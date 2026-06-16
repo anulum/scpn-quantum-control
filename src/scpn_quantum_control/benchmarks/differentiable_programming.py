@@ -12,13 +12,14 @@ from __future__ import annotations
 import math
 from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, cast
 
 import numpy as np
 from numpy.typing import NDArray
 
 from ..differentiable import (
     Parameter,
+    grad,
     is_jax_autodiff_available,
     jax_value_and_grad,
     program_adjoint_gradient,
@@ -992,12 +993,27 @@ def _transform_nesting_case() -> DifferentiableProgrammingBenchmarkResult:
     def sample_objective(row: Any) -> object:
         return row[0] * row[0] + np.sin(row[1])
 
-    gradients = vmap(
+    def batched_objective(flat_values: Any) -> object:
+        rows = flat_values.reshape((3, 2))
+        return np.sum(cast(Any, vmap(sample_objective)(rows)))
+
+    mapped_gradients = vmap(
         lambda row: whole_program_value_and_grad(sample_objective, row, trace=False).gradient
     )(values)
+    whole_program_batched_gradient = grad(
+        batched_objective,
+        values.reshape(-1),
+        method="whole_program",
+    )
     analytic = np.column_stack((2.0 * values[:, 0], np.cos(values[:, 1])))
-    gradient = np.asarray(gradients, dtype=np.float64).reshape(-1)
-    analytic_gradient = analytic.reshape(-1)
+    analytic_flat = analytic.reshape(-1)
+    gradient = np.concatenate(
+        [
+            np.asarray(mapped_gradients, dtype=np.float64).reshape(-1),
+            np.asarray(whole_program_batched_gradient, dtype=np.float64).reshape(-1),
+        ]
+    )
+    analytic_gradient = np.concatenate([analytic_flat, analytic_flat])
     return DifferentiableProgrammingBenchmarkResult(
         case_id="transform_nesting_vmap_program_grad",
         category="transform-nesting",
@@ -1008,8 +1024,9 @@ def _transform_nesting_case() -> DifferentiableProgrammingBenchmarkResult:
         adjoint_supported=True,
         max_abs_adjoint_error=0.0,
         claim_boundary=(
-            "vmap over program AD gradients compared with analytic separable references; "
-            "diagnostic conformance only, not a performance timing claim"
+            "vmap over program AD gradients and program AD grad(vmap(f)) compared with "
+            "analytic separable references; diagnostic conformance only, not a "
+            "performance timing claim"
         ),
     )
 

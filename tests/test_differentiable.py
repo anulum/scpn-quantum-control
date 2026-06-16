@@ -14643,6 +14643,55 @@ def test_canonical_grad_dispatches_whole_program_method_under_vmap() -> None:
     np.testing.assert_allclose(batched_gradients, expected, rtol=1.0e-12, atol=1.0e-12)
 
 
+def test_whole_program_grad_of_vmap_composes_with_higher_order_transforms() -> None:
+    """Whole-program grad(vmap(f)) should compose with JVP/VJP/Hessian transforms."""
+
+    def row_loss(row: np.ndarray) -> object:
+        return row[0] ** 2 + np.sin(row[1])
+
+    def batched_loss(flat_values: np.ndarray) -> object:
+        rows = flat_values.reshape((2, 2))
+        return np.sum(vmap(row_loss)(rows))
+
+    values = np.array([0.5, 0.25, -1.2, 0.75], dtype=np.float64)
+    tangent = np.array([0.25, -0.5, 1.5, -0.75], dtype=np.float64)
+    cotangent = np.array([1.0, -2.0, 0.5, 1.25], dtype=np.float64)
+    expected_gradient = np.array(
+        [2.0 * values[0], math.cos(values[1]), 2.0 * values[2], math.cos(values[3])],
+        dtype=np.float64,
+    )
+    expected_hessian = np.diag([2.0, -math.sin(values[1]), 2.0, -math.sin(values[3])])
+
+    program_gradient = grad(batched_loss, values, method="whole_program")
+    gradient_jacobian = jacfwd(
+        lambda candidate: grad(batched_loss, candidate, method="whole_program"),
+        values,
+        step=1.0e-6,
+    )
+    jvp_result = jvp(
+        lambda candidate: grad(batched_loss, candidate, method="whole_program"),
+        values,
+        tangent,
+        step=1.0e-6,
+    )
+    vjp_result = vjp(
+        lambda candidate: grad(batched_loss, candidate, method="whole_program"),
+        values,
+        cotangent,
+        step=1.0e-6,
+    )
+
+    np.testing.assert_allclose(program_gradient, expected_gradient, rtol=1.0e-12, atol=1.0e-12)
+    np.testing.assert_allclose(gradient_jacobian, expected_hessian, rtol=1.0e-6, atol=1.0e-6)
+    np.testing.assert_allclose(
+        hessian(batched_loss, values, step=1.0e-4), expected_hessian, rtol=1.0e-4, atol=1.0e-4
+    )
+    np.testing.assert_allclose(jvp_result, expected_hessian @ tangent, rtol=1.0e-6, atol=1.0e-6)
+    np.testing.assert_allclose(
+        vjp_result, expected_hessian.T @ cotangent, rtol=1.0e-6, atol=1.0e-6
+    )
+
+
 def test_transform_algebra_aliases_are_exported_from_package_root() -> None:
     """Transform algebra aliases should be stable package-root APIs."""
 

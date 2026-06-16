@@ -7958,13 +7958,17 @@ def vmap(
         if not args:
             raise ValueError("vmap requires at least one argument")
         axes = _normalise_vmap_in_axes(in_axes, len(args))
-        mapped: list[tuple[NDArray[np.float64], int] | None] = []
+        mapped: list[tuple[NDArray[np.float64] | TraceADArray, int] | None] = []
         batch_size: int | None = None
         for index, (arg, axis) in enumerate(zip(args, axes, strict=True)):
             if axis is None:
                 mapped.append(None)
                 continue
-            array = _as_real_numeric_array(f"vmap argument {index}", arg)
+            array = (
+                arg
+                if isinstance(arg, TraceADArray)
+                else _as_real_numeric_array(f"vmap argument {index}", arg)
+            )
             axis_index = _normalise_axis(f"in_axes[{index}]", axis, array.ndim)
             size = int(array.shape[axis_index])
             if size <= 0:
@@ -7987,7 +7991,10 @@ def vmap(
                     call_args.append(arg)
                 else:
                     array, axis_index = mapping
-                    call_args.append(np.take(array, item, axis=axis_index))
+                    if isinstance(array, TraceADArray):
+                        call_args.append(_trace_take(array, item, axis=axis_index, mode="raise"))
+                    else:
+                        call_args.append(np.take(array, item, axis=axis_index))
             outputs.append(function(*call_args))
         return _stack_vmap_outputs(outputs, out_axes)
 
@@ -8025,18 +8032,25 @@ def _stack_vmap_outputs(outputs: Sequence[object], out_axes: int) -> object:
     if not outputs:
         raise ValueError("vmap outputs must be non-empty")
     first = outputs[0]
+    if isinstance(first, (TraceADScalar, TraceADArray)):
+        context = first.context
+        trace_arrays = [_coerce_trace_array(output, context) for output in outputs]
+        shape = trace_arrays[0].shape
+        if any(array.shape != shape for array in trace_arrays):
+            raise ValueError("vmap output leaves must have consistent shapes")
+        return _trace_stack(tuple(trace_arrays), context, axis=out_axes)
     if isinstance(first, np.ndarray) or np.isscalar(first):
-        arrays = [np.asarray(output) for output in outputs]
-        shape = arrays[0].shape
-        if any(array.shape != shape for array in arrays):
+        numeric_arrays = [np.asarray(output) for output in outputs]
+        shape = numeric_arrays[0].shape
+        if any(array.shape != shape for array in numeric_arrays):
             raise ValueError("vmap output leaves must have consistent shapes")
         axis = out_axes
-        result_rank = arrays[0].ndim + 1
+        result_rank = numeric_arrays[0].ndim + 1
         if axis < 0:
             axis += result_rank
         if axis < 0 or axis >= result_rank:
             raise ValueError("out_axes is out of bounds for stacked output rank")
-        stacked = np.stack(arrays, axis=axis)
+        stacked: NDArray[Any] = np.stack(numeric_arrays, axis=axis)
         if stacked.dtype.kind in {"b", "O", "S", "U"}:
             raise ValueError("vmap output leaves must be numeric")
         return stacked

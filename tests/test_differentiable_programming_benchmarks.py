@@ -75,6 +75,9 @@ def test_differentiable_programming_benchmark_suite_matches_analytic_references(
     assert indexing_row.adjoint_supported is True
     assert indexing_row.max_abs_adjoint_error is not None
     assert indexing_row.max_abs_adjoint_error <= 1.0e-12
+    transform_row = next(row for row in results if row.category == "transform-nesting")
+    assert transform_row.gradient.shape == (12,)
+    assert "grad(vmap(f))" in transform_row.claim_boundary
 
 
 def test_differentiable_programming_benchmark_result_validation_paths() -> None:

@@ -370,7 +370,7 @@ Runs the committed conformance rows:
 | `linalg_primitive_contracts` | linalg-primitive | Registry-gated determinant, inverse, solve, trace, diagonal, flattened diagonal, matrix-power, and multi-dot contracts |
 | `indexing_static_gather_contracts` | indexing-heavy | Static slicing, static-axis concatenate/stack assembly, `np.hstack`/`np.vstack`/`np.column_stack`/`np.dstack` assembly conveniences, nested `np.block` assembly, static `np.split`/`np.array_split`/`np.hsplit`/`np.vsplit`/`np.dsplit` gather assembly, static `np.tril`/`np.triu` triangular masks, static `np.diagonal` offset/axis gather assembly, static `np.broadcast_arrays` broadcast assembly, static integer/boolean advanced getitem, `np.take` raise/wrap/clip modes, `np.take_along_axis`, static `np.delete`, static constant `np.pad`, static constant `np.insert`, `np.append`, strict finite no-tie `np.sort` adjoint routing, static-grid `np.trapezoid` adjoint routing, static scalar and coordinate `np.gradient` finite-difference adjoint routing, static-grid `np.interp` piecewise-linear adjoint routing, one-dimensional `np.convolve` signal/kernel adjoint routing, one-dimensional `np.correlate` signal/reference adjoint routing, and repeated adjoint accumulation |
 | `mutation_heavy_forward_only` | mutation-heavy | Static array mutation dataflow |
-| `transform_nesting_vmap_program_grad` | transform-nesting | `vmap` over program AD gradients |
+| `transform_nesting_vmap_program_grad` | transform-nesting | `vmap` over program AD gradients plus whole-program `grad(vmap(f))` over trace-aware leaves |
 
 #### `run_differentiable_programming_external_reference_suite()`
 
