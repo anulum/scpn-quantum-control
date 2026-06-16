@@ -188,8 +188,8 @@ def test_external_comparison_runs_configured_enzyme_runner(tmp_path, monkeypatch
                 "#!/usr/bin/env python3",
                 "# SPDX-License-Identifier: AGPL-3.0-or-later",
                 "# Commercial license available",
-                "# Copyright (c) Concepts 1996-2026 Miroslav Sotek. All rights reserved.",
-                "# Copyright (c) Code 2020-2026 Miroslav Sotek. All rights reserved.",
+                "# © Concepts 1996-2026 Miroslav Sotek. All rights reserved.",
+                "# © Code 2020-2026 Miroslav Sotek. All rights reserved.",
                 "# ORCID: 0009-0009-3560-0851",
                 "# Contact: www.anulum.li | protoscience@anulum.li",
                 "import json, math, sys",
@@ -221,6 +221,33 @@ def test_external_comparison_runs_configured_enzyme_runner(tmp_path, monkeypatch
     assert "Enzyme" in row.claim_boundary
     assert payload["toolchain"] == {"enzyme": "test-runner", "llvm": "test-llvm"}
     assert payload["dependency_versions"]
+
+
+def test_external_comparison_records_enzyme_jax_tooling_paths(
+    tmp_path,
+    monkeypatch,
+) -> None:
+    plugin = tmp_path / "enzyme_call.so"
+    runner = tmp_path / "enzyme_runner.py"
+    plugin.write_bytes(b"native-extension-placeholder")
+    runner.write_text("#!/usr/bin/env python3\n", encoding="utf-8")
+    monkeypatch.setenv("ENZYME_LLVM_PLUGIN", str(plugin))
+    monkeypatch.setenv("SCPN_ENZYME_RUNNER", str(runner))
+    monkeypatch.setattr(
+        comparison,
+        "_installed_version",
+        lambda package: {
+            "llvm": "not_installed",
+            "enzyme": "not_installed",
+            "enzyme_ad": "0.0.6",
+        }[package],
+    )
+
+    versions = comparison._backend_dependency_versions("enzyme")
+
+    assert versions["enzyme_ad"] == "0.0.6"
+    assert versions["enzyme_llvm_plugin"] == f"file:{plugin}"
+    assert versions["enzyme_runner"] == f"executable:{runner}"
 
 
 def test_external_comparison_classifies_enzyme_bad_json(tmp_path, monkeypatch) -> None:

@@ -1,0 +1,10 @@
+absl-py==2.3.1
+enzyme-ad==0.0.6
+importlib-metadata==8.7.1
+jax==0.4.30
+jaxlib==0.4.30
+ml-dtypes==0.5.4
+numpy==2.0.2
+opt-einsum==3.4.0
+scipy==1.13.1
+zipp==3.23.1

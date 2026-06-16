@@ -1,0 +1,41 @@
+{
+  "schema": "scpn_qc_framework_overlay_manifest_v2",
+  "artifact_id": "diff-qnode-framework-overlay-profile-v1",
+  "overlay_path": "/home/anulum/.cache/scpn-qc-framework-site-py312",
+  "python_version": "3.12",
+  "platform": "Linux-6.17.0-35-generic-x86_64-with-glibc2.39",
+  "cpu_wheels": [
+    "jax[cpu]",
+    "torch",
+    "tensorflow-cpu",
+    "pennylane"
+  ],
+  "install_command": [
+    "python",
+    "-m",
+    "pip",
+    "install",
+    "--target",
+    "/home/anulum/.cache/scpn-qc-framework-site-py312",
+    "--upgrade",
+    "jax[cpu]",
+    "torch",
+    "tensorflow-cpu",
+    "pennylane"
+  ],
+  "pythonpath": "/home/anulum/.cache/scpn-qc-framework-site-py312",
+  "wheel_sources": {
+    "jax[cpu]": "PyPI CPU extra",
+    "torch": "https://download.pytorch.org/whl/cpu",
+    "tensorflow-cpu": "PyPI CPU wheel",
+    "pennylane": "PyPI"
+  },
+  "package_versions": {
+    "jax": "0.10.1",
+    "torch": "2.12.0+cpu",
+    "tensorflow": "2.21.0",
+    "pennylane": "0.45.0"
+  },
+  "verification_status": "ready",
+  "claim_boundary": "CPU-only optional framework parity overlay; no CUDA, provider, QPU, or performance promotion claim."
+}

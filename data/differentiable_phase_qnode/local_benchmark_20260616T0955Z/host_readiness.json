@@ -1,0 +1,17 @@
+{
+  "ready": false,
+  "reserved_core": 2,
+  "governor": "powersave",
+  "governor_is_stable": false,
+  "frequency_mhz": 4600.0,
+  "load_average": [
+    4.60107421875,
+    4.5693359375,
+    4.99755859375
+  ],
+  "load_is_low": false,
+  "blockers": [
+    "cpu2 governor is 'powersave'; set it to 'performance' for stable benchmark timing",
+    "host load 5.00 exceeds the isolated threshold 1.00; quiesce concurrent jobs"
+  ]
+}

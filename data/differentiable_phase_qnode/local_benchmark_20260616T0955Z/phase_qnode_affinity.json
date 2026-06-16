@@ -1,0 +1,360 @@
+{
+  "claim_boundary": "isolated_affinity only when reserved CPU affinity, low host load, observed process affinity match, governor or frequency context, fixed command metadata, and no heavy concurrent jobs are recorded",
+  "evidence_label": "functional_non_isolated",
+  "isolation_failures": [
+    "host load must remain low before and after benchmark"
+  ],
+  "metadata": {
+    "affinity_cpus": [
+      2
+    ],
+    "command": "taskset -c 2 python tools/run_phase_qnode_affinity_benchmark.py",
+    "cpu_model": "11th Gen Intel(R) Core(TM) i5-11600K @ 3.90GHz",
+    "dependency_versions": {
+      "jax": "0.10.1",
+      "numpy": "2.4.6",
+      "pennylane": "0.45.0",
+      "python": "3.12.13",
+      "tensorflow": "not_installed",
+      "torch": "2.12.0+cpu"
+    },
+    "frequency_mhz": [
+      3887.655,
+      3887.937,
+      3889.686,
+      3891.524,
+      3903.254,
+      3903.159,
+      3888.164,
+      3887.943,
+      3889.686,
+      3891.076,
+      3902.974,
+      3903.22
+    ],
+    "governor": "powersave",
+    "heavy_concurrent_jobs": false,
+    "host_load_after": [
+      4.771484375,
+      4.57421875,
+      6.1640625
+    ],
+    "host_load_before": [
+      4.771484375,
+      4.57421875,
+      6.1640625
+    ],
+    "isolation_method": "taskset",
+    "observed_affinity_cpus": [
+      2
+    ],
+    "python_version": "3.12.13",
+    "repetitions": 50,
+    "runner_environment": "",
+    "runner_labels": [],
+    "warmups": 10
+  },
+  "production_benchmark": false,
+  "raw_timing_rows": [
+    {
+      "gradient_norm": 1.1102230246251565e-16,
+      "iteration": 0.0,
+      "seconds": 0.0006322819972410798,
+      "value": 1.0
+    },
+    {
+      "gradient_norm": 1.1102230246251565e-16,
+      "iteration": 1.0,
+      "seconds": 0.0006201340002007782,
+      "value": 1.0
+    },
+    {
+      "gradient_norm": 1.1102230246251565e-16,
+      "iteration": 2.0,
+      "seconds": 0.0007539509970229119,
+      "value": 1.0
+    },
+    {
+      "gradient_norm": 1.1102230246251565e-16,
+      "iteration": 3.0,
+      "seconds": 0.000715695001417771,
+      "value": 1.0
+    },
+    {
+      "gradient_norm": 1.1102230246251565e-16,
+      "iteration": 4.0,
+      "seconds": 0.0006286569987423718,
+      "value": 1.0
+    },
+    {
+      "gradient_norm": 1.1102230246251565e-16,
+      "iteration": 5.0,
+      "seconds": 0.0006417359982151538,
+      "value": 1.0
+    },
+    {
+      "gradient_norm": 1.1102230246251565e-16,
+      "iteration": 6.0,
+      "seconds": 0.0006099620077293366,
+      "value": 1.0
+    },
+    {
+      "gradient_norm": 1.1102230246251565e-16,
+      "iteration": 7.0,
+      "seconds": 0.0007632100023329258,
+      "value": 1.0
+    },
+    {
+      "gradient_norm": 1.1102230246251565e-16,
+      "iteration": 8.0,
+      "seconds": 0.0006336109945550561,
+      "value": 1.0
+    },
+    {
+      "gradient_norm": 1.1102230246251565e-16,
+      "iteration": 9.0,
+      "seconds": 0.0006418169941753149,
+      "value": 1.0
+    },
+    {
+      "gradient_norm": 1.1102230246251565e-16,
+      "iteration": 10.0,
+      "seconds": 0.0008144309977069497,
+      "value": 1.0
+    },
+    {
+      "gradient_norm": 1.1102230246251565e-16,
+      "iteration": 11.0,
+      "seconds": 0.0008417179924435914,
+      "value": 1.0
+    },
+    {
+      "gradient_norm": 1.1102230246251565e-16,
+      "iteration": 12.0,
+      "seconds": 0.0009020899888128042,
+      "value": 1.0
+    },
+    {
+      "gradient_norm": 1.1102230246251565e-16,
+      "iteration": 13.0,
+      "seconds": 0.0008569929923396558,
+      "value": 1.0
+    },
+    {
+      "gradient_norm": 1.1102230246251565e-16,
+      "iteration": 14.0,
+      "seconds": 0.0009413349907845259,
+      "value": 1.0
+    },
+    {
+      "gradient_norm": 1.1102230246251565e-16,
+      "iteration": 15.0,
+      "seconds": 0.0008642030006740242,
+      "value": 1.0
+    },
+    {
+      "gradient_norm": 1.1102230246251565e-16,
+      "iteration": 16.0,
+      "seconds": 0.0009229179995600134,
+      "value": 1.0
+    },
+    {
+      "gradient_norm": 1.1102230246251565e-16,
+      "iteration": 17.0,
+      "seconds": 0.0011137349938508123,
+      "value": 1.0
+    },
+    {
+      "gradient_norm": 1.1102230246251565e-16,
+      "iteration": 18.0,
+      "seconds": 0.0009989050158765167,
+      "value": 1.0
+    },
+    {
+      "gradient_norm": 1.1102230246251565e-16,
+      "iteration": 19.0,
+      "seconds": 0.0008472639892715961,
+      "value": 1.0
+    },
+    {
+      "gradient_norm": 1.1102230246251565e-16,
+      "iteration": 20.0,
+      "seconds": 0.0009063300094567239,
+      "value": 1.0
+    },
+    {
+      "gradient_norm": 1.1102230246251565e-16,
+      "iteration": 21.0,
+      "seconds": 0.0008935430087149143,
+      "value": 1.0
+    },
+    {
+      "gradient_norm": 1.1102230246251565e-16,
+      "iteration": 22.0,
+      "seconds": 0.0008523880096618086,
+      "value": 1.0
+    },
+    {
+      "gradient_norm": 1.1102230246251565e-16,
+      "iteration": 23.0,
+      "seconds": 0.0009521379834040999,
+      "value": 1.0
+    },
+    {
+      "gradient_norm": 1.1102230246251565e-16,
+      "iteration": 24.0,
+      "seconds": 0.0037970070261508226,
+      "value": 1.0
+    },
+    {
+      "gradient_norm": 1.1102230246251565e-16,
+      "iteration": 25.0,
+      "seconds": 0.0009042239980772138,
+      "value": 1.0
+    },
+    {
+      "gradient_norm": 1.1102230246251565e-16,
+      "iteration": 26.0,
+      "seconds": 0.0008677560254000127,
+      "value": 1.0
+    },
+    {
+      "gradient_norm": 1.1102230246251565e-16,
+      "iteration": 27.0,
+      "seconds": 0.0009434579988010228,
+      "value": 1.0
+    },
+    {
+      "gradient_norm": 1.1102230246251565e-16,
+      "iteration": 28.0,
+      "seconds": 0.0008409089932683855,
+      "value": 1.0
+    },
+    {
+      "gradient_norm": 1.1102230246251565e-16,
+      "iteration": 29.0,
+      "seconds": 0.0009948300139512867,
+      "value": 1.0
+    },
+    {
+      "gradient_norm": 1.1102230246251565e-16,
+      "iteration": 30.0,
+      "seconds": 0.0008448770095128566,
+      "value": 1.0
+    },
+    {
+      "gradient_norm": 1.1102230246251565e-16,
+      "iteration": 31.0,
+      "seconds": 0.0010184819984715432,
+      "value": 1.0
+    },
+    {
+      "gradient_norm": 1.1102230246251565e-16,
+      "iteration": 32.0,
+      "seconds": 0.001012605003779754,
+      "value": 1.0
+    },
+    {
+      "gradient_norm": 1.1102230246251565e-16,
+      "iteration": 33.0,
+      "seconds": 0.0008764399972278625,
+      "value": 1.0
+    },
+    {
+      "gradient_norm": 1.1102230246251565e-16,
+      "iteration": 34.0,
+      "seconds": 0.0008638959843665361,
+      "value": 1.0
+    },
+    {
+      "gradient_norm": 1.1102230246251565e-16,
+      "iteration": 35.0,
+      "seconds": 0.0008422480023000389,
+      "value": 1.0
+    },
+    {
+      "gradient_norm": 1.1102230246251565e-16,
+      "iteration": 36.0,
+      "seconds": 0.0008724250074010342,
+      "value": 1.0
+    },
+    {
+      "gradient_norm": 1.1102230246251565e-16,
+      "iteration": 37.0,
+      "seconds": 0.0008479779935441911,
+      "value": 1.0
+    },
+    {
+      "gradient_norm": 1.1102230246251565e-16,
+      "iteration": 38.0,
+      "seconds": 0.0009167840180452913,
+      "value": 1.0
+    },
+    {
+      "gradient_norm": 1.1102230246251565e-16,
+      "iteration": 39.0,
+      "seconds": 0.0008391989977099001,
+      "value": 1.0
+    },
+    {
+      "gradient_norm": 1.1102230246251565e-16,
+      "iteration": 40.0,
+      "seconds": 0.0008932389901019633,
+      "value": 1.0
+    },
+    {
+      "gradient_norm": 1.1102230246251565e-16,
+      "iteration": 41.0,
+      "seconds": 0.0009326980216428638,
+      "value": 1.0
+    },
+    {
+      "gradient_norm": 1.1102230246251565e-16,
+      "iteration": 42.0,
+      "seconds": 0.0008356549951713532,
+      "value": 1.0
+    },
+    {
+      "gradient_norm": 1.1102230246251565e-16,
+      "iteration": 43.0,
+      "seconds": 0.0008543239964637905,
+      "value": 1.0
+    },
+    {
+      "gradient_norm": 1.1102230246251565e-16,
+      "iteration": 44.0,
+      "seconds": 0.0010194169881287962,
+      "value": 1.0
+    },
+    {
+      "gradient_norm": 1.1102230246251565e-16,
+      "iteration": 45.0,
+      "seconds": 0.0008546419849153608,
+      "value": 1.0
+    },
+    {
+      "gradient_norm": 1.1102230246251565e-16,
+      "iteration": 46.0,
+      "seconds": 0.0008256080036517233,
+      "value": 1.0
+    },
+    {
+      "gradient_norm": 1.1102230246251565e-16,
+      "iteration": 47.0,
+      "seconds": 0.0008601040171924978,
+      "value": 1.0
+    },
+    {
+      "gradient_norm": 1.1102230246251565e-16,
+      "iteration": 48.0,
+      "seconds": 0.0011915919894818217,
+      "value": 1.0
+    },
+    {
+      "gradient_norm": 1.1102230246251565e-16,
+      "iteration": 49.0,
+      "seconds": 0.0010068299889098853,
+      "value": 1.0
+    }
+  ]
+}

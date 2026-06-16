@@ -432,6 +432,13 @@ the SCPN reference. These rows are comparison evidence only; they do not claim
 provider execution, QPU execution, GPU execution, arbitrary-program AD, or
 production performance.
 
+When Enzyme is supplied through the Enzyme-JAX package rather than a standalone
+`enzyme` executable, set `ENZYME_LLVM_PLUGIN` to the installed native extension
+path. The benchmark metadata records the `enzyme_ad` package version plus the
+runner and plugin paths. If the package is installed but the runner fails during
+lowering or execution, the row is a `runtime_error` hard gap rather than a
+`dependency_missing` hard gap.
+
 #### `run_differentiable_hardening_slice_gate()`
 
 Returns a JSON-ready `DifferentiableHardeningSliceGateResult` for the focused

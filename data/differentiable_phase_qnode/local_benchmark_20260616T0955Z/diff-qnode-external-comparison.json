@@ -1,0 +1,227 @@
+{
+  "artifact_id": "diff-qnode-external-comparison-local",
+  "claim_boundary": "External comparison artefact for bounded CPU framework correctness rows; not isolated benchmark evidence, not provider execution, and not a promotion artefact until the isolated benchmark gate supplies artefact IDs.",
+  "classification": "functional_non_isolated",
+  "environment": {
+    "machine": "x86_64",
+    "platform": "Linux-6.17.0-35-generic-x86_64-with-glibc2.39",
+    "processor": "x86_64",
+    "python": "3.12.13"
+  },
+  "generated_at_unix": 1781597702,
+  "production_eligible": false,
+  "promotion_ready": false,
+  "rows": [
+    {
+      "backend": "jax",
+      "batching_support": "vmap",
+      "case_id": "bounded_phase_objective",
+      "claim_boundary": "Bounded CPU external comparison against the SCPN reference; no provider, QPU, GPU, or production performance claim.",
+      "dependency_versions": {
+        "jax": "0.10.1",
+        "jaxlib": "0.10.1"
+      },
+      "device": "cpu",
+      "dtype": "float64",
+      "failure_class": null,
+      "gradient_error": 0.0,
+      "memory_peak_bytes": 3728091,
+      "runtime_seconds": 0.9943478149943985,
+      "setup_instructions": null,
+      "source_of_truth": "scpn_reference",
+      "status": "success",
+      "toolchain": null,
+      "transform_support": "value_and_grad",
+      "value_error": 0.0
+    },
+    {
+      "backend": "pytorch",
+      "batching_support": "torch.func.vmap",
+      "case_id": "bounded_phase_objective",
+      "claim_boundary": "Bounded CPU external comparison against the SCPN reference; no provider, QPU, GPU, or production performance claim.",
+      "dependency_versions": {
+        "torch": "2.12.0+cpu"
+      },
+      "device": "cpu",
+      "dtype": "float64",
+      "failure_class": null,
+      "gradient_error": 0.0,
+      "memory_peak_bytes": 66034541,
+      "runtime_seconds": 4.934263761009788,
+      "setup_instructions": null,
+      "source_of_truth": "scpn_reference",
+      "status": "success",
+      "toolchain": null,
+      "transform_support": "torch.func.grad/jacrev",
+      "value_error": 0.0
+    },
+    {
+      "backend": "tensorflow",
+      "batching_support": "vectorized_map",
+      "case_id": "bounded_phase_objective",
+      "claim_boundary": "Bounded CPU external comparison against the SCPN reference; no provider, QPU, GPU, or production performance claim.",
+      "dependency_versions": {
+        "tensorflow": "2.21.0",
+        "tensorflow-cpu": "2.21.0"
+      },
+      "device": "cpu",
+      "dtype": "float64",
+      "failure_class": null,
+      "gradient_error": 0.0,
+      "memory_peak_bytes": 426033,
+      "runtime_seconds": 0.03378906499710865,
+      "setup_instructions": null,
+      "source_of_truth": "scpn_reference",
+      "status": "success",
+      "toolchain": null,
+      "transform_support": "GradientTape",
+      "value_error": 0.0
+    },
+    {
+      "backend": "pennylane",
+      "batching_support": "not_native",
+      "case_id": "bounded_phase_objective",
+      "claim_boundary": "Bounded CPU external comparison against the SCPN reference; no provider, QPU, GPU, or production performance claim.",
+      "dependency_versions": {
+        "pennylane": "0.45.0"
+      },
+      "device": "cpu",
+      "dtype": "float64",
+      "failure_class": null,
+      "gradient_error": 5.551115123125783e-17,
+      "memory_peak_bytes": 255256,
+      "runtime_seconds": 0.01788222198956646,
+      "setup_instructions": null,
+      "source_of_truth": "scpn_reference",
+      "status": "success",
+      "toolchain": null,
+      "transform_support": "QNode",
+      "value_error": 1.1102230246251565e-16
+    },
+    {
+      "backend": "enzyme",
+      "batching_support": "not_supported",
+      "case_id": "bounded_phase_objective",
+      "claim_boundary": "Runtime comparison gap only; no hidden success or promoted claim.",
+      "dependency_versions": {
+        "enzyme": "not_installed",
+        "enzyme_ad": "0.0.6",
+        "enzyme_llvm_plugin": "file:/home/anulum/.cache/scpn-qc-enzyme-py39/lib/python3.9/site-packages/enzyme_ad/jax/enzyme_call.so",
+        "enzyme_runner": "executable:/media/anulum/GOTM/aaa_God_of_the_Math_Collection/03_CODE/SCPN-QUANTUM-CONTROL/data/differentiable_phase_qnode/local_benchmark_20260616T0955Z/enzyme_jax_runner.py",
+        "llvm": "not_installed"
+      },
+      "device": "cpu",
+      "dtype": "float64",
+      "failure_class": "runtime_error",
+      "gradient_error": null,
+      "memory_peak_bytes": null,
+      "runtime_seconds": null,
+      "setup_instructions": "Configured Enzyme runner failed: Enzyme-JAX execution failed: loc(\"-\":3:10): error: invalid properties {limit_indices = dense<1> : tensor<1xi64>, start_indices = dense<0> : tensor<1xi64>, strides = dense<1> : tensor<1xi64>} for op mhlo.slice: this operation does not support properties",
+      "source_of_truth": "scpn_reference",
+      "status": "hard_gap",
+      "toolchain": null,
+      "transform_support": "LLVM Enzyme runner",
+      "value_error": null
+    },
+    {
+      "backend": "jax",
+      "batching_support": "single-host vmap only; multi-host pmap is not promotion evidence",
+      "case_id": "bounded_phase_objective_unsupported_batching",
+      "claim_boundary": "Unsupported-route hard gap only; no hidden success or promoted claim.",
+      "dependency_versions": {
+        "jax": "0.10.1",
+        "jaxlib": "0.10.1"
+      },
+      "device": "cpu",
+      "dtype": "float64",
+      "failure_class": "unsupported_batching",
+      "gradient_error": null,
+      "memory_peak_bytes": null,
+      "runtime_seconds": null,
+      "setup_instructions": "Bounded JAX external comparison evidence covers CPU value_and_grad/vmap only; multi-host pmap or sharded hardware batches require a separate isolated artefact.",
+      "source_of_truth": "scpn_reference",
+      "status": "hard_gap",
+      "toolchain": null,
+      "transform_support": "value_and_grad",
+      "value_error": null
+    },
+    {
+      "backend": "pytorch",
+      "batching_support": "torch.func.vmap",
+      "case_id": "bounded_phase_objective_unsupported_transform",
+      "claim_boundary": "Unsupported-route hard gap only; no hidden success or promoted claim.",
+      "dependency_versions": {
+        "torch": "2.12.0+cpu"
+      },
+      "device": "cpu",
+      "dtype": "float64",
+      "failure_class": "unsupported_transform",
+      "gradient_error": null,
+      "memory_peak_bytes": null,
+      "runtime_seconds": null,
+      "setup_instructions": "Bounded PyTorch external comparison evidence covers torch.func.grad, vmap, jacrev, compile, and module wrappers separately; nested compile grad-of-grad promotion requires a dedicated correctness and isolation artefact.",
+      "source_of_truth": "scpn_reference",
+      "status": "hard_gap",
+      "toolchain": null,
+      "transform_support": "nested torch.compile grad-of-grad not evaluated",
+      "value_error": null
+    },
+    {
+      "backend": "tensorflow",
+      "batching_support": "vectorized_map",
+      "case_id": "bounded_phase_objective_unsupported_dtype",
+      "claim_boundary": "Unsupported-route hard gap only; no hidden success or promoted claim.",
+      "dependency_versions": {
+        "tensorflow": "2.21.0",
+        "tensorflow-cpu": "2.21.0"
+      },
+      "device": "cpu",
+      "dtype": "complex128",
+      "failure_class": "unsupported_dtype",
+      "gradient_error": null,
+      "memory_peak_bytes": null,
+      "runtime_seconds": null,
+      "setup_instructions": "External comparison promotion is real-valued float64 only. Complex or Wirtinger TensorFlow routes must use the explicit real/imaginary contract.",
+      "source_of_truth": "scpn_reference",
+      "status": "hard_gap",
+      "toolchain": null,
+      "transform_support": "GradientTape",
+      "value_error": null
+    },
+    {
+      "backend": "pennylane",
+      "batching_support": "not_native",
+      "case_id": "bounded_phase_objective_unsupported_device",
+      "claim_boundary": "Unsupported-route hard gap only; no hidden success or promoted claim.",
+      "dependency_versions": {
+        "pennylane": "0.45.0"
+      },
+      "device": "hardware_qpu",
+      "dtype": "float64",
+      "failure_class": "unsupported_device",
+      "gradient_error": null,
+      "memory_peak_bytes": null,
+      "runtime_seconds": null,
+      "setup_instructions": "External comparison rows do not submit live provider or QPU jobs. Hardware PennyLane evidence requires a provider policy ticket, artefact ID, shot budget, and isolated benchmark classification.",
+      "source_of_truth": "scpn_reference",
+      "status": "hard_gap",
+      "toolchain": null,
+      "transform_support": "QNode",
+      "value_error": null
+    }
+  ],
+  "schema": "scpn_qc_differentiable_external_comparison_v1",
+  "source_of_truth": "scpn_reference",
+  "summary": {
+    "failure_classes": [
+      "runtime_error",
+      "unsupported_batching",
+      "unsupported_device",
+      "unsupported_dtype",
+      "unsupported_transform"
+    ],
+    "hard_gap_count": 5,
+    "row_count": 9,
+    "success_count": 4
+  }
+}

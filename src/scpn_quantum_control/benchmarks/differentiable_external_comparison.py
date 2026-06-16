@@ -692,11 +692,23 @@ def _backend_dependency_versions(backend: str) -> dict[str, str]:
         "pytorch": ("torch",),
         "tensorflow": ("tensorflow", "tensorflow-cpu"),
         "pennylane": ("pennylane",),
-        "enzyme": ("llvm", "enzyme"),
+        "enzyme": ("llvm", "enzyme", "enzyme_ad"),
     }
-    return {
+    versions = {
         package: _installed_version(package) for package in packages_by_backend.get(backend, ())
     }
+    if backend == "enzyme":
+        plugin = os.environ.get("ENZYME_LLVM_PLUGIN")
+        if plugin:
+            versions["enzyme_llvm_plugin"] = (
+                f"file:{plugin}" if os.path.exists(plugin) else f"missing:{plugin}"
+            )
+        runner = os.environ.get("SCPN_ENZYME_RUNNER")
+        if runner:
+            versions["enzyme_runner"] = (
+                f"executable:{runner}" if os.path.exists(runner) else f"missing:{runner}"
+            )
+    return versions
 
 
 def _installed_version(package: str) -> str:
