@@ -5902,6 +5902,75 @@ def test_whole_program_ad_trace_native_llvm_jit_lowers_2x2_product_linalg_ops() 
     )
 
 
+def test_whole_program_ad_native_lowering_blocks_unverified_static_linalg_backends() -> None:
+    """Wider static linalg kernels must not promote to native or Rust by metadata alone."""
+
+    def objective(values: np.ndarray) -> object:
+        matrix = values[0:9].reshape((3, 3))
+        left = values[9:15].reshape((2, 3))
+        middle = values[15:27].reshape((3, 4))
+        right = values[27:35].reshape((4, 2))
+        return (
+            np.linalg.matrix_power(matrix, 3).sum()
+            + np.linalg.multi_dot((left, middle, right)).sum()
+        )
+
+    sample = np.array(
+        [
+            1.5,
+            -0.25,
+            0.5,
+            0.0,
+            2.0,
+            0.75,
+            0.25,
+            -0.5,
+            1.25,
+            1.0,
+            -0.5,
+            0.75,
+            0.25,
+            1.5,
+            -1.0,
+            1.25,
+            -0.5,
+            0.0,
+            0.5,
+            0.75,
+            1.0,
+            -0.25,
+            0.25,
+            0.0,
+            0.5,
+            1.5,
+            -0.75,
+            1.0,
+            -0.25,
+            0.5,
+            1.25,
+            -0.75,
+            0.0,
+            0.25,
+            0.5,
+        ],
+        dtype=np.float64,
+    )
+    parameters = tuple(Parameter(f"theta_{index}") for index in range(sample.size))
+
+    result = whole_program_value_and_grad(objective, sample, parameters)
+    report = analyse_whole_program_ad_native_lowering(result)
+
+    assert report.supported is False
+    assert any(op.startswith("linalg:matrix_power:3x3:power:3:") for op in report.unsupported_ops)
+    assert any(
+        op.startswith("linalg:multi_dot:2x3__3x4__4x2:out:2x2:") for op in report.unsupported_ops
+    )
+    assert "native LLVM/JIT and Rust static linalg lowering blocked" in report.fail_closed_reason
+    assert "verified executable kernels" in report.fail_closed_reason
+    with pytest.raises(ValueError, match="static linalg lowering blocked.*verified executable"):
+        compile_whole_program_ad_trace_to_native_llvm_jit(objective, sample, parameters)
+
+
 def test_whole_program_ad_trace_native_llvm_jit_lowers_2x2_linalg_scalar_ops() -> None:
     """Native program AD should lower scalar 2x2 det and trace linalg nodes."""
 

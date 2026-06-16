@@ -10111,6 +10111,11 @@ def analyse_whole_program_ad_native_lowering(
         effect_kinds = tuple(dict.fromkeys(effect.kind for effect in result.program_ir.effects))
     if unsupported_ops:
         reason = "unsupported native ops: " + ", ".join(unsupported_ops)
+        if any(_whole_program_native_is_unverified_static_linalg_op(op) for op in unsupported_ops):
+            reason = (
+                f"{reason}; native LLVM/JIT and Rust static linalg lowering blocked "
+                "until independently verified executable kernels exist"
+            )
     else:
         reason = "supported native LLVM/JIT lowering surface"
     return WholeProgramADNativeLoweringReport(
@@ -10124,6 +10129,14 @@ def analyse_whole_program_ad_native_lowering(
         unsupported_operation_count=len(result.ir_nodes) - lowerable_count,
         fail_closed_reason=reason,
     )
+
+
+def _whole_program_native_is_unverified_static_linalg_op(op: str) -> bool:
+    if op.startswith("linalg:matrix_power:2x2:power:2:"):
+        return False
+    if op.startswith("linalg:multi_dot:2x2__2x2:out:2x2:"):
+        return False
+    return op.startswith(("linalg:matrix_power:", "linalg:multi_dot:"))
 
 
 def _whole_program_native_node_is_lowerable(op: str) -> bool:
