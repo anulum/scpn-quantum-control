@@ -17,6 +17,7 @@ import pytest
 import scpn_quantum_control.phase.tensorflow_bridge as tensorflow_bridge
 import scpn_quantum_control.phase.torch_bridge as torch_bridge
 from scpn_quantum_control.phase import (
+    PhaseTensorFlowMaturityAuditResult,
     PhaseTensorFlowParameterShiftResult,
     PhaseTensorFlowQNNGradientResult,
     PhaseTorchAutogradQNNGradientResult,
@@ -33,6 +34,7 @@ from scpn_quantum_control.phase import (
     parameter_shift_qnn_classifier_gradient,
     parameter_shift_qnn_classifier_loss,
     run_tensorflow_keras_layer_wrapper_audit,
+    run_tensorflow_maturity_audit,
     run_torch_compile_compatibility_audit,
     run_torch_func_compatibility_audit,
     run_torch_maturity_audit,
@@ -1284,6 +1286,38 @@ def test_tensorflow_keras_layer_wrapper_audit_checks_gradient_tape(
     assert fake_tf.gradient_tape_entries == 1
     assert fake_tf.gradient_calls == 1
     assert result.to_dict()["keras_layer_supported"] is True
+
+
+def test_tensorflow_maturity_audit_records_bounded_passes_and_provider_gaps(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    fake_tf = _FakeTensorFlow()
+    monkeypatch.setattr(tensorflow_bridge, "_load_tensorflow", lambda: fake_tf)
+    features = np.array([[0.0], [np.pi]], dtype=float)
+    labels = np.array([0.0, 1.0], dtype=float)
+    params = np.array([0.45], dtype=float)
+
+    result = run_tensorflow_maturity_audit(
+        features=features,
+        labels=labels,
+        params=params,
+        tolerance=1e-12,
+    )
+
+    assert isinstance(result, PhaseTensorFlowMaturityAuditResult)
+    assert result.bounded_model_ready
+    assert not result.ready_for_provider_exceedance
+    assert result.evidence["analytic_tensor"].passed
+    assert result.evidence["gradient_tape"].passed
+    assert result.evidence["tf_function"].passed
+    assert result.evidence["xla"].passed
+    assert result.evidence["keras_layer"].passed
+    assert "arbitrary_phase_qnode_tensorflow_lowering" in result.open_gaps
+    assert "hardware_gradient_execution" in result.open_gaps
+    payload = result.to_dict()
+    assert payload["required_capabilities"]["xla"] == "passed"
+    assert payload["required_capabilities"]["provider_callbacks"] == "blocked"
+    assert payload["claim_boundary"] == "bounded_tensorflow_provider_maturity_audit"
 
 
 def test_tensorflow_keras_layer_fails_closed_without_keras_layer(

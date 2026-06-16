@@ -259,6 +259,29 @@ class PhaseTensorFlowKerasLayerWrapperAuditResult:
         }
 
 
+@dataclass(frozen=True)
+class PhaseTensorFlowMaturityAuditResult:
+    """Aggregate TensorFlow maturity evidence and explicit provider blockers."""
+
+    bounded_model_ready: bool
+    ready_for_provider_exceedance: bool
+    evidence: dict[str, object]
+    required_capabilities: dict[str, str]
+    open_gaps: tuple[str, ...]
+    claim_boundary: str = "bounded_tensorflow_provider_maturity_audit"
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready TensorFlow maturity evidence."""
+        return {
+            "bounded_model_ready": self.bounded_model_ready,
+            "ready_for_provider_exceedance": self.ready_for_provider_exceedance,
+            "evidence": {name: _result_to_dict(result) for name, result in self.evidence.items()},
+            "required_capabilities": dict(self.required_capabilities),
+            "open_gaps": list(self.open_gaps),
+            "claim_boundary": self.claim_boundary,
+        }
+
+
 def _load_tensorflow() -> Any:
     try:
         import tensorflow as tf
@@ -940,10 +963,99 @@ def run_tensorflow_keras_layer_wrapper_audit(
     )
 
 
+def run_tensorflow_maturity_audit(
+    *,
+    features: ArrayLike,
+    labels: ArrayLike,
+    params: ArrayLike | object,
+    tolerance: float = 1e-6,
+) -> PhaseTensorFlowMaturityAuditResult:
+    """Aggregate bounded TensorFlow evidence and provider-level blockers."""
+
+    tolerance_value = _as_non_negative_tolerance(tolerance)
+    feature_matrix = _as_feature_matrix(features)
+    label_vector = _as_label_vector(labels, n_samples=feature_matrix.shape[0])
+    parameter_values = _as_parameter_vector(
+        "params",
+        _tensorflow_values_to_numpy(params),
+        width=feature_matrix.shape[1],
+    )
+
+    analytic_tensor = tensorflow_bounded_qnn_value_and_grad(
+        feature_matrix,
+        label_vector,
+        parameter_values,
+        tolerance=tolerance_value,
+    )
+    gradient_tape = run_tensorflow_gradient_tape_compatibility_audit(
+        features=feature_matrix,
+        labels=label_vector,
+        params=parameter_values,
+        tolerance=tolerance_value,
+    )
+    tf_function = run_tensorflow_function_compatibility_audit(
+        features=feature_matrix,
+        labels=label_vector,
+        params=parameter_values,
+        tolerance=tolerance_value,
+    )
+    xla = run_tensorflow_xla_compatibility_audit(
+        features=feature_matrix,
+        labels=label_vector,
+        params=parameter_values,
+        tolerance=tolerance_value,
+    )
+    keras_layer = run_tensorflow_keras_layer_wrapper_audit(
+        features=feature_matrix,
+        labels=label_vector,
+        initial_params=parameter_values,
+        tolerance=tolerance_value,
+    )
+
+    evidence: dict[str, object] = {
+        "analytic_tensor": analytic_tensor,
+        "gradient_tape": gradient_tape,
+        "tf_function": tf_function,
+        "xla": xla,
+        "keras_layer": keras_layer,
+    }
+    bounded_model_ready = all(
+        bool(getattr(result, "passed", False)) for result in evidence.values()
+    )
+    required_capabilities = {
+        "analytic_tensor": "passed" if analytic_tensor.passed else "failed",
+        "gradient_tape": "passed" if gradient_tape.passed else "failed",
+        "tf_function": "passed" if tf_function.passed else "failed",
+        "xla": "passed" if xla.passed else "failed",
+        "keras_layer": "passed" if keras_layer.passed else "failed",
+        "arbitrary_phase_qnode_tensorflow_lowering": "blocked",
+        "full_graph_autodiff_through_simulator": "blocked",
+        "provider_callbacks": "blocked",
+        "hardware_gradient_execution": "blocked",
+        "promotion_grade_isolated_benchmarks": "blocked",
+    }
+    open_gaps = tuple(name for name, status in required_capabilities.items() if status != "passed")
+    return PhaseTensorFlowMaturityAuditResult(
+        bounded_model_ready=bounded_model_ready,
+        ready_for_provider_exceedance=bounded_model_ready and not open_gaps,
+        evidence=evidence,
+        required_capabilities=required_capabilities,
+        open_gaps=open_gaps,
+    )
+
+
+def _result_to_dict(result: object) -> object:
+    to_dict = getattr(result, "to_dict", None)
+    if callable(to_dict):
+        return to_dict()
+    return result
+
+
 __all__ = [
     "PhaseTensorFlowFunctionCompatibilityResult",
     "PhaseTensorFlowGradientTapeCompatibilityResult",
     "PhaseTensorFlowKerasLayerWrapperAuditResult",
+    "PhaseTensorFlowMaturityAuditResult",
     "PhaseTensorFlowParameterShiftResult",
     "PhaseTensorFlowQNNGradientResult",
     "PhaseTensorFlowXLACompatibilityResult",
@@ -951,6 +1063,7 @@ __all__ = [
     "run_tensorflow_function_compatibility_audit",
     "run_tensorflow_gradient_tape_compatibility_audit",
     "run_tensorflow_keras_layer_wrapper_audit",
+    "run_tensorflow_maturity_audit",
     "run_tensorflow_xla_compatibility_audit",
     "tensorflow_bounded_qnn_value_and_grad",
     "tensorflow_bounded_qnn_keras_layer",

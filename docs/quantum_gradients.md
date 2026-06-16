@@ -1809,6 +1809,7 @@ from scpn_quantum_control.phase import (
     run_tensorflow_function_compatibility_audit,
     run_tensorflow_gradient_tape_compatibility_audit,
     run_tensorflow_keras_layer_wrapper_audit,
+    run_tensorflow_maturity_audit,
     run_tensorflow_xla_compatibility_audit,
     run_torch_maturity_audit,
     run_torch_phase_qnode_lowering_matrix,
@@ -1849,6 +1850,11 @@ tf_keras_audit = run_tensorflow_keras_layer_wrapper_audit(
     labels=np.array([0.0, 1.0], dtype=float),
     initial_params=np.array([0.45], dtype=float),
 )
+tf_maturity = run_tensorflow_maturity_audit(
+    features=np.array([[0.0], [np.pi]], dtype=float),
+    labels=np.array([0.0, 1.0], dtype=float),
+    params=np.array([0.45], dtype=float),
+)
 torch_maturity = run_torch_maturity_audit(
     features=np.array([[0.0], [np.pi]], dtype=float),
     labels=np.array([0.0, 1.0], dtype=float),
@@ -1860,6 +1866,7 @@ torch_lowering = run_torch_phase_qnode_lowering_matrix()
 print(torch_result.torch_gradient, torch_result.host_boundary)
 print(torch_maturity.bounded_model_ready, torch_maturity.ready_for_provider_exceedance)
 print(torch_lowering.route_status("registered_phase_qnode_statevector_lowering"))
+print(tf_maturity.bounded_model_ready, tf_maturity.ready_for_provider_exceedance)
 print(tf_result.tensorflow_gradient, tf_result.host_boundary)
 ```
 
@@ -1898,9 +1905,13 @@ route traces only that same bounded loss through `tf.function` and checks its
 `tensorflow_bounded_qnn_keras_layer(...)` and
 `run_tensorflow_keras_layer_wrapper_audit(...)` routes expose only that same
 bounded loss through a Keras `Layer` and checks its `GradientTape` gradient
-against the same reference. All remain outside arbitrary provider or simulator
-autodiff and do not claim broad XLA or unrestricted Keras training-loop
-coverage.
+against the same reference. `run_tensorflow_maturity_audit(...)` aggregates the
+bounded TensorFlow tensor, `GradientTape`, `tf.function`, XLA, and Keras-layer
+passes into a provider-maturity record while keeping arbitrary Phase-QNode
+TensorFlow lowering, full graph autodiff-through-simulator, provider callbacks,
+hardware gradients, and isolated benchmark promotion blocked. All remain outside
+arbitrary provider or simulator autodiff and do not claim broad XLA or
+unrestricted Keras training-loop coverage.
 
 ## Enzyme/MLIR compiler maturity audit
 

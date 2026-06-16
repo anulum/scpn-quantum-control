@@ -1334,6 +1334,7 @@ run_tensorflow_function_compatibility_audit(features, labels, params, tolerance=
 run_tensorflow_xla_compatibility_audit(features, labels, params, tolerance=1e-6) -> PhaseTensorFlowXLACompatibilityResult
 tensorflow_bounded_qnn_keras_layer(features, labels, initial_params, trainable=True) -> tf.keras.layers.Layer
 run_tensorflow_keras_layer_wrapper_audit(features, labels, initial_params, tolerance=1e-6) -> PhaseTensorFlowKerasLayerWrapperAuditResult
+run_tensorflow_maturity_audit(features, labels, params, tolerance=1e-6) -> PhaseTensorFlowMaturityAuditResult
 natural_gradient(gradient_result, metric, damping=0.0, rcond=1e-12) -> NaturalGradientResult
 weighted_gradient_sum(components, weights, method="weighted_sum") -> WeightedGradientResult
 ```
