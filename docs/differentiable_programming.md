@@ -70,6 +70,13 @@ ledger, isolated CI benchmark artefact, and external comparison rows all pass.
 The ledger is committed at
 `data/differentiable_phase_qnode/claim_ledger.json` with a reviewer summary in
 `data/differentiable_phase_qnode/claim_ledger.md`.
+The public-safe wording table is generated from that ledger at
+`data/differentiable_phase_qnode/public_claim_table_20260616.md`. Use
+`render_public_claim_table(...)` and `validate_public_claim_table(...)` when a
+release note, README, package description, or reviewer response needs
+claim-boundary language. Every current row is a bounded candidate, so the table
+blocks hardware, provider, QPU, GPU, production-performance, and
+`isolated_affinity` claims until promoted evidence exists.
 `validate_differentiable_support_surface_alignment()` checks that each ledger
 row still points to existing implementation, test, and documentation surfaces
 and that source/test/docs paths are present in the generated capability

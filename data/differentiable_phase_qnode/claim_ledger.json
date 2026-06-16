@@ -234,6 +234,35 @@
       ],
       "promotion_status": "SOTA-candidate",
       "claim_boundary": "External-validation environment lockfiles support reviewer reproduction only; they do not promote performance, provider, QPU, GPU, hardware, or isolated_affinity benchmark claims."
+    },
+    {
+      "claim_id": "public_claim_table",
+      "claim_text": "The differentiable lane exposes a public-safe claim table generated from the committed ledger.",
+      "implementation_surface": [
+        "src/scpn_quantum_control/differentiable_claim_ledger.py"
+      ],
+      "test_surface": [
+        "tests/test_differentiable_claim_ledger.py"
+      ],
+      "docs_surface": [
+        "README.md",
+        "docs/differentiable_api.md",
+        "docs/differentiable_programming.md",
+        "data/differentiable_phase_qnode/public_claim_table_20260616.md",
+        "data/differentiable_phase_qnode/claim_ledger.md"
+      ],
+      "evidence_artifact_ids": [
+        "diff-public-claim-table-20260616"
+      ],
+      "benchmark_artifact_ids": [
+        "diff-public-claim-table-20260616"
+      ],
+      "known_gaps": [
+        "The table constrains wording but does not execute external validation or isolated benchmarks.",
+        "Rows remain bounded candidates unless the claim ledger promotes them with passing evidence."
+      ],
+      "promotion_status": "SOTA-candidate",
+      "claim_boundary": "Public claim table governance only; no provider execution, QPU execution, accelerator execution, hardware execution, or production benchmark promotion is implied."
     }
   ]
 }

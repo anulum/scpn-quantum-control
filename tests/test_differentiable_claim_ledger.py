@@ -17,8 +17,10 @@ from scpn_quantum_control.differentiable_claim_ledger import (
     ClaimLedgerRow,
     load_differentiable_claim_ledger,
     render_claim_ledger_markdown,
+    render_public_claim_table,
     validate_claim_ledger,
     validate_differentiable_support_surface_alignment,
+    validate_public_claim_table,
     validate_public_language_against_ledger,
 )
 
@@ -124,6 +126,28 @@ def test_public_language_cannot_exceed_unpromoted_ledger() -> None:
 
     assert not validation.passed
     assert "world-leading" in validation.errors[0]
+
+
+def test_public_claim_table_is_generated_from_committed_ledger() -> None:
+    ledger = load_differentiable_claim_ledger()
+    markdown = render_public_claim_table(ledger)
+    validation = validate_public_claim_table(ledger, markdown)
+
+    assert validation.passed
+    assert "# Differentiable Public Claim Table" in markdown
+    assert "`framework_overlay_parity`" in markdown
+    assert "`external_validation_environment_lock`" in markdown
+    assert "bounded-candidate" in markdown
+    assert "No hardware, provider, QPU, GPU, production-performance" in markdown
+
+
+def test_public_claim_table_validator_rejects_missing_rows() -> None:
+    ledger = load_differentiable_claim_ledger()
+
+    validation = validate_public_claim_table(ledger, "# Differentiable Public Claim Table\n")
+
+    assert not validation.passed
+    assert any("missing public claim-table row" in error for error in validation.errors)
 
 
 def test_support_surface_alignment_audit_matches_committed_manifest_and_ledger() -> None:

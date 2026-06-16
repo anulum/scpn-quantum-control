@@ -331,6 +331,103 @@ def render_claim_ledger_markdown(rows_or_ledger: ClaimLedger | Iterable[ClaimLed
     return "\n".join(lines)
 
 
+def render_public_claim_table(rows_or_ledger: ClaimLedger | Iterable[ClaimLedgerRow]) -> str:
+    """Render public-safe differentiable claim wording from the ledger."""
+
+    rows = (
+        rows_or_ledger.rows if isinstance(rows_or_ledger, ClaimLedger) else tuple(rows_or_ledger)
+    )
+    lines = [
+        "<!--",
+        "SPDX-License-Identifier: AGPL-3.0-or-later",
+        "Commercial license available",
+        "© Concepts 1996–2026 Miroslav Šotek. All rights reserved.",
+        "© Code 2020–2026 Miroslav Šotek. All rights reserved.",
+        "ORCID: 0009-0009-3560-0851",
+        "Contact: www.anulum.li | protoscience@anulum.li",
+        "SCPN Quantum Control — Differentiable Public Claim Table",
+        "-->",
+        "",
+        "# Differentiable Public Claim Table",
+        "",
+        "This table is generated from the differentiable claim ledger. It is the",
+        "public wording boundary for current differentiable-programming claims.",
+        "",
+        "| Claim ID | Public status | Public-safe wording | Do not claim yet | Evidence |",
+        "|---|---|---|---|---|",
+    ]
+    for row in rows:
+        safe_status = _public_status(row)
+        lines.append(
+            f"| `{row.claim_id}` | `{safe_status}` | {_public_safe_wording(row)} | "
+            f"{_public_blocked_wording(row)} | {_public_evidence_wording(row)} |"
+        )
+    lines.extend(
+        [
+            "",
+            "Global boundary: no differentiable row is promoted until the claim ledger,",
+            "external comparison rows, and isolated CI benchmark artefacts all pass.",
+            "",
+        ]
+    )
+    return "\n".join(lines)
+
+
+def validate_public_claim_table(
+    rows_or_ledger: ClaimLedger | Iterable[ClaimLedgerRow],
+    markdown: str,
+) -> ClaimLedgerValidation:
+    """Validate that the public claim table stays within ledger boundaries."""
+
+    rows = (
+        rows_or_ledger.rows if isinstance(rows_or_ledger, ClaimLedger) else tuple(rows_or_ledger)
+    )
+    errors: list[str] = []
+    public_language = validate_public_language_against_ledger(rows, (markdown,))
+    errors.extend(public_language.errors)
+    for row in rows:
+        if f"`{row.claim_id}`" not in markdown:
+            errors.append(f"{row.claim_id}: missing public claim-table row")
+        if row.claim_boundary not in markdown and row.promotion_status == "promoted":
+            errors.append(f"{row.claim_id}: promoted row must include exact claim boundary")
+    if any(row.promotion_status != "promoted" for row in rows):
+        required = (
+            "No hardware, provider, QPU, GPU, production-performance, or isolated_affinity claim."
+        )
+        if required not in markdown:
+            errors.append("public claim table is missing the non-promotional boundary")
+    return ClaimLedgerValidation(passed=not errors, errors=tuple(errors))
+
+
+def _public_status(row: ClaimLedgerRow) -> str:
+    if row.promotion_status == "promoted":
+        return "promoted"
+    if row.promotion_status == "hard_gap":
+        return "blocked"
+    return "bounded-candidate"
+
+
+def _public_safe_wording(row: ClaimLedgerRow) -> str:
+    if row.promotion_status == "promoted":
+        return row.claim_text
+    return (
+        "Evidence-backed candidate surface for the bounded differentiable lane; "
+        "use the listed artefacts and claim boundary when discussing scope."
+    )
+
+
+def _public_blocked_wording(row: ClaimLedgerRow) -> str:
+    if row.promotion_status == "promoted":
+        return "Do not extend beyond the exact claim boundary without a new ledger row."
+    return "No hardware, provider, QPU, GPU, production-performance, or isolated_affinity claim."
+
+
+def _public_evidence_wording(row: ClaimLedgerRow) -> str:
+    artefacts = ", ".join(f"`{artifact}`" for artifact in row.evidence_artifact_ids)
+    benchmarks = ", ".join(f"`{artifact}`" for artifact in row.benchmark_artifact_ids)
+    return f"Artefacts: {artefacts}; benchmark IDs: {benchmarks}."
+
+
 __all__ = [
     "ClaimLedger",
     "ClaimLedgerRow",
@@ -340,7 +437,9 @@ __all__ = [
     "DifferentiableSupportSurfaceAlignment",
     "load_differentiable_claim_ledger",
     "render_claim_ledger_markdown",
+    "render_public_claim_table",
     "validate_differentiable_support_surface_alignment",
     "validate_claim_ledger",
+    "validate_public_claim_table",
     "validate_public_language_against_ledger",
 ]
