@@ -14,6 +14,9 @@ import pytest
 
 import scpn_quantum_control.phase.jax_bridge as jax_bridge
 from scpn_quantum_control.phase import (
+    DenseHermitianObservable,
+    PauliCovarianceObservable,
+    PauliTerm,
     PhaseJAXCustomVJPQNNGradientResult,
     PhaseJAXGradientAgreementResult,
     PhaseJAXJITCompatibilityResult,
@@ -22,15 +25,21 @@ from scpn_quantum_control.phase import (
     PhaseJAXNestedTransformAlgebraResult,
     PhaseJAXParameterShiftResult,
     PhaseJAXPhaseQNodeLoweringMatrixResult,
+    PhaseJAXPhaseQNodeStatevectorResult,
     PhaseJAXPyTreeCompatibilityResult,
     PhaseJAXShardingCompatibilityResult,
     PhaseJAXVMAPCompatibilityResult,
+    PhaseQNodeCircuit,
+    SparsePauliHamiltonian,
     check_jax_parameter_shift_agreement,
+    execute_phase_qnode_circuit,
     is_phase_jax_available,
     jax_custom_vjp_qnn_value_and_grad,
     jax_native_qnn_value_and_grad,
     jax_parameter_shift_value_and_grad,
+    jax_phase_qnode_value_and_grad,
     multi_frequency_parameter_shift_rule,
+    parameter_shift_phase_qnode_gradient,
     parameter_shift_qnn_classifier_gradient,
     run_jax_jit_compatibility_audit,
     run_jax_maturity_audit,
@@ -782,24 +791,184 @@ def test_phase_jax_phase_qnode_lowering_matrix_fails_closed_for_arbitrary_qnodes
 
     assert isinstance(result, PhaseJAXPhaseQNodeLoweringMatrixResult)
     assert result.bounded_no_host_callback_routes_ready
-    assert not result.arbitrary_phase_qnode_lowering_ready
+    assert result.arbitrary_phase_qnode_lowering_ready
     assert not result.ready_for_provider_exceedance
     assert result.route_status("bounded_qnn_native_value_and_grad") == "passed"
     assert result.route_status("bounded_qnn_jit_value_and_grad") == "passed"
     assert result.route_status("bounded_qnn_vmap_value_and_grad") == "passed"
-    assert result.route_status("registered_phase_qnode_statevector_lowering") == "blocked"
+    assert result.route_status("registered_phase_qnode_statevector_lowering") == "passed"
     assert result.route_status("registered_phase_qnode_provider_lowering") == "blocked"
-    assert "registered_phase_qnode_statevector_lowering" in result.open_gaps
+    assert "registered_phase_qnode_statevector_lowering" not in result.open_gaps
     assert "isolated_benchmark_artifact" in result.open_gaps
     assert result.claim_boundary == "bounded_jax_phase_qnode_lowering_matrix"
 
     payload = result.to_dict()
     assert payload["routes"]["bounded_qnn_jit_value_and_grad"]["host_callback"] is False
-    assert payload["routes"]["registered_phase_qnode_statevector_lowering"]["requires"] == [
-        "native_jax_lowering_rules",
-        "gate_observable_coverage_matrix",
-        "statevector_gradient_parity_artifact",
-    ]
+    assert (
+        payload["routes"]["registered_phase_qnode_statevector_lowering"]["host_callback"] is False
+    )
+
+
+def test_phase_jax_registered_qnode_statevector_lowering_matches_scpn_reference() -> None:
+    if not is_phase_jax_available():
+        pytest.skip("JAX optional dependency is not installed")
+    circuit = PhaseQNodeCircuit(
+        n_qubits=3,
+        operations=(
+            ("h", (0,)),
+            ("ry", (1,), 0),
+            ("rx", (2,), 1),
+            ("cnot", (1, 2)),
+            ("crz", (0, 1), 2),
+            ("rxx", (0, 2), 3),
+            ("rzz", (1, 2), 4),
+            ("ccnot", (0, 1, 2)),
+        ),
+        observable=SparsePauliHamiltonian(
+            (
+                PauliTerm(0.5, ((0, "z"),)),
+                PauliTerm(-0.25, ((1, "x"), (2, "z"))),
+                PauliTerm(0.75, ((0, "y"), (2, "y"))),
+            )
+        ),
+    )
+    params = np.array([0.21, -0.32, 0.43, -0.54, 0.65], dtype=float)
+
+    result = jax_phase_qnode_value_and_grad(circuit, params, tolerance=2e-5)
+    scpn_value = execute_phase_qnode_circuit(circuit, params).value
+    scpn_gradient = parameter_shift_phase_qnode_gradient(circuit, params).gradient
+
+    assert isinstance(result, PhaseJAXPhaseQNodeStatevectorResult)
+    assert result.passed
+    assert result.native_framework_autodiff
+    assert not result.host_callback
+    assert not result.jitted
+    assert result.method == "jax_native_registered_phase_qnode_statevector_value_and_grad"
+    np.testing.assert_allclose(result.value, scpn_value, atol=2e-5)
+    np.testing.assert_allclose(result.gradient, scpn_gradient, atol=2e-5)
+    np.testing.assert_allclose(result.parameter_shift_gradient, scpn_gradient, atol=1e-12)
+    np.testing.assert_allclose(np.vdot(result.state, result.state).real, 1.0, atol=2e-5)
+    assert result.to_dict()["host_callback"] is False
+
+
+def test_phase_jax_registered_qnode_statevector_lowering_jits_without_callback() -> None:
+    if not is_phase_jax_available():
+        pytest.skip("JAX optional dependency is not installed")
+    circuit = PhaseQNodeCircuit(
+        n_qubits=2,
+        operations=(("ry", (0,), 0), ("cnot", (0, 1)), ("rz", (1,), 1)),
+        observable=PauliTerm(1.0, ((0, "z"), (1, "z"))),
+    )
+
+    result = jax_phase_qnode_value_and_grad(
+        circuit,
+        np.array([0.17, -0.23], dtype=float),
+        tolerance=2e-5,
+        jit=True,
+    )
+
+    assert result.passed
+    assert result.jit_requested
+    assert result.jitted
+    assert result.native_framework_autodiff
+    assert not result.host_callback
+
+
+def test_phase_jax_registered_qnode_lowering_covers_gate_and_observable_family() -> None:
+    if not is_phase_jax_available():
+        pytest.skip("JAX optional dependency is not installed")
+    params = np.linspace(0.11, 0.91, 10)
+    circuit = PhaseQNodeCircuit(
+        n_qubits=3,
+        operations=(
+            ("h", (0,)),
+            ("x", (1,)),
+            ("y", (2,)),
+            ("z", (0,)),
+            ("s", (1,)),
+            ("t", (2,)),
+            ("sx", (0,)),
+            ("rx", (0,), 0),
+            ("ry", (1,), 1),
+            ("rz", (2,), 2),
+            ("phase", (0,), 3),
+            ("cnot", (0, 1)),
+            ("cz", (1, 2)),
+            ("cy", (2, 0)),
+            ("swap", (0, 2)),
+            ("ch", (0, 1)),
+            ("cs", (1, 2)),
+            ("ct", (2, 0)),
+            ("crx", (0, 1), 4),
+            ("cry", (1, 2), 5),
+            ("crz", (2, 0), 6),
+            ("rxx", (0, 1), 7),
+            ("ryy", (1, 2), 8),
+            ("rzz", (0, 2), 9),
+            ("ccnot", (0, 1, 2)),
+            ("ccz", (0, 1, 2)),
+            ("cswap", (0, 1, 2)),
+        ),
+        observable=SparsePauliHamiltonian(
+            (
+                PauliTerm(0.5, ((0, "x"),)),
+                PauliTerm(-0.25, ((1, "y"), (2, "z"))),
+                PauliTerm(0.75, ((0, "z"), (1, "z"), (2, "z"))),
+            )
+        ),
+    )
+
+    result = jax_phase_qnode_value_and_grad(circuit, params, tolerance=5e-6)
+    reference = parameter_shift_phase_qnode_gradient(circuit, params)
+
+    assert result.passed
+    assert not result.host_callback
+    np.testing.assert_allclose(result.value, reference.value, atol=5e-6)
+    np.testing.assert_allclose(result.gradient, reference.gradient, atol=5e-6)
+
+
+def test_phase_jax_registered_qnode_lowering_matches_dense_and_covariance_observables() -> None:
+    if not is_phase_jax_available():
+        pytest.skip("JAX optional dependency is not installed")
+    dense_params = np.array([0.31, -0.17], dtype=float)
+    covariance_params = np.array([0.23, -0.41], dtype=float)
+    dense_circuit = PhaseQNodeCircuit(
+        n_qubits=1,
+        operations=(("ry", (0,), 0), ("rz", (0,), 1)),
+        observable=DenseHermitianObservable(np.array([[1.0, 0.2], [0.2, -0.5]], dtype=float)),
+    )
+    covariance_circuit = PhaseQNodeCircuit(
+        n_qubits=2,
+        operations=(("ry", (0,), 0), ("cnot", (0, 1)), ("rx", (1,), 1)),
+        observable=PauliCovarianceObservable(
+            PauliTerm(1.0, ((0, "z"),)),
+            PauliTerm(1.0, ((1, "x"),)),
+        ),
+    )
+
+    dense = jax_phase_qnode_value_and_grad(
+        dense_circuit,
+        dense_params,
+        tolerance=5e-6,
+    )
+    covariance = jax_phase_qnode_value_and_grad(
+        covariance_circuit,
+        covariance_params,
+        tolerance=5e-6,
+    )
+
+    assert dense.passed
+    assert covariance.passed
+    np.testing.assert_allclose(
+        dense.gradient,
+        parameter_shift_phase_qnode_gradient(dense_circuit, dense_params).gradient,
+        atol=5e-6,
+    )
+    np.testing.assert_allclose(
+        covariance.gradient,
+        parameter_shift_phase_qnode_gradient(covariance_circuit, covariance_params).gradient,
+        atol=5e-6,
+    )
 
 
 def test_phase_jax_maturity_audit_fails_closed_on_bad_batch_shape(

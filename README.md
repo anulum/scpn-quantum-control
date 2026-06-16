@@ -98,7 +98,7 @@ has a defined commercial licensing route.
 | Package version | 0.9.12 |
 | Public API exports | 647 |
 | Python source modules | 835 |
-| Public Python classes | 1781 |
+| Public Python classes | 1782 |
 | Paper 0 validation modules | 466 |
 | Domain package families | 32 |
 | API documentation pages | 0 |
@@ -319,8 +319,8 @@ CI benchmark artefacts all pass:
 | Hardening-slice gate | `run_differentiable_hardening_slice_gate(...)` records the required Ruff, mypy, module-specific pytest, test-quality audit, claim-ledger validation, and benchmark-classification checks for each differentiable hardening slice. It is checklist/classification evidence only, not benchmark execution. | [Differentiable Programming](docs/differentiable_programming.md), [Differentiable API](docs/differentiable_api.md) |
 | Module-hardening audit | `run_differentiable_module_hardening_audit()` discovers every differentiable/gradient/QNode/bridge/compiler module in the promotion scope and verifies a module-specific test plus declared fail-closed diagnostics for each. | [Differentiable Programming](docs/differentiable_programming.md), [Differentiable API](docs/differentiable_api.md) |
 | Bounded phase-QNN training | A deterministic data-reuploading binary classifier is available through `train_parameter_shift_qnn_classifier(...)` with multi-frequency parameter-shift descent, prediction evidence, accuracy, convergence certificates, finite-difference gradient verification, seeded finite-shot gradient uncertainty and noisy-convergence evidence, optional named external-gradient agreement records, a conformance suite with unsuitable-scenario evidence, deterministic convergence suites, non-isolated optimizer-baseline comparisons across parameter-shift, finite-difference, SGD, Adam, L-BFGS-B, diagonal-Fisher natural-gradient, seeded SPSA, and derivative-free grid routes, and caller-supplied framework-gradient agreement checks. | [Quantum Gradients](docs/quantum_gradients.md), [Differentiable API](docs/differentiable_api.md) |
-| Registered Phase-QNode family | Local statevector execution, density-matrix execution with bounded single-qubit Kraus channels, arbitrary-depth registered circuit builders with deterministic depth/resource profiles, registered GHZ-chain and hardware-efficient multi-qubit templates, controlled-H/S/T plus Toffoli/CCZ/Fredkin gates with exact Toffoli/Fredkin decompositions, sparse Ising-chain Hamiltonian construction, parameter-shift gradients for pure-state routes, framework parity rows, verified SCPN MLIR-runtime lowering adapters, and isolated-affinity benchmark metadata are available for the declared gate/observable subset. Unsupported gates, dynamic/provider paths, native LLVM/JIT lowering, interpreter fallback success, noisy-channel gradients/metrics, and unregistered observables fail closed with support reports. | [Differentiable API](docs/differentiable_api.md), [Benchmark Harness](docs/benchmark_harness.md) |
-| ML framework and tape roadmap | Gradient tape, QNode-style tape records, backend gradient planning, provider-safe callback execution with shot/variance accounting, convergence certificates, optional JAX host-callback parameter-shift interop, PennyLane gradient-agreement checks, PyTorch/TensorFlow host-boundary tensor bridges, and bounded framework parity rows are available. Full provider-backed QNode migration bridges and arbitrary architectures remain staged surfaces, not yet advertised as production-complete. | [Differentiable Roadmap](docs/differentiable_roadmap.md) |
+| Registered Phase-QNode family | Local statevector execution, density-matrix execution with bounded single-qubit Kraus channels, arbitrary-depth registered circuit builders with deterministic depth/resource profiles, registered GHZ-chain and hardware-efficient multi-qubit templates, controlled-H/S/T plus Toffoli/CCZ/Fredkin gates with exact Toffoli/Fredkin decompositions, sparse Ising-chain Hamiltonian construction, parameter-shift gradients for pure-state routes, framework parity rows, native JAX deterministic statevector value-and-gradient lowering for registered local circuits, verified SCPN MLIR-runtime lowering adapters, and isolated-affinity benchmark metadata are available for the declared gate/observable subset. Unsupported gates, dynamic/provider paths, native LLVM/JIT lowering, interpreter fallback success, noisy-channel gradients/metrics, and unregistered observables fail closed with support reports. | [Differentiable API](docs/differentiable_api.md), [Benchmark Harness](docs/benchmark_harness.md) |
+| ML framework and tape roadmap | Gradient tape, QNode-style tape records, backend gradient planning, provider-safe callback execution with shot/variance accounting, convergence certificates, optional JAX host-callback parameter-shift interop, deterministic registered Phase-QNode JAX statevector lowering, PennyLane gradient-agreement checks, PyTorch/TensorFlow host-boundary tensor bridges, and bounded framework parity rows are available. Full provider-backed QNode migration bridges, finite-shot native JAX lowering, dynamic-circuit lowering, and arbitrary architectures remain staged surfaces, not yet advertised as production-complete. | [Differentiable Roadmap](docs/differentiable_roadmap.md) |
 
 This matters commercially because optimisation users do not only need circuits.
 They need gradients, convergence evidence, framework interop, reproducible
@@ -333,7 +333,7 @@ The first production-grade differentiable workflows are deliberately bounded:
 1. train small VQE objectives with parameter-shift gradients through `PhaseVQE.solve(gradient_method="parameter_shift")`;
 2. verify gradients against finite differences and analytic references through `verify_parameter_shift_gradient(...)` and `verify_vqe_parameter_shift_gradient(...)`;
 3. train bounded phase-QNN classifiers through `train_parameter_shift_qnn_classifier(...)`, verify their QNN-specific gradients through `verify_parameter_shift_qnn_classifier_gradient(...)`, record seeded finite-shot uncertainty through `estimate_parameter_shift_qnn_finite_shot_gradient(...)`, package evidence with `run_parameter_shift_qnn_conformance_suite(...)`, certify deterministic local convergence with `run_parameter_shift_qnn_convergence_suite(...)`, replay seeded finite-shot convergence with `run_parameter_shift_qnn_finite_shot_convergence_suite(...)`, compare local optimizer baselines with `run_parameter_shift_qnn_optimizer_benchmark_suite(...)`, and record caller-supplied framework-gradient agreement with `verify_parameter_shift_qnn_framework_agreement(...)`;
-4. execute registered local Phase-QNode circuits with `execute_phase_qnode_circuit(...)`, compare installed framework parity with `run_phase_qnode_framework_parity_suite()`, and lower supported subsets to textual MLIR metadata with `lower_phase_qnode_circuit_to_mlir(...)`;
+4. execute registered local Phase-QNode circuits with `execute_phase_qnode_circuit(...)`, compare installed framework parity with `run_phase_qnode_framework_parity_suite()`, lower deterministic registered statevector value-and-gradient routes into native JAX with `jax_phase_qnode_value_and_grad(...)`, and lower supported subsets to textual MLIR metadata with `lower_phase_qnode_circuit_to_mlir(...)`;
 5. use compiler/program-AD kernels for supported classical objectives;
 6. evaluate hardware-gradient preparation with `evaluate_hardware_gradient_policy(...)`
    and `run_hardware_gradient_policy_readiness_suite()` before any provider job
@@ -343,10 +343,10 @@ The first production-grade differentiable workflows are deliberately bounded:
    before they can mislead users.
 
 Future releases will extend this route toward native framework gradients beyond
-the current host-boundary JAX/PyTorch/TensorFlow bridges, full PennyLane/Qiskit
-migration bridges beyond agreement checks, quantum neural networks, analog
-oscillator mappings, open-system gradients, benchmark leaderboards, and
-real-time feedback control.
+the current bounded JAX/PyTorch/TensorFlow bridges, full PennyLane/Qiskit
+migration bridges beyond agreement checks, finite-shot and provider-backed
+native lowering, quantum neural networks, analog oscillator mappings,
+open-system gradients, benchmark leaderboards, and real-time feedback control.
 
 ## Richer Presentation
 

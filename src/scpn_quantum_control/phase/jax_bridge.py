@@ -26,6 +26,17 @@ from .qnn_training import (
     parameter_shift_qnn_classifier_gradient,
     parameter_shift_qnn_classifier_loss,
 )
+from .qnode_circuit import (
+    DenseHermitianObservable,
+    PauliCovarianceObservable,
+    PauliTerm,
+    PhaseQNodeCircuit,
+    PhaseQNodeOperation,
+    PhaseQNodeSupportError,
+    SparsePauliHamiltonian,
+    parameter_shift_phase_qnode_gradient,
+    phase_qnode_support_report,
+)
 
 FloatArray: TypeAlias = NDArray[np.float64]
 ScalarObjective = Callable[[FloatArray], float]
@@ -159,6 +170,48 @@ class PhaseJAXCustomVJPQNNGradientResult:
             "jit_requested": self.jit_requested,
             "jitted": self.jitted,
             "method": self.method,
+        }
+
+
+@dataclass(frozen=True)
+class PhaseJAXPhaseQNodeStatevectorResult:
+    """Native JAX autodiff evidence for a registered local Phase-QNode."""
+
+    value: float
+    gradient: FloatArray
+    state: NDArray[np.complex128]
+    parameter_shift_value: float
+    parameter_shift_gradient: FloatArray
+    max_abs_error: float
+    l2_error: float
+    tolerance: float
+    passed: bool
+    native_framework_autodiff: bool
+    host_callback: bool
+    jit_requested: bool
+    jitted: bool
+    method: str = "jax_native_registered_phase_qnode_statevector_value_and_grad"
+    claim_boundary: str = "registered_phase_qnode_jax_statevector_lowering"
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready registered Phase-QNode JAX lowering evidence."""
+        return {
+            "value": self.value,
+            "gradient": self.gradient.tolist(),
+            "state_real": self.state.real.tolist(),
+            "state_imag": self.state.imag.tolist(),
+            "parameter_shift_value": self.parameter_shift_value,
+            "parameter_shift_gradient": self.parameter_shift_gradient.tolist(),
+            "max_abs_error": self.max_abs_error,
+            "l2_error": self.l2_error,
+            "tolerance": self.tolerance,
+            "passed": self.passed,
+            "native_framework_autodiff": self.native_framework_autodiff,
+            "host_callback": self.host_callback,
+            "jit_requested": self.jit_requested,
+            "jitted": self.jitted,
+            "method": self.method,
+            "claim_boundary": self.claim_boundary,
         }
 
 
@@ -502,7 +555,7 @@ class PhaseJAXPhaseQNodeLoweringMatrixResult:
         return all(
             route.status == "passed" and not route.host_callback
             for route in self.routes
-            if route.name.startswith("registered_phase_qnode_")
+            if route.name == "registered_phase_qnode_statevector_lowering"
         )
 
     @property
@@ -1115,6 +1168,314 @@ def jax_custom_vjp_qnn_value_and_grad(
         jit_requested=jit,
         jitted=jitted,
     )
+
+
+def jax_phase_qnode_value_and_grad(
+    circuit: PhaseQNodeCircuit,
+    params: ArrayLike,
+    *,
+    tolerance: float = 1e-6,
+    jit: bool = False,
+) -> PhaseJAXPhaseQNodeStatevectorResult:
+    """Lower a registered deterministic Phase-QNode statevector route into JAX.
+
+    The accepted surface is the local pure-state ``PhaseQNodeCircuit`` gate and
+    observable family. It deliberately excludes finite-shot sampling, provider
+    callbacks, hardware execution, density/noise channels, and dynamic circuits.
+    """
+    jax_module, jnp = _load_jax()
+    _enable_jax_x64(jax_module)
+    tolerance_value = _as_non_negative_tolerance(tolerance)
+    parameter_values = _as_parameter_vector("params", params)
+    report = phase_qnode_support_report(circuit, parameter_values)
+    if not report.supported:
+        raise PhaseQNodeSupportError(report)
+    parameter_shift = parameter_shift_phase_qnode_gradient(circuit, parameter_values)
+
+    def value_function(raw_params: object) -> object:
+        value, _state = _jax_phase_qnode_value_and_state(jnp, circuit, raw_params)
+        return value
+
+    value_and_grad = jax_module.value_and_grad(value_function)
+    if jit:
+        value_and_grad = jax_module.jit(value_and_grad)
+        state_function = jax_module.jit(
+            lambda raw_params: _jax_phase_qnode_value_and_state(jnp, circuit, raw_params)[1]
+        )
+        jitted = True
+    else:
+
+        def state_function(raw_params: object) -> object:
+            return _jax_phase_qnode_value_and_state(jnp, circuit, raw_params)[1]
+
+        jitted = False
+
+    value_obj, gradient_obj = value_and_grad(jnp.asarray(parameter_values))
+    state_obj = state_function(jnp.asarray(parameter_values))
+    gradient = _as_parameter_vector(
+        "JAX Phase-QNode gradient", gradient_obj, width=parameter_values.size
+    )
+    state = np.asarray(state_obj, dtype=np.complex128)
+    value = _as_scalar("JAX Phase-QNode value", value_obj)
+    max_abs_error = float(np.max(np.abs(gradient - parameter_shift.gradient), initial=0.0))
+    l2_error = float(np.linalg.norm(gradient - parameter_shift.gradient))
+    passed = bool(
+        abs(value - parameter_shift.value) <= tolerance_value and max_abs_error <= tolerance_value
+    )
+    return PhaseJAXPhaseQNodeStatevectorResult(
+        value=value,
+        gradient=gradient,
+        state=state,
+        parameter_shift_value=parameter_shift.value,
+        parameter_shift_gradient=parameter_shift.gradient.copy(),
+        max_abs_error=max_abs_error,
+        l2_error=l2_error,
+        tolerance=tolerance_value,
+        passed=passed,
+        native_framework_autodiff=True,
+        host_callback=False,
+        jit_requested=jit,
+        jitted=jitted,
+    )
+
+
+def _enable_jax_x64(jax_module: Any) -> None:
+    config = getattr(jax_module, "config", None)
+    update = getattr(config, "update", None)
+    if callable(update):
+        update("jax_enable_x64", True)
+
+
+def _jax_phase_qnode_value_and_state(
+    jnp: Any,
+    circuit: PhaseQNodeCircuit,
+    params: object,
+) -> tuple[object, object]:
+    parameter_tensor = jnp.asarray(params)
+    state = jnp.zeros((2**circuit.n_qubits,), dtype=jnp.complex128)
+    state = state.at[0].set(1.0 + 0.0j)
+    operations = cast(tuple[PhaseQNodeOperation, ...], circuit.operations)
+    for operation in operations:
+        matrix = _jax_gate_matrix(
+            jnp, operation.gate, _jax_operation_theta(operation, parameter_tensor)
+        )
+        state = _jax_apply_gate_matrix(jnp, state, circuit.n_qubits, operation.qubits, matrix)
+    return _jax_expectation_value(jnp, state, circuit.n_qubits, circuit.observable), state
+
+
+def _jax_operation_theta(operation: PhaseQNodeOperation, parameter_tensor: Any) -> Any:
+    if operation.parameter_index is None:
+        return 0.0
+    return parameter_tensor[operation.parameter_index]
+
+
+def _jax_gate_matrix(jnp: Any, gate: str, theta: Any) -> Any:
+    complex_dtype = jnp.complex128
+    one = jnp.asarray(1.0, dtype=complex_dtype)
+    zero = jnp.asarray(0.0, dtype=complex_dtype)
+    imag = jnp.asarray(1.0j, dtype=complex_dtype)
+    identity = jnp.eye(2, dtype=complex_dtype)
+    x_matrix = jnp.asarray([[0.0, 1.0], [1.0, 0.0]], dtype=complex_dtype)
+    y_matrix = jnp.asarray([[0.0, -1.0j], [1.0j, 0.0]], dtype=complex_dtype)
+    z_matrix = jnp.asarray([[1.0, 0.0], [0.0, -1.0]], dtype=complex_dtype)
+    h_matrix = (1.0 / jnp.sqrt(jnp.asarray(2.0))) * jnp.asarray(
+        [[1.0, 1.0], [1.0, -1.0]],
+        dtype=complex_dtype,
+    )
+    s_matrix = jnp.asarray([[1.0, 0.0], [0.0, 1.0j]], dtype=complex_dtype)
+    t_matrix = jnp.asarray(
+        [[1.0, 0.0], [0.0, np.exp(1.0j * np.pi / 4.0)]],
+        dtype=complex_dtype,
+    )
+    sx_matrix = 0.5 * jnp.asarray(
+        [[1.0 + 1.0j, 1.0 - 1.0j], [1.0 - 1.0j, 1.0 + 1.0j]],
+        dtype=complex_dtype,
+    )
+    if gate == "h":
+        return h_matrix
+    if gate == "x":
+        return x_matrix
+    if gate == "y":
+        return y_matrix
+    if gate == "z":
+        return z_matrix
+    if gate == "s":
+        return s_matrix
+    if gate == "t":
+        return t_matrix
+    if gate == "sx":
+        return sx_matrix
+    if gate == "rx":
+        return jnp.cos(theta / 2.0) * identity - imag * jnp.sin(theta / 2.0) * x_matrix
+    if gate == "ry":
+        return jnp.cos(theta / 2.0) * identity - imag * jnp.sin(theta / 2.0) * y_matrix
+    if gate == "rz":
+        return jnp.cos(theta / 2.0) * identity - imag * jnp.sin(theta / 2.0) * z_matrix
+    if gate == "phase":
+        return jnp.asarray([[one, zero], [zero, jnp.exp(imag * theta)]], dtype=complex_dtype)
+    if gate == "cnot":
+        return jnp.asarray(
+            [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 0, 1], [0, 0, 1, 0]], dtype=complex_dtype
+        )
+    if gate == "cz":
+        return jnp.diag(jnp.asarray([1.0, 1.0, 1.0, -1.0], dtype=complex_dtype))
+    if gate == "cy":
+        return jnp.asarray(
+            [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 0, -1.0j], [0, 0, 1.0j, 0]],
+            dtype=complex_dtype,
+        )
+    if gate == "swap":
+        return jnp.asarray(
+            [[1, 0, 0, 0], [0, 0, 1, 0], [0, 1, 0, 0], [0, 0, 0, 1]], dtype=complex_dtype
+        )
+    if gate == "ch":
+        return _jax_controlled(jnp, h_matrix)
+    if gate == "cs":
+        return _jax_controlled(jnp, s_matrix)
+    if gate == "ct":
+        return _jax_controlled(jnp, t_matrix)
+    if gate == "ccnot":
+        return _jax_ccnot_matrix(jnp)
+    if gate == "ccz":
+        return jnp.diag(
+            jnp.asarray([1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, -1.0], dtype=complex_dtype)
+        )
+    if gate == "cswap":
+        return _jax_cswap_matrix(jnp)
+    if gate == "crx":
+        return _jax_controlled(jnp, _jax_gate_matrix(jnp, "rx", theta))
+    if gate == "cry":
+        return _jax_controlled(jnp, _jax_gate_matrix(jnp, "ry", theta))
+    if gate == "crz":
+        return _jax_controlled(jnp, _jax_gate_matrix(jnp, "rz", theta))
+    if gate == "rxx":
+        return jnp.cos(theta / 2.0) * jnp.eye(4, dtype=complex_dtype) - imag * jnp.sin(
+            theta / 2.0
+        ) * jnp.kron(x_matrix, x_matrix)
+    if gate == "ryy":
+        return jnp.cos(theta / 2.0) * jnp.eye(4, dtype=complex_dtype) - imag * jnp.sin(
+            theta / 2.0
+        ) * jnp.kron(y_matrix, y_matrix)
+    if gate == "rzz":
+        return jnp.cos(theta / 2.0) * jnp.eye(4, dtype=complex_dtype) - imag * jnp.sin(
+            theta / 2.0
+        ) * jnp.kron(z_matrix, z_matrix)
+    raise ValueError(f"unsupported JAX Phase-QNode gate: {gate}")
+
+
+def _jax_controlled(jnp: Any, target: Any) -> Any:
+    matrix = jnp.eye(4, dtype=jnp.complex128)
+    return matrix.at[2:4, 2:4].set(target)
+
+
+def _jax_ccnot_matrix(jnp: Any) -> Any:
+    matrix = jnp.eye(8, dtype=jnp.complex128)
+    matrix = matrix.at[6, 6].set(0.0)
+    matrix = matrix.at[7, 7].set(0.0)
+    matrix = matrix.at[6, 7].set(1.0)
+    return matrix.at[7, 6].set(1.0)
+
+
+def _jax_cswap_matrix(jnp: Any) -> Any:
+    matrix = jnp.eye(8, dtype=jnp.complex128)
+    matrix = matrix.at[5, 5].set(0.0)
+    matrix = matrix.at[6, 6].set(0.0)
+    matrix = matrix.at[5, 6].set(1.0)
+    return matrix.at[6, 5].set(1.0)
+
+
+def _jax_apply_gate_matrix(
+    jnp: Any,
+    state: Any,
+    n_qubits: int,
+    qubits: tuple[int, ...],
+    matrix: Any,
+) -> Any:
+    width = len(qubits)
+    axes = list(qubits) + [axis for axis in range(n_qubits) if axis not in qubits]
+    inverse = np.argsort(axes)
+    tensor = jnp.transpose(jnp.reshape(state, (2,) * n_qubits), axes)
+    front = jnp.reshape(tensor, (2**width, -1))
+    updated = jnp.reshape(matrix @ front, (2,) * n_qubits)
+    return jnp.reshape(jnp.transpose(updated, tuple(int(axis) for axis in inverse)), (-1,))
+
+
+def _jax_expectation_value(
+    jnp: Any,
+    state: Any,
+    n_qubits: int,
+    observable: object,
+) -> Any:
+    if isinstance(observable, DenseHermitianObservable):
+        matrix = jnp.asarray(observable.matrix, dtype=jnp.complex128)
+        return jnp.real(jnp.vdot(state, matrix @ state))
+    if isinstance(observable, PauliCovarianceObservable):
+        symmetrized = _jax_symmetrized_product_expectation(
+            jnp, state, n_qubits, observable.left, observable.right
+        )
+        left_mean = _jax_term_expectation(jnp, state, n_qubits, observable.left)
+        right_mean = _jax_term_expectation(jnp, state, n_qubits, observable.right)
+        return symmetrized - left_mean * right_mean
+    if isinstance(observable, SparsePauliHamiltonian):
+        total = jnp.asarray(0.0)
+        for term in observable.terms:
+            total = total + _jax_term_expectation(jnp, state, n_qubits, term)
+        return total
+    if isinstance(observable, PauliTerm):
+        return _jax_term_expectation(jnp, state, n_qubits, observable)
+    raise ValueError(f"unsupported JAX Phase-QNode observable: {observable}")
+
+
+def _jax_term_expectation(jnp: Any, state: Any, n_qubits: int, term: PauliTerm) -> Any:
+    transformed = _jax_apply_term_operator(jnp, state, n_qubits, term)
+    return term.coefficient * jnp.real(jnp.vdot(state, transformed))
+
+
+def _jax_symmetrized_product_expectation(
+    jnp: Any,
+    state: Any,
+    n_qubits: int,
+    left: PauliTerm,
+    right: PauliTerm,
+) -> Any:
+    left_right = _jax_term_product_expectation(jnp, state, n_qubits, left, right)
+    right_left = _jax_term_product_expectation(jnp, state, n_qubits, right, left)
+    return jnp.real(0.5 * (left_right + right_left))
+
+
+def _jax_term_product_expectation(
+    jnp: Any,
+    state: Any,
+    n_qubits: int,
+    left: PauliTerm,
+    right: PauliTerm,
+) -> Any:
+    transformed = _jax_apply_term_operator(jnp, state, n_qubits, right)
+    transformed = _jax_apply_term_operator(jnp, transformed, n_qubits, left)
+    return left.coefficient * right.coefficient * jnp.vdot(state, transformed)
+
+
+def _jax_apply_term_operator(jnp: Any, state: Any, n_qubits: int, term: PauliTerm) -> Any:
+    transformed = state
+    for qubit, label in term.factors:
+        transformed = _jax_apply_gate_matrix(
+            jnp,
+            transformed,
+            n_qubits,
+            (qubit,),
+            _jax_pauli_matrix(jnp, label),
+        )
+    return transformed
+
+
+def _jax_pauli_matrix(jnp: Any, label: str) -> Any:
+    if label == "x":
+        return jnp.asarray([[0.0, 1.0], [1.0, 0.0]], dtype=jnp.complex128)
+    if label == "y":
+        return jnp.asarray([[0.0, -1.0j], [1.0j, 0.0]], dtype=jnp.complex128)
+    if label == "z":
+        return jnp.asarray([[1.0, 0.0], [0.0, -1.0]], dtype=jnp.complex128)
+    raise ValueError(f"unsupported JAX Pauli label: {label}")
 
 
 def run_jax_jit_compatibility_audit(
@@ -1754,14 +2115,12 @@ def run_jax_phase_qnode_lowering_matrix() -> PhaseJAXPhaseQNodeLoweringMatrixRes
         ),
         PhaseJAXPhaseQNodeLoweringRoute(
             name="registered_phase_qnode_statevector_lowering",
-            status="blocked",
-            reason="arbitrary registered Phase-QNode circuits do not yet lower into native JAX kernels",
-            host_callback=False,
-            requires=(
-                "native_jax_lowering_rules",
-                "gate_observable_coverage_matrix",
-                "statevector_gradient_parity_artifact",
+            status="passed",
+            reason=(
+                "registered deterministic Phase-QNode statevector circuits lower into "
+                "native JAX value-and-gradient execution without host callbacks"
             ),
+            host_callback=False,
         ),
         PhaseJAXPhaseQNodeLoweringRoute(
             name="registered_phase_qnode_finite_shot_lowering",
@@ -1959,6 +2318,7 @@ __all__ = [
     "PhaseJAXParameterShiftResult",
     "PhaseJAXPhaseQNodeLoweringMatrixResult",
     "PhaseJAXPhaseQNodeLoweringRoute",
+    "PhaseJAXPhaseQNodeStatevectorResult",
     "PhaseJAXPyTreeCompatibilityResult",
     "PhaseJAXShardingCompatibilityResult",
     "PhaseJAXVMAPCompatibilityResult",
@@ -1967,6 +2327,7 @@ __all__ = [
     "jax_custom_vjp_qnn_value_and_grad",
     "jax_native_qnn_value_and_grad",
     "jax_parameter_shift_value_and_grad",
+    "jax_phase_qnode_value_and_grad",
     "run_jax_jit_compatibility_audit",
     "run_jax_maturity_audit",
     "run_jax_nested_transform_algebra_audit",
