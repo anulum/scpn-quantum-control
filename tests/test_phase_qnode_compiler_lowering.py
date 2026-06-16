@@ -18,6 +18,8 @@ import scpn_quantum_control as scpn
 import scpn_quantum_control.compiler as compiler
 from scpn_quantum_control.compiler.mlir import (
     EnzymeMLIRMaturityAuditResult,
+    EnzymeNativeExecutionEvidence,
+    MLIRLLVMCorrectnessEvidence,
     PhaseQNodeMLIRRuntimeExecutable,
     compile_phase_qnode_circuit_to_mlir_runtime,
     lower_phase_qnode_circuit_to_mlir,
@@ -151,6 +153,7 @@ def test_enzyme_mlir_maturity_audit_records_runtime_evidence_and_toolchain_gaps(
     assert payload["toolchain"]["enzyme"]["available"] is False
     assert payload["toolchain"]["mlir-opt"]["failure_class"] == "toolchain_missing"
     assert "isolated benchmark artefact missing" in payload["hard_gaps"]
+    assert "MLIR/LLVM correctness artefact missing" in payload["hard_gaps"]
     assert payload["correctness_checks"]["phase_qnode_value_close"] is True
     assert payload["correctness_checks"]["phase_qnode_gradient_close"] is True
 
@@ -160,14 +163,104 @@ def test_enzyme_mlir_maturity_audit_records_versions_but_requires_execution_arti
         toolchain_probe=lambda command: f"/opt/toolchain/bin/{command}",
         version_probe=lambda executable: f"{executable} version 1.2.3",
         isolated_benchmark_artifact_id="iso-bench-001",
+        mlir_llvm_correctness_artifact_id="mlir-correctness-001",
     )
     payload = cast(dict[str, Any], result.to_dict())
 
     assert payload["toolchain"]["enzyme"]["available"] is True
     assert payload["toolchain"]["opt"]["version"] == "/opt/toolchain/bin/opt version 1.2.3"
+    assert payload["mlir_llvm_correctness_evidence"]["artifact_id"] == "mlir-correctness-001"
     assert result.ready_for_provider_exceedance is False
     assert "native Enzyme execution artefact missing" in result.hard_gaps
     assert "MLIR/LLVM correctness check missing" not in result.hard_gaps
+
+
+def test_enzyme_mlir_maturity_audit_keeps_runtime_gap_non_promotional() -> None:
+    evidence = EnzymeNativeExecutionEvidence(
+        artifact_id="enzyme-runtime-gap-001",
+        status="hard_gap",
+        failure_class="runtime_error",
+        value_error=None,
+        gradient_error=None,
+        runtime_seconds=None,
+        toolchain={"enzyme_ad": "0.0.6", "runner": "enzyme_jax_runner.py"},
+        setup_instructions="Configured Enzyme runner failed during MHLO lowering.",
+        claim_boundary="Runtime comparison gap only; no hidden success or promoted claim.",
+    )
+
+    result = run_enzyme_mlir_maturity_audit(
+        toolchain_probe=lambda command: f"/opt/toolchain/bin/{command}",
+        version_probe=lambda executable: f"{executable} version 1.2.3",
+        isolated_benchmark_artifact_id="iso-bench-001",
+        native_enzyme_execution_evidence=evidence,
+        mlir_llvm_correctness_artifact_id="mlir-correctness-001",
+    )
+    payload = cast(dict[str, Any], result.to_dict())
+
+    assert result.native_enzyme_execution_artifact_id == "enzyme-runtime-gap-001"
+    assert payload["native_enzyme_execution_evidence"]["failure_class"] == "runtime_error"
+    assert payload["native_enzyme_execution_evidence"]["passed"] is False
+    assert "native Enzyme execution hard gap: runtime_error" in result.hard_gaps
+    assert result.ready_for_provider_exceedance is False
+
+
+def test_enzyme_mlir_maturity_audit_requires_all_artifacts_for_promotion() -> None:
+    evidence = EnzymeNativeExecutionEvidence(
+        artifact_id="enzyme-success-001",
+        status="success",
+        failure_class=None,
+        value_error=0.0,
+        gradient_error=0.0,
+        runtime_seconds=0.01,
+        toolchain={"enzyme": "1.0", "llvm": "18.1.3"},
+        setup_instructions=None,
+        claim_boundary="Bounded native Enzyme execution evidence.",
+    )
+
+    result = run_enzyme_mlir_maturity_audit(
+        toolchain_probe=lambda command: f"/opt/toolchain/bin/{command}",
+        version_probe=lambda executable: f"{executable} version 1.2.3",
+        isolated_benchmark_artifact_id="iso-bench-001",
+        native_enzyme_execution_evidence=evidence,
+        mlir_llvm_correctness_artifact_id="mlir-correctness-001",
+    )
+
+    assert result.hard_gaps == ()
+    assert result.ready_for_provider_exceedance is True
+
+
+def test_enzyme_mlir_evidence_validation_paths() -> None:
+    with pytest.raises(ValueError, match="hard-gap Enzyme evidence"):
+        EnzymeNativeExecutionEvidence(
+            artifact_id="gap",
+            status="hard_gap",
+            failure_class=None,
+            value_error=None,
+            gradient_error=None,
+            runtime_seconds=None,
+            toolchain={"enzyme": "1.0"},
+            setup_instructions=None,
+            claim_boundary="gap",
+        )
+    with pytest.raises(ValueError, match="successful Enzyme evidence requires finite"):
+        EnzymeNativeExecutionEvidence(
+            artifact_id="success",
+            status="success",
+            failure_class=None,
+            value_error=0.0,
+            gradient_error=None,
+            runtime_seconds=0.01,
+            toolchain={"enzyme": "1.0"},
+            setup_instructions=None,
+            claim_boundary="success",
+        )
+    with pytest.raises(ValueError, match="checks"):
+        MLIRLLVMCorrectnessEvidence(
+            artifact_id="mlir",
+            checks={},
+            toolchain_versions={"clang": "18.1.3"},
+            claim_boundary="bounded correctness",
+        )
 
 
 def test_enzyme_mlir_maturity_audit_exports_are_public() -> None:
@@ -175,3 +268,7 @@ def test_enzyme_mlir_maturity_audit_exports_are_public() -> None:
     assert scpn.run_enzyme_mlir_maturity_audit is run_enzyme_mlir_maturity_audit
     assert compiler.EnzymeMLIRMaturityAuditResult is EnzymeMLIRMaturityAuditResult
     assert scpn.EnzymeMLIRMaturityAuditResult is EnzymeMLIRMaturityAuditResult
+    assert compiler.EnzymeNativeExecutionEvidence is EnzymeNativeExecutionEvidence
+    assert scpn.EnzymeNativeExecutionEvidence is EnzymeNativeExecutionEvidence
+    assert compiler.MLIRLLVMCorrectnessEvidence is MLIRLLVMCorrectnessEvidence
+    assert scpn.MLIRLLVMCorrectnessEvidence is MLIRLLVMCorrectnessEvidence

@@ -81,6 +81,10 @@ DEFAULT_ARTIFACT_BUNDLE_INPUTS: tuple[tuple[str, str], ...] = (
         "PyTorch maturity audit artefact",
     ),
     (
+        "data/differentiable_phase_qnode/enzyme_mlir_maturity_audit_20260616.json",
+        "Enzyme/MLIR maturity audit artefact with runtime-gap and correctness evidence",
+    ),
+    (
         "data/differentiable_phase_qnode/local_benchmark_20260616T0955Z/README.md",
         "Local benchmark evidence README and hardware boundary",
     ),

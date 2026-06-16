@@ -13576,6 +13576,116 @@ class EnzymeMLIRToolchainStatus:
 
 
 @dataclass(frozen=True)
+class EnzymeNativeExecutionEvidence:
+    """Validated native Enzyme execution evidence or named runtime hard gap."""
+
+    artifact_id: str
+    status: str
+    failure_class: str | None
+    value_error: float | None
+    gradient_error: float | None
+    runtime_seconds: float | None
+    toolchain: Mapping[str, str]
+    setup_instructions: str | None
+    claim_boundary: str
+
+    def __post_init__(self) -> None:
+        if not self.artifact_id.strip():
+            raise ValueError("artifact_id must be non-empty")
+        if self.status not in {"success", "hard_gap"}:
+            raise ValueError("status must be success or hard_gap")
+        toolchain = dict(self.toolchain)
+        if any(not key or not value for key, value in toolchain.items()):
+            raise ValueError("toolchain metadata must map non-empty strings")
+        if self.status == "success":
+            if self.failure_class is not None or self.setup_instructions is not None:
+                raise ValueError("successful Enzyme evidence must not carry hard-gap metadata")
+            for name, value in (
+                ("value_error", self.value_error),
+                ("gradient_error", self.gradient_error),
+                ("runtime_seconds", self.runtime_seconds),
+            ):
+                if value is None or value < 0.0 or not np.isfinite(value):
+                    raise ValueError(f"successful Enzyme evidence requires finite {name}")
+        else:
+            if not self.failure_class or not self.setup_instructions:
+                raise ValueError("hard-gap Enzyme evidence requires failure metadata")
+            if any(
+                value is not None
+                for value in (self.value_error, self.gradient_error, self.runtime_seconds)
+            ):
+                raise ValueError("hard-gap Enzyme evidence must not carry success metrics")
+        if not self.claim_boundary:
+            raise ValueError("claim_boundary must be non-empty")
+        object.__setattr__(self, "toolchain", MappingProxyType(toolchain))
+
+    @property
+    def passed(self) -> bool:
+        """Return whether native Enzyme execution matched the SCPN reference."""
+
+        return self.status == "success"
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready native Enzyme execution evidence."""
+
+        return {
+            "artifact_id": self.artifact_id,
+            "status": self.status,
+            "failure_class": self.failure_class,
+            "value_error": self.value_error,
+            "gradient_error": self.gradient_error,
+            "runtime_seconds": self.runtime_seconds,
+            "toolchain": dict(self.toolchain),
+            "setup_instructions": self.setup_instructions,
+            "claim_boundary": self.claim_boundary,
+            "passed": self.passed,
+        }
+
+
+@dataclass(frozen=True)
+class MLIRLLVMCorrectnessEvidence:
+    """Persistable correctness snapshot for the bounded MLIR/LLVM audit path."""
+
+    artifact_id: str
+    checks: Mapping[str, bool]
+    toolchain_versions: Mapping[str, str]
+    claim_boundary: str
+
+    def __post_init__(self) -> None:
+        if not self.artifact_id.strip():
+            raise ValueError("artifact_id must be non-empty")
+        checks = dict(self.checks)
+        if not checks:
+            raise ValueError("checks must be non-empty")
+        if any(not key or not isinstance(value, bool) for key, value in checks.items()):
+            raise ValueError("checks must map non-empty names to booleans")
+        toolchain_versions = dict(self.toolchain_versions)
+        if any(not key or not value for key, value in toolchain_versions.items()):
+            raise ValueError("toolchain_versions must map non-empty strings")
+        if not self.claim_boundary:
+            raise ValueError("claim_boundary must be non-empty")
+        object.__setattr__(self, "checks", MappingProxyType(checks))
+        object.__setattr__(self, "toolchain_versions", MappingProxyType(toolchain_versions))
+
+    @property
+    def passed(self) -> bool:
+        """Return whether every bounded MLIR/LLVM correctness check passed."""
+
+        return all(self.checks.values())
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready MLIR/LLVM correctness evidence."""
+
+        return {
+            "artifact_id": self.artifact_id,
+            "checks": dict(self.checks),
+            "toolchain_versions": dict(self.toolchain_versions),
+            "claim_boundary": self.claim_boundary,
+            "passed": self.passed,
+        }
+
+
+@dataclass(frozen=True)
 class EnzymeMLIRMaturityAuditResult:
     """Provider-exceedance gate for Enzyme/MLIR compiler AD maturity."""
 
@@ -13586,6 +13696,8 @@ class EnzymeMLIRMaturityAuditResult:
     hard_gaps: tuple[str, ...]
     isolated_benchmark_artifact_id: str | None
     native_enzyme_execution_artifact_id: str | None
+    native_enzyme_execution_evidence: EnzymeNativeExecutionEvidence | None = None
+    mlir_llvm_correctness_evidence: MLIRLLVMCorrectnessEvidence | None = None
     claim_boundary: str = "bounded_enzyme_mlir_compiler_maturity_audit"
 
     def __post_init__(self) -> None:
@@ -13613,6 +13725,25 @@ class EnzymeMLIRMaturityAuditResult:
             self.native_enzyme_execution_artifact_id.strip()
         ):
             raise ValueError("native_enzyme_execution_artifact_id must be non-empty when provided")
+        if self.native_enzyme_execution_evidence is not None and not isinstance(
+            self.native_enzyme_execution_evidence,
+            EnzymeNativeExecutionEvidence,
+        ):
+            raise ValueError(
+                "native_enzyme_execution_evidence must be EnzymeNativeExecutionEvidence"
+            )
+        if (
+            self.native_enzyme_execution_evidence is not None
+            and self.native_enzyme_execution_artifact_id is not None
+            and self.native_enzyme_execution_evidence.artifact_id
+            != self.native_enzyme_execution_artifact_id
+        ):
+            raise ValueError("native_enzyme_execution_artifact_id must match attached evidence")
+        if self.mlir_llvm_correctness_evidence is not None and not isinstance(
+            self.mlir_llvm_correctness_evidence,
+            MLIRLLVMCorrectnessEvidence,
+        ):
+            raise ValueError("mlir_llvm_correctness_evidence must be MLIRLLVMCorrectnessEvidence")
         if not self.claim_boundary:
             raise ValueError("claim_boundary must be non-empty")
         object.__setattr__(self, "toolchain", MappingProxyType(dict(self.toolchain)))
@@ -13630,8 +13761,12 @@ class EnzymeMLIRMaturityAuditResult:
             self.scpn_mlir_runtime_verified
             and all(status.available for status in self.toolchain.values())
             and all(self.correctness_checks.values())
+            and self.mlir_llvm_correctness_evidence is not None
+            and self.mlir_llvm_correctness_evidence.passed
             and self.isolated_benchmark_artifact_id is not None
             and self.native_enzyme_execution_artifact_id is not None
+            and self.native_enzyme_execution_evidence is not None
+            and self.native_enzyme_execution_evidence.passed
             and not self.hard_gaps
         )
 
@@ -13646,6 +13781,16 @@ class EnzymeMLIRMaturityAuditResult:
             "hard_gaps": list(self.hard_gaps),
             "isolated_benchmark_artifact_id": self.isolated_benchmark_artifact_id,
             "native_enzyme_execution_artifact_id": self.native_enzyme_execution_artifact_id,
+            "native_enzyme_execution_evidence": (
+                self.native_enzyme_execution_evidence.to_dict()
+                if self.native_enzyme_execution_evidence is not None
+                else None
+            ),
+            "mlir_llvm_correctness_evidence": (
+                self.mlir_llvm_correctness_evidence.to_dict()
+                if self.mlir_llvm_correctness_evidence is not None
+                else None
+            ),
             "ready_for_provider_exceedance": self.ready_for_provider_exceedance,
             "claim_boundary": self.claim_boundary,
         }
@@ -13659,6 +13804,8 @@ def run_enzyme_mlir_maturity_audit(
     version_probe: Callable[[str], str | None] | None = None,
     isolated_benchmark_artifact_id: str | None = None,
     native_enzyme_execution_artifact_id: str | None = None,
+    native_enzyme_execution_evidence: EnzymeNativeExecutionEvidence | None = None,
+    mlir_llvm_correctness_artifact_id: str | None = None,
 ) -> EnzymeMLIRMaturityAuditResult:
     """Audit Enzyme/MLIR maturity without promoting unsupported compiler-AD claims."""
 
@@ -13685,8 +13832,33 @@ def run_enzyme_mlir_maturity_audit(
             hard_gaps.append(f"{command} toolchain unavailable")
     if isolated_benchmark_artifact_id is None:
         hard_gaps.append("isolated benchmark artefact missing")
+    if native_enzyme_execution_evidence is not None:
+        native_enzyme_execution_artifact_id = native_enzyme_execution_evidence.artifact_id
+        if not native_enzyme_execution_evidence.passed:
+            failure = native_enzyme_execution_evidence.failure_class or "unknown"
+            hard_gaps.append(f"native Enzyme execution hard gap: {failure}")
     if native_enzyme_execution_artifact_id is None:
         hard_gaps.append("native Enzyme execution artefact missing")
+    toolchain_versions = {
+        command: status.version
+        for command, status in toolchain.items()
+        if status.available and status.version is not None
+    }
+    mlir_llvm_correctness_evidence = (
+        MLIRLLVMCorrectnessEvidence(
+            artifact_id=mlir_llvm_correctness_artifact_id,
+            checks=correctness_checks,
+            toolchain_versions=toolchain_versions,
+            claim_boundary=(
+                "Bounded SCPN MLIR-runtime and native LLVM/JIT support snapshot; "
+                "not native Enzyme execution, provider, hardware, or performance evidence."
+            ),
+        )
+        if mlir_llvm_correctness_artifact_id is not None
+        else None
+    )
+    if mlir_llvm_correctness_evidence is None:
+        hard_gaps.append("MLIR/LLVM correctness artefact missing")
     return EnzymeMLIRMaturityAuditResult(
         scpn_mlir_runtime_verified=bool(
             correctness_checks["phase_qnode_value_close"]
@@ -13699,6 +13871,8 @@ def run_enzyme_mlir_maturity_audit(
         hard_gaps=tuple(dict.fromkeys(hard_gaps)),
         isolated_benchmark_artifact_id=isolated_benchmark_artifact_id,
         native_enzyme_execution_artifact_id=native_enzyme_execution_artifact_id,
+        native_enzyme_execution_evidence=native_enzyme_execution_evidence,
+        mlir_llvm_correctness_evidence=mlir_llvm_correctness_evidence,
     )
 
 
@@ -13983,7 +14157,9 @@ __all__ = [
     "ExecutableWholeProgramADBatchResult",
     "ExecutableWholeProgramADKernel",
     "EnzymeMLIRMaturityAuditResult",
+    "EnzymeNativeExecutionEvidence",
     "EnzymeMLIRToolchainStatus",
+    "MLIRLLVMCorrectnessEvidence",
     "MLIRCompileConfig",
     "NativeWholeProgramADKernel",
     "PhaseQNodeMLIRRuntimeExecutable",

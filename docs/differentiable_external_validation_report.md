@@ -33,6 +33,7 @@ ledger is `data/differentiable_phase_qnode/claim_ledger.md`.
 | `data/differentiable_phase_qnode/local_benchmark_20260616T0955Z/diff-qnode-external-comparison.json` | Bounded JAX, PyTorch, TensorFlow, PennyLane, and Enzyme comparison rows. | Functional non-isolated comparison evidence. |
 | `data/differentiable_phase_qnode/identical_circuit_gradient_comparison_20260616.json` | Same-circuit gradient comparison artefact for Qiskit and PennyLane routes. | Correctness comparison, not hardware execution. |
 | `data/differentiable_phase_qnode/domain_benchmark_dataset_closure_20260616.json` | Exact-answer domain dataset closure artefact. | Dataset validation, not production benchmark promotion. |
+| `data/differentiable_phase_qnode/enzyme_mlir_maturity_audit_20260616.json` | Enzyme/MLIR maturity audit with MLIR-runtime correctness evidence and native Enzyme runtime-gap evidence. | Hard-gap evidence, not Enzyme parity promotion. |
 
 ## Provider Comparison Status
 
@@ -43,7 +44,7 @@ ledger is `data/differentiable_phase_qnode/claim_ledger.md`.
 | TensorFlow | Bounded `GradientTape`, `tf.function`, XLA, and Keras-layer evidence exist for declared routes. | Arbitrary Phase-QNode lowering and isolated benchmark artefacts. |
 | PennyLane | Export/import and identical-circuit comparison evidence exists for bounded local circuits. | Plugin/provider hardware routes and promotion-grade isolated benchmark evidence. |
 | Qiskit | Shifted-circuit generation, local Statevector, finite-shot surrogate, and no-submit preparation evidence exist. | Live execution, raw-count replay, calibration/statevector comparison, and hardware-gradient artefacts. |
-| Enzyme/LLVM/MLIR | Installed-toolchain evidence distinguishes dependency availability from runtime lowering gaps. | Native Enzyme execution artefacts, MLIR/LLVM correctness artefacts, and isolated benchmark IDs. |
+| Enzyme/LLVM/MLIR | MLIR-runtime correctness evidence is attached; the configured Enzyme runner is attached as a `runtime_error` hard gap; local CLI toolchain probing records the missing `enzyme`, `opt`, and `mlir-opt` commands. | Successful native Enzyme execution, complete LLVM/MLIR toolchain versions, and isolated benchmark IDs. |
 
 ## Reviewer Procedure
 

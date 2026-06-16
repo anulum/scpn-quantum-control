@@ -226,9 +226,14 @@ frontier.
 Use `run_enzyme_mlir_maturity_audit(...)` before making any compiler-AD parity
 claim against Enzyme/MLIR. The audit verifies the local SCPN MLIR-runtime
 adapter, records bounded native LLVM/JIT support metadata, probes local
-`enzyme`/LLVM/MLIR toolchain versions, and keeps provider-exceedance blocked
-until native Enzyme execution and `isolated_affinity` benchmark artefacts are
-attached.
+`enzyme`/LLVM/MLIR toolchain versions, validates attached native Enzyme
+execution evidence, and keeps provider-exceedance blocked until successful
+native Enzyme execution, MLIR/LLVM correctness evidence, complete toolchain
+metadata, and `isolated_affinity` benchmark artefacts are attached. The current
+committed `enzyme_mlir_maturity_audit_20260616.json` snapshot is a hard-gap
+artefact: the SCPN MLIR-runtime correctness checks pass, but Enzyme/LLVM CLI
+tooling is incomplete on PATH and the configured Enzyme runner fails during
+runtime lowering.
 
 Program AD execution is registry-gated. Supported traced NumPy primitives must
 resolve through a primitive identity with derivative, batching, shape, dtype,
