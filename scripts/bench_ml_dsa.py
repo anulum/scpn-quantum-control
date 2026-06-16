@@ -97,6 +97,7 @@ def _cpu_model() -> str:
 
 
 def run(repeats: int) -> dict:
+    """Run the local ML-DSA signing and verification benchmark."""
     load_before = os.getloadavg()
     ntt = _ntt_rows(repeats)
     operations = _operation_rows(max(3, repeats // 3))
@@ -125,6 +126,7 @@ def run(repeats: int) -> dict:
 
 
 def main() -> None:
+    """Run the ML-DSA benchmark CLI and write the JSON artefact."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repeats", type=int, default=21)
     args = parser.parse_args()

@@ -132,6 +132,7 @@ def _cpu_model() -> str:
 
 
 def run(repeats: int) -> dict:
+    """Run the local quantum/classical cosimulation benchmark."""
     load_before = os.getloadavg()
     substep = _substep_rows(repeats, 128)
     cosim = _cosim_rows(max(3, repeats // 4), 128, 8, 100)
@@ -160,6 +161,7 @@ def run(repeats: int) -> dict:
 
 
 def main() -> None:
+    """Run the cosimulation benchmark CLI and write the JSON artefact."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repeats", type=int, default=200)
     args = parser.parse_args()

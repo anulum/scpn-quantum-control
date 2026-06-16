@@ -52,6 +52,7 @@ class KnmGraph:
 
     @property
     def n_nodes(self) -> int:
+        """Number of graph nodes represented by the coupling matrix."""
         return int(self.coupling.shape[0])
 
 

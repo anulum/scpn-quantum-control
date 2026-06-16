@@ -125,6 +125,7 @@ def _cpu_governor() -> str:
 
 
 def run(bm_sizes: list[int], repeats: int, qrng_bits: int) -> dict:
+    """Run the local entropy QRNG benchmark."""
     load_before = os.getloadavg()
     bm = _bm_rows(bm_sizes, repeats)
     qrng = _qrng_rows(qrng_bits)
@@ -159,6 +160,7 @@ def run(bm_sizes: list[int], repeats: int, qrng_bits: int) -> dict:
 
 
 def main() -> None:
+    """Run the entropy QRNG benchmark CLI."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--bm-sizes", default="500,1000,2000,5000")
     parser.add_argument("--repeats", type=int, default=7)

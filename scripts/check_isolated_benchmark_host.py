@@ -25,6 +25,7 @@ from scpn_quantum_control.benchmarks.isolated_host_readiness import capture_host
 
 
 def main() -> int:
+    """Run the isolated-benchmark host readiness check."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--reserved-core",

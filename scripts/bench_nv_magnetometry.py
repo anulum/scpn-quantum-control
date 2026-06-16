@@ -107,6 +107,7 @@ def _cpu_model() -> str:
 
 
 def run(sizes: list[int], repeats: int) -> dict:
+    """Run the local NV magnetometry benchmark."""
     load_before = os.getloadavg()
     odmr = _odmr_rows(sizes, repeats)
     calibration = _calibration_rows()
@@ -136,6 +137,7 @@ def run(sizes: list[int], repeats: int) -> dict:
 
 
 def main() -> None:
+    """Run the NV magnetometry benchmark CLI."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--sizes", default="1024,8192,65536,262144")
     parser.add_argument("--repeats", type=int, default=9)

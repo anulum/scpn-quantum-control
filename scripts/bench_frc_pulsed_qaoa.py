@@ -135,6 +135,7 @@ def _cpu_model() -> str:
 
 
 def run(lengths: list[int], repeats: int) -> dict:
+    """Run the local FRC pulsed-shot QAOA benchmark."""
     load_before = os.getloadavg()
     mrti = _mrti_rows(lengths, repeats)
     schedulers = _scheduler_rows()
@@ -164,6 +165,7 @@ def run(lengths: list[int], repeats: int) -> dict:
 
 
 def main() -> None:
+    """Run the FRC pulsed-shot QAOA benchmark CLI."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--lengths", default="8,64,256,1024,4096")
     parser.add_argument("--repeats", type=int, default=9)

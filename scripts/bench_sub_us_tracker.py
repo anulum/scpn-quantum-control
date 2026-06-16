@@ -108,6 +108,7 @@ def _engine_version(engine) -> str:
 
 
 def run(sizes: list[int], repeats: int) -> dict:
+    """Run the local sub-microsecond tracker throughput benchmark."""
     engine = _engine()
     load_before = os.getloadavg()
     rows = []
@@ -190,6 +191,7 @@ def run(sizes: list[int], repeats: int) -> dict:
 
 
 def main() -> None:
+    """Run the sub-microsecond tracker benchmark CLI."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--sizes", default="1024,16384,65536,262144")
     parser.add_argument("--repeats", type=int, default=9)

@@ -95,6 +95,7 @@ def _cpu_model() -> str:
 
 
 def run(repeats: int) -> dict:
+    """Run the local UltraScale+ HLS codegen benchmark."""
     load_before = os.getloadavg()
     quantise = _quantise_rows(repeats, 10_000)
     codegen = _codegen_rows(max(3, repeats // 2), 10_000)
@@ -123,6 +124,7 @@ def run(repeats: int) -> dict:
 
 
 def main() -> None:
+    """Run the UltraScale+ HLS benchmark CLI."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repeats", type=int, default=21)
     args = parser.parse_args()

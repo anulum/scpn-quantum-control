@@ -68,10 +68,12 @@ class KnmPartition:
 
     @property
     def n_quantum(self) -> int:
+        """Number of oscillators assigned to the quantum partition."""
         return len(self.quantum_indices)
 
     @property
     def n_classical(self) -> int:
+        """Number of oscillators assigned to the classical partition."""
         return len(self.classical_indices)
 
 
