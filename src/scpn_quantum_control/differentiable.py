@@ -64,6 +64,23 @@ def _normalise_claim_boundary(label: str, claim_boundary: str) -> str:
     return boundary
 
 
+def _require_zero_frozen_entries(
+    name: str,
+    values: NDArray[np.float64],
+    trainable: tuple[bool, ...],
+    *,
+    axis: int = -1,
+) -> None:
+    """Reject derivative content assigned to non-trainable parameters."""
+
+    frozen = np.logical_not(np.asarray(trainable, dtype=bool))
+    if not np.any(frozen):
+        return
+    selected = np.take(values, np.flatnonzero(frozen), axis=axis)
+    if np.any(selected != 0.0):
+        raise ValueError(f"{name} must be zero for non-trainable parameters")
+
+
 @dataclass(frozen=True)
 class WholeProgramTraceEvent:
     """One executed Python source line observed during whole-program AD tracing."""
@@ -8567,6 +8584,7 @@ class GradientResult:
             raise ValueError("parameter_names must contain non-empty strings")
         if any(not isinstance(flag, bool) for flag in self.trainable):
             raise ValueError("trainable mask must contain booleans")
+        _require_zero_frozen_entries("gradient", gradient, self.trainable)
         object.__setattr__(self, "value", value)
         object.__setattr__(self, "gradient", gradient)
         object.__setattr__(self, "shift", shift)
@@ -9560,6 +9578,7 @@ class JacobianResult:
             raise ValueError("parameter_names must contain non-empty strings")
         if any(not isinstance(flag, bool) for flag in self.trainable):
             raise ValueError("trainable mask must contain booleans")
+        _require_zero_frozen_entries("jacobian", jacobian, self.trainable, axis=1)
         object.__setattr__(self, "value", value)
         object.__setattr__(self, "jacobian", jacobian)
         object.__setattr__(self, "step", step)
@@ -9610,6 +9629,7 @@ class JVPResult:
             raise ValueError("parameter_names must contain non-empty strings")
         if any(not isinstance(flag, bool) for flag in self.trainable):
             raise ValueError("trainable mask must contain booleans")
+        _require_zero_frozen_entries("JVP tangent", tangent, self.trainable)
         object.__setattr__(self, "value", value)
         object.__setattr__(self, "jvp", jvp)
         object.__setattr__(self, "tangent", tangent)
@@ -9661,6 +9681,7 @@ class VJPResult:
             raise ValueError("parameter_names must contain non-empty strings")
         if any(not isinstance(flag, bool) for flag in self.trainable):
             raise ValueError("trainable mask must contain booleans")
+        _require_zero_frozen_entries("VJP", vjp, self.trainable)
         object.__setattr__(self, "value", value)
         object.__setattr__(self, "cotangent", cotangent)
         object.__setattr__(self, "vjp", vjp)
@@ -9706,6 +9727,8 @@ class HessianResult:
             raise ValueError("trainable mask must contain booleans")
         if not np.allclose(hessian, hessian.T, atol=1.0e-8, rtol=1.0e-8):
             raise ValueError("hessian must be symmetric")
+        _require_zero_frozen_entries("hessian columns", hessian, self.trainable, axis=1)
+        _require_zero_frozen_entries("hessian rows", hessian, self.trainable, axis=0)
         object.__setattr__(self, "value", value)
         object.__setattr__(self, "hessian", hessian)
         object.__setattr__(self, "step", step)
@@ -9757,6 +9780,14 @@ class SparseMatrixResult:
             raise ValueError("parameter_names must contain non-empty strings")
         if any(not isinstance(flag, bool) for flag in self.trainable):
             raise ValueError("trainable mask must contain booleans")
+        frozen_columns = {
+            index for index, is_trainable in enumerate(self.trainable) if not is_trainable
+        }
+        if any(
+            int(column) in frozen_columns and float(value) != 0.0
+            for column, value in zip(columns, values, strict=True)
+        ):
+            raise ValueError("sparse values must be zero for non-trainable parameters")
         object.__setattr__(self, "row_indices", rows)
         object.__setattr__(self, "column_indices", columns)
         object.__setattr__(self, "values", values)
@@ -9815,6 +9846,8 @@ class HVPResult:
             raise ValueError("parameter_names must contain non-empty strings")
         if any(not isinstance(flag, bool) for flag in self.trainable):
             raise ValueError("trainable mask must contain booleans")
+        _require_zero_frozen_entries("HVP", hvp, self.trainable)
+        _require_zero_frozen_entries("HVP tangent", tangent, self.trainable)
         object.__setattr__(self, "value", value)
         object.__setattr__(self, "hvp", hvp)
         object.__setattr__(self, "tangent", tangent)

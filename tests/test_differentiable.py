@@ -802,7 +802,7 @@ def test_reverse_mode_tape_rejects_invalid_contracts() -> None:
 def test_sparse_matrix_result_round_trips_dense_derivatives() -> None:
     """Sparse coordinate derivatives should preserve dense values and metadata."""
 
-    dense = np.array([[1.0, 0.0, 2.0e-8], [0.0, -3.0, 0.0]])
+    dense = np.array([[1.0, 0.0, 2.0e-8], [0.0, 0.0, -3.0]])
     sparse = dense_to_sparse_matrix(
         dense,
         parameter_names=("a", "b", "c"),
@@ -815,7 +815,7 @@ def test_sparse_matrix_result_round_trips_dense_derivatives() -> None:
     assert sparse.shape == dense.shape
     assert sparse.parameter_names == ("a", "b", "c")
     assert sparse.trainable == (True, False, True)
-    np.testing.assert_allclose(sparse.to_dense(), [[1.0, 0.0, 0.0], [0.0, -3.0, 0.0]])
+    np.testing.assert_allclose(sparse.to_dense(), [[1.0, 0.0, 0.0], [0.0, 0.0, -3.0]])
 
 
 def test_sparse_jacobian_hessian_and_fisher_preserve_provenance() -> None:
@@ -823,7 +823,7 @@ def test_sparse_jacobian_hessian_and_fisher_preserve_provenance() -> None:
 
     jacobian_result = JacobianResult(
         value=np.array([1.0, -2.0]),
-        jacobian=np.array([[1.0, 0.0], [0.0, 2.0]]),
+        jacobian=np.array([[1.0, 0.0], [2.0, 0.0]]),
         method="analytic",
         step=1.0,
         evaluations=1,
@@ -851,7 +851,7 @@ def test_sparse_jacobian_hessian_and_fisher_preserve_provenance() -> None:
     assert sparse_h.trainable == (True, False)
     np.testing.assert_allclose(sparse_j.to_dense(), jacobian_result.jacobian)
     np.testing.assert_allclose(sparse_h.to_dense(), hessian_result.hessian)
-    np.testing.assert_allclose(sparse_fisher.to_dense(), [[1.0, 0.0], [0.0, 4.0]])
+    np.testing.assert_allclose(sparse_fisher.to_dense(), [[5.0, 0.0], [0.0, 0.0]])
 
 
 def test_sparse_matrix_result_rejects_invalid_contracts() -> None:
@@ -1969,7 +1969,7 @@ def test_natural_gradient_solves_trainable_metric_system() -> None:
 
     gradient = GradientResult(
         value=1.0,
-        gradient=np.array([2.0, 4.0, 9.0]),
+        gradient=np.array([2.0, 4.0, 0.0]),
         method="finite_difference_central",
         shift=1.0e-6,
         coefficient=5.0e5,
@@ -2949,7 +2949,7 @@ def test_gradient_descent_step_respects_trainable_mask() -> None:
 
     result = GradientResult(
         value=1.0,
-        gradient=np.array([2.0, 3.0]),
+        gradient=np.array([2.0, 0.0]),
         method="parameter_shift",
         shift=math.pi / 2,
         coefficient=0.5,
@@ -3017,7 +3017,7 @@ def test_gradient_descent_step_clips_trainable_gradient_norm() -> None:
 
     result = GradientResult(
         value=1.0,
-        gradient=np.array([3.0, 4.0, 100.0]),
+        gradient=np.array([3.0, 4.0, 0.0]),
         method="parameter_shift",
         shift=math.pi / 2,
         coefficient=0.5,
@@ -15653,6 +15653,19 @@ def test_differentiable_result_contracts_cover_fail_closed_metadata_boundaries()
             "matching shapes",
         ),
         (
+            lambda: GradientResult(
+                value=1.0,
+                gradient=np.array([1.0, 0.5]),
+                method="exact",
+                shift=None,
+                coefficient=1.0,
+                evaluations=1,
+                parameter_names=("x", "frozen"),
+                trainable=(True, False),
+            ),
+            "gradient must be zero for non-trainable parameters",
+        ),
+        (
             lambda: CustomDerivativeCheckResult(
                 custom_jvp=object(),  # type: ignore[arg-type]
                 custom_vjp=vjp_result,
@@ -15679,6 +15692,18 @@ def test_differentiable_result_contracts_cover_fail_closed_metadata_boundaries()
             "one-dimensional",
         ),
         (
+            lambda: JacobianResult(
+                value=np.array([1.0, 2.0]),
+                jacobian=np.array([[1.0, 0.5], [2.0, -0.25]]),
+                method="exact",
+                step=0.0,
+                evaluations=1,
+                parameter_names=("x", "frozen"),
+                trainable=(True, False),
+            ),
+            "jacobian must be zero for non-trainable parameters",
+        ),
+        (
             lambda: JVPResult(
                 value=np.array([1.0]),
                 jvp=np.array([1.0, 2.0]),
@@ -15690,6 +15715,19 @@ def test_differentiable_result_contracts_cover_fail_closed_metadata_boundaries()
                 trainable=(True,),
             ),
             "shape must match",
+        ),
+        (
+            lambda: JVPResult(
+                value=np.array([1.0]),
+                jvp=np.array([1.0]),
+                tangent=np.array([1.0, 0.5]),
+                method="exact",
+                step=0.0,
+                evaluations=1,
+                parameter_names=("x", "frozen"),
+                trainable=(True, False),
+            ),
+            "JVP tangent must be zero for non-trainable parameters",
         ),
         (
             lambda: VJPResult(
@@ -15705,6 +15743,19 @@ def test_differentiable_result_contracts_cover_fail_closed_metadata_boundaries()
             "cotangent shape",
         ),
         (
+            lambda: VJPResult(
+                value=np.array([1.0]),
+                cotangent=np.array([1.0]),
+                vjp=np.array([1.0, 0.25]),
+                method="exact",
+                step=0.0,
+                evaluations=1,
+                parameter_names=("x", "frozen"),
+                trainable=(True, False),
+            ),
+            "VJP must be zero for non-trainable parameters",
+        ),
+        (
             lambda: HessianResult(
                 value=1.0,
                 hessian=np.array([[1.0, 2.0]]),
@@ -15715,6 +15766,18 @@ def test_differentiable_result_contracts_cover_fail_closed_metadata_boundaries()
                 trainable=(True,),
             ),
             "square",
+        ),
+        (
+            lambda: HessianResult(
+                value=1.0,
+                hessian=np.array([[1.0, 0.5], [0.5, 0.25]]),
+                method="exact",
+                step=1.0e-3,
+                evaluations=1,
+                parameter_names=("x", "frozen"),
+                trainable=(True, False),
+            ),
+            "hessian columns must be zero for non-trainable parameters",
         ),
         (
             lambda: SparseMatrixResult(
@@ -15729,6 +15792,18 @@ def test_differentiable_result_contracts_cover_fail_closed_metadata_boundaries()
             "duplicate",
         ),
         (
+            lambda: SparseMatrixResult(
+                row_indices=np.array([0]),
+                column_indices=np.array([1]),
+                values=np.array([0.5]),
+                shape=(1, 2),
+                method="coo",
+                parameter_names=("x", "frozen"),
+                trainable=(True, False),
+            ),
+            "sparse values must be zero for non-trainable parameters",
+        ),
+        (
             lambda: HVPResult(
                 value=1.0,
                 hvp=np.array([1.0]),
@@ -15740,6 +15815,32 @@ def test_differentiable_result_contracts_cover_fail_closed_metadata_boundaries()
                 trainable=(True,),
             ),
             "tangent shape",
+        ),
+        (
+            lambda: HVPResult(
+                value=1.0,
+                hvp=np.array([1.0, 0.25]),
+                tangent=np.array([1.0, 0.0]),
+                method="exact",
+                step=1.0e-3,
+                evaluations=1,
+                parameter_names=("x", "frozen"),
+                trainable=(True, False),
+            ),
+            "HVP must be zero for non-trainable parameters",
+        ),
+        (
+            lambda: HVPResult(
+                value=1.0,
+                hvp=np.array([1.0, 0.0]),
+                tangent=np.array([1.0, 0.25]),
+                method="exact",
+                step=1.0e-3,
+                evaluations=1,
+                parameter_names=("x", "frozen"),
+                trainable=(True, False),
+            ),
+            "HVP tangent must be zero for non-trainable parameters",
         ),
         (
             lambda: NaturalGradientResult(
