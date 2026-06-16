@@ -15,6 +15,7 @@ symengine==0.14.1
 numpy==2.2.6
 scipy==1.15.3
 networkx==3.4.2
+jinja2==3.1.6
 requests==2.34.2
 tomli==2.4.1
 urllib3==2.7.0
