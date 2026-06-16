@@ -96,9 +96,9 @@ has a defined commercial licensing route.
 | Surface | Current inventory |
 |---|---:|
 | Package version | 0.9.12 |
-| Public API exports | 649 |
+| Public API exports | 652 |
 | Python source modules | 835 |
-| Public Python classes | 1783 |
+| Public Python classes | 1785 |
 | Paper 0 validation modules | 466 |
 | Domain package families | 32 |
 | API documentation pages | 0 |
@@ -304,7 +304,7 @@ CI benchmark artefacts all pass:
 | Layer | Current status | Where to start |
 |---|---|---|
 | Quantum parameter-shift | Supported through `scpn_quantum_control.phase.param_shift` for callable expectation objectives, structured `PhaseVQE` gradients, and local gradient-descent VQE examples. | [Quantum Gradients](docs/quantum_gradients.md), [Variational Methods](docs/variational.md) |
-| Program and compiler AD | Supported for registered scalar, vector, and matrix primitives with native lowering reports, finite/dtype/shape result checks, trainable-mask derivative zeroing, and fail-closed unsupported boundaries. | [Differentiable Programming](docs/differentiable_programming.md), [Differentiable API](docs/differentiable_api.md) |
+| Program and compiler AD | Supported for registered scalar, vector, and matrix primitives with native lowering reports, deterministic alias/effect metadata summaries, finite/dtype/shape result checks, trainable-mask derivative zeroing, and fail-closed unsupported boundaries. Alias/effect summaries are metadata-only, not a complete static alias lattice. | [Differentiable Programming](docs/differentiable_programming.md), [Differentiable API](docs/differentiable_api.md) |
 | Gradient support matrix | Executable support planning now covers registered gates, observables, backends, transforms, and ML/provider adapters with explicit blocked reasons and alternatives. | [Quantum Gradients](docs/quantum_gradients.md), [Differentiable API](docs/differentiable_api.md) |
 | Unified readiness ledger | `run_differentiable_readiness_audit()` aggregates the support matrix, transform nesting, QNode tape/transform suites, provider gradients, hardware policy, and provider hardware-preparation audit into one reviewer-facing pass/fail ledger. | [Differentiable Programming](docs/differentiable_programming.md), [Differentiable API](docs/differentiable_api.md) |
 | Transform nesting governance | Executable planning now separates supported local `grad`, `value_and_grad`, `hessian`, nested-grad, tape, scalar `jvp`, scalar `vjp`, scalar `jacfwd`, scalar `jacrev`, vector-output native Jacobian execution, native manual `vmap(grad)`, whole-program `grad(vmap(f))` over trace-aware leaves, and provider-callback QNode transforms from blocked framework-vectorized, adapter-nested, finite-shot curvature, malformed-provider, and hardware nesting routes. | [Quantum Gradients](docs/quantum_gradients.md), [Differentiable API](docs/differentiable_api.md) |

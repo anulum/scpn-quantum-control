@@ -59,6 +59,8 @@ from scpn_quantum_control.differentiable import (
     PrimitiveTransformRule,
     ProgramADAdjointResult,
     ProgramADAliasEdge,
+    ProgramADAliasEffectAnalysis,
+    ProgramADAliasSet,
     ProgramADControlRegion,
     ProgramADEffect,
     ProgramADEffectIR,
@@ -78,6 +80,7 @@ from scpn_quantum_control.differentiable import (
     WholeProgramSourceIRFeature,
     WholeProgramTraceEvent,
     allocate_parameter_shift_shots,
+    analyze_program_ad_alias_effects,
     armijo_backtracking_line_search,
     batch_complex_step_gradient,
     batch_custom_jacobian,
@@ -10153,6 +10156,8 @@ def test_whole_program_ad_is_exported_from_package_root() -> None:
     assert scpn.TraceADArray is TraceADArray
     assert scpn.ProgramADAdjointResult is ProgramADAdjointResult
     assert scpn.ProgramADAliasEdge is ProgramADAliasEdge
+    assert scpn.ProgramADAliasEffectAnalysis is ProgramADAliasEffectAnalysis
+    assert scpn.ProgramADAliasSet is ProgramADAliasSet
     assert scpn.ProgramADControlRegion is ProgramADControlRegion
     assert scpn.ProgramADEffect is ProgramADEffect
     assert scpn.ProgramADEffectIR is ProgramADEffectIR
@@ -10166,6 +10171,7 @@ def test_whole_program_ad_is_exported_from_package_root() -> None:
     assert scpn.program_adjoint_gradient is program_adjoint_gradient
     assert scpn.program_adjoint_result is program_adjoint_result
     assert scpn.program_adjoint_value_and_grad is program_adjoint_value_and_grad
+    assert scpn.analyze_program_ad_alias_effects is analyze_program_ad_alias_effects
     assert scpn.whole_program_grad is whole_program_grad
     assert scpn.whole_program_value_and_grad is whole_program_value_and_grad
 
@@ -14007,6 +14013,61 @@ def test_whole_program_ad_emits_deterministic_ssa_effect_ir() -> None:
         [1.0, 1.0, 2.0 + math.cos(0.75)],
         atol=1.0e-12,
     )
+
+
+def test_program_ad_alias_effect_analysis_summarizes_alias_sets_and_mutations() -> None:
+    """Program AD alias/effect analysis should expose deterministic alias sets."""
+
+    def objective(values: np.ndarray) -> object:
+        view = values.copy()
+        total = values[0]
+        for index in range(1, 3):
+            total = total + view[index] * float(index)
+        view[0] = total
+        return view[0] + values[2]
+
+    result = whole_program_value_and_grad(
+        objective,
+        np.array([0.25, 0.5, 0.75], dtype=np.float64),
+        parameters=(Parameter("a"), Parameter("b"), Parameter("c")),
+    )
+    assert result.program_ir is not None
+
+    analysis = analyze_program_ad_alias_effects(result.program_ir)
+
+    assert isinstance(analysis, ProgramADAliasEffectAnalysis)
+    assert all(isinstance(alias_set, ProgramADAliasSet) for alias_set in analysis.alias_sets)
+    assert analysis.claim_boundary == "metadata_only_no_general_alias_lattice"
+    assert analysis.unknown_aliasing is False
+    assert analysis.mutation_effects
+    assert analysis.mutation_effects == tuple(sorted(analysis.mutation_effects))
+    assert any(edge.kind == "mutation_version" for edge in analysis.alias_edges)
+    assert any(
+        "%array[0]" in alias_set.members
+        and any(member.startswith("%") and member != "%array[0]" for member in alias_set.members)
+        for alias_set in analysis.alias_sets
+    )
+    payload = analysis.as_dict()
+    assert payload["claim_boundary"] == "metadata_only_no_general_alias_lattice"
+    assert payload["unknown_aliasing"] is False
+    assert payload["mutation_effects"] == list(analysis.mutation_effects)
+
+    unsupported = ProgramADEffectIR(
+        ssa_values=result.program_ir.ssa_values,
+        effects=result.program_ir.effects,
+        alias_edges=(
+            ProgramADAliasEdge(
+                source="dynamic_object",
+                target="%0",
+                kind="runtime_unknown_alias",
+                version=0,
+            ),
+        ),
+        control_regions=result.program_ir.control_regions,
+        serialization="program_ad_effect_ir.v1",
+    )
+    with pytest.raises(ValueError, match="unknown alias"):
+        analyze_program_ad_alias_effects(unsupported)
 
 
 def test_program_ad_effect_ir_validation_paths() -> None:

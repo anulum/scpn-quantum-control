@@ -200,6 +200,83 @@ class ProgramADAliasEdge:
 
 
 @dataclass(frozen=True)
+class ProgramADAliasSet:
+    """One deterministic alias component derived from Program AD effect IR."""
+
+    index: int
+    members: tuple[str, ...]
+    versions: tuple[int, ...]
+    mutation_versions: tuple[int, ...]
+
+    def __post_init__(self) -> None:
+        if self.index < 0:
+            raise ValueError("program AD alias set index must be non-negative")
+        if any(not isinstance(member, str) or not member for member in self.members):
+            raise ValueError("program AD alias set members must be non-empty strings")
+        if tuple(sorted(self.members)) != self.members:
+            raise ValueError("program AD alias set members must be sorted deterministically")
+        if any(version < 0 for version in self.versions):
+            raise ValueError("program AD alias set versions must be non-negative")
+        if any(version < 0 for version in self.mutation_versions):
+            raise ValueError("program AD alias set mutation_versions must be non-negative")
+
+    def as_dict(self) -> dict[str, object]:
+        """Return a stable JSON-ready alias-set payload."""
+
+        return {
+            "index": self.index,
+            "members": list(self.members),
+            "versions": list(self.versions),
+            "mutation_versions": list(self.mutation_versions),
+        }
+
+
+@dataclass(frozen=True)
+class ProgramADAliasEffectAnalysis:
+    """Deterministic metadata-only alias/effect analysis for Program AD IR."""
+
+    alias_sets: tuple[ProgramADAliasSet, ...]
+    mutation_effects: tuple[int, ...]
+    alias_edges: tuple[ProgramADAliasEdge, ...]
+    unknown_aliasing: bool
+    claim_boundary: str
+
+    def __post_init__(self) -> None:
+        if any(not isinstance(alias_set, ProgramADAliasSet) for alias_set in self.alias_sets):
+            raise ValueError("program AD alias analysis alias_sets must contain ProgramADAliasSet")
+        if tuple(sorted(self.mutation_effects)) != self.mutation_effects:
+            raise ValueError("program AD alias analysis mutation_effects must be sorted")
+        if any(effect < 0 for effect in self.mutation_effects):
+            raise ValueError("program AD alias analysis mutation_effects must be non-negative")
+        if any(not isinstance(edge, ProgramADAliasEdge) for edge in self.alias_edges):
+            raise ValueError(
+                "program AD alias analysis alias_edges must contain ProgramADAliasEdge"
+            )
+        if not isinstance(self.unknown_aliasing, bool):
+            raise ValueError("program AD alias analysis unknown_aliasing must be boolean")
+        _normalise_claim_boundary("program AD alias analysis", self.claim_boundary)
+
+    def as_dict(self) -> dict[str, object]:
+        """Return a stable JSON-ready alias/effect analysis payload."""
+
+        return {
+            "alias_sets": [alias_set.as_dict() for alias_set in self.alias_sets],
+            "mutation_effects": list(self.mutation_effects),
+            "alias_edges": [
+                {
+                    "source": edge.source,
+                    "target": edge.target,
+                    "kind": edge.kind,
+                    "version": edge.version,
+                }
+                for edge in self.alias_edges
+            ],
+            "unknown_aliasing": self.unknown_aliasing,
+            "claim_boundary": self.claim_boundary,
+        }
+
+
+@dataclass(frozen=True)
 class ProgramADControlRegion:
     """One source or runtime control-flow region in program AD graph capture."""
 
@@ -247,6 +324,97 @@ class ProgramADEffectIR:
             )
         if not isinstance(self.serialization, str) or not self.serialization:
             raise ValueError("program AD IR serialization must be a non-empty string")
+
+
+PROGRAM_AD_ALIAS_EFFECT_CLAIM_BOUNDARY = "metadata_only_no_general_alias_lattice"
+_PROGRAM_AD_SUPPORTED_ALIAS_EDGE_KINDS = frozenset(
+    {
+        "alias_analysis",
+        "mutation_version",
+        "source_alias",
+    }
+)
+
+
+def analyze_program_ad_alias_effects(
+    program_ir: ProgramADEffectIR,
+) -> ProgramADAliasEffectAnalysis:
+    """Summarize deterministic alias/effect metadata from captured Program AD IR.
+
+    This helper is intentionally metadata-only. It does not promote the current
+    runtime trace evidence to a complete alias lattice or static compiler IR.
+    """
+
+    if not isinstance(program_ir, ProgramADEffectIR):
+        raise ValueError("program AD alias analysis requires ProgramADEffectIR")
+
+    parent: dict[str, str] = {}
+    versions_by_member: dict[str, set[int]] = {}
+    mutation_versions_by_member: dict[str, set[int]] = {}
+
+    def find(member: str) -> str:
+        parent.setdefault(member, member)
+        while parent[member] != member:
+            parent[member] = parent[parent[member]]
+            member = parent[member]
+        return member
+
+    def union(left: str, right: str) -> None:
+        left_root = find(left)
+        right_root = find(right)
+        if left_root == right_root:
+            return
+        if right_root < left_root:
+            left_root, right_root = right_root, left_root
+        parent[right_root] = left_root
+
+    for value in program_ir.ssa_values:
+        find(value.name)
+        versions_by_member.setdefault(value.name, set()).add(value.version)
+    for edge in program_ir.alias_edges:
+        if edge.kind not in _PROGRAM_AD_SUPPORTED_ALIAS_EDGE_KINDS:
+            raise ValueError(
+                f"unknown alias edge kind {edge.kind!r}; program AD alias analysis fails closed"
+            )
+        find(edge.source)
+        find(edge.target)
+        union(edge.source, edge.target)
+        versions_by_member.setdefault(edge.source, set()).add(edge.version)
+        versions_by_member.setdefault(edge.target, set()).add(edge.version)
+        if edge.kind == "mutation_version":
+            mutation_versions_by_member.setdefault(edge.source, set()).add(edge.version)
+            mutation_versions_by_member.setdefault(edge.target, set()).add(edge.version)
+
+    components: dict[str, list[str]] = {}
+    for member in sorted(parent):
+        components.setdefault(find(member), []).append(member)
+
+    alias_sets: list[ProgramADAliasSet] = []
+    for index, members in enumerate(sorted(components.values(), key=lambda values: tuple(values))):
+        component_versions: set[int] = set()
+        component_mutation_versions: set[int] = set()
+        for member in members:
+            component_versions.update(versions_by_member.get(member, set()))
+            component_mutation_versions.update(mutation_versions_by_member.get(member, set()))
+        alias_sets.append(
+            ProgramADAliasSet(
+                index=index,
+                members=tuple(members),
+                versions=tuple(sorted(component_versions)),
+                mutation_versions=tuple(sorted(component_mutation_versions)),
+            )
+        )
+
+    mutation_effects = tuple(
+        sorted(effect.index for effect in program_ir.effects if effect.kind == "mutation")
+    )
+    return ProgramADAliasEffectAnalysis(
+        alias_sets=tuple(alias_sets),
+        mutation_effects=mutation_effects,
+        alias_edges=program_ir.alias_edges,
+        unknown_aliasing=False,
+        claim_boundary=PROGRAM_AD_ALIAS_EFFECT_CLAIM_BOUNDARY,
+    )
 
 
 @dataclass(frozen=True)
@@ -27026,6 +27194,8 @@ __all__ = [
     "ParameterShiftSampleRecord",
     "ProgramADAdjointResult",
     "ProgramADAliasEdge",
+    "ProgramADAliasEffectAnalysis",
+    "ProgramADAliasSet",
     "ProgramADControlRegion",
     "ProgramADEffect",
     "ProgramADEffectIR",
@@ -27052,6 +27222,7 @@ __all__ = [
     "STOCHASTIC_PARAMETER_SHIFT_CLAIM_BOUNDARY",
     "VJPResult",
     "WeightedGradientResult",
+    "analyze_program_ad_alias_effects",
     "armijo_backtracking_line_search",
     "allocate_parameter_shift_shots",
     "batch_custom_jacobian",
