@@ -108,7 +108,8 @@ def _environment() -> Environment:
     return Environment(
         loader=FileSystemLoader(str(_TEMPLATE_DIR)),
         undefined=StrictUndefined,
-        autoescape=False,  # C/C++ source, not markup
+        # Trusted repository templates render C/C++ and XDC source, not HTML.
+        autoescape=False,  # nosec B701
         keep_trailing_newline=True,
         trim_blocks=False,
         lstrip_blocks=False,

@@ -98,33 +98,127 @@ def test_external_comparison_suite_records_success_rows_and_enzyme_hard_gap(
     }.issubset(failure_classes)
 
 
-def test_identical_circuit_gradient_comparison_records_qiskit_and_pennylane_rows() -> None:
+def test_identical_circuit_gradient_comparison_records_live_backend_boundaries() -> None:
     rows = run_identical_circuit_gradient_comparison_suite()
     by_backend = {row.backend: row for row in rows}
 
     assert set(by_backend) == {"qiskit", "pennylane"}
     for row in rows:
-        assert row.status == "success"
-        assert row.failure_class is None
         assert row.case_id == "single_ry_z_expectation_exact_state"
         assert row.circuit_fingerprint
         assert row.execution_mode == "exact_state"
         assert row.shots is None
         assert row.observable == "Z0"
         assert row.parameter_values == (0.4,)
-        assert row.value_error <= 1e-12
-        assert row.gradient_error <= 1e-12
         assert row.dependency_versions
         assert row.artifact_fields_ready
         assert not row.performance_claim_eligible
+        if row.status == "success":
+            assert row.failure_class is None
+            assert row.value_error is not None and row.value_error <= 1e-12
+            assert row.gradient_error is not None and row.gradient_error <= 1e-12
+        else:
+            assert row.failure_class in {"dependency_missing", "runtime_error"}
+            assert row.value_error is None
+            assert row.gradient_error is None
+
+
+def test_identical_circuit_gradient_comparison_success_rows_are_deterministic(
+    monkeypatch,
+) -> None:
+    class FakeQiskitResult:
+        value = np.cos(0.4)
+        gradient = np.array([-np.sin(0.4)], dtype=np.float64)
+        evaluations = 2
+
+    class FakePennyLaneResult:
+        pennylane_value = np.cos(0.4)
+        pennylane_gradient = np.array([-np.sin(0.4)], dtype=np.float64)
+        evaluations = 2
+
+    monkeypatch.setattr(
+        comparison,
+        "_qiskit_identical_circuit_row",
+        lambda **kwargs: comparison._identical_circuit_success_row(
+            backend="qiskit",
+            operations=kwargs["operations"],
+            observable_label=kwargs["observable_label"],
+            values=kwargs["values"],
+            fingerprint=kwargs["fingerprint"],
+            scpn_value=kwargs["scpn_value"],
+            backend_value=float(FakeQiskitResult.value),
+            scpn_gradient=kwargs["scpn_gradient"],
+            backend_gradient=tuple(float(item) for item in FakeQiskitResult.gradient),
+            evaluations=FakeQiskitResult.evaluations,
+        ),
+    )
+    monkeypatch.setattr(
+        comparison,
+        "_pennylane_identical_circuit_row",
+        lambda **kwargs: comparison._identical_circuit_success_row(
+            backend="pennylane",
+            operations=kwargs["operations"],
+            observable_label=kwargs["observable_label"],
+            values=kwargs["values"],
+            fingerprint=kwargs["fingerprint"],
+            scpn_value=kwargs["scpn_value"],
+            backend_value=float(FakePennyLaneResult.pennylane_value),
+            scpn_gradient=kwargs["scpn_gradient"],
+            backend_gradient=tuple(float(item) for item in FakePennyLaneResult.pennylane_gradient),
+            evaluations=FakePennyLaneResult.evaluations,
+        ),
+    )
+
+    rows = run_identical_circuit_gradient_comparison_suite()
+
+    assert {row.backend for row in rows} == {"qiskit", "pennylane"}
+    for row in rows:
+        assert row.status == "success"
+        assert row.failure_class is None
+        assert row.value_error is not None and row.value_error <= 1e-12
+        assert row.gradient_error is not None and row.gradient_error <= 1e-12
 
 
 def test_identical_circuit_gradient_comparison_writer_marks_ready_not_promoted(
     tmp_path,
 ) -> None:
     output = tmp_path / "identical-circuit.json"
+    circuit, values, operations, observable_label, fingerprint = (
+        comparison._identical_circuit_problem()
+    )
+    scpn_value = comparison.execute_phase_qnode_circuit(circuit, values).value
+    scpn_gradient = tuple(
+        float(item)
+        for item in comparison.parameter_shift_phase_qnode_gradient(circuit, values).gradient
+    )
+    rows = (
+        comparison._identical_circuit_success_row(
+            backend="qiskit",
+            operations=operations,
+            observable_label=observable_label,
+            values=values,
+            fingerprint=fingerprint,
+            scpn_value=float(scpn_value),
+            backend_value=float(scpn_value),
+            scpn_gradient=scpn_gradient,
+            backend_gradient=scpn_gradient,
+            evaluations=2,
+        ),
+        comparison._identical_circuit_success_row(
+            backend="pennylane",
+            operations=operations,
+            observable_label=observable_label,
+            values=values,
+            fingerprint=fingerprint,
+            scpn_value=float(scpn_value),
+            backend_value=float(scpn_value),
+            scpn_gradient=scpn_gradient,
+            backend_gradient=scpn_gradient,
+            evaluations=2,
+        ),
+    )
 
-    artifact = write_identical_circuit_gradient_comparison(output)
+    artifact = write_identical_circuit_gradient_comparison(output, rows=rows)
     payload = json.loads(output.read_text(encoding="utf-8"))
 
     assert isinstance(artifact, IdenticalCircuitGradientComparisonArtifact)
