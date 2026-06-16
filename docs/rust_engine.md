@@ -63,6 +63,33 @@ claim boundary is static source inventory only; it does not replace Miri,
 sanitizer, fuzzing, or formal memory-safety evidence if unsafe Rust is ever
 introduced.
 
+**Static execution-mode audit (2026-06-16):**
+`tools/audit_rust_kernel_execution.py` records whether each Rust PyO3 kernel is
+currently tagged as `scalar_or_unknown`, `ndarray_dot`, `rayon_threaded`, or
+`explicit_simd` before any performance promotion. The current committed
+artefact,
+`data/rust_kernel_execution/rust_kernel_execution_audit_2026-06-16.json`,
+reports:
+
+- 134 PyO3 kernel records.
+- 19 `rayon_threaded` records.
+- 1 `ndarray_dot` record.
+- 0 `explicit_simd` records.
+- 114 `scalar_or_unknown` records.
+- 0 performance-claim-eligible records.
+
+Run the gate with:
+
+```bash
+PYTHONPATH=src ./.venv/bin/python tools/audit_rust_kernel_execution.py \
+  --crate-root scpn_quantum_engine
+```
+
+This is static source evidence, not a benchmark. Existing speedup tables below
+are historical local regression evidence unless a row is explicitly tied to a
+separate `isolated_affinity` benchmark artefact with CPU affinity, host-load,
+governor/frequency, runner labels, and heavy-job metadata.
+
 ## Functions (134)
 
 The Rust crate exports 134 PyO3 bindings across 37 Rust source files. They are organised

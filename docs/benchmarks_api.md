@@ -18,6 +18,14 @@ differentiable-programming conformance.
 6 modules, differentiable-programming conformance rows, and 3 crossover
 estimates.
 
+Rust kernel execution-mode evidence is tracked separately from benchmark timing.
+`tools/audit_rust_kernel_execution.py` writes static SIMD/threading inventory
+artefacts such as
+`data/rust_kernel_execution/rust_kernel_execution_audit_2026-06-16.json`; those
+rows classify PyO3 kernels as scalar/unknown, ndarray-dot, rayon-threaded, or
+explicit-SIMD evidence only. They do not make performance claims. Timing
+promotion still requires the isolated benchmark metadata described below.
+
 ## Architecture
 
 ```

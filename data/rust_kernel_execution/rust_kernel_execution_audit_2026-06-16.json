@@ -1,0 +1,1413 @@
+{
+  "claim_boundary": "Static Rust source inventory only: records PyO3 kernel execution-mode evidence tokens for scalar/unknown, ndarray dot, rayon-threaded, and explicit SIMD paths. It is not an isolated benchmark, throughput claim, compiler-vectorization proof, or CPU-affinity artefact.",
+  "crate_root": "scpn_quantum_engine",
+  "explicit_simd_count": 0,
+  "kernel_records": [
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/analog.rs",
+      "line": 28,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "analog_coupling_terms"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/analog.rs",
+      "line": 108,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "hybrid_coupling_partition"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/biological_qec.rs",
+      "line": 231,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "biological_decode_z_errors"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [
+        "rayon::prelude",
+        ".into_par_iter("
+      ],
+      "execution_mode": "rayon_threaded",
+      "file": "src/community.rs",
+      "line": 31,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "score_regions_batch"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/compiler_ad.rs",
+      "line": 1582,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "matrix_2x2_eigenvalues_value"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/compiler_ad.rs",
+      "line": 1594,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "matrix_2x2_eigenvalues_jvp"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/compiler_ad.rs",
+      "line": 1609,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "matrix_2x2_eigenvalues_vjp"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/compiler_ad.rs",
+      "line": 1624,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "matrix_2x2_eigenvalues_sum_gradient"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/compiler_ad.rs",
+      "line": 1636,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "matrix_2x2_eigensystem_value"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/compiler_ad.rs",
+      "line": 1648,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "matrix_2x2_eigensystem_jvp"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/compiler_ad.rs",
+      "line": 1663,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "matrix_2x2_eigensystem_vjp"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/compiler_ad.rs",
+      "line": 1678,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "matrix_2x2_eigensystem_sum_gradient"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/compiler_ad.rs",
+      "line": 1690,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "matrix_quadratic_form_value"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/compiler_ad.rs",
+      "line": 1703,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "matrix_quadratic_form_jvp"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/compiler_ad.rs",
+      "line": 1720,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "matrix_quadratic_form_vjp"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/compiler_ad.rs",
+      "line": 1737,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "matrix_quadratic_form_gradient"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/compiler_ad.rs",
+      "line": 1750,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "matrix_trace_value"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/compiler_ad.rs",
+      "line": 1763,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "matrix_trace_jvp"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/compiler_ad.rs",
+      "line": 1779,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "matrix_trace_vjp"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/compiler_ad.rs",
+      "line": 1795,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "matrix_trace_gradient"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/compiler_ad.rs",
+      "line": 1808,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "matrix_frobenius_norm_squared_value"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/compiler_ad.rs",
+      "line": 1822,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "matrix_frobenius_norm_squared_jvp"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/compiler_ad.rs",
+      "line": 1839,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "matrix_frobenius_norm_squared_vjp"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/compiler_ad.rs",
+      "line": 1856,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "matrix_frobenius_norm_squared_gradient"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/compiler_ad.rs",
+      "line": 1870,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "matrix_vector_product_value"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/compiler_ad.rs",
+      "line": 1883,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "matrix_vector_product_jvp"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/compiler_ad.rs",
+      "line": 1900,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "matrix_vector_product_vjp"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/compiler_ad.rs",
+      "line": 1917,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "matrix_vector_product_sum_gradient"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/compiler_ad.rs",
+      "line": 1931,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "matrix_matrix_product_value"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/compiler_ad.rs",
+      "line": 1944,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "matrix_matrix_product_jvp"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/compiler_ad.rs",
+      "line": 1961,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "matrix_matrix_product_vjp"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/compiler_ad.rs",
+      "line": 1978,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "matrix_matrix_product_sum_gradient"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/compiler_ad.rs",
+      "line": 1992,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "matrix_2x2_determinant_value"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/compiler_ad.rs",
+      "line": 2004,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "matrix_2x2_determinant_jvp"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/compiler_ad.rs",
+      "line": 2019,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "matrix_2x2_determinant_vjp"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/compiler_ad.rs",
+      "line": 2034,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "matrix_2x2_determinant_gradient"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/compiler_ad.rs",
+      "line": 2046,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "matrix_2x2_inverse_value"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/compiler_ad.rs",
+      "line": 2058,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "matrix_2x2_inverse_jvp"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/compiler_ad.rs",
+      "line": 2073,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "matrix_2x2_inverse_vjp"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/compiler_ad.rs",
+      "line": 2088,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "matrix_2x2_inverse_sum_gradient"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/compiler_ad.rs",
+      "line": 2100,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "matrix_2x2_solve_value"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/compiler_ad.rs",
+      "line": 2112,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "matrix_2x2_solve_jvp"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/compiler_ad.rs",
+      "line": 2127,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "matrix_2x2_solve_vjp"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/compiler_ad.rs",
+      "line": 2142,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "matrix_2x2_solve_sum_gradient"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/compiler_ad.rs",
+      "line": 2154,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "symmetric_2x2_cholesky_value"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/compiler_ad.rs",
+      "line": 2166,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "symmetric_2x2_cholesky_jvp"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/compiler_ad.rs",
+      "line": 2181,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "symmetric_2x2_cholesky_vjp"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/compiler_ad.rs",
+      "line": 2196,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "symmetric_2x2_cholesky_sum_gradient"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/compiler_ad.rs",
+      "line": 2208,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "symmetric_2x2_eigenvalues_value"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/compiler_ad.rs",
+      "line": 2220,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "symmetric_2x2_eigenvalues_jvp"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/compiler_ad.rs",
+      "line": 2235,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "symmetric_2x2_eigenvalues_vjp"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/compiler_ad.rs",
+      "line": 2250,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "symmetric_2x2_eigenvalues_sum_gradient"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/compiler_ad.rs",
+      "line": 2262,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "vector_dot_value"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/compiler_ad.rs",
+      "line": 2275,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "vector_dot_jvp"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/compiler_ad.rs",
+      "line": 2291,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "vector_dot_vjp"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/compiler_ad.rs",
+      "line": 2307,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "vector_dot_gradient"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/compiler_ad.rs",
+      "line": 2320,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "vector_squared_norm_value"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/compiler_ad.rs",
+      "line": 2333,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "vector_squared_norm_jvp"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/compiler_ad.rs",
+      "line": 2350,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "vector_squared_norm_vjp"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/compiler_ad.rs",
+      "line": 2367,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "vector_squared_norm_gradient"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/concat_qec.rs",
+      "line": 46,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "concatenated_logical_rate_rust"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/concat_qec.rs",
+      "line": 95,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "knm_domain_coupling"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/cosimulation.rs",
+      "line": 32,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "cosim_classical_substep"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [
+        "rayon::prelude",
+        ".par_iter("
+      ],
+      "execution_mode": "rayon_threaded",
+      "file": "src/dla.rs",
+      "line": 36,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "dla_dimension"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [
+        "rayon::prelude",
+        ".par_iter("
+      ],
+      "execution_mode": "rayon_threaded",
+      "file": "src/dla.rs",
+      "line": 86,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "dla_protected_memory_mask"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [
+        "rayon::prelude",
+        ".par_iter("
+      ],
+      "execution_mode": "rayon_threaded",
+      "file": "src/dla.rs",
+      "line": 105,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "dla_protected_memory_metrics"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [
+        "rayon::prelude",
+        ".par_iter("
+      ],
+      "execution_mode": "rayon_threaded",
+      "file": "src/dla.rs",
+      "line": 127,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "dla_protected_trajectory_metrics"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/entropy.rs",
+      "line": 35,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "nist_berlekamp_massey"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/entropy.rs",
+      "line": 73,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "nist_monobit_sum"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/entropy.rs",
+      "line": 86,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "nist_runs_counts"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/entropy.rs",
+      "line": 108,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "nist_block_longest_runs"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/feedback.rs",
+      "line": 24,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "feedback_policy_batch"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/feedback.rs",
+      "line": 77,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "run_realtime_feedback_loop"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/fep.rs",
+      "line": 62,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "free_energy_gradient_rust"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/fep.rs",
+      "line": 105,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "hierarchical_prediction_error_rust"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/fep.rs",
+      "line": 175,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "variational_free_energy_rust"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/frc.rs",
+      "line": 40,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "frc_mrti_growth"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/gauge_lattice.rs",
+      "line": 97,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "plaquette_action_batch"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/gauge_lattice.rs",
+      "line": 135,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "gauge_force_batch"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/gauge_lattice.rs",
+      "line": 182,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "gauge_covariant_kinetic_rust"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/gauge_lattice.rs",
+      "line": 262,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "topological_charge_rust"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/hamiltonian.rs",
+      "line": 38,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "build_xy_hamiltonian_dense"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/hamiltonian.rs",
+      "line": 88,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "build_sparse_xy_hamiltonian"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/hls_quantise.rs",
+      "line": 25,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "quantise_q_format"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/knm.rs",
+      "line": 23,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "build_knm"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/koopman.rs",
+      "line": 34,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "koopman_generator"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [
+        ".dot("
+      ],
+      "execution_mode": "ndarray_dot",
+      "file": "src/krylov.rs",
+      "line": 44,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "lanczos_b_coefficients"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/kuramoto.rs",
+      "line": 27,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "kuramoto_euler"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/kuramoto.rs",
+      "line": 64,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "order_parameter"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/kuramoto.rs",
+      "line": 186,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "higher_order_kuramoto_trajectory"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/kuramoto.rs",
+      "line": 266,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "monitored_kuramoto_trajectory"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/kuramoto.rs",
+      "line": 357,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "pt_symmetric_kuramoto_trajectory"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/kuramoto.rs",
+      "line": 471,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "kuramoto_witness_candidate_features"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/kuramoto.rs",
+      "line": 554,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "kuramoto_trajectory"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/lindblad.rs",
+      "line": 48,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "lindblad_jump_ops_coo"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/lindblad.rs",
+      "line": 104,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "lindblad_anti_hermitian_diag"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/ml_dsa.rs",
+      "line": 119,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "ml_dsa_ntt"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/ml_dsa.rs",
+      "line": 127,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "ml_dsa_intt"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/monte_carlo.rs",
+      "line": 26,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "mc_xy_simulate"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [
+        "rayon::prelude",
+        ".into_par_iter("
+      ],
+      "execution_mode": "rayon_threaded",
+      "file": "src/mpc.rs",
+      "line": 28,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "brute_mpc"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [
+        "rayon::prelude",
+        ".par_iter("
+      ],
+      "execution_mode": "rayon_threaded",
+      "file": "src/otoc.rs",
+      "line": 72,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "otoc_from_eigendecomp"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/pauli.rs",
+      "line": 68,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "state_order_param_sparse"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/pauli.rs",
+      "line": 118,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "expectation_pauli_fast"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/pauli.rs",
+      "line": 176,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "all_xy_expectations"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [
+        "rayon::prelude",
+        ".into_par_iter("
+      ],
+      "execution_mode": "rayon_threaded",
+      "file": "src/pec.rs",
+      "line": 24,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "pec_coefficients"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [
+        "rayon::prelude",
+        ".into_par_iter("
+      ],
+      "execution_mode": "rayon_threaded",
+      "file": "src/pec.rs",
+      "line": 47,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "pec_sample_parallel"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [
+        "rayon::prelude",
+        ".par_iter("
+      ],
+      "execution_mode": "rayon_threaded",
+      "file": "src/pulse_shaping.rs",
+      "line": 97,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "hypergeometric_envelope_batch"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [
+        "rayon::prelude",
+        ".par_iter("
+      ],
+      "execution_mode": "rayon_threaded",
+      "file": "src/pulse_shaping.rs",
+      "line": 135,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "ici_mixing_angle_batch"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [
+        "rayon::prelude",
+        ".par_iter("
+      ],
+      "execution_mode": "rayon_threaded",
+      "file": "src/pulse_shaping.rs",
+      "line": 179,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "ici_three_level_evolution_batch"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [
+        "rayon::prelude",
+        ".par_iter("
+      ],
+      "execution_mode": "rayon_threaded",
+      "file": "src/pulse_shaping.rs",
+      "line": 355,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "rabi_pi_amplitude_fit"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/qnode_metrics.rs",
+      "line": 425,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "phase_qnode_fubini_study_metric_rust"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/qnode_metrics.rs",
+      "line": 452,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "phase_qnode_computational_basis_fisher_rust"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/qnode_metrics.rs",
+      "line": 488,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "phase_qnode_vector_jvp_rust"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/qnode_metrics.rs",
+      "line": 499,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "phase_qnode_vector_vjp_rust"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/qnode_metrics.rs",
+      "line": 511,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "phase_qnode_hessian_vector_product_rust"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/qnode_metrics.rs",
+      "line": 523,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "phase_qnode_vector_hessian_tensor_rust"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/qnode_metrics.rs",
+      "line": 537,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "phase_qnode_complex_derivative_contract_rust"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/qpetri.rs",
+      "line": 19,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "qpetri_transition_activity"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/qpetri.rs",
+      "line": 94,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "qpetri_state_metrics"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/qpetri.rs",
+      "line": 111,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "qpetri_sample_marking"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/qpetri.rs",
+      "line": 141,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "qpetri_campaign_aggregate"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/realtime.rs",
+      "line": 75,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "sub_us_jitter_percentiles"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/realtime.rs",
+      "line": 93,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "sub_us_tracker_summary"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [
+        "rayon::prelude",
+        ".par_iter("
+      ],
+      "execution_mode": "rayon_threaded",
+      "file": "src/sectors.rs",
+      "line": 43,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "magnetisation_labels"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [
+        "rayon::prelude",
+        ".par_iter("
+      ],
+      "execution_mode": "rayon_threaded",
+      "file": "src/sectors.rs",
+      "line": 66,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "order_param_from_statevector"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [
+        "rayon::prelude",
+        ".par_iter("
+      ],
+      "execution_mode": "rayon_threaded",
+      "file": "src/sectors.rs",
+      "line": 104,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "correlation_matrix_xy"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [
+        "rayon::prelude",
+        ".par_iter("
+      ],
+      "execution_mode": "rayon_threaded",
+      "file": "src/sectors.rs",
+      "line": 151,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "parity_filter_mask"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/sensing.rs",
+      "line": 21,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "nv_odmr_spectrum"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/stochastic_gradient.rs",
+      "line": 613,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "parameter_shift_gradient_uncertainty_rust"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/stochastic_gradient.rs",
+      "line": 663,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "spsa_gradient_rust"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/stochastic_gradient.rs",
+      "line": 717,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "score_function_gradient_rust"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/stochastic_gradient.rs",
+      "line": 756,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "gradient_confidence_interval_rust"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [
+        "rayon::prelude",
+        ".par_iter("
+      ],
+      "execution_mode": "rayon_threaded",
+      "file": "src/symmetry_decay.rs",
+      "line": 28,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "guess_extrapolate_batch"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [
+        "rayon::prelude",
+        ".par_iter("
+      ],
+      "execution_mode": "rayon_threaded",
+      "file": "src/symmetry_decay.rs",
+      "line": 69,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "fit_symmetry_decay"
+    }
+  ],
+  "ndarray_dot_count": 1,
+  "performance_claim_eligible_count": 0,
+  "pyfunction_count": 134,
+  "rayon_threaded_count": 19,
+  "scalar_or_unknown_count": 114,
+  "schema": "scpn-rust-kernel-execution-audit/v1",
+  "status": "pass"
+}
