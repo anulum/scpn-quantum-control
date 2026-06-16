@@ -1539,6 +1539,7 @@ from scpn_quantum_control.phase import (
     jax_custom_vjp_qnn_value_and_grad,
     run_jax_jit_compatibility_audit,
     run_jax_maturity_audit,
+    run_jax_nested_transform_algebra_audit,
     run_jax_pytree_compatibility_audit,
     run_jax_sharding_compatibility_audit,
     run_jax_vmap_compatibility_audit,
@@ -1588,6 +1589,14 @@ pytree_audit = run_jax_pytree_compatibility_audit(
 )
 print(pytree_audit.passed, pytree_audit.leaf_shapes)
 
+nested_audit = run_jax_nested_transform_algebra_audit(
+    features=features,
+    labels=labels,
+    params_batch=np.array([[0.25], [0.45]], dtype=float),
+    params_pytree={"phase": params},
+)
+print(nested_audit.passed, nested_audit.ready_for_provider_exceedance)
+
 maturity = run_jax_maturity_audit(
     features=features,
     labels=labels,
@@ -1617,6 +1626,13 @@ routes: they are not arbitrary simulator autodiff, not provider-backed
 execution, not hardware gradients, and not claims that every quantum objective
 can be lowered into JAX JIT, VMAP, distributed sharding, or arbitrary PyTree
 programs.
+`run_jax_nested_transform_algebra_audit(...)` verifies bounded
+`JIT(value_and_grad)` under VMAP, `JIT(VMAP(value_and_grad))`, and
+JIT-wrapped PyTree value-and-gradient routes against SCPN parameter-shift
+references. The same record keeps arbitrary Phase-QNode JAX lowering,
+arbitrary `jacfwd`/`jacrev`, arbitrary Hessian algebra,
+hardware/provider-callback transform safety, and isolated-benchmark promotion
+blocked until dedicated artefacts exist.
 `run_jax_maturity_audit(...)` is the provider-parity gate for JAX: it aggregates
 the bounded passes and emits explicit blockers for arbitrary quantum-kernel JAX
 lowering, full nested-transform algebra, hardware/provider callback transform

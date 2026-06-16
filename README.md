@@ -98,7 +98,7 @@ has a defined commercial licensing route.
 | Package version | 0.9.12 |
 | Public API exports | 637 |
 | Python source modules | 832 |
-| Public Python classes | 1750 |
+| Public Python classes | 1752 |
 | Paper 0 validation modules | 466 |
 | Domain package families | 32 |
 | API documentation pages | 0 |

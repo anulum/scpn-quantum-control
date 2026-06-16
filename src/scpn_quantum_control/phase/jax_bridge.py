@@ -372,6 +372,93 @@ class PhaseJAXMaturityAuditResult:
         }
 
 
+@dataclass(frozen=True)
+class PhaseJAXNestedTransformRoute:
+    """One bounded JAX nested-transform route or explicit blocker."""
+
+    name: str
+    status: str
+    reason: str
+    requires: tuple[str, ...] = ()
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready route metadata."""
+        return {
+            "name": self.name,
+            "status": self.status,
+            "reason": self.reason,
+            "requires": list(self.requires),
+        }
+
+
+@dataclass(frozen=True)
+class PhaseJAXNestedTransformAlgebraResult:
+    """Bounded JAX nested-transform evidence plus provider-exceedance blockers."""
+
+    jit_under_vmap_gradients: FloatArray
+    jit_vmap_gradients: FloatArray
+    pytree_gradient_vector: FloatArray
+    parameter_shift_batch_gradients: FloatArray
+    parameter_shift_pytree_gradient: FloatArray
+    max_abs_error: float
+    l2_error: float
+    tolerance: float
+    routes: tuple[PhaseJAXNestedTransformRoute, ...]
+    claim_boundary: str = "bounded_jax_nested_transform_algebra"
+
+    @property
+    def passed(self) -> bool:
+        """Return whether every implemented bounded transform check agrees."""
+        return self.max_abs_error <= self.tolerance
+
+    @property
+    def bounded_transform_algebra_ready(self) -> bool:
+        """Return whether bounded JAX transform routes pass."""
+        return self.passed and all(
+            route.status == "passed"
+            for route in self.routes
+            if route.name.startswith(("jit_", "pytree_", "vmap_"))
+        )
+
+    @property
+    def ready_for_provider_exceedance(self) -> bool:
+        """Return whether this audit permits JAX provider-exceedance claims."""
+        return self.bounded_transform_algebra_ready and all(
+            route.status == "passed" for route in self.routes
+        )
+
+    @property
+    def open_gaps(self) -> tuple[str, ...]:
+        """Return non-passing transform routes."""
+        return tuple(route.name for route in self.routes if route.status != "passed")
+
+    def route_status(self, name: str) -> str:
+        """Return a route status, failing closed on unknown routes."""
+        for route in self.routes:
+            if route.name == name:
+                return route.status
+        raise KeyError(f"unknown JAX nested-transform route: {name}")
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready JAX nested-transform evidence."""
+        return {
+            "jit_under_vmap_gradients": self.jit_under_vmap_gradients.copy(),
+            "jit_vmap_gradients": self.jit_vmap_gradients.copy(),
+            "pytree_gradient_vector": self.pytree_gradient_vector.copy(),
+            "parameter_shift_batch_gradients": self.parameter_shift_batch_gradients.copy(),
+            "parameter_shift_pytree_gradient": self.parameter_shift_pytree_gradient.copy(),
+            "max_abs_error": self.max_abs_error,
+            "l2_error": self.l2_error,
+            "tolerance": self.tolerance,
+            "passed": self.passed,
+            "bounded_transform_algebra_ready": self.bounded_transform_algebra_ready,
+            "ready_for_provider_exceedance": self.ready_for_provider_exceedance,
+            "routes": {route.name: route.to_dict() for route in self.routes},
+            "open_gaps": list(self.open_gaps),
+            "claim_boundary": self.claim_boundary,
+        }
+
+
 def _load_jax() -> tuple[Any, Any]:
     try:
         import jax
@@ -525,6 +612,14 @@ def _require_jax_pytree_support(jax_module: Any) -> None:
     value_and_grad = getattr(jax_module, "value_and_grad", None)
     if not callable(value_and_grad):
         raise RuntimeError("JAX value_and_grad is required for bounded-QNN PyTree parameters")
+
+
+def _require_jax_nested_transform_support(jax_module: Any) -> None:
+    _require_jax_vmap_support(jax_module)
+    _require_jax_pytree_support(jax_module)
+    jit = getattr(jax_module, "jit", None)
+    if not callable(jit):
+        raise RuntimeError("JAX JIT is required for bounded nested-transform algebra")
 
 
 def _jax_local_devices(jax_module: Any, local_device_count: int) -> tuple[str, ...]:
@@ -1393,6 +1488,154 @@ def run_jax_pytree_compatibility_audit(
     )
 
 
+def run_jax_nested_transform_algebra_audit(
+    *,
+    features: ArrayLike,
+    labels: ArrayLike,
+    params_batch: ArrayLike,
+    params_pytree: object,
+    tolerance: float = 1e-6,
+) -> PhaseJAXNestedTransformAlgebraResult:
+    """Audit bounded JAX nested-transform algebra for the phase-QNN route.
+
+    This verifies only the implemented bounded classifier path. It does not
+    promote arbitrary Phase-QNode lowering, full `jacfwd`/`jacrev` coverage,
+    hardware/provider callbacks, or isolated benchmark evidence.
+    """
+
+    jax_module, jnp = _load_jax()
+    _require_jax_nested_transform_support(jax_module)
+    tolerance_value = _as_non_negative_tolerance(tolerance)
+    feature_matrix = _as_feature_matrix(features)
+    label_vector = _as_label_vector(labels, n_samples=feature_matrix.shape[0])
+    parameter_batch = _as_parameter_batch(
+        "params_batch",
+        params_batch,
+        width=feature_matrix.shape[1],
+    )
+    parameter_vector, treedef, leaf_shapes, leaf_sizes = _as_pytree_parameter_vector(
+        jax_module,
+        "params_pytree",
+        params_pytree,
+        width=feature_matrix.shape[1],
+    )
+    feature_tensor = jnp.asarray(feature_matrix)
+    label_tensor = jnp.asarray(label_vector)
+
+    def loss_fn(raw_params: object) -> object:
+        return _jax_bounded_qnn_loss(jnp, feature_tensor, label_tensor, jnp.asarray(raw_params))
+
+    value_and_grad_fn = jax_module.value_and_grad(loss_fn)
+    jit_value_and_grad = jax_module.jit(value_and_grad_fn)
+    _jit_values, jit_under_vmap_obj = jax_module.vmap(jit_value_and_grad)(
+        jnp.asarray(parameter_batch)
+    )
+    _vmap_values, jit_vmap_obj = jax_module.jit(jax_module.vmap(value_and_grad_fn))(
+        jnp.asarray(parameter_batch)
+    )
+
+    def pytree_loss_fn(raw_tree: object) -> object:
+        raw_vector = _jax_flatten_pytree(jax_module, jnp, raw_tree)
+        return _jax_bounded_qnn_loss(jnp, feature_tensor, label_tensor, raw_vector)
+
+    _pytree_value, pytree_gradient_obj = jax_module.jit(jax_module.value_and_grad(pytree_loss_fn))(
+        params_pytree
+    )
+    jit_under_vmap_gradients = _as_parameter_batch(
+        "JAX jit-under-vmap gradients",
+        jit_under_vmap_obj,
+        width=feature_matrix.shape[1],
+    )
+    jit_vmap_gradients = _as_parameter_batch(
+        "JAX jit-vmap gradients",
+        jit_vmap_obj,
+        width=feature_matrix.shape[1],
+    )
+    pytree_gradient_vector = _flatten_runtime_pytree_gradient(
+        jax_module,
+        "JAX nested-transform PyTree gradient",
+        pytree_gradient_obj,
+        width=feature_matrix.shape[1],
+    )
+    parameter_shift_batch = np.vstack(
+        [
+            parameter_shift_qnn_classifier_gradient(feature_matrix, label_vector, row)
+            for row in parameter_batch
+        ],
+    )
+    parameter_shift_pytree = parameter_shift_qnn_classifier_gradient(
+        feature_matrix,
+        label_vector,
+        parameter_vector,
+    )
+    del treedef, leaf_shapes, leaf_sizes
+    deltas = (
+        jit_under_vmap_gradients - parameter_shift_batch,
+        jit_vmap_gradients - parameter_shift_batch,
+        pytree_gradient_vector - parameter_shift_pytree,
+    )
+    max_abs_error = max(float(np.max(np.abs(delta))) if delta.size else 0.0 for delta in deltas)
+    l2_error = float(np.sqrt(sum(float(np.sum(delta * delta)) for delta in deltas)))
+    routes = (
+        PhaseJAXNestedTransformRoute(
+            name="jit_value_and_grad_under_vmap",
+            status="passed",
+            reason="bounded phase-QNN JIT(value_and_grad) route agrees under VMAP",
+        ),
+        PhaseJAXNestedTransformRoute(
+            name="jit_vmap_value_and_grad",
+            status="passed",
+            reason="bounded phase-QNN JIT(VMAP(value_and_grad)) route agrees",
+        ),
+        PhaseJAXNestedTransformRoute(
+            name="jit_value_and_grad_pytree",
+            status="passed",
+            reason="bounded phase-QNN PyTree value-and-gradient route agrees under JIT",
+        ),
+        PhaseJAXNestedTransformRoute(
+            name="arbitrary_quantum_kernel_jax_lowering",
+            status="blocked",
+            reason="arbitrary Phase-QNode circuits do not lower into native JAX kernels",
+            requires=("jax_lowering_rules", "gate_observable_coverage_matrix"),
+        ),
+        PhaseJAXNestedTransformRoute(
+            name="arbitrary_phase_qnode_jacfwd_jacrev",
+            status="blocked",
+            reason="full vector-output jacfwd/jacrev algebra is not promoted for arbitrary QNodes",
+            requires=("jacfwd_jacrev_parity_artifact", "shape_dtype_transform_matrix"),
+        ),
+        PhaseJAXNestedTransformRoute(
+            name="arbitrary_phase_qnode_hessian",
+            status="blocked",
+            reason="arbitrary QNode Hessian algebra remains outside the bounded JAX route",
+            requires=("hessian_parity_artifact", "conditioning_policy"),
+        ),
+        PhaseJAXNestedTransformRoute(
+            name="hardware_provider_callback_transform_safety",
+            status="blocked",
+            reason="provider callbacks and hardware execution are not transform-safe JAX routes",
+            requires=("provider_allowlist", "live_ticket", "callback_safety_audit"),
+        ),
+        PhaseJAXNestedTransformRoute(
+            name="isolated_benchmark_artifact",
+            status="blocked",
+            reason="provider-exceedance promotion requires isolated benchmark evidence",
+            requires=("isolated_affinity_benchmark_id",),
+        ),
+    )
+    return PhaseJAXNestedTransformAlgebraResult(
+        jit_under_vmap_gradients=jit_under_vmap_gradients,
+        jit_vmap_gradients=jit_vmap_gradients,
+        pytree_gradient_vector=pytree_gradient_vector,
+        parameter_shift_batch_gradients=parameter_shift_batch,
+        parameter_shift_pytree_gradient=parameter_shift_pytree,
+        max_abs_error=max_abs_error,
+        l2_error=l2_error,
+        tolerance=tolerance_value,
+        routes=routes,
+    )
+
+
 def run_jax_maturity_audit(
     *,
     features: ArrayLike,
@@ -1454,6 +1697,13 @@ def run_jax_maturity_audit(
         params_pytree=params_pytree,
         tolerance=tolerance_value,
     )
+    nested_transform_algebra = run_jax_nested_transform_algebra_audit(
+        features=feature_matrix,
+        labels=label_vector,
+        params_batch=parameter_batch,
+        params_pytree=params_pytree,
+        tolerance=tolerance_value,
+    )
 
     evidence: dict[str, object] = {
         "custom_vjp": custom_vjp,
@@ -1461,6 +1711,7 @@ def run_jax_maturity_audit(
         "vmap": vmap,
         "pmap_sharding": sharding,
         "pytree": pytree,
+        "nested_transform_algebra": nested_transform_algebra,
     }
     bounded_model_ready = all(
         bool(getattr(result, "passed", False)) for result in evidence.values()
@@ -1471,11 +1722,18 @@ def run_jax_maturity_audit(
         "vmap": "passed" if vmap.passed else "failed",
         "pmap_sharding": "passed" if sharding.passed else "failed",
         "pytree": "passed" if pytree.passed else "failed",
+        "nested_transform_algebra": "passed" if nested_transform_algebra.passed else "failed",
         "arbitrary_quantum_kernel_jax_lowering": "blocked",
-        "full_transform_nesting_algebra": "blocked",
         "hardware_or_provider_callback_transform_safety": "blocked",
         "promotion_grade_isolated_benchmarks": "blocked",
     }
+    required_capabilities.update(
+        {
+            f"nested_transform:{route.name}": route.status
+            for route in nested_transform_algebra.routes
+            if route.status != "passed"
+        }
+    )
     open_gaps = tuple(name for name, status in required_capabilities.items() if status != "passed")
     return PhaseJAXMaturityAuditResult(
         bounded_model_ready=bounded_model_ready,
@@ -1499,6 +1757,8 @@ __all__ = [
     "PhaseJAXJITCompatibilityResult",
     "PhaseJAXMaturityAuditResult",
     "PhaseJAXNativeQNNGradientResult",
+    "PhaseJAXNestedTransformAlgebraResult",
+    "PhaseJAXNestedTransformRoute",
     "PhaseJAXParameterShiftResult",
     "PhaseJAXPyTreeCompatibilityResult",
     "PhaseJAXShardingCompatibilityResult",
@@ -1510,6 +1770,7 @@ __all__ = [
     "jax_parameter_shift_value_and_grad",
     "run_jax_jit_compatibility_audit",
     "run_jax_maturity_audit",
+    "run_jax_nested_transform_algebra_audit",
     "run_jax_pytree_compatibility_audit",
     "run_jax_sharding_compatibility_audit",
     "run_jax_vmap_compatibility_audit",

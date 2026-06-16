@@ -19,6 +19,7 @@ from scpn_quantum_control.phase import (
     PhaseJAXJITCompatibilityResult,
     PhaseJAXMaturityAuditResult,
     PhaseJAXNativeQNNGradientResult,
+    PhaseJAXNestedTransformAlgebraResult,
     PhaseJAXParameterShiftResult,
     PhaseJAXPyTreeCompatibilityResult,
     PhaseJAXShardingCompatibilityResult,
@@ -32,6 +33,7 @@ from scpn_quantum_control.phase import (
     parameter_shift_qnn_classifier_gradient,
     run_jax_jit_compatibility_audit,
     run_jax_maturity_audit,
+    run_jax_nested_transform_algebra_audit,
     run_jax_pytree_compatibility_audit,
     run_jax_sharding_compatibility_audit,
     run_jax_vmap_compatibility_audit,
@@ -727,6 +729,50 @@ def test_phase_jax_maturity_audit_records_bounded_passes_and_provider_gaps(
     assert payload["required_capabilities"]["jit"] == "passed"
     assert payload["required_capabilities"]["arbitrary_quantum_kernel_jax_lowering"] == "blocked"
     assert payload["claim_boundary"] == "bounded_jax_provider_maturity_audit"
+
+
+def test_phase_jax_nested_transform_algebra_audit_verifies_bounded_routes(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    fake_jax = _FakeJAX()
+    monkeypatch.setattr(jax_bridge, "_load_jax", lambda: (fake_jax, np))
+    features = np.array([[0.0, 0.2], [np.pi, np.pi + 0.2]], dtype=float)
+    labels = np.array([0.0, 1.0], dtype=float)
+    params_batch = np.array([[0.25, 0.45], [0.35, 0.55]], dtype=float)
+    params_pytree = {"encoder": np.array([0.25], dtype=float), "readout": (np.array([0.45]),)}
+
+    result = run_jax_nested_transform_algebra_audit(
+        features=features,
+        labels=labels,
+        params_batch=params_batch,
+        params_pytree=params_pytree,
+        tolerance=1e-8,
+    )
+
+    expected = np.vstack(
+        [parameter_shift_qnn_classifier_gradient(features, labels, row) for row in params_batch]
+    )
+    assert isinstance(result, PhaseJAXNestedTransformAlgebraResult)
+    assert result.passed
+    assert result.bounded_transform_algebra_ready
+    assert not result.ready_for_provider_exceedance
+    assert result.route_status("jit_value_and_grad_under_vmap") == "passed"
+    assert result.route_status("jit_vmap_value_and_grad") == "passed"
+    assert result.route_status("jit_value_and_grad_pytree") == "passed"
+    assert result.route_status("arbitrary_phase_qnode_jacfwd_jacrev") == "blocked"
+    assert "hardware_provider_callback_transform_safety" in result.open_gaps
+    assert result.claim_boundary == "bounded_jax_nested_transform_algebra"
+    assert fake_jax.jit_calls >= 3
+    assert fake_jax.vmap_calls >= 2
+    np.testing.assert_allclose(result.jit_under_vmap_gradients, expected, atol=1e-8)
+    np.testing.assert_allclose(result.jit_vmap_gradients, expected, atol=1e-8)
+    np.testing.assert_allclose(
+        result.pytree_gradient_vector,
+        parameter_shift_qnn_classifier_gradient(features, labels, np.array([0.25, 0.45])),
+        atol=1e-8,
+    )
+    payload = result.to_dict()
+    assert payload["routes"]["arbitrary_phase_qnode_hessian"]["status"] == "blocked"
 
 
 def test_phase_jax_maturity_audit_fails_closed_on_bad_batch_shape(
