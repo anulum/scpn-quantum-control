@@ -18871,6 +18871,293 @@ def _program_ad_linalg_direct_jvp(
     )
 
 
+@dataclass(frozen=True)
+class ProgramADLinalgConditioningDiagnostic:
+    """Conditioning report for numerically sensitive program-AD linalg primitives."""
+
+    primitive: str
+    shape: tuple[int, ...]
+    status: str
+    differentiability_ready: bool
+    condition_number: float
+    rank: int
+    smallest_scale: float
+    largest_scale: float
+    minimum_gap: float | None
+    threshold: float
+    required_boundary: str
+    message: str
+    claim_boundary: str = (
+        "program-AD linalg conditioning diagnostic only; no provider, hardware, "
+        "native-framework, or production benchmark evidence is implied"
+    )
+
+    def __post_init__(self) -> None:
+        if not self.primitive:
+            raise ValueError("conditioning diagnostic primitive must be non-empty")
+        if any(dimension < 0 for dimension in self.shape):
+            raise ValueError("conditioning diagnostic shape dimensions must be non-negative")
+        if self.status not in {
+            "well_conditioned",
+            "ill_conditioned",
+            "rank_deficient",
+            "zero_norm_boundary",
+        }:
+            raise ValueError("conditioning diagnostic status is unsupported")
+        for field_name, value in (
+            ("condition_number", self.condition_number),
+            ("smallest_scale", self.smallest_scale),
+            ("largest_scale", self.largest_scale),
+            ("threshold", self.threshold),
+        ):
+            if not math.isfinite(value) or value < 0.0:
+                raise ValueError(
+                    f"conditioning diagnostic {field_name} must be finite non-negative"
+                )
+        if self.minimum_gap is not None and (
+            not math.isfinite(self.minimum_gap) or self.minimum_gap < 0.0
+        ):
+            raise ValueError("conditioning diagnostic minimum_gap must be finite non-negative")
+        if self.rank < 0:
+            raise ValueError("conditioning diagnostic rank must be non-negative")
+        if not self.required_boundary:
+            raise ValueError("conditioning diagnostic required_boundary must be non-empty")
+        if not self.message:
+            raise ValueError("conditioning diagnostic message must be non-empty")
+        object.__setattr__(
+            self,
+            "claim_boundary",
+            _normalise_claim_boundary("conditioning diagnostic", self.claim_boundary),
+        )
+
+    def as_dict(self) -> dict[str, object]:
+        """Return a deterministic JSON-ready representation."""
+
+        return {
+            "primitive": self.primitive,
+            "shape": list(self.shape),
+            "status": self.status,
+            "differentiability_ready": self.differentiability_ready,
+            "condition_number": self.condition_number,
+            "rank": self.rank,
+            "smallest_scale": self.smallest_scale,
+            "largest_scale": self.largest_scale,
+            "minimum_gap": self.minimum_gap,
+            "threshold": self.threshold,
+            "required_boundary": self.required_boundary,
+            "message": self.message,
+            "claim_boundary": self.claim_boundary,
+        }
+
+
+_PROGRAM_AD_LINALG_CONDITIONING_BOUNDARIES: Mapping[str, str] = {
+    "norm": "non-zero norm for norm-gradient division",
+    "det": "non-singular matrix away from determinant rank drop",
+    "inv": "non-singular matrix inverse",
+    "solve": "non-singular linear system with compatible right-hand side",
+    "matrix_power": "non-singular matrix for negative powers",
+    "eig": "real simple diagonalizable eigensystem",
+    "eigh": "symmetric matrix with distinct eigenvalues",
+    "eigvals": "real simple diagonalizable spectrum",
+    "eigvalsh": "symmetric matrix with distinct eigenvalues",
+    "svd": "distinct positive singular values",
+    "pinv": "constant rank away from rank threshold crossing",
+}
+
+
+def _program_ad_linalg_conditioning_matrix(
+    primitive: str,
+    values: ArrayLike,
+) -> NDArray[np.float64]:
+    matrix = _as_real_numeric_array(f"program AD linalg {primitive} conditioning values", values)
+    if matrix.ndim != 2:
+        raise ValueError(f"program AD linalg {primitive} conditioning requires a rank-2 matrix")
+    if 0 in matrix.shape:
+        raise ValueError(f"program AD linalg {primitive} conditioning requires non-empty axes")
+    return matrix
+
+
+def _program_ad_linalg_condition_number(
+    singular_values: NDArray[np.float64],
+) -> tuple[float, float, float]:
+    if singular_values.size == 0:
+        return 0.0, 0.0, 0.0
+    largest = float(np.max(singular_values))
+    smallest = float(np.min(singular_values))
+    if smallest == 0.0:
+        return math.inf, smallest, largest
+    return float(largest / smallest), smallest, largest
+
+
+def _program_ad_linalg_minimum_gap(values: NDArray[np.float64]) -> float | None:
+    if values.size < 2:
+        return None
+    ordered = np.sort(np.asarray(values, dtype=np.float64).reshape(-1))
+    return float(np.min(np.diff(ordered)))
+
+
+def _program_ad_linalg_diagnostic_from_singular_values(
+    primitive: str,
+    shape: tuple[int, ...],
+    singular_values: NDArray[np.float64],
+    *,
+    condition_threshold: float,
+    rank_tolerance: float,
+    minimum_gap: float | None,
+) -> ProgramADLinalgConditioningDiagnostic:
+    condition_number, smallest, largest = _program_ad_linalg_condition_number(singular_values)
+    rank = int(np.sum(singular_values > rank_tolerance))
+    full_rank = rank == int(singular_values.size)
+    if not full_rank:
+        return ProgramADLinalgConditioningDiagnostic(
+            primitive=primitive,
+            shape=shape,
+            status="rank_deficient",
+            differentiability_ready=False,
+            condition_number=0.0 if math.isinf(condition_number) else condition_number,
+            rank=rank,
+            smallest_scale=smallest,
+            largest_scale=largest,
+            minimum_gap=minimum_gap,
+            threshold=condition_threshold,
+            required_boundary=_PROGRAM_AD_LINALG_CONDITIONING_BOUNDARIES[primitive],
+            message=(
+                f"program AD linalg {primitive} is at a rank threshold boundary; "
+                "the derivative contract remains fail-closed"
+            ),
+        )
+    status = "ill_conditioned" if condition_number > condition_threshold else "well_conditioned"
+    message = (
+        f"program AD linalg {primitive} is ill-conditioned but remains differentiable "
+        "inside the declared rank/spectrum boundary"
+        if status == "ill_conditioned"
+        else f"program AD linalg {primitive} conditioning is inside the declared boundary"
+    )
+    return ProgramADLinalgConditioningDiagnostic(
+        primitive=primitive,
+        shape=shape,
+        status=status,
+        differentiability_ready=True,
+        condition_number=condition_number,
+        rank=rank,
+        smallest_scale=smallest,
+        largest_scale=largest,
+        minimum_gap=minimum_gap,
+        threshold=condition_threshold,
+        required_boundary=_PROGRAM_AD_LINALG_CONDITIONING_BOUNDARIES[primitive],
+        message=message,
+    )
+
+
+def diagnose_program_ad_linalg_conditioning(
+    primitive: str,
+    values: ArrayLike,
+    *,
+    condition_threshold: float = 1.0e12,
+    rank_tolerance: float = 1.0e-12,
+) -> ProgramADLinalgConditioningDiagnostic:
+    """Diagnose conditioning for supported norm and program-AD linalg primitives."""
+
+    name = str(primitive).strip().lower()
+    if name not in _PROGRAM_AD_LINALG_CONDITIONING_BOUNDARIES:
+        raise ValueError(f"unsupported program AD linalg conditioning primitive {primitive!r}")
+    if not math.isfinite(condition_threshold) or condition_threshold <= 0.0:
+        raise ValueError("program AD linalg conditioning threshold must be positive and finite")
+    if not math.isfinite(rank_tolerance) or rank_tolerance < 0.0:
+        raise ValueError("program AD linalg rank tolerance must be finite non-negative")
+
+    if name == "norm":
+        array = _as_real_numeric_array("program AD linalg norm conditioning values", values)
+        norm_value = float(np.linalg.norm(array.reshape(-1), ord=2))
+        if norm_value <= rank_tolerance:
+            return ProgramADLinalgConditioningDiagnostic(
+                primitive=name,
+                shape=tuple(int(dimension) for dimension in array.shape),
+                status="zero_norm_boundary",
+                differentiability_ready=False,
+                condition_number=0.0,
+                rank=0,
+                smallest_scale=0.0,
+                largest_scale=norm_value,
+                minimum_gap=None,
+                threshold=condition_threshold,
+                required_boundary=_PROGRAM_AD_LINALG_CONDITIONING_BOUNDARIES[name],
+                message="program AD linalg norm is at the zero norm nondifferentiable boundary",
+            )
+        return ProgramADLinalgConditioningDiagnostic(
+            primitive=name,
+            shape=tuple(int(dimension) for dimension in array.shape),
+            status="well_conditioned",
+            differentiability_ready=True,
+            condition_number=1.0,
+            rank=1,
+            smallest_scale=norm_value,
+            largest_scale=norm_value,
+            minimum_gap=None,
+            threshold=condition_threshold,
+            required_boundary=_PROGRAM_AD_LINALG_CONDITIONING_BOUNDARIES[name],
+            message="program AD linalg norm is away from the zero norm boundary",
+        )
+
+    matrix = _program_ad_linalg_conditioning_matrix(name, values)
+    singular_values = np.linalg.svd(matrix, compute_uv=False).astype(np.float64)
+    minimum_gap: float | None = None
+    if name in {"eig", "eigvals"}:
+        eigenvalues, eigenvectors = np.linalg.eig(matrix)
+        if np.max(np.abs(eigenvalues.imag)) > 1.0e-10:
+            return ProgramADLinalgConditioningDiagnostic(
+                primitive=name,
+                shape=tuple(int(dimension) for dimension in matrix.shape),
+                status="rank_deficient",
+                differentiability_ready=False,
+                condition_number=0.0,
+                rank=int(np.linalg.matrix_rank(matrix, tol=rank_tolerance)),
+                smallest_scale=0.0,
+                largest_scale=float(np.max(np.abs(eigenvalues))),
+                minimum_gap=None,
+                threshold=condition_threshold,
+                required_boundary=_PROGRAM_AD_LINALG_CONDITIONING_BOUNDARIES[name],
+                message=f"program AD linalg {name} conditioning requires real eigenvalues",
+            )
+        minimum_gap = _program_ad_linalg_minimum_gap(eigenvalues.real.astype(np.float64))
+        singular_values = np.linalg.svd(eigenvectors.real, compute_uv=False).astype(np.float64)
+    elif name in {"eigh", "eigvalsh"}:
+        _program_ad_linalg_require_symmetric(name, matrix)
+        eigenvalues = np.asarray(np.linalg.eigvalsh(matrix), dtype=np.float64)
+        minimum_gap = _program_ad_linalg_minimum_gap(eigenvalues)
+        singular_values = np.abs(eigenvalues).astype(np.float64)
+    elif name == "svd":
+        minimum_gap = _program_ad_linalg_minimum_gap(singular_values)
+
+    if minimum_gap is not None and minimum_gap <= rank_tolerance:
+        return ProgramADLinalgConditioningDiagnostic(
+            primitive=name,
+            shape=tuple(int(dimension) for dimension in matrix.shape),
+            status="rank_deficient",
+            differentiability_ready=False,
+            condition_number=0.0,
+            rank=int(np.sum(singular_values > rank_tolerance)),
+            smallest_scale=float(np.min(singular_values)) if singular_values.size else 0.0,
+            largest_scale=float(np.max(singular_values)) if singular_values.size else 0.0,
+            minimum_gap=minimum_gap,
+            threshold=condition_threshold,
+            required_boundary=_PROGRAM_AD_LINALG_CONDITIONING_BOUNDARIES[name],
+            message=(
+                f"program AD linalg {name} is at a repeated spectrum boundary; "
+                "the derivative contract remains fail-closed"
+            ),
+        )
+
+    return _program_ad_linalg_diagnostic_from_singular_values(
+        name,
+        tuple(int(dimension) for dimension in matrix.shape),
+        singular_values,
+        condition_threshold=condition_threshold,
+        rank_tolerance=rank_tolerance,
+        minimum_gap=minimum_gap,
+    )
+
+
 def _program_ad_linalg_square_matrix(
     primitive_name: str,
     values: NDArray[np.float64],
@@ -22037,6 +22324,7 @@ def _program_ad_linalg_lowering_metadata(name: str) -> Mapping[str, str]:
         "static_argument_rule": "none",
         "static_derivative_factory": "not_required",
         "static_signature": "none",
+        "conditioning_diagnostic": "diagnose_program_ad_linalg_conditioning",
     }
     if name == "solve":
         metadata.update(
@@ -26741,6 +27029,7 @@ __all__ = [
     "ProgramADControlRegion",
     "ProgramADEffect",
     "ProgramADEffectIR",
+    "ProgramADLinalgConditioningDiagnostic",
     "ProgramADSSAValue",
     "PrimitiveBatchingRule",
     "PrimitiveContract",
@@ -26797,6 +27086,7 @@ __all__ = [
     "dual_log",
     "dual_sin",
     "dense_to_sparse_matrix",
+    "diagnose_program_ad_linalg_conditioning",
     "empirical_fisher_conjugate_gradient",
     "empirical_fisher_metric",
     "empirical_fisher_vector_product",

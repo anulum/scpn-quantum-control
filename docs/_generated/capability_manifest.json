@@ -8,9 +8,9 @@
     "notebook_files": 98,
     "optional_extras": 42,
     "paper0_validation_modules": 466,
-    "public_api_exports": 647,
+    "public_api_exports": 649,
     "public_documentation_pages": 254,
-    "python_model_classes": 1782,
+    "python_model_classes": 1783,
     "python_model_source_modules": 835,
     "rust_pyo3_model_wrappers": 134,
     "rust_source_modules": 37,
@@ -5510,6 +5510,10 @@
         "path": "src/scpn_quantum_control/differentiable.py"
       },
       {
+        "name": "ProgramADLinalgConditioningDiagnostic",
+        "path": "src/scpn_quantum_control/differentiable.py"
+      },
+      {
         "name": "ProgramADSSAValue",
         "path": "src/scpn_quantum_control/differentiable.py"
       },
@@ -9348,6 +9352,7 @@
     "ProgramADControlRegion",
     "ProgramADEffect",
     "ProgramADEffectIR",
+    "ProgramADLinalgConditioningDiagnostic",
     "ProgramADSSAValue",
     "ProviderCapabilityDecision",
     "ProviderCapabilitySnapshot",
@@ -9535,6 +9540,7 @@
     "custom_vjp",
     "cw_odmr_dc_sensitivity_t_per_sqrt_hz",
     "dense_to_sparse_matrix",
+    "diagnose_program_ad_linalg_conditioning",
     "differentiable_api",
     "differentiable_benchmark_report",
     "differentiable_compile_report",

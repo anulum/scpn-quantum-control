@@ -16525,3 +16525,65 @@ def test_program_ad_linalg_eigvals_registry_contract_and_root_export():
     metadata = contract.lowering_metadata
     assert metadata["static_derivative_factory"] == "program_ad_linalg_eigvals_derivative_rule"
     assert metadata["nondifferentiable_boundary"] == "real_simple_diagonalizable_spectrum"
+
+
+def test_program_ad_linalg_conditioning_diagnostics_cover_norm_svd_solve_and_rank_boundary():
+    import scpn_quantum_control as scpn
+    from scpn_quantum_control.differentiable import (
+        ProgramADLinalgConditioningDiagnostic,
+        diagnose_program_ad_linalg_conditioning,
+        primitive_contract_for,
+    )
+
+    well_conditioned = diagnose_program_ad_linalg_conditioning(
+        "svd", np.array([[3.0, 0.25], [0.1, 1.5]], dtype=np.float64)
+    )
+    assert isinstance(well_conditioned, ProgramADLinalgConditioningDiagnostic)
+    assert well_conditioned.primitive == "svd"
+    assert well_conditioned.shape == (2, 2)
+    assert well_conditioned.rank == 2
+    assert well_conditioned.status == "well_conditioned"
+    assert well_conditioned.differentiability_ready
+    assert well_conditioned.smallest_scale > 0.0
+    assert well_conditioned.condition_number < 10.0
+    assert "distinct positive singular values" in well_conditioned.required_boundary
+    assert well_conditioned.as_dict()["condition_number"] == well_conditioned.condition_number
+
+    ill_conditioned = diagnose_program_ad_linalg_conditioning(
+        "solve",
+        np.array([[1.0, 0.0], [0.0, 1.0e-10]], dtype=np.float64),
+        condition_threshold=1.0e8,
+    )
+    assert ill_conditioned.status == "ill_conditioned"
+    assert ill_conditioned.differentiability_ready
+    assert ill_conditioned.condition_number >= 1.0e10
+    assert "ill-conditioned" in ill_conditioned.message
+
+    rank_boundary = diagnose_program_ad_linalg_conditioning(
+        "pinv", np.array([[1.0, 0.0], [0.0, 0.0]], dtype=np.float64)
+    )
+    assert rank_boundary.status == "rank_deficient"
+    assert not rank_boundary.differentiability_ready
+    assert rank_boundary.rank == 1
+    assert rank_boundary.smallest_scale == 0.0
+    assert "rank threshold" in rank_boundary.required_boundary
+
+    vector_norm = diagnose_program_ad_linalg_conditioning("norm", np.array([3.0, 4.0]))
+    assert vector_norm.status == "well_conditioned"
+    assert vector_norm.condition_number == 1.0
+    assert vector_norm.differentiability_ready
+
+    zero_norm = diagnose_program_ad_linalg_conditioning("norm", np.zeros(3, dtype=np.float64))
+    assert zero_norm.status == "zero_norm_boundary"
+    assert not zero_norm.differentiability_ready
+    assert "zero norm" in zero_norm.message
+
+    with pytest.raises(ValueError, match="unsupported"):
+        diagnose_program_ad_linalg_conditioning("qr", np.eye(2, dtype=np.float64))
+
+    assert scpn.diagnose_program_ad_linalg_conditioning is diagnose_program_ad_linalg_conditioning
+    contract = primitive_contract_for("scpn.program_ad.linalg:svd")
+    assert contract is not None
+    assert contract.lowering_metadata["conditioning_diagnostic"] == (
+        "diagnose_program_ad_linalg_conditioning"
+    )
