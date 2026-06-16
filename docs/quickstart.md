@@ -223,6 +223,13 @@ This lane is intentionally bounded: supported primitive kernels execute; a
 general arbitrary-program MLIR/LLVM AD compiler remains an open engineering
 frontier.
 
+Use `run_enzyme_mlir_maturity_audit(...)` before making any compiler-AD parity
+claim against Enzyme/MLIR. The audit verifies the local SCPN MLIR-runtime
+adapter, records bounded native LLVM/JIT support metadata, probes local
+`enzyme`/LLVM/MLIR toolchain versions, and keeps provider-exceedance blocked
+until native Enzyme execution and `isolated_affinity` benchmark artefacts are
+attached.
+
 Program AD execution is registry-gated. Supported traced NumPy primitives must
 resolve through a primitive identity with derivative, batching, shape, dtype,
 static-argument, policy/effect, and lowering-provenance metadata before the

@@ -1855,6 +1855,34 @@ against the same reference. All remain outside arbitrary provider or simulator
 autodiff and do not claim broad XLA or unrestricted Keras training-loop
 coverage.
 
+## Enzyme/MLIR compiler maturity audit
+
+The compiler lane is audited with
+`run_enzyme_mlir_maturity_audit(...)`. The result is JSON-ready and separates
+four evidence classes:
+
+- verified SCPN MLIR-runtime execution for a registered local Phase-QNode value
+  and parameter-shift gradient;
+- the bounded in-process native LLVM/JIT surface already available for
+  supported compiler/program AD kernels;
+- local `enzyme`, `opt`, `mlir-opt`, and `clang` command/version metadata when
+  the compiler stack is installed;
+- hard gaps for missing toolchains, missing native Enzyme execution artefacts,
+  and missing isolated benchmark artefacts.
+
+```python
+from scpn_quantum_control import run_enzyme_mlir_maturity_audit
+
+audit = run_enzyme_mlir_maturity_audit()
+assert audit.ready_for_provider_exceedance is False
+```
+
+This audit is intentionally stricter than the diagnostic external-comparison
+row. A local SCPN MLIR-runtime pass is executable compiler evidence, but it is
+not an Enzyme parity claim. Provider-exceedance remains blocked until native
+Enzyme execution evidence, MLIR/LLVM version metadata, correctness checks, and
+`isolated_affinity` benchmark artefact IDs are present together.
+
 ## Verification requirements
 
 Before a new quantum-gradient path is promoted, it needs visible evidence:

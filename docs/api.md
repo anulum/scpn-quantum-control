@@ -403,6 +403,13 @@ verified SCPN MLIR-runtime adapter with explicit dialect operation records,
 runtime parameter shape/type checks, value/parameter-shift-gradient execution,
 and a blocked interpreter-fallback success claim. It does not claim native
 LLVM/JIT, provider, hardware, dynamic-circuit, or arbitrary-QNode compilation.
+`run_enzyme_mlir_maturity_audit()` is the Enzyme/MLIR provider-exceedance gate:
+it compiles and verifies a registered Phase-QNode through the SCPN MLIR-runtime
+adapter, records the bounded in-process native LLVM/JIT support surface, probes
+local `enzyme`, `opt`, `mlir-opt`, and `clang` commands with version metadata
+when present, and returns hard-gap rows when the compiler stack is unavailable.
+The audit remains non-promotional until a native Enzyme execution artefact and
+an isolated benchmark artefact are attached.
 `make_program_ad_linalg_matrix_power_executable_lowering_rule()`
 and `make_program_ad_linalg_multi_dot_executable_lowering_rule()` bind concrete
 static linalg signatures to verified MLIR-runtime value/JVP kernels derived from
@@ -1288,6 +1295,7 @@ jax_value_and_grad(objective, values) -> tuple[float, np.ndarray]
 is_phase_jax_available() -> bool
 jax_parameter_shift_value_and_grad(objective, values, jit=False, parameters=None, rule=None) -> PhaseJAXParameterShiftResult
 run_jax_maturity_audit(features, labels, params, params_batch, params_pytree, tolerance=1e-6) -> PhaseJAXMaturityAuditResult
+run_enzyme_mlir_maturity_audit(circuit=None, parameters=None, *, toolchain_probe=None, version_probe=None, isolated_benchmark_artifact_id=None, native_enzyme_execution_artifact_id=None) -> EnzymeMLIRMaturityAuditResult
 is_phase_pennylane_available() -> bool
 check_pennylane_parameter_shift_agreement(objective, pennylane_gradient, values, tolerance=1e-6, parameters=None, rule=None) -> PennyLaneGradientAgreementResult
 run_pennylane_maturity_audit(objective, pennylane_objective, pennylane_gradient, values, circuit, phase_qnode_values, import_tape=None, device_name="default.qubit", shots=None, interface="autograd", diff_method="parameter-shift", value_tolerance=1e-8, gradient_tolerance=1e-6, parameters=None, rule=None) -> PennyLaneMaturityAuditResult

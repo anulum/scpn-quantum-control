@@ -12,6 +12,8 @@ from .mlir import (
     CompilerADKernelVerification,
     CompilerADTransformPlan,
     DifferentiableMLIRCompileConfig,
+    EnzymeMLIRMaturityAuditResult,
+    EnzymeMLIRToolchainStatus,
     ExecutableCompilerADKernel,
     ExecutableWholeProgramADBatchResult,
     ExecutableWholeProgramADKernel,
@@ -71,6 +73,7 @@ from .mlir import (
     make_vector_squared_norm_native_llvm_jit_lowering_rule,
     native_whole_program_ad_compile_cache_stats,
     native_whole_program_ad_linalg_support,
+    run_enzyme_mlir_maturity_audit,
 )
 
 __all__ = [
@@ -78,6 +81,8 @@ __all__ = [
     "CompilerADKernelVerification",
     "CompilerADTransformPlan",
     "DifferentiableMLIRCompileConfig",
+    "EnzymeMLIRMaturityAuditResult",
+    "EnzymeMLIRToolchainStatus",
     "ExecutableCompilerADKernel",
     "ExecutableWholeProgramADBatchResult",
     "ExecutableWholeProgramADKernel",
@@ -137,4 +142,5 @@ __all__ = [
     "make_vector_squared_norm_native_llvm_jit_lowering_rule",
     "native_whole_program_ad_compile_cache_stats",
     "native_whole_program_ad_linalg_support",
+    "run_enzyme_mlir_maturity_audit",
 ]

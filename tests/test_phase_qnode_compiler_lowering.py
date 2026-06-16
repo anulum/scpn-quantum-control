@@ -9,15 +9,19 @@
 
 from __future__ import annotations
 
+from typing import Any, cast
+
 import numpy as np
 import pytest
 
 import scpn_quantum_control as scpn
 import scpn_quantum_control.compiler as compiler
 from scpn_quantum_control.compiler.mlir import (
+    EnzymeMLIRMaturityAuditResult,
     PhaseQNodeMLIRRuntimeExecutable,
     compile_phase_qnode_circuit_to_mlir_runtime,
     lower_phase_qnode_circuit_to_mlir,
+    run_enzyme_mlir_maturity_audit,
 )
 from scpn_quantum_control.phase.qnode_circuit import PauliTerm, PhaseQNodeCircuit
 
@@ -123,3 +127,51 @@ def test_phase_qnode_compiler_lowering_fails_closed_for_unsupported_circuit() ->
 
     with pytest.raises(ValueError, match="phase-QNode lowering failed closed"):
         lower_phase_qnode_circuit_to_mlir(circuit, np.array([0.2], dtype=float))
+
+
+def test_enzyme_mlir_maturity_audit_records_runtime_evidence_and_toolchain_gaps() -> None:
+    circuit = PhaseQNodeCircuit(
+        n_qubits=1,
+        operations=(("ry", (0,), 0), ("rx", (0,), 1)),
+        observable=PauliTerm(1.0, ((0, "z"),)),
+    )
+
+    result = run_enzyme_mlir_maturity_audit(
+        circuit,
+        np.array([0.2, -0.3], dtype=float),
+        toolchain_probe=lambda command: None,
+    )
+    payload = cast(dict[str, Any], result.to_dict())
+
+    assert isinstance(result, EnzymeMLIRMaturityAuditResult)
+    assert result.scpn_mlir_runtime_verified is True
+    assert result.native_llvm_jit_surface == "available: bounded in-process native LLVM/JIT"
+    assert result.ready_for_provider_exceedance is False
+    assert payload["claim_boundary"] == "bounded_enzyme_mlir_compiler_maturity_audit"
+    assert payload["toolchain"]["enzyme"]["available"] is False
+    assert payload["toolchain"]["mlir-opt"]["failure_class"] == "toolchain_missing"
+    assert "isolated benchmark artefact missing" in payload["hard_gaps"]
+    assert payload["correctness_checks"]["phase_qnode_value_close"] is True
+    assert payload["correctness_checks"]["phase_qnode_gradient_close"] is True
+
+
+def test_enzyme_mlir_maturity_audit_records_versions_but_requires_execution_artifacts() -> None:
+    result = run_enzyme_mlir_maturity_audit(
+        toolchain_probe=lambda command: f"/opt/toolchain/bin/{command}",
+        version_probe=lambda executable: f"{executable} version 1.2.3",
+        isolated_benchmark_artifact_id="iso-bench-001",
+    )
+    payload = cast(dict[str, Any], result.to_dict())
+
+    assert payload["toolchain"]["enzyme"]["available"] is True
+    assert payload["toolchain"]["opt"]["version"] == "/opt/toolchain/bin/opt version 1.2.3"
+    assert result.ready_for_provider_exceedance is False
+    assert "native Enzyme execution artefact missing" in result.hard_gaps
+    assert "MLIR/LLVM correctness check missing" not in result.hard_gaps
+
+
+def test_enzyme_mlir_maturity_audit_exports_are_public() -> None:
+    assert compiler.run_enzyme_mlir_maturity_audit is run_enzyme_mlir_maturity_audit
+    assert scpn.run_enzyme_mlir_maturity_audit is run_enzyme_mlir_maturity_audit
+    assert compiler.EnzymeMLIRMaturityAuditResult is EnzymeMLIRMaturityAuditResult
+    assert scpn.EnzymeMLIRMaturityAuditResult is EnzymeMLIRMaturityAuditResult

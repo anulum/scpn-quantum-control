@@ -81,6 +81,8 @@ from .compiler.mlir import (
     CompilerADKernelVerification,
     CompilerADTransformPlan,
     DifferentiableMLIRCompileConfig,
+    EnzymeMLIRMaturityAuditResult,
+    EnzymeMLIRToolchainStatus,
     ExecutableCompilerADKernel,
     ExecutableWholeProgramADBatchResult,
     ExecutableWholeProgramADKernel,
@@ -155,6 +157,7 @@ from .compiler.mlir import (
     make_vector_squared_norm_native_llvm_jit_primitive_transform,
     native_whole_program_ad_compile_cache_stats,
     native_whole_program_ad_linalg_support,
+    run_enzyme_mlir_maturity_audit,
 )
 from .control.frc_pulsed_qaoa import (
     FRCScheduleResult,
@@ -802,6 +805,8 @@ __all__ = [
     "CompilerADKernelVerification",
     "CompilerADTransformPlan",
     "DifferentiableMLIRCompileConfig",
+    "EnzymeMLIRMaturityAuditResult",
+    "EnzymeMLIRToolchainStatus",
     "ExecutableCompilerADKernel",
     "ExecutableWholeProgramADBatchResult",
     "ExecutableWholeProgramADKernel",
@@ -875,6 +880,7 @@ __all__ = [
     "compile_whole_program_ad_trace_to_mlir",
     "native_whole_program_ad_compile_cache_stats",
     "native_whole_program_ad_linalg_support",
+    "run_enzyme_mlir_maturity_audit",
     "compile_kuramoto_to_mlir",
     "AerQuantumEntropySource",
     "PqcTriggerSigner",

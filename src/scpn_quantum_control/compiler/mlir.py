@@ -21,6 +21,8 @@ import ctypes
 import hashlib
 import importlib
 import json
+import shutil
+import subprocess
 import threading
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field, is_dataclass
@@ -13510,12 +13512,12 @@ class PhaseQNodeMLIRRuntimeExecutable:
         if not self.claim_boundary:
             raise ValueError("claim_boundary must be non-empty")
 
-    def value(self, parameters: Sequence[float]) -> float:
+    def value(self, parameters: Sequence[float] | np.ndarray) -> float:
         """Execute the verified MLIR-runtime value kernel."""
         values = _as_phase_qnode_runtime_parameters(parameters, self.parameter_shape)
         return float(self.value_kernel(values))
 
-    def gradient(self, parameters: Sequence[float]) -> NDArray[np.float64]:
+    def gradient(self, parameters: Sequence[float] | np.ndarray) -> NDArray[np.float64]:
         """Execute the verified MLIR-runtime gradient kernel."""
         values = _as_phase_qnode_runtime_parameters(parameters, self.parameter_shape)
         return cast(NDArray[np.float64], self.gradient_kernel(values).copy())
@@ -13533,9 +13535,249 @@ class PhaseQNodeMLIRRuntimeExecutable:
         }
 
 
+@dataclass(frozen=True)
+class EnzymeMLIRToolchainStatus:
+    """Detected status for one native compiler-AD command."""
+
+    command: str
+    executable: str | None
+    available: bool
+    version: str | None
+    failure_class: str | None
+    setup_instructions: str | None
+
+    def __post_init__(self) -> None:
+        if not self.command:
+            raise ValueError("command must be non-empty")
+        if self.available:
+            if not self.executable or not self.version:
+                raise ValueError("available toolchains require executable and version metadata")
+            if self.failure_class is not None or self.setup_instructions is not None:
+                raise ValueError("available toolchains must not carry hard-gap metadata")
+        else:
+            if self.executable is not None or self.version is not None:
+                raise ValueError("unavailable toolchains must not carry executable metadata")
+            if not self.failure_class or not self.setup_instructions:
+                raise ValueError(
+                    "unavailable toolchains require failure_class and setup instructions"
+                )
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready toolchain status metadata."""
+
+        return {
+            "command": self.command,
+            "executable": self.executable,
+            "available": self.available,
+            "version": self.version,
+            "failure_class": self.failure_class,
+            "setup_instructions": self.setup_instructions,
+        }
+
+
+@dataclass(frozen=True)
+class EnzymeMLIRMaturityAuditResult:
+    """Provider-exceedance gate for Enzyme/MLIR compiler AD maturity."""
+
+    scpn_mlir_runtime_verified: bool
+    native_llvm_jit_surface: str
+    toolchain: Mapping[str, EnzymeMLIRToolchainStatus]
+    correctness_checks: Mapping[str, bool]
+    hard_gaps: tuple[str, ...]
+    isolated_benchmark_artifact_id: str | None
+    native_enzyme_execution_artifact_id: str | None
+    claim_boundary: str = "bounded_enzyme_mlir_compiler_maturity_audit"
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.scpn_mlir_runtime_verified, bool):
+            raise ValueError("scpn_mlir_runtime_verified must be a bool")
+        if not self.native_llvm_jit_surface:
+            raise ValueError("native_llvm_jit_surface must be non-empty")
+        if not self.toolchain:
+            raise ValueError("toolchain status map must be non-empty")
+        if any(
+            not isinstance(status, EnzymeMLIRToolchainStatus) for status in self.toolchain.values()
+        ):
+            raise ValueError("toolchain values must be EnzymeMLIRToolchainStatus")
+        if not self.correctness_checks:
+            raise ValueError("correctness_checks must be non-empty")
+        if any(not isinstance(value, bool) for value in self.correctness_checks.values()):
+            raise ValueError("correctness checks must be bool values")
+        if any(not gap for gap in self.hard_gaps):
+            raise ValueError("hard gap entries must be non-empty")
+        if self.isolated_benchmark_artifact_id is not None and not (
+            self.isolated_benchmark_artifact_id.strip()
+        ):
+            raise ValueError("isolated_benchmark_artifact_id must be non-empty when provided")
+        if self.native_enzyme_execution_artifact_id is not None and not (
+            self.native_enzyme_execution_artifact_id.strip()
+        ):
+            raise ValueError("native_enzyme_execution_artifact_id must be non-empty when provided")
+        if not self.claim_boundary:
+            raise ValueError("claim_boundary must be non-empty")
+        object.__setattr__(self, "toolchain", MappingProxyType(dict(self.toolchain)))
+        object.__setattr__(
+            self,
+            "correctness_checks",
+            MappingProxyType(dict(self.correctness_checks)),
+        )
+
+    @property
+    def ready_for_provider_exceedance(self) -> bool:
+        """Return whether Enzyme/MLIR can be promoted beyond bounded SCPN evidence."""
+
+        return (
+            self.scpn_mlir_runtime_verified
+            and all(status.available for status in self.toolchain.values())
+            and all(self.correctness_checks.values())
+            and self.isolated_benchmark_artifact_id is not None
+            and self.native_enzyme_execution_artifact_id is not None
+            and not self.hard_gaps
+        )
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready audit metadata for docs, ledgers, and benchmarks."""
+
+        return {
+            "scpn_mlir_runtime_verified": self.scpn_mlir_runtime_verified,
+            "native_llvm_jit_surface": self.native_llvm_jit_surface,
+            "toolchain": {command: status.to_dict() for command, status in self.toolchain.items()},
+            "correctness_checks": dict(self.correctness_checks),
+            "hard_gaps": list(self.hard_gaps),
+            "isolated_benchmark_artifact_id": self.isolated_benchmark_artifact_id,
+            "native_enzyme_execution_artifact_id": self.native_enzyme_execution_artifact_id,
+            "ready_for_provider_exceedance": self.ready_for_provider_exceedance,
+            "claim_boundary": self.claim_boundary,
+        }
+
+
+def run_enzyme_mlir_maturity_audit(
+    circuit: Any | None = None,
+    parameters: Sequence[float] | np.ndarray | None = None,
+    *,
+    toolchain_probe: Callable[[str], str | None] | None = None,
+    version_probe: Callable[[str], str | None] | None = None,
+    isolated_benchmark_artifact_id: str | None = None,
+    native_enzyme_execution_artifact_id: str | None = None,
+) -> EnzymeMLIRMaturityAuditResult:
+    """Audit Enzyme/MLIR maturity without promoting unsupported compiler-AD claims."""
+
+    executable = compile_phase_qnode_circuit_to_mlir_runtime(
+        _default_enzyme_mlir_audit_circuit() if circuit is None else circuit,
+        np.array([0.2, -0.3], dtype=np.float64) if parameters is None else parameters,
+    )
+    verification = dict(executable.verification)
+    correctness_checks = {
+        "phase_qnode_value_close": verification.get("value_close") is True,
+        "phase_qnode_gradient_close": verification.get("gradient_close") is True,
+        "mlir_runtime_backend_verified": executable.runtime_backend == "scpn_mlir_runtime_adapter",
+        "native_llvm_jit_support_matrix_declared": bool(native_whole_program_ad_linalg_support()),
+    }
+    toolchain = {
+        command: _enzyme_mlir_toolchain_status(command, toolchain_probe, version_probe)
+        for command in ("enzyme", "opt", "mlir-opt", "clang")
+    }
+    hard_gaps: list[str] = []
+    if not all(correctness_checks.values()):
+        hard_gaps.append("MLIR/LLVM correctness check missing")
+    for command, status in toolchain.items():
+        if not status.available:
+            hard_gaps.append(f"{command} toolchain unavailable")
+    if isolated_benchmark_artifact_id is None:
+        hard_gaps.append("isolated benchmark artefact missing")
+    if native_enzyme_execution_artifact_id is None:
+        hard_gaps.append("native Enzyme execution artefact missing")
+    return EnzymeMLIRMaturityAuditResult(
+        scpn_mlir_runtime_verified=bool(
+            correctness_checks["phase_qnode_value_close"]
+            and correctness_checks["phase_qnode_gradient_close"]
+            and correctness_checks["mlir_runtime_backend_verified"]
+        ),
+        native_llvm_jit_surface="available: bounded in-process native LLVM/JIT",
+        toolchain=toolchain,
+        correctness_checks=correctness_checks,
+        hard_gaps=tuple(dict.fromkeys(hard_gaps)),
+        isolated_benchmark_artifact_id=isolated_benchmark_artifact_id,
+        native_enzyme_execution_artifact_id=native_enzyme_execution_artifact_id,
+    )
+
+
+def _enzyme_mlir_toolchain_status(
+    command: str,
+    toolchain_probe: Callable[[str], str | None] | None,
+    version_probe: Callable[[str], str | None] | None,
+) -> EnzymeMLIRToolchainStatus:
+    executable = shutil.which(command) if toolchain_probe is None else toolchain_probe(command)
+    if executable is None:
+        return EnzymeMLIRToolchainStatus(
+            command=command,
+            executable=None,
+            available=False,
+            version=None,
+            failure_class="toolchain_missing",
+            setup_instructions=(
+                f"Install and expose {command} on PATH before promoting Enzyme/MLIR "
+                "compiler-AD maturity evidence."
+            ),
+        )
+    version = (
+        _probe_toolchain_version(executable)
+        if version_probe is None
+        else version_probe(executable)
+    )
+    if version is None:
+        return EnzymeMLIRToolchainStatus(
+            command=command,
+            executable=None,
+            available=False,
+            version=None,
+            failure_class="version_probe_failed",
+            setup_instructions=(
+                f"{command} was found at {executable}, but version metadata could not "
+                "be captured reproducibly."
+            ),
+        )
+    return EnzymeMLIRToolchainStatus(
+        command=command,
+        executable=executable,
+        available=True,
+        version=version,
+        failure_class=None,
+        setup_instructions=None,
+    )
+
+
+def _probe_toolchain_version(executable: str) -> str | None:
+    for flag in ("--version", "-version"):
+        try:
+            completed = subprocess.run(
+                (executable, flag),
+                check=False,
+                capture_output=True,
+                text=True,
+                timeout=5.0,
+            )
+        except (OSError, subprocess.TimeoutExpired):
+            continue
+        output = (completed.stdout or completed.stderr).strip().splitlines()
+        if output:
+            return output[0][:240]
+    return None
+
+
+def _default_enzyme_mlir_audit_circuit() -> Any:
+    from scpn_quantum_control.phase.qnode_circuit import PauliTerm, PhaseQNodeCircuit
+
+    return PhaseQNodeCircuit(
+        n_qubits=1,
+        operations=(("ry", (0,), 0), ("rx", (0,), 1)),
+        observable=PauliTerm(1.0, ((0, "z"),)),
+    )
+
+
 def lower_phase_qnode_circuit_to_mlir(
     circuit: Any,
-    parameters: Sequence[float],
+    parameters: Sequence[float] | np.ndarray,
 ) -> MLIRModule:
     """Lower a registered local Phase-QNode circuit to textual MLIR metadata.
 
@@ -13625,7 +13867,7 @@ def lower_phase_qnode_circuit_to_mlir(
 
 def compile_phase_qnode_circuit_to_mlir_runtime(
     circuit: Any,
-    sample_parameters: Sequence[float],
+    sample_parameters: Sequence[float] | np.ndarray,
     *,
     atol: float = 1.0e-10,
     rtol: float = 1.0e-10,
@@ -13740,6 +13982,8 @@ __all__ = [
     "ExecutableCompilerADKernel",
     "ExecutableWholeProgramADBatchResult",
     "ExecutableWholeProgramADKernel",
+    "EnzymeMLIRMaturityAuditResult",
+    "EnzymeMLIRToolchainStatus",
     "MLIRCompileConfig",
     "NativeWholeProgramADKernel",
     "PhaseQNodeMLIRRuntimeExecutable",
@@ -13775,6 +14019,7 @@ __all__ = [
     "compile_whole_program_ad_trace_to_mlir",
     "compile_kuramoto_to_mlir",
     "lower_phase_qnode_circuit_to_mlir",
+    "run_enzyme_mlir_maturity_audit",
     "make_executable_ad_kernel_batching_rule",
     "make_matrix_2x2_determinant_native_llvm_jit_lowering_rule",
     "make_matrix_2x2_determinant_native_llvm_jit_primitive_transform",
