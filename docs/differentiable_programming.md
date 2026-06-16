@@ -85,6 +85,13 @@ classification smoke cases. It also verifies that GitHub-hosted runners remain
 `isolated_affinity` path, and silent accelerator fallback remains a hard gap.
 The gate is planning and classification evidence only; it does not run shell
 commands or promote benchmark artefacts.
+`run_differentiable_module_hardening_audit()` discovers the differentiable
+module promotion scope from the committed patterns, compares it with the
+registered hardening map, and verifies that every module has module-specific
+tests plus declared fail-closed diagnostic surfaces. This closes the local
+module-inventory portion of the hardening lane; formal proof, provider
+execution, hardware execution, and isolated benchmark promotion remain separate
+evidence gates.
 
 Optional framework parity uses an explicit CPU-only overlay instead of the
 repository `jax` extra, because that extra resolves to `jax[cuda12]`.

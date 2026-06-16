@@ -178,6 +178,34 @@
       ],
       "promotion_status": "SOTA-candidate",
       "claim_boundary": "Per-slice hardening governance only; no provider execution, QPU execution, accelerator execution, or production benchmark promotion is implied."
+    },
+    {
+      "claim_id": "module_hardening_audit",
+      "claim_text": "Differentiable-programming modules are audited against the live module inventory, module-specific test surfaces, and declared fail-closed diagnostic surfaces before promotion.",
+      "implementation_surface": [
+        "src/scpn_quantum_control/differentiable_module_hardening_audit.py"
+      ],
+      "test_surface": [
+        "tests/test_differentiable_module_hardening_audit.py"
+      ],
+      "docs_surface": [
+        "README.md",
+        "docs/differentiable_api.md",
+        "docs/differentiable_programming.md",
+        "data/differentiable_phase_qnode/claim_ledger.md"
+      ],
+      "evidence_artifact_ids": [
+        "diff-module-hardening-audit-v1"
+      ],
+      "benchmark_artifact_ids": [
+        "diff-module-hardening-audit-v1"
+      ],
+      "known_gaps": [
+        "The audit verifies inventory, tests, and declared diagnostics; it does not prove full formal correctness.",
+        "Provider execution, hardware execution, and isolated benchmark promotion remain separate evidence gates."
+      ],
+      "promotion_status": "SOTA-candidate",
+      "claim_boundary": "Module-hardening governance only; no provider execution, QPU execution, full formal proof, or production benchmark promotion is implied."
     }
   ]
 }

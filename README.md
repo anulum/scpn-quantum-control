@@ -96,9 +96,9 @@ has a defined commercial licensing route.
 | Surface | Current inventory |
 |---|---:|
 | Package version | 0.9.12 |
-| Public API exports | 641 |
-| Python source modules | 833 |
-| Public Python classes | 1761 |
+| Public API exports | 645 |
+| Python source modules | 834 |
+| Public Python classes | 1763 |
 | Paper 0 validation modules | 466 |
 | Domain package families | 32 |
 | API documentation pages | 0 |
@@ -107,7 +107,7 @@ has a defined commercial licensing route.
 | Notebook files | 98 |
 | Example files | 30 |
 | Optional extras | 42 |
-| Python test files | 1951 |
+| Python test files | 1952 |
 | Public documentation pages | 253 |
 | GitHub Actions workflows | 19 |
 
@@ -308,6 +308,7 @@ CI benchmark artefacts all pass:
 | Hardware-gradient policy readiness | Executable dry-run policy decisions now gate hardware-gradient preparation by provider/backend allowlist, shot budget, required evidence IDs, and live-execution ticket status. `prepare_provider_hardware_parameter_shift_gradient(...)` packages that approval into provider-preparation evidence, and `run_provider_hardware_gradient_preparation_audit()` verifies supported and blocked preparation routes without submitting QPU jobs. | [Quantum Gradients](docs/quantum_gradients.md), [Differentiable API](docs/differentiable_api.md) |
 | Differentiable claim ledger | The Phase-QNode evidence ledger maps implementation, tests, artefact IDs, documentation, known gaps, and promotion status; no promoted claim is accepted without an artefact ID, and support-surface alignment checks keep ledger paths consistent with the generated capability manifest. | [Differentiable Programming](docs/differentiable_programming.md), [Claim Ledger](data/differentiable_phase_qnode/claim_ledger.md) |
 | Hardening-slice gate | `run_differentiable_hardening_slice_gate(...)` records the required Ruff, mypy, module-specific pytest, test-quality audit, claim-ledger validation, and benchmark-classification checks for each differentiable hardening slice. It is checklist/classification evidence only, not benchmark execution. | [Differentiable Programming](docs/differentiable_programming.md), [Differentiable API](docs/differentiable_api.md) |
+| Module-hardening audit | `run_differentiable_module_hardening_audit()` discovers every differentiable/gradient/QNode/bridge/compiler module in the promotion scope and verifies a module-specific test plus declared fail-closed diagnostics for each. | [Differentiable Programming](docs/differentiable_programming.md), [Differentiable API](docs/differentiable_api.md) |
 | Bounded phase-QNN training | A deterministic data-reuploading binary classifier is available through `train_parameter_shift_qnn_classifier(...)` with multi-frequency parameter-shift descent, prediction evidence, accuracy, convergence certificates, finite-difference gradient verification, seeded finite-shot gradient uncertainty and noisy-convergence evidence, optional named external-gradient agreement records, a conformance suite with unsuitable-scenario evidence, deterministic convergence suites, non-isolated optimizer-baseline comparisons across parameter-shift, finite-difference, SGD, Adam, L-BFGS-B, diagonal-Fisher natural-gradient, seeded SPSA, and derivative-free grid routes, and caller-supplied framework-gradient agreement checks. | [Quantum Gradients](docs/quantum_gradients.md), [Differentiable API](docs/differentiable_api.md) |
 | Registered Phase-QNode family | Local statevector execution, density-matrix execution with bounded single-qubit Kraus channels, arbitrary-depth registered circuit builders with deterministic depth/resource profiles, registered GHZ-chain and hardware-efficient multi-qubit templates, controlled-H/S/T plus Toffoli/CCZ/Fredkin gates with exact Toffoli/Fredkin decompositions, sparse Ising-chain Hamiltonian construction, parameter-shift gradients for pure-state routes, framework parity rows, verified SCPN MLIR-runtime lowering adapters, and isolated-affinity benchmark metadata are available for the declared gate/observable subset. Unsupported gates, dynamic/provider paths, native LLVM/JIT lowering, interpreter fallback success, noisy-channel gradients/metrics, and unregistered observables fail closed with support reports. | [Differentiable API](docs/differentiable_api.md), [Benchmark Harness](docs/benchmark_harness.md) |
 | ML framework and tape roadmap | Gradient tape, QNode-style tape records, backend gradient planning, provider-safe callback execution with shot/variance accounting, convergence certificates, optional JAX host-callback parameter-shift interop, PennyLane gradient-agreement checks, PyTorch/TensorFlow host-boundary tensor bridges, and bounded framework parity rows are available. Full provider-backed QNode migration bridges and arbitrary architectures remain staged surfaces, not yet advertised as production-complete. | [Differentiable Roadmap](docs/differentiable_roadmap.md) |

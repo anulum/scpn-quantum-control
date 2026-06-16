@@ -469,6 +469,12 @@ from .differentiable_api import (
     differentiable_value,
     explain_differentiability,
 )
+from .differentiable_module_hardening_audit import (
+    DifferentiableModuleHardeningAuditResult,
+    DifferentiableModuleHardeningRecord,
+    differentiable_module_hardening_registry,
+    run_differentiable_module_hardening_audit,
+)
 from .entropy import AerQuantumEntropySource, EntropyHealthReport, QRNGStream
 from .forecasting import (
     ForecastModelRun,
@@ -1010,6 +1016,8 @@ __all__ = [
     "CustomDerivativeRegistry",
     "DEFAULT_CUSTOM_DERIVATIVE_REGISTRY",
     "DifferentiabilityDiagnosticReport",
+    "DifferentiableModuleHardeningAuditResult",
+    "DifferentiableModuleHardeningRecord",
     "DifferentiableOptimizer",
     "UnifiedDifferentiableAPIResult",
     "FixedPointSensitivityResult",
@@ -1235,9 +1243,11 @@ __all__ = [
     "differentiable_gradient",
     "differentiable_hessian",
     "differentiable_jacobian",
+    "differentiable_module_hardening_registry",
     "differentiable_support_report",
     "differentiable_value",
     "explain_differentiability",
+    "run_differentiable_module_hardening_audit",
     "vmap",
     "value_and_hessian",
     "value_and_jacfwd",
