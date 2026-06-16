@@ -14622,6 +14622,27 @@ def test_transform_algebra_custom_rules_and_whole_program_ad_compose_with_vmap()
     np.testing.assert_allclose(trace_gradients, expected[:, 0, :], rtol=1.0e-12, atol=1.0e-12)
 
 
+def test_canonical_grad_dispatches_whole_program_method_under_vmap() -> None:
+    """Canonical value_and_grad/grad should expose whole-program AD to transform algebra."""
+
+    def loss(values: np.ndarray) -> object:
+        return values[0] ** 2 + np.sin(values[1])
+
+    values = np.array([[0.5, 0.25], [-1.2, 0.75], [2.0, -0.4]], dtype=np.float64)
+    single = value_and_grad(loss, values[0], method="whole_program")
+
+    assert isinstance(single, WholeProgramADResult)
+    assert single.method == "whole_program_ad"
+    assert single.semantics_report is not None
+    assert "whole-program operator-intercepted AD" in single.claim_boundary
+
+    batched_gradients = vmap(lambda row: grad(loss, row, method="whole_program"))(values)
+    expected = np.column_stack((2.0 * values[:, 0], np.cos(values[:, 1])))
+
+    np.testing.assert_allclose(single.gradient, expected[0], rtol=1.0e-12, atol=1.0e-12)
+    np.testing.assert_allclose(batched_gradients, expected, rtol=1.0e-12, atol=1.0e-12)
+
+
 def test_transform_algebra_aliases_are_exported_from_package_root() -> None:
     """Transform algebra aliases should be stable package-root APIs."""
 

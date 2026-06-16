@@ -24378,7 +24378,7 @@ def value_and_grad(
     method: str = "parameter_shift",
     rule: ParameterShiftRule | None = None,
     step: float | None = None,
-) -> GradientResult:
+) -> GradientResult | WholeProgramADResult:
     """Evaluate a scalar objective and gradient through a canonical transform API."""
 
     if method == "parameter_shift":
@@ -24414,9 +24414,16 @@ def value_and_grad(
             values,
             parameters=parameters,
         )
+    if method == "whole_program":
+        return whole_program_value_and_grad(
+            objective,
+            values,
+            parameters=parameters,
+            trace=True,
+        )
     raise ValueError(
         "gradient method must be one of: parameter_shift, finite_difference, complex_step, "
-        "forward_mode, reverse_mode"
+        "forward_mode, reverse_mode, whole_program"
     )
 
 
