@@ -9,6 +9,8 @@
 
 from __future__ import annotations
 
+from typing import Any, cast
+
 import numpy as np
 import pytest
 from qiskit import QuantumCircuit
@@ -21,6 +23,7 @@ from scpn_quantum_control.phase import (
     QiskitMaturityAuditResult,
     QiskitParameterShiftGradientResult,
     QiskitParameterShiftRecord,
+    QiskitRuntimePrimitiveExecutionArtifact,
     execute_qiskit_finite_shot_parameter_shift,
     execute_qiskit_statevector_parameter_shift,
     generate_qiskit_parameter_shift_circuits,
@@ -28,6 +31,10 @@ from scpn_quantum_control.phase import (
     parameter_shift_phase_qnode_gradient,
     plan_phase_qnode_parameter_shift_evaluations,
     run_qiskit_maturity_audit,
+)
+from scpn_quantum_control.phase.provider_gradient import ProviderGradientExecutionResult
+from scpn_quantum_control.phase.provider_hardware_gradient_audit import (
+    ProviderHardwareGradientPreparationAuditResult,
 )
 
 
@@ -118,21 +125,105 @@ def test_qiskit_maturity_audit_records_local_evidence_and_provider_gaps() -> Non
     assert isinstance(result, QiskitMaturityAuditResult)
     assert result.local_gradient_ready
     assert not result.ready_for_provider_exceedance
-    assert result.evidence["shifted_circuit_records"][0].parameter_name == "theta"
-    assert result.evidence["statevector_reference"].method == "qiskit_statevector_parameter_shift"
-    assert result.evidence["finite_shot_surrogate"].backend == "finite_shot_simulator"
-    assert result.evidence["provider_preparation_audit"].passed
+    shifted_records = cast(
+        tuple[QiskitParameterShiftRecord, ...], result.evidence["shifted_circuit_records"]
+    )
+    statevector_reference = cast(
+        QiskitParameterShiftGradientResult,
+        result.evidence["statevector_reference"],
+    )
+    finite_shot_surrogate = cast(
+        ProviderGradientExecutionResult,
+        result.evidence["finite_shot_surrogate"],
+    )
+    provider_preparation_audit = cast(
+        ProviderHardwareGradientPreparationAuditResult,
+        result.evidence["provider_preparation_audit"],
+    )
+    assert shifted_records[0].parameter_name == "theta"
+    assert statevector_reference.method == "qiskit_statevector_parameter_shift"
+    assert finite_shot_surrogate.backend == "finite_shot_simulator"
+    assert provider_preparation_audit.passed
     assert result.required_capabilities["shifted_circuit_generation"] == "passed"
     assert result.required_capabilities["statevector_reference_comparison"] == "passed"
     assert result.required_capabilities["provider_hardware_preparation_policy"] == "passed"
     assert result.required_capabilities["raw_count_capture_replay_harness"] == "blocked"
     assert result.local_reference_metadata["shots"] == 400
-    assert result.local_reference_metadata["statevector_finite_shot_max_abs_error"] <= 1e-12
+    max_abs_error = cast(
+        float, result.local_reference_metadata["statevector_finite_shot_max_abs_error"]
+    )
+    assert max_abs_error <= 1e-12
     assert "live_qpu_execution_ticket" in result.open_gaps
     assert "raw_count_capture_replay_harness" in result.open_gaps
-    payload = result.to_dict()
+    payload = cast(dict[str, Any], result.to_dict())
     assert payload["claim_boundary"] == "bounded_qiskit_provider_maturity_audit"
-    assert payload["local_reference_metadata"]["parameter_count"] == 1
+    local_reference_metadata = cast(dict[str, object], payload["local_reference_metadata"])
+    assert local_reference_metadata["parameter_count"] == 1
+
+
+def _qiskit_runtime_primitive_artifact() -> QiskitRuntimePrimitiveExecutionArtifact:
+    return QiskitRuntimePrimitiveExecutionArtifact(
+        artifact_id="qiskit-runtime-estimator-20260616",
+        provider_name="ibm_quantum",
+        primitive_name="EstimatorV2",
+        backend_name="ibm_simulator",
+        job_id="runtime-job-20260616",
+        session_id="runtime-session-20260616",
+        circuit_fingerprint="qiskit:ry(theta):z:v1",
+        observable_fingerprint="SparsePauliOp:Z:v1",
+        parameter_digest="sha256:" + "1" * 64,
+        result_digest="sha256:" + "2" * 64,
+        metadata_digest="sha256:" + "3" * 64,
+        shots=400,
+        hardware_execution=False,
+        raw_result_replay_artifact_id="qiskit-runtime-replay-20260616",
+    )
+
+
+def test_qiskit_maturity_audit_accepts_runtime_primitive_artifact_without_promotion() -> None:
+    circuit, parameters, observable = _single_rotation_problem()
+    artifact = _qiskit_runtime_primitive_artifact()
+
+    result = run_qiskit_maturity_audit(
+        circuit,
+        observable,
+        parameters,
+        np.array([0.4], dtype=float),
+        shots=400,
+        runtime_primitive_artifact=artifact,
+    )
+
+    assert result.required_capabilities["runtime_primitive_execution_evidence"] == "passed"
+    assert result.evidence["runtime_primitive_artifact"] is artifact
+    assert result.local_reference_metadata["runtime_primitive_artifact_id"] == artifact.artifact_id
+    assert not result.ready_for_provider_exceedance
+    assert "runtime_primitive_execution_evidence" not in result.open_gaps
+    assert "live_qpu_execution_ticket" in result.open_gaps
+    assert "raw_count_capture_replay_harness" in result.open_gaps
+    payload = cast(dict[str, Any], result.to_dict())
+    evidence = cast(dict[str, object], payload["evidence"])
+    primitive_payload = cast(dict[str, object], evidence["runtime_primitive_artifact"])
+    assert primitive_payload["artifact_id"] == artifact.artifact_id
+    assert primitive_payload["hardware_execution"] is False
+
+
+def test_qiskit_runtime_primitive_artifact_rejects_hardware_execution_claim() -> None:
+    with pytest.raises(ValueError, match="must not claim hardware execution"):
+        QiskitRuntimePrimitiveExecutionArtifact(
+            artifact_id="qiskit-runtime-estimator-20260616",
+            provider_name="ibm_quantum",
+            primitive_name="EstimatorV2",
+            backend_name="ibm_brisbane",
+            job_id="runtime-job-20260616",
+            session_id=None,
+            circuit_fingerprint="qiskit:ry(theta):z:v1",
+            observable_fingerprint="SparsePauliOp:Z:v1",
+            parameter_digest="sha256:" + "1" * 64,
+            result_digest="sha256:" + "2" * 64,
+            metadata_digest="sha256:" + "3" * 64,
+            shots=400,
+            hardware_execution=True,
+        )
 
 
 def test_qiskit_statevector_supports_multi_frequency_parameter_shift() -> None:

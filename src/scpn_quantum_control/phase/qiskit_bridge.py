@@ -118,6 +118,72 @@ class QiskitParameterShiftGradientResult:
 
 
 @dataclass(frozen=True)
+class QiskitRuntimePrimitiveExecutionArtifact:
+    """Validated Qiskit Runtime primitive execution evidence."""
+
+    artifact_id: str
+    provider_name: str
+    primitive_name: str
+    backend_name: str
+    job_id: str
+    session_id: str | None
+    circuit_fingerprint: str
+    observable_fingerprint: str
+    parameter_digest: str
+    result_digest: str
+    metadata_digest: str
+    shots: int | None
+    hardware_execution: bool = False
+    raw_result_replay_artifact_id: str | None = None
+
+    def __post_init__(self) -> None:
+        for field_name in (
+            "artifact_id",
+            "provider_name",
+            "primitive_name",
+            "backend_name",
+            "job_id",
+            "circuit_fingerprint",
+            "observable_fingerprint",
+        ):
+            if not str(getattr(self, field_name)).strip():
+                raise ValueError(f"{field_name} must be non-empty")
+        if self.session_id is not None and not self.session_id.strip():
+            raise ValueError("session_id must be non-empty when provided")
+        if self.raw_result_replay_artifact_id is not None and not (
+            self.raw_result_replay_artifact_id.strip()
+        ):
+            raise ValueError("raw_result_replay_artifact_id must be non-empty when provided")
+        if self.shots is not None:
+            _normalise_shots(self.shots)
+        if self.hardware_execution:
+            raise ValueError(
+                "runtime primitive execution artefacts must not claim hardware execution"
+            )
+        for field_name in ("parameter_digest", "result_digest", "metadata_digest"):
+            _validate_sha256_digest(field_name, str(getattr(self, field_name)))
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-compatible Qiskit Runtime primitive metadata."""
+        return {
+            "artifact_id": self.artifact_id,
+            "provider_name": self.provider_name,
+            "primitive_name": self.primitive_name,
+            "backend_name": self.backend_name,
+            "job_id": self.job_id,
+            "session_id": self.session_id,
+            "circuit_fingerprint": self.circuit_fingerprint,
+            "observable_fingerprint": self.observable_fingerprint,
+            "parameter_digest": self.parameter_digest,
+            "result_digest": self.result_digest,
+            "metadata_digest": self.metadata_digest,
+            "shots": self.shots,
+            "hardware_execution": self.hardware_execution,
+            "raw_result_replay_artifact_id": self.raw_result_replay_artifact_id,
+        }
+
+
+@dataclass(frozen=True)
 class QiskitMaturityAuditResult:
     """Aggregate Qiskit local-gradient evidence and provider-execution blockers."""
 
@@ -278,6 +344,7 @@ def run_qiskit_maturity_audit(
     confidence_level: float = 0.95,
     confidence_z: float = 1.959963984540054,
     provider_preparation_audit: ProviderHardwareGradientPreparationAuditResult | None = None,
+    runtime_primitive_artifact: QiskitRuntimePrimitiveExecutionArtifact | None = None,
 ) -> QiskitMaturityAuditResult:
     """Aggregate Qiskit local-gradient evidence and provider-level blockers.
 
@@ -342,11 +409,22 @@ def run_qiskit_maturity_audit(
             preparation_audit.gradient_available_count
         ),
     }
+    if runtime_primitive_artifact is not None:
+        local_reference_metadata["runtime_primitive_artifact_id"] = (
+            runtime_primitive_artifact.artifact_id
+        )
+        local_reference_metadata["runtime_primitive_name"] = (
+            runtime_primitive_artifact.primitive_name
+        )
+        local_reference_metadata["runtime_primitive_backend_name"] = (
+            runtime_primitive_artifact.backend_name
+        )
     evidence: dict[str, object] = {
         "shifted_circuit_records": shifted_records,
         "statevector_reference": statevector_reference,
         "finite_shot_surrogate": finite_shot_surrogate,
         "provider_preparation_audit": preparation_audit,
+        "runtime_primitive_artifact": runtime_primitive_artifact,
     }
     statevector_comparison_passed = max_abs_error <= 1e-10
     provider_policy_passed = (
@@ -368,6 +446,9 @@ def run_qiskit_maturity_audit(
         "provider_hardware_preparation_policy": ("passed" if provider_policy_passed else "failed"),
         "backend_allowlist_policy": "passed" if provider_policy_passed else "failed",
         "calibration_snapshot_policy": "passed" if provider_policy_passed else "failed",
+        "runtime_primitive_execution_evidence": (
+            "passed" if runtime_primitive_artifact is not None else "blocked"
+        ),
         "live_qpu_execution_ticket": "blocked",
         "raw_count_capture_replay_harness": "blocked",
         "live_backend_statevector_reference_comparison": "blocked",
@@ -515,6 +596,16 @@ def _as_positive_scalar(name: str, value: object) -> float:
     return scalar
 
 
+def _validate_sha256_digest(name: str, value: str) -> None:
+    hex_digest = value.removeprefix("sha256:")
+    if not (
+        value.startswith("sha256:")
+        and len(hex_digest) == 64
+        and all(char in "0123456789abcdefABCDEF" for char in hex_digest)
+    ):
+        raise ValueError(f"{name} must be a sha256:<64-hex> digest")
+
+
 def _normalise_shots(value: int) -> int:
     if isinstance(value, bool) or not isinstance(value, int) or value <= 0:
         raise ValueError("shots must be a positive integer")
@@ -525,6 +616,7 @@ __all__ = [
     "QiskitMaturityAuditResult",
     "QiskitParameterShiftGradientResult",
     "QiskitParameterShiftRecord",
+    "QiskitRuntimePrimitiveExecutionArtifact",
     "execute_qiskit_finite_shot_parameter_shift",
     "execute_qiskit_statevector_parameter_shift",
     "generate_qiskit_parameter_shift_circuits",

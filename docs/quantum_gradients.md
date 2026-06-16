@@ -824,8 +824,8 @@ fail closed until an explicit backend policy enables them.
 For reviewer-facing provider maturity evidence, use
 `run_qiskit_maturity_audit(...)`. It aggregates fully bound shifted-circuit
 generation, deterministic local Statevector reference gradients, finite-shot
-surrogate uncertainty, and the no-submit provider hardware-gradient preparation
-audit:
+surrogate uncertainty, optional Runtime primitive execution artefacts, and the
+no-submit provider hardware-gradient preparation audit:
 
 ```python
 maturity = run_qiskit_maturity_audit(
@@ -838,9 +838,15 @@ maturity = run_qiskit_maturity_audit(
 print(maturity.local_gradient_ready, maturity.ready_for_provider_exceedance)
 ```
 
-The audit keeps `ready_for_provider_exceedance=False` until live QPU execution
-tickets, raw-count capture and replay, live-backend calibration/statevector
-comparison artefacts, and isolated benchmark evidence exist.
+`QiskitRuntimePrimitiveExecutionArtifact` validates Runtime/primitive execution
+metadata with non-empty provider, primitive, backend, job, circuit, and
+observable identities, optional session and replay IDs, positive shots when
+present, SHA-256 parameter/result/metadata digests, and
+`hardware_execution=False`. Attaching it marks only
+`runtime_primitive_execution_evidence` as passed. The audit keeps
+`ready_for_provider_exceedance=False` until live QPU execution tickets,
+raw-count capture and replay, live-backend calibration/statevector comparison
+artefacts, and isolated benchmark evidence exist.
 
 ## Gradient Tape Boundary
 
