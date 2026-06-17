@@ -165,6 +165,13 @@ def test_differentiable_dashboard_status_is_claim_bounded_for_gui_consumers() ->
     assert rows["unified_differentiable_api"]["fail_closed"] is False
     assert rows["program_ad_ir"]["state"] == "metadata_only"
     assert rows["program_ad_ir"]["fail_closed"] is True
+    assert rows["program_ad_ir_roundtrip"]["state"] == "metadata_only"
+    assert rows["program_ad_ir_roundtrip"]["backing_api"] == "parse_program_ad_effect_ir"
+    assert rows["program_ad_ir_roundtrip"]["fail_closed"] is True
+    assert "program_ad_effect_ir.v1" in rows["program_ad_ir_roundtrip"]["evidence"]
+    assert "not a bytecode/source compiler frontend" in str(
+        rows["program_ad_ir_roundtrip"]["blocked_reasons"]
+    )
     assert rows["program_ad_alias_effects"]["claim_boundary"] == (
         "metadata_only_no_general_alias_lattice"
     )
@@ -181,6 +188,7 @@ def test_differentiable_dashboard_status_is_claim_bounded_for_gui_consumers() ->
     )
     assert rows["provider_and_hardware_gradients"]["state"] == "blocked"
     assert rows["gui_frontend"]["state"] == "planned"
+    assert "program_ad_effect_ir.v1" in payload["generated_from"]
     assert "without upgrading" in str(payload["claim_boundary"])
 
 

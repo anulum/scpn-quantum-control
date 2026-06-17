@@ -5,6 +5,13 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-06-17 — Exposed the bounded Program AD IR round-trip parser through
+  `differentiable_dashboard_status(...)` as a `program_ad_ir_roundtrip`
+  `metadata_only` row backed by `parse_program_ad_effect_ir(...)` and
+  `program_ad_effect_ir.v1` provenance. GUI/audit consumers can now distinguish
+  parser metadata evidence from the still-open bytecode/source compiler
+  frontend, static alias lattice, Rust interpreter, LLVM/JIT lowering, provider,
+  and hardware routes.
 - 2026-06-17 — Added `parse_program_ad_effect_ir(...)` for bounded
   `program_ad_effect_ir.v1` metadata round-tripping. The parser reconstructs
   validated Program AD IR dataclasses from emitted JSON and fails closed on

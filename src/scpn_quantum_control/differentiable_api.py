@@ -531,6 +531,20 @@ def differentiable_dashboard_status(
             claim_boundary="metadata and executed-trace evidence only; not full arbitrary Python AD",
         ),
         DifferentiableDashboardCapabilityRow(
+            surface="program_ad_ir_roundtrip",
+            state="metadata_only",
+            backing_api="parse_program_ad_effect_ir",
+            evidence=("parse_program_ad_effect_ir", "program_ad_effect_ir.v1"),
+            blocked_reasons=(
+                "parser is metadata-only and not a bytecode/source compiler frontend",
+            ),
+            claim_boundary=(
+                "bounded Program AD IR JSON metadata round-trip only; not a full "
+                "compiler frontend, alias lattice, Rust interpreter, LLVM/JIT "
+                "lowering, provider, or hardware evidence"
+            ),
+        ),
+        DifferentiableDashboardCapabilityRow(
             surface="program_ad_alias_effects",
             state="metadata_only",
             backing_api="analyze_program_ad_alias_effects",
@@ -619,6 +633,7 @@ def differentiable_dashboard_status(
         generated_from=(
             "differentiable_api",
             "program_ad_capability_contracts",
+            "program_ad_effect_ir.v1",
             "compiler_ad_transform_plan",
             "gradient_support_matrix",
         ),

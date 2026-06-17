@@ -72,7 +72,7 @@ finite differences or pretending that a hardware/provider gradient exists.
 
 | Object family | Examples | Use |
 |---|---|---|
-| Unified API evidence | `UnifiedDifferentiableAPIResult`, `DifferentiabilityDiagnosticReport`, `DifferentiableDashboardStatus`, `DifferentiableDashboardCapabilityRow`, `differentiable_api`, `differentiable_value`, `differentiable_gradient`, `differentiable_jacobian`, `differentiable_hessian`, `differentiable_support_report`, `explain_differentiability`, `differentiable_compile_report`, `differentiable_benchmark_report`, `differentiable_dashboard_status` | Use one JSON-ready envelope across scalar values, gradients, Jacobians, Hessians, fail-closed support decisions, differentiability diagnostics, compiler planning, local conformance evidence, and GUI/audit-dashboard status. Dashboard rows preserve `planned`, `metadata_only`, `diagnostic`, `conformance_backed`, `executable`, `blocked`, and `unsupported` labels without upgrading blocked compiler, Rust, LLVM, provider, or hardware paths. |
+| Unified API evidence | `UnifiedDifferentiableAPIResult`, `DifferentiabilityDiagnosticReport`, `DifferentiableDashboardStatus`, `DifferentiableDashboardCapabilityRow`, `differentiable_api`, `differentiable_value`, `differentiable_gradient`, `differentiable_jacobian`, `differentiable_hessian`, `differentiable_support_report`, `explain_differentiability`, `differentiable_compile_report`, `differentiable_benchmark_report`, `differentiable_dashboard_status` | Use one JSON-ready envelope across scalar values, gradients, Jacobians, Hessians, fail-closed support decisions, differentiability diagnostics, compiler planning, local conformance evidence, and GUI/audit-dashboard status. Dashboard rows preserve `planned`, `metadata_only`, `diagnostic`, `conformance_backed`, `executable`, `blocked`, and `unsupported` labels without upgrading bounded Program AD IR round-trip parsing into a compiler frontend or promoting blocked compiler, Rust, LLVM, provider, or hardware paths. |
 | Primitive identity and rules | `PrimitiveIdentity`, `PrimitiveContract`, `CustomDerivativeRule`, `CustomDerivativeRegistry`, `ProgramADLinalgConditioningDiagnostic`, `diagnose_program_ad_linalg_conditioning` | Bind derivative, batching, lowering, shape, dtype, nondifferentiability, and conditioning-diagnostic rules to supported primitives. The linalg diagnostic covers `norm`, `det`, `inv`, `solve`, `matrix_power`, `eig`, `eigh`, `eigvals`, `eigvalsh`, `svd`, and `pinv`; it reports zero-norm, rank-threshold, repeated-spectrum, and ill-conditioned boundaries without changing AD execution or promoting benchmark evidence. |
 | Program AD alias/effect metadata | `ProgramADAliasSet`, `ProgramADAliasEffectAnalysis`, `parse_program_ad_effect_ir`, `analyze_program_ad_alias_effects` | Parse the bounded `program_ad_effect_ir.v1` JSON evidence emitted by whole-program AD, then summarize deterministic alias components, mutation-effect ordering, mutation-version edges, source aliases, bounded local scalar rebinding, local list-alias rebinding/mutation metadata, and supported executed array-view aliases from emitted `ProgramADEffectIR`. The parser and analysis helper fail closed on malformed or unknown metadata and carry the `metadata_only_no_general_alias_lattice` claim boundary; they are not a complete static alias lattice or compiler frontend. |
 | Forward and reverse AD results | `GradientResult`, `JacobianResult`, `HessianResult`, `JVPResult`, `HVPResult`, `ProgramADAdjointResult` | Return structured derivative outputs and diagnostics. |
@@ -170,12 +170,13 @@ evidence only; it does not execute objectives, provider callbacks, hardware
 jobs, or performance benchmarks.
 `DifferentiableDashboardStatus` is the backing contract for future GUI or
 audit-dashboard layers. Consumers must display each row's `state` and
-`claim_boundary` directly: metadata-only Program AD IR and alias/effect rows are
-not static compiler proofs, higher-order transform algebra is `diagnostic` in
-the default cheap status call and becomes `conformance_backed` only when
-`include_conformance=True` runs the local benchmark report, conformance rows are
-local non-performance evidence, and Rust/LLVM/provider/hardware rows stay
-blocked until executable artefacts exist.
+`claim_boundary` directly: metadata-only Program AD IR, bounded
+`program_ad_effect_ir.v1` round-trip parsing, and alias/effect rows are not
+static compiler proofs or a bytecode/source compiler frontend; higher-order
+transform algebra is `diagnostic` in the default cheap status call and becomes
+`conformance_backed` only when `include_conformance=True` runs the local
+benchmark report, conformance rows are local non-performance evidence, and
+Rust/LLVM/provider/hardware rows stay blocked until executable artefacts exist.
 
 The façade delegates to existing implemented surfaces rather than weakening
 their contracts: finite-difference gradients, Jacobians, and Hessians remain
