@@ -1660,14 +1660,12 @@ class TraceADArray:
     def argmax(self, axis: int | None = None) -> NoReturn:
         """Reject nondifferentiable maximum-index selection."""
 
-        del axis
-        _raise_index_selection_boundary()
+        _raise_index_selection_boundary("argmax", (self, axis))
 
     def argmin(self, axis: int | None = None) -> NoReturn:
         """Reject nondifferentiable minimum-index selection."""
 
-        del axis
-        _raise_index_selection_boundary()
+        _raise_index_selection_boundary("argmin", (self, axis))
 
     def __getitem__(self, index: object) -> TraceADScalar | TraceADArray:
         return _trace_array_getitem(self, index)
@@ -2460,7 +2458,22 @@ class TraceADArray:
             _require_program_ad_linalg_contract("pinv", (matrix,))
             return _trace_pinv(matrix, self.context, rcond=cutoff)
         if func in {np.argmax, np.argmin}:
-            _raise_index_selection_boundary()
+            if len(args) not in {1, 2}:
+                raise ValueError(f"program AD np.{func.__name__} supports array and optional axis")
+            unsupported_index_kwargs = set(kwargs) - {"axis", "out", "keepdims"}
+            if unsupported_index_kwargs:
+                raise ValueError(
+                    f"program AD np.{func.__name__} only supports axis, out, and keepdims"
+                )
+            if kwargs.get("out") is not None:
+                raise ValueError(f"program AD np.{func.__name__} does not support out")
+            keepdims = kwargs.get("keepdims", False)
+            if not isinstance(keepdims, (bool, np.bool_)) or bool(keepdims):
+                raise ValueError(f"program AD np.{func.__name__} supports keepdims=False only")
+            if len(args) == 2 and "axis" in kwargs:
+                raise ValueError(f"program AD np.{func.__name__} received duplicate axis")
+            axis = args[1] if len(args) == 2 else kwargs.get("axis")
+            _raise_index_selection_boundary(func.__name__, (args[0], axis))
         if func is np.sort:
             if len(args) != 1:
                 raise ValueError("program AD np.sort expects exactly one differentiable array")
@@ -2482,10 +2495,22 @@ class TraceADArray:
                 kind=cast(_TraceSortKind | None, kind),
             )
         if func is np.argsort:
-            raise ValueError(
-                "whole-program AD argsort selection semantics are nondifferentiable "
-                "integer selection without an explicit primitive policy"
-            )
+            if len(args) != 1:
+                raise ValueError("program AD np.argsort expects exactly one differentiable array")
+            unsupported_argsort_kwargs = set(kwargs) - {"axis", "kind", "order", "stable"}
+            if unsupported_argsort_kwargs:
+                raise ValueError(
+                    "program AD np.argsort only supports axis, kind, order, and stable"
+                )
+            if kwargs.get("order") is not None:
+                raise ValueError("program AD np.argsort does not support structured-array order")
+            if kwargs.get("stable") is not None:
+                raise ValueError("program AD np.argsort does not support stable keyword")
+            kind = kwargs.get("kind")
+            if kind not in {None, "quicksort", "mergesort", "heapsort", "stable"}:
+                raise ValueError("program AD np.argsort kind must be a NumPy sort kind")
+            axis = kwargs.get("axis", -1)
+            _raise_index_selection_boundary("argsort", (args[0], axis, kind))
         raise ValueError(f"unsupported whole-program AD NumPy function {func.__name__}")
 
     def _binary(self, other: object, op: np.ufunc) -> TraceADScalar | TraceADArray:
@@ -5350,10 +5375,15 @@ def _trace_insert(
     return TraceADArray(items, output_shape, array.context)
 
 
-def _raise_index_selection_boundary() -> NoReturn:
+def _raise_index_selection_boundary(
+    name: str = "argmax",
+    args: tuple[object, ...] = (),
+) -> NoReturn:
+    if name in _PROGRAM_AD_SELECTION_IDENTITIES and args:
+        _require_program_ad_selection_contract(name, args)
     raise ValueError(
-        "program AD argmax/argmin index selection semantics require an explicit "
-        "nondifferentiable primitive policy"
+        "program AD argmax/argmin/argsort index selection semantics are registered "
+        "nondifferentiable integer selection primitives and fail closed"
     )
 
 
@@ -11512,7 +11542,7 @@ _PROGRAM_AD_SELECTION_PRIMITIVE_NAMESPACE = "scpn.program_ad.selection"
 _PROGRAM_AD_SELECTION_POLICY = "program_ad_trace_exact_fail_closed"
 _PROGRAM_AD_SELECTION_IDENTITIES: Mapping[str, PrimitiveIdentity] = {
     name: PrimitiveIdentity(_PROGRAM_AD_SELECTION_PRIMITIVE_NAMESPACE, name, "1")
-    for name in ("where", "clip", "sort")
+    for name in ("where", "clip", "sort", "argmax", "argmin", "argsort")
 }
 
 _PROGRAM_AD_PRODUCT_PRIMITIVE_NAMESPACE = "scpn.program_ad.product"
@@ -17123,6 +17153,31 @@ def _program_ad_selection_sort_shape(args: tuple[object, ...]) -> tuple[int, ...
     return source_shape
 
 
+def _program_ad_selection_index_reduce_shape(args: tuple[object, ...]) -> tuple[int, ...]:
+    if len(args) not in {1, 2}:
+        raise ValueError("program AD index selection shape rule requires source and optional axis")
+    source_shape = _program_ad_array_shape_of(args[0])
+    axis = args[1] if len(args) == 2 else None
+    if axis is None:
+        return ()
+    axis_index = _normalise_sort_axis(axis, len(source_shape))
+    return tuple(dimension for index, dimension in enumerate(source_shape) if index != axis_index)
+
+
+def _program_ad_selection_argsort_shape(args: tuple[object, ...]) -> tuple[int, ...]:
+    if len(args) not in {1, 2, 3}:
+        raise ValueError("program AD argsort shape rule requires source, axis, and kind")
+    source_shape = _program_ad_array_shape_of(args[0])
+    axis = args[1] if len(args) >= 2 else -1
+    kind = args[2] if len(args) == 3 else None
+    if kind not in {None, "quicksort", "mergesort", "heapsort", "stable"}:
+        raise ValueError("program AD argsort shape rule requires a NumPy sort kind")
+    if axis is None:
+        return (int(np.prod(source_shape)),)
+    _normalise_sort_axis(axis, len(source_shape))
+    return source_shape
+
+
 def _program_ad_selection_where_dtype_rule(args: tuple[object, ...]) -> str:
     if len(args) != 3:
         raise ValueError("program AD selection where dtype rule requires condition, true, false")
@@ -17141,6 +17196,12 @@ def _program_ad_selection_sort_dtype_rule(args: tuple[object, ...]) -> str:
     if len(args) not in {1, 2, 3}:
         raise ValueError("program AD selection sort dtype rule requires source, axis, and kind")
     return _program_ad_array_dtype_of(args[0])
+
+
+def _program_ad_selection_index_dtype_rule(args: tuple[object, ...]) -> str:
+    if not args:
+        raise ValueError("program AD index selection dtype rule requires a source operand")
+    return "int64"
 
 
 def _program_ad_product_matmul_shape(args: tuple[object, ...]) -> tuple[int, ...]:
@@ -17702,6 +17763,35 @@ def _program_ad_selection_sort_static_arguments(args: tuple[object, ...]) -> tup
         axis = _normalise_sort_axis(axis, len(source_shape))
     if kind not in {None, "quicksort", "mergesort", "heapsort", "stable"}:
         raise ValueError("program AD selection sort static rule requires a NumPy sort kind")
+    return ("axis", axis, "kind", "quicksort" if kind is None else kind)
+
+
+def _program_ad_selection_index_reduce_static_arguments(
+    args: tuple[object, ...],
+) -> tuple[object, ...]:
+    if len(args) not in {1, 2}:
+        raise ValueError(
+            "program AD index selection static rule requires source and optional axis"
+        )
+    source_shape = _program_ad_array_shape_of(args[0])
+    axis = args[1] if len(args) == 2 else None
+    if axis is None:
+        return ("axis", None)
+    return ("axis", _normalise_sort_axis(axis, len(source_shape)))
+
+
+def _program_ad_selection_argsort_static_arguments(
+    args: tuple[object, ...],
+) -> tuple[object, ...]:
+    if len(args) not in {1, 2, 3}:
+        raise ValueError("program AD argsort static rule requires source, axis, and kind")
+    source_shape = _program_ad_array_shape_of(args[0])
+    axis = args[1] if len(args) >= 2 else -1
+    kind = args[2] if len(args) == 3 else None
+    if axis is not None:
+        axis = _normalise_sort_axis(axis, len(source_shape))
+    if kind not in {None, "quicksort", "mergesort", "heapsort", "stable"}:
+        raise ValueError("program AD argsort static rule requires a NumPy sort kind")
     return ("axis", axis, "kind", "quicksort" if kind is None else kind)
 
 
@@ -19546,18 +19636,27 @@ _PROGRAM_AD_SELECTION_SHAPE_RULES: Mapping[str, PrimitiveShapeRule] = {
     "where": _program_ad_selection_where_shape,
     "clip": _program_ad_selection_clip_shape,
     "sort": _program_ad_selection_sort_shape,
+    "argmax": _program_ad_selection_index_reduce_shape,
+    "argmin": _program_ad_selection_index_reduce_shape,
+    "argsort": _program_ad_selection_argsort_shape,
 }
 
 _PROGRAM_AD_SELECTION_DTYPE_RULES: Mapping[str, PrimitiveDTypeRule] = {
     "where": _program_ad_selection_where_dtype_rule,
     "clip": _program_ad_selection_clip_dtype_rule,
     "sort": _program_ad_selection_sort_dtype_rule,
+    "argmax": _program_ad_selection_index_dtype_rule,
+    "argmin": _program_ad_selection_index_dtype_rule,
+    "argsort": _program_ad_selection_index_dtype_rule,
 }
 
 _PROGRAM_AD_SELECTION_STATIC_ARGUMENT_RULES: Mapping[str, PrimitiveStaticArgumentRule] = {
     "where": _program_ad_selection_where_static_arguments,
     "clip": _program_ad_selection_clip_static_arguments,
     "sort": _program_ad_selection_sort_static_arguments,
+    "argmax": _program_ad_selection_index_reduce_static_arguments,
+    "argmin": _program_ad_selection_index_reduce_static_arguments,
+    "argsort": _program_ad_selection_argsort_static_arguments,
 }
 
 _PROGRAM_AD_PRODUCT_SHAPE_RULES: Mapping[str, PrimitiveShapeRule] = {
@@ -20026,9 +20125,23 @@ def _program_ad_selection_sort_batching_rule(
     return np.moveaxis(stacked, 0, _normalise_axis("out_axes", out_axes, stacked.ndim))
 
 
+def _program_ad_selection_index_batching_rule(
+    _function: Callable[..., object],
+    _args: tuple[object, ...],
+    _axes: tuple[int | None, ...],
+    _out_axes: int,
+) -> NoReturn:
+    raise ValueError(
+        "program AD argmax/argmin/argsort batching is unsupported because integer "
+        "index selection is nondifferentiable"
+    )
+
+
 def _program_ad_selection_batching_rule_for(name: str) -> PrimitiveBatchingRule:
     if name == "sort":
         return _program_ad_selection_sort_batching_rule
+    if name in {"argmax", "argmin", "argsort"}:
+        return _program_ad_selection_index_batching_rule
     return _program_ad_selection_batching_rule
 
 
@@ -20037,6 +20150,9 @@ def _program_ad_selection_lowering_metadata(name: str) -> Mapping[str, str]:
         "where": "program_ad_selection_where_derivative_rule",
         "clip": "program_ad_selection_clip_derivative_rule",
         "sort": "operator_intercepted_sort_permutation_trace",
+        "argmax": "unsupported_nondifferentiable_index_selection",
+        "argmin": "unsupported_nondifferentiable_index_selection",
+        "argsort": "unsupported_nondifferentiable_index_selection",
     }
     static_signatures = {
         "where": (
@@ -20048,19 +20164,31 @@ def _program_ad_selection_lowering_metadata(name: str) -> Mapping[str, str]:
             "upper_shape:ranked_tensor_shape"
         ),
         "sort": "source_shape:ranked_tensor_shape;axis_kind",
+        "argmax": "source_shape:ranked_tensor_shape;axis",
+        "argmin": "source_shape:ranked_tensor_shape;axis",
+        "argsort": "source_shape:ranked_tensor_shape;axis_kind",
     }
     nondifferentiable_boundaries = {
         "where": "predicate_branch_boundary",
         "clip": "clipping_boundary_and_bound_order",
         "sort": "strict_total_order_required",
+        "argmax": "integer_index_selection_nondifferentiable",
+        "argmin": "integer_index_selection_nondifferentiable",
+        "argsort": "integer_index_permutation_nondifferentiable",
     }
     return {
-        "program_ad": "operator_intercepted_trace",
+        "program_ad": (
+            "unsupported_index_selection_fail_closed"
+            if name in {"argmax", "argmin", "argsort"}
+            else "operator_intercepted_trace"
+        ),
         "mlir": "available: scpn_diff selection dialect interchange; executable lowering blocked",
         "mlir_op": f"scpn_diff.selection.{name}",
         "llvm": "blocked_until_executable_selection_lowering",
         "rust": "blocked_until_polyglot_selection_ad",
-        "static_argument_rule": "required" if name == "where" else "none",
+        "static_argument_rule": (
+            "required" if name in {"where", "argmax", "argmin", "argsort"} else "none"
+        ),
         "static_derivative_factory": static_factories[name],
         "static_signature": static_signatures[name],
         "nondifferentiable_boundary": nondifferentiable_boundaries[name],

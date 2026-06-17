@@ -9465,6 +9465,22 @@ def test_program_ad_primitive_metadata_advertises_static_derivative_factories() 
             "program_ad_selection_clip_derivative_rule",
             "source_shape:ranked_tensor_shape;lower_shape:ranked_tensor_shape;upper_shape:ranked_tensor_shape",
         ),
+        "scpn.program_ad.selection:sort": (
+            "operator_intercepted_sort_permutation_trace",
+            "source_shape:ranked_tensor_shape;axis_kind",
+        ),
+        "scpn.program_ad.selection:argmax": (
+            "unsupported_nondifferentiable_index_selection",
+            "source_shape:ranked_tensor_shape;axis",
+        ),
+        "scpn.program_ad.selection:argmin": (
+            "unsupported_nondifferentiable_index_selection",
+            "source_shape:ranked_tensor_shape;axis",
+        ),
+        "scpn.program_ad.selection:argsort": (
+            "unsupported_nondifferentiable_index_selection",
+            "source_shape:ranked_tensor_shape;axis_kind",
+        ),
         "scpn.program_ad.product:matmul": (
             "program_ad_product_matmul_derivative_rule",
             "left_shape:ranked_tensor_shape;right_shape:ranked_tensor_shape",
@@ -10423,12 +10439,62 @@ def test_program_ad_selection_primitives_are_registry_policy_gated() -> None:
         "stable",
     )
 
+    argmax_contract = primitive_contract_for("scpn.program_ad.selection:argmax")
+    assert argmax_contract.identity == PrimitiveIdentity(
+        "scpn.program_ad.selection", "argmax", "1"
+    )
+    assert argmax_contract.nondifferentiable_policy == "program_ad_trace_exact_fail_closed"
+    assert argmax_contract.effect == "pure"
+    assert argmax_contract.lowering_metadata["program_ad"] == (
+        "unsupported_index_selection_fail_closed"
+    )
+    assert argmax_contract.lowering_metadata["mlir_op"] == "scpn_diff.selection.argmax"
+    assert argmax_contract.shape_rule is not None
+    assert argmax_contract.shape_rule((matrix, 1)) == (2,)
+    assert argmax_contract.shape_rule((matrix, None)) == ()
+    assert argmax_contract.dtype_rule is not None
+    assert argmax_contract.dtype_rule((matrix, 1)) == "int64"
+    assert argmax_contract.static_argument_rule is not None
+    assert argmax_contract.static_argument_rule((matrix, 1)) == ("axis", 1)
+
+    argmin_contract = primitive_contract_for("scpn.program_ad.selection:argmin")
+    assert argmin_contract.identity == PrimitiveIdentity(
+        "scpn.program_ad.selection", "argmin", "1"
+    )
+    assert argmin_contract.lowering_metadata["program_ad"] == (
+        "unsupported_index_selection_fail_closed"
+    )
+    assert argmin_contract.shape_rule is not None
+    assert argmin_contract.shape_rule((matrix, 0)) == (3,)
+
+    argsort_contract = primitive_contract_for("scpn.program_ad.selection:argsort")
+    assert argsort_contract.identity == PrimitiveIdentity(
+        "scpn.program_ad.selection", "argsort", "1"
+    )
+    assert argsort_contract.lowering_metadata["program_ad"] == (
+        "unsupported_index_selection_fail_closed"
+    )
+    assert argsort_contract.shape_rule is not None
+    assert argsort_contract.shape_rule((matrix, 1, "stable")) == (2, 3)
+    assert argsort_contract.shape_rule((matrix, None, "stable")) == (6,)
+    assert argsort_contract.dtype_rule is not None
+    assert argsort_contract.dtype_rule((matrix, 1, "stable")) == "int64"
+    assert argsort_contract.static_argument_rule is not None
+    assert argsort_contract.static_argument_rule((matrix, 1, "stable")) == (
+        "axis",
+        1,
+        "kind",
+        "stable",
+    )
+
     with pytest.raises(ValueError, match="incomplete primitive contract"):
         primitive_complete_contract_for(where_contract.identity)
     with pytest.raises(ValueError, match="incomplete primitive contract"):
         primitive_complete_contract_for(clip_contract.identity)
     with pytest.raises(ValueError, match="incomplete primitive contract"):
         primitive_complete_contract_for(sort_contract.identity)
+    with pytest.raises(ValueError, match="incomplete primitive contract"):
+        primitive_complete_contract_for(argmax_contract.identity)
 
 
 def test_program_ad_selection_boundary_metadata_is_explicit() -> None:
@@ -10438,6 +10504,9 @@ def test_program_ad_selection_boundary_metadata_is_explicit() -> None:
         "where": "predicate_branch_boundary",
         "clip": "clipping_boundary_and_bound_order",
         "sort": "strict_total_order_required",
+        "argmax": "integer_index_selection_nondifferentiable",
+        "argmin": "integer_index_selection_nondifferentiable",
+        "argsort": "integer_index_permutation_nondifferentiable",
     }
     for name, boundary in expected_boundaries.items():
         metadata = primitive_contract_for(
@@ -10513,6 +10582,79 @@ def test_program_ad_selection_primitives_validate_registry_rules_at_dispatch() -
         "where": {"shape", "dtype", "static"},
         "clip": {"shape", "dtype", "static"},
         "sort": {"shape", "dtype", "static"},
+    }
+
+
+def test_program_ad_index_selection_primitives_validate_registry_rules_at_dispatch() -> None:
+    """Index-valued selection boundaries should still validate registry metadata."""
+
+    originals = {
+        name: primitive_contract_for(f"scpn.program_ad.selection:{name}")
+        for name in ("argmax", "argmin", "argsort")
+    }
+    calls: dict[str, set[str]] = {name: set() for name in originals}
+
+    for name, original in originals.items():
+        assert original.shape_rule is not None
+        assert original.dtype_rule is not None
+        assert original.static_argument_rule is not None
+
+        def shape_rule(args, *, primitive_name=name, contract=original):
+            calls[primitive_name].add("shape")
+            return contract.shape_rule(args)
+
+        def dtype_rule(args, *, primitive_name=name, contract=original):
+            calls[primitive_name].add("dtype")
+            return contract.dtype_rule(args)
+
+        def static_argument_rule(args, *, primitive_name=name, contract=original):
+            calls[primitive_name].add("static")
+            return contract.static_argument_rule(args)
+
+        DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.register_transform(
+            PrimitiveTransformRule(
+                identity=original.identity,
+                derivative_rule=original.derivative_rule,
+                batching_rule=original.batching_rule,
+                lowering_rule=original.lowering_rule,
+                lowering_metadata=original.lowering_metadata,
+                shape_rule=shape_rule,
+                dtype_rule=dtype_rule,
+                static_argument_rule=static_argument_rule,
+                nondifferentiable_policy=original.nondifferentiable_policy,
+                effect=original.effect,
+            ),
+            overwrite=True,
+        )
+
+    try:
+        values = np.array([1.0, 2.0, 3.0, 4.0], dtype=np.float64)
+        with pytest.raises(
+            ValueError, match="registered nondifferentiable integer selection primitives"
+        ):
+            whole_program_value_and_grad(lambda vector: np.argmax(vector), values)
+        with pytest.raises(
+            ValueError, match="registered nondifferentiable integer selection primitives"
+        ):
+            whole_program_value_and_grad(
+                lambda vector: np.reshape(vector, (2, 2)).argmin(axis=1)[0], values
+            )
+        with pytest.raises(
+            ValueError, match="registered nondifferentiable integer selection primitives"
+        ):
+            whole_program_value_and_grad(
+                lambda vector: np.argsort(vector, kind="stable")[0], values
+            )
+    finally:
+        for original in originals.values():
+            DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.register_transform(
+                _transform_rule_from_contract(original), overwrite=True
+            )
+
+    assert calls == {
+        "argmax": {"shape", "dtype", "static"},
+        "argmin": {"shape", "dtype", "static"},
+        "argsort": {"shape", "dtype", "static"},
     }
 
 
@@ -14543,15 +14685,26 @@ def test_program_ad_advanced_indexing_fails_closed() -> None:
 def test_program_ad_index_selection_primitives_fail_closed() -> None:
     """Index-valued selection should require an explicit nondifferentiable policy."""
 
-    with pytest.raises(ValueError, match="argmax/argmin index selection semantics"):
+    with pytest.raises(
+        ValueError, match="registered nondifferentiable integer selection primitives"
+    ):
         whole_program_value_and_grad(
             lambda values: np.argmax(values),
             np.array([1.0, 2.0], dtype=np.float64),
         )
-    with pytest.raises(ValueError, match="argmax/argmin index selection semantics"):
+    with pytest.raises(
+        ValueError, match="registered nondifferentiable integer selection primitives"
+    ):
         whole_program_value_and_grad(
             lambda values: np.reshape(values, (2, 2)).argmin(axis=1)[0],
             np.array([1.0, 2.0, 3.0, 4.0], dtype=np.float64),
+        )
+    with pytest.raises(
+        ValueError, match="registered nondifferentiable integer selection primitives"
+    ):
+        whole_program_value_and_grad(
+            lambda values: np.argsort(values, kind="stable")[0],
+            np.array([1.0, 2.0], dtype=np.float64),
         )
 
 

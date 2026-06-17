@@ -5,6 +5,12 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-06-18 — Registered Program AD `np.argmax`, `np.argmin`, trace-array
+  `.argmax()`/`.argmin()`, and `np.argsort` as explicit fail-closed
+  index-selection primitive contracts with shape, dtype, static-axis/kind,
+  batching, lowering, and nondifferentiable integer-output metadata. Rust/LLVM
+  executable promotion remains blocked because these primitives return
+  nondifferentiable integer selectors.
 - 2026-06-17 — Registered Program AD `np.hstack`, `np.vstack`,
   `np.column_stack`, and `np.dstack` as bounded assembly primitive contracts
   with shape, dtype, static operand-shape validation, batching, lowering
