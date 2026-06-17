@@ -14070,6 +14070,42 @@ def test_program_ad_alias_effect_analysis_summarizes_alias_sets_and_mutations() 
         analyze_program_ad_alias_effects(unsupported)
 
 
+def test_program_ad_alias_effect_analysis_tracks_array_view_aliases() -> None:
+    """Program AD alias metadata should distinguish view aliases from mutations."""
+
+    def objective(values: np.ndarray) -> object:
+        matrix = values.reshape((2, 3))
+        trailing = matrix[:, 1:]
+        transposed = trailing.T
+        flat = transposed.ravel()
+        return flat[0] + 2.0 * flat[2]
+
+    result = whole_program_value_and_grad(
+        objective,
+        np.array([0.25, 0.5, 0.75, 1.0, 1.25, 1.5], dtype=np.float64),
+    )
+    assert result.program_ir is not None
+
+    analysis = analyze_program_ad_alias_effects(result.program_ir)
+    view_edges = tuple(edge for edge in analysis.alias_edges if edge.kind == "view_alias")
+
+    assert view_edges
+    assert analysis.mutation_effects == ()
+    assert all(alias_set.mutation_versions == () for alias_set in analysis.alias_sets)
+    assert any(
+        edge.source == "%array[1]" and edge.target.startswith("view:getitem")
+        for edge in view_edges
+    )
+    assert any(edge.target.startswith("view:transpose") for edge in view_edges)
+    assert any(edge.target.startswith("view:ravel") for edge in view_edges)
+    assert any(
+        "%array[1]" in alias_set.members
+        and any(member.startswith("view:getitem") for member in alias_set.members)
+        and any(member.startswith("view:ravel") for member in alias_set.members)
+        for alias_set in analysis.alias_sets
+    )
+
+
 def test_program_ad_effect_ir_validation_paths() -> None:
     """Program AD IR dataclasses should fail closed on malformed compiler metadata."""
 

@@ -332,6 +332,7 @@ _PROGRAM_AD_SUPPORTED_ALIAS_EDGE_KINDS = frozenset(
         "alias_analysis",
         "mutation_version",
         "source_alias",
+        "view_alias",
     }
 )
 
@@ -648,7 +649,14 @@ def whole_program_value_and_grad(
         if parameter.trainable:
             tangent[index] = 1.0
         traced_values.append(context.make("parameter", (parameter.name,), float(value), tangent))
-    raw = objective(TraceADArray(tuple(traced_values), (len(traced_values),), context))
+    raw = objective(
+        TraceADArray(
+            tuple(traced_values),
+            (len(traced_values),),
+            context,
+            tuple(range(len(traced_values))),
+        )
+    )
     if isinstance(raw, TraceADArray):
         if raw.shape != ():
             raise ValueError("whole-program objective must return a whole-program AD scalar")
@@ -794,6 +802,44 @@ class _WholeProgramTraceContext:
                 )
             )
         return TraceADScalar(node.value, node.tangent, self, name)
+
+    def record_array_view_aliases(
+        self,
+        op: str,
+        source_indices: Sequence[int | None],
+        items: Sequence[TraceADScalar],
+    ) -> None:
+        """Record deterministic metadata for derivative-preserving array views."""
+
+        if len(source_indices) != len(items):
+            raise ValueError("program AD view alias source and item counts must match")
+        base = f"view:{op}:{len(self.alias_edges)}"
+        for output_index, (source_index, item) in enumerate(
+            zip(source_indices, items, strict=True)
+        ):
+            if source_index is not None and source_index < 0:
+                raise ValueError("program AD view alias source index must be non-negative")
+            if item.context is not self:
+                raise ValueError("program AD view alias item belongs to a different trace")
+            view_member = f"{base}[{output_index}]"
+            version = len(self.alias_edges)
+            if source_index is not None:
+                self.alias_edges.append(
+                    ProgramADAliasEdge(
+                        source=f"%array[{source_index}]",
+                        target=view_member,
+                        kind="view_alias",
+                        version=version,
+                    )
+                )
+            self.alias_edges.append(
+                ProgramADAliasEdge(
+                    source=view_member,
+                    target=item.name,
+                    kind="view_alias",
+                    version=version,
+                )
+            )
 
     def program_ir(
         self,
@@ -1117,6 +1163,7 @@ class TraceADArray:
         items: tuple[TraceADScalar, ...],
         shape: tuple[int, ...],
         context: _WholeProgramTraceContext,
+        source_indices: tuple[int | None, ...] | None = None,
     ) -> None:
         if not shape:
             if len(items) != 1:
@@ -1125,9 +1172,16 @@ class TraceADArray:
             raise ValueError("TraceADArray shape must match item count")
         if any(item.context is not context for item in items):
             raise ValueError("TraceADArray items must belong to the same trace")
+        if source_indices is not None and len(source_indices) != len(items):
+            raise ValueError("TraceADArray source indices must match item count")
+        if source_indices is not None and any(
+            source_index is not None and source_index < 0 for source_index in source_indices
+        ):
+            raise ValueError("TraceADArray source indices must be non-negative or None")
         self._items = list(items)
         self.shape = shape
         self.context = context
+        self._source_indices = source_indices
 
     @property
     def ndim(self) -> int:
@@ -1153,7 +1207,12 @@ class TraceADArray:
             rows, cols = self.shape
             return iter(
                 TraceADArray(
-                    tuple(self._items[row * cols : (row + 1) * cols]), (cols,), self.context
+                    tuple(self._items[row * cols : (row + 1) * cols]),
+                    (cols,),
+                    self.context,
+                    None
+                    if self._source_indices is None
+                    else tuple(self._source_indices[row * cols : (row + 1) * cols]),
                 )
                 for row in range(rows)
             )
@@ -1175,7 +1234,7 @@ class TraceADArray:
     def copy(self) -> TraceADArray:
         """Return a derivative-preserving shallow array copy."""
 
-        return TraceADArray(tuple(self._items), self.shape, self.context)
+        return TraceADArray(tuple(self._items), self.shape, self.context, self._source_indices)
 
     def reshape(self, *shape: int | tuple[int, ...]) -> TraceADArray:
         """Return a derivative-preserving reshaped array view."""
@@ -1186,13 +1245,19 @@ class TraceADArray:
             raw_target = shape
         _require_program_ad_shape_contract("reshape", (self, raw_target))
         target = _normalise_trace_reshape_shape(raw_target, self.size)
-        return TraceADArray(tuple(self._items), target, self.context)
+        items = tuple(self._items)
+        source_indices = _trace_array_source_indices(self)
+        self.context.record_array_view_aliases("reshape", source_indices, items)
+        return TraceADArray(items, target, self.context, source_indices)
 
     def ravel(self) -> TraceADArray:
         """Return a flat view-preserving program AD array."""
 
         _require_program_ad_shape_contract("ravel", (self,))
-        return TraceADArray(tuple(self._items), (self.size,), self.context)
+        items = tuple(self._items)
+        source_indices = _trace_array_source_indices(self)
+        self.context.record_array_view_aliases("ravel", source_indices, items)
+        return TraceADArray(items, (self.size,), self.context, source_indices)
 
     def flatten(self) -> TraceADArray:
         """Return a flat copy-equivalent program AD array."""
@@ -2262,6 +2327,14 @@ def _normalise_trace_broadcast_shape(shape: object) -> tuple[int, ...]:
     return dimensions
 
 
+def _trace_array_source_indices(array: TraceADArray) -> tuple[int | None, ...]:
+    """Return original parameter-array slots carried by a trace array, if known."""
+
+    if array._source_indices is None:
+        return tuple(None for _ in range(array.size))
+    return array._source_indices
+
+
 def _trace_array_getitem(array: TraceADArray, index: object) -> TraceADScalar | TraceADArray:
     _require_program_ad_array_contract("getitem", (array, index))
     _validate_trace_basic_index(index)
@@ -2276,11 +2349,15 @@ def _trace_array_getitem(array: TraceADArray, index: object) -> TraceADScalar | 
     selected_array = np.asarray(selected)
     if selected_array.shape == ():
         return array._items[int(selected_array)]
-    items = tuple(array._items[int(item)] for item in selected_array.reshape(-1))
+    local_indices = tuple(int(item) for item in selected_array.reshape(-1))
+    source_indices = tuple(_trace_array_source_indices(array)[index] for index in local_indices)
+    items = tuple(array._items[index] for index in local_indices)
+    array.context.record_array_view_aliases("getitem", source_indices, items)
     return TraceADArray(
         items,
         tuple(int(dimension) for dimension in selected_array.shape),
         array.context,
+        source_indices,
     )
 
 
@@ -4527,8 +4604,13 @@ def _trace_take(
     selected_array = np.asarray(selected)
     if selected_array.shape == ():
         return array._items[int(selected_array)]
-    items = tuple(array._items[int(index)] for index in selected_array.reshape(-1))
-    return TraceADArray(items, tuple(int(dim) for dim in selected_array.shape), array.context)
+    local_indices = tuple(int(index) for index in selected_array.reshape(-1))
+    source_indices = tuple(_trace_array_source_indices(array)[index] for index in local_indices)
+    items = tuple(array._items[index] for index in local_indices)
+    array.context.record_array_view_aliases("take", source_indices, items)
+    return TraceADArray(
+        items, tuple(int(dim) for dim in selected_array.shape), array.context, source_indices
+    )
 
 
 def _trace_take_along_axis(
@@ -4945,7 +5027,18 @@ def _trace_transpose(
         target_index = np.unravel_index(target_flat, target_shape)
         source_index = tuple(target_index[inverse_axes[axis]] for axis in range(array.ndim))
         items.append(array._items[int(np.ravel_multi_index(source_index, array.shape))])
-    return TraceADArray(tuple(items), target_shape, context)
+    local_indices = tuple(
+        int(np.ravel_multi_index(source_index, array.shape))
+        for source_index in (
+            tuple(target_index[inverse_axes[axis]] for axis in range(array.ndim))
+            for target_index in np.ndindex(target_shape)
+        )
+    )
+    source_indices = tuple(
+        _trace_array_source_indices(array)[local_index] for local_index in local_indices
+    )
+    context.record_array_view_aliases("transpose", source_indices, items)
+    return TraceADArray(tuple(items), target_shape, context, source_indices)
 
 
 def _trace_dot(
