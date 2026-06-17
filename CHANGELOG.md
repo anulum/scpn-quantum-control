@@ -5,6 +5,10 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-06-17 — Registered Program AD `np.zeros_like`, `np.ones_like`, and
+  `np.full_like` as bounded assembly primitive contracts with shape, dtype,
+  static reference-shape/scalar-fill validation, batching, lowering metadata,
+  and blocked Rust/LLVM executable lowering status.
 - 2026-06-17 — Registered Program AD `np.var`/`np.std` and trace-array
   `.var()`/`.std()` as bounded variance-reduction primitive contracts with
   shape, dtype, static axis/ddof validation, batching, lowering metadata,

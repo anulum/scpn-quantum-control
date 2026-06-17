@@ -1810,13 +1810,14 @@ class TraceADArray:
             if len(args) != 1:
                 raise ValueError("program AD like-constructors require one reference array")
             _validate_trace_like_constructor_kwargs(kwargs)
-            fill_value = 0.0 if func is np.zeros_like else 1.0
-            return _trace_like_constant(args[0], fill_value, self.context)
+            if func is np.zeros_like:
+                return _trace_like_constant(args[0], 0.0, self.context, name="zeros_like")
+            return _trace_like_constant(args[0], 1.0, self.context, name="ones_like")
         if func is np.full_like:
             if len(args) != 2:
                 raise ValueError("program AD full_like requires reference array and fill value")
             _validate_trace_like_constructor_kwargs(kwargs)
-            return _trace_like_constant(args[0], args[1], self.context)
+            return _trace_like_constant(args[0], args[1], self.context, name="full_like")
         if func is np.mean:
             if len(args) != 1 or kwargs.keys() - {"axis"}:
                 raise ValueError("whole-program AD np.mean supports one array and optional axis")
@@ -2617,8 +2618,13 @@ def _trace_like_constant(
     reference: object,
     fill_value: object,
     context: _WholeProgramTraceContext,
+    *,
+    name: Literal["zeros_like", "ones_like", "full_like"],
 ) -> TraceADArray:
     array = _coerce_trace_array(reference, context)
+    _require_program_ad_assembly_contract(
+        name, (array,) if name != "full_like" else (array, fill_value)
+    )
     scalar = _coerce_trace_scalar(fill_value, context)
     return TraceADArray(tuple(scalar for _ in range(array.size)), array.shape, context)
 
@@ -11420,6 +11426,9 @@ _PROGRAM_AD_ASSEMBLY_IDENTITIES: Mapping[str, PrimitiveIdentity] = {
         "block",
         "broadcast_to",
         "broadcast_arrays",
+        "zeros_like",
+        "ones_like",
+        "full_like",
         "tril",
         "triu",
         "diagonal",
@@ -17833,6 +17842,75 @@ def _program_ad_assembly_derivative_rule(name: str) -> CustomDerivativeRule:
     raise ValueError(f"unsupported program AD assembly primitive {name}")
 
 
+def _program_ad_assembly_like_reference_shape(args: tuple[object, ...]) -> tuple[int, ...]:
+    if not args:
+        raise ValueError("program AD like-constructor requires a reference operand")
+    source_shape = _program_ad_array_shape_of(args[0])
+    if int(np.prod(source_shape)) == 0:
+        raise ValueError("program AD like-constructor requires at least one element")
+    return source_shape
+
+
+def _program_ad_assembly_zeros_like_shape(args: tuple[object, ...]) -> tuple[int, ...]:
+    if len(args) != 1:
+        raise ValueError("program AD zeros_like requires one reference operand")
+    return _program_ad_assembly_like_reference_shape(args)
+
+
+def _program_ad_assembly_ones_like_shape(args: tuple[object, ...]) -> tuple[int, ...]:
+    if len(args) != 1:
+        raise ValueError("program AD ones_like requires one reference operand")
+    return _program_ad_assembly_like_reference_shape(args)
+
+
+def _program_ad_assembly_full_like_shape(args: tuple[object, ...]) -> tuple[int, ...]:
+    if len(args) != 2:
+        raise ValueError("program AD full_like requires reference and scalar fill operands")
+    _program_ad_assembly_static_scalar_fill(args[1])
+    return _program_ad_assembly_like_reference_shape(args)
+
+
+def _program_ad_assembly_like_dtype_rule(_args: tuple[object, ...]) -> str:
+    return "float64"
+
+
+def _program_ad_assembly_static_scalar_fill(value: object) -> str:
+    if isinstance(value, TraceADScalar):
+        return "trace_scalar"
+    if isinstance(value, TraceADArray):
+        raise ValueError("program AD full_like fill value must be scalar")
+    array = np.asarray(value)
+    if array.shape not in {(), (1,)}:
+        raise ValueError("program AD full_like fill value must be scalar")
+    if array.dtype.kind in {"O", "S", "U", "c"}:
+        raise ValueError("program AD full_like fill value must be real numeric")
+    scalar = float(array.reshape(-1)[0])
+    if not math.isfinite(scalar):
+        raise ValueError("program AD full_like fill value must be finite")
+    return "static_scalar"
+
+
+def _program_ad_assembly_zeros_like_static_arguments(
+    args: tuple[object, ...],
+) -> tuple[object, ...]:
+    return (_program_ad_assembly_zeros_like_shape(args),)
+
+
+def _program_ad_assembly_ones_like_static_arguments(
+    args: tuple[object, ...],
+) -> tuple[object, ...]:
+    return (_program_ad_assembly_ones_like_shape(args),)
+
+
+def _program_ad_assembly_full_like_static_arguments(
+    args: tuple[object, ...],
+) -> tuple[object, ...]:
+    return (
+        _program_ad_assembly_full_like_shape(args),
+        _program_ad_assembly_static_scalar_fill(args[1]),
+    )
+
+
 def _program_ad_assembly_concatenate_operands(
     args: tuple[object, ...],
 ) -> tuple[tuple[object, ...], object]:
@@ -18886,6 +18964,35 @@ def _program_ad_assembly_stack_batching_rule(
     return np.moveaxis(stacked, 0, _normalise_axis("out_axes", out_axes, stacked.ndim))
 
 
+def _program_ad_assembly_like_batching_rule(
+    function: Callable[..., object],
+    args: tuple[object, ...],
+    axes: tuple[int | None, ...],
+    out_axes: int,
+) -> object:
+    if len(args) != len(axes):
+        raise ValueError("program AD like-constructor batching axes must match arguments")
+    if not args:
+        raise ValueError("program AD like-constructor batching requires a reference operand")
+    if axes[0] is None:
+        return _as_real_numeric_array(
+            "program AD like-constructor batched output", function(*args)
+        )
+    if any(axis is not None for axis in axes[1:]):
+        raise ValueError("program AD like-constructor batching keeps fill values static")
+    reference = _as_real_numeric_array("program AD like-constructor batched reference", args[0])
+    batch_axis = _normalise_axis("axes[0]", axes[0], reference.ndim)
+    outputs = [
+        _as_real_numeric_array(
+            "program AD like-constructor batched output",
+            function(np.take(reference, batch_index, axis=batch_axis), *args[1:]),
+        )
+        for batch_index in range(int(reference.shape[batch_axis]))
+    ]
+    stacked = np.stack(outputs, axis=0)
+    return np.moveaxis(stacked, 0, _normalise_axis("out_axes", out_axes, stacked.ndim))
+
+
 def _program_ad_assembly_lowering_metadata(name: str) -> Mapping[str, str]:
     if name not in _PROGRAM_AD_ASSEMBLY_IDENTITIES:
         raise ValueError(f"unsupported program AD assembly primitive {name}")
@@ -18896,6 +19003,8 @@ def _program_ad_assembly_lowering_metadata(name: str) -> Mapping[str, str]:
         "broadcast_to": "program_ad_assembly_broadcast_to_derivative_rule",
         "concatenate": "program_ad_assembly_concatenate_derivative_rule",
         "diagonal": "program_ad_assembly_diagonal_derivative_rule",
+        "full_like": "program_ad_assembly_full_like_derivative_rule",
+        "ones_like": "program_ad_assembly_ones_like_derivative_rule",
         "split": "program_ad_assembly_split_derivative_rule",
         "array_split": "program_ad_assembly_split_derivative_rule",
         "hsplit": "program_ad_assembly_split_derivative_rule",
@@ -18904,6 +19013,7 @@ def _program_ad_assembly_lowering_metadata(name: str) -> Mapping[str, str]:
         "stack": "program_ad_assembly_stack_derivative_rule",
         "tril": "program_ad_assembly_tril_derivative_rule",
         "triu": "program_ad_assembly_triu_derivative_rule",
+        "zeros_like": "program_ad_assembly_zeros_like_derivative_rule",
     }
     boundaries = {
         "append": "static_source_values_shape_axis_append",
@@ -18912,6 +19022,8 @@ def _program_ad_assembly_lowering_metadata(name: str) -> Mapping[str, str]:
         "broadcast_to": "static_source_shape_broadcast_to",
         "concatenate": "static_operand_shape_axis_concatenate",
         "diagonal": "static_diagonal_offset_axis_gather_scatter",
+        "full_like": "static_reference_shape_scalar_fill",
+        "ones_like": "static_reference_shape_unit_fill",
         "split": "static_split_sections_gather_scatter",
         "array_split": "static_array_split_sections_gather_scatter",
         "hsplit": "static_hsplit_sections_gather_scatter",
@@ -18920,6 +19032,7 @@ def _program_ad_assembly_lowering_metadata(name: str) -> Mapping[str, str]:
         "stack": "static_operand_shape_axis_stack",
         "tril": "static_lower_triangular_mask",
         "triu": "static_upper_triangular_mask",
+        "zeros_like": "static_reference_shape_zero_fill",
     }
     static_signatures = {
         "append": "source_shape:ranked_tensor_shape;values_shape:ranked_tensor_shape;axis",
@@ -18928,6 +19041,8 @@ def _program_ad_assembly_lowering_metadata(name: str) -> Mapping[str, str]:
         "broadcast_to": "source_shape:ranked_tensor_shape;output_shape",
         "concatenate": "operand_shapes:ranked_tensor_shapes;axis",
         "diagonal": "source_shape:rank_ge_2;offset_axis_pair;output_shape",
+        "full_like": "source_shape:ranked_tensor_shape;scalar_fill",
+        "ones_like": "source_shape:ranked_tensor_shape",
         "split": "source_shape:ranked_tensor_shape;indices_or_sections;axis;part_shapes",
         "array_split": "source_shape:ranked_tensor_shape;indices_or_sections;axis;part_shapes",
         "hsplit": "source_shape:ranked_tensor_shape;indices_or_sections;axis;part_shapes",
@@ -18936,6 +19051,7 @@ def _program_ad_assembly_lowering_metadata(name: str) -> Mapping[str, str]:
         "stack": "operand_shapes:ranked_tensor_shapes;axis",
         "tril": "source_shape:rank_ge_2;k",
         "triu": "source_shape:rank_ge_2;k",
+        "zeros_like": "source_shape:ranked_tensor_shape",
     }
     return {
         "program_ad": "operator_intercepted_trace",
@@ -19964,6 +20080,8 @@ def _register_program_ad_assembly_primitive_contracts() -> None:
         "broadcast_to": _program_ad_assembly_broadcast_to_batching_rule,
         "concatenate": _program_ad_assembly_batching_rule,
         "diagonal": _program_ad_assembly_diagonal_batching_rule,
+        "full_like": _program_ad_assembly_like_batching_rule,
+        "ones_like": _program_ad_assembly_like_batching_rule,
         "split": _program_ad_assembly_split_batching_rule_for("split"),
         "array_split": _program_ad_assembly_split_batching_rule_for("array_split"),
         "hsplit": _program_ad_assembly_split_batching_rule_for("hsplit"),
@@ -19972,6 +20090,7 @@ def _register_program_ad_assembly_primitive_contracts() -> None:
         "stack": _program_ad_assembly_stack_batching_rule,
         "tril": _program_ad_assembly_triangular_batching_rule_for("tril"),
         "triu": _program_ad_assembly_triangular_batching_rule_for("triu"),
+        "zeros_like": _program_ad_assembly_like_batching_rule,
     }
     shape_rules: Mapping[str, PrimitiveShapeRule] = {
         "append": _program_ad_assembly_append_shape,
@@ -19980,6 +20099,8 @@ def _register_program_ad_assembly_primitive_contracts() -> None:
         "broadcast_to": _program_ad_assembly_broadcast_to_shape,
         "concatenate": _program_ad_assembly_concatenate_shape,
         "diagonal": _program_ad_assembly_diagonal_shape,
+        "full_like": _program_ad_assembly_full_like_shape,
+        "ones_like": _program_ad_assembly_ones_like_shape,
         "split": _program_ad_assembly_split_shape_rule_for("split"),
         "array_split": _program_ad_assembly_split_shape_rule_for("array_split"),
         "hsplit": _program_ad_assembly_split_shape_rule_for("hsplit"),
@@ -19988,6 +20109,7 @@ def _register_program_ad_assembly_primitive_contracts() -> None:
         "stack": _program_ad_assembly_stack_shape,
         "tril": _program_ad_assembly_triangular_shape,
         "triu": _program_ad_assembly_triangular_shape,
+        "zeros_like": _program_ad_assembly_zeros_like_shape,
     }
     dtype_rules: Mapping[str, PrimitiveDTypeRule] = {
         "append": _program_ad_assembly_append_dtype_rule,
@@ -19996,6 +20118,8 @@ def _register_program_ad_assembly_primitive_contracts() -> None:
         "broadcast_to": _program_ad_assembly_broadcast_to_dtype_rule,
         "concatenate": _program_ad_assembly_concatenate_dtype_rule,
         "diagonal": _program_ad_assembly_diagonal_dtype_rule,
+        "full_like": _program_ad_assembly_like_dtype_rule,
+        "ones_like": _program_ad_assembly_like_dtype_rule,
         "split": _program_ad_assembly_split_dtype_rule,
         "array_split": _program_ad_assembly_split_dtype_rule,
         "hsplit": _program_ad_assembly_split_dtype_rule,
@@ -20004,6 +20128,7 @@ def _register_program_ad_assembly_primitive_contracts() -> None:
         "stack": _program_ad_assembly_stack_dtype_rule,
         "tril": _program_ad_assembly_triangular_dtype_rule,
         "triu": _program_ad_assembly_triangular_dtype_rule,
+        "zeros_like": _program_ad_assembly_like_dtype_rule,
     }
     static_argument_rules: Mapping[str, PrimitiveStaticArgumentRule] = {
         "append": _program_ad_assembly_append_static_arguments,
@@ -20012,6 +20137,8 @@ def _register_program_ad_assembly_primitive_contracts() -> None:
         "broadcast_to": _program_ad_assembly_broadcast_to_static_arguments,
         "concatenate": _program_ad_assembly_concatenate_static_arguments,
         "diagonal": _program_ad_assembly_diagonal_static_arguments,
+        "full_like": _program_ad_assembly_full_like_static_arguments,
+        "ones_like": _program_ad_assembly_ones_like_static_arguments,
         "split": _program_ad_assembly_split_static_arguments_rule_for("split"),
         "array_split": _program_ad_assembly_split_static_arguments_rule_for("array_split"),
         "hsplit": _program_ad_assembly_split_static_arguments_rule_for("hsplit"),
@@ -20020,6 +20147,7 @@ def _register_program_ad_assembly_primitive_contracts() -> None:
         "stack": _program_ad_assembly_stack_static_arguments,
         "tril": _program_ad_assembly_triangular_static_arguments,
         "triu": _program_ad_assembly_triangular_static_arguments,
+        "zeros_like": _program_ad_assembly_zeros_like_static_arguments,
     }
     for name, identity in _PROGRAM_AD_ASSEMBLY_IDENTITIES.items():
         if DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.contract_for(identity) is not None:

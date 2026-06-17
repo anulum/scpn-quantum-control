@@ -9152,6 +9152,18 @@ def test_program_ad_primitive_metadata_advertises_static_derivative_factories() 
             "program_ad_assembly_broadcast_arrays_derivative_rule",
             "operand_shapes:ranked_tensor_shapes;output_shape",
         ),
+        "scpn.program_ad.assembly:zeros_like": (
+            "program_ad_assembly_zeros_like_derivative_rule",
+            "source_shape:ranked_tensor_shape",
+        ),
+        "scpn.program_ad.assembly:ones_like": (
+            "program_ad_assembly_ones_like_derivative_rule",
+            "source_shape:ranked_tensor_shape",
+        ),
+        "scpn.program_ad.assembly:full_like": (
+            "program_ad_assembly_full_like_derivative_rule",
+            "source_shape:ranked_tensor_shape;scalar_fill",
+        ),
         "scpn.program_ad.assembly:tril": (
             "program_ad_assembly_tril_derivative_rule",
             "source_shape:rank_ge_2;k",
@@ -13571,12 +13583,15 @@ def test_program_ad_assembly_primitives_validate_registry_rules_at_dispatch() ->
             "concatenate",
             "diagonal",
             "dsplit",
+            "full_like",
             "hsplit",
+            "ones_like",
             "split",
             "stack",
             "tril",
             "triu",
             "vsplit",
+            "zeros_like",
         )
     }
     calls: dict[str, set[str]] = {name: set() for name in originals}
@@ -13637,6 +13652,9 @@ def test_program_ad_assembly_primitives_validate_registry_rules_at_dispatch() ->
             + np.sum(np.broadcast_to(source[:1], (2, 1)))
             + np.sum(broadcast_left)
             + np.sum(broadcast_right)
+            + np.sum(np.zeros_like(source))
+            + np.sum(np.ones_like(source))
+            + np.sum(np.full_like(source, 2.0))
             + np.sum(np.tril(matrix, k=-1))
             + np.sum(np.triu(matrix, k=1))
             + np.sum(np.diagonal(matrix, offset=0, axis1=0, axis2=1))
@@ -13665,12 +13683,15 @@ def test_program_ad_assembly_primitives_validate_registry_rules_at_dispatch() ->
         "concatenate": {"shape", "dtype", "static"},
         "diagonal": {"shape", "dtype", "static"},
         "dsplit": {"shape", "dtype", "static"},
+        "full_like": {"shape", "dtype", "static"},
         "hsplit": {"shape", "dtype", "static"},
+        "ones_like": {"shape", "dtype", "static"},
         "split": {"shape", "dtype", "static"},
         "stack": {"shape", "dtype", "static"},
         "tril": {"shape", "dtype", "static"},
         "triu": {"shape", "dtype", "static"},
         "vsplit": {"shape", "dtype", "static"},
+        "zeros_like": {"shape", "dtype", "static"},
     }
 
 
