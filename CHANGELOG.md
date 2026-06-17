@@ -5,6 +5,14 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-06-17 — Added the
+  `transform_nesting_whole_program_higher_order` differentiable-programming
+  conformance benchmark row. It checks `jacfwd` and `jacrev` over
+  whole-program `grad(vmap(f))` against analytic block-diagonal curvature,
+  keeping the evidence bounded to deterministic correctness and avoiding
+  compiler, JIT, hardware, or timing claims. Documented in
+  `docs/benchmarks_api.md` and covered by
+  `tests/test_differentiable_programming_benchmarks.py`.
 - 2026-06-17 — Added `differentiable_dashboard_status` plus
   `DifferentiableDashboardStatus` and `DifferentiableDashboardCapabilityRow`
   for GUI/audit-dashboard consumers. The status payload labels executable,

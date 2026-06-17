@@ -40,6 +40,7 @@ def test_differentiable_programming_benchmark_suite_matches_analytic_references(
         "indexing_static_gather_contracts",
         "mutation_heavy_forward_only",
         "transform_nesting_vmap_program_grad",
+        "transform_nesting_whole_program_higher_order",
     ]
     assert {row.category for row in results} == {
         "loop-heavy",
@@ -85,6 +86,12 @@ def test_differentiable_programming_benchmark_suite_matches_analytic_references(
     transform_row = next(row for row in results if row.category == "transform-nesting")
     assert transform_row.gradient.shape == (12,)
     assert "grad(vmap(f))" in transform_row.claim_boundary
+    higher_order_row = next(
+        row for row in results if row.case_id == "transform_nesting_whole_program_higher_order"
+    )
+    assert higher_order_row.gradient.shape == (32,)
+    assert higher_order_row.max_abs_gradient_error <= 1.0e-6
+    assert "jacfwd/jacrev over whole-program grad(vmap(f))" in higher_order_row.claim_boundary
 
 
 def test_differentiable_programming_benchmark_result_validation_paths() -> None:

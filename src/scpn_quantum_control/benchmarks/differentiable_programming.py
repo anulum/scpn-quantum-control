@@ -21,6 +21,8 @@ from ..differentiable import (
     Parameter,
     grad,
     is_jax_autodiff_available,
+    jacfwd,
+    jacrev,
     jax_value_and_grad,
     program_adjoint_gradient,
     vmap,
@@ -205,6 +207,7 @@ def run_differentiable_programming_benchmark_suite() -> tuple[
         _indexing_heavy_case(),
         _mutation_heavy_case(),
         _transform_nesting_case(),
+        _higher_order_transform_nesting_case(),
     )
 
 
@@ -1072,6 +1075,46 @@ def _transform_nesting_case() -> DifferentiableProgrammingBenchmarkResult:
             "vmap over program AD gradients and program AD grad(vmap(f)) compared with "
             "analytic separable references; diagnostic conformance only, not a "
             "performance timing claim"
+        ),
+    )
+
+
+def _higher_order_transform_nesting_case() -> DifferentiableProgrammingBenchmarkResult:
+    values = np.array([[0.5, 0.25], [-1.2, 0.75]], dtype=np.float64)
+    flat_values = values.reshape(-1)
+    row_shape = (2, 2)
+
+    def row_loss(row: Any) -> object:
+        return row[0] * row[0] + row[0] * row[1] + 0.5 * row[1] * row[1]
+
+    def batched_loss(candidate: Any) -> object:
+        return np.sum(cast(Any, vmap(row_loss)(np.reshape(candidate, row_shape))))
+
+    def batched_program_gradient(candidate: Any) -> NDArray[np.float64]:
+        return grad(batched_loss, candidate, method="whole_program")
+
+    forward_nested = jacfwd(batched_program_gradient, flat_values, step=1.0e-4)
+    reverse_nested = jacrev(batched_program_gradient, flat_values, step=1.0e-4)
+    analytic_hessian = np.zeros((flat_values.size, flat_values.size), dtype=np.float64)
+    analytic_hessian[0:2, 0:2] = np.array([[2.0, 1.0], [1.0, 1.0]], dtype=np.float64)
+    analytic_hessian[2:4, 2:4] = np.array([[2.0, 1.0], [1.0, 1.0]], dtype=np.float64)
+    gradient = np.concatenate([forward_nested.reshape(-1), reverse_nested.reshape(-1)])
+    analytic_gradient = np.concatenate(
+        [analytic_hessian.reshape(-1), analytic_hessian.reshape(-1)]
+    )
+    return DifferentiableProgrammingBenchmarkResult(
+        case_id="transform_nesting_whole_program_higher_order",
+        category="transform-nesting",
+        value=float(cast(Any, batched_loss(flat_values))),
+        gradient=gradient,
+        analytic_gradient=analytic_gradient,
+        max_abs_gradient_error=_max_abs_error(gradient, analytic_gradient),
+        adjoint_supported=True,
+        max_abs_adjoint_error=0.0,
+        claim_boundary=(
+            "jacfwd/jacrev over whole-program grad(vmap(f)) compared with analytic "
+            "block-diagonal curvature; diagnostic conformance only, not a performance "
+            "timing claim"
         ),
     )
 
