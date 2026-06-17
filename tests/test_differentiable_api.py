@@ -168,6 +168,12 @@ def test_differentiable_dashboard_status_is_claim_bounded_for_gui_consumers() ->
     assert rows["program_ad_alias_effects"]["claim_boundary"] == (
         "metadata_only_no_general_alias_lattice"
     )
+    assert rows["higher_order_transform_algebra"]["state"] == "diagnostic"
+    assert rows["higher_order_transform_algebra"]["fail_closed"] is True
+    assert (
+        "transform_nesting_whole_program_higher_order"
+        in rows["higher_order_transform_algebra"]["evidence"]
+    )
     assert rows["polyglot_compiler_chain"]["state"] == "blocked"
     assert (
         "native Rust Program AD interpreter is not promoted"
@@ -176,6 +182,17 @@ def test_differentiable_dashboard_status_is_claim_bounded_for_gui_consumers() ->
     assert rows["provider_and_hardware_gradients"]["state"] == "blocked"
     assert rows["gui_frontend"]["state"] == "planned"
     assert "without upgrading" in str(payload["claim_boundary"])
+
+
+def test_differentiable_dashboard_status_can_include_conformance_backing() -> None:
+    status = differentiable_dashboard_status(include_conformance=True)
+    rows = {row.surface: row for row in status.rows}
+
+    assert rows["benchmark_conformance"].state == "conformance_backed"
+    assert rows["higher_order_transform_algebra"].state == "conformance_backed"
+    assert rows["higher_order_transform_algebra"].fail_closed is False
+    assert rows["higher_order_transform_algebra"].blocked_reasons == ()
+    assert "no compiler" in rows["higher_order_transform_algebra"].claim_boundary
 
 
 def test_differentiable_dashboard_status_validates_rows() -> None:

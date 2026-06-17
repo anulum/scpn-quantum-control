@@ -5,6 +5,13 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-06-17 — Added a `higher_order_transform_algebra` row to
+  `differentiable_dashboard_status(...)`. The row is `diagnostic` by default
+  and becomes `conformance_backed` only when `include_conformance=True` runs
+  the local benchmark report, tying GUI/audit status to the
+  `transform_nesting_vmap_program_grad` and
+  `transform_nesting_whole_program_higher_order` benchmark rows without
+  promoting compiler, JIT, hardware, provider, or performance claims.
 - 2026-06-17 — Added the
   `transform_nesting_whole_program_higher_order` differentiable-programming
   conformance benchmark row. It checks `jacfwd` and `jacrev` over

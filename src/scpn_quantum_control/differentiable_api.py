@@ -547,6 +547,22 @@ def differentiable_dashboard_status(
             claim_boundary="registered primitive contracts only; unknown primitives fail closed",
         ),
         DifferentiableDashboardCapabilityRow(
+            surface="higher_order_transform_algebra",
+            state="conformance_backed" if conformance_passed else "diagnostic",
+            backing_api="run_differentiable_programming_benchmark_suite",
+            evidence=(
+                "transform_nesting_vmap_program_grad",
+                "transform_nesting_whole_program_higher_order",
+            ),
+            blocked_reasons=()
+            if conformance_passed
+            else ("conformance suite not run in this status call",),
+            claim_boundary=(
+                "local transform-algebra conformance for vmap, whole-program grad, "
+                "jacfwd, and jacrev only; no compiler, JIT, hardware, or performance claim"
+            ),
+        ),
+        DifferentiableDashboardCapabilityRow(
             surface="nondifferentiability_diagnostics",
             state="diagnostic",
             backing_api="diagnose_program_ad_linalg_conditioning",
