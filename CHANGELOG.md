@@ -5,6 +5,11 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-06-17 — Registered Program AD `np.var`/`np.std` and trace-array
+  `.var()`/`.std()` as bounded variance-reduction primitive contracts with
+  shape, dtype, static axis/ddof validation, batching, lowering metadata,
+  direct JVP/VJP factories, positive-denominator checks, and fail-closed
+  zero-variance standard-deviation boundaries.
 - 2026-06-17 — Registered Program AD `np.max`/`np.min` and trace-array
   `.max()`/`.min()` as bounded extreme-reduction primitive contracts with
   shape, dtype, static-axis validation, batching, lowering metadata, direct

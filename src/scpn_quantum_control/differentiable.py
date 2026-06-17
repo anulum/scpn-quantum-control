@@ -1626,11 +1626,13 @@ class TraceADArray:
     def var(self, axis: int | None = None, ddof: int = 0) -> TraceADScalar | TraceADArray:
         """Return a derivative-preserving variance with NumPy-compatible ddof."""
 
+        _require_program_ad_reduction_contract("var", (self, axis, ddof))
         return _trace_variance(self, axis=axis, ddof=ddof)
 
     def std(self, axis: int | None = None, ddof: int = 0) -> TraceADScalar | TraceADArray:
         """Return a derivative-preserving standard deviation."""
 
+        _require_program_ad_reduction_contract("std", (self, axis, ddof))
         return _trace_std(self, axis=axis, ddof=ddof)
 
     def max(self, axis: int | None = None) -> TraceADScalar | TraceADArray:
@@ -1836,18 +1838,30 @@ class TraceADArray:
         if func is np.var:
             if len(args) != 1 or kwargs.keys() - {"axis", "ddof"}:
                 raise ValueError("program AD np.var supports one array, axis, and ddof")
+            var_axis = cast(int | None, kwargs.get("axis"))
+            var_ddof = kwargs.get("ddof", 0)
+            _require_program_ad_reduction_contract(
+                "var",
+                (_coerce_trace_array(args[0], self.context), var_axis, var_ddof),
+            )
             return _trace_variance(
                 _coerce_trace_array(args[0], self.context),
-                axis=cast(int | None, kwargs.get("axis")),
-                ddof=kwargs.get("ddof", 0),
+                axis=var_axis,
+                ddof=var_ddof,
             )
         if func is np.std:
             if len(args) != 1 or kwargs.keys() - {"axis", "ddof"}:
                 raise ValueError("program AD np.std supports one array, axis, and ddof")
+            std_axis = cast(int | None, kwargs.get("axis"))
+            std_ddof = kwargs.get("ddof", 0)
+            _require_program_ad_reduction_contract(
+                "std",
+                (_coerce_trace_array(args[0], self.context), std_axis, std_ddof),
+            )
             return _trace_std(
                 _coerce_trace_array(args[0], self.context),
-                axis=cast(int | None, kwargs.get("axis")),
-                ddof=kwargs.get("ddof", 0),
+                axis=std_axis,
+                ddof=std_ddof,
             )
         if func is np.median:
             if len(args) < 1 or len(args) > 2 or kwargs.keys() - {"axis"}:
@@ -11370,6 +11384,8 @@ _PROGRAM_AD_REDUCTION_IDENTITIES: Mapping[str, PrimitiveIdentity] = {
         "sum",
         "prod",
         "mean",
+        "var",
+        "std",
         "max",
         "min",
         "median",
@@ -13149,6 +13165,80 @@ def _program_ad_reduction_mean_vjp(
     return np.full(vector.shape, scalar_cotangent / float(vector.size), dtype=np.float64)
 
 
+def _program_ad_reduction_variance_gradient(
+    name: str,
+    values: NDArray[np.float64],
+    *,
+    ddof: int,
+) -> NDArray[np.float64]:
+    vector = _program_ad_reduction_vector(name, values)
+    ddof_int = _normalise_ddof(ddof, vector.size)
+    mean = float(np.mean(vector))
+    return (2.0 / float(vector.size - ddof_int)) * (vector - mean)
+
+
+def _program_ad_reduction_var_value(values: NDArray[np.float64]) -> NDArray[np.float64]:
+    vector = _program_ad_reduction_vector("var", values)
+    _normalise_ddof(0, vector.size)
+    return np.array([float(np.var(vector))], dtype=np.float64)
+
+
+def _program_ad_reduction_var_jvp(
+    values: NDArray[np.float64],
+    tangent: NDArray[np.float64],
+) -> NDArray[np.float64]:
+    vector, tangent_vector = _program_ad_reduction_tangent_pair("var", values, tangent)
+    gradient = _program_ad_reduction_variance_gradient("var", vector, ddof=0)
+    return np.array([float(np.dot(gradient, tangent_vector))], dtype=np.float64)
+
+
+def _program_ad_reduction_var_vjp(
+    values: NDArray[np.float64],
+    cotangent: NDArray[np.float64],
+) -> NDArray[np.float64]:
+    vector = _program_ad_reduction_vector("var", values)
+    scalar_cotangent = _program_ad_reduction_scalar_cotangent("var", cotangent)
+    return scalar_cotangent * _program_ad_reduction_variance_gradient("var", vector, ddof=0)
+
+
+def _program_ad_reduction_std_value(values: NDArray[np.float64]) -> NDArray[np.float64]:
+    vector = _program_ad_reduction_vector("std", values)
+    _normalise_ddof(0, vector.size)
+    return np.array([float(np.std(vector))], dtype=np.float64)
+
+
+def _program_ad_reduction_std_gradient(
+    values: NDArray[np.float64],
+    *,
+    ddof: int,
+) -> NDArray[np.float64]:
+    vector = _program_ad_reduction_vector("std", values)
+    standard_deviation = float(np.std(vector, ddof=ddof))
+    if standard_deviation == 0.0:
+        raise ValueError("program AD reduction std direct rule is undefined at zero variance")
+    return _program_ad_reduction_variance_gradient("std", vector, ddof=ddof) / (
+        2.0 * standard_deviation
+    )
+
+
+def _program_ad_reduction_std_jvp(
+    values: NDArray[np.float64],
+    tangent: NDArray[np.float64],
+) -> NDArray[np.float64]:
+    vector, tangent_vector = _program_ad_reduction_tangent_pair("std", values, tangent)
+    gradient = _program_ad_reduction_std_gradient(vector, ddof=0)
+    return np.array([float(np.dot(gradient, tangent_vector))], dtype=np.float64)
+
+
+def _program_ad_reduction_std_vjp(
+    values: NDArray[np.float64],
+    cotangent: NDArray[np.float64],
+) -> NDArray[np.float64]:
+    vector = _program_ad_reduction_vector("std", values)
+    scalar_cotangent = _program_ad_reduction_scalar_cotangent("std", cotangent)
+    return scalar_cotangent * _program_ad_reduction_std_gradient(vector, ddof=0)
+
+
 def _program_ad_reduction_order_statistic_value(
     name: str,
     values: NDArray[np.float64],
@@ -13265,6 +13355,20 @@ def _program_ad_reduction_derivative_rule(name: str) -> CustomDerivativeRule:
             jvp_rule=_program_ad_reduction_mean_jvp,
             vjp_rule=_program_ad_reduction_mean_vjp,
         )
+    if name == "var":
+        return CustomDerivativeRule(
+            name="program_ad_reduction_var_direct_rule",
+            value_fn=_program_ad_reduction_var_value,
+            jvp_rule=_program_ad_reduction_var_jvp,
+            vjp_rule=_program_ad_reduction_var_vjp,
+        )
+    if name == "std":
+        return CustomDerivativeRule(
+            name="program_ad_reduction_std_direct_rule",
+            value_fn=_program_ad_reduction_std_value,
+            jvp_rule=_program_ad_reduction_std_jvp,
+            vjp_rule=_program_ad_reduction_std_vjp,
+        )
     if name == "max":
         return _program_ad_reduction_order_statistic_rule(name, q=1.0)
     if name == "min":
@@ -13338,6 +13442,139 @@ def _program_ad_reduction_order_statistic_static_value(
             name, source_values, q=q
         )[0]
     return _program_ad_float64_vector_result(output)
+
+
+def _program_ad_reduction_var_static_value(
+    values: NDArray[np.float64],
+    *,
+    source_shape: tuple[int, ...],
+    axis: int | None,
+    ddof: int,
+) -> NDArray[np.float64]:
+    vector = _program_ad_reduction_source_vector(
+        "var", "values", values, source_shape=source_shape
+    )
+    count = vector.size if axis is None else source_shape[axis]
+    _normalise_ddof(ddof, count)
+    return _program_ad_float64_vector_result(
+        np.var(vector.reshape(source_shape), axis=axis, ddof=ddof)
+    )
+
+
+def _program_ad_reduction_var_static_jvp(
+    values: NDArray[np.float64],
+    tangent: NDArray[np.float64],
+    *,
+    source_shape: tuple[int, ...],
+    axis: int | None,
+    ddof: int,
+) -> NDArray[np.float64]:
+    value_array = _program_ad_reduction_source_vector(
+        "var", "values", values, source_shape=source_shape
+    ).reshape(source_shape)
+    tangent_array = _program_ad_reduction_source_vector(
+        "var", "tangent", tangent, source_shape=source_shape
+    ).reshape(source_shape)
+    count = value_array.size if axis is None else source_shape[axis]
+    ddof_int = _normalise_ddof(ddof, count)
+    mean = np.mean(value_array, axis=axis, keepdims=True)
+    gradient = (2.0 / float(count - ddof_int)) * (value_array - mean)
+    return _program_ad_float64_vector_result(np.sum(gradient * tangent_array, axis=axis))
+
+
+def _program_ad_reduction_var_static_vjp(
+    values: NDArray[np.float64],
+    cotangent: NDArray[np.float64],
+    *,
+    source_shape: tuple[int, ...],
+    axis: int | None,
+    ddof: int,
+) -> NDArray[np.float64]:
+    value_array = _program_ad_reduction_source_vector(
+        "var", "values", values, source_shape=source_shape
+    ).reshape(source_shape)
+    output_shape = _program_ad_reduction_output_shape(source_shape, axis)
+    cotangent_array = _program_ad_reduction_cotangent_array(
+        "var", cotangent, output_shape=output_shape
+    )
+    count = value_array.size if axis is None else source_shape[axis]
+    ddof_int = _normalise_ddof(ddof, count)
+    mean = np.mean(value_array, axis=axis, keepdims=True)
+    gradient = (2.0 / float(count - ddof_int)) * (value_array - mean)
+    if axis is None:
+        return _program_ad_float64_vector_result(gradient * float(cotangent_array))
+    expanded_cotangent = np.expand_dims(cotangent_array, axis=axis)
+    return _program_ad_float64_vector_result(gradient * expanded_cotangent)
+
+
+def _program_ad_reduction_std_static_value(
+    values: NDArray[np.float64],
+    *,
+    source_shape: tuple[int, ...],
+    axis: int | None,
+    ddof: int,
+) -> NDArray[np.float64]:
+    vector = _program_ad_reduction_source_vector(
+        "std", "values", values, source_shape=source_shape
+    )
+    count = vector.size if axis is None else source_shape[axis]
+    _normalise_ddof(ddof, count)
+    result = np.std(vector.reshape(source_shape), axis=axis, ddof=ddof)
+    if bool(np.any(np.asarray(result) == 0.0)):
+        raise ValueError("program AD reduction std direct rule is undefined at zero variance")
+    return _program_ad_float64_vector_result(result)
+
+
+def _program_ad_reduction_std_static_jvp(
+    values: NDArray[np.float64],
+    tangent: NDArray[np.float64],
+    *,
+    source_shape: tuple[int, ...],
+    axis: int | None,
+    ddof: int,
+) -> NDArray[np.float64]:
+    value_array = _program_ad_reduction_source_vector(
+        "std", "values", values, source_shape=source_shape
+    ).reshape(source_shape)
+    tangent_array = _program_ad_reduction_source_vector(
+        "std", "tangent", tangent, source_shape=source_shape
+    ).reshape(source_shape)
+    count = value_array.size if axis is None else source_shape[axis]
+    ddof_int = _normalise_ddof(ddof, count)
+    standard_deviation = np.std(value_array, axis=axis, ddof=ddof_int, keepdims=True)
+    if bool(np.any(standard_deviation == 0.0)):
+        raise ValueError("program AD reduction std direct rule is undefined at zero variance")
+    mean = np.mean(value_array, axis=axis, keepdims=True)
+    gradient = (value_array - mean) / (float(count - ddof_int) * standard_deviation)
+    return _program_ad_float64_vector_result(np.sum(gradient * tangent_array, axis=axis))
+
+
+def _program_ad_reduction_std_static_vjp(
+    values: NDArray[np.float64],
+    cotangent: NDArray[np.float64],
+    *,
+    source_shape: tuple[int, ...],
+    axis: int | None,
+    ddof: int,
+) -> NDArray[np.float64]:
+    value_array = _program_ad_reduction_source_vector(
+        "std", "values", values, source_shape=source_shape
+    ).reshape(source_shape)
+    output_shape = _program_ad_reduction_output_shape(source_shape, axis)
+    cotangent_array = _program_ad_reduction_cotangent_array(
+        "std", cotangent, output_shape=output_shape
+    )
+    count = value_array.size if axis is None else source_shape[axis]
+    ddof_int = _normalise_ddof(ddof, count)
+    standard_deviation = np.std(value_array, axis=axis, ddof=ddof_int, keepdims=True)
+    if bool(np.any(standard_deviation == 0.0)):
+        raise ValueError("program AD reduction std direct rule is undefined at zero variance")
+    mean = np.mean(value_array, axis=axis, keepdims=True)
+    gradient = (value_array - mean) / (float(count - ddof_int) * standard_deviation)
+    if axis is None:
+        return _program_ad_float64_vector_result(gradient * float(cotangent_array))
+    expanded_cotangent = np.expand_dims(cotangent_array, axis=axis)
+    return _program_ad_float64_vector_result(gradient * expanded_cotangent)
 
 
 def _program_ad_reduction_order_statistic_static_jvp(
@@ -13777,6 +14014,85 @@ def program_ad_reduction_mean_derivative_rule(
     """Build an exact direct derivative rule for a fixed mean reduction signature."""
 
     return _program_ad_reduction_static_rule("mean", source_shape, axis)
+
+
+def _program_ad_reduction_var_std_static_rule(
+    name: Literal["var", "std"],
+    source_shape: Sequence[int],
+    *,
+    axis: int | None,
+    ddof: int,
+) -> CustomDerivativeRule:
+    source = _program_ad_reduction_normalise_static_shape(name, source_shape)
+    normalised_axis = None if axis is None else _normalise_axis("axis", axis, len(source))
+    count = (
+        _program_ad_shape_static_size(source)
+        if normalised_axis is None
+        else source[normalised_axis]
+    )
+    ddof_int = _normalise_ddof(ddof, count)
+
+    def value_fn(values: NDArray[np.float64]) -> NDArray[np.float64]:
+        if name == "var":
+            return _program_ad_reduction_var_static_value(
+                values, source_shape=source, axis=normalised_axis, ddof=ddof_int
+            )
+        return _program_ad_reduction_std_static_value(
+            values, source_shape=source, axis=normalised_axis, ddof=ddof_int
+        )
+
+    def jvp_rule(values: NDArray[np.float64], tangent: NDArray[np.float64]) -> NDArray[np.float64]:
+        if name == "var":
+            return _program_ad_reduction_var_static_jvp(
+                values, tangent, source_shape=source, axis=normalised_axis, ddof=ddof_int
+            )
+        return _program_ad_reduction_std_static_jvp(
+            values, tangent, source_shape=source, axis=normalised_axis, ddof=ddof_int
+        )
+
+    def vjp_rule(
+        values: NDArray[np.float64], cotangent: NDArray[np.float64]
+    ) -> NDArray[np.float64]:
+        if name == "var":
+            return _program_ad_reduction_var_static_vjp(
+                values, cotangent, source_shape=source, axis=normalised_axis, ddof=ddof_int
+            )
+        return _program_ad_reduction_std_static_vjp(
+            values, cotangent, source_shape=source, axis=normalised_axis, ddof=ddof_int
+        )
+
+    return CustomDerivativeRule(
+        name=(
+            f"program_ad_reduction_{name}_{_program_ad_shape_signature(source)}_axis_"
+            f"{_program_ad_reduction_axis_signature(normalised_axis)}_ddof_"
+            f"{ddof_int}_direct_rule"
+        ),
+        value_fn=value_fn,
+        jvp_rule=jvp_rule,
+        vjp_rule=vjp_rule,
+    )
+
+
+def program_ad_reduction_var_derivative_rule(
+    source_shape: Sequence[int],
+    axis: int | None = None,
+    *,
+    ddof: int = 0,
+) -> CustomDerivativeRule:
+    """Build an exact direct derivative rule for a fixed variance signature."""
+
+    return _program_ad_reduction_var_std_static_rule("var", source_shape, axis=axis, ddof=ddof)
+
+
+def program_ad_reduction_std_derivative_rule(
+    source_shape: Sequence[int],
+    axis: int | None = None,
+    *,
+    ddof: int = 0,
+) -> CustomDerivativeRule:
+    """Build an exact direct derivative rule for a fixed standard-deviation signature."""
+
+    return _program_ad_reduction_var_std_static_rule("std", source_shape, axis=axis, ddof=ddof)
 
 
 def program_ad_reduction_max_derivative_rule(
@@ -16583,6 +16899,21 @@ def _program_ad_reduction_axis(args: tuple[object, ...]) -> int | None:
     return int(axis)
 
 
+def _program_ad_reduction_axis_ddof(args: tuple[object, ...]) -> tuple[int | None, int]:
+    if len(args) != 3:
+        raise ValueError("program AD variance/std rule requires array, axis, and ddof")
+    source_shape = _program_ad_array_shape_of(args[0])
+    raw_axis = args[1]
+    if raw_axis is None:
+        axis = None
+    elif isinstance(raw_axis, bool) or not isinstance(raw_axis, (int, np.integer)):
+        raise ValueError("program AD variance/std axis must be a static integer or None")
+    else:
+        axis = _normalise_axis("axis", int(raw_axis), len(source_shape))
+    count = int(np.prod(source_shape)) if axis is None else source_shape[axis]
+    return axis, _normalise_ddof(args[2], count)
+
+
 def _program_ad_order_statistic_reduction_axis(args: tuple[object, ...]) -> int | None:
     if len(args) == 2:
         axis = args[1]
@@ -16603,6 +16934,16 @@ def _program_ad_reduction_shape(args: tuple[object, ...]) -> tuple[int, ...]:
         return ()
     normalised_axis = _normalise_axis("axis", axis, len(source_shape))
     return source_shape[:normalised_axis] + source_shape[normalised_axis + 1 :]
+
+
+def _program_ad_reduction_var_std_shape(args: tuple[object, ...]) -> tuple[int, ...]:
+    source_shape = _program_ad_array_shape_of(args[0])
+    if int(np.prod(source_shape)) == 0:
+        raise ValueError("program AD variance/std shape rule requires at least one element")
+    axis, _ddof = _program_ad_reduction_axis_ddof(args)
+    if axis is None:
+        return ()
+    return source_shape[:axis] + source_shape[axis + 1 :]
 
 
 def _program_ad_order_statistic_reduction_shape(args: tuple[object, ...]) -> tuple[int, ...]:
@@ -17206,6 +17547,12 @@ def _program_ad_reduction_order_statistic_axis_static_arguments(
     args: tuple[object, ...],
 ) -> tuple[object, ...]:
     return (_program_ad_order_statistic_reduction_axis(args),)
+
+
+def _program_ad_reduction_var_std_static_arguments(
+    args: tuple[object, ...],
+) -> tuple[object, ...]:
+    return _program_ad_reduction_axis_ddof(args)
 
 
 def _program_ad_reduction_quantile_static_arguments(
@@ -18795,6 +19142,8 @@ _PROGRAM_AD_REDUCTION_SHAPE_RULES: Mapping[str, PrimitiveShapeRule] = {
     "sum": _program_ad_reduction_shape,
     "prod": _program_ad_reduction_shape,
     "mean": _program_ad_reduction_shape,
+    "var": _program_ad_reduction_var_std_shape,
+    "std": _program_ad_reduction_var_std_shape,
     "max": _program_ad_order_statistic_reduction_shape,
     "min": _program_ad_order_statistic_reduction_shape,
     "median": _program_ad_order_statistic_reduction_shape,
@@ -18807,6 +19156,8 @@ _PROGRAM_AD_REDUCTION_STATIC_ARGUMENT_RULES: Mapping[str, PrimitiveStaticArgumen
     "sum": _program_ad_reduction_static_arguments,
     "prod": _program_ad_reduction_static_arguments,
     "mean": _program_ad_reduction_static_arguments,
+    "var": _program_ad_reduction_var_std_static_arguments,
+    "std": _program_ad_reduction_var_std_static_arguments,
     "max": _program_ad_reduction_order_statistic_axis_static_arguments,
     "min": _program_ad_reduction_order_statistic_axis_static_arguments,
     "median": _program_ad_reduction_order_statistic_axis_static_arguments,
@@ -19042,6 +19393,8 @@ def _program_ad_reduction_batching_rule(
     order_statistic = len(args) == 4 and isinstance(args[3], str)
     if order_statistic:
         reduction_axis = _program_ad_order_statistic_reduction_axis(args)
+    elif len(args) == 3:
+        reduction_axis, ddof = _program_ad_reduction_axis_ddof(args)
     elif len(args) == 4:
         reduction_axis = _program_ad_reduction_trapezoid_axis(args)
     else:
@@ -19064,6 +19417,20 @@ def _program_ad_reduction_batching_rule(
                     q,
                     axis=reduction_axis,
                     method=method,
+                ),
+            )
+            for batch_index in range(int(array.shape[batch_axis]))
+        ]
+        stacked = np.stack(outputs, axis=0)
+        return np.moveaxis(stacked, 0, _normalise_axis("out_axes", out_axes, stacked.ndim))
+    if len(args) == 3:
+        outputs = [
+            _as_real_numeric_array(
+                "program AD reduction batched output",
+                function(
+                    np.take(array, batch_index, axis=batch_axis),
+                    axis=reduction_axis,
+                    ddof=ddof,
                 ),
             )
             for batch_index in range(int(array.shape[batch_axis]))
@@ -19093,6 +19460,8 @@ def _program_ad_reduction_lowering_metadata(name: str) -> Mapping[str, str]:
         "sum": "program_ad_reduction_sum_derivative_rule",
         "prod": "program_ad_reduction_prod_derivative_rule",
         "mean": "program_ad_reduction_mean_derivative_rule",
+        "var": "program_ad_reduction_var_derivative_rule",
+        "std": "program_ad_reduction_std_derivative_rule",
         "max": "program_ad_reduction_max_derivative_rule",
         "min": "program_ad_reduction_min_derivative_rule",
         "median": "program_ad_reduction_median_derivative_rule",
@@ -19104,6 +19473,8 @@ def _program_ad_reduction_lowering_metadata(name: str) -> Mapping[str, str]:
         "sum": "static_axis_and_stable_output_shape",
         "prod": "static_axis_zero_factor_sensitive",
         "mean": "static_axis_nonempty_reduction",
+        "var": "static_axis_ddof_positive_denominator",
+        "std": "static_axis_ddof_positive_denominator_nonzero_variance",
         "max": "static_axis_unique_max_selector",
         "min": "static_axis_unique_min_selector",
         "median": "static_axis_strict_order_selection",
@@ -19125,7 +19496,11 @@ def _program_ad_reduction_lowering_metadata(name: str) -> Mapping[str, str]:
             else (
                 "source_shape:ranked_tensor_shape;q;axis;method"
                 if name in {"quantile", "percentile"}
-                else "source_shape:ranked_tensor_shape;axis"
+                else (
+                    "source_shape:ranked_tensor_shape;axis;ddof"
+                    if name in {"var", "std"}
+                    else "source_shape:ranked_tensor_shape;axis"
+                )
             )
         ),
         "nondifferentiable_boundary": nondifferentiable_boundaries[name],
@@ -28337,7 +28712,9 @@ __all__ = [
     "program_ad_reduction_prod_derivative_rule",
     "program_ad_reduction_quantile_derivative_rule",
     "program_ad_reduction_sum_derivative_rule",
+    "program_ad_reduction_std_derivative_rule",
     "program_ad_reduction_trapezoid_derivative_rule",
+    "program_ad_reduction_var_derivative_rule",
     "program_ad_selection_clip_derivative_rule",
     "program_ad_selection_where_derivative_rule",
     "program_ad_shape_expand_dims_derivative_rule",

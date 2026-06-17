@@ -190,8 +190,10 @@ from scpn_quantum_control.differentiable import (
     program_ad_reduction_percentile_derivative_rule,
     program_ad_reduction_prod_derivative_rule,
     program_ad_reduction_quantile_derivative_rule,
+    program_ad_reduction_std_derivative_rule,
     program_ad_reduction_sum_derivative_rule,
     program_ad_reduction_trapezoid_derivative_rule,
+    program_ad_reduction_var_derivative_rule,
     program_ad_selection_clip_derivative_rule,
     program_ad_selection_where_derivative_rule,
     program_ad_shape_atleast_1d_derivative_rule,
@@ -5728,6 +5730,8 @@ def test_program_ad_reduction_primitives_are_registry_policy_gated() -> None:
         "sum": (2,),
         "prod": (2,),
         "mean": (2,),
+        "var": (2,),
+        "std": (2,),
         "max": (2,),
         "min": (2,),
         "median": (2,),
@@ -5738,6 +5742,8 @@ def test_program_ad_reduction_primitives_are_registry_policy_gated() -> None:
         "sum": "program_ad_reduction_sum_derivative_rule",
         "prod": "program_ad_reduction_prod_derivative_rule",
         "mean": "program_ad_reduction_mean_derivative_rule",
+        "var": "program_ad_reduction_var_derivative_rule",
+        "std": "program_ad_reduction_std_derivative_rule",
         "max": "program_ad_reduction_max_derivative_rule",
         "min": "program_ad_reduction_min_derivative_rule",
         "median": "program_ad_reduction_median_derivative_rule",
@@ -5748,6 +5754,8 @@ def test_program_ad_reduction_primitives_are_registry_policy_gated() -> None:
         "sum": "static_axis_and_stable_output_shape",
         "prod": "static_axis_zero_factor_sensitive",
         "mean": "static_axis_nonempty_reduction",
+        "var": "static_axis_ddof_positive_denominator",
+        "std": "static_axis_ddof_positive_denominator_nonzero_variance",
         "max": "static_axis_unique_max_selector",
         "min": "static_axis_unique_min_selector",
         "median": "static_axis_strict_order_selection",
@@ -5758,6 +5766,8 @@ def test_program_ad_reduction_primitives_are_registry_policy_gated() -> None:
         "sum": "source_shape:ranked_tensor_shape;axis",
         "prod": "source_shape:ranked_tensor_shape;axis",
         "mean": "source_shape:ranked_tensor_shape;axis",
+        "var": "source_shape:ranked_tensor_shape;axis;ddof",
+        "std": "source_shape:ranked_tensor_shape;axis;ddof",
         "max": "source_shape:ranked_tensor_shape;axis",
         "min": "source_shape:ranked_tensor_shape;axis",
         "median": "source_shape:ranked_tensor_shape;axis",
@@ -5771,6 +5781,8 @@ def test_program_ad_reduction_primitives_are_registry_policy_gated() -> None:
             if name == "quantile"
             else (matrix, 75.0, 1, "linear")
             if name == "percentile"
+            else (matrix, 1, 1)
+            if name in {"var", "std"}
             else (matrix, 1)
         )
         contract = primitive_contract_for(f"scpn.program_ad.reduction:{name}")
@@ -5795,6 +5807,9 @@ def test_program_ad_reduction_primitives_are_registry_policy_gated() -> None:
         elif name == "percentile":
             assert contract.static_argument_rule(args) == (0.75, 1, "linear")
             assert contract.shape_rule((matrix, 75.0, None, "linear")) == ()
+        elif name in {"var", "std"}:
+            assert contract.static_argument_rule(args) == (1, 1)
+            assert contract.shape_rule((matrix, None, 1)) == ()
         else:
             assert contract.static_argument_rule((matrix, 1)) == (1,)
             assert contract.static_argument_rule((matrix, None)) == (None,)
@@ -5810,6 +5825,8 @@ def test_program_ad_reduction_boundary_metadata_is_explicit() -> None:
         "sum": "static_axis_and_stable_output_shape",
         "prod": "static_axis_zero_factor_sensitive",
         "mean": "static_axis_nonempty_reduction",
+        "var": "static_axis_ddof_positive_denominator",
+        "std": "static_axis_ddof_positive_denominator_nonzero_variance",
         "max": "static_axis_unique_max_selector",
         "min": "static_axis_unique_min_selector",
         "median": "static_axis_strict_order_selection",
@@ -6056,7 +6073,18 @@ def test_program_ad_reduction_primitives_validate_registry_rules_at_dispatch() -
 
     originals = {
         name: primitive_contract_for(f"scpn.program_ad.reduction:{name}")
-        for name in ("sum", "prod", "mean", "max", "min", "median", "quantile", "percentile")
+        for name in (
+            "sum",
+            "prod",
+            "mean",
+            "var",
+            "std",
+            "max",
+            "min",
+            "median",
+            "quantile",
+            "percentile",
+        )
     }
     calls: dict[str, set[str]] = {name: set() for name in originals}
 
@@ -6098,6 +6126,8 @@ def test_program_ad_reduction_primitives_validate_registry_rules_at_dispatch() -
                 np.sum(np.reshape(values, (2, 3)), axis=0)[0]
                 + np.prod(np.reshape(values, (2, 3)), axis=1)[1]
                 + np.mean(np.reshape(values, (2, 3)), axis=1)[0]
+                + np.var(np.reshape(values, (2, 3)), axis=1, ddof=1)[0]
+                + np.std(np.reshape(values, (2, 3)), axis=0, ddof=1)[2]
                 + np.max(np.reshape(values, (2, 3)), axis=0)[1]
                 + np.min(np.reshape(values, (2, 3)), axis=1)[1]
                 + np.median(values)
@@ -6112,8 +6142,10 @@ def test_program_ad_reduction_primitives_validate_registry_rules_at_dispatch() -
                 _transform_rule_from_contract(original), overwrite=True
             )
 
-    assert result.value == pytest.approx(566.0)
+    assert result.value == pytest.approx(567.0 + math.sqrt(32.0))
     assert calls == {
+        "std": {"shape", "dtype", "static"},
+        "var": {"shape", "dtype", "static"},
         "max": {"shape", "dtype", "static"},
         "min": {"shape", "dtype", "static"},
         "median": {"shape", "dtype", "static"},
@@ -6190,6 +6222,56 @@ def test_program_ad_reduction_static_derivative_factories_are_direct_kernels() -
         program_ad_reduction_sum_derivative_rule((2, 3), axis=2)
     with pytest.raises(ValueError, match="at least one value"):
         program_ad_reduction_mean_derivative_rule((0, 3), axis=None)
+
+
+def test_program_ad_variance_static_derivative_factories_are_direct_kernels() -> None:
+    """Variance/std factories should expose exact axis-aware JVP and VJP rules."""
+
+    matrix = np.array([[1.0, 3.0, 6.0], [2.0, 5.0, 9.0]], dtype=np.float64)
+    values = matrix.reshape(-1)
+    tangent = np.array([0.25, -0.5, 1.0, -1.5, 0.75, 2.0], dtype=np.float64)
+    row_cotangent = np.array([1.5, -0.75], dtype=np.float64)
+
+    var_rule = program_ad_reduction_var_derivative_rule((2, 3), axis=1, ddof=1)
+    assert var_rule.name == "program_ad_reduction_var_2x3_axis_1_ddof_1_direct_rule"
+    assert var_rule.jvp_rule is not None
+    assert var_rule.vjp_rule is not None
+    np.testing.assert_allclose(var_rule.value_fn(values), np.var(matrix, axis=1, ddof=1))
+    np.testing.assert_allclose(
+        var_rule.jvp_rule(values, tangent),
+        [
+            np.dot(matrix[0] - np.mean(matrix[0]), tangent[:3]),
+            np.dot(matrix[1] - np.mean(matrix[1]), tangent[3:]),
+        ],
+    )
+    expected_var_vjp = np.zeros_like(matrix)
+    expected_var_vjp[0] = row_cotangent[0] * (matrix[0] - np.mean(matrix[0]))
+    expected_var_vjp[1] = row_cotangent[1] * (matrix[1] - np.mean(matrix[1]))
+    np.testing.assert_allclose(
+        var_rule.vjp_rule(values, row_cotangent), expected_var_vjp.reshape(-1)
+    )
+
+    std_rule = program_ad_reduction_std_derivative_rule((2, 3), axis=1, ddof=1)
+    assert std_rule.name == "program_ad_reduction_std_2x3_axis_1_ddof_1_direct_rule"
+    std_gradient = np.vstack(
+        [(row - np.mean(row)) / (2.0 * np.std(row, ddof=1)) for row in matrix]
+    )
+    np.testing.assert_allclose(std_rule.value_fn(values), np.std(matrix, axis=1, ddof=1))
+    np.testing.assert_allclose(
+        std_rule.jvp_rule(values, tangent),
+        np.sum(std_gradient * tangent.reshape(matrix.shape), axis=1),
+    )
+    np.testing.assert_allclose(
+        std_rule.vjp_rule(values, row_cotangent),
+        (std_gradient * row_cotangent[:, None]).reshape(-1),
+    )
+
+    with pytest.raises(ValueError, match="positive denominator"):
+        program_ad_reduction_var_derivative_rule((2,), ddof=2)
+    with pytest.raises(ValueError, match="zero variance"):
+        program_ad_reduction_std_derivative_rule((2,)).value_fn(
+            np.array([1.0, 1.0], dtype=np.float64)
+        )
 
 
 def test_program_ad_order_statistic_static_derivative_factories_are_direct_kernels() -> None:
@@ -9181,6 +9263,14 @@ def test_program_ad_primitive_metadata_advertises_static_derivative_factories() 
         "scpn.program_ad.reduction:mean": (
             "program_ad_reduction_mean_derivative_rule",
             "source_shape:ranked_tensor_shape;axis",
+        ),
+        "scpn.program_ad.reduction:var": (
+            "program_ad_reduction_var_derivative_rule",
+            "source_shape:ranked_tensor_shape;axis;ddof",
+        ),
+        "scpn.program_ad.reduction:std": (
+            "program_ad_reduction_std_derivative_rule",
+            "source_shape:ranked_tensor_shape;axis;ddof",
         ),
         "scpn.program_ad.reduction:max": (
             "program_ad_reduction_max_derivative_rule",
@@ -13599,8 +13689,10 @@ def test_program_ad_reduction_and_cumulative_primitives_validate_registry_rules_
             "percentile",
             "prod",
             "quantile",
+            "std",
             "sum",
             "trapezoid",
+            "var",
         )
     }
     originals.update(
@@ -13656,6 +13748,8 @@ def test_program_ad_reduction_and_cumulative_primitives_validate_registry_rules_
             + np.sum(np.mean(matrix, axis=0))
             + np.sum(matrix.max(axis=0))
             - np.sum(matrix.min(axis=1))
+            + np.sum(matrix.var(axis=1, ddof=1))
+            + np.sum(matrix.std(axis=0, ddof=1))
             + np.median(source)
             + np.sum(np.quantile(matrix, 0.25, axis=1))
             + np.sum(np.percentile(matrix, 75.0, axis=0))
@@ -13686,8 +13780,10 @@ def test_program_ad_reduction_and_cumulative_primitives_validate_registry_rules_
         "percentile": {"shape", "dtype", "static"},
         "prod": {"shape", "dtype", "static"},
         "quantile": {"shape", "dtype", "static"},
+        "std": {"shape", "dtype", "static"},
         "sum": {"shape", "dtype", "static"},
         "trapezoid": {"shape", "dtype", "static"},
+        "var": {"shape", "dtype", "static"},
     }
 
 
