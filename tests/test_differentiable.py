@@ -160,12 +160,16 @@ from scpn_quantum_control.differentiable import (
     program_ad_assembly_block_derivative_rule,
     program_ad_assembly_broadcast_arrays_derivative_rule,
     program_ad_assembly_broadcast_to_derivative_rule,
+    program_ad_assembly_column_stack_derivative_rule,
     program_ad_assembly_concatenate_derivative_rule,
     program_ad_assembly_diagonal_derivative_rule,
+    program_ad_assembly_dstack_derivative_rule,
+    program_ad_assembly_hstack_derivative_rule,
     program_ad_assembly_split_derivative_rule,
     program_ad_assembly_stack_derivative_rule,
     program_ad_assembly_tril_derivative_rule,
     program_ad_assembly_triu_derivative_rule,
+    program_ad_assembly_vstack_derivative_rule,
     program_ad_cumulative_cumprod_derivative_rule,
     program_ad_cumulative_cumsum_derivative_rule,
     program_ad_cumulative_diff_derivative_rule,
@@ -9241,6 +9245,22 @@ def test_program_ad_primitive_metadata_advertises_static_derivative_factories() 
             "program_ad_assembly_broadcast_arrays_derivative_rule",
             "operand_shapes:ranked_tensor_shapes;output_shape",
         ),
+        "scpn.program_ad.assembly:hstack": (
+            "program_ad_assembly_hstack_derivative_rule",
+            "operand_shapes:ranked_tensor_shapes;output_shape",
+        ),
+        "scpn.program_ad.assembly:vstack": (
+            "program_ad_assembly_vstack_derivative_rule",
+            "operand_shapes:ranked_tensor_shapes;output_shape",
+        ),
+        "scpn.program_ad.assembly:column_stack": (
+            "program_ad_assembly_column_stack_derivative_rule",
+            "operand_shapes:ranked_tensor_shapes;output_shape",
+        ),
+        "scpn.program_ad.assembly:dstack": (
+            "program_ad_assembly_dstack_derivative_rule",
+            "operand_shapes:ranked_tensor_shapes;output_shape",
+        ),
         "scpn.program_ad.assembly:zeros_like": (
             "program_ad_assembly_zeros_like_derivative_rule",
             "source_shape:ranked_tensor_shape",
@@ -12073,6 +12093,109 @@ def test_program_ad_assembly_stack_batching_rule_maps_operand_batches() -> None:
         )
 
 
+def test_program_ad_assembly_stack_convenience_contracts_and_direct_rules() -> None:
+    """Stack convenience calls should expose exact fixed-shape assembly rules."""
+
+    cases = (
+        (
+            "hstack",
+            program_ad_assembly_hstack_derivative_rule,
+            (np.array([1.0, -2.0]), np.array([0.5, 3.0, -1.5])),
+            np.hstack,
+        ),
+        (
+            "vstack",
+            program_ad_assembly_vstack_derivative_rule,
+            (np.array([1.0, -2.0]), np.array([0.5, 3.0])),
+            np.vstack,
+        ),
+        (
+            "column_stack",
+            program_ad_assembly_column_stack_derivative_rule,
+            (np.array([1.0, -2.0]), np.array([[0.5, 3.0], [-1.5, 2.0]])),
+            np.column_stack,
+        ),
+        (
+            "dstack",
+            program_ad_assembly_dstack_derivative_rule,
+            (np.array([[1.0, -2.0]]), np.array([[0.5, 3.0]])),
+            np.dstack,
+        ),
+    )
+    for name, factory, operands, numpy_function in cases:
+        contract = primitive_contract_for(f"scpn.program_ad.assembly:{name}")
+        assert contract.identity == PrimitiveIdentity("scpn.program_ad.assembly", name, "1")
+        assert contract.nondifferentiable_policy == "program_ad_trace_exact_fail_closed"
+        assert contract.effect == "pure"
+        assert contract.shape_rule is not None
+        assert contract.shape_rule((operands,)) == np.asarray(numpy_function(operands)).shape
+        assert contract.dtype_rule is not None
+        assert contract.dtype_rule((operands,)) == "float64"
+        assert contract.static_argument_rule is not None
+        assert contract.static_argument_rule((operands,)) == (
+            tuple(operand.shape for operand in operands),
+            np.asarray(numpy_function(operands)).shape,
+        )
+        assert contract.lowering_metadata["mlir_op"] == f"scpn_diff.assembly.{name}"
+        assert contract.lowering_metadata["static_derivative_factory"] == factory.__name__
+        assert contract.lowering_metadata["rust"] == "blocked_until_polyglot_assembly_ad"
+
+        operand_shapes = tuple(operand.shape for operand in operands)
+        values = np.concatenate([operand.reshape(-1) for operand in operands])
+        tangent = np.linspace(-0.3, 0.4, values.size, dtype=np.float64)
+        expected_value = np.asarray(numpy_function(operands), dtype=np.float64).reshape(-1)
+        tangent_operands: list[np.ndarray] = []
+        offset = 0
+        for shape in operand_shapes:
+            size = int(np.prod(shape, dtype=np.int64))
+            tangent_operands.append(tangent[offset : offset + size].reshape(shape))
+            offset += size
+        expected_jvp = np.asarray(
+            numpy_function(tuple(tangent_operands)), dtype=np.float64
+        ).reshape(-1)
+
+        index_operands: list[np.ndarray] = []
+        offset = 0
+        for shape in operand_shapes:
+            size = int(np.prod(shape, dtype=np.int64))
+            index_operands.append(np.arange(offset, offset + size, dtype=np.int64).reshape(shape))
+            offset += size
+        selected = np.asarray(numpy_function(tuple(index_operands)), dtype=np.int64).reshape(-1)
+        cotangent = np.linspace(0.25, 1.0, selected.size, dtype=np.float64)
+        expected_vjp = np.zeros(values.size, dtype=np.float64)
+        np.add.at(expected_vjp, selected, cotangent)
+
+        rule = factory(operand_shapes)
+        assert rule.name == f"program_ad_assembly_{name}_{len(operands)}_operands_direct_rule"
+        np.testing.assert_allclose(rule.value_fn(values), expected_value)
+        np.testing.assert_allclose(rule.jvp_rule(values, tangent), expected_jvp)
+        assert rule.vjp_rule is not None
+        np.testing.assert_allclose(rule.vjp_rule(values, cotangent), expected_vjp)
+
+
+def test_program_ad_assembly_stack_convenience_batching_rules_map_operands() -> None:
+    """Stack convenience batching should map compatible operand batch axes."""
+
+    for name, function in (
+        ("hstack", np.hstack),
+        ("vstack", np.vstack),
+        ("column_stack", np.column_stack),
+        ("dstack", np.dstack),
+    ):
+        contract = primitive_contract_for(f"scpn.program_ad.assembly:{name}")
+        assert contract.batching_rule is not None
+        left = np.arange(6.0, dtype=np.float64).reshape(3, 2)
+        right = np.arange(6.0, 12.0, dtype=np.float64).reshape(3, 2)
+        batched = contract.batching_rule(
+            function,
+            ((left, right),),
+            ((0, 0),),
+            0,
+        )
+        expected = np.stack([function((left[index], right[index])) for index in range(3)])
+        np.testing.assert_allclose(batched, expected)
+
+
 def test_program_ad_assembly_append_contract_and_direct_rule() -> None:
     """np.append should expose a fail-closed assembly primitive direct rule."""
 
@@ -13678,15 +13801,19 @@ def test_program_ad_assembly_primitives_validate_registry_rules_at_dispatch() ->
             "broadcast_arrays",
             "broadcast_to",
             "concatenate",
+            "column_stack",
             "diagonal",
+            "dstack",
             "dsplit",
             "full_like",
             "hsplit",
+            "hstack",
             "ones_like",
             "split",
             "stack",
             "tril",
             "triu",
+            "vstack",
             "vsplit",
             "zeros_like",
         )
@@ -13744,6 +13871,10 @@ def test_program_ad_assembly_primitives_validate_registry_rules_at_dispatch() ->
         return (
             np.sum(np.concatenate((left, right), axis=1))
             + np.sum(np.stack((top, bottom), axis=0))
+            + np.sum(np.hstack((left, right)))
+            + np.sum(np.vstack((top, bottom)))
+            + np.sum(np.column_stack((source[:3], source[3:])))
+            + np.sum(np.dstack((top, bottom)))
             + np.sum(np.append(left, right[:, :1], axis=1))
             + np.sum(np.block([[left, right]]))
             + np.sum(np.broadcast_to(source[:1], (2, 1)))
@@ -13778,15 +13909,19 @@ def test_program_ad_assembly_primitives_validate_registry_rules_at_dispatch() ->
         "broadcast_arrays": {"shape", "dtype", "static"},
         "broadcast_to": {"shape", "dtype", "static"},
         "concatenate": {"shape", "dtype", "static"},
+        "column_stack": {"shape", "dtype", "static"},
         "diagonal": {"shape", "dtype", "static"},
+        "dstack": {"shape", "dtype", "static"},
         "dsplit": {"shape", "dtype", "static"},
         "full_like": {"shape", "dtype", "static"},
         "hsplit": {"shape", "dtype", "static"},
+        "hstack": {"shape", "dtype", "static"},
         "ones_like": {"shape", "dtype", "static"},
         "split": {"shape", "dtype", "static"},
         "stack": {"shape", "dtype", "static"},
         "tril": {"shape", "dtype", "static"},
         "triu": {"shape", "dtype", "static"},
+        "vstack": {"shape", "dtype", "static"},
         "vsplit": {"shape", "dtype", "static"},
         "zeros_like": {"shape", "dtype", "static"},
     }
@@ -16100,6 +16235,22 @@ def test_primitive_batching_exports_are_available_from_package_root() -> None:
     )
     assert (
         scpn.program_ad_assembly_stack_derivative_rule is program_ad_assembly_stack_derivative_rule
+    )
+    assert (
+        scpn.program_ad_assembly_hstack_derivative_rule
+        is program_ad_assembly_hstack_derivative_rule
+    )
+    assert (
+        scpn.program_ad_assembly_vstack_derivative_rule
+        is program_ad_assembly_vstack_derivative_rule
+    )
+    assert (
+        scpn.program_ad_assembly_column_stack_derivative_rule
+        is program_ad_assembly_column_stack_derivative_rule
+    )
+    assert (
+        scpn.program_ad_assembly_dstack_derivative_rule
+        is program_ad_assembly_dstack_derivative_rule
     )
     assert (
         scpn.program_ad_signal_convolve_derivative_rule

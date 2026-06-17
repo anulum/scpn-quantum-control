@@ -5,6 +5,11 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-06-17 — Registered Program AD `np.hstack`, `np.vstack`,
+  `np.column_stack`, and `np.dstack` as bounded assembly primitive contracts
+  with shape, dtype, static operand-shape validation, batching, lowering
+  metadata, fixed-shape direct JVP/VJP factories, and blocked Rust/LLVM
+  executable lowering status.
 - 2026-06-17 — Registered Program AD `np.flipud` and `np.fliplr` as
   bounded shape primitive contracts with rank validation, batching, lowering
   metadata, fixed-axis direct JVP/VJP factories, and blocked Rust/LLVM
