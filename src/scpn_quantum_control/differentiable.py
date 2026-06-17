@@ -565,6 +565,9 @@ class WholeProgramADResult:
             raise ValueError("parameter_names length must match gradient length")
         if len(self.trainable) != gradient.size:
             raise ValueError("trainable mask length must match gradient length")
+        if any(not isinstance(flag, bool) for flag in self.trainable):
+            raise ValueError("trainable mask must contain booleans")
+        _require_zero_frozen_entries("whole-program AD gradient", gradient, self.trainable)
         if any(not isinstance(event, WholeProgramTraceEvent) for event in self.trace_events):
             raise ValueError("trace_events must contain WholeProgramTraceEvent entries")
         if any(not isinstance(node, WholeProgramIRNode) for node in self.ir_nodes):
@@ -596,6 +599,12 @@ class WholeProgramADResult:
             and self.adjoint_result.gradient.shape != gradient.shape
         ):
             raise ValueError("adjoint_result gradient shape must match forward gradient shape")
+        if self.adjoint_result is not None:
+            _require_zero_frozen_entries(
+                "whole-program AD adjoint gradient",
+                self.adjoint_result.gradient,
+                self.trainable,
+            )
         if not isinstance(self.control_flow_observed, bool):
             raise ValueError("control_flow_observed must be a boolean")
         if not isinstance(self.numpy_observed, bool):

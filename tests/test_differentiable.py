@@ -14460,7 +14460,7 @@ def test_whole_program_result_validation_fail_closed_paths() -> None:
 
     valid = {
         "value": 1.0,
-        "gradient": np.array([1.0, 2.0], dtype=np.float64),
+        "gradient": np.array([1.0, 0.0], dtype=np.float64),
         "method": "whole_program_ad",
         "step": 0.0,
         "evaluations": 1,
@@ -14494,6 +14494,22 @@ def test_whole_program_result_validation_fail_closed_paths() -> None:
         payload[key] = value
         with pytest.raises(ValueError, match=message):
             WholeProgramADResult(**payload)
+
+    payload = dict(valid)
+    payload["gradient"] = np.array([1.0, 0.5], dtype=np.float64)
+    with pytest.raises(ValueError, match="non-trainable parameters"):
+        WholeProgramADResult(**payload)
+
+    payload = dict(valid)
+    payload["adjoint_result"] = ProgramADAdjointResult(
+        gradient=np.array([1.0, 0.25], dtype=np.float64),
+        supported=True,
+        unsupported_ops=(),
+        method="program_adjoint_replay",
+        claim_boundary="bounded adjoint",
+    )
+    with pytest.raises(ValueError, match="non-trainable parameters"):
+        WholeProgramADResult(**payload)
 
 
 def test_whole_program_event_and_ir_node_validation_paths() -> None:

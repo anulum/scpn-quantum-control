@@ -5,6 +5,11 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-06-17 — Hardened `WholeProgramADResult` trainable-mask validation so
+  forward whole-program gradients and attached adjoint replay gradients fail
+  closed when frozen parameters carry derivative mass. Documented the
+  invariant in `docs/differentiable_programming.md` and covered it in
+  `tests/test_differentiable.py`.
 - 2026-06-17 — Added a `higher_order_transform_algebra` row to
   `differentiable_dashboard_status(...)`. The row is `diagnostic` by default
   and becomes `conformance_backed` only when `include_conformance=True` runs
