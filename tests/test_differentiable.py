@@ -14128,6 +14128,43 @@ def test_program_ad_alias_effect_analysis_tracks_array_view_aliases() -> None:
     )
 
 
+def test_program_ad_alias_effect_analysis_tracks_list_alias_rebinding() -> None:
+    """Program AD source metadata should expose local list alias rebinding."""
+
+    def objective(values: np.ndarray) -> object:
+        scratch = [values[0], values[1]]
+        alias = scratch
+        alias[0] = values[2]
+        return scratch[0] + 2.0 * alias[1]
+
+    result = whole_program_value_and_grad(
+        objective,
+        np.array([0.25, 0.5, 0.75], dtype=np.float64),
+        parameters=(Parameter("a"), Parameter("b"), Parameter("c")),
+    )
+    assert result.program_ir is not None
+
+    analysis = analyze_program_ad_alias_effects(result.program_ir)
+    list_edges = tuple(edge for edge in analysis.alias_edges if edge.kind == "list_alias")
+
+    assert list_edges
+    assert any(
+        edge.source == "list:scratch" and edge.target == "name:alias" for edge in list_edges
+    )
+    assert any(
+        edge.source == "list:scratch" and edge.target == "source:list_mutation"
+        for edge in list_edges
+    )
+    assert any(
+        "list:scratch" in alias_set.members
+        and "name:alias" in alias_set.members
+        and "source:list_mutation" in alias_set.members
+        for alias_set in analysis.alias_sets
+    )
+    assert analysis.claim_boundary == "metadata_only_no_general_alias_lattice"
+    np.testing.assert_allclose(result.gradient, [0.0, 2.0, 1.0], atol=1.0e-12)
+
+
 def test_program_ad_effect_ir_validation_paths() -> None:
     """Program AD IR dataclasses should fail closed on malformed compiler metadata."""
 

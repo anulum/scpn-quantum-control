@@ -330,6 +330,7 @@ PROGRAM_AD_ALIAS_EFFECT_CLAIM_BOUNDARY = "metadata_only_no_general_alias_lattice
 _PROGRAM_AD_SUPPORTED_ALIAS_EDGE_KINDS = frozenset(
     {
         "alias_analysis",
+        "list_alias",
         "mutation_version",
         "source_alias",
         "view_alias",
@@ -852,6 +853,19 @@ class _WholeProgramTraceContext:
         alias_edges = list(self.alias_edges)
         control_regions = list(self.control_regions)
         for feature in source_ir_features:
+            if feature.kind == "list_alias":
+                source, separator, target = feature.detail.partition("->")
+                if not separator or not source or not target:
+                    raise ValueError("program AD list alias feature must encode source->target")
+                alias_edges.append(
+                    ProgramADAliasEdge(
+                        source=source,
+                        target=target,
+                        kind="list_alias",
+                        version=len(alias_edges),
+                    )
+                )
+                continue
             if "alias" in feature.kind:
                 alias_edges.append(
                     ProgramADAliasEdge(
@@ -7994,6 +8008,59 @@ def _source_ir_features(
                 "add",
             }:
                 add(node, "mutation", name)
+    features.extend(_source_list_alias_features(tree))
+    return tuple(features)
+
+
+def _source_list_alias_features(tree: ast.AST) -> tuple[WholeProgramSourceIRFeature, ...]:
+    """Return bounded source-level list alias metadata for local bindings."""
+
+    features: list[WholeProgramSourceIRFeature] = []
+    list_roots: set[str] = set()
+    aliases: dict[str, str] = {}
+
+    def root_for(name: str) -> str | None:
+        if name in list_roots:
+            return name
+        return aliases.get(name)
+
+    assignments = sorted(
+        (node for node in ast.walk(tree) if isinstance(node, ast.Assign)),
+        key=lambda node: int(getattr(node, "lineno", 1) or 1),
+    )
+    for node in assignments:
+        line_number = int(getattr(node, "lineno", 1) or 1)
+        for target in node.targets:
+            if isinstance(target, ast.Name) and isinstance(node.value, ast.List):
+                list_roots.add(target.id)
+                features.append(
+                    WholeProgramSourceIRFeature(
+                        "list_alias",
+                        f"list:{target.id}->name:{target.id}",
+                        line_number,
+                    )
+                )
+            elif isinstance(target, ast.Name) and isinstance(node.value, ast.Name):
+                root = root_for(node.value.id)
+                if root is not None:
+                    aliases[target.id] = root
+                    features.append(
+                        WholeProgramSourceIRFeature(
+                            "list_alias",
+                            f"list:{root}->name:{target.id}",
+                            line_number,
+                        )
+                    )
+            elif isinstance(target, ast.Subscript) and isinstance(target.value, ast.Name):
+                root = root_for(target.value.id)
+                if root is not None:
+                    features.append(
+                        WholeProgramSourceIRFeature(
+                            "list_alias",
+                            f"list:{root}->source:list_mutation",
+                            line_number,
+                        )
+                    )
     return tuple(features)
 
 
