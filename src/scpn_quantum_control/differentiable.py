@@ -1102,6 +1102,12 @@ class TraceADScalar:
     def __neg__(self) -> TraceADScalar:
         return self.context.make("neg", (self.name,), -self.primal, -self.tangent)
 
+    def __abs__(self) -> TraceADScalar:
+        result = _apply_trace_ufunc(np.absolute, (self,), self.context)
+        if not isinstance(result, TraceADScalar):
+            raise ValueError("whole-program AD absolute value returned a non-scalar result")
+        return result
+
     def _compare(self, op: str, other: object) -> _TracePredicate:
         rhs = self._coerce(other)
         if op in {"gt", "ge", "lt", "le"} and self.primal == rhs.primal:

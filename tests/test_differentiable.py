@@ -9972,6 +9972,28 @@ def test_whole_program_ad_selection_primitives_fail_closed_at_nondifferentiable_
         )
 
 
+def test_whole_program_ad_abs_fails_closed_at_zero_cusp() -> None:
+    """Python and NumPy absolute-value syntax should share the zero-cusp policy."""
+
+    result = whole_program_value_and_grad(
+        lambda values: abs(values[0]) + np.abs(values[1]),
+        np.array([-2.0, 3.0], dtype=np.float64),
+    )
+    assert result.value == pytest.approx(5.0)
+    np.testing.assert_allclose(result.gradient, np.array([-1.0, 1.0], dtype=np.float64))
+
+    with pytest.raises(ValueError, match="absolute value is non-differentiable at zero"):
+        whole_program_value_and_grad(
+            lambda values: abs(values[0]),
+            np.array([0.0], dtype=np.float64),
+        )
+    with pytest.raises(ValueError, match="absolute value is non-differentiable at zero"):
+        whole_program_value_and_grad(
+            lambda values: np.abs(values[0]),
+            np.array([0.0], dtype=np.float64),
+        )
+
+
 def test_program_ad_selection_primitives_are_registry_policy_gated() -> None:
     """Where and clip should expose first-class primitive registry contracts."""
 

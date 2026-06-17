@@ -243,6 +243,8 @@ static-argument, policy/effect, and lowering-provenance metadata before the
 operator-intercepted program path executes. Smooth primitives may omit
 nondifferentiable-boundary metadata; primitives that declare a boundary must
 also declare the boundary policy as fail-closed.
+Python scalar `abs()` uses the same registered absolute-value primitive as
+NumPy `abs`/`absolute`, including fail-closed rejection at the zero cusp.
 
 Reverse-mode program gradients are available through
 `program_adjoint_grad(...)` and `program_adjoint_value_and_grad(...)`. These
