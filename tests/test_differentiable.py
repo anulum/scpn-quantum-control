@@ -65,6 +65,7 @@ from scpn_quantum_control.differentiable import (
     ProgramADControlRegion,
     ProgramADEffect,
     ProgramADEffectIR,
+    ProgramADPhiNode,
     ProgramADSSAValue,
     ReverseNode,
     ShotAllocationResult,
@@ -10185,6 +10186,7 @@ def test_whole_program_ad_is_exported_from_package_root() -> None:
     assert scpn.ProgramADControlRegion is ProgramADControlRegion
     assert scpn.ProgramADEffect is ProgramADEffect
     assert scpn.ProgramADEffectIR is ProgramADEffectIR
+    assert scpn.ProgramADPhiNode is ProgramADPhiNode
     assert scpn.ProgramADSSAValue is ProgramADSSAValue
     assert scpn.WholeProgramADResult is WholeProgramADResult
     assert scpn.WholeProgramBytecodeInstruction is WholeProgramBytecodeInstruction
@@ -14033,6 +14035,10 @@ def test_whole_program_ad_emits_deterministic_ssa_effect_ir() -> None:
     assert result.program_ir.alias_edges
     assert any(region.kind == "runtime_branch" for region in result.program_ir.control_regions)
     assert any(region.kind.startswith("source_") for region in result.program_ir.control_regions)
+    assert result.program_ir.phi_nodes
+    assert any(phi.target.startswith("phi:runtime_branch") for phi in result.program_ir.phi_nodes)
+    assert any(phi.target.startswith("phi:source:") for phi in result.program_ir.phi_nodes)
+    assert all(phi.control_region is not None for phi in result.program_ir.phi_nodes)
     np.testing.assert_allclose(
         result.gradient,
         [1.0, 1.0, 2.0 + math.cos(0.75)],
@@ -14062,6 +14068,7 @@ def test_program_ad_effect_ir_serialization_round_trips_metadata() -> None:
     assert parsed.effects == result.program_ir.effects
     assert parsed.alias_edges == result.program_ir.alias_edges
     assert parsed.control_regions == result.program_ir.control_regions
+    assert parsed.phi_nodes == result.program_ir.phi_nodes
     assert parsed.serialization == result.program_ir.serialization
     assert analyze_program_ad_alias_effects(parsed).claim_boundary == (
         "metadata_only_no_general_alias_lattice"
@@ -14095,10 +14102,28 @@ def test_program_ad_effect_ir_parser_fails_closed_on_malformed_payloads() -> Non
         ],
         "alias_edges": [],
         "control_regions": [],
+        "phi_nodes": [
+            {
+                "index": 0,
+                "target": "phi:source:control_flow:1",
+                "incoming": ["executed_path", "non_executed_path"],
+                "control_region": None,
+                "selected": "executed_path",
+                "source_line": 1,
+            }
+        ],
         "bytecode_offsets": [0],
     }
     parsed = parse_program_ad_effect_ir(json.dumps(valid, sort_keys=True, separators=(",", ":")))
     assert parsed.ssa_values[0].name == "%0"
+    assert parsed.phi_nodes[0] == ProgramADPhiNode(
+        index=0,
+        target="phi:source:control_flow:1",
+        incoming=("executed_path", "non_executed_path"),
+        control_region=None,
+        selected="executed_path",
+        source_line=1,
+    )
 
     for payload, message in (
         ("", "non-empty"),
@@ -14109,6 +14134,18 @@ def test_program_ad_effect_ir_parser_fails_closed_on_malformed_payloads() -> Non
         ({**valid, "ssa_values": [{**valid["ssa_values"][0], "shape": [True]}]}, "integer"),
         ({**valid, "effects": [{**valid["effects"][0], "inputs": {}}]}, "inputs"),
         ({**valid, "control_regions": [{"entered": "yes"}]}, "entered"),
+        (
+            {
+                **valid,
+                "phi_nodes": [
+                    {
+                        **valid["phi_nodes"][0],
+                        "incoming": ["only_one"],
+                    }
+                ],
+            },
+            "incoming values",
+        ),
         ({**valid, "bytecode_offsets": ["zero"]}, "bytecode offset"),
     ):
         serialized = payload if isinstance(payload, str) else json.dumps(payload)
@@ -14165,6 +14202,7 @@ def test_program_ad_alias_effect_analysis_summarizes_alias_sets_and_mutations() 
         ),
         control_regions=result.program_ir.control_regions,
         serialization="program_ad_effect_ir.v1",
+        phi_nodes=result.program_ir.phi_nodes,
     )
     with pytest.raises(ValueError, match="unknown alias"):
         analyze_program_ad_alias_effects(unsupported)
@@ -14298,9 +14336,20 @@ def test_program_ad_effect_ir_validation_paths() -> None:
         alias_edges=(edge,),
         control_regions=(region,),
         serialization="program_ad_effect_ir.v1",
+        phi_nodes=(
+            ProgramADPhiNode(
+                index=0,
+                target="phi:runtime_branch:0",
+                incoming=("executed_true", "executed_false"),
+                control_region=0,
+                selected="executed_true",
+                source_line=None,
+            ),
+        ),
     )
 
     assert ir.ssa_values == (value,)
+    assert ir.phi_nodes[0].selected == "executed_true"
     with pytest.raises(ValueError, match="SSA value name"):
         ProgramADSSAValue("", producer=0, version=0, shape=(), dtype="float64")
     with pytest.raises(ValueError, match="effect kind"):
@@ -14309,6 +14358,15 @@ def test_program_ad_effect_ir_validation_paths() -> None:
         ProgramADAliasEdge(source="", target="%0", kind="source_alias", version=0)
     with pytest.raises(ValueError, match="control region kind"):
         ProgramADControlRegion(index=0, kind="", predicate=None, entered=True, source_line=None)
+    with pytest.raises(ValueError, match="incoming values"):
+        ProgramADPhiNode(
+            index=0,
+            target="phi:bad",
+            incoming=("only_one",),
+            control_region=None,
+            selected=None,
+            source_line=None,
+        )
     with pytest.raises(ValueError, match="serialization"):
         ProgramADEffectIR(
             ssa_values=(value,),

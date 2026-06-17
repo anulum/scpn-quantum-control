@@ -8,9 +8,9 @@
     "notebook_files": 98,
     "optional_extras": 42,
     "paper0_validation_modules": 466,
-    "public_api_exports": 657,
+    "public_api_exports": 658,
     "public_documentation_pages": 254,
-    "python_model_classes": 1787,
+    "python_model_classes": 1788,
     "python_model_source_modules": 835,
     "rust_pyo3_model_wrappers": 134,
     "rust_source_modules": 37,
@@ -5530,6 +5530,10 @@
         "path": "src/scpn_quantum_control/differentiable.py"
       },
       {
+        "name": "ProgramADPhiNode",
+        "path": "src/scpn_quantum_control/differentiable.py"
+      },
+      {
         "name": "ProgramADSSAValue",
         "path": "src/scpn_quantum_control/differentiable.py"
       },
@@ -9374,6 +9378,7 @@
     "ProgramADEffect",
     "ProgramADEffectIR",
     "ProgramADLinalgConditioningDiagnostic",
+    "ProgramADPhiNode",
     "ProgramADSSAValue",
     "ProviderCapabilityDecision",
     "ProviderCapabilitySnapshot",

@@ -277,6 +277,36 @@ class ProgramADAliasEffectAnalysis:
 
 
 @dataclass(frozen=True)
+class ProgramADPhiNode:
+    """One metadata-only control-join phi record in program AD graph capture."""
+
+    index: int
+    target: str
+    incoming: tuple[str, ...]
+    control_region: int | None
+    selected: str | None
+    source_line: int | None
+
+    def __post_init__(self) -> None:
+        if self.index < 0:
+            raise ValueError("program AD phi node index must be non-negative")
+        if not isinstance(self.target, str) or not self.target:
+            raise ValueError("program AD phi node target must be a non-empty string")
+        if len(self.incoming) < 2:
+            raise ValueError(
+                "program AD phi node incoming values must contain at least two entries"
+            )
+        if any(not isinstance(item, str) or not item for item in self.incoming):
+            raise ValueError("program AD phi node incoming values must be non-empty strings")
+        if self.control_region is not None and self.control_region < 0:
+            raise ValueError("program AD phi node control_region must be non-negative or None")
+        if self.selected is not None and (not isinstance(self.selected, str) or not self.selected):
+            raise ValueError("program AD phi node selected value must be non-empty or None")
+        if self.source_line is not None and self.source_line <= 0:
+            raise ValueError("program AD phi node source_line must be positive or None")
+
+
+@dataclass(frozen=True)
 class ProgramADControlRegion:
     """One source or runtime control-flow region in program AD graph capture."""
 
@@ -310,6 +340,7 @@ class ProgramADEffectIR:
     alias_edges: tuple[ProgramADAliasEdge, ...]
     control_regions: tuple[ProgramADControlRegion, ...]
     serialization: str
+    phi_nodes: tuple[ProgramADPhiNode, ...] = ()
 
     def __post_init__(self) -> None:
         if any(not isinstance(value, ProgramADSSAValue) for value in self.ssa_values):
@@ -322,6 +353,8 @@ class ProgramADEffectIR:
             raise ValueError(
                 "program AD IR control_regions must contain ProgramADControlRegion entries"
             )
+        if any(not isinstance(phi, ProgramADPhiNode) for phi in self.phi_nodes):
+            raise ValueError("program AD IR phi_nodes must contain ProgramADPhiNode entries")
         if not isinstance(self.serialization, str) or not self.serialization:
             raise ValueError("program AD IR serialization must be a non-empty string")
 
@@ -349,6 +382,7 @@ def parse_program_ad_effect_ir(serialization: str) -> ProgramADEffectIR:
     effects = _parse_program_ad_effects(payload.get("effects"))
     alias_edges = _parse_program_ad_alias_edges(payload.get("alias_edges"))
     control_regions = _parse_program_ad_control_regions(payload.get("control_regions"))
+    phi_nodes = _parse_program_ad_phi_nodes(payload.get("phi_nodes", []))
     _parse_program_ad_bytecode_offsets(payload.get("bytecode_offsets"))
     return ProgramADEffectIR(
         ssa_values=ssa_values,
@@ -356,6 +390,7 @@ def parse_program_ad_effect_ir(serialization: str) -> ProgramADEffectIR:
         alias_edges=alias_edges,
         control_regions=control_regions,
         serialization=serialization,
+        phi_nodes=phi_nodes,
     )
 
 
@@ -468,6 +503,24 @@ def _parse_program_ad_control_regions(value: object) -> tuple[ProgramADControlRe
             )
         )
     return tuple(regions)
+
+
+def _parse_program_ad_phi_nodes(value: object) -> tuple[ProgramADPhiNode, ...]:
+    return tuple(
+        ProgramADPhiNode(
+            index=_parse_program_ad_int("phi node index", row.get("index")),
+            target=_parse_program_ad_str("phi node target", row.get("target")),
+            incoming=_parse_program_ad_str_tuple("phi node incoming", row.get("incoming")),
+            control_region=_parse_program_ad_optional_int(
+                "phi node control_region", row.get("control_region")
+            ),
+            selected=_parse_program_ad_optional_str("phi node selected", row.get("selected")),
+            source_line=_parse_program_ad_optional_int(
+                "phi node source_line", row.get("source_line")
+            ),
+        )
+        for row in _require_program_ad_ir_rows("phi_nodes", value)
+    )
 
 
 def _parse_program_ad_bytecode_offsets(value: object) -> tuple[int, ...]:
@@ -903,6 +956,7 @@ class _WholeProgramTraceContext:
         self.effects: list[ProgramADEffect] = []
         self.alias_edges: list[ProgramADAliasEdge] = []
         self.control_regions: list[ProgramADControlRegion] = []
+        self.phi_nodes: list[ProgramADPhiNode] = []
         self._value_versions: dict[str, int] = {}
         self._effect_order = 0
 
@@ -955,12 +1009,24 @@ class _WholeProgramTraceContext:
                 )
             )
         if op.startswith("branch:"):
+            region_index = len(self.control_regions)
+            selected = "executed_true" if bool(value) else "executed_false"
             self.control_regions.append(
                 ProgramADControlRegion(
-                    index=len(self.control_regions),
+                    index=region_index,
                     kind="runtime_branch",
                     predicate=op,
                     entered=bool(value),
+                    source_line=None,
+                )
+            )
+            self.phi_nodes.append(
+                ProgramADPhiNode(
+                    index=len(self.phi_nodes),
+                    target=f"phi:runtime_branch:{region_index}",
+                    incoming=("executed_true", "executed_false"),
+                    control_region=region_index,
+                    selected=selected,
                     source_line=None,
                 )
             )
@@ -1014,6 +1080,7 @@ class _WholeProgramTraceContext:
 
         alias_edges = list(self.alias_edges)
         control_regions = list(self.control_regions)
+        phi_nodes = list(self.phi_nodes)
         for feature in source_ir_features:
             if feature.kind in {"list_alias", "local_rebinding_alias"}:
                 source, separator, target = feature.detail.partition("->")
@@ -1040,12 +1107,29 @@ class _WholeProgramTraceContext:
                     )
                 )
             if any(token in feature.kind for token in ("branch", "control", "loop")):
+                region_index = len(control_regions)
                 control_regions.append(
                     ProgramADControlRegion(
-                        index=len(control_regions),
+                        index=region_index,
                         kind=f"source_{feature.kind}",
                         predicate=feature.detail,
                         entered=True,
+                        source_line=feature.line_number,
+                    )
+                )
+                if "loop" in feature.kind:
+                    incoming = ("loop_entry", "loop_backedge")
+                    selected = "executed_loop_trace"
+                else:
+                    incoming = ("executed_path", "non_executed_path")
+                    selected = "executed_path"
+                phi_nodes.append(
+                    ProgramADPhiNode(
+                        index=len(phi_nodes),
+                        target=f"phi:source:{feature.kind}:{feature.line_number}",
+                        incoming=incoming,
+                        control_region=region_index,
+                        selected=selected,
                         source_line=feature.line_number,
                     )
                 )
@@ -1092,6 +1176,17 @@ class _WholeProgramTraceContext:
                 }
                 for region in control_regions
             ],
+            "phi_nodes": [
+                {
+                    "index": phi.index,
+                    "target": phi.target,
+                    "incoming": phi.incoming,
+                    "control_region": phi.control_region,
+                    "selected": phi.selected,
+                    "source_line": phi.source_line,
+                }
+                for phi in phi_nodes
+            ],
             "bytecode_offsets": tuple(instruction.offset for instruction in bytecode_instructions),
         }
         return ProgramADEffectIR(
@@ -1100,6 +1195,7 @@ class _WholeProgramTraceContext:
             alias_edges=tuple(alias_edges),
             control_regions=tuple(control_regions),
             serialization=json.dumps(payload, sort_keys=True, separators=(",", ":")),
+            phi_nodes=tuple(phi_nodes),
         )
 
     def _next_value_version(self, name: str) -> int:
@@ -27557,6 +27653,7 @@ __all__ = [
     "ProgramADEffect",
     "ProgramADEffectIR",
     "ProgramADLinalgConditioningDiagnostic",
+    "ProgramADPhiNode",
     "ProgramADSSAValue",
     "PrimitiveBatchingRule",
     "PrimitiveContract",

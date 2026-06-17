@@ -5,6 +5,12 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-06-17 — Added `ProgramADPhiNode` metadata to emitted
+  `ProgramADEffectIR` and the `program_ad_effect_ir.v1` round-trip parser.
+  Runtime branches and source-level control/loop regions now carry
+  deterministic control-join provenance while remaining metadata-only; this
+  does not promote non-executed branch adjoints, full compiler phi lowering,
+  static alias lattice coverage, Rust, LLVM/JIT, provider, or hardware routes.
 - 2026-06-17 — Exposed the bounded Program AD IR round-trip parser through
   `differentiable_dashboard_status(...)` as a `program_ad_ir_roundtrip`
   `metadata_only` row backed by `parse_program_ad_effect_ir(...)` and
