@@ -5,6 +5,11 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-06-17 — Added a per-module strict-mypy ratchet for
+  `scpn_quantum_control.differentiable` in CI, local preflight, and the
+  pre-push hook. Removed the redundant casts that blocked `mypy --strict` on the
+  differentiable-programming surface while leaving the wider repository
+  strict-mypy migration tracked as module-specific debt.
 - 2026-06-17 — Added IR-format and replay-count provenance to
   `ProgramADAdjointResult`. Supported scalar whole-program adjoint replay now
   records replayed node, effect, control-region, and phi-node counts from the

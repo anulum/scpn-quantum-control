@@ -15,8 +15,9 @@ Gates (in order):
   5. version-sync    — version string consistency across 5 carrier files
   6. rust-pyi        — Rust PyO3 exports match local typing contract
   7. mypy            — type errors
-  8. pytest+coverage — tests + temporary coverage threshold (--cov-fail-under=70)
-  9. bandit          — security scan
+  8. mypy-strict-dp  — strict typing ratchet for differentiable programming
+  9. pytest+coverage — tests + temporary coverage threshold (--cov-fail-under=70)
+  10. bandit         — security scan
 
 Usage:
   python tools/preflight.py                # all gates (default)
@@ -68,6 +69,10 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     ("version-sync", [_PY, "scripts/check_version_consistency.py"]),
     ("rust-pyi", [_PY, "tools/check_rust_pyi_exports.py"]),
     ("mypy", [_PY, "-m", "mypy"]),
+    (
+        "mypy-strict-differentiable",
+        [_PY, "-m", "mypy", "--strict", "src/scpn_quantum_control/differentiable.py"],
+    ),
 ]
 
 BANDIT_GATE: tuple[str, list[str]] = (

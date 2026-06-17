@@ -3207,7 +3207,7 @@ def _trace_static_index_array(selector: object) -> NDArray[Any]:
         raise ValueError(_PROGRAM_AD_STATIC_INDEX_ERROR)
     if array.shape == () and array.dtype.kind == "b":
         raise ValueError(_PROGRAM_AD_STATIC_INDEX_ERROR)
-    return cast(NDArray[Any], array)
+    return array
 
 
 def _broadcast_trace_array(
@@ -3245,7 +3245,8 @@ def _broadcast_shape(*shapes: tuple[int, ...]) -> tuple[int, ...]:
     """Return a NumPy-compatible broadcast shape or fail closed."""
 
     try:
-        return cast(tuple[int, ...], np.broadcast_shapes(*shapes))
+        shape: tuple[int, ...] = np.broadcast_shapes(*shapes)
+        return shape
     except ValueError as exc:
         raise ValueError(
             "whole-program AD array operands must follow NumPy broadcasting rules"
@@ -5205,7 +5206,7 @@ def _program_ad_array_insert_values(values: object, *, context: str) -> NDArray[
         raise ValueError(
             f"program AD array insert {context} requires static finite real insert values"
         )
-    return cast(NDArray[np.float64], insert_values)
+    return insert_values
 
 
 def _program_ad_array_insert_axis(axis: object, ndim: int, *, context: str) -> int | None:
@@ -7174,7 +7175,8 @@ def program_adjoint_gradient(result: WholeProgramADResult) -> NDArray[np.float64
     if not adjoint.supported:
         unsupported = ", ".join(adjoint.unsupported_ops)
         raise ValueError(f"program AD adjoint replay unsupported for ops: {unsupported}")
-    return cast(NDArray[np.float64], adjoint.gradient.copy())
+    gradient: NDArray[np.float64] = adjoint.gradient.copy()
+    return gradient
 
 
 def program_adjoint_grad(
@@ -8762,7 +8764,7 @@ def _as_real_numeric_array(name: str, values: object) -> NDArray[np.float64]:
         array = np.asarray(raw, dtype=np.float64)
     except (TypeError, ValueError) as exc:
         raise ValueError(f"{name} must contain real numeric scalars") from exc
-    return cast(NDArray[np.float64], array)
+    return array
 
 
 def _as_real_scalar(name: str, value: object) -> float:
@@ -8789,7 +8791,7 @@ def _as_index_vector(name: str, values: object) -> NDArray[np.int64]:
         raise ValueError(f"{name} must be one-dimensional")
     if np.any(array < 0):
         raise ValueError(f"{name} must contain non-negative indices")
-    return cast(NDArray[np.int64], array)
+    return array
 
 
 @dataclass(frozen=True)
@@ -19975,7 +19977,7 @@ def _program_ad_linalg_normalise_solve_shapes(
         raise ValueError(
             "program AD linalg solve direct rule right-hand side rows must match matrix"
         )
-    return cast(tuple[int, int], matrix), rhs
+    return matrix, rhs
 
 
 def _program_ad_linalg_solve_static_split(
@@ -21163,7 +21165,7 @@ def _program_ad_linalg_rank2_shape(
         raise ValueError(f"program AD linalg {name} derivative rule requires a rank-2 matrix")
     if any(dimension <= 0 for dimension in shape):
         raise ValueError(f"program AD linalg {name} derivative rule dimensions must be positive")
-    return cast(tuple[int, int], shape)
+    return shape
 
 
 def _program_ad_linalg_trace_positions(
@@ -22428,7 +22430,7 @@ def _program_ad_linalg_trace_shape(args: tuple[object, ...]) -> tuple[int, ...]:
         axis2 = _program_ad_linalg_offset("trace", cast(int | np.integer, args[3]))
     if (axis1, axis2) != (0, 1):
         raise ValueError("program AD linalg trace shape rule supports axis1=0 and axis2=1")
-    _program_ad_linalg_trace_positions(cast(tuple[int, int], shape), offset)
+    _program_ad_linalg_trace_positions(shape, offset)
     return ()
 
 
@@ -22622,7 +22624,7 @@ def _program_ad_linalg_trace_static_arguments(args: tuple[object, ...]) -> tuple
         axis2 = _program_ad_linalg_offset("trace", cast(int | np.integer, args[3]))
     if (axis1, axis2) != (0, 1):
         raise ValueError("program AD linalg trace static rule supports axis1=0 and axis2=1")
-    _program_ad_linalg_trace_positions(cast(tuple[int, int], shape), offset)
+    _program_ad_linalg_trace_positions(shape, offset)
     return (shape, offset, axis1, axis2)
 
 
@@ -24240,13 +24242,14 @@ class NaturalGradientOptimizer:
         natural_gradient_value: NDArray[np.float64],
         trainable: NDArray[np.bool_],
     ) -> NDArray[np.float64]:
-        step_vector = cast(NDArray[np.float64], self.learning_rate * natural_gradient_value.copy())
+        step_vector = self.learning_rate * natural_gradient_value.copy()
         if self.max_step_norm is not None and np.any(trainable):
             norm = float(np.linalg.norm(step_vector[trainable], ord=2))
             if norm > self.max_step_norm:
                 step_vector[trainable] *= self.max_step_norm / norm
         step_vector[~trainable] = 0.0
-        return step_vector
+        typed_step: NDArray[np.float64] = step_vector
+        return typed_step
 
     @staticmethod
     def _gradient(
@@ -24395,7 +24398,7 @@ def _as_parameter_shift_sample_tensor(
         raise ValueError(f"{name} must contain at least one parameter column")
     if not np.all(np.isfinite(array)):
         raise ValueError(f"{name} must contain only finite values")
-    return cast(NDArray[np.float64], array)
+    return array
 
 
 def _as_batch_parameter_array(
@@ -24557,7 +24560,8 @@ def _project_bounds(
             projected[index] = bound.lower
         if bound.upper is not None and projected[index] > bound.upper:
             projected[index] = bound.upper
-    return cast(NDArray[np.float64], projected)
+    typed_projected: NDArray[np.float64] = projected
+    return typed_projected
 
 
 def _validate_max_gradient_norm(max_gradient_norm: float | None) -> float | None:
@@ -24578,11 +24582,13 @@ def _clip_gradient(
     max_norm = _validate_max_gradient_norm(max_gradient_norm)
     clipped = gradient.copy()
     if max_norm is None or not np.any(trainable):
-        return cast(NDArray[np.float64], clipped)
+        typed_clipped: NDArray[np.float64] = clipped
+        return typed_clipped
     trainable_norm = float(np.linalg.norm(clipped[trainable], ord=2))
     if trainable_norm > max_norm:
         clipped[trainable] *= max_norm / trainable_norm
-    return cast(NDArray[np.float64], clipped)
+    clipped_gradient: NDArray[np.float64] = clipped
+    return clipped_gradient
 
 
 def parameter_shift_gradient(
@@ -26053,7 +26059,7 @@ def vector_jacobian_product(
     cotangent_values = _as_vector_output(cotangent)
     if cotangent_values.shape != jacobian.value.shape:
         raise ValueError("VJP cotangent shape must match Jacobian value shape")
-    vjp = cast(NDArray[np.float64], jacobian.jacobian.T @ cotangent_values)
+    vjp = jacobian.jacobian.T @ cotangent_values
     trainable = np.asarray(jacobian.trainable, dtype=bool)
     vjp[~trainable] = 0.0
     return VJPResult(
@@ -26847,7 +26853,8 @@ def empirical_fisher_metric(
     metric = jacobian_arr.T @ weighted
     if damping_value > 0.0:
         metric = metric + damping_value * np.eye(metric.shape[0], dtype=np.float64)
-    return cast(NDArray[np.float64], metric)
+    typed_metric: NDArray[np.float64] = metric
+    return typed_metric
 
 
 def sparse_empirical_fisher_metric(
@@ -26896,7 +26903,7 @@ def empirical_fisher_vector_product(
     damping_value = _as_real_scalar("Fisher-vector damping", damping)
     if damping_value < 0.0:
         raise ValueError("Fisher-vector damping must be finite and non-negative")
-    projection = cast(NDArray[np.float64], jacobian.jacobian @ masked_tangent)
+    projection = jacobian.jacobian @ masked_tangent
     if weights is None:
         weighted_projection = projection
     else:
@@ -26906,7 +26913,7 @@ def empirical_fisher_vector_product(
         if not np.all(np.isfinite(weight_arr)) or np.any(weight_arr < 0.0):
             raise ValueError("weights must contain only finite non-negative values")
         weighted_projection = projection * weight_arr
-    product = cast(NDArray[np.float64], jacobian.jacobian.T @ weighted_projection)
+    product = jacobian.jacobian.T @ weighted_projection
     if damping_value > 0.0:
         product[trainable] += damping_value * masked_tangent[trainable]
     product[~trainable] = 0.0
@@ -27101,7 +27108,7 @@ def huber_residual_weights(
     weights[outliers] = delta_value / magnitudes[outliers]
     if min_weight_value > 0.0:
         weights = np.maximum(weights, min_weight_value)
-    return cast(NDArray[np.float64], weights)
+    return weights
 
 
 def soft_l1_residual_weights(
@@ -27124,7 +27131,7 @@ def soft_l1_residual_weights(
     weights = 1.0 / np.sqrt(1.0 + scaled * scaled)
     if min_weight_value > 0.0:
         weights = np.maximum(weights, min_weight_value)
-    return cast(NDArray[np.float64], weights)
+    return weights
 
 
 def gauss_newton_gradient(
@@ -27158,7 +27165,7 @@ def gauss_newton_gradient(
         weighted_residual = residual * weight_arr
 
     loss_value = 0.5 * float(residual @ weighted_residual)
-    gradient = cast(NDArray[np.float64], jacobian_arr.T @ weighted_residual)
+    gradient = jacobian_arr.T @ weighted_residual
     base_gradient = GradientResult(
         value=loss_value,
         gradient=gradient,
