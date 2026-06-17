@@ -365,6 +365,7 @@ Runs the committed conformance rows:
 | Case | Category | Contract |
 |------|----------|----------|
 | `loop_heavy_scalar` | loop-heavy | Executed Python loops with scalar ufuncs |
+| `elementwise_boundary_contracts` | elementwise-boundary | Builtin `abs`, NumPy absolute value, positive-domain, nonzero-denominator, and inverse-trig boundary contracts |
 | `matrix_heavy_linear_algebra` | matrix-heavy | Dot, inner, outer, trace, tensordot, and einsum semantics |
 | `selection_piecewise_contracts` | selection-heavy | Registry-gated `where`/`clip` branch and boundary contracts, with `np.select`, callable `np.piecewise`, static-selector `np.choose`, static-mask `np.compress`, and same-size static-mask `np.extract` folded through trace selection/gather semantics |
 | `linalg_primitive_contracts` | linalg-primitive | Registry-gated determinant, inverse, solve, trace, diagonal, flattened diagonal, matrix-power, and multi-dot contracts |

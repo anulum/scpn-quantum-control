@@ -33,6 +33,7 @@ def test_differentiable_programming_benchmark_suite_matches_analytic_references(
 
     assert [row.case_id for row in results] == [
         "loop_heavy_scalar",
+        "elementwise_boundary_contracts",
         "matrix_heavy_linear_algebra",
         "selection_piecewise_contracts",
         "linalg_primitive_contracts",
@@ -42,6 +43,7 @@ def test_differentiable_programming_benchmark_suite_matches_analytic_references(
     ]
     assert {row.category for row in results} == {
         "loop-heavy",
+        "elementwise-boundary",
         "matrix-heavy",
         "selection-heavy",
         "linalg-primitive",
@@ -67,6 +69,11 @@ def test_differentiable_programming_benchmark_suite_matches_analytic_references(
     assert linalg_row.adjoint_supported is True
     assert linalg_row.max_abs_adjoint_error is not None
     assert linalg_row.max_abs_adjoint_error <= 1.0e-12
+    elementwise_row = next(row for row in results if row.category == "elementwise-boundary")
+    assert elementwise_row.adjoint_supported is True
+    assert elementwise_row.max_abs_adjoint_error is not None
+    assert elementwise_row.max_abs_adjoint_error <= 1.0e-12
+    assert "zero-cusp absolute-value" in elementwise_row.claim_boundary
     selection_row = next(row for row in results if row.category == "selection-heavy")
     assert selection_row.adjoint_supported is True
     assert selection_row.max_abs_adjoint_error is not None

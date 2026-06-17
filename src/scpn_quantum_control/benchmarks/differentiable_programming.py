@@ -198,6 +198,7 @@ def run_differentiable_programming_benchmark_suite() -> tuple[
 
     return (
         _loop_heavy_case(),
+        _elementwise_boundary_case(),
         _matrix_heavy_case(),
         _selection_heavy_case(),
         _linalg_primitive_case(),
@@ -321,6 +322,50 @@ def _loop_heavy_case() -> DifferentiableProgrammingBenchmarkResult:
         objective,
         values,
         analytic,
+    )
+
+
+def _elementwise_boundary_case() -> DifferentiableProgrammingBenchmarkResult:
+    values = np.array([-1.5, 0.75, 2.25, 0.5], dtype=np.float64)
+
+    def objective(trace_values: Any) -> object:
+        return (
+            abs(trace_values[0])
+            + np.abs(trace_values[1])
+            + np.log(trace_values[2])
+            + np.sqrt(trace_values[2])
+            + np.reciprocal(trace_values[3])
+            + np.log1p(trace_values[3])
+            + np.arcsin(0.5 * trace_values[3])
+            + np.arccos(0.25 * trace_values[3])
+        )
+
+    x2 = values[2]
+    x3 = values[3]
+    analytic = np.array(
+        [
+            -1.0,
+            1.0,
+            1.0 / x2 + 1.0 / (2.0 * math.sqrt(x2)),
+            -1.0 / (x3 * x3)
+            + 1.0 / (1.0 + x3)
+            + 0.5 / math.sqrt(1.0 - (0.5 * x3) ** 2)
+            - 0.25 / math.sqrt(1.0 - (0.25 * x3) ** 2),
+        ],
+        dtype=np.float64,
+    )
+    return _program_ad_case(
+        "elementwise_boundary_contracts",
+        "elementwise-boundary",
+        objective,
+        values,
+        analytic,
+        claim_boundary=(
+            "deterministic program AD conformance for zero-cusp absolute-value, "
+            "positive-domain, nonzero-denominator, and inverse-trig boundary "
+            "contracts; no wall-clock performance, hardware, LLVM, Rust, or JIT "
+            "execution claim"
+        ),
     )
 
 
@@ -1037,6 +1082,7 @@ def _program_ad_case(
     objective: Callable[[Any], object],
     values: NDArray[np.float64],
     analytic_gradient: NDArray[np.float64],
+    claim_boundary: str | None = None,
 ) -> DifferentiableProgrammingBenchmarkResult:
     result = whole_program_value_and_grad(
         objective,
@@ -1056,7 +1102,8 @@ def _program_ad_case(
         max_abs_gradient_error=_max_abs_error(result.gradient, analytic_gradient),
         adjoint_supported=adjoint_supported,
         max_abs_adjoint_error=adjoint_error,
-        claim_boundary=(
+        claim_boundary=claim_boundary
+        or (
             "deterministic program AD conformance against analytic references; "
             "no wall-clock performance, hardware, LLVM, Rust, or JIT execution claim"
         ),
