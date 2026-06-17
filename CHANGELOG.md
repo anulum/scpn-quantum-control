@@ -5,6 +5,12 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-06-17 — Registered Program AD `np.median`, `np.quantile`, and
+  `np.percentile` as bounded reduction primitive contracts with shape, dtype,
+  static scalar-q/axis/method validation, batching, lowering metadata, direct
+  JVP/VJP factories, and fail-closed strict-order selection boundaries.
+  Rust/LLVM executable promotion remains blocked until independently verified
+  polyglot reduction kernels exist.
 - 2026-06-17 — Registered Program AD `np.sort` as a bounded selection
   primitive contract with shape, dtype, static-axis/kind, batching, lowering,
   and fail-closed strict-total-order nondifferentiability metadata. `np.argsort`

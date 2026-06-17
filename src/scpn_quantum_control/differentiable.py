@@ -1852,10 +1852,15 @@ class TraceADArray:
                 raise ValueError("program AD np.median supports one array and optional axis")
             if len(args) == 2 and "axis" in kwargs:
                 raise ValueError("program AD np.median axis must be supplied once")
+            median_axis = args[1] if len(args) == 2 else kwargs.get("axis")
+            _require_program_ad_reduction_contract(
+                "median",
+                (_coerce_trace_array(args[0], self.context), median_axis),
+            )
             return _trace_order_statistic(
                 _coerce_trace_array(args[0], self.context),
                 q=0.5,
-                axis=args[1] if len(args) == 2 else kwargs.get("axis"),
+                axis=median_axis,
                 op_name="np.median",
             )
         if func in {np.quantile, np.percentile}:
@@ -1877,13 +1882,24 @@ class TraceADArray:
             if "method" in kwargs and "interpolation" in kwargs:
                 raise ValueError(f"program AD np.{func.__name__} method must be supplied once")
             method = kwargs.get("method", kwargs.get("interpolation", "linear"))
+            order_statistic_axis = args[2] if len(args) == 3 else kwargs.get("axis")
+            order_statistic_q = _normalise_order_statistic_q(
+                args[1],
+                percentile=func is np.percentile,
+            )
+            _require_program_ad_reduction_contract(
+                func.__name__,
+                (
+                    _coerce_trace_array(args[0], self.context),
+                    args[1],
+                    order_statistic_axis,
+                    method,
+                ),
+            )
             return _trace_order_statistic(
                 _coerce_trace_array(args[0], self.context),
-                q=_normalise_order_statistic_q(
-                    args[1],
-                    percentile=func is np.percentile,
-                ),
-                axis=args[2] if len(args) == 3 else kwargs.get("axis"),
+                q=order_statistic_q,
+                axis=order_statistic_axis,
                 method=method,
                 op_name=f"np.{func.__name__}",
             )
@@ -11338,7 +11354,7 @@ _PROGRAM_AD_REDUCTION_PRIMITIVE_NAMESPACE = "scpn.program_ad.reduction"
 _PROGRAM_AD_REDUCTION_POLICY = "program_ad_trace_exact_fail_closed"
 _PROGRAM_AD_REDUCTION_IDENTITIES: Mapping[str, PrimitiveIdentity] = {
     name: PrimitiveIdentity(_PROGRAM_AD_REDUCTION_PRIMITIVE_NAMESPACE, name, "1")
-    for name in ("sum", "prod", "mean", "trapezoid")
+    for name in ("sum", "prod", "mean", "median", "quantile", "percentile", "trapezoid")
 }
 
 _PROGRAM_AD_STENCIL_PRIMITIVE_NAMESPACE = "scpn.program_ad.stencil"
@@ -13111,6 +13127,67 @@ def _program_ad_reduction_mean_vjp(
     return np.full(vector.shape, scalar_cotangent / float(vector.size), dtype=np.float64)
 
 
+def _program_ad_reduction_order_statistic_value(
+    name: str,
+    values: NDArray[np.float64],
+    *,
+    q: float,
+) -> NDArray[np.float64]:
+    vector = _program_ad_reduction_vector(name, values)
+    _require_strict_order_statistic_values(vector, f"np.{name}")
+    order = np.argsort(vector, kind="stable")
+    position = q * float(vector.size - 1)
+    lower = int(math.floor(position))
+    upper = int(math.ceil(position))
+    upper_weight = position - float(lower)
+    value = vector[int(order[lower])]
+    if lower != upper:
+        value = value * (1.0 - upper_weight) + vector[int(order[upper])] * upper_weight
+    return np.array([float(value)], dtype=np.float64)
+
+
+def _program_ad_reduction_order_statistic_jvp(
+    name: str,
+    values: NDArray[np.float64],
+    tangent: NDArray[np.float64],
+    *,
+    q: float,
+) -> NDArray[np.float64]:
+    vector, tangent_vector = _program_ad_reduction_tangent_pair(name, values, tangent)
+    _require_strict_order_statistic_values(vector, f"np.{name}")
+    order = np.argsort(vector, kind="stable")
+    position = q * float(vector.size - 1)
+    lower = int(math.floor(position))
+    upper = int(math.ceil(position))
+    upper_weight = position - float(lower)
+    value = tangent_vector[int(order[lower])]
+    if lower != upper:
+        value = value * (1.0 - upper_weight) + tangent_vector[int(order[upper])] * upper_weight
+    return np.array([float(value)], dtype=np.float64)
+
+
+def _program_ad_reduction_order_statistic_vjp(
+    name: str,
+    values: NDArray[np.float64],
+    cotangent: NDArray[np.float64],
+    *,
+    q: float,
+) -> NDArray[np.float64]:
+    vector = _program_ad_reduction_vector(name, values)
+    scalar_cotangent = _program_ad_reduction_scalar_cotangent(name, cotangent)
+    _require_strict_order_statistic_values(vector, f"np.{name}")
+    order = np.argsort(vector, kind="stable")
+    position = q * float(vector.size - 1)
+    lower = int(math.floor(position))
+    upper = int(math.ceil(position))
+    upper_weight = position - float(lower)
+    result = np.zeros_like(vector, dtype=np.float64)
+    result[int(order[lower])] += scalar_cotangent * (1.0 - upper_weight)
+    if lower != upper:
+        result[int(order[upper])] += scalar_cotangent * upper_weight
+    return result
+
+
 def _program_ad_reduction_trapezoid_flat_weights(size: int) -> NDArray[np.float64]:
     if size < 2:
         raise ValueError("program AD reduction trapezoid direct rule requires at least two values")
@@ -13166,6 +13243,12 @@ def _program_ad_reduction_derivative_rule(name: str) -> CustomDerivativeRule:
             jvp_rule=_program_ad_reduction_mean_jvp,
             vjp_rule=_program_ad_reduction_mean_vjp,
         )
+    if name == "median":
+        return _program_ad_reduction_order_statistic_rule(name, q=0.5)
+    if name == "quantile":
+        return _program_ad_reduction_order_statistic_rule(name, q=0.5)
+    if name == "percentile":
+        return _program_ad_reduction_order_statistic_rule(name, q=0.5)
     if name == "trapezoid":
         return CustomDerivativeRule(
             name="program_ad_reduction_trapezoid_direct_rule",
@@ -13202,6 +13285,163 @@ def _program_ad_reduction_output_shape(
         return ()
     normalised_axis = _normalise_axis("axis", axis, len(source_shape))
     return source_shape[:normalised_axis] + source_shape[normalised_axis + 1 :]
+
+
+def _program_ad_reduction_q_signature(q: float) -> str:
+    return str(float(q)).replace("-", "neg_").replace(".", "_")
+
+
+def _program_ad_reduction_order_statistic_static_value(
+    name: str,
+    values: NDArray[np.float64],
+    *,
+    source_shape: tuple[int, ...],
+    axis: int | None,
+    q: float,
+) -> NDArray[np.float64]:
+    vector = _program_ad_reduction_source_vector(name, "values", values, source_shape=source_shape)
+    value_array = vector.reshape(source_shape)
+    if axis is None:
+        return _program_ad_reduction_order_statistic_value(name, vector, q=q)
+    output = np.empty(_program_ad_reduction_output_shape(source_shape, axis), dtype=np.float64)
+    for reduced_index in np.ndindex(output.shape):
+        source_values = value_array[
+            reduced_index[:axis] + (slice(None),) + reduced_index[axis:]
+        ].reshape(-1)
+        output[reduced_index] = _program_ad_reduction_order_statistic_value(
+            name, source_values, q=q
+        )[0]
+    return _program_ad_float64_vector_result(output)
+
+
+def _program_ad_reduction_order_statistic_static_jvp(
+    name: str,
+    values: NDArray[np.float64],
+    tangent: NDArray[np.float64],
+    *,
+    source_shape: tuple[int, ...],
+    axis: int | None,
+    q: float,
+) -> NDArray[np.float64]:
+    value_array = _program_ad_reduction_source_vector(
+        name, "values", values, source_shape=source_shape
+    ).reshape(source_shape)
+    tangent_array = _program_ad_reduction_source_vector(
+        name, "tangent", tangent, source_shape=source_shape
+    ).reshape(source_shape)
+    if axis is None:
+        return _program_ad_reduction_order_statistic_jvp(
+            name, value_array.reshape(-1), tangent_array.reshape(-1), q=q
+        )
+    output = np.empty(_program_ad_reduction_output_shape(source_shape, axis), dtype=np.float64)
+    for reduced_index in np.ndindex(output.shape):
+        selector = reduced_index[:axis] + (slice(None),) + reduced_index[axis:]
+        output[reduced_index] = _program_ad_reduction_order_statistic_jvp(
+            name,
+            value_array[selector].reshape(-1),
+            tangent_array[selector].reshape(-1),
+            q=q,
+        )[0]
+    return _program_ad_float64_vector_result(output)
+
+
+def _program_ad_reduction_order_statistic_static_vjp(
+    name: str,
+    values: NDArray[np.float64],
+    cotangent: NDArray[np.float64],
+    *,
+    source_shape: tuple[int, ...],
+    axis: int | None,
+    q: float,
+) -> NDArray[np.float64]:
+    value_array = _program_ad_reduction_source_vector(
+        name, "values", values, source_shape=source_shape
+    ).reshape(source_shape)
+    output_shape = _program_ad_reduction_output_shape(source_shape, axis)
+    cotangent_array = _program_ad_reduction_cotangent_array(
+        name, cotangent, output_shape=output_shape
+    )
+    if axis is None:
+        return _program_ad_reduction_order_statistic_vjp(
+            name, value_array.reshape(-1), cotangent_array.reshape(-1), q=q
+        )
+    result = np.zeros_like(value_array, dtype=np.float64)
+    for reduced_index in np.ndindex(output_shape):
+        selector = reduced_index[:axis] + (slice(None),) + reduced_index[axis:]
+        result[selector] += _program_ad_reduction_order_statistic_vjp(
+            name,
+            value_array[selector].reshape(-1),
+            np.array([float(cotangent_array[reduced_index])], dtype=np.float64),
+            q=q,
+        ).reshape(result[selector].shape)
+    return _program_ad_float64_vector_result(result)
+
+
+def _program_ad_reduction_order_statistic_rule(
+    name: str,
+    *,
+    q: float,
+    source_shape: Sequence[int] | None = None,
+    axis: int | None = None,
+) -> CustomDerivativeRule:
+    if source_shape is None:
+
+        def value_fn(values: NDArray[np.float64]) -> NDArray[np.float64]:
+            return _program_ad_reduction_order_statistic_value(name, values, q=q)
+
+        def jvp_rule(
+            values: NDArray[np.float64],
+            tangent: NDArray[np.float64],
+        ) -> NDArray[np.float64]:
+            return _program_ad_reduction_order_statistic_jvp(name, values, tangent, q=q)
+
+        def vjp_rule(
+            values: NDArray[np.float64],
+            cotangent: NDArray[np.float64],
+        ) -> NDArray[np.float64]:
+            return _program_ad_reduction_order_statistic_vjp(name, values, cotangent, q=q)
+
+        return CustomDerivativeRule(
+            name=f"program_ad_reduction_{name}_q_{_program_ad_reduction_q_signature(q)}_direct_rule",
+            value_fn=value_fn,
+            jvp_rule=jvp_rule,
+            vjp_rule=vjp_rule,
+        )
+
+    source = _program_ad_reduction_normalise_static_shape(name, source_shape)
+    normalised_axis = None if axis is None else _normalise_axis("axis", axis, len(source))
+
+    def static_value_fn(values: NDArray[np.float64]) -> NDArray[np.float64]:
+        return _program_ad_reduction_order_statistic_static_value(
+            name, values, source_shape=source, axis=normalised_axis, q=q
+        )
+
+    def static_jvp_rule(
+        values: NDArray[np.float64],
+        tangent: NDArray[np.float64],
+    ) -> NDArray[np.float64]:
+        return _program_ad_reduction_order_statistic_static_jvp(
+            name, values, tangent, source_shape=source, axis=normalised_axis, q=q
+        )
+
+    def static_vjp_rule(
+        values: NDArray[np.float64],
+        cotangent: NDArray[np.float64],
+    ) -> NDArray[np.float64]:
+        return _program_ad_reduction_order_statistic_static_vjp(
+            name, values, cotangent, source_shape=source, axis=normalised_axis, q=q
+        )
+
+    return CustomDerivativeRule(
+        name=(
+            f"program_ad_reduction_{name}_{_program_ad_shape_signature(source)}_axis_"
+            f"{_program_ad_reduction_axis_signature(normalised_axis)}_q_"
+            f"{_program_ad_reduction_q_signature(q)}_direct_rule"
+        ),
+        value_fn=static_value_fn,
+        jvp_rule=static_jvp_rule,
+        vjp_rule=static_vjp_rule,
+    )
 
 
 def _program_ad_reduction_source_vector(
@@ -13511,6 +13751,49 @@ def program_ad_reduction_mean_derivative_rule(
     """Build an exact direct derivative rule for a fixed mean reduction signature."""
 
     return _program_ad_reduction_static_rule("mean", source_shape, axis)
+
+
+def program_ad_reduction_median_derivative_rule(
+    source_shape: Sequence[int],
+    axis: int | None = None,
+) -> CustomDerivativeRule:
+    """Build an exact direct derivative rule for a fixed median reduction signature."""
+
+    return _program_ad_reduction_order_statistic_rule(
+        "median", q=0.5, source_shape=source_shape, axis=axis
+    )
+
+
+def program_ad_reduction_quantile_derivative_rule(
+    source_shape: Sequence[int],
+    *,
+    q: object = 0.5,
+    axis: int | None = None,
+) -> CustomDerivativeRule:
+    """Build an exact direct derivative rule for a fixed scalar-quantile signature."""
+
+    return _program_ad_reduction_order_statistic_rule(
+        "quantile",
+        q=_normalise_order_statistic_q(q, percentile=False),
+        source_shape=source_shape,
+        axis=axis,
+    )
+
+
+def program_ad_reduction_percentile_derivative_rule(
+    source_shape: Sequence[int],
+    *,
+    q: object = 50.0,
+    axis: int | None = None,
+) -> CustomDerivativeRule:
+    """Build an exact direct derivative rule for a fixed scalar-percentile signature."""
+
+    return _program_ad_reduction_order_statistic_rule(
+        "percentile",
+        q=_normalise_order_statistic_q(q, percentile=True),
+        source_shape=source_shape,
+        axis=axis,
+    )
 
 
 def program_ad_reduction_prod_derivative_rule(
@@ -16252,6 +16535,17 @@ def _program_ad_reduction_axis(args: tuple[object, ...]) -> int | None:
     return int(axis)
 
 
+def _program_ad_order_statistic_reduction_axis(args: tuple[object, ...]) -> int | None:
+    if len(args) == 2:
+        axis = args[1]
+    elif len(args) == 4:
+        _normalise_order_statistic_method(args[3])
+        axis = args[2]
+    else:
+        raise ValueError("program AD order-statistic reduction rule requires static arguments")
+    return _normalise_order_statistic_axis(axis, len(_program_ad_array_shape_of(args[0])))
+
+
 def _program_ad_reduction_shape(args: tuple[object, ...]) -> tuple[int, ...]:
     source_shape = _program_ad_array_shape_of(args[0])
     if int(np.prod(source_shape)) == 0:
@@ -16261,6 +16555,18 @@ def _program_ad_reduction_shape(args: tuple[object, ...]) -> tuple[int, ...]:
         return ()
     normalised_axis = _normalise_axis("axis", axis, len(source_shape))
     return source_shape[:normalised_axis] + source_shape[normalised_axis + 1 :]
+
+
+def _program_ad_order_statistic_reduction_shape(args: tuple[object, ...]) -> tuple[int, ...]:
+    source_shape = _program_ad_array_shape_of(args[0])
+    if int(np.prod(source_shape)) == 0:
+        raise ValueError(
+            "program AD order-statistic reduction shape rule requires at least one element"
+        )
+    axis = _program_ad_order_statistic_reduction_axis(args)
+    if axis is None:
+        return ()
+    return source_shape[:axis] + source_shape[axis + 1 :]
 
 
 def _program_ad_reduction_trapezoid_axis(args: tuple[object, ...]) -> int:
@@ -16846,6 +17152,38 @@ def _program_ad_reduction_static_arguments(args: tuple[object, ...]) -> tuple[ob
             axis,
         )
     return (_program_ad_reduction_axis(args),)
+
+
+def _program_ad_reduction_median_static_arguments(
+    args: tuple[object, ...],
+) -> tuple[object, ...]:
+    return (_program_ad_order_statistic_reduction_axis(args),)
+
+
+def _program_ad_reduction_quantile_static_arguments(
+    args: tuple[object, ...],
+) -> tuple[object, ...]:
+    if len(args) != 4:
+        raise ValueError("program AD quantile rule requires array, q, axis, and method")
+    _normalise_order_statistic_method(args[3])
+    return (
+        _normalise_order_statistic_q(args[1], percentile=False),
+        _program_ad_order_statistic_reduction_axis(args),
+        "linear",
+    )
+
+
+def _program_ad_reduction_percentile_static_arguments(
+    args: tuple[object, ...],
+) -> tuple[object, ...]:
+    if len(args) != 4:
+        raise ValueError("program AD percentile rule requires array, q, axis, and method")
+    _normalise_order_statistic_method(args[3])
+    return (
+        _normalise_order_statistic_q(args[1], percentile=True),
+        _program_ad_order_statistic_reduction_axis(args),
+        "linear",
+    )
 
 
 def _program_ad_elementwise_static_arguments(args: tuple[object, ...]) -> tuple[object, ...]:
@@ -18409,7 +18747,20 @@ _PROGRAM_AD_REDUCTION_SHAPE_RULES: Mapping[str, PrimitiveShapeRule] = {
     "sum": _program_ad_reduction_shape,
     "prod": _program_ad_reduction_shape,
     "mean": _program_ad_reduction_shape,
+    "median": _program_ad_order_statistic_reduction_shape,
+    "quantile": _program_ad_order_statistic_reduction_shape,
+    "percentile": _program_ad_order_statistic_reduction_shape,
     "trapezoid": _program_ad_reduction_trapezoid_shape,
+}
+
+_PROGRAM_AD_REDUCTION_STATIC_ARGUMENT_RULES: Mapping[str, PrimitiveStaticArgumentRule] = {
+    "sum": _program_ad_reduction_static_arguments,
+    "prod": _program_ad_reduction_static_arguments,
+    "mean": _program_ad_reduction_static_arguments,
+    "median": _program_ad_reduction_median_static_arguments,
+    "quantile": _program_ad_reduction_quantile_static_arguments,
+    "percentile": _program_ad_reduction_percentile_static_arguments,
+    "trapezoid": _program_ad_reduction_static_arguments,
 }
 
 _PROGRAM_AD_ELEMENTWISE_SHAPE_RULES: Mapping[str, PrimitiveShapeRule] = {
@@ -18636,11 +18987,13 @@ def _program_ad_reduction_batching_rule(
     if any(item is not None for item in axes[1:]):
         raise ValueError("program AD reduction batching supports static axes only")
     batch_axis = _normalise_axis("axes[0]", batch_axis, array.ndim)
-    reduction_axis = (
-        _program_ad_reduction_trapezoid_axis(args)
-        if len(args) == 4
-        else _program_ad_reduction_axis(args)
-    )
+    order_statistic = len(args) == 4 and isinstance(args[3], str)
+    if order_statistic:
+        reduction_axis = _program_ad_order_statistic_reduction_axis(args)
+    elif len(args) == 4:
+        reduction_axis = _program_ad_reduction_trapezoid_axis(args)
+    else:
+        reduction_axis = _program_ad_reduction_axis(args)
     if reduction_axis is not None:
         reduction_axis = _normalise_axis("reduction axis", reduction_axis, array.ndim)
         if reduction_axis == batch_axis:
@@ -18648,6 +19001,23 @@ def _program_ad_reduction_batching_rule(
         if reduction_axis > batch_axis:
             reduction_axis -= 1
     static_tail: tuple[object, ...] = (reduction_axis,)
+    if order_statistic:
+        q = args[1]
+        method = args[3]
+        outputs = [
+            _as_real_numeric_array(
+                "program AD reduction batched output",
+                function(
+                    np.take(array, batch_index, axis=batch_axis),
+                    q,
+                    axis=reduction_axis,
+                    method=method,
+                ),
+            )
+            for batch_index in range(int(array.shape[batch_axis]))
+        ]
+        stacked = np.stack(outputs, axis=0)
+        return np.moveaxis(stacked, 0, _normalise_axis("out_axes", out_axes, stacked.ndim))
     if len(args) == 4 and args[1] is not None:
         x_array = _as_real_numeric_array("program AD trapezoid batched x", args[1])
         if tuple(x_array.shape) == tuple(array.shape):
@@ -18671,12 +19041,18 @@ def _program_ad_reduction_lowering_metadata(name: str) -> Mapping[str, str]:
         "sum": "program_ad_reduction_sum_derivative_rule",
         "prod": "program_ad_reduction_prod_derivative_rule",
         "mean": "program_ad_reduction_mean_derivative_rule",
+        "median": "program_ad_reduction_median_derivative_rule",
+        "quantile": "program_ad_reduction_quantile_derivative_rule",
+        "percentile": "program_ad_reduction_percentile_derivative_rule",
         "trapezoid": "program_ad_reduction_trapezoid_derivative_rule",
     }[name]
     nondifferentiable_boundaries = {
         "sum": "static_axis_and_stable_output_shape",
         "prod": "static_axis_zero_factor_sensitive",
         "mean": "static_axis_nonempty_reduction",
+        "median": "static_axis_strict_order_selection",
+        "quantile": "static_scalar_q_axis_method_strict_order_selection",
+        "percentile": "static_scalar_q_axis_method_strict_order_selection",
         "trapezoid": "static_axis_and_static_grid_spacing",
     }
     return {
@@ -18688,9 +19064,13 @@ def _program_ad_reduction_lowering_metadata(name: str) -> Mapping[str, str]:
         "static_argument_rule": "required",
         "static_derivative_factory": static_factory,
         "static_signature": (
-            "source_shape:ranked_tensor_shape;axis"
-            if name != "trapezoid"
-            else "source_shape:ranked_tensor_shape;x_or_dx;axis"
+            "source_shape:ranked_tensor_shape;x_or_dx;axis"
+            if name == "trapezoid"
+            else (
+                "source_shape:ranked_tensor_shape;q;axis;method"
+                if name in {"quantile", "percentile"}
+                else "source_shape:ranked_tensor_shape;axis"
+            )
         ),
         "nondifferentiable_boundary": nondifferentiable_boundaries[name],
         "nondifferentiable_boundary_policy": "fail_closed",
@@ -19278,7 +19658,7 @@ def _register_program_ad_reduction_primitive_contracts() -> None:
                 lowering_metadata=_program_ad_reduction_lowering_metadata(name),
                 shape_rule=_PROGRAM_AD_REDUCTION_SHAPE_RULES[name],
                 dtype_rule=_program_ad_reduction_dtype_rule,
-                static_argument_rule=_program_ad_reduction_static_arguments,
+                static_argument_rule=_PROGRAM_AD_REDUCTION_STATIC_ARGUMENT_RULES[name],
                 nondifferentiable_policy=_PROGRAM_AD_REDUCTION_POLICY,
                 effect="pure",
             )
@@ -27894,7 +28274,10 @@ __all__ = [
     "program_ad_product_outer_derivative_rule",
     "program_ad_product_tensordot_derivative_rule",
     "program_ad_reduction_mean_derivative_rule",
+    "program_ad_reduction_median_derivative_rule",
+    "program_ad_reduction_percentile_derivative_rule",
     "program_ad_reduction_prod_derivative_rule",
+    "program_ad_reduction_quantile_derivative_rule",
     "program_ad_reduction_sum_derivative_rule",
     "program_ad_reduction_trapezoid_derivative_rule",
     "program_ad_selection_clip_derivative_rule",

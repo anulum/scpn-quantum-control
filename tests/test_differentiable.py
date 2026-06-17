@@ -184,7 +184,10 @@ from scpn_quantum_control.differentiable import (
     program_ad_product_outer_derivative_rule,
     program_ad_product_tensordot_derivative_rule,
     program_ad_reduction_mean_derivative_rule,
+    program_ad_reduction_median_derivative_rule,
+    program_ad_reduction_percentile_derivative_rule,
     program_ad_reduction_prod_derivative_rule,
+    program_ad_reduction_quantile_derivative_rule,
     program_ad_reduction_sum_derivative_rule,
     program_ad_reduction_trapezoid_derivative_rule,
     program_ad_selection_clip_derivative_rule,
@@ -5716,47 +5719,76 @@ def test_program_ad_shape_static_derivative_factories_are_direct_kernels() -> No
 
 
 def test_program_ad_reduction_primitives_are_registry_policy_gated() -> None:
-    """Sum, product, and mean should expose primitive registry contracts."""
+    """Scalar reductions should expose primitive registry contracts."""
 
     matrix = np.arange(6.0, dtype=np.float64).reshape(2, 3)
     expected_shapes = {
         "sum": (2,),
         "prod": (2,),
         "mean": (2,),
+        "median": (2,),
+        "quantile": (2,),
+        "percentile": (2,),
     }
     expected_factories = {
         "sum": "program_ad_reduction_sum_derivative_rule",
         "prod": "program_ad_reduction_prod_derivative_rule",
         "mean": "program_ad_reduction_mean_derivative_rule",
+        "median": "program_ad_reduction_median_derivative_rule",
+        "quantile": "program_ad_reduction_quantile_derivative_rule",
+        "percentile": "program_ad_reduction_percentile_derivative_rule",
     }
     expected_boundaries = {
         "sum": "static_axis_and_stable_output_shape",
         "prod": "static_axis_zero_factor_sensitive",
         "mean": "static_axis_nonempty_reduction",
+        "median": "static_axis_strict_order_selection",
+        "quantile": "static_scalar_q_axis_method_strict_order_selection",
+        "percentile": "static_scalar_q_axis_method_strict_order_selection",
+    }
+    expected_signatures = {
+        "sum": "source_shape:ranked_tensor_shape;axis",
+        "prod": "source_shape:ranked_tensor_shape;axis",
+        "mean": "source_shape:ranked_tensor_shape;axis",
+        "median": "source_shape:ranked_tensor_shape;axis",
+        "quantile": "source_shape:ranked_tensor_shape;q;axis;method",
+        "percentile": "source_shape:ranked_tensor_shape;q;axis;method",
     }
 
     for name, expected_shape in expected_shapes.items():
+        args = (
+            (matrix, 0.25, 1, "linear")
+            if name == "quantile"
+            else (matrix, 75.0, 1, "linear")
+            if name == "percentile"
+            else (matrix, 1)
+        )
         contract = primitive_contract_for(f"scpn.program_ad.reduction:{name}")
         assert contract.identity == PrimitiveIdentity("scpn.program_ad.reduction", name, "1")
         assert contract.nondifferentiable_policy == "program_ad_trace_exact_fail_closed"
         assert contract.effect == "pure"
         assert contract.lowering_metadata["mlir_op"] == f"scpn_diff.reduction.{name}"
         assert contract.lowering_metadata["static_derivative_factory"] == expected_factories[name]
-        assert contract.lowering_metadata["static_signature"] == (
-            "source_shape:ranked_tensor_shape;axis"
-        )
+        assert contract.lowering_metadata["static_signature"] == expected_signatures[name]
         assert (
             contract.lowering_metadata["nondifferentiable_boundary"] == expected_boundaries[name]
         )
         assert contract.lowering_metadata["nondifferentiable_boundary_policy"] == "fail_closed"
         assert contract.shape_rule is not None
-        assert contract.shape_rule((matrix, 1)) == expected_shape
-        assert contract.shape_rule((matrix, None)) == ()
+        assert contract.shape_rule(args) == expected_shape
         assert contract.dtype_rule is not None
-        assert contract.dtype_rule((matrix, 1)) == "float64"
+        assert contract.dtype_rule(args) == "float64"
         assert contract.static_argument_rule is not None
-        assert contract.static_argument_rule((matrix, 1)) == (1,)
-        assert contract.static_argument_rule((matrix, None)) == (None,)
+        if name == "quantile":
+            assert contract.static_argument_rule(args) == (0.25, 1, "linear")
+            assert contract.shape_rule((matrix, 0.25, None, "linear")) == ()
+        elif name == "percentile":
+            assert contract.static_argument_rule(args) == (0.75, 1, "linear")
+            assert contract.shape_rule((matrix, 75.0, None, "linear")) == ()
+        else:
+            assert contract.static_argument_rule((matrix, 1)) == (1,)
+            assert contract.static_argument_rule((matrix, None)) == (None,)
+            assert contract.shape_rule((matrix, None)) == ()
         with pytest.raises(ValueError, match="incomplete primitive contract"):
             primitive_complete_contract_for(contract.identity)
 
@@ -5768,6 +5800,9 @@ def test_program_ad_reduction_boundary_metadata_is_explicit() -> None:
         "sum": "static_axis_and_stable_output_shape",
         "prod": "static_axis_zero_factor_sensitive",
         "mean": "static_axis_nonempty_reduction",
+        "median": "static_axis_strict_order_selection",
+        "quantile": "static_scalar_q_axis_method_strict_order_selection",
+        "percentile": "static_scalar_q_axis_method_strict_order_selection",
         "trapezoid": "static_axis_and_static_grid_spacing",
     }
     for name, boundary in expected_boundaries.items():
@@ -6009,7 +6044,7 @@ def test_program_ad_reduction_primitives_validate_registry_rules_at_dispatch() -
 
     originals = {
         name: primitive_contract_for(f"scpn.program_ad.reduction:{name}")
-        for name in ("sum", "prod", "mean")
+        for name in ("sum", "prod", "mean", "median", "quantile", "percentile")
     }
     calls: dict[str, set[str]] = {name: set() for name in originals}
 
@@ -6051,8 +6086,11 @@ def test_program_ad_reduction_primitives_validate_registry_rules_at_dispatch() -
                 np.sum(np.reshape(values, (2, 3)), axis=0)[0]
                 + np.prod(np.reshape(values, (2, 3)), axis=1)[1]
                 + np.mean(np.reshape(values, (2, 3)), axis=1)[0]
+                + np.median(values)
+                + np.quantile(np.reshape(values, (2, 3)), 0.25, axis=1)[0]
+                + np.percentile(np.reshape(values, (2, 3)), 75.0, axis=0)[2]
             ),
-            np.array([1.0, 2.0, 3.0, 4.0, 5.0, 6.0], dtype=np.float64),
+            np.array([1.0, 2.0, 3.0, 6.0, 8.0, 11.0], dtype=np.float64),
         )
     finally:
         for original in originals.values():
@@ -6060,11 +6098,14 @@ def test_program_ad_reduction_primitives_validate_registry_rules_at_dispatch() -
                 _transform_rule_from_contract(original), overwrite=True
             )
 
-    assert result.value == pytest.approx(127.0)
+    assert result.value == pytest.approx(552.0)
     assert calls == {
+        "median": {"shape", "dtype", "static"},
         "sum": {"shape", "dtype", "static"},
         "prod": {"shape", "dtype", "static"},
         "mean": {"shape", "dtype", "static"},
+        "percentile": {"shape", "dtype", "static"},
+        "quantile": {"shape", "dtype", "static"},
     }
 
 
@@ -6133,6 +6174,60 @@ def test_program_ad_reduction_static_derivative_factories_are_direct_kernels() -
         program_ad_reduction_sum_derivative_rule((2, 3), axis=2)
     with pytest.raises(ValueError, match="at least one value"):
         program_ad_reduction_mean_derivative_rule((0, 3), axis=None)
+
+
+def test_program_ad_order_statistic_static_derivative_factories_are_direct_kernels() -> None:
+    """Order-statistic factories should expose exact strict-order JVP and VJP rules."""
+
+    matrix = np.array([[3.0, -1.0, 2.0], [0.5, 4.0, -2.0]], dtype=np.float64)
+    values = matrix.reshape(-1)
+    tangent = np.array([0.25, -0.5, 1.5, -1.0, 0.75, 2.0], dtype=np.float64)
+    row_cotangent = np.array([1.2, -0.4], dtype=np.float64)
+
+    median_rule = program_ad_reduction_median_derivative_rule((2, 3), axis=1)
+    assert median_rule.name == "program_ad_reduction_median_2x3_axis_1_q_0_5_direct_rule"
+    assert median_rule.jvp_rule is not None
+    assert median_rule.vjp_rule is not None
+    np.testing.assert_allclose(median_rule.value_fn(values), np.median(matrix, axis=1))
+    np.testing.assert_allclose(
+        median_rule.jvp_rule(values, tangent),
+        np.array([tangent[2], tangent[3]], dtype=np.float64),
+    )
+    np.testing.assert_allclose(
+        median_rule.vjp_rule(values, row_cotangent),
+        np.array([0.0, 0.0, 1.2, -0.4, 0.0, 0.0], dtype=np.float64),
+    )
+
+    quantile_rule = program_ad_reduction_quantile_derivative_rule((2, 3), q=0.25, axis=1)
+    assert quantile_rule.name == "program_ad_reduction_quantile_2x3_axis_1_q_0_25_direct_rule"
+    np.testing.assert_allclose(quantile_rule.value_fn(values), np.quantile(matrix, 0.25, axis=1))
+    np.testing.assert_allclose(
+        quantile_rule.jvp_rule(values, tangent),
+        np.array([0.5 * tangent[1] + 0.5 * tangent[2], 0.5 * tangent[5] + 0.5 * tangent[3]]),
+    )
+    np.testing.assert_allclose(
+        quantile_rule.vjp_rule(values, row_cotangent),
+        np.array([0.0, 0.6, 0.6, -0.2, 0.0, -0.2], dtype=np.float64),
+    )
+
+    percentile_rule = program_ad_reduction_percentile_derivative_rule((2, 3), q=75.0, axis=0)
+    assert percentile_rule.name == (
+        "program_ad_reduction_percentile_2x3_axis_0_q_0_75_direct_rule"
+    )
+    column_cotangent = np.array([0.5, -1.0, 2.0], dtype=np.float64)
+    np.testing.assert_allclose(
+        percentile_rule.value_fn(values),
+        np.percentile(matrix, 75.0, axis=0),
+    )
+    np.testing.assert_allclose(
+        percentile_rule.vjp_rule(values, column_cotangent),
+        np.array([0.375, -0.25, 1.5, 0.125, -0.75, 0.5], dtype=np.float64),
+    )
+
+    with pytest.raises(ValueError, match="strictly ordered"):
+        program_ad_reduction_median_derivative_rule((3,)).value_fn(
+            np.array([1.0, 1.0, 2.0], dtype=np.float64)
+        )
 
 
 def test_program_ad_reduction_primitives_expose_direct_value_jvp_kernels() -> None:
@@ -9048,6 +9143,18 @@ def test_program_ad_primitive_metadata_advertises_static_derivative_factories() 
         "scpn.program_ad.reduction:mean": (
             "program_ad_reduction_mean_derivative_rule",
             "source_shape:ranked_tensor_shape;axis",
+        ),
+        "scpn.program_ad.reduction:median": (
+            "program_ad_reduction_median_derivative_rule",
+            "source_shape:ranked_tensor_shape;axis",
+        ),
+        "scpn.program_ad.reduction:quantile": (
+            "program_ad_reduction_quantile_derivative_rule",
+            "source_shape:ranked_tensor_shape;q;axis;method",
+        ),
+        "scpn.program_ad.reduction:percentile": (
+            "program_ad_reduction_percentile_derivative_rule",
+            "source_shape:ranked_tensor_shape;q;axis;method",
         ),
         "scpn.program_ad.reduction:trapezoid": (
             "program_ad_reduction_trapezoid_derivative_rule",
@@ -13438,7 +13545,7 @@ def test_program_ad_reduction_and_cumulative_primitives_validate_registry_rules_
 
     originals = {
         name: primitive_contract_for(f"scpn.program_ad.reduction:{name}")
-        for name in ("mean", "prod", "sum", "trapezoid")
+        for name in ("mean", "median", "percentile", "prod", "quantile", "sum", "trapezoid")
     }
     originals.update(
         {
@@ -13491,6 +13598,9 @@ def test_program_ad_reduction_and_cumulative_primitives_validate_registry_rules_
             np.sum(matrix)
             + np.sum(np.prod(shifted, axis=1))
             + np.sum(np.mean(matrix, axis=0))
+            + np.median(source)
+            + np.sum(np.quantile(matrix, 0.25, axis=1))
+            + np.sum(np.percentile(matrix, 75.0, axis=0))
             + np.sum(np.trapezoid(matrix, x=grid, axis=1))
             + np.sum(np.cumsum(source))
             + np.sum(np.cumprod(source + 3.0))
@@ -13512,7 +13622,10 @@ def test_program_ad_reduction_and_cumulative_primitives_validate_registry_rules_
         "cumsum": {"shape", "dtype", "static"},
         "diff": {"shape", "dtype", "static"},
         "mean": {"shape", "dtype", "static"},
+        "median": {"shape", "dtype", "static"},
+        "percentile": {"shape", "dtype", "static"},
         "prod": {"shape", "dtype", "static"},
+        "quantile": {"shape", "dtype", "static"},
         "sum": {"shape", "dtype", "static"},
         "trapezoid": {"shape", "dtype", "static"},
     }
