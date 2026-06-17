@@ -2431,9 +2431,11 @@ class TraceADArray:
             kind = kwargs.get("kind")
             if kind not in {None, "quicksort", "mergesort", "heapsort", "stable"}:
                 raise ValueError("program AD np.sort kind must be a NumPy sort kind")
+            sort_axis = kwargs.get("axis", -1)
+            _require_program_ad_selection_contract("sort", (args[0], sort_axis, kind))
             return _trace_sort(
                 _coerce_trace_array(args[0], self.context),
-                axis=kwargs.get("axis", -1),
+                axis=sort_axis,
                 kind=cast(_TraceSortKind | None, kind),
             )
         if func is np.argsort:
@@ -11426,7 +11428,7 @@ _PROGRAM_AD_SELECTION_PRIMITIVE_NAMESPACE = "scpn.program_ad.selection"
 _PROGRAM_AD_SELECTION_POLICY = "program_ad_trace_exact_fail_closed"
 _PROGRAM_AD_SELECTION_IDENTITIES: Mapping[str, PrimitiveIdentity] = {
     name: PrimitiveIdentity(_PROGRAM_AD_SELECTION_PRIMITIVE_NAMESPACE, name, "1")
-    for name in ("where", "clip")
+    for name in ("where", "clip", "sort")
 }
 
 _PROGRAM_AD_PRODUCT_PRIMITIVE_NAMESPACE = "scpn.program_ad.product"
@@ -16337,6 +16339,17 @@ def _program_ad_selection_clip_shape(args: tuple[object, ...]) -> tuple[int, ...
     return source_shape
 
 
+def _program_ad_selection_sort_shape(args: tuple[object, ...]) -> tuple[int, ...]:
+    if len(args) not in {1, 2, 3}:
+        raise ValueError("program AD selection sort shape rule requires source, axis, and kind")
+    source_shape = _program_ad_array_shape_of(args[0])
+    axis = args[1] if len(args) >= 2 else -1
+    if axis is None:
+        return (int(np.prod(source_shape)),)
+    _normalise_sort_axis(axis, len(source_shape))
+    return source_shape
+
+
 def _program_ad_selection_where_dtype_rule(args: tuple[object, ...]) -> str:
     if len(args) != 3:
         raise ValueError("program AD selection where dtype rule requires condition, true, false")
@@ -16349,6 +16362,12 @@ def _program_ad_selection_clip_dtype_rule(args: tuple[object, ...]) -> str:
         raise ValueError("program AD selection clip dtype rule requires source, lower, and upper")
     dtypes = tuple(np.dtype(_program_ad_array_dtype_of(arg)) for arg in args)
     return str(np.result_type(*dtypes))
+
+
+def _program_ad_selection_sort_dtype_rule(args: tuple[object, ...]) -> str:
+    if len(args) not in {1, 2, 3}:
+        raise ValueError("program AD selection sort dtype rule requires source, axis, and kind")
+    return _program_ad_array_dtype_of(args[0])
 
 
 def _program_ad_product_matmul_shape(args: tuple[object, ...]) -> tuple[int, ...]:
@@ -16860,6 +16879,19 @@ def _program_ad_selection_clip_static_arguments(args: tuple[object, ...]) -> tup
         raise ValueError("program AD selection clip static rule requires source, lower, and upper")
     _program_ad_selection_clip_shape(args)
     return ()
+
+
+def _program_ad_selection_sort_static_arguments(args: tuple[object, ...]) -> tuple[object, ...]:
+    if len(args) not in {1, 2, 3}:
+        raise ValueError("program AD selection sort static rule requires source, axis, and kind")
+    source_shape = _program_ad_array_shape_of(args[0])
+    axis = args[1] if len(args) >= 2 else -1
+    kind = args[2] if len(args) == 3 else None
+    if axis is not None:
+        axis = _normalise_sort_axis(axis, len(source_shape))
+    if kind not in {None, "quicksort", "mergesort", "heapsort", "stable"}:
+        raise ValueError("program AD selection sort static rule requires a NumPy sort kind")
+    return ("axis", axis, "kind", "quicksort" if kind is None else kind)
 
 
 def _program_ad_product_static_arguments(args: tuple[object, ...]) -> tuple[object, ...]:
@@ -18387,16 +18419,19 @@ _PROGRAM_AD_ELEMENTWISE_SHAPE_RULES: Mapping[str, PrimitiveShapeRule] = {
 _PROGRAM_AD_SELECTION_SHAPE_RULES: Mapping[str, PrimitiveShapeRule] = {
     "where": _program_ad_selection_where_shape,
     "clip": _program_ad_selection_clip_shape,
+    "sort": _program_ad_selection_sort_shape,
 }
 
 _PROGRAM_AD_SELECTION_DTYPE_RULES: Mapping[str, PrimitiveDTypeRule] = {
     "where": _program_ad_selection_where_dtype_rule,
     "clip": _program_ad_selection_clip_dtype_rule,
+    "sort": _program_ad_selection_sort_dtype_rule,
 }
 
 _PROGRAM_AD_SELECTION_STATIC_ARGUMENT_RULES: Mapping[str, PrimitiveStaticArgumentRule] = {
     "where": _program_ad_selection_where_static_arguments,
     "clip": _program_ad_selection_clip_static_arguments,
+    "sort": _program_ad_selection_sort_static_arguments,
 }
 
 _PROGRAM_AD_PRODUCT_SHAPE_RULES: Mapping[str, PrimitiveShapeRule] = {
@@ -18776,10 +18811,43 @@ def _program_ad_selection_batching_rule(
     return np.moveaxis(stacked, 0, _normalise_axis("out_axes", out_axes, stacked.ndim))
 
 
+def _program_ad_selection_sort_batching_rule(
+    function: Callable[..., object],
+    args: tuple[object, ...],
+    axes: tuple[int | None, ...],
+    out_axes: int,
+) -> object:
+    if len(args) not in {1, 2, 3} or len(args) != len(axes):
+        raise ValueError("program AD selection sort batching requires source, axis, and kind")
+    if len(axes) >= 2 and any(axis is not None for axis in axes[1:]):
+        raise ValueError("program AD selection sort batching requires static axis and kind")
+    source = _as_real_numeric_array("program AD selection sort batched source", args[0])
+    batch_axis = axes[0]
+    if batch_axis is None:
+        return function(*args)
+    batch_axis_index = _normalise_axis("axes[0]", batch_axis, source.ndim)
+    outputs = [
+        _as_real_numeric_array(
+            "program AD selection sort batched output",
+            function(np.take(source, batch_index, axis=batch_axis_index), *args[1:]),
+        )
+        for batch_index in range(int(source.shape[batch_axis_index]))
+    ]
+    stacked = np.stack(outputs, axis=0)
+    return np.moveaxis(stacked, 0, _normalise_axis("out_axes", out_axes, stacked.ndim))
+
+
+def _program_ad_selection_batching_rule_for(name: str) -> PrimitiveBatchingRule:
+    if name == "sort":
+        return _program_ad_selection_sort_batching_rule
+    return _program_ad_selection_batching_rule
+
+
 def _program_ad_selection_lowering_metadata(name: str) -> Mapping[str, str]:
     static_factories = {
         "where": "program_ad_selection_where_derivative_rule",
         "clip": "program_ad_selection_clip_derivative_rule",
+        "sort": "operator_intercepted_sort_permutation_trace",
     }
     static_signatures = {
         "where": (
@@ -18790,10 +18858,12 @@ def _program_ad_selection_lowering_metadata(name: str) -> Mapping[str, str]:
             "source_shape:ranked_tensor_shape;lower_shape:ranked_tensor_shape;"
             "upper_shape:ranked_tensor_shape"
         ),
+        "sort": "source_shape:ranked_tensor_shape;axis_kind",
     }
     nondifferentiable_boundaries = {
         "where": "predicate_branch_boundary",
         "clip": "clipping_boundary_and_bound_order",
+        "sort": "strict_total_order_required",
     }
     return {
         "program_ad": "operator_intercepted_trace",
@@ -19242,7 +19312,7 @@ def _register_program_ad_selection_primitive_contracts() -> None:
             PrimitiveTransformRule(
                 identity=identity,
                 derivative_rule=_program_ad_selection_derivative_rule(name),
-                batching_rule=_program_ad_selection_batching_rule,
+                batching_rule=_program_ad_selection_batching_rule_for(name),
                 lowering_metadata=_program_ad_selection_lowering_metadata(name),
                 shape_rule=_PROGRAM_AD_SELECTION_SHAPE_RULES[name],
                 dtype_rule=_PROGRAM_AD_SELECTION_DTYPE_RULES[name],

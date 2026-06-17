@@ -9998,7 +9998,7 @@ def test_whole_program_ad_abs_fails_closed_at_zero_cusp() -> None:
 
 
 def test_program_ad_selection_primitives_are_registry_policy_gated() -> None:
-    """Where and clip should expose first-class primitive registry contracts."""
+    """Selection primitives should expose first-class primitive registry contracts."""
 
     vector = np.array([-1.0, 0.25, 2.0], dtype=np.float64)
     condition = np.array([True, False, True])
@@ -10032,10 +10032,31 @@ def test_program_ad_selection_primitives_are_registry_policy_gated() -> None:
     assert clip_contract.static_argument_rule is not None
     assert clip_contract.static_argument_rule((vector, -0.5, upper)) == ()
 
+    sort_contract = primitive_contract_for("scpn.program_ad.selection:sort")
+    assert sort_contract.identity == PrimitiveIdentity("scpn.program_ad.selection", "sort", "1")
+    assert sort_contract.nondifferentiable_policy == "program_ad_trace_exact_fail_closed"
+    assert sort_contract.effect == "pure"
+    assert sort_contract.lowering_metadata["mlir_op"] == "scpn_diff.selection.sort"
+    assert sort_contract.shape_rule is not None
+    assert sort_contract.shape_rule((vector, None, "stable")) == (3,)
+    matrix = np.reshape(np.arange(6.0, dtype=np.float64), (2, 3))
+    assert sort_contract.shape_rule((matrix, 1, "quicksort")) == (2, 3)
+    assert sort_contract.dtype_rule is not None
+    assert sort_contract.dtype_rule((vector, None, "stable")) == "float64"
+    assert sort_contract.static_argument_rule is not None
+    assert sort_contract.static_argument_rule((matrix, 1, "stable")) == (
+        "axis",
+        1,
+        "kind",
+        "stable",
+    )
+
     with pytest.raises(ValueError, match="incomplete primitive contract"):
         primitive_complete_contract_for(where_contract.identity)
     with pytest.raises(ValueError, match="incomplete primitive contract"):
         primitive_complete_contract_for(clip_contract.identity)
+    with pytest.raises(ValueError, match="incomplete primitive contract"):
+        primitive_complete_contract_for(sort_contract.identity)
 
 
 def test_program_ad_selection_boundary_metadata_is_explicit() -> None:
@@ -10044,6 +10065,7 @@ def test_program_ad_selection_boundary_metadata_is_explicit() -> None:
     expected_boundaries = {
         "where": "predicate_branch_boundary",
         "clip": "clipping_boundary_and_bound_order",
+        "sort": "strict_total_order_required",
     }
     for name, boundary in expected_boundaries.items():
         metadata = primitive_contract_for(
@@ -10054,11 +10076,11 @@ def test_program_ad_selection_boundary_metadata_is_explicit() -> None:
 
 
 def test_program_ad_selection_primitives_validate_registry_rules_at_dispatch() -> None:
-    """Where and clip trace execution should validate registry shape, dtype, and static rules."""
+    """Selection trace execution should validate registry shape, dtype, and static rules."""
 
     originals = {
         name: primitive_contract_for(f"scpn.program_ad.selection:{name}")
-        for name in ("where", "clip")
+        for name in ("where", "clip", "sort")
     }
     calls: dict[str, set[str]] = {name: set() for name in originals}
 
@@ -10104,6 +10126,7 @@ def test_program_ad_selection_primitives_validate_registry_rules_at_dispatch() -
                     -0.75,
                     np.array([0.5, 0.75, 2.0]),
                 )
+                + np.sort(values, kind="stable")
             ),
             np.array([-1.0, 0.4, 1.2], dtype=np.float64),
         )
@@ -10113,10 +10136,11 @@ def test_program_ad_selection_primitives_validate_registry_rules_at_dispatch() -
                 _transform_rule_from_contract(original), overwrite=True
             )
 
-    np.testing.assert_allclose(result.gradient, np.array([-1.0, 1.8, 3.4]))
+    np.testing.assert_allclose(result.gradient, np.array([0.0, 2.8, 4.4]))
     assert calls == {
         "where": {"shape", "dtype", "static"},
         "clip": {"shape", "dtype", "static"},
+        "sort": {"shape", "dtype", "static"},
     }
 
 

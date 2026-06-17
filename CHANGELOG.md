@@ -5,6 +5,10 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-06-17 — Registered Program AD `np.sort` as a bounded selection
+  primitive contract with shape, dtype, static-axis/kind, batching, lowering,
+  and fail-closed strict-total-order nondifferentiability metadata. `np.argsort`
+  remains fail-closed index selection.
 - 2026-06-17 — Added a per-module strict-mypy ratchet for
   `scpn_quantum_control.differentiable` in CI, local preflight, and the
   pre-push hook. Removed the redundant casts that blocked `mypy --strict` on the
