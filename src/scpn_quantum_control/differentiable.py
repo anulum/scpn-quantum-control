@@ -3185,15 +3185,29 @@ def _trace_order_statistic(
 
 
 def _trace_flipud(array: TraceADArray) -> TraceADArray:
+    _require_program_ad_shape_contract("flipud", (array,))
     if array.ndim < 1:
         raise ValueError("program AD flipud requires at least rank-1 arrays")
-    return _trace_flip(array, axis=0)
+    source = np.arange(array.size, dtype=np.int64).reshape(array.shape)
+    flipped = np.flipud(source)
+    return TraceADArray(
+        tuple(array._items[int(index)] for index in flipped.reshape(-1)),
+        tuple(map(int, flipped.shape)),
+        array.context,
+    )
 
 
 def _trace_fliplr(array: TraceADArray) -> TraceADArray:
+    _require_program_ad_shape_contract("fliplr", (array,))
     if array.ndim < 2:
         raise ValueError("program AD fliplr requires at least rank-2 arrays")
-    return _trace_flip(array, axis=1)
+    source = np.arange(array.size, dtype=np.int64).reshape(array.shape)
+    flipped = np.fliplr(source)
+    return TraceADArray(
+        tuple(array._items[int(index)] for index in flipped.reshape(-1)),
+        tuple(map(int, flipped.shape)),
+        array.context,
+    )
 
 
 def _validate_trace_basic_index(index: object) -> None:
@@ -11369,6 +11383,8 @@ _PROGRAM_AD_SHAPE_IDENTITIES: Mapping[str, PrimitiveIdentity] = {
         "atleast_3d",
         "expand_dims",
         "flip",
+        "fliplr",
+        "flipud",
         "moveaxis",
         "reshape",
         "ravel",
@@ -12747,6 +12763,36 @@ def program_ad_shape_flip_derivative_rule(
         value_fn=value_fn,
         jvp_rule=jvp_rule,
         vjp_rule=vjp_rule,
+    )
+
+
+def program_ad_shape_flipud_derivative_rule(source_shape: Sequence[int]) -> CustomDerivativeRule:
+    """Build an exact direct derivative rule for fixed first-axis flips."""
+
+    source = _program_ad_shape_normalise_static_shape("flipud", source_shape)
+    if len(source) < 1:
+        raise ValueError("program AD flipud direct rule requires at least rank-1 arrays")
+    rule = program_ad_shape_flip_derivative_rule(source, axis=0)
+    return CustomDerivativeRule(
+        name=f"program_ad_shape_flipud_{_program_ad_shape_signature(source)}_direct_rule",
+        value_fn=rule.value_fn,
+        jvp_rule=rule.jvp_rule,
+        vjp_rule=rule.vjp_rule,
+    )
+
+
+def program_ad_shape_fliplr_derivative_rule(source_shape: Sequence[int]) -> CustomDerivativeRule:
+    """Build an exact direct derivative rule for fixed second-axis flips."""
+
+    source = _program_ad_shape_normalise_static_shape("fliplr", source_shape)
+    if len(source) < 2:
+        raise ValueError("program AD fliplr direct rule requires at least rank-2 arrays")
+    rule = program_ad_shape_flip_derivative_rule(source, axis=1)
+    return CustomDerivativeRule(
+        name=f"program_ad_shape_fliplr_{_program_ad_shape_signature(source)}_direct_rule",
+        value_fn=rule.value_fn,
+        jvp_rule=rule.jvp_rule,
+        vjp_rule=rule.vjp_rule,
     )
 
 
@@ -16852,6 +16898,24 @@ def _program_ad_shape_flip_shape(args: tuple[object, ...]) -> tuple[int, ...]:
     return source_shape
 
 
+def _program_ad_shape_flipud_shape(args: tuple[object, ...]) -> tuple[int, ...]:
+    if len(args) != 1:
+        raise ValueError("program AD shape flipud rule requires one array")
+    source_shape = _program_ad_array_shape_of(args[0])
+    if len(source_shape) < 1:
+        raise ValueError("program AD flipud requires at least rank-1 arrays")
+    return source_shape
+
+
+def _program_ad_shape_fliplr_shape(args: tuple[object, ...]) -> tuple[int, ...]:
+    if len(args) != 1:
+        raise ValueError("program AD shape fliplr rule requires one array")
+    source_shape = _program_ad_array_shape_of(args[0])
+    if len(source_shape) < 2:
+        raise ValueError("program AD fliplr requires at least rank-2 arrays")
+    return source_shape
+
+
 def _program_ad_shape_rot90_shape(args: tuple[object, ...]) -> tuple[int, ...]:
     if len(args) not in {1, 2, 3}:
         raise ValueError("program AD shape rot90 rule requires array, k, and axes")
@@ -19224,6 +19288,8 @@ _PROGRAM_AD_SHAPE_SHAPE_RULES: Mapping[str, PrimitiveShapeRule] = {
     "atleast_3d": _program_ad_shape_atleast_3d_shape,
     "expand_dims": _program_ad_shape_expand_dims_shape,
     "flip": _program_ad_shape_flip_shape,
+    "fliplr": _program_ad_shape_fliplr_shape,
+    "flipud": _program_ad_shape_flipud_shape,
     "moveaxis": _program_ad_shape_moveaxis_shape,
     "reshape": _program_ad_shape_reshape_shape,
     "ravel": _program_ad_shape_ravel_shape,
@@ -19242,6 +19308,8 @@ _PROGRAM_AD_SHAPE_STATIC_ARGUMENT_RULES: Mapping[str, PrimitiveStaticArgumentRul
     "atleast_3d": _program_ad_shape_atleast_static_arguments,
     "expand_dims": _program_ad_shape_expand_dims_static_arguments,
     "flip": _program_ad_shape_flip_static_arguments,
+    "fliplr": _program_ad_shape_no_static_arguments,
+    "flipud": _program_ad_shape_no_static_arguments,
     "moveaxis": _program_ad_shape_moveaxis_static_arguments,
     "reshape": _program_ad_shape_reshape_static_arguments,
     "ravel": _program_ad_shape_no_static_arguments,
@@ -19430,6 +19498,8 @@ def _program_ad_shape_lowering_metadata(name: str) -> Mapping[str, str]:
         "atleast_3d": "program_ad_shape_atleast_3d_derivative_rule",
         "expand_dims": "program_ad_shape_expand_dims_derivative_rule",
         "flip": "program_ad_shape_flip_derivative_rule",
+        "fliplr": "program_ad_shape_fliplr_derivative_rule",
+        "flipud": "program_ad_shape_flipud_derivative_rule",
         "moveaxis": "program_ad_shape_moveaxis_derivative_rule",
         "repeat": "program_ad_shape_repeat_derivative_rule",
         "reshape": "program_ad_shape_reshape_derivative_rule",
@@ -19447,6 +19517,8 @@ def _program_ad_shape_lowering_metadata(name: str) -> Mapping[str, str]:
         "atleast_3d": "source_shape:ranked_tensor_shape",
         "expand_dims": "source_shape:ranked_tensor_shape;axis",
         "flip": "source_shape:ranked_tensor_shape;axis",
+        "fliplr": "source_shape:rank_ge_2",
+        "flipud": "source_shape:rank_ge_1",
         "moveaxis": "source_shape:ranked_tensor_shape;source_destination",
         "repeat": "source_shape:ranked_tensor_shape;repeats_axis",
         "reshape": "source_shape:ranked_tensor_shape;target_shape",
@@ -19464,6 +19536,8 @@ def _program_ad_shape_lowering_metadata(name: str) -> Mapping[str, str]:
         "atleast_3d": "static_rank_promotion",
         "expand_dims": "static_singleton_axis_insertion",
         "flip": "static_axis_flip_permutation",
+        "fliplr": "static_second_axis_flip_permutation",
+        "flipud": "static_first_axis_flip_permutation",
         "moveaxis": "static_axis_move_permutation",
         "repeat": "static_repeat_scatter_add",
         "reshape": "element_count_preserving_static_shape",
@@ -28847,6 +28921,8 @@ __all__ = [
     "program_ad_selection_where_derivative_rule",
     "program_ad_shape_expand_dims_derivative_rule",
     "program_ad_shape_flip_derivative_rule",
+    "program_ad_shape_fliplr_derivative_rule",
+    "program_ad_shape_flipud_derivative_rule",
     "program_ad_shape_moveaxis_derivative_rule",
     "program_ad_shape_ravel_derivative_rule",
     "program_ad_shape_repeat_derivative_rule",

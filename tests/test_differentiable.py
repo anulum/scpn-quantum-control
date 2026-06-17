@@ -201,6 +201,8 @@ from scpn_quantum_control.differentiable import (
     program_ad_shape_atleast_3d_derivative_rule,
     program_ad_shape_expand_dims_derivative_rule,
     program_ad_shape_flip_derivative_rule,
+    program_ad_shape_fliplr_derivative_rule,
+    program_ad_shape_flipud_derivative_rule,
     program_ad_shape_moveaxis_derivative_rule,
     program_ad_shape_ravel_derivative_rule,
     program_ad_shape_repeat_derivative_rule,
@@ -4993,6 +4995,8 @@ def test_program_ad_shape_primitives_are_registry_policy_gated() -> None:
     assert scpn.program_ad_shape_roll_derivative_rule is program_ad_shape_roll_derivative_rule
     assert scpn.program_ad_shape_rot90_derivative_rule is program_ad_shape_rot90_derivative_rule
     assert scpn.program_ad_shape_flip_derivative_rule is program_ad_shape_flip_derivative_rule
+    assert scpn.program_ad_shape_flipud_derivative_rule is program_ad_shape_flipud_derivative_rule
+    assert scpn.program_ad_shape_fliplr_derivative_rule is program_ad_shape_fliplr_derivative_rule
     assert scpn.program_ad_shape_repeat_derivative_rule is program_ad_shape_repeat_derivative_rule
     assert scpn.program_ad_shape_tile_derivative_rule is program_ad_shape_tile_derivative_rule
     assert scpn.program_ad_shape_atleast_1d_derivative_rule is (
@@ -5123,6 +5127,28 @@ def test_program_ad_shape_primitives_are_registry_policy_gated() -> None:
     with pytest.raises(ValueError, match="incomplete primitive contract"):
         primitive_complete_contract_for(flip_contract.identity)
 
+    flipud_contract = primitive_contract_for("scpn.program_ad.shape:flipud")
+    assert flipud_contract.identity == PrimitiveIdentity("scpn.program_ad.shape", "flipud", "1")
+    assert flipud_contract.shape_rule is not None
+    assert flipud_contract.shape_rule((cube,)) == cube.shape
+    assert flipud_contract.dtype_rule is not None
+    assert flipud_contract.dtype_rule((cube,)) == "float64"
+    assert flipud_contract.static_argument_rule is not None
+    assert flipud_contract.static_argument_rule((cube,)) == ()
+    with pytest.raises(ValueError, match="incomplete primitive contract"):
+        primitive_complete_contract_for(flipud_contract.identity)
+
+    fliplr_contract = primitive_contract_for("scpn.program_ad.shape:fliplr")
+    assert fliplr_contract.identity == PrimitiveIdentity("scpn.program_ad.shape", "fliplr", "1")
+    assert fliplr_contract.shape_rule is not None
+    assert fliplr_contract.shape_rule((cube,)) == cube.shape
+    assert fliplr_contract.dtype_rule is not None
+    assert fliplr_contract.dtype_rule((cube,)) == "float64"
+    assert fliplr_contract.static_argument_rule is not None
+    assert fliplr_contract.static_argument_rule((cube,)) == ()
+    with pytest.raises(ValueError, match="incomplete primitive contract"):
+        primitive_complete_contract_for(fliplr_contract.identity)
+
     rot90_contract = primitive_contract_for("scpn.program_ad.shape:rot90")
     assert rot90_contract.identity == PrimitiveIdentity("scpn.program_ad.shape", "rot90", "1")
     assert rot90_contract.shape_rule is not None
@@ -5205,6 +5231,8 @@ def test_program_ad_shape_boundary_metadata_is_explicit() -> None:
         "atleast_3d": "program_ad_shape_atleast_3d_derivative_rule",
         "expand_dims": "program_ad_shape_expand_dims_derivative_rule",
         "flip": "program_ad_shape_flip_derivative_rule",
+        "fliplr": "program_ad_shape_fliplr_derivative_rule",
+        "flipud": "program_ad_shape_flipud_derivative_rule",
         "moveaxis": "program_ad_shape_moveaxis_derivative_rule",
         "repeat": "program_ad_shape_repeat_derivative_rule",
         "reshape": "program_ad_shape_reshape_derivative_rule",
@@ -5222,6 +5250,8 @@ def test_program_ad_shape_boundary_metadata_is_explicit() -> None:
         "atleast_3d": "source_shape:ranked_tensor_shape",
         "expand_dims": "source_shape:ranked_tensor_shape;axis",
         "flip": "source_shape:ranked_tensor_shape;axis",
+        "fliplr": "source_shape:rank_ge_2",
+        "flipud": "source_shape:rank_ge_1",
         "moveaxis": "source_shape:ranked_tensor_shape;source_destination",
         "repeat": "source_shape:ranked_tensor_shape;repeats_axis",
         "reshape": "source_shape:ranked_tensor_shape;target_shape",
@@ -5239,6 +5269,8 @@ def test_program_ad_shape_boundary_metadata_is_explicit() -> None:
         "atleast_3d": "static_rank_promotion",
         "expand_dims": "static_singleton_axis_insertion",
         "flip": "static_axis_flip_permutation",
+        "fliplr": "static_second_axis_flip_permutation",
+        "flipud": "static_first_axis_flip_permutation",
         "roll": "static_integer_roll_permutation",
         "rot90": "static_quarter_turn_axis_permutation",
         "repeat": "static_repeat_scatter_add",
@@ -5274,6 +5306,8 @@ def test_program_ad_shape_primitives_validate_registry_rules_at_dispatch() -> No
             "rot90",
             "repeat",
             "flip",
+            "flipud",
+            "fliplr",
             "squeeze",
             "swapaxes",
             "moveaxis",
@@ -5328,7 +5362,9 @@ def test_program_ad_shape_primitives_validate_registry_rules_at_dispatch() -> No
             rolled = np.roll(tiled, shift=(1, -1), axis=(0, 1))
             rotated = np.rot90(rolled, k=1, axes=(0, 1))
             flipped = np.flip(rotated, axis=(0, 1))
-            flattened = np.ravel(np.transpose(flipped))
+            flipped_ud = np.flipud(flipped)
+            flipped_lr = np.fliplr(flipped_ud)
+            flattened = np.ravel(np.transpose(flipped_lr))
             promoted = np.atleast_3d(np.atleast_2d(np.atleast_1d(flattened)))
             return np.sum(np.squeeze(np.expand_dims(promoted, axis=0), axis=0))
 
@@ -5352,6 +5388,8 @@ def test_program_ad_shape_primitives_validate_registry_rules_at_dispatch() -> No
         "rot90": {"shape", "dtype", "static"},
         "repeat": {"shape", "dtype", "static"},
         "flip": {"shape", "dtype", "static"},
+        "flipud": {"shape", "dtype", "static"},
+        "fliplr": {"shape", "dtype", "static"},
         "squeeze": {"shape", "dtype", "static"},
         "swapaxes": {"shape", "dtype", "static"},
         "moveaxis": {"shape", "dtype", "static"},
@@ -5596,6 +5634,57 @@ def test_program_ad_shape_static_derivative_factories_are_direct_kernels() -> No
         rtol=0.0,
         atol=0.0,
     )
+
+    flipud_rule = program_ad_shape_flipud_derivative_rule((2, 3, 4))
+    assert flipud_rule.name == "program_ad_shape_flipud_2x3x4_direct_rule"
+    assert flipud_rule.jvp_rule is not None
+    assert flipud_rule.vjp_rule is not None
+    np.testing.assert_allclose(
+        flipud_rule.value_fn(cube_values),
+        np.flipud(cube).reshape(-1),
+        rtol=0.0,
+        atol=0.0,
+    )
+    np.testing.assert_allclose(
+        flipud_rule.jvp_rule(cube_values, cube_tangent),
+        np.flipud(cube_tangent.reshape(2, 3, 4)).reshape(-1),
+        rtol=0.0,
+        atol=0.0,
+    )
+    np.testing.assert_allclose(
+        flipud_rule.vjp_rule(cube_values, cube_tangent),
+        np.flipud(cube_tangent.reshape(2, 3, 4)).reshape(-1),
+        rtol=0.0,
+        atol=0.0,
+    )
+
+    fliplr_rule = program_ad_shape_fliplr_derivative_rule((2, 3, 4))
+    assert fliplr_rule.name == "program_ad_shape_fliplr_2x3x4_direct_rule"
+    assert fliplr_rule.jvp_rule is not None
+    assert fliplr_rule.vjp_rule is not None
+    np.testing.assert_allclose(
+        fliplr_rule.value_fn(cube_values),
+        np.fliplr(cube).reshape(-1),
+        rtol=0.0,
+        atol=0.0,
+    )
+    np.testing.assert_allclose(
+        fliplr_rule.jvp_rule(cube_values, cube_tangent),
+        np.fliplr(cube_tangent.reshape(2, 3, 4)).reshape(-1),
+        rtol=0.0,
+        atol=0.0,
+    )
+    np.testing.assert_allclose(
+        fliplr_rule.vjp_rule(cube_values, cube_tangent),
+        np.fliplr(cube_tangent.reshape(2, 3, 4)).reshape(-1),
+        rtol=0.0,
+        atol=0.0,
+    )
+
+    with pytest.raises(ValueError, match="rank-1"):
+        program_ad_shape_flipud_derivative_rule(())
+    with pytest.raises(ValueError, match="rank-2"):
+        program_ad_shape_fliplr_derivative_rule((3,))
 
     rot90_cotangent = np.arange(1.0, 7.0, dtype=np.float64).reshape(3, 2)
     rot90_rule = program_ad_shape_rot90_derivative_rule((2, 3), k=1, axes=(0, 1))
@@ -9239,6 +9328,14 @@ def test_program_ad_primitive_metadata_advertises_static_derivative_factories() 
         "scpn.program_ad.shape:flip": (
             "program_ad_shape_flip_derivative_rule",
             "source_shape:ranked_tensor_shape;axis",
+        ),
+        "scpn.program_ad.shape:flipud": (
+            "program_ad_shape_flipud_derivative_rule",
+            "source_shape:rank_ge_1",
+        ),
+        "scpn.program_ad.shape:fliplr": (
+            "program_ad_shape_fliplr_derivative_rule",
+            "source_shape:rank_ge_2",
         ),
         "scpn.program_ad.shape:rot90": (
             "program_ad_shape_rot90_derivative_rule",
