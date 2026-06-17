@@ -9,6 +9,7 @@
 
 from __future__ import annotations
 
+import json
 import math
 from collections.abc import Callable
 from dataclasses import dataclass
@@ -143,6 +144,7 @@ from scpn_quantum_control.differentiable import (
     natural_gradient,
     parameter_shift_gradient,
     parameter_shift_gradient_with_uncertainty,
+    parse_program_ad_effect_ir,
     primitive_complete_contract_for,
     primitive_contract_for,
     primitive_dtype_rule_for,
@@ -10194,6 +10196,7 @@ def test_whole_program_ad_is_exported_from_package_root() -> None:
     assert scpn.program_adjoint_result is program_adjoint_result
     assert scpn.program_adjoint_value_and_grad is program_adjoint_value_and_grad
     assert scpn.analyze_program_ad_alias_effects is analyze_program_ad_alias_effects
+    assert scpn.parse_program_ad_effect_ir is parse_program_ad_effect_ir
     assert scpn.whole_program_grad is whole_program_grad
     assert scpn.whole_program_value_and_grad is whole_program_value_and_grad
 
@@ -14035,6 +14038,82 @@ def test_whole_program_ad_emits_deterministic_ssa_effect_ir() -> None:
         [1.0, 1.0, 2.0 + math.cos(0.75)],
         atol=1.0e-12,
     )
+
+
+def test_program_ad_effect_ir_serialization_round_trips_metadata() -> None:
+    """Program AD effect IR serialization should parse back into validated records."""
+
+    def objective(values: np.ndarray) -> object:
+        total = values[0]
+        if values[1] > 0.0:
+            total = total + np.sin(values[1])
+        return total + values[2]
+
+    result = whole_program_value_and_grad(
+        objective,
+        np.array([0.25, 0.5, 0.75], dtype=np.float64),
+        parameters=(Parameter("a"), Parameter("b"), Parameter("c")),
+    )
+    assert result.program_ir is not None
+
+    parsed = parse_program_ad_effect_ir(result.program_ir.serialization)
+
+    assert parsed.ssa_values == result.program_ir.ssa_values
+    assert parsed.effects == result.program_ir.effects
+    assert parsed.alias_edges == result.program_ir.alias_edges
+    assert parsed.control_regions == result.program_ir.control_regions
+    assert parsed.serialization == result.program_ir.serialization
+    assert analyze_program_ad_alias_effects(parsed).claim_boundary == (
+        "metadata_only_no_general_alias_lattice"
+    )
+
+
+def test_program_ad_effect_ir_parser_fails_closed_on_malformed_payloads() -> None:
+    """Program AD effect IR parsing should reject unsupported or malformed metadata."""
+
+    valid = {
+        "format": "program_ad_effect_ir.v1",
+        "ssa_values": [
+            {
+                "name": "%0",
+                "producer": 0,
+                "version": 0,
+                "shape": [],
+                "dtype": "float64",
+                "effect": 0,
+            }
+        ],
+        "effects": [
+            {
+                "index": 0,
+                "kind": "pure",
+                "target": "%0",
+                "inputs": [],
+                "version": 0,
+                "ordering": 0,
+            }
+        ],
+        "alias_edges": [],
+        "control_regions": [],
+        "bytecode_offsets": [0],
+    }
+    parsed = parse_program_ad_effect_ir(json.dumps(valid, sort_keys=True, separators=(",", ":")))
+    assert parsed.ssa_values[0].name == "%0"
+
+    for payload, message in (
+        ("", "non-empty"),
+        ("not-json", "valid JSON"),
+        ("[]", "decode to an object"),
+        ({**valid, "format": "program_ad_effect_ir.v2"}, "format"),
+        ({**valid, "ssa_values": {}}, "ssa_values"),
+        ({**valid, "ssa_values": [{**valid["ssa_values"][0], "shape": [True]}]}, "integer"),
+        ({**valid, "effects": [{**valid["effects"][0], "inputs": {}}]}, "inputs"),
+        ({**valid, "control_regions": [{"entered": "yes"}]}, "entered"),
+        ({**valid, "bytecode_offsets": ["zero"]}, "bytecode offset"),
+    ):
+        serialized = payload if isinstance(payload, str) else json.dumps(payload)
+        with pytest.raises(ValueError, match=message):
+            parse_program_ad_effect_ir(serialized)
 
 
 def test_program_ad_alias_effect_analysis_summarizes_alias_sets_and_mutations() -> None:

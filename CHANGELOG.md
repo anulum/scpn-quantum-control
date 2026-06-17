@@ -5,6 +5,13 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-06-17 — Added `parse_program_ad_effect_ir(...)` for bounded
+  `program_ad_effect_ir.v1` metadata round-tripping. The parser reconstructs
+  validated Program AD IR dataclasses from emitted JSON and fails closed on
+  malformed or unsupported payloads without claiming a full bytecode/source
+  compiler frontend. Documented in `docs/differentiable_api.md` and
+  `docs/differentiable_programming.md`, with generated capability surfaces
+  refreshed.
 - 2026-06-17 — Hardened `WholeProgramADResult` trainable-mask validation so
   forward whole-program gradients and attached adjoint replay gradients fail
   closed when frozen parameters carry derivative mass. Documented the

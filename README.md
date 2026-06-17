@@ -96,7 +96,7 @@ has a defined commercial licensing route.
 | Surface | Current inventory |
 |---|---:|
 | Package version | 0.9.12 |
-| Public API exports | 656 |
+| Public API exports | 657 |
 | Python source modules | 835 |
 | Public Python classes | 1787 |
 | Paper 0 validation modules | 466 |
