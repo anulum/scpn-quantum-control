@@ -15,10 +15,14 @@ import pytest
 import scpn_quantum_control as scpn
 from scpn_quantum_control.differentiable_api import (
     DifferentiabilityDiagnosticReport,
+    DifferentiableDashboardCapabilityRow,
+    DifferentiableDashboardCapabilityState,
+    DifferentiableDashboardStatus,
     UnifiedDifferentiableAPIResult,
     differentiable_api,
     differentiable_benchmark_report,
     differentiable_compile_report,
+    differentiable_dashboard_status,
     differentiable_gradient,
     differentiable_hessian,
     differentiable_jacobian,
@@ -149,6 +153,61 @@ def test_unified_differentiable_benchmark_report_is_non_performance_evidence() -
     assert "not isolated performance" in report.claim_boundary
 
 
+def test_differentiable_dashboard_status_is_claim_bounded_for_gui_consumers() -> None:
+    status = differentiable_dashboard_status()
+
+    assert isinstance(status, DifferentiableDashboardStatus)
+    assert status.status_api_ready is True
+    payload = status.to_dict()
+    rows = {str(row["surface"]): row for row in payload["rows"]}
+
+    assert rows["unified_differentiable_api"]["state"] == "executable"
+    assert rows["unified_differentiable_api"]["fail_closed"] is False
+    assert rows["program_ad_ir"]["state"] == "metadata_only"
+    assert rows["program_ad_ir"]["fail_closed"] is True
+    assert rows["program_ad_alias_effects"]["claim_boundary"] == (
+        "metadata_only_no_general_alias_lattice"
+    )
+    assert rows["polyglot_compiler_chain"]["state"] == "blocked"
+    assert (
+        "native Rust Program AD interpreter is not promoted"
+        in rows["polyglot_compiler_chain"]["blocked_reasons"]
+    )
+    assert rows["provider_and_hardware_gradients"]["state"] == "blocked"
+    assert rows["gui_frontend"]["state"] == "planned"
+    assert "without upgrading" in str(payload["claim_boundary"])
+
+
+def test_differentiable_dashboard_status_validates_rows() -> None:
+    row = DifferentiableDashboardCapabilityRow(
+        surface="demo",
+        state="unsupported",
+        backing_api="demo_api",
+        evidence=("contract",),
+        blocked_reasons=("not implemented",),
+        claim_boundary="bounded",
+    )
+
+    assert row.fail_closed is True
+    assert row.to_dict()["state"] == "unsupported"
+    with pytest.raises(ValueError, match="surface"):
+        DifferentiableDashboardCapabilityRow(
+            surface="",
+            state="planned",
+            backing_api="demo_api",
+            evidence=("contract",),
+            blocked_reasons=(),
+            claim_boundary="bounded",
+        )
+    with pytest.raises(ValueError, match="rows"):
+        DifferentiableDashboardStatus(
+            rows=(),
+            status_api_ready=True,
+            generated_from=("demo",),
+            claim_boundary="bounded",
+        )
+
+
 def test_unified_differentiable_dispatcher_and_root_exports() -> None:
     values = np.array([2.0, -1.0], dtype=float)
 
@@ -169,11 +228,19 @@ def test_unified_differentiable_dispatcher_and_root_exports() -> None:
         gate="unregistered_gate",
         observable="pauli_expectation",
     )
+    dashboard = differentiable_api("dashboard_status")
 
     np.testing.assert_allclose(gradient.gradient, np.array([4.0, 3.0]), atol=1e-5)
     assert support.supported
     assert diagnostic.fail_closed
     assert diagnostic.payload["blocked_reasons"]
+    assert dashboard.supported
+    assert dashboard.payload["status_api_ready"] is True
+    assert dashboard.payload["rows"]
+    assert scpn.DifferentiableDashboardStatus is DifferentiableDashboardStatus
+    assert scpn.DifferentiableDashboardCapabilityRow is DifferentiableDashboardCapabilityRow
+    assert scpn.DifferentiableDashboardCapabilityState is DifferentiableDashboardCapabilityState
+    assert scpn.differentiable_dashboard_status is differentiable_dashboard_status
     assert scpn.explain_differentiability is explain_differentiability
     assert scpn.differentiable_api is differentiable_api
     assert scpn.differentiable_gradient is differentiable_gradient

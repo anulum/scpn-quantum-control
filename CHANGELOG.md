@@ -5,6 +5,15 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-06-17 — Added `differentiable_dashboard_status` plus
+  `DifferentiableDashboardStatus` and `DifferentiableDashboardCapabilityRow`
+  for GUI/audit-dashboard consumers. The status payload labels executable,
+  metadata-only, diagnostic, conformance-backed, planned, blocked, and
+  unsupported differentiable routes without promoting Program AD metadata,
+  Rust/LLVM compiler paths, provider routes, hardware routes, or local
+  conformance rows beyond their current claim boundaries. Documented in
+  `docs/differentiable_api.md` and `docs/differentiable_programming.md`, with
+  generated capability surfaces refreshed.
 - 2026-06-16 — Added isolated-benchmark host readiness and self-hosted runner
   provisioning so the `differentiable-isolated-benchmark` CI job can produce
   `isolated_affinity` evidence. `benchmarks/isolated_host_readiness.py`

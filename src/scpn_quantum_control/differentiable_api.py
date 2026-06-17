@@ -51,6 +51,16 @@ UnifiedDifferentiableOperation = Literal[
     "diagnostic_report",
     "compile_report",
     "benchmark_report",
+    "dashboard_status",
+]
+DifferentiableDashboardCapabilityState = Literal[
+    "planned",
+    "metadata_only",
+    "diagnostic",
+    "conformance_backed",
+    "executable",
+    "blocked",
+    "unsupported",
 ]
 
 CLAIM_BOUNDARY = (
@@ -126,6 +136,78 @@ class DifferentiabilityDiagnosticReport:
             "device_matrix": [dict(row) for row in self.device_matrix],
             "backend_matrix": [dict(row) for row in self.backend_matrix],
             "support_payload": dict(self.support_payload),
+            "claim_boundary": self.claim_boundary,
+        }
+
+
+@dataclass(frozen=True)
+class DifferentiableDashboardCapabilityRow:
+    """One claim-bounded row for differentiable dashboard consumers."""
+
+    surface: str
+    state: DifferentiableDashboardCapabilityState
+    backing_api: str
+    evidence: tuple[str, ...]
+    blocked_reasons: tuple[str, ...]
+    claim_boundary: str
+
+    def __post_init__(self) -> None:
+        if not self.surface:
+            raise ValueError("dashboard status surface must be non-empty")
+        if not self.backing_api:
+            raise ValueError("dashboard status backing_api must be non-empty")
+        if any(not item for item in self.evidence):
+            raise ValueError("dashboard status evidence entries must be non-empty")
+        if any(not item for item in self.blocked_reasons):
+            raise ValueError("dashboard status blocked reasons must be non-empty")
+        if not self.claim_boundary:
+            raise ValueError("dashboard status claim_boundary must be non-empty")
+
+    @property
+    def fail_closed(self) -> bool:
+        """Return true when the dashboard row is intentionally non-executable."""
+        return self.state in {"planned", "metadata_only", "diagnostic", "blocked", "unsupported"}
+
+    def to_dict(self) -> dict[str, object]:
+        """Return a JSON-ready dashboard row."""
+        return {
+            "surface": self.surface,
+            "state": self.state,
+            "backing_api": self.backing_api,
+            "evidence": list(self.evidence),
+            "blocked_reasons": list(self.blocked_reasons),
+            "fail_closed": self.fail_closed,
+            "claim_boundary": self.claim_boundary,
+        }
+
+
+@dataclass(frozen=True)
+class DifferentiableDashboardStatus:
+    """Machine-readable differentiable status for GUI/audit-dashboard layers."""
+
+    rows: tuple[DifferentiableDashboardCapabilityRow, ...]
+    status_api_ready: bool
+    generated_from: tuple[str, ...]
+    claim_boundary: str
+
+    def __post_init__(self) -> None:
+        if not self.rows:
+            raise ValueError("dashboard status rows must be non-empty")
+        if any(not isinstance(row, DifferentiableDashboardCapabilityRow) for row in self.rows):
+            raise ValueError("dashboard status rows must contain dashboard row entries")
+        if not isinstance(self.status_api_ready, bool):
+            raise ValueError("dashboard status status_api_ready must be boolean")
+        if any(not item for item in self.generated_from):
+            raise ValueError("dashboard status generated_from entries must be non-empty")
+        if not self.claim_boundary:
+            raise ValueError("dashboard status claim_boundary must be non-empty")
+
+    def to_dict(self) -> dict[str, object]:
+        """Return a JSON-ready dashboard status payload."""
+        return {
+            "status_api_ready": self.status_api_ready,
+            "generated_from": list(self.generated_from),
+            "rows": [row.to_dict() for row in self.rows],
             "claim_boundary": self.claim_boundary,
         }
 
@@ -416,6 +498,121 @@ def differentiable_benchmark_report() -> UnifiedDifferentiableAPIResult:
     )
 
 
+def differentiable_dashboard_status(
+    *,
+    include_conformance: bool = False,
+) -> DifferentiableDashboardStatus:
+    """Return the claim-bounded status contract for a future GUI/dashboard."""
+    conformance_passed: bool | None = None
+    if include_conformance:
+        conformance_passed = differentiable_benchmark_report().supported
+
+    rows = [
+        DifferentiableDashboardCapabilityRow(
+            surface="unified_differentiable_api",
+            state="executable",
+            backing_api="differentiable_api",
+            evidence=(
+                "UnifiedDifferentiableAPIResult",
+                "differentiable_value",
+                "differentiable_gradient",
+                "differentiable_jacobian",
+                "differentiable_hessian",
+            ),
+            blocked_reasons=(),
+            claim_boundary=CLAIM_BOUNDARY,
+        ),
+        DifferentiableDashboardCapabilityRow(
+            surface="program_ad_ir",
+            state="metadata_only",
+            backing_api="whole_program_value_and_grad",
+            evidence=("ProgramADEffectIR", "WholeProgramADResult.program_ir"),
+            blocked_reasons=("complete bytecode/source compiler frontend remains open",),
+            claim_boundary="metadata and executed-trace evidence only; not full arbitrary Python AD",
+        ),
+        DifferentiableDashboardCapabilityRow(
+            surface="program_ad_alias_effects",
+            state="metadata_only",
+            backing_api="analyze_program_ad_alias_effects",
+            evidence=("ProgramADAliasEffectAnalysis", "ProgramADAliasSet"),
+            blocked_reasons=("full static alias lattice remains open",),
+            claim_boundary="metadata_only_no_general_alias_lattice",
+        ),
+        DifferentiableDashboardCapabilityRow(
+            surface="primitive_contracts",
+            state="executable",
+            backing_api="primitive_complete_contract_for",
+            evidence=("PrimitiveContract", "PrimitiveTransformRule"),
+            blocked_reasons=(),
+            claim_boundary="registered primitive contracts only; unknown primitives fail closed",
+        ),
+        DifferentiableDashboardCapabilityRow(
+            surface="nondifferentiability_diagnostics",
+            state="diagnostic",
+            backing_api="diagnose_program_ad_linalg_conditioning",
+            evidence=("ProgramADLinalgConditioningDiagnostic",),
+            blocked_reasons=("diagnostic rows do not execute or promote derivative kernels",),
+            claim_boundary="local diagnostic evidence only; no provider, hardware, or benchmark claim",
+        ),
+        DifferentiableDashboardCapabilityRow(
+            surface="benchmark_conformance",
+            state="conformance_backed" if conformance_passed else "diagnostic",
+            backing_api="differentiable_benchmark_report",
+            evidence=("run_differentiable_programming_benchmark_suite",),
+            blocked_reasons=()
+            if conformance_passed
+            else ("conformance suite not run in this status call",),
+            claim_boundary=(
+                "local deterministic conformance evidence; not isolated performance, "
+                "hardware, or provider execution evidence"
+            ),
+        ),
+        DifferentiableDashboardCapabilityRow(
+            surface="polyglot_compiler_chain",
+            state="blocked",
+            backing_api="differentiable_compile_report",
+            evidence=("compile_compiler_ad_transform_plan_to_mlir",),
+            blocked_reasons=(
+                "native Rust Program AD interpreter is not promoted",
+                "native LLVM/JIT differentiated kernels remain blocked until runtime verified",
+            ),
+            claim_boundary="compiler/interchange planning evidence only unless executable kernels pass runtime verification",
+        ),
+        DifferentiableDashboardCapabilityRow(
+            surface="provider_and_hardware_gradients",
+            state="blocked",
+            backing_api="explain_differentiability",
+            evidence=("DifferentiabilityDiagnosticReport",),
+            blocked_reasons=(
+                "live provider and hardware gradient execution require explicit policy evidence",
+            ),
+            claim_boundary="planning and diagnostic evidence only; no hardware job submission",
+        ),
+        DifferentiableDashboardCapabilityRow(
+            surface="gui_frontend",
+            state="planned",
+            backing_api="differentiable_dashboard_status",
+            evidence=("DifferentiableDashboardStatus",),
+            blocked_reasons=("frontend implementation is planned after this status contract",),
+            claim_boundary="dashboard backing contract only; no user-interface implementation claim",
+        ),
+    ]
+    return DifferentiableDashboardStatus(
+        rows=tuple(rows),
+        status_api_ready=True,
+        generated_from=(
+            "differentiable_api",
+            "program_ad_capability_contracts",
+            "compiler_ad_transform_plan",
+            "gradient_support_matrix",
+        ),
+        claim_boundary=(
+            "machine-readable status for audit dashboards; row states must be displayed "
+            "without upgrading planned, metadata-only, diagnostic, blocked, or unsupported routes"
+        ),
+    )
+
+
 def differentiable_api(
     operation: UnifiedDifferentiableOperation,
     *,
@@ -507,6 +704,19 @@ def differentiable_api(
         )
     if operation == "benchmark_report":
         return differentiable_benchmark_report()
+    if operation == "dashboard_status":
+        status = differentiable_dashboard_status()
+        return UnifiedDifferentiableAPIResult(
+            operation="dashboard_status",
+            supported=status.status_api_ready,
+            method="claim_bounded_dashboard_status",
+            value=None,
+            gradient=None,
+            jacobian=None,
+            hessian=None,
+            payload=status.to_dict(),
+            claim_boundary=status.claim_boundary,
+        )
     raise ValueError(f"unsupported unified differentiable operation: {operation!r}")
 
 
@@ -640,12 +850,16 @@ def _unique_strings(values: Sequence[object]) -> tuple[str, ...]:
 
 
 __all__ = [
+    "DifferentiableDashboardCapabilityRow",
+    "DifferentiableDashboardCapabilityState",
+    "DifferentiableDashboardStatus",
     "DifferentiabilityDiagnosticReport",
     "UnifiedDifferentiableAPIResult",
     "UnifiedDifferentiableOperation",
     "differentiable_api",
     "differentiable_benchmark_report",
     "differentiable_compile_report",
+    "differentiable_dashboard_status",
     "differentiable_gradient",
     "differentiable_hessian",
     "differentiable_jacobian",

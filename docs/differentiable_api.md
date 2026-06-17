@@ -19,7 +19,7 @@ finite differences or pretending that a hardware/provider gradient exists.
 
 | Namespace | Role |
 |---|---|
-| `scpn_quantum_control.differentiable_api` | Unified façade for value, gradient, Jacobian, Hessian, support, diagnostics, compile, and local conformance benchmark reports with one JSON evidence envelope. |
+| `scpn_quantum_control.differentiable_api` | Unified façade for value, gradient, Jacobian, Hessian, support, diagnostics, compile, local conformance benchmark, and dashboard-status reports with one JSON evidence envelope. |
 | `scpn_quantum_control.differentiable` | AD data structures, primitive registry contracts, optimisation helpers, program-AD metadata, and support reports. |
 | `scpn_quantum_control.phase.param_shift` | Parameter-shift gradient helper and gradient-descent VQE example. |
 | `scpn_quantum_control.phase.coupling_learning` | Differentiable coupling inference from observation models with convergence and finite-difference agreement certificates. |
@@ -72,7 +72,7 @@ finite differences or pretending that a hardware/provider gradient exists.
 
 | Object family | Examples | Use |
 |---|---|---|
-| Unified API evidence | `UnifiedDifferentiableAPIResult`, `DifferentiabilityDiagnosticReport`, `differentiable_api`, `differentiable_value`, `differentiable_gradient`, `differentiable_jacobian`, `differentiable_hessian`, `differentiable_support_report`, `explain_differentiability`, `differentiable_compile_report`, `differentiable_benchmark_report` | Use one JSON-ready envelope across scalar values, gradients, Jacobians, Hessians, fail-closed support decisions, differentiability diagnostics, compiler planning, and local conformance evidence. |
+| Unified API evidence | `UnifiedDifferentiableAPIResult`, `DifferentiabilityDiagnosticReport`, `DifferentiableDashboardStatus`, `DifferentiableDashboardCapabilityRow`, `differentiable_api`, `differentiable_value`, `differentiable_gradient`, `differentiable_jacobian`, `differentiable_hessian`, `differentiable_support_report`, `explain_differentiability`, `differentiable_compile_report`, `differentiable_benchmark_report`, `differentiable_dashboard_status` | Use one JSON-ready envelope across scalar values, gradients, Jacobians, Hessians, fail-closed support decisions, differentiability diagnostics, compiler planning, local conformance evidence, and GUI/audit-dashboard status. Dashboard rows preserve `planned`, `metadata_only`, `diagnostic`, `conformance_backed`, `executable`, `blocked`, and `unsupported` labels without upgrading blocked compiler, Rust, LLVM, provider, or hardware paths. |
 | Primitive identity and rules | `PrimitiveIdentity`, `PrimitiveContract`, `CustomDerivativeRule`, `CustomDerivativeRegistry`, `ProgramADLinalgConditioningDiagnostic`, `diagnose_program_ad_linalg_conditioning` | Bind derivative, batching, lowering, shape, dtype, nondifferentiability, and conditioning-diagnostic rules to supported primitives. The linalg diagnostic covers `norm`, `det`, `inv`, `solve`, `matrix_power`, `eig`, `eigh`, `eigvals`, `eigvalsh`, `svd`, and `pinv`; it reports zero-norm, rank-threshold, repeated-spectrum, and ill-conditioned boundaries without changing AD execution or promoting benchmark evidence. |
 | Program AD alias/effect metadata | `ProgramADAliasSet`, `ProgramADAliasEffectAnalysis`, `analyze_program_ad_alias_effects` | Summarize deterministic alias components, mutation-effect ordering, mutation-version edges, source aliases, bounded local scalar rebinding, local list-alias rebinding/mutation metadata, and supported executed array-view aliases from emitted `ProgramADEffectIR`. The helper fails closed on unknown alias metadata and carries the `metadata_only_no_general_alias_lattice` claim boundary; it is not a complete static alias lattice or compiler frontend. |
 | Forward and reverse AD results | `GradientResult`, `JacobianResult`, `HessianResult`, `JVPResult`, `HVPResult`, `ProgramADAdjointResult` | Return structured derivative outputs and diagnostics. |
@@ -154,6 +154,9 @@ same_gradient = differentiable_api(
     method="finite_difference",
 )
 assert same_gradient.to_dict()["operation"] == "gradient"
+
+dashboard = differentiable_api("dashboard_status")
+assert dashboard.payload["status_api_ready"] is True
 ```
 
 `UnifiedDifferentiableAPIResult` is the stable evidence envelope for the façade.
@@ -165,6 +168,12 @@ for bounded framework bridges, device capability rows, backend planning rows,
 and the underlying support-plan payload. The diagnostic route is planning
 evidence only; it does not execute objectives, provider callbacks, hardware
 jobs, or performance benchmarks.
+`DifferentiableDashboardStatus` is the backing contract for future GUI or
+audit-dashboard layers. Consumers must display each row's `state` and
+`claim_boundary` directly: metadata-only Program AD IR and alias/effect rows are
+not static compiler proofs, conformance rows are local non-performance evidence,
+and Rust/LLVM/provider/hardware rows stay blocked until executable artefacts
+exist.
 
 The façade delegates to existing implemented surfaces rather than weakening
 their contracts: finite-difference gradients, Jacobians, and Hessians remain
