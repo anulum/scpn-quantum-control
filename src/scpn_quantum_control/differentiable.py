@@ -634,6 +634,11 @@ class ProgramADAdjointResult:
     unsupported_ops: tuple[str, ...]
     method: str
     claim_boundary: str
+    replay_node_count: int = 0
+    replay_effect_count: int = 0
+    replay_control_region_count: int = 0
+    replay_phi_node_count: int = 0
+    replay_ir_format: str = "program_ad_effect_ir.v1"
 
     def __post_init__(self) -> None:
         gradient = _as_real_numeric_array("program AD adjoint gradient", self.gradient)
@@ -651,6 +656,17 @@ class ProgramADAdjointResult:
             raise ValueError("program AD adjoint method must be non-empty")
         if not self.claim_boundary:
             raise ValueError("program AD adjoint claim_boundary must be non-empty")
+        for name in (
+            "replay_node_count",
+            "replay_effect_count",
+            "replay_control_region_count",
+            "replay_phi_node_count",
+        ):
+            value = getattr(self, name)
+            if isinstance(value, bool) or not isinstance(value, int) or value < 0:
+                raise ValueError(f"program AD adjoint {name} must be a non-negative integer")
+        if not isinstance(self.replay_ir_format, str) or not self.replay_ir_format:
+            raise ValueError("program AD adjoint replay_ir_format must be a non-empty string")
         object.__setattr__(self, "gradient", gradient)
 
 
@@ -910,6 +926,7 @@ def whole_program_value_and_grad(
         output_name=raw.name,
         parameter_names=tuple(parameter.name for parameter in parameter_meta),
         trainable=tuple(parameter.trainable for parameter in parameter_meta),
+        program_ir=program_ir,
     )
     return WholeProgramADResult(
         value=raw.primal,
@@ -7213,6 +7230,7 @@ def _program_adjoint_result_from_nodes(
     output_name: str,
     parameter_names: tuple[str, ...],
     trainable: tuple[bool, ...],
+    program_ir: ProgramADEffectIR | None = None,
 ) -> ProgramADAdjointResult:
     """Replay reverse-mode adjoints over supported scalar program AD IR nodes."""
 
@@ -7252,6 +7270,9 @@ def _program_adjoint_result_from_nodes(
     supported = not unsupported_ops
     if not supported:
         gradient = np.zeros(parameter_count, dtype=np.float64)
+    replay_effect_count = len(program_ir.effects) if program_ir is not None else 0
+    replay_control_region_count = len(program_ir.control_regions) if program_ir is not None else 0
+    replay_phi_node_count = len(program_ir.phi_nodes) if program_ir is not None else 0
     return ProgramADAdjointResult(
         gradient=gradient,
         supported=supported,
@@ -7262,6 +7283,11 @@ def _program_adjoint_result_from_nodes(
             "pure operations; unsupported operations fail closed without substituting finite "
             "differences or forward tangents"
         ),
+        replay_node_count=len(nodes),
+        replay_effect_count=replay_effect_count,
+        replay_control_region_count=replay_control_region_count,
+        replay_phi_node_count=replay_phi_node_count,
+        replay_ir_format="program_ad_effect_ir.v1",
     )
 
 

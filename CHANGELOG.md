@@ -5,6 +5,11 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-06-17 — Added IR-format and replay-count provenance to
+  `ProgramADAdjointResult`. Supported scalar whole-program adjoint replay now
+  records replayed node, effect, control-region, and phi-node counts from the
+  emitted `ProgramADEffectIR`, keeping reverse-mode evidence auditable without
+  promoting full arbitrary Python reverse-mode compiler AD.
 - 2026-06-17 — Added `ProgramADPhiNode` metadata to emitted
   `ProgramADEffectIR` and the `program_ad_effect_ir.v1` round-trip parser.
   Runtime branches and source-level control/loop regions now carry

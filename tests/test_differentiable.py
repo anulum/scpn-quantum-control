@@ -10297,6 +10297,14 @@ def test_program_adjoint_replay_supports_static_setitem_effects() -> None:
     assert result.adjoint_result is not None
     assert result.adjoint_result.supported is True
     assert result.adjoint_result.unsupported_ops == ()
+    assert result.program_ir is not None
+    assert result.adjoint_result.replay_node_count == len(result.ir_nodes)
+    assert result.adjoint_result.replay_effect_count == len(result.program_ir.effects)
+    assert result.adjoint_result.replay_control_region_count == len(
+        result.program_ir.control_regions
+    )
+    assert result.adjoint_result.replay_phi_node_count == len(result.program_ir.phi_nodes)
+    assert result.adjoint_result.replay_ir_format == "program_ad_effect_ir.v1"
     np.testing.assert_allclose(result.gradient, [1.0, 3.0], atol=1.0e-12)
     np.testing.assert_allclose(program_adjoint_gradient(result), result.gradient, atol=1.0e-12)
 
@@ -10313,6 +10321,7 @@ def test_program_adjoint_result_validation_paths() -> None:
     )
 
     assert result.supported is True
+    assert result.replay_ir_format == "program_ad_effect_ir.v1"
     with pytest.raises(ValueError, match="one-dimensional"):
         ProgramADAdjointResult(
             gradient=np.array([[1.0]], dtype=np.float64),
@@ -10336,6 +10345,24 @@ def test_program_adjoint_result_validation_paths() -> None:
             unsupported_ops=(),
             method="",
             claim_boundary="supported scalar replay",
+        )
+    with pytest.raises(ValueError, match="replay_node_count"):
+        ProgramADAdjointResult(
+            gradient=np.array([1.0], dtype=np.float64),
+            supported=True,
+            unsupported_ops=(),
+            method="program_adjoint_replay",
+            claim_boundary="supported scalar replay",
+            replay_node_count=-1,
+        )
+    with pytest.raises(ValueError, match="replay_ir_format"):
+        ProgramADAdjointResult(
+            gradient=np.array([1.0], dtype=np.float64),
+            supported=True,
+            unsupported_ops=(),
+            method="program_adjoint_replay",
+            claim_boundary="supported scalar replay",
+            replay_ir_format="",
         )
 
 
