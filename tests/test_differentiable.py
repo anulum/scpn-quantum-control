@@ -14054,7 +14054,6 @@ def test_program_ad_alias_effect_analysis_summarizes_alias_sets_and_mutations() 
         parameters=(Parameter("a"), Parameter("b"), Parameter("c")),
     )
     assert result.program_ir is not None
-
     analysis = analyze_program_ad_alias_effects(result.program_ir)
 
     assert isinstance(analysis, ProgramADAliasEffectAnalysis)
@@ -14107,7 +14106,6 @@ def test_program_ad_alias_effect_analysis_tracks_array_view_aliases() -> None:
         np.array([0.25, 0.5, 0.75, 1.0, 1.25, 1.5], dtype=np.float64),
     )
     assert result.program_ir is not None
-
     analysis = analyze_program_ad_alias_effects(result.program_ir)
     view_edges = tuple(edge for edge in analysis.alias_edges if edge.kind == "view_alias")
 
@@ -14143,7 +14141,6 @@ def test_program_ad_alias_effect_analysis_tracks_list_alias_rebinding() -> None:
         parameters=(Parameter("a"), Parameter("b"), Parameter("c")),
     )
     assert result.program_ir is not None
-
     analysis = analyze_program_ad_alias_effects(result.program_ir)
     list_edges = tuple(edge for edge in analysis.alias_edges if edge.kind == "list_alias")
 
@@ -14163,6 +14160,37 @@ def test_program_ad_alias_effect_analysis_tracks_list_alias_rebinding() -> None:
     )
     assert analysis.claim_boundary == "metadata_only_no_general_alias_lattice"
     np.testing.assert_allclose(result.gradient, [0.0, 2.0, 1.0], atol=1.0e-12)
+
+
+def test_program_ad_alias_effect_analysis_tracks_local_scalar_rebinding() -> None:
+    """Program AD source metadata should expose local scalar rebinding aliases."""
+
+    def objective(values: np.ndarray) -> object:
+        seed = values[0]
+        rebound = seed
+        return rebound + 3.0 * values[1]
+
+    result = whole_program_value_and_grad(
+        objective,
+        np.array([0.25, 0.5], dtype=np.float64),
+        parameters=(Parameter("a"), Parameter("b")),
+    )
+    assert result.program_ir is not None
+
+    analysis = analyze_program_ad_alias_effects(result.program_ir)
+    rebinding_edges = tuple(
+        edge for edge in analysis.alias_edges if edge.kind == "local_rebinding_alias"
+    )
+
+    assert any(
+        edge.source == "name:seed" and edge.target == "name:rebound" for edge in rebinding_edges
+    )
+    assert any(
+        "name:seed" in alias_set.members and "name:rebound" in alias_set.members
+        for alias_set in analysis.alias_sets
+    )
+    assert analysis.claim_boundary == "metadata_only_no_general_alias_lattice"
+    np.testing.assert_allclose(result.gradient, [1.0, 3.0], atol=1.0e-12)
 
 
 def test_program_ad_effect_ir_validation_paths() -> None:

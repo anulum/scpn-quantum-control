@@ -331,6 +331,7 @@ _PROGRAM_AD_SUPPORTED_ALIAS_EDGE_KINDS = frozenset(
     {
         "alias_analysis",
         "list_alias",
+        "local_rebinding_alias",
         "mutation_version",
         "source_alias",
         "view_alias",
@@ -853,15 +854,17 @@ class _WholeProgramTraceContext:
         alias_edges = list(self.alias_edges)
         control_regions = list(self.control_regions)
         for feature in source_ir_features:
-            if feature.kind == "list_alias":
+            if feature.kind in {"list_alias", "local_rebinding_alias"}:
                 source, separator, target = feature.detail.partition("->")
                 if not separator or not source or not target:
-                    raise ValueError("program AD list alias feature must encode source->target")
+                    raise ValueError(
+                        f"program AD {feature.kind} feature must encode source->target"
+                    )
                 alias_edges.append(
                     ProgramADAliasEdge(
                         source=source,
                         target=target,
-                        kind="list_alias",
+                        kind=feature.kind,
                         version=len(alias_edges),
                     )
                 )
@@ -8009,6 +8012,7 @@ def _source_ir_features(
             }:
                 add(node, "mutation", name)
     features.extend(_source_list_alias_features(tree))
+    features.extend(_source_local_rebinding_alias_features(tree))
     return tuple(features)
 
 
@@ -8061,6 +8065,32 @@ def _source_list_alias_features(tree: ast.AST) -> tuple[WholeProgramSourceIRFeat
                             line_number,
                         )
                     )
+    return tuple(features)
+
+
+def _source_local_rebinding_alias_features(
+    tree: ast.AST,
+) -> tuple[WholeProgramSourceIRFeature, ...]:
+    """Return bounded source-level metadata for local name rebinding."""
+
+    features: list[WholeProgramSourceIRFeature] = []
+    assignments = sorted(
+        (node for node in ast.walk(tree) if isinstance(node, ast.Assign)),
+        key=lambda node: int(getattr(node, "lineno", 1) or 1),
+    )
+    for node in assignments:
+        line_number = int(getattr(node, "lineno", 1) or 1)
+        if not isinstance(node.value, ast.Name):
+            continue
+        for target in node.targets:
+            if isinstance(target, ast.Name):
+                features.append(
+                    WholeProgramSourceIRFeature(
+                        "local_rebinding_alias",
+                        f"name:{node.value.id}->name:{target.id}",
+                        line_number,
+                    )
+                )
     return tuple(features)
 
 
