@@ -5,6 +5,10 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-06-17 — Registered Program AD `np.max`/`np.min` and trace-array
+  `.max()`/`.min()` as bounded extreme-reduction primitive contracts with
+  shape, dtype, static-axis validation, batching, lowering metadata, direct
+  JVP/VJP factories, and fail-closed unique-selector boundaries.
 - 2026-06-17 — Registered Program AD `np.median`, `np.quantile`, and
   `np.percentile` as bounded reduction primitive contracts with shape, dtype,
   static scalar-q/axis/method validation, batching, lowering metadata, direct

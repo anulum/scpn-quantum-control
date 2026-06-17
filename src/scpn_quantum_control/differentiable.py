@@ -1636,11 +1636,13 @@ class TraceADArray:
     def max(self, axis: int | None = None) -> TraceADScalar | TraceADArray:
         """Return a derivative-preserving maximum with tie-safe semantics."""
 
+        _require_program_ad_reduction_contract("max", (self, axis))
         return _trace_extreme(self, axis=axis, choose_max=True)
 
     def min(self, axis: int | None = None) -> TraceADScalar | TraceADArray:
         """Return a derivative-preserving minimum with tie-safe semantics."""
 
+        _require_program_ad_reduction_contract("min", (self, axis))
         return _trace_extreme(self, axis=axis, choose_max=False)
 
     def take(
@@ -1906,17 +1908,27 @@ class TraceADArray:
         if func is np.max:
             if len(args) != 1 or kwargs.keys() - {"axis"}:
                 raise ValueError("program AD np.max supports one array and optional axis")
+            max_axis = cast(int | None, kwargs.get("axis"))
+            _require_program_ad_reduction_contract(
+                "max",
+                (_coerce_trace_array(args[0], self.context), max_axis),
+            )
             return _trace_extreme(
                 _coerce_trace_array(args[0], self.context),
-                axis=cast(int | None, kwargs.get("axis")),
+                axis=max_axis,
                 choose_max=True,
             )
         if func is np.min:
             if len(args) != 1 or kwargs.keys() - {"axis"}:
                 raise ValueError("program AD np.min supports one array and optional axis")
+            min_axis = cast(int | None, kwargs.get("axis"))
+            _require_program_ad_reduction_contract(
+                "min",
+                (_coerce_trace_array(args[0], self.context), min_axis),
+            )
             return _trace_extreme(
                 _coerce_trace_array(args[0], self.context),
-                axis=cast(int | None, kwargs.get("axis")),
+                axis=min_axis,
                 choose_max=False,
             )
         if func is np.dot:
@@ -11354,7 +11366,17 @@ _PROGRAM_AD_REDUCTION_PRIMITIVE_NAMESPACE = "scpn.program_ad.reduction"
 _PROGRAM_AD_REDUCTION_POLICY = "program_ad_trace_exact_fail_closed"
 _PROGRAM_AD_REDUCTION_IDENTITIES: Mapping[str, PrimitiveIdentity] = {
     name: PrimitiveIdentity(_PROGRAM_AD_REDUCTION_PRIMITIVE_NAMESPACE, name, "1")
-    for name in ("sum", "prod", "mean", "median", "quantile", "percentile", "trapezoid")
+    for name in (
+        "sum",
+        "prod",
+        "mean",
+        "max",
+        "min",
+        "median",
+        "quantile",
+        "percentile",
+        "trapezoid",
+    )
 }
 
 _PROGRAM_AD_STENCIL_PRIMITIVE_NAMESPACE = "scpn.program_ad.stencil"
@@ -13243,6 +13265,10 @@ def _program_ad_reduction_derivative_rule(name: str) -> CustomDerivativeRule:
             jvp_rule=_program_ad_reduction_mean_jvp,
             vjp_rule=_program_ad_reduction_mean_vjp,
         )
+    if name == "max":
+        return _program_ad_reduction_order_statistic_rule(name, q=1.0)
+    if name == "min":
+        return _program_ad_reduction_order_statistic_rule(name, q=0.0)
     if name == "median":
         return _program_ad_reduction_order_statistic_rule(name, q=0.5)
     if name == "quantile":
@@ -13751,6 +13777,28 @@ def program_ad_reduction_mean_derivative_rule(
     """Build an exact direct derivative rule for a fixed mean reduction signature."""
 
     return _program_ad_reduction_static_rule("mean", source_shape, axis)
+
+
+def program_ad_reduction_max_derivative_rule(
+    source_shape: Sequence[int],
+    axis: int | None = None,
+) -> CustomDerivativeRule:
+    """Build an exact direct derivative rule for a fixed maximum reduction signature."""
+
+    return _program_ad_reduction_order_statistic_rule(
+        "max", q=1.0, source_shape=source_shape, axis=axis
+    )
+
+
+def program_ad_reduction_min_derivative_rule(
+    source_shape: Sequence[int],
+    axis: int | None = None,
+) -> CustomDerivativeRule:
+    """Build an exact direct derivative rule for a fixed minimum reduction signature."""
+
+    return _program_ad_reduction_order_statistic_rule(
+        "min", q=0.0, source_shape=source_shape, axis=axis
+    )
 
 
 def program_ad_reduction_median_derivative_rule(
@@ -17154,7 +17202,7 @@ def _program_ad_reduction_static_arguments(args: tuple[object, ...]) -> tuple[ob
     return (_program_ad_reduction_axis(args),)
 
 
-def _program_ad_reduction_median_static_arguments(
+def _program_ad_reduction_order_statistic_axis_static_arguments(
     args: tuple[object, ...],
 ) -> tuple[object, ...]:
     return (_program_ad_order_statistic_reduction_axis(args),)
@@ -18747,6 +18795,8 @@ _PROGRAM_AD_REDUCTION_SHAPE_RULES: Mapping[str, PrimitiveShapeRule] = {
     "sum": _program_ad_reduction_shape,
     "prod": _program_ad_reduction_shape,
     "mean": _program_ad_reduction_shape,
+    "max": _program_ad_order_statistic_reduction_shape,
+    "min": _program_ad_order_statistic_reduction_shape,
     "median": _program_ad_order_statistic_reduction_shape,
     "quantile": _program_ad_order_statistic_reduction_shape,
     "percentile": _program_ad_order_statistic_reduction_shape,
@@ -18757,7 +18807,9 @@ _PROGRAM_AD_REDUCTION_STATIC_ARGUMENT_RULES: Mapping[str, PrimitiveStaticArgumen
     "sum": _program_ad_reduction_static_arguments,
     "prod": _program_ad_reduction_static_arguments,
     "mean": _program_ad_reduction_static_arguments,
-    "median": _program_ad_reduction_median_static_arguments,
+    "max": _program_ad_reduction_order_statistic_axis_static_arguments,
+    "min": _program_ad_reduction_order_statistic_axis_static_arguments,
+    "median": _program_ad_reduction_order_statistic_axis_static_arguments,
     "quantile": _program_ad_reduction_quantile_static_arguments,
     "percentile": _program_ad_reduction_percentile_static_arguments,
     "trapezoid": _program_ad_reduction_static_arguments,
@@ -19041,6 +19093,8 @@ def _program_ad_reduction_lowering_metadata(name: str) -> Mapping[str, str]:
         "sum": "program_ad_reduction_sum_derivative_rule",
         "prod": "program_ad_reduction_prod_derivative_rule",
         "mean": "program_ad_reduction_mean_derivative_rule",
+        "max": "program_ad_reduction_max_derivative_rule",
+        "min": "program_ad_reduction_min_derivative_rule",
         "median": "program_ad_reduction_median_derivative_rule",
         "quantile": "program_ad_reduction_quantile_derivative_rule",
         "percentile": "program_ad_reduction_percentile_derivative_rule",
@@ -19050,6 +19104,8 @@ def _program_ad_reduction_lowering_metadata(name: str) -> Mapping[str, str]:
         "sum": "static_axis_and_stable_output_shape",
         "prod": "static_axis_zero_factor_sensitive",
         "mean": "static_axis_nonempty_reduction",
+        "max": "static_axis_unique_max_selector",
+        "min": "static_axis_unique_min_selector",
         "median": "static_axis_strict_order_selection",
         "quantile": "static_scalar_q_axis_method_strict_order_selection",
         "percentile": "static_scalar_q_axis_method_strict_order_selection",
@@ -28273,8 +28329,10 @@ __all__ = [
     "program_ad_product_matmul_derivative_rule",
     "program_ad_product_outer_derivative_rule",
     "program_ad_product_tensordot_derivative_rule",
+    "program_ad_reduction_max_derivative_rule",
     "program_ad_reduction_mean_derivative_rule",
     "program_ad_reduction_median_derivative_rule",
+    "program_ad_reduction_min_derivative_rule",
     "program_ad_reduction_percentile_derivative_rule",
     "program_ad_reduction_prod_derivative_rule",
     "program_ad_reduction_quantile_derivative_rule",
