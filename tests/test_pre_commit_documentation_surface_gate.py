@@ -40,3 +40,7 @@ def test_pre_push_hook_gates_differentiable_strict_mypy_ratchet() -> None:
     assert "src/scpn_quantum_control/phase/differentiable_audit.py" in config
     assert "src/scpn_quantum_control/phase/gradient_support_matrix.py" in config
     assert "src/scpn_quantum_control/phase/provider_gradient.py" in config
+    assert "src/scpn_quantum_control/phase/hardware_gradient_policy.py" in config
+    assert "src/scpn_quantum_control/phase/provider_gradient_audit.py" in config
+    assert "src/scpn_quantum_control/phase/hardware_gradient_publication.py" in config
+    assert "src/scpn_quantum_control/phase/provider_hardware_gradient_audit.py" in config

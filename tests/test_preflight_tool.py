@@ -59,6 +59,10 @@ def test_static_gates_include_differentiable_strict_mypy_ratchet() -> None:
     assert "src/scpn_quantum_control/phase/differentiable_audit.py" in strict_cmd
     assert "src/scpn_quantum_control/phase/gradient_support_matrix.py" in strict_cmd
     assert "src/scpn_quantum_control/phase/provider_gradient.py" in strict_cmd
+    assert "src/scpn_quantum_control/phase/hardware_gradient_policy.py" in strict_cmd
+    assert "src/scpn_quantum_control/phase/provider_gradient_audit.py" in strict_cmd
+    assert "src/scpn_quantum_control/phase/hardware_gradient_publication.py" in strict_cmd
+    assert "src/scpn_quantum_control/phase/provider_hardware_gradient_audit.py" in strict_cmd
 
 
 def test_preflight_coverage_gate_matches_temporary_ci_threshold():
