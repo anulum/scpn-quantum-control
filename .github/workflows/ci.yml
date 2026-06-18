@@ -187,6 +187,7 @@ jobs:
           src/scpn_quantum_control/phase/jax_bridge.py
           src/scpn_quantum_control/phase/torch_bridge.py
           src/scpn_quantum_control/phase/tensorflow_bridge.py
+          src/scpn_quantum_control/phase/qiskit_bridge.py
       - run: mypy
 
   wheel-check:
