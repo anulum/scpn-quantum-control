@@ -61,3 +61,4 @@ def test_pre_push_hook_gates_differentiable_strict_mypy_ratchet() -> None:
     assert "src/scpn_quantum_control/phase/torch_bridge.py" in config
     assert "src/scpn_quantum_control/phase/tensorflow_bridge.py" in config
     assert "src/scpn_quantum_control/phase/qiskit_bridge.py" in config
+    assert "src/scpn_quantum_control/phase/qnn_framework_bridge_matrix.py" in config
