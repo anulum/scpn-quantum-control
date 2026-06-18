@@ -5,6 +5,13 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-06-18 — Exposed Program AD array-indexing conformance in
+  `differentiable_dashboard_status(...)`. The `program_ad_array_indexing` row
+  is diagnostic by default and becomes conformance-backed only when
+  `indexing_static_gather_contracts` runs through
+  `run_differentiable_programming_benchmark_suite()`, keeping dynamic indices,
+  dynamic insertion values, Rust, LLVM/JIT, hardware, and performance
+  promotion fail-closed.
 - 2026-06-18 — Extended Program AD alias/effect metadata for derivative-
   preserving permutation and source-reuse transforms (`tile`, `roll`,
   `rot90`, `flip`, `flipud`, `fliplr`) with deterministic conformance

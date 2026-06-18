@@ -186,6 +186,10 @@ def test_differentiable_dashboard_status_is_claim_bounded_for_gui_consumers() ->
         "filtered, set, and dict comprehensions remain fail-closed"
         in rows["program_ad_python_semantics"]["claim_boundary"]
     )
+    assert rows["program_ad_array_indexing"]["state"] == "diagnostic"
+    assert rows["program_ad_array_indexing"]["fail_closed"] is True
+    assert "indexing_static_gather_contracts" in rows["program_ad_array_indexing"]["evidence"]
+    assert "dynamic indices" in rows["program_ad_array_indexing"]["claim_boundary"]
     assert rows["higher_order_transform_algebra"]["state"] == "diagnostic"
     assert rows["higher_order_transform_algebra"]["fail_closed"] is True
     assert (
@@ -211,6 +215,10 @@ def test_differentiable_dashboard_status_can_include_conformance_backing() -> No
     assert rows["program_ad_python_semantics"].state == "conformance_backed"
     assert rows["program_ad_python_semantics"].fail_closed is False
     assert rows["program_ad_python_semantics"].blocked_reasons == ()
+    assert rows["program_ad_array_indexing"].state == "conformance_backed"
+    assert rows["program_ad_array_indexing"].fail_closed is False
+    assert rows["program_ad_array_indexing"].blocked_reasons == ()
+    assert "constant-insert" in rows["program_ad_array_indexing"].claim_boundary
     assert rows["higher_order_transform_algebra"].state == "conformance_backed"
     assert rows["higher_order_transform_algebra"].fail_closed is False
     assert rows["higher_order_transform_algebra"].blocked_reasons == ()
