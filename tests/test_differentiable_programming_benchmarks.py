@@ -41,6 +41,7 @@ def test_differentiable_programming_benchmark_suite_matches_analytic_references(
         "cumulative_primitive_contracts",
         "assembly_primitive_contracts",
         "reduction_primitive_contracts",
+        "shape_primitive_contracts",
         "linalg_primitive_contracts",
         "indexing_static_gather_contracts",
         "mutation_heavy_forward_only",
@@ -64,6 +65,7 @@ def test_differentiable_programming_benchmark_suite_matches_analytic_references(
         "cumulative-primitive",
         "assembly-primitive",
         "reduction-primitive",
+        "shape-primitive",
         "linalg-primitive",
         "indexing-heavy",
         "mutation-heavy",
@@ -140,6 +142,12 @@ def test_differentiable_programming_benchmark_suite_matches_analytic_references(
     assert reduction_row.max_abs_adjoint_error <= 1.0e-12
     assert "sum, prod, mean, var, std, trapezoid" in reduction_row.claim_boundary
     assert "unique and strict-order selector reductions" in reduction_row.claim_boundary
+    shape_row = next(row for row in results if row.category == "shape-primitive")
+    assert shape_row.adjoint_supported is True
+    assert shape_row.max_abs_adjoint_error is not None
+    assert shape_row.max_abs_adjoint_error <= 1.0e-12
+    assert "reshape, ravel, transpose, expand_dims, squeeze" in shape_row.claim_boundary
+    assert "flip, flipud, fliplr" in shape_row.claim_boundary
     indexing_row = next(row for row in results if row.category == "indexing-heavy")
     assert indexing_row.adjoint_supported is True
     assert indexing_row.max_abs_adjoint_error is not None

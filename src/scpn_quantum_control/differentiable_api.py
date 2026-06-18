@@ -686,6 +686,24 @@ def differentiable_dashboard_status(
             ),
         ),
         DifferentiableDashboardCapabilityRow(
+            surface="program_ad_shape_primitives",
+            state="conformance_backed" if conformance_passed else "diagnostic",
+            backing_api="run_differentiable_programming_benchmark_suite",
+            evidence=(
+                "scpn.program_ad.shape:{reshape,ravel,transpose,expand_dims,squeeze,swapaxes,moveaxis,repeat,atleast_1d,atleast_2d,atleast_3d,tile,roll,rot90,flip,flipud,fliplr}",
+                "shape_primitive_contracts",
+            ),
+            blocked_reasons=()
+            if conformance_passed
+            else ("conformance suite not run in this status call",),
+            claim_boundary=(
+                "bounded Program AD shape primitive conformance only; dynamic "
+                "shape arguments, invalid axes, Rust/LLVM executable lowering, "
+                "hardware, and performance promotion remain blocked; rank "
+                "promotion is covered only under local deterministic conformance"
+            ),
+        ),
+        DifferentiableDashboardCapabilityRow(
             surface="primitive_contracts",
             state="executable",
             backing_api="primitive_complete_contract_for",

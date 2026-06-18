@@ -215,6 +215,7 @@ def run_differentiable_programming_benchmark_suite() -> tuple[
         _cumulative_primitive_case(),
         _assembly_primitive_case(),
         _reduction_primitive_case(),
+        _shape_primitive_case(),
         _linalg_primitive_case(),
         _indexing_heavy_case(),
         _mutation_heavy_case(),
@@ -1004,6 +1005,75 @@ def _reduction_primitive_case() -> DifferentiableProgrammingBenchmarkResult:
             "strict-order selector reductions, and scalar q order-statistics for "
             "bounded one-dimensional Program AD traces; dynamic axes, dynamic q, "
             "tie boundaries, zero-variance standard-deviation, Rust/LLVM "
+            "executable lowering, hardware, and performance promotion remain "
+            "blocked; no wall-clock performance claim"
+        ),
+    )
+
+
+def _shape_primitive_gradient(values: NDArray[np.float64]) -> NDArray[np.float64]:
+    source = np.arange(values.size, dtype=np.int64)
+    matrix_source = source.reshape(2, 3)
+    tensor_source = source.reshape(1, 2, 1, 3)
+    squeezed_source = np.squeeze(tensor_source, axis=(0, 2))
+    moved_source = np.moveaxis(
+        np.swapaxes(np.expand_dims(squeezed_source, axis=0), 0, 1),
+        source=2,
+        destination=0,
+    )
+    gradient = np.zeros(values.size, dtype=np.float64)
+    for transformed_source in (
+        np.ravel(np.transpose(matrix_source, axes=(1, 0))),
+        np.repeat(moved_source, repeats=(1, 2, 1), axis=0),
+        np.atleast_1d(source[0]),
+        np.atleast_2d(source[:3]),
+        np.atleast_3d(matrix_source[0]),
+        np.tile(matrix_source, (2, 1)),
+        np.roll(matrix_source, shift=1, axis=1),
+        np.rot90(matrix_source, k=1),
+        np.flip(matrix_source, axis=0),
+        np.flipud(matrix_source),
+        np.fliplr(matrix_source),
+    ):
+        np.add.at(gradient, transformed_source.reshape(-1), 1.0)
+    return gradient
+
+
+def _shape_primitive_case() -> DifferentiableProgrammingBenchmarkResult:
+    values = np.array([0.25, 0.5, 0.75, 1.0, 1.25, 1.5], dtype=np.float64)
+
+    def objective(trace_values: Any) -> object:
+        matrix = np.reshape(trace_values, (2, 3))
+        tensor = np.reshape(trace_values, (1, 2, 1, 3))
+        squeezed = np.squeeze(tensor, axis=(0, 2))
+        expanded = np.expand_dims(squeezed, axis=0)
+        swapped = np.swapaxes(expanded, 0, 1)
+        moved = np.moveaxis(swapped, source=2, destination=0)
+        return (
+            np.sum(np.ravel(np.transpose(matrix, axes=(1, 0))))
+            + np.sum(np.repeat(moved, repeats=(1, 2, 1), axis=0))
+            + np.sum(np.atleast_1d(trace_values[0]))
+            + np.sum(np.atleast_2d(trace_values[:3]))
+            + np.sum(np.atleast_3d(matrix[0]))
+            + np.sum(np.tile(matrix, (2, 1)))
+            + np.sum(np.roll(matrix, shift=1, axis=1))
+            + np.sum(np.rot90(matrix, k=1))
+            + np.sum(np.flip(matrix, axis=0))
+            + np.sum(np.flipud(matrix))
+            + np.sum(np.fliplr(matrix))
+        )
+
+    return _program_ad_case(
+        "shape_primitive_contracts",
+        "shape-primitive",
+        objective,
+        values,
+        _shape_primitive_gradient(values),
+        claim_boundary=(
+            "deterministic reshape, ravel, transpose, expand_dims, squeeze, "
+            "swapaxes, moveaxis, repeat, rank promotion, tile, roll, rot90, "
+            "flip, flipud, fliplr shape primitive contracts for bounded Program "
+            "AD traces; dynamic shape arguments, invalid axes, Rust/LLVM "
             "executable lowering, hardware, and performance promotion remain "
             "blocked; no wall-clock performance claim"
         ),
