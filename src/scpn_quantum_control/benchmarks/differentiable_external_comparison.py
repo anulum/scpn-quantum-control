@@ -1112,7 +1112,7 @@ def _run_jax_reference(values: NDArray[np.float64]) -> tuple[float, NDArray[np.f
 
     jax.config.update("jax_enable_x64", True)
 
-    def objective(x):
+    def objective(x: Any) -> Any:
         return jnp.cos(x[0]) + 0.25 * jnp.sin(x[1])
 
     value, gradient = jax.value_and_grad(objective)(jnp.asarray(values, dtype=jnp.float64))
@@ -1122,7 +1122,7 @@ def _run_jax_reference(values: NDArray[np.float64]) -> tuple[float, NDArray[np.f
 def _run_pytorch_reference(values: NDArray[np.float64]) -> tuple[float, NDArray[np.float64]]:
     import torch
 
-    def objective(x):
+    def objective(x: Any) -> Any:
         return torch.cos(x[0]) + 0.25 * torch.sin(x[1])
 
     tensor = torch.tensor(values, dtype=torch.float64)
@@ -1152,13 +1152,14 @@ def _run_pennylane_reference(values: NDArray[np.float64]) -> tuple[float, NDArra
 
     dev = qml.device("default.qubit", wires=2)
 
-    @qml.qnode(dev, interface="autograd")
-    def circuit(x):
+    def circuit_body(x: Any) -> Any:
         qml.RY(x[0], wires=0)
         qml.RY(x[1], wires=1)
         return qml.expval(qml.PauliZ(0)), qml.expval(qml.PauliX(1))
 
-    def objective(x):
+    circuit: Any = qml.qnode(dev, interface="autograd")(circuit_body)
+
+    def objective(x: Any) -> Any:
         z0, x1 = circuit(x)
         return z0 + 0.25 * x1
 
