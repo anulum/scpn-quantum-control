@@ -217,6 +217,10 @@ def test_differentiable_dashboard_status_is_claim_bounded_for_gui_consumers() ->
         in rows["higher_order_transform_algebra"]["evidence"]
     )
     assert (
+        "transform_nesting_program_ad_hessian_jvp_vjp"
+        in rows["higher_order_transform_algebra"]["evidence"]
+    )
+    assert (
         "transform_nesting_whole_program_higher_order"
         in rows["higher_order_transform_algebra"]["evidence"]
     )
@@ -256,6 +260,7 @@ def test_differentiable_dashboard_status_can_include_conformance_backing() -> No
     assert rows["higher_order_transform_algebra"].state == "conformance_backed"
     assert rows["higher_order_transform_algebra"].fail_closed is False
     assert rows["higher_order_transform_algebra"].blocked_reasons == ()
+    assert "Hessian transforms" in rows["higher_order_transform_algebra"].claim_boundary
     assert "no compiler" in rows["higher_order_transform_algebra"].claim_boundary
 
 

@@ -649,6 +649,7 @@ def differentiable_dashboard_status(
                 "transform_nesting_program_ad_vmap_jvp_vjp",
                 "transform_nesting_whole_program_higher_order",
                 "transform_nesting_program_ad_hessian",
+                "transform_nesting_program_ad_hessian_jvp_vjp",
             ),
             blocked_reasons=()
             if conformance_passed
@@ -656,7 +657,8 @@ def differentiable_dashboard_status(
             claim_boundary=(
                 "local transform-algebra conformance for vmap, exact custom JVP/VJP "
                 "rules, whole-program grad, JVP/VJP, jacfwd, jacrev, and local "
-                "Hessian transforms only; no compiler, JIT, hardware, or performance claim"
+                "Hessian transforms including JVP/VJP over Hessian transforms only; "
+                "no compiler, JIT, hardware, or performance claim"
             ),
         ),
         DifferentiableDashboardCapabilityRow(

@@ -5,6 +5,10 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-06-18 — Added deterministic transform-algebra conformance for JVP/VJP
+  over whole-program AD Hessian transforms through
+  `transform_nesting_program_ad_hessian_jvp_vjp`, with compiler, Rust,
+  LLVM/JIT, hardware, and performance claims still blocked.
 - 2026-06-18 — Extended the explicit strict-mypy ratchet for differentiable
   promotion surfaces. CI, local preflight, and the pre-push hook now enforce
   `mypy --strict` on `differentiable.py`, `differentiable_claim_ledger.py`,

@@ -223,6 +223,7 @@ def run_differentiable_programming_benchmark_suite() -> tuple[
         _program_ad_transform_jvp_vjp_case(),
         _higher_order_transform_nesting_case(),
         _program_ad_hessian_transform_case(),
+        _program_ad_hessian_jvp_vjp_transform_case(),
     )
 
 
@@ -1584,6 +1585,53 @@ def _program_ad_hessian_transform_case() -> DifferentiableProgrammingBenchmarkRe
             "hessian over a whole-program AD scalar objective compared with analytic "
             "curvature; diagnostic conformance only, not a compiler, Rust, LLVM/JIT, "
             "hardware, or performance timing claim, and not a performance benchmark"
+        ),
+    )
+
+
+def _program_ad_hessian_jvp_vjp_transform_case() -> DifferentiableProgrammingBenchmarkResult:
+    values = np.array([0.4, -0.35], dtype=np.float64)
+    tangent = np.array([0.25, -0.5], dtype=np.float64)
+    cotangent = np.array([1.0, -0.25, 0.75, 0.5], dtype=np.float64)
+    hessian_jacobian = np.array(
+        [[6.0, 2.0], [2.0, 1.0], [2.0, 1.0], [1.0, 6.0]],
+        dtype=np.float64,
+    )
+
+    def cubic_loss(row: Any) -> object:
+        return (
+            row[0] * row[0] * row[0]
+            + row[0] * row[0] * row[1]
+            + 0.5 * row[0] * row[1] * row[1]
+            + row[1] * row[1] * row[1]
+        )
+
+    def program_value(candidate: Any) -> float:
+        return float(whole_program_value_and_grad(cubic_loss, candidate, trace=False).value)
+
+    def hessian_flat(candidate: Any) -> NDArray[np.float64]:
+        return hessian(program_value, candidate, step=1.0e-1).reshape(-1)
+
+    hessian_jvp = jvp(hessian_flat, values, tangent, step=1.0e-2)
+    hessian_vjp = vjp(hessian_flat, values, cotangent, step=1.0e-2)
+    analytic_jvp = hessian_jacobian @ tangent
+    analytic_vjp = hessian_jacobian.T @ cotangent
+    gradient = np.concatenate([hessian_jvp, hessian_vjp])
+    analytic_gradient = np.concatenate([analytic_jvp, analytic_vjp])
+    return DifferentiableProgrammingBenchmarkResult(
+        case_id="transform_nesting_program_ad_hessian_jvp_vjp",
+        category="transform-nesting",
+        value=float(np.sum(hessian_flat(values))),
+        gradient=gradient,
+        analytic_gradient=analytic_gradient,
+        max_abs_gradient_error=_max_abs_error(gradient, analytic_gradient),
+        adjoint_supported=True,
+        max_abs_adjoint_error=0.0,
+        claim_boundary=(
+            "jvp/vjp over whole-program AD Hessian transforms compared with analytic "
+            "third-derivative contractions; diagnostic conformance only, not a "
+            "compiler, Rust, LLVM/JIT, hardware, or performance timing claim, and "
+            "not a performance benchmark"
         ),
     )
 

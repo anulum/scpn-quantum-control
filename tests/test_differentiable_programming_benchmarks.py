@@ -49,6 +49,7 @@ def test_differentiable_programming_benchmark_suite_matches_analytic_references(
         "transform_nesting_program_ad_vmap_jvp_vjp",
         "transform_nesting_whole_program_higher_order",
         "transform_nesting_program_ad_hessian",
+        "transform_nesting_program_ad_hessian_jvp_vjp",
     ]
     assert {row.category for row in results} == {
         "loop-heavy",
@@ -148,6 +149,14 @@ def test_differentiable_programming_benchmark_suite_matches_analytic_references(
     assert program_hessian_row.max_abs_gradient_error <= 1.0e-6
     assert "hessian over a whole-program AD scalar objective" in (
         program_hessian_row.claim_boundary
+    )
+    hessian_jvp_vjp_row = next(
+        row for row in results if row.case_id == "transform_nesting_program_ad_hessian_jvp_vjp"
+    )
+    assert hessian_jvp_vjp_row.gradient.shape == (6,)
+    assert hessian_jvp_vjp_row.max_abs_gradient_error <= 1.0e-6
+    assert "jvp/vjp over whole-program AD Hessian transforms" in (
+        hessian_jvp_vjp_row.claim_boundary
     )
 
 
