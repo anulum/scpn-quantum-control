@@ -157,8 +157,8 @@ def _shifted_objective_values(
 
 def _stochastic_input(array: FloatArray) -> FloatArray:
     if array.shape[0] == 1:
-        return cast(FloatArray, array[0].copy())
-    return cast(FloatArray, array.copy())
+        return cast(FloatArray, np.asarray(array[0], dtype=np.float64).copy())  # type: ignore[redundant-cast]
+    return cast(FloatArray, np.asarray(array, dtype=np.float64).copy())  # type: ignore[redundant-cast]
 
 
 def _balanced_shots_from_allocation(allocation: ShotAllocationResult) -> FloatArray:

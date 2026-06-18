@@ -54,6 +54,9 @@ def test_static_gates_include_differentiable_strict_mypy_ratchet() -> None:
     assert "src/scpn_quantum_control/differentiable_framework_overlay.py" in strict_cmd
     assert "src/scpn_quantum_control/differentiable_module_hardening_audit.py" in strict_cmd
     assert "src/scpn_quantum_control/benchmarks/differentiable_hardening_gate.py" in strict_cmd
+    assert "src/scpn_quantum_control/benchmarks/differentiable_evidence.py" in strict_cmd
+    assert "src/scpn_quantum_control/phase/differentiable_readiness.py" in strict_cmd
+    assert "src/scpn_quantum_control/phase/differentiable_audit.py" in strict_cmd
 
 
 def test_preflight_coverage_gate_matches_temporary_ci_threshold():

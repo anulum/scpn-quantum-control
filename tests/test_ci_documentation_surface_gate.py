@@ -35,3 +35,6 @@ def test_ci_gates_differentiable_strict_mypy_ratchet() -> None:
     assert "src/scpn_quantum_control/differentiable_framework_overlay.py" in workflow
     assert "src/scpn_quantum_control/differentiable_module_hardening_audit.py" in workflow
     assert "src/scpn_quantum_control/benchmarks/differentiable_hardening_gate.py" in workflow
+    assert "src/scpn_quantum_control/benchmarks/differentiable_evidence.py" in workflow
+    assert "src/scpn_quantum_control/phase/differentiable_readiness.py" in workflow
+    assert "src/scpn_quantum_control/phase/differentiable_audit.py" in workflow
