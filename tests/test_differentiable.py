@@ -15143,7 +15143,14 @@ def test_program_ad_alias_effect_analysis_tracks_array_view_aliases() -> None:
         trailing = matrix[:, 1:]
         transposed = trailing.T
         flat = transposed.ravel()
-        return flat[0] + 2.0 * flat[2]
+        tensor = values.reshape((1, 2, 1, 3))
+        squeezed = np.squeeze(tensor, axis=(0, 2))
+        expanded = np.expand_dims(squeezed, axis=0)
+        swapped = np.swapaxes(expanded, 0, 1)
+        moved = np.moveaxis(swapped, source=2, destination=0)
+        repeated = np.repeat(moved, repeats=(1, 2, 1), axis=0)
+        promoted = np.atleast_3d(squeezed[0])
+        return flat[0] + 2.0 * flat[2] + np.sum(repeated) + np.sum(promoted)
 
     result = whole_program_value_and_grad(
         objective,
@@ -15162,10 +15169,21 @@ def test_program_ad_alias_effect_analysis_tracks_array_view_aliases() -> None:
     )
     assert any(edge.target.startswith("view:transpose") for edge in view_edges)
     assert any(edge.target.startswith("view:ravel") for edge in view_edges)
+    assert any(edge.target.startswith("view:squeeze") for edge in view_edges)
+    assert any(edge.target.startswith("view:expand_dims") for edge in view_edges)
+    assert any(edge.target.startswith("view:swapaxes") for edge in view_edges)
+    assert any(edge.target.startswith("view:moveaxis") for edge in view_edges)
+    assert any(edge.target.startswith("view:repeat") for edge in view_edges)
+    assert any(edge.target.startswith("view:atleast_3d") for edge in view_edges)
     assert any(
         "%array[1]" in alias_set.members
         and any(member.startswith("view:getitem") for member in alias_set.members)
         and any(member.startswith("view:ravel") for member in alias_set.members)
+        for alias_set in analysis.alias_sets
+    )
+    assert any(
+        "%array[1]" in alias_set.members
+        and any(member.startswith("view:repeat") for member in alias_set.members)
         for alias_set in analysis.alias_sets
     )
 

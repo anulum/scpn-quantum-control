@@ -20,6 +20,7 @@ from numpy.typing import NDArray
 from ..differentiable import (
     CustomDerivativeRule,
     Parameter,
+    analyze_program_ad_alias_effects,
     custom_jvp,
     custom_vjp,
     grad,
@@ -212,6 +213,7 @@ def run_differentiable_programming_benchmark_suite() -> tuple[
         _linalg_primitive_case(),
         _indexing_heavy_case(),
         _mutation_heavy_case(),
+        _shape_view_alias_metadata_case(),
         _transform_nesting_case(),
         _custom_rule_transform_nesting_case(),
         _program_ad_transform_jvp_vjp_case(),
@@ -1062,6 +1064,84 @@ def _indexing_heavy_case() -> DifferentiableProgrammingBenchmarkResult:
         objective,
         values,
         analytic,
+    )
+
+
+def _shape_view_alias_metadata_case() -> DifferentiableProgrammingBenchmarkResult:
+    values = np.array([0.25, 0.5, 0.75, 1.0, 1.25, 1.5], dtype=np.float64)
+
+    def objective(trace_values: Any) -> object:
+        matrix = np.reshape(trace_values, (2, 3))
+        trailing = matrix[:, 1:]
+        transposed = trailing.T
+        flat = transposed.ravel()
+        tensor = np.reshape(trace_values, (1, 2, 1, 3))
+        squeezed = np.squeeze(tensor, axis=(0, 2))
+        expanded = np.expand_dims(squeezed, axis=0)
+        swapped = np.swapaxes(expanded, 0, 1)
+        moved = np.moveaxis(swapped, source=2, destination=0)
+        repeated = np.repeat(moved, repeats=(1, 2, 1), axis=0)
+        promoted = np.atleast_3d(squeezed[0])
+        return flat[0] + 2.0 * flat[2] + np.sum(repeated) + np.sum(promoted)
+
+    result = whole_program_value_and_grad(objective, values)
+    if result.program_ir is None:
+        raise ValueError("shape-view alias benchmark requires Program AD IR")
+    analysis = analyze_program_ad_alias_effects(result.program_ir)
+    view_targets = tuple(edge.target for edge in analysis.alias_edges if edge.kind == "view_alias")
+    required_prefixes = (
+        "view:getitem",
+        "view:ravel",
+        "view:reshape",
+        "view:squeeze",
+        "view:expand_dims",
+        "view:swapaxes",
+        "view:moveaxis",
+        "view:repeat",
+        "view:atleast_3d",
+    )
+    missing = tuple(
+        prefix
+        for prefix in required_prefixes
+        if not any(target.startswith(prefix) for target in view_targets)
+    )
+    if missing:
+        raise ValueError(f"shape-view alias benchmark missing aliases: {missing}")
+
+    source = np.arange(values.size, dtype=np.int64)
+    matrix_source = source.reshape(2, 3)
+    flat_source = matrix_source[:, 1:].T.reshape(-1)
+    squeezed_source = source.reshape(1, 2, 1, 3).squeeze(axis=(0, 2))
+    moved_source = np.moveaxis(
+        np.swapaxes(np.expand_dims(squeezed_source, axis=0), 0, 1),
+        source=2,
+        destination=0,
+    )
+    repeated_source = np.repeat(moved_source, repeats=(1, 2, 1), axis=0)
+    promoted_source = np.atleast_3d(squeezed_source[0]).reshape(-1)
+    analytic = np.zeros(values.size, dtype=np.float64)
+    np.add.at(analytic, [int(flat_source[0]), int(flat_source[2])], [1.0, 2.0])
+    np.add.at(analytic, repeated_source.reshape(-1), 1.0)
+    np.add.at(analytic, promoted_source, 1.0)
+    adjoint_supported = result.adjoint_result is not None and result.adjoint_result.supported
+    adjoint_error = (
+        _max_abs_error(program_adjoint_gradient(result), analytic) if adjoint_supported else None
+    )
+    return DifferentiableProgrammingBenchmarkResult(
+        case_id="shape_view_alias_metadata_contracts",
+        category="alias-effect",
+        value=result.value,
+        gradient=result.gradient,
+        analytic_gradient=analytic,
+        max_abs_gradient_error=_max_abs_error(result.gradient, analytic),
+        adjoint_supported=adjoint_supported,
+        max_abs_adjoint_error=adjoint_error,
+        claim_boundary=(
+            "deterministic shape-view alias metadata conformance for reshape, getitem, "
+            "ravel, squeeze, expand_dims, swapaxes, moveaxis, repeat, and atleast_3d; "
+            "metadata_only_no_general_alias_lattice; no wall-clock performance, "
+            "hardware, LLVM, Rust, or JIT execution claim"
+        ),
     )
 
 

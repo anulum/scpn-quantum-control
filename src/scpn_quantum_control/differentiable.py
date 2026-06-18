@@ -2707,6 +2707,22 @@ def _trace_array_source_indices(array: TraceADArray) -> tuple[int | None, ...]:
     return array._source_indices
 
 
+def _trace_array_view_from_local_indices(
+    array: TraceADArray,
+    op: str,
+    local_indices: Sequence[int],
+    shape: tuple[int, ...],
+) -> TraceADArray:
+    """Return a derivative-preserving view and record source-index alias metadata."""
+
+    source_indices = tuple(
+        _trace_array_source_indices(array)[int(local_index)] for local_index in local_indices
+    )
+    items = tuple(array._items[int(local_index)] for local_index in local_indices)
+    array.context.record_array_view_aliases(op, source_indices, items)
+    return TraceADArray(items, shape, array.context, source_indices)
+
+
 def _trace_array_getitem(array: TraceADArray, index: object) -> TraceADScalar | TraceADArray:
     _require_program_ad_array_contract("getitem", (array, index))
     _validate_trace_basic_index(index)
@@ -2722,14 +2738,11 @@ def _trace_array_getitem(array: TraceADArray, index: object) -> TraceADScalar | 
     if selected_array.shape == ():
         return array._items[int(selected_array)]
     local_indices = tuple(int(item) for item in selected_array.reshape(-1))
-    source_indices = tuple(_trace_array_source_indices(array)[index] for index in local_indices)
-    items = tuple(array._items[index] for index in local_indices)
-    array.context.record_array_view_aliases("getitem", source_indices, items)
-    return TraceADArray(
-        items,
+    return _trace_array_view_from_local_indices(
+        array,
+        "getitem",
+        local_indices,
         tuple(int(dimension) for dimension in selected_array.shape),
-        array.context,
-        source_indices,
     )
 
 
@@ -2756,9 +2769,10 @@ def _trace_squeeze(
     array: TraceADArray, *, axis: int | tuple[int, ...] | None = None
 ) -> TraceADArray:
     _require_program_ad_shape_contract("squeeze", (array,) if axis is None else (array, axis))
+    local_indices = tuple(range(array.size))
     if axis is None:
         target_shape = tuple(dimension for dimension in array.shape if dimension != 1)
-        return TraceADArray(tuple(array._items), target_shape, array.context)
+        return _trace_array_view_from_local_indices(array, "squeeze", local_indices, target_shape)
     axes = _normalise_shape_transform_axes("squeeze", axis, output_rank=array.ndim)
     for item in axes:
         if array.shape[item] != 1:
@@ -2766,7 +2780,7 @@ def _trace_squeeze(
     target_shape = tuple(
         dimension for index, dimension in enumerate(array.shape) if index not in axes
     )
-    return TraceADArray(tuple(array._items), target_shape, array.context)
+    return _trace_array_view_from_local_indices(array, "squeeze", local_indices, target_shape)
 
 
 def _trace_expand_dims(array: TraceADArray, *, axis: int | tuple[int, ...]) -> TraceADArray:
@@ -2777,7 +2791,12 @@ def _trace_expand_dims(array: TraceADArray, *, axis: int | tuple[int, ...]) -> T
     shape = list(array.shape)
     for item in axes:
         shape.insert(item, 1)
-    return TraceADArray(tuple(array._items), tuple(shape), array.context)
+    return _trace_array_view_from_local_indices(
+        array,
+        "expand_dims",
+        tuple(range(array.size)),
+        tuple(shape),
+    )
 
 
 def _trace_atleast_nd(array: TraceADArray, *, rank: int) -> TraceADArray:
@@ -2802,7 +2821,12 @@ def _trace_atleast_nd(array: TraceADArray, *, rank: int) -> TraceADArray:
             shape = (array.shape[0], array.shape[1], 1)
         else:
             shape = array.shape
-    return TraceADArray(tuple(array._items), shape, array.context)
+    return _trace_array_view_from_local_indices(
+        array,
+        f"atleast_{rank}d",
+        tuple(range(array.size)),
+        shape,
+    )
 
 
 def _normalise_axis_permutation_axis(name: str, axis: object, *, rank: int) -> int:
@@ -2840,10 +2864,11 @@ def _trace_swapaxes(array: TraceADArray, *, axis1: int, axis2: int) -> TraceADAr
     second = _normalise_axis_permutation_axis("swapaxes", axis2, rank=array.ndim)
     source = np.arange(array.size, dtype=np.int64).reshape(array.shape)
     moved = np.swapaxes(source, first, second)
-    return TraceADArray(
-        tuple(array._items[int(index)] for index in moved.reshape(-1)),
+    return _trace_array_view_from_local_indices(
+        array,
+        "swapaxes",
+        tuple(int(index) for index in moved.reshape(-1)),
         tuple(map(int, moved.shape)),
-        array.context,
     )
 
 
@@ -2867,10 +2892,11 @@ def _trace_moveaxis(
         source_axes,
         destination_axes,
     )
-    return TraceADArray(
-        tuple(array._items[int(index)] for index in moved_indices.reshape(-1)),
+    return _trace_array_view_from_local_indices(
+        array,
+        "moveaxis",
+        tuple(int(index) for index in moved_indices.reshape(-1)),
         tuple(map(int, moved_indices.shape)),
-        array.context,
     )
 
 
@@ -2910,10 +2936,11 @@ def _trace_repeat(
         axis_index = _normalise_axis_permutation_axis("repeat", axis, rank=array.ndim)
         repeat_counts = _normalise_repeat_counts(repeats, array.shape[axis_index])
         repeated = np.repeat(source, repeat_counts, axis=axis_index)
-    return TraceADArray(
-        tuple(array._items[int(index)] for index in repeated.reshape(-1)),
+    return _trace_array_view_from_local_indices(
+        array,
+        "repeat",
+        tuple(int(index) for index in repeated.reshape(-1)),
         tuple(map(int, repeated.shape)),
-        array.context,
     )
 
 

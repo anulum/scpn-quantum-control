@@ -548,7 +548,11 @@ def differentiable_dashboard_status(
             surface="program_ad_alias_effects",
             state="metadata_only",
             backing_api="analyze_program_ad_alias_effects",
-            evidence=("ProgramADAliasEffectAnalysis", "ProgramADAliasSet"),
+            evidence=(
+                "ProgramADAliasEffectAnalysis",
+                "ProgramADAliasSet",
+                "shape_view_alias_metadata_contracts",
+            ),
             blocked_reasons=("full static alias lattice remains open",),
             claim_boundary="metadata_only_no_general_alias_lattice",
         ),

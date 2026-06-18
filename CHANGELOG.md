@@ -5,6 +5,10 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-06-18 — Extended Program AD alias/effect metadata to executed shape
+  views (`squeeze`, `expand_dims`, `atleast_*d`, `swapaxes`, `moveaxis`) and
+  repeat source reuse, with deterministic conformance evidence while keeping
+  the full alias lattice and Rust/LLVM promotion blocked.
 - 2026-06-18 — Promoted bounded plain list-comprehension semantics for
   whole-program AD, with deterministic benchmark conformance and fail-closed
   filtered, set, and dict comprehension boundaries.
