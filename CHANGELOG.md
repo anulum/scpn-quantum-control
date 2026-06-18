@@ -5,6 +5,12 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-06-18 — Registered Program AD `np.select`, `np.piecewise`,
+  `np.choose`, `np.compress`, and `np.extract` as bounded selection-fold
+  primitive contracts with shape, dtype, static mask/selector/branch metadata,
+  batching, lowering metadata, and fail-closed static boundary policies.
+  Rust/LLVM executable promotion remains blocked until independently verified
+  selection-fold kernels exist.
 - 2026-06-18 — Registered Program AD `np.argmax`, `np.argmin`, trace-array
   `.argmax()`/`.argmin()`, and `np.argsort` as explicit fail-closed
   index-selection primitive contracts with shape, dtype, static-axis/kind,

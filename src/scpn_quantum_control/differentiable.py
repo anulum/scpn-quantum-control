@@ -6562,6 +6562,7 @@ def _trace_choose(
     mode: str,
 ) -> TraceADScalar | TraceADArray:
     choice_arrays = _trace_choose_choice_arrays(choices, context)
+    _require_program_ad_selection_contract("choose", (selector, choice_arrays, mode))
     selector_indices = _trace_choose_selector_indices(
         selector,
         choice_count=len(choice_arrays),
@@ -6645,6 +6646,7 @@ def _trace_compress(
     *,
     axis: object,
 ) -> TraceADScalar | TraceADArray:
+    _require_program_ad_selection_contract("compress", (condition, array, axis))
     indices = _trace_compress_condition_indices(condition)
     if axis is None:
         return _trace_take(array.ravel(), indices, axis=0, mode="raise")
@@ -6679,6 +6681,7 @@ def _trace_extract(
     condition: object,
     array: TraceADArray,
 ) -> TraceADScalar | TraceADArray:
+    _require_program_ad_selection_contract("extract", (condition, array))
     indices = _trace_extract_condition_indices(condition, array.size)
     return _trace_take(array.ravel(), indices, axis=0, mode="raise")
 
@@ -6718,6 +6721,7 @@ def _trace_select(
     choices = tuple(choicelist)
     if len(conditions) != len(choices):
         raise ValueError("program AD np.select requires matching condition and choice counts")
+    _require_program_ad_selection_contract("select", (conditions, choices, default))
     if not conditions:
         default_array = _coerce_trace_array(default, context)
         return default_array._items[0] if default_array.shape == () else default_array
@@ -6744,6 +6748,7 @@ def _trace_piecewise(
             "program AD np.piecewise requires one function per condition and optional default"
         )
     array = _coerce_trace_array(values, context)
+    _require_program_ad_selection_contract("piecewise", (array, conditions, functions))
     if len(functions) == len(conditions) + 1:
         default_function = functions[-1]
         result: object = (
@@ -11542,7 +11547,19 @@ _PROGRAM_AD_SELECTION_PRIMITIVE_NAMESPACE = "scpn.program_ad.selection"
 _PROGRAM_AD_SELECTION_POLICY = "program_ad_trace_exact_fail_closed"
 _PROGRAM_AD_SELECTION_IDENTITIES: Mapping[str, PrimitiveIdentity] = {
     name: PrimitiveIdentity(_PROGRAM_AD_SELECTION_PRIMITIVE_NAMESPACE, name, "1")
-    for name in ("where", "clip", "sort", "argmax", "argmin", "argsort")
+    for name in (
+        "where",
+        "clip",
+        "sort",
+        "select",
+        "piecewise",
+        "choose",
+        "compress",
+        "extract",
+        "argmax",
+        "argmin",
+        "argsort",
+    )
 }
 
 _PROGRAM_AD_PRODUCT_PRIMITIVE_NAMESPACE = "scpn.program_ad.product"
@@ -17178,6 +17195,141 @@ def _program_ad_selection_argsort_shape(args: tuple[object, ...]) -> tuple[int, 
     return source_shape
 
 
+def _program_ad_selection_sequence(name: str, value: object, role: str) -> tuple[object, ...]:
+    if isinstance(value, (TraceADArray, np.ndarray)) or not isinstance(value, Sequence):
+        raise ValueError(f"program AD {name} requires a static {role} sequence")
+    return tuple(value)
+
+
+def _program_ad_selection_select_parts(
+    args: tuple[object, ...],
+) -> tuple[tuple[object, ...], tuple[object, ...], object]:
+    if len(args) != 3:
+        raise ValueError("program AD select contract requires conditions, choices, and default")
+    conditions = _program_ad_selection_sequence("select", args[0], "condition")
+    choices = _program_ad_selection_sequence("select", args[1], "choice")
+    if len(conditions) != len(choices):
+        raise ValueError("program AD select requires matching condition and choice counts")
+    return conditions, choices, args[2]
+
+
+def _program_ad_selection_select_shape(args: tuple[object, ...]) -> tuple[int, ...]:
+    conditions, choices, default = _program_ad_selection_select_parts(args)
+    output_shape = _program_ad_array_shape_of(default)
+    for condition, choice in reversed(tuple(zip(conditions, choices, strict=True))):
+        choice_shape = _program_ad_array_shape_of(choice)
+        try:
+            output_shape = tuple(
+                int(dim) for dim in np.broadcast_shapes(choice_shape, output_shape)
+            )
+        except ValueError as exc:
+            raise ValueError("program AD select choices must broadcast with default") from exc
+        condition_shape = _program_ad_selection_condition_shape(condition)
+        if condition_shape not in {(), output_shape}:
+            raise ValueError("program AD select condition shape must be scalar or output-shaped")
+    return output_shape
+
+
+def _program_ad_selection_piecewise_parts(
+    args: tuple[object, ...],
+) -> tuple[tuple[int, ...], tuple[object, ...], tuple[object, ...]]:
+    if len(args) != 3:
+        raise ValueError("program AD piecewise contract requires source, conditions, functions")
+    source_shape = _program_ad_array_shape_of(args[0])
+    conditions = _program_ad_selection_sequence("piecewise", args[1], "condition")
+    functions = _program_ad_selection_sequence("piecewise", args[2], "function")
+    if len(functions) not in {len(conditions), len(conditions) + 1}:
+        raise ValueError(
+            "program AD piecewise requires one function per condition and optional default"
+        )
+    for condition in conditions:
+        condition_shape = _program_ad_selection_condition_shape(condition)
+        if condition_shape not in {(), source_shape}:
+            raise ValueError(
+                "program AD piecewise condition shape must be scalar or source-shaped"
+            )
+    return source_shape, conditions, functions
+
+
+def _program_ad_selection_piecewise_shape(args: tuple[object, ...]) -> tuple[int, ...]:
+    source_shape, _conditions, _functions = _program_ad_selection_piecewise_parts(args)
+    return source_shape
+
+
+def _program_ad_selection_choose_parts(
+    args: tuple[object, ...],
+) -> tuple[NDArray[np.int64], tuple[tuple[int, ...], ...], str]:
+    if len(args) != 3:
+        raise ValueError("program AD choose contract requires selector, choices, and mode")
+    raw_choices = args[1]
+    if isinstance(raw_choices, TraceADArray):
+        raise ValueError("program AD choose requires a static choice sequence")
+    if isinstance(raw_choices, (np.ndarray, Sequence)):
+        choices = tuple(raw_choices)
+    else:
+        raise ValueError("program AD choose requires a static choice sequence")
+    if not choices:
+        raise ValueError("program AD choose requires at least one choice")
+    mode = args[2]
+    if not isinstance(mode, str):
+        raise ValueError("program AD choose mode must be raise, wrap, or clip")
+    selector = _trace_choose_selector_indices(args[0], choice_count=len(choices), mode=mode)
+    choice_shapes = tuple(_program_ad_array_shape_of(choice) for choice in choices)
+    return selector, choice_shapes, mode
+
+
+def _program_ad_selection_choose_shape(args: tuple[object, ...]) -> tuple[int, ...]:
+    selector, choice_shapes, _mode = _program_ad_selection_choose_parts(args)
+    try:
+        return tuple(
+            int(dim) for dim in np.broadcast_shapes(tuple(selector.shape), *choice_shapes)
+        )
+    except ValueError as exc:
+        raise ValueError(
+            "program AD choose selector and choices must be broadcast-compatible"
+        ) from exc
+
+
+def _program_ad_selection_compress_parts(
+    args: tuple[object, ...],
+) -> tuple[tuple[int, ...], NDArray[np.int64], int | None]:
+    if len(args) != 3:
+        raise ValueError("program AD compress contract requires condition, array, and axis")
+    source_shape = _program_ad_array_shape_of(args[1])
+    indices = _trace_compress_condition_indices(args[0])
+    axis_arg = args[2]
+    if axis_arg is None:
+        source_size = _program_ad_array_static_size(source_shape)
+        if bool(np.any(indices >= source_size)):
+            raise ValueError("program AD compress condition length exceeds flattened array")
+        return source_shape, indices, None
+    if isinstance(axis_arg, (bool, np.bool_)) or not isinstance(axis_arg, (int, np.integer)):
+        raise ValueError("program AD compress requires a static integer axis or None")
+    axis = _normalise_axis("axis", int(axis_arg), len(source_shape))
+    if bool(np.any(indices >= source_shape[axis])):
+        raise ValueError("program AD compress condition length exceeds selected axis")
+    return source_shape, indices, axis
+
+
+def _program_ad_selection_compress_shape(args: tuple[object, ...]) -> tuple[int, ...]:
+    source_shape, indices, axis = _program_ad_selection_compress_parts(args)
+    if axis is None:
+        return (int(indices.size),)
+    result_shape = list(source_shape)
+    result_shape[axis] = int(indices.size)
+    return tuple(result_shape)
+
+
+def _program_ad_selection_extract_shape(args: tuple[object, ...]) -> tuple[int, ...]:
+    if len(args) != 2:
+        raise ValueError("program AD extract contract requires condition and array")
+    source_shape = _program_ad_array_shape_of(args[1])
+    indices = _trace_extract_condition_indices(
+        args[0], _program_ad_array_static_size(source_shape)
+    )
+    return (int(indices.size),)
+
+
 def _program_ad_selection_where_dtype_rule(args: tuple[object, ...]) -> str:
     if len(args) != 3:
         raise ValueError("program AD selection where dtype rule requires condition, true, false")
@@ -17202,6 +17354,38 @@ def _program_ad_selection_index_dtype_rule(args: tuple[object, ...]) -> str:
     if not args:
         raise ValueError("program AD index selection dtype rule requires a source operand")
     return "int64"
+
+
+def _program_ad_selection_select_dtype_rule(args: tuple[object, ...]) -> str:
+    _conditions, choices, default = _program_ad_selection_select_parts(args)
+    dtypes = [np.dtype(_program_ad_array_dtype_of(choice)) for choice in choices]
+    dtypes.append(np.dtype(_program_ad_array_dtype_of(default)))
+    return str(np.result_type(*dtypes))
+
+
+def _program_ad_selection_piecewise_dtype_rule(args: tuple[object, ...]) -> str:
+    _source_shape, _conditions, _functions = _program_ad_selection_piecewise_parts(args)
+    return str(np.dtype(_program_ad_array_dtype_of(args[0])))
+
+
+def _program_ad_selection_choose_dtype_rule(args: tuple[object, ...]) -> str:
+    _selector, choice_shapes, _mode = _program_ad_selection_choose_parts(args)
+    if not choice_shapes:
+        raise ValueError("program AD choose requires at least one choice")
+    raw_choices = tuple(cast(Sequence[object], args[1]))
+    return str(
+        np.result_type(*(np.dtype(_program_ad_array_dtype_of(choice)) for choice in raw_choices))
+    )
+
+
+def _program_ad_selection_compress_dtype_rule(args: tuple[object, ...]) -> str:
+    _program_ad_selection_compress_parts(args)
+    return str(np.dtype(_program_ad_array_dtype_of(args[1])))
+
+
+def _program_ad_selection_extract_dtype_rule(args: tuple[object, ...]) -> str:
+    _program_ad_selection_extract_shape(args)
+    return str(np.dtype(_program_ad_array_dtype_of(args[1])))
 
 
 def _program_ad_product_matmul_shape(args: tuple[object, ...]) -> tuple[int, ...]:
@@ -17793,6 +17977,100 @@ def _program_ad_selection_argsort_static_arguments(
     if kind not in {None, "quicksort", "mergesort", "heapsort", "stable"}:
         raise ValueError("program AD argsort static rule requires a NumPy sort kind")
     return ("axis", axis, "kind", "quicksort" if kind is None else kind)
+
+
+def _program_ad_selection_select_static_arguments(args: tuple[object, ...]) -> tuple[object, ...]:
+    conditions, choices, default = _program_ad_selection_select_parts(args)
+    output_shape = _program_ad_selection_select_shape(args)
+    condition_signatures: list[tuple[str, object, tuple[int, ...]]] = []
+    for condition in conditions:
+        condition_shape = _program_ad_selection_condition_shape(condition)
+        if isinstance(condition, _TracePredicate):
+            condition_signatures.append(("runtime_predicate", (), output_shape))
+        elif isinstance(condition, TraceADPredicateArray):
+            condition_signatures.append(("runtime_predicate", condition.shape, output_shape))
+        else:
+            raw = np.asarray(condition)
+            condition_signatures.append(
+                (
+                    "static_condition",
+                    tuple(bool(item) for item in np.broadcast_to(raw, output_shape).reshape(-1)),
+                    output_shape,
+                )
+            )
+        if condition_shape not in {(), output_shape}:
+            raise ValueError("program AD select condition shape must be scalar or output-shaped")
+    return (
+        "branch_count",
+        len(conditions),
+        "condition_signatures",
+        tuple(condition_signatures),
+        "choice_shapes",
+        tuple(_program_ad_array_shape_of(choice) for choice in choices),
+        "default_shape",
+        _program_ad_array_shape_of(default),
+        "output_shape",
+        output_shape,
+    )
+
+
+def _program_ad_selection_piecewise_static_arguments(
+    args: tuple[object, ...],
+) -> tuple[object, ...]:
+    source_shape, conditions, functions = _program_ad_selection_piecewise_parts(args)
+    return (
+        "source_shape",
+        source_shape,
+        "condition_shapes",
+        tuple(_program_ad_selection_condition_shape(condition) for condition in conditions),
+        "function_count",
+        len(functions),
+        "has_default",
+        len(functions) == len(conditions) + 1,
+    )
+
+
+def _program_ad_selection_choose_static_arguments(args: tuple[object, ...]) -> tuple[object, ...]:
+    selector, choice_shapes, mode = _program_ad_selection_choose_parts(args)
+    return (
+        "selector",
+        tuple(int(item) for item in selector.reshape(-1)),
+        "selector_shape",
+        tuple(int(dimension) for dimension in selector.shape),
+        "choice_shapes",
+        choice_shapes,
+        "mode",
+        mode,
+    )
+
+
+def _program_ad_selection_compress_static_arguments(
+    args: tuple[object, ...],
+) -> tuple[object, ...]:
+    source_shape, indices, axis = _program_ad_selection_compress_parts(args)
+    return (
+        "source_shape",
+        source_shape,
+        "indices",
+        tuple(int(item) for item in indices.reshape(-1)),
+        "axis",
+        axis,
+    )
+
+
+def _program_ad_selection_extract_static_arguments(args: tuple[object, ...]) -> tuple[object, ...]:
+    if len(args) != 2:
+        raise ValueError("program AD extract static rule requires condition and array")
+    source_shape = _program_ad_array_shape_of(args[1])
+    indices = _trace_extract_condition_indices(
+        args[0], _program_ad_array_static_size(source_shape)
+    )
+    return (
+        "source_shape",
+        source_shape,
+        "indices",
+        tuple(int(item) for item in indices.reshape(-1)),
+    )
 
 
 def _program_ad_product_static_arguments(args: tuple[object, ...]) -> tuple[object, ...]:
@@ -19636,6 +19914,11 @@ _PROGRAM_AD_SELECTION_SHAPE_RULES: Mapping[str, PrimitiveShapeRule] = {
     "where": _program_ad_selection_where_shape,
     "clip": _program_ad_selection_clip_shape,
     "sort": _program_ad_selection_sort_shape,
+    "select": _program_ad_selection_select_shape,
+    "piecewise": _program_ad_selection_piecewise_shape,
+    "choose": _program_ad_selection_choose_shape,
+    "compress": _program_ad_selection_compress_shape,
+    "extract": _program_ad_selection_extract_shape,
     "argmax": _program_ad_selection_index_reduce_shape,
     "argmin": _program_ad_selection_index_reduce_shape,
     "argsort": _program_ad_selection_argsort_shape,
@@ -19645,6 +19928,11 @@ _PROGRAM_AD_SELECTION_DTYPE_RULES: Mapping[str, PrimitiveDTypeRule] = {
     "where": _program_ad_selection_where_dtype_rule,
     "clip": _program_ad_selection_clip_dtype_rule,
     "sort": _program_ad_selection_sort_dtype_rule,
+    "select": _program_ad_selection_select_dtype_rule,
+    "piecewise": _program_ad_selection_piecewise_dtype_rule,
+    "choose": _program_ad_selection_choose_dtype_rule,
+    "compress": _program_ad_selection_compress_dtype_rule,
+    "extract": _program_ad_selection_extract_dtype_rule,
     "argmax": _program_ad_selection_index_dtype_rule,
     "argmin": _program_ad_selection_index_dtype_rule,
     "argsort": _program_ad_selection_index_dtype_rule,
@@ -19654,6 +19942,11 @@ _PROGRAM_AD_SELECTION_STATIC_ARGUMENT_RULES: Mapping[str, PrimitiveStaticArgumen
     "where": _program_ad_selection_where_static_arguments,
     "clip": _program_ad_selection_clip_static_arguments,
     "sort": _program_ad_selection_sort_static_arguments,
+    "select": _program_ad_selection_select_static_arguments,
+    "piecewise": _program_ad_selection_piecewise_static_arguments,
+    "choose": _program_ad_selection_choose_static_arguments,
+    "compress": _program_ad_selection_compress_static_arguments,
+    "extract": _program_ad_selection_extract_static_arguments,
     "argmax": _program_ad_selection_index_reduce_static_arguments,
     "argmin": _program_ad_selection_index_reduce_static_arguments,
     "argsort": _program_ad_selection_argsort_static_arguments,
@@ -20150,6 +20443,11 @@ def _program_ad_selection_lowering_metadata(name: str) -> Mapping[str, str]:
         "where": "program_ad_selection_where_derivative_rule",
         "clip": "program_ad_selection_clip_derivative_rule",
         "sort": "operator_intercepted_sort_permutation_trace",
+        "select": "operator_intercepted_static_select_fold_trace",
+        "piecewise": "operator_intercepted_static_piecewise_fold_trace",
+        "choose": "operator_intercepted_static_choose_gather_trace",
+        "compress": "operator_intercepted_static_compress_gather_trace",
+        "extract": "operator_intercepted_static_extract_gather_trace",
         "argmax": "unsupported_nondifferentiable_index_selection",
         "argmin": "unsupported_nondifferentiable_index_selection",
         "argsort": "unsupported_nondifferentiable_index_selection",
@@ -20164,6 +20462,11 @@ def _program_ad_selection_lowering_metadata(name: str) -> Mapping[str, str]:
             "upper_shape:ranked_tensor_shape"
         ),
         "sort": "source_shape:ranked_tensor_shape;axis_kind",
+        "select": "condition_sequence;choice_shapes;default_shape",
+        "piecewise": "source_shape;condition_sequence;function_count",
+        "choose": "selector_shape;choice_shapes;mode",
+        "compress": "source_shape;condition_indices;axis",
+        "extract": "source_shape;condition_indices",
         "argmax": "source_shape:ranked_tensor_shape;axis",
         "argmin": "source_shape:ranked_tensor_shape;axis",
         "argsort": "source_shape:ranked_tensor_shape;axis_kind",
@@ -20172,6 +20475,11 @@ def _program_ad_selection_lowering_metadata(name: str) -> Mapping[str, str]:
         "where": "predicate_branch_boundary",
         "clip": "clipping_boundary_and_bound_order",
         "sort": "strict_total_order_required",
+        "select": "static_condition_sequence_branch_fold",
+        "piecewise": "static_condition_sequence_callable_fold",
+        "choose": "static_integer_selector_gather",
+        "compress": "static_boolean_mask_gather",
+        "extract": "static_boolean_mask_flat_gather",
         "argmax": "integer_index_selection_nondifferentiable",
         "argmin": "integer_index_selection_nondifferentiable",
         "argsort": "integer_index_permutation_nondifferentiable",
@@ -20187,7 +20495,20 @@ def _program_ad_selection_lowering_metadata(name: str) -> Mapping[str, str]:
         "llvm": "blocked_until_executable_selection_lowering",
         "rust": "blocked_until_polyglot_selection_ad",
         "static_argument_rule": (
-            "required" if name in {"where", "argmax", "argmin", "argsort"} else "none"
+            "required"
+            if name
+            in {
+                "where",
+                "select",
+                "piecewise",
+                "choose",
+                "compress",
+                "extract",
+                "argmax",
+                "argmin",
+                "argsort",
+            }
+            else "none"
         ),
         "static_derivative_factory": static_factories[name],
         "static_signature": static_signatures[name],

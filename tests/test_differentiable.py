@@ -10439,6 +10439,85 @@ def test_program_ad_selection_primitives_are_registry_policy_gated() -> None:
         "stable",
     )
 
+    select_contract = primitive_contract_for("scpn.program_ad.selection:select")
+    assert select_contract.identity == PrimitiveIdentity(
+        "scpn.program_ad.selection", "select", "1"
+    )
+    assert select_contract.nondifferentiable_policy == "program_ad_trace_exact_fail_closed"
+    assert select_contract.effect == "pure"
+    assert select_contract.lowering_metadata["mlir_op"] == "scpn_diff.selection.select"
+    assert select_contract.shape_rule is not None
+    assert select_contract.shape_rule(((condition,), (vector,), 0.0)) == (3,)
+    assert select_contract.dtype_rule is not None
+    assert select_contract.dtype_rule(((condition,), (vector,), 0.0)) == "float64"
+    assert select_contract.static_argument_rule is not None
+    assert select_contract.static_argument_rule(((condition,), (vector,), 0.0))[:2] == (
+        "branch_count",
+        1,
+    )
+
+    piecewise_contract = primitive_contract_for("scpn.program_ad.selection:piecewise")
+    assert piecewise_contract.identity == PrimitiveIdentity(
+        "scpn.program_ad.selection", "piecewise", "1"
+    )
+    assert piecewise_contract.lowering_metadata["mlir_op"] == "scpn_diff.selection.piecewise"
+    assert piecewise_contract.shape_rule is not None
+    assert piecewise_contract.shape_rule((vector, (condition,), (lambda item: item, 0.0))) == (3,)
+    assert piecewise_contract.dtype_rule is not None
+    assert piecewise_contract.dtype_rule((vector, (condition,), (lambda item: item, 0.0))) == (
+        "float64"
+    )
+    assert piecewise_contract.static_argument_rule is not None
+    assert piecewise_contract.static_argument_rule(
+        (vector, (condition,), (lambda item: item, 0.0))
+    )[-2:] == ("has_default", True)
+
+    choose_contract = primitive_contract_for("scpn.program_ad.selection:choose")
+    selector = np.array([0, 1, 0], dtype=np.int64)
+    assert choose_contract.identity == PrimitiveIdentity(
+        "scpn.program_ad.selection", "choose", "1"
+    )
+    assert choose_contract.lowering_metadata["mlir_op"] == "scpn_diff.selection.choose"
+    assert choose_contract.shape_rule is not None
+    assert choose_contract.shape_rule((selector, (vector, upper), "raise")) == (3,)
+    assert choose_contract.dtype_rule is not None
+    assert choose_contract.dtype_rule((selector, (vector, upper), "raise")) == "float64"
+    assert choose_contract.static_argument_rule is not None
+    assert choose_contract.static_argument_rule((selector, (vector, upper), "raise"))[-2:] == (
+        "mode",
+        "raise",
+    )
+
+    compress_contract = primitive_contract_for("scpn.program_ad.selection:compress")
+    assert compress_contract.identity == PrimitiveIdentity(
+        "scpn.program_ad.selection", "compress", "1"
+    )
+    assert compress_contract.lowering_metadata["mlir_op"] == "scpn_diff.selection.compress"
+    assert compress_contract.shape_rule is not None
+    assert compress_contract.shape_rule((condition, vector, None)) == (2,)
+    assert compress_contract.dtype_rule is not None
+    assert compress_contract.dtype_rule((condition, vector, None)) == "float64"
+    assert compress_contract.static_argument_rule is not None
+    assert compress_contract.static_argument_rule((condition, vector, None))[-2:] == (
+        "axis",
+        None,
+    )
+
+    extract_contract = primitive_contract_for("scpn.program_ad.selection:extract")
+    assert extract_contract.identity == PrimitiveIdentity(
+        "scpn.program_ad.selection", "extract", "1"
+    )
+    assert extract_contract.lowering_metadata["mlir_op"] == "scpn_diff.selection.extract"
+    assert extract_contract.shape_rule is not None
+    assert extract_contract.shape_rule((condition, vector)) == (2,)
+    assert extract_contract.dtype_rule is not None
+    assert extract_contract.dtype_rule((condition, vector)) == "float64"
+    assert extract_contract.static_argument_rule is not None
+    assert extract_contract.static_argument_rule((condition, vector))[-2:] == (
+        "indices",
+        (0, 2),
+    )
+
     argmax_contract = primitive_contract_for("scpn.program_ad.selection:argmax")
     assert argmax_contract.identity == PrimitiveIdentity(
         "scpn.program_ad.selection", "argmax", "1"
@@ -10495,6 +10574,8 @@ def test_program_ad_selection_primitives_are_registry_policy_gated() -> None:
         primitive_complete_contract_for(sort_contract.identity)
     with pytest.raises(ValueError, match="incomplete primitive contract"):
         primitive_complete_contract_for(argmax_contract.identity)
+    with pytest.raises(ValueError, match="incomplete primitive contract"):
+        primitive_complete_contract_for(select_contract.identity)
 
 
 def test_program_ad_selection_boundary_metadata_is_explicit() -> None:
@@ -10504,6 +10585,11 @@ def test_program_ad_selection_boundary_metadata_is_explicit() -> None:
         "where": "predicate_branch_boundary",
         "clip": "clipping_boundary_and_bound_order",
         "sort": "strict_total_order_required",
+        "select": "static_condition_sequence_branch_fold",
+        "piecewise": "static_condition_sequence_callable_fold",
+        "choose": "static_integer_selector_gather",
+        "compress": "static_boolean_mask_gather",
+        "extract": "static_boolean_mask_flat_gather",
         "argmax": "integer_index_selection_nondifferentiable",
         "argmin": "integer_index_selection_nondifferentiable",
         "argsort": "integer_index_permutation_nondifferentiable",
@@ -10582,6 +10668,93 @@ def test_program_ad_selection_primitives_validate_registry_rules_at_dispatch() -
         "where": {"shape", "dtype", "static"},
         "clip": {"shape", "dtype", "static"},
         "sort": {"shape", "dtype", "static"},
+    }
+
+
+def test_program_ad_selection_fold_primitives_validate_registry_rules_at_dispatch() -> None:
+    """Selection fold primitives should execute through registry validation rules."""
+
+    originals = {
+        name: primitive_contract_for(f"scpn.program_ad.selection:{name}")
+        for name in ("select", "piecewise", "choose", "compress", "extract")
+    }
+    calls: dict[str, set[str]] = {name: set() for name in originals}
+
+    for name, original in originals.items():
+        assert original.shape_rule is not None
+        assert original.dtype_rule is not None
+        assert original.static_argument_rule is not None
+
+        def shape_rule(args, *, primitive_name=name, contract=original):
+            calls[primitive_name].add("shape")
+            return contract.shape_rule(args)
+
+        def dtype_rule(args, *, primitive_name=name, contract=original):
+            calls[primitive_name].add("dtype")
+            return contract.dtype_rule(args)
+
+        def static_argument_rule(args, *, primitive_name=name, contract=original):
+            calls[primitive_name].add("static")
+            return contract.static_argument_rule(args)
+
+        DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.register_transform(
+            PrimitiveTransformRule(
+                identity=original.identity,
+                derivative_rule=original.derivative_rule,
+                batching_rule=original.batching_rule,
+                lowering_rule=original.lowering_rule,
+                lowering_metadata=original.lowering_metadata,
+                shape_rule=shape_rule,
+                dtype_rule=dtype_rule,
+                static_argument_rule=static_argument_rule,
+                nondifferentiable_policy=original.nondifferentiable_policy,
+                effect=original.effect,
+            ),
+            overwrite=True,
+        )
+
+    selector = np.array([0, 1, 0, 1], dtype=np.int64)
+    mask = np.array([True, False, True, False], dtype=np.bool_)
+
+    def objective(values):
+        selected = np.select(
+            [values < -0.5, values > 1.0],
+            [values * values, 2.0 * values],
+            default=-values,
+        )
+        piecewise = np.piecewise(
+            values,
+            [values < -0.5, values > 1.0],
+            [lambda item: item * item, lambda item: 2.0 * item, lambda item: -item],
+        )
+        chosen = np.choose(selector, [values, 2.0 * values])
+        compressed = np.compress(mask, values)
+        extracted = np.extract(mask, values)
+        return (
+            np.sum(selected)
+            + np.sum(piecewise)
+            + np.sum(chosen)
+            + np.sum(compressed)
+            + np.sum(extracted)
+        )
+
+    values = np.array([-1.0, -0.25, 0.75, 1.5], dtype=np.float64)
+    try:
+        result = whole_program_value_and_grad(objective, values)
+    finally:
+        for original in originals.values():
+            DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.register_transform(
+                _transform_rule_from_contract(original), overwrite=True
+            )
+
+    assert result.value == pytest.approx(float(objective(values)))
+    np.testing.assert_allclose(program_adjoint_gradient(result), result.gradient, atol=1.0e-12)
+    assert calls == {
+        "select": {"shape", "dtype", "static"},
+        "piecewise": {"shape", "dtype", "static"},
+        "choose": {"shape", "dtype", "static"},
+        "compress": {"shape", "dtype", "static"},
+        "extract": {"shape", "dtype", "static"},
     }
 
 
