@@ -15150,7 +15150,25 @@ def test_program_ad_alias_effect_analysis_tracks_array_view_aliases() -> None:
         moved = np.moveaxis(swapped, source=2, destination=0)
         repeated = np.repeat(moved, repeats=(1, 2, 1), axis=0)
         promoted = np.atleast_3d(squeezed[0])
-        return flat[0] + 2.0 * flat[2] + np.sum(repeated) + np.sum(promoted)
+        base = values.reshape((2, 3))
+        tiled = np.tile(base, (2, 1))
+        rolled = np.roll(base, shift=1, axis=1)
+        rotated = np.rot90(base, k=1)
+        flipped = np.flip(base, axis=0)
+        flipped_ud = np.flipud(base)
+        flipped_lr = np.fliplr(base)
+        return (
+            flat[0]
+            + 2.0 * flat[2]
+            + np.sum(repeated)
+            + np.sum(promoted)
+            + np.sum(tiled)
+            + np.sum(rolled)
+            + np.sum(rotated)
+            + np.sum(flipped)
+            + np.sum(flipped_ud)
+            + np.sum(flipped_lr)
+        )
 
     result = whole_program_value_and_grad(
         objective,
@@ -15175,6 +15193,12 @@ def test_program_ad_alias_effect_analysis_tracks_array_view_aliases() -> None:
     assert any(edge.target.startswith("view:moveaxis") for edge in view_edges)
     assert any(edge.target.startswith("view:repeat") for edge in view_edges)
     assert any(edge.target.startswith("view:atleast_3d") for edge in view_edges)
+    assert any(edge.target.startswith("view:tile") for edge in view_edges)
+    assert any(edge.target.startswith("view:roll") for edge in view_edges)
+    assert any(edge.target.startswith("view:rot90") for edge in view_edges)
+    assert any(edge.target.startswith("view:flip") for edge in view_edges)
+    assert any(edge.target.startswith("view:flipud") for edge in view_edges)
+    assert any(edge.target.startswith("view:fliplr") for edge in view_edges)
     assert any(
         "%array[1]" in alias_set.members
         and any(member.startswith("view:getitem") for member in alias_set.members)
@@ -15184,6 +15208,12 @@ def test_program_ad_alias_effect_analysis_tracks_array_view_aliases() -> None:
     assert any(
         "%array[1]" in alias_set.members
         and any(member.startswith("view:repeat") for member in alias_set.members)
+        for alias_set in analysis.alias_sets
+    )
+    assert any(
+        "%array[1]" in alias_set.members
+        and any(member.startswith("view:roll") for member in alias_set.members)
+        and any(member.startswith("view:fliplr") for member in alias_set.members)
         for alias_set in analysis.alias_sets
     )
 

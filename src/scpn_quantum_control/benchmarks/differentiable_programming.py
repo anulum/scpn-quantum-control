@@ -1083,7 +1083,25 @@ def _shape_view_alias_metadata_case() -> DifferentiableProgrammingBenchmarkResul
         moved = np.moveaxis(swapped, source=2, destination=0)
         repeated = np.repeat(moved, repeats=(1, 2, 1), axis=0)
         promoted = np.atleast_3d(squeezed[0])
-        return flat[0] + 2.0 * flat[2] + np.sum(repeated) + np.sum(promoted)
+        base = np.reshape(trace_values, (2, 3))
+        tiled = np.tile(base, (2, 1))
+        rolled = np.roll(base, shift=1, axis=1)
+        rotated = np.rot90(base, k=1)
+        flipped = np.flip(base, axis=0)
+        flipped_ud = np.flipud(base)
+        flipped_lr = np.fliplr(base)
+        return (
+            flat[0]
+            + 2.0 * flat[2]
+            + np.sum(repeated)
+            + np.sum(promoted)
+            + np.sum(tiled)
+            + np.sum(rolled)
+            + np.sum(rotated)
+            + np.sum(flipped)
+            + np.sum(flipped_ud)
+            + np.sum(flipped_lr)
+        )
 
     result = whole_program_value_and_grad(objective, values)
     if result.program_ir is None:
@@ -1100,6 +1118,12 @@ def _shape_view_alias_metadata_case() -> DifferentiableProgrammingBenchmarkResul
         "view:moveaxis",
         "view:repeat",
         "view:atleast_3d",
+        "view:tile",
+        "view:roll",
+        "view:rot90",
+        "view:flip",
+        "view:flipud",
+        "view:fliplr",
     )
     missing = tuple(
         prefix
@@ -1124,6 +1148,15 @@ def _shape_view_alias_metadata_case() -> DifferentiableProgrammingBenchmarkResul
     np.add.at(analytic, [int(flat_source[0]), int(flat_source[2])], [1.0, 2.0])
     np.add.at(analytic, repeated_source.reshape(-1), 1.0)
     np.add.at(analytic, promoted_source, 1.0)
+    for permutation_source in (
+        np.tile(matrix_source, (2, 1)),
+        np.roll(matrix_source, shift=1, axis=1),
+        np.rot90(matrix_source, k=1),
+        np.flip(matrix_source, axis=0),
+        np.flipud(matrix_source),
+        np.fliplr(matrix_source),
+    ):
+        np.add.at(analytic, permutation_source.reshape(-1), 1.0)
     adjoint_supported = result.adjoint_result is not None and result.adjoint_result.supported
     adjoint_error = (
         _max_abs_error(program_adjoint_gradient(result), analytic) if adjoint_supported else None
@@ -1139,9 +1172,10 @@ def _shape_view_alias_metadata_case() -> DifferentiableProgrammingBenchmarkResul
         max_abs_adjoint_error=adjoint_error,
         claim_boundary=(
             "deterministic shape-view alias metadata conformance for reshape, getitem, "
-            "ravel, squeeze, expand_dims, swapaxes, moveaxis, repeat, and atleast_3d; "
-            "metadata_only_no_general_alias_lattice; no wall-clock performance, "
-            "hardware, LLVM, Rust, or JIT execution claim"
+            "ravel, squeeze, expand_dims, swapaxes, moveaxis, repeat, atleast_3d, "
+            "tile, roll, rot90, flip, flipud, and fliplr; "
+            "metadata_only_no_general_alias_lattice; no wall-clock performance, hardware, "
+            "LLVM, Rust, or JIT execution claim"
         ),
     )
 

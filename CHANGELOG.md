@@ -5,6 +5,11 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-06-18 — Extended Program AD alias/effect metadata for derivative-
+  preserving permutation and source-reuse transforms (`tile`, `roll`,
+  `rot90`, `flip`, `flipud`, `fliplr`) with deterministic conformance
+  evidence while keeping the full alias lattice and Rust/LLVM promotion
+  blocked.
 - 2026-06-18 — Added Program AD static rank-1 slice assignment for
   derivative-carrying arrays, with source-index mutation metadata and
   deterministic alias/effect conformance evidence while keeping the full alias

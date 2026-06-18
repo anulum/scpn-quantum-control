@@ -3033,10 +3033,11 @@ def _trace_tile(array: TraceADArray, *, reps: object) -> TraceADArray:
     reps_aligned = (1,) * (rank - len(reps_tuple)) + reps_tuple
     source = np.arange(array.size, dtype=np.int64).reshape(source_shape)
     tiled = np.tile(source, reps_aligned)
-    return TraceADArray(
-        tuple(array._items[int(index)] for index in tiled.reshape(-1)),
+    return _trace_array_view_from_local_indices(
+        array,
+        "tile",
+        tuple(int(index) for index in tiled.reshape(-1)),
         tuple(map(int, tiled.shape)),
-        array.context,
     )
 
 
@@ -3073,10 +3074,11 @@ def _trace_roll(array: TraceADArray, *, shift: object, axis: object = None) -> T
             shifts,
             axis=axes,
         )
-    return TraceADArray(
-        tuple(array._items[int(index)] for index in rolled.reshape(-1)),
+    return _trace_array_view_from_local_indices(
+        array,
+        "roll",
+        tuple(int(index) for index in rolled.reshape(-1)),
         tuple(map(int, rolled.shape)),
-        array.context,
     )
 
 
@@ -3102,10 +3104,11 @@ def _trace_rot90(array: TraceADArray, *, k: object = 1, axes: object = (0, 1)) -
         k=k_value,
         axes=axes_value,
     )
-    return TraceADArray(
-        tuple(array._items[int(index)] for index in rotated.reshape(-1)),
+    return _trace_array_view_from_local_indices(
+        array,
+        "rot90",
+        tuple(int(index) for index in rotated.reshape(-1)),
         tuple(map(int, rotated.shape)),
-        array.context,
     )
 
 
@@ -3117,10 +3120,11 @@ def _trace_flip(array: TraceADArray, *, axis: object = None) -> TraceADArray:
     else:
         axes = _normalise_axis_permutation_axes("flip", axis, rank=array.ndim, role="axis")
         flipped = np.flip(source, axis=axes)
-    return TraceADArray(
-        tuple(array._items[int(index)] for index in flipped.reshape(-1)),
+    return _trace_array_view_from_local_indices(
+        array,
+        "flip",
+        tuple(int(index) for index in flipped.reshape(-1)),
         tuple(map(int, flipped.shape)),
-        array.context,
     )
 
 
@@ -3302,10 +3306,11 @@ def _trace_flipud(array: TraceADArray) -> TraceADArray:
         raise ValueError("program AD flipud requires at least rank-1 arrays")
     source = np.arange(array.size, dtype=np.int64).reshape(array.shape)
     flipped = np.flipud(source)
-    return TraceADArray(
-        tuple(array._items[int(index)] for index in flipped.reshape(-1)),
+    return _trace_array_view_from_local_indices(
+        array,
+        "flipud",
+        tuple(int(index) for index in flipped.reshape(-1)),
         tuple(map(int, flipped.shape)),
-        array.context,
     )
 
 
@@ -3315,10 +3320,11 @@ def _trace_fliplr(array: TraceADArray) -> TraceADArray:
         raise ValueError("program AD fliplr requires at least rank-2 arrays")
     source = np.arange(array.size, dtype=np.int64).reshape(array.shape)
     flipped = np.fliplr(source)
-    return TraceADArray(
-        tuple(array._items[int(index)] for index in flipped.reshape(-1)),
+    return _trace_array_view_from_local_indices(
+        array,
+        "fliplr",
+        tuple(int(index) for index in flipped.reshape(-1)),
         tuple(map(int, flipped.shape)),
-        array.context,
     )
 
 
