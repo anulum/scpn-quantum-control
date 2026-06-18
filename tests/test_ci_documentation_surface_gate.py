@@ -59,3 +59,4 @@ def test_ci_gates_differentiable_strict_mypy_ratchet() -> None:
     assert "src/scpn_quantum_control/phase/pennylane_bridge.py" in workflow
     assert "src/scpn_quantum_control/phase/jax_bridge.py" in workflow
     assert "src/scpn_quantum_control/phase/torch_bridge.py" in workflow
+    assert "src/scpn_quantum_control/phase/tensorflow_bridge.py" in workflow
