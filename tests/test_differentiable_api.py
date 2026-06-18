@@ -175,6 +175,13 @@ def test_differentiable_dashboard_status_is_claim_bounded_for_gui_consumers() ->
     assert rows["program_ad_alias_effects"]["claim_boundary"] == (
         "metadata_only_no_general_alias_lattice"
     )
+    assert rows["program_ad_python_semantics"]["state"] == "diagnostic"
+    assert rows["program_ad_python_semantics"]["fail_closed"] is True
+    assert "python_semantics_list_comprehension" in rows["program_ad_python_semantics"]["evidence"]
+    assert (
+        "filtered, set, and dict comprehensions remain fail-closed"
+        in rows["program_ad_python_semantics"]["claim_boundary"]
+    )
     assert rows["higher_order_transform_algebra"]["state"] == "diagnostic"
     assert rows["higher_order_transform_algebra"]["fail_closed"] is True
     assert (
@@ -197,6 +204,9 @@ def test_differentiable_dashboard_status_can_include_conformance_backing() -> No
     rows = {row.surface: row for row in status.rows}
 
     assert rows["benchmark_conformance"].state == "conformance_backed"
+    assert rows["program_ad_python_semantics"].state == "conformance_backed"
+    assert rows["program_ad_python_semantics"].fail_closed is False
+    assert rows["program_ad_python_semantics"].blocked_reasons == ()
     assert rows["higher_order_transform_algebra"].state == "conformance_backed"
     assert rows["higher_order_transform_algebra"].fail_closed is False
     assert rows["higher_order_transform_algebra"].blocked_reasons == ()

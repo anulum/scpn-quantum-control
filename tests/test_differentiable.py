@@ -3675,6 +3675,26 @@ def test_whole_program_ad_reports_accepted_python_calling_semantics() -> None:
     np.testing.assert_allclose(result.gradient, [scale], atol=1.0e-12)
 
 
+def test_whole_program_ad_accepts_bounded_list_comprehension_semantics() -> None:
+    """Plain list comprehensions should preserve derivative-carrying values."""
+
+    def objective(values: np.ndarray) -> object:
+        terms = [item * item + np.sin(item) for item in values]
+        return sum(terms)
+
+    values = np.array([0.25, -0.5, 1.25], dtype=np.float64)
+    result = whole_program_value_and_grad(objective, values)
+
+    assert result.semantics_report is not None
+    assert result.semantics_report.unsupported_python_semantics == ()
+    assert "list_comprehension" in result.semantics_report.accepted_python_semantics
+    assert any(
+        feature.kind == "python_semantics" and feature.detail == "list_comprehension"
+        for feature in result.source_ir_features
+    )
+    np.testing.assert_allclose(result.gradient, 2.0 * values + np.cos(values), atol=1.0e-12)
+
+
 def test_whole_program_ad_fails_closed_for_unsupported_python_semantics() -> None:
     """Unsupported Python constructs should be rejected before objective execution."""
 
@@ -3684,8 +3704,14 @@ def test_whole_program_ad_fails_closed_for_unsupported_python_semantics() -> Non
 
     holder = ScaleHolder(scale=2.0)
 
-    def comprehension_objective(values: np.ndarray) -> object:
-        return sum([item for item in values])
+    def filtered_comprehension_objective(values: np.ndarray) -> object:
+        return sum([item for item in values if item > 0.0])
+
+    def set_comprehension_objective(values: np.ndarray) -> object:
+        return sum({item for item in values})
+
+    def dict_comprehension_objective(values: np.ndarray) -> object:
+        return sum({index: item for index, item in enumerate(values)}.values())
 
     def generator_objective(values: np.ndarray) -> object:
         yield values[0]
@@ -3717,7 +3743,9 @@ def test_whole_program_ad_fails_closed_for_unsupported_python_semantics() -> Non
         return values[0]
 
     for objective, diagnostic in (
-        (comprehension_objective, "comprehension"),
+        (filtered_comprehension_objective, "filtered_comprehension"),
+        (set_comprehension_objective, "set_or_dict_comprehension"),
+        (dict_comprehension_objective, "set_or_dict_comprehension"),
         (generator_objective, "generator"),
         (context_manager_objective, "context_manager"),
         (exception_objective, "exception_control_flow"),

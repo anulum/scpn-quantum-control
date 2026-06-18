@@ -553,6 +553,23 @@ def differentiable_dashboard_status(
             claim_boundary="metadata_only_no_general_alias_lattice",
         ),
         DifferentiableDashboardCapabilityRow(
+            surface="program_ad_python_semantics",
+            state="conformance_backed" if conformance_passed else "diagnostic",
+            backing_api="whole_program_value_and_grad",
+            evidence=(
+                "WholeProgramSemanticsReport",
+                "python_semantics_list_comprehension",
+            ),
+            blocked_reasons=()
+            if conformance_passed
+            else ("conformance suite not run in this status call",),
+            claim_boundary=(
+                "bounded plain list-comprehension whole-program AD semantics only; "
+                "filtered, set, and dict comprehensions remain fail-closed; no "
+                "compiler, Rust, LLVM, JIT, hardware, or performance claim"
+            ),
+        ),
+        DifferentiableDashboardCapabilityRow(
             surface="primitive_contracts",
             state="executable",
             backing_api="primitive_complete_contract_for",

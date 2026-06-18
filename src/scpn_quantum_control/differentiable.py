@@ -8503,6 +8503,8 @@ def _accepted_python_semantics(
                 accepted.add("var_keyword_parameter")
             elif parameter.kind is inspect.Parameter.VAR_POSITIONAL:
                 accepted.add("var_positional_parameter")
+    if _source_has_node(source, ast.ListComp):
+        accepted.add("list_comprehension")
     if _source_has_node(source, ast.GeneratorExp):
         accepted.add("generator_expression")
     return tuple(sorted(accepted))
@@ -8527,8 +8529,11 @@ def _unsupported_python_semantics(
     allowed_attribute_roots = {"math", "np", "numpy"}
 
     for node in ast.walk(tree):
-        if isinstance(node, ast.ListComp | ast.SetComp | ast.DictComp):
-            unsupported.add("comprehension")
+        if isinstance(node, ast.ListComp):
+            if any(generator.ifs for generator in node.generators):
+                unsupported.add("filtered_comprehension")
+        elif isinstance(node, ast.SetComp | ast.DictComp):
+            unsupported.add("set_or_dict_comprehension")
         elif isinstance(node, ast.Yield | ast.YieldFrom):
             unsupported.add("generator")
         elif isinstance(node, ast.With | ast.AsyncWith):

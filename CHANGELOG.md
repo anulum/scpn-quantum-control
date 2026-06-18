@@ -5,6 +5,9 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-06-18 — Promoted bounded plain list-comprehension semantics for
+  whole-program AD, with deterministic benchmark conformance and fail-closed
+  filtered, set, and dict comprehension boundaries.
 - 2026-06-18 — Added deterministic transform-algebra conformance coverage for
   JVP/VJP over `vmap` of whole-program AD gradients against analytic
   block-Hessian contractions, with compiler, Rust, LLVM, hardware, and

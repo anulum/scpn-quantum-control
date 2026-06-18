@@ -205,6 +205,7 @@ def run_differentiable_programming_benchmark_suite() -> tuple[
 
     return (
         _loop_heavy_case(),
+        _python_semantics_list_comprehension_case(),
         _elementwise_boundary_case(),
         _matrix_heavy_case(),
         _selection_heavy_case(),
@@ -304,6 +305,28 @@ def _sparse_ising_chain_quantum_gradient_case() -> QuantumGradientBenchmarkResul
             "deterministic sparse Hamiltonian expectation-gradient conformance "
             "for a six-qubit nearest-neighbour Ising chain; no wall-clock "
             "performance, hardware, provider, or framework-autodiff claim"
+        ),
+    )
+
+
+def _python_semantics_list_comprehension_case() -> DifferentiableProgrammingBenchmarkResult:
+    values = np.array([0.25, -0.5, 1.25], dtype=np.float64)
+
+    def objective(params: Any) -> object:
+        terms = [item * item + np.sin(item) for item in params]
+        return sum(terms)
+
+    analytic = 2.0 * values + np.cos(values)
+    return _program_ad_case(
+        "python_semantics_list_comprehension",
+        "python-semantics",
+        objective,
+        values,
+        analytic,
+        claim_boundary=(
+            "bounded plain list-comprehension whole-program AD conformance against "
+            "analytic references; filtered, set, and dict comprehensions fail closed; "
+            "no wall-clock performance, hardware, LLVM, Rust, or JIT execution claim"
         ),
     )
 

@@ -33,6 +33,7 @@ def test_differentiable_programming_benchmark_suite_matches_analytic_references(
 
     assert [row.case_id for row in results] == [
         "loop_heavy_scalar",
+        "python_semantics_list_comprehension",
         "elementwise_boundary_contracts",
         "matrix_heavy_linear_algebra",
         "selection_piecewise_contracts",
@@ -46,6 +47,7 @@ def test_differentiable_programming_benchmark_suite_matches_analytic_references(
     ]
     assert {row.category for row in results} == {
         "loop-heavy",
+        "python-semantics",
         "elementwise-boundary",
         "matrix-heavy",
         "selection-heavy",
@@ -68,6 +70,14 @@ def test_differentiable_programming_benchmark_suite_matches_analytic_references(
     assert mutation_row.max_abs_adjoint_error is not None
     assert mutation_row.max_abs_adjoint_error <= 1.0e-12
     assert np.any(mutation_row.gradient != 0.0)
+    python_semantics_row = next(row for row in results if row.category == "python-semantics")
+    assert python_semantics_row.adjoint_supported is True
+    assert python_semantics_row.max_abs_adjoint_error is not None
+    assert python_semantics_row.max_abs_adjoint_error <= 1.0e-12
+    assert "plain list-comprehension" in python_semantics_row.claim_boundary
+    assert "filtered, set, and dict comprehensions fail closed" in (
+        python_semantics_row.claim_boundary
+    )
     linalg_row = next(row for row in results if row.category == "linalg-primitive")
     assert linalg_row.adjoint_supported is True
     assert linalg_row.max_abs_adjoint_error is not None
