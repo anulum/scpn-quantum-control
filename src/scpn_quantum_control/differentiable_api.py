@@ -545,6 +545,25 @@ def differentiable_dashboard_status(
             ),
         ),
         DifferentiableDashboardCapabilityRow(
+            surface="program_ad_ir_roundtrip_conformance",
+            state="conformance_backed" if conformance_passed else "diagnostic",
+            backing_api="run_differentiable_programming_benchmark_suite",
+            evidence=(
+                "parse_program_ad_effect_ir",
+                "program_ad_effect_ir.v1",
+                "program_ad_ir_roundtrip_contracts",
+            ),
+            blocked_reasons=()
+            if conformance_passed
+            else ("conformance suite not run in this status call",),
+            claim_boundary=(
+                "bounded program_ad_effect_ir.v1 parser and stable serialization "
+                "round-trip conformance only; not a bytecode/source compiler "
+                "frontend, full alias lattice, non-executed branch semantics, "
+                "Rust/LLVM executable lowering, hardware, or performance promotion"
+            ),
+        ),
+        DifferentiableDashboardCapabilityRow(
             surface="program_ad_alias_effects",
             state="metadata_only",
             backing_api="analyze_program_ad_alias_effects",

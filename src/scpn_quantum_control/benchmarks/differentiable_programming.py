@@ -30,6 +30,7 @@ from ..differentiable import (
     jacrev,
     jax_value_and_grad,
     jvp,
+    parse_program_ad_effect_ir,
     program_adjoint_gradient,
     program_adjoint_result,
     vjp,
@@ -209,6 +210,7 @@ def run_differentiable_programming_benchmark_suite() -> tuple[
     return (
         _loop_heavy_case(),
         _python_semantics_list_comprehension_case(),
+        _program_ad_ir_roundtrip_case(),
         _program_adjoint_replay_provenance_case(),
         _elementwise_boundary_case(),
         _matrix_heavy_case(),
@@ -370,6 +372,60 @@ def _loop_heavy_case() -> DifferentiableProgrammingBenchmarkResult:
         objective,
         values,
         analytic,
+    )
+
+
+def _program_ad_ir_roundtrip_case() -> DifferentiableProgrammingBenchmarkResult:
+    values = np.array([0.8, -0.35, 1.4], dtype=np.float64)
+
+    def objective(trace_values: Any) -> object:
+        x, y, z = trace_values
+        branch = x * z if x > y else y * z
+        return branch + np.sin(x - y) + np.log(z + 2.0)
+
+    result = whole_program_value_and_grad(
+        objective,
+        values,
+        parameters=(Parameter("x"), Parameter("y"), Parameter("z")),
+    )
+    if result.program_ir is None:
+        raise ValueError("program AD IR round-trip case requires program IR")
+    parsed = parse_program_ad_effect_ir(result.program_ir.serialization)
+    if (
+        parsed.ssa_values != result.program_ir.ssa_values
+        or parsed.effects != result.program_ir.effects
+        or parsed.alias_edges != result.program_ir.alias_edges
+        or parsed.control_regions != result.program_ir.control_regions
+        or parsed.phi_nodes != result.program_ir.phi_nodes
+        or parsed.serialization != result.program_ir.serialization
+    ):
+        raise ValueError("program AD IR round-trip parser did not reconstruct emitted IR")
+
+    x, y, z = values
+    analytic = np.array(
+        [
+            z + math.cos(x - y),
+            -math.cos(x - y),
+            x + 1.0 / (z + 2.0),
+        ],
+        dtype=np.float64,
+    )
+    return DifferentiableProgrammingBenchmarkResult(
+        case_id="program_ad_ir_roundtrip_contracts",
+        category="ir-roundtrip",
+        value=result.value,
+        gradient=result.gradient,
+        analytic_gradient=analytic,
+        max_abs_gradient_error=_max_abs_error(result.gradient, analytic),
+        adjoint_supported=result.adjoint_result is not None and result.adjoint_result.supported,
+        max_abs_adjoint_error=_max_abs_error(program_adjoint_gradient(result), analytic),
+        claim_boundary=(
+            "bounded program_ad_effect_ir.v1 parser and stable serialization "
+            "round-trip conformance for emitted Program AD SSA/effect/control/phi "
+            "metadata; not a bytecode/source compiler frontend, full alias lattice, "
+            "non-executed branch semantics, Rust/LLVM executable lowering, hardware, "
+            "or performance evidence; no wall-clock performance claim"
+        ),
     )
 
 
