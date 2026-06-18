@@ -76,6 +76,7 @@ def test_static_gates_include_differentiable_strict_mypy_ratchet() -> None:
     assert "src/scpn_quantum_control/phase/qnode_framework_parity.py" in strict_cmd
     assert "src/scpn_quantum_control/phase/qnode_circuit.py" in strict_cmd
     assert "src/scpn_quantum_control/phase/pennylane_bridge.py" in strict_cmd
+    assert "src/scpn_quantum_control/phase/jax_bridge.py" in strict_cmd
 
 
 def test_preflight_coverage_gate_matches_temporary_ci_threshold():

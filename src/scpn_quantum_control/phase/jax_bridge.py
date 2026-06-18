@@ -41,6 +41,7 @@ from .qnode_circuit import (
 FloatArray: TypeAlias = NDArray[np.float64]
 ScalarObjective = Callable[[FloatArray], float]
 GradientCallable = Callable[[FloatArray], ArrayLike]
+JAXCallable = Callable[[object], object]
 
 
 @dataclass(frozen=True)
@@ -704,6 +705,11 @@ def _require_jax_custom_vjp_support(jax_module: Any) -> None:
         raise RuntimeError("JAX value_and_grad is required for the bounded-QNN custom VJP route")
 
 
+def _custom_vjp_function(jax_module: Any, function: JAXCallable) -> Any:
+    custom_vjp = cast(Callable[[JAXCallable], Any], jax_module.custom_vjp)
+    return custom_vjp(function)
+
+
 def _require_jax_vmap_support(jax_module: Any) -> None:
     vmap = getattr(jax_module, "vmap", None)
     if not callable(vmap):
@@ -882,7 +888,7 @@ def jax_parameter_shift_value_and_grad(
     shift_terms = len((rule or ParameterShiftRule()).terms)
     last_result: GradientResult | None = None
 
-    def evaluate(raw_values: object) -> tuple[np.ndarray, np.ndarray]:
+    def evaluate(raw_values: object) -> tuple[FloatArray, FloatArray]:
         nonlocal last_result
         raw_array = _as_parameter_vector(
             "JAX callback values", raw_values, width=parameter_values.size
@@ -895,8 +901,8 @@ def jax_parameter_shift_value_and_grad(
         )
         last_result = result
         return (
-            np.asarray(result.value, dtype=callback_dtype),
-            result.gradient.astype(callback_dtype, copy=False),
+            cast(FloatArray, np.asarray(result.value, dtype=callback_dtype)),
+            cast(FloatArray, result.gradient.astype(callback_dtype, copy=False)),
         )
 
     parameter_tensor = jnp.asarray(parameter_values)
@@ -1101,9 +1107,10 @@ def jax_custom_vjp_qnn_value_and_grad(
     feature_tensor = jnp.asarray(feature_matrix)
     label_tensor = jnp.asarray(label_vector)
 
-    @jax_module.custom_vjp
     def loss_fn(raw_params: object) -> object:
         return _jax_bounded_qnn_loss(jnp, feature_tensor, label_tensor, jnp.asarray(raw_params))
+
+    custom_loss: Any = _custom_vjp_function(jax_module, loss_fn)
 
     def loss_fwd(raw_params: object) -> tuple[object, object]:
         parameter_tensor = jnp.asarray(raw_params)
@@ -1121,9 +1128,9 @@ def jax_custom_vjp_qnn_value_and_grad(
         )
         return (jnp.asarray(cotangent) * gradient,)
 
-    loss_fn.defvjp(loss_fwd, loss_bwd)
+    custom_loss.defvjp(loss_fwd, loss_bwd)
 
-    executable = jax_module.value_and_grad(loss_fn)
+    executable = jax_module.value_and_grad(custom_loss)
     jitted = False
     if jit:
         jit_fn = getattr(jax_module, "jit", None)
@@ -1585,9 +1592,10 @@ def run_jax_vmap_compatibility_audit(
     def native_loss_fn(raw_params: object) -> object:
         return _jax_bounded_qnn_loss(jnp, feature_tensor, label_tensor, jnp.asarray(raw_params))
 
-    @jax_module.custom_vjp
     def custom_loss_fn(raw_params: object) -> object:
         return _jax_bounded_qnn_loss(jnp, feature_tensor, label_tensor, jnp.asarray(raw_params))
+
+    custom_loss: Any = _custom_vjp_function(jax_module, custom_loss_fn)
 
     def custom_loss_fwd(raw_params: object) -> tuple[object, object]:
         parameter_tensor = jnp.asarray(raw_params)
@@ -1605,13 +1613,13 @@ def run_jax_vmap_compatibility_audit(
         )
         return (jnp.asarray(cotangent) * gradient,)
 
-    custom_loss_fn.defvjp(custom_loss_fwd, custom_loss_bwd)
+    custom_loss.defvjp(custom_loss_fwd, custom_loss_bwd)
 
     native_losses_obj, native_gradients_obj = jax_module.vmap(
         jax_module.value_and_grad(native_loss_fn)
     )(jnp.asarray(parameter_batch))
     custom_losses_obj, custom_gradients_obj = jax_module.vmap(
-        jax_module.value_and_grad(custom_loss_fn)
+        jax_module.value_and_grad(custom_loss)
     )(jnp.asarray(parameter_batch))
 
     native_losses = np.asarray(native_losses_obj, dtype=float)
@@ -1710,9 +1718,10 @@ def run_jax_sharding_compatibility_audit(
     def native_loss_fn(raw_params: object) -> object:
         return _jax_bounded_qnn_loss(jnp, feature_tensor, label_tensor, jnp.asarray(raw_params))
 
-    @jax_module.custom_vjp
     def custom_loss_fn(raw_params: object) -> object:
         return _jax_bounded_qnn_loss(jnp, feature_tensor, label_tensor, jnp.asarray(raw_params))
+
+    custom_loss: Any = _custom_vjp_function(jax_module, custom_loss_fn)
 
     def custom_loss_fwd(raw_params: object) -> tuple[object, object]:
         parameter_tensor = jnp.asarray(raw_params)
@@ -1730,13 +1739,13 @@ def run_jax_sharding_compatibility_audit(
         )
         return (jnp.asarray(cotangent) * gradient,)
 
-    custom_loss_fn.defvjp(custom_loss_fwd, custom_loss_bwd)
+    custom_loss.defvjp(custom_loss_fwd, custom_loss_bwd)
 
     native_losses_obj, native_gradients_obj = jax_module.pmap(
         jax_module.value_and_grad(native_loss_fn)
     )(jnp.asarray(parameter_batch))
     custom_losses_obj, custom_gradients_obj = jax_module.pmap(
-        jax_module.value_and_grad(custom_loss_fn)
+        jax_module.value_and_grad(custom_loss)
     )(jnp.asarray(parameter_batch))
 
     native_losses = np.asarray(native_losses_obj, dtype=float)
@@ -1832,10 +1841,11 @@ def run_jax_pytree_compatibility_audit(
         parameter_tensor = _jax_flatten_pytree(jax_module, jnp, raw_tree)
         return _jax_bounded_qnn_loss(jnp, feature_tensor, label_tensor, parameter_tensor)
 
-    @jax_module.custom_vjp
     def custom_loss_fn(raw_tree: object) -> object:
         parameter_tensor = _jax_flatten_pytree(jax_module, jnp, raw_tree)
         return _jax_bounded_qnn_loss(jnp, feature_tensor, label_tensor, parameter_tensor)
+
+    custom_loss: Any = _custom_vjp_function(jax_module, custom_loss_fn)
 
     def custom_loss_fwd(raw_tree: object) -> tuple[object, object]:
         parameter_tensor = _jax_flatten_pytree(jax_module, jnp, raw_tree)
@@ -1861,14 +1871,12 @@ def run_jax_pytree_compatibility_audit(
         )
         return (gradient_tree,)
 
-    custom_loss_fn.defvjp(custom_loss_fwd, custom_loss_bwd)
+    custom_loss.defvjp(custom_loss_fwd, custom_loss_bwd)
 
     native_loss_obj, native_gradient_pytree = jax_module.value_and_grad(native_loss_fn)(
         params_pytree
     )
-    custom_loss_obj, custom_gradient_pytree = jax_module.value_and_grad(custom_loss_fn)(
-        params_pytree
-    )
+    custom_loss_obj, custom_gradient_pytree = jax_module.value_and_grad(custom_loss)(params_pytree)
     native_gradient_vector = _flatten_runtime_pytree_gradient(
         jax_module,
         "JAX native PyTree gradient",
