@@ -216,6 +216,7 @@ def run_differentiable_programming_benchmark_suite() -> tuple[
         _assembly_primitive_case(),
         _reduction_primitive_case(),
         _shape_primitive_case(),
+        _broadcast_primitive_case(),
         _linalg_primitive_case(),
         _indexing_heavy_case(),
         _mutation_heavy_case(),
@@ -1074,6 +1075,74 @@ def _shape_primitive_case() -> DifferentiableProgrammingBenchmarkResult:
             "swapaxes, moveaxis, repeat, rank promotion, tile, roll, rot90, "
             "flip, flipud, fliplr shape primitive contracts for bounded Program "
             "AD traces; dynamic shape arguments, invalid axes, Rust/LLVM "
+            "executable lowering, hardware, and performance promotion remain "
+            "blocked; no wall-clock performance claim"
+        ),
+    )
+
+
+def _broadcast_primitive_gradient() -> NDArray[np.float64]:
+    broadcast_to_weights = np.array(
+        [[0.25, -0.5], [0.75, -1.0], [1.25, -1.5]],
+        dtype=np.float64,
+    )
+    column_weights = np.array([[0.3, -0.7, 1.1], [-1.3, 0.5, -0.2]], dtype=np.float64)
+    row_weights = np.array([[-0.4, 0.8, -1.2], [1.4, -0.6, 0.2]], dtype=np.float64)
+    scalar_weights = np.array([[0.9, -0.3, 0.6], [-0.8, 1.0, -0.5]], dtype=np.float64)
+    product_weights = np.array([[0.2, -0.1, 0.4], [-0.6, 0.3, -0.2]], dtype=np.float64)
+    values = np.array([0.2, -0.4, 0.7, -1.1, 1.3, -0.6], dtype=np.float64)
+    column = values[:2].reshape(2, 1)
+    row = values[2:5]
+
+    gradient = np.zeros(values.size, dtype=np.float64)
+    gradient[:2] += np.sum(broadcast_to_weights, axis=0)
+    gradient[:2] += np.sum(column_weights, axis=1)
+    gradient[2:5] += np.sum(row_weights, axis=0)
+    gradient[5] += float(np.sum(scalar_weights))
+    gradient[:2] += 0.17 * np.sum(row * product_weights, axis=1)
+    gradient[2:5] += 0.17 * np.sum(column * product_weights, axis=0)
+    return gradient
+
+
+def _broadcast_primitive_case() -> DifferentiableProgrammingBenchmarkResult:
+    values = np.array([0.2, -0.4, 0.7, -1.1, 1.3, -0.6], dtype=np.float64)
+    broadcast_to_weights = np.array(
+        [[0.25, -0.5], [0.75, -1.0], [1.25, -1.5]],
+        dtype=np.float64,
+    )
+    column_weights = np.array([[0.3, -0.7, 1.1], [-1.3, 0.5, -0.2]], dtype=np.float64)
+    row_weights = np.array([[-0.4, 0.8, -1.2], [1.4, -0.6, 0.2]], dtype=np.float64)
+    scalar_weights = np.array([[0.9, -0.3, 0.6], [-0.8, 1.0, -0.5]], dtype=np.float64)
+    product_weights = np.array([[0.2, -0.1, 0.4], [-0.6, 0.3, -0.2]], dtype=np.float64)
+
+    def objective(trace_values: Any) -> object:
+        source = trace_values[:2]
+        column = np.reshape(trace_values[:2], (2, 1))
+        row = trace_values[2:5]
+        scalar = trace_values[5:6]
+        broadcast_column, broadcast_row, broadcast_scalar = np.broadcast_arrays(
+            column,
+            row,
+            scalar,
+        )
+        return (
+            np.sum(np.broadcast_to(source, (3, 2)) * broadcast_to_weights)
+            + np.sum(broadcast_column * column_weights)
+            + np.sum(broadcast_row * row_weights)
+            + np.sum(broadcast_scalar * scalar_weights)
+            + 0.17 * np.sum((column * row) * product_weights)
+        )
+
+    return _program_ad_case(
+        "broadcast_primitive_contracts",
+        "broadcast-primitive",
+        objective,
+        values,
+        _broadcast_primitive_gradient(),
+        claim_boundary=(
+            "deterministic broadcast_to, broadcast_arrays, and binary elementwise "
+            "rank broadcasting contracts for bounded Program AD traces; dynamic "
+            "output shapes, incompatible shapes, subok propagation, Rust/LLVM "
             "executable lowering, hardware, and performance promotion remain "
             "blocked; no wall-clock performance claim"
         ),

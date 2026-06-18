@@ -704,6 +704,26 @@ def differentiable_dashboard_status(
             ),
         ),
         DifferentiableDashboardCapabilityRow(
+            surface="program_ad_broadcast_primitives",
+            state="conformance_backed" if conformance_passed else "diagnostic",
+            backing_api="run_differentiable_programming_benchmark_suite",
+            evidence=(
+                "scpn.program_ad.assembly:{broadcast_to,broadcast_arrays}",
+                "scpn.program_ad.elementwise:binary_rank_broadcasting",
+                "broadcast_primitive_contracts",
+            ),
+            blocked_reasons=()
+            if conformance_passed
+            else ("conformance suite not run in this status call",),
+            claim_boundary=(
+                "bounded Program AD broadcast primitive conformance only; "
+                "dynamic output shapes, incompatible shapes, subok propagation, "
+                "Rust/LLVM executable lowering, hardware, and performance "
+                "promotion remain blocked; rank broadcasting is covered only "
+                "under local deterministic conformance"
+            ),
+        ),
+        DifferentiableDashboardCapabilityRow(
             surface="primitive_contracts",
             state="executable",
             backing_api="primitive_complete_contract_for",
