@@ -10,7 +10,7 @@
 from __future__ import annotations
 
 import json
-from collections.abc import Iterable, Sequence
+from collections.abc import Iterable, Iterator, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Literal
@@ -100,7 +100,7 @@ class ClaimLedger:
     artifact_id: str
     rows: tuple[ClaimLedgerRow, ...]
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[ClaimLedgerRow]:
         return iter(self.rows)
 
 

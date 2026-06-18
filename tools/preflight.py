@@ -71,7 +71,16 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     ("mypy", [_PY, "-m", "mypy"]),
     (
         "mypy-strict-differentiable",
-        [_PY, "-m", "mypy", "--strict", "src/scpn_quantum_control/differentiable.py"],
+        [
+            _PY,
+            "-m",
+            "mypy",
+            "--strict",
+            "src/scpn_quantum_control/differentiable.py",
+            "src/scpn_quantum_control/differentiable_claim_ledger.py",
+            "src/scpn_quantum_control/differentiable_api.py",
+            "src/scpn_quantum_control/benchmarks/differentiable_programming.py",
+        ],
     ),
 ]
 

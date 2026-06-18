@@ -152,7 +152,12 @@ jobs:
           cache: 'pip'
       - run: pip install --require-hashes -r requirements-ci-py312-linux.txt
       - run: python tools/check_rust_pyi_exports.py
-      - run: mypy --strict src/scpn_quantum_control/differentiable.py
+      - run: >-
+          mypy --strict
+          src/scpn_quantum_control/differentiable.py
+          src/scpn_quantum_control/differentiable_claim_ledger.py
+          src/scpn_quantum_control/differentiable_api.py
+          src/scpn_quantum_control/benchmarks/differentiable_programming.py
       - run: mypy
 
   wheel-check:

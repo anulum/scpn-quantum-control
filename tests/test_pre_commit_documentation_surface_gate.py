@@ -20,3 +20,14 @@ def test_pre_push_hook_gates_documentation_surface() -> None:
     assert "python tools/audit_documentation_surface.py" in config
     assert "--allowlist tools/documentation_surface_allowlist.json" in config
     assert "--fail-on-findings" in config
+
+
+def test_pre_push_hook_gates_differentiable_strict_mypy_ratchet() -> None:
+    """The local pre-push hook must enforce strict mypy on promoted modules."""
+    config = Path(".pre-commit-config.yaml").read_text(encoding="utf-8")
+
+    assert "mypy --strict" in config
+    assert "src/scpn_quantum_control/differentiable.py" in config
+    assert "src/scpn_quantum_control/differentiable_claim_ledger.py" in config
+    assert "src/scpn_quantum_control/differentiable_api.py" in config
+    assert "src/scpn_quantum_control/benchmarks/differentiable_programming.py" in config

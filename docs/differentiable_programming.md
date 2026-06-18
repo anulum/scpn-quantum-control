@@ -97,6 +97,11 @@ classification smoke cases. It also verifies that GitHub-hosted runners remain
 `isolated_affinity` path, and silent accelerator fallback remains a hard gap.
 The gate is planning and classification evidence only; it does not run shell
 commands or promote benchmark artefacts.
+CI, local preflight, and the pre-push hook enforce a separate strict-mypy
+ratchet for `differentiable.py`, `differentiable_claim_ledger.py`,
+`differentiable_api.py`, and `benchmarks/differentiable_programming.py`.
+That ratchet is module-specific governance; repository-wide `mypy --strict`
+remains open until the rest of the codebase is migrated.
 `run_differentiable_module_hardening_audit()` discovers the differentiable
 module promotion scope from the committed patterns, compares it with the
 registered hardening map, and verifies that every module has module-specific

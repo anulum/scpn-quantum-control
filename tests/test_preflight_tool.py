@@ -40,6 +40,18 @@ def test_static_gates_include_documentation_surface_gate():
     assert "--fail-on-findings" in gate_map["documentation-surface"]
 
 
+def test_static_gates_include_differentiable_strict_mypy_ratchet() -> None:
+    """Differentiable promotion modules must stay under explicit strict mypy."""
+    gate_map = {name: cmd for name, cmd in _preflight.STATIC_GATES}
+    strict_cmd = gate_map["mypy-strict-differentiable"]
+
+    assert "--strict" in strict_cmd
+    assert "src/scpn_quantum_control/differentiable.py" in strict_cmd
+    assert "src/scpn_quantum_control/differentiable_claim_ledger.py" in strict_cmd
+    assert "src/scpn_quantum_control/differentiable_api.py" in strict_cmd
+    assert "src/scpn_quantum_control/benchmarks/differentiable_programming.py" in strict_cmd
+
+
 def test_preflight_coverage_gate_matches_temporary_ci_threshold():
     assert "--cov-fail-under=70" in _preflight._PYTEST_COV
 
