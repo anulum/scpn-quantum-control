@@ -93,6 +93,9 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
             "src/scpn_quantum_control/phase/provider_gradient_audit.py",
             "src/scpn_quantum_control/phase/hardware_gradient_publication.py",
             "src/scpn_quantum_control/phase/provider_hardware_gradient_audit.py",
+            "src/scpn_quantum_control/phase/hardware_gradient_campaign.py",
+            "src/scpn_quantum_control/phase/gradient_backend.py",
+            "src/scpn_quantum_control/phase/gradient_tape.py",
         ],
     ),
 ]

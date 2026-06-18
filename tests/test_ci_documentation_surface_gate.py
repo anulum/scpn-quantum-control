@@ -44,3 +44,6 @@ def test_ci_gates_differentiable_strict_mypy_ratchet() -> None:
     assert "src/scpn_quantum_control/phase/provider_gradient_audit.py" in workflow
     assert "src/scpn_quantum_control/phase/hardware_gradient_publication.py" in workflow
     assert "src/scpn_quantum_control/phase/provider_hardware_gradient_audit.py" in workflow
+    assert "src/scpn_quantum_control/phase/hardware_gradient_campaign.py" in workflow
+    assert "src/scpn_quantum_control/phase/gradient_backend.py" in workflow
+    assert "src/scpn_quantum_control/phase/gradient_tape.py" in workflow
