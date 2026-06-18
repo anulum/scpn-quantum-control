@@ -40,6 +40,7 @@ def test_differentiable_programming_benchmark_suite_matches_analytic_references(
         "indexing_static_gather_contracts",
         "mutation_heavy_forward_only",
         "transform_nesting_vmap_program_grad",
+        "transform_nesting_custom_rule_vmap_jvp_vjp",
         "transform_nesting_whole_program_higher_order",
     ]
     assert {row.category for row in results} == {
@@ -86,6 +87,13 @@ def test_differentiable_programming_benchmark_suite_matches_analytic_references(
     transform_row = next(row for row in results if row.category == "transform-nesting")
     assert transform_row.gradient.shape == (12,)
     assert "grad(vmap(f))" in transform_row.claim_boundary
+    custom_rule_row = next(
+        row for row in results if row.case_id == "transform_nesting_custom_rule_vmap_jvp_vjp"
+    )
+    assert custom_rule_row.gradient.shape == (12,)
+    assert custom_rule_row.adjoint_supported is True
+    assert custom_rule_row.max_abs_adjoint_error == 0.0
+    assert "exact custom JVP/VJP" in custom_rule_row.claim_boundary
     higher_order_row = next(
         row for row in results if row.case_id == "transform_nesting_whole_program_higher_order"
     )

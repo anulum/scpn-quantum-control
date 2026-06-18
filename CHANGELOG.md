@@ -5,6 +5,9 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-06-18 — Added deterministic differentiable-programming conformance
+  coverage for eager `vmap` over exact custom JVP/VJP rules, with a
+  non-performance claim boundary.
 - 2026-06-18 — Registered Program AD `np.select`, `np.piecewise`,
   `np.choose`, `np.compress`, and `np.extract` as bounded selection-fold
   primitive contracts with shape, dtype, static mask/selector/branch metadata,

@@ -566,14 +566,16 @@ def differentiable_dashboard_status(
             backing_api="run_differentiable_programming_benchmark_suite",
             evidence=(
                 "transform_nesting_vmap_program_grad",
+                "transform_nesting_custom_rule_vmap_jvp_vjp",
                 "transform_nesting_whole_program_higher_order",
             ),
             blocked_reasons=()
             if conformance_passed
             else ("conformance suite not run in this status call",),
             claim_boundary=(
-                "local transform-algebra conformance for vmap, whole-program grad, "
-                "jacfwd, and jacrev only; no compiler, JIT, hardware, or performance claim"
+                "local transform-algebra conformance for vmap, exact custom JVP/VJP "
+                "rules, whole-program grad, jacfwd, and jacrev only; no compiler, JIT, "
+                "hardware, or performance claim"
             ),
         ),
         DifferentiableDashboardCapabilityRow(

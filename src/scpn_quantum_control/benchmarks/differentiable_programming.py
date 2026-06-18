@@ -18,7 +18,10 @@ import numpy as np
 from numpy.typing import NDArray
 
 from ..differentiable import (
+    CustomDerivativeRule,
     Parameter,
+    custom_jvp,
+    custom_vjp,
     grad,
     is_jax_autodiff_available,
     jacfwd,
@@ -207,6 +210,7 @@ def run_differentiable_programming_benchmark_suite() -> tuple[
         _indexing_heavy_case(),
         _mutation_heavy_case(),
         _transform_nesting_case(),
+        _custom_rule_transform_nesting_case(),
         _higher_order_transform_nesting_case(),
     )
 
@@ -1115,6 +1119,75 @@ def _higher_order_transform_nesting_case() -> DifferentiableProgrammingBenchmark
             "jacfwd/jacrev over whole-program grad(vmap(f)) compared with analytic "
             "block-diagonal curvature; diagnostic conformance only, not a performance "
             "timing claim"
+        ),
+    )
+
+
+def _custom_rule_transform_nesting_case() -> DifferentiableProgrammingBenchmarkResult:
+    values = np.array([[0.5, -0.25], [1.25, 0.75], [-0.4, 1.1]], dtype=np.float64)
+    tangents = np.array([[0.2, -0.5], [-0.3, 0.4], [0.75, -0.1]], dtype=np.float64)
+    cotangents = np.array([[1.0, -0.25], [0.5, 1.5], [-1.2, 0.75]], dtype=np.float64)
+
+    def value_fn(row: NDArray[np.float64]) -> NDArray[np.float64]:
+        return np.array([row[0] * row[0] + np.sin(row[1]), row[0] * row[1]], dtype=np.float64)
+
+    def jvp_rule(row: NDArray[np.float64], tangent: NDArray[np.float64]) -> NDArray[np.float64]:
+        return np.array(
+            [
+                2.0 * row[0] * tangent[0] + math.cos(row[1]) * tangent[1],
+                tangent[0] * row[1] + row[0] * tangent[1],
+            ],
+            dtype=np.float64,
+        )
+
+    def vjp_rule(row: NDArray[np.float64], cotangent: NDArray[np.float64]) -> NDArray[np.float64]:
+        return np.array(
+            [
+                2.0 * row[0] * cotangent[0] + row[1] * cotangent[1],
+                math.cos(row[1]) * cotangent[0] + row[0] * cotangent[1],
+            ],
+            dtype=np.float64,
+        )
+
+    rule = CustomDerivativeRule(
+        name="benchmark_custom_rule_transform_nesting",
+        value_fn=value_fn,
+        jvp_rule=jvp_rule,
+        vjp_rule=vjp_rule,
+        parameter_names=("x0", "x1"),
+    )
+    mapped_jvp = vmap(lambda row, tangent: custom_jvp(rule, row, tangent))(values, tangents)
+    mapped_vjp = vmap(lambda row, cotangent: custom_vjp(rule, row, cotangent).vjp)(
+        values, cotangents
+    )
+    analytic_jvp = np.asarray(
+        [jvp_rule(row, tangent) for row, tangent in zip(values, tangents, strict=True)],
+        dtype=np.float64,
+    )
+    analytic_vjp = np.asarray(
+        [vjp_rule(row, cotangent) for row, cotangent in zip(values, cotangents, strict=True)],
+        dtype=np.float64,
+    )
+    gradient = np.concatenate(
+        [
+            np.asarray(mapped_jvp, dtype=np.float64).reshape(-1),
+            np.asarray(mapped_vjp, dtype=np.float64).reshape(-1),
+        ]
+    )
+    analytic_gradient = np.concatenate([analytic_jvp.reshape(-1), analytic_vjp.reshape(-1)])
+    value = float(np.sum(cast(Any, vmap(value_fn)(values))))
+    return DifferentiableProgrammingBenchmarkResult(
+        case_id="transform_nesting_custom_rule_vmap_jvp_vjp",
+        category="transform-nesting",
+        value=value,
+        gradient=gradient,
+        analytic_gradient=analytic_gradient,
+        max_abs_gradient_error=_max_abs_error(gradient, analytic_gradient),
+        adjoint_supported=True,
+        max_abs_adjoint_error=0.0,
+        claim_boundary=(
+            "vmap over exact custom JVP/VJP rules compared with analytic row-wise "
+            "references; diagnostic conformance only, not a performance timing claim"
         ),
     )
 
