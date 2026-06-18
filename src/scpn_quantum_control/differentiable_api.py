@@ -641,8 +641,12 @@ def differentiable_dashboard_status(
         DifferentiableDashboardCapabilityRow(
             surface="nondifferentiability_diagnostics",
             state="diagnostic",
-            backing_api="diagnose_program_ad_linalg_conditioning",
-            evidence=("ProgramADLinalgConditioningDiagnostic",),
+            backing_api="primitive_contract_for",
+            evidence=(
+                "ProgramADLinalgConditioningDiagnostic",
+                "program_ad_elementwise:sign",
+                "program_ad_elementwise:heaviside",
+            ),
             blocked_reasons=("diagnostic rows do not execute or promote derivative kernels",),
             claim_boundary="local diagnostic evidence only; no provider, hardware, or benchmark claim",
         ),

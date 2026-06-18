@@ -198,6 +198,11 @@ def test_differentiable_dashboard_status_is_claim_bounded_for_gui_consumers() ->
     assert rows["program_ad_linalg_primitives"]["fail_closed"] is True
     assert "linalg_primitive_contracts" in rows["program_ad_linalg_primitives"]["evidence"]
     assert "rank-threshold" in rows["program_ad_linalg_primitives"]["claim_boundary"]
+    assert rows["nondifferentiability_diagnostics"]["state"] == "diagnostic"
+    assert "program_ad_elementwise:sign" in rows["nondifferentiability_diagnostics"]["evidence"]
+    assert (
+        "program_ad_elementwise:heaviside" in rows["nondifferentiability_diagnostics"]["evidence"]
+    )
     assert rows["higher_order_transform_algebra"]["state"] == "diagnostic"
     assert rows["higher_order_transform_algebra"]["fail_closed"] is True
     assert (

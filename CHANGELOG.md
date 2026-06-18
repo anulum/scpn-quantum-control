@@ -5,6 +5,11 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-06-18 — Registered Program AD `np.sign` and `np.heaviside` as
+  derivative-losing elementwise primitive contracts with explicit fail-closed
+  nondifferentiability policies and dashboard evidence. No derivative kernel,
+  benchmark-performance, Rust, LLVM/JIT, provider, or hardware claim is
+  promoted for these discontinuous primitives.
 - 2026-06-18 — Added bounded Program AD loop-carried state alias/effect
   metadata for local derivative-carrying scalar reassignment, with deterministic
   conformance evidence through `loop_carried_state_alias_metadata_contracts`

@@ -6665,6 +6665,35 @@ def test_program_ad_elementwise_boundary_metadata_is_explicit() -> None:
         assert metadata["nondifferentiable_boundary_policy"] == "fail_closed"
 
 
+def test_program_ad_discontinuous_elementwise_primitives_fail_closed_by_policy() -> None:
+    """Discontinuous elementwise primitives should expose explicit fail-closed policies."""
+
+    expected_boundaries = {
+        "sign": "sign_step_derivative_losing_boundary",
+        "heaviside": "heaviside_step_derivative_losing_boundary",
+    }
+    for name, boundary in expected_boundaries.items():
+        contract = primitive_contract_for(
+            PrimitiveIdentity("scpn.program_ad.elementwise", name, "1")
+        )
+        assert contract.lowering_metadata["nondifferentiable_boundary"] == boundary
+        assert contract.lowering_metadata["nondifferentiable_boundary_policy"] == "fail_closed"
+        assert (
+            contract.lowering_metadata["static_derivative_factory"] == "blocked_derivative_losing"
+        )
+
+    with pytest.raises(ValueError, match="program AD sign is derivative-losing"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(np.sign(values)),
+            np.array([-1.0, 2.0], dtype=np.float64),
+        )
+    with pytest.raises(ValueError, match="program AD heaviside is derivative-losing"):
+        whole_program_value_and_grad(
+            lambda values: np.sum(np.heaviside(values, 0.5)),
+            np.array([-1.0, 2.0], dtype=np.float64),
+        )
+
+
 def test_program_ad_elementwise_primitives_validate_registry_rules_at_dispatch() -> None:
     """Supported unary elementwise primitives must execute through registry validation rules."""
 

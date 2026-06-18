@@ -3445,6 +3445,12 @@ def _apply_trace_ufunc(
     inputs: tuple[object, ...],
     context: _WholeProgramTraceContext,
 ) -> TraceADScalar | TraceADArray:
+    if ufunc is np.sign and len(inputs) == 1:
+        _require_program_ad_elementwise_contract("sign", inputs)
+        _raise_program_ad_derivative_losing_elementwise("sign")
+    if ufunc is np.heaviside and len(inputs) == 2:
+        _require_program_ad_elementwise_contract("heaviside", inputs)
+        _raise_program_ad_derivative_losing_elementwise("heaviside")
     if ufunc is np.negative and len(inputs) == 1:
         operand = _coerce_trace_array(inputs[0], context)
         _require_program_ad_elementwise_contract("negative", (operand,))
@@ -11697,6 +11703,10 @@ _PROGRAM_AD_ELEMENTWISE_UNARY_NAMES = (
     "abs",
     "negative",
 )
+_PROGRAM_AD_ELEMENTWISE_DISCONTINUOUS_NAMES = (
+    "sign",
+    "heaviside",
+)
 _PROGRAM_AD_ELEMENTWISE_BINARY_NAMES = (
     "add",
     "subtract",
@@ -11708,6 +11718,7 @@ _PROGRAM_AD_ELEMENTWISE_BINARY_NAMES = (
 )
 _PROGRAM_AD_ELEMENTWISE_NAMES = (
     *_PROGRAM_AD_ELEMENTWISE_UNARY_NAMES,
+    *_PROGRAM_AD_ELEMENTWISE_DISCONTINUOUS_NAMES,
     *_PROGRAM_AD_ELEMENTWISE_BINARY_NAMES,
 )
 _PROGRAM_AD_ELEMENTWISE_IDENTITIES: Mapping[str, PrimitiveIdentity] = {
@@ -14587,6 +14598,30 @@ def _program_ad_elementwise_direct_jvp(
     )
 
 
+def _raise_program_ad_derivative_losing_elementwise(name: str) -> NoReturn:
+    raise ValueError(
+        f"program AD {name} is derivative-losing and fails closed under the registered "
+        "nondifferentiability policy"
+    )
+
+
+def _program_ad_elementwise_derivative_losing_value_for(name: str) -> VectorObjective:
+    def value_fn(_values: NDArray[np.float64]) -> NDArray[np.float64]:
+        _raise_program_ad_derivative_losing_elementwise(name)
+
+    return value_fn
+
+
+def _program_ad_elementwise_derivative_losing_jvp_for(name: str) -> CustomJVPRule:
+    def jvp_rule(
+        _values: NDArray[np.float64],
+        _tangent: NDArray[np.float64],
+    ) -> NDArray[np.float64]:
+        _raise_program_ad_derivative_losing_elementwise(name)
+
+    return jvp_rule
+
+
 def _program_ad_elementwise_unary_vector(
     name: str, values: NDArray[np.float64]
 ) -> NDArray[np.float64]:
@@ -15125,6 +15160,13 @@ def program_ad_elementwise_binary_derivative_rule(
 
 
 def _program_ad_elementwise_derivative_rule(name: str) -> CustomDerivativeRule:
+    if name in _PROGRAM_AD_ELEMENTWISE_DISCONTINUOUS_NAMES:
+        return CustomDerivativeRule(
+            name=f"program_ad_elementwise_{name}_fail_closed_rule",
+            value_fn=_program_ad_elementwise_derivative_losing_value_for(name),
+            jvp_rule=_program_ad_elementwise_derivative_losing_jvp_for(name),
+            vjp_rule=_program_ad_elementwise_derivative_losing_jvp_for(name),
+        )
     if name in _PROGRAM_AD_ELEMENTWISE_UNARY_NAMES:
         return CustomDerivativeRule(
             name=f"program_ad_elementwise_{name}_direct_rule",
@@ -20494,6 +20536,7 @@ def _program_ad_elementwise_batching_rule(
 
 def _program_ad_elementwise_lowering_metadata(name: str) -> Mapping[str, str]:
     is_binary = name in _PROGRAM_AD_ELEMENTWISE_BINARY_NAMES
+    is_derivative_losing = name in _PROGRAM_AD_ELEMENTWISE_DISCONTINUOUS_NAMES
     metadata = {
         "program_ad": "operator_intercepted_trace",
         "mlir": "available: scpn_diff elementwise dialect interchange; executable lowering blocked",
@@ -20502,11 +20545,19 @@ def _program_ad_elementwise_lowering_metadata(name: str) -> Mapping[str, str]:
         "rust": "blocked_until_polyglot_elementwise_ad",
         "static_argument_rule": "none",
         "static_derivative_factory": (
-            "program_ad_elementwise_binary_derivative_rule" if is_binary else "not_required"
+            "blocked_derivative_losing"
+            if is_derivative_losing
+            else "program_ad_elementwise_binary_derivative_rule"
+            if is_binary
+            else "not_required"
         ),
         "static_signature": (
             "left_shape:ranked_tensor_shape;right_shape:ranked_tensor_shape"
             if is_binary
+            else "source_shape:ranked_tensor_shape;step_value"
+            if name == "heaviside"
+            else "source_shape:ranked_tensor_shape"
+            if is_derivative_losing
             else "none"
         ),
     }
@@ -20522,6 +20573,8 @@ def _program_ad_elementwise_lowering_metadata(name: str) -> Mapping[str, str]:
         "power": "positive_base_for_variable_exponent",
         "maximum": "equal_operand_tie",
         "minimum": "equal_operand_tie",
+        "sign": "sign_step_derivative_losing_boundary",
+        "heaviside": "heaviside_step_derivative_losing_boundary",
     }
     boundary = nondifferentiable_boundaries.get(name)
     if boundary is not None:
