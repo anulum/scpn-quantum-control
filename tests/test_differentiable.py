@@ -15188,6 +15188,63 @@ def test_program_ad_alias_effect_analysis_tracks_array_view_aliases() -> None:
     )
 
 
+def test_program_ad_alias_effect_analysis_tracks_static_slice_mutation() -> None:
+    """Program AD slice mutation should preserve gradients and source metadata."""
+
+    def objective(values: np.ndarray) -> object:
+        window = values.reshape((6,))[1:5]
+        window[1:3] = np.array([2.0 * values[0], values[5] + 1.0])
+        return window[0] + window[1] + window[2] + window[3]
+
+    result = whole_program_value_and_grad(
+        objective,
+        np.array([0.25, 0.5, 0.75, 1.0, 1.25, 1.5], dtype=np.float64),
+    )
+    assert result.program_ir is not None
+    analysis = analyze_program_ad_alias_effects(result.program_ir)
+
+    mutation_edges = tuple(
+        edge for edge in analysis.alias_edges if edge.kind == "mutation_version"
+    )
+    assert len(mutation_edges) == 2
+    assert any(edge.source == "%array[2]" for edge in mutation_edges)
+    assert any(edge.source == "%array[3]" for edge in mutation_edges)
+    assert any(effect.kind == "mutation" for effect in result.program_ir.effects)
+    assert any(edge.target.startswith("view:getitem") for edge in analysis.alias_edges)
+    assert analysis.mutation_effects == tuple(sorted(analysis.mutation_effects))
+    assert analysis.claim_boundary == "metadata_only_no_general_alias_lattice"
+    np.testing.assert_allclose(result.gradient, [2.0, 1.0, 0.0, 0.0, 1.0, 1.0], atol=1.0e-12)
+    np.testing.assert_allclose(program_adjoint_gradient(result), result.gradient, atol=1.0e-12)
+
+
+def test_program_ad_static_slice_mutation_fails_closed_for_unsupported_shapes() -> None:
+    """Program AD slice mutation should reject non-rank-1 and length-mismatched writes."""
+
+    with pytest.raises(ValueError, match="rank-1"):
+        whole_program_value_and_grad(
+            lambda values: _program_ad_rank_two_slice_write(values),
+            np.array([0.25, 0.5, 0.75, 1.0], dtype=np.float64),
+        )
+
+    with pytest.raises(ValueError, match="value length"):
+        whole_program_value_and_grad(
+            lambda values: _program_ad_slice_write_length_mismatch(values),
+            np.array([0.25, 0.5, 0.75, 1.0], dtype=np.float64),
+        )
+
+
+def _program_ad_rank_two_slice_write(values: np.ndarray) -> object:
+    matrix = values.reshape((2, 2))
+    matrix[0:1] = np.array([values[0]])
+    return np.sum(matrix)
+
+
+def _program_ad_slice_write_length_mismatch(values: np.ndarray) -> object:
+    work = values.reshape((4,))
+    work[1:3] = np.array([values[0]])
+    return np.sum(work)
+
+
 def test_program_ad_alias_effect_analysis_tracks_list_alias_rebinding() -> None:
     """Program AD source metadata should expose local list alias rebinding."""
 

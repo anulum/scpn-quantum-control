@@ -41,6 +41,7 @@ def test_differentiable_programming_benchmark_suite_matches_analytic_references(
         "indexing_static_gather_contracts",
         "mutation_heavy_forward_only",
         "shape_view_alias_metadata_contracts",
+        "slice_mutation_alias_metadata_contracts",
         "transform_nesting_vmap_program_grad",
         "transform_nesting_custom_rule_vmap_jvp_vjp",
         "transform_nesting_program_ad_vmap_jvp_vjp",
@@ -72,12 +73,15 @@ def test_differentiable_programming_benchmark_suite_matches_analytic_references(
     assert mutation_row.max_abs_adjoint_error is not None
     assert mutation_row.max_abs_adjoint_error <= 1.0e-12
     assert np.any(mutation_row.gradient != 0.0)
-    alias_row = next(row for row in results if row.category == "alias-effect")
-    assert alias_row.adjoint_supported is True
-    assert alias_row.max_abs_adjoint_error is not None
-    assert alias_row.max_abs_adjoint_error <= 1.0e-12
-    assert "shape-view alias metadata conformance" in alias_row.claim_boundary
-    assert "metadata_only_no_general_alias_lattice" in alias_row.claim_boundary
+    alias_rows = tuple(row for row in results if row.category == "alias-effect")
+    assert len(alias_rows) == 2
+    for alias_row in alias_rows:
+        assert alias_row.adjoint_supported is True
+        assert alias_row.max_abs_adjoint_error is not None
+        assert alias_row.max_abs_adjoint_error <= 1.0e-12
+        assert "metadata_only_no_general_alias_lattice" in alias_row.claim_boundary
+    assert any("shape-view alias metadata conformance" in row.claim_boundary for row in alias_rows)
+    assert any("slice-mutation alias/effect metadata" in row.claim_boundary for row in alias_rows)
     python_semantics_row = next(row for row in results if row.category == "python-semantics")
     assert python_semantics_row.adjoint_supported is True
     assert python_semantics_row.max_abs_adjoint_error is not None

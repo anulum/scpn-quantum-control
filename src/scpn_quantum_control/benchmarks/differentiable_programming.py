@@ -214,6 +214,7 @@ def run_differentiable_programming_benchmark_suite() -> tuple[
         _indexing_heavy_case(),
         _mutation_heavy_case(),
         _shape_view_alias_metadata_case(),
+        _slice_mutation_alias_metadata_case(),
         _transform_nesting_case(),
         _custom_rule_transform_nesting_case(),
         _program_ad_transform_jvp_vjp_case(),
@@ -1141,6 +1142,50 @@ def _shape_view_alias_metadata_case() -> DifferentiableProgrammingBenchmarkResul
             "ravel, squeeze, expand_dims, swapaxes, moveaxis, repeat, and atleast_3d; "
             "metadata_only_no_general_alias_lattice; no wall-clock performance, "
             "hardware, LLVM, Rust, or JIT execution claim"
+        ),
+    )
+
+
+def _slice_mutation_alias_metadata_case() -> DifferentiableProgrammingBenchmarkResult:
+    values = np.array([0.25, 0.5, 0.75, 1.0, 1.25, 1.5], dtype=np.float64)
+
+    def objective(trace_values: Any) -> object:
+        window = np.reshape(trace_values, (6,))[1:5]
+        window[1:3] = np.array([2.0 * trace_values[0], trace_values[5] + 1.0])
+        return window[0] + window[1] + window[2] + window[3]
+
+    result = whole_program_value_and_grad(objective, values)
+    if result.program_ir is None:
+        raise ValueError("slice-mutation alias benchmark requires Program AD IR")
+    analysis = analyze_program_ad_alias_effects(result.program_ir)
+    mutation_sources = tuple(
+        edge.source for edge in analysis.alias_edges if edge.kind == "mutation_version"
+    )
+    if "%array[2]" not in mutation_sources or "%array[3]" not in mutation_sources:
+        raise ValueError("slice-mutation alias benchmark missing source-index mutations")
+    if not any(edge.target.startswith("view:getitem") for edge in analysis.alias_edges):
+        raise ValueError("slice-mutation alias benchmark missing view alias metadata")
+    if len(analysis.mutation_effects) != 2:
+        raise ValueError("slice-mutation alias benchmark expected two mutation effects")
+
+    analytic = np.array([2.0, 1.0, 0.0, 0.0, 1.0, 1.0], dtype=np.float64)
+    adjoint_supported = result.adjoint_result is not None and result.adjoint_result.supported
+    adjoint_error = (
+        _max_abs_error(program_adjoint_gradient(result), analytic) if adjoint_supported else None
+    )
+    return DifferentiableProgrammingBenchmarkResult(
+        case_id="slice_mutation_alias_metadata_contracts",
+        category="alias-effect",
+        value=result.value,
+        gradient=result.gradient,
+        analytic_gradient=analytic,
+        max_abs_gradient_error=_max_abs_error(result.gradient, analytic),
+        adjoint_supported=adjoint_supported,
+        max_abs_adjoint_error=adjoint_error,
+        claim_boundary=(
+            "deterministic static slice-mutation alias/effect metadata conformance for "
+            "rank-1 Program AD views; metadata_only_no_general_alias_lattice; no "
+            "wall-clock performance, hardware, LLVM, Rust, or JIT execution claim"
         ),
     )
 

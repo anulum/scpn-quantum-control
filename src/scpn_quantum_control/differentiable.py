@@ -1673,6 +1673,51 @@ class TraceADArray:
     def __setitem__(self, index: object, value: object) -> None:
         if self.ndim > 2:
             raise ValueError("whole-program AD array mutation supports arrays with rank <= 2")
+        if isinstance(index, slice):
+            if self.ndim != 1:
+                raise ValueError("whole-program AD slice mutation supports rank-1 arrays")
+            targets = tuple(range(self.size))[index]
+            if not targets:
+                return
+            if isinstance(value, TraceADArray):
+                array_value = _coerce_trace_array(value, self.context)
+                if array_value.shape == ():
+                    scalars = (array_value.item(),) * len(targets)
+                elif array_value.size == len(targets):
+                    scalars = tuple(array_value._items)
+                else:
+                    raise ValueError(
+                        "whole-program AD slice mutation value length must match target length"
+                    )
+            elif isinstance(value, TraceADScalar):
+                scalars = (_coerce_trace_scalar(value, self.context),) * len(targets)
+            else:
+                raw_value = np.asarray(value)
+                if raw_value.shape == ():
+                    scalars = (_coerce_trace_scalar(float(raw_value), self.context),) * len(
+                        targets
+                    )
+                elif raw_value.dtype.kind == "O" and all(
+                    isinstance(item, TraceADScalar) for item in raw_value.reshape(-1)
+                ):
+                    flat_values = tuple(
+                        _coerce_trace_scalar(item, self.context) for item in raw_value.reshape(-1)
+                    )
+                    if len(flat_values) != len(targets):
+                        raise ValueError(
+                            "whole-program AD slice mutation value length must match target length"
+                        )
+                    scalars = flat_values
+                else:
+                    array_value = _coerce_trace_array(value, self.context)
+                    if array_value.size != len(targets):
+                        raise ValueError(
+                            "whole-program AD slice mutation value length must match target length"
+                        )
+                    scalars = tuple(array_value._items)
+            for flat_index, scalar in zip(targets, scalars, strict=True):
+                self._set_flat_item(int(flat_index), scalar)
+            return
         if isinstance(index, tuple):
             if self.ndim != 2 or len(index) != 2:
                 raise ValueError("whole-program AD matrix mutation expects two integer indices")
@@ -1686,15 +1731,30 @@ class TraceADArray:
         elif isinstance(index, (int, np.integer)):
             flat_index = int(index)
         else:
-            raise ValueError("whole-program AD array mutation supports integer indices")
+            raise ValueError("whole-program AD array mutation supports integer or slice indices")
         scalar = _coerce_trace_scalar(value, self.context)
+        self._set_flat_item(flat_index, scalar)
+
+    def _set_flat_item(self, flat_index: int, scalar: TraceADScalar) -> None:
+        """Assign one flattened element and emit deterministic mutation metadata."""
+
+        if flat_index < 0:
+            flat_index += self.size
+        if flat_index < 0 or flat_index >= self.size:
+            raise ValueError("whole-program AD array mutation index out of bounds")
+        source_index = None if self._source_indices is None else self._source_indices[flat_index]
+        mutation_target = f"%array[{flat_index if source_index is None else source_index}]"
         self.context.make(
             "mutation:setitem",
-            (f"%array[{flat_index}]", scalar.name),
+            (mutation_target, scalar.name),
             scalar.primal,
             scalar.tangent,
         )
         self._items[flat_index] = scalar
+        if self._source_indices is not None:
+            source_indices = list(self._source_indices)
+            source_indices[flat_index] = None
+            self._source_indices = tuple(source_indices)
 
     def __array_ufunc__(
         self, ufunc: np.ufunc, method: str, *inputs: object, **kwargs: object

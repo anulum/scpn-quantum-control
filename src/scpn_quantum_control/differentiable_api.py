@@ -552,6 +552,7 @@ def differentiable_dashboard_status(
                 "ProgramADAliasEffectAnalysis",
                 "ProgramADAliasSet",
                 "shape_view_alias_metadata_contracts",
+                "slice_mutation_alias_metadata_contracts",
             ),
             blocked_reasons=("full static alias lattice remains open",),
             claim_boundary="metadata_only_no_general_alias_lattice",
