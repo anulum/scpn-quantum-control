@@ -99,7 +99,10 @@ The gate is planning and classification evidence only; it does not run shell
 commands or promote benchmark artefacts.
 CI, local preflight, and the pre-push hook enforce a separate strict-mypy
 ratchet for `differentiable.py`, `differentiable_claim_ledger.py`,
-`differentiable_api.py`, and `benchmarks/differentiable_programming.py`.
+`differentiable_api.py`, `benchmarks/differentiable_programming.py`,
+`differentiable_external_validation.py`, `differentiable_framework_overlay.py`,
+`differentiable_module_hardening_audit.py`, and
+`benchmarks/differentiable_hardening_gate.py`.
 That ratchet is module-specific governance; repository-wide `mypy --strict`
 remains open until the rest of the codebase is migrated.
 `run_differentiable_module_hardening_audit()` discovers the differentiable

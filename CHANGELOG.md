@@ -13,8 +13,9 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   promotion surfaces. CI, local preflight, and the pre-push hook now enforce
   `mypy --strict` on `differentiable.py`, `differentiable_claim_ledger.py`,
   `differentiable_api.py`, and
-  `benchmarks/differentiable_programming.py`; repository-wide strict mode
-  remains open debt.
+  `benchmarks/differentiable_programming.py`, plus external-validation,
+  framework-overlay, module-hardening-audit, and hardening-gate differentiable
+  modules; repository-wide strict mode remains open debt.
 - 2026-06-18 — Exposed structured numeric Program AD primitive conformance
   through `structured_numeric_primitive_contracts` and the
   `program_ad_structured_primitives` dashboard row. The row covers product,

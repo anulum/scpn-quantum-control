@@ -80,6 +80,10 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
             "src/scpn_quantum_control/differentiable_claim_ledger.py",
             "src/scpn_quantum_control/differentiable_api.py",
             "src/scpn_quantum_control/benchmarks/differentiable_programming.py",
+            "src/scpn_quantum_control/differentiable_external_validation.py",
+            "src/scpn_quantum_control/differentiable_framework_overlay.py",
+            "src/scpn_quantum_control/differentiable_module_hardening_audit.py",
+            "src/scpn_quantum_control/benchmarks/differentiable_hardening_gate.py",
         ],
     ),
 ]

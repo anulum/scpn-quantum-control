@@ -31,3 +31,7 @@ def test_pre_push_hook_gates_differentiable_strict_mypy_ratchet() -> None:
     assert "src/scpn_quantum_control/differentiable_claim_ledger.py" in config
     assert "src/scpn_quantum_control/differentiable_api.py" in config
     assert "src/scpn_quantum_control/benchmarks/differentiable_programming.py" in config
+    assert "src/scpn_quantum_control/differentiable_external_validation.py" in config
+    assert "src/scpn_quantum_control/differentiable_framework_overlay.py" in config
+    assert "src/scpn_quantum_control/differentiable_module_hardening_audit.py" in config
+    assert "src/scpn_quantum_control/benchmarks/differentiable_hardening_gate.py" in config
