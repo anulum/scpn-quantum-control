@@ -22,6 +22,11 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   The audit helper now avoids the redundant casts that blocked strict mode, and
   CI, local preflight, and the pre-push hook enforce the same eleven-module
   strict command while repository-wide strict mode remains open debt.
+- 2026-06-18 — Extended the differentiable strict-mypy ratchet to
+  `phase/gradient_support_matrix.py` and `phase/provider_gradient.py`, bringing
+  the explicit CI, local preflight, and pre-push strict command to thirteen
+  differentiable/gradient modules while repository-wide strict mode remains
+  open debt.
 - 2026-06-18 — Exposed structured numeric Program AD primitive conformance
   through `structured_numeric_primitive_contracts` and the
   `program_ad_structured_primitives` dashboard row. The row covers product,

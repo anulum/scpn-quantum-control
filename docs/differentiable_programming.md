@@ -104,7 +104,8 @@ ratchet for `differentiable.py`, `differentiable_claim_ledger.py`,
 `differentiable_module_hardening_audit.py`, and
 `benchmarks/differentiable_hardening_gate.py`,
 `benchmarks/differentiable_evidence.py`, `phase/differentiable_readiness.py`,
-and `phase/differentiable_audit.py`.
+`phase/differentiable_audit.py`, `phase/gradient_support_matrix.py`, and
+`phase/provider_gradient.py`.
 That ratchet is module-specific governance; repository-wide `mypy --strict`
 remains open until the rest of the codebase is migrated.
 `run_differentiable_module_hardening_audit()` discovers the differentiable
