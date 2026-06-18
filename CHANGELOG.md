@@ -38,6 +38,12 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   `phase/gradient_tape.py`, bringing the explicit CI, local preflight, and
   pre-push strict command to twenty differentiable/gradient modules while
   repository-wide strict mode remains open debt.
+- 2026-06-18 — Extended the differentiable strict-mypy ratchet to
+  `phase/natural_gradient.py`, `phase/gradient_descent.py`, and
+  `phase/qnode_affinity_benchmark.py`, bringing the explicit CI, local
+  preflight, and pre-push strict command to twenty-three
+  differentiable/gradient modules while repository-wide strict mode remains
+  open debt.
 - 2026-06-18 — Exposed structured numeric Program AD primitive conformance
   through `structured_numeric_primitive_contracts` and the
   `program_ad_structured_primitives` dashboard row. The row covers product,

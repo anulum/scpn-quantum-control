@@ -47,3 +47,6 @@ def test_ci_gates_differentiable_strict_mypy_ratchet() -> None:
     assert "src/scpn_quantum_control/phase/hardware_gradient_campaign.py" in workflow
     assert "src/scpn_quantum_control/phase/gradient_backend.py" in workflow
     assert "src/scpn_quantum_control/phase/gradient_tape.py" in workflow
+    assert "src/scpn_quantum_control/phase/natural_gradient.py" in workflow
+    assert "src/scpn_quantum_control/phase/gradient_descent.py" in workflow
+    assert "src/scpn_quantum_control/phase/qnode_affinity_benchmark.py" in workflow
