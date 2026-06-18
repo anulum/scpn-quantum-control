@@ -50,3 +50,6 @@ def test_pre_push_hook_gates_differentiable_strict_mypy_ratchet() -> None:
     assert "src/scpn_quantum_control/phase/natural_gradient.py" in config
     assert "src/scpn_quantum_control/phase/gradient_descent.py" in config
     assert "src/scpn_quantum_control/phase/qnode_affinity_benchmark.py" in config
+    assert "src/scpn_quantum_control/phase/qnode_tape.py" in config
+    assert "src/scpn_quantum_control/phase/qnode_provider_transforms.py" in config
+    assert "src/scpn_quantum_control/phase/qnode_transforms.py" in config
