@@ -5,6 +5,10 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-06-18 — Added bounded Program AD loop-carried state alias/effect
+  metadata for local derivative-carrying scalar reassignment, with deterministic
+  conformance evidence through `loop_carried_state_alias_metadata_contracts`
+  while keeping the full alias lattice and Rust/LLVM promotion blocked.
 - 2026-06-18 — Exposed Program AD array-indexing conformance in
   `differentiable_dashboard_status(...)`. The `program_ad_array_indexing` row
   is diagnostic by default and becomes conformance-backed only when

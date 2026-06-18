@@ -215,6 +215,7 @@ def run_differentiable_programming_benchmark_suite() -> tuple[
         _mutation_heavy_case(),
         _shape_view_alias_metadata_case(),
         _slice_mutation_alias_metadata_case(),
+        _loop_carried_state_alias_metadata_case(),
         _transform_nesting_case(),
         _custom_rule_transform_nesting_case(),
         _program_ad_transform_jvp_vjp_case(),
@@ -1220,6 +1221,56 @@ def _slice_mutation_alias_metadata_case() -> DifferentiableProgrammingBenchmarkR
             "deterministic static slice-mutation alias/effect metadata conformance for "
             "rank-1 Program AD views; metadata_only_no_general_alias_lattice; no "
             "wall-clock performance, hardware, LLVM, Rust, or JIT execution claim"
+        ),
+    )
+
+
+def _loop_carried_state_alias_metadata_case() -> DifferentiableProgrammingBenchmarkResult:
+    values = np.array([0.25, 0.5, 0.75, 1.0, 1.25], dtype=np.float64)
+
+    def objective(trace_values: Any) -> object:
+        carry = trace_values[0]
+        for index in range(1, 4):
+            carry = carry + float(index) * trace_values[index]
+        return carry + trace_values[4]
+
+    result = whole_program_value_and_grad(objective, values)
+    if result.program_ir is None:
+        raise ValueError("loop-carried state alias benchmark requires Program AD IR")
+    analysis = analyze_program_ad_alias_effects(result.program_ir)
+    loop_edges = tuple(edge for edge in analysis.alias_edges if edge.kind == "loop_carried_state")
+    if not any(
+        edge.source == "loop:carry:entry" and edge.target == "loop:carry:backedge"
+        for edge in loop_edges
+    ):
+        raise ValueError("loop-carried state alias benchmark missing carry backedge metadata")
+    if not any(
+        phi.selected == "executed_loop_trace"
+        and "loop_entry" in phi.incoming
+        and "loop_backedge" in phi.incoming
+        for phi in result.program_ir.phi_nodes
+    ):
+        raise ValueError("loop-carried state alias benchmark missing loop phi metadata")
+
+    analytic = np.array([1.0, 1.0, 2.0, 3.0, 1.0], dtype=np.float64)
+    adjoint_supported = result.adjoint_result is not None and result.adjoint_result.supported
+    adjoint_error = (
+        _max_abs_error(program_adjoint_gradient(result), analytic) if adjoint_supported else None
+    )
+    return DifferentiableProgrammingBenchmarkResult(
+        case_id="loop_carried_state_alias_metadata_contracts",
+        category="alias-effect",
+        value=result.value,
+        gradient=result.gradient,
+        analytic_gradient=analytic,
+        max_abs_gradient_error=_max_abs_error(result.gradient, analytic),
+        adjoint_supported=adjoint_supported,
+        max_abs_adjoint_error=adjoint_error,
+        claim_boundary=(
+            "deterministic loop-carried state alias metadata conformance for local "
+            "derivative-carrying scalar reassignment; "
+            "metadata_only_no_general_alias_lattice; no wall-clock performance, "
+            "hardware, LLVM, Rust, or JIT execution claim"
         ),
     )
 

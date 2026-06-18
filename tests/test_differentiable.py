@@ -4535,7 +4535,7 @@ def test_whole_program_ad_numpy_linear_algebra_fail_closed_paths() -> None:
             lambda values: np.tensordot(values, values, axes=2),
             np.array([1.0, 2.0], dtype=np.float64),
         )
-    with pytest.raises(ValueError, match="argsort selection semantics"):
+    with pytest.raises(ValueError, match="argmax/argmin/argsort index selection semantics"):
         whole_program_value_and_grad(
             lambda values: np.argsort(values)[0],
             np.array([1.0, 2.0], dtype=np.float64),
@@ -10199,7 +10199,7 @@ def test_program_ad_sort_fails_closed_on_nondifferentiable_boundaries() -> None:
             np.array([1.0, 2.0, 3.0, 4.0], dtype=np.float64),
         )
 
-    with pytest.raises(ValueError, match="argsort selection semantics"):
+    with pytest.raises(ValueError, match="argmax/argmin/argsort index selection semantics"):
         whole_program_value_and_grad(
             lambda values: np.argsort(values)[0],
             np.array([1.0, 2.0], dtype=np.float64),
@@ -15340,6 +15340,49 @@ def test_program_ad_alias_effect_analysis_tracks_local_scalar_rebinding() -> Non
     )
     assert analysis.claim_boundary == "metadata_only_no_general_alias_lattice"
     np.testing.assert_allclose(result.gradient, [1.0, 3.0], atol=1.0e-12)
+
+
+def test_program_ad_alias_effect_analysis_tracks_loop_carried_state() -> None:
+    """Program AD source metadata should expose derivative-carrying loop state."""
+
+    def objective(values: np.ndarray) -> object:
+        carry = values[0]
+        for index in range(1, 4):
+            carry = carry + float(index) * values[index]
+        return carry + values[4]
+
+    result = whole_program_value_and_grad(
+        objective,
+        np.array([0.25, 0.5, 0.75, 1.0, 1.25], dtype=np.float64),
+        parameters=(
+            Parameter("seed"),
+            Parameter("step1"),
+            Parameter("step2"),
+            Parameter("step3"),
+            Parameter("tail"),
+        ),
+    )
+    assert result.program_ir is not None
+
+    analysis = analyze_program_ad_alias_effects(result.program_ir)
+    loop_edges = tuple(edge for edge in analysis.alias_edges if edge.kind == "loop_carried_state")
+
+    assert loop_edges
+    assert any(edge.source == "loop:carry:entry" for edge in loop_edges)
+    assert any(edge.target == "loop:carry:backedge" for edge in loop_edges)
+    assert any(
+        "loop:carry:entry" in alias_set.members and "loop:carry:backedge" in alias_set.members
+        for alias_set in analysis.alias_sets
+    )
+    assert any(
+        phi.selected == "executed_loop_trace"
+        and "loop_entry" in phi.incoming
+        and "loop_backedge" in phi.incoming
+        for phi in result.program_ir.phi_nodes
+    )
+    assert analysis.claim_boundary == "metadata_only_no_general_alias_lattice"
+    np.testing.assert_allclose(result.gradient, [1.0, 1.0, 2.0, 3.0, 1.0], atol=1.0e-12)
+    np.testing.assert_allclose(program_adjoint_gradient(result), result.gradient, atol=1.0e-12)
 
 
 def test_program_ad_effect_ir_validation_paths() -> None:

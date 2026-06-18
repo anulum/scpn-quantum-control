@@ -179,6 +179,10 @@ def test_differentiable_dashboard_status_is_claim_bounded_for_gui_consumers() ->
     assert (
         "slice_mutation_alias_metadata_contracts" in rows["program_ad_alias_effects"]["evidence"]
     )
+    assert (
+        "loop_carried_state_alias_metadata_contracts"
+        in rows["program_ad_alias_effects"]["evidence"]
+    )
     assert rows["program_ad_python_semantics"]["state"] == "diagnostic"
     assert rows["program_ad_python_semantics"]["fail_closed"] is True
     assert "python_semantics_list_comprehension" in rows["program_ad_python_semantics"]["evidence"]

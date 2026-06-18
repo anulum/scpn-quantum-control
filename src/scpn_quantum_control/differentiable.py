@@ -537,6 +537,7 @@ _PROGRAM_AD_SUPPORTED_ALIAS_EDGE_KINDS = frozenset(
         "alias_analysis",
         "list_alias",
         "local_rebinding_alias",
+        "loop_carried_state",
         "mutation_version",
         "source_alias",
         "view_alias",
@@ -1099,7 +1100,11 @@ class _WholeProgramTraceContext:
         control_regions = list(self.control_regions)
         phi_nodes = list(self.phi_nodes)
         for feature in source_ir_features:
-            if feature.kind in {"list_alias", "local_rebinding_alias"}:
+            if feature.kind in {
+                "list_alias",
+                "local_rebinding_alias",
+                "loop_carried_state",
+            }:
                 source, separator, target = feature.detail.partition("->")
                 if not separator or not source or not target:
                     raise ValueError(
@@ -8491,6 +8496,7 @@ def _source_ir_features(
                 add(node, "mutation", name)
     features.extend(_source_list_alias_features(tree))
     features.extend(_source_local_rebinding_alias_features(tree))
+    features.extend(_source_loop_carried_state_features(tree))
     return tuple(features)
 
 
@@ -8569,6 +8575,74 @@ def _source_local_rebinding_alias_features(
                         line_number,
                     )
                 )
+    return tuple(features)
+
+
+def _source_loop_carried_state_features(
+    tree: ast.AST,
+) -> tuple[WholeProgramSourceIRFeature, ...]:
+    """Return bounded source metadata for local loop-carried scalar state."""
+
+    features: list[WholeProgramSourceIRFeature] = []
+
+    def assigned_names_in_target(target: ast.AST) -> set[str]:
+        if isinstance(target, ast.Name):
+            return {target.id}
+        if isinstance(target, (ast.Tuple, ast.List)):
+            names: set[str] = set()
+            for element in target.elts:
+                names.update(assigned_names_in_target(element))
+            return names
+        return set()
+
+    def assigned_names_in_statement(statement: ast.stmt) -> set[str]:
+        if isinstance(statement, ast.Assign):
+            names: set[str] = set()
+            for target in statement.targets:
+                names.update(assigned_names_in_target(target))
+            return names
+        if isinstance(statement, ast.AnnAssign):
+            return assigned_names_in_target(statement.target)
+        if isinstance(statement, ast.AugAssign):
+            return assigned_names_in_target(statement.target)
+        if isinstance(statement, (ast.For, ast.While, ast.If)):
+            names = (
+                assigned_names_in_target(statement.target)
+                if isinstance(statement, ast.For)
+                else set()
+            )
+            for child in (*statement.body, *statement.orelse):
+                names.update(assigned_names_in_statement(child))
+            return names
+        return set()
+
+    def scan_statement_block(statements: Sequence[ast.stmt]) -> set[str]:
+        assigned_before: set[str] = set()
+        for statement in statements:
+            if isinstance(statement, (ast.For, ast.While)):
+                loop_assigned: set[str] = set()
+                for child in statement.body:
+                    loop_assigned.update(assigned_names_in_statement(child))
+                line_number = int(getattr(statement, "lineno", 1) or 1)
+                for name in sorted(assigned_before.intersection(loop_assigned)):
+                    features.append(
+                        WholeProgramSourceIRFeature(
+                            "loop_carried_state",
+                            f"loop:{name}:entry->loop:{name}:backedge",
+                            line_number,
+                        )
+                    )
+                scan_statement_block(statement.body)
+                scan_statement_block(statement.orelse)
+            elif isinstance(statement, ast.If):
+                scan_statement_block(statement.body)
+                scan_statement_block(statement.orelse)
+            assigned_before.update(assigned_names_in_statement(statement))
+        return assigned_before
+
+    for node in ast.walk(tree):
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            scan_statement_block(node.body)
     return tuple(features)
 
 
