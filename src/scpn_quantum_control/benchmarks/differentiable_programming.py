@@ -27,7 +27,9 @@ from ..differentiable import (
     jacfwd,
     jacrev,
     jax_value_and_grad,
+    jvp,
     program_adjoint_gradient,
+    vjp,
     vmap,
     whole_program_value_and_grad,
 )
@@ -211,6 +213,7 @@ def run_differentiable_programming_benchmark_suite() -> tuple[
         _mutation_heavy_case(),
         _transform_nesting_case(),
         _custom_rule_transform_nesting_case(),
+        _program_ad_transform_jvp_vjp_case(),
         _higher_order_transform_nesting_case(),
     )
 
@@ -1188,6 +1191,50 @@ def _custom_rule_transform_nesting_case() -> DifferentiableProgrammingBenchmarkR
         claim_boundary=(
             "vmap over exact custom JVP/VJP rules compared with analytic row-wise "
             "references; diagnostic conformance only, not a performance timing claim"
+        ),
+    )
+
+
+def _program_ad_transform_jvp_vjp_case() -> DifferentiableProgrammingBenchmarkResult:
+    values = np.array([[0.5, 0.25], [-1.2, 0.75]], dtype=np.float64)
+    flat_values = values.reshape(-1)
+    tangent = np.array([0.3, -0.2, 0.4, 0.1], dtype=np.float64)
+    cotangent = np.array([1.5, -0.25, 0.75, 0.5], dtype=np.float64)
+    row_shape = (2, 2)
+    row_hessian = np.array([[2.0, 1.0], [1.0, 1.0]], dtype=np.float64)
+    block_hessian = np.zeros((flat_values.size, flat_values.size), dtype=np.float64)
+    block_hessian[0:2, 0:2] = row_hessian
+    block_hessian[2:4, 2:4] = row_hessian
+
+    def row_loss(row: Any) -> object:
+        return row[0] * row[0] + row[0] * row[1] + 0.5 * row[1] * row[1]
+
+    def mapped_program_gradient(candidate: Any) -> NDArray[np.float64]:
+        rows = np.reshape(candidate, row_shape)
+        mapped = vmap(
+            lambda row: whole_program_value_and_grad(row_loss, row, trace=False).gradient
+        )(rows)
+        return np.asarray(mapped, dtype=np.float64).reshape(-1)
+
+    jvp_gradient = jvp(mapped_program_gradient, flat_values, tangent, step=1.0e-2)
+    vjp_gradient = vjp(mapped_program_gradient, flat_values, cotangent, step=1.0e-2)
+    analytic_jvp = block_hessian @ tangent
+    analytic_vjp = block_hessian.T @ cotangent
+    gradient = np.concatenate([jvp_gradient, vjp_gradient])
+    analytic_gradient = np.concatenate([analytic_jvp, analytic_vjp])
+    return DifferentiableProgrammingBenchmarkResult(
+        case_id="transform_nesting_program_ad_vmap_jvp_vjp",
+        category="transform-nesting",
+        value=float(np.sum(mapped_program_gradient(flat_values))),
+        gradient=gradient,
+        analytic_gradient=analytic_gradient,
+        max_abs_gradient_error=_max_abs_error(gradient, analytic_gradient),
+        adjoint_supported=True,
+        max_abs_adjoint_error=0.0,
+        claim_boundary=(
+            "jvp/vjp over vmap of whole-program AD gradients compared with analytic "
+            "block-Hessian contractions; diagnostic conformance only, not a "
+            "performance timing claim"
         ),
     )
 

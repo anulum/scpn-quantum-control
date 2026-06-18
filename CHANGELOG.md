@@ -5,6 +5,10 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-06-18 — Added deterministic transform-algebra conformance coverage for
+  JVP/VJP over `vmap` of whole-program AD gradients against analytic
+  block-Hessian contractions, with compiler, Rust, LLVM, hardware, and
+  performance claims still blocked.
 - 2026-06-18 — Added deterministic differentiable-programming conformance
   coverage for eager `vmap` over exact custom JVP/VJP rules, with a
   non-performance claim boundary.

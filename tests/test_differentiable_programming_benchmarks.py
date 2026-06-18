@@ -41,6 +41,7 @@ def test_differentiable_programming_benchmark_suite_matches_analytic_references(
         "mutation_heavy_forward_only",
         "transform_nesting_vmap_program_grad",
         "transform_nesting_custom_rule_vmap_jvp_vjp",
+        "transform_nesting_program_ad_vmap_jvp_vjp",
         "transform_nesting_whole_program_higher_order",
     ]
     assert {row.category for row in results} == {
@@ -94,6 +95,12 @@ def test_differentiable_programming_benchmark_suite_matches_analytic_references(
     assert custom_rule_row.adjoint_supported is True
     assert custom_rule_row.max_abs_adjoint_error == 0.0
     assert "exact custom JVP/VJP" in custom_rule_row.claim_boundary
+    program_jvp_vjp_row = next(
+        row for row in results if row.case_id == "transform_nesting_program_ad_vmap_jvp_vjp"
+    )
+    assert program_jvp_vjp_row.gradient.shape == (8,)
+    assert program_jvp_vjp_row.max_abs_gradient_error <= 1.0e-8
+    assert "jvp/vjp over vmap of whole-program AD gradients" in program_jvp_vjp_row.claim_boundary
     higher_order_row = next(
         row for row in results if row.case_id == "transform_nesting_whole_program_higher_order"
     )
