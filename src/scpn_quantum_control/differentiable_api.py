@@ -593,6 +593,24 @@ def differentiable_dashboard_status(
             ),
         ),
         DifferentiableDashboardCapabilityRow(
+            surface="program_ad_linalg_primitives",
+            state="conformance_backed" if conformance_passed else "diagnostic",
+            backing_api="run_differentiable_programming_benchmark_suite",
+            evidence=(
+                "scpn.program_ad.linalg:{trace,diag,diagflat,det,inv,solve,matrix_power,multi_dot}",
+                "linalg_primitive_contracts",
+            ),
+            blocked_reasons=()
+            if conformance_passed
+            else ("conformance suite not run in this status call",),
+            claim_boundary=(
+                "bounded local Program AD linalg primitive conformance only; "
+                "spectral multiplicity, rank-threshold crossings, wider native "
+                "LLVM/JIT kernels, Rust interpreter promotion, hardware, and "
+                "performance promotion remain blocked"
+            ),
+        ),
+        DifferentiableDashboardCapabilityRow(
             surface="primitive_contracts",
             state="executable",
             backing_api="primitive_complete_contract_for",

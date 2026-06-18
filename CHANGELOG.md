@@ -12,6 +12,11 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   `run_differentiable_programming_benchmark_suite()`, keeping dynamic indices,
   dynamic insertion values, Rust, LLVM/JIT, hardware, and performance
   promotion fail-closed.
+- 2026-06-18 — Exposed bounded Program AD linalg primitive conformance through
+  a dedicated `program_ad_linalg_primitives` dashboard row backed by
+  `linalg_primitive_contracts`, keeping spectral multiplicity,
+  rank-threshold, wider native LLVM/JIT, Rust, hardware, and performance
+  promotion boundaries separate from linalg conditioning diagnostics.
 - 2026-06-18 — Extended Program AD alias/effect metadata for derivative-
   preserving permutation and source-reuse transforms (`tile`, `roll`,
   `rot90`, `flip`, `flipud`, `fliplr`) with deterministic conformance
