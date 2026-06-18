@@ -376,10 +376,12 @@ from .qnn_training import (
     verify_parameter_shift_qnn_classifier_gradient,
 )
 from .qnode_affinity_benchmark import (
+    PhaseQNodeAffinityArtifactValidation,
     PhaseQNodeAffinityBenchmarkMetadata,
     PhaseQNodeAffinityBenchmarkResult,
     classify_affinity_evidence,
     run_phase_qnode_affinity_benchmark,
+    validate_phase_qnode_affinity_artifact,
 )
 from .qnode_circuit import (
     DenseHermitianObservable,
@@ -715,8 +717,10 @@ __all__ = [
     "run_phase_qnode_framework_parity_suite",
     "PhaseQNodeAffinityBenchmarkMetadata",
     "PhaseQNodeAffinityBenchmarkResult",
+    "PhaseQNodeAffinityArtifactValidation",
     "classify_affinity_evidence",
     "run_phase_qnode_affinity_benchmark",
+    "validate_phase_qnode_affinity_artifact",
     "DifferentiableModelTrainingEvidenceSuite",
     "DifferentiableModelTrainingRecord",
     "RegisteredDifferentiableTrainingSuiteAuditResult",

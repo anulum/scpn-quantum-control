@@ -73,3 +73,9 @@ evidence reports `isolated_affinity`. Otherwise the result is
 throughput or latency claim. The helper
 `tools/setup_isolated_benchmark_runner.py` prints or installs the required
 runner configuration on the reserved Linux x64 benchmark host.
+`validate_phase_qnode_affinity_artifact(...)` is the attachment gate for those
+raw JSON files: it hashes the artefact into a deterministic
+`phase-qnode-affinity:<sha>` benchmark ID, counts raw timing rows, checks
+host-isolation metadata, and reports `promotion_ready=True` only for
+`isolated_affinity` artefacts with `production_benchmark=True` and no recorded
+isolation failures.

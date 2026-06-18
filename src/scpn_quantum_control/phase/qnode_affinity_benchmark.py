@@ -9,13 +9,17 @@
 
 from __future__ import annotations
 
+import hashlib
+import json
 import os
 import platform
 import sys
 import time
+from collections.abc import Mapping
 from dataclasses import dataclass
 from importlib import metadata
-from typing import Literal, TypeAlias
+from pathlib import Path
+from typing import Literal, TypeAlias, cast
 
 import numpy as np
 from numpy.typing import NDArray
@@ -93,6 +97,35 @@ class PhaseQNodeAffinityBenchmarkResult:
             "metadata": self.metadata.to_dict(),
             "raw_timing_rows": list(self.raw_timing_rows),
             "isolation_failures": list(self.isolation_failures),
+            "claim_boundary": self.claim_boundary,
+        }
+
+
+@dataclass(frozen=True)
+class PhaseQNodeAffinityArtifactValidation:
+    """Fail-closed attachment verdict for a Phase-QNode benchmark JSON file."""
+
+    artifact_path: str
+    artifact_sha256: str
+    benchmark_artifact_id: str
+    evidence_label: str
+    production_benchmark: bool
+    promotion_ready: bool
+    raw_timing_row_count: int
+    missing_requirements: tuple[str, ...]
+    claim_boundary: str
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready validation evidence for claim-ledger attachment."""
+        return {
+            "artifact_path": self.artifact_path,
+            "artifact_sha256": self.artifact_sha256,
+            "benchmark_artifact_id": self.benchmark_artifact_id,
+            "evidence_label": self.evidence_label,
+            "production_benchmark": self.production_benchmark,
+            "promotion_ready": self.promotion_ready,
+            "raw_timing_row_count": self.raw_timing_row_count,
+            "missing_requirements": list(self.missing_requirements),
             "claim_boundary": self.claim_boundary,
         }
 
@@ -222,6 +255,63 @@ def run_phase_qnode_affinity_benchmark(
     )
 
 
+def validate_phase_qnode_affinity_artifact(
+    artifact_path: str | Path,
+    *,
+    require_isolated: bool = True,
+) -> PhaseQNodeAffinityArtifactValidation:
+    """Validate raw Phase-QNode benchmark JSON before promotion attachment.
+
+    The validator does not upgrade local evidence. It only reports
+    ``promotion_ready=True`` when the committed raw JSON already carries the
+    isolated label, production flag, timing rows, host metadata, and no
+    isolation failures required by the benchmark runner contract.
+    """
+    path = Path(artifact_path)
+    artifact_bytes = path.read_bytes()
+    artifact_sha256 = hashlib.sha256(artifact_bytes).hexdigest()
+    benchmark_artifact_id = f"phase-qnode-affinity:{artifact_sha256[:16]}"
+    payload = _json_object_from_bytes(artifact_bytes, path)
+    metadata_payload = _mapping_value(payload, "metadata")
+    timing_rows = _list_value(payload, "raw_timing_rows")
+    isolation_failures = _list_value(payload, "isolation_failures")
+
+    evidence_label = _string_value(payload, "evidence_label")
+    production_benchmark = _bool_value(payload, "production_benchmark")
+    raw_timing_row_count = len(timing_rows)
+    missing_requirements: list[str] = []
+
+    if require_isolated and evidence_label != "isolated_affinity":
+        missing_requirements.append("isolated_affinity evidence label")
+    if require_isolated and not production_benchmark:
+        missing_requirements.append("production benchmark flag")
+    if raw_timing_row_count < 1:
+        missing_requirements.append("raw timing rows")
+    if require_isolated and isolation_failures:
+        missing_requirements.append("empty isolation failures")
+
+    missing_requirements.extend(
+        _missing_metadata_requirements(metadata_payload, require_isolated=require_isolated)
+    )
+    promotion_ready = not missing_requirements
+    claim_boundary = _string_value(payload, "claim_boundary") or (
+        "Phase-QNode affinity benchmark artefacts are promotional only when "
+        "validated as isolated_affinity with raw timing rows and complete host "
+        "isolation metadata."
+    )
+    return PhaseQNodeAffinityArtifactValidation(
+        artifact_path=str(path),
+        artifact_sha256=artifact_sha256,
+        benchmark_artifact_id=benchmark_artifact_id,
+        evidence_label=evidence_label,
+        production_benchmark=production_benchmark,
+        promotion_ready=promotion_ready,
+        raw_timing_row_count=raw_timing_row_count,
+        missing_requirements=tuple(missing_requirements),
+        claim_boundary=claim_boundary,
+    )
+
+
 def _isolation_failures(
     *,
     reserved_cpus: tuple[int, ...],
@@ -257,6 +347,67 @@ def _isolation_failures(
     if heavy_concurrent_jobs:
         failures.append("heavy concurrent jobs were reported")
     return failures
+
+
+def _json_object_from_bytes(raw_payload: bytes, path: Path) -> Mapping[str, object]:
+    try:
+        payload = json.loads(raw_payload.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise ValueError(f"{path} is not valid UTF-8 JSON") from exc
+    if not isinstance(payload, dict):
+        raise ValueError(f"{path} must contain a JSON object")
+    return cast(Mapping[str, object], payload)
+
+
+def _mapping_value(payload: Mapping[str, object], key: str) -> Mapping[str, object]:
+    value = payload.get(key)
+    if isinstance(value, dict):
+        return cast(Mapping[str, object], value)
+    return {}
+
+
+def _list_value(payload: Mapping[str, object], key: str) -> tuple[object, ...]:
+    value = payload.get(key)
+    if isinstance(value, list):
+        return tuple(value)
+    return ()
+
+
+def _string_value(payload: Mapping[str, object], key: str) -> str:
+    value = payload.get(key)
+    return value if isinstance(value, str) else ""
+
+
+def _bool_value(payload: Mapping[str, object], key: str) -> bool:
+    value = payload.get(key)
+    return value if isinstance(value, bool) else False
+
+
+def _missing_metadata_requirements(
+    metadata_payload: Mapping[str, object],
+    *,
+    require_isolated: bool,
+) -> tuple[str, ...]:
+    missing: list[str] = []
+    if not _string_value(metadata_payload, "command"):
+        missing.append("fixed command metadata")
+    if not _list_value(metadata_payload, "affinity_cpus"):
+        missing.append("reserved CPU affinity metadata")
+    if not _list_value(metadata_payload, "observed_affinity_cpus"):
+        missing.append("observed CPU affinity metadata")
+    if len(_list_value(metadata_payload, "host_load_before")) != 3:
+        missing.append("host load before metadata")
+    if len(_list_value(metadata_payload, "host_load_after")) != 3:
+        missing.append("host load after metadata")
+    if (
+        require_isolated
+        and not _string_value(metadata_payload, "governor")
+        and not _list_value(metadata_payload, "frequency_mhz")
+    ):
+        missing.append("governor or frequency metadata")
+    if _bool_value(metadata_payload, "heavy_concurrent_jobs"):
+        missing.append("no heavy concurrent jobs")
+    return tuple(missing)
 
 
 def _load_average() -> tuple[float, float, float]:
@@ -332,8 +483,10 @@ def _dependency_versions() -> dict[str, str]:
 
 
 __all__ = [
+    "PhaseQNodeAffinityArtifactValidation",
     "PhaseQNodeAffinityBenchmarkMetadata",
     "PhaseQNodeAffinityBenchmarkResult",
     "classify_affinity_evidence",
     "run_phase_qnode_affinity_benchmark",
+    "validate_phase_qnode_affinity_artifact",
 ]

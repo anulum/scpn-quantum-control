@@ -10,7 +10,7 @@
     "paper0_validation_modules": 466,
     "public_api_exports": 664,
     "public_documentation_pages": 254,
-    "python_model_classes": 1788,
+    "python_model_classes": 1789,
     "python_model_source_modules": 835,
     "rust_pyo3_model_wrappers": 134,
     "rust_source_modules": 37,
@@ -5084,6 +5084,10 @@
       {
         "name": "PhasePredictionErrorValidationResult",
         "path": "src/scpn_quantum_control/paper0/hpc_upde_bridge_validation.py"
+      },
+      {
+        "name": "PhaseQNodeAffinityArtifactValidation",
+        "path": "src/scpn_quantum_control/phase/qnode_affinity_benchmark.py"
       },
       {
         "name": "PhaseQNodeAffinityBenchmarkMetadata",
