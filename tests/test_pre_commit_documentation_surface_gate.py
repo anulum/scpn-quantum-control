@@ -55,3 +55,4 @@ def test_pre_push_hook_gates_differentiable_strict_mypy_ratchet() -> None:
     assert "src/scpn_quantum_control/phase/qnode_transforms.py" in config
     assert "src/scpn_quantum_control/phase/qnode_vector_transforms.py" in config
     assert "src/scpn_quantum_control/phase/qnode_framework_parity.py" in config
+    assert "src/scpn_quantum_control/phase/qnode_circuit.py" in config

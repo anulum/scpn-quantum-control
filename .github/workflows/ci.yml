@@ -182,6 +182,7 @@ jobs:
           src/scpn_quantum_control/phase/qnode_transforms.py
           src/scpn_quantum_control/phase/qnode_vector_transforms.py
           src/scpn_quantum_control/phase/qnode_framework_parity.py
+          src/scpn_quantum_control/phase/qnode_circuit.py
       - run: mypy
 
   wheel-check:

@@ -11,7 +11,7 @@ from __future__ import annotations
 
 from collections.abc import Callable, Iterable, Mapping
 from dataclasses import dataclass
-from typing import TypeAlias, cast
+from typing import Any, TypeAlias, cast
 
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
@@ -936,7 +936,7 @@ def phase_qnode_support_report(
     differentiable = tuple(
         sorted(
             {
-                cast(int, operation.parameter_index)
+                operation.parameter_index
                 for operation in operations
                 if operation.gate in _PARAMETRIC_GATES and operation.parameter_index is not None
             }
@@ -1031,7 +1031,7 @@ def phase_qnode_density_support_report(
     differentiable = tuple(
         sorted(
             {
-                cast(int, operation.parameter_index)
+                operation.parameter_index
                 for operation in unitary_operations
                 if operation.gate in _PARAMETRIC_GATES and operation.parameter_index is not None
             }
@@ -1121,7 +1121,7 @@ def plan_phase_qnode_parameter_shift_evaluations(
                 "shifted evaluations are authorised for unsupported or density/noise routes"
             ),
         )
-    operations = _parsed_operations(cast(PhaseQNodeCircuit, circuit))
+    operations = _parsed_operations(circuit)
     parametric_by_index: dict[int, list[tuple[int, PhaseQNodeOperation]]] = {}
     for operation_index, operation in enumerate(operations):
         if operation.gate in _PARAMETRIC_GATES and operation.parameter_index is not None:
@@ -1487,7 +1487,8 @@ def phase_qnode_natural_gradient_metric(
 
     def metric(parameters: FloatArray) -> FloatArray:
         result = phase_qnode_quantum_fisher_information(circuit, parameters)
-        return cast(FloatArray, result.fubini_study_metric.copy())
+        metric_copy: Any = result.fubini_study_metric.copy()
+        return cast(FloatArray, metric_copy)
 
     return metric
 
@@ -1527,11 +1528,11 @@ def _parse_density_operation(
         if len(operation) != 3:
             raise ValueError("noise channel specs must include a probability")
         return PhaseQNodeNoiseChannel(name, qubits, float(cast(float, operation[2])))
-    return _parse_operation(cast(OperationSpec, operation))
+    return _parse_operation(operation)
 
 
 def _parsed_operations(circuit: PhaseQNodeCircuit) -> tuple[PhaseQNodeOperation, ...]:
-    return cast(tuple[PhaseQNodeOperation, ...], circuit.operations)
+    return tuple(_parse_operation(operation) for operation in circuit.operations)
 
 
 def _parametric_operations_by_parameter(
@@ -2402,7 +2403,8 @@ def _term_operator(n_qubits: int, term: PauliTerm) -> ComplexArray:
 
 
 def _apply_term_operator(state: ComplexArray, n_qubits: int, term: PauliTerm) -> ComplexArray:
-    transformed = cast(ComplexArray, state.copy())
+    state_copy: Any = state.copy()
+    transformed = cast(ComplexArray, state_copy)
     for qubit, label in term.factors:
         transformed = _apply_gate_matrix(transformed, n_qubits, (qubit,), _PAULI_MATRICES[label])
     return transformed

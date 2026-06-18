@@ -104,6 +104,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
             "src/scpn_quantum_control/phase/qnode_transforms.py",
             "src/scpn_quantum_control/phase/qnode_vector_transforms.py",
             "src/scpn_quantum_control/phase/qnode_framework_parity.py",
+            "src/scpn_quantum_control/phase/qnode_circuit.py",
         ],
     ),
 ]
