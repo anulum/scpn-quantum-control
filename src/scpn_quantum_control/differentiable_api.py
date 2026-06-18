@@ -628,14 +628,15 @@ def differentiable_dashboard_status(
                 "transform_nesting_custom_rule_vmap_jvp_vjp",
                 "transform_nesting_program_ad_vmap_jvp_vjp",
                 "transform_nesting_whole_program_higher_order",
+                "transform_nesting_program_ad_hessian",
             ),
             blocked_reasons=()
             if conformance_passed
             else ("conformance suite not run in this status call",),
             claim_boundary=(
                 "local transform-algebra conformance for vmap, exact custom JVP/VJP "
-                "rules, whole-program grad, JVP/VJP, jacfwd, and jacrev only; no "
-                "compiler, JIT, hardware, or performance claim"
+                "rules, whole-program grad, JVP/VJP, jacfwd, jacrev, and local "
+                "Hessian transforms only; no compiler, JIT, hardware, or performance claim"
             ),
         ),
         DifferentiableDashboardCapabilityRow(

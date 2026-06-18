@@ -206,6 +206,10 @@ def test_differentiable_dashboard_status_is_claim_bounded_for_gui_consumers() ->
     assert rows["higher_order_transform_algebra"]["state"] == "diagnostic"
     assert rows["higher_order_transform_algebra"]["fail_closed"] is True
     assert (
+        "transform_nesting_program_ad_hessian"
+        in rows["higher_order_transform_algebra"]["evidence"]
+    )
+    assert (
         "transform_nesting_whole_program_higher_order"
         in rows["higher_order_transform_algebra"]["evidence"]
     )

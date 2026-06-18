@@ -5,6 +5,10 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-06-18 — Added deterministic transform-algebra conformance coverage for
+  local Hessian over a whole-program AD scalar objective against analytic
+  curvature through `transform_nesting_program_ad_hessian`, with compiler,
+  Rust, LLVM/JIT, hardware, and performance claims still blocked.
 - 2026-06-18 — Registered Program AD `np.sign` and `np.heaviside` as
   derivative-losing elementwise primitive contracts with explicit fail-closed
   nondifferentiability policies and dashboard evidence. No derivative kernel,

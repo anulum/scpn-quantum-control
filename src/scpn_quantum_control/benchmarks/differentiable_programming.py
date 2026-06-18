@@ -24,6 +24,7 @@ from ..differentiable import (
     custom_jvp,
     custom_vjp,
     grad,
+    hessian,
     is_jax_autodiff_available,
     jacfwd,
     jacrev,
@@ -220,6 +221,7 @@ def run_differentiable_programming_benchmark_suite() -> tuple[
         _custom_rule_transform_nesting_case(),
         _program_ad_transform_jvp_vjp_case(),
         _higher_order_transform_nesting_case(),
+        _program_ad_hessian_transform_case(),
     )
 
 
@@ -1355,6 +1357,36 @@ def _higher_order_transform_nesting_case() -> DifferentiableProgrammingBenchmark
             "jacfwd/jacrev over whole-program grad(vmap(f)) compared with analytic "
             "block-diagonal curvature; diagnostic conformance only, not a performance "
             "timing claim"
+        ),
+    )
+
+
+def _program_ad_hessian_transform_case() -> DifferentiableProgrammingBenchmarkResult:
+    values = np.array([0.4, -0.75], dtype=np.float64)
+    analytic_hessian = np.array([[2.0, 1.0], [1.0, 1.0]], dtype=np.float64)
+
+    def row_loss(row: Any) -> object:
+        return row[0] * row[0] + row[0] * row[1] + 0.5 * row[1] * row[1]
+
+    def program_value(candidate: Any) -> float:
+        return float(whole_program_value_and_grad(row_loss, candidate, trace=False).value)
+
+    program_hessian = hessian(program_value, values, step=1.0e-1)
+    gradient = program_hessian.reshape(-1)
+    analytic_gradient = analytic_hessian.reshape(-1)
+    return DifferentiableProgrammingBenchmarkResult(
+        case_id="transform_nesting_program_ad_hessian",
+        category="transform-nesting",
+        value=program_value(values),
+        gradient=gradient,
+        analytic_gradient=analytic_gradient,
+        max_abs_gradient_error=_max_abs_error(gradient, analytic_gradient),
+        adjoint_supported=True,
+        max_abs_adjoint_error=0.0,
+        claim_boundary=(
+            "hessian over a whole-program AD scalar objective compared with analytic "
+            "curvature; diagnostic conformance only, not a compiler, Rust, LLVM/JIT, "
+            "hardware, or performance timing claim, and not a performance benchmark"
         ),
     )
 
