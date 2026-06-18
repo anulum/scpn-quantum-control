@@ -185,6 +185,21 @@ def test_differentiable_dashboard_status_is_claim_bounded_for_gui_consumers() ->
         "not a bytecode/source compiler frontend"
         in (rows["program_ad_ir_roundtrip_conformance"]["claim_boundary"])
     )
+    assert rows["program_ad_control_phi_metadata"]["state"] == "diagnostic"
+    assert rows["program_ad_control_phi_metadata"]["fail_closed"] is True
+    assert (
+        "program_ad_control_phi_metadata_contracts"
+        in rows["program_ad_control_phi_metadata"]["evidence"]
+    )
+    assert "ProgramADPhiNode" in rows["program_ad_control_phi_metadata"]["evidence"]
+    assert (
+        "runtime and source control regions"
+        in (rows["program_ad_control_phi_metadata"]["claim_boundary"])
+    )
+    assert (
+        "not non-executed branch adjoints"
+        in (rows["program_ad_control_phi_metadata"]["claim_boundary"])
+    )
     assert rows["program_ad_alias_effects"]["claim_boundary"] == (
         "metadata_only_no_general_alias_lattice"
     )
@@ -304,6 +319,10 @@ def test_differentiable_dashboard_status_can_include_conformance_backing() -> No
     assert "program_ad_effect_ir.v1 parser" in (
         rows["program_ad_ir_roundtrip_conformance"].claim_boundary
     )
+    assert rows["program_ad_control_phi_metadata"].state == "conformance_backed"
+    assert rows["program_ad_control_phi_metadata"].fail_closed is False
+    assert rows["program_ad_control_phi_metadata"].blocked_reasons == ()
+    assert "control-join provenance" in rows["program_ad_control_phi_metadata"].claim_boundary
     assert rows["program_ad_python_semantics"].state == "conformance_backed"
     assert rows["program_ad_python_semantics"].fail_closed is False
     assert rows["program_ad_python_semantics"].blocked_reasons == ()

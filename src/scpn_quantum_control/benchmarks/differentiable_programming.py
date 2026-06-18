@@ -211,6 +211,7 @@ def run_differentiable_programming_benchmark_suite() -> tuple[
         _loop_heavy_case(),
         _python_semantics_list_comprehension_case(),
         _program_ad_ir_roundtrip_case(),
+        _program_ad_control_phi_metadata_case(),
         _program_adjoint_replay_provenance_case(),
         _elementwise_boundary_case(),
         _matrix_heavy_case(),
@@ -424,6 +425,81 @@ def _program_ad_ir_roundtrip_case() -> DifferentiableProgrammingBenchmarkResult:
             "round-trip conformance for emitted Program AD SSA/effect/control/phi "
             "metadata; not a bytecode/source compiler frontend, full alias lattice, "
             "non-executed branch semantics, Rust/LLVM executable lowering, hardware, "
+            "or performance evidence; no wall-clock performance claim"
+        ),
+    )
+
+
+def _program_ad_control_phi_metadata_case() -> DifferentiableProgrammingBenchmarkResult:
+    values = np.array([1.2, -0.4, 0.75], dtype=np.float64)
+
+    def objective(trace_values: Any) -> object:
+        x, y, z = trace_values
+        acc = x
+        if x > y:
+            acc = acc + z * z
+        else:
+            acc = acc - y * z
+        for _ in range(2):
+            acc = acc + 0.5 * x
+        return acc + np.sin(y + z)
+
+    result = whole_program_value_and_grad(
+        objective,
+        values,
+        parameters=(Parameter("x"), Parameter("y"), Parameter("z")),
+    )
+    if result.program_ir is None:
+        raise ValueError("program AD control/phi metadata case requires program IR")
+    parsed = parse_program_ad_effect_ir(result.program_ir.serialization)
+    if parsed != result.program_ir:
+        raise ValueError("program AD control/phi parser did not reconstruct emitted IR")
+    has_runtime_branch = any(
+        region.kind == "runtime_branch" and region.entered
+        for region in result.program_ir.control_regions
+    )
+    has_source_control = any(
+        region.kind.startswith("source_") for region in result.program_ir.control_regions
+    )
+    has_runtime_phi = any(
+        phi.target.startswith("phi:runtime_branch")
+        and phi.selected == "executed_true"
+        and phi.control_region is not None
+        for phi in result.program_ir.phi_nodes
+    )
+    has_source_phi = any(
+        phi.target.startswith("phi:source:") and phi.control_region is not None
+        for phi in result.program_ir.phi_nodes
+    )
+    has_control_effect = any(
+        effect.kind == "control_branch" for effect in result.program_ir.effects
+    )
+    if not (
+        has_runtime_branch
+        and has_source_control
+        and has_runtime_phi
+        and has_source_phi
+        and has_control_effect
+    ):
+        raise ValueError("program AD control/phi metadata provenance is incomplete")
+
+    x, y, z = values
+    common = math.cos(y + z)
+    analytic = np.array([2.0, common, 2.0 * z + common], dtype=np.float64)
+    return DifferentiableProgrammingBenchmarkResult(
+        case_id="program_ad_control_phi_metadata_contracts",
+        category="control-phi",
+        value=result.value,
+        gradient=result.gradient,
+        analytic_gradient=analytic,
+        max_abs_gradient_error=_max_abs_error(result.gradient, analytic),
+        adjoint_supported=result.adjoint_result is not None and result.adjoint_result.supported,
+        max_abs_adjoint_error=_max_abs_error(program_adjoint_gradient(result), analytic),
+        claim_boundary=(
+            "ProgramADPhiNode control-join provenance for supported executed "
+            "runtime and source control regions in program_ad_effect_ir.v1; "
+            "local conformance only, not non-executed branch adjoints, full "
+            "compiler phi lowering, Rust/LLVM executable lowering, hardware, "
             "or performance evidence; no wall-clock performance claim"
         ),
     )

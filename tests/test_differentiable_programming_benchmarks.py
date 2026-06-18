@@ -35,6 +35,7 @@ def test_differentiable_programming_benchmark_suite_matches_analytic_references(
         "loop_heavy_scalar",
         "python_semantics_list_comprehension",
         "program_ad_ir_roundtrip_contracts",
+        "program_ad_control_phi_metadata_contracts",
         "program_adjoint_replay_provenance_contracts",
         "elementwise_boundary_contracts",
         "matrix_heavy_linear_algebra",
@@ -62,6 +63,7 @@ def test_differentiable_programming_benchmark_suite_matches_analytic_references(
         "loop-heavy",
         "python-semantics",
         "ir-roundtrip",
+        "control-phi",
         "reverse-adjoint",
         "elementwise-boundary",
         "matrix-heavy",
@@ -117,6 +119,13 @@ def test_differentiable_programming_benchmark_suite_matches_analytic_references(
     assert "program_ad_effect_ir.v1" in ir_roundtrip_row.claim_boundary
     assert "stable serialization" in ir_roundtrip_row.claim_boundary
     assert "not a bytecode/source compiler frontend" in ir_roundtrip_row.claim_boundary
+    control_phi_row = next(row for row in results if row.category == "control-phi")
+    assert control_phi_row.adjoint_supported is True
+    assert control_phi_row.max_abs_adjoint_error is not None
+    assert control_phi_row.max_abs_adjoint_error <= 1.0e-12
+    assert "ProgramADPhiNode control-join provenance" in control_phi_row.claim_boundary
+    assert "runtime and source control regions" in control_phi_row.claim_boundary
+    assert "not non-executed branch adjoints" in control_phi_row.claim_boundary
     reverse_adjoint_row = next(row for row in results if row.category == "reverse-adjoint")
     assert reverse_adjoint_row.adjoint_supported is True
     assert reverse_adjoint_row.max_abs_adjoint_error is not None

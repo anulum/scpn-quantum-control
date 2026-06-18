@@ -564,6 +564,25 @@ def differentiable_dashboard_status(
             ),
         ),
         DifferentiableDashboardCapabilityRow(
+            surface="program_ad_control_phi_metadata",
+            state="conformance_backed" if conformance_passed else "diagnostic",
+            backing_api="run_differentiable_programming_benchmark_suite",
+            evidence=(
+                "ProgramADControlRegion",
+                "ProgramADPhiNode",
+                "program_ad_control_phi_metadata_contracts",
+            ),
+            blocked_reasons=()
+            if conformance_passed
+            else ("conformance suite not run in this status call",),
+            claim_boundary=(
+                "bounded ProgramADPhiNode control-join provenance for supported "
+                "executed runtime and source control regions only; not "
+                "non-executed branch adjoints, full compiler phi lowering, "
+                "Rust/LLVM executable lowering, hardware, or performance promotion"
+            ),
+        ),
+        DifferentiableDashboardCapabilityRow(
             surface="program_ad_alias_effects",
             state="metadata_only",
             backing_api="analyze_program_ad_alias_effects",
