@@ -39,6 +39,7 @@ def test_differentiable_programming_benchmark_suite_matches_analytic_references(
         "selection_piecewise_contracts",
         "structured_numeric_primitive_contracts",
         "cumulative_primitive_contracts",
+        "assembly_primitive_contracts",
         "linalg_primitive_contracts",
         "indexing_static_gather_contracts",
         "mutation_heavy_forward_only",
@@ -60,6 +61,7 @@ def test_differentiable_programming_benchmark_suite_matches_analytic_references(
         "selection-heavy",
         "structured-numeric",
         "cumulative-primitive",
+        "assembly-primitive",
         "linalg-primitive",
         "indexing-heavy",
         "mutation-heavy",
@@ -123,6 +125,13 @@ def test_differentiable_programming_benchmark_suite_matches_analytic_references(
     assert cumulative_row.max_abs_adjoint_error is not None
     assert cumulative_row.max_abs_adjoint_error <= 1.0e-12
     assert "cumsum, cumprod, and diff primitive contracts" in cumulative_row.claim_boundary
+    assembly_row = next(row for row in results if row.category == "assembly-primitive")
+    assert assembly_row.adjoint_supported is True
+    assert assembly_row.max_abs_adjoint_error is not None
+    assert assembly_row.max_abs_adjoint_error <= 1.0e-12
+    assert "like-constructor and stack assembly primitive contracts" in (
+        assembly_row.claim_boundary
+    )
     indexing_row = next(row for row in results if row.category == "indexing-heavy")
     assert indexing_row.adjoint_supported is True
     assert indexing_row.max_abs_adjoint_error is not None

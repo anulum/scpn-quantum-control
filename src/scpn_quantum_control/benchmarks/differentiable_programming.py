@@ -213,6 +213,7 @@ def run_differentiable_programming_benchmark_suite() -> tuple[
         _selection_heavy_case(),
         _structured_numeric_primitive_case(),
         _cumulative_primitive_case(),
+        _assembly_primitive_case(),
         _linalg_primitive_case(),
         _indexing_heavy_case(),
         _mutation_heavy_case(),
@@ -864,6 +865,85 @@ def _cumulative_primitive_case() -> DifferentiableProgrammingBenchmarkResult:
             "bounded one-dimensional Program AD traces; dynamic axis promotion, "
             "Rust/LLVM executable lowering, hardware, and performance promotion "
             "remain blocked; no wall-clock performance claim"
+        ),
+    )
+
+
+def _assembly_primitive_value(values: NDArray[np.float64]) -> float:
+    matrix = values.reshape(2, 3)
+    left = values[:3]
+    right = values[3:]
+    flat_weights = np.array([0.5, -0.75, 1.25, -1.5, 0.875, -0.625], dtype=np.float64)
+    matrix_weights = np.array([[0.2, -0.4, 0.6], [-0.8, 1.0, -1.2]], dtype=np.float64)
+    column_weights = np.array([[0.3, -0.5], [0.7, -0.9], [1.1, -1.3]], dtype=np.float64)
+    depth_weights = np.array(
+        [[[0.15, -0.25], [0.35, -0.45]], [[0.55, -0.65], [0.75, -0.85]]],
+        dtype=np.float64,
+    )
+    return float(
+        np.sum(np.zeros_like(values))
+        + 0.01 * np.sum(np.ones_like(values))
+        + 0.02 * np.sum(np.full_like(values, -0.25))
+        + np.sum(np.hstack((left, right)) * flat_weights)
+        + np.sum(np.vstack((matrix[0], matrix[1])) * matrix_weights)
+        + np.sum(np.column_stack((left, right)) * column_weights)
+        + np.sum(np.dstack((matrix[:, :2], matrix[:, 1:])) * depth_weights)
+    )
+
+
+def _assembly_primitive_case() -> DifferentiableProgrammingBenchmarkResult:
+    values = np.array([0.5, -1.25, 2.0, -0.75, 1.5, 0.25], dtype=np.float64)
+
+    def objective(trace_values: Any) -> object:
+        matrix = np.reshape(trace_values, (2, 3))
+        left = trace_values[:3]
+        right = trace_values[3:]
+        flat_weights = np.array(
+            [0.5, -0.75, 1.25, -1.5, 0.875, -0.625],
+            dtype=np.float64,
+        )
+        matrix_weights = np.array(
+            [[0.2, -0.4, 0.6], [-0.8, 1.0, -1.2]],
+            dtype=np.float64,
+        )
+        column_weights = np.array(
+            [[0.3, -0.5], [0.7, -0.9], [1.1, -1.3]],
+            dtype=np.float64,
+        )
+        depth_weights = np.array(
+            [[[0.15, -0.25], [0.35, -0.45]], [[0.55, -0.65], [0.75, -0.85]]],
+            dtype=np.float64,
+        )
+        return (
+            np.sum(np.zeros_like(trace_values))
+            + 0.01 * np.sum(np.ones_like(trace_values))
+            + 0.02 * np.sum(np.full_like(trace_values, -0.25))
+            + np.sum(np.hstack((left, right)) * flat_weights)
+            + np.sum(np.vstack((matrix[0], matrix[1])) * matrix_weights)
+            + np.sum(np.column_stack((left, right)) * column_weights)
+            + np.sum(np.dstack((matrix[:, :2], matrix[:, 1:])) * depth_weights)
+        )
+
+    zero_value = _assembly_primitive_value(np.zeros_like(values))
+    analytic = np.array(
+        [
+            _assembly_primitive_value(basis) - zero_value
+            for basis in np.eye(values.size, dtype=np.float64)
+        ],
+        dtype=np.float64,
+    )
+    return _program_ad_case(
+        "assembly_primitive_contracts",
+        "assembly-primitive",
+        objective,
+        values,
+        analytic,
+        claim_boundary=(
+            "deterministic like-constructor and stack assembly primitive "
+            "contracts for zeros_like, ones_like, full_like, hstack, vstack, "
+            "column_stack, and dstack; dynamic shape assembly, Rust/LLVM "
+            "executable lowering, hardware, and performance promotion remain "
+            "blocked; no wall-clock performance claim"
         ),
     )
 

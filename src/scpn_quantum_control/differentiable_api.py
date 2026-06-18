@@ -649,6 +649,24 @@ def differentiable_dashboard_status(
             ),
         ),
         DifferentiableDashboardCapabilityRow(
+            surface="program_ad_assembly_primitives",
+            state="conformance_backed" if conformance_passed else "diagnostic",
+            backing_api="run_differentiable_programming_benchmark_suite",
+            evidence=(
+                "scpn.program_ad.assembly:{zeros_like,ones_like,full_like,hstack,vstack,column_stack,dstack}",
+                "assembly_primitive_contracts",
+            ),
+            blocked_reasons=()
+            if conformance_passed
+            else ("conformance suite not run in this status call",),
+            claim_boundary=(
+                "bounded like-constructor and stack assembly Program AD "
+                "primitive conformance only; dynamic shape assembly, "
+                "Rust/LLVM executable lowering, hardware, and performance "
+                "promotion remain blocked"
+            ),
+        ),
+        DifferentiableDashboardCapabilityRow(
             surface="primitive_contracts",
             state="executable",
             backing_api="primitive_complete_contract_for",
