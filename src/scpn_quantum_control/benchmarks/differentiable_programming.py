@@ -214,6 +214,7 @@ def run_differentiable_programming_benchmark_suite() -> tuple[
         _structured_numeric_primitive_case(),
         _cumulative_primitive_case(),
         _assembly_primitive_case(),
+        _reduction_primitive_case(),
         _linalg_primitive_case(),
         _indexing_heavy_case(),
         _mutation_heavy_case(),
@@ -942,6 +943,67 @@ def _assembly_primitive_case() -> DifferentiableProgrammingBenchmarkResult:
             "deterministic like-constructor and stack assembly primitive "
             "contracts for zeros_like, ones_like, full_like, hstack, vstack, "
             "column_stack, and dstack; dynamic shape assembly, Rust/LLVM "
+            "executable lowering, hardware, and performance promotion remain "
+            "blocked; no wall-clock performance claim"
+        ),
+    )
+
+
+def _reduction_primitive_gradient(values: NDArray[np.float64]) -> NDArray[np.float64]:
+    shifted = values + 2.5
+    product = float(np.prod(shifted))
+    mean = float(np.mean(values))
+    shifted_std = float(np.std(values + 3.0, ddof=0))
+    size = float(values.size)
+    trapezoid_weights = np.array([0.25, 0.5, 0.5, 0.5, 0.25], dtype=np.float64)
+    gradient = (
+        0.2
+        + 0.13 * product / shifted
+        + 0.17 / size
+        + 0.19 * 2.0 * (values - mean) / size
+        + 0.23 * (values - mean) / (size * shifted_std)
+        + 0.29 * trapezoid_weights
+    )
+    gradient[int(np.argmax(values))] += 0.31
+    gradient[int(np.argmin(values))] -= 0.37
+
+    order = np.argsort(values)
+    gradient[int(order[2])] += 0.41
+    gradient[int(order[1])] += 0.43
+    gradient[int(order[3])] -= 0.47
+    return gradient
+
+
+def _reduction_primitive_case() -> DifferentiableProgrammingBenchmarkResult:
+    values = np.array([-1.0, 0.25, 1.4, -0.4, 0.9], dtype=np.float64)
+
+    def objective(trace_values: Any) -> object:
+        shifted = trace_values + 2.5
+        return (
+            0.2 * np.sum(trace_values)
+            + 0.13 * np.prod(shifted)
+            + 0.17 * np.mean(trace_values)
+            + 0.19 * np.var(trace_values, ddof=0)
+            + 0.23 * np.std(trace_values + 3.0, ddof=0)
+            + 0.29 * np.trapezoid(trace_values, dx=0.5)
+            + 0.31 * np.max(trace_values)
+            - 0.37 * np.min(trace_values)
+            + 0.41 * np.median(trace_values)
+            + 0.43 * np.quantile(trace_values, 0.25)
+            - 0.47 * np.percentile(trace_values, 75.0)
+        )
+
+    return _program_ad_case(
+        "reduction_primitive_contracts",
+        "reduction-primitive",
+        objective,
+        values,
+        _reduction_primitive_gradient(values),
+        claim_boundary=(
+            "deterministic sum, prod, mean, var, std, trapezoid, unique and "
+            "strict-order selector reductions, and scalar q order-statistics for "
+            "bounded one-dimensional Program AD traces; dynamic axes, dynamic q, "
+            "tie boundaries, zero-variance standard-deviation, Rust/LLVM "
             "executable lowering, hardware, and performance promotion remain "
             "blocked; no wall-clock performance claim"
         ),

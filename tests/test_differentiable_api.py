@@ -213,6 +213,10 @@ def test_differentiable_dashboard_status_is_claim_bounded_for_gui_consumers() ->
     assert rows["program_ad_assembly_primitives"]["fail_closed"] is True
     assert "assembly_primitive_contracts" in rows["program_ad_assembly_primitives"]["evidence"]
     assert "dynamic shape assembly" in rows["program_ad_assembly_primitives"]["claim_boundary"]
+    assert rows["program_ad_reduction_primitives"]["state"] == "diagnostic"
+    assert rows["program_ad_reduction_primitives"]["fail_closed"] is True
+    assert "reduction_primitive_contracts" in rows["program_ad_reduction_primitives"]["evidence"]
+    assert "strict-order selectors" in rows["program_ad_reduction_primitives"]["claim_boundary"]
     assert rows["nondifferentiability_diagnostics"]["state"] == "diagnostic"
     assert "program_ad_elementwise:sign" in rows["nondifferentiability_diagnostics"]["evidence"]
     assert (
@@ -276,6 +280,10 @@ def test_differentiable_dashboard_status_can_include_conformance_backing() -> No
         "like-constructor and stack assembly"
         in rows["program_ad_assembly_primitives"].claim_boundary
     )
+    assert rows["program_ad_reduction_primitives"].state == "conformance_backed"
+    assert rows["program_ad_reduction_primitives"].fail_closed is False
+    assert rows["program_ad_reduction_primitives"].blocked_reasons == ()
+    assert "scalar q order-statistics" in rows["program_ad_reduction_primitives"].claim_boundary
     assert rows["higher_order_transform_algebra"].state == "conformance_backed"
     assert rows["higher_order_transform_algebra"].fail_closed is False
     assert rows["higher_order_transform_algebra"].blocked_reasons == ()
