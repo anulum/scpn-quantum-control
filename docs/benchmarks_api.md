@@ -365,7 +365,7 @@ Runs the committed conformance rows:
 | Case | Category | Contract |
 |------|----------|----------|
 | `loop_heavy_scalar` | loop-heavy | Executed Python loops with scalar ufuncs |
-| `elementwise_boundary_contracts` | elementwise-boundary | Builtin `abs`, NumPy absolute value, positive-domain, nonzero-denominator, and inverse-trig boundary contracts |
+| `elementwise_boundary_contracts` | elementwise-boundary | Registry-gated builtin `abs`, NumPy absolute value, positive-domain, nonzero-denominator, and inverse-trig boundary contracts with analytic gradient and adjoint parity checks; unsupported domain boundaries, derivative-losing `sign`/`heaviside` kernels, Rust/LLVM executable lowering, hardware, and performance promotion remain blocked |
 | `matrix_heavy_linear_algebra` | matrix-heavy | Dot, inner, outer, trace, tensordot, and einsum semantics |
 | `selection_piecewise_contracts` | selection-heavy | Registry-gated `where`/`clip` branch and boundary contracts, strict no-tie `sort`, static selection folds with `np.select`, callable `np.piecewise`, static-selector `np.choose`, static-mask `np.compress`, and same-size static-mask `np.extract`, plus fail-closed integer-output selector contracts exposed through the dashboard selection primitive row; dynamic masks, dynamic selectors, ties, Rust/LLVM executable lowering, hardware, and performance promotion remain blocked |
 | `structured_numeric_primitive_contracts` | structured-numeric | Registry-gated product, interpolation, signal, and stencil contracts for `inner`, `outer`, `matmul`, `tensordot`, `einsum`, `interp`, `convolve`, `correlate`, and `gradient` |

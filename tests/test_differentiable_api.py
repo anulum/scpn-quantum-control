@@ -190,6 +190,15 @@ def test_differentiable_dashboard_status_is_claim_bounded_for_gui_consumers() ->
         "filtered, set, and dict comprehensions remain fail-closed"
         in rows["program_ad_python_semantics"]["claim_boundary"]
     )
+    assert rows["program_ad_elementwise_primitives"]["state"] == "diagnostic"
+    assert rows["program_ad_elementwise_primitives"]["fail_closed"] is True
+    assert (
+        "elementwise_boundary_contracts" in rows["program_ad_elementwise_primitives"]["evidence"]
+    )
+    assert (
+        "zero-cusp absolute-value" in rows["program_ad_elementwise_primitives"]["claim_boundary"]
+    )
+    assert "domain boundaries" in rows["program_ad_elementwise_primitives"]["claim_boundary"]
     assert rows["program_ad_array_indexing"]["state"] == "diagnostic"
     assert rows["program_ad_array_indexing"]["fail_closed"] is True
     assert "indexing_static_gather_contracts" in rows["program_ad_array_indexing"]["evidence"]
@@ -268,6 +277,12 @@ def test_differentiable_dashboard_status_can_include_conformance_backing() -> No
     assert rows["program_ad_python_semantics"].state == "conformance_backed"
     assert rows["program_ad_python_semantics"].fail_closed is False
     assert rows["program_ad_python_semantics"].blocked_reasons == ()
+    assert rows["program_ad_elementwise_primitives"].state == "conformance_backed"
+    assert rows["program_ad_elementwise_primitives"].fail_closed is False
+    assert rows["program_ad_elementwise_primitives"].blocked_reasons == ()
+    assert "inverse-trig boundary contracts" in (
+        rows["program_ad_elementwise_primitives"].claim_boundary
+    )
     assert rows["program_ad_array_indexing"].state == "conformance_backed"
     assert rows["program_ad_array_indexing"].fail_closed is False
     assert rows["program_ad_array_indexing"].blocked_reasons == ()

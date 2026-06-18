@@ -576,6 +576,25 @@ def differentiable_dashboard_status(
             ),
         ),
         DifferentiableDashboardCapabilityRow(
+            surface="program_ad_elementwise_primitives",
+            state="conformance_backed" if conformance_passed else "diagnostic",
+            backing_api="run_differentiable_programming_benchmark_suite",
+            evidence=(
+                "scpn.program_ad.elementwise:{abs,absolute,log,sqrt,reciprocal,log1p,arcsin,arccos}",
+                "elementwise_boundary_contracts",
+            ),
+            blocked_reasons=()
+            if conformance_passed
+            else ("conformance suite not run in this status call",),
+            claim_boundary=(
+                "bounded Program AD elementwise primitive conformance for "
+                "zero-cusp absolute-value, positive-domain, nonzero-denominator, "
+                "and inverse-trig boundary contracts only; unsupported domain "
+                "boundaries, derivative-losing sign/heaviside kernels, Rust/LLVM "
+                "executable lowering, hardware, and performance promotion remain blocked"
+            ),
+        ),
+        DifferentiableDashboardCapabilityRow(
             surface="program_ad_array_indexing",
             state="conformance_backed" if conformance_passed else "diagnostic",
             backing_api="run_differentiable_programming_benchmark_suite",
