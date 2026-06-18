@@ -34,6 +34,7 @@ def test_differentiable_programming_benchmark_suite_matches_analytic_references(
     assert [row.case_id for row in results] == [
         "loop_heavy_scalar",
         "python_semantics_list_comprehension",
+        "program_adjoint_replay_provenance_contracts",
         "elementwise_boundary_contracts",
         "matrix_heavy_linear_algebra",
         "selection_piecewise_contracts",
@@ -59,6 +60,7 @@ def test_differentiable_programming_benchmark_suite_matches_analytic_references(
     assert {row.category for row in results} == {
         "loop-heavy",
         "python-semantics",
+        "reverse-adjoint",
         "elementwise-boundary",
         "matrix-heavy",
         "selection-heavy",
@@ -106,6 +108,13 @@ def test_differentiable_programming_benchmark_suite_matches_analytic_references(
     assert "filtered, set, and dict comprehensions fail closed" in (
         python_semantics_row.claim_boundary
     )
+    reverse_adjoint_row = next(row for row in results if row.category == "reverse-adjoint")
+    assert reverse_adjoint_row.adjoint_supported is True
+    assert reverse_adjoint_row.max_abs_adjoint_error is not None
+    assert reverse_adjoint_row.max_abs_adjoint_error <= 1.0e-12
+    assert "ProgramADAdjointResult replay provenance" in reverse_adjoint_row.claim_boundary
+    assert "program_ad_effect_ir.v1" in reverse_adjoint_row.claim_boundary
+    assert "not full reverse-mode compiler AD" in reverse_adjoint_row.claim_boundary
     linalg_row = next(row for row in results if row.category == "linalg-primitive")
     assert linalg_row.adjoint_supported is True
     assert linalg_row.max_abs_adjoint_error is not None

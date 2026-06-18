@@ -31,6 +31,7 @@ from ..differentiable import (
     jax_value_and_grad,
     jvp,
     program_adjoint_gradient,
+    program_adjoint_result,
     vjp,
     vmap,
     whole_program_value_and_grad,
@@ -208,6 +209,7 @@ def run_differentiable_programming_benchmark_suite() -> tuple[
     return (
         _loop_heavy_case(),
         _python_semantics_list_comprehension_case(),
+        _program_adjoint_replay_provenance_case(),
         _elementwise_boundary_case(),
         _matrix_heavy_case(),
         _selection_heavy_case(),
@@ -368,6 +370,72 @@ def _loop_heavy_case() -> DifferentiableProgrammingBenchmarkResult:
         objective,
         values,
         analytic,
+    )
+
+
+def _program_adjoint_replay_provenance_case() -> DifferentiableProgrammingBenchmarkResult:
+    values = np.array([1.25, -0.4, 0.75], dtype=np.float64)
+
+    def objective(trace_values: Any) -> object:
+        x, y, z = trace_values
+        branch = x if x > y else y
+        return (
+            np.sin(x)
+            + np.cos(y)
+            + np.exp(x - y)
+            + np.log(z + 3.0)
+            + np.sqrt(z + 4.0)
+            + np.tanh(x * z)
+            + x**2.0
+            + 2.0**y
+            + branch
+        )
+
+    result = whole_program_value_and_grad(
+        objective,
+        values,
+        parameters=(Parameter("x"), Parameter("y"), Parameter("z")),
+    )
+    adjoint = program_adjoint_result(result)
+    if result.program_ir is None:
+        raise ValueError("program AD adjoint replay provenance case requires program IR")
+    if (
+        adjoint.replay_node_count != len(result.ir_nodes)
+        or adjoint.replay_effect_count != len(result.program_ir.effects)
+        or adjoint.replay_control_region_count != len(result.program_ir.control_regions)
+        or adjoint.replay_phi_node_count != len(result.program_ir.phi_nodes)
+        or adjoint.replay_ir_format != "program_ad_effect_ir.v1"
+    ):
+        raise ValueError("program AD adjoint replay provenance counts do not match program IR")
+
+    x, y, z = values
+    analytic = np.array(
+        [
+            math.cos(x) + math.exp(x - y) + z * (1.0 - math.tanh(x * z) ** 2) + 2.0 * x + 1.0,
+            -math.sin(y) - math.exp(x - y) + math.log(2.0) * (2.0**y),
+            1.0 / (z + 3.0) + 1.0 / (2.0 * math.sqrt(z + 4.0)) + x * (1.0 - math.tanh(x * z) ** 2),
+        ],
+        dtype=np.float64,
+    )
+    adjoint_gradient = program_adjoint_gradient(result)
+    return DifferentiableProgrammingBenchmarkResult(
+        case_id="program_adjoint_replay_provenance_contracts",
+        category="reverse-adjoint",
+        value=result.value,
+        gradient=result.gradient,
+        analytic_gradient=analytic,
+        max_abs_gradient_error=_max_abs_error(result.gradient, analytic),
+        adjoint_supported=adjoint.supported,
+        max_abs_adjoint_error=_max_abs_error(adjoint_gradient, analytic)
+        if adjoint.supported
+        else None,
+        claim_boundary=(
+            "ProgramADAdjointResult replay provenance over supported executed scalar "
+            "IR nodes, effects, control regions, and phi metadata in "
+            "program_ad_effect_ir.v1; local conformance only, not full reverse-mode "
+            "compiler AD, non-executed branch adjoints, Rust, LLVM/JIT, hardware, "
+            "or performance evidence; no wall-clock performance claim"
+        ),
     )
 
 

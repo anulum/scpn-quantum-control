@@ -190,6 +190,17 @@ def test_differentiable_dashboard_status_is_claim_bounded_for_gui_consumers() ->
         "filtered, set, and dict comprehensions remain fail-closed"
         in rows["program_ad_python_semantics"]["claim_boundary"]
     )
+    assert rows["program_ad_reverse_adjoint_replay"]["state"] == "diagnostic"
+    assert rows["program_ad_reverse_adjoint_replay"]["fail_closed"] is True
+    assert (
+        "program_adjoint_replay_provenance_contracts"
+        in rows["program_ad_reverse_adjoint_replay"]["evidence"]
+    )
+    assert "ProgramADAdjointResult" in rows["program_ad_reverse_adjoint_replay"]["evidence"]
+    assert (
+        "not full reverse-mode compiler AD"
+        in (rows["program_ad_reverse_adjoint_replay"]["claim_boundary"])
+    )
     assert rows["program_ad_elementwise_primitives"]["state"] == "diagnostic"
     assert rows["program_ad_elementwise_primitives"]["fail_closed"] is True
     assert (
@@ -277,6 +288,12 @@ def test_differentiable_dashboard_status_can_include_conformance_backing() -> No
     assert rows["program_ad_python_semantics"].state == "conformance_backed"
     assert rows["program_ad_python_semantics"].fail_closed is False
     assert rows["program_ad_python_semantics"].blocked_reasons == ()
+    assert rows["program_ad_reverse_adjoint_replay"].state == "conformance_backed"
+    assert rows["program_ad_reverse_adjoint_replay"].fail_closed is False
+    assert rows["program_ad_reverse_adjoint_replay"].blocked_reasons == ()
+    assert "replay node/effect/control/phi provenance" in (
+        rows["program_ad_reverse_adjoint_replay"].claim_boundary
+    )
     assert rows["program_ad_elementwise_primitives"].state == "conformance_backed"
     assert rows["program_ad_elementwise_primitives"].fail_closed is False
     assert rows["program_ad_elementwise_primitives"].blocked_reasons == ()

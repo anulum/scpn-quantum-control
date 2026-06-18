@@ -576,6 +576,27 @@ def differentiable_dashboard_status(
             ),
         ),
         DifferentiableDashboardCapabilityRow(
+            surface="program_ad_reverse_adjoint_replay",
+            state="conformance_backed" if conformance_passed else "diagnostic",
+            backing_api="run_differentiable_programming_benchmark_suite",
+            evidence=(
+                "ProgramADAdjointResult",
+                "program_adjoint_result",
+                "program_adjoint_gradient",
+                "program_adjoint_replay_provenance_contracts",
+            ),
+            blocked_reasons=()
+            if conformance_passed
+            else ("conformance suite not run in this status call",),
+            claim_boundary=(
+                "bounded Program AD reverse adjoint replay over supported executed "
+                "scalar IR only, with replay node/effect/control/phi provenance "
+                "bound to program_ad_effect_ir.v1; not full reverse-mode compiler "
+                "AD, non-executed branch adjoints, Rust/LLVM executable lowering, "
+                "hardware, or performance promotion"
+            ),
+        ),
+        DifferentiableDashboardCapabilityRow(
             surface="program_ad_elementwise_primitives",
             state="conformance_backed" if conformance_passed else "diagnostic",
             backing_api="run_differentiable_programming_benchmark_suite",
