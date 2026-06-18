@@ -724,6 +724,24 @@ def differentiable_dashboard_status(
             ),
         ),
         DifferentiableDashboardCapabilityRow(
+            surface="program_ad_selection_primitives",
+            state="conformance_backed" if conformance_passed else "diagnostic",
+            backing_api="run_differentiable_programming_benchmark_suite",
+            evidence=(
+                "scpn.program_ad.selection:{where,clip,sort,select,piecewise,choose,compress,extract,argmax,argmin,argsort}",
+                "selection_piecewise_contracts",
+            ),
+            blocked_reasons=()
+            if conformance_passed
+            else ("conformance suite not run in this status call",),
+            claim_boundary=(
+                "bounded Program AD static selection folds, strict sort, where, "
+                "and clip conformance only; dynamic masks, dynamic selectors, "
+                "tie boundaries, integer-output selectors, Rust/LLVM executable "
+                "lowering, hardware, and performance promotion remain blocked"
+            ),
+        ),
+        DifferentiableDashboardCapabilityRow(
             surface="primitive_contracts",
             state="executable",
             backing_api="primitive_complete_contract_for",
