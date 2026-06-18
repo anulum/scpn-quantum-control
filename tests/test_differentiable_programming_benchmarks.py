@@ -37,6 +37,7 @@ def test_differentiable_programming_benchmark_suite_matches_analytic_references(
         "elementwise_boundary_contracts",
         "matrix_heavy_linear_algebra",
         "selection_piecewise_contracts",
+        "structured_numeric_primitive_contracts",
         "linalg_primitive_contracts",
         "indexing_static_gather_contracts",
         "mutation_heavy_forward_only",
@@ -55,6 +56,7 @@ def test_differentiable_programming_benchmark_suite_matches_analytic_references(
         "elementwise-boundary",
         "matrix-heavy",
         "selection-heavy",
+        "structured-numeric",
         "linalg-primitive",
         "indexing-heavy",
         "mutation-heavy",
@@ -106,6 +108,13 @@ def test_differentiable_programming_benchmark_suite_matches_analytic_references(
     assert selection_row.adjoint_supported is True
     assert selection_row.max_abs_adjoint_error is not None
     assert selection_row.max_abs_adjoint_error <= 1.0e-12
+    structured_row = next(row for row in results if row.category == "structured-numeric")
+    assert structured_row.adjoint_supported is True
+    assert structured_row.max_abs_adjoint_error is not None
+    assert structured_row.max_abs_adjoint_error <= 1.0e-12
+    assert "product, interpolation, signal, and stencil primitive contracts" in (
+        structured_row.claim_boundary
+    )
     indexing_row = next(row for row in results if row.category == "indexing-heavy")
     assert indexing_row.adjoint_supported is True
     assert indexing_row.max_abs_adjoint_error is not None

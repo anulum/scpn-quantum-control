@@ -5,6 +5,11 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-06-18 — Exposed structured numeric Program AD primitive conformance
+  through `structured_numeric_primitive_contracts` and the
+  `program_ad_structured_primitives` dashboard row. The row covers product,
+  interpolation, signal, and stencil primitive contracts while keeping
+  Rust/LLVM/JIT, hardware, and performance promotion blocked.
 - 2026-06-18 — Added deterministic transform-algebra conformance coverage for
   local Hessian over a whole-program AD scalar objective against analytic
   curvature through `transform_nesting_program_ad_hessian`, with compiler,

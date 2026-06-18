@@ -211,6 +211,7 @@ def run_differentiable_programming_benchmark_suite() -> tuple[
         _elementwise_boundary_case(),
         _matrix_heavy_case(),
         _selection_heavy_case(),
+        _structured_numeric_primitive_case(),
         _linalg_primitive_case(),
         _indexing_heavy_case(),
         _mutation_heavy_case(),
@@ -593,6 +594,202 @@ def _selection_heavy_case() -> DifferentiableProgrammingBenchmarkResult:
         objective,
         values,
         analytic,
+    )
+
+
+def _structured_numeric_value_and_directional(
+    source: NDArray[np.float64],
+    direction: NDArray[np.float64],
+) -> tuple[float, float]:
+    left = source[:3]
+    right = source[3:6]
+    matrix = source[:6].reshape(2, 3)
+    signal = source[6:10]
+    kernel = source[10:13]
+    samples = source[13:16]
+
+    direction_left = direction[:3]
+    direction_right = direction[3:6]
+    direction_matrix = direction[:6].reshape(2, 3)
+    direction_signal = direction[6:10]
+    direction_kernel = direction[10:13]
+    direction_samples = direction[13:16]
+
+    product_vector = np.array([0.5, -1.25, 0.75], dtype=np.float64)
+    matmul_weights = np.array([1.5, -0.25], dtype=np.float64)
+    outer_weights = np.array([[0.2, -0.4], [0.6, -0.8]], dtype=np.float64)
+    tensor_weights = np.array([[0.3, -0.5, 0.7], [-0.2, 0.4, -0.6]], dtype=np.float64)
+    grid = np.array([0.0, 1.0, 2.0, 3.0], dtype=np.float64)
+    convolve_weights = np.array([0.25, -0.5, 0.75, -1.0], dtype=np.float64)
+    correlate_weights = np.array([0.4, -0.6], dtype=np.float64)
+    gradient_weights = np.array([-0.3, 0.1, 0.5, -0.7], dtype=np.float64)
+
+    interpolated = np.interp(samples, grid, signal)
+    convolved = np.convolve(signal, kernel, mode="same")
+    correlated = np.correlate(signal, kernel, mode="valid")
+    stencil = np.gradient(signal, 0.5, edge_order=1)
+    value = (
+        float(np.inner(left, right))
+        + 0.17 * float(np.sum(np.outer(left[:2], right[:2]) * outer_weights))
+        + 0.23 * float(np.sum(np.matmul(matrix, product_vector) * matmul_weights))
+        + 0.29 * float(np.tensordot(left, right, axes=1))
+        + 0.31 * float(np.sum(np.tensordot(left[:2], right, axes=0) * tensor_weights))
+        + 0.37 * float(np.einsum("i,i->", left, right))
+        + 0.19 * float(np.sum(np.einsum("i,j->ij", left[:2], right[:2]) * outer_weights))
+        + float(np.sum(interpolated))
+        + 0.41 * float(np.sum(convolved * convolve_weights))
+        - 0.13 * float(np.sum(correlated * correlate_weights))
+        + 0.07 * float(np.sum(stencil * gradient_weights))
+    )
+
+    interpolation_directional = 0.0
+    for sample, sample_tangent in zip(samples, direction_samples, strict=True):
+        interval = int(np.searchsorted(grid, sample, side="right") - 1)
+        if interval < 0 or interval >= grid.size - 1:
+            raise ValueError("structured benchmark interpolation samples must stay inside grid")
+        width = float(grid[interval + 1] - grid[interval])
+        weight_right = float((sample - grid[interval]) / width)
+        weight_left = 1.0 - weight_right
+        slope = float((signal[interval + 1] - signal[interval]) / width)
+        interpolation_directional += (
+            slope * float(sample_tangent)
+            + weight_left * float(direction_signal[interval])
+            + weight_right * float(direction_signal[interval + 1])
+        )
+
+    directional = (
+        float(np.inner(direction_left, right) + np.inner(left, direction_right))
+        + 0.17
+        * float(
+            np.sum(
+                (np.outer(direction_left[:2], right[:2]) + np.outer(left[:2], direction_right[:2]))
+                * outer_weights
+            )
+        )
+        + 0.23 * float(np.sum(np.matmul(direction_matrix, product_vector) * matmul_weights))
+        + 0.29 * float(np.tensordot(direction_left, right, axes=1))
+        + 0.29 * float(np.tensordot(left, direction_right, axes=1))
+        + 0.31
+        * float(
+            np.sum(
+                (
+                    np.tensordot(direction_left[:2], right, axes=0)
+                    + np.tensordot(left[:2], direction_right, axes=0)
+                )
+                * tensor_weights
+            )
+        )
+        + 0.37
+        * float(
+            np.einsum("i,i->", direction_left, right) + np.einsum("i,i->", left, direction_right)
+        )
+        + 0.19
+        * float(
+            np.sum(
+                (
+                    np.einsum("i,j->ij", direction_left[:2], right[:2])
+                    + np.einsum("i,j->ij", left[:2], direction_right[:2])
+                )
+                * outer_weights
+            )
+        )
+        + interpolation_directional
+        + 0.41
+        * float(
+            np.sum(
+                (
+                    np.convolve(direction_signal, kernel, mode="same")
+                    + np.convolve(signal, direction_kernel, mode="same")
+                )
+                * convolve_weights
+            )
+        )
+        - 0.13
+        * float(
+            np.sum(
+                (
+                    np.correlate(direction_signal, kernel, mode="valid")
+                    + np.correlate(signal, direction_kernel, mode="valid")
+                )
+                * correlate_weights
+            )
+        )
+        + 0.07 * float(np.sum(np.gradient(direction_signal, 0.5, edge_order=1) * gradient_weights))
+    )
+    return value, directional
+
+
+def _structured_numeric_primitive_case() -> DifferentiableProgrammingBenchmarkResult:
+    values = np.array(
+        [
+            0.75,
+            -1.25,
+            2.0,
+            -0.5,
+            1.5,
+            0.25,
+            1.0,
+            -0.5,
+            2.0,
+            0.25,
+            0.5,
+            -1.0,
+            0.75,
+            0.25,
+            1.25,
+            2.5,
+        ],
+        dtype=np.float64,
+    )
+    product_vector = np.array([0.5, -1.25, 0.75], dtype=np.float64)
+    matmul_weights = np.array([1.5, -0.25], dtype=np.float64)
+    outer_weights = np.array([[0.2, -0.4], [0.6, -0.8]], dtype=np.float64)
+    tensor_weights = np.array([[0.3, -0.5, 0.7], [-0.2, 0.4, -0.6]], dtype=np.float64)
+    grid = np.array([0.0, 1.0, 2.0, 3.0], dtype=np.float64)
+    convolve_weights = np.array([0.25, -0.5, 0.75, -1.0], dtype=np.float64)
+    correlate_weights = np.array([0.4, -0.6], dtype=np.float64)
+    gradient_weights = np.array([-0.3, 0.1, 0.5, -0.7], dtype=np.float64)
+
+    def objective(trace_values: Any) -> object:
+        left = trace_values[:3]
+        right = trace_values[3:6]
+        matrix = np.reshape(trace_values[:6], (2, 3))
+        signal = trace_values[6:10]
+        kernel = trace_values[10:13]
+        samples = trace_values[13:16]
+        return (
+            np.inner(left, right)
+            + 0.17 * np.sum(np.outer(left[:2], right[:2]) * outer_weights)
+            + 0.23 * np.sum(np.matmul(matrix, product_vector) * matmul_weights)
+            + 0.29 * np.tensordot(left, right, axes=1)
+            + 0.31 * np.sum(np.tensordot(left[:2], right, axes=0) * tensor_weights)
+            + 0.37 * np.einsum("i,i->", left, right)
+            + 0.19 * np.sum(np.einsum("i,j->ij", left[:2], right[:2]) * outer_weights)
+            + np.sum(np.interp(samples, grid, signal))
+            + 0.41 * np.sum(np.convolve(signal, kernel, mode="same") * convolve_weights)
+            - 0.13 * np.sum(np.correlate(signal, kernel, mode="valid") * correlate_weights)
+            + 0.07 * np.sum(np.gradient(signal, 0.5, edge_order=1) * gradient_weights)
+        )
+
+    analytic = np.array(
+        [
+            _structured_numeric_value_and_directional(values, basis)[1]
+            for basis in np.eye(values.size, dtype=np.float64)
+        ],
+        dtype=np.float64,
+    )
+    return _program_ad_case(
+        "structured_numeric_primitive_contracts",
+        "structured-numeric",
+        objective,
+        values,
+        analytic,
+        claim_boundary=(
+            "deterministic product, interpolation, signal, and stencil primitive "
+            "contracts for inner, outer, matmul, tensordot, einsum, interp, "
+            "convolve, correlate, and gradient; no wall-clock performance, "
+            "hardware, LLVM, Rust, or JIT execution claim"
+        ),
     )
 
 
