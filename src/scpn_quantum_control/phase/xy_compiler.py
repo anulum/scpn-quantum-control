@@ -23,7 +23,11 @@ Inspired by MISTIQS domain-specific TFIM compiler (USCCACS).
 from __future__ import annotations
 
 import numpy as np
+from numpy.typing import NDArray
 from qiskit import QuantumCircuit
+
+FloatArray = NDArray[np.float64]
+DepthComparison = dict[str, int | float]
 
 
 def xy_gate(qc: QuantumCircuit, i: int, j: int, angle: float) -> None:
@@ -38,8 +42,8 @@ def xy_gate(qc: QuantumCircuit, i: int, j: int, angle: float) -> None:
 
 
 def compile_xy_trotter(
-    K: np.ndarray,
-    omega: np.ndarray,
+    K: FloatArray,
+    omega: FloatArray,
     t: float = 0.1,
     reps: int = 1,
     order: int = 1,
@@ -92,7 +96,7 @@ def compile_xy_trotter(
     return qc
 
 
-def _apply_xy_layer(qc: QuantumCircuit, K: np.ndarray, dt: float, n: int) -> None:
+def _apply_xy_layer(qc: QuantumCircuit, K: FloatArray, dt: float, n: int) -> None:
     """Apply all XY coupling terms for one Trotter step."""
     for i in range(n):
         for j in range(i + 1, n):
@@ -101,11 +105,11 @@ def _apply_xy_layer(qc: QuantumCircuit, K: np.ndarray, dt: float, n: int) -> Non
 
 
 def depth_comparison(
-    K: np.ndarray,
-    omega: np.ndarray,
+    K: FloatArray,
+    omega: FloatArray,
     t: float = 0.1,
     reps: int = 5,
-) -> dict:
+) -> DepthComparison:
     """Compare circuit depth: generic Trotter vs XY-optimised.
 
     Returns dict with keys: generic_depth, optimised_depth, reduction_pct

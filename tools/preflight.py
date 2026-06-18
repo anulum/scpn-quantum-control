@@ -113,6 +113,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
             "src/scpn_quantum_control/phase/qnn_framework_bridge_matrix.py",
             "src/scpn_quantum_control/phase/transform_nesting.py",
             "src/scpn_quantum_control/benchmarks/differentiable_external_comparison.py",
+            "src/scpn_quantum_control/phase/xy_compiler.py",
         ],
     ),
 ]

@@ -64,3 +64,4 @@ def test_ci_gates_differentiable_strict_mypy_ratchet() -> None:
     assert "src/scpn_quantum_control/phase/qnn_framework_bridge_matrix.py" in workflow
     assert "src/scpn_quantum_control/phase/transform_nesting.py" in workflow
     assert "src/scpn_quantum_control/benchmarks/differentiable_external_comparison.py" in workflow
+    assert "src/scpn_quantum_control/phase/xy_compiler.py" in workflow
