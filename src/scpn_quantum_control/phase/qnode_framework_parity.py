@@ -10,6 +10,7 @@
 from __future__ import annotations
 
 import importlib
+from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any, Literal, TypeAlias, cast
 
@@ -189,11 +190,12 @@ def _default_params(scenario: ParityScenario) -> FloatArray:
 
 
 def _as_params(params: FloatArray, scenario: ParityScenario) -> FloatArray:
-    values = np.asarray(params, dtype=np.float64)
+    raw_values: Any = np.array(params, dtype=np.float64, copy=True)
+    values = cast(FloatArray, raw_values)
     expected_shape = _default_params(scenario).shape
     if values.shape != expected_shape or not np.all(np.isfinite(values)):
         raise ValueError(f"params must be a finite vector with shape {expected_shape}")
-    return cast(FloatArray, values.copy())
+    return values
 
 
 def _scenario_circuit(scenario: ParityScenario) -> PhaseQNodeCircuit:
@@ -368,8 +370,9 @@ def _run_pennylane(
     pnp = importlib.import_module("pennylane.numpy")
     if scenario == "registered_two_qubit_entangling_statevector":
         device = qml.device("default.qubit", wires=2)
+        qnode = cast(Callable[[Callable[[Any], Any]], Callable[[Any], Any]], qml.qnode(device))
 
-        @qml.qnode(device)
+        @qnode
         def two_qubit_circuit(theta: Any) -> Any:
             qml.RY(theta[0], wires=0)
             qml.RX(theta[1], wires=1)
@@ -388,8 +391,9 @@ def _run_pennylane(
         return float(value), np.asarray(gradient, dtype=np.float64), "float64", "default.qubit"
 
     device = qml.device("default.qubit", wires=1)
+    qnode = cast(Callable[[Callable[[Any], Any]], Callable[[Any], Any]], qml.qnode(device))
 
-    @qml.qnode(device)
+    @qnode
     def circuit(theta: Any) -> Any:
         qml.RY(theta[0], wires=0)
         qml.RX(theta[1], wires=0)

@@ -54,3 +54,4 @@ def test_ci_gates_differentiable_strict_mypy_ratchet() -> None:
     assert "src/scpn_quantum_control/phase/qnode_provider_transforms.py" in workflow
     assert "src/scpn_quantum_control/phase/qnode_transforms.py" in workflow
     assert "src/scpn_quantum_control/phase/qnode_vector_transforms.py" in workflow
+    assert "src/scpn_quantum_control/phase/qnode_framework_parity.py" in workflow
