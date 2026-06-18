@@ -212,6 +212,7 @@ def run_differentiable_programming_benchmark_suite() -> tuple[
         _matrix_heavy_case(),
         _selection_heavy_case(),
         _structured_numeric_primitive_case(),
+        _cumulative_primitive_case(),
         _linalg_primitive_case(),
         _indexing_heavy_case(),
         _mutation_heavy_case(),
@@ -790,6 +791,79 @@ def _structured_numeric_primitive_case() -> DifferentiableProgrammingBenchmarkRe
             "contracts for inner, outer, matmul, tensordot, einsum, interp, "
             "convolve, correlate, and gradient; no wall-clock performance, "
             "hardware, LLVM, Rust, or JIT execution claim"
+        ),
+    )
+
+
+def _cumulative_primitive_gradient(
+    values: NDArray[np.float64],
+    cumulative_weights: NDArray[np.float64],
+    product_weights: NDArray[np.float64],
+    first_difference_weights: NDArray[np.float64],
+    second_difference_weights: NDArray[np.float64],
+) -> NDArray[np.float64]:
+    shifted = values + 2.5
+    products = np.cumprod(shifted)
+    gradient = np.zeros_like(values, dtype=np.float64)
+    size = int(values.size)
+
+    for parameter_index in range(size):
+        gradient[parameter_index] += float(np.sum(cumulative_weights[parameter_index:]))
+        for output_index in range(parameter_index, size):
+            gradient[parameter_index] += (
+                float(product_weights[output_index])
+                * float(products[output_index])
+                / float(shifted[parameter_index])
+            )
+        if parameter_index > 0:
+            gradient[parameter_index] += float(first_difference_weights[parameter_index - 1])
+        if parameter_index < size - 1:
+            gradient[parameter_index] -= float(first_difference_weights[parameter_index])
+        if parameter_index < size - 2:
+            gradient[parameter_index] += float(second_difference_weights[parameter_index])
+        if 0 < parameter_index < size - 1:
+            gradient[parameter_index] -= 2.0 * float(
+                second_difference_weights[parameter_index - 1]
+            )
+        if parameter_index >= 2:
+            gradient[parameter_index] += float(second_difference_weights[parameter_index - 2])
+    return gradient
+
+
+def _cumulative_primitive_case() -> DifferentiableProgrammingBenchmarkResult:
+    values = np.array([0.2, -0.35, 0.6, 1.1, -0.15], dtype=np.float64)
+    cumulative_weights = np.array([0.3, -0.5, 0.7, -0.2, 0.4], dtype=np.float64)
+    product_weights = np.array([-0.11, 0.17, -0.23, 0.29, -0.31], dtype=np.float64)
+    first_difference_weights = np.array([0.13, -0.19, 0.37, -0.41], dtype=np.float64)
+    second_difference_weights = np.array([-0.07, 0.09, -0.15], dtype=np.float64)
+
+    def objective(trace_values: Any) -> object:
+        shifted = trace_values + 2.5
+        return (
+            np.sum(np.cumsum(trace_values) * cumulative_weights)
+            + np.sum(np.cumprod(shifted) * product_weights)
+            + np.sum(np.diff(trace_values) * first_difference_weights)
+            + np.sum(np.diff(trace_values, n=2) * second_difference_weights)
+        )
+
+    analytic = _cumulative_primitive_gradient(
+        values,
+        cumulative_weights,
+        product_weights,
+        first_difference_weights,
+        second_difference_weights,
+    )
+    return _program_ad_case(
+        "cumulative_primitive_contracts",
+        "cumulative-primitive",
+        objective,
+        values,
+        analytic,
+        claim_boundary=(
+            "deterministic cumsum, cumprod, and diff primitive contracts for "
+            "bounded one-dimensional Program AD traces; dynamic axis promotion, "
+            "Rust/LLVM executable lowering, hardware, and performance promotion "
+            "remain blocked; no wall-clock performance claim"
         ),
     )
 

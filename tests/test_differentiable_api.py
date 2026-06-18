@@ -205,6 +205,10 @@ def test_differentiable_dashboard_status_is_claim_bounded_for_gui_consumers() ->
         in rows["program_ad_structured_primitives"]["evidence"]
     )
     assert "Rust/LLVM" in rows["program_ad_structured_primitives"]["claim_boundary"]
+    assert rows["program_ad_cumulative_primitives"]["state"] == "diagnostic"
+    assert rows["program_ad_cumulative_primitives"]["fail_closed"] is True
+    assert "cumulative_primitive_contracts" in rows["program_ad_cumulative_primitives"]["evidence"]
+    assert "dynamic axis promotion" in rows["program_ad_cumulative_primitives"]["claim_boundary"]
     assert rows["nondifferentiability_diagnostics"]["state"] == "diagnostic"
     assert "program_ad_elementwise:sign" in rows["nondifferentiability_diagnostics"]["evidence"]
     assert (
@@ -257,6 +261,10 @@ def test_differentiable_dashboard_status_can_include_conformance_backing() -> No
     assert "structured numeric Program AD primitive conformance" in (
         rows["program_ad_structured_primitives"].claim_boundary
     )
+    assert rows["program_ad_cumulative_primitives"].state == "conformance_backed"
+    assert rows["program_ad_cumulative_primitives"].fail_closed is False
+    assert rows["program_ad_cumulative_primitives"].blocked_reasons == ()
+    assert "cumsum, cumprod, and diff" in rows["program_ad_cumulative_primitives"].claim_boundary
     assert rows["higher_order_transform_algebra"].state == "conformance_backed"
     assert rows["higher_order_transform_algebra"].fail_closed is False
     assert rows["higher_order_transform_algebra"].blocked_reasons == ()
