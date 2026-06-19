@@ -11275,6 +11275,16 @@ def test_program_adjoint_replay_matches_forward_program_ad_for_supported_ir() ->
     assert adjoint.adjoint_steps[0].primal_value == f"%{len(result.ir_nodes) - 1}"
     assert adjoint.adjoint_steps[0].supported is True
     assert adjoint.adjoint_steps[-1].operation == "parameter"
+    branch_steps = tuple(
+        step for step in adjoint.adjoint_steps if step.operation.startswith("branch:")
+    )
+    assert len(branch_steps) == 1
+    branch_step = branch_steps[0]
+    assert branch_step.control_region is not None
+    assert branch_step.control_region_kind == "runtime_branch"
+    assert branch_step.control_region_entered is True
+    assert branch_step.phi_node is not None
+    assert branch_step.phi_selected == "executed_true"
     effect_ordering = tuple(
         step.effect_ordering for step in adjoint.adjoint_steps if step.effect_ordering is not None
     )
@@ -11291,6 +11301,14 @@ def test_program_adjoint_replay_matches_forward_program_ad_for_supported_ir() ->
     assert len(payload["adjoint_steps"][0]["contribution_inputs"]) == len(
         payload["adjoint_steps"][0]["contribution_cotangents"]
     )
+    payload_branch = next(
+        step for step in payload["adjoint_steps"] if str(step["operation"]).startswith("branch:")
+    )
+    assert payload_branch["control_region"] == branch_step.control_region
+    assert payload_branch["control_region_kind"] == "runtime_branch"
+    assert payload_branch["control_region_entered"] is True
+    assert payload_branch["phi_node"] == branch_step.phi_node
+    assert payload_branch["phi_selected"] == "executed_true"
     np.testing.assert_allclose(adjoint.gradient, result.gradient, rtol=1.0e-12, atol=1.0e-12)
     np.testing.assert_allclose(
         program_adjoint_gradient(result), result.gradient, rtol=1.0e-12, atol=1.0e-12
@@ -11409,6 +11427,11 @@ def test_program_adjoint_result_validation_paths() -> None:
     assert result.to_dict()["adjoint_steps"][0]["effect_kind"] == "pure"
     assert result.to_dict()["adjoint_steps"][0]["effect_version"] == 0
     assert result.to_dict()["adjoint_steps"][0]["effect_ordering"] == 0
+    assert result.to_dict()["adjoint_steps"][0]["control_region"] is None
+    assert result.to_dict()["adjoint_steps"][0]["control_region_kind"] is None
+    assert result.to_dict()["adjoint_steps"][0]["control_region_entered"] is None
+    assert result.to_dict()["adjoint_steps"][0]["phi_node"] is None
+    assert result.to_dict()["adjoint_steps"][0]["phi_selected"] is None
     assert result.to_dict()["adjoint_steps"][0]["incoming_cotangent"] == 0.0
     assert result.to_dict()["adjoint_steps"][0]["contribution_scales"] == []
     assert result.to_dict()["adjoint_steps"][0]["contribution_cotangents"] == []
@@ -11489,6 +11512,46 @@ def test_program_adjoint_result_validation_paths() -> None:
         valid_step(effect_version=-1)
     with pytest.raises(ValueError, match="effect_ordering"):
         valid_step(effect_ordering=True)  # type: ignore[arg-type]
+    with pytest.raises(ValueError, match="control metadata"):
+        valid_step(control_region_kind="runtime_branch")
+    with pytest.raises(ValueError, match="control_region must be non-negative"):
+        valid_step(
+            control_region=-1,
+            control_region_kind="runtime_branch",
+            control_region_entered=True,
+        )
+    with pytest.raises(ValueError, match="control_region_kind"):
+        valid_step(
+            control_region=0,
+            control_region_kind="",
+            control_region_entered=True,
+        )
+    with pytest.raises(ValueError, match="control_region_entered"):
+        valid_step(
+            control_region=0,
+            control_region_kind="runtime_branch",
+            control_region_entered=None,
+        )
+    with pytest.raises(ValueError, match="phi metadata requires a phi_node"):
+        valid_step(phi_selected="executed_true")
+    with pytest.raises(ValueError, match="phi metadata requires control metadata"):
+        valid_step(phi_node=0, phi_selected="executed_true")
+    with pytest.raises(ValueError, match="phi_node"):
+        valid_step(
+            control_region=0,
+            control_region_kind="runtime_branch",
+            control_region_entered=True,
+            phi_node=-1,
+            phi_selected="executed_true",
+        )
+    with pytest.raises(ValueError, match="phi_selected"):
+        valid_step(
+            control_region=0,
+            control_region_kind="runtime_branch",
+            control_region_entered=True,
+            phi_node=0,
+            phi_selected="",
+        )
     with pytest.raises(ValueError, match="contribution_scales length"):
         valid_step(
             operation="add",

@@ -634,8 +634,9 @@ class ProgramADAdjointStep:
 
     The step binds a primal SSA value and stabilized effect row to the local
     pullback inputs, finite incoming cotangent, local pullback coefficients,
-    emitted contribution cotangents, and effect ordering metadata used by
-    reverse-mode adjoint generation. It is an auditable generation plan over
+    emitted contribution cotangents, effect ordering metadata, and any
+    unambiguous executed runtime control/phi row used by reverse-mode adjoint
+    generation. It is an auditable generation plan over
     ``program_ad_effect_ir.v1`` metadata; it does not add non-executed branch
     adjoints or executable compiler lowering.
     """
@@ -650,6 +651,11 @@ class ProgramADAdjointStep:
     effect_kind: str | None = None
     effect_version: int | None = None
     effect_ordering: int | None = None
+    control_region: int | None = None
+    control_region_kind: str | None = None
+    control_region_entered: bool | None = None
+    phi_node: int | None = None
+    phi_selected: str | None = None
     incoming_cotangent: float = 0.0
     contribution_scales: tuple[float, ...] = ()
     contribution_cotangents: tuple[float, ...] = ()
@@ -693,6 +699,45 @@ class ProgramADAdjointStep:
                 raise ValueError(
                     "program AD adjoint step effect_ordering must be non-negative "
                     "when primal_effect is present"
+                )
+        if self.control_region is None:
+            if self.control_region_kind is not None or self.control_region_entered is not None:
+                raise ValueError(
+                    "program AD adjoint step control metadata requires a control_region"
+                )
+        else:
+            if (
+                isinstance(self.control_region, bool)
+                or not isinstance(self.control_region, int)
+                or self.control_region < 0
+            ):
+                raise ValueError("program AD adjoint step control_region must be non-negative")
+            if not isinstance(self.control_region_kind, str) or not self.control_region_kind:
+                raise ValueError(
+                    "program AD adjoint step control_region_kind must be non-empty "
+                    "when control_region is present"
+                )
+            if not isinstance(self.control_region_entered, bool):
+                raise ValueError(
+                    "program AD adjoint step control_region_entered must be a boolean "
+                    "when control_region is present"
+                )
+        if self.phi_node is None:
+            if self.phi_selected is not None:
+                raise ValueError("program AD adjoint step phi metadata requires a phi_node")
+        else:
+            if self.control_region is None:
+                raise ValueError("program AD adjoint step phi metadata requires control metadata")
+            if (
+                isinstance(self.phi_node, bool)
+                or not isinstance(self.phi_node, int)
+                or self.phi_node < 0
+            ):
+                raise ValueError("program AD adjoint step phi_node must be non-negative")
+            if not isinstance(self.phi_selected, str) or not self.phi_selected:
+                raise ValueError(
+                    "program AD adjoint step phi_selected must be non-empty when phi_node "
+                    "is present"
                 )
         if not self.operation:
             raise ValueError("program AD adjoint step operation must be non-empty")
@@ -782,6 +827,11 @@ class ProgramADAdjointStep:
             "effect_kind": self.effect_kind,
             "effect_version": self.effect_version,
             "effect_ordering": self.effect_ordering,
+            "control_region": self.control_region,
+            "control_region_kind": self.control_region_kind,
+            "control_region_entered": self.control_region_entered,
+            "phi_node": self.phi_node,
+            "phi_selected": self.phi_selected,
             "operation": self.operation,
             "input_values": list(self.input_values),
             "contribution_inputs": list(self.contribution_inputs),
@@ -8350,6 +8400,20 @@ def _program_adjoint_steps_from_ir(
 
     ssa_by_name = {value.name: value for value in program_ir.ssa_values}
     effect_by_index = {effect.index: effect for effect in program_ir.effects}
+    runtime_regions_by_predicate: dict[str, list[ProgramADControlRegion]] = {}
+    for region in program_ir.control_regions:
+        if region.source_line is None and region.predicate is not None:
+            runtime_regions_by_predicate.setdefault(region.predicate, []).append(region)
+    runtime_phi_by_region: dict[int, ProgramADPhiNode] = {}
+    ambiguous_phi_regions: set[int] = set()
+    for phi_node in program_ir.phi_nodes:
+        if phi_node.source_line is not None or phi_node.control_region is None:
+            continue
+        if phi_node.control_region in runtime_phi_by_region:
+            ambiguous_phi_regions.add(phi_node.control_region)
+            runtime_phi_by_region.pop(phi_node.control_region, None)
+        elif phi_node.control_region not in ambiguous_phi_regions:
+            runtime_phi_by_region[phi_node.control_region] = phi_node
     steps: list[ProgramADAdjointStep] = []
     for node in reversed(nodes):
         primal_value = f"%{node.index}"
@@ -8365,6 +8429,22 @@ def _program_adjoint_steps_from_ir(
         incoming_cotangent = float(cotangents.get(primal_value, 0.0))
         contribution_scales: tuple[float, ...] = ()
         contribution_cotangents: tuple[float, ...] = ()
+        control_region: int | None = None
+        control_region_kind: str | None = None
+        control_region_entered: bool | None = None
+        phi_node_index: int | None = None
+        phi_selected: str | None = None
+        if node.op.startswith("branch:"):
+            runtime_regions = tuple(runtime_regions_by_predicate.get(node.op, ()))
+            if len(runtime_regions) == 1:
+                runtime_region = runtime_regions[0]
+                control_region = runtime_region.index
+                control_region_kind = runtime_region.kind
+                control_region_entered = runtime_region.entered
+                runtime_phi = runtime_phi_by_region.get(runtime_region.index)
+                if runtime_phi is not None:
+                    phi_node_index = runtime_phi.index
+                    phi_selected = runtime_phi.selected
         if ssa_value is None:
             supported = False
             unsupported_reason = "missing_ssa_value"
@@ -8396,6 +8476,11 @@ def _program_adjoint_steps_from_ir(
                 effect_kind=effect_kind,
                 effect_version=effect_version,
                 effect_ordering=effect_ordering,
+                control_region=control_region,
+                control_region_kind=control_region_kind,
+                control_region_entered=control_region_entered,
+                phi_node=phi_node_index,
+                phi_selected=phi_selected,
                 operation=node.op,
                 input_values=node.inputs,
                 contribution_inputs=contribution_inputs,

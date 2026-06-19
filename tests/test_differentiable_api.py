@@ -290,6 +290,10 @@ def test_differentiable_dashboard_status_is_claim_bounded_for_gui_consumers() ->
         "reverse effect-order rows" in rows["program_ad_reverse_adjoint_replay"]["claim_boundary"]
     )
     assert (
+        "runtime control/phi row bindings"
+        in rows["program_ad_reverse_adjoint_replay"]["claim_boundary"]
+    )
+    assert (
         "not full reverse-mode compiler AD"
         in (rows["program_ad_reverse_adjoint_replay"]["claim_boundary"])
     )
@@ -426,7 +430,7 @@ def test_differentiable_dashboard_status_can_include_conformance_backing() -> No
     assert "reverse effect-order rows" in (
         rows["program_ad_reverse_adjoint_replay"].claim_boundary
     )
-    assert "node/effect/control/phi provenance" in (
+    assert "runtime control/phi row bindings" in (
         rows["program_ad_reverse_adjoint_replay"].claim_boundary
     )
     assert rows["program_ad_elementwise_primitives"].state == "conformance_backed"

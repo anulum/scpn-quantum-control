@@ -909,6 +909,9 @@ def _program_adjoint_replay_provenance_case() -> DifferentiableProgrammingBenchm
     effect_orderings = tuple(
         step.effect_ordering for step in adjoint.adjoint_steps if step.effect_ordering is not None
     )
+    branch_steps = tuple(
+        step for step in adjoint.adjoint_steps if step.operation.startswith("branch:")
+    )
     if (
         adjoint.replay_node_count != len(result.ir_nodes)
         or adjoint.replay_effect_count != len(result.program_ir.effects)
@@ -930,6 +933,15 @@ def _program_adjoint_replay_provenance_case() -> DifferentiableProgrammingBenchm
         or any(
             len(step.contribution_inputs) != len(step.contribution_cotangents)
             for step in adjoint.adjoint_steps
+        )
+        or not branch_steps
+        or any(
+            step.control_region is None
+            or step.control_region_kind != "runtime_branch"
+            or step.control_region_entered is not True
+            or step.phi_node is None
+            or step.phi_selected != "executed_true"
+            for step in branch_steps
         )
         or not any(abs(step.incoming_cotangent) > 0.0 for step in adjoint.adjoint_steps)
     ):
@@ -960,10 +972,10 @@ def _program_adjoint_replay_provenance_case() -> DifferentiableProgrammingBenchm
             "ProgramADAdjointResult and ProgramADAdjointStep generation provenance "
             "over supported executed scalar IR nodes, finite local pullback scales, "
             "cotangent-flow rows, reverse effect-order rows, control regions, and "
-            "phi metadata in program_ad_effect_ir.v1; local conformance only, not "
-            "full reverse-mode compiler AD, non-executed branch adjoints, Rust, "
-            "LLVM/JIT, hardware, or performance evidence; no wall-clock performance "
-            "claim"
+            "runtime control/phi row bindings in program_ad_effect_ir.v1; local "
+            "conformance only, not full reverse-mode compiler AD, non-executed "
+            "branch adjoints, Rust, LLVM/JIT, hardware, or performance evidence; "
+            "no wall-clock performance claim"
         ),
     )
 
