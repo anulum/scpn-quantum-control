@@ -39,13 +39,18 @@ Operator pool (per Grimsley et al. structure)
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import TypeAlias
 
 import numpy as np
+from numpy.typing import NDArray
 from qiskit.quantum_info import SparsePauliOp
 from scipy.optimize import minimize
 
 from ..bridge.knm_hamiltonian import knm_to_dense_matrix
 from ..dense_budget import require_dense_allocation
+
+FloatArray: TypeAlias = NDArray[np.float64]
+ComplexArray: TypeAlias = NDArray[np.complex128]
 
 
 @dataclass
@@ -61,7 +66,7 @@ class ADAPTResult:
     converged: bool
 
 
-def _build_operator_pool(K: np.ndarray, n: int) -> list[SparsePauliOp]:
+def _build_operator_pool(K: FloatArray, n: int) -> list[SparsePauliOp]:
     """Build the anti-Hermitian operator pool from the K_nm coupling topology.
 
     Pool elements:
@@ -93,7 +98,7 @@ def _build_operator_pool(K: np.ndarray, n: int) -> list[SparsePauliOp]:
     return pool
 
 
-def _pool_generators_dense(K: np.ndarray, n: int) -> list[np.ndarray]:
+def _pool_generators_dense(K: FloatArray, n: int) -> list[ComplexArray]:
     """Dense Hermitian generators ``G_k`` derived from :func:`_build_operator_pool`.
 
     The pool stores anti-Hermitian ``τ_k = i G_k``; the variational gate is the
@@ -104,7 +109,7 @@ def _pool_generators_dense(K: np.ndarray, n: int) -> list[np.ndarray]:
     return [np.asarray((op / 1j).to_matrix(), dtype=complex) for op in _build_operator_pool(K, n)]
 
 
-def _plus_reference(n: int) -> np.ndarray:
+def _plus_reference(n: int) -> ComplexArray:
     """The symmetric reference state ``|+⟩^{⊗n}`` as a dense statevector."""
     plus = np.array([1.0, 1.0], dtype=complex) / np.sqrt(2.0)
     state = np.ones(1, dtype=complex)
@@ -114,17 +119,17 @@ def _plus_reference(n: int) -> np.ndarray:
 
 
 def _generator_spectra(
-    generators: list[np.ndarray],
-) -> list[tuple[np.ndarray, np.ndarray]]:
+    generators: list[ComplexArray],
+) -> list[tuple[FloatArray, ComplexArray]]:
     """Eigendecompose each Hermitian generator once for fast ``exp(-iθG)`` action."""
     return [np.linalg.eigh(generator) for generator in generators]
 
 
 def _ansatz_state(
-    reference: np.ndarray,
-    layer_spectra: list[tuple[np.ndarray, np.ndarray]],
-    angles: np.ndarray,
-) -> np.ndarray:
+    reference: ComplexArray,
+    layer_spectra: list[tuple[FloatArray, ComplexArray]],
+    angles: FloatArray,
+) -> ComplexArray:
     """Apply ``exp(-i θ_k G_k)`` via cached spectra: ``V (e^{-iθλ} ⊙ (V† ψ))``."""
     state = reference
     for (eigvals, eigvecs), theta in zip(layer_spectra, angles, strict=True):
@@ -133,8 +138,8 @@ def _ansatz_state(
 
 
 def adapt_vqe(
-    K: np.ndarray,
-    omega: np.ndarray,
+    K: FloatArray,
+    omega: FloatArray,
     max_iterations: int = 20,
     gradient_threshold: float = 1e-3,
     maxiter_opt: int = 200,
@@ -176,14 +181,14 @@ def adapt_vqe(
     reference = _plus_reference(n)
     rng = np.random.default_rng(seed)
 
-    def energy_of(state: np.ndarray) -> float:
+    def energy_of(state: ComplexArray) -> float:
         return float((state.conj() @ hamiltonian @ state).real)
 
     reference_energy = energy_of(reference)
     energies: list[float] = [reference_energy]
     grad_norms: list[float] = []
     best_energy = reference_energy
-    best_angles: np.ndarray = np.zeros(0)
+    best_angles: FloatArray = np.zeros(0)
     converged = False
     layers = 0
 
@@ -192,13 +197,13 @@ def adapt_vqe(
         n_params = len(layer_spectra)
 
         def cost(
-            angles: np.ndarray,
-            spectra_seq: list[tuple[np.ndarray, np.ndarray]] = layer_spectra,
+            angles: FloatArray,
+            spectra_seq: list[tuple[FloatArray, ComplexArray]] = layer_spectra,
         ) -> float:
             return energy_of(_ansatz_state(reference, spectra_seq, angles))
 
         layer_best_energy = np.inf
-        layer_best_angles: np.ndarray = np.zeros(n_params)
+        layer_best_angles: FloatArray = np.zeros(n_params)
         layer_best_grad = np.inf
         for _restart in range(max(1, n_restarts)):
             x0 = rng.uniform(-np.pi, np.pi, n_params)
