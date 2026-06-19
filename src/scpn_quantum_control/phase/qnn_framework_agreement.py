@@ -11,7 +11,7 @@ from __future__ import annotations
 
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
-from typing import TypeAlias, cast
+from typing import TypeAlias
 
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
@@ -261,7 +261,8 @@ def _default_framework_gradients(
     reference = parameter_shift_qnn_classifier_gradient(case.features, case.labels, case.params)
 
     def _reference_gradient(_params: FloatArray, *, values: FloatArray = reference) -> FloatArray:
-        return cast(FloatArray, values.copy())
+        gradient: FloatArray = np.array(values, dtype=np.float64, copy=True)
+        return gradient
 
     return {
         "jax_manual_reference": _reference_gradient,

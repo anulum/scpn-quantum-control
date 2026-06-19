@@ -24,9 +24,10 @@ hardware, or production QGNN convergence.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, TypeAlias
 
 import numpy as np
+from numpy.typing import NDArray
 
 from .qnode_circuit import (
     PauliTerm,
@@ -42,13 +43,15 @@ _EDGE_THRESHOLD = 1e-9
 # Statevector ceiling for the per-graph circuit.
 MAX_QGNN_NODES = 12
 
+FloatArray: TypeAlias = NDArray[np.float64]
+
 
 @dataclass(frozen=True)
 class KnmGraph:
     """A K_nm coupling graph: symmetric couplings plus per-node frequencies."""
 
-    coupling: np.ndarray
-    node_frequencies: np.ndarray
+    coupling: FloatArray
+    node_frequencies: FloatArray
 
     @property
     def n_nodes(self) -> int:
@@ -80,8 +83,8 @@ class QGNNConfig:
 class QGNNTrainingResult:
     """Trained weights and the observed local loss trajectory."""
 
-    parameters: np.ndarray
-    loss_history: np.ndarray
+    parameters: FloatArray
+    loss_history: FloatArray
     final_loss: float
     provenance: dict[str, Any] = field(default_factory=dict)
 
@@ -102,16 +105,16 @@ def validate_graph(graph: KnmGraph) -> KnmGraph:
     return KnmGraph(coupling=0.5 * (coupling + coupling.T), node_frequencies=frequencies)
 
 
-def _node_features(graph: KnmGraph) -> np.ndarray:
+def _node_features(graph: KnmGraph) -> FloatArray:
     """Per-node input features: natural frequency and weighted degree."""
     degree = np.sum(np.abs(graph.coupling), axis=1)
     return np.stack([graph.node_frequencies, degree], axis=1)
 
 
-def _normalised_adjacency(coupling: np.ndarray) -> np.ndarray:
+def _normalised_adjacency(coupling: FloatArray) -> FloatArray:
     degree = np.sum(np.abs(coupling), axis=1, keepdims=True)
     degree[degree < _EDGE_THRESHOLD] = 1.0
-    adjacency: np.ndarray = coupling / degree
+    adjacency: FloatArray = coupling / degree
     return adjacency
 
 
@@ -139,18 +142,18 @@ def parameter_count(config: QGNNConfig) -> int:
     return sum(int(np.prod(shape)) for _name, shape in _parameter_layout(config))
 
 
-def initialise_parameters(config: QGNNConfig, seed: int | None = None) -> np.ndarray:
+def initialise_parameters(config: QGNNConfig, seed: int | None = None) -> FloatArray:
     """Draw a small-variance initial weight vector."""
     rng = np.random.default_rng(seed)
     return rng.standard_normal(parameter_count(config)) * 0.1
 
 
-def _unflatten(config: QGNNConfig, parameters: np.ndarray) -> dict[str, np.ndarray]:
+def _unflatten(config: QGNNConfig, parameters: FloatArray) -> dict[str, FloatArray]:
     parameters = np.asarray(parameters, dtype=np.float64)
     expected = parameter_count(config)
     if parameters.shape != (expected,):
         raise ValueError(f"parameters must be a length-{expected} vector")
-    blocks: dict[str, np.ndarray] = {}
+    blocks: dict[str, FloatArray] = {}
     offset = 0
     for name, shape in _parameter_layout(config):
         size = int(np.prod(shape))
@@ -161,13 +164,13 @@ def _unflatten(config: QGNNConfig, parameters: np.ndarray) -> dict[str, np.ndarr
 
 def _message_passing_forward(
     config: QGNNConfig,
-    weights: dict[str, np.ndarray],
-    features: np.ndarray,
-    adjacency: np.ndarray,
-) -> tuple[np.ndarray, list[dict[str, np.ndarray]]]:
+    weights: dict[str, FloatArray],
+    features: FloatArray,
+    adjacency: FloatArray,
+) -> tuple[FloatArray, list[dict[str, FloatArray]]]:
     """Run the message-passing stack, returning the angle vector and a tape."""
     activation = features
-    tape: list[dict[str, np.ndarray]] = []
+    tape: list[dict[str, FloatArray]] = []
     for layer in range(config.n_message_layers):
         aggregate = adjacency @ activation
         pre = (
@@ -184,7 +187,7 @@ def _message_passing_forward(
     return angles_per_node.reshape(-1), tape
 
 
-def _readout_circuit(config: QGNNConfig, graph: KnmGraph, angles: np.ndarray) -> PhaseQNodeCircuit:
+def _readout_circuit(config: QGNNConfig, graph: KnmGraph, angles: FloatArray) -> PhaseQNodeCircuit:
     n = graph.n_nodes
     operations: list[PhaseQNodeOperation] = []
     index = 0
@@ -209,7 +212,7 @@ def _readout_circuit(config: QGNNConfig, graph: KnmGraph, angles: np.ndarray) ->
     return PhaseQNodeCircuit(n_qubits=n, operations=tuple(operations), observable=observable)
 
 
-def _circuit_angles(config: QGNNConfig, graph: KnmGraph, flat_angles: np.ndarray) -> np.ndarray:
+def _circuit_angles(config: QGNNConfig, graph: KnmGraph, flat_angles: FloatArray) -> FloatArray:
     """Reorder per-node angle blocks into circuit-operation order."""
     n = graph.n_nodes
     per_node = flat_angles.reshape(n, config.angles_per_node)
@@ -218,7 +221,7 @@ def _circuit_angles(config: QGNNConfig, graph: KnmGraph, flat_angles: np.ndarray
     return np.concatenate([per_node[:, 0], per_node[:, 1]])
 
 
-def predict(config: QGNNConfig, parameters: np.ndarray, graph: KnmGraph) -> float:
+def predict(config: QGNNConfig, parameters: FloatArray, graph: KnmGraph) -> float:
     """Forward pass: graph + weights -> circuit expectation."""
     graph = validate_graph(graph)
     weights = _unflatten(config, parameters)
@@ -231,8 +234,8 @@ def predict(config: QGNNConfig, parameters: np.ndarray, graph: KnmGraph) -> floa
 
 
 def predict_and_gradient(
-    config: QGNNConfig, parameters: np.ndarray, graph: KnmGraph
-) -> tuple[float, np.ndarray]:
+    config: QGNNConfig, parameters: FloatArray, graph: KnmGraph
+) -> tuple[float, FloatArray]:
     """Return the prediction and its exact gradient with respect to the weights.
 
     The gradient chains the analytic parameter-shift gradient of the circuit
@@ -266,13 +269,13 @@ def predict_and_gradient(
 
 def _message_passing_backward(
     config: QGNNConfig,
-    weights: dict[str, np.ndarray],
-    tape: list[dict[str, np.ndarray]],
-    grad_angles: np.ndarray,
-    adjacency: np.ndarray,
-) -> dict[str, np.ndarray]:
+    weights: dict[str, FloatArray],
+    tape: list[dict[str, FloatArray]],
+    grad_angles: FloatArray,
+    adjacency: FloatArray,
+) -> dict[str, FloatArray]:
     readout = tape[-1]
-    grads: dict[str, np.ndarray] = {}
+    grads: dict[str, FloatArray] = {}
     # Readout: angles = pi * tanh(readout_pre); d angle / d readout_pre.
     grad_pre = grad_angles * np.pi * (1.0 - np.tanh(readout["readout_pre"]) ** 2)
     readout_input = readout["readout_input"]
@@ -316,9 +319,9 @@ def synthetic_kuramoto_target(graph: KnmGraph) -> float:
 
 def train(
     config: QGNNConfig,
-    parameters: np.ndarray,
+    parameters: FloatArray,
     graphs: tuple[KnmGraph, ...],
-    targets: np.ndarray,
+    targets: FloatArray,
     *,
     learning_rate: float = 0.1,
     epochs: int = 50,

@@ -93,6 +93,8 @@ def test_static_gates_include_differentiable_strict_mypy_ratchet() -> None:
     assert "src/scpn_quantum_control/phase/qnn_finite_shot.py" in strict_cmd
     assert "src/scpn_quantum_control/phase/qnn_convergence.py" in strict_cmd
     assert "src/scpn_quantum_control/phase/qnn_loss_landscape.py" in strict_cmd
+    assert "src/scpn_quantum_control/phase/qgnn.py" in strict_cmd
+    assert "src/scpn_quantum_control/phase/qnn_framework_agreement.py" in strict_cmd
 
 
 def test_preflight_coverage_gate_matches_temporary_ci_threshold():

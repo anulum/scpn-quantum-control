@@ -114,7 +114,7 @@ The gate is planning and classification evidence only; it does not run shell
 commands or promote benchmark artefacts.
 CI, local preflight, and the pre-push hook enforce a separate strict-mypy
 ratchet over the differentiable API, claim-ledger, benchmark-evidence,
-hardening-gate, QNN training/evidence satellites, optimizer-baseline,
+hardening-gate, QNN/QGNN training and evidence satellites, optimizer-baseline,
 framework-overlay, external-validation, Phase-QNode, gradient, provider/hardware-gradient, framework-bridge,
 transform-nesting, external-comparison, XY compiler, and PennyLane import
 modules that have been closed module-by-module. That ratchet is
