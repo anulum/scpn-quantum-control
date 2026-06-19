@@ -40,6 +40,10 @@ def _vector_objective(values: np.ndarray) -> np.ndarray:
     return np.array([values[0] + values[1], values[0] * values[1]], dtype=float)
 
 
+def _require_torch_backend() -> None:
+    pytest.importorskip("torch", reason="native Torch differentiable rows require PyTorch")
+
+
 def test_unified_differentiable_value_and_gradient_share_schema() -> None:
     values = np.array([2.0, -1.0], dtype=float)
 
@@ -143,6 +147,8 @@ def test_unified_differentiable_compile_report_filters_registered_primitives() -
 
 
 def test_unified_differentiable_benchmark_report_is_non_performance_evidence() -> None:
+    _require_torch_backend()
+
     report = differentiable_benchmark_report()
 
     assert report.operation == "benchmark_report"
@@ -344,6 +350,8 @@ def test_differentiable_dashboard_status_is_claim_bounded_for_gui_consumers() ->
 
 
 def test_differentiable_dashboard_status_can_include_conformance_backing() -> None:
+    _require_torch_backend()
+
     status = differentiable_dashboard_status(include_conformance=True)
     rows = {row.surface: row for row in status.rows}
 

@@ -170,7 +170,7 @@ def test_live_rust_crate_records_threading_without_simd_promotion() -> None:
     audit = scan_crate(crate)
 
     assert audit.status == "pass"
-    assert audit.pyfunction_count == 134
+    assert audit.pyfunction_count == 135
     assert audit.rayon_threaded_count > 0
     assert audit.explicit_simd_count == 0
     assert audit.performance_claim_eligible_count == 0

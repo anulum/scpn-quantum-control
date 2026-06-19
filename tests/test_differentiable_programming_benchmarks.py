@@ -26,6 +26,10 @@ from scpn_quantum_control.benchmarks import (
 from scpn_quantum_control.benchmarks import differentiable_programming as dp_benchmarks
 
 
+def _require_torch_backend() -> None:
+    pytest.importorskip("torch", reason="native Torch quantum-gradient rows require PyTorch")
+
+
 def test_differentiable_programming_benchmark_suite_matches_analytic_references() -> None:
     """Benchmark rows should compare implemented program AD against analytic references."""
 
@@ -365,6 +369,8 @@ def test_differentiable_programming_benchmark_result_validation_paths() -> None:
 
 def test_quantum_gradient_benchmark_suite_matches_analytic_references() -> None:
     """Quantum-gradient rows should expose parameter-shift verification evidence."""
+
+    _require_torch_backend()
 
     results = run_quantum_gradient_benchmark_suite()
 

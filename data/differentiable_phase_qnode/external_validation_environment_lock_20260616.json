@@ -40,7 +40,7 @@
       "path": "requirements-ci-py310-linux.txt",
       "pinned_package_count": 157,
       "role": "Python 3.10 Linux CI lockfile",
-      "sha256": "631f57a206dafcb53c6423db8d903a8e25748b502cc1f5c6be1bf561e20e2d6c",
+      "sha256": "e54e8869ac82a495906475af4e5c4e68bce352079abdf3ef29265d0ca0f3a6e0",
       "size_bytes": 211367
     },
     {
@@ -48,7 +48,7 @@
       "path": "requirements-ci-py311-linux.txt",
       "pinned_package_count": 155,
       "role": "Python 3.11 Linux CI lockfile",
-      "sha256": "a4e8cfa3d5ba52f448c063f9dc401f6ecb46a29ecd5430911afbcb239ec479f8",
+      "sha256": "b78e24e63c7bb344892e392b1e0be073b68f445483cd603d8c8842fdf9d10f4b",
       "size_bytes": 212632
     },
     {
@@ -56,7 +56,7 @@
       "path": "requirements-ci-py312-linux.txt",
       "pinned_package_count": 155,
       "role": "Python 3.12 Linux CI lockfile",
-      "sha256": "d2ecd9238ee3f5e1b730edac4aabd99dc03f6b4b85d7e5e1a04717b2d902527d",
+      "sha256": "d3a7ffa4efe3af3ff7d36639279be9e8bcc34f37abcd59e0c33e1ed2c5ede4a4",
       "size_bytes": 208807
     },
     {
@@ -64,7 +64,7 @@
       "path": "requirements-ci-py313-linux.txt",
       "pinned_package_count": 155,
       "role": "Python 3.13 Linux CI lockfile",
-      "sha256": "f213a5d4ab2d3cfbd99c950d0cfa7bff79d57a5def584e0567bec86647cf8afc",
+      "sha256": "5a3d6b43fca32f26b0f4f417460c6e73ae3687be557e03ca7d7b9181ed3602c9",
       "size_bytes": 212632
     },
     {
@@ -85,6 +85,6 @@
     }
   ],
   "platform": "Linux-6.17.0-35-generic-x86_64-with-glibc2.39",
-  "python_version": "3.12.13",
+  "python_version": "3.12.3",
   "schema": "scpn_qc_differentiable_external_validation_environment_lock_v1"
 }

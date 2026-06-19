@@ -977,6 +977,8 @@ def test_torch_phase_qnode_lowering_matrix_fails_closed_for_arbitrary_qnodes() -
 
 
 def test_torch_phase_qnode_value_and_grad_lowers_registered_statevector() -> None:
+    pytest.importorskip("torch", reason="native Torch phase-QNode lowering requires PyTorch")
+
     circuit = PhaseQNodeCircuit(
         n_qubits=2,
         operations=(
