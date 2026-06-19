@@ -25,6 +25,7 @@ from scpn_quantum_control.phase import (
     PennyLaneMaturityAuditResult,
     PennyLanePluginMatrixResult,
     PennyLanePluginMatrixRoute,
+    PennyLaneProviderGradientParityArtifact,
     PennyLaneProviderPluginExecutionArtifact,
     PennyLaneQNodeConversionResult,
     PennyLaneRoundTripResult,
@@ -609,6 +610,32 @@ def _provider_plugin_execution_artifact() -> PennyLaneProviderPluginExecutionArt
     )
 
 
+def _provider_gradient_parity_artifact(
+    *,
+    circuit_fingerprint: str = "phase-qnode:ry-rx-pauli-z:v1",
+    max_abs_error: float = 1e-9,
+    tolerance: float = 1e-6,
+    shots: int | None = 4096,
+) -> PennyLaneProviderGradientParityArtifact:
+    return PennyLaneProviderGradientParityArtifact(
+        artifact_id="pl-provider-gradient-20260616",
+        provider_execution_artifact_id="pl-provider-sim-20260616",
+        plugin_name="pennylane-provider-simulator",
+        provider_name="example-provider",
+        device_name="example.simulator",
+        backend_name="example_sim_v1",
+        circuit_fingerprint=circuit_fingerprint,
+        gradient_digest="sha256:" + "c" * 64,
+        reference_gradient_digest="sha256:" + "d" * 64,
+        max_abs_error=max_abs_error,
+        l2_error=2e-9,
+        tolerance=tolerance,
+        shots=shots,
+        replay_artifact_id="pl-provider-gradient-replay-20260616",
+        hardware_execution=False,
+    )
+
+
 def test_pennylane_plugin_matrix_accepts_provider_execution_artifact_without_promotion() -> None:
     artifact = _provider_plugin_execution_artifact()
 
@@ -625,6 +652,111 @@ def test_pennylane_plugin_matrix_accepts_provider_execution_artifact_without_pro
     provider_payload = cast(dict[str, object], payload["provider_execution_artifact"])
     assert provider_payload["artifact_id"] == artifact.artifact_id
     assert provider_payload["execution_mode"] == "provider_simulator"
+
+
+def test_pennylane_plugin_matrix_accepts_provider_gradient_parity_without_promotion() -> None:
+    execution_artifact = _provider_plugin_execution_artifact()
+    gradient_artifact = _provider_gradient_parity_artifact()
+
+    result = run_pennylane_plugin_matrix(
+        provider_execution_artifact=execution_artifact,
+        provider_gradient_parity_artifact=gradient_artifact,
+    )
+
+    assert result.provider_plugin_execution_ready
+    assert result.provider_plugin_gradient_parity_ready
+    assert result.route_status("provider_plugin_gradient_parity") == "passed"
+    assert result.provider_gradient_parity_artifact is gradient_artifact
+    assert not result.hardware_plugin_execution_ready
+    assert not result.ready_for_provider_exceedance
+    assert "provider_plugin_gradient_parity" not in result.open_gaps
+    assert "hardware_plugin_execution" in result.open_gaps
+    assert "isolated_benchmark_artifact" in result.open_gaps
+    payload = cast(dict[str, Any], result.to_dict())
+    gradient_payload = cast(dict[str, object], payload["provider_gradient_parity_artifact"])
+    assert gradient_payload["artifact_id"] == gradient_artifact.artifact_id
+    assert gradient_payload["max_abs_error"] == gradient_artifact.max_abs_error
+
+
+def test_pennylane_plugin_matrix_rejects_unpaired_provider_gradient_parity() -> None:
+    gradient_artifact = _provider_gradient_parity_artifact()
+
+    with pytest.raises(ValueError, match="provider execution artefact"):
+        run_pennylane_plugin_matrix(provider_gradient_parity_artifact=gradient_artifact)
+
+
+def test_pennylane_plugin_matrix_rejects_mismatched_provider_gradient_parity() -> None:
+    execution_artifact = _provider_plugin_execution_artifact()
+    gradient_artifact = _provider_gradient_parity_artifact(
+        circuit_fingerprint="phase-qnode:other:v1",
+    )
+
+    with pytest.raises(ValueError, match="circuit_fingerprint"):
+        run_pennylane_plugin_matrix(
+            provider_execution_artifact=execution_artifact,
+            provider_gradient_parity_artifact=gradient_artifact,
+        )
+
+
+@pytest.mark.parametrize(
+    ("factory", "match"),
+    [
+        (
+            lambda: _provider_gradient_parity_artifact(max_abs_error=2e-6, tolerance=1e-6),
+            "max_abs_error",
+        ),
+        (
+            lambda: _provider_gradient_parity_artifact(shots=cast(Any, True)),
+            "shots",
+        ),
+        (
+            lambda: PennyLaneProviderGradientParityArtifact(
+                artifact_id="pl-provider-gradient-20260616",
+                provider_execution_artifact_id="pl-provider-sim-20260616",
+                plugin_name="pennylane-provider-simulator",
+                provider_name="example-provider",
+                device_name="example.simulator",
+                backend_name="example_sim_v1",
+                circuit_fingerprint="phase-qnode:ry-rx-pauli-z:v1",
+                gradient_digest="sha256:" + "c" * 63,
+                reference_gradient_digest="sha256:" + "d" * 64,
+                max_abs_error=1e-9,
+                l2_error=2e-9,
+                tolerance=1e-6,
+                shots=4096,
+                replay_artifact_id="pl-provider-gradient-replay-20260616",
+                hardware_execution=False,
+            ),
+            "gradient_digest",
+        ),
+        (
+            lambda: PennyLaneProviderGradientParityArtifact(
+                artifact_id="pl-provider-gradient-20260616",
+                provider_execution_artifact_id="pl-provider-sim-20260616",
+                plugin_name="pennylane-provider-simulator",
+                provider_name="example-provider",
+                device_name="example.simulator",
+                backend_name="example_sim_v1",
+                circuit_fingerprint="phase-qnode:ry-rx-pauli-z:v1",
+                gradient_digest="sha256:" + "c" * 64,
+                reference_gradient_digest="sha256:" + "d" * 64,
+                max_abs_error=1e-9,
+                l2_error=2e-9,
+                tolerance=1e-6,
+                shots=4096,
+                replay_artifact_id="pl-provider-gradient-replay-20260616",
+                hardware_execution=True,
+            ),
+            "hardware execution",
+        ),
+    ],
+)
+def test_pennylane_provider_gradient_parity_artifact_rejects_malformed_evidence(
+    factory: Callable[[], PennyLaneProviderGradientParityArtifact],
+    match: str,
+) -> None:
+    with pytest.raises(ValueError, match=match):
+        factory()
 
 
 @pytest.mark.parametrize("execution_mode", ["simulator", "local_simulator", "offline_replay"])
@@ -765,6 +897,39 @@ def test_pennylane_maturity_audit_records_provider_execution_artifact_without_pr
     assert not result.ready_for_provider_exceedance
     assert "provider_plugin_execution" not in result.open_gaps
     assert "provider_plugin_gradient_parity" in result.open_gaps
+    assert "hardware_execution" in result.open_gaps
+
+
+def test_pennylane_maturity_audit_records_provider_gradient_parity_without_promotion(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    fake_qml = _FakePennyLane()
+    monkeypatch.setattr(pennylane_bridge, "_load_pennylane", lambda: fake_qml)
+    circuit = PhaseQNodeCircuit(
+        1,
+        (("ry", (0,), 0), ("rx", (0,), 1)),
+        PauliTerm(1.0, ((0, "z"),)),
+    )
+    execution_artifact = _provider_plugin_execution_artifact()
+    gradient_artifact = _provider_gradient_parity_artifact()
+
+    result = run_pennylane_maturity_audit(
+        objective=_objective,
+        pennylane_objective=_objective,
+        pennylane_gradient=_closed_form_gradient,
+        values=np.array([0.4, -0.2], dtype=float),
+        circuit=circuit,
+        phase_qnode_values=np.array([0.37, -0.29], dtype=float),
+        provider_execution_artifact=execution_artifact,
+        provider_gradient_parity_artifact=gradient_artifact,
+    )
+
+    plugin_matrix = cast(PennyLanePluginMatrixResult, result.evidence["pennylane_plugin_matrix"])
+    assert result.required_capabilities["provider_plugin_execution"] == "passed"
+    assert result.required_capabilities["provider_plugin_gradient_parity"] == "passed"
+    assert plugin_matrix.provider_gradient_parity_artifact is gradient_artifact
+    assert not result.ready_for_provider_exceedance
+    assert "provider_plugin_gradient_parity" not in result.open_gaps
     assert "hardware_execution" in result.open_gaps
 
 

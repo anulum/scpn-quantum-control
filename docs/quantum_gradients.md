@@ -1883,18 +1883,19 @@ shots when present, SHA-256 result and metadata digests, optional replay
 metadata, non-hardware execution mode, and `hardware_execution=False`.
 `run_pennylane_plugin_matrix(...)` records local `default.qubit` exact-state,
 shot-policy metadata, generated Phase-QNode export, and supported tape-import
-routes as passed. Passing a validated provider execution artefact marks only
-`provider_plugin_execution` as passed. Hardware-plugin execution,
-provider-plugin gradient parity, and isolated-benchmark promotion remain
+routes as passed. Passing a validated provider execution artefact marks
+`provider_plugin_execution` as passed, and a matching
+`PennyLaneProviderGradientParityArtifact` marks provider-gradient parity as
+passed. Hardware-plugin execution and isolated-benchmark promotion remain
 blocked with required artefacts listed per route.
 `run_pennylane_maturity_audit(...)` combines caller-supplied gradient agreement,
 caller-supplied QNode round-trip parity, generated Phase-QNode export parity,
 optional PennyLane tape import parity, device metadata, shot policy, diff
 method, grouped registered Phase-QNode parameter-shift evaluation counts,
-optional provider execution artefact, and the plugin matrix. The audit can mark
-`identical_circuit_ready=True` only when a PennyLane import tape is supplied and
-every bounded route passes. It keeps provider exceedance blocked until
-provider-plugin gradient parity, hardware execution, and promotion-grade
+optional provider execution and provider-gradient parity artefacts, and the
+plugin matrix. The audit can mark `identical_circuit_ready=True` only when a
+PennyLane import tape is supplied and every bounded route passes. It keeps
+provider exceedance blocked until hardware execution and promotion-grade
 isolated benchmark artefacts exist.
 
 ### Importing a PennyLane tape

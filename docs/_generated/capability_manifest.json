@@ -10,7 +10,7 @@
     "paper0_validation_modules": 466,
     "public_api_exports": 664,
     "public_documentation_pages": 254,
-    "python_model_classes": 1808,
+    "python_model_classes": 1809,
     "python_model_source_modules": 835,
     "rust_pyo3_model_wrappers": 135,
     "rust_source_modules": 38,
@@ -4975,6 +4975,10 @@
       },
       {
         "name": "PennyLanePluginMatrixRoute",
+        "path": "src/scpn_quantum_control/phase/pennylane_bridge.py"
+      },
+      {
+        "name": "PennyLaneProviderGradientParityArtifact",
         "path": "src/scpn_quantum_control/phase/pennylane_bridge.py"
       },
       {

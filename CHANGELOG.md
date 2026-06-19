@@ -5,6 +5,10 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-06-19 — Added fail-closed PennyLane provider-plugin gradient parity
+  artefacts, pairing them with matching provider execution artefacts before the
+  plugin matrix can mark provider-gradient parity as passed while hardware and
+  isolated-benchmark promotion remain blocked.
 - 2026-06-19 — Hardened PennyLane plugin-matrix route metadata by
   canonicalising route names, reasons, and requirement labels, and rejecting
   malformed route names, empty reasons, control characters, and unsupported

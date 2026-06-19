@@ -295,6 +295,9 @@ diagnostic.
   provider-scoped while still rejecting hardware/QPU execution modes.
 - Keep PennyLane plugin-matrix route evidence canonical: statuses are
   `passed`, `blocked`, or `failed`, and route metadata is control-clean.
+- Pair PennyLane provider-gradient parity evidence to the same provider
+  execution artefact, circuit fingerprint, backend, and shot policy before
+  marking provider-gradient parity as passed.
 - Compare gradients against finite differences, analytic references, and cross-framework references where practical.
 - Document failed or unsuitable scenarios because they are research evidence.
 

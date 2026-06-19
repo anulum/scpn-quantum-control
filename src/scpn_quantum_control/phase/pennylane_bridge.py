@@ -250,15 +250,11 @@ class PennyLaneProviderPluginExecutionArtifact:
                 ),
             )
         for field_name in ("result_digest", "metadata_digest"):
-            digest = str(getattr(self, field_name))
-            hex_digest = digest.removeprefix("sha256:")
-            if not (
-                digest.startswith("sha256:")
-                and len(hex_digest) == 64
-                and all(char in "0123456789abcdefABCDEF" for char in hex_digest)
-            ):
-                raise ValueError(f"{field_name} must be a sha256:<64-hex> digest")
-            object.__setattr__(self, field_name, f"sha256:{hex_digest.lower()}")
+            object.__setattr__(
+                self,
+                field_name,
+                _normalise_sha256_digest(field_name, getattr(self, field_name)),
+            )
 
     def to_dict(self) -> dict[str, object]:
         """Return JSON-ready provider-plugin execution metadata."""
@@ -279,11 +275,92 @@ class PennyLaneProviderPluginExecutionArtifact:
 
 
 @dataclass(frozen=True)
+class PennyLaneProviderGradientParityArtifact:
+    """Validated PennyLane provider-plugin gradient parity evidence."""
+
+    artifact_id: str
+    provider_execution_artifact_id: str
+    plugin_name: str
+    provider_name: str
+    device_name: str
+    backend_name: str
+    circuit_fingerprint: str
+    gradient_digest: str
+    reference_gradient_digest: str
+    max_abs_error: float
+    l2_error: float
+    tolerance: float
+    shots: int | None
+    replay_artifact_id: str
+    hardware_execution: bool = False
+
+    def __post_init__(self) -> None:
+        for field_name in (
+            "artifact_id",
+            "provider_execution_artifact_id",
+            "plugin_name",
+            "provider_name",
+            "device_name",
+            "backend_name",
+            "circuit_fingerprint",
+            "replay_artifact_id",
+        ):
+            object.__setattr__(
+                self,
+                field_name,
+                _normalise_metadata_text(field_name, getattr(self, field_name)),
+            )
+        if self.shots is not None and (
+            isinstance(self.shots, bool) or not isinstance(self.shots, int) or self.shots <= 0
+        ):
+            raise ValueError("shots must be positive when provided")
+        if self.hardware_execution:
+            raise ValueError(
+                "provider-gradient parity artefacts must not claim hardware execution"
+            )
+        for field_name in ("gradient_digest", "reference_gradient_digest"):
+            object.__setattr__(
+                self,
+                field_name,
+                _normalise_sha256_digest(field_name, getattr(self, field_name)),
+            )
+        max_abs_error = _as_non_negative_finite_metric("max_abs_error", self.max_abs_error)
+        l2_error = _as_non_negative_finite_metric("l2_error", self.l2_error)
+        tolerance = _as_non_negative_finite_metric("tolerance", self.tolerance)
+        if max_abs_error > tolerance:
+            raise ValueError("max_abs_error must not exceed tolerance")
+        object.__setattr__(self, "max_abs_error", max_abs_error)
+        object.__setattr__(self, "l2_error", l2_error)
+        object.__setattr__(self, "tolerance", tolerance)
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready provider-plugin gradient parity metadata."""
+        return {
+            "artifact_id": self.artifact_id,
+            "provider_execution_artifact_id": self.provider_execution_artifact_id,
+            "plugin_name": self.plugin_name,
+            "provider_name": self.provider_name,
+            "device_name": self.device_name,
+            "backend_name": self.backend_name,
+            "circuit_fingerprint": self.circuit_fingerprint,
+            "gradient_digest": self.gradient_digest,
+            "reference_gradient_digest": self.reference_gradient_digest,
+            "max_abs_error": self.max_abs_error,
+            "l2_error": self.l2_error,
+            "tolerance": self.tolerance,
+            "shots": self.shots,
+            "replay_artifact_id": self.replay_artifact_id,
+            "hardware_execution": self.hardware_execution,
+        }
+
+
+@dataclass(frozen=True)
 class PennyLanePluginMatrixResult:
     """Fail-closed PennyLane plugin/provider parity matrix."""
 
     routes: tuple[PennyLanePluginMatrixRoute, ...]
     provider_execution_artifact: PennyLaneProviderPluginExecutionArtifact | None = None
+    provider_gradient_parity_artifact: PennyLaneProviderGradientParityArtifact | None = None
     claim_boundary: str = "bounded_pennylane_plugin_matrix"
 
     @property
@@ -308,6 +385,11 @@ class PennyLanePluginMatrixResult:
             for route in self.routes
             if route.name.startswith("hardware_plugin_")
         )
+
+    @property
+    def provider_plugin_gradient_parity_ready(self) -> bool:
+        """Return whether provider-plugin gradient parity artefacts are attached."""
+        return self.route_status("provider_plugin_gradient_parity") == "passed"
 
     @property
     def ready_for_provider_exceedance(self) -> bool:
@@ -338,6 +420,11 @@ class PennyLanePluginMatrixResult:
                 if self.provider_execution_artifact is None
                 else self.provider_execution_artifact.to_dict()
             ),
+            "provider_gradient_parity_artifact": (
+                None
+                if self.provider_gradient_parity_artifact is None
+                else self.provider_gradient_parity_artifact.to_dict()
+            ),
             "routes": {route.name: route.to_dict() for route in self.routes},
             "open_gaps": list(self.open_gaps),
             "claim_boundary": self.claim_boundary,
@@ -366,6 +453,7 @@ def is_phase_pennylane_available() -> bool:
 def run_pennylane_plugin_matrix(
     *,
     provider_execution_artifact: PennyLaneProviderPluginExecutionArtifact | None = None,
+    provider_gradient_parity_artifact: PennyLaneProviderGradientParityArtifact | None = None,
 ) -> PennyLanePluginMatrixResult:
     """Return a fail-closed PennyLane plugin/provider parity matrix.
 
@@ -376,11 +464,23 @@ def run_pennylane_plugin_matrix(
     until concrete artefacts are attached.
     """
 
+    _validate_provider_gradient_parity_pair(
+        provider_execution_artifact,
+        provider_gradient_parity_artifact,
+    )
     provider_execution_status = "passed" if provider_execution_artifact is not None else "blocked"
     provider_execution_reason = (
         "validated PennyLane provider-plugin execution artefact is attached"
         if provider_execution_artifact is not None
         else "PennyLane provider-plugin execution artefacts are not attached"
+    )
+    provider_gradient_status = (
+        "passed" if provider_gradient_parity_artifact is not None else "blocked"
+    )
+    provider_gradient_reason = (
+        "validated same-circuit provider-plugin gradient parity artefact is attached"
+        if provider_gradient_parity_artifact is not None
+        else "provider-plugin gradients need same-circuit provider execution and replay artefacts"
     )
     routes = (
         PennyLanePluginMatrixRoute(
@@ -427,8 +527,8 @@ def run_pennylane_plugin_matrix(
         ),
         PennyLanePluginMatrixRoute(
             name="provider_plugin_gradient_parity",
-            status="blocked",
-            reason="provider-plugin gradients need same-circuit provider execution and replay artefacts",
+            status=provider_gradient_status,
+            reason=provider_gradient_reason,
             requires=(
                 "same_circuit_provider_artifact",
                 "raw_result_replay",
@@ -445,6 +545,7 @@ def run_pennylane_plugin_matrix(
     return PennyLanePluginMatrixResult(
         routes=routes,
         provider_execution_artifact=provider_execution_artifact,
+        provider_gradient_parity_artifact=provider_gradient_parity_artifact,
     )
 
 
@@ -473,6 +574,53 @@ def _normalise_metadata_text(field_name: str, value: object) -> str:
     if any(ord(character) < 32 or ord(character) == 127 for character in text):
         raise ValueError(f"{field_name} must not contain control characters")
     return text
+
+
+def _normalise_sha256_digest(field_name: str, value: object) -> str:
+    digest = str(value)
+    hex_digest = digest.removeprefix("sha256:")
+    if not (
+        digest.startswith("sha256:")
+        and len(hex_digest) == 64
+        and all(char in "0123456789abcdefABCDEF" for char in hex_digest)
+    ):
+        raise ValueError(f"{field_name} must be a sha256:<64-hex> digest")
+    return f"sha256:{hex_digest.lower()}"
+
+
+def _as_non_negative_finite_metric(name: str, value: float) -> float:
+    metric = float(value)
+    if metric < 0.0 or not np.isfinite(metric):
+        raise ValueError(f"{name} must be finite and non-negative")
+    return metric
+
+
+def _validate_provider_gradient_parity_pair(
+    provider_execution_artifact: PennyLaneProviderPluginExecutionArtifact | None,
+    provider_gradient_parity_artifact: PennyLaneProviderGradientParityArtifact | None,
+) -> None:
+    if provider_gradient_parity_artifact is None:
+        return
+    if provider_execution_artifact is None:
+        raise ValueError(
+            "provider gradient parity artefacts require a provider execution artefact"
+        )
+    expected = {
+        "provider_execution_artifact_id": provider_execution_artifact.artifact_id,
+        "plugin_name": provider_execution_artifact.plugin_name,
+        "provider_name": provider_execution_artifact.provider_name,
+        "device_name": provider_execution_artifact.device_name,
+        "backend_name": provider_execution_artifact.backend_name,
+        "circuit_fingerprint": provider_execution_artifact.circuit_fingerprint,
+        "shots": provider_execution_artifact.shots,
+    }
+    for field_name, expected_value in expected.items():
+        actual_value = getattr(provider_gradient_parity_artifact, field_name)
+        if actual_value != expected_value:
+            raise ValueError(
+                "provider gradient parity artefact does not match provider execution "
+                f"artefact field {field_name}"
+            )
 
 
 def _validate_provider_plugin_execution_mode(execution_mode: str) -> None:
@@ -765,6 +913,7 @@ def run_pennylane_maturity_audit(
     parameters: Sequence[Parameter] | None = None,
     rule: ParameterShiftRule | None = None,
     provider_execution_artifact: PennyLaneProviderPluginExecutionArtifact | None = None,
+    provider_gradient_parity_artifact: PennyLaneProviderGradientParityArtifact | None = None,
 ) -> PennyLaneMaturityAuditResult:
     """Aggregate PennyLane agreement, export, and optional import evidence.
 
@@ -849,6 +998,7 @@ def run_pennylane_maturity_audit(
         )
     plugin_matrix = run_pennylane_plugin_matrix(
         provider_execution_artifact=provider_execution_artifact,
+        provider_gradient_parity_artifact=provider_gradient_parity_artifact,
     )
 
     import_passed = bool(
@@ -884,8 +1034,10 @@ def run_pennylane_maturity_audit(
         "provider_plugin_execution": (
             "passed" if plugin_matrix.provider_plugin_execution_ready else "blocked"
         ),
+        "provider_plugin_gradient_parity": (
+            "passed" if plugin_matrix.provider_plugin_gradient_parity_ready else "blocked"
+        ),
         "hardware_execution": "blocked",
-        "provider_plugin_gradient_parity": "blocked",
         "promotion_grade_isolated_benchmarks": "blocked",
     }
     identical_circuit_ready = all(
@@ -1049,6 +1201,8 @@ __all__ = [
     "PennyLaneMaturityAuditResult",
     "PennyLanePluginMatrixResult",
     "PennyLanePluginMatrixRoute",
+    "PennyLaneProviderGradientParityArtifact",
+    "PennyLaneProviderPluginExecutionArtifact",
     "PennyLaneQNodeConversionResult",
     "PennyLaneRoundTripResult",
     "build_pennylane_qnode_from_phase_qnode",
