@@ -288,6 +288,83 @@ class PhaseJAXPhaseQNodeNativeTransformResult:
 
 
 @dataclass(frozen=True)
+class PhaseJAXPhaseQNodePyTreeTransformResult:
+    """Native JAX PyTree transform evidence for a registered local Phase-QNode."""
+
+    value: float
+    gradient: FloatArray
+    gradient_pytree: object
+    value_and_grad_value: float
+    value_and_grad_gradient: FloatArray
+    value_and_grad_gradient_pytree: object
+    jacfwd_gradient: FloatArray
+    jacrev_gradient: FloatArray
+    jvp_value: float
+    jvp_tangent: float
+    vjp_value: float
+    vjp_cotangent_gradient: FloatArray
+    vmap_values: FloatArray
+    vmap_gradients: FloatArray
+    parameter_shift_value: float
+    parameter_shift_gradient: FloatArray
+    parameter_vector: FloatArray
+    tangent: FloatArray
+    batch_params: FloatArray
+    batch_parameter_shift_gradients: FloatArray
+    leaf_shapes: tuple[tuple[int, ...], ...]
+    max_abs_gradient_error: float
+    max_abs_transform_error: float
+    tolerance: float
+    passed: bool
+    native_framework_autodiff: bool
+    host_callback: bool
+    jit_value_and_grad: bool
+    vmap_value_and_grad: bool
+    transform_names: tuple[str, ...]
+    method: str = "jax_native_registered_phase_qnode_pytree_transform_audit"
+    claim_boundary: str = "registered_phase_qnode_jax_pytree_transform_lowering"
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready registered Phase-QNode JAX PyTree evidence."""
+        return {
+            "value": self.value,
+            "gradient": self.gradient.tolist(),
+            "gradient_pytree": _json_ready_pytree(self.gradient_pytree),
+            "value_and_grad_value": self.value_and_grad_value,
+            "value_and_grad_gradient": self.value_and_grad_gradient.tolist(),
+            "value_and_grad_gradient_pytree": _json_ready_pytree(
+                self.value_and_grad_gradient_pytree
+            ),
+            "jacfwd_gradient": self.jacfwd_gradient.tolist(),
+            "jacrev_gradient": self.jacrev_gradient.tolist(),
+            "jvp_value": self.jvp_value,
+            "jvp_tangent": self.jvp_tangent,
+            "vjp_value": self.vjp_value,
+            "vjp_cotangent_gradient": self.vjp_cotangent_gradient.tolist(),
+            "vmap_values": self.vmap_values.tolist(),
+            "vmap_gradients": self.vmap_gradients.tolist(),
+            "parameter_shift_value": self.parameter_shift_value,
+            "parameter_shift_gradient": self.parameter_shift_gradient.tolist(),
+            "parameter_vector": self.parameter_vector.tolist(),
+            "tangent": self.tangent.tolist(),
+            "batch_params": self.batch_params.tolist(),
+            "batch_parameter_shift_gradients": self.batch_parameter_shift_gradients.tolist(),
+            "leaf_shapes": [list(shape) for shape in self.leaf_shapes],
+            "max_abs_gradient_error": self.max_abs_gradient_error,
+            "max_abs_transform_error": self.max_abs_transform_error,
+            "tolerance": self.tolerance,
+            "passed": self.passed,
+            "native_framework_autodiff": self.native_framework_autodiff,
+            "host_callback": self.host_callback,
+            "jit_value_and_grad": self.jit_value_and_grad,
+            "vmap_value_and_grad": self.vmap_value_and_grad,
+            "transform_names": list(self.transform_names),
+            "method": self.method,
+            "claim_boundary": self.claim_boundary,
+        }
+
+
+@dataclass(frozen=True)
 class PhaseJAXJITCompatibilityResult:
     """Audited JAX JIT compatibility for bounded phase-QNN gradient routes."""
 
@@ -833,21 +910,37 @@ def _require_jax_phase_qnode_transform_support(jax_module: Any) -> None:
         )
 
 
+def _require_jax_phase_qnode_pytree_transform_support(jax_module: Any) -> None:
+    required = (
+        "grad",
+        "value_and_grad",
+        "jacfwd",
+        "jacrev",
+        "jvp",
+        "vjp",
+        "vmap",
+        "jit",
+    )
+    missing = tuple(name for name in required if not callable(getattr(jax_module, name, None)))
+    if missing:
+        missing_names = ", ".join(missing)
+        raise RuntimeError(
+            "JAX PyTree transforms are required for registered Phase-QNode lowering: "
+            f"{missing_names}"
+        )
+
+
 def _require_jax_pytree_support(jax_module: Any) -> None:
     tree_util = getattr(jax_module, "tree_util", None)
     if tree_util is None:
-        raise RuntimeError(
-            "JAX PyTree tree_util support is required for bounded-QNN PyTree parameters"
-        )
+        raise RuntimeError("JAX PyTree tree_util support is required for JAX PyTree parameters")
     if not callable(getattr(tree_util, "tree_flatten", None)):
-        raise RuntimeError("JAX PyTree tree_flatten is required for bounded-QNN PyTree parameters")
+        raise RuntimeError("JAX PyTree tree_flatten is required for JAX PyTree parameters")
     if not callable(getattr(tree_util, "tree_unflatten", None)):
-        raise RuntimeError(
-            "JAX PyTree tree_unflatten is required for bounded-QNN PyTree parameters"
-        )
+        raise RuntimeError("JAX PyTree tree_unflatten is required for JAX PyTree parameters")
     value_and_grad = getattr(jax_module, "value_and_grad", None)
     if not callable(value_and_grad):
-        raise RuntimeError("JAX value_and_grad is required for bounded-QNN PyTree parameters")
+        raise RuntimeError("JAX value_and_grad is required for JAX PyTree parameters")
 
 
 def _require_jax_nested_transform_support(jax_module: Any) -> None:
@@ -921,6 +1014,24 @@ def _jax_unflatten_vector_to_pytree(
     return jax_module.tree_util.tree_unflatten(treedef, leaves)
 
 
+def _jax_unflatten_batch_to_pytree(
+    jax_module: Any,
+    jnp: Any,
+    batch: object,
+    treedef: object,
+    leaf_shapes: tuple[tuple[int, ...], ...],
+    leaf_sizes: tuple[int, ...],
+) -> object:
+    batch_values = jnp.asarray(batch)
+    leaves = []
+    offset = 0
+    for shape, size in zip(leaf_shapes, leaf_sizes, strict=True):
+        target_shape = (batch_values.shape[0], *shape)
+        leaves.append(jnp.reshape(batch_values[:, offset : offset + size], target_shape))
+        offset += size
+    return jax_module.tree_util.tree_unflatten(treedef, leaves)
+
+
 def _flatten_runtime_pytree_gradient(
     jax_module: Any,
     name: str,
@@ -937,6 +1048,33 @@ def _flatten_runtime_pytree_gradient(
     if not np.all(np.isfinite(vector)):
         raise ValueError(f"{name} must contain only finite values")
     return cast(FloatArray, vector.astype(np.float64, copy=True))
+
+
+def _flatten_batched_runtime_pytree_gradient(
+    jax_module: Any,
+    name: str,
+    gradient_pytree: object,
+    *,
+    batch_size: int,
+    width: int,
+) -> FloatArray:
+    leaves, _treedef = jax_module.tree_util.tree_flatten(gradient_pytree)
+    if not leaves:
+        raise ValueError(f"{name} must contain at least one gradient leaf")
+    parts = []
+    for index, leaf in enumerate(leaves):
+        array = np.asarray(leaf, dtype=float)
+        if array.shape[0] != batch_size:
+            raise ValueError(f"{name} leaf {index} must have leading batch size {batch_size}")
+        parts.append(array.reshape(batch_size, -1))
+    matrix = np.concatenate(parts, axis=1)
+    if matrix.shape != (batch_size, width):
+        raise ValueError(
+            f"{name} must flatten to shape ({batch_size}, {width}), got {matrix.shape}"
+        )
+    if not np.all(np.isfinite(matrix)):
+        raise ValueError(f"{name} must contain only finite values")
+    return cast(FloatArray, matrix.astype(np.float64, copy=True))
 
 
 def _jax_bounded_qnn_loss(
@@ -1551,6 +1689,255 @@ def jax_phase_qnode_native_transform_audit(
             "jacfwd",
             "jacrev",
             "hessian",
+            "jvp",
+            "vjp",
+            "vmap",
+            "jit",
+        ),
+    )
+
+
+def jax_phase_qnode_pytree_transform_audit(
+    circuit: PhaseQNodeCircuit,
+    params_pytree: object,
+    *,
+    tangent: ArrayLike | None = None,
+    batch_offsets: ArrayLike | None = None,
+    tolerance: float = 1e-6,
+) -> PhaseJAXPhaseQNodePyTreeTransformResult:
+    """Audit native JAX PyTree transforms for a registered local Phase-QNode.
+
+    The route accepts nested numeric PyTree parameter containers, lowers them
+    into the registered deterministic Phase-QNode statevector value function,
+    and validates native JAX ``grad``, ``value_and_grad``, ``jacfwd``,
+    ``jacrev``, ``jvp``, ``vjp``, ``vmap``, and ``jit`` against the canonical
+    SCPN parameter-shift gradient. It keeps the same fail-closed boundary as
+    the flat transform audit: no host callbacks, no finite-shot lowering, no
+    provider execution, no hardware submission, and no dynamic-circuit claim.
+    """
+
+    jax_module, jnp = _load_jax()
+    _enable_jax_x64(jax_module)
+    _require_jax_phase_qnode_pytree_transform_support(jax_module)
+    _require_jax_pytree_support(jax_module)
+    tolerance_value = _as_non_negative_tolerance(tolerance)
+    raw_parameter_vector = _jax_flatten_pytree(jax_module, jnp, params_pytree)
+    parameter_values = _as_parameter_vector("params_pytree", raw_parameter_vector)
+    (
+        parameter_values,
+        treedef,
+        leaf_shapes,
+        leaf_sizes,
+    ) = _as_pytree_parameter_vector(
+        jax_module,
+        "params_pytree",
+        params_pytree,
+        width=parameter_values.size,
+    )
+    report = phase_qnode_support_report(circuit, parameter_values)
+    if not report.supported:
+        raise PhaseQNodeSupportError(report)
+
+    if tangent is None:
+        tangent_values = np.linspace(
+            0.25,
+            0.25 + 0.05 * (parameter_values.size - 1),
+            parameter_values.size,
+            dtype=np.float64,
+        )
+    else:
+        tangent_values = _as_parameter_vector("tangent", tangent, width=parameter_values.size)
+    if batch_offsets is None:
+        offsets = np.vstack(
+            (
+                np.zeros(parameter_values.size, dtype=np.float64),
+                np.eye(parameter_values.size, dtype=np.float64) * 0.03,
+                -np.eye(parameter_values.size, dtype=np.float64) * 0.02,
+            )
+        )
+        batch_values = parameter_values + offsets.reshape(-1, parameter_values.size)
+    else:
+        offset_values = _as_parameter_batch(
+            "batch_offsets",
+            batch_offsets,
+            width=parameter_values.size,
+        )
+        batch_values = parameter_values + offset_values
+
+    parameter_shift = parameter_shift_phase_qnode_gradient(circuit, parameter_values)
+    raw_params = _jax_unflatten_vector_to_pytree(
+        jax_module,
+        jnp,
+        jnp.asarray(parameter_values),
+        treedef,
+        leaf_shapes,
+        leaf_sizes,
+    )
+    raw_tangent = _jax_unflatten_vector_to_pytree(
+        jax_module,
+        jnp,
+        jnp.asarray(tangent_values),
+        treedef,
+        leaf_shapes,
+        leaf_sizes,
+    )
+    raw_batch = _jax_unflatten_batch_to_pytree(
+        jax_module,
+        jnp,
+        jnp.asarray(batch_values),
+        treedef,
+        leaf_shapes,
+        leaf_sizes,
+    )
+
+    def value_function(raw_tree: object) -> object:
+        vector = _jax_flatten_pytree(jax_module, jnp, raw_tree)
+        value, _state = _jax_phase_qnode_value_and_state(jnp, circuit, vector)
+        return value
+
+    gradient_pytree_obj = jax_module.grad(value_function)(raw_params)
+    value_and_grad_fn = jax_module.value_and_grad(value_function)
+    value_and_grad_value_obj, value_and_grad_gradient_obj = value_and_grad_fn(raw_params)
+    jit_value_obj, jit_gradient_obj = jax_module.jit(value_and_grad_fn)(raw_params)
+    jacfwd_obj = jax_module.jacfwd(value_function)(raw_params)
+    jacrev_obj = jax_module.jacrev(value_function)(raw_params)
+    jvp_value_obj, jvp_tangent_obj = jax_module.jvp(value_function, (raw_params,), (raw_tangent,))
+    vjp_value_obj, pullback = jax_module.vjp(value_function, raw_params)
+    (vjp_cotangent_obj,) = pullback(jnp.asarray(1.0))
+    vmap_value_and_grad = jax_module.vmap(value_and_grad_fn)
+    vmap_values_obj, vmap_gradients_obj = vmap_value_and_grad(raw_batch)
+
+    gradient = _flatten_runtime_pytree_gradient(
+        jax_module,
+        "JAX grad Phase-QNode PyTree gradient",
+        gradient_pytree_obj,
+        width=parameter_values.size,
+    )
+    value_and_grad_gradient = _flatten_runtime_pytree_gradient(
+        jax_module,
+        "JAX value_and_grad Phase-QNode PyTree gradient",
+        value_and_grad_gradient_obj,
+        width=parameter_values.size,
+    )
+    jit_gradient = _flatten_runtime_pytree_gradient(
+        jax_module,
+        "JAX jit Phase-QNode PyTree gradient",
+        jit_gradient_obj,
+        width=parameter_values.size,
+    )
+    jacfwd_gradient = _flatten_runtime_pytree_gradient(
+        jax_module,
+        "JAX jacfwd Phase-QNode PyTree gradient",
+        jacfwd_obj,
+        width=parameter_values.size,
+    )
+    jacrev_gradient = _flatten_runtime_pytree_gradient(
+        jax_module,
+        "JAX jacrev Phase-QNode PyTree gradient",
+        jacrev_obj,
+        width=parameter_values.size,
+    )
+    vjp_cotangent_gradient = _flatten_runtime_pytree_gradient(
+        jax_module,
+        "JAX vjp Phase-QNode PyTree cotangent gradient",
+        vjp_cotangent_obj,
+        width=parameter_values.size,
+    )
+    vmap_values = _as_parameter_vector(
+        "JAX vmap Phase-QNode PyTree values",
+        vmap_values_obj,
+        width=batch_values.shape[0],
+    )
+    vmap_gradients = _flatten_batched_runtime_pytree_gradient(
+        jax_module,
+        "JAX vmap Phase-QNode PyTree gradients",
+        vmap_gradients_obj,
+        batch_size=batch_values.shape[0],
+        width=parameter_values.size,
+    )
+    batch_parameter_shift_gradients = np.vstack(
+        [parameter_shift_phase_qnode_gradient(circuit, row).gradient for row in batch_values]
+    ).astype(np.float64, copy=False)
+    reference_errors = (
+        gradient - parameter_shift.gradient,
+        value_and_grad_gradient - parameter_shift.gradient,
+        jit_gradient - parameter_shift.gradient,
+        jacfwd_gradient - parameter_shift.gradient,
+        jacrev_gradient - parameter_shift.gradient,
+        vjp_cotangent_gradient - parameter_shift.gradient,
+        vmap_gradients - batch_parameter_shift_gradients,
+    )
+    max_abs_gradient_error = max(
+        float(np.max(np.abs(error), initial=0.0)) for error in reference_errors
+    )
+    expected_jvp = float(np.dot(parameter_shift.gradient, tangent_values))
+    value_errors = (
+        abs(
+            _as_scalar("JAX value_and_grad Phase-QNode PyTree value", value_and_grad_value_obj)
+            - parameter_shift.value
+        ),
+        abs(_as_scalar("JAX jit Phase-QNode PyTree value", jit_value_obj) - parameter_shift.value),
+        abs(_as_scalar("JAX jvp Phase-QNode PyTree value", jvp_value_obj) - parameter_shift.value),
+        abs(_as_scalar("JAX vjp Phase-QNode PyTree value", vjp_value_obj) - parameter_shift.value),
+        abs(_as_scalar("JAX jvp Phase-QNode PyTree tangent", jvp_tangent_obj) - expected_jvp),
+        float(
+            np.max(
+                np.abs(
+                    vmap_values
+                    - np.asarray(
+                        [
+                            parameter_shift_phase_qnode_gradient(circuit, row).value
+                            for row in batch_values
+                        ],
+                        dtype=np.float64,
+                    )
+                ),
+                initial=0.0,
+            )
+        ),
+    )
+    max_abs_transform_error = max(float(error) for error in value_errors)
+    passed = bool(
+        max_abs_gradient_error <= tolerance_value and max_abs_transform_error <= tolerance_value
+    )
+    return PhaseJAXPhaseQNodePyTreeTransformResult(
+        value=_as_scalar("JAX grad Phase-QNode PyTree value", value_function(raw_params)),
+        gradient=gradient,
+        gradient_pytree=gradient_pytree_obj,
+        value_and_grad_value=_as_scalar(
+            "JAX value_and_grad Phase-QNode PyTree value",
+            value_and_grad_value_obj,
+        ),
+        value_and_grad_gradient=value_and_grad_gradient,
+        value_and_grad_gradient_pytree=value_and_grad_gradient_obj,
+        jacfwd_gradient=jacfwd_gradient,
+        jacrev_gradient=jacrev_gradient,
+        jvp_value=_as_scalar("JAX jvp Phase-QNode PyTree value", jvp_value_obj),
+        jvp_tangent=_as_scalar("JAX jvp Phase-QNode PyTree tangent", jvp_tangent_obj),
+        vjp_value=_as_scalar("JAX vjp Phase-QNode PyTree value", vjp_value_obj),
+        vjp_cotangent_gradient=vjp_cotangent_gradient,
+        vmap_values=vmap_values,
+        vmap_gradients=vmap_gradients,
+        parameter_shift_value=parameter_shift.value,
+        parameter_shift_gradient=parameter_shift.gradient.copy(),
+        parameter_vector=parameter_values.copy(),
+        tangent=tangent_values.copy(),
+        batch_params=batch_values.copy(),
+        batch_parameter_shift_gradients=batch_parameter_shift_gradients.copy(),
+        leaf_shapes=leaf_shapes,
+        max_abs_gradient_error=max_abs_gradient_error,
+        max_abs_transform_error=max_abs_transform_error,
+        tolerance=tolerance_value,
+        passed=passed,
+        native_framework_autodiff=True,
+        host_callback=False,
+        jit_value_and_grad=True,
+        vmap_value_and_grad=True,
+        transform_names=(
+            "grad",
+            "value_and_grad",
+            "jacfwd",
+            "jacrev",
             "jvp",
             "vjp",
             "vmap",
@@ -2454,6 +2841,16 @@ def run_jax_phase_qnode_lowering_matrix() -> PhaseJAXPhaseQNodeLoweringMatrixRes
             host_callback=False,
         ),
         PhaseJAXPhaseQNodeLoweringRoute(
+            name="registered_phase_qnode_pytree_transform_lowering",
+            status="passed",
+            reason=(
+                "registered deterministic Phase-QNode statevector circuits execute "
+                "structured PyTree parameters through native JAX grad, value_and_grad, "
+                "jacfwd, jacrev, jvp, vjp, vmap, and jit routes without host callbacks"
+            ),
+            host_callback=False,
+        ),
+        PhaseJAXPhaseQNodeLoweringRoute(
             name="registered_phase_qnode_finite_shot_lowering",
             status="blocked",
             reason="finite-shot JAX lowering needs sampler, seed, and uncertainty provenance",
@@ -2650,6 +3047,7 @@ __all__ = [
     "PhaseJAXPhaseQNodeLoweringMatrixResult",
     "PhaseJAXPhaseQNodeLoweringRoute",
     "PhaseJAXPhaseQNodeNativeTransformResult",
+    "PhaseJAXPhaseQNodePyTreeTransformResult",
     "PhaseJAXPhaseQNodeStatevectorResult",
     "PhaseJAXPyTreeCompatibilityResult",
     "PhaseJAXShardingCompatibilityResult",
@@ -2660,6 +3058,7 @@ __all__ = [
     "jax_native_qnn_value_and_grad",
     "jax_parameter_shift_value_and_grad",
     "jax_phase_qnode_native_transform_audit",
+    "jax_phase_qnode_pytree_transform_audit",
     "jax_phase_qnode_value_and_grad",
     "run_jax_jit_compatibility_audit",
     "run_jax_maturity_audit",

@@ -38,7 +38,11 @@ from ..differentiable import (
     vmap,
     whole_program_value_and_grad,
 )
-from ..phase.jax_bridge import is_phase_jax_available, jax_phase_qnode_native_transform_audit
+from ..phase.jax_bridge import (
+    is_phase_jax_available,
+    jax_phase_qnode_native_transform_audit,
+    jax_phase_qnode_pytree_transform_audit,
+)
 from ..phase.param_shift import verify_parameter_shift_gradient
 from ..phase.qnode_circuit import PauliTerm, PhaseQNodeCircuit, PhaseQNodeOperation
 from ..phase.torch_bridge import is_phase_torch_available, torch_phase_qnode_value_and_grad
@@ -259,7 +263,10 @@ def run_quantum_gradient_benchmark_suite() -> tuple[QuantumGradientBenchmarkResu
     if is_phase_torch_available():
         rows += (_torch_registered_phase_qnode_statevector_case(),)
     if is_phase_jax_available():
-        rows += (_jax_registered_phase_qnode_native_transform_case(),)
+        rows += (
+            _jax_registered_phase_qnode_native_transform_case(),
+            _jax_registered_phase_qnode_pytree_transform_case(),
+        )
     return rows
 
 
@@ -413,6 +420,57 @@ def _jax_registered_phase_qnode_native_transform_case() -> QuantumGradientBenchm
         + (2 * values.size * (result.batch_params.shape[0] + 1)),
         claim_boundary=(
             "native JAX grad, value_and_grad, jacfwd, jacrev, hessian, jvp, "
+            "vjp, vmap, and jit statevector lowering for deterministic "
+            "registered local Phase-QNode circuits compared with SCPN "
+            "parameter-shift references; no wall-clock performance claim and "
+            "no provider, hardware, isolated benchmark, or performance promotion"
+        ),
+    )
+
+
+def _jax_registered_phase_qnode_pytree_transform_case() -> QuantumGradientBenchmarkResult:
+    values = np.array([0.37, -0.21], dtype=np.float64)
+    params_pytree = {
+        "parameter_0": np.array([values[0]], dtype=np.float64),
+        "parameter_1": (np.array([values[1]], dtype=np.float64),),
+    }
+    circuit = PhaseQNodeCircuit(
+        n_qubits=2,
+        operations=(
+            PhaseQNodeOperation("ry", (0,), parameter_index=0),
+            PhaseQNodeOperation("rx", (1,), parameter_index=1),
+            PhaseQNodeOperation("cnot", (0, 1)),
+        ),
+        observable=PauliTerm(1.0, ((0, "z"), (1, "z"))),
+    )
+    result = jax_phase_qnode_pytree_transform_audit(circuit, params_pytree, tolerance=1.0e-8)
+    finite_difference_certificate = verify_parameter_shift_gradient(
+        lambda params: (
+            jax_phase_qnode_pytree_transform_audit(
+                circuit,
+                {
+                    "parameter_0": np.array([params[0]], dtype=np.float64),
+                    "parameter_1": (np.array([params[1]], dtype=np.float64),),
+                },
+                tolerance=1.0e-8,
+            ).value
+        ),
+        values,
+    )
+    return QuantumGradientBenchmarkResult(
+        case_id="jax_registered_phase_qnode_pytree_transform_lowering",
+        category="quantum-gradient",
+        value=result.value,
+        parameter_shift_gradient=result.gradient,
+        finite_difference_gradient=finite_difference_certificate.finite_difference_gradient,
+        analytic_gradient=result.parameter_shift_gradient,
+        max_abs_reference_error=max(result.max_abs_gradient_error, result.max_abs_transform_error),
+        max_abs_finite_difference_error=finite_difference_certificate.max_abs_error,
+        verification_passed=result.passed and finite_difference_certificate.passed,
+        evaluations=finite_difference_certificate.total_evaluations
+        + (2 * values.size * (result.batch_params.shape[0] + 1)),
+        claim_boundary=(
+            "native JAX PyTree grad, value_and_grad, jacfwd, jacrev, jvp, "
             "vjp, vmap, and jit statevector lowering for deterministic "
             "registered local Phase-QNode circuits compared with SCPN "
             "parameter-shift references; no wall-clock performance claim and "

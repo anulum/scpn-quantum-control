@@ -669,6 +669,13 @@ statevector value function through native JAX `grad`, `value_and_grad`,
 `jacfwd`, `jacrev`, `hessian`, `jvp`, `vjp`, `vmap`, and `jit` routes, checks
 first-order and batched gradients against SCPN parameter-shift references, and
 checks Hessian symmetry and JVP/VJP contractions without host callbacks.
+`jax_phase_qnode_pytree_transform_audit` accepts nested numeric PyTree
+parameters for the same registered local circuit family, flattens them in JAX
+tree order, restores native gradients to the caller's PyTree structure, and
+checks `grad`, `value_and_grad`, `jacfwd`, `jacrev`, `jvp`, `vjp`, `vmap`, and
+`jit` against SCPN parameter-shift references without host callbacks. The PyTree
+route is first-order structured-parameter evidence; finite-shot, provider,
+hardware, dynamic-circuit, and performance-promotion claims remain blocked.
 `run_jax_maturity_audit` aggregates the bounded custom-VJP, JIT, VMAP,
 PMAP/sharding, and PyTree audits into one reviewer-facing record. It reports
 `bounded_model_ready=True` when those bounded routes pass, but keeps

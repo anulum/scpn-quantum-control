@@ -26,6 +26,7 @@ from scpn_quantum_control.phase import (
     PhaseJAXParameterShiftResult,
     PhaseJAXPhaseQNodeLoweringMatrixResult,
     PhaseJAXPhaseQNodeNativeTransformResult,
+    PhaseJAXPhaseQNodePyTreeTransformResult,
     PhaseJAXPhaseQNodeStatevectorResult,
     PhaseJAXPyTreeCompatibilityResult,
     PhaseJAXShardingCompatibilityResult,
@@ -39,6 +40,7 @@ from scpn_quantum_control.phase import (
     jax_native_qnn_value_and_grad,
     jax_parameter_shift_value_and_grad,
     jax_phase_qnode_native_transform_audit,
+    jax_phase_qnode_pytree_transform_audit,
     jax_phase_qnode_value_and_grad,
     multi_frequency_parameter_shift_rule,
     parameter_shift_phase_qnode_gradient,
@@ -846,9 +848,11 @@ def test_phase_jax_phase_qnode_lowering_matrix_fails_closed_for_arbitrary_qnodes
     assert result.route_status("bounded_qnn_vmap_value_and_grad") == "passed"
     assert result.route_status("registered_phase_qnode_statevector_lowering") == "passed"
     assert result.route_status("registered_phase_qnode_native_transform_lowering") == "passed"
+    assert result.route_status("registered_phase_qnode_pytree_transform_lowering") == "passed"
     assert result.route_status("registered_phase_qnode_provider_lowering") == "blocked"
     assert "registered_phase_qnode_statevector_lowering" not in result.open_gaps
     assert "registered_phase_qnode_native_transform_lowering" not in result.open_gaps
+    assert "registered_phase_qnode_pytree_transform_lowering" not in result.open_gaps
     assert "isolated_benchmark_artifact" in result.open_gaps
     assert result.claim_boundary == "bounded_jax_phase_qnode_lowering_matrix"
 
@@ -859,6 +863,10 @@ def test_phase_jax_phase_qnode_lowering_matrix_fails_closed_for_arbitrary_qnodes
     )
     assert (
         payload["routes"]["registered_phase_qnode_native_transform_lowering"]["host_callback"]
+        is False
+    )
+    assert (
+        payload["routes"]["registered_phase_qnode_pytree_transform_lowering"]["host_callback"]
         is False
     )
 
@@ -921,6 +929,68 @@ def test_phase_jax_registered_qnode_native_transform_audit_uses_no_callback() ->
     assert payload["claim_boundary"] == "registered_phase_qnode_jax_native_transform_lowering"
 
 
+def test_phase_jax_registered_qnode_pytree_transform_audit_uses_no_callback() -> None:
+    """Registered Phase-QNode PyTrees should lower through native JAX transforms."""
+
+    if not is_phase_jax_available():
+        pytest.skip("JAX optional dependency is not installed")
+    circuit = PhaseQNodeCircuit(
+        n_qubits=2,
+        operations=(
+            ("ry", (0,), 0),
+            ("rx", (1,), 1),
+            ("cnot", (0, 1)),
+        ),
+        observable=PauliTerm(1.0, ((0, "z"), (1, "z"))),
+    )
+    params_pytree = {
+        "parameter_0": np.array([0.37], dtype=float),
+        "parameter_1": (np.array([-0.21], dtype=float),),
+    }
+    flat_params = np.array([0.37, -0.21], dtype=float)
+
+    result = jax_phase_qnode_pytree_transform_audit(
+        circuit,
+        params_pytree,
+        tangent=np.array([0.25, -0.15], dtype=float),
+        batch_offsets=np.array([[0.0, 0.0], [0.03, -0.01]], dtype=float),
+        tolerance=5e-5,
+    )
+    reference = parameter_shift_phase_qnode_gradient(circuit, flat_params)
+
+    assert isinstance(result, PhaseJAXPhaseQNodePyTreeTransformResult)
+    assert result.passed
+    assert result.native_framework_autodiff
+    assert not result.host_callback
+    assert result.jit_value_and_grad
+    assert result.vmap_value_and_grad
+    assert result.leaf_shapes == ((1,), (1,))
+    assert set(result.transform_names) == {
+        "grad",
+        "value_and_grad",
+        "jacfwd",
+        "jacrev",
+        "jvp",
+        "vjp",
+        "vmap",
+        "jit",
+    }
+    np.testing.assert_allclose(result.value, reference.value, atol=5e-5)
+    np.testing.assert_allclose(result.gradient, reference.gradient, atol=5e-5)
+    np.testing.assert_allclose(result.parameter_vector, flat_params, atol=5e-5)
+    np.testing.assert_allclose(result.value_and_grad_gradient, reference.gradient, atol=5e-5)
+    np.testing.assert_allclose(result.jacfwd_gradient, reference.gradient, atol=5e-5)
+    np.testing.assert_allclose(result.jacrev_gradient, reference.gradient, atol=5e-5)
+    np.testing.assert_allclose(result.vjp_cotangent_gradient, reference.gradient, atol=5e-5)
+    assert result.batch_params.shape == (2, 2)
+    assert result.vmap_gradients.shape == (2, 2)
+    payload = result.to_dict()
+    assert payload["host_callback"] is False
+    assert payload["leaf_shapes"] == [[1], [1]]
+    assert payload["method"] == "jax_native_registered_phase_qnode_pytree_transform_audit"
+    assert payload["claim_boundary"] == "registered_phase_qnode_jax_pytree_transform_lowering"
+
+
 def test_phase_jax_registered_qnode_native_transform_audit_fails_closed_without_transforms(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -938,6 +1008,28 @@ def test_phase_jax_registered_qnode_native_transform_audit_fails_closed_without_
 
     with pytest.raises(RuntimeError, match="grad"):
         jax_phase_qnode_native_transform_audit(circuit, np.array([0.2], dtype=float))
+
+
+def test_phase_jax_registered_qnode_pytree_transform_audit_fails_closed_without_tree_util(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Partial JAX modules should not pass as PyTree transform lowering."""
+
+    class _MissingTreeUtil(_FakeJAX):
+        tree_util = None
+
+    monkeypatch.setattr(jax_bridge, "_load_jax", lambda: (_MissingTreeUtil(), np))
+    circuit = PhaseQNodeCircuit(
+        n_qubits=1,
+        operations=(("ry", (0,), 0),),
+        observable=PauliTerm(1.0, ((0, "z"),)),
+    )
+
+    with pytest.raises(RuntimeError, match="tree_util"):
+        jax_phase_qnode_pytree_transform_audit(
+            circuit,
+            {"theta": np.array([0.2], dtype=float)},
+        )
 
 
 def test_phase_jax_registered_qnode_statevector_lowering_matches_scpn_reference() -> None:
