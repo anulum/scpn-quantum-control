@@ -370,16 +370,18 @@ def test_differentiable_programming_benchmark_result_validation_paths() -> None:
 def test_quantum_gradient_benchmark_suite_matches_analytic_references() -> None:
     """Quantum-gradient rows should expose parameter-shift verification evidence."""
 
-    _require_torch_backend()
-
     results = run_quantum_gradient_benchmark_suite()
 
-    assert [row.case_id for row in results] == [
+    expected_case_ids = [
         "single_rotation_parameter_shift",
         "two_parameter_phase_expectation",
         "sparse_ising_chain_six_qubit_expectation",
-        "torch_registered_phase_qnode_statevector_lowering",
     ]
+    if dp_benchmarks.is_phase_torch_available():
+        expected_case_ids.append("torch_registered_phase_qnode_statevector_lowering")
+    if dp_benchmarks.is_phase_jax_available():
+        expected_case_ids.append("jax_registered_phase_qnode_native_transform_lowering")
+    assert [row.case_id for row in results] == expected_case_ids
     for row in results:
         assert isinstance(row, QuantumGradientBenchmarkResult)
         assert row.category == "quantum-gradient"
@@ -399,13 +401,22 @@ def test_quantum_gradient_benchmark_suite_matches_analytic_references() -> None:
     assert sparse_row.parameter_shift_gradient.shape == (6,)
     assert sparse_row.evaluations >= 24
     assert "sparse Hamiltonian" in sparse_row.claim_boundary
-    torch_row = next(row for row in results if row.case_id.startswith("torch_registered"))
-    assert torch_row.parameter_shift_gradient.shape == (2,)
-    assert torch_row.max_abs_reference_error <= 1.0e-8
-    assert "native PyTorch autograd statevector lowering" in torch_row.claim_boundary
-    assert "no provider, hardware, isolated benchmark, or performance promotion" in (
-        torch_row.claim_boundary
-    )
+    if dp_benchmarks.is_phase_torch_available():
+        torch_row = next(row for row in results if row.case_id.startswith("torch_registered"))
+        assert torch_row.parameter_shift_gradient.shape == (2,)
+        assert torch_row.max_abs_reference_error <= 1.0e-8
+        assert "native PyTorch autograd statevector lowering" in torch_row.claim_boundary
+        assert "no provider, hardware, isolated benchmark, or performance promotion" in (
+            torch_row.claim_boundary
+        )
+    if dp_benchmarks.is_phase_jax_available():
+        jax_row = next(row for row in results if row.case_id.startswith("jax_registered"))
+        assert jax_row.parameter_shift_gradient.shape == (2,)
+        assert jax_row.max_abs_reference_error <= 1.0e-8
+        assert "native JAX grad" in jax_row.claim_boundary
+        assert "no provider, hardware, isolated benchmark, or performance promotion" in (
+            jax_row.claim_boundary
+        )
 
 
 def test_quantum_gradient_benchmark_result_validation_paths() -> None:

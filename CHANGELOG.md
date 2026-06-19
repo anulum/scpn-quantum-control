@@ -5,6 +5,16 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-06-19 — Added registered local Phase-QNode native JAX transform
+  lowering evidence through `jax_phase_qnode_native_transform_audit(...)`.
+  The audit exercises JAX `grad`, `value_and_grad`, `jacfwd`, `jacrev`,
+  `hessian`, `jvp`, `vjp`, `vmap`, and `jit` without host callbacks, compares
+  against SCPN parameter-shift references, exports the result surface, updates
+  the JAX lowering matrix, and adds a non-isolated quantum-gradient conformance
+  benchmark row. The quantum-gradient benchmark suite now also skips unavailable
+  optional backend rows instead of failing before installed backends can run,
+  while finite-shot, provider, hardware, dynamic-circuit, and
+  performance-promotion claims remain blocked.
 - 2026-06-19 — Added a scoped NumPy-style Ruff docstring ratchet for the
   differentiable external-validation, module-hardening audit, and
   hardening-slice gate surfaces. CI, local preflight, and the pre-push hook now

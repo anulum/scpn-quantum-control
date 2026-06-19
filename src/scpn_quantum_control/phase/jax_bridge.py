@@ -217,6 +217,77 @@ class PhaseJAXPhaseQNodeStatevectorResult:
 
 
 @dataclass(frozen=True)
+class PhaseJAXPhaseQNodeNativeTransformResult:
+    """Native JAX transform evidence for a registered local Phase-QNode."""
+
+    value: float
+    gradient: FloatArray
+    value_and_grad_value: float
+    value_and_grad_gradient: FloatArray
+    jacfwd_gradient: FloatArray
+    jacrev_gradient: FloatArray
+    hessian: FloatArray
+    jvp_value: float
+    jvp_tangent: float
+    vjp_value: float
+    vjp_cotangent_gradient: FloatArray
+    vmap_values: FloatArray
+    vmap_gradients: FloatArray
+    parameter_shift_value: float
+    parameter_shift_gradient: FloatArray
+    tangent: FloatArray
+    batch_params: FloatArray
+    batch_parameter_shift_gradients: FloatArray
+    max_abs_gradient_error: float
+    max_abs_transform_error: float
+    max_abs_hessian_symmetry_error: float
+    tolerance: float
+    passed: bool
+    native_framework_autodiff: bool
+    host_callback: bool
+    jit_value_and_grad: bool
+    vmap_value_and_grad: bool
+    transform_names: tuple[str, ...]
+    method: str = "jax_native_registered_phase_qnode_transform_audit"
+    claim_boundary: str = "registered_phase_qnode_jax_native_transform_lowering"
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready registered Phase-QNode JAX transform evidence."""
+        return {
+            "value": self.value,
+            "gradient": self.gradient.tolist(),
+            "value_and_grad_value": self.value_and_grad_value,
+            "value_and_grad_gradient": self.value_and_grad_gradient.tolist(),
+            "jacfwd_gradient": self.jacfwd_gradient.tolist(),
+            "jacrev_gradient": self.jacrev_gradient.tolist(),
+            "hessian": self.hessian.tolist(),
+            "jvp_value": self.jvp_value,
+            "jvp_tangent": self.jvp_tangent,
+            "vjp_value": self.vjp_value,
+            "vjp_cotangent_gradient": self.vjp_cotangent_gradient.tolist(),
+            "vmap_values": self.vmap_values.tolist(),
+            "vmap_gradients": self.vmap_gradients.tolist(),
+            "parameter_shift_value": self.parameter_shift_value,
+            "parameter_shift_gradient": self.parameter_shift_gradient.tolist(),
+            "tangent": self.tangent.tolist(),
+            "batch_params": self.batch_params.tolist(),
+            "batch_parameter_shift_gradients": self.batch_parameter_shift_gradients.tolist(),
+            "max_abs_gradient_error": self.max_abs_gradient_error,
+            "max_abs_transform_error": self.max_abs_transform_error,
+            "max_abs_hessian_symmetry_error": self.max_abs_hessian_symmetry_error,
+            "tolerance": self.tolerance,
+            "passed": self.passed,
+            "native_framework_autodiff": self.native_framework_autodiff,
+            "host_callback": self.host_callback,
+            "jit_value_and_grad": self.jit_value_and_grad,
+            "vmap_value_and_grad": self.vmap_value_and_grad,
+            "transform_names": list(self.transform_names),
+            "method": self.method,
+            "claim_boundary": self.claim_boundary,
+        }
+
+
+@dataclass(frozen=True)
 class PhaseJAXJITCompatibilityResult:
     """Audited JAX JIT compatibility for bounded phase-QNN gradient routes."""
 
@@ -556,7 +627,15 @@ class PhaseJAXPhaseQNodeLoweringMatrixResult:
         return all(
             route.status == "passed" and not route.host_callback
             for route in self.routes
-            if route.name == "registered_phase_qnode_statevector_lowering"
+            if route.name.startswith("registered_phase_qnode_")
+            and route.name.endswith("_lowering")
+            and route.name
+            not in {
+                "registered_phase_qnode_finite_shot_lowering",
+                "registered_phase_qnode_provider_lowering",
+                "registered_phase_qnode_hardware_lowering",
+                "registered_phase_qnode_dynamic_circuit_lowering",
+            }
         )
 
     @property
@@ -730,6 +809,27 @@ def _require_jax_pmap_support(jax_module: Any) -> None:
     if not callable(local_device_count):
         raise RuntimeError(
             "JAX local_device_count is required for bounded-QNN sharding compatibility"
+        )
+
+
+def _require_jax_phase_qnode_transform_support(jax_module: Any) -> None:
+    required = (
+        "grad",
+        "value_and_grad",
+        "jacfwd",
+        "jacrev",
+        "hessian",
+        "jvp",
+        "vjp",
+        "vmap",
+        "jit",
+    )
+    missing = tuple(name for name in required if not callable(getattr(jax_module, name, None)))
+    if missing:
+        missing_names = ", ".join(missing)
+        raise RuntimeError(
+            "JAX native transforms are required for registered Phase-QNode lowering: "
+            f"{missing_names}"
         )
 
 
@@ -1243,6 +1343,219 @@ def jax_phase_qnode_value_and_grad(
         host_callback=False,
         jit_requested=jit,
         jitted=jitted,
+    )
+
+
+def jax_phase_qnode_native_transform_audit(
+    circuit: PhaseQNodeCircuit,
+    params: ArrayLike,
+    *,
+    tangent: ArrayLike | None = None,
+    batch_offsets: ArrayLike | None = None,
+    tolerance: float = 1e-6,
+) -> PhaseJAXPhaseQNodeNativeTransformResult:
+    """Audit native JAX transforms for a registered local Phase-QNode.
+
+    The executable route is the same deterministic statevector lowering used by
+    :func:`jax_phase_qnode_value_and_grad`, but it is exercised through JAX
+    ``grad``, ``value_and_grad``, ``jacfwd``, ``jacrev``, ``hessian``, ``jvp``,
+    ``vjp``, ``vmap``, and ``jit``. It deliberately does not use host callbacks
+    and does not promote finite-shot, provider, hardware, density/noise, or
+    dynamic-circuit lowering.
+    """
+
+    jax_module, jnp = _load_jax()
+    _enable_jax_x64(jax_module)
+    _require_jax_phase_qnode_transform_support(jax_module)
+    tolerance_value = _as_non_negative_tolerance(tolerance)
+    parameter_values = _as_parameter_vector("params", params)
+    report = phase_qnode_support_report(circuit, parameter_values)
+    if not report.supported:
+        raise PhaseQNodeSupportError(report)
+
+    if tangent is None:
+        tangent_values = np.linspace(
+            0.25,
+            0.25 + 0.05 * (parameter_values.size - 1),
+            parameter_values.size,
+            dtype=np.float64,
+        )
+    else:
+        tangent_values = _as_parameter_vector("tangent", tangent, width=parameter_values.size)
+    if batch_offsets is None:
+        offsets = np.vstack(
+            (
+                np.zeros(parameter_values.size, dtype=np.float64),
+                np.eye(parameter_values.size, dtype=np.float64) * 0.03,
+                -np.eye(parameter_values.size, dtype=np.float64) * 0.02,
+            )
+        )
+        batch_values = parameter_values + offsets.reshape(-1, parameter_values.size)
+    else:
+        offset_values = _as_parameter_batch(
+            "batch_offsets",
+            batch_offsets,
+            width=parameter_values.size,
+        )
+        batch_values = parameter_values + offset_values
+
+    parameter_shift = parameter_shift_phase_qnode_gradient(circuit, parameter_values)
+
+    def value_function(raw_params: object) -> object:
+        value, _state = _jax_phase_qnode_value_and_state(jnp, circuit, raw_params)
+        return value
+
+    raw_params = jnp.asarray(parameter_values)
+    raw_tangent = jnp.asarray(tangent_values)
+    raw_batch = jnp.asarray(batch_values)
+    gradient_obj = jax_module.grad(value_function)(raw_params)
+    value_and_grad_fn = jax_module.value_and_grad(value_function)
+    value_and_grad_value_obj, value_and_grad_gradient_obj = value_and_grad_fn(raw_params)
+    jit_value_obj, jit_gradient_obj = jax_module.jit(value_and_grad_fn)(raw_params)
+    jacfwd_obj = jax_module.jacfwd(value_function)(raw_params)
+    jacrev_obj = jax_module.jacrev(value_function)(raw_params)
+    hessian_obj = jax_module.hessian(value_function)(raw_params)
+    jvp_value_obj, jvp_tangent_obj = jax_module.jvp(value_function, (raw_params,), (raw_tangent,))
+    vjp_value_obj, pullback = jax_module.vjp(value_function, raw_params)
+    (vjp_cotangent_obj,) = pullback(jnp.asarray(1.0))
+    vmap_value_and_grad = jax_module.vmap(value_and_grad_fn)
+    vmap_values_obj, vmap_gradients_obj = vmap_value_and_grad(raw_batch)
+
+    gradient = _as_parameter_vector(
+        "JAX grad Phase-QNode gradient", gradient_obj, width=parameter_values.size
+    )
+    value_and_grad_gradient = _as_parameter_vector(
+        "JAX value_and_grad Phase-QNode gradient",
+        value_and_grad_gradient_obj,
+        width=parameter_values.size,
+    )
+    jit_gradient = _as_parameter_vector(
+        "JAX jit value_and_grad Phase-QNode gradient",
+        jit_gradient_obj,
+        width=parameter_values.size,
+    )
+    jacfwd_gradient = _as_parameter_vector(
+        "JAX jacfwd Phase-QNode gradient",
+        jacfwd_obj,
+        width=parameter_values.size,
+    )
+    jacrev_gradient = _as_parameter_vector(
+        "JAX jacrev Phase-QNode gradient",
+        jacrev_obj,
+        width=parameter_values.size,
+    )
+    vjp_cotangent_gradient = _as_parameter_vector(
+        "JAX vjp Phase-QNode cotangent gradient",
+        vjp_cotangent_obj,
+        width=parameter_values.size,
+    )
+    vmap_values = _as_parameter_vector(
+        "JAX vmap Phase-QNode values",
+        vmap_values_obj,
+        width=batch_values.shape[0],
+    )
+    vmap_gradients = _as_parameter_batch(
+        "JAX vmap Phase-QNode gradients",
+        vmap_gradients_obj,
+        width=parameter_values.size,
+    )
+    hessian_matrix = np.asarray(hessian_obj, dtype=np.float64)
+    if hessian_matrix.shape != (parameter_values.size, parameter_values.size):
+        raise RuntimeError("JAX Phase-QNode hessian has an unexpected shape")
+    batch_parameter_shift_gradients = np.vstack(
+        [parameter_shift_phase_qnode_gradient(circuit, row).gradient for row in batch_values]
+    ).astype(np.float64, copy=False)
+    reference_errors = (
+        gradient - parameter_shift.gradient,
+        value_and_grad_gradient - parameter_shift.gradient,
+        jit_gradient - parameter_shift.gradient,
+        jacfwd_gradient - parameter_shift.gradient,
+        jacrev_gradient - parameter_shift.gradient,
+        vjp_cotangent_gradient - parameter_shift.gradient,
+        vmap_gradients - batch_parameter_shift_gradients,
+    )
+    max_abs_gradient_error = max(
+        float(np.max(np.abs(error), initial=0.0)) for error in reference_errors
+    )
+    value_errors = (
+        abs(
+            _as_scalar("JAX value_and_grad Phase-QNode value", value_and_grad_value_obj)
+            - parameter_shift.value
+        ),
+        abs(_as_scalar("JAX jit Phase-QNode value", jit_value_obj) - parameter_shift.value),
+        abs(_as_scalar("JAX jvp Phase-QNode value", jvp_value_obj) - parameter_shift.value),
+        abs(_as_scalar("JAX vjp Phase-QNode value", vjp_value_obj) - parameter_shift.value),
+    )
+    expected_jvp = float(np.dot(parameter_shift.gradient, tangent_values))
+    max_abs_transform_error = max(
+        *(float(error) for error in value_errors),
+        abs(_as_scalar("JAX jvp Phase-QNode tangent", jvp_tangent_obj) - expected_jvp),
+        float(
+            np.max(
+                np.abs(
+                    vmap_values
+                    - np.asarray(
+                        [
+                            parameter_shift_phase_qnode_gradient(circuit, row).value
+                            for row in batch_values
+                        ],
+                        dtype=np.float64,
+                    )
+                ),
+                initial=0.0,
+            )
+        ),
+    )
+    max_abs_hessian_symmetry_error = float(
+        np.max(np.abs(hessian_matrix - hessian_matrix.T), initial=0.0)
+    )
+    passed = bool(
+        max_abs_gradient_error <= tolerance_value
+        and max_abs_transform_error <= tolerance_value
+        and max_abs_hessian_symmetry_error <= tolerance_value
+    )
+    return PhaseJAXPhaseQNodeNativeTransformResult(
+        value=_as_scalar("JAX grad Phase-QNode value", value_function(raw_params)),
+        gradient=gradient,
+        value_and_grad_value=_as_scalar(
+            "JAX value_and_grad Phase-QNode value",
+            value_and_grad_value_obj,
+        ),
+        value_and_grad_gradient=value_and_grad_gradient,
+        jacfwd_gradient=jacfwd_gradient,
+        jacrev_gradient=jacrev_gradient,
+        hessian=hessian_matrix.copy(),
+        jvp_value=_as_scalar("JAX jvp Phase-QNode value", jvp_value_obj),
+        jvp_tangent=_as_scalar("JAX jvp Phase-QNode tangent", jvp_tangent_obj),
+        vjp_value=_as_scalar("JAX vjp Phase-QNode value", vjp_value_obj),
+        vjp_cotangent_gradient=vjp_cotangent_gradient,
+        vmap_values=vmap_values,
+        vmap_gradients=vmap_gradients,
+        parameter_shift_value=parameter_shift.value,
+        parameter_shift_gradient=parameter_shift.gradient.copy(),
+        tangent=tangent_values.copy(),
+        batch_params=batch_values.copy(),
+        batch_parameter_shift_gradients=batch_parameter_shift_gradients.copy(),
+        max_abs_gradient_error=max_abs_gradient_error,
+        max_abs_transform_error=max_abs_transform_error,
+        max_abs_hessian_symmetry_error=max_abs_hessian_symmetry_error,
+        tolerance=tolerance_value,
+        passed=passed,
+        native_framework_autodiff=True,
+        host_callback=False,
+        jit_value_and_grad=True,
+        vmap_value_and_grad=True,
+        transform_names=(
+            "grad",
+            "value_and_grad",
+            "jacfwd",
+            "jacrev",
+            "hessian",
+            "jvp",
+            "vjp",
+            "vmap",
+            "jit",
+        ),
     )
 
 
@@ -2131,6 +2444,16 @@ def run_jax_phase_qnode_lowering_matrix() -> PhaseJAXPhaseQNodeLoweringMatrixRes
             host_callback=False,
         ),
         PhaseJAXPhaseQNodeLoweringRoute(
+            name="registered_phase_qnode_native_transform_lowering",
+            status="passed",
+            reason=(
+                "registered deterministic Phase-QNode statevector circuits execute "
+                "through native JAX grad, value_and_grad, jacfwd, jacrev, hessian, "
+                "jvp, vjp, vmap, and jit routes without host callbacks"
+            ),
+            host_callback=False,
+        ),
+        PhaseJAXPhaseQNodeLoweringRoute(
             name="registered_phase_qnode_finite_shot_lowering",
             status="blocked",
             reason="finite-shot JAX lowering needs sampler, seed, and uncertainty provenance",
@@ -2326,6 +2649,7 @@ __all__ = [
     "PhaseJAXParameterShiftResult",
     "PhaseJAXPhaseQNodeLoweringMatrixResult",
     "PhaseJAXPhaseQNodeLoweringRoute",
+    "PhaseJAXPhaseQNodeNativeTransformResult",
     "PhaseJAXPhaseQNodeStatevectorResult",
     "PhaseJAXPyTreeCompatibilityResult",
     "PhaseJAXShardingCompatibilityResult",
@@ -2335,6 +2659,7 @@ __all__ = [
     "jax_custom_vjp_qnn_value_and_grad",
     "jax_native_qnn_value_and_grad",
     "jax_parameter_shift_value_and_grad",
+    "jax_phase_qnode_native_transform_audit",
     "jax_phase_qnode_value_and_grad",
     "run_jax_jit_compatibility_audit",
     "run_jax_maturity_audit",

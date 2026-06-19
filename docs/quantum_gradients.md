@@ -1582,6 +1582,7 @@ from scpn_quantum_control.phase import (
     PhaseQNodeCircuit,
     SparsePauliHamiltonian,
     jax_custom_vjp_qnn_value_and_grad,
+    jax_phase_qnode_native_transform_audit,
     jax_phase_qnode_value_and_grad,
     run_jax_jit_compatibility_audit,
     run_jax_maturity_audit,
@@ -1646,6 +1647,7 @@ print(nested_audit.passed, nested_audit.ready_for_provider_exceedance)
 
 lowering_matrix = run_jax_phase_qnode_lowering_matrix()
 print(lowering_matrix.route_status("registered_phase_qnode_statevector_lowering"))
+print(lowering_matrix.route_status("registered_phase_qnode_native_transform_lowering"))
 
 registered_circuit = PhaseQNodeCircuit(
     n_qubits=2,
@@ -1658,6 +1660,12 @@ registered_jax = jax_phase_qnode_value_and_grad(
     jit=True,
 )
 print(registered_jax.passed, registered_jax.host_callback, registered_jax.jitted)
+
+registered_transforms = jax_phase_qnode_native_transform_audit(
+    registered_circuit,
+    np.array([0.17, -0.23], dtype=float),
+)
+print(registered_transforms.passed, registered_transforms.transform_names)
 
 maturity = run_jax_maturity_audit(
     features=features,
@@ -1700,12 +1708,17 @@ blocked until dedicated artefacts exist.
 enables JAX x64 for complex statevector fidelity, optionally wraps the route in
 `jax.jit`, and reports `host_callback=False`. It validates the JAX value and
 gradient against the canonical SCPN statevector value and gate-aware
-parameter-shift gradient. `run_jax_phase_qnode_lowering_matrix(...)` makes the
+parameter-shift gradient. `jax_phase_qnode_native_transform_audit(...)` runs the
+same registered local statevector value function through native JAX `grad`,
+`value_and_grad`, `jacfwd`, `jacrev`, `hessian`, `jvp`, `vjp`, `vmap`, and
+`jit`, compares first-order and batched gradients against SCPN parameter-shift
+references, checks JVP/VJP contractions and Hessian symmetry, and reports
+`host_callback=False`. `run_jax_phase_qnode_lowering_matrix(...)` makes the
 native-lowering boundary explicit: bounded QNN native, custom-VJP, JIT, VMAP,
-PyTree, and registered deterministic statevector routes are listed as
-no-host-callback passes, while finite-shot, provider, hardware, and
-dynamic-circuit JAX lowering remain blocked until their own policy and parity
-artefacts exist.
+PyTree, registered deterministic statevector, and registered deterministic
+native-transform routes are listed as no-host-callback passes, while
+finite-shot, provider, hardware, and dynamic-circuit JAX lowering remain
+blocked until their own policy and parity artefacts exist.
 `run_jax_maturity_audit(...)` is the provider-parity gate for JAX: it aggregates
 the bounded passes and emits explicit blockers for full arbitrary
 `jacfwd`/`jacrev`/Hessian transform algebra, finite-shot/provider/hardware
