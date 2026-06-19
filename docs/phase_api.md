@@ -237,8 +237,12 @@ from scpn_quantum_control.phase.avqds import (
 )
 ```
 
-`avqds_simulate(K, omega, t_max=5.0, dt=0.1, reps=2)` → `AVQDSResult` with:
-`times`, `energies`, `R_values`, `params_history`.
+`avqds_simulate(K, omega, t_total=1.0, n_steps=20, ansatz_reps=2, seed=None, *, max_dense_gib=None)` →
+`AVQDSResult` with: `times`, `energies`, `fidelities`,
+`parameters_history`, `n_params`, `final_energy`, and `final_fidelity`.
+The result arrays and parameter history use explicit `float64` array contracts;
+the dense Hamiltonian and exact-reference evolution are converted through a
+single sparse-compatible `complex128` matrix boundary before time stepping.
 
 ---
 

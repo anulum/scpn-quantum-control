@@ -33,23 +33,36 @@ in real time without deep Trotter circuits.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Protocol, TypeAlias, runtime_checkable
 
 import numpy as np
+from numpy.typing import NDArray
 from qiskit import QuantumCircuit
-from qiskit.quantum_info import Statevector
+from qiskit.quantum_info import SparsePauliOp, Statevector
 
 from ..bridge.knm_hamiltonian import knm_to_ansatz, knm_to_hamiltonian
 from ..dense_budget import require_dense_allocation
+
+FloatArray: TypeAlias = NDArray[np.float64]
+ComplexArray: TypeAlias = NDArray[np.complex128]
+
+
+@runtime_checkable
+class _SparseMatrixLike(Protocol):
+    """Matrix object with a dense conversion method."""
+
+    def toarray(self) -> object:
+        """Return a dense matrix representation."""
 
 
 @dataclass
 class AVQDSResult:
     """AVQDS simulation result."""
 
-    times: np.ndarray
-    energies: np.ndarray
-    fidelities: np.ndarray  # overlap with exact evolution
-    parameters_history: list[np.ndarray]
+    times: FloatArray
+    energies: FloatArray
+    fidelities: FloatArray  # overlap with exact evolution
+    parameters_history: list[FloatArray]
     n_params: int
     final_energy: float
     final_fidelity: float
@@ -62,14 +75,21 @@ def _qubits_from_state_length(state_length: int) -> int:
     return state_length.bit_length() - 1
 
 
+def _dense_complex_matrix(matrix: object) -> ComplexArray:
+    """Return a dense complex matrix from Qiskit or sparse-like matrix output."""
+    if isinstance(matrix, _SparseMatrixLike):
+        matrix = matrix.toarray()
+    return np.asarray(matrix, dtype=np.complex128)
+
+
 def _mclachlan_matrices(
     ansatz: QuantumCircuit,
-    params: np.ndarray,
-    H_op,
+    params: FloatArray,
+    H_op: SparsePauliOp,
     epsilon: float = 1e-4,
     *,
     max_dense_gib: float | None = None,
-) -> tuple[np.ndarray, np.ndarray]:
+) -> tuple[FloatArray, FloatArray]:
     """Compute McLachlan M matrix and V vector.
 
     M_ij = Re(<∂_i ψ|∂_j ψ>)
@@ -95,7 +115,7 @@ def _mclachlan_matrices(
         )
 
     # Compute parameter derivatives via finite differences
-    dpsi: np.ndarray = np.zeros((n_params, len(psi_0)), dtype=complex)
+    dpsi: ComplexArray = np.zeros((n_params, len(psi_0)), dtype=np.complex128)
     for k in range(n_params):
         p_plus = params.copy()
         p_plus[k] += epsilon
@@ -106,18 +126,16 @@ def _mclachlan_matrices(
         dpsi[k] = (psi_plus - psi_minus) / (2.0 * epsilon)
 
     # M matrix
-    M = np.zeros((n_params, n_params))
+    M = np.zeros((n_params, n_params), dtype=np.float64)
     for i in range(n_params):
         for j in range(n_params):
             M[i, j] = float(np.real(np.dot(dpsi[i].conj(), dpsi[j])))
 
     # V vector
-    H_mat = H_op.to_matrix()
-    if hasattr(H_mat, "toarray"):
-        H_mat = H_mat.toarray()
+    H_mat = _dense_complex_matrix(H_op.to_matrix())
     H_psi = H_mat @ psi_0
 
-    V = np.zeros(n_params)
+    V = np.zeros(n_params, dtype=np.float64)
     for i in range(n_params):
         V[i] = -float(np.imag(np.dot(dpsi[i].conj(), H_psi)))
 
@@ -125,8 +143,8 @@ def _mclachlan_matrices(
 
 
 def avqds_simulate(
-    K: np.ndarray,
-    omega: np.ndarray,
+    K: FloatArray,
+    omega: FloatArray,
     t_total: float = 1.0,
     n_steps: int = 20,
     ansatz_reps: int = 2,
@@ -156,9 +174,7 @@ def avqds_simulate(
         label="AVQDS dense Hamiltonian",
     )
     H_op = knm_to_hamiltonian(K, omega)
-    H_mat = H_op.to_matrix()
-    if hasattr(H_mat, "toarray"):
-        H_mat = H_mat.toarray()
+    H_mat = _dense_complex_matrix(H_op.to_matrix())
 
     ansatz = knm_to_ansatz(K, reps=ansatz_reps)
     n_params = ansatz.num_parameters
@@ -167,10 +183,10 @@ def avqds_simulate(
     params = rng.normal(0, 0.1, size=n_params)
     dt = t_total / n_steps
 
-    times = np.linspace(0, t_total, n_steps + 1)
-    energies = np.zeros(n_steps + 1)
-    fidelities = np.zeros(n_steps + 1)
-    param_history: list[np.ndarray] = [params.copy()]
+    times: FloatArray = np.linspace(0.0, t_total, n_steps + 1, dtype=np.float64)
+    energies = np.zeros(n_steps + 1, dtype=np.float64)
+    fidelities = np.zeros(n_steps + 1, dtype=np.float64)
+    param_history: list[FloatArray] = [params.copy()]
 
     # Initial exact state for fidelity comparison
     psi_exact = Statevector.from_instruction(ansatz.assign_parameters(params)).data

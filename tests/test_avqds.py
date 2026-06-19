@@ -17,8 +17,51 @@ from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_pa
 from scpn_quantum_control.dense_budget import DenseAllocationError
 from scpn_quantum_control.phase.avqds import (
     AVQDSResult,
+    _mclachlan_matrices,
+    _qubits_from_state_length,
     avqds_simulate,
 )
+
+
+class _SparseLike:
+    def __init__(self, matrix):
+        self.matrix = matrix
+
+    def toarray(self):
+        return self.matrix
+
+
+class _FakeHamiltonian:
+    def __init__(self, matrix):
+        self.matrix = matrix
+
+    def to_matrix(self):
+        return _SparseLike(self.matrix)
+
+
+class _FakeAnsatz:
+    num_parameters = 1
+
+    def __init__(self, *, expose_num_qubits: bool = False):
+        if expose_num_qubits:
+            self.num_qubits = 1
+
+    def assign_parameters(self, params):
+        return params
+
+
+class _FakeStatevector:
+    def __init__(self, data):
+        self.data = data
+
+    @classmethod
+    def from_instruction(cls, assigned):
+        theta = float(np.asarray(assigned)[0])
+        return cls(np.array([np.cos(theta), np.sin(theta)], dtype=np.complex128))
+
+    def expectation_value(self, hamiltonian):
+        matrix = hamiltonian.to_matrix().toarray()
+        return complex(np.vdot(self.data, matrix @ self.data))
 
 
 class TestAVQDS:
@@ -89,6 +132,50 @@ class TestAVQDS:
 
         with pytest.raises(DenseAllocationError, match="AVQDS dense Hamiltonian"):
             avqds_simulate(K, omega, t_total=0.1, n_steps=2, seed=42, max_dense_gib=1e-9)
+
+    def test_rejects_non_power_of_two_statevector_length(self):
+        with pytest.raises(ValueError, match="positive power of two"):
+            _qubits_from_state_length(3)
+
+    def test_mclachlan_uses_declared_ansatz_qubit_count(self, monkeypatch):
+        monkeypatch.setattr(avqds_mod, "Statevector", _FakeStatevector)
+        matrix = np.array([[1.0, 0.0], [0.0, 2.0]], dtype=np.complex128)
+
+        M, V = _mclachlan_matrices(
+            _FakeAnsatz(expose_num_qubits=True),
+            np.array([0.1], dtype=np.float64),
+            _FakeHamiltonian(matrix),
+            max_dense_gib=1e-6,
+        )
+
+        assert M.shape == (1, 1)
+        assert V.shape == (1,)
+        assert np.all(np.isfinite(M))
+        assert np.all(np.isfinite(V))
+
+    def test_simulation_contract_with_sparse_like_boundaries(self, monkeypatch):
+        matrix = np.array([[1.0, 0.0], [0.0, 2.0]], dtype=np.complex128)
+        monkeypatch.setattr(
+            avqds_mod, "knm_to_hamiltonian", lambda K, omega: _FakeHamiltonian(matrix)
+        )
+        monkeypatch.setattr(
+            avqds_mod,
+            "knm_to_ansatz",
+            lambda K, reps: _FakeAnsatz(expose_num_qubits=False),
+        )
+        monkeypatch.setattr(avqds_mod, "Statevector", _FakeStatevector)
+
+        result = avqds_simulate(
+            np.zeros((1, 1), dtype=np.float64),
+            np.zeros(1, dtype=np.float64),
+            t_total=0.1,
+            n_steps=1,
+            seed=0,
+        )
+
+        assert result.times.tolist() == [0.0, 0.1]
+        assert len(result.parameters_history) == 2
+        assert result.final_fidelity >= 0.0
 
 
 def test_avqds_finite_energies():
