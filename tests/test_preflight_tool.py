@@ -113,6 +113,7 @@ def test_static_gates_include_differentiable_strict_mypy_ratchet() -> None:
     assert "src/scpn_quantum_control/phase/results.py" in strict_cmd
     assert "src/scpn_quantum_control/phase/provider_hardware_safety_audit.py" in strict_cmd
     assert "src/scpn_quantum_control/phase/backend_selector.py" in strict_cmd
+    assert "src/scpn_quantum_control/phase/ansatz_bench.py" in strict_cmd
 
 
 def test_preflight_coverage_gate_matches_temporary_ci_threshold():

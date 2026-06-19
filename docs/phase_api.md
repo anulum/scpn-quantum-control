@@ -292,6 +292,11 @@ and $K_{nm}$-topology-informed.
 ### `ansatz_bench` — Ansatz Benchmarking
 
 Systematic comparison of ansatz expressibility, trainability, and convergence rate.
+`benchmark_ansatz(...)` and `run_ansatz_benchmark(...)` return
+`AnsatzBenchmarkRow`, a typed JSON-ready row with ansatz name, qubit count,
+parameter count, energy, evaluation count, optimisation history, and repetition
+metadata. These rows are local functional benchmark evidence; production
+performance claims still require isolated-affinity artefacts.
 
 ---
 

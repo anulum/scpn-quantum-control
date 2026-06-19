@@ -11,7 +11,7 @@ UPDE Trotter integration, Trotter error analysis, and ansatz benchmarking.
 
 from .adapt_vqe import ADAPTResult, adapt_vqe
 from .adiabatic_preparation import AdiabaticResult, adiabatic_ramp
-from .ansatz_bench import benchmark_ansatz, run_ansatz_benchmark
+from .ansatz_bench import AnsatzBenchmarkRow, benchmark_ansatz, run_ansatz_benchmark
 from .ansatz_methodology import AnsatzBenchmarkResult
 from .avqds import AVQDSResult, avqds_simulate
 from .coupling_learning import (
@@ -537,6 +537,7 @@ __all__ = [
     "trotter_error_sweep",
     "benchmark_ansatz",
     "run_ansatz_benchmark",
+    "AnsatzBenchmarkRow",
     "adapt_vqe",
     "ADAPTResult",
     "adiabatic_ramp",
