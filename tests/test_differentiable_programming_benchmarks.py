@@ -382,6 +382,7 @@ def test_quantum_gradient_benchmark_suite_matches_analytic_references() -> None:
     if dp_benchmarks.is_phase_jax_available():
         expected_case_ids.append("jax_registered_phase_qnode_native_transform_lowering")
         expected_case_ids.append("jax_registered_phase_qnode_pytree_transform_lowering")
+        expected_case_ids.append("jax_registered_phase_qnode_pmap_sharding_lowering")
     assert [row.case_id for row in results] == expected_case_ids
     for row in results:
         assert isinstance(row, QuantumGradientBenchmarkResult)

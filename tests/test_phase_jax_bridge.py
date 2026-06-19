@@ -849,10 +849,12 @@ def test_phase_jax_phase_qnode_lowering_matrix_fails_closed_for_arbitrary_qnodes
     assert result.route_status("registered_phase_qnode_statevector_lowering") == "passed"
     assert result.route_status("registered_phase_qnode_native_transform_lowering") == "passed"
     assert result.route_status("registered_phase_qnode_pytree_transform_lowering") == "passed"
+    assert result.route_status("registered_phase_qnode_pmap_sharding_lowering") == "passed"
     assert result.route_status("registered_phase_qnode_provider_lowering") == "blocked"
     assert "registered_phase_qnode_statevector_lowering" not in result.open_gaps
     assert "registered_phase_qnode_native_transform_lowering" not in result.open_gaps
     assert "registered_phase_qnode_pytree_transform_lowering" not in result.open_gaps
+    assert "registered_phase_qnode_pmap_sharding_lowering" not in result.open_gaps
     assert "isolated_benchmark_artifact" in result.open_gaps
     assert result.claim_boundary == "bounded_jax_phase_qnode_lowering_matrix"
 
@@ -867,6 +869,10 @@ def test_phase_jax_phase_qnode_lowering_matrix_fails_closed_for_arbitrary_qnodes
     )
     assert (
         payload["routes"]["registered_phase_qnode_pytree_transform_lowering"]["host_callback"]
+        is False
+    )
+    assert (
+        payload["routes"]["registered_phase_qnode_pmap_sharding_lowering"]["host_callback"]
         is False
     )
 
@@ -997,6 +1003,56 @@ def test_phase_jax_registered_qnode_pytree_transform_audit_uses_no_callback() ->
     assert payload["claim_boundary"] == "registered_phase_qnode_jax_pytree_transform_lowering"
 
 
+def test_phase_jax_registered_qnode_sharding_transform_audit_uses_no_callback() -> None:
+    """Registered Phase-QNode batches should lower through native JAX pmap."""
+
+    if not is_phase_jax_available():
+        pytest.skip("JAX optional dependency is not installed")
+    import jax
+
+    local_device_count = int(jax.local_device_count())
+    circuit = PhaseQNodeCircuit(
+        n_qubits=2,
+        operations=(
+            ("ry", (0,), 0),
+            ("rx", (1,), 1),
+            ("cnot", (0, 1)),
+        ),
+        observable=PauliTerm(1.0, ((0, "z"), (1, "z"))),
+    )
+    base_params = np.array([0.37, -0.21], dtype=float)
+    offsets = np.arange(local_device_count, dtype=float)[:, None] * np.array(
+        [[0.01, -0.015]],
+        dtype=float,
+    )
+    params_batch = base_params[None, :] + offsets
+
+    result = jax_bridge.jax_phase_qnode_sharding_transform_audit(
+        circuit,
+        params_batch,
+        tolerance=5e-5,
+    )
+    reference_gradients = np.vstack(
+        [parameter_shift_phase_qnode_gradient(circuit, row).gradient for row in params_batch]
+    )
+
+    assert result.passed
+    assert result.native_framework_autodiff
+    assert not result.host_callback
+    assert result.pmapped
+    assert result.batch_size == local_device_count
+    assert result.local_device_count == local_device_count
+    assert result.sharding_mode in {"single_device_pmap_smoke", "multi_device_pmap"}
+    assert result.values.shape == (local_device_count,)
+    assert result.gradients.shape == (local_device_count, 2)
+    np.testing.assert_allclose(result.gradients, reference_gradients, atol=5e-5)
+    payload = result.to_dict()
+    assert payload["host_callback"] is False
+    assert payload["pmapped"] is True
+    assert payload["local_device_count"] == local_device_count
+    assert payload["claim_boundary"] == "registered_phase_qnode_jax_pmap_sharding_lowering"
+
+
 def test_phase_jax_registered_qnode_native_transform_audit_fails_closed_without_transforms(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -1035,6 +1091,28 @@ def test_phase_jax_registered_qnode_pytree_transform_audit_fails_closed_without_
         jax_phase_qnode_pytree_transform_audit(
             circuit,
             {"theta": np.array([0.2], dtype=float)},
+        )
+
+
+def test_phase_jax_registered_qnode_sharding_transform_audit_fails_closed_without_pmap(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Partial JAX modules should not pass as PMAP sharding lowering."""
+
+    class _MissingPMAP(_FakeJAX):
+        pmap = None
+
+    monkeypatch.setattr(jax_bridge, "_load_jax", lambda: (_MissingPMAP(), np))
+    circuit = PhaseQNodeCircuit(
+        n_qubits=1,
+        operations=(("ry", (0,), 0),),
+        observable=PauliTerm(1.0, ((0, "z"),)),
+    )
+
+    with pytest.raises(RuntimeError, match="pmap"):
+        jax_bridge.jax_phase_qnode_sharding_transform_audit(
+            circuit,
+            np.array([[0.2]], dtype=float),
         )
 
 

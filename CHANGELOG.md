@@ -5,6 +5,15 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-06-19 — Added registered local Phase-QNode JAX pmap/sharding transform
+  evidence through `jax_phase_qnode_sharding_transform_audit(...)`. The audit
+  maps one deterministic statevector value-and-gradient row per local JAX
+  device, compares values and gradients against SCPN parameter-shift
+  references without host callbacks, updates the lowering matrix, and adds a
+  non-isolated quantum-gradient conformance benchmark row. Single-device CPU
+  runs are pmap smoke evidence only; provider, hardware, finite-shot,
+  dynamic-circuit, isolated benchmark, and performance-promotion claims remain
+  blocked.
 - 2026-06-19 — Added registered local Phase-QNode PyTree native JAX transform
   evidence through `jax_phase_qnode_pytree_transform_audit(...)`. The audit
   accepts structured numeric PyTree parameters, validates native `grad`,

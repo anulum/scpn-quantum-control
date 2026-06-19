@@ -371,6 +371,53 @@ class PhaseJAXPhaseQNodePyTreeTransformResult:
 
 
 @dataclass(frozen=True)
+class PhaseJAXPhaseQNodeShardingTransformResult:
+    """Native JAX PMAP evidence for registered local Phase-QNode batches."""
+
+    values: FloatArray
+    gradients: FloatArray
+    parameter_shift_values: FloatArray
+    parameter_shift_gradients: FloatArray
+    batch_params: FloatArray
+    batch_size: int
+    local_device_count: int
+    device_descriptions: tuple[str, ...]
+    sharding_mode: str
+    max_abs_value_error: float
+    max_abs_gradient_error: float
+    tolerance: float
+    passed: bool
+    native_framework_autodiff: bool
+    host_callback: bool
+    pmapped: bool
+    method: str = "jax_native_registered_phase_qnode_pmap_sharding_audit"
+    claim_boundary: str = "registered_phase_qnode_jax_pmap_sharding_lowering"
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready registered Phase-QNode JAX PMAP evidence."""
+        return {
+            "values": self.values.tolist(),
+            "gradients": self.gradients.tolist(),
+            "parameter_shift_values": self.parameter_shift_values.tolist(),
+            "parameter_shift_gradients": self.parameter_shift_gradients.tolist(),
+            "batch_params": self.batch_params.tolist(),
+            "batch_size": self.batch_size,
+            "local_device_count": self.local_device_count,
+            "device_descriptions": list(self.device_descriptions),
+            "sharding_mode": self.sharding_mode,
+            "max_abs_value_error": self.max_abs_value_error,
+            "max_abs_gradient_error": self.max_abs_gradient_error,
+            "tolerance": self.tolerance,
+            "passed": self.passed,
+            "native_framework_autodiff": self.native_framework_autodiff,
+            "host_callback": self.host_callback,
+            "pmapped": self.pmapped,
+            "method": self.method,
+            "claim_boundary": self.claim_boundary,
+        }
+
+
+@dataclass(frozen=True)
 class PhaseJAXJITCompatibilityResult:
     """Audited JAX JIT compatibility for bounded phase-QNN gradient routes."""
 
@@ -2010,6 +2057,98 @@ def jax_phase_qnode_pytree_transform_audit(
     )
 
 
+def jax_phase_qnode_sharding_transform_audit(
+    circuit: PhaseQNodeCircuit,
+    params_batch: ArrayLike,
+    *,
+    tolerance: float = 1e-6,
+) -> PhaseJAXPhaseQNodeShardingTransformResult:
+    """Audit native JAX PMAP lowering for registered local Phase-QNode batches.
+
+    The audit maps one deterministic statevector value-and-gradient row per
+    local JAX device via ``jax.pmap`` and compares every row against the SCPN
+    gate-aware parameter-shift reference. It is local sharding evidence only:
+    no host callbacks, no finite-shot lowering, no provider execution, no
+    hardware submission, and no wall-clock performance promotion.
+    """
+
+    jax_module, jnp = _load_jax()
+    _enable_jax_x64(jax_module)
+    _require_jax_pmap_support(jax_module)
+    tolerance_value = _as_non_negative_tolerance(tolerance)
+    local_device_count = int(jax_module.local_device_count())
+    if local_device_count <= 0:
+        raise RuntimeError("JAX local_device_count must be positive for PMAP lowering")
+    parameter_batch = np.asarray(params_batch, dtype=float)
+    if parameter_batch.ndim != 2:
+        raise ValueError("params_batch must be a two-dimensional array")
+    if parameter_batch.shape[0] != local_device_count:
+        raise ValueError(
+            "params_batch must contain exactly one row per local JAX device, "
+            f"got {parameter_batch.shape[0]} rows for {local_device_count} devices"
+        )
+    parameter_batch = _as_parameter_batch(
+        "params_batch",
+        parameter_batch,
+        width=parameter_batch.shape[1],
+    )
+    for row in parameter_batch:
+        report = phase_qnode_support_report(circuit, row)
+        if not report.supported:
+            raise PhaseQNodeSupportError(report)
+
+    def value_function(raw_params: object) -> object:
+        value, _state = _jax_phase_qnode_value_and_state(jnp, circuit, raw_params)
+        return value
+
+    value_and_grad_fn = jax_module.value_and_grad(value_function)
+    values_obj, gradients_obj = jax_module.pmap(value_and_grad_fn)(jnp.asarray(parameter_batch))
+    values = _as_parameter_vector(
+        "JAX pmap Phase-QNode values",
+        values_obj,
+        width=local_device_count,
+    )
+    gradients = _as_parameter_batch(
+        "JAX pmap Phase-QNode gradients",
+        gradients_obj,
+        width=parameter_batch.shape[1],
+    )
+    references = tuple(
+        parameter_shift_phase_qnode_gradient(circuit, row) for row in parameter_batch
+    )
+    parameter_shift_values = np.asarray([result.value for result in references], dtype=np.float64)
+    parameter_shift_gradients = np.vstack([result.gradient for result in references]).astype(
+        np.float64,
+        copy=False,
+    )
+    max_abs_value_error = float(np.max(np.abs(values - parameter_shift_values), initial=0.0))
+    max_abs_gradient_error = float(
+        np.max(np.abs(gradients - parameter_shift_gradients), initial=0.0)
+    )
+    passed = bool(
+        max_abs_value_error <= tolerance_value and max_abs_gradient_error <= tolerance_value
+    )
+    sharding_mode = "single_device_pmap_smoke" if local_device_count == 1 else "multi_device_pmap"
+    return PhaseJAXPhaseQNodeShardingTransformResult(
+        values=values,
+        gradients=gradients,
+        parameter_shift_values=parameter_shift_values,
+        parameter_shift_gradients=parameter_shift_gradients,
+        batch_params=parameter_batch.copy(),
+        batch_size=int(parameter_batch.shape[0]),
+        local_device_count=local_device_count,
+        device_descriptions=_jax_local_devices(jax_module, local_device_count),
+        sharding_mode=sharding_mode,
+        max_abs_value_error=max_abs_value_error,
+        max_abs_gradient_error=max_abs_gradient_error,
+        tolerance=tolerance_value,
+        passed=passed,
+        native_framework_autodiff=True,
+        host_callback=False,
+        pmapped=True,
+    )
+
+
 def _enable_jax_x64(jax_module: Any) -> None:
     config = getattr(jax_module, "config", None)
     update = getattr(config, "update", None)
@@ -2915,6 +3054,16 @@ def run_jax_phase_qnode_lowering_matrix() -> PhaseJAXPhaseQNodeLoweringMatrixRes
             host_callback=False,
         ),
         PhaseJAXPhaseQNodeLoweringRoute(
+            name="registered_phase_qnode_pmap_sharding_lowering",
+            status="passed",
+            reason=(
+                "registered deterministic Phase-QNode statevector circuit batches execute "
+                "one row per local JAX device through native pmap value-and-gradient "
+                "routes without host callbacks"
+            ),
+            host_callback=False,
+        ),
+        PhaseJAXPhaseQNodeLoweringRoute(
             name="registered_phase_qnode_finite_shot_lowering",
             status="blocked",
             reason="finite-shot JAX lowering needs sampler, seed, and uncertainty provenance",
@@ -3112,6 +3261,7 @@ __all__ = [
     "PhaseJAXPhaseQNodeLoweringRoute",
     "PhaseJAXPhaseQNodeNativeTransformResult",
     "PhaseJAXPhaseQNodePyTreeTransformResult",
+    "PhaseJAXPhaseQNodeShardingTransformResult",
     "PhaseJAXPhaseQNodeStatevectorResult",
     "PhaseJAXPyTreeCompatibilityResult",
     "PhaseJAXShardingCompatibilityResult",
@@ -3123,6 +3273,7 @@ __all__ = [
     "jax_parameter_shift_value_and_grad",
     "jax_phase_qnode_native_transform_audit",
     "jax_phase_qnode_pytree_transform_audit",
+    "jax_phase_qnode_sharding_transform_audit",
     "jax_phase_qnode_value_and_grad",
     "run_jax_jit_compatibility_audit",
     "run_jax_maturity_audit",

@@ -1584,6 +1584,7 @@ from scpn_quantum_control.phase import (
     jax_custom_vjp_qnn_value_and_grad,
     jax_phase_qnode_native_transform_audit,
     jax_phase_qnode_pytree_transform_audit,
+    jax_phase_qnode_sharding_transform_audit,
     jax_phase_qnode_value_and_grad,
     run_jax_jit_compatibility_audit,
     run_jax_maturity_audit,
@@ -1650,6 +1651,7 @@ lowering_matrix = run_jax_phase_qnode_lowering_matrix()
 print(lowering_matrix.route_status("registered_phase_qnode_statevector_lowering"))
 print(lowering_matrix.route_status("registered_phase_qnode_native_transform_lowering"))
 print(lowering_matrix.route_status("registered_phase_qnode_pytree_transform_lowering"))
+print(lowering_matrix.route_status("registered_phase_qnode_pmap_sharding_lowering"))
 
 registered_circuit = PhaseQNodeCircuit(
     n_qubits=2,
@@ -1677,6 +1679,15 @@ registered_pytree_transforms = jax_phase_qnode_pytree_transform_audit(
     },
 )
 print(registered_pytree_transforms.passed, registered_pytree_transforms.transform_names)
+
+registered_sharding_transforms = jax_phase_qnode_sharding_transform_audit(
+    registered_circuit,
+    np.tile(
+        np.array([[0.17, -0.23]], dtype=float),
+        (int(jax.local_device_count()), 1),
+    ),
+)
+print(registered_sharding_transforms.passed, registered_sharding_transforms.sharding_mode)
 
 maturity = run_jax_maturity_audit(
     features=features,
@@ -1730,12 +1741,17 @@ checks native JAX `grad`, `value_and_grad`, `jacfwd`, `jacrev`, `jvp`, `vjp`,
 `hessian`, `vmap`, and `jit` against SCPN parameter-shift references, restores
 gradients to the caller's PyTree structure, records flattened Hessian symmetry
 evidence, and reports `host_callback=False`.
+`jax_phase_qnode_sharding_transform_audit(...)` maps one registered local
+statevector value-and-gradient row per local JAX device through `jax.pmap`,
+checks every row against SCPN parameter-shift references, labels single-device
+CPU runs as pmap smoke evidence, and reports `host_callback=False`.
 `run_jax_phase_qnode_lowering_matrix(...)` makes the
 native-lowering boundary explicit: bounded QNN native, custom-VJP, JIT, VMAP,
-PyTree, registered deterministic statevector, and registered deterministic
-native-transform routes are listed as no-host-callback passes, while
-finite-shot, provider, hardware, and dynamic-circuit JAX lowering remain
-blocked until their own policy and parity artefacts exist.
+PyTree, registered deterministic statevector, registered deterministic
+native-transform, and registered deterministic pmap/sharding routes are listed
+as no-host-callback passes, while finite-shot, provider, hardware, and
+dynamic-circuit JAX lowering remain blocked until their own policy and parity
+artefacts exist.
 `run_jax_maturity_audit(...)` is the provider-parity gate for JAX: it aggregates
 the bounded passes and emits explicit blockers for full arbitrary
 `jacfwd`/`jacrev`/Hessian transform algebra, finite-shot/provider/hardware
