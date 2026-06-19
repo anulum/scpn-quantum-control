@@ -317,10 +317,12 @@ result = runner.run_trotter(t=0.5, reps=2)
 # result: PennyLaneResult(energy, order_parameter, n_qubits, device_name, statevector)
 ```
 
-Device strings are trimmed before dispatch and malformed payloads are rejected
-before `qml.device(...)` is called. Vendor-specific keyword arguments are
-forwarded verbatim; no allow-list is maintained in the adapter, and mocked
-provider-breadth tests do not touch live hardware.
+Device strings are trimmed before dispatch. Malformed native-gate payloads are
+rejected before `qml.device(...)` is called, including unsupported gates, wrong
+gate arities, non-integer or duplicate wires, wrong rotation-parameter counts,
+boolean parameters, and non-finite rotation parameters. Vendor-specific keyword
+arguments are forwarded verbatim; no allow-list is maintained in the adapter,
+and mocked provider-breadth tests do not touch live hardware.
 
 VQE via PennyLane optimisers:
 ```python

@@ -11,8 +11,10 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 from collections.abc import Mapping, Sequence
 from datetime import datetime, timezone
+from numbers import Real
 from time import time_ns
 from typing import Any, cast
 
@@ -38,6 +40,26 @@ _SUPPORTED_GATES = frozenset(
         "swap",
     }
 )
+_PARAMETER_COUNTS: Mapping[str, int] = {
+    "rx": 1,
+    "ry": 1,
+    "rz": 1,
+}
+_WIRE_COUNTS: Mapping[str, int] = {
+    "h": 1,
+    "x": 1,
+    "y": 1,
+    "z": 1,
+    "s": 1,
+    "t": 1,
+    "rx": 1,
+    "ry": 1,
+    "rz": 1,
+    "cnot": 2,
+    "cx": 2,
+    "cz": 2,
+    "swap": 2,
+}
 
 
 def pennylane_gate_workload(
@@ -170,19 +192,43 @@ def _normalise_instruction(instruction: Mapping[str, object], n_qubits: int) -> 
     wires = instruction.get("wires")
     if not isinstance(wires, Sequence) or isinstance(wires, str):
         raise ValueError("PennyLane instruction wires must be a sequence of integers")
-    wire_tuple = tuple(int(wire) for wire in wires)
+    wire_tuple = tuple(_normalise_wire(wire) for wire in wires)
     if not wire_tuple:
         raise ValueError("PennyLane instruction wires must not be empty")
+    expected_wires = _WIRE_COUNTS[gate]
+    if len(wire_tuple) != expected_wires:
+        raise ValueError(f"PennyLane gate {gate} requires {expected_wires} wires")
+    if len(set(wire_tuple)) != len(wire_tuple):
+        raise ValueError("PennyLane instruction wires must be unique")
     if any(wire < 0 or wire >= n_qubits for wire in wire_tuple):
         raise ValueError("PennyLane instruction wire is outside the workload register")
     params = instruction.get("params", ())
     if not isinstance(params, Sequence) or isinstance(params, str):
         raise ValueError("PennyLane instruction params must be a sequence of numbers")
+    param_tuple = tuple(_normalise_parameter(param) for param in params)
+    expected_params = _PARAMETER_COUNTS.get(gate, 0)
+    if len(param_tuple) != expected_params:
+        raise ValueError(f"PennyLane gate {gate} requires {expected_params} parameters")
     return {
         "gate": gate,
         "wires": list(wire_tuple),
-        "params": [float(param) for param in params],
+        "params": list(param_tuple),
     }
+
+
+def _normalise_wire(wire: object) -> int:
+    if isinstance(wire, bool) or not isinstance(wire, int):
+        raise ValueError("PennyLane instruction wires must be integers")
+    return wire
+
+
+def _normalise_parameter(parameter: object) -> float:
+    if isinstance(parameter, bool) or not isinstance(parameter, Real):
+        raise ValueError("PennyLane instruction params must be real numbers")
+    value = float(parameter)
+    if not math.isfinite(value):
+        raise ValueError("PennyLane instruction params must be finite")
+    return value
 
 
 def _normalise_device_name(device_name: str) -> str:
@@ -206,7 +252,12 @@ def _decode_native_gate_payload(workload: QuantumWorkload) -> tuple[dict[str, ob
     instructions = payload.get("instructions")
     if not isinstance(instructions, list):
         raise ValueError("PennyLane workload instructions must be a list")
-    return tuple(_normalise_instruction(item, workload.n_qubits) for item in instructions)
+    normalised: list[dict[str, object]] = []
+    for item in instructions:
+        if not isinstance(item, Mapping):
+            raise ValueError("PennyLane workload instructions must be objects")
+        normalised.append(_normalise_instruction(item, workload.n_qubits))
+    return tuple(normalised)
 
 
 def _execute_native_gates(

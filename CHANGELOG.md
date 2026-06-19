@@ -5,6 +5,11 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-06-19 — Hardened the PennyLane HAL native-gate payload boundary by
+  rejecting non-integer or duplicate wires, wrong gate arities, wrong rotation
+  parameter counts, boolean parameters, and non-finite rotation parameters
+  before plugin loading or device dispatch, with standalone strict mypy on the
+  HAL adapter and focused HAL PennyLane tests.
 - 2026-06-19 — Hardened the legacy PennyLane runner physics-input boundary by
   rejecting non-square Kuramoto coupling matrices before device dispatch,
   preserving existing finite `K`/`omega` and shot validation, and bringing

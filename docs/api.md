@@ -2302,11 +2302,13 @@ Pasqal submission APIs.
 
 PennyLane, qBraid, and Strangeworks adapters are concrete HAL routes, not registry aliases.
 `PennyLaneDeviceHALAdapter` executes strict native-gate payloads on a local
-PennyLane device and fails closed on unsupported gates. Its local device name is
-trimmed and rejected when empty or when it contains control characters before
-PennyLane plugin dispatch, and `device_kwargs` are forwarded unchanged to
-`qml.device(...)`. This preserves installed PennyLane plugin breadth without
-claiming provider hardware execution. `QbraidRuntimeHALAdapter`
+PennyLane device and fails closed on unsupported gates, wrong gate arity,
+non-integer or duplicate wires, wrong rotation-parameter counts, boolean
+parameters, and non-finite rotation parameters before plugin loading. Its local
+device name is trimmed and rejected when empty or when it contains control
+characters before PennyLane plugin dispatch, and `device_kwargs` are forwarded
+unchanged to `qml.device(...)`. This preserves installed PennyLane plugin
+breadth without claiming provider hardware execution. `QbraidRuntimeHALAdapter`
 uses injected qBraid devices or providers and still requires the HAL approval
 token for cloud submission. `snapshot_from_qbraid_device()` also normalises
 qBraid catalogue `program_specs` into HAL IR tokens and records the resolved

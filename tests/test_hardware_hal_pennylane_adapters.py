@@ -10,6 +10,7 @@
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
+from typing import Any
 
 import pytest
 
@@ -65,6 +66,77 @@ def test_pennylane_adapter_fails_closed_on_unknown_gate() -> None:
     )
 
     with pytest.raises(ValueError, match="unsupported PennyLane gate"):
+        hal.submit("local_pennylane", workload)
+
+
+@pytest.mark.parametrize(
+    ("instruction", "match"),
+    [
+        ({"gate": "h", "wires": [True], "params": []}, "wires"),
+        ({"gate": "h", "wires": [0.0], "params": []}, "wires"),
+        ({"gate": "cnot", "wires": [0, 0], "params": []}, "unique"),
+        ({"gate": "cnot", "wires": [0], "params": []}, "requires 2 wires"),
+        ({"gate": "h", "wires": [0], "params": [0.1]}, "requires 0 parameters"),
+        ({"gate": "rx", "wires": [0], "params": []}, "requires 1 parameters"),
+        ({"gate": "rx", "wires": [0], "params": [True]}, "real numbers"),
+        ({"gate": "rx", "wires": [0], "params": [float("nan")]}, "finite"),
+        ({"gate": "rx", "wires": [0], "params": [float("inf")]}, "finite"),
+    ],
+)
+def test_pennylane_gate_workload_rejects_malformed_native_instructions(
+    instruction: Mapping[str, object],
+    match: str,
+) -> None:
+    """Native PennyLane gate payloads must preserve exact gate semantics."""
+
+    with pytest.raises(ValueError, match=match):
+        pennylane_gate_workload(
+            [instruction],
+            workload_id="pl_malformed_native_gate",
+            n_qubits=2,
+            shots=16,
+        )
+
+
+@pytest.mark.parametrize(
+    ("program", "match"),
+    [
+        (
+            '{"schema":"scpn.pennylane.native_gates.v1","instructions":[false]}',
+            "instructions must be objects",
+        ),
+        (
+            '{"schema":"scpn.pennylane.native_gates.v1","instructions":[{"gate":"rx","wires":[0],"params":[NaN]}]}',
+            "finite",
+        ),
+        (
+            '{"schema":"scpn.pennylane.native_gates.v1","instructions":[{"gate":"cz","wires":[1,1],"params":[]}]}',
+            "unique",
+        ),
+    ],
+)
+def test_pennylane_adapter_rejects_malformed_payloads_before_plugin_dispatch(
+    monkeypatch: pytest.MonkeyPatch,
+    program: str,
+    match: str,
+) -> None:
+    """Invalid native-gate payloads must fail before PennyLane plugin loading."""
+
+    def _fail_if_loaded() -> Any:
+        raise AssertionError("PennyLane plugin loader must not be called")
+
+    monkeypatch.setattr(pennylane_mod, "_load_pennylane", _fail_if_loaded)
+    hal = HardwareAbstractionLayer.with_builtin_profiles()
+    hal.register_backend(PennyLaneDeviceHALAdapter(hal.profile("local_pennylane")))
+    workload = QuantumWorkload(
+        workload_id="pl_invalid_payload",
+        ir_format="pennylane",
+        program=program,
+        n_qubits=2,
+        shots=16,
+    )
+
+    with pytest.raises(ValueError, match=match):
         hal.submit("local_pennylane", workload)
 
 
