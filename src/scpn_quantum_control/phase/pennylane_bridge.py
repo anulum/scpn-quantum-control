@@ -214,7 +214,9 @@ class PennyLaneProviderPluginExecutionArtifact:
                 field_name,
                 _normalise_metadata_text(field_name, getattr(self, field_name)),
             )
-        if isinstance(self.shots, bool) or (self.shots is not None and self.shots <= 0):
+        if self.shots is not None and (
+            isinstance(self.shots, bool) or not isinstance(self.shots, int) or self.shots <= 0
+        ):
             raise ValueError("shots must be positive when provided")
         if self.hardware_execution:
             raise ValueError(
@@ -935,13 +937,12 @@ def _phase_qnode_parameter_count(circuit: PhaseQNodeCircuit) -> int:
     return 0 if not parameter_indices else max(parameter_indices) + 1
 
 
-def _as_optional_shots(value: int | None) -> int | None:
+def _as_optional_shots(value: object) -> int | None:
     if value is None:
         return None
-    shots = int(value)
-    if isinstance(value, bool) or shots < 1:
+    if isinstance(value, bool) or not isinstance(value, int) or value < 1:
         raise ValueError("shots must be a positive integer or None")
-    return shots
+    return value
 
 
 def _attach_phase_qnode_metadata(

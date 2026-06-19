@@ -389,6 +389,52 @@ def test_pennylane_bridge_rejects_unsafe_conversion_metadata(
     assert fake_qml.devices == []
 
 
+@pytest.mark.parametrize(
+    "shots", [cast(Any, True), cast(Any, 0), cast(Any, -1), cast(Any, 1.5), cast(Any, "64")]
+)
+def test_pennylane_bridge_rejects_non_integer_shots_before_device_dispatch(
+    monkeypatch: pytest.MonkeyPatch,
+    shots: Any,
+) -> None:
+    """Finite-shot conversion metadata must be an explicit positive integer."""
+
+    fake_qml = _FakePennyLane()
+    monkeypatch.setattr(pennylane_bridge, "_load_pennylane", lambda: fake_qml)
+    circuit = PhaseQNodeCircuit(
+        1,
+        (("ry", (0,), 0),),
+        PauliTerm(1.0, ((0, "z"),)),
+    )
+
+    with pytest.raises(ValueError, match="shots"):
+        build_pennylane_qnode_from_phase_qnode(circuit, shots=shots)
+
+    assert fake_qml.devices == []
+
+
+@pytest.mark.parametrize("shots", [cast(Any, 1.5), cast(Any, "4096")])
+def test_pennylane_provider_plugin_execution_artifact_rejects_non_integer_shots(
+    shots: Any,
+) -> None:
+    """Provider-plugin execution artifacts must not coerce shot counts."""
+
+    with pytest.raises(ValueError, match="shots"):
+        PennyLaneProviderPluginExecutionArtifact(
+            artifact_id="pl-provider-sim-20260616",
+            plugin_name="pennylane-provider-simulator",
+            provider_name="example-provider",
+            device_name="example.simulator",
+            backend_name="example_sim_v1",
+            circuit_fingerprint="phase-qnode:ry-rx-pauli-z:v1",
+            execution_mode="provider_simulator",
+            shots=shots,
+            result_digest="sha256:" + "a" * 64,
+            metadata_digest="sha256:" + "b" * 64,
+            hardware_execution=False,
+            raw_result_replay_artifact_id="pl-provider-replay-20260616",
+        )
+
+
 def test_pennylane_maturity_audit_records_export_metadata_and_provider_gaps(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

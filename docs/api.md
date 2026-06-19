@@ -1423,6 +1423,13 @@ unavailable dependencies fail-closed, and marks PennyLane as blocked unless a
 caller-supplied QNode gradient callable is provided. This is parity evidence,
 not a full accelerator, autograd graph, or framework-native training-loop
 certificate.
+`build_pennylane_qnode_from_phase_qnode()` and
+`run_pennylane_maturity_audit()` preserve PennyLane plugin breadth while
+failing closed before `qml.device(...)` for unsafe device/interface/diff
+metadata and non-coercive shot metadata: `shots=None` is analytic mode and
+finite-shot mode requires an explicit positive integer, not a boolean, float,
+or numeric string. Provider-plugin execution artefacts use the same shot-count
+boundary and still do not promote hardware execution.
 `parameter_shift_gradient_descent()` is the phase-native training surface for
 quantum objectives: it plans a fail-closed backend route, evaluates native
 parameter-shift gradients, applies Armijo backtracking, and records

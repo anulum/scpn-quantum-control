@@ -288,6 +288,9 @@ diagnostic.
 - Separate exact, approximate, finite-shot, and roadmap gradient modes.
 - Do not silently treat analytic classical penalties as parameter-shift quantum terms.
 - Keep shape, dtype, backend, and primitive support inspectable.
+- Treat PennyLane finite-shot metadata as non-coercive: analytic mode is
+  `shots=None`, and finite-shot mode requires an explicit positive integer
+  before plugin/device dispatch.
 - Compare gradients against finite differences, analytic references, and cross-framework references where practical.
 - Document failed or unsuitable scenarios because they are research evidence.
 

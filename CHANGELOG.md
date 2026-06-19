@@ -5,6 +5,10 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-06-19 — Hardened PennyLane Phase-QNode finite-shot metadata by rejecting
+  boolean, non-positive, non-integer, and string-coercible shot counts before
+  `qml.device(...)` dispatch, and applying the same non-coercive integer-shot
+  boundary to provider-plugin execution artefacts under standalone strict mypy.
 - 2026-06-19 — Hardened the PennyLane HAL native-gate payload boundary by
   rejecting non-integer or duplicate wires, wrong gate arities, wrong rotation
   parameter counts, boolean parameters, and non-finite rotation parameters
