@@ -905,15 +905,17 @@ def _program_adjoint_replay_provenance_case() -> DifferentiableProgrammingBenchm
     )
     adjoint = program_adjoint_result(result)
     if result.program_ir is None:
-        raise ValueError("program AD adjoint replay provenance case requires program IR")
+        raise ValueError("program AD adjoint generation provenance case requires program IR")
     if (
         adjoint.replay_node_count != len(result.ir_nodes)
         or adjoint.replay_effect_count != len(result.program_ir.effects)
         or adjoint.replay_control_region_count != len(result.program_ir.control_regions)
         or adjoint.replay_phi_node_count != len(result.program_ir.phi_nodes)
         or adjoint.replay_ir_format != "program_ad_effect_ir.v1"
+        or adjoint.adjoint_step_count != len(result.ir_nodes)
+        or any(not step.supported for step in adjoint.adjoint_steps)
     ):
-        raise ValueError("program AD adjoint replay provenance counts do not match program IR")
+        raise ValueError("program AD adjoint generation provenance does not match program IR")
 
     x, y, z = values
     analytic = np.array(
@@ -937,11 +939,11 @@ def _program_adjoint_replay_provenance_case() -> DifferentiableProgrammingBenchm
         if adjoint.supported
         else None,
         claim_boundary=(
-            "ProgramADAdjointResult replay provenance over supported executed scalar "
-            "IR nodes, effects, control regions, and phi metadata in "
-            "program_ad_effect_ir.v1; local conformance only, not full reverse-mode "
-            "compiler AD, non-executed branch adjoints, Rust, LLVM/JIT, hardware, "
-            "or performance evidence; no wall-clock performance claim"
+            "ProgramADAdjointResult and ProgramADAdjointStep generation provenance "
+            "over supported executed scalar IR nodes, effects, control regions, "
+            "and phi metadata in program_ad_effect_ir.v1; local conformance only, "
+            "not full reverse-mode compiler AD, non-executed branch adjoints, Rust, "
+            "LLVM/JIT, hardware, or performance evidence; no wall-clock performance claim"
         ),
     )
 

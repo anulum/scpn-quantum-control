@@ -8,9 +8,9 @@
     "notebook_files": 98,
     "optional_extras": 42,
     "paper0_validation_modules": 466,
-    "public_api_exports": 680,
+    "public_api_exports": 681,
     "public_documentation_pages": 254,
-    "python_model_classes": 1823,
+    "python_model_classes": 1824,
     "python_model_source_modules": 835,
     "rust_pyo3_model_wrappers": 135,
     "rust_source_modules": 38,
@@ -5594,6 +5594,10 @@
         "path": "src/scpn_quantum_control/differentiable.py"
       },
       {
+        "name": "ProgramADAdjointStep",
+        "path": "src/scpn_quantum_control/differentiable.py"
+      },
+      {
         "name": "ProgramADAliasEdge",
         "path": "src/scpn_quantum_control/differentiable.py"
       },
@@ -9517,6 +9521,7 @@
     "PrimitiveTransformRule",
     "Problem",
     "ProgramADAdjointResult",
+    "ProgramADAdjointStep",
     "ProgramADAliasEdge",
     "ProgramADAliasEffectAnalysis",
     "ProgramADAliasSet",

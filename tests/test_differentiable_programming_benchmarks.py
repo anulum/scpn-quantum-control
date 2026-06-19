@@ -143,7 +143,9 @@ def test_differentiable_programming_benchmark_suite_matches_analytic_references(
     assert reverse_adjoint_row.adjoint_supported is True
     assert reverse_adjoint_row.max_abs_adjoint_error is not None
     assert reverse_adjoint_row.max_abs_adjoint_error <= 1.0e-12
-    assert "ProgramADAdjointResult replay provenance" in reverse_adjoint_row.claim_boundary
+    assert "ProgramADAdjointResult and ProgramADAdjointStep generation provenance" in (
+        reverse_adjoint_row.claim_boundary
+    )
     assert "program_ad_effect_ir.v1" in reverse_adjoint_row.claim_boundary
     assert "not full reverse-mode compiler AD" in reverse_adjoint_row.claim_boundary
     linalg_row = next(row for row in results if row.category == "linalg-primitive")

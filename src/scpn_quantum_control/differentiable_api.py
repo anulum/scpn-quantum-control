@@ -720,6 +720,7 @@ def differentiable_dashboard_status(
             backing_api="run_differentiable_programming_benchmark_suite",
             evidence=(
                 "ProgramADAdjointResult",
+                "ProgramADAdjointStep",
                 "program_adjoint_result",
                 "program_adjoint_gradient",
                 "program_adjoint_replay_provenance_contracts",
@@ -728,11 +729,12 @@ def differentiable_dashboard_status(
             if conformance_passed
             else ("conformance suite not run in this status call",),
             claim_boundary=(
-                "bounded Program AD reverse adjoint replay over supported executed "
-                "scalar IR only, with replay node/effect/control/phi provenance "
-                "bound to program_ad_effect_ir.v1; not full reverse-mode compiler "
-                "AD, non-executed branch adjoints, Rust/LLVM executable lowering, "
-                "hardware, or performance promotion"
+                "bounded Program AD reverse adjoint generation over stabilized "
+                "program_ad_effect_ir.v1 for supported executed scalar IR only, "
+                "with generated adjoint steps and node/effect/control/phi "
+                "provenance; not full reverse-mode compiler AD, non-executed "
+                "branch adjoints, Rust/LLVM executable lowering, hardware, or "
+                "performance promotion"
             ),
         ),
         DifferentiableDashboardCapabilityRow(

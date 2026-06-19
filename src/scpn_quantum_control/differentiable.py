@@ -628,8 +628,70 @@ def analyze_program_ad_alias_effects(
 
 
 @dataclass(frozen=True)
+class ProgramADAdjointStep:
+    """One generated reverse-adjoint step over stabilized Program AD IR.
+
+    The step binds a primal SSA value and effect row to the local pullback
+    inputs used by reverse-mode adjoint generation. It is an auditable generation
+    plan over ``program_ad_effect_ir.v1`` metadata; it does not add
+    non-executed branch adjoints or executable compiler lowering.
+    """
+
+    index: int
+    primal_value: str
+    primal_effect: int | None
+    operation: str
+    input_values: tuple[str, ...]
+    contribution_inputs: tuple[str, ...]
+    supported: bool
+    unsupported_reason: str | None = None
+
+    def __post_init__(self) -> None:
+        if self.index < 0:
+            raise ValueError("program AD adjoint step index must be non-negative")
+        if not self.primal_value:
+            raise ValueError("program AD adjoint step primal_value must be non-empty")
+        if self.primal_effect is not None and self.primal_effect < 0:
+            raise ValueError("program AD adjoint step primal_effect must be non-negative or None")
+        if not self.operation:
+            raise ValueError("program AD adjoint step operation must be non-empty")
+        if any(not value for value in self.input_values):
+            raise ValueError("program AD adjoint step input_values entries must be non-empty")
+        if any(not value for value in self.contribution_inputs):
+            raise ValueError(
+                "program AD adjoint step contribution_inputs entries must be non-empty"
+            )
+        if tuple(sorted(set(self.contribution_inputs))) != self.contribution_inputs:
+            raise ValueError(
+                "program AD adjoint step contribution_inputs must be sorted and unique"
+            )
+        if not isinstance(self.supported, bool):
+            raise ValueError("program AD adjoint step supported must be a boolean")
+        if self.supported and self.unsupported_reason is not None:
+            raise ValueError("supported program AD adjoint step cannot carry unsupported_reason")
+        if self.unsupported_reason is not None and not self.unsupported_reason:
+            raise ValueError(
+                "program AD adjoint step unsupported_reason must be non-empty or None"
+            )
+
+    def to_dict(self) -> dict[str, object]:
+        """Return a JSON-ready reverse-adjoint generation step."""
+
+        return {
+            "index": self.index,
+            "primal_value": self.primal_value,
+            "primal_effect": self.primal_effect,
+            "operation": self.operation,
+            "input_values": list(self.input_values),
+            "contribution_inputs": list(self.contribution_inputs),
+            "supported": self.supported,
+            "unsupported_reason": self.unsupported_reason,
+        }
+
+
+@dataclass(frozen=True)
 class ProgramADAdjointResult:
-    """Reverse-mode adjoint replay result for a captured program AD graph."""
+    """Reverse-mode adjoint generation result for a captured Program AD graph."""
 
     gradient: NDArray[np.float64]
     supported: bool
@@ -641,6 +703,7 @@ class ProgramADAdjointResult:
     replay_control_region_count: int = 0
     replay_phi_node_count: int = 0
     replay_ir_format: str = "program_ad_effect_ir.v1"
+    adjoint_steps: tuple[ProgramADAdjointStep, ...] = ()
 
     def __post_init__(self) -> None:
         gradient = _as_real_numeric_array("program AD adjoint gradient", self.gradient)
@@ -669,7 +732,47 @@ class ProgramADAdjointResult:
                 raise ValueError(f"program AD adjoint {name} must be a non-negative integer")
         if not isinstance(self.replay_ir_format, str) or not self.replay_ir_format:
             raise ValueError("program AD adjoint replay_ir_format must be a non-empty string")
+        if any(not isinstance(step, ProgramADAdjointStep) for step in self.adjoint_steps):
+            raise ValueError(
+                "program AD adjoint adjoint_steps must contain ProgramADAdjointStep entries"
+            )
+        step_indices = tuple(step.index for step in self.adjoint_steps)
+        if tuple(range(len(self.adjoint_steps))) != step_indices:
+            raise ValueError("program AD adjoint adjoint_steps must be densely indexed")
+        unsupported_step_ops = {
+            step.operation for step in self.adjoint_steps if not step.supported
+        }
+        if unsupported_step_ops and not unsupported_step_ops.issubset(set(self.unsupported_ops)):
+            raise ValueError(
+                "program AD adjoint unsupported steps must be reflected in unsupported_ops"
+            )
+        if self.supported and any(not step.supported for step in self.adjoint_steps):
+            raise ValueError("supported program AD adjoint cannot carry unsupported steps")
         object.__setattr__(self, "gradient", gradient)
+
+    @property
+    def adjoint_step_count(self) -> int:
+        """Return the number of generated reverse-adjoint steps."""
+
+        return len(self.adjoint_steps)
+
+    def to_dict(self) -> dict[str, object]:
+        """Return a JSON-ready reverse-adjoint result."""
+
+        return {
+            "gradient": self.gradient.tolist(),
+            "supported": self.supported,
+            "unsupported_ops": list(self.unsupported_ops),
+            "method": self.method,
+            "claim_boundary": self.claim_boundary,
+            "replay_node_count": self.replay_node_count,
+            "replay_effect_count": self.replay_effect_count,
+            "replay_control_region_count": self.replay_control_region_count,
+            "replay_phi_node_count": self.replay_phi_node_count,
+            "replay_ir_format": self.replay_ir_format,
+            "adjoint_step_count": self.adjoint_step_count,
+            "adjoint_steps": [step.to_dict() for step in self.adjoint_steps],
+        }
 
 
 @dataclass(frozen=True)
@@ -7986,12 +8089,12 @@ def whole_program_grad(
 
 
 def program_adjoint_result(result: WholeProgramADResult) -> ProgramADAdjointResult:
-    """Return the reverse-mode adjoint replay result attached to a program AD result."""
+    """Return the reverse-mode adjoint generation result attached to Program AD."""
 
     if not isinstance(result, WholeProgramADResult):
         raise ValueError("program adjoint input must be a WholeProgramADResult")
     if result.adjoint_result is None:
-        raise ValueError("program AD result does not contain adjoint replay metadata")
+        raise ValueError("program AD result does not contain adjoint generation metadata")
     return result.adjoint_result
 
 
@@ -8001,7 +8104,7 @@ def program_adjoint_gradient(result: WholeProgramADResult) -> NDArray[np.float64
     adjoint = program_adjoint_result(result)
     if not adjoint.supported:
         unsupported = ", ".join(adjoint.unsupported_ops)
-        raise ValueError(f"program AD adjoint replay unsupported for ops: {unsupported}")
+        raise ValueError(f"program AD adjoint generation unsupported for ops: {unsupported}")
     gradient: NDArray[np.float64] = adjoint.gradient.copy()
     return gradient
 
@@ -8015,10 +8118,10 @@ def program_adjoint_grad(
 ) -> NDArray[np.float64]:
     """Return the reverse-mode program AD gradient for supported captured IR.
 
-    The execution path first captures the operator-intercepted program AD trace,
-    then returns the reverse adjoint replay gradient. If replay does not support
-    every captured IR node, this function fails closed instead of substituting a
-    forward-mode tangent or finite-difference result.
+    The execution path first captures the operator-intercepted Program AD trace,
+    then returns the reverse adjoint generation gradient. If generation does
+    not support every captured IR node, this function fails closed instead of
+    substituting a forward-mode tangent or finite-difference result.
     """
 
     result = whole_program_value_and_grad(
@@ -8037,10 +8140,10 @@ def program_adjoint_value_and_grad(
     *,
     trace: bool = True,
 ) -> tuple[float, NDArray[np.float64]]:
-    """Return the program value and reverse-mode adjoint replay gradient.
+    """Return the program value and reverse-mode adjoint generation gradient.
 
     This is the first-class reverse-mode program AD API. It keeps the same
-    fail-closed replay boundary as :func:`program_adjoint_grad` and does not
+    fail-closed generation boundary as :func:`program_adjoint_grad` and does not
     claim executable compiler lowering or arbitrary Python differentiation.
     """
 
@@ -8061,7 +8164,7 @@ def _program_adjoint_result_from_nodes(
     trainable: tuple[bool, ...],
     program_ir: ProgramADEffectIR | None = None,
 ) -> ProgramADAdjointResult:
-    """Replay reverse-mode adjoints over supported scalar program AD IR nodes."""
+    """Generate reverse-mode adjoints over supported scalar Program AD IR nodes."""
 
     parameter_count = len(parameter_names)
     unsupported_ops: set[str] = {
@@ -8102,22 +8205,82 @@ def _program_adjoint_result_from_nodes(
     replay_effect_count = len(program_ir.effects) if program_ir is not None else 0
     replay_control_region_count = len(program_ir.control_regions) if program_ir is not None else 0
     replay_phi_node_count = len(program_ir.phi_nodes) if program_ir is not None else 0
+    adjoint_steps = (
+        _program_adjoint_steps_from_ir(
+            nodes=nodes,
+            node_by_name=node_by_name,
+            program_ir=program_ir,
+        )
+        if program_ir is not None
+        else ()
+    )
     return ProgramADAdjointResult(
         gradient=gradient,
         supported=supported,
         unsupported_ops=tuple(sorted(unsupported_ops)),
-        method="program_adjoint_replay",
+        method="program_adjoint_ir_generation",
         claim_boundary=(
-            "reverse-mode adjoint replay over captured scalar program AD IR for supported "
-            "pure operations; unsupported operations fail closed without substituting finite "
-            "differences or forward tangents"
+            "reverse-mode adjoint generation over stabilized program_ad_effect_ir.v1 "
+            "for supported executed scalar Program AD operations; unsupported operations "
+            "fail closed without substituting finite differences or forward tangents; "
+            "no non-executed branch adjoints or executable Rust/LLVM/JIT lowering claim"
         ),
         replay_node_count=len(nodes),
         replay_effect_count=replay_effect_count,
         replay_control_region_count=replay_control_region_count,
         replay_phi_node_count=replay_phi_node_count,
         replay_ir_format="program_ad_effect_ir.v1",
+        adjoint_steps=adjoint_steps,
     )
+
+
+def _program_adjoint_steps_from_ir(
+    *,
+    nodes: tuple[WholeProgramIRNode, ...],
+    node_by_name: Mapping[str, WholeProgramIRNode],
+    program_ir: ProgramADEffectIR,
+) -> tuple[ProgramADAdjointStep, ...]:
+    """Generate reverse-adjoint steps from stabilized Program AD IR metadata."""
+
+    ssa_by_name = {value.name: value for value in program_ir.ssa_values}
+    effect_indices = {effect.index for effect in program_ir.effects}
+    steps: list[ProgramADAdjointStep] = []
+    for node in reversed(nodes):
+        primal_value = f"%{node.index}"
+        ssa_value = ssa_by_name.get(primal_value)
+        primal_effect = None if ssa_value is None else ssa_value.effect
+        unsupported_reason: str | None = None
+        supported = True
+        contribution_inputs: tuple[str, ...] = ()
+        if ssa_value is None:
+            supported = False
+            unsupported_reason = "missing_ssa_value"
+        elif primal_effect is not None and primal_effect not in effect_indices:
+            supported = False
+            unsupported_reason = "missing_effect"
+        else:
+            try:
+                contributions = _program_adjoint_node_contributions(node, node_by_name)
+            except ValueError as exc:
+                supported = False
+                unsupported_reason = str(exc)
+            else:
+                contribution_inputs = tuple(
+                    sorted({input_name for input_name, _scale in contributions})
+                )
+        steps.append(
+            ProgramADAdjointStep(
+                index=len(steps),
+                primal_value=primal_value,
+                primal_effect=primal_effect,
+                operation=node.op,
+                input_values=node.inputs,
+                contribution_inputs=contribution_inputs,
+                supported=supported,
+                unsupported_reason=unsupported_reason,
+            )
+        )
+    return tuple(steps)
 
 
 def _program_adjoint_node_contributions(
@@ -31122,6 +31285,7 @@ __all__ = [
     "ParameterShiftRule",
     "ParameterShiftSampleRecord",
     "ProgramADAdjointResult",
+    "ProgramADAdjointStep",
     "ProgramADAliasEdge",
     "ProgramADAliasEffectAnalysis",
     "ProgramADAliasSet",

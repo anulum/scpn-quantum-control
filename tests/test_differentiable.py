@@ -59,6 +59,7 @@ from scpn_quantum_control.differentiable import (
     PrimitiveShapeRule,
     PrimitiveTransformRule,
     ProgramADAdjointResult,
+    ProgramADAdjointStep,
     ProgramADAliasEdge,
     ProgramADAliasEffectAnalysis,
     ProgramADAliasSet,
@@ -11164,6 +11165,7 @@ def test_whole_program_ad_is_exported_from_package_root() -> None:
 
     assert scpn.TraceADArray is TraceADArray
     assert scpn.ProgramADAdjointResult is ProgramADAdjointResult
+    assert scpn.ProgramADAdjointStep is ProgramADAdjointStep
     assert scpn.ProgramADAliasEdge is ProgramADAliasEdge
     assert scpn.ProgramADAliasEffectAnalysis is ProgramADAliasEffectAnalysis
     assert scpn.ProgramADAliasSet is ProgramADAliasSet
@@ -11266,7 +11268,16 @@ def test_program_adjoint_replay_matches_forward_program_ad_for_supported_ir() ->
 
     assert adjoint.supported is True
     assert adjoint.unsupported_ops == ()
-    assert adjoint.method == "program_adjoint_replay"
+    assert adjoint.method == "program_adjoint_ir_generation"
+    assert adjoint.adjoint_step_count == len(result.ir_nodes)
+    assert adjoint.adjoint_steps
+    assert all(isinstance(step, ProgramADAdjointStep) for step in adjoint.adjoint_steps)
+    assert adjoint.adjoint_steps[0].primal_value == f"%{len(result.ir_nodes) - 1}"
+    assert adjoint.adjoint_steps[0].supported is True
+    assert adjoint.adjoint_steps[-1].operation == "parameter"
+    payload = adjoint.to_dict()
+    assert payload["adjoint_step_count"] == len(result.ir_nodes)
+    assert payload["adjoint_steps"][0]["primal_effect"] is not None
     np.testing.assert_allclose(adjoint.gradient, result.gradient, rtol=1.0e-12, atol=1.0e-12)
     np.testing.assert_allclose(
         program_adjoint_gradient(result), result.gradient, rtol=1.0e-12, atol=1.0e-12
@@ -11298,6 +11309,8 @@ def test_program_adjoint_replay_supports_static_setitem_effects() -> None:
     )
     assert result.adjoint_result.replay_phi_node_count == len(result.program_ir.phi_nodes)
     assert result.adjoint_result.replay_ir_format == "program_ad_effect_ir.v1"
+    assert result.adjoint_result.adjoint_step_count == len(result.ir_nodes)
+    assert all(step.supported for step in result.adjoint_result.adjoint_steps)
     np.testing.assert_allclose(result.gradient, [1.0, 3.0], atol=1.0e-12)
     np.testing.assert_allclose(program_adjoint_gradient(result), result.gradient, atol=1.0e-12)
 
@@ -11309,12 +11322,25 @@ def test_program_adjoint_result_validation_paths() -> None:
         gradient=np.array([1.0], dtype=np.float64),
         supported=True,
         unsupported_ops=(),
-        method="program_adjoint_replay",
+        method="program_adjoint_ir_generation",
         claim_boundary="supported scalar replay",
+        adjoint_steps=(
+            ProgramADAdjointStep(
+                index=0,
+                primal_value="%0",
+                primal_effect=0,
+                operation="parameter",
+                input_values=("x",),
+                contribution_inputs=(),
+                supported=True,
+            ),
+        ),
     )
 
     assert result.supported is True
     assert result.replay_ir_format == "program_ad_effect_ir.v1"
+    assert result.adjoint_step_count == 1
+    assert result.to_dict()["adjoint_steps"][0]["operation"] == "parameter"
     with pytest.raises(ValueError, match="one-dimensional"):
         ProgramADAdjointResult(
             gradient=np.array([[1.0]], dtype=np.float64),
@@ -11356,6 +11382,56 @@ def test_program_adjoint_result_validation_paths() -> None:
             method="program_adjoint_replay",
             claim_boundary="supported scalar replay",
             replay_ir_format="",
+        )
+    with pytest.raises(ValueError, match="densely indexed"):
+        ProgramADAdjointResult(
+            gradient=np.array([1.0], dtype=np.float64),
+            supported=True,
+            unsupported_ops=(),
+            method="program_adjoint_ir_generation",
+            claim_boundary="supported scalar replay",
+            adjoint_steps=(
+                ProgramADAdjointStep(
+                    index=1,
+                    primal_value="%0",
+                    primal_effect=0,
+                    operation="parameter",
+                    input_values=("x",),
+                    contribution_inputs=(),
+                    supported=True,
+                ),
+            ),
+        )
+    with pytest.raises(ValueError, match="unsupported steps"):
+        ProgramADAdjointResult(
+            gradient=np.array([0.0], dtype=np.float64),
+            supported=False,
+            unsupported_ops=("unsupported_op",),
+            method="program_adjoint_ir_generation",
+            claim_boundary="unsupported scalar replay",
+            adjoint_steps=(
+                ProgramADAdjointStep(
+                    index=0,
+                    primal_value="%0",
+                    primal_effect=0,
+                    operation="different_op",
+                    input_values=(),
+                    contribution_inputs=(),
+                    supported=False,
+                    unsupported_reason="no rule",
+                ),
+            ),
+        )
+    with pytest.raises(ValueError, match="supported program AD adjoint step"):
+        ProgramADAdjointStep(
+            index=0,
+            primal_value="%0",
+            primal_effect=0,
+            operation="parameter",
+            input_values=("x",),
+            contribution_inputs=(),
+            supported=True,
+            unsupported_reason="not allowed",
         )
 
 
