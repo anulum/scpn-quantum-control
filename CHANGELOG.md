@@ -5,6 +5,11 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-06-19 — Tightened the PyTorch/TensorFlow framework-bridge test surface
+  under strict mypy by replacing legacy unparameterised NumPy array annotations
+  with typed `NDArray[np.float64]` aliases and removing obsolete dynamic-attribute
+  ignore comments. The focused framework-bridge test module remains behaviourally
+  unchanged and now passes strict mypy as a touched file.
 - 2026-06-19 — Added bounded PyTorch module training-loop parity evidence
   through `run_torch_training_loop_audit(...)`. The audit compiles the bounded
   phase-QNN module loss, obtains `torch.func.grad` gradients, applies

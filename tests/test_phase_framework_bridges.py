@@ -16,6 +16,7 @@ from typing import Any, cast
 
 import numpy as np
 import pytest
+from numpy.typing import NDArray
 
 import scpn_quantum_control.phase.tensorflow_bridge as tensorflow_bridge
 import scpn_quantum_control.phase.torch_bridge as torch_bridge
@@ -71,6 +72,8 @@ from scpn_quantum_control.phase import (
     torch_phase_qnode_value_and_grad,
 )
 
+FloatArray = NDArray[np.float64]
+
 
 class _FakeTorchTensor:
     def __init__(self, values: object) -> None:
@@ -92,7 +95,7 @@ class _FakeTorchTensor:
     def cpu(self) -> _FakeTorchTensor:
         return self
 
-    def numpy(self) -> np.ndarray:
+    def numpy(self) -> FloatArray:
         return self._values.copy()
 
     def __mul__(self, other: object) -> _FakeTorchTensor:
@@ -128,8 +131,8 @@ class _FakeTorchAutogradFunction:
     def apply(cls, *args: object) -> _FakeTorchTensor:
         ctx = type("_FakeAutogradContext", (), {})()
         result = cast(Any, cls).forward(ctx, *args)
-        result._ctx = ctx  # type: ignore[attr-defined]
-        result._function_cls = cls  # type: ignore[attr-defined]
+        result._ctx = ctx
+        result._function_cls = cls
         return cast(_FakeTorchTensor, result)
 
 
@@ -212,7 +215,7 @@ class _FakeTorchFunc:
         return jacobian
 
     @staticmethod
-    def _gradient(params: object) -> np.ndarray:
+    def _gradient(params: object) -> FloatArray:
         features = np.array([[0.0], [np.pi]], dtype=float)
         labels = np.array([0.0, 1.0], dtype=float)
         return parameter_shift_qnn_classifier_gradient(
@@ -230,7 +233,7 @@ class _FakeTorch:
         self.autograd = _FakeTorchAutograd()
         self.func = _FakeTorchFunc()
         self.nn = _FakeTorchNN()
-        self.as_tensor_calls: list[np.ndarray] = []
+        self.as_tensor_calls: list[FloatArray] = []
         self.compile_calls: list[dict[str, object]] = []
 
     def as_tensor(self, values: object, *, dtype: object | None = None) -> _FakeTorchTensor:
@@ -283,7 +286,7 @@ class _FakeTensorFlowTensor:
         self,
         values: object,
         *,
-        derivative: np.ndarray | None = None,
+        derivative: FloatArray | None = None,
     ) -> None:
         if isinstance(values, _FakeTensorFlowTensor):
             if derivative is None:
@@ -292,35 +295,35 @@ class _FakeTensorFlowTensor:
         self._values = np.asarray(values, dtype=float)
         self._derivative = None if derivative is None else np.asarray(derivative, dtype=float)
 
-    def numpy(self) -> np.ndarray:
+    def numpy(self) -> FloatArray:
         return self._values.copy()
 
-    def derivative(self) -> np.ndarray | None:
+    def derivative(self) -> FloatArray | None:
         if self._derivative is None:
             return None
         return self._derivative.copy()
 
     @staticmethod
     def _with_derivative(
-        values: np.ndarray, derivative: np.ndarray | None
+        values: FloatArray, derivative: FloatArray | None
     ) -> _FakeTensorFlowTensor:
         return _FakeTensorFlowTensor(values, derivative=derivative)
 
     @staticmethod
     def _broadcast_derivative(
-        derivative: np.ndarray | None,
+        derivative: FloatArray | None,
         *,
         target_shape: tuple[int, ...],
         width: int,
-    ) -> np.ndarray:
+    ) -> FloatArray:
         if derivative is None:
             return np.zeros((*target_shape, width), dtype=float)
         return np.broadcast_to(derivative, (*target_shape, width)).copy()
 
     @staticmethod
     def _derivative_width(
-        left: np.ndarray | None,
-        right: np.ndarray | None,
+        left: FloatArray | None,
+        right: FloatArray | None,
     ) -> int | None:
         if left is not None:
             return int(left.shape[-1])
@@ -467,7 +470,7 @@ class _FakeTensorFlowConstantInitializer:
     def __init__(self, values: object) -> None:
         self._values = _FakeTensorFlowTensor(values).numpy()
 
-    def __call__(self, *, shape: tuple[int, ...]) -> np.ndarray:
+    def __call__(self, *, shape: tuple[int, ...]) -> FloatArray:
         values = np.asarray(self._values, dtype=float)
         if values.shape != shape:
             return np.broadcast_to(values, shape).copy()
@@ -492,7 +495,7 @@ class _FakeTensorFlow:
     float64 = np.float64
 
     def __init__(self) -> None:
-        self.convert_calls: list[np.ndarray] = []
+        self.convert_calls: list[FloatArray] = []
         self.gradient_tape_entries = 0
         self.gradient_calls = 0
         self.function_traces = 0
@@ -557,7 +560,7 @@ class _FakeTensorFlow:
         )
 
 
-def _objective(values: np.ndarray) -> float:
+def _objective(values: FloatArray) -> float:
     return float(np.cos(values[0]) + 0.25 * np.sin(values[1]))
 
 
@@ -592,7 +595,7 @@ def test_torch_bridge_reports_multi_frequency_parameter_shift(
     monkeypatch.setattr(torch_bridge, "_load_torch", lambda: fake_torch)
     rule = multi_frequency_parameter_shift_rule([1.0, 2.0])
 
-    def objective(values: np.ndarray) -> float:
+    def objective(values: FloatArray) -> float:
         return float(np.sin(values[0]) + 0.1 * np.cos(2.0 * values[0]))
 
     result = torch_parameter_shift_value_and_grad(
@@ -1323,7 +1326,7 @@ def test_tensorflow_bridge_reports_multi_frequency_parameter_shift(
     monkeypatch.setattr(tensorflow_bridge, "_load_tensorflow", lambda: fake_tf)
     rule = multi_frequency_parameter_shift_rule([1.0, 2.0])
 
-    def objective(values: np.ndarray) -> float:
+    def objective(values: FloatArray) -> float:
         return float(np.sin(values[0]) + 0.1 * np.cos(2.0 * values[0]))
 
     result = tensorflow_parameter_shift_value_and_grad(
