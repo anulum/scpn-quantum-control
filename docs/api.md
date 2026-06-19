@@ -1449,8 +1449,12 @@ Runtime primitive metadata: `QiskitRuntimeQPUExecutionArtifact` accepts only
 EstimatorV2 or SamplerV2 routes, requires live-ticket, backend-allowlist,
 shot-budget, ISA/transpiled-circuit digest, Runtime result/metadata digests,
 positive shots, and a live QPU session mode, and clears only the
-`live_qpu_execution_ticket` gate. Raw-count replay, calibration comparison, and
-isolated-benchmark promotion remain separate evidence requirements.
+`live_qpu_execution_ticket` gate. Raw-count replay must then match the Runtime
+QPU provider, backend, job, circuit fingerprint, live ticket, and shots before
+`raw_count_capture_replay_harness` can pass. Calibration comparison must match
+the same Runtime QPU provider, backend, circuit fingerprint, and live ticket
+before `live_backend_statevector_reference_comparison` can pass. Isolated
+benchmark promotion remains a separate evidence requirement.
 `parameter_shift_gradient_descent()` is the phase-native training surface for
 quantum objectives: it plans a fail-closed backend route, evaluates native
 parameter-shift gradients, applies Armijo backtracking, and records

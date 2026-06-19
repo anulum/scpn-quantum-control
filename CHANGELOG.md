@@ -5,6 +5,11 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-06-19 — Paired Qiskit raw-count replay and live
+  calibration/statevector comparison evidence to matching Runtime QPU execution
+  artefacts. The Qiskit maturity audit now rejects unpaired or mismatched
+  provider, backend, job, circuit, live-ticket, or shot evidence before those
+  gates can pass, while isolated benchmark promotion remains blocked.
 - 2026-06-19 — Added fail-closed Qiskit Runtime QPU execution artefacts for
   EstimatorV2 and SamplerV2 evidence, requiring live tickets, backend
   allowlists, shot budgets, ISA/transpiled-circuit digests, Runtime metadata,

@@ -575,14 +575,20 @@ def run_qiskit_maturity_audit(
 
     The audit records fully bound shifted-circuit generation, deterministic
     local statevector reference gradients, finite-shot surrogate uncertainty,
-    and the no-submit provider hardware-gradient preparation audit. It does not
-    claim live QPU execution, raw-count capture, calibration snapshots from a
-    live backend, or promotion-grade isolated benchmark evidence.
+    and the no-submit provider hardware-gradient preparation audit. Runtime QPU
+    evidence, raw-count replay, and calibration comparison artefacts may be
+    attached only as a matching live execution chain. The audit does not claim
+    promotion-grade isolated benchmark evidence.
     """
 
     parameter_tuple = _normalise_parameters(parameters)
     values_vector = _as_finite_vector("values", values, width=len(parameter_tuple))
     shot_count = _normalise_shots(shots)
+    _validate_runtime_qpu_evidence_chain(
+        runtime_qpu_execution_artifact=runtime_qpu_execution_artifact,
+        raw_count_replay_artifact=raw_count_replay_artifact,
+        calibration_comparison_artifact=calibration_comparison_artifact,
+    )
     shifted_records = generate_qiskit_parameter_shift_circuits(
         circuit,
         parameter_tuple,
@@ -898,6 +904,74 @@ def _validate_runtime_qpu_mode(runtime_session_mode: str) -> None:
         raise ValueError("runtime_session_mode must identify live QPU execution")
     if "simulator" in mode or "offline" in mode or "replay" in mode:
         raise ValueError("runtime_session_mode must not identify simulator or replay execution")
+
+
+def _validate_runtime_qpu_evidence_chain(
+    *,
+    runtime_qpu_execution_artifact: QiskitRuntimeQPUExecutionArtifact | None,
+    raw_count_replay_artifact: QiskitRawCountReplayArtifact | None,
+    calibration_comparison_artifact: QiskitCalibrationStatevectorComparisonArtifact | None,
+) -> None:
+    if raw_count_replay_artifact is not None and runtime_qpu_execution_artifact is None:
+        raise ValueError("raw-count replay artefact requires matching Runtime QPU evidence")
+    if calibration_comparison_artifact is not None and runtime_qpu_execution_artifact is None:
+        raise ValueError("calibration comparison artefact requires matching Runtime QPU evidence")
+    if runtime_qpu_execution_artifact is None:
+        return
+    if raw_count_replay_artifact is not None:
+        _require_matching_evidence_field(
+            "raw_count_replay_artifact.provider_name",
+            raw_count_replay_artifact.provider_name,
+            runtime_qpu_execution_artifact.provider_name,
+        )
+        _require_matching_evidence_field(
+            "raw_count_replay_artifact.backend_name",
+            raw_count_replay_artifact.backend_name,
+            runtime_qpu_execution_artifact.backend_name,
+        )
+        _require_matching_evidence_field(
+            "raw_count_replay_artifact.job_id",
+            raw_count_replay_artifact.job_id,
+            runtime_qpu_execution_artifact.job_id,
+        )
+        _require_matching_evidence_field(
+            "raw_count_replay_artifact.circuit_fingerprint",
+            raw_count_replay_artifact.circuit_fingerprint,
+            runtime_qpu_execution_artifact.circuit_fingerprint,
+        )
+        _require_matching_evidence_field(
+            "raw_count_replay_artifact.live_ticket_id",
+            raw_count_replay_artifact.live_ticket_id,
+            runtime_qpu_execution_artifact.live_execution_ticket,
+        )
+        if raw_count_replay_artifact.shots != runtime_qpu_execution_artifact.shots:
+            raise ValueError("raw_count_replay_artifact.shots must match Runtime QPU shots")
+    if calibration_comparison_artifact is not None:
+        _require_matching_evidence_field(
+            "calibration_comparison_artifact.provider_name",
+            calibration_comparison_artifact.provider_name,
+            runtime_qpu_execution_artifact.provider_name,
+        )
+        _require_matching_evidence_field(
+            "calibration_comparison_artifact.backend_name",
+            calibration_comparison_artifact.backend_name,
+            runtime_qpu_execution_artifact.backend_name,
+        )
+        _require_matching_evidence_field(
+            "calibration_comparison_artifact.circuit_fingerprint",
+            calibration_comparison_artifact.circuit_fingerprint,
+            runtime_qpu_execution_artifact.circuit_fingerprint,
+        )
+        _require_matching_evidence_field(
+            "calibration_comparison_artifact.live_ticket_id",
+            calibration_comparison_artifact.live_ticket_id,
+            runtime_qpu_execution_artifact.live_execution_ticket,
+        )
+
+
+def _require_matching_evidence_field(field_name: str, observed: str, expected: str) -> None:
+    if observed != expected:
+        raise ValueError(f"{field_name} must match Runtime QPU evidence")
 
 
 def _normalise_shots(value: int) -> int:

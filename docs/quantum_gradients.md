@@ -857,10 +857,13 @@ count, expectation value, standard error, and SHA-256 count/replay digests.
 `QiskitCalibrationStatevectorComparisonArtifact` validates a live-backend
 calibration snapshot against a statevector reference with SHA-256 calibration
 and comparison digests, finite non-negative error, positive tolerance, and
-hardware-execution citation. These artefacts can clear only their corresponding
-Runtime/QPU, raw-count replay, and calibration/statevector comparison gates. The
-audit keeps `ready_for_provider_exceedance=False` until isolated benchmark
-evidence exists.
+hardware-execution citation. Raw-count replay must match the Runtime QPU
+provider, backend, job, circuit fingerprint, live ticket, and shot count;
+calibration/statevector comparison must match the Runtime QPU provider,
+backend, circuit fingerprint, and live ticket. These artefacts can clear only
+their corresponding Runtime/QPU, raw-count replay, and calibration/statevector
+comparison gates. The audit keeps `ready_for_provider_exceedance=False` until
+isolated benchmark evidence exists.
 
 ## Gradient Tape Boundary
 
