@@ -140,6 +140,47 @@ class TestAdiabaticRamp:
         with pytest.raises(ValueError, match="T_total must be a real numeric scalar"):
             adiabatic_ramp(omega, topology, K_target=2.0, T_total=True, n_steps=10)
 
+    def test_rejects_ragged_omega_before_coercion(self):
+        topology = _ring_topology(2)
+
+        with pytest.raises(ValueError, match="omega must be a rectangular numeric array"):
+            adiabatic_ramp([[1.0], [2.0, 3.0]], topology, K_target=2.0, T_total=5.0, n_steps=10)
+
+    def test_rejects_structured_topology_dtype(self):
+        omega = OMEGA_N_16[:2]
+        topology = np.array(
+            [[(0.0, 0.0), (1.0, 0.0)], [(1.0, 0.0), (0.0, 0.0)]],
+            dtype=[("weight", np.float64), ("phase", np.float64)],
+        )
+
+        with pytest.raises(ValueError, match="K_topology must contain real numeric scalars"):
+            adiabatic_ramp(omega, topology, K_target=2.0, T_total=5.0, n_steps=10)
+
+    def test_rejects_vector_target_scalar(self):
+        omega = OMEGA_N_16[:2]
+        topology = _ring_topology(2)
+
+        with pytest.raises(ValueError, match="K_target must be a real numeric scalar"):
+            adiabatic_ramp(
+                omega,
+                topology,
+                K_target=np.array([1.0, 2.0]),
+                T_total=5.0,
+                n_steps=10,
+            )
+
+    def test_rejects_nonvector_omega_shape(self):
+        topology = _ring_topology(2)
+
+        with pytest.raises(ValueError, match="omega must be a one-dimensional vector"):
+            adiabatic_ramp(
+                np.ones((2, 1)),
+                topology,
+                K_target=2.0,
+                T_total=5.0,
+                n_steps=10,
+            )
+
 
 class TestAdiabaticTimeScaling:
     def test_returns_dict(self):
@@ -152,6 +193,13 @@ class TestAdiabaticTimeScaling:
         assert "T_total" in result
         assert "final_fidelity" in result
         assert len(result["T_total"]) == 2
+
+    def test_uses_default_time_grid(self):
+        n = 2
+        T = _ring_topology(n)
+        omega = OMEGA_N_16[:n]
+        result = adiabatic_time_scaling(omega, T, K_target=2.0, n_steps_per_T=5)
+        assert result["T_total"] == [1.0, 2.0, 5.0, 10.0, 20.0]
 
     def test_fidelity_increases_with_time(self):
         """Longer ramps should keep finite values in this finite-size diagnostic."""

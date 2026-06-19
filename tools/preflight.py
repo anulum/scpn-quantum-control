@@ -143,6 +143,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
             "src/scpn_quantum_control/phase/backend_selector.py",
             "src/scpn_quantum_control/phase/ansatz_bench.py",
             "src/scpn_quantum_control/phase/trotter_upde.py",
+            "src/scpn_quantum_control/phase/adiabatic_preparation.py",
         ],
     ),
 ]

@@ -23,15 +23,20 @@ prove an asymptotic BKT scaling law by itself.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import TypeAlias
 
 import numpy as np
+from numpy.typing import NDArray
 from scipy.linalg import expm
 
 from ..bridge.knm_hamiltonian import knm_to_dense_matrix
 from ..dense_budget import require_dense_allocation
 
+FloatArray: TypeAlias = NDArray[np.float64]
+ComplexArray: TypeAlias = NDArray[np.complex128]
 
-def _as_real_numeric_array(name: str, values: object) -> np.ndarray:
+
+def _as_real_numeric_array(name: str, values: object) -> FloatArray:
     """Return a real numeric array without implicit string/bool/object coercion."""
     try:
         raw = np.asarray(values)
@@ -57,12 +62,12 @@ def _as_real_scalar(name: str, value: object) -> float:
 
 
 def _validate_adiabatic_inputs(
-    omega: np.ndarray,
-    K_topology: np.ndarray,
+    omega: FloatArray,
+    K_topology: FloatArray,
     K_target: float,
     T_total: float,
     n_steps: int,
-) -> tuple[np.ndarray, np.ndarray, float, float, int]:
+) -> tuple[FloatArray, FloatArray, float, float, int]:
     omega_arr = _as_real_numeric_array("omega", omega)
     K_arr = _as_real_numeric_array("K_topology", K_topology)
     if omega_arr.ndim != 1:
@@ -92,9 +97,9 @@ def _validate_adiabatic_inputs(
 
 
 def _validate_time_scaling_inputs(
-    T_values: np.ndarray,
+    T_values: FloatArray,
     n_steps_per_T: int,
-) -> tuple[np.ndarray, int]:
+) -> tuple[FloatArray, int]:
     T_arr = _as_real_numeric_array("T_values", T_values)
     if T_arr.ndim != 1 or T_arr.size == 0:
         raise ValueError("T_values must be a non-empty one-dimensional array.")
@@ -109,18 +114,18 @@ def _validate_time_scaling_inputs(
 class AdiabaticResult:
     """Adiabatic preparation result."""
 
-    times: np.ndarray
-    K_schedule: np.ndarray  # K(t) at each time
-    fidelity: np.ndarray  # |⟨ψ(t)|ψ_gs(K(t))⟩|² at each time
-    gap: np.ndarray  # spectral gap at each K(t)
+    times: FloatArray
+    K_schedule: FloatArray  # K(t) at each time
+    fidelity: FloatArray  # |⟨ψ(t)|ψ_gs(K(t))⟩|² at each time
+    gap: FloatArray  # spectral gap at each K(t)
     final_fidelity: float
     min_gap: float
     min_gap_K: float  # K value where gap is smallest
 
 
 def adiabatic_ramp(
-    omega: np.ndarray,
-    K_topology: np.ndarray,
+    omega: FloatArray,
+    K_topology: FloatArray,
     K_target: float,
     T_total: float = 10.0,
     n_steps: int = 50,
@@ -160,10 +165,10 @@ def adiabatic_ramp(
     K_init = 0.01 * K_topology
     H_init = knm_to_dense_matrix(K_init, omega, max_dense_gib=max_dense_gib)
     eigvals_init, eigvecs_init = np.linalg.eigh(H_init)
-    psi = np.ascontiguousarray(eigvecs_init[:, 0]).astype(complex)
+    psi: ComplexArray = np.ascontiguousarray(eigvecs_init[:, 0]).astype(np.complex128)
 
-    times = np.linspace(0, T_total, n_steps + 1)
-    K_schedule = K_target * times / T_total
+    times: FloatArray = np.linspace(0.0, T_total, n_steps + 1, dtype=np.float64)
+    K_schedule: FloatArray = np.asarray(K_target * times / T_total, dtype=np.float64)
     fidelity = np.zeros(n_steps + 1)
     gaps = np.zeros(n_steps + 1)
 
@@ -207,10 +212,10 @@ def adiabatic_ramp(
 
 
 def adiabatic_time_scaling(
-    omega: np.ndarray,
-    K_topology: np.ndarray,
+    omega: FloatArray,
+    K_topology: FloatArray,
     K_target: float,
-    T_values: np.ndarray | None = None,
+    T_values: FloatArray | None = None,
     n_steps_per_T: int = 40,
     *,
     max_dense_gib: float | None = None,

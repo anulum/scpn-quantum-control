@@ -356,6 +356,9 @@ $K \neq K_c$, where the gap remains open and adiabatic preparation is efficient.
 Inputs are accepted only as explicit real numeric values: `omega`,
 `K_topology`, `K_target`, `T_total`, and optional scan grids must not rely on
 string, boolean, object, or complex coercion before validation.
+The returned `AdiabaticResult` exposes `float64` arrays for `times`,
+`K_schedule`, `fidelity`, and `gap`, plus scalar `final_fidelity`, `min_gap`,
+and `min_gap_K` values.
 
 **Rust acceleration:** Hamiltonian construction at each adiabatic step via
 `build_xy_hamiltonian_dense` (Qiskit-free).
