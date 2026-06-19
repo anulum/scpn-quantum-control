@@ -17,6 +17,7 @@
     "compiler AD breadth evidence missing"
   ],
   "isolated_benchmark_artifact_id": null,
+  "isolated_benchmark_evidence": null,
   "mlir_llvm_correctness_evidence": {
     "artifact_id": "mlir-llvm-correctness-20260616-installed-stack",
     "checks": {

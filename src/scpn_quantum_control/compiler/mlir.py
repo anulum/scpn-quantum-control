@@ -47,6 +47,7 @@ from ..differentiable import (
     whole_program_value_and_grad,
 )
 from ..kuramoto_core import KuramotoProblem, build_kuramoto_problem
+from ..phase.qnode_affinity_benchmark import PhaseQNodeAffinityArtifactValidation
 
 FloatArray: TypeAlias = NDArray[np.float64]
 ENZYME_MLIR_COMPILER_AD_BREADTH_CASES = frozenset(
@@ -13816,6 +13817,126 @@ class MLIRLLVMCorrectnessEvidence:
 
 
 @dataclass(frozen=True)
+class EnzymeMLIRBenchmarkAttachment:
+    """Validated isolated benchmark attachment for Enzyme/MLIR compiler AD.
+
+    Parameters
+    ----------
+    validation:
+        Phase-QNode affinity benchmark artefact validation produced from a raw
+        benchmark JSON file.
+    required_breadth_cases:
+        Enzyme/MLIR compiler-AD breadth cases covered by the benchmark
+        attachment. The set must exactly match the compiler-AD breadth contract.
+    claim_boundary:
+        Explicit statement preventing local or partial benchmark evidence from
+        becoming a provider, QPU, hardware, or arbitrary performance claim.
+    """
+
+    validation: PhaseQNodeAffinityArtifactValidation
+    required_breadth_cases: tuple[str, ...]
+    claim_boundary: str
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.validation, PhaseQNodeAffinityArtifactValidation):
+            raise ValueError("validation must be PhaseQNodeAffinityArtifactValidation")
+        cases = tuple(sorted(case.strip() for case in self.required_breadth_cases))
+        if set(cases) != ENZYME_MLIR_COMPILER_AD_BREADTH_CASES:
+            missing = sorted(ENZYME_MLIR_COMPILER_AD_BREADTH_CASES.difference(cases))
+            extra = sorted(set(cases).difference(ENZYME_MLIR_COMPILER_AD_BREADTH_CASES))
+            details = ", ".join(
+                part
+                for part in (
+                    f"missing={missing}" if missing else "",
+                    f"extra={extra}" if extra else "",
+                )
+                if part
+            )
+            raise ValueError(f"required_breadth_cases must match Enzyme/MLIR cases: {details}")
+        if any(not case for case in cases):
+            raise ValueError("required_breadth_cases must contain non-empty entries")
+        object.__setattr__(self, "required_breadth_cases", cases)
+        claim_boundary = self.claim_boundary.strip()
+        if not claim_boundary:
+            raise ValueError("claim_boundary must be non-empty")
+        object.__setattr__(self, "claim_boundary", claim_boundary)
+
+    @property
+    def benchmark_artifact_id(self) -> str:
+        """Return the validated benchmark artefact identifier."""
+
+        return self.validation.benchmark_artifact_id
+
+    @property
+    def promotion_ready(self) -> bool:
+        """Return whether the benchmark attachment satisfies promotion policy."""
+
+        return (
+            self.validation.promotion_ready
+            and self.validation.evidence_label == "isolated_affinity"
+            and self.validation.production_benchmark
+            and self.validation.raw_timing_row_count > 0
+            and not self.validation.missing_requirements
+        )
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready benchmark attachment metadata."""
+
+        return {
+            "benchmark_artifact_id": self.benchmark_artifact_id,
+            "evidence_label": self.validation.evidence_label,
+            "production_benchmark": self.validation.production_benchmark,
+            "promotion_ready": self.promotion_ready,
+            "raw_timing_row_count": self.validation.raw_timing_row_count,
+            "missing_requirements": list(self.validation.missing_requirements),
+            "artifact_path": self.validation.artifact_path,
+            "artifact_sha256": self.validation.artifact_sha256,
+            "required_breadth_cases": list(self.required_breadth_cases),
+            "required_breadth_case_count": len(self.required_breadth_cases),
+            "validation_claim_boundary": self.validation.claim_boundary,
+            "claim_boundary": self.claim_boundary,
+        }
+
+
+def build_enzyme_mlir_benchmark_attachment(
+    *,
+    validation: PhaseQNodeAffinityArtifactValidation,
+    required_breadth_cases: Sequence[str],
+    claim_boundary: str,
+) -> EnzymeMLIRBenchmarkAttachment:
+    """Build a fail-closed Enzyme/MLIR isolated benchmark attachment.
+
+    Parameters
+    ----------
+    validation:
+        Existing Phase-QNode affinity artefact validation. The resulting
+        attachment is promotional only when this validation is already
+        ``isolated_affinity`` and promotion-ready.
+    required_breadth_cases:
+        Breadth cases represented by the benchmark attachment. The set must
+        match the Enzyme/MLIR compiler-AD breadth contract exactly.
+    claim_boundary:
+        Claim boundary stored in the serialized maturity audit.
+
+    Returns
+    -------
+    EnzymeMLIRBenchmarkAttachment
+        Validated benchmark attachment for maturity-audit input.
+
+    Raises
+    ------
+    ValueError
+        If the validation type, breadth cases, or claim boundary are malformed.
+    """
+
+    return EnzymeMLIRBenchmarkAttachment(
+        validation=validation,
+        required_breadth_cases=tuple(required_breadth_cases),
+        claim_boundary=claim_boundary,
+    )
+
+
+@dataclass(frozen=True)
 class EnzymeMLIRCompilerADBreadthEvidence:
     """Validated breadth evidence for Enzyme/MLIR compiler AD promotion.
 
@@ -14001,6 +14122,7 @@ class EnzymeMLIRMaturityAuditResult:
     correctness_checks: Mapping[str, bool]
     hard_gaps: tuple[str, ...]
     isolated_benchmark_artifact_id: str | None
+    isolated_benchmark_evidence: EnzymeMLIRBenchmarkAttachment | None
     native_enzyme_execution_artifact_id: str | None
     native_enzyme_execution_evidence: EnzymeNativeExecutionEvidence | None = None
     mlir_llvm_correctness_evidence: MLIRLLVMCorrectnessEvidence | None = None
@@ -14028,6 +14150,21 @@ class EnzymeMLIRMaturityAuditResult:
             self.isolated_benchmark_artifact_id.strip()
         ):
             raise ValueError("isolated_benchmark_artifact_id must be non-empty when provided")
+        if self.isolated_benchmark_evidence is not None and not isinstance(
+            self.isolated_benchmark_evidence,
+            EnzymeMLIRBenchmarkAttachment,
+        ):
+            raise ValueError("isolated_benchmark_evidence must be EnzymeMLIRBenchmarkAttachment")
+        if (
+            self.isolated_benchmark_evidence is not None
+            and self.isolated_benchmark_artifact_id is not None
+            and self.isolated_benchmark_evidence.benchmark_artifact_id
+            != self.isolated_benchmark_artifact_id
+        ):
+            raise ValueError(
+                "isolated_benchmark_evidence.benchmark_artifact_id must match "
+                "isolated_benchmark_artifact_id"
+            )
         if self.native_enzyme_execution_artifact_id is not None and not (
             self.native_enzyme_execution_artifact_id.strip()
         ):
@@ -14088,6 +14225,8 @@ class EnzymeMLIRMaturityAuditResult:
             and self.mlir_llvm_correctness_evidence is not None
             and self.mlir_llvm_correctness_evidence.passed
             and self.isolated_benchmark_artifact_id is not None
+            and self.isolated_benchmark_evidence is not None
+            and self.isolated_benchmark_evidence.promotion_ready
             and self.native_enzyme_execution_artifact_id is not None
             and self.native_enzyme_execution_evidence is not None
             and self.native_enzyme_execution_evidence.passed
@@ -14106,6 +14245,11 @@ class EnzymeMLIRMaturityAuditResult:
             "correctness_checks": dict(self.correctness_checks),
             "hard_gaps": list(self.hard_gaps),
             "isolated_benchmark_artifact_id": self.isolated_benchmark_artifact_id,
+            "isolated_benchmark_evidence": (
+                self.isolated_benchmark_evidence.to_dict()
+                if self.isolated_benchmark_evidence is not None
+                else None
+            ),
             "native_enzyme_execution_artifact_id": self.native_enzyme_execution_artifact_id,
             "native_enzyme_execution_evidence": (
                 self.native_enzyme_execution_evidence.to_dict()
@@ -14134,6 +14278,7 @@ def run_enzyme_mlir_maturity_audit(
     toolchain_probe: Callable[[str], str | None] | None = None,
     version_probe: Callable[[str], str | None] | None = None,
     isolated_benchmark_artifact_id: str | None = None,
+    isolated_benchmark_evidence: EnzymeMLIRBenchmarkAttachment | None = None,
     native_enzyme_execution_artifact_id: str | None = None,
     native_enzyme_execution_evidence: EnzymeNativeExecutionEvidence | None = None,
     mlir_llvm_correctness_artifact_id: str | None = None,
@@ -14164,6 +14309,8 @@ def run_enzyme_mlir_maturity_audit(
             hard_gaps.append(f"{command} toolchain unavailable")
     if isolated_benchmark_artifact_id is None:
         hard_gaps.append("isolated benchmark artefact missing")
+    elif isolated_benchmark_evidence is None or not isolated_benchmark_evidence.promotion_ready:
+        hard_gaps.append("validated isolated benchmark evidence missing")
     if native_enzyme_execution_evidence is not None:
         native_enzyme_execution_artifact_id = native_enzyme_execution_evidence.artifact_id
         if not native_enzyme_execution_evidence.passed:
@@ -14204,6 +14351,7 @@ def run_enzyme_mlir_maturity_audit(
         correctness_checks=correctness_checks,
         hard_gaps=tuple(dict.fromkeys(hard_gaps)),
         isolated_benchmark_artifact_id=isolated_benchmark_artifact_id,
+        isolated_benchmark_evidence=isolated_benchmark_evidence,
         native_enzyme_execution_artifact_id=native_enzyme_execution_artifact_id,
         native_enzyme_execution_evidence=native_enzyme_execution_evidence,
         mlir_llvm_correctness_evidence=mlir_llvm_correctness_evidence,
@@ -14488,6 +14636,7 @@ __all__ = [
     "ExecutableCompilerADKernel",
     "ExecutableWholeProgramADBatchResult",
     "ExecutableWholeProgramADKernel",
+    "EnzymeMLIRBenchmarkAttachment",
     "EnzymeMLIRCompilerADBreadthEvidence",
     "EnzymeMLIRMaturityAuditResult",
     "EnzymeNativeExecutionEvidence",
@@ -14500,6 +14649,7 @@ __all__ = [
     "WholeProgramADNativeLoweringReport",
     "MLIRModule",
     "analyse_whole_program_ad_native_lowering",
+    "build_enzyme_mlir_benchmark_attachment",
     "build_enzyme_mlir_compiler_ad_breadth_evidence",
     "build_compiler_ad_transform_plan",
     "compile_compiler_ad_transform_plan_to_mlir",

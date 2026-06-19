@@ -19,15 +19,20 @@ import pytest
 import scpn_quantum_control as scpn
 import scpn_quantum_control.compiler as compiler
 from scpn_quantum_control.compiler.mlir import (
+    EnzymeMLIRBenchmarkAttachment,
     EnzymeMLIRCompilerADBreadthEvidence,
     EnzymeMLIRMaturityAuditResult,
     EnzymeNativeExecutionEvidence,
     MLIRLLVMCorrectnessEvidence,
     PhaseQNodeMLIRRuntimeExecutable,
+    build_enzyme_mlir_benchmark_attachment,
     build_enzyme_mlir_compiler_ad_breadth_evidence,
     compile_phase_qnode_circuit_to_mlir_runtime,
     lower_phase_qnode_circuit_to_mlir,
     run_enzyme_mlir_maturity_audit,
+)
+from scpn_quantum_control.phase.qnode_affinity_benchmark import (
+    PhaseQNodeAffinityArtifactValidation,
 )
 from scpn_quantum_control.phase.qnode_circuit import PauliTerm, PhaseQNodeCircuit
 
@@ -322,6 +327,7 @@ def test_enzyme_mlir_maturity_audit_requires_complete_compiler_ad_breadth() -> N
         toolchain_probe=lambda command: f"/opt/toolchain/bin/{command}",
         version_probe=lambda executable: f"{executable} version 1.2.3",
         isolated_benchmark_artifact_id="iso-bench-001",
+        isolated_benchmark_evidence=_benchmark_attachment(),
         native_enzyme_execution_evidence=evidence,
         mlir_llvm_correctness_artifact_id="mlir-correctness-001",
         compiler_ad_breadth_evidence=_compiler_ad_breadth_evidence(),
@@ -338,6 +344,130 @@ def test_enzyme_mlir_maturity_audit_requires_complete_compiler_ad_breadth() -> N
         "reverse",
         "vjp",
     ]
+
+
+def _benchmark_attachment(
+    *,
+    benchmark_artifact_id: str = "iso-bench-001",
+    promotion_ready: bool = True,
+    evidence_label: str = "isolated_affinity",
+    production_benchmark: bool = True,
+    raw_timing_row_count: int = 5,
+    missing_requirements: tuple[str, ...] = (),
+) -> EnzymeMLIRBenchmarkAttachment:
+    validation = PhaseQNodeAffinityArtifactValidation(
+        artifact_path="data/benchmarks/enzyme_mlir_iso.json",
+        artifact_sha256="a" * 64,
+        benchmark_artifact_id=benchmark_artifact_id,
+        evidence_label=evidence_label,
+        production_benchmark=production_benchmark,
+        promotion_ready=promotion_ready,
+        raw_timing_row_count=raw_timing_row_count,
+        missing_requirements=missing_requirements,
+        claim_boundary="isolated benchmark validation for Enzyme/MLIR compiler AD.",
+    )
+    return build_enzyme_mlir_benchmark_attachment(
+        validation=validation,
+        required_breadth_cases=tuple(sorted(_compiler_ad_breadth_evidence().cases)),
+        claim_boundary="Enzyme/MLIR compiler-AD benchmark attachment.",
+    )
+
+
+def test_enzyme_mlir_maturity_audit_requires_validated_isolated_benchmark() -> None:
+    evidence = EnzymeNativeExecutionEvidence(
+        artifact_id="enzyme-success-001",
+        status="success",
+        failure_class=None,
+        value_error=0.0,
+        gradient_error=0.0,
+        runtime_seconds=0.01,
+        toolchain={"enzyme": "1.0", "llvm": "18.1.3"},
+        setup_instructions=None,
+        claim_boundary="Bounded native Enzyme execution evidence.",
+    )
+
+    result = run_enzyme_mlir_maturity_audit(
+        toolchain_probe=lambda command: f"/opt/toolchain/bin/{command}",
+        version_probe=lambda executable: f"{executable} version 1.2.3",
+        isolated_benchmark_artifact_id="iso-bench-001",
+        isolated_benchmark_evidence=_benchmark_attachment(
+            promotion_ready=False,
+            evidence_label="functional_non_isolated",
+            production_benchmark=False,
+            missing_requirements=("isolated_affinity evidence label",),
+        ),
+        native_enzyme_execution_evidence=evidence,
+        mlir_llvm_correctness_artifact_id="mlir-correctness-001",
+        compiler_ad_breadth_evidence=_compiler_ad_breadth_evidence(),
+    )
+
+    assert result.ready_for_provider_exceedance is False
+    assert "validated isolated benchmark evidence missing" in result.hard_gaps
+    payload = cast(dict[str, Any], result.to_dict())
+    assert payload["isolated_benchmark_evidence"]["promotion_ready"] is False
+    assert payload["isolated_benchmark_evidence"]["evidence_label"] == "functional_non_isolated"
+
+
+def test_enzyme_mlir_maturity_audit_accepts_validated_isolated_benchmark() -> None:
+    evidence = EnzymeNativeExecutionEvidence(
+        artifact_id="enzyme-success-001",
+        status="success",
+        failure_class=None,
+        value_error=0.0,
+        gradient_error=0.0,
+        runtime_seconds=0.01,
+        toolchain={"enzyme": "1.0", "llvm": "18.1.3"},
+        setup_instructions=None,
+        claim_boundary="Bounded native Enzyme execution evidence.",
+    )
+
+    result = run_enzyme_mlir_maturity_audit(
+        toolchain_probe=lambda command: f"/opt/toolchain/bin/{command}",
+        version_probe=lambda executable: f"{executable} version 1.2.3",
+        isolated_benchmark_artifact_id="iso-bench-001",
+        isolated_benchmark_evidence=_benchmark_attachment(),
+        native_enzyme_execution_evidence=evidence,
+        mlir_llvm_correctness_artifact_id="mlir-correctness-001",
+        compiler_ad_breadth_evidence=_compiler_ad_breadth_evidence(),
+    )
+
+    assert result.hard_gaps == ()
+    assert result.ready_for_provider_exceedance is True
+    payload = cast(dict[str, Any], result.to_dict())
+    assert payload["isolated_benchmark_evidence"]["required_breadth_case_count"] == 11
+
+
+def test_enzyme_mlir_maturity_audit_rejects_benchmark_attachment_mismatch() -> None:
+    with pytest.raises(ValueError, match="isolated_benchmark_evidence.benchmark_artifact_id"):
+        run_enzyme_mlir_maturity_audit(
+            toolchain_probe=lambda command: f"/opt/toolchain/bin/{command}",
+            version_probe=lambda executable: f"{executable} version 1.2.3",
+            isolated_benchmark_artifact_id="iso-bench-001",
+            isolated_benchmark_evidence=_benchmark_attachment(
+                benchmark_artifact_id="iso-bench-002"
+            ),
+        )
+
+
+def test_enzyme_mlir_benchmark_attachment_rejects_incomplete_case_set() -> None:
+    validation = PhaseQNodeAffinityArtifactValidation(
+        artifact_path="data/benchmarks/enzyme_mlir_iso.json",
+        artifact_sha256="b" * 64,
+        benchmark_artifact_id="iso-bench-001",
+        evidence_label="isolated_affinity",
+        production_benchmark=True,
+        promotion_ready=True,
+        raw_timing_row_count=5,
+        missing_requirements=(),
+        claim_boundary="isolated benchmark validation for Enzyme/MLIR compiler AD.",
+    )
+
+    with pytest.raises(ValueError, match="required_breadth_cases"):
+        build_enzyme_mlir_benchmark_attachment(
+            validation=validation,
+            required_breadth_cases=("scalar_forward_mode",),
+            claim_boundary="Enzyme/MLIR compiler-AD benchmark attachment.",
+        )
 
 
 def test_enzyme_mlir_compiler_ad_breadth_rejects_missing_case() -> None:
@@ -431,3 +561,9 @@ def test_enzyme_mlir_maturity_audit_exports_are_public() -> None:
     assert scpn.EnzymeNativeExecutionEvidence is EnzymeNativeExecutionEvidence
     assert compiler.MLIRLLVMCorrectnessEvidence is MLIRLLVMCorrectnessEvidence
     assert scpn.MLIRLLVMCorrectnessEvidence is MLIRLLVMCorrectnessEvidence
+    assert compiler.EnzymeMLIRBenchmarkAttachment is EnzymeMLIRBenchmarkAttachment
+    assert scpn.EnzymeMLIRBenchmarkAttachment is EnzymeMLIRBenchmarkAttachment
+    assert (
+        compiler.build_enzyme_mlir_benchmark_attachment is build_enzyme_mlir_benchmark_attachment
+    )
+    assert scpn.build_enzyme_mlir_benchmark_attachment is build_enzyme_mlir_benchmark_attachment

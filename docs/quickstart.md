@@ -229,13 +229,14 @@ adapter, records bounded native LLVM/JIT support metadata, probes local
 `enzyme`/LLVM/MLIR toolchain versions, validates attached native Enzyme
 execution evidence, and keeps provider-exceedance blocked until successful
 native Enzyme execution, MLIR/LLVM correctness evidence, and
-`isolated_affinity` benchmark artefacts are attached. The current
+validated `EnzymeMLIRBenchmarkAttachment` evidence are attached. A string
+benchmark ID alone does not clear the isolated benchmark gate. The current
 committed `enzyme_mlir_maturity_audit_20260616.json` snapshot is a hard-gap
 artefact: the SCPN MLIR-runtime correctness checks pass and local
 `enzyme`/`opt`/`mlir-opt`/`clang` version metadata is recorded. The bounded
 native LLVM Enzyme scalar probe passes, while the separate Enzyme-JAX external
 comparison still fails during runtime lowering and promotion remains blocked
-until isolated benchmark evidence and complete compiler-AD breadth evidence
+until validated isolated benchmark evidence and complete compiler-AD breadth evidence
 exist.
 
 Program AD execution is registry-gated. Supported traced NumPy primitives must

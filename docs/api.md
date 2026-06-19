@@ -433,10 +433,13 @@ it compiles and verifies a registered Phase-QNode through the SCPN MLIR-runtime
 adapter, records the bounded in-process native LLVM/JIT support surface, probes
 local `enzyme`, `opt`, `mlir-opt`, and `clang` commands with version metadata
 when present, validates attached native Enzyme execution evidence, validates an
-attached MLIR/LLVM correctness artefact ID, and returns hard-gap rows when the
-compiler stack or native Enzyme execution path is unavailable. The audit remains
-non-promotional until successful native Enzyme execution evidence, MLIR/LLVM
-correctness evidence, and an isolated benchmark artefact are attached together.
+attached MLIR/LLVM correctness artefact ID, validates the isolated benchmark
+attachment against the Phase-QNode affinity artefact contract, and returns
+hard-gap rows when the compiler stack or native Enzyme execution path is
+unavailable. The audit remains non-promotional until successful native Enzyme
+execution evidence, MLIR/LLVM correctness evidence, compiler-AD breadth
+evidence, and a promotion-ready `EnzymeMLIRBenchmarkAttachment` are attached
+together.
 The 2026-06-16 committed evidence includes a bounded native LLVM Enzyme scalar
 probe; it is not arbitrary-program AD, provider execution, hardware execution,
 or performance evidence.
@@ -1331,8 +1334,9 @@ jax_parameter_shift_value_and_grad(objective, values, jit=False, parameters=None
 run_jax_phase_qnode_lowering_matrix() -> PhaseJAXPhaseQNodeLoweringMatrixResult
 run_jax_nested_transform_algebra_audit(features, labels, params_batch, params_pytree, tolerance=1e-6) -> PhaseJAXNestedTransformAlgebraResult
 run_jax_maturity_audit(features, labels, params, params_batch, params_pytree, tolerance=1e-6) -> PhaseJAXMaturityAuditResult
+build_enzyme_mlir_benchmark_attachment(*, validation, required_breadth_cases, claim_boundary) -> EnzymeMLIRBenchmarkAttachment
 build_enzyme_mlir_compiler_ad_breadth_evidence(*, artifact_id, cases, transform_modes, frontend_languages, isolated_benchmark_artifact_id, max_abs_error, runtime_seconds, claim_boundary) -> EnzymeMLIRCompilerADBreadthEvidence
-run_enzyme_mlir_maturity_audit(circuit=None, parameters=None, *, toolchain_probe=None, version_probe=None, isolated_benchmark_artifact_id=None, native_enzyme_execution_artifact_id=None, native_enzyme_execution_evidence=None, mlir_llvm_correctness_artifact_id=None, compiler_ad_breadth_evidence=None) -> EnzymeMLIRMaturityAuditResult
+run_enzyme_mlir_maturity_audit(circuit=None, parameters=None, *, toolchain_probe=None, version_probe=None, isolated_benchmark_artifact_id=None, isolated_benchmark_evidence=None, native_enzyme_execution_artifact_id=None, native_enzyme_execution_evidence=None, mlir_llvm_correctness_artifact_id=None, compiler_ad_breadth_evidence=None) -> EnzymeMLIRMaturityAuditResult
 is_phase_pennylane_available() -> bool
 check_pennylane_parameter_shift_agreement(objective, pennylane_gradient, values, tolerance=1e-6, parameters=None, rule=None) -> PennyLaneGradientAgreementResult
 run_pennylane_plugin_matrix(provider_execution_artifact=None, provider_gradient_parity_artifact=None, hardware_execution_artifact=None) -> PennyLanePluginMatrixResult
@@ -1497,8 +1501,11 @@ alias activity, MLIR lowering, LLVM IR generation, and native Enzyme execution
 checks. Build it with `build_enzyme_mlir_compiler_ad_breadth_evidence(...)`
 from captured correctness and isolated-benchmark evidence. The Enzyme/MLIR
 maturity audit keeps provider-exceedance blocked until MLIR/LLVM correctness,
-native Enzyme execution, compiler-AD breadth, and isolated benchmark artefacts
-all match.
+native Enzyme execution, compiler-AD breadth, and a promotion-ready
+`EnzymeMLIRBenchmarkAttachment` all match. Build that attachment with
+`build_enzyme_mlir_benchmark_attachment(...)` from
+`PhaseQNodeAffinityArtifactValidation`; a string benchmark ID alone remains a
+hard gap.
 `parameter_shift_gradient_descent()` is the phase-native training surface for
 quantum objectives: it plans a fail-closed backend route, evaluates native
 parameter-shift gradients, applies Armijo backtracking, and records
