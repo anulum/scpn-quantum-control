@@ -298,6 +298,9 @@ diagnostic.
 - Pair PennyLane provider-gradient parity evidence to the same provider
   execution artefact, circuit fingerprint, backend, and shot policy before
   marking provider-gradient parity as passed.
+- Require ticketed live hardware, allowlist, shot-budget, raw-count,
+  calibration, and metadata evidence before PennyLane hardware-plugin execution
+  can pass; keep promotion blocked until isolated benchmark evidence exists.
 - Compare gradients against finite differences, analytic references, and cross-framework references where practical.
 - Document failed or unsuitable scenarios because they are research evidence.
 

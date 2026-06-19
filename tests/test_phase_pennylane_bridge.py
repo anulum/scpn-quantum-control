@@ -22,6 +22,7 @@ from scpn_quantum_control.phase import (
     PauliCovarianceObservable,
     PauliTerm,
     PennyLaneGradientAgreementResult,
+    PennyLaneHardwarePluginExecutionArtifact,
     PennyLaneMaturityAuditResult,
     PennyLanePluginMatrixResult,
     PennyLanePluginMatrixRoute,
@@ -636,6 +637,32 @@ def _provider_gradient_parity_artifact(
     )
 
 
+def _hardware_plugin_execution_artifact(
+    *,
+    execution_mode: str = "provider_live_qpu",
+    shots: int = 4096,
+) -> PennyLaneHardwarePluginExecutionArtifact:
+    return PennyLaneHardwarePluginExecutionArtifact(
+        artifact_id="pl-hardware-exec-20260616",
+        plugin_name="pennylane-provider-hardware",
+        provider_name="example-provider",
+        device_name="example.qpu",
+        backend_name="example_qpu_v1",
+        circuit_fingerprint="phase-qnode:ry-rx-pauli-z:v1",
+        execution_mode=execution_mode,
+        shots=shots,
+        live_execution_ticket="ticket-pl-hw-20260616",
+        provider_allowlist_id="allowlist-pl-hw-20260616",
+        shot_budget_id="shot-budget-pl-hw-20260616",
+        hardware_evidence_id="hardware-evidence-pl-hw-20260616",
+        result_digest="sha256:" + "e" * 64,
+        raw_counts_digest="sha256:" + "f" * 64,
+        calibration_snapshot_digest="sha256:" + "1" * 64,
+        metadata_digest="sha256:" + "2" * 64,
+        hardware_execution=True,
+    )
+
+
 def test_pennylane_plugin_matrix_accepts_provider_execution_artifact_without_promotion() -> None:
     artifact = _provider_plugin_execution_artifact()
 
@@ -676,6 +703,26 @@ def test_pennylane_plugin_matrix_accepts_provider_gradient_parity_without_promot
     gradient_payload = cast(dict[str, object], payload["provider_gradient_parity_artifact"])
     assert gradient_payload["artifact_id"] == gradient_artifact.artifact_id
     assert gradient_payload["max_abs_error"] == gradient_artifact.max_abs_error
+
+
+def test_pennylane_plugin_matrix_accepts_hardware_execution_without_promotion() -> None:
+    hardware_artifact = _hardware_plugin_execution_artifact()
+
+    result = run_pennylane_plugin_matrix(hardware_execution_artifact=hardware_artifact)
+
+    assert result.hardware_plugin_execution_ready
+    assert result.route_status("hardware_plugin_execution") == "passed"
+    assert result.hardware_execution_artifact is hardware_artifact
+    assert not result.provider_plugin_execution_ready
+    assert not result.provider_plugin_gradient_parity_ready
+    assert not result.ready_for_provider_exceedance
+    assert "hardware_plugin_execution" not in result.open_gaps
+    assert "provider_plugin_execution" in result.open_gaps
+    assert "isolated_benchmark_artifact" in result.open_gaps
+    payload = cast(dict[str, Any], result.to_dict())
+    hardware_payload = cast(dict[str, object], payload["hardware_execution_artifact"])
+    assert hardware_payload["artifact_id"] == hardware_artifact.artifact_id
+    assert hardware_payload["hardware_execution"] is True
 
 
 def test_pennylane_plugin_matrix_rejects_unpaired_provider_gradient_parity() -> None:
@@ -753,6 +800,93 @@ def test_pennylane_plugin_matrix_rejects_mismatched_provider_gradient_parity() -
 )
 def test_pennylane_provider_gradient_parity_artifact_rejects_malformed_evidence(
     factory: Callable[[], PennyLaneProviderGradientParityArtifact],
+    match: str,
+) -> None:
+    with pytest.raises(ValueError, match=match):
+        factory()
+
+
+@pytest.mark.parametrize(
+    ("factory", "match"),
+    [
+        (
+            lambda: _hardware_plugin_execution_artifact(execution_mode="provider_simulator"),
+            "live hardware execution",
+        ),
+        (
+            lambda: _hardware_plugin_execution_artifact(shots=cast(Any, True)),
+            "shots",
+        ),
+        (
+            lambda: PennyLaneHardwarePluginExecutionArtifact(
+                artifact_id="pl-hardware-exec-20260616",
+                plugin_name="pennylane-provider-hardware",
+                provider_name="example-provider",
+                device_name="example.qpu",
+                backend_name="example_qpu_v1",
+                circuit_fingerprint="phase-qnode:ry-rx-pauli-z:v1",
+                execution_mode="provider_live_qpu",
+                shots=4096,
+                live_execution_ticket=" ",
+                provider_allowlist_id="allowlist-pl-hw-20260616",
+                shot_budget_id="shot-budget-pl-hw-20260616",
+                hardware_evidence_id="hardware-evidence-pl-hw-20260616",
+                result_digest="sha256:" + "e" * 64,
+                raw_counts_digest="sha256:" + "f" * 64,
+                calibration_snapshot_digest="sha256:" + "1" * 64,
+                metadata_digest="sha256:" + "2" * 64,
+                hardware_execution=True,
+            ),
+            "live_execution_ticket",
+        ),
+        (
+            lambda: PennyLaneHardwarePluginExecutionArtifact(
+                artifact_id="pl-hardware-exec-20260616",
+                plugin_name="pennylane-provider-hardware",
+                provider_name="example-provider",
+                device_name="example.qpu",
+                backend_name="example_qpu_v1",
+                circuit_fingerprint="phase-qnode:ry-rx-pauli-z:v1",
+                execution_mode="provider_live_qpu",
+                shots=4096,
+                live_execution_ticket="ticket-pl-hw-20260616",
+                provider_allowlist_id="allowlist-pl-hw-20260616",
+                shot_budget_id="shot-budget-pl-hw-20260616",
+                hardware_evidence_id="hardware-evidence-pl-hw-20260616",
+                result_digest="sha256:" + "e" * 63,
+                raw_counts_digest="sha256:" + "f" * 64,
+                calibration_snapshot_digest="sha256:" + "1" * 64,
+                metadata_digest="sha256:" + "2" * 64,
+                hardware_execution=True,
+            ),
+            "result_digest",
+        ),
+        (
+            lambda: PennyLaneHardwarePluginExecutionArtifact(
+                artifact_id="pl-hardware-exec-20260616",
+                plugin_name="pennylane-provider-hardware",
+                provider_name="example-provider",
+                device_name="example.qpu",
+                backend_name="example_qpu_v1",
+                circuit_fingerprint="phase-qnode:ry-rx-pauli-z:v1",
+                execution_mode="provider_live_qpu",
+                shots=4096,
+                live_execution_ticket="ticket-pl-hw-20260616",
+                provider_allowlist_id="allowlist-pl-hw-20260616",
+                shot_budget_id="shot-budget-pl-hw-20260616",
+                hardware_evidence_id="hardware-evidence-pl-hw-20260616",
+                result_digest="sha256:" + "e" * 64,
+                raw_counts_digest="sha256:" + "f" * 64,
+                calibration_snapshot_digest="sha256:" + "1" * 64,
+                metadata_digest="sha256:" + "2" * 64,
+                hardware_execution=False,
+            ),
+            "hardware execution",
+        ),
+    ],
+)
+def test_pennylane_hardware_plugin_execution_artifact_rejects_malformed_evidence(
+    factory: Callable[[], PennyLaneHardwarePluginExecutionArtifact],
     match: str,
 ) -> None:
     with pytest.raises(ValueError, match=match):
@@ -931,6 +1065,36 @@ def test_pennylane_maturity_audit_records_provider_gradient_parity_without_promo
     assert not result.ready_for_provider_exceedance
     assert "provider_plugin_gradient_parity" not in result.open_gaps
     assert "hardware_execution" in result.open_gaps
+
+
+def test_pennylane_maturity_audit_records_hardware_execution_without_benchmark_promotion(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    fake_qml = _FakePennyLane()
+    monkeypatch.setattr(pennylane_bridge, "_load_pennylane", lambda: fake_qml)
+    circuit = PhaseQNodeCircuit(
+        1,
+        (("ry", (0,), 0), ("rx", (0,), 1)),
+        PauliTerm(1.0, ((0, "z"),)),
+    )
+    hardware_artifact = _hardware_plugin_execution_artifact()
+
+    result = run_pennylane_maturity_audit(
+        objective=_objective,
+        pennylane_objective=_objective,
+        pennylane_gradient=_closed_form_gradient,
+        values=np.array([0.4, -0.2], dtype=float),
+        circuit=circuit,
+        phase_qnode_values=np.array([0.37, -0.29], dtype=float),
+        hardware_execution_artifact=hardware_artifact,
+    )
+
+    plugin_matrix = cast(PennyLanePluginMatrixResult, result.evidence["pennylane_plugin_matrix"])
+    assert result.required_capabilities["hardware_execution"] == "passed"
+    assert plugin_matrix.hardware_execution_artifact is hardware_artifact
+    assert not result.ready_for_provider_exceedance
+    assert "hardware_execution" not in result.open_gaps
+    assert "promotion_grade_isolated_benchmarks" in result.open_gaps
 
 
 def test_pennylane_bridge_converts_dense_hermitian_observable(

@@ -355,12 +355,94 @@ class PennyLaneProviderGradientParityArtifact:
 
 
 @dataclass(frozen=True)
+class PennyLaneHardwarePluginExecutionArtifact:
+    """Validated PennyLane hardware-plugin execution evidence."""
+
+    artifact_id: str
+    plugin_name: str
+    provider_name: str
+    device_name: str
+    backend_name: str
+    circuit_fingerprint: str
+    execution_mode: str
+    shots: int
+    live_execution_ticket: str
+    provider_allowlist_id: str
+    shot_budget_id: str
+    hardware_evidence_id: str
+    result_digest: str
+    raw_counts_digest: str
+    calibration_snapshot_digest: str
+    metadata_digest: str
+    hardware_execution: bool = True
+
+    def __post_init__(self) -> None:
+        for field_name in (
+            "artifact_id",
+            "plugin_name",
+            "provider_name",
+            "device_name",
+            "backend_name",
+            "circuit_fingerprint",
+            "execution_mode",
+            "live_execution_ticket",
+            "provider_allowlist_id",
+            "shot_budget_id",
+            "hardware_evidence_id",
+        ):
+            object.__setattr__(
+                self,
+                field_name,
+                _normalise_metadata_text(field_name, getattr(self, field_name)),
+            )
+        if isinstance(self.shots, bool) or not isinstance(self.shots, int) or self.shots <= 0:
+            raise ValueError("shots must be a positive integer")
+        if not self.hardware_execution:
+            raise ValueError("hardware-plugin execution artefacts must claim hardware execution")
+        _validate_hardware_plugin_execution_mode(self.execution_mode)
+        for field_name in (
+            "result_digest",
+            "raw_counts_digest",
+            "calibration_snapshot_digest",
+            "metadata_digest",
+        ):
+            object.__setattr__(
+                self,
+                field_name,
+                _normalise_sha256_digest(field_name, getattr(self, field_name)),
+            )
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready hardware-plugin execution metadata."""
+        return {
+            "artifact_id": self.artifact_id,
+            "plugin_name": self.plugin_name,
+            "provider_name": self.provider_name,
+            "device_name": self.device_name,
+            "backend_name": self.backend_name,
+            "circuit_fingerprint": self.circuit_fingerprint,
+            "execution_mode": self.execution_mode,
+            "shots": self.shots,
+            "live_execution_ticket": self.live_execution_ticket,
+            "provider_allowlist_id": self.provider_allowlist_id,
+            "shot_budget_id": self.shot_budget_id,
+            "hardware_evidence_id": self.hardware_evidence_id,
+            "result_digest": self.result_digest,
+            "raw_counts_digest": self.raw_counts_digest,
+            "calibration_snapshot_digest": self.calibration_snapshot_digest,
+            "metadata_digest": self.metadata_digest,
+            "hardware_execution": self.hardware_execution,
+        }
+
+
+@dataclass(frozen=True)
 class PennyLanePluginMatrixResult:
     """Fail-closed PennyLane plugin/provider parity matrix."""
 
     routes: tuple[PennyLanePluginMatrixRoute, ...]
     provider_execution_artifact: PennyLaneProviderPluginExecutionArtifact | None = None
     provider_gradient_parity_artifact: PennyLaneProviderGradientParityArtifact | None = None
+    hardware_execution_artifact: PennyLaneHardwarePluginExecutionArtifact | None = None
     claim_boundary: str = "bounded_pennylane_plugin_matrix"
 
     @property
@@ -425,6 +507,11 @@ class PennyLanePluginMatrixResult:
                 if self.provider_gradient_parity_artifact is None
                 else self.provider_gradient_parity_artifact.to_dict()
             ),
+            "hardware_execution_artifact": (
+                None
+                if self.hardware_execution_artifact is None
+                else self.hardware_execution_artifact.to_dict()
+            ),
             "routes": {route.name: route.to_dict() for route in self.routes},
             "open_gaps": list(self.open_gaps),
             "claim_boundary": self.claim_boundary,
@@ -454,6 +541,7 @@ def run_pennylane_plugin_matrix(
     *,
     provider_execution_artifact: PennyLaneProviderPluginExecutionArtifact | None = None,
     provider_gradient_parity_artifact: PennyLaneProviderGradientParityArtifact | None = None,
+    hardware_execution_artifact: PennyLaneHardwarePluginExecutionArtifact | None = None,
 ) -> PennyLanePluginMatrixResult:
     """Return a fail-closed PennyLane plugin/provider parity matrix.
 
@@ -481,6 +569,12 @@ def run_pennylane_plugin_matrix(
         "validated same-circuit provider-plugin gradient parity artefact is attached"
         if provider_gradient_parity_artifact is not None
         else "provider-plugin gradients need same-circuit provider execution and replay artefacts"
+    )
+    hardware_execution_status = "passed" if hardware_execution_artifact is not None else "blocked"
+    hardware_execution_reason = (
+        "validated ticketed PennyLane hardware-plugin execution artefact is attached"
+        if hardware_execution_artifact is not None
+        else "live PennyLane hardware plugin execution requires ticketed hardware evidence"
     )
     routes = (
         PennyLanePluginMatrixRoute(
@@ -516,8 +610,8 @@ def run_pennylane_plugin_matrix(
         ),
         PennyLanePluginMatrixRoute(
             name="hardware_plugin_execution",
-            status="blocked",
-            reason="live PennyLane hardware plugin execution requires ticketed hardware evidence",
+            status=hardware_execution_status,
+            reason=hardware_execution_reason,
             requires=(
                 "live_ticket",
                 "provider_allowlist",
@@ -546,6 +640,7 @@ def run_pennylane_plugin_matrix(
         routes=routes,
         provider_execution_artifact=provider_execution_artifact,
         provider_gradient_parity_artifact=provider_gradient_parity_artifact,
+        hardware_execution_artifact=hardware_execution_artifact,
     )
 
 
@@ -629,6 +724,14 @@ def _validate_provider_plugin_execution_mode(execution_mode: str) -> None:
         raise ValueError("execution_mode must not imply hardware execution")
     if "provider" not in mode:
         raise ValueError("execution_mode must identify provider-plugin execution")
+
+
+def _validate_hardware_plugin_execution_mode(execution_mode: str) -> None:
+    mode = execution_mode.lower()
+    if not any(token in mode for token in ("hardware", "qpu", "live")):
+        raise ValueError("execution_mode must identify live hardware execution")
+    if "simulator" in mode or "offline" in mode or "replay" in mode:
+        raise ValueError("execution_mode must not identify simulator or replay execution")
 
 
 def _as_finite_scalar(name: str, value: object) -> float:
@@ -914,6 +1017,7 @@ def run_pennylane_maturity_audit(
     rule: ParameterShiftRule | None = None,
     provider_execution_artifact: PennyLaneProviderPluginExecutionArtifact | None = None,
     provider_gradient_parity_artifact: PennyLaneProviderGradientParityArtifact | None = None,
+    hardware_execution_artifact: PennyLaneHardwarePluginExecutionArtifact | None = None,
 ) -> PennyLaneMaturityAuditResult:
     """Aggregate PennyLane agreement, export, and optional import evidence.
 
@@ -999,6 +1103,7 @@ def run_pennylane_maturity_audit(
     plugin_matrix = run_pennylane_plugin_matrix(
         provider_execution_artifact=provider_execution_artifact,
         provider_gradient_parity_artifact=provider_gradient_parity_artifact,
+        hardware_execution_artifact=hardware_execution_artifact,
     )
 
     import_passed = bool(
@@ -1037,7 +1142,9 @@ def run_pennylane_maturity_audit(
         "provider_plugin_gradient_parity": (
             "passed" if plugin_matrix.provider_plugin_gradient_parity_ready else "blocked"
         ),
-        "hardware_execution": "blocked",
+        "hardware_execution": (
+            "passed" if plugin_matrix.hardware_plugin_execution_ready else "blocked"
+        ),
         "promotion_grade_isolated_benchmarks": "blocked",
     }
     identical_circuit_ready = all(
@@ -1198,6 +1305,7 @@ def _pennylane_single_pauli(qml: Any, qubit: int, label: str) -> object:
 
 __all__ = [
     "PennyLaneGradientAgreementResult",
+    "PennyLaneHardwarePluginExecutionArtifact",
     "PennyLaneMaturityAuditResult",
     "PennyLanePluginMatrixResult",
     "PennyLanePluginMatrixRoute",

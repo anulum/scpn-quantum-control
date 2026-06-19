@@ -5,6 +5,11 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-06-19 — Added fail-closed PennyLane hardware-plugin execution artefacts,
+  requiring ticket, allowlist, shot-budget, raw-count, calibration, metadata,
+  and live hardware execution evidence before the plugin matrix can mark
+  hardware execution as passed while isolated-benchmark promotion remains
+  blocked.
 - 2026-06-19 — Added fail-closed PennyLane provider-plugin gradient parity
   artefacts, pairing them with matching provider execution artefacts before the
   plugin matrix can mark provider-gradient parity as passed while hardware and

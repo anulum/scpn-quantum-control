@@ -240,6 +240,7 @@ from .param_shift import (
 )
 from .pennylane_bridge import (
     PennyLaneGradientAgreementResult,
+    PennyLaneHardwarePluginExecutionArtifact,
     PennyLaneMaturityAuditResult,
     PennyLanePluginMatrixResult,
     PennyLanePluginMatrixRoute,
@@ -822,6 +823,7 @@ __all__ = [
     "check_pennylane_phase_qnode_import_round_trip",
     "is_pennylane_import_available",
     "PennyLaneGradientAgreementResult",
+    "PennyLaneHardwarePluginExecutionArtifact",
     "PennyLaneMaturityAuditResult",
     "PennyLanePluginMatrixResult",
     "PennyLanePluginMatrixRoute",
