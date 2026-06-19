@@ -209,18 +209,28 @@ class PennyLaneProviderPluginExecutionArtifact:
             "circuit_fingerprint",
             "execution_mode",
         ):
-            if not str(getattr(self, field_name)).strip():
-                raise ValueError(f"{field_name} must be non-empty")
-        if self.shots is not None and self.shots <= 0:
+            object.__setattr__(
+                self,
+                field_name,
+                _normalise_metadata_text(field_name, getattr(self, field_name)),
+            )
+        if isinstance(self.shots, bool) or (self.shots is not None and self.shots <= 0):
             raise ValueError("shots must be positive when provided")
         if self.hardware_execution:
             raise ValueError(
                 "provider-plugin execution artefacts must not claim hardware execution"
             )
-        if self.raw_result_replay_artifact_id is not None and not (
-            self.raw_result_replay_artifact_id.strip()
-        ):
-            raise ValueError("raw_result_replay_artifact_id must be non-empty when provided")
+        if self.execution_mode.lower() in {"hardware", "qpu", "live_qpu", "provider_qpu"}:
+            raise ValueError("execution_mode must not imply hardware execution")
+        if self.raw_result_replay_artifact_id is not None:
+            object.__setattr__(
+                self,
+                "raw_result_replay_artifact_id",
+                _normalise_metadata_text(
+                    "raw_result_replay_artifact_id",
+                    self.raw_result_replay_artifact_id,
+                ),
+            )
         for field_name in ("result_digest", "metadata_digest"):
             digest = str(getattr(self, field_name))
             hex_digest = digest.removeprefix("sha256:")
@@ -230,6 +240,7 @@ class PennyLaneProviderPluginExecutionArtifact:
                 and all(char in "0123456789abcdefABCDEF" for char in hex_digest)
             ):
                 raise ValueError(f"{field_name} must be a sha256:<64-hex> digest")
+            object.__setattr__(self, field_name, f"sha256:{hex_digest.lower()}")
 
     def to_dict(self) -> dict[str, object]:
         """Return JSON-ready provider-plugin execution metadata."""
@@ -437,6 +448,15 @@ def _as_non_negative_tolerance(value: float) -> float:
     return tolerance
 
 
+def _normalise_metadata_text(field_name: str, value: object) -> str:
+    text = str(value).strip()
+    if not text:
+        raise ValueError(f"{field_name} must be non-empty")
+    if any(ord(character) < 32 or ord(character) == 127 for character in text):
+        raise ValueError(f"{field_name} must not contain control characters")
+    return text
+
+
 def _as_finite_scalar(name: str, value: object) -> float:
     raw = np.asarray(value)
     if raw.shape != () or raw.dtype.kind in {"b", "O", "S", "U", "c"}:
@@ -573,6 +593,9 @@ def build_pennylane_qnode_from_phase_qnode(
     observables remain explicit non-claims.
     """
     qml = _load_pennylane()
+    canonical_device_name = _normalise_metadata_text("device_name", device_name)
+    canonical_interface = _normalise_metadata_text("interface", interface)
+    canonical_diff_method = _normalise_metadata_text("diff_method", diff_method)
     shot_policy = _as_optional_shots(shots)
     parameter_count = _phase_qnode_parameter_count(circuit)
     support_report = phase_qnode_support_report(circuit, np.zeros(parameter_count, dtype=float))
@@ -583,7 +606,7 @@ def build_pennylane_qnode_from_phase_qnode(
             "PennyLane QNode conversion does not support Pauli covariance observables; "
             "use local Phase-QNode execution for covariance product-rule gradients"
         )
-    device = qml.device(device_name, wires=circuit.n_qubits, shots=shot_policy)
+    device = qml.device(canonical_device_name, wires=circuit.n_qubits, shots=shot_policy)
 
     def qnode_body(parameters: ArrayLike) -> object:
         values = _as_qnode_parameter_argument("values", parameters, width=parameter_count)
@@ -591,7 +614,11 @@ def build_pennylane_qnode_from_phase_qnode(
             _apply_pennylane_operation(qml, cast(PhaseQNodeOperation, operation), values)
         return qml.expval(_pennylane_observable(qml, circuit.observable, circuit.n_qubits))
 
-    qnode = qml.qnode(device, interface=interface, diff_method=diff_method)(qnode_body)
+    qnode = qml.qnode(
+        device,
+        interface=canonical_interface,
+        diff_method=canonical_diff_method,
+    )(qnode_body)
     _attach_phase_qnode_metadata(qnode, circuit)
     try:
         gradient = qml.grad(qnode, argnum=0)
@@ -600,11 +627,11 @@ def build_pennylane_qnode_from_phase_qnode(
     return PennyLaneQNodeConversionResult(
         qnode=qnode,
         gradient=gradient,
-        device_name=device_name,
+        device_name=canonical_device_name,
         n_qubits=circuit.n_qubits,
         shots=shot_policy,
-        interface=interface,
-        diff_method=diff_method,
+        interface=canonical_interface,
+        diff_method=canonical_diff_method,
         gates=support_report.gates,
         observable_kind=support_report.observable_kind,
         differentiable_parameters=support_report.differentiable_parameters,

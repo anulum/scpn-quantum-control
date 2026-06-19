@@ -14,6 +14,7 @@ from typing import Any, cast
 
 import numpy as np
 import pytest
+from numpy.typing import NDArray
 
 import scpn_quantum_control.phase.pennylane_bridge as pennylane_bridge
 from scpn_quantum_control.phase import (
@@ -38,6 +39,8 @@ from scpn_quantum_control.phase import (
     run_pennylane_maturity_audit,
     run_pennylane_plugin_matrix,
 )
+
+FloatArray = NDArray[np.float64]
 
 
 class _FakeObservable:
@@ -80,9 +83,9 @@ class _FakePennyLane:
         self,
         device: object,
         **metadata: object,
-    ) -> Callable[[Callable[[np.ndarray], object]], Callable[[np.ndarray], float]]:
-        def decorate(function: Callable[[np.ndarray], object]) -> Callable[[np.ndarray], float]:
-            def wrapper(params: np.ndarray) -> float:
+    ) -> Callable[[Callable[[FloatArray], object]], Callable[[FloatArray], float]]:
+        def decorate(function: Callable[[FloatArray], object]) -> Callable[[FloatArray], float]:
+            def wrapper(params: FloatArray) -> float:
                 function(params)
                 circuit = cast(Any, wrapper)._scpn_phase_qnode_circuit
                 return execute_phase_qnode_circuit(circuit, params).value
@@ -93,8 +96,8 @@ class _FakePennyLane:
 
         return decorate
 
-    def grad(self, qnode: Callable[[np.ndarray], object]) -> Callable[[np.ndarray], np.ndarray]:
-        def gradient(params: np.ndarray) -> np.ndarray:
+    def grad(self, qnode: Callable[[FloatArray], object]) -> Callable[[FloatArray], FloatArray]:
+        def gradient(params: FloatArray) -> FloatArray:
             circuit = cast(Any, qnode)._scpn_phase_qnode_circuit
             return parameter_shift_phase_qnode_gradient(circuit, params).gradient
 
@@ -112,7 +115,7 @@ class _FakePennyLane:
         self.calls.append(("Hamiltonian", (tuple(coefficients), tuple(observables)), {}))
         return _FakeObservable("Hamiltonian", (), terms=tuple(observables))
 
-    def Hermitian(self, matrix: np.ndarray, *, wires: range) -> _FakeObservable:
+    def Hermitian(self, matrix: FloatArray, *, wires: range) -> _FakeObservable:
         self.calls.append(("Hermitian", (np.asarray(matrix),), {"wires": tuple(wires)}))
         return _FakeObservable("Hermitian", tuple(wires))
 
@@ -152,11 +155,11 @@ class _FakePennyLane:
         return _FakeObservable(name, wire_value)
 
 
-def _objective(values: np.ndarray) -> float:
+def _objective(values: FloatArray) -> float:
     return float(np.cos(values[0]) + 0.25 * np.sin(values[1]))
 
 
-def _closed_form_gradient(values: np.ndarray) -> np.ndarray:
+def _closed_form_gradient(values: FloatArray) -> FloatArray:
     return np.array([-np.sin(values[0]), 0.25 * np.cos(values[1])], dtype=float)
 
 
@@ -181,8 +184,8 @@ def test_pennylane_bridge_reports_gradient_agreement(monkeypatch: pytest.MonkeyP
 def test_pennylane_bridge_reports_gradient_mismatch(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(pennylane_bridge, "_load_pennylane", lambda: object())
 
-    def shifted_gradient(values: np.ndarray) -> np.ndarray:
-        return cast(np.ndarray, _closed_form_gradient(values) + np.array([0.01, 0.0], dtype=float))
+    def shifted_gradient(values: FloatArray) -> FloatArray:
+        return cast(FloatArray, _closed_form_gradient(values) + np.array([0.01, 0.0], dtype=float))
 
     result = check_pennylane_parameter_shift_agreement(
         _objective,
@@ -202,10 +205,10 @@ def test_pennylane_bridge_reports_multi_frequency_gradient_agreement(
     monkeypatch.setattr(pennylane_bridge, "_load_pennylane", lambda: object())
     rule = multi_frequency_parameter_shift_rule([1.0, 2.0])
 
-    def objective(values: np.ndarray) -> float:
+    def objective(values: FloatArray) -> float:
         return float(np.sin(values[0]) + 0.1 * np.cos(2.0 * values[0]))
 
-    def external_gradient(values: np.ndarray) -> np.ndarray:
+    def external_gradient(values: FloatArray) -> FloatArray:
         return np.array([np.cos(values[0]) - 0.2 * np.sin(2.0 * values[0])], dtype=float)
 
     result = check_pennylane_parameter_shift_agreement(
@@ -254,10 +257,10 @@ def test_pennylane_bridge_reports_multi_frequency_qnode_round_trip(
     monkeypatch.setattr(pennylane_bridge, "_load_pennylane", lambda: object())
     rule = multi_frequency_parameter_shift_rule([1.0, 2.0])
 
-    def objective(values: np.ndarray) -> float:
+    def objective(values: FloatArray) -> float:
         return float(np.sin(values[0]) + 0.1 * np.cos(2.0 * values[0]))
 
-    def external_gradient(values: np.ndarray) -> np.ndarray:
+    def external_gradient(values: FloatArray) -> FloatArray:
         return np.array([np.cos(values[0]) - 0.2 * np.sin(2.0 * values[0])], dtype=float)
 
     result = check_pennylane_qnode_round_trip(
@@ -291,7 +294,7 @@ def test_pennylane_bridge_builds_phase_qnode_conversion_and_round_trips(
 
     conversion = build_pennylane_qnode_from_phase_qnode(circuit, shots=None)
     value = cast(float, conversion.qnode(params))
-    gradient = cast(np.ndarray, conversion.gradient(params))
+    gradient = cast(FloatArray, conversion.gradient(params))
     round_trip = check_pennylane_phase_qnode_round_trip(circuit, params)
     payload = cast(dict[str, Any], conversion.to_dict())
 
@@ -320,6 +323,70 @@ def test_pennylane_bridge_builds_phase_qnode_conversion_and_round_trips(
     assert ("RY", (params[0],), {"wires": 0}) in fake_qml.calls
     assert ("RX", (params[1],), {"wires": 0}) in fake_qml.calls
     assert any(call[0] == "expval" for call in fake_qml.calls)
+
+
+def test_pennylane_bridge_canonicalises_conversion_metadata_before_dispatch(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    fake_qml = _FakePennyLane()
+    monkeypatch.setattr(pennylane_bridge, "_load_pennylane", lambda: fake_qml)
+    circuit = PhaseQNodeCircuit(
+        1,
+        (("ry", (0,), 0),),
+        PauliTerm(1.0, ((0, "z"),)),
+    )
+
+    conversion = build_pennylane_qnode_from_phase_qnode(
+        circuit,
+        device_name="  plugin.simulator  ",
+        interface="  autograd  ",
+        diff_method="  parameter-shift  ",
+        shots=64,
+    )
+
+    assert conversion.device_name == "plugin.simulator"
+    assert conversion.interface == "autograd"
+    assert conversion.diff_method == "parameter-shift"
+    assert fake_qml.devices == [{"name": "plugin.simulator", "wires": 1, "shots": 64}]
+    assert cast(Any, conversion.qnode).metadata == {
+        "interface": "autograd",
+        "diff_method": "parameter-shift",
+    }
+
+
+@pytest.mark.parametrize(
+    ("field_name", "device_name", "interface", "diff_method"),
+    [
+        ("device_name", "", "autograd", "parameter-shift"),
+        ("device_name", "default.qubit\nbad", "autograd", "parameter-shift"),
+        ("interface", "default.qubit", "autograd\x7fbad", "parameter-shift"),
+        ("diff_method", "default.qubit", "autograd", "   "),
+    ],
+)
+def test_pennylane_bridge_rejects_unsafe_conversion_metadata(
+    monkeypatch: pytest.MonkeyPatch,
+    field_name: str,
+    device_name: str,
+    interface: str,
+    diff_method: str,
+) -> None:
+    fake_qml = _FakePennyLane()
+    monkeypatch.setattr(pennylane_bridge, "_load_pennylane", lambda: fake_qml)
+    circuit = PhaseQNodeCircuit(
+        1,
+        (("ry", (0,), 0),),
+        PauliTerm(1.0, ((0, "z"),)),
+    )
+
+    with pytest.raises(ValueError, match=field_name):
+        build_pennylane_qnode_from_phase_qnode(
+            circuit,
+            device_name=device_name,
+            interface=interface,
+            diff_method=diff_method,
+        )
+
+    assert fake_qml.devices == []
 
 
 def test_pennylane_maturity_audit_records_export_metadata_and_provider_gaps(
@@ -458,6 +525,76 @@ def test_pennylane_provider_plugin_execution_artifact_rejects_hardware_claim() -
         )
 
 
+@pytest.mark.parametrize("case", ["plugin_name", "execution_mode", "shots", "replay"])
+def test_pennylane_provider_plugin_execution_artifact_rejects_malformed_metadata(
+    case: str,
+) -> None:
+    if case == "plugin_name":
+        with pytest.raises(ValueError, match="plugin_name"):
+            PennyLaneProviderPluginExecutionArtifact(
+                artifact_id="pl-provider-sim-20260616",
+                plugin_name="provider\nplugin",
+                provider_name="example-provider",
+                device_name="example.simulator",
+                backend_name="example_sim_v1",
+                circuit_fingerprint="phase-qnode:ry-rx-pauli-z:v1",
+                execution_mode="provider_simulator",
+                shots=4096,
+                result_digest="sha256:" + "a" * 64,
+                metadata_digest="sha256:" + "b" * 64,
+                hardware_execution=False,
+                raw_result_replay_artifact_id="pl-provider-replay-20260616",
+            )
+    elif case == "execution_mode":
+        with pytest.raises(ValueError, match="execution_mode"):
+            PennyLaneProviderPluginExecutionArtifact(
+                artifact_id="pl-provider-sim-20260616",
+                plugin_name="pennylane-provider-simulator",
+                provider_name="example-provider",
+                device_name="example.simulator",
+                backend_name="example_sim_v1",
+                circuit_fingerprint="phase-qnode:ry-rx-pauli-z:v1",
+                execution_mode="qpu",
+                shots=4096,
+                result_digest="sha256:" + "a" * 64,
+                metadata_digest="sha256:" + "b" * 64,
+                hardware_execution=False,
+                raw_result_replay_artifact_id="pl-provider-replay-20260616",
+            )
+    elif case == "shots":
+        with pytest.raises(ValueError, match="shots"):
+            PennyLaneProviderPluginExecutionArtifact(
+                artifact_id="pl-provider-sim-20260616",
+                plugin_name="pennylane-provider-simulator",
+                provider_name="example-provider",
+                device_name="example.simulator",
+                backend_name="example_sim_v1",
+                circuit_fingerprint="phase-qnode:ry-rx-pauli-z:v1",
+                execution_mode="provider_simulator",
+                shots=True,
+                result_digest="sha256:" + "a" * 64,
+                metadata_digest="sha256:" + "b" * 64,
+                hardware_execution=False,
+                raw_result_replay_artifact_id="pl-provider-replay-20260616",
+            )
+    else:
+        with pytest.raises(ValueError, match="raw_result_replay_artifact_id"):
+            PennyLaneProviderPluginExecutionArtifact(
+                artifact_id="pl-provider-sim-20260616",
+                plugin_name="pennylane-provider-simulator",
+                provider_name="example-provider",
+                device_name="example.simulator",
+                backend_name="example_sim_v1",
+                circuit_fingerprint="phase-qnode:ry-rx-pauli-z:v1",
+                execution_mode="provider_simulator",
+                shots=4096,
+                result_digest="sha256:" + "a" * 64,
+                metadata_digest="sha256:" + "b" * 64,
+                hardware_execution=False,
+                raw_result_replay_artifact_id="  ",
+            )
+
+
 def test_pennylane_maturity_audit_records_provider_execution_artifact_without_promotion(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -534,7 +671,7 @@ def test_pennylane_bridge_reports_qnode_round_trip_mismatch(
 ) -> None:
     monkeypatch.setattr(pennylane_bridge, "_load_pennylane", lambda: object())
 
-    def shifted_objective(values: np.ndarray) -> float:
+    def shifted_objective(values: FloatArray) -> float:
         return _objective(values) + 0.01
 
     result = check_pennylane_qnode_round_trip(
@@ -556,7 +693,7 @@ def test_pennylane_bridge_round_trip_rejects_bad_values(
 ) -> None:
     monkeypatch.setattr(pennylane_bridge, "_load_pennylane", lambda: object())
 
-    def non_finite_objective(values: np.ndarray) -> float:
+    def non_finite_objective(values: FloatArray) -> float:
         return float("nan")
 
     with pytest.raises(ValueError, match="PennyLane objective"):
@@ -571,7 +708,7 @@ def test_pennylane_bridge_round_trip_rejects_bad_values(
 def test_pennylane_bridge_fails_closed_when_pennylane_missing(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    def unavailable():
+    def unavailable() -> None:
         raise ImportError("blocked")
 
     monkeypatch.setattr(pennylane_bridge, "_load_pennylane", unavailable)

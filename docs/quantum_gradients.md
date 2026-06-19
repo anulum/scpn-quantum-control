@@ -1874,10 +1874,13 @@ PennyLane equivalents, including CH, Toffoli, Fredkin, and controlled phase
 equivalents for CS/CT/CCZ where the optional dependency is installed. Provider
 submission, hardware execution, dynamic circuits, noise models, and covariance
 observable conversion remain explicit non-claims.
+Device, interface, and diff-method metadata is trimmed and rejected when empty
+or when it contains control characters before `qml.device(...)` or QNode
+construction is reached.
 `PennyLaneProviderPluginExecutionArtifact` validates provider-plugin execution
 metadata with non-empty plugin/provider/device/backend identities, positive
 shots when present, SHA-256 result and metadata digests, optional replay
-metadata, and `hardware_execution=False`.
+metadata, non-hardware execution mode, and `hardware_execution=False`.
 `run_pennylane_plugin_matrix(...)` records local `default.qubit` exact-state,
 shot-policy metadata, generated Phase-QNode export, and supported tape-import
 routes as passed. Passing a validated provider execution artefact marks only

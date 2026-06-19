@@ -1373,10 +1373,14 @@ The generated-QNode route covers the registered static gate family and direct
 expectation observables with PennyLane equivalents. It does not claim provider
 submission, hardware execution, dynamic circuits, noise models, or covariance
 observable conversion.
+Generated-QNode `device_name`, `interface`, and `diff_method` metadata is
+trimmed and rejected when empty or when it contains control characters before
+PennyLane device creation, so plugin selection remains explicit and auditable.
 `PennyLaneProviderPluginExecutionArtifact` validates provider-plugin execution
 metadata with non-empty plugin/provider/device/backend identities, a
 circuit-fingerprint string, positive shots when present, replay metadata when
-present, SHA-256 result and metadata digests, and `hardware_execution=False`.
+present, SHA-256 result and metadata digests, non-hardware execution mode, and
+`hardware_execution=False`.
 `run_pennylane_plugin_matrix` records local `default.qubit` exact-state,
 shot-policy metadata, generated Phase-QNode export, and supported tape-import
 routes as passed. Passing a validated provider execution artefact marks only

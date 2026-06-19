@@ -5,6 +5,12 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-06-19 — Hardened the PennyLane Phase-QNode conversion and provider-plugin
+  artefact boundary by canonicalising generated-QNode device/interface/diff
+  metadata before PennyLane dispatch, rejecting control-character metadata before
+  device creation, rejecting boolean provider-shot counts, rejecting
+  hardware-implying provider execution modes, and normalising SHA-256 artefact
+  digests without promoting provider, hardware, or benchmark claims.
 - 2026-06-19 — Hardened the PennyLane HAL device route by normalising local
   plugin device names before `qml.device(...)`, preserving `device_kwargs`
   dispatch evidence, rejecting empty/control-character device names at adapter
