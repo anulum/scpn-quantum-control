@@ -256,9 +256,10 @@ Reverse-mode program gradients are available through
 `program_adjoint_grad(...)` and `program_adjoint_value_and_grad(...)`. These
 functions execute program capture, then require supported adjoint generation
 over the captured scalar IR. Generated `ProgramADAdjointStep` rows bind the
-local pullbacks to `program_ad_effect_ir.v1`; unsupported generation operations
-fail closed. The API does not substitute finite differences or claim a general
-arbitrary-Python MLIR/LLVM compiler.
+local pullback inputs and finite pullback coefficients to
+`program_ad_effect_ir.v1`; unsupported generation operations fail closed. The
+API does not substitute finite differences or claim a general arbitrary-Python
+MLIR/LLVM compiler.
 
 Supported captured scalar program traces can also be promoted to an executable
 replay kernel with `compile_whole_program_ad_trace_to_executable(...)`. The

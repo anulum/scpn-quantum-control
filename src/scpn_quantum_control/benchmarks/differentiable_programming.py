@@ -914,6 +914,11 @@ def _program_adjoint_replay_provenance_case() -> DifferentiableProgrammingBenchm
         or adjoint.replay_ir_format != "program_ad_effect_ir.v1"
         or adjoint.adjoint_step_count != len(result.ir_nodes)
         or any(not step.supported for step in adjoint.adjoint_steps)
+        or not any(step.contribution_inputs for step in adjoint.adjoint_steps)
+        or any(
+            len(step.contribution_inputs) != len(step.contribution_scales)
+            for step in adjoint.adjoint_steps
+        )
     ):
         raise ValueError("program AD adjoint generation provenance does not match program IR")
 
@@ -940,10 +945,11 @@ def _program_adjoint_replay_provenance_case() -> DifferentiableProgrammingBenchm
         else None,
         claim_boundary=(
             "ProgramADAdjointResult and ProgramADAdjointStep generation provenance "
-            "over supported executed scalar IR nodes, effects, control regions, "
-            "and phi metadata in program_ad_effect_ir.v1; local conformance only, "
-            "not full reverse-mode compiler AD, non-executed branch adjoints, Rust, "
-            "LLVM/JIT, hardware, or performance evidence; no wall-clock performance claim"
+            "over supported executed scalar IR nodes, finite local pullback scales, "
+            "effects, control regions, and phi metadata in program_ad_effect_ir.v1; "
+            "local conformance only, not full reverse-mode compiler AD, non-executed "
+            "branch adjoints, Rust, LLVM/JIT, hardware, or performance evidence; "
+            "no wall-clock performance claim"
         ),
     )
 

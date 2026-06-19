@@ -25,6 +25,7 @@ import sys
 import textwrap
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
+from numbers import Real
 from typing import Any, Literal, NoReturn, cast
 
 import numpy as np
@@ -632,9 +633,10 @@ class ProgramADAdjointStep:
     """One generated reverse-adjoint step over stabilized Program AD IR.
 
     The step binds a primal SSA value and effect row to the local pullback
-    inputs used by reverse-mode adjoint generation. It is an auditable generation
-    plan over ``program_ad_effect_ir.v1`` metadata; it does not add
-    non-executed branch adjoints or executable compiler lowering.
+    inputs and finite local pullback coefficients used by reverse-mode adjoint
+    generation. It is an auditable generation plan over
+    ``program_ad_effect_ir.v1`` metadata; it does not add non-executed branch
+    adjoints or executable compiler lowering.
     """
 
     index: int
@@ -644,6 +646,7 @@ class ProgramADAdjointStep:
     input_values: tuple[str, ...]
     contribution_inputs: tuple[str, ...]
     supported: bool
+    contribution_scales: tuple[float, ...] = ()
     unsupported_reason: str | None = None
 
     def __post_init__(self) -> None:
@@ -665,6 +668,24 @@ class ProgramADAdjointStep:
             raise ValueError(
                 "program AD adjoint step contribution_inputs must be sorted and unique"
             )
+        if len(self.contribution_scales) != len(self.contribution_inputs):
+            raise ValueError(
+                "program AD adjoint step contribution_scales length must match contribution_inputs"
+            )
+        normalized_scales: list[float] = []
+        raw_scales = cast(tuple[object, ...], self.contribution_scales)
+        for scale in raw_scales:
+            if isinstance(scale, bool) or not isinstance(scale, Real):
+                raise ValueError(
+                    "program AD adjoint step contribution_scales entries must be finite floats"
+                )
+            scale_float = float(scale)
+            if not np.isfinite(scale_float):
+                raise ValueError(
+                    "program AD adjoint step contribution_scales entries must be finite"
+                )
+            normalized_scales.append(scale_float)
+        object.__setattr__(self, "contribution_scales", tuple(normalized_scales))
         if not isinstance(self.supported, bool):
             raise ValueError("program AD adjoint step supported must be a boolean")
         if self.supported and self.unsupported_reason is not None:
@@ -684,6 +705,7 @@ class ProgramADAdjointStep:
             "operation": self.operation,
             "input_values": list(self.input_values),
             "contribution_inputs": list(self.contribution_inputs),
+            "contribution_scales": list(self.contribution_scales),
             "supported": self.supported,
             "unsupported_reason": self.unsupported_reason,
         }
@@ -8252,6 +8274,7 @@ def _program_adjoint_steps_from_ir(
         unsupported_reason: str | None = None
         supported = True
         contribution_inputs: tuple[str, ...] = ()
+        contribution_scales: tuple[float, ...] = ()
         if ssa_value is None:
             supported = False
             unsupported_reason = "missing_ssa_value"
@@ -8265,8 +8288,12 @@ def _program_adjoint_steps_from_ir(
                 supported = False
                 unsupported_reason = str(exc)
             else:
-                contribution_inputs = tuple(
-                    sorted({input_name for input_name, _scale in contributions})
+                scale_by_input: dict[str, float] = {}
+                for input_name, scale in contributions:
+                    scale_by_input[input_name] = scale_by_input.get(input_name, 0.0) + scale
+                contribution_inputs = tuple(sorted(scale_by_input))
+                contribution_scales = tuple(
+                    scale_by_input[input_name] for input_name in contribution_inputs
                 )
         steps.append(
             ProgramADAdjointStep(
@@ -8276,6 +8303,7 @@ def _program_adjoint_steps_from_ir(
                 operation=node.op,
                 input_values=node.inputs,
                 contribution_inputs=contribution_inputs,
+                contribution_scales=contribution_scales,
                 supported=supported,
                 unsupported_reason=unsupported_reason,
             )

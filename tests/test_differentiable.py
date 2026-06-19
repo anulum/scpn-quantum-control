@@ -11278,10 +11278,47 @@ def test_program_adjoint_replay_matches_forward_program_ad_for_supported_ir() ->
     payload = adjoint.to_dict()
     assert payload["adjoint_step_count"] == len(result.ir_nodes)
     assert payload["adjoint_steps"][0]["primal_effect"] is not None
+    assert len(payload["adjoint_steps"][0]["contribution_inputs"]) == len(
+        payload["adjoint_steps"][0]["contribution_scales"]
+    )
     np.testing.assert_allclose(adjoint.gradient, result.gradient, rtol=1.0e-12, atol=1.0e-12)
     np.testing.assert_allclose(
         program_adjoint_gradient(result), result.gradient, rtol=1.0e-12, atol=1.0e-12
     )
+
+
+def test_program_adjoint_generation_steps_record_local_pullback_scales() -> None:
+    """Generated adjoint steps should expose finite local pullback coefficients."""
+
+    def objective(values: np.ndarray) -> object:
+        x, y = values
+        return (x * y) + (x + x)
+
+    result = whole_program_value_and_grad(
+        objective,
+        np.array([2.0, 3.0], dtype=np.float64),
+        parameters=(Parameter("x"), Parameter("y")),
+    )
+    adjoint = program_adjoint_result(result)
+
+    mul_step = next(step for step in adjoint.adjoint_steps if step.operation == "mul")
+    assert mul_step.contribution_inputs == ("%0", "%1")
+    np.testing.assert_allclose(mul_step.contribution_scales, [3.0, 2.0], atol=1.0e-12)
+
+    repeated_add_step = next(
+        step
+        for step in adjoint.adjoint_steps
+        if step.operation == "add" and step.input_values == ("%0", "%0")
+    )
+    assert repeated_add_step.contribution_inputs == ("%0",)
+    np.testing.assert_allclose(repeated_add_step.contribution_scales, [2.0], atol=1.0e-12)
+
+    payload_steps = {
+        tuple(step["input_values"]): step
+        for step in adjoint.to_dict()["adjoint_steps"]
+        if step["operation"] == "add"
+    }
+    assert payload_steps[("%0", "%0")]["contribution_scales"] == [2.0]
 
 
 def test_program_adjoint_replay_supports_static_setitem_effects() -> None:
@@ -11341,6 +11378,7 @@ def test_program_adjoint_result_validation_paths() -> None:
     assert result.replay_ir_format == "program_ad_effect_ir.v1"
     assert result.adjoint_step_count == 1
     assert result.to_dict()["adjoint_steps"][0]["operation"] == "parameter"
+    assert result.to_dict()["adjoint_steps"][0]["contribution_scales"] == []
     with pytest.raises(ValueError, match="one-dimensional"):
         ProgramADAdjointResult(
             gradient=np.array([[1.0]], dtype=np.float64),
@@ -11432,6 +11470,39 @@ def test_program_adjoint_result_validation_paths() -> None:
             contribution_inputs=(),
             supported=True,
             unsupported_reason="not allowed",
+        )
+    with pytest.raises(ValueError, match="contribution_scales length"):
+        ProgramADAdjointStep(
+            index=0,
+            primal_value="%0",
+            primal_effect=0,
+            operation="add",
+            input_values=("%0", "%1"),
+            contribution_inputs=("%0",),
+            contribution_scales=(),
+            supported=True,
+        )
+    with pytest.raises(ValueError, match="contribution_scales entries must be finite"):
+        ProgramADAdjointStep(
+            index=0,
+            primal_value="%0",
+            primal_effect=0,
+            operation="add",
+            input_values=("%0", "%1"),
+            contribution_inputs=("%0",),
+            contribution_scales=(float("nan"),),
+            supported=True,
+        )
+    with pytest.raises(ValueError, match="contribution_scales entries must be finite floats"):
+        ProgramADAdjointStep(
+            index=0,
+            primal_value="%0",
+            primal_effect=0,
+            operation="add",
+            input_values=("%0", "%1"),
+            contribution_inputs=("%0",),
+            contribution_scales=("bad",),  # type: ignore[arg-type]
+            supported=True,
         )
 
 
