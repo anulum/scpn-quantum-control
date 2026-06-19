@@ -299,6 +299,8 @@ class PhaseJAXPhaseQNodePyTreeTransformResult:
     value_and_grad_gradient_pytree: object
     jacfwd_gradient: FloatArray
     jacrev_gradient: FloatArray
+    hessian: FloatArray
+    hessian_pytree: object
     jvp_value: float
     jvp_tangent: float
     vjp_value: float
@@ -314,6 +316,7 @@ class PhaseJAXPhaseQNodePyTreeTransformResult:
     leaf_shapes: tuple[tuple[int, ...], ...]
     max_abs_gradient_error: float
     max_abs_transform_error: float
+    max_abs_hessian_symmetry_error: float
     tolerance: float
     passed: bool
     native_framework_autodiff: bool
@@ -337,6 +340,8 @@ class PhaseJAXPhaseQNodePyTreeTransformResult:
             ),
             "jacfwd_gradient": self.jacfwd_gradient.tolist(),
             "jacrev_gradient": self.jacrev_gradient.tolist(),
+            "hessian": self.hessian.tolist(),
+            "hessian_pytree": _json_ready_pytree(self.hessian_pytree),
             "jvp_value": self.jvp_value,
             "jvp_tangent": self.jvp_tangent,
             "vjp_value": self.vjp_value,
@@ -352,6 +357,7 @@ class PhaseJAXPhaseQNodePyTreeTransformResult:
             "leaf_shapes": [list(shape) for shape in self.leaf_shapes],
             "max_abs_gradient_error": self.max_abs_gradient_error,
             "max_abs_transform_error": self.max_abs_transform_error,
+            "max_abs_hessian_symmetry_error": self.max_abs_hessian_symmetry_error,
             "tolerance": self.tolerance,
             "passed": self.passed,
             "native_framework_autodiff": self.native_framework_autodiff,
@@ -916,6 +922,7 @@ def _require_jax_phase_qnode_pytree_transform_support(jax_module: Any) -> None:
         "value_and_grad",
         "jacfwd",
         "jacrev",
+        "hessian",
         "jvp",
         "vjp",
         "vmap",
@@ -1075,6 +1082,45 @@ def _flatten_batched_runtime_pytree_gradient(
     if not np.all(np.isfinite(matrix)):
         raise ValueError(f"{name} must contain only finite values")
     return cast(FloatArray, matrix.astype(np.float64, copy=True))
+
+
+def _flatten_runtime_pytree_hessian(
+    jax_module: Any,
+    name: str,
+    hessian_pytree: object,
+    *,
+    leaf_shapes: tuple[tuple[int, ...], ...],
+    leaf_sizes: tuple[int, ...],
+) -> FloatArray:
+    blocks, _treedef = jax_module.tree_util.tree_flatten(hessian_pytree)
+    leaf_count = len(leaf_sizes)
+    expected_blocks = leaf_count * leaf_count
+    if len(blocks) != expected_blocks:
+        raise ValueError(f"{name} must contain {expected_blocks} Hessian blocks")
+    width = int(sum(leaf_sizes))
+    matrix = np.zeros((width, width), dtype=np.float64)
+    row_offset = 0
+    block_index = 0
+    for row_shape, row_size in zip(leaf_shapes, leaf_sizes, strict=True):
+        col_offset = 0
+        for col_shape, col_size in zip(leaf_shapes, leaf_sizes, strict=True):
+            block = np.asarray(blocks[block_index], dtype=float)
+            expected_shape = (*row_shape, *col_shape)
+            if block.shape != expected_shape:
+                raise ValueError(
+                    f"{name} block {block_index} must have shape {expected_shape}, "
+                    f"got {block.shape}"
+                )
+            matrix[
+                row_offset : row_offset + row_size,
+                col_offset : col_offset + col_size,
+            ] = block.reshape(row_size, col_size)
+            col_offset += col_size
+            block_index += 1
+        row_offset += row_size
+    if not np.all(np.isfinite(matrix)):
+        raise ValueError(f"{name} must contain only finite values")
+    return cast(FloatArray, matrix)
 
 
 def _jax_bounded_qnn_loss(
@@ -1710,10 +1756,11 @@ def jax_phase_qnode_pytree_transform_audit(
     The route accepts nested numeric PyTree parameter containers, lowers them
     into the registered deterministic Phase-QNode statevector value function,
     and validates native JAX ``grad``, ``value_and_grad``, ``jacfwd``,
-    ``jacrev``, ``jvp``, ``vjp``, ``vmap``, and ``jit`` against the canonical
-    SCPN parameter-shift gradient. It keeps the same fail-closed boundary as
-    the flat transform audit: no host callbacks, no finite-shot lowering, no
-    provider execution, no hardware submission, and no dynamic-circuit claim.
+    ``jacrev``, ``hessian``, ``jvp``, ``vjp``, ``vmap``, and ``jit`` against the
+    canonical SCPN parameter-shift gradient. It keeps the same fail-closed
+    boundary as the flat transform audit: no host callbacks, no finite-shot
+    lowering, no provider execution, no hardware submission, and no
+    dynamic-circuit claim.
     """
 
     jax_module, jnp = _load_jax()
@@ -1801,6 +1848,7 @@ def jax_phase_qnode_pytree_transform_audit(
     jit_value_obj, jit_gradient_obj = jax_module.jit(value_and_grad_fn)(raw_params)
     jacfwd_obj = jax_module.jacfwd(value_function)(raw_params)
     jacrev_obj = jax_module.jacrev(value_function)(raw_params)
+    hessian_obj = jax_module.hessian(value_function)(raw_params)
     jvp_value_obj, jvp_tangent_obj = jax_module.jvp(value_function, (raw_params,), (raw_tangent,))
     vjp_value_obj, pullback = jax_module.vjp(value_function, raw_params)
     (vjp_cotangent_obj,) = pullback(jnp.asarray(1.0))
@@ -1836,6 +1884,13 @@ def jax_phase_qnode_pytree_transform_audit(
         "JAX jacrev Phase-QNode PyTree gradient",
         jacrev_obj,
         width=parameter_values.size,
+    )
+    hessian_matrix = _flatten_runtime_pytree_hessian(
+        jax_module,
+        "JAX hessian Phase-QNode PyTree matrix",
+        hessian_obj,
+        leaf_shapes=leaf_shapes,
+        leaf_sizes=leaf_sizes,
     )
     vjp_cotangent_gradient = _flatten_runtime_pytree_gradient(
         jax_module,
@@ -1897,8 +1952,13 @@ def jax_phase_qnode_pytree_transform_audit(
         ),
     )
     max_abs_transform_error = max(float(error) for error in value_errors)
+    max_abs_hessian_symmetry_error = float(
+        np.max(np.abs(hessian_matrix - hessian_matrix.T), initial=0.0)
+    )
     passed = bool(
-        max_abs_gradient_error <= tolerance_value and max_abs_transform_error <= tolerance_value
+        max_abs_gradient_error <= tolerance_value
+        and max_abs_transform_error <= tolerance_value
+        and max_abs_hessian_symmetry_error <= tolerance_value
     )
     return PhaseJAXPhaseQNodePyTreeTransformResult(
         value=_as_scalar("JAX grad Phase-QNode PyTree value", value_function(raw_params)),
@@ -1912,6 +1972,8 @@ def jax_phase_qnode_pytree_transform_audit(
         value_and_grad_gradient_pytree=value_and_grad_gradient_obj,
         jacfwd_gradient=jacfwd_gradient,
         jacrev_gradient=jacrev_gradient,
+        hessian=hessian_matrix.copy(),
+        hessian_pytree=hessian_obj,
         jvp_value=_as_scalar("JAX jvp Phase-QNode PyTree value", jvp_value_obj),
         jvp_tangent=_as_scalar("JAX jvp Phase-QNode PyTree tangent", jvp_tangent_obj),
         vjp_value=_as_scalar("JAX vjp Phase-QNode PyTree value", vjp_value_obj),
@@ -1927,6 +1989,7 @@ def jax_phase_qnode_pytree_transform_audit(
         leaf_shapes=leaf_shapes,
         max_abs_gradient_error=max_abs_gradient_error,
         max_abs_transform_error=max_abs_transform_error,
+        max_abs_hessian_symmetry_error=max_abs_hessian_symmetry_error,
         tolerance=tolerance_value,
         passed=passed,
         native_framework_autodiff=True,
@@ -1938,6 +2001,7 @@ def jax_phase_qnode_pytree_transform_audit(
             "value_and_grad",
             "jacfwd",
             "jacrev",
+            "hessian",
             "jvp",
             "vjp",
             "vmap",

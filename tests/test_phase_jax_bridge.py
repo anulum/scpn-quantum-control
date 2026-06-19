@@ -970,6 +970,7 @@ def test_phase_jax_registered_qnode_pytree_transform_audit_uses_no_callback() ->
         "value_and_grad",
         "jacfwd",
         "jacrev",
+        "hessian",
         "jvp",
         "vjp",
         "vmap",
@@ -982,10 +983,15 @@ def test_phase_jax_registered_qnode_pytree_transform_audit_uses_no_callback() ->
     np.testing.assert_allclose(result.jacfwd_gradient, reference.gradient, atol=5e-5)
     np.testing.assert_allclose(result.jacrev_gradient, reference.gradient, atol=5e-5)
     np.testing.assert_allclose(result.vjp_cotangent_gradient, reference.gradient, atol=5e-5)
+    assert result.hessian.shape == (2, 2)
+    np.testing.assert_allclose(result.hessian, result.hessian.T, atol=5e-5)
+    assert result.max_abs_hessian_symmetry_error <= 5e-5
     assert result.batch_params.shape == (2, 2)
     assert result.vmap_gradients.shape == (2, 2)
     payload = result.to_dict()
     assert payload["host_callback"] is False
+    np.testing.assert_allclose(payload["hessian"], result.hessian, atol=5e-5)
+    assert payload["max_abs_hessian_symmetry_error"] <= 5e-5
     assert payload["leaf_shapes"] == [[1], [1]]
     assert payload["method"] == "jax_native_registered_phase_qnode_pytree_transform_audit"
     assert payload["claim_boundary"] == "registered_phase_qnode_jax_pytree_transform_lowering"

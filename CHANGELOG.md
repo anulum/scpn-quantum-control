@@ -8,9 +8,9 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 - 2026-06-19 — Added registered local Phase-QNode PyTree native JAX transform
   evidence through `jax_phase_qnode_pytree_transform_audit(...)`. The audit
   accepts structured numeric PyTree parameters, validates native `grad`,
-  `value_and_grad`, `jacfwd`, `jacrev`, `jvp`, `vjp`, `vmap`, and `jit`
-  against SCPN parameter-shift references without host callbacks, exports the
-  result surface, updates the JAX lowering matrix, and adds a non-isolated
+  `value_and_grad`, `jacfwd`, `jacrev`, `hessian`, `jvp`, `vjp`, `vmap`, and
+  `jit` against SCPN parameter-shift references without host callbacks, exports
+  the result surface, updates the JAX lowering matrix, and adds a non-isolated
   quantum-gradient conformance benchmark row while provider, hardware,
   finite-shot, dynamic-circuit, and performance-promotion claims remain blocked.
 - 2026-06-19 — Hardened optional JAX availability detection so import-time

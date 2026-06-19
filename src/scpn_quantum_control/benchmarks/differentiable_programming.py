@@ -464,14 +464,18 @@ def _jax_registered_phase_qnode_pytree_transform_case() -> QuantumGradientBenchm
         parameter_shift_gradient=result.gradient,
         finite_difference_gradient=finite_difference_certificate.finite_difference_gradient,
         analytic_gradient=result.parameter_shift_gradient,
-        max_abs_reference_error=max(result.max_abs_gradient_error, result.max_abs_transform_error),
+        max_abs_reference_error=max(
+            result.max_abs_gradient_error,
+            result.max_abs_transform_error,
+            result.max_abs_hessian_symmetry_error,
+        ),
         max_abs_finite_difference_error=finite_difference_certificate.max_abs_error,
         verification_passed=result.passed and finite_difference_certificate.passed,
         evaluations=finite_difference_certificate.total_evaluations
         + (2 * values.size * (result.batch_params.shape[0] + 1)),
         claim_boundary=(
-            "native JAX PyTree grad, value_and_grad, jacfwd, jacrev, jvp, "
-            "vjp, vmap, and jit statevector lowering for deterministic "
+            "native JAX PyTree grad, value_and_grad, jacfwd, jacrev, "
+            "hessian, jvp, vjp, vmap, and jit statevector lowering for deterministic "
             "registered local Phase-QNode circuits compared with SCPN "
             "parameter-shift references; no wall-clock performance claim and "
             "no provider, hardware, isolated benchmark, or performance promotion"

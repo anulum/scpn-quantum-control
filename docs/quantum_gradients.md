@@ -1727,8 +1727,9 @@ references, checks JVP/VJP contractions and Hessian symmetry, and reports
 `host_callback=False`. `jax_phase_qnode_pytree_transform_audit(...)` accepts
 nested numeric PyTree parameters for the same registered local circuit family,
 checks native JAX `grad`, `value_and_grad`, `jacfwd`, `jacrev`, `jvp`, `vjp`,
-`vmap`, and `jit` against SCPN parameter-shift references, restores gradients
-to the caller's PyTree structure, and reports `host_callback=False`.
+`hessian`, `vmap`, and `jit` against SCPN parameter-shift references, restores
+gradients to the caller's PyTree structure, records flattened Hessian symmetry
+evidence, and reports `host_callback=False`.
 `run_jax_phase_qnode_lowering_matrix(...)` makes the
 native-lowering boundary explicit: bounded QNN native, custom-VJP, JIT, VMAP,
 PyTree, registered deterministic statevector, and registered deterministic
