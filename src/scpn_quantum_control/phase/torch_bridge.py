@@ -385,6 +385,55 @@ class PhaseTorchPhaseQNodeTransformResult:
 
 
 @dataclass(frozen=True)
+class PhaseTorchPhaseQNodeCompileResult:
+    """Native ``torch.compile`` evidence for registered local Phase-QNode circuits."""
+
+    value: float
+    gradient: FloatArray
+    parameter_shift_value: float
+    parameter_shift_gradient: FloatArray
+    torch_value: Any
+    torch_gradient: Any
+    max_abs_error: float
+    l2_error: float
+    tolerance: float
+    passed: bool
+    torch_compile_supported: bool
+    compiled_value_supported: bool
+    compiled_gradient_supported: bool
+    fullgraph: bool
+    dynamic: bool
+    native_framework_autodiff: bool = True
+    host_boundary: bool = False
+    method: str = "torch_native_registered_phase_qnode_compile_audit"
+    claim_boundary: str = "registered_phase_qnode_torch_compile_lowering"
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready registered Phase-QNode PyTorch compile evidence."""
+        return {
+            "value": self.value,
+            "gradient": self.gradient.tolist(),
+            "parameter_shift_value": self.parameter_shift_value,
+            "parameter_shift_gradient": self.parameter_shift_gradient.tolist(),
+            "max_abs_error": self.max_abs_error,
+            "l2_error": self.l2_error,
+            "tolerance": self.tolerance,
+            "passed": self.passed,
+            "torch_compile_supported": self.torch_compile_supported,
+            "compiled_value_supported": self.compiled_value_supported,
+            "compiled_gradient_supported": self.compiled_gradient_supported,
+            "fullgraph": self.fullgraph,
+            "dynamic": self.dynamic,
+            "native_framework_autodiff": self.native_framework_autodiff,
+            "host_boundary": self.host_boundary,
+            "method": self.method,
+            "claim_boundary": self.claim_boundary,
+            "torch_value_type": type(self.torch_value).__name__,
+            "torch_gradient_type": type(self.torch_gradient).__name__,
+        }
+
+
+@dataclass(frozen=True)
 class PhaseTorchLiveOverlayEvidence:
     """Validated live CPU-overlay PyTorch external-comparison evidence."""
 
@@ -694,14 +743,22 @@ def run_torch_phase_qnode_lowering_matrix() -> PhaseTorchPhaseQNodeLoweringMatri
         ),
         PhaseTorchPhaseQNodeLoweringRoute(
             name="registered_phase_qnode_torch_compile_lowering",
+            status="passed",
+            reason=(
+                "registered deterministic Phase-QNode statevector circuits execute through "
+                "non-fullgraph torch.compile value and gradient routes on CPU"
+            ),
+        ),
+        PhaseTorchPhaseQNodeLoweringRoute(
+            name="registered_phase_qnode_torch_compile_fullgraph_lowering",
             status="blocked",
             reason=(
-                "registered Phase-QNode torch.compile lowering needs fake-tensor-safe "
-                "complex constants or an opaque custom-op boundary"
+                "fullgraph registered Phase-QNode torch.compile lowering is still blocked "
+                "by PyTorch Dynamo data-dependent symbolic-shape extraction"
             ),
             requires=(
-                "registered_phase_qnode_compile_artifact",
-                "fake_tensor_safe_complex_constant_lowering",
+                "registered_phase_qnode_fullgraph_compile_artifact",
+                "static_shape_symbolic_integer_guards",
             ),
         ),
         PhaseTorchPhaseQNodeLoweringRoute(
@@ -1049,55 +1106,75 @@ def _torch_operation_theta(operation: PhaseQNodeOperation, parameter_tensor: Any
 
 def _torch_gate_matrix(torch_module: Any, gate: str, theta: Any) -> Any:
     complex_dtype = torch_module.complex128
-    one = _torch_complex_tensor(torch_module, 1.0 + 0.0j)
-    zero = _torch_complex_tensor(torch_module, 0.0 + 0.0j)
-    imag = _torch_complex_tensor(torch_module, 1.0j)
-    identity = torch_module.eye(2, dtype=complex_dtype)
-    x_matrix = _torch_complex_tensor(torch_module, [[0.0, 1.0], [1.0, 0.0]])
-    y_matrix = _torch_complex_tensor(torch_module, [[0.0, -1.0j], [1.0j, 0.0]])
-    z_matrix = _torch_complex_tensor(torch_module, [[1.0, 0.0], [0.0, -1.0]])
-    h_matrix = (1.0 / torch_module.sqrt(_torch_real_tensor(torch_module, 2.0))) * (
-        _torch_complex_tensor(torch_module, [[1.0, 1.0], [1.0, -1.0]])
-    )
-    s_matrix = _torch_complex_tensor(torch_module, [[1.0, 0.0], [0.0, 1.0j]])
-    t_matrix = _torch_complex_tensor(
-        torch_module,
-        [[1.0, 0.0], [0.0, np.exp(1.0j * np.pi / 4.0)]],
-    )
-    sx_matrix = 0.5 * _torch_complex_tensor(
-        torch_module,
-        [[1.0 + 1.0j, 1.0 - 1.0j], [1.0 - 1.0j, 1.0 + 1.0j]],
-    )
+
+    def identity() -> Any:
+        return torch_module.eye(2, dtype=complex_dtype)
+
+    def x_matrix() -> Any:
+        return _torch_complex_tensor(torch_module, [[0.0, 1.0], [1.0, 0.0]])
+
+    def y_matrix() -> Any:
+        return _torch_complex_tensor(torch_module, [[0.0, -1.0j], [1.0j, 0.0]])
+
+    def z_matrix() -> Any:
+        return _torch_complex_tensor(torch_module, [[1.0, 0.0], [0.0, -1.0]])
+
+    def h_matrix() -> Any:
+        return (1.0 / torch_module.sqrt(_torch_real_tensor(torch_module, 2.0))) * (
+            _torch_complex_tensor(torch_module, [[1.0, 1.0], [1.0, -1.0]])
+        )
+
+    def s_matrix() -> Any:
+        return _torch_complex_tensor(torch_module, [[1.0, 0.0], [0.0, 1.0j]])
+
+    def t_matrix() -> Any:
+        return _torch_complex_tensor(
+            torch_module,
+            [[1.0, 0.0], [0.0, np.exp(1.0j * np.pi / 4.0)]],
+        )
+
+    def sx_matrix() -> Any:
+        return 0.5 * _torch_complex_tensor(
+            torch_module,
+            [[1.0 + 1.0j, 1.0 - 1.0j], [1.0 - 1.0j, 1.0 + 1.0j]],
+        )
+
     if gate == "h":
-        return h_matrix
+        return h_matrix()
     if gate == "x":
-        return x_matrix
+        return x_matrix()
     if gate == "y":
-        return y_matrix
+        return y_matrix()
     if gate == "z":
-        return z_matrix
+        return z_matrix()
     if gate == "s":
-        return s_matrix
+        return s_matrix()
     if gate == "t":
-        return t_matrix
+        return t_matrix()
     if gate == "sx":
-        return sx_matrix
+        return sx_matrix()
     if gate == "rx":
+        imag = _torch_complex_tensor(torch_module, 1.0j)
         return (
-            torch_module.cos(theta / 2.0) * identity
-            - imag * torch_module.sin(theta / 2.0) * x_matrix
+            torch_module.cos(theta / 2.0) * identity()
+            - imag * torch_module.sin(theta / 2.0) * x_matrix()
         )
     if gate == "ry":
+        imag = _torch_complex_tensor(torch_module, 1.0j)
         return (
-            torch_module.cos(theta / 2.0) * identity
-            - imag * torch_module.sin(theta / 2.0) * y_matrix
+            torch_module.cos(theta / 2.0) * identity()
+            - imag * torch_module.sin(theta / 2.0) * y_matrix()
         )
     if gate == "rz":
+        imag = _torch_complex_tensor(torch_module, 1.0j)
         return (
-            torch_module.cos(theta / 2.0) * identity
-            - imag * torch_module.sin(theta / 2.0) * z_matrix
+            torch_module.cos(theta / 2.0) * identity()
+            - imag * torch_module.sin(theta / 2.0) * z_matrix()
         )
     if gate == "phase":
+        one = _torch_complex_tensor(torch_module, 1.0 + 0.0j)
+        zero = _torch_complex_tensor(torch_module, 0.0 + 0.0j)
+        imag = _torch_complex_tensor(torch_module, 1.0j)
         return torch_module.stack(
             (
                 torch_module.stack((one, zero)),
@@ -1122,11 +1199,11 @@ def _torch_gate_matrix(torch_module: Any, gate: str, theta: Any) -> Any:
             [[1, 0, 0, 0], [0, 0, 1, 0], [0, 1, 0, 0], [0, 0, 0, 1]],
         )
     if gate == "ch":
-        return _torch_controlled(torch_module, h_matrix)
+        return _torch_controlled(torch_module, h_matrix())
     if gate == "cs":
-        return _torch_controlled(torch_module, s_matrix)
+        return _torch_controlled(torch_module, s_matrix())
     if gate == "ct":
-        return _torch_controlled(torch_module, t_matrix)
+        return _torch_controlled(torch_module, t_matrix())
     if gate == "ccnot":
         return _torch_ccnot_matrix(torch_module)
     if gate == "ccz":
@@ -1142,17 +1219,20 @@ def _torch_gate_matrix(torch_module: Any, gate: str, theta: Any) -> Any:
     if gate == "crz":
         return _torch_controlled(torch_module, _torch_gate_matrix(torch_module, "rz", theta))
     if gate == "rxx":
+        imag = _torch_complex_tensor(torch_module, 1.0j)
         return torch_module.cos(theta / 2.0) * torch_module.eye(4, dtype=complex_dtype) - imag * (
             torch_module.sin(theta / 2.0)
-        ) * torch_module.kron(x_matrix, x_matrix)
+        ) * torch_module.kron(x_matrix(), x_matrix())
     if gate == "ryy":
+        imag = _torch_complex_tensor(torch_module, 1.0j)
         return torch_module.cos(theta / 2.0) * torch_module.eye(4, dtype=complex_dtype) - imag * (
             torch_module.sin(theta / 2.0)
-        ) * torch_module.kron(y_matrix, y_matrix)
+        ) * torch_module.kron(y_matrix(), y_matrix())
     if gate == "rzz":
+        imag = _torch_complex_tensor(torch_module, 1.0j)
         return torch_module.cos(theta / 2.0) * torch_module.eye(4, dtype=complex_dtype) - imag * (
             torch_module.sin(theta / 2.0)
-        ) * torch_module.kron(z_matrix, z_matrix)
+        ) * torch_module.kron(z_matrix(), z_matrix())
     raise ValueError(f"unsupported PyTorch Phase-QNode gate: {gate}")
 
 
@@ -1565,6 +1645,87 @@ def torch_phase_qnode_transform_audit(
         func_grad_supported=True,
         func_vmap_supported=True,
         func_jacrev_supported=True,
+    )
+
+
+def torch_phase_qnode_compile_audit(
+    circuit: PhaseQNodeCircuit,
+    params: ArrayLike | object,
+    *,
+    tolerance: float = 1e-6,
+    fullgraph: bool = False,
+    dynamic: bool = False,
+) -> PhaseTorchPhaseQNodeCompileResult:
+    """Audit registered Phase-QNode execution through ``torch.compile``.
+
+    The audit compiles the deterministic local statevector value function and
+    the corresponding ``torch.func.grad`` gradient function for the registered
+    ``PhaseQNodeCircuit`` gate and observable family. It excludes finite-shot,
+    provider, hardware, CUDA promotion, and performance claims.
+    """
+
+    torch_module = _load_torch()
+    compile_fn = _torch_compile(torch_module)
+    torch_func_grad, _torch_func_vmap, _torch_func_jacrev = _torch_func_transforms(torch_module)
+    tolerance_value = _as_non_negative_tolerance(tolerance)
+    parameter_values = _as_parameter_vector("params", params)
+    report = phase_qnode_support_report(circuit, parameter_values)
+    if not report.supported:
+        raise PhaseQNodeSupportError(report)
+    parameter_shift = parameter_shift_phase_qnode_gradient(circuit, parameter_values)
+
+    def value_function(parameter_tensor: Any) -> Any:
+        value, _state = _torch_phase_qnode_value_and_state(
+            torch_module,
+            circuit,
+            parameter_tensor,
+        )
+        return value
+
+    grad_fn = torch_func_grad(value_function)
+    compiled_value_fn = compile_fn(
+        value_function,
+        fullgraph=bool(fullgraph),
+        dynamic=bool(dynamic),
+    )
+    compiled_grad_fn = compile_fn(
+        grad_fn,
+        fullgraph=bool(fullgraph),
+        dynamic=bool(dynamic),
+    )
+    torch_params = _torch_tensor(torch_module, parameter_values)
+    torch_value = compiled_value_fn(torch_params)
+    torch_gradient = compiled_grad_fn(torch_params)
+    value = _torch_scalar_to_float(torch_value)
+    gradient = _as_parameter_vector(
+        "PyTorch Phase-QNode torch.compile gradient",
+        _torch_values_to_numpy(torch_gradient),
+        width=parameter_values.size,
+    )
+    delta = gradient - parameter_shift.gradient
+    max_abs_error = float(
+        max(
+            abs(value - parameter_shift.value),
+            float(np.max(np.abs(delta))) if delta.size else 0.0,
+        )
+    )
+    l2_error = float(np.linalg.norm(delta))
+    return PhaseTorchPhaseQNodeCompileResult(
+        value=value,
+        gradient=gradient,
+        parameter_shift_value=parameter_shift.value,
+        parameter_shift_gradient=parameter_shift.gradient.copy(),
+        torch_value=torch_value,
+        torch_gradient=torch_gradient,
+        max_abs_error=max_abs_error,
+        l2_error=l2_error,
+        tolerance=tolerance_value,
+        passed=bool(max_abs_error <= tolerance_value),
+        torch_compile_supported=True,
+        compiled_value_supported=True,
+        compiled_gradient_supported=True,
+        fullgraph=bool(fullgraph),
+        dynamic=bool(dynamic),
     )
 
 
@@ -2100,14 +2261,21 @@ def run_torch_ecosystem_maturity_audit() -> PhaseTorchEcosystemMaturityAuditResu
     routes.append(
         PhaseTorchEcosystemMaturityRoute(
             name="registered_phase_qnode_torch_compile_lowering",
+            status="passed",
+            reason=("registered Phase-QNode non-fullgraph torch.compile lowering is implemented"),
+        )
+    )
+    routes.append(
+        PhaseTorchEcosystemMaturityRoute(
+            name="registered_phase_qnode_torch_compile_fullgraph_lowering",
             status="blocked",
             reason=(
-                "registered Phase-QNode torch.compile lowering still needs "
-                "fake-tensor-safe complex constants or an opaque custom-op boundary"
+                "registered Phase-QNode fullgraph torch.compile lowering is still blocked "
+                "by PyTorch Dynamo data-dependent symbolic-shape extraction"
             ),
             requires=(
-                "registered_phase_qnode_compile_artifact",
-                "fake_tensor_safe_complex_constant_lowering",
+                "registered_phase_qnode_fullgraph_compile_artifact",
+                "static_shape_symbolic_integer_guards",
             ),
         )
     )
@@ -2153,7 +2321,7 @@ def plan_torch_cloud_validation_batch(
     lowering_matrix = run_torch_phase_qnode_lowering_matrix()
     cloud_route_names = {
         "cuda_accelerator_device",
-        "registered_phase_qnode_torch_compile_lowering",
+        "registered_phase_qnode_torch_compile_fullgraph_lowering",
         "registered_phase_qnode_cuda_device_lowering",
         "isolated_benchmark_artifact",
     }
@@ -2179,6 +2347,8 @@ def plan_torch_cloud_validation_batch(
     commands = (
         ".venv/bin/python -m pytest "
         "tests/test_phase_framework_bridges.py::"
+        "test_torch_phase_qnode_compile_audit_lowers_registered_statevector "
+        "tests/test_phase_framework_bridges.py::"
         "test_torch_phase_qnode_value_and_grad_lowers_registered_statevector "
         "tests/test_phase_framework_bridges.py::"
         "test_torch_phase_qnode_transform_audit_checks_grad_jacrev_and_vmap -q",
@@ -2200,8 +2370,8 @@ def plan_torch_cloud_validation_batch(
         cuda_device_names=ecosystem.cuda_device_names,
         blocked_local_routes=blocked_local_routes,
         required_artifacts=(
-            "registered_phase_qnode_compile_artifact",
-            "fake_tensor_safe_complex_constant_lowering_artifact",
+            "registered_phase_qnode_fullgraph_compile_artifact",
+            "static_shape_symbolic_integer_guard_artifact",
             "cuda_device_phase_qnode_gradient_artifact",
             "successful_cuda_tensor_smoke_artifact",
             "isolated_benchmark_artifact",
@@ -2453,6 +2623,7 @@ __all__ = [
     "PhaseTorchMaturityAuditResult",
     "PhaseTorchModuleWrapperAuditResult",
     "PhaseTorchParameterShiftResult",
+    "PhaseTorchPhaseQNodeCompileResult",
     "PhaseTorchPhaseQNodeLoweringMatrixResult",
     "PhaseTorchPhaseQNodeLoweringRoute",
     "PhaseTorchPhaseQNodeStatevectorResult",
@@ -2471,6 +2642,7 @@ __all__ = [
     "torch_bounded_qnn_layer",
     "torch_bounded_qnn_module",
     "torch_parameter_shift_value_and_grad",
+    "torch_phase_qnode_compile_audit",
     "torch_phase_qnode_transform_audit",
     "torch_phase_qnode_value_and_grad",
 ]

@@ -5,6 +5,14 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-06-19 — Added registered local Phase-QNode PyTorch non-fullgraph
+  `torch.compile` evidence through `torch_phase_qnode_compile_audit(...)`. The
+  audit compiles the deterministic statevector value and gradient routes,
+  compares them against SCPN parameter-shift references, updates the PyTorch
+  lowering matrix, and adds a non-isolated quantum-gradient conformance
+  benchmark row. Fullgraph `torch.compile`, incompatible CUDA/device execution,
+  provider, hardware, finite-shot, dynamic-circuit, isolated benchmark, and
+  performance-promotion claims remain blocked.
 - 2026-06-19 — Added `plan_torch_cloud_validation_batch(...)` and
   `PhaseTorchCloudValidationRunSpec` for PyTorch differentiable cloud
   validation scheduling. The plan records local CUDA/device skip reasons,

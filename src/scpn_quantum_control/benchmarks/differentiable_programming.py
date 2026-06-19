@@ -48,6 +48,7 @@ from ..phase.param_shift import verify_parameter_shift_gradient
 from ..phase.qnode_circuit import PauliTerm, PhaseQNodeCircuit, PhaseQNodeOperation
 from ..phase.torch_bridge import (
     is_phase_torch_available,
+    torch_phase_qnode_compile_audit,
     torch_phase_qnode_transform_audit,
     torch_phase_qnode_value_and_grad,
 )
@@ -269,6 +270,7 @@ def run_quantum_gradient_benchmark_suite() -> tuple[QuantumGradientBenchmarkResu
         rows += (
             _torch_registered_phase_qnode_statevector_case(),
             _torch_registered_phase_qnode_func_transform_case(),
+            _torch_registered_phase_qnode_compile_case(),
         )
     if is_phase_jax_available():
         rows += (
@@ -434,6 +436,55 @@ def _torch_registered_phase_qnode_func_transform_case() -> QuantumGradientBenchm
             "lowering for deterministic registered local Phase-QNode circuits "
             "compared with SCPN parameter-shift references; no wall-clock "
             "performance claim and no torch.compile, CUDA, provider, hardware, "
+            "isolated benchmark, or performance promotion"
+        ),
+    )
+
+
+def _torch_registered_phase_qnode_compile_case() -> QuantumGradientBenchmarkResult:
+    values = np.array([0.37, -0.21], dtype=np.float64)
+    circuit = PhaseQNodeCircuit(
+        n_qubits=2,
+        operations=(
+            PhaseQNodeOperation("ry", (0,), parameter_index=0),
+            PhaseQNodeOperation("rx", (1,), parameter_index=1),
+            PhaseQNodeOperation("cnot", (0, 1)),
+        ),
+        observable=PauliTerm(1.0, ((0, "z"), (1, "z"))),
+    )
+    result = torch_phase_qnode_compile_audit(
+        circuit,
+        values,
+        tolerance=1.0e-8,
+        fullgraph=False,
+    )
+    finite_difference_certificate = verify_parameter_shift_gradient(
+        lambda params: (
+            torch_phase_qnode_compile_audit(
+                circuit,
+                params,
+                tolerance=1.0e-8,
+                fullgraph=False,
+            ).value
+        ),
+        values,
+    )
+    return QuantumGradientBenchmarkResult(
+        case_id="torch_registered_phase_qnode_compile_lowering",
+        category="quantum-gradient",
+        value=result.value,
+        parameter_shift_gradient=result.gradient,
+        finite_difference_gradient=finite_difference_certificate.finite_difference_gradient,
+        analytic_gradient=result.parameter_shift_gradient,
+        max_abs_reference_error=result.max_abs_error,
+        max_abs_finite_difference_error=finite_difference_certificate.max_abs_error,
+        verification_passed=result.passed and finite_difference_certificate.passed,
+        evaluations=finite_difference_certificate.total_evaluations + (4 * values.size),
+        claim_boundary=(
+            "native PyTorch non-fullgraph torch.compile statevector lowering "
+            "for deterministic registered local Phase-QNode circuits compared "
+            "with SCPN parameter-shift references; no wall-clock performance "
+            "claim and no fullgraph compile, CUDA, provider, hardware, "
             "isolated benchmark, or performance promotion"
         ),
     )

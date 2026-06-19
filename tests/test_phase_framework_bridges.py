@@ -35,6 +35,7 @@ from scpn_quantum_control.phase import (
     PhaseTorchMaturityAuditResult,
     PhaseTorchModuleWrapperAuditResult,
     PhaseTorchParameterShiftResult,
+    PhaseTorchPhaseQNodeCompileResult,
     PhaseTorchPhaseQNodeLoweringMatrixResult,
     PhaseTorchPhaseQNodeStatevectorResult,
     PhaseTorchPhaseQNodeTransformResult,
@@ -63,6 +64,7 @@ from scpn_quantum_control.phase import (
     torch_bounded_qnn_module,
     torch_bounded_qnn_value_and_grad,
     torch_parameter_shift_value_and_grad,
+    torch_phase_qnode_compile_audit,
     torch_phase_qnode_transform_audit,
     torch_phase_qnode_value_and_grad,
 )
@@ -949,6 +951,10 @@ def test_torch_ecosystem_maturity_audit_records_broad_module_func_compile_device
     assert result.route_status("torch_func_grad_vmap_jacrev") == "passed"
     assert result.route_status("torch_func_jacfwd_hessian") == "blocked"
     assert result.route_status("torch_compile_callable") == "passed"
+    assert result.route_status("registered_phase_qnode_torch_compile_lowering") == "passed"
+    assert (
+        result.route_status("registered_phase_qnode_torch_compile_fullgraph_lowering") == "blocked"
+    )
     assert result.route_status("cuda_accelerator_device") == "blocked"
     assert result.torch_version == "2.11.0+cpu"
     assert not result.cuda_available
@@ -998,13 +1004,17 @@ def test_torch_phase_qnode_lowering_matrix_fails_closed_for_arbitrary_qnodes() -
     assert result.route_status("bounded_qnn_custom_autograd") == "passed"
     assert result.route_status("registered_phase_qnode_statevector_lowering") == "passed"
     assert result.route_status("registered_phase_qnode_torch_func_transform_lowering") == "passed"
-    assert result.route_status("registered_phase_qnode_torch_compile_lowering") == "blocked"
+    assert result.route_status("registered_phase_qnode_torch_compile_lowering") == "passed"
+    assert (
+        result.route_status("registered_phase_qnode_torch_compile_fullgraph_lowering") == "blocked"
+    )
     assert result.route_status("registered_phase_qnode_cuda_device_lowering") == "blocked"
     assert result.route_status("registered_phase_qnode_provider_lowering") == "blocked"
     assert result.route_status("registered_phase_qnode_hardware_lowering") == "blocked"
     assert "registered_phase_qnode_statevector_lowering" not in result.open_gaps
     assert "registered_phase_qnode_torch_func_transform_lowering" not in result.open_gaps
-    assert "registered_phase_qnode_torch_compile_lowering" in result.open_gaps
+    assert "registered_phase_qnode_torch_compile_lowering" not in result.open_gaps
+    assert "registered_phase_qnode_torch_compile_fullgraph_lowering" in result.open_gaps
     assert "isolated_benchmark_artifact" in result.open_gaps
     assert result.claim_boundary == "bounded_torch_phase_qnode_lowering_matrix"
 
@@ -1034,9 +1044,9 @@ def test_torch_cloud_validation_batch_schedules_incompatible_local_device(
     assert result.ready_for_cloud_dispatch
     assert result.local_execution_status == "skipped_incompatible_local_hardware"
     assert "CUDA" in result.local_skip_reason
-    assert "registered_phase_qnode_torch_compile_lowering" in result.blocked_local_routes
+    assert "registered_phase_qnode_torch_compile_fullgraph_lowering" in result.blocked_local_routes
     assert "registered_phase_qnode_cuda_device_lowering" in result.blocked_local_routes
-    assert "registered_phase_qnode_compile_artifact" in result.required_artifacts
+    assert "registered_phase_qnode_fullgraph_compile_artifact" in result.required_artifacts
     assert "cuda_device_phase_qnode_gradient_artifact" in result.required_artifacts
     assert "isolated_benchmark_artifact" in result.required_artifacts
     assert any("test_phase_framework_bridges.py" in command for command in result.commands)
@@ -1044,6 +1054,44 @@ def test_torch_cloud_validation_batch_schedules_incompatible_local_device(
     assert result.claim_boundary == "torch_cloud_validation_batch_plan"
     payload = result.to_dict()
     assert payload["local_execution_status"] == "skipped_incompatible_local_hardware"
+    json.dumps(payload)
+
+
+def test_torch_phase_qnode_compile_audit_lowers_registered_statevector() -> None:
+    pytest.importorskip("torch", reason="native Torch Phase-QNode compile requires PyTorch")
+
+    circuit = PhaseQNodeCircuit(
+        n_qubits=2,
+        operations=(
+            PhaseQNodeOperation("ry", (0,), parameter_index=0),
+            PhaseQNodeOperation("rx", (1,), parameter_index=1),
+            PhaseQNodeOperation("cnot", (0, 1)),
+        ),
+        observable=PauliTerm(1.0, ((0, "z"), (1, "z"))),
+    )
+    params = np.array([0.37, -0.21], dtype=float)
+
+    result = torch_phase_qnode_compile_audit(
+        circuit,
+        params,
+        tolerance=1e-8,
+        fullgraph=False,
+    )
+    reference = parameter_shift_phase_qnode_gradient(circuit, params)
+
+    assert isinstance(result, PhaseTorchPhaseQNodeCompileResult)
+    assert result.passed
+    assert result.torch_compile_supported
+    assert result.compiled_value_supported
+    assert result.compiled_gradient_supported
+    assert result.native_framework_autodiff
+    assert not result.host_boundary
+    assert not result.fullgraph
+    assert result.claim_boundary == "registered_phase_qnode_torch_compile_lowering"
+    np.testing.assert_allclose(result.value, reference.value, atol=1e-8)
+    np.testing.assert_allclose(result.gradient, reference.gradient, atol=1e-8)
+    payload = result.to_dict()
+    assert payload["compiled_gradient_supported"] is True
     json.dumps(payload)
 
 
