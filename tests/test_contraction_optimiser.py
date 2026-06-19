@@ -41,6 +41,37 @@ class TestCotengraAvailability:
         result = is_cotengra_available()
         assert isinstance(result, bool)
 
+    def test_import_guard_accepts_cotengra_like_module(self, monkeypatch):
+        module_name = "scpn_quantum_control.phase.contraction_optimiser"
+        original_module = sys.modules[module_name]
+
+        class FakeCotengra:
+            @staticmethod
+            def einsum_path(*args, **kwargs):
+                return [(0, 1)], "fake_info"
+
+            @staticmethod
+            def einsum(*args, **kwargs):
+                return np.eye(2)
+
+        monkeypatch.setitem(sys.modules, "cotengra", FakeCotengra())
+        sys.modules.pop(module_name, None)
+        try:
+            reloaded = importlib.import_module(module_name)
+            assert reloaded.is_cotengra_available() is True
+            path, info = reloaded.optimal_contraction_path(
+                "ij,jk->ik",
+                np.eye(2),
+                np.eye(2),
+            )
+            assert path == [(0, 1)]
+            assert info["method"] == "cotengra"
+        finally:
+            import scpn_quantum_control.phase as phase_pkg
+
+            sys.modules[module_name] = original_module
+            phase_pkg.contraction_optimiser = original_module
+
     def test_import_guard_reports_unavailable_when_cotengra_import_fails(self, monkeypatch):
         import builtins
 
