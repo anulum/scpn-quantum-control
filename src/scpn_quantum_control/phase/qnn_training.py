@@ -81,7 +81,12 @@ class ParameterShiftQNNTrainingResult:
     @property
     def best_params(self) -> FloatArray:
         """Return the best parameter vector found during training."""
-        return cast(FloatArray, self.training.best_params.copy())
+        best_params: FloatArray = np.array(
+            self.training.best_params,
+            dtype=np.float64,
+            copy=True,
+        )
+        return best_params
 
     def to_dict(self) -> dict[str, object]:
         """Return JSON-ready QNN training evidence."""
@@ -344,7 +349,7 @@ def parameter_shift_qnn_classifier_gradient(
     def objective(candidate: FloatArray) -> float:
         return _qnn_classifier_loss(feature_matrix, label_vector, candidate)
 
-    return cast(FloatArray, parameter_shift_gradient(objective, parameters, rule=rule))
+    return parameter_shift_gradient(objective, parameters, rule=rule)
 
 
 def verify_parameter_shift_qnn_classifier_gradient(
@@ -379,10 +384,7 @@ def verify_parameter_shift_qnn_classifier_gradient(
     def objective(candidate: FloatArray) -> float:
         return _qnn_classifier_loss(feature_matrix, label_vector, candidate)
 
-    shift_gradient = cast(
-        FloatArray,
-        parameter_shift_gradient(objective, parameters, rule=rule),
-    )
+    shift_gradient = parameter_shift_gradient(objective, parameters, rule=rule)
     finite_difference_gradient = _central_finite_difference_gradient(
         objective,
         parameters,
