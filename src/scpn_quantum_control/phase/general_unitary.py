@@ -17,15 +17,19 @@ fail-closed without enlarging the differentiable-gate primitive set.
 
 from __future__ import annotations
 
+from typing import TypeAlias
+
 import numpy as np
+from numpy.typing import NDArray
 
 from .qnode_circuit import PhaseQNodeOperation
 
 # Angle below which a Z rotation is treated as identity for the gamma = pi gauge.
 _GIMBAL_TOL = 1e-9
+ComplexArray: TypeAlias = NDArray[np.complex128]
 
 
-def su2_zyz_angles(unitary: np.ndarray) -> tuple[float, float, float]:
+def su2_zyz_angles(unitary: ComplexArray) -> tuple[float, float, float]:
     """Return ``(phi, theta, lam)`` with ``U ∝ RZ(phi) RY(theta) RZ(lam)``.
 
     The global phase is discarded (irrelevant to expectation values). The

@@ -18,6 +18,7 @@ entanglement exclusively on biologically coupled channels.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from numbers import Real
 
 import numpy as np
 from qiskit.quantum_info import Statevector
@@ -136,17 +137,23 @@ def eeg_plv_to_vqe(
     sol = vqe.solve(maxiter=200, seed=42)
 
     # Extract optimized state
-    opt_params = sol.get("optimal_params", np.zeros(n_params))
+    opt_params = np.asarray(sol.get("optimal_params", np.zeros(n_params)), dtype=float)
     bound = ansatz.assign_parameters(opt_params)
     sv = Statevector.from_instruction(bound).data
+    energy_value = sol.get("vqe_energy", sol.get("ground_energy", 0.0))
+    if not isinstance(energy_value, Real):
+        raise TypeError("PhaseVQE returned a non-numeric energy")
+    converged_value = sol.get("converged", False)
+    if not isinstance(converged_value, (bool, np.bool_)):
+        raise TypeError("PhaseVQE returned a non-boolean convergence flag")
 
     return EEGVQEResult(
         n_channels=n,
-        optimal_energy=sol.get("vqe_energy", sol.get("ground_energy", 0.0)),
+        optimal_energy=float(energy_value),
         statevector=sv,
         ansatz_depth=ansatz.depth(),
         n_params=n_params,
-        success=sol.get("converged", False),
+        success=bool(converged_value),
     )
 
 

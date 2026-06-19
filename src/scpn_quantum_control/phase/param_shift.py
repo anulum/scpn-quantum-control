@@ -11,7 +11,7 @@ from __future__ import annotations
 
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass
-from typing import TypeAlias, cast
+from typing import TypeAlias
 
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
@@ -110,7 +110,8 @@ class ParamShiftVQEResult:
     @property
     def optimal_params(self) -> FloatArray:
         """Return the best parameters found during the descent."""
-        return cast(FloatArray, self.best_params.copy())
+        best_params: FloatArray = np.array(self.best_params, dtype=np.float64, copy=True)
+        return best_params
 
     def _legacy_mapping(self) -> dict[str, object]:
         """Return the historical four-key VQE result mapping."""

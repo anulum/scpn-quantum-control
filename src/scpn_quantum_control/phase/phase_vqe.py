@@ -14,7 +14,10 @@ where entanglement topology matches Knm sparsity.
 
 from __future__ import annotations
 
+from typing import TypeAlias
+
 import numpy as np
+from numpy.typing import NDArray
 from qiskit.quantum_info import Statevector
 from scipy.optimize import minimize
 
@@ -26,6 +29,9 @@ from ..differentiable import (
 )
 from ..hardware.classical import classical_exact_diag
 
+FloatArray: TypeAlias = NDArray[np.float64]
+PhaseVQEResult: TypeAlias = dict[str, object]
+
 
 class PhaseVQE:
     """VQE solver for the XY Kuramoto Hamiltonian ground state.
@@ -36,41 +42,41 @@ class PhaseVQE:
 
     def __init__(
         self,
-        K: np.ndarray,
-        omega: np.ndarray,
+        K: FloatArray,
+        omega: FloatArray,
         ansatz_reps: int = 2,
         threshold: float = 0.01,
     ):
         """Build Hamiltonian and K_nm-informed ansatz from coupling parameters."""
-        self.K = K
-        self.omega = omega
-        self.hamiltonian = knm_to_hamiltonian(K, omega)
-        self.ansatz = knm_to_ansatz(K, reps=ansatz_reps, threshold=threshold)
+        self.K: FloatArray = np.asarray(K, dtype=np.float64)
+        self.omega: FloatArray = np.asarray(omega, dtype=np.float64)
+        self.hamiltonian = knm_to_hamiltonian(self.K, self.omega)
+        self.ansatz = knm_to_ansatz(self.K, reps=ansatz_reps, threshold=threshold)
         self.n_params = self.ansatz.num_parameters
-        self._optimal_params: np.ndarray | None = None
+        self._optimal_params: FloatArray | None = None
         self._ground_energy: float | None = None
 
-    def _validate_params(self, params: np.ndarray) -> np.ndarray:
+    def _validate_params(self, params: FloatArray) -> FloatArray:
         """Return finite one-dimensional VQE parameters with the expected width."""
-        values = np.asarray(params, dtype=float)
+        values: FloatArray = np.asarray(params, dtype=np.float64)
         if values.shape != (self.n_params,):
             raise ValueError(f"params must have shape ({self.n_params},), got {values.shape}")
         if not np.all(np.isfinite(values)):
             raise ValueError("params must contain only finite values")
         return values
 
-    def _cost(self, params: np.ndarray) -> float:
+    def _cost(self, params: FloatArray) -> float:
         values = self._validate_params(params)
         bound = self.ansatz.assign_parameters(values)
         sv = Statevector.from_instruction(bound)
         return float(sv.expectation_value(self.hamiltonian).real)
 
-    def parameter_shift_gradient(self, params: np.ndarray) -> np.ndarray:
+    def parameter_shift_gradient(self, params: FloatArray) -> FloatArray:
         """Return analytic parameter-shift gradients for the current ansatz."""
         values = self._validate_params(params)
         return parameter_shift_gradient(self._cost, values)
 
-    def value_and_parameter_shift_gradient(self, params: np.ndarray) -> GradientResult:
+    def value_and_parameter_shift_gradient(self, params: FloatArray) -> GradientResult:
         """Return the VQE energy and structured parameter-shift gradient metadata."""
         values = self._validate_params(params)
         return value_and_parameter_shift_grad(self._cost, values)
@@ -81,7 +87,7 @@ class PhaseVQE:
         maxiter: int = 200,
         seed: int | None = None,
         gradient_method: str | None = None,
-    ) -> dict:
+    ) -> PhaseVQEResult:
         """Run VQE optimisation.
 
         Returns dict with ground_energy, optimal_params, n_evals, and gradient metadata.
@@ -102,7 +108,7 @@ class PhaseVQE:
             if optimizer.upper() in {"COBYLA", "NELDER-MEAD", "POWELL"}:
                 effective_optimizer = "L-BFGS-B"
 
-            def jac(params: np.ndarray) -> np.ndarray:
+            def jac(params: FloatArray) -> FloatArray:
                 nonlocal n_grad_evals
                 n_grad_evals += 1
                 return self.parameter_shift_gradient(params)
