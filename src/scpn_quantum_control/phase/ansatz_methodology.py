@@ -35,10 +35,13 @@ Nobody has generalized to dynamical systems / physical coupling matrices.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import TypeAlias
 
 import numpy as np
+from numpy.typing import NDArray
+from qiskit import QuantumCircuit
 from qiskit.circuit.library import efficient_su2, n_local
-from qiskit.quantum_info import Statevector
+from qiskit.quantum_info import SparsePauliOp, Statevector
 from scipy.optimize import minimize
 
 from ..bridge.knm_hamiltonian import (
@@ -48,6 +51,9 @@ from ..bridge.knm_hamiltonian import (
     knm_to_hamiltonian,
 )
 from ..hardware.classical import classical_exact_diag
+
+FloatArray: TypeAlias = NDArray[np.float64]
+AnsatzSummaryRow: TypeAlias = dict[str, str | int | float]
 
 
 @dataclass
@@ -68,7 +74,7 @@ class AnsatzBenchmarkResult:
     gradient_variance: float
 
 
-def _count_entangling_gates(circuit) -> int:
+def _count_entangling_gates(circuit: QuantumCircuit) -> int:
     """Count two-qubit entangling gates (CX, CZ, ECR, RZZ, etc.)."""
     two_qubit_names = {"cx", "cz", "ecr", "rzz", "rxx", "ryy", "swap", "iswap", "cphase"}
     count = 0
@@ -82,7 +88,12 @@ def _count_entangling_gates(circuit) -> int:
     return count
 
 
-def _gradient_variance(ansatz, hamiltonian, n_samples: int = 50, seed: int = 42) -> float:
+def _gradient_variance(
+    ansatz: QuantumCircuit,
+    hamiltonian: SparsePauliOp,
+    n_samples: int = 50,
+    seed: int = 42,
+) -> float:
     """Estimate gradient variance via parameter-shift sampling.
 
     Large variance → trainable landscape.
@@ -92,7 +103,7 @@ def _gradient_variance(ansatz, hamiltonian, n_samples: int = 50, seed: int = 42)
     n_params = ansatz.num_parameters
     shift = np.pi / 2
 
-    gradients = []
+    gradients: list[float] = []
     for _ in range(n_samples):
         params = rng.uniform(-np.pi, np.pi, n_params)
         grad_norm_sq = 0.0
@@ -113,11 +124,16 @@ def _gradient_variance(ansatz, hamiltonian, n_samples: int = 50, seed: int = 42)
     return float(np.var(gradients))
 
 
-def _vqe_run(ansatz, hamiltonian, maxiter: int = 200, seed: int = 42):
+def _vqe_run(
+    ansatz: QuantumCircuit,
+    hamiltonian: SparsePauliOp,
+    maxiter: int = 200,
+    seed: int = 42,
+) -> tuple[float, int, list[float]]:
     """COBYLA VQE returning (energy, n_evals, history)."""
     history: list[float] = []
 
-    def cost(params):
+    def cost(params: FloatArray) -> float:
         bound = ansatz.assign_parameters(params)
         sv = Statevector.from_instruction(bound)
         e = float(sv.expectation_value(hamiltonian).real)
@@ -126,7 +142,7 @@ def _vqe_run(ansatz, hamiltonian, maxiter: int = 200, seed: int = 42):
 
     x0 = np.random.default_rng(seed).uniform(-np.pi, np.pi, ansatz.num_parameters)
     res = minimize(cost, x0, method="COBYLA", options={"maxiter": maxiter})
-    return float(res.fun), res.nfev, history
+    return float(res.fun), int(res.nfev), history
 
 
 def _convergence_99pct(history: list[float]) -> int:
@@ -144,8 +160,8 @@ def _convergence_99pct(history: list[float]) -> int:
 
 
 def benchmark_single_ansatz(
-    K: np.ndarray,
-    omega: np.ndarray,
+    K: FloatArray,
+    omega: FloatArray,
     ansatz_name: str,
     maxiter: int = 200,
     reps: int = 2,
@@ -166,7 +182,7 @@ def benchmark_single_ansatz(
         raise ValueError(f"Unknown ansatz: {ansatz_name}")
 
     exact = classical_exact_diag(n, K=K, omega=omega)
-    e_exact = exact["ground_energy"]
+    e_exact = float(exact["ground_energy"])
 
     energy, n_evals, history = _vqe_run(ansatz, H, maxiter, seed)
     conv_iter = _convergence_99pct(history)
@@ -224,9 +240,9 @@ def run_full_benchmark(
     return results
 
 
-def summarize_benchmark(results: list[AnsatzBenchmarkResult]) -> dict:
+def summarize_benchmark(results: list[AnsatzBenchmarkResult]) -> dict[str, list[AnsatzSummaryRow]]:
     """Produce summary table from benchmark results."""
-    rows = []
+    rows: list[AnsatzSummaryRow] = []
     for r in results:
         rows.append(
             {

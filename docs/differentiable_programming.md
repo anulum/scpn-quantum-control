@@ -116,7 +116,7 @@ CI, local preflight, and the pre-push hook enforce a separate strict-mypy
 ratchet over the differentiable API, claim-ledger, benchmark-evidence,
 hardening-gate, QNN/QGNN/QSNN training and evidence satellites,
 objective/domain evidence, optimizer-baseline, parameter-shift/VQE foundations,
-structured-ansatz/Kuramoto solver foundations,
+structured-ansatz/methodology/Kuramoto solver foundations,
 layered ADAPT-VQE,
 Trotter-error bounds,
 framework-overlay, external-validation, Phase-QNode, gradient, provider/hardware-gradient, framework-bridge,
