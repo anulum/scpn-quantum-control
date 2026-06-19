@@ -262,6 +262,12 @@ to `program_ad_effect_ir.v1`; unsupported generation operations fail closed.
 The API does not substitute finite differences or claim a general
 arbitrary-Python MLIR/LLVM compiler.
 
+Alias/effect audits can be inspected with
+`program_ad_static_alias_lattice_report(...)`. The report builds a static
+alias-lattice readiness view over emitted `program_ad_effect_ir.v1` components
+and records non-executed phi inputs as blockers; it is not object-attribute
+aliasing, non-executed branch adjoints, or executable compiler lowering.
+
 Supported captured scalar program traces can also be promoted to an executable
 replay kernel with `compile_whole_program_ad_trace_to_executable(...)`. The
 kernel carries deterministic MLIR provenance, checks parameter shape and

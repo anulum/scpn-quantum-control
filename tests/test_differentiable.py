@@ -68,6 +68,8 @@ from scpn_quantum_control.differentiable import (
     ProgramADEffectIR,
     ProgramADPhiNode,
     ProgramADSSAValue,
+    ProgramADStaticAliasLatticeComponent,
+    ProgramADStaticAliasLatticeReport,
     ReverseNode,
     ShotAllocationResult,
     SparseMatrixResult,
@@ -227,6 +229,7 @@ from scpn_quantum_control.differentiable import (
     program_ad_shape_transpose_derivative_rule,
     program_ad_signal_convolve_derivative_rule,
     program_ad_signal_correlate_derivative_rule,
+    program_ad_static_alias_lattice_report,
     program_ad_stencil_gradient_derivative_rule,
     program_adjoint_grad,
     program_adjoint_gradient,
@@ -11174,6 +11177,8 @@ def test_whole_program_ad_is_exported_from_package_root() -> None:
     assert scpn.ProgramADEffectIR is ProgramADEffectIR
     assert scpn.ProgramADPhiNode is ProgramADPhiNode
     assert scpn.ProgramADSSAValue is ProgramADSSAValue
+    assert scpn.ProgramADStaticAliasLatticeComponent is ProgramADStaticAliasLatticeComponent
+    assert scpn.ProgramADStaticAliasLatticeReport is ProgramADStaticAliasLatticeReport
     assert scpn.WholeProgramADResult is WholeProgramADResult
     assert scpn.WholeProgramBytecodeBasicBlock is WholeProgramBytecodeBasicBlock
     assert scpn.WholeProgramBytecodeInstruction is WholeProgramBytecodeInstruction
@@ -11192,6 +11197,7 @@ def test_whole_program_ad_is_exported_from_package_root() -> None:
     assert scpn.program_adjoint_result is program_adjoint_result
     assert scpn.program_adjoint_value_and_grad is program_adjoint_value_and_grad
     assert scpn.analyze_program_ad_alias_effects is analyze_program_ad_alias_effects
+    assert scpn.program_ad_static_alias_lattice_report is program_ad_static_alias_lattice_report
     assert scpn.parse_program_ad_effect_ir is parse_program_ad_effect_ir
     assert scpn.whole_program_grad is whole_program_grad
     assert scpn.whole_program_value_and_grad is whole_program_value_and_grad
@@ -15654,6 +15660,118 @@ def test_program_ad_alias_effect_analysis_summarizes_alias_sets_and_mutations() 
     )
     with pytest.raises(ValueError, match="unknown alias"):
         analyze_program_ad_alias_effects(unsupported)
+
+
+def test_program_ad_static_alias_lattice_reports_complete_emitted_ir() -> None:
+    """Static alias lattice reports should classify emitted Program AD alias components."""
+
+    def objective(values: np.ndarray) -> object:
+        view = values.reshape((2, 2)).T.ravel()
+        return view[0] + 2.0 * view[3]
+
+    result = whole_program_value_and_grad(
+        objective,
+        np.array([0.25, 0.5, 0.75, 1.0], dtype=np.float64),
+        parameters=(Parameter("a"), Parameter("b"), Parameter("c"), Parameter("d")),
+    )
+    assert result.program_ir is not None
+
+    report = program_ad_static_alias_lattice_report(result.program_ir)
+
+    assert isinstance(report, ProgramADStaticAliasLatticeReport)
+    assert all(
+        isinstance(component, ProgramADStaticAliasLatticeComponent)
+        for component in report.components
+    )
+    assert report.complete is True
+    assert report.blocker_reasons == ()
+    assert report.non_executed_phi_nodes == ()
+    assert report.unknown_alias_edge_kinds == ()
+    assert report.claim_boundary == (
+        "static_alias_lattice_over_emitted_program_ad_ir_no_non_executed_branch_semantics"
+    )
+    assert any(
+        "view_alias" in component.edge_kinds
+        and "%array[0]" in component.members
+        and any(member.startswith("view:transpose") for member in component.members)
+        for component in report.components
+    )
+    payload = report.as_dict()
+    assert payload["complete"] is True
+    assert payload["blocker_reasons"] == []
+    assert payload["components"]
+
+
+def test_program_ad_static_alias_lattice_records_non_executed_phi_blockers() -> None:
+    """Static alias lattice reports should keep non-executed branch inputs blocked."""
+
+    def objective(values: np.ndarray) -> object:
+        total = values[0]
+        if values[1] > 0.0:
+            total = total + values[2]
+        else:
+            total = total - values[3]
+        return total
+
+    result = whole_program_value_and_grad(
+        objective,
+        np.array([0.25, 0.5, 0.75, 1.0], dtype=np.float64),
+        parameters=(Parameter("a"), Parameter("b"), Parameter("c"), Parameter("d")),
+    )
+    assert result.program_ir is not None
+
+    report = program_ad_static_alias_lattice_report(result.program_ir)
+
+    assert report.complete is False
+    assert report.non_executed_phi_nodes
+    assert "non_executed_phi_inputs_require_branch_semantics" in report.blocker_reasons
+    assert report.unknown_alias_edge_kinds == ()
+    assert report.as_dict()["non_executed_phi_nodes"] == list(report.non_executed_phi_nodes)
+
+
+def test_program_ad_static_alias_lattice_reports_unknown_alias_edges() -> None:
+    """Static alias lattice reports should expose unknown edge kinds without promoting them."""
+
+    value = ProgramADSSAValue("%0", producer=0, version=0, shape=(), dtype="float64", effect=0)
+    effect = ProgramADEffect(
+        index=0,
+        kind="pure",
+        target="%0",
+        inputs=(),
+        version=0,
+        ordering=0,
+    )
+    ir = ProgramADEffectIR(
+        ssa_values=(value,),
+        effects=(effect,),
+        alias_edges=(
+            ProgramADAliasEdge(
+                source="dynamic_object",
+                target="%0",
+                kind="runtime_unknown_alias",
+                version=0,
+            ),
+        ),
+        control_regions=(),
+        serialization="program_ad_effect_ir.v1",
+    )
+
+    report = program_ad_static_alias_lattice_report(ir)
+
+    assert report.complete is False
+    assert report.unknown_alias_edge_kinds == ("runtime_unknown_alias",)
+    assert "unknown_alias_edge_kinds" in report.blocker_reasons
+
+    with pytest.raises(ValueError, match="complete"):
+        ProgramADStaticAliasLatticeReport(
+            components=(),
+            mutation_effects=(),
+            non_executed_phi_nodes=(),
+            unknown_alias_edge_kinds=(),
+            blocker_reasons=("blocked",),
+            complete=True,
+            claim_boundary="static_alias_lattice_over_emitted_program_ad_ir",
+        )
 
 
 def test_program_ad_alias_effect_analysis_tracks_array_view_aliases() -> None:

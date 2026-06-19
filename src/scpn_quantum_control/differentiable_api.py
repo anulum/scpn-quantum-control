@@ -664,16 +664,24 @@ def differentiable_dashboard_status(
         DifferentiableDashboardCapabilityRow(
             surface="program_ad_alias_effects",
             state="metadata_only",
-            backing_api="analyze_program_ad_alias_effects",
+            backing_api="analyze_program_ad_alias_effects; program_ad_static_alias_lattice_report",
             evidence=(
                 "ProgramADAliasEffectAnalysis",
                 "ProgramADAliasSet",
+                "ProgramADStaticAliasLatticeReport",
                 "shape_view_alias_metadata_contracts",
                 "slice_mutation_alias_metadata_contracts",
                 "loop_carried_state_alias_metadata_contracts",
+                "program_ad_static_alias_lattice_contracts",
             ),
-            blocked_reasons=("full static alias lattice remains open",),
-            claim_boundary="metadata_only_no_general_alias_lattice",
+            blocked_reasons=(
+                "object-attribute aliasing remains unsupported",
+                "non-executed branch semantics remain blocked",
+            ),
+            claim_boundary=(
+                "static alias-lattice readiness over emitted Program AD IR metadata; "
+                "non-executed phi inputs are explicit blockers, not promoted branch adjoints"
+            ),
         ),
         DifferentiableDashboardCapabilityRow(
             surface="torch_phase_qnode_statevector_lowering",

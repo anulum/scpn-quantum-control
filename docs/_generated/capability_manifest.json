@@ -8,9 +8,9 @@
     "notebook_files": 98,
     "optional_extras": 42,
     "paper0_validation_modules": 466,
-    "public_api_exports": 681,
+    "public_api_exports": 684,
     "public_documentation_pages": 254,
-    "python_model_classes": 1824,
+    "python_model_classes": 1826,
     "python_model_source_modules": 835,
     "rust_pyo3_model_wrappers": 135,
     "rust_source_modules": 38,
@@ -5634,6 +5634,14 @@
         "path": "src/scpn_quantum_control/differentiable.py"
       },
       {
+        "name": "ProgramADStaticAliasLatticeComponent",
+        "path": "src/scpn_quantum_control/differentiable.py"
+      },
+      {
+        "name": "ProgramADStaticAliasLatticeReport",
+        "path": "src/scpn_quantum_control/differentiable.py"
+      },
+      {
         "name": "ProjectedSPSAOptimizer",
         "path": "src/scpn_quantum_control/topology_control/optimizers.py"
       },
@@ -9531,6 +9539,8 @@
     "ProgramADLinalgConditioningDiagnostic",
     "ProgramADPhiNode",
     "ProgramADSSAValue",
+    "ProgramADStaticAliasLatticeComponent",
+    "ProgramADStaticAliasLatticeReport",
     "ProviderCapabilityDecision",
     "ProviderCapabilitySnapshot",
     "ProviderMetadataProbe",
@@ -9925,6 +9935,7 @@
     "program_ad_shape_transpose_derivative_rule",
     "program_ad_signal_convolve_derivative_rule",
     "program_ad_signal_correlate_derivative_rule",
+    "program_ad_static_alias_lattice_report",
     "program_ad_stencil_gradient_derivative_rule",
     "program_adjoint_grad",
     "program_adjoint_gradient",

@@ -279,6 +279,126 @@ class ProgramADAliasEffectAnalysis:
 
 
 @dataclass(frozen=True)
+class ProgramADStaticAliasLatticeComponent:
+    """One component in the static alias lattice derived from emitted Program AD IR."""
+
+    index: int
+    members: tuple[str, ...]
+    edge_kinds: tuple[str, ...]
+    versions: tuple[int, ...]
+    mutation_versions: tuple[int, ...]
+
+    def __post_init__(self) -> None:
+        if self.index < 0:
+            raise ValueError("program AD static alias component index must be non-negative")
+        if any(not isinstance(member, str) or not member for member in self.members):
+            raise ValueError("program AD static alias component members must be non-empty strings")
+        if tuple(sorted(self.members)) != self.members:
+            raise ValueError(
+                "program AD static alias component members must be sorted deterministically"
+            )
+        if any(not isinstance(kind, str) or not kind for kind in self.edge_kinds):
+            raise ValueError(
+                "program AD static alias component edge_kinds must be non-empty strings"
+            )
+        if tuple(sorted(set(self.edge_kinds))) != self.edge_kinds:
+            raise ValueError(
+                "program AD static alias component edge_kinds must be sorted and unique"
+            )
+        if any(version < 0 for version in self.versions):
+            raise ValueError("program AD static alias component versions must be non-negative")
+        if any(version < 0 for version in self.mutation_versions):
+            raise ValueError(
+                "program AD static alias component mutation_versions must be non-negative"
+            )
+
+    def as_dict(self) -> dict[str, object]:
+        """Return a JSON-ready static alias lattice component."""
+
+        return {
+            "index": self.index,
+            "members": list(self.members),
+            "edge_kinds": list(self.edge_kinds),
+            "versions": list(self.versions),
+            "mutation_versions": list(self.mutation_versions),
+        }
+
+
+@dataclass(frozen=True)
+class ProgramADStaticAliasLatticeReport:
+    """Static alias-lattice readiness report for emitted Program AD IR.
+
+    The report builds deterministic alias components from the emitted
+    ``program_ad_effect_ir.v1`` metadata and records the exact blockers that
+    prevent promotion to full static alias or non-executed branch semantics.
+    """
+
+    components: tuple[ProgramADStaticAliasLatticeComponent, ...]
+    mutation_effects: tuple[int, ...]
+    non_executed_phi_nodes: tuple[int, ...]
+    unknown_alias_edge_kinds: tuple[str, ...]
+    blocker_reasons: tuple[str, ...]
+    complete: bool
+    claim_boundary: str
+
+    def __post_init__(self) -> None:
+        if any(
+            not isinstance(component, ProgramADStaticAliasLatticeComponent)
+            for component in self.components
+        ):
+            raise ValueError(
+                "program AD static alias lattice components must contain "
+                "ProgramADStaticAliasLatticeComponent entries"
+            )
+        if tuple(component.index for component in self.components) != tuple(
+            range(len(self.components))
+        ):
+            raise ValueError("program AD static alias lattice components must be dense")
+        for name in ("mutation_effects", "non_executed_phi_nodes"):
+            values = getattr(self, name)
+            if tuple(sorted(values)) != values or any(value < 0 for value in values):
+                raise ValueError(
+                    f"program AD static alias lattice {name} must be sorted non-negative ints"
+                )
+        if any(not isinstance(kind, str) or not kind for kind in self.unknown_alias_edge_kinds):
+            raise ValueError(
+                "program AD static alias lattice unknown_alias_edge_kinds must be strings"
+            )
+        if tuple(sorted(set(self.unknown_alias_edge_kinds))) != self.unknown_alias_edge_kinds:
+            raise ValueError(
+                "program AD static alias lattice unknown_alias_edge_kinds must be sorted unique"
+            )
+        if any(not isinstance(reason, str) or not reason for reason in self.blocker_reasons):
+            raise ValueError(
+                "program AD static alias lattice blocker_reasons must be non-empty strings"
+            )
+        if tuple(sorted(set(self.blocker_reasons))) != self.blocker_reasons:
+            raise ValueError(
+                "program AD static alias lattice blocker_reasons must be sorted and unique"
+            )
+        if not isinstance(self.complete, bool):
+            raise ValueError("program AD static alias lattice complete must be boolean")
+        if self.complete and self.blocker_reasons:
+            raise ValueError(
+                "complete program AD static alias lattice cannot carry blocker reasons"
+            )
+        _normalise_claim_boundary("program AD static alias lattice", self.claim_boundary)
+
+    def as_dict(self) -> dict[str, object]:
+        """Return a JSON-ready static alias lattice readiness payload."""
+
+        return {
+            "components": [component.as_dict() for component in self.components],
+            "mutation_effects": list(self.mutation_effects),
+            "non_executed_phi_nodes": list(self.non_executed_phi_nodes),
+            "unknown_alias_edge_kinds": list(self.unknown_alias_edge_kinds),
+            "blocker_reasons": list(self.blocker_reasons),
+            "complete": self.complete,
+            "claim_boundary": self.claim_boundary,
+        }
+
+
+@dataclass(frozen=True)
 class ProgramADPhiNode:
     """One metadata-only control-join phi record in program AD graph capture."""
 
@@ -534,6 +654,9 @@ def _parse_program_ad_bytecode_offsets(value: object) -> tuple[int, ...]:
 
 
 PROGRAM_AD_ALIAS_EFFECT_CLAIM_BOUNDARY = "metadata_only_no_general_alias_lattice"
+PROGRAM_AD_STATIC_ALIAS_LATTICE_CLAIM_BOUNDARY = (
+    "static_alias_lattice_over_emitted_program_ad_ir_no_non_executed_branch_semantics"
+)
 _PROGRAM_AD_SUPPORTED_ALIAS_EDGE_KINDS = frozenset(
     {
         "alias_analysis",
@@ -625,6 +748,118 @@ def analyze_program_ad_alias_effects(
         alias_edges=program_ir.alias_edges,
         unknown_aliasing=False,
         claim_boundary=PROGRAM_AD_ALIAS_EFFECT_CLAIM_BOUNDARY,
+    )
+
+
+def program_ad_static_alias_lattice_report(
+    program_ir: ProgramADEffectIR,
+) -> ProgramADStaticAliasLatticeReport:
+    """Build a static alias-lattice readiness report from emitted Program AD IR.
+
+    The report is complete only for the alias metadata actually emitted in
+    ``program_ad_effect_ir.v1``. Unknown alias edge kinds and non-selected phi
+    inputs are recorded as hard blockers instead of being promoted into full
+    non-executed branch semantics.
+    """
+
+    if not isinstance(program_ir, ProgramADEffectIR):
+        raise ValueError("program AD static alias lattice requires ProgramADEffectIR")
+
+    parent: dict[str, str] = {}
+    versions_by_member: dict[str, set[int]] = {}
+    mutation_versions_by_member: dict[str, set[int]] = {}
+    edge_kinds_by_member: dict[str, set[str]] = {}
+    unknown_alias_edge_kinds = tuple(
+        sorted(
+            {
+                edge.kind
+                for edge in program_ir.alias_edges
+                if edge.kind not in _PROGRAM_AD_SUPPORTED_ALIAS_EDGE_KINDS
+            }
+        )
+    )
+
+    def find(member: str) -> str:
+        parent.setdefault(member, member)
+        while parent[member] != member:
+            parent[member] = parent[parent[member]]
+            member = parent[member]
+        return member
+
+    def union(left: str, right: str) -> None:
+        left_root = find(left)
+        right_root = find(right)
+        if left_root == right_root:
+            return
+        if right_root < left_root:
+            left_root, right_root = right_root, left_root
+        parent[right_root] = left_root
+
+    for value in program_ir.ssa_values:
+        find(value.name)
+        versions_by_member.setdefault(value.name, set()).add(value.version)
+    for edge in program_ir.alias_edges:
+        find(edge.source)
+        find(edge.target)
+        union(edge.source, edge.target)
+        versions_by_member.setdefault(edge.source, set()).add(edge.version)
+        versions_by_member.setdefault(edge.target, set()).add(edge.version)
+        edge_kinds_by_member.setdefault(edge.source, set()).add(edge.kind)
+        edge_kinds_by_member.setdefault(edge.target, set()).add(edge.kind)
+        if edge.kind == "mutation_version":
+            mutation_versions_by_member.setdefault(edge.source, set()).add(edge.version)
+            mutation_versions_by_member.setdefault(edge.target, set()).add(edge.version)
+
+    components_by_root: dict[str, list[str]] = {}
+    for member in sorted(parent):
+        components_by_root.setdefault(find(member), []).append(member)
+
+    components: list[ProgramADStaticAliasLatticeComponent] = []
+    for index, members in enumerate(
+        sorted(components_by_root.values(), key=lambda values: tuple(values))
+    ):
+        edge_kinds: set[str] = set()
+        versions: set[int] = set()
+        mutation_versions: set[int] = set()
+        for member in members:
+            edge_kinds.update(edge_kinds_by_member.get(member, set()))
+            versions.update(versions_by_member.get(member, set()))
+            mutation_versions.update(mutation_versions_by_member.get(member, set()))
+        components.append(
+            ProgramADStaticAliasLatticeComponent(
+                index=index,
+                members=tuple(members),
+                edge_kinds=tuple(sorted(edge_kinds)),
+                versions=tuple(sorted(versions)),
+                mutation_versions=tuple(sorted(mutation_versions)),
+            )
+        )
+
+    non_executed_phi_nodes = tuple(
+        sorted(
+            phi_node.index
+            for phi_node in program_ir.phi_nodes
+            if phi_node.selected is not None
+            and any(incoming != phi_node.selected for incoming in phi_node.incoming)
+        )
+    )
+    mutation_effects = tuple(
+        sorted(effect.index for effect in program_ir.effects if effect.kind == "mutation")
+    )
+    blocker_reasons: set[str] = set()
+    if unknown_alias_edge_kinds:
+        blocker_reasons.add("unknown_alias_edge_kinds")
+    if non_executed_phi_nodes:
+        blocker_reasons.add("non_executed_phi_inputs_require_branch_semantics")
+    complete = not blocker_reasons
+    return ProgramADStaticAliasLatticeReport(
+        components=tuple(components),
+        mutation_effects=mutation_effects,
+        non_executed_phi_nodes=non_executed_phi_nodes,
+        unknown_alias_edge_kinds=unknown_alias_edge_kinds,
+        blocker_reasons=tuple(sorted(blocker_reasons)),
+        complete=complete,
+        claim_boundary=PROGRAM_AD_STATIC_ALIAS_LATTICE_CLAIM_BOUNDARY,
     )
 
 
@@ -31500,6 +31735,8 @@ __all__ = [
     "ProgramADAliasEdge",
     "ProgramADAliasEffectAnalysis",
     "ProgramADAliasSet",
+    "ProgramADStaticAliasLatticeComponent",
+    "ProgramADStaticAliasLatticeReport",
     "ProgramADControlRegion",
     "ProgramADEffect",
     "ProgramADEffectIR",
@@ -31528,6 +31765,7 @@ __all__ = [
     "VJPResult",
     "WeightedGradientResult",
     "analyze_program_ad_alias_effects",
+    "program_ad_static_alias_lattice_report",
     "armijo_backtracking_line_search",
     "allocate_parameter_shift_shots",
     "batch_custom_jacobian",

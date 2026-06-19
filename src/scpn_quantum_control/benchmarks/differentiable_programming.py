@@ -32,6 +32,7 @@ from ..differentiable import (
     jax_value_and_grad,
     jvp,
     parse_program_ad_effect_ir,
+    program_ad_static_alias_lattice_report,
     program_adjoint_gradient,
     program_adjoint_result,
     vjp,
@@ -243,6 +244,7 @@ def run_differentiable_programming_benchmark_suite() -> tuple[
         _shape_view_alias_metadata_case(),
         _slice_mutation_alias_metadata_case(),
         _loop_carried_state_alias_metadata_case(),
+        _static_alias_lattice_report_case(),
         _transform_nesting_case(),
         _custom_rule_transform_nesting_case(),
         _program_ad_transform_jvp_vjp_case(),
@@ -2435,6 +2437,72 @@ def _loop_carried_state_alias_metadata_case() -> DifferentiableProgrammingBenchm
             "derivative-carrying scalar reassignment; "
             "metadata_only_no_general_alias_lattice; no wall-clock performance, "
             "hardware, LLVM, Rust, or JIT execution claim"
+        ),
+    )
+
+
+def _static_alias_lattice_report_case() -> DifferentiableProgrammingBenchmarkResult:
+    values = np.array([0.25, 0.5, 0.75, 1.0], dtype=np.float64)
+
+    def alias_objective(trace_values: Any) -> object:
+        view = np.reshape(trace_values, (2, 2)).T.ravel()
+        return view[0] + 2.0 * view[3]
+
+    alias_result = whole_program_value_and_grad(alias_objective, values)
+    if alias_result.program_ir is None:
+        raise ValueError("static alias lattice benchmark requires Program AD IR")
+    lattice_report = program_ad_static_alias_lattice_report(alias_result.program_ir)
+    if not lattice_report.complete:
+        raise ValueError("static alias lattice benchmark expected complete emitted-IR report")
+    if not any(
+        "view_alias" in component.edge_kinds
+        and "%array[0]" in component.members
+        and any(member.startswith("view:transpose") for member in component.members)
+        for component in lattice_report.components
+    ):
+        raise ValueError("static alias lattice benchmark missing view-alias component")
+
+    def branch_objective(trace_values: Any) -> object:
+        total = trace_values[0]
+        if trace_values[1] > 0.0:
+            total = total + trace_values[2]
+        else:
+            total = total - trace_values[3]
+        return total
+
+    branch_result = whole_program_value_and_grad(branch_objective, values)
+    if branch_result.program_ir is None:
+        raise ValueError("static alias lattice branch benchmark requires Program AD IR")
+    branch_report = program_ad_static_alias_lattice_report(branch_result.program_ir)
+    if branch_report.complete:
+        raise ValueError("static alias lattice benchmark must not promote branch phi blockers")
+    if "non_executed_phi_inputs_require_branch_semantics" not in branch_report.blocker_reasons:
+        raise ValueError("static alias lattice benchmark missing non-executed phi blocker")
+
+    analytic = np.array([1.0, 0.0, 0.0, 2.0], dtype=np.float64)
+    adjoint_supported = (
+        alias_result.adjoint_result is not None and alias_result.adjoint_result.supported
+    )
+    adjoint_error = (
+        _max_abs_error(program_adjoint_gradient(alias_result), analytic)
+        if adjoint_supported
+        else None
+    )
+    return DifferentiableProgrammingBenchmarkResult(
+        case_id="program_ad_static_alias_lattice_contracts",
+        category="alias-lattice",
+        value=alias_result.value,
+        gradient=alias_result.gradient,
+        analytic_gradient=analytic,
+        max_abs_gradient_error=_max_abs_error(alias_result.gradient, analytic),
+        adjoint_supported=adjoint_supported,
+        max_abs_adjoint_error=adjoint_error,
+        claim_boundary=(
+            "static alias-lattice readiness over emitted program_ad_effect_ir.v1 "
+            "components, including view-alias edge-kind classification and explicit "
+            "non-executed phi blocker reporting; not full object-attribute aliasing, "
+            "non-executed branch adjoints, Rust/LLVM executable lowering, hardware, "
+            "or performance evidence; no wall-clock performance claim"
         ),
     )
 
