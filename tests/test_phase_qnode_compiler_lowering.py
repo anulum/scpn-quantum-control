@@ -19,10 +19,12 @@ import pytest
 import scpn_quantum_control as scpn
 import scpn_quantum_control.compiler as compiler
 from scpn_quantum_control.compiler.mlir import (
+    EnzymeMLIRCompilerADBreadthEvidence,
     EnzymeMLIRMaturityAuditResult,
     EnzymeNativeExecutionEvidence,
     MLIRLLVMCorrectnessEvidence,
     PhaseQNodeMLIRRuntimeExecutable,
+    build_enzyme_mlir_compiler_ad_breadth_evidence,
     compile_phase_qnode_circuit_to_mlir_runtime,
     lower_phase_qnode_circuit_to_mlir,
     run_enzyme_mlir_maturity_audit,
@@ -267,8 +269,106 @@ def test_enzyme_mlir_maturity_audit_requires_all_artifacts_for_promotion() -> No
         mlir_llvm_correctness_artifact_id="mlir-correctness-001",
     )
 
+    assert result.ready_for_provider_exceedance is False
+    assert "compiler AD breadth evidence missing" in result.hard_gaps
+
+
+def _compiler_ad_breadth_evidence(
+    *,
+    isolated_benchmark_artifact_id: str = "iso-bench-001",
+    case_overrides: dict[str, bool] | None = None,
+) -> EnzymeMLIRCompilerADBreadthEvidence:
+    cases = {
+        "scalar_forward_mode": True,
+        "scalar_reverse_mode": True,
+        "vector_jvp": True,
+        "vector_vjp": True,
+        "matrix_jvp": True,
+        "matrix_vjp": True,
+        "loop_activity": True,
+        "alias_activity": True,
+        "mlir_lowering": True,
+        "llvm_ir_generation": True,
+        "native_enzyme_execution": True,
+    }
+    if case_overrides is not None:
+        cases.update(case_overrides)
+    return build_enzyme_mlir_compiler_ad_breadth_evidence(
+        artifact_id="enzyme-mlir-breadth-001",
+        cases=cases,
+        transform_modes=("forward", "reverse", "jvp", "vjp"),
+        frontend_languages=("c", "cxx", "rust", "julia", "mlir", "llvm_ir"),
+        isolated_benchmark_artifact_id=isolated_benchmark_artifact_id,
+        max_abs_error=0.0,
+        runtime_seconds=0.12,
+        claim_boundary="captured Enzyme/MLIR compiler AD breadth evidence.",
+    )
+
+
+def test_enzyme_mlir_maturity_audit_requires_complete_compiler_ad_breadth() -> None:
+    evidence = EnzymeNativeExecutionEvidence(
+        artifact_id="enzyme-success-001",
+        status="success",
+        failure_class=None,
+        value_error=0.0,
+        gradient_error=0.0,
+        runtime_seconds=0.01,
+        toolchain={"enzyme": "1.0", "llvm": "18.1.3"},
+        setup_instructions=None,
+        claim_boundary="Bounded native Enzyme execution evidence.",
+    )
+
+    result = run_enzyme_mlir_maturity_audit(
+        toolchain_probe=lambda command: f"/opt/toolchain/bin/{command}",
+        version_probe=lambda executable: f"{executable} version 1.2.3",
+        isolated_benchmark_artifact_id="iso-bench-001",
+        native_enzyme_execution_evidence=evidence,
+        mlir_llvm_correctness_artifact_id="mlir-correctness-001",
+        compiler_ad_breadth_evidence=_compiler_ad_breadth_evidence(),
+    )
+
     assert result.hard_gaps == ()
     assert result.ready_for_provider_exceedance is True
+    payload = cast(dict[str, Any], result.to_dict())
+    assert payload["compiler_ad_breadth_evidence"]["passed"] is True
+    assert payload["compiler_ad_breadth_evidence"]["case_count"] == 11
+    assert payload["compiler_ad_breadth_evidence"]["transform_modes"] == [
+        "forward",
+        "jvp",
+        "reverse",
+        "vjp",
+    ]
+
+
+def test_enzyme_mlir_compiler_ad_breadth_rejects_missing_case() -> None:
+    with pytest.raises(ValueError, match="compiler AD breadth cases"):
+        _compiler_ad_breadth_evidence(case_overrides={"matrix_vjp": False})
+
+
+def test_enzyme_mlir_maturity_audit_rejects_breadth_benchmark_mismatch() -> None:
+    evidence = EnzymeNativeExecutionEvidence(
+        artifact_id="enzyme-success-001",
+        status="success",
+        failure_class=None,
+        value_error=0.0,
+        gradient_error=0.0,
+        runtime_seconds=0.01,
+        toolchain={"enzyme": "1.0", "llvm": "18.1.3"},
+        setup_instructions=None,
+        claim_boundary="Bounded native Enzyme execution evidence.",
+    )
+
+    with pytest.raises(ValueError, match="compiler_ad_breadth_evidence.isolated_benchmark"):
+        run_enzyme_mlir_maturity_audit(
+            toolchain_probe=lambda command: f"/opt/toolchain/bin/{command}",
+            version_probe=lambda executable: f"{executable} version 1.2.3",
+            isolated_benchmark_artifact_id="iso-bench-001",
+            native_enzyme_execution_evidence=evidence,
+            mlir_llvm_correctness_artifact_id="mlir-correctness-001",
+            compiler_ad_breadth_evidence=_compiler_ad_breadth_evidence(
+                isolated_benchmark_artifact_id="other-bench"
+            ),
+        )
 
 
 def test_committed_enzyme_mlir_audit_records_installed_native_probe() -> None:
@@ -276,7 +376,11 @@ def test_committed_enzyme_mlir_audit_records_installed_native_probe() -> None:
 
     assert payload["classification"] == "hard_gap"
     assert payload["ready_for_provider_exceedance"] is False
-    assert payload["hard_gaps"] == ["isolated benchmark artefact missing"]
+    assert payload["hard_gaps"] == [
+        "isolated benchmark artefact missing",
+        "compiler AD breadth evidence missing",
+    ]
+    assert payload["compiler_ad_breadth_evidence"] is None
     assert all(status["available"] for status in payload["toolchain"].values())
     assert payload["native_enzyme_execution_evidence"]["status"] == "success"
     assert payload["native_enzyme_execution_evidence"]["value_error"] == 0.0

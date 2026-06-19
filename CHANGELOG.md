@@ -5,6 +5,12 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-06-19 — Added fail-closed Enzyme/MLIR compiler-AD breadth evidence
+  through `EnzymeMLIRCompilerADBreadthEvidence` and
+  `build_enzyme_mlir_compiler_ad_breadth_evidence(...)`. The Enzyme/MLIR
+  maturity audit now requires complete scalar, vector, matrix, loop, alias,
+  MLIR, LLVM, native Enzyme, and isolated benchmark evidence before
+  provider-exceedance can pass.
 - 2026-06-19 — Added a no-submit Qiskit provider-gradient workflow evidence
   artefact for captured Runtime parameter-shift, finite-difference, LCU, SPSA,
   QGT, and QFI workflow metadata. The Qiskit maturity audit now keeps provider

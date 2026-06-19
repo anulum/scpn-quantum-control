@@ -235,7 +235,8 @@ artefact: the SCPN MLIR-runtime correctness checks pass and local
 `enzyme`/`opt`/`mlir-opt`/`clang` version metadata is recorded. The bounded
 native LLVM Enzyme scalar probe passes, while the separate Enzyme-JAX external
 comparison still fails during runtime lowering and promotion remains blocked
-until isolated benchmark evidence exists.
+until isolated benchmark evidence and complete compiler-AD breadth evidence
+exist.
 
 Program AD execution is registry-gated. Supported traced NumPy primitives must
 resolve through a primitive identity with derivative, batching, shape, dtype,

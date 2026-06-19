@@ -11,8 +11,10 @@
     "phase_qnode_gradient_close": true,
     "phase_qnode_value_close": true
   },
+  "compiler_ad_breadth_evidence": null,
   "hard_gaps": [
-    "isolated benchmark artefact missing"
+    "isolated benchmark artefact missing",
+    "compiler AD breadth evidence missing"
   ],
   "isolated_benchmark_artifact_id": null,
   "mlir_llvm_correctness_evidence": {
@@ -56,7 +58,7 @@
   "orcid": "0009-0009-3560-0851",
   "promotion_ready": false,
   "ready_for_provider_exceedance": false,
-  "schema": "scpn_qc_enzyme_mlir_maturity_audit_v1",
+  "schema": "scpn_qc_enzyme_mlir_maturity_audit_v2",
   "scpn_mlir_runtime_verified": true,
   "source_external_comparison_artifact": "data/differentiable_phase_qnode/local_benchmark_20260616T0955Z/diff-qnode-external-comparison.json",
   "source_native_probe": "LLVM IR square derivative probe generated with opt -passes=enzyme and clang execution",

@@ -8,9 +8,9 @@
     "notebook_files": 98,
     "optional_extras": 42,
     "paper0_validation_modules": 466,
-    "public_api_exports": 664,
+    "public_api_exports": 666,
     "public_documentation_pages": 254,
-    "python_model_classes": 1813,
+    "python_model_classes": 1814,
     "python_model_source_modules": 835,
     "rust_pyo3_model_wrappers": 135,
     "rust_source_modules": 38,
@@ -2504,6 +2504,10 @@
       {
         "name": "EnvironmentLockfileSummary",
         "path": "src/scpn_quantum_control/differentiable_external_validation.py"
+      },
+      {
+        "name": "EnzymeMLIRCompilerADBreadthEvidence",
+        "path": "src/scpn_quantum_control/compiler/mlir.py"
       },
       {
         "name": "EnzymeMLIRMaturityAuditResult",
@@ -9384,6 +9388,7 @@
     "DynamicCouplingConfig",
     "DynamicCouplingEngine",
     "EntropyHealthReport",
+    "EnzymeMLIRCompilerADBreadthEvidence",
     "EnzymeMLIRMaturityAuditResult",
     "EnzymeMLIRToolchainStatus",
     "EnzymeNativeExecutionEvidence",
@@ -9603,6 +9608,7 @@
     "braket_circuit_to_workload",
     "build_backend",
     "build_compiler_ad_transform_plan",
+    "build_enzyme_mlir_compiler_ad_breadth_evidence",
     "build_experiment",
     "build_identity_attractor",
     "build_knm_paper27",

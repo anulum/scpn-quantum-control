@@ -49,6 +49,22 @@ from ..differentiable import (
 from ..kuramoto_core import KuramotoProblem, build_kuramoto_problem
 
 FloatArray: TypeAlias = NDArray[np.float64]
+ENZYME_MLIR_COMPILER_AD_BREADTH_CASES = frozenset(
+    {
+        "scalar_forward_mode",
+        "scalar_reverse_mode",
+        "vector_jvp",
+        "vector_vjp",
+        "matrix_jvp",
+        "matrix_vjp",
+        "loop_activity",
+        "alias_activity",
+        "mlir_lowering",
+        "llvm_ir_generation",
+        "native_enzyme_execution",
+    }
+)
+ENZYME_MLIR_COMPILER_AD_TRANSFORM_MODES = frozenset({"forward", "reverse", "jvp", "vjp"})
 
 
 def _copy_float_array(values: FloatArray) -> FloatArray:
@@ -13800,6 +13816,182 @@ class MLIRLLVMCorrectnessEvidence:
 
 
 @dataclass(frozen=True)
+class EnzymeMLIRCompilerADBreadthEvidence:
+    """Validated breadth evidence for Enzyme/MLIR compiler AD promotion.
+
+    The evidence records captured compiler-AD coverage across scalar, vector,
+    matrix, control-flow, alias/activity, MLIR lowering, LLVM IR generation,
+    and native Enzyme execution checks. It is an attachment contract for
+    reviewer evidence; it does not run Enzyme, submit provider jobs, or create
+    isolated benchmark artefacts.
+
+    Parameters
+    ----------
+    artifact_id:
+        Stable identifier for the captured breadth evidence bundle.
+    cases:
+        Mapping from required breadth-case names to pass/fail flags. The mapping
+        must contain exactly the required case set and every case must pass.
+    transform_modes:
+        Compiler AD transform modes covered by the evidence. The required set
+        is forward, reverse, JVP, and VJP.
+    frontend_languages:
+        Frontend or IR surfaces covered by the evidence bundle.
+    isolated_benchmark_artifact_id:
+        Identifier for the matching isolated benchmark artefact.
+    max_abs_error:
+        Maximum absolute correctness error recorded across breadth cases.
+    runtime_seconds:
+        Captured runtime for the breadth evidence runner.
+    claim_boundary:
+        Explicit claim boundary retained in serialized evidence.
+    """
+
+    artifact_id: str
+    cases: Mapping[str, bool]
+    transform_modes: tuple[str, ...]
+    frontend_languages: tuple[str, ...]
+    isolated_benchmark_artifact_id: str
+    max_abs_error: float
+    runtime_seconds: float
+    claim_boundary: str
+
+    def __post_init__(self) -> None:
+        artifact_id = self.artifact_id.strip()
+        if not artifact_id:
+            raise ValueError("artifact_id must be non-empty")
+        object.__setattr__(self, "artifact_id", artifact_id)
+        cases = dict(self.cases)
+        if set(cases) != ENZYME_MLIR_COMPILER_AD_BREADTH_CASES or not all(cases.values()):
+            missing = sorted(ENZYME_MLIR_COMPILER_AD_BREADTH_CASES.difference(cases))
+            failed = sorted(key for key, value in cases.items() if not value)
+            extra = sorted(set(cases).difference(ENZYME_MLIR_COMPILER_AD_BREADTH_CASES))
+            details = ", ".join(
+                part
+                for part in (
+                    f"missing={missing}" if missing else "",
+                    f"failed={failed}" if failed else "",
+                    f"extra={extra}" if extra else "",
+                )
+                if part
+            )
+            raise ValueError(f"compiler AD breadth cases must be complete and passing: {details}")
+        if any(not isinstance(value, bool) for value in cases.values()):
+            raise ValueError("compiler AD breadth cases must map to booleans")
+        object.__setattr__(self, "cases", MappingProxyType(cases))
+        modes = tuple(sorted(mode.strip().lower() for mode in self.transform_modes))
+        if set(modes) != ENZYME_MLIR_COMPILER_AD_TRANSFORM_MODES:
+            raise ValueError("transform_modes must cover forward, reverse, jvp, and vjp")
+        object.__setattr__(self, "transform_modes", modes)
+        languages = tuple(sorted(language.strip().lower() for language in self.frontend_languages))
+        if not languages or any(not language for language in languages):
+            raise ValueError("frontend_languages must contain non-empty entries")
+        if len(set(languages)) != len(languages):
+            raise ValueError("frontend_languages must be unique")
+        object.__setattr__(self, "frontend_languages", languages)
+        isolated_benchmark_artifact_id = self.isolated_benchmark_artifact_id.strip()
+        if not isolated_benchmark_artifact_id:
+            raise ValueError("isolated_benchmark_artifact_id must be non-empty")
+        object.__setattr__(
+            self,
+            "isolated_benchmark_artifact_id",
+            isolated_benchmark_artifact_id,
+        )
+        if self.max_abs_error < 0.0 or not np.isfinite(self.max_abs_error):
+            raise ValueError("max_abs_error must be finite and non-negative")
+        if self.runtime_seconds <= 0.0 or not np.isfinite(self.runtime_seconds):
+            raise ValueError("runtime_seconds must be finite and positive")
+        claim_boundary = self.claim_boundary.strip()
+        if not claim_boundary:
+            raise ValueError("claim_boundary must be non-empty")
+        object.__setattr__(self, "claim_boundary", claim_boundary)
+
+    @property
+    def passed(self) -> bool:
+        """Return whether all required compiler-AD breadth cases passed."""
+
+        return (
+            set(self.cases) == ENZYME_MLIR_COMPILER_AD_BREADTH_CASES
+            and all(self.cases.values())
+            and set(self.transform_modes) == ENZYME_MLIR_COMPILER_AD_TRANSFORM_MODES
+        )
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready compiler AD breadth evidence metadata."""
+
+        return {
+            "artifact_id": self.artifact_id,
+            "cases": dict(self.cases),
+            "case_count": len(self.cases),
+            "transform_modes": list(self.transform_modes),
+            "frontend_languages": list(self.frontend_languages),
+            "isolated_benchmark_artifact_id": self.isolated_benchmark_artifact_id,
+            "max_abs_error": self.max_abs_error,
+            "runtime_seconds": self.runtime_seconds,
+            "claim_boundary": self.claim_boundary,
+            "passed": self.passed,
+        }
+
+
+def build_enzyme_mlir_compiler_ad_breadth_evidence(
+    *,
+    artifact_id: str,
+    cases: Mapping[str, bool],
+    transform_modes: Sequence[str],
+    frontend_languages: Sequence[str],
+    isolated_benchmark_artifact_id: str,
+    max_abs_error: float,
+    runtime_seconds: float,
+    claim_boundary: str,
+) -> EnzymeMLIRCompilerADBreadthEvidence:
+    """Build validated Enzyme/MLIR compiler AD breadth evidence.
+
+    Parameters
+    ----------
+    artifact_id:
+        Stable identifier for the captured breadth evidence bundle.
+    cases:
+        Required breadth-case pass/fail map. It must cover every case in the
+        Enzyme/MLIR compiler AD breadth contract.
+    transform_modes:
+        Compiler AD transform modes covered by the captured evidence.
+    frontend_languages:
+        Frontend or IR surfaces represented by the evidence bundle.
+    isolated_benchmark_artifact_id:
+        Matching isolated benchmark artefact identifier.
+    max_abs_error:
+        Maximum absolute correctness error across the captured cases.
+    runtime_seconds:
+        Positive runtime for the captured evidence runner.
+    claim_boundary:
+        Explicit boundary that prevents breadth evidence from becoming a
+        provider, hardware, or fabricated performance claim.
+
+    Returns
+    -------
+    EnzymeMLIRCompilerADBreadthEvidence
+        Validated evidence ready for maturity-audit attachment.
+
+    Raises
+    ------
+    ValueError
+        If case coverage, transform modes, languages, benchmark linkage,
+        errors, runtime, or claim boundary are malformed.
+    """
+
+    return EnzymeMLIRCompilerADBreadthEvidence(
+        artifact_id=artifact_id,
+        cases=cases,
+        transform_modes=tuple(transform_modes),
+        frontend_languages=tuple(frontend_languages),
+        isolated_benchmark_artifact_id=isolated_benchmark_artifact_id,
+        max_abs_error=max_abs_error,
+        runtime_seconds=runtime_seconds,
+        claim_boundary=claim_boundary,
+    )
+
+
+@dataclass(frozen=True)
 class EnzymeMLIRMaturityAuditResult:
     """Provider-exceedance gate for Enzyme/MLIR compiler AD maturity."""
 
@@ -13812,6 +14004,7 @@ class EnzymeMLIRMaturityAuditResult:
     native_enzyme_execution_artifact_id: str | None
     native_enzyme_execution_evidence: EnzymeNativeExecutionEvidence | None = None
     mlir_llvm_correctness_evidence: MLIRLLVMCorrectnessEvidence | None = None
+    compiler_ad_breadth_evidence: EnzymeMLIRCompilerADBreadthEvidence | None = None
     claim_boundary: str = "bounded_enzyme_mlir_compiler_maturity_audit"
 
     def __post_init__(self) -> None:
@@ -13858,6 +14051,23 @@ class EnzymeMLIRMaturityAuditResult:
             MLIRLLVMCorrectnessEvidence,
         ):
             raise ValueError("mlir_llvm_correctness_evidence must be MLIRLLVMCorrectnessEvidence")
+        if self.compiler_ad_breadth_evidence is not None and not isinstance(
+            self.compiler_ad_breadth_evidence,
+            EnzymeMLIRCompilerADBreadthEvidence,
+        ):
+            raise ValueError(
+                "compiler_ad_breadth_evidence must be EnzymeMLIRCompilerADBreadthEvidence"
+            )
+        if (
+            self.compiler_ad_breadth_evidence is not None
+            and self.isolated_benchmark_artifact_id is not None
+            and self.compiler_ad_breadth_evidence.isolated_benchmark_artifact_id
+            != self.isolated_benchmark_artifact_id
+        ):
+            raise ValueError(
+                "compiler_ad_breadth_evidence.isolated_benchmark_artifact_id must match "
+                "isolated_benchmark_artifact_id"
+            )
         if not self.claim_boundary:
             raise ValueError("claim_boundary must be non-empty")
         object.__setattr__(self, "toolchain", MappingProxyType(dict(self.toolchain)))
@@ -13881,6 +14091,8 @@ class EnzymeMLIRMaturityAuditResult:
             and self.native_enzyme_execution_artifact_id is not None
             and self.native_enzyme_execution_evidence is not None
             and self.native_enzyme_execution_evidence.passed
+            and self.compiler_ad_breadth_evidence is not None
+            and self.compiler_ad_breadth_evidence.passed
             and not self.hard_gaps
         )
 
@@ -13905,6 +14117,11 @@ class EnzymeMLIRMaturityAuditResult:
                 if self.mlir_llvm_correctness_evidence is not None
                 else None
             ),
+            "compiler_ad_breadth_evidence": (
+                self.compiler_ad_breadth_evidence.to_dict()
+                if self.compiler_ad_breadth_evidence is not None
+                else None
+            ),
             "ready_for_provider_exceedance": self.ready_for_provider_exceedance,
             "claim_boundary": self.claim_boundary,
         }
@@ -13920,6 +14137,7 @@ def run_enzyme_mlir_maturity_audit(
     native_enzyme_execution_artifact_id: str | None = None,
     native_enzyme_execution_evidence: EnzymeNativeExecutionEvidence | None = None,
     mlir_llvm_correctness_artifact_id: str | None = None,
+    compiler_ad_breadth_evidence: EnzymeMLIRCompilerADBreadthEvidence | None = None,
 ) -> EnzymeMLIRMaturityAuditResult:
     """Audit Enzyme/MLIR maturity without promoting unsupported compiler-AD claims."""
 
@@ -13973,6 +14191,8 @@ def run_enzyme_mlir_maturity_audit(
     )
     if mlir_llvm_correctness_evidence is None:
         hard_gaps.append("MLIR/LLVM correctness artefact missing")
+    if compiler_ad_breadth_evidence is None:
+        hard_gaps.append("compiler AD breadth evidence missing")
     return EnzymeMLIRMaturityAuditResult(
         scpn_mlir_runtime_verified=bool(
             correctness_checks["phase_qnode_value_close"]
@@ -13987,6 +14207,7 @@ def run_enzyme_mlir_maturity_audit(
         native_enzyme_execution_artifact_id=native_enzyme_execution_artifact_id,
         native_enzyme_execution_evidence=native_enzyme_execution_evidence,
         mlir_llvm_correctness_evidence=mlir_llvm_correctness_evidence,
+        compiler_ad_breadth_evidence=compiler_ad_breadth_evidence,
     )
 
 
@@ -14267,6 +14488,7 @@ __all__ = [
     "ExecutableCompilerADKernel",
     "ExecutableWholeProgramADBatchResult",
     "ExecutableWholeProgramADKernel",
+    "EnzymeMLIRCompilerADBreadthEvidence",
     "EnzymeMLIRMaturityAuditResult",
     "EnzymeNativeExecutionEvidence",
     "EnzymeMLIRToolchainStatus",
@@ -14278,6 +14500,7 @@ __all__ = [
     "WholeProgramADNativeLoweringReport",
     "MLIRModule",
     "analyse_whole_program_ad_native_lowering",
+    "build_enzyme_mlir_compiler_ad_breadth_evidence",
     "build_compiler_ad_transform_plan",
     "compile_compiler_ad_transform_plan_to_mlir",
     "compile_phase_qnode_circuit_to_mlir_runtime",

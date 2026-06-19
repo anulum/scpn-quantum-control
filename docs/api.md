@@ -1331,7 +1331,8 @@ jax_parameter_shift_value_and_grad(objective, values, jit=False, parameters=None
 run_jax_phase_qnode_lowering_matrix() -> PhaseJAXPhaseQNodeLoweringMatrixResult
 run_jax_nested_transform_algebra_audit(features, labels, params_batch, params_pytree, tolerance=1e-6) -> PhaseJAXNestedTransformAlgebraResult
 run_jax_maturity_audit(features, labels, params, params_batch, params_pytree, tolerance=1e-6) -> PhaseJAXMaturityAuditResult
-run_enzyme_mlir_maturity_audit(circuit=None, parameters=None, *, toolchain_probe=None, version_probe=None, isolated_benchmark_artifact_id=None, native_enzyme_execution_artifact_id=None, native_enzyme_execution_evidence=None, mlir_llvm_correctness_artifact_id=None) -> EnzymeMLIRMaturityAuditResult
+build_enzyme_mlir_compiler_ad_breadth_evidence(*, artifact_id, cases, transform_modes, frontend_languages, isolated_benchmark_artifact_id, max_abs_error, runtime_seconds, claim_boundary) -> EnzymeMLIRCompilerADBreadthEvidence
+run_enzyme_mlir_maturity_audit(circuit=None, parameters=None, *, toolchain_probe=None, version_probe=None, isolated_benchmark_artifact_id=None, native_enzyme_execution_artifact_id=None, native_enzyme_execution_evidence=None, mlir_llvm_correctness_artifact_id=None, compiler_ad_breadth_evidence=None) -> EnzymeMLIRMaturityAuditResult
 is_phase_pennylane_available() -> bool
 check_pennylane_parameter_shift_agreement(objective, pennylane_gradient, values, tolerance=1e-6, parameters=None, rule=None) -> PennyLaneGradientAgreementResult
 run_pennylane_plugin_matrix(provider_execution_artifact=None, provider_gradient_parity_artifact=None, hardware_execution_artifact=None) -> PennyLanePluginMatrixResult
@@ -1490,6 +1491,14 @@ The maturity audit accepts provider-gradient workflow evidence only when the
 complete method set is attached and, if Runtime QPU evidence is present, every
 workflow artefact matches the same provider, backend, job, circuit, live ticket,
 and shot count.
+`EnzymeMLIRCompilerADBreadthEvidence` validates captured compiler-AD breadth
+for scalar forward/reverse mode, vector JVP/VJP, matrix JVP/VJP, loop activity,
+alias activity, MLIR lowering, LLVM IR generation, and native Enzyme execution
+checks. Build it with `build_enzyme_mlir_compiler_ad_breadth_evidence(...)`
+from captured correctness and isolated-benchmark evidence. The Enzyme/MLIR
+maturity audit keeps provider-exceedance blocked until MLIR/LLVM correctness,
+native Enzyme execution, compiler-AD breadth, and isolated benchmark artefacts
+all match.
 `parameter_shift_gradient_descent()` is the phase-native training surface for
 quantum objectives: it plans a fail-closed backend route, evaluates native
 parameter-shift gradients, applies Armijo backtracking, and records
