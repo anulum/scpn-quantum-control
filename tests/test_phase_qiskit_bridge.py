@@ -9,6 +9,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from typing import Any, cast
 
 import numpy as np
@@ -26,6 +27,7 @@ from scpn_quantum_control.phase import (
     QiskitParameterShiftRecord,
     QiskitRawCountReplayArtifact,
     QiskitRuntimePrimitiveExecutionArtifact,
+    QiskitRuntimeQPUExecutionArtifact,
     execute_qiskit_finite_shot_parameter_shift,
     execute_qiskit_statevector_parameter_shift,
     generate_qiskit_parameter_shift_circuits,
@@ -182,6 +184,35 @@ def _qiskit_runtime_primitive_artifact() -> QiskitRuntimePrimitiveExecutionArtif
     )
 
 
+def _qiskit_runtime_qpu_execution_artifact(
+    *,
+    primitive_name: str = "EstimatorV2",
+    runtime_session_mode: str = "live_qpu_session",
+    observable_fingerprint: str | None = "SparsePauliOp:Z:v1",
+    shots: int = 4096,
+) -> QiskitRuntimeQPUExecutionArtifact:
+    return QiskitRuntimeQPUExecutionArtifact(
+        artifact_id="qiskit-runtime-qpu-20260619",
+        provider_name="ibm_quantum",
+        primitive_name=primitive_name,
+        backend_name="ibm_brisbane",
+        job_id="runtime-qpu-job-20260619",
+        session_id="runtime-qpu-session-20260619",
+        circuit_fingerprint="qiskit:ry(theta):z:v1",
+        observable_fingerprint=observable_fingerprint,
+        parameter_digest="sha256:" + "8" * 64,
+        result_digest="sha256:" + "9" * 64,
+        metadata_digest="sha256:" + "a" * 64,
+        transpiled_circuit_digest="sha256:" + "b" * 64,
+        live_execution_ticket="live-ticket-20260619",
+        backend_allowlist_id="backend-allowlist-20260619",
+        shot_budget_id="shot-budget-20260619",
+        runtime_session_mode=runtime_session_mode,
+        shots=shots,
+        hardware_execution=True,
+    )
+
+
 def test_qiskit_maturity_audit_accepts_runtime_primitive_artifact_without_promotion() -> None:
     circuit, parameters, observable = _single_rotation_problem()
     artifact = _qiskit_runtime_primitive_artifact()
@@ -207,6 +238,154 @@ def test_qiskit_maturity_audit_accepts_runtime_primitive_artifact_without_promot
     primitive_payload = cast(dict[str, object], evidence["runtime_primitive_artifact"])
     assert primitive_payload["artifact_id"] == artifact.artifact_id
     assert primitive_payload["hardware_execution"] is False
+
+
+def test_qiskit_maturity_audit_accepts_runtime_qpu_execution_without_promotion() -> None:
+    circuit, parameters, observable = _single_rotation_problem()
+    artifact = _qiskit_runtime_qpu_execution_artifact()
+
+    result = run_qiskit_maturity_audit(
+        circuit,
+        observable,
+        parameters,
+        np.array([0.4], dtype=float),
+        shots=400,
+        runtime_qpu_execution_artifact=artifact,
+    )
+
+    assert result.required_capabilities["live_qpu_execution_ticket"] == "passed"
+    assert result.evidence["runtime_qpu_execution_artifact"] is artifact
+    assert result.local_reference_metadata["runtime_qpu_execution_artifact_id"] == (
+        artifact.artifact_id
+    )
+    assert result.local_reference_metadata["runtime_qpu_primitive_name"] == "EstimatorV2"
+    assert not result.ready_for_provider_exceedance
+    assert "live_qpu_execution_ticket" not in result.open_gaps
+    assert "raw_count_capture_replay_harness" in result.open_gaps
+    assert "promotion_grade_isolated_benchmarks" in result.open_gaps
+    payload = cast(dict[str, Any], result.to_dict())
+    evidence = cast(dict[str, object], payload["evidence"])
+    qpu_payload = cast(dict[str, object], evidence["runtime_qpu_execution_artifact"])
+    assert qpu_payload["hardware_execution"] is True
+    assert qpu_payload["primitive_name"] == "EstimatorV2"
+
+
+def test_qiskit_runtime_qpu_execution_artifact_accepts_sampler_without_observable() -> None:
+    artifact = _qiskit_runtime_qpu_execution_artifact(
+        primitive_name="sampler",
+        observable_fingerprint=None,
+    )
+
+    assert artifact.primitive_name == "SamplerV2"
+    assert artifact.observable_fingerprint is None
+    assert artifact.to_dict()["primitive_name"] == "SamplerV2"
+
+
+@pytest.mark.parametrize(
+    ("factory", "match"),
+    [
+        (
+            lambda: _qiskit_runtime_qpu_execution_artifact(primitive_name="EstimatorV1"),
+            "primitive_name",
+        ),
+        (
+            lambda: _qiskit_runtime_qpu_execution_artifact(observable_fingerprint=None),
+            "observable_fingerprint",
+        ),
+        (
+            lambda: _qiskit_runtime_qpu_execution_artifact(
+                primitive_name="SamplerV2",
+                observable_fingerprint="SparsePauliOp:Z:v1",
+            ),
+            "observable_fingerprint",
+        ),
+        (
+            lambda: _qiskit_runtime_qpu_execution_artifact(
+                runtime_session_mode="offline_replay",
+            ),
+            "live QPU execution",
+        ),
+        (
+            lambda: _qiskit_runtime_qpu_execution_artifact(shots=cast(Any, True)),
+            "shots",
+        ),
+        (
+            lambda: QiskitRuntimeQPUExecutionArtifact(
+                artifact_id="qiskit-runtime-qpu-20260619",
+                provider_name="ibm_quantum",
+                primitive_name="EstimatorV2",
+                backend_name="ibm_brisbane",
+                job_id="runtime-qpu-job-20260619",
+                session_id="runtime-qpu-session-20260619",
+                circuit_fingerprint="qiskit:ry(theta):z:v1",
+                observable_fingerprint="SparsePauliOp:Z:v1",
+                parameter_digest="sha256:" + "8" * 63,
+                result_digest="sha256:" + "9" * 64,
+                metadata_digest="sha256:" + "a" * 64,
+                transpiled_circuit_digest="sha256:" + "b" * 64,
+                live_execution_ticket="live-ticket-20260619",
+                backend_allowlist_id="backend-allowlist-20260619",
+                shot_budget_id="shot-budget-20260619",
+                runtime_session_mode="live_qpu_session",
+                shots=4096,
+                hardware_execution=True,
+            ),
+            "parameter_digest",
+        ),
+        (
+            lambda: QiskitRuntimeQPUExecutionArtifact(
+                artifact_id="qiskit-runtime-qpu-20260619",
+                provider_name="ibm_quantum",
+                primitive_name="EstimatorV2",
+                backend_name="ibm_brisbane",
+                job_id="runtime-qpu-job-20260619",
+                session_id="runtime-qpu-session-20260619",
+                circuit_fingerprint="qiskit:ry(theta):z:v1",
+                observable_fingerprint="SparsePauliOp:Z:v1",
+                parameter_digest="sha256:" + "8" * 64,
+                result_digest="sha256:" + "9" * 64,
+                metadata_digest="sha256:" + "a" * 64,
+                transpiled_circuit_digest="sha256:" + "b" * 64,
+                live_execution_ticket=" ",
+                backend_allowlist_id="backend-allowlist-20260619",
+                shot_budget_id="shot-budget-20260619",
+                runtime_session_mode="live_qpu_session",
+                shots=4096,
+                hardware_execution=True,
+            ),
+            "live_execution_ticket",
+        ),
+        (
+            lambda: QiskitRuntimeQPUExecutionArtifact(
+                artifact_id="qiskit-runtime-qpu-20260619",
+                provider_name="ibm_quantum",
+                primitive_name="EstimatorV2",
+                backend_name="ibm_brisbane",
+                job_id="runtime-qpu-job-20260619",
+                session_id="runtime-qpu-session-20260619",
+                circuit_fingerprint="qiskit:ry(theta):z:v1",
+                observable_fingerprint="SparsePauliOp:Z:v1",
+                parameter_digest="sha256:" + "8" * 64,
+                result_digest="sha256:" + "9" * 64,
+                metadata_digest="sha256:" + "a" * 64,
+                transpiled_circuit_digest="sha256:" + "b" * 64,
+                live_execution_ticket="live-ticket-20260619",
+                backend_allowlist_id="backend-allowlist-20260619",
+                shot_budget_id="shot-budget-20260619",
+                runtime_session_mode="live_qpu_session",
+                shots=4096,
+                hardware_execution=False,
+            ),
+            "hardware execution",
+        ),
+    ],
+)
+def test_qiskit_runtime_qpu_execution_artifact_rejects_malformed_evidence(
+    factory: Callable[[], QiskitRuntimeQPUExecutionArtifact],
+    match: str,
+) -> None:
+    with pytest.raises(ValueError, match=match):
+        factory()
 
 
 def test_qiskit_runtime_primitive_artifact_rejects_hardware_execution_claim() -> None:

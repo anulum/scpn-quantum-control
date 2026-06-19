@@ -1323,7 +1323,7 @@ is_phase_pennylane_available() -> bool
 check_pennylane_parameter_shift_agreement(objective, pennylane_gradient, values, tolerance=1e-6, parameters=None, rule=None) -> PennyLaneGradientAgreementResult
 run_pennylane_plugin_matrix(provider_execution_artifact=None, provider_gradient_parity_artifact=None, hardware_execution_artifact=None) -> PennyLanePluginMatrixResult
 run_pennylane_maturity_audit(objective, pennylane_objective, pennylane_gradient, values, circuit, phase_qnode_values, import_tape=None, device_name="default.qubit", shots=None, interface="autograd", diff_method="parameter-shift", value_tolerance=1e-8, gradient_tolerance=1e-6, parameters=None, rule=None, provider_execution_artifact=None, provider_gradient_parity_artifact=None, hardware_execution_artifact=None) -> PennyLaneMaturityAuditResult
-run_qiskit_maturity_audit(circuit, observable, parameters, values, shots, rule=None, shift=1.5707963267948966, confidence_level=0.95, confidence_z=1.959963984540054, provider_preparation_audit=None, runtime_primitive_artifact=None, raw_count_replay_artifact=None, calibration_comparison_artifact=None) -> QiskitMaturityAuditResult
+run_qiskit_maturity_audit(circuit, observable, parameters, values, shots, rule=None, shift=1.5707963267948966, confidence_level=0.95, confidence_z=1.959963984540054, provider_preparation_audit=None, runtime_primitive_artifact=None, runtime_qpu_execution_artifact=None, raw_count_replay_artifact=None, calibration_comparison_artifact=None) -> QiskitMaturityAuditResult
 run_differentiable_provider_hardware_safety_audit(*, live_execution_ticket=None, raw_count_replay_artifact_id=None, calibration_snapshot_artifact_id=None, statevector_comparison_artifact_id=None, isolated_benchmark_artifact_id=None) -> DifferentiableProviderHardwareSafetyAuditResult
 build_registered_phase_qnode_circuit(n_qubits, operations, observable, max_depth=None, max_operations=None) -> PhaseQNodeRegisteredCircuitSpec
 build_phase_qnode_template(name, n_qubits, n_layers=1, entangler="chain", observable=None) -> PhaseQNodeTemplateSpec
@@ -1444,6 +1444,13 @@ before `hardware_plugin_execution` can pass.
 PennyLane plugin-matrix route records are also fail-closed evidence objects:
 route names, reasons, and requirement labels are control-clean strings, and
 route statuses are limited to `passed`, `blocked`, or `failed`.
+Qiskit Runtime QPU execution evidence is similarly split from no-submit
+Runtime primitive metadata: `QiskitRuntimeQPUExecutionArtifact` accepts only
+EstimatorV2 or SamplerV2 routes, requires live-ticket, backend-allowlist,
+shot-budget, ISA/transpiled-circuit digest, Runtime result/metadata digests,
+positive shots, and a live QPU session mode, and clears only the
+`live_qpu_execution_ticket` gate. Raw-count replay, calibration comparison, and
+isolated-benchmark promotion remain separate evidence requirements.
 `parameter_shift_gradient_descent()` is the phase-native training surface for
 quantum objectives: it plans a fail-closed backend route, evaluates native
 parameter-shift gradients, applies Armijo backtracking, and records

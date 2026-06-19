@@ -301,6 +301,10 @@ diagnostic.
 - Require ticketed live hardware, allowlist, shot-budget, raw-count,
   calibration, and metadata evidence before PennyLane hardware-plugin execution
   can pass; keep promotion blocked until isolated benchmark evidence exists.
+- Split Qiskit Runtime evidence into no-submit primitive metadata and live QPU
+  EstimatorV2/SamplerV2 artefacts; live QPU evidence must carry ticket,
+  backend-allowlist, shot-budget, ISA/transpiled-circuit, Runtime result, and
+  metadata digests before the live-ticket gate can pass.
 - Compare gradients against finite differences, analytic references, and cross-framework references where practical.
 - Document failed or unsuitable scenarios because they are research evidence.
 

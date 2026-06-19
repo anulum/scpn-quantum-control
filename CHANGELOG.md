@@ -5,6 +5,11 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-06-19 — Added fail-closed Qiskit Runtime QPU execution artefacts for
+  EstimatorV2 and SamplerV2 evidence, requiring live tickets, backend
+  allowlists, shot budgets, ISA/transpiled-circuit digests, Runtime metadata,
+  positive shots, and hardware execution before the Qiskit maturity audit can
+  clear the live-QPU ticket gate.
 - 2026-06-19 — Added fail-closed PennyLane hardware-plugin execution artefacts,
   requiring ticket, allowlist, shot-budget, raw-count, calibration, metadata,
   and live hardware execution evidence before the plugin matrix can mark

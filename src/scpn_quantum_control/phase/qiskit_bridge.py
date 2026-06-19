@@ -184,6 +184,104 @@ class QiskitRuntimePrimitiveExecutionArtifact:
 
 
 @dataclass(frozen=True)
+class QiskitRuntimeQPUExecutionArtifact:
+    """Validated Qiskit Runtime EstimatorV2/SamplerV2 QPU execution evidence."""
+
+    artifact_id: str
+    provider_name: str
+    primitive_name: str
+    backend_name: str
+    job_id: str
+    session_id: str | None
+    circuit_fingerprint: str
+    observable_fingerprint: str | None
+    parameter_digest: str
+    result_digest: str
+    metadata_digest: str
+    transpiled_circuit_digest: str
+    live_execution_ticket: str
+    backend_allowlist_id: str
+    shot_budget_id: str
+    runtime_session_mode: str
+    shots: int
+    hardware_execution: bool = True
+
+    def __post_init__(self) -> None:
+        for field_name in (
+            "artifact_id",
+            "provider_name",
+            "primitive_name",
+            "backend_name",
+            "job_id",
+            "circuit_fingerprint",
+            "live_execution_ticket",
+            "backend_allowlist_id",
+            "shot_budget_id",
+            "runtime_session_mode",
+        ):
+            object.__setattr__(
+                self,
+                field_name,
+                _normalise_metadata_text(field_name, getattr(self, field_name)),
+            )
+        primitive_name = _normalise_qiskit_runtime_primitive(self.primitive_name)
+        object.__setattr__(self, "primitive_name", primitive_name)
+        if self.session_id is not None:
+            object.__setattr__(
+                self,
+                "session_id",
+                _normalise_metadata_text("session_id", self.session_id),
+            )
+        if self.observable_fingerprint is not None:
+            object.__setattr__(
+                self,
+                "observable_fingerprint",
+                _normalise_metadata_text(
+                    "observable_fingerprint",
+                    self.observable_fingerprint,
+                ),
+            )
+        if primitive_name == "EstimatorV2" and self.observable_fingerprint is None:
+            raise ValueError("observable_fingerprint is required for EstimatorV2 evidence")
+        if primitive_name == "SamplerV2" and self.observable_fingerprint is not None:
+            raise ValueError("observable_fingerprint must be absent for SamplerV2 evidence")
+        object.__setattr__(self, "shots", _normalise_shots(self.shots))
+        if not self.hardware_execution:
+            raise ValueError("runtime QPU execution artefacts must cite hardware execution")
+        _validate_runtime_qpu_mode(self.runtime_session_mode)
+        for field_name in (
+            "parameter_digest",
+            "result_digest",
+            "metadata_digest",
+            "transpiled_circuit_digest",
+        ):
+            _validate_sha256_digest(field_name, str(getattr(self, field_name)))
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-compatible Qiskit Runtime QPU execution metadata."""
+        return {
+            "artifact_id": self.artifact_id,
+            "provider_name": self.provider_name,
+            "primitive_name": self.primitive_name,
+            "backend_name": self.backend_name,
+            "job_id": self.job_id,
+            "session_id": self.session_id,
+            "circuit_fingerprint": self.circuit_fingerprint,
+            "observable_fingerprint": self.observable_fingerprint,
+            "parameter_digest": self.parameter_digest,
+            "result_digest": self.result_digest,
+            "metadata_digest": self.metadata_digest,
+            "transpiled_circuit_digest": self.transpiled_circuit_digest,
+            "live_execution_ticket": self.live_execution_ticket,
+            "backend_allowlist_id": self.backend_allowlist_id,
+            "shot_budget_id": self.shot_budget_id,
+            "runtime_session_mode": self.runtime_session_mode,
+            "shots": self.shots,
+            "hardware_execution": self.hardware_execution,
+        }
+
+
+@dataclass(frozen=True)
 class QiskitRawCountReplayArtifact:
     """Validated Qiskit raw-count capture and replay evidence."""
 
@@ -469,6 +567,7 @@ def run_qiskit_maturity_audit(
     confidence_z: float = 1.959963984540054,
     provider_preparation_audit: ProviderHardwareGradientPreparationAuditResult | None = None,
     runtime_primitive_artifact: QiskitRuntimePrimitiveExecutionArtifact | None = None,
+    runtime_qpu_execution_artifact: QiskitRuntimeQPUExecutionArtifact | None = None,
     raw_count_replay_artifact: QiskitRawCountReplayArtifact | None = None,
     calibration_comparison_artifact: QiskitCalibrationStatevectorComparisonArtifact | None = None,
 ) -> QiskitMaturityAuditResult:
@@ -545,6 +644,17 @@ def run_qiskit_maturity_audit(
         local_reference_metadata["runtime_primitive_backend_name"] = (
             runtime_primitive_artifact.backend_name
         )
+    if runtime_qpu_execution_artifact is not None:
+        local_reference_metadata["runtime_qpu_execution_artifact_id"] = (
+            runtime_qpu_execution_artifact.artifact_id
+        )
+        local_reference_metadata["runtime_qpu_primitive_name"] = (
+            runtime_qpu_execution_artifact.primitive_name
+        )
+        local_reference_metadata["runtime_qpu_backend_name"] = (
+            runtime_qpu_execution_artifact.backend_name
+        )
+        local_reference_metadata["runtime_qpu_shots"] = runtime_qpu_execution_artifact.shots
     if raw_count_replay_artifact is not None:
         local_reference_metadata["raw_count_replay_artifact_id"] = (
             raw_count_replay_artifact.artifact_id
@@ -569,6 +679,7 @@ def run_qiskit_maturity_audit(
         "finite_shot_surrogate": finite_shot_surrogate,
         "provider_preparation_audit": preparation_audit,
         "runtime_primitive_artifact": runtime_primitive_artifact,
+        "runtime_qpu_execution_artifact": runtime_qpu_execution_artifact,
         "raw_count_replay_artifact": raw_count_replay_artifact,
         "calibration_comparison_artifact": calibration_comparison_artifact,
     }
@@ -595,7 +706,9 @@ def run_qiskit_maturity_audit(
         "runtime_primitive_execution_evidence": (
             "passed" if runtime_primitive_artifact is not None else "blocked"
         ),
-        "live_qpu_execution_ticket": "blocked",
+        "live_qpu_execution_ticket": (
+            "passed" if runtime_qpu_execution_artifact is not None else "blocked"
+        ),
         "raw_count_capture_replay_harness": (
             "passed" if raw_count_replay_artifact is not None else "blocked"
         ),
@@ -756,6 +869,37 @@ def _validate_sha256_digest(name: str, value: str) -> None:
         raise ValueError(f"{name} must be a sha256:<64-hex> digest")
 
 
+def _normalise_metadata_text(field_name: str, value: object) -> str:
+    text = str(value).strip()
+    if not text:
+        raise ValueError(f"{field_name} must be non-empty")
+    if any(ord(character) < 32 or ord(character) == 127 for character in text):
+        raise ValueError(f"{field_name} must not contain control characters")
+    return text
+
+
+def _normalise_qiskit_runtime_primitive(primitive_name: str) -> str:
+    primitive = primitive_name.strip()
+    aliases = {
+        "estimator": "EstimatorV2",
+        "estimatorv2": "EstimatorV2",
+        "sampler": "SamplerV2",
+        "samplerv2": "SamplerV2",
+    }
+    try:
+        return aliases[primitive.lower()]
+    except KeyError as exc:
+        raise ValueError("primitive_name must be EstimatorV2 or SamplerV2") from exc
+
+
+def _validate_runtime_qpu_mode(runtime_session_mode: str) -> None:
+    mode = runtime_session_mode.lower()
+    if not any(token in mode for token in ("qpu", "hardware", "live")):
+        raise ValueError("runtime_session_mode must identify live QPU execution")
+    if "simulator" in mode or "offline" in mode or "replay" in mode:
+        raise ValueError("runtime_session_mode must not identify simulator or replay execution")
+
+
 def _normalise_shots(value: int) -> int:
     if isinstance(value, bool) or not isinstance(value, int) or value <= 0:
         raise ValueError("shots must be a positive integer")
@@ -769,6 +913,7 @@ __all__ = [
     "QiskitParameterShiftRecord",
     "QiskitRawCountReplayArtifact",
     "QiskitRuntimePrimitiveExecutionArtifact",
+    "QiskitRuntimeQPUExecutionArtifact",
     "execute_qiskit_finite_shot_parameter_shift",
     "execute_qiskit_statevector_parameter_shift",
     "generate_qiskit_parameter_shift_circuits",
