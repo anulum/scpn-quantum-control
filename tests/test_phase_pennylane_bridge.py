@@ -24,6 +24,7 @@ from scpn_quantum_control.phase import (
     PennyLaneGradientAgreementResult,
     PennyLaneMaturityAuditResult,
     PennyLanePluginMatrixResult,
+    PennyLanePluginMatrixRoute,
     PennyLaneProviderPluginExecutionArtifact,
     PennyLaneQNodeConversionResult,
     PennyLaneRoundTripResult,
@@ -518,6 +519,77 @@ def test_pennylane_plugin_matrix_fails_closed_for_provider_plugins() -> None:
     assert "provider_plugin_execution" in result.open_gaps
     assert "isolated_benchmark_artifact" in result.open_gaps
     assert result.claim_boundary == "bounded_pennylane_plugin_matrix"
+
+
+def test_pennylane_plugin_matrix_route_normalises_metadata() -> None:
+    route = PennyLanePluginMatrixRoute(
+        name="  provider_plugin_execution  ",
+        status="blocked",
+        reason="  artefact missing  ",
+        requires=(" provider_execution_artifact ",),
+    )
+
+    assert route.name == "provider_plugin_execution"
+    assert route.reason == "artefact missing"
+    assert route.requires == ("provider_execution_artifact",)
+    assert route.to_dict() == {
+        "name": "provider_plugin_execution",
+        "status": "blocked",
+        "reason": "artefact missing",
+        "requires": ["provider_execution_artifact"],
+    }
+
+
+@pytest.mark.parametrize(
+    ("factory", "match"),
+    [
+        (
+            lambda: PennyLanePluginMatrixRoute(name=" ", status="blocked", reason="missing"),
+            "route name",
+        ),
+        (
+            lambda: PennyLanePluginMatrixRoute(
+                name="bad\nname",
+                status="blocked",
+                reason="missing",
+            ),
+            "route name",
+        ),
+        (
+            lambda: PennyLanePluginMatrixRoute(
+                name="provider_plugin_execution",
+                status="unknown",
+                reason="missing",
+            ),
+            "route status",
+        ),
+        (
+            lambda: PennyLanePluginMatrixRoute(
+                name="provider_plugin_execution",
+                status="blocked",
+                reason="",
+            ),
+            "route reason",
+        ),
+        (
+            lambda: PennyLanePluginMatrixRoute(
+                name="provider_plugin_execution",
+                status="blocked",
+                reason="missing",
+                requires=(" ",),
+            ),
+            "route requirement",
+        ),
+    ],
+)
+def test_pennylane_plugin_matrix_route_rejects_malformed_metadata(
+    factory: Callable[[], PennyLanePluginMatrixRoute],
+    match: str,
+) -> None:
+    """Plugin matrix routes must not carry malformed evidence states."""
+
+    with pytest.raises(ValueError, match=match):
+        factory()
 
 
 def _provider_plugin_execution_artifact() -> PennyLaneProviderPluginExecutionArtifact:

@@ -293,6 +293,8 @@ diagnostic.
   before plugin/device dispatch.
 - Require PennyLane provider-plugin artefact `execution_mode` values to be
   provider-scoped while still rejecting hardware/QPU execution modes.
+- Keep PennyLane plugin-matrix route evidence canonical: statuses are
+  `passed`, `blocked`, or `failed`, and route metadata is control-clean.
 - Compare gradients against finite differences, analytic references, and cross-framework references where practical.
 - Document failed or unsuitable scenarios because they are research evidence.
 

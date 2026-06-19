@@ -1431,6 +1431,9 @@ finite-shot mode requires an explicit positive integer, not a boolean, float,
 or numeric string. Provider-plugin execution artefacts use the same shot-count
 boundary, must identify provider-plugin execution in `execution_mode`, and
 still do not promote provider-gradient or hardware execution.
+PennyLane plugin-matrix route records are also fail-closed evidence objects:
+route names, reasons, and requirement labels are control-clean strings, and
+route statuses are limited to `passed`, `blocked`, or `failed`.
 `parameter_shift_gradient_descent()` is the phase-native training surface for
 quantum objectives: it plans a fail-closed backend route, evaluates native
 parameter-shift gradients, applies Armijo backtracking, and records

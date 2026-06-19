@@ -172,6 +172,23 @@ class PennyLanePluginMatrixRoute:
     reason: str
     requires: tuple[str, ...] = ()
 
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "name", _normalise_metadata_text("route name", self.name))
+        status = _normalise_metadata_text("route status", self.status)
+        if status not in {"passed", "blocked", "failed"}:
+            raise ValueError("route status must be one of passed, blocked, or failed")
+        object.__setattr__(self, "status", status)
+        object.__setattr__(
+            self,
+            "reason",
+            _normalise_metadata_text("route reason", self.reason),
+        )
+        object.__setattr__(
+            self,
+            "requires",
+            tuple(_normalise_metadata_text("route requirement", item) for item in self.requires),
+        )
+
     def to_dict(self) -> dict[str, object]:
         """Return JSON-ready PennyLane plugin route metadata."""
         return {

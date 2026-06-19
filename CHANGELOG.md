@@ -5,6 +5,10 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-06-19 — Hardened PennyLane plugin-matrix route metadata by
+  canonicalising route names, reasons, and requirement labels, and rejecting
+  malformed route names, empty reasons, control characters, and unsupported
+  route statuses outside `passed`, `blocked`, and `failed`.
 - 2026-06-19 — Hardened PennyLane provider-plugin execution artefacts by
   requiring execution modes to explicitly identify provider-plugin execution,
   rejecting generic local/offline simulator labels while still rejecting
