@@ -693,6 +693,23 @@ class WholeProgramBytecodeInstruction:
 
 
 @dataclass(frozen=True)
+class _ObjectiveSourceMetadata:
+    """Source text and absolute file-line bounds for a Python callable."""
+
+    source: str
+    start_line: int
+    end_line: int
+
+    def __post_init__(self) -> None:
+        if not self.source:
+            raise ValueError("objective source metadata source must be non-empty")
+        if self.start_line <= 0:
+            raise ValueError("objective source metadata start_line must be positive")
+        if self.end_line < self.start_line:
+            raise ValueError("objective source metadata end_line must be >= start_line")
+
+
+@dataclass(frozen=True)
 class WholeProgramSourceIRFeature:
     """One source-level semantic feature captured for whole-program AD."""
 
@@ -821,6 +838,7 @@ class WholeProgramSourceBytecodeLineMap:
     """
 
     line_number: int
+    absolute_line_number: int | None
     instruction_offsets: tuple[int, ...]
     region_ids: tuple[str, ...]
     feature_kinds: tuple[str, ...]
@@ -828,6 +846,10 @@ class WholeProgramSourceBytecodeLineMap:
     def __post_init__(self) -> None:
         if self.line_number <= 0:
             raise ValueError("source-bytecode line map line_number must be positive")
+        if self.absolute_line_number is not None and self.absolute_line_number <= 0:
+            raise ValueError(
+                "source-bytecode line map absolute_line_number must be positive or None"
+            )
         if not self.instruction_offsets:
             raise ValueError("source-bytecode line map instruction_offsets must be non-empty")
         if tuple(sorted(self.instruction_offsets)) != self.instruction_offsets:
@@ -848,6 +870,7 @@ class WholeProgramSourceBytecodeLineMap:
 
         return {
             "line_number": self.line_number,
+            "absolute_line_number": self.absolute_line_number,
             "instruction_offsets": list(self.instruction_offsets),
             "region_ids": list(self.region_ids),
             "feature_kinds": list(self.feature_kinds),
@@ -976,6 +999,10 @@ class WholeProgramCompilerFrontendReport:
         Whether source text could be obtained through introspection.
     source_sha256:
         SHA-256 digest of the dedented source when available.
+    source_start_line:
+        Absolute file line where the inspected source snippet starts.
+    source_end_line:
+        Absolute file line where the inspected source snippet ends.
     bytecode_digest:
         SHA-256 digest over the normalised bytecode instruction stream.
     frontend_digest:
@@ -1001,6 +1028,8 @@ class WholeProgramCompilerFrontendReport:
     semantics_report: WholeProgramSemanticsReport
     source_available: bool
     source_sha256: str | None
+    source_start_line: int | None
+    source_end_line: int | None
     bytecode_digest: str
     frontend_digest: str
     ast_node_count: int
@@ -1061,6 +1090,10 @@ class WholeProgramCompilerFrontendReport:
                 "WholeProgramSourceBytecodeLineMap entries"
             )
         for line_map in self.source_bytecode_line_map:
+            if self.source_regions and not line_map.region_ids:
+                raise ValueError(
+                    "compiler frontend source_bytecode_line_map must attach source regions"
+                )
             if any(offset not in instruction_offsets for offset in line_map.instruction_offsets):
                 raise ValueError(
                     "compiler frontend source_bytecode_line_map must reference known instructions"
@@ -1078,6 +1111,10 @@ class WholeProgramCompilerFrontendReport:
                 "WholeProgramSymbolScopeEntry entries"
             )
         for entry in self.symbol_scope_entries:
+            if entry.line_numbers and self.source_regions and not entry.region_ids:
+                raise ValueError(
+                    "compiler frontend symbol_scope_entries with lines must attach source regions"
+                )
             if any(offset not in instruction_offsets for offset in entry.bytecode_offsets):
                 raise ValueError(
                     "compiler frontend symbol_scope_entries must reference known instructions"
@@ -1095,8 +1132,14 @@ class WholeProgramCompilerFrontendReport:
         if self.source_available:
             if self.source_sha256 is None or len(self.source_sha256) != 64:
                 raise ValueError("available compiler frontend source requires sha256 digest")
+            if self.source_start_line is None or self.source_start_line <= 0:
+                raise ValueError("available compiler frontend source requires start line")
+            if self.source_end_line is None or self.source_end_line < self.source_start_line:
+                raise ValueError("available compiler frontend source requires valid end line")
         elif self.source_sha256 is not None:
             raise ValueError("unavailable compiler frontend source must not carry sha256")
+        elif self.source_start_line is not None or self.source_end_line is not None:
+            raise ValueError("unavailable compiler frontend source must not carry line bounds")
         if len(self.bytecode_digest) != 64:
             raise ValueError("compiler frontend bytecode_digest must be a sha256 digest")
         if len(self.frontend_digest) != 64:
@@ -1174,6 +1217,8 @@ class WholeProgramCompilerFrontendReport:
             "frontend_ready": self.frontend_ready,
             "source_available": self.source_available,
             "source_sha256": self.source_sha256,
+            "source_start_line": self.source_start_line,
+            "source_end_line": self.source_end_line,
             "bytecode_digest": self.bytecode_digest,
             "frontend_digest": self.frontend_digest,
             "bytecode_instruction_count": self.bytecode_instruction_count,
@@ -8879,13 +8924,31 @@ def _program_adjoint_is_ir_value(name: str) -> bool:
     return isinstance(name, str) and name.startswith("%") and name[1:].isdigit()
 
 
+def _objective_source_metadata(
+    objective: Callable[..., object],
+) -> _ObjectiveSourceMetadata | None:
+    """Return dedented source and file-line bounds when introspection permits."""
+
+    try:
+        source_lines, start_line = inspect.getsourcelines(objective)
+    except (OSError, TypeError):
+        return None
+    source = textwrap.dedent("".join(source_lines)).strip()
+    if not source:
+        return None
+    source_line_count = max(1, len(source.splitlines()))
+    return _ObjectiveSourceMetadata(
+        source=source,
+        start_line=int(start_line),
+        end_line=int(start_line) + source_line_count - 1,
+    )
+
+
 def _objective_source(objective: Callable[..., object]) -> str | None:
     """Return dedented source for a Python callable when introspection permits."""
 
-    try:
-        return textwrap.dedent(inspect.getsource(objective)).strip()
-    except (OSError, TypeError):
-        return None
+    metadata = _objective_source_metadata(objective)
+    return None if metadata is None else metadata.source
 
 
 def _objective_bytecode(
@@ -9301,7 +9364,8 @@ def compile_whole_program_frontend(
 
     if not callable(objective):
         raise ValueError("whole-program compiler frontend objective must be callable")
-    source = _objective_source(objective)
+    source_metadata = _objective_source_metadata(objective)
+    source = None if source_metadata is None else source_metadata.source
     bytecode_instructions = _objective_bytecode(objective)
     accepted_python_semantics = _accepted_python_semantics(objective, source)
     unsupported_python_semantics = _unsupported_python_semantics(objective, source)
@@ -9316,12 +9380,14 @@ def compile_whole_program_frontend(
         bytecode_instructions=bytecode_instructions,
         source_ir_features=source_ir_features,
         source_regions=source_regions,
+        source_start_line=None if source_metadata is None else source_metadata.start_line,
     )
     symbol_scope_entries = _symbol_scope_entries(
         objective=objective,
         source=source,
         bytecode_instructions=bytecode_instructions,
         source_regions=source_regions,
+        source_start_line=None if source_metadata is None else source_metadata.start_line,
     )
     source_parse_failed = _source_parse_failed(source)
     semantics_report = _whole_program_semantics_report(
@@ -9369,9 +9435,13 @@ def compile_whole_program_frontend(
         source_sha256=None
         if source is None
         else hashlib.sha256(source.encode("utf-8")).hexdigest(),
+        source_start_line=None if source_metadata is None else source_metadata.start_line,
+        source_end_line=None if source_metadata is None else source_metadata.end_line,
         bytecode_digest=_bytecode_instruction_digest(bytecode_instructions),
         frontend_digest=_frontend_digest(
             source=source,
+            source_start_line=None if source_metadata is None else source_metadata.start_line,
+            source_end_line=None if source_metadata is None else source_metadata.end_line,
             bytecode_instructions=bytecode_instructions,
             bytecode_basic_blocks=bytecode_basic_blocks,
             source_ir_features=source_ir_features,
@@ -9615,13 +9685,17 @@ def _source_bytecode_line_map(
     bytecode_instructions: Sequence[WholeProgramBytecodeInstruction],
     source_ir_features: Sequence[WholeProgramSourceIRFeature],
     source_regions: Sequence[WholeProgramSourceRegion],
+    source_start_line: int | None,
 ) -> tuple[WholeProgramSourceBytecodeLineMap, ...]:
     """Return deterministic source-line to bytecode crosswalk metadata."""
 
     offsets_by_line: dict[int, set[int]] = {}
+    absolute_by_line: dict[int, set[int]] = {}
     for instruction in bytecode_instructions:
         if instruction.line_number is not None:
-            offsets_by_line.setdefault(instruction.line_number, set()).add(instruction.offset)
+            source_line = _source_relative_line(instruction.line_number, source_start_line)
+            offsets_by_line.setdefault(source_line, set()).add(instruction.offset)
+            absolute_by_line.setdefault(source_line, set()).add(instruction.line_number)
 
     features_by_line: dict[int, set[str]] = {}
     for feature in source_ir_features:
@@ -9639,6 +9713,7 @@ def _source_bytecode_line_map(
         rows.append(
             WholeProgramSourceBytecodeLineMap(
                 line_number=line_number,
+                absolute_line_number=_single_absolute_line(absolute_by_line[line_number]),
                 instruction_offsets=tuple(sorted(offsets_by_line[line_number])),
                 region_ids=region_ids,
                 feature_kinds=tuple(sorted(features_by_line.get(line_number, set()))),
@@ -9653,6 +9728,7 @@ def _symbol_scope_entries(
     source: str | None,
     bytecode_instructions: Sequence[WholeProgramBytecodeInstruction],
     source_regions: Sequence[WholeProgramSourceRegion],
+    source_start_line: int | None,
 ) -> tuple[WholeProgramSymbolScopeEntry, ...]:
     """Return deterministic static symbol-scope metadata for a callable."""
 
@@ -9673,14 +9749,20 @@ def _symbol_scope_entries(
         *,
         line_number: int | None = None,
         bytecode_offset: int | None = None,
+        line_is_absolute: bool = True,
     ) -> None:
         if not symbol or not role:
             return
         ensure_symbol(symbol)
         symbol_roles[symbol].add(role)
         if line_number is not None and line_number > 0:
-            symbol_lines[symbol].add(line_number)
-            symbol_regions[symbol].update(_source_region_ids_for_line(source_regions, line_number))
+            source_line = (
+                _source_relative_line(line_number, source_start_line)
+                if line_is_absolute
+                else line_number
+            )
+            symbol_lines[symbol].add(source_line)
+            symbol_regions[symbol].update(_source_region_ids_for_line(source_regions, source_line))
         if bytecode_offset is not None and bytecode_offset >= 0:
             symbol_offsets[symbol].add(bytecode_offset)
 
@@ -9724,12 +9806,18 @@ def _symbol_scope_entries(
         if tree is not None:
             for node in ast.walk(tree):
                 if isinstance(node, ast.arg):
-                    add_symbol(node.arg, "parameter", line_number=getattr(node, "lineno", None))
+                    add_symbol(
+                        node.arg,
+                        "parameter",
+                        line_number=getattr(node, "lineno", None),
+                        line_is_absolute=False,
+                    )
                 elif isinstance(node, ast.Name):
                     add_symbol(
                         node.id,
                         _ast_name_role(node.ctx),
                         line_number=getattr(node, "lineno", None),
+                        line_is_absolute=False,
                     )
 
     entries: list[WholeProgramSymbolScopeEntry] = []
@@ -9762,6 +9850,24 @@ def _source_region_ids_for_line(
             if region.line_start <= line_number <= region.line_end
         )
     )
+
+
+def _source_relative_line(line_number: int, source_start_line: int | None) -> int:
+    """Return a source-relative line for a CPython absolute line number."""
+
+    if source_start_line is None:
+        return line_number
+    relative_line = line_number - source_start_line + 1
+    return relative_line if relative_line > 0 else line_number
+
+
+def _single_absolute_line(line_numbers: set[int]) -> int | None:
+    """Return one absolute line when all bytecode offsets share it."""
+
+    sorted_lines = sorted(line_numbers)
+    if len(sorted_lines) != 1:
+        return None
+    return sorted_lines[0]
 
 
 def _bytecode_symbol_name(instruction: WholeProgramBytecodeInstruction) -> str | None:
@@ -9811,6 +9917,8 @@ def _ast_name_role(context: ast.expr_context) -> str:
 def _frontend_digest(
     *,
     source: str | None,
+    source_start_line: int | None,
+    source_end_line: int | None,
     bytecode_instructions: Sequence[WholeProgramBytecodeInstruction],
     bytecode_basic_blocks: Sequence[WholeProgramBytecodeBasicBlock],
     source_ir_features: Sequence[WholeProgramSourceIRFeature],
@@ -9826,6 +9934,8 @@ def _frontend_digest(
         "source_sha256": None
         if source is None
         else hashlib.sha256(source.encode("utf-8")).hexdigest(),
+        "source_start_line": source_start_line,
+        "source_end_line": source_end_line,
         "bytecode_instructions": [
             {
                 "offset": instruction.offset,

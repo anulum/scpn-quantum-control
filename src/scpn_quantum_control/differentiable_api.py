@@ -581,8 +581,8 @@ def differentiable_dashboard_status(
             ),
             claim_boundary=(
                 "first-class static bytecode/source compiler frontend preflight "
-                "with bytecode basic blocks, source regions, source-bytecode maps, "
-                "and symbol scopes for supported "
+                "with bytecode basic blocks, source regions, normalized "
+                "source-bytecode maps, and symbol scopes for supported "
                 "Program AD Python semantics; no objective execution, no "
                 "executable compiler lowering, no Rust/LLVM/JIT, provider, "
                 "hardware, or performance claim"

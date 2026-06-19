@@ -531,6 +531,16 @@ def test_unified_differentiable_dispatcher_and_root_exports() -> None:
     assert frontend_direct.payload["source_region_count"] > 0
     assert frontend_direct.payload["source_bytecode_line_map_count"] > 0
     assert frontend_direct.payload["symbol_scope_entry_count"] > 0
+    assert int(frontend_direct.payload["source_start_line"]) > 0
+    assert int(frontend_direct.payload["source_end_line"]) >= int(
+        frontend_direct.payload["source_start_line"]
+    )
+    first_line_map = frontend_direct.payload["source_bytecode_line_map"][0]
+    assert int(first_line_map["line_number"]) > 0
+    assert first_line_map["absolute_line_number"] is None or int(
+        first_line_map["absolute_line_number"]
+    ) >= int(frontend_direct.payload["source_start_line"])
+    assert first_line_map["region_ids"]
     assert len(str(frontend_direct.payload["frontend_digest"])) == 64
     assert frontend_dispatched.supported is True
     assert frontend_dispatched.payload["bytecode_instruction_count"] > 0

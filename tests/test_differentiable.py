@@ -10917,6 +10917,9 @@ def test_whole_program_compiler_frontend_report_is_static_and_complete() -> None
     assert report.source_available is True
     assert report.source_sha256 is not None
     assert len(report.source_sha256) == 64
+    assert report.source_start_line is not None
+    assert report.source_end_line is not None
+    assert report.source_start_line < report.source_end_line
     assert len(report.bytecode_digest) == 64
     assert len(report.frontend_digest) == 64
     assert report.bytecode_instruction_count > 0
@@ -10943,6 +10946,21 @@ def test_whole_program_compiler_frontend_report_is_static_and_complete() -> None
     assert {"entry", "function", "loop", "control_flow"}.issubset(
         {region.kind for region in report.source_regions}
     )
+    source_line_count = max(region.line_end for region in report.source_regions)
+    assert all(
+        1 <= line_map.line_number <= source_line_count
+        for line_map in report.source_bytecode_line_map
+    )
+    assert all(line_map.region_ids for line_map in report.source_bytecode_line_map)
+    assert any(
+        line_map.absolute_line_number is not None
+        and line_map.absolute_line_number > line_map.line_number
+        for line_map in report.source_bytecode_line_map
+    )
+    assert any("loop" in line_map.feature_kinds for line_map in report.source_bytecode_line_map)
+    assert any(
+        entry.symbol == "values" and entry.region_ids for entry in report.symbol_scope_entries
+    )
     assert report.semantics_report.bytecode_frontend is True
     assert report.semantics_report.source_frontend is True
     assert report.semantics_report.loop_observed is True
@@ -10953,6 +10971,8 @@ def test_whole_program_compiler_frontend_report_is_static_and_complete() -> None
     )
     assert payload["frontend_ready"] is True
     assert payload["function_name"].endswith("objective")
+    assert payload["source_start_line"] == report.source_start_line
+    assert payload["source_end_line"] == report.source_end_line
     assert payload["bytecode_instruction_count"] == report.bytecode_instruction_count
     assert payload["bytecode_basic_block_count"] == report.bytecode_basic_block_count
     assert payload["source_region_count"] == report.source_region_count
@@ -10962,6 +10982,7 @@ def test_whole_program_compiler_frontend_report_is_static_and_complete() -> None
     assert payload["bytecode_basic_blocks"][0]["label"] == report.bytecode_basic_blocks[0].label
     assert payload["source_regions"][0]["kind"] == "entry"
     assert payload["source_bytecode_line_map"][0]["instruction_offsets"]
+    assert payload["source_bytecode_line_map"][0]["region_ids"]
     assert any(
         entry["symbol"] == "values" and "parameter" in entry["roles"]
         for entry in payload["symbol_scope_entries"]
@@ -11036,6 +11057,7 @@ def test_whole_program_frontend_block_and_region_validation() -> None:
     with pytest.raises(ValueError, match="instruction_offsets must be sorted"):
         WholeProgramSourceBytecodeLineMap(
             line_number=1,
+            absolute_line_number=1,
             instruction_offsets=(4, 2),
             region_ids=("region:entry",),
             feature_kinds=(),
