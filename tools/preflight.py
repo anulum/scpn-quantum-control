@@ -124,6 +124,11 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
             "src/scpn_quantum_control/phase/qgnn.py",
             "src/scpn_quantum_control/phase/qnn_framework_agreement.py",
             "src/scpn_quantum_control/phase/model_training_evidence.py",
+            "src/scpn_quantum_control/phase/domain_benchmark_datasets.py",
+            "src/scpn_quantum_control/phase/objectives.py",
+            "src/scpn_quantum_control/phase/objective_planner.py",
+            "src/scpn_quantum_control/phase/objective_audit.py",
+            "src/scpn_quantum_control/phase/optimizer_audit.py",
         ],
     ),
 ]
