@@ -113,21 +113,13 @@ classification smoke cases. It also verifies that GitHub-hosted runners remain
 The gate is planning and classification evidence only; it does not run shell
 commands or promote benchmark artefacts.
 CI, local preflight, and the pre-push hook enforce a separate strict-mypy
-ratchet for `differentiable.py`, `differentiable_claim_ledger.py`,
-`differentiable_api.py`, `benchmarks/differentiable_programming.py`,
-`differentiable_external_validation.py`, `differentiable_framework_overlay.py`,
-`differentiable_module_hardening_audit.py`, and
-`benchmarks/differentiable_hardening_gate.py`,
-`benchmarks/differentiable_evidence.py`, `phase/differentiable_readiness.py`,
-`phase/differentiable_audit.py`, `phase/gradient_support_matrix.py`, and
-`phase/provider_gradient.py`, `phase/hardware_gradient_policy.py`,
-`phase/provider_gradient_audit.py`, `phase/hardware_gradient_publication.py`,
-`phase/provider_hardware_gradient_audit.py`,
-`phase/hardware_gradient_campaign.py`, `phase/gradient_backend.py`, and
-`phase/gradient_tape.py`, `phase/natural_gradient.py`,
-`phase/gradient_descent.py`, and `phase/qnode_affinity_benchmark.py`.
-That ratchet is module-specific governance; repository-wide `mypy --strict`
-remains open until the rest of the codebase is migrated.
+ratchet over the differentiable API, claim-ledger, benchmark-evidence,
+hardening-gate, framework-overlay, external-validation, Phase-QNode, gradient,
+provider/hardware-gradient, framework-bridge, transform-nesting,
+external-comparison, XY compiler, and PennyLane import modules that have been
+closed module-by-module. That ratchet is module-specific governance;
+repository-wide `mypy --strict` remains open until the rest of the codebase is
+migrated.
 `run_differentiable_module_hardening_audit()` discovers the differentiable
 module promotion scope from the committed patterns, compares it with the
 registered hardening map, and verifies that every module has module-specific

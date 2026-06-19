@@ -27,6 +27,7 @@ from dataclasses import dataclass, field
 from typing import Any
 
 import numpy as np
+from numpy.typing import NDArray
 
 from .pennylane_bridge import _PENNYLANE_OPERATION_NAMES, _load_pennylane
 from .qnode_circuit import (
@@ -50,7 +51,7 @@ class PennyLaneImportResult:
     """A registered circuit imported from a PennyLane tape."""
 
     circuit: PhaseQNodeCircuit
-    parameter_values: np.ndarray
+    parameter_values: NDArray[np.float64]
     n_qubits: int
     provenance: dict[str, Any] = field(default_factory=dict)
 
@@ -196,7 +197,7 @@ def import_phase_qnode_from_pennylane(tape: Any) -> PennyLaneImportResult:
 
 def _pennylane_value_and_gradient(
     qml: Any, tape: Any, n_qubits: int, n_gate_parameters: int
-) -> tuple[float, np.ndarray]:
+) -> tuple[float, NDArray[np.float64]]:
     device = qml.device("default.qubit", wires=n_qubits)
     value = float(qml.execute([tape], device, diff_method=None)[0])
     if n_gate_parameters == 0:
