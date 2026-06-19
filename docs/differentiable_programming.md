@@ -114,12 +114,12 @@ The gate is planning and classification evidence only; it does not run shell
 commands or promote benchmark artefacts.
 CI, local preflight, and the pre-push hook enforce a separate strict-mypy
 ratchet over the differentiable API, claim-ledger, benchmark-evidence,
-hardening-gate, framework-overlay, external-validation, Phase-QNode, gradient,
-provider/hardware-gradient, framework-bridge, transform-nesting,
-external-comparison, XY compiler, and PennyLane import modules that have been
-closed module-by-module. That ratchet is module-specific governance;
-repository-wide `mypy --strict` remains open until the rest of the codebase is
-migrated.
+hardening-gate, optimizer-baseline, framework-overlay, external-validation,
+Phase-QNode, gradient, provider/hardware-gradient, framework-bridge,
+transform-nesting, external-comparison, XY compiler, and PennyLane import
+modules that have been closed module-by-module. That ratchet is
+module-specific governance; repository-wide `mypy --strict` remains open until
+the rest of the codebase is migrated.
 `run_differentiable_module_hardening_audit()` discovers the differentiable
 module promotion scope from the committed patterns, compares it with the
 registered hardening map, and verifies that every module has module-specific

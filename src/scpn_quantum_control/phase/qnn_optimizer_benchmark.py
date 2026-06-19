@@ -9,7 +9,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Mapping, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from time import perf_counter
 from typing import TypeAlias
@@ -28,6 +28,7 @@ from .qnn_training import (
 
 FloatArray: TypeAlias = NDArray[np.float64]
 DerivativeFreeCandidateMap: TypeAlias = Mapping[str, Sequence[ArrayLike]]
+OptimizerTrainingFactory: TypeAlias = Callable[[], "_OptimizerTrainingResult"]
 
 EVIDENCE_CLASS = "functional_non_isolated"
 CLAIM_BOUNDARY = (
@@ -743,7 +744,7 @@ def _baseline_results(
             started=started,
         )
     )
-    for name, training in (
+    optimizer_training_factories: tuple[tuple[str, OptimizerTrainingFactory], ...] = (
         (
             "sgd",
             lambda: _sgd_training(
@@ -783,7 +784,8 @@ def _baseline_results(
                 seed=spsa_seed,
             ),
         ),
-    ):
+    )
+    for name, training in optimizer_training_factories:
         started = perf_counter()
         results.append(
             _record_wall_time(
