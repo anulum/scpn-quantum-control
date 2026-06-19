@@ -483,6 +483,49 @@ class PhaseTorchEcosystemMaturityAuditResult:
 
 
 @dataclass(frozen=True)
+class PhaseTorchCloudValidationRunSpec:
+    """Cloud validation batch plan for PyTorch compiler and device promotion.
+
+    The plan records why the local workstation is or is not suitable for CUDA
+    validation, which PyTorch Phase-QNode routes remain blocked locally, and the
+    exact artefact classes that must be produced on a compatible cloud runner
+    before any provider-exceedance or accelerator-performance claim is made.
+    """
+
+    runner: str
+    local_execution_status: str
+    local_skip_reason: str
+    torch_version: str
+    cuda_available: bool
+    cuda_device_count: int
+    cuda_device_names: tuple[str, ...]
+    blocked_local_routes: tuple[str, ...]
+    required_artifacts: tuple[str, ...]
+    required_environment: dict[str, object]
+    commands: tuple[str, ...]
+    ready_for_cloud_dispatch: bool
+    claim_boundary: str = "torch_cloud_validation_batch_plan"
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready PyTorch cloud validation scheduling metadata."""
+        return {
+            "runner": self.runner,
+            "local_execution_status": self.local_execution_status,
+            "local_skip_reason": self.local_skip_reason,
+            "torch_version": self.torch_version,
+            "cuda_available": self.cuda_available,
+            "cuda_device_count": self.cuda_device_count,
+            "cuda_device_names": list(self.cuda_device_names),
+            "blocked_local_routes": list(self.blocked_local_routes),
+            "required_artifacts": list(self.required_artifacts),
+            "required_environment": dict(self.required_environment),
+            "commands": list(self.commands),
+            "ready_for_cloud_dispatch": self.ready_for_cloud_dispatch,
+            "claim_boundary": self.claim_boundary,
+        }
+
+
+@dataclass(frozen=True)
 class PhaseTorchMaturityAuditResult:
     """Aggregate PyTorch maturity evidence and explicit provider-parity blockers."""
 
@@ -2077,6 +2120,107 @@ def run_torch_ecosystem_maturity_audit() -> PhaseTorchEcosystemMaturityAuditResu
     )
 
 
+def plan_torch_cloud_validation_batch(
+    *,
+    runner: str = "jarvislabs",
+    accelerator_backend: str = "cuda",
+) -> PhaseTorchCloudValidationRunSpec:
+    """Plan the PyTorch cloud validation batch for blocked local routes.
+
+    Parameters
+    ----------
+    runner:
+        Human-readable runner label used in the downstream validation queue.
+    accelerator_backend:
+        Accelerator runtime requested for the cloud rerun, usually ``"cuda"``
+        for the PyTorch wheels used by the differentiable-programming lane.
+
+    Returns
+    -------
+    PhaseTorchCloudValidationRunSpec
+        JSON-ready scheduling metadata with local skip status, required cloud
+        artefacts, environment constraints, and reproduction commands.
+    """
+
+    clean_runner = runner.strip()
+    if not clean_runner:
+        raise ValueError("runner must be a non-empty string")
+    clean_backend = accelerator_backend.strip().lower()
+    if clean_backend not in {"cuda", "rocm"}:
+        raise ValueError("accelerator_backend must be 'cuda' or 'rocm'")
+
+    ecosystem = run_torch_ecosystem_maturity_audit()
+    lowering_matrix = run_torch_phase_qnode_lowering_matrix()
+    cloud_route_names = {
+        "cuda_accelerator_device",
+        "registered_phase_qnode_torch_compile_lowering",
+        "registered_phase_qnode_cuda_device_lowering",
+        "isolated_benchmark_artifact",
+    }
+    blocked_ecosystem_routes = tuple(
+        route.name
+        for route in ecosystem.routes
+        if route.status != "passed" and route.name in cloud_route_names
+    )
+    blocked_lowering_routes = tuple(
+        route.name
+        for route in lowering_matrix.routes
+        if route.status != "passed" and route.name in cloud_route_names
+    )
+    blocked_local_routes = blocked_ecosystem_routes + blocked_lowering_routes
+    cuda_route = next(
+        route for route in ecosystem.routes if route.name == "cuda_accelerator_device"
+    )
+    local_execution_status = (
+        "local_accelerator_ready"
+        if cuda_route.status == "passed"
+        else "skipped_incompatible_local_hardware"
+    )
+    commands = (
+        ".venv/bin/python -m pytest "
+        "tests/test_phase_framework_bridges.py::"
+        "test_torch_phase_qnode_value_and_grad_lowers_registered_statevector "
+        "tests/test_phase_framework_bridges.py::"
+        "test_torch_phase_qnode_transform_audit_checks_grad_jacrev_and_vmap -q",
+        ".venv/bin/python -m pytest "
+        "tests/test_differentiable_programming_benchmarks.py::"
+        "test_quantum_gradient_benchmark_suite_matches_analytic_references -q",
+        ".venv/bin/python - <<'PY'\n"
+        "from scpn_quantum_control.phase import plan_torch_cloud_validation_batch\n"
+        "print(plan_torch_cloud_validation_batch().to_dict())\n"
+        "PY",
+    )
+    return PhaseTorchCloudValidationRunSpec(
+        runner=clean_runner,
+        local_execution_status=local_execution_status,
+        local_skip_reason=cuda_route.reason if cuda_route.status != "passed" else "",
+        torch_version=ecosystem.torch_version,
+        cuda_available=ecosystem.cuda_available,
+        cuda_device_count=ecosystem.cuda_device_count,
+        cuda_device_names=ecosystem.cuda_device_names,
+        blocked_local_routes=blocked_local_routes,
+        required_artifacts=(
+            "registered_phase_qnode_compile_artifact",
+            "fake_tensor_safe_complex_constant_lowering_artifact",
+            "cuda_device_phase_qnode_gradient_artifact",
+            "successful_cuda_tensor_smoke_artifact",
+            "isolated_benchmark_artifact",
+            "host_load_and_affinity_metadata",
+        ),
+        required_environment={
+            "accelerator_backend": clean_backend,
+            "minimum_cuda_compute_capability": "7.5" if clean_backend == "cuda" else None,
+            "visible_device_metadata_required": True,
+            "host_load_metadata_required": True,
+            "isolated_affinity_required_for_promotion": True,
+            "network_required": False,
+            "hardware_submission_allowed": False,
+        },
+        commands=commands,
+        ready_for_cloud_dispatch=bool(blocked_local_routes),
+    )
+
+
 def run_torch_maturity_audit(
     *,
     features: ArrayLike,
@@ -2146,6 +2290,7 @@ def run_torch_maturity_audit(
         tolerance=tolerance_value,
     )
     ecosystem_maturity = run_torch_ecosystem_maturity_audit()
+    cloud_validation_batch = plan_torch_cloud_validation_batch()
     live_overlay = (
         _load_torch_live_overlay_evidence(live_overlay_artifact_path)
         if live_overlay_artifact_path is not None
@@ -2160,13 +2305,19 @@ def run_torch_maturity_audit(
         "module_layer_wrapper": module_layer_wrapper,
         "ecosystem_maturity": ecosystem_maturity,
         "phase_qnode_lowering_matrix": run_torch_phase_qnode_lowering_matrix(),
+        "cloud_validation_batch": cloud_validation_batch,
     }
     if live_overlay is not None:
         evidence["live_overlay"] = live_overlay
     bounded_model_ready = all(
         bool(getattr(result, "passed", False))
         for name, result in evidence.items()
-        if name not in {"phase_qnode_lowering_matrix", "ecosystem_maturity"}
+        if name
+        not in {
+            "phase_qnode_lowering_matrix",
+            "ecosystem_maturity",
+            "cloud_validation_batch",
+        }
     )
     lowering_matrix = evidence["phase_qnode_lowering_matrix"]
     assert isinstance(lowering_matrix, PhaseTorchPhaseQNodeLoweringMatrixResult)
@@ -2178,6 +2329,9 @@ def run_torch_maturity_audit(
         "module_layer_wrapper": "passed" if module_layer_wrapper.passed else "failed",
         "torch_ecosystem_maturity": (
             "passed" if ecosystem_maturity.ready_for_provider_exceedance else "blocked"
+        ),
+        "cloud_validation_batch": (
+            "scheduled" if cloud_validation_batch.ready_for_cloud_dispatch else "not_required"
         ),
         "live_overlay_execution": "passed" if live_overlay is not None else "blocked",
         "finite_shot_provider_hardware_torch_phase_qnode_lowering": "blocked",
@@ -2290,6 +2444,7 @@ def _json_ready(value: object) -> object:
 
 __all__ = [
     "PhaseTorchAutogradQNNGradientResult",
+    "PhaseTorchCloudValidationRunSpec",
     "PhaseTorchCompileCompatibilityResult",
     "PhaseTorchEcosystemMaturityAuditResult",
     "PhaseTorchEcosystemMaturityRoute",
@@ -2304,6 +2459,7 @@ __all__ = [
     "PhaseTorchPhaseQNodeTransformResult",
     "PhaseTorchQNNGradientResult",
     "is_phase_torch_available",
+    "plan_torch_cloud_validation_batch",
     "run_torch_compile_compatibility_audit",
     "run_torch_ecosystem_maturity_audit",
     "run_torch_func_compatibility_audit",

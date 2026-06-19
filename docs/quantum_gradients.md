@@ -1943,6 +1943,7 @@ from scpn_quantum_control.phase import (
     run_tensorflow_keras_layer_wrapper_audit,
     run_tensorflow_maturity_audit,
     run_tensorflow_xla_compatibility_audit,
+    plan_torch_cloud_validation_batch,
     run_torch_ecosystem_maturity_audit,
     run_torch_maturity_audit,
     run_torch_phase_qnode_lowering_matrix,
@@ -1998,12 +1999,14 @@ torch_maturity = run_torch_maturity_audit(
 )
 torch_ecosystem = run_torch_ecosystem_maturity_audit()
 torch_lowering = run_torch_phase_qnode_lowering_matrix()
+torch_cloud_batch = plan_torch_cloud_validation_batch(runner="jarvislabs")
 
 print(torch_result.torch_gradient, torch_result.host_boundary)
 print(torch_maturity.bounded_model_ready, torch_maturity.ready_for_provider_exceedance)
 print(torch_ecosystem.route_status("cuda_accelerator_device"))
 print(torch_lowering.route_status("registered_phase_qnode_statevector_lowering"))
 print(torch_lowering.route_status("registered_phase_qnode_torch_func_transform_lowering"))
+print(torch_cloud_batch.local_execution_status, torch_cloud_batch.required_artifacts)
 print(tf_maturity.bounded_model_ready, tf_maturity.ready_for_provider_exceedance)
 print(tf_result.tensorflow_gradient, tf_result.host_boundary)
 ```
@@ -2044,7 +2047,11 @@ claim-boundary metadata. Provider exceedance still remains blocked until
 registered Phase-QNode `torch.compile` lowering, compatible CUDA/device
 evidence, finite-shot/provider/hardware Phase-QNode Torch lowering, full
 compiler/autograd integration, and promotion-grade isolated benchmark artefacts
-exist. The separate
+exist. The aggregate audit also includes the
+`plan_torch_cloud_validation_batch(...)` run spec, which records local
+CUDA/device skip reasons, blocked PyTorch Phase-QNode routes, required
+JarvisLabs/cloud artefacts, and reproduction commands for the deferred
+accelerator validation batch. The separate
 `run_torch_phase_qnode_lowering_matrix(...)` route makes that boundary explicit:
 bounded QNN tensor, custom-autograd, `torch.func`, `torch.compile`, and
 module/layer routes plus deterministic registered statevector and `torch.func`

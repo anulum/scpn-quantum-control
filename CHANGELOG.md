@@ -5,6 +5,13 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-06-19 — Added `plan_torch_cloud_validation_batch(...)` and
+  `PhaseTorchCloudValidationRunSpec` for PyTorch differentiable cloud
+  validation scheduling. The plan records local CUDA/device skip reasons,
+  blocked registered Phase-QNode `torch.compile` and accelerator routes,
+  required JarvisLabs/cloud artefacts, and reproduction commands while keeping
+  cloud execution and promotion claims open until compatible hardware artefacts
+  exist.
 - 2026-06-19 — Added registered local Phase-QNode PyTorch `torch.func`
   transform evidence through `torch_phase_qnode_transform_audit(...)`, plus
   broad PyTorch module/transform/compiler/device maturity routing through

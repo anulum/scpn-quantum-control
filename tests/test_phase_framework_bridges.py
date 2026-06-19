@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import json
 from collections.abc import Callable
+from pathlib import Path
 from typing import Any, cast
 
 import numpy as np
@@ -27,6 +28,7 @@ from scpn_quantum_control.phase import (
     PhaseTensorFlowPhaseQNodeLoweringMatrixResult,
     PhaseTensorFlowQNNGradientResult,
     PhaseTorchAutogradQNNGradientResult,
+    PhaseTorchCloudValidationRunSpec,
     PhaseTorchCompileCompatibilityResult,
     PhaseTorchEcosystemMaturityAuditResult,
     PhaseTorchFuncCompatibilityResult,
@@ -43,6 +45,7 @@ from scpn_quantum_control.phase import (
     parameter_shift_phase_qnode_gradient,
     parameter_shift_qnn_classifier_gradient,
     parameter_shift_qnn_classifier_loss,
+    plan_torch_cloud_validation_batch,
     run_tensorflow_keras_layer_wrapper_audit,
     run_tensorflow_maturity_audit,
     run_tensorflow_phase_qnode_lowering_matrix,
@@ -217,6 +220,7 @@ class _FakeTorchFunc:
 
 class _FakeTorch:
     float64 = np.float64
+    __version__ = "fake-torch"
 
     def __init__(self) -> None:
         self.autograd = _FakeTorchAutograd()
@@ -857,7 +861,7 @@ def test_torch_module_wrapper_audit_checks_module_grad(
 
 def test_torch_maturity_audit_records_bounded_passes_and_provider_gaps(
     monkeypatch: pytest.MonkeyPatch,
-    tmp_path,
+    tmp_path: Path,
 ) -> None:
     fake_torch = _FakeTorch()
     monkeypatch.setattr(torch_bridge, "_load_torch", lambda: fake_torch)
@@ -910,6 +914,7 @@ def test_torch_maturity_audit_records_bounded_passes_and_provider_gaps(
     assert evidence["torch_compile"].passed
     assert evidence["module_layer_wrapper"].passed
     assert evidence["ecosystem_maturity"].route_status("torch_compile_callable") == "passed"
+    assert evidence["cloud_validation_batch"].ready_for_cloud_dispatch
     assert evidence["live_overlay"].passed
     assert evidence["live_overlay"].artifact_id == "diff-qnode-external-comparison-local"
     assert "finite_shot_provider_hardware_torch_phase_qnode_lowering" in result.open_gaps
@@ -921,6 +926,7 @@ def test_torch_maturity_audit_records_bounded_passes_and_provider_gaps(
     required_capabilities = cast(dict[str, str], payload["required_capabilities"])
     assert required_capabilities["torch_compile"] == "passed"
     assert required_capabilities["torch_ecosystem_maturity"] == "blocked"
+    assert required_capabilities["cloud_validation_batch"] == "scheduled"
     assert required_capabilities["live_overlay_execution"] == "passed"
     assert (
         cast(dict[str, Any], payload["evidence"])["live_overlay"]["torch_version"] == "2.11.0+cpu"
@@ -956,7 +962,7 @@ def test_torch_ecosystem_maturity_audit_records_broad_module_func_compile_device
 
 def test_torch_maturity_audit_rejects_incomplete_live_overlay_artifact(
     monkeypatch: pytest.MonkeyPatch,
-    tmp_path,
+    tmp_path: Path,
 ) -> None:
     fake_torch = _FakeTorch()
     monkeypatch.setattr(torch_bridge, "_load_torch", lambda: fake_torch)
@@ -1012,6 +1018,33 @@ def test_torch_phase_qnode_lowering_matrix_fails_closed_for_arbitrary_qnodes() -
         "shot_budget",
         "hardware_evidence_id",
     ]
+
+
+def test_torch_cloud_validation_batch_schedules_incompatible_local_device(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    fake_torch = _FakeTorch()
+    fake_torch.__version__ = "2.11.0+cpu"
+    monkeypatch.setattr(torch_bridge, "_load_torch", lambda: fake_torch)
+
+    result = plan_torch_cloud_validation_batch(runner="jarvislabs")
+
+    assert isinstance(result, PhaseTorchCloudValidationRunSpec)
+    assert result.runner == "jarvislabs"
+    assert result.ready_for_cloud_dispatch
+    assert result.local_execution_status == "skipped_incompatible_local_hardware"
+    assert "CUDA" in result.local_skip_reason
+    assert "registered_phase_qnode_torch_compile_lowering" in result.blocked_local_routes
+    assert "registered_phase_qnode_cuda_device_lowering" in result.blocked_local_routes
+    assert "registered_phase_qnode_compile_artifact" in result.required_artifacts
+    assert "cuda_device_phase_qnode_gradient_artifact" in result.required_artifacts
+    assert "isolated_benchmark_artifact" in result.required_artifacts
+    assert any("test_phase_framework_bridges.py" in command for command in result.commands)
+    assert result.required_environment["accelerator_backend"] == "cuda"
+    assert result.claim_boundary == "torch_cloud_validation_batch_plan"
+    payload = result.to_dict()
+    assert payload["local_execution_status"] == "skipped_incompatible_local_hardware"
+    json.dumps(payload)
 
 
 def test_torch_phase_qnode_value_and_grad_lowers_registered_statevector() -> None:

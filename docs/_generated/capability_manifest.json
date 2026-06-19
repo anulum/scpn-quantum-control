@@ -10,7 +10,7 @@
     "paper0_validation_modules": 466,
     "public_api_exports": 664,
     "public_documentation_pages": 254,
-    "python_model_classes": 1805,
+    "python_model_classes": 1806,
     "python_model_source_modules": 835,
     "rust_pyo3_model_wrappers": 135,
     "rust_source_modules": 38,
@@ -5279,6 +5279,10 @@
       },
       {
         "name": "PhaseTorchAutogradQNNGradientResult",
+        "path": "src/scpn_quantum_control/phase/torch_bridge.py"
+      },
+      {
+        "name": "PhaseTorchCloudValidationRunSpec",
         "path": "src/scpn_quantum_control/phase/torch_bridge.py"
       },
       {

@@ -503,6 +503,7 @@ from .tensorflow_bridge import (
 )
 from .torch_bridge import (
     PhaseTorchAutogradQNNGradientResult,
+    PhaseTorchCloudValidationRunSpec,
     PhaseTorchCompileCompatibilityResult,
     PhaseTorchEcosystemMaturityAuditResult,
     PhaseTorchEcosystemMaturityRoute,
@@ -517,6 +518,7 @@ from .torch_bridge import (
     PhaseTorchPhaseQNodeTransformResult,
     PhaseTorchQNNGradientResult,
     is_phase_torch_available,
+    plan_torch_cloud_validation_batch,
     run_torch_compile_compatibility_audit,
     run_torch_ecosystem_maturity_audit,
     run_torch_func_compatibility_audit,
@@ -903,6 +905,7 @@ __all__ = [
     "generate_qiskit_parameter_shift_circuits",
     "run_qiskit_maturity_audit",
     "is_phase_torch_available",
+    "plan_torch_cloud_validation_batch",
     "run_torch_compile_compatibility_audit",
     "run_torch_ecosystem_maturity_audit",
     "run_torch_func_compatibility_audit",
@@ -914,6 +917,7 @@ __all__ = [
     "torch_parameter_shift_value_and_grad",
     "torch_phase_qnode_transform_audit",
     "PhaseTorchAutogradQNNGradientResult",
+    "PhaseTorchCloudValidationRunSpec",
     "PhaseTorchCompileCompatibilityResult",
     "PhaseTorchEcosystemMaturityAuditResult",
     "PhaseTorchEcosystemMaturityRoute",
