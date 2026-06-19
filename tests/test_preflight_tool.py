@@ -50,10 +50,12 @@ def test_static_gates_include_differentiable_docstring_ratchet() -> None:
 
     assert "--select" in docstring_cmd
     assert "D" in docstring_cmd
+    assert "src/scpn_quantum_control/differentiable_external_validation.py" in (docstring_cmd)
     assert "src/scpn_quantum_control/differentiable_module_hardening_audit.py" in (docstring_cmd)
     assert "src/scpn_quantum_control/benchmarks/differentiable_hardening_gate.py" in (
         docstring_cmd
     )
+    assert "tests/test_differentiable_external_validation.py" in docstring_cmd
     assert "tests/test_differentiable_module_hardening_audit.py" in docstring_cmd
     assert "tests/test_differentiable_hardening_gate.py" in docstring_cmd
 

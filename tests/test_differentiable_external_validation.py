@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
+
 from scpn_quantum_control.differentiable_external_validation import (
     EXTERNAL_VALIDATION_ENVIRONMENT_LOCK_SCHEMA,
     EnvironmentLockfileSummary,
@@ -23,6 +25,7 @@ from scpn_quantum_control.differentiable_external_validation import (
     load_external_validation_environment_lock,
     render_external_validation_artifact_bundle_markdown,
     render_external_validation_environment_lock_markdown,
+    summarize_artifact_entry,
     summarize_environment_lockfile,
     validate_external_validation_artifact_bundle,
     validate_external_validation_environment_lock,
@@ -30,9 +33,13 @@ from scpn_quantum_control.differentiable_external_validation import (
 
 
 def test_build_external_validation_environment_lock_records_exact_lockfiles() -> None:
+    """Environment lock manifests must record every committed lockfile."""
     manifest = build_external_validation_environment_lock()
 
+    payload = manifest.to_dict()
     paths = {lockfile.path for lockfile in manifest.lockfiles}
+    assert payload["artifact_id"] == manifest.artifact_id
+    assert payload["lockfiles"][0] == manifest.lockfiles[0].to_dict()
     assert manifest.schema == EXTERNAL_VALIDATION_ENVIRONMENT_LOCK_SCHEMA
     assert manifest.classification == "functional_non_isolated"
     assert "isolated_affinity benchmark claims" in manifest.claim_boundary
@@ -48,6 +55,7 @@ def test_build_external_validation_environment_lock_records_exact_lockfiles() ->
 
 
 def test_committed_external_validation_environment_lock_matches_files() -> None:
+    """Committed environment lock manifests must match current files."""
     manifest = load_external_validation_environment_lock()
     validation = validate_external_validation_environment_lock(manifest)
 
@@ -58,6 +66,7 @@ def test_committed_external_validation_environment_lock_matches_files() -> None:
 
 
 def test_environment_lock_validation_rejects_hash_drift() -> None:
+    """Environment lock validation must reject checksum drift."""
     manifest = build_external_validation_environment_lock()
     first = manifest.lockfiles[0]
     drifted = EnvironmentLockfileSummary(
@@ -84,7 +93,56 @@ def test_environment_lock_validation_rejects_hash_drift() -> None:
     assert validation.errors == ("sha256 mismatch: pyproject.toml",)
 
 
+def test_environment_lock_validation_rejects_contract_drift(tmp_path: Path) -> None:
+    """Environment lock validation must reject schema and metadata drift."""
+    lockfile = tmp_path / "requirements.txt"
+    lockfile.write_text("numpy==2.0.0\nscipy==1.12.0\n", encoding="utf-8")
+    summary = summarize_environment_lockfile(lockfile, repo_root=tmp_path, role="runtime")
+    drifted = EnvironmentLockfileSummary(
+        path=summary.path,
+        role=summary.role,
+        sha256=summary.sha256,
+        size_bytes=summary.size_bytes + 1,
+        line_count=summary.line_count + 1,
+        pinned_package_count=summary.pinned_package_count + 1,
+    )
+    missing = EnvironmentLockfileSummary(
+        path="missing.txt",
+        role="missing",
+        sha256="0" * 64,
+        size_bytes=0,
+        line_count=0,
+        pinned_package_count=0,
+    )
+    candidate = ExternalValidationEnvironmentLock(
+        artifact_id="candidate",
+        schema="wrong",
+        python_version="3.12.0",
+        platform="test",
+        lockfiles=(drifted, missing),
+        classification="promoted",
+        claim_boundary="too vague",
+    )
+
+    validation = validate_external_validation_environment_lock(
+        candidate,
+        repo_root=tmp_path,
+    )
+
+    assert validation.to_dict()["passed"] is False
+    assert validation.errors == (
+        "unexpected schema: wrong",
+        "environment lock manifest must remain functional_non_isolated",
+        "environment lock manifest claim boundary is not explicit enough",
+        "size mismatch: requirements.txt",
+        "line-count mismatch: requirements.txt",
+        "pinned-package-count mismatch: requirements.txt",
+        "missing lockfile: missing.txt",
+    )
+
+
 def test_summarize_environment_lockfile_counts_pinned_packages(tmp_path: Path) -> None:
+    """Lockfile summaries must count pinned requirements and file metadata."""
     lockfile = tmp_path / "requirements.txt"
     lockfile.write_text(
         "numpy==2.0.0\nscipy==1.12.0 ; python_version >= '3.10'\n# comment\njax[cpu]==0.4.30\n",
@@ -103,7 +161,18 @@ def test_summarize_environment_lockfile_counts_pinned_packages(tmp_path: Path) -
     assert len(summary.sha256) == 64
 
 
+def test_environment_lockfile_summary_rejects_missing_file(tmp_path: Path) -> None:
+    """Environment lockfile summaries must fail closed on missing files."""
+    missing = tmp_path / "missing.txt"
+
+    with pytest.raises(FileNotFoundError) as exc_info:
+        summarize_environment_lockfile(missing, repo_root=tmp_path, role="missing")
+
+    assert str(exc_info.value) == f"environment lockfile is missing: {missing}"
+
+
 def test_environment_lock_markdown_lists_claim_boundary() -> None:
+    """Environment lock Markdown must expose the claim boundary."""
     markdown = render_external_validation_environment_lock_markdown(
         build_external_validation_environment_lock()
     )
@@ -115,9 +184,13 @@ def test_environment_lock_markdown_lists_claim_boundary() -> None:
 
 
 def test_build_external_validation_artifact_bundle_records_committed_evidence() -> None:
+    """Artefact bundle manifests must record committed evidence files."""
     bundle = build_external_validation_artifact_bundle()
 
+    payload = bundle.to_dict()
     paths = {entry.path for entry in bundle.entries}
+    assert payload["artifact_id"] == bundle.artifact_id
+    assert payload["entries"][0] == bundle.entries[0].to_dict()
     assert bundle.classification == "functional_non_isolated"
     assert "isolated_affinity benchmark claims" in bundle.claim_boundary
     assert "data/differentiable_phase_qnode/claim_ledger.json" in paths
@@ -131,6 +204,7 @@ def test_build_external_validation_artifact_bundle_records_committed_evidence() 
 
 
 def test_committed_external_validation_artifact_bundle_matches_files() -> None:
+    """Committed artefact bundle manifests must match current evidence files."""
     bundle = load_external_validation_artifact_bundle()
     validation = validate_external_validation_artifact_bundle(bundle)
 
@@ -140,6 +214,7 @@ def test_committed_external_validation_artifact_bundle_matches_files() -> None:
 
 
 def test_artifact_bundle_validation_rejects_hash_drift() -> None:
+    """Artefact bundle validation must reject checksum drift."""
     bundle = build_external_validation_artifact_bundle()
     first = bundle.entries[0]
     drifted = ExternalValidationArtifactEntry(
@@ -164,7 +239,57 @@ def test_artifact_bundle_validation_rejects_hash_drift() -> None:
     )
 
 
+def test_artifact_bundle_validation_rejects_contract_drift(tmp_path: Path) -> None:
+    """Artefact bundle validation must reject schema and metadata drift."""
+    artefact = tmp_path / "evidence.json"
+    artefact.write_text('{"ok": true}\n', encoding="utf-8")
+    entry = summarize_artifact_entry(artefact, repo_root=tmp_path, role="evidence")
+    summary = ExternalValidationArtifactEntry(
+        path=entry.path,
+        role=entry.role,
+        sha256=entry.sha256,
+        size_bytes=entry.size_bytes + 1,
+    )
+    missing = ExternalValidationArtifactEntry(
+        path="missing.json",
+        role="missing",
+        sha256="0" * 64,
+        size_bytes=0,
+    )
+    bundle = ExternalValidationArtifactBundle(
+        artifact_id="candidate",
+        schema="wrong",
+        entries=(summary, missing),
+        classification="promoted",
+        claim_boundary="too vague",
+    )
+
+    validation = validate_external_validation_artifact_bundle(
+        bundle,
+        repo_root=tmp_path,
+    )
+
+    assert validation.errors == (
+        "unexpected schema: wrong",
+        "artifact bundle must remain functional_non_isolated",
+        "artifact bundle claim boundary is not explicit enough",
+        "size mismatch: evidence.json",
+        "missing artefact: missing.json",
+    )
+
+
+def test_artifact_entry_summary_rejects_missing_file(tmp_path: Path) -> None:
+    """Artefact entry summaries must fail closed on missing files."""
+    missing = tmp_path / "missing.json"
+
+    with pytest.raises(FileNotFoundError) as exc_info:
+        summarize_artifact_entry(missing, repo_root=tmp_path, role="missing")
+
+    assert str(exc_info.value) == f"external-validation artefact is missing: {missing}"
+
+
 def test_artifact_bundle_markdown_lists_claim_boundary() -> None:
+    """Artefact bundle Markdown must expose the claim boundary."""
     markdown = render_external_validation_artifact_bundle_markdown(
         build_external_validation_artifact_bundle()
     )

@@ -37,8 +37,10 @@ ROOT = Path(__file__).resolve().parent.parent
 _PY = sys.executable
 
 DIFFERENTIABLE_DOCSTRING_RATCHET = [
+    "src/scpn_quantum_control/differentiable_external_validation.py",
     "src/scpn_quantum_control/differentiable_module_hardening_audit.py",
     "src/scpn_quantum_control/benchmarks/differentiable_hardening_gate.py",
+    "tests/test_differentiable_external_validation.py",
     "tests/test_differentiable_module_hardening_audit.py",
     "tests/test_differentiable_hardening_gate.py",
 ]

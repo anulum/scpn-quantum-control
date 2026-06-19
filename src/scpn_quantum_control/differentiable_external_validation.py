@@ -123,7 +123,6 @@ class EnvironmentLockfileSummary:
 
     def to_dict(self) -> dict[str, Any]:
         """Return a JSON-ready lockfile summary."""
-
         return {
             "path": self.path,
             "role": self.role,
@@ -148,7 +147,6 @@ class ExternalValidationEnvironmentLock:
 
     def to_dict(self) -> dict[str, Any]:
         """Return a JSON-ready external-validation environment manifest."""
-
         return {
             "schema": self.schema,
             "artifact_id": self.artifact_id,
@@ -170,7 +168,6 @@ class ExternalValidationEnvironmentLockValidation:
 
     def to_dict(self) -> dict[str, Any]:
         """Return JSON-ready validation metadata."""
-
         return {
             "passed": self.passed,
             "errors": list(self.errors),
@@ -189,7 +186,6 @@ class ExternalValidationArtifactEntry:
 
     def to_dict(self) -> dict[str, Any]:
         """Return a JSON-ready artefact entry."""
-
         return {
             "path": self.path,
             "role": self.role,
@@ -210,7 +206,6 @@ class ExternalValidationArtifactBundle:
 
     def to_dict(self) -> dict[str, Any]:
         """Return a JSON-ready artefact-bundle manifest."""
-
         return {
             "schema": self.schema,
             "artifact_id": self.artifact_id,
@@ -227,7 +222,6 @@ def summarize_environment_lockfile(
     role: str,
 ) -> EnvironmentLockfileSummary:
     """Summarize one repository-relative lockfile with a SHA-256 digest."""
-
     resolved = path if path.is_absolute() else repo_root / path
     if not resolved.exists():
         raise FileNotFoundError(f"environment lockfile is missing: {path}")
@@ -254,7 +248,6 @@ def summarize_artifact_entry(
     role: str,
 ) -> ExternalValidationArtifactEntry:
     """Summarize one external-validation artefact with a SHA-256 digest."""
-
     resolved = path if path.is_absolute() else repo_root / path
     if not resolved.exists():
         raise FileNotFoundError(f"external-validation artefact is missing: {path}")
@@ -274,7 +267,6 @@ def build_external_validation_environment_lock(
     inputs: tuple[tuple[str, str], ...] = DEFAULT_ENVIRONMENT_LOCK_INPUTS,
 ) -> ExternalValidationEnvironmentLock:
     """Build the exact environment-lock manifest for the differentiable package."""
-
     summaries = tuple(
         summarize_environment_lockfile(repo_root / lockfile_path, repo_root=repo_root, role=role)
         for lockfile_path, role in inputs
@@ -301,7 +293,6 @@ def build_external_validation_artifact_bundle(
     inputs: tuple[tuple[str, str], ...] = DEFAULT_ARTIFACT_BUNDLE_INPUTS,
 ) -> ExternalValidationArtifactBundle:
     """Build the reproducible external-validation artefact bundle manifest."""
-
     entries = tuple(
         summarize_artifact_entry(repo_root / artefact_path, repo_root=repo_root, role=role)
         for artefact_path, role in inputs
@@ -323,7 +314,6 @@ def load_external_validation_environment_lock(
     path: Path = DEFAULT_EXTERNAL_VALIDATION_ENVIRONMENT_LOCK_PATH,
 ) -> ExternalValidationEnvironmentLock:
     """Load a committed external-validation environment manifest."""
-
     payload = json.loads(path.read_text(encoding="utf-8"))
     return ExternalValidationEnvironmentLock(
         artifact_id=str(payload["artifact_id"]),
@@ -350,7 +340,6 @@ def load_external_validation_artifact_bundle(
     path: Path = DEFAULT_EXTERNAL_VALIDATION_ARTIFACT_BUNDLE_PATH,
 ) -> ExternalValidationArtifactBundle:
     """Load a committed external-validation artefact-bundle manifest."""
-
     payload = json.loads(path.read_text(encoding="utf-8"))
     return ExternalValidationArtifactBundle(
         artifact_id=str(payload["artifact_id"]),
@@ -376,7 +365,6 @@ def validate_external_validation_environment_lock(
     path: Path = DEFAULT_EXTERNAL_VALIDATION_ENVIRONMENT_LOCK_PATH,
 ) -> ExternalValidationEnvironmentLockValidation:
     """Validate that committed environment-lock hashes match repository files."""
-
     candidate = manifest or load_external_validation_environment_lock(path)
     errors: list[str] = []
     checked_paths: list[str] = []
@@ -415,7 +403,6 @@ def validate_external_validation_artifact_bundle(
     path: Path = DEFAULT_EXTERNAL_VALIDATION_ARTIFACT_BUNDLE_PATH,
 ) -> ExternalValidationEnvironmentLockValidation:
     """Validate that the artefact-bundle manifest matches repository files."""
-
     candidate = bundle or load_external_validation_artifact_bundle(path)
     errors: list[str] = []
     checked_paths: list[str] = []
@@ -447,7 +434,6 @@ def render_external_validation_environment_lock_markdown(
     manifest: ExternalValidationEnvironmentLock,
 ) -> str:
     """Render a reviewer-facing Markdown summary for the lockfile manifest."""
-
     lines = [
         "<!--",
         "SPDX-License-Identifier: AGPL-3.0-or-later",
@@ -483,7 +469,6 @@ def render_external_validation_artifact_bundle_markdown(
     bundle: ExternalValidationArtifactBundle,
 ) -> str:
     """Render a reviewer-facing Markdown summary for the artefact bundle."""
-
     lines = [
         "<!--",
         "SPDX-License-Identifier: AGPL-3.0-or-later",

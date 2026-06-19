@@ -73,7 +73,9 @@ def test_ci_gates_differentiable_docstring_ratchet() -> None:
 
     assert "Ruff docstring ratchet for differentiable module hardening" in workflow
     assert "ruff check --select D" in workflow
+    assert "src/scpn_quantum_control/differentiable_external_validation.py" in workflow
     assert "src/scpn_quantum_control/differentiable_module_hardening_audit.py" in workflow
     assert "src/scpn_quantum_control/benchmarks/differentiable_hardening_gate.py" in (workflow)
+    assert "tests/test_differentiable_external_validation.py" in workflow
     assert "tests/test_differentiable_module_hardening_audit.py" in workflow
     assert "tests/test_differentiable_hardening_gate.py" in workflow

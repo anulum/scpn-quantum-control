@@ -180,6 +180,13 @@ evidence files. `validate_external_validation_artifact_bundle()` rechecks those
 digests against the current checkout. The bundle is checksum provenance only
 and remains `functional_non_isolated`.
 
+CI, local preflight, and the pre-push hook now include the external-validation
+module and its module-specific tests in the scoped NumPy-style Ruff docstring
+ratchet alongside the module-hardening audit and hardening-slice gate surfaces.
+That ratchet covers the manifest builders, checksum validators, renderer
+contracts, and fail-closed drift branches while repository-wide docstring
+enforcement remains open rollout debt.
+
 Differentiable CI reproducibility is split into explicit sparse, full, optional
 GPU-contract, scheduled metadata, and isolated-runner lanes. The sparse and full
 CPU profiles run across Python 3.10, 3.11, 3.12, and 3.13 using the pinned
