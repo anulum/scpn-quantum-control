@@ -60,7 +60,12 @@ from .domain_benchmark_datasets import (
     run_differentiable_domain_benchmark_dataset_validation,
     run_differentiable_published_domain_benchmark_validation,
 )
-from .floquet_kuramoto import FloquetResult, floquet_evolve, scan_drive_amplitude
+from .floquet_kuramoto import (
+    DTC_SUBHARMONIC_THRESHOLD,
+    FloquetResult,
+    floquet_evolve,
+    scan_drive_amplitude,
+)
 from .general_unitary import build_u3_operations, su2_zyz_angles
 from .gradient_backend import (
     QuantumGradientBackendCapability,
@@ -588,6 +593,7 @@ __all__ = [
     "floquet_evolve",
     "scan_drive_amplitude",
     "FloquetResult",
+    "DTC_SUBHARMONIC_THRESHOLD",
     "quantum_gradient_backend_capability",
     "HardwareGradientPolicy",
     "HardwareGradientPolicyDecision",

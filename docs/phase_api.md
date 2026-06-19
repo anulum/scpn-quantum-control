@@ -395,7 +395,8 @@ period. Returns the time series of $R(t)$ and the subharmonic ratio (power at
 $\Omega/2$ divided by power at $\Omega$, computed via FFT).
 
 `FloquetResult` fields: `times`, `R_values`, `drive_signal`, `subharmonic_ratio`,
-`is_dtc_candidate` (True when `subharmonic_ratio > 1`).
+`is_dtc_candidate` (True when `subharmonic_ratio > 0.1`,
+the `DTC_SUBHARMONIC_THRESHOLD` used by the module).
 
 **Rust acceleration:** Hamiltonian construction via `build_xy_hamiltonian_dense` (Qiskit-free).
 Order parameter R computed via `all_xy_expectations` (batch bitwise Pauli, 1 FFI call instead

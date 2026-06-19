@@ -121,6 +121,7 @@ def test_static_gates_include_differentiable_strict_mypy_ratchet() -> None:
     assert "src/scpn_quantum_control/phase/coupling_learning.py" in strict_cmd
     assert "src/scpn_quantum_control/phase/contraction_optimiser.py" in strict_cmd
     assert "src/scpn_quantum_control/phase/cross_domain_transfer.py" in strict_cmd
+    assert "src/scpn_quantum_control/phase/floquet_kuramoto.py" in strict_cmd
 
 
 def test_preflight_coverage_gate_matches_temporary_ci_threshold():

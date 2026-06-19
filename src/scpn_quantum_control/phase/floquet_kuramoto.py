@@ -24,37 +24,47 @@ Floquet-Kuramoto with heterogeneous omega_i is completely open.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import TypeAlias
 
 import numpy as np
+from numpy.typing import NDArray
 from scipy.linalg import expm
 
 from ..accel.rust_import import optional_rust_engine
 from ..bridge.knm_hamiltonian import knm_to_dense_matrix
 from ..dense_budget import require_dense_allocation
 
+FloatArray: TypeAlias = NDArray[np.float64]
+ComplexArray: TypeAlias = NDArray[np.complex128]
+
+DTC_SUBHARMONIC_THRESHOLD = 0.1
+"""Minimum subharmonic-power ratio used to flag a DTC candidate."""
+
 
 @dataclass
 class FloquetResult:
     """Floquet-Kuramoto simulation result."""
 
-    times: np.ndarray
-    R_values: np.ndarray
-    drive_signal: np.ndarray
+    times: FloatArray
+    R_values: FloatArray
+    drive_signal: FloatArray
     subharmonic_ratio: float  # power at Omega/2 / power at Omega
-    is_dtc_candidate: bool  # subharmonic_ratio > threshold
+    is_dtc_candidate: bool  # subharmonic_ratio > DTC_SUBHARMONIC_THRESHOLD
 
 
 def _build_H_matrix(
-    K: np.ndarray,
-    omega: np.ndarray,
+    K: FloatArray,
+    omega: FloatArray,
     *,
     max_dense_gib: float | None = None,
-) -> np.ndarray:
+) -> ComplexArray:
     """Build dense Hamiltonian matrix."""
-    return knm_to_dense_matrix(K, omega, max_dense_gib=max_dense_gib)
+    return np.asarray(
+        knm_to_dense_matrix(K, omega, max_dense_gib=max_dense_gib), dtype=np.complex128
+    )
 
 
-def _order_parameter(psi: np.ndarray, n: int) -> float:
+def _order_parameter(psi: ComplexArray, n: int) -> float:
     """R from statevector via single-qubit expectations.
 
     Rust fast path uses bitwise Pauli expectations (no Qiskit overhead).
@@ -66,7 +76,10 @@ def _order_parameter(psi: np.ndarray, n: int) -> float:
         psi_re = np.ascontiguousarray(psi.real)
         psi_im = np.ascontiguousarray(psi.imag)
         exp_x, exp_y = _engine.all_xy_expectations(psi_re, psi_im, n)
-        phases = np.arctan2(np.asarray(exp_y), np.asarray(exp_x))
+        phases = np.arctan2(
+            np.asarray(exp_y, dtype=np.float64),
+            np.asarray(exp_x, dtype=np.float64),
+        )
         return float(abs(np.mean(np.exp(1j * phases))))
     except AttributeError:
         pass
@@ -79,8 +92,8 @@ def _order_parameter(psi: np.ndarray, n: int) -> float:
 
 
 def floquet_evolve(
-    K_topology: np.ndarray,
-    omega: np.ndarray,
+    K_topology: FloatArray,
+    omega: FloatArray,
     K_base: float,
     drive_amplitude: float,
     drive_frequency: float,
@@ -101,6 +114,7 @@ def floquet_evolve(
         drive_frequency: Omega (angular frequency of periodic drive)
         n_periods: number of drive periods to simulate
         steps_per_period: time steps per period
+        max_dense_gib: optional dense allocation budget in GiB
     """
     n = len(omega)
     require_dense_allocation(
@@ -125,11 +139,11 @@ def floquet_evolve(
     n_steps = n_periods * steps_per_period
 
     # Initial state: |+⟩^n (equal superposition — nontrivial phases)
-    psi = np.ones(dim, dtype=complex) / np.sqrt(dim)
+    psi: ComplexArray = np.ones(dim, dtype=np.complex128) / np.sqrt(dim)
 
-    times = np.zeros(n_steps + 1)
-    R_values = np.zeros(n_steps + 1)
-    drive_signal = np.zeros(n_steps + 1)
+    times = np.zeros(n_steps + 1, dtype=np.float64)
+    R_values = np.zeros(n_steps + 1, dtype=np.float64)
+    drive_signal = np.zeros(n_steps + 1, dtype=np.float64)
 
     R_values[0] = _order_parameter(psi, n)
     drive_signal[0] = K_base * (1 + drive_amplitude)
@@ -144,7 +158,7 @@ def floquet_evolve(
         # Full Hamiltonian at midpoint
         H_coupling = _build_H_matrix(
             K_t * K_topology,
-            np.zeros(n),
+            np.zeros(n, dtype=np.float64),
             max_dense_gib=max_dense_gib,
         )
         H_total = H_coupling + H_freq
@@ -165,11 +179,11 @@ def floquet_evolve(
         R_values=R_values,
         drive_signal=drive_signal,
         subharmonic_ratio=sub_ratio,
-        is_dtc_candidate=sub_ratio > 0.1,
+        is_dtc_candidate=sub_ratio > DTC_SUBHARMONIC_THRESHOLD,
     )
 
 
-def _subharmonic_ratio(signal: np.ndarray, drive_freq: float, dt: float) -> float:
+def _subharmonic_ratio(signal: FloatArray, drive_freq: float, dt: float) -> float:
     """Ratio of spectral power at Omega/2 to power at Omega.
 
     > 0 indicates subharmonic response (DTC signature).
@@ -208,11 +222,11 @@ def _subharmonic_ratio(signal: np.ndarray, drive_freq: float, dt: float) -> floa
 
 
 def scan_drive_amplitude(
-    K_topology: np.ndarray,
-    omega: np.ndarray,
+    K_topology: FloatArray,
+    omega: FloatArray,
     K_base: float,
     drive_frequency: float,
-    amplitudes: np.ndarray | None = None,
+    amplitudes: FloatArray | None = None,
     n_periods: int = 8,
     steps_per_period: int = 16,
     *,
@@ -223,7 +237,9 @@ def scan_drive_amplitude(
     DTC phase boundary: where subharmonic_ratio jumps from ~0 to > 0.
     """
     if amplitudes is None:
-        amplitudes = np.linspace(0.1, 2.0, 10)
+        scan_amplitudes = np.asarray(np.linspace(0.1, 2.0, 10), dtype=np.float64)
+    else:
+        scan_amplitudes = amplitudes
 
     results: dict[str, list[float]] = {
         "amplitude": [],
@@ -232,7 +248,7 @@ def scan_drive_amplitude(
         "is_dtc": [],
     }
 
-    for amp in amplitudes:
+    for amp in scan_amplitudes:
         fr = floquet_evolve(
             K_topology,
             omega,

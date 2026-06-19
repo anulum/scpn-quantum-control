@@ -14,7 +14,7 @@
     "python_model_source_modules": 835,
     "rust_pyo3_model_wrappers": 135,
     "rust_source_modules": 38,
-    "test_files": 1955
+    "test_files": 1956
   },
   "documentation": {
     "examples": [
@@ -10663,6 +10663,7 @@
       "tests/test_fim_mechanism.py",
       "tests/test_finite_size_scaling.py",
       "tests/test_floquet_kuramoto.py",
+      "tests/test_floquet_kuramoto_strict_surface.py",
       "tests/test_fmo_benchmark.py",
       "tests/test_fractional_gates.py",
       "tests/test_frontier_generate_params.py",
