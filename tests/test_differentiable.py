@@ -81,8 +81,10 @@ from scpn_quantum_control.differentiable import (
     WholeProgramCompilerFrontendReport,
     WholeProgramIRNode,
     WholeProgramSemanticsReport,
+    WholeProgramSourceBytecodeLineMap,
     WholeProgramSourceIRFeature,
     WholeProgramSourceRegion,
+    WholeProgramSymbolScopeEntry,
     WholeProgramTraceEvent,
     allocate_parameter_shift_shots,
     analyze_program_ad_alias_effects,
@@ -10921,12 +10923,21 @@ def test_whole_program_compiler_frontend_report_is_static_and_complete() -> None
     assert report.bytecode_basic_block_count > 1
     assert report.source_feature_count > 0
     assert report.source_region_count > 1
+    assert report.source_bytecode_line_map_count > 0
+    assert report.symbol_scope_entry_count > 0
     assert report.ast_node_count > 0
     assert report.hard_gaps == ()
     assert all(
         isinstance(block, WholeProgramBytecodeBasicBlock) for block in report.bytecode_basic_blocks
     )
     assert all(isinstance(region, WholeProgramSourceRegion) for region in report.source_regions)
+    assert all(
+        isinstance(line_map, WholeProgramSourceBytecodeLineMap)
+        for line_map in report.source_bytecode_line_map
+    )
+    assert all(
+        isinstance(entry, WholeProgramSymbolScopeEntry) for entry in report.symbol_scope_entries
+    )
     assert any(block.successor_offsets for block in report.bytecode_basic_blocks)
     assert any(len(block.successor_offsets) == 2 for block in report.bytecode_basic_blocks)
     assert {"entry", "function", "loop", "control_flow"}.issubset(
@@ -10945,9 +10956,16 @@ def test_whole_program_compiler_frontend_report_is_static_and_complete() -> None
     assert payload["bytecode_instruction_count"] == report.bytecode_instruction_count
     assert payload["bytecode_basic_block_count"] == report.bytecode_basic_block_count
     assert payload["source_region_count"] == report.source_region_count
+    assert payload["source_bytecode_line_map_count"] == report.source_bytecode_line_map_count
+    assert payload["symbol_scope_entry_count"] == report.symbol_scope_entry_count
     assert payload["frontend_digest"] == report.frontend_digest
     assert payload["bytecode_basic_blocks"][0]["label"] == report.bytecode_basic_blocks[0].label
     assert payload["source_regions"][0]["kind"] == "entry"
+    assert payload["source_bytecode_line_map"][0]["instruction_offsets"]
+    assert any(
+        entry["symbol"] == "values" and "parameter" in entry["roles"]
+        for entry in payload["symbol_scope_entries"]
+    )
     assert "does not execute objectives" in report.claim_boundary
 
 
@@ -11013,6 +11031,23 @@ def test_whole_program_frontend_block_and_region_validation() -> None:
             line_end=1,
             parent_region_id=None,
             feature_kinds=("loop", "loop"),
+        )
+
+    with pytest.raises(ValueError, match="instruction_offsets must be sorted"):
+        WholeProgramSourceBytecodeLineMap(
+            line_number=1,
+            instruction_offsets=(4, 2),
+            region_ids=("region:entry",),
+            feature_kinds=(),
+        )
+
+    with pytest.raises(ValueError, match="roles must be sorted and unique"):
+        WholeProgramSymbolScopeEntry(
+            symbol="values",
+            roles=("parameter", "parameter"),
+            line_numbers=(1,),
+            bytecode_offsets=(),
+            region_ids=("region:entry",),
         )
 
 
@@ -11090,7 +11125,9 @@ def test_whole_program_ad_is_exported_from_package_root() -> None:
     assert scpn.WholeProgramCompilerFrontendReport is WholeProgramCompilerFrontendReport
     assert scpn.WholeProgramTraceEvent is WholeProgramTraceEvent
     assert scpn.WholeProgramSourceIRFeature is WholeProgramSourceIRFeature
+    assert scpn.WholeProgramSourceBytecodeLineMap is WholeProgramSourceBytecodeLineMap
     assert scpn.WholeProgramSourceRegion is WholeProgramSourceRegion
+    assert scpn.WholeProgramSymbolScopeEntry is WholeProgramSymbolScopeEntry
     assert scpn.WholeProgramSemanticsReport is WholeProgramSemanticsReport
     assert scpn.program_adjoint_grad is program_adjoint_grad
     assert scpn.program_adjoint_gradient is program_adjoint_gradient

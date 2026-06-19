@@ -812,6 +812,99 @@ class WholeProgramSourceRegion:
 
 
 @dataclass(frozen=True)
+class WholeProgramSourceBytecodeLineMap:
+    """One source-line to bytecode crosswalk row for frontend planning.
+
+    The row links a Python source line to normalized bytecode offsets, source
+    regions, and feature kinds. It is static inspection metadata only; it does
+    not assert executable compiler lowering or non-executed branch adjoints.
+    """
+
+    line_number: int
+    instruction_offsets: tuple[int, ...]
+    region_ids: tuple[str, ...]
+    feature_kinds: tuple[str, ...]
+
+    def __post_init__(self) -> None:
+        if self.line_number <= 0:
+            raise ValueError("source-bytecode line map line_number must be positive")
+        if not self.instruction_offsets:
+            raise ValueError("source-bytecode line map instruction_offsets must be non-empty")
+        if tuple(sorted(self.instruction_offsets)) != self.instruction_offsets:
+            raise ValueError("source-bytecode line map instruction_offsets must be sorted")
+        if any(offset < 0 for offset in self.instruction_offsets):
+            raise ValueError("source-bytecode line map instruction_offsets must be non-negative")
+        if any(not region_id for region_id in self.region_ids):
+            raise ValueError("source-bytecode line map region_ids entries must be non-empty")
+        if tuple(sorted(set(self.region_ids))) != self.region_ids:
+            raise ValueError("source-bytecode line map region_ids must be sorted and unique")
+        if any(not feature for feature in self.feature_kinds):
+            raise ValueError("source-bytecode line map feature_kinds entries must be non-empty")
+        if tuple(sorted(set(self.feature_kinds))) != self.feature_kinds:
+            raise ValueError("source-bytecode line map feature_kinds must be sorted and unique")
+
+    def to_dict(self) -> dict[str, object]:
+        """Return a JSON-ready source-bytecode crosswalk row."""
+
+        return {
+            "line_number": self.line_number,
+            "instruction_offsets": list(self.instruction_offsets),
+            "region_ids": list(self.region_ids),
+            "feature_kinds": list(self.feature_kinds),
+        }
+
+
+@dataclass(frozen=True)
+class WholeProgramSymbolScopeEntry:
+    """One static symbol-scope entry for whole-program frontend diagnostics.
+
+    Entries merge source names, bytecode operands, function parameters, locals,
+    globals, closure variables, and cell variables into a deterministic symbol
+    table. The table is a compiler-frontend diagnostic and does not execute the
+    objective or prove runtime alias safety.
+    """
+
+    symbol: str
+    roles: tuple[str, ...]
+    line_numbers: tuple[int, ...]
+    bytecode_offsets: tuple[int, ...]
+    region_ids: tuple[str, ...]
+
+    def __post_init__(self) -> None:
+        if not self.symbol:
+            raise ValueError("symbol-scope entry symbol must be non-empty")
+        if not self.roles:
+            raise ValueError("symbol-scope entry roles must be non-empty")
+        if tuple(sorted(set(self.roles))) != self.roles:
+            raise ValueError("symbol-scope entry roles must be sorted and unique")
+        if any(not role for role in self.roles):
+            raise ValueError("symbol-scope entry roles entries must be non-empty")
+        if any(line_number <= 0 for line_number in self.line_numbers):
+            raise ValueError("symbol-scope entry line_numbers must be positive")
+        if tuple(sorted(set(self.line_numbers))) != self.line_numbers:
+            raise ValueError("symbol-scope entry line_numbers must be sorted and unique")
+        if any(offset < 0 for offset in self.bytecode_offsets):
+            raise ValueError("symbol-scope entry bytecode_offsets must be non-negative")
+        if tuple(sorted(set(self.bytecode_offsets))) != self.bytecode_offsets:
+            raise ValueError("symbol-scope entry bytecode_offsets must be sorted and unique")
+        if any(not region_id for region_id in self.region_ids):
+            raise ValueError("symbol-scope entry region_ids entries must be non-empty")
+        if tuple(sorted(set(self.region_ids))) != self.region_ids:
+            raise ValueError("symbol-scope entry region_ids must be sorted and unique")
+
+    def to_dict(self) -> dict[str, object]:
+        """Return a JSON-ready symbol-scope entry."""
+
+        return {
+            "symbol": self.symbol,
+            "roles": list(self.roles),
+            "line_numbers": list(self.line_numbers),
+            "bytecode_offsets": list(self.bytecode_offsets),
+            "region_ids": list(self.region_ids),
+        }
+
+
+@dataclass(frozen=True)
 class WholeProgramSemanticsReport:
     """Static semantics summary for whole-program AD graph capture."""
 
@@ -871,6 +964,12 @@ class WholeProgramCompilerFrontendReport:
         Source-level AST feature rows used by the Program AD frontend.
     source_regions:
         Static source-region graph derived from bounded AST constructs.
+    source_bytecode_line_map:
+        Static crosswalk from source lines to bytecode offsets, source regions,
+        and source feature kinds.
+    symbol_scope_entries:
+        Static symbol-scope table derived from source names, bytecode operands,
+        and function code-object scope metadata.
     semantics_report:
         Static semantics summary derived from bytecode and source features.
     source_available:
@@ -897,6 +996,8 @@ class WholeProgramCompilerFrontendReport:
     bytecode_basic_blocks: tuple[WholeProgramBytecodeBasicBlock, ...]
     source_ir_features: tuple[WholeProgramSourceIRFeature, ...]
     source_regions: tuple[WholeProgramSourceRegion, ...]
+    source_bytecode_line_map: tuple[WholeProgramSourceBytecodeLineMap, ...]
+    symbol_scope_entries: tuple[WholeProgramSymbolScopeEntry, ...]
     semantics_report: WholeProgramSemanticsReport
     source_available: bool
     source_sha256: str | None
@@ -951,6 +1052,40 @@ class WholeProgramCompilerFrontendReport:
         for region in self.source_regions:
             if region.parent_region_id is not None and region.parent_region_id not in region_ids:
                 raise ValueError("compiler frontend source_regions must reference known parents")
+        if any(
+            not isinstance(line_map, WholeProgramSourceBytecodeLineMap)
+            for line_map in self.source_bytecode_line_map
+        ):
+            raise ValueError(
+                "compiler frontend source_bytecode_line_map must contain "
+                "WholeProgramSourceBytecodeLineMap entries"
+            )
+        for line_map in self.source_bytecode_line_map:
+            if any(offset not in instruction_offsets for offset in line_map.instruction_offsets):
+                raise ValueError(
+                    "compiler frontend source_bytecode_line_map must reference known instructions"
+                )
+            if any(region_id not in region_ids for region_id in line_map.region_ids):
+                raise ValueError(
+                    "compiler frontend source_bytecode_line_map must reference known regions"
+                )
+        if any(
+            not isinstance(entry, WholeProgramSymbolScopeEntry)
+            for entry in self.symbol_scope_entries
+        ):
+            raise ValueError(
+                "compiler frontend symbol_scope_entries must contain "
+                "WholeProgramSymbolScopeEntry entries"
+            )
+        for entry in self.symbol_scope_entries:
+            if any(offset not in instruction_offsets for offset in entry.bytecode_offsets):
+                raise ValueError(
+                    "compiler frontend symbol_scope_entries must reference known instructions"
+                )
+            if any(region_id not in region_ids for region_id in entry.region_ids):
+                raise ValueError(
+                    "compiler frontend symbol_scope_entries must reference known regions"
+                )
         if not isinstance(self.semantics_report, WholeProgramSemanticsReport):
             raise ValueError(
                 "compiler frontend semantics_report must be WholeProgramSemanticsReport"
@@ -1000,6 +1135,8 @@ class WholeProgramCompilerFrontendReport:
             and self.bytecode_instruction_count > 0
             and self.bytecode_basic_block_count > 0
             and self.source_region_count > 0
+            and self.source_bytecode_line_map_count > 0
+            and self.symbol_scope_entry_count > 0
             and self.semantics_report.bytecode_frontend
             and self.semantics_report.source_frontend
             and not self.hard_gaps
@@ -1017,6 +1154,18 @@ class WholeProgramCompilerFrontendReport:
 
         return len(self.source_regions)
 
+    @property
+    def source_bytecode_line_map_count(self) -> int:
+        """Return the number of source-bytecode crosswalk rows in the report."""
+
+        return len(self.source_bytecode_line_map)
+
+    @property
+    def symbol_scope_entry_count(self) -> int:
+        """Return the number of static symbol-scope entries in the report."""
+
+        return len(self.symbol_scope_entries)
+
     def to_dict(self) -> dict[str, object]:
         """Return a JSON-ready compiler frontend report."""
 
@@ -1031,6 +1180,8 @@ class WholeProgramCompilerFrontendReport:
             "bytecode_basic_block_count": self.bytecode_basic_block_count,
             "source_feature_count": self.source_feature_count,
             "source_region_count": self.source_region_count,
+            "source_bytecode_line_map_count": self.source_bytecode_line_map_count,
+            "symbol_scope_entry_count": self.symbol_scope_entry_count,
             "ast_node_count": self.ast_node_count,
             "bytecode_instructions": [
                 {
@@ -1051,6 +1202,10 @@ class WholeProgramCompilerFrontendReport:
                 for feature in self.source_ir_features
             ],
             "source_regions": [region.to_dict() for region in self.source_regions],
+            "source_bytecode_line_map": [
+                line_map.to_dict() for line_map in self.source_bytecode_line_map
+            ],
+            "symbol_scope_entries": [entry.to_dict() for entry in self.symbol_scope_entries],
             "semantics_report": {
                 "bytecode_frontend": self.semantics_report.bytecode_frontend,
                 "source_frontend": self.semantics_report.source_frontend,
@@ -9157,6 +9312,17 @@ def compile_whole_program_frontend(
     )
     bytecode_basic_blocks = _bytecode_basic_blocks(bytecode_instructions)
     source_regions = _source_regions(source, source_ir_features)
+    source_bytecode_line_map = _source_bytecode_line_map(
+        bytecode_instructions=bytecode_instructions,
+        source_ir_features=source_ir_features,
+        source_regions=source_regions,
+    )
+    symbol_scope_entries = _symbol_scope_entries(
+        objective=objective,
+        source=source,
+        bytecode_instructions=bytecode_instructions,
+        source_regions=source_regions,
+    )
     source_parse_failed = _source_parse_failed(source)
     semantics_report = _whole_program_semantics_report(
         bytecode_instructions=bytecode_instructions,
@@ -9181,6 +9347,10 @@ def compile_whole_program_frontend(
         hard_gaps.append("source_frontend_missing")
     elif not source_regions:
         hard_gaps.append("source_regions_missing")
+    elif not source_bytecode_line_map:
+        hard_gaps.append("source_bytecode_line_map_missing")
+    if not symbol_scope_entries:
+        hard_gaps.append("symbol_scope_entries_missing")
     if source_parse_failed:
         hard_gaps.append("source_ast_parse_failed")
     hard_gaps.extend(
@@ -9192,6 +9362,8 @@ def compile_whole_program_frontend(
         bytecode_basic_blocks=bytecode_basic_blocks,
         source_ir_features=source_ir_features,
         source_regions=source_regions,
+        source_bytecode_line_map=source_bytecode_line_map,
+        symbol_scope_entries=symbol_scope_entries,
         semantics_report=semantics_report,
         source_available=source is not None,
         source_sha256=None
@@ -9204,6 +9376,8 @@ def compile_whole_program_frontend(
             bytecode_basic_blocks=bytecode_basic_blocks,
             source_ir_features=source_ir_features,
             source_regions=source_regions,
+            source_bytecode_line_map=source_bytecode_line_map,
+            symbol_scope_entries=symbol_scope_entries,
             semantics_report=semantics_report,
             hard_gaps=tuple(hard_gaps),
         ),
@@ -9436,6 +9610,204 @@ def _source_regions(
     return tuple(regions)
 
 
+def _source_bytecode_line_map(
+    *,
+    bytecode_instructions: Sequence[WholeProgramBytecodeInstruction],
+    source_ir_features: Sequence[WholeProgramSourceIRFeature],
+    source_regions: Sequence[WholeProgramSourceRegion],
+) -> tuple[WholeProgramSourceBytecodeLineMap, ...]:
+    """Return deterministic source-line to bytecode crosswalk metadata."""
+
+    offsets_by_line: dict[int, set[int]] = {}
+    for instruction in bytecode_instructions:
+        if instruction.line_number is not None:
+            offsets_by_line.setdefault(instruction.line_number, set()).add(instruction.offset)
+
+    features_by_line: dict[int, set[str]] = {}
+    for feature in source_ir_features:
+        features_by_line.setdefault(feature.line_number, set()).add(feature.kind)
+
+    rows: list[WholeProgramSourceBytecodeLineMap] = []
+    for line_number in sorted(offsets_by_line):
+        region_ids = tuple(
+            sorted(
+                region.region_id
+                for region in source_regions
+                if region.line_start <= line_number <= region.line_end
+            )
+        )
+        rows.append(
+            WholeProgramSourceBytecodeLineMap(
+                line_number=line_number,
+                instruction_offsets=tuple(sorted(offsets_by_line[line_number])),
+                region_ids=region_ids,
+                feature_kinds=tuple(sorted(features_by_line.get(line_number, set()))),
+            )
+        )
+    return tuple(rows)
+
+
+def _symbol_scope_entries(
+    *,
+    objective: Callable[..., object],
+    source: str | None,
+    bytecode_instructions: Sequence[WholeProgramBytecodeInstruction],
+    source_regions: Sequence[WholeProgramSourceRegion],
+) -> tuple[WholeProgramSymbolScopeEntry, ...]:
+    """Return deterministic static symbol-scope metadata for a callable."""
+
+    symbol_roles: dict[str, set[str]] = {}
+    symbol_lines: dict[str, set[int]] = {}
+    symbol_offsets: dict[str, set[int]] = {}
+    symbol_regions: dict[str, set[str]] = {}
+
+    def ensure_symbol(symbol: str) -> None:
+        symbol_roles.setdefault(symbol, set())
+        symbol_lines.setdefault(symbol, set())
+        symbol_offsets.setdefault(symbol, set())
+        symbol_regions.setdefault(symbol, set())
+
+    def add_symbol(
+        symbol: str,
+        role: str,
+        *,
+        line_number: int | None = None,
+        bytecode_offset: int | None = None,
+    ) -> None:
+        if not symbol or not role:
+            return
+        ensure_symbol(symbol)
+        symbol_roles[symbol].add(role)
+        if line_number is not None and line_number > 0:
+            symbol_lines[symbol].add(line_number)
+            symbol_regions[symbol].update(_source_region_ids_for_line(source_regions, line_number))
+        if bytecode_offset is not None and bytecode_offset >= 0:
+            symbol_offsets[symbol].add(bytecode_offset)
+
+    try:
+        signature = inspect.signature(objective)
+    except (TypeError, ValueError):
+        signature = None
+    if signature is not None:
+        for parameter in signature.parameters:
+            add_symbol(parameter, "parameter")
+
+    code = getattr(objective, "__code__", None)
+    if code is not None:
+        argcount = int(code.co_argcount) + int(code.co_kwonlyargcount)
+        for symbol in code.co_varnames[:argcount]:
+            add_symbol(str(symbol), "parameter")
+        for symbol in code.co_varnames[argcount:]:
+            add_symbol(str(symbol), "local")
+        for symbol in code.co_freevars:
+            add_symbol(str(symbol), "closure")
+        for symbol in code.co_cellvars:
+            add_symbol(str(symbol), "cell")
+        for symbol in code.co_names:
+            add_symbol(str(symbol), "global_or_attribute")
+
+    for instruction in bytecode_instructions:
+        symbol = _bytecode_symbol_name(instruction)
+        if symbol is not None:
+            add_symbol(
+                symbol,
+                _bytecode_symbol_role(instruction.opname),
+                line_number=instruction.line_number,
+                bytecode_offset=instruction.offset,
+            )
+
+    if source is not None:
+        try:
+            tree = ast.parse(source)
+        except SyntaxError:
+            tree = None
+        if tree is not None:
+            for node in ast.walk(tree):
+                if isinstance(node, ast.arg):
+                    add_symbol(node.arg, "parameter", line_number=getattr(node, "lineno", None))
+                elif isinstance(node, ast.Name):
+                    add_symbol(
+                        node.id,
+                        _ast_name_role(node.ctx),
+                        line_number=getattr(node, "lineno", None),
+                    )
+
+    entries: list[WholeProgramSymbolScopeEntry] = []
+    for symbol in sorted(symbol_roles):
+        roles = tuple(sorted(symbol_roles[symbol]))
+        if not roles:
+            continue
+        entries.append(
+            WholeProgramSymbolScopeEntry(
+                symbol=symbol,
+                roles=roles,
+                line_numbers=tuple(sorted(symbol_lines[symbol])),
+                bytecode_offsets=tuple(sorted(symbol_offsets[symbol])),
+                region_ids=tuple(sorted(symbol_regions[symbol])),
+            )
+        )
+    return tuple(entries)
+
+
+def _source_region_ids_for_line(
+    source_regions: Sequence[WholeProgramSourceRegion],
+    line_number: int,
+) -> tuple[str, ...]:
+    """Return source-region identifiers covering a source line."""
+
+    return tuple(
+        sorted(
+            region.region_id
+            for region in source_regions
+            if region.line_start <= line_number <= region.line_end
+        )
+    )
+
+
+def _bytecode_symbol_name(instruction: WholeProgramBytecodeInstruction) -> str | None:
+    """Return the static symbol operand for a bytecode instruction."""
+
+    if not (
+        instruction.opname.endswith("_FAST")
+        or instruction.opname.endswith("_DEREF")
+        or instruction.opname.endswith("_GLOBAL")
+        or instruction.opname.endswith("_NAME")
+        or instruction.opname in {"LOAD_ATTR", "STORE_ATTR", "DELETE_ATTR"}
+    ):
+        return None
+    pieces = instruction.argrepr.replace("(", " ").replace(")", " ").replace("+", " ").split()
+    if not pieces:
+        return None
+    for piece in pieces:
+        if piece.isidentifier() and piece != "NULL":
+            return piece
+    return None
+
+
+def _bytecode_symbol_role(opname: str) -> str:
+    """Return a source-like symbol role for a bytecode operation name."""
+
+    if opname.startswith("LOAD"):
+        return "bytecode_load"
+    if opname.startswith("STORE"):
+        return "bytecode_store"
+    if opname.startswith("DELETE"):
+        return "bytecode_delete"
+    return "bytecode_reference"
+
+
+def _ast_name_role(context: ast.expr_context) -> str:
+    """Return a symbol role for an AST name context."""
+
+    if isinstance(context, ast.Load):
+        return "source_load"
+    if isinstance(context, ast.Store):
+        return "source_store"
+    if isinstance(context, ast.Del):
+        return "source_delete"
+    return "source_reference"
+
+
 def _frontend_digest(
     *,
     source: str | None,
@@ -9443,6 +9815,8 @@ def _frontend_digest(
     bytecode_basic_blocks: Sequence[WholeProgramBytecodeBasicBlock],
     source_ir_features: Sequence[WholeProgramSourceIRFeature],
     source_regions: Sequence[WholeProgramSourceRegion],
+    source_bytecode_line_map: Sequence[WholeProgramSourceBytecodeLineMap],
+    symbol_scope_entries: Sequence[WholeProgramSymbolScopeEntry],
     semantics_report: WholeProgramSemanticsReport,
     hard_gaps: tuple[str, ...],
 ) -> str:
@@ -9471,6 +9845,8 @@ def _frontend_digest(
             for feature in source_ir_features
         ],
         "source_regions": [region.to_dict() for region in source_regions],
+        "source_bytecode_line_map": [line_map.to_dict() for line_map in source_bytecode_line_map],
+        "symbol_scope_entries": [entry.to_dict() for entry in symbol_scope_entries],
         "semantics": {
             "accepted": list(semantics_report.accepted_python_semantics),
             "unsupported": list(semantics_report.unsupported_python_semantics),
@@ -30670,8 +31046,10 @@ __all__ = [
     "WholeProgramCompilerFrontendReport",
     "WholeProgramIRNode",
     "WholeProgramSemanticsReport",
+    "WholeProgramSourceBytecodeLineMap",
     "WholeProgramSourceIRFeature",
     "WholeProgramSourceRegion",
+    "WholeProgramSymbolScopeEntry",
     "WholeProgramTraceEvent",
     "compile_whole_program_frontend",
     "vmap",

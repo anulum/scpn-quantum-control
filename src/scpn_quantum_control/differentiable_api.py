@@ -570,15 +570,19 @@ def differentiable_dashboard_status(
                 "WholeProgramBytecodeInstruction",
                 "WholeProgramSourceIRFeature",
                 "WholeProgramSourceRegion",
+                "WholeProgramSourceBytecodeLineMap",
+                "WholeProgramSymbolScopeEntry",
                 "WholeProgramSemanticsReport",
             ),
             blocked_reasons=(
-                "static bytecode basic blocks and source regions only; executable "
-                "Rust, LLVM, JIT, provider, hardware, and benchmark promotion remain open",
+                "static bytecode basic blocks, source regions, source-bytecode maps, "
+                "and symbol scopes only; executable Rust, LLVM, JIT, provider, hardware, "
+                "and benchmark promotion remain open",
             ),
             claim_boundary=(
                 "first-class static bytecode/source compiler frontend preflight "
-                "with bytecode basic blocks and source regions for supported "
+                "with bytecode basic blocks, source regions, source-bytecode maps, "
+                "and symbol scopes for supported "
                 "Program AD Python semantics; no objective execution, no "
                 "executable compiler lowering, no Rust/LLVM/JIT, provider, "
                 "hardware, or performance claim"
