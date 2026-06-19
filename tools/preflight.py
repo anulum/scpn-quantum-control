@@ -132,6 +132,9 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
             "src/scpn_quantum_control/phase/param_shift.py",
             "src/scpn_quantum_control/phase/general_unitary.py",
             "src/scpn_quantum_control/phase/phase_vqe.py",
+            "src/scpn_quantum_control/phase/structured_ansatz.py",
+            "src/scpn_quantum_control/phase/xy_kuramoto.py",
+            "src/scpn_quantum_control/phase/kuramoto_variants.py",
         ],
     ),
 ]

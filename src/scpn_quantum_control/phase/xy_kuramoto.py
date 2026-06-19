@@ -17,8 +17,10 @@ Quantum hardware simulates this natively via Trotterized time evolution.
 from __future__ import annotations
 
 from dataclasses import dataclass, replace
+from typing import TypeAlias
 
 import numpy as np
+from numpy.typing import NDArray
 from qiskit import QuantumCircuit
 from qiskit.circuit.library import PauliEvolutionGate
 from qiskit.quantum_info import SparsePauliOp, Statevector
@@ -29,8 +31,10 @@ from ..bridge.knm_hamiltonian import knm_to_hamiltonian
 from ..dense_budget import require_dense_allocation
 from .results import TrajectoryResult
 
+FloatArray: TypeAlias = NDArray[np.float64]
 
-def _as_real_numeric_array(name: str, values: object) -> np.ndarray:
+
+def _as_real_numeric_array(name: str, values: object) -> FloatArray:
     """Return a real numeric array without implicit string/bool/object coercion."""
     try:
         raw = np.asarray(values)
@@ -82,8 +86,8 @@ class QuantumKuramotoSolver:
     def __init__(
         self,
         n_oscillators: int,
-        K_coupling: np.ndarray,
-        omega_natural: np.ndarray,
+        K_coupling: FloatArray,
+        omega_natural: FloatArray,
         trotter_order: int | None = None,
         evolution_config: TrotterEvolutionConfig | None = None,
     ):
@@ -108,7 +112,7 @@ class QuantumKuramotoSolver:
         return n_oscillators
 
     @staticmethod
-    def _validate_coupling_inputs(n: int, K: np.ndarray, omega: np.ndarray) -> None:
+    def _validate_coupling_inputs(n: int, K: FloatArray, omega: FloatArray) -> None:
         if K.shape != (n, n):
             raise ValueError(f"K_coupling shape must be ({n}, {n}), got {K.shape}")
         if omega.shape != (n,):

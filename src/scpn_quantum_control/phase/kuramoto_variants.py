@@ -453,7 +453,7 @@ def _readonly_float_array(values: FloatArray, name: str) -> FloatArray:
     if not np.all(np.isfinite(arr)):
         raise ValueError(f"{name} must contain only finite values")
     arr.setflags(write=False)
-    return cast(FloatArray, arr)
+    return arr
 
 
 def _validate_metadata(metadata: Mapping[str, JsonScalar]) -> dict[str, JsonScalar]:
@@ -484,7 +484,7 @@ def validate_variant_kuramoto_inputs(
     K_copy = np.array(K_arr, dtype=np.float64, copy=True)
     np.fill_diagonal(K_copy, 0.0)
     K_copy.setflags(write=False)
-    return cast(FloatArray, K_copy), omega_arr
+    return K_copy, omega_arr
 
 
 def _validate_time_grid(dt: float, n_steps: int) -> None:

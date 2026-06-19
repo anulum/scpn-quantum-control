@@ -18,12 +18,17 @@ such as molecular interaction graphs, power grids, or neural connectomes.
 
 from __future__ import annotations
 
+from typing import TypeAlias
+
 import numpy as np
+from numpy.typing import NDArray
 from qiskit.circuit import ParameterVector, QuantumCircuit
+
+FloatArray: TypeAlias = NDArray[np.float64]
 
 
 def build_structured_ansatz(
-    coupling_matrix: np.ndarray,
+    coupling_matrix: FloatArray,
     reps: int = 2,
     entanglement_gate: str = "cz",
     threshold: float = 1e-6,
