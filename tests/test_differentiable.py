@@ -11275,9 +11275,16 @@ def test_program_adjoint_replay_matches_forward_program_ad_for_supported_ir() ->
     assert adjoint.adjoint_steps[0].primal_value == f"%{len(result.ir_nodes) - 1}"
     assert adjoint.adjoint_steps[0].supported is True
     assert adjoint.adjoint_steps[-1].operation == "parameter"
+    effect_ordering = tuple(
+        step.effect_ordering for step in adjoint.adjoint_steps if step.effect_ordering is not None
+    )
+    assert effect_ordering == tuple(sorted(effect_ordering, reverse=True))
     payload = adjoint.to_dict()
     assert payload["adjoint_step_count"] == len(result.ir_nodes)
     assert payload["adjoint_steps"][0]["primal_effect"] is not None
+    assert payload["adjoint_steps"][0]["effect_kind"] == "pure"
+    assert payload["adjoint_steps"][0]["effect_version"] >= 0
+    assert payload["adjoint_steps"][0]["effect_ordering"] == len(result.ir_nodes) - 1
     assert len(payload["adjoint_steps"][0]["contribution_inputs"]) == len(
         payload["adjoint_steps"][0]["contribution_scales"]
     )
@@ -11370,29 +11377,38 @@ def test_program_adjoint_replay_supports_static_setitem_effects() -> None:
 def test_program_adjoint_result_validation_paths() -> None:
     """Program adjoint result metadata should reject malformed reverse-mode outputs."""
 
+    def valid_step(**overrides: object) -> ProgramADAdjointStep:
+        payload: dict[str, object] = {
+            "index": 0,
+            "primal_value": "%0",
+            "primal_effect": 0,
+            "effect_kind": "pure",
+            "effect_version": 0,
+            "effect_ordering": 0,
+            "operation": "parameter",
+            "input_values": ("x",),
+            "contribution_inputs": (),
+            "supported": True,
+        }
+        payload.update(overrides)
+        return ProgramADAdjointStep(**payload)  # type: ignore[arg-type]
+
     result = ProgramADAdjointResult(
         gradient=np.array([1.0], dtype=np.float64),
         supported=True,
         unsupported_ops=(),
         method="program_adjoint_ir_generation",
         claim_boundary="supported scalar replay",
-        adjoint_steps=(
-            ProgramADAdjointStep(
-                index=0,
-                primal_value="%0",
-                primal_effect=0,
-                operation="parameter",
-                input_values=("x",),
-                contribution_inputs=(),
-                supported=True,
-            ),
-        ),
+        adjoint_steps=(valid_step(),),
     )
 
     assert result.supported is True
     assert result.replay_ir_format == "program_ad_effect_ir.v1"
     assert result.adjoint_step_count == 1
     assert result.to_dict()["adjoint_steps"][0]["operation"] == "parameter"
+    assert result.to_dict()["adjoint_steps"][0]["effect_kind"] == "pure"
+    assert result.to_dict()["adjoint_steps"][0]["effect_version"] == 0
+    assert result.to_dict()["adjoint_steps"][0]["effect_ordering"] == 0
     assert result.to_dict()["adjoint_steps"][0]["incoming_cotangent"] == 0.0
     assert result.to_dict()["adjoint_steps"][0]["contribution_scales"] == []
     assert result.to_dict()["adjoint_steps"][0]["contribution_cotangents"] == []
@@ -11445,17 +11461,7 @@ def test_program_adjoint_result_validation_paths() -> None:
             unsupported_ops=(),
             method="program_adjoint_ir_generation",
             claim_boundary="supported scalar replay",
-            adjoint_steps=(
-                ProgramADAdjointStep(
-                    index=1,
-                    primal_value="%0",
-                    primal_effect=0,
-                    operation="parameter",
-                    input_values=("x",),
-                    contribution_inputs=(),
-                    supported=True,
-                ),
-            ),
+            adjoint_steps=(valid_step(index=1),),
         )
     with pytest.raises(ValueError, match="unsupported steps"):
         ProgramADAdjointResult(
@@ -11465,136 +11471,95 @@ def test_program_adjoint_result_validation_paths() -> None:
             method="program_adjoint_ir_generation",
             claim_boundary="unsupported scalar replay",
             adjoint_steps=(
-                ProgramADAdjointStep(
-                    index=0,
-                    primal_value="%0",
-                    primal_effect=0,
+                valid_step(
                     operation="different_op",
                     input_values=(),
-                    contribution_inputs=(),
                     supported=False,
                     unsupported_reason="no rule",
                 ),
             ),
         )
     with pytest.raises(ValueError, match="supported program AD adjoint step"):
-        ProgramADAdjointStep(
-            index=0,
-            primal_value="%0",
-            primal_effect=0,
-            operation="parameter",
-            input_values=("x",),
-            contribution_inputs=(),
-            supported=True,
-            unsupported_reason="not allowed",
-        )
+        valid_step(unsupported_reason="not allowed")
+    with pytest.raises(ValueError, match="effect metadata requires"):
+        valid_step(primal_effect=None)
+    with pytest.raises(ValueError, match="effect_kind"):
+        valid_step(effect_kind=None)
+    with pytest.raises(ValueError, match="effect_version"):
+        valid_step(effect_version=-1)
+    with pytest.raises(ValueError, match="effect_ordering"):
+        valid_step(effect_ordering=True)  # type: ignore[arg-type]
     with pytest.raises(ValueError, match="contribution_scales length"):
-        ProgramADAdjointStep(
-            index=0,
-            primal_value="%0",
-            primal_effect=0,
+        valid_step(
             operation="add",
             input_values=("%0", "%1"),
             contribution_inputs=("%0",),
             contribution_scales=(),
-            supported=True,
         )
     with pytest.raises(ValueError, match="incoming_cotangent must be finite"):
-        ProgramADAdjointStep(
-            index=0,
-            primal_value="%0",
-            primal_effect=0,
+        valid_step(
             operation="add",
             input_values=("%0", "%1"),
             contribution_inputs=("%0",),
             incoming_cotangent=float("inf"),
             contribution_scales=(1.0,),
             contribution_cotangents=(1.0,),
-            supported=True,
         )
     with pytest.raises(ValueError, match="incoming_cotangent must be a finite float"):
-        ProgramADAdjointStep(
-            index=0,
-            primal_value="%0",
-            primal_effect=0,
+        valid_step(
             operation="add",
             input_values=("%0", "%1"),
             contribution_inputs=("%0",),
             incoming_cotangent=True,  # type: ignore[arg-type]
             contribution_scales=(1.0,),
             contribution_cotangents=(1.0,),
-            supported=True,
         )
     with pytest.raises(ValueError, match="contribution_scales entries must be finite"):
-        ProgramADAdjointStep(
-            index=0,
-            primal_value="%0",
-            primal_effect=0,
+        valid_step(
             operation="add",
             input_values=("%0", "%1"),
             contribution_inputs=("%0",),
             contribution_scales=(float("nan"),),
-            supported=True,
         )
     with pytest.raises(ValueError, match="contribution_scales entries must be finite floats"):
-        ProgramADAdjointStep(
-            index=0,
-            primal_value="%0",
-            primal_effect=0,
+        valid_step(
             operation="add",
             input_values=("%0", "%1"),
             contribution_inputs=("%0",),
             contribution_scales=("bad",),  # type: ignore[arg-type]
-            supported=True,
         )
     with pytest.raises(ValueError, match="contribution_cotangents length"):
-        ProgramADAdjointStep(
-            index=0,
-            primal_value="%0",
-            primal_effect=0,
+        valid_step(
             operation="add",
             input_values=("%0", "%1"),
             contribution_inputs=("%0",),
             contribution_scales=(1.0,),
             contribution_cotangents=(),
-            supported=True,
         )
     with pytest.raises(ValueError, match="contribution_cotangents entries must be finite"):
-        ProgramADAdjointStep(
-            index=0,
-            primal_value="%0",
-            primal_effect=0,
+        valid_step(
             operation="add",
             input_values=("%0", "%1"),
             contribution_inputs=("%0",),
             contribution_scales=(1.0,),
             contribution_cotangents=(float("nan"),),
-            supported=True,
         )
     with pytest.raises(ValueError, match="contribution_cotangents entries must be finite floats"):
-        ProgramADAdjointStep(
-            index=0,
-            primal_value="%0",
-            primal_effect=0,
+        valid_step(
             operation="add",
             input_values=("%0", "%1"),
             contribution_inputs=("%0",),
             contribution_scales=(1.0,),
             contribution_cotangents=("bad",),  # type: ignore[arg-type]
-            supported=True,
         )
     with pytest.raises(ValueError, match="contribution_cotangents must match"):
-        ProgramADAdjointStep(
-            index=0,
-            primal_value="%0",
-            primal_effect=0,
+        valid_step(
             operation="add",
             input_values=("%0", "%1"),
             contribution_inputs=("%0",),
             incoming_cotangent=2.0,
             contribution_scales=(3.0,),
             contribution_cotangents=(5.0,),
-            supported=True,
         )
 
 

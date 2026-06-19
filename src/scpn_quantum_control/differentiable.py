@@ -632,10 +632,10 @@ def analyze_program_ad_alias_effects(
 class ProgramADAdjointStep:
     """One generated reverse-adjoint step over stabilized Program AD IR.
 
-    The step binds a primal SSA value and effect row to the local pullback
-    inputs, finite incoming cotangent, local pullback coefficients, and emitted
-    contribution cotangents used by reverse-mode adjoint generation. It is an
-    auditable generation plan over
+    The step binds a primal SSA value and stabilized effect row to the local
+    pullback inputs, finite incoming cotangent, local pullback coefficients,
+    emitted contribution cotangents, and effect ordering metadata used by
+    reverse-mode adjoint generation. It is an auditable generation plan over
     ``program_ad_effect_ir.v1`` metadata; it does not add non-executed branch
     adjoints or executable compiler lowering.
     """
@@ -647,6 +647,9 @@ class ProgramADAdjointStep:
     input_values: tuple[str, ...]
     contribution_inputs: tuple[str, ...]
     supported: bool
+    effect_kind: str | None = None
+    effect_version: int | None = None
+    effect_ordering: int | None = None
     incoming_cotangent: float = 0.0
     contribution_scales: tuple[float, ...] = ()
     contribution_cotangents: tuple[float, ...] = ()
@@ -659,6 +662,38 @@ class ProgramADAdjointStep:
             raise ValueError("program AD adjoint step primal_value must be non-empty")
         if self.primal_effect is not None and self.primal_effect < 0:
             raise ValueError("program AD adjoint step primal_effect must be non-negative or None")
+        if self.primal_effect is None and (
+            self.effect_kind is not None
+            or self.effect_version is not None
+            or self.effect_ordering is not None
+        ):
+            raise ValueError("program AD adjoint step effect metadata requires a primal_effect")
+        if self.primal_effect is not None:
+            if not isinstance(self.effect_kind, str) or not self.effect_kind:
+                raise ValueError(
+                    "program AD adjoint step effect_kind must be non-empty when "
+                    "primal_effect is present"
+                )
+            if (
+                self.effect_version is None
+                or isinstance(self.effect_version, bool)
+                or not isinstance(self.effect_version, int)
+                or self.effect_version < 0
+            ):
+                raise ValueError(
+                    "program AD adjoint step effect_version must be non-negative "
+                    "when primal_effect is present"
+                )
+            if (
+                self.effect_ordering is None
+                or isinstance(self.effect_ordering, bool)
+                or not isinstance(self.effect_ordering, int)
+                or self.effect_ordering < 0
+            ):
+                raise ValueError(
+                    "program AD adjoint step effect_ordering must be non-negative "
+                    "when primal_effect is present"
+                )
         if not self.operation:
             raise ValueError("program AD adjoint step operation must be non-empty")
         if any(not value for value in self.input_values):
@@ -744,6 +779,9 @@ class ProgramADAdjointStep:
             "index": self.index,
             "primal_value": self.primal_value,
             "primal_effect": self.primal_effect,
+            "effect_kind": self.effect_kind,
+            "effect_version": self.effect_version,
+            "effect_ordering": self.effect_ordering,
             "operation": self.operation,
             "input_values": list(self.input_values),
             "contribution_inputs": list(self.contribution_inputs),
@@ -8311,12 +8349,16 @@ def _program_adjoint_steps_from_ir(
     """Generate reverse-adjoint steps from stabilized Program AD IR metadata."""
 
     ssa_by_name = {value.name: value for value in program_ir.ssa_values}
-    effect_indices = {effect.index for effect in program_ir.effects}
+    effect_by_index = {effect.index: effect for effect in program_ir.effects}
     steps: list[ProgramADAdjointStep] = []
     for node in reversed(nodes):
         primal_value = f"%{node.index}"
         ssa_value = ssa_by_name.get(primal_value)
         primal_effect = None if ssa_value is None else ssa_value.effect
+        effect = None if primal_effect is None else effect_by_index.get(primal_effect)
+        effect_kind = None if effect is None else effect.kind
+        effect_version = None if effect is None else effect.version
+        effect_ordering = None if effect is None else effect.ordering
         unsupported_reason: str | None = None
         supported = True
         contribution_inputs: tuple[str, ...] = ()
@@ -8326,7 +8368,7 @@ def _program_adjoint_steps_from_ir(
         if ssa_value is None:
             supported = False
             unsupported_reason = "missing_ssa_value"
-        elif primal_effect is not None and primal_effect not in effect_indices:
+        elif primal_effect is not None and effect is None:
             supported = False
             unsupported_reason = "missing_effect"
         else:
@@ -8351,6 +8393,9 @@ def _program_adjoint_steps_from_ir(
                 index=len(steps),
                 primal_value=primal_value,
                 primal_effect=primal_effect,
+                effect_kind=effect_kind,
+                effect_version=effect_version,
+                effect_ordering=effect_ordering,
                 operation=node.op,
                 input_values=node.inputs,
                 contribution_inputs=contribution_inputs,

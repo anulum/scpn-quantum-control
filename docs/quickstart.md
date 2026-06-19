@@ -256,7 +256,8 @@ Reverse-mode program gradients are available through
 `program_adjoint_grad(...)` and `program_adjoint_value_and_grad(...)`. These
 functions execute program capture, then require supported adjoint generation
 over the captured scalar IR. Generated `ProgramADAdjointStep` rows bind the
-local pullback inputs, finite pullback coefficients, and cotangent-flow rows to
+local pullback inputs, finite pullback coefficients, cotangent-flow rows, and
+reverse effect-order metadata to
 `program_ad_effect_ir.v1`; unsupported generation operations fail closed. The
 API does not substitute finite differences or claim a general arbitrary-Python
 MLIR/LLVM compiler.

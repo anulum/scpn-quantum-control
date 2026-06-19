@@ -906,6 +906,9 @@ def _program_adjoint_replay_provenance_case() -> DifferentiableProgrammingBenchm
     adjoint = program_adjoint_result(result)
     if result.program_ir is None:
         raise ValueError("program AD adjoint generation provenance case requires program IR")
+    effect_orderings = tuple(
+        step.effect_ordering for step in adjoint.adjoint_steps if step.effect_ordering is not None
+    )
     if (
         adjoint.replay_node_count != len(result.ir_nodes)
         or adjoint.replay_effect_count != len(result.program_ir.effects)
@@ -915,6 +918,11 @@ def _program_adjoint_replay_provenance_case() -> DifferentiableProgrammingBenchm
         or adjoint.adjoint_step_count != len(result.ir_nodes)
         or any(not step.supported for step in adjoint.adjoint_steps)
         or not any(step.contribution_inputs for step in adjoint.adjoint_steps)
+        or any(
+            step.effect_kind is None or step.effect_version is None or step.effect_ordering is None
+            for step in adjoint.adjoint_steps
+        )
+        or effect_orderings != tuple(sorted(effect_orderings, reverse=True))
         or any(
             len(step.contribution_inputs) != len(step.contribution_scales)
             for step in adjoint.adjoint_steps
@@ -951,10 +959,11 @@ def _program_adjoint_replay_provenance_case() -> DifferentiableProgrammingBenchm
         claim_boundary=(
             "ProgramADAdjointResult and ProgramADAdjointStep generation provenance "
             "over supported executed scalar IR nodes, finite local pullback scales, "
-            "cotangent-flow rows, effects, control regions, and phi metadata in "
-            "program_ad_effect_ir.v1; local conformance only, not full reverse-mode "
-            "compiler AD, non-executed branch adjoints, Rust, LLVM/JIT, hardware, "
-            "or performance evidence; no wall-clock performance claim"
+            "cotangent-flow rows, reverse effect-order rows, control regions, and "
+            "phi metadata in program_ad_effect_ir.v1; local conformance only, not "
+            "full reverse-mode compiler AD, non-executed branch adjoints, Rust, "
+            "LLVM/JIT, hardware, or performance evidence; no wall-clock performance "
+            "claim"
         ),
     )
 
