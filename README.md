@@ -102,8 +102,8 @@ has a defined commercial licensing route.
 | Paper 0 validation modules | 466 |
 | Domain package families | 32 |
 | API documentation pages | 0 |
-| Rust PyO3 function bindings | 134 |
-| Rust source modules | 37 |
+| Rust PyO3 function bindings | 135 |
+| Rust source modules | 38 |
 | Notebook files | 98 |
 | Example files | 30 |
 | Optional extras | 42 |
@@ -328,6 +328,13 @@ They need gradients, convergence evidence, framework interop, reproducible
 benchmarks, and clear failure modes. The SCPN route aims to combine
 Kuramoto-XY physics, quantum-control objectives, hardware-result governance,
 and compiler-backed AD under one support matrix.
+
+Rust polyglot parity includes a claim-bounded Program AD IR metadata parser in
+`scpn_quantum_engine::program_ad_ir` plus
+`program_ad_effect_ir_metadata_summary(...)` for PyO3 consumers. It validates
+`program_ad_effect_ir.v1` evidence only and remains
+`metadata_only_no_program_execution`; native Rust Program AD interpretation,
+general LLVM/JIT execution, hardware, and performance promotion remain blocked.
 
 The first production-grade differentiable workflows are deliberately bounded:
 

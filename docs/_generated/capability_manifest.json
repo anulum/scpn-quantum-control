@@ -12,8 +12,8 @@
     "public_documentation_pages": 254,
     "python_model_classes": 1789,
     "python_model_source_modules": 835,
-    "rust_pyo3_model_wrappers": 134,
-    "rust_source_modules": 37,
+    "rust_pyo3_model_wrappers": 135,
+    "rust_source_modules": 38,
     "test_files": 1955
   },
   "documentation": {
@@ -9158,6 +9158,7 @@
       "phase_qnode_vector_jvp_rust",
       "phase_qnode_vector_vjp_rust",
       "plaquette_action_batch",
+      "program_ad_effect_ir_metadata_summary",
       "pt_symmetric_kuramoto_trajectory",
       "qpetri_campaign_aggregate",
       "qpetri_sample_marking",
@@ -9220,6 +9221,7 @@
       "scpn_quantum_engine/src/otoc.rs",
       "scpn_quantum_engine/src/pauli.rs",
       "scpn_quantum_engine/src/pec.rs",
+      "scpn_quantum_engine/src/program_ad_ir.rs",
       "scpn_quantum_engine/src/pulse_shaping.rs",
       "scpn_quantum_engine/src/qnode_metrics.rs",
       "scpn_quantum_engine/src/qpetri.rs",

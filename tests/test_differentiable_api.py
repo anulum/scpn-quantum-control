@@ -302,6 +302,10 @@ def test_differentiable_dashboard_status_is_claim_bounded_for_gui_consumers() ->
         "native Rust Program AD interpreter is not promoted"
         in rows["polyglot_compiler_chain"]["blocked_reasons"]
     )
+    assert "Rust Program AD IR metadata parser" in rows["polyglot_compiler_chain"]["evidence"]
+    assert (
+        "metadata_only_no_program_execution" in rows["polyglot_compiler_chain"]["claim_boundary"]
+    )
     assert rows["provider_and_hardware_gradients"]["state"] == "blocked"
     assert rows["gui_frontend"]["state"] == "planned"
     assert "program_ad_effect_ir.v1" in payload["generated_from"]

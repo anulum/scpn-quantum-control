@@ -878,12 +878,21 @@ def differentiable_dashboard_status(
             surface="polyglot_compiler_chain",
             state="blocked",
             backing_api="differentiable_compile_report",
-            evidence=("compile_compiler_ad_transform_plan_to_mlir",),
+            evidence=(
+                "compile_compiler_ad_transform_plan_to_mlir",
+                "Rust Program AD IR metadata parser",
+                "program_ad_effect_ir_metadata_summary",
+            ),
             blocked_reasons=(
                 "native Rust Program AD interpreter is not promoted",
                 "native LLVM/JIT differentiated kernels remain blocked until runtime verified",
             ),
-            claim_boundary="compiler/interchange planning evidence only unless executable kernels pass runtime verification",
+            claim_boundary=(
+                "compiler/interchange planning plus Rust "
+                "metadata_only_no_program_execution Program AD IR parsing only; "
+                "no Rust interpreter, LLVM/JIT execution, hardware, provider, or "
+                "performance claim"
+            ),
         ),
         DifferentiableDashboardCapabilityRow(
             surface="provider_and_hardware_gradients",

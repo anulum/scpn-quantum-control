@@ -63,6 +63,13 @@ This repository now documents those questions directly. Current support is delib
 | Registered Phase-QNode circuit family | Available for the declared local gate/observable subset with arbitrary-depth registered circuit builders, deterministic depth/resource profiles, registered GHZ-chain and hardware-efficient multi-qubit templates, controlled-H/S/T plus Toffoli/CCZ/Fredkin gates, exact Toffoli/Fredkin operation-list decompositions, statevector execution, density-matrix execution with bounded single-qubit Kraus channels, analytic parameter-shift gradients for pure-state routes, framework parity rows, verified SCPN MLIR-runtime lowering adapters, and affinity-labelled benchmark metadata. Unsupported gates, observables, provider paths, dynamic routes, native LLVM/JIT lowering, noisy-channel gradients/metrics, and interpreter fallback success claims fail closed with support reports. | [Differentiable API](differentiable_api.md), [Benchmark Harness](benchmark_harness.md) |
 | QNN/QGNN/QSNN training lane | A bounded phase-QNN binary classifier, QNN-specific finite-difference gradient verification, deterministic multi-seed convergence envelopes, bounded loss-landscape grids, seeded finite-shot gradient uncertainty and noisy-convergence evidence, named external-gradient agreement records, dedicated caller-supplied framework-gradient agreement checks, deterministic convergence-suite evidence, conformance-suite evidence with unsuitable-scenario records, non-isolated optimizer-baseline comparisons across parameter-shift, finite-difference, SGD, Adam, L-BFGS-B, diagonal-Fisher natural-gradient, seeded SPSA, and derivative-free grid routes, QSNN parameter-shift training evidence, and a registered medium QNN/QGNN/QSNN/Kuramoto-XY training evidence suite are available locally; arbitrary QNN/QGNN/QSNN stacks and production convergence notebooks remain planned. | [Differentiable API](differentiable_api.md), [Quantum Gradients](quantum_gradients.md) |
 
+Rust polyglot parity includes `scpn_quantum_engine::program_ad_ir`, a
+serde-backed `program_ad_effect_ir.v1` metadata parser with the PyO3
+`program_ad_effect_ir_metadata_summary(...)` export. It is deliberately bounded
+to `metadata_only_no_program_execution`; no Rust Program AD interpreter,
+general LLVM/JIT lowering, hardware execution, or performance promotion is
+claimed from this parser.
+
 ## Evidence Promotion Lane
 
 The differentiable Phase-QNode lane is SOTA-candidate until the committed claim

@@ -54,6 +54,7 @@ pub mod mpc;
 pub mod otoc;
 pub mod pauli;
 pub mod pec;
+pub mod program_ad_ir;
 pub mod pulse_shaping;
 pub mod qnode_metrics;
 pub mod qpetri;
@@ -386,6 +387,10 @@ fn scpn_quantum_engine(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(compiler_ad::vector_squared_norm_vjp, m)?)?;
     m.add_function(wrap_pyfunction!(
         compiler_ad::vector_squared_norm_gradient,
+        m
+    )?)?;
+    m.add_function(wrap_pyfunction!(
+        program_ad_ir::program_ad_effect_ir_metadata_summary,
         m
     )?)?;
 
