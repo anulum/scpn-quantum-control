@@ -1943,10 +1943,12 @@ from scpn_quantum_control.phase import (
     run_tensorflow_keras_layer_wrapper_audit,
     run_tensorflow_maturity_audit,
     run_tensorflow_xla_compatibility_audit,
+    run_torch_ecosystem_maturity_audit,
     run_torch_maturity_audit,
     run_torch_phase_qnode_lowering_matrix,
     tensorflow_bounded_qnn_keras_layer,
     tensorflow_parameter_shift_value_and_grad,
+    torch_phase_qnode_transform_audit,
     torch_phase_qnode_value_and_grad,
     torch_parameter_shift_value_and_grad,
 )
@@ -1994,11 +1996,14 @@ torch_maturity = run_torch_maturity_audit(
     params=np.array([0.45], dtype=float),
     params_batch=np.array([[0.25], [0.45], [0.65]], dtype=float),
 )
+torch_ecosystem = run_torch_ecosystem_maturity_audit()
 torch_lowering = run_torch_phase_qnode_lowering_matrix()
 
 print(torch_result.torch_gradient, torch_result.host_boundary)
 print(torch_maturity.bounded_model_ready, torch_maturity.ready_for_provider_exceedance)
+print(torch_ecosystem.route_status("cuda_accelerator_device"))
 print(torch_lowering.route_status("registered_phase_qnode_statevector_lowering"))
+print(torch_lowering.route_status("registered_phase_qnode_torch_func_transform_lowering"))
 print(tf_maturity.bounded_model_ready, tf_maturity.ready_for_provider_exceedance)
 print(tf_result.tensorflow_gradient, tf_result.host_boundary)
 ```
@@ -2013,28 +2018,41 @@ for the bounded phase-QNN model. The separate
 local Phase-QNode statevector execution into native PyTorch autograd without
 host callbacks and checks the value and gradient against the SCPN
 parameter-shift reference. It is not finite-shot, provider-backed, dynamic, or
-hardware lowering evidence. The separate
+hardware lowering evidence. The separate `torch_phase_qnode_transform_audit(...)`
+route runs registered local Phase-QNode statevector execution through
+`torch.func.grad`, `torch.func.jacrev`, and `torch.func.vmap`, checking single
+and batched gradients against SCPN parameter-shift references without host
+callbacks. The separate
 `run_torch_func_compatibility_audit(...)` route verifies `torch.func.grad`,
 `vmap`, and `jacrev` only for the same bounded model. The separate
 `run_torch_compile_compatibility_audit(...)` route verifies compiled bounded-loss
 gradients only for that same model. The separate
 `torch_bounded_qnn_module(...)` / `torch_bounded_qnn_layer(...)` wrapper route
 verifies a bounded PyTorch `nn.Module`/layer loss and gradient only for that same
-model. The separate `run_torch_maturity_audit(...)` route aggregates those
-bounded PyTorch passes into a provider-maturity record. When called with
+model. The separate `run_torch_ecosystem_maturity_audit(...)` route records
+installed `nn.Module`/`Parameter`, `torch.func`, `torch.compile`, and CUDA-device
+capability state. A visible CUDA device is still blocked if the installed
+PyTorch wheel cannot execute a tensor smoke on that hardware, and registered
+Phase-QNode `torch.compile` lowering stays blocked until fake-tensor-safe
+complex constants or an opaque custom-op boundary exist. The separate
+`run_torch_maturity_audit(...)` route aggregates those bounded PyTorch passes
+and ecosystem routes into a provider-maturity record. When called with
 `live_overlay_artifact_path`, it validates the external-comparison JSON and only
 marks live overlay execution passed when that artefact contains a successful
 PyTorch row with dependency version, value/gradient error, runtime, memory, and
 claim-boundary metadata. Provider exceedance still remains blocked until
-finite-shot/provider/hardware Phase-QNode Torch lowering, full
+registered Phase-QNode `torch.compile` lowering, compatible CUDA/device
+evidence, finite-shot/provider/hardware Phase-QNode Torch lowering, full
 compiler/autograd integration, and promotion-grade isolated benchmark artefacts
 exist. The separate
 `run_torch_phase_qnode_lowering_matrix(...)` route makes that boundary explicit:
 bounded QNN tensor, custom-autograd, `torch.func`, `torch.compile`, and
-module/layer routes plus deterministic registered statevector lowering are
-marked passed, while finite-shot lowering, provider callbacks, hardware
-lowering, dynamic-circuit lowering, and isolated-benchmark promotion remain
-blocked with the required artefacts listed in the returned route metadata. The
+module/layer routes plus deterministic registered statevector and `torch.func`
+Phase-QNode transform lowering are marked passed, while registered Phase-QNode
+`torch.compile` lowering, CUDA/device lowering, finite-shot lowering, provider
+callbacks, hardware lowering, dynamic-circuit lowering, and isolated-benchmark
+promotion remain blocked with the required artefacts listed in the returned
+route metadata. The
 separate
 `run_tensorflow_gradient_tape_compatibility_audit(...)`
 route verifies TensorFlow `GradientTape` only for the same bounded classifier

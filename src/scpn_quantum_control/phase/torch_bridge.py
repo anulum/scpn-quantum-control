@@ -330,6 +330,61 @@ class PhaseTorchPhaseQNodeStatevectorResult:
 
 
 @dataclass(frozen=True)
+class PhaseTorchPhaseQNodeTransformResult:
+    """Native ``torch.func`` evidence for registered local Phase-QNode circuits."""
+
+    value: float
+    gradient: FloatArray
+    jacrev_gradient: FloatArray
+    vmap_gradients: FloatArray
+    parameter_shift_value: float
+    parameter_shift_gradient: FloatArray
+    parameter_shift_batch_gradients: FloatArray
+    torch_value: Any
+    torch_gradient: Any
+    torch_jacrev_gradient: Any
+    torch_vmap_gradients: Any
+    max_abs_error: float
+    l2_error: float
+    tolerance: float
+    passed: bool
+    func_grad_supported: bool
+    func_vmap_supported: bool
+    func_jacrev_supported: bool
+    native_framework_autodiff: bool = True
+    host_boundary: bool = False
+    method: str = "torch_native_registered_phase_qnode_func_transform_audit"
+    claim_boundary: str = "registered_phase_qnode_torch_func_transform_lowering"
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready registered Phase-QNode PyTorch transform evidence."""
+        return {
+            "value": self.value,
+            "gradient": self.gradient.tolist(),
+            "jacrev_gradient": self.jacrev_gradient.tolist(),
+            "vmap_gradients": self.vmap_gradients.tolist(),
+            "parameter_shift_value": self.parameter_shift_value,
+            "parameter_shift_gradient": self.parameter_shift_gradient.tolist(),
+            "parameter_shift_batch_gradients": self.parameter_shift_batch_gradients.tolist(),
+            "max_abs_error": self.max_abs_error,
+            "l2_error": self.l2_error,
+            "tolerance": self.tolerance,
+            "passed": self.passed,
+            "func_grad_supported": self.func_grad_supported,
+            "func_vmap_supported": self.func_vmap_supported,
+            "func_jacrev_supported": self.func_jacrev_supported,
+            "native_framework_autodiff": self.native_framework_autodiff,
+            "host_boundary": self.host_boundary,
+            "method": self.method,
+            "claim_boundary": self.claim_boundary,
+            "torch_value_type": type(self.torch_value).__name__,
+            "torch_gradient_type": type(self.torch_gradient).__name__,
+            "torch_jacrev_gradient_type": type(self.torch_jacrev_gradient).__name__,
+            "torch_vmap_gradients_type": type(self.torch_vmap_gradients).__name__,
+        }
+
+
+@dataclass(frozen=True)
 class PhaseTorchLiveOverlayEvidence:
     """Validated live CPU-overlay PyTorch external-comparison evidence."""
 
@@ -363,6 +418,67 @@ class PhaseTorchLiveOverlayEvidence:
             "claim_boundary": self.claim_boundary,
             "promotion_ready": self.promotion_ready,
             "passed": self.passed,
+        }
+
+
+@dataclass(frozen=True)
+class PhaseTorchEcosystemMaturityRoute:
+    """One PyTorch ecosystem capability route and its claim boundary."""
+
+    name: str
+    status: str
+    reason: str
+    requires: tuple[str, ...] = ()
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready PyTorch ecosystem route metadata."""
+        return {
+            "name": self.name,
+            "status": self.status,
+            "reason": self.reason,
+            "requires": list(self.requires),
+        }
+
+
+@dataclass(frozen=True)
+class PhaseTorchEcosystemMaturityAuditResult:
+    """PyTorch module, transform, compiler, and device maturity evidence."""
+
+    torch_version: str
+    cuda_available: bool
+    cuda_device_count: int
+    cuda_device_names: tuple[str, ...]
+    routes: tuple[PhaseTorchEcosystemMaturityRoute, ...]
+    claim_boundary: str = "torch_ecosystem_device_maturity_audit"
+
+    @property
+    def open_gaps(self) -> tuple[str, ...]:
+        """Return PyTorch ecosystem routes that remain blocked."""
+        return tuple(route.name for route in self.routes if route.status != "passed")
+
+    @property
+    def ready_for_provider_exceedance(self) -> bool:
+        """Return whether PyTorch ecosystem evidence permits provider exceedance."""
+        return not self.open_gaps
+
+    def route_status(self, name: str) -> str:
+        """Return the status for a named PyTorch ecosystem route."""
+        for route in self.routes:
+            if route.name == name:
+                return route.status
+        raise KeyError(f"unknown PyTorch ecosystem maturity route: {name}")
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready PyTorch ecosystem maturity evidence."""
+        return {
+            "torch_version": self.torch_version,
+            "cuda_available": self.cuda_available,
+            "cuda_device_count": self.cuda_device_count,
+            "cuda_device_names": list(self.cuda_device_names),
+            "routes": {route.name: route.to_dict() for route in self.routes},
+            "open_gaps": list(self.open_gaps),
+            "ready_for_provider_exceedance": self.ready_for_provider_exceedance,
+            "claim_boundary": self.claim_boundary,
         }
 
 
@@ -523,6 +639,36 @@ def run_torch_phase_qnode_lowering_matrix() -> PhaseTorchPhaseQNodeLoweringMatri
             reason=(
                 "registered deterministic Phase-QNode statevector circuits lower into "
                 "native PyTorch autograd execution without host callbacks"
+            ),
+        ),
+        PhaseTorchPhaseQNodeLoweringRoute(
+            name="registered_phase_qnode_torch_func_transform_lowering",
+            status="passed",
+            reason=(
+                "registered deterministic Phase-QNode statevector circuits execute "
+                "through torch.func grad, jacrev, and vmap transform routes on CPU"
+            ),
+        ),
+        PhaseTorchPhaseQNodeLoweringRoute(
+            name="registered_phase_qnode_torch_compile_lowering",
+            status="blocked",
+            reason=(
+                "registered Phase-QNode torch.compile lowering needs fake-tensor-safe "
+                "complex constants or an opaque custom-op boundary"
+            ),
+            requires=(
+                "registered_phase_qnode_compile_artifact",
+                "fake_tensor_safe_complex_constant_lowering",
+            ),
+        ),
+        PhaseTorchPhaseQNodeLoweringRoute(
+            name="registered_phase_qnode_cuda_device_lowering",
+            status="blocked",
+            reason="CUDA/device promotion requires compatible visible hardware and smoke artefacts",
+            requires=(
+                "compatible_cuda_device",
+                "successful_cuda_tensor_smoke",
+                "device_specific_phase_qnode_gradient_artifact",
             ),
         ),
         PhaseTorchPhaseQNodeLoweringRoute(
@@ -747,6 +893,41 @@ def _torch_nn_module_and_parameter(torch_module: Any) -> tuple[Any, Any]:
     if torch_nn is None or module_base is None or not callable(parameter_cls):
         raise RuntimeError("PyTorch module does not expose torch.nn.Module and torch.nn.Parameter")
     return module_base, parameter_cls
+
+
+def _torch_cuda_metadata(torch_module: Any) -> tuple[bool, int, tuple[str, ...], bool, str]:
+    cuda = getattr(torch_module, "cuda", None)
+    is_available = getattr(cuda, "is_available", None)
+    device_count_fn = getattr(cuda, "device_count", None)
+    if cuda is None or not callable(is_available) or not callable(device_count_fn):
+        return False, 0, (), False, "PyTorch CUDA runtime metadata is unavailable"
+    cuda_available = bool(is_available())
+    device_count = int(device_count_fn()) if cuda_available else 0
+    device_names: list[str] = []
+    get_device_name = getattr(cuda, "get_device_name", None)
+    for index in range(device_count):
+        if callable(get_device_name):
+            try:
+                device_names.append(str(get_device_name(index)))
+            except Exception as exc:  # pragma: no cover - defensive optional runtime probe
+                device_names.append(f"unavailable:{type(exc).__name__}")
+        else:
+            device_names.append(f"cuda:{index}")
+    if not cuda_available or device_count == 0:
+        return cuda_available, device_count, tuple(device_names), False, "no visible CUDA devices"
+    try:
+        device = torch_module.device("cuda", 0)
+        sample = torch_module.ones((1,), dtype=torch_module.float64, device=device)
+        _ = (sample + sample).detach().cpu().numpy()
+    except Exception as exc:
+        return (
+            cuda_available,
+            device_count,
+            tuple(device_names),
+            False,
+            f"CUDA smoke execution failed: {type(exc).__name__}: {exc}",
+        )
+    return cuda_available, device_count, tuple(device_names), True, "CUDA smoke execution passed"
 
 
 def _torch_parameter_count(module: Any) -> int:
@@ -1239,6 +1420,111 @@ def torch_phase_qnode_value_and_grad(
     )
 
 
+def torch_phase_qnode_transform_audit(
+    circuit: PhaseQNodeCircuit,
+    params: ArrayLike | object,
+    *,
+    params_batch: ArrayLike | object,
+    tolerance: float = 1e-6,
+) -> PhaseTorchPhaseQNodeTransformResult:
+    """Audit registered Phase-QNode execution through ``torch.func`` transforms.
+
+    The accepted surface is deterministic local statevector execution for the
+    registered ``PhaseQNodeCircuit`` gate and observable family. The audit
+    verifies ``torch.func.grad``, ``torch.func.jacrev``, and ``torch.func.vmap``
+    against SCPN parameter-shift references. It does not promote finite-shot,
+    provider, hardware, CUDA, ``torch.compile``, or performance claims.
+    """
+
+    torch_module = _load_torch()
+    torch_func_grad, torch_func_vmap, torch_func_jacrev = _torch_func_transforms(torch_module)
+    tolerance_value = _as_non_negative_tolerance(tolerance)
+    parameter_values = _as_parameter_vector("params", params)
+    parameter_batch = _as_parameter_matrix(
+        "params_batch",
+        _torch_matrix_to_numpy("params_batch", params_batch),
+        width=parameter_values.size,
+    )
+    report = phase_qnode_support_report(circuit, parameter_values)
+    if not report.supported:
+        raise PhaseQNodeSupportError(report)
+    for row in parameter_batch:
+        row_report = phase_qnode_support_report(circuit, row)
+        if not row_report.supported:
+            raise PhaseQNodeSupportError(row_report)
+
+    def value_function(parameter_tensor: Any) -> Any:
+        value, _state = _torch_phase_qnode_value_and_state(
+            torch_module,
+            circuit,
+            parameter_tensor,
+        )
+        return value
+
+    grad_fn = torch_func_grad(value_function)
+    vmap_grad_fn = torch_func_vmap(grad_fn)
+    jacrev_fn = torch_func_jacrev(value_function)
+    torch_params = _torch_tensor(torch_module, parameter_values)
+    torch_params_batch = _torch_tensor(torch_module, parameter_batch)
+    torch_value, _torch_state = _torch_phase_qnode_value_and_state(
+        torch_module,
+        circuit,
+        torch_params,
+    )
+    torch_gradient = grad_fn(torch_params)
+    torch_jacrev_gradient = jacrev_fn(torch_params)
+    torch_vmap_gradients = vmap_grad_fn(torch_params_batch)
+    value = _torch_scalar_to_float(torch_value)
+    gradient = _as_parameter_vector(
+        "PyTorch Phase-QNode torch.func gradient",
+        _torch_values_to_numpy(torch_gradient),
+        width=parameter_values.size,
+    )
+    jacrev_gradient = _as_parameter_vector(
+        "PyTorch Phase-QNode torch.func jacrev gradient",
+        _torch_values_to_numpy(torch_jacrev_gradient),
+        width=parameter_values.size,
+    )
+    vmap_gradients = _as_parameter_matrix(
+        "PyTorch Phase-QNode torch.func vmap gradients",
+        _torch_batch_to_numpy(torch_vmap_gradients),
+        width=parameter_values.size,
+    )
+    parameter_shift = parameter_shift_phase_qnode_gradient(circuit, parameter_values)
+    parameter_shift_batch_gradients = np.vstack(
+        [parameter_shift_phase_qnode_gradient(circuit, row).gradient for row in parameter_batch]
+    ).astype(np.float64, copy=False)
+    deltas = (
+        gradient - parameter_shift.gradient,
+        jacrev_gradient - parameter_shift.gradient,
+        (vmap_gradients - parameter_shift_batch_gradients).reshape(-1),
+        np.asarray([value - parameter_shift.value], dtype=np.float64),
+    )
+    flat_delta = np.concatenate([delta.reshape(-1) for delta in deltas])
+    max_abs_error = float(np.max(np.abs(flat_delta))) if flat_delta.size else 0.0
+    l2_error = float(np.linalg.norm(flat_delta))
+    return PhaseTorchPhaseQNodeTransformResult(
+        value=value,
+        gradient=gradient,
+        jacrev_gradient=jacrev_gradient,
+        vmap_gradients=vmap_gradients,
+        parameter_shift_value=parameter_shift.value,
+        parameter_shift_gradient=parameter_shift.gradient.copy(),
+        parameter_shift_batch_gradients=parameter_shift_batch_gradients,
+        torch_value=torch_value,
+        torch_gradient=torch_gradient,
+        torch_jacrev_gradient=torch_jacrev_gradient,
+        torch_vmap_gradients=torch_vmap_gradients,
+        max_abs_error=max_abs_error,
+        l2_error=l2_error,
+        tolerance=tolerance_value,
+        passed=bool(max_abs_error <= tolerance_value),
+        func_grad_supported=True,
+        func_vmap_supported=True,
+        func_jacrev_supported=True,
+    )
+
+
 def torch_bounded_qnn_value_and_grad(
     features: ArrayLike,
     labels: ArrayLike,
@@ -1661,6 +1947,136 @@ def run_torch_module_wrapper_audit(
     )
 
 
+def run_torch_ecosystem_maturity_audit() -> PhaseTorchEcosystemMaturityAuditResult:
+    """Audit broad PyTorch module, transform, compiler, and device maturity.
+
+    The audit is capability evidence, not a provider or performance promotion.
+    It records which framework surfaces are present in the installed PyTorch
+    runtime and keeps GPU/device and full compiler maturity blocked unless a
+    local CUDA smoke execution succeeds and the broader transform/compiler
+    routes are available.
+    """
+
+    torch_module = _load_torch()
+    torch_version = str(getattr(torch_module, "__version__", "unknown"))
+    routes: list[PhaseTorchEcosystemMaturityRoute] = []
+    try:
+        _torch_nn_module_and_parameter(torch_module)
+    except RuntimeError as exc:
+        routes.append(
+            PhaseTorchEcosystemMaturityRoute(
+                name="nn_module_parameter_surface",
+                status="blocked",
+                reason=str(exc),
+                requires=("torch.nn.Module", "torch.nn.Parameter"),
+            )
+        )
+    else:
+        routes.append(
+            PhaseTorchEcosystemMaturityRoute(
+                name="nn_module_parameter_surface",
+                status="passed",
+                reason="torch.nn.Module and torch.nn.Parameter are available",
+            )
+        )
+
+    try:
+        _torch_func_transforms(torch_module)
+    except RuntimeError as exc:
+        routes.append(
+            PhaseTorchEcosystemMaturityRoute(
+                name="torch_func_grad_vmap_jacrev",
+                status="blocked",
+                reason=str(exc),
+                requires=("torch.func.grad", "torch.func.vmap", "torch.func.jacrev"),
+            )
+        )
+    else:
+        routes.append(
+            PhaseTorchEcosystemMaturityRoute(
+                name="torch_func_grad_vmap_jacrev",
+                status="passed",
+                reason="torch.func.grad, torch.func.vmap, and torch.func.jacrev are available",
+            )
+        )
+
+    torch_func = getattr(torch_module, "func", None)
+    jacfwd = getattr(torch_func, "jacfwd", None)
+    hessian = getattr(torch_func, "hessian", None)
+    if callable(jacfwd) and callable(hessian):
+        routes.append(
+            PhaseTorchEcosystemMaturityRoute(
+                name="torch_func_jacfwd_hessian",
+                status="passed",
+                reason="torch.func.jacfwd and torch.func.hessian are available",
+            )
+        )
+    else:
+        routes.append(
+            PhaseTorchEcosystemMaturityRoute(
+                name="torch_func_jacfwd_hessian",
+                status="blocked",
+                reason="torch.func.jacfwd and torch.func.hessian are not both available",
+                requires=("torch.func.jacfwd", "torch.func.hessian"),
+            )
+        )
+
+    try:
+        _torch_compile(torch_module)
+    except RuntimeError as exc:
+        routes.append(
+            PhaseTorchEcosystemMaturityRoute(
+                name="torch_compile_callable",
+                status="blocked",
+                reason=str(exc),
+                requires=("torch.compile",),
+            )
+        )
+    else:
+        routes.append(
+            PhaseTorchEcosystemMaturityRoute(
+                name="torch_compile_callable",
+                status="passed",
+                reason="torch.compile callable is available",
+            )
+        )
+
+    cuda_available, cuda_device_count, cuda_device_names, cuda_smoke_passed, cuda_reason = (
+        _torch_cuda_metadata(torch_module)
+    )
+    routes.append(
+        PhaseTorchEcosystemMaturityRoute(
+            name="cuda_accelerator_device",
+            status="passed" if cuda_smoke_passed else "blocked",
+            reason=cuda_reason,
+            requires=()
+            if cuda_smoke_passed
+            else ("compatible_cuda_device", "successful_cuda_tensor_smoke"),
+        )
+    )
+    routes.append(
+        PhaseTorchEcosystemMaturityRoute(
+            name="registered_phase_qnode_torch_compile_lowering",
+            status="blocked",
+            reason=(
+                "registered Phase-QNode torch.compile lowering still needs "
+                "fake-tensor-safe complex constants or an opaque custom-op boundary"
+            ),
+            requires=(
+                "registered_phase_qnode_compile_artifact",
+                "fake_tensor_safe_complex_constant_lowering",
+            ),
+        )
+    )
+    return PhaseTorchEcosystemMaturityAuditResult(
+        torch_version=torch_version,
+        cuda_available=cuda_available,
+        cuda_device_count=cuda_device_count,
+        cuda_device_names=cuda_device_names,
+        routes=tuple(routes),
+    )
+
+
 def run_torch_maturity_audit(
     *,
     features: ArrayLike,
@@ -1729,6 +2145,7 @@ def run_torch_maturity_audit(
         initial_params=parameter_values,
         tolerance=tolerance_value,
     )
+    ecosystem_maturity = run_torch_ecosystem_maturity_audit()
     live_overlay = (
         _load_torch_live_overlay_evidence(live_overlay_artifact_path)
         if live_overlay_artifact_path is not None
@@ -1741,6 +2158,7 @@ def run_torch_maturity_audit(
         "torch_func": torch_func,
         "torch_compile": torch_compile,
         "module_layer_wrapper": module_layer_wrapper,
+        "ecosystem_maturity": ecosystem_maturity,
         "phase_qnode_lowering_matrix": run_torch_phase_qnode_lowering_matrix(),
     }
     if live_overlay is not None:
@@ -1748,7 +2166,7 @@ def run_torch_maturity_audit(
     bounded_model_ready = all(
         bool(getattr(result, "passed", False))
         for name, result in evidence.items()
-        if name != "phase_qnode_lowering_matrix"
+        if name not in {"phase_qnode_lowering_matrix", "ecosystem_maturity"}
     )
     lowering_matrix = evidence["phase_qnode_lowering_matrix"]
     assert isinstance(lowering_matrix, PhaseTorchPhaseQNodeLoweringMatrixResult)
@@ -1758,6 +2176,9 @@ def run_torch_maturity_audit(
         "torch_func": "passed" if torch_func.passed else "failed",
         "torch_compile": "passed" if torch_compile.passed else "failed",
         "module_layer_wrapper": "passed" if module_layer_wrapper.passed else "failed",
+        "torch_ecosystem_maturity": (
+            "passed" if ecosystem_maturity.ready_for_provider_exceedance else "blocked"
+        ),
         "live_overlay_execution": "passed" if live_overlay is not None else "blocked",
         "finite_shot_provider_hardware_torch_phase_qnode_lowering": "blocked",
         "full_compiler_autograd_integration": "blocked",
@@ -1870,6 +2291,8 @@ def _json_ready(value: object) -> object:
 __all__ = [
     "PhaseTorchAutogradQNNGradientResult",
     "PhaseTorchCompileCompatibilityResult",
+    "PhaseTorchEcosystemMaturityAuditResult",
+    "PhaseTorchEcosystemMaturityRoute",
     "PhaseTorchFuncCompatibilityResult",
     "PhaseTorchLiveOverlayEvidence",
     "PhaseTorchMaturityAuditResult",
@@ -1878,9 +2301,11 @@ __all__ = [
     "PhaseTorchPhaseQNodeLoweringMatrixResult",
     "PhaseTorchPhaseQNodeLoweringRoute",
     "PhaseTorchPhaseQNodeStatevectorResult",
+    "PhaseTorchPhaseQNodeTransformResult",
     "PhaseTorchQNNGradientResult",
     "is_phase_torch_available",
     "run_torch_compile_compatibility_audit",
+    "run_torch_ecosystem_maturity_audit",
     "run_torch_func_compatibility_audit",
     "run_torch_maturity_audit",
     "run_torch_module_wrapper_audit",
@@ -1890,5 +2315,6 @@ __all__ = [
     "torch_bounded_qnn_layer",
     "torch_bounded_qnn_module",
     "torch_parameter_shift_value_and_grad",
+    "torch_phase_qnode_transform_audit",
     "torch_phase_qnode_value_and_grad",
 ]

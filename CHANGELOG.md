@@ -5,6 +5,16 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-06-19 — Added registered local Phase-QNode PyTorch `torch.func`
+  transform evidence through `torch_phase_qnode_transform_audit(...)`, plus
+  broad PyTorch module/transform/compiler/device maturity routing through
+  `run_torch_ecosystem_maturity_audit(...)`. The new audit records
+  `torch.nn.Module`/`Parameter`, `torch.func`, `torch.compile`, and CUDA-device
+  capability state, updates the PyTorch lowering matrix, and adds a
+  non-isolated quantum-gradient conformance benchmark row. Registered
+  Phase-QNode `torch.compile`, incompatible CUDA/device execution, provider,
+  hardware, finite-shot, dynamic-circuit, isolated benchmark, and performance
+  promotion claims remain blocked.
 - 2026-06-19 — Added registered local Phase-QNode JAX pmap/sharding transform
   evidence through `jax_phase_qnode_sharding_transform_audit(...)`. The audit
   maps one deterministic statevector value-and-gradient row per local JAX

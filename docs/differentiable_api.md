@@ -64,7 +64,7 @@ finite differences or pretending that a hardware/provider gradient exists.
 | `scpn_quantum_control.differentiable_external_validation` | Exact external-validation environment lock manifest, reproducible artefact-bundle manifest, checksum validators, and reviewer Markdown renderers for runtime, development, CI, framework-overlay, Enzyme-runner, and committed evidence artefacts. |
 | `scpn_quantum_control.phase.jax_bridge` | Optional JAX host-callback adapter for supported phase parameter-shift value-and-gradient calls plus bounded native/custom-VJP JAX phase-QNN evidence, audited no-host-callback JIT/VMAP/PMAP/PyTree boundaries for that narrow model, and registered deterministic local Phase-QNode flat/PyTree native transform lowering evidence. |
 | `scpn_quantum_control.phase.pennylane_bridge` | Optional PennyLane gradient-agreement checker for caller-supplied PennyLane/QNode gradient functions. |
-| `scpn_quantum_control.phase.torch_bridge` | Optional PyTorch bridge for supported phase parameter-shift value-and-gradient calls, tensor-ready bounded phase-QNN analytic gradient evidence, bounded custom `torch.autograd.Function`, bounded `torch.func.grad`/`vmap`/`jacrev`, bounded `torch.compile`, bounded `nn.Module`/layer wrapper compatibility, deterministic registered local Phase-QNode statevector lowering through native PyTorch autograd, live CPU-overlay external-comparison artefact validation, and a fail-closed registered Phase-QNode Torch-lowering matrix checked against parameter-shift references and promotion blockers. |
+| `scpn_quantum_control.phase.torch_bridge` | Optional PyTorch bridge for supported phase parameter-shift value-and-gradient calls, tensor-ready bounded phase-QNN analytic gradient evidence, bounded custom `torch.autograd.Function`, bounded `torch.func.grad`/`vmap`/`jacrev`, bounded `torch.compile`, bounded `nn.Module`/layer wrapper compatibility, deterministic registered local Phase-QNode statevector lowering through native PyTorch autograd, registered local Phase-QNode `torch.func.grad`/`jacrev`/`vmap` transform evidence, broad PyTorch module/transform/compiler/device maturity routing, live CPU-overlay external-comparison artefact validation, and a fail-closed registered Phase-QNode Torch-lowering matrix checked against parameter-shift references and promotion blockers. |
 | `scpn_quantum_control.phase.tensorflow_bridge` | Optional TensorFlow tensor bridge for supported phase parameter-shift value-and-gradient calls plus tensor-ready bounded phase-QNN analytic gradient evidence checked against parameter-shift references. |
 | `scpn_quantum_control.compiler.mlir` | Compiler/program AD lowering, native executable kernel helpers, Phase-QNode MLIR-runtime execution adapters, support-profile reports, and the Enzyme/MLIR maturity audit that records executable SCPN MLIR-runtime correctness, native LLVM/JIT support metadata, local toolchain versions, typed native Enzyme execution evidence, typed MLIR/LLVM correctness evidence, and hard gaps until successful native Enzyme plus isolated benchmark artefacts exist. |
 
@@ -97,7 +97,7 @@ finite differences or pretending that a hardware/provider gradient exists.
 | Optional JAX bridge | `PhaseJAXParameterShiftResult`, `PhaseJAXNativeQNNGradientResult`, `PhaseJAXCustomVJPQNNGradientResult`, `PhaseJAXPhaseQNodeStatevectorResult`, `PhaseJAXPhaseQNodeNativeTransformResult`, `PhaseJAXPhaseQNodePyTreeTransformResult`, `PhaseJAXPhaseQNodeShardingTransformResult`, `PhaseJAXJITCompatibilityResult`, `PhaseJAXVMAPCompatibilityResult`, `PhaseJAXShardingCompatibilityResult`, `PhaseJAXPyTreeCompatibilityResult`, `PhaseJAXNestedTransformRoute`, `PhaseJAXNestedTransformAlgebraResult`, `PhaseJAXPhaseQNodeLoweringRoute`, `PhaseJAXPhaseQNodeLoweringMatrixResult`, `PhaseJAXMaturityAuditResult`, `jax_parameter_shift_value_and_grad`, `jax_native_qnn_value_and_grad`, `jax_custom_vjp_qnn_value_and_grad`, `jax_phase_qnode_value_and_grad`, `jax_phase_qnode_native_transform_audit`, `jax_phase_qnode_pytree_transform_audit`, `jax_phase_qnode_sharding_transform_audit`, `run_jax_jit_compatibility_audit`, `run_jax_vmap_compatibility_audit`, `run_jax_sharding_compatibility_audit`, `run_jax_pytree_compatibility_audit`, `run_jax_nested_transform_algebra_audit`, `run_jax_phase_qnode_lowering_matrix`, `run_jax_maturity_audit`, `is_phase_jax_available` | Expose phase parameter-shift value-and-gradient calls to JAX workflows through an explicit host-callback boundary, expose native JAX autodiff evidence for the bounded phase-QNN classifier, expose a bounded JAX `custom_vjp` route whose backward rule is checked against the SCPN parameter-shift gradient, lower registered deterministic local Phase-QNode statevector value-and-gradient and flat/PyTree/native-sharded `grad`/`value_and_grad`/`jacfwd`/`jacrev`/`hessian`/`jvp`/`vjp`/`vmap`/`jit`/`pmap` execution into native JAX without host callbacks, report JIT/VMAP/PMAP/PyTree and bounded nested-transform algebra compatibility, provide a fail-closed registered Phase-QNode JAX-lowering matrix, and aggregate a maturity audit that keeps finite-shot/provider/hardware/dynamic lowering, provider callbacks, hardware gradients, broad arbitrary-provider parity, and promotion-grade benchmarks blocked until artefacts exist. |
 | Optional PennyLane bridge | `PennyLaneGradientAgreementResult`, `PennyLaneQNodeConversionResult`, `PennyLaneRoundTripResult`, `PennyLanePluginMatrixRoute`, `PennyLanePluginMatrixResult`, `PennyLaneProviderPluginExecutionArtifact`, `PennyLaneMaturityAuditResult`, `check_pennylane_parameter_shift_agreement`, `build_pennylane_qnode_from_phase_qnode`, `check_pennylane_phase_qnode_round_trip`, `check_pennylane_qnode_round_trip`, `run_pennylane_plugin_matrix`, `run_pennylane_maturity_audit`, `is_phase_pennylane_available` | Compare SCPN parameter-shift gradients against caller-supplied PennyLane callables, generate bounded PennyLane QNodes from registered local `PhaseQNodeCircuit` declarations with explicit device, shot, and diff-method metadata, record a fail-closed plugin/provider matrix that passes local `default.qubit` parity routes and optional validated provider-plugin execution artefacts, and aggregate agreement/export/import evidence plus grouped parameter-shift evaluation counts while keeping provider-gradient parity, hardware, and isolated-benchmark promotion blocked until artefacts exist. |
 | Optional Qiskit bridge | `QiskitParameterShiftRecord`, `QiskitParameterShiftGradientResult`, `QiskitRuntimePrimitiveExecutionArtifact`, `QiskitRawCountReplayArtifact`, `QiskitCalibrationStatevectorComparisonArtifact`, `QiskitMaturityAuditResult`, `generate_qiskit_parameter_shift_circuits`, `execute_qiskit_statevector_parameter_shift`, `execute_qiskit_finite_shot_parameter_shift`, `run_qiskit_maturity_audit` | Generate fully bound Qiskit parameter-shift circuits, evaluate local Statevector gradients, produce finite-shot provider-contract surrogate uncertainty, validate optional Runtime primitive, raw-count replay, and calibration/statevector comparison artefacts, and aggregate maturity evidence while keeping live-ticket and isolated-benchmark promotion blocked until artefacts exist. |
-| Optional PyTorch bridge | `PhaseTorchParameterShiftResult`, `PhaseTorchQNNGradientResult`, `PhaseTorchAutogradQNNGradientResult`, `PhaseTorchFuncCompatibilityResult`, `PhaseTorchCompileCompatibilityResult`, `PhaseTorchModuleWrapperAuditResult`, `PhaseTorchLiveOverlayEvidence`, `PhaseTorchPhaseQNodeStatevectorResult`, `PhaseTorchPhaseQNodeLoweringRoute`, `PhaseTorchPhaseQNodeLoweringMatrixResult`, `PhaseTorchMaturityAuditResult`, `torch_parameter_shift_value_and_grad`, `torch_bounded_qnn_value_and_grad`, `torch_autograd_qnn_value_and_grad`, `torch_phase_qnode_value_and_grad`, `run_torch_func_compatibility_audit`, `run_torch_compile_compatibility_audit`, `torch_bounded_qnn_module`, `torch_bounded_qnn_layer`, `run_torch_module_wrapper_audit`, `run_torch_phase_qnode_lowering_matrix`, `run_torch_maturity_audit`, `is_phase_torch_available` | Convert supported phase parameter-shift value-and-gradient outputs into PyTorch tensors, provide bounded phase-QNN tensor-gradient evidence, expose a bounded custom `torch.autograd.Function` path, audit bounded `torch.func.grad`/`vmap`/`jacrev`, `torch.compile`, and module/layer wrapper compatibility, lower deterministic registered local Phase-QNode statevector value-and-gradient execution into native PyTorch autograd without host callbacks, validate optional live CPU-overlay external-comparison artefacts for the PyTorch route, and aggregate those routes plus a fail-closed registered Phase-QNode lowering matrix into a maturity audit that keeps finite-shot lowering, provider callbacks, hardware lowering, dynamic circuits, full compiler/autograd integration, and isolated benchmark promotion blocked until artefacts exist. |
+| Optional PyTorch bridge | `PhaseTorchParameterShiftResult`, `PhaseTorchQNNGradientResult`, `PhaseTorchAutogradQNNGradientResult`, `PhaseTorchFuncCompatibilityResult`, `PhaseTorchCompileCompatibilityResult`, `PhaseTorchModuleWrapperAuditResult`, `PhaseTorchEcosystemMaturityRoute`, `PhaseTorchEcosystemMaturityAuditResult`, `PhaseTorchLiveOverlayEvidence`, `PhaseTorchPhaseQNodeStatevectorResult`, `PhaseTorchPhaseQNodeTransformResult`, `PhaseTorchPhaseQNodeLoweringRoute`, `PhaseTorchPhaseQNodeLoweringMatrixResult`, `PhaseTorchMaturityAuditResult`, `torch_parameter_shift_value_and_grad`, `torch_bounded_qnn_value_and_grad`, `torch_autograd_qnn_value_and_grad`, `torch_phase_qnode_value_and_grad`, `torch_phase_qnode_transform_audit`, `run_torch_func_compatibility_audit`, `run_torch_compile_compatibility_audit`, `run_torch_ecosystem_maturity_audit`, `torch_bounded_qnn_module`, `torch_bounded_qnn_layer`, `run_torch_module_wrapper_audit`, `run_torch_phase_qnode_lowering_matrix`, `run_torch_maturity_audit`, `is_phase_torch_available` | Convert supported phase parameter-shift value-and-gradient outputs into PyTorch tensors, provide bounded phase-QNN tensor-gradient evidence, expose a bounded custom `torch.autograd.Function` path, audit bounded `torch.func.grad`/`vmap`/`jacrev`, `torch.compile`, and module/layer wrapper compatibility, lower deterministic registered local Phase-QNode statevector value-and-gradient execution into native PyTorch autograd without host callbacks, audit registered local Phase-QNode `torch.func.grad`/`jacrev`/`vmap` transforms against SCPN parameter-shift references, record broad PyTorch module/transform/compiler/CUDA-device maturity, validate optional live CPU-overlay external-comparison artefacts for the PyTorch route, and aggregate those routes plus a fail-closed registered Phase-QNode lowering matrix into a maturity audit that keeps registered `torch.compile`, incompatible CUDA/device routes, finite-shot lowering, provider callbacks, hardware lowering, dynamic circuits, full compiler/autograd integration, and isolated benchmark promotion blocked until artefacts exist. |
 | Optional TensorFlow bridge | `PhaseTensorFlowParameterShiftResult`, `PhaseTensorFlowQNNGradientResult`, `PhaseTensorFlowGradientTapeCompatibilityResult`, `PhaseTensorFlowFunctionCompatibilityResult`, `PhaseTensorFlowXLACompatibilityResult`, `PhaseTensorFlowKerasLayerWrapperAuditResult`, `PhaseTensorFlowPhaseQNodeLoweringRoute`, `PhaseTensorFlowPhaseQNodeLoweringMatrixResult`, `PhaseTensorFlowMaturityAuditResult`, `tensorflow_parameter_shift_value_and_grad`, `tensorflow_bounded_qnn_value_and_grad`, `run_tensorflow_gradient_tape_compatibility_audit`, `run_tensorflow_function_compatibility_audit`, `run_tensorflow_xla_compatibility_audit`, `tensorflow_bounded_qnn_keras_layer`, `run_tensorflow_keras_layer_wrapper_audit`, `run_tensorflow_phase_qnode_lowering_matrix`, `run_tensorflow_maturity_audit`, `is_phase_tensorflow_available` | Convert supported phase parameter-shift value-and-gradient outputs into TensorFlow tensors, provide bounded phase-QNN tensor-gradient evidence, audit bounded `GradientTape`/`tf.function`/XLA/Keras layer gradients against parameter-shift references, expose a fail-closed registered Phase-QNode TensorFlow-lowering matrix, and aggregate those routes into a maturity record that keeps arbitrary Phase-QNode TensorFlow lowering, full graph autodiff-through-simulator, provider callbacks, hardware gradients, and isolated benchmark promotion blocked until artefacts exist. |
 
 ## Unified façade
@@ -480,6 +480,7 @@ from scpn_quantum_control.phase import (
     run_jax_sharding_compatibility_audit,
     run_jax_vmap_compatibility_audit,
     run_torch_compile_compatibility_audit,
+    run_torch_ecosystem_maturity_audit,
     run_torch_func_compatibility_audit,
     run_torch_module_wrapper_audit,
     run_tensorflow_function_compatibility_audit,
@@ -492,6 +493,8 @@ from scpn_quantum_control.phase import (
     torch_bounded_qnn_value_and_grad,
     torch_bounded_qnn_layer,
     torch_bounded_qnn_module,
+    torch_phase_qnode_transform_audit,
+    torch_phase_qnode_value_and_grad,
 )
 
 features = np.array([[0.0], [np.pi]], dtype=float)
@@ -617,6 +620,16 @@ torch_module_audit = run_torch_module_wrapper_audit(
     labels=labels,
     initial_params=params,
 )
+torch_qnode = torch_phase_qnode_value_and_grad(
+    jax_circuit,
+    np.array([0.17, -0.23], dtype=float),
+)
+torch_qnode_transforms = torch_phase_qnode_transform_audit(
+    jax_circuit,
+    np.array([0.17, -0.23], dtype=float),
+    params_batch=np.array([[0.17, -0.23], [0.21, -0.19]], dtype=float),
+)
+torch_ecosystem = run_torch_ecosystem_maturity_audit()
 
 assert jax_result.passed
 assert jax_custom_vjp_result.passed
@@ -659,6 +672,10 @@ assert torch_module().shape == ()
 assert torch_layer.claim_boundary == "bounded_torch_module_layer_wrapper"
 assert torch_module_audit.passed
 assert torch_module_audit.module_wrapper_supported
+assert torch_qnode.passed
+assert torch_qnode_transforms.passed
+assert torch_qnode_transforms.func_vmap_supported
+assert torch_ecosystem.route_status("torch_compile_callable") in {"passed", "blocked"}
 ```
 
 `jax_native_qnn_value_and_grad` expresses the bounded model directly in JAX
@@ -726,13 +743,22 @@ reference.
 `torch_phase_qnode_value_and_grad` lowers deterministic registered local
 Phase-QNode statevector value-and-gradient execution into native PyTorch
 autograd without host callbacks and checks the result against the SCPN
-parameter-shift reference. `run_torch_maturity_audit` aggregates the bounded
-analytic tensor, custom-autograd, `torch.func`, `torch.compile`, module/layer
-wrapper, and registered statevector lowering evidence into one reviewer-facing
-record. It reports `bounded_model_ready=True` only when the bounded model routes
-pass, but keeps `ready_for_provider_exceedance=False` until live overlay
-execution, finite-shot/provider/hardware Phase-QNode Torch lowering, full
-compiler/autograd integration, and promotion-grade isolated benchmark artefacts
+parameter-shift reference. `torch_phase_qnode_transform_audit` runs the same
+registered local statevector family through `torch.func.grad`,
+`torch.func.jacrev`, and `torch.func.vmap`, checks single-row and batched
+gradients against SCPN parameter-shift references, and keeps `host_boundary`
+false. `run_torch_ecosystem_maturity_audit` records installed PyTorch
+`nn.Module`/`Parameter`, `torch.func`, `torch.compile`, and CUDA-device
+capabilities; visible but incompatible CUDA devices remain blocked until a
+successful device smoke and device-specific Phase-QNode gradient artefact exist.
+`run_torch_maturity_audit` aggregates the bounded analytic tensor,
+custom-autograd, `torch.func`, `torch.compile`, module/layer wrapper,
+registered statevector lowering, and ecosystem-route evidence into one
+reviewer-facing record. It reports `bounded_model_ready=True` only when the
+bounded model routes pass, but keeps `ready_for_provider_exceedance=False` until
+live overlay execution, registered Phase-QNode `torch.compile` lowering,
+compatible CUDA/device evidence, finite-shot/provider/hardware Phase-QNode Torch
+lowering, full compiler/autograd integration, and promotion-grade isolated benchmark artefacts
 exist.
 `tensorflow_bounded_qnn_value_and_grad` returns TensorFlow tensors from the
 analytic bounded-model gradient and checks the same reference.
