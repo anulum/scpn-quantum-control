@@ -523,7 +523,7 @@ from .transform_nesting import (
     run_gradient_transform_nesting_audit,
 )
 from .trotter_error import trotter_error_norm, trotter_error_sweep
-from .trotter_upde import QuantumUPDESolver
+from .trotter_upde import QuantumUPDESolver, UPDEStepResult, UPDETrajectoryResult
 from .varqite import VarQITEResult, varqite_ground_state
 from .xy_kuramoto import QuantumKuramotoSolver, TrotterEvolutionConfig
 
@@ -532,6 +532,8 @@ __all__ = [
     "TrotterEvolutionConfig",
     "TrajectoryResult",
     "QuantumUPDESolver",
+    "UPDEStepResult",
+    "UPDETrajectoryResult",
     "PhaseVQE",
     "trotter_error_norm",
     "trotter_error_sweep",

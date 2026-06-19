@@ -14,11 +14,32 @@ maps to XY interaction strength; natural frequencies Omega_n map to Z fields.
 
 from __future__ import annotations
 
+from typing import TypeAlias, TypedDict
+
 import numpy as np
+from numpy.typing import NDArray
 from qiskit.quantum_info import SparsePauliOp, Statevector
 
 from ..bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
 from .xy_kuramoto import QuantumKuramotoSolver
+
+FloatArray: TypeAlias = NDArray[np.float64]
+
+
+class UPDEStepResult(TypedDict):
+    """Single UPDE Trotter step order-parameter result."""
+
+    R_global: float
+    psi: float
+    dt: float
+
+
+class UPDETrajectoryResult(TypedDict):
+    """UPDE order-parameter trajectory returned by ``QuantumUPDESolver.run``."""
+
+    times: FloatArray
+    R: FloatArray
+    n_layers: int
 
 
 class QuantumUPDESolver:
@@ -29,25 +50,31 @@ class QuantumUPDESolver:
 
     def __init__(
         self,
-        K: np.ndarray | None = None,
-        omega: np.ndarray | None = None,
+        K: FloatArray | None = None,
+        omega: FloatArray | None = None,
         trotter_order: int = 1,
-    ):
+    ) -> None:
         """Defaults to canonical 16-layer Paper 27 parameters if K/omega not given."""
         if K is None:
             K = build_knm_paper27()
         if omega is None:
             omega = OMEGA_N_16.copy()
 
-        self.K = K
-        self.omega = omega
+        self.K: FloatArray = np.asarray(K, dtype=np.float64)
+        self.omega: FloatArray = np.asarray(omega, dtype=np.float64)
         self.n_layers = len(omega)
-        self._solver = QuantumKuramotoSolver(self.n_layers, K, omega, trotter_order=trotter_order)
+        self._solver = QuantumKuramotoSolver(
+            self.n_layers,
+            self.K,
+            self.omega,
+            trotter_order=trotter_order,
+        )
         self._solver.build_hamiltonian()
+        self._sv: Statevector | None = None
 
-    def step(self, dt: float = 0.1, trotter_steps: int = 5) -> dict:
+    def step(self, dt: float = 0.1, trotter_steps: int = 5) -> UPDEStepResult:
         """Single Trotter step, return per-layer expectations and global R."""
-        if not hasattr(self, "_sv"):
+        if self._sv is None:
             from qiskit import QuantumCircuit
 
             qc = QuantumCircuit(self.n_layers)
@@ -61,7 +88,12 @@ class QuantumUPDESolver:
 
         return {"R_global": R, "psi": psi, "dt": dt}
 
-    def run(self, n_steps: int = 50, dt: float = 0.1, trotter_per_step: int = 5) -> dict:
+    def run(
+        self,
+        n_steps: int = 50,
+        dt: float = 0.1,
+        trotter_per_step: int = 5,
+    ) -> UPDETrajectoryResult:
         """Full trajectory returning R(t) over n_steps."""
         result = self._solver.run(n_steps * dt, dt, trotter_per_step)
         return {
@@ -72,8 +104,7 @@ class QuantumUPDESolver:
 
     def reset(self) -> None:
         """Reset statevector so the next step() reinitialises from omega."""
-        if hasattr(self, "_sv"):
-            del self._sv
+        self._sv = None
 
     def hamiltonian(self) -> SparsePauliOp | None:
         """Return the compiled XY Hamiltonian, or None if not yet built."""

@@ -10,7 +10,7 @@
     "paper0_validation_modules": 466,
     "public_api_exports": 664,
     "public_documentation_pages": 254,
-    "python_model_classes": 1793,
+    "python_model_classes": 1795,
     "python_model_source_modules": 835,
     "rust_pyo3_model_wrappers": 135,
     "rust_source_modules": 38,
@@ -7984,6 +7984,14 @@
       {
         "name": "UPDEPhaseArtifact",
         "path": "src/scpn_quantum_control/bridge/phase_artifact.py"
+      },
+      {
+        "name": "UPDEStepResult",
+        "path": "src/scpn_quantum_control/phase/trotter_upde.py"
+      },
+      {
+        "name": "UPDETrajectoryResult",
+        "path": "src/scpn_quantum_control/phase/trotter_upde.py"
       },
       {
         "name": "UnifiedConsciousnessMeasureConfig",

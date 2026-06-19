@@ -11,7 +11,67 @@ import numpy as np
 import pytest
 
 from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
+from scpn_quantum_control.phase import QuantumUPDESolver as ExportedQuantumUPDESolver
+from scpn_quantum_control.phase import UPDEStepResult, UPDETrajectoryResult
+from scpn_quantum_control.phase import trotter_upde as trotter_upde_module
 from scpn_quantum_control.phase.trotter_upde import QuantumUPDESolver
+
+
+@pytest.fixture(autouse=True)
+def deterministic_upde_boundary(monkeypatch):
+    class FakeHamiltonian:
+        def __init__(self, n_qubits):
+            self.num_qubits = n_qubits
+
+        def to_matrix(self):
+            return np.eye(2**self.num_qubits, dtype=np.complex128)
+
+    class FakeStatevector:
+        def __init__(self, step_index=0):
+            self.step_index = step_index
+
+        @classmethod
+        def from_instruction(cls, qc):
+            del qc
+            return cls(step_index=0)
+
+        def evolve(self, evo_qc):
+            del evo_qc
+            return FakeStatevector(step_index=self.step_index + 1)
+
+    class FakeKuramotoSolver:
+        def __init__(self, n_oscillators, K_coupling, omega_natural, trotter_order=1):
+            self.n = n_oscillators
+            self.K = np.asarray(K_coupling, dtype=np.float64)
+            self.omega = np.asarray(omega_natural, dtype=np.float64)
+            self.trotter_order = trotter_order
+            self._hamiltonian = None
+
+        def build_hamiltonian(self):
+            self._hamiltonian = FakeHamiltonian(self.n)
+            return self._hamiltonian
+
+        def evolve(self, time, trotter_steps):
+            return {"time": time, "trotter_steps": trotter_steps}
+
+        def measure_order_parameter(self, sv):
+            value = 0.5 + 0.1 * sv.step_index
+            return value, -0.25 * sv.step_index
+
+        def run(self, t_max, dt, trotter_per_step):
+            del trotter_per_step
+            n_steps = int(round(t_max / dt))
+            times = np.linspace(0.0, t_max, n_steps + 1, dtype=np.float64)
+            return {"times": times, "R": np.linspace(0.2, 0.8, n_steps + 1, dtype=np.float64)}
+
+    monkeypatch.setattr(trotter_upde_module, "QuantumKuramotoSolver", FakeKuramotoSolver)
+    monkeypatch.setattr(trotter_upde_module, "Statevector", FakeStatevector)
+
+
+def test_phase_namespace_exports_upde_contracts():
+    assert ExportedQuantumUPDESolver is QuantumUPDESolver
+    assert UPDEStepResult.__name__ == "UPDEStepResult"
+    assert UPDETrajectoryResult.__name__ == "UPDETrajectoryResult"
 
 
 def test_default_16_layers():

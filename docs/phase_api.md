@@ -100,18 +100,18 @@ $K_{nm}$ matrix from Paper 27.
 from scpn_quantum_control.phase.trotter_upde import QuantumUPDESolver
 ```
 
-**`QuantumUPDESolver(n_layers=16, knm=None, omega=None)`**
+**`QuantumUPDESolver(K=None, omega=None, trotter_order=1)`**
 
 | Method | Description |
 |--------|-------------|
-| `.build_hamiltonian()` | 16-qubit XY Hamiltonian from $K_{nm}$ |
-| `.step(dt, shots=10000)` | Single Trotter step, measure $R$ per layer |
-| `.run(n_steps, dt, shots=10000)` | Multi-step simulation with per-layer tracking |
+| `.hamiltonian()` | Compiled XY Hamiltonian from $K_{nm}$ |
+| `.step(dt=0.1, trotter_steps=5)` | Single Trotter step returning `UPDEStepResult` with `R_global`, `psi`, and `dt` |
+| `.run(n_steps=50, dt=0.1, trotter_per_step=5)` | Multi-step simulation returning `UPDETrajectoryResult` with `times`, `R`, and `n_layers` |
+| `.reset()` | Reset the cached statevector before the next step |
 
-Returns `per_layer_R` (order parameter per SCPN layer) and `global_R` (system-wide
-synchronization). This is the quantum digital twin of the UPDE — the master equation
-of the SCPN framework running on quantum circuits. Hardware claims must be
-cited through the hardware ledger and committed raw artifacts.
+The trajectory result records the global order parameter over the requested time
+grid. Hardware claims must be cited through the hardware ledger and committed raw
+artifacts.
 
 ### `trotter_error` — Error Analysis
 
