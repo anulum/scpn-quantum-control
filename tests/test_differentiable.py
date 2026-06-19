@@ -77,6 +77,7 @@ from scpn_quantum_control.differentiable import (
     WeightedGradientResult,
     WholeProgramADResult,
     WholeProgramBytecodeInstruction,
+    WholeProgramCompilerFrontendReport,
     WholeProgramIRNode,
     WholeProgramSemanticsReport,
     WholeProgramSourceIRFeature,
@@ -104,6 +105,7 @@ from scpn_quantum_control.differentiable import (
     batch_vector_jacobian_product,
     check_custom_derivative_consistency,
     check_parameter_shift_consistency,
+    compile_whole_program_frontend,
     complex_step_gradient,
     custom_derivative_rule_for,
     custom_gauss_newton_gradient,
@@ -10888,6 +10890,87 @@ def test_program_ad_index_selection_primitives_validate_registry_rules_at_dispat
     }
 
 
+def test_whole_program_compiler_frontend_report_is_static_and_complete() -> None:
+    """Compiler frontend reports should inspect bytecode/source without execution."""
+
+    calls = {"count": 0}
+
+    def objective(values: np.ndarray) -> object:
+        calls["count"] += 1
+        total = values[0]
+        for index in range(1, 3):
+            total = total + np.sin(values[index])
+        if total > 0.0:
+            total = total * values[0]
+        return total
+
+    report = compile_whole_program_frontend(objective)
+    payload = report.to_dict()
+
+    assert calls == {"count": 0}
+    assert isinstance(report, WholeProgramCompilerFrontendReport)
+    assert report.frontend_ready is True
+    assert report.source_available is True
+    assert report.source_sha256 is not None
+    assert len(report.source_sha256) == 64
+    assert len(report.bytecode_digest) == 64
+    assert report.bytecode_instruction_count > 0
+    assert report.source_feature_count > 0
+    assert report.ast_node_count > 0
+    assert report.hard_gaps == ()
+    assert report.semantics_report.bytecode_frontend is True
+    assert report.semantics_report.source_frontend is True
+    assert report.semantics_report.loop_observed is True
+    assert report.semantics_report.control_flow_observed is True
+    assert report.semantics_report.numpy_observed is True
+    assert {"loop", "control_flow", "numpy"}.issubset(
+        {feature.kind for feature in report.source_ir_features}
+    )
+    assert payload["frontend_ready"] is True
+    assert payload["function_name"].endswith("objective")
+    assert payload["bytecode_instruction_count"] == report.bytecode_instruction_count
+    assert "does not execute objectives" in report.claim_boundary
+
+
+def test_whole_program_compiler_frontend_reports_unsupported_semantics() -> None:
+    """Unsupported source semantics should become explicit hard gaps."""
+
+    def objective(values: np.ndarray) -> object:
+        return sum([item for item in values if item > 0.0])
+
+    report = compile_whole_program_frontend(objective)
+    payload = report.to_dict()
+
+    assert report.frontend_ready is False
+    assert "filtered_comprehension" in report.semantics_report.unsupported_python_semantics
+    assert "unsupported_python_semantics:filtered_comprehension" in report.hard_gaps
+    assert "unsupported_python_semantics:filtered_comprehension" in payload["hard_gaps"]
+    assert any(
+        feature.kind == "unsupported_python_semantics"
+        and feature.detail == "filtered_comprehension"
+        for feature in report.source_ir_features
+    )
+
+
+def test_whole_program_semantics_report_validates_all_semantics_tuples() -> None:
+    """Accepted and unsupported semantics entries should both be validated."""
+
+    with pytest.raises(ValueError, match="accepted_python_semantics entries"):
+        WholeProgramSemanticsReport(
+            bytecode_frontend=True,
+            source_frontend=True,
+            graph_capture=True,
+            aliasing_observed=False,
+            mutation_observed=False,
+            loop_observed=False,
+            control_flow_observed=False,
+            numpy_observed=False,
+            differentiation_semantics="bounded",
+            accepted_python_semantics=("",),
+            unsupported_python_semantics=(),
+        )
+
+
 def test_program_ad_selection_static_derivative_factories() -> None:
     """Static where and clip factories should expose exact branch/clip adjoints."""
 
@@ -10958,6 +11041,7 @@ def test_whole_program_ad_is_exported_from_package_root() -> None:
     assert scpn.ProgramADSSAValue is ProgramADSSAValue
     assert scpn.WholeProgramADResult is WholeProgramADResult
     assert scpn.WholeProgramBytecodeInstruction is WholeProgramBytecodeInstruction
+    assert scpn.WholeProgramCompilerFrontendReport is WholeProgramCompilerFrontendReport
     assert scpn.WholeProgramTraceEvent is WholeProgramTraceEvent
     assert scpn.WholeProgramSourceIRFeature is WholeProgramSourceIRFeature
     assert scpn.WholeProgramSemanticsReport is WholeProgramSemanticsReport
@@ -10969,6 +11053,7 @@ def test_whole_program_ad_is_exported_from_package_root() -> None:
     assert scpn.parse_program_ad_effect_ir is parse_program_ad_effect_ir
     assert scpn.whole_program_grad is whole_program_grad
     assert scpn.whole_program_value_and_grad is whole_program_value_and_grad
+    assert scpn.compile_whole_program_frontend is compile_whole_program_frontend
 
 
 def test_program_adjoint_value_and_grad_api_returns_reverse_replay_gradient() -> None:

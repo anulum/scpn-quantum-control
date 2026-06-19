@@ -23,6 +23,7 @@ from scpn_quantum_control.differentiable_api import (
     differentiable_benchmark_report,
     differentiable_compile_report,
     differentiable_dashboard_status,
+    differentiable_frontend_report,
     differentiable_gradient,
     differentiable_hessian,
     differentiable_jacobian,
@@ -171,11 +172,25 @@ def test_differentiable_dashboard_status_is_claim_bounded_for_gui_consumers() ->
     assert rows["unified_differentiable_api"]["fail_closed"] is False
     assert rows["program_ad_ir"]["state"] == "metadata_only"
     assert rows["program_ad_ir"]["fail_closed"] is True
+    assert rows["program_ad_bytecode_source_frontend"]["state"] == "diagnostic"
+    assert rows["program_ad_bytecode_source_frontend"]["fail_closed"] is True
+    assert (
+        rows["program_ad_bytecode_source_frontend"]["backing_api"]
+        == "compile_whole_program_frontend"
+    )
+    assert (
+        "WholeProgramCompilerFrontendReport"
+        in rows["program_ad_bytecode_source_frontend"]["evidence"]
+    )
+    assert (
+        "static bytecode/source compiler frontend preflight"
+        in rows["program_ad_bytecode_source_frontend"]["claim_boundary"]
+    )
     assert rows["program_ad_ir_roundtrip"]["state"] == "metadata_only"
     assert rows["program_ad_ir_roundtrip"]["backing_api"] == "parse_program_ad_effect_ir"
     assert rows["program_ad_ir_roundtrip"]["fail_closed"] is True
     assert "program_ad_effect_ir.v1" in rows["program_ad_ir_roundtrip"]["evidence"]
-    assert "not a bytecode/source compiler frontend" in str(
+    assert "not executable compiler lowering" in str(
         rows["program_ad_ir_roundtrip"]["blocked_reasons"]
     )
     assert rows["program_ad_ir_roundtrip_conformance"]["state"] == "diagnostic"
@@ -188,7 +203,7 @@ def test_differentiable_dashboard_status_is_claim_bounded_for_gui_consumers() ->
         "stable serialization" in (rows["program_ad_ir_roundtrip_conformance"]["claim_boundary"])
     )
     assert (
-        "not a bytecode/source compiler frontend"
+        "not executable compiler lowering"
         in (rows["program_ad_ir_roundtrip_conformance"]["claim_boundary"])
     )
     assert rows["program_ad_control_phi_metadata"]["state"] == "diagnostic"
@@ -461,6 +476,11 @@ def test_differentiable_dashboard_status_validates_rows() -> None:
 
 def test_unified_differentiable_dispatcher_and_root_exports() -> None:
     values = np.array([2.0, -1.0], dtype=float)
+    calls = {"count": 0}
+
+    def frontend_objective(inputs: np.ndarray) -> object:
+        calls["count"] += 1
+        return np.sin(inputs[0]) + inputs[1]
 
     gradient = differentiable_api(
         "gradient",
@@ -480,18 +500,27 @@ def test_unified_differentiable_dispatcher_and_root_exports() -> None:
         observable="pauli_expectation",
     )
     dashboard = differentiable_api("dashboard_status")
+    frontend_direct = differentiable_frontend_report(frontend_objective)
+    frontend_dispatched = differentiable_api("frontend_report", objective=frontend_objective)
 
     np.testing.assert_allclose(gradient.gradient, np.array([4.0, 3.0]), atol=1e-5)
+    assert calls == {"count": 0}
     assert support.supported
     assert diagnostic.fail_closed
     assert diagnostic.payload["blocked_reasons"]
     assert dashboard.supported
     assert dashboard.payload["status_api_ready"] is True
     assert dashboard.payload["rows"]
+    assert frontend_direct.operation == "frontend_report"
+    assert frontend_direct.supported is True
+    assert frontend_direct.payload["frontend_ready"] is True
+    assert frontend_dispatched.supported is True
+    assert frontend_dispatched.payload["bytecode_instruction_count"] > 0
     assert scpn.DifferentiableDashboardStatus is DifferentiableDashboardStatus
     assert scpn.DifferentiableDashboardCapabilityRow is DifferentiableDashboardCapabilityRow
     assert scpn.DifferentiableDashboardCapabilityState is DifferentiableDashboardCapabilityState
     assert scpn.differentiable_dashboard_status is differentiable_dashboard_status
+    assert scpn.differentiable_frontend_report is differentiable_frontend_report
     assert scpn.explain_differentiability is explain_differentiability
     assert scpn.differentiable_api is differentiable_api
     assert scpn.differentiable_gradient is differentiable_gradient

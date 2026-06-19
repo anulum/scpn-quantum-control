@@ -30,6 +30,7 @@ from .differentiable import (
     PrimitiveIdentity,
     ScalarObjective,
     VectorObjective,
+    compile_whole_program_frontend,
     value_and_grad,
     value_and_hessian,
     value_and_jacobian,
@@ -50,6 +51,7 @@ UnifiedDifferentiableOperation = Literal[
     "support_report",
     "diagnostic_report",
     "compile_report",
+    "frontend_report",
     "benchmark_report",
     "dashboard_status",
 ]
@@ -498,6 +500,31 @@ def differentiable_benchmark_report() -> UnifiedDifferentiableAPIResult:
     )
 
 
+def differentiable_frontend_report(
+    objective: Callable[..., object],
+) -> UnifiedDifferentiableAPIResult:
+    """Return static whole-program bytecode/source frontend evidence.
+
+    The objective is inspected but not executed. The returned payload is
+    suitable for dashboards and audits that need deterministic source/bytecode
+    metadata without promoting executable compiler lowering, provider, hardware,
+    or performance claims.
+    """
+
+    report = compile_whole_program_frontend(objective)
+    return UnifiedDifferentiableAPIResult(
+        operation="frontend_report",
+        supported=report.frontend_ready,
+        method="static_bytecode_source_frontend_preflight",
+        value=None,
+        gradient=None,
+        jacobian=None,
+        hessian=None,
+        payload=report.to_dict(),
+        claim_boundary=report.claim_boundary,
+    )
+
+
 def differentiable_dashboard_status(
     *,
     include_conformance: bool = False,
@@ -527,17 +554,39 @@ def differentiable_dashboard_status(
             state="metadata_only",
             backing_api="whole_program_value_and_grad",
             evidence=("ProgramADEffectIR", "WholeProgramADResult.program_ir"),
-            blocked_reasons=("complete bytecode/source compiler frontend remains open",),
-            claim_boundary="metadata and executed-trace evidence only; not full arbitrary Python AD",
+            blocked_reasons=("executable compiler lowering remains open",),
+            claim_boundary=(
+                "metadata and executed-trace evidence only; static frontend "
+                "preflight is separate and not full arbitrary Python AD"
+            ),
+        ),
+        DifferentiableDashboardCapabilityRow(
+            surface="program_ad_bytecode_source_frontend",
+            state="diagnostic",
+            backing_api="compile_whole_program_frontend",
+            evidence=(
+                "WholeProgramCompilerFrontendReport",
+                "WholeProgramBytecodeInstruction",
+                "WholeProgramSourceIRFeature",
+                "WholeProgramSemanticsReport",
+            ),
+            blocked_reasons=(
+                "static preflight only; executable Rust, LLVM, JIT, provider, "
+                "hardware, and benchmark promotion remain open",
+            ),
+            claim_boundary=(
+                "first-class static bytecode/source compiler frontend preflight "
+                "for supported Program AD Python semantics; no objective "
+                "execution, no executable compiler lowering, no Rust/LLVM/JIT, "
+                "provider, hardware, or performance claim"
+            ),
         ),
         DifferentiableDashboardCapabilityRow(
             surface="program_ad_ir_roundtrip",
             state="metadata_only",
             backing_api="parse_program_ad_effect_ir",
             evidence=("parse_program_ad_effect_ir", "program_ad_effect_ir.v1"),
-            blocked_reasons=(
-                "parser is metadata-only and not a bytecode/source compiler frontend",
-            ),
+            blocked_reasons=("parser is metadata-only and not executable compiler lowering",),
             claim_boundary=(
                 "bounded Program AD IR JSON metadata round-trip only; not a full "
                 "compiler frontend, alias lattice, Rust interpreter, LLVM/JIT "
@@ -558,8 +607,8 @@ def differentiable_dashboard_status(
             else ("conformance suite not run in this status call",),
             claim_boundary=(
                 "bounded program_ad_effect_ir.v1 parser and stable serialization "
-                "round-trip conformance only; not a bytecode/source compiler "
-                "frontend, full alias lattice, non-executed branch semantics, "
+                "round-trip conformance only; not executable compiler lowering, "
+                "full alias lattice, non-executed branch semantics, "
                 "Rust/LLVM executable lowering, hardware, or performance promotion"
             ),
         ),
@@ -1065,6 +1114,8 @@ def differentiable_api(
         )
     if operation == "benchmark_report":
         return differentiable_benchmark_report()
+    if operation == "frontend_report":
+        return differentiable_frontend_report(_require_objective(objective))
     if operation == "dashboard_status":
         status = differentiable_dashboard_status()
         return UnifiedDifferentiableAPIResult(
@@ -1221,6 +1272,7 @@ __all__ = [
     "differentiable_benchmark_report",
     "differentiable_compile_report",
     "differentiable_dashboard_status",
+    "differentiable_frontend_report",
     "differentiable_gradient",
     "differentiable_hessian",
     "differentiable_jacobian",

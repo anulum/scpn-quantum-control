@@ -8,9 +8,9 @@
     "notebook_files": 98,
     "optional_extras": 42,
     "paper0_validation_modules": 466,
-    "public_api_exports": 672,
+    "public_api_exports": 675,
     "public_documentation_pages": 254,
-    "python_model_classes": 1817,
+    "python_model_classes": 1818,
     "python_model_source_modules": 835,
     "rust_pyo3_model_wrappers": 135,
     "rust_source_modules": 38,
@@ -8258,6 +8258,10 @@
         "path": "src/scpn_quantum_control/differentiable.py"
       },
       {
+        "name": "WholeProgramCompilerFrontendReport",
+        "path": "src/scpn_quantum_control/differentiable.py"
+      },
+      {
         "name": "WholeProgramIRNode",
         "path": "src/scpn_quantum_control/differentiable.py"
       },
@@ -9581,6 +9585,7 @@
     "WholeProgramADNativeLoweringReport",
     "WholeProgramADResult",
     "WholeProgramBytecodeInstruction",
+    "WholeProgramCompilerFrontendReport",
     "WholeProgramIRNode",
     "WholeProgramSemanticsReport",
     "WholeProgramSourceIRFeature",
@@ -9681,6 +9686,7 @@
     "compile_whole_program_ad_trace_to_executable",
     "compile_whole_program_ad_trace_to_mlir",
     "compile_whole_program_ad_trace_to_native_llvm_jit",
+    "compile_whole_program_frontend",
     "complex_step_gradient",
     "compound_mitigate_pipeline",
     "concatenated_logical_rate",
@@ -9698,6 +9704,7 @@
     "differentiable_benchmark_report",
     "differentiable_compile_report",
     "differentiable_dashboard_status",
+    "differentiable_frontend_report",
     "differentiable_gradient",
     "differentiable_hessian",
     "differentiable_jacobian",

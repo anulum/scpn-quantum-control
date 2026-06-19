@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import ast
 import dis
+import hashlib
 import inspect
 import json
 import linecache
@@ -745,6 +746,170 @@ class WholeProgramSemanticsReport:
                 raise ValueError(f"{name} must be a tuple")
             if any(not isinstance(item, str) or not item for item in semantics):
                 raise ValueError(f"{name} entries must be non-empty strings")
+
+
+@dataclass(frozen=True)
+class WholeProgramCompilerFrontendReport:
+    """Static bytecode/source frontend report for whole-program AD objectives.
+
+    The report inspects Python bytecode and source-derived AST features without
+    executing the objective. It is a compiler-frontend preflight artefact for
+    accepted whole-program AD semantics, not executable Rust, LLVM, JIT,
+    provider, hardware, or benchmark evidence.
+
+    Parameters
+    ----------
+    function_name:
+        Python callable name used for diagnostics.
+    bytecode_instructions:
+        Normalised Python bytecode instruction rows from ``dis``.
+    source_ir_features:
+        Source-level AST feature rows used by the Program AD frontend.
+    semantics_report:
+        Static semantics summary derived from bytecode and source features.
+    source_available:
+        Whether source text could be obtained through introspection.
+    source_sha256:
+        SHA-256 digest of the dedented source when available.
+    bytecode_digest:
+        SHA-256 digest over the normalised bytecode instruction stream.
+    ast_node_count:
+        Number of AST nodes in the parsed source tree when available.
+    hard_gaps:
+        Named blockers that prevent the report from being accepted as a
+        complete bytecode/source frontend preflight.
+    claim_boundary:
+        Boundary preventing this static report from becoming an execution or
+        performance claim.
+    """
+
+    function_name: str
+    bytecode_instructions: tuple[WholeProgramBytecodeInstruction, ...]
+    source_ir_features: tuple[WholeProgramSourceIRFeature, ...]
+    semantics_report: WholeProgramSemanticsReport
+    source_available: bool
+    source_sha256: str | None
+    bytecode_digest: str
+    ast_node_count: int
+    hard_gaps: tuple[str, ...]
+    claim_boundary: str
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.function_name, str) or not self.function_name:
+            raise ValueError("compiler frontend function_name must be non-empty")
+        if any(
+            not isinstance(instruction, WholeProgramBytecodeInstruction)
+            for instruction in self.bytecode_instructions
+        ):
+            raise ValueError(
+                "compiler frontend bytecode_instructions must contain "
+                "WholeProgramBytecodeInstruction entries"
+            )
+        if any(
+            not isinstance(feature, WholeProgramSourceIRFeature)
+            for feature in self.source_ir_features
+        ):
+            raise ValueError(
+                "compiler frontend source_ir_features must contain "
+                "WholeProgramSourceIRFeature entries"
+            )
+        if not isinstance(self.semantics_report, WholeProgramSemanticsReport):
+            raise ValueError(
+                "compiler frontend semantics_report must be WholeProgramSemanticsReport"
+            )
+        if not isinstance(self.source_available, bool):
+            raise ValueError("compiler frontend source_available must be boolean")
+        if self.source_available:
+            if self.source_sha256 is None or len(self.source_sha256) != 64:
+                raise ValueError("available compiler frontend source requires sha256 digest")
+        elif self.source_sha256 is not None:
+            raise ValueError("unavailable compiler frontend source must not carry sha256")
+        if len(self.bytecode_digest) != 64:
+            raise ValueError("compiler frontend bytecode_digest must be a sha256 digest")
+        if self.ast_node_count < 0:
+            raise ValueError("compiler frontend ast_node_count must be non-negative")
+        if any(not isinstance(gap, str) or not gap for gap in self.hard_gaps):
+            raise ValueError("compiler frontend hard_gaps entries must be non-empty strings")
+        if self.semantics_report.unsupported_python_semantics and not any(
+            gap.startswith("unsupported_python_semantics:") for gap in self.hard_gaps
+        ):
+            raise ValueError(
+                "unsupported compiler frontend semantics must be recorded as hard gaps"
+            )
+        if not self.claim_boundary:
+            raise ValueError("compiler frontend claim_boundary must be non-empty")
+
+    @property
+    def bytecode_instruction_count(self) -> int:
+        """Return the number of bytecode instructions in the frontend report."""
+
+        return len(self.bytecode_instructions)
+
+    @property
+    def source_feature_count(self) -> int:
+        """Return the number of source IR feature rows in the frontend report."""
+
+        return len(self.source_ir_features)
+
+    @property
+    def frontend_ready(self) -> bool:
+        """Return whether bytecode and source frontend metadata passed preflight."""
+
+        return (
+            self.source_available
+            and self.bytecode_instruction_count > 0
+            and self.semantics_report.bytecode_frontend
+            and self.semantics_report.source_frontend
+            and not self.hard_gaps
+        )
+
+    def to_dict(self) -> dict[str, object]:
+        """Return a JSON-ready compiler frontend report."""
+
+        return {
+            "function_name": self.function_name,
+            "frontend_ready": self.frontend_ready,
+            "source_available": self.source_available,
+            "source_sha256": self.source_sha256,
+            "bytecode_digest": self.bytecode_digest,
+            "bytecode_instruction_count": self.bytecode_instruction_count,
+            "source_feature_count": self.source_feature_count,
+            "ast_node_count": self.ast_node_count,
+            "bytecode_instructions": [
+                {
+                    "offset": instruction.offset,
+                    "opname": instruction.opname,
+                    "argrepr": instruction.argrepr,
+                    "line_number": instruction.line_number,
+                }
+                for instruction in self.bytecode_instructions
+            ],
+            "source_ir_features": [
+                {
+                    "kind": feature.kind,
+                    "detail": feature.detail,
+                    "line_number": feature.line_number,
+                }
+                for feature in self.source_ir_features
+            ],
+            "semantics_report": {
+                "bytecode_frontend": self.semantics_report.bytecode_frontend,
+                "source_frontend": self.semantics_report.source_frontend,
+                "graph_capture": self.semantics_report.graph_capture,
+                "aliasing_observed": self.semantics_report.aliasing_observed,
+                "mutation_observed": self.semantics_report.mutation_observed,
+                "loop_observed": self.semantics_report.loop_observed,
+                "control_flow_observed": self.semantics_report.control_flow_observed,
+                "numpy_observed": self.semantics_report.numpy_observed,
+                "differentiation_semantics": self.semantics_report.differentiation_semantics,
+                "accepted_python_semantics": list(self.semantics_report.accepted_python_semantics),
+                "unsupported_python_semantics": list(
+                    self.semantics_report.unsupported_python_semantics
+                ),
+            },
+            "hard_gaps": list(self.hard_gaps),
+            "claim_boundary": self.claim_boundary,
+        }
 
 
 @dataclass(frozen=True)
@@ -8794,6 +8959,127 @@ def _whole_program_semantics_report(
         accepted_python_semantics=accepted_python_semantics,
         unsupported_python_semantics=unsupported_python_semantics,
     )
+
+
+def compile_whole_program_frontend(
+    objective: Callable[..., object],
+) -> WholeProgramCompilerFrontendReport:
+    """Inspect a Python callable as a bounded whole-program AD frontend.
+
+    Parameters
+    ----------
+    objective:
+        Callable to inspect. The callable is not executed; only bytecode,
+        source text, AST features, and supported/unsupported Python semantics
+        are inspected.
+
+    Returns
+    -------
+    WholeProgramCompilerFrontendReport
+        Static compiler-frontend preflight report with bytecode/source
+        metadata, deterministic digests, hard gaps, and claim boundary.
+
+    Raises
+    ------
+    ValueError
+        If ``objective`` is not callable.
+    """
+
+    if not callable(objective):
+        raise ValueError("whole-program compiler frontend objective must be callable")
+    source = _objective_source(objective)
+    bytecode_instructions = _objective_bytecode(objective)
+    accepted_python_semantics = _accepted_python_semantics(objective, source)
+    unsupported_python_semantics = _unsupported_python_semantics(objective, source)
+    source_ir_features = _source_ir_features(
+        source,
+        accepted_python_semantics=accepted_python_semantics,
+        unsupported_python_semantics=unsupported_python_semantics,
+    )
+    source_parse_failed = _source_parse_failed(source)
+    semantics_report = _whole_program_semantics_report(
+        bytecode_instructions=bytecode_instructions,
+        source_ir_features=source_ir_features,
+        trace_events=(),
+        source=source,
+        accepted_python_semantics=accepted_python_semantics,
+        unsupported_python_semantics=unsupported_python_semantics,
+        numpy_observed=_source_mentions_numpy(source),
+        differentiation_semantics=(
+            "static bytecode/source frontend preflight for whole-program AD; "
+            "no objective execution, no finite-difference fallback, and no "
+            "executable Rust, LLVM, JIT, provider, hardware, or performance claim"
+        ),
+    )
+    hard_gaps: list[str] = []
+    if not bytecode_instructions:
+        hard_gaps.append("bytecode_frontend_missing")
+    if source is None:
+        hard_gaps.append("source_frontend_missing")
+    if source_parse_failed:
+        hard_gaps.append("source_ast_parse_failed")
+    hard_gaps.extend(
+        f"unsupported_python_semantics:{item}" for item in unsupported_python_semantics
+    )
+    return WholeProgramCompilerFrontendReport(
+        function_name=_objective_name(objective),
+        bytecode_instructions=bytecode_instructions,
+        source_ir_features=source_ir_features,
+        semantics_report=semantics_report,
+        source_available=source is not None,
+        source_sha256=None
+        if source is None
+        else hashlib.sha256(source.encode("utf-8")).hexdigest(),
+        bytecode_digest=_bytecode_instruction_digest(bytecode_instructions),
+        ast_node_count=_source_ast_node_count(source),
+        hard_gaps=tuple(hard_gaps),
+        claim_boundary=(
+            "static bytecode/source compiler frontend preflight for supported "
+            "whole-program AD Python semantics only; does not execute objectives "
+            "and is not executable Rust, LLVM, JIT, provider, hardware, or "
+            "benchmark evidence"
+        ),
+    )
+
+
+def _objective_name(objective: Callable[..., object]) -> str:
+    name = getattr(objective, "__qualname__", None) or getattr(objective, "__name__", "")
+    return str(name) if name else "<callable>"
+
+
+def _bytecode_instruction_digest(
+    instructions: Sequence[WholeProgramBytecodeInstruction],
+) -> str:
+    payload = [
+        {
+            "offset": instruction.offset,
+            "opname": instruction.opname,
+            "argrepr": instruction.argrepr,
+            "line_number": instruction.line_number,
+        }
+        for instruction in instructions
+    ]
+    encoded = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
+
+
+def _source_ast_node_count(source: str | None) -> int:
+    if source is None:
+        return 0
+    try:
+        return sum(1 for _node in ast.walk(ast.parse(source)))
+    except SyntaxError:
+        return 0
+
+
+def _source_parse_failed(source: str | None) -> bool:
+    if source is None:
+        return False
+    try:
+        ast.parse(source)
+    except SyntaxError:
+        return True
+    return False
 
 
 def _source_has_control_flow(source: str | None) -> bool:
@@ -29960,10 +30246,12 @@ __all__ = [
     "TraceADScalar",
     "WholeProgramADResult",
     "WholeProgramBytecodeInstruction",
+    "WholeProgramCompilerFrontendReport",
     "WholeProgramIRNode",
     "WholeProgramSemanticsReport",
     "WholeProgramSourceIRFeature",
     "WholeProgramTraceEvent",
+    "compile_whole_program_frontend",
     "vmap",
     "parameter_shift_gradient",
     "value_and_complex_step_grad",
