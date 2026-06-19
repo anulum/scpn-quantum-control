@@ -916,6 +916,51 @@ def test_torch_training_loop_audit_updates_module_with_compile_and_func(
     assert len(fake_torch.compile_calls) >= 1
 
 
+@pytest.mark.parametrize(
+    ("learning_rate", "steps", "tolerance", "match"),
+    [
+        (0.0, 4, 1e-12, "learning_rate"),
+        (-0.1, 4, 1e-12, "learning_rate"),
+        (0.2, 0, 1e-12, "steps"),
+        (0.2, True, 1e-12, "steps"),
+        (0.2, 4, -1e-12, "tolerance"),
+    ],
+)
+def test_torch_training_loop_audit_fails_closed_on_invalid_controls(
+    monkeypatch: pytest.MonkeyPatch,
+    learning_rate: float,
+    steps: int,
+    tolerance: float,
+    match: str,
+) -> None:
+    fake_torch = _FakeTorch()
+    monkeypatch.setattr(torch_bridge, "_load_torch", lambda: fake_torch)
+
+    with pytest.raises(ValueError, match=match):
+        run_torch_training_loop_audit(
+            features=np.array([[0.0], [np.pi]], dtype=float),
+            labels=np.array([0.0, 1.0], dtype=float),
+            initial_params=np.array([0.45], dtype=float),
+            learning_rate=learning_rate,
+            steps=steps,
+            tolerance=tolerance,
+        )
+
+
+def test_torch_training_loop_audit_fails_closed_on_shape_mismatch(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    fake_torch = _FakeTorch()
+    monkeypatch.setattr(torch_bridge, "_load_torch", lambda: fake_torch)
+
+    with pytest.raises(ValueError, match=r"initial_params must have shape \(2,\)"):
+        run_torch_training_loop_audit(
+            features=np.array([[0.0, np.pi]], dtype=float),
+            labels=np.array([1.0], dtype=float),
+            initial_params=np.array([0.45], dtype=float),
+        )
+
+
 def test_torch_maturity_audit_records_bounded_passes_and_provider_gaps(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,

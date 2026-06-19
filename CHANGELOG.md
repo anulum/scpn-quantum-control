@@ -5,6 +5,10 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-06-19 — Added fail-closed negative-path coverage for the bounded PyTorch
+  training-loop audit, covering invalid learning rates, invalid step counts,
+  negative tolerances, and parameter-width mismatches in the
+  `nn.Module`/`torch.func`/`torch.compile` parity route.
 - 2026-06-19 — Tightened the PyTorch/TensorFlow framework-bridge test surface
   under strict mypy by replacing legacy unparameterised NumPy array annotations
   with typed `NDArray[np.float64]` aliases and removing obsolete dynamic-attribute
