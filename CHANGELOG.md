@@ -6,10 +6,10 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ### Added
 - 2026-06-19 — Added a scoped NumPy-style Ruff docstring ratchet for the
-  differentiable module-hardening audit surface. CI, local preflight, and the
-  pre-push hook now enforce `ruff check --select D` on
-  `differentiable_module_hardening_audit.py` and its module-specific tests
-  while repository-wide docstring enforcement remains open rollout debt.
+  differentiable module-hardening audit and hardening-slice gate surfaces. CI,
+  local preflight, and the pre-push hook now enforce `ruff check --select D` on
+  both modules and their module-specific tests while repository-wide docstring
+  enforcement remains open rollout debt.
 - 2026-06-18 — Added deterministic transform-algebra conformance for JVP/VJP
   over whole-program AD Hessian transforms through
   `transform_nesting_program_ad_hessian_jvp_vjp`, with compiler, Rust,

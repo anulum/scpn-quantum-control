@@ -41,7 +41,9 @@ jobs:
         run: >-
           ruff check --select D
           src/scpn_quantum_control/differentiable_module_hardening_audit.py
+          src/scpn_quantum_control/benchmarks/differentiable_hardening_gate.py
           tests/test_differentiable_module_hardening_audit.py
+          tests/test_differentiable_hardening_gate.py
 
   test:
     needs: lint

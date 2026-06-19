@@ -15,6 +15,8 @@ import sys
 from pathlib import Path
 from types import ModuleType
 
+import pytest
+
 
 def _load_tool_module(module_name: str, filename: str) -> ModuleType:
     module_path = Path(__file__).resolve().parents[1] / "tools" / filename
@@ -30,7 +32,8 @@ def _load_tool_module(module_name: str, filename: str) -> ModuleType:
 _preflight = _load_tool_module("preflight_for_tests", "preflight.py")
 
 
-def test_static_gates_include_documentation_surface_gate():
+def test_static_gates_include_documentation_surface_gate() -> None:
+    """Preflight must run the documentation-surface audit."""
     gate_map = {name: cmd for name, cmd in _preflight.STATIC_GATES}
 
     assert "documentation-surface" in gate_map
@@ -38,6 +41,21 @@ def test_static_gates_include_documentation_surface_gate():
     assert "--allowlist" in gate_map["documentation-surface"]
     assert "tools/documentation_surface_allowlist.json" in gate_map["documentation-surface"]
     assert "--fail-on-findings" in gate_map["documentation-surface"]
+
+
+def test_static_gates_include_differentiable_docstring_ratchet() -> None:
+    """Differentiable docstring-clean modules must stay under Ruff D."""
+    gate_map = {name: cmd for name, cmd in _preflight.STATIC_GATES}
+    docstring_cmd = gate_map["ruff D differentiable module-hardening ratchet"]
+
+    assert "--select" in docstring_cmd
+    assert "D" in docstring_cmd
+    assert "src/scpn_quantum_control/differentiable_module_hardening_audit.py" in (docstring_cmd)
+    assert "src/scpn_quantum_control/benchmarks/differentiable_hardening_gate.py" in (
+        docstring_cmd
+    )
+    assert "tests/test_differentiable_module_hardening_audit.py" in docstring_cmd
+    assert "tests/test_differentiable_hardening_gate.py" in docstring_cmd
 
 
 def test_static_gates_include_differentiable_strict_mypy_ratchet() -> None:
@@ -124,11 +142,17 @@ def test_static_gates_include_differentiable_strict_mypy_ratchet() -> None:
     assert "src/scpn_quantum_control/phase/floquet_kuramoto.py" in strict_cmd
 
 
-def test_preflight_coverage_gate_matches_temporary_ci_threshold():
+def test_preflight_coverage_gate_matches_temporary_ci_threshold() -> None:
+    """Preflight coverage threshold must mirror the temporary CI threshold."""
     assert "--cov-fail-under=70" in _preflight._PYTEST_COV
 
 
-def test_run_gate_reports_pass(monkeypatch, capsys):
+def test_run_gate_reports_pass(
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """Passing gates should print a compact pass summary."""
+
     def fake_run(cmd: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
         return subprocess.CompletedProcess(cmd, 0, stdout="", stderr="")
 
@@ -138,7 +162,12 @@ def test_run_gate_reports_pass(monkeypatch, capsys):
     assert "PASS  unit" in capsys.readouterr().out
 
 
-def test_run_gate_reports_failure_tail(monkeypatch, capsys):
+def test_run_gate_reports_failure_tail(
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """Failing gates should print only the tail of captured output."""
+
     def fake_run(cmd: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
         return subprocess.CompletedProcess(
             cmd,
@@ -159,7 +188,11 @@ def test_run_gate_reports_failure_tail(monkeypatch, capsys):
     assert "        out-1\n" not in output
 
 
-def test_main_skips_tests_with_no_tests_flag(monkeypatch, capsys):
+def test_main_skips_tests_with_no_tests_flag(
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """The no-tests option should run static gates and bandit only."""
     calls: list[str] = []
     monkeypatch.setattr(_preflight, "STATIC_GATES", [("lint", ["lint"])])
     monkeypatch.setattr(_preflight, "BANDIT_GATE", ("bandit", ["bandit"]))
@@ -176,7 +209,10 @@ def test_main_skips_tests_with_no_tests_flag(monkeypatch, capsys):
     assert "ALL CLEAR" in capsys.readouterr().out
 
 
-def test_main_uses_plain_pytest_when_coverage_is_disabled(monkeypatch):
+def test_main_uses_plain_pytest_when_coverage_is_disabled(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """The no-coverage option should keep pytest but drop coverage flags."""
     calls: list[str] = []
     monkeypatch.setattr(_preflight, "STATIC_GATES", [("lint", ["lint"])])
     monkeypatch.setattr(_preflight, "BANDIT_GATE", ("bandit", ["bandit"]))
@@ -192,7 +228,11 @@ def test_main_uses_plain_pytest_when_coverage_is_disabled(monkeypatch):
     assert calls == ["lint", "pytest", "bandit"]
 
 
-def test_main_stops_on_first_failed_gate(monkeypatch, capsys):
+def test_main_stops_on_first_failed_gate(
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """The preflight runner should stop after the first failed gate."""
     calls: list[str] = []
     monkeypatch.setattr(_preflight, "STATIC_GATES", [("lint", ["lint"]), ("type", ["type"])])
     monkeypatch.setattr(_preflight, "BANDIT_GATE", ("bandit", ["bandit"]))

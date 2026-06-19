@@ -32,6 +32,7 @@ class DifferentiableHardeningGateCheck:
     evidence: str
 
     def __post_init__(self) -> None:
+        """Validate that the verification row has executable evidence fields."""
         if not self.check_id:
             raise ValueError("check_id must be non-empty")
         if not self.command:
@@ -41,7 +42,6 @@ class DifferentiableHardeningGateCheck:
 
     def to_dict(self) -> dict[str, Any]:
         """Return a JSON-ready check row."""
-
         return {
             "check_id": self.check_id,
             "command": list(self.command),
@@ -62,7 +62,6 @@ class DifferentiableBenchmarkClassificationCase:
     @property
     def passed(self) -> bool:
         """Return whether the observed classification matches the contract."""
-
         return (
             self.metadata.classification == self.expected_classification
             and self.metadata.failure_class == self.expected_failure_class
@@ -70,7 +69,6 @@ class DifferentiableBenchmarkClassificationCase:
 
     def to_dict(self) -> dict[str, Any]:
         """Return JSON-ready benchmark classification evidence."""
-
         return {
             "case_id": self.case_id,
             "expected_classification": self.expected_classification,
@@ -94,7 +92,6 @@ class DifferentiableHardeningSliceGateResult:
 
     def to_dict(self) -> dict[str, Any]:
         """Return JSON-ready hardening-gate evidence."""
-
         return {
             "passed": self.passed,
             "checks": [check.to_dict() for check in self.checks],
@@ -118,7 +115,6 @@ def run_differentiable_hardening_slice_gate(
     It does not execute the commands and does not promote local benchmark rows
     to production evidence.
     """
-
     pytest_targets = _normalise_targets(
         module_specific_pytest_targets,
         field_name="module_specific_pytest_targets",

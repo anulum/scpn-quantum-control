@@ -65,3 +65,15 @@ def test_ci_gates_differentiable_strict_mypy_ratchet() -> None:
     assert "src/scpn_quantum_control/phase/transform_nesting.py" in workflow
     assert "src/scpn_quantum_control/benchmarks/differentiable_external_comparison.py" in workflow
     assert "src/scpn_quantum_control/phase/xy_compiler.py" in workflow
+
+
+def test_ci_gates_differentiable_docstring_ratchet() -> None:
+    """CI must enforce Ruff D on docstring-clean differentiable modules."""
+    workflow = Path(".github/workflows/ci.yml").read_text(encoding="utf-8")
+
+    assert "Ruff docstring ratchet for differentiable module hardening" in workflow
+    assert "ruff check --select D" in workflow
+    assert "src/scpn_quantum_control/differentiable_module_hardening_audit.py" in workflow
+    assert "src/scpn_quantum_control/benchmarks/differentiable_hardening_gate.py" in (workflow)
+    assert "tests/test_differentiable_module_hardening_audit.py" in workflow
+    assert "tests/test_differentiable_hardening_gate.py" in workflow

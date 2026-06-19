@@ -65,3 +65,14 @@ def test_pre_push_hook_gates_differentiable_strict_mypy_ratchet() -> None:
     assert "src/scpn_quantum_control/phase/transform_nesting.py" in config
     assert "src/scpn_quantum_control/benchmarks/differentiable_external_comparison.py" in config
     assert "src/scpn_quantum_control/phase/xy_compiler.py" in config
+
+
+def test_pre_push_hook_gates_differentiable_docstring_ratchet() -> None:
+    """The pre-push hook must enforce Ruff D on clean differentiable modules."""
+    config = Path(".pre-commit-config.yaml").read_text(encoding="utf-8")
+
+    assert "ruff check --select D" in config
+    assert "src/scpn_quantum_control/differentiable_module_hardening_audit.py" in config
+    assert "src/scpn_quantum_control/benchmarks/differentiable_hardening_gate.py" in config
+    assert "tests/test_differentiable_module_hardening_audit.py" in config
+    assert "tests/test_differentiable_hardening_gate.py" in config

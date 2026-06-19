@@ -13,9 +13,13 @@ import pytest
 
 import scpn_quantum_control as scpn
 from scpn_quantum_control.benchmarks import run_differentiable_hardening_slice_gate
+from scpn_quantum_control.benchmarks.differentiable_hardening_gate import (
+    DifferentiableHardeningGateCheck,
+)
 
 
 def test_hardening_slice_gate_accepts_full_focused_verification_plan() -> None:
+    """Verify that a complete focused verification plan passes the gate."""
     result = run_differentiable_hardening_slice_gate(
         changed_python_targets=(
             "src/scpn_quantum_control/benchmarks/differentiable_hardening_gate.py",
@@ -38,6 +42,7 @@ def test_hardening_slice_gate_accepts_full_focused_verification_plan() -> None:
 
 
 def test_hardening_slice_gate_rejects_bucket_pytest_targets() -> None:
+    """Verify that broad pytest bucket targets fail before gate creation."""
     with pytest.raises(ValueError, match="bucket target"):
         run_differentiable_hardening_slice_gate(
             changed_python_targets=(
@@ -47,7 +52,52 @@ def test_hardening_slice_gate_rejects_bucket_pytest_targets() -> None:
         )
 
 
+def test_hardening_gate_check_rejects_empty_fields() -> None:
+    """Verify that individual gate-check rows reject empty evidence fields."""
+    with pytest.raises(ValueError, match="check_id"):
+        DifferentiableHardeningGateCheck(
+            check_id="",
+            command=("./.venv/bin/ruff", "check"),
+            passed=False,
+            evidence="scoped lint command",
+        )
+    with pytest.raises(ValueError, match="command"):
+        DifferentiableHardeningGateCheck(
+            check_id="ruff",
+            command=(),
+            passed=False,
+            evidence="scoped lint command",
+        )
+    with pytest.raises(ValueError, match="evidence"):
+        DifferentiableHardeningGateCheck(
+            check_id="ruff",
+            command=("./.venv/bin/ruff", "check"),
+            passed=False,
+            evidence="",
+        )
+
+
+def test_hardening_slice_gate_rejects_empty_required_targets() -> None:
+    """Verify that required pytest and claim-ledger targets fail closed."""
+    with pytest.raises(ValueError, match="module_specific_pytest_targets"):
+        run_differentiable_hardening_slice_gate(
+            changed_python_targets=(
+                "src/scpn_quantum_control/benchmarks/differentiable_hardening_gate.py",
+            ),
+            module_specific_pytest_targets=(),
+        )
+    with pytest.raises(ValueError, match="claim_ledger_validation_target"):
+        run_differentiable_hardening_slice_gate(
+            changed_python_targets=(
+                "src/scpn_quantum_control/benchmarks/differentiable_hardening_gate.py",
+            ),
+            module_specific_pytest_targets=("tests/test_differentiable_hardening_gate.py",),
+            claim_ledger_validation_target="",
+        )
+
+
 def test_hardening_slice_gate_marks_missing_source_targets_as_incomplete() -> None:
+    """Verify that test-only slices cannot satisfy the strict typing check."""
     result = run_differentiable_hardening_slice_gate(
         module_specific_pytest_targets=("tests/test_differentiable_hardening_gate.py",),
     )
@@ -59,6 +109,7 @@ def test_hardening_slice_gate_marks_missing_source_targets_as_incomplete() -> No
 
 
 def test_hardening_slice_gate_preserves_benchmark_classification_contracts() -> None:
+    """Verify benchmark classification cases preserve promotion boundaries."""
     result = run_differentiable_hardening_slice_gate(
         changed_python_targets=(
             "src/scpn_quantum_control/benchmarks/differentiable_hardening_gate.py",
@@ -88,6 +139,7 @@ def test_hardening_slice_gate_preserves_benchmark_classification_contracts() -> 
 
 
 def test_hardening_slice_gate_is_exported_from_public_namespaces() -> None:
+    """Verify that the hardening gate is available from public namespaces."""
     assert scpn.run_differentiable_hardening_slice_gate is (
         run_differentiable_hardening_slice_gate
     )

@@ -38,7 +38,9 @@ _PY = sys.executable
 
 DIFFERENTIABLE_DOCSTRING_RATCHET = [
     "src/scpn_quantum_control/differentiable_module_hardening_audit.py",
+    "src/scpn_quantum_control/benchmarks/differentiable_hardening_gate.py",
     "tests/test_differentiable_module_hardening_audit.py",
+    "tests/test_differentiable_hardening_gate.py",
 ]
 
 _PYTEST_BASE = [

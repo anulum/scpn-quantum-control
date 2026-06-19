@@ -131,9 +131,10 @@ registered hardening map, and verifies that every module has module-specific
 tests plus declared fail-closed diagnostic surfaces. This closes the local
 module-inventory portion of the hardening lane. CI, local preflight, and the
 pre-push hook also enforce a scoped NumPy-style Ruff docstring ratchet for this
-audit module and its module-specific tests. Formal proof, provider execution,
-hardware execution, isolated benchmark promotion, and repository-wide docstring
-enforcement remain separate evidence gates.
+audit module, `run_differentiable_hardening_slice_gate(...)`, and their
+module-specific tests. Formal proof, provider execution, hardware execution,
+isolated benchmark promotion, and repository-wide docstring enforcement remain
+separate evidence gates.
 
 Optional framework parity uses an explicit CPU-only overlay instead of the
 repository `jax` extra, because that extra resolves to `jax[cuda12]`.
