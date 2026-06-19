@@ -1159,3 +1159,16 @@ def test_phase_jax_bridge_fails_closed_when_jax_missing(monkeypatch: pytest.Monk
             np.array([0.0], dtype=float),
             np.array([0.2], dtype=float),
         )
+
+
+def test_phase_jax_bridge_import_runtime_failure_reports_unavailable(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """JAX import-time compatibility errors should fail closed as unavailable."""
+
+    def incompatible_jax() -> tuple[object, object]:
+        raise AttributeError("numpy dtype surface is incompatible with this JAX build")
+
+    monkeypatch.setattr(jax_bridge, "_load_jax", incompatible_jax)
+
+    assert not is_phase_jax_available()

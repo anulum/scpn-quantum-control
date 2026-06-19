@@ -682,7 +682,7 @@ def is_phase_jax_available() -> bool:
     """Return whether the optional phase JAX adapter can import JAX."""
     try:
         _load_jax()
-    except ImportError:
+    except (AttributeError, ImportError, RuntimeError, ValueError):
         return False
     return True
 

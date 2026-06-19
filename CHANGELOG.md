@@ -5,6 +5,9 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-06-19 — Hardened optional JAX availability detection so import-time
+  backend compatibility failures fail closed as unavailable instead of
+  escaping through optional benchmark/test discovery.
 - 2026-06-19 — Added registered local Phase-QNode native JAX transform
   lowering evidence through `jax_phase_qnode_native_transform_audit(...)`.
   The audit exercises JAX `grad`, `value_and_grad`, `jacfwd`, `jacrev`,
