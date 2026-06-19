@@ -224,6 +224,7 @@ jobs:
           src/scpn_quantum_control/phase/adiabatic_preparation.py
           src/scpn_quantum_control/phase/ancilla_lindblad.py
           src/scpn_quantum_control/phase/avqds.py
+          src/scpn_quantum_control/phase/coupling_learning.py
       - run: mypy
 
   wheel-check:
