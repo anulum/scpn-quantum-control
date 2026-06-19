@@ -90,6 +90,23 @@ def _wires_to_indices(operation: Any) -> tuple[int, ...]:
     return tuple(indices)
 
 
+def _as_finite_gate_parameter(operation: Any) -> float:
+    raw_parameter = np.asarray(operation.parameters[0])
+    if raw_parameter.shape != () or raw_parameter.dtype.kind in {"b", "O", "S", "U", "c"}:
+        raise ValueError(f"PennyLane gate {operation.name!r} parameter must be a real scalar")
+    value = float(raw_parameter)
+    if not np.isfinite(value):
+        raise ValueError(f"PennyLane gate {operation.name!r} parameter must be finite")
+    return value
+
+
+def _as_non_negative_tolerance(field_name: str, value: float) -> float:
+    tolerance = float(value)
+    if not np.isfinite(tolerance) or tolerance < 0.0:
+        raise ValueError(f"{field_name} must be finite and non-negative")
+    return tolerance
+
+
 def _import_observable(
     qml: Any, measurement: Any, n_qubits: int
 ) -> PauliTerm | SparsePauliHamiltonian:
@@ -111,11 +128,14 @@ def _import_observable(
             raise ValueError("identity-only observable terms are not supported")
         if abs(float(np.imag(coefficient))) > 1e-12:
             raise ValueError("observable coefficients must be real")
+        real_coefficient = float(np.real(coefficient))
+        if not np.isfinite(real_coefficient):
+            raise ValueError("observable coefficients must be finite")
         factors = tuple(sorted(((int(wire), str(pauli).lower()) for wire, pauli in word.items())))
         for wire, _pauli in factors:
             if not 0 <= wire < n_qubits:
                 raise ValueError(f"observable wire {wire} is outside 0..{n_qubits - 1}")
-        terms.append(PauliTerm(float(np.real(coefficient)), factors))
+        terms.append(PauliTerm(real_coefficient, factors))
 
     if not terms:
         raise ValueError("observable reduced to an empty Pauli sentence")
@@ -161,7 +181,7 @@ def import_phase_qnode_from_pennylane(tape: Any) -> PennyLaneImportResult:
             operations.append(PhaseQNodeOperation(gate, wires))
         elif operation.num_params == 1:
             operations.append(PhaseQNodeOperation(gate, wires, parameter_index=parameter_index))
-            values.append(float(operation.parameters[0]))
+            values.append(_as_finite_gate_parameter(operation))
             parameter_index += 1
         else:
             raise ValueError(
@@ -226,6 +246,8 @@ def check_pennylane_phase_qnode_import_round_trip(
     compares their expectation values and parameter-shift gradients.
     """
     qml = _load_pennylane()
+    value_tol = _as_non_negative_tolerance("value_tolerance", value_tolerance)
+    gradient_tol = _as_non_negative_tolerance("gradient_tolerance", gradient_tolerance)
     imported = import_phase_qnode_from_pennylane(tape)
     values: FloatArray = imported.parameter_values
 
@@ -247,8 +269,8 @@ def check_pennylane_phase_qnode_import_round_trip(
         max_gradient_difference = float(np.max(np.abs(phase_gradient - pennylane_gradient)))
 
     return PennyLaneImportRoundTripResult(
-        value_match=max_value_difference <= value_tolerance,
-        gradient_match=max_gradient_difference <= gradient_tolerance,
+        value_match=max_value_difference <= value_tol,
+        gradient_match=max_gradient_difference <= gradient_tol,
         phase_value=phase_value,
         pennylane_value=pennylane_value,
         max_value_difference=max_value_difference,

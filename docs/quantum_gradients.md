@@ -1928,8 +1928,10 @@ it independently confirms the four-term controlled-rotation rule against
 PennyLane's own gradient. Import is fail-closed: gates outside the registered
 set, multi-parameter gates (for example `Rot`), non-integer or non-contiguous
 wires, multiple or non-expectation measurements, and non-Pauli or identity
-observables are rejected. Mid-circuit measurement, channel, template, provider,
-and hardware import remain explicit non-claims.
+observables are rejected. Non-finite imported gate parameters and invalid
+value/gradient tolerances are rejected before the round-trip comparison runs.
+Mid-circuit measurement, channel, template, provider, and hardware import
+remain explicit non-claims.
 
 ## Optional PyTorch and TensorFlow tensor bridges
 

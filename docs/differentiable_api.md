@@ -1396,6 +1396,10 @@ the plugin matrix. It reports `identical_circuit_ready=True` only when the
 import tape is supplied and all bounded agreement/export/import routes pass;
 `ready_for_provider_exceedance` remains false until provider-plugin gradient
 parity, hardware-execution, and isolated-benchmark artefacts exist.
+The inverse PennyLane tape import rejects non-finite gate parameters and invalid
+round-trip tolerances before executing the imported Phase-QNode comparison, so
+import parity remains a bounded local-circuit contract rather than an implicit
+provider or hardware claim.
 
 ## Minimal PyTorch and TensorFlow tensor bridges
 

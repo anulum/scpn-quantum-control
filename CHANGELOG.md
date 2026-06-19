@@ -5,6 +5,11 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-06-19 — Hardened the PennyLane tape-import boundary by rejecting
+  non-finite imported gate parameters and invalid import round-trip tolerances,
+  preserving bounded local import claims, and bringing the dedicated PennyLane
+  import test module under standalone strict mypy with typed tape factories and
+  `NDArray[np.float64]` callback annotations.
 - 2026-06-19 — Hardened the PennyLane Phase-QNode conversion and provider-plugin
   artefact boundary by canonicalising generated-QNode device/interface/diff
   metadata before PennyLane dispatch, rejecting control-character metadata before

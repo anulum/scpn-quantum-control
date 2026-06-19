@@ -7,11 +7,16 @@
 # SCPN Quantum Control — Tests for the PennyLane import-from bridge
 """Round-trip and fail-closed tests for importing PennyLane tapes into Phase-QNode."""
 
+from __future__ import annotations
+
+from collections.abc import Callable, Sequence
+from typing import Any, cast
+
 import numpy as np
 import pytest
-from typing import cast
+from numpy.typing import NDArray
 
-qml = pytest.importorskip("pennylane")
+qml: Any = pytest.importorskip("pennylane")
 
 from scpn_quantum_control.phase.pennylane_bridge import run_pennylane_maturity_audit
 from scpn_quantum_control.phase.pennylane_import import (
@@ -28,19 +33,22 @@ from scpn_quantum_control.phase.qnode_circuit import (
     SparsePauliHamiltonian,
 )
 
+FloatArray = NDArray[np.float64]
+TapeFactory = Callable[[], object]
 
-def _script(ops, measurements):
+
+def _script(ops: Sequence[object], measurements: Sequence[object]) -> object:
     return qml.tape.QuantumScript(ops, measurements)
 
 
-def test_availability():
+def test_availability() -> None:
     assert is_pennylane_import_available() is True
 
 
 # --------------------------------------------------------------------------- #
 # Import structure
 # --------------------------------------------------------------------------- #
-def test_import_structure_and_parameter_order():
+def test_import_structure_and_parameter_order() -> None:
     tape = _script(
         [
             qml.Hadamard(0),
@@ -63,7 +71,7 @@ def test_import_structure_and_parameter_order():
     assert "claim_boundary" in result.provenance
 
 
-def test_import_hamiltonian_observable():
+def test_import_hamiltonian_observable() -> None:
     tape = _script(
         [qml.RY(0.4, wires=0), qml.RY(1.1, wires=1)],
         [qml.expval(qml.Hamiltonian([0.5, -0.25], [qml.PauliZ(0), qml.PauliX(1)]))],
@@ -103,7 +111,7 @@ def test_import_hamiltonian_observable():
         ([qml.CRY(0.8, wires=[0, 1]), qml.Hadamard(0)], qml.PauliX(0) @ qml.PauliY(1)),
     ],
 )
-def test_import_round_trip_value_and_gradient(ops, obs):
+def test_import_round_trip_value_and_gradient(ops: Sequence[object], obs: object) -> None:
     tape = _script(ops, [qml.expval(obs)])
     result = check_pennylane_phase_qnode_import_round_trip(tape)
     assert result.value_match
@@ -112,7 +120,7 @@ def test_import_round_trip_value_and_gradient(ops, obs):
     assert result.max_gradient_difference < 1e-6
 
 
-def test_import_round_trip_parameterless():
+def test_import_round_trip_parameterless() -> None:
     tape = _script([qml.Hadamard(0), qml.CNOT([0, 1])], [qml.expval(qml.PauliZ(1))])
     result = check_pennylane_phase_qnode_import_round_trip(tape)
     assert result.value_match
@@ -120,7 +128,7 @@ def test_import_round_trip_parameterless():
     assert result.n_parameters == 0
 
 
-def test_pennylane_maturity_audit_records_live_import_round_trip():
+def test_pennylane_maturity_audit_records_live_import_round_trip() -> None:
     tape = _script(
         [qml.RY(0.4, wires=0), qml.RX(-0.2, wires=0)],
         [qml.expval(qml.PauliZ(0))],
@@ -131,10 +139,10 @@ def test_pennylane_maturity_audit_records_live_import_round_trip():
         PauliTerm(1.0, ((0, "z"),)),
     )
 
-    def objective(values: np.ndarray) -> float:
+    def objective(values: FloatArray) -> float:
         return float(np.cos(values[0]) + 0.25 * np.sin(values[1]))
 
-    def gradient(values: np.ndarray) -> np.ndarray:
+    def gradient(values: FloatArray) -> FloatArray:
         return np.array([-np.sin(values[0]), 0.25 * np.cos(values[1])], dtype=float)
 
     result = run_pennylane_maturity_audit(
@@ -177,11 +185,45 @@ def test_pennylane_maturity_audit_records_live_import_round_trip():
         lambda: _script([qml.RX(0.3, wires=0), qml.RX(0.2, wires=2)], [qml.expval(qml.PauliZ(0))]),
     ],
 )
-def test_import_rejects_unsupported(tape_factory):
+def test_import_rejects_unsupported(tape_factory: TapeFactory) -> None:
     with pytest.raises(ValueError):
         import_phase_qnode_from_pennylane(tape_factory())
 
 
-def test_import_rejects_non_tape():
+@pytest.mark.parametrize("parameter", [float("nan"), float("inf"), -float("inf")])
+def test_import_rejects_non_finite_gate_parameters(parameter: float) -> None:
+    tape = _script(
+        [qml.RX(parameter, wires=0)],
+        [qml.expval(qml.PauliZ(0))],
+    )
+
+    with pytest.raises(ValueError, match="parameter must be finite"):
+        import_phase_qnode_from_pennylane(tape)
+
+
+@pytest.mark.parametrize(
+    ("value_tolerance", "gradient_tolerance", "match"),
+    [
+        (-1e-6, 1e-6, "value_tolerance"),
+        (1e-6, -1e-6, "gradient_tolerance"),
+        (float("nan"), 1e-6, "value_tolerance"),
+    ],
+)
+def test_import_round_trip_rejects_invalid_tolerances(
+    value_tolerance: float,
+    gradient_tolerance: float,
+    match: str,
+) -> None:
+    tape = _script([qml.RY(0.4, wires=0)], [qml.expval(qml.PauliZ(0))])
+
+    with pytest.raises(ValueError, match=match):
+        check_pennylane_phase_qnode_import_round_trip(
+            tape,
+            value_tolerance=value_tolerance,
+            gradient_tolerance=gradient_tolerance,
+        )
+
+
+def test_import_rejects_non_tape() -> None:
     with pytest.raises(ValueError):
         import_phase_qnode_from_pennylane(object())
