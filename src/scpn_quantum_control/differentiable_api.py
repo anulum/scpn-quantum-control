@@ -583,6 +583,27 @@ def differentiable_dashboard_status(
             ),
         ),
         DifferentiableDashboardCapabilityRow(
+            surface="program_ad_mlir_interchange",
+            state="conformance_backed" if conformance_passed else "diagnostic",
+            backing_api="compile_whole_program_ad_trace_to_mlir",
+            evidence=(
+                "program_ad_effect_ir.v1",
+                "scpn_diff.program_ad_ssa",
+                "scpn_diff.program_ad_effect",
+                "scpn_diff.program_ad_phi",
+                "program_ad_mlir_interchange_contracts",
+            ),
+            blocked_reasons=()
+            if conformance_passed
+            else ("conformance suite not run in this status call",),
+            claim_boundary=(
+                "bounded Program AD IR MLIR dialect interchange lowering for "
+                "captured SSA/effect/control/phi metadata only; no executable "
+                "Rust, LLVM, or JIT differentiated runtime, hardware, provider, "
+                "or performance promotion"
+            ),
+        ),
+        DifferentiableDashboardCapabilityRow(
             surface="program_ad_alias_effects",
             state="metadata_only",
             backing_api="analyze_program_ad_alias_effects",
@@ -880,6 +901,7 @@ def differentiable_dashboard_status(
             backing_api="differentiable_compile_report",
             evidence=(
                 "compile_compiler_ad_transform_plan_to_mlir",
+                "compile_whole_program_ad_trace_to_mlir",
                 "Rust Program AD IR metadata parser",
                 "program_ad_effect_ir_metadata_summary",
             ),

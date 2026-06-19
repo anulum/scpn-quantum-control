@@ -4932,6 +4932,42 @@ def test_whole_program_ad_mlir_exports_trace_and_polyglot_status() -> None:
     assert 'execution = "python_whole_program_ad_interchange"' in module.text
 
 
+def test_whole_program_ad_mlir_lowers_program_ad_effect_ir_metadata() -> None:
+    """Whole-program AD MLIR lowering should expose captured Program AD IR records."""
+
+    def objective(values: np.ndarray) -> object:
+        total = values[0]
+        if values[1] > 0.0:
+            total = total + np.sin(values[1])
+        return total + values[2]
+
+    result = whole_program_value_and_grad(
+        objective,
+        np.array([0.25, 0.5, 0.75], dtype=np.float64),
+        parameters=(Parameter("a"), Parameter("b"), Parameter("c")),
+    )
+    assert result.program_ir is not None
+
+    module = compile_whole_program_ad_trace_to_mlir(result, DifferentiableMLIRCompileConfig())
+
+    assert 'scpn.program_ir_format = "program_ad_effect_ir.v1"' in module.text
+    assert "scpn_diff.program_ad_ssa" in module.text
+    assert "scpn_diff.program_ad_effect" in module.text
+    assert "scpn_diff.program_ad_control_region" in module.text
+    assert "scpn_diff.program_ad_phi" in module.text
+    assert module.resource_counts["program_ad_ssa_values"] == len(result.program_ir.ssa_values)
+    assert module.resource_counts["program_ad_effects"] == len(result.program_ir.effects)
+    assert module.resource_counts["program_ad_control_regions"] == len(
+        result.program_ir.control_regions
+    )
+    assert module.resource_counts["program_ad_phi_nodes"] == len(result.program_ir.phi_nodes)
+    assert module.metadata["program_ad_ir"]["format"] == "program_ad_effect_ir.v1"
+    assert module.metadata["program_ad_ir"]["claim_boundary"] == (
+        "program_ad_ir_mlir_interchange_only_no_executable_lowering"
+    )
+    assert module.metadata["polyglot_targets"]["rust"].startswith("blocked")
+
+
 def test_whole_program_ad_trace_executable_replays_supported_scalar_ir() -> None:
     """Executable program AD trace kernels should replay gradients fail-closed."""
 

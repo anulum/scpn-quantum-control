@@ -69,6 +69,14 @@ serde-backed `program_ad_effect_ir.v1` metadata parser with the PyO3
 to `metadata_only_no_program_execution`; no Rust Program AD interpreter,
 general LLVM/JIT lowering, hardware execution, or performance promotion is
 claimed from this parser.
+Python compiler interchange lowers captured `program_ad_effect_ir.v1` records
+into deterministic `scpn_diff.program_ad_ssa`,
+`scpn_diff.program_ad_effect`, `scpn_diff.program_ad_alias_edge`,
+`scpn_diff.program_ad_control_region`, and `scpn_diff.program_ad_phi`
+operations through `compile_whole_program_ad_trace_to_mlir(...)`. The
+`program_ad_mlir_interchange_contracts` row validates that metadata lowering as
+local conformance only; executable Rust, LLVM, JIT, provider, hardware, and
+performance promotion remain blocked.
 
 ## Evidence Promotion Lane
 

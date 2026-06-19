@@ -200,6 +200,18 @@ def test_differentiable_dashboard_status_is_claim_bounded_for_gui_consumers() ->
         "not non-executed branch adjoints"
         in (rows["program_ad_control_phi_metadata"]["claim_boundary"])
     )
+    assert rows["program_ad_mlir_interchange"]["state"] == "diagnostic"
+    assert rows["program_ad_mlir_interchange"]["fail_closed"] is True
+    assert (
+        "program_ad_mlir_interchange_contracts" in rows["program_ad_mlir_interchange"]["evidence"]
+    )
+    assert (
+        rows["program_ad_mlir_interchange"]["backing_api"]
+        == "compile_whole_program_ad_trace_to_mlir"
+    )
+    assert (
+        "no executable Rust, LLVM, or JIT" in rows["program_ad_mlir_interchange"]["claim_boundary"]
+    )
     assert rows["program_ad_alias_effects"]["claim_boundary"] == (
         "metadata_only_no_general_alias_lattice"
     )
@@ -303,6 +315,7 @@ def test_differentiable_dashboard_status_is_claim_bounded_for_gui_consumers() ->
         in rows["polyglot_compiler_chain"]["blocked_reasons"]
     )
     assert "Rust Program AD IR metadata parser" in rows["polyglot_compiler_chain"]["evidence"]
+    assert "compile_whole_program_ad_trace_to_mlir" in rows["polyglot_compiler_chain"]["evidence"]
     assert (
         "metadata_only_no_program_execution" in rows["polyglot_compiler_chain"]["claim_boundary"]
     )

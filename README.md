@@ -335,6 +335,11 @@ Rust polyglot parity includes a claim-bounded Program AD IR metadata parser in
 `program_ad_effect_ir.v1` evidence only and remains
 `metadata_only_no_program_execution`; native Rust Program AD interpretation,
 general LLVM/JIT execution, hardware, and performance promotion remain blocked.
+Python compiler interchange lowers captured `program_ad_effect_ir.v1` records
+into deterministic `scpn_diff.program_ad_*` MLIR-style operations through
+`compile_whole_program_ad_trace_to_mlir(...)`, validated by
+`program_ad_mlir_interchange_contracts`. This remains metadata interchange, not
+executable Rust, LLVM, JIT, provider, hardware, or performance evidence.
 
 The first production-grade differentiable workflows are deliberately bounded:
 

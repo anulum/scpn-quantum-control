@@ -36,6 +36,7 @@ def test_differentiable_programming_benchmark_suite_matches_analytic_references(
         "python_semantics_list_comprehension",
         "program_ad_ir_roundtrip_contracts",
         "program_ad_control_phi_metadata_contracts",
+        "program_ad_mlir_interchange_contracts",
         "program_adjoint_replay_provenance_contracts",
         "elementwise_boundary_contracts",
         "matrix_heavy_linear_algebra",
@@ -64,6 +65,7 @@ def test_differentiable_programming_benchmark_suite_matches_analytic_references(
         "python-semantics",
         "ir-roundtrip",
         "control-phi",
+        "mlir-interchange",
         "reverse-adjoint",
         "elementwise-boundary",
         "matrix-heavy",
@@ -118,6 +120,13 @@ def test_differentiable_programming_benchmark_suite_matches_analytic_references(
     assert ir_roundtrip_row.max_abs_adjoint_error <= 1.0e-12
     assert "program_ad_effect_ir.v1" in ir_roundtrip_row.claim_boundary
     assert "stable serialization" in ir_roundtrip_row.claim_boundary
+    mlir_row = next(row for row in results if row.category == "mlir-interchange")
+    assert mlir_row.adjoint_supported is True
+    assert mlir_row.max_abs_adjoint_error is not None
+    assert mlir_row.max_abs_adjoint_error <= 1.0e-12
+    assert "program_ad_effect_ir.v1" in mlir_row.claim_boundary
+    assert "MLIR dialect interchange" in mlir_row.claim_boundary
+    assert "no executable Rust, LLVM, or JIT" in mlir_row.claim_boundary
     assert "not a bytecode/source compiler frontend" in ir_roundtrip_row.claim_boundary
     control_phi_row = next(row for row in results if row.category == "control-phi")
     assert control_phi_row.adjoint_supported is True

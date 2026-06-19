@@ -194,6 +194,15 @@ The Rust engine mirrors the bounded Program AD IR metadata schema through
 `metadata_only_no_program_execution`, so the native Rust Program AD
 interpreter, LLVM/JIT differentiated execution, hardware, provider, and
 performance routes remain blocked until separately verified.
+`compile_whole_program_ad_trace_to_mlir(...)` lowers captured
+`program_ad_effect_ir.v1` records into deterministic
+`scpn_diff.program_ad_ssa`, `scpn_diff.program_ad_effect`,
+`scpn_diff.program_ad_alias_edge`, `scpn_diff.program_ad_control_region`, and
+`scpn_diff.program_ad_phi` interchange operations. The
+`program_ad_mlir_interchange` dashboard row and
+`program_ad_mlir_interchange_contracts` benchmark row validate metadata
+lowering only; they do not promote executable Rust, LLVM, JIT, provider,
+hardware, or performance claims.
 
 Registered Phase-QNode callers can preflight each narrow route with
 `phase_qnode_support_report(...)`, `phase_qnode_density_support_report(...)`,

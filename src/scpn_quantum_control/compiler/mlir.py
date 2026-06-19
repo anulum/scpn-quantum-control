@@ -9096,15 +9096,31 @@ def compile_whole_program_ad_trace_to_mlir(
     if not isinstance(result, WholeProgramADResult):
         raise ValueError("whole-program MLIR lowering requires a WholeProgramADResult")
     compile_config = DifferentiableMLIRCompileConfig() if config is None else config
+    program_ir = result.program_ir
+    program_ir_format = "program_ad_effect_ir.v1" if program_ir is not None else "none"
     lines = [
         f'module attributes {{scpn.module = "whole_program_ad", '
         f'scpn.dialect = "{compile_config.dialect}", '
+        f'scpn.program_ir_format = "{program_ir_format}", '
         f"scpn.n_parameters = {result.gradient.size}, "
         f"scpn.trace_events = {len(result.trace_events)}, "
         f"scpn.control_flow = {_fmt_bool(result.control_flow_observed)}, "
         f"scpn.numpy = {_fmt_bool(result.numpy_observed)}}} {{",
         "  func.func @main() {",
     ]
+
+    def optional_int_attribute(value: int | None) -> str:
+        return "none" if value is None else str(value)
+
+    def optional_str_attribute(value: str | None) -> str:
+        return "none" if value is None else _escape_mlir_string(value)
+
+    def joined_ints(values: Sequence[int]) -> str:
+        return ",".join(str(value) for value in values)
+
+    def joined_strings(values: Sequence[str]) -> str:
+        return ",".join(_escape_mlir_string(value) for value in values)
+
     if compile_config.include_numeric_payload:
         lines.append(f"    scpn_diff.value %objective {{value = {_fmt_float(result.value)}}}")
         for index, (name, trainable, gradient) in enumerate(
@@ -9136,6 +9152,49 @@ def compile_whole_program_ad_trace_to_mlir(
             f'{{index = {index}, kind = "{_escape_mlir_string(feature.kind)}", '
             f'detail = "{_escape_mlir_string(feature.detail)}", line = {feature.line_number}}}'
         )
+    if program_ir is not None:
+        for index, value in enumerate(program_ir.ssa_values):
+            lines.append(
+                "    scpn_diff.program_ad_ssa "
+                f'%ssa{index} {{name = "{_escape_mlir_string(value.name)}", '
+                f"producer = {optional_int_attribute(value.producer)}, "
+                f"version = {value.version}, "
+                f'shape = "{joined_ints(value.shape)}", '
+                f'dtype = "{_escape_mlir_string(value.dtype)}", '
+                f"effect = {optional_int_attribute(value.effect)}}}"
+            )
+        for effect in program_ir.effects:
+            lines.append(
+                "    scpn_diff.program_ad_effect "
+                f'{{index = {effect.index}, kind = "{_escape_mlir_string(effect.kind)}", '
+                f'target = "{_escape_mlir_string(effect.target)}", '
+                f'inputs = "{joined_strings(effect.inputs)}", '
+                f"version = {effect.version}, ordering = {effect.ordering}}}"
+            )
+        for edge in program_ir.alias_edges:
+            lines.append(
+                "    scpn_diff.program_ad_alias_edge "
+                f'{{source = "{_escape_mlir_string(edge.source)}", '
+                f'target = "{_escape_mlir_string(edge.target)}", '
+                f'kind = "{_escape_mlir_string(edge.kind)}", version = {edge.version}}}'
+            )
+        for region in program_ir.control_regions:
+            lines.append(
+                "    scpn_diff.program_ad_control_region "
+                f'{{index = {region.index}, kind = "{_escape_mlir_string(region.kind)}", '
+                f'predicate = "{optional_str_attribute(region.predicate)}", '
+                f"entered = {_fmt_bool(region.entered)}, "
+                f"source_line = {optional_int_attribute(region.source_line)}}}"
+            )
+        for phi in program_ir.phi_nodes:
+            lines.append(
+                "    scpn_diff.program_ad_phi "
+                f'{{index = {phi.index}, target = "{_escape_mlir_string(phi.target)}", '
+                f'incoming = "{joined_strings(phi.incoming)}", '
+                f"control_region = {optional_int_attribute(phi.control_region)}, "
+                f'selected = "{optional_str_attribute(phi.selected)}", '
+                f"source_line = {optional_int_attribute(phi.source_line)}}}"
+            )
     lines.append(
         "    scpn_diff.whole_program_ad "
         f'{{method = "{_escape_mlir_string(result.method)}", '
@@ -9161,6 +9220,20 @@ def compile_whole_program_ad_trace_to_mlir(
                 "numpy_observed": result.semantics_report.numpy_observed,
                 "source_frontend": result.semantics_report.source_frontend,
             },
+            "program_ad_ir": None
+            if program_ir is None
+            else {
+                "alias_edges": len(program_ir.alias_edges),
+                "claim_boundary": ("program_ad_ir_mlir_interchange_only_no_executable_lowering"),
+                "control_regions": len(program_ir.control_regions),
+                "effects": len(program_ir.effects),
+                "format": "program_ad_effect_ir.v1",
+                "phi_nodes": len(program_ir.phi_nodes),
+                "serialization_sha256": hashlib.sha256(
+                    program_ir.serialization.encode("utf-8")
+                ).hexdigest(),
+                "ssa_values": len(program_ir.ssa_values),
+            },
             "target": compile_config.target,
         }
         encoded = json.dumps(metadata, sort_keys=True, separators=(",", ":"))
@@ -9176,6 +9249,13 @@ def compile_whole_program_ad_trace_to_mlir(
             "bytecode_instructions": len(result.bytecode_instructions),
             "source_ir_features": len(result.source_ir_features),
             "ir_nodes": len(result.ir_nodes),
+            "program_ad_ssa_values": 0 if program_ir is None else len(program_ir.ssa_values),
+            "program_ad_effects": 0 if program_ir is None else len(program_ir.effects),
+            "program_ad_alias_edges": 0 if program_ir is None else len(program_ir.alias_edges),
+            "program_ad_control_regions": 0
+            if program_ir is None
+            else len(program_ir.control_regions),
+            "program_ad_phi_nodes": 0 if program_ir is None else len(program_ir.phi_nodes),
             "trace_events": len(result.trace_events),
             "trainable_parameters": int(sum(result.trainable)),
             "gradient_nnz": int(np.count_nonzero(result.gradient)),
@@ -9196,6 +9276,20 @@ def compile_whole_program_ad_trace_to_mlir(
                 "mutation_observed": result.semantics_report.mutation_observed,
                 "numpy_observed": result.semantics_report.numpy_observed,
                 "source_frontend": result.semantics_report.source_frontend,
+            },
+            "program_ad_ir": None
+            if program_ir is None
+            else {
+                "alias_edges": len(program_ir.alias_edges),
+                "claim_boundary": ("program_ad_ir_mlir_interchange_only_no_executable_lowering"),
+                "control_regions": len(program_ir.control_regions),
+                "effects": len(program_ir.effects),
+                "format": "program_ad_effect_ir.v1",
+                "phi_nodes": len(program_ir.phi_nodes),
+                "serialization_sha256": hashlib.sha256(
+                    program_ir.serialization.encode("utf-8")
+                ).hexdigest(),
+                "ssa_values": len(program_ir.ssa_values),
             },
             "sha256_source": "module.text",
         },

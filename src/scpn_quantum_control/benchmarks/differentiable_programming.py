@@ -17,6 +17,7 @@ from typing import Any, cast
 import numpy as np
 from numpy.typing import NDArray
 
+from ..compiler.mlir import DifferentiableMLIRCompileConfig, compile_whole_program_ad_trace_to_mlir
 from ..differentiable import (
     CustomDerivativeRule,
     Parameter,
@@ -212,6 +213,7 @@ def run_differentiable_programming_benchmark_suite() -> tuple[
         _python_semantics_list_comprehension_case(),
         _program_ad_ir_roundtrip_case(),
         _program_ad_control_phi_metadata_case(),
+        _program_ad_mlir_interchange_case(),
         _program_adjoint_replay_provenance_case(),
         _elementwise_boundary_case(),
         _matrix_heavy_case(),
@@ -501,6 +503,62 @@ def _program_ad_control_phi_metadata_case() -> DifferentiableProgrammingBenchmar
             "local conformance only, not non-executed branch adjoints, full "
             "compiler phi lowering, Rust/LLVM executable lowering, hardware, "
             "or performance evidence; no wall-clock performance claim"
+        ),
+    )
+
+
+def _program_ad_mlir_interchange_case() -> DifferentiableProgrammingBenchmarkResult:
+    values = np.array([0.25, 0.5, 0.75], dtype=np.float64)
+
+    def objective(trace_values: Any) -> object:
+        total = trace_values[0]
+        if trace_values[1] > 0.0:
+            total = total + np.sin(trace_values[1])
+        return total + trace_values[2]
+
+    result = whole_program_value_and_grad(
+        objective,
+        values,
+        parameters=(Parameter("a"), Parameter("b"), Parameter("c")),
+    )
+    if result.program_ir is None:
+        raise ValueError("program AD MLIR interchange case requires program IR")
+    module = compile_whole_program_ad_trace_to_mlir(result, DifferentiableMLIRCompileConfig())
+    program_ir_metadata = module.metadata.get("program_ad_ir")
+    if not isinstance(program_ir_metadata, dict):
+        raise ValueError("program AD MLIR interchange metadata is missing")
+    if (
+        'scpn.program_ir_format = "program_ad_effect_ir.v1"' not in module.text
+        or "scpn_diff.program_ad_ssa" not in module.text
+        or "scpn_diff.program_ad_effect" not in module.text
+        or "scpn_diff.program_ad_control_region" not in module.text
+        or "scpn_diff.program_ad_phi" not in module.text
+        or module.resource_counts["program_ad_ssa_values"] != len(result.program_ir.ssa_values)
+        or module.resource_counts["program_ad_effects"] != len(result.program_ir.effects)
+        or module.resource_counts["program_ad_control_regions"]
+        != len(result.program_ir.control_regions)
+        or module.resource_counts["program_ad_phi_nodes"] != len(result.program_ir.phi_nodes)
+        or program_ir_metadata.get("format") != "program_ad_effect_ir.v1"
+        or program_ir_metadata.get("claim_boundary")
+        != "program_ad_ir_mlir_interchange_only_no_executable_lowering"
+    ):
+        raise ValueError("program AD MLIR interchange lowering is incomplete")
+
+    analytic = np.array([1.0, math.cos(values[1]), 1.0], dtype=np.float64)
+    return DifferentiableProgrammingBenchmarkResult(
+        case_id="program_ad_mlir_interchange_contracts",
+        category="mlir-interchange",
+        value=result.value,
+        gradient=result.gradient,
+        analytic_gradient=analytic,
+        max_abs_gradient_error=_max_abs_error(result.gradient, analytic),
+        adjoint_supported=result.adjoint_result is not None and result.adjoint_result.supported,
+        max_abs_adjoint_error=_max_abs_error(program_adjoint_gradient(result), analytic),
+        claim_boundary=(
+            "bounded program_ad_effect_ir.v1 MLIR dialect interchange lowering "
+            "for captured SSA/effect/control/phi metadata only; no executable "
+            "Rust, LLVM, or JIT differentiated runtime, hardware, provider, or "
+            "performance evidence; no wall-clock performance claim"
         ),
     )
 
