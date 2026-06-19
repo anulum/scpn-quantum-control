@@ -117,6 +117,10 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
             "src/scpn_quantum_control/phase/pennylane_import.py",
             "src/scpn_quantum_control/phase/qnn_optimizer_benchmark.py",
             "src/scpn_quantum_control/phase/qnn_training.py",
+            "src/scpn_quantum_control/phase/qnn_conformance.py",
+            "src/scpn_quantum_control/phase/qnn_finite_shot.py",
+            "src/scpn_quantum_control/phase/qnn_convergence.py",
+            "src/scpn_quantum_control/phase/qnn_loss_landscape.py",
         ],
     ),
 ]
