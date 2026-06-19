@@ -37,6 +37,11 @@ jobs:
           python tools/audit_documentation_surface.py
           --allowlist tools/documentation_surface_allowlist.json
           --fail-on-findings
+      - name: Ruff docstring ratchet for differentiable module hardening
+        run: >-
+          ruff check --select D
+          src/scpn_quantum_control/differentiable_module_hardening_audit.py
+          tests/test_differentiable_module_hardening_audit.py
 
   test:
     needs: lint

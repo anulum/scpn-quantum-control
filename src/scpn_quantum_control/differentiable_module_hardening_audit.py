@@ -36,6 +36,7 @@ class DifferentiableModuleHardeningRecord:
     diagnostic_surfaces: tuple[str, ...]
 
     def __post_init__(self) -> None:
+        """Validate that every registry row contains concrete evidence paths."""
         if not self.module_path:
             raise ValueError("module_path must be non-empty")
         if not self.test_paths or any(not path for path in self.test_paths):
@@ -47,7 +48,6 @@ class DifferentiableModuleHardeningRecord:
 
     def to_dict(self) -> dict[str, Any]:
         """Return a JSON-ready module-hardening row."""
-
         return {
             "module_path": self.module_path,
             "test_paths": list(self.test_paths),
@@ -70,7 +70,6 @@ class DifferentiableModuleHardeningAuditResult:
 
     def to_dict(self) -> dict[str, Any]:
         """Return JSON-ready audit evidence."""
-
         return {
             "passed": self.passed,
             "records": [record.to_dict() for record in self.records],
@@ -85,7 +84,6 @@ class DifferentiableModuleHardeningAuditResult:
 
 def differentiable_module_hardening_registry() -> tuple[DifferentiableModuleHardeningRecord, ...]:
     """Return the registered differentiable module hardening evidence map."""
-
     return (
         _record(
             "src/scpn_quantum_control/benchmarks/differentiable_evidence.py",
@@ -284,7 +282,6 @@ def run_differentiable_module_hardening_audit(
     registry: Sequence[DifferentiableModuleHardeningRecord] | None = None,
 ) -> DifferentiableModuleHardeningAuditResult:
     """Audit differentiable modules against registered tests and diagnostics."""
-
     records = tuple(registry or differentiable_module_hardening_registry())
     discovered = _discover_differentiable_modules(repo_root)
     registered_paths = tuple(record.module_path for record in records)

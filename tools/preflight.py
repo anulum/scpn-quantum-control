@@ -11,13 +11,14 @@ Gates (in order):
   1. ruff check      — lint errors
   2. ruff format     — formatting drift
   3. docs surface    — public docs/docstring surface regression gate
-  4. test-quality    — forbid coverage-bucket pytest modules
-  5. version-sync    — version string consistency across 5 carrier files
-  6. rust-pyi        — Rust PyO3 exports match local typing contract
-  7. mypy            — type errors
-  8. mypy-strict-dp  — strict typing ratchet for differentiable programming
-  9. pytest+coverage — tests + temporary coverage threshold (--cov-fail-under=70)
-  10. bandit         — security scan
+  4. ruff D ratchet  — NumPy-style docstring ratchet for differentiable hardening
+  5. test-quality    — forbid coverage-bucket pytest modules
+  6. version-sync    — version string consistency across 5 carrier files
+  7. rust-pyi        — Rust PyO3 exports match local typing contract
+  8. mypy            — type errors
+  9. mypy-strict-dp  — strict typing ratchet for differentiable programming
+  10. pytest+coverage — tests + temporary coverage threshold (--cov-fail-under=70)
+  11. bandit         — security scan
 
 Usage:
   python tools/preflight.py                # all gates (default)
@@ -34,6 +35,11 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 _PY = sys.executable
+
+DIFFERENTIABLE_DOCSTRING_RATCHET = [
+    "src/scpn_quantum_control/differentiable_module_hardening_audit.py",
+    "tests/test_differentiable_module_hardening_audit.py",
+]
 
 _PYTEST_BASE = [
     _PY,
@@ -63,6 +69,18 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
             "--allowlist",
             "tools/documentation_surface_allowlist.json",
             "--fail-on-findings",
+        ],
+    ),
+    (
+        "ruff D differentiable module-hardening ratchet",
+        [
+            _PY,
+            "-m",
+            "ruff",
+            "check",
+            "--select",
+            "D",
+            *DIFFERENTIABLE_DOCSTRING_RATCHET,
         ],
     ),
     ("test-quality", [_PY, "tools/audit_test_quality.py"]),
