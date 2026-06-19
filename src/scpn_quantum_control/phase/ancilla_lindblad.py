@@ -24,8 +24,26 @@ Hu et al., arXiv:2312.05371 (2023).
 
 from __future__ import annotations
 
+from typing import TypeAlias, TypedDict
+
 import numpy as np
+from numpy.typing import NDArray
 from qiskit import ClassicalRegister, QuantumCircuit, QuantumRegister
+
+FloatArray: TypeAlias = NDArray[np.float64]
+
+
+class AncillaCircuitStats(TypedDict):
+    """Resource estimate for a single-ancilla Lindblad circuit."""
+
+    n_qubits: int
+    n_system: int
+    n_ancilla: int
+    n_cx_gates: int
+    n_resets: int
+    total_gates: int
+    n_dissipation_steps: int
+    gamma: float
 
 
 def _validate_parameters(
@@ -53,8 +71,8 @@ def _amplitude_damping_angle(gamma: float, dt: float) -> float:
 
 
 def build_ancilla_lindblad_circuit(
-    K: np.ndarray,
-    omega: np.ndarray,
+    K: FloatArray,
+    omega: FloatArray,
     t: float = 0.1,
     trotter_reps: int = 5,
     gamma: float = 0.05,
@@ -127,13 +145,13 @@ def build_ancilla_lindblad_circuit(
 
 
 def ancilla_circuit_stats(
-    K: np.ndarray,
-    omega: np.ndarray,
+    K: FloatArray,
+    omega: FloatArray,
     t: float = 0.1,
     trotter_reps: int = 5,
     gamma: float = 0.05,
     n_dissipation_steps: int = 3,
-) -> dict:
+) -> AncillaCircuitStats:
     """Return circuit statistics without building full circuit.
 
     Returns

@@ -105,7 +105,7 @@ Based on Cattaneo et al., PRR 6, 043321 (2024).
 
 ```python
 from scpn_quantum_control.phase.ancilla_lindblad import (
-    build_ancilla_lindblad_circuit, ancilla_circuit_stats
+    AncillaCircuitStats, build_ancilla_lindblad_circuit, ancilla_circuit_stats
 )
 
 qc = build_ancilla_lindblad_circuit(K, omega, t=0.5, gamma=0.05,
@@ -116,7 +116,14 @@ stats = ancilla_circuit_stats(K, omega)
 print(f"CX gates: {stats['n_cx_gates']}, Resets: {stats['n_resets']}")
 ```
 
-**Tests:** 4 (ancilla present, reset count, stats, measurements)
+`ancilla_circuit_stats(...)` returns the typed `AncillaCircuitStats` envelope:
+qubit counts, CX/reset counts, total gate estimate, dissipation-step count, and
+the validated damping rate. The circuit and stats APIs use explicit `float64`
+array contracts for `K` and `omega`.
+
+**Tests:** module and contract suites cover circuit shape, reset scaling,
+finite-time damping angles, validation, stats consistency, and QASM-export
+workflow integration.
 
 ---
 

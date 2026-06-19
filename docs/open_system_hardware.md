@@ -48,8 +48,8 @@ requires a different ancilla protocol (not implemented).
 from scpn_quantum_control.phase.ancilla_lindblad import build_ancilla_lindblad_circuit
 
 qc = build_ancilla_lindblad_circuit(
-    K: np.ndarray,              # (n, n) coupling matrix
-    omega: np.ndarray,          # (n,) natural frequencies
+    K: np.ndarray,              # float64 (n, n) coupling matrix
+    omega: np.ndarray,          # float64 (n,) natural frequencies
     t: float = 0.1,             # evolution time
     trotter_reps: int = 5,      # Trotter steps per coherent block
     gamma: float = 0.05,        # amplitude damping rate
@@ -62,7 +62,7 @@ qc = build_ancilla_lindblad_circuit(
 #### `ancilla_circuit_stats`
 
 ```python
-from scpn_quantum_control.phase.ancilla_lindblad import ancilla_circuit_stats
+from scpn_quantum_control.phase.ancilla_lindblad import AncillaCircuitStats, ancilla_circuit_stats
 
 stats = ancilla_circuit_stats(K, omega, t=0.1, trotter_reps=5,
                                gamma=0.05, n_dissipation_steps=3)
@@ -75,12 +75,16 @@ stats = ancilla_circuit_stats(K, omega, t=0.1, trotter_reps=5,
     "n_qubits": int,          # total qubits (system + ancilla)
     "n_system": int,           # system qubits
     "n_ancilla": int,          # always 1
-    "estimated_depth": int,    # circuit depth estimate
     "n_cx_gates": int,         # CNOT count
     "n_resets": int,           # ancilla reset count
-    "total_gates": int,        # total gate count
+    "total_gates": int,        # analytic gate-count estimate
+    "n_dissipation_steps": int,
+    "gamma": float,
 }
 ```
+
+The stats payload is typed as `AncillaCircuitStats` and uses integer counts
+plus the validated real-valued damping rate.
 
 ### Tutorial
 

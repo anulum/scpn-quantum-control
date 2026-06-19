@@ -140,7 +140,9 @@ class TestBuildCircuit:
         ("kwargs", "message"),
         [
             ({"gamma": -0.1}, "gamma must be non-negative"),
+            ({"gamma": np.inf}, "gamma must be finite"),
             ({"t": -0.1}, "t must be non-negative"),
+            ({"t": np.inf}, "t must be finite"),
             ({"trotter_reps": 0}, "trotter_reps must be positive"),
             ({"n_dissipation_steps": 0}, "n_dissipation_steps must be positive"),
         ],
