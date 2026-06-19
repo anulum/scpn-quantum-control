@@ -21,6 +21,7 @@ SCPN Quantum Control — Enzyme/MLIR maturity audit artefact
 | Native Enzyme value error | `0.0` |
 | Native Enzyme gradient error | `0.0` |
 | MLIR/LLVM correctness evidence | `mlir-llvm-correctness-20260616-installed-stack` |
+| Compiler AD breadth artifact | `missing` |
 | Compiler AD breadth evidence | `missing` |
 | Ready for provider exceedance | `False` |
 
@@ -38,10 +39,11 @@ The native Enzyme probe transforms LLVM IR for `square(x)=x*x`, compiles the tra
 ## Hard Gaps
 
 - `isolated benchmark artefact missing`
+- `compiler AD breadth artifact missing`
 - `compiler AD breadth evidence missing`
 
 ## Boundary
 
 bounded_enzyme_mlir_compiler_maturity_audit
 
-The direct LLVM Enzyme probe is successful bounded compiler-AD evidence. The separate Enzyme-JAX external-comparison row remains a runtime gap, and this artefact still does not promote Enzyme/MLIR parity, provider execution, hardware execution, arbitrary compiler-AD breadth, or performance claims without isolated benchmark and breadth evidence.
+The direct LLVM Enzyme probe is successful bounded compiler-AD evidence. The separate Enzyme-JAX external-comparison row remains a runtime gap, and this artefact still does not promote Enzyme/MLIR parity, provider execution, hardware execution, arbitrary compiler-AD breadth, or performance claims without isolated benchmark, raw breadth-artifact, and derived breadth evidence.

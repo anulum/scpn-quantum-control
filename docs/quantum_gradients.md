@@ -2164,13 +2164,17 @@ four evidence classes:
   vector JVP/VJP, matrix JVP/VJP, loop activity, alias activity, MLIR lowering,
   LLVM IR generation, native Enzyme execution, and matching isolated benchmark
   metadata;
+- attached raw `EnzymeMLIRCompilerADBreadthArtifact` case rows covering exactly
+  the required scalar, vector, matrix, loop/activity, MLIR, LLVM, and native
+  Enzyme routes before the derived breadth evidence can be accepted;
 - attached `EnzymeMLIRBenchmarkAttachment` built from
   `PhaseQNodeAffinityArtifactValidation`, so the isolated benchmark gate is
   satisfied only by promotion-ready `isolated_affinity` evidence with raw timing
   rows and complete host metadata;
 - hard gaps for missing toolchains when they are absent, failed native Enzyme
   execution, missing compiler-AD breadth evidence, missing isolated benchmark
-  artefacts, and missing validated isolated benchmark attachments.
+  artefacts, missing raw breadth artifacts, and missing validated isolated
+  benchmark attachments.
 
 ```python
 from scpn_quantum_control import run_enzyme_mlir_maturity_audit
@@ -2188,8 +2192,8 @@ Enzyme scalar derivative probe. The separate Enzyme-JAX external-comparison row
 remains a runtime hard gap. Provider-exceedance remains blocked until
 `isolated_affinity` benchmark artefacts are validated through
 `EnzymeMLIRBenchmarkAttachment` with correctness, native Enzyme execution, and
-compiler-AD breadth evidence. A string benchmark ID without the validated
-attachment is still a hard gap.
+raw-plus-derived compiler-AD breadth evidence. A string benchmark ID without
+the validated attachment is still a hard gap.
 
 ## Verification requirements
 

@@ -438,8 +438,8 @@ attachment against the Phase-QNode affinity artefact contract, and returns
 hard-gap rows when the compiler stack or native Enzyme execution path is
 unavailable. The audit remains non-promotional until successful native Enzyme
 execution evidence, MLIR/LLVM correctness evidence, compiler-AD breadth
-evidence, and a promotion-ready `EnzymeMLIRBenchmarkAttachment` are attached
-together.
+evidence derived from a raw `EnzymeMLIRCompilerADBreadthArtifact`, and a
+promotion-ready `EnzymeMLIRBenchmarkAttachment` are attached together.
 The 2026-06-16 committed evidence includes a bounded native LLVM Enzyme scalar
 probe; it is not arbitrary-program AD, provider execution, hardware execution,
 or performance evidence.
@@ -1335,8 +1335,9 @@ run_jax_phase_qnode_lowering_matrix() -> PhaseJAXPhaseQNodeLoweringMatrixResult
 run_jax_nested_transform_algebra_audit(features, labels, params_batch, params_pytree, tolerance=1e-6) -> PhaseJAXNestedTransformAlgebraResult
 run_jax_maturity_audit(features, labels, params, params_batch, params_pytree, tolerance=1e-6) -> PhaseJAXMaturityAuditResult
 build_enzyme_mlir_benchmark_attachment(*, validation, required_breadth_cases, claim_boundary) -> EnzymeMLIRBenchmarkAttachment
+build_enzyme_mlir_compiler_ad_breadth_artifact(*, artifact_id, cases, isolated_benchmark_evidence, claim_boundary) -> EnzymeMLIRCompilerADBreadthArtifact
 build_enzyme_mlir_compiler_ad_breadth_evidence(*, artifact_id, cases, transform_modes, frontend_languages, isolated_benchmark_artifact_id, max_abs_error, runtime_seconds, claim_boundary) -> EnzymeMLIRCompilerADBreadthEvidence
-run_enzyme_mlir_maturity_audit(circuit=None, parameters=None, *, toolchain_probe=None, version_probe=None, isolated_benchmark_artifact_id=None, isolated_benchmark_evidence=None, native_enzyme_execution_artifact_id=None, native_enzyme_execution_evidence=None, mlir_llvm_correctness_artifact_id=None, compiler_ad_breadth_evidence=None) -> EnzymeMLIRMaturityAuditResult
+run_enzyme_mlir_maturity_audit(circuit=None, parameters=None, *, toolchain_probe=None, version_probe=None, isolated_benchmark_artifact_id=None, isolated_benchmark_evidence=None, native_enzyme_execution_artifact_id=None, native_enzyme_execution_evidence=None, mlir_llvm_correctness_artifact_id=None, compiler_ad_breadth_evidence=None, compiler_ad_breadth_artifact=None) -> EnzymeMLIRMaturityAuditResult
 is_phase_pennylane_available() -> bool
 check_pennylane_parameter_shift_agreement(objective, pennylane_gradient, values, tolerance=1e-6, parameters=None, rule=None) -> PennyLaneGradientAgreementResult
 run_pennylane_plugin_matrix(provider_execution_artifact=None, provider_gradient_parity_artifact=None, hardware_execution_artifact=None) -> PennyLanePluginMatrixResult
@@ -1498,12 +1499,15 @@ and shot count.
 `EnzymeMLIRCompilerADBreadthEvidence` validates captured compiler-AD breadth
 for scalar forward/reverse mode, vector JVP/VJP, matrix JVP/VJP, loop activity,
 alias activity, MLIR lowering, LLVM IR generation, and native Enzyme execution
-checks. Build it with `build_enzyme_mlir_compiler_ad_breadth_evidence(...)`
-from captured correctness and isolated-benchmark evidence. The Enzyme/MLIR
-maturity audit keeps provider-exceedance blocked until MLIR/LLVM correctness,
-native Enzyme execution, compiler-AD breadth, and a promotion-ready
-`EnzymeMLIRBenchmarkAttachment` all match. Build that attachment with
-`build_enzyme_mlir_benchmark_attachment(...)` from
+checks. `EnzymeMLIRCompilerADBreadthCaseEvidence` records the raw case-level
+rows, and `build_enzyme_mlir_compiler_ad_breadth_artifact(...)` validates that
+the raw artifact covers exactly the required case set and links to a
+promotion-ready isolated benchmark attachment. The maturity audit can derive
+`EnzymeMLIRCompilerADBreadthEvidence` from that artifact, but keeps
+provider-exceedance blocked until MLIR/LLVM correctness, native Enzyme
+execution, the raw breadth artifact, the derived breadth evidence, and a
+promotion-ready `EnzymeMLIRBenchmarkAttachment` all match. Build the benchmark
+attachment with `build_enzyme_mlir_benchmark_attachment(...)` from
 `PhaseQNodeAffinityArtifactValidation`; a string benchmark ID alone remains a
 hard gap.
 `parameter_shift_gradient_descent()` is the phase-native training surface for

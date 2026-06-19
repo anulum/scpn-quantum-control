@@ -13937,6 +13937,286 @@ def build_enzyme_mlir_benchmark_attachment(
 
 
 @dataclass(frozen=True)
+class EnzymeMLIRCompilerADBreadthCaseEvidence:
+    """One raw Enzyme/MLIR compiler-AD breadth case row.
+
+    Parameters
+    ----------
+    case_id:
+        Required Enzyme/MLIR breadth-case identifier.
+    status:
+        ``success`` for captured passing evidence or ``hard_gap`` for a named
+        missing or failed route.
+    transform_modes:
+        Compiler-AD transform modes covered by this case row.
+    frontend_language:
+        Frontend or IR surface represented by the row.
+    value_error:
+        Absolute value error for successful correctness rows.
+    gradient_error:
+        Absolute derivative error for successful correctness rows.
+    runtime_seconds:
+        Positive bounded runner runtime for successful rows.
+    artifact_refs:
+        Stable references to raw logs, JSON, IR, or benchmark artefacts.
+    failure_class:
+        Named failure class for hard-gap rows.
+    setup_instructions:
+        Reproduction or remediation instructions for hard-gap rows.
+    claim_boundary:
+        Boundary preventing a case row from becoming a provider, hardware, or
+        performance claim.
+    """
+
+    case_id: str
+    status: str
+    transform_modes: tuple[str, ...]
+    frontend_language: str
+    value_error: float | None
+    gradient_error: float | None
+    runtime_seconds: float | None
+    artifact_refs: Mapping[str, str]
+    failure_class: str | None
+    setup_instructions: str | None
+    claim_boundary: str
+
+    def __post_init__(self) -> None:
+        case_id = self.case_id.strip()
+        if case_id not in ENZYME_MLIR_COMPILER_AD_BREADTH_CASES:
+            raise ValueError("case_id must be an Enzyme/MLIR compiler-AD breadth case")
+        object.__setattr__(self, "case_id", case_id)
+        if self.status not in {"success", "hard_gap"}:
+            raise ValueError("status must be success or hard_gap")
+        modes = tuple(sorted(mode.strip().lower() for mode in self.transform_modes))
+        if not modes or any(not mode for mode in modes):
+            raise ValueError("transform_modes must contain non-empty entries")
+        if not set(modes).issubset(ENZYME_MLIR_COMPILER_AD_TRANSFORM_MODES):
+            raise ValueError("transform_modes must be valid Enzyme/MLIR transform modes")
+        object.__setattr__(self, "transform_modes", modes)
+        frontend_language = self.frontend_language.strip().lower()
+        if not frontend_language:
+            raise ValueError("frontend_language must be non-empty")
+        object.__setattr__(self, "frontend_language", frontend_language)
+        refs = dict(self.artifact_refs)
+        if not refs or any(not key or not value for key, value in refs.items()):
+            raise ValueError("artifact_refs must map non-empty strings")
+        object.__setattr__(self, "artifact_refs", MappingProxyType(refs))
+        if self.status == "success":
+            for name, value in (
+                ("value_error", self.value_error),
+                ("gradient_error", self.gradient_error),
+                ("runtime_seconds", self.runtime_seconds),
+            ):
+                if value is None or value < 0.0 or not np.isfinite(value):
+                    raise ValueError(f"success case rows require finite {name}")
+            if self.runtime_seconds is None or self.runtime_seconds <= 0.0:
+                raise ValueError("success case rows require positive runtime_seconds")
+            if self.failure_class is not None or self.setup_instructions is not None:
+                raise ValueError("success case rows must not carry hard-gap metadata")
+        else:
+            if not self.failure_class or not self.setup_instructions:
+                raise ValueError("hard-gap case rows require failure metadata")
+            if any(
+                value is not None
+                for value in (self.value_error, self.gradient_error, self.runtime_seconds)
+            ):
+                raise ValueError("hard-gap case rows must not carry success metrics")
+        claim_boundary = self.claim_boundary.strip()
+        if not claim_boundary:
+            raise ValueError("claim_boundary must be non-empty")
+        object.__setattr__(self, "claim_boundary", claim_boundary)
+
+    @property
+    def passed(self) -> bool:
+        """Return whether this breadth case has passing raw evidence."""
+
+        return self.status == "success"
+
+    @property
+    def max_abs_error(self) -> float:
+        """Return the largest correctness error carried by this row."""
+
+        return max(float(self.value_error or 0.0), float(self.gradient_error or 0.0))
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready breadth-case evidence metadata."""
+
+        return {
+            "case_id": self.case_id,
+            "status": self.status,
+            "passed": self.passed,
+            "transform_modes": list(self.transform_modes),
+            "frontend_language": self.frontend_language,
+            "value_error": self.value_error,
+            "gradient_error": self.gradient_error,
+            "runtime_seconds": self.runtime_seconds,
+            "artifact_refs": dict(self.artifact_refs),
+            "failure_class": self.failure_class,
+            "setup_instructions": self.setup_instructions,
+            "claim_boundary": self.claim_boundary,
+        }
+
+
+@dataclass(frozen=True)
+class EnzymeMLIRCompilerADBreadthArtifact:
+    """Raw Enzyme/MLIR compiler-AD breadth artefact with benchmark linkage."""
+
+    artifact_id: str
+    cases: tuple[EnzymeMLIRCompilerADBreadthCaseEvidence, ...]
+    isolated_benchmark_evidence: EnzymeMLIRBenchmarkAttachment
+    claim_boundary: str
+
+    def __post_init__(self) -> None:
+        artifact_id = self.artifact_id.strip()
+        if not artifact_id:
+            raise ValueError("artifact_id must be non-empty")
+        object.__setattr__(self, "artifact_id", artifact_id)
+        if not isinstance(self.isolated_benchmark_evidence, EnzymeMLIRBenchmarkAttachment):
+            raise ValueError("isolated_benchmark_evidence must be EnzymeMLIRBenchmarkAttachment")
+        cases = tuple(self.cases)
+        if any(not isinstance(case, EnzymeMLIRCompilerADBreadthCaseEvidence) for case in cases):
+            raise ValueError("cases must be EnzymeMLIRCompilerADBreadthCaseEvidence rows")
+        case_ids = tuple(case.case_id for case in cases)
+        if set(case_ids) != ENZYME_MLIR_COMPILER_AD_BREADTH_CASES or len(case_ids) != len(
+            set(case_ids)
+        ):
+            missing = sorted(ENZYME_MLIR_COMPILER_AD_BREADTH_CASES.difference(case_ids))
+            extra = sorted(set(case_ids).difference(ENZYME_MLIR_COMPILER_AD_BREADTH_CASES))
+            duplicates = sorted(
+                case_id for case_id in set(case_ids) if case_ids.count(case_id) > 1
+            )
+            details = ", ".join(
+                part
+                for part in (
+                    f"missing={missing}" if missing else "",
+                    f"extra={extra}" if extra else "",
+                    f"duplicates={duplicates}" if duplicates else "",
+                )
+                if part
+            )
+            raise ValueError(f"cases must exactly cover Enzyme/MLIR breadth cases: {details}")
+        object.__setattr__(self, "cases", tuple(sorted(cases, key=lambda row: row.case_id)))
+        claim_boundary = self.claim_boundary.strip()
+        if not claim_boundary:
+            raise ValueError("claim_boundary must be non-empty")
+        object.__setattr__(self, "claim_boundary", claim_boundary)
+
+    @property
+    def transform_modes(self) -> tuple[str, ...]:
+        """Return sorted transform modes covered across breadth cases."""
+
+        modes = {mode for case in self.cases for mode in case.transform_modes}
+        return tuple(sorted(modes))
+
+    @property
+    def frontend_languages(self) -> tuple[str, ...]:
+        """Return sorted frontend or IR surfaces covered by the artefact."""
+
+        return tuple(sorted({case.frontend_language for case in self.cases}))
+
+    @property
+    def max_abs_error(self) -> float:
+        """Return the largest correctness error recorded across passing rows."""
+
+        return max(case.max_abs_error for case in self.cases)
+
+    @property
+    def runtime_seconds(self) -> float:
+        """Return total bounded runtime across passing rows."""
+
+        return sum(float(case.runtime_seconds or 0.0) for case in self.cases)
+
+    @property
+    def promotion_ready(self) -> bool:
+        """Return whether the artefact can derive compiler-AD breadth evidence."""
+
+        return (
+            self.isolated_benchmark_evidence.promotion_ready
+            and all(case.passed for case in self.cases)
+            and set(self.transform_modes) == ENZYME_MLIR_COMPILER_AD_TRANSFORM_MODES
+            and self.runtime_seconds > 0.0
+        )
+
+    def to_breadth_evidence(self) -> EnzymeMLIRCompilerADBreadthEvidence:
+        """Derive promotion evidence from a complete raw breadth artefact.
+
+        Raises
+        ------
+        ValueError
+            If any breadth case failed, the transform modes are incomplete, or
+            the attached isolated benchmark evidence is not promotion-ready.
+        """
+
+        if not self.promotion_ready:
+            raise ValueError("compiler AD breadth artifact must be promotion-ready")
+        return EnzymeMLIRCompilerADBreadthEvidence(
+            artifact_id=self.artifact_id,
+            cases={case.case_id: case.passed for case in self.cases},
+            transform_modes=self.transform_modes,
+            frontend_languages=self.frontend_languages,
+            isolated_benchmark_artifact_id=(
+                self.isolated_benchmark_evidence.benchmark_artifact_id
+            ),
+            max_abs_error=self.max_abs_error,
+            runtime_seconds=self.runtime_seconds,
+            claim_boundary=self.claim_boundary,
+        )
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready raw breadth artefact metadata."""
+
+        return {
+            "schema": "scpn_qc_enzyme_mlir_compiler_ad_breadth_artifact_v1",
+            "artifact_id": self.artifact_id,
+            "case_count": len(self.cases),
+            "cases": [case.to_dict() for case in self.cases],
+            "transform_modes": list(self.transform_modes),
+            "frontend_languages": list(self.frontend_languages),
+            "max_abs_error": self.max_abs_error,
+            "runtime_seconds": self.runtime_seconds,
+            "isolated_benchmark_evidence": self.isolated_benchmark_evidence.to_dict(),
+            "promotion_ready": self.promotion_ready,
+            "claim_boundary": self.claim_boundary,
+        }
+
+
+def build_enzyme_mlir_compiler_ad_breadth_artifact(
+    *,
+    artifact_id: str,
+    cases: Sequence[EnzymeMLIRCompilerADBreadthCaseEvidence],
+    isolated_benchmark_evidence: EnzymeMLIRBenchmarkAttachment,
+    claim_boundary: str,
+) -> EnzymeMLIRCompilerADBreadthArtifact:
+    """Build a validated raw Enzyme/MLIR compiler-AD breadth artefact.
+
+    Parameters
+    ----------
+    artifact_id:
+        Stable raw artefact identifier.
+    cases:
+        Case rows that must exactly cover every required Enzyme/MLIR breadth
+        case.
+    isolated_benchmark_evidence:
+        Promotion-ready isolated benchmark attachment for the same evidence
+        chain. Non-promotional benchmark evidence keeps the artefact blocked.
+    claim_boundary:
+        Claim boundary serialized into the artifact and derived evidence.
+
+    Returns
+    -------
+    EnzymeMLIRCompilerADBreadthArtifact
+        Validated raw breadth artefact.
+    """
+
+    return EnzymeMLIRCompilerADBreadthArtifact(
+        artifact_id=artifact_id,
+        cases=tuple(cases),
+        isolated_benchmark_evidence=isolated_benchmark_evidence,
+        claim_boundary=claim_boundary,
+    )
+
+
+@dataclass(frozen=True)
 class EnzymeMLIRCompilerADBreadthEvidence:
     """Validated breadth evidence for Enzyme/MLIR compiler AD promotion.
 
@@ -14127,6 +14407,7 @@ class EnzymeMLIRMaturityAuditResult:
     native_enzyme_execution_evidence: EnzymeNativeExecutionEvidence | None = None
     mlir_llvm_correctness_evidence: MLIRLLVMCorrectnessEvidence | None = None
     compiler_ad_breadth_evidence: EnzymeMLIRCompilerADBreadthEvidence | None = None
+    compiler_ad_breadth_artifact: EnzymeMLIRCompilerADBreadthArtifact | None = None
     claim_boundary: str = "bounded_enzyme_mlir_compiler_maturity_audit"
 
     def __post_init__(self) -> None:
@@ -14195,6 +14476,13 @@ class EnzymeMLIRMaturityAuditResult:
             raise ValueError(
                 "compiler_ad_breadth_evidence must be EnzymeMLIRCompilerADBreadthEvidence"
             )
+        if self.compiler_ad_breadth_artifact is not None and not isinstance(
+            self.compiler_ad_breadth_artifact,
+            EnzymeMLIRCompilerADBreadthArtifact,
+        ):
+            raise ValueError(
+                "compiler_ad_breadth_artifact must be EnzymeMLIRCompilerADBreadthArtifact"
+            )
         if (
             self.compiler_ad_breadth_evidence is not None
             and self.isolated_benchmark_artifact_id is not None
@@ -14205,6 +14493,13 @@ class EnzymeMLIRMaturityAuditResult:
                 "compiler_ad_breadth_evidence.isolated_benchmark_artifact_id must match "
                 "isolated_benchmark_artifact_id"
             )
+        if (
+            self.compiler_ad_breadth_artifact is not None
+            and self.compiler_ad_breadth_evidence is not None
+            and self.compiler_ad_breadth_artifact.artifact_id
+            != self.compiler_ad_breadth_evidence.artifact_id
+        ):
+            raise ValueError("compiler_ad_breadth_artifact must match attached breadth evidence")
         if not self.claim_boundary:
             raise ValueError("claim_boundary must be non-empty")
         object.__setattr__(self, "toolchain", MappingProxyType(dict(self.toolchain)))
@@ -14232,6 +14527,10 @@ class EnzymeMLIRMaturityAuditResult:
             and self.native_enzyme_execution_evidence.passed
             and self.compiler_ad_breadth_evidence is not None
             and self.compiler_ad_breadth_evidence.passed
+            and (
+                self.compiler_ad_breadth_artifact is None
+                or self.compiler_ad_breadth_artifact.promotion_ready
+            )
             and not self.hard_gaps
         )
 
@@ -14266,6 +14565,11 @@ class EnzymeMLIRMaturityAuditResult:
                 if self.compiler_ad_breadth_evidence is not None
                 else None
             ),
+            "compiler_ad_breadth_artifact": (
+                self.compiler_ad_breadth_artifact.to_dict()
+                if self.compiler_ad_breadth_artifact is not None
+                else None
+            ),
             "ready_for_provider_exceedance": self.ready_for_provider_exceedance,
             "claim_boundary": self.claim_boundary,
         }
@@ -14283,6 +14587,7 @@ def run_enzyme_mlir_maturity_audit(
     native_enzyme_execution_evidence: EnzymeNativeExecutionEvidence | None = None,
     mlir_llvm_correctness_artifact_id: str | None = None,
     compiler_ad_breadth_evidence: EnzymeMLIRCompilerADBreadthEvidence | None = None,
+    compiler_ad_breadth_artifact: EnzymeMLIRCompilerADBreadthArtifact | None = None,
 ) -> EnzymeMLIRMaturityAuditResult:
     """Audit Enzyme/MLIR maturity without promoting unsupported compiler-AD claims."""
 
@@ -14338,6 +14643,13 @@ def run_enzyme_mlir_maturity_audit(
     )
     if mlir_llvm_correctness_evidence is None:
         hard_gaps.append("MLIR/LLVM correctness artefact missing")
+    if compiler_ad_breadth_artifact is None:
+        hard_gaps.append("compiler AD breadth artifact missing")
+    elif compiler_ad_breadth_evidence is None:
+        if compiler_ad_breadth_artifact.promotion_ready:
+            compiler_ad_breadth_evidence = compiler_ad_breadth_artifact.to_breadth_evidence()
+        else:
+            hard_gaps.append("compiler AD breadth artifact not promotion-ready")
     if compiler_ad_breadth_evidence is None:
         hard_gaps.append("compiler AD breadth evidence missing")
     return EnzymeMLIRMaturityAuditResult(
@@ -14356,6 +14668,7 @@ def run_enzyme_mlir_maturity_audit(
         native_enzyme_execution_evidence=native_enzyme_execution_evidence,
         mlir_llvm_correctness_evidence=mlir_llvm_correctness_evidence,
         compiler_ad_breadth_evidence=compiler_ad_breadth_evidence,
+        compiler_ad_breadth_artifact=compiler_ad_breadth_artifact,
     )
 
 
@@ -14637,6 +14950,8 @@ __all__ = [
     "ExecutableWholeProgramADBatchResult",
     "ExecutableWholeProgramADKernel",
     "EnzymeMLIRBenchmarkAttachment",
+    "EnzymeMLIRCompilerADBreadthArtifact",
+    "EnzymeMLIRCompilerADBreadthCaseEvidence",
     "EnzymeMLIRCompilerADBreadthEvidence",
     "EnzymeMLIRMaturityAuditResult",
     "EnzymeNativeExecutionEvidence",
@@ -14650,6 +14965,7 @@ __all__ = [
     "MLIRModule",
     "analyse_whole_program_ad_native_lowering",
     "build_enzyme_mlir_benchmark_attachment",
+    "build_enzyme_mlir_compiler_ad_breadth_artifact",
     "build_enzyme_mlir_compiler_ad_breadth_evidence",
     "build_compiler_ad_transform_plan",
     "compile_compiler_ad_transform_plan_to_mlir",

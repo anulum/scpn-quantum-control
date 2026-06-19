@@ -12,8 +12,10 @@
     "phase_qnode_value_close": true
   },
   "compiler_ad_breadth_evidence": null,
+  "compiler_ad_breadth_artifact": null,
   "hard_gaps": [
     "isolated benchmark artefact missing",
+    "compiler AD breadth artifact missing",
     "compiler AD breadth evidence missing"
   ],
   "isolated_benchmark_artifact_id": null,

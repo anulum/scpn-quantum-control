@@ -54,8 +54,8 @@
     {
       "path": "data/differentiable_phase_qnode/enzyme_mlir_maturity_audit_20260616.json",
       "role": "Enzyme/MLIR maturity audit artefact with runtime-gap and correctness evidence",
-      "sha256": "c477063e323df3e4c33f36f1b77d3dd73471aad62227df66ff19224a3ede9110",
-      "size_bytes": 4295
+      "sha256": "4c22d858a28b1ff94b06b4a135039eccc49890607c584a38b413e0ead46fb707",
+      "size_bytes": 4379
     },
     {
       "path": "data/differentiable_phase_qnode/local_benchmark_20260616T0955Z/README.md",

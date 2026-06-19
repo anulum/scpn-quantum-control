@@ -20,12 +20,15 @@ import scpn_quantum_control as scpn
 import scpn_quantum_control.compiler as compiler
 from scpn_quantum_control.compiler.mlir import (
     EnzymeMLIRBenchmarkAttachment,
+    EnzymeMLIRCompilerADBreadthArtifact,
+    EnzymeMLIRCompilerADBreadthCaseEvidence,
     EnzymeMLIRCompilerADBreadthEvidence,
     EnzymeMLIRMaturityAuditResult,
     EnzymeNativeExecutionEvidence,
     MLIRLLVMCorrectnessEvidence,
     PhaseQNodeMLIRRuntimeExecutable,
     build_enzyme_mlir_benchmark_attachment,
+    build_enzyme_mlir_compiler_ad_breadth_artifact,
     build_enzyme_mlir_compiler_ad_breadth_evidence,
     compile_phase_qnode_circuit_to_mlir_runtime,
     lower_phase_qnode_circuit_to_mlir,
@@ -275,6 +278,7 @@ def test_enzyme_mlir_maturity_audit_requires_all_artifacts_for_promotion() -> No
     )
 
     assert result.ready_for_provider_exceedance is False
+    assert "compiler AD breadth artifact missing" in result.hard_gaps
     assert "compiler AD breadth evidence missing" in result.hard_gaps
 
 
@@ -323,6 +327,7 @@ def test_enzyme_mlir_maturity_audit_requires_complete_compiler_ad_breadth() -> N
         claim_boundary="Bounded native Enzyme execution evidence.",
     )
 
+    artifact = _compiler_ad_breadth_artifact()
     result = run_enzyme_mlir_maturity_audit(
         toolchain_probe=lambda command: f"/opt/toolchain/bin/{command}",
         version_probe=lambda executable: f"{executable} version 1.2.3",
@@ -330,7 +335,8 @@ def test_enzyme_mlir_maturity_audit_requires_complete_compiler_ad_breadth() -> N
         isolated_benchmark_evidence=_benchmark_attachment(),
         native_enzyme_execution_evidence=evidence,
         mlir_llvm_correctness_artifact_id="mlir-correctness-001",
-        compiler_ad_breadth_evidence=_compiler_ad_breadth_evidence(),
+        compiler_ad_breadth_evidence=artifact.to_breadth_evidence(),
+        compiler_ad_breadth_artifact=artifact,
     )
 
     assert result.hard_gaps == ()
@@ -344,6 +350,7 @@ def test_enzyme_mlir_maturity_audit_requires_complete_compiler_ad_breadth() -> N
         "reverse",
         "vjp",
     ]
+    assert payload["compiler_ad_breadth_artifact"]["promotion_ready"] is True
 
 
 def _benchmark_attachment(
@@ -370,6 +377,37 @@ def _benchmark_attachment(
         validation=validation,
         required_breadth_cases=tuple(sorted(_compiler_ad_breadth_evidence().cases)),
         claim_boundary="Enzyme/MLIR compiler-AD benchmark attachment.",
+    )
+
+
+def _compiler_ad_breadth_artifact(
+    *,
+    isolated_benchmark_evidence: EnzymeMLIRBenchmarkAttachment | None = None,
+    case_overrides: dict[str, bool] | None = None,
+) -> EnzymeMLIRCompilerADBreadthArtifact:
+    rows: list[EnzymeMLIRCompilerADBreadthCaseEvidence] = []
+    for case_id in sorted(_compiler_ad_breadth_evidence().cases):
+        passed = case_overrides.get(case_id, True) if case_overrides is not None else True
+        rows.append(
+            EnzymeMLIRCompilerADBreadthCaseEvidence(
+                case_id=case_id,
+                status="success" if passed else "hard_gap",
+                transform_modes=("forward", "reverse", "jvp", "vjp"),
+                frontend_language="llvm_ir" if case_id == "native_enzyme_execution" else "mlir",
+                value_error=0.0 if passed else None,
+                gradient_error=0.0 if passed else None,
+                runtime_seconds=0.01 if passed else None,
+                artifact_refs={"raw_case": f"data/differentiable_phase_qnode/{case_id}.json"},
+                failure_class=None if passed else "missing_case_evidence",
+                setup_instructions=None if passed else "Attach passing raw case evidence.",
+                claim_boundary="bounded Enzyme/MLIR compiler-AD breadth case evidence.",
+            )
+        )
+    return build_enzyme_mlir_compiler_ad_breadth_artifact(
+        artifact_id="enzyme-mlir-breadth-artifact-001",
+        cases=tuple(rows),
+        isolated_benchmark_evidence=isolated_benchmark_evidence or _benchmark_attachment(),
+        claim_boundary="bounded Enzyme/MLIR compiler-AD breadth artifact.",
     )
 
 
@@ -421,6 +459,7 @@ def test_enzyme_mlir_maturity_audit_accepts_validated_isolated_benchmark() -> No
         claim_boundary="Bounded native Enzyme execution evidence.",
     )
 
+    artifact = _compiler_ad_breadth_artifact()
     result = run_enzyme_mlir_maturity_audit(
         toolchain_probe=lambda command: f"/opt/toolchain/bin/{command}",
         version_probe=lambda executable: f"{executable} version 1.2.3",
@@ -428,13 +467,85 @@ def test_enzyme_mlir_maturity_audit_accepts_validated_isolated_benchmark() -> No
         isolated_benchmark_evidence=_benchmark_attachment(),
         native_enzyme_execution_evidence=evidence,
         mlir_llvm_correctness_artifact_id="mlir-correctness-001",
-        compiler_ad_breadth_evidence=_compiler_ad_breadth_evidence(),
+        compiler_ad_breadth_evidence=artifact.to_breadth_evidence(),
+        compiler_ad_breadth_artifact=artifact,
     )
 
     assert result.hard_gaps == ()
     assert result.ready_for_provider_exceedance is True
     payload = cast(dict[str, Any], result.to_dict())
     assert payload["isolated_benchmark_evidence"]["required_breadth_case_count"] == 11
+
+
+def test_enzyme_mlir_breadth_artifact_builds_promotion_evidence() -> None:
+    artifact = _compiler_ad_breadth_artifact()
+    evidence = artifact.to_breadth_evidence()
+    payload = artifact.to_dict()
+
+    assert artifact.promotion_ready is True
+    assert evidence.passed is True
+    assert evidence.isolated_benchmark_artifact_id == "iso-bench-001"
+    assert evidence.max_abs_error == 0.0
+    assert payload["schema"] == "scpn_qc_enzyme_mlir_compiler_ad_breadth_artifact_v1"
+    assert payload["case_count"] == 11
+    benchmark_payload = cast(dict[str, Any], payload["isolated_benchmark_evidence"])
+    assert benchmark_payload["promotion_ready"] is True
+
+
+def test_enzyme_mlir_breadth_artifact_blocks_failed_case() -> None:
+    artifact = _compiler_ad_breadth_artifact(case_overrides={"loop_activity": False})
+
+    assert artifact.promotion_ready is False
+    with pytest.raises(ValueError, match="promotion-ready"):
+        artifact.to_breadth_evidence()
+
+
+def test_enzyme_mlir_maturity_audit_derives_breadth_from_artifact() -> None:
+    evidence = EnzymeNativeExecutionEvidence(
+        artifact_id="enzyme-success-001",
+        status="success",
+        failure_class=None,
+        value_error=0.0,
+        gradient_error=0.0,
+        runtime_seconds=0.01,
+        toolchain={"enzyme": "1.0", "llvm": "18.1.3"},
+        setup_instructions=None,
+        claim_boundary="Bounded native Enzyme execution evidence.",
+    )
+
+    result = run_enzyme_mlir_maturity_audit(
+        toolchain_probe=lambda command: f"/opt/toolchain/bin/{command}",
+        version_probe=lambda executable: f"{executable} version 1.2.3",
+        isolated_benchmark_artifact_id="iso-bench-001",
+        isolated_benchmark_evidence=_benchmark_attachment(),
+        native_enzyme_execution_evidence=evidence,
+        mlir_llvm_correctness_artifact_id="mlir-correctness-001",
+        compiler_ad_breadth_artifact=_compiler_ad_breadth_artifact(),
+    )
+
+    assert result.ready_for_provider_exceedance is True
+    assert result.compiler_ad_breadth_evidence is not None
+    assert result.compiler_ad_breadth_artifact is not None
+    result_payload = cast(dict[str, Any], result.to_dict())
+    artifact_payload = cast(dict[str, Any], result_payload["compiler_ad_breadth_artifact"])
+    assert artifact_payload["promotion_ready"] is True
+
+
+def test_enzyme_mlir_maturity_audit_blocks_nonpromotional_breadth_artifact() -> None:
+    result = run_enzyme_mlir_maturity_audit(
+        toolchain_probe=lambda command: f"/opt/toolchain/bin/{command}",
+        version_probe=lambda executable: f"{executable} version 1.2.3",
+        isolated_benchmark_artifact_id="iso-bench-001",
+        isolated_benchmark_evidence=_benchmark_attachment(),
+        native_enzyme_execution_artifact_id="enzyme-success-001",
+        mlir_llvm_correctness_artifact_id="mlir-correctness-001",
+        compiler_ad_breadth_artifact=_compiler_ad_breadth_artifact(
+            case_overrides={"loop_activity": False}
+        ),
+    )
+
+    assert result.ready_for_provider_exceedance is False
+    assert "compiler AD breadth artifact not promotion-ready" in result.hard_gaps
 
 
 def test_enzyme_mlir_maturity_audit_rejects_benchmark_attachment_mismatch() -> None:
@@ -467,6 +578,23 @@ def test_enzyme_mlir_benchmark_attachment_rejects_incomplete_case_set() -> None:
             validation=validation,
             required_breadth_cases=("scalar_forward_mode",),
             claim_boundary="Enzyme/MLIR compiler-AD benchmark attachment.",
+        )
+
+
+def test_enzyme_mlir_breadth_case_rejects_malformed_success() -> None:
+    with pytest.raises(ValueError, match="success case rows require finite"):
+        EnzymeMLIRCompilerADBreadthCaseEvidence(
+            case_id="scalar_forward_mode",
+            status="success",
+            transform_modes=("forward",),
+            frontend_language="mlir",
+            value_error=0.0,
+            gradient_error=None,
+            runtime_seconds=0.01,
+            artifact_refs={"raw": "case.json"},
+            failure_class=None,
+            setup_instructions=None,
+            claim_boundary="bounded case",
         )
 
 
@@ -508,8 +636,10 @@ def test_committed_enzyme_mlir_audit_records_installed_native_probe() -> None:
     assert payload["ready_for_provider_exceedance"] is False
     assert payload["hard_gaps"] == [
         "isolated benchmark artefact missing",
+        "compiler AD breadth artifact missing",
         "compiler AD breadth evidence missing",
     ]
+    assert payload["compiler_ad_breadth_artifact"] is None
     assert payload["compiler_ad_breadth_evidence"] is None
     assert all(status["available"] for status in payload["toolchain"].values())
     assert payload["native_enzyme_execution_evidence"]["status"] == "success"
@@ -563,7 +693,21 @@ def test_enzyme_mlir_maturity_audit_exports_are_public() -> None:
     assert scpn.MLIRLLVMCorrectnessEvidence is MLIRLLVMCorrectnessEvidence
     assert compiler.EnzymeMLIRBenchmarkAttachment is EnzymeMLIRBenchmarkAttachment
     assert scpn.EnzymeMLIRBenchmarkAttachment is EnzymeMLIRBenchmarkAttachment
+    assert compiler.EnzymeMLIRCompilerADBreadthArtifact is EnzymeMLIRCompilerADBreadthArtifact
+    assert scpn.EnzymeMLIRCompilerADBreadthArtifact is EnzymeMLIRCompilerADBreadthArtifact
+    assert (
+        compiler.EnzymeMLIRCompilerADBreadthCaseEvidence is EnzymeMLIRCompilerADBreadthCaseEvidence
+    )
+    assert scpn.EnzymeMLIRCompilerADBreadthCaseEvidence is EnzymeMLIRCompilerADBreadthCaseEvidence
     assert (
         compiler.build_enzyme_mlir_benchmark_attachment is build_enzyme_mlir_benchmark_attachment
     )
     assert scpn.build_enzyme_mlir_benchmark_attachment is build_enzyme_mlir_benchmark_attachment
+    assert (
+        compiler.build_enzyme_mlir_compiler_ad_breadth_artifact
+        is build_enzyme_mlir_compiler_ad_breadth_artifact
+    )
+    assert (
+        scpn.build_enzyme_mlir_compiler_ad_breadth_artifact
+        is build_enzyme_mlir_compiler_ad_breadth_artifact
+    )

@@ -8,9 +8,9 @@
     "notebook_files": 98,
     "optional_extras": 42,
     "paper0_validation_modules": 466,
-    "public_api_exports": 668,
+    "public_api_exports": 671,
     "public_documentation_pages": 254,
-    "python_model_classes": 1815,
+    "python_model_classes": 1817,
     "python_model_source_modules": 835,
     "rust_pyo3_model_wrappers": 135,
     "rust_source_modules": 38,
@@ -2507,6 +2507,14 @@
       },
       {
         "name": "EnzymeMLIRBenchmarkAttachment",
+        "path": "src/scpn_quantum_control/compiler/mlir.py"
+      },
+      {
+        "name": "EnzymeMLIRCompilerADBreadthArtifact",
+        "path": "src/scpn_quantum_control/compiler/mlir.py"
+      },
+      {
+        "name": "EnzymeMLIRCompilerADBreadthCaseEvidence",
         "path": "src/scpn_quantum_control/compiler/mlir.py"
       },
       {
@@ -9393,6 +9401,8 @@
     "DynamicCouplingEngine",
     "EntropyHealthReport",
     "EnzymeMLIRBenchmarkAttachment",
+    "EnzymeMLIRCompilerADBreadthArtifact",
+    "EnzymeMLIRCompilerADBreadthCaseEvidence",
     "EnzymeMLIRCompilerADBreadthEvidence",
     "EnzymeMLIRMaturityAuditResult",
     "EnzymeMLIRToolchainStatus",
@@ -9614,6 +9624,7 @@
     "build_backend",
     "build_compiler_ad_transform_plan",
     "build_enzyme_mlir_benchmark_attachment",
+    "build_enzyme_mlir_compiler_ad_breadth_artifact",
     "build_enzyme_mlir_compiler_ad_breadth_evidence",
     "build_experiment",
     "build_identity_attractor",
