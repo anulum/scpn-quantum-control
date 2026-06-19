@@ -5,6 +5,12 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-06-19 — Hardened the PennyLane HAL device route by normalising local
+  plugin device names before `qml.device(...)`, preserving `device_kwargs`
+  dispatch evidence, rejecting empty/control-character device names at adapter
+  construction, avoiding untyped QNode decorator leakage under strict mypy, and
+  validating provider-lineage control-character failures without monkeypatching
+  imported stdlib modules.
 - 2026-06-19 — Hardened the PennyLane provider/device adapter boundary by
   normalising padded device names, rejecting empty or control-character device
   strings, rejecting non-positive or boolean finite-shot counts, and bringing

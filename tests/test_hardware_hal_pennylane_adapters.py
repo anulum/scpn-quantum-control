@@ -9,6 +9,8 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping, Sequence
+
 import pytest
 
 from scpn_quantum_control.hardware import hal_pennylane as pennylane_mod
@@ -113,6 +115,69 @@ def test_pennylane_adapter_rejects_shot_mismatch(monkeypatch: pytest.MonkeyPatch
         hal.submit("local_pennylane", workload)
 
 
+def test_pennylane_device_name_is_canonical_before_dispatch(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """HAL PennyLane devices should be normalised before plugin dispatch."""
+
+    class _FakeQml:
+        def __init__(self) -> None:
+            self.device_calls: list[dict[str, object]] = []
+
+        def device(self, name: str, **kwargs: object) -> object:
+            self.device_calls.append({"name": name, "kwargs": dict(kwargs)})
+            return object()
+
+    def _fake_execute_native_gates(
+        qml: object,
+        device: object,
+        instructions: Sequence[Mapping[str, object]],
+        n_qubits: int,
+        shots: int,
+    ) -> dict[str, int]:
+        del qml, device, instructions
+        return {"0" * n_qubits: shots}
+
+    fake_qml = _FakeQml()
+    monkeypatch.setattr(pennylane_mod, "_load_pennylane", lambda: fake_qml)
+    monkeypatch.setattr(pennylane_mod, "_execute_native_gates", _fake_execute_native_gates)
+
+    hal = HardwareAbstractionLayer.with_builtin_profiles()
+    adapter = PennyLaneDeviceHALAdapter(
+        hal.profile("local_pennylane"),
+        device_name="  custom.plugin.device  ",
+        device_kwargs={"analytic": False, "seed": 11},
+    )
+    hal.register_backend(adapter)
+    workload = pennylane_gate_workload(
+        [{"gate": "x", "wires": [0]}],
+        workload_id="pl_device_normalised",
+        n_qubits=1,
+        shots=4,
+    )
+
+    result = hal.result(hal.submit("local_pennylane", workload))
+
+    assert adapter.device_name == "custom.plugin.device"
+    assert result.metadata["device_name"] == "custom.plugin.device"
+    assert fake_qml.device_calls == [
+        {
+            "name": "custom.plugin.device",
+            "kwargs": {"wires": 1, "shots": 4, "analytic": False, "seed": 11},
+        }
+    ]
+
+
+@pytest.mark.parametrize("device_name", ["", "   ", "default.qubit\nbad", "default.qubit\x7fbad"])
+def test_pennylane_device_name_rejects_empty_or_control_strings(device_name: str) -> None:
+    """HAL PennyLane plugin names must fail closed before execution."""
+
+    hal = HardwareAbstractionLayer.with_builtin_profiles()
+
+    with pytest.raises(ValueError, match="PennyLane device name"):
+        PennyLaneDeviceHALAdapter(hal.profile("local_pennylane"), device_name=device_name)
+
+
 def test_pennylane_provider_job_id_uses_strict_validator(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -147,11 +212,11 @@ def test_pennylane_provider_job_id_rejects_control_characters(
 ) -> None:
     """PennyLane provider identifiers must reject control-character payloads."""
 
-    class _FakeDigest:
-        def hexdigest(self) -> str:
-            return "bad\nhash"
+    def _bad_digest(program: str) -> str:
+        del program
+        return "bad\nhash"
 
-    monkeypatch.setattr(pennylane_mod.hashlib, "sha256", lambda *_args, **_kwargs: _FakeDigest())
+    monkeypatch.setattr(pennylane_mod, "_program_digest", _bad_digest)
 
     with pytest.raises(ValueError, match="provider job id"):
         pennylane_mod._provider_job_id(

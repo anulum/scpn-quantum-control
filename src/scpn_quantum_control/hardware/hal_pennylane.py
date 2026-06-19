@@ -81,7 +81,7 @@ class PennyLaneDeviceHALAdapter:
             raise ValueError("PennyLaneDeviceHALAdapter requires the local_pennylane profile")
         self.profile = profile
         self.backend_id = profile.backend_id
-        self.device_name = device_name
+        self.device_name = _normalise_device_name(device_name)
         self._device = device
         self._device_kwargs = dict(device_kwargs or {})
         self._jobs: dict[str, QuantumJobRef] = {}
@@ -185,6 +185,15 @@ def _normalise_instruction(instruction: Mapping[str, object], n_qubits: int) -> 
     }
 
 
+def _normalise_device_name(device_name: str) -> str:
+    normalised = str(device_name).strip()
+    if not normalised:
+        raise ValueError("PennyLane device name must not be empty")
+    if any(ord(character) < 32 or ord(character) == 127 for character in normalised):
+        raise ValueError("PennyLane device name must not contain control characters")
+    return normalised
+
+
 def _decode_native_gate_payload(workload: QuantumWorkload) -> tuple[dict[str, object], ...]:
     if workload.ir_format != "pennylane":
         raise ValueError("PennyLane adapter requires pennylane workloads")
@@ -207,12 +216,12 @@ def _execute_native_gates(
     n_qubits: int,
     shots: int,
 ) -> dict[str, int]:
-    @qml.qnode(device)
-    def circuit() -> Any:
+    def _circuit() -> Any:
         for instruction in instructions:
             _apply_gate(qml, instruction)
         return qml.sample(wires=list(range(n_qubits)))
 
+    circuit = qml.qnode(device)(_circuit)
     samples = np.asarray(circuit(), dtype=int)
     if samples.ndim == 1:
         samples = samples.reshape((shots, n_qubits))
@@ -285,10 +294,14 @@ def _utc_now() -> str:
 
 
 def _provider_job_id(workload: QuantumWorkload) -> str:
-    program_digest = hashlib.sha256(workload.program.encode("utf-8")).hexdigest()[:12]
+    program_digest = _program_digest(workload.program)
     submitted_ns = time_ns()
     raw_provider_job_id = f"pennylane-local:{workload.workload_id}:{program_digest}:{submitted_ns}"
     return strict_provider_job_id(raw_provider_job_id, field_name="PennyLane provider job id")
+
+
+def _program_digest(program: str) -> str:
+    return hashlib.sha256(program.encode("utf-8")).hexdigest()[:12]
 
 
 def _hal_job_id(backend_id: str, workload_id: str, provider_job_id: str) -> str:
