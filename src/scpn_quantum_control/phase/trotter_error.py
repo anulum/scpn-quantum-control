@@ -39,20 +39,28 @@ and is not bounded by these commutator estimates.
 
 from __future__ import annotations
 
+from typing import TypeAlias
+
 import numpy as np
+from numpy.typing import NDArray
 from scipy.linalg import expm
 
 from ..bridge.knm_hamiltonian import knm_to_dense_matrix
 from ..dense_budget import require_dense_allocation
 
+FloatArray: TypeAlias = NDArray[np.float64]
+ComplexArray: TypeAlias = NDArray[np.complex128]
+TrotterSweepResult: TypeAlias = dict[str, object]
+OptimalStepResult: TypeAlias = dict[str, object]
+
 
 def _two_group_unitary(
-    h_xy: np.ndarray,
-    h_z: np.ndarray,
+    h_xy: ComplexArray,
+    h_z: ComplexArray,
     t: float,
     reps: int,
     order: int,
-) -> np.ndarray:
+) -> ComplexArray:
     """Dense unitary of the two-group product formula over ``reps`` steps.
 
     order 1: ``(e^{-i H_XY τ} e^{-i H_Z τ})^r`` (Lie-Trotter).
@@ -69,8 +77,8 @@ def _two_group_unitary(
 
 
 def trotter_error_norm(
-    K: np.ndarray,
-    omega: np.ndarray,
+    K: FloatArray,
+    omega: FloatArray,
     t: float,
     reps: int,
     order: int = 1,
@@ -87,8 +95,8 @@ def trotter_error_norm(
     Raises ValueError for n > 10 (2^10 = 1024, dense matrices grow fast),
     reps < 1, or order not in {1, 2}.
     """
-    K_arr = np.asarray(K, dtype=np.float64)
-    omega_arr = np.asarray(omega, dtype=np.float64)
+    K_arr: FloatArray = np.asarray(K, dtype=np.float64)
+    omega_arr: FloatArray = np.asarray(omega, dtype=np.float64)
     _validate_k_omega(K_arr, omega_arr)
     n = omega_arr.shape[0]
     if n > 10:
@@ -106,9 +114,18 @@ def trotter_error_norm(
         max_gib=max_dense_gib,
         label="Trotter dense unitary comparison workspace",
     )
-    h_full = knm_to_dense_matrix(K_arr, omega_arr, max_dense_gib=max_dense_gib)
-    h_xy = knm_to_dense_matrix(K_arr, np.zeros_like(omega_arr), max_dense_gib=max_dense_gib)
-    h_z = knm_to_dense_matrix(np.zeros_like(K_arr), omega_arr, max_dense_gib=max_dense_gib)
+    h_full: ComplexArray = np.asarray(
+        knm_to_dense_matrix(K_arr, omega_arr, max_dense_gib=max_dense_gib),
+        dtype=np.complex128,
+    )
+    h_xy: ComplexArray = np.asarray(
+        knm_to_dense_matrix(K_arr, np.zeros_like(omega_arr), max_dense_gib=max_dense_gib),
+        dtype=np.complex128,
+    )
+    h_z: ComplexArray = np.asarray(
+        knm_to_dense_matrix(np.zeros_like(K_arr), omega_arr, max_dense_gib=max_dense_gib),
+        dtype=np.complex128,
+    )
 
     u_exact = expm(-1j * h_full * t)
     u_trotter = _two_group_unitary(h_xy, h_z, t, reps, order)
@@ -117,21 +134,21 @@ def trotter_error_norm(
 
 
 def trotter_error_sweep(
-    K: np.ndarray,
-    omega: np.ndarray,
+    K: FloatArray,
+    omega: FloatArray,
     t_values: list[float],
     reps_values: list[int],
     order: int = 1,
     *,
     max_dense_gib: float | None = None,
-) -> dict:
+) -> TrotterSweepResult:
     """2D sweep of two-group Trotter error over (t, reps) pairs.
 
     Returns dict with keys 't_values', 'reps_values', 'order', 'errors' (2D list).
     """
-    errors = []
+    errors: list[list[float]] = []
     for t in t_values:
-        row = []
+        row: list[float] = []
         for reps in reps_values:
             row.append(trotter_error_norm(K, omega, t, reps, order, max_dense_gib=max_dense_gib))
         errors.append(row)
@@ -144,7 +161,7 @@ def trotter_error_sweep(
     }
 
 
-def commutator_norm_bound(K: np.ndarray, omega: np.ndarray) -> float:
+def commutator_norm_bound(K: FloatArray, omega: FloatArray) -> float:
     """Compute ||[H_XY, H_Z]|| analytically.
 
     For the XY-Z split:
@@ -164,8 +181,8 @@ def commutator_norm_bound(K: np.ndarray, omega: np.ndarray) -> float:
 
 
 def nested_commutator_norm_bound(
-    K: np.ndarray,
-    omega: np.ndarray,
+    K: FloatArray,
+    omega: FloatArray,
     *,
     exact_qubit_limit: int = 8,
     max_dense_gib: float | None = None,
@@ -179,8 +196,8 @@ def nested_commutator_norm_bound(
     ``2 (||H_XY|| + ||H_Z||) ||[H_XY,H_Z]||`` using Pauli coefficient-norm
     bounds, avoiding unsafe dense ``2^n`` allocation.
     """
-    K_arr = np.asarray(K, dtype=np.float64)
-    omega_arr = np.asarray(omega, dtype=np.float64)
+    K_arr: FloatArray = np.asarray(K, dtype=np.float64)
+    omega_arr: FloatArray = np.asarray(omega, dtype=np.float64)
     _validate_k_omega(K_arr, omega_arr)
     n = omega_arr.shape[0]
     if exact_qubit_limit < 0:
@@ -195,8 +212,14 @@ def nested_commutator_norm_bound(
             max_gib=max_dense_gib,
             label="Trotter nested dense commutator workspace",
         )
-        h_xy = knm_to_dense_matrix(K_arr, np.zeros_like(omega_arr), max_dense_gib=max_dense_gib)
-        h_z = knm_to_dense_matrix(np.zeros_like(K_arr), omega_arr, max_dense_gib=max_dense_gib)
+        h_xy: ComplexArray = np.asarray(
+            knm_to_dense_matrix(K_arr, np.zeros_like(omega_arr), max_dense_gib=max_dense_gib),
+            dtype=np.complex128,
+        )
+        h_z: ComplexArray = np.asarray(
+            knm_to_dense_matrix(np.zeros_like(K_arr), omega_arr, max_dense_gib=max_dense_gib),
+            dtype=np.complex128,
+        )
         comm = h_xy @ h_z - h_z @ h_xy
         nested_xy = h_xy @ comm - comm @ h_xy
         nested_z = h_z @ comm - comm @ h_z
@@ -212,8 +235,8 @@ def nested_commutator_norm_bound(
 
 
 def trotter_error_bound(
-    K: np.ndarray,
-    omega: np.ndarray,
+    K: FloatArray,
+    omega: FloatArray,
     t: float,
     reps: int,
     order: int = 1,
@@ -241,14 +264,14 @@ def trotter_error_bound(
 
 
 def optimal_dt(
-    K: np.ndarray,
-    omega: np.ndarray,
+    K: FloatArray,
+    omega: FloatArray,
     epsilon: float,
     t_total: float,
     order: int = 1,
     *,
     max_dense_gib: float | None = None,
-) -> dict:
+) -> OptimalStepResult:
     """Compute optimal Trotter step size for target error epsilon.
 
     Returns dict with dt, n_steps, error_bound, and the commutator norm Gamma.
@@ -277,7 +300,7 @@ def optimal_dt(
     }
 
 
-def frequency_heterogeneity(omega: np.ndarray) -> float:
+def frequency_heterogeneity(omega: FloatArray) -> float:
     """Measure of frequency spread: mean |ω_i - ω_j| over all pairs.
 
     Zero when all frequencies are equal (Trotter error vanishes).
@@ -293,7 +316,7 @@ def frequency_heterogeneity(omega: np.ndarray) -> float:
     return total / max(count, 1)
 
 
-def _validate_k_omega(K: np.ndarray, omega: np.ndarray) -> None:
+def _validate_k_omega(K: FloatArray, omega: FloatArray) -> None:
     if K.ndim != 2 or K.shape[0] != K.shape[1]:
         raise ValueError(f"K must be a square 2-D matrix, got shape {K.shape}")
     if omega.ndim != 1 or omega.shape[0] != K.shape[0]:

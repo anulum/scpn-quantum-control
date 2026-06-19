@@ -118,6 +118,7 @@ hardening-gate, QNN/QGNN/QSNN training and evidence satellites,
 objective/domain evidence, optimizer-baseline, parameter-shift/VQE foundations,
 structured-ansatz/Kuramoto solver foundations,
 layered ADAPT-VQE,
+Trotter-error bounds,
 framework-overlay, external-validation, Phase-QNode, gradient, provider/hardware-gradient, framework-bridge,
 transform-nesting, external-comparison, XY compiler, and PennyLane import
 modules that have been closed module-by-module. That ratchet is
