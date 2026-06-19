@@ -304,10 +304,11 @@ diagnostic.
 - Split Qiskit Runtime evidence into no-submit primitive metadata and live QPU
   EstimatorV2/SamplerV2 artefacts; live QPU evidence must carry ticket,
   backend-allowlist, shot-budget, ISA/transpiled-circuit, Runtime result, and
-  metadata digests before the live-ticket gate can pass. Raw-count replay and
-  calibration/statevector comparison artefacts must be attached to the same
-  Runtime QPU provider/backend/circuit/live-ticket chain before their gates can
-  pass.
+  metadata digests before the live-ticket gate can pass. Build those live-QPU
+  artefacts from captured Runtime metadata with the no-submit Qiskit helper;
+  raw-count replay and calibration/statevector comparison artefacts must be
+  attached to the same Runtime QPU provider/backend/circuit/live-ticket chain
+  before their gates can pass.
 - Compare gradients against finite differences, analytic references, and cross-framework references where practical.
 - Document failed or unsuitable scenarios because they are research evidence.
 

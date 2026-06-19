@@ -5,6 +5,10 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-06-19 — Added a no-submit Qiskit Runtime QPU evidence builder for
+  captured EstimatorV2/SamplerV2 metadata. The helper constructs validated
+  Runtime QPU artefacts from approved ticket, backend, job, digest,
+  shot-budget, and session-mode evidence without submitting provider jobs.
 - 2026-06-19 — Paired Qiskit raw-count replay and live
   calibration/statevector comparison evidence to matching Runtime QPU execution
   artefacts. The Qiskit maturity audit now rejects unpaired or mismatched

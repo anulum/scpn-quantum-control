@@ -73,6 +73,10 @@ metadata and clear only the runtime-primitive evidence gate; live QPU,
 raw-count replay and calibration/statevector comparison require their own
 validated artefacts, and benchmark promotion remains blocked until isolated
 artefacts exist.
+Use `build_qiskit_runtime_qpu_execution_artifact(...)` to convert captured
+EstimatorV2/SamplerV2 Runtime job metadata and SHA-256 digests into a validated
+no-submit `QiskitRuntimeQPUExecutionArtifact` before attaching live-QPU
+evidence to the maturity audit.
 
 For first-path user workflows, start with the
 [Stable Facades API](stable_facades_api.md). It is the mkdocstrings reference
@@ -1323,6 +1327,7 @@ is_phase_pennylane_available() -> bool
 check_pennylane_parameter_shift_agreement(objective, pennylane_gradient, values, tolerance=1e-6, parameters=None, rule=None) -> PennyLaneGradientAgreementResult
 run_pennylane_plugin_matrix(provider_execution_artifact=None, provider_gradient_parity_artifact=None, hardware_execution_artifact=None) -> PennyLanePluginMatrixResult
 run_pennylane_maturity_audit(objective, pennylane_objective, pennylane_gradient, values, circuit, phase_qnode_values, import_tape=None, device_name="default.qubit", shots=None, interface="autograd", diff_method="parameter-shift", value_tolerance=1e-8, gradient_tolerance=1e-6, parameters=None, rule=None, provider_execution_artifact=None, provider_gradient_parity_artifact=None, hardware_execution_artifact=None) -> PennyLaneMaturityAuditResult
+build_qiskit_runtime_qpu_execution_artifact(*, artifact_id, provider_name, primitive_name, backend_name, job_id, session_id, circuit_fingerprint, observable_fingerprint, parameter_digest, result_digest, metadata_digest, transpiled_circuit_digest, live_execution_ticket, backend_allowlist_id, shot_budget_id, runtime_session_mode, shots) -> QiskitRuntimeQPUExecutionArtifact
 run_qiskit_maturity_audit(circuit, observable, parameters, values, shots, rule=None, shift=1.5707963267948966, confidence_level=0.95, confidence_z=1.959963984540054, provider_preparation_audit=None, runtime_primitive_artifact=None, runtime_qpu_execution_artifact=None, raw_count_replay_artifact=None, calibration_comparison_artifact=None) -> QiskitMaturityAuditResult
 run_differentiable_provider_hardware_safety_audit(*, live_execution_ticket=None, raw_count_replay_artifact_id=None, calibration_snapshot_artifact_id=None, statevector_comparison_artifact_id=None, isolated_benchmark_artifact_id=None) -> DifferentiableProviderHardwareSafetyAuditResult
 build_registered_phase_qnode_circuit(n_qubits, operations, observable, max_depth=None, max_operations=None) -> PhaseQNodeRegisteredCircuitSpec
@@ -1449,12 +1454,15 @@ Runtime primitive metadata: `QiskitRuntimeQPUExecutionArtifact` accepts only
 EstimatorV2 or SamplerV2 routes, requires live-ticket, backend-allowlist,
 shot-budget, ISA/transpiled-circuit digest, Runtime result/metadata digests,
 positive shots, and a live QPU session mode, and clears only the
-`live_qpu_execution_ticket` gate. Raw-count replay must then match the Runtime
-QPU provider, backend, job, circuit fingerprint, live ticket, and shots before
-`raw_count_capture_replay_harness` can pass. Calibration comparison must match
-the same Runtime QPU provider, backend, circuit fingerprint, and live ticket
-before `live_backend_statevector_reference_comparison` can pass. Isolated
-benchmark promotion remains a separate evidence requirement.
+`live_qpu_execution_ticket` gate. `build_qiskit_runtime_qpu_execution_artifact(...)`
+is the no-submit construction path for captured Runtime metadata and digests; it
+does not contact a provider or create hardware evidence by itself. Raw-count
+replay must then match the Runtime QPU provider, backend, job, circuit
+fingerprint, live ticket, and shots before `raw_count_capture_replay_harness`
+can pass. Calibration comparison must match the same Runtime QPU provider,
+backend, circuit fingerprint, and live ticket before
+`live_backend_statevector_reference_comparison` can pass. Isolated benchmark
+promotion remains a separate evidence requirement.
 `parameter_shift_gradient_descent()` is the phase-native training surface for
 quantum objectives: it plans a fail-closed backend route, evaluates native
 parameter-shift gradients, applies Armijo backtracking, and records

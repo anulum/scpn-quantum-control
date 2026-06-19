@@ -28,6 +28,7 @@ from scpn_quantum_control.phase import (
     QiskitRawCountReplayArtifact,
     QiskitRuntimePrimitiveExecutionArtifact,
     QiskitRuntimeQPUExecutionArtifact,
+    build_qiskit_runtime_qpu_execution_artifact,
     execute_qiskit_finite_shot_parameter_shift,
     execute_qiskit_statevector_parameter_shift,
     generate_qiskit_parameter_shift_circuits,
@@ -279,6 +280,105 @@ def test_qiskit_runtime_qpu_execution_artifact_accepts_sampler_without_observabl
     assert artifact.primitive_name == "SamplerV2"
     assert artifact.observable_fingerprint is None
     assert artifact.to_dict()["primitive_name"] == "SamplerV2"
+
+
+def test_build_qiskit_runtime_qpu_execution_artifact_from_estimator_capture() -> None:
+    artifact = build_qiskit_runtime_qpu_execution_artifact(
+        artifact_id=" qiskit-runtime-qpu-builder-20260619 ",
+        provider_name="ibm_quantum",
+        primitive_name="estimator",
+        backend_name="ibm_brisbane",
+        job_id="runtime-qpu-job-20260619",
+        session_id="runtime-qpu-session-20260619",
+        circuit_fingerprint="qiskit:ry(theta):z:v1",
+        observable_fingerprint="SparsePauliOp:Z:v1",
+        parameter_digest="sha256:" + "8" * 64,
+        result_digest="sha256:" + "9" * 64,
+        metadata_digest="sha256:" + "a" * 64,
+        transpiled_circuit_digest="sha256:" + "b" * 64,
+        live_execution_ticket="live-ticket-20260619",
+        backend_allowlist_id="backend-allowlist-20260619",
+        shot_budget_id="shot-budget-20260619",
+        runtime_session_mode="live_qpu_session",
+        shots=4096,
+    )
+
+    assert artifact.artifact_id == "qiskit-runtime-qpu-builder-20260619"
+    assert artifact.primitive_name == "EstimatorV2"
+    assert artifact.hardware_execution is True
+    assert artifact.observable_fingerprint == "SparsePauliOp:Z:v1"
+
+
+def test_build_qiskit_runtime_qpu_execution_artifact_from_sampler_capture() -> None:
+    artifact = build_qiskit_runtime_qpu_execution_artifact(
+        artifact_id="qiskit-runtime-qpu-sampler-builder-20260619",
+        provider_name="ibm_quantum",
+        primitive_name="SamplerV2",
+        backend_name="ibm_brisbane",
+        job_id="runtime-qpu-sampler-job-20260619",
+        session_id=None,
+        circuit_fingerprint="qiskit:bell:meas:v1",
+        observable_fingerprint=None,
+        parameter_digest="sha256:" + "c" * 64,
+        result_digest="sha256:" + "d" * 64,
+        metadata_digest="sha256:" + "e" * 64,
+        transpiled_circuit_digest="sha256:" + "f" * 64,
+        live_execution_ticket="live-ticket-20260619",
+        backend_allowlist_id="backend-allowlist-20260619",
+        shot_budget_id="shot-budget-20260619",
+        runtime_session_mode="backend_live_qpu_mode",
+        shots=1024,
+    )
+
+    assert artifact.primitive_name == "SamplerV2"
+    assert artifact.observable_fingerprint is None
+    assert artifact.shots == 1024
+
+
+def test_build_qiskit_runtime_qpu_execution_artifact_rejects_sampler_observable() -> None:
+    with pytest.raises(ValueError, match="observable_fingerprint"):
+        build_qiskit_runtime_qpu_execution_artifact(
+            artifact_id="qiskit-runtime-qpu-sampler-builder-20260619",
+            provider_name="ibm_quantum",
+            primitive_name="SamplerV2",
+            backend_name="ibm_brisbane",
+            job_id="runtime-qpu-sampler-job-20260619",
+            session_id=None,
+            circuit_fingerprint="qiskit:bell:meas:v1",
+            observable_fingerprint="SparsePauliOp:Z:v1",
+            parameter_digest="sha256:" + "c" * 64,
+            result_digest="sha256:" + "d" * 64,
+            metadata_digest="sha256:" + "e" * 64,
+            transpiled_circuit_digest="sha256:" + "f" * 64,
+            live_execution_ticket="live-ticket-20260619",
+            backend_allowlist_id="backend-allowlist-20260619",
+            shot_budget_id="shot-budget-20260619",
+            runtime_session_mode="backend_live_qpu_mode",
+            shots=1024,
+        )
+
+
+def test_build_qiskit_runtime_qpu_execution_artifact_rejects_simulator_capture() -> None:
+    with pytest.raises(ValueError, match="live QPU execution"):
+        build_qiskit_runtime_qpu_execution_artifact(
+            artifact_id="qiskit-runtime-qpu-builder-20260619",
+            provider_name="ibm_quantum",
+            primitive_name="EstimatorV2",
+            backend_name="ibm_simulator",
+            job_id="runtime-qpu-job-20260619",
+            session_id="runtime-qpu-session-20260619",
+            circuit_fingerprint="qiskit:ry(theta):z:v1",
+            observable_fingerprint="SparsePauliOp:Z:v1",
+            parameter_digest="sha256:" + "8" * 64,
+            result_digest="sha256:" + "9" * 64,
+            metadata_digest="sha256:" + "a" * 64,
+            transpiled_circuit_digest="sha256:" + "b" * 64,
+            live_execution_ticket="live-ticket-20260619",
+            backend_allowlist_id="backend-allowlist-20260619",
+            shot_budget_id="shot-budget-20260619",
+            runtime_session_mode="simulator",
+            shots=4096,
+        )
 
 
 @pytest.mark.parametrize(

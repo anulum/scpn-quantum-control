@@ -766,6 +766,7 @@ from qiskit.circuit import Parameter
 from qiskit.quantum_info import SparsePauliOp
 
 from scpn_quantum_control.phase import (
+    build_qiskit_runtime_qpu_execution_artifact,
     execute_qiskit_statevector_parameter_shift,
     run_qiskit_maturity_audit,
 )
@@ -851,6 +852,9 @@ result and metadata digests, positive shots, hardware execution, and a live
 QPU session mode; EstimatorV2 evidence must include an observable fingerprint,
 while SamplerV2 evidence must not. Attaching it marks only
 `live_qpu_execution_ticket` as passed.
+`build_qiskit_runtime_qpu_execution_artifact(...)` is the no-submit helper for
+turning captured Runtime job metadata and SHA-256 artefact digests into that
+validated evidence object; it does not create or submit provider jobs.
 `QiskitRawCountReplayArtifact` validates raw-count capture and replay metadata
 with live-ticket ID, hardware-execution citation, shot count, measured-qubit
 count, expectation value, standard error, and SHA-256 count/replay digests.

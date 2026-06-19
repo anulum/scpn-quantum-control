@@ -281,6 +281,56 @@ class QiskitRuntimeQPUExecutionArtifact:
         }
 
 
+def build_qiskit_runtime_qpu_execution_artifact(
+    *,
+    artifact_id: str,
+    provider_name: str,
+    primitive_name: str,
+    backend_name: str,
+    job_id: str,
+    session_id: str | None,
+    circuit_fingerprint: str,
+    observable_fingerprint: str | None,
+    parameter_digest: str,
+    result_digest: str,
+    metadata_digest: str,
+    transpiled_circuit_digest: str,
+    live_execution_ticket: str,
+    backend_allowlist_id: str,
+    shot_budget_id: str,
+    runtime_session_mode: str,
+    shots: int,
+) -> QiskitRuntimeQPUExecutionArtifact:
+    """Build Runtime QPU evidence from captured EstimatorV2/SamplerV2 metadata.
+
+    The helper is intentionally no-submit: callers must provide digests and
+    identifiers captured from an approved Qiskit Runtime execution. The returned
+    artefact validates the Runtime primitive family, backend/session mode,
+    positive shot count, ticket/allowlist/budget IDs, and SHA-256 digests before
+    it can be attached to the Qiskit maturity audit.
+    """
+    return QiskitRuntimeQPUExecutionArtifact(
+        artifact_id=artifact_id,
+        provider_name=provider_name,
+        primitive_name=primitive_name,
+        backend_name=backend_name,
+        job_id=job_id,
+        session_id=session_id,
+        circuit_fingerprint=circuit_fingerprint,
+        observable_fingerprint=observable_fingerprint,
+        parameter_digest=parameter_digest,
+        result_digest=result_digest,
+        metadata_digest=metadata_digest,
+        transpiled_circuit_digest=transpiled_circuit_digest,
+        live_execution_ticket=live_execution_ticket,
+        backend_allowlist_id=backend_allowlist_id,
+        shot_budget_id=shot_budget_id,
+        runtime_session_mode=runtime_session_mode,
+        shots=shots,
+        hardware_execution=True,
+    )
+
+
 @dataclass(frozen=True)
 class QiskitRawCountReplayArtifact:
     """Validated Qiskit raw-count capture and replay evidence."""
@@ -988,6 +1038,7 @@ __all__ = [
     "QiskitRawCountReplayArtifact",
     "QiskitRuntimePrimitiveExecutionArtifact",
     "QiskitRuntimeQPUExecutionArtifact",
+    "build_qiskit_runtime_qpu_execution_artifact",
     "execute_qiskit_finite_shot_parameter_shift",
     "execute_qiskit_statevector_parameter_shift",
     "generate_qiskit_parameter_shift_circuits",
