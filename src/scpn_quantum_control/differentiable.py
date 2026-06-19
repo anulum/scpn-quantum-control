@@ -633,8 +633,9 @@ class ProgramADAdjointStep:
     """One generated reverse-adjoint step over stabilized Program AD IR.
 
     The step binds a primal SSA value and effect row to the local pullback
-    inputs and finite local pullback coefficients used by reverse-mode adjoint
-    generation. It is an auditable generation plan over
+    inputs, finite incoming cotangent, local pullback coefficients, and emitted
+    contribution cotangents used by reverse-mode adjoint generation. It is an
+    auditable generation plan over
     ``program_ad_effect_ir.v1`` metadata; it does not add non-executed branch
     adjoints or executable compiler lowering.
     """
@@ -646,7 +647,9 @@ class ProgramADAdjointStep:
     input_values: tuple[str, ...]
     contribution_inputs: tuple[str, ...]
     supported: bool
+    incoming_cotangent: float = 0.0
     contribution_scales: tuple[float, ...] = ()
+    contribution_cotangents: tuple[float, ...] = ()
     unsupported_reason: str | None = None
 
     def __post_init__(self) -> None:
@@ -668,6 +671,15 @@ class ProgramADAdjointStep:
             raise ValueError(
                 "program AD adjoint step contribution_inputs must be sorted and unique"
             )
+        raw_incoming_cotangent = cast(object, self.incoming_cotangent)
+        if isinstance(raw_incoming_cotangent, bool) or not isinstance(
+            raw_incoming_cotangent, Real
+        ):
+            raise ValueError("program AD adjoint step incoming_cotangent must be a finite float")
+        incoming_cotangent = float(raw_incoming_cotangent)
+        if not np.isfinite(incoming_cotangent):
+            raise ValueError("program AD adjoint step incoming_cotangent must be finite")
+        object.__setattr__(self, "incoming_cotangent", incoming_cotangent)
         if len(self.contribution_scales) != len(self.contribution_inputs):
             raise ValueError(
                 "program AD adjoint step contribution_scales length must match contribution_inputs"
@@ -686,6 +698,36 @@ class ProgramADAdjointStep:
                 )
             normalized_scales.append(scale_float)
         object.__setattr__(self, "contribution_scales", tuple(normalized_scales))
+        if len(self.contribution_cotangents) != len(self.contribution_inputs):
+            raise ValueError(
+                "program AD adjoint step contribution_cotangents length must match "
+                "contribution_inputs"
+            )
+        normalized_cotangents: list[float] = []
+        raw_cotangents = cast(tuple[object, ...], self.contribution_cotangents)
+        for cotangent in raw_cotangents:
+            if isinstance(cotangent, bool) or not isinstance(cotangent, Real):
+                raise ValueError(
+                    "program AD adjoint step contribution_cotangents entries must be finite floats"
+                )
+            cotangent_float = float(cotangent)
+            if not np.isfinite(cotangent_float):
+                raise ValueError(
+                    "program AD adjoint step contribution_cotangents entries must be finite"
+                )
+            normalized_cotangents.append(cotangent_float)
+        object.__setattr__(self, "contribution_cotangents", tuple(normalized_cotangents))
+        expected_cotangents = tuple(incoming_cotangent * scale for scale in normalized_scales)
+        if not np.allclose(
+            np.asarray(normalized_cotangents, dtype=np.float64),
+            np.asarray(expected_cotangents, dtype=np.float64),
+            rtol=0.0,
+            atol=1.0e-12,
+        ):
+            raise ValueError(
+                "program AD adjoint step contribution_cotangents must match "
+                "incoming_cotangent times contribution_scales"
+            )
         if not isinstance(self.supported, bool):
             raise ValueError("program AD adjoint step supported must be a boolean")
         if self.supported and self.unsupported_reason is not None:
@@ -705,7 +747,9 @@ class ProgramADAdjointStep:
             "operation": self.operation,
             "input_values": list(self.input_values),
             "contribution_inputs": list(self.contribution_inputs),
+            "incoming_cotangent": self.incoming_cotangent,
             "contribution_scales": list(self.contribution_scales),
+            "contribution_cotangents": list(self.contribution_cotangents),
             "supported": self.supported,
             "unsupported_reason": self.unsupported_reason,
         }
@@ -8232,6 +8276,7 @@ def _program_adjoint_result_from_nodes(
             nodes=nodes,
             node_by_name=node_by_name,
             program_ir=program_ir,
+            cotangents=adjoints,
         )
         if program_ir is not None
         else ()
@@ -8261,6 +8306,7 @@ def _program_adjoint_steps_from_ir(
     nodes: tuple[WholeProgramIRNode, ...],
     node_by_name: Mapping[str, WholeProgramIRNode],
     program_ir: ProgramADEffectIR,
+    cotangents: Mapping[str, float],
 ) -> tuple[ProgramADAdjointStep, ...]:
     """Generate reverse-adjoint steps from stabilized Program AD IR metadata."""
 
@@ -8274,7 +8320,9 @@ def _program_adjoint_steps_from_ir(
         unsupported_reason: str | None = None
         supported = True
         contribution_inputs: tuple[str, ...] = ()
+        incoming_cotangent = float(cotangents.get(primal_value, 0.0))
         contribution_scales: tuple[float, ...] = ()
+        contribution_cotangents: tuple[float, ...] = ()
         if ssa_value is None:
             supported = False
             unsupported_reason = "missing_ssa_value"
@@ -8295,6 +8343,9 @@ def _program_adjoint_steps_from_ir(
                 contribution_scales = tuple(
                     scale_by_input[input_name] for input_name in contribution_inputs
                 )
+                contribution_cotangents = tuple(
+                    incoming_cotangent * scale for scale in contribution_scales
+                )
         steps.append(
             ProgramADAdjointStep(
                 index=len(steps),
@@ -8303,7 +8354,9 @@ def _program_adjoint_steps_from_ir(
                 operation=node.op,
                 input_values=node.inputs,
                 contribution_inputs=contribution_inputs,
+                incoming_cotangent=incoming_cotangent,
                 contribution_scales=contribution_scales,
+                contribution_cotangents=contribution_cotangents,
                 supported=supported,
                 unsupported_reason=unsupported_reason,
             )

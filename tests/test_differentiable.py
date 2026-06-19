@@ -11281,14 +11281,17 @@ def test_program_adjoint_replay_matches_forward_program_ad_for_supported_ir() ->
     assert len(payload["adjoint_steps"][0]["contribution_inputs"]) == len(
         payload["adjoint_steps"][0]["contribution_scales"]
     )
+    assert len(payload["adjoint_steps"][0]["contribution_inputs"]) == len(
+        payload["adjoint_steps"][0]["contribution_cotangents"]
+    )
     np.testing.assert_allclose(adjoint.gradient, result.gradient, rtol=1.0e-12, atol=1.0e-12)
     np.testing.assert_allclose(
         program_adjoint_gradient(result), result.gradient, rtol=1.0e-12, atol=1.0e-12
     )
 
 
-def test_program_adjoint_generation_steps_record_local_pullback_scales() -> None:
-    """Generated adjoint steps should expose finite local pullback coefficients."""
+def test_program_adjoint_generation_steps_record_local_pullback_flow() -> None:
+    """Generated adjoint steps should expose finite local pullback cotangent flow."""
 
     def objective(values: np.ndarray) -> object:
         x, y = values
@@ -11303,7 +11306,9 @@ def test_program_adjoint_generation_steps_record_local_pullback_scales() -> None
 
     mul_step = next(step for step in adjoint.adjoint_steps if step.operation == "mul")
     assert mul_step.contribution_inputs == ("%0", "%1")
+    assert mul_step.incoming_cotangent == pytest.approx(1.0)
     np.testing.assert_allclose(mul_step.contribution_scales, [3.0, 2.0], atol=1.0e-12)
+    np.testing.assert_allclose(mul_step.contribution_cotangents, [3.0, 2.0], atol=1.0e-12)
 
     repeated_add_step = next(
         step
@@ -11311,7 +11316,16 @@ def test_program_adjoint_generation_steps_record_local_pullback_scales() -> None
         if step.operation == "add" and step.input_values == ("%0", "%0")
     )
     assert repeated_add_step.contribution_inputs == ("%0",)
+    assert repeated_add_step.incoming_cotangent == pytest.approx(1.0)
     np.testing.assert_allclose(repeated_add_step.contribution_scales, [2.0], atol=1.0e-12)
+    np.testing.assert_allclose(repeated_add_step.contribution_cotangents, [2.0], atol=1.0e-12)
+
+    parameter_cotangents = {
+        step.input_values[0]: step.incoming_cotangent
+        for step in adjoint.adjoint_steps
+        if step.operation == "parameter"
+    }
+    assert parameter_cotangents == pytest.approx({"x": 5.0, "y": 2.0})
 
     payload_steps = {
         tuple(step["input_values"]): step
@@ -11319,6 +11333,7 @@ def test_program_adjoint_generation_steps_record_local_pullback_scales() -> None
         if step["operation"] == "add"
     }
     assert payload_steps[("%0", "%0")]["contribution_scales"] == [2.0]
+    assert payload_steps[("%0", "%0")]["contribution_cotangents"] == [2.0]
 
 
 def test_program_adjoint_replay_supports_static_setitem_effects() -> None:
@@ -11378,7 +11393,9 @@ def test_program_adjoint_result_validation_paths() -> None:
     assert result.replay_ir_format == "program_ad_effect_ir.v1"
     assert result.adjoint_step_count == 1
     assert result.to_dict()["adjoint_steps"][0]["operation"] == "parameter"
+    assert result.to_dict()["adjoint_steps"][0]["incoming_cotangent"] == 0.0
     assert result.to_dict()["adjoint_steps"][0]["contribution_scales"] == []
+    assert result.to_dict()["adjoint_steps"][0]["contribution_cotangents"] == []
     with pytest.raises(ValueError, match="one-dimensional"):
         ProgramADAdjointResult(
             gradient=np.array([[1.0]], dtype=np.float64),
@@ -11482,6 +11499,32 @@ def test_program_adjoint_result_validation_paths() -> None:
             contribution_scales=(),
             supported=True,
         )
+    with pytest.raises(ValueError, match="incoming_cotangent must be finite"):
+        ProgramADAdjointStep(
+            index=0,
+            primal_value="%0",
+            primal_effect=0,
+            operation="add",
+            input_values=("%0", "%1"),
+            contribution_inputs=("%0",),
+            incoming_cotangent=float("inf"),
+            contribution_scales=(1.0,),
+            contribution_cotangents=(1.0,),
+            supported=True,
+        )
+    with pytest.raises(ValueError, match="incoming_cotangent must be a finite float"):
+        ProgramADAdjointStep(
+            index=0,
+            primal_value="%0",
+            primal_effect=0,
+            operation="add",
+            input_values=("%0", "%1"),
+            contribution_inputs=("%0",),
+            incoming_cotangent=True,  # type: ignore[arg-type]
+            contribution_scales=(1.0,),
+            contribution_cotangents=(1.0,),
+            supported=True,
+        )
     with pytest.raises(ValueError, match="contribution_scales entries must be finite"):
         ProgramADAdjointStep(
             index=0,
@@ -11502,6 +11545,55 @@ def test_program_adjoint_result_validation_paths() -> None:
             input_values=("%0", "%1"),
             contribution_inputs=("%0",),
             contribution_scales=("bad",),  # type: ignore[arg-type]
+            supported=True,
+        )
+    with pytest.raises(ValueError, match="contribution_cotangents length"):
+        ProgramADAdjointStep(
+            index=0,
+            primal_value="%0",
+            primal_effect=0,
+            operation="add",
+            input_values=("%0", "%1"),
+            contribution_inputs=("%0",),
+            contribution_scales=(1.0,),
+            contribution_cotangents=(),
+            supported=True,
+        )
+    with pytest.raises(ValueError, match="contribution_cotangents entries must be finite"):
+        ProgramADAdjointStep(
+            index=0,
+            primal_value="%0",
+            primal_effect=0,
+            operation="add",
+            input_values=("%0", "%1"),
+            contribution_inputs=("%0",),
+            contribution_scales=(1.0,),
+            contribution_cotangents=(float("nan"),),
+            supported=True,
+        )
+    with pytest.raises(ValueError, match="contribution_cotangents entries must be finite floats"):
+        ProgramADAdjointStep(
+            index=0,
+            primal_value="%0",
+            primal_effect=0,
+            operation="add",
+            input_values=("%0", "%1"),
+            contribution_inputs=("%0",),
+            contribution_scales=(1.0,),
+            contribution_cotangents=("bad",),  # type: ignore[arg-type]
+            supported=True,
+        )
+    with pytest.raises(ValueError, match="contribution_cotangents must match"):
+        ProgramADAdjointStep(
+            index=0,
+            primal_value="%0",
+            primal_effect=0,
+            operation="add",
+            input_values=("%0", "%1"),
+            contribution_inputs=("%0",),
+            incoming_cotangent=2.0,
+            contribution_scales=(3.0,),
+            contribution_cotangents=(5.0,),
             supported=True,
         )
 

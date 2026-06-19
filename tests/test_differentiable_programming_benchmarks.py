@@ -147,6 +147,7 @@ def test_differentiable_programming_benchmark_suite_matches_analytic_references(
         reverse_adjoint_row.claim_boundary
     )
     assert "finite local pullback scales" in reverse_adjoint_row.claim_boundary
+    assert "cotangent-flow rows" in reverse_adjoint_row.claim_boundary
     assert "program_ad_effect_ir.v1" in reverse_adjoint_row.claim_boundary
     assert "not full reverse-mode compiler AD" in reverse_adjoint_row.claim_boundary
     linalg_row = next(row for row in results if row.category == "linalg-primitive")

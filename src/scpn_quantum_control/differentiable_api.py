@@ -731,10 +731,10 @@ def differentiable_dashboard_status(
             claim_boundary=(
                 "bounded Program AD reverse adjoint generation over stabilized "
                 "program_ad_effect_ir.v1 for supported executed scalar IR only, "
-                "with generated adjoint steps, finite local pullback scales, and "
-                "node/effect/control/phi provenance; not full reverse-mode compiler "
-                "AD, non-executed branch adjoints, Rust/LLVM executable lowering, "
-                "hardware, or performance promotion"
+                "with generated adjoint steps, finite local pullback scales, "
+                "cotangent-flow rows, and node/effect/control/phi provenance; not "
+                "full reverse-mode compiler AD, non-executed branch adjoints, "
+                "Rust/LLVM executable lowering, hardware, or performance promotion"
             ),
         ),
         DifferentiableDashboardCapabilityRow(
