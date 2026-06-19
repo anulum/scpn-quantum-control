@@ -767,6 +767,7 @@ from qiskit.quantum_info import SparsePauliOp
 
 from scpn_quantum_control.phase import (
     build_qiskit_runtime_qpu_execution_artifact,
+    build_qiskit_runtime_qpu_provider_evidence_bundle,
     execute_qiskit_statevector_parameter_shift,
     run_qiskit_maturity_audit,
 )
@@ -868,6 +869,10 @@ backend, circuit fingerprint, and live ticket. These artefacts can clear only
 their corresponding Runtime/QPU, raw-count replay, and calibration/statevector
 comparison gates. The audit keeps `ready_for_provider_exceedance=False` until
 isolated benchmark evidence exists.
+`QiskitRuntimeQPUProviderEvidenceBundle` validates that whole attachable chain
+as one no-submit audit input and can carry an isolated benchmark artefact ID.
+Without that ID, benchmark promotion remains blocked even when the Runtime QPU,
+raw-count, and calibration comparison artefacts match.
 
 ## Gradient Tape Boundary
 

@@ -308,7 +308,10 @@ diagnostic.
   artefacts from captured Runtime metadata with the no-submit Qiskit helper;
   raw-count replay and calibration/statevector comparison artefacts must be
   attached to the same Runtime QPU provider/backend/circuit/live-ticket chain
-  before their gates can pass.
+  before their gates can pass. Use the provider evidence bundle when attaching
+  Runtime QPU, raw-count, calibration, and isolated benchmark artefacts
+  together; omitting the isolated benchmark ID keeps benchmark promotion
+  blocked.
 - Compare gradients against finite differences, analytic references, and cross-framework references where practical.
 - Document failed or unsuitable scenarios because they are research evidence.
 

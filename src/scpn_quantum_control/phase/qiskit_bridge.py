@@ -456,6 +456,79 @@ class QiskitCalibrationStatevectorComparisonArtifact:
 
 
 @dataclass(frozen=True)
+class QiskitRuntimeQPUProviderEvidenceBundle:
+    """Validated Runtime QPU, replay, calibration, and benchmark evidence chain."""
+
+    artifact_id: str
+    runtime_qpu_execution_artifact: QiskitRuntimeQPUExecutionArtifact
+    raw_count_replay_artifact: QiskitRawCountReplayArtifact
+    calibration_comparison_artifact: QiskitCalibrationStatevectorComparisonArtifact
+    isolated_benchmark_artifact_id: str | None = None
+    claim_boundary: str = "qiskit_runtime_qpu_provider_evidence_bundle"
+
+    def __post_init__(self) -> None:
+        object.__setattr__(
+            self,
+            "artifact_id",
+            _normalise_metadata_text("artifact_id", self.artifact_id),
+        )
+        object.__setattr__(
+            self,
+            "claim_boundary",
+            _normalise_metadata_text("claim_boundary", self.claim_boundary),
+        )
+        if self.isolated_benchmark_artifact_id is not None:
+            object.__setattr__(
+                self,
+                "isolated_benchmark_artifact_id",
+                _normalise_metadata_text(
+                    "isolated_benchmark_artifact_id",
+                    self.isolated_benchmark_artifact_id,
+                ),
+            )
+        _validate_runtime_qpu_evidence_chain(
+            runtime_qpu_execution_artifact=self.runtime_qpu_execution_artifact,
+            raw_count_replay_artifact=self.raw_count_replay_artifact,
+            calibration_comparison_artifact=self.calibration_comparison_artifact,
+        )
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-compatible Runtime QPU provider evidence metadata."""
+        return {
+            "artifact_id": self.artifact_id,
+            "runtime_qpu_execution_artifact": (self.runtime_qpu_execution_artifact.to_dict()),
+            "raw_count_replay_artifact": self.raw_count_replay_artifact.to_dict(),
+            "calibration_comparison_artifact": (self.calibration_comparison_artifact.to_dict()),
+            "isolated_benchmark_artifact_id": self.isolated_benchmark_artifact_id,
+            "claim_boundary": self.claim_boundary,
+        }
+
+
+def build_qiskit_runtime_qpu_provider_evidence_bundle(
+    *,
+    artifact_id: str,
+    runtime_qpu_execution_artifact: QiskitRuntimeQPUExecutionArtifact,
+    raw_count_replay_artifact: QiskitRawCountReplayArtifact,
+    calibration_comparison_artifact: QiskitCalibrationStatevectorComparisonArtifact,
+    isolated_benchmark_artifact_id: str | None = None,
+) -> QiskitRuntimeQPUProviderEvidenceBundle:
+    """Build a no-submit Qiskit Runtime QPU provider evidence bundle.
+
+    The bundle ties one Runtime QPU execution artefact to its matching
+    raw-count replay and calibration/statevector comparison artefacts. An
+    isolated benchmark artefact ID may be attached when benchmark evidence has
+    been produced under the repository benchmark-isolation policy.
+    """
+    return QiskitRuntimeQPUProviderEvidenceBundle(
+        artifact_id=artifact_id,
+        runtime_qpu_execution_artifact=runtime_qpu_execution_artifact,
+        raw_count_replay_artifact=raw_count_replay_artifact,
+        calibration_comparison_artifact=calibration_comparison_artifact,
+        isolated_benchmark_artifact_id=isolated_benchmark_artifact_id,
+    )
+
+
+@dataclass(frozen=True)
 class QiskitMaturityAuditResult:
     """Aggregate Qiskit local-gradient evidence and provider-execution blockers."""
 
@@ -620,6 +693,7 @@ def run_qiskit_maturity_audit(
     runtime_qpu_execution_artifact: QiskitRuntimeQPUExecutionArtifact | None = None,
     raw_count_replay_artifact: QiskitRawCountReplayArtifact | None = None,
     calibration_comparison_artifact: QiskitCalibrationStatevectorComparisonArtifact | None = None,
+    qpu_provider_evidence_bundle: QiskitRuntimeQPUProviderEvidenceBundle | None = None,
 ) -> QiskitMaturityAuditResult:
     """Aggregate Qiskit local-gradient evidence and provider-level blockers.
 
@@ -634,6 +708,26 @@ def run_qiskit_maturity_audit(
     parameter_tuple = _normalise_parameters(parameters)
     values_vector = _as_finite_vector("values", values, width=len(parameter_tuple))
     shot_count = _normalise_shots(shots)
+    isolated_benchmark_artifact_id: str | None = None
+    if qpu_provider_evidence_bundle is not None:
+        if (
+            runtime_qpu_execution_artifact is not None
+            or raw_count_replay_artifact is not None
+            or calibration_comparison_artifact is not None
+        ):
+            raise ValueError(
+                "qpu_provider_evidence_bundle cannot be combined with individual QPU artefacts"
+            )
+        runtime_qpu_execution_artifact = (
+            qpu_provider_evidence_bundle.runtime_qpu_execution_artifact
+        )
+        raw_count_replay_artifact = qpu_provider_evidence_bundle.raw_count_replay_artifact
+        calibration_comparison_artifact = (
+            qpu_provider_evidence_bundle.calibration_comparison_artifact
+        )
+        isolated_benchmark_artifact_id = (
+            qpu_provider_evidence_bundle.isolated_benchmark_artifact_id
+        )
     _validate_runtime_qpu_evidence_chain(
         runtime_qpu_execution_artifact=runtime_qpu_execution_artifact,
         raw_count_replay_artifact=raw_count_replay_artifact,
@@ -729,6 +823,12 @@ def run_qiskit_maturity_audit(
         local_reference_metadata["calibration_comparison_tolerance"] = (
             calibration_comparison_artifact.tolerance
         )
+    if qpu_provider_evidence_bundle is not None:
+        local_reference_metadata["qpu_provider_evidence_bundle_id"] = (
+            qpu_provider_evidence_bundle.artifact_id
+        )
+    if isolated_benchmark_artifact_id is not None:
+        local_reference_metadata["isolated_benchmark_artifact_id"] = isolated_benchmark_artifact_id
     evidence: dict[str, object] = {
         "shifted_circuit_records": shifted_records,
         "statevector_reference": statevector_reference,
@@ -738,6 +838,7 @@ def run_qiskit_maturity_audit(
         "runtime_qpu_execution_artifact": runtime_qpu_execution_artifact,
         "raw_count_replay_artifact": raw_count_replay_artifact,
         "calibration_comparison_artifact": calibration_comparison_artifact,
+        "qpu_provider_evidence_bundle": qpu_provider_evidence_bundle,
     }
     statevector_comparison_passed = max_abs_error <= 1e-10
     provider_policy_passed = (
@@ -760,7 +861,9 @@ def run_qiskit_maturity_audit(
         "backend_allowlist_policy": "passed" if provider_policy_passed else "failed",
         "calibration_snapshot_policy": "passed" if provider_policy_passed else "failed",
         "runtime_primitive_execution_evidence": (
-            "passed" if runtime_primitive_artifact is not None else "blocked"
+            "passed"
+            if runtime_primitive_artifact is not None or runtime_qpu_execution_artifact is not None
+            else "blocked"
         ),
         "live_qpu_execution_ticket": (
             "passed" if runtime_qpu_execution_artifact is not None else "blocked"
@@ -771,7 +874,9 @@ def run_qiskit_maturity_audit(
         "live_backend_statevector_reference_comparison": (
             "passed" if calibration_comparison_artifact is not None else "blocked"
         ),
-        "promotion_grade_isolated_benchmarks": "blocked",
+        "promotion_grade_isolated_benchmarks": (
+            "passed" if isolated_benchmark_artifact_id is not None else "blocked"
+        ),
     }
     local_gradient_ready = all(
         required_capabilities[name] == "passed"
@@ -1037,8 +1142,10 @@ __all__ = [
     "QiskitParameterShiftRecord",
     "QiskitRawCountReplayArtifact",
     "QiskitRuntimePrimitiveExecutionArtifact",
+    "QiskitRuntimeQPUProviderEvidenceBundle",
     "QiskitRuntimeQPUExecutionArtifact",
     "build_qiskit_runtime_qpu_execution_artifact",
+    "build_qiskit_runtime_qpu_provider_evidence_bundle",
     "execute_qiskit_finite_shot_parameter_shift",
     "execute_qiskit_statevector_parameter_shift",
     "generate_qiskit_parameter_shift_circuits",

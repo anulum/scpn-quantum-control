@@ -77,6 +77,10 @@ Use `build_qiskit_runtime_qpu_execution_artifact(...)` to convert captured
 EstimatorV2/SamplerV2 Runtime job metadata and SHA-256 digests into a validated
 no-submit `QiskitRuntimeQPUExecutionArtifact` before attaching live-QPU
 evidence to the maturity audit.
+Use `build_qiskit_runtime_qpu_provider_evidence_bundle(...)` when Runtime QPU,
+raw-count replay, calibration/statevector comparison, and isolated benchmark
+artefact IDs need to be attached as one validated evidence chain; omitting the
+isolated benchmark artefact ID keeps benchmark promotion blocked.
 
 For first-path user workflows, start with the
 [Stable Facades API](stable_facades_api.md). It is the mkdocstrings reference
@@ -1328,7 +1332,8 @@ check_pennylane_parameter_shift_agreement(objective, pennylane_gradient, values,
 run_pennylane_plugin_matrix(provider_execution_artifact=None, provider_gradient_parity_artifact=None, hardware_execution_artifact=None) -> PennyLanePluginMatrixResult
 run_pennylane_maturity_audit(objective, pennylane_objective, pennylane_gradient, values, circuit, phase_qnode_values, import_tape=None, device_name="default.qubit", shots=None, interface="autograd", diff_method="parameter-shift", value_tolerance=1e-8, gradient_tolerance=1e-6, parameters=None, rule=None, provider_execution_artifact=None, provider_gradient_parity_artifact=None, hardware_execution_artifact=None) -> PennyLaneMaturityAuditResult
 build_qiskit_runtime_qpu_execution_artifact(*, artifact_id, provider_name, primitive_name, backend_name, job_id, session_id, circuit_fingerprint, observable_fingerprint, parameter_digest, result_digest, metadata_digest, transpiled_circuit_digest, live_execution_ticket, backend_allowlist_id, shot_budget_id, runtime_session_mode, shots) -> QiskitRuntimeQPUExecutionArtifact
-run_qiskit_maturity_audit(circuit, observable, parameters, values, shots, rule=None, shift=1.5707963267948966, confidence_level=0.95, confidence_z=1.959963984540054, provider_preparation_audit=None, runtime_primitive_artifact=None, runtime_qpu_execution_artifact=None, raw_count_replay_artifact=None, calibration_comparison_artifact=None) -> QiskitMaturityAuditResult
+build_qiskit_runtime_qpu_provider_evidence_bundle(*, artifact_id, runtime_qpu_execution_artifact, raw_count_replay_artifact, calibration_comparison_artifact, isolated_benchmark_artifact_id=None) -> QiskitRuntimeQPUProviderEvidenceBundle
+run_qiskit_maturity_audit(circuit, observable, parameters, values, shots, rule=None, shift=1.5707963267948966, confidence_level=0.95, confidence_z=1.959963984540054, provider_preparation_audit=None, runtime_primitive_artifact=None, runtime_qpu_execution_artifact=None, raw_count_replay_artifact=None, calibration_comparison_artifact=None, qpu_provider_evidence_bundle=None) -> QiskitMaturityAuditResult
 run_differentiable_provider_hardware_safety_audit(*, live_execution_ticket=None, raw_count_replay_artifact_id=None, calibration_snapshot_artifact_id=None, statevector_comparison_artifact_id=None, isolated_benchmark_artifact_id=None) -> DifferentiableProviderHardwareSafetyAuditResult
 build_registered_phase_qnode_circuit(n_qubits, operations, observable, max_depth=None, max_operations=None) -> PhaseQNodeRegisteredCircuitSpec
 build_phase_qnode_template(name, n_qubits, n_layers=1, entangler="chain", observable=None) -> PhaseQNodeTemplateSpec
@@ -1463,6 +1468,13 @@ can pass. Calibration comparison must match the same Runtime QPU provider,
 backend, circuit fingerprint, and live ticket before
 `live_backend_statevector_reference_comparison` can pass. Isolated benchmark
 promotion remains a separate evidence requirement.
+`QiskitRuntimeQPUProviderEvidenceBundle` is the no-submit bundled attachment
+for a matching Runtime QPU execution artefact, raw-count replay artefact, and
+calibration/statevector comparison artefact. Build it with
+`build_qiskit_runtime_qpu_provider_evidence_bundle(...)` when a reviewer needs
+one chain identifier in the maturity audit. The bundle only clears the isolated
+benchmark gate when `isolated_benchmark_artifact_id` is present; otherwise the
+benchmark promotion gate remains blocked.
 `parameter_shift_gradient_descent()` is the phase-native training surface for
 quantum objectives: it plans a fail-closed backend route, evaluates native
 parameter-shift gradients, applies Armijo backtracking, and records

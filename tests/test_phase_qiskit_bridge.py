@@ -28,7 +28,9 @@ from scpn_quantum_control.phase import (
     QiskitRawCountReplayArtifact,
     QiskitRuntimePrimitiveExecutionArtifact,
     QiskitRuntimeQPUExecutionArtifact,
+    QiskitRuntimeQPUProviderEvidenceBundle,
     build_qiskit_runtime_qpu_execution_artifact,
+    build_qiskit_runtime_qpu_provider_evidence_bundle,
     execute_qiskit_finite_shot_parameter_shift,
     execute_qiskit_statevector_parameter_shift,
     generate_qiskit_parameter_shift_circuits,
@@ -594,6 +596,99 @@ def test_qiskit_maturity_audit_accepts_paired_qpu_raw_count_and_calibration_with
     assert "raw_count_capture_replay_harness" not in result.open_gaps
     assert "live_backend_statevector_reference_comparison" not in result.open_gaps
     assert "promotion_grade_isolated_benchmarks" in result.open_gaps
+
+
+def _qiskit_qpu_provider_evidence_bundle(
+    *,
+    isolated_benchmark_artifact_id: str | None = "isolated-qiskit-benchmark-20260619",
+) -> QiskitRuntimeQPUProviderEvidenceBundle:
+    return build_qiskit_runtime_qpu_provider_evidence_bundle(
+        artifact_id="qiskit-provider-evidence-bundle-20260619",
+        runtime_qpu_execution_artifact=_qiskit_runtime_qpu_execution_artifact(),
+        raw_count_replay_artifact=_qiskit_raw_count_replay_artifact(),
+        calibration_comparison_artifact=_qiskit_calibration_comparison_artifact(),
+        isolated_benchmark_artifact_id=isolated_benchmark_artifact_id,
+    )
+
+
+def test_qiskit_provider_evidence_bundle_clears_full_evidence_chain() -> None:
+    circuit, parameters, observable = _single_rotation_problem()
+    bundle = _qiskit_qpu_provider_evidence_bundle()
+
+    result = run_qiskit_maturity_audit(
+        circuit,
+        observable,
+        parameters,
+        np.array([0.4], dtype=float),
+        shots=400,
+        qpu_provider_evidence_bundle=bundle,
+    )
+
+    assert result.ready_for_provider_exceedance
+    assert not result.open_gaps
+    assert result.evidence["qpu_provider_evidence_bundle"] is bundle
+    assert result.required_capabilities["runtime_primitive_execution_evidence"] == "passed"
+    assert result.required_capabilities["live_qpu_execution_ticket"] == "passed"
+    assert result.required_capabilities["raw_count_capture_replay_harness"] == "passed"
+    assert (
+        result.required_capabilities["live_backend_statevector_reference_comparison"] == "passed"
+    )
+    assert result.required_capabilities["promotion_grade_isolated_benchmarks"] == "passed"
+    assert result.local_reference_metadata["qpu_provider_evidence_bundle_id"] == (
+        bundle.artifact_id
+    )
+    assert result.local_reference_metadata["isolated_benchmark_artifact_id"] == (
+        "isolated-qiskit-benchmark-20260619"
+    )
+    payload = bundle.to_dict()
+    assert payload["artifact_id"] == bundle.artifact_id
+    assert payload["isolated_benchmark_artifact_id"] == "isolated-qiskit-benchmark-20260619"
+
+
+def test_qiskit_provider_evidence_bundle_keeps_benchmark_gate_blocked_without_benchmark() -> None:
+    circuit, parameters, observable = _single_rotation_problem()
+    bundle = _qiskit_qpu_provider_evidence_bundle(isolated_benchmark_artifact_id=None)
+
+    result = run_qiskit_maturity_audit(
+        circuit,
+        observable,
+        parameters,
+        np.array([0.4], dtype=float),
+        shots=400,
+        qpu_provider_evidence_bundle=bundle,
+    )
+
+    assert not result.ready_for_provider_exceedance
+    assert "promotion_grade_isolated_benchmarks" in result.open_gaps
+    assert result.required_capabilities["promotion_grade_isolated_benchmarks"] == "blocked"
+
+
+def test_qiskit_provider_evidence_bundle_rejects_mismatched_raw_count_chain() -> None:
+    with pytest.raises(ValueError, match="raw_count_replay_artifact.job_id"):
+        build_qiskit_runtime_qpu_provider_evidence_bundle(
+            artifact_id="qiskit-provider-evidence-bundle-20260619",
+            runtime_qpu_execution_artifact=_qiskit_runtime_qpu_execution_artifact(),
+            raw_count_replay_artifact=_qiskit_raw_count_replay_artifact(
+                job_id="runtime-qpu-job-other"
+            ),
+            calibration_comparison_artifact=_qiskit_calibration_comparison_artifact(),
+            isolated_benchmark_artifact_id="isolated-qiskit-benchmark-20260619",
+        )
+
+
+def test_qiskit_maturity_audit_rejects_bundle_mixed_with_individual_qpu_artifacts() -> None:
+    circuit, parameters, observable = _single_rotation_problem()
+
+    with pytest.raises(ValueError, match="qpu_provider_evidence_bundle"):
+        run_qiskit_maturity_audit(
+            circuit,
+            observable,
+            parameters,
+            np.array([0.4], dtype=float),
+            shots=400,
+            qpu_provider_evidence_bundle=_qiskit_qpu_provider_evidence_bundle(),
+            runtime_qpu_execution_artifact=_qiskit_runtime_qpu_execution_artifact(),
+        )
 
 
 def test_qiskit_maturity_audit_rejects_unpaired_raw_count_replay_artifact() -> None:
