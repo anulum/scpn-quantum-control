@@ -372,6 +372,7 @@ def test_quantum_gradient_benchmark_suite_matches_analytic_references() -> None:
         "single_rotation_parameter_shift",
         "two_parameter_phase_expectation",
         "sparse_ising_chain_six_qubit_expectation",
+        "torch_registered_phase_qnode_statevector_lowering",
     ]
     for row in results:
         assert isinstance(row, QuantumGradientBenchmarkResult)
@@ -392,6 +393,13 @@ def test_quantum_gradient_benchmark_suite_matches_analytic_references() -> None:
     assert sparse_row.parameter_shift_gradient.shape == (6,)
     assert sparse_row.evaluations >= 24
     assert "sparse Hamiltonian" in sparse_row.claim_boundary
+    torch_row = next(row for row in results if row.case_id.startswith("torch_registered"))
+    assert torch_row.parameter_shift_gradient.shape == (2,)
+    assert torch_row.max_abs_reference_error <= 1.0e-8
+    assert "native PyTorch autograd statevector lowering" in torch_row.claim_boundary
+    assert "no provider, hardware, isolated benchmark, or performance promotion" in (
+        torch_row.claim_boundary
+    )
 
 
 def test_quantum_gradient_benchmark_result_validation_paths() -> None:

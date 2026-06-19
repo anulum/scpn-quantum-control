@@ -19,6 +19,9 @@ import pytest
 import scpn_quantum_control.phase.tensorflow_bridge as tensorflow_bridge
 import scpn_quantum_control.phase.torch_bridge as torch_bridge
 from scpn_quantum_control.phase import (
+    PauliTerm,
+    PhaseQNodeCircuit,
+    PhaseQNodeOperation,
     PhaseTensorFlowMaturityAuditResult,
     PhaseTensorFlowParameterShiftResult,
     PhaseTensorFlowPhaseQNodeLoweringMatrixResult,
@@ -30,10 +33,12 @@ from scpn_quantum_control.phase import (
     PhaseTorchModuleWrapperAuditResult,
     PhaseTorchParameterShiftResult,
     PhaseTorchPhaseQNodeLoweringMatrixResult,
+    PhaseTorchPhaseQNodeStatevectorResult,
     PhaseTorchQNNGradientResult,
     is_phase_tensorflow_available,
     is_phase_torch_available,
     multi_frequency_parameter_shift_rule,
+    parameter_shift_phase_qnode_gradient,
     parameter_shift_qnn_classifier_gradient,
     parameter_shift_qnn_classifier_loss,
     run_tensorflow_keras_layer_wrapper_audit,
@@ -52,6 +57,7 @@ from scpn_quantum_control.phase import (
     torch_bounded_qnn_module,
     torch_bounded_qnn_value_and_grad,
     torch_parameter_shift_value_and_grad,
+    torch_phase_qnode_value_and_grad,
 )
 
 
@@ -901,7 +907,7 @@ def test_torch_maturity_audit_records_bounded_passes_and_provider_gaps(
     assert evidence["module_layer_wrapper"].passed
     assert evidence["live_overlay"].passed
     assert evidence["live_overlay"].artifact_id == "diff-qnode-external-comparison-local"
-    assert "arbitrary_phase_qnode_torch_lowering" in result.open_gaps
+    assert "finite_shot_provider_hardware_torch_phase_qnode_lowering" in result.open_gaps
     assert "promotion_grade_isolated_benchmarks" in result.open_gaps
     assert "live_overlay_execution" not in result.open_gaps
     payload = cast(dict[str, Any], result.to_dict())
@@ -951,10 +957,10 @@ def test_torch_phase_qnode_lowering_matrix_fails_closed_for_arbitrary_qnodes() -
     assert not result.arbitrary_phase_qnode_lowering_ready
     assert not result.ready_for_provider_exceedance
     assert result.route_status("bounded_qnn_custom_autograd") == "passed"
-    assert result.route_status("registered_phase_qnode_statevector_lowering") == "blocked"
+    assert result.route_status("registered_phase_qnode_statevector_lowering") == "passed"
     assert result.route_status("registered_phase_qnode_provider_lowering") == "blocked"
     assert result.route_status("registered_phase_qnode_hardware_lowering") == "blocked"
-    assert "registered_phase_qnode_statevector_lowering" in result.open_gaps
+    assert "registered_phase_qnode_statevector_lowering" not in result.open_gaps
     assert "isolated_benchmark_artifact" in result.open_gaps
     assert result.claim_boundary == "bounded_torch_phase_qnode_lowering_matrix"
 
@@ -968,6 +974,36 @@ def test_torch_phase_qnode_lowering_matrix_fails_closed_for_arbitrary_qnodes() -
         "shot_budget",
         "hardware_evidence_id",
     ]
+
+
+def test_torch_phase_qnode_value_and_grad_lowers_registered_statevector() -> None:
+    circuit = PhaseQNodeCircuit(
+        n_qubits=2,
+        operations=(
+            PhaseQNodeOperation("ry", (0,), parameter_index=0),
+            PhaseQNodeOperation("rx", (1,), parameter_index=1),
+            PhaseQNodeOperation("cnot", (0, 1)),
+        ),
+        observable=PauliTerm(1.0, ((0, "z"), (1, "z"))),
+    )
+    params = np.array([0.37, -0.21], dtype=float)
+
+    result = torch_phase_qnode_value_and_grad(circuit, params, tolerance=1e-8)
+    reference = parameter_shift_phase_qnode_gradient(circuit, params)
+
+    assert isinstance(result, PhaseTorchPhaseQNodeStatevectorResult)
+    assert result.passed
+    assert result.native_framework_autodiff
+    assert not result.host_boundary
+    assert result.claim_boundary == "registered_phase_qnode_torch_statevector_lowering"
+    np.testing.assert_allclose(result.value, reference.value, atol=1e-8)
+    np.testing.assert_allclose(result.gradient, reference.gradient, atol=1e-8)
+    assert result.max_abs_error <= 1e-8
+    assert result.state.shape == (4,)
+    payload = result.to_dict()
+    assert payload["method"] == "torch_native_registered_phase_qnode_statevector_value_and_grad"
+    assert payload["host_boundary"] is False
+    json.dumps(payload)
 
 
 def test_torch_maturity_audit_fails_closed_on_bad_batch_shape(

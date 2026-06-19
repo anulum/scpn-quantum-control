@@ -319,6 +319,24 @@ def test_differentiable_dashboard_status_is_claim_bounded_for_gui_consumers() ->
     assert (
         "metadata_only_no_program_execution" in rows["polyglot_compiler_chain"]["claim_boundary"]
     )
+    assert rows["torch_phase_qnode_statevector_lowering"]["state"] == "diagnostic"
+    assert rows["torch_phase_qnode_statevector_lowering"]["fail_closed"] is True
+    assert (
+        rows["torch_phase_qnode_statevector_lowering"]["backing_api"]
+        == "torch_phase_qnode_value_and_grad"
+    )
+    assert (
+        "torch_registered_phase_qnode_statevector_lowering"
+        in rows["torch_phase_qnode_statevector_lowering"]["evidence"]
+    )
+    assert (
+        "finite-shot Torch lowering remains blocked"
+        in rows["torch_phase_qnode_statevector_lowering"]["blocked_reasons"]
+    )
+    assert (
+        "no provider, hardware, isolated benchmark, or performance promotion"
+        in rows["torch_phase_qnode_statevector_lowering"]["claim_boundary"]
+    )
     assert rows["provider_and_hardware_gradients"]["state"] == "blocked"
     assert rows["gui_frontend"]["state"] == "planned"
     assert "program_ad_effect_ir.v1" in payload["generated_from"]

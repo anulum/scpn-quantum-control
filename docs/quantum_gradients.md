@@ -1885,7 +1885,8 @@ and hardware import remain explicit non-claims.
 ## Optional PyTorch and TensorFlow tensor bridges
 
 For ML pipelines that need framework tensors, the phase namespace exposes
-host-boundary PyTorch and TensorFlow adapters:
+host-boundary adapters plus the deterministic PyTorch registered statevector
+route:
 
 ```python
 import numpy as np
@@ -1900,6 +1901,7 @@ from scpn_quantum_control.phase import (
     run_torch_phase_qnode_lowering_matrix,
     tensorflow_bounded_qnn_keras_layer,
     tensorflow_parameter_shift_value_and_grad,
+    torch_phase_qnode_value_and_grad,
     torch_parameter_shift_value_and_grad,
 )
 
@@ -1961,6 +1963,11 @@ framework tensor payloads. Multi-frequency rules preserve the native method and
 shift-term count in the adapter result. The separate
 `torch_autograd_qnn_value_and_grad(...)` route is native PyTorch autograd only
 for the bounded phase-QNN model. The separate
+`torch_phase_qnode_value_and_grad(...)` route lowers deterministic registered
+local Phase-QNode statevector execution into native PyTorch autograd without
+host callbacks and checks the value and gradient against the SCPN
+parameter-shift reference. It is not finite-shot, provider-backed, dynamic, or
+hardware lowering evidence. The separate
 `run_torch_func_compatibility_audit(...)` route verifies `torch.func.grad`,
 `vmap`, and `jacrev` only for the same bounded model. The separate
 `run_torch_compile_compatibility_audit(...)` route verifies compiled bounded-loss
@@ -1973,12 +1980,13 @@ bounded PyTorch passes into a provider-maturity record. When called with
 marks live overlay execution passed when that artefact contains a successful
 PyTorch row with dependency version, value/gradient error, runtime, memory, and
 claim-boundary metadata. Provider exceedance still remains blocked until
-arbitrary registered Phase-QNode Torch lowering, full compiler/autograd
-integration, and promotion-grade isolated benchmark artefacts exist. The separate
+finite-shot/provider/hardware Phase-QNode Torch lowering, full
+compiler/autograd integration, and promotion-grade isolated benchmark artefacts
+exist. The separate
 `run_torch_phase_qnode_lowering_matrix(...)` route makes that boundary explicit:
 bounded QNN tensor, custom-autograd, `torch.func`, `torch.compile`, and
-module/layer routes are marked passed, while arbitrary registered Phase-QNode
-statevector lowering, finite-shot lowering, provider callbacks, hardware
+module/layer routes plus deterministic registered statevector lowering are
+marked passed, while finite-shot lowering, provider callbacks, hardware
 lowering, dynamic-circuit lowering, and isolated-benchmark promotion remain
 blocked with the required artefacts listed in the returned route metadata. The
 separate

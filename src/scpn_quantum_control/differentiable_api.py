@@ -618,6 +618,28 @@ def differentiable_dashboard_status(
             claim_boundary="metadata_only_no_general_alias_lattice",
         ),
         DifferentiableDashboardCapabilityRow(
+            surface="torch_phase_qnode_statevector_lowering",
+            state="conformance_backed" if conformance_passed else "diagnostic",
+            backing_api="torch_phase_qnode_value_and_grad",
+            evidence=(
+                "PhaseTorchPhaseQNodeStatevectorResult",
+                "registered_phase_qnode_torch_statevector_lowering",
+                "torch_registered_phase_qnode_statevector_lowering",
+            ),
+            blocked_reasons=()
+            if conformance_passed
+            else (
+                "conformance suite not run in this status call",
+                "finite-shot Torch lowering remains blocked",
+                "provider, hardware, dynamic-circuit, and isolated benchmark promotion remain blocked",
+            ),
+            claim_boundary=(
+                "native PyTorch autograd statevector lowering for deterministic "
+                "registered local Phase-QNode circuits only; no provider, "
+                "hardware, isolated benchmark, or performance promotion"
+            ),
+        ),
+        DifferentiableDashboardCapabilityRow(
             surface="program_ad_python_semantics",
             state="conformance_backed" if conformance_passed else "diagnostic",
             backing_api="whole_program_value_and_grad",

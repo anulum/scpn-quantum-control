@@ -500,6 +500,7 @@ from .torch_bridge import (
     PhaseTorchParameterShiftResult,
     PhaseTorchPhaseQNodeLoweringMatrixResult,
     PhaseTorchPhaseQNodeLoweringRoute,
+    PhaseTorchPhaseQNodeStatevectorResult,
     PhaseTorchQNNGradientResult,
     is_phase_torch_available,
     run_torch_compile_compatibility_audit,
@@ -512,6 +513,7 @@ from .torch_bridge import (
     torch_bounded_qnn_module,
     torch_bounded_qnn_value_and_grad,
     torch_parameter_shift_value_and_grad,
+    torch_phase_qnode_value_and_grad,
 )
 from .transform_nesting import (
     GradientTransformNestingAuditResult,
@@ -892,9 +894,11 @@ __all__ = [
     "PhaseTorchParameterShiftResult",
     "PhaseTorchPhaseQNodeLoweringMatrixResult",
     "PhaseTorchPhaseQNodeLoweringRoute",
+    "PhaseTorchPhaseQNodeStatevectorResult",
     "PhaseTorchQNNGradientResult",
     "run_torch_maturity_audit",
     "run_torch_phase_qnode_lowering_matrix",
+    "torch_phase_qnode_value_and_grad",
     "GradientTransformNestingPlan",
     "GradientTransformNestingAuditResult",
     "plan_gradient_transform_nesting",
