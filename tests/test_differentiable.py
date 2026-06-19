@@ -86,6 +86,7 @@ from scpn_quantum_control.differentiable import (
     WholeProgramSourceRegion,
     WholeProgramSymbolScopeEntry,
     WholeProgramTraceEvent,
+    WholeProgramUnsupportedSemanticDiagnostic,
     allocate_parameter_shift_shots,
     analyze_program_ad_alias_effects,
     armijo_backtracking_line_search,
@@ -10978,6 +10979,11 @@ def test_whole_program_compiler_frontend_report_is_static_and_complete() -> None
     assert payload["source_region_count"] == report.source_region_count
     assert payload["source_bytecode_line_map_count"] == report.source_bytecode_line_map_count
     assert payload["symbol_scope_entry_count"] == report.symbol_scope_entry_count
+    assert (
+        payload["unsupported_semantic_diagnostic_count"]
+        == report.unsupported_semantic_diagnostic_count
+        == 0
+    )
     assert payload["frontend_digest"] == report.frontend_digest
     assert payload["bytecode_basic_blocks"][0]["label"] == report.bytecode_basic_blocks[0].label
     assert payload["source_regions"][0]["kind"] == "entry"
@@ -11002,11 +11008,26 @@ def test_whole_program_compiler_frontend_reports_unsupported_semantics() -> None
     assert report.frontend_ready is False
     assert "filtered_comprehension" in report.semantics_report.unsupported_python_semantics
     assert "unsupported_python_semantics:filtered_comprehension" in report.hard_gaps
+    assert report.unsupported_semantic_diagnostic_count == 1
+    diagnostic = report.unsupported_semantic_diagnostics[0]
+    assert isinstance(diagnostic, WholeProgramUnsupportedSemanticDiagnostic)
+    assert diagnostic.semantic == "filtered_comprehension"
+    assert diagnostic.detail == "filtered_comprehension"
+    assert diagnostic.line_number > 0
+    assert diagnostic.absolute_line_number is not None
+    assert diagnostic.region_ids
+    assert isinstance(diagnostic.bytecode_offsets, tuple)
     assert report.frontend_digest
     assert "unsupported_python_semantics:filtered_comprehension" in payload["hard_gaps"]
+    assert payload["unsupported_semantic_diagnostic_count"] == 1
+    assert payload["unsupported_semantic_diagnostics"][0]["semantic"] == ("filtered_comprehension")
+    assert payload["unsupported_semantic_diagnostics"][0]["line_number"] == (
+        diagnostic.line_number
+    )
     assert any(
         feature.kind == "unsupported_python_semantics"
         and feature.detail == "filtered_comprehension"
+        and feature.line_number == diagnostic.line_number
         for feature in report.source_ir_features
     )
 
@@ -11070,6 +11091,16 @@ def test_whole_program_frontend_block_and_region_validation() -> None:
             line_numbers=(1,),
             bytecode_offsets=(),
             region_ids=("region:entry",),
+        )
+
+    with pytest.raises(ValueError, match="bytecode_offsets must be sorted"):
+        WholeProgramUnsupportedSemanticDiagnostic(
+            semantic="filtered_comprehension",
+            detail="filtered_comprehension",
+            line_number=1,
+            absolute_line_number=10,
+            region_ids=("region:entry",),
+            bytecode_offsets=(4, 2),
         )
 
 
@@ -11151,6 +11182,9 @@ def test_whole_program_ad_is_exported_from_package_root() -> None:
     assert scpn.WholeProgramSourceRegion is WholeProgramSourceRegion
     assert scpn.WholeProgramSymbolScopeEntry is WholeProgramSymbolScopeEntry
     assert scpn.WholeProgramSemanticsReport is WholeProgramSemanticsReport
+    assert (
+        scpn.WholeProgramUnsupportedSemanticDiagnostic is WholeProgramUnsupportedSemanticDiagnostic
+    )
     assert scpn.program_adjoint_grad is program_adjoint_grad
     assert scpn.program_adjoint_gradient is program_adjoint_gradient
     assert scpn.program_adjoint_result is program_adjoint_result

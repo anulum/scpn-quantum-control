@@ -928,6 +928,64 @@ class WholeProgramSymbolScopeEntry:
 
 
 @dataclass(frozen=True)
+class WholeProgramUnsupportedSemanticDiagnostic:
+    """One fail-closed Python-semantics diagnostic for frontend audits.
+
+    The diagnostic binds an unsupported source construct to source-relative
+    lines, optional CPython/file lines, source regions, and bytecode offsets.
+    It is static preflight metadata only and does not execute or lower the
+    blocked construct.
+    """
+
+    semantic: str
+    detail: str
+    line_number: int
+    absolute_line_number: int | None
+    region_ids: tuple[str, ...]
+    bytecode_offsets: tuple[int, ...]
+
+    def __post_init__(self) -> None:
+        if not self.semantic:
+            raise ValueError("unsupported semantic diagnostic semantic must be non-empty")
+        if not self.detail:
+            raise ValueError("unsupported semantic diagnostic detail must be non-empty")
+        if self.line_number <= 0:
+            raise ValueError("unsupported semantic diagnostic line_number must be positive")
+        if self.absolute_line_number is not None and self.absolute_line_number <= 0:
+            raise ValueError(
+                "unsupported semantic diagnostic absolute_line_number must be positive or None"
+            )
+        if any(not region_id for region_id in self.region_ids):
+            raise ValueError(
+                "unsupported semantic diagnostic region_ids entries must be non-empty"
+            )
+        if tuple(sorted(set(self.region_ids))) != self.region_ids:
+            raise ValueError(
+                "unsupported semantic diagnostic region_ids must be sorted and unique"
+            )
+        if any(offset < 0 for offset in self.bytecode_offsets):
+            raise ValueError(
+                "unsupported semantic diagnostic bytecode_offsets must be non-negative"
+            )
+        if tuple(sorted(set(self.bytecode_offsets))) != self.bytecode_offsets:
+            raise ValueError(
+                "unsupported semantic diagnostic bytecode_offsets must be sorted and unique"
+            )
+
+    def to_dict(self) -> dict[str, object]:
+        """Return a JSON-ready unsupported-semantics diagnostic."""
+
+        return {
+            "semantic": self.semantic,
+            "detail": self.detail,
+            "line_number": self.line_number,
+            "absolute_line_number": self.absolute_line_number,
+            "region_ids": list(self.region_ids),
+            "bytecode_offsets": list(self.bytecode_offsets),
+        }
+
+
+@dataclass(frozen=True)
 class WholeProgramSemanticsReport:
     """Static semantics summary for whole-program AD graph capture."""
 
@@ -993,6 +1051,8 @@ class WholeProgramCompilerFrontendReport:
     symbol_scope_entries:
         Static symbol-scope table derived from source names, bytecode operands,
         and function code-object scope metadata.
+    unsupported_semantic_diagnostics:
+        Static fail-closed diagnostics for unsupported Python constructs.
     semantics_report:
         Static semantics summary derived from bytecode and source features.
     source_available:
@@ -1025,6 +1085,7 @@ class WholeProgramCompilerFrontendReport:
     source_regions: tuple[WholeProgramSourceRegion, ...]
     source_bytecode_line_map: tuple[WholeProgramSourceBytecodeLineMap, ...]
     symbol_scope_entries: tuple[WholeProgramSymbolScopeEntry, ...]
+    unsupported_semantic_diagnostics: tuple[WholeProgramUnsupportedSemanticDiagnostic, ...]
     semantics_report: WholeProgramSemanticsReport
     source_available: bool
     source_sha256: str | None
@@ -1123,6 +1184,28 @@ class WholeProgramCompilerFrontendReport:
                 raise ValueError(
                     "compiler frontend symbol_scope_entries must reference known regions"
                 )
+        if any(
+            not isinstance(diagnostic, WholeProgramUnsupportedSemanticDiagnostic)
+            for diagnostic in self.unsupported_semantic_diagnostics
+        ):
+            raise ValueError(
+                "compiler frontend unsupported_semantic_diagnostics must contain "
+                "WholeProgramUnsupportedSemanticDiagnostic entries"
+            )
+        for diagnostic in self.unsupported_semantic_diagnostics:
+            if self.source_regions and not diagnostic.region_ids:
+                raise ValueError(
+                    "compiler frontend unsupported_semantic_diagnostics must attach regions"
+                )
+            if any(region_id not in region_ids for region_id in diagnostic.region_ids):
+                raise ValueError(
+                    "compiler frontend unsupported_semantic_diagnostics must reference known regions"
+                )
+            if any(offset not in instruction_offsets for offset in diagnostic.bytecode_offsets):
+                raise ValueError(
+                    "compiler frontend unsupported_semantic_diagnostics must reference known "
+                    "instructions"
+                )
         if not isinstance(self.semantics_report, WholeProgramSemanticsReport):
             raise ValueError(
                 "compiler frontend semantics_report must be WholeProgramSemanticsReport"
@@ -1154,6 +1237,12 @@ class WholeProgramCompilerFrontendReport:
             raise ValueError(
                 "unsupported compiler frontend semantics must be recorded as hard gaps"
             )
+        diagnostic_semantics = {
+            diagnostic.semantic for diagnostic in self.unsupported_semantic_diagnostics
+        }
+        report_semantics = set(self.semantics_report.unsupported_python_semantics)
+        if diagnostic_semantics != report_semantics:
+            raise ValueError("unsupported compiler frontend semantics must match diagnostics")
         if not self.claim_boundary:
             raise ValueError("compiler frontend claim_boundary must be non-empty")
 
@@ -1209,6 +1298,12 @@ class WholeProgramCompilerFrontendReport:
 
         return len(self.symbol_scope_entries)
 
+    @property
+    def unsupported_semantic_diagnostic_count(self) -> int:
+        """Return the number of unsupported-semantics diagnostics in the report."""
+
+        return len(self.unsupported_semantic_diagnostics)
+
     def to_dict(self) -> dict[str, object]:
         """Return a JSON-ready compiler frontend report."""
 
@@ -1227,6 +1322,7 @@ class WholeProgramCompilerFrontendReport:
             "source_region_count": self.source_region_count,
             "source_bytecode_line_map_count": self.source_bytecode_line_map_count,
             "symbol_scope_entry_count": self.symbol_scope_entry_count,
+            "unsupported_semantic_diagnostic_count": (self.unsupported_semantic_diagnostic_count),
             "ast_node_count": self.ast_node_count,
             "bytecode_instructions": [
                 {
@@ -1251,6 +1347,9 @@ class WholeProgramCompilerFrontendReport:
                 line_map.to_dict() for line_map in self.source_bytecode_line_map
             ],
             "symbol_scope_entries": [entry.to_dict() for entry in self.symbol_scope_entries],
+            "unsupported_semantic_diagnostics": [
+                diagnostic.to_dict() for diagnostic in self.unsupported_semantic_diagnostics
+            ],
             "semantics_report": {
                 "bytecode_frontend": self.semantics_report.bytecode_frontend,
                 "source_frontend": self.semantics_report.source_frontend,
@@ -8983,14 +9082,25 @@ def _source_ir_features(
     *,
     accepted_python_semantics: tuple[str, ...] = (),
     unsupported_python_semantics: tuple[str, ...] = (),
+    unsupported_semantic_diagnostics: Sequence[WholeProgramUnsupportedSemanticDiagnostic] = (),
 ) -> tuple[WholeProgramSourceIRFeature, ...]:
     """Return source-level control, alias, mutation, and loop features."""
 
     features: list[WholeProgramSourceIRFeature] = []
     for detail in accepted_python_semantics:
         features.append(WholeProgramSourceIRFeature("python_semantics", detail, 1))
-    for detail in unsupported_python_semantics:
-        features.append(WholeProgramSourceIRFeature("unsupported_python_semantics", detail, 1))
+    if unsupported_semantic_diagnostics:
+        for diagnostic in unsupported_semantic_diagnostics:
+            features.append(
+                WholeProgramSourceIRFeature(
+                    "unsupported_python_semantics",
+                    diagnostic.semantic,
+                    diagnostic.line_number,
+                )
+            )
+    else:
+        for detail in unsupported_python_semantics:
+            features.append(WholeProgramSourceIRFeature("unsupported_python_semantics", detail, 1))
     if source is None:
         return tuple(features)
     try:
@@ -9231,42 +9341,88 @@ def _unsupported_python_semantics(
 ) -> tuple[str, ...]:
     """Return unsupported Python semantics detected before objective execution."""
 
-    unsupported: set[str] = set()
+    return tuple(
+        sorted(
+            {
+                diagnostic.semantic
+                for diagnostic in _unsupported_python_semantic_diagnostics(
+                    objective=objective,
+                    source=source,
+                    source_start_line=None,
+                    bytecode_instructions=(),
+                    source_regions=(),
+                )
+            }
+        )
+    )
+
+
+def _unsupported_python_semantic_diagnostics(
+    *,
+    objective: Callable[..., object],
+    source: str | None,
+    source_start_line: int | None,
+    bytecode_instructions: Sequence[WholeProgramBytecodeInstruction],
+    source_regions: Sequence[WholeProgramSourceRegion],
+) -> tuple[WholeProgramUnsupportedSemanticDiagnostic, ...]:
+    """Return located unsupported Python-semantics diagnostics."""
+
     if source is None:
         return ()
     try:
         tree = ast.parse(source)
     except SyntaxError:
         return ()
-
     objective_name = getattr(objective, "__name__", "")
     captured_attribute_roots = _captured_or_global_names(objective)
     allowed_attribute_roots = {"math", "np", "numpy"}
+    diagnostics: dict[tuple[str, int, str], WholeProgramUnsupportedSemanticDiagnostic] = {}
+
+    def add(node: ast.AST, semantic: str, detail: str | None = None) -> None:
+        line_number = int(getattr(node, "lineno", 1) or 1)
+        absolute_line = None if source_start_line is None else source_start_line + line_number - 1
+        bytecode_offsets = tuple(
+            instruction.offset
+            for instruction in bytecode_instructions
+            if instruction.line_number == absolute_line
+        )
+        diagnostic = WholeProgramUnsupportedSemanticDiagnostic(
+            semantic=semantic,
+            detail=detail or semantic,
+            line_number=line_number,
+            absolute_line_number=absolute_line,
+            region_ids=_source_region_ids_for_line(source_regions, line_number),
+            bytecode_offsets=bytecode_offsets,
+        )
+        diagnostics[(semantic, line_number, diagnostic.detail)] = diagnostic
 
     for node in ast.walk(tree):
         if isinstance(node, ast.ListComp):
             if any(generator.ifs for generator in node.generators):
-                unsupported.add("filtered_comprehension")
+                add(node, "filtered_comprehension")
         elif isinstance(node, ast.SetComp | ast.DictComp):
-            unsupported.add("set_or_dict_comprehension")
+            add(node, "set_or_dict_comprehension")
         elif isinstance(node, ast.Yield | ast.YieldFrom):
-            unsupported.add("generator")
+            add(node, "generator")
         elif isinstance(node, ast.With | ast.AsyncWith):
-            unsupported.add("context_manager")
+            add(node, "context_manager")
         elif isinstance(node, ast.Try | ast.Raise | ast.Assert):
-            unsupported.add("exception_control_flow")
+            add(node, "exception_control_flow")
         elif isinstance(node, ast.FunctionDef | ast.AsyncFunctionDef):
             if node.decorator_list:
-                unsupported.add("decorator")
+                add(node, "decorator")
         elif isinstance(node, ast.Call) and objective_name:
             call_name = _ast_call_name(node.func)
             if call_name.rsplit(".", 1)[-1] == objective_name:
-                unsupported.add("recursion")
+                add(node, "recursion")
         elif isinstance(node, ast.Attribute):
             root_name = _ast_attribute_root(node)
             if root_name in captured_attribute_roots and root_name not in allowed_attribute_roots:
-                unsupported.add("object_attribute")
-    return tuple(sorted(unsupported))
+                add(node, "object_attribute", detail=f"object_attribute:{root_name}")
+    return tuple(
+        diagnostics[key]
+        for key in sorted(diagnostics, key=lambda item: (item[1], item[0], item[2]))
+    )
 
 
 def _captured_or_global_names(objective: Callable[..., object]) -> set[str]:
@@ -9368,14 +9524,31 @@ def compile_whole_program_frontend(
     source = None if source_metadata is None else source_metadata.source
     bytecode_instructions = _objective_bytecode(objective)
     accepted_python_semantics = _accepted_python_semantics(objective, source)
-    unsupported_python_semantics = _unsupported_python_semantics(objective, source)
+    preliminary_unsupported_diagnostics = _unsupported_python_semantic_diagnostics(
+        objective=objective,
+        source=source,
+        source_start_line=None if source_metadata is None else source_metadata.start_line,
+        bytecode_instructions=bytecode_instructions,
+        source_regions=(),
+    )
+    unsupported_python_semantics = tuple(
+        sorted({diagnostic.semantic for diagnostic in preliminary_unsupported_diagnostics})
+    )
     source_ir_features = _source_ir_features(
         source,
         accepted_python_semantics=accepted_python_semantics,
         unsupported_python_semantics=unsupported_python_semantics,
+        unsupported_semantic_diagnostics=preliminary_unsupported_diagnostics,
     )
     bytecode_basic_blocks = _bytecode_basic_blocks(bytecode_instructions)
     source_regions = _source_regions(source, source_ir_features)
+    unsupported_semantic_diagnostics = _unsupported_python_semantic_diagnostics(
+        objective=objective,
+        source=source,
+        source_start_line=None if source_metadata is None else source_metadata.start_line,
+        bytecode_instructions=bytecode_instructions,
+        source_regions=source_regions,
+    )
     source_bytecode_line_map = _source_bytecode_line_map(
         bytecode_instructions=bytecode_instructions,
         source_ir_features=source_ir_features,
@@ -9430,6 +9603,7 @@ def compile_whole_program_frontend(
         source_regions=source_regions,
         source_bytecode_line_map=source_bytecode_line_map,
         symbol_scope_entries=symbol_scope_entries,
+        unsupported_semantic_diagnostics=unsupported_semantic_diagnostics,
         semantics_report=semantics_report,
         source_available=source is not None,
         source_sha256=None
@@ -9448,6 +9622,7 @@ def compile_whole_program_frontend(
             source_regions=source_regions,
             source_bytecode_line_map=source_bytecode_line_map,
             symbol_scope_entries=symbol_scope_entries,
+            unsupported_semantic_diagnostics=unsupported_semantic_diagnostics,
             semantics_report=semantics_report,
             hard_gaps=tuple(hard_gaps),
         ),
@@ -9925,6 +10100,7 @@ def _frontend_digest(
     source_regions: Sequence[WholeProgramSourceRegion],
     source_bytecode_line_map: Sequence[WholeProgramSourceBytecodeLineMap],
     symbol_scope_entries: Sequence[WholeProgramSymbolScopeEntry],
+    unsupported_semantic_diagnostics: Sequence[WholeProgramUnsupportedSemanticDiagnostic],
     semantics_report: WholeProgramSemanticsReport,
     hard_gaps: tuple[str, ...],
 ) -> str:
@@ -9957,6 +10133,9 @@ def _frontend_digest(
         "source_regions": [region.to_dict() for region in source_regions],
         "source_bytecode_line_map": [line_map.to_dict() for line_map in source_bytecode_line_map],
         "symbol_scope_entries": [entry.to_dict() for entry in symbol_scope_entries],
+        "unsupported_semantic_diagnostics": [
+            diagnostic.to_dict() for diagnostic in unsupported_semantic_diagnostics
+        ],
         "semantics": {
             "accepted": list(semantics_report.accepted_python_semantics),
             "unsupported": list(semantics_report.unsupported_python_semantics),
@@ -31161,6 +31340,7 @@ __all__ = [
     "WholeProgramSourceRegion",
     "WholeProgramSymbolScopeEntry",
     "WholeProgramTraceEvent",
+    "WholeProgramUnsupportedSemanticDiagnostic",
     "compile_whole_program_frontend",
     "vmap",
     "parameter_shift_gradient",

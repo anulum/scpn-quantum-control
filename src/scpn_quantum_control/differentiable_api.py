@@ -573,16 +573,18 @@ def differentiable_dashboard_status(
                 "WholeProgramSourceBytecodeLineMap",
                 "WholeProgramSymbolScopeEntry",
                 "WholeProgramSemanticsReport",
+                "WholeProgramUnsupportedSemanticDiagnostic",
             ),
             blocked_reasons=(
                 "static bytecode basic blocks, source regions, source-bytecode maps, "
-                "and symbol scopes only; executable Rust, LLVM, JIT, provider, hardware, "
-                "and benchmark promotion remain open",
+                "symbol scopes, and unsupported-semantics diagnostics only; executable Rust, "
+                "LLVM, JIT, provider, hardware, and benchmark promotion remain open",
             ),
             claim_boundary=(
                 "first-class static bytecode/source compiler frontend preflight "
                 "with bytecode basic blocks, source regions, normalized "
-                "source-bytecode maps, and symbol scopes for supported "
+                "source-bytecode maps, symbol scopes, and unsupported-semantics "
+                "diagnostics for supported "
                 "Program AD Python semantics; no objective execution, no "
                 "executable compiler lowering, no Rust/LLVM/JIT, provider, "
                 "hardware, or performance claim"

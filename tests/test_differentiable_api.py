@@ -194,11 +194,19 @@ def test_differentiable_dashboard_status_is_claim_bounded_for_gui_consumers() ->
         "WholeProgramSymbolScopeEntry" in rows["program_ad_bytecode_source_frontend"]["evidence"]
     )
     assert (
+        "WholeProgramUnsupportedSemanticDiagnostic"
+        in rows["program_ad_bytecode_source_frontend"]["evidence"]
+    )
+    assert (
         "static bytecode/source compiler frontend preflight"
         in rows["program_ad_bytecode_source_frontend"]["claim_boundary"]
     )
     assert "bytecode basic blocks" in rows["program_ad_bytecode_source_frontend"]["claim_boundary"]
     assert "source-bytecode maps" in rows["program_ad_bytecode_source_frontend"]["claim_boundary"]
+    assert (
+        "unsupported-semantics diagnostics"
+        in rows["program_ad_bytecode_source_frontend"]["claim_boundary"]
+    )
     assert rows["program_ad_ir_roundtrip"]["state"] == "metadata_only"
     assert rows["program_ad_ir_roundtrip"]["backing_api"] == "parse_program_ad_effect_ir"
     assert rows["program_ad_ir_roundtrip"]["fail_closed"] is True
@@ -531,6 +539,8 @@ def test_unified_differentiable_dispatcher_and_root_exports() -> None:
     assert frontend_direct.payload["source_region_count"] > 0
     assert frontend_direct.payload["source_bytecode_line_map_count"] > 0
     assert frontend_direct.payload["symbol_scope_entry_count"] > 0
+    assert frontend_direct.payload["unsupported_semantic_diagnostic_count"] == 0
+    assert frontend_direct.payload["unsupported_semantic_diagnostics"] == []
     assert int(frontend_direct.payload["source_start_line"]) > 0
     assert int(frontend_direct.payload["source_end_line"]) >= int(
         frontend_direct.payload["source_start_line"]
