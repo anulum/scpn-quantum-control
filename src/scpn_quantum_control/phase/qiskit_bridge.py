@@ -31,6 +31,9 @@ from .provider_hardware_gradient_audit import (
 )
 
 FloatArray: TypeAlias = NDArray[np.float64]
+QISKIT_PROVIDER_GRADIENT_METHODS = frozenset(
+    {"parameter_shift", "finite_difference", "lcu", "spsa", "qgt", "qfi"}
+)
 
 
 @dataclass(frozen=True)
@@ -456,6 +459,191 @@ class QiskitCalibrationStatevectorComparisonArtifact:
 
 
 @dataclass(frozen=True)
+class QiskitProviderGradientWorkflowArtifact:
+    """Validated Qiskit Runtime provider-gradient workflow evidence.
+
+    The artefact records captured Runtime metadata for one provider-gradient
+    method. It does not submit a provider job; callers must supply job IDs,
+    SHA-256 digests, shot counts, parameter dimensions, and the live-ticket
+    citation captured from an approved Runtime workflow.
+    """
+
+    artifact_id: str
+    provider_name: str
+    backend_name: str
+    job_id: str
+    primitive_name: str
+    gradient_method: str
+    circuit_fingerprint: str
+    observable_fingerprint: str | None
+    parameter_digest: str
+    gradient_digest: str
+    metadata_digest: str
+    shots: int
+    parameter_count: int
+    gradient_dimension: int
+    hardware_execution: bool
+    live_ticket_id: str
+    claim_boundary: str = "qiskit_provider_gradient_workflow_capture"
+
+    def __post_init__(self) -> None:
+        for field_name in (
+            "artifact_id",
+            "provider_name",
+            "backend_name",
+            "job_id",
+            "circuit_fingerprint",
+            "live_ticket_id",
+            "claim_boundary",
+        ):
+            object.__setattr__(
+                self,
+                field_name,
+                _normalise_metadata_text(field_name, getattr(self, field_name)),
+            )
+        primitive_name = _normalise_qiskit_runtime_primitive(self.primitive_name)
+        object.__setattr__(self, "primitive_name", primitive_name)
+        gradient_method = _normalise_qiskit_provider_gradient_method(self.gradient_method)
+        object.__setattr__(self, "gradient_method", gradient_method)
+        if self.observable_fingerprint is not None:
+            object.__setattr__(
+                self,
+                "observable_fingerprint",
+                _normalise_metadata_text(
+                    "observable_fingerprint",
+                    self.observable_fingerprint,
+                ),
+            )
+        if primitive_name == "EstimatorV2" and self.observable_fingerprint is None:
+            raise ValueError("observable_fingerprint is required for EstimatorV2 workflows")
+        if primitive_name == "SamplerV2" and self.observable_fingerprint is not None:
+            raise ValueError("observable_fingerprint must be absent for SamplerV2 workflows")
+        object.__setattr__(self, "shots", _normalise_shots(self.shots))
+        object.__setattr__(
+            self,
+            "parameter_count",
+            _normalise_positive_int("parameter_count", self.parameter_count),
+        )
+        object.__setattr__(
+            self,
+            "gradient_dimension",
+            _normalise_positive_int("gradient_dimension", self.gradient_dimension),
+        )
+        if self.gradient_dimension != self.parameter_count:
+            raise ValueError("gradient_dimension must match parameter_count")
+        if not self.hardware_execution:
+            raise ValueError("provider-gradient workflow artefacts must cite hardware execution")
+        for field_name in ("parameter_digest", "gradient_digest", "metadata_digest"):
+            _validate_sha256_digest(field_name, str(getattr(self, field_name)))
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-compatible Qiskit provider-gradient workflow metadata."""
+        return {
+            "artifact_id": self.artifact_id,
+            "provider_name": self.provider_name,
+            "backend_name": self.backend_name,
+            "job_id": self.job_id,
+            "primitive_name": self.primitive_name,
+            "gradient_method": self.gradient_method,
+            "circuit_fingerprint": self.circuit_fingerprint,
+            "observable_fingerprint": self.observable_fingerprint,
+            "parameter_digest": self.parameter_digest,
+            "gradient_digest": self.gradient_digest,
+            "metadata_digest": self.metadata_digest,
+            "shots": self.shots,
+            "parameter_count": self.parameter_count,
+            "gradient_dimension": self.gradient_dimension,
+            "hardware_execution": self.hardware_execution,
+            "live_ticket_id": self.live_ticket_id,
+            "claim_boundary": self.claim_boundary,
+        }
+
+
+def build_qiskit_provider_gradient_workflow_artifact(
+    *,
+    artifact_id: str,
+    provider_name: str,
+    backend_name: str,
+    job_id: str,
+    primitive_name: str,
+    gradient_method: str,
+    circuit_fingerprint: str,
+    observable_fingerprint: str | None,
+    parameter_digest: str,
+    gradient_digest: str,
+    metadata_digest: str,
+    shots: int,
+    parameter_count: int,
+    gradient_dimension: int,
+    hardware_execution: bool,
+    live_ticket_id: str,
+    claim_boundary: str = "qiskit_provider_gradient_workflow_capture",
+) -> QiskitProviderGradientWorkflowArtifact:
+    """Build no-submit evidence for a captured Qiskit provider-gradient workflow.
+
+    Parameters
+    ----------
+    artifact_id:
+        Stable evidence identifier for the captured workflow.
+    provider_name, backend_name, job_id:
+        Runtime provider, backend, and job identifiers from the captured run.
+    primitive_name:
+        Runtime primitive family, normalised to ``EstimatorV2`` or
+        ``SamplerV2``.
+    gradient_method:
+        Captured gradient method. Accepted values are ``parameter_shift``,
+        ``finite_difference``, ``lcu``, ``spsa``, ``qgt``, and ``qfi``.
+    circuit_fingerprint, observable_fingerprint:
+        Circuit identity and optional observable identity. Estimator workflows
+        require an observable fingerprint; Sampler workflows reject one.
+    parameter_digest, gradient_digest, metadata_digest:
+        ``sha256:<64-hex>`` digests for the parameter payload, gradient payload,
+        and workflow metadata payload.
+    shots:
+        Positive Runtime shot count for the captured workflow.
+    parameter_count, gradient_dimension:
+        Positive parameter width and gradient width; they must match.
+    hardware_execution:
+        Must be true because this artefact represents captured live Runtime
+        provider-gradient evidence.
+    live_ticket_id:
+        Approval ticket for the captured live workflow.
+    claim_boundary:
+        Explicit boundary label retained in serialized evidence.
+
+    Returns
+    -------
+    QiskitProviderGradientWorkflowArtifact
+        Validated workflow metadata ready for maturity-audit attachment.
+
+    Raises
+    ------
+    ValueError
+        If primitive, method, digest, shot, dimension, observable, live-ticket,
+        or hardware-execution evidence is malformed.
+    """
+    return QiskitProviderGradientWorkflowArtifact(
+        artifact_id=artifact_id,
+        provider_name=provider_name,
+        backend_name=backend_name,
+        job_id=job_id,
+        primitive_name=primitive_name,
+        gradient_method=gradient_method,
+        circuit_fingerprint=circuit_fingerprint,
+        observable_fingerprint=observable_fingerprint,
+        parameter_digest=parameter_digest,
+        gradient_digest=gradient_digest,
+        metadata_digest=metadata_digest,
+        shots=shots,
+        parameter_count=parameter_count,
+        gradient_dimension=gradient_dimension,
+        hardware_execution=hardware_execution,
+        live_ticket_id=live_ticket_id,
+        claim_boundary=claim_boundary,
+    )
+
+
+@dataclass(frozen=True)
 class QiskitRuntimeQPUProviderEvidenceBundle:
     """Validated Runtime QPU, replay, calibration, and benchmark evidence chain."""
 
@@ -694,6 +882,8 @@ def run_qiskit_maturity_audit(
     raw_count_replay_artifact: QiskitRawCountReplayArtifact | None = None,
     calibration_comparison_artifact: QiskitCalibrationStatevectorComparisonArtifact | None = None,
     qpu_provider_evidence_bundle: QiskitRuntimeQPUProviderEvidenceBundle | None = None,
+    provider_gradient_workflow_artifacts: Sequence[QiskitProviderGradientWorkflowArtifact]
+    | None = None,
 ) -> QiskitMaturityAuditResult:
     """Aggregate Qiskit local-gradient evidence and provider-level blockers.
 
@@ -701,8 +891,10 @@ def run_qiskit_maturity_audit(
     local statevector reference gradients, finite-shot surrogate uncertainty,
     and the no-submit provider hardware-gradient preparation audit. Runtime QPU
     evidence, raw-count replay, and calibration comparison artefacts may be
-    attached only as a matching live execution chain. The audit does not claim
-    promotion-grade isolated benchmark evidence.
+    attached only as a matching live execution chain. The audit does not create
+    promotion-grade isolated benchmark evidence; it only records supplied
+    artifact IDs and keeps the corresponding gate blocked when evidence is
+    absent.
     """
 
     parameter_tuple = _normalise_parameters(parameters)
@@ -732,6 +924,10 @@ def run_qiskit_maturity_audit(
         runtime_qpu_execution_artifact=runtime_qpu_execution_artifact,
         raw_count_replay_artifact=raw_count_replay_artifact,
         calibration_comparison_artifact=calibration_comparison_artifact,
+    )
+    provider_gradient_workflow_tuple = _normalise_provider_gradient_workflow_artifacts(
+        provider_gradient_workflow_artifacts,
+        runtime_qpu_execution_artifact=runtime_qpu_execution_artifact,
     )
     shifted_records = generate_qiskit_parameter_shift_circuits(
         circuit,
@@ -829,6 +1025,13 @@ def run_qiskit_maturity_audit(
         )
     if isolated_benchmark_artifact_id is not None:
         local_reference_metadata["isolated_benchmark_artifact_id"] = isolated_benchmark_artifact_id
+    if provider_gradient_workflow_tuple:
+        local_reference_metadata["provider_gradient_workflow_artifact_count"] = len(
+            provider_gradient_workflow_tuple
+        )
+        local_reference_metadata["provider_gradient_workflow_methods"] = tuple(
+            sorted(artifact.gradient_method for artifact in provider_gradient_workflow_tuple)
+        )
     evidence: dict[str, object] = {
         "shifted_circuit_records": shifted_records,
         "statevector_reference": statevector_reference,
@@ -839,6 +1042,7 @@ def run_qiskit_maturity_audit(
         "raw_count_replay_artifact": raw_count_replay_artifact,
         "calibration_comparison_artifact": calibration_comparison_artifact,
         "qpu_provider_evidence_bundle": qpu_provider_evidence_bundle,
+        "provider_gradient_workflow_artifacts": provider_gradient_workflow_tuple,
     }
     statevector_comparison_passed = max_abs_error <= 1e-10
     provider_policy_passed = (
@@ -876,6 +1080,9 @@ def run_qiskit_maturity_audit(
         ),
         "promotion_grade_isolated_benchmarks": (
             "passed" if isolated_benchmark_artifact_id is not None else "blocked"
+        ),
+        "provider_gradient_workflow_evidence": (
+            "passed" if provider_gradient_workflow_tuple else "blocked"
         ),
     }
     local_gradient_ready = all(
@@ -1053,6 +1260,25 @@ def _normalise_qiskit_runtime_primitive(primitive_name: str) -> str:
         raise ValueError("primitive_name must be EstimatorV2 or SamplerV2") from exc
 
 
+def _normalise_qiskit_provider_gradient_method(gradient_method: str) -> str:
+    method = gradient_method.strip().lower().replace("-", "_")
+    aliases = {
+        "parameter_shift": "parameter_shift",
+        "finite_difference": "finite_difference",
+        "lcu": "lcu",
+        "spsa": "spsa",
+        "qgt": "qgt",
+        "qfi": "qfi",
+    }
+    try:
+        return aliases[method]
+    except KeyError as exc:
+        raise ValueError(
+            "gradient_method must be one of finite_difference, lcu, "
+            "parameter_shift, qfi, qgt, or spsa"
+        ) from exc
+
+
 def _validate_runtime_qpu_mode(runtime_session_mode: str) -> None:
     mode = runtime_session_mode.lower()
     if not any(token in mode for token in ("qpu", "hardware", "live")):
@@ -1124,9 +1350,78 @@ def _validate_runtime_qpu_evidence_chain(
         )
 
 
+def _normalise_provider_gradient_workflow_artifacts(
+    artifacts: Sequence[QiskitProviderGradientWorkflowArtifact] | None,
+    *,
+    runtime_qpu_execution_artifact: QiskitRuntimeQPUExecutionArtifact | None,
+) -> tuple[QiskitProviderGradientWorkflowArtifact, ...]:
+    if artifacts is None:
+        return ()
+    artifact_tuple = tuple(artifacts)
+    if not artifact_tuple:
+        return ()
+    methods = {artifact.gradient_method for artifact in artifact_tuple}
+    if methods != QISKIT_PROVIDER_GRADIENT_METHODS:
+        missing = sorted(QISKIT_PROVIDER_GRADIENT_METHODS - methods)
+        extra = sorted(methods - QISKIT_PROVIDER_GRADIENT_METHODS)
+        raise ValueError(
+            "provider gradient workflow methods must cover "
+            f"{sorted(QISKIT_PROVIDER_GRADIENT_METHODS)}; missing={missing}; extra={extra}"
+        )
+    if len(methods) != len(artifact_tuple):
+        raise ValueError("provider gradient workflow methods must not contain duplicates")
+    if runtime_qpu_execution_artifact is not None:
+        for artifact in artifact_tuple:
+            _validate_provider_gradient_workflow_chain(
+                artifact,
+                runtime_qpu_execution_artifact=runtime_qpu_execution_artifact,
+            )
+    return artifact_tuple
+
+
+def _validate_provider_gradient_workflow_chain(
+    artifact: QiskitProviderGradientWorkflowArtifact,
+    *,
+    runtime_qpu_execution_artifact: QiskitRuntimeQPUExecutionArtifact,
+) -> None:
+    _require_matching_evidence_field(
+        "provider_gradient_workflow_artifact.provider_name",
+        artifact.provider_name,
+        runtime_qpu_execution_artifact.provider_name,
+    )
+    _require_matching_evidence_field(
+        "provider_gradient_workflow_artifact.backend_name",
+        artifact.backend_name,
+        runtime_qpu_execution_artifact.backend_name,
+    )
+    _require_matching_evidence_field(
+        "provider_gradient_workflow_artifact.job_id",
+        artifact.job_id,
+        runtime_qpu_execution_artifact.job_id,
+    )
+    _require_matching_evidence_field(
+        "provider_gradient_workflow_artifact.circuit_fingerprint",
+        artifact.circuit_fingerprint,
+        runtime_qpu_execution_artifact.circuit_fingerprint,
+    )
+    _require_matching_evidence_field(
+        "provider_gradient_workflow_artifact.live_ticket_id",
+        artifact.live_ticket_id,
+        runtime_qpu_execution_artifact.live_execution_ticket,
+    )
+    if artifact.shots != runtime_qpu_execution_artifact.shots:
+        raise ValueError("provider_gradient_workflow_artifact.shots must match Runtime QPU shots")
+
+
 def _require_matching_evidence_field(field_name: str, observed: str, expected: str) -> None:
     if observed != expected:
         raise ValueError(f"{field_name} must match Runtime QPU evidence")
+
+
+def _normalise_positive_int(name: str, value: int) -> int:
+    if isinstance(value, bool) or not isinstance(value, int) or value <= 0:
+        raise ValueError(f"{name} must be a positive integer")
+    return value
 
 
 def _normalise_shots(value: int) -> int:
@@ -1140,10 +1435,12 @@ __all__ = [
     "QiskitMaturityAuditResult",
     "QiskitParameterShiftGradientResult",
     "QiskitParameterShiftRecord",
+    "QiskitProviderGradientWorkflowArtifact",
     "QiskitRawCountReplayArtifact",
     "QiskitRuntimePrimitiveExecutionArtifact",
     "QiskitRuntimeQPUProviderEvidenceBundle",
     "QiskitRuntimeQPUExecutionArtifact",
+    "build_qiskit_provider_gradient_workflow_artifact",
     "build_qiskit_runtime_qpu_execution_artifact",
     "build_qiskit_runtime_qpu_provider_evidence_bundle",
     "execute_qiskit_finite_shot_parameter_shift",

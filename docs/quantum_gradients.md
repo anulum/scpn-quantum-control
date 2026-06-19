@@ -766,6 +766,7 @@ from qiskit.circuit import Parameter
 from qiskit.quantum_info import SparsePauliOp
 
 from scpn_quantum_control.phase import (
+    build_qiskit_provider_gradient_workflow_artifact,
     build_qiskit_runtime_qpu_execution_artifact,
     build_qiskit_runtime_qpu_provider_evidence_bundle,
     execute_qiskit_statevector_parameter_shift,
@@ -873,6 +874,12 @@ isolated benchmark evidence exists.
 as one no-submit audit input and can carry an isolated benchmark artefact ID.
 Without that ID, benchmark promotion remains blocked even when the Runtime QPU,
 raw-count, and calibration comparison artefacts match.
+`QiskitProviderGradientWorkflowArtifact` covers captured Runtime
+provider-gradient workflow evidence for parameter-shift, finite-difference,
+LCU, SPSA, QGT, and QFI methods. Build those artefacts with
+`build_qiskit_provider_gradient_workflow_artifact(...)`; the maturity audit
+keeps `provider_gradient_workflow_evidence` blocked until all six methods are
+attached and matched to the same Runtime QPU evidence chain.
 
 ## Gradient Tape Boundary
 

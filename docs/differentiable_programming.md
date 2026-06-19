@@ -311,7 +311,9 @@ diagnostic.
   before their gates can pass. Use the provider evidence bundle when attaching
   Runtime QPU, raw-count, calibration, and isolated benchmark artefacts
   together; omitting the isolated benchmark ID keeps benchmark promotion
-  blocked.
+  blocked. Attach provider-gradient workflow artefacts for the complete
+  parameter-shift, finite-difference, LCU, SPSA, QGT, and QFI method set before
+  the Qiskit maturity audit can pass the provider-gradient workflow gate.
 - Compare gradients against finite differences, analytic references, and cross-framework references where practical.
 - Document failed or unsuitable scenarios because they are research evidence.
 

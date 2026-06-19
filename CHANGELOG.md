@@ -5,6 +5,11 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-06-19 — Added a no-submit Qiskit provider-gradient workflow evidence
+  artefact for captured Runtime parameter-shift, finite-difference, LCU, SPSA,
+  QGT, and QFI workflow metadata. The Qiskit maturity audit now keeps provider
+  gradient workflow evidence blocked until the complete method set is attached
+  and matched to the Runtime QPU provider/backend/circuit/live-ticket chain.
 - 2026-06-19 — Added a no-submit Qiskit Runtime QPU provider evidence bundle
   tying captured Runtime QPU execution, raw-count replay,
   calibration/statevector comparison, and optional isolated benchmark artefacts

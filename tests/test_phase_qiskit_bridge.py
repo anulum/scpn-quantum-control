@@ -25,10 +25,12 @@ from scpn_quantum_control.phase import (
     QiskitMaturityAuditResult,
     QiskitParameterShiftGradientResult,
     QiskitParameterShiftRecord,
+    QiskitProviderGradientWorkflowArtifact,
     QiskitRawCountReplayArtifact,
     QiskitRuntimePrimitiveExecutionArtifact,
     QiskitRuntimeQPUExecutionArtifact,
     QiskitRuntimeQPUProviderEvidenceBundle,
+    build_qiskit_provider_gradient_workflow_artifact,
     build_qiskit_runtime_qpu_execution_artifact,
     build_qiskit_runtime_qpu_provider_evidence_bundle,
     execute_qiskit_finite_shot_parameter_shift,
@@ -611,7 +613,45 @@ def _qiskit_qpu_provider_evidence_bundle(
     )
 
 
-def test_qiskit_provider_evidence_bundle_clears_full_evidence_chain() -> None:
+def _qiskit_provider_gradient_workflow_artifact(
+    gradient_method: str,
+    *,
+    primitive_name: str = "EstimatorV2",
+    observable_fingerprint: str | None = "SparsePauliOp:Z:v1",
+    live_ticket_id: str = "live-ticket-20260619",
+) -> QiskitProviderGradientWorkflowArtifact:
+    return build_qiskit_provider_gradient_workflow_artifact(
+        artifact_id=f"qiskit-gradient-workflow-{gradient_method}-20260619",
+        provider_name="ibm_quantum",
+        backend_name="ibm_brisbane",
+        job_id="runtime-qpu-job-20260619",
+        primitive_name=primitive_name,
+        gradient_method=gradient_method,
+        circuit_fingerprint="qiskit:ry(theta):z:v1",
+        observable_fingerprint=observable_fingerprint,
+        parameter_digest="sha256:" + "a" * 64,
+        gradient_digest="sha256:" + "b" * 64,
+        metadata_digest="sha256:" + "c" * 64,
+        shots=4096,
+        parameter_count=1,
+        gradient_dimension=1,
+        hardware_execution=True,
+        live_ticket_id=live_ticket_id,
+        claim_boundary="qiskit_provider_gradient_workflow_capture",
+    )
+
+
+def _qiskit_provider_gradient_workflow_suite() -> tuple[
+    QiskitProviderGradientWorkflowArtifact,
+    ...,
+]:
+    return tuple(
+        _qiskit_provider_gradient_workflow_artifact(method)
+        for method in ("parameter_shift", "finite_difference", "lcu", "spsa", "qgt", "qfi")
+    )
+
+
+def test_qiskit_provider_evidence_bundle_keeps_gradient_workflow_gate_blocked() -> None:
     circuit, parameters, observable = _single_rotation_problem()
     bundle = _qiskit_qpu_provider_evidence_bundle()
 
@@ -624,8 +664,8 @@ def test_qiskit_provider_evidence_bundle_clears_full_evidence_chain() -> None:
         qpu_provider_evidence_bundle=bundle,
     )
 
-    assert result.ready_for_provider_exceedance
-    assert not result.open_gaps
+    assert not result.ready_for_provider_exceedance
+    assert "provider_gradient_workflow_evidence" in result.open_gaps
     assert result.evidence["qpu_provider_evidence_bundle"] is bundle
     assert result.required_capabilities["runtime_primitive_execution_evidence"] == "passed"
     assert result.required_capabilities["live_qpu_execution_ticket"] == "passed"
@@ -634,6 +674,7 @@ def test_qiskit_provider_evidence_bundle_clears_full_evidence_chain() -> None:
         result.required_capabilities["live_backend_statevector_reference_comparison"] == "passed"
     )
     assert result.required_capabilities["promotion_grade_isolated_benchmarks"] == "passed"
+    assert result.required_capabilities["provider_gradient_workflow_evidence"] == "blocked"
     assert result.local_reference_metadata["qpu_provider_evidence_bundle_id"] == (
         bundle.artifact_id
     )
@@ -643,6 +684,95 @@ def test_qiskit_provider_evidence_bundle_clears_full_evidence_chain() -> None:
     payload = bundle.to_dict()
     assert payload["artifact_id"] == bundle.artifact_id
     assert payload["isolated_benchmark_artifact_id"] == "isolated-qiskit-benchmark-20260619"
+
+
+def test_qiskit_gradient_workflow_suite_clears_provider_workflow_gate() -> None:
+    circuit, parameters, observable = _single_rotation_problem()
+    bundle = _qiskit_qpu_provider_evidence_bundle()
+    gradient_artifacts = _qiskit_provider_gradient_workflow_suite()
+
+    result = run_qiskit_maturity_audit(
+        circuit,
+        observable,
+        parameters,
+        np.array([0.4], dtype=float),
+        shots=400,
+        qpu_provider_evidence_bundle=bundle,
+        provider_gradient_workflow_artifacts=gradient_artifacts,
+    )
+
+    assert result.ready_for_provider_exceedance
+    assert not result.open_gaps
+    assert result.evidence["provider_gradient_workflow_artifacts"] == gradient_artifacts
+    assert result.required_capabilities["provider_gradient_workflow_evidence"] == "passed"
+    assert result.local_reference_metadata["provider_gradient_workflow_methods"] == (
+        "finite_difference",
+        "lcu",
+        "parameter_shift",
+        "qfi",
+        "qgt",
+        "spsa",
+    )
+    assert result.local_reference_metadata["provider_gradient_workflow_artifact_count"] == 6
+    payload = gradient_artifacts[0].to_dict()
+    assert payload["gradient_method"] == "parameter_shift"
+    assert payload["hardware_execution"] is True
+
+
+def test_qiskit_gradient_workflow_suite_rejects_missing_method() -> None:
+    circuit, parameters, observable = _single_rotation_problem()
+    bundle = _qiskit_qpu_provider_evidence_bundle()
+
+    with pytest.raises(ValueError, match="provider gradient workflow methods"):
+        run_qiskit_maturity_audit(
+            circuit,
+            observable,
+            parameters,
+            np.array([0.4], dtype=float),
+            shots=400,
+            qpu_provider_evidence_bundle=bundle,
+            provider_gradient_workflow_artifacts=_qiskit_provider_gradient_workflow_suite()[:-1],
+        )
+
+
+def test_qiskit_gradient_workflow_artifact_rejects_mismatched_qpu_chain() -> None:
+    circuit, parameters, observable = _single_rotation_problem()
+    bundle = _qiskit_qpu_provider_evidence_bundle()
+    gradient_artifacts = (
+        _qiskit_provider_gradient_workflow_artifact(
+            "parameter_shift",
+            live_ticket_id="other-ticket",
+        ),
+        *tuple(
+            _qiskit_provider_gradient_workflow_artifact(method)
+            for method in ("finite_difference", "lcu", "spsa", "qgt", "qfi")
+        ),
+    )
+
+    with pytest.raises(ValueError, match="provider_gradient_workflow_artifact.live_ticket_id"):
+        run_qiskit_maturity_audit(
+            circuit,
+            observable,
+            parameters,
+            np.array([0.4], dtype=float),
+            shots=400,
+            qpu_provider_evidence_bundle=bundle,
+            provider_gradient_workflow_artifacts=gradient_artifacts,
+        )
+
+
+def test_qiskit_gradient_workflow_artifact_rejects_sampler_observable() -> None:
+    with pytest.raises(ValueError, match="observable_fingerprint"):
+        _qiskit_provider_gradient_workflow_artifact(
+            "spsa",
+            primitive_name="SamplerV2",
+            observable_fingerprint="SparsePauliOp:Z:v1",
+        )
+
+
+def test_qiskit_gradient_workflow_artifact_rejects_unknown_method() -> None:
+    with pytest.raises(ValueError, match="gradient_method"):
+        _qiskit_provider_gradient_workflow_artifact("adjoint")
 
 
 def test_qiskit_provider_evidence_bundle_keeps_benchmark_gate_blocked_without_benchmark() -> None:
