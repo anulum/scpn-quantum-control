@@ -15702,6 +15702,59 @@ def test_program_ad_static_alias_lattice_reports_complete_emitted_ir() -> None:
     assert payload["components"]
 
 
+def test_program_ad_static_alias_lattice_tracks_local_object_attribute_aliases() -> None:
+    """Static alias lattice reports should include bounded local object attributes."""
+
+    class Scratch:
+        """Mutable local container used to exercise source-level attribute aliases."""
+
+        left: object
+        right: object
+        total: object
+
+    def objective(values: np.ndarray) -> object:
+        scratch = Scratch()
+        scratch.left = values[0]
+        scratch.right = values[1]
+        alias = scratch.left
+        combined = alias + 2.0 * scratch.right
+        scratch.total = combined
+        return scratch.total + values[2]
+
+    result = whole_program_value_and_grad(
+        objective,
+        np.array([0.25, 0.5, 0.75], dtype=np.float64),
+        parameters=(Parameter("a"), Parameter("b"), Parameter("c")),
+    )
+    assert result.program_ir is not None
+
+    analysis = analyze_program_ad_alias_effects(result.program_ir)
+    report = program_ad_static_alias_lattice_report(result.program_ir)
+
+    assert result.semantics_report is not None
+    assert result.semantics_report.aliasing_observed is True
+    assert report.complete is True
+    assert report.blocker_reasons == ()
+    assert any(edge.kind == "object_attribute_alias" for edge in analysis.alias_edges)
+    assert any(edge.kind == "expression_rebinding_alias" for edge in analysis.alias_edges)
+    assert any(
+        "object_attribute_alias" in component.edge_kinds
+        and "object:scratch" in component.members
+        and "attr:scratch.left" in component.members
+        and "attr:scratch.total" in component.members
+        for component in report.components
+    )
+    assert any(
+        "expression_rebinding_alias" in component.edge_kinds
+        and "name:combined" in component.members
+        for component in report.components
+    )
+    payload = report.as_dict()
+    assert payload["complete"] is True
+    np.testing.assert_allclose(result.gradient, [1.0, 2.0, 1.0], atol=1.0e-12)
+    np.testing.assert_allclose(program_adjoint_gradient(result), result.gradient, atol=1.0e-12)
+
+
 def test_program_ad_static_alias_lattice_records_non_executed_phi_blockers() -> None:
     """Static alias lattice reports should keep non-executed branch inputs blocked."""
 
@@ -15727,6 +15780,43 @@ def test_program_ad_static_alias_lattice_records_non_executed_phi_blockers() -> 
     assert "non_executed_phi_inputs_require_branch_semantics" in report.blocker_reasons
     assert report.unknown_alias_edge_kinds == ()
     assert report.as_dict()["non_executed_phi_nodes"] == list(report.non_executed_phi_nodes)
+
+
+def test_program_ad_static_alias_lattice_blocks_non_executed_attribute_paths() -> None:
+    """Static alias lattice reports should not promote branch-local attribute paths."""
+
+    class Scratch:
+        """Mutable local container used to exercise branch-local attribute writes."""
+
+        value: object
+
+    def objective(values: np.ndarray) -> object:
+        scratch = Scratch()
+        if values[2] > 0.0:
+            scratch.value = values[0]
+        else:
+            scratch.value = values[1]
+        alias = scratch.value
+        return alias + values[3]
+
+    result = whole_program_value_and_grad(
+        objective,
+        np.array([0.25, 0.5, 0.75, 1.0], dtype=np.float64),
+        parameters=(Parameter("a"), Parameter("b"), Parameter("c"), Parameter("d")),
+    )
+    assert result.program_ir is not None
+
+    report = program_ad_static_alias_lattice_report(result.program_ir)
+
+    assert report.complete is False
+    assert report.non_executed_phi_nodes
+    assert "non_executed_phi_inputs_require_branch_semantics" in report.blocker_reasons
+    assert any(
+        "object_attribute_alias" in component.edge_kinds
+        and "attr:scratch.value" in component.members
+        for component in report.components
+    )
+    np.testing.assert_allclose(result.gradient, [1.0, 0.0, 0.0, 1.0], atol=1.0e-12)
 
 
 def test_program_ad_static_alias_lattice_reports_unknown_alias_edges() -> None:

@@ -2444,9 +2444,22 @@ def _loop_carried_state_alias_metadata_case() -> DifferentiableProgrammingBenchm
 def _static_alias_lattice_report_case() -> DifferentiableProgrammingBenchmarkResult:
     values = np.array([0.25, 0.5, 0.75, 1.0], dtype=np.float64)
 
+    class Scratch:
+        """Local mutable container for bounded object-attribute alias evidence."""
+
+        left: Any
+        right: Any
+        total: Any
+        value: Any
+
     def alias_objective(trace_values: Any) -> object:
         view = np.reshape(trace_values, (2, 2)).T.ravel()
-        return view[0] + 2.0 * view[3]
+        scratch = Scratch()
+        scratch.left = view[0]
+        scratch.right = view[3]
+        combined = scratch.left + 2.0 * scratch.right
+        scratch.total = combined
+        return scratch.total
 
     alias_result = whole_program_value_and_grad(alias_objective, values)
     if alias_result.program_ir is None:
@@ -2461,14 +2474,28 @@ def _static_alias_lattice_report_case() -> DifferentiableProgrammingBenchmarkRes
         for component in lattice_report.components
     ):
         raise ValueError("static alias lattice benchmark missing view-alias component")
+    if not any(
+        "object_attribute_alias" in component.edge_kinds
+        and "object:scratch" in component.members
+        and "attr:scratch.left" in component.members
+        and "attr:scratch.total" in component.members
+        for component in lattice_report.components
+    ):
+        raise ValueError("static alias lattice benchmark missing object-attribute component")
+    if not any(
+        "expression_rebinding_alias" in component.edge_kinds
+        and "name:combined" in component.members
+        for component in lattice_report.components
+    ):
+        raise ValueError("static alias lattice benchmark missing expression-rebinding component")
 
     def branch_objective(trace_values: Any) -> object:
-        total = trace_values[0]
+        scratch = Scratch()
         if trace_values[1] > 0.0:
-            total = total + trace_values[2]
+            scratch.value = trace_values[0] + trace_values[3]
         else:
-            total = total - trace_values[3]
-        return total
+            scratch.value = trace_values[0] - trace_values[3]
+        return scratch.value
 
     branch_result = whole_program_value_and_grad(branch_objective, values)
     if branch_result.program_ir is None:
@@ -2478,6 +2505,12 @@ def _static_alias_lattice_report_case() -> DifferentiableProgrammingBenchmarkRes
         raise ValueError("static alias lattice benchmark must not promote branch phi blockers")
     if "non_executed_phi_inputs_require_branch_semantics" not in branch_report.blocker_reasons:
         raise ValueError("static alias lattice benchmark missing non-executed phi blocker")
+    if not any(
+        "object_attribute_alias" in component.edge_kinds
+        and "attr:scratch.value" in component.members
+        for component in branch_report.components
+    ):
+        raise ValueError("static alias lattice branch benchmark missing attribute-path metadata")
 
     analytic = np.array([1.0, 0.0, 0.0, 2.0], dtype=np.float64)
     adjoint_supported = (
@@ -2499,8 +2532,9 @@ def _static_alias_lattice_report_case() -> DifferentiableProgrammingBenchmarkRes
         max_abs_adjoint_error=adjoint_error,
         claim_boundary=(
             "static alias-lattice readiness over emitted program_ad_effect_ir.v1 "
-            "components, including view-alias edge-kind classification and explicit "
-            "non-executed phi blocker reporting; not full object-attribute aliasing, "
+            "components, including view-alias, bounded local object-attribute, "
+            "expression-rebinding classification, and explicit non-executed phi "
+            "blocker reporting; not captured/global object-attribute aliasing, "
             "non-executed branch adjoints, Rust/LLVM executable lowering, hardware, "
             "or performance evidence; no wall-clock performance claim"
         ),

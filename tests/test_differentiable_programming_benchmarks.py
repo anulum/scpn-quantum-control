@@ -115,8 +115,10 @@ def test_differentiable_programming_benchmark_suite_matches_analytic_references(
     assert alias_lattice_row.max_abs_adjoint_error is not None
     assert alias_lattice_row.max_abs_adjoint_error <= 1.0e-12
     assert "static alias-lattice readiness" in alias_lattice_row.claim_boundary
+    assert "bounded local object-attribute" in alias_lattice_row.claim_boundary
+    assert "expression-rebinding classification" in alias_lattice_row.claim_boundary
     assert "non-executed phi blocker reporting" in alias_lattice_row.claim_boundary
-    assert "not full object-attribute aliasing" in alias_lattice_row.claim_boundary
+    assert "not captured/global object-attribute aliasing" in alias_lattice_row.claim_boundary
     assert any("slice-mutation alias/effect metadata" in row.claim_boundary for row in alias_rows)
     assert any("loop-carried state alias metadata" in row.claim_boundary for row in alias_rows)
     python_semantics_row = next(row for row in results if row.category == "python-semantics")

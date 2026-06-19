@@ -660,10 +660,12 @@ PROGRAM_AD_STATIC_ALIAS_LATTICE_CLAIM_BOUNDARY = (
 _PROGRAM_AD_SUPPORTED_ALIAS_EDGE_KINDS = frozenset(
     {
         "alias_analysis",
+        "expression_rebinding_alias",
         "list_alias",
         "local_rebinding_alias",
         "loop_carried_state",
         "mutation_version",
+        "object_attribute_alias",
         "source_alias",
         "view_alias",
     }
@@ -2216,9 +2218,11 @@ class _WholeProgramTraceContext:
         phi_nodes = list(self.phi_nodes)
         for feature in source_ir_features:
             if feature.kind in {
+                "expression_rebinding_alias",
                 "list_alias",
                 "local_rebinding_alias",
                 "loop_carried_state",
+                "object_attribute_alias",
             }:
                 source, separator, target = feature.detail.partition("->")
                 if not separator or not source or not target:
@@ -9763,6 +9767,8 @@ def _source_ir_features(
                 add(node, "mutation", name)
     features.extend(_source_list_alias_features(tree))
     features.extend(_source_local_rebinding_alias_features(tree))
+    features.extend(_source_expression_rebinding_alias_features(tree))
+    features.extend(_source_object_attribute_alias_features(tree))
     features.extend(_source_loop_carried_state_features(tree))
     return tuple(features)
 
@@ -9843,6 +9849,114 @@ def _source_local_rebinding_alias_features(
                     )
                 )
     return tuple(features)
+
+
+def _source_expression_rebinding_alias_features(
+    tree: ast.AST,
+) -> tuple[WholeProgramSourceIRFeature, ...]:
+    """Return bounded source-level metadata for local expression rebinding."""
+
+    features: list[WholeProgramSourceIRFeature] = []
+    assignments = sorted(
+        (node for node in ast.walk(tree) if isinstance(node, ast.Assign)),
+        key=lambda node: int(getattr(node, "lineno", 1) or 1),
+    )
+    for node in assignments:
+        if isinstance(node.value, ast.Name):
+            continue
+        if not _expression_may_rebind_trace_value(node.value):
+            continue
+        line_number = int(getattr(node, "lineno", 1) or 1)
+        expression = _stable_ast_expression_label(node.value, line_number)
+        for target in node.targets:
+            if isinstance(target, ast.Name):
+                features.append(
+                    WholeProgramSourceIRFeature(
+                        "expression_rebinding_alias",
+                        f"{expression}->name:{target.id}",
+                        line_number,
+                    )
+                )
+    return tuple(features)
+
+
+def _source_object_attribute_alias_features(
+    tree: ast.AST,
+) -> tuple[WholeProgramSourceIRFeature, ...]:
+    """Return bounded source-level metadata for local object attribute aliases."""
+
+    features: list[WholeProgramSourceIRFeature] = []
+    local_objects: set[str] = set()
+    assignments = sorted(
+        (node for node in ast.walk(tree) if isinstance(node, ast.Assign)),
+        key=lambda node: int(getattr(node, "lineno", 1) or 1),
+    )
+    for node in assignments:
+        line_number = int(getattr(node, "lineno", 1) or 1)
+        for target in node.targets:
+            if isinstance(target, ast.Name) and _is_local_object_constructor_call(node.value):
+                local_objects.add(target.id)
+                features.append(
+                    WholeProgramSourceIRFeature(
+                        "object_attribute_alias",
+                        f"object:{target.id}->name:{target.id}",
+                        line_number,
+                    )
+                )
+            elif isinstance(target, ast.Attribute):
+                root_name = _ast_attribute_root(target)
+                if root_name in local_objects:
+                    features.append(
+                        WholeProgramSourceIRFeature(
+                            "object_attribute_alias",
+                            f"object:{root_name}->attr:{root_name}.{target.attr}",
+                            line_number,
+                        )
+                    )
+            elif isinstance(target, ast.Name) and isinstance(node.value, ast.Attribute):
+                root_name = _ast_attribute_root(node.value)
+                if root_name in local_objects:
+                    features.append(
+                        WholeProgramSourceIRFeature(
+                            "object_attribute_alias",
+                            f"attr:{root_name}.{node.value.attr}->name:{target.id}",
+                            line_number,
+                        )
+                    )
+    return tuple(features)
+
+
+def _expression_may_rebind_trace_value(node: ast.AST) -> bool:
+    """Return whether an expression can carry a trace value into a local binding."""
+
+    return any(
+        isinstance(child, ast.Name | ast.Attribute | ast.Subscript) for child in ast.walk(node)
+    )
+
+
+def _stable_ast_expression_label(node: ast.AST, line_number: int) -> str:
+    """Return a deterministic short label for a source expression alias."""
+
+    try:
+        expression = ast.unparse(node)
+    except Exception:  # pragma: no cover - ast.unparse is available on supported Python.
+        expression = node.__class__.__name__
+    compact = "_".join(expression.split())
+    if len(compact) > 80:
+        compact = f"{compact[:77]}..."
+    return f"expr:{line_number}:{compact}"
+
+
+def _is_local_object_constructor_call(node: ast.AST) -> bool:
+    """Return whether an assignment value looks like a local object constructor."""
+
+    if not isinstance(node, ast.Call):
+        return False
+    name = _ast_call_name(node.func)
+    if not name:
+        return False
+    root = name.split(".", 1)[0]
+    return root not in {"math", "np", "numpy"}
 
 
 def _source_loop_carried_state_features(
@@ -10090,7 +10204,7 @@ def _whole_program_semantics_report(
         bytecode_frontend=bool(bytecode_instructions),
         source_frontend=source is not None,
         graph_capture=bool(trace_events or bytecode_instructions or source_ir_features),
-        aliasing_observed="alias_analysis" in feature_kinds,
+        aliasing_observed=any("alias" in kind for kind in feature_kinds),
         mutation_observed="mutation" in feature_kinds,
         loop_observed="loop" in feature_kinds or "FOR_ITER" in jump_ops,
         control_flow_observed=_source_has_control_flow(source)

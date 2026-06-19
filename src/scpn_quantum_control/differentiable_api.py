@@ -669,18 +669,22 @@ def differentiable_dashboard_status(
                 "ProgramADAliasEffectAnalysis",
                 "ProgramADAliasSet",
                 "ProgramADStaticAliasLatticeReport",
+                "bounded local object-attribute alias metadata",
+                "expression-rebinding alias metadata",
                 "shape_view_alias_metadata_contracts",
                 "slice_mutation_alias_metadata_contracts",
                 "loop_carried_state_alias_metadata_contracts",
                 "program_ad_static_alias_lattice_contracts",
             ),
             blocked_reasons=(
-                "object-attribute aliasing remains unsupported",
+                "captured/global object-attribute aliasing remains unsupported",
                 "non-executed branch semantics remain blocked",
             ),
             claim_boundary=(
                 "static alias-lattice readiness over emitted Program AD IR metadata; "
-                "non-executed phi inputs are explicit blockers, not promoted branch adjoints"
+                "bounded local object-attribute and expression-rebinding aliases are "
+                "metadata only; non-executed phi inputs are explicit blockers, not "
+                "promoted branch adjoints"
             ),
         ),
         DifferentiableDashboardCapabilityRow(

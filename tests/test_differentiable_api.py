@@ -255,11 +255,18 @@ def test_differentiable_dashboard_status_is_claim_bounded_for_gui_consumers() ->
         "no executable Rust, LLVM, or JIT" in rows["program_ad_mlir_interchange"]["claim_boundary"]
     )
     assert "static alias-lattice readiness" in rows["program_ad_alias_effects"]["claim_boundary"]
+    assert "bounded local object-attribute" in rows["program_ad_alias_effects"]["claim_boundary"]
+    assert "expression-rebinding aliases" in rows["program_ad_alias_effects"]["claim_boundary"]
     assert (
         "non-executed phi inputs are explicit blockers"
         in rows["program_ad_alias_effects"]["claim_boundary"]
     )
     assert "ProgramADStaticAliasLatticeReport" in rows["program_ad_alias_effects"]["evidence"]
+    assert (
+        "bounded local object-attribute alias metadata"
+        in rows["program_ad_alias_effects"]["evidence"]
+    )
+    assert "expression-rebinding alias metadata" in rows["program_ad_alias_effects"]["evidence"]
     assert "shape_view_alias_metadata_contracts" in rows["program_ad_alias_effects"]["evidence"]
     assert (
         "slice_mutation_alias_metadata_contracts" in rows["program_ad_alias_effects"]["evidence"]
@@ -270,6 +277,10 @@ def test_differentiable_dashboard_status_is_claim_bounded_for_gui_consumers() ->
     )
     assert (
         "program_ad_static_alias_lattice_contracts" in rows["program_ad_alias_effects"]["evidence"]
+    )
+    assert (
+        "captured/global object-attribute aliasing remains unsupported"
+        in (rows["program_ad_alias_effects"]["blocked_reasons"])
     )
     assert (
         "non-executed branch semantics remain blocked"
