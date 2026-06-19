@@ -222,8 +222,7 @@ class PennyLaneProviderPluginExecutionArtifact:
             raise ValueError(
                 "provider-plugin execution artefacts must not claim hardware execution"
             )
-        if self.execution_mode.lower() in {"hardware", "qpu", "live_qpu", "provider_qpu"}:
-            raise ValueError("execution_mode must not imply hardware execution")
+        _validate_provider_plugin_execution_mode(self.execution_mode)
         if self.raw_result_replay_artifact_id is not None:
             object.__setattr__(
                 self,
@@ -457,6 +456,14 @@ def _normalise_metadata_text(field_name: str, value: object) -> str:
     if any(ord(character) < 32 or ord(character) == 127 for character in text):
         raise ValueError(f"{field_name} must not contain control characters")
     return text
+
+
+def _validate_provider_plugin_execution_mode(execution_mode: str) -> None:
+    mode = execution_mode.lower()
+    if mode in {"hardware", "qpu", "live_qpu", "provider_qpu"}:
+        raise ValueError("execution_mode must not imply hardware execution")
+    if "provider" not in mode:
+        raise ValueError("execution_mode must identify provider-plugin execution")
 
 
 def _as_finite_scalar(name: str, value: object) -> float:

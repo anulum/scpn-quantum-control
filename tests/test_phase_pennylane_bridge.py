@@ -552,6 +552,30 @@ def test_pennylane_plugin_matrix_accepts_provider_execution_artifact_without_pro
     payload = cast(dict[str, Any], result.to_dict())
     provider_payload = cast(dict[str, object], payload["provider_execution_artifact"])
     assert provider_payload["artifact_id"] == artifact.artifact_id
+    assert provider_payload["execution_mode"] == "provider_simulator"
+
+
+@pytest.mark.parametrize("execution_mode", ["simulator", "local_simulator", "offline_replay"])
+def test_pennylane_provider_plugin_execution_artifact_requires_provider_mode(
+    execution_mode: str,
+) -> None:
+    """Provider artefacts must identify provider-plugin execution explicitly."""
+
+    with pytest.raises(ValueError, match="provider-plugin execution"):
+        PennyLaneProviderPluginExecutionArtifact(
+            artifact_id="pl-provider-sim-20260616",
+            plugin_name="pennylane-provider-simulator",
+            provider_name="example-provider",
+            device_name="example.simulator",
+            backend_name="example_sim_v1",
+            circuit_fingerprint="phase-qnode:ry-rx-pauli-z:v1",
+            execution_mode=execution_mode,
+            shots=4096,
+            result_digest="sha256:" + "a" * 64,
+            metadata_digest="sha256:" + "b" * 64,
+            hardware_execution=False,
+            raw_result_replay_artifact_id="pl-provider-replay-20260616",
+        )
 
 
 def test_pennylane_provider_plugin_execution_artifact_rejects_hardware_claim() -> None:

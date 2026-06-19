@@ -5,6 +5,11 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-06-19 — Hardened PennyLane provider-plugin execution artefacts by
+  requiring execution modes to explicitly identify provider-plugin execution,
+  rejecting generic local/offline simulator labels while still rejecting
+  hardware/QPU modes and keeping provider-gradient and hardware promotion
+  blocked.
 - 2026-06-19 — Hardened PennyLane Phase-QNode finite-shot metadata by rejecting
   boolean, non-positive, non-integer, and string-coercible shot counts before
   `qml.device(...)` dispatch, and applying the same non-coercive integer-shot

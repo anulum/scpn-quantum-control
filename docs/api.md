@@ -1429,7 +1429,8 @@ failing closed before `qml.device(...)` for unsafe device/interface/diff
 metadata and non-coercive shot metadata: `shots=None` is analytic mode and
 finite-shot mode requires an explicit positive integer, not a boolean, float,
 or numeric string. Provider-plugin execution artefacts use the same shot-count
-boundary and still do not promote hardware execution.
+boundary, must identify provider-plugin execution in `execution_mode`, and
+still do not promote provider-gradient or hardware execution.
 `parameter_shift_gradient_descent()` is the phase-native training surface for
 quantum objectives: it plans a fail-closed backend route, evaluates native
 parameter-shift gradients, applies Armijo backtracking, and records
