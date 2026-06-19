@@ -1337,6 +1337,7 @@ run_jax_maturity_audit(features, labels, params, params_batch, params_pytree, to
 build_enzyme_mlir_benchmark_attachment(*, validation, required_breadth_cases, claim_boundary) -> EnzymeMLIRBenchmarkAttachment
 build_enzyme_mlir_compiler_ad_breadth_artifact(*, artifact_id, cases, isolated_benchmark_evidence, claim_boundary) -> EnzymeMLIRCompilerADBreadthArtifact
 build_enzyme_mlir_compiler_ad_breadth_evidence(*, artifact_id, cases, transform_modes, frontend_languages, isolated_benchmark_artifact_id, max_abs_error, runtime_seconds, claim_boundary) -> EnzymeMLIRCompilerADBreadthEvidence
+build_enzyme_mlir_compiler_ad_breadth_gap_artifact(*, artifact_id, observed_cases, isolated_benchmark_evidence, default_transform_modes=("forward", "reverse", "jvp", "vjp"), default_frontend_language="mlir", missing_case_failure_class="missing_case_evidence", missing_case_setup_instructions="Attach raw Enzyme/MLIR compiler-AD case evidence before promotion.", claim_boundary="bounded Enzyme/MLIR compiler-AD breadth artifact; missing cases remain explicit hard gaps") -> EnzymeMLIRCompilerADBreadthArtifact
 run_enzyme_mlir_maturity_audit(circuit=None, parameters=None, *, toolchain_probe=None, version_probe=None, isolated_benchmark_artifact_id=None, isolated_benchmark_evidence=None, native_enzyme_execution_artifact_id=None, native_enzyme_execution_evidence=None, mlir_llvm_correctness_artifact_id=None, compiler_ad_breadth_evidence=None, compiler_ad_breadth_artifact=None) -> EnzymeMLIRMaturityAuditResult
 is_phase_pennylane_available() -> bool
 check_pennylane_parameter_shift_agreement(objective, pennylane_gradient, values, tolerance=1e-6, parameters=None, rule=None) -> PennyLaneGradientAgreementResult
@@ -1502,10 +1503,13 @@ alias activity, MLIR lowering, LLVM IR generation, and native Enzyme execution
 checks. `EnzymeMLIRCompilerADBreadthCaseEvidence` records the raw case-level
 rows, and `build_enzyme_mlir_compiler_ad_breadth_artifact(...)` validates that
 the raw artifact covers exactly the required case set and links to a
-promotion-ready isolated benchmark attachment. The maturity audit can derive
-`EnzymeMLIRCompilerADBreadthEvidence` from that artifact, but keeps
-provider-exceedance blocked until MLIR/LLVM correctness, native Enzyme
-execution, the raw breadth artifact, the derived breadth evidence, and a
+promotion-ready isolated benchmark attachment.
+`build_enzyme_mlir_compiler_ad_breadth_gap_artifact(...)` assembles partial
+captures into the same complete 11-case artifact while filling absent cases as
+named `hard_gap` rows and exposing `failed_case_ids`. The maturity audit can
+derive `EnzymeMLIRCompilerADBreadthEvidence` from a promotion-ready artifact,
+but keeps provider-exceedance blocked until MLIR/LLVM correctness, native
+Enzyme execution, the raw breadth artifact, the derived breadth evidence, and a
 promotion-ready `EnzymeMLIRBenchmarkAttachment` all match. Build the benchmark
 attachment with `build_enzyme_mlir_benchmark_attachment(...)` from
 `PhaseQNodeAffinityArtifactValidation`; a string benchmark ID alone remains a

@@ -14115,6 +14115,18 @@ class EnzymeMLIRCompilerADBreadthArtifact:
         return tuple(sorted({case.frontend_language for case in self.cases}))
 
     @property
+    def failed_case_ids(self) -> tuple[str, ...]:
+        """Return sorted breadth-case identifiers that remain hard gaps."""
+
+        return tuple(case.case_id for case in self.cases if not case.passed)
+
+    @property
+    def passed_case_ids(self) -> tuple[str, ...]:
+        """Return sorted breadth-case identifiers with passing raw evidence."""
+
+        return tuple(case.case_id for case in self.cases if case.passed)
+
+    @property
     def max_abs_error(self) -> float:
         """Return the largest correctness error recorded across passing rows."""
 
@@ -14170,6 +14182,8 @@ class EnzymeMLIRCompilerADBreadthArtifact:
             "artifact_id": self.artifact_id,
             "case_count": len(self.cases),
             "cases": [case.to_dict() for case in self.cases],
+            "passed_case_ids": list(self.passed_case_ids),
+            "failed_case_ids": list(self.failed_case_ids),
             "transform_modes": list(self.transform_modes),
             "frontend_languages": list(self.frontend_languages),
             "max_abs_error": self.max_abs_error,
@@ -14211,6 +14225,99 @@ def build_enzyme_mlir_compiler_ad_breadth_artifact(
     return EnzymeMLIRCompilerADBreadthArtifact(
         artifact_id=artifact_id,
         cases=tuple(cases),
+        isolated_benchmark_evidence=isolated_benchmark_evidence,
+        claim_boundary=claim_boundary,
+    )
+
+
+def build_enzyme_mlir_compiler_ad_breadth_gap_artifact(
+    *,
+    artifact_id: str,
+    observed_cases: Sequence[EnzymeMLIRCompilerADBreadthCaseEvidence],
+    isolated_benchmark_evidence: EnzymeMLIRBenchmarkAttachment,
+    default_transform_modes: Sequence[str] = ("forward", "reverse", "jvp", "vjp"),
+    default_frontend_language: str = "mlir",
+    missing_case_failure_class: str = "missing_case_evidence",
+    missing_case_setup_instructions: str = (
+        "Attach raw Enzyme/MLIR compiler-AD case evidence before promotion."
+    ),
+    claim_boundary: str = (
+        "bounded Enzyme/MLIR compiler-AD breadth artifact; missing cases remain explicit hard gaps"
+    ),
+) -> EnzymeMLIRCompilerADBreadthArtifact:
+    """Build a complete raw breadth artefact from partial observed case rows.
+
+    Parameters
+    ----------
+    artifact_id:
+        Stable raw artefact identifier.
+    observed_cases:
+        Captured raw case rows. Duplicate case identifiers are rejected. Any
+        required Enzyme/MLIR breadth case not present here is filled as a
+        ``hard_gap`` row rather than silently omitted.
+    isolated_benchmark_evidence:
+        Benchmark attachment for the same evidence chain. Non-promotional
+        benchmark evidence keeps the resulting artefact blocked.
+    default_transform_modes:
+        Transform modes assigned to generated hard-gap rows.
+    default_frontend_language:
+        Frontend or IR surface assigned to generated hard-gap rows.
+    missing_case_failure_class:
+        Failure class assigned to generated hard-gap rows.
+    missing_case_setup_instructions:
+        Remediation text assigned to generated hard-gap rows.
+    claim_boundary:
+        Claim boundary serialized into the artifact and generated hard-gap
+        rows.
+
+    Returns
+    -------
+    EnzymeMLIRCompilerADBreadthArtifact
+        Complete 11-case breadth artefact. It is promotion-ready only when all
+        rows pass and the benchmark attachment is promotion-ready.
+
+    Raises
+    ------
+    ValueError
+        If observed rows are duplicated or any default hard-gap metadata is
+        malformed.
+    """
+
+    observed_by_case: dict[str, EnzymeMLIRCompilerADBreadthCaseEvidence] = {}
+    for case in observed_cases:
+        if not isinstance(case, EnzymeMLIRCompilerADBreadthCaseEvidence):
+            raise ValueError("observed_cases must contain EnzymeMLIRCompilerADBreadthCaseEvidence")
+        if case.case_id in observed_by_case:
+            raise ValueError("observed_cases must not contain duplicate case identifiers")
+        observed_by_case[case.case_id] = case
+    if not missing_case_failure_class.strip():
+        raise ValueError("missing_case_failure_class must be non-empty")
+    if not missing_case_setup_instructions.strip():
+        raise ValueError("missing_case_setup_instructions must be non-empty")
+    rows: list[EnzymeMLIRCompilerADBreadthCaseEvidence] = []
+    for case_id in sorted(ENZYME_MLIR_COMPILER_AD_BREADTH_CASES):
+        observed = observed_by_case.get(case_id)
+        if observed is not None:
+            rows.append(observed)
+            continue
+        rows.append(
+            EnzymeMLIRCompilerADBreadthCaseEvidence(
+                case_id=case_id,
+                status="hard_gap",
+                transform_modes=tuple(default_transform_modes),
+                frontend_language=default_frontend_language,
+                value_error=None,
+                gradient_error=None,
+                runtime_seconds=None,
+                artifact_refs={"missing_case": f"enzyme_mlir_compiler_ad_breadth:{case_id}"},
+                failure_class=missing_case_failure_class,
+                setup_instructions=missing_case_setup_instructions,
+                claim_boundary=claim_boundary,
+            )
+        )
+    return build_enzyme_mlir_compiler_ad_breadth_artifact(
+        artifact_id=artifact_id,
+        cases=tuple(rows),
         isolated_benchmark_evidence=isolated_benchmark_evidence,
         claim_boundary=claim_boundary,
     )
@@ -14650,6 +14757,11 @@ def run_enzyme_mlir_maturity_audit(
             compiler_ad_breadth_evidence = compiler_ad_breadth_artifact.to_breadth_evidence()
         else:
             hard_gaps.append("compiler AD breadth artifact not promotion-ready")
+            if compiler_ad_breadth_artifact.failed_case_ids:
+                hard_gaps.append(
+                    "compiler AD breadth case hard gaps: "
+                    + ", ".join(compiler_ad_breadth_artifact.failed_case_ids)
+                )
     if compiler_ad_breadth_evidence is None:
         hard_gaps.append("compiler AD breadth evidence missing")
     return EnzymeMLIRMaturityAuditResult(
@@ -14967,6 +15079,7 @@ __all__ = [
     "build_enzyme_mlir_benchmark_attachment",
     "build_enzyme_mlir_compiler_ad_breadth_artifact",
     "build_enzyme_mlir_compiler_ad_breadth_evidence",
+    "build_enzyme_mlir_compiler_ad_breadth_gap_artifact",
     "build_compiler_ad_transform_plan",
     "compile_compiler_ad_transform_plan_to_mlir",
     "compile_phase_qnode_circuit_to_mlir_runtime",

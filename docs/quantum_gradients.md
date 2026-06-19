@@ -2167,6 +2167,9 @@ four evidence classes:
 - attached raw `EnzymeMLIRCompilerADBreadthArtifact` case rows covering exactly
   the required scalar, vector, matrix, loop/activity, MLIR, LLVM, and native
   Enzyme routes before the derived breadth evidence can be accepted;
+- `build_enzyme_mlir_compiler_ad_breadth_gap_artifact(...)` for partial raw
+  captures, which fills every absent route as a named `hard_gap` row and exposes
+  `failed_case_ids` instead of allowing sliced evidence to look complete;
 - attached `EnzymeMLIRBenchmarkAttachment` built from
   `PhaseQNodeAffinityArtifactValidation`, so the isolated benchmark gate is
   satisfied only by promotion-ready `isolated_affinity` evidence with raw timing
@@ -2192,8 +2195,9 @@ Enzyme scalar derivative probe. The separate Enzyme-JAX external-comparison row
 remains a runtime hard gap. Provider-exceedance remains blocked until
 `isolated_affinity` benchmark artefacts are validated through
 `EnzymeMLIRBenchmarkAttachment` with correctness, native Enzyme execution, and
-raw-plus-derived compiler-AD breadth evidence. A string benchmark ID without
-the validated attachment is still a hard gap.
+raw-plus-derived compiler-AD breadth evidence. Partial breadth captures are
+represented as complete artifacts with explicit case hard gaps. A string
+benchmark ID without the validated attachment is still a hard gap.
 
 ## Verification requirements
 

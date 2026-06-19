@@ -231,9 +231,12 @@ execution evidence, and keeps provider-exceedance blocked until successful
 native Enzyme execution, MLIR/LLVM correctness evidence, and
 validated `EnzymeMLIRBenchmarkAttachment` plus raw
 `EnzymeMLIRCompilerADBreadthArtifact` evidence are attached. A string
-benchmark ID alone does not clear the isolated benchmark or breadth gates. The current
-committed `enzyme_mlir_maturity_audit_20260616.json` snapshot is a hard-gap
-artefact: the SCPN MLIR-runtime correctness checks pass and local
+benchmark ID alone does not clear the isolated benchmark or breadth gates.
+Partial breadth captures should be assembled with
+`build_enzyme_mlir_compiler_ad_breadth_gap_artifact(...)`, which records absent
+routes as explicit case hard gaps. The current committed
+`enzyme_mlir_maturity_audit_20260616.json` snapshot is a hard-gap artefact: the
+SCPN MLIR-runtime correctness checks pass and local
 `enzyme`/`opt`/`mlir-opt`/`clang` version metadata is recorded. The bounded
 native LLVM Enzyme scalar probe passes, while the separate Enzyme-JAX external
 comparison still fails during runtime lowering and promotion remains blocked

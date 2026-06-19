@@ -33,7 +33,7 @@ ledger is `data/differentiable_phase_qnode/claim_ledger.md`.
 | `data/differentiable_phase_qnode/local_benchmark_20260616T0955Z/diff-qnode-external-comparison.json` | Bounded JAX, PyTorch, TensorFlow, PennyLane, and Enzyme comparison rows. | Functional non-isolated comparison evidence. |
 | `data/differentiable_phase_qnode/identical_circuit_gradient_comparison_20260616.json` | Same-circuit gradient comparison artefact for Qiskit and PennyLane routes. | Correctness comparison, not hardware execution. |
 | `data/differentiable_phase_qnode/domain_benchmark_dataset_closure_20260616.json` | Exact-answer domain dataset closure artefact. | Dataset validation, not production benchmark promotion. |
-| `data/differentiable_phase_qnode/enzyme_mlir_maturity_audit_20260616.json` | Enzyme/MLIR maturity audit with MLIR-runtime correctness evidence, native Enzyme scalar evidence, and missing raw compiler-AD breadth artifact plus derived breadth evidence recorded as hard gaps. | Hard-gap evidence, not Enzyme parity promotion. |
+| `data/differentiable_phase_qnode/enzyme_mlir_maturity_audit_20260616.json` | Enzyme/MLIR maturity audit with MLIR-runtime correctness evidence, native Enzyme scalar evidence, and missing raw compiler-AD breadth artifact plus derived breadth evidence recorded as hard gaps. Partial breadth captures are represented through complete artifacts with explicit case hard gaps before promotion. | Hard-gap evidence, not Enzyme parity promotion. |
 
 ## Provider Comparison Status
 
