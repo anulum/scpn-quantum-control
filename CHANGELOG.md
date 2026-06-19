@@ -5,6 +5,13 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-06-19 — Added bounded PyTorch module training-loop parity evidence
+  through `run_torch_training_loop_audit(...)`. The audit compiles the bounded
+  phase-QNN module loss, obtains `torch.func.grad` gradients, applies
+  deterministic parameter updates, checks every gradient route against SCPN
+  parameter-shift references, and feeds `run_torch_maturity_audit(...)` while
+  keeping CUDA/device, provider, hardware, isolated benchmark, and performance
+  promotion blocked.
 - 2026-06-19 — Added registered local Phase-QNode PyTorch non-fullgraph
   `torch.compile` evidence through `torch_phase_qnode_compile_audit(...)`. The
   audit compiles the deterministic statevector value and gradient routes,

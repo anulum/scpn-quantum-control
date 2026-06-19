@@ -288,6 +288,75 @@ class PhaseTorchModuleWrapperAuditResult:
 
 
 @dataclass(frozen=True)
+class PhaseTorchTrainingLoopAuditResult:
+    """Bounded PyTorch training-loop parity evidence for phase-QNN modules."""
+
+    initial_params: FloatArray
+    final_params: FloatArray
+    loss_history: FloatArray
+    gradient_history: FloatArray
+    final_gradient: FloatArray
+    parameter_shift_final_gradient: FloatArray
+    max_abs_gradient_error: float
+    l2_gradient_error: float
+    tolerance: float
+    passed: bool
+    steps: int
+    learning_rate: float
+    torch_module: Any
+    torch_final_loss: Any
+    torch_final_gradient: Any
+    module_wrapper_supported: bool
+    func_grad_supported: bool
+    torch_compile_supported: bool
+    compiled_loss_supported: bool
+    parameter_update_supported: bool
+    native_framework_autodiff: bool = True
+    host_boundary: bool = False
+    claim_boundary: str = "bounded_torch_training_loop_parity"
+
+    @property
+    def initial_loss(self) -> float:
+        """Return the first recorded training loss."""
+        return float(self.loss_history[0])
+
+    @property
+    def final_loss(self) -> float:
+        """Return the final recorded training loss."""
+        return float(self.loss_history[-1])
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready PyTorch training-loop evidence metadata."""
+        return {
+            "initial_params": self.initial_params.tolist(),
+            "final_params": self.final_params.tolist(),
+            "loss_history": self.loss_history.tolist(),
+            "gradient_history": self.gradient_history.tolist(),
+            "final_gradient": self.final_gradient.tolist(),
+            "parameter_shift_final_gradient": self.parameter_shift_final_gradient.tolist(),
+            "max_abs_gradient_error": self.max_abs_gradient_error,
+            "l2_gradient_error": self.l2_gradient_error,
+            "tolerance": self.tolerance,
+            "passed": self.passed,
+            "steps": self.steps,
+            "learning_rate": self.learning_rate,
+            "initial_loss": self.initial_loss,
+            "final_loss": self.final_loss,
+            "module_wrapper_supported": self.module_wrapper_supported,
+            "func_grad_supported": self.func_grad_supported,
+            "torch_compile_supported": self.torch_compile_supported,
+            "compiled_loss_supported": self.compiled_loss_supported,
+            "parameter_update_supported": self.parameter_update_supported,
+            "native_framework_autodiff": self.native_framework_autodiff,
+            "host_boundary": self.host_boundary,
+            "claim_boundary": self.claim_boundary,
+            "torch_module_type": type(self.torch_module).__name__,
+            "torch_final_loss_type": type(self.torch_final_loss).__name__,
+            "torch_final_gradient_type": type(self.torch_final_gradient).__name__,
+        }
+
+
+@dataclass(frozen=True)
 class PhaseTorchPhaseQNodeStatevectorResult:
     """Native PyTorch autograd evidence for a registered local Phase-QNode."""
 
@@ -873,6 +942,21 @@ def _as_non_negative_tolerance(value: float) -> float:
     if not np.isfinite(tolerance) or tolerance < 0.0:
         raise ValueError("tolerance must be a non-negative finite float")
     return tolerance
+
+
+def _as_positive_learning_rate(value: float) -> float:
+    learning_rate = float(value)
+    if not np.isfinite(learning_rate) or learning_rate <= 0.0:
+        raise ValueError("learning_rate must be a positive finite float")
+    return learning_rate
+
+
+def _as_positive_step_count(value: int) -> int:
+    if isinstance(value, bool) or not isinstance(value, int):
+        raise ValueError("steps must be a positive integer")
+    if value <= 0:
+        raise ValueError("steps must be a positive integer")
+    return value
 
 
 def _torch_values_to_numpy(values: object) -> FloatArray:
@@ -2151,6 +2235,140 @@ def run_torch_module_wrapper_audit(
     )
 
 
+def run_torch_training_loop_audit(
+    *,
+    features: ArrayLike,
+    labels: ArrayLike,
+    initial_params: ArrayLike | object,
+    learning_rate: float = 0.1,
+    steps: int = 4,
+    tolerance: float = 1e-6,
+    fullgraph: bool = True,
+    dynamic: bool = False,
+) -> PhaseTorchTrainingLoopAuditResult:
+    """Audit a bounded PyTorch module training loop against SCPN references.
+
+    The loop uses the bounded phase-QNN ``nn.Module`` wrapper, compiles its loss
+    callable with ``torch.compile``, obtains gradients through ``torch.func``,
+    and applies deterministic gradient-descent updates. It is local functional
+    correctness evidence only; CUDA, provider, finite-shot, hardware, isolated
+    benchmark, and performance promotion claims remain outside this route.
+    """
+
+    torch_module = _load_torch()
+    compile_fn = _torch_compile(torch_module)
+    torch_func_grad, _torch_func_vmap, _torch_func_jacrev = _torch_func_transforms(torch_module)
+    del _torch_func_vmap, _torch_func_jacrev
+    feature_matrix = _as_feature_matrix(features)
+    label_vector = _as_label_vector(labels, n_samples=feature_matrix.shape[0])
+    parameter_values = _torch_values_to_numpy(initial_params)
+    parameter_values = _as_parameter_vector(
+        "initial_params",
+        parameter_values,
+        width=feature_matrix.shape[1],
+    )
+    tolerance_value = _as_non_negative_tolerance(tolerance)
+    learning_rate_value = _as_positive_learning_rate(learning_rate)
+    step_count = _as_positive_step_count(steps)
+    module = torch_bounded_qnn_module(
+        features=feature_matrix,
+        labels=label_vector,
+        initial_params=parameter_values,
+        trainable=True,
+    )
+
+    def loss_fn(parameter_tensor: Any) -> Any:
+        return module(parameter_tensor)
+
+    compiled_loss_fn = compile_fn(loss_fn, fullgraph=bool(fullgraph), dynamic=bool(dynamic))
+    grad_fn = torch_func_grad(loss_fn)
+    compiled_grad_fn = compile_fn(grad_fn, fullgraph=bool(fullgraph), dynamic=bool(dynamic))
+    current_params = parameter_values.copy()
+    loss_values: list[float] = []
+    gradient_values: list[FloatArray] = []
+    gradient_deltas: list[FloatArray] = []
+    for _index in range(step_count):
+        torch_params = _torch_tensor(torch_module, current_params)
+        torch_loss = compiled_loss_fn(torch_params)
+        torch_gradient = compiled_grad_fn(torch_params)
+        loss_values.append(_torch_scalar_to_float(torch_loss))
+        gradient = _as_parameter_vector(
+            "PyTorch training-loop gradient",
+            _torch_values_to_numpy(torch_gradient),
+            width=parameter_values.size,
+        )
+        reference_gradient = parameter_shift_qnn_classifier_gradient(
+            feature_matrix,
+            label_vector,
+            current_params,
+        )
+        reference_gradient = _as_parameter_vector(
+            "SCPN bounded phase-QNN parameter-shift gradient",
+            reference_gradient,
+            width=parameter_values.size,
+        )
+        gradient_values.append(gradient)
+        gradient_deltas.append(gradient - reference_gradient)
+        current_params = current_params - learning_rate_value * gradient
+
+    final_torch_params = _torch_tensor(torch_module, current_params)
+    final_torch_loss = compiled_loss_fn(final_torch_params)
+    final_torch_gradient = compiled_grad_fn(final_torch_params)
+    final_gradient = _as_parameter_vector(
+        "PyTorch training-loop final gradient",
+        _torch_values_to_numpy(final_torch_gradient),
+        width=parameter_values.size,
+    )
+    parameter_shift_final_gradient = parameter_shift_qnn_classifier_gradient(
+        feature_matrix,
+        label_vector,
+        current_params,
+    )
+    parameter_shift_final_gradient = _as_parameter_vector(
+        "SCPN bounded phase-QNN final parameter-shift gradient",
+        parameter_shift_final_gradient,
+        width=parameter_values.size,
+    )
+    gradient_deltas.append(final_gradient - parameter_shift_final_gradient)
+    loss_values.append(_torch_scalar_to_float(final_torch_loss))
+    flat_delta = np.concatenate([delta.reshape(-1) for delta in gradient_deltas])
+    max_abs_gradient_error = float(np.max(np.abs(flat_delta))) if flat_delta.size else 0.0
+    l2_gradient_error = float(np.linalg.norm(flat_delta))
+    loss_history = _as_parameter_vector("PyTorch training-loop loss history", loss_values)
+    gradient_history = _as_parameter_matrix(
+        "PyTorch training-loop gradient history",
+        np.vstack(gradient_values),
+        width=parameter_values.size,
+    )
+    passed = bool(
+        max_abs_gradient_error <= tolerance_value
+        and np.all(np.isfinite(loss_history))
+        and float(loss_history[-1]) <= float(loss_history[0]) + tolerance_value
+    )
+    return PhaseTorchTrainingLoopAuditResult(
+        initial_params=parameter_values,
+        final_params=current_params,
+        loss_history=loss_history,
+        gradient_history=gradient_history,
+        final_gradient=final_gradient,
+        parameter_shift_final_gradient=parameter_shift_final_gradient,
+        max_abs_gradient_error=max_abs_gradient_error,
+        l2_gradient_error=l2_gradient_error,
+        tolerance=tolerance_value,
+        passed=passed,
+        steps=step_count,
+        learning_rate=learning_rate_value,
+        torch_module=module,
+        torch_final_loss=final_torch_loss,
+        torch_final_gradient=final_torch_gradient,
+        module_wrapper_supported=True,
+        func_grad_supported=True,
+        torch_compile_supported=True,
+        compiled_loss_supported=True,
+        parameter_update_supported=bool(not np.allclose(current_params, parameter_values)),
+    )
+
+
 def run_torch_ecosystem_maturity_audit() -> PhaseTorchEcosystemMaturityAuditResult:
     """Audit broad PyTorch module, transform, compiler, and device maturity.
 
@@ -2459,6 +2677,14 @@ def run_torch_maturity_audit(
         initial_params=parameter_values,
         tolerance=tolerance_value,
     )
+    training_loop = run_torch_training_loop_audit(
+        features=feature_matrix,
+        labels=label_vector,
+        initial_params=parameter_values,
+        tolerance=tolerance_value,
+        fullgraph=fullgraph,
+        dynamic=dynamic,
+    )
     ecosystem_maturity = run_torch_ecosystem_maturity_audit()
     cloud_validation_batch = plan_torch_cloud_validation_batch()
     live_overlay = (
@@ -2473,6 +2699,7 @@ def run_torch_maturity_audit(
         "torch_func": torch_func,
         "torch_compile": torch_compile,
         "module_layer_wrapper": module_layer_wrapper,
+        "training_loop": training_loop,
         "ecosystem_maturity": ecosystem_maturity,
         "phase_qnode_lowering_matrix": run_torch_phase_qnode_lowering_matrix(),
         "cloud_validation_batch": cloud_validation_batch,
@@ -2497,6 +2724,7 @@ def run_torch_maturity_audit(
         "torch_func": "passed" if torch_func.passed else "failed",
         "torch_compile": "passed" if torch_compile.passed else "failed",
         "module_layer_wrapper": "passed" if module_layer_wrapper.passed else "failed",
+        "training_loop": "passed" if training_loop.passed else "failed",
         "torch_ecosystem_maturity": (
             "passed" if ecosystem_maturity.ready_for_provider_exceedance else "blocked"
         ),
@@ -2629,6 +2857,7 @@ __all__ = [
     "PhaseTorchPhaseQNodeStatevectorResult",
     "PhaseTorchPhaseQNodeTransformResult",
     "PhaseTorchQNNGradientResult",
+    "PhaseTorchTrainingLoopAuditResult",
     "is_phase_torch_available",
     "plan_torch_cloud_validation_batch",
     "run_torch_compile_compatibility_audit",
@@ -2637,6 +2866,7 @@ __all__ = [
     "run_torch_maturity_audit",
     "run_torch_module_wrapper_audit",
     "run_torch_phase_qnode_lowering_matrix",
+    "run_torch_training_loop_audit",
     "torch_autograd_qnn_value_and_grad",
     "torch_bounded_qnn_value_and_grad",
     "torch_bounded_qnn_layer",

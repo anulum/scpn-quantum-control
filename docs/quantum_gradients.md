@@ -1947,6 +1947,7 @@ from scpn_quantum_control.phase import (
     run_torch_ecosystem_maturity_audit,
     run_torch_maturity_audit,
     run_torch_phase_qnode_lowering_matrix,
+    run_torch_training_loop_audit,
     tensorflow_bounded_qnn_keras_layer,
     tensorflow_parameter_shift_value_and_grad,
     torch_phase_qnode_compile_audit,
@@ -1998,11 +1999,17 @@ torch_maturity = run_torch_maturity_audit(
     params=np.array([0.45], dtype=float),
     params_batch=np.array([[0.25], [0.45], [0.65]], dtype=float),
 )
+torch_training_loop = run_torch_training_loop_audit(
+    features=np.array([[0.0], [np.pi]], dtype=float),
+    labels=np.array([0.0, 1.0], dtype=float),
+    initial_params=np.array([0.45], dtype=float),
+)
 torch_ecosystem = run_torch_ecosystem_maturity_audit()
 torch_lowering = run_torch_phase_qnode_lowering_matrix()
 torch_cloud_batch = plan_torch_cloud_validation_batch(runner="jarvislabs")
 
 print(torch_result.torch_gradient, torch_result.host_boundary)
+print(torch_training_loop.final_loss, torch_training_loop.passed)
 print(torch_maturity.bounded_model_ready, torch_maturity.ready_for_provider_exceedance)
 print(torch_ecosystem.route_status("cuda_accelerator_device"))
 print(torch_lowering.route_status("registered_phase_qnode_statevector_lowering"))
@@ -2039,7 +2046,12 @@ remain outside that route. The separate
 gradients only for that same model. The separate
 `torch_bounded_qnn_module(...)` / `torch_bounded_qnn_layer(...)` wrapper route
 verifies a bounded PyTorch `nn.Module`/layer loss and gradient only for that same
-model. The separate `run_torch_ecosystem_maturity_audit(...)` route records
+model. `run_torch_training_loop_audit(...)` compiles that bounded module loss,
+uses `torch.func.grad` for deterministic gradient-descent updates, records loss
+and gradient histories, and checks every gradient route against SCPN
+parameter-shift references. It is local training-loop correctness evidence, not
+CUDA, provider, finite-shot, hardware, isolated benchmark, or performance
+promotion evidence. The separate `run_torch_ecosystem_maturity_audit(...)` route records
 installed `nn.Module`/`Parameter`, `torch.func`, `torch.compile`, and CUDA-device
 capability state. A visible CUDA device is still blocked if the installed
 PyTorch wheel cannot execute a tensor smoke on that hardware. Registered

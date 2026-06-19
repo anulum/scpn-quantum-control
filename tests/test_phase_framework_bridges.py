@@ -40,6 +40,7 @@ from scpn_quantum_control.phase import (
     PhaseTorchPhaseQNodeStatevectorResult,
     PhaseTorchPhaseQNodeTransformResult,
     PhaseTorchQNNGradientResult,
+    PhaseTorchTrainingLoopAuditResult,
     is_phase_tensorflow_available,
     is_phase_torch_available,
     multi_frequency_parameter_shift_rule,
@@ -56,6 +57,7 @@ from scpn_quantum_control.phase import (
     run_torch_maturity_audit,
     run_torch_module_wrapper_audit,
     run_torch_phase_qnode_lowering_matrix,
+    run_torch_training_loop_audit,
     tensorflow_bounded_qnn_keras_layer,
     tensorflow_bounded_qnn_value_and_grad,
     tensorflow_parameter_shift_value_and_grad,
@@ -861,6 +863,56 @@ def test_torch_module_wrapper_audit_checks_module_grad(
     assert fake_torch.func.grad_calls == 1
 
 
+def test_torch_training_loop_audit_updates_module_with_compile_and_func(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    fake_torch = _FakeTorch()
+    monkeypatch.setattr(torch_bridge, "_load_torch", lambda: fake_torch)
+    features = np.array([[0.0], [np.pi]], dtype=float)
+    labels = np.array([0.0, 1.0], dtype=float)
+    initial_params = np.array([0.45], dtype=float)
+
+    result = run_torch_training_loop_audit(
+        features=features,
+        labels=labels,
+        initial_params=initial_params,
+        learning_rate=0.2,
+        steps=4,
+        tolerance=1e-12,
+        fullgraph=True,
+    )
+
+    initial_loss = parameter_shift_qnn_classifier_loss(features, labels, initial_params)
+    final_reference_gradient = parameter_shift_qnn_classifier_gradient(
+        features,
+        labels,
+        result.final_params,
+    )
+    assert isinstance(result, PhaseTorchTrainingLoopAuditResult)
+    assert result.passed
+    assert result.steps == 4
+    assert result.learning_rate == 0.2
+    assert result.initial_loss == pytest.approx(initial_loss)
+    assert result.final_loss < result.initial_loss
+    assert result.loss_history.shape == (5,)
+    assert np.all(np.diff(result.loss_history) <= 1e-12)
+    assert result.gradient_history.shape == (4, 1)
+    assert result.module_wrapper_supported
+    assert result.func_grad_supported
+    assert result.torch_compile_supported
+    assert result.compiled_loss_supported
+    assert result.parameter_update_supported
+    assert result.native_framework_autodiff
+    assert not result.host_boundary
+    np.testing.assert_allclose(result.final_gradient, final_reference_gradient, atol=1e-12)
+    payload = result.to_dict()
+    assert payload["claim_boundary"] == "bounded_torch_training_loop_parity"
+    assert payload["compiled_loss_supported"] is True
+    json.dumps(payload)
+    assert fake_torch.func.grad_calls >= 1
+    assert len(fake_torch.compile_calls) >= 1
+
+
 def test_torch_maturity_audit_records_bounded_passes_and_provider_gaps(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
@@ -915,6 +967,7 @@ def test_torch_maturity_audit_records_bounded_passes_and_provider_gaps(
     assert evidence["torch_func"].passed
     assert evidence["torch_compile"].passed
     assert evidence["module_layer_wrapper"].passed
+    assert evidence["training_loop"].passed
     assert evidence["ecosystem_maturity"].route_status("torch_compile_callable") == "passed"
     assert evidence["cloud_validation_batch"].ready_for_cloud_dispatch
     assert evidence["live_overlay"].passed
@@ -927,6 +980,7 @@ def test_torch_maturity_audit_records_bounded_passes_and_provider_gaps(
     json.dumps(payload)
     required_capabilities = cast(dict[str, str], payload["required_capabilities"])
     assert required_capabilities["torch_compile"] == "passed"
+    assert required_capabilities["training_loop"] == "passed"
     assert required_capabilities["torch_ecosystem_maturity"] == "blocked"
     assert required_capabilities["cloud_validation_batch"] == "scheduled"
     assert required_capabilities["live_overlay_execution"] == "passed"

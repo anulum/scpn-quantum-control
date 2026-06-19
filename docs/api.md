@@ -1348,6 +1348,7 @@ run_torch_compile_compatibility_audit(features, labels, params, tolerance=1e-6, 
 torch_bounded_qnn_module(features, labels, initial_params, trainable=True) -> torch.nn.Module
 torch_bounded_qnn_layer(features, labels, initial_params, trainable=True) -> torch.nn.Module
 run_torch_module_wrapper_audit(features, labels, initial_params, tolerance=1e-6) -> PhaseTorchModuleWrapperAuditResult
+run_torch_training_loop_audit(features, labels, initial_params, learning_rate=0.1, steps=4, tolerance=1e-6, fullgraph=True, dynamic=False) -> PhaseTorchTrainingLoopAuditResult
 run_torch_phase_qnode_lowering_matrix() -> PhaseTorchPhaseQNodeLoweringMatrixResult
 torch_phase_qnode_compile_audit(circuit, params, tolerance=1e-6, fullgraph=False, dynamic=False) -> PhaseTorchPhaseQNodeCompileResult
 plan_torch_cloud_validation_batch(runner="jarvislabs", accelerator_backend="cuda") -> PhaseTorchCloudValidationRunSpec
