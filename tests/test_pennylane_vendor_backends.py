@@ -33,6 +33,7 @@ from unittest.mock import MagicMock
 
 import numpy as np
 import pytest
+from numpy.typing import NDArray
 
 from scpn_quantum_control.hardware import pennylane_adapter as pl_mod
 
@@ -136,12 +137,15 @@ VENDOR_MATRIX: list[tuple[str, int | None, dict[str, Any], str]] = [
 ]
 
 
-def _minimal_inputs(n: int = 3) -> tuple[np.ndarray, np.ndarray]:
+FloatArray = NDArray[np.float64]
+
+
+def _minimal_inputs(n: int = 3) -> tuple[FloatArray, FloatArray]:
     K = np.zeros((n, n))
     for i in range(n - 1):
         K[i, i + 1] = 0.5
         K[i + 1, i] = 0.5
-    omega = np.linspace(0.8, 1.2, n)
+    omega = np.linspace(0.8, 1.2, n).astype(np.float64)
     return K, omega
 
 
@@ -247,6 +251,37 @@ class TestVendorPassThroughSemantics:
         K, omega = _minimal_inputs()
         pl_mod.PennyLaneRunner(K, omega, device="future.vendor.qubit", shots=100)
         assert spy_pl.device_calls[0]["name"] == "future.vendor.qubit"
+
+    def test_device_name_is_trimmed_before_plugin_dispatch(self, spy_pl: _SpyQml) -> None:
+        """Device strings may arrive from config files with padding."""
+        K, omega = _minimal_inputs()
+        runner = pl_mod.PennyLaneRunner(K, omega, device="  braket.aws.qubit  ", shots=100)
+        assert runner.device_name == "braket.aws.qubit"
+        assert spy_pl.device_calls[0]["name"] == "braket.aws.qubit"
+
+    @pytest.mark.parametrize("device", ["", "  ", "qiskit.ibmq\nbackend"])
+    def test_device_name_rejects_empty_or_control_payloads(
+        self,
+        spy_pl: _SpyQml,
+        device: str,
+    ) -> None:
+        """Provider plugin names must fail closed before reaching PennyLane."""
+        K, omega = _minimal_inputs()
+        with pytest.raises(ValueError, match="PennyLane device name"):
+            pl_mod.PennyLaneRunner(K, omega, device=device, shots=100)
+        assert spy_pl.device_calls == []
+
+    @pytest.mark.parametrize("shots", [0, -1, True])
+    def test_shots_rejects_non_positive_or_bool_values(
+        self,
+        spy_pl: _SpyQml,
+        shots: int | bool,
+    ) -> None:
+        """Finite-shot provider routes must use positive integer shot counts."""
+        K, omega = _minimal_inputs()
+        with pytest.raises(ValueError, match="shots"):
+            pl_mod.PennyLaneRunner(K, omega, device="ionq.qpu", shots=shots)
+        assert spy_pl.device_calls == []
 
     def test_exactly_one_device_call_per_runner(self, spy_pl: _SpyQml) -> None:
         """Each ``PennyLaneRunner`` construction issues exactly one

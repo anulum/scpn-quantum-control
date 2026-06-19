@@ -5,6 +5,10 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-06-19 — Hardened the PennyLane provider/device adapter boundary by
+  normalising padded device names, rejecting empty or control-character device
+  strings, rejecting non-positive or boolean finite-shot counts, and bringing
+  the adapter plus vendor-backend tests under standalone strict mypy.
 - 2026-06-19 — Added fail-closed negative-path coverage for the bounded PyTorch
   training-loop audit, covering invalid learning rates, invalid step counts,
   negative tolerances, and parameter-width mismatches in the

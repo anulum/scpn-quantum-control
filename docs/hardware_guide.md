@@ -249,6 +249,13 @@ energy objective and the post-optimization observable pass. The returned
 same X/Y phase reconstruction; it is not a sentinel, simulator-only
 statevector value, or unmeasured placeholder.
 
+Provider and plugin routing is intentionally delegated to PennyLane: unknown
+device strings are forwarded to `qml.device(...)` so installed plugins can own
+their validation. The adapter still fails closed before plugin dispatch for
+empty device names, control-character payloads, and invalid finite-shot counts;
+`shots=None` remains the analytic/simulator route and finite-shot runs require
+a positive integer.
+
 ---
 
 ## Experiments (`experiments.py`)
@@ -308,6 +315,11 @@ runner = PennyLaneRunner(K, omega, device="default.qubit")
 result = runner.run_trotter(t=0.5, reps=2)
 # result: PennyLaneResult(energy, order_parameter, n_qubits, device_name, statevector)
 ```
+
+Device strings are trimmed before dispatch and malformed payloads are rejected
+before `qml.device(...)` is called. Vendor-specific keyword arguments are
+forwarded verbatim; no allow-list is maintained in the adapter, and mocked
+provider-breadth tests do not touch live hardware.
 
 VQE via PennyLane optimisers:
 ```python
