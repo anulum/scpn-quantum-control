@@ -10,7 +10,7 @@
     "paper0_validation_modules": 466,
     "public_api_exports": 664,
     "public_documentation_pages": 254,
-    "python_model_classes": 1790,
+    "python_model_classes": 1792,
     "python_model_source_modules": 835,
     "rust_pyo3_model_wrappers": 135,
     "rust_source_modules": 38,
@@ -1358,6 +1358,10 @@
         "path": "src/scpn_quantum_control/hardware/async_runner.py"
       },
       {
+        "name": "AutoSolveResult",
+        "path": "src/scpn_quantum_control/phase/backend_selector.py"
+      },
+      {
         "name": "AxiomIFamilyPredictionsConfig",
         "path": "src/scpn_quantum_control/paper0/axiom_i_family_predictions_validation.py"
       },
@@ -1508,6 +1512,10 @@
       {
         "name": "BackendProtocol",
         "path": "src/scpn_quantum_control/hardware/backends.py"
+      },
+      {
+        "name": "BackendRecommendation",
+        "path": "src/scpn_quantum_control/phase/backend_selector.py"
       },
       {
         "name": "BackendRegistrationError",

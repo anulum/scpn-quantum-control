@@ -260,17 +260,37 @@ class TestAutoSolve:
         from unittest.mock import patch
 
         K, omega = _system(4)
-        with patch(
-            "scpn_quantum_control.phase.backend_selector.recommend_backend",
-            return_value={
-                "backend": "statevector",
-                "reason": "test",
-                "memory_mb": 1,
-                "feasible": True,
-            },
+
+        class FakeQuantumKuramotoSolver:
+            def __init__(self, n, K_arg, omega_arg):
+                assert n == 4
+                assert K_arg is K
+                assert omega_arg is omega
+
+            def run(self, *, t_max, dt, max_statevector_gib):
+                assert t_max == 0.1
+                assert dt == 0.1
+                assert max_statevector_gib is None
+                return {"times": np.array([0.0, 0.1]), "R": np.array([1.0, 0.9])}
+
+        with (
+            patch(
+                "scpn_quantum_control.phase.backend_selector.recommend_backend",
+                return_value={
+                    "backend": "statevector",
+                    "reason": "test",
+                    "memory_mb": 1,
+                    "feasible": True,
+                },
+            ),
+            patch(
+                "scpn_quantum_control.phase.xy_kuramoto.QuantumKuramotoSolver",
+                FakeQuantumKuramotoSolver,
+            ),
         ):
             result = auto_solve(K, omega, t_max=0.1, dt=0.1)
             assert result["backend_used"] == "statevector"
+            assert result["result"]["R"].tolist() == [1.0, 0.9]
 
     def test_hardware_recommendation_does_not_submit_qpu_job(self):
         """The selector recommends hardware; auto_solve fails closed locally."""

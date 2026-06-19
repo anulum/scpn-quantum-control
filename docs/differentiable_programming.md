@@ -115,7 +115,7 @@ commands or promote benchmark artefacts.
 CI, local preflight, and the pre-push hook enforce a separate strict-mypy
 ratchet over the differentiable API, claim-ledger, benchmark-evidence,
 hardening-gate, QNN/QGNN/QSNN training and evidence satellites,
-objective/domain evidence, optimizer-baseline, parameter-shift/VQE foundations,
+objective/domain evidence, optimizer-baseline, backend selection, parameter-shift/VQE foundations,
 structured-ansatz/methodology/Kuramoto solver foundations,
 typed trajectory-result containers,
 layered ADAPT-VQE,

@@ -19,10 +19,34 @@ Inspired by Maestro (Qoro, arXiv:2512.04216).
 
 from __future__ import annotations
 
+from typing import Any, TypedDict
+
 import numpy as np
+from numpy.typing import NDArray
 
 from ..bridge.knm_hamiltonian import knm_to_dense_matrix
 from ..dense_budget import require_dense_allocation
+
+FloatArray = NDArray[np.float64]
+ComplexArray = NDArray[np.complex128]
+
+
+class BackendRecommendation(TypedDict, total=False):
+    """Backend recommendation metadata returned by :func:`recommend_backend`."""
+
+    backend: str
+    reason: str
+    memory_mb: float
+    feasible: bool
+    note: str
+
+
+class AutoSolveResult(TypedDict):
+    """Result envelope returned by :func:`auto_solve`."""
+
+    backend_used: str
+    result: Any
+    recommendation: BackendRecommendation
 
 
 def recommend_backend(
@@ -32,7 +56,7 @@ def recommend_backend(
     has_gpu: bool = False,
     want_open_system: bool = False,
     allow_u1_sector: bool = True,
-) -> dict:
+) -> BackendRecommendation:
     """Recommend the best simulation backend for given system size.
 
     Parameters
@@ -160,8 +184,8 @@ def recommend_backend(
 
 
 def auto_solve(
-    K: np.ndarray,
-    omega: np.ndarray,
+    K: FloatArray,
+    omega: FloatArray,
     ram_gb: float = 32.0,
     want_open_system: bool = False,
     allow_u1_sector: bool = True,
@@ -171,7 +195,7 @@ def auto_solve(
     dt: float = 0.1,
     *,
     max_dense_gib: float | None = None,
-) -> dict:
+) -> AutoSolveResult:
     """Automatically select backend and run simulation.
 
     Returns dict with keys: backend_used, result, recommendation
@@ -218,6 +242,8 @@ def auto_solve(
             label="auto_solve exact diagonalisation",
         )
         H = knm_to_dense_matrix(K, omega, max_dense_gib=max_dense_gib)
+        eigvals: FloatArray
+        eigvecs: ComplexArray
         eigvals, eigvecs = np.linalg.eigh(H)
         return {
             "backend_used": backend,
