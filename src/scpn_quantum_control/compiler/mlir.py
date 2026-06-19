@@ -27,7 +27,7 @@ import threading
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field, is_dataclass
 from types import MappingProxyType
-from typing import Any, cast
+from typing import Any, TypeAlias, cast
 
 import numpy as np
 from numpy.typing import NDArray
@@ -47,6 +47,13 @@ from ..differentiable import (
     whole_program_value_and_grad,
 )
 from ..kuramoto_core import KuramotoProblem, build_kuramoto_problem
+
+FloatArray: TypeAlias = NDArray[np.float64]
+
+
+def _copy_float_array(values: FloatArray) -> FloatArray:
+    copied: object = values.copy()
+    return cast(FloatArray, copied)
 
 
 @dataclass(frozen=True)
@@ -1023,9 +1030,9 @@ class ExecutableCompilerADKernel:
     rule_name: str
     backend: str
     mlir_module: MLIRModule
-    value_kernel: Callable[[np.ndarray], np.ndarray]
-    jvp_kernel: Callable[[np.ndarray, np.ndarray], np.ndarray] | None
-    vjp_kernel: Callable[[np.ndarray, np.ndarray], np.ndarray] | None
+    value_kernel: Callable[[FloatArray], FloatArray]
+    jvp_kernel: Callable[[FloatArray, FloatArray], FloatArray] | None
+    vjp_kernel: Callable[[FloatArray, FloatArray], FloatArray] | None
     verification: CompilerADKernelVerification
     llvm_gradient_ir: str | None = None
     claim_boundary: str = (
@@ -1055,26 +1062,26 @@ class ExecutableCompilerADKernel:
         if not self.claim_boundary:
             raise ValueError("claim_boundary must be non-empty")
 
-    def value(self, values: np.ndarray) -> np.ndarray:
+    def value(self, values: FloatArray) -> FloatArray:
         """Execute the compiled value kernel."""
 
         return self.value_kernel(values)
 
-    def jvp(self, values: np.ndarray, tangent: np.ndarray) -> np.ndarray:
+    def jvp(self, values: FloatArray, tangent: FloatArray) -> FloatArray:
         """Execute the compiled JVP kernel."""
 
         if self.jvp_kernel is None:
             raise ValueError(f"kernel {self.rule_name} has no JVP rule")
         return self.jvp_kernel(values, tangent)
 
-    def vjp(self, values: np.ndarray, cotangent: np.ndarray) -> np.ndarray:
+    def vjp(self, values: FloatArray, cotangent: FloatArray) -> FloatArray:
         """Execute the compiled VJP kernel."""
 
         if self.vjp_kernel is None:
             raise ValueError(f"kernel {self.rule_name} has no VJP rule")
         return self.vjp_kernel(values, cotangent)
 
-    def gradient(self, values: np.ndarray) -> np.ndarray:
+    def gradient(self, values: FloatArray) -> FloatArray:
         """Execute the compiled scalar-output gradient kernel."""
 
         if self.vjp_kernel is None:
@@ -1162,10 +1169,10 @@ def _prepare_executable_kernel_batch_args(
 def _slice_executable_kernel_batch_arg(arg: object, axis: int | None, item: int) -> object:
     if axis is None:
         return arg
-    return np.take(cast(np.ndarray, arg), item, axis=axis)
+    return np.take(cast(FloatArray, arg), item, axis=axis)
 
 
-def _as_executable_kernel_batch_array(name: str, value: object) -> np.ndarray:
+def _as_executable_kernel_batch_array(name: str, value: object) -> FloatArray:
     raw = np.asarray(value)
     if raw.dtype.kind in {"b", "O", "S", "U"}:
         raise ValueError(f"executable AD kernel batching {name} must be numeric")
@@ -1191,7 +1198,7 @@ def _execute_kernel_batch_slice(
     kernel: ExecutableCompilerADKernel,
     method: str,
     args: tuple[object, ...],
-) -> np.ndarray:
+) -> FloatArray:
     if method == "value":
         if len(args) != 1:
             raise ValueError("executable AD kernel value batching requires one argument")
@@ -1239,9 +1246,9 @@ def _execute_kernel_batch_slice(
 
 
 def _stack_executable_kernel_batch_outputs(
-    outputs: Sequence[np.ndarray],
+    outputs: Sequence[FloatArray],
     out_axes: int,
-) -> np.ndarray:
+) -> FloatArray:
     if not outputs:
         raise ValueError("executable AD kernel batching outputs must be non-empty")
     arrays = [np.asarray(output, dtype=np.float64) for output in outputs]
@@ -1258,9 +1265,9 @@ def _stack_executable_kernel_batch_outputs(
 
 
 def compile_kuramoto_to_mlir(
-    problem: KuramotoProblem | np.ndarray,
+    problem: KuramotoProblem | FloatArray,
     config: MLIRCompileConfig,
-    omega: np.ndarray | None = None,
+    omega: FloatArray | None = None,
 ) -> MLIRModule:
     """Compile a Kuramoto problem into deterministic MLIR-style text.
 
@@ -1324,7 +1331,7 @@ def compile_kuramoto_to_mlir(
 
 def compile_custom_derivative_rule_to_mlir(
     rule: CustomDerivativeRule,
-    values: np.ndarray,
+    values: FloatArray,
     config: DifferentiableMLIRCompileConfig | None = None,
 ) -> MLIRModule:
     """Lower an exact custom derivative rule to deterministic MLIR-style text.
@@ -1408,11 +1415,11 @@ def compile_custom_derivative_rule_to_mlir(
 
 def compile_custom_derivative_rule_to_executable(
     rule: CustomDerivativeRule,
-    sample_values: Sequence[float] | np.ndarray,
+    sample_values: Sequence[float] | FloatArray,
     config: CompilerADExecutableConfig | None = None,
     *,
-    sample_tangent: Sequence[float] | np.ndarray | None = None,
-    sample_cotangent: Sequence[float] | np.ndarray | None = None,
+    sample_tangent: Sequence[float] | FloatArray | None = None,
+    sample_cotangent: Sequence[float] | FloatArray | None = None,
 ) -> ExecutableCompilerADKernel:
     """Compile a custom derivative rule into a verified executable AD kernel.
 
@@ -1438,12 +1445,12 @@ def compile_custom_derivative_rule_to_executable(
         compile_config.mlir_config,
     )
 
-    def value_kernel(raw_values: np.ndarray) -> np.ndarray:
+    def value_kernel(raw_values: FloatArray) -> FloatArray:
         return _as_finite_vector(
             "value kernel output", rule.value_fn(_as_finite_vector("values", raw_values))
         )
 
-    def jvp_kernel(raw_values: np.ndarray, raw_tangent: np.ndarray) -> np.ndarray:
+    def jvp_kernel(raw_values: FloatArray, raw_tangent: FloatArray) -> FloatArray:
         if rule.jvp_rule is None:
             raise ValueError(f"rule {rule.name} has no JVP rule")
         checked_values = _as_finite_vector("values", raw_values)
@@ -1454,7 +1461,7 @@ def compile_custom_derivative_rule_to_executable(
             "JVP kernel output", rule.jvp_rule(checked_values, checked_tangent)
         )
 
-    def vjp_kernel(raw_values: np.ndarray, raw_cotangent: np.ndarray) -> np.ndarray:
+    def vjp_kernel(raw_values: FloatArray, raw_cotangent: FloatArray) -> FloatArray:
         if rule.vjp_rule is None:
             raise ValueError(f"rule {rule.name} has no VJP rule")
         checked_values = _as_finite_vector("values", raw_values)
@@ -1493,11 +1500,11 @@ def compile_custom_derivative_rule_to_executable(
 def compile_registered_primitive_to_executable(
     registry: CustomDerivativeRegistry,
     identity: PrimitiveIdentity | str,
-    sample_values: Sequence[float] | np.ndarray,
+    sample_values: Sequence[float] | FloatArray,
     config: CompilerADExecutableConfig | None = None,
     *,
-    sample_tangent: Sequence[float] | np.ndarray | None = None,
-    sample_cotangent: Sequence[float] | np.ndarray | None = None,
+    sample_tangent: Sequence[float] | FloatArray | None = None,
+    sample_cotangent: Sequence[float] | FloatArray | None = None,
 ) -> ExecutableCompilerADKernel:
     """Compile a registered primitive identity into an executable AD kernel."""
 
@@ -1532,10 +1539,10 @@ def compile_registered_primitive_to_executable(
 
 def make_program_ad_linalg_matrix_power_executable_lowering_rule(
     power: int | np.integer,
-    sample_values: Sequence[float] | np.ndarray,
+    sample_values: Sequence[float] | FloatArray,
     config: CompilerADExecutableConfig | None = None,
     *,
-    sample_tangent: Sequence[float] | np.ndarray | None = None,
+    sample_tangent: Sequence[float] | FloatArray | None = None,
 ) -> Callable[[CustomDerivativeRule], ExecutableCompilerADKernel]:
     """Build a verified executable lowering rule for a fixed matrix_power signature."""
 
@@ -1558,10 +1565,10 @@ def make_program_ad_linalg_matrix_power_executable_lowering_rule(
 
 def make_program_ad_linalg_multi_dot_executable_lowering_rule(
     operand_shapes: Sequence[Sequence[int]],
-    sample_values: Sequence[float] | np.ndarray,
+    sample_values: Sequence[float] | FloatArray,
     config: CompilerADExecutableConfig | None = None,
     *,
-    sample_tangent: Sequence[float] | np.ndarray | None = None,
+    sample_tangent: Sequence[float] | FloatArray | None = None,
 ) -> Callable[[CustomDerivativeRule], ExecutableCompilerADKernel]:
     """Build a verified executable lowering rule for a fixed multi_dot signature."""
 
@@ -1584,14 +1591,14 @@ def make_program_ad_linalg_multi_dot_executable_lowering_rule(
 
 def _verify_executable_ad_kernel(
     rule: CustomDerivativeRule,
-    values: np.ndarray,
-    value_kernel: Callable[[np.ndarray], np.ndarray],
-    jvp_kernel: Callable[[np.ndarray, np.ndarray], np.ndarray] | None,
-    vjp_kernel: Callable[[np.ndarray, np.ndarray], np.ndarray] | None,
+    values: FloatArray,
+    value_kernel: Callable[[FloatArray], FloatArray],
+    jvp_kernel: Callable[[FloatArray, FloatArray], FloatArray] | None,
+    vjp_kernel: Callable[[FloatArray, FloatArray], FloatArray] | None,
     config: CompilerADExecutableConfig,
     *,
-    sample_tangent: Sequence[float] | np.ndarray | None,
-    sample_cotangent: Sequence[float] | np.ndarray | None,
+    sample_tangent: Sequence[float] | FloatArray | None,
+    sample_cotangent: Sequence[float] | FloatArray | None,
 ) -> CompilerADKernelVerification:
     if not config.verify:
         return CompilerADKernelVerification(
@@ -1661,8 +1668,8 @@ def _verify_executable_ad_kernel(
 
 def _compile_scalar_gradient_llvm_ir(
     rule: CustomDerivativeRule,
-    values: np.ndarray,
-    vjp_kernel: Callable[[np.ndarray, np.ndarray], np.ndarray],
+    values: FloatArray,
+    vjp_kernel: Callable[[FloatArray, FloatArray], FloatArray],
 ) -> str:
     value = _as_finite_vector("rule value", rule.value_fn(values))
     if value.size != 1:
@@ -4330,8 +4337,8 @@ def _compile_native_llvm_jit_functions(
 
 def _call_native_scalar_unary(
     function: Callable[[Any, Any], None],
-    values: np.ndarray,
-) -> np.ndarray:
+    values: FloatArray,
+) -> FloatArray:
     checked_values = np.ascontiguousarray(_as_finite_vector("values", values), dtype=np.float64)
     if checked_values.size != 1:
         raise ValueError("native scalar LLVM/JIT kernel requires one value")
@@ -4346,10 +4353,10 @@ def _call_native_scalar_unary(
 
 def _call_native_scalar_binary(
     function: Callable[[Any, Any, Any], None],
-    values: np.ndarray,
-    tangent_or_cotangent: np.ndarray,
+    values: FloatArray,
+    tangent_or_cotangent: FloatArray,
     label: str,
-) -> np.ndarray:
+) -> FloatArray:
     checked_values = np.ascontiguousarray(_as_finite_vector("values", values), dtype=np.float64)
     checked_vector = np.ascontiguousarray(
         _as_finite_vector(label, tangent_or_cotangent), dtype=np.float64
@@ -4370,9 +4377,9 @@ def _call_native_scalar_binary(
 
 def _call_native_scalar_pair_unary(
     function: Callable[[Any, Any], None],
-    values: np.ndarray,
+    values: FloatArray,
     output_size: int,
-) -> np.ndarray:
+) -> FloatArray:
     checked_values = np.ascontiguousarray(_as_finite_vector("values", values), dtype=np.float64)
     if checked_values.size != 2:
         raise ValueError("native scalar binary LLVM/JIT kernel requires two values")
@@ -4389,11 +4396,11 @@ def _call_native_scalar_pair_unary(
 
 def _call_native_scalar_pair_binary(
     function: Callable[[Any, Any, Any], None],
-    values: np.ndarray,
-    tangent_or_cotangent: np.ndarray,
+    values: FloatArray,
+    tangent_or_cotangent: FloatArray,
     label: str,
     output_size: int,
-) -> np.ndarray:
+) -> FloatArray:
     checked_values = np.ascontiguousarray(_as_finite_vector("values", values), dtype=np.float64)
     checked_vector = np.ascontiguousarray(
         _as_finite_vector(label, tangent_or_cotangent), dtype=np.float64
@@ -4420,10 +4427,10 @@ def _call_native_scalar_pair_binary(
 
 def _call_native_vector_dot_unary(
     function: Callable[[Any, Any], None],
-    values: np.ndarray,
+    values: FloatArray,
     dimension: int,
     output_size: int,
-) -> np.ndarray:
+) -> FloatArray:
     checked_dimension = _validate_vector_dot_dimension(dimension)
     checked_values = np.ascontiguousarray(_as_finite_vector("values", values), dtype=np.float64)
     if checked_values.size != 2 * checked_dimension:
@@ -4441,12 +4448,12 @@ def _call_native_vector_dot_unary(
 
 def _call_native_vector_dot_binary(
     function: Callable[[Any, Any, Any], None],
-    values: np.ndarray,
-    tangent_or_cotangent: np.ndarray,
+    values: FloatArray,
+    tangent_or_cotangent: FloatArray,
     label: str,
     dimension: int,
     output_size: int,
-) -> np.ndarray:
+) -> FloatArray:
     checked_dimension = _validate_vector_dot_dimension(dimension)
     checked_values = np.ascontiguousarray(_as_finite_vector("values", values), dtype=np.float64)
     checked_vector = np.ascontiguousarray(
@@ -4473,10 +4480,10 @@ def _call_native_vector_dot_binary(
 
 def _call_native_vector_squared_norm_unary(
     function: Callable[[Any, Any], None],
-    values: np.ndarray,
+    values: FloatArray,
     dimension: int,
     output_size: int,
-) -> np.ndarray:
+) -> FloatArray:
     checked_dimension = _validate_vector_dot_dimension(dimension)
     checked_values = np.ascontiguousarray(_as_finite_vector("values", values), dtype=np.float64)
     if checked_values.size != checked_dimension:
@@ -4496,12 +4503,12 @@ def _call_native_vector_squared_norm_unary(
 
 def _call_native_vector_squared_norm_binary(
     function: Callable[[Any, Any, Any], None],
-    values: np.ndarray,
-    tangent_or_cotangent: np.ndarray,
+    values: FloatArray,
+    tangent_or_cotangent: FloatArray,
     label: str,
     dimension: int,
     output_size: int,
-) -> np.ndarray:
+) -> FloatArray:
     checked_dimension = _validate_vector_dot_dimension(dimension)
     checked_values = np.ascontiguousarray(_as_finite_vector("values", values), dtype=np.float64)
     checked_vector = np.ascontiguousarray(
@@ -4531,10 +4538,10 @@ def _call_native_vector_squared_norm_binary(
 
 def _call_native_matrix_quadratic_form_unary(
     function: Callable[[Any, Any], None],
-    values: np.ndarray,
+    values: FloatArray,
     dimension: int,
     output_size: int,
-) -> np.ndarray:
+) -> FloatArray:
     checked_dimension = _validate_matrix_quadratic_form_dimension(dimension)
     expected_value_count = _matrix_quadratic_form_value_count(checked_dimension)
     checked_values = np.ascontiguousarray(_as_finite_vector("values", values), dtype=np.float64)
@@ -4558,12 +4565,12 @@ def _call_native_matrix_quadratic_form_unary(
 
 def _call_native_matrix_quadratic_form_binary(
     function: Callable[[Any, Any, Any], None],
-    values: np.ndarray,
-    tangent_or_cotangent: np.ndarray,
+    values: FloatArray,
+    tangent_or_cotangent: FloatArray,
     label: str,
     dimension: int,
     output_size: int,
-) -> np.ndarray:
+) -> FloatArray:
     checked_dimension = _validate_matrix_quadratic_form_dimension(dimension)
     expected_value_count = _matrix_quadratic_form_value_count(checked_dimension)
     checked_values = np.ascontiguousarray(_as_finite_vector("values", values), dtype=np.float64)
@@ -4597,10 +4604,10 @@ def _call_native_matrix_quadratic_form_binary(
 
 def _call_native_matrix_vector_product_unary(
     function: Callable[[Any, Any], None],
-    values: np.ndarray,
+    values: FloatArray,
     dimension: int,
     output_size: int,
-) -> np.ndarray:
+) -> FloatArray:
     checked_dimension = _validate_matrix_quadratic_form_dimension(dimension)
     expected_value_count = _matrix_quadratic_form_value_count(checked_dimension)
     checked_values = np.ascontiguousarray(_as_finite_vector("values", values), dtype=np.float64)
@@ -4624,12 +4631,12 @@ def _call_native_matrix_vector_product_unary(
 
 def _call_native_matrix_vector_product_binary(
     function: Callable[[Any, Any, Any], None],
-    values: np.ndarray,
-    tangent_or_cotangent: np.ndarray,
+    values: FloatArray,
+    tangent_or_cotangent: FloatArray,
     label: str,
     dimension: int,
     output_size: int,
-) -> np.ndarray:
+) -> FloatArray:
     checked_dimension = _validate_matrix_quadratic_form_dimension(dimension)
     expected_value_count = _matrix_quadratic_form_value_count(checked_dimension)
     checked_values = np.ascontiguousarray(_as_finite_vector("values", values), dtype=np.float64)
@@ -4663,10 +4670,10 @@ def _call_native_matrix_vector_product_binary(
 
 def _call_native_matrix_matrix_product_unary(
     function: Callable[[Any, Any], None],
-    values: np.ndarray,
+    values: FloatArray,
     dimension: int,
     output_size: int,
-) -> np.ndarray:
+) -> FloatArray:
     checked_dimension = _validate_matrix_quadratic_form_dimension(dimension)
     matrix_size = checked_dimension * checked_dimension
     expected_value_count = 2 * matrix_size
@@ -4691,12 +4698,12 @@ def _call_native_matrix_matrix_product_unary(
 
 def _call_native_matrix_matrix_product_binary(
     function: Callable[[Any, Any, Any], None],
-    values: np.ndarray,
-    tangent_or_cotangent: np.ndarray,
+    values: FloatArray,
+    tangent_or_cotangent: FloatArray,
     label: str,
     dimension: int,
     output_size: int,
-) -> np.ndarray:
+) -> FloatArray:
     checked_dimension = _validate_matrix_quadratic_form_dimension(dimension)
     matrix_size = checked_dimension * checked_dimension
     expected_value_count = 2 * matrix_size
@@ -4731,10 +4738,10 @@ def _call_native_matrix_matrix_product_binary(
 
 def _call_native_matrix_trace_unary(
     function: Callable[[Any, Any], None],
-    values: np.ndarray,
+    values: FloatArray,
     dimension: int,
     output_size: int,
-) -> np.ndarray:
+) -> FloatArray:
     checked_dimension = _validate_matrix_quadratic_form_dimension(dimension)
     matrix_size = checked_dimension * checked_dimension
     checked_values = np.ascontiguousarray(_as_finite_vector("values", values), dtype=np.float64)
@@ -4755,12 +4762,12 @@ def _call_native_matrix_trace_unary(
 
 def _call_native_matrix_trace_binary(
     function: Callable[[Any, Any, Any], None],
-    values: np.ndarray,
-    tangent_or_cotangent: np.ndarray,
+    values: FloatArray,
+    tangent_or_cotangent: FloatArray,
     label: str,
     dimension: int,
     output_size: int,
-) -> np.ndarray:
+) -> FloatArray:
     checked_dimension = _validate_matrix_quadratic_form_dimension(dimension)
     matrix_size = checked_dimension * checked_dimension
     checked_values = np.ascontiguousarray(_as_finite_vector("values", values), dtype=np.float64)
@@ -4790,10 +4797,10 @@ def _call_native_matrix_trace_binary(
 
 def _call_native_matrix_frobenius_norm_squared_unary(
     function: Callable[[Any, Any], None],
-    values: np.ndarray,
+    values: FloatArray,
     dimension: int,
     output_size: int,
-) -> np.ndarray:
+) -> FloatArray:
     checked_dimension = _validate_matrix_quadratic_form_dimension(dimension)
     matrix_size = checked_dimension * checked_dimension
     checked_values = np.ascontiguousarray(_as_finite_vector("values", values), dtype=np.float64)
@@ -4816,12 +4823,12 @@ def _call_native_matrix_frobenius_norm_squared_unary(
 
 def _call_native_matrix_frobenius_norm_squared_binary(
     function: Callable[[Any, Any, Any], None],
-    values: np.ndarray,
-    tangent_or_cotangent: np.ndarray,
+    values: FloatArray,
+    tangent_or_cotangent: FloatArray,
     label: str,
     dimension: int,
     output_size: int,
-) -> np.ndarray:
+) -> FloatArray:
     checked_dimension = _validate_matrix_quadratic_form_dimension(dimension)
     matrix_size = checked_dimension * checked_dimension
     checked_values = np.ascontiguousarray(_as_finite_vector("values", values), dtype=np.float64)
@@ -4854,9 +4861,9 @@ def _call_native_matrix_frobenius_norm_squared_binary(
 
 def _call_native_matrix_2x2_determinant_unary(
     function: Callable[[Any, Any], None],
-    values: np.ndarray,
+    values: FloatArray,
     output_size: int,
-) -> np.ndarray:
+) -> FloatArray:
     checked_values = np.ascontiguousarray(_as_finite_vector("values", values), dtype=np.float64)
     if checked_values.size != 4:
         raise ValueError("native 2x2 determinant LLVM/JIT kernel requires four matrix values")
@@ -4873,11 +4880,11 @@ def _call_native_matrix_2x2_determinant_unary(
 
 def _call_native_matrix_2x2_determinant_binary(
     function: Callable[[Any, Any, Any], None],
-    values: np.ndarray,
-    tangent_or_cotangent: np.ndarray,
+    values: FloatArray,
+    tangent_or_cotangent: FloatArray,
     label: str,
     output_size: int,
-) -> np.ndarray:
+) -> FloatArray:
     checked_values = np.ascontiguousarray(_as_finite_vector("values", values), dtype=np.float64)
     checked_vector = np.ascontiguousarray(
         _as_finite_vector(label, tangent_or_cotangent), dtype=np.float64
@@ -4904,8 +4911,8 @@ def _call_native_matrix_2x2_determinant_binary(
 
 def _as_native_matrix_2x2_inverse_values(
     label: str,
-    values: Sequence[float] | np.ndarray,
-) -> np.ndarray:
+    values: Sequence[float] | FloatArray,
+) -> FloatArray:
     checked_values = np.ascontiguousarray(_as_finite_vector(label, values), dtype=np.float64)
     if checked_values.size != 4:
         raise ValueError("native 2x2 inverse LLVM/JIT kernel requires four matrix values")
@@ -4917,9 +4924,9 @@ def _as_native_matrix_2x2_inverse_values(
 
 def _call_native_matrix_2x2_inverse_unary(
     function: Callable[[Any, Any], None],
-    values: np.ndarray,
+    values: FloatArray,
     output_size: int,
-) -> np.ndarray:
+) -> FloatArray:
     checked_values = _as_native_matrix_2x2_inverse_values("values", values)
     if output_size != 4:
         raise ValueError("native 2x2 inverse LLVM/JIT output_size must be four")
@@ -4934,10 +4941,10 @@ def _call_native_matrix_2x2_inverse_unary(
 
 def _call_native_matrix_2x2_inverse_binary(
     function: Callable[[Any, Any, Any], None],
-    values: np.ndarray,
-    tangent_or_cotangent: np.ndarray,
+    values: FloatArray,
+    tangent_or_cotangent: FloatArray,
     label: str,
-) -> np.ndarray:
+) -> FloatArray:
     checked_values = _as_native_matrix_2x2_inverse_values("values", values)
     checked_vector = np.ascontiguousarray(
         _as_finite_vector(label, tangent_or_cotangent), dtype=np.float64
@@ -4956,8 +4963,8 @@ def _call_native_matrix_2x2_inverse_binary(
 
 def _as_native_matrix_2x2_solve_values(
     label: str,
-    values: Sequence[float] | np.ndarray,
-) -> np.ndarray:
+    values: Sequence[float] | FloatArray,
+) -> FloatArray:
     checked_values = np.ascontiguousarray(_as_finite_vector(label, values), dtype=np.float64)
     if checked_values.size != 6:
         raise ValueError(
@@ -4971,9 +4978,9 @@ def _as_native_matrix_2x2_solve_values(
 
 def _call_native_matrix_2x2_solve_unary(
     function: Callable[[Any, Any], None],
-    values: np.ndarray,
+    values: FloatArray,
     output_size: int,
-) -> np.ndarray:
+) -> FloatArray:
     checked_values = _as_native_matrix_2x2_solve_values("values", values)
     if output_size not in {2, 6}:
         raise ValueError("native 2x2 solve LLVM/JIT output_size must be two or six")
@@ -4988,11 +4995,11 @@ def _call_native_matrix_2x2_solve_unary(
 
 def _call_native_matrix_2x2_solve_binary(
     function: Callable[[Any, Any, Any], None],
-    values: np.ndarray,
-    tangent_or_cotangent: np.ndarray,
+    values: FloatArray,
+    tangent_or_cotangent: FloatArray,
     label: str,
     output_size: int,
-) -> np.ndarray:
+) -> FloatArray:
     checked_values = _as_native_matrix_2x2_solve_values("values", values)
     checked_vector = np.ascontiguousarray(
         _as_finite_vector(label, tangent_or_cotangent), dtype=np.float64
@@ -5016,8 +5023,8 @@ def _call_native_matrix_2x2_solve_binary(
 
 def _as_native_symmetric_2x2_cholesky_values(
     label: str,
-    values: Sequence[float] | np.ndarray,
-) -> np.ndarray:
+    values: Sequence[float] | FloatArray,
+) -> FloatArray:
     checked_values = np.ascontiguousarray(_as_finite_vector(label, values), dtype=np.float64)
     if checked_values.size != 3:
         raise ValueError(
@@ -5034,9 +5041,9 @@ def _as_native_symmetric_2x2_cholesky_values(
 
 def _call_native_symmetric_2x2_cholesky_unary(
     function: Callable[[Any, Any], None],
-    values: np.ndarray,
+    values: FloatArray,
     output_size: int,
-) -> np.ndarray:
+) -> FloatArray:
     checked_values = _as_native_symmetric_2x2_cholesky_values("values", values)
     if output_size != 3:
         raise ValueError("native symmetric 2x2 Cholesky LLVM/JIT output_size must be three")
@@ -5051,11 +5058,11 @@ def _call_native_symmetric_2x2_cholesky_unary(
 
 def _call_native_symmetric_2x2_cholesky_binary(
     function: Callable[[Any, Any, Any], None],
-    values: np.ndarray,
-    tangent_or_cotangent: np.ndarray,
+    values: FloatArray,
+    tangent_or_cotangent: FloatArray,
     label: str,
     output_size: int,
-) -> np.ndarray:
+) -> FloatArray:
     checked_values = _as_native_symmetric_2x2_cholesky_values("values", values)
     checked_vector = np.ascontiguousarray(
         _as_finite_vector(label, tangent_or_cotangent), dtype=np.float64
@@ -5078,8 +5085,8 @@ def _call_native_symmetric_2x2_cholesky_binary(
 
 def _as_native_symmetric_2x2_eigenvalues_values(
     label: str,
-    values: Sequence[float] | np.ndarray,
-) -> np.ndarray:
+    values: Sequence[float] | FloatArray,
+) -> FloatArray:
     checked_values = np.ascontiguousarray(_as_finite_vector(label, values), dtype=np.float64)
     if checked_values.size != 3:
         raise ValueError(
@@ -5096,9 +5103,9 @@ def _as_native_symmetric_2x2_eigenvalues_values(
 
 def _call_native_symmetric_2x2_eigenvalues_unary(
     function: Callable[[Any, Any], None],
-    values: np.ndarray,
+    values: FloatArray,
     output_size: int,
-) -> np.ndarray:
+) -> FloatArray:
     checked_values = _as_native_symmetric_2x2_eigenvalues_values("values", values)
     if output_size not in {2, 3}:
         raise ValueError(
@@ -5115,11 +5122,11 @@ def _call_native_symmetric_2x2_eigenvalues_unary(
 
 def _call_native_symmetric_2x2_eigenvalues_binary(
     function: Callable[[Any, Any, Any], None],
-    values: np.ndarray,
-    tangent_or_cotangent: np.ndarray,
+    values: FloatArray,
+    tangent_or_cotangent: FloatArray,
     label: str,
     output_size: int,
-) -> np.ndarray:
+) -> FloatArray:
     checked_values = _as_native_symmetric_2x2_eigenvalues_values("values", values)
     checked_vector = np.ascontiguousarray(
         _as_finite_vector(label, tangent_or_cotangent), dtype=np.float64
@@ -5146,8 +5153,8 @@ def _call_native_symmetric_2x2_eigenvalues_binary(
 
 def _as_native_matrix_2x2_eigenvalues_values(
     label: str,
-    values: Sequence[float] | np.ndarray,
-) -> np.ndarray:
+    values: Sequence[float] | FloatArray,
+) -> FloatArray:
     checked_values = np.ascontiguousarray(_as_finite_vector(label, values), dtype=np.float64)
     if checked_values.size != 4:
         raise ValueError(
@@ -5164,9 +5171,9 @@ def _as_native_matrix_2x2_eigenvalues_values(
 
 def _call_native_matrix_2x2_eigenvalues_unary(
     function: Callable[[Any, Any], None],
-    values: np.ndarray,
+    values: FloatArray,
     output_size: int,
-) -> np.ndarray:
+) -> FloatArray:
     checked_values = _as_native_matrix_2x2_eigenvalues_values("values", values)
     if output_size not in {2, 4}:
         raise ValueError("native matrix 2x2 eigenvalue LLVM/JIT output_size must be two or four")
@@ -5181,11 +5188,11 @@ def _call_native_matrix_2x2_eigenvalues_unary(
 
 def _call_native_matrix_2x2_eigenvalues_binary(
     function: Callable[[Any, Any, Any], None],
-    values: np.ndarray,
-    tangent_or_cotangent: np.ndarray,
+    values: FloatArray,
+    tangent_or_cotangent: FloatArray,
     label: str,
     output_size: int,
-) -> np.ndarray:
+) -> FloatArray:
     checked_values = _as_native_matrix_2x2_eigenvalues_values("values", values)
     checked_vector = np.ascontiguousarray(
         _as_finite_vector(label, tangent_or_cotangent), dtype=np.float64
@@ -5210,8 +5217,8 @@ def _call_native_matrix_2x2_eigenvalues_binary(
 
 def _as_native_matrix_2x2_eigensystem_values(
     label: str,
-    values: Sequence[float] | np.ndarray,
-) -> np.ndarray:
+    values: Sequence[float] | FloatArray,
+) -> FloatArray:
     checked_values = _as_native_matrix_2x2_eigenvalues_values(label, values)
     if abs(float(checked_values[1])) <= 1.0e-12:
         raise ValueError(
@@ -5223,9 +5230,9 @@ def _as_native_matrix_2x2_eigensystem_values(
 
 def _call_native_matrix_2x2_eigensystem_unary(
     function: Callable[[Any, Any], None],
-    values: np.ndarray,
+    values: FloatArray,
     output_size: int,
-) -> np.ndarray:
+) -> FloatArray:
     checked_values = _as_native_matrix_2x2_eigensystem_values("values", values)
     if output_size not in {4, 6}:
         raise ValueError("native matrix 2x2 eigensystem LLVM/JIT output_size must be four or six")
@@ -5240,11 +5247,11 @@ def _call_native_matrix_2x2_eigensystem_unary(
 
 def _call_native_matrix_2x2_eigensystem_binary(
     function: Callable[[Any, Any, Any], None],
-    values: np.ndarray,
-    tangent_or_cotangent: np.ndarray,
+    values: FloatArray,
+    tangent_or_cotangent: FloatArray,
     label: str,
     output_size: int,
-) -> np.ndarray:
+) -> FloatArray:
     checked_values = _as_native_matrix_2x2_eigensystem_values("values", values)
     checked_vector = np.ascontiguousarray(
         _as_finite_vector(label, tangent_or_cotangent), dtype=np.float64
@@ -5273,10 +5280,10 @@ def compile_scalar_quadratic_ad_to_native_llvm_jit(
     quadratic: float,
     linear: float,
     constant: float,
-    sample_values: Sequence[float] | np.ndarray,
+    sample_values: Sequence[float] | FloatArray,
     config: CompilerADExecutableConfig | None = None,
-    sample_tangent: Sequence[float] | np.ndarray | None = None,
-    sample_cotangent: Sequence[float] | np.ndarray | None = None,
+    sample_tangent: Sequence[float] | FloatArray | None = None,
+    sample_cotangent: Sequence[float] | FloatArray | None = None,
 ) -> ExecutableCompilerADKernel:
     """Compile scalar quadratic value/JVP/VJP/gradient kernels to LLVM MCJIT."""
 
@@ -5309,15 +5316,15 @@ def compile_scalar_quadratic_ad_to_native_llvm_jit(
         _safe_llvm_symbol(rule.name),
     )
 
-    def value_kernel(raw_values: np.ndarray) -> np.ndarray:
+    def value_kernel(raw_values: FloatArray) -> FloatArray:
         return _call_native_scalar_unary(native_functions["value"], raw_values)
 
-    def jvp_kernel(raw_values: np.ndarray, raw_tangent: np.ndarray) -> np.ndarray:
+    def jvp_kernel(raw_values: FloatArray, raw_tangent: FloatArray) -> FloatArray:
         return _call_native_scalar_binary(
             native_functions["jvp"], raw_values, raw_tangent, "tangent"
         )
 
-    def vjp_kernel(raw_values: np.ndarray, raw_cotangent: np.ndarray) -> np.ndarray:
+    def vjp_kernel(raw_values: FloatArray, raw_cotangent: FloatArray) -> FloatArray:
         return _call_native_scalar_binary(
             native_functions["vjp"], raw_values, raw_cotangent, "cotangent"
         )
@@ -5363,10 +5370,10 @@ def make_scalar_quadratic_native_llvm_jit_lowering_rule(
     quadratic: float,
     linear: float,
     constant: float,
-    sample_values: Sequence[float] | np.ndarray | None = None,
+    sample_values: Sequence[float] | FloatArray | None = None,
     config: CompilerADExecutableConfig | None = None,
-    sample_tangent: Sequence[float] | np.ndarray | None = None,
-    sample_cotangent: Sequence[float] | np.ndarray | None = None,
+    sample_tangent: Sequence[float] | FloatArray | None = None,
+    sample_cotangent: Sequence[float] | FloatArray | None = None,
 ) -> Callable[..., ExecutableCompilerADKernel]:
     """Create a lowering rule for scalar quadratic native LLVM/JIT AD kernels."""
 
@@ -5387,11 +5394,11 @@ def make_scalar_quadratic_native_llvm_jit_lowering_rule(
 
     def lowering_rule(
         rule: CustomDerivativeRule,
-        runtime_sample_values: Sequence[float] | np.ndarray | None = None,
+        runtime_sample_values: Sequence[float] | FloatArray | None = None,
         runtime_config: CompilerADExecutableConfig | None = None,
         *,
-        sample_tangent: Sequence[float] | np.ndarray | None = None,
-        sample_cotangent: Sequence[float] | np.ndarray | None = None,
+        sample_tangent: Sequence[float] | FloatArray | None = None,
+        sample_cotangent: Sequence[float] | FloatArray | None = None,
     ) -> ExecutableCompilerADKernel:
         effective_values = runtime_sample_values
         if effective_values is None:
@@ -5421,10 +5428,10 @@ def compile_scalar_unary_elementwise_ad_to_native_llvm_jit(
     rule: CustomDerivativeRule,
     *,
     primitive: str,
-    sample_values: Sequence[float] | np.ndarray,
+    sample_values: Sequence[float] | FloatArray,
     config: CompilerADExecutableConfig | None = None,
-    sample_tangent: Sequence[float] | np.ndarray | None = None,
-    sample_cotangent: Sequence[float] | np.ndarray | None = None,
+    sample_tangent: Sequence[float] | FloatArray | None = None,
+    sample_cotangent: Sequence[float] | FloatArray | None = None,
 ) -> ExecutableCompilerADKernel:
     """Compile scalar unary elementwise value/JVP/VJP/gradient kernels to LLVM MCJIT."""
 
@@ -5454,15 +5461,15 @@ def compile_scalar_unary_elementwise_ad_to_native_llvm_jit(
         _safe_llvm_symbol(rule.name),
     )
 
-    def value_kernel(raw_values: np.ndarray) -> np.ndarray:
+    def value_kernel(raw_values: FloatArray) -> FloatArray:
         return _call_native_scalar_unary(native_functions["value"], raw_values)
 
-    def jvp_kernel(raw_values: np.ndarray, raw_tangent: np.ndarray) -> np.ndarray:
+    def jvp_kernel(raw_values: FloatArray, raw_tangent: FloatArray) -> FloatArray:
         return _call_native_scalar_binary(
             native_functions["jvp"], raw_values, raw_tangent, "tangent"
         )
 
-    def vjp_kernel(raw_values: np.ndarray, raw_cotangent: np.ndarray) -> np.ndarray:
+    def vjp_kernel(raw_values: FloatArray, raw_cotangent: FloatArray) -> FloatArray:
         return _call_native_scalar_binary(
             native_functions["vjp"], raw_values, raw_cotangent, "cotangent"
         )
@@ -5506,10 +5513,10 @@ def compile_scalar_unary_elementwise_ad_to_native_llvm_jit(
 def make_scalar_unary_elementwise_native_llvm_jit_lowering_rule(
     *,
     primitive: str,
-    sample_values: Sequence[float] | np.ndarray | None = None,
+    sample_values: Sequence[float] | FloatArray | None = None,
     config: CompilerADExecutableConfig | None = None,
-    sample_tangent: Sequence[float] | np.ndarray | None = None,
-    sample_cotangent: Sequence[float] | np.ndarray | None = None,
+    sample_tangent: Sequence[float] | FloatArray | None = None,
+    sample_cotangent: Sequence[float] | FloatArray | None = None,
 ) -> Callable[..., ExecutableCompilerADKernel]:
     """Create a lowering rule for scalar unary elementwise native LLVM/JIT kernels."""
 
@@ -5529,11 +5536,11 @@ def make_scalar_unary_elementwise_native_llvm_jit_lowering_rule(
 
     def lowering_rule(
         rule: CustomDerivativeRule,
-        runtime_sample_values: Sequence[float] | np.ndarray | None = None,
+        runtime_sample_values: Sequence[float] | FloatArray | None = None,
         runtime_config: CompilerADExecutableConfig | None = None,
         *,
-        sample_tangent: Sequence[float] | np.ndarray | None = None,
-        sample_cotangent: Sequence[float] | np.ndarray | None = None,
+        sample_tangent: Sequence[float] | FloatArray | None = None,
+        sample_cotangent: Sequence[float] | FloatArray | None = None,
     ) -> ExecutableCompilerADKernel:
         effective_values = runtime_sample_values
         if effective_values is None:
@@ -5561,10 +5568,10 @@ def compile_scalar_binary_elementwise_ad_to_native_llvm_jit(
     rule: CustomDerivativeRule,
     *,
     primitive: str,
-    sample_values: Sequence[float] | np.ndarray,
+    sample_values: Sequence[float] | FloatArray,
     config: CompilerADExecutableConfig | None = None,
-    sample_tangent: Sequence[float] | np.ndarray | None = None,
-    sample_cotangent: Sequence[float] | np.ndarray | None = None,
+    sample_tangent: Sequence[float] | FloatArray | None = None,
+    sample_cotangent: Sequence[float] | FloatArray | None = None,
 ) -> ExecutableCompilerADKernel:
     """Compile scalar binary elementwise value/JVP/VJP/gradient kernels to LLVM MCJIT."""
 
@@ -5594,15 +5601,15 @@ def compile_scalar_binary_elementwise_ad_to_native_llvm_jit(
         _safe_llvm_symbol(rule.name),
     )
 
-    def value_kernel(raw_values: np.ndarray) -> np.ndarray:
+    def value_kernel(raw_values: FloatArray) -> FloatArray:
         return _call_native_scalar_pair_unary(native_functions["value"], raw_values, 1)
 
-    def jvp_kernel(raw_values: np.ndarray, raw_tangent: np.ndarray) -> np.ndarray:
+    def jvp_kernel(raw_values: FloatArray, raw_tangent: FloatArray) -> FloatArray:
         return _call_native_scalar_pair_binary(
             native_functions["jvp"], raw_values, raw_tangent, "tangent", 1
         )
 
-    def vjp_kernel(raw_values: np.ndarray, raw_cotangent: np.ndarray) -> np.ndarray:
+    def vjp_kernel(raw_values: FloatArray, raw_cotangent: FloatArray) -> FloatArray:
         return _call_native_scalar_pair_binary(
             native_functions["vjp"], raw_values, raw_cotangent, "cotangent", 2
         )
@@ -5646,10 +5653,10 @@ def compile_scalar_binary_elementwise_ad_to_native_llvm_jit(
 def make_scalar_binary_elementwise_native_llvm_jit_lowering_rule(
     *,
     primitive: str,
-    sample_values: Sequence[float] | np.ndarray | None = None,
+    sample_values: Sequence[float] | FloatArray | None = None,
     config: CompilerADExecutableConfig | None = None,
-    sample_tangent: Sequence[float] | np.ndarray | None = None,
-    sample_cotangent: Sequence[float] | np.ndarray | None = None,
+    sample_tangent: Sequence[float] | FloatArray | None = None,
+    sample_cotangent: Sequence[float] | FloatArray | None = None,
 ) -> Callable[..., ExecutableCompilerADKernel]:
     """Create a lowering rule for scalar binary elementwise native LLVM/JIT kernels."""
 
@@ -5669,11 +5676,11 @@ def make_scalar_binary_elementwise_native_llvm_jit_lowering_rule(
 
     def lowering_rule(
         rule: CustomDerivativeRule,
-        runtime_sample_values: Sequence[float] | np.ndarray | None = None,
+        runtime_sample_values: Sequence[float] | FloatArray | None = None,
         runtime_config: CompilerADExecutableConfig | None = None,
         *,
-        sample_tangent: Sequence[float] | np.ndarray | None = None,
-        sample_cotangent: Sequence[float] | np.ndarray | None = None,
+        sample_tangent: Sequence[float] | FloatArray | None = None,
+        sample_cotangent: Sequence[float] | FloatArray | None = None,
     ) -> ExecutableCompilerADKernel:
         effective_values = runtime_sample_values
         if effective_values is None:
@@ -5701,10 +5708,10 @@ def compile_vector_dot_ad_to_native_llvm_jit(
     rule: CustomDerivativeRule,
     *,
     dimension: int | np.integer,
-    sample_values: Sequence[float] | np.ndarray,
+    sample_values: Sequence[float] | FloatArray,
     config: CompilerADExecutableConfig | None = None,
-    sample_tangent: Sequence[float] | np.ndarray | None = None,
-    sample_cotangent: Sequence[float] | np.ndarray | None = None,
+    sample_tangent: Sequence[float] | FloatArray | None = None,
+    sample_cotangent: Sequence[float] | FloatArray | None = None,
 ) -> ExecutableCompilerADKernel:
     """Compile vector dot-product value/JVP/VJP/gradient kernels to LLVM MCJIT."""
 
@@ -5730,12 +5737,12 @@ def compile_vector_dot_ad_to_native_llvm_jit(
         _safe_llvm_symbol(rule.name),
     )
 
-    def value_kernel(raw_values: np.ndarray) -> np.ndarray:
+    def value_kernel(raw_values: FloatArray) -> FloatArray:
         return _call_native_vector_dot_unary(
             native_functions["value"], raw_values, checked_dimension, 1
         )
 
-    def jvp_kernel(raw_values: np.ndarray, raw_tangent: np.ndarray) -> np.ndarray:
+    def jvp_kernel(raw_values: FloatArray, raw_tangent: FloatArray) -> FloatArray:
         return _call_native_vector_dot_binary(
             native_functions["jvp"],
             raw_values,
@@ -5745,7 +5752,7 @@ def compile_vector_dot_ad_to_native_llvm_jit(
             1,
         )
 
-    def vjp_kernel(raw_values: np.ndarray, raw_cotangent: np.ndarray) -> np.ndarray:
+    def vjp_kernel(raw_values: FloatArray, raw_cotangent: FloatArray) -> FloatArray:
         return _call_native_vector_dot_binary(
             native_functions["vjp"],
             raw_values,
@@ -5796,10 +5803,10 @@ def compile_vector_dot_ad_to_native_llvm_jit(
 def make_vector_dot_native_llvm_jit_lowering_rule(
     *,
     dimension: int | np.integer,
-    sample_values: Sequence[float] | np.ndarray | None = None,
+    sample_values: Sequence[float] | FloatArray | None = None,
     config: CompilerADExecutableConfig | None = None,
-    sample_tangent: Sequence[float] | np.ndarray | None = None,
-    sample_cotangent: Sequence[float] | np.ndarray | None = None,
+    sample_tangent: Sequence[float] | FloatArray | None = None,
+    sample_cotangent: Sequence[float] | FloatArray | None = None,
 ) -> Callable[..., ExecutableCompilerADKernel]:
     """Create a lowering rule for vector dot-product native LLVM/JIT kernels."""
 
@@ -5818,11 +5825,11 @@ def make_vector_dot_native_llvm_jit_lowering_rule(
 
     def lowering_rule(
         rule: CustomDerivativeRule,
-        runtime_sample_values: Sequence[float] | np.ndarray | None = None,
+        runtime_sample_values: Sequence[float] | FloatArray | None = None,
         runtime_config: CompilerADExecutableConfig | None = None,
         *,
-        sample_tangent: Sequence[float] | np.ndarray | None = None,
-        sample_cotangent: Sequence[float] | np.ndarray | None = None,
+        sample_tangent: Sequence[float] | FloatArray | None = None,
+        sample_cotangent: Sequence[float] | FloatArray | None = None,
     ) -> ExecutableCompilerADKernel:
         effective_values = runtime_sample_values
         if effective_values is None:
@@ -5851,10 +5858,10 @@ def make_vector_dot_native_llvm_jit_primitive_transform(
     rule: CustomDerivativeRule,
     *,
     dimension: int | np.integer,
-    sample_values: Sequence[float] | np.ndarray,
+    sample_values: Sequence[float] | FloatArray,
     config: CompilerADExecutableConfig | None = None,
-    sample_tangent: Sequence[float] | np.ndarray | None = None,
-    sample_cotangent: Sequence[float] | np.ndarray | None = None,
+    sample_tangent: Sequence[float] | FloatArray | None = None,
+    sample_cotangent: Sequence[float] | FloatArray | None = None,
 ) -> PrimitiveTransformRule:
     """Create a complete Rust/PyO3 + native LLVM/JIT vector dot contract."""
 
@@ -5938,10 +5945,10 @@ def compile_vector_squared_norm_ad_to_native_llvm_jit(
     rule: CustomDerivativeRule,
     *,
     dimension: int | np.integer,
-    sample_values: Sequence[float] | np.ndarray,
+    sample_values: Sequence[float] | FloatArray,
     config: CompilerADExecutableConfig | None = None,
-    sample_tangent: Sequence[float] | np.ndarray | None = None,
-    sample_cotangent: Sequence[float] | np.ndarray | None = None,
+    sample_tangent: Sequence[float] | FloatArray | None = None,
+    sample_cotangent: Sequence[float] | FloatArray | None = None,
 ) -> ExecutableCompilerADKernel:
     """Compile vector squared-norm value/JVP/VJP/gradient kernels to LLVM MCJIT."""
 
@@ -5967,12 +5974,12 @@ def compile_vector_squared_norm_ad_to_native_llvm_jit(
         _safe_llvm_symbol(rule.name),
     )
 
-    def value_kernel(raw_values: np.ndarray) -> np.ndarray:
+    def value_kernel(raw_values: FloatArray) -> FloatArray:
         return _call_native_vector_squared_norm_unary(
             native_functions["value"], raw_values, checked_dimension, 1
         )
 
-    def jvp_kernel(raw_values: np.ndarray, raw_tangent: np.ndarray) -> np.ndarray:
+    def jvp_kernel(raw_values: FloatArray, raw_tangent: FloatArray) -> FloatArray:
         return _call_native_vector_squared_norm_binary(
             native_functions["jvp"],
             raw_values,
@@ -5982,7 +5989,7 @@ def compile_vector_squared_norm_ad_to_native_llvm_jit(
             1,
         )
 
-    def vjp_kernel(raw_values: np.ndarray, raw_cotangent: np.ndarray) -> np.ndarray:
+    def vjp_kernel(raw_values: FloatArray, raw_cotangent: FloatArray) -> FloatArray:
         return _call_native_vector_squared_norm_binary(
             native_functions["vjp"],
             raw_values,
@@ -6033,10 +6040,10 @@ def compile_vector_squared_norm_ad_to_native_llvm_jit(
 def make_vector_squared_norm_native_llvm_jit_lowering_rule(
     *,
     dimension: int | np.integer,
-    sample_values: Sequence[float] | np.ndarray | None = None,
+    sample_values: Sequence[float] | FloatArray | None = None,
     config: CompilerADExecutableConfig | None = None,
-    sample_tangent: Sequence[float] | np.ndarray | None = None,
-    sample_cotangent: Sequence[float] | np.ndarray | None = None,
+    sample_tangent: Sequence[float] | FloatArray | None = None,
+    sample_cotangent: Sequence[float] | FloatArray | None = None,
 ) -> Callable[..., ExecutableCompilerADKernel]:
     """Create a lowering rule for vector squared-norm native LLVM/JIT kernels."""
 
@@ -6055,11 +6062,11 @@ def make_vector_squared_norm_native_llvm_jit_lowering_rule(
 
     def lowering_rule(
         rule: CustomDerivativeRule,
-        runtime_sample_values: Sequence[float] | np.ndarray | None = None,
+        runtime_sample_values: Sequence[float] | FloatArray | None = None,
         runtime_config: CompilerADExecutableConfig | None = None,
         *,
-        sample_tangent: Sequence[float] | np.ndarray | None = None,
-        sample_cotangent: Sequence[float] | np.ndarray | None = None,
+        sample_tangent: Sequence[float] | FloatArray | None = None,
+        sample_cotangent: Sequence[float] | FloatArray | None = None,
     ) -> ExecutableCompilerADKernel:
         effective_values = runtime_sample_values
         if effective_values is None:
@@ -6088,10 +6095,10 @@ def make_vector_squared_norm_native_llvm_jit_primitive_transform(
     rule: CustomDerivativeRule,
     *,
     dimension: int | np.integer,
-    sample_values: Sequence[float] | np.ndarray,
+    sample_values: Sequence[float] | FloatArray,
     config: CompilerADExecutableConfig | None = None,
-    sample_tangent: Sequence[float] | np.ndarray | None = None,
-    sample_cotangent: Sequence[float] | np.ndarray | None = None,
+    sample_tangent: Sequence[float] | FloatArray | None = None,
+    sample_cotangent: Sequence[float] | FloatArray | None = None,
 ) -> PrimitiveTransformRule:
     """Create a complete Rust/PyO3 + native LLVM/JIT squared-norm contract."""
 
@@ -6177,10 +6184,10 @@ def compile_matrix_vector_product_ad_to_native_llvm_jit(
     rule: CustomDerivativeRule,
     *,
     dimension: int | np.integer,
-    sample_values: Sequence[float] | np.ndarray,
+    sample_values: Sequence[float] | FloatArray,
     config: CompilerADExecutableConfig | None = None,
-    sample_tangent: Sequence[float] | np.ndarray | None = None,
-    sample_cotangent: Sequence[float] | np.ndarray | None = None,
+    sample_tangent: Sequence[float] | FloatArray | None = None,
+    sample_cotangent: Sequence[float] | FloatArray | None = None,
 ) -> ExecutableCompilerADKernel:
     """Compile matrix-vector value/JVP/VJP kernels to LLVM MCJIT."""
 
@@ -6210,12 +6217,12 @@ def compile_matrix_vector_product_ad_to_native_llvm_jit(
         _safe_llvm_symbol(rule.name),
     )
 
-    def value_kernel(raw_values: np.ndarray) -> np.ndarray:
+    def value_kernel(raw_values: FloatArray) -> FloatArray:
         return _call_native_matrix_vector_product_unary(
             native_functions["value"], raw_values, checked_dimension, checked_dimension
         )
 
-    def jvp_kernel(raw_values: np.ndarray, raw_tangent: np.ndarray) -> np.ndarray:
+    def jvp_kernel(raw_values: FloatArray, raw_tangent: FloatArray) -> FloatArray:
         return _call_native_matrix_vector_product_binary(
             native_functions["jvp"],
             raw_values,
@@ -6225,7 +6232,7 @@ def compile_matrix_vector_product_ad_to_native_llvm_jit(
             checked_dimension,
         )
 
-    def vjp_kernel(raw_values: np.ndarray, raw_cotangent: np.ndarray) -> np.ndarray:
+    def vjp_kernel(raw_values: FloatArray, raw_cotangent: FloatArray) -> FloatArray:
         return _call_native_matrix_vector_product_binary(
             native_functions["vjp"],
             raw_values,
@@ -6276,10 +6283,10 @@ def compile_matrix_vector_product_ad_to_native_llvm_jit(
 def make_matrix_vector_product_native_llvm_jit_lowering_rule(
     *,
     dimension: int | np.integer,
-    sample_values: Sequence[float] | np.ndarray | None = None,
+    sample_values: Sequence[float] | FloatArray | None = None,
     config: CompilerADExecutableConfig | None = None,
-    sample_tangent: Sequence[float] | np.ndarray | None = None,
-    sample_cotangent: Sequence[float] | np.ndarray | None = None,
+    sample_tangent: Sequence[float] | FloatArray | None = None,
+    sample_cotangent: Sequence[float] | FloatArray | None = None,
 ) -> Callable[..., ExecutableCompilerADKernel]:
     """Create a lowering rule for matrix-vector native LLVM/JIT kernels."""
 
@@ -6298,11 +6305,11 @@ def make_matrix_vector_product_native_llvm_jit_lowering_rule(
 
     def lowering_rule(
         rule: CustomDerivativeRule,
-        runtime_sample_values: Sequence[float] | np.ndarray | None = None,
+        runtime_sample_values: Sequence[float] | FloatArray | None = None,
         runtime_config: CompilerADExecutableConfig | None = None,
         *,
-        sample_tangent: Sequence[float] | np.ndarray | None = None,
-        sample_cotangent: Sequence[float] | np.ndarray | None = None,
+        sample_tangent: Sequence[float] | FloatArray | None = None,
+        sample_cotangent: Sequence[float] | FloatArray | None = None,
     ) -> ExecutableCompilerADKernel:
         effective_values = runtime_sample_values
         if effective_values is None:
@@ -6331,10 +6338,10 @@ def make_matrix_vector_product_native_llvm_jit_primitive_transform(
     rule: CustomDerivativeRule,
     *,
     dimension: int | np.integer,
-    sample_values: Sequence[float] | np.ndarray,
+    sample_values: Sequence[float] | FloatArray,
     config: CompilerADExecutableConfig | None = None,
-    sample_tangent: Sequence[float] | np.ndarray | None = None,
-    sample_cotangent: Sequence[float] | np.ndarray | None = None,
+    sample_tangent: Sequence[float] | FloatArray | None = None,
+    sample_cotangent: Sequence[float] | FloatArray | None = None,
 ) -> PrimitiveTransformRule:
     """Create a complete Rust/PyO3 + native LLVM/JIT matrix-vector contract."""
 
@@ -6424,10 +6431,10 @@ def compile_matrix_matrix_product_ad_to_native_llvm_jit(
     rule: CustomDerivativeRule,
     *,
     dimension: int | np.integer,
-    sample_values: Sequence[float] | np.ndarray,
+    sample_values: Sequence[float] | FloatArray,
     config: CompilerADExecutableConfig | None = None,
-    sample_tangent: Sequence[float] | np.ndarray | None = None,
-    sample_cotangent: Sequence[float] | np.ndarray | None = None,
+    sample_tangent: Sequence[float] | FloatArray | None = None,
+    sample_cotangent: Sequence[float] | FloatArray | None = None,
 ) -> ExecutableCompilerADKernel:
     """Compile matrix-matrix value/JVP/VJP kernels to LLVM MCJIT."""
 
@@ -6457,12 +6464,12 @@ def compile_matrix_matrix_product_ad_to_native_llvm_jit(
         _safe_llvm_symbol(rule.name),
     )
 
-    def value_kernel(raw_values: np.ndarray) -> np.ndarray:
+    def value_kernel(raw_values: FloatArray) -> FloatArray:
         return _call_native_matrix_matrix_product_unary(
             native_functions["value"], raw_values, checked_dimension, matrix_size
         )
 
-    def jvp_kernel(raw_values: np.ndarray, raw_tangent: np.ndarray) -> np.ndarray:
+    def jvp_kernel(raw_values: FloatArray, raw_tangent: FloatArray) -> FloatArray:
         return _call_native_matrix_matrix_product_binary(
             native_functions["jvp"],
             raw_values,
@@ -6472,7 +6479,7 @@ def compile_matrix_matrix_product_ad_to_native_llvm_jit(
             matrix_size,
         )
 
-    def vjp_kernel(raw_values: np.ndarray, raw_cotangent: np.ndarray) -> np.ndarray:
+    def vjp_kernel(raw_values: FloatArray, raw_cotangent: FloatArray) -> FloatArray:
         return _call_native_matrix_matrix_product_binary(
             native_functions["vjp"],
             raw_values,
@@ -6523,10 +6530,10 @@ def compile_matrix_matrix_product_ad_to_native_llvm_jit(
 def make_matrix_matrix_product_native_llvm_jit_lowering_rule(
     *,
     dimension: int | np.integer,
-    sample_values: Sequence[float] | np.ndarray | None = None,
+    sample_values: Sequence[float] | FloatArray | None = None,
     config: CompilerADExecutableConfig | None = None,
-    sample_tangent: Sequence[float] | np.ndarray | None = None,
-    sample_cotangent: Sequence[float] | np.ndarray | None = None,
+    sample_tangent: Sequence[float] | FloatArray | None = None,
+    sample_cotangent: Sequence[float] | FloatArray | None = None,
 ) -> Callable[..., ExecutableCompilerADKernel]:
     """Create a lowering rule for matrix-matrix native LLVM/JIT kernels."""
 
@@ -6545,11 +6552,11 @@ def make_matrix_matrix_product_native_llvm_jit_lowering_rule(
 
     def lowering_rule(
         rule: CustomDerivativeRule,
-        runtime_sample_values: Sequence[float] | np.ndarray | None = None,
+        runtime_sample_values: Sequence[float] | FloatArray | None = None,
         runtime_config: CompilerADExecutableConfig | None = None,
         *,
-        sample_tangent: Sequence[float] | np.ndarray | None = None,
-        sample_cotangent: Sequence[float] | np.ndarray | None = None,
+        sample_tangent: Sequence[float] | FloatArray | None = None,
+        sample_cotangent: Sequence[float] | FloatArray | None = None,
     ) -> ExecutableCompilerADKernel:
         effective_values = runtime_sample_values
         if effective_values is None:
@@ -6578,10 +6585,10 @@ def make_matrix_matrix_product_native_llvm_jit_primitive_transform(
     rule: CustomDerivativeRule,
     *,
     dimension: int | np.integer,
-    sample_values: Sequence[float] | np.ndarray,
+    sample_values: Sequence[float] | FloatArray,
     config: CompilerADExecutableConfig | None = None,
-    sample_tangent: Sequence[float] | np.ndarray | None = None,
-    sample_cotangent: Sequence[float] | np.ndarray | None = None,
+    sample_tangent: Sequence[float] | FloatArray | None = None,
+    sample_cotangent: Sequence[float] | FloatArray | None = None,
 ) -> PrimitiveTransformRule:
     """Create a complete Rust/PyO3 + native LLVM/JIT matrix-matrix contract."""
 
@@ -6672,10 +6679,10 @@ def compile_matrix_trace_ad_to_native_llvm_jit(
     rule: CustomDerivativeRule,
     *,
     dimension: int | np.integer,
-    sample_values: Sequence[float] | np.ndarray,
+    sample_values: Sequence[float] | FloatArray,
     config: CompilerADExecutableConfig | None = None,
-    sample_tangent: Sequence[float] | np.ndarray | None = None,
-    sample_cotangent: Sequence[float] | np.ndarray | None = None,
+    sample_tangent: Sequence[float] | FloatArray | None = None,
+    sample_cotangent: Sequence[float] | FloatArray | None = None,
 ) -> ExecutableCompilerADKernel:
     """Compile matrix trace value/JVP/VJP/gradient kernels to LLVM MCJIT."""
 
@@ -6702,12 +6709,12 @@ def compile_matrix_trace_ad_to_native_llvm_jit(
         _safe_llvm_symbol(rule.name),
     )
 
-    def value_kernel(raw_values: np.ndarray) -> np.ndarray:
+    def value_kernel(raw_values: FloatArray) -> FloatArray:
         return _call_native_matrix_trace_unary(
             native_functions["value"], raw_values, checked_dimension, 1
         )
 
-    def jvp_kernel(raw_values: np.ndarray, raw_tangent: np.ndarray) -> np.ndarray:
+    def jvp_kernel(raw_values: FloatArray, raw_tangent: FloatArray) -> FloatArray:
         return _call_native_matrix_trace_binary(
             native_functions["jvp"],
             raw_values,
@@ -6717,7 +6724,7 @@ def compile_matrix_trace_ad_to_native_llvm_jit(
             1,
         )
 
-    def vjp_kernel(raw_values: np.ndarray, raw_cotangent: np.ndarray) -> np.ndarray:
+    def vjp_kernel(raw_values: FloatArray, raw_cotangent: FloatArray) -> FloatArray:
         return _call_native_matrix_trace_binary(
             native_functions["vjp"],
             raw_values,
@@ -6768,10 +6775,10 @@ def compile_matrix_trace_ad_to_native_llvm_jit(
 def make_matrix_trace_native_llvm_jit_lowering_rule(
     *,
     dimension: int | np.integer,
-    sample_values: Sequence[float] | np.ndarray | None = None,
+    sample_values: Sequence[float] | FloatArray | None = None,
     config: CompilerADExecutableConfig | None = None,
-    sample_tangent: Sequence[float] | np.ndarray | None = None,
-    sample_cotangent: Sequence[float] | np.ndarray | None = None,
+    sample_tangent: Sequence[float] | FloatArray | None = None,
+    sample_cotangent: Sequence[float] | FloatArray | None = None,
 ) -> Callable[..., ExecutableCompilerADKernel]:
     """Create a lowering rule for matrix trace native LLVM/JIT kernels."""
 
@@ -6790,11 +6797,11 @@ def make_matrix_trace_native_llvm_jit_lowering_rule(
 
     def lowering_rule(
         rule: CustomDerivativeRule,
-        runtime_sample_values: Sequence[float] | np.ndarray | None = None,
+        runtime_sample_values: Sequence[float] | FloatArray | None = None,
         runtime_config: CompilerADExecutableConfig | None = None,
         *,
-        sample_tangent: Sequence[float] | np.ndarray | None = None,
-        sample_cotangent: Sequence[float] | np.ndarray | None = None,
+        sample_tangent: Sequence[float] | FloatArray | None = None,
+        sample_cotangent: Sequence[float] | FloatArray | None = None,
     ) -> ExecutableCompilerADKernel:
         effective_values = runtime_sample_values
         if effective_values is None:
@@ -6823,10 +6830,10 @@ def make_matrix_trace_native_llvm_jit_primitive_transform(
     rule: CustomDerivativeRule,
     *,
     dimension: int | np.integer,
-    sample_values: Sequence[float] | np.ndarray,
+    sample_values: Sequence[float] | FloatArray,
     config: CompilerADExecutableConfig | None = None,
-    sample_tangent: Sequence[float] | np.ndarray | None = None,
-    sample_cotangent: Sequence[float] | np.ndarray | None = None,
+    sample_tangent: Sequence[float] | FloatArray | None = None,
+    sample_cotangent: Sequence[float] | FloatArray | None = None,
 ) -> PrimitiveTransformRule:
     """Create a complete Rust/PyO3 + native LLVM/JIT matrix-trace contract."""
 
@@ -6911,10 +6918,10 @@ def compile_matrix_frobenius_norm_squared_ad_to_native_llvm_jit(
     rule: CustomDerivativeRule,
     *,
     dimension: int | np.integer,
-    sample_values: Sequence[float] | np.ndarray,
+    sample_values: Sequence[float] | FloatArray,
     config: CompilerADExecutableConfig | None = None,
-    sample_tangent: Sequence[float] | np.ndarray | None = None,
-    sample_cotangent: Sequence[float] | np.ndarray | None = None,
+    sample_tangent: Sequence[float] | FloatArray | None = None,
+    sample_cotangent: Sequence[float] | FloatArray | None = None,
 ) -> ExecutableCompilerADKernel:
     """Compile matrix Frobenius-squared value/JVP/VJP/gradient kernels to LLVM MCJIT."""
 
@@ -6946,7 +6953,7 @@ def compile_matrix_frobenius_norm_squared_ad_to_native_llvm_jit(
         _safe_llvm_symbol(rule.name),
     )
 
-    def value_kernel(raw_values: np.ndarray) -> np.ndarray:
+    def value_kernel(raw_values: FloatArray) -> FloatArray:
         return _call_native_matrix_frobenius_norm_squared_unary(
             native_functions["value"],
             raw_values,
@@ -6954,7 +6961,7 @@ def compile_matrix_frobenius_norm_squared_ad_to_native_llvm_jit(
             1,
         )
 
-    def jvp_kernel(raw_values: np.ndarray, raw_tangent: np.ndarray) -> np.ndarray:
+    def jvp_kernel(raw_values: FloatArray, raw_tangent: FloatArray) -> FloatArray:
         return _call_native_matrix_frobenius_norm_squared_binary(
             native_functions["jvp"],
             raw_values,
@@ -6964,7 +6971,7 @@ def compile_matrix_frobenius_norm_squared_ad_to_native_llvm_jit(
             1,
         )
 
-    def vjp_kernel(raw_values: np.ndarray, raw_cotangent: np.ndarray) -> np.ndarray:
+    def vjp_kernel(raw_values: FloatArray, raw_cotangent: FloatArray) -> FloatArray:
         return _call_native_matrix_frobenius_norm_squared_binary(
             native_functions["vjp"],
             raw_values,
@@ -7020,10 +7027,10 @@ def compile_matrix_frobenius_norm_squared_ad_to_native_llvm_jit(
 def make_matrix_frobenius_norm_squared_native_llvm_jit_lowering_rule(
     *,
     dimension: int | np.integer,
-    sample_values: Sequence[float] | np.ndarray | None = None,
+    sample_values: Sequence[float] | FloatArray | None = None,
     config: CompilerADExecutableConfig | None = None,
-    sample_tangent: Sequence[float] | np.ndarray | None = None,
-    sample_cotangent: Sequence[float] | np.ndarray | None = None,
+    sample_tangent: Sequence[float] | FloatArray | None = None,
+    sample_cotangent: Sequence[float] | FloatArray | None = None,
 ) -> Callable[..., ExecutableCompilerADKernel]:
     """Create a lowering rule for matrix Frobenius-squared native LLVM/JIT kernels."""
 
@@ -7042,11 +7049,11 @@ def make_matrix_frobenius_norm_squared_native_llvm_jit_lowering_rule(
 
     def lowering_rule(
         rule: CustomDerivativeRule,
-        runtime_sample_values: Sequence[float] | np.ndarray | None = None,
+        runtime_sample_values: Sequence[float] | FloatArray | None = None,
         runtime_config: CompilerADExecutableConfig | None = None,
         *,
-        sample_tangent: Sequence[float] | np.ndarray | None = None,
-        sample_cotangent: Sequence[float] | np.ndarray | None = None,
+        sample_tangent: Sequence[float] | FloatArray | None = None,
+        sample_cotangent: Sequence[float] | FloatArray | None = None,
     ) -> ExecutableCompilerADKernel:
         effective_values = runtime_sample_values
         if effective_values is None:
@@ -7075,10 +7082,10 @@ def make_matrix_frobenius_norm_squared_native_llvm_jit_primitive_transform(
     rule: CustomDerivativeRule,
     *,
     dimension: int | np.integer,
-    sample_values: Sequence[float] | np.ndarray,
+    sample_values: Sequence[float] | FloatArray,
     config: CompilerADExecutableConfig | None = None,
-    sample_tangent: Sequence[float] | np.ndarray | None = None,
-    sample_cotangent: Sequence[float] | np.ndarray | None = None,
+    sample_tangent: Sequence[float] | FloatArray | None = None,
+    sample_cotangent: Sequence[float] | FloatArray | None = None,
 ) -> PrimitiveTransformRule:
     """Create a complete Rust/PyO3 + native LLVM/JIT Frobenius-squared contract."""
 
@@ -7172,10 +7179,10 @@ def make_matrix_frobenius_norm_squared_native_llvm_jit_primitive_transform(
 def compile_matrix_2x2_determinant_ad_to_native_llvm_jit(
     rule: CustomDerivativeRule,
     *,
-    sample_values: Sequence[float] | np.ndarray,
+    sample_values: Sequence[float] | FloatArray,
     config: CompilerADExecutableConfig | None = None,
-    sample_tangent: Sequence[float] | np.ndarray | None = None,
-    sample_cotangent: Sequence[float] | np.ndarray | None = None,
+    sample_tangent: Sequence[float] | FloatArray | None = None,
+    sample_cotangent: Sequence[float] | FloatArray | None = None,
 ) -> ExecutableCompilerADKernel:
     """Compile exact 2x2 determinant value/JVP/VJP/gradient kernels to LLVM MCJIT."""
 
@@ -7200,14 +7207,14 @@ def compile_matrix_2x2_determinant_ad_to_native_llvm_jit(
         _safe_llvm_symbol(rule.name),
     )
 
-    def value_kernel(raw_values: np.ndarray) -> np.ndarray:
+    def value_kernel(raw_values: FloatArray) -> FloatArray:
         return _call_native_matrix_2x2_determinant_unary(
             native_functions["value"],
             raw_values,
             1,
         )
 
-    def jvp_kernel(raw_values: np.ndarray, raw_tangent: np.ndarray) -> np.ndarray:
+    def jvp_kernel(raw_values: FloatArray, raw_tangent: FloatArray) -> FloatArray:
         return _call_native_matrix_2x2_determinant_binary(
             native_functions["jvp"],
             raw_values,
@@ -7216,7 +7223,7 @@ def compile_matrix_2x2_determinant_ad_to_native_llvm_jit(
             1,
         )
 
-    def vjp_kernel(raw_values: np.ndarray, raw_cotangent: np.ndarray) -> np.ndarray:
+    def vjp_kernel(raw_values: FloatArray, raw_cotangent: FloatArray) -> FloatArray:
         return _call_native_matrix_2x2_determinant_binary(
             native_functions["vjp"],
             raw_values,
@@ -7267,10 +7274,10 @@ def compile_matrix_2x2_determinant_ad_to_native_llvm_jit(
 
 def make_matrix_2x2_determinant_native_llvm_jit_lowering_rule(
     *,
-    sample_values: Sequence[float] | np.ndarray | None = None,
+    sample_values: Sequence[float] | FloatArray | None = None,
     config: CompilerADExecutableConfig | None = None,
-    sample_tangent: Sequence[float] | np.ndarray | None = None,
-    sample_cotangent: Sequence[float] | np.ndarray | None = None,
+    sample_tangent: Sequence[float] | FloatArray | None = None,
+    sample_cotangent: Sequence[float] | FloatArray | None = None,
 ) -> Callable[..., ExecutableCompilerADKernel]:
     """Create a lowering rule for exact 2x2 determinant native LLVM/JIT kernels."""
 
@@ -7288,11 +7295,11 @@ def make_matrix_2x2_determinant_native_llvm_jit_lowering_rule(
 
     def lowering_rule(
         rule: CustomDerivativeRule,
-        runtime_sample_values: Sequence[float] | np.ndarray | None = None,
+        runtime_sample_values: Sequence[float] | FloatArray | None = None,
         runtime_config: CompilerADExecutableConfig | None = None,
         *,
-        sample_tangent: Sequence[float] | np.ndarray | None = None,
-        sample_cotangent: Sequence[float] | np.ndarray | None = None,
+        sample_tangent: Sequence[float] | FloatArray | None = None,
+        sample_cotangent: Sequence[float] | FloatArray | None = None,
     ) -> ExecutableCompilerADKernel:
         effective_values = runtime_sample_values
         if effective_values is None:
@@ -7319,10 +7326,10 @@ def make_matrix_2x2_determinant_native_llvm_jit_primitive_transform(
     identity: PrimitiveIdentity | str,
     rule: CustomDerivativeRule,
     *,
-    sample_values: Sequence[float] | np.ndarray,
+    sample_values: Sequence[float] | FloatArray,
     config: CompilerADExecutableConfig | None = None,
-    sample_tangent: Sequence[float] | np.ndarray | None = None,
-    sample_cotangent: Sequence[float] | np.ndarray | None = None,
+    sample_tangent: Sequence[float] | FloatArray | None = None,
+    sample_cotangent: Sequence[float] | FloatArray | None = None,
 ) -> PrimitiveTransformRule:
     """Create a complete Rust/PyO3 + native LLVM/JIT 2x2 determinant contract."""
 
@@ -7402,10 +7409,10 @@ def make_matrix_2x2_determinant_native_llvm_jit_primitive_transform(
 def compile_matrix_2x2_inverse_ad_to_native_llvm_jit(
     rule: CustomDerivativeRule,
     *,
-    sample_values: Sequence[float] | np.ndarray,
+    sample_values: Sequence[float] | FloatArray,
     config: CompilerADExecutableConfig | None = None,
-    sample_tangent: Sequence[float] | np.ndarray | None = None,
-    sample_cotangent: Sequence[float] | np.ndarray | None = None,
+    sample_tangent: Sequence[float] | FloatArray | None = None,
+    sample_cotangent: Sequence[float] | FloatArray | None = None,
 ) -> ExecutableCompilerADKernel:
     """Compile exact nonsingular 2x2 inverse value/JVP/VJP kernels to LLVM MCJIT."""
 
@@ -7428,14 +7435,14 @@ def compile_matrix_2x2_inverse_ad_to_native_llvm_jit(
         _safe_llvm_symbol(rule.name),
     )
 
-    def value_kernel(raw_values: np.ndarray) -> np.ndarray:
+    def value_kernel(raw_values: FloatArray) -> FloatArray:
         return _call_native_matrix_2x2_inverse_unary(
             native_functions["value"],
             raw_values,
             4,
         )
 
-    def jvp_kernel(raw_values: np.ndarray, raw_tangent: np.ndarray) -> np.ndarray:
+    def jvp_kernel(raw_values: FloatArray, raw_tangent: FloatArray) -> FloatArray:
         return _call_native_matrix_2x2_inverse_binary(
             native_functions["jvp"],
             raw_values,
@@ -7443,7 +7450,7 @@ def compile_matrix_2x2_inverse_ad_to_native_llvm_jit(
             "tangent",
         )
 
-    def vjp_kernel(raw_values: np.ndarray, raw_cotangent: np.ndarray) -> np.ndarray:
+    def vjp_kernel(raw_values: FloatArray, raw_cotangent: FloatArray) -> FloatArray:
         return _call_native_matrix_2x2_inverse_binary(
             native_functions["vjp"],
             raw_values,
@@ -7496,10 +7503,10 @@ def compile_matrix_2x2_inverse_ad_to_native_llvm_jit(
 
 def make_matrix_2x2_inverse_native_llvm_jit_lowering_rule(
     *,
-    sample_values: Sequence[float] | np.ndarray | None = None,
+    sample_values: Sequence[float] | FloatArray | None = None,
     config: CompilerADExecutableConfig | None = None,
-    sample_tangent: Sequence[float] | np.ndarray | None = None,
-    sample_cotangent: Sequence[float] | np.ndarray | None = None,
+    sample_tangent: Sequence[float] | FloatArray | None = None,
+    sample_cotangent: Sequence[float] | FloatArray | None = None,
 ) -> Callable[..., ExecutableCompilerADKernel]:
     """Create a lowering rule for exact nonsingular 2x2 inverse native LLVM/JIT kernels."""
 
@@ -7519,11 +7526,11 @@ def make_matrix_2x2_inverse_native_llvm_jit_lowering_rule(
 
     def lowering_rule(
         rule: CustomDerivativeRule,
-        runtime_sample_values: Sequence[float] | np.ndarray | None = None,
+        runtime_sample_values: Sequence[float] | FloatArray | None = None,
         runtime_config: CompilerADExecutableConfig | None = None,
         *,
-        sample_tangent: Sequence[float] | np.ndarray | None = None,
-        sample_cotangent: Sequence[float] | np.ndarray | None = None,
+        sample_tangent: Sequence[float] | FloatArray | None = None,
+        sample_cotangent: Sequence[float] | FloatArray | None = None,
     ) -> ExecutableCompilerADKernel:
         effective_values = runtime_sample_values
         if effective_values is None:
@@ -7550,10 +7557,10 @@ def make_matrix_2x2_inverse_native_llvm_jit_primitive_transform(
     identity: PrimitiveIdentity | str,
     rule: CustomDerivativeRule,
     *,
-    sample_values: Sequence[float] | np.ndarray,
+    sample_values: Sequence[float] | FloatArray,
     config: CompilerADExecutableConfig | None = None,
-    sample_tangent: Sequence[float] | np.ndarray | None = None,
-    sample_cotangent: Sequence[float] | np.ndarray | None = None,
+    sample_tangent: Sequence[float] | FloatArray | None = None,
+    sample_cotangent: Sequence[float] | FloatArray | None = None,
 ) -> PrimitiveTransformRule:
     """Create a complete Rust/PyO3 + native LLVM/JIT nonsingular 2x2 inverse contract."""
 
@@ -7633,10 +7640,10 @@ def make_matrix_2x2_inverse_native_llvm_jit_primitive_transform(
 def compile_matrix_2x2_solve_ad_to_native_llvm_jit(
     rule: CustomDerivativeRule,
     *,
-    sample_values: Sequence[float] | np.ndarray,
+    sample_values: Sequence[float] | FloatArray,
     config: CompilerADExecutableConfig | None = None,
-    sample_tangent: Sequence[float] | np.ndarray | None = None,
-    sample_cotangent: Sequence[float] | np.ndarray | None = None,
+    sample_tangent: Sequence[float] | FloatArray | None = None,
+    sample_cotangent: Sequence[float] | FloatArray | None = None,
 ) -> ExecutableCompilerADKernel:
     """Compile exact nonsingular 2x2 linear-solve value/JVP/VJP kernels to LLVM MCJIT."""
 
@@ -7659,14 +7666,14 @@ def compile_matrix_2x2_solve_ad_to_native_llvm_jit(
         _safe_llvm_symbol(rule.name),
     )
 
-    def value_kernel(raw_values: np.ndarray) -> np.ndarray:
+    def value_kernel(raw_values: FloatArray) -> FloatArray:
         return _call_native_matrix_2x2_solve_unary(
             native_functions["value"],
             raw_values,
             2,
         )
 
-    def jvp_kernel(raw_values: np.ndarray, raw_tangent: np.ndarray) -> np.ndarray:
+    def jvp_kernel(raw_values: FloatArray, raw_tangent: FloatArray) -> FloatArray:
         return _call_native_matrix_2x2_solve_binary(
             native_functions["jvp"],
             raw_values,
@@ -7675,7 +7682,7 @@ def compile_matrix_2x2_solve_ad_to_native_llvm_jit(
             2,
         )
 
-    def vjp_kernel(raw_values: np.ndarray, raw_cotangent: np.ndarray) -> np.ndarray:
+    def vjp_kernel(raw_values: FloatArray, raw_cotangent: FloatArray) -> FloatArray:
         return _call_native_matrix_2x2_solve_binary(
             native_functions["vjp"],
             raw_values,
@@ -7729,10 +7736,10 @@ def compile_matrix_2x2_solve_ad_to_native_llvm_jit(
 
 def make_matrix_2x2_solve_native_llvm_jit_lowering_rule(
     *,
-    sample_values: Sequence[float] | np.ndarray | None = None,
+    sample_values: Sequence[float] | FloatArray | None = None,
     config: CompilerADExecutableConfig | None = None,
-    sample_tangent: Sequence[float] | np.ndarray | None = None,
-    sample_cotangent: Sequence[float] | np.ndarray | None = None,
+    sample_tangent: Sequence[float] | FloatArray | None = None,
+    sample_cotangent: Sequence[float] | FloatArray | None = None,
 ) -> Callable[..., ExecutableCompilerADKernel]:
     """Create a lowering rule for exact nonsingular 2x2 solve native LLVM/JIT kernels."""
 
@@ -7752,11 +7759,11 @@ def make_matrix_2x2_solve_native_llvm_jit_lowering_rule(
 
     def lowering_rule(
         rule: CustomDerivativeRule,
-        runtime_sample_values: Sequence[float] | np.ndarray | None = None,
+        runtime_sample_values: Sequence[float] | FloatArray | None = None,
         runtime_config: CompilerADExecutableConfig | None = None,
         *,
-        sample_tangent: Sequence[float] | np.ndarray | None = None,
-        sample_cotangent: Sequence[float] | np.ndarray | None = None,
+        sample_tangent: Sequence[float] | FloatArray | None = None,
+        sample_cotangent: Sequence[float] | FloatArray | None = None,
     ) -> ExecutableCompilerADKernel:
         effective_values = runtime_sample_values
         if effective_values is None:
@@ -7783,10 +7790,10 @@ def make_matrix_2x2_solve_native_llvm_jit_primitive_transform(
     identity: PrimitiveIdentity | str,
     rule: CustomDerivativeRule,
     *,
-    sample_values: Sequence[float] | np.ndarray,
+    sample_values: Sequence[float] | FloatArray,
     config: CompilerADExecutableConfig | None = None,
-    sample_tangent: Sequence[float] | np.ndarray | None = None,
-    sample_cotangent: Sequence[float] | np.ndarray | None = None,
+    sample_tangent: Sequence[float] | FloatArray | None = None,
+    sample_cotangent: Sequence[float] | FloatArray | None = None,
 ) -> PrimitiveTransformRule:
     """Create a complete Rust/PyO3 + native LLVM/JIT nonsingular 2x2 solve contract."""
 
@@ -7861,10 +7868,10 @@ def make_matrix_2x2_solve_native_llvm_jit_primitive_transform(
 def compile_symmetric_2x2_cholesky_ad_to_native_llvm_jit(
     rule: CustomDerivativeRule,
     *,
-    sample_values: Sequence[float] | np.ndarray,
+    sample_values: Sequence[float] | FloatArray,
     config: CompilerADExecutableConfig | None = None,
-    sample_tangent: Sequence[float] | np.ndarray | None = None,
-    sample_cotangent: Sequence[float] | np.ndarray | None = None,
+    sample_tangent: Sequence[float] | FloatArray | None = None,
+    sample_cotangent: Sequence[float] | FloatArray | None = None,
 ) -> ExecutableCompilerADKernel:
     """Compile SPD symmetric 2x2 Cholesky value/JVP/VJP kernels to LLVM MCJIT."""
 
@@ -7887,14 +7894,14 @@ def compile_symmetric_2x2_cholesky_ad_to_native_llvm_jit(
         _safe_llvm_symbol(rule.name),
     )
 
-    def value_kernel(raw_values: np.ndarray) -> np.ndarray:
+    def value_kernel(raw_values: FloatArray) -> FloatArray:
         return _call_native_symmetric_2x2_cholesky_unary(
             native_functions["value"],
             raw_values,
             3,
         )
 
-    def jvp_kernel(raw_values: np.ndarray, raw_tangent: np.ndarray) -> np.ndarray:
+    def jvp_kernel(raw_values: FloatArray, raw_tangent: FloatArray) -> FloatArray:
         return _call_native_symmetric_2x2_cholesky_binary(
             native_functions["jvp"],
             raw_values,
@@ -7903,7 +7910,7 @@ def compile_symmetric_2x2_cholesky_ad_to_native_llvm_jit(
             3,
         )
 
-    def vjp_kernel(raw_values: np.ndarray, raw_cotangent: np.ndarray) -> np.ndarray:
+    def vjp_kernel(raw_values: FloatArray, raw_cotangent: FloatArray) -> FloatArray:
         return _call_native_symmetric_2x2_cholesky_binary(
             native_functions["vjp"],
             raw_values,
@@ -7957,10 +7964,10 @@ def compile_symmetric_2x2_cholesky_ad_to_native_llvm_jit(
 
 def make_symmetric_2x2_cholesky_native_llvm_jit_lowering_rule(
     *,
-    sample_values: Sequence[float] | np.ndarray | None = None,
+    sample_values: Sequence[float] | FloatArray | None = None,
     config: CompilerADExecutableConfig | None = None,
-    sample_tangent: Sequence[float] | np.ndarray | None = None,
-    sample_cotangent: Sequence[float] | np.ndarray | None = None,
+    sample_tangent: Sequence[float] | FloatArray | None = None,
+    sample_cotangent: Sequence[float] | FloatArray | None = None,
 ) -> Callable[..., ExecutableCompilerADKernel]:
     """Create a lowering rule for SPD symmetric 2x2 Cholesky native LLVM/JIT kernels."""
 
@@ -7980,11 +7987,11 @@ def make_symmetric_2x2_cholesky_native_llvm_jit_lowering_rule(
 
     def lowering_rule(
         rule: CustomDerivativeRule,
-        runtime_sample_values: Sequence[float] | np.ndarray | None = None,
+        runtime_sample_values: Sequence[float] | FloatArray | None = None,
         runtime_config: CompilerADExecutableConfig | None = None,
         *,
-        sample_tangent: Sequence[float] | np.ndarray | None = None,
-        sample_cotangent: Sequence[float] | np.ndarray | None = None,
+        sample_tangent: Sequence[float] | FloatArray | None = None,
+        sample_cotangent: Sequence[float] | FloatArray | None = None,
     ) -> ExecutableCompilerADKernel:
         effective_values = runtime_sample_values
         if effective_values is None:
@@ -8011,10 +8018,10 @@ def make_symmetric_2x2_cholesky_native_llvm_jit_primitive_transform(
     identity: PrimitiveIdentity | str,
     rule: CustomDerivativeRule,
     *,
-    sample_values: Sequence[float] | np.ndarray,
+    sample_values: Sequence[float] | FloatArray,
     config: CompilerADExecutableConfig | None = None,
-    sample_tangent: Sequence[float] | np.ndarray | None = None,
-    sample_cotangent: Sequence[float] | np.ndarray | None = None,
+    sample_tangent: Sequence[float] | FloatArray | None = None,
+    sample_cotangent: Sequence[float] | FloatArray | None = None,
 ) -> PrimitiveTransformRule:
     """Create a complete Rust/PyO3 + native LLVM/JIT SPD 2x2 Cholesky contract."""
 
@@ -8096,10 +8103,10 @@ def make_symmetric_2x2_cholesky_native_llvm_jit_primitive_transform(
 def compile_symmetric_2x2_eigenvalues_ad_to_native_llvm_jit(
     rule: CustomDerivativeRule,
     *,
-    sample_values: Sequence[float] | np.ndarray,
+    sample_values: Sequence[float] | FloatArray,
     config: CompilerADExecutableConfig | None = None,
-    sample_tangent: Sequence[float] | np.ndarray | None = None,
-    sample_cotangent: Sequence[float] | np.ndarray | None = None,
+    sample_tangent: Sequence[float] | FloatArray | None = None,
+    sample_cotangent: Sequence[float] | FloatArray | None = None,
 ) -> ExecutableCompilerADKernel:
     """Compile distinct symmetric 2x2 eigenvalue value/JVP/VJP kernels to LLVM MCJIT."""
 
@@ -8122,14 +8129,14 @@ def compile_symmetric_2x2_eigenvalues_ad_to_native_llvm_jit(
         _safe_llvm_symbol(rule.name),
     )
 
-    def value_kernel(raw_values: np.ndarray) -> np.ndarray:
+    def value_kernel(raw_values: FloatArray) -> FloatArray:
         return _call_native_symmetric_2x2_eigenvalues_unary(
             native_functions["value"],
             raw_values,
             2,
         )
 
-    def jvp_kernel(raw_values: np.ndarray, raw_tangent: np.ndarray) -> np.ndarray:
+    def jvp_kernel(raw_values: FloatArray, raw_tangent: FloatArray) -> FloatArray:
         return _call_native_symmetric_2x2_eigenvalues_binary(
             native_functions["jvp"],
             raw_values,
@@ -8138,7 +8145,7 @@ def compile_symmetric_2x2_eigenvalues_ad_to_native_llvm_jit(
             2,
         )
 
-    def vjp_kernel(raw_values: np.ndarray, raw_cotangent: np.ndarray) -> np.ndarray:
+    def vjp_kernel(raw_values: FloatArray, raw_cotangent: FloatArray) -> FloatArray:
         return _call_native_symmetric_2x2_eigenvalues_binary(
             native_functions["vjp"],
             raw_values,
@@ -8192,10 +8199,10 @@ def compile_symmetric_2x2_eigenvalues_ad_to_native_llvm_jit(
 
 def make_symmetric_2x2_eigenvalues_native_llvm_jit_lowering_rule(
     *,
-    sample_values: Sequence[float] | np.ndarray | None = None,
+    sample_values: Sequence[float] | FloatArray | None = None,
     config: CompilerADExecutableConfig | None = None,
-    sample_tangent: Sequence[float] | np.ndarray | None = None,
-    sample_cotangent: Sequence[float] | np.ndarray | None = None,
+    sample_tangent: Sequence[float] | FloatArray | None = None,
+    sample_cotangent: Sequence[float] | FloatArray | None = None,
 ) -> Callable[..., ExecutableCompilerADKernel]:
     """Create a lowering rule for distinct symmetric 2x2 eigenvalue native LLVM/JIT kernels."""
 
@@ -8215,11 +8222,11 @@ def make_symmetric_2x2_eigenvalues_native_llvm_jit_lowering_rule(
 
     def lowering_rule(
         rule: CustomDerivativeRule,
-        runtime_sample_values: Sequence[float] | np.ndarray | None = None,
+        runtime_sample_values: Sequence[float] | FloatArray | None = None,
         runtime_config: CompilerADExecutableConfig | None = None,
         *,
-        sample_tangent: Sequence[float] | np.ndarray | None = None,
-        sample_cotangent: Sequence[float] | np.ndarray | None = None,
+        sample_tangent: Sequence[float] | FloatArray | None = None,
+        sample_cotangent: Sequence[float] | FloatArray | None = None,
     ) -> ExecutableCompilerADKernel:
         effective_values = runtime_sample_values
         if effective_values is None:
@@ -8246,10 +8253,10 @@ def make_symmetric_2x2_eigenvalues_native_llvm_jit_primitive_transform(
     identity: PrimitiveIdentity | str,
     rule: CustomDerivativeRule,
     *,
-    sample_values: Sequence[float] | np.ndarray,
+    sample_values: Sequence[float] | FloatArray,
     config: CompilerADExecutableConfig | None = None,
-    sample_tangent: Sequence[float] | np.ndarray | None = None,
-    sample_cotangent: Sequence[float] | np.ndarray | None = None,
+    sample_tangent: Sequence[float] | FloatArray | None = None,
+    sample_cotangent: Sequence[float] | FloatArray | None = None,
 ) -> PrimitiveTransformRule:
     """Create a complete Rust/PyO3 + native LLVM/JIT distinct symmetric eigvalsh contract."""
 
@@ -8333,10 +8340,10 @@ def make_symmetric_2x2_eigenvalues_native_llvm_jit_primitive_transform(
 def compile_matrix_2x2_eigenvalues_ad_to_native_llvm_jit(
     rule: CustomDerivativeRule,
     *,
-    sample_values: Sequence[float] | np.ndarray,
+    sample_values: Sequence[float] | FloatArray,
     config: CompilerADExecutableConfig | None = None,
-    sample_tangent: Sequence[float] | np.ndarray | None = None,
-    sample_cotangent: Sequence[float] | np.ndarray | None = None,
+    sample_tangent: Sequence[float] | FloatArray | None = None,
+    sample_cotangent: Sequence[float] | FloatArray | None = None,
 ) -> ExecutableCompilerADKernel:
     """Compile real-simple nonsymmetric 2x2 eigenvalue value/JVP/VJP kernels."""
 
@@ -8359,14 +8366,14 @@ def compile_matrix_2x2_eigenvalues_ad_to_native_llvm_jit(
         _safe_llvm_symbol(rule.name),
     )
 
-    def value_kernel(raw_values: np.ndarray) -> np.ndarray:
+    def value_kernel(raw_values: FloatArray) -> FloatArray:
         return _call_native_matrix_2x2_eigenvalues_unary(
             native_functions["value"],
             raw_values,
             2,
         )
 
-    def jvp_kernel(raw_values: np.ndarray, raw_tangent: np.ndarray) -> np.ndarray:
+    def jvp_kernel(raw_values: FloatArray, raw_tangent: FloatArray) -> FloatArray:
         return _call_native_matrix_2x2_eigenvalues_binary(
             native_functions["jvp"],
             raw_values,
@@ -8375,7 +8382,7 @@ def compile_matrix_2x2_eigenvalues_ad_to_native_llvm_jit(
             2,
         )
 
-    def vjp_kernel(raw_values: np.ndarray, raw_cotangent: np.ndarray) -> np.ndarray:
+    def vjp_kernel(raw_values: FloatArray, raw_cotangent: FloatArray) -> FloatArray:
         return _call_native_matrix_2x2_eigenvalues_binary(
             native_functions["vjp"],
             raw_values,
@@ -8430,10 +8437,10 @@ def compile_matrix_2x2_eigenvalues_ad_to_native_llvm_jit(
 
 def make_matrix_2x2_eigenvalues_native_llvm_jit_lowering_rule(
     *,
-    sample_values: Sequence[float] | np.ndarray | None = None,
+    sample_values: Sequence[float] | FloatArray | None = None,
     config: CompilerADExecutableConfig | None = None,
-    sample_tangent: Sequence[float] | np.ndarray | None = None,
-    sample_cotangent: Sequence[float] | np.ndarray | None = None,
+    sample_tangent: Sequence[float] | FloatArray | None = None,
+    sample_cotangent: Sequence[float] | FloatArray | None = None,
 ) -> Callable[..., ExecutableCompilerADKernel]:
     """Create a lowering rule for real-simple nonsymmetric 2x2 eigenvalue kernels."""
 
@@ -8453,11 +8460,11 @@ def make_matrix_2x2_eigenvalues_native_llvm_jit_lowering_rule(
 
     def lowering_rule(
         rule: CustomDerivativeRule,
-        runtime_sample_values: Sequence[float] | np.ndarray | None = None,
+        runtime_sample_values: Sequence[float] | FloatArray | None = None,
         runtime_config: CompilerADExecutableConfig | None = None,
         *,
-        sample_tangent: Sequence[float] | np.ndarray | None = None,
-        sample_cotangent: Sequence[float] | np.ndarray | None = None,
+        sample_tangent: Sequence[float] | FloatArray | None = None,
+        sample_cotangent: Sequence[float] | FloatArray | None = None,
     ) -> ExecutableCompilerADKernel:
         effective_values = runtime_sample_values
         if effective_values is None:
@@ -8484,10 +8491,10 @@ def make_matrix_2x2_eigenvalues_native_llvm_jit_primitive_transform(
     identity: PrimitiveIdentity | str,
     rule: CustomDerivativeRule,
     *,
-    sample_values: Sequence[float] | np.ndarray,
+    sample_values: Sequence[float] | FloatArray,
     config: CompilerADExecutableConfig | None = None,
-    sample_tangent: Sequence[float] | np.ndarray | None = None,
-    sample_cotangent: Sequence[float] | np.ndarray | None = None,
+    sample_tangent: Sequence[float] | FloatArray | None = None,
+    sample_cotangent: Sequence[float] | FloatArray | None = None,
 ) -> PrimitiveTransformRule:
     """Create a complete Rust/PyO3 + native LLVM/JIT eigenvalue contract.
 
@@ -8582,10 +8589,10 @@ def make_matrix_2x2_eigenvalues_native_llvm_jit_primitive_transform(
 def compile_matrix_2x2_eigensystem_ad_to_native_llvm_jit(
     rule: CustomDerivativeRule,
     *,
-    sample_values: Sequence[float] | np.ndarray,
+    sample_values: Sequence[float] | FloatArray,
     config: CompilerADExecutableConfig | None = None,
-    sample_tangent: Sequence[float] | np.ndarray | None = None,
-    sample_cotangent: Sequence[float] | np.ndarray | None = None,
+    sample_tangent: Sequence[float] | FloatArray | None = None,
+    sample_cotangent: Sequence[float] | FloatArray | None = None,
 ) -> ExecutableCompilerADKernel:
     """Compile real-simple nonsymmetric 2x2 eigensystem value/JVP/VJP kernels."""
 
@@ -8608,14 +8615,14 @@ def compile_matrix_2x2_eigensystem_ad_to_native_llvm_jit(
         _safe_llvm_symbol(rule.name),
     )
 
-    def value_kernel(raw_values: np.ndarray) -> np.ndarray:
+    def value_kernel(raw_values: FloatArray) -> FloatArray:
         return _call_native_matrix_2x2_eigensystem_unary(
             native_functions["value"],
             raw_values,
             6,
         )
 
-    def jvp_kernel(raw_values: np.ndarray, raw_tangent: np.ndarray) -> np.ndarray:
+    def jvp_kernel(raw_values: FloatArray, raw_tangent: FloatArray) -> FloatArray:
         return _call_native_matrix_2x2_eigensystem_binary(
             native_functions["jvp"],
             raw_values,
@@ -8624,7 +8631,7 @@ def compile_matrix_2x2_eigensystem_ad_to_native_llvm_jit(
             6,
         )
 
-    def vjp_kernel(raw_values: np.ndarray, raw_cotangent: np.ndarray) -> np.ndarray:
+    def vjp_kernel(raw_values: FloatArray, raw_cotangent: FloatArray) -> FloatArray:
         return _call_native_matrix_2x2_eigensystem_binary(
             native_functions["vjp"],
             raw_values,
@@ -8679,10 +8686,10 @@ def compile_matrix_2x2_eigensystem_ad_to_native_llvm_jit(
 
 def make_matrix_2x2_eigensystem_native_llvm_jit_lowering_rule(
     *,
-    sample_values: Sequence[float] | np.ndarray | None = None,
+    sample_values: Sequence[float] | FloatArray | None = None,
     config: CompilerADExecutableConfig | None = None,
-    sample_tangent: Sequence[float] | np.ndarray | None = None,
-    sample_cotangent: Sequence[float] | np.ndarray | None = None,
+    sample_tangent: Sequence[float] | FloatArray | None = None,
+    sample_cotangent: Sequence[float] | FloatArray | None = None,
 ) -> Callable[..., ExecutableCompilerADKernel]:
     """Create a lowering rule for real-simple nonsymmetric 2x2 eigensystem kernels."""
 
@@ -8702,11 +8709,11 @@ def make_matrix_2x2_eigensystem_native_llvm_jit_lowering_rule(
 
     def lowering_rule(
         rule: CustomDerivativeRule,
-        runtime_sample_values: Sequence[float] | np.ndarray | None = None,
+        runtime_sample_values: Sequence[float] | FloatArray | None = None,
         runtime_config: CompilerADExecutableConfig | None = None,
         *,
-        sample_tangent: Sequence[float] | np.ndarray | None = None,
-        sample_cotangent: Sequence[float] | np.ndarray | None = None,
+        sample_tangent: Sequence[float] | FloatArray | None = None,
+        sample_cotangent: Sequence[float] | FloatArray | None = None,
     ) -> ExecutableCompilerADKernel:
         effective_values = runtime_sample_values
         if effective_values is None:
@@ -8733,10 +8740,10 @@ def make_matrix_2x2_eigensystem_native_llvm_jit_primitive_transform(
     identity: PrimitiveIdentity | str,
     rule: CustomDerivativeRule,
     *,
-    sample_values: Sequence[float] | np.ndarray,
+    sample_values: Sequence[float] | FloatArray,
     config: CompilerADExecutableConfig | None = None,
-    sample_tangent: Sequence[float] | np.ndarray | None = None,
-    sample_cotangent: Sequence[float] | np.ndarray | None = None,
+    sample_tangent: Sequence[float] | FloatArray | None = None,
+    sample_cotangent: Sequence[float] | FloatArray | None = None,
 ) -> PrimitiveTransformRule:
     """Create a complete Rust/PyO3 + native LLVM/JIT eigensystem contract.
 
@@ -8831,10 +8838,10 @@ def compile_matrix_quadratic_form_ad_to_native_llvm_jit(
     rule: CustomDerivativeRule,
     *,
     dimension: int | np.integer,
-    sample_values: Sequence[float] | np.ndarray,
+    sample_values: Sequence[float] | FloatArray,
     config: CompilerADExecutableConfig | None = None,
-    sample_tangent: Sequence[float] | np.ndarray | None = None,
-    sample_cotangent: Sequence[float] | np.ndarray | None = None,
+    sample_tangent: Sequence[float] | FloatArray | None = None,
+    sample_cotangent: Sequence[float] | FloatArray | None = None,
 ) -> ExecutableCompilerADKernel:
     """Compile matrix quadratic-form value/JVP/VJP/gradient kernels to LLVM MCJIT."""
 
@@ -8864,12 +8871,12 @@ def compile_matrix_quadratic_form_ad_to_native_llvm_jit(
         _safe_llvm_symbol(rule.name),
     )
 
-    def value_kernel(raw_values: np.ndarray) -> np.ndarray:
+    def value_kernel(raw_values: FloatArray) -> FloatArray:
         return _call_native_matrix_quadratic_form_unary(
             native_functions["value"], raw_values, checked_dimension, 1
         )
 
-    def jvp_kernel(raw_values: np.ndarray, raw_tangent: np.ndarray) -> np.ndarray:
+    def jvp_kernel(raw_values: FloatArray, raw_tangent: FloatArray) -> FloatArray:
         return _call_native_matrix_quadratic_form_binary(
             native_functions["jvp"],
             raw_values,
@@ -8879,7 +8886,7 @@ def compile_matrix_quadratic_form_ad_to_native_llvm_jit(
             1,
         )
 
-    def vjp_kernel(raw_values: np.ndarray, raw_cotangent: np.ndarray) -> np.ndarray:
+    def vjp_kernel(raw_values: FloatArray, raw_cotangent: FloatArray) -> FloatArray:
         return _call_native_matrix_quadratic_form_binary(
             native_functions["vjp"],
             raw_values,
@@ -8930,10 +8937,10 @@ def compile_matrix_quadratic_form_ad_to_native_llvm_jit(
 def make_matrix_quadratic_form_native_llvm_jit_lowering_rule(
     *,
     dimension: int | np.integer,
-    sample_values: Sequence[float] | np.ndarray | None = None,
+    sample_values: Sequence[float] | FloatArray | None = None,
     config: CompilerADExecutableConfig | None = None,
-    sample_tangent: Sequence[float] | np.ndarray | None = None,
-    sample_cotangent: Sequence[float] | np.ndarray | None = None,
+    sample_tangent: Sequence[float] | FloatArray | None = None,
+    sample_cotangent: Sequence[float] | FloatArray | None = None,
 ) -> Callable[..., ExecutableCompilerADKernel]:
     """Create a lowering rule for matrix quadratic-form native LLVM/JIT kernels."""
 
@@ -8952,11 +8959,11 @@ def make_matrix_quadratic_form_native_llvm_jit_lowering_rule(
 
     def lowering_rule(
         rule: CustomDerivativeRule,
-        runtime_sample_values: Sequence[float] | np.ndarray | None = None,
+        runtime_sample_values: Sequence[float] | FloatArray | None = None,
         runtime_config: CompilerADExecutableConfig | None = None,
         *,
-        sample_tangent: Sequence[float] | np.ndarray | None = None,
-        sample_cotangent: Sequence[float] | np.ndarray | None = None,
+        sample_tangent: Sequence[float] | FloatArray | None = None,
+        sample_cotangent: Sequence[float] | FloatArray | None = None,
     ) -> ExecutableCompilerADKernel:
         effective_values = runtime_sample_values
         if effective_values is None:
@@ -8985,10 +8992,10 @@ def make_matrix_quadratic_form_native_llvm_jit_primitive_transform(
     rule: CustomDerivativeRule,
     *,
     dimension: int | np.integer,
-    sample_values: Sequence[float] | np.ndarray,
+    sample_values: Sequence[float] | FloatArray,
     config: CompilerADExecutableConfig | None = None,
-    sample_tangent: Sequence[float] | np.ndarray | None = None,
-    sample_cotangent: Sequence[float] | np.ndarray | None = None,
+    sample_tangent: Sequence[float] | FloatArray | None = None,
+    sample_cotangent: Sequence[float] | FloatArray | None = None,
 ) -> PrimitiveTransformRule:
     """Create a complete Rust/PyO3 + native LLVM/JIT quadratic-form contract."""
 
@@ -9503,7 +9510,7 @@ class NativeWholeProgramADKernel:
         if not self.claim_boundary:
             raise ValueError("claim_boundary must be non-empty")
 
-    def _checked_values(self, values: Sequence[float] | np.ndarray) -> NDArray[np.float64]:
+    def _checked_values(self, values: Sequence[float] | FloatArray) -> NDArray[np.float64]:
         checked = _as_finite_vector("values", values)
         if checked.shape != self.parameter_shape:
             raise ValueError(
@@ -9514,7 +9521,7 @@ class NativeWholeProgramADKernel:
 
     def _checked_batch_values(
         self,
-        values: Sequence[Sequence[float]] | np.ndarray,
+        values: Sequence[Sequence[float]] | FloatArray,
     ) -> NDArray[np.float64]:
         checked = np.asarray(values, dtype=np.float64)
         if checked.ndim != 2:
@@ -9532,7 +9539,7 @@ class NativeWholeProgramADKernel:
 
     def _checked_batch_tangents(
         self,
-        tangents: Sequence[Sequence[float]] | np.ndarray,
+        tangents: Sequence[Sequence[float]] | FloatArray,
         row_count: int,
     ) -> NDArray[np.float64]:
         checked = np.asarray(tangents, dtype=np.float64)
@@ -9546,7 +9553,7 @@ class NativeWholeProgramADKernel:
 
     @staticmethod
     def _checked_batch_cotangents(
-        cotangents: Sequence[float] | Sequence[Sequence[float]] | np.ndarray,
+        cotangents: Sequence[float] | Sequence[Sequence[float]] | FloatArray,
         row_count: int,
     ) -> NDArray[np.float64]:
         checked = np.asarray(cotangents, dtype=np.float64)
@@ -9576,7 +9583,7 @@ class NativeWholeProgramADKernel:
                 "recompile with representative sample values"
             )
 
-    def value(self, values: Sequence[float] | np.ndarray) -> float:
+    def value(self, values: Sequence[float] | FloatArray) -> float:
         """Execute the native scalar value kernel."""
 
         checked = self._checked_values(values)
@@ -9588,7 +9595,7 @@ class NativeWholeProgramADKernel:
         )
         return float(output[0])
 
-    def gradient(self, values: Sequence[float] | np.ndarray) -> NDArray[np.float64]:
+    def gradient(self, values: Sequence[float] | FloatArray) -> NDArray[np.float64]:
         """Execute the native scalar-output gradient kernel."""
 
         checked = self._checked_values(values)
@@ -9601,7 +9608,7 @@ class NativeWholeProgramADKernel:
 
     def value_and_grad(
         self,
-        values: Sequence[float] | np.ndarray,
+        values: Sequence[float] | FloatArray,
     ) -> tuple[float, NDArray[np.float64]]:
         """Execute native value and gradient kernels."""
 
@@ -9621,8 +9628,8 @@ class NativeWholeProgramADKernel:
 
     def jvp(
         self,
-        values: Sequence[float] | np.ndarray,
-        tangent: Sequence[float] | np.ndarray,
+        values: Sequence[float] | FloatArray,
+        tangent: Sequence[float] | FloatArray,
     ) -> float:
         """Execute the native scalar JVP kernel."""
 
@@ -9641,8 +9648,8 @@ class NativeWholeProgramADKernel:
 
     def vjp(
         self,
-        values: Sequence[float] | np.ndarray,
-        cotangent: Sequence[float] | np.ndarray,
+        values: Sequence[float] | FloatArray,
+        cotangent: Sequence[float] | FloatArray,
     ) -> NDArray[np.float64]:
         """Execute the native scalar VJP kernel."""
 
@@ -9660,7 +9667,7 @@ class NativeWholeProgramADKernel:
 
     def batch_value_and_grad(
         self,
-        values: Sequence[Sequence[float]] | np.ndarray,
+        values: Sequence[Sequence[float]] | FloatArray,
     ) -> ExecutableWholeProgramADBatchResult:
         """Execute native value and gradient kernels over a two-dimensional batch."""
 
@@ -9686,14 +9693,14 @@ class NativeWholeProgramADKernel:
             ),
         )
 
-    def batch_value(self, values: Sequence[Sequence[float]] | np.ndarray) -> NDArray[np.float64]:
+    def batch_value(self, values: Sequence[Sequence[float]] | FloatArray) -> NDArray[np.float64]:
         """Execute native value kernels over a two-dimensional batch."""
 
         return self.batch_value_and_grad(values).values
 
     def batch_gradient(
         self,
-        values: Sequence[Sequence[float]] | np.ndarray,
+        values: Sequence[Sequence[float]] | FloatArray,
     ) -> NDArray[np.float64]:
         """Execute native gradient kernels over a two-dimensional batch."""
 
@@ -9701,8 +9708,8 @@ class NativeWholeProgramADKernel:
 
     def batch_jvp(
         self,
-        values: Sequence[Sequence[float]] | np.ndarray,
-        tangents: Sequence[Sequence[float]] | np.ndarray,
+        values: Sequence[Sequence[float]] | FloatArray,
+        tangents: Sequence[Sequence[float]] | FloatArray,
     ) -> NDArray[np.float64]:
         """Execute the compiled native JVP kernel over a two-dimensional batch."""
 
@@ -9719,8 +9726,8 @@ class NativeWholeProgramADKernel:
 
     def batch_vjp(
         self,
-        values: Sequence[Sequence[float]] | np.ndarray,
-        cotangents: Sequence[float] | Sequence[Sequence[float]] | np.ndarray,
+        values: Sequence[Sequence[float]] | FloatArray,
+        cotangents: Sequence[float] | Sequence[Sequence[float]] | FloatArray,
     ) -> NDArray[np.float64]:
         """Execute the compiled native VJP kernel over a two-dimensional batch."""
 
@@ -9791,7 +9798,7 @@ class ExecutableWholeProgramADKernel:
         if not self.claim_boundary:
             raise ValueError("claim_boundary must be non-empty")
 
-    def _checked_values(self, values: Sequence[float] | np.ndarray) -> NDArray[np.float64]:
+    def _checked_values(self, values: Sequence[float] | FloatArray) -> NDArray[np.float64]:
         checked = _as_finite_vector("values", values)
         if checked.shape != self.parameter_shape:
             raise ValueError(
@@ -9802,7 +9809,7 @@ class ExecutableWholeProgramADKernel:
 
     def _checked_batch_values(
         self,
-        values: Sequence[Sequence[float]] | np.ndarray,
+        values: Sequence[Sequence[float]] | FloatArray,
     ) -> NDArray[np.float64]:
         checked = np.asarray(values, dtype=np.float64)
         if checked.ndim != 2:
@@ -9816,9 +9823,9 @@ class ExecutableWholeProgramADKernel:
             )
         if not np.all(np.isfinite(checked)):
             raise ValueError("batch values must contain only finite values")
-        return cast(NDArray[np.float64], checked.copy())
+        return _copy_float_array(checked)
 
-    def _recapture(self, values: Sequence[float] | np.ndarray) -> WholeProgramADResult:
+    def _recapture(self, values: Sequence[float] | FloatArray) -> WholeProgramADResult:
         checked = self._checked_values(values)
         result = whole_program_value_and_grad(
             self.objective,
@@ -9836,26 +9843,26 @@ class ExecutableWholeProgramADKernel:
 
     def value_and_grad(
         self,
-        values: Sequence[float] | np.ndarray,
+        values: Sequence[float] | FloatArray,
     ) -> tuple[float, NDArray[np.float64]]:
         """Execute value replay and reverse-mode adjoint gradient replay."""
 
         result = self._recapture(values)
         return result.value, program_adjoint_gradient(result)
 
-    def value(self, values: Sequence[float] | np.ndarray) -> float:
+    def value(self, values: Sequence[float] | FloatArray) -> float:
         """Execute value replay for the captured program AD trace."""
 
         return self.value_and_grad(values)[0]
 
-    def gradient(self, values: Sequence[float] | np.ndarray) -> NDArray[np.float64]:
+    def gradient(self, values: Sequence[float] | FloatArray) -> NDArray[np.float64]:
         """Execute reverse-mode adjoint replay for the captured program AD trace."""
 
         return self.value_and_grad(values)[1]
 
     def batch_value_and_grad(
         self,
-        values: Sequence[Sequence[float]] | np.ndarray,
+        values: Sequence[Sequence[float]] | FloatArray,
     ) -> ExecutableWholeProgramADBatchResult:
         """Execute same-branch batched value and reverse-adjoint gradient replay."""
 
@@ -9881,14 +9888,14 @@ class ExecutableWholeProgramADKernel:
             mlir_sha256=self.mlir_module.sha256,
         )
 
-    def batch_value(self, values: Sequence[Sequence[float]] | np.ndarray) -> NDArray[np.float64]:
+    def batch_value(self, values: Sequence[Sequence[float]] | FloatArray) -> NDArray[np.float64]:
         """Execute batched value replay for rows preserving the compiled branch path."""
 
         return self.batch_value_and_grad(values).values
 
     def batch_gradient(
         self,
-        values: Sequence[Sequence[float]] | np.ndarray,
+        values: Sequence[Sequence[float]] | FloatArray,
     ) -> NDArray[np.float64]:
         """Execute batched reverse-adjoint replay for rows preserving the branch path."""
 
@@ -9897,7 +9904,7 @@ class ExecutableWholeProgramADKernel:
 
 def compile_whole_program_ad_trace_to_executable(
     objective: Callable[[Any], object],
-    sample_values: Sequence[float] | np.ndarray,
+    sample_values: Sequence[float] | FloatArray,
     parameters: Sequence[Parameter] | None = None,
     config: DifferentiableMLIRCompileConfig | None = None,
     *,
@@ -9945,7 +9952,7 @@ def compile_whole_program_ad_trace_to_executable(
 
 def compile_whole_program_ad_trace_to_native_llvm_jit(
     objective: Callable[[Any], object],
-    sample_values: Sequence[float] | np.ndarray,
+    sample_values: Sequence[float] | FloatArray,
     parameters: Sequence[Parameter] | None = None,
     config: DifferentiableMLIRCompileConfig | None = None,
     *,
@@ -13231,7 +13238,7 @@ def _fmt_llvm_int(value: int) -> str:
 
 def _call_native_whole_program_unary(
     function: Callable[[Any, Any], None],
-    values: np.ndarray,
+    values: FloatArray,
     output_size: int,
 ) -> NDArray[np.float64]:
     checked_values = np.ascontiguousarray(_as_finite_vector("values", values), dtype=np.float64)
@@ -13250,8 +13257,8 @@ def _call_native_whole_program_unary(
 
 def _call_native_whole_program_binary(
     function: Callable[[Any, Any, Any], None],
-    values: np.ndarray,
-    vector: np.ndarray,
+    values: FloatArray,
+    vector: FloatArray,
     output_size: int,
 ) -> NDArray[np.float64]:
     checked_values = np.ascontiguousarray(_as_finite_vector("values", values), dtype=np.float64)
@@ -13272,7 +13279,7 @@ def _call_native_whole_program_binary(
 
 def _call_native_whole_program_batch_value_gradient(
     function: Callable[[Any, int, Any, Any], None],
-    values: np.ndarray,
+    values: FloatArray,
     parameter_count: int,
 ) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
     checked_values = np.ascontiguousarray(np.asarray(values, dtype=np.float64))
@@ -13304,8 +13311,8 @@ def _call_native_whole_program_batch_value_gradient(
 
 def _call_native_whole_program_batch_jvp(
     function: Callable[[Any, Any, int, Any], None],
-    values: np.ndarray,
-    tangents: np.ndarray,
+    values: FloatArray,
+    tangents: FloatArray,
     parameter_count: int,
 ) -> NDArray[np.float64]:
     checked_values = np.ascontiguousarray(np.asarray(values, dtype=np.float64))
@@ -13336,8 +13343,8 @@ def _call_native_whole_program_batch_jvp(
 
 def _call_native_whole_program_batch_vjp(
     function: Callable[[Any, Any, int, Any], None],
-    values: np.ndarray,
-    cotangents: np.ndarray,
+    values: FloatArray,
+    cotangents: FloatArray,
     parameter_count: int,
 ) -> NDArray[np.float64]:
     checked_values = np.ascontiguousarray(np.asarray(values, dtype=np.float64))
@@ -13531,7 +13538,7 @@ def _whole_program_replay_signature(result: WholeProgramADResult) -> tuple[str, 
     return tuple(f"{node.index}:{node.op}:{','.join(node.inputs)}" for node in result.ir_nodes)
 
 
-def _coupling_terms(K_nm: np.ndarray) -> tuple[tuple[int, int, float], ...]:
+def _coupling_terms(K_nm: FloatArray) -> tuple[tuple[int, int, float], ...]:
     terms: list[tuple[int, int, float]] = []
     n_oscillators = K_nm.shape[0]
     for left in range(n_oscillators):
@@ -13550,10 +13557,10 @@ def _as_finite_vector(name: str, value: object) -> NDArray[np.float64]:
         raise ValueError(f"{name} must be one-dimensional")
     if not np.all(np.isfinite(array)):
         raise ValueError(f"{name} must contain only finite values")
-    return cast(NDArray[np.float64], array.copy())
+    return _copy_float_array(array)
 
 
-def _max_abs_error(left: np.ndarray, right: np.ndarray) -> float:
+def _max_abs_error(left: FloatArray, right: FloatArray) -> float:
     if left.shape != right.shape:
         return float("inf")
     if left.size == 0:
@@ -13619,15 +13626,15 @@ class PhaseQNodeMLIRRuntimeExecutable:
         if not self.claim_boundary:
             raise ValueError("claim_boundary must be non-empty")
 
-    def value(self, parameters: Sequence[float] | np.ndarray) -> float:
+    def value(self, parameters: Sequence[float] | FloatArray) -> float:
         """Execute the verified MLIR-runtime value kernel."""
         values = _as_phase_qnode_runtime_parameters(parameters, self.parameter_shape)
         return float(self.value_kernel(values))
 
-    def gradient(self, parameters: Sequence[float] | np.ndarray) -> NDArray[np.float64]:
+    def gradient(self, parameters: Sequence[float] | FloatArray) -> NDArray[np.float64]:
         """Execute the verified MLIR-runtime gradient kernel."""
         values = _as_phase_qnode_runtime_parameters(parameters, self.parameter_shape)
-        return cast(NDArray[np.float64], self.gradient_kernel(values).copy())
+        return _copy_float_array(self.gradient_kernel(values))
 
     def to_dict(self) -> dict[str, object]:
         """Return JSON-ready runtime metadata without raw callables."""
@@ -13905,7 +13912,7 @@ class EnzymeMLIRMaturityAuditResult:
 
 def run_enzyme_mlir_maturity_audit(
     circuit: Any | None = None,
-    parameters: Sequence[float] | np.ndarray | None = None,
+    parameters: Sequence[float] | FloatArray | None = None,
     *,
     toolchain_probe: Callable[[str], str | None] | None = None,
     version_probe: Callable[[str], str | None] | None = None,
@@ -14058,7 +14065,7 @@ def _default_enzyme_mlir_audit_circuit() -> Any:
 
 def lower_phase_qnode_circuit_to_mlir(
     circuit: Any,
-    parameters: Sequence[float] | np.ndarray,
+    parameters: Sequence[float] | FloatArray,
 ) -> MLIRModule:
     """Lower a registered local Phase-QNode circuit to textual MLIR metadata.
 
@@ -14148,7 +14155,7 @@ def lower_phase_qnode_circuit_to_mlir(
 
 def compile_phase_qnode_circuit_to_mlir_runtime(
     circuit: Any,
-    sample_parameters: Sequence[float] | np.ndarray,
+    sample_parameters: Sequence[float] | FloatArray,
     *,
     atol: float = 1.0e-10,
     rtol: float = 1.0e-10,
@@ -14173,10 +14180,7 @@ def compile_phase_qnode_circuit_to_mlir_runtime(
 
     def gradient_kernel(parameters: NDArray[np.float64]) -> NDArray[np.float64]:
         values = _as_phase_qnode_runtime_parameters(parameters, sample.shape)
-        return cast(
-            NDArray[np.float64],
-            parameter_shift_phase_qnode_gradient(circuit, values).gradient.copy(),
-        )
+        return _copy_float_array(parameter_shift_phase_qnode_gradient(circuit, values).gradient)
 
     reference_value = float(execute_phase_qnode_circuit(circuit, sample).value)
     reference_gradient = parameter_shift_phase_qnode_gradient(circuit, sample).gradient
@@ -14224,7 +14228,7 @@ def _as_phase_qnode_runtime_parameters(
         raise ValueError(f"runtime parameter shape must be {expected_shape}, got {values.shape}")
     if not np.all(np.isfinite(values)):
         raise ValueError("runtime parameters must contain finite real numeric values")
-    return cast(NDArray[np.float64], values.copy())
+    return _copy_float_array(values)
 
 
 def _as_mlir_runtime_tolerance(value: float, name: str) -> float:
