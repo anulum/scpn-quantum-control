@@ -566,19 +566,22 @@ def differentiable_dashboard_status(
             backing_api="compile_whole_program_frontend",
             evidence=(
                 "WholeProgramCompilerFrontendReport",
+                "WholeProgramBytecodeBasicBlock",
                 "WholeProgramBytecodeInstruction",
                 "WholeProgramSourceIRFeature",
+                "WholeProgramSourceRegion",
                 "WholeProgramSemanticsReport",
             ),
             blocked_reasons=(
-                "static preflight only; executable Rust, LLVM, JIT, provider, "
-                "hardware, and benchmark promotion remain open",
+                "static bytecode basic blocks and source regions only; executable "
+                "Rust, LLVM, JIT, provider, hardware, and benchmark promotion remain open",
             ),
             claim_boundary=(
                 "first-class static bytecode/source compiler frontend preflight "
-                "for supported Program AD Python semantics; no objective "
-                "execution, no executable compiler lowering, no Rust/LLVM/JIT, "
-                "provider, hardware, or performance claim"
+                "with bytecode basic blocks and source regions for supported "
+                "Program AD Python semantics; no objective execution, no "
+                "executable compiler lowering, no Rust/LLVM/JIT, provider, "
+                "hardware, or performance claim"
             ),
         ),
         DifferentiableDashboardCapabilityRow(

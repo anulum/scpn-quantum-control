@@ -76,11 +76,13 @@ from scpn_quantum_control.differentiable import (
     VJPResult,
     WeightedGradientResult,
     WholeProgramADResult,
+    WholeProgramBytecodeBasicBlock,
     WholeProgramBytecodeInstruction,
     WholeProgramCompilerFrontendReport,
     WholeProgramIRNode,
     WholeProgramSemanticsReport,
     WholeProgramSourceIRFeature,
+    WholeProgramSourceRegion,
     WholeProgramTraceEvent,
     allocate_parameter_shift_shots,
     analyze_program_ad_alias_effects,
@@ -10914,10 +10916,22 @@ def test_whole_program_compiler_frontend_report_is_static_and_complete() -> None
     assert report.source_sha256 is not None
     assert len(report.source_sha256) == 64
     assert len(report.bytecode_digest) == 64
+    assert len(report.frontend_digest) == 64
     assert report.bytecode_instruction_count > 0
+    assert report.bytecode_basic_block_count > 1
     assert report.source_feature_count > 0
+    assert report.source_region_count > 1
     assert report.ast_node_count > 0
     assert report.hard_gaps == ()
+    assert all(
+        isinstance(block, WholeProgramBytecodeBasicBlock) for block in report.bytecode_basic_blocks
+    )
+    assert all(isinstance(region, WholeProgramSourceRegion) for region in report.source_regions)
+    assert any(block.successor_offsets for block in report.bytecode_basic_blocks)
+    assert any(len(block.successor_offsets) == 2 for block in report.bytecode_basic_blocks)
+    assert {"entry", "function", "loop", "control_flow"}.issubset(
+        {region.kind for region in report.source_regions}
+    )
     assert report.semantics_report.bytecode_frontend is True
     assert report.semantics_report.source_frontend is True
     assert report.semantics_report.loop_observed is True
@@ -10929,6 +10943,11 @@ def test_whole_program_compiler_frontend_report_is_static_and_complete() -> None
     assert payload["frontend_ready"] is True
     assert payload["function_name"].endswith("objective")
     assert payload["bytecode_instruction_count"] == report.bytecode_instruction_count
+    assert payload["bytecode_basic_block_count"] == report.bytecode_basic_block_count
+    assert payload["source_region_count"] == report.source_region_count
+    assert payload["frontend_digest"] == report.frontend_digest
+    assert payload["bytecode_basic_blocks"][0]["label"] == report.bytecode_basic_blocks[0].label
+    assert payload["source_regions"][0]["kind"] == "entry"
     assert "does not execute objectives" in report.claim_boundary
 
 
@@ -10944,6 +10963,7 @@ def test_whole_program_compiler_frontend_reports_unsupported_semantics() -> None
     assert report.frontend_ready is False
     assert "filtered_comprehension" in report.semantics_report.unsupported_python_semantics
     assert "unsupported_python_semantics:filtered_comprehension" in report.hard_gaps
+    assert report.frontend_digest
     assert "unsupported_python_semantics:filtered_comprehension" in payload["hard_gaps"]
     assert any(
         feature.kind == "unsupported_python_semantics"
@@ -10968,6 +10988,31 @@ def test_whole_program_semantics_report_validates_all_semantics_tuples() -> None
             differentiation_semantics="bounded",
             accepted_python_semantics=("",),
             unsupported_python_semantics=(),
+        )
+
+
+def test_whole_program_frontend_block_and_region_validation() -> None:
+    """Compiler frontend block and source-region dataclasses should fail closed."""
+
+    with pytest.raises(ValueError, match="instruction_offsets must be sorted"):
+        WholeProgramBytecodeBasicBlock(
+            label="bb",
+            start_offset=1,
+            end_offset=2,
+            instruction_offsets=(2, 1),
+            successor_offsets=(),
+            terminating_opname="RETURN_VALUE",
+        )
+
+    with pytest.raises(ValueError, match="feature_kinds must be sorted and unique"):
+        WholeProgramSourceRegion(
+            region_id="region:bad",
+            kind="entry",
+            detail="module",
+            line_start=1,
+            line_end=1,
+            parent_region_id=None,
+            feature_kinds=("loop", "loop"),
         )
 
 
@@ -11040,10 +11085,12 @@ def test_whole_program_ad_is_exported_from_package_root() -> None:
     assert scpn.ProgramADPhiNode is ProgramADPhiNode
     assert scpn.ProgramADSSAValue is ProgramADSSAValue
     assert scpn.WholeProgramADResult is WholeProgramADResult
+    assert scpn.WholeProgramBytecodeBasicBlock is WholeProgramBytecodeBasicBlock
     assert scpn.WholeProgramBytecodeInstruction is WholeProgramBytecodeInstruction
     assert scpn.WholeProgramCompilerFrontendReport is WholeProgramCompilerFrontendReport
     assert scpn.WholeProgramTraceEvent is WholeProgramTraceEvent
     assert scpn.WholeProgramSourceIRFeature is WholeProgramSourceIRFeature
+    assert scpn.WholeProgramSourceRegion is WholeProgramSourceRegion
     assert scpn.WholeProgramSemanticsReport is WholeProgramSemanticsReport
     assert scpn.program_adjoint_grad is program_adjoint_grad
     assert scpn.program_adjoint_gradient is program_adjoint_gradient

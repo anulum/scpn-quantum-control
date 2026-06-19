@@ -710,6 +710,108 @@ class WholeProgramSourceIRFeature:
 
 
 @dataclass(frozen=True)
+class WholeProgramBytecodeBasicBlock:
+    """One static Python-bytecode basic block for frontend planning.
+
+    The block is derived from normalized ``dis`` instructions without executing
+    the objective. Successors are bytecode offsets only; they are a static
+    control-flow skeleton for audits and later lowerings, not executable
+    compiler evidence.
+    """
+
+    label: str
+    start_offset: int
+    end_offset: int
+    instruction_offsets: tuple[int, ...]
+    successor_offsets: tuple[int, ...]
+    terminating_opname: str
+
+    def __post_init__(self) -> None:
+        if not self.label:
+            raise ValueError("bytecode basic block label must be non-empty")
+        if self.start_offset < 0 or self.end_offset < 0:
+            raise ValueError("bytecode basic block offsets must be non-negative")
+        if self.end_offset < self.start_offset:
+            raise ValueError("bytecode basic block end_offset must be >= start_offset")
+        if not self.instruction_offsets:
+            raise ValueError("bytecode basic block instruction_offsets must be non-empty")
+        if tuple(sorted(self.instruction_offsets)) != self.instruction_offsets:
+            raise ValueError("bytecode basic block instruction_offsets must be sorted")
+        if self.instruction_offsets[0] != self.start_offset:
+            raise ValueError("bytecode basic block start_offset must match first instruction")
+        if self.instruction_offsets[-1] != self.end_offset:
+            raise ValueError("bytecode basic block end_offset must match last instruction")
+        if any(offset < 0 for offset in self.successor_offsets):
+            raise ValueError("bytecode basic block successor_offsets must be non-negative")
+        if tuple(sorted(set(self.successor_offsets))) != self.successor_offsets:
+            raise ValueError("bytecode basic block successor_offsets must be sorted and unique")
+        if not self.terminating_opname:
+            raise ValueError("bytecode basic block terminating_opname must be non-empty")
+
+    def to_dict(self) -> dict[str, object]:
+        """Return a JSON-ready bytecode block."""
+
+        return {
+            "label": self.label,
+            "start_offset": self.start_offset,
+            "end_offset": self.end_offset,
+            "instruction_offsets": list(self.instruction_offsets),
+            "successor_offsets": list(self.successor_offsets),
+            "terminating_opname": self.terminating_opname,
+        }
+
+
+@dataclass(frozen=True)
+class WholeProgramSourceRegion:
+    """One static source-region node for frontend planning.
+
+    Regions summarize bounded AST constructs such as function entry, control
+    flow, loops, alias bindings, and mutations. They are deterministic source
+    metadata for the bytecode/source frontend and do not imply non-executed
+    branch adjoints or executable compiler lowering.
+    """
+
+    region_id: str
+    kind: str
+    detail: str
+    line_start: int
+    line_end: int
+    parent_region_id: str | None
+    feature_kinds: tuple[str, ...]
+
+    def __post_init__(self) -> None:
+        if not self.region_id:
+            raise ValueError("source region region_id must be non-empty")
+        if not self.kind:
+            raise ValueError("source region kind must be non-empty")
+        if not self.detail:
+            raise ValueError("source region detail must be non-empty")
+        if self.line_start <= 0 or self.line_end <= 0:
+            raise ValueError("source region line numbers must be positive")
+        if self.line_end < self.line_start:
+            raise ValueError("source region line_end must be >= line_start")
+        if self.parent_region_id is not None and not self.parent_region_id:
+            raise ValueError("source region parent_region_id must be non-empty or None")
+        if any(not feature for feature in self.feature_kinds):
+            raise ValueError("source region feature_kinds entries must be non-empty")
+        if tuple(sorted(set(self.feature_kinds))) != self.feature_kinds:
+            raise ValueError("source region feature_kinds must be sorted and unique")
+
+    def to_dict(self) -> dict[str, object]:
+        """Return a JSON-ready source region."""
+
+        return {
+            "region_id": self.region_id,
+            "kind": self.kind,
+            "detail": self.detail,
+            "line_start": self.line_start,
+            "line_end": self.line_end,
+            "parent_region_id": self.parent_region_id,
+            "feature_kinds": list(self.feature_kinds),
+        }
+
+
+@dataclass(frozen=True)
 class WholeProgramSemanticsReport:
     """Static semantics summary for whole-program AD graph capture."""
 
@@ -763,8 +865,12 @@ class WholeProgramCompilerFrontendReport:
         Python callable name used for diagnostics.
     bytecode_instructions:
         Normalised Python bytecode instruction rows from ``dis``.
+    bytecode_basic_blocks:
+        Static control-flow block skeleton derived from the bytecode stream.
     source_ir_features:
         Source-level AST feature rows used by the Program AD frontend.
+    source_regions:
+        Static source-region graph derived from bounded AST constructs.
     semantics_report:
         Static semantics summary derived from bytecode and source features.
     source_available:
@@ -773,6 +879,9 @@ class WholeProgramCompilerFrontendReport:
         SHA-256 digest of the dedented source when available.
     bytecode_digest:
         SHA-256 digest over the normalised bytecode instruction stream.
+    frontend_digest:
+        SHA-256 digest over bytecode, source, source features, source regions,
+        and semantic support metadata.
     ast_node_count:
         Number of AST nodes in the parsed source tree when available.
     hard_gaps:
@@ -785,11 +894,14 @@ class WholeProgramCompilerFrontendReport:
 
     function_name: str
     bytecode_instructions: tuple[WholeProgramBytecodeInstruction, ...]
+    bytecode_basic_blocks: tuple[WholeProgramBytecodeBasicBlock, ...]
     source_ir_features: tuple[WholeProgramSourceIRFeature, ...]
+    source_regions: tuple[WholeProgramSourceRegion, ...]
     semantics_report: WholeProgramSemanticsReport
     source_available: bool
     source_sha256: str | None
     bytecode_digest: str
+    frontend_digest: str
     ast_node_count: int
     hard_gaps: tuple[str, ...]
     claim_boundary: str
@@ -806,6 +918,24 @@ class WholeProgramCompilerFrontendReport:
                 "WholeProgramBytecodeInstruction entries"
             )
         if any(
+            not isinstance(block, WholeProgramBytecodeBasicBlock)
+            for block in self.bytecode_basic_blocks
+        ):
+            raise ValueError(
+                "compiler frontend bytecode_basic_blocks must contain "
+                "WholeProgramBytecodeBasicBlock entries"
+            )
+        instruction_offsets = {instruction.offset for instruction in self.bytecode_instructions}
+        for block in self.bytecode_basic_blocks:
+            if any(offset not in instruction_offsets for offset in block.instruction_offsets):
+                raise ValueError(
+                    "compiler frontend bytecode_basic_blocks must reference known instructions"
+                )
+            if any(offset not in instruction_offsets for offset in block.successor_offsets):
+                raise ValueError(
+                    "compiler frontend bytecode_basic_blocks must reference known successors"
+                )
+        if any(
             not isinstance(feature, WholeProgramSourceIRFeature)
             for feature in self.source_ir_features
         ):
@@ -813,6 +943,14 @@ class WholeProgramCompilerFrontendReport:
                 "compiler frontend source_ir_features must contain "
                 "WholeProgramSourceIRFeature entries"
             )
+        if any(not isinstance(region, WholeProgramSourceRegion) for region in self.source_regions):
+            raise ValueError(
+                "compiler frontend source_regions must contain WholeProgramSourceRegion entries"
+            )
+        region_ids = {region.region_id for region in self.source_regions}
+        for region in self.source_regions:
+            if region.parent_region_id is not None and region.parent_region_id not in region_ids:
+                raise ValueError("compiler frontend source_regions must reference known parents")
         if not isinstance(self.semantics_report, WholeProgramSemanticsReport):
             raise ValueError(
                 "compiler frontend semantics_report must be WholeProgramSemanticsReport"
@@ -826,6 +964,8 @@ class WholeProgramCompilerFrontendReport:
             raise ValueError("unavailable compiler frontend source must not carry sha256")
         if len(self.bytecode_digest) != 64:
             raise ValueError("compiler frontend bytecode_digest must be a sha256 digest")
+        if len(self.frontend_digest) != 64:
+            raise ValueError("compiler frontend frontend_digest must be a sha256 digest")
         if self.ast_node_count < 0:
             raise ValueError("compiler frontend ast_node_count must be non-negative")
         if any(not isinstance(gap, str) or not gap for gap in self.hard_gaps):
@@ -858,10 +998,24 @@ class WholeProgramCompilerFrontendReport:
         return (
             self.source_available
             and self.bytecode_instruction_count > 0
+            and self.bytecode_basic_block_count > 0
+            and self.source_region_count > 0
             and self.semantics_report.bytecode_frontend
             and self.semantics_report.source_frontend
             and not self.hard_gaps
         )
+
+    @property
+    def bytecode_basic_block_count(self) -> int:
+        """Return the number of bytecode basic blocks in the frontend report."""
+
+        return len(self.bytecode_basic_blocks)
+
+    @property
+    def source_region_count(self) -> int:
+        """Return the number of source regions in the frontend report."""
+
+        return len(self.source_regions)
 
     def to_dict(self) -> dict[str, object]:
         """Return a JSON-ready compiler frontend report."""
@@ -872,8 +1026,11 @@ class WholeProgramCompilerFrontendReport:
             "source_available": self.source_available,
             "source_sha256": self.source_sha256,
             "bytecode_digest": self.bytecode_digest,
+            "frontend_digest": self.frontend_digest,
             "bytecode_instruction_count": self.bytecode_instruction_count,
+            "bytecode_basic_block_count": self.bytecode_basic_block_count,
             "source_feature_count": self.source_feature_count,
+            "source_region_count": self.source_region_count,
             "ast_node_count": self.ast_node_count,
             "bytecode_instructions": [
                 {
@@ -884,6 +1041,7 @@ class WholeProgramCompilerFrontendReport:
                 }
                 for instruction in self.bytecode_instructions
             ],
+            "bytecode_basic_blocks": [block.to_dict() for block in self.bytecode_basic_blocks],
             "source_ir_features": [
                 {
                     "kind": feature.kind,
@@ -892,6 +1050,7 @@ class WholeProgramCompilerFrontendReport:
                 }
                 for feature in self.source_ir_features
             ],
+            "source_regions": [region.to_dict() for region in self.source_regions],
             "semantics_report": {
                 "bytecode_frontend": self.semantics_report.bytecode_frontend,
                 "source_frontend": self.semantics_report.source_frontend,
@@ -8996,6 +9155,8 @@ def compile_whole_program_frontend(
         accepted_python_semantics=accepted_python_semantics,
         unsupported_python_semantics=unsupported_python_semantics,
     )
+    bytecode_basic_blocks = _bytecode_basic_blocks(bytecode_instructions)
+    source_regions = _source_regions(source, source_ir_features)
     source_parse_failed = _source_parse_failed(source)
     semantics_report = _whole_program_semantics_report(
         bytecode_instructions=bytecode_instructions,
@@ -9014,8 +9175,12 @@ def compile_whole_program_frontend(
     hard_gaps: list[str] = []
     if not bytecode_instructions:
         hard_gaps.append("bytecode_frontend_missing")
+    if not bytecode_basic_blocks:
+        hard_gaps.append("bytecode_basic_blocks_missing")
     if source is None:
         hard_gaps.append("source_frontend_missing")
+    elif not source_regions:
+        hard_gaps.append("source_regions_missing")
     if source_parse_failed:
         hard_gaps.append("source_ast_parse_failed")
     hard_gaps.extend(
@@ -9024,13 +9189,24 @@ def compile_whole_program_frontend(
     return WholeProgramCompilerFrontendReport(
         function_name=_objective_name(objective),
         bytecode_instructions=bytecode_instructions,
+        bytecode_basic_blocks=bytecode_basic_blocks,
         source_ir_features=source_ir_features,
+        source_regions=source_regions,
         semantics_report=semantics_report,
         source_available=source is not None,
         source_sha256=None
         if source is None
         else hashlib.sha256(source.encode("utf-8")).hexdigest(),
         bytecode_digest=_bytecode_instruction_digest(bytecode_instructions),
+        frontend_digest=_frontend_digest(
+            source=source,
+            bytecode_instructions=bytecode_instructions,
+            bytecode_basic_blocks=bytecode_basic_blocks,
+            source_ir_features=source_ir_features,
+            source_regions=source_regions,
+            semantics_report=semantics_report,
+            hard_gaps=tuple(hard_gaps),
+        ),
         ast_node_count=_source_ast_node_count(source),
         hard_gaps=tuple(hard_gaps),
         claim_boundary=(
@@ -9047,6 +9223,94 @@ def _objective_name(objective: Callable[..., object]) -> str:
     return str(name) if name else "<callable>"
 
 
+def _bytecode_basic_blocks(
+    instructions: Sequence[WholeProgramBytecodeInstruction],
+) -> tuple[WholeProgramBytecodeBasicBlock, ...]:
+    """Return a deterministic static basic-block skeleton for bytecode."""
+
+    if not instructions:
+        return ()
+    offsets = [instruction.offset for instruction in instructions]
+    offset_set = set(offsets)
+    offset_to_index = {offset: index for index, offset in enumerate(offsets)}
+    leaders: set[int] = {offsets[0]}
+    jump_targets: dict[int, int] = {}
+    terminators = {"RETURN_VALUE", "RAISE_VARARGS", "RERAISE"}
+
+    for index, instruction in enumerate(instructions):
+        jump_target = _bytecode_jump_target(instruction)
+        if jump_target is not None and jump_target in offset_set:
+            leaders.add(jump_target)
+            jump_targets[instruction.offset] = jump_target
+        if (
+            "JUMP" in instruction.opname
+            or instruction.opname == "FOR_ITER"
+            or instruction.opname in terminators
+        ) and index + 1 < len(instructions):
+            leaders.add(instructions[index + 1].offset)
+
+    sorted_leaders = sorted(leaders)
+    blocks: list[WholeProgramBytecodeBasicBlock] = []
+    for block_index, start_offset in enumerate(sorted_leaders):
+        start_index = offset_to_index[start_offset]
+        if block_index + 1 < len(sorted_leaders):
+            next_start_index = offset_to_index[sorted_leaders[block_index + 1]]
+            block_instructions = tuple(instructions[start_index:next_start_index])
+        else:
+            block_instructions = tuple(instructions[start_index:])
+        if not block_instructions:
+            continue
+        terminator = block_instructions[-1]
+        successors: set[int] = set()
+        jump_target = jump_targets.get(terminator.offset)
+        if jump_target is not None:
+            successors.add(jump_target)
+        next_block_offset = (
+            sorted_leaders[block_index + 1] if block_index + 1 < len(sorted_leaders) else None
+        )
+        if (
+            next_block_offset is not None
+            and terminator.opname not in terminators
+            and not _bytecode_is_unconditional_jump(terminator.opname)
+        ):
+            successors.add(next_block_offset)
+        blocks.append(
+            WholeProgramBytecodeBasicBlock(
+                label=f"bb{block_index}",
+                start_offset=block_instructions[0].offset,
+                end_offset=block_instructions[-1].offset,
+                instruction_offsets=tuple(
+                    instruction.offset for instruction in block_instructions
+                ),
+                successor_offsets=tuple(sorted(successors)),
+                terminating_opname=terminator.opname,
+            )
+        )
+    return tuple(blocks)
+
+
+def _bytecode_is_unconditional_jump(opname: str) -> bool:
+    """Return true when a bytecode operation jumps without a fallthrough path."""
+
+    return opname.startswith("JUMP") and "IF" not in opname and opname != "JUMP_IF_NOT_EXC_MATCH"
+
+
+def _bytecode_jump_target(instruction: WholeProgramBytecodeInstruction) -> int | None:
+    """Return a jump target offset encoded by CPython's ``dis`` argrepr."""
+
+    if "JUMP" not in instruction.opname and instruction.opname != "FOR_ITER":
+        return None
+    pieces = instruction.argrepr.replace("(", " ").replace(")", " ").split()
+    for index, piece in enumerate(pieces):
+        if piece == "to" and index + 1 < len(pieces):
+            try:
+                target = int(pieces[index + 1])
+            except ValueError:
+                return None
+            return target if target >= 0 else None
+    return None
+
+
 def _bytecode_instruction_digest(
     instructions: Sequence[WholeProgramBytecodeInstruction],
 ) -> str:
@@ -9059,6 +9323,162 @@ def _bytecode_instruction_digest(
         }
         for instruction in instructions
     ]
+    encoded = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
+
+
+def _source_regions(
+    source: str | None,
+    source_ir_features: Sequence[WholeProgramSourceIRFeature],
+) -> tuple[WholeProgramSourceRegion, ...]:
+    """Return deterministic bounded source-region metadata for frontend planning."""
+
+    if source is None:
+        return ()
+    try:
+        tree = ast.parse(source)
+    except SyntaxError:
+        return ()
+
+    features_by_line: dict[int, set[str]] = {}
+    for feature in source_ir_features:
+        features_by_line.setdefault(feature.line_number, set()).add(feature.kind)
+
+    source_line_count = max(1, len(source.splitlines()))
+    regions: list[WholeProgramSourceRegion] = [
+        WholeProgramSourceRegion(
+            region_id="region:entry",
+            kind="entry",
+            detail="module",
+            line_start=1,
+            line_end=source_line_count,
+            parent_region_id=None,
+            feature_kinds=tuple(sorted({feature.kind for feature in source_ir_features})),
+        )
+    ]
+    stack: list[str] = ["region:entry"]
+    counter = 0
+
+    def region_descriptor(node: ast.AST) -> tuple[str, str] | None:
+        if isinstance(node, ast.FunctionDef):
+            return ("function", node.name)
+        if isinstance(node, ast.AsyncFunctionDef):
+            return ("function", node.name)
+        if isinstance(node, ast.If):
+            return ("control_flow", "if")
+        if isinstance(node, ast.IfExp):
+            return ("control_flow", "if_expression")
+        if isinstance(node, ast.For):
+            return ("loop", "for")
+        if isinstance(node, ast.While):
+            return ("loop", "while")
+        if isinstance(node, ast.Assign):
+            return ("effect", "assignment")
+        if isinstance(node, ast.AnnAssign):
+            return ("effect", "annotated_assignment")
+        if isinstance(node, ast.AugAssign):
+            return ("effect", "augmented_assignment")
+        if isinstance(node, ast.Delete):
+            return ("effect", "delete")
+        if isinstance(node, ast.Call):
+            name = _ast_call_name(node.func)
+            if name.startswith(("np.", "numpy.")):
+                return ("numpy_call", name)
+            if name.rsplit(".", 1)[-1] in {
+                "append",
+                "extend",
+                "insert",
+                "pop",
+                "remove",
+                "clear",
+                "sort",
+                "update",
+                "add",
+            }:
+                return ("effect", name)
+        return None
+
+    def line_features(line_start: int, line_end: int) -> tuple[str, ...]:
+        kinds: set[str] = set()
+        for line_number in range(line_start, line_end + 1):
+            kinds.update(features_by_line.get(line_number, set()))
+        return tuple(sorted(kinds))
+
+    def visit(node: ast.AST) -> None:
+        nonlocal counter
+        descriptor = region_descriptor(node)
+        pushed = False
+        if descriptor is not None:
+            kind, detail = descriptor
+            counter += 1
+            line_start = int(getattr(node, "lineno", 1) or 1)
+            line_end = int(getattr(node, "end_lineno", line_start) or line_start)
+            region_id = f"region:{counter}:{kind}:{line_start}"
+            regions.append(
+                WholeProgramSourceRegion(
+                    region_id=region_id,
+                    kind=kind,
+                    detail=detail,
+                    line_start=line_start,
+                    line_end=line_end,
+                    parent_region_id=stack[-1],
+                    feature_kinds=line_features(line_start, line_end),
+                )
+            )
+            stack.append(region_id)
+            pushed = True
+        for child in ast.iter_child_nodes(node):
+            visit(child)
+        if pushed:
+            stack.pop()
+
+    visit(tree)
+    return tuple(regions)
+
+
+def _frontend_digest(
+    *,
+    source: str | None,
+    bytecode_instructions: Sequence[WholeProgramBytecodeInstruction],
+    bytecode_basic_blocks: Sequence[WholeProgramBytecodeBasicBlock],
+    source_ir_features: Sequence[WholeProgramSourceIRFeature],
+    source_regions: Sequence[WholeProgramSourceRegion],
+    semantics_report: WholeProgramSemanticsReport,
+    hard_gaps: tuple[str, ...],
+) -> str:
+    """Return a stable digest for the complete static frontend payload."""
+
+    payload = {
+        "source_sha256": None
+        if source is None
+        else hashlib.sha256(source.encode("utf-8")).hexdigest(),
+        "bytecode_instructions": [
+            {
+                "offset": instruction.offset,
+                "opname": instruction.opname,
+                "argrepr": instruction.argrepr,
+                "line_number": instruction.line_number,
+            }
+            for instruction in bytecode_instructions
+        ],
+        "bytecode_basic_blocks": [block.to_dict() for block in bytecode_basic_blocks],
+        "source_ir_features": [
+            {
+                "kind": feature.kind,
+                "detail": feature.detail,
+                "line_number": feature.line_number,
+            }
+            for feature in source_ir_features
+        ],
+        "source_regions": [region.to_dict() for region in source_regions],
+        "semantics": {
+            "accepted": list(semantics_report.accepted_python_semantics),
+            "unsupported": list(semantics_report.unsupported_python_semantics),
+            "bytecode_frontend": semantics_report.bytecode_frontend,
+            "source_frontend": semantics_report.source_frontend,
+        },
+        "hard_gaps": list(hard_gaps),
+    }
     encoded = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
     return hashlib.sha256(encoded).hexdigest()
 
@@ -30245,11 +30665,13 @@ __all__ = [
     "TraceADArray",
     "TraceADScalar",
     "WholeProgramADResult",
+    "WholeProgramBytecodeBasicBlock",
     "WholeProgramBytecodeInstruction",
     "WholeProgramCompilerFrontendReport",
     "WholeProgramIRNode",
     "WholeProgramSemanticsReport",
     "WholeProgramSourceIRFeature",
+    "WholeProgramSourceRegion",
     "WholeProgramTraceEvent",
     "compile_whole_program_frontend",
     "vmap",

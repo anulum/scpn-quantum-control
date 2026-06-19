@@ -183,9 +183,14 @@ def test_differentiable_dashboard_status_is_claim_bounded_for_gui_consumers() ->
         in rows["program_ad_bytecode_source_frontend"]["evidence"]
     )
     assert (
+        "WholeProgramBytecodeBasicBlock" in rows["program_ad_bytecode_source_frontend"]["evidence"]
+    )
+    assert "WholeProgramSourceRegion" in rows["program_ad_bytecode_source_frontend"]["evidence"]
+    assert (
         "static bytecode/source compiler frontend preflight"
         in rows["program_ad_bytecode_source_frontend"]["claim_boundary"]
     )
+    assert "bytecode basic blocks" in rows["program_ad_bytecode_source_frontend"]["claim_boundary"]
     assert rows["program_ad_ir_roundtrip"]["state"] == "metadata_only"
     assert rows["program_ad_ir_roundtrip"]["backing_api"] == "parse_program_ad_effect_ir"
     assert rows["program_ad_ir_roundtrip"]["fail_closed"] is True
@@ -514,6 +519,9 @@ def test_unified_differentiable_dispatcher_and_root_exports() -> None:
     assert frontend_direct.operation == "frontend_report"
     assert frontend_direct.supported is True
     assert frontend_direct.payload["frontend_ready"] is True
+    assert frontend_direct.payload["bytecode_basic_block_count"] > 0
+    assert frontend_direct.payload["source_region_count"] > 0
+    assert len(str(frontend_direct.payload["frontend_digest"])) == 64
     assert frontend_dispatched.supported is True
     assert frontend_dispatched.payload["bytecode_instruction_count"] > 0
     assert scpn.DifferentiableDashboardStatus is DifferentiableDashboardStatus

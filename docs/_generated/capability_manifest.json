@@ -8,9 +8,9 @@
     "notebook_files": 98,
     "optional_extras": 42,
     "paper0_validation_modules": 466,
-    "public_api_exports": 675,
+    "public_api_exports": 677,
     "public_documentation_pages": 254,
-    "python_model_classes": 1818,
+    "python_model_classes": 1820,
     "python_model_source_modules": 835,
     "rust_pyo3_model_wrappers": 135,
     "rust_source_modules": 38,
@@ -8254,6 +8254,10 @@
         "path": "src/scpn_quantum_control/differentiable.py"
       },
       {
+        "name": "WholeProgramBytecodeBasicBlock",
+        "path": "src/scpn_quantum_control/differentiable.py"
+      },
+      {
         "name": "WholeProgramBytecodeInstruction",
         "path": "src/scpn_quantum_control/differentiable.py"
       },
@@ -8271,6 +8275,10 @@
       },
       {
         "name": "WholeProgramSourceIRFeature",
+        "path": "src/scpn_quantum_control/differentiable.py"
+      },
+      {
+        "name": "WholeProgramSourceRegion",
         "path": "src/scpn_quantum_control/differentiable.py"
       },
       {
@@ -9584,11 +9592,13 @@
     "WeightedGradientResult",
     "WholeProgramADNativeLoweringReport",
     "WholeProgramADResult",
+    "WholeProgramBytecodeBasicBlock",
     "WholeProgramBytecodeInstruction",
     "WholeProgramCompilerFrontendReport",
     "WholeProgramIRNode",
     "WholeProgramSemanticsReport",
     "WholeProgramSourceIRFeature",
+    "WholeProgramSourceRegion",
     "WholeProgramTraceEvent",
     "WirtingerDerivative",
     "WirtingerOptimisationResult",
