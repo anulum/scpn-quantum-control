@@ -79,3 +79,14 @@ def test_ci_gates_differentiable_docstring_ratchet() -> None:
     assert "tests/test_differentiable_external_validation.py" in workflow
     assert "tests/test_differentiable_module_hardening_audit.py" in workflow
     assert "tests/test_differentiable_hardening_gate.py" in workflow
+
+
+def test_rust_audit_installer_retries_transient_crates_io_transport_errors() -> None:
+    """The Rust advisory gate must tolerate transient crates.io transport errors."""
+    workflow = Path(".github/workflows/ci.yml").read_text(encoding="utf-8")
+
+    assert "Install cargo-audit" in workflow
+    assert 'CARGO_HTTP_MULTIPLEXING: "false"' in workflow
+    assert "for attempt in 1 2 3" in workflow
+    assert "cargo install cargo-audit --locked --version 0.22.1" in workflow
+    assert "cargo audit --deny warnings" in workflow

@@ -15,18 +15,20 @@ from pathlib import Path
 def test_pre_push_hook_gates_documentation_surface() -> None:
     """The local pre-push hook must mirror the CI documentation-surface gate."""
     config = Path(".pre-commit-config.yaml").read_text(encoding="utf-8")
+    preflight = Path("tools/preflight.py").read_text(encoding="utf-8")
 
     assert "preflight (lint + docs + type-check)" in config
-    assert "python tools/audit_documentation_surface.py" in config
-    assert "--allowlist tools/documentation_surface_allowlist.json" in config
-    assert "--fail-on-findings" in config
+    assert "tools/preflight.py --no-tests" in config
+    assert "tools/audit_documentation_surface.py" in preflight
+    assert "tools/documentation_surface_allowlist.json" in preflight
+    assert "--fail-on-findings" in preflight
 
 
 def test_pre_push_hook_gates_differentiable_strict_mypy_ratchet() -> None:
     """The local pre-push hook must enforce strict mypy on promoted modules."""
-    config = Path(".pre-commit-config.yaml").read_text(encoding="utf-8")
+    config = Path("tools/preflight.py").read_text(encoding="utf-8")
 
-    assert "mypy --strict" in config
+    assert '"--strict"' in config
     assert "src/scpn_quantum_control/differentiable.py" in config
     assert "src/scpn_quantum_control/differentiable_claim_ledger.py" in config
     assert "src/scpn_quantum_control/differentiable_api.py" in config
@@ -69,9 +71,11 @@ def test_pre_push_hook_gates_differentiable_strict_mypy_ratchet() -> None:
 
 def test_pre_push_hook_gates_differentiable_docstring_ratchet() -> None:
     """The pre-push hook must enforce Ruff D on clean differentiable modules."""
-    config = Path(".pre-commit-config.yaml").read_text(encoding="utf-8")
+    config = Path("tools/preflight.py").read_text(encoding="utf-8")
 
-    assert "ruff check --select D" in config
+    assert '"ruff"' in config
+    assert '"--select"' in config
+    assert '"D"' in config
     assert "src/scpn_quantum_control/differentiable_external_validation.py" in config
     assert "src/scpn_quantum_control/differentiable_module_hardening_audit.py" in config
     assert "src/scpn_quantum_control/benchmarks/differentiable_hardening_gate.py" in config
