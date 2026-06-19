@@ -22,12 +22,14 @@ Inspired by MISTIQS domain-specific TFIM compiler (USCCACS).
 
 from __future__ import annotations
 
+from typing import TypeAlias
+
 import numpy as np
 from numpy.typing import NDArray
 from qiskit import QuantumCircuit
 
-FloatArray = NDArray[np.float64]
-DepthComparison = dict[str, int | float]
+FloatArray: TypeAlias = NDArray[np.float64]
+DepthComparison: TypeAlias = dict[str, int | float]
 
 
 def xy_gate(qc: QuantumCircuit, i: int, j: int, angle: float) -> None:

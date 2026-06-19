@@ -19,7 +19,7 @@ Inspired by Maestro (Qoro, arXiv:2512.04216).
 
 from __future__ import annotations
 
-from typing import Any, TypedDict
+from typing import Any, TypeAlias, TypedDict
 
 import numpy as np
 from numpy.typing import NDArray
@@ -27,8 +27,8 @@ from numpy.typing import NDArray
 from ..bridge.knm_hamiltonian import knm_to_dense_matrix
 from ..dense_budget import require_dense_allocation
 
-FloatArray = NDArray[np.float64]
-ComplexArray = NDArray[np.complex128]
+FloatArray: TypeAlias = NDArray[np.float64]
+ComplexArray: TypeAlias = NDArray[np.complex128]
 
 
 class BackendRecommendation(TypedDict, total=False):
