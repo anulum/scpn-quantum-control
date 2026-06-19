@@ -29,12 +29,38 @@ Prior art:
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Protocol, TypeAlias, TypedDict
 
 import numpy as np
+from numpy.typing import NDArray
 from qiskit.quantum_info import SparsePauliOp, Statevector
 from scipy.optimize import minimize
 
 from ..bridge.knm_hamiltonian import knm_to_ansatz, knm_to_hamiltonian
+
+FloatArray: TypeAlias = NDArray[np.float64]
+
+
+class _ParametricCircuitLike(Protocol):
+    """Subset of the Qiskit circuit API required by the VQE optimiser."""
+
+    @property
+    def num_parameters(self) -> int:
+        """Return the number of trainable circuit parameters."""
+
+    def assign_parameters(self, parameters: FloatArray) -> object:
+        """Bind trainable parameters and return an instruction-like circuit."""
+
+
+class TransferSummary(TypedDict):
+    """JSON-ready aggregate summary for cross-domain VQE transfer results."""
+
+    n_pairs: int
+    n_positive_transfer: int
+    n_negative_transfer: int
+    best_transfer: str | None
+    best_speedup: float
+    mean_speedup: float
 
 
 @dataclass
@@ -57,8 +83,8 @@ class PhysicalSystem:
     """A physical system defined by its coupling matrix and frequencies."""
 
     name: str
-    K: np.ndarray
-    omega: np.ndarray
+    K: FloatArray
+    omega: FloatArray
 
 
 def build_systems(n_qubits: int = 4) -> list[PhysicalSystem]:
@@ -69,54 +95,54 @@ def build_systems(n_qubits: int = 4) -> list[PhysicalSystem]:
     """
     from ..bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
 
-    systems = []
+    systems: list[PhysicalSystem] = []
 
     # System 1: SCPN K_nm (neural oscillators)
-    K_scpn = build_knm_paper27(L=n_qubits)
-    omega_scpn = OMEGA_N_16[:n_qubits]
+    K_scpn = np.asarray(build_knm_paper27(L=n_qubits), dtype=np.float64)
+    omega_scpn = np.asarray(OMEGA_N_16[:n_qubits], dtype=np.float64)
     systems.append(PhysicalSystem("scpn_neural", K_scpn, omega_scpn))
 
     # System 2: Nearest-neighbor chain (condensed matter)
-    K_nn = np.zeros((n_qubits, n_qubits))
+    K_nn = np.zeros((n_qubits, n_qubits), dtype=np.float64)
     for i in range(n_qubits - 1):
         K_nn[i, i + 1] = K_nn[i + 1, i] = 0.5
-    omega_nn = np.linspace(0.5, 2.0, n_qubits)
+    omega_nn = np.asarray(np.linspace(0.5, 2.0, n_qubits), dtype=np.float64)
     systems.append(PhysicalSystem("nearest_neighbor", K_nn, omega_nn))
 
     # System 3: All-to-all uniform (mean-field)
-    K_all = np.ones((n_qubits, n_qubits)) * 0.3
+    K_all = np.ones((n_qubits, n_qubits), dtype=np.float64) * 0.3
     np.fill_diagonal(K_all, 0.0)
-    omega_all = np.ones(n_qubits) * 1.5
+    omega_all = np.ones(n_qubits, dtype=np.float64) * 1.5
     systems.append(PhysicalSystem("mean_field", K_all, omega_all))
 
     # System 4: Power-law decay (gravitational/Coulomb analogy)
-    K_pl = np.zeros((n_qubits, n_qubits))
+    K_pl = np.zeros((n_qubits, n_qubits), dtype=np.float64)
     for i in range(n_qubits):
         for j in range(i + 1, n_qubits):
             K_pl[i, j] = K_pl[j, i] = 1.0 / (abs(i - j) ** 1.5)
-    omega_pl = np.array([0.8 + 0.3 * i for i in range(n_qubits)])
+    omega_pl = np.array([0.8 + 0.3 * i for i in range(n_qubits)], dtype=np.float64)
     systems.append(PhysicalSystem("power_law", K_pl, omega_pl))
 
     return systems
 
 
 def _vqe_optimize(
-    ansatz,
+    ansatz: _ParametricCircuitLike,
     hamiltonian: SparsePauliOp,
-    init_params: np.ndarray,
+    init_params: FloatArray,
     maxiter: int = 200,
-) -> tuple[float, int, np.ndarray]:
+) -> tuple[float, int, FloatArray]:
     """COBYLA VQE optimization. Returns (energy, n_evals, optimal_params)."""
     history: list[float] = []
 
-    def cost(params):
+    def cost(params: FloatArray) -> float:
         sv = Statevector.from_instruction(ansatz.assign_parameters(params))
         e = float(sv.expectation_value(hamiltonian).real)
         history.append(e)
         return e
 
     res = minimize(cost, init_params, method="COBYLA", options={"maxiter": maxiter})
-    return float(res.fun), res.nfev, res.x
+    return float(res.fun), int(res.nfev), np.asarray(res.x, dtype=np.float64)
 
 
 def transfer_experiment(
@@ -151,10 +177,10 @@ def transfer_experiment(
     from ..hardware.classical import classical_exact_diag
 
     exact = classical_exact_diag(target.K.shape[0], K=target.K, omega=target.omega)
-    exact_energy = exact["ground_energy"]
+    exact_energy = float(exact["ground_energy"])
 
     # Transfer: map source params to target (truncate/pad if sizes differ)
-    transfer_params = np.zeros(n_target_params)
+    transfer_params = np.zeros(n_target_params, dtype=np.float64)
     n_copy = min(len(source_params), n_target_params)
     transfer_params[:n_copy] = source_params[:n_copy]
 
@@ -195,7 +221,7 @@ def run_transfer_matrix(
     where source != target.
     """
     systems = build_systems(n_qubits)
-    results = []
+    results: list[TransferResult] = []
     for source in systems:
         for target in systems:
             if source.name == target.name:
@@ -205,20 +231,17 @@ def run_transfer_matrix(
     return results
 
 
-def summarize_transfer(results: list[TransferResult]) -> dict:
+def summarize_transfer(results: list[TransferResult]) -> TransferSummary:
     """Summarize transfer matrix: which pairs show positive transfer?"""
     positive = [r for r in results if r.energy_improvement > 0]
     negative = [r for r in results if r.energy_improvement <= 0]
+    best = max(results, key=lambda r: r.speedup) if results else None
 
     return {
         "n_pairs": len(results),
         "n_positive_transfer": len(positive),
         "n_negative_transfer": len(negative),
-        "best_transfer": max(results, key=lambda r: r.speedup).source_system
-        + " → "
-        + max(results, key=lambda r: r.speedup).target_system
-        if results
-        else None,
+        "best_transfer": f"{best.source_system} -> {best.target_system}" if best else None,
         "best_speedup": max(r.speedup for r in results) if results else 0.0,
         "mean_speedup": float(np.mean([r.speedup for r in results])) if results else 0.0,
     }

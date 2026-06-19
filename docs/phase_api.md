@@ -277,11 +277,14 @@ random initialisation on the target. `TransferResult` fields: `source_system`,
 
 **`build_systems(n_qubits=4) → list[PhysicalSystem]`**
 
-Default set of physical systems for benchmarking: ring, chain, star, complete graph.
+Default set of physical systems for local transfer experiments:
+`scpn_neural`, `nearest_neighbor`, `mean_field`, and `power_law`. Each system
+uses explicit `float64` coupling and frequency arrays.
 
-**`run_transfer_matrix(systems, ...) → list[TransferResult]`**
+**`run_transfer_matrix(n_qubits=4, reps=2, maxiter=100, seed=42) → list[TransferResult]`**
 
-All-pairs transfer experiments.
+All-pairs transfer experiments over the default system set, excluding
+self-transfer pairs.
 
 The mechanism behind cross-domain transfer: systems with the same coupling graph have
 the same DLA (Gem 11). The variational landscape is determined by the DLA, so optimal

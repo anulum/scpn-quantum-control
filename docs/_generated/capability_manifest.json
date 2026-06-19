@@ -10,7 +10,7 @@
     "paper0_validation_modules": 466,
     "public_api_exports": 664,
     "public_documentation_pages": 254,
-    "python_model_classes": 1798,
+    "python_model_classes": 1799,
     "python_model_source_modules": 835,
     "rust_pyo3_model_wrappers": 135,
     "rust_source_modules": 38,
@@ -7951,6 +7951,10 @@
       },
       {
         "name": "TransferResult",
+        "path": "src/scpn_quantum_control/phase/cross_domain_transfer.py"
+      },
+      {
+        "name": "TransferSummary",
         "path": "src/scpn_quantum_control/phase/cross_domain_transfer.py"
       },
       {
