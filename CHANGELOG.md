@@ -5,6 +5,11 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-06-19 — Hardened the legacy PennyLane runner physics-input boundary by
+  rejecting non-square Kuramoto coupling matrices before device dispatch,
+  preserving existing finite `K`/`omega` and shot validation, and bringing
+  `tests/test_pennylane_adapter_contracts.py` plus vendor-backend tests under
+  standalone strict mypy.
 - 2026-06-19 — Hardened the PennyLane tape-import boundary by rejecting
   non-finite imported gate parameters and invalid import round-trip tolerances,
   preserving bounded local import claims, and bringing the dedicated PennyLane

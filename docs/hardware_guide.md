@@ -252,9 +252,10 @@ statevector value, or unmeasured placeholder.
 Provider and plugin routing is intentionally delegated to PennyLane: unknown
 device strings are forwarded to `qml.device(...)` so installed plugins can own
 their validation. The adapter still fails closed before plugin dispatch for
-empty device names, control-character payloads, and invalid finite-shot counts;
-`shots=None` remains the analytic/simulator route and finite-shot runs require
-a positive integer.
+empty device names, control-character payloads, invalid finite-shot counts,
+non-finite physics inputs, non-square Kuramoto coupling matrices, and `omega`
+vectors whose width does not match `K`; `shots=None` remains the
+analytic/simulator route and finite-shot runs require a positive integer.
 
 ---
 

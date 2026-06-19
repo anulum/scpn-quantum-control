@@ -158,6 +158,8 @@ class PennyLaneRunner:
             raise ImportError("PennyLane not installed: pip install pennylane")
 
         self.K = _as_finite_matrix("K", K)
+        if self.K.shape[0] != self.K.shape[1]:
+            raise ValueError("K must be a square coupling matrix")
         self.omega = _as_finite_vector("omega", omega, width=self.K.shape[0])
         self.n = self.K.shape[0]
         self.H = _xy_hamiltonian_pl(self.K, self.omega)

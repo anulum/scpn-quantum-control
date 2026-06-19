@@ -1587,9 +1587,11 @@ grad_result.method          # "pennylane_autodiff"
 ```
 
 The adapter trims padded device strings, rejects empty or control-character
-device payloads, and requires finite-shot counts to be positive integers.
-Unknown device strings still reach `qml.device(...)` so installed PennyLane
-plugins remain the source of truth for provider-specific routing.
+device payloads, requires finite-shot counts to be positive integers, and
+validates finite physics inputs before device dispatch: `K` must be a square
+Kuramoto coupling matrix and `omega` must have matching width. Unknown device
+strings still reach `qml.device(...)` so installed PennyLane plugins remain the
+source of truth for provider-specific routing.
 
 Claim boundary: this is a native differentiable-programming foundation for
 scalar SCPN quantum objectives and QSNN training. It is not yet a full
