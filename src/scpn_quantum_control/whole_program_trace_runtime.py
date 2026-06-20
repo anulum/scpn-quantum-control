@@ -10,8 +10,11 @@
 from __future__ import annotations
 
 import json
+import linecache
+import sys
 from collections.abc import Callable, Sequence
-from typing import TYPE_CHECKING
+from types import FrameType
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 from numpy.typing import NDArray
@@ -24,7 +27,7 @@ from .program_ad_effect_ir import (
     ProgramADPhiNode,
     ProgramADSSAValue,
 )
-from .whole_program_ad_result import WholeProgramIRNode
+from .whole_program_ad_result import WholeProgramIRNode, WholeProgramTraceEvent
 from .whole_program_frontend import (
     WholeProgramBytecodeInstruction,
     WholeProgramSourceIRFeature,
@@ -36,6 +39,7 @@ if TYPE_CHECKING:
 _TraceScalarFactory = Callable[
     [float, NDArray[np.float64], "_WholeProgramTraceContext", str], "TraceADScalar"
 ]
+_ScalarObjective = Callable[[NDArray[np.float64]], object]
 
 
 class _WholeProgramTraceContext:
@@ -345,3 +349,55 @@ class _WholeProgramTraceContext:
         }:
             return "primitive"
         return "pure"
+
+
+def _trace_whole_program_objective(
+    objective: _ScalarObjective, values: NDArray[np.float64]
+) -> tuple[WholeProgramTraceEvent, ...]:
+    """Execute ``objective`` once and capture source-line trace events."""
+
+    code = getattr(objective, "__code__", None)
+    if code is None:
+        return ()
+    target_filename = code.co_filename
+    events: list[WholeProgramTraceEvent] = []
+    seen: set[tuple[str, int, str]] = set()
+    previous_trace = sys.gettrace()
+
+    def tracer(frame: FrameType, event: str, arg: object) -> Any:
+        del arg
+        if event == "line" and frame.f_code.co_filename == target_filename:
+            key = (frame.f_code.co_filename, frame.f_lineno, frame.f_code.co_name)
+            if key not in seen:
+                seen.add(key)
+                events.append(
+                    WholeProgramTraceEvent(
+                        filename=frame.f_code.co_filename,
+                        function_name=frame.f_code.co_name,
+                        line_number=frame.f_lineno,
+                        source=linecache.getline(frame.f_code.co_filename, frame.f_lineno),
+                    )
+                )
+        return tracer
+
+    sys.settrace(tracer)
+    try:
+        raw = objective(np.array(values, dtype=np.float64, copy=True))
+    finally:
+        sys.settrace(previous_trace)
+    _as_trace_real_scalar("whole-program traced objective", raw)
+    return tuple(events)
+
+
+def _as_trace_real_scalar(name: str, value: object) -> float:
+    """Return an explicit finite real scalar for traced objective validation."""
+
+    if isinstance(value, bool):
+        raise ValueError(f"{name} must be a real numeric scalar")
+    raw = np.asarray(value)
+    if raw.shape != () or raw.dtype.kind in {"b", "O", "S", "U", "c"}:
+        raise ValueError(f"{name} must be a real numeric scalar")
+    scalar = float(raw)
+    if not np.isfinite(scalar):
+        raise ValueError(f"{name} must be finite")
+    return scalar

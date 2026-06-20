@@ -14,9 +14,7 @@ runtime dependency of the core package.
 
 from __future__ import annotations
 
-import linecache
 import math
-import sys
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from typing import Any, Literal, NoReturn, cast
@@ -135,7 +133,10 @@ from .whole_program_frontend import (
     _whole_program_semantics_report,
     compile_whole_program_frontend,
 )
-from .whole_program_trace_runtime import _WholeProgramTraceContext
+from .whole_program_trace_runtime import (
+    _trace_whole_program_objective,
+    _WholeProgramTraceContext,
+)
 
 ScalarObjective = Callable[[NDArray[np.float64]], float | int | np.floating[Any]]
 VectorObjective = Callable[[NDArray[np.float64]], ArrayLike]
@@ -7572,44 +7573,6 @@ def _program_adjoint_input_value(
 
 def _program_adjoint_is_ir_value(name: str) -> bool:
     return isinstance(name, str) and name.startswith("%") and name[1:].isdigit()
-
-
-def _trace_whole_program_objective(
-    objective: ScalarObjective, values: NDArray[np.float64]
-) -> tuple[WholeProgramTraceEvent, ...]:
-    """Execute ``objective`` once and capture source-line trace events."""
-
-    code = getattr(objective, "__code__", None)
-    if code is None:
-        return ()
-    target_filename = code.co_filename
-    events: list[WholeProgramTraceEvent] = []
-    seen: set[tuple[str, int, str]] = set()
-    previous_trace = sys.gettrace()
-
-    def tracer(frame: Any, event: str, arg: object) -> Any:
-        del arg
-        if event == "line" and frame.f_code.co_filename == target_filename:
-            key = (frame.f_code.co_filename, frame.f_lineno, frame.f_code.co_name)
-            if key not in seen:
-                seen.add(key)
-                events.append(
-                    WholeProgramTraceEvent(
-                        filename=frame.f_code.co_filename,
-                        function_name=frame.f_code.co_name,
-                        line_number=frame.f_lineno,
-                        source=linecache.getline(frame.f_code.co_filename, frame.f_lineno),
-                    )
-                )
-        return tracer
-
-    sys.settrace(tracer)
-    try:
-        raw = objective(np.array(values, dtype=np.float64, copy=True))
-    finally:
-        sys.settrace(previous_trace)
-    _as_real_scalar("whole-program traced objective", raw)
-    return tuple(events)
 
 
 def vmap(

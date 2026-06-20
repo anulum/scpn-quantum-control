@@ -10,15 +10,20 @@
 from __future__ import annotations
 
 import json
+import sys
 
 import numpy as np
 import pytest
+from numpy.typing import NDArray
 
 import scpn_quantum_control.differentiable as differentiable
 from scpn_quantum_control.differentiable import TraceADScalar
 from scpn_quantum_control.whole_program_frontend import (
     WholeProgramBytecodeInstruction,
     WholeProgramSourceIRFeature,
+)
+from scpn_quantum_control.whole_program_trace_runtime import (
+    _trace_whole_program_objective,
 )
 from scpn_quantum_control.whole_program_trace_runtime import (
     _WholeProgramTraceContext as ExtractedWholeProgramTraceContext,
@@ -152,3 +157,82 @@ def test_trace_context_rejects_malformed_explicit_alias_feature() -> None:
             ),
             bytecode_instructions=(),
         )
+
+
+def test_trace_whole_program_objective_captures_source_lines_and_restores_tracer() -> None:
+    """The source-line tracer should capture objective lines and restore the previous hook."""
+
+    values = np.array([2.0, 3.0], dtype=np.float64)
+
+    def objective(parameters: NDArray[np.float64]) -> float:
+        parameters[0] = 99.0
+        total = parameters[0] + parameters[1]
+        return float(total)
+
+    previous_trace = sys.gettrace()
+    events = _trace_whole_program_objective(objective, values)
+
+    assert sys.gettrace() is previous_trace
+    assert values.tolist() == [2.0, 3.0]
+    assert {event.function_name for event in events} == {"objective"}
+    assert any("total = parameters[0] + parameters[1]" in event.source for event in events)
+    assert all(event.line_number > 0 for event in events)
+
+
+def test_trace_whole_program_objective_deduplicates_manual_tracer_events(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """The installed trace callback should record each source line only once."""
+
+    captured: dict[str, object] = {}
+
+    def fake_settrace(tracer: object) -> None:
+        captured["tracer"] = tracer
+
+    monkeypatch.setattr(sys, "settrace", fake_settrace)
+
+    def objective(values: NDArray[np.float64]) -> float:
+        tracer = captured["tracer"]
+        assert callable(tracer)
+        frame = sys._getframe()
+        tracer(frame, "call", None)
+        for _ in range(2):
+            tracer(frame, "line", None)
+        return float(values[0] + values[1])
+
+    events = _trace_whole_program_objective(objective, np.array([1.0, 2.0]))
+
+    assert len(events) == 1
+    assert events[0].function_name == "objective"
+    assert events[0].source.strip() == 'tracer(frame, "line", None)'
+
+
+def test_trace_whole_program_objective_handles_code_less_callable() -> None:
+    """Callables without a direct ``__code__`` attribute should not be traced."""
+
+    class Objective:
+        def __call__(self, values: NDArray[np.float64]) -> float:
+            return float(values.sum())
+
+    assert _trace_whole_program_objective(Objective(), np.array([1.0], dtype=np.float64)) == ()
+
+
+@pytest.mark.parametrize(
+    ("raw", "match"),
+    [
+        (True, "real numeric scalar"),
+        (complex(1.0, 0.0), "real numeric scalar"),
+        (float("nan"), "finite"),
+    ],
+)
+def test_trace_whole_program_objective_rejects_invalid_scalar_results(
+    raw: object, match: str
+) -> None:
+    """Trace replay should keep finite real scalar objective contracts."""
+
+    def objective(values: NDArray[np.float64]) -> object:
+        del values
+        return raw
+
+    with pytest.raises(ValueError, match=match):
+        _trace_whole_program_objective(objective, np.array([1.0], dtype=np.float64))
