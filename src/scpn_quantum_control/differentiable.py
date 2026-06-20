@@ -23642,15 +23642,10 @@ def _require_program_ad_runtime_contract(
         missing.append("lowering_metadata")
     if not contract.lowering_metadata.get("mlir_op"):
         missing.append("mlir_op")
-    has_boundary_metadata = (
-        "nondifferentiable_boundary" in contract.lowering_metadata
-        or "nondifferentiable_boundary_policy" in contract.lowering_metadata
-    )
-    if has_boundary_metadata:
-        if not contract.lowering_metadata.get("nondifferentiable_boundary"):
-            missing.append("nondifferentiable_boundary")
-        if contract.lowering_metadata.get("nondifferentiable_boundary_policy") != "fail_closed":
-            missing.append("nondifferentiable_boundary_policy")
+    if not contract.lowering_metadata.get("nondifferentiable_boundary"):
+        missing.append("nondifferentiable_boundary")
+    if contract.lowering_metadata.get("nondifferentiable_boundary_policy") != "fail_closed":
+        missing.append("nondifferentiable_boundary_policy")
     if contract.shape_rule is None:
         missing.append("shape_rule")
     if contract.dtype_rule is None:

@@ -6783,6 +6783,42 @@ def test_program_ad_elementwise_primitives_validate_registry_rules_at_dispatch()
     }
 
 
+def test_program_ad_elementwise_runtime_dispatch_rejects_boundary_metadata_drift() -> None:
+    """Runtime dispatch should enforce the same boundary metadata as coverage."""
+
+    original = primitive_contract_for("scpn.program_ad.elementwise:sin")
+    lowering_metadata = {
+        key: value
+        for key, value in original.lowering_metadata.items()
+        if key not in {"nondifferentiable_boundary", "nondifferentiable_boundary_policy"}
+    }
+    DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.register_transform(
+        PrimitiveTransformRule(
+            identity=original.identity,
+            derivative_rule=original.derivative_rule,
+            batching_rule=original.batching_rule,
+            lowering_rule=original.lowering_rule,
+            lowering_metadata=lowering_metadata,
+            shape_rule=original.shape_rule,
+            dtype_rule=original.dtype_rule,
+            static_argument_rule=original.static_argument_rule,
+            nondifferentiable_policy=original.nondifferentiable_policy,
+            effect=original.effect,
+        ),
+        overwrite=True,
+    )
+    try:
+        with pytest.raises(ValueError, match="missing nondifferentiable_boundary"):
+            whole_program_value_and_grad(
+                lambda values: np.sum(np.sin(values)),
+                np.array([0.25, 0.5], dtype=np.float64),
+            )
+    finally:
+        DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.register_transform(
+            _transform_rule_from_contract(original), overwrite=True
+        )
+
+
 def test_program_ad_binary_elementwise_primitives_are_registry_policy_gated() -> None:
     """Binary elementwise math should expose broadcast-aware primitive contracts."""
 
@@ -17268,6 +17304,46 @@ def test_program_ad_registry_dispatch_coverage_report_fails_closed_for_missing_r
     payload = report.to_dict()
     assert payload["supported"] is False
     assert len(payload["blocked_identities"]) == report.total_primitives
+
+
+def test_program_ad_registry_dispatch_coverage_report_rejects_boundary_metadata_drift() -> None:
+    """Registry-dispatch coverage should reject incomplete boundary metadata."""
+
+    registry = CustomDerivativeRegistry()
+    for transform in DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.transform_snapshot().values():
+        registry.register_transform(transform)
+    original = primitive_contract_for("scpn.program_ad.elementwise:sin")
+    lowering_metadata = {
+        key: value
+        for key, value in original.lowering_metadata.items()
+        if key not in {"nondifferentiable_boundary", "nondifferentiable_boundary_policy"}
+    }
+    registry.register_transform(
+        PrimitiveTransformRule(
+            identity=original.identity,
+            derivative_rule=original.derivative_rule,
+            batching_rule=original.batching_rule,
+            lowering_rule=original.lowering_rule,
+            lowering_metadata=lowering_metadata,
+            shape_rule=original.shape_rule,
+            dtype_rule=original.dtype_rule,
+            static_argument_rule=original.static_argument_rule,
+            nondifferentiable_policy=original.nondifferentiable_policy,
+            effect=original.effect,
+        ),
+        overwrite=True,
+    )
+
+    report = program_ad_registry_dispatch_coverage_report(registry=registry)
+    sin_row = next(row for row in report.rows if row.identity == original.identity.key)
+
+    assert report.supported is False
+    assert original.identity.key in report.blocked_identities
+    assert sin_row.complete is False
+    assert sin_row.blocked_reasons == (
+        "incomplete registry-dispatch contract: missing "
+        "nondifferentiable_boundary, nondifferentiable_boundary_policy",
+    )
 
 
 def test_primitive_transform_registry_validation_and_overwrite_paths() -> None:
