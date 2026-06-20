@@ -14,6 +14,7 @@ The core identity: P(|1>) = sin^2(theta/2) for Ry(theta)|0>.
 from __future__ import annotations
 
 import numpy as np
+from numpy.typing import NDArray
 
 
 def probability_to_angle(p: float) -> float:
@@ -33,24 +34,24 @@ def angle_to_probability(theta: float) -> float:
     return float(np.sin(theta / 2.0) ** 2)
 
 
-def bitstream_to_statevector(bits: np.ndarray) -> np.ndarray:
+def bitstream_to_statevector(bits: NDArray[np.float64]) -> NDArray[np.float64]:
     """Decode bitstream mean probability, return single-qubit statevector [alpha, beta].
 
     |psi> = cos(theta/2)|0> + sin(theta/2)|1>  where  sin^2(theta/2) = mean(bits)
     """
     p = float(np.mean(bits))
     theta = probability_to_angle(p)
-    result: np.ndarray = np.array([np.cos(theta / 2.0), np.sin(theta / 2.0)])
+    result: NDArray[np.float64] = np.array([np.cos(theta / 2.0), np.sin(theta / 2.0)])
     return result
 
 
 def measurement_to_bitstream(
-    counts: dict, length: int, rng: np.random.Generator | None = None
-) -> np.ndarray:
+    counts: dict[str, int], length: int, rng: np.random.Generator | None = None
+) -> NDArray[np.uint8]:
     """Convert shot counts {'0': n0, '1': n1} to Bernoulli bitstream of given length."""
     total = sum(counts.values())
     p_one = counts.get("1", 0) / total if total > 0 else 0.0
     if rng is None:
         rng = np.random.default_rng()
-    result: np.ndarray = rng.binomial(1, p_one, size=length).astype(np.uint8)
+    result: NDArray[np.uint8] = rng.binomial(1, p_one, size=length).astype(np.uint8)
     return result

@@ -32,6 +32,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import numpy as np
+from numpy.typing import NDArray
 
 from ..qsnn.qlayer import QuantumDenseLayer
 
@@ -40,16 +41,16 @@ from ..qsnn.qlayer import QuantumDenseLayer
 class BackwardResult:
     """SNN-quantum backward pass result."""
 
-    grad_params: np.ndarray  # dL/dθ for quantum circuit parameters
-    grad_spikes: np.ndarray  # dL/d(spike_rates) for SNN
+    grad_params: NDArray[np.float64]  # dL/dθ for quantum circuit parameters
+    grad_spikes: NDArray[np.float64]  # dL/d(spike_rates) for SNN
     loss: float
     n_evaluations: int  # 2 per parameter (parameter-shift)
 
 
 def _quantum_forward(
     layer: QuantumDenseLayer,
-    input_values: np.ndarray,
-) -> np.ndarray:
+    input_values: NDArray[np.float64],
+) -> NDArray[np.float64]:
     """Run quantum layer forward and return neuron P(|1>) probabilities.
 
     Rebuilds the circuit internally to get continuous probabilities
@@ -74,25 +75,25 @@ def _quantum_forward(
     for n_idx in range(layer.n_neurons):
         marginal = sv.probabilities([layer.n_inputs + n_idx])
         probs[n_idx] = marginal[1]
-    result: np.ndarray = probs
+    result: NDArray[np.float64] = probs
     return result
 
 
-def _mse_loss(y: np.ndarray, target: np.ndarray) -> float:
+def _mse_loss(y: NDArray[np.float64], target: NDArray[np.float64]) -> float:
     """Mean squared error loss."""
     return float(np.mean((y - target) ** 2))
 
 
-def _mse_grad(y: np.ndarray, target: np.ndarray) -> np.ndarray:
+def _mse_grad(y: NDArray[np.float64], target: NDArray[np.float64]) -> NDArray[np.float64]:
     """Gradient of MSE loss w.r.t. y."""
-    result: np.ndarray = 2.0 * (y - target) / len(y)
+    result: NDArray[np.float64] = 2.0 * (y - target) / len(y)
     return result
 
 
 def parameter_shift_gradient(
     layer: QuantumDenseLayer,
-    input_values: np.ndarray,
-    target: np.ndarray,
+    input_values: NDArray[np.float64],
+    target: NDArray[np.float64],
     shift: float = 0.25,
 ) -> BackwardResult:
     """Compute dL/d(input) via parameter-shift rule.

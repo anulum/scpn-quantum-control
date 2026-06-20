@@ -12,34 +12,39 @@ Supports raw numpy spike arrays and optional sc-neurocore ArcaneNeuron integrati
 
 from __future__ import annotations
 
+from typing import Any
+
 import numpy as np
+from numpy.typing import NDArray
 
 from ..qsnn.qlayer import QuantumDenseLayer
 
 
-def spike_train_to_rotations(spikes: np.ndarray, window: int = 10) -> np.ndarray:
+def spike_train_to_rotations(spikes: NDArray[np.float64], window: int = 10) -> NDArray[np.float64]:
     """Convert spike history to Ry rotation angles.
 
     spikes: (timesteps, n_neurons) binary array.
     Returns (n_neurons,) angles = firing_rate * pi, in [0, pi].
     """
-    spikes = np.asarray(spikes)
+    spikes = np.asarray(spikes, dtype=np.float64)
     if spikes.ndim == 1:
         spikes = spikes.reshape(1, -1)
     tail = spikes[-min(window, len(spikes)) :]
     rates = np.mean(tail, axis=0)
-    angles: np.ndarray = rates * np.pi
+    angles: NDArray[np.float64] = rates * np.pi
     return angles
 
 
-def quantum_measurement_to_current(values: np.ndarray, scale: float = 1.0) -> np.ndarray:
+def quantum_measurement_to_current(
+    values: NDArray[np.float64], scale: float = 1.0
+) -> NDArray[np.float64]:
     """Convert quantum output values to SNN input currents.
 
     values: (n_neurons,) array — either P(|1>) probabilities in [0, 1]
     or binary spike indicators (0/1). Both are valid inputs.
     Returns (n_neurons,) input currents scaled by ``scale``.
     """
-    currents: np.ndarray = np.asarray(values, dtype=np.float64) * scale
+    currents: NDArray[np.float64] = np.asarray(values, dtype=np.float64) * scale
     return currents
 
 
@@ -64,7 +69,7 @@ class SNNQuantumBridge:
         self.scale = scale
         self.layer = QuantumDenseLayer(n_neurons, n_inputs, seed=seed)
 
-    def forward(self, spike_history: np.ndarray) -> np.ndarray:
+    def forward(self, spike_history: NDArray[np.float64]) -> NDArray[np.float64]:
         """Full forward pass: spike history -> quantum -> output currents.
 
         spike_history: (timesteps, n_inputs) binary spike array.
@@ -103,28 +108,28 @@ class ArcaneNeuronBridge:
         self.threshold = threshold
         self.bridge = SNNQuantumBridge(n_neurons, n_inputs, window, scale, seed)
         self.neurons = [ArcaneNeuron() for _ in range(n_inputs)]
-        self._spike_history: list[np.ndarray] = []
+        self._spike_history: list[NDArray[np.float64]] = []
 
-    def step_neurons(self, currents: np.ndarray) -> np.ndarray:
+    def step_neurons(self, currents: NDArray[np.float64]) -> NDArray[np.float64]:
         """Step all ArcaneNeurons, return binary spike vector."""
-        spikes: np.ndarray = np.zeros(len(self.neurons), dtype=np.float64)
+        spikes: NDArray[np.float64] = np.zeros(len(self.neurons), dtype=np.float64)
         for i, neuron in enumerate(self.neurons):
             spikes[i] = float(neuron.step(float(currents[i])))
         self._spike_history.append(spikes)
         return spikes
 
-    def quantum_forward(self) -> np.ndarray:
+    def quantum_forward(self) -> NDArray[np.float64]:
         """Pass accumulated spike history through quantum layer.
 
         Returns (n_neurons,) output currents.
         """
         if not self._spike_history:
-            out: np.ndarray = np.zeros(self.bridge.n_neurons)
+            out: NDArray[np.float64] = np.zeros(self.bridge.n_neurons)
             return out
-        history = np.array(self._spike_history)
+        history = np.array(self._spike_history, dtype=np.float64)
         return self.bridge.forward(history)
 
-    def step(self, external_currents: np.ndarray) -> dict:
+    def step(self, external_currents: NDArray[np.float64]) -> dict[str, Any]:
         """Full cycle: step neurons -> quantum forward -> output.
 
         Returns dict with spike vector, output currents, and neuron states.
