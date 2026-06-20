@@ -9,6 +9,7 @@
 
 from __future__ import annotations
 
+import math
 from typing import Any, cast
 
 import numpy as np
@@ -178,3 +179,102 @@ def test_whole_program_ad_rank_n_axis_validation_paths() -> None:
             lambda values: np.sum(np.transpose(np.reshape(values, (2, 2)), axes=(0, 0))),
             np.array([1.0, 2.0, 3.0, 4.0], dtype=np.float64),
         )
+
+
+def test_whole_program_ad_handles_matrix_indexing_reductions_and_products() -> None:
+    """Program AD should cover rank-2 array control, mutation, and products."""
+
+    def objective(values: Any) -> object:
+        matrix = values.reshape(2, 2).copy()
+        matrix[0, 1] = matrix[0, 1] + matrix[1, 0]
+        column_sum = np.sum(matrix, axis=0)
+        row_sum = np.sum(matrix, axis=1)
+        matrix_vector = matrix @ np.array([2.0, -1.0], dtype=np.float64)
+        vector_matrix = np.array([1.5, -0.5], dtype=np.float64) @ matrix
+        return (
+            np.sum(column_sum)
+            + np.sum(row_sum)
+            + np.sum(matrix_vector)
+            + np.sum(vector_matrix)
+            + np.sum(matrix.T)
+        )
+
+    result = whole_program_value_and_grad(
+        objective,
+        np.array([1.0, 2.0, 3.0, 4.0], dtype=np.float64),
+        parameters=(Parameter("a"), Parameter("b"), Parameter("c"), Parameter("d")),
+    )
+
+    assert any(node.op == "mutation:setitem" for node in result.ir_nodes)
+    assert result.semantics_report is not None
+    assert result.semantics_report.mutation_observed is True
+    _assert_allclose(result.gradient, [6.5, 3.5, 8.0, 1.5], atol=1.0e-12)
+
+
+def test_whole_program_ad_handles_numpy_composition_and_norms() -> None:
+    """Program AD should cover common NumPy shape composition and norm workflows."""
+
+    def objective(values: Any) -> object:
+        left = values[:2]
+        right = values[2:4]
+        stacked = np.stack((left, right), axis=0)
+        flat = np.concatenate((stacked[0], stacked[1]))
+        reshaped = np.reshape(flat, (2, 2))
+        transposed = np.transpose(reshaped)
+        clipped = np.clip(transposed, -0.25, 1.5)
+        return np.linalg.norm(clipped) + np.sum(np.ravel(transposed))
+
+    values = np.array([0.5, -0.1, 2.0, -2.0], dtype=np.float64)
+    result = whole_program_value_and_grad(
+        objective,
+        values,
+        parameters=(Parameter("a"), Parameter("b"), Parameter("c"), Parameter("d")),
+    )
+
+    norm = math.sqrt(0.5**2 + (-0.1) ** 2 + 1.5**2 + (-0.25) ** 2)
+    expected = np.array([1.0 + 0.5 / norm, 1.0 - 0.1 / norm, 1.0, 1.0], dtype=np.float64)
+    assert any(node.op == "clip" for node in result.ir_nodes)
+    assert any(node.op == "sqrt" for node in result.ir_nodes)
+    _assert_allclose(result.gradient, expected, atol=1.0e-12)
+
+
+def test_whole_program_ad_handles_numpy_linear_algebra_primitives() -> None:
+    """Program AD should cover bounded NumPy linear algebra forms exactly."""
+
+    def objective(values: Any) -> object:
+        left = values[:2]
+        right = values[2:4]
+        matrix = np.reshape(values, (2, 2))
+        return (
+            np.inner(left, right)
+            + np.sum(np.outer(left, right))
+            + np.trace(matrix)
+            + np.sum(np.diag(matrix))
+            + np.tensordot(left, right, axes=1)
+            + np.sum(np.tensordot(left, right, axes=0))
+            + np.einsum("i,i->", left, right)
+            + np.sum(np.einsum("i,j->ij", left, right))
+            + np.sum(np.einsum("ij,j->i", matrix, left))
+            + np.einsum("ii->", matrix)
+        )
+
+    values = np.array([0.5, -0.25, 1.5, -2.0], dtype=np.float64)
+    result = whole_program_value_and_grad(
+        objective,
+        values,
+        parameters=(Parameter("a"), Parameter("b"), Parameter("c"), Parameter("d")),
+    )
+    expected = np.array(
+        [
+            7.0 * values[2] + 3.0 * values[3] + 2.0 * values[0] + 3.0,
+            3.0 * values[2] + 7.0 * values[3] + 2.0 * values[1],
+            7.0 * values[0] + 3.0 * values[1],
+            3.0 * values[0] + 7.0 * values[1] + 3.0,
+        ],
+        dtype=np.float64,
+    )
+
+    assert result.adjoint_result is not None
+    assert result.adjoint_result.supported is True
+    _assert_allclose(result.gradient, expected, rtol=1.0e-12, atol=1.0e-12)
+    _assert_allclose(program_adjoint_gradient(result), expected, rtol=1.0e-12, atol=1.0e-12)
