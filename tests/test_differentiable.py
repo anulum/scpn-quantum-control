@@ -8283,63 +8283,6 @@ def test_program_ad_linalg_primitive_batching_rules_vectorize_outputs() -> None:
     )
 
 
-def test_program_ad_extreme_reductions_match_strict_selection_adjoint() -> None:
-    """Program AD max/min reductions should route adjoints to unique selected entries."""
-
-    def objective(values: np.ndarray) -> object:
-        matrix = np.reshape(values, (2, 3))
-        column_max = np.max(matrix, axis=0)
-        row_min = np.min(matrix, axis=1)
-        return column_max[0] + 2.0 * column_max[1] + 3.0 * column_max[2] + row_min[0] - row_min[1]
-
-    result = whole_program_value_and_grad(
-        objective,
-        np.array([1.0, 4.0, -2.0, 3.0, 0.5, -1.0], dtype=np.float64),
-        parameters=(
-            Parameter("x00"),
-            Parameter("x01"),
-            Parameter("x02"),
-            Parameter("x10"),
-            Parameter("x11"),
-            Parameter("x12"),
-        ),
-    )
-
-    assert result.value == pytest.approx(7.0)
-    np.testing.assert_allclose(
-        result.gradient,
-        [0.0, 2.0, 1.0, 1.0, 0.0, 2.0],
-        atol=1.0e-12,
-    )
-    np.testing.assert_allclose(
-        program_adjoint_gradient(result),
-        result.gradient,
-        atol=1.0e-12,
-    )
-
-
-def test_program_ad_extreme_reduction_methods_match_numpy_functions() -> None:
-    """Trace arrays should support ndarray-style max/min method reductions."""
-
-    def objective(values: np.ndarray) -> object:
-        matrix = np.reshape(values, (2, 2))
-        return matrix.max(axis=0)[1] - matrix.min(axis=1)[0] + matrix.max()
-
-    result = whole_program_value_and_grad(
-        objective,
-        np.array([1.0, -3.0, 4.0, 2.0], dtype=np.float64),
-        parameters=(
-            Parameter("x00"),
-            Parameter("x01"),
-            Parameter("x10"),
-            Parameter("x11"),
-        ),
-    )
-
-    assert result.value == pytest.approx(9.0)
-    np.testing.assert_allclose(result.gradient, [0.0, -1.0, 1.0, 1.0], atol=1.0e-12)
-
-
 def test_program_ad_basic_slicing_preserves_static_adjoint_paths() -> None:
     """Program AD basic slicing should preserve exact static index adjoints."""
 

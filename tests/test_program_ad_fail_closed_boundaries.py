@@ -11,8 +11,15 @@ from __future__ import annotations
 
 import numpy as np
 import pytest
+from numpy.typing import NDArray
 
-from scpn_quantum_control.differentiable import whole_program_value_and_grad
+from scpn_quantum_control.differentiable import (
+    Parameter,
+    program_adjoint_gradient,
+    whole_program_value_and_grad,
+)
+
+FloatArray = NDArray[np.float64]
 
 
 def test_program_ad_advanced_indexing_fails_closed() -> None:
@@ -80,6 +87,63 @@ def test_program_ad_extreme_reductions_fail_closed_on_ties() -> None:
             lambda values: np.min(np.reshape(values, (2, 2)), axis=1)[0],
             np.array([1.0, 1.0, 3.0, 4.0], dtype=np.float64),
         )
+
+
+def test_program_ad_extreme_reductions_match_strict_selection_adjoint() -> None:
+    """Program AD max/min reductions should route adjoints to unique selected entries."""
+
+    def objective(values: FloatArray) -> object:
+        matrix = np.reshape(values, (2, 3))
+        column_max = np.max(matrix, axis=0)
+        row_min = np.min(matrix, axis=1)
+        return column_max[0] + 2.0 * column_max[1] + 3.0 * column_max[2] + row_min[0] - row_min[1]
+
+    result = whole_program_value_and_grad(
+        objective,
+        np.array([1.0, 4.0, -2.0, 3.0, 0.5, -1.0], dtype=np.float64),
+        parameters=(
+            Parameter("x00"),
+            Parameter("x01"),
+            Parameter("x02"),
+            Parameter("x10"),
+            Parameter("x11"),
+            Parameter("x12"),
+        ),
+    )
+
+    assert result.value == pytest.approx(7.0)
+    np.testing.assert_allclose(
+        result.gradient,
+        [0.0, 2.0, 1.0, 1.0, 0.0, 2.0],
+        atol=1.0e-12,
+    )
+    np.testing.assert_allclose(
+        program_adjoint_gradient(result),
+        result.gradient,
+        atol=1.0e-12,
+    )
+
+
+def test_program_ad_extreme_reduction_methods_match_numpy_functions() -> None:
+    """Trace arrays should support ndarray-style max/min method reductions."""
+
+    def objective(values: FloatArray) -> object:
+        matrix = np.reshape(values, (2, 2))
+        return matrix.max(axis=0)[1] - matrix.min(axis=1)[0] + matrix.max()
+
+    result = whole_program_value_and_grad(
+        objective,
+        np.array([1.0, -3.0, 4.0, 2.0], dtype=np.float64),
+        parameters=(
+            Parameter("x00"),
+            Parameter("x01"),
+            Parameter("x10"),
+            Parameter("x11"),
+        ),
+    )
+
+    assert result.value == pytest.approx(9.0)
+    np.testing.assert_allclose(result.gradient, [0.0, -1.0, 1.0, 1.0], atol=1.0e-12)
 
 
 def test_whole_program_ad_selection_primitives_fail_closed_at_nondifferentiable_boundaries() -> (
