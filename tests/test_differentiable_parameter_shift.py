@@ -16,11 +16,15 @@ import numpy as np
 import pytest
 from numpy.typing import NDArray
 
+from scpn_quantum_control import differentiable as differentiable_module
 from scpn_quantum_control.differentiable import (
     GradientResult,
     Parameter,
     ParameterShiftRule,
     ParameterShiftSampleRecord,
+    ShotAllocationResult,
+    StochasticGradientResult,
+    WeightedGradientResult,
     allocate_parameter_shift_shots,
     batch_complex_step_gradient,
     batch_parameter_shift_gradient,
@@ -31,6 +35,7 @@ from scpn_quantum_control.differentiable import (
     parameter_shift_gradient,
     parameter_shift_gradient_with_uncertainty,
     value_and_parameter_shift_grad,
+    weighted_gradient_sum,
 )
 
 FloatArray = NDArray[np.float64]
@@ -287,6 +292,206 @@ def test_multi_frequency_parameter_shift_rejects_ambiguous_shot_tensors() -> Non
             target_standard_error=0.1,
             rule=rule,
         )
+
+
+def test_parameter_shift_gradient_with_uncertainty_propagates_shot_noise() -> None:
+    """Independent plus/minus shot noise should propagate into gradient variance."""
+
+    result = parameter_shift_gradient_with_uncertainty(
+        plus_values=[0.8, 0.1],
+        minus_values=[0.2, -0.3],
+        plus_variances=[0.36, 0.25],
+        minus_variances=[0.16, 0.09],
+        plus_shots=[900, 400],
+        minus_shots=[400, 100],
+        value=0.5,
+        parameters=[Parameter("theta"), Parameter("frozen", trainable=False)],
+    )
+
+    assert isinstance(result, StochasticGradientResult)
+    assert result.method == "parameter_shift_shot_noise"
+    assert result.claim_boundary == differentiable_module.STOCHASTIC_PARAMETER_SHIFT_CLAIM_BOUNDARY
+    assert result.hardware_execution is False
+    assert result.evaluations == 2
+    assert result.parameter_names == ("theta", "frozen")
+    assert result.trainable == (True, False)
+    assert len(result.records) == 2
+    active_record, frozen_record = result.records
+    assert active_record.parameter_name == "theta"
+    assert active_record.shift == pytest.approx(math.pi / 2.0)
+    assert active_record.coefficient == pytest.approx(0.5)
+    assert active_record.plus_shots == 900
+    assert active_record.minus_shots == 400
+    assert active_record.gradient_contribution == pytest.approx(0.3)
+    assert active_record.variance_contribution > 0.0
+    assert frozen_record.parameter_name == "frozen"
+    assert frozen_record.trainable is False
+    assert frozen_record.gradient_contribution == pytest.approx(0.0)
+    assert frozen_record.variance_contribution == pytest.approx(0.0)
+    _assert_allclose(result.gradient, [0.3, 0.0])
+    expected_variance = 0.5**2 * (0.36 / 900.0 + 0.16 / 400.0)
+    _assert_allclose(result.standard_error, [math.sqrt(expected_variance), 0.0])
+    _assert_allclose(result.covariance, np.diag([expected_variance, 0.0]))
+    _assert_allclose(result.confidence_radius, 1.959963984540054 * result.standard_error)
+    _assert_allclose(result.shots, [[900.0, 400.0], [400.0, 100.0]])
+    evidence = cast(dict[str, Any], result.to_dict())
+    assert (
+        evidence["claim_boundary"]
+        == differentiable_module.STOCHASTIC_PARAMETER_SHIFT_CLAIM_BOUNDARY
+    )
+    assert evidence["hardware_execution"] is False
+    assert len(cast(list[object], evidence["records"])) == 2
+
+
+def test_parameter_shift_gradient_with_uncertainty_rejects_invalid_inputs() -> None:
+    """Shot-noise gradients must fail closed on impossible measurement contracts."""
+
+    with pytest.raises(ValueError, match="variance shapes"):
+        parameter_shift_gradient_with_uncertainty([1.0], [0.0], [0.1, 0.2], [0.1], [10])
+    with pytest.raises(ValueError, match="shot variances"):
+        parameter_shift_gradient_with_uncertainty([1.0], [0.0], [-0.1], [0.1], [10])
+    with pytest.raises(ValueError, match="shot counts"):
+        parameter_shift_gradient_with_uncertainty([1.0], [0.0], [0.1], [0.1], [0])
+    with pytest.raises(ValueError, match="confidence_level"):
+        parameter_shift_gradient_with_uncertainty(
+            [1.0],
+            [0.0],
+            [0.1],
+            [0.1],
+            [10],
+            confidence_level=1.0,
+        )
+    with pytest.raises(ValueError, match="confidence_z"):
+        parameter_shift_gradient_with_uncertainty(
+            [1.0],
+            [0.0],
+            [0.1],
+            [0.1],
+            [10],
+            confidence_z=0.0,
+        )
+    with pytest.raises(ValueError, match="hardware execution"):
+        StochasticGradientResult(
+            value=0.0,
+            gradient=np.array([1.0]),
+            standard_error=np.array([0.1]),
+            covariance=np.eye(1),
+            confidence_radius=np.array([0.2]),
+            shots=np.array([[10.0], [10.0]]),
+            confidence_level=0.95,
+            method="parameter_shift_shot_noise",
+            shift=math.pi / 2.0,
+            coefficient=0.5,
+            evaluations=2,
+            parameter_names=("theta",),
+            trainable=(True,),
+            hardware_execution=True,
+        )
+
+
+def test_allocate_parameter_shift_shots_meets_target_standard_error() -> None:
+    """Shot allocation should conservatively meet target gradient uncertainty."""
+
+    allocation = allocate_parameter_shift_shots(
+        plus_variances=[0.36, 0.25],
+        minus_variances=[0.16, 0.09],
+        target_standard_error=0.02,
+        parameters=[Parameter("theta"), Parameter("frozen", trainable=False)],
+    )
+
+    assert isinstance(allocation, ShotAllocationResult)
+    assert allocation.method == "parameter_shift_target_se"
+    assert allocation.parameter_names == ("theta", "frozen")
+    assert allocation.trainable == (True, False)
+    assert allocation.shots.shape == (2, 2)
+    assert allocation.shots[0, 0] >= 1.0
+    assert allocation.shots[1, 0] >= 1.0
+    assert allocation.shots[0, 1] == 1.0
+    assert allocation.shots[1, 1] == 1.0
+    assert allocation.predicted_standard_error[0] <= 0.02
+    assert allocation.predicted_standard_error[1] == pytest.approx(0.0)
+    assert allocation.total_shots == int(np.sum(allocation.shots))
+    _assert_allclose(allocation.covariance, np.diag(allocation.predicted_standard_error**2))
+
+
+def test_allocate_parameter_shift_shots_respects_caps() -> None:
+    """Shot allocation should report capped uncertainty when budgets are bounded."""
+
+    allocation = allocate_parameter_shift_shots(
+        plus_variances=[1.0],
+        minus_variances=[1.0],
+        target_standard_error=1.0e-3,
+        min_shots=4,
+        max_shots_per_evaluation=10,
+    )
+
+    _assert_allclose(allocation.shots, [[10.0], [10.0]])
+    assert allocation.predicted_standard_error[0] > allocation.target_standard_error
+
+
+def test_allocate_parameter_shift_shots_rejects_invalid_inputs() -> None:
+    """Shot allocation must fail closed on impossible planning contracts."""
+
+    with pytest.raises(ValueError, match="minus_variances shape"):
+        allocate_parameter_shift_shots([0.1], [0.1, 0.2], target_standard_error=0.1)
+    with pytest.raises(ValueError, match="shot variances"):
+        allocate_parameter_shift_shots([-0.1], [0.1], target_standard_error=0.1)
+    with pytest.raises(ValueError, match="target_standard_error"):
+        allocate_parameter_shift_shots([0.1], [0.1], target_standard_error=0.0)
+    with pytest.raises(ValueError, match="min_shots"):
+        allocate_parameter_shift_shots([0.1], [0.1], target_standard_error=0.1, min_shots=0)
+    with pytest.raises(ValueError, match="max_shots_per_evaluation"):
+        allocate_parameter_shift_shots(
+            [0.1],
+            [0.1],
+            target_standard_error=0.1,
+            min_shots=10,
+            max_shots_per_evaluation=5,
+        )
+
+
+def test_weighted_gradient_sum_preserves_component_provenance() -> None:
+    """Weighted multi-objective aggregation should keep component metadata."""
+
+    components = batch_value_and_parameter_shift_grad(
+        [
+            lambda values: math.sin(values[0]),
+            lambda values: math.cos(values[0]),
+        ],
+        [0.25],
+        parameters=[Parameter("theta")],
+    )
+    result = weighted_gradient_sum(components, np.array([0.75, 0.25]))
+
+    assert isinstance(result, WeightedGradientResult)
+    assert result.components == components
+    assert result.evaluations == sum(component.evaluations for component in components)
+    assert result.parameter_names == ("theta",)
+    assert result.value == pytest.approx(0.75 * math.sin(0.25) + 0.25 * math.cos(0.25))
+    _assert_allclose(
+        result.gradient,
+        [0.75 * math.cos(0.25) - 0.25 * math.sin(0.25)],
+    )
+
+
+def test_weighted_gradient_sum_rejects_incompatible_components() -> None:
+    """Weighted aggregation must fail closed on metadata mismatches."""
+
+    first = value_and_parameter_shift_grad(
+        lambda values: math.sin(values[0]),
+        [0.1],
+        parameters=[Parameter("theta")],
+    )
+    second = value_and_parameter_shift_grad(
+        lambda values: math.sin(values[0]),
+        [0.1],
+        parameters=[Parameter("phi")],
+    )
+
+    with pytest.raises(ValueError, match="weights length"):
+        weighted_gradient_sum([first], np.array([1.0, 2.0]))
+    with pytest.raises(ValueError, match="parameter_names"):
+        weighted_gradient_sum([first, second], np.array([0.5, 0.5]))
 
 
 def test_batch_parameter_shift_gradient_stacks_independent_objectives() -> None:
