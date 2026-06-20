@@ -84,19 +84,29 @@ class FRCEquilibriumLike(Protocol):
     """
 
     @property
-    def s_parameter(self) -> float: ...
+    def s_parameter(self) -> float:
+        """Ion-gyroradii separation ``s = R_s / rho_i`` of the equilibrium."""
+        ...
 
     @property
-    def density_peak_m3(self) -> float: ...
+    def density_peak_m3(self) -> float:
+        """Peak ion number density of the equilibrium [m^-3]."""
+        ...
 
     @property
-    def converged(self) -> bool: ...
+    def converged(self) -> bool:
+        """Whether the equilibrium solver reached its residual tolerance."""
+        ...
 
     @property
-    def R_null(self) -> float: ...
+    def R_null(self) -> float:
+        """Field-null radius of the equilibrium [m]."""
+        ...
 
     @property
-    def target_separatrix_radius_m(self) -> float: ...
+    def target_separatrix_radius_m(self) -> float:
+        """Requested separatrix radius ``R_s`` of the equilibrium [m]."""
+        ...
 
 
 def _finite_positive(name: str, value: float) -> float:
