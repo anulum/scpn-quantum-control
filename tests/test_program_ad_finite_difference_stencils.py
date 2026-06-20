@@ -9,13 +9,17 @@
 
 from __future__ import annotations
 
-from typing import Any, cast
+from typing import Any, Literal, cast
 
 import numpy as np
 import pytest
+from numpy.typing import NDArray
 
 from scpn_quantum_control.differentiable import (
     Parameter,
+    PrimitiveIdentity,
+    primitive_contract_for,
+    program_ad_stencil_gradient_derivative_rule,
     program_adjoint_gradient,
     whole_program_value_and_grad,
 )
@@ -27,6 +31,187 @@ def _assert_allclose(
     """Assert NumPy closeness across dynamically typed Program AD result payloads."""
 
     cast(Any, np.testing.assert_allclose)(actual, expected, rtol=rtol, atol=atol)
+
+
+def test_program_ad_stencil_gradient_contract_and_direct_rule() -> None:
+    """Static gradient stencils should expose exact linear JVP/VJP rules."""
+
+    matrix = np.array([[1.0, 2.0, 4.0], [0.5, -1.5, 3.0]], dtype=np.float64)
+    tangent = np.array([[0.25, -0.5, 1.0], [1.5, -0.75, 0.5]], dtype=np.float64)
+    x_grid = np.array([0.0, 0.25, 1.0], dtype=np.float64)
+    cotangent = np.array([[1.5, -2.0, 0.75], [-0.25, 0.5, 1.25]], dtype=np.float64)
+    contract = primitive_contract_for("scpn.program_ad.stencil:gradient")
+
+    assert contract.identity == PrimitiveIdentity("scpn.program_ad.stencil", "gradient", "1")
+    assert contract.nondifferentiable_policy == "program_ad_trace_exact_fail_closed"
+    assert contract.effect == "pure"
+    assert contract.lowering_metadata["mlir_op"] == "scpn_diff.stencil.gradient"
+    assert (
+        contract.lowering_metadata["static_derivative_factory"]
+        == "program_ad_stencil_gradient_derivative_rule"
+    )
+    assert contract.lowering_metadata["static_signature"] == (
+        "source_shape:ranked_tensor_shape;spacing_axis_edge_order"
+    )
+    assert (
+        contract.lowering_metadata["nondifferentiable_boundary"]
+        == "static_spacing_axis_edge_order"
+    )
+    assert contract.lowering_metadata["nondifferentiable_boundary_policy"] == "fail_closed"
+    assert contract.shape_rule is not None
+    assert contract.shape_rule((matrix, (x_grid,), 1, 1)) == matrix.shape
+    assert contract.dtype_rule is not None
+    assert contract.dtype_rule((matrix, (x_grid,), 1, 1)) == "float64"
+    assert contract.static_argument_rule is not None
+    assert contract.static_argument_rule((matrix, (x_grid,), 1, 1)) == (
+        matrix.shape,
+        (("coordinates", (3,), (0.0, 0.25, 1.0)),),
+        (1,),
+        1,
+    )
+
+    rule = program_ad_stencil_gradient_derivative_rule(matrix.shape, (x_grid,), axis=1)
+    assert rule.name == "program_ad_stencil_gradient_2x3_axes_1_edge_1_direct_rule"
+    assert rule.jvp_rule is not None
+    assert rule.vjp_rule is not None
+    _assert_allclose(
+        rule.value_fn(matrix.reshape(-1)),
+        np.gradient(matrix, x_grid, axis=1).reshape(-1),
+    )
+    _assert_allclose(
+        rule.jvp_rule(matrix.reshape(-1), tangent.reshape(-1)),
+        np.gradient(tangent, x_grid, axis=1).reshape(-1),
+        rtol=1.0e-12,
+        atol=1.0e-12,
+    )
+    expected_vjp = np.zeros(matrix.size, dtype=np.float64)
+    for source_index in range(matrix.size):
+        basis = np.zeros_like(matrix)
+        basis.reshape(-1)[source_index] = 1.0
+        expected_vjp[source_index] = float(np.sum(np.gradient(basis, x_grid, axis=1) * cotangent))
+    _assert_allclose(
+        rule.vjp_rule(matrix.reshape(-1), cotangent.reshape(-1)),
+        expected_vjp,
+        rtol=1.0e-12,
+        atol=1.0e-12,
+    )
+
+
+def test_program_ad_stencil_gradient_batching_rule_maps_outer_axes() -> None:
+    """Gradient stencils should vmap only over non-differentiated batch axes."""
+
+    cube = np.array(
+        [
+            [[1.0, 2.0, 4.0], [0.5, -1.5, 3.0]],
+            [[-0.25, 0.75, 1.25], [2.5, -0.5, 0.0]],
+        ],
+        dtype=np.float64,
+    )
+    x_grid = np.array([0.0, 0.25, 1.0], dtype=np.float64)
+    contract = primitive_contract_for("scpn.program_ad.stencil:gradient")
+    assert contract.batching_rule is not None
+    batching_rule = contract.batching_rule
+
+    def gradient_fn(
+        values: NDArray[np.float64],
+        spacings: tuple[NDArray[np.float64], ...],
+        axis: int,
+        edge_order: Literal[1, 2],
+    ) -> NDArray[np.float64]:
+        return cast(
+            NDArray[np.float64],
+            np.gradient(values, *spacings, axis=axis, edge_order=edge_order),
+        )
+
+    batched = batching_rule(
+        gradient_fn,
+        (cube, (x_grid,), 2, 1),
+        (0, None, None, None),
+        0,
+    )
+    expected = np.stack(
+        [np.gradient(cube[index], x_grid, axis=1) for index in range(cube.shape[0])],
+        axis=0,
+    )
+    _assert_allclose(batched, expected, rtol=1.0e-12, atol=1.0e-12)
+
+    with pytest.raises(ValueError, match="cannot batch over a differentiated axis"):
+        batching_rule(
+            gradient_fn,
+            (cube, (x_grid,), 2, 1),
+            (2, None, None, None),
+            0,
+        )
+
+
+def test_program_ad_stencil_gradient_direct_rule_handles_multi_axis_edge_order_two() -> None:
+    """Multi-axis second-order stencils should expose the exact transpose adjoint."""
+
+    matrix = np.array(
+        [[1.0, 2.5, 4.0], [0.25, -1.0, 3.5], [2.0, 0.75, -0.5]],
+        dtype=np.float64,
+    )
+    tangent = np.array(
+        [[0.5, -0.25, 1.5], [1.0, 0.75, -0.5], [-1.25, 0.25, 0.0]],
+        dtype=np.float64,
+    )
+    row_grid = np.array([0.0, 0.5, 1.5], dtype=np.float64)
+    col_grid = np.array([-1.0, 0.25, 2.0], dtype=np.float64)
+    cotangent_components = (
+        np.array([[1.0, -0.5, 0.25], [0.75, 1.25, -1.5], [0.5, -0.25, 2.0]]),
+        np.array([[-0.75, 0.5, 1.5], [1.0, -1.25, 0.25], [0.0, 0.75, -0.5]]),
+    )
+
+    rule = program_ad_stencil_gradient_derivative_rule(
+        matrix.shape,
+        (row_grid, col_grid),
+        axis=(0, 1),
+        edge_order=2,
+    )
+    assert rule.jvp_rule is not None
+    assert rule.vjp_rule is not None
+    expected_value = np.concatenate(
+        [
+            component.reshape(-1)
+            for component in np.gradient(matrix, row_grid, col_grid, edge_order=2)
+        ]
+    )
+    expected_jvp = np.concatenate(
+        [
+            component.reshape(-1)
+            for component in np.gradient(tangent, row_grid, col_grid, edge_order=2)
+        ]
+    )
+    cotangent = np.concatenate([component.reshape(-1) for component in cotangent_components])
+    expected_vjp = np.zeros(matrix.size, dtype=np.float64)
+    for source_index in range(matrix.size):
+        basis = np.zeros_like(matrix)
+        basis.reshape(-1)[source_index] = 1.0
+        basis_gradient = np.gradient(basis, row_grid, col_grid, edge_order=2)
+        expected_vjp[source_index] = float(
+            sum(
+                np.sum(component * component_cotangent)
+                for component, component_cotangent in zip(
+                    basis_gradient,
+                    cotangent_components,
+                    strict=True,
+                )
+            )
+        )
+
+    _assert_allclose(rule.value_fn(matrix.reshape(-1)), expected_value)
+    _assert_allclose(
+        rule.jvp_rule(matrix.reshape(-1), tangent.reshape(-1)),
+        expected_jvp,
+        rtol=1.0e-12,
+        atol=1.0e-12,
+    )
+    _assert_allclose(
+        rule.vjp_rule(matrix.reshape(-1), cotangent),
+        expected_vjp,
+        rtol=1.0e-12,
+        atol=1.0e-12,
+    )
 
 
 def test_program_ad_finite_differences_match_linear_adjoint() -> None:
