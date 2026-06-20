@@ -19,6 +19,7 @@ import numpy as np
 import pytest
 
 from scpn_quantum_control import differentiable as differentiable_facade
+from scpn_quantum_control.differentiable import Parameter, whole_program_value_and_grad
 from scpn_quantum_control.program_ad_rust_bridge import (
     RustProgramADInterpreterResult,
     RustProgramADValueAndGradientResult,
@@ -122,6 +123,131 @@ def test_forward_interpreter_bridge_normalises_payload(
     assert result.value == pytest.approx(9.0)
     assert result.supported_effect_count == 3
     assert "no_llvm_jit" in result.claim_boundary
+
+
+def test_rust_program_ad_value_and_gradient_replay_matches_python_trace() -> None:
+    """Rust Program AD scalar replay should match the emitted Python trace."""
+
+    pytest.importorskip("scpn_quantum_engine")
+    values = np.array([0.4, -0.2], dtype=np.float64)
+
+    def objective(trace_values: Any) -> object:
+        x, y = trace_values
+        return x * x + 2.0 * y + np.sin(x)
+
+    result = whole_program_value_and_grad(
+        objective,
+        values,
+        parameters=(Parameter("x"), Parameter("y")),
+    )
+    assert result.program_ir is not None
+
+    rust_result = value_and_grad_program_ad_effect_ir_with_rust(result.program_ir, values)
+
+    assert isinstance(rust_result, RustProgramADValueAndGradientResult)
+    assert rust_result.supported is True
+    assert rust_result.value == pytest.approx(result.value, abs=1.0e-12)
+    np.testing.assert_allclose(rust_result.gradient, result.gradient, atol=1.0e-12)
+    assert len(rust_result.parameter_targets) == values.size
+    assert rust_result.supported_effect_count == len(result.program_ir.effects)
+    assert (
+        rust_result.claim_boundary
+        == "bounded_rust_program_ad_ir_scalar_primitives_value_and_gradient_executed_branch_no_alias_no_llvm_jit"
+    )
+
+
+def test_rust_program_ad_value_and_gradient_replays_executed_branch_trace() -> None:
+    """Rust Program AD replay should preserve executed scalar branch semantics."""
+
+    engine = pytest.importorskip("scpn_quantum_engine")
+    assert callable(getattr(engine, "program_ad_effect_ir_interpret_value_and_gradient", None))
+    values = np.array([0.4, -0.2], dtype=np.float64)
+
+    def objective(trace_values: Any) -> object:
+        x, y = trace_values
+        return (x * x if x > y else y * y) + 2.0 * y + np.sin(x)
+
+    result = whole_program_value_and_grad(
+        objective,
+        values,
+        parameters=(Parameter("x"), Parameter("y")),
+    )
+    assert result.program_ir is not None
+    assert result.program_ir.control_regions
+    assert result.program_ir.phi_nodes
+    assert not result.program_ir.alias_edges
+    assert "runtime_branch" in {region.kind for region in result.program_ir.control_regions}, (
+        result.program_ir.control_regions
+    )
+    assert '"kind":"runtime_branch"' in result.program_ir.serialization
+    assert callable(getattr(engine, "program_ad_effect_ir_interpret_value_and_gradient", None))
+
+    rust_result = value_and_grad_program_ad_effect_ir_with_rust(result.program_ir, values)
+
+    assert rust_result.supported is True, rust_result.blocked_reasons
+    assert rust_result.value == pytest.approx(result.value, abs=1.0e-12)
+    np.testing.assert_allclose(rust_result.gradient, result.gradient, atol=1.0e-12)
+    assert rust_result.supported_effect_count == len(result.program_ir.effects)
+    assert (
+        rust_result.claim_boundary
+        == "bounded_rust_program_ad_ir_scalar_primitives_value_and_gradient_executed_branch_no_alias_no_llvm_jit"
+    )
+
+
+def test_rust_program_ad_value_and_gradient_replays_scalar_primitive_family_trace() -> None:
+    """Rust Program AD replay should preserve emitted scalar primitive-family traces."""
+
+    pytest.importorskip("scpn_quantum_engine")
+    values = np.array([0.4, -0.2, 0.25, 0.1], dtype=np.float64)
+
+    def objective(trace_values: Any) -> object:
+        x, y, z, w = trace_values
+        return (
+            np.sqrt(x + 2.0)
+            + np.tanh(y)
+            + np.log1p(z)
+            + np.expm1(w)
+            + np.reciprocal(x + 3.0)
+            + np.arcsin(0.2 * y)
+            + np.arccos(0.1 * z)
+            + abs(w + 1.0)
+        )
+
+    result = whole_program_value_and_grad(
+        objective,
+        values,
+        parameters=(
+            Parameter("x"),
+            Parameter("y"),
+            Parameter("z"),
+            Parameter("w"),
+        ),
+    )
+    assert result.program_ir is not None
+    assert not result.program_ir.alias_edges
+    assert not result.program_ir.control_regions
+    operations = {effect.operation for effect in result.program_ir.effects}
+    assert {
+        "sqrt",
+        "tanh",
+        "log1p",
+        "expm1",
+        "reciprocal",
+        "arcsin",
+        "arccos",
+        "abs",
+    } <= operations
+
+    rust_result = value_and_grad_program_ad_effect_ir_with_rust(result.program_ir, values)
+
+    assert rust_result.supported is True, rust_result.blocked_reasons
+    assert rust_result.value == pytest.approx(result.value, abs=1.0e-12)
+    np.testing.assert_allclose(rust_result.gradient, result.gradient, atol=1.0e-12)
+    assert rust_result.supported_effect_count == len(result.program_ir.effects)
+    assert (
+        rust_result.claim_boundary
+        == "bounded_rust_program_ad_ir_scalar_primitives_value_and_gradient_executed_branch_no_alias_no_llvm_jit"
+    )
 
 
 def test_bridge_fails_closed_when_native_extension_or_export_is_missing(
