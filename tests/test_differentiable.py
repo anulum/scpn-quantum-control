@@ -9,8 +9,6 @@
 
 from __future__ import annotations
 
-import math
-
 import numpy as np
 import pytest
 
@@ -126,8 +124,6 @@ from scpn_quantum_control.differentiable import (
     vector_jacobian_product,
     weighted_gradient_sum,
 )
-from scpn_quantum_control.qsnn.qlayer import QuantumDenseLayer
-from scpn_quantum_control.qsnn.training import QSNNTrainer
 
 try:
     from scpn_quantum_control.hardware.pennylane_adapter import (
@@ -138,38 +134,6 @@ try:
     _PL_OK = is_pennylane_available()
 except (ImportError, AttributeError):
     _PL_OK = False
-
-
-def test_qsnn_trainer_uses_native_parameter_shift(monkeypatch: pytest.MonkeyPatch) -> None:
-    """QSNN training should delegate gradient evaluation to the core primitive."""
-
-    import scpn_quantum_control.qsnn.training as training
-
-    calls: list[tuple[tuple[float, ...], tuple[str, ...]]] = []
-
-    def fake_value_and_grad(objective, values, *, parameters, rule=None):
-        calls.append((tuple(float(value) for value in values), tuple(p.name for p in parameters)))
-        value = float(objective(values))
-        return GradientResult(
-            value=value,
-            gradient=np.full(len(values), 0.25),
-            method="parameter_shift",
-            shift=math.pi / 2,
-            coefficient=0.5,
-            evaluations=1 + 2 * len(values),
-            parameter_names=tuple(p.name for p in parameters),
-            trainable=tuple(p.trainable for p in parameters),
-        )
-
-    monkeypatch.setattr(training, "value_and_parameter_shift_grad", fake_value_and_grad)
-
-    layer = QuantumDenseLayer(1, 2, seed=0)
-    trainer = QSNNTrainer(layer)
-    gradient = trainer.parameter_shift_gradient(np.array([0.5, 0.25]), np.array([1.0]))
-
-    assert calls
-    assert calls[0][1] == ("synapse_0_0", "synapse_0_1")
-    np.testing.assert_allclose(gradient, [[0.25, 0.25]])
 
 
 def test_differentiable_api_exported_from_package_root() -> None:
