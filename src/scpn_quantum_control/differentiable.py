@@ -13416,6 +13416,136 @@ class PrimitiveContract:
         )
 
 
+PROGRAM_AD_REGISTRY_DISPATCH_CLAIM_BOUNDARY = (
+    "registry-dispatched Program AD primitive coverage over declared derivative, "
+    "batching, lowering metadata, shape, dtype, static-argument, "
+    "nondifferentiability, and effect contracts only; not executable Rust, LLVM, "
+    "JIT, provider, hardware, or performance evidence"
+)
+
+
+@dataclass(frozen=True)
+class ProgramADRegistryDispatchCoverageRow:
+    """Coverage status for one Program AD primitive resolved through the registry."""
+
+    family: str
+    primitive: str
+    identity: str
+    derivative_rule: str | None
+    has_batching_rule: bool
+    has_lowering_rule: bool
+    has_lowering_metadata: bool
+    has_shape_rule: bool
+    has_dtype_rule: bool
+    has_static_argument_rule: bool
+    nondifferentiable_policy: str | None
+    effect: str | None
+    lowering_metadata_keys: tuple[str, ...]
+    complete: bool
+    blocked_reasons: tuple[str, ...]
+    claim_boundary: str = PROGRAM_AD_REGISTRY_DISPATCH_CLAIM_BOUNDARY
+
+    def __post_init__(self) -> None:
+        if not self.family:
+            raise ValueError("registry dispatch coverage family must be non-empty")
+        if not self.primitive:
+            raise ValueError("registry dispatch coverage primitive must be non-empty")
+        if not self.identity:
+            raise ValueError("registry dispatch coverage identity must be non-empty")
+        if self.derivative_rule is not None and not self.derivative_rule:
+            raise ValueError("registry dispatch coverage derivative_rule must be non-empty")
+        if any(not key for key in self.lowering_metadata_keys):
+            raise ValueError("registry dispatch coverage metadata keys must be non-empty")
+        if any(not reason for reason in self.blocked_reasons):
+            raise ValueError("registry dispatch coverage blocked reasons must be non-empty")
+        if self.complete and self.blocked_reasons:
+            raise ValueError("complete registry dispatch coverage rows cannot be blocked")
+        if not isinstance(self.complete, bool):
+            raise ValueError("registry dispatch coverage complete must be boolean")
+        if not self.claim_boundary:
+            raise ValueError("registry dispatch coverage claim_boundary must be non-empty")
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready primitive registry-dispatch coverage."""
+
+        return {
+            "family": self.family,
+            "primitive": self.primitive,
+            "identity": self.identity,
+            "derivative_rule": self.derivative_rule,
+            "has_batching_rule": self.has_batching_rule,
+            "has_lowering_rule": self.has_lowering_rule,
+            "has_lowering_metadata": self.has_lowering_metadata,
+            "has_shape_rule": self.has_shape_rule,
+            "has_dtype_rule": self.has_dtype_rule,
+            "has_static_argument_rule": self.has_static_argument_rule,
+            "nondifferentiable_policy": self.nondifferentiable_policy,
+            "effect": self.effect,
+            "lowering_metadata_keys": list(self.lowering_metadata_keys),
+            "complete": self.complete,
+            "blocked_reasons": list(self.blocked_reasons),
+            "claim_boundary": self.claim_boundary,
+        }
+
+
+@dataclass(frozen=True)
+class ProgramADRegistryDispatchCoverageReport:
+    """JSON-ready coverage report for registry-dispatched Program AD primitives."""
+
+    rows: tuple[ProgramADRegistryDispatchCoverageRow, ...]
+    family_counts: Mapping[str, int]
+    covered_primitives: int
+    total_primitives: int
+    claim_boundary: str = PROGRAM_AD_REGISTRY_DISPATCH_CLAIM_BOUNDARY
+
+    def __post_init__(self) -> None:
+        if not self.rows:
+            raise ValueError("registry dispatch coverage report requires rows")
+        if any(not isinstance(row, ProgramADRegistryDispatchCoverageRow) for row in self.rows):
+            raise ValueError("registry dispatch coverage rows must be coverage row entries")
+        family_counts = dict(self.family_counts)
+        if any(not family for family in family_counts):
+            raise ValueError("registry dispatch coverage families must be non-empty")
+        if any(count <= 0 for count in family_counts.values()):
+            raise ValueError("registry dispatch coverage family counts must be positive")
+        if self.total_primitives != len(self.rows):
+            raise ValueError("registry dispatch coverage total must match row count")
+        if self.covered_primitives != sum(1 for row in self.rows if row.complete):
+            raise ValueError("registry dispatch coverage covered count must match complete rows")
+        if self.covered_primitives < 0 or self.covered_primitives > self.total_primitives:
+            raise ValueError("registry dispatch coverage covered count is invalid")
+        if sum(family_counts.values()) != self.total_primitives:
+            raise ValueError("registry dispatch coverage family counts must sum to total")
+        if not self.claim_boundary:
+            raise ValueError("registry dispatch coverage claim_boundary must be non-empty")
+        object.__setattr__(self, "family_counts", family_counts)
+
+    @property
+    def supported(self) -> bool:
+        """Return true only when every declared primitive has complete metadata."""
+
+        return self.covered_primitives == self.total_primitives
+
+    @property
+    def blocked_identities(self) -> tuple[str, ...]:
+        """Return primitive identities that did not resolve to complete contracts."""
+
+        return tuple(row.identity for row in self.rows if not row.complete)
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready registry-dispatch coverage evidence."""
+
+        return {
+            "supported": self.supported,
+            "covered_primitives": self.covered_primitives,
+            "total_primitives": self.total_primitives,
+            "blocked_identities": list(self.blocked_identities),
+            "family_counts": dict(self.family_counts),
+            "rows": [row.to_dict() for row in self.rows],
+            "claim_boundary": self.claim_boundary,
+        }
+
+
 class CustomDerivativeRegistry:
     """Conflict-safe registry binding primitive identities to exact rules."""
 
@@ -13964,6 +14094,21 @@ _PROGRAM_AD_LINALG_IDENTITIES: Mapping[str, PrimitiveIdentity] = {
         "svd",
         "pinv",
     )
+}
+
+_PROGRAM_AD_REGISTRY_DISPATCH_IDENTITY_GROUPS: Mapping[str, Mapping[str, PrimitiveIdentity]] = {
+    "array": _PROGRAM_AD_ARRAY_IDENTITIES,
+    "shape": _PROGRAM_AD_SHAPE_IDENTITIES,
+    "reduction": _PROGRAM_AD_REDUCTION_IDENTITIES,
+    "stencil": _PROGRAM_AD_STENCIL_IDENTITIES,
+    "interpolation": _PROGRAM_AD_INTERPOLATION_IDENTITIES,
+    "assembly": _PROGRAM_AD_ASSEMBLY_IDENTITIES,
+    "signal": _PROGRAM_AD_SIGNAL_IDENTITIES,
+    "elementwise": _PROGRAM_AD_ELEMENTWISE_IDENTITIES,
+    "selection": _PROGRAM_AD_SELECTION_IDENTITIES,
+    "product": _PROGRAM_AD_PRODUCT_IDENTITIES,
+    "cumulative": _PROGRAM_AD_CUMULATIVE_IDENTITIES,
+    "linalg": _PROGRAM_AD_LINALG_IDENTITIES,
 }
 
 
@@ -22764,7 +22909,9 @@ def _program_ad_elementwise_lowering_metadata(name: str) -> Mapping[str, str]:
     boundary = nondifferentiable_boundaries.get(name)
     if boundary is not None:
         metadata["nondifferentiable_boundary"] = boundary
-        metadata["nondifferentiable_boundary_policy"] = "fail_closed"
+    else:
+        metadata["nondifferentiable_boundary"] = "none"
+    metadata["nondifferentiable_boundary_policy"] = "fail_closed"
     return metadata
 
 
@@ -27499,6 +27646,95 @@ def primitive_complete_contract_for(
     return target.require_complete_contract(identity)
 
 
+def _program_ad_registry_dispatch_coverage_row(
+    family: str,
+    primitive: str,
+    identity: PrimitiveIdentity,
+    registry: CustomDerivativeRegistry,
+) -> ProgramADRegistryDispatchCoverageRow:
+    blocked_reasons: list[str] = []
+    contract = registry.contract_for(identity)
+    complete = False
+    if contract is None:
+        blocked_reasons.append("missing primitive registry contract")
+    else:
+        missing: list[str] = []
+        if contract.batching_rule is None:
+            missing.append("batching_rule")
+        if not contract.lowering_metadata:
+            missing.append("lowering_metadata")
+        if not contract.lowering_metadata.get("nondifferentiable_boundary"):
+            missing.append("nondifferentiable_boundary")
+        if contract.lowering_metadata.get("nondifferentiable_boundary_policy") != "fail_closed":
+            missing.append("nondifferentiable_boundary_policy")
+        if contract.shape_rule is None:
+            missing.append("shape_rule")
+        if contract.dtype_rule is None:
+            missing.append("dtype_rule")
+        if contract.static_argument_rule is None:
+            missing.append("static_argument_rule")
+        if contract.nondifferentiable_policy == "not_declared":
+            missing.append("nondifferentiable_policy")
+        if not contract.effect:
+            missing.append("effect")
+        if missing:
+            blocked_reasons.append(
+                f"incomplete registry-dispatch contract: missing {', '.join(missing)}"
+            )
+        else:
+            complete = True
+
+    return ProgramADRegistryDispatchCoverageRow(
+        family=family,
+        primitive=primitive,
+        identity=identity.key,
+        derivative_rule=None if contract is None else contract.derivative_rule.name,
+        has_batching_rule=contract is not None and contract.batching_rule is not None,
+        has_lowering_rule=contract is not None and contract.lowering_rule is not None,
+        has_lowering_metadata=contract is not None and bool(contract.lowering_metadata),
+        has_shape_rule=contract is not None and contract.shape_rule is not None,
+        has_dtype_rule=contract is not None and contract.dtype_rule is not None,
+        has_static_argument_rule=contract is not None
+        and contract.static_argument_rule is not None,
+        nondifferentiable_policy=None if contract is None else contract.nondifferentiable_policy,
+        effect=None if contract is None else contract.effect,
+        lowering_metadata_keys=()
+        if contract is None
+        else tuple(sorted(contract.lowering_metadata)),
+        complete=complete,
+        blocked_reasons=tuple(blocked_reasons),
+    )
+
+
+def program_ad_registry_dispatch_coverage_report(
+    *,
+    registry: CustomDerivativeRegistry | None = None,
+) -> ProgramADRegistryDispatchCoverageReport:
+    """Return registry-dispatched coverage for declared Program AD primitives."""
+
+    target = DEFAULT_CUSTOM_DERIVATIVE_REGISTRY if registry is None else registry
+    rows: list[ProgramADRegistryDispatchCoverageRow] = []
+    family_counts: dict[str, int] = {}
+    for family, identities in _PROGRAM_AD_REGISTRY_DISPATCH_IDENTITY_GROUPS.items():
+        family_counts[family] = len(identities)
+        for primitive, identity in sorted(identities.items()):
+            rows.append(
+                _program_ad_registry_dispatch_coverage_row(
+                    family,
+                    primitive,
+                    identity,
+                    target,
+                )
+            )
+
+    return ProgramADRegistryDispatchCoverageReport(
+        rows=tuple(rows),
+        family_counts=family_counts,
+        covered_primitives=sum(1 for row in rows if row.complete),
+        total_primitives=len(rows),
+    )
+
+
 def custom_derivative_rule_for(
     identity: PrimitiveIdentity | str,
     *,
@@ -31947,6 +32183,8 @@ __all__ = [
     "ProgramADEffectIR",
     "ProgramADLinalgConditioningDiagnostic",
     "ProgramADPhiNode",
+    "ProgramADRegistryDispatchCoverageReport",
+    "ProgramADRegistryDispatchCoverageRow",
     "ProgramADSSAValue",
     "PrimitiveBatchingRule",
     "PrimitiveContract",
@@ -32041,6 +32279,7 @@ __all__ = [
     "primitive_nondifferentiable_policy_for",
     "primitive_shape_rule_for",
     "primitive_static_argument_rule_for",
+    "program_ad_registry_dispatch_coverage_report",
     "program_ad_shape_atleast_1d_derivative_rule",
     "program_ad_shape_atleast_2d_derivative_rule",
     "program_ad_shape_atleast_3d_derivative_rule",

@@ -8,9 +8,9 @@
     "notebook_files": 98,
     "optional_extras": 42,
     "paper0_validation_modules": 466,
-    "public_api_exports": 684,
+    "public_api_exports": 687,
     "public_documentation_pages": 254,
-    "python_model_classes": 1826,
+    "python_model_classes": 1828,
     "python_model_source_modules": 835,
     "rust_pyo3_model_wrappers": 135,
     "rust_source_modules": 38,
@@ -5630,6 +5630,14 @@
         "path": "src/scpn_quantum_control/differentiable.py"
       },
       {
+        "name": "ProgramADRegistryDispatchCoverageReport",
+        "path": "src/scpn_quantum_control/differentiable.py"
+      },
+      {
+        "name": "ProgramADRegistryDispatchCoverageRow",
+        "path": "src/scpn_quantum_control/differentiable.py"
+      },
+      {
         "name": "ProgramADSSAValue",
         "path": "src/scpn_quantum_control/differentiable.py"
       },
@@ -9538,6 +9546,8 @@
     "ProgramADEffectIR",
     "ProgramADLinalgConditioningDiagnostic",
     "ProgramADPhiNode",
+    "ProgramADRegistryDispatchCoverageReport",
+    "ProgramADRegistryDispatchCoverageRow",
     "ProgramADSSAValue",
     "ProgramADStaticAliasLatticeComponent",
     "ProgramADStaticAliasLatticeReport",
@@ -9914,6 +9924,7 @@
     "program_ad_product_inner_derivative_rule",
     "program_ad_product_outer_derivative_rule",
     "program_ad_product_tensordot_derivative_rule",
+    "program_ad_registry_dispatch_coverage_report",
     "program_ad_selection_clip_derivative_rule",
     "program_ad_selection_where_derivative_rule",
     "program_ad_shape_atleast_1d_derivative_rule",

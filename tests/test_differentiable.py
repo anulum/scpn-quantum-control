@@ -67,6 +67,8 @@ from scpn_quantum_control.differentiable import (
     ProgramADEffect,
     ProgramADEffectIR,
     ProgramADPhiNode,
+    ProgramADRegistryDispatchCoverageReport,
+    ProgramADRegistryDispatchCoverageRow,
     ProgramADSSAValue,
     ProgramADStaticAliasLatticeComponent,
     ProgramADStaticAliasLatticeReport,
@@ -208,6 +210,7 @@ from scpn_quantum_control.differentiable import (
     program_ad_reduction_sum_derivative_rule,
     program_ad_reduction_trapezoid_derivative_rule,
     program_ad_reduction_var_derivative_rule,
+    program_ad_registry_dispatch_coverage_report,
     program_ad_selection_clip_derivative_rule,
     program_ad_selection_where_derivative_rule,
     program_ad_shape_atleast_1d_derivative_rule,
@@ -17204,6 +17207,69 @@ def test_primitive_registry_requires_complete_contract_for_compiler_consumers() 
     assert primitive_complete_contract_for(identity, registry=registry) == contract
 
 
+def test_program_ad_registry_dispatch_coverage_report_is_complete() -> None:
+    """Program AD primitive coverage should be resolved through registry contracts."""
+
+    report = program_ad_registry_dispatch_coverage_report()
+
+    assert isinstance(report, ProgramADRegistryDispatchCoverageReport)
+    assert report.supported is True
+    assert report.blocked_identities == ()
+    assert report.covered_primitives == report.total_primitives
+    assert report.total_primitives > 90
+    assert set(report.family_counts) == {
+        "array",
+        "shape",
+        "reduction",
+        "stencil",
+        "interpolation",
+        "assembly",
+        "signal",
+        "elementwise",
+        "selection",
+        "product",
+        "cumulative",
+        "linalg",
+    }
+    assert report.family_counts["elementwise"] >= 20
+    assert all(isinstance(row, ProgramADRegistryDispatchCoverageRow) for row in report.rows)
+    assert all(row.complete for row in report.rows)
+    assert all(row.blocked_reasons == () for row in report.rows)
+    assert all(row.has_batching_rule for row in report.rows)
+    assert all(row.has_lowering_metadata for row in report.rows)
+    assert all(row.has_shape_rule for row in report.rows)
+    assert all(row.has_dtype_rule for row in report.rows)
+    assert all(row.has_static_argument_rule for row in report.rows)
+    assert all(
+        row.nondifferentiable_policy == "program_ad_trace_exact_fail_closed" for row in report.rows
+    )
+    assert all(row.effect == "pure" for row in report.rows)
+    assert any(row.identity == "scpn.program_ad.product:einsum@1" for row in report.rows)
+    payload = report.to_dict()
+    assert payload["supported"] is True
+    assert payload["blocked_identities"] == []
+    assert payload["covered_primitives"] == report.total_primitives
+    assert "not executable Rust, LLVM, JIT" in str(payload["claim_boundary"])
+
+
+def test_program_ad_registry_dispatch_coverage_report_fails_closed_for_missing_registry() -> None:
+    """Registry-dispatch coverage should expose missing contracts as blocked rows."""
+
+    report = program_ad_registry_dispatch_coverage_report(registry=CustomDerivativeRegistry())
+
+    assert report.supported is False
+    assert report.covered_primitives == 0
+    assert len(report.blocked_identities) == report.total_primitives
+    assert all(not row.complete for row in report.rows)
+    assert all(row.derivative_rule is None for row in report.rows)
+    assert all(
+        row.blocked_reasons == ("missing primitive registry contract",) for row in report.rows
+    )
+    payload = report.to_dict()
+    assert payload["supported"] is False
+    assert len(payload["blocked_identities"]) == report.total_primitives
+
+
 def test_primitive_transform_registry_validation_and_overwrite_paths() -> None:
     """Primitive transform registration should fail closed and support explicit overwrite."""
 
@@ -17425,6 +17491,8 @@ def test_primitive_batching_exports_are_available_from_package_root() -> None:
     assert scpn.PrimitiveShapeRule is PrimitiveShapeRule
     assert scpn.PrimitiveStaticArgumentRule is not None
     assert scpn.PrimitiveTransformRule is PrimitiveTransformRule
+    assert scpn.ProgramADRegistryDispatchCoverageReport is ProgramADRegistryDispatchCoverageReport
+    assert scpn.ProgramADRegistryDispatchCoverageRow is ProgramADRegistryDispatchCoverageRow
     assert scpn.primitive_complete_contract_for is primitive_complete_contract_for
     assert scpn.primitive_dtype_rule_for is primitive_dtype_rule_for
     assert scpn.primitive_effect_for is primitive_effect_for
@@ -17432,6 +17500,10 @@ def test_primitive_batching_exports_are_available_from_package_root() -> None:
     assert scpn.primitive_nondifferentiable_policy_for is primitive_nondifferentiable_policy_for
     assert scpn.primitive_shape_rule_for is primitive_shape_rule_for
     assert scpn.primitive_static_argument_rule_for is primitive_static_argument_rule_for
+    assert (
+        scpn.program_ad_registry_dispatch_coverage_report
+        is program_ad_registry_dispatch_coverage_report
+    )
     assert (
         scpn.program_ad_stencil_gradient_derivative_rule
         is program_ad_stencil_gradient_derivative_rule

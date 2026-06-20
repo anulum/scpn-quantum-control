@@ -292,6 +292,20 @@ def test_differentiable_dashboard_status_is_claim_bounded_for_gui_consumers() ->
         "non-executed branch semantics remain blocked"
         in (rows["program_ad_alias_effects"]["blocked_reasons"])
     )
+    assert rows["program_ad_registry_dispatch_coverage"]["state"] == "diagnostic"
+    assert rows["program_ad_registry_dispatch_coverage"]["fail_closed"] is True
+    assert (
+        "ProgramADRegistryDispatchCoverageReport"
+        in rows["program_ad_registry_dispatch_coverage"]["evidence"]
+    )
+    assert (
+        "program_ad_registry_dispatch_contracts"
+        in rows["program_ad_registry_dispatch_coverage"]["evidence"]
+    )
+    assert (
+        "not executable Rust, LLVM, JIT"
+        in (rows["program_ad_registry_dispatch_coverage"]["claim_boundary"])
+    )
     assert rows["program_ad_python_semantics"]["state"] == "diagnostic"
     assert rows["program_ad_python_semantics"]["fail_closed"] is True
     assert "python_semantics_list_comprehension" in rows["program_ad_python_semantics"]["evidence"]
@@ -450,6 +464,12 @@ def test_differentiable_dashboard_status_can_include_conformance_backing() -> No
     assert rows["program_ad_reverse_adjoint_replay"].fail_closed is False
     assert rows["program_ad_reverse_adjoint_replay"].blocked_reasons == ()
     assert "generated adjoint steps" in (rows["program_ad_reverse_adjoint_replay"].claim_boundary)
+    assert rows["program_ad_registry_dispatch_coverage"].state == "conformance_backed"
+    assert rows["program_ad_registry_dispatch_coverage"].fail_closed is False
+    assert rows["program_ad_registry_dispatch_coverage"].blocked_reasons == ()
+    assert "not executable Rust, LLVM, JIT" in (
+        rows["program_ad_registry_dispatch_coverage"].claim_boundary
+    )
     assert "finite local pullback scales" in (
         rows["program_ad_reverse_adjoint_replay"].claim_boundary
     )

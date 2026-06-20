@@ -31,6 +31,7 @@ from .differentiable import (
     ScalarObjective,
     VectorObjective,
     compile_whole_program_frontend,
+    program_ad_registry_dispatch_coverage_report,
     value_and_grad,
     value_and_hessian,
     value_and_jacobian,
@@ -688,6 +689,20 @@ def differentiable_dashboard_status(
                 "metadata only; control-path aliases and non-executed phi inputs are "
                 "explicit blockers, not promoted branch adjoints"
             ),
+        ),
+        DifferentiableDashboardCapabilityRow(
+            surface="program_ad_registry_dispatch_coverage",
+            state="conformance_backed" if conformance_passed else "diagnostic",
+            backing_api="program_ad_registry_dispatch_coverage_report",
+            evidence=(
+                "ProgramADRegistryDispatchCoverageReport",
+                "ProgramADRegistryDispatchCoverageRow",
+                "program_ad_registry_dispatch_contracts",
+            ),
+            blocked_reasons=()
+            if conformance_passed
+            else ("conformance suite not run in this status call",),
+            claim_boundary=program_ad_registry_dispatch_coverage_report().claim_boundary,
         ),
         DifferentiableDashboardCapabilityRow(
             surface="torch_phase_qnode_statevector_lowering",

@@ -32,6 +32,7 @@ from ..differentiable import (
     jax_value_and_grad,
     jvp,
     parse_program_ad_effect_ir,
+    program_ad_registry_dispatch_coverage_report,
     program_ad_static_alias_lattice_report,
     program_adjoint_gradient,
     program_adjoint_result,
@@ -228,6 +229,7 @@ def run_differentiable_programming_benchmark_suite() -> tuple[
         _program_ad_ir_roundtrip_case(),
         _program_ad_control_phi_metadata_case(),
         _program_ad_mlir_interchange_case(),
+        _program_ad_registry_dispatch_coverage_case(),
         _program_adjoint_replay_provenance_case(),
         _elementwise_boundary_case(),
         _matrix_heavy_case(),
@@ -878,6 +880,53 @@ def _program_ad_mlir_interchange_case() -> DifferentiableProgrammingBenchmarkRes
             "for captured SSA/effect/control/phi metadata only; no executable "
             "Rust, LLVM, or JIT differentiated runtime, hardware, provider, or "
             "performance evidence; no wall-clock performance claim"
+        ),
+    )
+
+
+def _program_ad_registry_dispatch_coverage_case() -> DifferentiableProgrammingBenchmarkResult:
+    report = program_ad_registry_dispatch_coverage_report()
+    if not report.supported:
+        blocked = ", ".join(report.blocked_identities)
+        raise ValueError(f"program AD registry-dispatch coverage is incomplete: {blocked}")
+    if report.covered_primitives != report.total_primitives:
+        raise ValueError("program AD registry-dispatch coverage count mismatch")
+    required_families = {
+        "array",
+        "shape",
+        "reduction",
+        "stencil",
+        "interpolation",
+        "assembly",
+        "signal",
+        "elementwise",
+        "selection",
+        "product",
+        "cumulative",
+        "linalg",
+    }
+    if set(report.family_counts) != required_families:
+        raise ValueError("program AD registry-dispatch family coverage is incomplete")
+
+    gradient = np.array(
+        [float(report.covered_primitives), float(report.total_primitives)],
+        dtype=np.float64,
+    )
+    return DifferentiableProgrammingBenchmarkResult(
+        case_id="program_ad_registry_dispatch_contracts",
+        category="registry-dispatch",
+        value=float(report.covered_primitives),
+        gradient=gradient,
+        analytic_gradient=gradient.copy(),
+        max_abs_gradient_error=0.0,
+        adjoint_supported=False,
+        max_abs_adjoint_error=None,
+        claim_boundary=(
+            "registry-dispatched Program AD primitive coverage over declared "
+            "derivative, batching, lowering metadata, shape, dtype, "
+            "static-argument, nondifferentiability, and effect contracts only; "
+            "not executable Rust, LLVM, JIT, provider, hardware, or performance "
+            "evidence; no wall-clock performance claim"
         ),
     )
 
