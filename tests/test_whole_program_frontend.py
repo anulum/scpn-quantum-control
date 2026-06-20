@@ -1,0 +1,197 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
+# © Concepts 1996-2026 Miroslav Sotek. All rights reserved.
+# © Code 2020-2026 Miroslav Sotek. All rights reserved.
+# ORCID: 0009-0009-3560-0851
+# Contact: www.anulum.li | protoscience@anulum.li
+# scpn-quantum-control -- whole-program frontend extraction contracts
+"""Contracts for static whole-program bytecode/source frontend inspection."""
+
+from __future__ import annotations
+
+import numpy as np
+import pytest
+from numpy.typing import NDArray
+
+import scpn_quantum_control as scpn
+from scpn_quantum_control.differentiable import (
+    compile_whole_program_frontend as facade_compile_whole_program_frontend,
+)
+from scpn_quantum_control.whole_program_frontend import (
+    WholeProgramBytecodeBasicBlock,
+    WholeProgramCompilerFrontendReport,
+    WholeProgramSemanticsReport,
+    WholeProgramSourceBytecodeLineMap,
+    WholeProgramSourceRegion,
+    WholeProgramSymbolScopeEntry,
+    WholeProgramUnsupportedSemanticDiagnostic,
+    compile_whole_program_frontend,
+)
+
+
+def test_whole_program_frontend_module_matches_facade_report() -> None:
+    """The extracted module and compatibility facade should inspect the same objective."""
+
+    calls = {"count": 0}
+
+    def objective(values: NDArray[np.float64]) -> object:
+        calls["count"] += 1
+        total = values[0]
+        for index in range(1, 3):
+            total = total + np.sin(values[index])
+        if total > 0.0:
+            total = total * values[0]
+        return total
+
+    module_report = compile_whole_program_frontend(objective)
+    facade_report = facade_compile_whole_program_frontend(objective)
+    payload = module_report.to_dict()
+
+    assert calls == {"count": 0}
+    assert module_report == facade_report
+    assert isinstance(module_report, WholeProgramCompilerFrontendReport)
+    assert module_report.frontend_ready is True
+    assert module_report.source_available is True
+    assert module_report.source_sha256 is not None
+    assert len(module_report.source_sha256) == 64
+    assert len(module_report.bytecode_digest) == 64
+    assert len(module_report.frontend_digest) == 64
+    assert module_report.bytecode_instruction_count > 0
+    assert module_report.bytecode_basic_block_count > 1
+    assert module_report.source_region_count > 1
+    assert module_report.source_bytecode_line_map_count > 0
+    assert module_report.symbol_scope_entry_count > 0
+    assert module_report.ast_node_count > 0
+    assert module_report.hard_gaps == ()
+    assert any(block.successor_offsets for block in module_report.bytecode_basic_blocks)
+    assert any(len(block.successor_offsets) == 2 for block in module_report.bytecode_basic_blocks)
+    assert {"entry", "function", "loop", "control_flow"}.issubset(
+        {region.kind for region in module_report.source_regions}
+    )
+    assert any(
+        line_map.absolute_line_number is not None
+        and line_map.absolute_line_number > line_map.line_number
+        for line_map in module_report.source_bytecode_line_map
+    )
+    assert any(
+        entry.symbol == "values" and entry.region_ids
+        for entry in module_report.symbol_scope_entries
+    )
+    assert module_report.semantics_report.bytecode_frontend is True
+    assert module_report.semantics_report.source_frontend is True
+    assert module_report.semantics_report.loop_observed is True
+    assert module_report.semantics_report.control_flow_observed is True
+    assert module_report.semantics_report.numpy_observed is True
+    assert payload["frontend_ready"] is True
+    assert payload["frontend_digest"] == module_report.frontend_digest
+    assert "does not execute objectives" in module_report.claim_boundary
+
+
+def test_whole_program_frontend_reports_located_unsupported_semantics() -> None:
+    """Unsupported source constructs should become located hard gaps."""
+
+    def objective(values: NDArray[np.float64]) -> object:
+        return sum([item for item in values if item > 0.0])
+
+    report = compile_whole_program_frontend(objective)
+    payload = report.to_dict()
+
+    assert report.frontend_ready is False
+    assert report.semantics_report.unsupported_python_semantics == ("filtered_comprehension",)
+    assert report.hard_gaps == ("unsupported_python_semantics:filtered_comprehension",)
+    assert report.unsupported_semantic_diagnostic_count == 1
+    diagnostic = report.unsupported_semantic_diagnostics[0]
+    assert isinstance(diagnostic, WholeProgramUnsupportedSemanticDiagnostic)
+    assert diagnostic.semantic == "filtered_comprehension"
+    assert diagnostic.line_number > 0
+    assert diagnostic.absolute_line_number is not None
+    assert diagnostic.region_ids
+    diagnostics = payload["unsupported_semantic_diagnostics"]
+    assert isinstance(diagnostics, list)
+    assert diagnostics
+    first_diagnostic = diagnostics[0]
+    assert isinstance(first_diagnostic, dict)
+    assert first_diagnostic["semantic"] == "filtered_comprehension"
+
+
+def test_whole_program_frontend_dataclasses_fail_closed() -> None:
+    """Frontend value objects should reject inconsistent static metadata."""
+
+    with pytest.raises(ValueError, match="instruction_offsets must be sorted"):
+        WholeProgramBytecodeBasicBlock(
+            label="bb",
+            start_offset=1,
+            end_offset=2,
+            instruction_offsets=(2, 1),
+            successor_offsets=(),
+            terminating_opname="RETURN_VALUE",
+        )
+
+    with pytest.raises(ValueError, match="feature_kinds must be sorted and unique"):
+        WholeProgramSourceRegion(
+            region_id="region:bad",
+            kind="entry",
+            detail="module",
+            line_start=1,
+            line_end=1,
+            parent_region_id=None,
+            feature_kinds=("loop", "loop"),
+        )
+
+    with pytest.raises(ValueError, match="instruction_offsets must be sorted"):
+        WholeProgramSourceBytecodeLineMap(
+            line_number=1,
+            absolute_line_number=1,
+            instruction_offsets=(4, 2),
+            region_ids=("region:entry",),
+            feature_kinds=(),
+        )
+
+    with pytest.raises(ValueError, match="roles must be sorted and unique"):
+        WholeProgramSymbolScopeEntry(
+            symbol="values",
+            roles=("parameter", "parameter"),
+            line_numbers=(1,),
+            bytecode_offsets=(),
+            region_ids=("region:entry",),
+        )
+
+    with pytest.raises(ValueError, match="bytecode_offsets must be sorted"):
+        WholeProgramUnsupportedSemanticDiagnostic(
+            semantic="filtered_comprehension",
+            detail="filtered_comprehension",
+            line_number=1,
+            absolute_line_number=10,
+            region_ids=("region:entry",),
+            bytecode_offsets=(4, 2),
+        )
+
+    with pytest.raises(ValueError, match="accepted_python_semantics entries"):
+        WholeProgramSemanticsReport(
+            bytecode_frontend=True,
+            source_frontend=True,
+            graph_capture=True,
+            aliasing_observed=False,
+            mutation_observed=False,
+            loop_observed=False,
+            control_flow_observed=False,
+            numpy_observed=False,
+            differentiation_semantics="bounded",
+            accepted_python_semantics=("",),
+            unsupported_python_semantics=(),
+        )
+
+
+def test_whole_program_frontend_exports_stay_crosswired() -> None:
+    """Package-root, facade, and module exports should share object identity."""
+
+    assert scpn.compile_whole_program_frontend is compile_whole_program_frontend
+    assert facade_compile_whole_program_frontend is compile_whole_program_frontend
+    assert scpn.WholeProgramBytecodeBasicBlock is WholeProgramBytecodeBasicBlock
+    assert scpn.WholeProgramCompilerFrontendReport is WholeProgramCompilerFrontendReport
+    assert scpn.WholeProgramSourceBytecodeLineMap is WholeProgramSourceBytecodeLineMap
+    assert scpn.WholeProgramSourceRegion is WholeProgramSourceRegion
+    assert scpn.WholeProgramSymbolScopeEntry is WholeProgramSymbolScopeEntry
+    assert (
+        scpn.WholeProgramUnsupportedSemanticDiagnostic is WholeProgramUnsupportedSemanticDiagnostic
+    )

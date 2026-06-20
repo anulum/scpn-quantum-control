@@ -23,6 +23,7 @@ DIFFERENTIABLE_MODULE_PATTERNS = (
     "src/scpn_quantum_control/phase/*qnode*.py",
     "src/scpn_quantum_control/phase/*bridge*.py",
     "src/scpn_quantum_control/phase/*compiler*.py",
+    "src/scpn_quantum_control/whole_program*.py",
     "src/scpn_quantum_control/benchmarks/differentiable*.py",
 )
 
@@ -109,6 +110,11 @@ def differentiable_module_hardening_registry() -> tuple[DifferentiableModuleHard
             "src/scpn_quantum_control/differentiable.py",
             ("tests/test_differentiable.py",),
             ("shape and dtype validation", "diagnostic-only finite differences"),
+        ),
+        _record(
+            "src/scpn_quantum_control/whole_program_frontend.py",
+            ("tests/test_whole_program_frontend.py",),
+            ("static bytecode/source frontend", "unsupported Python-semantics hard gaps"),
         ),
         _record(
             "src/scpn_quantum_control/differentiable_api.py",

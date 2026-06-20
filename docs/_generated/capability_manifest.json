@@ -11,10 +11,10 @@
     "public_api_exports": 712,
     "public_documentation_pages": 254,
     "python_model_classes": 1837,
-    "python_model_source_modules": 839,
+    "python_model_source_modules": 840,
     "rust_pyo3_model_wrappers": 137,
     "rust_source_modules": 38,
-    "test_files": 1960
+    "test_files": 1961
   },
   "documentation": {
     "examples": [
@@ -8311,15 +8311,15 @@
       },
       {
         "name": "WholeProgramBytecodeBasicBlock",
-        "path": "src/scpn_quantum_control/differentiable.py"
+        "path": "src/scpn_quantum_control/whole_program_frontend.py"
       },
       {
         "name": "WholeProgramBytecodeInstruction",
-        "path": "src/scpn_quantum_control/differentiable.py"
+        "path": "src/scpn_quantum_control/whole_program_frontend.py"
       },
       {
         "name": "WholeProgramCompilerFrontendReport",
-        "path": "src/scpn_quantum_control/differentiable.py"
+        "path": "src/scpn_quantum_control/whole_program_frontend.py"
       },
       {
         "name": "WholeProgramIRNode",
@@ -8327,23 +8327,23 @@
       },
       {
         "name": "WholeProgramSemanticsReport",
-        "path": "src/scpn_quantum_control/differentiable.py"
+        "path": "src/scpn_quantum_control/whole_program_frontend.py"
       },
       {
         "name": "WholeProgramSourceBytecodeLineMap",
-        "path": "src/scpn_quantum_control/differentiable.py"
+        "path": "src/scpn_quantum_control/whole_program_frontend.py"
       },
       {
         "name": "WholeProgramSourceIRFeature",
-        "path": "src/scpn_quantum_control/differentiable.py"
+        "path": "src/scpn_quantum_control/whole_program_frontend.py"
       },
       {
         "name": "WholeProgramSourceRegion",
-        "path": "src/scpn_quantum_control/differentiable.py"
+        "path": "src/scpn_quantum_control/whole_program_frontend.py"
       },
       {
         "name": "WholeProgramSymbolScopeEntry",
-        "path": "src/scpn_quantum_control/differentiable.py"
+        "path": "src/scpn_quantum_control/whole_program_frontend.py"
       },
       {
         "name": "WholeProgramTraceEvent",
@@ -8351,7 +8351,7 @@
       },
       {
         "name": "WholeProgramUnsupportedSemanticDiagnostic",
-        "path": "src/scpn_quantum_control/differentiable.py"
+        "path": "src/scpn_quantum_control/whole_program_frontend.py"
       },
       {
         "name": "WilsonLoopResult",
@@ -9249,6 +9249,7 @@
       "src/scpn_quantum_control/topology_control/objectives.py",
       "src/scpn_quantum_control/topology_control/optimizers.py",
       "src/scpn_quantum_control/topology_control/qsnn_integration.py",
+      "src/scpn_quantum_control/whole_program_frontend.py",
       "src/scpn_quantum_control/wirtinger_calculus.py"
     ],
     "rust_pyo3_wrappers": [
@@ -12174,6 +12175,7 @@
       "tests/test_vqls_edge_cases.py",
       "tests/test_vqls_gs.py",
       "tests/test_vqs_alternative_readiness.py",
+      "tests/test_whole_program_frontend.py",
       "tests/test_wilson_loop.py",
       "tests/test_wirtinger_calculus.py",
       "tests/test_witness_discovery.py",

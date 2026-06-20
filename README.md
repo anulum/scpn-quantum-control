@@ -97,7 +97,7 @@ has a defined commercial licensing route.
 |---|---:|
 | Package version | 0.9.12 |
 | Public API exports | 712 |
-| Python source modules | 839 |
+| Python source modules | 840 |
 | Public Python classes | 1837 |
 | Paper 0 validation modules | 466 |
 | Domain package families | 32 |
@@ -107,7 +107,7 @@ has a defined commercial licensing route.
 | Notebook files | 98 |
 | Example files | 30 |
 | Optional extras | 42 |
-| Python test files | 1960 |
+| Python test files | 1961 |
 | Public documentation pages | 254 |
 | GitHub Actions workflows | 19 |
 
@@ -345,6 +345,12 @@ Program AD execution, LLVM/JIT execution, hardware, and performance promotion.
 Python callers can use `scpn_quantum_control.program_ad_rust_bridge` for the
 typed fail-closed wrappers; `scpn_quantum_control.differentiable` re-exports
 the same symbols for backward compatibility.
+Static whole-program bytecode/source frontend inspection now lives in
+`scpn_quantum_control.whole_program_frontend`; `scpn_quantum_control.differentiable`
+and the package root re-export `compile_whole_program_frontend(...)` and its
+report objects for compatibility. The frontend remains no-execution preflight
+metadata, not executable Rust, LLVM, JIT, provider, hardware, or benchmark
+evidence.
 Python compiler interchange lowers captured `program_ad_effect_ir.v1` records
 into deterministic `scpn_diff.program_ad_*` MLIR-style operations through
 `compile_whole_program_ad_trace_to_mlir(...)`, validated by
