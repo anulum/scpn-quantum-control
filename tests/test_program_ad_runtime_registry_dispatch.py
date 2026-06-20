@@ -16,7 +16,10 @@ import numpy as np
 import pytest
 from numpy.typing import NDArray
 
-from scpn_quantum_control.differentiable import whole_program_value_and_grad
+from scpn_quantum_control.differentiable import (
+    program_adjoint_gradient,
+    whole_program_value_and_grad,
+)
 from scpn_quantum_control.program_ad_registry import (
     DEFAULT_CUSTOM_DERIVATIVE_REGISTRY,
     PrimitiveContract,
@@ -352,4 +355,135 @@ def test_program_ad_assembly_primitives_validate_registry_rules_at_dispatch() ->
         "vstack": {"shape", "dtype", "static"},
         "vsplit": {"shape", "dtype", "static"},
         "zeros_like": {"shape", "dtype", "static"},
+    }
+
+
+def test_program_ad_reduction_and_cumulative_primitives_validate_registry_rules_at_dispatch() -> (
+    None
+):
+    """Supported reduction and cumulative primitives must use registry validation."""
+
+    originals = {
+        name: primitive_contract_for(f"scpn.program_ad.reduction:{name}")
+        for name in (
+            "max",
+            "mean",
+            "median",
+            "min",
+            "percentile",
+            "prod",
+            "quantile",
+            "std",
+            "sum",
+            "trapezoid",
+            "var",
+        )
+    }
+    originals.update(
+        {
+            name: primitive_contract_for(f"scpn.program_ad.cumulative:{name}")
+            for name in ("cumprod", "cumsum", "diff")
+        }
+    )
+    calls: dict[str, set[str]] = {name: set() for name in originals}
+
+    for name, original in originals.items():
+        assert original.shape_rule is not None
+        assert original.dtype_rule is not None
+        assert original.static_argument_rule is not None
+        contract_shape_rule = cast(Any, original.shape_rule)
+        contract_dtype_rule = cast(Any, original.dtype_rule)
+        contract_static_argument_rule = cast(Any, original.static_argument_rule)
+
+        def shape_rule(
+            args: tuple[object, ...],
+            *,
+            primitive_name: str = name,
+            contract_rule: Any = contract_shape_rule,
+        ) -> tuple[int, ...]:
+            calls[primitive_name].add("shape")
+            return cast(tuple[int, ...], contract_rule(args))
+
+        def dtype_rule(
+            args: tuple[object, ...],
+            *,
+            primitive_name: str = name,
+            contract_rule: Any = contract_dtype_rule,
+        ) -> str:
+            calls[primitive_name].add("dtype")
+            return cast(str, contract_rule(args))
+
+        def static_argument_rule(
+            args: tuple[object, ...],
+            *,
+            primitive_name: str = name,
+            contract_rule: Any = contract_static_argument_rule,
+        ) -> tuple[object, ...]:
+            calls[primitive_name].add("static")
+            return cast(tuple[object, ...], contract_rule(args))
+
+        DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.register_transform(
+            PrimitiveTransformRule(
+                identity=original.identity,
+                derivative_rule=original.derivative_rule,
+                batching_rule=original.batching_rule,
+                lowering_rule=original.lowering_rule,
+                lowering_metadata=original.lowering_metadata,
+                shape_rule=shape_rule,
+                dtype_rule=dtype_rule,
+                static_argument_rule=static_argument_rule,
+                nondifferentiable_policy=original.nondifferentiable_policy,
+                effect=original.effect,
+            ),
+            overwrite=True,
+        )
+
+    values = np.array([1.0, -2.0, 0.5, 3.0, -1.5, 2.0], dtype=np.float64)
+
+    def objective(source: Any) -> object:
+        matrix = np.reshape(source, (2, 3))
+        shifted = matrix + 3.0
+        grid = np.array([0.0, 0.5, 2.0], dtype=np.float64)
+        return (
+            np.sum(matrix)
+            + np.sum(np.prod(shifted, axis=1))
+            + np.sum(np.mean(matrix, axis=0))
+            + np.sum(matrix.max(axis=0))
+            - np.sum(matrix.min(axis=1))
+            + np.sum(matrix.var(axis=1, ddof=1))
+            + np.sum(matrix.std(axis=0, ddof=1))
+            + np.median(source)
+            + np.sum(np.quantile(matrix, 0.25, axis=1))
+            + np.sum(np.percentile(matrix, 75.0, axis=0))
+            + np.sum(np.trapezoid(matrix, x=grid, axis=1))
+            + np.sum(np.cumsum(source))
+            + np.sum(np.cumprod(source + 3.0))
+            + np.sum(np.diff(source, n=2))
+        )
+
+    try:
+        result = whole_program_value_and_grad(objective, values)
+    finally:
+        for original in originals.values():
+            DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.register_transform(
+                _transform_rule_from_contract(original), overwrite=True
+            )
+
+    assert result.value == pytest.approx(float(cast(Any, objective)(values)))
+    np.testing.assert_allclose(program_adjoint_gradient(result), result.gradient, atol=1.0e-12)
+    assert calls == {
+        "cumprod": {"shape", "dtype", "static"},
+        "cumsum": {"shape", "dtype", "static"},
+        "diff": {"shape", "dtype", "static"},
+        "max": {"shape", "dtype", "static"},
+        "mean": {"shape", "dtype", "static"},
+        "median": {"shape", "dtype", "static"},
+        "min": {"shape", "dtype", "static"},
+        "percentile": {"shape", "dtype", "static"},
+        "prod": {"shape", "dtype", "static"},
+        "quantile": {"shape", "dtype", "static"},
+        "std": {"shape", "dtype", "static"},
+        "sum": {"shape", "dtype", "static"},
+        "trapezoid": {"shape", "dtype", "static"},
+        "var": {"shape", "dtype", "static"},
     }
