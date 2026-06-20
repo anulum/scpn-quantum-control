@@ -101,9 +101,7 @@ from scpn_quantum_control.differentiable import (
     huber_residual_weights,
     implicit_fixed_point_sensitivity,
     implicit_stationary_sensitivity,
-    is_jax_autodiff_available,
     jacobian,
-    jax_value_and_grad,
     least_squares_covariance,
     levenberg_marquardt_step,
     multi_frequency_parameter_shift_rule,
@@ -3175,26 +3173,6 @@ def test_gradient_result_rejects_malformed_metadata() -> None:
             parameter_names=("a",),
             trainable=(np.bool_(True),),  # type: ignore[arg-type]
         )
-
-
-def test_jax_value_and_grad_matches_quadratic_when_available() -> None:
-    """Optional JAX bridge should expose real autodiff when JAX is installed."""
-
-    if not is_jax_autodiff_available():
-        with pytest.raises(ImportError, match="JAX"):
-            jax_value_and_grad(lambda values: values[0] ** 2, [2.0])
-        return
-
-    value, gradient = jax_value_and_grad(lambda values: values[0] ** 2, [2.0])
-    assert value == pytest.approx(4.0)
-    np.testing.assert_allclose(gradient, [4.0], rtol=1e-6, atol=1e-6)
-
-
-def test_jax_value_and_grad_rejects_implicit_parameter_coercion() -> None:
-    """JAX bridge input validation should match the native differentiable path."""
-
-    with pytest.raises(ValueError, match="parameters must contain real numeric scalars"):
-        jax_value_and_grad(lambda values: values[0] ** 2, ["2.0"])
 
 
 def test_qsnn_trainer_uses_native_parameter_shift(monkeypatch: pytest.MonkeyPatch) -> None:
