@@ -135,6 +135,7 @@ def test_rust_program_ad_value_and_gradient_replay_matches_scalar_reference() ->
     assert payload["parameter_targets"] == ["%0", "%1"]
     assert payload["value"] == pytest.approx(0.4**2 + 2.0 * -0.2 + np.sin(0.4))
     assert payload["gradient"] == pytest.approx([2.0 * 0.4 + np.cos(0.4), 2.0])
+    assert "scalar_primitives" in payload["claim_boundary"]
     assert "executed_branch_no_alias" in payload["claim_boundary"]
 
 

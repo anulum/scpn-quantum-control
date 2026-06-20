@@ -15597,7 +15597,7 @@ def test_rust_program_ad_value_and_gradient_replay_matches_python_trace() -> Non
     assert rust_result.supported_effect_count == len(result.program_ir.effects)
     assert (
         rust_result.claim_boundary
-        == "bounded_rust_program_ad_ir_scalar_value_and_gradient_executed_branch_no_alias_no_llvm_jit"
+        == "bounded_rust_program_ad_ir_scalar_primitives_value_and_gradient_executed_branch_no_alias_no_llvm_jit"
     )
 
 
@@ -15635,7 +15635,63 @@ def test_rust_program_ad_value_and_gradient_replays_executed_branch_trace() -> N
     assert rust_result.supported_effect_count == len(result.program_ir.effects)
     assert (
         rust_result.claim_boundary
-        == "bounded_rust_program_ad_ir_scalar_value_and_gradient_executed_branch_no_alias_no_llvm_jit"
+        == "bounded_rust_program_ad_ir_scalar_primitives_value_and_gradient_executed_branch_no_alias_no_llvm_jit"
+    )
+
+
+def test_rust_program_ad_value_and_gradient_replays_scalar_primitive_family_trace() -> None:
+    """Rust Program AD replay should preserve emitted scalar primitive-family traces."""
+
+    pytest.importorskip("scpn_quantum_engine")
+    values = np.array([0.4, -0.2, 0.25, 0.1], dtype=np.float64)
+
+    def objective(trace_values: Any) -> object:
+        x, y, z, w = trace_values
+        return (
+            np.sqrt(x + 2.0)
+            + np.tanh(y)
+            + np.log1p(z)
+            + np.expm1(w)
+            + np.reciprocal(x + 3.0)
+            + np.arcsin(0.2 * y)
+            + np.arccos(0.1 * z)
+            + abs(w + 1.0)
+        )
+
+    result = whole_program_value_and_grad(
+        objective,
+        values,
+        parameters=(
+            Parameter("x"),
+            Parameter("y"),
+            Parameter("z"),
+            Parameter("w"),
+        ),
+    )
+    assert result.program_ir is not None
+    assert not result.program_ir.alias_edges
+    assert not result.program_ir.control_regions
+    operations = {effect.operation for effect in result.program_ir.effects}
+    assert {
+        "sqrt",
+        "tanh",
+        "log1p",
+        "expm1",
+        "reciprocal",
+        "arcsin",
+        "arccos",
+        "abs",
+    } <= operations
+
+    rust_result = value_and_grad_program_ad_effect_ir_with_rust(result.program_ir, values)
+
+    assert rust_result.supported is True, rust_result.blocked_reasons
+    assert rust_result.value == pytest.approx(result.value, abs=1.0e-12)
+    np.testing.assert_allclose(rust_result.gradient, result.gradient, atol=1.0e-12)
+    assert rust_result.supported_effect_count == len(result.program_ir.effects)
+    assert (
+        rust_result.claim_boundary
+        == "bounded_rust_program_ad_ir_scalar_primitives_value_and_gradient_executed_branch_no_alias_no_llvm_jit"
     )
 
 

@@ -24,26 +24,26 @@
     {
       "path": "data/differentiable_phase_qnode/differentiable_sota_scorecard_20260620.json",
       "role": "Differentiable SOTA category scorecard artefact",
-      "sha256": "89373f656c61a0e8fa2103fbcddf21302f1fd810ec77eadcb58723710803c27a",
-      "size_bytes": 28123
+      "sha256": "5364b173b066094d3d93da4998420fb6be1fa7aa61f9d9f245b88fb3a360e2b1",
+      "size_bytes": 28112
     },
     {
       "path": "data/differentiable_phase_qnode/differentiable_sota_scorecard_20260620.md",
       "role": "Differentiable SOTA category scorecard reviewer summary",
-      "sha256": "07216bdd86f8933d26cf072891b3027172998d7f22dfa9b510b967f5cf5e6131",
-      "size_bytes": 7497
+      "sha256": "254fbc085d4a4bfc8ddd0b800c98af64d589e9d70a1e702f43bbe53a8d22d49b",
+      "size_bytes": 7486
     },
     {
       "path": "data/differentiable_phase_qnode/differentiable_rust_python_inventory_20260620.json",
       "role": "Differentiable Rust/Python rustification surface inventory artefact",
-      "sha256": "84e11fcdda6e782611d6c10acb898653f8fed7162366292f5ddbe2fba92e3a15",
-      "size_bytes": 27393
+      "sha256": "8f43aec29788f869a807fa1a4b4fbf22eebc9ce9eee42ccec248670aae5e5fbf",
+      "size_bytes": 27435
     },
     {
       "path": "data/differentiable_phase_qnode/differentiable_rust_python_inventory_20260620.md",
       "role": "Differentiable Rust/Python rustification surface inventory reviewer summary",
-      "sha256": "8c33461865548dfc3a923d3f4bb0287aa3edd2714923df80f778c45e3938466c",
-      "size_bytes": 3027
+      "sha256": "db52d436dead3a1e8fb5558f49cc4622cc62d5cf5f2df3411649a29bfe4a59b6",
+      "size_bytes": 2999
     },
     {
       "path": "data/differentiable_phase_qnode/external_validation_environment_lock_20260616.json",

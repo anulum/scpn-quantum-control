@@ -24,9 +24,9 @@ use serde_json::Value;
 const PROGRAM_AD_EFFECT_IR_FORMAT: &str = "program_ad_effect_ir.v1";
 const PROGRAM_AD_IR_CLAIM_BOUNDARY: &str = "metadata_only_no_program_execution";
 const PROGRAM_AD_RUST_INTERPRETER_CLAIM_BOUNDARY: &str =
-    "bounded_rust_program_ad_ir_scalar_forward_executed_branch_no_alias_no_llvm_jit";
+    "bounded_rust_program_ad_ir_scalar_primitives_executed_branch_no_alias_no_llvm_jit";
 const PROGRAM_AD_RUST_VALUE_AND_GRADIENT_CLAIM_BOUNDARY: &str =
-    "bounded_rust_program_ad_ir_scalar_value_and_gradient_executed_branch_no_alias_no_llvm_jit";
+    "bounded_rust_program_ad_ir_scalar_primitives_value_and_gradient_executed_branch_no_alias_no_llvm_jit";
 
 /// One SSA value record from Python-emitted Program AD metadata.
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize)]

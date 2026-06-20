@@ -69,12 +69,12 @@ serde-backed `program_ad_effect_ir.v1` metadata parser with the PyO3
 interpreter exposed as `program_ad_effect_ir_interpret_forward(...)`, and a
 bounded scalar value+gradient replay exposed as
 `program_ad_effect_ir_interpret_value_and_gradient(...)`. Rust replay only
-executes opcode-bearing scalar `program_ad_effect_ir.v1` rows emitted by
-current Python traces, including executed runtime branch metadata when matched
-by runtime phi provenance. Legacy opcode-free metadata, aliases, mutation,
-array semantics, source-level and non-executed branch semantics, general Program
-AD execution, LLVM/JIT lowering, hardware execution, and performance promotion
-remain fail-closed.
+executes opcode-bearing scalar primitive-family `program_ad_effect_ir.v1` rows
+emitted by current Python traces, including executed runtime branch metadata
+when matched by runtime phi provenance. Legacy opcode-free metadata, aliases,
+mutation, array semantics, source-level and non-executed branch semantics,
+general Program AD execution, LLVM/JIT lowering, hardware execution, and
+performance promotion remain fail-closed.
 Python compiler interchange lowers captured `program_ad_effect_ir.v1` records
 into deterministic `scpn_diff.program_ad_ssa`,
 `scpn_diff.program_ad_effect`, `scpn_diff.program_ad_alias_edge`,

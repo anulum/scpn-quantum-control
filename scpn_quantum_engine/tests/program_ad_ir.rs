@@ -108,6 +108,66 @@ const EXECUTED_BRANCH_PROGRAM_AD_IR: &str = r#"{
   "bytecode_offsets": [0, 2, 4]
 }"#;
 
+const SCALAR_PRIMITIVE_FAMILY_PROGRAM_AD_IR: &str = r#"{
+  "format": "program_ad_effect_ir.v1",
+  "ssa_values": [
+    {"name": "%0", "producer": 0, "version": 0, "shape": [], "dtype": "float64", "effect": 0},
+    {"name": "%1", "producer": 1, "version": 0, "shape": [], "dtype": "float64", "effect": 1},
+    {"name": "%2", "producer": 2, "version": 0, "shape": [], "dtype": "float64", "effect": 2},
+    {"name": "%3", "producer": 3, "version": 0, "shape": [], "dtype": "float64", "effect": 3},
+    {"name": "%4", "producer": 4, "version": 0, "shape": [], "dtype": "float64", "effect": 4},
+    {"name": "%5", "producer": 5, "version": 0, "shape": [], "dtype": "float64", "effect": 5},
+    {"name": "%6", "producer": 6, "version": 0, "shape": [], "dtype": "float64", "effect": 6},
+    {"name": "%7", "producer": 7, "version": 0, "shape": [], "dtype": "float64", "effect": 7},
+    {"name": "%8", "producer": 8, "version": 0, "shape": [], "dtype": "float64", "effect": 8},
+    {"name": "%9", "producer": 9, "version": 0, "shape": [], "dtype": "float64", "effect": 9},
+    {"name": "%10", "producer": 10, "version": 0, "shape": [], "dtype": "float64", "effect": 10},
+    {"name": "%11", "producer": 11, "version": 0, "shape": [], "dtype": "float64", "effect": 11},
+    {"name": "%12", "producer": 12, "version": 0, "shape": [], "dtype": "float64", "effect": 12},
+    {"name": "%13", "producer": 13, "version": 0, "shape": [], "dtype": "float64", "effect": 13},
+    {"name": "%14", "producer": 14, "version": 0, "shape": [], "dtype": "float64", "effect": 14},
+    {"name": "%15", "producer": 15, "version": 0, "shape": [], "dtype": "float64", "effect": 15},
+    {"name": "%16", "producer": 16, "version": 0, "shape": [], "dtype": "float64", "effect": 16},
+    {"name": "%17", "producer": 17, "version": 0, "shape": [], "dtype": "float64", "effect": 17},
+    {"name": "%18", "producer": 18, "version": 0, "shape": [], "dtype": "float64", "effect": 18},
+    {"name": "%19", "producer": 19, "version": 0, "shape": [], "dtype": "float64", "effect": 19},
+    {"name": "%20", "producer": 20, "version": 0, "shape": [], "dtype": "float64", "effect": 20},
+    {"name": "%21", "producer": 21, "version": 0, "shape": [], "dtype": "float64", "effect": 21},
+    {"name": "%22", "producer": 22, "version": 0, "shape": [], "dtype": "float64", "effect": 22},
+    {"name": "%23", "producer": 23, "version": 0, "shape": [], "dtype": "float64", "effect": 23}
+  ],
+  "effects": [
+    {"index": 0, "kind": "parameter", "target": "%0", "inputs": ["x"], "version": 0, "ordering": 0, "operation": "parameter"},
+    {"index": 1, "kind": "parameter", "target": "%1", "inputs": ["y"], "version": 0, "ordering": 1, "operation": "parameter"},
+    {"index": 2, "kind": "parameter", "target": "%2", "inputs": ["z"], "version": 0, "ordering": 2, "operation": "parameter"},
+    {"index": 3, "kind": "parameter", "target": "%3", "inputs": ["w"], "version": 0, "ordering": 3, "operation": "parameter"},
+    {"index": 4, "kind": "pure", "target": "%4", "inputs": ["%0", "2.0"], "version": 0, "ordering": 4, "operation": "add"},
+    {"index": 5, "kind": "primitive", "target": "%5", "inputs": ["%4"], "version": 0, "ordering": 5, "operation": "sqrt"},
+    {"index": 6, "kind": "primitive", "target": "%6", "inputs": ["%1"], "version": 0, "ordering": 6, "operation": "tanh"},
+    {"index": 7, "kind": "pure", "target": "%7", "inputs": ["%5", "%6"], "version": 0, "ordering": 7, "operation": "add"},
+    {"index": 8, "kind": "primitive", "target": "%8", "inputs": ["%2"], "version": 0, "ordering": 8, "operation": "log1p"},
+    {"index": 9, "kind": "pure", "target": "%9", "inputs": ["%7", "%8"], "version": 0, "ordering": 9, "operation": "add"},
+    {"index": 10, "kind": "primitive", "target": "%10", "inputs": ["%3"], "version": 0, "ordering": 10, "operation": "expm1"},
+    {"index": 11, "kind": "pure", "target": "%11", "inputs": ["%9", "%10"], "version": 0, "ordering": 11, "operation": "add"},
+    {"index": 12, "kind": "pure", "target": "%12", "inputs": ["%0", "3.0"], "version": 0, "ordering": 12, "operation": "add"},
+    {"index": 13, "kind": "primitive", "target": "%13", "inputs": ["%12"], "version": 0, "ordering": 13, "operation": "reciprocal"},
+    {"index": 14, "kind": "pure", "target": "%14", "inputs": ["%11", "%13"], "version": 0, "ordering": 14, "operation": "add"},
+    {"index": 15, "kind": "pure", "target": "%15", "inputs": ["%1", "0.2"], "version": 0, "ordering": 15, "operation": "mul"},
+    {"index": 16, "kind": "primitive", "target": "%16", "inputs": ["%15"], "version": 0, "ordering": 16, "operation": "arcsin"},
+    {"index": 17, "kind": "pure", "target": "%17", "inputs": ["%14", "%16"], "version": 0, "ordering": 17, "operation": "add"},
+    {"index": 18, "kind": "pure", "target": "%18", "inputs": ["%2", "0.1"], "version": 0, "ordering": 18, "operation": "mul"},
+    {"index": 19, "kind": "primitive", "target": "%19", "inputs": ["%18"], "version": 0, "ordering": 19, "operation": "arccos"},
+    {"index": 20, "kind": "pure", "target": "%20", "inputs": ["%17", "%19"], "version": 0, "ordering": 20, "operation": "add"},
+    {"index": 21, "kind": "pure", "target": "%21", "inputs": ["%3", "1.0"], "version": 0, "ordering": 21, "operation": "add"},
+    {"index": 22, "kind": "primitive", "target": "%22", "inputs": ["%21"], "version": 0, "ordering": 22, "operation": "abs"},
+    {"index": 23, "kind": "pure", "target": "%23", "inputs": ["%20", "%22"], "version": 0, "ordering": 23, "operation": "add"}
+  ],
+  "alias_edges": [],
+  "control_regions": [],
+  "phi_nodes": [],
+  "bytecode_offsets": [0, 2, 4]
+}"#;
+
 #[test]
 fn program_ad_effect_ir_parser_round_trips_python_payload_shape() {
     let ir = parse_program_ad_effect_ir(VALID_PROGRAM_AD_IR).unwrap();
@@ -187,7 +247,7 @@ fn program_ad_effect_ir_rust_interpreter_executes_opcode_bearing_scalar_subset()
     assert!((result.value.unwrap() - expected).abs() <= 1.0e-12);
     assert_eq!(
         result.claim_boundary,
-        "bounded_rust_program_ad_ir_scalar_forward_executed_branch_no_alias_no_llvm_jit"
+        "bounded_rust_program_ad_ir_scalar_primitives_executed_branch_no_alias_no_llvm_jit"
     );
 }
 
@@ -205,7 +265,7 @@ fn program_ad_effect_ir_rust_interpreter_replays_executed_branch_metadata() {
     assert!((result.value.unwrap() - expected).abs() <= 1.0e-12);
     assert_eq!(
         result.claim_boundary,
-        "bounded_rust_program_ad_ir_scalar_forward_executed_branch_no_alias_no_llvm_jit"
+        "bounded_rust_program_ad_ir_scalar_primitives_executed_branch_no_alias_no_llvm_jit"
     );
 }
 
@@ -229,7 +289,7 @@ fn program_ad_effect_ir_rust_value_and_gradient_replays_scalar_reverse_subset() 
     assert_eq!(result.parameter_targets, vec!["%0", "%1"]);
     assert_eq!(
         result.claim_boundary,
-        "bounded_rust_program_ad_ir_scalar_value_and_gradient_executed_branch_no_alias_no_llvm_jit"
+        "bounded_rust_program_ad_ir_scalar_primitives_value_and_gradient_executed_branch_no_alias_no_llvm_jit"
     );
 }
 
@@ -253,7 +313,50 @@ fn program_ad_effect_ir_rust_value_and_gradient_replays_executed_branch_metadata
     assert_eq!(result.parameter_targets, vec!["%0", "%1"]);
     assert_eq!(
         result.claim_boundary,
-        "bounded_rust_program_ad_ir_scalar_value_and_gradient_executed_branch_no_alias_no_llvm_jit"
+        "bounded_rust_program_ad_ir_scalar_primitives_value_and_gradient_executed_branch_no_alias_no_llvm_jit"
+    );
+}
+
+#[test]
+fn program_ad_effect_ir_rust_value_and_gradient_replays_scalar_primitive_family() {
+    let result = interpret_program_ad_effect_ir_value_and_gradient(
+        SCALAR_PRIMITIVE_FAMILY_PROGRAM_AD_IR,
+        &[0.4, -0.2, 0.25, 0.1],
+    )
+    .unwrap();
+
+    let x: f64 = 0.4;
+    let y: f64 = -0.2;
+    let z: f64 = 0.25;
+    let w: f64 = 0.1;
+    let expected = (x + 2.0).sqrt()
+        + y.tanh()
+        + z.ln_1p()
+        + w.exp_m1()
+        + 1.0 / (x + 3.0)
+        + (0.2 * y).asin()
+        + (0.1 * z).acos()
+        + (w + 1.0).abs();
+    let expected_gradient = [
+        0.5 / (x + 2.0).sqrt() - 1.0 / ((x + 3.0) * (x + 3.0)),
+        1.0 - y.tanh() * y.tanh() + 0.2 / (1.0 - (0.2 * y) * (0.2 * y)).sqrt(),
+        1.0 / (1.0 + z) - 0.1 / (1.0 - (0.1 * z) * (0.1 * z)).sqrt(),
+        w.exp() + 1.0,
+    ];
+
+    assert!(result.supported);
+    assert_eq!(result.effect_count, 24);
+    assert_eq!(result.supported_effect_count, 24);
+    assert!(result.blocked_reasons.is_empty());
+    assert!((result.value.unwrap() - expected).abs() <= 1.0e-12);
+    assert_eq!(result.gradient.len(), 4);
+    for (actual, expected) in result.gradient.iter().zip(expected_gradient) {
+        assert!((actual - expected).abs() <= 1.0e-12);
+    }
+    assert_eq!(result.parameter_targets, vec!["%0", "%1", "%2", "%3"]);
+    assert_eq!(
+        result.claim_boundary,
+        "bounded_rust_program_ad_ir_scalar_primitives_value_and_gradient_executed_branch_no_alias_no_llvm_jit"
     );
 }
 

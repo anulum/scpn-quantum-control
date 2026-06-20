@@ -757,16 +757,26 @@ def _program_ad_ir_roundtrip_case() -> DifferentiableProgrammingBenchmarkResult:
 
 
 def _program_ad_rust_scalar_interpreter_case() -> DifferentiableProgrammingBenchmarkResult:
-    values = np.array([0.4, -0.2], dtype=np.float64)
+    values = np.array([0.4, -0.2, 0.25, 0.1], dtype=np.float64)
 
     def objective(trace_values: Any) -> object:
-        x, y = trace_values
-        return (x * x if x > y else y * y) + 2.0 * y + np.sin(x)
+        x, y, z, w = trace_values
+        return (
+            (x * x if x > y else y * y)
+            + np.sqrt(x + 2.0)
+            + np.tanh(y)
+            + np.log1p(z)
+            + np.expm1(w)
+            + np.reciprocal(x + 3.0)
+            + np.arcsin(0.2 * y)
+            + np.arccos(0.1 * z)
+            + abs(w + 1.0)
+        )
 
     result = whole_program_value_and_grad(
         objective,
         values,
-        parameters=(Parameter("x"), Parameter("y")),
+        parameters=(Parameter("x"), Parameter("y"), Parameter("z"), Parameter("w")),
     )
     if result.program_ir is None:
         raise ValueError("Rust Program AD interpreter case requires program IR")
@@ -794,7 +804,16 @@ def _program_ad_rust_scalar_interpreter_case() -> DifferentiableProgrammingBench
     if rust_value_gradient.supported_effect_count != len(result.program_ir.effects):
         raise ValueError("Rust Program AD scalar value+gradient replay missed effects")
 
-    analytic = np.array([2.0 * values[0] + math.cos(values[0]), 2.0], dtype=np.float64)
+    x, y, z, w = values
+    analytic = np.array(
+        [
+            2.0 * x + 0.5 / math.sqrt(x + 2.0) - 1.0 / ((x + 3.0) * (x + 3.0)),
+            1.0 - math.tanh(y) * math.tanh(y) + 0.2 / math.sqrt(1.0 - (0.2 * y) ** 2),
+            1.0 / (1.0 + z) - 0.1 / math.sqrt(1.0 - (0.1 * z) ** 2),
+            math.exp(w) + 1.0,
+        ],
+        dtype=np.float64,
+    )
     if _max_abs_error(rust_value_gradient.gradient, result.gradient) > 1.0e-12:
         raise ValueError("Rust Program AD scalar value+gradient replay gradient diverged")
     return DifferentiableProgrammingBenchmarkResult(
@@ -808,11 +827,12 @@ def _program_ad_rust_scalar_interpreter_case() -> DifferentiableProgrammingBench
         max_abs_adjoint_error=_max_abs_error(rust_value_gradient.gradient, analytic),
         claim_boundary=(
             "bounded Rust Program AD IR scalar value+gradient replay over opcode-bearing "
-            "program_ad_effect_ir.v1 rows with executed runtime branch metadata but no "
-            "aliases, mutation, arrays, LLVM, JIT, provider, hardware, or performance "
-            "claim; non-executed branch adjoints and source-level control lowering remain "
-            "fail-closed; Python whole-program AD and analytic gradients are local "
-            "conformance references only; no wall-clock performance claim"
+            "program_ad_effect_ir.v1 rows with scalar primitive-family operations and "
+            "executed runtime branch metadata but no aliases, mutation, arrays, LLVM, "
+            "JIT, provider, hardware, or performance claim; non-executed branch adjoints "
+            "and source-level control lowering remain fail-closed; Python whole-program AD "
+            "and analytic gradients are local conformance references only; no wall-clock "
+            "performance claim"
         ),
     )
 

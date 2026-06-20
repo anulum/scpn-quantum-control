@@ -635,7 +635,7 @@ def interpret_program_ad_effect_ir_with_rust(
     if not np.all(np.isfinite(checked_inputs)):
         raise ValueError("Rust Program AD interpreter inputs must contain finite values")
     claim_boundary = (
-        "bounded_rust_program_ad_ir_scalar_forward_executed_branch_no_alias_no_llvm_jit"
+        "bounded_rust_program_ad_ir_scalar_primitives_executed_branch_no_alias_no_llvm_jit"
     )
     try:
         import scpn_quantum_engine as engine
@@ -711,9 +711,7 @@ def value_and_grad_program_ad_effect_ir_with_rust(
         raise ValueError("Rust Program AD value+gradient inputs must be one-dimensional")
     if not np.all(np.isfinite(checked_inputs)):
         raise ValueError("Rust Program AD value+gradient inputs must contain finite values")
-    claim_boundary = (
-        "bounded_rust_program_ad_ir_scalar_value_and_gradient_executed_branch_no_alias_no_llvm_jit"
-    )
+    claim_boundary = "bounded_rust_program_ad_ir_scalar_primitives_value_and_gradient_executed_branch_no_alias_no_llvm_jit"
     try:
         import scpn_quantum_engine as engine
     except ModuleNotFoundError:
