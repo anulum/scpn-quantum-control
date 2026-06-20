@@ -240,12 +240,7 @@ from .param_shift import (
 )
 from .pennylane_bridge import (
     PennyLaneGradientAgreementResult,
-    PennyLaneHardwarePluginExecutionArtifact,
     PennyLaneMaturityAuditResult,
-    PennyLanePluginMatrixResult,
-    PennyLanePluginMatrixRoute,
-    PennyLaneProviderGradientParityArtifact,
-    PennyLaneProviderPluginExecutionArtifact,
     PennyLaneQNodeConversionResult,
     PennyLaneRoundTripResult,
     build_pennylane_qnode_from_phase_qnode,
@@ -254,7 +249,6 @@ from .pennylane_bridge import (
     check_pennylane_qnode_round_trip,
     is_phase_pennylane_available,
     run_pennylane_maturity_audit,
-    run_pennylane_plugin_matrix,
 )
 from .pennylane_import import (
     PennyLaneImportResult,
@@ -262,6 +256,14 @@ from .pennylane_import import (
     check_pennylane_phase_qnode_import_round_trip,
     import_phase_qnode_from_pennylane,
     is_pennylane_import_available,
+)
+from .pennylane_provider_plugin import (
+    PennyLaneHardwarePluginExecutionArtifact,
+    PennyLanePluginMatrixResult,
+    PennyLanePluginMatrixRoute,
+    PennyLaneProviderGradientParityArtifact,
+    PennyLaneProviderPluginExecutionArtifact,
+    run_pennylane_plugin_matrix,
 )
 from .phase_vqe import PhaseVQE
 from .provider_gradient import (

@@ -1903,6 +1903,9 @@ observable conversion remain explicit non-claims.
 Device, interface, and diff-method metadata is trimmed and rejected when empty
 or when it contains control characters before `qml.device(...)` or QNode
 construction is reached.
+`scpn_quantum_control.phase.pennylane_provider_plugin` owns the provider-plugin
+artefact types and fail-closed plugin matrix; `pennylane_bridge` re-exports the
+same objects for compatibility with older imports.
 `PennyLaneProviderPluginExecutionArtifact` validates provider-plugin execution
 metadata with non-empty plugin/provider/device/backend identities, positive
 shots when present, SHA-256 result and metadata digests, optional replay

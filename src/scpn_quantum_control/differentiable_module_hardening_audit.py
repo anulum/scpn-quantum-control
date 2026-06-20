@@ -20,6 +20,7 @@ DIFFERENTIABLE_MODULE_PATTERNS = (
     "src/scpn_quantum_control/differentiable*.py",
     "src/scpn_quantum_control/phase/differentiable*.py",
     "src/scpn_quantum_control/phase/*gradient*.py",
+    "src/scpn_quantum_control/phase/*provider*.py",
     "src/scpn_quantum_control/phase/*qnode*.py",
     "src/scpn_quantum_control/phase/*bridge*.py",
     "src/scpn_quantum_control/phase/*compiler*.py",
@@ -220,6 +221,11 @@ def differentiable_module_hardening_registry() -> tuple[DifferentiableModuleHard
             ("missing-PennyLane dependency records", "round-trip failure diagnostics"),
         ),
         _record(
+            "src/scpn_quantum_control/phase/pennylane_provider_plugin.py",
+            ("tests/test_phase_pennylane_provider_plugin.py",),
+            ("provider-plugin artifact validation", "provider-exceedance blockers"),
+        ),
+        _record(
             "src/scpn_quantum_control/phase/provider_gradient.py",
             ("tests/test_phase_provider_gradient.py",),
             ("malformed callback records", "finite-shot uncertainty records"),
@@ -233,6 +239,11 @@ def differentiable_module_hardening_registry() -> tuple[DifferentiableModuleHard
             "src/scpn_quantum_control/phase/provider_hardware_gradient_audit.py",
             ("tests/test_phase_provider_hardware_gradient_audit.py",),
             ("no-submit provider audits", "missing evidence gates"),
+        ),
+        _record(
+            "src/scpn_quantum_control/phase/provider_hardware_safety_audit.py",
+            ("tests/test_phase_provider_hardware_safety_audit.py",),
+            ("aggregate provider safety gate", "hardware-promotion blockers"),
         ),
         _record(
             "src/scpn_quantum_control/phase/qiskit_bridge.py",

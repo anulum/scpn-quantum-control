@@ -182,6 +182,10 @@ or debugging a subsystem, not as the default path for tutorial code.
     options:
       members: [ExternalComparisonArtifact, ExternalComparisonRow, IdenticalCircuitGradientComparisonArtifact, IdenticalCircuitGradientComparisonRow, run_differentiable_external_comparison_suite, run_identical_circuit_gradient_comparison_suite, write_differentiable_external_comparison, write_identical_circuit_gradient_comparison]
 
+::: scpn_quantum_control.phase.pennylane_provider_plugin
+    options:
+      members: [PennyLaneHardwarePluginExecutionArtifact, PennyLanePluginMatrixResult, PennyLanePluginMatrixRoute, PennyLaneProviderGradientParityArtifact, PennyLaneProviderPluginExecutionArtifact, run_pennylane_plugin_matrix]
+
 ::: scpn_quantum_control.differentiable_claim_ledger
     options:
       members: [ClaimLedger, ClaimLedgerRow, ClaimLedgerValidation, DifferentiableSupportSurfaceAlignment, load_differentiable_claim_ledger, render_claim_ledger_markdown, validate_claim_ledger, validate_differentiable_support_surface_alignment, validate_public_language_against_ledger]
