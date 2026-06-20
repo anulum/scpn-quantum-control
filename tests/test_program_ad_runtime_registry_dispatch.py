@@ -487,3 +487,96 @@ def test_program_ad_reduction_and_cumulative_primitives_validate_registry_rules_
         "trapezoid": {"shape", "dtype", "static"},
         "var": {"shape", "dtype", "static"},
     }
+
+
+def test_program_ad_array_primitives_validate_registry_rules_at_dispatch() -> None:
+    """Supported array primitives must execute through registry validation rules."""
+
+    originals = {
+        name: primitive_contract_for(f"scpn.program_ad.array:{name}")
+        for name in ("getitem", "take", "take_along_axis", "delete", "pad", "insert")
+    }
+    calls: dict[str, set[str]] = {name: set() for name in originals}
+
+    for name, original in originals.items():
+        assert original.shape_rule is not None
+        assert original.dtype_rule is not None
+        assert original.static_argument_rule is not None
+        contract_shape_rule = cast(Any, original.shape_rule)
+        contract_dtype_rule = cast(Any, original.dtype_rule)
+        contract_static_argument_rule = cast(Any, original.static_argument_rule)
+
+        def shape_rule(
+            args: tuple[object, ...],
+            *,
+            primitive_name: str = name,
+            contract_rule: Any = contract_shape_rule,
+        ) -> tuple[int, ...]:
+            calls[primitive_name].add("shape")
+            return cast(tuple[int, ...], contract_rule(args))
+
+        def dtype_rule(
+            args: tuple[object, ...],
+            *,
+            primitive_name: str = name,
+            contract_rule: Any = contract_dtype_rule,
+        ) -> str:
+            calls[primitive_name].add("dtype")
+            return cast(str, contract_rule(args))
+
+        def static_argument_rule(
+            args: tuple[object, ...],
+            *,
+            primitive_name: str = name,
+            contract_rule: Any = contract_static_argument_rule,
+        ) -> tuple[object, ...]:
+            calls[primitive_name].add("static")
+            return cast(tuple[object, ...], contract_rule(args))
+
+        DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.register_transform(
+            PrimitiveTransformRule(
+                identity=original.identity,
+                derivative_rule=original.derivative_rule,
+                batching_rule=original.batching_rule,
+                lowering_rule=original.lowering_rule,
+                lowering_metadata=original.lowering_metadata,
+                shape_rule=shape_rule,
+                dtype_rule=dtype_rule,
+                static_argument_rule=static_argument_rule,
+                nondifferentiable_policy=original.nondifferentiable_policy,
+                effect=original.effect,
+            ),
+            overwrite=True,
+        )
+
+    try:
+
+        def objective(values: Any) -> object:
+            matrix = np.reshape(values, (2, 3))
+            sliced = matrix[:, 1:]
+            taken = np.take(sliced, np.array([1, 0]), axis=1)
+            along = np.take_along_axis(taken, np.array([[1, 0], [0, 1]]), axis=1)
+            deleted = np.delete(along, np.array([0]), axis=0)
+            padded = np.pad(deleted, ((0, 1), (1, 0)), mode="constant", constant_values=0.5)
+            inserted = np.insert(padded, 1, np.array([2.0, -1.0]), axis=1)
+            return np.sum(inserted)
+
+        result = whole_program_value_and_grad(
+            objective,
+            np.array([1.0, 2.0, 3.0, 4.0, 5.0, 6.0], dtype=np.float64),
+        )
+    finally:
+        for original in originals.values():
+            DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.register_transform(
+                _transform_rule_from_contract(original), overwrite=True
+            )
+
+    assert result.value == pytest.approx(14.0)
+    assert calls == {
+        "getitem": {"shape", "dtype", "static"},
+        "take": {"shape", "dtype", "static"},
+        "take_along_axis": {"shape", "dtype", "static"},
+        "delete": {"shape", "dtype", "static"},
+        "pad": {"shape", "dtype", "static"},
+        "insert": {"shape", "dtype", "static"},
+    }
