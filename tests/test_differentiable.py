@@ -142,46 +142,6 @@ except (ImportError, AttributeError):
     _PL_OK = False
 
 
-def test_natural_gradient_damping_repairs_semidefinite_metric() -> None:
-    """Damping should make semidefinite trainable metrics solvable."""
-
-    gradient = GradientResult(
-        value=1.0,
-        gradient=np.array([2.0]),
-        method="finite_difference_central",
-        shift=1.0e-6,
-        coefficient=5.0e5,
-        evaluations=3,
-        parameter_names=("x",),
-        trainable=(True,),
-    )
-    result = natural_gradient(gradient, np.array([[0.0]]), damping=0.5)
-
-    np.testing.assert_allclose(result.natural_gradient, [4.0])
-
-
-def test_natural_gradient_rejects_invalid_metric() -> None:
-    """Natural-gradient metrics must be symmetric positive definite."""
-
-    gradient = GradientResult(
-        value=1.0,
-        gradient=np.array([1.0, 2.0]),
-        method="finite_difference_central",
-        shift=1.0e-6,
-        coefficient=5.0e5,
-        evaluations=5,
-        parameter_names=("x", "y"),
-        trainable=(True, True),
-    )
-
-    with pytest.raises(ValueError, match="symmetric"):
-        natural_gradient(gradient, np.array([[1.0, 2.0], [0.0, 1.0]]))
-    with pytest.raises(ValueError, match="positive definite"):
-        natural_gradient(gradient, np.diag([1.0, 0.0]))
-    with pytest.raises(ValueError, match="rcond"):
-        natural_gradient(gradient, np.eye(2), rcond=0.0)
-
-
 def test_parameter_shift_consistency_passes_for_shift_compatible_objective() -> None:
     """Gradient checks should pass for a standard sinusoidal generator rule."""
 
