@@ -14,20 +14,26 @@ from typing import Any, cast
 import numpy as np
 import pytest
 
+from scpn_quantum_control import differentiable as differentiable_module
 from scpn_quantum_control.differentiable import (
     Parameter,
     PrimitiveIdentity,
     primitive_complete_contract_for,
     primitive_contract_for,
+    program_ad_array_getitem_derivative_rule,
+    program_ad_array_take_along_axis_derivative_rule,
+    program_ad_array_take_derivative_rule,
     program_adjoint_gradient,
     whole_program_value_and_grad,
 )
 
 
-def _assert_allclose(actual: object, expected: object, *, atol: float = 0.0) -> None:
+def _assert_allclose(
+    actual: object, expected: object, *, rtol: float = 1.0e-7, atol: float = 0.0
+) -> None:
     """Assert NumPy closeness across dynamically typed Program AD result payloads."""
 
-    cast(Any, np.testing.assert_allclose)(actual, expected, atol=atol)
+    cast(Any, np.testing.assert_allclose)(actual, expected, rtol=rtol, atol=atol)
 
 
 def test_program_ad_basic_slicing_preserves_static_adjoint_paths() -> None:
@@ -244,6 +250,232 @@ def test_program_ad_array_indexing_primitives_are_registry_policy_gated() -> Non
     assert insert_dtype_rule((matrix, 1, np.array([-2.0, 3.0]), 1)) == "float64"
     with pytest.raises(ValueError, match="incomplete primitive contract"):
         primitive_complete_contract_for(insert_contract.identity)
+
+
+def test_program_ad_array_static_derivative_factories_are_direct_kernels() -> None:
+    """Static array-indexing factories should expose exact gather/scatter adjoints."""
+
+    matrix = np.arange(6.0, dtype=np.float64).reshape(2, 3)
+    values = matrix.reshape(-1)
+    tangent = np.array([0.5, -1.0, 0.25, 2.0, -0.75, 1.25], dtype=np.float64)
+    flat_values = np.arange(6.0, dtype=np.float64)
+
+    getitem_rule = program_ad_array_getitem_derivative_rule((2, 3), (slice(None), 1))
+    getitem_jvp = getitem_rule.jvp_rule
+    getitem_vjp = getitem_rule.vjp_rule
+    assert getitem_rule.name == "program_ad_array_getitem_2x3_static_direct_rule"
+    assert getitem_jvp is not None
+    assert getitem_vjp is not None
+    _assert_allclose(
+        getitem_rule.value_fn(values),
+        matrix[:, 1].reshape(-1),
+        rtol=0.0,
+        atol=0.0,
+    )
+    _assert_allclose(
+        getitem_jvp(values, tangent),
+        tangent.reshape(2, 3)[:, 1].reshape(-1),
+        rtol=0.0,
+        atol=0.0,
+    )
+    _assert_allclose(
+        getitem_vjp(values, np.array([1.5, -2.0], dtype=np.float64)),
+        np.array([0.0, 1.5, 0.0, 0.0, -2.0, 0.0], dtype=np.float64),
+        rtol=0.0,
+        atol=0.0,
+    )
+
+    advanced_getitem_rule = program_ad_array_getitem_derivative_rule(
+        (2, 3), ([1, 0, 1], [2, 0, 2])
+    )
+    advanced_getitem_jvp = advanced_getitem_rule.jvp_rule
+    advanced_getitem_vjp = advanced_getitem_rule.vjp_rule
+    assert advanced_getitem_jvp is not None
+    assert advanced_getitem_vjp is not None
+    _assert_allclose(
+        advanced_getitem_rule.value_fn(values),
+        matrix[[1, 0, 1], [2, 0, 2]].reshape(-1),
+        rtol=0.0,
+        atol=0.0,
+    )
+    _assert_allclose(
+        advanced_getitem_jvp(values, tangent),
+        tangent.reshape(2, 3)[[1, 0, 1], [2, 0, 2]].reshape(-1),
+        rtol=0.0,
+        atol=0.0,
+    )
+    _assert_allclose(
+        advanced_getitem_vjp(values, np.array([1.0, -0.5, 2.0], dtype=np.float64)),
+        np.array([-0.5, 0.0, 0.0, 0.0, 0.0, 3.0], dtype=np.float64),
+        rtol=0.0,
+        atol=0.0,
+    )
+
+    take_rule = program_ad_array_take_derivative_rule((2, 3), (2, 0, 2), axis=1)
+    take_jvp = take_rule.jvp_rule
+    take_vjp = take_rule.vjp_rule
+    assert take_rule.name == "program_ad_array_take_2x3_axis_1_static_direct_rule"
+    assert take_jvp is not None
+    assert take_vjp is not None
+    expected_take = np.take(matrix, [2, 0, 2], axis=1)
+    expected_take_tangent = np.take(tangent.reshape(2, 3), [2, 0, 2], axis=1)
+    _assert_allclose(take_rule.value_fn(values), expected_take.reshape(-1))
+    _assert_allclose(take_jvp(values, tangent), expected_take_tangent.reshape(-1))
+    _assert_allclose(
+        take_vjp(
+            values,
+            np.array([[1.0, -0.5, 2.0], [0.25, 1.5, -1.25]], dtype=np.float64).reshape(-1),
+        ),
+        np.array([-0.5, 0.0, 3.0, 1.5, 0.0, -1.0], dtype=np.float64),
+        rtol=0.0,
+        atol=0.0,
+    )
+
+    with pytest.raises(ValueError, match="static integer or boolean"):
+        program_ad_array_getitem_derivative_rule((2, 3), np.array([1.0, 0.0]))
+
+    wrap_rule = program_ad_array_take_derivative_rule((6,), (-1, 6, 0), mode="wrap")
+    wrap_jvp = wrap_rule.jvp_rule
+    wrap_vjp = wrap_rule.vjp_rule
+    assert wrap_rule.name == "program_ad_array_take_6_axis_flat_mode_wrap_static_direct_rule"
+    assert wrap_jvp is not None
+    assert wrap_vjp is not None
+    _assert_allclose(wrap_rule.value_fn(flat_values), [5.0, 0.0, 0.0])
+    _assert_allclose(
+        wrap_jvp(
+            flat_values,
+            np.array([0.0, 1.0, 2.0, 3.0, 4.0, 5.0], dtype=np.float64),
+        ),
+        [5.0, 0.0, 0.0],
+    )
+    _assert_allclose(
+        wrap_vjp(flat_values, np.array([0.5, -1.0, 2.0], dtype=np.float64)),
+        [1.0, 0.0, 0.0, 0.0, 0.0, 0.5],
+    )
+
+    clip_rule = program_ad_array_take_derivative_rule((6,), (-3, 2, 20), mode="clip")
+    clip_vjp = clip_rule.vjp_rule
+    assert clip_rule.name == "program_ad_array_take_6_axis_flat_mode_clip_static_direct_rule"
+    assert clip_rule.jvp_rule is not None
+    assert clip_vjp is not None
+    _assert_allclose(clip_rule.value_fn(flat_values), [0.0, 2.0, 5.0])
+    _assert_allclose(
+        clip_vjp(flat_values, np.array([-0.25, 1.5, 0.75], dtype=np.float64)),
+        [-0.25, 0.0, 1.5, 0.0, 0.0, 0.75],
+    )
+    with pytest.raises(ValueError, match="mode"):
+        program_ad_array_take_derivative_rule((2, 3), (0,), axis=0, mode="not_a_mode")
+
+    delete_rule = differentiable_module.program_ad_array_delete_derivative_rule(
+        (2, 3), (1,), axis=1
+    )
+    delete_jvp = delete_rule.jvp_rule
+    delete_vjp = delete_rule.vjp_rule
+    assert delete_rule.name == "program_ad_array_delete_2x3_axis_1_static_direct_rule"
+    assert delete_jvp is not None
+    assert delete_vjp is not None
+    _assert_allclose(delete_rule.value_fn(values), [0.0, 2.0, 3.0, 5.0])
+    _assert_allclose(delete_jvp(values, tangent), [0.5, 0.25, 2.0, 1.25])
+    _assert_allclose(
+        delete_vjp(values, np.array([1.0, -2.0, 0.5, 3.0], dtype=np.float64)),
+        [1.0, 0.0, -2.0, 0.5, 0.0, 3.0],
+    )
+
+    flat_delete_rule = differentiable_module.program_ad_array_delete_derivative_rule((6,), (1, 4))
+    flat_delete_vjp = flat_delete_rule.vjp_rule
+    assert flat_delete_vjp is not None
+    assert flat_delete_rule.name == "program_ad_array_delete_6_axis_flat_static_direct_rule"
+    _assert_allclose(flat_delete_rule.value_fn(flat_values), [0.0, 2.0, 3.0, 5.0])
+    _assert_allclose(
+        flat_delete_vjp(flat_values, np.array([0.25, -0.75, 1.25, -1.5], dtype=np.float64)),
+        [0.25, 0.0, -0.75, 1.25, 0.0, -1.5],
+    )
+
+    pad_rule = differentiable_module.program_ad_array_pad_derivative_rule(
+        (2, 3), ((1, 0), (0, 1)), constant_values=-2.0
+    )
+    pad_jvp = pad_rule.jvp_rule
+    pad_vjp = pad_rule.vjp_rule
+    assert pad_rule.name == "program_ad_array_pad_2x3_static_constant_direct_rule"
+    assert pad_jvp is not None
+    assert pad_vjp is not None
+    expected_pad = np.pad(matrix, ((1, 0), (0, 1)), constant_values=-2.0)
+    expected_pad_tangent = np.pad(tangent.reshape(2, 3), ((1, 0), (0, 1)), constant_values=0.0)
+    _assert_allclose(pad_rule.value_fn(values), expected_pad.reshape(-1))
+    _assert_allclose(pad_jvp(values, tangent), expected_pad_tangent.reshape(-1))
+    _assert_allclose(
+        pad_vjp(
+            values,
+            np.array(
+                [[0.5, -1.0, 2.0, 0.25], [1.5, -2.0, 0.75, 3.0], [-0.25, 0.5, 2.5, -1.5]],
+                dtype=np.float64,
+            ).reshape(-1),
+        ),
+        [1.5, -2.0, 0.75, -0.25, 0.5, 2.5],
+    )
+
+    insert_rule = differentiable_module.program_ad_array_insert_derivative_rule(
+        (2, 3), 1, np.array([-2.0, 3.0]), axis=1
+    )
+    insert_jvp = insert_rule.jvp_rule
+    insert_vjp = insert_rule.vjp_rule
+    assert insert_rule.name == "program_ad_array_insert_2x3_axis_1_static_constant_direct_rule"
+    assert insert_jvp is not None
+    assert insert_vjp is not None
+    expected_insert = np.insert(matrix, 1, np.array([-2.0, 3.0]), axis=1)
+    expected_insert_tangent = np.insert(tangent.reshape(2, 3), 1, np.array([0.0, 0.0]), axis=1)
+    _assert_allclose(insert_rule.value_fn(values), expected_insert.reshape(-1))
+    _assert_allclose(insert_jvp(values, tangent), expected_insert_tangent.reshape(-1))
+    _assert_allclose(
+        insert_vjp(
+            values,
+            np.array([[1.0, 10.0, -2.0, 0.5], [3.0, -20.0, -1.5, 2.5]], dtype=np.float64).reshape(
+                -1
+            ),
+        ),
+        [1.0, -2.0, 0.5, 3.0, -1.5, 2.5],
+    )
+
+    flat_insert_rule = differentiable_module.program_ad_array_insert_derivative_rule(
+        (6,), (1, 4), np.array([0.5, -1.5])
+    )
+    flat_insert_vjp = flat_insert_rule.vjp_rule
+    assert flat_insert_vjp is not None
+    assert (
+        flat_insert_rule.name == "program_ad_array_insert_6_axis_flat_static_constant_direct_rule"
+    )
+    _assert_allclose(
+        flat_insert_rule.value_fn(flat_values),
+        np.insert(flat_values, [1, 4], np.array([0.5, -1.5])),
+    )
+    _assert_allclose(
+        flat_insert_vjp(
+            flat_values,
+            np.array([1.0, 10.0, -2.0, 0.5, 3.0, -20.0, -1.5, 2.5], dtype=np.float64),
+        ),
+        [1.0, -2.0, 0.5, 3.0, -1.5, 2.5],
+    )
+
+    along_indices = np.array([[2, 0, 2], [1, 1, 0]], dtype=np.int64)
+    along_weights = np.array([[1.0, -0.5, 2.0], [0.25, 1.5, -1.25]], dtype=np.float64)
+    along_rule = program_ad_array_take_along_axis_derivative_rule((2, 3), along_indices, axis=1)
+    along_jvp = along_rule.jvp_rule
+    along_vjp = along_rule.vjp_rule
+    assert along_rule.name == "program_ad_array_take_along_axis_2x3_axis_1_static_direct_rule"
+    assert along_jvp is not None
+    assert along_vjp is not None
+    expected_along = np.take_along_axis(matrix, along_indices, axis=1)
+    expected_along_tangent = np.take_along_axis(tangent.reshape(2, 3), along_indices, axis=1)
+    _assert_allclose(along_rule.value_fn(values), expected_along.reshape(-1))
+    _assert_allclose(along_jvp(values, tangent), expected_along_tangent.reshape(-1))
+    _assert_allclose(
+        along_vjp(values, along_weights.reshape(-1)),
+        np.array([-0.5, 0.0, 3.0, -1.25, 1.75, 0.0], dtype=np.float64),
+        rtol=0.0,
+        atol=0.0,
+    )
+    with pytest.raises(ValueError, match="static integer indices"):
+        program_ad_array_take_along_axis_derivative_rule((2, 3), np.array([[0.0, 1.0]]), axis=1)
 
 
 def test_program_ad_array_boundary_metadata_is_explicit() -> None:
