@@ -18,6 +18,7 @@ import numpy as np
 import pytest
 from numpy.typing import NDArray
 
+from scpn_quantum_control.differentiable import GradientResult
 from scpn_quantum_control.hardware import pennylane_adapter as pl_mod
 
 FloatArray = NDArray[np.float64]
@@ -97,6 +98,16 @@ class _MockQml:
         opt = MagicMock()
         opt.step = lambda fn, p: p + np.random.default_rng(0).normal(0, 0.001, size=len(p))
         return opt
+
+    def grad(self, fn: Any) -> Any:
+        """Return a deterministic finite gradient function for mock QNodes."""
+        del fn
+
+        def gradient(current_params: object) -> NDArray[np.float64]:
+            params = np.asarray(current_params, dtype=np.float64)
+            return np.full(params.shape, 0.25, dtype=np.float64)
+
+        return gradient
 
 
 @pytest.fixture()
@@ -249,6 +260,25 @@ def test_runner_run_vqe(mock_pl: _MockQml) -> None:
     assert any(op == "cnot" for op, _payload in mock_pl.operations)
     assert any(op == "paulix" for op, _payload in mock_pl.operations)
     assert any(op == "pauliy" for op, _payload in mock_pl.operations)
+
+
+def test_runner_exposes_vqe_value_and_grad(mock_pl: _MockQml) -> None:
+    """PennyLane adapter should expose differentiable VQE parameters."""
+
+    K = np.array([[0.0, 0.25], [0.25, 0.0]], dtype=np.float64)
+    omega = np.array([0.1, -0.2], dtype=np.float64)
+    runner = pl_mod.PennyLaneRunner(K, omega, device="default.qubit")
+    params = np.array([0.01, -0.02, 0.03, 0.04, -0.05, 0.06], dtype=np.float64)
+
+    result = runner.vqe_value_and_grad(params, ansatz_depth=1)
+
+    assert isinstance(result, GradientResult)
+    assert result.method == "pennylane_autodiff"
+    assert result.gradient.shape == params.shape
+    assert result.parameter_names[0] == "vqe_0"
+    assert np.isfinite(result.value)
+    assert np.all(np.isfinite(result.gradient))
+    assert [op for op, _payload in mock_pl.operations].count("rot") >= runner.n
 
 
 def test_runner_shots_param(mock_pl: _MockQml) -> None:
