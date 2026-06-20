@@ -551,6 +551,84 @@ def test_program_ad_linalg_eigvals_registry_contract_and_root_export() -> None:
     assert metadata["nondifferentiable_boundary"] == "real_simple_diagonalizable_spectrum"
 
 
+def test_program_ad_linalg_eig_matches_real_simple_eigensystem_differential() -> None:
+    from scpn_quantum_control.differentiable import (
+        program_adjoint_gradient,
+        whole_program_value_and_grad,
+    )
+
+    matrix = np.array([[2.0, 0.25], [0.5, 1.25]], dtype=np.float64)
+    weights = np.array([[0.75, -1.25], [1.5, 0.5]], dtype=np.float64)
+    value_weights = np.array([1.25, -0.5], dtype=np.float64)
+    values = matrix.reshape(-1)
+
+    eigenvalues, right_eigenvectors = np.linalg.eig(matrix)
+    eigenvalues = np.real(eigenvalues)
+    right_eigenvectors = np.real(right_eigenvectors)
+    left_eigenvector_rows = np.linalg.inv(right_eigenvectors)
+    expected = np.zeros_like(matrix)
+    for index, value_weight in enumerate(value_weights):
+        expected = expected + float(value_weight) * np.outer(
+            left_eigenvector_rows[index, :], right_eigenvectors[:, index]
+        )
+    for row in range(matrix.shape[0]):
+        for col in range(matrix.shape[1]):
+            basis = np.zeros_like(matrix)
+            basis[row, col] = 1.0
+            eigenvector_jvp = np.zeros_like(right_eigenvectors)
+            for column in range(matrix.shape[0]):
+                source = right_eigenvectors[:, column]
+                raw_column = np.zeros(matrix.shape[0], dtype=np.float64)
+                for other in range(matrix.shape[0]):
+                    if other == column:
+                        continue
+                    scale = float(left_eigenvector_rows[other, :] @ basis @ source) / float(
+                        eigenvalues[column] - eigenvalues[other]
+                    )
+                    raw_column += scale * right_eigenvectors[:, other]
+                eigenvector_jvp[:, column] = raw_column - source * float(source.T @ raw_column)
+            expected[row, col] += float(np.sum(weights * eigenvector_jvp))
+
+    def objective(flat_values: Any) -> object:
+        eig_values, eig_vectors = np.linalg.eig(np.reshape(flat_values, (2, 2)))
+        return value_weights @ eig_values + np.sum(weights * eig_vectors)
+
+    result = whole_program_value_and_grad(objective, values)
+    expected_gradient = expected.reshape(-1)
+
+    assert result.adjoint_result is not None
+    assert result.adjoint_result.supported
+    _assert_allclose(result.gradient, expected_gradient, rtol=1.0e-10, atol=1.0e-10)
+    _assert_allclose(
+        program_adjoint_gradient(result), expected_gradient, rtol=1.0e-10, atol=1.0e-10
+    )
+
+
+def test_program_ad_linalg_eig_fails_closed_invalid_spectral_contracts() -> None:
+    from scpn_quantum_control.differentiable import whole_program_value_and_grad
+
+    def eig_value_sum(flat_values: Any) -> object:
+        return np.sum(np.linalg.eig(np.reshape(flat_values, (2, 2)))[0])
+
+    def rectangular_eig_value_sum(flat_values: Any) -> object:
+        return np.sum(np.linalg.eig(np.reshape(flat_values, (2, 3)))[0])
+
+    with pytest.raises(ValueError, match="requires real eigenvalues"):
+        whole_program_value_and_grad(
+            eig_value_sum,
+            np.array([0.0, -1.0, 1.0, 0.0], dtype=np.float64),
+        )
+
+    with pytest.raises(ValueError, match="requires distinct eigenvalues"):
+        whole_program_value_and_grad(eig_value_sum, np.eye(2, dtype=np.float64).reshape(-1))
+
+    with pytest.raises(ValueError, match="requires a square matrix"):
+        whole_program_value_and_grad(
+            rectangular_eig_value_sum,
+            np.arange(1.0, 7.0, dtype=np.float64),
+        )
+
+
 def test_program_ad_linalg_conditioning_diagnostics_cover_norm_svd_solve_and_rank_boundary() -> (
     None
 ):
