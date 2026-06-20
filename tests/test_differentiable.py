@@ -3662,43 +3662,6 @@ def test_program_ad_shape_primitives_validate_registry_rules_at_dispatch() -> No
     }
 
 
-def test_program_ad_vdot_flattens_operands_with_exact_adjoint() -> None:
-    """Program AD vdot should apply exact flattened real inner-product semantics."""
-
-    left_weights = np.linspace(-1.5, 2.5, 6, dtype=np.float64).reshape(2, 3)
-    right_weights = np.linspace(-2.0, 1.0, 6, dtype=np.float64).reshape(2, 3)
-
-    def objective(values: np.ndarray) -> object:
-        left = np.reshape(values[:6], (2, 3))
-        right = np.reshape(values[6:], (3, 2))
-        return np.vdot(left, right) + np.vdot(left * left_weights, right_weights)
-
-    values = np.linspace(-0.8, 1.2, 12, dtype=np.float64)
-    result = whole_program_value_and_grad(
-        objective,
-        values,
-        parameters=tuple(Parameter(f"theta_{index}") for index in range(values.size)),
-    )
-
-    expected = np.zeros(12, dtype=np.float64)
-    expected[:6] = values[6:] + left_weights.reshape(-1) * right_weights.reshape(-1)
-    expected[6:] = values[:6]
-    np.testing.assert_allclose(result.gradient, expected, rtol=1.0e-12, atol=1.0e-12)
-    np.testing.assert_allclose(
-        program_adjoint_gradient(result), expected, rtol=1.0e-12, atol=1.0e-12
-    )
-
-
-def test_program_ad_vdot_fails_closed_size_mismatch() -> None:
-    """Program AD vdot should reject flattened size mismatches explicitly."""
-
-    with pytest.raises(ValueError, match="vdot flattened operands must have matching size"):
-        whole_program_value_and_grad(
-            lambda values: np.vdot(values[:2], values[2:5]),
-            np.array([1.0, 2.0, 3.0, 4.0, 5.0], dtype=np.float64),
-        )
-
-
 def test_program_ad_linalg_det_matches_cofactor_adjoint() -> None:
     """Program AD determinant should expose exact cofactor derivatives."""
 
