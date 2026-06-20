@@ -18,6 +18,7 @@ from numpy.typing import NDArray
 
 from scpn_quantum_control import differentiable as differentiable_module
 from scpn_quantum_control.differentiable import (
+    GradientCheckResult,
     GradientResult,
     Parameter,
     ParameterShiftRule,
@@ -31,6 +32,7 @@ from scpn_quantum_control.differentiable import (
     batch_value_and_complex_step_grad,
     batch_value_and_finite_difference_grad,
     batch_value_and_parameter_shift_grad,
+    check_parameter_shift_consistency,
     multi_frequency_parameter_shift_rule,
     parameter_shift_gradient,
     parameter_shift_gradient_with_uncertainty,
@@ -143,6 +145,52 @@ def test_parameter_metadata_validation_and_custom_rule() -> None:
     )
 
     _assert_allclose(result.gradient, [2.0 * math.cos(0.6)], atol=1.0e-12)
+
+
+def test_parameter_shift_consistency_passes_for_shift_compatible_objective() -> None:
+    """Gradient checks should pass for a standard sinusoidal generator rule."""
+
+    result = check_parameter_shift_consistency(
+        lambda values: math.sin(values[0]) + math.cos(values[1]),
+        [0.3, -0.2],
+        tolerance=1.0e-5,
+    )
+
+    assert isinstance(result, GradientCheckResult)
+    assert result.passed
+    assert result.candidate.method == "parameter_shift"
+    assert result.reference.method == "finite_difference_central"
+    assert result.max_abs_error <= 1.0e-5
+    assert result.value_delta == pytest.approx(0.0)
+
+
+def test_parameter_shift_consistency_detects_wrong_rule_coefficient() -> None:
+    """Gradient checks should fail closed when a rule coefficient is invalid."""
+
+    result = check_parameter_shift_consistency(
+        lambda values: math.sin(values[0]),
+        [0.3],
+        rule=ParameterShiftRule(coefficient=0.25),
+        tolerance=1.0e-5,
+    )
+
+    assert not result.passed
+    assert result.max_abs_error > result.tolerance
+
+
+def test_parameter_shift_consistency_rejects_invalid_tolerance() -> None:
+    """Gradient-check tolerances must be explicit non-negative real scalars."""
+
+    with pytest.raises(ValueError, match="gradient check tolerance must be a real numeric scalar"):
+        check_parameter_shift_consistency(
+            lambda values: math.sin(values[0]), [0.3], tolerance=cast(Any, "1e-5")
+        )
+    with pytest.raises(
+        ValueError, match="gradient check tolerance must be finite and non-negative"
+    ):
+        check_parameter_shift_consistency(
+            lambda values: math.sin(values[0]), [0.3], tolerance=-1.0
+        )
 
 
 def test_multi_frequency_parameter_shift_rule_matches_analytic_reference() -> None:

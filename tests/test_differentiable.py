@@ -23,7 +23,6 @@ from scpn_quantum_control.differentiable import (
     FisherConjugateGradientResult,
     FisherVectorProductResult,
     FixedPointSensitivityResult,
-    GradientCheckResult,
     GradientResult,
     HessianResult,
     HVPResult,
@@ -140,52 +139,6 @@ try:
     _PL_OK = is_pennylane_available()
 except (ImportError, AttributeError):
     _PL_OK = False
-
-
-def test_parameter_shift_consistency_passes_for_shift_compatible_objective() -> None:
-    """Gradient checks should pass for a standard sinusoidal generator rule."""
-
-    result = check_parameter_shift_consistency(
-        lambda values: math.sin(values[0]) + math.cos(values[1]),
-        [0.3, -0.2],
-        tolerance=1.0e-5,
-    )
-
-    assert isinstance(result, GradientCheckResult)
-    assert result.passed
-    assert result.candidate.method == "parameter_shift"
-    assert result.reference.method == "finite_difference_central"
-    assert result.max_abs_error <= 1.0e-5
-    assert result.value_delta == pytest.approx(0.0)
-
-
-def test_parameter_shift_consistency_detects_wrong_rule_coefficient() -> None:
-    """Gradient checks should fail closed when a rule coefficient is invalid."""
-
-    result = check_parameter_shift_consistency(
-        lambda values: math.sin(values[0]),
-        [0.3],
-        rule=ParameterShiftRule(coefficient=0.25),
-        tolerance=1.0e-5,
-    )
-
-    assert not result.passed
-    assert result.max_abs_error > result.tolerance
-
-
-def test_parameter_shift_consistency_rejects_invalid_tolerance() -> None:
-    """Gradient-check tolerances must be explicit non-negative real scalars."""
-
-    with pytest.raises(ValueError, match="gradient check tolerance must be a real numeric scalar"):
-        check_parameter_shift_consistency(
-            lambda values: math.sin(values[0]), [0.3], tolerance="1e-5"
-        )
-    with pytest.raises(
-        ValueError, match="gradient check tolerance must be finite and non-negative"
-    ):
-        check_parameter_shift_consistency(
-            lambda values: math.sin(values[0]), [0.3], tolerance=-1.0
-        )
 
 
 def test_gradient_descent_step_respects_trainable_mask() -> None:
