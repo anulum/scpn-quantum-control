@@ -109,8 +109,8 @@ def differentiable_module_hardening_registry() -> tuple[DifferentiableModuleHard
         ),
         _record(
             "src/scpn_quantum_control/differentiable.py",
-            ("tests/test_differentiable.py",),
-            ("shape and dtype validation", "diagnostic-only finite differences"),
+            ("tests/test_differentiable_package_exports.py",),
+            ("facade export compatibility", "diagnostic-only finite differences"),
         ),
         _record(
             "src/scpn_quantum_control/whole_program_frontend.py",
@@ -151,6 +151,11 @@ def differentiable_module_hardening_registry() -> tuple[DifferentiableModuleHard
             ("module inventory discovery", "module-specific test enforcement"),
         ),
         _record(
+            "src/scpn_quantum_control/differentiable_parameter_contracts.py",
+            ("tests/test_differentiable_parameter_contracts.py",),
+            ("parameter metadata validation", "multi-frequency shift conditioning"),
+        ),
+        _record(
             "src/scpn_quantum_control/differentiable_rust_python_inventory.py",
             ("tests/test_differentiable_rust_python_inventory.py",),
             ("rustification classification rows", "claim-ledger readiness guards"),
@@ -159,6 +164,16 @@ def differentiable_module_hardening_registry() -> tuple[DifferentiableModuleHard
             "src/scpn_quantum_control/differentiable_sota_scorecard.py",
             ("tests/test_differentiable_sota_scorecard.py",),
             ("category promotion blockers", "claim-ledger promotion guards"),
+        ),
+        _record(
+            "src/scpn_quantum_control/whole_program_ad_result.py",
+            ("tests/test_whole_program_ad_contracts.py",),
+            ("whole-program result validation", "facade export compatibility"),
+        ),
+        _record(
+            "src/scpn_quantum_control/whole_program_trace_runtime.py",
+            ("tests/test_whole_program_trace_runtime.py",),
+            ("runtime SSA/effect metadata", "source-line trace capture"),
         ),
         _record(
             "src/scpn_quantum_control/phase/differentiable_audit.py",

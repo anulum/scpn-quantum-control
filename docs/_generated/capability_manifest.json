@@ -10,11 +10,11 @@
     "paper0_validation_modules": 466,
     "public_api_exports": 714,
     "public_documentation_pages": 254,
-    "python_model_classes": 1838,
-    "python_model_source_modules": 847,
+    "python_model_classes": 1840,
+    "python_model_source_modules": 849,
     "rust_pyo3_model_wrappers": 137,
     "rust_source_modules": 38,
-    "test_files": 2014
+    "test_files": 2016
   },
   "documentation": {
     "examples": [
@@ -459,7 +459,7 @@
       {
         "package": "bridge",
         "path": "src/scpn_quantum_control/bridge",
-        "python_modules": 13
+        "python_modules": 14
       },
       {
         "package": "codegen",
@@ -2722,6 +2722,10 @@
         "path": "src/scpn_quantum_control/applications/fmo_benchmark.py"
       },
       {
+        "name": "FRCEquilibriumLike",
+        "path": "src/scpn_quantum_control/bridge/fusion_core_frc.py"
+      },
+      {
         "name": "FRCPlasmaSurrogate",
         "path": "src/scpn_quantum_control/control/qaoa_pulsed_cost.py"
       },
@@ -2956,6 +2960,10 @@
       {
         "name": "FunctionalImplicationsFixtureResult",
         "path": "src/scpn_quantum_control/paper0/functional_implications_validation.py"
+      },
+      {
+        "name": "FusionCoreFRCCalibration",
+        "path": "src/scpn_quantum_control/bridge/fusion_core_frc.py"
       },
       {
         "name": "GPUBaselineResult",
@@ -4811,11 +4819,11 @@
       },
       {
         "name": "Parameter",
-        "path": "src/scpn_quantum_control/differentiable.py"
+        "path": "src/scpn_quantum_control/differentiable_parameter_contracts.py"
       },
       {
         "name": "ParameterBounds",
-        "path": "src/scpn_quantum_control/differentiable.py"
+        "path": "src/scpn_quantum_control/differentiable_parameter_contracts.py"
       },
       {
         "name": "ParameterShiftAnalyticAgreement",
@@ -4939,7 +4947,7 @@
       },
       {
         "name": "ParameterShiftRule",
-        "path": "src/scpn_quantum_control/differentiable.py"
+        "path": "src/scpn_quantum_control/differentiable_parameter_contracts.py"
       },
       {
         "name": "ParameterShiftSampleRecord",
@@ -8510,6 +8518,7 @@
       "src/scpn_quantum_control/benchmarks/quantum_advantage.py",
       "src/scpn_quantum_control/benchmarks/s3_design_protocol.py",
       "src/scpn_quantum_control/bridge/control_plasma_knm.py",
+      "src/scpn_quantum_control/bridge/fusion_core_frc.py",
       "src/scpn_quantum_control/bridge/knm_hamiltonian.py",
       "src/scpn_quantum_control/bridge/orchestrator_adapter.py",
       "src/scpn_quantum_control/bridge/orchestrator_feedback.py",
@@ -8558,6 +8567,7 @@
       "src/scpn_quantum_control/differentiable_external_validation.py",
       "src/scpn_quantum_control/differentiable_framework_overlay.py",
       "src/scpn_quantum_control/differentiable_module_hardening_audit.py",
+      "src/scpn_quantum_control/differentiable_parameter_contracts.py",
       "src/scpn_quantum_control/differentiable_rust_python_inventory.py",
       "src/scpn_quantum_control/differentiable_sota_scorecard.py",
       "src/scpn_quantum_control/dla_parity/baselines.py",
@@ -10839,6 +10849,7 @@
       "tests/test_differentiable_module_hardening_audit.py",
       "tests/test_differentiable_natural_gradient_line_search.py",
       "tests/test_differentiable_package_exports.py",
+      "tests/test_differentiable_parameter_contracts.py",
       "tests/test_differentiable_parameter_shift.py",
       "tests/test_differentiable_programming_benchmarks.py",
       "tests/test_differentiable_result_contracts.py",
@@ -10904,6 +10915,7 @@
       "tests/test_fractional_gates.py",
       "tests/test_frontier_generate_params.py",
       "tests/test_frontier_interface_guards.py",
+      "tests/test_fusion_core_frc.py",
       "tests/test_gate_paper0_promotion_slice.py",
       "tests/test_gauge_topology_contracts.py",
       "tests/test_generate_s19_resource_signature_scan.py",
