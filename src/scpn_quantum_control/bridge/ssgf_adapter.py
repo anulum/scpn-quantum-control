@@ -16,13 +16,14 @@ from __future__ import annotations
 from typing import Any
 
 import numpy as np
+from numpy.typing import NDArray
 from qiskit import QuantumCircuit
 from qiskit.quantum_info import SparsePauliOp, Statevector
 
 from .knm_hamiltonian import knm_to_hamiltonian
 
 
-def ssgf_w_to_hamiltonian(W: np.ndarray, omega: np.ndarray) -> SparsePauliOp:
+def ssgf_w_to_hamiltonian(W: NDArray[np.float64], omega: NDArray[np.float64]) -> SparsePauliOp:
     """Convert SSGF geometry matrix W to Pauli Hamiltonian.
 
     W has the same structure as K_nm (symmetric, non-negative, zero diagonal),
@@ -31,7 +32,7 @@ def ssgf_w_to_hamiltonian(W: np.ndarray, omega: np.ndarray) -> SparsePauliOp:
     return knm_to_hamiltonian(W, omega)
 
 
-def ssgf_state_to_quantum(state_dict: dict) -> QuantumCircuit:
+def ssgf_state_to_quantum(state_dict: dict[str, Any]) -> QuantumCircuit:
     """Encode SSGF oscillator phases into qubit XY-plane rotations.
 
     state_dict must contain 'theta': array of oscillator phases.
@@ -47,7 +48,7 @@ def ssgf_state_to_quantum(state_dict: dict) -> QuantumCircuit:
     return qc
 
 
-def quantum_to_ssgf_state(sv: Statevector, n_osc: int) -> dict:
+def quantum_to_ssgf_state(sv: Statevector, n_osc: int) -> dict[str, Any]:
     """Extract oscillator phases and coherence from statevector.
 
     Per-qubit: theta_i = atan2(<Y_i>, <X_i>).
@@ -86,17 +87,17 @@ class SSGFQuantumLoop:
         self.dt = dt
         self.trotter_reps = trotter_reps
 
-    def _read_engine(self) -> tuple[np.ndarray, np.ndarray]:
+    def _read_engine(self) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
         """Read W matrix and theta phases from SSGFEngine.ns."""
         ns = self.engine.ns
         return np.array(ns.W), np.array(ns.theta)
 
-    def _write_theta(self, theta: np.ndarray) -> None:
+    def _write_theta(self, theta: NDArray[np.float64]) -> None:
         """Write phases back into SSGFEngine.ns (in-place)."""
         ns = self.engine.ns
         ns.theta[:] = theta
 
-    def quantum_step(self) -> dict:
+    def quantum_step(self) -> dict[str, Any]:
         """One quantum-in-the-loop step.
 
         1. Read W, theta from SSGFEngine

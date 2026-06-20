@@ -29,6 +29,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import numpy as np
+from numpy.typing import NDArray
 from qiskit.quantum_info import SparsePauliOp, Statevector
 
 from .ssgf_adapter import quantum_to_ssgf_state, ssgf_state_to_quantum, ssgf_w_to_hamiltonian
@@ -38,14 +39,14 @@ from .ssgf_adapter import quantum_to_ssgf_state, ssgf_state_to_quantum, ssgf_w_t
 class WAdaptResult:
     """Result of W adaptation step."""
 
-    W_updated: np.ndarray
+    W_updated: NDArray[np.float64]
     r_global: float
     delta_r: float
-    correlators: np.ndarray
+    correlators: NDArray[np.float64]
     max_update: float
 
 
-def _measure_correlators(sv: Statevector, n: int) -> np.ndarray:
+def _measure_correlators(sv: Statevector, n: int) -> NDArray[np.float64]:
     """Measure <XX + YY> for all pairs from statevector."""
     C = np.zeros((n, n))
     for i in range(n):
@@ -62,16 +63,16 @@ def _measure_correlators(sv: Statevector, n: int) -> np.ndarray:
             )
             val = float(sv.expectation_value(op).real)
             C[i, j] = C[j, i] = val
-    result: np.ndarray = C
+    result: NDArray[np.float64] = C
     return result
 
 
 def adapt_w_from_quantum(
-    W: np.ndarray,
-    theta: np.ndarray,
+    W: NDArray[np.float64],
+    theta: NDArray[np.float64],
     r_target: float = 0.9,
     learning_rate: float = 0.01,
-    omega: np.ndarray | None = None,
+    omega: NDArray[np.float64] | None = None,
     dt: float = 0.1,
     trotter_reps: int = 3,
     min_coupling: float = 0.0,
