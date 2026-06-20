@@ -16,6 +16,8 @@ from typing import Any
 import numpy as np
 import pytest
 
+import scpn_quantum_control as scpn
+from scpn_quantum_control import program_ad_effect_ir as effect_ir_module
 from scpn_quantum_control.differentiable import (
     Parameter,
     ProgramADAliasEdge,
@@ -28,6 +30,25 @@ from scpn_quantum_control.differentiable import (
     parse_program_ad_effect_ir,
     whole_program_value_and_grad,
 )
+
+
+def test_program_ad_effect_ir_exports_stable_facade_identities() -> None:
+    """Program AD effect-IR records should share identities across public surfaces."""
+
+    assert ProgramADSSAValue is effect_ir_module.ProgramADSSAValue
+    assert ProgramADEffect is effect_ir_module.ProgramADEffect
+    assert ProgramADAliasEdge is effect_ir_module.ProgramADAliasEdge
+    assert ProgramADPhiNode is effect_ir_module.ProgramADPhiNode
+    assert ProgramADControlRegion is effect_ir_module.ProgramADControlRegion
+    assert ProgramADEffectIR is effect_ir_module.ProgramADEffectIR
+    assert parse_program_ad_effect_ir is effect_ir_module.parse_program_ad_effect_ir
+    assert scpn.ProgramADSSAValue is ProgramADSSAValue
+    assert scpn.ProgramADEffect is ProgramADEffect
+    assert scpn.ProgramADAliasEdge is ProgramADAliasEdge
+    assert scpn.ProgramADPhiNode is ProgramADPhiNode
+    assert scpn.ProgramADControlRegion is ProgramADControlRegion
+    assert scpn.ProgramADEffectIR is ProgramADEffectIR
+    assert scpn.parse_program_ad_effect_ir is parse_program_ad_effect_ir
 
 
 def test_whole_program_ad_emits_deterministic_ssa_effect_ir() -> None:
