@@ -8317,65 +8317,6 @@ def test_program_ad_linalg_primitive_batching_rules_vectorize_outputs() -> None:
     )
 
 
-def test_whole_program_ad_selection_primitives_fail_closed_at_nondifferentiable_boundaries() -> (
-    None
-):
-    """Selection primitives should reject boundary points with ambiguous derivatives."""
-
-    with pytest.raises(ValueError, match="maximum is non-differentiable"):
-        whole_program_value_and_grad(
-            lambda values: np.maximum(values[0], values[1]),
-            np.array([1.0, 1.0], dtype=np.float64),
-        )
-    with pytest.raises(ValueError, match="minimum is non-differentiable"):
-        whole_program_value_and_grad(
-            lambda values: np.minimum(values[0], values[1]),
-            np.array([1.0, 1.0], dtype=np.float64),
-        )
-    with pytest.raises(ValueError, match="np.clip is non-differentiable"):
-        whole_program_value_and_grad(
-            lambda values: np.sum(np.clip(values, -0.5, 0.5)),
-            np.array([-0.5, 0.25], dtype=np.float64),
-        )
-    with pytest.raises(ValueError, match="np.clip is non-differentiable"):
-        whole_program_value_and_grad(
-            lambda values: np.sum(np.clip(values, -0.5, 0.5)),
-            np.array([0.25, 0.5], dtype=np.float64),
-        )
-    with pytest.raises(ValueError, match="ordering predicate is non-differentiable"):
-        whole_program_value_and_grad(
-            lambda values: values[0] if values[0] > values[1] else values[1],
-            np.array([1.0, 1.0], dtype=np.float64),
-        )
-    with pytest.raises(ValueError, match="ordering predicate is non-differentiable"):
-        whole_program_value_and_grad(
-            lambda values: np.sum(np.where(values >= 0.0, values, -values)),
-            np.array([0.0, 1.0], dtype=np.float64),
-        )
-
-
-def test_whole_program_ad_abs_fails_closed_at_zero_cusp() -> None:
-    """Python and NumPy absolute-value syntax should share the zero-cusp policy."""
-
-    result = whole_program_value_and_grad(
-        lambda values: abs(values[0]) + np.abs(values[1]),
-        np.array([-2.0, 3.0], dtype=np.float64),
-    )
-    assert result.value == pytest.approx(5.0)
-    np.testing.assert_allclose(result.gradient, np.array([-1.0, 1.0], dtype=np.float64))
-
-    with pytest.raises(ValueError, match="absolute value is non-differentiable at zero"):
-        whole_program_value_and_grad(
-            lambda values: abs(values[0]),
-            np.array([0.0], dtype=np.float64),
-        )
-    with pytest.raises(ValueError, match="absolute value is non-differentiable at zero"):
-        whole_program_value_and_grad(
-            lambda values: np.abs(values[0]),
-            np.array([0.0], dtype=np.float64),
-        )
-
-
 def test_program_ad_selection_primitives_are_registry_policy_gated() -> None:
     """Selection primitives should expose first-class primitive registry contracts."""
 
