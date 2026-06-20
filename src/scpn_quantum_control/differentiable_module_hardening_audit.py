@@ -156,6 +156,11 @@ def differentiable_module_hardening_registry() -> tuple[DifferentiableModuleHard
             ("parameter metadata validation", "multi-frequency shift conditioning"),
         ),
         _record(
+            "src/scpn_quantum_control/differentiable_scalar_kernels.py",
+            ("tests/test_differentiable_scalar_kernels.py",),
+            ("forward scalar elementary kernels", "reverse scalar pullback kernels"),
+        ),
+        _record(
             "src/scpn_quantum_control/differentiable_rust_python_inventory.py",
             ("tests/test_differentiable_rust_python_inventory.py",),
             ("rustification classification rows", "claim-ledger readiness guards"),

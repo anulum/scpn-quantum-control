@@ -11,10 +11,10 @@
     "public_api_exports": 714,
     "public_documentation_pages": 254,
     "python_model_classes": 1840,
-    "python_model_source_modules": 849,
+    "python_model_source_modules": 850,
     "rust_pyo3_model_wrappers": 137,
     "rust_source_modules": 38,
-    "test_files": 2016
+    "test_files": 2017
   },
   "documentation": {
     "examples": [
@@ -2451,7 +2451,7 @@
       },
       {
         "name": "DualNumber",
-        "path": "src/scpn_quantum_control/differentiable.py"
+        "path": "src/scpn_quantum_control/differentiable_scalar_kernels.py"
       },
       {
         "name": "DynamicCouplingConfig",
@@ -6367,7 +6367,7 @@
       },
       {
         "name": "ReverseNode",
-        "path": "src/scpn_quantum_control/differentiable.py"
+        "path": "src/scpn_quantum_control/differentiable_scalar_kernels.py"
       },
       {
         "name": "RigettiQCSHALAdapter",
@@ -8569,6 +8569,7 @@
       "src/scpn_quantum_control/differentiable_module_hardening_audit.py",
       "src/scpn_quantum_control/differentiable_parameter_contracts.py",
       "src/scpn_quantum_control/differentiable_rust_python_inventory.py",
+      "src/scpn_quantum_control/differentiable_scalar_kernels.py",
       "src/scpn_quantum_control/differentiable_sota_scorecard.py",
       "src/scpn_quantum_control/dla_parity/baselines.py",
       "src/scpn_quantum_control/dla_parity/dataset.py",
@@ -10854,6 +10855,7 @@
       "tests/test_differentiable_programming_benchmarks.py",
       "tests/test_differentiable_result_contracts.py",
       "tests/test_differentiable_rust_python_inventory.py",
+      "tests/test_differentiable_scalar_kernels.py",
       "tests/test_differentiable_score_function.py",
       "tests/test_differentiable_sota_scorecard.py",
       "tests/test_differentiable_sparse_derivatives.py",
