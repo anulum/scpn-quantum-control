@@ -408,13 +408,20 @@ def test_differentiable_dashboard_status_is_claim_bounded_for_gui_consumers() ->
     )
     assert rows["polyglot_compiler_chain"]["state"] == "blocked"
     assert (
-        "native Rust Program AD interpreter is not promoted"
+        "only bounded scalar opcode-bearing Rust forward interpretation is promoted"
         in rows["polyglot_compiler_chain"]["blocked_reasons"]
+    )
+    assert rows["program_ad_rust_scalar_interpreter"]["state"] == "diagnostic"
+    assert (
+        "program_ad_rust_scalar_interpreter_contracts"
+        in rows["program_ad_rust_scalar_interpreter"]["evidence"]
     )
     assert "Rust Program AD IR metadata parser" in rows["polyglot_compiler_chain"]["evidence"]
     assert "compile_whole_program_ad_trace_to_mlir" in rows["polyglot_compiler_chain"]["evidence"]
+    assert "program_ad_effect_ir_interpret_forward" in rows["polyglot_compiler_chain"]["evidence"]
     assert (
-        "metadata_only_no_program_execution" in rows["polyglot_compiler_chain"]["claim_boundary"]
+        "bounded scalar forward Program AD IR interpretation"
+        in rows["polyglot_compiler_chain"]["claim_boundary"]
     )
     assert rows["torch_phase_qnode_statevector_lowering"]["state"] == "diagnostic"
     assert rows["torch_phase_qnode_statevector_lowering"]["fail_closed"] is True

@@ -65,10 +65,13 @@ This repository now documents those questions directly. Current support is delib
 
 Rust polyglot parity includes `scpn_quantum_engine::program_ad_ir`, a
 serde-backed `program_ad_effect_ir.v1` metadata parser with the PyO3
-`program_ad_effect_ir_metadata_summary(...)` export. It is deliberately bounded
-to `metadata_only_no_program_execution`; no Rust Program AD interpreter,
-general LLVM/JIT lowering, hardware execution, or performance promotion is
-claimed from this parser.
+`program_ad_effect_ir_metadata_summary(...)` export and a bounded scalar
+forward interpreter exposed as `program_ad_effect_ir_interpret_forward(...)`.
+The interpreter only executes opcode-bearing scalar `program_ad_effect_ir.v1`
+rows emitted by current Python traces; legacy opcode-free metadata, aliases,
+control flow, mutation, array semantics, reverse-mode Rust AD, general
+LLVM/JIT lowering, hardware execution, and performance promotion remain
+fail-closed.
 Python compiler interchange lowers captured `program_ad_effect_ir.v1` records
 into deterministic `scpn_diff.program_ad_ssa`,
 `scpn_diff.program_ad_effect`, `scpn_diff.program_ad_alias_edge`,

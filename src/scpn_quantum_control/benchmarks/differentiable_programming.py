@@ -26,6 +26,7 @@ from ..differentiable import (
     custom_vjp,
     grad,
     hessian,
+    interpret_program_ad_effect_ir_with_rust,
     is_jax_autodiff_available,
     jacfwd,
     jacrev,
@@ -227,6 +228,7 @@ def run_differentiable_programming_benchmark_suite() -> tuple[
         _loop_heavy_case(),
         _python_semantics_list_comprehension_case(),
         _program_ad_ir_roundtrip_case(),
+        _program_ad_rust_scalar_interpreter_case(),
         _program_ad_control_phi_metadata_case(),
         _program_ad_mlir_interchange_case(),
         _program_ad_registry_dispatch_coverage_case(),
@@ -749,6 +751,48 @@ def _program_ad_ir_roundtrip_case() -> DifferentiableProgrammingBenchmarkResult:
             "metadata; not a bytecode/source compiler frontend, full alias lattice, "
             "non-executed branch semantics, Rust/LLVM executable lowering, hardware, "
             "or performance evidence; no wall-clock performance claim"
+        ),
+    )
+
+
+def _program_ad_rust_scalar_interpreter_case() -> DifferentiableProgrammingBenchmarkResult:
+    values = np.array([0.4, -0.2], dtype=np.float64)
+
+    def objective(trace_values: Any) -> object:
+        x, y = trace_values
+        return x * x + 2.0 * y + np.sin(x)
+
+    result = whole_program_value_and_grad(
+        objective,
+        values,
+        parameters=(Parameter("x"), Parameter("y")),
+    )
+    if result.program_ir is None:
+        raise ValueError("Rust Program AD interpreter case requires program IR")
+    rust_result = interpret_program_ad_effect_ir_with_rust(result.program_ir, values)
+    if not rust_result.supported or rust_result.value is None:
+        blocked = ", ".join(rust_result.blocked_reasons)
+        raise ValueError(f"Rust Program AD scalar interpreter did not execute: {blocked}")
+    if abs(rust_result.value - result.value) > 1.0e-12:
+        raise ValueError("Rust Program AD scalar interpreter value diverged from Python trace")
+    if rust_result.supported_effect_count != len(result.program_ir.effects):
+        raise ValueError("Rust Program AD scalar interpreter did not execute every effect")
+
+    analytic = np.array([2.0 * values[0] + math.cos(values[0]), 2.0], dtype=np.float64)
+    return DifferentiableProgrammingBenchmarkResult(
+        case_id="program_ad_rust_scalar_interpreter_contracts",
+        category="rust-interpreter",
+        value=rust_result.value,
+        gradient=result.gradient,
+        analytic_gradient=analytic,
+        max_abs_gradient_error=_max_abs_error(result.gradient, analytic),
+        adjoint_supported=False,
+        max_abs_adjoint_error=None,
+        claim_boundary=(
+            "bounded Rust Program AD IR scalar forward interpreter over opcode-bearing "
+            "program_ad_effect_ir.v1 rows, with Python whole-program AD gradient parity "
+            "used only as the local analytic reference; not reverse-mode Rust AD, LLVM, "
+            "JIT, provider, hardware, or performance evidence; no wall-clock performance claim"
         ),
     )
 

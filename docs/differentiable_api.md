@@ -192,11 +192,13 @@ not isolated performance, provider, or hardware execution evidence.
 
 The Rust engine mirrors the bounded Program AD IR metadata schema through
 `scpn_quantum_engine::program_ad_ir` and the PyO3
-`program_ad_effect_ir_metadata_summary(...)` export. This is parser parity for
-`program_ad_effect_ir.v1` evidence only; its claim boundary is
-`metadata_only_no_program_execution`, so the native Rust Program AD
-interpreter, LLVM/JIT differentiated execution, hardware, provider, and
-performance routes remain blocked until separately verified.
+`program_ad_effect_ir_metadata_summary(...)` and
+`program_ad_effect_ir_interpret_forward(...)` exports. Metadata summaries remain
+parser parity for `program_ad_effect_ir.v1`; the interpreter is bounded to
+opcode-bearing scalar forward rows and fails closed on legacy opcode-free
+metadata, aliases, control flow, mutation, array semantics, reverse-mode Rust
+AD, LLVM/JIT differentiated execution, hardware, provider, and performance
+routes.
 `compile_whole_program_ad_trace_to_mlir(...)` lowers captured
 `program_ad_effect_ir.v1` records into deterministic
 `scpn_diff.program_ad_ssa`, `scpn_diff.program_ad_effect`,

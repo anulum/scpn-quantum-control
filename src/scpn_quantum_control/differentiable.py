@@ -165,6 +165,7 @@ class ProgramADEffect:
     inputs: tuple[str, ...]
     version: int
     ordering: int
+    operation: str | None = None
 
     def __post_init__(self) -> None:
         if self.index < 0:
@@ -179,6 +180,10 @@ class ProgramADEffect:
             raise ValueError("program AD effect version must be non-negative")
         if self.ordering < 0:
             raise ValueError("program AD effect ordering must be non-negative")
+        if self.operation is not None and (
+            not isinstance(self.operation, str) or not self.operation
+        ):
+            raise ValueError("program AD effect operation must be non-empty or None")
 
 
 @dataclass(frozen=True)
@@ -533,6 +538,109 @@ def parse_program_ad_effect_ir(serialization: str) -> ProgramADEffectIR:
     )
 
 
+@dataclass(frozen=True)
+class RustProgramADInterpreterResult:
+    """Result from the bounded Rust Program AD IR scalar interpreter."""
+
+    supported: bool
+    value: float | None
+    effect_count: int
+    supported_effect_count: int
+    blocked_reasons: tuple[str, ...]
+    claim_boundary: str
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.supported, bool):
+            raise ValueError("Rust Program AD interpreter supported flag must be boolean")
+        if self.value is not None:
+            _as_real_scalar("Rust Program AD interpreter value", self.value)
+        if self.effect_count < 0 or self.supported_effect_count < 0:
+            raise ValueError("Rust Program AD interpreter counts must be non-negative")
+        if self.supported_effect_count > self.effect_count:
+            raise ValueError("Rust Program AD interpreter supported count exceeds effect count")
+        if any(not isinstance(reason, str) or not reason for reason in self.blocked_reasons):
+            raise ValueError("Rust Program AD interpreter blocked reasons must be non-empty")
+        if self.supported != (self.value is not None and not self.blocked_reasons):
+            raise ValueError("Rust Program AD interpreter supported state is inconsistent")
+        if not self.claim_boundary:
+            raise ValueError("Rust Program AD interpreter claim boundary must be non-empty")
+
+
+def interpret_program_ad_effect_ir_with_rust(
+    program_ir: ProgramADEffectIR | str,
+    inputs: Sequence[float] | NDArray[np.float64],
+) -> RustProgramADInterpreterResult:
+    """Execute a bounded scalar ``program_ad_effect_ir.v1`` trace in Rust.
+
+    The Rust path is deliberately narrow: every effect row must include the
+    opcode-bearing ``operation`` metadata emitted by current Python traces, all
+    operations must be scalar and finite, and control/mutation/array semantics
+    fail closed instead of falling back to Python execution. This is not LLVM,
+    JIT, reverse-mode compiler AD, provider, hardware, or performance evidence.
+    """
+
+    serialization = (
+        program_ir.serialization if isinstance(program_ir, ProgramADEffectIR) else program_ir
+    )
+    if not isinstance(serialization, str) or not serialization:
+        raise ValueError("program AD IR serialization must be a non-empty string")
+    checked_inputs = _as_real_numeric_array("Rust Program AD interpreter inputs", inputs)
+    if checked_inputs.ndim != 1:
+        raise ValueError("Rust Program AD interpreter inputs must be one-dimensional")
+    if not np.all(np.isfinite(checked_inputs)):
+        raise ValueError("Rust Program AD interpreter inputs must contain finite values")
+    claim_boundary = (
+        "bounded_rust_program_ad_ir_scalar_forward_interpreter_no_reverse_ad_no_llvm_jit"
+    )
+    try:
+        import scpn_quantum_engine as engine
+    except ModuleNotFoundError:
+        return RustProgramADInterpreterResult(
+            supported=False,
+            value=None,
+            effect_count=0,
+            supported_effect_count=0,
+            blocked_reasons=("scpn_quantum_engine native extension is not built",),
+            claim_boundary=claim_boundary,
+        )
+    raw = engine.program_ad_effect_ir_interpret_forward(
+        serialization,
+        [float(value) for value in checked_inputs],
+    )
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as exc:
+        raise ValueError("Rust Program AD interpreter returned invalid JSON") from exc
+    if not isinstance(payload, dict):
+        raise ValueError("Rust Program AD interpreter payload must be a JSON object")
+    value = payload.get("value")
+    return RustProgramADInterpreterResult(
+        supported=bool(payload.get("supported")),
+        value=float(value)
+        if isinstance(value, int | float) and not isinstance(value, bool)
+        else None,
+        effect_count=_parse_program_ad_int(
+            "Rust Program AD interpreter effect_count",
+            payload.get("effect_count"),
+        ),
+        supported_effect_count=_parse_program_ad_int(
+            "Rust Program AD interpreter supported_effect_count",
+            payload.get("supported_effect_count"),
+        ),
+        blocked_reasons=tuple(
+            _parse_program_ad_str(
+                "Rust Program AD interpreter blocked reason",
+                reason,
+            )
+            for reason in payload.get("blocked_reasons", [])
+        ),
+        claim_boundary=_parse_program_ad_str(
+            "Rust Program AD interpreter claim_boundary",
+            payload.get("claim_boundary"),
+        ),
+    )
+
+
 def _require_program_ad_ir_rows(name: str, value: object) -> tuple[Mapping[str, object], ...]:
     if not isinstance(value, list):
         raise ValueError(f"program AD IR {name} must be a list")
@@ -605,6 +713,7 @@ def _parse_program_ad_effects(value: object) -> tuple[ProgramADEffect, ...]:
             inputs=_parse_program_ad_str_tuple("effect inputs", row.get("inputs")),
             version=_parse_program_ad_int("effect version", row.get("version")),
             ordering=_parse_program_ad_int("effect ordering", row.get("ordering")),
+            operation=_parse_program_ad_optional_str("effect operation", row.get("operation")),
         )
         for row in _require_program_ad_ir_rows("effects", value)
     )
@@ -2148,6 +2257,7 @@ class _WholeProgramTraceContext:
             inputs=inputs,
             version=version,
             ordering=self._effect_order,
+            operation=op,
         )
         self._effect_order += 1
         self.effects.append(effect)
@@ -2324,6 +2434,7 @@ class _WholeProgramTraceContext:
                     "inputs": effect.inputs,
                     "version": effect.version,
                     "ordering": effect.ordering,
+                    "operation": effect.operation,
                 }
                 for effect in self.effects
             ],
@@ -32180,6 +32291,7 @@ __all__ = [
     "ProgramADPhiNode",
     "ProgramADRegistryDispatchCoverageReport",
     "ProgramADRegistryDispatchCoverageRow",
+    "RustProgramADInterpreterResult",
     "ProgramADSSAValue",
     "PrimitiveBatchingRule",
     "PrimitiveContract",
@@ -32266,6 +32378,7 @@ __all__ = [
     "least_squares_covariance",
     "levenberg_marquardt_step",
     "natural_gradient",
+    "interpret_program_ad_effect_ir_with_rust",
     "parse_program_ad_effect_ir",
     "primitive_complete_contract_for",
     "primitive_contract_for",

@@ -642,6 +642,25 @@ def differentiable_dashboard_status(
             ),
         ),
         DifferentiableDashboardCapabilityRow(
+            surface="program_ad_rust_scalar_interpreter",
+            state="conformance_backed" if conformance_passed else "diagnostic",
+            backing_api="run_differentiable_programming_benchmark_suite",
+            evidence=(
+                "program_ad_effect_ir_interpret_forward",
+                "interpret_program_ad_effect_ir_with_rust",
+                "program_ad_rust_scalar_interpreter_contracts",
+            ),
+            blocked_reasons=()
+            if conformance_passed
+            else ("conformance suite not run in this status call",),
+            claim_boundary=(
+                "bounded Rust scalar forward interpreter for opcode-bearing "
+                "program_ad_effect_ir.v1 rows only; not reverse-mode Rust AD, "
+                "general Program AD execution, LLVM/JIT lowering, provider, "
+                "hardware, or performance promotion"
+            ),
+        ),
+        DifferentiableDashboardCapabilityRow(
             surface="program_ad_mlir_interchange",
             state="conformance_backed" if conformance_passed else "diagnostic",
             backing_api="compile_whole_program_ad_trace_to_mlir",
@@ -1016,16 +1035,17 @@ def differentiable_dashboard_status(
                 "compile_whole_program_ad_trace_to_mlir",
                 "Rust Program AD IR metadata parser",
                 "program_ad_effect_ir_metadata_summary",
+                "program_ad_effect_ir_interpret_forward",
             ),
             blocked_reasons=(
-                "native Rust Program AD interpreter is not promoted",
+                "only bounded scalar opcode-bearing Rust forward interpretation is promoted",
                 "native LLVM/JIT differentiated kernels remain blocked until runtime verified",
             ),
             claim_boundary=(
                 "compiler/interchange planning plus Rust "
-                "metadata_only_no_program_execution Program AD IR parsing only; "
-                "no Rust interpreter, LLVM/JIT execution, hardware, provider, or "
-                "performance claim"
+                "metadata parsing and bounded scalar forward Program AD IR "
+                "interpretation only; no reverse-mode Rust AD, general Program AD "
+                "execution, LLVM/JIT execution, hardware, provider, or performance claim"
             ),
         ),
         DifferentiableDashboardCapabilityRow(

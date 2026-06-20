@@ -6,7 +6,9 @@
 // Contact: www.anulum.li | protoscience@anulum.li
 // scpn-quantum-engine — Program AD IR parity tests
 
-use scpn_quantum_engine::program_ad_ir::parse_program_ad_effect_ir;
+use scpn_quantum_engine::program_ad_ir::{
+    interpret_program_ad_effect_ir_forward, parse_program_ad_effect_ir,
+};
 
 const VALID_PROGRAM_AD_IR: &str = r#"{
   "format": "program_ad_effect_ir.v1",
@@ -27,6 +29,32 @@ const VALID_PROGRAM_AD_IR: &str = r#"{
   "phi_nodes": [
     {"index": 0, "target": "phi:runtime_branch:0", "incoming": ["executed_true", "executed_false"], "control_region": 0, "selected": "executed_true", "source_line": null}
   ],
+  "bytecode_offsets": [0, 2, 4]
+}"#;
+
+const EXECUTABLE_SCALAR_PROGRAM_AD_IR: &str = r#"{
+  "format": "program_ad_effect_ir.v1",
+  "ssa_values": [
+    {"name": "%0", "producer": 0, "version": 0, "shape": [], "dtype": "float64", "effect": 0},
+    {"name": "%1", "producer": 1, "version": 0, "shape": [], "dtype": "float64", "effect": 1},
+    {"name": "%2", "producer": 2, "version": 0, "shape": [], "dtype": "float64", "effect": 2},
+    {"name": "%3", "producer": 3, "version": 0, "shape": [], "dtype": "float64", "effect": 3},
+    {"name": "%4", "producer": 4, "version": 0, "shape": [], "dtype": "float64", "effect": 4},
+    {"name": "%5", "producer": 5, "version": 0, "shape": [], "dtype": "float64", "effect": 5},
+    {"name": "%6", "producer": 6, "version": 0, "shape": [], "dtype": "float64", "effect": 6}
+  ],
+  "effects": [
+    {"index": 0, "kind": "parameter", "target": "%0", "inputs": ["x"], "version": 0, "ordering": 0, "operation": "parameter"},
+    {"index": 1, "kind": "parameter", "target": "%1", "inputs": ["y"], "version": 0, "ordering": 1, "operation": "parameter"},
+    {"index": 2, "kind": "pure", "target": "%2", "inputs": ["%0", "%0"], "version": 0, "ordering": 2, "operation": "mul"},
+    {"index": 3, "kind": "pure", "target": "%3", "inputs": ["%1", "2.0"], "version": 0, "ordering": 3, "operation": "mul"},
+    {"index": 4, "kind": "pure", "target": "%4", "inputs": ["%2", "%3"], "version": 0, "ordering": 4, "operation": "add"},
+    {"index": 5, "kind": "primitive", "target": "%5", "inputs": ["%0"], "version": 0, "ordering": 5, "operation": "sin"},
+    {"index": 6, "kind": "pure", "target": "%6", "inputs": ["%4", "%5"], "version": 0, "ordering": 6, "operation": "add"}
+  ],
+  "alias_edges": [],
+  "control_regions": [],
+  "phi_nodes": [],
   "bytecode_offsets": [0, 2, 4]
 }"#;
 
@@ -93,4 +121,37 @@ fn program_ad_effect_ir_parser_fails_closed_on_malformed_payloads() {
     assert!(parse_program_ad_effect_ir(&bad_source_line)
         .unwrap_err()
         .contains("source_line"));
+}
+
+#[test]
+fn program_ad_effect_ir_rust_interpreter_executes_opcode_bearing_scalar_subset() {
+    let result =
+        interpret_program_ad_effect_ir_forward(EXECUTABLE_SCALAR_PROGRAM_AD_IR, &[0.4, -0.2])
+            .unwrap();
+
+    let expected = 0.4_f64 * 0.4_f64 + 2.0_f64 * -0.2_f64 + 0.4_f64.sin();
+    assert!(result.supported);
+    assert_eq!(result.effect_count, 7);
+    assert_eq!(result.supported_effect_count, 7);
+    assert!(result.blocked_reasons.is_empty());
+    assert!((result.value.unwrap() - expected).abs() <= 1.0e-12);
+    assert_eq!(
+        result.claim_boundary,
+        "bounded_rust_program_ad_ir_scalar_forward_interpreter_no_reverse_ad_no_llvm_jit"
+    );
+}
+
+#[test]
+fn program_ad_effect_ir_rust_interpreter_fails_closed_without_operation_metadata() {
+    let legacy_ir = EXECUTABLE_SCALAR_PROGRAM_AD_IR
+        .replace(", \"operation\": \"parameter\"", "")
+        .replace(", \"operation\": \"mul\"", "")
+        .replace(", \"operation\": \"add\"", "")
+        .replace(", \"operation\": \"sin\"", "");
+    let result = interpret_program_ad_effect_ir_forward(&legacy_ir, &[0.4, -0.2]).unwrap();
+
+    assert!(!result.supported);
+    assert_eq!(result.value, None);
+    assert_eq!(result.supported_effect_count, 0);
+    assert!(result.blocked_reasons[0].contains("operation metadata"));
 }

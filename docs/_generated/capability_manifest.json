@@ -8,11 +8,11 @@
     "notebook_files": 98,
     "optional_extras": 42,
     "paper0_validation_modules": 466,
-    "public_api_exports": 687,
+    "public_api_exports": 689,
     "public_documentation_pages": 254,
-    "python_model_classes": 1828,
+    "python_model_classes": 1829,
     "python_model_source_modules": 835,
-    "rust_pyo3_model_wrappers": 135,
+    "rust_pyo3_model_wrappers": 136,
     "rust_source_modules": 38,
     "test_files": 1956
   },
@@ -6342,6 +6342,10 @@
         "path": "src/scpn_quantum_control/identity/robustness.py"
       },
       {
+        "name": "RustProgramADInterpreterResult",
+        "path": "src/scpn_quantum_control/differentiable.py"
+      },
+      {
         "name": "S1FeedbackArmCircuit",
         "path": "src/scpn_quantum_control/hardware/s1_feedback_ibm.py"
       },
@@ -9314,6 +9318,7 @@
       "phase_qnode_vector_jvp_rust",
       "phase_qnode_vector_vjp_rust",
       "plaquette_action_batch",
+      "program_ad_effect_ir_interpret_forward",
       "program_ad_effect_ir_metadata_summary",
       "pt_symmetric_kuramoto_trajectory",
       "qpetri_campaign_aggregate",
@@ -9593,6 +9598,7 @@
     "Result",
     "ReverseNode",
     "RigettiQCSHALAdapter",
+    "RustProgramADInterpreterResult",
     "SNNQuantumBridge",
     "SPSAGradientResult",
     "SPSAObjectiveSample",
@@ -9807,6 +9813,7 @@
     "identity_fingerprint",
     "implicit_fixed_point_sensitivity",
     "implicit_stationary_sensitivity",
+    "interpret_program_ad_effect_ir_with_rust",
     "ionq_qis_workload",
     "iqm_qiskit_workload",
     "is_holomorphic",
