@@ -16,6 +16,8 @@ import pytest
 
 from scpn_quantum_control.differentiable import (
     Parameter,
+    PrimitiveIdentity,
+    primitive_contract_for,
     program_adjoint_gradient,
     whole_program_value_and_grad,
 )
@@ -26,6 +28,76 @@ def _assert_allclose(
 ) -> None:
     """Assert NumPy closeness across dynamically typed Program AD payloads."""
     cast(Any, np.testing.assert_allclose)(actual, expected, rtol=rtol, atol=atol)
+
+
+def test_program_ad_shape_boundary_metadata_is_explicit() -> None:
+    """Shape contracts should expose fail-closed static-layout boundaries."""
+
+    expected_factories = {
+        "atleast_1d": "program_ad_shape_atleast_1d_derivative_rule",
+        "atleast_2d": "program_ad_shape_atleast_2d_derivative_rule",
+        "atleast_3d": "program_ad_shape_atleast_3d_derivative_rule",
+        "expand_dims": "program_ad_shape_expand_dims_derivative_rule",
+        "flip": "program_ad_shape_flip_derivative_rule",
+        "fliplr": "program_ad_shape_fliplr_derivative_rule",
+        "flipud": "program_ad_shape_flipud_derivative_rule",
+        "moveaxis": "program_ad_shape_moveaxis_derivative_rule",
+        "repeat": "program_ad_shape_repeat_derivative_rule",
+        "reshape": "program_ad_shape_reshape_derivative_rule",
+        "ravel": "program_ad_shape_ravel_derivative_rule",
+        "roll": "program_ad_shape_roll_derivative_rule",
+        "rot90": "program_ad_shape_rot90_derivative_rule",
+        "squeeze": "program_ad_shape_squeeze_derivative_rule",
+        "swapaxes": "program_ad_shape_swapaxes_derivative_rule",
+        "tile": "program_ad_shape_tile_derivative_rule",
+        "transpose": "program_ad_shape_transpose_derivative_rule",
+    }
+    expected_static_signatures = {
+        "atleast_1d": "source_shape:ranked_tensor_shape",
+        "atleast_2d": "source_shape:ranked_tensor_shape",
+        "atleast_3d": "source_shape:ranked_tensor_shape",
+        "expand_dims": "source_shape:ranked_tensor_shape;axis",
+        "flip": "source_shape:ranked_tensor_shape;axis",
+        "fliplr": "source_shape:rank_ge_2",
+        "flipud": "source_shape:rank_ge_1",
+        "moveaxis": "source_shape:ranked_tensor_shape;source_destination",
+        "repeat": "source_shape:ranked_tensor_shape;repeats_axis",
+        "reshape": "source_shape:ranked_tensor_shape;target_shape",
+        "ravel": "source_shape:ranked_tensor_shape",
+        "roll": "source_shape:ranked_tensor_shape;shift_axis",
+        "rot90": "source_shape:ranked_tensor_shape;k_axes",
+        "squeeze": "source_shape:ranked_tensor_shape;axis",
+        "swapaxes": "source_shape:ranked_tensor_shape;axis1_axis2",
+        "tile": "source_shape:ranked_tensor_shape;reps",
+        "transpose": "source_shape:ranked_tensor_shape;axes",
+    }
+    expected_boundaries = {
+        "atleast_1d": "static_rank_promotion",
+        "atleast_2d": "static_rank_promotion",
+        "atleast_3d": "static_rank_promotion",
+        "expand_dims": "static_singleton_axis_insertion",
+        "flip": "static_axis_flip_permutation",
+        "fliplr": "static_second_axis_flip_permutation",
+        "flipud": "static_first_axis_flip_permutation",
+        "moveaxis": "static_axis_move_permutation",
+        "repeat": "static_repeat_scatter_add",
+        "reshape": "element_count_preserving_static_shape",
+        "ravel": "contiguous_flat_view_shape",
+        "roll": "static_integer_roll_permutation",
+        "rot90": "static_quarter_turn_axis_permutation",
+        "squeeze": "static_singleton_axis_removal",
+        "swapaxes": "static_axis_swap_permutation",
+        "tile": "static_tile_scatter_add",
+        "transpose": "static_axis_permutation",
+    }
+    for name, boundary in expected_boundaries.items():
+        metadata = primitive_contract_for(
+            PrimitiveIdentity("scpn.program_ad.shape", name, "1")
+        ).lowering_metadata
+        assert metadata["static_derivative_factory"] == expected_factories[name]
+        assert metadata["static_signature"] == expected_static_signatures[name]
+        assert metadata["nondifferentiable_boundary"] == boundary
+        assert metadata["nondifferentiable_boundary_policy"] == "fail_closed"
 
 
 def test_program_ad_squeeze_expand_dims_preserve_exact_adjoint() -> None:
