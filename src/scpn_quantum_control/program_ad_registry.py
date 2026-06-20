@@ -323,7 +323,9 @@ class ProgramADRegistryDispatchCoverageReport:
             raise ValueError("registry dispatch coverage total must match row count")
         if self.covered_primitives != sum(1 for row in self.rows if row.complete):
             raise ValueError("registry dispatch coverage covered count must match complete rows")
-        if self.covered_primitives < 0 or self.covered_primitives > self.total_primitives:
+        if (  # pragma: no cover - guarded by row-count invariants above
+            self.covered_primitives < 0 or self.covered_primitives > self.total_primitives
+        ):
             raise ValueError("registry dispatch coverage covered count is invalid")
         if sum(family_counts.values()) != self.total_primitives:
             raise ValueError("registry dispatch coverage family counts must sum to total")
@@ -658,7 +660,7 @@ class CustomDerivativeRegistry:
             missing.append("static_argument_rule")
         if contract.nondifferentiable_policy == "not_declared":
             missing.append("nondifferentiable_policy")
-        if not contract.effect:
+        if not contract.effect:  # pragma: no cover - PrimitiveContract rejects empty effect
             missing.append("effect")
         if missing:
             joined = ", ".join(missing)
@@ -1080,7 +1082,7 @@ def _program_ad_registry_dispatch_coverage_row(
             missing.append("static_argument_rule")
         if contract.nondifferentiable_policy == "not_declared":
             missing.append("nondifferentiable_policy")
-        if not contract.effect:
+        if not contract.effect:  # pragma: no cover - PrimitiveContract rejects empty effect
             missing.append("effect")
         if missing:
             blocked_reasons.append(
