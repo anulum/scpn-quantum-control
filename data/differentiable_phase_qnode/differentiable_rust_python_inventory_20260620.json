@@ -77,11 +77,12 @@
       "benchmark_status": "functional_non_isolated",
       "benchmark_surface": [
         "program_ad_rust_value_gradient_replay",
+        "program_ad_rust_executed_branch_replay",
         "diff-qnode-claim-ledger-v1",
         "diff-module-hardening-audit-v1"
       ],
       "blockers": [
-        "executed branch replay, primitive-family replay, and array adjoints are missing",
+        "primitive-family replay and array adjoints are missing",
         "registry metadata mirror, LLVM/JIT lowering, and isolated benchmark evidence are missing"
       ],
       "claim_boundary": "Differentiable Rust/Python surface inventory for rustification planning; no broad rustification promotion, provider execution, hardware execution, LLVM/JIT execution, GPU execution, or isolated benchmark claim is implied.",
@@ -137,7 +138,7 @@
         "tests/test_differentiable_claim_ledger.py",
         "tests/test_differentiable_module_hardening_audit.py"
       ],
-      "title": "Rust Program AD IR parser and bounded scalar value+gradient replay"
+      "title": "Rust Program AD IR parser plus bounded scalar value+gradient and executed branch replay"
     },
     {
       "benchmark_status": "functional_non_isolated",

@@ -10,9 +10,11 @@
 from __future__ import annotations
 
 import json
+from typing import Any
 
 import numpy as np
 import pytest
+from numpy.typing import NDArray
 
 from scpn_quantum_control.differentiable import (
     Parameter,
@@ -58,7 +60,7 @@ _EXECUTABLE_SCALAR_PROGRAM_AD_IR = """{
 }"""
 
 
-def _require_export(name: str):
+def _require_export(name: str) -> Any:
     if not hasattr(engine, name):
         pytest.skip(f"scpn_quantum_engine is installed without {name}")
     return getattr(engine, name)
@@ -66,7 +68,12 @@ def _require_export(name: str):
 
 def _ry_state_and_derivative(
     theta: float,
-) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+) -> tuple[
+    NDArray[np.float64],
+    NDArray[np.float64],
+    NDArray[np.float64],
+    NDArray[np.float64],
+]:
     state_re = np.array([np.cos(theta / 2.0), np.sin(theta / 2.0)], dtype=np.float64)
     state_im = np.zeros(2, dtype=np.float64)
     derivatives_re = np.array(
@@ -77,7 +84,7 @@ def _ry_state_and_derivative(
     return state_re, state_im, derivatives_re, derivatives_im
 
 
-def _vector_objective(params: np.ndarray) -> np.ndarray:
+def _vector_objective(params: NDArray[np.float64]) -> NDArray[np.float64]:
     return np.array(
         [
             np.cos(params[0]) + 0.1 * np.sin(params[1]),
@@ -87,7 +94,7 @@ def _vector_objective(params: np.ndarray) -> np.ndarray:
     )
 
 
-def _scalar_objective(params: np.ndarray) -> float:
+def _scalar_objective(params: NDArray[np.float64]) -> float:
     return float(np.cos(params[0]) + 0.25 * np.sin(params[1]))
 
 
@@ -128,7 +135,7 @@ def test_rust_program_ad_value_and_gradient_replay_matches_scalar_reference() ->
     assert payload["parameter_targets"] == ["%0", "%1"]
     assert payload["value"] == pytest.approx(0.4**2 + 2.0 * -0.2 + np.sin(0.4))
     assert payload["gradient"] == pytest.approx([2.0 * 0.4 + np.cos(0.4), 2.0])
-    assert "no_control_no_alias" in payload["claim_boundary"]
+    assert "executed_branch_no_alias" in payload["claim_boundary"]
 
 
 def test_rust_phase_qnode_computational_basis_fisher_matches_python_surface() -> None:

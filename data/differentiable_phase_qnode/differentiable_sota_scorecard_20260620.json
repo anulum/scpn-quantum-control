@@ -289,7 +289,7 @@
         "diff-sota-scorecard-20260620"
       ],
       "blockers": [
-        "executed branch replay, primitive-family replay, and array adjoints are missing",
+        "primitive-family replay and array adjoints are missing",
         "registry metadata mirror, LLVM/JIT lowering, and isolated benchmark evidence are missing"
       ],
       "category": "rust_native_program_ad",
@@ -297,7 +297,7 @@
       "claim_ids": [
         "phase_qnode_claim_boundary"
       ],
-      "current_evidence": "Rust Program AD metadata parsing plus bounded scalar forward and value+gradient replay exist; executed branch replay, array adjoints, and registry mirror remain open.",
+      "current_evidence": "Rust Program AD metadata parsing plus bounded scalar forward/value+gradient replay and executed runtime branch replay exist; array adjoints and registry mirror remain open.",
       "docs_surface": [
         "README.md",
         "docs/differentiable_programming.md",
@@ -516,5 +516,65 @@
     }
   ],
   "schema": "scpn_qc_differentiable_sota_scorecard_v1",
-  "total_category_count": 11
+  "total_category_count": 11,
+  "validation": {
+    "checked_categories": [
+      "jax_native_transforms",
+      "pytorch_autograd_compile",
+      "pennylane_qnode_device_plugin",
+      "qiskit_runtime_provider_gradients",
+      "catalyst_compiler_workflows",
+      "enzyme_compiler_ad",
+      "rust_native_program_ad",
+      "provider_hardware_gradients",
+      "benchmark_promotion",
+      "docs_api_maintainability",
+      "adoption_licensing"
+    ],
+    "checked_claim_ids": [
+      "ci_benchmark_evidence",
+      "external_framework_comparison",
+      "external_validation_artifact_bundle",
+      "hardening_slice_gate",
+      "module_hardening_audit",
+      "phase_qnode_claim_boundary",
+      "public_claim_table",
+      "support_surface_alignment"
+    ],
+    "checked_paths": [
+      ".github/workflows/ci.yml",
+      "README.md",
+      "data/differentiable_phase_qnode/claim_ledger.md",
+      "data/differentiable_phase_qnode/differentiable_sota_scorecard_20260620.md",
+      "data/differentiable_phase_qnode/external_validation_artifact_bundle_20260616.md",
+      "data/differentiable_phase_qnode/public_claim_table_20260616.md",
+      "docs/benchmarks_api.md",
+      "docs/differentiable_api.md",
+      "docs/differentiable_programming.md",
+      "scripts/run_differentiable_benchmark_evidence.py",
+      "src/scpn_quantum_control/benchmarks/differentiable_evidence.py",
+      "src/scpn_quantum_control/benchmarks/differentiable_external_comparison.py",
+      "src/scpn_quantum_control/benchmarks/differentiable_hardening_gate.py",
+      "src/scpn_quantum_control/differentiable_claim_ledger.py",
+      "src/scpn_quantum_control/differentiable_external_validation.py",
+      "src/scpn_quantum_control/differentiable_module_hardening_audit.py",
+      "src/scpn_quantum_control/phase/qnode_tape.py",
+      "src/scpn_quantum_control/phase/qnode_transforms.py",
+      "src/scpn_quantum_control/phase/qnode_vector_transforms.py",
+      "tests/test_differentiable_benchmark_evidence.py",
+      "tests/test_differentiable_benchmark_workflow.py",
+      "tests/test_differentiable_claim_ledger.py",
+      "tests/test_differentiable_external_comparisons.py",
+      "tests/test_differentiable_external_validation.py",
+      "tests/test_differentiable_hardening_gate.py",
+      "tests/test_differentiable_module_hardening_audit.py",
+      "tests/test_differentiable_sota_scorecard.py",
+      "tests/test_phase_qnode_tape.py",
+      "tests/test_phase_qnode_transforms.py",
+      "tests/test_phase_qnode_vector_transforms.py"
+    ],
+    "claim_boundary": "SOTA scorecard validation only; validates category coverage and claim-ledger consistency without promoting performance, provider, hardware, QPU, GPU, or isolated_affinity claims",
+    "errors": [],
+    "passed": true
+  }
 }

@@ -57,7 +57,7 @@ def test_inventory_rows_are_claim_bounded_and_path_backed() -> None:
     assert rust_ir.rust_parity_status == "partial"
     assert "scpn_quantum_engine/src/program_ad_ir.rs" in rust_ir.rust_surface
     assert "tests/test_phase_qnode_rust_parity.py" in rust_ir.test_surface
-    assert any("branch replay" in blocker for blocker in rust_ir.blockers)
+    assert any("primitive-family replay" in blocker for blocker in rust_ir.blockers)
 
     qiskit = rows["qiskit_runtime_provider_gradients"]
     assert qiskit.classification == "provider_blocked"

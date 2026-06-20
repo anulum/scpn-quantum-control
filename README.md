@@ -337,10 +337,11 @@ Rust polyglot parity includes a claim-bounded Program AD IR metadata parser in
 `program_ad_effect_ir_interpret_forward(...)` plus
 `program_ad_effect_ir_interpret_value_and_gradient(...)` for PyO3 consumers.
 Metadata summaries validate `program_ad_effect_ir.v1` evidence only; Rust
-replay is bounded to opcode-bearing scalar forward and value+gradient rows and
-fails closed on legacy opcode-free metadata, aliases, control flow, mutation,
-arrays, general Program AD execution, LLVM/JIT execution, hardware, and
-performance promotion.
+replay is bounded to opcode-bearing scalar forward and value+gradient rows,
+including executed runtime branch metadata when matched by runtime phi
+provenance. It still fails closed on legacy opcode-free metadata, aliases,
+mutation, arrays, source-level/non-executed branch semantics, general Program
+AD execution, LLVM/JIT execution, hardware, and performance promotion.
 Python compiler interchange lowers captured `program_ad_effect_ir.v1` records
 into deterministic `scpn_diff.program_ad_*` MLIR-style operations through
 `compile_whole_program_ad_trace_to_mlir(...)`, validated by

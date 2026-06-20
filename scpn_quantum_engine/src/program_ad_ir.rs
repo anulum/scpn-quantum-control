@@ -14,7 +14,7 @@
 //! lowering, JIT execution, reverse-mode compiler AD, hardware execution, or
 //! performance claims.
 
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
@@ -24,9 +24,9 @@ use serde_json::Value;
 const PROGRAM_AD_EFFECT_IR_FORMAT: &str = "program_ad_effect_ir.v1";
 const PROGRAM_AD_IR_CLAIM_BOUNDARY: &str = "metadata_only_no_program_execution";
 const PROGRAM_AD_RUST_INTERPRETER_CLAIM_BOUNDARY: &str =
-    "bounded_rust_program_ad_ir_scalar_forward_interpreter_no_reverse_ad_no_llvm_jit";
+    "bounded_rust_program_ad_ir_scalar_forward_executed_branch_no_alias_no_llvm_jit";
 const PROGRAM_AD_RUST_VALUE_AND_GRADIENT_CLAIM_BOUNDARY: &str =
-    "bounded_rust_program_ad_ir_scalar_value_and_gradient_no_control_no_alias_no_llvm_jit";
+    "bounded_rust_program_ad_ir_scalar_value_and_gradient_executed_branch_no_alias_no_llvm_jit";
 
 /// One SSA value record from Python-emitted Program AD metadata.
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize)]
@@ -327,14 +327,11 @@ pub fn interpret_program_ad_effect_ir_forward(
             ],
         ));
     }
-    if !ir.control_regions.is_empty() || !ir.phi_nodes.is_empty() {
+    if let Err(reason) = validate_executed_branch_metadata(&ir) {
         return Ok(ProgramADRustInterpreterResult::unsupported(
             ir.effects.len(),
             0,
-            vec![
-                "control-flow Program AD IR requires branch-signature replay outside the bounded Rust scalar interpreter"
-                    .to_owned(),
-            ],
+            vec![reason],
         ));
     }
 
@@ -531,14 +528,11 @@ fn evaluate_scalar_program_ad_ir<'a>(
             ],
         )));
     }
-    if !ir.control_regions.is_empty() || !ir.phi_nodes.is_empty() {
+    if let Err(reason) = validate_executed_branch_metadata(ir) {
         return Err(Box::new(ProgramADRustValueAndGradientResult::unsupported(
             ir.effects.len(),
             0,
-            vec![
-                "control-flow Program AD IR requires branch-signature replay outside bounded Rust scalar value+gradient replay"
-                    .to_owned(),
-            ],
+            vec![reason],
         )));
     }
 
@@ -608,6 +602,7 @@ fn accumulate_reverse_effect(
     adjoints: &mut HashMap<String, f64>,
 ) -> Result<(), String> {
     match operation {
+        operation if operation.starts_with("branch:") => Ok(()),
         "add" => accumulate_binary(effect, values, adjoints, cotangent, 1.0, 1.0),
         "sub" => accumulate_binary(effect, values, adjoints, cotangent, 1.0, -1.0),
         "mul" => {
@@ -831,6 +826,9 @@ fn evaluate_effect(
         *input_index += 1;
         return Ok(*value);
     }
+    if operation.starts_with("branch:") {
+        return evaluate_branch_effect(effect, operation);
+    }
     match operation {
         "add" => binary(effect, values, |lhs, rhs| Ok(lhs + rhs)),
         "sub" => binary(effect, values, |lhs, rhs| Ok(lhs - rhs)),
@@ -909,6 +907,142 @@ fn evaluate_effect(
             "effect {} operation {operation} is outside the bounded Rust scalar interpreter",
             effect.index
         )),
+    }
+}
+
+fn validate_executed_branch_metadata(ir: &ProgramADEffectIR) -> Result<(), String> {
+    let mut branch_effects_by_operation: HashMap<&str, usize> = HashMap::new();
+    for effect in &ir.effects {
+        let Some(operation) = effect.operation.as_deref() else {
+            continue;
+        };
+        if !operation.starts_with("branch:") {
+            continue;
+        }
+        if effect.kind != "control_branch" {
+            return Err(format!(
+                "branch effect {} must have kind control_branch",
+                effect.index
+            ));
+        }
+        if !effect.inputs.is_empty() {
+            return Err(format!(
+                "branch effect {} must not carry differentiable inputs",
+                effect.index
+            ));
+        }
+        branch_effects_by_operation.insert(operation, effect.index);
+    }
+
+    if ir.control_regions.is_empty() && ir.phi_nodes.is_empty() {
+        return Ok(());
+    }
+    if ir.control_regions.is_empty() || ir.phi_nodes.is_empty() {
+        return Err(
+            "runtime branch metadata must include both control regions and phi nodes".to_owned(),
+        );
+    }
+
+    let mut runtime_region_entered_by_index: HashMap<usize, bool> = HashMap::new();
+    let mut source_region_indices: HashSet<usize> = HashSet::new();
+    for region in &ir.control_regions {
+        if region.kind == "source_control_flow" {
+            source_region_indices.insert(region.index);
+            continue;
+        }
+        if region.kind != "runtime_branch" {
+            return Err(
+                "only executed runtime_branch metadata is supported by bounded Rust branch replay"
+                    .to_owned(),
+            );
+        }
+        let Some(predicate) = region.predicate.as_deref() else {
+            return Err("runtime branch metadata must include a predicate".to_owned());
+        };
+        if !predicate.starts_with("branch:") {
+            return Err("runtime branch predicate must reference a branch operation".to_owned());
+        }
+        if !branch_effects_by_operation.contains_key(predicate) {
+            return Err("runtime branch predicate must match a control_branch effect".to_owned());
+        }
+        let predicate_entered = branch_operation_value(predicate)?;
+        if predicate_entered != region.entered {
+            return Err("runtime branch predicate and entered flag disagree".to_owned());
+        }
+        runtime_region_entered_by_index.insert(region.index, region.entered);
+    }
+
+    let mut phi_count_by_region: HashMap<usize, usize> = HashMap::new();
+    for phi in &ir.phi_nodes {
+        let Some(region_index) = phi.control_region else {
+            return Err("runtime branch phi metadata must reference a control region".to_owned());
+        };
+        if source_region_indices.contains(&region_index) {
+            continue;
+        }
+        let Some(entered) = runtime_region_entered_by_index.get(&region_index) else {
+            return Err(
+                "runtime branch phi metadata must reference a runtime_branch region".to_owned(),
+            );
+        };
+        let Some(selected) = phi.selected.as_deref() else {
+            return Err("runtime branch phi metadata must record selected path".to_owned());
+        };
+        let expected_selected = if *entered {
+            "executed_true"
+        } else {
+            "executed_false"
+        };
+        if selected != expected_selected {
+            return Err(
+                "runtime branch phi selected path disagrees with executed branch".to_owned(),
+            );
+        }
+        let has_true = phi.incoming.iter().any(|value| value == "executed_true");
+        let has_false = phi.incoming.iter().any(|value| value == "executed_false");
+        if !has_true || !has_false {
+            return Err(
+                "runtime branch phi incoming paths must include executed_true and executed_false"
+                    .to_owned(),
+            );
+        }
+        *phi_count_by_region.entry(region_index).or_insert(0) += 1;
+    }
+    for region_index in runtime_region_entered_by_index.keys() {
+        if phi_count_by_region.get(region_index) != Some(&1) {
+            return Err("each runtime branch region must have exactly one phi node".to_owned());
+        }
+    }
+    Ok(())
+}
+
+fn evaluate_branch_effect(effect: &ProgramADEffect, operation: &str) -> Result<f64, String> {
+    if effect.kind != "control_branch" {
+        return Err(format!(
+            "effect {} branch operation must have kind control_branch",
+            effect.index
+        ));
+    }
+    if !effect.inputs.is_empty() {
+        return Err(format!(
+            "effect {} branch operation must not carry differentiable inputs",
+            effect.index
+        ));
+    }
+    Ok(if branch_operation_value(operation)? {
+        1.0
+    } else {
+        0.0
+    })
+}
+
+fn branch_operation_value(operation: &str) -> Result<bool, String> {
+    if operation.ends_with(":True") {
+        Ok(true)
+    } else if operation.ends_with(":False") {
+        Ok(false)
+    } else {
+        Err("branch operation must end with :True or :False".to_owned())
     }
 }
 

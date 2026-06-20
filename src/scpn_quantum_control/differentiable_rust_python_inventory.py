@@ -381,7 +381,7 @@ def _default_inventory_rows(
         ),
         _inventory_row(
             "rust_program_ad_ir",
-            "Rust Program AD IR parser and bounded scalar value+gradient replay",
+            "Rust Program AD IR parser plus bounded scalar value+gradient and executed branch replay",
             "rust_backed",
             "src/scpn_quantum_control/differentiable.py",
             (
@@ -397,13 +397,13 @@ def _default_inventory_rows(
             ("docs/differentiable_api.md",),
             ("tests/test_phase_qnode_rust_parity.py", "tests/test_differentiable.py"),
             ("docs/differentiable_api.md", "docs/differentiable_programming.md"),
-            ("program_ad_rust_value_gradient_replay",),
+            ("program_ad_rust_value_gradient_replay", "program_ad_rust_executed_branch_replay"),
             ("phase_qnode_claim_boundary", "module_hardening_audit"),
             "functional_non_isolated",
             "partial",
             "partial",
             (
-                "executed branch replay, primitive-family replay, and array adjoints are missing",
+                "primitive-family replay and array adjoints are missing",
                 "registry metadata mirror, LLVM/JIT lowering, and isolated benchmark evidence are missing",
             ),
         ),

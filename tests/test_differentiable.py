@@ -15597,7 +15597,45 @@ def test_rust_program_ad_value_and_gradient_replay_matches_python_trace() -> Non
     assert rust_result.supported_effect_count == len(result.program_ir.effects)
     assert (
         rust_result.claim_boundary
-        == "bounded_rust_program_ad_ir_scalar_value_and_gradient_no_control_no_alias_no_llvm_jit"
+        == "bounded_rust_program_ad_ir_scalar_value_and_gradient_executed_branch_no_alias_no_llvm_jit"
+    )
+
+
+def test_rust_program_ad_value_and_gradient_replays_executed_branch_trace() -> None:
+    """Rust Program AD replay should preserve executed scalar branch semantics."""
+
+    engine = pytest.importorskip("scpn_quantum_engine")
+    assert callable(getattr(engine, "program_ad_effect_ir_interpret_value_and_gradient", None))
+    values = np.array([0.4, -0.2], dtype=np.float64)
+
+    def objective(trace_values: Any) -> object:
+        x, y = trace_values
+        return (x * x if x > y else y * y) + 2.0 * y + np.sin(x)
+
+    result = whole_program_value_and_grad(
+        objective,
+        values,
+        parameters=(Parameter("x"), Parameter("y")),
+    )
+    assert result.program_ir is not None
+    assert result.program_ir.control_regions
+    assert result.program_ir.phi_nodes
+    assert not result.program_ir.alias_edges
+    assert "runtime_branch" in {region.kind for region in result.program_ir.control_regions}, (
+        result.program_ir.control_regions
+    )
+    assert '"kind":"runtime_branch"' in result.program_ir.serialization
+    assert callable(getattr(engine, "program_ad_effect_ir_interpret_value_and_gradient", None))
+
+    rust_result = value_and_grad_program_ad_effect_ir_with_rust(result.program_ir, values)
+
+    assert rust_result.supported is True, rust_result.blocked_reasons
+    assert rust_result.value == pytest.approx(result.value, abs=1.0e-12)
+    np.testing.assert_allclose(rust_result.gradient, result.gradient, atol=1.0e-12)
+    assert rust_result.supported_effect_count == len(result.program_ir.effects)
+    assert (
+        rust_result.claim_boundary
+        == "bounded_rust_program_ad_ir_scalar_value_and_gradient_executed_branch_no_alias_no_llvm_jit"
     )
 
 

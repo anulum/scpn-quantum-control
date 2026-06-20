@@ -616,9 +616,12 @@ def interpret_program_ad_effect_ir_with_rust(
 
     The Rust path is deliberately narrow: every effect row must include the
     opcode-bearing ``operation`` metadata emitted by current Python traces, all
-    operations must be scalar and finite, and control/mutation/array semantics
-    fail closed instead of falling back to Python execution. This is not LLVM,
-    JIT, reverse-mode compiler AD, provider, hardware, or performance evidence.
+    operations must be scalar and finite. Executed runtime branch metadata is
+    accepted only when it is side-effect-free and matched by runtime phi
+    provenance; aliases, mutation, arrays, source-level branch semantics, and
+    non-executed branch adjoints fail closed instead of falling back to Python
+    execution. This is not LLVM, JIT, reverse-mode compiler AD, provider,
+    hardware, or performance evidence.
     """
 
     serialization = (
@@ -632,7 +635,7 @@ def interpret_program_ad_effect_ir_with_rust(
     if not np.all(np.isfinite(checked_inputs)):
         raise ValueError("Rust Program AD interpreter inputs must contain finite values")
     claim_boundary = (
-        "bounded_rust_program_ad_ir_scalar_forward_interpreter_no_reverse_ad_no_llvm_jit"
+        "bounded_rust_program_ad_ir_scalar_forward_executed_branch_no_alias_no_llvm_jit"
     )
     try:
         import scpn_quantum_engine as engine
@@ -690,10 +693,12 @@ def value_and_grad_program_ad_effect_ir_with_rust(
     """Replay bounded scalar Program AD value and gradient in Rust.
 
     The replay is intentionally limited to opcode-bearing scalar
-    ``program_ad_effect_ir.v1`` rows with no aliases, mutation, control flow,
-    arrays, provider execution, hardware execution, LLVM/JIT execution, or
-    performance claim. Unsupported routes return a fail-closed result instead
-    of falling back to Python.
+    ``program_ad_effect_ir.v1`` rows with no aliases, mutation, arrays,
+    provider execution, hardware execution, LLVM/JIT execution, or performance
+    claim. Executed runtime branch metadata is replayed only as provenance for
+    the already-executed scalar path; non-executed branch adjoints and
+    source-level control-flow lowering remain fail-closed. Unsupported routes
+    return a fail-closed result instead of falling back to Python.
     """
 
     serialization = (
@@ -707,7 +712,7 @@ def value_and_grad_program_ad_effect_ir_with_rust(
     if not np.all(np.isfinite(checked_inputs)):
         raise ValueError("Rust Program AD value+gradient inputs must contain finite values")
     claim_boundary = (
-        "bounded_rust_program_ad_ir_scalar_value_and_gradient_no_control_no_alias_no_llvm_jit"
+        "bounded_rust_program_ad_ir_scalar_value_and_gradient_executed_branch_no_alias_no_llvm_jit"
     )
     try:
         import scpn_quantum_engine as engine

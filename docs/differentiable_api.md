@@ -207,10 +207,12 @@ The Rust engine mirrors the bounded Program AD IR metadata schema through
 `program_ad_effect_ir_interpret_forward(...)` plus
 `program_ad_effect_ir_interpret_value_and_gradient(...)` exports. Metadata
 summaries remain parser parity for `program_ad_effect_ir.v1`; Rust replay is
-bounded to opcode-bearing scalar forward and value+gradient rows and fails
-closed on legacy opcode-free metadata, aliases, control flow, mutation, array
-semantics, general Program AD execution, LLVM/JIT differentiated execution,
-hardware, provider, and performance routes.
+bounded to opcode-bearing scalar forward and value+gradient rows, including
+executed runtime branch metadata when matched by runtime phi provenance. Legacy
+opcode-free metadata, aliases, mutation, array semantics, source-level and
+non-executed branch semantics, general Program AD execution, LLVM/JIT
+differentiated execution, hardware, provider, and performance routes remain
+fail-closed.
 `compile_whole_program_ad_trace_to_mlir(...)` lowers captured
 `program_ad_effect_ir.v1` records into deterministic
 `scpn_diff.program_ad_ssa`, `scpn_diff.program_ad_effect`,

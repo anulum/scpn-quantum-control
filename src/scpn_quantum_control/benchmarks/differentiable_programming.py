@@ -761,7 +761,7 @@ def _program_ad_rust_scalar_interpreter_case() -> DifferentiableProgrammingBench
 
     def objective(trace_values: Any) -> object:
         x, y = trace_values
-        return x * x + 2.0 * y + np.sin(x)
+        return (x * x if x > y else y * y) + 2.0 * y + np.sin(x)
 
     result = whole_program_value_and_grad(
         objective,
@@ -770,6 +770,10 @@ def _program_ad_rust_scalar_interpreter_case() -> DifferentiableProgrammingBench
     )
     if result.program_ir is None:
         raise ValueError("Rust Program AD interpreter case requires program IR")
+    if not result.program_ir.control_regions or not result.program_ir.phi_nodes:
+        raise ValueError("Rust Program AD interpreter case requires runtime branch metadata")
+    if result.program_ir.alias_edges:
+        raise ValueError("Rust Program AD interpreter case must not emit alias edges")
     rust_result = interpret_program_ad_effect_ir_with_rust(result.program_ir, values)
     if not rust_result.supported or rust_result.value is None:
         blocked = ", ".join(rust_result.blocked_reasons)
@@ -804,10 +808,11 @@ def _program_ad_rust_scalar_interpreter_case() -> DifferentiableProgrammingBench
         max_abs_adjoint_error=_max_abs_error(rust_value_gradient.gradient, analytic),
         claim_boundary=(
             "bounded Rust Program AD IR scalar value+gradient replay over opcode-bearing "
-            "program_ad_effect_ir.v1 rows with no aliases, control flow, arrays, LLVM, "
-            "JIT, provider, hardware, or performance claim; Python whole-program AD and "
-            "analytic gradients are local conformance references only; no wall-clock "
-            "performance claim"
+            "program_ad_effect_ir.v1 rows with executed runtime branch metadata but no "
+            "aliases, mutation, arrays, LLVM, JIT, provider, hardware, or performance "
+            "claim; non-executed branch adjoints and source-level control lowering remain "
+            "fail-closed; Python whole-program AD and analytic gradients are local "
+            "conformance references only; no wall-clock performance claim"
         ),
     )
 

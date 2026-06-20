@@ -24,26 +24,26 @@
     {
       "path": "data/differentiable_phase_qnode/differentiable_sota_scorecard_20260620.json",
       "role": "Differentiable SOTA category scorecard artefact",
-      "sha256": "47a8a1ce0bf0d879d02ae4c984ebccb0aa252b6b748959a90c528909b6c5e3f6",
-      "size_bytes": 25397
+      "sha256": "89373f656c61a0e8fa2103fbcddf21302f1fd810ec77eadcb58723710803c27a",
+      "size_bytes": 28123
     },
     {
       "path": "data/differentiable_phase_qnode/differentiable_sota_scorecard_20260620.md",
       "role": "Differentiable SOTA category scorecard reviewer summary",
-      "sha256": "df991176c4fc6278c896ac7dff094cff6dba34d0c17245e511a50976e9c009a0",
-      "size_bytes": 7516
+      "sha256": "07216bdd86f8933d26cf072891b3027172998d7f22dfa9b510b967f5cf5e6131",
+      "size_bytes": 7497
     },
     {
       "path": "data/differentiable_phase_qnode/differentiable_rust_python_inventory_20260620.json",
       "role": "Differentiable Rust/Python rustification surface inventory artefact",
-      "sha256": "722624d0a051eaf752e23ed3f1d41e97b1f0f04d21ca757fd07623a914e60bc2",
-      "size_bytes": 27347
+      "sha256": "84e11fcdda6e782611d6c10acb898653f8fed7162366292f5ddbe2fba92e3a15",
+      "size_bytes": 27393
     },
     {
       "path": "data/differentiable_phase_qnode/differentiable_rust_python_inventory_20260620.md",
       "role": "Differentiable Rust/Python rustification surface inventory reviewer summary",
-      "sha256": "ba3604eb9e7438e27bca8888e4a1386dca56bfd0e448a487738d4642f9afa68c",
-      "size_bytes": 3052
+      "sha256": "8c33461865548dfc3a923d3f4bb0287aa3edd2714923df80f778c45e3938466c",
+      "size_bytes": 3027
     },
     {
       "path": "data/differentiable_phase_qnode/external_validation_environment_lock_20260616.json",
@@ -112,5 +112,29 @@
       "size_bytes": 424
     }
   ],
-  "schema": "scpn_qc_differentiable_external_validation_artifact_bundle_v1"
+  "schema": "scpn_qc_differentiable_external_validation_artifact_bundle_v1",
+  "validation": {
+    "checked_paths": [
+      "data/differentiable_phase_qnode/claim_ledger.json",
+      "data/differentiable_phase_qnode/claim_ledger.md",
+      "data/differentiable_phase_qnode/public_claim_table_20260616.md",
+      "data/differentiable_phase_qnode/differentiable_sota_scorecard_20260620.json",
+      "data/differentiable_phase_qnode/differentiable_sota_scorecard_20260620.md",
+      "data/differentiable_phase_qnode/differentiable_rust_python_inventory_20260620.json",
+      "data/differentiable_phase_qnode/differentiable_rust_python_inventory_20260620.md",
+      "data/differentiable_phase_qnode/external_validation_environment_lock_20260616.json",
+      "data/differentiable_phase_qnode/external_validation_environment_lock_20260616.md",
+      "data/differentiable_phase_qnode/domain_benchmark_dataset_closure_20260616.json",
+      "data/differentiable_phase_qnode/identical_circuit_gradient_comparison_20260616.json",
+      "data/differentiable_phase_qnode/torch_maturity_audit_20260616.json",
+      "data/differentiable_phase_qnode/enzyme_mlir_maturity_audit_20260616.json",
+      "data/differentiable_phase_qnode/local_benchmark_20260616T0955Z/README.md",
+      "data/differentiable_phase_qnode/local_benchmark_20260616T0955Z/diff-qnode-ci-evidence-schema-v1.json",
+      "data/differentiable_phase_qnode/local_benchmark_20260616T0955Z/diff-qnode-external-comparison.json",
+      "data/differentiable_phase_qnode/local_benchmark_20260616T0955Z/phase_qnode_affinity.json",
+      "data/differentiable_phase_qnode/local_benchmark_20260616T0955Z/host_readiness.json"
+    ],
+    "errors": [],
+    "passed": true
+  }
 }

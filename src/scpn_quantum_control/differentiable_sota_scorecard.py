@@ -413,11 +413,11 @@ def _default_scorecard_rows(
             "rust_native_program_ad",
             "Rust-native Program AD value and gradient replay, executed control-flow replay, "
             "array adjoints, registry metadata mirror, and safe PyO3 bindings.",
-            "Rust Program AD metadata parsing plus bounded scalar forward and value+gradient replay "
-            "exist; executed branch replay, array adjoints, and registry mirror remain open.",
+            "Rust Program AD metadata parsing plus bounded scalar forward/value+gradient replay "
+            "and executed runtime branch replay exist; array adjoints and registry mirror remain open.",
             ("phase_qnode_claim_boundary",),
             (
-                "executed branch replay, primitive-family replay, and array adjoints are missing",
+                "primitive-family replay and array adjoints are missing",
                 "registry metadata mirror, LLVM/JIT lowering, and isolated benchmark evidence are missing",
             ),
             ("Round 4 compiler AD and Program AD", "Round 5 Rustification readiness"),
