@@ -580,3 +580,99 @@ def test_program_ad_array_primitives_validate_registry_rules_at_dispatch() -> No
         "pad": {"shape", "dtype", "static"},
         "insert": {"shape", "dtype", "static"},
     }
+
+
+def test_program_ad_signal_interpolation_and_stencil_validate_registry_rules_at_dispatch() -> None:
+    """Signal, interpolation, and stencil primitives must use registry validation."""
+
+    originals = {
+        "interp": primitive_contract_for("scpn.program_ad.interpolation:interp"),
+        "convolve": primitive_contract_for("scpn.program_ad.signal:convolve"),
+        "correlate": primitive_contract_for("scpn.program_ad.signal:correlate"),
+        "gradient": primitive_contract_for("scpn.program_ad.stencil:gradient"),
+    }
+    calls: dict[str, set[str]] = {name: set() for name in originals}
+
+    for name, original in originals.items():
+        assert original.shape_rule is not None
+        assert original.dtype_rule is not None
+        assert original.static_argument_rule is not None
+        contract_shape_rule = cast(Any, original.shape_rule)
+        contract_dtype_rule = cast(Any, original.dtype_rule)
+        contract_static_argument_rule = cast(Any, original.static_argument_rule)
+
+        def shape_rule(
+            args: tuple[object, ...],
+            *,
+            primitive_name: str = name,
+            contract_rule: Any = contract_shape_rule,
+        ) -> tuple[int, ...]:
+            calls[primitive_name].add("shape")
+            return cast(tuple[int, ...], contract_rule(args))
+
+        def dtype_rule(
+            args: tuple[object, ...],
+            *,
+            primitive_name: str = name,
+            contract_rule: Any = contract_dtype_rule,
+        ) -> str:
+            calls[primitive_name].add("dtype")
+            return cast(str, contract_rule(args))
+
+        def static_argument_rule(
+            args: tuple[object, ...],
+            *,
+            primitive_name: str = name,
+            contract_rule: Any = contract_static_argument_rule,
+        ) -> tuple[object, ...]:
+            calls[primitive_name].add("static")
+            return cast(tuple[object, ...], contract_rule(args))
+
+        DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.register_transform(
+            PrimitiveTransformRule(
+                identity=original.identity,
+                derivative_rule=original.derivative_rule,
+                batching_rule=original.batching_rule,
+                lowering_rule=original.lowering_rule,
+                lowering_metadata=original.lowering_metadata,
+                shape_rule=shape_rule,
+                dtype_rule=dtype_rule,
+                static_argument_rule=static_argument_rule,
+                nondifferentiable_policy=original.nondifferentiable_policy,
+                effect=original.effect,
+            ),
+            overwrite=True,
+        )
+
+    grid = np.array([0.0, 1.0, 2.0, 3.0], dtype=np.float64)
+    values = np.array(
+        [0.25, 1.25, 2.5, 1.0, -0.5, 2.0, 0.25, 0.75, -1.25, 1.5],
+        dtype=np.float64,
+    )
+
+    def objective(source: Any) -> object:
+        samples = source[:3]
+        signal = source[3:7]
+        kernel = source[7:10]
+        interpolated = np.interp(samples, grid, signal)
+        convolved = np.convolve(signal, kernel, mode="same")
+        correlated = np.correlate(signal, kernel, mode="valid")
+        stencil = np.gradient(signal, 0.5, edge_order=1)
+        return np.sum(interpolated) + np.sum(convolved) + np.sum(correlated) + np.sum(stencil)
+
+    try:
+        result = whole_program_value_and_grad(objective, values)
+    finally:
+        for original in originals.values():
+            DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.register_transform(
+                _transform_rule_from_contract(original), overwrite=True
+            )
+
+    assert result.value == pytest.approx(float(cast(Any, objective)(values)))
+    np.testing.assert_allclose(program_adjoint_gradient(result), result.gradient, atol=1.0e-12)
+    assert calls == {
+        "convolve": {"shape", "dtype", "static"},
+        "correlate": {"shape", "dtype", "static"},
+        "gradient": {"shape", "dtype", "static"},
+        "interp": {"shape", "dtype", "static"},
+    }
