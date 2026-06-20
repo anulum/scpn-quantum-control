@@ -9,12 +9,16 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, cast
 
 import numpy as np
 import pytest
 
+import scpn_quantum_control as scpn
+from scpn_quantum_control import program_ad_alias_analysis as alias_analysis_module
 from scpn_quantum_control.differentiable import (
+    PROGRAM_AD_ALIAS_EFFECT_CLAIM_BOUNDARY,
+    PROGRAM_AD_STATIC_ALIAS_LATTICE_CLAIM_BOUNDARY,
     Parameter,
     ProgramADAliasEdge,
     ProgramADAliasEffectAnalysis,
@@ -29,6 +33,365 @@ from scpn_quantum_control.differentiable import (
     program_adjoint_gradient,
     whole_program_value_and_grad,
 )
+
+
+def test_program_ad_alias_analysis_exports_stable_facade_identities() -> None:
+    """Program AD alias-analysis exports should stay stable across public surfaces."""
+
+    assert PROGRAM_AD_ALIAS_EFFECT_CLAIM_BOUNDARY == (
+        alias_analysis_module.PROGRAM_AD_ALIAS_EFFECT_CLAIM_BOUNDARY
+    )
+    assert PROGRAM_AD_STATIC_ALIAS_LATTICE_CLAIM_BOUNDARY == (
+        alias_analysis_module.PROGRAM_AD_STATIC_ALIAS_LATTICE_CLAIM_BOUNDARY
+    )
+    assert ProgramADAliasSet is alias_analysis_module.ProgramADAliasSet
+    assert ProgramADAliasEffectAnalysis is alias_analysis_module.ProgramADAliasEffectAnalysis
+    assert (
+        ProgramADStaticAliasLatticeComponent
+        is alias_analysis_module.ProgramADStaticAliasLatticeComponent
+    )
+    assert (
+        ProgramADStaticAliasLatticeReport
+        is alias_analysis_module.ProgramADStaticAliasLatticeReport
+    )
+    assert (
+        analyze_program_ad_alias_effects is alias_analysis_module.analyze_program_ad_alias_effects
+    )
+    assert (
+        program_ad_static_alias_lattice_report
+        is alias_analysis_module.program_ad_static_alias_lattice_report
+    )
+    assert scpn.ProgramADAliasSet is ProgramADAliasSet
+    assert scpn.ProgramADAliasEffectAnalysis is ProgramADAliasEffectAnalysis
+    assert scpn.ProgramADStaticAliasLatticeComponent is ProgramADStaticAliasLatticeComponent
+    assert scpn.ProgramADStaticAliasLatticeReport is ProgramADStaticAliasLatticeReport
+    assert scpn.analyze_program_ad_alias_effects is analyze_program_ad_alias_effects
+    assert scpn.program_ad_static_alias_lattice_report is program_ad_static_alias_lattice_report
+
+
+def test_program_ad_alias_analysis_validation_paths() -> None:
+    """Program AD alias-analysis records should reject malformed metadata."""
+
+    alias_set = ProgramADAliasSet(
+        index=0,
+        members=("a", "b"),
+        versions=(0, 1),
+        mutation_versions=(1,),
+    )
+    edge = ProgramADAliasEdge(source="a", target="b", kind="source_alias", version=0)
+    component = ProgramADStaticAliasLatticeComponent(
+        index=0,
+        members=("a", "b"),
+        edge_kinds=("source_alias",),
+        versions=(0, 1),
+        mutation_versions=(1,),
+    )
+
+    assert alias_set.as_dict()["members"] == ["a", "b"]
+    assert component.as_dict()["edge_kinds"] == ["source_alias"]
+    with pytest.raises(ValueError, match="index"):
+        ProgramADAliasSet(index=-1, members=("a",), versions=(), mutation_versions=())
+    with pytest.raises(ValueError, match="members"):
+        ProgramADAliasSet(index=0, members=("",), versions=(), mutation_versions=())
+    with pytest.raises(ValueError, match="sorted"):
+        ProgramADAliasSet(index=0, members=("b", "a"), versions=(), mutation_versions=())
+    with pytest.raises(ValueError, match="versions"):
+        ProgramADAliasSet(index=0, members=("a",), versions=(-1,), mutation_versions=())
+    with pytest.raises(ValueError, match="mutation_versions"):
+        ProgramADAliasSet(index=0, members=("a",), versions=(), mutation_versions=(-1,))
+    with pytest.raises(ValueError, match="alias_sets"):
+        ProgramADAliasEffectAnalysis(
+            alias_sets=cast(tuple[ProgramADAliasSet, ...], (object(),)),
+            mutation_effects=(),
+            alias_edges=(),
+            unknown_aliasing=False,
+            claim_boundary="metadata_only_no_general_alias_lattice",
+        )
+    with pytest.raises(ValueError, match="sorted"):
+        ProgramADAliasEffectAnalysis(
+            alias_sets=(alias_set,),
+            mutation_effects=(1, 0),
+            alias_edges=(),
+            unknown_aliasing=False,
+            claim_boundary="metadata_only_no_general_alias_lattice",
+        )
+    with pytest.raises(ValueError, match="non-negative"):
+        ProgramADAliasEffectAnalysis(
+            alias_sets=(alias_set,),
+            mutation_effects=(-1,),
+            alias_edges=(),
+            unknown_aliasing=False,
+            claim_boundary="metadata_only_no_general_alias_lattice",
+        )
+    with pytest.raises(ValueError, match="alias_edges"):
+        ProgramADAliasEffectAnalysis(
+            alias_sets=(alias_set,),
+            mutation_effects=(),
+            alias_edges=cast(tuple[ProgramADAliasEdge, ...], (object(),)),
+            unknown_aliasing=False,
+            claim_boundary="metadata_only_no_general_alias_lattice",
+        )
+    with pytest.raises(ValueError, match="unknown_aliasing"):
+        ProgramADAliasEffectAnalysis(
+            alias_sets=(alias_set,),
+            mutation_effects=(),
+            alias_edges=(edge,),
+            unknown_aliasing=cast(bool, "no"),
+            claim_boundary="metadata_only_no_general_alias_lattice",
+        )
+    with pytest.raises(ValueError, match="claim_boundary"):
+        ProgramADAliasEffectAnalysis(
+            alias_sets=(alias_set,),
+            mutation_effects=(),
+            alias_edges=(edge,),
+            unknown_aliasing=False,
+            claim_boundary="",
+        )
+
+    with pytest.raises(ValueError, match="index"):
+        ProgramADStaticAliasLatticeComponent(
+            index=-1,
+            members=("a",),
+            edge_kinds=(),
+            versions=(),
+            mutation_versions=(),
+        )
+    with pytest.raises(ValueError, match="members"):
+        ProgramADStaticAliasLatticeComponent(
+            index=0,
+            members=("",),
+            edge_kinds=(),
+            versions=(),
+            mutation_versions=(),
+        )
+    with pytest.raises(ValueError, match="sorted"):
+        ProgramADStaticAliasLatticeComponent(
+            index=0,
+            members=("b", "a"),
+            edge_kinds=(),
+            versions=(),
+            mutation_versions=(),
+        )
+    with pytest.raises(ValueError, match="edge_kinds"):
+        ProgramADStaticAliasLatticeComponent(
+            index=0,
+            members=("a",),
+            edge_kinds=("",),
+            versions=(),
+            mutation_versions=(),
+        )
+    with pytest.raises(ValueError, match="sorted and unique"):
+        ProgramADStaticAliasLatticeComponent(
+            index=0,
+            members=("a",),
+            edge_kinds=("view_alias", "source_alias"),
+            versions=(),
+            mutation_versions=(),
+        )
+    with pytest.raises(ValueError, match="versions"):
+        ProgramADStaticAliasLatticeComponent(
+            index=0,
+            members=("a",),
+            edge_kinds=(),
+            versions=(-1,),
+            mutation_versions=(),
+        )
+    with pytest.raises(ValueError, match="mutation_versions"):
+        ProgramADStaticAliasLatticeComponent(
+            index=0,
+            members=("a",),
+            edge_kinds=(),
+            versions=(),
+            mutation_versions=(-1,),
+        )
+
+    valid_report = ProgramADStaticAliasLatticeReport(
+        components=(component,),
+        mutation_effects=(0,),
+        non_executed_phi_nodes=(),
+        non_executed_control_alias_edges=(),
+        unknown_alias_edge_kinds=(),
+        blocker_reasons=(),
+        complete=True,
+        claim_boundary="static_alias_lattice_over_emitted_program_ad_ir",
+    )
+    assert valid_report.as_dict()["components"]
+    with pytest.raises(ValueError, match="components"):
+        ProgramADStaticAliasLatticeReport(
+            components=cast(tuple[ProgramADStaticAliasLatticeComponent, ...], (object(),)),
+            mutation_effects=(),
+            non_executed_phi_nodes=(),
+            non_executed_control_alias_edges=(),
+            unknown_alias_edge_kinds=(),
+            blocker_reasons=(),
+            complete=False,
+            claim_boundary="static_alias_lattice_over_emitted_program_ad_ir",
+        )
+    with pytest.raises(ValueError, match="dense"):
+        ProgramADStaticAliasLatticeReport(
+            components=(
+                ProgramADStaticAliasLatticeComponent(
+                    index=1,
+                    members=("a",),
+                    edge_kinds=(),
+                    versions=(),
+                    mutation_versions=(),
+                ),
+            ),
+            mutation_effects=(),
+            non_executed_phi_nodes=(),
+            non_executed_control_alias_edges=(),
+            unknown_alias_edge_kinds=(),
+            blocker_reasons=(),
+            complete=False,
+            claim_boundary="static_alias_lattice_over_emitted_program_ad_ir",
+        )
+    for field_name in ("mutation_effects", "non_executed_phi_nodes"):
+        kwargs: dict[str, object] = {
+            "components": (),
+            "mutation_effects": (),
+            "non_executed_phi_nodes": (),
+            "non_executed_control_alias_edges": (),
+            "unknown_alias_edge_kinds": (),
+            "blocker_reasons": (),
+            "complete": False,
+            "claim_boundary": "static_alias_lattice_over_emitted_program_ad_ir",
+        }
+        kwargs[field_name] = (1, 0)
+        with pytest.raises(ValueError, match=field_name):
+            ProgramADStaticAliasLatticeReport(**cast(Any, kwargs))
+    with pytest.raises(ValueError, match="control_alias_edges"):
+        ProgramADStaticAliasLatticeReport(
+            components=(),
+            mutation_effects=(),
+            non_executed_phi_nodes=(),
+            non_executed_control_alias_edges=("",),
+            unknown_alias_edge_kinds=(),
+            blocker_reasons=(),
+            complete=False,
+            claim_boundary="static_alias_lattice_over_emitted_program_ad_ir",
+        )
+    with pytest.raises(ValueError, match="sorted and unique"):
+        ProgramADStaticAliasLatticeReport(
+            components=(),
+            mutation_effects=(),
+            non_executed_phi_nodes=(),
+            non_executed_control_alias_edges=("b->a", "a->b"),
+            unknown_alias_edge_kinds=(),
+            blocker_reasons=(),
+            complete=False,
+            claim_boundary="static_alias_lattice_over_emitted_program_ad_ir",
+        )
+    with pytest.raises(ValueError, match="unknown_alias_edge_kinds"):
+        ProgramADStaticAliasLatticeReport(
+            components=(),
+            mutation_effects=(),
+            non_executed_phi_nodes=(),
+            non_executed_control_alias_edges=(),
+            unknown_alias_edge_kinds=("",),
+            blocker_reasons=(),
+            complete=False,
+            claim_boundary="static_alias_lattice_over_emitted_program_ad_ir",
+        )
+    with pytest.raises(ValueError, match="sorted unique"):
+        ProgramADStaticAliasLatticeReport(
+            components=(),
+            mutation_effects=(),
+            non_executed_phi_nodes=(),
+            non_executed_control_alias_edges=(),
+            unknown_alias_edge_kinds=("z", "a"),
+            blocker_reasons=(),
+            complete=False,
+            claim_boundary="static_alias_lattice_over_emitted_program_ad_ir",
+        )
+    with pytest.raises(ValueError, match="blocker_reasons"):
+        ProgramADStaticAliasLatticeReport(
+            components=(),
+            mutation_effects=(),
+            non_executed_phi_nodes=(),
+            non_executed_control_alias_edges=(),
+            unknown_alias_edge_kinds=(),
+            blocker_reasons=("",),
+            complete=False,
+            claim_boundary="static_alias_lattice_over_emitted_program_ad_ir",
+        )
+    with pytest.raises(ValueError, match="sorted and unique"):
+        ProgramADStaticAliasLatticeReport(
+            components=(),
+            mutation_effects=(),
+            non_executed_phi_nodes=(),
+            non_executed_control_alias_edges=(),
+            unknown_alias_edge_kinds=(),
+            blocker_reasons=("z", "a"),
+            complete=False,
+            claim_boundary="static_alias_lattice_over_emitted_program_ad_ir",
+        )
+    with pytest.raises(ValueError, match="complete must be boolean"):
+        ProgramADStaticAliasLatticeReport(
+            components=(),
+            mutation_effects=(),
+            non_executed_phi_nodes=(),
+            non_executed_control_alias_edges=(),
+            unknown_alias_edge_kinds=(),
+            blocker_reasons=(),
+            complete=cast(bool, "no"),
+            claim_boundary="static_alias_lattice_over_emitted_program_ad_ir",
+        )
+    with pytest.raises(ValueError, match="claim_boundary"):
+        ProgramADStaticAliasLatticeReport(
+            components=(),
+            mutation_effects=(),
+            non_executed_phi_nodes=(),
+            non_executed_control_alias_edges=(),
+            unknown_alias_edge_kinds=(),
+            blocker_reasons=(),
+            complete=False,
+            claim_boundary="",
+        )
+
+
+def test_program_ad_alias_analysis_fail_closed_entry_points() -> None:
+    """Alias-analysis entry points should reject non-effect-IR inputs."""
+
+    with pytest.raises(ValueError, match="alias analysis requires"):
+        analyze_program_ad_alias_effects(cast(ProgramADEffectIR, object()))
+    with pytest.raises(ValueError, match="static alias lattice requires"):
+        program_ad_static_alias_lattice_report(cast(ProgramADEffectIR, object()))
+
+
+def test_program_ad_static_alias_lattice_tracks_mutation_versions_directly() -> None:
+    """Static alias lattice reports should retain mutation-version component metadata."""
+
+    value = ProgramADSSAValue("%0", producer=0, version=0, shape=(), dtype="float64", effect=0)
+    effect = ProgramADEffect(
+        index=0,
+        kind="mutation",
+        target="%0",
+        inputs=("%0",),
+        version=2,
+        ordering=0,
+    )
+    ir = ProgramADEffectIR(
+        ssa_values=(value,),
+        effects=(effect,),
+        alias_edges=(
+            ProgramADAliasEdge(
+                source="%0",
+                target="source:mutation",
+                kind="mutation_version",
+                version=2,
+            ),
+        ),
+        control_regions=(),
+        serialization="program_ad_effect_ir.v1",
+    )
+
+    report = program_ad_static_alias_lattice_report(ir)
+
+    assert report.mutation_effects == (0,)
+    assert len(report.components) == 1
+    assert report.components[0].mutation_versions == (2,)
+    assert report.components[0].edge_kinds == ("mutation_version",)
 
 
 def test_program_ad_alias_effect_analysis_summarizes_alias_sets_and_mutations() -> None:
