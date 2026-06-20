@@ -14,6 +14,7 @@ import json
 import sys
 from pathlib import Path
 from types import ModuleType
+from typing import Any
 
 
 def _load_tool_module(module_name: str, filename: str) -> ModuleType:
@@ -143,7 +144,7 @@ def test_kernel_execution_json_output_is_deterministic(tmp_path: Path) -> None:
     assert decoded["schema"] == "scpn-rust-kernel-execution-audit/v1"
 
 
-def test_kernel_execution_cli_writes_json(tmp_path: Path, capsys: object) -> None:
+def test_kernel_execution_cli_writes_json(tmp_path: Path, capsys: Any) -> None:
     crate = _write_rust_fixture(
         tmp_path,
         lib_rs="\n".join(
@@ -170,7 +171,7 @@ def test_live_rust_crate_records_threading_without_simd_promotion() -> None:
     audit = scan_crate(crate)
 
     assert audit.status == "pass"
-    assert audit.pyfunction_count == 135
+    assert audit.pyfunction_count == 137
     assert audit.rayon_threaded_count > 0
     assert audit.explicit_simd_count == 0
     assert audit.performance_claim_eligible_count == 0

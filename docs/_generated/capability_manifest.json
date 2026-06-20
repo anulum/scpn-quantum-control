@@ -8,11 +8,11 @@
     "notebook_files": 98,
     "optional_extras": 42,
     "paper0_validation_modules": 466,
-    "public_api_exports": 709,
+    "public_api_exports": 712,
     "public_documentation_pages": 254,
-    "python_model_classes": 1835,
+    "python_model_classes": 1836,
     "python_model_source_modules": 837,
-    "rust_pyo3_model_wrappers": 136,
+    "rust_pyo3_model_wrappers": 137,
     "rust_source_modules": 38,
     "test_files": 1958
   },
@@ -6370,6 +6370,10 @@
         "path": "src/scpn_quantum_control/differentiable.py"
       },
       {
+        "name": "RustProgramADValueAndGradientResult",
+        "path": "src/scpn_quantum_control/differentiable.py"
+      },
+      {
         "name": "S1FeedbackArmCircuit",
         "path": "src/scpn_quantum_control/hardware/s1_feedback_ibm.py"
       },
@@ -9345,6 +9349,7 @@
       "phase_qnode_vector_vjp_rust",
       "plaquette_action_batch",
       "program_ad_effect_ir_interpret_forward",
+      "program_ad_effect_ir_interpret_value_and_gradient",
       "program_ad_effect_ir_metadata_summary",
       "pt_symmetric_kuramoto_trajectory",
       "qpetri_campaign_aggregate",
@@ -9637,6 +9642,7 @@
     "ReverseNode",
     "RigettiQCSHALAdapter",
     "RustProgramADInterpreterResult",
+    "RustProgramADValueAndGradientResult",
     "SNNQuantumBridge",
     "SPSAGradientResult",
     "SPSAObjectiveSample",
@@ -10111,6 +10117,8 @@
     "value_and_finite_difference_jvp",
     "value_and_forward_mode_grad",
     "value_and_grad",
+    "value_and_grad_program_ad_effect_ir_with_rust",
+    "value_and_grad_program_ad_effect_ir_with_rust",
     "value_and_hessian",
     "value_and_jacfwd",
     "value_and_jacobian",

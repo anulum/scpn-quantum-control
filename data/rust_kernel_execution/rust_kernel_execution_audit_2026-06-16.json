@@ -1094,6 +1094,36 @@
     },
     {
       "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/program_ad_ir.rs",
+      "line": 1006,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "program_ad_effect_ir_metadata_summary"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/program_ad_ir.rs",
+      "line": 1015,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "program_ad_effect_ir_interpret_forward"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
+      "evidence_tokens": [],
+      "execution_mode": "scalar_or_unknown",
+      "file": "src/program_ad_ir.rs",
+      "line": 1030,
+      "performance_claim_eligible": false,
+      "registered": true,
+      "symbol": "program_ad_effect_ir_interpret_value_and_gradient"
+    },
+    {
+      "claim_boundary": "Execution-mode evidence only. Promotion of speedup or production performance claims requires separate isolated_affinity benchmark artefacts.",
       "evidence_tokens": [
         "rayon::prelude",
         ".par_iter("
@@ -1405,9 +1435,9 @@
   ],
   "ndarray_dot_count": 1,
   "performance_claim_eligible_count": 0,
-  "pyfunction_count": 134,
+  "pyfunction_count": 137,
   "rayon_threaded_count": 19,
-  "scalar_or_unknown_count": 114,
+  "scalar_or_unknown_count": 117,
   "schema": "scpn-rust-kernel-execution-audit/v1",
   "status": "pass"
 }

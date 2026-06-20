@@ -566,6 +566,48 @@ class RustProgramADInterpreterResult:
             raise ValueError("Rust Program AD interpreter claim boundary must be non-empty")
 
 
+@dataclass(frozen=True)
+class RustProgramADValueAndGradientResult:
+    """Result from bounded Rust Program AD scalar value+gradient replay."""
+
+    supported: bool
+    value: float | None
+    gradient: NDArray[np.float64]
+    parameter_targets: tuple[str, ...]
+    effect_count: int
+    supported_effect_count: int
+    blocked_reasons: tuple[str, ...]
+    claim_boundary: str
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.supported, bool):
+            raise ValueError("Rust Program AD value+gradient supported flag must be boolean")
+        if self.value is not None:
+            _as_real_scalar("Rust Program AD value+gradient value", self.value)
+        checked_gradient = _as_real_numeric_array(
+            "Rust Program AD value+gradient gradient",
+            self.gradient,
+        )
+        if checked_gradient.ndim != 1:
+            raise ValueError("Rust Program AD value+gradient gradient must be one-dimensional")
+        if checked_gradient.size != len(self.parameter_targets):
+            raise ValueError("Rust Program AD value+gradient target count must match gradient")
+        if self.effect_count < 0 or self.supported_effect_count < 0:
+            raise ValueError("Rust Program AD value+gradient counts must be non-negative")
+        if self.supported_effect_count > self.effect_count:
+            raise ValueError("Rust Program AD value+gradient supported count exceeds effect count")
+        if any(not isinstance(target, str) or not target for target in self.parameter_targets):
+            raise ValueError("Rust Program AD value+gradient targets must be non-empty")
+        if any(not isinstance(reason, str) or not reason for reason in self.blocked_reasons):
+            raise ValueError("Rust Program AD value+gradient blocked reasons must be non-empty")
+        if self.supported != (
+            self.value is not None and checked_gradient.size > 0 and not self.blocked_reasons
+        ):
+            raise ValueError("Rust Program AD value+gradient supported state is inconsistent")
+        if not self.claim_boundary:
+            raise ValueError("Rust Program AD value+gradient claim boundary must be non-empty")
+
+
 def interpret_program_ad_effect_ir_with_rust(
     program_ir: ProgramADEffectIR | str,
     inputs: Sequence[float] | NDArray[np.float64],
@@ -636,6 +678,113 @@ def interpret_program_ad_effect_ir_with_rust(
         ),
         claim_boundary=_parse_program_ad_str(
             "Rust Program AD interpreter claim_boundary",
+            payload.get("claim_boundary"),
+        ),
+    )
+
+
+def value_and_grad_program_ad_effect_ir_with_rust(
+    program_ir: ProgramADEffectIR | str,
+    inputs: Sequence[float] | NDArray[np.float64],
+) -> RustProgramADValueAndGradientResult:
+    """Replay bounded scalar Program AD value and gradient in Rust.
+
+    The replay is intentionally limited to opcode-bearing scalar
+    ``program_ad_effect_ir.v1`` rows with no aliases, mutation, control flow,
+    arrays, provider execution, hardware execution, LLVM/JIT execution, or
+    performance claim. Unsupported routes return a fail-closed result instead
+    of falling back to Python.
+    """
+
+    serialization = (
+        program_ir.serialization if isinstance(program_ir, ProgramADEffectIR) else program_ir
+    )
+    if not isinstance(serialization, str) or not serialization:
+        raise ValueError("program AD IR serialization must be a non-empty string")
+    checked_inputs = _as_real_numeric_array("Rust Program AD value+gradient inputs", inputs)
+    if checked_inputs.ndim != 1:
+        raise ValueError("Rust Program AD value+gradient inputs must be one-dimensional")
+    if not np.all(np.isfinite(checked_inputs)):
+        raise ValueError("Rust Program AD value+gradient inputs must contain finite values")
+    claim_boundary = (
+        "bounded_rust_program_ad_ir_scalar_value_and_gradient_no_control_no_alias_no_llvm_jit"
+    )
+    try:
+        import scpn_quantum_engine as engine
+    except ModuleNotFoundError:
+        return RustProgramADValueAndGradientResult(
+            supported=False,
+            value=None,
+            gradient=np.array([], dtype=np.float64),
+            parameter_targets=(),
+            effect_count=0,
+            supported_effect_count=0,
+            blocked_reasons=("scpn_quantum_engine native extension is not built",),
+            claim_boundary=claim_boundary,
+        )
+    interpreter = getattr(engine, "program_ad_effect_ir_interpret_value_and_gradient", None)
+    if not callable(interpreter):
+        return RustProgramADValueAndGradientResult(
+            supported=False,
+            value=None,
+            gradient=np.array([], dtype=np.float64),
+            parameter_targets=(),
+            effect_count=0,
+            supported_effect_count=0,
+            blocked_reasons=(
+                "scpn_quantum_engine native extension lacks Program AD value+gradient replay",
+            ),
+            claim_boundary=claim_boundary,
+        )
+    raw = interpreter(
+        serialization,
+        [float(value) for value in checked_inputs],
+    )
+    if not isinstance(raw, str):
+        raise ValueError("Rust Program AD value+gradient must return JSON text")
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as exc:
+        raise ValueError("Rust Program AD value+gradient returned invalid JSON") from exc
+    if not isinstance(payload, dict):
+        raise ValueError("Rust Program AD value+gradient payload must be a JSON object")
+    value = payload.get("value")
+    gradient_payload = payload.get("gradient")
+    if not isinstance(gradient_payload, list):
+        raise ValueError("Rust Program AD value+gradient gradient must be a JSON list")
+    return RustProgramADValueAndGradientResult(
+        supported=bool(payload.get("supported")),
+        value=float(value)
+        if isinstance(value, int | float) and not isinstance(value, bool)
+        else None,
+        gradient=np.array(
+            [
+                _as_real_scalar("Rust Program AD value+gradient gradient item", item)
+                for item in gradient_payload
+            ],
+            dtype=np.float64,
+        ),
+        parameter_targets=tuple(
+            _parse_program_ad_str("Rust Program AD value+gradient parameter target", target)
+            for target in payload.get("parameter_targets", [])
+        ),
+        effect_count=_parse_program_ad_int(
+            "Rust Program AD value+gradient effect_count",
+            payload.get("effect_count"),
+        ),
+        supported_effect_count=_parse_program_ad_int(
+            "Rust Program AD value+gradient supported_effect_count",
+            payload.get("supported_effect_count"),
+        ),
+        blocked_reasons=tuple(
+            _parse_program_ad_str(
+                "Rust Program AD value+gradient blocked reason",
+                reason,
+            )
+            for reason in payload.get("blocked_reasons", [])
+        ),
+        claim_boundary=_parse_program_ad_str(
+            "Rust Program AD value+gradient claim_boundary",
             payload.get("claim_boundary"),
         ),
     )
@@ -32292,6 +32441,7 @@ __all__ = [
     "ProgramADRegistryDispatchCoverageReport",
     "ProgramADRegistryDispatchCoverageRow",
     "RustProgramADInterpreterResult",
+    "RustProgramADValueAndGradientResult",
     "ProgramADSSAValue",
     "PrimitiveBatchingRule",
     "PrimitiveContract",
@@ -32379,6 +32529,7 @@ __all__ = [
     "levenberg_marquardt_step",
     "natural_gradient",
     "interpret_program_ad_effect_ir_with_rust",
+    "value_and_grad_program_ad_effect_ir_with_rust",
     "parse_program_ad_effect_ir",
     "primitive_complete_contract_for",
     "primitive_contract_for",

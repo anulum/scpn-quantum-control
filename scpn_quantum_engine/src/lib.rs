@@ -397,6 +397,10 @@ fn scpn_quantum_engine(m: &Bound<'_, PyModule>) -> PyResult<()> {
         program_ad_ir::program_ad_effect_ir_interpret_forward,
         m
     )?)?;
+    m.add_function(wrap_pyfunction!(
+        program_ad_ir::program_ad_effect_ir_interpret_value_and_gradient,
+        m
+    )?)?;
 
     // Pulse shaping (hypergeometric + ICI)
     m.add_function(wrap_pyfunction!(

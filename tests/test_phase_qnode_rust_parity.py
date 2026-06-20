@@ -9,6 +9,8 @@
 
 from __future__ import annotations
 
+import json
+
 import numpy as np
 import pytest
 
@@ -28,6 +30,32 @@ from scpn_quantum_control.phase import (
 )
 
 engine = pytest.importorskip("scpn_quantum_engine")
+
+_EXECUTABLE_SCALAR_PROGRAM_AD_IR = """{
+  "format": "program_ad_effect_ir.v1",
+  "ssa_values": [
+    {"name": "%0", "producer": 0, "version": 0, "shape": [], "dtype": "float64", "effect": 0},
+    {"name": "%1", "producer": 1, "version": 0, "shape": [], "dtype": "float64", "effect": 1},
+    {"name": "%2", "producer": 2, "version": 0, "shape": [], "dtype": "float64", "effect": 2},
+    {"name": "%3", "producer": 3, "version": 0, "shape": [], "dtype": "float64", "effect": 3},
+    {"name": "%4", "producer": 4, "version": 0, "shape": [], "dtype": "float64", "effect": 4},
+    {"name": "%5", "producer": 5, "version": 0, "shape": [], "dtype": "float64", "effect": 5},
+    {"name": "%6", "producer": 6, "version": 0, "shape": [], "dtype": "float64", "effect": 6}
+  ],
+  "effects": [
+    {"index": 0, "kind": "parameter", "target": "%0", "inputs": ["x"], "version": 0, "ordering": 0, "operation": "parameter"},
+    {"index": 1, "kind": "parameter", "target": "%1", "inputs": ["y"], "version": 0, "ordering": 1, "operation": "parameter"},
+    {"index": 2, "kind": "pure", "target": "%2", "inputs": ["%0", "%0"], "version": 0, "ordering": 2, "operation": "mul"},
+    {"index": 3, "kind": "pure", "target": "%3", "inputs": ["%1", "2.0"], "version": 0, "ordering": 3, "operation": "mul"},
+    {"index": 4, "kind": "pure", "target": "%4", "inputs": ["%2", "%3"], "version": 0, "ordering": 4, "operation": "add"},
+    {"index": 5, "kind": "primitive", "target": "%5", "inputs": ["%0"], "version": 0, "ordering": 5, "operation": "sin"},
+    {"index": 6, "kind": "pure", "target": "%6", "inputs": ["%4", "%5"], "version": 0, "ordering": 6, "operation": "add"}
+  ],
+  "alias_edges": [],
+  "control_regions": [],
+  "phi_nodes": [],
+  "bytecode_offsets": [0, 2, 4]
+}"""
 
 
 def _require_export(name: str):
@@ -87,6 +115,20 @@ def test_rust_phase_qnode_fubini_study_metric_matches_python_qfi_surface() -> No
     np.testing.assert_allclose(metric, python_result.fubini_study_metric, atol=1e-12)
     np.testing.assert_allclose(qfi, python_result.quantum_fisher_information, atol=1e-12)
     np.testing.assert_allclose(derivative_norms, python_result.derivative_norms, atol=1e-12)
+
+
+def test_rust_program_ad_value_and_gradient_replay_matches_scalar_reference() -> None:
+    """Verify PyO3 Rust Program AD value+gradient replay for a scalar IR subset."""
+    rust_value_and_gradient = _require_export("program_ad_effect_ir_interpret_value_and_gradient")
+
+    payload = json.loads(rust_value_and_gradient(_EXECUTABLE_SCALAR_PROGRAM_AD_IR, [0.4, -0.2]))
+
+    assert payload["supported"] is True
+    assert payload["blocked_reasons"] == []
+    assert payload["parameter_targets"] == ["%0", "%1"]
+    assert payload["value"] == pytest.approx(0.4**2 + 2.0 * -0.2 + np.sin(0.4))
+    assert payload["gradient"] == pytest.approx([2.0 * 0.4 + np.cos(0.4), 2.0])
+    assert "no_control_no_alias" in payload["claim_boundary"]
 
 
 def test_rust_phase_qnode_computational_basis_fisher_matches_python_surface() -> None:

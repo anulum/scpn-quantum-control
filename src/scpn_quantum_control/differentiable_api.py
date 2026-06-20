@@ -1072,16 +1072,17 @@ def differentiable_dashboard_status(
                 "Rust Program AD IR metadata parser",
                 "program_ad_effect_ir_metadata_summary",
                 "program_ad_effect_ir_interpret_forward",
+                "program_ad_effect_ir_interpret_value_and_gradient",
             ),
             blocked_reasons=(
-                "only bounded scalar opcode-bearing Rust forward interpretation is promoted",
+                "only bounded scalar opcode-bearing Rust value+gradient replay is promoted",
                 "native LLVM/JIT differentiated kernels remain blocked until runtime verified",
             ),
             claim_boundary=(
                 "compiler/interchange planning plus Rust "
-                "metadata parsing and bounded scalar forward Program AD IR "
-                "interpretation only; no reverse-mode Rust AD, general Program AD "
-                "execution, LLVM/JIT execution, hardware, provider, or performance claim"
+                "metadata parsing plus bounded scalar value+gradient Program AD IR "
+                "replay only; no general Program AD execution, control-flow replay, "
+                "array adjoints, LLVM/JIT execution, hardware, provider, or performance claim"
             ),
         ),
         DifferentiableDashboardCapabilityRow(

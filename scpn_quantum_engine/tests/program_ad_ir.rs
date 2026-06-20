@@ -7,7 +7,8 @@
 // scpn-quantum-engine — Program AD IR parity tests
 
 use scpn_quantum_engine::program_ad_ir::{
-    interpret_program_ad_effect_ir_forward, parse_program_ad_effect_ir,
+    interpret_program_ad_effect_ir_forward, interpret_program_ad_effect_ir_value_and_gradient,
+    parse_program_ad_effect_ir,
 };
 
 const VALID_PROGRAM_AD_IR: &str = r#"{
@@ -56,6 +57,22 @@ const EXECUTABLE_SCALAR_PROGRAM_AD_IR: &str = r#"{
   "control_regions": [],
   "phi_nodes": [],
   "bytecode_offsets": [0, 2, 4]
+}"#;
+
+const ABS_CUSP_PROGRAM_AD_IR: &str = r#"{
+  "format": "program_ad_effect_ir.v1",
+  "ssa_values": [
+    {"name": "%0", "producer": 0, "version": 0, "shape": [], "dtype": "float64", "effect": 0},
+    {"name": "%1", "producer": 1, "version": 0, "shape": [], "dtype": "float64", "effect": 1}
+  ],
+  "effects": [
+    {"index": 0, "kind": "parameter", "target": "%0", "inputs": ["x"], "version": 0, "ordering": 0, "operation": "parameter"},
+    {"index": 1, "kind": "primitive", "target": "%1", "inputs": ["%0"], "version": 0, "ordering": 1, "operation": "abs"}
+  ],
+  "alias_edges": [],
+  "control_regions": [],
+  "phi_nodes": [],
+  "bytecode_offsets": [0, 2]
 }"#;
 
 #[test]
@@ -142,6 +159,30 @@ fn program_ad_effect_ir_rust_interpreter_executes_opcode_bearing_scalar_subset()
 }
 
 #[test]
+fn program_ad_effect_ir_rust_value_and_gradient_replays_scalar_reverse_subset() {
+    let result = interpret_program_ad_effect_ir_value_and_gradient(
+        EXECUTABLE_SCALAR_PROGRAM_AD_IR,
+        &[0.4, -0.2],
+    )
+    .unwrap();
+
+    let expected = 0.4_f64 * 0.4_f64 + 2.0_f64 * -0.2_f64 + 0.4_f64.sin();
+    assert!(result.supported);
+    assert_eq!(result.effect_count, 7);
+    assert_eq!(result.supported_effect_count, 7);
+    assert!(result.blocked_reasons.is_empty());
+    assert!((result.value.unwrap() - expected).abs() <= 1.0e-12);
+    assert_eq!(result.gradient.len(), 2);
+    assert!((result.gradient[0] - (2.0_f64 * 0.4_f64 + 0.4_f64.cos())).abs() <= 1.0e-12);
+    assert!((result.gradient[1] - 2.0_f64).abs() <= 1.0e-12);
+    assert_eq!(result.parameter_targets, vec!["%0", "%1"]);
+    assert_eq!(
+        result.claim_boundary,
+        "bounded_rust_program_ad_ir_scalar_value_and_gradient_no_control_no_alias_no_llvm_jit"
+    );
+}
+
+#[test]
 fn program_ad_effect_ir_rust_interpreter_fails_closed_without_operation_metadata() {
     let legacy_ir = EXECUTABLE_SCALAR_PROGRAM_AD_IR
         .replace(", \"operation\": \"parameter\"", "")
@@ -154,4 +195,15 @@ fn program_ad_effect_ir_rust_interpreter_fails_closed_without_operation_metadata
     assert_eq!(result.value, None);
     assert_eq!(result.supported_effect_count, 0);
     assert!(result.blocked_reasons[0].contains("operation metadata"));
+}
+
+#[test]
+fn program_ad_effect_ir_rust_value_and_gradient_fails_closed_on_abs_cusp() {
+    let result =
+        interpret_program_ad_effect_ir_value_and_gradient(ABS_CUSP_PROGRAM_AD_IR, &[0.0]).unwrap();
+
+    assert!(!result.supported);
+    assert_eq!(result.value, None);
+    assert!(result.gradient.is_empty());
+    assert!(result.blocked_reasons[0].contains("abs gradient is undefined at zero"));
 }

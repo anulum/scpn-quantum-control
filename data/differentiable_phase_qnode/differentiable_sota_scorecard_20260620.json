@@ -289,15 +289,15 @@
         "diff-sota-scorecard-20260620"
       ],
       "blockers": [
-        "Rust scalar value+gradient Program AD replay is not complete",
-        "executed branch replay, primitive-family replay, and array adjoints are missing"
+        "executed branch replay, primitive-family replay, and array adjoints are missing",
+        "registry metadata mirror, LLVM/JIT lowering, and isolated benchmark evidence are missing"
       ],
       "category": "rust_native_program_ad",
       "claim_boundary": "Differentiable state-of-art scorecard governance only; the lane remains SOTA-candidate until category rows have promoted claim-ledger evidence, isolated benchmark artefacts, and external baseline comparisons.",
       "claim_ids": [
         "phase_qnode_claim_boundary"
       ],
-      "current_evidence": "Rust Program AD metadata parsing and bounded scalar forward interpretation exist; scalar value+gradient replay, branch replay, array adjoints, and registry mirror remain open.",
+      "current_evidence": "Rust Program AD metadata parsing plus bounded scalar forward and value+gradient replay exist; executed branch replay, array adjoints, and registry mirror remain open.",
       "docs_surface": [
         "README.md",
         "docs/differentiable_programming.md",

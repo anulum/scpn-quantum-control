@@ -408,7 +408,7 @@ def test_differentiable_dashboard_status_is_claim_bounded_for_gui_consumers() ->
     )
     assert rows["polyglot_compiler_chain"]["state"] == "blocked"
     assert (
-        "only bounded scalar opcode-bearing Rust forward interpretation is promoted"
+        "only bounded scalar opcode-bearing Rust value+gradient replay is promoted"
         in rows["polyglot_compiler_chain"]["blocked_reasons"]
     )
     assert rows["program_ad_rust_scalar_interpreter"]["state"] == "diagnostic"
@@ -420,7 +420,11 @@ def test_differentiable_dashboard_status_is_claim_bounded_for_gui_consumers() ->
     assert "compile_whole_program_ad_trace_to_mlir" in rows["polyglot_compiler_chain"]["evidence"]
     assert "program_ad_effect_ir_interpret_forward" in rows["polyglot_compiler_chain"]["evidence"]
     assert (
-        "bounded scalar forward Program AD IR interpretation"
+        "program_ad_effect_ir_interpret_value_and_gradient"
+        in rows["polyglot_compiler_chain"]["evidence"]
+    )
+    assert (
+        "bounded scalar value+gradient Program AD IR replay"
         in rows["polyglot_compiler_chain"]["claim_boundary"]
     )
     assert rows["torch_phase_qnode_statevector_lowering"]["state"] == "diagnostic"

@@ -73,6 +73,7 @@ from scpn_quantum_control.differentiable import (
     ProgramADStaticAliasLatticeComponent,
     ProgramADStaticAliasLatticeReport,
     ReverseNode,
+    RustProgramADValueAndGradientResult,
     ShotAllocationResult,
     SparseMatrixResult,
     StochasticGradientResult,
@@ -266,6 +267,7 @@ from scpn_quantum_control.differentiable import (
     value_and_finite_difference_jvp,
     value_and_forward_mode_grad,
     value_and_grad,
+    value_and_grad_program_ad_effect_ir_with_rust,
     value_and_hessian,
     value_and_jacfwd,
     value_and_jacobian,
@@ -15565,6 +15567,37 @@ def test_program_ad_effect_ir_serialization_round_trips_metadata() -> None:
     assert parsed.serialization == result.program_ir.serialization
     assert analyze_program_ad_alias_effects(parsed).claim_boundary == (
         "metadata_only_no_general_alias_lattice"
+    )
+
+
+def test_rust_program_ad_value_and_gradient_replay_matches_python_trace() -> None:
+    """Rust Program AD scalar replay should match the emitted Python trace."""
+
+    pytest.importorskip("scpn_quantum_engine")
+    values = np.array([0.4, -0.2], dtype=np.float64)
+
+    def objective(trace_values: Any) -> object:
+        x, y = trace_values
+        return x * x + 2.0 * y + np.sin(x)
+
+    result = whole_program_value_and_grad(
+        objective,
+        values,
+        parameters=(Parameter("x"), Parameter("y")),
+    )
+    assert result.program_ir is not None
+
+    rust_result = value_and_grad_program_ad_effect_ir_with_rust(result.program_ir, values)
+
+    assert isinstance(rust_result, RustProgramADValueAndGradientResult)
+    assert rust_result.supported is True
+    assert rust_result.value == pytest.approx(result.value, abs=1.0e-12)
+    np.testing.assert_allclose(rust_result.gradient, result.gradient, atol=1.0e-12)
+    assert len(rust_result.parameter_targets) == values.size
+    assert rust_result.supported_effect_count == len(result.program_ir.effects)
+    assert (
+        rust_result.claim_boundary
+        == "bounded_rust_program_ad_ir_scalar_value_and_gradient_no_control_no_alias_no_llvm_jit"
     )
 
 

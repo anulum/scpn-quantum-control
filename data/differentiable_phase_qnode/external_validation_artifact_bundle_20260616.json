@@ -1,8 +1,7 @@
 {
-  "schema": "scpn_qc_differentiable_external_validation_artifact_bundle_v1",
   "artifact_id": "diff-external-validation-artifact-bundle-20260616",
-  "classification": "functional_non_isolated",
   "claim_boundary": "Reproducible artefact-bundle manifest only; it records committed evidence file checksums and does not promote performance, provider, QPU, GPU, hardware, or isolated_affinity benchmark claims.",
+  "classification": "functional_non_isolated",
   "entries": [
     {
       "path": "data/differentiable_phase_qnode/claim_ledger.json",
@@ -25,26 +24,26 @@
     {
       "path": "data/differentiable_phase_qnode/differentiable_sota_scorecard_20260620.json",
       "role": "Differentiable SOTA category scorecard artefact",
-      "sha256": "83a470506039dc53406b3d02840a7a2aa65eb0f6d7894291daf16efe3f7a0d4d",
-      "size_bytes": 25378
+      "sha256": "47a8a1ce0bf0d879d02ae4c984ebccb0aa252b6b748959a90c528909b6c5e3f6",
+      "size_bytes": 25397
     },
     {
       "path": "data/differentiable_phase_qnode/differentiable_sota_scorecard_20260620.md",
       "role": "Differentiable SOTA category scorecard reviewer summary",
-      "sha256": "79391a4eaf7c2b90de81cf33ff9be171c79ee23238b00587087ca79f0e41c2d7",
-      "size_bytes": 7497
+      "sha256": "df991176c4fc6278c896ac7dff094cff6dba34d0c17245e511a50976e9c009a0",
+      "size_bytes": 7516
     },
     {
       "path": "data/differentiable_phase_qnode/differentiable_rust_python_inventory_20260620.json",
       "role": "Differentiable Rust/Python rustification surface inventory artefact",
-      "sha256": "5c8055a7f4aa11befce2e105e551de94f100cf5dbc7f00414656da1d674f070a",
-      "size_bytes": 27206
+      "sha256": "722624d0a051eaf752e23ed3f1d41e97b1f0f04d21ca757fd07623a914e60bc2",
+      "size_bytes": 27347
     },
     {
       "path": "data/differentiable_phase_qnode/differentiable_rust_python_inventory_20260620.md",
       "role": "Differentiable Rust/Python rustification surface inventory reviewer summary",
-      "sha256": "049ec049fab9f2d451dc25b3bfcc5a9d03c309f2b0b46228800f27a7437b66f5",
-      "size_bytes": 2972
+      "sha256": "ba3604eb9e7438e27bca8888e4a1386dca56bfd0e448a487738d4642f9afa68c",
+      "size_bytes": 3052
     },
     {
       "path": "data/differentiable_phase_qnode/external_validation_environment_lock_20260616.json",
@@ -112,5 +111,6 @@
       "sha256": "16bc50f32fc5bb7fbca2bb4282dfcc4c3ac9198d33afa920220938c593b30b68",
       "size_bytes": 424
     }
-  ]
+  ],
+  "schema": "scpn_qc_differentiable_external_validation_artifact_bundle_v1"
 }

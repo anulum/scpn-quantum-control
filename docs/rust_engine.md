@@ -44,7 +44,7 @@ inventories the Rust `src/*.rs` boundary before binding expansion. The current
 committed artefact,
 `data/rust_ffi_safety/rust_ffi_safety_audit_2026-06-16.json`, reports:
 
-- 134 exported `#[pyfunction]` boundaries.
+- 137 exported `#[pyfunction]` boundaries.
 - 1 `#[pymodule]` initializer.
 - 0 unregistered PyO3 functions.
 - 0 `unsafe` occurrences.
@@ -71,11 +71,11 @@ artefact,
 `data/rust_kernel_execution/rust_kernel_execution_audit_2026-06-16.json`,
 reports:
 
-- 134 PyO3 kernel records.
+- 137 PyO3 kernel records.
 - 19 `rayon_threaded` records.
 - 1 `ndarray_dot` record.
 - 0 `explicit_simd` records.
-- 114 `scalar_or_unknown` records.
+- 117 `scalar_or_unknown` records.
 - 0 performance-claim-eligible records.
 
 Run the gate with:
@@ -90,9 +90,9 @@ are historical local regression evidence unless a row is explicitly tied to a
 separate `isolated_affinity` benchmark artefact with CPU affinity, host-load,
 governor/frequency, runner labels, and heavy-job metadata.
 
-## Functions (134)
+## Functions (137)
 
-The Rust crate exports 134 PyO3 bindings across 37 Rust source files. They are organised
+The Rust crate exports 137 PyO3 bindings across 37 Rust source files. They are organised
 below by topic.
 
 ### Classical Kuramoto

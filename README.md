@@ -96,13 +96,13 @@ has a defined commercial licensing route.
 | Surface | Current inventory |
 |---|---:|
 | Package version | 0.9.12 |
-| Public API exports | 709 |
+| Public API exports | 712 |
 | Python source modules | 837 |
-| Public Python classes | 1835 |
+| Public Python classes | 1836 |
 | Paper 0 validation modules | 466 |
 | Domain package families | 32 |
 | API documentation pages | 0 |
-| Rust PyO3 function bindings | 136 |
+| Rust PyO3 function bindings | 137 |
 | Rust source modules | 38 |
 | Notebook files | 98 |
 | Example files | 30 |
@@ -334,12 +334,13 @@ and compiler-backed AD under one support matrix.
 Rust polyglot parity includes a claim-bounded Program AD IR metadata parser in
 `scpn_quantum_engine::program_ad_ir` plus
 `program_ad_effect_ir_metadata_summary(...)` and
-`program_ad_effect_ir_interpret_forward(...)` for PyO3 consumers. Metadata
-summaries validate `program_ad_effect_ir.v1` evidence only; the Rust
-interpreter is bounded to opcode-bearing scalar forward rows and fails closed
-on legacy opcode-free metadata, aliases, control flow, mutation, arrays,
-reverse-mode Rust AD, general LLVM/JIT execution, hardware, and performance
-promotion.
+`program_ad_effect_ir_interpret_forward(...)` plus
+`program_ad_effect_ir_interpret_value_and_gradient(...)` for PyO3 consumers.
+Metadata summaries validate `program_ad_effect_ir.v1` evidence only; Rust
+replay is bounded to opcode-bearing scalar forward and value+gradient rows and
+fails closed on legacy opcode-free metadata, aliases, control flow, mutation,
+arrays, general Program AD execution, LLVM/JIT execution, hardware, and
+performance promotion.
 Python compiler interchange lowers captured `program_ad_effect_ir.v1` records
 into deterministic `scpn_diff.program_ad_*` MLIR-style operations through
 `compile_whole_program_ad_trace_to_mlir(...)`, validated by

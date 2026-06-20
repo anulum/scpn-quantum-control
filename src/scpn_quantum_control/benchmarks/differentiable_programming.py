@@ -37,6 +37,7 @@ from ..differentiable import (
     program_ad_static_alias_lattice_report,
     program_adjoint_gradient,
     program_adjoint_result,
+    value_and_grad_program_ad_effect_ir_with_rust,
     vjp,
     vmap,
     whole_program_value_and_grad,
@@ -778,21 +779,35 @@ def _program_ad_rust_scalar_interpreter_case() -> DifferentiableProgrammingBench
     if rust_result.supported_effect_count != len(result.program_ir.effects):
         raise ValueError("Rust Program AD scalar interpreter did not execute every effect")
 
+    rust_value_gradient = value_and_grad_program_ad_effect_ir_with_rust(result.program_ir, values)
+    if not rust_value_gradient.supported or rust_value_gradient.value is None:
+        blocked = ", ".join(rust_value_gradient.blocked_reasons)
+        raise ValueError(
+            f"Rust Program AD scalar value+gradient replay did not execute: {blocked}"
+        )
+    if abs(rust_value_gradient.value - result.value) > 1.0e-12:
+        raise ValueError("Rust Program AD scalar value+gradient replay value diverged")
+    if rust_value_gradient.supported_effect_count != len(result.program_ir.effects):
+        raise ValueError("Rust Program AD scalar value+gradient replay missed effects")
+
     analytic = np.array([2.0 * values[0] + math.cos(values[0]), 2.0], dtype=np.float64)
+    if _max_abs_error(rust_value_gradient.gradient, result.gradient) > 1.0e-12:
+        raise ValueError("Rust Program AD scalar value+gradient replay gradient diverged")
     return DifferentiableProgrammingBenchmarkResult(
         case_id="program_ad_rust_scalar_interpreter_contracts",
         category="rust-interpreter",
-        value=rust_result.value,
-        gradient=result.gradient,
+        value=rust_value_gradient.value,
+        gradient=rust_value_gradient.gradient,
         analytic_gradient=analytic,
-        max_abs_gradient_error=_max_abs_error(result.gradient, analytic),
-        adjoint_supported=False,
-        max_abs_adjoint_error=None,
+        max_abs_gradient_error=_max_abs_error(rust_value_gradient.gradient, analytic),
+        adjoint_supported=True,
+        max_abs_adjoint_error=_max_abs_error(rust_value_gradient.gradient, analytic),
         claim_boundary=(
-            "bounded Rust Program AD IR scalar forward interpreter over opcode-bearing "
-            "program_ad_effect_ir.v1 rows, with Python whole-program AD gradient parity "
-            "used only as the local analytic reference; not reverse-mode Rust AD, LLVM, "
-            "JIT, provider, hardware, or performance evidence; no wall-clock performance claim"
+            "bounded Rust Program AD IR scalar value+gradient replay over opcode-bearing "
+            "program_ad_effect_ir.v1 rows with no aliases, control flow, arrays, LLVM, "
+            "JIT, provider, hardware, or performance claim; Python whole-program AD and "
+            "analytic gradients are local conformance references only; no wall-clock "
+            "performance claim"
         ),
     )
 

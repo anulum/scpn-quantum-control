@@ -25,6 +25,8 @@ const PROGRAM_AD_EFFECT_IR_FORMAT: &str = "program_ad_effect_ir.v1";
 const PROGRAM_AD_IR_CLAIM_BOUNDARY: &str = "metadata_only_no_program_execution";
 const PROGRAM_AD_RUST_INTERPRETER_CLAIM_BOUNDARY: &str =
     "bounded_rust_program_ad_ir_scalar_forward_interpreter_no_reverse_ad_no_llvm_jit";
+const PROGRAM_AD_RUST_VALUE_AND_GRADIENT_CLAIM_BOUNDARY: &str =
+    "bounded_rust_program_ad_ir_scalar_value_and_gradient_no_control_no_alias_no_llvm_jit";
 
 /// One SSA value record from Python-emitted Program AD metadata.
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize)]
@@ -117,6 +119,19 @@ pub struct ProgramADRustInterpreterResult {
     pub claim_boundary: String,
 }
 
+/// JSON-ready result for bounded Rust scalar Program AD value and gradient replay.
+#[derive(Debug, Clone, PartialEq, Serialize)]
+pub struct ProgramADRustValueAndGradientResult {
+    pub supported: bool,
+    pub value: Option<f64>,
+    pub gradient: Vec<f64>,
+    pub parameter_targets: Vec<String>,
+    pub effect_count: usize,
+    pub supported_effect_count: usize,
+    pub blocked_reasons: Vec<String>,
+    pub claim_boundary: String,
+}
+
 impl ProgramADEffectIR {
     /// Return a claim-bounded metadata summary without executing Program AD.
     pub fn metadata_summary(&self) -> ProgramADEffectIRMetadataSummary {
@@ -157,6 +172,43 @@ impl ProgramADRustInterpreterResult {
             supported_effect_count: effect_count,
             blocked_reasons: Vec::new(),
             claim_boundary: PROGRAM_AD_RUST_INTERPRETER_CLAIM_BOUNDARY.to_owned(),
+        }
+    }
+}
+
+impl ProgramADRustValueAndGradientResult {
+    fn unsupported(
+        effect_count: usize,
+        supported_effect_count: usize,
+        blocked_reasons: Vec<String>,
+    ) -> Self {
+        Self {
+            supported: false,
+            value: None,
+            gradient: Vec::new(),
+            parameter_targets: Vec::new(),
+            effect_count,
+            supported_effect_count,
+            blocked_reasons,
+            claim_boundary: PROGRAM_AD_RUST_VALUE_AND_GRADIENT_CLAIM_BOUNDARY.to_owned(),
+        }
+    }
+
+    fn supported(
+        value: f64,
+        gradient: Vec<f64>,
+        parameter_targets: Vec<String>,
+        effect_count: usize,
+    ) -> Self {
+        Self {
+            supported: true,
+            value: Some(value),
+            gradient,
+            parameter_targets,
+            effect_count,
+            supported_effect_count: effect_count,
+            blocked_reasons: Vec::new(),
+            claim_boundary: PROGRAM_AD_RUST_VALUE_AND_GRADIENT_CLAIM_BOUNDARY.to_owned(),
         }
     }
 }
@@ -359,6 +411,401 @@ pub fn interpret_program_ad_effect_ir_forward(
         *value,
         ir.effects.len(),
     ))
+}
+
+/// Replay scalar value and reverse-mode gradients for a bounded opcode-bearing IR subset.
+pub fn interpret_program_ad_effect_ir_value_and_gradient(
+    serialization: &str,
+    inputs: &[f64],
+) -> Result<ProgramADRustValueAndGradientResult, String> {
+    let ir = parse_program_ad_effect_ir(serialization)?;
+    let (ordered_effects, parameter_targets, values, supported_effect_count) =
+        match evaluate_scalar_program_ad_ir(&ir, inputs) {
+            Ok(result) => result,
+            Err(result) => return Ok(*result),
+        };
+    let Some(final_effect) = ordered_effects.last() else {
+        return Ok(ProgramADRustValueAndGradientResult::unsupported(
+            ir.effects.len(),
+            supported_effect_count,
+            vec!["Program AD IR has no final effect".to_owned()],
+        ));
+    };
+    let Some(final_value) = values.get(&final_effect.target) else {
+        return Ok(ProgramADRustValueAndGradientResult::unsupported(
+            ir.effects.len(),
+            supported_effect_count,
+            vec!["final Program AD IR target was not evaluated".to_owned()],
+        ));
+    };
+    if !final_value.is_finite() {
+        return Ok(ProgramADRustValueAndGradientResult::unsupported(
+            ir.effects.len(),
+            supported_effect_count,
+            vec!["Rust Program AD value+gradient final value is not finite".to_owned()],
+        ));
+    }
+
+    let mut adjoints: HashMap<String, f64> = HashMap::new();
+    adjoints.insert(final_effect.target.clone(), 1.0);
+    for effect in ordered_effects.iter().rev() {
+        let cotangent = *adjoints.get(&effect.target).unwrap_or(&0.0);
+        if cotangent == 0.0 {
+            continue;
+        }
+        let Some(operation) = effect.operation.as_deref() else {
+            return Ok(ProgramADRustValueAndGradientResult::unsupported(
+                ir.effects.len(),
+                supported_effect_count,
+                vec![format!(
+                    "effect {} target {} has no opcode-bearing operation metadata",
+                    effect.index, effect.target
+                )],
+            ));
+        };
+        if operation == "parameter" {
+            continue;
+        }
+        if let Err(reason) =
+            accumulate_reverse_effect(effect, operation, cotangent, &values, &mut adjoints)
+        {
+            return Ok(ProgramADRustValueAndGradientResult::unsupported(
+                ir.effects.len(),
+                supported_effect_count,
+                vec![reason],
+            ));
+        }
+    }
+
+    let gradient = parameter_targets
+        .iter()
+        .map(|target| *adjoints.get(target).unwrap_or(&0.0))
+        .collect::<Vec<f64>>();
+    if gradient.iter().any(|value| !value.is_finite()) {
+        return Ok(ProgramADRustValueAndGradientResult::unsupported(
+            ir.effects.len(),
+            supported_effect_count,
+            vec!["Rust Program AD value+gradient produced a non-finite gradient".to_owned()],
+        ));
+    }
+    Ok(ProgramADRustValueAndGradientResult::supported(
+        *final_value,
+        gradient,
+        parameter_targets,
+        ir.effects.len(),
+    ))
+}
+
+type ScalarEvaluation<'a> = (
+    Vec<&'a ProgramADEffect>,
+    Vec<String>,
+    HashMap<String, f64>,
+    usize,
+);
+
+fn evaluate_scalar_program_ad_ir<'a>(
+    ir: &'a ProgramADEffectIR,
+    inputs: &[f64],
+) -> Result<ScalarEvaluation<'a>, Box<ProgramADRustValueAndGradientResult>> {
+    if ir.effects.is_empty() {
+        return Err(Box::new(ProgramADRustValueAndGradientResult::unsupported(
+            0,
+            0,
+            vec!["program AD IR contains no effects".to_owned()],
+        )));
+    }
+    if inputs.iter().any(|value| !value.is_finite()) {
+        return Err(Box::new(ProgramADRustValueAndGradientResult::unsupported(
+            ir.effects.len(),
+            0,
+            vec!["Rust Program AD value+gradient inputs must be finite".to_owned()],
+        )));
+    }
+    if !ir.alias_edges.is_empty() {
+        return Err(Box::new(ProgramADRustValueAndGradientResult::unsupported(
+            ir.effects.len(),
+            0,
+            vec![
+                "alias-bearing Program AD IR is outside bounded Rust scalar value+gradient replay"
+                    .to_owned(),
+            ],
+        )));
+    }
+    if !ir.control_regions.is_empty() || !ir.phi_nodes.is_empty() {
+        return Err(Box::new(ProgramADRustValueAndGradientResult::unsupported(
+            ir.effects.len(),
+            0,
+            vec![
+                "control-flow Program AD IR requires branch-signature replay outside bounded Rust scalar value+gradient replay"
+                    .to_owned(),
+            ],
+        )));
+    }
+
+    let mut ordered_effects: Vec<&ProgramADEffect> = ir.effects.iter().collect();
+    ordered_effects.sort_by_key(|effect| effect.ordering);
+    let expected_parameters = ordered_effects
+        .iter()
+        .filter(|effect| effect.kind == "parameter")
+        .count();
+    if expected_parameters != inputs.len() {
+        return Err(Box::new(ProgramADRustValueAndGradientResult::unsupported(
+            ir.effects.len(),
+            0,
+            vec![format!(
+                "Program AD IR parameter count {expected_parameters} does not match input count {}",
+                inputs.len()
+            )],
+        )));
+    }
+
+    let mut values: HashMap<String, f64> = HashMap::new();
+    let mut input_index = 0usize;
+    let mut supported_effect_count = 0usize;
+    let mut parameter_targets = Vec::new();
+    for effect in &ordered_effects {
+        let Some(operation) = effect.operation.as_deref() else {
+            return Err(Box::new(ProgramADRustValueAndGradientResult::unsupported(
+                ir.effects.len(),
+                supported_effect_count,
+                vec![format!(
+                    "effect {} target {} has no opcode-bearing operation metadata",
+                    effect.index, effect.target
+                )],
+            )));
+        };
+        let evaluated = evaluate_effect(effect, operation, inputs, &mut input_index, &values);
+        match evaluated {
+            Ok(value) => {
+                if operation == "parameter" {
+                    parameter_targets.push(effect.target.clone());
+                }
+                values.insert(effect.target.clone(), value);
+                supported_effect_count += 1;
+            }
+            Err(reason) => {
+                return Err(Box::new(ProgramADRustValueAndGradientResult::unsupported(
+                    ir.effects.len(),
+                    supported_effect_count,
+                    vec![reason],
+                )));
+            }
+        }
+    }
+    Ok((
+        ordered_effects,
+        parameter_targets,
+        values,
+        supported_effect_count,
+    ))
+}
+
+fn accumulate_reverse_effect(
+    effect: &ProgramADEffect,
+    operation: &str,
+    cotangent: f64,
+    values: &HashMap<String, f64>,
+    adjoints: &mut HashMap<String, f64>,
+) -> Result<(), String> {
+    match operation {
+        "add" => accumulate_binary(effect, values, adjoints, cotangent, 1.0, 1.0),
+        "sub" => accumulate_binary(effect, values, adjoints, cotangent, 1.0, -1.0),
+        "mul" => {
+            let lhs = operand_value(&effect.inputs[0], values)?;
+            let rhs = operand_value(&effect.inputs[1], values)?;
+            accumulate_binary(effect, values, adjoints, cotangent, rhs, lhs)
+        }
+        "div" => {
+            let lhs = operand_value(&effect.inputs[0], values)?;
+            let rhs = operand_value(&effect.inputs[1], values)?;
+            if rhs == 0.0 {
+                return Err("division denominator must be non-zero".to_owned());
+            }
+            accumulate_binary(
+                effect,
+                values,
+                adjoints,
+                cotangent,
+                1.0 / rhs,
+                -lhs / (rhs * rhs),
+            )
+        }
+        "pow" => {
+            let lhs = operand_value(&effect.inputs[0], values)?;
+            let rhs = operand_value(&effect.inputs[1], values)?;
+            if lhs <= 0.0 {
+                return Err("pow gradient requires a positive base".to_owned());
+            }
+            let value = lhs.powf(rhs);
+            accumulate_binary(
+                effect,
+                values,
+                adjoints,
+                cotangent,
+                rhs * lhs.powf(rhs - 1.0),
+                value * lhs.ln(),
+            )
+        }
+        "sin" => accumulate_unary(effect, values, adjoints, cotangent, f64::cos),
+        "cos" => accumulate_unary(effect, values, adjoints, cotangent, |value| -value.sin()),
+        "exp" => accumulate_unary(effect, values, adjoints, cotangent, f64::exp),
+        "expm1" => accumulate_unary(effect, values, adjoints, cotangent, f64::exp),
+        "log" => accumulate_unary_domain(
+            effect,
+            values,
+            adjoints,
+            cotangent,
+            |value| value > 0.0,
+            |value| 1.0 / value,
+            "log input must be positive",
+        ),
+        "log1p" => accumulate_unary_domain(
+            effect,
+            values,
+            adjoints,
+            cotangent,
+            |value| value > -1.0,
+            |value| 1.0 / (1.0 + value),
+            "log1p input must be greater than -1",
+        ),
+        "sqrt" => accumulate_unary_domain(
+            effect,
+            values,
+            adjoints,
+            cotangent,
+            |value| value > 0.0,
+            |value| 0.5 / value.sqrt(),
+            "sqrt input must be positive",
+        ),
+        "tan" => accumulate_unary_domain(
+            effect,
+            values,
+            adjoints,
+            cotangent,
+            |value| value.cos().abs() > 1.0e-15,
+            |value| 1.0 / (value.cos() * value.cos()),
+            "tan input must have non-zero cosine",
+        ),
+        "tanh" => accumulate_unary(effect, values, adjoints, cotangent, |value| {
+            let tanh = value.tanh();
+            1.0 - tanh * tanh
+        }),
+        "arcsin" => accumulate_unary_domain(
+            effect,
+            values,
+            adjoints,
+            cotangent,
+            |value| value.abs() < 1.0,
+            |value| 1.0 / (1.0 - value * value).sqrt(),
+            "arcsin input must be strictly inside (-1, 1)",
+        ),
+        "arccos" => accumulate_unary_domain(
+            effect,
+            values,
+            adjoints,
+            cotangent,
+            |value| value.abs() < 1.0,
+            |value| -1.0 / (1.0 - value * value).sqrt(),
+            "arccos input must be strictly inside (-1, 1)",
+        ),
+        "reciprocal" => accumulate_unary_domain(
+            effect,
+            values,
+            adjoints,
+            cotangent,
+            |value| value != 0.0,
+            |value| -1.0 / (value * value),
+            "reciprocal input must be non-zero",
+        ),
+        "abs" => accumulate_unary_domain(
+            effect,
+            values,
+            adjoints,
+            cotangent,
+            |value| value != 0.0,
+            |value| value.signum(),
+            "abs gradient is undefined at zero",
+        ),
+        _ => Err(format!(
+            "effect {} operation {operation} is outside bounded Rust scalar value+gradient replay",
+            effect.index
+        )),
+    }
+}
+
+fn accumulate_unary(
+    effect: &ProgramADEffect,
+    values: &HashMap<String, f64>,
+    adjoints: &mut HashMap<String, f64>,
+    cotangent: f64,
+    derivative: impl Fn(f64) -> f64,
+) -> Result<(), String> {
+    if effect.inputs.len() != 1 {
+        return Err(format!("effect {} requires one input", effect.index));
+    }
+    let input = &effect.inputs[0];
+    let value = operand_value(input, values)?;
+    add_adjoint(input, cotangent * derivative(value), values, adjoints)
+}
+
+fn accumulate_unary_domain(
+    effect: &ProgramADEffect,
+    values: &HashMap<String, f64>,
+    adjoints: &mut HashMap<String, f64>,
+    cotangent: f64,
+    predicate: impl Fn(f64) -> bool,
+    derivative: impl Fn(f64) -> f64,
+    domain_error: &str,
+) -> Result<(), String> {
+    if effect.inputs.len() != 1 {
+        return Err(format!("effect {} requires one input", effect.index));
+    }
+    let input = &effect.inputs[0];
+    let value = operand_value(input, values)?;
+    if !predicate(value) {
+        return Err(domain_error.to_owned());
+    }
+    add_adjoint(input, cotangent * derivative(value), values, adjoints)
+}
+
+fn accumulate_binary(
+    effect: &ProgramADEffect,
+    values: &HashMap<String, f64>,
+    adjoints: &mut HashMap<String, f64>,
+    cotangent: f64,
+    lhs_derivative: f64,
+    rhs_derivative: f64,
+) -> Result<(), String> {
+    if effect.inputs.len() != 2 {
+        return Err(format!("effect {} requires two inputs", effect.index));
+    }
+    add_adjoint(
+        &effect.inputs[0],
+        cotangent * lhs_derivative,
+        values,
+        adjoints,
+    )?;
+    add_adjoint(
+        &effect.inputs[1],
+        cotangent * rhs_derivative,
+        values,
+        adjoints,
+    )
+}
+
+fn add_adjoint(
+    input: &str,
+    contribution: f64,
+    values: &HashMap<String, f64>,
+    adjoints: &mut HashMap<String, f64>,
+) -> Result<(), String> {
+    if !contribution.is_finite() {
+        return Err(format!("adjoint contribution for {input} must be finite"));
+    }
+    if values.contains_key(input) {
+        *adjoints.entry(input.to_owned()).or_insert(0.0) += contribution;
+    }
+    Ok(())
 }
 
 fn evaluate_effect(
@@ -575,6 +1022,21 @@ pub fn program_ad_effect_ir_interpret_forward(
     serde_json::to_string(&result).map_err(|error| {
         PyValueError::new_err(format!(
             "failed to encode Program AD IR interpreter result: {error}"
+        ))
+    })
+}
+
+/// PyO3 wrapper returning JSON for bounded Rust scalar Program AD value+gradient replay.
+#[pyfunction]
+pub fn program_ad_effect_ir_interpret_value_and_gradient(
+    serialization: &str,
+    inputs: Vec<f64>,
+) -> PyResult<String> {
+    let result = interpret_program_ad_effect_ir_value_and_gradient(serialization, &inputs)
+        .map_err(PyValueError::new_err)?;
+    serde_json::to_string(&result).map_err(|error| {
+        PyValueError::new_err(format!(
+            "failed to encode Program AD IR value+gradient result: {error}"
         ))
     })
 }

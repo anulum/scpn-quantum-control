@@ -2,7 +2,7 @@
   "claim_boundary": "Static Rust FFI inventory only: records PyO3 boundaries, registration drift, extern \"C\" declarations, and literal unsafe tokens. It is not a formal proof, Miri run, sanitizer run, fuzz campaign, or dynamic memory-safety guarantee.",
   "crate_root": "scpn_quantum_engine",
   "extern_c_count": 0,
-  "pyfunction_count": 134,
+  "pyfunction_count": 137,
   "pymodule_count": 1,
   "pyo3_boundaries": [
     {
@@ -666,7 +666,7 @@
     {
       "file": "src/lib.rs",
       "kind": "pymodule",
-      "line": 67,
+      "line": 68,
       "registered": true,
       "symbol": "scpn_quantum_engine"
     },
@@ -753,6 +753,27 @@
       "line": 47,
       "registered": true,
       "symbol": "pec_sample_parallel"
+    },
+    {
+      "file": "src/program_ad_ir.rs",
+      "kind": "pyfunction",
+      "line": 1006,
+      "registered": true,
+      "symbol": "program_ad_effect_ir_metadata_summary"
+    },
+    {
+      "file": "src/program_ad_ir.rs",
+      "kind": "pyfunction",
+      "line": 1015,
+      "registered": true,
+      "symbol": "program_ad_effect_ir_interpret_forward"
+    },
+    {
+      "file": "src/program_ad_ir.rs",
+      "kind": "pyfunction",
+      "line": 1030,
+      "registered": true,
+      "symbol": "program_ad_effect_ir_interpret_value_and_gradient"
     },
     {
       "file": "src/pulse_shaping.rs",

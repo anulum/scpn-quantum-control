@@ -74,15 +74,15 @@
       "title": "Unified differentiable API and dashboard facade"
     },
     {
-      "benchmark_status": "not_run",
+      "benchmark_status": "functional_non_isolated",
       "benchmark_surface": [
-        "program_ad_rust_forward_interpreter",
+        "program_ad_rust_value_gradient_replay",
         "diff-qnode-claim-ledger-v1",
         "diff-module-hardening-audit-v1"
       ],
       "blockers": [
-        "reverse-mode value+gradient replay is not complete",
-        "executed branch replay and array adjoints are missing"
+        "executed branch replay, primitive-family replay, and array adjoints are missing",
+        "registry metadata mirror, LLVM/JIT lowering, and isolated benchmark evidence are missing"
       ],
       "claim_boundary": "Differentiable Rust/Python surface inventory for rustification planning; no broad rustification promotion, provider execution, hardware execution, LLVM/JIT execution, GPU execution, or isolated benchmark claim is implied.",
       "claim_ids": [
@@ -110,7 +110,8 @@
       ],
       "public_api": [
         "program_ad_registry_dispatch_coverage_report",
-        "compile_whole_program_frontend"
+        "compile_whole_program_frontend",
+        "value_and_grad_program_ad_effect_ir_with_rust"
       ],
       "python_surface": [
         "src/scpn_quantum_control/differentiable.py",
@@ -136,7 +137,7 @@
         "tests/test_differentiable_claim_ledger.py",
         "tests/test_differentiable_module_hardening_audit.py"
       ],
-      "title": "Rust Program AD IR parser and bounded scalar forward interpreter"
+      "title": "Rust Program AD IR parser and bounded scalar value+gradient replay"
     },
     {
       "benchmark_status": "functional_non_isolated",
