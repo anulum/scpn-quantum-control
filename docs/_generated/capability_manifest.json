@@ -11,10 +11,10 @@
     "public_api_exports": 714,
     "public_documentation_pages": 254,
     "python_model_classes": 1838,
-    "python_model_source_modules": 842,
+    "python_model_source_modules": 846,
     "rust_pyo3_model_wrappers": 137,
     "rust_source_modules": 38,
-    "test_files": 1963
+    "test_files": 2013
   },
   "documentation": {
     "examples": [
@@ -5619,35 +5619,35 @@
       },
       {
         "name": "ProgramADAdjointResult",
-        "path": "src/scpn_quantum_control/differentiable.py"
+        "path": "src/scpn_quantum_control/program_ad_adjoint.py"
       },
       {
         "name": "ProgramADAdjointStep",
-        "path": "src/scpn_quantum_control/differentiable.py"
+        "path": "src/scpn_quantum_control/program_ad_adjoint.py"
       },
       {
         "name": "ProgramADAliasEdge",
-        "path": "src/scpn_quantum_control/differentiable.py"
+        "path": "src/scpn_quantum_control/program_ad_effect_ir.py"
       },
       {
         "name": "ProgramADAliasEffectAnalysis",
-        "path": "src/scpn_quantum_control/differentiable.py"
+        "path": "src/scpn_quantum_control/program_ad_alias_analysis.py"
       },
       {
         "name": "ProgramADAliasSet",
-        "path": "src/scpn_quantum_control/differentiable.py"
+        "path": "src/scpn_quantum_control/program_ad_alias_analysis.py"
       },
       {
         "name": "ProgramADControlRegion",
-        "path": "src/scpn_quantum_control/differentiable.py"
+        "path": "src/scpn_quantum_control/program_ad_effect_ir.py"
       },
       {
         "name": "ProgramADEffect",
-        "path": "src/scpn_quantum_control/differentiable.py"
+        "path": "src/scpn_quantum_control/program_ad_effect_ir.py"
       },
       {
         "name": "ProgramADEffectIR",
-        "path": "src/scpn_quantum_control/differentiable.py"
+        "path": "src/scpn_quantum_control/program_ad_effect_ir.py"
       },
       {
         "name": "ProgramADEffectIRLike",
@@ -5659,7 +5659,7 @@
       },
       {
         "name": "ProgramADPhiNode",
-        "path": "src/scpn_quantum_control/differentiable.py"
+        "path": "src/scpn_quantum_control/program_ad_effect_ir.py"
       },
       {
         "name": "ProgramADRegistryDispatchCoverageReport",
@@ -5671,15 +5671,15 @@
       },
       {
         "name": "ProgramADSSAValue",
-        "path": "src/scpn_quantum_control/differentiable.py"
+        "path": "src/scpn_quantum_control/program_ad_effect_ir.py"
       },
       {
         "name": "ProgramADStaticAliasLatticeComponent",
-        "path": "src/scpn_quantum_control/differentiable.py"
+        "path": "src/scpn_quantum_control/program_ad_alias_analysis.py"
       },
       {
         "name": "ProgramADStaticAliasLatticeReport",
-        "path": "src/scpn_quantum_control/differentiable.py"
+        "path": "src/scpn_quantum_control/program_ad_alias_analysis.py"
       },
       {
         "name": "ProjectedSPSAOptimizer",
@@ -8311,7 +8311,7 @@
       },
       {
         "name": "WholeProgramADResult",
-        "path": "src/scpn_quantum_control/differentiable.py"
+        "path": "src/scpn_quantum_control/whole_program_ad_result.py"
       },
       {
         "name": "WholeProgramBytecodeBasicBlock",
@@ -8327,7 +8327,7 @@
       },
       {
         "name": "WholeProgramIRNode",
-        "path": "src/scpn_quantum_control/differentiable.py"
+        "path": "src/scpn_quantum_control/whole_program_ad_result.py"
       },
       {
         "name": "WholeProgramSemanticsReport",
@@ -8351,7 +8351,7 @@
       },
       {
         "name": "WholeProgramTraceEvent",
-        "path": "src/scpn_quantum_control/differentiable.py"
+        "path": "src/scpn_quantum_control/whole_program_ad_result.py"
       },
       {
         "name": "WholeProgramUnsupportedSemanticDiagnostic",
@@ -9210,6 +9210,9 @@
       "src/scpn_quantum_control/phase/varqite.py",
       "src/scpn_quantum_control/phase/xy_compiler.py",
       "src/scpn_quantum_control/phase/xy_kuramoto.py",
+      "src/scpn_quantum_control/program_ad_adjoint.py",
+      "src/scpn_quantum_control/program_ad_alias_analysis.py",
+      "src/scpn_quantum_control/program_ad_effect_ir.py",
       "src/scpn_quantum_control/program_ad_registry.py",
       "src/scpn_quantum_control/program_ad_rust_bridge.py",
       "src/scpn_quantum_control/psi_field/infoton.py",
@@ -9255,6 +9258,7 @@
       "src/scpn_quantum_control/topology_control/objectives.py",
       "src/scpn_quantum_control/topology_control/optimizers.py",
       "src/scpn_quantum_control/topology_control/qsnn_integration.py",
+      "src/scpn_quantum_control/whole_program_ad_result.py",
       "src/scpn_quantum_control/whole_program_frontend.py",
       "src/scpn_quantum_control/wirtinger_calculus.py"
     ],
@@ -10813,23 +10817,36 @@
       "tests/test_dependency_hygiene.py",
       "tests/test_dependency_security_closure.py",
       "tests/test_determinism.py",
-      "tests/test_differentiable.py",
       "tests/test_differentiable_api.py",
       "tests/test_differentiable_benchmark_evidence.py",
       "tests/test_differentiable_benchmark_report.py",
       "tests/test_differentiable_benchmark_workflow.py",
+      "tests/test_differentiable_canonical_modes.py",
       "tests/test_differentiable_claim_ledger.py",
+      "tests/test_differentiable_custom_derivatives.py",
       "tests/test_differentiable_external_comparisons.py",
       "tests/test_differentiable_external_validation.py",
+      "tests/test_differentiable_finite_difference.py",
+      "tests/test_differentiable_fisher_gauss_newton.py",
       "tests/test_differentiable_framework_ci_workflow.py",
       "tests/test_differentiable_framework_overlay.py",
+      "tests/test_differentiable_gradient_descent_optimizer.py",
       "tests/test_differentiable_hardening_gate.py",
+      "tests/test_differentiable_implicit_sensitivity.py",
+      "tests/test_differentiable_jax.py",
+      "tests/test_differentiable_levenberg_marquardt.py",
       "tests/test_differentiable_module_hardening_audit.py",
+      "tests/test_differentiable_natural_gradient_line_search.py",
+      "tests/test_differentiable_package_exports.py",
+      "tests/test_differentiable_parameter_shift.py",
       "tests/test_differentiable_programming_benchmarks.py",
+      "tests/test_differentiable_result_contracts.py",
       "tests/test_differentiable_rust_python_inventory.py",
       "tests/test_differentiable_score_function.py",
       "tests/test_differentiable_sota_scorecard.py",
+      "tests/test_differentiable_sparse_derivatives.py",
       "tests/test_differentiable_spsa.py",
+      "tests/test_differentiable_vmap.py",
       "tests/test_disruption_classifier.py",
       "tests/test_dla_parity_baselines.py",
       "tests/test_dla_parity_dataset.py",
@@ -11569,8 +11586,40 @@
       "tests/test_prepare_s1_ibm_live_readiness.py",
       "tests/test_probe_s1_generic_gate_metadata.py",
       "tests/test_probe_s1_ibm_metadata.py",
+      "tests/test_program_ad_alias_effects.py",
+      "tests/test_program_ad_array_indexing_registry.py",
+      "tests/test_program_ad_binary_elementwise_registry.py",
+      "tests/test_program_ad_broadcast_assembly.py",
+      "tests/test_program_ad_cumulative_primitives.py",
+      "tests/test_program_ad_effect_ir.py",
+      "tests/test_program_ad_elementwise_registry.py",
+      "tests/test_program_ad_fail_closed_boundaries.py",
+      "tests/test_program_ad_finite_difference_stencils.py",
+      "tests/test_program_ad_interpolation.py",
+      "tests/test_program_ad_like_constructors.py",
+      "tests/test_program_ad_linalg_core.py",
+      "tests/test_program_ad_linalg_direct_rules.py",
+      "tests/test_program_ad_linalg_matrix_ops.py",
+      "tests/test_program_ad_linalg_registry.py",
+      "tests/test_program_ad_linalg_spectral.py",
+      "tests/test_program_ad_product_contractions.py",
+      "tests/test_program_ad_reduction_norms.py",
       "tests/test_program_ad_registry.py",
+      "tests/test_program_ad_runtime_registry_dispatch.py",
       "tests/test_program_ad_rust_bridge.py",
+      "tests/test_program_ad_selection_direct_rules.py",
+      "tests/test_program_ad_selection_folds.py",
+      "tests/test_program_ad_selection_order_statistics.py",
+      "tests/test_program_ad_selection_registry.py",
+      "tests/test_program_ad_shape_transforms.py",
+      "tests/test_program_ad_signal_primitives.py",
+      "tests/test_program_ad_split_assembly.py",
+      "tests/test_program_ad_stack_block_assembly.py",
+      "tests/test_program_ad_static_array_assembly.py",
+      "tests/test_program_ad_trapezoid.py",
+      "tests/test_program_ad_triangular_diagonal_assembly.py",
+      "tests/test_program_ad_unary_ufuncs.py",
+      "tests/test_program_adjoint_replay.py",
       "tests/test_project_paths.py",
       "tests/test_provenance.py",
       "tests/test_provider_capability_discovery.py",
@@ -11599,6 +11648,7 @@
       "tests/test_qpu_compute.py",
       "tests/test_qpu_data_artifact.py",
       "tests/test_qrc_phase_detector.py",
+      "tests/test_qsnn_native_parameter_shift.py",
       "tests/test_qsnn_training.py",
       "tests/test_qsnn_validation.py",
       "tests/test_qstdp.py",
@@ -12170,6 +12220,7 @@
       "tests/test_topology_auth_edge.py",
       "tests/test_topology_control_core.py",
       "tests/test_topology_control_integration.py",
+      "tests/test_transform_algebra.py",
       "tests/test_translation_symmetry.py",
       "tests/test_translation_symmetry_contracts.py",
       "tests/test_trapped_ion.py",
@@ -12185,6 +12236,9 @@
       "tests/test_vqls_edge_cases.py",
       "tests/test_vqls_gs.py",
       "tests/test_vqs_alternative_readiness.py",
+      "tests/test_whole_program_ad_contracts.py",
+      "tests/test_whole_program_ad_numpy_structural.py",
+      "tests/test_whole_program_ad_runtime.py",
       "tests/test_whole_program_frontend.py",
       "tests/test_wilson_loop.py",
       "tests/test_wirtinger_calculus.py",

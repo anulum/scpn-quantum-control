@@ -16,12 +16,17 @@ from typing import Any, cast
 import numpy as np
 import pytest
 
+from scpn_quantum_control import whole_program_ad_result as result_module
 from scpn_quantum_control.differentiable import (
     Parameter,
     ProgramADAdjointResult,
+    ProgramADEffectIR,
     TraceADScalar,
     WholeProgramADResult,
+    WholeProgramBytecodeInstruction,
     WholeProgramIRNode,
+    WholeProgramSemanticsReport,
+    WholeProgramSourceIRFeature,
     WholeProgramTraceEvent,
     whole_program_grad,
     whole_program_value_and_grad,
@@ -182,19 +187,33 @@ def test_whole_program_ad_operator_surface_and_fail_closed_paths() -> None:
 def test_whole_program_result_validation_fail_closed_paths() -> None:
     """Whole-program AD result contracts should reject malformed metadata."""
 
+    assert WholeProgramADResult is result_module.WholeProgramADResult
+    assert WholeProgramIRNode is result_module.WholeProgramIRNode
+    assert WholeProgramTraceEvent is result_module.WholeProgramTraceEvent
+
     for key, value, message in (
         ("value", float("nan"), "finite"),
         ("gradient", np.array([[1.0]]), "one-dimensional"),
+        ("gradient", np.array([float("nan")]), "finite"),
+        ("step", cast(Any, "bad"), "real scalar"),
+        ("step", float("nan"), "finite"),
         ("step", -1.0, "step"),
         ("evaluations", 0, "evaluations"),
         ("parameter_names", ("x",), "parameter_names"),
         ("trainable", (True,), "trainable"),
+        ("trainable", (True, "no"), "booleans"),
         ("trace_events", (object(),), "trace_events"),
         ("ir_nodes", (object(),), "ir_nodes"),
+        ("bytecode_instructions", (object(),), "bytecode_instructions"),
+        ("source_ir_features", (object(),), "source_ir_features"),
+        ("semantics_report", object(), "semantics_report"),
+        ("program_ir", object(), "program_ir"),
+        ("adjoint_result", object(), "adjoint_result"),
         ("control_flow_observed", "yes", "control_flow_observed"),
         ("numpy_observed", "yes", "numpy_observed"),
         ("polyglot_targets", {}, "polyglot_targets"),
         ("polyglot_targets", {"": "available"}, "polyglot target"),
+        ("polyglot_targets", {"python": ""}, "polyglot target"),
         ("claim_boundary", "", "claim_boundary"),
     ):
         payload = _valid_whole_program_payload()
@@ -209,6 +228,17 @@ def test_whole_program_result_validation_fail_closed_paths() -> None:
 
     payload = _valid_whole_program_payload()
     payload["adjoint_result"] = ProgramADAdjointResult(
+        gradient=np.array([1.0], dtype=np.float64),
+        supported=True,
+        unsupported_ops=(),
+        method="program_adjoint_replay",
+        claim_boundary="bounded adjoint",
+    )
+    with pytest.raises(ValueError, match="gradient shape"):
+        WholeProgramADResult(**payload)
+
+    payload = _valid_whole_program_payload()
+    payload["adjoint_result"] = ProgramADAdjointResult(
         gradient=np.array([1.0, 0.25], dtype=np.float64),
         supported=True,
         unsupported_ops=(),
@@ -217,6 +247,44 @@ def test_whole_program_result_validation_fail_closed_paths() -> None:
     )
     with pytest.raises(ValueError, match="non-trainable parameters"):
         WholeProgramADResult(**payload)
+
+    payload = _valid_whole_program_payload()
+    payload["bytecode_instructions"] = (
+        WholeProgramBytecodeInstruction(
+            offset=0,
+            opname="LOAD_FAST",
+            argrepr="x",
+            line_number=1,
+        ),
+    )
+    payload["source_ir_features"] = (
+        WholeProgramSourceIRFeature(kind="call", detail="np.sin", line_number=1),
+    )
+    payload["semantics_report"] = WholeProgramSemanticsReport(
+        bytecode_frontend=True,
+        source_frontend=True,
+        graph_capture=True,
+        aliasing_observed=False,
+        mutation_observed=False,
+        loop_observed=False,
+        control_flow_observed=False,
+        numpy_observed=True,
+        differentiation_semantics="operator_intercepted",
+        accepted_python_semantics=("plain_return",),
+        unsupported_python_semantics=(),
+    )
+    payload["program_ir"] = ProgramADEffectIR(
+        ssa_values=(),
+        effects=(),
+        alias_edges=(),
+        control_regions=(),
+        serialization='{"format":"program_ad_effect_ir.v1"}',
+    )
+    valid = WholeProgramADResult(**payload)
+    assert valid.bytecode_instructions
+    assert valid.source_ir_features
+    assert valid.semantics_report is payload["semantics_report"]
+    assert valid.program_ir is payload["program_ir"]
 
 
 def test_whole_program_event_and_ir_node_validation_paths() -> None:
