@@ -2505,6 +2505,10 @@ def _static_alias_lattice_report_case() -> DifferentiableProgrammingBenchmarkRes
         raise ValueError("static alias lattice benchmark must not promote branch phi blockers")
     if "non_executed_phi_inputs_require_branch_semantics" not in branch_report.blocker_reasons:
         raise ValueError("static alias lattice benchmark missing non-executed phi blocker")
+    if "control_path_aliases_require_branch_semantics" not in branch_report.blocker_reasons:
+        raise ValueError("static alias lattice benchmark missing control-path alias blocker")
+    if not branch_report.non_executed_control_alias_edges:
+        raise ValueError("static alias lattice benchmark missing control-path alias edges")
     if not any(
         "object_attribute_alias" in component.edge_kinds
         and "attr:scratch.value" in component.members
@@ -2533,10 +2537,11 @@ def _static_alias_lattice_report_case() -> DifferentiableProgrammingBenchmarkRes
         claim_boundary=(
             "static alias-lattice readiness over emitted program_ad_effect_ir.v1 "
             "components, including view-alias, bounded local object-attribute, "
-            "expression-rebinding classification, and explicit non-executed phi "
-            "blocker reporting; not captured/global object-attribute aliasing, "
-            "non-executed branch adjoints, Rust/LLVM executable lowering, hardware, "
-            "or performance evidence; no wall-clock performance claim"
+            "expression-rebinding classification, explicit non-executed phi, and "
+            "control-path alias blocker reporting; not captured/global "
+            "object-attribute aliasing, non-executed branch adjoints, Rust/LLVM "
+            "executable lowering, hardware, or performance evidence; no wall-clock "
+            "performance claim"
         ),
     )
 

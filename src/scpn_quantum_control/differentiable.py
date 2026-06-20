@@ -336,6 +336,7 @@ class ProgramADStaticAliasLatticeReport:
     components: tuple[ProgramADStaticAliasLatticeComponent, ...]
     mutation_effects: tuple[int, ...]
     non_executed_phi_nodes: tuple[int, ...]
+    non_executed_control_alias_edges: tuple[str, ...]
     unknown_alias_edge_kinds: tuple[str, ...]
     blocker_reasons: tuple[str, ...]
     complete: bool
@@ -360,6 +361,21 @@ class ProgramADStaticAliasLatticeReport:
                 raise ValueError(
                     f"program AD static alias lattice {name} must be sorted non-negative ints"
                 )
+        if any(
+            not isinstance(edge, str) or not edge for edge in self.non_executed_control_alias_edges
+        ):
+            raise ValueError(
+                "program AD static alias lattice non_executed_control_alias_edges "
+                "must be non-empty strings"
+            )
+        if (
+            tuple(sorted(set(self.non_executed_control_alias_edges)))
+            != self.non_executed_control_alias_edges
+        ):
+            raise ValueError(
+                "program AD static alias lattice non_executed_control_alias_edges "
+                "must be sorted and unique"
+            )
         if any(not isinstance(kind, str) or not kind for kind in self.unknown_alias_edge_kinds):
             raise ValueError(
                 "program AD static alias lattice unknown_alias_edge_kinds must be strings"
@@ -391,6 +407,7 @@ class ProgramADStaticAliasLatticeReport:
             "components": [component.as_dict() for component in self.components],
             "mutation_effects": list(self.mutation_effects),
             "non_executed_phi_nodes": list(self.non_executed_phi_nodes),
+            "non_executed_control_alias_edges": list(self.non_executed_control_alias_edges),
             "unknown_alias_edge_kinds": list(self.unknown_alias_edge_kinds),
             "blocker_reasons": list(self.blocker_reasons),
             "complete": self.complete,
@@ -660,6 +677,7 @@ PROGRAM_AD_STATIC_ALIAS_LATTICE_CLAIM_BOUNDARY = (
 _PROGRAM_AD_SUPPORTED_ALIAS_EDGE_KINDS = frozenset(
     {
         "alias_analysis",
+        "control_path_alias",
         "expression_rebinding_alias",
         "list_alias",
         "local_rebinding_alias",
@@ -845,6 +863,13 @@ def program_ad_static_alias_lattice_report(
             and any(incoming != phi_node.selected for incoming in phi_node.incoming)
         )
     )
+    control_alias_edges = tuple(
+        sorted(
+            f"{edge.source}->{edge.target}"
+            for edge in program_ir.alias_edges
+            if edge.kind == "control_path_alias"
+        )
+    )
     mutation_effects = tuple(
         sorted(effect.index for effect in program_ir.effects if effect.kind == "mutation")
     )
@@ -853,11 +878,14 @@ def program_ad_static_alias_lattice_report(
         blocker_reasons.add("unknown_alias_edge_kinds")
     if non_executed_phi_nodes:
         blocker_reasons.add("non_executed_phi_inputs_require_branch_semantics")
+    if control_alias_edges:
+        blocker_reasons.add("control_path_aliases_require_branch_semantics")
     complete = not blocker_reasons
     return ProgramADStaticAliasLatticeReport(
         components=tuple(components),
         mutation_effects=mutation_effects,
         non_executed_phi_nodes=non_executed_phi_nodes,
+        non_executed_control_alias_edges=control_alias_edges,
         unknown_alias_edge_kinds=unknown_alias_edge_kinds,
         blocker_reasons=tuple(sorted(blocker_reasons)),
         complete=complete,
@@ -2218,6 +2246,7 @@ class _WholeProgramTraceContext:
         phi_nodes = list(self.phi_nodes)
         for feature in source_ir_features:
             if feature.kind in {
+                "control_path_alias",
                 "expression_rebinding_alias",
                 "list_alias",
                 "local_rebinding_alias",
@@ -9769,6 +9798,7 @@ def _source_ir_features(
     features.extend(_source_local_rebinding_alias_features(tree))
     features.extend(_source_expression_rebinding_alias_features(tree))
     features.extend(_source_object_attribute_alias_features(tree))
+    features.extend(_source_control_path_alias_features(tree))
     features.extend(_source_loop_carried_state_features(tree))
     return tuple(features)
 
@@ -9923,6 +9953,56 @@ def _source_object_attribute_alias_features(
                             line_number,
                         )
                     )
+    return tuple(features)
+
+
+def _source_control_path_alias_features(
+    tree: ast.AST,
+) -> tuple[WholeProgramSourceIRFeature, ...]:
+    """Return branch-local alias metadata that needs non-executed semantics."""
+
+    features: list[WholeProgramSourceIRFeature] = []
+
+    def target_label(target: ast.AST) -> str | None:
+        if isinstance(target, ast.Name):
+            return f"name:{target.id}"
+        if isinstance(target, ast.Attribute):
+            root_name = _ast_attribute_root(target)
+            return f"attr:{root_name}.{target.attr}" if root_name else None
+        if isinstance(target, ast.Subscript):
+            root_name = _ast_subscript_root(target)
+            return f"subscript:{root_name}" if root_name else None
+        return None
+
+    def add_targets(statement: ast.stmt, source: str) -> None:
+        targets: Sequence[ast.AST]
+        if isinstance(statement, ast.Assign):
+            targets = statement.targets
+        elif isinstance(statement, ast.AnnAssign | ast.AugAssign):
+            targets = (statement.target,)
+        else:
+            return
+        line_number = int(getattr(statement, "lineno", 1) or 1)
+        for target in targets:
+            label = target_label(target)
+            if label is not None:
+                features.append(
+                    WholeProgramSourceIRFeature(
+                        "control_path_alias",
+                        f"{source}->control:{label}",
+                        line_number,
+                    )
+                )
+
+    for node in sorted(
+        (candidate for candidate in ast.walk(tree) if isinstance(candidate, ast.If)),
+        key=lambda candidate: int(getattr(candidate, "lineno", 1) or 1),
+    ):
+        branch_line = int(getattr(node, "lineno", 1) or 1)
+        for statement in node.body:
+            add_targets(statement, f"control:if:{branch_line}:body")
+        for statement in node.orelse:
+            add_targets(statement, f"control:if:{branch_line}:orelse")
     return tuple(features)
 
 
@@ -10165,6 +10245,17 @@ def _ast_attribute_root(node: ast.Attribute) -> str:
     current: ast.AST = node
     while isinstance(current, ast.Attribute):
         current = current.value
+    if isinstance(current, ast.Name):
+        return current.id
+    return ""
+
+
+def _ast_subscript_root(node: ast.Subscript) -> str:
+    current: ast.AST = node.value
+    while isinstance(current, ast.Subscript):
+        current = current.value
+    if isinstance(current, ast.Attribute):
+        return _ast_attribute_root(current)
     if isinstance(current, ast.Name):
         return current.id
     return ""

@@ -15777,9 +15777,14 @@ def test_program_ad_static_alias_lattice_records_non_executed_phi_blockers() -> 
 
     assert report.complete is False
     assert report.non_executed_phi_nodes
+    assert report.non_executed_control_alias_edges
     assert "non_executed_phi_inputs_require_branch_semantics" in report.blocker_reasons
+    assert "control_path_aliases_require_branch_semantics" in report.blocker_reasons
     assert report.unknown_alias_edge_kinds == ()
     assert report.as_dict()["non_executed_phi_nodes"] == list(report.non_executed_phi_nodes)
+    assert report.as_dict()["non_executed_control_alias_edges"] == list(
+        report.non_executed_control_alias_edges
+    )
 
 
 def test_program_ad_static_alias_lattice_blocks_non_executed_attribute_paths() -> None:
@@ -15810,7 +15815,9 @@ def test_program_ad_static_alias_lattice_blocks_non_executed_attribute_paths() -
 
     assert report.complete is False
     assert report.non_executed_phi_nodes
+    assert report.non_executed_control_alias_edges
     assert "non_executed_phi_inputs_require_branch_semantics" in report.blocker_reasons
+    assert "control_path_aliases_require_branch_semantics" in report.blocker_reasons
     assert any(
         "object_attribute_alias" in component.edge_kinds
         and "attr:scratch.value" in component.members
@@ -15857,6 +15864,7 @@ def test_program_ad_static_alias_lattice_reports_unknown_alias_edges() -> None:
             components=(),
             mutation_effects=(),
             non_executed_phi_nodes=(),
+            non_executed_control_alias_edges=(),
             unknown_alias_edge_kinds=(),
             blocker_reasons=("blocked",),
             complete=True,
