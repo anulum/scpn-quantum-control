@@ -8,13 +8,13 @@
     "notebook_files": 98,
     "optional_extras": 42,
     "paper0_validation_modules": 466,
-    "public_api_exports": 689,
+    "public_api_exports": 698,
     "public_documentation_pages": 254,
-    "python_model_classes": 1829,
-    "python_model_source_modules": 835,
+    "python_model_classes": 1832,
+    "python_model_source_modules": 836,
     "rust_pyo3_model_wrappers": 136,
     "rust_source_modules": 38,
-    "test_files": 1956
+    "test_files": 1957
   },
   "documentation": {
     "examples": [
@@ -2320,6 +2320,18 @@
       {
         "name": "DifferentiableReadinessSurface",
         "path": "src/scpn_quantum_control/phase/differentiable_readiness.py"
+      },
+      {
+        "name": "DifferentiableSOTAScorecard",
+        "path": "src/scpn_quantum_control/differentiable_sota_scorecard.py"
+      },
+      {
+        "name": "DifferentiableSOTAScorecardRow",
+        "path": "src/scpn_quantum_control/differentiable_sota_scorecard.py"
+      },
+      {
+        "name": "DifferentiableSOTAScorecardValidation",
+        "path": "src/scpn_quantum_control/differentiable_sota_scorecard.py"
       },
       {
         "name": "DifferentiableSupportSurfaceAlignment",
@@ -8521,6 +8533,7 @@
       "src/scpn_quantum_control/differentiable_external_validation.py",
       "src/scpn_quantum_control/differentiable_framework_overlay.py",
       "src/scpn_quantum_control/differentiable_module_hardening_audit.py",
+      "src/scpn_quantum_control/differentiable_sota_scorecard.py",
       "src/scpn_quantum_control/dla_parity/baselines.py",
       "src/scpn_quantum_control/dla_parity/dataset.py",
       "src/scpn_quantum_control/dla_parity/reproduce.py",
@@ -9444,6 +9457,11 @@
     "DifferentiableOptimizer",
     "DifferentiableProgrammingBenchmarkResult",
     "DifferentiableProgrammingExternalReferenceResult",
+    "DifferentiableSOTACategory",
+    "DifferentiableSOTAScorecard",
+    "DifferentiableSOTAScorecardRow",
+    "DifferentiableSOTAScorecardValidation",
+    "DifferentiableSOTAStatus",
     "DisruptionBenchmark",
     "DualNumber",
     "DynamicCouplingConfig",
@@ -9765,6 +9783,7 @@
     "differentiable_hessian",
     "differentiable_jacobian",
     "differentiable_module_hardening_registry",
+    "differentiable_sota_scorecard_report",
     "differentiable_support_report",
     "differentiable_value",
     "disposition_entanglement_map",
@@ -9985,6 +10004,7 @@
     "registered_custom_jacobian",
     "registered_custom_jvp",
     "registered_custom_vjp",
+    "render_differentiable_sota_scorecard_markdown",
     "resolve_aggregator_provider_route",
     "reverse_cos",
     "reverse_exp",
@@ -9998,6 +10018,7 @@
     "run_differentiable_module_hardening_audit",
     "run_differentiable_programming_benchmark_suite",
     "run_differentiable_programming_external_reference_suite",
+    "run_differentiable_sota_scorecard",
     "run_documented_classical_baselines",
     "run_enzyme_mlir_maturity_audit",
     "run_quantum_gradient_benchmark_suite",
@@ -10052,6 +10073,7 @@
     "transpile_for_trapped_ion",
     "trapped_ion_noise_model",
     "update_levenberg_marquardt_damping",
+    "validate_differentiable_sota_scorecard",
     "validate_kuramoto_inputs",
     "validate_scpn_control_bridge_dependency_contract",
     "value_and_complex_step_grad",
@@ -10757,6 +10779,7 @@
       "tests/test_differentiable_module_hardening_audit.py",
       "tests/test_differentiable_programming_benchmarks.py",
       "tests/test_differentiable_score_function.py",
+      "tests/test_differentiable_sota_scorecard.py",
       "tests/test_differentiable_spsa.py",
       "tests/test_disruption_classifier.py",
       "tests/test_dla_parity_baselines.py",

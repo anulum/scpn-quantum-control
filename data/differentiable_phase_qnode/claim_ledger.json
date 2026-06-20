@@ -320,6 +320,36 @@
       ],
       "promotion_status": "SOTA-candidate",
       "claim_boundary": "Technical-report governance only; no provider execution, QPU execution, accelerator execution, hardware execution, or production benchmark promotion is implied."
+    },
+    {
+      "claim_id": "differentiable_sota_scorecard",
+      "claim_text": "The differentiable lane has a deterministic category scorecard that keeps state-of-art promotion blocked until external baselines, promoted claim-ledger rows, and isolated benchmark evidence agree.",
+      "implementation_surface": [
+        "src/scpn_quantum_control/differentiable_sota_scorecard.py",
+        "src/scpn_quantum_control/differentiable_api.py"
+      ],
+      "test_surface": [
+        "tests/test_differentiable_sota_scorecard.py"
+      ],
+      "docs_surface": [
+        "README.md",
+        "docs/differentiable_api.md",
+        "docs/differentiable_programming.md",
+        "data/differentiable_phase_qnode/differentiable_sota_scorecard_20260620.md",
+        "data/differentiable_phase_qnode/claim_ledger.md"
+      ],
+      "evidence_artifact_ids": [
+        "diff-sota-scorecard-20260620"
+      ],
+      "benchmark_artifact_ids": [
+        "diff-sota-scorecard-20260620"
+      ],
+      "known_gaps": [
+        "The scorecard is governance evidence and does not execute external validation jobs or isolated benchmarks.",
+        "Rows remain behind-baseline until promoted claim-ledger rows, category-specific external comparisons, and isolated benchmark artefacts exist."
+      ],
+      "promotion_status": "SOTA-candidate",
+      "claim_boundary": "Differentiable SOTA scorecard governance only; no provider execution, QPU execution, accelerator execution, hardware execution, or production benchmark promotion is implied."
     }
   ]
 }

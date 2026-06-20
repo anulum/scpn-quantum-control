@@ -61,6 +61,14 @@ DEFAULT_ARTIFACT_BUNDLE_INPUTS: tuple[tuple[str, str], ...] = (
         "Public-safe claim wording table",
     ),
     (
+        "data/differentiable_phase_qnode/differentiable_sota_scorecard_20260620.json",
+        "Differentiable SOTA category scorecard artefact",
+    ),
+    (
+        "data/differentiable_phase_qnode/differentiable_sota_scorecard_20260620.md",
+        "Differentiable SOTA category scorecard reviewer summary",
+    ),
+    (
         "data/differentiable_phase_qnode/external_validation_environment_lock_20260616.json",
         "Exact environment-lock manifest",
     ),

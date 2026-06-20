@@ -95,6 +95,17 @@ release note, README, package description, or reviewer response needs
 claim-boundary language. Every current row is a bounded candidate, so the table
 blocks hardware, provider, QPU, GPU, production-performance, and
 `isolated_affinity` claims until promoted evidence exists.
+`run_differentiable_sota_scorecard()` adds the category scorecard that keeps
+the promotion discussion tied to named external baselines: JAX transforms,
+PyTorch autograd/compile, PennyLane QNode/device/plugin breadth, Qiskit Runtime
+provider gradients, Catalyst compiler workflows, Enzyme compiler AD, Rust
+Program AD, provider/hardware gradients, benchmark promotion, docs/API
+maintainability, and adoption/licensing. The committed artefacts live at
+`data/differentiable_phase_qnode/differentiable_sota_scorecard_20260620.json`
+and `data/differentiable_phase_qnode/differentiable_sota_scorecard_20260620.md`.
+Every current category remains `behind_baseline`; the scorecard is governance
+evidence only and does not promote performance, provider, QPU, GPU, hardware,
+or `isolated_affinity` claims.
 The current public technical report is
 [Differentiable External-Validation Technical Report](differentiable_external_validation_report.md).
 It summarizes the comparison package, provider-family status, reproducibility

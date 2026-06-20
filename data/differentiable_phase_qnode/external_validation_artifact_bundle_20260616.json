@@ -6,20 +6,32 @@
     {
       "path": "data/differentiable_phase_qnode/claim_ledger.json",
       "role": "Claim-ledger source of truth",
-      "sha256": "a31a99bfdef2108dd1c0ee594042a5cfda0e970d38dba3d6ecda2bed2d90e8f7",
-      "size_bytes": 15064
+      "sha256": "36c22d5d03d4de325896860b2cc99129e770a6c49d12c460de0478d1c9cc0afb",
+      "size_bytes": 16594
     },
     {
       "path": "data/differentiable_phase_qnode/claim_ledger.md",
       "role": "Reviewer claim-ledger summary",
-      "sha256": "43865071ab2ce3b1e38fc37d9f9e3c21e7d6aaa8dbaef8793dd6cb34c8739253",
-      "size_bytes": 4329
+      "sha256": "c67e7c9cc4e52407950d47ab5d7047c59264f3b83b09b6b1ae269f489057dd24",
+      "size_bytes": 4696
     },
     {
       "path": "data/differentiable_phase_qnode/public_claim_table_20260616.md",
       "role": "Public-safe claim wording table",
-      "sha256": "af7ce430a3b172f2656e782abf60145ab5a23b9323bf1425b9ca103c448511e3",
-      "size_bytes": 5102
+      "sha256": "6efc9f778d52398e3974e5c5d19f3a70a4ca30a385e5ce9b719bd037043c67fe",
+      "size_bytes": 5479
+    },
+    {
+      "path": "data/differentiable_phase_qnode/differentiable_sota_scorecard_20260620.json",
+      "role": "Differentiable SOTA category scorecard artefact",
+      "sha256": "83a470506039dc53406b3d02840a7a2aa65eb0f6d7894291daf16efe3f7a0d4d",
+      "size_bytes": 25378
+    },
+    {
+      "path": "data/differentiable_phase_qnode/differentiable_sota_scorecard_20260620.md",
+      "role": "Differentiable SOTA category scorecard reviewer summary",
+      "sha256": "79391a4eaf7c2b90de81cf33ff9be171c79ee23238b00587087ca79f0e41c2d7",
+      "size_bytes": 7497
     },
     {
       "path": "data/differentiable_phase_qnode/external_validation_environment_lock_20260616.json",

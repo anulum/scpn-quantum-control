@@ -96,9 +96,9 @@ has a defined commercial licensing route.
 | Surface | Current inventory |
 |---|---:|
 | Package version | 0.9.12 |
-| Public API exports | 689 |
-| Python source modules | 835 |
-| Public Python classes | 1829 |
+| Public API exports | 698 |
+| Python source modules | 836 |
+| Public Python classes | 1832 |
 | Paper 0 validation modules | 466 |
 | Domain package families | 32 |
 | API documentation pages | 0 |
@@ -107,7 +107,7 @@ has a defined commercial licensing route.
 | Notebook files | 98 |
 | Example files | 30 |
 | Optional extras | 42 |
-| Python test files | 1956 |
+| Python test files | 1957 |
 | Public documentation pages | 254 |
 | GitHub Actions workflows | 19 |
 
@@ -313,6 +313,7 @@ CI benchmark artefacts all pass:
 | Hardware-gradient policy readiness | Executable dry-run policy decisions now gate hardware-gradient preparation by provider/backend allowlist, shot budget, required evidence IDs, and live-execution ticket status. `prepare_provider_hardware_parameter_shift_gradient(...)` packages that approval into provider-preparation evidence, and `run_provider_hardware_gradient_preparation_audit()` verifies supported and blocked preparation routes without submitting QPU jobs. | [Quantum Gradients](docs/quantum_gradients.md), [Differentiable API](docs/differentiable_api.md) |
 | Differentiable claim ledger | The Phase-QNode evidence ledger maps implementation, tests, artefact IDs, documentation, known gaps, and promotion status; no promoted claim is accepted without an artefact ID, and support-surface alignment checks keep ledger paths consistent with the generated capability manifest. | [Differentiable Programming](docs/differentiable_programming.md), [Claim Ledger](data/differentiable_phase_qnode/claim_ledger.md) |
 | Differentiable public claim table | Public-facing differentiable wording is generated from the committed ledger. Every current row is bounded-candidate only, and the table blocks hardware, provider, QPU, GPU, production-performance, and `isolated_affinity` claims until promotion evidence exists. | [Public Claim Table](data/differentiable_phase_qnode/public_claim_table_20260616.md) |
+| Differentiable SOTA scorecard | `run_differentiable_sota_scorecard()` scores the lane against named JAX, PyTorch, PennyLane, Qiskit Runtime, Catalyst, Enzyme, Rust Program AD, provider/hardware, benchmark, docs/API, and adoption baselines. Every current category remains behind-baseline governance evidence until promoted ledger rows and isolated benchmark artefacts exist. | [Differentiable Programming](docs/differentiable_programming.md), [SOTA Scorecard](data/differentiable_phase_qnode/differentiable_sota_scorecard_20260620.md) |
 | Differentiable external-validation lock | The external-validation package records exact SHA-256 digests for runtime, development, Python 3.10-3.13 CI, CPU framework-overlay, and Enzyme-runner lockfiles. The artefact is reviewer reproduction evidence only and remains `functional_non_isolated`. | [Differentiable Programming](docs/differentiable_programming.md), [Environment Lock](data/differentiable_phase_qnode/external_validation_environment_lock_20260616.md) |
 | Differentiable CI reproducibility | The differentiable framework workflow runs sparse and full CPU profiles across Python 3.10-3.13, enforces the module-specific test audit, uploads scheduled benchmark metadata, and exposes a manual optional GPU contract lane that remains `functional_non_isolated`. | [Differentiable Programming](docs/differentiable_programming.md), [Workflow](.github/workflows/differentiable-frameworks.yml) |
 | Differentiable artefact bundle | The external-validation package records a reproducible manifest over the committed claim ledger, public claim table, environment lock, domain dataset closure, gradient comparison, maturity audit, and local benchmark evidence. The bundle is checksum provenance only and remains `functional_non_isolated`. | [Artefact Bundle](data/differentiable_phase_qnode/external_validation_artifact_bundle_20260616.md) |

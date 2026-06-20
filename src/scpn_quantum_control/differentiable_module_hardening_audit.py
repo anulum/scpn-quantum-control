@@ -139,6 +139,11 @@ def differentiable_module_hardening_registry() -> tuple[DifferentiableModuleHard
             ("module inventory discovery", "module-specific test enforcement"),
         ),
         _record(
+            "src/scpn_quantum_control/differentiable_sota_scorecard.py",
+            ("tests/test_differentiable_sota_scorecard.py",),
+            ("category promotion blockers", "claim-ledger promotion guards"),
+        ),
+        _record(
             "src/scpn_quantum_control/phase/differentiable_audit.py",
             ("tests/test_phase_differentiable_audit.py",),
             ("audit-suite failure rows", "bounded workflow diagnostics"),

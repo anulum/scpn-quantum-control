@@ -36,6 +36,7 @@ from .differentiable import (
     value_and_hessian,
     value_and_jacobian,
 )
+from .differentiable_sota_scorecard import run_differentiable_sota_scorecard
 from .phase.gradient_backend import (
     plan_quantum_gradient_backend,
     quantum_gradient_backend_capability,
@@ -55,6 +56,7 @@ UnifiedDifferentiableOperation = Literal[
     "frontend_report",
     "benchmark_report",
     "dashboard_status",
+    "sota_scorecard",
 ]
 DifferentiableDashboardCapabilityState = Literal[
     "planned",
@@ -498,6 +500,22 @@ def differentiable_benchmark_report() -> UnifiedDifferentiableAPIResult:
             "local deterministic conformance benchmark bundle; not isolated "
             "performance, hardware, or provider execution evidence"
         ),
+    )
+
+
+def differentiable_sota_scorecard_report() -> UnifiedDifferentiableAPIResult:
+    """Return claim-bounded SOTA/category scorecard evidence."""
+    scorecard = run_differentiable_sota_scorecard()
+    return UnifiedDifferentiableAPIResult(
+        operation="sota_scorecard",
+        supported=scorecard.promotion_ready,
+        method="differentiable_sota_scorecard",
+        value=None,
+        gradient=None,
+        jacobian=None,
+        hessian=None,
+        payload=scorecard.to_dict(),
+        claim_boundary=scorecard.claim_boundary,
     )
 
 
@@ -1175,6 +1193,8 @@ def differentiable_api(
         )
     if operation == "benchmark_report":
         return differentiable_benchmark_report()
+    if operation == "sota_scorecard":
+        return differentiable_sota_scorecard_report()
     if operation == "frontend_report":
         return differentiable_frontend_report(_require_objective(objective))
     if operation == "dashboard_status":
@@ -1337,6 +1357,7 @@ __all__ = [
     "differentiable_gradient",
     "differentiable_hessian",
     "differentiable_jacobian",
+    "differentiable_sota_scorecard_report",
     "differentiable_support_report",
     "differentiable_value",
     "explain_differentiability",
