@@ -14,6 +14,7 @@ from typing import Any, cast
 import numpy as np
 import pytest
 
+from scpn_quantum_control import program_ad_adjoint as adjoint_module
 from scpn_quantum_control.differentiable import (
     Parameter,
     ProgramADAdjointResult,
@@ -93,6 +94,8 @@ def test_whole_program_ad_is_exported_from_package_root() -> None:
 
     import scpn_quantum_control as scpn
 
+    assert ProgramADAdjointResult is adjoint_module.ProgramADAdjointResult
+    assert ProgramADAdjointStep is adjoint_module.ProgramADAdjointStep
     assert scpn.TraceADArray is TraceADArray
     assert scpn.ProgramADAdjointResult is ProgramADAdjointResult
     assert scpn.ProgramADAdjointStep is ProgramADAdjointStep
@@ -382,6 +385,30 @@ def test_program_adjoint_result_validation_paths() -> None:
             method="program_adjoint_replay",
             claim_boundary="supported scalar replay",
         )
+    with pytest.raises(ValueError, match="finite values"):
+        ProgramADAdjointResult(
+            gradient=np.array([float("nan")], dtype=np.float64),
+            supported=True,
+            unsupported_ops=(),
+            method="program_adjoint_replay",
+            claim_boundary="supported scalar replay",
+        )
+    with pytest.raises(ValueError, match="supported must be a boolean"):
+        ProgramADAdjointResult(
+            gradient=np.array([1.0], dtype=np.float64),
+            supported=cast(Any, "yes"),
+            unsupported_ops=(),
+            method="program_adjoint_replay",
+            claim_boundary="supported scalar replay",
+        )
+    with pytest.raises(ValueError, match="unsupported_ops"):
+        ProgramADAdjointResult(
+            gradient=np.array([1.0], dtype=np.float64),
+            supported=False,
+            unsupported_ops=cast(tuple[str, ...], ("",)),
+            method="program_adjoint_replay",
+            claim_boundary="unsupported scalar replay",
+        )
     with pytest.raises(ValueError, match="cannot be supported"):
         ProgramADAdjointResult(
             gradient=np.array([1.0], dtype=np.float64),
@@ -397,6 +424,14 @@ def test_program_adjoint_result_validation_paths() -> None:
             unsupported_ops=(),
             method="",
             claim_boundary="supported scalar replay",
+        )
+    with pytest.raises(ValueError, match="claim_boundary"):
+        ProgramADAdjointResult(
+            gradient=np.array([1.0], dtype=np.float64),
+            supported=True,
+            unsupported_ops=(),
+            method="program_adjoint_replay",
+            claim_boundary="",
         )
     with pytest.raises(ValueError, match="replay_node_count"):
         ProgramADAdjointResult(
@@ -415,6 +450,15 @@ def test_program_adjoint_result_validation_paths() -> None:
             method="program_adjoint_replay",
             claim_boundary="supported scalar replay",
             replay_ir_format="",
+        )
+    with pytest.raises(ValueError, match="adjoint_steps"):
+        ProgramADAdjointResult(
+            gradient=np.array([1.0], dtype=np.float64),
+            supported=True,
+            unsupported_ops=(),
+            method="program_adjoint_ir_generation",
+            claim_boundary="supported scalar replay",
+            adjoint_steps=cast(tuple[ProgramADAdjointStep, ...], (object(),)),
         )
     with pytest.raises(ValueError, match="densely indexed"):
         ProgramADAdjointResult(
@@ -441,8 +485,39 @@ def test_program_adjoint_result_validation_paths() -> None:
                 ),
             ),
         )
+    with pytest.raises(ValueError, match="supported program AD adjoint cannot"):
+        ProgramADAdjointResult(
+            gradient=np.array([1.0], dtype=np.float64),
+            supported=True,
+            unsupported_ops=(),
+            method="program_adjoint_ir_generation",
+            claim_boundary="supported scalar replay",
+            adjoint_steps=(
+                valid_step(
+                    operation="unsupported_op",
+                    input_values=(),
+                    supported=False,
+                    unsupported_reason="no rule",
+                ),
+            ),
+        )
+    with pytest.raises(ValueError, match="index"):
+        valid_step(index=-1)
+    with pytest.raises(ValueError, match="primal_value"):
+        valid_step(primal_value="")
+    with pytest.raises(ValueError, match="primal_effect"):
+        valid_step(primal_effect=-1)
     with pytest.raises(ValueError, match="supported program AD adjoint step"):
         valid_step(unsupported_reason="not allowed")
+    with pytest.raises(ValueError, match="supported must be a boolean"):
+        valid_step(supported=cast(Any, "yes"))
+    with pytest.raises(ValueError, match="unsupported_reason"):
+        valid_step(
+            operation="unsupported_op",
+            input_values=(),
+            supported=False,
+            unsupported_reason="",
+        )
     with pytest.raises(ValueError, match="effect metadata requires"):
         valid_step(primal_effect=None)
     with pytest.raises(ValueError, match="effect_kind"):
@@ -491,6 +566,14 @@ def test_program_adjoint_result_validation_paths() -> None:
             phi_node=0,
             phi_selected="",
         )
+    with pytest.raises(ValueError, match="operation"):
+        valid_step(operation="")
+    with pytest.raises(ValueError, match="input_values"):
+        valid_step(input_values=("",))
+    with pytest.raises(ValueError, match="contribution_inputs entries"):
+        valid_step(contribution_inputs=("",))
+    with pytest.raises(ValueError, match="sorted and unique"):
+        valid_step(contribution_inputs=("%1", "%0"), contribution_scales=(1.0, 1.0))
     with pytest.raises(ValueError, match="contribution_scales length"):
         valid_step(
             operation="add",
