@@ -23,12 +23,15 @@ Inspired by QuSpin's sparse Hamiltonian construction (Weinberg & Bukov, SciPost 
 
 from __future__ import annotations
 
+from typing import Any
+
 import numpy as np
+from numpy.typing import NDArray
 from scipy import sparse
 from scipy.sparse.linalg import eigsh
 
 
-def _canonical_xy_coupling(K: np.ndarray) -> np.ndarray:
+def _canonical_xy_coupling(K: NDArray[np.float64]) -> NDArray[np.float64]:
     """Return a validated XY coupling matrix with its Hermitian component.
 
     Learned or imported coupling matrices can carry a directed residue. The
@@ -41,7 +44,9 @@ def _canonical_xy_coupling(K: np.ndarray) -> np.ndarray:
     return np.ascontiguousarray((K_arr + K_arr.T) / 2.0)
 
 
-def _canonical_xy_inputs(K: np.ndarray, omega: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+def _canonical_xy_inputs(
+    K: NDArray[np.float64], omega: NDArray[np.float64]
+) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
     """Return validated XY Hamiltonian inputs with canonical coupling."""
     K_arr = _canonical_xy_coupling(K)
     omega_arr = np.asarray(omega, dtype=np.float64)
@@ -52,7 +57,9 @@ def _canonical_xy_inputs(K: np.ndarray, omega: np.ndarray) -> tuple[np.ndarray, 
     return K_arr, omega_arr
 
 
-def _try_rust_sparse(K: np.ndarray, omega: np.ndarray, n: int) -> sparse.csc_matrix | None:
+def _try_rust_sparse(
+    K: NDArray[np.float64], omega: NDArray[np.float64], n: int
+) -> sparse.csc_matrix | None:
     """Try Rust-accelerated sparse construction (80× faster)."""
     try:
         import scpn_quantum_engine as eng
@@ -72,8 +79,8 @@ def _try_rust_sparse(K: np.ndarray, omega: np.ndarray, n: int) -> sparse.csc_mat
 
 
 def build_sparse_hamiltonian(
-    K: np.ndarray,
-    omega: np.ndarray,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
 ) -> sparse.csc_matrix:
     """Build the XY Hamiltonian as a sparse CSC matrix.
 
@@ -139,10 +146,10 @@ def build_sparse_hamiltonian(
 
 
 def build_sparse_sector_hamiltonian(
-    K: np.ndarray,
-    omega: np.ndarray,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
     M: int,
-) -> tuple[sparse.csc_matrix, np.ndarray]:
+) -> tuple[sparse.csc_matrix, NDArray[np.intp]]:
     """Build sparse Hamiltonian within a U(1) magnetisation sector.
 
     Combines sparse construction with U(1) symmetry for maximum reduction.
@@ -201,12 +208,12 @@ def build_sparse_sector_hamiltonian(
 
 
 def sparse_eigsh(
-    K: np.ndarray,
-    omega: np.ndarray,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
     k: int = 10,
     which: str = "SA",
     M: int | None = None,
-) -> dict:
+) -> dict[str, Any]:
     """Sparse eigenvalue computation for the XY Hamiltonian.
 
     Uses ARPACK (scipy.sparse.linalg.eigsh) for the k smallest eigenvalues.
@@ -256,7 +263,7 @@ def sparse_eigsh(
     }
 
 
-def sparsity_stats(n: int, K: np.ndarray) -> dict:
+def sparsity_stats(n: int, K: NDArray[np.float64]) -> dict[str, Any]:
     """Estimate sparsity statistics without building the full matrix.
 
     Returns dict with: dim, nnz_estimate, fill_pct, memory_sparse_mb, memory_dense_mb

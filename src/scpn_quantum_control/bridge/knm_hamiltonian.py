@@ -18,8 +18,10 @@ Kuramoto <-> XY mapping:
 from __future__ import annotations
 
 import numpy as np
+from numpy.typing import NDArray
 from qiskit.circuit import ParameterVector, QuantumCircuit
 from qiskit.quantum_info import SparsePauliOp
+from scipy import sparse
 
 from .._constants import COUPLING_SPARSITY_EPS
 from ..accel.rust_import import optional_rust_engine
@@ -55,14 +57,14 @@ def build_knm_paper27(
     L: int = 16,
     K_base: float = 0.45,  # Paper 27, Eq. 3
     K_alpha: float = 0.3,  # Paper 27, Eq. 3
-) -> np.ndarray:
+) -> NDArray[np.float64]:
     """Build the canonical Knm coupling matrix from Paper 27.
 
     K[i,j] = K_base * exp(-K_alpha * |i - j|)   (Paper 27, Eq. 3)
     with calibration anchors from Table 2 and cross-hierarchy boosts from S4.3.
     """
     idx = np.arange(L)
-    K: np.ndarray = K_base * np.exp(-K_alpha * np.abs(idx[:, None] - idx[None, :]))
+    K: NDArray[np.float64] = K_base * np.exp(-K_alpha * np.abs(idx[:, None] - idx[None, :]))
 
     # Paper 27 Table 2 calibration anchors (only apply if indices in range)
     anchors = {(0, 1): 0.302, (1, 2): 0.201, (2, 3): 0.252, (3, 4): 0.154}
@@ -82,15 +84,15 @@ def build_knm_paper27(
 def build_kuramoto_ring(
     n: int,
     coupling: float = 1.0,
-    omega: np.ndarray | None = None,
+    omega: NDArray[np.float64] | None = None,
     rng_seed: int | None = None,
-) -> tuple[np.ndarray, np.ndarray]:
+) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
     """Build a nearest-neighbour ring coupling matrix for n Kuramoto oscillators.
 
     Returns (K, omega) ready for QuantumKuramotoSolver or knm_to_hamiltonian.
     If omega is None, draws from N(0,1) with the given seed.
     """
-    K: np.ndarray = np.zeros((n, n), dtype=np.float64)
+    K: NDArray[np.float64] = np.zeros((n, n), dtype=np.float64)
     for i in range(n):
         j = (i + 1) % n
         K[i, j] = K[j, i] = coupling
@@ -101,8 +103,8 @@ def build_kuramoto_ring(
 
 
 def knm_to_xxz_hamiltonian(
-    K: np.ndarray,
-    omega: np.ndarray,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
     delta: float = 0.0,
 ) -> SparsePauliOp:
     """Convert Knm + frequencies to XXZ Hamiltonian with anisotropy Δ.
@@ -162,7 +164,7 @@ def knm_to_xxz_hamiltonian(
     return SparsePauliOp(list(labels), list(coeffs)).simplify()
 
 
-def knm_to_hamiltonian(K: np.ndarray, omega: np.ndarray) -> SparsePauliOp:
+def knm_to_hamiltonian(K: NDArray[np.float64], omega: NDArray[np.float64]) -> SparsePauliOp:
     """Convert Knm coupling matrix + natural frequencies to SparsePauliOp.
 
     H = -sum_{i<j} K[i,j] * (X_i X_j + Y_i Y_j) - sum_i omega_i * Z_i
@@ -173,7 +175,9 @@ def knm_to_hamiltonian(K: np.ndarray, omega: np.ndarray) -> SparsePauliOp:
     return knm_to_xxz_hamiltonian(K, omega, delta=0.0)
 
 
-def knm_to_sparse_matrix(K: np.ndarray, omega: np.ndarray, delta: float = 0.0):
+def knm_to_sparse_matrix(
+    K: NDArray[np.float64], omega: NDArray[np.float64], delta: float = 0.0
+) -> sparse.csc_matrix:
     """Build sparse XY/XXZ Hamiltonian matrix in CSC format."""
     H_op = knm_to_xxz_hamiltonian(K, omega, delta)
     # to_matrix(sparse=True) returns a scipy.sparse.csr_matrix
@@ -182,12 +186,12 @@ def knm_to_sparse_matrix(K: np.ndarray, omega: np.ndarray, delta: float = 0.0):
 
 
 def knm_to_dense_matrix(
-    K: np.ndarray,
-    omega: np.ndarray,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
     delta: float = 0.0,
     *,
     max_dense_gib: float | None = None,
-) -> np.ndarray:
+) -> NDArray[np.complex128]:
     """Build dense XY Hamiltonian matrix, Rust fast path with Qiskit fallback.
 
     Returns complex ndarray of shape (2^n, 2^n).
@@ -226,7 +230,9 @@ def knm_to_dense_matrix(
     return H_raw.toarray() if hasattr(H_raw, "toarray") else np.array(H_raw)
 
 
-def knm_to_ansatz(K: np.ndarray, reps: int = 2, threshold: float = 0.01) -> QuantumCircuit:
+def knm_to_ansatz(
+    K: NDArray[np.float64], reps: int = 2, threshold: float = 0.01
+) -> QuantumCircuit:
     """Build physics-informed ansatz: CZ entanglement only between Knm-connected pairs.
 
     Pattern from QUANTUM_LAB script 16 (PhysicsInformedAnsatz).
