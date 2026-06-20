@@ -17,7 +17,22 @@ import pytest
 from scpn_quantum_control.differentiable import (
     Parameter,
     PrimitiveIdentity,
+    primitive_complete_contract_for,
     primitive_contract_for,
+    program_ad_shape_atleast_1d_derivative_rule,
+    program_ad_shape_atleast_2d_derivative_rule,
+    program_ad_shape_atleast_3d_derivative_rule,
+    program_ad_shape_expand_dims_derivative_rule,
+    program_ad_shape_flip_derivative_rule,
+    program_ad_shape_fliplr_derivative_rule,
+    program_ad_shape_flipud_derivative_rule,
+    program_ad_shape_moveaxis_derivative_rule,
+    program_ad_shape_repeat_derivative_rule,
+    program_ad_shape_roll_derivative_rule,
+    program_ad_shape_rot90_derivative_rule,
+    program_ad_shape_squeeze_derivative_rule,
+    program_ad_shape_swapaxes_derivative_rule,
+    program_ad_shape_tile_derivative_rule,
     program_adjoint_gradient,
     whole_program_value_and_grad,
 )
@@ -28,6 +43,241 @@ def _assert_allclose(
 ) -> None:
     """Assert NumPy closeness across dynamically typed Program AD payloads."""
     cast(Any, np.testing.assert_allclose)(actual, expected, rtol=rtol, atol=atol)
+
+
+def _contract_rules(contract: Any) -> tuple[Any, Any, Any]:
+    """Return asserted registry validation callables for dynamic contracts."""
+
+    assert contract.shape_rule is not None
+    assert contract.dtype_rule is not None
+    assert contract.static_argument_rule is not None
+    return contract.shape_rule, contract.dtype_rule, contract.static_argument_rule
+
+
+def test_program_ad_shape_primitives_are_registry_policy_gated() -> None:
+    """Shape transforms should expose primitive registry contracts."""
+
+    import scpn_quantum_control as scpn
+
+    assert (
+        scpn.program_ad_shape_expand_dims_derivative_rule
+        is program_ad_shape_expand_dims_derivative_rule
+    )
+    assert (
+        scpn.program_ad_shape_squeeze_derivative_rule is program_ad_shape_squeeze_derivative_rule
+    )
+    assert (
+        scpn.program_ad_shape_swapaxes_derivative_rule is program_ad_shape_swapaxes_derivative_rule
+    )
+    assert (
+        scpn.program_ad_shape_moveaxis_derivative_rule is program_ad_shape_moveaxis_derivative_rule
+    )
+    assert scpn.program_ad_shape_roll_derivative_rule is program_ad_shape_roll_derivative_rule
+    assert scpn.program_ad_shape_rot90_derivative_rule is program_ad_shape_rot90_derivative_rule
+    assert scpn.program_ad_shape_flip_derivative_rule is program_ad_shape_flip_derivative_rule
+    assert scpn.program_ad_shape_flipud_derivative_rule is program_ad_shape_flipud_derivative_rule
+    assert scpn.program_ad_shape_fliplr_derivative_rule is program_ad_shape_fliplr_derivative_rule
+    assert scpn.program_ad_shape_repeat_derivative_rule is program_ad_shape_repeat_derivative_rule
+    assert scpn.program_ad_shape_tile_derivative_rule is program_ad_shape_tile_derivative_rule
+    assert scpn.program_ad_shape_atleast_1d_derivative_rule is (
+        program_ad_shape_atleast_1d_derivative_rule
+    )
+    assert scpn.program_ad_shape_atleast_2d_derivative_rule is (
+        program_ad_shape_atleast_2d_derivative_rule
+    )
+    assert scpn.program_ad_shape_atleast_3d_derivative_rule is (
+        program_ad_shape_atleast_3d_derivative_rule
+    )
+
+    scalar = np.array(2.0, dtype=np.float64)
+    vector = np.arange(3.0, dtype=np.float64)
+    matrix = np.arange(6.0, dtype=np.float64).reshape(2, 3)
+    cube = np.arange(24.0, dtype=np.float64).reshape(2, 3, 4)
+    singleton = matrix.reshape(1, 2, 3, 1)
+    reshape_contract = primitive_contract_for("scpn.program_ad.shape:reshape")
+    reshape_shape_rule, reshape_dtype_rule, reshape_static_rule = _contract_rules(reshape_contract)
+    assert reshape_contract.identity == PrimitiveIdentity("scpn.program_ad.shape", "reshape", "1")
+    assert reshape_contract.nondifferentiable_policy == "program_ad_trace_exact_fail_closed"
+    assert reshape_contract.effect == "pure"
+    assert reshape_contract.lowering_metadata["mlir_op"] == "scpn_diff.shape.reshape"
+    assert reshape_shape_rule((matrix, (3, -1))) == (3, 2)
+    assert reshape_dtype_rule((matrix, (3, -1))) == "float64"
+    assert reshape_static_rule((matrix, (3, -1))) == ((3, 2),)
+    with pytest.raises(ValueError, match="incomplete primitive contract"):
+        primitive_complete_contract_for(reshape_contract.identity)
+
+    ravel_contract = primitive_contract_for("scpn.program_ad.shape:ravel")
+    ravel_shape_rule, ravel_dtype_rule, ravel_static_rule = _contract_rules(ravel_contract)
+    assert ravel_contract.identity == PrimitiveIdentity("scpn.program_ad.shape", "ravel", "1")
+    assert ravel_shape_rule((matrix,)) == (6,)
+    assert ravel_dtype_rule((matrix,)) == "float64"
+    assert ravel_static_rule((matrix,)) == ()
+    with pytest.raises(ValueError, match="incomplete primitive contract"):
+        primitive_complete_contract_for(ravel_contract.identity)
+
+    transpose_contract = primitive_contract_for("scpn.program_ad.shape:transpose")
+    transpose_shape_rule, transpose_dtype_rule, transpose_static_rule = _contract_rules(
+        transpose_contract
+    )
+    assert transpose_contract.identity == PrimitiveIdentity(
+        "scpn.program_ad.shape", "transpose", "1"
+    )
+    assert transpose_shape_rule((matrix, (1, 0))) == (3, 2)
+    assert transpose_dtype_rule((matrix, (1, 0))) == "float64"
+    assert transpose_static_rule((matrix, (1, 0))) == ((1, 0),)
+    with pytest.raises(ValueError, match="incomplete primitive contract"):
+        primitive_complete_contract_for(transpose_contract.identity)
+
+    expand_contract = primitive_contract_for("scpn.program_ad.shape:expand_dims")
+    expand_shape_rule, expand_dtype_rule, expand_static_rule = _contract_rules(expand_contract)
+    assert expand_contract.identity == PrimitiveIdentity(
+        "scpn.program_ad.shape", "expand_dims", "1"
+    )
+    assert expand_shape_rule((matrix, (0, -1))) == (1, 2, 3, 1)
+    assert expand_dtype_rule((matrix, (0, -1))) == "float64"
+    assert expand_static_rule((matrix, (0, -1))) == ((0, 3),)
+    with pytest.raises(ValueError, match="incomplete primitive contract"):
+        primitive_complete_contract_for(expand_contract.identity)
+
+    squeeze_contract = primitive_contract_for("scpn.program_ad.shape:squeeze")
+    squeeze_shape_rule, squeeze_dtype_rule, squeeze_static_rule = _contract_rules(squeeze_contract)
+    assert squeeze_contract.identity == PrimitiveIdentity("scpn.program_ad.shape", "squeeze", "1")
+    assert squeeze_shape_rule((singleton, (0, -1))) == (2, 3)
+    assert squeeze_dtype_rule((singleton, (0, -1))) == "float64"
+    assert squeeze_static_rule((singleton, (0, -1))) == ((0, 3),)
+    with pytest.raises(ValueError, match="incomplete primitive contract"):
+        primitive_complete_contract_for(squeeze_contract.identity)
+
+    swapaxes_contract = primitive_contract_for("scpn.program_ad.shape:swapaxes")
+    swapaxes_shape_rule, swapaxes_dtype_rule, swapaxes_static_rule = _contract_rules(
+        swapaxes_contract
+    )
+    assert swapaxes_contract.identity == PrimitiveIdentity(
+        "scpn.program_ad.shape", "swapaxes", "1"
+    )
+    assert swapaxes_shape_rule((cube, 0, -1)) == (4, 3, 2)
+    assert swapaxes_dtype_rule((cube, 0, -1)) == "float64"
+    assert swapaxes_static_rule((cube, 0, -1)) == (0, 2)
+    with pytest.raises(ValueError, match="incomplete primitive contract"):
+        primitive_complete_contract_for(swapaxes_contract.identity)
+
+    moveaxis_contract = primitive_contract_for("scpn.program_ad.shape:moveaxis")
+    moveaxis_shape_rule, moveaxis_dtype_rule, moveaxis_static_rule = _contract_rules(
+        moveaxis_contract
+    )
+    assert moveaxis_contract.identity == PrimitiveIdentity(
+        "scpn.program_ad.shape", "moveaxis", "1"
+    )
+    assert moveaxis_shape_rule((cube, (0, 2), (2, 0))) == (4, 3, 2)
+    assert moveaxis_dtype_rule((cube, (0, 2), (2, 0))) == "float64"
+    assert moveaxis_static_rule((cube, (0, 2), (2, 0))) == (
+        (0, 2),
+        (2, 0),
+    )
+    with pytest.raises(ValueError, match="incomplete primitive contract"):
+        primitive_complete_contract_for(moveaxis_contract.identity)
+
+    roll_contract = primitive_contract_for("scpn.program_ad.shape:roll")
+    roll_shape_rule, roll_dtype_rule, roll_static_rule = _contract_rules(roll_contract)
+    assert roll_contract.identity == PrimitiveIdentity("scpn.program_ad.shape", "roll", "1")
+    assert roll_shape_rule((cube, (1, -2), (0, 2))) == cube.shape
+    assert roll_dtype_rule((cube, (1, -2), (0, 2))) == "float64"
+    assert roll_static_rule((cube, (1, -2), (0, 2))) == ((1, -2), (0, 2))
+    with pytest.raises(ValueError, match="incomplete primitive contract"):
+        primitive_complete_contract_for(roll_contract.identity)
+
+    flip_contract = primitive_contract_for("scpn.program_ad.shape:flip")
+    flip_shape_rule, flip_dtype_rule, flip_static_rule = _contract_rules(flip_contract)
+    assert flip_contract.identity == PrimitiveIdentity("scpn.program_ad.shape", "flip", "1")
+    assert flip_shape_rule((cube, (0, -1))) == cube.shape
+    assert flip_dtype_rule((cube, (0, -1))) == "float64"
+    assert flip_static_rule((cube, (0, -1))) == ((0, 2),)
+    with pytest.raises(ValueError, match="incomplete primitive contract"):
+        primitive_complete_contract_for(flip_contract.identity)
+
+    flipud_contract = primitive_contract_for("scpn.program_ad.shape:flipud")
+    flipud_shape_rule, flipud_dtype_rule, flipud_static_rule = _contract_rules(flipud_contract)
+    assert flipud_contract.identity == PrimitiveIdentity("scpn.program_ad.shape", "flipud", "1")
+    assert flipud_shape_rule((cube,)) == cube.shape
+    assert flipud_dtype_rule((cube,)) == "float64"
+    assert flipud_static_rule((cube,)) == ()
+    with pytest.raises(ValueError, match="incomplete primitive contract"):
+        primitive_complete_contract_for(flipud_contract.identity)
+
+    fliplr_contract = primitive_contract_for("scpn.program_ad.shape:fliplr")
+    fliplr_shape_rule, fliplr_dtype_rule, fliplr_static_rule = _contract_rules(fliplr_contract)
+    assert fliplr_contract.identity == PrimitiveIdentity("scpn.program_ad.shape", "fliplr", "1")
+    assert fliplr_shape_rule((cube,)) == cube.shape
+    assert fliplr_dtype_rule((cube,)) == "float64"
+    assert fliplr_static_rule((cube,)) == ()
+    with pytest.raises(ValueError, match="incomplete primitive contract"):
+        primitive_complete_contract_for(fliplr_contract.identity)
+
+    rot90_contract = primitive_contract_for("scpn.program_ad.shape:rot90")
+    rot90_shape_rule, rot90_dtype_rule, rot90_static_rule = _contract_rules(rot90_contract)
+    assert rot90_contract.identity == PrimitiveIdentity("scpn.program_ad.shape", "rot90", "1")
+    assert rot90_shape_rule((matrix, 1, (0, 1))) == (3, 2)
+    assert rot90_dtype_rule((matrix, 1, (0, 1))) == "float64"
+    assert rot90_static_rule((matrix, 1, (0, 1))) == (1, (0, 1))
+    with pytest.raises(ValueError, match="incomplete primitive contract"):
+        primitive_complete_contract_for(rot90_contract.identity)
+
+    repeat_contract = primitive_contract_for("scpn.program_ad.shape:repeat")
+    repeat_shape_rule, repeat_dtype_rule, repeat_static_rule = _contract_rules(repeat_contract)
+    assert repeat_contract.identity == PrimitiveIdentity("scpn.program_ad.shape", "repeat", "1")
+    assert repeat_shape_rule((matrix, (1, 2, 0), 1)) == (2, 3)
+    assert repeat_dtype_rule((matrix, (1, 2, 0), 1)) == "float64"
+    assert repeat_static_rule((matrix, (1, 2, 0), 1)) == ((1, 2, 0), 1)
+    with pytest.raises(ValueError, match="incomplete primitive contract"):
+        primitive_complete_contract_for(repeat_contract.identity)
+
+    tile_contract = primitive_contract_for("scpn.program_ad.shape:tile")
+    tile_shape_rule, tile_dtype_rule, tile_static_rule = _contract_rules(tile_contract)
+    assert tile_contract.identity == PrimitiveIdentity("scpn.program_ad.shape", "tile", "1")
+    assert tile_shape_rule((matrix, (2, 1))) == (4, 3)
+    assert tile_dtype_rule((matrix, (2, 1))) == "float64"
+    assert tile_static_rule((matrix, (2, 1))) == ((2, 1),)
+    with pytest.raises(ValueError, match="incomplete primitive contract"):
+        primitive_complete_contract_for(tile_contract.identity)
+
+    atleast_1d_contract = primitive_contract_for("scpn.program_ad.shape:atleast_1d")
+    atleast_1d_shape_rule, atleast_1d_dtype_rule, atleast_1d_static_rule = _contract_rules(
+        atleast_1d_contract
+    )
+    assert atleast_1d_contract.identity == PrimitiveIdentity(
+        "scpn.program_ad.shape", "atleast_1d", "1"
+    )
+    assert atleast_1d_shape_rule((scalar,)) == (1,)
+    assert atleast_1d_dtype_rule((scalar,)) == "float64"
+    assert atleast_1d_static_rule((scalar,)) == ()
+    with pytest.raises(ValueError, match="incomplete primitive contract"):
+        primitive_complete_contract_for(atleast_1d_contract.identity)
+
+    atleast_2d_contract = primitive_contract_for("scpn.program_ad.shape:atleast_2d")
+    atleast_2d_shape_rule, atleast_2d_dtype_rule, atleast_2d_static_rule = _contract_rules(
+        atleast_2d_contract
+    )
+    assert atleast_2d_contract.identity == PrimitiveIdentity(
+        "scpn.program_ad.shape", "atleast_2d", "1"
+    )
+    assert atleast_2d_shape_rule((vector,)) == (1, 3)
+    assert atleast_2d_dtype_rule((vector,)) == "float64"
+    assert atleast_2d_static_rule((vector,)) == ()
+    with pytest.raises(ValueError, match="incomplete primitive contract"):
+        primitive_complete_contract_for(atleast_2d_contract.identity)
+
+    atleast_3d_contract = primitive_contract_for("scpn.program_ad.shape:atleast_3d")
+    atleast_3d_shape_rule, atleast_3d_dtype_rule, atleast_3d_static_rule = _contract_rules(
+        atleast_3d_contract
+    )
+    assert atleast_3d_contract.identity == PrimitiveIdentity(
+        "scpn.program_ad.shape", "atleast_3d", "1"
+    )
+    assert atleast_3d_shape_rule((matrix,)) == (2, 3, 1)
+    assert atleast_3d_dtype_rule((matrix,)) == "float64"
+    assert atleast_3d_static_rule((matrix,)) == ()
+    with pytest.raises(ValueError, match="incomplete primitive contract"):
+        primitive_complete_contract_for(atleast_3d_contract.identity)
 
 
 def test_program_ad_shape_boundary_metadata_is_explicit() -> None:
