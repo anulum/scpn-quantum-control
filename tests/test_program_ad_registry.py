@@ -11,15 +11,18 @@ from __future__ import annotations
 
 import math
 from collections.abc import Callable
+from typing import cast
 
 import numpy as np
 import pytest
+from numpy.typing import NDArray
 
 from scpn_quantum_control import differentiable as differentiable_facade
 from scpn_quantum_control.differentiable import (
     registered_custom_jacobian,
     registered_custom_jvp,
     registered_custom_vjp,
+    vmap,
 )
 from scpn_quantum_control.program_ad_registry import (
     DEFAULT_CUSTOM_DERIVATIVE_REGISTRY,
@@ -198,6 +201,54 @@ def test_custom_derivative_registry_rejects_ambiguous_identity_and_conflicts() -
     assert registry.snapshot() == {}
 
 
+def test_vmap_uses_registered_primitive_batching_rule() -> None:
+    """vmap should dispatch to primitive-specific batching rules when requested."""
+
+    identity = PrimitiveIdentity("scpn.quantum", "batched_affine", "1")
+    rule = CustomDerivativeRule(
+        name="batched_affine_rule",
+        value_fn=lambda values: np.array([values[0] + 2.0 * values[1]], dtype=np.float64),
+        jvp_rule=lambda values, tangent: np.array(
+            [tangent[0] + 2.0 * tangent[1]], dtype=np.float64
+        ),
+        parameter_names=("offset", "phase"),
+        trainable=(True, True),
+    )
+    registry = CustomDerivativeRegistry()
+    registry.register(identity, rule)
+    calls: list[str] = []
+
+    def batching_rule(
+        function: Callable[..., object],
+        args: tuple[object, ...],
+        axes: tuple[int | None, ...],
+        out_axes: int,
+    ) -> object:
+        calls.append("batching_rule")
+        assert axes == (0, None)
+        del function
+        batch = np.asarray(args[0], dtype=np.float64)
+        scale = float(cast(float, args[1]))
+        return np.stack([batch[:, 0] + scale * batch[:, 1]], axis=out_axes)
+
+    registry.register_batching_rule(identity, batching_rule)
+    batched = vmap(
+        lambda row, scale: row[0] + scale * row[1],
+        in_axes=(0, None),
+        out_axes=1,
+        primitive_identity=identity,
+        registry=registry,
+    )
+
+    result = cast(
+        NDArray[np.float64],
+        batched(np.array([[1.0, 2.0], [3.0, -1.0]], dtype=np.float64), 2.0),
+    )
+
+    assert calls == ["batching_rule"]
+    np.testing.assert_allclose(result, [[5.0], [1.0]], atol=1.0e-12)
+
+
 def test_primitive_contract_round_trip_from_extracted_registry() -> None:
     """A complete transform should round-trip through contract helpers."""
 
@@ -236,6 +287,67 @@ def test_primitive_contract_round_trip_from_extracted_registry() -> None:
     assert contract.nondifferentiable_policy == "fail_closed_at_boundaries"
 
 
+def test_primitive_transform_registry_holds_complete_metadata() -> None:
+    """Registry transform bindings should keep derivative and compiler facets together."""
+
+    identity = PrimitiveIdentity("scpn.quantum", "lowered_batch", "1")
+    rule = _rule("lowered_batch_rule")
+
+    def batching_rule(
+        function: Callable[..., object],
+        args: tuple[object, ...],
+        axes: tuple[int | None, ...],
+        out_axes: int,
+    ) -> object:
+        del function, axes
+        return np.asarray(args[0], dtype=np.float64).sum(axis=1 + out_axes * 0)
+
+    registry = CustomDerivativeRegistry()
+    transform = PrimitiveTransformRule(
+        identity=identity,
+        derivative_rule=rule,
+        batching_rule=batching_rule,
+        lowering_rule=_lowering_rule,
+        lowering_metadata={"mlir_op": "scpn_diff.lowered_batch", "rust": "blocked"},
+        shape_rule=_shape_rule,
+        dtype_rule=_dtype_rule,
+        static_argument_rule=_static_argument_rule,
+        nondifferentiable_policy="fail_closed_at_boundaries",
+        effect="pure",
+    )
+
+    assert registry.register_transform(transform) is transform
+    assert registry.require(identity) is rule
+    assert registry.require_batching_rule(identity) is batching_rule
+    assert registry.require_lowering_rule(identity) is _lowering_rule
+    assert registry.require_shape_rule(identity) is _shape_rule
+    assert registry.require_dtype_rule(identity) is _dtype_rule
+    assert registry.require_static_argument_rule(identity) is _static_argument_rule
+    assert registry.require_nondifferentiable_policy(identity) == "fail_closed_at_boundaries"
+    assert registry.require_effect(identity) == "pure"
+    assert primitive_shape_rule_for(identity, registry=registry) is _shape_rule
+    assert primitive_dtype_rule_for(identity, registry=registry) is _dtype_rule
+    assert (
+        primitive_nondifferentiable_policy_for(identity, registry=registry)
+        == "fail_closed_at_boundaries"
+    )
+    assert primitive_effect_for(identity, registry=registry) == "pure"
+    snapshot = registry.transform_snapshot()
+    assert snapshot[identity].lowering_rule is _lowering_rule
+    lowering_metadata = snapshot[identity].lowering_metadata
+    assert lowering_metadata is not None
+    assert lowering_metadata["mlir_op"] == "scpn_diff.lowered_batch"
+    assert snapshot[identity].shape_rule is _shape_rule
+    assert snapshot[identity].dtype_rule is _dtype_rule
+    assert snapshot[identity].static_argument_rule is _static_argument_rule
+    assert snapshot[identity].nondifferentiable_policy == "fail_closed_at_boundaries"
+    assert snapshot[identity].effect == "pure"
+    with pytest.raises(ValueError, match="batching rule already registered"):
+        registry.register_batching_rule(identity, batching_rule)
+    with pytest.raises(ValueError, match="lowering rule already registered"):
+        registry.register_lowering_rule(identity, _lowering_rule)
+
+
 def test_program_ad_registry_dispatch_report_uses_extracted_default_registry() -> None:
     """Registry-dispatch coverage should resolve all default Program AD contracts."""
 
@@ -252,6 +364,51 @@ def test_program_ad_registry_dispatch_report_uses_extracted_default_registry() -
     assert all(row.complete for row in report.rows)
     assert any(row.identity == "scpn.program_ad.linalg:pinv@1" for row in report.rows)
     assert "not executable Rust, LLVM, JIT" in report.claim_boundary
+
+
+def test_program_ad_registry_dispatch_report_is_complete() -> None:
+    """Program AD primitive coverage should resolve through complete registry contracts."""
+
+    report = program_ad_registry_dispatch_coverage_report()
+
+    assert isinstance(report, ProgramADRegistryDispatchCoverageReport)
+    assert report.supported is True
+    assert report.blocked_identities == ()
+    assert report.covered_primitives == report.total_primitives
+    assert report.total_primitives > 90
+    assert set(report.family_counts) == {
+        "array",
+        "shape",
+        "reduction",
+        "stencil",
+        "interpolation",
+        "assembly",
+        "signal",
+        "elementwise",
+        "selection",
+        "product",
+        "cumulative",
+        "linalg",
+    }
+    assert report.family_counts["elementwise"] >= 20
+    assert all(isinstance(row, ProgramADRegistryDispatchCoverageRow) for row in report.rows)
+    assert all(row.complete for row in report.rows)
+    assert all(row.blocked_reasons == () for row in report.rows)
+    assert all(row.has_batching_rule for row in report.rows)
+    assert all(row.has_lowering_metadata for row in report.rows)
+    assert all(row.has_shape_rule for row in report.rows)
+    assert all(row.has_dtype_rule for row in report.rows)
+    assert all(row.has_static_argument_rule for row in report.rows)
+    assert all(
+        row.nondifferentiable_policy == "program_ad_trace_exact_fail_closed" for row in report.rows
+    )
+    assert all(row.effect == "pure" for row in report.rows)
+    assert any(row.identity == "scpn.program_ad.product:einsum@1" for row in report.rows)
+    payload = report.to_dict()
+    assert payload["supported"] is True
+    assert payload["blocked_identities"] == []
+    assert payload["covered_primitives"] == report.total_primitives
+    assert "not executable Rust, LLVM, JIT" in str(payload["claim_boundary"])
 
 
 def test_program_ad_registry_dispatch_report_fails_closed_for_missing_contracts() -> None:
@@ -335,6 +492,137 @@ def test_default_registry_helper_paths_register_and_unregister() -> None:
 
     with pytest.raises(ValueError, match="no custom derivative rule"):
         DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.require(identity)
+
+
+def test_default_registry_helper_unregister_paths_and_missing_vmap_batching() -> None:
+    """Default helper bindings should unregister cleanly and vmap should fail closed."""
+
+    batch_identity = PrimitiveIdentity("scpn.quantum", "default_helper_batch", "1")
+    batch_rule = CustomDerivativeRule(
+        name="default_helper_rule",
+        value_fn=lambda values: np.array([values[0] + values[1]], dtype=np.float64),
+        jvp_rule=lambda values, tangent: np.array([tangent[0] + tangent[1]], dtype=np.float64),
+    )
+
+    def batching_rule(
+        function: Callable[..., object],
+        args: tuple[object, ...],
+        axes: tuple[int | None, ...],
+        out_axes: int,
+    ) -> object:
+        del function
+        assert axes == (0,)
+        batch = np.asarray(args[0], dtype=np.float64)
+        return np.moveaxis(batch[:, 0] + batch[:, 1], 0, out_axes)
+
+    with pytest.raises(ValueError, match="no custom derivative rule"):
+        register_primitive_batching_rule(batch_identity, batching_rule)
+    register_custom_derivative_rule(batch_identity, batch_rule)
+    try:
+        assert register_primitive_batching_rule(batch_identity, batching_rule) is batching_rule
+        batched = vmap(lambda row: row[0] + row[1], primitive_identity=batch_identity)
+        batch_result = cast(
+            NDArray[np.float64],
+            batched(np.array([[1.0, 2.0], [3.0, 4.0]], dtype=np.float64)),
+        )
+        np.testing.assert_allclose(batch_result, [3.0, 7.0], atol=1.0e-12)
+        assert DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.unregister(batch_identity) is batch_rule
+        assert DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.batching_rule_for(batch_identity) is None
+        with pytest.raises(ValueError, match="no custom derivative rule"):
+            DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.unregister(batch_identity)
+    finally:
+        if DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.lookup(batch_identity) is not None:
+            DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.unregister(batch_identity)
+
+    lowering_identity = PrimitiveIdentity("scpn.quantum", "default_helper_lower", "1")
+    lowering_rule_binding = _rule("default_helper_lower_rule")
+    with pytest.raises(ValueError, match="no custom derivative rule"):
+        register_primitive_lowering_rule(lowering_identity, _lowering_rule)
+    register_custom_derivative_rule(lowering_identity, lowering_rule_binding)
+    try:
+        assert register_primitive_lowering_rule(lowering_identity, _lowering_rule) is (
+            _lowering_rule
+        )
+        assert DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.require_lowering_rule(lowering_identity) is (
+            _lowering_rule
+        )
+        assert DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.unregister(lowering_identity) is (
+            lowering_rule_binding
+        )
+        assert DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.lowering_rule_for(lowering_identity) is None
+    finally:
+        if DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.lookup(lowering_identity) is not None:
+            DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.unregister(lowering_identity)
+
+    missing_identity = PrimitiveIdentity("scpn.quantum", "missing_batch", "1")
+    missing_registry = CustomDerivativeRegistry({missing_identity: _rule("missing_batch_rule")})
+    with pytest.raises(ValueError, match="no batching rule"):
+        vmap(lambda row: row[0], primitive_identity=missing_identity, registry=missing_registry)
+
+
+def test_primitive_registry_root_exports_match_facade() -> None:
+    """Primitive registry and Program AD derivative exports should be stable root APIs."""
+
+    import scpn_quantum_control as scpn
+
+    names = (
+        "PrimitiveBatchingRule",
+        "PrimitiveContract",
+        "PrimitiveDTypeRule",
+        "PrimitiveLoweringRule",
+        "PrimitiveShapeRule",
+        "PrimitiveStaticArgumentRule",
+        "PrimitiveTransformRule",
+        "ProgramADRegistryDispatchCoverageReport",
+        "ProgramADRegistryDispatchCoverageRow",
+        "primitive_complete_contract_for",
+        "primitive_dtype_rule_for",
+        "primitive_effect_for",
+        "primitive_contract_for",
+        "primitive_nondifferentiable_policy_for",
+        "primitive_shape_rule_for",
+        "primitive_static_argument_rule_for",
+        "program_ad_registry_dispatch_coverage_report",
+        "program_ad_stencil_gradient_derivative_rule",
+        "program_ad_interpolation_interp_derivative_rule",
+        "program_ad_assembly_concatenate_derivative_rule",
+        "program_ad_assembly_broadcast_to_derivative_rule",
+        "program_ad_assembly_broadcast_arrays_derivative_rule",
+        "program_ad_assembly_tril_derivative_rule",
+        "program_ad_assembly_triu_derivative_rule",
+        "program_ad_assembly_diagonal_derivative_rule",
+        "program_ad_assembly_append_derivative_rule",
+        "program_ad_assembly_block_derivative_rule",
+        "program_ad_assembly_split_derivative_rule",
+        "program_ad_assembly_stack_derivative_rule",
+        "program_ad_assembly_hstack_derivative_rule",
+        "program_ad_assembly_vstack_derivative_rule",
+        "program_ad_assembly_column_stack_derivative_rule",
+        "program_ad_assembly_dstack_derivative_rule",
+        "program_ad_signal_convolve_derivative_rule",
+        "program_ad_signal_correlate_derivative_rule",
+        "program_ad_array_take_along_axis_derivative_rule",
+        "program_ad_array_delete_derivative_rule",
+        "program_ad_array_pad_derivative_rule",
+        "program_ad_array_insert_derivative_rule",
+        "program_ad_linalg_diag_derivative_rule",
+        "program_ad_linalg_diagflat_derivative_rule",
+        "program_ad_product_inner_derivative_rule",
+        "program_ad_product_einsum_derivative_rule",
+        "program_ad_product_outer_derivative_rule",
+        "program_ad_product_tensordot_derivative_rule",
+        "program_ad_selection_clip_derivative_rule",
+        "program_ad_selection_where_derivative_rule",
+        "program_ad_linalg_matrix_power_derivative_rule",
+        "program_ad_linalg_multi_dot_derivative_rule",
+        "program_ad_linalg_trace_derivative_rule",
+        "register_primitive_batching_rule",
+        "register_primitive_lowering_rule",
+        "register_primitive_transform_rule",
+    )
+
+    for name in names:
+        assert getattr(scpn, name) is getattr(differentiable_facade, name)
 
 
 @pytest.mark.parametrize(
