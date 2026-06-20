@@ -9,14 +9,18 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from typing import Any, cast
 
 import numpy as np
 import pytest
 
 from scpn_quantum_control.differentiable import (
+    DEFAULT_CUSTOM_DERIVATIVE_REGISTRY,
     Parameter,
+    PrimitiveContract,
     PrimitiveIdentity,
+    PrimitiveTransformRule,
     primitive_complete_contract_for,
     primitive_contract_for,
     program_ad_shape_atleast_1d_derivative_rule,
@@ -55,6 +59,23 @@ def _contract_rules(contract: Any) -> tuple[Any, Any, Any]:
     assert contract.dtype_rule is not None
     assert contract.static_argument_rule is not None
     return contract.shape_rule, contract.dtype_rule, contract.static_argument_rule
+
+
+def _transform_rule_from_contract(contract: PrimitiveContract) -> PrimitiveTransformRule:
+    """Return a mutable registry transform that exactly mirrors a contract."""
+
+    return PrimitiveTransformRule(
+        identity=contract.identity,
+        derivative_rule=contract.derivative_rule,
+        batching_rule=contract.batching_rule,
+        lowering_rule=contract.lowering_rule,
+        lowering_metadata=contract.lowering_metadata,
+        shape_rule=contract.shape_rule,
+        dtype_rule=contract.dtype_rule,
+        static_argument_rule=contract.static_argument_rule,
+        nondifferentiable_policy=contract.nondifferentiable_policy,
+        effect=contract.effect,
+    )
 
 
 def test_program_ad_shape_primitives_are_registry_policy_gated() -> None:
@@ -351,6 +372,134 @@ def test_program_ad_shape_boundary_metadata_is_explicit() -> None:
         assert metadata["static_signature"] == expected_static_signatures[name]
         assert metadata["nondifferentiable_boundary"] == boundary
         assert metadata["nondifferentiable_boundary_policy"] == "fail_closed"
+
+
+def test_program_ad_shape_primitives_validate_registry_rules_at_dispatch() -> None:
+    """Supported shape primitives must execute through registry validation rules."""
+
+    originals = {
+        name: primitive_contract_for(f"scpn.program_ad.shape:{name}")
+        for name in (
+            "reshape",
+            "ravel",
+            "transpose",
+            "expand_dims",
+            "roll",
+            "rot90",
+            "repeat",
+            "flip",
+            "flipud",
+            "fliplr",
+            "squeeze",
+            "swapaxes",
+            "moveaxis",
+            "tile",
+            "atleast_1d",
+            "atleast_2d",
+            "atleast_3d",
+        )
+    }
+    calls: dict[str, set[str]] = {name: set() for name in originals}
+
+    for name, original in originals.items():
+        assert original.shape_rule is not None
+        assert original.dtype_rule is not None
+        assert original.static_argument_rule is not None
+        original_shape_rule = original.shape_rule
+        original_dtype_rule = original.dtype_rule
+        original_static_argument_rule = original.static_argument_rule
+
+        def shape_rule(
+            args: tuple[object, ...],
+            *,
+            primitive_name: str = name,
+            wrapped_rule: Callable[[tuple[object, ...]], tuple[int, ...]] = original_shape_rule,
+        ) -> tuple[int, ...]:
+            calls[primitive_name].add("shape")
+            return wrapped_rule(args)
+
+        def dtype_rule(
+            args: tuple[object, ...],
+            *,
+            primitive_name: str = name,
+            wrapped_rule: Callable[[tuple[object, ...]], str] = original_dtype_rule,
+        ) -> str:
+            calls[primitive_name].add("dtype")
+            return wrapped_rule(args)
+
+        def static_argument_rule(
+            args: tuple[object, ...],
+            *,
+            primitive_name: str = name,
+            wrapped_rule: Callable[
+                [tuple[object, ...]], tuple[object, ...]
+            ] = original_static_argument_rule,
+        ) -> tuple[object, ...]:
+            calls[primitive_name].add("static")
+            return wrapped_rule(args)
+
+        DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.register_transform(
+            PrimitiveTransformRule(
+                identity=original.identity,
+                derivative_rule=original.derivative_rule,
+                batching_rule=original.batching_rule,
+                lowering_rule=original.lowering_rule,
+                lowering_metadata=original.lowering_metadata,
+                shape_rule=shape_rule,
+                dtype_rule=dtype_rule,
+                static_argument_rule=static_argument_rule,
+                nondifferentiable_policy=original.nondifferentiable_policy,
+                effect=original.effect,
+            ),
+            overwrite=True,
+        )
+    try:
+
+        def objective(values: Any) -> object:
+            reshaped = np.reshape(values, (2, 2))
+            swapped = np.swapaxes(reshaped, 0, 1)
+            moved = np.moveaxis(swapped, 0, 1)
+            repeated = np.repeat(moved, repeats=(1, 1), axis=0)
+            tiled = np.tile(repeated, reps=(1, 1))
+            rolled = np.roll(tiled, shift=(1, -1), axis=(0, 1))
+            rotated = np.rot90(rolled, k=1, axes=(0, 1))
+            flipped = np.flip(rotated, axis=(0, 1))
+            flipped_ud = np.flipud(flipped)
+            flipped_lr = np.fliplr(flipped_ud)
+            flattened = np.ravel(np.transpose(flipped_lr))
+            promoted = np.atleast_3d(np.atleast_2d(np.atleast_1d(flattened)))
+            return np.sum(np.squeeze(np.expand_dims(promoted, axis=0), axis=0))
+
+        result = whole_program_value_and_grad(
+            objective,
+            np.array([1.0, 2.0, 3.0, 4.0], dtype=np.float64),
+        )
+    finally:
+        for original in originals.values():
+            DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.register_transform(
+                _transform_rule_from_contract(original), overwrite=True
+            )
+
+    assert result.value == pytest.approx(10.0)
+    assert calls == {
+        "reshape": {"shape", "dtype", "static"},
+        "ravel": {"shape", "dtype", "static"},
+        "transpose": {"shape", "dtype", "static"},
+        "expand_dims": {"shape", "dtype", "static"},
+        "roll": {"shape", "dtype", "static"},
+        "rot90": {"shape", "dtype", "static"},
+        "repeat": {"shape", "dtype", "static"},
+        "flip": {"shape", "dtype", "static"},
+        "flipud": {"shape", "dtype", "static"},
+        "fliplr": {"shape", "dtype", "static"},
+        "squeeze": {"shape", "dtype", "static"},
+        "swapaxes": {"shape", "dtype", "static"},
+        "moveaxis": {"shape", "dtype", "static"},
+        "tile": {"shape", "dtype", "static"},
+        "atleast_1d": {"shape", "dtype", "static"},
+        "atleast_2d": {"shape", "dtype", "static"},
+        "atleast_3d": {"shape", "dtype", "static"},
+    }
 
 
 def test_program_ad_shape_static_derivative_factories_are_direct_kernels() -> None:
