@@ -69,6 +69,14 @@ DEFAULT_ARTIFACT_BUNDLE_INPUTS: tuple[tuple[str, str], ...] = (
         "Differentiable SOTA category scorecard reviewer summary",
     ),
     (
+        "data/differentiable_phase_qnode/differentiable_rust_python_inventory_20260620.json",
+        "Differentiable Rust/Python rustification surface inventory artefact",
+    ),
+    (
+        "data/differentiable_phase_qnode/differentiable_rust_python_inventory_20260620.md",
+        "Differentiable Rust/Python rustification surface inventory reviewer summary",
+    ),
+    (
         "data/differentiable_phase_qnode/external_validation_environment_lock_20260616.json",
         "Exact environment-lock manifest",
     ),

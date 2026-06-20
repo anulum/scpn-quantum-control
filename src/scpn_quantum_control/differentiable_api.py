@@ -36,6 +36,7 @@ from .differentiable import (
     value_and_hessian,
     value_and_jacobian,
 )
+from .differentiable_rust_python_inventory import run_differentiable_rust_python_inventory
 from .differentiable_sota_scorecard import run_differentiable_sota_scorecard
 from .phase.gradient_backend import (
     plan_quantum_gradient_backend,
@@ -57,6 +58,7 @@ UnifiedDifferentiableOperation = Literal[
     "benchmark_report",
     "dashboard_status",
     "sota_scorecard",
+    "rust_python_inventory",
 ]
 DifferentiableDashboardCapabilityState = Literal[
     "planned",
@@ -516,6 +518,22 @@ def differentiable_sota_scorecard_report() -> UnifiedDifferentiableAPIResult:
         hessian=None,
         payload=scorecard.to_dict(),
         claim_boundary=scorecard.claim_boundary,
+    )
+
+
+def differentiable_rust_python_inventory_report() -> UnifiedDifferentiableAPIResult:
+    """Return claim-bounded Rust/Python rustification inventory evidence."""
+    inventory = run_differentiable_rust_python_inventory()
+    return UnifiedDifferentiableAPIResult(
+        operation="rust_python_inventory",
+        supported=inventory.rustification_ready,
+        method="differentiable_rust_python_inventory",
+        value=None,
+        gradient=None,
+        jacobian=None,
+        hessian=None,
+        payload=inventory.to_dict(),
+        claim_boundary=inventory.claim_boundary,
     )
 
 
@@ -1195,6 +1213,8 @@ def differentiable_api(
         return differentiable_benchmark_report()
     if operation == "sota_scorecard":
         return differentiable_sota_scorecard_report()
+    if operation == "rust_python_inventory":
+        return differentiable_rust_python_inventory_report()
     if operation == "frontend_report":
         return differentiable_frontend_report(_require_objective(objective))
     if operation == "dashboard_status":
@@ -1357,6 +1377,7 @@ __all__ = [
     "differentiable_gradient",
     "differentiable_hessian",
     "differentiable_jacobian",
+    "differentiable_rust_python_inventory_report",
     "differentiable_sota_scorecard_report",
     "differentiable_support_report",
     "differentiable_value",

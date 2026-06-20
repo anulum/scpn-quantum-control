@@ -106,6 +106,17 @@ and `data/differentiable_phase_qnode/differentiable_sota_scorecard_20260620.md`.
 Every current category remains `behind_baseline`; the scorecard is governance
 evidence only and does not promote performance, provider, QPU, GPU, hardware,
 or `isolated_affinity` claims.
+`run_differentiable_rust_python_inventory()` adds the rustification surface
+inventory required before broad Rust migration. It classifies each current
+differentiable route as `rust_backed`, `python_reference`, `metadata_only`,
+`compiler_native_not_rust`, `provider_blocked`, `hardware_blocked`, or
+`deprecate_before_promotion`; records owner modules, tests, docs, benchmark
+status, mypy targets, docstring status, Rust parity, and polyglot status; and
+keeps every row non-promotional until matching claim-ledger, benchmark, and
+provider/hardware evidence exists. The committed artefacts live at
+`data/differentiable_phase_qnode/differentiable_rust_python_inventory_20260620.json`
+and
+`data/differentiable_phase_qnode/differentiable_rust_python_inventory_20260620.md`.
 The current public technical report is
 [Differentiable External-Validation Technical Report](differentiable_external_validation_report.md).
 It summarizes the comparison package, provider-family status, reproducibility

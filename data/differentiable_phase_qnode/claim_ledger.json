@@ -2,10 +2,10 @@
   "SPDX-License-Identifier": "AGPL-3.0-or-later",
   "commercial_license": "available",
   "contact": "www.anulum.li | protoscience@anulum.li",
-  "copyright_code": "© Code 2020–2026 Miroslav Šotek. All rights reserved.",
-  "copyright_concepts": "© Concepts 1996–2026 Miroslav Šotek. All rights reserved.",
+  "copyright_code": "\u00a9 Code 2020\u20132026 Miroslav \u0160otek. All rights reserved.",
+  "copyright_concepts": "\u00a9 Concepts 1996\u20132026 Miroslav \u0160otek. All rights reserved.",
   "orcid": "0009-0009-3560-0851",
-  "title": "SCPN Quantum Control — Differentiable Phase-QNode Claim Ledger",
+  "title": "SCPN Quantum Control \u2014 Differentiable Phase-QNode Claim Ledger",
   "schema": "scpn_qc_differentiable_claim_ledger_v1",
   "artifact_id": "diff-qnode-claim-ledger-v1",
   "claims": [
@@ -350,6 +350,36 @@
       ],
       "promotion_status": "SOTA-candidate",
       "claim_boundary": "Differentiable SOTA scorecard governance only; no provider execution, QPU execution, accelerator execution, hardware execution, or production benchmark promotion is implied."
+    },
+    {
+      "claim_id": "differentiable_rust_python_inventory",
+      "claim_text": "The differentiable lane has a deterministic Rust/Python surface inventory that classifies rustification, polyglot, provider, hardware, compiler, metadata, and deprecation states before broad Rust migration.",
+      "implementation_surface": [
+        "src/scpn_quantum_control/differentiable_rust_python_inventory.py",
+        "src/scpn_quantum_control/differentiable_api.py"
+      ],
+      "test_surface": [
+        "tests/test_differentiable_rust_python_inventory.py"
+      ],
+      "docs_surface": [
+        "README.md",
+        "docs/differentiable_api.md",
+        "docs/differentiable_programming.md",
+        "data/differentiable_phase_qnode/differentiable_rust_python_inventory_20260620.md",
+        "data/differentiable_phase_qnode/claim_ledger.md"
+      ],
+      "evidence_artifact_ids": [
+        "diff-rust-python-inventory-20260620"
+      ],
+      "benchmark_artifact_ids": [
+        "diff-rust-python-inventory-20260620"
+      ],
+      "known_gaps": [
+        "The inventory is governance evidence and does not execute Rust migrations, provider jobs, hardware jobs, LLVM/JIT lowerings, or isolated benchmarks.",
+        "Rows remain non-promotional until Rust parity, polyglot parity, claim-ledger promotion, provider/hardware evidence, and isolated benchmark artefacts exist where required."
+      ],
+      "promotion_status": "SOTA-candidate",
+      "claim_boundary": "Differentiable Rust/Python inventory governance only; no Rust promotion, provider execution, QPU execution, accelerator execution, hardware execution, LLVM/JIT execution, or production benchmark promotion is implied."
     }
   ]
 }

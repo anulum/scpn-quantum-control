@@ -8,13 +8,13 @@
     "notebook_files": 98,
     "optional_extras": 42,
     "paper0_validation_modules": 466,
-    "public_api_exports": 698,
+    "public_api_exports": 709,
     "public_documentation_pages": 254,
-    "python_model_classes": 1832,
-    "python_model_source_modules": 836,
+    "python_model_classes": 1835,
+    "python_model_source_modules": 837,
     "rust_pyo3_model_wrappers": 136,
     "rust_source_modules": 38,
-    "test_files": 1957
+    "test_files": 1958
   },
   "documentation": {
     "examples": [
@@ -2320,6 +2320,18 @@
       {
         "name": "DifferentiableReadinessSurface",
         "path": "src/scpn_quantum_control/phase/differentiable_readiness.py"
+      },
+      {
+        "name": "DifferentiableRustPythonInventory",
+        "path": "src/scpn_quantum_control/differentiable_rust_python_inventory.py"
+      },
+      {
+        "name": "DifferentiableRustPythonInventoryRow",
+        "path": "src/scpn_quantum_control/differentiable_rust_python_inventory.py"
+      },
+      {
+        "name": "DifferentiableRustPythonInventoryValidation",
+        "path": "src/scpn_quantum_control/differentiable_rust_python_inventory.py"
       },
       {
         "name": "DifferentiableSOTAScorecard",
@@ -8533,6 +8545,7 @@
       "src/scpn_quantum_control/differentiable_external_validation.py",
       "src/scpn_quantum_control/differentiable_framework_overlay.py",
       "src/scpn_quantum_control/differentiable_module_hardening_audit.py",
+      "src/scpn_quantum_control/differentiable_rust_python_inventory.py",
       "src/scpn_quantum_control/differentiable_sota_scorecard.py",
       "src/scpn_quantum_control/dla_parity/baselines.py",
       "src/scpn_quantum_control/dla_parity/dataset.py",
@@ -9457,6 +9470,13 @@
     "DifferentiableOptimizer",
     "DifferentiableProgrammingBenchmarkResult",
     "DifferentiableProgrammingExternalReferenceResult",
+    "DifferentiableRustPythonInventory",
+    "DifferentiableRustPythonInventoryBenchmarkStatus",
+    "DifferentiableRustPythonInventoryClassification",
+    "DifferentiableRustPythonInventoryPolyglotStatus",
+    "DifferentiableRustPythonInventoryRow",
+    "DifferentiableRustPythonInventoryRustParityStatus",
+    "DifferentiableRustPythonInventoryValidation",
     "DifferentiableSOTACategory",
     "DifferentiableSOTAScorecard",
     "DifferentiableSOTAScorecardRow",
@@ -9783,6 +9803,7 @@
     "differentiable_hessian",
     "differentiable_jacobian",
     "differentiable_module_hardening_registry",
+    "differentiable_rust_python_inventory_report",
     "differentiable_sota_scorecard_report",
     "differentiable_support_report",
     "differentiable_value",
@@ -10004,6 +10025,7 @@
     "registered_custom_jacobian",
     "registered_custom_jvp",
     "registered_custom_vjp",
+    "render_differentiable_rust_python_inventory_markdown",
     "render_differentiable_sota_scorecard_markdown",
     "resolve_aggregator_provider_route",
     "reverse_cos",
@@ -10018,6 +10040,7 @@
     "run_differentiable_module_hardening_audit",
     "run_differentiable_programming_benchmark_suite",
     "run_differentiable_programming_external_reference_suite",
+    "run_differentiable_rust_python_inventory",
     "run_differentiable_sota_scorecard",
     "run_documented_classical_baselines",
     "run_enzyme_mlir_maturity_audit",
@@ -10073,6 +10096,7 @@
     "transpile_for_trapped_ion",
     "trapped_ion_noise_model",
     "update_levenberg_marquardt_damping",
+    "validate_differentiable_rust_python_inventory",
     "validate_differentiable_sota_scorecard",
     "validate_kuramoto_inputs",
     "validate_scpn_control_bridge_dependency_contract",
@@ -10778,6 +10802,7 @@
       "tests/test_differentiable_hardening_gate.py",
       "tests/test_differentiable_module_hardening_audit.py",
       "tests/test_differentiable_programming_benchmarks.py",
+      "tests/test_differentiable_rust_python_inventory.py",
       "tests/test_differentiable_score_function.py",
       "tests/test_differentiable_sota_scorecard.py",
       "tests/test_differentiable_spsa.py",
