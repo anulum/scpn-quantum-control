@@ -9,12 +9,16 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass
 from numbers import Real
-from typing import cast
+from typing import TYPE_CHECKING, cast
 
 import numpy as np
 from numpy.typing import NDArray
+
+if TYPE_CHECKING:
+    from .whole_program_ad_result import WholeProgramIRNode
 
 
 @dataclass(frozen=True)
@@ -325,6 +329,30 @@ def _as_real_numeric_array(label: str, value: object) -> NDArray[np.float64]:
     if np.any(~np.isfinite(array)):
         raise ValueError(f"{label} must contain finite values")
     return array
+
+
+def _program_adjoint_input_value(
+    name: str,
+    node_by_name: Mapping[str, WholeProgramIRNode],
+) -> float:
+    """Resolve a Program AD adjoint input token to a primal scalar."""
+
+    if _program_adjoint_is_ir_value(name):
+        if name not in node_by_name:
+            raise ValueError(f"program AD adjoint input {name} is missing from IR")
+        return node_by_name[name].value
+    try:
+        return float(name)
+    except ValueError:
+        if name.startswith("np.float64(") and name.endswith(")"):
+            return float(name.removeprefix("np.float64(").removesuffix(")"))
+        raise ValueError(f"program AD adjoint literal {name!r} is not numeric") from None
+
+
+def _program_adjoint_is_ir_value(name: str) -> bool:
+    """Return whether ``name`` is a Program AD SSA value token."""
+
+    return isinstance(name, str) and name.startswith("%") and name[1:].isdigit()
 
 
 __all__ = ["ProgramADAdjointResult", "ProgramADAdjointStep"]

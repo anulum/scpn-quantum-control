@@ -22,7 +22,12 @@ from typing import Any, Literal, NoReturn, cast
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
 
-from .program_ad_adjoint import ProgramADAdjointResult, ProgramADAdjointStep
+from .program_ad_adjoint import (
+    ProgramADAdjointResult,
+    ProgramADAdjointStep,
+    _program_adjoint_input_value,
+    _program_adjoint_is_ir_value,
+)
 from .program_ad_alias_analysis import (
     PROGRAM_AD_ALIAS_EFFECT_CLAIM_BOUNDARY as PROGRAM_AD_ALIAS_EFFECT_CLAIM_BOUNDARY,
 )
@@ -7553,26 +7558,6 @@ def _program_adjoint_pinv_contributions(
         for row in range(rows)
         for col in range(cols)
     )
-
-
-def _program_adjoint_input_value(
-    name: str,
-    node_by_name: Mapping[str, WholeProgramIRNode],
-) -> float:
-    if _program_adjoint_is_ir_value(name):
-        if name not in node_by_name:
-            raise ValueError(f"program AD adjoint input {name} is missing from IR")
-        return node_by_name[name].value
-    try:
-        return float(name)
-    except ValueError:
-        if name.startswith("np.float64(") and name.endswith(")"):
-            return float(name.removeprefix("np.float64(").removesuffix(")"))
-        raise ValueError(f"program AD adjoint literal {name!r} is not numeric") from None
-
-
-def _program_adjoint_is_ir_value(name: str) -> bool:
-    return isinstance(name, str) and name.startswith("%") and name[1:].isdigit()
 
 
 def vmap(

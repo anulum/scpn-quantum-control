@@ -14,6 +14,7 @@ from typing import Any, cast
 import numpy as np
 import pytest
 
+import scpn_quantum_control.differentiable as differentiable
 from scpn_quantum_control import program_ad_adjoint as adjoint_module
 from scpn_quantum_control.differentiable import (
     Parameter,
@@ -34,6 +35,7 @@ from scpn_quantum_control.differentiable import (
     WholeProgramBytecodeBasicBlock,
     WholeProgramBytecodeInstruction,
     WholeProgramCompilerFrontendReport,
+    WholeProgramIRNode,
     WholeProgramSemanticsReport,
     WholeProgramSourceBytecodeLineMap,
     WholeProgramSourceIRFeature,
@@ -74,6 +76,43 @@ def _list_payload(value: object) -> list[Any]:
 
     assert isinstance(value, list)
     return value
+
+
+def test_program_adjoint_input_token_helpers_resolve_literals_and_ir_values() -> None:
+    """Program adjoint token helpers should resolve SSA and literal input tokens."""
+
+    node = WholeProgramIRNode(
+        index=0,
+        op="parameter",
+        inputs=("theta",),
+        value=2.5,
+        tangent=np.array([1.0], dtype=np.float64),
+    )
+    node_by_name = {"%0": node}
+
+    assert adjoint_module._program_adjoint_is_ir_value("%0") is True
+    assert adjoint_module._program_adjoint_is_ir_value("%x") is False
+    assert adjoint_module._program_adjoint_is_ir_value("0.5") is False
+    assert vars(differentiable)["_program_adjoint_is_ir_value"] is (
+        adjoint_module._program_adjoint_is_ir_value
+    )
+    assert vars(differentiable)["_program_adjoint_input_value"] is (
+        adjoint_module._program_adjoint_input_value
+    )
+    assert adjoint_module._program_adjoint_input_value("%0", node_by_name) == pytest.approx(2.5)
+    assert adjoint_module._program_adjoint_input_value("3.25", node_by_name) == pytest.approx(3.25)
+    assert adjoint_module._program_adjoint_input_value(
+        "np.float64(-1.5)", node_by_name
+    ) == pytest.approx(-1.5)
+
+
+def test_program_adjoint_input_token_helpers_fail_closed_for_missing_or_bad_tokens() -> None:
+    """Program adjoint token helpers should reject missing SSA and malformed literals."""
+
+    with pytest.raises(ValueError, match="missing from IR"):
+        adjoint_module._program_adjoint_input_value("%2", {})
+    with pytest.raises(ValueError, match="not numeric"):
+        adjoint_module._program_adjoint_input_value("not-a-number", {})
 
 
 def test_whole_program_grad_respects_trainable_mask() -> None:
