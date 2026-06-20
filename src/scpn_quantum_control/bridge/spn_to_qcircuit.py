@@ -15,6 +15,7 @@ Inhibitor arcs use the anti-control pattern: X-CRy-X.
 from __future__ import annotations
 
 import numpy as np
+from numpy.typing import NDArray
 from qiskit import QuantumCircuit
 
 from .._constants import WEIGHT_SPARSITY_EPS
@@ -22,9 +23,9 @@ from .sc_to_quantum import probability_to_angle
 
 
 def spn_to_circuit(
-    W_in: np.ndarray,
-    W_out: np.ndarray,
-    thresholds: np.ndarray,
+    W_in: NDArray[np.float64],
+    W_out: NDArray[np.float64],
+    thresholds: NDArray[np.float64],
 ) -> QuantumCircuit:
     """Convert SPN weight matrices to a quantum circuit.
 

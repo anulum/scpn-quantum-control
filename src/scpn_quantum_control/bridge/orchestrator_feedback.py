@@ -29,6 +29,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import numpy as np
+from numpy.typing import NDArray
 
 from ..l16.quantum_director import compute_l16_lyapunov
 
@@ -46,8 +47,8 @@ class OrchestratorFeedback:
 
 
 def compute_orchestrator_feedback(
-    K: np.ndarray,
-    omega: np.ndarray,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
     r_advance: float = 0.8,
     r_hold: float = 0.5,
 ) -> OrchestratorFeedback:

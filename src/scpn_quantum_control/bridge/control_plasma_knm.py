@@ -12,12 +12,14 @@ from __future__ import annotations
 import sys
 from importlib import import_module
 from pathlib import Path
+from types import ModuleType
 from typing import Any
 
 import numpy as np
+from numpy.typing import NDArray
 
 
-def _import_plasma_knm_module(*, repo_src: str | Path | None = None):
+def _import_plasma_knm_module(*, repo_src: str | Path | None = None) -> ModuleType:
     """Import ``scpn_control.phase.plasma_knm`` with optional local src path."""
     inserted = False
     src = str(Path(repo_src).resolve()) if repo_src is not None else ""
@@ -48,7 +50,7 @@ def build_knm_plasma(
     custom_overrides: dict[tuple[int, int], float] | None = None,
     layer_names: list[str] | None = None,
     repo_src: str | Path | None = None,
-) -> np.ndarray:
+) -> NDArray[np.float64]:
     """Build plasma-native Knm via scpn-control and return K matrix."""
     mod = _import_plasma_knm_module(repo_src=repo_src)
     spec = mod.build_knm_plasma(
@@ -59,7 +61,7 @@ def build_knm_plasma(
         custom_overrides=custom_overrides,
         layer_names=layer_names,
     )
-    result: np.ndarray = np.asarray(spec.K, dtype=np.float64)
+    result: NDArray[np.float64] = np.asarray(spec.K, dtype=np.float64)
     return result
 
 
@@ -103,7 +105,7 @@ def build_knm_plasma_from_config(
     L: int = 8,
     zeta_uniform: float = 0.0,
     repo_src: str | Path | None = None,
-) -> np.ndarray:
+) -> NDArray[np.float64]:
     """Build plasma-native Knm from tokamak config via scpn-control."""
     mod = _import_plasma_knm_module(repo_src=repo_src)
     spec = mod.build_knm_plasma_from_config(
@@ -116,14 +118,14 @@ def build_knm_plasma_from_config(
         L=L,
         zeta_uniform=zeta_uniform,
     )
-    result: np.ndarray = np.asarray(spec.K, dtype=np.float64)
+    result: NDArray[np.float64] = np.asarray(spec.K, dtype=np.float64)
     return result
 
 
-def plasma_omega(*, L: int = 8, repo_src: str | Path | None = None) -> np.ndarray:
+def plasma_omega(*, L: int = 8, repo_src: str | Path | None = None) -> NDArray[np.float64]:
     """Return plasma omega vector from scpn-control."""
     mod = _import_plasma_knm_module(repo_src=repo_src)
-    result: np.ndarray = np.asarray(mod.plasma_omega(L=L), dtype=np.float64)
+    result: NDArray[np.float64] = np.asarray(mod.plasma_omega(L=L), dtype=np.float64)
     return result
 
 

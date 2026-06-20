@@ -13,6 +13,7 @@ from collections.abc import Mapping
 from typing import Any
 
 import numpy as np
+from numpy.typing import NDArray
 
 from .phase_artifact import LayerStateArtifact, LockSignatureArtifact, UPDEPhaseArtifact
 
@@ -117,7 +118,7 @@ class PhaseOrchestratorAdapter:
         binding_spec: Any,
         *,
         zero_diagonal: bool = False,
-    ) -> np.ndarray:
+    ) -> NDArray[np.float64]:
         """Build Knm from orchestrator BindingSpec coupling fields.
 
         This follows the orchestrator default contract:
@@ -136,7 +137,7 @@ class PhaseOrchestratorAdapter:
 
         idx = np.arange(n_osc, dtype=np.float64)
         dist = np.abs(idx[:, None] - idx[None, :])
-        knm: np.ndarray = base_strength * np.exp(-decay_alpha * dist)
+        knm: NDArray[np.float64] = base_strength * np.exp(-decay_alpha * dist)
         if zero_diagonal:
             np.fill_diagonal(knm, 0.0)
         return knm
@@ -146,7 +147,7 @@ class PhaseOrchestratorAdapter:
         binding_spec: Any,
         *,
         default_omega: float = 1.0,
-    ) -> np.ndarray:
+    ) -> NDArray[np.float64]:
         """Build per-oscillator omega vector from binding spec layer metadata.
 
         If a layer contains ``natural_frequency`` metadata, that value is applied
@@ -160,7 +161,7 @@ class PhaseOrchestratorAdapter:
             omegas.extend([layer_omega] * len(osc_ids))
         if not omegas:
             raise ValueError("BindingSpec must define at least one oscillator.")
-        result: np.ndarray = np.asarray(omegas, dtype=np.float64)
+        result: NDArray[np.float64] = np.asarray(omegas, dtype=np.float64)
         return result
 
 
