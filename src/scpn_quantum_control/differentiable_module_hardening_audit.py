@@ -161,6 +161,11 @@ def differentiable_module_hardening_registry() -> tuple[DifferentiableModuleHard
             ("forward scalar elementary kernels", "reverse scalar pullback kernels"),
         ),
         _record(
+            "src/scpn_quantum_control/differentiable_stochastic_policy.py",
+            ("tests/test_stochastic_gradient_failure_policy.py",),
+            ("confidence interval validation", "fail-closed uncertainty policy"),
+        ),
+        _record(
             "src/scpn_quantum_control/differentiable_rust_python_inventory.py",
             ("tests/test_differentiable_rust_python_inventory.py",),
             ("rustification classification rows", "claim-ledger readiness guards"),

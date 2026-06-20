@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import numpy as np
 import pytest
+from numpy.typing import NDArray
 
 from scpn_quantum_control.differentiable import (
     SPSAObjectiveSample,
@@ -22,7 +23,7 @@ engine = pytest.importorskip("scpn_quantum_engine")
 
 
 def test_rust_spsa_gradient_matches_python_materialised_records() -> None:
-    def objective(values: np.ndarray, shots: int | None) -> SPSAObjectiveSample:
+    def objective(values: NDArray[np.float64], shots: int | None) -> SPSAObjectiveSample:
         assert shots == 400
         return SPSAObjectiveSample(
             value=float(0.5 * values[0] - 0.25 * values[1]),

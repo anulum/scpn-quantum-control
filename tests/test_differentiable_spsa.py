@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import numpy as np
 import pytest
+from numpy.typing import NDArray
 
 import scpn_quantum_control as scpn
 from scpn_quantum_control import Parameter
@@ -21,7 +22,7 @@ from scpn_quantum_control.differentiable import (
 )
 
 
-def _linear_objective(params: np.ndarray) -> float:
+def _linear_objective(params: NDArray[np.float64]) -> float:
     return float(1.2 * params[0] + 0.5)
 
 
@@ -70,7 +71,7 @@ def test_spsa_gradient_estimate_is_seeded_and_records_probe_pairs() -> None:
 def test_spsa_gradient_estimate_propagates_finite_shot_uncertainty() -> None:
     params = np.array([0.4, -0.2], dtype=np.float64)
 
-    def sample_objective(values: np.ndarray, shots: int | None) -> SPSAObjectiveSample:
+    def sample_objective(values: NDArray[np.float64], shots: int | None) -> SPSAObjectiveSample:
         assert shots == 400
         return SPSAObjectiveSample(
             value=float(0.5 * values[0] - 0.25 * values[1]),
@@ -91,7 +92,9 @@ def test_spsa_gradient_estimate_propagates_finite_shot_uncertainty() -> None:
 
     assert result.method == "finite_shot_spsa"
     assert result.total_shots == 3200
-    assert result.records[0].plus.metadata["fixture"] == "finite-shot"
+    metadata = result.records[0].plus.metadata
+    assert metadata is not None
+    assert metadata["fixture"] == "finite-shot"
     assert np.all(result.standard_error > 0.0)
     np.testing.assert_allclose(result.confidence_radius, 2.0 * result.standard_error)
 
