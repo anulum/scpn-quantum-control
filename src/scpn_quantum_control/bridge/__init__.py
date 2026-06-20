@@ -18,6 +18,12 @@ from .control_plasma_knm import (
     build_knm_plasma_spec,
     plasma_omega,
 )
+from .fusion_core_frc import (
+    FRCEquilibriumLike,
+    FusionCoreFRCCalibration,
+    calibrate_frc_surrogate_from_equilibrium,
+    calibrate_frc_surrogate_from_inputs,
+)
 from .knm_hamiltonian import (
     OMEGA_N_16,
     build_knm_paper27,
@@ -60,6 +66,10 @@ __all__ = [
     "build_knm_plasma_spec",
     "build_knm_plasma_from_config",
     "plasma_omega",
+    "FRCEquilibriumLike",
+    "FusionCoreFRCCalibration",
+    "calibrate_frc_surrogate_from_equilibrium",
+    "calibrate_frc_surrogate_from_inputs",
     "LockSignatureArtifact",
     "LayerStateArtifact",
     "UPDEPhaseArtifact",

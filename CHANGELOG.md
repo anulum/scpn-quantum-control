@@ -5,6 +5,15 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-06-21 — Added a SCPN-FUSION-CORE FRC calibration bridge
+  (`scpn_quantum_control.bridge.fusion_core_frc`):
+  `calibrate_frc_surrogate_from_equilibrium`, `calibrate_frc_surrogate_from_inputs`,
+  the `FRCEquilibriumLike` structural contract, and the `FusionCoreFRCCalibration`
+  provenance record. The bridge derives the pulsed-shot QAOA scheduler's
+  `FRCPlasmaSurrogate` reference field, s-parameter, and plasma mass density from a
+  fusion-core rigid-rotor equilibrium, records which surrogate fields are
+  physics-derived versus control-grade defaults, and imports fusion-core lazily with
+  an optional `repo_src` fallback.
 - 2026-06-19 — Added fail-closed Enzyme/MLIR compiler-AD breadth evidence
   through `EnzymeMLIRCompilerADBreadthEvidence` and
   `build_enzyme_mlir_compiler_ad_breadth_evidence(...)`. The Enzyme/MLIR

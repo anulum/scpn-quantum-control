@@ -565,11 +565,55 @@ each computed from the full statevector. For n=8 this is 28 pairs.
 
 ---
 
+### 13. `fusion_core_frc` — Fusion-Core FRC Calibration Bridge
+
+Calibrates the pulsed-shot QAOA scheduler's
+`control.qaoa_pulsed_cost.FRCPlasmaSurrogate` from a SCPN-FUSION-CORE rigid-rotor
+FRC equilibrium. SCPN-FUSION-CORE owns the FRC physics (2026-05-31 cross-repo
+solver-ownership broadcast); this bridge is the consumption path the surrogate
+docstring asks for.
+
+#### `calibrate_frc_surrogate_from_equilibrium(equilibrium, *, reference_field_T, elongation=None, mass_amu=2.014, base_surrogate=None, require_converged=True)`
+
+Pure core; needs no fusion-core import. Accepts any object satisfying
+`FRCEquilibriumLike` and overrides exactly three surrogate fields from physics:
+
+- `reference_field_T` ← external confining field `B_ext`
+- `reference_s_parameter` ← fusion-core `s = R_s / rho_i`
+- `plasma_mass_density_kg_per_m3` ← `density_peak_m3 * mass_amu * u`
+
+Returns `(FRCPlasmaSurrogate, FusionCoreFRCCalibration)`. Fails closed on an
+unconverged equilibrium unless `require_converged=False`.
+
+#### `calibrate_frc_surrogate_from_inputs(*, n0, T_i_eV, T_e_eV, R_s, B_ext, ..., repo_src=None)`
+
+Solves a fusion-core equilibrium (no-rotation Steinhauer limit) and delegates to
+the pure core. Builds a valid radial grid when none is supplied and imports
+`scpn_fusion.core.frc_rigid_rotor` lazily with an optional `repo_src` fallback.
+
+#### `FRCEquilibriumLike`
+
+Structural `Protocol` (`s_parameter`, `density_peak_m3`, `converged`, `R_null`,
+`target_separatrix_radius_m`) decoupling the bridge from the concrete fusion-core
+equilibrium type.
+
+#### `FusionCoreFRCCalibration`
+
+Frozen provenance record (`to_dict` / `from_dict` / `to_json` / `from_json`) listing
+the fusion-core-derived quantities and which surrogate fields were physics-derived
+versus retained from the control-grade base surrogate. Every other surrogate field
+(compression exponent, Atwood number, perturbation wavelength, areal mass, initial
+perturbation, tilt threshold) is retained from the base surrogate because the radial
+equilibrium does not determine it.
+
+---
+
 ## Cross-Repository Dependencies
 
 | Module | External Package | Required? |
 |--------|-----------------|-----------|
 | `control_plasma_knm` | scpn-control | Optional (ImportError with instructions) |
+| `fusion_core_frc` | scpn-fusion-core | Optional (ImportError with instructions) |
 | `snn_adapter.ArcaneNeuronBridge` | sc-neurocore >= 3.14 | Optional (ImportError with instructions) |
 | `ssgf_adapter.SSGFQuantumLoop` | SCPN-CODEBASE (SSGFEngine) | Optional (runtime only) |
 | `orchestrator_adapter` | scpn-phase-orchestrator | No (works with any dict/object) |
