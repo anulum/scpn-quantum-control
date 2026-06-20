@@ -213,6 +213,10 @@ provenance. Legacy opcode-free metadata, aliases, mutation, array semantics,
 source-level and non-executed branch semantics, general Program AD execution,
 LLVM/JIT differentiated execution, hardware, provider, and performance routes
 remain fail-closed.
+Python callers may use `scpn_quantum_control.program_ad_rust_bridge` directly
+for the typed fail-closed wrappers, while the historical
+`scpn_quantum_control.differentiable` facade re-exports the same result
+dataclasses and helper functions for compatibility.
 `compile_whole_program_ad_trace_to_mlir(...)` lowers captured
 `program_ad_effect_ir.v1` records into deterministic
 `scpn_diff.program_ad_ssa`, `scpn_diff.program_ad_effect`,

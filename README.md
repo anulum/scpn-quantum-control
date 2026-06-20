@@ -97,8 +97,8 @@ has a defined commercial licensing route.
 |---|---:|
 | Package version | 0.9.12 |
 | Public API exports | 712 |
-| Python source modules | 837 |
-| Public Python classes | 1836 |
+| Python source modules | 838 |
+| Public Python classes | 1837 |
 | Paper 0 validation modules | 466 |
 | Domain package families | 32 |
 | API documentation pages | 0 |
@@ -107,7 +107,7 @@ has a defined commercial licensing route.
 | Notebook files | 98 |
 | Example files | 30 |
 | Optional extras | 42 |
-| Python test files | 1958 |
+| Python test files | 1959 |
 | Public documentation pages | 254 |
 | GitHub Actions workflows | 19 |
 
@@ -342,6 +342,9 @@ value+gradient rows, including executed runtime branch metadata when matched by
 runtime phi provenance. It still fails closed on legacy opcode-free metadata,
 aliases, mutation, arrays, source-level/non-executed branch semantics, general
 Program AD execution, LLVM/JIT execution, hardware, and performance promotion.
+Python callers can use `scpn_quantum_control.program_ad_rust_bridge` for the
+typed fail-closed wrappers; `scpn_quantum_control.differentiable` re-exports
+the same symbols for backward compatibility.
 Python compiler interchange lowers captured `program_ad_effect_ir.v1` records
 into deterministic `scpn_diff.program_ad_*` MLIR-style operations through
 `compile_whole_program_ad_trace_to_mlir(...)`, validated by

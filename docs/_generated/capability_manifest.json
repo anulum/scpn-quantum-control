@@ -10,11 +10,11 @@
     "paper0_validation_modules": 466,
     "public_api_exports": 712,
     "public_documentation_pages": 254,
-    "python_model_classes": 1836,
-    "python_model_source_modules": 837,
+    "python_model_classes": 1837,
+    "python_model_source_modules": 838,
     "rust_pyo3_model_wrappers": 137,
     "rust_source_modules": 38,
-    "test_files": 1958
+    "test_files": 1959
   },
   "documentation": {
     "examples": [
@@ -5646,6 +5646,10 @@
         "path": "src/scpn_quantum_control/differentiable.py"
       },
       {
+        "name": "ProgramADEffectIRLike",
+        "path": "src/scpn_quantum_control/program_ad_rust_bridge.py"
+      },
+      {
         "name": "ProgramADLinalgConditioningDiagnostic",
         "path": "src/scpn_quantum_control/differentiable.py"
       },
@@ -6367,11 +6371,11 @@
       },
       {
         "name": "RustProgramADInterpreterResult",
-        "path": "src/scpn_quantum_control/differentiable.py"
+        "path": "src/scpn_quantum_control/program_ad_rust_bridge.py"
       },
       {
         "name": "RustProgramADValueAndGradientResult",
-        "path": "src/scpn_quantum_control/differentiable.py"
+        "path": "src/scpn_quantum_control/program_ad_rust_bridge.py"
       },
       {
         "name": "S1FeedbackArmCircuit",
@@ -9200,6 +9204,7 @@
       "src/scpn_quantum_control/phase/varqite.py",
       "src/scpn_quantum_control/phase/xy_compiler.py",
       "src/scpn_quantum_control/phase/xy_kuramoto.py",
+      "src/scpn_quantum_control/program_ad_rust_bridge.py",
       "src/scpn_quantum_control/psi_field/infoton.py",
       "src/scpn_quantum_control/psi_field/lattice.py",
       "src/scpn_quantum_control/psi_field/observables.py",
@@ -11552,6 +11557,7 @@
       "tests/test_prepare_s1_ibm_live_readiness.py",
       "tests/test_probe_s1_generic_gate_metadata.py",
       "tests/test_probe_s1_ibm_metadata.py",
+      "tests/test_program_ad_rust_bridge.py",
       "tests/test_project_paths.py",
       "tests/test_provenance.py",
       "tests/test_provider_capability_discovery.py",

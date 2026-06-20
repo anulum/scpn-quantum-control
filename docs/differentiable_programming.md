@@ -75,6 +75,11 @@ when matched by runtime phi provenance. Legacy opcode-free metadata, aliases,
 mutation, array semantics, source-level and non-executed branch semantics,
 general Program AD execution, LLVM/JIT lowering, hardware execution, and
 performance promotion remain fail-closed.
+Python integration is isolated in
+`scpn_quantum_control.program_ad_rust_bridge`, which owns the typed wrapper
+dataclasses, native-extension fail-closed handling, JSON payload validation,
+and NumPy input normalisation. The legacy differentiable-programming facade
+continues to re-export those bridge symbols.
 Python compiler interchange lowers captured `program_ad_effect_ir.v1` records
 into deterministic `scpn_diff.program_ad_ssa`,
 `scpn_diff.program_ad_effect`, `scpn_diff.program_ad_alias_edge`,
