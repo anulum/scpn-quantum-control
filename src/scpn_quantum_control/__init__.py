@@ -517,6 +517,10 @@ from .differentiable_api import (
     differentiable_value,
     explain_differentiability,
 )
+from .differentiable_benchmark_report import (
+    DifferentiableBenchmarkReport,
+    build_differentiable_benchmark_report,
+)
 from .differentiable_module_hardening_audit import (
     DifferentiableModuleHardeningAuditResult,
     DifferentiableModuleHardeningRecord,
@@ -1352,6 +1356,8 @@ __all__ = [
     "DifferentiableDashboardCapabilityRow",
     "DifferentiableDashboardCapabilityState",
     "DifferentiableDashboardStatus",
+    "DifferentiableBenchmarkReport",
+    "build_differentiable_benchmark_report",
     "differentiable_api",
     "differentiable_benchmark_report",
     "differentiable_compile_report",

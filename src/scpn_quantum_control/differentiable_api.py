@@ -10,16 +10,12 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Mapping, Sequence
-from dataclasses import dataclass, fields, is_dataclass
+from dataclasses import dataclass
 from typing import Any, Literal, TypeAlias, cast
 
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
 
-from .benchmarks.differentiable_programming import (
-    run_differentiable_programming_benchmark_suite,
-    run_quantum_gradient_benchmark_suite,
-)
 from .compiler.mlir import (
     build_compiler_ad_transform_plan,
     compile_compiler_ad_transform_plan_to_mlir,
@@ -36,13 +32,14 @@ from .differentiable import (
     value_and_hessian,
     value_and_jacobian,
 )
+from .differentiable_benchmark_report import build_differentiable_benchmark_report
 from .differentiable_rust_python_inventory import run_differentiable_rust_python_inventory
 from .differentiable_sota_scorecard import run_differentiable_sota_scorecard
 from .phase.gradient_backend import (
     plan_quantum_gradient_backend,
     quantum_gradient_backend_capability,
 )
-from .phase.gradient_support_matrix import plan_gradient_support, run_gradient_support_matrix_audit
+from .phase.gradient_support_matrix import plan_gradient_support
 from .phase.qnn_framework_bridge_matrix import run_bounded_qnn_framework_bridge_matrix
 
 FloatArray: TypeAlias = NDArray[np.float64]
@@ -475,33 +472,17 @@ def differentiable_compile_report(
 
 def differentiable_benchmark_report() -> UnifiedDifferentiableAPIResult:
     """Return local non-performance benchmark/conformance evidence."""
-    program_rows = run_differentiable_programming_benchmark_suite()
-    quantum_rows = run_quantum_gradient_benchmark_suite()
-    support_audit = run_gradient_support_matrix_audit()
-    passed = (
-        all(row.passed for row in program_rows)
-        and all(row.passed for row in quantum_rows)
-        and support_audit.passed
-    )
+    report = build_differentiable_benchmark_report()
     return UnifiedDifferentiableAPIResult(
         operation="benchmark_report",
-        supported=passed,
-        method="local_conformance_bundle",
+        supported=report.supported,
+        method=report.method,
         value=None,
         gradient=None,
         jacobian=None,
         hessian=None,
-        payload={
-            "program_ad_case_count": len(program_rows),
-            "quantum_gradient_case_count": len(quantum_rows),
-            "support_audit_passed": support_audit.passed,
-            "program_ad_cases": [_dataclass_payload(row) for row in program_rows],
-            "quantum_gradient_cases": [_dataclass_payload(row) for row in quantum_rows],
-        },
-        claim_boundary=(
-            "local deterministic conformance benchmark bundle; not isolated "
-            "performance, hardware, or provider execution evidence"
-        ),
+        payload=report.payload,
+        claim_boundary=report.claim_boundary,
     )
 
 
@@ -1255,30 +1236,6 @@ def _selected_primitive_keys(
     if not keys:
         raise ValueError("primitive_identities must be non-empty when provided")
     return keys
-
-
-def _dataclass_payload(value: object) -> dict[str, object]:
-    if not is_dataclass(value):
-        raise TypeError("benchmark payload values must be dataclass instances")
-    payload: dict[str, object] = {}
-    for field in fields(value):
-        payload[field.name] = _json_ready(getattr(value, field.name))
-    passed = getattr(value, "passed", None)
-    if isinstance(passed, bool):
-        payload["passed"] = passed
-    return payload
-
-
-def _json_ready(value: object) -> object:
-    if isinstance(value, np.ndarray):
-        return value.tolist()
-    if isinstance(value, tuple):
-        return [_json_ready(item) for item in value]
-    if isinstance(value, list):
-        return [_json_ready(item) for item in value]
-    if isinstance(value, Mapping):
-        return {str(key): _json_ready(item) for key, item in value.items()}
-    return value
 
 
 def _dependency_matrix_rows() -> tuple[Mapping[str, object], ...]:

@@ -166,6 +166,10 @@ or debugging a subsystem, not as the default path for tutorial code.
     options:
       members: [DifferentiableModuleHardeningAuditResult, DifferentiableModuleHardeningRecord, differentiable_module_hardening_registry, run_differentiable_module_hardening_audit]
 
+::: scpn_quantum_control.differentiable_benchmark_report
+    options:
+      members: [DifferentiableBenchmarkReport, build_differentiable_benchmark_report]
+
 ::: scpn_quantum_control.benchmarks.differentiable_evidence
     options:
       members: [BenchmarkIsolationMetadata, DifferentiableBenchmarkEvidenceBundle, capture_host_load, infer_heavy_jobs_running, read_cpu_frequency_mhz, read_cpu_governor, write_differentiable_benchmark_evidence_bundle]

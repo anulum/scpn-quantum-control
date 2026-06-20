@@ -8,13 +8,13 @@
     "notebook_files": 98,
     "optional_extras": 42,
     "paper0_validation_modules": 466,
-    "public_api_exports": 712,
+    "public_api_exports": 714,
     "public_documentation_pages": 254,
-    "python_model_classes": 1837,
-    "python_model_source_modules": 840,
+    "python_model_classes": 1838,
+    "python_model_source_modules": 841,
     "rust_pyo3_model_wrappers": 137,
     "rust_source_modules": 38,
-    "test_files": 1961
+    "test_files": 1962
   },
   "documentation": {
     "examples": [
@@ -2212,6 +2212,10 @@
       {
         "name": "DifferentiableBenchmarkEvidenceBundle",
         "path": "src/scpn_quantum_control/benchmarks/differentiable_evidence.py"
+      },
+      {
+        "name": "DifferentiableBenchmarkReport",
+        "path": "src/scpn_quantum_control/differentiable_benchmark_report.py"
       },
       {
         "name": "DifferentiableDashboardCapabilityRow",
@@ -8549,6 +8553,7 @@
       "src/scpn_quantum_control/deployment/cloud_native.py",
       "src/scpn_quantum_control/differentiable.py",
       "src/scpn_quantum_control/differentiable_api.py",
+      "src/scpn_quantum_control/differentiable_benchmark_report.py",
       "src/scpn_quantum_control/differentiable_claim_ledger.py",
       "src/scpn_quantum_control/differentiable_external_validation.py",
       "src/scpn_quantum_control/differentiable_framework_overlay.py",
@@ -9471,6 +9476,7 @@
     "DWaveLeapHALAdapter",
     "DifferentiabilityDiagnosticReport",
     "DifferentiableBenchmarkClassificationCase",
+    "DifferentiableBenchmarkReport",
     "DifferentiableDashboardCapabilityRow",
     "DifferentiableDashboardCapabilityState",
     "DifferentiableDashboardStatus",
@@ -9735,6 +9741,7 @@
     "braket_circuit_to_workload",
     "build_backend",
     "build_compiler_ad_transform_plan",
+    "build_differentiable_benchmark_report",
     "build_enzyme_mlir_benchmark_attachment",
     "build_enzyme_mlir_compiler_ad_breadth_artifact",
     "build_enzyme_mlir_compiler_ad_breadth_evidence",
@@ -10808,6 +10815,7 @@
       "tests/test_differentiable.py",
       "tests/test_differentiable_api.py",
       "tests/test_differentiable_benchmark_evidence.py",
+      "tests/test_differentiable_benchmark_report.py",
       "tests/test_differentiable_benchmark_workflow.py",
       "tests/test_differentiable_claim_ledger.py",
       "tests/test_differentiable_external_comparisons.py",

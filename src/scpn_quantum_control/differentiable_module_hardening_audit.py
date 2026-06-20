@@ -122,6 +122,11 @@ def differentiable_module_hardening_registry() -> tuple[DifferentiableModuleHard
             ("unified support reports", "unsupported-route diagnostics"),
         ),
         _record(
+            "src/scpn_quantum_control/differentiable_benchmark_report.py",
+            ("tests/test_differentiable_benchmark_report.py",),
+            ("local conformance bundle", "non-isolated benchmark claim boundary"),
+        ),
+        _record(
             "src/scpn_quantum_control/differentiable_claim_ledger.py",
             ("tests/test_differentiable_claim_ledger.py",),
             ("public-language guard", "support-surface alignment errors"),
