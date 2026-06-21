@@ -213,6 +213,15 @@ from .differentiable_stochastic_policy import (
     gradient_confidence_interval,
 )
 from .differentiable_transform_helpers import (
+    _as_scalar as _as_scalar,
+)
+from .differentiable_transform_helpers import (
+    _as_vector_output as _as_vector_output,
+)
+from .differentiable_transform_helpers import (
+    _clip_gradient as _clip_gradient,
+)
+from .differentiable_transform_helpers import (
     _normalise_parameters,
 )
 from .differentiable_vmap import vmap
