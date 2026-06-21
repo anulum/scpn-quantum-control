@@ -78,6 +78,29 @@ def _list_payload(value: object) -> list[Any]:
     return value
 
 
+def _minimal_whole_program_result(
+    adjoint_result: ProgramADAdjointResult | None,
+) -> WholeProgramADResult:
+    """Build a minimal whole-program result for adjoint accessor tests."""
+
+    return WholeProgramADResult(
+        value=1.0,
+        gradient=np.array([1.0], dtype=np.float64),
+        method="whole_program_ad",
+        step=0.0,
+        evaluations=1,
+        parameter_names=("x",),
+        trainable=(True,),
+        trace_events=(),
+        source=None,
+        control_flow_observed=False,
+        numpy_observed=False,
+        polyglot_targets={"python": "local"},
+        claim_boundary="test-only whole-program result",
+        adjoint_result=adjoint_result,
+    )
+
+
 def test_program_adjoint_input_token_helpers_resolve_literals_and_ir_values() -> None:
     """Program adjoint token helpers should resolve SSA and literal input tokens."""
 
@@ -104,6 +127,25 @@ def test_program_adjoint_input_token_helpers_resolve_literals_and_ir_values() ->
     assert adjoint_module._program_adjoint_input_value(
         "np.float64(-1.5)", node_by_name
     ) == pytest.approx(-1.5)
+
+
+def test_program_adjoint_accessors_fail_closed_for_invalid_or_unsupported_results() -> None:
+    """Extracted adjoint accessors should reject invalid or unsupported inputs."""
+
+    unsupported_adjoint = ProgramADAdjointResult(
+        gradient=np.array([0.0], dtype=np.float64),
+        supported=False,
+        unsupported_ops=("unsupported_op",),
+        method="program_adjoint_ir_generation",
+        claim_boundary="unsupported scalar replay",
+    )
+
+    with pytest.raises(ValueError, match="WholeProgramADResult"):
+        adjoint_module.program_adjoint_result(object())
+    with pytest.raises(ValueError, match="does not contain adjoint"):
+        adjoint_module.program_adjoint_result(_minimal_whole_program_result(None))
+    with pytest.raises(ValueError, match="unsupported for ops: unsupported_op"):
+        adjoint_module.program_adjoint_gradient(_minimal_whole_program_result(unsupported_adjoint))
 
 
 def test_program_adjoint_input_token_helpers_fail_closed_for_missing_or_bad_tokens() -> None:
@@ -162,8 +204,10 @@ def test_whole_program_ad_is_exported_from_package_root() -> None:
         scpn.WholeProgramUnsupportedSemanticDiagnostic is WholeProgramUnsupportedSemanticDiagnostic
     )
     assert scpn.program_adjoint_grad is program_adjoint_grad
-    assert scpn.program_adjoint_gradient is program_adjoint_gradient
-    assert scpn.program_adjoint_result is program_adjoint_result
+    assert differentiable.program_adjoint_gradient is adjoint_module.program_adjoint_gradient
+    assert differentiable.program_adjoint_result is adjoint_module.program_adjoint_result
+    assert scpn.program_adjoint_gradient is adjoint_module.program_adjoint_gradient
+    assert scpn.program_adjoint_result is adjoint_module.program_adjoint_result
     assert scpn.program_adjoint_value_and_grad is program_adjoint_value_and_grad
     assert scpn.analyze_program_ad_alias_effects is analyze_program_ad_alias_effects
     assert scpn.program_ad_static_alias_lattice_report is program_ad_static_alias_lattice_report
@@ -400,7 +444,18 @@ def test_program_adjoint_result_validation_paths() -> None:
     result_payload = _dict_payload(result.to_dict())
     result_steps = _list_payload(result_payload["adjoint_steps"])
     first_step = _dict_payload(result_steps[0])
+    no_effect_step = ProgramADAdjointStep(
+        index=0,
+        primal_value="%0",
+        primal_effect=None,
+        operation="branch:%0:True",
+        input_values=(),
+        contribution_inputs=(),
+        supported=True,
+    )
     assert result.supported is True
+    assert no_effect_step.primal_effect is None
+    assert no_effect_step.effect_kind is None
     assert result.replay_ir_format == "program_ad_effect_ir.v1"
     assert result.adjoint_step_count == 1
     assert first_step["operation"] == "parameter"

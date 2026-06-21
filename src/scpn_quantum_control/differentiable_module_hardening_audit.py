@@ -228,7 +228,11 @@ def differentiable_module_hardening_registry() -> tuple[DifferentiableModuleHard
         _record(
             "src/scpn_quantum_control/program_ad_adjoint.py",
             ("tests/test_program_adjoint_replay.py",),
-            ("reverse-adjoint result records", "input-token replay helpers"),
+            (
+                "reverse-adjoint result records",
+                "input-token replay helpers",
+                "reverse-adjoint result accessors",
+            ),
         ),
         _record(
             "src/scpn_quantum_control/program_ad_alias_analysis.py",

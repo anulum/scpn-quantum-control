@@ -4,8 +4,8 @@
 # © Code 2020-2026 Miroslav Sotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# scpn-quantum-control -- Program AD reverse-adjoint result records
-"""Program AD reverse-adjoint generation result records."""
+# scpn-quantum-control -- Program AD reverse-adjoint result records and accessors
+"""Program AD reverse-adjoint generation result records and accessors."""
 
 from __future__ import annotations
 
@@ -331,6 +331,65 @@ def _as_real_numeric_array(label: str, value: object) -> NDArray[np.float64]:
     return array
 
 
+def program_adjoint_result(result: object) -> ProgramADAdjointResult:
+    """Return the reverse-mode adjoint generation result attached to Program AD.
+
+    Parameters
+    ----------
+    result:
+        Whole-program AD result that should carry reverse-adjoint replay
+        metadata.
+
+    Returns
+    -------
+    ProgramADAdjointResult
+        Attached reverse-adjoint replay result.
+
+    Raises
+    ------
+    ValueError
+        If ``result`` is not a whole-program AD result or has no attached
+        adjoint metadata.
+    """
+
+    from .whole_program_ad_result import WholeProgramADResult
+
+    if not isinstance(result, WholeProgramADResult):
+        raise ValueError("program adjoint input must be a WholeProgramADResult")
+    if result.adjoint_result is None:
+        raise ValueError("program AD result does not contain adjoint generation metadata")
+    return result.adjoint_result
+
+
+def program_adjoint_gradient(result: object) -> NDArray[np.float64]:
+    """Return a supported reverse-mode adjoint gradient or fail closed.
+
+    Parameters
+    ----------
+    result:
+        Whole-program AD result whose attached reverse-adjoint metadata should
+        be supported.
+
+    Returns
+    -------
+    numpy.ndarray
+        Copy of the attached reverse-adjoint gradient.
+
+    Raises
+    ------
+    ValueError
+        If no adjoint metadata is attached or the captured IR has unsupported
+        operations.
+    """
+
+    adjoint = program_adjoint_result(result)
+    if not adjoint.supported:
+        unsupported = ", ".join(adjoint.unsupported_ops)
+        raise ValueError(f"program AD adjoint generation unsupported for ops: {unsupported}")
+    gradient: NDArray[np.float64] = adjoint.gradient.copy()
+    return gradient
+
+
 def _program_adjoint_input_value(
     name: str,
     node_by_name: Mapping[str, WholeProgramIRNode],
@@ -355,4 +414,9 @@ def _program_adjoint_is_ir_value(name: str) -> bool:
     return isinstance(name, str) and name.startswith("%") and name[1:].isdigit()
 
 
-__all__ = ["ProgramADAdjointResult", "ProgramADAdjointStep"]
+__all__ = [
+    "ProgramADAdjointResult",
+    "ProgramADAdjointStep",
+    "program_adjoint_gradient",
+    "program_adjoint_result",
+]

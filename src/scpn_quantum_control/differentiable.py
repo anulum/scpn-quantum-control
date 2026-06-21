@@ -210,8 +210,14 @@ from .differentiable_vmap import vmap
 from .program_ad_adjoint import (
     ProgramADAdjointResult,
     ProgramADAdjointStep,
-    _program_adjoint_input_value,
-    _program_adjoint_is_ir_value,
+    program_adjoint_gradient,
+    program_adjoint_result,
+)
+from .program_ad_adjoint import (
+    _program_adjoint_input_value as _program_adjoint_input_value,
+)
+from .program_ad_adjoint import (
+    _program_adjoint_is_ir_value as _program_adjoint_is_ir_value,
 )
 from .program_ad_alias_analysis import (
     PROGRAM_AD_ALIAS_EFFECT_CLAIM_BOUNDARY as PROGRAM_AD_ALIAS_EFFECT_CLAIM_BOUNDARY,
@@ -5429,27 +5435,6 @@ def whole_program_grad(
     return whole_program_value_and_grad(
         objective, values, parameters=parameters, trace=trace
     ).gradient
-
-
-def program_adjoint_result(result: WholeProgramADResult) -> ProgramADAdjointResult:
-    """Return the reverse-mode adjoint generation result attached to Program AD."""
-
-    if not isinstance(result, WholeProgramADResult):
-        raise ValueError("program adjoint input must be a WholeProgramADResult")
-    if result.adjoint_result is None:
-        raise ValueError("program AD result does not contain adjoint generation metadata")
-    return result.adjoint_result
-
-
-def program_adjoint_gradient(result: WholeProgramADResult) -> NDArray[np.float64]:
-    """Return a supported reverse-mode adjoint gradient or fail closed."""
-
-    adjoint = program_adjoint_result(result)
-    if not adjoint.supported:
-        unsupported = ", ".join(adjoint.unsupported_ops)
-        raise ValueError(f"program AD adjoint generation unsupported for ops: {unsupported}")
-    gradient: NDArray[np.float64] = adjoint.gradient.copy()
-    return gradient
 
 
 def program_adjoint_grad(
