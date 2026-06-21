@@ -36,6 +36,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import numpy as np
+from numpy.typing import NDArray
 
 from ..bridge.knm_hamiltonian import build_knm_paper27
 from .wilson_loop import compute_wilson_loops
@@ -54,8 +55,8 @@ class ConfinementResult:
 
 
 def _average_wilson_by_length(
-    K: np.ndarray,
-    omega: np.ndarray,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
     length: int,
 ) -> float:
     """Average Wilson loop magnitude for loops of given length."""
@@ -91,8 +92,8 @@ def extract_string_tension(
 
 
 def confinement_analysis(
-    K: np.ndarray,
-    omega: np.ndarray,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
 ) -> ConfinementResult:
     """Full confinement-deconfinement analysis.
 
@@ -122,15 +123,15 @@ def confinement_analysis(
 
 
 def confinement_vs_coupling(
-    omega: np.ndarray,
-    k_values: np.ndarray | None = None,
+    omega: NDArray[np.float64],
+    k_values: NDArray[np.float64] | None = None,
 ) -> dict[str, list[float]]:
     """Scan confinement across coupling strength.
 
     At K_c, the string tension should vanish (deconfinement transition).
     """
     if k_values is None:
-        k_values = np.linspace(0.1, 3.0, 15)
+        k_values = np.linspace(0.1, 3.0, 15, dtype=np.float64)
 
     n = len(omega)
     results: dict[str, list[float]] = {

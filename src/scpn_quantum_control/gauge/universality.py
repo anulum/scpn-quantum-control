@@ -28,6 +28,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import numpy as np
+from numpy.typing import NDArray
 from qiskit.quantum_info import SparsePauliOp, Statevector
 
 from ..hardware.classical import classical_exact_diag
@@ -47,7 +48,7 @@ class UniversalityResult:
 
 
 def _xy_correlator(
-    psi: np.ndarray,
+    psi: NDArray[np.complex128],
     i: int,
     j: int,
     n: int,
@@ -70,8 +71,8 @@ def _xy_correlator(
 
 
 def correlation_vs_distance(
-    K: np.ndarray,
-    omega: np.ndarray,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
 ) -> tuple[list[float], list[float]]:
     """Compute XY correlation function vs graph distance.
 
@@ -118,8 +119,8 @@ def fit_correlation_exponent(
 
 
 def check_nelson_kosterlitz(
-    K: np.ndarray,
-    omega: np.ndarray,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
 ) -> tuple[float, float]:
     """Check Nelson-Kosterlitz universal stiffness jump.
 
@@ -151,8 +152,8 @@ def check_nelson_kosterlitz(
 
 
 def universality_analysis(
-    K: np.ndarray,
-    omega: np.ndarray,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
 ) -> UniversalityResult:
     """Full BKT universality class check."""
     n = K.shape[0]

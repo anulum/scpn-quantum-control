@@ -33,6 +33,7 @@ from dataclasses import dataclass
 from itertools import combinations
 
 import numpy as np
+from numpy.typing import NDArray
 from qiskit.quantum_info import SparsePauliOp, Statevector
 
 from ..hardware.classical import classical_exact_diag
@@ -48,10 +49,10 @@ class VortexResult:
     vortex_density: float  # (n_v + n_av) / n_plaquettes
     net_charge: int  # n_v - n_av (should be 0 on closed manifold)
     plaquette_vorticities: list[int]
-    phases: np.ndarray  # extracted oscillator phases
+    phases: NDArray[np.float64]  # extracted oscillator phases
 
 
-def _extract_phases(psi: np.ndarray, n_qubits: int) -> np.ndarray:
+def _extract_phases(psi: NDArray[np.complex128], n_qubits: int) -> NDArray[np.float64]:
     """Extract oscillator phases from statevector via Pauli expectations."""
     sv = Statevector(np.ascontiguousarray(psi))
     phases = np.zeros(n_qubits)
@@ -63,11 +64,11 @@ def _extract_phases(psi: np.ndarray, n_qubits: int) -> np.ndarray:
         exp_x = float(sv.expectation_value(SparsePauliOp("".join(reversed(label_x)))).real)
         exp_y = float(sv.expectation_value(SparsePauliOp("".join(reversed(label_y)))).real)
         phases[i] = np.arctan2(exp_y, exp_x)
-    result: np.ndarray = phases
+    result: NDArray[np.float64] = phases
     return result
 
 
-def _find_plaquettes(K: np.ndarray) -> list[list[int]]:
+def _find_plaquettes(K: NDArray[np.float64]) -> list[list[int]]:
     """Find triangular plaquettes on the coupling graph.
 
     A plaquette is a minimal closed loop. For a general graph,
@@ -87,7 +88,7 @@ def _angle_diff(a: float, b: float) -> float:
     return float(d - 2 * np.pi * round(d / (2 * np.pi)))
 
 
-def plaquette_vorticity(phases: np.ndarray, plaquette: list[int]) -> int:
+def plaquette_vorticity(phases: NDArray[np.float64], plaquette: list[int]) -> int:
     """Compute vorticity (winding number) around a plaquette.
 
     q = round(Σ Δθ / (2π)) where Δθ is the signed phase difference.
@@ -101,8 +102,8 @@ def plaquette_vorticity(phases: np.ndarray, plaquette: list[int]) -> int:
 
 
 def measure_vortex_density(
-    K: np.ndarray,
-    omega: np.ndarray,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
 ) -> VortexResult:
     """Measure vortex density from the ground state of H(K, omega)."""
     n = K.shape[0]
@@ -134,8 +135,8 @@ def measure_vortex_density(
 
 
 def vortex_density_vs_coupling(
-    omega: np.ndarray,
-    k_base_values: np.ndarray | None = None,
+    omega: NDArray[np.float64],
+    k_base_values: NDArray[np.float64] | None = None,
 ) -> dict[str, list[float]]:
     """Scan vortex density vs coupling strength.
 
@@ -144,7 +145,7 @@ def vortex_density_vs_coupling(
     from ..bridge.knm_hamiltonian import build_knm_paper27
 
     if k_base_values is None:
-        k_base_values = np.linspace(0.01, 3.0, 20)
+        k_base_values = np.linspace(0.01, 3.0, 20, dtype=np.float64)
 
     n = len(omega)
     results: dict[str, list[float]] = {

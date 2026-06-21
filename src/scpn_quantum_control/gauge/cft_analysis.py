@@ -31,6 +31,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import numpy as np
+from numpy.typing import NDArray
 
 from ..analysis.entanglement_spectrum import (
     entanglement_analysis,
@@ -53,7 +54,7 @@ class CFTResult:
 
 
 def find_critical_coupling(
-    omega: np.ndarray,
+    omega: NDArray[np.float64],
     k_range: tuple[float, float] = (0.01, 5.0),
     n_points: int = 30,
 ) -> tuple[float, list[float], list[float]]:
@@ -62,7 +63,7 @@ def find_critical_coupling(
     At the critical point, entanglement is maximal (log divergence).
     """
     n = len(omega)
-    k_values = np.linspace(k_range[0], k_range[1], n_points)
+    k_values = np.linspace(k_range[0], k_range[1], n_points, dtype=np.float64)
     entropies: list[float] = []
 
     for kb in k_values:
@@ -76,8 +77,8 @@ def find_critical_coupling(
 
 
 def extract_central_charge(
-    K: np.ndarray,
-    omega: np.ndarray,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
 ) -> float | None:
     """Extract CFT central charge c from entanglement scaling at given K.
 
@@ -92,7 +93,7 @@ def extract_central_charge(
 
 
 def cft_analysis(
-    omega: np.ndarray,
+    omega: NDArray[np.float64],
     k_range: tuple[float, float] = (0.01, 5.0),
     n_points: int = 30,
 ) -> CFTResult:

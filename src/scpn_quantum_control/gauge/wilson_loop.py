@@ -33,6 +33,7 @@ from dataclasses import dataclass
 from itertools import combinations
 
 import numpy as np
+from numpy.typing import NDArray
 from qiskit.quantum_info import SparsePauliOp
 
 from ..hardware.classical import classical_exact_diag
@@ -92,7 +93,7 @@ def _build_wilson_operator(loop: list[int], n_qubits: int) -> SparsePauliOp:
 
 
 def wilson_loop_expectation(
-    psi: np.ndarray,
+    psi: NDArray[np.complex128],
     loop: list[int],
     n_qubits: int,
 ) -> complex:
@@ -104,7 +105,7 @@ def wilson_loop_expectation(
     return complex(psi.conj() @ W_mat @ psi)
 
 
-def _find_loops(K: np.ndarray, max_length: int = 4) -> list[list[int]]:
+def _find_loops(K: NDArray[np.float64], max_length: int = 4) -> list[list[int]]:
     """Find closed loops of length 3 and 4 on the coupling graph."""
     n = K.shape[0]
     loops: list[list[int]] = []
@@ -124,8 +125,8 @@ def _find_loops(K: np.ndarray, max_length: int = 4) -> list[list[int]]:
 
 
 def compute_wilson_loops(
-    K: np.ndarray,
-    omega: np.ndarray,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
     max_length: int = 4,
     max_loops: int = 20,
 ) -> list[WilsonLoopResult]:
