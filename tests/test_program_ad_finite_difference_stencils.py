@@ -23,6 +23,9 @@ from scpn_quantum_control.differentiable import (
     program_adjoint_gradient,
     whole_program_value_and_grad,
 )
+from scpn_quantum_control.program_ad_stencil_primitives import (
+    program_ad_stencil_gradient_derivative_rule as module_stencil_gradient_derivative_rule,
+)
 
 
 def _assert_allclose(
@@ -92,6 +95,72 @@ def test_program_ad_stencil_gradient_contract_and_direct_rule() -> None:
     _assert_allclose(
         rule.vjp_rule(matrix.reshape(-1), cotangent.reshape(-1)),
         expected_vjp,
+        rtol=1.0e-12,
+        atol=1.0e-12,
+    )
+
+
+def test_program_ad_stencil_gradient_rule_is_exposed_from_extracted_module() -> None:
+    """The stencil facade should delegate fixed-shape direct rules to the module."""
+
+    source_shape = (2, 3)
+    facade_rule = program_ad_stencil_gradient_derivative_rule(source_shape, axis=1)
+    module_rule = module_stencil_gradient_derivative_rule(source_shape, axis=1)
+    values = np.arange(6.0, dtype=np.float64)
+
+    assert facade_rule.name == module_rule.name
+    assert facade_rule.value_fn(values) == pytest.approx(module_rule.value_fn(values))
+
+
+def test_program_ad_stencil_gradient_direct_rule_rejects_invalid_static_boundaries() -> None:
+    """Static stencil direct rules should fail closed for unsupported signatures."""
+
+    class InvalidArrayProtocol:
+        def __array__(self, dtype: object = None, copy: object = None) -> NDArray[np.float64]:
+            raise ValueError("invalid spacing")
+
+    trace_spacing = type("TraceADArray", (), {})()
+    scalar_edge_two_rule = module_stencil_gradient_derivative_rule((3,), edge_order=2)
+
+    with pytest.raises(ValueError, match="edge_order"):
+        module_stencil_gradient_derivative_rule((3,), edge_order=True)
+    with pytest.raises(ValueError, match="axis out of bounds"):
+        module_stencil_gradient_derivative_rule((3,), axis=-2)
+    with pytest.raises(ValueError, match="axis must be a static integer"):
+        module_stencil_gradient_derivative_rule((3,), axis=())
+    with pytest.raises(ValueError, match="axis must be a static integer"):
+        module_stencil_gradient_derivative_rule((3,), axis=(0, "x"))
+    with pytest.raises(ValueError, match="spacing must be static real numeric"):
+        module_stencil_gradient_derivative_rule((3,), (trace_spacing,), axis=0)
+    with pytest.raises(ValueError, match="spacing count must match axes"):
+        module_stencil_gradient_derivative_rule((2, 2), (trace_spacing,), axis=(0, 1))
+    with pytest.raises(ValueError, match="spacing count must match axes"):
+        module_stencil_gradient_derivative_rule((2, 2), ([1.0, 2.0],), axis=(0, 1))
+    with pytest.raises(ValueError, match="spacing count must match axes"):
+        module_stencil_gradient_derivative_rule((2, 2), (1.0, 1.0, 1.0), axis=(0, 1))
+    with pytest.raises(ValueError, match="spacing count must match axes"):
+        module_stencil_gradient_derivative_rule((2, 2), (InvalidArrayProtocol(),), axis=(0, 1))
+    with pytest.raises(ValueError, match="spacing must be non-zero"):
+        module_stencil_gradient_derivative_rule((3,), (0.0,), axis=0)
+    with pytest.raises(ValueError, match="coordinates must match"):
+        module_stencil_gradient_derivative_rule((3,), (np.array([0.0, 1.0]),), axis=0)
+    with pytest.raises(ValueError, match="finite values"):
+        module_stencil_gradient_derivative_rule((3,), (np.array([0.0, np.inf, 2.0]),), axis=0)
+    with pytest.raises(ValueError, match="positive source dimensions"):
+        module_stencil_gradient_derivative_rule((3, 0), axis=0)
+    with pytest.raises(ValueError, match="3 values"):
+        scalar_edge_two_rule.value_fn(np.array([1.0, 2.0], dtype=np.float64))
+    assert scalar_edge_two_rule.vjp_rule is not None
+    with pytest.raises(ValueError, match="3 cotangent values"):
+        scalar_edge_two_rule.vjp_rule(
+            np.array([1.0, 2.0, 4.0], dtype=np.float64),
+            np.array([1.0, 2.0], dtype=np.float64),
+        )
+
+    expected_edge_two = np.gradient(np.array([1.0, 2.0, 4.0], dtype=np.float64), edge_order=2)
+    _assert_allclose(
+        scalar_edge_two_rule.value_fn(np.array([1.0, 2.0, 4.0], dtype=np.float64)),
+        expected_edge_two,
         rtol=1.0e-12,
         atol=1.0e-12,
     )
