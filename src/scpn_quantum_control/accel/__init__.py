@@ -51,10 +51,11 @@ __all__ = [
 ]
 
 import numpy as np
+from numpy.typing import NDArray
 
 
-def rust_random_state(n_qubits: int, seed: int = 42):
+def rust_random_state(n_qubits: int, seed: int = 42) -> NDArray[np.complex128]:
     """Return a normalized complex random state vector for fallback tests."""
     np.random.seed(seed)
     state = np.random.randn(2**n_qubits) + 1j * np.random.randn(2**n_qubits)
-    return state / np.linalg.norm(state)
+    return np.asarray(state / np.linalg.norm(state), dtype=np.complex128)

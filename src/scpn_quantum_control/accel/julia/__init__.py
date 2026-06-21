@@ -25,6 +25,7 @@ from pathlib import Path
 from typing import Any
 
 import numpy as np
+from numpy.typing import NDArray
 
 _JL: Any = None
 _INCLUDED: bool = False
@@ -37,7 +38,7 @@ def _load() -> Any:
     if _JL is not None and _INCLUDED:
         return _JL
     try:
-        from juliacall import Main as jl  # type: ignore[import-not-found]
+        from juliacall import Main as jl
     except Exception as exc:
         raise ImportError("juliacall is not installed") from exc
     _JL = jl
@@ -62,7 +63,7 @@ def is_available() -> bool:
         return False
 
 
-def order_parameter(theta: np.ndarray) -> float:
+def order_parameter(theta: NDArray[np.float64]) -> float:
     """Julia-tier implementation of the Kuramoto order parameter."""
     jl = _load()
     # juliacall converts a numpy array to a Julia Vector{Float64}
@@ -71,7 +72,7 @@ def order_parameter(theta: np.ndarray) -> float:
     return float(jl.order_parameter(arr))
 
 
-def order_parameters_batch(theta_batch: np.ndarray) -> np.ndarray:
+def order_parameters_batch(theta_batch: NDArray[np.float64]) -> NDArray[np.float64]:
     """Julia-tier batched variant — T time-slices × N oscillators."""
     jl = _load()
     arr = np.ascontiguousarray(theta_batch, dtype=np.float64)

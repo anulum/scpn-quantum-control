@@ -40,6 +40,7 @@ from collections.abc import Callable
 from typing import Any
 
 import numpy as np
+from numpy.typing import NDArray
 
 from .rust_import import optional_rust_engine
 
@@ -89,7 +90,7 @@ def available_tiers() -> list[str]:
 # ---------------------------------------------------------------------------
 
 
-def _rust_order_parameter(theta: np.ndarray) -> float:
+def _rust_order_parameter(theta: NDArray[np.float64]) -> float:
     engine = optional_rust_engine()
     if engine is None:
         raise ModuleNotFoundError("scpn_quantum_engine")
@@ -100,13 +101,13 @@ def _rust_order_parameter(theta: np.ndarray) -> float:
     return float(rust_op(np.ascontiguousarray(theta, dtype=np.float64)))
 
 
-def _julia_order_parameter(theta: np.ndarray) -> float:
+def _julia_order_parameter(theta: NDArray[np.float64]) -> float:
     from .julia import order_parameter as julia_op
 
     return julia_op(theta)
 
 
-def _python_order_parameter(theta: np.ndarray) -> float:
+def _python_order_parameter(theta: NDArray[np.float64]) -> float:
     # Correctness floor — same math, no acceleration.
     z = np.mean(np.exp(1j * np.asarray(theta, dtype=np.float64)))
     return float(abs(z))
@@ -139,7 +140,7 @@ def _python_order_parameter(theta: np.ndarray) -> float:
 # Rerun ``python scripts/bench_order_parameter_tiers.py`` when
 # this file is edited; the measurements above must stay in sync
 # with the committed JSON artefact.
-_ORDER_PARAMETER_CHAIN: list[tuple[str, Callable[[np.ndarray], float]]] = [
+_ORDER_PARAMETER_CHAIN: list[tuple[str, Callable[[NDArray[np.float64]], float]]] = [
     ("rust", _rust_order_parameter),
     ("julia", _julia_order_parameter),
     ("python", _python_order_parameter),
@@ -210,7 +211,7 @@ class MultiLangDispatcher:
 _order_parameter_dispatcher = MultiLangDispatcher(_ORDER_PARAMETER_CHAIN)
 
 
-def order_parameter(theta: np.ndarray) -> float:
+def order_parameter(theta: NDArray[np.float64]) -> float:
     """Kuramoto order parameter with multi-language dispatch.
 
     Chain (measured fastest first): Rust → Julia → Python floor.
