@@ -68,7 +68,7 @@ def _qiskit_executor(circuit: QuantumCircuit, shots: int = 8192) -> float:
 def zne_mitigated_expectation(
     circuit: QuantumCircuit,
     executor: Optional[Any] = None,
-    scale_factors: Optional[list] = None,
+    scale_factors: Optional[list[float]] = None,
     shots: int = 8192,
 ) -> float:
     """Run ZNE (Zero Noise Extrapolation) via Mitiq.

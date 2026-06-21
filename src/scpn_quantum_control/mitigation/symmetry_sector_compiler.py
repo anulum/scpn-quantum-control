@@ -19,6 +19,7 @@ from dataclasses import asdict, dataclass
 from typing import Literal
 
 import numpy as np
+from numpy.typing import NDArray
 
 MitigationPrimitive = Literal[
     "parity_postselection",
@@ -59,7 +60,9 @@ class SymmetrySectorPlan:
         return asdict(self)
 
 
-def _validate_problem(problem: SymmetrySectorProblem) -> tuple[np.ndarray, np.ndarray, list[str]]:
+def _validate_problem(
+    problem: SymmetrySectorProblem,
+) -> tuple[NDArray[np.float64], NDArray[np.float64], list[str]]:
     """Validate a problem descriptor and return arrays plus blockers."""
 
     blockers: list[str] = []

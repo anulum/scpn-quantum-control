@@ -18,6 +18,7 @@ the regression model is fit, leading to vastly improved mitigation accuracy.
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
 
 from qiskit import QuantumCircuit
@@ -47,7 +48,7 @@ class CompoundMitigationResult:
 def compound_mitigate_pipeline(
     target_circuit: QuantumCircuit,
     target_counts: dict[str, int],
-    run_on_backend,
+    run_on_backend: Callable[[list[QuantumCircuit]], list[dict[str, int]]],
     expected_parity: int,
     n_training: int = 20,
     perturbation_scale: float = 0.1,

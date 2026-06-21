@@ -15,6 +15,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 import numpy as np
+from numpy.typing import NDArray
 from qiskit import QuantumCircuit
 from qiskit.quantum_info import Statevector
 
@@ -29,7 +30,7 @@ class PECResult:
     sign_distribution: list[float] = field(default_factory=list)
 
 
-def pauli_twirl_decompose(gate_error_rate: float, n_qubits: int = 1) -> np.ndarray:
+def pauli_twirl_decompose(gate_error_rate: float, n_qubits: int = 1) -> NDArray[np.float64]:
     """Quasi-probability coefficients for depolarizing channel inverse.
 
     Single-qubit: q_I = 1 + 3p/(4-4p), q_{X,Y,Z} = -p/(4-4p).
@@ -46,9 +47,11 @@ def pauli_twirl_decompose(gate_error_rate: float, n_qubits: int = 1) -> np.ndarr
     denom = 4.0 - 4.0 * p
     q_i = 1.0 + 3.0 * p / denom
     q_xyz = -p / denom
-    coeffs: np.ndarray = np.array([q_i, q_xyz, q_xyz, q_xyz])
+    coeffs: NDArray[np.float64] = np.array([q_i, q_xyz, q_xyz, q_xyz], dtype=np.float64)
     for _ in range(1, n_qubits):
-        coeffs = np.kron(coeffs, np.array([q_i, q_xyz, q_xyz, q_xyz]))
+        coeffs = np.kron(coeffs, np.array([q_i, q_xyz, q_xyz, q_xyz], dtype=np.float64)).astype(
+            np.float64
+        )
     return coeffs
 
 

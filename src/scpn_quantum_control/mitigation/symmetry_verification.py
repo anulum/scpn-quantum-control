@@ -32,6 +32,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import numpy as np
+from numpy.typing import NDArray
 
 try:
     import scpn_quantum_engine as _engine  # pragma: no cover
@@ -82,7 +83,7 @@ def bitstring_parity(bitstring: str) -> int:
     return _clean_bitstring(bitstring).count("1") % 2
 
 
-def initial_state_parity(omega: np.ndarray) -> int:
+def initial_state_parity(omega: NDArray[np.float64]) -> int:
     """Compute the dominant parity sector of the initial state |ψ_0⟩.
 
     The initial state is ⊗_i Ry(ω_i)|0⟩. Each qubit has probability
@@ -193,7 +194,7 @@ def parity_verified_expectation(
     counts: dict[str, int],
     n_qubits: int,
     expected_parity: int,
-) -> tuple[np.ndarray, np.ndarray, float]:
+) -> tuple[NDArray[np.float64], NDArray[np.float64], float]:
     """Compute per-qubit ⟨Z⟩ from parity-verified counts only.
 
     Returns:
@@ -216,7 +217,7 @@ def parity_verified_expectation(
             bit = int(bits[-(q + 1)])
             exp_vals[q] += (1 - 2 * bit) * count
     exp_vals /= total
-    std_vals: np.ndarray = np.sqrt(np.maximum(1.0 - exp_vals**2, 0.0) / total)
+    std_vals: NDArray[np.float64] = np.sqrt(np.maximum(1.0 - exp_vals**2, 0.0) / total)
     return exp_vals, std_vals, result.rejection_rate
 
 
@@ -226,7 +227,7 @@ def parity_verified_R(
     y_counts: dict[str, int],
     n_qubits: int,
     expected_parity: int,
-) -> dict:
+) -> dict[str, float]:
     """Compute order parameter R from parity-verified XYZ measurements.
 
     Drop-in replacement for experiments._R_from_xyz with symmetry

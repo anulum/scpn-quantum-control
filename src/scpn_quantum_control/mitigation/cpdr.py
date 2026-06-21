@@ -28,6 +28,7 @@ errors, parity post-selection removes remaining symmetry-violating noise.
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
 
 import numpy as np
@@ -217,7 +218,7 @@ def cpdr_mitigate(
 def cpdr_full_pipeline(
     target_circuit: QuantumCircuit,
     target_counts: dict[str, int],
-    run_on_backend,
+    run_on_backend: Callable[[list[QuantumCircuit]], list[dict[str, int]]],
     n_training: int = 20,
     perturbation_scale: float = 0.1,
     observable_qubits: list[int] | None = None,
