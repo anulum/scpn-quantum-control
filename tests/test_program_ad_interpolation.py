@@ -15,6 +15,8 @@ import numpy as np
 import pytest
 from numpy.typing import NDArray
 
+from scpn_quantum_control import differentiable as differentiable_facade
+from scpn_quantum_control import program_ad_interpolation_primitives
 from scpn_quantum_control.differentiable import (
     Parameter,
     PrimitiveIdentity,
@@ -238,6 +240,21 @@ def test_program_ad_interp_direct_rule_is_exposed_from_extracted_module() -> Non
 
     assert facade_rule.name == module_rule.name
     _assert_allclose(facade_rule.value_fn(source), module_rule.value_fn(source))
+
+
+def test_program_ad_interp_contract_helpers_are_exposed_from_extracted_module() -> None:
+    """The interpolation facade should reuse the extracted registry-contract helpers."""
+
+    facade_exports = vars(differentiable_facade)
+    assert (
+        facade_exports["_register_program_ad_interpolation_primitive_contracts"]
+        is program_ad_interpolation_primitives._register_program_ad_interpolation_primitive_contracts
+    )
+    assert (
+        facade_exports["_require_program_ad_interpolation_contract"]
+        is program_ad_interpolation_primitives._require_program_ad_interpolation_contract
+    )
+    assert program_ad_interpolation_interp_derivative_rule is module_interp_derivative_rule
 
 
 def test_program_ad_interp_direct_rule_rejects_invalid_static_boundaries() -> None:

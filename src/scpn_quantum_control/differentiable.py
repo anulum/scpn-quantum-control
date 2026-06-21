@@ -107,8 +107,6 @@ from .program_ad_alias_analysis import (
 from .program_ad_array_indexing import (
     _program_ad_array_delete_object,
     _program_ad_array_derivative_rule,
-    _program_ad_array_direct_jvp,
-    _program_ad_array_direct_value,
     _program_ad_array_insert_axis,
     _program_ad_array_insert_layout,
     _program_ad_array_insert_object,
@@ -168,7 +166,8 @@ from .program_ad_elementwise_primitives import (
 )
 from .program_ad_interpolation_primitives import (
     _normalise_interp_grid,
-    _program_ad_interp_static_boundary,
+    _register_program_ad_interpolation_primitive_contracts,
+    _require_program_ad_interpolation_contract,
     program_ad_interpolation_interp_derivative_rule,
 )
 from .program_ad_linalg_primitives import (
@@ -237,8 +236,6 @@ from .program_ad_registry import (
     _PROGRAM_AD_ARRAY_POLICY,
     _PROGRAM_AD_CUMULATIVE_IDENTITIES,
     _PROGRAM_AD_CUMULATIVE_POLICY,
-    _PROGRAM_AD_INTERPOLATION_IDENTITIES,
-    _PROGRAM_AD_INTERPOLATION_POLICY,
     _PROGRAM_AD_SELECTION_IDENTITIES,
     _PROGRAM_AD_SHAPE_IDENTITIES,
     _PROGRAM_AD_SHAPE_POLICY,
@@ -7352,122 +7349,6 @@ _PROGRAM_AD_ARRAY_STATIC_ARGUMENT_RULES: Mapping[str, PrimitiveStaticArgumentRul
 }
 
 
-def _program_ad_interpolation_sample_shape(value: object) -> tuple[int, ...]:
-    if isinstance(value, TraceADArray):
-        return value.shape
-    if isinstance(value, TraceADScalar):
-        return ()
-    return tuple(int(dimension) for dimension in np.asarray(value).shape)
-
-
-def _program_ad_interpolation_fp_shape(value: object) -> tuple[int, ...]:
-    if isinstance(value, TraceADArray):
-        return value.shape
-    if isinstance(value, TraceADScalar):
-        raise ValueError("program AD interpolation interp fp must be one-dimensional")
-    return tuple(int(dimension) for dimension in np.asarray(value).shape)
-
-
-def _program_ad_interpolation_static_parts(
-    args: tuple[object, ...],
-) -> tuple[tuple[int, ...], NDArray[np.float64], tuple[int, ...], float | None, float | None]:
-    if len(args) != 6:
-        raise ValueError(
-            "program AD interpolation interp rule requires x, xp, fp, left, right, and period"
-        )
-    if args[5] is not None:
-        raise ValueError("program AD interpolation interp period is not supported")
-    sample_shape = _program_ad_interpolation_sample_shape(args[0])
-    grid = _normalise_interp_grid(args[1])
-    fp_shape = _program_ad_interpolation_fp_shape(args[2])
-    if fp_shape != (grid.size,):
-        raise ValueError("program AD np.interp fp values must match xp grid")
-    left = _program_ad_interp_static_boundary("left", args[3])
-    right = _program_ad_interp_static_boundary("right", args[4])
-    return sample_shape, grid, fp_shape, left, right
-
-
-def _program_ad_interpolation_interp_shape(args: tuple[object, ...]) -> tuple[int, ...]:
-    sample_shape, _grid, _fp_shape, _left, _right = _program_ad_interpolation_static_parts(args)
-    return sample_shape
-
-
-def _program_ad_interpolation_interp_dtype_rule(_args: tuple[object, ...]) -> str:
-    return "float64"
-
-
-def _program_ad_interpolation_interp_static_arguments(
-    args: tuple[object, ...],
-) -> tuple[object, ...]:
-    sample_shape, grid, fp_shape, left, right = _program_ad_interpolation_static_parts(args)
-    return (
-        sample_shape,
-        ("xp", tuple(int(dimension) for dimension in grid.shape), tuple(float(x) for x in grid)),
-        fp_shape,
-        left,
-        right,
-        None,
-    )
-
-
-def _program_ad_interpolation_derivative_rule(name: str) -> CustomDerivativeRule:
-    if name == "interp":
-        return CustomDerivativeRule(
-            name="program_ad_interpolation_interp_trace_contract",
-            value_fn=_program_ad_array_direct_value,
-            jvp_rule=_program_ad_array_direct_jvp,
-        )
-    raise ValueError(f"unsupported program AD interpolation primitive {name}")
-
-
-def _program_ad_interpolation_batching_rule(
-    function: Callable[..., object],
-    args: tuple[object, ...],
-    axes: tuple[int | None, ...],
-    out_axes: int,
-) -> object:
-    if len(args) != 6 or len(axes) != 6:
-        raise ValueError(
-            "program AD interpolation interp batching requires x, xp, fp, left, right, and period"
-        )
-    if any(axis is not None for axis in axes[1:]):
-        raise ValueError(
-            "program AD interpolation interp batching keeps xp, fp, left, right, and period static"
-        )
-    if axes[0] is None:
-        return _as_real_numeric_array(
-            "program AD interpolation interp batched output", function(*args)
-        )
-    samples = _as_real_numeric_array("program AD interpolation interp batched samples", args[0])
-    batch_axis = _normalise_axis("axes[0]", axes[0], samples.ndim)
-    outputs = [
-        _as_real_numeric_array(
-            "program AD interpolation interp batched output",
-            function(np.take(samples, batch_index, axis=batch_axis), *args[1:]),
-        )
-        for batch_index in range(samples.shape[batch_axis])
-    ]
-    stacked = np.stack(outputs, axis=0)
-    return np.moveaxis(stacked, 0, _normalise_axis("out_axes", out_axes, stacked.ndim))
-
-
-def _program_ad_interpolation_lowering_metadata(name: str) -> Mapping[str, str]:
-    if name != "interp":
-        raise ValueError(f"unsupported program AD interpolation primitive {name}")
-    return {
-        "program_ad": "operator_intercepted_trace",
-        "mlir": "available: scpn_diff interpolation dialect interchange; executable lowering blocked",
-        "mlir_op": "scpn_diff.interpolation.interp",
-        "llvm": "blocked_until_executable_interpolation_lowering",
-        "rust": "blocked_until_polyglot_interpolation_ad",
-        "static_argument_rule": "required",
-        "static_derivative_factory": "program_ad_interpolation_interp_derivative_rule",
-        "static_signature": "sample_shape:ranked_tensor_shape;xp_grid;fp_shape;left_right_period",
-        "nondifferentiable_boundary": "static_grid_knot_and_period_boundary",
-        "nondifferentiable_boundary_policy": "fail_closed",
-    }
-
-
 _PROGRAM_AD_SHAPE_SHAPE_RULES: Mapping[str, PrimitiveShapeRule] = {
     "atleast_1d": _program_ad_shape_atleast_1d_shape,
     "atleast_2d": _program_ad_shape_atleast_2d_shape,
@@ -7767,25 +7648,6 @@ def _register_program_ad_array_primitive_contracts() -> None:
         )
 
 
-def _register_program_ad_interpolation_primitive_contracts() -> None:
-    for name, identity in _PROGRAM_AD_INTERPOLATION_IDENTITIES.items():
-        if DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.contract_for(identity) is not None:
-            continue
-        DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.register_transform(
-            PrimitiveTransformRule(
-                identity=identity,
-                derivative_rule=_program_ad_interpolation_derivative_rule(name),
-                batching_rule=_program_ad_interpolation_batching_rule,
-                lowering_metadata=_program_ad_interpolation_lowering_metadata(name),
-                shape_rule=_program_ad_interpolation_interp_shape,
-                dtype_rule=_program_ad_interpolation_interp_dtype_rule,
-                static_argument_rule=_program_ad_interpolation_interp_static_arguments,
-                nondifferentiable_policy=_PROGRAM_AD_INTERPOLATION_POLICY,
-                effect="pure",
-            )
-        )
-
-
 def _register_program_ad_shape_primitive_contracts() -> None:
     for name, identity in _PROGRAM_AD_SHAPE_IDENTITIES.items():
         if DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.contract_for(identity) is not None:
@@ -7910,19 +7772,6 @@ def _require_program_ad_array_contract(
         family="array",
         identities=_PROGRAM_AD_ARRAY_IDENTITIES,
         expected_policy=_PROGRAM_AD_ARRAY_POLICY,
-        args=args,
-    )
-
-
-def _require_program_ad_interpolation_contract(
-    name: str,
-    args: tuple[object, ...] | None = None,
-) -> PrimitiveContract:
-    return _require_program_ad_runtime_contract(
-        name,
-        family="interpolation",
-        identities=_PROGRAM_AD_INTERPOLATION_IDENTITIES,
-        expected_policy=_PROGRAM_AD_INTERPOLATION_POLICY,
         args=args,
     )
 
