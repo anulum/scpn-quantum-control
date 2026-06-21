@@ -60,6 +60,15 @@ def test_program_ad_signal_direct_factories_have_dedicated_module_path() -> None
         differentiable_facade.program_ad_signal_correlate_derivative_rule
         is program_ad_signal_correlate_derivative_rule
     )
+    facade_exports = vars(differentiable_facade)
+    assert (
+        facade_exports["_require_program_ad_signal_contract"]
+        is program_ad_signal_primitives._require_program_ad_signal_contract
+    )
+    assert (
+        facade_exports["_register_program_ad_signal_primitive_contracts"]
+        is program_ad_signal_primitives._register_program_ad_signal_primitive_contracts
+    )
 
 
 def test_program_ad_convolve_matches_signal_kernel_adjoint() -> None:
