@@ -14,7 +14,7 @@
     "python_model_source_modules": 885,
     "rust_pyo3_model_wrappers": 137,
     "rust_source_modules": 38,
-    "test_files": 2034
+    "test_files": 2035
   },
   "documentation": {
     "examples": [
@@ -10925,6 +10925,7 @@
       "tests/test_e2e_contract_boundary_audit.py",
       "tests/test_eeg_benchmark.py",
       "tests/test_eeg_classification.py",
+      "tests/test_eeg_classification_validation.py",
       "tests/test_enaqt.py",
       "tests/test_entanglement_enhanced_sync.py",
       "tests/test_entanglement_entropy.py",
