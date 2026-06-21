@@ -14,7 +14,7 @@
     "python_model_source_modules": 889,
     "rust_pyo3_model_wrappers": 137,
     "rust_source_modules": 38,
-    "test_files": 2053
+    "test_files": 2056
   },
   "documentation": {
     "examples": [
@@ -10830,6 +10830,7 @@
       "tests/test_classical.py",
       "tests/test_classical_baselines.py",
       "tests/test_classical_irreproducibility.py",
+      "tests/test_classical_pauli_unsupported.py",
       "tests/test_classical_reference_regression.py",
       "tests/test_closed_loop_analysis.py",
       "tests/test_closed_loop_analysis_wall_clock.py",
@@ -11575,6 +11576,7 @@
       "tests/test_pec_rng_default.py",
       "tests/test_pennylane_adapter.py",
       "tests/test_pennylane_adapter_contracts.py",
+      "tests/test_pennylane_adapter_validation.py",
       "tests/test_pennylane_vendor_backends.py",
       "tests/test_percolation_edge_cases.py",
       "tests/test_perf_regression.py",
@@ -12299,6 +12301,7 @@
       "tests/test_tcbo_observer_edge_cases.py",
       "tests/test_tcbo_reproduction_audit.py",
       "tests/test_tcbo_weighted_complex.py",
+      "tests/test_tcbo_weighted_complex_validation.py",
       "tests/test_tensor_jump.py",
       "tests/test_tensor_jump_contracts.py",
       "tests/test_thermodynamic_witness.py",
