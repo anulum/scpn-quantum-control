@@ -10,7 +10,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TypeAlias, cast
+from typing import TypeAlias
 
 import numpy as np
 from numpy.typing import NDArray
@@ -29,14 +29,14 @@ class TopologicalDynamicCouplingPolicy:
     optimizer: ProjectedSPSAOptimizer
     last_trace: TopologyOptimisationTrace | None = None
 
-    def apply(self, recurrent_weights: np.ndarray) -> FloatArray:
+    def apply(self, recurrent_weights: NDArray[np.float64]) -> FloatArray:
         """Return projected/optimised recurrent weights without external dependencies."""
 
         trace = self.optimizer.optimise(recurrent_weights, self.objective)
         self.last_trace = trace
-        result = trace.final_matrix.copy()
+        result: FloatArray = trace.final_matrix.copy()
         np.fill_diagonal(result, 0.0)
-        return cast(FloatArray, result)
+        return result
 
 
 __all__ = ["FloatArray", "TopologicalDynamicCouplingPolicy"]

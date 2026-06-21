@@ -51,7 +51,7 @@ class CouplingTopologyObjective:
     ledger: TopologyConstraintLedger
     h1_target: float = 0.0
     h1_weight: float = 1.0
-    source_matrix: np.ndarray | None = None
+    source_matrix: NDArray[np.float64] | None = None
     source_distance_weight: float = 0.0
     connectivity_weight: float = 10.0
     constraint_weight: float = 100.0
@@ -69,7 +69,7 @@ class CouplingTopologyObjective:
         if self.h1_target < 0.0:
             raise ValueError("h1_target must be non-negative")
 
-    def evaluate(self, matrix: np.ndarray) -> ObjectiveBreakdown:
+    def evaluate(self, matrix: NDArray[np.float64]) -> ObjectiveBreakdown:
         """Evaluate projected coupling matrix and return decomposed score."""
 
         if (
@@ -118,7 +118,7 @@ class CouplingTopologyObjective:
         return float(self.source_distance_weight * np.linalg.norm(matrix - source) / denom)
 
 
-def classify_degeneracy(matrix: np.ndarray) -> DegeneracyMode:
+def classify_degeneracy(matrix: NDArray[np.float64]) -> DegeneracyMode:
     """Classify trivial coupling graphs that can fake a low-H1 score."""
 
     K = np.asarray(matrix, dtype=np.float64)

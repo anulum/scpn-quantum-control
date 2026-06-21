@@ -10,7 +10,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TypeAlias, cast
+from typing import TypeAlias
 
 import numpy as np
 from numpy.typing import NDArray
@@ -75,7 +75,7 @@ class ProjectedSPSAOptimizer:
 
     def optimise(
         self,
-        initial_matrix: np.ndarray,
+        initial_matrix: NDArray[np.float64],
         objective: CouplingTopologyObjective,
     ) -> TopologyOptimisationTrace:
         """Run projected SPSA and return an auditable trace."""
@@ -104,7 +104,7 @@ class ProjectedSPSAOptimizer:
             steps.append(
                 TopologyOptimisationStep(
                     index=idx,
-                    matrix=cast(FloatArray, K.copy()),
+                    matrix=K.copy(),
                     objective=breakdown,
                     gradient_norm=float(np.linalg.norm(gradient)),
                     step_size=self.step_size,
@@ -117,7 +117,7 @@ class ProjectedSPSAOptimizer:
             steps.append(
                 TopologyOptimisationStep(
                     index=0,
-                    matrix=cast(FloatArray, K.copy()),
+                    matrix=K.copy(),
                     objective=breakdown,
                     gradient_norm=0.0,
                     step_size=0.0,
@@ -126,8 +126,8 @@ class ProjectedSPSAOptimizer:
             )
 
         return TopologyOptimisationTrace(
-            initial_matrix=cast(FloatArray, objective.ledger.project(initial_matrix)),
-            final_matrix=cast(FloatArray, K.copy()),
+            initial_matrix=objective.ledger.project(initial_matrix),
+            final_matrix=K.copy(),
             steps=steps,
             seed=self.seed,
         )
@@ -143,7 +143,7 @@ class ProjectedScipyOptimizer:
 
     def optimise(
         self,
-        initial_matrix: np.ndarray,
+        initial_matrix: NDArray[np.float64],
         objective: CouplingTopologyObjective,
     ) -> TopologyOptimisationTrace:
         """Optimise using scipy when available."""
@@ -154,20 +154,20 @@ class ProjectedScipyOptimizer:
         n = initial.shape[0]
         upper = [(i, j) for i in range(n) for j in range(i + 1, n)]
 
-        def unpack(values: np.ndarray) -> FloatArray:
+        def unpack(values: NDArray[np.float64]) -> FloatArray:
             K = np.zeros_like(initial)
             for value, (i, j) in zip(values, upper):
                 K[i, j] = float(value)
                 K[j, i] = float(value)
-            return cast(FloatArray, objective.ledger.project(K))
+            return objective.ledger.project(K)
 
-        def score(values: np.ndarray) -> float:
+        def score(values: NDArray[np.float64]) -> float:
             return objective.evaluate(unpack(values)).total
 
         x0 = np.array([initial[i, j] for i, j in upper], dtype=np.float64)
         steps: list[TopologyOptimisationStep] = []
 
-        def on_step(values: np.ndarray) -> None:
+        def on_step(values: NDArray[np.float64]) -> None:
             matrix = unpack(np.asarray(values, dtype=np.float64))
             steps.append(
                 TopologyOptimisationStep(

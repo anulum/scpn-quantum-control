@@ -100,7 +100,7 @@ class TopologyConstraintLedger:
     frozen_edges: FrozenEdges = field(default_factory=dict)
     hardware_edges: set[Edge] | frozenset[Edge] | None = None
     algebraic_connectivity_min: float = 0.0
-    fixed_sign_reference: np.ndarray | None = None
+    fixed_sign_reference: NDArray[np.float64] | None = None
 
     def __post_init__(self) -> None:
         if self.sign_policy not in {"nonnegative", "signed", "fixed_sign"}:
@@ -112,15 +112,16 @@ class TopologyConstraintLedger:
         if self.algebraic_connectivity_min < 0.0:
             raise ValueError("algebraic_connectivity_min must be non-negative")
 
-    def _as_matrix(self, matrix: np.ndarray) -> FloatArray:
+    def _as_matrix(self, matrix: NDArray[np.float64]) -> FloatArray:
         arr = np.asarray(matrix, dtype=np.float64)
         if arr.ndim != 2 or arr.shape[0] != arr.shape[1]:
             raise ValueError("coupling matrix must be square")
         if not np.all(np.isfinite(arr)):
             raise ValueError("coupling matrix must contain only finite values")
-        return cast(FloatArray, arr.copy())
+        out: FloatArray = arr.copy()
+        return out
 
-    def project(self, matrix: np.ndarray) -> FloatArray:
+    def project(self, matrix: NDArray[np.float64]) -> FloatArray:
         """Project a candidate matrix onto hard shape, sign, edge, and budget constraints."""
 
         projected = self._as_matrix(matrix)
@@ -152,9 +153,9 @@ class TopologyConstraintLedger:
         if self.total_weight is not None:
             projected = self._project_total_weight(projected)
 
-        projected = (projected + projected.T) / 2.0
-        np.fill_diagonal(projected, 0.0)
-        return cast(FloatArray, projected)
+        symmetric: FloatArray = (projected + projected.T) / 2.0
+        np.fill_diagonal(symmetric, 0.0)
+        return symmetric
 
     def _project_total_weight(self, matrix: FloatArray) -> FloatArray:
         if self.total_weight is None:
@@ -187,7 +188,7 @@ class TopologyConstraintLedger:
         scaled[adjustable_mask] *= target_adjustable / adjustable_sum
         return cast(FloatArray, np.clip(scaled, self.bounds.lower, self.bounds.upper))
 
-    def violations(self, matrix: np.ndarray) -> ConstraintViolation:
+    def violations(self, matrix: NDArray[np.float64]) -> ConstraintViolation:
         """Return violation magnitudes without mutating the candidate matrix."""
 
         K = self._as_matrix(matrix)
@@ -228,7 +229,7 @@ class TopologyConstraintLedger:
         )
 
 
-def algebraic_connectivity(matrix: np.ndarray) -> float:
+def algebraic_connectivity(matrix: NDArray[np.float64]) -> float:
     """Weighted graph algebraic connectivity using absolute edge weights."""
 
     K = np.asarray(matrix, dtype=np.float64)

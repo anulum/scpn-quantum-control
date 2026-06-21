@@ -10,14 +10,14 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Protocol, TypeAlias, cast
+from typing import Protocol, TypeAlias
 
 import networkx as nx
 import numpy as np
 from numpy.typing import NDArray
 
 try:
-    from ripser import ripser  # type: ignore[import-untyped]
+    from ripser import ripser
 
     RIPSER_AVAILABLE = True
 except ImportError:  # pragma: no cover - depends on optional topology extra.
@@ -61,12 +61,12 @@ class PersistentHomologyBackend(Protocol):
     approximate: bool
 
     def compute(
-        self, distance_matrix: np.ndarray, *, persistence_threshold: float = 0.1
+        self, distance_matrix: NDArray[np.float64], *, persistence_threshold: float = 0.1
     ) -> H1Summary:
         """Compute persistent-H1 summary from a precomputed distance matrix."""
 
 
-def _as_square_symmetric_matrix(name: str, matrix: np.ndarray) -> FloatArray:
+def _as_square_symmetric_matrix(name: str, matrix: NDArray[np.float64]) -> FloatArray:
     arr = np.asarray(matrix, dtype=np.float64)
     if arr.ndim != 2 or arr.shape[0] != arr.shape[1]:
         raise ValueError(f"{name} must be a square matrix")
@@ -76,9 +76,9 @@ def _as_square_symmetric_matrix(name: str, matrix: np.ndarray) -> FloatArray:
         raise ValueError(f"{name} must be symmetric")
     if np.any(arr < -1e-12):
         raise ValueError(f"{name} must be non-negative")
-    result = (arr + arr.T) / 2.0
+    result: FloatArray = (arr + arr.T) / 2.0
     np.fill_diagonal(result, 0.0)
-    return cast(FloatArray, result)
+    return result
 
 
 def max_h1_for_vertices(n_vertices: int) -> int:
@@ -89,7 +89,7 @@ def max_h1_for_vertices(n_vertices: int) -> int:
     return max((n_vertices - 1) * (n_vertices - 2) // 2, 1)
 
 
-def build_coupling_distance_matrix(coupling: np.ndarray) -> FloatArray:
+def build_coupling_distance_matrix(coupling: NDArray[np.float64]) -> FloatArray:
     """Convert a coupling matrix into a Vietoris-Rips distance matrix.
 
     Stronger absolute couplings become shorter distances. A zero-coupling graph
@@ -102,26 +102,26 @@ def build_coupling_distance_matrix(coupling: np.ndarray) -> FloatArray:
     max_weight = float(np.max(weights))
     if max_weight <= 1e-15:
         distance = np.ones_like(K) - np.eye(K.shape[0])
-        return cast(FloatArray, distance)
+        return distance
     distance = 1.0 - weights / max_weight
     np.fill_diagonal(distance, 0.0)
-    return cast(FloatArray, distance)
+    return distance
 
 
-def build_correlation_distance_matrix(correlation: np.ndarray) -> FloatArray:
+def build_correlation_distance_matrix(correlation: NDArray[np.float64]) -> FloatArray:
     """Convert a correlation matrix into a distance matrix."""
 
     corr = _as_square_symmetric_matrix("correlation", np.abs(correlation))
     max_corr = float(np.max(corr))
     if max_corr <= 1e-15:
         distance = np.ones_like(corr) - np.eye(corr.shape[0])
-        return cast(FloatArray, distance)
+        return distance
     distance = 1.0 - corr / max_corr
     np.fill_diagonal(distance, 0.0)
-    return cast(FloatArray, distance)
+    return distance
 
 
-def spike_trace_correlation_distance(spike_traces: np.ndarray) -> FloatArray:
+def spike_trace_correlation_distance(spike_traces: NDArray[np.float64]) -> FloatArray:
     """Build a neuron-neuron distance matrix from spike or membrane traces.
 
     Input shape is ``(steps, nodes)``. Constant columns are treated as zero
@@ -156,7 +156,7 @@ class NetworkCycleBackend:
 
     def compute(
         self,
-        distance_matrix: np.ndarray,
+        distance_matrix: NDArray[np.float64],
         *,
         persistence_threshold: float = 0.1,
     ) -> H1Summary:
@@ -200,7 +200,7 @@ class RipserPHBackend:
 
     def compute(
         self,
-        distance_matrix: np.ndarray,
+        distance_matrix: NDArray[np.float64],
         *,
         persistence_threshold: float = 0.1,
     ) -> H1Summary:
