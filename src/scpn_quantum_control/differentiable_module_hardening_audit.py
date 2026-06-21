@@ -297,6 +297,11 @@ def differentiable_module_hardening_registry() -> tuple[DifferentiableModuleHard
             ),
         ),
         _record(
+            "src/scpn_quantum_control/differentiable_exact_modes.py",
+            ("tests/test_differentiable_exact_modes.py",),
+            ("forward-mode dual gradients", "reverse-mode tape gradients"),
+        ),
+        _record(
             "src/scpn_quantum_control/differentiable_fisher.py",
             ("tests/test_differentiable_fisher.py",),
             (

@@ -31,6 +31,12 @@ from .differentiable_consistency import (
     check_custom_derivative_consistency,
     check_parameter_shift_consistency,
 )
+from .differentiable_exact_modes import (
+    forward_mode_gradient,
+    reverse_mode_gradient,
+    value_and_forward_mode_grad,
+    value_and_reverse_mode_grad,
+)
 from .differentiable_fisher import (
     empirical_fisher_conjugate_gradient,
     empirical_fisher_vector_product,
@@ -134,15 +140,12 @@ from .differentiable_stochastic_policy import (
 )
 from .differentiable_transform_helpers import (
     _as_complex_step_scalar,
-    _as_forward_mode_scalar,
-    _as_reverse_mode_scalar,
     _as_scalar,
     _as_vector_output,
     _clip_gradient,
     _normalise_bounds,
     _normalise_parameters,
     _project_bounds,
-    _reverse_topological_order,
     _validate_max_gradient_norm,
 )
 from .differentiable_vmap import vmap
@@ -7495,111 +7498,6 @@ def batch_value_and_complex_step_grad(
         )
         for objective in objectives
     )
-
-
-def value_and_forward_mode_grad(
-    objective: Callable[[tuple[DualNumber, ...]], object],
-    values: ArrayLike,
-    *,
-    parameters: Sequence[Parameter] | None = None,
-) -> GradientResult:
-    """Evaluate a scalar objective and exact forward-mode dual gradient."""
-
-    parameter_values = _as_parameter_array(values)
-    parameter_meta = _normalise_parameters(parameter_values, parameters)
-    base_duals = tuple(DualNumber(float(value), 0.0) for value in parameter_values)
-    base_value = _as_forward_mode_scalar(objective(base_duals)).primal
-    gradient = np.zeros_like(parameter_values)
-    evaluations = 1
-
-    for index, parameter in enumerate(parameter_meta):
-        if not parameter.trainable:
-            continue
-        dual_values = tuple(
-            DualNumber(float(value), 1.0 if basis_index == index else 0.0)
-            for basis_index, value in enumerate(parameter_values)
-        )
-        gradient[index] = _as_forward_mode_scalar(objective(dual_values)).tangent
-        evaluations += 1
-
-    return GradientResult(
-        value=base_value,
-        gradient=gradient,
-        method="forward_mode_dual",
-        shift=None,
-        coefficient=None,
-        evaluations=evaluations,
-        parameter_names=tuple(parameter.name for parameter in parameter_meta),
-        trainable=tuple(parameter.trainable for parameter in parameter_meta),
-    )
-
-
-def forward_mode_gradient(
-    objective: Callable[[tuple[DualNumber, ...]], object],
-    values: ArrayLike,
-    *,
-    parameters: Sequence[Parameter] | None = None,
-) -> NDArray[np.float64]:
-    """Return an exact forward-mode dual gradient for scalar objectives."""
-
-    return value_and_forward_mode_grad(
-        objective,
-        values,
-        parameters=parameters,
-    ).gradient
-
-
-def value_and_reverse_mode_grad(
-    objective: Callable[[tuple[ReverseNode, ...]], object],
-    values: ArrayLike,
-    *,
-    parameters: Sequence[Parameter] | None = None,
-) -> GradientResult:
-    """Evaluate a scalar objective and exact reverse-mode tape gradient."""
-
-    parameter_values = _as_parameter_array(values)
-    parameter_meta = _normalise_parameters(parameter_values, parameters)
-    reverse_values = tuple(ReverseNode(float(value)) for value in parameter_values)
-    output = _as_reverse_mode_scalar(objective(reverse_values))
-    tape = _reverse_topological_order(output)
-    for node in tape:
-        node.adjoint = 0.0
-    output.adjoint = 1.0
-    for node in reversed(tape):
-        for parent, local_derivative in node.parents:
-            parent.adjoint += node.adjoint * local_derivative
-    gradient = np.array(
-        [
-            node.adjoint if parameter.trainable else 0.0
-            for node, parameter in zip(reverse_values, parameter_meta)
-        ],
-        dtype=np.float64,
-    )
-    return GradientResult(
-        value=output.primal,
-        gradient=gradient,
-        method="reverse_mode_tape",
-        shift=None,
-        coefficient=None,
-        evaluations=1,
-        parameter_names=tuple(parameter.name for parameter in parameter_meta),
-        trainable=tuple(parameter.trainable for parameter in parameter_meta),
-    )
-
-
-def reverse_mode_gradient(
-    objective: Callable[[tuple[ReverseNode, ...]], object],
-    values: ArrayLike,
-    *,
-    parameters: Sequence[Parameter] | None = None,
-) -> NDArray[np.float64]:
-    """Return an exact reverse-mode tape gradient for scalar objectives."""
-
-    return value_and_reverse_mode_grad(
-        objective,
-        values,
-        parameters=parameters,
-    ).gradient
 
 
 def value_and_grad(
