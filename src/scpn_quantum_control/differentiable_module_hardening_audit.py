@@ -114,6 +114,15 @@ def differentiable_module_hardening_registry() -> tuple[DifferentiableModuleHard
             ("facade export compatibility", "diagnostic-only finite differences"),
         ),
         _record(
+            "src/scpn_quantum_control/program_ad_elementwise_primitives.py",
+            (
+                "tests/test_program_ad_elementwise_registry.py",
+                "tests/test_program_ad_binary_elementwise_registry.py",
+                "tests/test_program_ad_runtime_registry_dispatch.py",
+            ),
+            ("elementwise direct rules", "elementwise registry dispatch boundaries"),
+        ),
+        _record(
             "src/scpn_quantum_control/program_ad_array_indexing.py",
             ("tests/test_program_ad_array_indexing_registry.py",),
             ("static gather direct rules", "scatter-add VJP boundaries"),

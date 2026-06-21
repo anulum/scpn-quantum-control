@@ -15,6 +15,7 @@ from typing import Any, cast
 import numpy as np
 import pytest
 
+import scpn_quantum_control.program_ad_elementwise_primitives as elementwise_primitives
 from scpn_quantum_control.differentiable import (
     DEFAULT_CUSTOM_DERIVATIVE_REGISTRY,
     PrimitiveContract,
@@ -50,6 +51,15 @@ def _transform_rule_from_contract(contract: PrimitiveContract) -> PrimitiveTrans
         static_argument_rule=contract.static_argument_rule,
         nondifferentiable_policy=contract.nondifferentiable_policy,
         effect=contract.effect,
+    )
+
+
+def test_program_ad_elementwise_binary_derivative_rule_is_extracted_identity() -> None:
+    """The facade should re-export the extracted binary elementwise factory."""
+
+    assert (
+        program_ad_elementwise_binary_derivative_rule
+        is elementwise_primitives.program_ad_elementwise_binary_derivative_rule
     )
 
 
