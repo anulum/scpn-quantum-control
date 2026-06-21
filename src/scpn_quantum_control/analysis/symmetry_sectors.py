@@ -23,7 +23,10 @@ Inspired by QuSpin's symmetry handling (Weinberg & Bukov, SciPost 2017).
 
 from __future__ import annotations
 
+from typing import Any
+
 import numpy as np
+from numpy.typing import NDArray
 
 from ..bridge.sparse_hamiltonian import build_sparse_hamiltonian
 from ..dense_budget import require_dense_allocation
@@ -34,7 +37,7 @@ def _parity(k: int, n: int) -> int:
     return bin(k).count("1") % 2
 
 
-def basis_indices_by_parity(n: int) -> tuple[np.ndarray, np.ndarray]:
+def basis_indices_by_parity(n: int) -> tuple[NDArray[np.intp], NDArray[np.intp]]:
     """Split computational basis into even and odd parity sectors.
 
     Returns (even_indices, odd_indices) where each is a sorted array
@@ -51,7 +54,9 @@ def basis_indices_by_parity(n: int) -> tuple[np.ndarray, np.ndarray]:
     return np.array(even, dtype=np.intp), np.array(odd, dtype=np.intp)
 
 
-def project_hamiltonian(H: np.ndarray, sector_indices: np.ndarray) -> np.ndarray:
+def project_hamiltonian(
+    H: NDArray[np.complex128], sector_indices: NDArray[np.intp]
+) -> NDArray[np.complex128]:
     """Project full Hamiltonian onto a parity sector.
 
     H_sector[i,j] = H[sector_indices[i], sector_indices[j]]
@@ -75,12 +80,12 @@ def _sector_dense_budget(
 
 
 def build_sector_hamiltonian(
-    K: np.ndarray,
-    omega: np.ndarray,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
     parity: int = 0,
     *,
     max_dense_gib: float | None = None,
-) -> tuple[np.ndarray, np.ndarray]:
+) -> tuple[NDArray[np.complex128], NDArray[np.intp]]:
     """Build the XY Hamiltonian projected onto a parity sector.
 
     Parameters
@@ -110,11 +115,11 @@ def build_sector_hamiltonian(
 
 
 def eigh_by_sector(
-    K: np.ndarray,
-    omega: np.ndarray,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
     *,
     max_dense_gib: float | None = None,
-) -> dict:
+) -> dict[str, Any]:
     """Diagonalise both parity sectors separately.
 
     Returns dict with keys:
@@ -152,11 +157,11 @@ def eigh_by_sector(
 
 
 def level_spacing_by_sector(
-    K: np.ndarray,
-    omega: np.ndarray,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
     *,
     max_dense_gib: float | None = None,
-) -> dict:
+) -> dict[str, Any]:
     """Level-spacing ratio r̄ computed within each parity sector.
 
     This avoids mixing even/odd spectra which would artificially
@@ -165,7 +170,7 @@ def level_spacing_by_sector(
     """
     result = eigh_by_sector(K, omega, max_dense_gib=max_dense_gib)
 
-    def _r_bar(eigvals: np.ndarray) -> float:
+    def _r_bar(eigvals: NDArray[np.float64]) -> float:
         gaps = np.diff(eigvals)
         gaps = gaps[gaps > 1e-14]  # skip degeneracies
         if len(gaps) < 2:
