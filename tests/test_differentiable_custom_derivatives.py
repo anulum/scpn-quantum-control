@@ -14,12 +14,16 @@ from typing import Any, cast
 import numpy as np
 import pytest
 
+import scpn_quantum_control as scpn
+from scpn_quantum_control import differentiable as differentiable_module
+from scpn_quantum_control import differentiable_custom_derivatives as custom_derivative_module
 from scpn_quantum_control.differentiable import (
     CustomDerivativeRule,
     JacobianResult,
     JVPResult,
     LevenbergMarquardtStep,
     NaturalGradientResult,
+    Parameter,
     VJPResult,
     batch_custom_jacobian,
     batch_custom_jvp,
@@ -42,6 +46,30 @@ def _assert_allclose(actual: object, expected: object) -> None:
     """Assert NumPy-close equality while preserving strict test typing."""
 
     cast(Any, np.testing.assert_allclose)(actual, expected)
+
+
+def test_facade_and_package_root_reuse_extracted_custom_derivative_helpers() -> None:
+    """Facade and package-root exports should point at extracted custom helpers."""
+
+    helper_names = (
+        "batch_custom_jacobian",
+        "batch_custom_jvp",
+        "batch_custom_vjp",
+        "batch_value_and_custom_jacobian",
+        "batch_value_and_custom_jvp",
+        "batch_value_and_custom_vjp",
+        "custom_jacobian",
+        "custom_jvp",
+        "custom_vjp",
+        "value_and_custom_jacobian",
+        "value_and_custom_jvp",
+        "value_and_custom_vjp",
+    )
+
+    for name in helper_names:
+        helper = getattr(custom_derivative_module, name)
+        assert getattr(differentiable_module, name) is helper
+        assert getattr(scpn, name) is helper
 
 
 def test_custom_derivative_rule_evaluates_exact_jvp_and_vjp() -> None:
@@ -83,6 +111,27 @@ def test_custom_derivative_rule_evaluates_exact_jvp_and_vjp() -> None:
     assert vjp_result.method == "custom_vjp:quadratic_coupler"
 
 
+def test_custom_derivative_rule_accepts_explicit_parameter_metadata() -> None:
+    """Explicit parameters should override rule-local metadata for exact transforms."""
+
+    rule = CustomDerivativeRule(
+        name="identity_pair",
+        value_fn=lambda values: values,
+        jvp_rule=lambda values, tangent: tangent,
+    )
+
+    result = value_and_custom_jvp(
+        rule,
+        [1.0, 2.0],
+        [3.0, 4.0],
+        parameters=[Parameter("external_theta"), Parameter("external_phi", trainable=False)],
+    )
+
+    assert result.parameter_names == ("external_theta", "external_phi")
+    assert result.trainable == (True, False)
+    _assert_allclose(result.tangent, [3.0, 0.0])
+
+
 def test_custom_derivative_rule_rejects_invalid_contracts() -> None:
     """Custom derivative rules must fail closed on bad exact-rule contracts."""
 
@@ -105,10 +154,16 @@ def test_custom_derivative_rule_rejects_invalid_contracts() -> None:
     )
     with pytest.raises(ValueError, match="JVP output shape"):
         value_and_custom_jvp(rule, [1.0], [1.0])
+    with pytest.raises(ValueError, match="custom JVP requires a CustomDerivativeRule"):
+        value_and_custom_jvp(cast(CustomDerivativeRule, object()), [1.0], [1.0])
+    with pytest.raises(ValueError, match="custom JVP tangent length"):
+        value_and_custom_jvp(rule, [1.0], [1.0, 2.0])
     with pytest.raises(ValueError, match="cotangent shape"):
         value_and_custom_vjp(rule, [1.0], [1.0, 2.0])
     with pytest.raises(ValueError, match="VJP output length"):
         value_and_custom_vjp(rule, [1.0], [1.0])
+    with pytest.raises(ValueError, match="custom VJP requires a CustomDerivativeRule"):
+        value_and_custom_vjp(cast(CustomDerivativeRule, object()), [1.0], [1.0])
     with pytest.raises(ValueError, match="does not define a JVP"):
         value_and_custom_jvp(
             CustomDerivativeRule(
@@ -119,6 +174,39 @@ def test_custom_derivative_rule_rejects_invalid_contracts() -> None:
             [1.0],
             [1.0],
         )
+    with pytest.raises(ValueError, match="does not define a VJP"):
+        value_and_custom_vjp(
+            CustomDerivativeRule(
+                name="jvp_only",
+                value_fn=lambda values: values,
+                jvp_rule=lambda values, tangent: tangent,
+            ),
+            [1.0],
+            [1.0],
+        )
+
+
+def test_custom_derivative_rule_rejects_corrupted_parameter_metadata() -> None:
+    """Exact transforms should still fail closed if frozen rule metadata is corrupted."""
+
+    bad_names = CustomDerivativeRule(
+        name="bad_names",
+        value_fn=lambda values: values,
+        jvp_rule=lambda values, tangent: tangent,
+        parameter_names=("theta", "phi"),
+    )
+    with pytest.raises(ValueError, match="parameter_names length"):
+        value_and_custom_jvp(bad_names, [1.0], [1.0])
+
+    bad_trainable = CustomDerivativeRule(
+        name="bad_trainable",
+        value_fn=lambda values: values,
+        jvp_rule=lambda values, tangent: tangent,
+        parameter_names=("theta", "phi"),
+    )
+    object.__setattr__(bad_trainable, "trainable", (True,))
+    with pytest.raises(ValueError, match="trainable mask length"):
+        value_and_custom_jvp(bad_trainable, [1.0, 2.0], [1.0, 1.0])
 
 
 def test_custom_jacobian_materializes_exact_jvp_columns() -> None:
@@ -174,6 +262,15 @@ def test_custom_jacobian_rejects_invalid_exact_rule_shapes() -> None:
     invalid_rule = cast(CustomDerivativeRule, object())
     with pytest.raises(ValueError, match="CustomDerivativeRule"):
         value_and_custom_jacobian(invalid_rule, [1.0])
+    no_rule = CustomDerivativeRule(
+        name="corrupted_empty",
+        value_fn=lambda values: values,
+        jvp_rule=lambda values, tangent: tangent,
+    )
+    object.__setattr__(no_rule, "jvp_rule", None)
+    object.__setattr__(no_rule, "vjp_rule", None)
+    with pytest.raises(ValueError, match="requires a JVP or VJP"):
+        value_and_custom_jacobian(no_rule, [1.0])
 
     bad_jvp = CustomDerivativeRule(
         name="bad_jvp",
@@ -269,6 +366,8 @@ def test_batched_custom_jacobian_materializes_parameter_batches() -> None:
     _assert_allclose(results[1].value, [-4.0, 1.0])
     with pytest.raises(ValueError, match="two-dimensional batch"):
         batch_value_and_custom_jacobian(rule, [1.0, 2.0])
+    with pytest.raises(ValueError, match="finite values"):
+        batch_value_and_custom_jacobian(rule, [[1.0, np.nan]])
 
 
 def test_custom_gauss_newton_gradient_uses_exact_custom_jacobian() -> None:
