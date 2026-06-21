@@ -305,6 +305,11 @@ def differentiable_module_hardening_registry() -> tuple[DifferentiableModuleHard
             ),
         ),
         _record(
+            "src/scpn_quantum_control/differentiable_implicit_sensitivity.py",
+            ("tests/test_differentiable_implicit_sensitivity.py",),
+            ("implicit stationary sensitivity", "fixed-point sensitivity solves"),
+        ),
+        _record(
             "src/scpn_quantum_control/differentiable_module_hardening_audit.py",
             ("tests/test_differentiable_module_hardening_audit.py",),
             ("module inventory discovery", "module-specific test enforcement"),

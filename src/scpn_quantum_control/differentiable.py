@@ -36,6 +36,10 @@ from .differentiable_fisher import (
     empirical_fisher_vector_product,
     least_squares_covariance,
 )
+from .differentiable_implicit_sensitivity import (
+    implicit_fixed_point_sensitivity,
+    implicit_stationary_sensitivity,
+)
 from .differentiable_jax_adapter import (
     is_jax_autodiff_available,
     jax_value_and_grad,
@@ -9408,139 +9412,6 @@ def update_levenberg_marquardt_damping(
         trial=trial,
         next_damping=min(max_value, max(min_value, current)),
         action="accept_keep",
-    )
-
-
-def implicit_stationary_sensitivity(
-    hessian: ArrayLike,
-    cross_derivative: ArrayLike,
-    *,
-    parameters: Sequence[Parameter] | None = None,
-    hyperparameter_names: Sequence[str] | None = None,
-    damping: float = 0.0,
-    rcond: float = 1.0e-12,
-) -> ImplicitSensitivityResult:
-    """Return ``dx*/dalpha = -H^-1 B`` for an implicit stationary system."""
-
-    hessian_arr = _as_real_numeric_array("implicit hessian", hessian)
-    cross = _as_real_numeric_array("implicit cross_derivative", cross_derivative)
-    if hessian_arr.ndim != 2 or hessian_arr.shape[0] != hessian_arr.shape[1]:
-        raise ValueError("implicit hessian must be a square matrix")
-    if cross.ndim == 1:
-        cross = cross.reshape((-1, 1))
-    if cross.ndim != 2 or cross.shape[0] != hessian_arr.shape[0]:
-        raise ValueError("implicit cross_derivative row count must match hessian dimension")
-    if not np.all(np.isfinite(hessian_arr)) or not np.all(np.isfinite(cross)):
-        raise ValueError("implicit operands must contain only finite values")
-    if not np.allclose(hessian_arr, hessian_arr.T, atol=1.0e-10, rtol=1.0e-10):
-        raise ValueError("implicit hessian must be symmetric")
-    damping_value = _as_real_scalar("implicit damping", damping)
-    if damping_value < 0.0:
-        raise ValueError("implicit damping must be finite and non-negative")
-    rcond_value = _as_real_scalar("implicit rcond", rcond)
-    if rcond_value <= 0.0:
-        raise ValueError("implicit rcond must be finite and positive")
-    parameter_values = np.zeros(hessian_arr.shape[0], dtype=np.float64)
-    parameter_meta = _normalise_parameters(parameter_values, parameters)
-    hyper_names = (
-        tuple(f"alpha{index}" for index in range(cross.shape[1]))
-        if hyperparameter_names is None
-        else tuple(hyperparameter_names)
-    )
-    if len(hyper_names) != cross.shape[1]:
-        raise ValueError("hyperparameter_names length must match cross_derivative columns")
-    trainable = np.asarray([parameter.trainable for parameter in parameter_meta], dtype=bool)
-    sensitivity = np.zeros_like(cross)
-    condition_number = 1.0
-    if np.any(trainable):
-        active_hessian = hessian_arr[np.ix_(trainable, trainable)].copy()
-        if damping_value > 0.0:
-            active_hessian += damping_value * np.eye(active_hessian.shape[0], dtype=np.float64)
-        eigenvalues = np.linalg.eigvalsh(active_hessian)
-        min_eigenvalue = float(np.min(eigenvalues))
-        max_eigenvalue = float(np.max(eigenvalues))
-        if min_eigenvalue <= 0.0:
-            raise ValueError("implicit hessian must be positive definite on trainable parameters")
-        condition_number = max_eigenvalue / min_eigenvalue
-        if condition_number > 1.0 / rcond_value:
-            raise ValueError("implicit hessian is ill-conditioned")
-        sensitivity[trainable, :] = -np.linalg.solve(active_hessian, cross[trainable, :])
-    return ImplicitSensitivityResult(
-        sensitivity=sensitivity,
-        hessian=hessian_arr,
-        cross_derivative=cross,
-        damping=damping_value,
-        condition_number=condition_number,
-        method="implicit_stationary_sensitivity",
-        parameter_names=tuple(parameter.name for parameter in parameter_meta),
-        trainable=tuple(parameter.trainable for parameter in parameter_meta),
-        hyperparameter_names=hyper_names,
-    )
-
-
-def implicit_fixed_point_sensitivity(
-    state_jacobian: ArrayLike,
-    parameter_jacobian: ArrayLike,
-    *,
-    parameters: Sequence[Parameter] | None = None,
-    hyperparameter_names: Sequence[str] | None = None,
-    damping: float = 0.0,
-    rcond: float = 1.0e-12,
-) -> FixedPointSensitivityResult:
-    """Return ``dx*/dalpha`` for ``x* = T(x*, alpha)`` fixed-point maps."""
-
-    state = _as_real_numeric_array("fixed-point state_jacobian", state_jacobian)
-    parameter = _as_real_numeric_array("fixed-point parameter_jacobian", parameter_jacobian)
-    if state.ndim != 2 or state.shape[0] != state.shape[1]:
-        raise ValueError("fixed-point state_jacobian must be a square matrix")
-    if parameter.ndim == 1:
-        parameter = parameter.reshape((-1, 1))
-    if parameter.ndim != 2 or parameter.shape[0] != state.shape[0]:
-        raise ValueError("fixed-point parameter_jacobian row count must match state dimension")
-    if not np.all(np.isfinite(state)) or not np.all(np.isfinite(parameter)):
-        raise ValueError("fixed-point operands must contain only finite values")
-    damping_value = _as_real_scalar("fixed-point damping", damping)
-    if damping_value < 0.0:
-        raise ValueError("fixed-point damping must be finite and non-negative")
-    rcond_value = _as_real_scalar("fixed-point rcond", rcond)
-    if rcond_value <= 0.0:
-        raise ValueError("fixed-point rcond must be finite and positive")
-    parameter_values = np.zeros(state.shape[0], dtype=np.float64)
-    parameter_meta = _normalise_parameters(parameter_values, parameters)
-    hyper_names = (
-        tuple(f"alpha{index}" for index in range(parameter.shape[1]))
-        if hyperparameter_names is None
-        else tuple(hyperparameter_names)
-    )
-    if len(hyper_names) != parameter.shape[1]:
-        raise ValueError(
-            "hyperparameter_names length must match fixed-point parameter_jacobian columns"
-        )
-    system_matrix = np.eye(state.shape[0], dtype=np.float64) - state
-    if damping_value > 0.0:
-        system_matrix = system_matrix + damping_value * np.eye(state.shape[0], dtype=np.float64)
-    trainable = np.asarray(
-        [parameter_info.trainable for parameter_info in parameter_meta], dtype=bool
-    )
-    sensitivity = np.zeros_like(parameter)
-    condition_number = 1.0
-    if np.any(trainable):
-        active_system = system_matrix[np.ix_(trainable, trainable)]
-        condition_number = float(np.linalg.cond(active_system))
-        if not np.isfinite(condition_number) or condition_number > 1.0 / rcond_value:
-            raise ValueError("fixed-point system is ill-conditioned")
-        sensitivity[trainable, :] = np.linalg.solve(active_system, parameter[trainable, :])
-    return FixedPointSensitivityResult(
-        sensitivity=sensitivity,
-        state_jacobian=state,
-        parameter_jacobian=parameter,
-        system_matrix=system_matrix,
-        damping=damping_value,
-        condition_number=condition_number,
-        method="implicit_fixed_point_sensitivity",
-        parameter_names=tuple(parameter_info.name for parameter_info in parameter_meta),
-        trainable=tuple(parameter_info.trainable for parameter_info in parameter_meta),
-        hyperparameter_names=hyper_names,
     )
 
 
