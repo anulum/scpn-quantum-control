@@ -14,7 +14,7 @@
     "python_model_source_modules": 889,
     "rust_pyo3_model_wrappers": 137,
     "rust_source_modules": 38,
-    "test_files": 2064
+    "test_files": 2065
   },
   "documentation": {
     "examples": [
@@ -12316,6 +12316,7 @@
       "tests/test_topological_optimizer.py",
       "tests/test_topology_auth_edge.py",
       "tests/test_topology_complexes.py",
+      "tests/test_topology_constraints_guards.py",
       "tests/test_topology_control_core.py",
       "tests/test_topology_control_integration.py",
       "tests/test_transform_algebra.py",
