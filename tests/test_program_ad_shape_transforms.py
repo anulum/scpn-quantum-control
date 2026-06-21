@@ -23,6 +23,11 @@ from scpn_quantum_control.differentiable import (
     PrimitiveTransformRule,
     primitive_complete_contract_for,
     primitive_contract_for,
+    program_adjoint_gradient,
+    whole_program_value_and_grad,
+)
+from scpn_quantum_control.program_ad_shape_transforms import (
+    _program_ad_shape_derivative_rule,
     program_ad_shape_atleast_1d_derivative_rule,
     program_ad_shape_atleast_2d_derivative_rule,
     program_ad_shape_atleast_3d_derivative_rule,
@@ -40,8 +45,6 @@ from scpn_quantum_control.differentiable import (
     program_ad_shape_swapaxes_derivative_rule,
     program_ad_shape_tile_derivative_rule,
     program_ad_shape_transpose_derivative_rule,
-    program_adjoint_gradient,
-    whole_program_value_and_grad,
 )
 
 
@@ -75,6 +78,38 @@ def _transform_rule_from_contract(contract: PrimitiveContract) -> PrimitiveTrans
         static_argument_rule=contract.static_argument_rule,
         nondifferentiable_policy=contract.nondifferentiable_policy,
         effect=contract.effect,
+    )
+
+
+def test_program_ad_shape_direct_factories_have_dedicated_module_path() -> None:
+    """Shape direct-rule factories should be available outside the facade."""
+
+    from scpn_quantum_control import differentiable as differentiable_facade
+    from scpn_quantum_control import program_ad_shape_transforms
+
+    assert (
+        program_ad_shape_transforms.program_ad_shape_reshape_derivative_rule
+        is program_ad_shape_reshape_derivative_rule
+    )
+    assert (
+        differentiable_facade.program_ad_shape_reshape_derivative_rule
+        is program_ad_shape_reshape_derivative_rule
+    )
+    assert (
+        program_ad_shape_transforms.program_ad_shape_repeat_derivative_rule
+        is program_ad_shape_repeat_derivative_rule
+    )
+    assert (
+        differentiable_facade.program_ad_shape_repeat_derivative_rule
+        is program_ad_shape_repeat_derivative_rule
+    )
+    assert (
+        program_ad_shape_transforms.program_ad_shape_atleast_3d_derivative_rule
+        is program_ad_shape_atleast_3d_derivative_rule
+    )
+    assert (
+        differentiable_facade.program_ad_shape_atleast_3d_derivative_rule
+        is program_ad_shape_atleast_3d_derivative_rule
     )
 
 
@@ -910,6 +945,111 @@ def test_program_ad_shape_static_derivative_factories_are_direct_kernels() -> No
     _assert_allclose(
         atleast_3d_rule.jvp_rule(values, tangent),
         np.atleast_3d(tangent.reshape(2, 3)).reshape(-1),
+        rtol=0.0,
+        atol=0.0,
+    )
+
+
+def test_program_ad_shape_direct_factories_fail_closed_on_static_boundary_edges() -> None:
+    """Shape direct-rule factories should reject invalid static transform contracts."""
+
+    trace_contract = _program_ad_shape_derivative_rule("reshape")
+    with pytest.raises(ValueError, match="operator-intercepted trace dispatch"):
+        trace_contract.value_fn(np.array([1.0], dtype=np.float64))
+    assert trace_contract.jvp_rule is not None
+    with pytest.raises(ValueError, match="operator-intercepted trace dispatch"):
+        trace_contract.jvp_rule(
+            np.array([1.0], dtype=np.float64),
+            np.array([1.0], dtype=np.float64),
+        )
+
+    with pytest.raises(ValueError, match="non-negative dimensions"):
+        program_ad_shape_reshape_derivative_rule((-1,), (1,))
+    reshape_rule = program_ad_shape_reshape_derivative_rule((2,), (2,))
+    with pytest.raises(ValueError, match="requires values with 2 values"):
+        reshape_rule.value_fn(np.array([1.0], dtype=np.float64))
+
+    transpose_default_rule = program_ad_shape_transpose_derivative_rule((2, 3))
+    _assert_allclose(
+        transpose_default_rule.value_fn(np.arange(6.0, dtype=np.float64)),
+        np.arange(6.0, dtype=np.float64).reshape(2, 3).transpose().reshape(-1),
+        rtol=0.0,
+        atol=0.0,
+    )
+    with pytest.raises(ValueError, match="axis out of bounds"):
+        program_ad_shape_expand_dims_derivative_rule((2,), 3)
+    with pytest.raises(ValueError, match="source axes must be static integers"):
+        program_ad_shape_moveaxis_derivative_rule((2, 3), cast(Any, object()), 0)
+
+    with pytest.raises(ValueError, match="repeat counts must be static"):
+        program_ad_shape_repeat_derivative_rule((2,), object(), axis=None)
+    with pytest.raises(ValueError, match="repeat counts must be static"):
+        program_ad_shape_repeat_derivative_rule((2,), -1, axis=None)
+    flat_repeat_rule = program_ad_shape_repeat_derivative_rule((2, 3), 2, axis=None)
+    _assert_allclose(
+        flat_repeat_rule.value_fn(np.arange(6.0, dtype=np.float64)),
+        np.repeat(np.arange(6.0, dtype=np.float64), 2),
+        rtol=0.0,
+        atol=0.0,
+    )
+
+    scalar_tile_rule = program_ad_shape_tile_derivative_rule((2,), 2)
+    _assert_allclose(
+        scalar_tile_rule.value_fn(np.array([1.0, 2.0], dtype=np.float64)),
+        np.array([1.0, 2.0, 1.0, 2.0], dtype=np.float64),
+        rtol=0.0,
+        atol=0.0,
+    )
+    with pytest.raises(ValueError, match="tile reps must be static"):
+        program_ad_shape_tile_derivative_rule((2,), (True,))
+
+    axis_broadcast_roll_rule = program_ad_shape_roll_derivative_rule((2, 3), shift=1, axis=(0, 1))
+    _assert_allclose(
+        axis_broadcast_roll_rule.value_fn(np.arange(6.0, dtype=np.float64)),
+        np.roll(np.arange(6.0, dtype=np.float64).reshape(2, 3), (1, 1), axis=(0, 1)).reshape(-1),
+        rtol=0.0,
+        atol=0.0,
+    )
+    flat_roll_rule = program_ad_shape_roll_derivative_rule((2, 3), shift=1, axis=None)
+    _assert_allclose(
+        flat_roll_rule.value_fn(np.arange(6.0, dtype=np.float64)),
+        np.roll(np.arange(6.0, dtype=np.float64).reshape(2, 3), 1).reshape(-1),
+        rtol=0.0,
+        atol=0.0,
+    )
+    with pytest.raises(ValueError, match="roll shift must be static"):
+        program_ad_shape_roll_derivative_rule((2, 3), shift=object(), axis=(0,))
+
+    with pytest.raises(ValueError, match="rot90 k must be a static integer"):
+        program_ad_shape_rot90_derivative_rule((2, 3), k=True, axes=(0, 1))
+    with pytest.raises(ValueError, match="rot90 axes must contain exactly two axes"):
+        program_ad_shape_rot90_derivative_rule((2, 3), k=1, axes=(0,))
+
+    atleast_2d_scalar_rule = program_ad_shape_atleast_2d_derivative_rule(())
+    _assert_allclose(
+        atleast_2d_scalar_rule.value_fn(np.array([3.0], dtype=np.float64)),
+        np.array([3.0], dtype=np.float64),
+        rtol=0.0,
+        atol=0.0,
+    )
+    atleast_2d_matrix_rule = program_ad_shape_atleast_2d_derivative_rule((2, 3))
+    _assert_allclose(
+        atleast_2d_matrix_rule.value_fn(np.arange(6.0, dtype=np.float64)),
+        np.arange(6.0, dtype=np.float64),
+        rtol=0.0,
+        atol=0.0,
+    )
+    atleast_3d_scalar_rule = program_ad_shape_atleast_3d_derivative_rule(())
+    _assert_allclose(
+        atleast_3d_scalar_rule.value_fn(np.array([4.0], dtype=np.float64)),
+        np.array([4.0], dtype=np.float64),
+        rtol=0.0,
+        atol=0.0,
+    )
+    atleast_3d_cube_rule = program_ad_shape_atleast_3d_derivative_rule((2, 3, 4))
+    _assert_allclose(
+        atleast_3d_cube_rule.value_fn(np.arange(24.0, dtype=np.float64)),
+        np.arange(24.0, dtype=np.float64),
         rtol=0.0,
         atol=0.0,
     )

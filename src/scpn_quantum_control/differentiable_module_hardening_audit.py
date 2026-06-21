@@ -119,6 +119,11 @@ def differentiable_module_hardening_registry() -> tuple[DifferentiableModuleHard
             ("static gather direct rules", "scatter-add VJP boundaries"),
         ),
         _record(
+            "src/scpn_quantum_control/program_ad_shape_transforms.py",
+            ("tests/test_program_ad_shape_transforms.py",),
+            ("static shape direct rules", "shape-transform VJP boundaries"),
+        ),
+        _record(
             "src/scpn_quantum_control/program_ad_adjoint.py",
             ("tests/test_program_adjoint_replay.py",),
             ("reverse-adjoint result records", "input-token replay helpers"),
