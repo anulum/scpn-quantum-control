@@ -114,6 +114,11 @@ def differentiable_module_hardening_registry() -> tuple[DifferentiableModuleHard
             ("facade export compatibility", "diagnostic-only finite differences"),
         ),
         _record(
+            "src/scpn_quantum_control/differentiable_batch_helpers.py",
+            ("tests/test_differentiable_batch_helpers.py",),
+            ("parameter-shift sample tensors", "batched tangent/cotangent validation"),
+        ),
+        _record(
             "src/scpn_quantum_control/differentiable_vmap.py",
             ("tests/test_differentiable_vmap.py",),
             ("eager vectorization transform", "nested output stacking boundaries"),

@@ -11,10 +11,10 @@
     "public_api_exports": 713,
     "public_documentation_pages": 254,
     "python_model_classes": 1840,
-    "python_model_source_modules": 869,
+    "python_model_source_modules": 870,
     "rust_pyo3_model_wrappers": 137,
     "rust_source_modules": 38,
-    "test_files": 2018
+    "test_files": 2019
   },
   "documentation": {
     "examples": [
@@ -8562,6 +8562,7 @@
       "src/scpn_quantum_control/deployment/cloud_native.py",
       "src/scpn_quantum_control/differentiable.py",
       "src/scpn_quantum_control/differentiable_api.py",
+      "src/scpn_quantum_control/differentiable_batch_helpers.py",
       "src/scpn_quantum_control/differentiable_benchmark_report.py",
       "src/scpn_quantum_control/differentiable_claim_ledger.py",
       "src/scpn_quantum_control/differentiable_external_validation.py",
@@ -10848,6 +10849,7 @@
       "tests/test_dependency_security_closure.py",
       "tests/test_determinism.py",
       "tests/test_differentiable_api.py",
+      "tests/test_differentiable_batch_helpers.py",
       "tests/test_differentiable_benchmark_evidence.py",
       "tests/test_differentiable_benchmark_report.py",
       "tests/test_differentiable_benchmark_workflow.py",
