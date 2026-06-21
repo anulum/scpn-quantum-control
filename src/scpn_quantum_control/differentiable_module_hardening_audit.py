@@ -134,6 +134,11 @@ def differentiable_module_hardening_registry() -> tuple[DifferentiableModuleHard
             ("static cumulative direct rules", "axis-aware cumulative VJP boundaries"),
         ),
         _record(
+            "src/scpn_quantum_control/program_ad_trapezoid_primitives.py",
+            ("tests/test_program_ad_trapezoid.py",),
+            ("static trapezoid direct rules", "static-grid trapezoid VJP boundaries"),
+        ),
+        _record(
             "src/scpn_quantum_control/program_ad_stencil_primitives.py",
             ("tests/test_program_ad_finite_difference_stencils.py",),
             ("static stencil direct rules", "gradient VJP boundary coefficients"),
