@@ -4,20 +4,32 @@
 # © Code 2020-2026 Miroslav Sotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# scpn-quantum-control -- Program AD linalg reverse-adjoint contribution generation
-"""Reverse-mode local pullback contribution rules for linear-algebra primitives.
+# scpn-quantum-control -- Program AD reverse-adjoint generation over stabilised IR
+"""Reverse-mode adjoint generation over the stabilised whole-program AD IR.
 
-Each helper consumes one stabilised whole-program AD IR node for a linear-algebra
-primitive (determinant, inverse, linear solve, trace, diagonal construction and
-extraction, matrix power, multi-dot, ``eig``/``eigh`` eigenvalue and eigenvector
-elements, ``eigvals``/``eigvalsh`` spectra, ``svdvals`` singular values, and
-``pinv`` elements) plus the captured node table, and returns the local
-reverse-mode cotangent contributions ``((input_name, partial), ...)`` consumed by
-the adjoint-generation dispatcher in :mod:`scpn_quantum_control.differentiable`.
+This module owns the reverse pass of whole-program AD for supported scalar
+programs:
 
-The mathematical VJP rules are sourced from
-:mod:`scpn_quantum_control.program_ad_linalg_primitives`; this module owns only
-the IR-node decoding, shape/metadata validation, and contribution assembly.
+- Per-node local pullback contribution rules: elementwise/unary and binary
+  operations, selection primitives (``where``, ``clip``, ``choose``), and the
+  linear-algebra primitives (determinant, inverse, linear solve, trace, diagonal
+  construction/extraction, matrix power, multi-dot, ``eig``/``eigh`` eigenvalue
+  and eigenvector elements, ``eigvals``/``eigvalsh`` spectra, ``svdvals``
+  singular values, and ``pinv`` elements). Each returns the local cotangent
+  contributions ``((input_name, partial), ...)``.
+- The dispatcher :func:`_program_adjoint_node_contributions` routing one IR node
+  to its contribution rule and failing closed on unsupported operations.
+- The replay driver :func:`_program_adjoint_result_from_nodes` (and its
+  :func:`_program_adjoint_steps_from_ir` helper) that propagates cotangents
+  backward over the captured nodes, assembles the parameter gradient, and emits
+  the per-step reverse-adjoint record over ``program_ad_effect_ir.v1`` metadata.
+
+Linear-algebra VJP rules are sourced from
+:mod:`scpn_quantum_control.program_ad_linalg_primitives`; IR-node and result
+records come from :mod:`scpn_quantum_control.program_ad_effect_ir` and
+:mod:`scpn_quantum_control.program_ad_adjoint`. The public reverse-mode wrappers
+(``program_adjoint_grad`` and friends) remain in
+:mod:`scpn_quantum_control.differentiable` and call into this module.
 """
 
 from __future__ import annotations
