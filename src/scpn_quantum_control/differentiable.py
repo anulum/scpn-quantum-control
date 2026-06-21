@@ -21,6 +21,15 @@ from typing import Any, Literal, NoReturn, cast
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
 
+from .differentiable_batch_helpers import (
+    _as_batch_parameter_array as _as_batch_parameter_array,
+)
+from .differentiable_batch_helpers import (
+    _as_batch_vector_array as _as_batch_vector_array,
+)
+from .differentiable_batch_helpers import (
+    _as_parameter_shift_sample_tensor as _as_parameter_shift_sample_tensor,
+)
 from .differentiable_consistency import (
     check_custom_derivative_consistency,
     check_parameter_shift_consistency,
