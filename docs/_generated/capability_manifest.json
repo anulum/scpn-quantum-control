@@ -14,7 +14,7 @@
     "python_model_source_modules": 889,
     "rust_pyo3_model_wrappers": 137,
     "rust_source_modules": 38,
-    "test_files": 2056
+    "test_files": 2059
   },
   "documentation": {
     "examples": [
@@ -11047,6 +11047,7 @@
       "tests/test_knm_physical_validation_audit.py",
       "tests/test_knm_properties.py",
       "tests/test_koopman.py",
+      "tests/test_koopman_rust_generator_branches.py",
       "tests/test_krylov_complexity.py",
       "tests/test_kuramoto_core.py",
       "tests/test_kuramoto_variants.py",
@@ -11064,6 +11065,7 @@
       "tests/test_loschmidt_echo.py",
       "tests/test_magic_nonstabilizerness.py",
       "tests/test_magnetisation_sectors.py",
+      "tests/test_magnetisation_sectors_empty_guard.py",
       "tests/test_mitiq_integration.py",
       "tests/test_ml_dsa_pqc.py",
       "tests/test_mlir_realtime_cloud.py",
@@ -12337,6 +12339,7 @@
       "tests/test_wilson_loop.py",
       "tests/test_wirtinger_calculus.py",
       "tests/test_witness_discovery.py",
+      "tests/test_witness_discovery_engine_fallback.py",
       "tests/test_xxz_hamiltonian.py",
       "tests/test_xxz_phase_diagram.py",
       "tests/test_xy_compiler.py",
