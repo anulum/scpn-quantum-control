@@ -26,6 +26,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import numpy as np
+from numpy.typing import NDArray
 from qiskit.quantum_info import SparsePauliOp, Statevector
 
 from ..bridge.knm_hamiltonian import knm_to_dense_matrix
@@ -36,7 +37,7 @@ from ..dense_budget import require_dense_allocation
 class PairingResult:
     """Pairing correlator analysis."""
 
-    pairing_matrix: np.ndarray  # ⟨S_i⁺ S_j⁻⟩ for all pairs
+    pairing_matrix: NDArray[np.complex128]  # ⟨S_i⁺ S_j⁻⟩ for all pairs
     max_pairing: float
     mean_pairing: float
     pairing_topology_correlation: float  # correlation with K_nm
@@ -45,7 +46,7 @@ class PairingResult:
     K_base: float
 
 
-def _pairing_correlator(psi: np.ndarray, i: int, j: int, n: int) -> complex:
+def _pairing_correlator(psi: NDArray[np.complex128], i: int, j: int, n: int) -> complex:
     """Compute ⟨S_i⁺ S_j⁻⟩ = ⟨(X_i+iY_i)(X_j-iY_j)⟩/4.
 
     S⁺S⁻ = (XX + YY + i(YX - XY))/4 = (XX + YY)/4 + i(YX - XY)/4
@@ -68,8 +69,8 @@ def _pairing_correlator(psi: np.ndarray, i: int, j: int, n: int) -> complex:
 
 
 def pairing_map(
-    omega: np.ndarray,
-    K_topology: np.ndarray,
+    omega: NDArray[np.float64],
+    K_topology: NDArray[np.float64],
     K_base: float,
     delta: float = 0.0,
     *,
@@ -90,7 +91,7 @@ def pairing_map(
     eigenvalues, eigenvectors = np.linalg.eigh(H_mat)
     psi0 = eigenvectors[:, 0]
 
-    pairing: np.ndarray = np.zeros((n, n), dtype=complex)
+    pairing: NDArray[np.complex128] = np.zeros((n, n), dtype=complex)
     for i in range(n):
         for j in range(i + 1, n):
             c = _pairing_correlator(psi0, i, j, n)
@@ -119,10 +120,10 @@ def pairing_map(
 
 
 def pairing_vs_anisotropy(
-    omega: np.ndarray,
-    K_topology: np.ndarray,
+    omega: NDArray[np.float64],
+    K_topology: NDArray[np.float64],
     K_base: float,
-    delta_range: np.ndarray | None = None,
+    delta_range: NDArray[np.float64] | None = None,
     *,
     max_dense_gib: float | None = None,
 ) -> dict[str, list[float]]:
@@ -131,7 +132,7 @@ def pairing_vs_anisotropy(
     Shows how off-plane coupling (Δ > 0) activates Richardson pairing.
     """
     if delta_range is None:
-        delta_range = np.linspace(0.0, 1.0, 6)
+        delta_range = np.linspace(0.0, 1.0, 6, dtype=np.float64)
 
     results: dict[str, list[float]] = {
         "delta": [],

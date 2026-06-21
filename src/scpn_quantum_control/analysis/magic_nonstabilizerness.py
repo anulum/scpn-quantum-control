@@ -30,6 +30,7 @@ from dataclasses import dataclass
 from itertools import product as iterproduct
 
 import numpy as np
+from numpy.typing import NDArray
 from qiskit.quantum_info import SparsePauliOp, Statevector
 
 from ..bridge.knm_hamiltonian import knm_to_dense_matrix, knm_to_hamiltonian
@@ -50,13 +51,13 @@ class MagicResult:
 class MagicScanResult:
     """Magic scan across coupling strength."""
 
-    k_values: np.ndarray
-    sre_m2: np.ndarray  # M_2 at each K
+    k_values: NDArray[np.float64]
+    sre_m2: NDArray[np.float64]  # M_2 at each K
     peak_K: float | None  # K where M_2 is maximum
     peak_magic: float
 
 
-def _compute_sre_m2(psi: np.ndarray, n: int) -> tuple[float, float]:
+def _compute_sre_m2(psi: NDArray[np.complex128], n: int) -> tuple[float, float]:
     """Compute Stabilizer Rényi Entropy M_2.
 
     M_2 = -log₂(Ξ) - n  where Ξ = Σ_P ⟨ψ|P|ψ⟩⁴ / 2^n
@@ -83,8 +84,8 @@ def _compute_sre_m2(psi: np.ndarray, n: int) -> tuple[float, float]:
 
 
 def magic_at_coupling(
-    omega: np.ndarray,
-    K_topology: np.ndarray,
+    omega: NDArray[np.float64],
+    K_topology: NDArray[np.float64],
     K_base: float,
     *,
     max_dense_gib: float | None = None,
@@ -116,9 +117,9 @@ def magic_at_coupling(
 
 
 def magic_vs_coupling(
-    omega: np.ndarray,
-    K_topology: np.ndarray,
-    k_range: np.ndarray | None = None,
+    omega: NDArray[np.float64],
+    K_topology: NDArray[np.float64],
+    k_range: NDArray[np.float64] | None = None,
     *,
     max_dense_gib: float | None = None,
 ) -> MagicScanResult:
@@ -127,7 +128,7 @@ def magic_vs_coupling(
     At K_c: magic should peak (maximally non-classical critical state).
     """
     if k_range is None:
-        k_range = np.linspace(0.5, 5.0, 15)
+        k_range = np.linspace(0.5, 5.0, 15, dtype=np.float64)
 
     n_k = len(k_range)
     sre = np.zeros(n_k)
