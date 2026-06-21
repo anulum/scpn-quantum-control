@@ -15,6 +15,9 @@ from typing import Any, cast
 import numpy as np
 import pytest
 
+import scpn_quantum_control as scpn
+from scpn_quantum_control import differentiable as differentiable_module
+from scpn_quantum_control import differentiable_gradient_descent as gradient_descent_module
 from scpn_quantum_control.differentiable import (
     DifferentiableOptimizer,
     GradientResult,
@@ -36,6 +39,23 @@ def _assert_allclose(
     cast(Any, np.testing.assert_allclose)(actual, expected, rtol=rtol, atol=atol)
 
 
+def test_facade_and_package_root_reuse_extracted_gradient_descent_optimizer() -> None:
+    """Facade and package-root exports should reuse the extracted optimizer."""
+
+    assert (
+        differentiable_module.DifferentiableOptimizer
+        is gradient_descent_module.DifferentiableOptimizer
+    )
+    assert scpn.DifferentiableOptimizer is gradient_descent_module.DifferentiableOptimizer
+
+
+def test_gradient_descent_rejects_negative_learning_rate() -> None:
+    """Gradient-descent step sizes must be non-negative real scalars."""
+
+    with pytest.raises(ValueError, match="learning_rate"):
+        DifferentiableOptimizer(learning_rate=-0.1)
+
+
 def test_gradient_descent_step_respects_trainable_mask() -> None:
     """Native optimizer step should update only trainable parameters."""
 
@@ -54,6 +74,29 @@ def test_gradient_descent_step_respects_trainable_mask() -> None:
     updated = optimizer.step([1.0, 5.0], result)
 
     _assert_allclose(updated, [0.8, 5.0])
+
+
+def test_gradient_descent_step_rejects_inconsistent_metadata() -> None:
+    """Optimizer steps must fail closed when gradient metadata is inconsistent."""
+
+    result = GradientResult(
+        value=1.0,
+        gradient=np.array([2.0]),
+        method="parameter_shift",
+        shift=math.pi / 2,
+        coefficient=0.5,
+        evaluations=3,
+        parameter_names=("theta",),
+        trainable=(True,),
+    )
+    optimizer = DifferentiableOptimizer(learning_rate=0.1)
+
+    with pytest.raises(ValueError, match="values length"):
+        optimizer.step([1.0, 2.0], result)
+
+    object.__setattr__(result, "trainable", (True, False))
+    with pytest.raises(ValueError, match="trainable mask length"):
+        optimizer.step([1.0], result)
 
 
 def test_gradient_descent_step_projects_box_bounds() -> None:
@@ -241,6 +284,23 @@ def test_optimizer_minimize_accepts_gradient_clipping() -> None:
     _assert_allclose(result.values, [9.5], atol=1.0e-5)
 
 
+def test_optimizer_minimize_stops_on_value_tolerance() -> None:
+    """Value-tolerance convergence should stop after a small objective change."""
+
+    optimizer = DifferentiableOptimizer(learning_rate=0.01)
+    result = optimizer.minimize(
+        lambda values: 1.0 - math.cos(values[0]),
+        [0.2],
+        max_steps=20,
+        gradient_tolerance=0.0,
+        value_tolerance=1.0,
+    )
+
+    assert result.converged
+    assert result.reason == "value_tolerance"
+    assert result.steps == 1
+
+
 def test_optimizer_result_tracks_best_iterate_when_final_worsens() -> None:
     """OptimizationResult should preserve the best observed iterate."""
 
@@ -322,6 +382,8 @@ def test_optimizer_minimize_rejects_invalid_loop_controls() -> None:
         optimizer.minimize(
             lambda values: math.sin(values[0]), [0.1], gradient_tolerance=cast(Any, "1e-3")
         )
+    with pytest.raises(ValueError, match="gradient_tolerance"):
+        optimizer.minimize(lambda values: math.sin(values[0]), [0.1], gradient_tolerance=-1.0)
     with pytest.raises(ValueError, match="value_tolerance"):
         optimizer.minimize(lambda values: math.sin(values[0]), [0.1], value_tolerance=-1.0)
     with pytest.raises(ValueError, match="bounds length"):

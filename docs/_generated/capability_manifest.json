@@ -11,10 +11,10 @@
     "public_api_exports": 714,
     "public_documentation_pages": 254,
     "python_model_classes": 1840,
-    "python_model_source_modules": 883,
+    "python_model_source_modules": 884,
     "rust_pyo3_model_wrappers": 137,
     "rust_source_modules": 38,
-    "test_files": 2029
+    "test_files": 2030
   },
   "documentation": {
     "examples": [
@@ -2271,7 +2271,7 @@
       },
       {
         "name": "DifferentiableOptimizer",
-        "path": "src/scpn_quantum_control/differentiable.py"
+        "path": "src/scpn_quantum_control/differentiable_gradient_descent.py"
       },
       {
         "name": "DifferentiableProgrammingBenchmarkResult",
@@ -8572,6 +8572,7 @@
       "src/scpn_quantum_control/differentiable_finite_difference.py",
       "src/scpn_quantum_control/differentiable_fisher.py",
       "src/scpn_quantum_control/differentiable_framework_overlay.py",
+      "src/scpn_quantum_control/differentiable_gradient_descent.py",
       "src/scpn_quantum_control/differentiable_implicit_sensitivity.py",
       "src/scpn_quantum_control/differentiable_jax_adapter.py",
       "src/scpn_quantum_control/differentiable_module_hardening_audit.py",
@@ -11716,6 +11717,7 @@
       "tests/test_quantum_advantage_crossover_figure.py",
       "tests/test_quantum_advantage_gap_audit.py",
       "tests/test_quantum_costs.py",
+      "tests/test_quantum_entropy_source.py",
       "tests/test_quantum_evs.py",
       "tests/test_quantum_kernel.py",
       "tests/test_quantum_kuramoto_api_contract.py",

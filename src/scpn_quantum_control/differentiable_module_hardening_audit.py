@@ -328,6 +328,14 @@ def differentiable_module_hardening_registry() -> tuple[DifferentiableModuleHard
             ),
         ),
         _record(
+            "src/scpn_quantum_control/differentiable_gradient_descent.py",
+            ("tests/test_differentiable_gradient_descent_optimizer.py",),
+            (
+                "gradient-descent optimizer step",
+                "gradient-descent minimize loop controls",
+            ),
+        ),
+        _record(
             "src/scpn_quantum_control/differentiable_implicit_sensitivity.py",
             ("tests/test_differentiable_implicit_sensitivity.py",),
             ("implicit stationary sensitivity", "fixed-point sensitivity solves"),
