@@ -297,6 +297,14 @@ def differentiable_module_hardening_registry() -> tuple[DifferentiableModuleHard
             ),
         ),
         _record(
+            "src/scpn_quantum_control/differentiable_fisher.py",
+            ("tests/test_differentiable_fisher.py",),
+            (
+                "matrix-free empirical-Fisher products",
+                "least-squares covariance estimation",
+            ),
+        ),
+        _record(
             "src/scpn_quantum_control/differentiable_module_hardening_audit.py",
             ("tests/test_differentiable_module_hardening_audit.py",),
             ("module inventory discovery", "module-specific test enforcement"),
