@@ -1330,6 +1330,208 @@ class NaturalGradientOptimizationResult:
 
 
 @dataclass(frozen=True)
+class LeastSquaresCovarianceResult:
+    """Parameter uncertainty estimate from a residual-map Fisher metric."""
+
+    covariance: NDArray[np.float64]
+    standard_errors: NDArray[np.float64]
+    residual_variance: float
+    degrees_of_freedom: int
+    condition_number: float
+    parameter_names: tuple[str, ...]
+    trainable: tuple[bool, ...]
+
+    def __post_init__(self) -> None:
+        covariance = _as_real_numeric_array("least-squares covariance", self.covariance)
+        standard_errors = _as_real_numeric_array(
+            "least-squares standard errors",
+            self.standard_errors,
+        )
+        if covariance.ndim != 2 or covariance.shape[0] != covariance.shape[1]:
+            raise ValueError("least-squares covariance must be a square matrix")
+        if standard_errors.ndim != 1 or standard_errors.shape[0] != covariance.shape[0]:
+            raise ValueError("standard_errors length must match covariance dimension")
+        if not np.all(np.isfinite(covariance)):
+            raise ValueError("least-squares covariance must contain only finite values")
+        if not np.allclose(covariance, covariance.T, atol=1.0e-10):
+            raise ValueError("least-squares covariance must be symmetric")
+        if not np.all(np.isfinite(standard_errors)) or np.any(standard_errors < 0.0):
+            raise ValueError("standard_errors must contain finite non-negative values")
+        residual_variance = _as_real_scalar(
+            "least-squares residual_variance",
+            self.residual_variance,
+        )
+        if residual_variance < 0.0:
+            raise ValueError("residual_variance must be finite and non-negative")
+        degrees_of_freedom = int(self.degrees_of_freedom)
+        if degrees_of_freedom < 1:
+            raise ValueError("degrees_of_freedom must be positive")
+        condition_number = _as_real_scalar(
+            "least-squares condition_number",
+            self.condition_number,
+        )
+        if condition_number < 1.0:
+            raise ValueError("condition_number must be at least one")
+        if len(self.parameter_names) != covariance.shape[0]:
+            raise ValueError("parameter_names length must match covariance dimension")
+        if len(self.trainable) != covariance.shape[0]:
+            raise ValueError("trainable mask length must match covariance dimension")
+        object.__setattr__(self, "covariance", covariance)
+        object.__setattr__(self, "standard_errors", standard_errors)
+        object.__setattr__(self, "residual_variance", residual_variance)
+        object.__setattr__(self, "degrees_of_freedom", degrees_of_freedom)
+        object.__setattr__(self, "condition_number", condition_number)
+
+
+@dataclass(frozen=True)
+class FisherVectorProductResult:
+    """Matrix-free empirical-Fisher vector product with provenance."""
+
+    value: NDArray[np.float64]
+    tangent: NDArray[np.float64]
+    product: NDArray[np.float64]
+    residual_projection: NDArray[np.float64]
+    damping: float
+    method: str
+    evaluations: int
+    parameter_names: tuple[str, ...]
+    trainable: tuple[bool, ...]
+
+    def __post_init__(self) -> None:
+        value = _as_real_numeric_array("Fisher-vector value", self.value)
+        tangent = _as_real_numeric_array("Fisher-vector tangent", self.tangent)
+        product = _as_real_numeric_array("Fisher-vector product", self.product)
+        projection = _as_real_numeric_array(
+            "Fisher-vector residual_projection",
+            self.residual_projection,
+        )
+        if value.ndim != 1:
+            raise ValueError("Fisher-vector value must be one-dimensional")
+        if tangent.ndim != 1 or product.shape != tangent.shape:
+            raise ValueError("Fisher-vector tangent and product must be one-dimensional matches")
+        if projection.shape != value.shape:
+            raise ValueError("residual_projection shape must match value shape")
+        if not np.all(np.isfinite(value)) or not np.all(np.isfinite(projection)):
+            raise ValueError("Fisher-vector value and projection must contain only finite values")
+        if not np.all(np.isfinite(tangent)) or not np.all(np.isfinite(product)):
+            raise ValueError("Fisher-vector tangent and product must contain only finite values")
+        damping = _as_real_scalar("Fisher-vector damping", self.damping)
+        if damping < 0.0:
+            raise ValueError("Fisher-vector damping must be finite and non-negative")
+        if not self.method:
+            raise ValueError("Fisher-vector method must be non-empty")
+        if self.evaluations < 0:
+            raise ValueError("Fisher-vector evaluations must be non-negative")
+        if len(self.parameter_names) != tangent.size:
+            raise ValueError("parameter_names length must match Fisher-vector dimension")
+        if len(self.trainable) != tangent.size:
+            raise ValueError("trainable mask length must match Fisher-vector dimension")
+        if any(not isinstance(name, str) or not name for name in self.parameter_names):
+            raise ValueError("parameter_names must contain non-empty strings")
+        if any(not isinstance(flag, bool) for flag in self.trainable):
+            raise ValueError("trainable mask must contain booleans")
+        object.__setattr__(self, "value", value)
+        object.__setattr__(self, "tangent", tangent)
+        object.__setattr__(self, "product", product)
+        object.__setattr__(self, "residual_projection", projection)
+        object.__setattr__(self, "damping", damping)
+
+
+@dataclass(frozen=True)
+class FisherConjugateGradientResult:
+    """Matrix-free empirical-Fisher conjugate-gradient solve result."""
+
+    solution: NDArray[np.float64]
+    residual_norm_history: tuple[float, ...]
+    iterations: int
+    converged: bool
+    tolerance: float
+    damping: float
+    parameter_names: tuple[str, ...]
+    trainable: tuple[bool, ...]
+
+    def __post_init__(self) -> None:
+        solution = _as_real_numeric_array("Fisher-CG solution", self.solution)
+        if solution.ndim != 1:
+            raise ValueError("Fisher-CG solution must be one-dimensional")
+        if not np.all(np.isfinite(solution)):
+            raise ValueError("Fisher-CG solution must contain only finite values")
+        if not self.residual_norm_history:
+            raise ValueError("Fisher-CG residual history must be non-empty")
+        residual_history = tuple(
+            _as_real_scalar("Fisher-CG residual norm", value)
+            for value in self.residual_norm_history
+        )
+        if any(value < 0.0 for value in residual_history):
+            raise ValueError("Fisher-CG residual norms must be finite and non-negative")
+        iterations = int(self.iterations)
+        if iterations < 0:
+            raise ValueError("Fisher-CG iterations must be non-negative")
+        if len(residual_history) != iterations + 1:
+            raise ValueError("Fisher-CG residual history must include initial residual")
+        tolerance = _as_real_scalar("Fisher-CG tolerance", self.tolerance)
+        damping = _as_real_scalar("Fisher-CG damping", self.damping)
+        if tolerance < 0.0:
+            raise ValueError("Fisher-CG tolerance must be finite and non-negative")
+        if damping < 0.0:
+            raise ValueError("Fisher-CG damping must be finite and non-negative")
+        if len(self.parameter_names) != solution.size:
+            raise ValueError("parameter_names length must match Fisher-CG dimension")
+        if len(self.trainable) != solution.size:
+            raise ValueError("trainable mask length must match Fisher-CG dimension")
+        if any(not isinstance(name, str) or not name for name in self.parameter_names):
+            raise ValueError("parameter_names must contain non-empty strings")
+        if any(not isinstance(flag, bool) for flag in self.trainable):
+            raise ValueError("trainable mask must contain booleans")
+        object.__setattr__(self, "solution", solution)
+        object.__setattr__(self, "residual_norm_history", residual_history)
+        object.__setattr__(self, "iterations", iterations)
+        object.__setattr__(self, "converged", bool(self.converged))
+        object.__setattr__(self, "tolerance", tolerance)
+        object.__setattr__(self, "damping", damping)
+
+
+@dataclass(frozen=True)
+class WeightedGradientResult:
+    """Weighted scalarisation of multiple scalar gradient results."""
+
+    value: float
+    gradient: NDArray[np.float64]
+    components: tuple[GradientResult, ...]
+    weights: NDArray[np.float64]
+    method: str
+    evaluations: int
+    parameter_names: tuple[str, ...]
+    trainable: tuple[bool, ...]
+
+    def __post_init__(self) -> None:
+        if not self.components:
+            raise ValueError("weighted gradient components must be non-empty")
+        value = _as_real_scalar("weighted gradient value", self.value)
+        gradient = _as_real_numeric_array("weighted gradient", self.gradient)
+        weights = _as_real_numeric_array("weighted gradient weights", self.weights)
+        if gradient.ndim != 1:
+            raise ValueError("weighted gradient must be a one-dimensional array")
+        if weights.ndim != 1 or weights.size != len(self.components):
+            raise ValueError("weights length must match weighted gradient components")
+        if not np.all(np.isfinite(gradient)):
+            raise ValueError("weighted gradient must contain only finite values")
+        if not np.all(np.isfinite(weights)):
+            raise ValueError("weights must contain only finite values")
+        if not self.method:
+            raise ValueError("weighted gradient method must be non-empty")
+        if self.evaluations < 0:
+            raise ValueError("weighted gradient evaluations must be non-negative")
+        if len(self.parameter_names) != gradient.size:
+            raise ValueError("parameter_names length must match gradient length")
+        if len(self.trainable) != gradient.size:
+            raise ValueError("trainable mask length must match gradient length")
+        object.__setattr__(self, "value", value)
+        object.__setattr__(self, "gradient", gradient)
+        object.__setattr__(self, "weights", weights)
+
+
+@dataclass(frozen=True)
 class ImplicitSensitivityResult:
     """Implicit-function sensitivity for a stationary differentiable system."""
 
@@ -1494,6 +1696,10 @@ __all__ = [
     "HVPResult",
     "NaturalGradientResult",
     "NaturalGradientOptimizationResult",
+    "LeastSquaresCovarianceResult",
+    "FisherVectorProductResult",
+    "FisherConjugateGradientResult",
+    "WeightedGradientResult",
     "ImplicitSensitivityResult",
     "FixedPointSensitivityResult",
     "_normalise_claim_boundary",

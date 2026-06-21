@@ -209,6 +209,19 @@ def test_result_contract_exports_remain_facade_compatible() -> None:
         is result_contracts.NaturalGradientOptimizationResult
     )
     assert (
+        differentiable_facade.LeastSquaresCovarianceResult
+        is result_contracts.LeastSquaresCovarianceResult
+    )
+    assert (
+        differentiable_facade.FisherVectorProductResult
+        is result_contracts.FisherVectorProductResult
+    )
+    assert (
+        differentiable_facade.FisherConjugateGradientResult
+        is result_contracts.FisherConjugateGradientResult
+    )
+    assert differentiable_facade.WeightedGradientResult is result_contracts.WeightedGradientResult
+    assert (
         differentiable_facade.ImplicitSensitivityResult
         is result_contracts.ImplicitSensitivityResult
     )
@@ -2591,6 +2604,603 @@ def test_result_contracts_reject_name_mask_and_interval_status_edges() -> None:
             assert re.search(message, str(exc)), f"{index}: {exc}"
         else:
             pytest.fail(f"{index}: expected ValueError matching {message!r}")
+
+
+def test_fisher_and_weighted_result_contracts_validate_extracted_records() -> None:
+    """Extracted Fisher and weighted-gradient records should validate metadata."""
+
+    gradient = _base_gradient()
+    covariance = result_contracts.LeastSquaresCovarianceResult(
+        covariance=np.eye(2),
+        standard_errors=np.array([1.0, 1.0]),
+        residual_variance=0.25,
+        degrees_of_freedom=3,
+        condition_number=1.0,
+        parameter_names=("x", "y"),
+        trainable=(True, False),
+    )
+    fisher_product = result_contracts.FisherVectorProductResult(
+        value=np.array([1.0, -2.0]),
+        tangent=np.array([0.5, 0.0]),
+        product=np.array([1.5, 0.0]),
+        residual_projection=np.array([0.5, -0.5]),
+        damping=0.1,
+        method="fisher_vector_product:test",
+        evaluations=2,
+        parameter_names=("x", "y"),
+        trainable=(True, False),
+    )
+    fisher_cg = result_contracts.FisherConjugateGradientResult(
+        solution=np.array([0.25, 0.0]),
+        residual_norm_history=(1.0, 0.0),
+        iterations=1,
+        converged=True,
+        tolerance=1.0e-8,
+        damping=0.1,
+        parameter_names=("x", "y"),
+        trainable=(True, False),
+    )
+    weighted = result_contracts.WeightedGradientResult(
+        value=1.0,
+        gradient=np.array([0.5, -1.0]),
+        components=(gradient,),
+        weights=np.array([1.0]),
+        method="weighted:test",
+        evaluations=gradient.evaluations,
+        parameter_names=("x", "y"),
+        trainable=(True, True),
+    )
+
+    assert covariance.degrees_of_freedom == 3
+    assert fisher_product.damping == pytest.approx(0.1)
+    assert fisher_cg.residual_norm_history == (1.0, 0.0)
+    assert weighted.components == (gradient,)
+
+
+def test_fisher_and_weighted_result_contracts_fail_closed_after_extraction() -> None:
+    """Extracted Fisher and weighted records should reject malformed metadata."""
+
+    gradient = _base_gradient()
+    invalid_factories: tuple[tuple[Callable[[], object], str], ...] = (
+        (
+            lambda: result_contracts.LeastSquaresCovarianceResult(
+                covariance=np.ones((2, 3)),
+                standard_errors=np.ones(2),
+                residual_variance=0.0,
+                degrees_of_freedom=1,
+                condition_number=1.0,
+                parameter_names=("x", "y"),
+                trainable=(True, True),
+            ),
+            "square matrix",
+        ),
+        (
+            lambda: result_contracts.LeastSquaresCovarianceResult(
+                covariance=np.eye(2),
+                standard_errors=np.ones(1),
+                residual_variance=0.0,
+                degrees_of_freedom=1,
+                condition_number=1.0,
+                parameter_names=("x", "y"),
+                trainable=(True, True),
+            ),
+            "standard_errors length",
+        ),
+        (
+            lambda: result_contracts.LeastSquaresCovarianceResult(
+                covariance=np.array([[1.0, 0.0], [0.0, np.inf]]),
+                standard_errors=np.ones(2),
+                residual_variance=0.0,
+                degrees_of_freedom=1,
+                condition_number=1.0,
+                parameter_names=("x", "y"),
+                trainable=(True, True),
+            ),
+            "finite values",
+        ),
+        (
+            lambda: result_contracts.LeastSquaresCovarianceResult(
+                covariance=np.array([[1.0, 0.5], [0.0, 1.0]]),
+                standard_errors=np.ones(2),
+                residual_variance=0.0,
+                degrees_of_freedom=1,
+                condition_number=1.0,
+                parameter_names=("x", "y"),
+                trainable=(True, True),
+            ),
+            "symmetric",
+        ),
+        (
+            lambda: result_contracts.LeastSquaresCovarianceResult(
+                covariance=np.eye(2),
+                standard_errors=np.ones(2),
+                residual_variance=-0.1,
+                degrees_of_freedom=1,
+                condition_number=1.0,
+                parameter_names=("x", "y"),
+                trainable=(True, True),
+            ),
+            "residual_variance",
+        ),
+        (
+            lambda: result_contracts.LeastSquaresCovarianceResult(
+                covariance=np.eye(2),
+                standard_errors=np.ones(2),
+                residual_variance=0.0,
+                degrees_of_freedom=0,
+                condition_number=1.0,
+                parameter_names=("x", "y"),
+                trainable=(True, True),
+            ),
+            "degrees_of_freedom",
+        ),
+        (
+            lambda: result_contracts.LeastSquaresCovarianceResult(
+                covariance=np.eye(2),
+                standard_errors=np.ones(2),
+                residual_variance=0.0,
+                degrees_of_freedom=1,
+                condition_number=0.5,
+                parameter_names=("x", "y"),
+                trainable=(True, True),
+            ),
+            "condition_number",
+        ),
+        (
+            lambda: result_contracts.LeastSquaresCovarianceResult(
+                covariance=np.eye(2),
+                standard_errors=np.ones(2),
+                residual_variance=0.0,
+                degrees_of_freedom=1,
+                condition_number=1.0,
+                parameter_names=("x",),
+                trainable=(True, True),
+            ),
+            "parameter_names length",
+        ),
+        (
+            lambda: result_contracts.LeastSquaresCovarianceResult(
+                covariance=np.eye(2),
+                standard_errors=np.ones(2),
+                residual_variance=0.0,
+                degrees_of_freedom=1,
+                condition_number=1.0,
+                parameter_names=("x", "y"),
+                trainable=(True,),
+            ),
+            "trainable mask length",
+        ),
+        (
+            lambda: result_contracts.FisherVectorProductResult(
+                value=np.ones((1, 2)),
+                tangent=np.ones(2),
+                product=np.ones(2),
+                residual_projection=np.ones(2),
+                damping=0.0,
+                method="fisher",
+                evaluations=1,
+                parameter_names=("x", "y"),
+                trainable=(True, True),
+            ),
+            "one-dimensional",
+        ),
+        (
+            lambda: result_contracts.FisherVectorProductResult(
+                value=np.ones(2),
+                tangent=np.ones((1, 2)),
+                product=np.ones(2),
+                residual_projection=np.ones(2),
+                damping=0.0,
+                method="fisher",
+                evaluations=1,
+                parameter_names=("x", "y"),
+                trainable=(True, True),
+            ),
+            "one-dimensional matches",
+        ),
+        (
+            lambda: result_contracts.FisherVectorProductResult(
+                value=np.ones(2),
+                tangent=np.ones(2),
+                product=np.ones(2),
+                residual_projection=np.ones(1),
+                damping=0.0,
+                method="fisher",
+                evaluations=1,
+                parameter_names=("x", "y"),
+                trainable=(True, True),
+            ),
+            "residual_projection shape",
+        ),
+        (
+            lambda: result_contracts.FisherVectorProductResult(
+                value=np.array([np.inf, 1.0]),
+                tangent=np.ones(2),
+                product=np.ones(2),
+                residual_projection=np.ones(2),
+                damping=0.0,
+                method="fisher",
+                evaluations=1,
+                parameter_names=("x", "y"),
+                trainable=(True, True),
+            ),
+            "value and projection",
+        ),
+        (
+            lambda: result_contracts.FisherVectorProductResult(
+                value=np.ones(2),
+                tangent=np.array([np.inf, 1.0]),
+                product=np.ones(2),
+                residual_projection=np.ones(2),
+                damping=0.0,
+                method="fisher",
+                evaluations=1,
+                parameter_names=("x", "y"),
+                trainable=(True, True),
+            ),
+            "tangent and product",
+        ),
+        (
+            lambda: result_contracts.FisherVectorProductResult(
+                value=np.ones(2),
+                tangent=np.ones(2),
+                product=np.ones(2),
+                residual_projection=np.ones(2),
+                damping=-1.0,
+                method="fisher",
+                evaluations=1,
+                parameter_names=("x", "y"),
+                trainable=(True, True),
+            ),
+            "damping",
+        ),
+        (
+            lambda: result_contracts.FisherVectorProductResult(
+                value=np.ones(2),
+                tangent=np.ones(2),
+                product=np.ones(2),
+                residual_projection=np.ones(2),
+                damping=0.0,
+                method="",
+                evaluations=1,
+                parameter_names=("x", "y"),
+                trainable=(True, True),
+            ),
+            "method",
+        ),
+        (
+            lambda: result_contracts.FisherVectorProductResult(
+                value=np.ones(2),
+                tangent=np.ones(2),
+                product=np.ones(2),
+                residual_projection=np.ones(2),
+                damping=0.0,
+                method="fisher",
+                evaluations=-1,
+                parameter_names=("x", "y"),
+                trainable=(True, True),
+            ),
+            "evaluations",
+        ),
+        (
+            lambda: result_contracts.FisherVectorProductResult(
+                value=np.ones(2),
+                tangent=np.ones(2),
+                product=np.ones(2),
+                residual_projection=np.ones(2),
+                damping=0.0,
+                method="fisher",
+                evaluations=1,
+                parameter_names=("x",),
+                trainable=(True, True),
+            ),
+            "parameter_names length",
+        ),
+        (
+            lambda: result_contracts.FisherVectorProductResult(
+                value=np.ones(2),
+                tangent=np.ones(2),
+                product=np.ones(2),
+                residual_projection=np.ones(2),
+                damping=0.0,
+                method="fisher",
+                evaluations=1,
+                parameter_names=("x", ""),
+                trainable=(True, True),
+            ),
+            "parameter_names",
+        ),
+        (
+            lambda: result_contracts.FisherVectorProductResult(
+                value=np.ones(2),
+                tangent=np.ones(2),
+                product=np.ones(2),
+                residual_projection=np.ones(2),
+                damping=0.0,
+                method="fisher",
+                evaluations=1,
+                parameter_names=("x", "y"),
+                trainable=(True, cast(bool, "yes")),
+            ),
+            "trainable mask",
+        ),
+        (
+            lambda: result_contracts.FisherConjugateGradientResult(
+                solution=np.ones((1, 2)),
+                residual_norm_history=(1.0,),
+                iterations=0,
+                converged=False,
+                tolerance=1.0e-8,
+                damping=0.0,
+                parameter_names=("x", "y"),
+                trainable=(True, True),
+            ),
+            "one-dimensional",
+        ),
+        (
+            lambda: result_contracts.FisherConjugateGradientResult(
+                solution=np.array([np.inf, 1.0]),
+                residual_norm_history=(1.0,),
+                iterations=0,
+                converged=False,
+                tolerance=1.0e-8,
+                damping=0.0,
+                parameter_names=("x", "y"),
+                trainable=(True, True),
+            ),
+            "finite values",
+        ),
+        (
+            lambda: result_contracts.FisherConjugateGradientResult(
+                solution=np.ones(2),
+                residual_norm_history=(),
+                iterations=0,
+                converged=False,
+                tolerance=1.0e-8,
+                damping=0.0,
+                parameter_names=("x", "y"),
+                trainable=(True, True),
+            ),
+            "residual history",
+        ),
+        (
+            lambda: result_contracts.FisherConjugateGradientResult(
+                solution=np.ones(2),
+                residual_norm_history=(1.0,),
+                iterations=1,
+                converged=False,
+                tolerance=1.0e-8,
+                damping=0.0,
+                parameter_names=("x", "y"),
+                trainable=(True, True),
+            ),
+            "initial residual",
+        ),
+        (
+            lambda: result_contracts.FisherConjugateGradientResult(
+                solution=np.ones(2),
+                residual_norm_history=(-1.0,),
+                iterations=0,
+                converged=False,
+                tolerance=1.0e-8,
+                damping=0.0,
+                parameter_names=("x", "y"),
+                trainable=(True, True),
+            ),
+            "residual norms",
+        ),
+        (
+            lambda: result_contracts.FisherConjugateGradientResult(
+                solution=np.ones(2),
+                residual_norm_history=(1.0,),
+                iterations=-1,
+                converged=False,
+                tolerance=1.0e-8,
+                damping=0.0,
+                parameter_names=("x", "y"),
+                trainable=(True, True),
+            ),
+            "iterations",
+        ),
+        (
+            lambda: result_contracts.FisherConjugateGradientResult(
+                solution=np.ones(2),
+                residual_norm_history=(1.0,),
+                iterations=0,
+                converged=False,
+                tolerance=-1.0,
+                damping=0.0,
+                parameter_names=("x", "y"),
+                trainable=(True, True),
+            ),
+            "tolerance",
+        ),
+        (
+            lambda: result_contracts.FisherConjugateGradientResult(
+                solution=np.ones(2),
+                residual_norm_history=(1.0,),
+                iterations=0,
+                converged=False,
+                tolerance=1.0e-8,
+                damping=-1.0,
+                parameter_names=("x", "y"),
+                trainable=(True, True),
+            ),
+            "damping",
+        ),
+        (
+            lambda: result_contracts.FisherConjugateGradientResult(
+                solution=np.ones(2),
+                residual_norm_history=(1.0,),
+                iterations=0,
+                converged=False,
+                tolerance=1.0e-8,
+                damping=0.0,
+                parameter_names=("x",),
+                trainable=(True, True),
+            ),
+            "parameter_names length",
+        ),
+        (
+            lambda: result_contracts.FisherConjugateGradientResult(
+                solution=np.ones(2),
+                residual_norm_history=(1.0,),
+                iterations=0,
+                converged=False,
+                tolerance=1.0e-8,
+                damping=0.0,
+                parameter_names=("x", "y"),
+                trainable=(True,),
+            ),
+            "trainable mask length",
+        ),
+        (
+            lambda: result_contracts.FisherConjugateGradientResult(
+                solution=np.ones(2),
+                residual_norm_history=(1.0,),
+                iterations=0,
+                converged=False,
+                tolerance=1.0e-8,
+                damping=0.0,
+                parameter_names=("x", ""),
+                trainable=(True, True),
+            ),
+            "parameter_names",
+        ),
+        (
+            lambda: result_contracts.FisherConjugateGradientResult(
+                solution=np.ones(2),
+                residual_norm_history=(1.0,),
+                iterations=0,
+                converged=False,
+                tolerance=1.0e-8,
+                damping=0.0,
+                parameter_names=("x", "y"),
+                trainable=(True, cast(bool, "yes")),
+            ),
+            "trainable mask",
+        ),
+        (
+            lambda: result_contracts.WeightedGradientResult(
+                value=1.0,
+                gradient=np.ones(2),
+                components=(),
+                weights=np.ones(1),
+                method="weighted",
+                evaluations=1,
+                parameter_names=("x", "y"),
+                trainable=(True, True),
+            ),
+            "components",
+        ),
+        (
+            lambda: result_contracts.WeightedGradientResult(
+                value=1.0,
+                gradient=np.ones(2),
+                components=(gradient,),
+                weights=np.ones(2),
+                method="weighted",
+                evaluations=1,
+                parameter_names=("x", "y"),
+                trainable=(True, True),
+            ),
+            "weights length",
+        ),
+        (
+            lambda: result_contracts.WeightedGradientResult(
+                value=1.0,
+                gradient=np.ones((1, 2)),
+                components=(gradient,),
+                weights=np.ones(1),
+                method="weighted",
+                evaluations=1,
+                parameter_names=("x", "y"),
+                trainable=(True, True),
+            ),
+            "one-dimensional",
+        ),
+        (
+            lambda: result_contracts.WeightedGradientResult(
+                value=1.0,
+                gradient=np.array([np.inf, 1.0]),
+                components=(gradient,),
+                weights=np.ones(1),
+                method="weighted",
+                evaluations=1,
+                parameter_names=("x", "y"),
+                trainable=(True, True),
+            ),
+            "finite values",
+        ),
+        (
+            lambda: result_contracts.WeightedGradientResult(
+                value=1.0,
+                gradient=np.ones(2),
+                components=(gradient,),
+                weights=np.array([np.inf]),
+                method="weighted",
+                evaluations=1,
+                parameter_names=("x", "y"),
+                trainable=(True, True),
+            ),
+            "weights",
+        ),
+        (
+            lambda: result_contracts.WeightedGradientResult(
+                value=1.0,
+                gradient=np.ones(2),
+                components=(gradient,),
+                weights=np.ones(1),
+                method="",
+                evaluations=1,
+                parameter_names=("x", "y"),
+                trainable=(True, True),
+            ),
+            "method",
+        ),
+        (
+            lambda: result_contracts.WeightedGradientResult(
+                value=1.0,
+                gradient=np.ones(2),
+                components=(gradient,),
+                weights=np.ones(1),
+                method="weighted",
+                evaluations=-1,
+                parameter_names=("x", "y"),
+                trainable=(True, True),
+            ),
+            "evaluations",
+        ),
+        (
+            lambda: result_contracts.WeightedGradientResult(
+                value=1.0,
+                gradient=np.ones(2),
+                components=(gradient,),
+                weights=np.ones(1),
+                method="weighted",
+                evaluations=1,
+                parameter_names=("x",),
+                trainable=(True, True),
+            ),
+            "parameter_names length",
+        ),
+        (
+            lambda: result_contracts.WeightedGradientResult(
+                value=1.0,
+                gradient=np.ones(2),
+                components=(gradient,),
+                weights=np.ones(1),
+                method="weighted",
+                evaluations=1,
+                parameter_names=("x", "y"),
+                trainable=(True,),
+            ),
+            "trainable mask length",
+        ),
+    )
+    for factory, message in invalid_factories:
+        with pytest.raises(ValueError, match=message):
+            factory()
 
 
 def test_primitive_identity_and_contracts_fail_closed_on_malformed_metadata() -> None:

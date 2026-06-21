@@ -2855,7 +2855,7 @@
       },
       {
         "name": "FisherConjugateGradientResult",
-        "path": "src/scpn_quantum_control/differentiable.py"
+        "path": "src/scpn_quantum_control/differentiable_result_contracts.py"
       },
       {
         "name": "FisherResult",
@@ -2863,7 +2863,7 @@
       },
       {
         "name": "FisherVectorProductResult",
-        "path": "src/scpn_quantum_control/differentiable.py"
+        "path": "src/scpn_quantum_control/differentiable_result_contracts.py"
       },
       {
         "name": "FixedPointSensitivityResult",
@@ -3899,7 +3899,7 @@
       },
       {
         "name": "LeastSquaresCovarianceResult",
-        "path": "src/scpn_quantum_control/differentiable.py"
+        "path": "src/scpn_quantum_control/differentiable_result_contracts.py"
       },
       {
         "name": "LevenbergMarquardtDampingUpdate",
@@ -8311,7 +8311,7 @@
       },
       {
         "name": "WeightedGradientResult",
-        "path": "src/scpn_quantum_control/differentiable.py"
+        "path": "src/scpn_quantum_control/differentiable_result_contracts.py"
       },
       {
         "name": "WholeProgramADNativeLoweringReport",
