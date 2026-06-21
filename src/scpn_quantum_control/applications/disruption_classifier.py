@@ -30,6 +30,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import numpy as np
+from numpy.typing import NDArray
 
 from ..bridge.knm_hamiltonian import build_knm_paper27
 from .quantum_kernel import compute_kernel_matrix
@@ -42,14 +43,14 @@ class DisruptionClassifierResult:
     accuracy: float
     n_train: int
     n_test: int
-    predictions: np.ndarray
-    labels: np.ndarray
+    predictions: NDArray[np.int64]
+    labels: NDArray[np.float64]
     kernel_n_qubits: int
     source_mode: str
     publication_safe: bool
 
 
-def _validated_feature_matrix(X: np.ndarray, name: str) -> np.ndarray:
+def _validated_feature_matrix(X: NDArray[np.float64], name: str) -> NDArray[np.float64]:
     features = np.asarray(X, dtype=float)
     if features.ndim != 2:
         raise ValueError(f"{name} must be a 2-D feature matrix.")
@@ -62,7 +63,7 @@ def _validated_feature_matrix(X: np.ndarray, name: str) -> np.ndarray:
     return features
 
 
-def _validated_binary_labels(y_train: np.ndarray, n_samples: int) -> np.ndarray:
+def _validated_binary_labels(y_train: NDArray[np.float64], n_samples: int) -> NDArray[np.float64]:
     labels = np.asarray(y_train)
     if labels.ndim != 1:
         raise ValueError("y_train must be a 1-D label vector.")
@@ -82,7 +83,7 @@ def _validated_positive_float(value: float, name: str) -> float:
     return value
 
 
-def _validated_weights(weights: np.ndarray, n_samples: int) -> np.ndarray:
+def _validated_weights(weights: NDArray[np.float64], n_samples: int) -> NDArray[np.float64]:
     weight_vector = np.asarray(weights, dtype=float)
     if weight_vector.ndim != 1:
         raise ValueError("weights must be a 1-D vector.")
@@ -100,7 +101,7 @@ def generate_synthetic_disruption_data(
     seed: int = 42,
     *,
     allow_synthetic: bool = False,
-) -> tuple[np.ndarray, np.ndarray]:
+) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
     """Generate synthetic tokamak disruption data.
 
     Features mimic:
@@ -145,11 +146,11 @@ def generate_synthetic_disruption_data(
 
 
 def train_disruption_classifier(
-    X_train: np.ndarray,
-    y_train: np.ndarray,
+    X_train: NDArray[np.float64],
+    y_train: NDArray[np.float64],
     n_qubits: int = 4,
     alpha: float = 1.0,
-) -> tuple[np.ndarray, np.ndarray]:
+) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
     """Train quantum kernel classifier for disruption prediction.
 
     Uses kernel ridge regression: w = (K + αI)^{-1} y.
@@ -164,16 +165,16 @@ def train_disruption_classifier(
     K_mat = kernel_result.kernel_matrix
 
     n = K_mat.shape[0]
-    weights = np.linalg.solve(K_mat + alpha * np.eye(n), y_train)
+    weights = np.linalg.solve(K_mat + alpha * np.eye(n), y_train).astype(np.float64)
     return weights, K_mat
 
 
 def predict_disruption(
-    X_test: np.ndarray,
-    X_train: np.ndarray,
-    weights: np.ndarray,
+    X_test: NDArray[np.float64],
+    X_train: NDArray[np.float64],
+    weights: NDArray[np.float64],
     n_qubits: int = 4,
-) -> np.ndarray:
+) -> NDArray[np.int64]:
     """Predict disruption using trained quantum kernel classifier."""
     from .quantum_kernel import quantum_kernel_entry
 
@@ -194,7 +195,7 @@ def predict_disruption(
             K_test[i, j] = quantum_kernel_entry(X_test[i], X_train[j], K_coupling, n_qubits)
 
     scores = K_test @ weights
-    predictions: np.ndarray = (scores > 0.5).astype(int)
+    predictions: NDArray[np.int64] = (scores > 0.5).astype(np.int64)
     return predictions
 
 

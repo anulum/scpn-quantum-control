@@ -32,6 +32,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import numpy as np
+from numpy.typing import NDArray
 from scipy.stats import spearmanr
 
 from scpn_quantum_control.bridge.qpu_data_artifact import (
@@ -86,11 +87,11 @@ class ITERBenchmarkResult:
 
 
 def _validated_square_matrix(
-    matrix: np.ndarray,
+    matrix: NDArray[np.float64],
     name: str,
     *,
     require_mhd_coupling: bool = False,
-) -> np.ndarray:
+) -> NDArray[np.float64]:
     values = np.asarray(matrix, dtype=float)
     if values.ndim != 2 or values.shape[0] != values.shape[1]:
         raise ValueError(f"{name} must be a square 2-D matrix.")
@@ -109,11 +110,11 @@ def _validated_square_matrix(
 
 
 def _validated_frequency_vector(
-    frequencies: np.ndarray,
+    frequencies: NDArray[np.float64],
     n_modes: int,
     name: str,
     matrix_name: str,
-) -> np.ndarray:
+) -> NDArray[np.float64]:
     values = np.asarray(frequencies, dtype=float)
     if values.ndim != 1 or values.shape != (n_modes,):
         raise ValueError(f"{name} must match {matrix_name} mode count.")
@@ -131,7 +132,7 @@ def _finite_correlation(value: float) -> float:
 def iter_coupling_matrix(
     *,
     allow_synthetic_reference: bool = False,
-) -> tuple[np.ndarray, np.ndarray]:
+) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
     """Get the built-in synthetic ITER MHD mode coupling and frequencies."""
     if not allow_synthetic_reference:
         raise RuntimeError(
@@ -143,11 +144,11 @@ def iter_coupling_matrix(
 
 
 def iter_benchmark(
-    K_scpn: np.ndarray,
-    omega_scpn: np.ndarray,
+    K_scpn: NDArray[np.float64],
+    omega_scpn: NDArray[np.float64],
     *,
-    iter_coupling: np.ndarray | None = None,
-    iter_frequencies: np.ndarray | None = None,
+    iter_coupling: NDArray[np.float64] | None = None,
+    iter_frequencies: NDArray[np.float64] | None = None,
     reference_source_mode: str = "curated",
     allow_synthetic_reference: bool = False,
 ) -> ITERBenchmarkResult:

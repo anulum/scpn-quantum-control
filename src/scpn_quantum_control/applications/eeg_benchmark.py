@@ -38,6 +38,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import numpy as np
+from numpy.typing import NDArray
 from scipy.stats import spearmanr
 
 # Canonical 8-channel EEG layout (10-20 system subset)
@@ -78,11 +79,11 @@ class EEGBenchmarkResult:
 
 
 def _validated_square_matrix(
-    matrix: np.ndarray,
+    matrix: NDArray[np.float64],
     name: str,
     *,
     require_plv: bool = False,
-) -> np.ndarray:
+) -> NDArray[np.float64]:
     values = np.asarray(matrix, dtype=float)
     if values.ndim != 2 or values.shape[0] != values.shape[1]:
         raise ValueError(f"{name} must be a square 2-D matrix.")
@@ -101,11 +102,11 @@ def _validated_square_matrix(
 
 
 def _validated_frequency_vector(
-    frequencies: np.ndarray,
+    frequencies: NDArray[np.float64],
     n_channels: int,
     name: str,
     matrix_name: str,
-) -> np.ndarray:
+) -> NDArray[np.float64]:
     values = np.asarray(frequencies, dtype=float)
     if values.ndim != 1 or values.shape != (n_channels,):
         raise ValueError(f"{name} must match {matrix_name} channel count.")
@@ -124,7 +125,7 @@ def eeg_coupling_matrix(
     band: str = "alpha",
     *,
     allow_builtin_reference: bool = False,
-) -> tuple[np.ndarray, np.ndarray]:
+) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
     """Get the built-in EEG coupling reference for a frequency band."""
     if not allow_builtin_reference:
         raise RuntimeError(
@@ -137,12 +138,12 @@ def eeg_coupling_matrix(
 
 
 def eeg_benchmark(
-    K_scpn: np.ndarray,
-    omega_scpn: np.ndarray,
+    K_scpn: NDArray[np.float64],
+    omega_scpn: NDArray[np.float64],
     band: str = "alpha",
     *,
-    eeg_coupling: np.ndarray | None = None,
-    eeg_frequencies: np.ndarray | None = None,
+    eeg_coupling: NDArray[np.float64] | None = None,
+    eeg_frequencies: NDArray[np.float64] | None = None,
     allow_builtin_reference: bool = False,
 ) -> EEGBenchmarkResult:
     """Compare SCPN K_nm with EEG functional connectivity."""

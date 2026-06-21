@@ -36,10 +36,11 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import numpy as np
+from numpy.typing import NDArray
 from scipy.stats import spearmanr
 
 
-def _has_variation(values: np.ndarray) -> bool:
+def _has_variation(values: NDArray[np.float64]) -> bool:
     """True when correlation is statistically defined for a vector."""
     return values.size >= 2 and float(np.ptp(values)) > 0.0
 
@@ -89,7 +90,7 @@ def jja_coupling_matrix(
     topology: str = "linear",
     coupling_edges: list[tuple[int, int, float]] | None = None,
     allow_illustrative_topology: bool = False,
-) -> tuple[np.ndarray, np.ndarray]:
+) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
     """Build Kuramoto-equivalent coupling matrix from JJA parameters.
 
     Topologies:
@@ -143,8 +144,8 @@ def jja_coupling_matrix(
 
 
 def josephson_benchmark(
-    K_scpn: np.ndarray,
-    omega_scpn: np.ndarray,
+    K_scpn: NDArray[np.float64],
+    omega_scpn: NDArray[np.float64],
     topology: str = "all_to_all",
     parameters: JosephsonArrayParameters | None = None,
     coupling_edges: list[tuple[int, int, float]] | None = None,

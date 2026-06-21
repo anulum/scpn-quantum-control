@@ -38,6 +38,7 @@ from dataclasses import dataclass
 from itertools import product
 
 import numpy as np
+from numpy.typing import NDArray
 from qiskit import QuantumCircuit
 from qiskit.circuit.library import PauliEvolutionGate
 from qiskit.quantum_info import SparsePauliOp, Statevector
@@ -50,13 +51,13 @@ from ..bridge.knm_hamiltonian import knm_to_hamiltonian
 class ReservoirResult:
     """Quantum reservoir computation result."""
 
-    features: np.ndarray  # (n_features,) Pauli expectation values
+    features: NDArray[np.float64]  # (n_features,) Pauli expectation values
     n_qubits: int
     n_features: int
     feature_labels: list[str]
 
 
-def _validated_coupling_matrix(K: np.ndarray) -> np.ndarray:
+def _validated_coupling_matrix(K: NDArray[np.float64]) -> NDArray[np.float64]:
     """Return a finite square coupling matrix."""
     K_array = np.asarray(K, dtype=float)
     if K_array.ndim != 2 or K_array.shape[0] != K_array.shape[1]:
@@ -68,7 +69,7 @@ def _validated_coupling_matrix(K: np.ndarray) -> np.ndarray:
     return K_array
 
 
-def _validated_feature_vector(x: np.ndarray, *, name: str = "x") -> np.ndarray:
+def _validated_feature_vector(x: NDArray[np.float64], *, name: str = "x") -> NDArray[np.float64]:
     """Return a finite non-empty 1-D feature vector."""
     x_array = np.asarray(x, dtype=float)
     if x_array.ndim != 1:
@@ -80,7 +81,7 @@ def _validated_feature_vector(x: np.ndarray, *, name: str = "x") -> np.ndarray:
     return x_array
 
 
-def _validated_omega(omega: np.ndarray | None, n: int) -> np.ndarray:
+def _validated_omega(omega: NDArray[np.float64] | None, n: int) -> NDArray[np.float64]:
     """Return a finite frequency vector matching ``K``."""
     if omega is None:
         return np.zeros(n)
@@ -101,7 +102,7 @@ def _validated_max_weight(max_weight: int, n: int) -> int:
     return max_weight
 
 
-def _validated_feature_matrix(X: np.ndarray) -> np.ndarray:
+def _validated_feature_matrix(X: NDArray[np.float64]) -> NDArray[np.float64]:
     """Return a finite non-empty 2-D feature matrix."""
     X_array = np.asarray(X, dtype=float)
     if X_array.ndim != 2:
@@ -128,9 +129,9 @@ def _pauli_feature_set(n: int, max_weight: int = 2) -> list[str]:
 
 
 def reservoir_features(
-    x: np.ndarray,
-    K: np.ndarray,
-    omega: np.ndarray | None = None,
+    x: NDArray[np.float64],
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64] | None = None,
     t: float = 1.0,
     max_weight: int = 2,
 ) -> ReservoirResult:
@@ -179,12 +180,12 @@ def reservoir_features(
 
 
 def reservoir_feature_matrix(
-    X: np.ndarray,
-    K: np.ndarray,
-    omega: np.ndarray | None = None,
+    X: NDArray[np.float64],
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64] | None = None,
     t: float = 1.0,
     max_weight: int = 2,
-) -> np.ndarray:
+) -> NDArray[np.float64]:
     """Compute reservoir features for multiple inputs.
 
     Args:
@@ -212,18 +213,18 @@ def reservoir_feature_matrix(
         r = reservoir_features(X[i], K, omega, t, max_weight)
         F[i] = r.features
 
-    result: np.ndarray = F
+    result: NDArray[np.float64] = F
     return result
 
 
 def reservoir_ridge_regression(
-    X_train: np.ndarray,
-    y_train: np.ndarray,
-    K: np.ndarray,
-    omega: np.ndarray | None = None,
+    X_train: NDArray[np.float64],
+    y_train: NDArray[np.float64],
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64] | None = None,
     alpha: float = 1.0,
     max_weight: int = 2,
-) -> tuple[np.ndarray, np.ndarray]:
+) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
     """Train quantum reservoir with ridge regression readout.
 
     Returns (weights, predictions_on_train).
@@ -241,5 +242,5 @@ def reservoir_ridge_regression(
     # Ridge: W = (F^T F + αI)^{-1} F^T y
     n_feat = F.shape[1]
     W = np.linalg.solve(F.T @ F + alpha * np.eye(n_feat), F.T @ y_array)
-    preds: np.ndarray = F @ W
+    preds: NDArray[np.float64] = F @ W
     return W, preds

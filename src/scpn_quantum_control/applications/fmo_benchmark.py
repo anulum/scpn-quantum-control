@@ -26,6 +26,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import numpy as np
+from numpy.typing import NDArray
 from scipy.stats import spearmanr
 
 # FMO site energies (cm⁻¹, Adolphs & Renger 2006, Table 1)
@@ -60,7 +61,7 @@ FMO_COUPLING = np.array(
 def fmo_coupling_matrix(
     *,
     allow_builtin_reference: bool = False,
-) -> tuple[np.ndarray, np.ndarray]:
+) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
     """Return the built-in FMO coupling matrix and site energies.
 
     Scaled to natural units: energies in rad/ps (divide cm⁻¹ by 5309).
@@ -94,11 +95,11 @@ class FMOBenchmarkResult:
 
 
 def _validated_square_matrix(
-    matrix: np.ndarray,
+    matrix: NDArray[np.float64],
     name: str,
     *,
     require_coupling_structure: bool = False,
-) -> np.ndarray:
+) -> NDArray[np.float64]:
     values = np.asarray(matrix, dtype=float)
     if values.ndim != 2 or values.shape[0] != values.shape[1]:
         raise ValueError(f"{name} must be a square 2-D matrix.")
@@ -115,11 +116,11 @@ def _validated_square_matrix(
 
 
 def _validated_frequency_vector(
-    frequencies: np.ndarray,
+    frequencies: NDArray[np.float64],
     n_sites: int,
     name: str,
     matrix_name: str,
-) -> np.ndarray:
+) -> NDArray[np.float64]:
     values = np.asarray(frequencies, dtype=float)
     if values.ndim != 1 or values.shape != (n_sites,):
         raise ValueError(f"{name} must match {matrix_name} site count.")
@@ -135,11 +136,11 @@ def _finite_correlation(value: float) -> float:
 
 
 def fmo_benchmark(
-    K_scpn: np.ndarray,
-    omega_scpn: np.ndarray,
+    K_scpn: NDArray[np.float64],
+    omega_scpn: NDArray[np.float64],
     *,
-    fmo_coupling: np.ndarray | None = None,
-    fmo_frequencies: np.ndarray | None = None,
+    fmo_coupling: NDArray[np.float64] | None = None,
+    fmo_frequencies: NDArray[np.float64] | None = None,
     allow_builtin_reference: bool = False,
 ) -> FMOBenchmarkResult:
     """Compare SCPN coupling structure (7-oscillator subset) against FMO.

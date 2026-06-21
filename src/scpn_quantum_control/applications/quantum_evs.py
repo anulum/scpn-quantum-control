@@ -29,6 +29,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import numpy as np
+from numpy.typing import NDArray
 
 from ..bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
 from ..bridge.ssgf_adapter import (
@@ -42,14 +43,14 @@ from ..bridge.ssgf_adapter import (
 class QuantumEVSResult:
     """Quantum-enhanced EVS feature vector."""
 
-    classical_features: np.ndarray  # input EVS features
-    quantum_features: np.ndarray  # enhanced features
+    classical_features: NDArray[np.float64]  # input EVS features
+    quantum_features: NDArray[np.float64]  # enhanced features
     r_global: float  # quantum synchronisation
     p_h1_proxy: float  # topological feature
     enhancement_factor: float  # ||quantum|| / ||classical||
 
 
-def _validated_features(features: np.ndarray) -> np.ndarray:
+def _validated_features(features: NDArray[np.float64]) -> NDArray[np.float64]:
     """Return a finite non-empty 1-D EVS feature vector."""
     feature_array = np.asarray(features, dtype=float)
     if feature_array.ndim != 1:
@@ -70,7 +71,7 @@ def _validated_n_osc(n_osc: int) -> int:
     return n_osc
 
 
-def _evs_to_coupling(features: np.ndarray, n_osc: int) -> np.ndarray:
+def _evs_to_coupling(features: NDArray[np.float64], n_osc: int) -> NDArray[np.float64]:
     """Map EVS feature vector to coupling modulation.
 
     Features modulate the base K_nm: stronger features → stronger coupling.
@@ -90,12 +91,12 @@ def _evs_to_coupling(features: np.ndarray, n_osc: int) -> np.ndarray:
             modulation[i, j] = modulation[j, i] = mod
             pair_idx += 1
 
-    K_modulated: np.ndarray = K_base * modulation
+    K_modulated: NDArray[np.float64] = K_base * modulation
     return K_modulated
 
 
 def quantum_evs_enhance(
-    features: np.ndarray,
+    features: NDArray[np.float64],
     n_osc: int = 8,
     dt: float = 0.1,
     trotter_reps: int = 3,

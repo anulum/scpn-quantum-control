@@ -31,6 +31,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import numpy as np
+from numpy.typing import NDArray
 from qiskit import QuantumCircuit
 from qiskit.circuit.library import PauliEvolutionGate
 from qiskit.quantum_info import Statevector
@@ -43,13 +44,13 @@ from ..bridge.knm_hamiltonian import knm_to_hamiltonian
 class QuantumKernelResult:
     """Quantum kernel computation result."""
 
-    kernel_matrix: np.ndarray  # K(x_i, x_j) for all pairs
+    kernel_matrix: NDArray[np.float64]  # K(x_i, x_j) for all pairs
     n_samples: int
     n_qubits: int
     feature_dim: int
 
 
-def _validated_coupling_matrix(K: np.ndarray, n_qubits: int) -> np.ndarray:
+def _validated_coupling_matrix(K: NDArray[np.float64], n_qubits: int) -> NDArray[np.float64]:
     """Return a finite square coupling matrix matching the qubit count."""
     K_array = np.asarray(K, dtype=float)
     if K_array.ndim != 2 or K_array.shape[0] != K_array.shape[1]:
@@ -63,7 +64,7 @@ def _validated_coupling_matrix(K: np.ndarray, n_qubits: int) -> np.ndarray:
     return K_array
 
 
-def _validated_feature_vector(x: np.ndarray, *, name: str = "x") -> np.ndarray:
+def _validated_feature_vector(x: NDArray[np.float64], *, name: str = "x") -> NDArray[np.float64]:
     """Return a finite non-empty 1-D feature vector."""
     x_array = np.asarray(x, dtype=float)
     if x_array.ndim != 1:
@@ -76,8 +77,8 @@ def _validated_feature_vector(x: np.ndarray, *, name: str = "x") -> np.ndarray:
 
 
 def _encode_features(
-    x: np.ndarray,
-    K: np.ndarray,
+    x: NDArray[np.float64],
+    K: NDArray[np.float64],
     n_qubits: int,
     t: float = 1.0,
     reps: int = 2,
@@ -123,9 +124,9 @@ def _encode_features(
 
 
 def quantum_kernel_entry(
-    x1: np.ndarray,
-    x2: np.ndarray,
-    K: np.ndarray,
+    x1: NDArray[np.float64],
+    x2: NDArray[np.float64],
+    K: NDArray[np.float64],
     n_qubits: int,
 ) -> float:
     """Compute single kernel entry K(x1, x2) = |<φ(x1)|φ(x2)>|²."""
@@ -141,8 +142,8 @@ def quantum_kernel_entry(
 
 
 def compute_kernel_matrix(
-    X: np.ndarray,
-    K: np.ndarray,
+    X: NDArray[np.float64],
+    K: NDArray[np.float64],
     n_qubits: int,
 ) -> QuantumKernelResult:
     """Compute the full kernel matrix for a set of feature vectors.

@@ -35,6 +35,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import numpy as np
+from numpy.typing import NDArray
 from scipy.stats import spearmanr
 
 from scpn_quantum_control.bridge.qpu_data_artifact import (
@@ -117,7 +118,7 @@ IEEE_14BUS_VOLTAGE = np.array(
 IEEE_14BUS_FREQ_DEV = np.zeros(14, dtype=float)
 
 
-def ieee_14bus_susceptance_matrix() -> np.ndarray:
+def ieee_14bus_susceptance_matrix() -> NDArray[np.float64]:
     """Build the symmetric branch-susceptance matrix for IEEE 14-bus case14."""
     matrix = np.zeros((14, 14), dtype=float)
     for from_bus, to_bus, reactance in IEEE_14BUS_BRANCH_REACTANCE:
@@ -134,7 +135,7 @@ def ieee_14bus_susceptance_matrix() -> np.ndarray:
 def ieee_14bus_admittance_coupling_matrix(
     *,
     allow_builtin_reference: bool = False,
-) -> tuple[np.ndarray, np.ndarray]:
+) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
     """Build a voltage-weighted IEEE 14-bus admittance coupling matrix.
 
     The matrix uses K_ij = V_i * V_j / X_ij for branches in the public case14
@@ -168,11 +169,11 @@ class PowerGridBenchmarkResult:
 
 
 def _validated_square_matrix(
-    matrix: np.ndarray,
+    matrix: NDArray[np.float64],
     name: str,
     *,
     require_grid_coupling: bool = False,
-) -> np.ndarray:
+) -> NDArray[np.float64]:
     values = np.asarray(matrix, dtype=float)
     if values.ndim != 2 or values.shape[0] != values.shape[1]:
         raise ValueError(f"{name} must be a square 2-D matrix.")
@@ -191,11 +192,11 @@ def _validated_square_matrix(
 
 
 def _validated_frequency_vector(
-    frequencies: np.ndarray,
+    frequencies: NDArray[np.float64],
     n_nodes: int,
     name: str,
     matrix_name: str,
-) -> np.ndarray:
+) -> NDArray[np.float64]:
     values = np.asarray(frequencies, dtype=float)
     if values.ndim != 1 or values.shape != (n_nodes,):
         raise ValueError(f"{name} must match {matrix_name} node count.")
@@ -213,7 +214,7 @@ def _finite_correlation(value: float) -> float:
 def ieee_5bus_coupling_matrix(
     *,
     allow_builtin_reference: bool = False,
-) -> tuple[np.ndarray, np.ndarray]:
+) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
     """Build Kuramoto coupling matrix from IEEE 5-bus data.
 
     K_ij = V_i × V_j × B_ij / (2 × H_i × ω_0)
@@ -227,7 +228,7 @@ def ieee_5bus_coupling_matrix(
         )
     omega_0 = 2 * np.pi * 60.0
     n = 5
-    K: np.ndarray = np.zeros((n, n))
+    K: NDArray[np.float64] = np.zeros((n, n))
     for i in range(n):
         for j in range(n):
             if IEEE_5BUS_SUSCEPTANCE[i, j] > 0:
@@ -245,12 +246,12 @@ def ieee_5bus_coupling_matrix(
 
 
 def power_grid_benchmark(
-    K_scpn: np.ndarray,
-    omega_scpn: np.ndarray,
+    K_scpn: NDArray[np.float64],
+    omega_scpn: NDArray[np.float64],
     grid_name: str = "IEEE-5bus",
     *,
-    grid_coupling: np.ndarray | None = None,
-    grid_frequencies: np.ndarray | None = None,
+    grid_coupling: NDArray[np.float64] | None = None,
+    grid_frequencies: NDArray[np.float64] | None = None,
     reference_source_mode: str = "curated",
     allow_builtin_reference: bool = False,
 ) -> PowerGridBenchmarkResult:

@@ -21,6 +21,7 @@ from dataclasses import dataclass
 from numbers import Real
 
 import numpy as np
+from numpy.typing import NDArray
 from qiskit.quantum_info import Statevector
 
 from scpn_quantum_control.bridge.knm_hamiltonian import knm_to_dense_matrix
@@ -34,13 +35,13 @@ class EEGVQEResult:
 
     n_channels: int
     optimal_energy: float
-    statevector: np.ndarray
+    statevector: NDArray[np.complex128]
     ansatz_depth: int
     n_params: int
     success: bool
 
 
-def _validated_plv_matrix(plv_matrix: np.ndarray) -> np.ndarray:
+def _validated_plv_matrix(plv_matrix: NDArray[np.float64]) -> NDArray[np.float64]:
     plv = np.asarray(plv_matrix, dtype=float)
     if plv.ndim != 2 or plv.shape[0] != plv.shape[1]:
         raise ValueError("plv_matrix must be a square 2-D matrix.")
@@ -58,9 +59,9 @@ def _validated_plv_matrix(plv_matrix: np.ndarray) -> np.ndarray:
 
 
 def _validated_natural_frequencies(
-    natural_frequencies: np.ndarray,
+    natural_frequencies: NDArray[np.float64],
     n_channels: int,
-) -> np.ndarray:
+) -> NDArray[np.float64]:
     frequencies = np.asarray(natural_frequencies, dtype=float)
     if frequencies.ndim != 1 or frequencies.shape != (n_channels,):
         raise ValueError("natural_frequencies must match plv_matrix channel count as a 1-D array.")
@@ -84,7 +85,7 @@ def _validated_threshold(threshold: float) -> float:
     return threshold_value
 
 
-def _validated_statevector(state: np.ndarray, name: str) -> np.ndarray:
+def _validated_statevector(state: NDArray[np.complex128], name: str) -> NDArray[np.complex128]:
     vector = np.asarray(state, dtype=complex)
     if vector.ndim != 1:
         raise ValueError(f"{name} must be a 1-D statevector.")
@@ -99,8 +100,8 @@ def _validated_statevector(state: np.ndarray, name: str) -> np.ndarray:
 
 
 def eeg_plv_to_vqe(
-    plv_matrix: np.ndarray,
-    natural_frequencies: np.ndarray,
+    plv_matrix: NDArray[np.float64],
+    natural_frequencies: NDArray[np.float64],
     reps: int = 2,
     threshold: float = 0.1,
     *,
@@ -157,7 +158,7 @@ def eeg_plv_to_vqe(
     )
 
 
-def eeg_quantum_kernel(state_a: np.ndarray, state_b: np.ndarray) -> float:
+def eeg_quantum_kernel(state_a: NDArray[np.complex128], state_b: NDArray[np.complex128]) -> float:
     """Compute the quantum kernel fidelity |<A|B>|^2 between two EEG VQE states."""
     state_a = _validated_statevector(state_a, "state_a")
     state_b = _validated_statevector(state_b, "state_b")
