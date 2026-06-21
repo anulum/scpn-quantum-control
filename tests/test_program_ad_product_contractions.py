@@ -15,6 +15,7 @@ from typing import Any, cast
 import numpy as np
 import pytest
 
+import scpn_quantum_control.program_ad_product_primitives as product_primitives
 from scpn_quantum_control.differentiable import (
     DEFAULT_CUSTOM_DERIVATIVE_REGISTRY,
     Parameter,
@@ -56,6 +57,31 @@ def _transform_rule_from_contract(contract: PrimitiveContract) -> PrimitiveTrans
         static_argument_rule=contract.static_argument_rule,
         nondifferentiable_policy=contract.nondifferentiable_policy,
         effect=contract.effect,
+    )
+
+
+def test_program_ad_product_factories_remain_facade_compatible() -> None:
+    """Product factories should re-export the extracted module implementations."""
+
+    assert (
+        program_ad_product_einsum_derivative_rule
+        is product_primitives.program_ad_product_einsum_derivative_rule
+    )
+    assert (
+        program_ad_product_inner_derivative_rule
+        is product_primitives.program_ad_product_inner_derivative_rule
+    )
+    assert (
+        program_ad_product_matmul_derivative_rule
+        is product_primitives.program_ad_product_matmul_derivative_rule
+    )
+    assert (
+        program_ad_product_outer_derivative_rule
+        is product_primitives.program_ad_product_outer_derivative_rule
+    )
+    assert (
+        program_ad_product_tensordot_derivative_rule
+        is product_primitives.program_ad_product_tensordot_derivative_rule
     )
 
 
