@@ -15,13 +15,16 @@ NISQ simulation; the orchestrator spec uses the full set.
 
 from __future__ import annotations
 
+from typing import Any
+
 import numpy as np
+from numpy.typing import NDArray
 
 from .ground_state import IdentityAttractor
 
 # Canonical identity topology: 6 layers x 3 oscillators = 18 total.
 # Coupling strength reflects disposition affinity.
-ARCANE_SAPIENCE_SPEC: dict = {
+ARCANE_SAPIENCE_SPEC: dict[str, Any] = {
     "layers": [
         {
             "name": "working_style",
@@ -85,13 +88,15 @@ ORCHESTRATOR_MAPPING: dict[str, list[str]] = {
 }
 
 
-def _build_knm_from_spec(spec: dict) -> tuple[np.ndarray, np.ndarray]:
+def _build_knm_from_spec(
+    spec: dict[str, Any],
+) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
     """Compile binding spec into (K, omega) arrays."""
     layers = spec["layers"]
     coupling = spec["coupling"]
     n = sum(len(lay["oscillator_ids"]) for lay in layers)
-    K: np.ndarray = np.zeros((n, n), dtype=np.float64)
-    omega: np.ndarray = np.zeros(n, dtype=np.float64)
+    K: NDArray[np.float64] = np.zeros((n, n), dtype=np.float64)
+    omega: NDArray[np.float64] = np.zeros(n, dtype=np.float64)
 
     idx = 0
     layer_ranges: list[tuple[int, int]] = []
@@ -126,7 +131,7 @@ def _build_knm_from_spec(spec: dict) -> tuple[np.ndarray, np.ndarray]:
 
 
 def build_identity_attractor(
-    spec: dict | None = None,
+    spec: dict[str, Any] | None = None,
     ansatz_reps: int = 2,
 ) -> IdentityAttractor:
     """Build IdentityAttractor from binding spec (defaults to ARCANE_SAPIENCE_SPEC)."""
@@ -137,18 +142,18 @@ def build_identity_attractor(
 
 
 def solve_identity(
-    spec: dict | None = None,
+    spec: dict[str, Any] | None = None,
     maxiter: int = 200,
     seed: int | None = None,
-) -> dict:
+) -> dict[str, Any]:
     """Build + solve identity attractor in one call."""
     attractor = build_identity_attractor(spec)
     return attractor.solve(maxiter=maxiter, seed=seed)
 
 
 def quantum_to_orchestrator_phases(
-    quantum_theta: np.ndarray,
-    spec: dict | None = None,
+    quantum_theta: NDArray[np.float64],
+    spec: dict[str, Any] | None = None,
 ) -> dict[str, float]:
     """Map 18 quantum phases to 35 orchestrator oscillator phases.
 
@@ -169,8 +174,8 @@ def quantum_to_orchestrator_phases(
 
 def orchestrator_to_quantum_phases(
     orchestrator_phases: dict[str, float],
-    spec: dict | None = None,
-) -> np.ndarray:
+    spec: dict[str, Any] | None = None,
+) -> NDArray[np.float64]:
     """Map 35 orchestrator phases back to 18 quantum oscillator phases.
 
     Each quantum oscillator gets the circular mean of its sub-group phases.
@@ -184,5 +189,5 @@ def orchestrator_to_quantum_phases(
         sub_phases = [orchestrator_phases.get(sid, 0.0) for sid in sub_ids]
         z = np.mean(np.exp(1j * np.array(sub_phases)))
         theta[i] = np.angle(z)
-    result: np.ndarray = theta
+    result: NDArray[np.float64] = theta
     return result

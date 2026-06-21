@@ -14,6 +14,8 @@ dispositions — they cannot be described as independent states.
 
 from __future__ import annotations
 
+from typing import Any
+
 import numpy as np
 from qiskit.quantum_info import Statevector
 
@@ -90,7 +92,7 @@ def _two_qubit_correlator(
 def disposition_entanglement_map(
     sv: Statevector,
     disposition_labels: list[str] | None = None,
-) -> dict:
+) -> dict[str, Any]:
     """Compute CHSH S-parameter for all qubit pairs.
 
     Returns dict with 'pairs' (list of {qa, qb, S, entangled}),

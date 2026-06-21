@@ -15,6 +15,8 @@ quantum identity representation can be on NISQ hardware.
 
 from __future__ import annotations
 
+from typing import Any
+
 import numpy as np
 
 from ..hardware.noise_model import (
@@ -87,7 +89,7 @@ def coherence_budget(
     cz_error: float = CZ_ERROR_RATE,
     readout_error: float = READOUT_ERROR_RATE,
     two_qubit_fraction: float = 0.4,
-) -> dict:
+) -> dict[str, Any]:
     """Compute the maximum circuit depth before fidelity drops below threshold.
 
     Returns dict with max_depth (the budget), fidelity_at_max,

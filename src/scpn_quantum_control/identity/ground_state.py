@@ -14,7 +14,10 @@ the identity resists perturbation; a small gap means fragile coupling.
 
 from __future__ import annotations
 
+from typing import Any
+
 import numpy as np
+from numpy.typing import NDArray
 
 from ..bridge.orchestrator_adapter import PhaseOrchestratorAdapter
 from ..hardware.classical import classical_exact_diag
@@ -31,8 +34,8 @@ class IdentityAttractor:
 
     def __init__(
         self,
-        K: np.ndarray,
-        omega: np.ndarray,
+        K: NDArray[np.float64],
+        omega: NDArray[np.float64],
         ansatz_reps: int = 2,
     ):
         if K.shape[0] != K.shape[1]:
@@ -42,12 +45,12 @@ class IdentityAttractor:
         self.K = K
         self.omega = omega
         self._vqe = PhaseVQE(K, omega, ansatz_reps=ansatz_reps)
-        self._result: dict | None = None
+        self._result: dict[str, Any] | None = None
 
     @classmethod
     def from_binding_spec(
         cls,
-        binding_spec: dict,
+        binding_spec: dict[str, Any],
         ansatz_reps: int = 2,
     ) -> IdentityAttractor:
         """Build from an scpn-phase-orchestrator binding spec."""
@@ -58,7 +61,7 @@ class IdentityAttractor:
         omega = PhaseOrchestratorAdapter.build_omega_from_binding_spec(binding_spec)
         return cls(K, omega, ansatz_reps=ansatz_reps)
 
-    def solve(self, maxiter: int = 200, seed: int | None = None) -> dict:
+    def solve(self, maxiter: int = 200, seed: int | None = None) -> dict[str, Any]:
         """Find the ground state and compute robustness metrics.
 
         Returns dict with ground_energy, exact_energy, energy_gap,
@@ -88,6 +91,6 @@ class IdentityAttractor:
         gap: float = self._result["robustness_gap"]
         return gap
 
-    def ground_state(self):
+    def ground_state(self) -> NDArray[np.complex128]:
         """Return the VQE-optimized ground state vector."""
-        return self._vqe.ground_state()
+        return np.asarray(self._vqe.ground_state(), dtype=np.complex128)

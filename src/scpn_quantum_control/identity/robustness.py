@@ -31,6 +31,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import numpy as np
+from numpy.typing import NDArray
 
 from ..hardware.classical import classical_exact_diag
 
@@ -49,8 +50,8 @@ class RobustnessCertificate:
 
 
 def compute_robustness_certificate(
-    K: np.ndarray,
-    omega: np.ndarray,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
     noise_strength: float = 0.01,
     sweep_rate: float = 0.1,
 ) -> RobustnessCertificate:
@@ -98,9 +99,9 @@ def compute_robustness_certificate(
 
 
 def perturbation_fidelity(
-    K: np.ndarray,
-    omega: np.ndarray,
-    delta_K: np.ndarray,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
+    delta_K: NDArray[np.float64],
 ) -> float:
     """Ground state overlap |<ψ_0(K)|ψ_0(K+δK)>|² under coupling perturbation.
 
@@ -118,9 +119,9 @@ def perturbation_fidelity(
 
 
 def gap_vs_perturbation_scan(
-    K: np.ndarray,
-    omega: np.ndarray,
-    noise_range: np.ndarray | None = None,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
+    noise_range: NDArray[np.float64] | None = None,
     n_samples: int = 20,
     seed: int = 42,
 ) -> dict[str, list[float]]:
@@ -129,7 +130,7 @@ def gap_vs_perturbation_scan(
     Returns dict with noise_strength, p_transition, fidelity columns.
     """
     if noise_range is None:
-        noise_range = np.linspace(0.001, 0.5, n_samples)
+        noise_range = np.linspace(0.001, 0.5, n_samples, dtype=np.float64)
 
     rng = np.random.default_rng(seed)
     n = K.shape[0]

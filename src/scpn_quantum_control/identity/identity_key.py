@@ -15,7 +15,10 @@ different K_nm, therefore different quantum keys.
 
 from __future__ import annotations
 
+from typing import Any
+
 import numpy as np
+from numpy.typing import NDArray
 
 from ..bridge.orchestrator_adapter import PhaseOrchestratorAdapter
 from ..crypto.knm_key import prepare_key_state
@@ -28,12 +31,12 @@ from ..crypto.topology_auth import (
 
 
 def identity_fingerprint(
-    K: np.ndarray,
-    omega: np.ndarray,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
     *,
     ansatz_reps: int = 2,
     maxiter: int = 200,
-) -> dict:
+) -> dict[str, Any]:
     """Generate a quantum identity fingerprint from coupling topology.
 
     Combines spectral fingerprint (public, topology-derived) with
@@ -60,9 +63,9 @@ def identity_fingerprint(
 
 
 def identity_fingerprint_from_binding_spec(
-    binding_spec: dict,
-    **kwargs,
-) -> dict:
+    binding_spec: dict[str, Any],
+    **kwargs: int,
+) -> dict[str, Any]:
     """Generate fingerprint from an scpn-phase-orchestrator binding spec."""
     K = PhaseOrchestratorAdapter.build_knm_from_binding_spec(
         binding_spec,
@@ -73,7 +76,7 @@ def identity_fingerprint_from_binding_spec(
 
 
 def verify_identity(
-    K: np.ndarray,
+    K: NDArray[np.float64],
     challenge: bytes,
     response: bytes,
 ) -> bool:
@@ -85,6 +88,6 @@ def verify_identity(
     return challenge_response_verify(K, challenge, response)
 
 
-def prove_identity(K: np.ndarray, challenge: bytes) -> bytes:
+def prove_identity(K: NDArray[np.float64], challenge: bytes) -> bytes:
     """Prove knowledge of K_nm without transmitting it."""
     return challenge_response_prove(K, challenge)
