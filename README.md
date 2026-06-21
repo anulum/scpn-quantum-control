@@ -96,8 +96,8 @@ has a defined commercial licensing route.
 | Surface | Current inventory |
 |---|---:|
 | Package version | 0.9.12 |
-| Public API exports | 713 |
-| Python source modules | 880 |
+| Public API exports | 714 |
+| Python source modules | 881 |
 | Public Python classes | 1840 |
 | Paper 0 validation modules | 466 |
 | Domain package families | 32 |
@@ -107,7 +107,7 @@ has a defined commercial licensing route.
 | Notebook files | 98 |
 | Example files | 30 |
 | Optional extras | 42 |
-| Python test files | 2027 |
+| Python test files | 2029 |
 | Public documentation pages | 254 |
 | GitHub Actions workflows | 19 |
 

@@ -15,6 +15,7 @@ import numpy as np
 import pytest
 from numpy.typing import NDArray
 
+import scpn_quantum_control as scpn
 from scpn_quantum_control import differentiable as differentiable_module
 from scpn_quantum_control.differentiable import (
     GradientResult,
@@ -24,9 +25,12 @@ from scpn_quantum_control.differentiable import (
     JVPResult,
     Parameter,
     VJPResult,
+    batch_complex_step_gradient,
     batch_finite_difference_hvp,
     batch_finite_difference_jvp,
     batch_finite_difference_vjp,
+    batch_value_and_complex_step_grad,
+    batch_value_and_finite_difference_grad,
     batch_value_and_finite_difference_hvp,
     batch_value_and_finite_difference_jvp,
     batch_value_and_finite_difference_vjp,
@@ -38,14 +42,134 @@ from scpn_quantum_control.differentiable import (
     finite_difference_jacobian,
     finite_difference_jvp,
     finite_difference_vjp,
+    hessian,
+    jacfwd,
+    jacobian,
+    jacrev,
+    jvp,
     value_and_complex_step_grad,
     value_and_finite_difference_grad,
     value_and_finite_difference_hessian,
     value_and_finite_difference_hvp,
     value_and_finite_difference_jacobian,
     value_and_finite_difference_jvp,
+    value_and_finite_difference_vjp,
+    value_and_hessian,
+    value_and_jacfwd,
+    value_and_jacobian,
+    value_and_jacrev,
+    value_and_jvp,
+    value_and_vjp,
     vector_jacobian_product,
+    vjp,
 )
+from scpn_quantum_control.differentiable_finite_difference import (
+    batch_complex_step_gradient as extracted_batch_complex_step_gradient,
+)
+from scpn_quantum_control.differentiable_finite_difference import (
+    batch_finite_difference_hvp as extracted_batch_finite_difference_hvp,
+)
+from scpn_quantum_control.differentiable_finite_difference import (
+    batch_finite_difference_jvp as extracted_batch_finite_difference_jvp,
+)
+from scpn_quantum_control.differentiable_finite_difference import (
+    batch_finite_difference_vjp as extracted_batch_finite_difference_vjp,
+)
+from scpn_quantum_control.differentiable_finite_difference import (
+    batch_value_and_complex_step_grad as extracted_batch_value_and_complex_step_grad,
+)
+from scpn_quantum_control.differentiable_finite_difference import (
+    batch_value_and_finite_difference_grad as extracted_batch_value_and_finite_difference_grad,
+)
+from scpn_quantum_control.differentiable_finite_difference import (
+    batch_value_and_finite_difference_hvp as extracted_batch_value_and_finite_difference_hvp,
+)
+from scpn_quantum_control.differentiable_finite_difference import (
+    batch_value_and_finite_difference_jvp as extracted_batch_value_and_finite_difference_jvp,
+)
+from scpn_quantum_control.differentiable_finite_difference import (
+    batch_value_and_finite_difference_vjp as extracted_batch_value_and_finite_difference_vjp,
+)
+from scpn_quantum_control.differentiable_finite_difference import (
+    batch_vector_jacobian_product as extracted_batch_vector_jacobian_product,
+)
+from scpn_quantum_control.differentiable_finite_difference import (
+    complex_step_gradient as extracted_complex_step_gradient,
+)
+from scpn_quantum_control.differentiable_finite_difference import (
+    finite_difference_gradient as extracted_finite_difference_gradient,
+)
+from scpn_quantum_control.differentiable_finite_difference import (
+    finite_difference_hessian as extracted_finite_difference_hessian,
+)
+from scpn_quantum_control.differentiable_finite_difference import (
+    finite_difference_hvp as extracted_finite_difference_hvp,
+)
+from scpn_quantum_control.differentiable_finite_difference import (
+    finite_difference_jacobian as extracted_finite_difference_jacobian,
+)
+from scpn_quantum_control.differentiable_finite_difference import (
+    finite_difference_jvp as extracted_finite_difference_jvp,
+)
+from scpn_quantum_control.differentiable_finite_difference import (
+    finite_difference_vjp as extracted_finite_difference_vjp,
+)
+from scpn_quantum_control.differentiable_finite_difference import (
+    hessian as extracted_hessian,
+)
+from scpn_quantum_control.differentiable_finite_difference import (
+    jacfwd as extracted_jacfwd,
+)
+from scpn_quantum_control.differentiable_finite_difference import (
+    jacobian as extracted_jacobian,
+)
+from scpn_quantum_control.differentiable_finite_difference import (
+    jacrev as extracted_jacrev,
+)
+from scpn_quantum_control.differentiable_finite_difference import jvp as extracted_jvp
+from scpn_quantum_control.differentiable_finite_difference import (
+    value_and_complex_step_grad as extracted_value_and_complex_step_grad,
+)
+from scpn_quantum_control.differentiable_finite_difference import (
+    value_and_finite_difference_grad as extracted_value_and_finite_difference_grad,
+)
+from scpn_quantum_control.differentiable_finite_difference import (
+    value_and_finite_difference_hessian as extracted_value_and_finite_difference_hessian,
+)
+from scpn_quantum_control.differentiable_finite_difference import (
+    value_and_finite_difference_hvp as extracted_value_and_finite_difference_hvp,
+)
+from scpn_quantum_control.differentiable_finite_difference import (
+    value_and_finite_difference_jacobian as extracted_value_and_finite_difference_jacobian,
+)
+from scpn_quantum_control.differentiable_finite_difference import (
+    value_and_finite_difference_jvp as extracted_value_and_finite_difference_jvp,
+)
+from scpn_quantum_control.differentiable_finite_difference import (
+    value_and_finite_difference_vjp as extracted_value_and_finite_difference_vjp,
+)
+from scpn_quantum_control.differentiable_finite_difference import (
+    value_and_hessian as extracted_value_and_hessian,
+)
+from scpn_quantum_control.differentiable_finite_difference import (
+    value_and_jacfwd as extracted_value_and_jacfwd,
+)
+from scpn_quantum_control.differentiable_finite_difference import (
+    value_and_jacobian as extracted_value_and_jacobian,
+)
+from scpn_quantum_control.differentiable_finite_difference import (
+    value_and_jacrev as extracted_value_and_jacrev,
+)
+from scpn_quantum_control.differentiable_finite_difference import (
+    value_and_jvp as extracted_value_and_jvp,
+)
+from scpn_quantum_control.differentiable_finite_difference import (
+    value_and_vjp as extracted_value_and_vjp,
+)
+from scpn_quantum_control.differentiable_finite_difference import (
+    vector_jacobian_product as extracted_vector_jacobian_product,
+)
+from scpn_quantum_control.differentiable_finite_difference import vjp as extracted_vjp
 
 FloatArray = NDArray[np.float64]
 
@@ -56,6 +180,53 @@ def _assert_allclose(
     """Assert NumPy closeness across differentiable diagnostic payloads."""
 
     cast(Any, np.testing.assert_allclose)(actual, expected, rtol=rtol, atol=atol)
+
+
+def test_facade_and_package_root_reuse_extracted_diagnostic_helpers() -> None:
+    """Facade and package-root exports should point at extracted diagnostics."""
+
+    expected = {
+        "batch_complex_step_gradient": extracted_batch_complex_step_gradient,
+        "batch_finite_difference_hvp": extracted_batch_finite_difference_hvp,
+        "batch_finite_difference_jvp": extracted_batch_finite_difference_jvp,
+        "batch_finite_difference_vjp": extracted_batch_finite_difference_vjp,
+        "batch_value_and_complex_step_grad": extracted_batch_value_and_complex_step_grad,
+        "batch_value_and_finite_difference_grad": extracted_batch_value_and_finite_difference_grad,
+        "batch_value_and_finite_difference_hvp": extracted_batch_value_and_finite_difference_hvp,
+        "batch_value_and_finite_difference_jvp": extracted_batch_value_and_finite_difference_jvp,
+        "batch_value_and_finite_difference_vjp": extracted_batch_value_and_finite_difference_vjp,
+        "batch_vector_jacobian_product": extracted_batch_vector_jacobian_product,
+        "complex_step_gradient": extracted_complex_step_gradient,
+        "finite_difference_gradient": extracted_finite_difference_gradient,
+        "finite_difference_hessian": extracted_finite_difference_hessian,
+        "finite_difference_hvp": extracted_finite_difference_hvp,
+        "finite_difference_jacobian": extracted_finite_difference_jacobian,
+        "finite_difference_jvp": extracted_finite_difference_jvp,
+        "finite_difference_vjp": extracted_finite_difference_vjp,
+        "hessian": extracted_hessian,
+        "jacfwd": extracted_jacfwd,
+        "jacobian": extracted_jacobian,
+        "jacrev": extracted_jacrev,
+        "jvp": extracted_jvp,
+        "value_and_complex_step_grad": extracted_value_and_complex_step_grad,
+        "value_and_finite_difference_grad": extracted_value_and_finite_difference_grad,
+        "value_and_finite_difference_hessian": extracted_value_and_finite_difference_hessian,
+        "value_and_finite_difference_hvp": extracted_value_and_finite_difference_hvp,
+        "value_and_finite_difference_jacobian": extracted_value_and_finite_difference_jacobian,
+        "value_and_finite_difference_jvp": extracted_value_and_finite_difference_jvp,
+        "value_and_finite_difference_vjp": extracted_value_and_finite_difference_vjp,
+        "value_and_hessian": extracted_value_and_hessian,
+        "value_and_jacfwd": extracted_value_and_jacfwd,
+        "value_and_jacobian": extracted_value_and_jacobian,
+        "value_and_jacrev": extracted_value_and_jacrev,
+        "value_and_jvp": extracted_value_and_jvp,
+        "value_and_vjp": extracted_value_and_vjp,
+        "vector_jacobian_product": extracted_vector_jacobian_product,
+        "vjp": extracted_vjp,
+    }
+    for name, helper in expected.items():
+        assert getattr(differentiable_module, name) is helper
+        assert getattr(scpn, name) is helper
 
 
 def test_finite_difference_gradient_matches_quadratic_derivative() -> None:
@@ -94,6 +265,23 @@ def test_finite_difference_gradient_rejects_invalid_step() -> None:
         finite_difference_gradient(lambda values: values[0] ** 2, [1.0], step=invalid_step)
     with pytest.raises(ValueError, match="finite difference step must be finite and positive"):
         finite_difference_gradient(lambda values: values[0] ** 2, [1.0], step=0.0)
+
+
+def test_batch_finite_difference_gradient_helpers_cover_values_and_empty_inputs() -> None:
+    """Batched finite-difference gradient helpers should return one result per objective."""
+
+    objectives = [
+        lambda values: float(values[0] ** 2),
+        lambda values: float(3.0 * values[0]),
+    ]
+
+    results = batch_value_and_finite_difference_grad(objectives, [2.0])
+
+    assert len(results) == 2
+    _assert_allclose([result.value for result in results], [4.0, 6.0])
+    _assert_allclose([result.gradient for result in results], [[4.0], [3.0]], atol=1.0e-6)
+    with pytest.raises(ValueError, match="at least one scalar objective"):
+        batch_value_and_finite_difference_grad([], [2.0])
 
 
 def test_derivative_result_claim_boundary_must_be_explicit() -> None:
@@ -154,6 +342,26 @@ def test_complex_step_gradient_respects_frozen_parameters() -> None:
     _assert_allclose(result.gradient, [4.0, 0.0], rtol=1.0e-14, atol=1.0e-14)
 
 
+def test_batch_complex_step_helpers_cover_values_and_empty_inputs() -> None:
+    """Batched complex-step helpers should stack gradients and full results."""
+
+    objectives = [
+        lambda values: values[0] ** 2,
+        lambda values: np.exp(values[0]),
+    ]
+
+    results = batch_value_and_complex_step_grad(objectives, [0.5])
+    stacked = batch_complex_step_gradient(objectives, [0.5])
+
+    assert len(results) == 2
+    _assert_allclose([result.value for result in results], [0.25, np.exp(0.5)])
+    _assert_allclose(stacked, [[1.0], [np.exp(0.5)]], rtol=1.0e-14, atol=1.0e-14)
+    with pytest.raises(ValueError, match="at least one scalar objective"):
+        batch_complex_step_gradient([], [0.5])
+    with pytest.raises(ValueError, match="at least one scalar objective"):
+        batch_value_and_complex_step_grad([], [0.5])
+
+
 def test_complex_step_gradient_rejects_invalid_inputs() -> None:
     """Complex-step gradients should fail closed on invalid scalar contracts."""
 
@@ -168,6 +376,8 @@ def test_complex_step_gradient_rejects_invalid_inputs() -> None:
         complex_step_gradient(lambda _values: "not numeric", [1.0])
     with pytest.raises(ValueError, match="complex-step objective returned a non-finite scalar"):
         complex_step_gradient(lambda values: values[0] * complex(np.nan, 1.0), [1.0])
+    with pytest.raises(ValueError, match="non-real base scalar"):
+        complex_step_gradient(lambda values: values[0] + 1j, [1.0])
 
 
 def test_finite_difference_jacobian_matches_vector_objective() -> None:
@@ -214,6 +424,37 @@ def test_finite_difference_jacobian_rejects_non_vector_output() -> None:
         value_and_finite_difference_jacobian(lambda _values: np.array([[1.0]]), [0.0])
     with pytest.raises(ValueError, match="real numeric"):
         value_and_finite_difference_jacobian(lambda _values: np.array(["1.0"]), [0.0])
+    with pytest.raises(ValueError, match="finite difference step"):
+        value_and_finite_difference_jacobian(lambda values: np.array([values[0]]), [1.0], step=0.0)
+
+
+def test_canonical_jacobian_and_hessian_wrappers_dispatch_and_reject_methods() -> None:
+    """Canonical finite-difference wrappers should preserve method boundaries."""
+
+    def vector_objective(values: FloatArray) -> FloatArray:
+        return np.array([values[0] ** 2], dtype=np.float64)
+
+    def scalar_objective(values: FloatArray) -> float:
+        return float(values[0] ** 2)
+
+    jacobian_result = value_and_jacobian(vector_objective, [2.0])
+    jacfwd_result = value_and_jacfwd(vector_objective, [2.0])
+    jacrev_result = value_and_jacrev(vector_objective, [2.0])
+    hessian_result = value_and_hessian(scalar_objective, [2.0])
+
+    _assert_allclose(jacobian_result.jacobian, [[4.0]], atol=1.0e-6)
+    _assert_allclose(jacfwd_result.jacobian, [[4.0]], atol=1.0e-6)
+    _assert_allclose(jacrev_result.jacobian, [[4.0]], atol=1.0e-6)
+    _assert_allclose(jacobian(vector_objective, [2.0]), [[4.0]], atol=1.0e-6)
+    _assert_allclose(jacfwd(vector_objective, [2.0]), [[4.0]], atol=1.0e-6)
+    _assert_allclose(jacrev(vector_objective, [2.0]), [[4.0]], atol=1.0e-6)
+    _assert_allclose(hessian_result.hessian, [[2.0]], atol=1.0e-3)
+    _assert_allclose(hessian(scalar_objective, [2.0]), [[2.0]], atol=1.0e-3)
+
+    with pytest.raises(ValueError, match="Jacobian method"):
+        value_and_jacobian(vector_objective, [2.0], method="reverse")
+    with pytest.raises(ValueError, match="Hessian method"):
+        value_and_hessian(scalar_objective, [2.0], method="reverse")
 
 
 def test_finite_difference_jvp_matches_jacobian_directional_product() -> None:
@@ -280,6 +521,23 @@ def test_finite_difference_jvp_rejects_invalid_inputs() -> None:
         value_and_finite_difference_jvp(unstable, [0.0], [1.0])
 
 
+def test_canonical_jvp_wrappers_and_zero_direction_branch() -> None:
+    """JVP wrappers should expose finite-difference dispatch and zero tangents."""
+
+    def objective(values: FloatArray) -> FloatArray:
+        return np.array([values[0] ** 2], dtype=np.float64)
+
+    result = value_and_jvp(objective, [2.0], [0.0])
+
+    assert result.evaluations == 1
+    _assert_allclose(result.jvp, [0.0])
+    _assert_allclose(jvp(objective, [2.0], [1.0]), [4.0], atol=1.0e-6)
+    with pytest.raises(ValueError, match="JVP method"):
+        value_and_jvp(objective, [2.0], [1.0], method="reverse")
+    with pytest.raises(ValueError, match="finite difference step"):
+        value_and_finite_difference_jvp(objective, [2.0], [1.0], step=0.0)
+
+
 def test_vector_jacobian_product_contracts_cotangent() -> None:
     """Reverse-mode VJP should contract cotangents against validated Jacobians."""
 
@@ -309,6 +567,21 @@ def test_vector_jacobian_product_contracts_cotangent() -> None:
     )
 
 
+def test_value_and_canonical_vjp_wrappers_dispatch_and_reject_methods() -> None:
+    """VJP wrappers should route through finite-difference Jacobian products."""
+
+    def objective(values: FloatArray) -> FloatArray:
+        return np.array([values[0] ** 2], dtype=np.float64)
+
+    result = value_and_finite_difference_vjp(objective, [3.0], [0.5])
+
+    _assert_allclose(result.vjp, [3.0], atol=1.0e-6)
+    _assert_allclose(value_and_vjp(objective, [3.0], [0.5]).vjp, [3.0], atol=1.0e-6)
+    _assert_allclose(vjp(objective, [3.0], [0.5]), [3.0], atol=1.0e-6)
+    with pytest.raises(ValueError, match="VJP method"):
+        value_and_vjp(objective, [3.0], [0.5], method="forward")
+
+
 def test_vector_jacobian_product_respects_frozen_parameters_and_validation() -> None:
     """VJP products should zero frozen columns and reject malformed cotangents."""
 
@@ -324,6 +597,8 @@ def test_vector_jacobian_product_respects_frozen_parameters_and_validation() -> 
         vector_jacobian_product(cast(Any, np.eye(2)), [1.0, 2.0])
     with pytest.raises(ValueError, match="cotangent shape"):
         vector_jacobian_product(jacobian_result, [1.0])
+    with pytest.raises(ValueError, match="JacobianResult"):
+        batch_vector_jacobian_product(cast(Any, np.eye(2)), [[1.0, 2.0]])
 
 
 def test_batch_finite_difference_jvp_returns_stacked_products_and_results() -> None:
@@ -487,6 +762,19 @@ def test_finite_difference_hvp_respects_frozen_parameters() -> None:
 
     _assert_allclose(result.tangent, [3.0, 0.0])
     _assert_allclose(result.hvp, [6.0, 0.0], atol=1.0e-4)
+
+
+def test_finite_difference_hvp_zero_direction_branch() -> None:
+    """HVP wrappers should avoid gradient probes for zero trainable tangents."""
+
+    result = value_and_finite_difference_hvp(
+        lambda values: float(values[0] ** 2),
+        [2.0],
+        [0.0],
+    )
+
+    assert result.evaluations == 1
+    _assert_allclose(result.hvp, [0.0])
 
 
 def test_finite_difference_hvp_rejects_invalid_inputs() -> None:

@@ -8,13 +8,13 @@
     "notebook_files": 98,
     "optional_extras": 42,
     "paper0_validation_modules": 466,
-    "public_api_exports": 713,
+    "public_api_exports": 714,
     "public_documentation_pages": 254,
     "python_model_classes": 1840,
-    "python_model_source_modules": 880,
+    "python_model_source_modules": 881,
     "rust_pyo3_model_wrappers": 137,
     "rust_source_modules": 38,
-    "test_files": 2027
+    "test_files": 2029
   },
   "documentation": {
     "examples": [
@@ -8568,6 +8568,7 @@
       "src/scpn_quantum_control/differentiable_consistency.py",
       "src/scpn_quantum_control/differentiable_exact_modes.py",
       "src/scpn_quantum_control/differentiable_external_validation.py",
+      "src/scpn_quantum_control/differentiable_finite_difference.py",
       "src/scpn_quantum_control/differentiable_fisher.py",
       "src/scpn_quantum_control/differentiable_framework_overlay.py",
       "src/scpn_quantum_control/differentiable_implicit_sensitivity.py",
@@ -10176,6 +10177,7 @@
     "value_and_finite_difference_hvp",
     "value_and_finite_difference_jacobian",
     "value_and_finite_difference_jvp",
+    "value_and_finite_difference_vjp",
     "value_and_forward_mode_grad",
     "value_and_grad",
     "value_and_grad_program_ad_effect_ir_with_rust",
@@ -10833,6 +10835,7 @@
       "tests/test_control_qec.py",
       "tests/test_control_structured_ansatz.py",
       "tests/test_cosimulation.py",
+      "tests/test_count_integrity.py",
       "tests/test_cpdr.py",
       "tests/test_critical_concordance.py",
       "tests/test_cross_domain.py",
@@ -12268,6 +12271,7 @@
       "tests/test_tcbo_weighted_complex.py",
       "tests/test_tensor_jump.py",
       "tests/test_tensor_jump_contracts.py",
+      "tests/test_thermodynamic_witness.py",
       "tests/test_topological_coupling_guard.py",
       "tests/test_topological_optimizer.py",
       "tests/test_topology_auth_edge.py",

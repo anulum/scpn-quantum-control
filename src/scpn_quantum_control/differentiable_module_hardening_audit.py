@@ -310,6 +310,15 @@ def differentiable_module_hardening_registry() -> tuple[DifferentiableModuleHard
             ),
         ),
         _record(
+            "src/scpn_quantum_control/differentiable_finite_difference.py",
+            ("tests/test_differentiable_finite_difference.py",),
+            (
+                "finite-difference diagnostics",
+                "complex-step diagnostics",
+                "Jacobian/JVP/VJP/Hessian/HVP wrappers",
+            ),
+        ),
+        _record(
             "src/scpn_quantum_control/differentiable_implicit_sensitivity.py",
             ("tests/test_differentiable_implicit_sensitivity.py",),
             ("implicit stationary sensitivity", "fixed-point sensitivity solves"),

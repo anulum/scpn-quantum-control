@@ -112,6 +112,7 @@ from scpn_quantum_control.differentiable import (
     value_and_custom_vjp,
     value_and_finite_difference_hvp,
     value_and_finite_difference_jvp,
+    value_and_finite_difference_vjp,
     value_and_forward_mode_grad,
     value_and_grad,
     value_and_hessian,
@@ -232,6 +233,7 @@ def test_differentiable_api_exported_from_package_root() -> None:
     assert scpn.batch_vector_jacobian_product is batch_vector_jacobian_product
     assert scpn.value_and_finite_difference_hvp is value_and_finite_difference_hvp
     assert scpn.value_and_finite_difference_jvp is value_and_finite_difference_jvp
+    assert scpn.value_and_finite_difference_vjp is value_and_finite_difference_vjp
     assert scpn.value_and_forward_mode_grad is value_and_forward_mode_grad
     assert scpn.value_and_grad is value_and_grad
     assert scpn.value_and_hessian is value_and_hessian
