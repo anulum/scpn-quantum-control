@@ -14,6 +14,7 @@ from typing import Any, cast
 
 import numpy as np
 import pytest
+from numpy.typing import NDArray
 
 from scpn_quantum_control.differentiable import (
     DEFAULT_CUSTOM_DERIVATIVE_REGISTRY,
@@ -53,6 +54,24 @@ def _transform_rule_from_contract(contract: PrimitiveContract) -> PrimitiveTrans
         nondifferentiable_policy=contract.nondifferentiable_policy,
         effect=contract.effect,
     )
+
+
+def test_program_ad_cumulative_direct_rules_are_exposed_from_extracted_module() -> None:
+    """The facade and extracted cumulative module should expose identical factories."""
+
+    from scpn_quantum_control.program_ad_cumulative_primitives import (
+        program_ad_cumulative_cumprod_derivative_rule as module_cumprod_rule,
+    )
+    from scpn_quantum_control.program_ad_cumulative_primitives import (
+        program_ad_cumulative_cumsum_derivative_rule as module_cumsum_rule,
+    )
+    from scpn_quantum_control.program_ad_cumulative_primitives import (
+        program_ad_cumulative_diff_derivative_rule as module_diff_rule,
+    )
+
+    assert module_cumsum_rule is program_ad_cumulative_cumsum_derivative_rule
+    assert module_cumprod_rule is program_ad_cumulative_cumprod_derivative_rule
+    assert module_diff_rule is program_ad_cumulative_diff_derivative_rule
 
 
 def test_program_ad_cumulative_primitives_are_registry_policy_gated() -> None:
@@ -369,6 +388,18 @@ def test_program_ad_cumulative_static_derivative_factories_are_axis_aware() -> N
         cumprod_rule.jvp_rule(values, tangent_values),
         expected_cumprod_jvp.reshape(-1),
     )
+    cumprod_cotangent = np.array([[1.0, -0.5, 2.0], [0.25, 1.5, -1.0]], dtype=np.float64)
+    expected_cumprod_vjp = np.array(
+        [
+            [1.0 - 0.5 * 2.0 + 2.0 * 2.0 * 0.5, -0.5 * 1.0 + 2.0 * 1.0 * 0.5, 2.0 * 1.0 * 2.0],
+            [0.25 + 1.5 * -1.0 - 1.0 * -1.0 * 4.0, 1.5 * 3.0 - 1.0 * 3.0 * 4.0, -1.0 * 3.0 * -1.0],
+        ],
+        dtype=np.float64,
+    )
+    _assert_allclose(
+        cumprod_rule.vjp_rule(values, cumprod_cotangent.reshape(-1)),
+        expected_cumprod_vjp.reshape(-1),
+    )
 
     diff_rule = program_ad_cumulative_diff_derivative_rule((2, 3), order=2, axis=1)
     assert diff_rule.name == "program_ad_cumulative_diff_2x3_order_2_axis_1_direct_rule"
@@ -389,3 +420,133 @@ def test_program_ad_cumulative_static_derivative_factories_are_axis_aware() -> N
         program_ad_cumulative_cumsum_derivative_rule((2, 3), axis=2)
     with pytest.raises(ValueError, match="non-negative integer"):
         program_ad_cumulative_diff_derivative_rule((2, 3), order=-1, axis=1)
+
+
+def test_program_ad_cumulative_direct_rules_fail_closed_on_bad_shapes() -> None:
+    """Direct cumulative rules should reject malformed tangent and cotangent vectors."""
+
+    values = np.array([1.0, 2.0, 3.0], dtype=np.float64)
+    short = np.array([1.0, 2.0], dtype=np.float64)
+    empty = np.array([], dtype=np.float64)
+    cumsum_rule = custom_derivative_rule_for(
+        PrimitiveIdentity("scpn.program_ad.cumulative", "cumsum", "1")
+    )
+    cumprod_rule = custom_derivative_rule_for(
+        PrimitiveIdentity("scpn.program_ad.cumulative", "cumprod", "1")
+    )
+    diff_rule = custom_derivative_rule_for(
+        PrimitiveIdentity("scpn.program_ad.cumulative", "diff", "1")
+    )
+    assert cumsum_rule.jvp_rule is not None
+    assert cumsum_rule.vjp_rule is not None
+    assert cumprod_rule.jvp_rule is not None
+    assert cumprod_rule.vjp_rule is not None
+    assert diff_rule.jvp_rule is not None
+    assert diff_rule.vjp_rule is not None
+
+    with pytest.raises(ValueError, match="tangent shape must match"):
+        cumsum_rule.jvp_rule(values, short)
+    with pytest.raises(ValueError, match="cotangent shape must match"):
+        cumsum_rule.vjp_rule(values, short)
+    with pytest.raises(ValueError, match="tangent shape must match"):
+        cumprod_rule.jvp_rule(values, short)
+    with pytest.raises(ValueError, match="cotangent shape must match"):
+        cumprod_rule.vjp_rule(values, short)
+    with pytest.raises(ValueError, match="tangent shape must match"):
+        diff_rule.jvp_rule(values, short)
+    with pytest.raises(ValueError, match="at least one value"):
+        diff_rule.vjp_rule(empty, empty)
+    with pytest.raises(ValueError, match="cotangent shape must match"):
+        diff_rule.vjp_rule(values, values)
+    _assert_allclose(diff_rule.vjp_rule(np.array([1.0], dtype=np.float64), empty), [0.0])
+    _assert_allclose(
+        diff_rule.vjp_rule(
+            np.array([1.0, 3.0], dtype=np.float64),
+            np.array([2.0], dtype=np.float64),
+        ),
+        [-2.0, 2.0],
+    )
+
+
+def test_program_ad_cumulative_static_factories_cover_flat_and_failure_boundaries() -> None:
+    """Static cumulative factories should cover flat signatures and reject invalid shapes."""
+
+    from scpn_quantum_control.program_ad_cumulative_primitives import (
+        _program_ad_cumulative_derivative_rule,
+    )
+
+    matrix = np.array([[1.0, 2.0], [3.0, 4.0]], dtype=np.float64)
+    tangent = np.array([[0.5, -1.0], [1.5, 0.25]], dtype=np.float64)
+    cotangent = np.array([[1.0, -0.5], [0.25, 2.0]], dtype=np.float64)
+    values = matrix.reshape(-1)
+
+    cumsum_rule = program_ad_cumulative_cumsum_derivative_rule((2, 2))
+    assert cumsum_rule.name == "program_ad_cumulative_cumsum_2x2_axis_flat_direct_rule"
+    assert cumsum_rule.jvp_rule is not None
+    assert cumsum_rule.vjp_rule is not None
+    _assert_allclose(cumsum_rule.value_fn(values), np.cumsum(values))
+    _assert_allclose(
+        cumsum_rule.jvp_rule(values, tangent.reshape(-1)), np.cumsum(tangent.reshape(-1))
+    )
+    _assert_allclose(
+        cumsum_rule.vjp_rule(values, cotangent.reshape(-1)),
+        np.flip(np.cumsum(np.flip(cotangent.reshape(-1)))),
+    )
+
+    cumprod_rule = program_ad_cumulative_cumprod_derivative_rule((2, 2))
+    assert cumprod_rule.name == "program_ad_cumulative_cumprod_2x2_axis_flat_direct_rule"
+    assert cumprod_rule.jvp_rule is not None
+    assert cumprod_rule.vjp_rule is not None
+    flat_cumprod_rule = custom_derivative_rule_for(
+        PrimitiveIdentity("scpn.program_ad.cumulative", "cumprod", "1")
+    )
+    assert flat_cumprod_rule.jvp_rule is not None
+    assert flat_cumprod_rule.vjp_rule is not None
+    _assert_allclose(cumprod_rule.value_fn(values), np.cumprod(values))
+    _assert_allclose(
+        cumprod_rule.jvp_rule(values, tangent.reshape(-1)),
+        flat_cumprod_rule.jvp_rule(values, tangent.reshape(-1)),
+    )
+    _assert_allclose(
+        cumprod_rule.vjp_rule(values, cotangent.reshape(-1)),
+        flat_cumprod_rule.vjp_rule(values, cotangent.reshape(-1)),
+    )
+
+    with pytest.raises(ValueError, match="unsupported program AD cumulative primitive"):
+        _program_ad_cumulative_derivative_rule("unknown")
+    with pytest.raises(ValueError, match="non-negative dimensions"):
+        program_ad_cumulative_cumsum_derivative_rule((2, -1))
+    with pytest.raises(ValueError, match="at least one value"):
+        program_ad_cumulative_cumsum_derivative_rule((0,))
+    with pytest.raises(ValueError, match="cannot map over a scalar"):
+        program_ad_cumulative_cumsum_derivative_rule((), axis=0)
+    with pytest.raises(ValueError, match="requires tangent with 4 values"):
+        cumsum_rule.jvp_rule(values, values[:-1])
+    with pytest.raises(ValueError, match="order exceeds axis length"):
+        program_ad_cumulative_diff_derivative_rule((2, 3), order=4, axis=1)
+
+
+def test_program_ad_cumulative_diff_static_vjp_detects_internal_shape_mismatch(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Static diff VJP should fail closed if an internal adjoint shape changes."""
+
+    from scpn_quantum_control import program_ad_cumulative_primitives as cumulative
+
+    def wrong_shape_once(
+        cotangent_array: NDArray[np.float64],
+        *,
+        source_shape: tuple[int, ...],
+        axis: int,
+    ) -> NDArray[np.float64]:
+        del cotangent_array, source_shape, axis
+        return np.zeros((1,), dtype=np.float64)
+
+    monkeypatch.setattr(cumulative, "_program_ad_cumulative_diff_once_vjp_axis", wrong_shape_once)
+    with pytest.raises(ValueError, match="internal shape mismatch"):
+        cumulative._program_ad_cumulative_diff_static_vjp_array(
+            np.array([1.0], dtype=np.float64),
+            source_shape=(3,),
+            order=1,
+            axis=0,
+        )
