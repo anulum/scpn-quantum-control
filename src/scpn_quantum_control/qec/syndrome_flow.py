@@ -16,6 +16,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import numpy as np
+from numpy.typing import NDArray
 
 from .multiscale_qec import MultiscaleQECResult, QECLevel, knm_between_domains
 
@@ -32,7 +33,7 @@ class SyndromeFlow:
 
 
 def syndrome_flow_between_levels(
-    K: np.ndarray,
+    K: NDArray[np.float64],
     level_a: QECLevel,
     level_b: QECLevel,
 ) -> SyndromeFlow:
@@ -55,7 +56,7 @@ def syndrome_flow_between_levels(
 
 
 def syndrome_flow_analysis(
-    K: np.ndarray,
+    K: NDArray[np.float64],
     result: MultiscaleQECResult,
 ) -> list[SyndromeFlow]:
     """Analyse syndrome information flow between all adjacent levels."""

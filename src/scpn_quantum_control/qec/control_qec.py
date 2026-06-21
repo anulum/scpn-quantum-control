@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import networkx as nx
 import numpy as np
+from numpy.typing import NDArray
 
 
 class SurfaceCode:
@@ -32,16 +33,16 @@ class SurfaceCode:
         self.num_data = 2 * distance**2
         self.Hx, self.Hz = self._build_checks()
 
-    def _build_checks(self) -> tuple[np.ndarray, np.ndarray]:
+    def _build_checks(self) -> tuple[NDArray[np.int8], NDArray[np.int8]]:
         d = self.d
         N = self.num_data
-        Hx: np.ndarray = np.zeros((d * d, N), dtype=np.int8)
-        Hz: np.ndarray = np.zeros((d * d, N), dtype=np.int8)
+        Hx: NDArray[np.int8] = np.zeros((d * d, N), dtype=np.int8)
+        Hz: NDArray[np.int8] = np.zeros((d * d, N), dtype=np.int8)
 
-        def h(r, c):
+        def h(r: int, c: int) -> int:
             return 2 * (r * d + c)
 
-        def v(r, c):
+        def v(r: int, c: int) -> int:
             return 2 * (r * d + c) + 1
 
         for r in range(d):
@@ -68,12 +69,12 @@ class MWPMDecoder:
     Manhattan distance on toric lattice, optionally weighted by Knm graph distance.
     """
 
-    def __init__(self, distance: int, knm_weights: np.ndarray | None = None):
+    def __init__(self, distance: int, knm_weights: NDArray[np.float64] | None = None):
         """Optional knm_weights rescales Manhattan distance by 1/(1+K[u,v])."""
         self.d = distance
         self.knm_weights = knm_weights
 
-    def decode(self, syndrome: np.ndarray, dual: bool = False) -> np.ndarray:
+    def decode(self, syndrome: NDArray[np.int8], dual: bool = False) -> NDArray[np.int8]:
         """Decode syndrome -> correction vector of length 2*d^2.
 
         dual=False for vertex syndromes (X error correction),
@@ -93,7 +94,7 @@ class MWPMDecoder:
 
         matching = nx.max_weight_matching(G, maxcardinality=True)
 
-        correction: np.ndarray = np.zeros(2 * self.d**2, dtype=np.int8)
+        correction: NDArray[np.int8] = np.zeros(2 * self.d**2, dtype=np.int8)
         for i, j in matching:
             path = self._shortest_path(defects[i], defects[j], dual=dual)
             for qubit in path:
@@ -180,14 +181,14 @@ class ControlQEC:
     Combines SurfaceCode + MWPMDecoder with optional Knm-weighted edges.
     """
 
-    def __init__(self, distance: int = 3, knm_weights: np.ndarray | None = None):
+    def __init__(self, distance: int = 3, knm_weights: NDArray[np.float64] | None = None):
         """Assemble SurfaceCode + MWPMDecoder for the given distance."""
         self.code = SurfaceCode(distance)
         self.decoder = MWPMDecoder(distance, knm_weights)
 
     def simulate_errors(
         self, p_error: float, rng: np.random.Generator | None = None
-    ) -> tuple[np.ndarray, np.ndarray]:
+    ) -> tuple[NDArray[np.int8], NDArray[np.int8]]:
         """Simulate independent X and Z errors with probability p_error."""
         if rng is None:
             rng = np.random.default_rng()
@@ -196,13 +197,15 @@ class ControlQEC:
         err_z = rng.binomial(1, p_error, N).astype(np.int8)
         return err_x, err_z
 
-    def get_syndrome(self, err_x: np.ndarray, err_z: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    def get_syndrome(
+        self, err_x: NDArray[np.int8], err_z: NDArray[np.int8]
+    ) -> tuple[NDArray[np.int8], NDArray[np.int8]]:
         """Compute syndromes: syn_z = Hx @ err_x mod 2, syn_x = Hz @ err_z mod 2."""
         syn_z = (self.code.Hx @ err_x) % 2
         syn_x = (self.code.Hz @ err_z) % 2
         return syn_z, syn_x
 
-    def decode_and_correct(self, err_x: np.ndarray, err_z: np.ndarray) -> bool:
+    def decode_and_correct(self, err_x: NDArray[np.int8], err_z: NDArray[np.int8]) -> bool:
         """Full decode cycle. Returns True if no logical error remains.
 
         Checks both syndrome clearance and non-trivial homology on the torus.
@@ -225,7 +228,9 @@ class ControlQEC:
 
         return not self._has_logical_error(residual_x, residual_z)
 
-    def _has_logical_error(self, residual_x: np.ndarray, residual_z: np.ndarray) -> bool:
+    def _has_logical_error(
+        self, residual_x: NDArray[np.int8], residual_z: NDArray[np.int8]
+    ) -> bool:
         """Check if residual errors form non-trivial homology cycles.
 
         A residual with zero syndrome may still be a logical operator if it

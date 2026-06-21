@@ -16,8 +16,10 @@ on statevector; not executable on current hardware at useful noise levels.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Any
 
 import numpy as np
+from numpy.typing import NDArray
 from qiskit import QuantumCircuit
 from qiskit.quantum_info import Statevector
 
@@ -49,8 +51,8 @@ class RepetitionCodeUPDE:
         self,
         n_osc: int,
         code_distance: int = 3,
-        K: np.ndarray | None = None,
-        omega: np.ndarray | None = None,
+        K: NDArray[np.float64] | None = None,
+        omega: NDArray[np.float64] | None = None,
     ):
         if n_osc < 2:
             raise ValueError(f"Need >= 2 oscillators, got {n_osc}")
@@ -132,7 +134,7 @@ class RepetitionCodeUPDE:
 
         return qc
 
-    def step_with_qec(self, dt: float = 0.1) -> dict:
+    def step_with_qec(self, dt: float = 0.1) -> dict[str, Any]:
         """Execute one QEC-protected Trotter step and extract syndromes."""
         qc = self.build_step_circuit(dt)
         sv = Statevector.from_instruction(qc)

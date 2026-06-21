@@ -20,6 +20,7 @@ from dataclasses import asdict, dataclass
 from typing import Any
 
 import numpy as np
+from numpy.typing import NDArray
 
 from .biological_diagnostics import (
     BiologicalSurfaceDiagnostics,
@@ -85,8 +86,8 @@ class BiologicalQecBatchExecution:
 
 
 def run_biological_qec_execution(
-    K: np.ndarray,
-    z_errors: np.ndarray,
+    K: NDArray[np.float64],
+    z_errors: NDArray[np.int8],
     *,
     threshold: float = 1e-5,
     node_domains: dict[int, str] | None = None,
@@ -118,8 +119,8 @@ def run_biological_qec_execution(
 
 
 def run_biological_qec_batch_execution(
-    K: np.ndarray,
-    z_error_matrix: np.ndarray,
+    K: NDArray[np.float64],
+    z_error_matrix: NDArray[np.int8],
     *,
     threshold: float = 1e-5,
     node_domains: dict[int, str] | None = None,

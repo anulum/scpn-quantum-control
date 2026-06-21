@@ -34,6 +34,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import numpy as np
+from numpy.typing import NDArray
 
 from ..phase.trotter_error import commutator_norm_bound, trotter_error_bound
 
@@ -92,8 +93,8 @@ def minimum_code_distance(
 
 
 def compute_error_budget(
-    K: np.ndarray,
-    omega: np.ndarray,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
     t_total: float = 1.0,
     trotter_order: int = 1,
     target_total_error: float = 0.01,
@@ -175,9 +176,9 @@ def compute_error_budget(
 
 
 def compare_error_budgets(
-    K: np.ndarray,
-    omega: np.ndarray,
-    p_physical_values: np.ndarray | None = None,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
+    p_physical_values: NDArray[np.float64] | None = None,
 ) -> list[ErrorBudget]:
     """Compare error budgets across hardware generations.
 

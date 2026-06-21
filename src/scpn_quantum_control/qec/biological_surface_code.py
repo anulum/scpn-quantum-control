@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import networkx as nx
 import numpy as np
+from numpy.typing import NDArray
 
 from scpn_quantum_control.accel.rust_import import optional_rust_engine
 
@@ -30,7 +31,7 @@ from scpn_quantum_control.accel.rust_import import optional_rust_engine
 class BiologicalSurfaceCode:
     """A Surface Code defined directly on a biological coupling graph."""
 
-    def __init__(self, K: np.ndarray, threshold: float = 1e-5):
+    def __init__(self, K: NDArray[np.float64], threshold: float = 1e-5):
         K_array = np.asarray(K, dtype=float)
         if K_array.ndim != 2 or K_array.shape[0] != K_array.shape[1]:
             raise ValueError("Coupling matrix K must be a square 2D matrix.")
@@ -116,7 +117,7 @@ class BiologicalSurfaceCode:
             "css_commutes": self.verify_css_commutation(),
         }
 
-    def x_syndrome_from_z_errors(self, z_errors: np.ndarray) -> np.ndarray:
+    def x_syndrome_from_z_errors(self, z_errors: NDArray[np.int8]) -> NDArray[np.int8]:
         """Compute X stabiliser syndrome induced by edge-local Z errors."""
         errors = np.asarray(z_errors)
         if errors.ndim != 1 or errors.shape[0] != self.num_data:
@@ -127,7 +128,9 @@ class BiologicalSurfaceCode:
             raise ValueError("z_errors must be a binary vector with entries 0 or 1.")
         return ((self.Hx @ errors.astype(np.int8, copy=False)) % 2).astype(np.int8)
 
-    def apply_z_correction(self, z_errors: np.ndarray, correction: np.ndarray) -> np.ndarray:
+    def apply_z_correction(
+        self, z_errors: NDArray[np.int8], correction: NDArray[np.int8]
+    ) -> NDArray[np.int8]:
         """Apply edge correction modulo 2 and return residual Z-error pattern."""
         errors = np.asarray(z_errors)
         corr = np.asarray(correction)
@@ -163,7 +166,7 @@ class BiologicalMWPMDecoder:
         """Return backend used by most recent decode call."""
         return self._last_decoder_backend
 
-    def decode_z_errors(self, syndrome_x: np.ndarray) -> np.ndarray:
+    def decode_z_errors(self, syndrome_x: NDArray[np.int8]) -> NDArray[np.int8]:
         """Decode X-syndromes to find the optimal Z-error correction.
 
         Z errors on edges flip the X stabilizers at their endpoint nodes.
@@ -259,7 +262,9 @@ class BiologicalMWPMDecoder:
 
         return correction
 
-    def decode_and_apply(self, z_errors: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    def decode_and_apply(
+        self, z_errors: NDArray[np.int8]
+    ) -> tuple[NDArray[np.int8], NDArray[np.int8]]:
         """Decode from a Z-error pattern and return (correction, residual)."""
         syndrome = self.code.x_syndrome_from_z_errors(z_errors)
         correction = self.decode_z_errors(syndrome)

@@ -15,6 +15,7 @@ from pathlib import Path
 from typing import Any
 
 import numpy as np
+from numpy.typing import NDArray
 
 from .biological_pipeline import (
     run_biological_qec_batch_execution,
@@ -22,7 +23,7 @@ from .biological_pipeline import (
 )
 
 
-def _load_matrix(path: Path) -> np.ndarray:
+def _load_matrix(path: Path) -> NDArray[np.float64]:
     suffix = path.suffix.lower()
     if suffix == ".npy":
         matrix = np.load(path)
@@ -33,7 +34,7 @@ def _load_matrix(path: Path) -> np.ndarray:
     return np.asarray(matrix, dtype=float)
 
 
-def _load_array(path: Path) -> np.ndarray:
+def _load_array(path: Path) -> NDArray[np.int8]:
     suffix = path.suffix.lower()
     if suffix == ".npy":
         vector = np.load(path)

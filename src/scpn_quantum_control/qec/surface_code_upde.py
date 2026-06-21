@@ -30,6 +30,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import numpy as np
+from numpy.typing import NDArray
 from qiskit import QuantumCircuit
 
 from ..bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
@@ -79,8 +80,8 @@ class SurfaceCodeUPDE:
         self,
         n_osc: int,
         code_distance: int = 3,
-        K: np.ndarray | None = None,
-        omega: np.ndarray | None = None,
+        K: NDArray[np.float64] | None = None,
+        omega: NDArray[np.float64] | None = None,
     ):
         if n_osc < 2:
             raise ValueError(f"Need >= 2 oscillators, got {n_osc}")
@@ -243,7 +244,7 @@ class SurfaceCodeUPDE:
 
         return qc
 
-    def physical_qubit_budget(self) -> dict:
+    def physical_qubit_budget(self) -> dict[str, int]:
         """Physical qubit requirements."""
         return {
             "n_osc": self.n_osc,

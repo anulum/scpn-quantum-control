@@ -41,6 +41,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import numpy as np
+from numpy.typing import NDArray
 
 from .error_budget import (
     SURFACE_CODE_PREFACTOR,
@@ -105,7 +106,7 @@ class MultiscaleQECResult:
 
 
 def knm_between_domains(
-    K: np.ndarray,
+    K: NDArray[np.float64],
     domain_a: tuple[int, int],
     domain_b: tuple[int, int],
 ) -> float:
@@ -187,7 +188,7 @@ def _build_levels(
     domain_list: list[tuple[str, tuple[int, int]]],
     distances: list[int],
     rates: list[float],
-    K: np.ndarray,
+    K: NDArray[np.float64],
     p_physical: float,
     n_oscillators_per_level: int,
 ) -> tuple[list[QECLevel], int]:
@@ -271,7 +272,7 @@ def _make_result(
 
 
 def build_multiscale_qec(
-    K: np.ndarray,
+    K: NDArray[np.float64],
     n_oscillators_per_level: int | None = None,
     p_physical: float = 0.003,
     target_logical_rate: float = 1e-10,
