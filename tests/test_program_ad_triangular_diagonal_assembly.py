@@ -29,11 +29,28 @@ from scpn_quantum_control.differentiable import (
     program_adjoint_gradient,
     whole_program_value_and_grad,
 )
+from scpn_quantum_control.program_ad_assembly_primitives import (
+    program_ad_assembly_diagonal_derivative_rule as extracted_diagonal_derivative_rule,
+)
+from scpn_quantum_control.program_ad_assembly_primitives import (
+    program_ad_assembly_tril_derivative_rule as extracted_tril_derivative_rule,
+)
+from scpn_quantum_control.program_ad_assembly_primitives import (
+    program_ad_assembly_triu_derivative_rule as extracted_triu_derivative_rule,
+)
 
 FloatArray = NDArray[np.float64]
 IntArray = NDArray[np.int64]
 TriangularFactory = Callable[..., CustomDerivativeRule]
 TriangularNumpyFn = Callable[..., FloatArray]
+
+
+def test_program_ad_triangular_diagonal_facade_uses_extracted_factories() -> None:
+    """The compatibility facade should expose the extracted assembly factories."""
+
+    assert program_ad_assembly_diagonal_derivative_rule is extracted_diagonal_derivative_rule
+    assert program_ad_assembly_tril_derivative_rule is extracted_tril_derivative_rule
+    assert program_ad_assembly_triu_derivative_rule is extracted_triu_derivative_rule
 
 
 def _assert_allclose(

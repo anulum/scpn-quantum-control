@@ -24,8 +24,17 @@ from scpn_quantum_control.differentiable import (
     program_adjoint_gradient,
     whole_program_value_and_grad,
 )
+from scpn_quantum_control.program_ad_assembly_primitives import (
+    program_ad_assembly_split_derivative_rule as extracted_split_derivative_rule,
+)
 
 FloatArray = NDArray[np.float64]
+
+
+def test_program_ad_assembly_split_facade_uses_extracted_factory() -> None:
+    """The compatibility facade should expose the extracted split factory."""
+
+    assert program_ad_assembly_split_derivative_rule is extracted_split_derivative_rule
 
 
 def _assert_allclose(
