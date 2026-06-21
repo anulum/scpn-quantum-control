@@ -36,6 +36,11 @@ from .differentiable_parameter_contracts import (
     _as_real_scalar,
     multi_frequency_parameter_shift_rule,
 )
+from .differentiable_registered_custom import (
+    registered_custom_jacobian,
+    registered_custom_jvp,
+    registered_custom_vjp,
+)
 from .differentiable_result_contracts import (
     DIFFERENTIABLE_RESULT_CLAIM_BOUNDARY,
     FINITE_DIFFERENCE_DIAGNOSTIC_CLAIM_BOUNDARY,
@@ -6503,58 +6508,6 @@ _register_program_ad_selection_primitive_contracts()
 _register_program_ad_product_primitive_contracts()
 _register_program_ad_cumulative_primitive_contracts()
 _register_program_ad_linalg_primitive_contracts()
-
-
-def registered_custom_jvp(
-    identity: PrimitiveIdentity | str,
-    values: ArrayLike,
-    tangent: ArrayLike,
-    *,
-    parameters: Sequence[Parameter] | None = None,
-    registry: CustomDerivativeRegistry | None = None,
-) -> NDArray[np.float64]:
-    """Return a JVP by resolving the primitive's registered custom rule."""
-
-    return custom_jvp(
-        custom_derivative_rule_for(identity, registry=registry),
-        values,
-        tangent,
-        parameters=parameters,
-    )
-
-
-def registered_custom_vjp(
-    identity: PrimitiveIdentity | str,
-    values: ArrayLike,
-    cotangent: ArrayLike,
-    *,
-    parameters: Sequence[Parameter] | None = None,
-    registry: CustomDerivativeRegistry | None = None,
-) -> VJPResult:
-    """Return a VJP by resolving the primitive's registered custom rule."""
-
-    return custom_vjp(
-        custom_derivative_rule_for(identity, registry=registry),
-        values,
-        cotangent,
-        parameters=parameters,
-    )
-
-
-def registered_custom_jacobian(
-    identity: PrimitiveIdentity | str,
-    values: ArrayLike,
-    *,
-    parameters: Sequence[Parameter] | None = None,
-    registry: CustomDerivativeRegistry | None = None,
-) -> JacobianResult:
-    """Return a dense Jacobian by resolving the primitive's registered custom rule."""
-
-    return value_and_custom_jacobian(
-        custom_derivative_rule_for(identity, registry=registry),
-        values,
-        parameters=parameters,
-    )
 
 
 @dataclass(frozen=True)

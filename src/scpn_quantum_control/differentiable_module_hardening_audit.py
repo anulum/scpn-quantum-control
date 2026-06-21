@@ -299,6 +299,11 @@ def differentiable_module_hardening_registry() -> tuple[DifferentiableModuleHard
             ("derivative result validation", "facade export compatibility"),
         ),
         _record(
+            "src/scpn_quantum_control/differentiable_registered_custom.py",
+            ("tests/test_differentiable_registered_custom.py",),
+            ("registry-backed custom JVP/VJP wrappers", "facade export compatibility"),
+        ),
+        _record(
             "src/scpn_quantum_control/differentiable_scalar_kernels.py",
             ("tests/test_differentiable_scalar_kernels.py",),
             ("forward scalar elementary kernels", "reverse scalar pullback kernels"),
