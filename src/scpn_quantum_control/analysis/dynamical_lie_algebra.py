@@ -24,6 +24,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import numpy as np
+from numpy.typing import NDArray
 from qiskit.quantum_info import SparsePauliOp
 
 
@@ -46,13 +47,15 @@ class DLAResult:
         return self.is_polynomial
 
 
-def _commutator(a: np.ndarray, b: np.ndarray) -> np.ndarray:
+def _commutator(a: NDArray[np.complex128], b: NDArray[np.complex128]) -> NDArray[np.complex128]:
     """Matrix commutator [A, B] = AB - BA."""
-    result: np.ndarray = a @ b - b @ a
+    result: NDArray[np.complex128] = (a @ b - b @ a).astype(np.complex128)
     return result
 
 
-def _is_independent(new_op: np.ndarray, basis: list[np.ndarray], tol: float = 1e-10) -> bool:
+def _is_independent(
+    new_op: NDArray[np.complex128], basis: list[NDArray[np.complex128]], tol: float = 1e-10
+) -> bool:
     """Check if new_op is linearly independent of existing basis vectors."""
     if not basis:
         return bool(np.linalg.norm(new_op) > tol)
@@ -88,7 +91,7 @@ def compute_dla(
     gen_mats = [1j * g.to_matrix() for g in generators]
 
     # Initialize basis with generators
-    basis: list[np.ndarray] = []
+    basis: list[NDArray[np.complex128]] = []
     labels: list[str] = []
     for i, g in enumerate(gen_mats):
         if _is_independent(g, basis, tol):
@@ -98,7 +101,7 @@ def compute_dla(
     n_iters = 0
     for _step in range(1, max_iterations + 1):
         n_iters = _step
-        new_ops: list[tuple[np.ndarray, str]] = []
+        new_ops: list[tuple[NDArray[np.complex128], str]] = []
         n_basis = len(basis)
 
         for i in range(n_basis):
@@ -210,7 +213,7 @@ def compute_dla_rust(
     )
 
 
-def build_xy_generators(K: np.ndarray, omega: np.ndarray) -> list[SparsePauliOp]:
+def build_xy_generators(K: NDArray[np.float64], omega: NDArray[np.float64]) -> list[SparsePauliOp]:
     """Build the standard XY Hamiltonian generators: {Z_i, X_iX_j, Y_iY_j}."""
     from ..bridge.knm_hamiltonian import KNM_SPARSITY_EPS
 
@@ -243,9 +246,9 @@ def build_xy_generators(K: np.ndarray, omega: np.ndarray) -> list[SparsePauliOp]
 
 
 def build_ssgf_generators(
-    K: np.ndarray,
-    omega: np.ndarray,
-    W: np.ndarray,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
+    W: NDArray[np.float64],
     sigma_g: float = 0.3,
 ) -> list[SparsePauliOp]:
     """Build generators including SSGF geometry feedback term.
@@ -275,9 +278,9 @@ def build_ssgf_generators(
 
 
 def build_pgbo_generators(
-    K: np.ndarray,
-    omega: np.ndarray,
-    h_munu: np.ndarray,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
+    h_munu: NDArray[np.float64],
     pgbo_weight: float = 0.1,
 ) -> list[SparsePauliOp]:
     """Build generators including PGBO tensor field h_munu coupling.
@@ -308,8 +311,8 @@ def build_pgbo_generators(
 
 
 def build_tcbo_generators(
-    K: np.ndarray,
-    omega: np.ndarray,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
     kappa: float = 1.0,
     connectivity: str = "nearest",
 ) -> list[SparsePauliOp]:
@@ -347,10 +350,10 @@ def build_tcbo_generators(
 
 
 def build_full_scpn_generators(
-    K: np.ndarray,
-    omega: np.ndarray,
-    W: np.ndarray | None = None,
-    h_munu: np.ndarray | None = None,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
+    W: NDArray[np.float64] | None = None,
+    h_munu: NDArray[np.float64] | None = None,
     sigma_g: float = 0.3,
     pgbo_weight: float = 0.1,
     kappa: float = 1.0,

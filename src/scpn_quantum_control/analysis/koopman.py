@@ -39,6 +39,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import numpy as np
+from numpy.typing import NDArray
 
 from ..accel.rust_import import optional_rust_engine
 
@@ -52,9 +53,9 @@ MAX_OSCILLATORS_DEFAULT = 32
 
 
 def _validate_inputs(
-    K: np.ndarray,
-    omega: np.ndarray,
-    theta_ref: np.ndarray | None,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
+    theta_ref: NDArray[np.float64] | None,
     max_oscillators: int,
 ) -> None:
     """Validate Koopman inputs. Raises ValueError on any violation."""
@@ -94,19 +95,19 @@ def _observable_labels(n: int) -> list[str]:
 class KoopmanResult:
     """Koopman linearisation result."""
 
-    generator: np.ndarray  # L_K matrix
-    eigenvalues: np.ndarray  # Koopman eigenvalues
+    generator: NDArray[np.float64]  # L_K matrix
+    eigenvalues: NDArray[np.complex128]  # Koopman eigenvalues
     n_observables: int
     n_oscillators: int
     observable_labels: list[str]
 
 
 def build_koopman_generator(
-    K: np.ndarray,
-    omega: np.ndarray,
-    theta_ref: np.ndarray | None = None,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
+    theta_ref: NDArray[np.float64] | None = None,
     max_oscillators: int = MAX_OSCILLATORS_DEFAULT,
-) -> tuple[np.ndarray, list[str]]:
+) -> tuple[NDArray[np.float64], list[str]]:
     """Build the Koopman generator matrix L_K for the Kuramoto system.
 
     Observable basis (for n oscillators):
@@ -194,13 +195,13 @@ def build_koopman_generator(
 
 
 def build_koopman_generator_rust(
-    K: np.ndarray,
-    omega: np.ndarray,
-    theta_ref: np.ndarray | None = None,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
+    theta_ref: NDArray[np.float64] | None = None,
     max_oscillators: int = MAX_OSCILLATORS_DEFAULT,
     *,
     require_rust: bool = False,
-) -> tuple[np.ndarray, list[str]]:
+) -> tuple[NDArray[np.float64], list[str]]:
     """Rust-preferred Koopman generator with explicit Python fallback.
 
     When the optional ``scpn_quantum_engine.koopman_generator`` export is
@@ -242,9 +243,9 @@ def build_koopman_generator_rust(
 
 
 def koopman_analysis(
-    K: np.ndarray,
-    omega: np.ndarray,
-    theta_ref: np.ndarray | None = None,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
+    theta_ref: NDArray[np.float64] | None = None,
     max_oscillators: int = MAX_OSCILLATORS_DEFAULT,
 ) -> KoopmanResult:
     """Full Koopman linearisation and spectral analysis.
@@ -256,7 +257,7 @@ def koopman_analysis(
     """
     n = K.shape[0]
     L, labels = build_koopman_generator(K, omega, theta_ref, max_oscillators)
-    eigenvalues = np.linalg.eigvals(L)
+    eigenvalues = np.linalg.eigvals(L).astype(np.complex128)
     eigenvalues = eigenvalues[np.argsort(-np.abs(eigenvalues))]
 
     return KoopmanResult(
@@ -273,7 +274,7 @@ def koopman_dimension(n_osc: int) -> int:
     return n_osc * n_osc
 
 
-def koopman_to_hamiltonian(L: np.ndarray) -> np.ndarray:
+def koopman_to_hamiltonian(L: NDArray[np.float64]) -> NDArray[np.complex128]:
     """Convert Koopman generator to Hermitian Hamiltonian.
 
     H = i × (L - L†) / 2 (anti-Hermitian part, Hermitianised)
@@ -281,7 +282,7 @@ def koopman_to_hamiltonian(L: np.ndarray) -> np.ndarray:
     This H can be encoded as a Pauli Hamiltonian for quantum simulation,
     extending the XY approximation to the full nonlinear Kuramoto dynamics.
     """
-    H: np.ndarray = 1j * (L - L.conj().T) / 2.0
+    H: NDArray[np.complex128] = (1j * (L - L.conj().T) / 2.0).astype(np.complex128)
     # Ensure exact Hermiticity
-    H = (H + H.conj().T) / 2.0
+    H = ((H + H.conj().T) / 2.0).astype(np.complex128)
     return H
