@@ -29,6 +29,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import numpy as np
+from numpy.typing import NDArray
 from qiskit.quantum_info import SparsePauliOp, Statevector
 
 from ..bridge.knm_hamiltonian import knm_to_dense_matrix, knm_to_hamiltonian
@@ -43,17 +44,17 @@ class QRCPhaseResult:
     n_train: int
     n_test: int
     n_features: int
-    weights: np.ndarray
+    weights: NDArray[np.float64]
     k_boundary_predicted: float | None
 
 
 def _pauli_features_from_hamiltonian(
-    K: np.ndarray,
-    omega: np.ndarray,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
     max_weight: int = 2,
     *,
     max_dense_gib: float | None = None,
-) -> np.ndarray:
+) -> NDArray[np.float64]:
     """Extract Pauli expectation features from the ground state of H(K).
 
     Uses exact diagonalization (no circuit evolution needed for ground state).
@@ -82,7 +83,7 @@ def _pauli_features_from_hamiltonian(
         if 0 < weight <= max_weight:
             labels.append("".join(combo))
 
-    features: np.ndarray = np.zeros(len(labels))
+    features: NDArray[np.float64] = np.zeros(len(labels))
     for i, label in enumerate(labels):
         op = SparsePauliOp(label)
         features[i] = float(sv.expectation_value(op).real)
@@ -91,14 +92,14 @@ def _pauli_features_from_hamiltonian(
 
 
 def generate_training_data(
-    omega: np.ndarray,
-    K_topology: np.ndarray,
-    k_range: np.ndarray,
+    omega: NDArray[np.float64],
+    K_topology: NDArray[np.float64],
+    k_range: NDArray[np.float64],
     k_threshold: float,
     max_weight: int = 2,
     *,
     max_dense_gib: float | None = None,
-) -> tuple[np.ndarray, np.ndarray]:
+) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
     """Generate labeled feature matrix for QRC phase classification.
 
     K_topology: normalized coupling matrix (max=1).
@@ -120,37 +121,37 @@ def generate_training_data(
         features_list.append(feat)
         labels.append(1.0 if kb >= k_threshold else 0.0)
 
-    X: np.ndarray = np.array(features_list)
-    y: np.ndarray = np.array(labels)
+    X: NDArray[np.float64] = np.array(features_list)
+    y: NDArray[np.float64] = np.array(labels)
     return X, y
 
 
 def train_linear_readout(
-    X_train: np.ndarray,
-    y_train: np.ndarray,
+    X_train: NDArray[np.float64],
+    y_train: NDArray[np.float64],
     alpha: float = 0.1,
-) -> np.ndarray:
+) -> NDArray[np.float64]:
     """Ridge regression readout: W = (X^T X + αI)^{-1} X^T y."""
     n_feat = X_train.shape[1]
-    W: np.ndarray = np.linalg.solve(
+    W: NDArray[np.float64] = np.linalg.solve(
         X_train.T @ X_train + alpha * np.eye(n_feat),
         X_train.T @ y_train,
-    )
+    ).astype(np.float64)
     return W
 
 
-def classify(X: np.ndarray, W: np.ndarray) -> np.ndarray:
+def classify(X: NDArray[np.float64], W: NDArray[np.float64]) -> NDArray[np.float64]:
     """Binary classification: threshold at 0.5."""
     preds_raw = X @ W
-    result: np.ndarray = (preds_raw > 0.5).astype(float)
+    result: NDArray[np.float64] = (preds_raw > 0.5).astype(float)
     return result
 
 
 def qrc_phase_detection(
-    omega: np.ndarray,
-    K_topology: np.ndarray,
-    k_train: np.ndarray,
-    k_test: np.ndarray,
+    omega: NDArray[np.float64],
+    K_topology: NDArray[np.float64],
+    k_train: NDArray[np.float64],
+    k_test: NDArray[np.float64],
     k_threshold: float,
     alpha: float = 0.1,
     max_weight: int = 2,
