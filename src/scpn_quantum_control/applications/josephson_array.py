@@ -158,8 +158,11 @@ def josephson_benchmark(
             "Use JosephsonArrayParameters.nominal_transmon() only for labelled "
             "illustrative comparisons."
         )
+    # omega_scpn is retained in the public signature for symmetry with K_scpn,
+    # but the JJA frequency vector is uniform so no frequency correlation is defined.
+    _ = omega_scpn
     n = K_scpn.shape[0]
-    K_jja, omega_jja = jja_coupling_matrix(
+    K_jja, _omega_jja = jja_coupling_matrix(
         n,
         topology=topology,
         parameters=parameters,
@@ -182,10 +185,10 @@ def josephson_benchmark(
     scpn_mean = float(np.mean(scpn_flat[scpn_flat > 0])) if np.any(scpn_flat > 0) else 0.0
     ratio = jja_mean / max(scpn_mean, 1e-15)
 
-    if n >= 3 and _has_variation(omega_jja[:n]) and _has_variation(omega_scpn[:n]):
-        freq_corr = float(np.corrcoef(omega_jja[:n], omega_scpn[:n])[0, 1])
-    else:
-        freq_corr = 0.0
+    # The JJA frequency vector is the uniform charging energy (omega = E_C for
+    # every junction), so a JJA-vs-SCPN frequency correlation is undefined; report
+    # 0.0 rather than a spurious coefficient over a constant vector.
+    freq_corr = 0.0
 
     ej_ec = parameters.ej_ghz / parameters.ec_ghz
     is_transmon = ej_ec > 20
