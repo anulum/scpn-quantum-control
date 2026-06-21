@@ -31,8 +31,10 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import Enum
+from typing import Any
 
 import numpy as np
+from numpy.typing import NDArray
 from qiskit import QuantumCircuit
 from qiskit.quantum_info import SparsePauliOp, Statevector
 
@@ -61,7 +63,7 @@ class SyncTrajectory:
 
 
 def prepare_initial_state(
-    n_qubits: int, state_type: InitialState, omega: np.ndarray
+    n_qubits: int, state_type: InitialState, omega: NDArray[np.float64]
 ) -> QuantumCircuit:
     """Prepare the specified initial state on n qubits."""
     qc = QuantumCircuit(n_qubits)
@@ -88,7 +90,7 @@ def prepare_initial_state(
     return qc
 
 
-def _prepare_w_state(qc: QuantumCircuit, n: int):
+def _prepare_w_state(qc: QuantumCircuit, n: int) -> None:
     """Prepare |W_n⟩ = (|10..0⟩ + |01..0⟩ + ... + |00..1⟩)/√n.
 
     Uses the recursive Dicke state preparation (Bärtschi & Eidenbenz, 2019).
@@ -101,8 +103,8 @@ def _prepare_w_state(qc: QuantumCircuit, n: int):
 
 
 def simulate_sync_trajectory(
-    K: np.ndarray,
-    omega: np.ndarray,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
     state_type: InitialState,
     t_max: float = 2.0,
     n_steps: int = 20,
@@ -157,15 +159,15 @@ def simulate_sync_trajectory(
     )
 
 
-def _matrix_exp(A: np.ndarray) -> np.ndarray:
+def _matrix_exp(A: NDArray[np.complex128]) -> NDArray[np.complex128]:
     """Matrix exponential via scipy."""
     from scipy.linalg import expm
 
-    result: np.ndarray = expm(A)
+    result: NDArray[np.complex128] = expm(A)
     return result
 
 
-def _state_order_parameter(psi: np.ndarray, n_qubits: int) -> float:
+def _state_order_parameter(psi: NDArray[np.complex128], n_qubits: int) -> float:
     """Compute Kuramoto order parameter R from quantum state vector.
 
     R = |⟨exp(iθ)⟩| where θ_k = arctan2(⟨Y_k⟩, ⟨X_k⟩).
@@ -180,7 +182,9 @@ def _state_order_parameter(psi: np.ndarray, n_qubits: int) -> float:
     return float(np.abs(z))
 
 
-def _single_qubit_expectation(psi: np.ndarray, n: int, qubit: int, basis: str) -> float:
+def _single_qubit_expectation(
+    psi: NDArray[np.complex128], n: int, qubit: int, basis: str
+) -> float:
     """Compute ⟨ψ|O_k|ψ⟩ for single-qubit Pauli O on qubit k."""
     pauli_label = "I" * (n - qubit - 1) + basis + "I" * qubit
     op = SparsePauliOp.from_list([(pauli_label, 1.0)])
@@ -189,8 +193,8 @@ def _single_qubit_expectation(psi: np.ndarray, n: int, qubit: int, basis: str) -
 
 
 def compare_all_initial_states(
-    K: np.ndarray,
-    omega: np.ndarray,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
     t_max: float = 2.0,
     n_steps: int = 20,
     *,
@@ -210,7 +214,7 @@ def compare_all_initial_states(
     return results
 
 
-def entanglement_advantage(results: dict[str, SyncTrajectory]) -> dict:
+def entanglement_advantage(results: dict[str, SyncTrajectory]) -> dict[str, Any]:
     """Quantify entanglement advantage from comparison results.
 
     Metrics:
@@ -228,7 +232,7 @@ def entanglement_advantage(results: dict[str, SyncTrajectory]) -> dict:
 
         delta_R = traj.final_R - product.final_R
 
-        def _steps_to_90pct(r_vals):
+        def _steps_to_90pct(r_vals: list[float]) -> int:
             target = 0.9 * r_vals[-1] if r_vals[-1] > 0.1 else 0.1
             for i, r in enumerate(r_vals):
                 if r >= target:

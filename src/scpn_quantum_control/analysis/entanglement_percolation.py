@@ -31,6 +31,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import numpy as np
+from numpy.typing import NDArray
 from qiskit.quantum_info import DensityMatrix, Statevector, partial_trace
 
 from ..bridge.knm_hamiltonian import knm_to_dense_matrix, knm_to_hamiltonian
@@ -41,17 +42,17 @@ from ..dense_budget import require_dense_allocation
 class PercolationScanResult:
     """Result of scanning entanglement percolation across coupling."""
 
-    k_values: np.ndarray
-    fiedler_values: np.ndarray  # lambda_2 of entanglement Laplacian at each K
-    max_concurrence: np.ndarray  # max pairwise concurrence at each K
-    mean_concurrence: np.ndarray  # mean pairwise concurrence at each K
-    n_entangled_pairs: np.ndarray  # number of entangled pairs at each K
-    R_values: np.ndarray  # Kuramoto order parameter at each K
+    k_values: NDArray[np.float64]
+    fiedler_values: NDArray[np.float64]  # lambda_2 of entanglement Laplacian at each K
+    max_concurrence: NDArray[np.float64]  # max pairwise concurrence at each K
+    mean_concurrence: NDArray[np.float64]  # mean pairwise concurrence at each K
+    n_entangled_pairs: NDArray[np.float64]  # number of entangled pairs at each K
+    R_values: NDArray[np.float64]  # Kuramoto order parameter at each K
     k_percolation: float | None  # K where entanglement graph first percolates
     k_sync: float | None  # K where R first exceeds threshold
 
 
-def _concurrence_2qubit(rho_mat: np.ndarray) -> float:
+def _concurrence_2qubit(rho_mat: NDArray[np.complex128]) -> float:
     """Wootters concurrence for a 2-qubit density matrix (raw numpy)."""
     sigma_y = np.array([[0, -1j], [1j, 0]])
     yy = np.kron(sigma_y, sigma_y)
@@ -62,7 +63,7 @@ def _concurrence_2qubit(rho_mat: np.ndarray) -> float:
     return float(max(0, sqrt_eigvals[0] - sqrt_eigvals[1] - sqrt_eigvals[2] - sqrt_eigvals[3]))
 
 
-def _order_parameter_from_state(psi: np.ndarray, n: int) -> float:
+def _order_parameter_from_state(psi: NDArray[np.complex128], n: int) -> float:
     """R = |mean(exp(i*theta_k))| from statevector."""
     sv = Statevector(np.ascontiguousarray(psi))
     phases = np.zeros(n)
@@ -79,14 +80,16 @@ def _order_parameter_from_state(psi: np.ndarray, n: int) -> float:
     return float(abs(np.mean(np.exp(1j * phases))))
 
 
-def concurrence_map_exact(psi: np.ndarray, n: int, threshold: float = 1e-6) -> np.ndarray:
+def concurrence_map_exact(
+    psi: NDArray[np.complex128], n: int, threshold: float = 1e-6
+) -> NDArray[np.float64]:
     """Pairwise concurrence from a pure state (exact, no VQE).
 
     Returns n×n symmetric matrix.
     """
     sv = Statevector(np.ascontiguousarray(psi))
     rho_full = DensityMatrix(sv)
-    conc: np.ndarray = np.zeros((n, n))
+    conc: NDArray[np.float64] = np.zeros((n, n))
 
     for i in range(n):
         for j in range(i + 1, n):
@@ -100,7 +103,7 @@ def concurrence_map_exact(psi: np.ndarray, n: int, threshold: float = 1e-6) -> n
     return conc
 
 
-def fiedler_eigenvalue(adj: np.ndarray) -> float:
+def fiedler_eigenvalue(adj: NDArray[np.float64]) -> float:
     """Second-smallest eigenvalue of the graph Laplacian.
 
     lambda_2 > 0 iff graph is connected (entanglement percolates).
@@ -112,9 +115,9 @@ def fiedler_eigenvalue(adj: np.ndarray) -> float:
 
 
 def percolation_scan(
-    omega: np.ndarray,
-    K_topology: np.ndarray,
-    k_range: np.ndarray | None = None,
+    omega: NDArray[np.float64],
+    K_topology: NDArray[np.float64],
+    k_range: NDArray[np.float64] | None = None,
     concurrence_threshold: float = 1e-4,
     R_threshold: float = 0.5,
     *,
@@ -127,7 +130,7 @@ def percolation_scan(
     R_threshold: R value to define sync onset.
     """
     if k_range is None:
-        k_range = np.linspace(0.1, 5.0, 20)
+        k_range = np.linspace(0.1, 5.0, 20, dtype=np.float64)
 
     n = len(omega)
     n_k = len(k_range)
