@@ -28,6 +28,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import numpy as np
+from numpy.typing import NDArray
 
 from ..analysis.bkt_analysis import coupling_laplacian, fiedler_eigenvalue
 
@@ -40,21 +41,21 @@ class SpectralBridgeResult:
     frequency_spread: float  # max(ω) - min(ω)
     entrainment_stable: bool  # λ_2 > frequency_spread
     stability_margin: float  # λ_2 - Δω (positive = stable)
-    laplacian_spectrum: np.ndarray  # all eigenvalues of L_K
+    laplacian_spectrum: NDArray[np.float64]  # all eigenvalues of L_K
     qpe_bits_needed: int  # precision bits for ε resolution
     qpe_circuit_depth: int  # estimated QPE depth
 
 
-def laplacian_spectrum(K: np.ndarray) -> np.ndarray:
+def laplacian_spectrum(K: NDArray[np.float64]) -> NDArray[np.float64]:
     """Full eigenvalue spectrum of the coupling-weighted Laplacian."""
     L = coupling_laplacian(K)
-    eigenvalues: np.ndarray = np.sort(np.linalg.eigvalsh(L))
+    eigenvalues: NDArray[np.float64] = np.sort(np.linalg.eigvalsh(L)).astype(np.float64)
     return eigenvalues
 
 
 def entrainment_criterion(
-    K: np.ndarray,
-    omega: np.ndarray,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
 ) -> tuple[bool, float]:
     """Check if λ_2 > Δω (synchronisation possible).
 
@@ -67,7 +68,7 @@ def entrainment_criterion(
 
 
 def qpe_resource_estimate(
-    K: np.ndarray,
+    K: NDArray[np.float64],
     epsilon: float = 0.01,
 ) -> tuple[int, int]:
     """Estimate QPE resources for Fiedler eigenvalue extraction.
@@ -88,8 +89,8 @@ def qpe_resource_estimate(
 
 
 def spectral_bridge_analysis(
-    K: np.ndarray,
-    omega: np.ndarray,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
     epsilon: float = 0.01,
 ) -> SpectralBridgeResult:
     """Full spectral bridge analysis."""
@@ -111,14 +112,14 @@ def spectral_bridge_analysis(
 
 
 def spectral_bridge_vs_coupling(
-    omega: np.ndarray,
-    k_values: np.ndarray | None = None,
+    omega: NDArray[np.float64],
+    k_values: NDArray[np.float64] | None = None,
 ) -> dict[str, list[float]]:
     """Scan Fiedler value and stability margin vs coupling strength."""
     from ..bridge.knm_hamiltonian import build_knm_paper27
 
     if k_values is None:
-        k_values = np.linspace(0.01, 3.0, 20)
+        k_values = np.linspace(0.01, 3.0, 20, dtype=np.float64)
 
     n = len(omega)
     results: dict[str, list[float]] = {

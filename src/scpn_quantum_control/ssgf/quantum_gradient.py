@@ -36,6 +36,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import numpy as np
+from numpy.typing import NDArray
 from qiskit.quantum_info import Statevector
 
 from ..bridge.ssgf_adapter import (
@@ -50,12 +51,12 @@ class QuantumGradientResult:
     """Result of quantum gradient computation."""
 
     cost: float  # C_quantum at z
-    gradient: np.ndarray  # dC/dz vector
+    gradient: NDArray[np.float64]  # dC/dz vector
     r_global: float  # order parameter at z
     n_evaluations: int  # total quantum evaluations
 
 
-def _w_from_z(z: np.ndarray, n_osc: int) -> np.ndarray:
+def _w_from_z(z: NDArray[np.float64], n_osc: int) -> NDArray[np.float64]:
     """Map latent z to geometry matrix W.
 
     Simple parameterisation: z is the upper triangle of W,
@@ -74,14 +75,14 @@ def _w_from_z(z: np.ndarray, n_osc: int) -> np.ndarray:
         for j in range(i + 1, n_osc):
             W[i, j] = W[j, i] = w_values[idx]
             idx += 1
-    result: np.ndarray = W
+    result: NDArray[np.float64] = W
     return result
 
 
 def quantum_cost(
-    W: np.ndarray,
-    theta_init: np.ndarray,
-    omega: np.ndarray | None = None,
+    W: NDArray[np.float64],
+    theta_init: NDArray[np.float64],
+    omega: NDArray[np.float64] | None = None,
     dt: float = 0.1,
     trotter_reps: int = 3,
 ) -> float:
@@ -113,10 +114,10 @@ def quantum_cost(
 
 
 def compute_quantum_gradient(
-    z: np.ndarray,
+    z: NDArray[np.float64],
     n_osc: int,
-    theta_init: np.ndarray | None = None,
-    omega: np.ndarray | None = None,
+    theta_init: NDArray[np.float64] | None = None,
+    omega: NDArray[np.float64] | None = None,
     epsilon: float = 0.01,
     dt: float = 0.1,
     trotter_reps: int = 3,
@@ -133,9 +134,9 @@ def compute_quantum_gradient(
         trotter_reps: Trotter repetitions
     """
     if theta_init is None:
-        theta_init = np.linspace(0, 2 * np.pi * (1 - 1 / n_osc), n_osc)
+        theta_init = np.linspace(0, 2 * np.pi * (1 - 1 / n_osc), n_osc, dtype=np.float64)
     if omega is None:
-        omega = np.zeros(n_osc)
+        omega = np.zeros(n_osc, dtype=np.float64)
 
     W_center = _w_from_z(z, n_osc)
     cost_center = quantum_cost(W_center, theta_init, omega, dt, trotter_reps)

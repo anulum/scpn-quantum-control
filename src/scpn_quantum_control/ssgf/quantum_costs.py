@@ -31,6 +31,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import numpy as np
+from numpy.typing import NDArray
 from qiskit.quantum_info import SparsePauliOp, Statevector
 
 from ..bridge.ssgf_adapter import (
@@ -53,9 +54,9 @@ class QuantumCosts:
 
 
 def _evolve_state(
-    W: np.ndarray,
-    theta_init: np.ndarray,
-    omega: np.ndarray | None = None,
+    W: NDArray[np.float64],
+    theta_init: NDArray[np.float64],
+    omega: NDArray[np.float64] | None = None,
     dt: float = 0.1,
     trotter_reps: int = 3,
 ) -> Statevector:
@@ -134,9 +135,9 @@ def compute_c_pgbo(sv: Statevector, n: int) -> tuple[float, float]:
 
 
 def compute_quantum_costs(
-    W: np.ndarray,
-    theta_init: np.ndarray,
-    omega: np.ndarray | None = None,
+    W: NDArray[np.float64],
+    theta_init: NDArray[np.float64],
+    omega: NDArray[np.float64] | None = None,
     dt: float = 0.1,
     trotter_reps: int = 3,
 ) -> QuantumCosts:

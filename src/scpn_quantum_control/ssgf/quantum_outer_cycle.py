@@ -34,6 +34,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 
 import numpy as np
+from numpy.typing import NDArray
 
 from .quantum_gradient import _w_from_z, compute_quantum_gradient
 
@@ -42,8 +43,8 @@ from .quantum_gradient import _w_from_z, compute_quantum_gradient
 class OuterCycleResult:
     """Result of quantum SSGF outer cycle optimisation."""
 
-    z_optimised: np.ndarray
-    W_optimised: np.ndarray
+    z_optimised: NDArray[np.float64]
+    W_optimised: NDArray[np.float64]
     cost_history: list[float]
     r_global_history: list[float]
     n_iterations: int
@@ -52,7 +53,7 @@ class OuterCycleResult:
     converged: bool
 
 
-def classical_cost(W: np.ndarray, *, allow_surrogate: bool = False) -> float:
+def classical_cost(W: NDArray[np.float64], *, allow_surrogate: bool = False) -> float:
     """Opt-in legacy surrogate for the classical SSGF cost.
 
     The full SSGF objective is not determined by ``W`` alone. Production
@@ -78,9 +79,9 @@ def classical_cost(W: np.ndarray, *, allow_surrogate: bool = False) -> float:
 
 def quantum_outer_cycle(
     n_osc: int,
-    z_init: np.ndarray | None = None,
+    z_init: NDArray[np.float64] | None = None,
     alpha: float = 0.5,
-    classical_cost_fn: Callable[[np.ndarray], float] | None = None,
+    classical_cost_fn: Callable[[NDArray[np.float64]], float] | None = None,
     allow_classical_surrogate: bool = False,
     learning_rate: float = 0.1,
     max_iterations: int = 30,
@@ -138,7 +139,7 @@ def quantum_outer_cycle(
             cost_fn = classical_cost_fn
             if cost_fn is None:
 
-                def surrogate_cost(matrix: np.ndarray) -> float:
+                def surrogate_cost(matrix: NDArray[np.float64]) -> float:
                     return classical_cost(matrix, allow_surrogate=True)
 
                 cost_fn = surrogate_cost
