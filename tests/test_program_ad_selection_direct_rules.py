@@ -14,6 +14,7 @@ from typing import Any, cast
 import numpy as np
 import pytest
 
+import scpn_quantum_control.program_ad_selection_primitives as selection_primitives
 from scpn_quantum_control.differentiable import (
     program_ad_selection_clip_derivative_rule,
     program_ad_selection_where_derivative_rule,
@@ -24,6 +25,19 @@ def _assert_allclose(actual: object, expected: object) -> None:
     """Assert NumPy closeness across dynamically typed direct-rule payloads."""
 
     cast(Any, np.testing.assert_allclose)(actual, expected)
+
+
+def test_program_ad_selection_factories_remain_facade_compatible() -> None:
+    """Selection factories should re-export the extracted module implementations."""
+
+    assert (
+        program_ad_selection_where_derivative_rule
+        is selection_primitives.program_ad_selection_where_derivative_rule
+    )
+    assert (
+        program_ad_selection_clip_derivative_rule
+        is selection_primitives.program_ad_selection_clip_derivative_rule
+    )
 
 
 def test_program_ad_selection_static_derivative_factories() -> None:

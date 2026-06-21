@@ -187,6 +187,15 @@ def differentiable_module_hardening_registry() -> tuple[DifferentiableModuleHard
             ("static linalg direct rules", "linalg registry dispatch boundaries"),
         ),
         _record(
+            "src/scpn_quantum_control/program_ad_selection_primitives.py",
+            (
+                "tests/test_program_ad_selection_direct_rules.py",
+                "tests/test_program_ad_selection_registry.py",
+                "tests/test_program_ad_selection_folds.py",
+            ),
+            ("selection direct rules", "selection registry dispatch boundaries"),
+        ),
+        _record(
             "src/scpn_quantum_control/program_ad_adjoint.py",
             ("tests/test_program_adjoint_replay.py",),
             ("reverse-adjoint result records", "input-token replay helpers"),
