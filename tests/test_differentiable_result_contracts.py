@@ -17,6 +17,7 @@ from typing import Any, cast
 
 import numpy as np
 import pytest
+from numpy.typing import NDArray
 
 from scpn_quantum_control import differentiable as differentiable_facade
 from scpn_quantum_control import differentiable_result_contracts as result_contracts
@@ -60,6 +61,64 @@ def _base_gradient() -> GradientResult:
         evaluations=1,
         parameter_names=("x", "y"),
         trainable=(True, True),
+    )
+
+
+def _natural_gradient() -> NaturalGradientResult:
+    return NaturalGradientResult(
+        base_gradient=_base_gradient(),
+        metric=np.eye(2),
+        natural_gradient=np.array([1.0, -2.0]),
+        damping=0.1,
+        condition_number=1.0,
+    )
+
+
+def _levenberg_marquardt_step() -> result_contracts.LevenbergMarquardtStep:
+    return result_contracts.LevenbergMarquardtStep(
+        gauss_newton=_natural_gradient(),
+        step=np.array([-0.25, 0.5]),
+        candidate_values=np.array([0.75, 1.5]),
+        damping=0.1,
+        predicted_reduction=0.25,
+    )
+
+
+def _levenberg_marquardt_trial() -> result_contracts.LevenbergMarquardtTrial:
+    return result_contracts.LevenbergMarquardtTrial(
+        step_result=_levenberg_marquardt_step(),
+        candidate_residual=np.array([0.5, -0.25]),
+        candidate_value=0.15625,
+        actual_reduction=0.5,
+        reduction_ratio=0.75,
+        accepted=True,
+    )
+
+
+def _levenberg_marquardt_result(
+    *,
+    values: NDArray[np.float64] | None = None,
+    residual: NDArray[np.float64] | None = None,
+    value_history: tuple[float, ...] = (1.0, 0.15625),
+    damping_history: tuple[float, ...] = (0.1, 0.05),
+    accepted_history: tuple[bool, ...] = (True,),
+    steps: int = 1,
+    converged: bool = True,
+    reason: str = "value_tolerance",
+    best_values: NDArray[np.float64] | None = None,
+    best_value: float = 0.15625,
+) -> result_contracts.LevenbergMarquardtResult:
+    return result_contracts.LevenbergMarquardtResult(
+        values=np.array([0.75, 1.5]) if values is None else values,
+        residual=np.array([0.5, -0.25]) if residual is None else residual,
+        value_history=value_history,
+        damping_history=damping_history,
+        accepted_history=accepted_history,
+        steps=steps,
+        converged=converged,
+        reason=reason,
+        best_values=np.array([0.75, 1.5]) if best_values is None else best_values,
+        best_value=best_value,
     )
 
 
@@ -208,6 +267,17 @@ def test_result_contract_exports_remain_facade_compatible() -> None:
         differentiable_facade.NaturalGradientOptimizationResult
         is result_contracts.NaturalGradientOptimizationResult
     )
+    assert differentiable_facade.LevenbergMarquardtStep is result_contracts.LevenbergMarquardtStep
+    assert (
+        differentiable_facade.LevenbergMarquardtTrial is result_contracts.LevenbergMarquardtTrial
+    )
+    assert (
+        differentiable_facade.LevenbergMarquardtDampingUpdate
+        is result_contracts.LevenbergMarquardtDampingUpdate
+    )
+    assert (
+        differentiable_facade.LevenbergMarquardtResult is result_contracts.LevenbergMarquardtResult
+    )
     assert (
         differentiable_facade.LeastSquaresCovarianceResult
         is result_contracts.LeastSquaresCovarianceResult
@@ -229,6 +299,156 @@ def test_result_contract_exports_remain_facade_compatible() -> None:
         differentiable_facade.FixedPointSensitivityResult
         is result_contracts.FixedPointSensitivityResult
     )
+
+
+def test_levenberg_marquardt_result_contracts_normalise_extracted_records() -> None:
+    """Extracted LM records should preserve numeric normalization and provenance fields."""
+
+    step = _levenberg_marquardt_step()
+    trial = _levenberg_marquardt_trial()
+    update = result_contracts.LevenbergMarquardtDampingUpdate(
+        trial=trial,
+        next_damping=0.05,
+        action="accept_decrease",
+    )
+    result = _levenberg_marquardt_result()
+
+    assert np.array_equal(step.step, np.array([-0.25, 0.5]))
+    assert step.predicted_reduction == pytest.approx(0.25)
+    assert trial.step_result is not step
+    assert trial.accepted is True
+    assert update.trial is trial
+    assert update.next_damping == pytest.approx(0.05)
+    assert result.steps == 1
+    assert result.converged is True
+    assert result.value_history == (1.0, 0.15625)
+    assert np.array_equal(result.best_values, np.array([0.75, 1.5]))
+
+
+def test_levenberg_marquardt_step_contract_rejects_malformed_inputs() -> None:
+    """LM step records should fail closed on malformed candidate data."""
+
+    gauss_newton = _natural_gradient()
+    with pytest.raises(ValueError, match="one-dimensional"):
+        result_contracts.LevenbergMarquardtStep(
+            gauss_newton=gauss_newton,
+            step=np.array([[1.0, 2.0]]),
+            candidate_values=np.array([1.0, 2.0]),
+            damping=0.1,
+            predicted_reduction=0.1,
+        )
+    with pytest.raises(ValueError, match="candidate_values shape"):
+        result_contracts.LevenbergMarquardtStep(
+            gauss_newton=gauss_newton,
+            step=np.array([1.0, 2.0]),
+            candidate_values=np.array([1.0]),
+            damping=0.1,
+            predicted_reduction=0.1,
+        )
+    with pytest.raises(ValueError, match="gradient shape"):
+        result_contracts.LevenbergMarquardtStep(
+            gauss_newton=gauss_newton,
+            step=np.array([1.0]),
+            candidate_values=np.array([1.0]),
+            damping=0.1,
+            predicted_reduction=0.1,
+        )
+    with pytest.raises(ValueError, match="finite and non-negative"):
+        result_contracts.LevenbergMarquardtStep(
+            gauss_newton=gauss_newton,
+            step=np.array([1.0, 2.0]),
+            candidate_values=np.array([1.0, 2.0]),
+            damping=-0.1,
+            predicted_reduction=0.1,
+        )
+    with pytest.raises(ValueError, match="predicted_reduction"):
+        result_contracts.LevenbergMarquardtStep(
+            gauss_newton=gauss_newton,
+            step=np.array([1.0, 2.0]),
+            candidate_values=np.array([1.0, 2.0]),
+            damping=0.1,
+            predicted_reduction=-0.1,
+        )
+
+
+def test_levenberg_marquardt_trial_and_update_contracts_reject_malformed_inputs() -> None:
+    """LM trial and damping records should validate record types and scalar controls."""
+
+    step = _levenberg_marquardt_step()
+    invalid_step = cast(result_contracts.LevenbergMarquardtStep, object())
+    with pytest.raises(ValueError, match="LevenbergMarquardtStep"):
+        result_contracts.LevenbergMarquardtTrial(
+            step_result=invalid_step,
+            candidate_residual=np.array([0.5, -0.25]),
+            candidate_value=0.15625,
+            actual_reduction=0.5,
+            reduction_ratio=0.75,
+            accepted=True,
+        )
+    with pytest.raises(ValueError, match="one-dimensional"):
+        result_contracts.LevenbergMarquardtTrial(
+            step_result=step,
+            candidate_residual=np.array([[0.5, -0.25]]),
+            candidate_value=0.15625,
+            actual_reduction=0.5,
+            reduction_ratio=0.75,
+            accepted=True,
+        )
+    with pytest.raises(ValueError, match="accepted flag"):
+        result_contracts.LevenbergMarquardtTrial(
+            step_result=step,
+            candidate_residual=np.array([0.5, -0.25]),
+            candidate_value=0.15625,
+            actual_reduction=0.5,
+            reduction_ratio=0.75,
+            accepted=cast(bool, 1),
+        )
+
+    trial = _levenberg_marquardt_trial()
+    invalid_trial = cast(result_contracts.LevenbergMarquardtTrial, step)
+    with pytest.raises(ValueError, match="LevenbergMarquardtTrial"):
+        result_contracts.LevenbergMarquardtDampingUpdate(
+            trial=invalid_trial,
+            next_damping=0.05,
+            action="accept_keep",
+        )
+    with pytest.raises(ValueError, match="next_damping"):
+        result_contracts.LevenbergMarquardtDampingUpdate(
+            trial=trial,
+            next_damping=-0.05,
+            action="accept_keep",
+        )
+    with pytest.raises(ValueError, match="known Levenberg-Marquardt action"):
+        result_contracts.LevenbergMarquardtDampingUpdate(
+            trial=trial,
+            next_damping=0.05,
+            action="unknown",
+        )
+
+
+def test_levenberg_marquardt_result_contract_rejects_malformed_inputs() -> None:
+    """LM result records should validate convergence traces and best-state metadata."""
+
+    with pytest.raises(ValueError, match="best values"):
+        _levenberg_marquardt_result(best_values=np.array([0.75]))
+    with pytest.raises(ValueError, match="value history"):
+        _levenberg_marquardt_result(value_history=())
+    with pytest.raises(ValueError, match="non-negative"):
+        _levenberg_marquardt_result(steps=-1)
+    with pytest.raises(ValueError, match="damping history"):
+        _levenberg_marquardt_result(damping_history=(0.1, -0.05))
+    with pytest.raises(ValueError, match="accepted history"):
+        _levenberg_marquardt_result(accepted_history=())
+    with pytest.raises(ValueError, match="initial damping"):
+        _levenberg_marquardt_result(damping_history=(0.1,))
+    with pytest.raises(ValueError, match="initial value"):
+        _levenberg_marquardt_result(value_history=(1.0,))
+    with pytest.raises(ValueError, match="best objective"):
+        _levenberg_marquardt_result(best_value=0.5)
+    with pytest.raises(ValueError, match="known convergence status"):
+        _levenberg_marquardt_result(reason="unknown")
+    with pytest.raises(ValueError, match="one-dimensional"):
+        _levenberg_marquardt_result(residual=np.array([[0.5, -0.25]]))
 
 
 def test_differentiable_result_contracts_cover_fail_closed_metadata_boundaries() -> None:

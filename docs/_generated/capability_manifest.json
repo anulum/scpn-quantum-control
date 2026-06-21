@@ -3903,7 +3903,7 @@
       },
       {
         "name": "LevenbergMarquardtDampingUpdate",
-        "path": "src/scpn_quantum_control/differentiable.py"
+        "path": "src/scpn_quantum_control/differentiable_result_contracts.py"
       },
       {
         "name": "LevenbergMarquardtOptimizer",
@@ -3911,15 +3911,15 @@
       },
       {
         "name": "LevenbergMarquardtResult",
-        "path": "src/scpn_quantum_control/differentiable.py"
+        "path": "src/scpn_quantum_control/differentiable_result_contracts.py"
       },
       {
         "name": "LevenbergMarquardtStep",
-        "path": "src/scpn_quantum_control/differentiable.py"
+        "path": "src/scpn_quantum_control/differentiable_result_contracts.py"
       },
       {
         "name": "LevenbergMarquardtTrial",
-        "path": "src/scpn_quantum_control/differentiable.py"
+        "path": "src/scpn_quantum_control/differentiable_result_contracts.py"
       },
       {
         "name": "LindbladKuramotoSolver",
