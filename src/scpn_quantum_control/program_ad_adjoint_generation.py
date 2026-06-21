@@ -29,7 +29,17 @@ from typing import cast
 import numpy as np
 from numpy.typing import NDArray
 
-from .program_ad_adjoint import _program_adjoint_input_value, _program_adjoint_is_ir_value
+from .program_ad_adjoint import (
+    ProgramADAdjointResult,
+    ProgramADAdjointStep,
+    _program_adjoint_input_value,
+    _program_adjoint_is_ir_value,
+)
+from .program_ad_effect_ir import (
+    ProgramADControlRegion,
+    ProgramADEffectIR,
+    ProgramADPhiNode,
+)
 from .program_ad_linalg_primitives import (
     _program_ad_linalg_det_cofactor_matrix,
     _program_ad_linalg_eig_eigenvector_jvp_matrix,
@@ -1006,3 +1016,187 @@ def _program_adjoint_where_predicate_truth(predicate_name: str) -> bool:
     if predicate_name == "constant:False":
         return False
     raise ValueError("where adjoint requires recorded predicate branch")
+
+
+def _program_adjoint_result_from_nodes(
+    *,
+    nodes: tuple[WholeProgramIRNode, ...],
+    output_name: str,
+    parameter_names: tuple[str, ...],
+    trainable: tuple[bool, ...],
+    program_ir: ProgramADEffectIR | None = None,
+) -> ProgramADAdjointResult:
+    """Generate reverse-mode adjoints over supported scalar Program AD IR nodes."""
+
+    parameter_count = len(parameter_names)
+    unsupported_ops: set[str] = {
+        node.op
+        for node in nodes
+        if node.op.startswith("mutation:") and node.op != "mutation:setitem"
+    }
+    node_by_name = {f"%{node.index}": node for node in nodes}
+    adjoints = {name: 0.0 for name in node_by_name}
+    if output_name not in adjoints:
+        unsupported_ops.add("output:not_in_ir")
+    else:
+        adjoints[output_name] = 1.0
+    for node in reversed(nodes):
+        name = f"%{node.index}"
+        cotangent = adjoints.get(name, 0.0)
+        if cotangent == 0.0:
+            continue
+        try:
+            contributions = _program_adjoint_node_contributions(node, node_by_name)
+        except ValueError:
+            unsupported_ops.add(node.op)
+            continue
+        for input_name, contribution in contributions:
+            if input_name in adjoints:
+                adjoints[input_name] += cotangent * contribution
+    gradient = np.zeros(parameter_count, dtype=np.float64)
+    for index, (name, trainable_flag) in enumerate(zip(parameter_names, trainable, strict=True)):
+        if not trainable_flag:
+            continue
+        for node in nodes:
+            if node.op == "parameter" and node.inputs == (name,):
+                gradient[index] = adjoints.get(f"%{node.index}", 0.0)
+                break
+    supported = not unsupported_ops
+    if not supported:
+        gradient = np.zeros(parameter_count, dtype=np.float64)
+    replay_effect_count = len(program_ir.effects) if program_ir is not None else 0
+    replay_control_region_count = len(program_ir.control_regions) if program_ir is not None else 0
+    replay_phi_node_count = len(program_ir.phi_nodes) if program_ir is not None else 0
+    adjoint_steps = (
+        _program_adjoint_steps_from_ir(
+            nodes=nodes,
+            node_by_name=node_by_name,
+            program_ir=program_ir,
+            cotangents=adjoints,
+        )
+        if program_ir is not None
+        else ()
+    )
+    return ProgramADAdjointResult(
+        gradient=gradient,
+        supported=supported,
+        unsupported_ops=tuple(sorted(unsupported_ops)),
+        method="program_adjoint_ir_generation",
+        claim_boundary=(
+            "reverse-mode adjoint generation over stabilized program_ad_effect_ir.v1 "
+            "for supported executed scalar Program AD operations; unsupported operations "
+            "fail closed without substituting finite differences or forward tangents; "
+            "no non-executed branch adjoints or executable Rust/LLVM/JIT lowering claim"
+        ),
+        replay_node_count=len(nodes),
+        replay_effect_count=replay_effect_count,
+        replay_control_region_count=replay_control_region_count,
+        replay_phi_node_count=replay_phi_node_count,
+        replay_ir_format="program_ad_effect_ir.v1",
+        adjoint_steps=adjoint_steps,
+    )
+
+
+def _program_adjoint_steps_from_ir(
+    *,
+    nodes: tuple[WholeProgramIRNode, ...],
+    node_by_name: Mapping[str, WholeProgramIRNode],
+    program_ir: ProgramADEffectIR,
+    cotangents: Mapping[str, float],
+) -> tuple[ProgramADAdjointStep, ...]:
+    """Generate reverse-adjoint steps from stabilized Program AD IR metadata."""
+
+    ssa_by_name = {value.name: value for value in program_ir.ssa_values}
+    effect_by_index = {effect.index: effect for effect in program_ir.effects}
+    runtime_regions_by_predicate: dict[str, list[ProgramADControlRegion]] = {}
+    for region in program_ir.control_regions:
+        if region.source_line is None and region.predicate is not None:
+            runtime_regions_by_predicate.setdefault(region.predicate, []).append(region)
+    runtime_phi_by_region: dict[int, ProgramADPhiNode] = {}
+    ambiguous_phi_regions: set[int] = set()
+    for phi_node in program_ir.phi_nodes:
+        if phi_node.source_line is not None or phi_node.control_region is None:
+            continue
+        if phi_node.control_region in runtime_phi_by_region:
+            ambiguous_phi_regions.add(phi_node.control_region)
+            runtime_phi_by_region.pop(phi_node.control_region, None)
+        elif phi_node.control_region not in ambiguous_phi_regions:
+            runtime_phi_by_region[phi_node.control_region] = phi_node
+    steps: list[ProgramADAdjointStep] = []
+    for node in reversed(nodes):
+        primal_value = f"%{node.index}"
+        ssa_value = ssa_by_name.get(primal_value)
+        primal_effect = None if ssa_value is None else ssa_value.effect
+        effect = None if primal_effect is None else effect_by_index.get(primal_effect)
+        effect_kind = None if effect is None else effect.kind
+        effect_version = None if effect is None else effect.version
+        effect_ordering = None if effect is None else effect.ordering
+        unsupported_reason: str | None = None
+        supported = True
+        contribution_inputs: tuple[str, ...] = ()
+        incoming_cotangent = float(cotangents.get(primal_value, 0.0))
+        contribution_scales: tuple[float, ...] = ()
+        contribution_cotangents: tuple[float, ...] = ()
+        control_region: int | None = None
+        control_region_kind: str | None = None
+        control_region_entered: bool | None = None
+        phi_node_index: int | None = None
+        phi_selected: str | None = None
+        if node.op.startswith("branch:"):
+            runtime_regions = tuple(runtime_regions_by_predicate.get(node.op, ()))
+            if len(runtime_regions) == 1:
+                runtime_region = runtime_regions[0]
+                control_region = runtime_region.index
+                control_region_kind = runtime_region.kind
+                control_region_entered = runtime_region.entered
+                runtime_phi = runtime_phi_by_region.get(runtime_region.index)
+                if runtime_phi is not None:
+                    phi_node_index = runtime_phi.index
+                    phi_selected = runtime_phi.selected
+        if ssa_value is None:
+            supported = False
+            unsupported_reason = "missing_ssa_value"
+        elif primal_effect is not None and effect is None:
+            supported = False
+            unsupported_reason = "missing_effect"
+        else:
+            try:
+                contributions = _program_adjoint_node_contributions(node, node_by_name)
+            except ValueError as exc:
+                supported = False
+                unsupported_reason = str(exc)
+            else:
+                scale_by_input: dict[str, float] = {}
+                for input_name, scale in contributions:
+                    scale_by_input[input_name] = scale_by_input.get(input_name, 0.0) + scale
+                contribution_inputs = tuple(sorted(scale_by_input))
+                contribution_scales = tuple(
+                    scale_by_input[input_name] for input_name in contribution_inputs
+                )
+                contribution_cotangents = tuple(
+                    incoming_cotangent * scale for scale in contribution_scales
+                )
+        steps.append(
+            ProgramADAdjointStep(
+                index=len(steps),
+                primal_value=primal_value,
+                primal_effect=primal_effect,
+                effect_kind=effect_kind,
+                effect_version=effect_version,
+                effect_ordering=effect_ordering,
+                control_region=control_region,
+                control_region_kind=control_region_kind,
+                control_region_entered=control_region_entered,
+                phi_node=phi_node_index,
+                phi_selected=phi_selected,
+                operation=node.op,
+                input_values=node.inputs,
+                contribution_inputs=contribution_inputs,
+                incoming_cotangent=incoming_cotangent,
+                contribution_scales=contribution_scales,
+                contribution_cotangents=contribution_cotangents,
+                supported=supported,
+                unsupported_reason=unsupported_reason,
+            )
+        )
+    return tuple(steps)

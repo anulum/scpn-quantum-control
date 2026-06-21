@@ -42,10 +42,19 @@ from scpn_quantum_control.program_ad_adjoint_generation import (
     _program_adjoint_node_contributions,
     _program_adjoint_parse_shape_label,
     _program_adjoint_pinv_contributions,
+    _program_adjoint_result_from_nodes,
     _program_adjoint_solve_contributions,
+    _program_adjoint_steps_from_ir,
     _program_adjoint_svdvals_contributions,
     _program_adjoint_trace_contributions,
     _program_adjoint_where_predicate_truth,
+)
+from scpn_quantum_control.program_ad_effect_ir import (
+    ProgramADControlRegion,
+    ProgramADEffect,
+    ProgramADEffectIR,
+    ProgramADPhiNode,
+    ProgramADSSAValue,
 )
 from scpn_quantum_control.whole_program_ad_result import WholeProgramIRNode
 
@@ -1308,3 +1317,245 @@ def test_where_predicate_truth_rejects_unrecorded_branch() -> None:
     """Where predicate truth rejects unrecorded branch."""
     with pytest.raises(ValueError, match="recorded predicate branch"):
         _program_adjoint_where_predicate_truth("p:unknown")
+
+
+# ------------------------------------------------------------ replay driver: result
+
+
+def _parameter_node(index: int, name: str, value: float) -> WholeProgramIRNode:
+    """Build a captured parameter IR node bound to one trainable name."""
+
+    return WholeProgramIRNode(
+        index=index, op="parameter", inputs=(name,), value=float(value), tangent=np.zeros(1)
+    )
+
+
+def test_result_gradient_for_trainable_parameter() -> None:
+    """Result gradient for trainable parameter."""
+    param = _parameter_node(0, "x", 3.0)
+    squared = WholeProgramIRNode(
+        index=1, op="square", inputs=("%0",), value=9.0, tangent=np.zeros(1)
+    )
+    result = _program_adjoint_result_from_nodes(
+        nodes=(param, squared),
+        output_name="%1",
+        parameter_names=("x",),
+        trainable=(True,),
+    )
+    assert result.supported is True
+    np.testing.assert_allclose(result.gradient, [6.0])
+
+
+def test_result_untrainable_and_unmatched_parameters() -> None:
+    """Result untrainable and unmatched parameters."""
+    param = _parameter_node(0, "a", 1.0)
+    result = _program_adjoint_result_from_nodes(
+        nodes=(param,),
+        output_name="%0",
+        parameter_names=("a", "b"),
+        trainable=(False, True),
+    )
+    assert result.supported is True
+    np.testing.assert_allclose(result.gradient, [0.0, 0.0])
+
+
+def test_result_output_not_in_ir_fails_closed() -> None:
+    """Result output not in ir fails closed."""
+    param = _parameter_node(0, "x", 1.0)
+    result = _program_adjoint_result_from_nodes(
+        nodes=(param,),
+        output_name="%9",
+        parameter_names=("x",),
+        trainable=(True,),
+    )
+    assert result.supported is False
+    assert "output:not_in_ir" in result.unsupported_ops
+    np.testing.assert_allclose(result.gradient, [0.0])
+
+
+def test_result_unsupported_output_op_fails_closed() -> None:
+    """Result unsupported output op fails closed."""
+    node = WholeProgramIRNode(
+        index=0, op="convolve", inputs=("1.0", "2.0"), value=0.0, tangent=np.zeros(1)
+    )
+    result = _program_adjoint_result_from_nodes(
+        nodes=(node,),
+        output_name="%0",
+        parameter_names=(),
+        trainable=(),
+    )
+    assert result.supported is False
+    assert "convolve" in result.unsupported_ops
+
+
+# --------------------------------------------------------------- replay driver: steps
+
+
+def _effect_ir(
+    *,
+    ssa: tuple[ProgramADSSAValue, ...] = (),
+    effects: tuple[ProgramADEffect, ...] = (),
+    control_regions: tuple[ProgramADControlRegion, ...] = (),
+    phi_nodes: tuple[ProgramADPhiNode, ...] = (),
+) -> ProgramADEffectIR:
+    """Assemble a minimal stabilised effect IR for replay-step tests."""
+
+    return ProgramADEffectIR(
+        ssa_values=ssa,
+        effects=effects,
+        alias_edges=(),
+        control_regions=control_regions,
+        serialization="program_ad_effect_ir.v1",
+        phi_nodes=phi_nodes,
+    )
+
+
+def _ssa(name: str, *, effect: int | None = None) -> ProgramADSSAValue:
+    """Build a scalar SSA value record for one IR node."""
+
+    return ProgramADSSAValue(
+        name=name, producer=None, version=0, shape=(), dtype="float64", effect=effect
+    )
+
+
+def test_steps_missing_ssa_value_is_unsupported() -> None:
+    """Steps missing ssa value is unsupported."""
+    node = _parameter_node(0, "x", 1.0)
+    steps = _program_adjoint_steps_from_ir(
+        nodes=(node,),
+        node_by_name={"%0": node},
+        program_ir=_effect_ir(),
+        cotangents={"%0": 1.0},
+    )
+    assert steps[0].supported is False
+    assert steps[0].unsupported_reason == "missing_ssa_value"
+
+
+def test_steps_missing_effect_fails_closed_on_inconsistent_ir() -> None:
+    """Steps missing effect fails closed on inconsistent ir.
+
+    When an SSA value references an effect index absent from the IR, the replay
+    marks the step unsupported (``missing_effect``); the subsequent
+    ``ProgramADAdjointStep`` construction then rejects the primal effect carried
+    without a resolvable kind, so inconsistent IR fails closed with a
+    ``ValueError`` rather than emitting a malformed step. This documents the
+    current behaviour of the defensive branch; consistent capture IR never
+    produces a primal effect without its effect record.
+    """
+
+    node = _parameter_node(0, "x", 1.0)
+    with pytest.raises(ValueError, match="effect_kind must be non-empty"):
+        _program_adjoint_steps_from_ir(
+            nodes=(node,),
+            node_by_name={"%0": node},
+            program_ir=_effect_ir(ssa=(_ssa("%0", effect=5),)),
+            cotangents={"%0": 1.0},
+        )
+
+
+def test_steps_unsupported_contribution_records_reason() -> None:
+    """Steps unsupported contribution records reason."""
+    node = WholeProgramIRNode(
+        index=0, op="convolve", inputs=("1.0", "2.0"), value=0.0, tangent=np.zeros(1)
+    )
+    steps = _program_adjoint_steps_from_ir(
+        nodes=(node,),
+        node_by_name={"%0": node},
+        program_ir=_effect_ir(ssa=(_ssa("%0"),)),
+        cotangents={"%0": 1.0},
+    )
+    assert steps[0].supported is False
+    assert steps[0].unsupported_reason is not None
+    assert "unsupported program AD adjoint op" in steps[0].unsupported_reason
+
+
+def _branch_node(index: int = 0) -> WholeProgramIRNode:
+    """Build a runtime branch IR node."""
+
+    return WholeProgramIRNode(
+        index=index, op="branch:cond", inputs=("p",), value=0.0, tangent=np.zeros(1)
+    )
+
+
+def _runtime_region(index: int = 0) -> ProgramADControlRegion:
+    """Build a runtime (non-source) control region for the branch predicate."""
+
+    return ProgramADControlRegion(
+        index=index, kind="if", predicate="branch:cond", entered=True, source_line=None
+    )
+
+
+def _runtime_phi(index: int, region: int) -> ProgramADPhiNode:
+    """Build a runtime (non-source) phi node bound to a control region."""
+
+    return ProgramADPhiNode(
+        index=index,
+        target=f"%phi{index}",
+        incoming=("%1", "%2"),
+        control_region=region,
+        selected="%1",
+        source_line=None,
+    )
+
+
+def test_steps_branch_binds_runtime_region_and_phi() -> None:
+    """Steps branch binds runtime region and phi."""
+    node = _branch_node()
+    steps = _program_adjoint_steps_from_ir(
+        nodes=(node,),
+        node_by_name={"%0": node},
+        program_ir=_effect_ir(
+            ssa=(_ssa("%0"),),
+            control_regions=(_runtime_region(0),),
+            phi_nodes=(_runtime_phi(0, 0),),
+        ),
+        cotangents={"%0": 0.0},
+    )
+    assert steps[0].control_region == 0
+    assert steps[0].phi_node == 0
+    assert steps[0].phi_selected == "%1"
+
+
+def test_steps_branch_region_without_phi() -> None:
+    """Steps branch region without phi."""
+    node = _branch_node()
+    steps = _program_adjoint_steps_from_ir(
+        nodes=(node,),
+        node_by_name={"%0": node},
+        program_ir=_effect_ir(ssa=(_ssa("%0"),), control_regions=(_runtime_region(0),)),
+        cotangents={"%0": 0.0},
+    )
+    assert steps[0].control_region == 0
+    assert steps[0].phi_node is None
+
+
+def test_steps_branch_ignores_ambiguous_region_count() -> None:
+    """Steps branch ignores ambiguous region count."""
+    node = _branch_node()
+    steps = _program_adjoint_steps_from_ir(
+        nodes=(node,),
+        node_by_name={"%0": node},
+        program_ir=_effect_ir(
+            ssa=(_ssa("%0"),),
+            control_regions=(_runtime_region(0), _runtime_region(1)),
+        ),
+        cotangents={"%0": 0.0},
+    )
+    assert steps[0].control_region is None
+
+
+def test_steps_branch_drops_ambiguous_phi() -> None:
+    """Steps branch drops ambiguous phi."""
+    node = _branch_node()
+    steps = _program_adjoint_steps_from_ir(
+        nodes=(node,),
+        node_by_name={"%0": node},
+        program_ir=_effect_ir(
+            ssa=(_ssa("%0"),),
+            control_regions=(_runtime_region(0),),
+            phi_nodes=(_runtime_phi(0, 0), _runtime_phi(1, 0), _runtime_phi(2, 0)),
+        ),
+        cotangents={"%0": 0.0},
+    )
+    assert steps[0].control_region == 0
+    assert steps[0].phi_node is None
