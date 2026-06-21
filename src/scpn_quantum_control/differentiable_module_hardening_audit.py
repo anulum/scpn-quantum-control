@@ -355,10 +355,14 @@ def differentiable_module_hardening_registry() -> tuple[DifferentiableModuleHard
         ),
         _record(
             "src/scpn_quantum_control/differentiable_natural_gradient.py",
-            ("tests/test_differentiable_natural_gradient.py",),
+            (
+                "tests/test_differentiable_natural_gradient.py",
+                "tests/test_differentiable_natural_gradient_line_search.py",
+            ),
             (
                 "natural-gradient metric solves",
                 "Armijo line-search and weighted-gradient aggregation",
+                "natural-gradient optimizer loop controls",
             ),
         ),
         _record(

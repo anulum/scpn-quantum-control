@@ -10,20 +10,26 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Sequence
+from dataclasses import dataclass
 from typing import Any
 
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
 
+from .differentiable_finite_difference import value_and_finite_difference_grad
 from .differentiable_parameter_contracts import (
+    Parameter,
     ParameterBounds,
+    ParameterShiftRule,
     _as_parameter_array,
     _as_real_numeric_array,
     _as_real_scalar,
 )
+from .differentiable_parameter_shift import value_and_parameter_shift_grad
 from .differentiable_result_contracts import (
     ArmijoLineSearchResult,
     GradientResult,
+    NaturalGradientOptimizationResult,
     NaturalGradientResult,
     WeightedGradientResult,
 )
@@ -300,7 +306,271 @@ def natural_gradient(
     )
 
 
+@dataclass(frozen=True)
+class NaturalGradientOptimizer:
+    """Bounded natural-gradient optimizer for scalar objectives with explicit metrics.
+
+    Parameters
+    ----------
+    learning_rate
+        Non-negative scale applied to each natural-gradient step.
+    damping
+        Non-negative diagonal damping added to the trainable metric block.
+    rcond
+        Positive reciprocal-condition threshold for metric solves.
+    max_step_norm
+        Optional positive L2 cap for trainable natural-gradient steps.
+    """
+
+    learning_rate: float = 0.01
+    damping: float = 0.0
+    rcond: float = 1.0e-12
+    max_step_norm: float | None = None
+
+    def __post_init__(self) -> None:
+        """Validate and canonicalize natural-gradient optimizer controls."""
+
+        learning_rate = _as_real_scalar("natural-gradient learning_rate", self.learning_rate)
+        damping = _as_real_scalar("natural-gradient damping", self.damping)
+        rcond = _as_real_scalar("natural-gradient rcond", self.rcond)
+        if learning_rate < 0.0:
+            raise ValueError("natural-gradient learning_rate must be finite and non-negative")
+        if damping < 0.0:
+            raise ValueError("natural-gradient damping must be finite and non-negative")
+        if rcond <= 0.0:
+            raise ValueError("natural-gradient rcond must be finite and positive")
+        max_step_norm = (
+            None
+            if self.max_step_norm is None
+            else _as_real_scalar("natural-gradient max_step_norm", self.max_step_norm)
+        )
+        if max_step_norm is not None and max_step_norm <= 0.0:
+            raise ValueError("natural-gradient max_step_norm must be finite and positive")
+        object.__setattr__(self, "learning_rate", learning_rate)
+        object.__setattr__(self, "damping", damping)
+        object.__setattr__(self, "rcond", rcond)
+        object.__setattr__(self, "max_step_norm", max_step_norm)
+
+    def minimize(
+        self,
+        objective: ScalarObjective,
+        initial_values: ArrayLike,
+        metric_fn: Callable[[GradientResult, NDArray[np.float64]], ArrayLike],
+        *,
+        parameters: Sequence[Parameter] | None = None,
+        rule: ParameterShiftRule | None = None,
+        gradient_method: str = "parameter_shift",
+        finite_difference_step: float = 1.0e-6,
+        bounds: Sequence[ParameterBounds] | None = None,
+        max_steps: int = 100,
+        gradient_tolerance: float = 1.0e-8,
+        step_tolerance: float = 1.0e-8,
+        value_tolerance: float | None = None,
+    ) -> NaturalGradientOptimizationResult:
+        """Run a bounded natural-gradient descent loop with metric provenance.
+
+        Parameters
+        ----------
+        objective
+            Scalar objective evaluated at real parameter vectors.
+        initial_values
+            Initial real parameter vector before optional bound projection.
+        metric_fn
+            Callback returning the metric matrix for the current gradient and
+            parameter vector.
+        parameters
+            Optional parameter metadata controlling names and trainable masks.
+        rule
+            Optional parameter-shift rule for the parameter-shift backend.
+        gradient_method
+            Either ``"parameter_shift"`` or ``"finite_difference"``.
+        finite_difference_step
+            Positive central-difference step for finite-difference gradients.
+        bounds
+            Optional per-parameter box or periodic bounds.
+        max_steps
+            Non-negative maximum number of descent steps.
+        gradient_tolerance
+            Non-negative trainable-gradient convergence tolerance.
+        step_tolerance
+            Non-negative trainable-step convergence tolerance.
+        value_tolerance
+            Optional non-negative objective-change convergence tolerance.
+
+        Returns
+        -------
+        NaturalGradientOptimizationResult
+            Final values, gradient and natural-gradient records, histories,
+            convergence state, and best-observed iterate.
+        """
+
+        if gradient_method not in {"parameter_shift", "finite_difference"}:
+            raise ValueError("gradient_method must be 'parameter_shift' or 'finite_difference'")
+        finite_difference_step_value = _as_real_scalar(
+            "finite_difference_step", finite_difference_step
+        )
+        if finite_difference_step_value <= 0.0:
+            raise ValueError("finite_difference_step must be finite and positive")
+        if isinstance(max_steps, bool) or not isinstance(max_steps, int) or max_steps < 0:
+            raise ValueError("max_steps must be a non-negative integer")
+        gradient_tolerance_value = _as_real_scalar("gradient_tolerance", gradient_tolerance)
+        step_tolerance_value = _as_real_scalar("step_tolerance", step_tolerance)
+        if gradient_tolerance_value < 0.0 or step_tolerance_value < 0.0:
+            raise ValueError("natural-gradient tolerances must be finite and non-negative")
+        value_tolerance_value = (
+            None
+            if value_tolerance is None
+            else _as_real_scalar("value_tolerance", value_tolerance)
+        )
+        if value_tolerance_value is not None and value_tolerance_value < 0.0:
+            raise ValueError("value_tolerance must be finite and non-negative")
+
+        values = _as_parameter_array(initial_values).copy()
+        bounds_meta = _normalise_bounds(values, bounds)
+        values = _project_bounds(values, bounds_meta)
+        value_history: list[float] = []
+        gradient_norm_history: list[float] = []
+        step_norm_history: list[float] = []
+        best_values = values.copy()
+        best_value = float("inf")
+        previous_value: float | None = None
+
+        for step_index in range(max_steps + 1):
+            gradient_result = self._gradient(
+                objective,
+                values,
+                parameters=parameters,
+                rule=rule,
+                gradient_method=gradient_method,
+                finite_difference_step=finite_difference_step_value,
+            )
+            metric = metric_fn(gradient_result, values.copy())
+            natural_result = natural_gradient(
+                gradient_result,
+                metric,
+                damping=self.damping,
+                rcond=self.rcond,
+            )
+            trainable = np.asarray(gradient_result.trainable, dtype=bool)
+            gradient_norm = float(np.linalg.norm(gradient_result.gradient[trainable], ord=2))
+            value_history.append(gradient_result.value)
+            gradient_norm_history.append(gradient_norm)
+            if gradient_result.value < best_value:
+                best_value = gradient_result.value
+                best_values = values.copy()
+            if gradient_norm <= gradient_tolerance_value:
+                return NaturalGradientOptimizationResult(
+                    values=values,
+                    final_gradient=gradient_result,
+                    final_natural_gradient=natural_result,
+                    value_history=tuple(value_history),
+                    gradient_norm_history=tuple(gradient_norm_history),
+                    natural_step_norm_history=tuple(step_norm_history),
+                    steps=step_index,
+                    converged=True,
+                    reason="gradient_tolerance",
+                    best_values=best_values,
+                    best_value=best_value,
+                )
+            if (
+                value_tolerance_value is not None
+                and previous_value is not None
+                and abs(previous_value - gradient_result.value) <= value_tolerance_value
+            ):
+                return NaturalGradientOptimizationResult(
+                    values=values,
+                    final_gradient=gradient_result,
+                    final_natural_gradient=natural_result,
+                    value_history=tuple(value_history),
+                    gradient_norm_history=tuple(gradient_norm_history),
+                    natural_step_norm_history=tuple(step_norm_history),
+                    steps=step_index,
+                    converged=True,
+                    reason="value_tolerance",
+                    best_values=best_values,
+                    best_value=best_value,
+                )
+            if step_index == max_steps:
+                return NaturalGradientOptimizationResult(
+                    values=values,
+                    final_gradient=gradient_result,
+                    final_natural_gradient=natural_result,
+                    value_history=tuple(value_history),
+                    gradient_norm_history=tuple(gradient_norm_history),
+                    natural_step_norm_history=tuple(step_norm_history),
+                    steps=step_index,
+                    converged=False,
+                    reason="max_steps",
+                    best_values=best_values,
+                    best_value=best_value,
+                )
+            step_vector = self._bounded_step(natural_result.natural_gradient, trainable)
+            step_norm = float(np.linalg.norm(step_vector[trainable], ord=2))
+            if step_norm <= step_tolerance_value:
+                return NaturalGradientOptimizationResult(
+                    values=values,
+                    final_gradient=gradient_result,
+                    final_natural_gradient=natural_result,
+                    value_history=tuple(value_history),
+                    gradient_norm_history=tuple(gradient_norm_history),
+                    natural_step_norm_history=tuple(step_norm_history),
+                    steps=step_index,
+                    converged=True,
+                    reason="step_tolerance",
+                    best_values=best_values,
+                    best_value=best_value,
+                )
+            step_norm_history.append(step_norm)
+            previous_value = gradient_result.value
+            values = _project_bounds(values - step_vector, bounds_meta)
+
+        raise RuntimeError("unreachable natural-gradient optimizer state")  # pragma: no cover
+
+    def _bounded_step(
+        self,
+        natural_gradient_value: NDArray[np.float64],
+        trainable: NDArray[np.bool_],
+    ) -> NDArray[np.float64]:
+        """Return one trainable-mask-aware bounded natural-gradient step."""
+
+        step_vector = self.learning_rate * natural_gradient_value.copy()
+        if self.max_step_norm is not None and np.any(trainable):
+            norm = float(np.linalg.norm(step_vector[trainable], ord=2))
+            if norm > self.max_step_norm:
+                step_vector[trainable] *= self.max_step_norm / norm
+        step_vector[~trainable] = 0.0
+        typed_step: NDArray[np.float64] = step_vector
+        return typed_step
+
+    @staticmethod
+    def _gradient(
+        objective: ScalarObjective,
+        values: NDArray[np.float64],
+        *,
+        parameters: Sequence[Parameter] | None,
+        rule: ParameterShiftRule | None,
+        gradient_method: str,
+        finite_difference_step: float,
+    ) -> GradientResult:
+        """Return a gradient record from the requested scalar-gradient backend."""
+
+        if gradient_method == "finite_difference":
+            return value_and_finite_difference_grad(
+                objective,
+                values,
+                parameters=parameters,
+                step=finite_difference_step,
+            )
+        return value_and_parameter_shift_grad(
+            objective,
+            values,
+            parameters=parameters,
+            rule=rule,
+        )
+
+
 __all__ = [
+    "NaturalGradientOptimizer",
     "armijo_backtracking_line_search",
     "natural_gradient",
     "weighted_gradient_sum",

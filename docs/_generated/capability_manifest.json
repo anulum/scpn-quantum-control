@@ -14,7 +14,7 @@
     "python_model_source_modules": 885,
     "rust_pyo3_model_wrappers": 137,
     "rust_source_modules": 38,
-    "test_files": 2035
+    "test_files": 2036
   },
   "documentation": {
     "examples": [
@@ -4443,7 +4443,7 @@
       },
       {
         "name": "NaturalGradientOptimizer",
-        "path": "src/scpn_quantum_control/differentiable.py"
+        "path": "src/scpn_quantum_control/differentiable_natural_gradient.py"
       },
       {
         "name": "NaturalGradientResult",
@@ -11708,6 +11708,7 @@
       "tests/test_qlayer.py",
       "tests/test_qlif.py",
       "tests/test_qpetri.py",
+      "tests/test_qpetri_branches.py",
       "tests/test_qpetri_superposition.py",
       "tests/test_qpu_compute.py",
       "tests/test_qpu_data_artifact.py",
