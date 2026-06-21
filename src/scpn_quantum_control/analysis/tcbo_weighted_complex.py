@@ -23,6 +23,7 @@ from dataclasses import dataclass
 from itertools import combinations
 
 import numpy as np
+from numpy.typing import NDArray
 
 
 @dataclass(frozen=True)
@@ -37,7 +38,7 @@ class TCBOWeightedComplexResult:
     n_edges: int
     n_triangles: int
     max_h1: int
-    edge_weights: np.ndarray
+    edge_weights: NDArray[np.float64]
 
 
 @dataclass(frozen=True)
@@ -74,7 +75,7 @@ class TCBOWeightedReplayUncertainty:
     best_threshold_samples: tuple[float, ...]
 
 
-def _validated_coupling_matrix(K: np.ndarray) -> np.ndarray:
+def _validated_coupling_matrix(K: NDArray[np.float64]) -> NDArray[np.float64]:
     coupling = np.asarray(K, dtype=float)
     if coupling.ndim != 2 or coupling.shape[0] != coupling.shape[1]:
         raise ValueError("K must be a square 2-D coupling matrix.")
@@ -89,7 +90,7 @@ def _validated_coupling_matrix(K: np.ndarray) -> np.ndarray:
     return coupling
 
 
-def _validated_phase_vector(theta: np.ndarray, n_nodes: int) -> np.ndarray:
+def _validated_phase_vector(theta: NDArray[np.float64], n_nodes: int) -> NDArray[np.float64]:
     phases = np.asarray(theta, dtype=float)
     if phases.ndim != 1 or phases.shape != (n_nodes,):
         raise ValueError("theta must match K node count as a 1-D vector.")
@@ -118,11 +119,11 @@ def _validated_seed(value: int) -> int:
 
 
 def coupling_weighted_edge_matrix(
-    K: np.ndarray,
-    theta: np.ndarray,
+    K: NDArray[np.float64],
+    theta: NDArray[np.float64],
     *,
     normalise: bool = True,
-) -> np.ndarray:
+) -> NDArray[np.float64]:
     """Return edge weights ``K_ij * |cos(theta_j - theta_i)|``.
 
     Args:
@@ -144,7 +145,7 @@ def coupling_weighted_edge_matrix(
     return weights
 
 
-def _active_edges(weights: np.ndarray, threshold: float) -> list[tuple[int, int]]:
+def _active_edges(weights: NDArray[np.float64], threshold: float) -> list[tuple[int, int]]:
     n_nodes = weights.shape[0]
     return [
         (i, j)
@@ -186,7 +187,7 @@ def _triangles_from_edges(
     return triangles
 
 
-def _gf2_rank(matrix: np.ndarray) -> int:
+def _gf2_rank(matrix: NDArray[np.uint8]) -> int:
     work = np.asarray(matrix, dtype=np.uint8).copy() % 2
     if work.size == 0:
         return 0
@@ -225,8 +226,8 @@ def _boundary_2_rank(
 
 
 def tcbo_weighted_complex(
-    K: np.ndarray,
-    theta: np.ndarray,
+    K: NDArray[np.float64],
+    theta: NDArray[np.float64],
     *,
     threshold: float = 0.72,
 ) -> TCBOWeightedComplexResult:
@@ -256,10 +257,10 @@ def tcbo_weighted_complex(
 
 
 def tcbo_weighted_threshold_scan(
-    K: np.ndarray,
-    theta: np.ndarray,
+    K: NDArray[np.float64],
+    theta: NDArray[np.float64],
     *,
-    thresholds: np.ndarray | None = None,
+    thresholds: NDArray[np.float64] | None = None,
     target_p_h1: float = 0.72,
     promotion_tolerance: float | None = None,
 ) -> TCBOWeightedThresholdScan:
@@ -297,11 +298,11 @@ def tcbo_weighted_threshold_scan(
 
 
 def tcbo_weighted_uncertainty_replay(
-    K: np.ndarray,
+    K: NDArray[np.float64],
     *,
     n_replays: int = 128,
     seed: int = 1701,
-    thresholds: np.ndarray | None = None,
+    thresholds: NDArray[np.float64] | None = None,
     target_p_h1: float = 0.72,
     confidence_level: float = 0.95,
     promotion_tolerance: float = 0.02,

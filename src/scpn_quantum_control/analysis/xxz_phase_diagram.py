@@ -31,6 +31,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import numpy as np
+from numpy.typing import NDArray
 
 from ..bridge.knm_hamiltonian import knm_to_dense_matrix
 from ..dense_budget import require_dense_allocation
@@ -41,9 +42,9 @@ class AnisotropyScanResult:
     """Result of scanning K at fixed Δ."""
 
     delta: float
-    k_values: np.ndarray
-    gaps: np.ndarray
-    R_values: np.ndarray
+    k_values: NDArray[np.float64]
+    gaps: NDArray[np.float64]
+    R_values: NDArray[np.float64]
     k_c_from_gap: float
 
 
@@ -51,15 +52,15 @@ class AnisotropyScanResult:
 class PhaseDiagramResult:
     """Full K_c(Δ) phase diagram."""
 
-    delta_values: np.ndarray
-    k_c_values: np.ndarray
-    gap_min_values: np.ndarray
+    delta_values: NDArray[np.float64]
+    k_c_values: NDArray[np.float64]
+    gap_min_values: NDArray[np.float64]
     scans: list[AnisotropyScanResult]
 
 
 def _ground_state_properties(
-    K: np.ndarray,
-    omega: np.ndarray,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
     delta: float,
     *,
     max_dense_gib: float | None = None,
@@ -101,16 +102,16 @@ def _ground_state_properties(
 
 
 def scan_coupling_at_delta(
-    omega: np.ndarray,
-    K_topology: np.ndarray,
+    omega: NDArray[np.float64],
+    K_topology: NDArray[np.float64],
     delta: float,
-    k_range: np.ndarray | None = None,
+    k_range: NDArray[np.float64] | None = None,
     *,
     max_dense_gib: float | None = None,
 ) -> AnisotropyScanResult:
     """Sweep K at fixed anisotropy Δ. Find K_c from gap minimum."""
     if k_range is None:
-        k_range = np.linspace(0.5, 5.0, 15)
+        k_range = np.linspace(0.5, 5.0, 15, dtype=np.float64)
 
     n_k = len(k_range)
     gaps = np.zeros(n_k)
@@ -139,10 +140,10 @@ def scan_coupling_at_delta(
 
 
 def anisotropy_phase_diagram(
-    omega: np.ndarray,
-    K_topology: np.ndarray,
-    delta_range: np.ndarray | None = None,
-    k_range: np.ndarray | None = None,
+    omega: NDArray[np.float64],
+    K_topology: NDArray[np.float64],
+    delta_range: NDArray[np.float64] | None = None,
+    k_range: NDArray[np.float64] | None = None,
     *,
     max_dense_gib: float | None = None,
 ) -> PhaseDiagramResult:
@@ -151,9 +152,9 @@ def anisotropy_phase_diagram(
     Scans Δ from 0 (XY) to 1 (Heisenberg) and finds K_c at each Δ.
     """
     if delta_range is None:
-        delta_range = np.linspace(0.0, 1.0, 6)
+        delta_range = np.linspace(0.0, 1.0, 6, dtype=np.float64)
     if k_range is None:
-        k_range = np.linspace(0.5, 5.0, 12)
+        k_range = np.linspace(0.5, 5.0, 12, dtype=np.float64)
 
     scans = []
     k_c_vals = np.zeros(len(delta_range))
