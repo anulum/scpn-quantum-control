@@ -21,6 +21,15 @@ class ThermodynamicWitness:
     """
 
     def __call__(self, counts: Mapping[str, int] | None = None, **kwargs: Any) -> dict[str, float]:
+        """Summarise calibrated work samples into a thermodynamic witness.
+
+        Requires ``work_samples_joule`` (an iterable) or ``work_joule`` (a scalar)
+        from a calibrated protocol; ``counts`` is ignored. Returns the mean and
+        sample variance of the work, and — when the optional
+        ``delta_free_energy_joule`` and/or ``beta_per_joule`` keywords are given —
+        the dissipated work and the Jarzynski free-energy estimate with its
+        residual against the supplied free-energy difference.
+        """
         _ = counts
         samples_raw = kwargs.get("work_samples_joule")
         scalar_raw = kwargs.get("work_joule")
@@ -33,8 +42,9 @@ class ThermodynamicWitness:
         if samples_raw is not None:
             samples = np.asarray(list(samples_raw), dtype=float)
         else:
-            if scalar_raw is None:
-                raise ValueError("work_joule must be supplied when work_samples_joule is absent.")
+            # The outer guard guarantees scalar_raw is not None here; assert it
+            # so the type narrows (kwargs.get returns Any | None).
+            assert scalar_raw is not None
             samples = np.asarray([float(scalar_raw)], dtype=float)
 
         if samples.size == 0:
