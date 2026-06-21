@@ -31,6 +31,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import numpy as np
+from numpy.typing import NDArray
 
 from ..hardware.classical import classical_exact_diag
 from .quantum_phi import partial_trace, von_neumann_entropy
@@ -42,14 +43,14 @@ class EntanglementResult:
 
     n_qubits: int
     half_chain_entropy: float  # S(n/2)
-    entanglement_spectrum: np.ndarray  # eigenvalues of ρ_A
+    entanglement_spectrum: NDArray[np.float64]  # eigenvalues of ρ_A
     entropy_vs_subsystem: list[float]  # S(|A|) for |A| = 1..n/2
     cft_central_charge: float | None  # extracted c from log fit
 
 
 def entanglement_entropy_half_chain(
-    K: np.ndarray,
-    omega: np.ndarray,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
 ) -> float:
     """Bipartite entanglement entropy for half-chain partition."""
     n = K.shape[0]
@@ -64,9 +65,9 @@ def entanglement_entropy_half_chain(
 
 
 def entanglement_spectrum_half_chain(
-    K: np.ndarray,
-    omega: np.ndarray,
-) -> np.ndarray:
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
+) -> NDArray[np.float64]:
     """Eigenvalue spectrum of the reduced density matrix ρ_A (half chain)."""
     n = K.shape[0]
     exact = classical_exact_diag(n, K=K, omega=omega)
@@ -75,13 +76,13 @@ def entanglement_spectrum_half_chain(
 
     half = n // 2
     rho_a = partial_trace(rho, list(range(half)), n)
-    eigenvalues: np.ndarray = np.sort(np.linalg.eigvalsh(rho_a))[::-1]
+    eigenvalues: NDArray[np.float64] = np.sort(np.linalg.eigvalsh(rho_a)).astype(np.float64)[::-1]
     return eigenvalues
 
 
 def entropy_vs_subsystem_size(
-    K: np.ndarray,
-    omega: np.ndarray,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
 ) -> list[float]:
     """S(|A|) for |A| = 1 to n//2."""
     n = K.shape[0]
@@ -97,8 +98,8 @@ def entropy_vs_subsystem_size(
 
 
 def fit_cft_central_charge(
-    subsystem_sizes: np.ndarray,
-    entropies: np.ndarray,
+    subsystem_sizes: NDArray[np.float64],
+    entropies: NDArray[np.float64],
     n_total: int,
 ) -> float | None:
     """Extract CFT central charge c from S(l) = (c/3) log(l) + const.
@@ -137,8 +138,8 @@ def fit_cft_central_charge(
 
 
 def entanglement_analysis(
-    K: np.ndarray,
-    omega: np.ndarray,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
 ) -> EntanglementResult:
     """Full entanglement spectrum analysis at given coupling."""
     n = K.shape[0]
@@ -159,8 +160,8 @@ def entanglement_analysis(
 
 
 def entropy_vs_coupling_scan(
-    omega: np.ndarray,
-    k_base_values: np.ndarray | None = None,
+    omega: NDArray[np.float64],
+    k_base_values: NDArray[np.float64] | None = None,
 ) -> dict[str, list[float]]:
     """Scan half-chain entropy S(n/2) vs coupling K_base.
 
@@ -170,7 +171,7 @@ def entropy_vs_coupling_scan(
     from ..bridge.knm_hamiltonian import build_knm_paper27
 
     if k_base_values is None:
-        k_base_values = np.linspace(0.01, 3.0, 30)
+        k_base_values = np.linspace(0.01, 3.0, 30, dtype=np.float64)
 
     n = len(omega)
     results: dict[str, list[float]] = {

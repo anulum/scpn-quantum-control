@@ -31,6 +31,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import numpy as np
+from numpy.typing import NDArray
 
 from ..bridge.knm_hamiltonian import knm_to_dense_matrix
 from ..dense_budget import require_dense_allocation
@@ -43,7 +44,7 @@ class EntanglementResult:
     K_base: float
     entropy: float  # S(A) in bits
     schmidt_gap: float  # λ₁ - λ₂
-    schmidt_values: np.ndarray  # sorted descending
+    schmidt_values: NDArray[np.float64]  # sorted descending
     spectral_gap: float
 
 
@@ -51,17 +52,17 @@ class EntanglementResult:
 class EntanglementScanResult:
     """Scan across coupling strength."""
 
-    k_values: np.ndarray
-    entropy: np.ndarray
-    schmidt_gap: np.ndarray
-    spectral_gap: np.ndarray
+    k_values: NDArray[np.float64]
+    entropy: NDArray[np.float64]
+    schmidt_gap: NDArray[np.float64]
+    spectral_gap: NDArray[np.float64]
     entropy_peak_K: float | None  # K where entropy peaks
     schmidt_gap_min_K: float | None  # K where Schmidt gap is smallest
 
 
 def _bipartite_entropy_and_schmidt(
-    psi: np.ndarray, n: int, n_A: int
-) -> tuple[float, float, np.ndarray]:
+    psi: NDArray[np.complex128], n: int, n_A: int
+) -> tuple[float, float, NDArray[np.float64]]:
     """Compute entanglement entropy and Schmidt gap for bipartition A|B.
 
     A = first n_A qubits, B = remaining n-n_A qubits.
@@ -94,8 +95,8 @@ def _bipartite_entropy_and_schmidt(
 
 
 def entanglement_at_coupling(
-    omega: np.ndarray,
-    K_topology: np.ndarray,
+    omega: NDArray[np.float64],
+    K_topology: NDArray[np.float64],
     K_base: float,
     *,
     max_dense_gib: float | None = None,
@@ -134,9 +135,9 @@ def entanglement_at_coupling(
 
 
 def entanglement_vs_coupling(
-    omega: np.ndarray,
-    K_topology: np.ndarray,
-    k_range: np.ndarray | None = None,
+    omega: NDArray[np.float64],
+    K_topology: NDArray[np.float64],
+    k_range: NDArray[np.float64] | None = None,
     *,
     max_dense_gib: float | None = None,
 ) -> EntanglementScanResult:
@@ -146,7 +147,7 @@ def entanglement_vs_coupling(
     JAX GPU fast path when available (vectorised scan via jax.vmap).
     """
     if k_range is None:
-        k_range = np.linspace(0.5, 5.0, 20)
+        k_range = np.linspace(0.5, 5.0, 20, dtype=np.float64)
 
     # JAX GPU fast path: entire scan as one GPU kernel
     try:

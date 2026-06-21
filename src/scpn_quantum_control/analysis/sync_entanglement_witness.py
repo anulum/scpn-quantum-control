@@ -51,8 +51,10 @@ References:
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Any
 
 import numpy as np
+from numpy.typing import NDArray
 from qiskit.quantum_info import SparsePauliOp, Statevector
 
 from ..bridge.knm_hamiltonian import knm_to_dense_matrix, knm_to_hamiltonian
@@ -90,8 +92,8 @@ def R_separable_bound(n_qubits: int) -> float:
 
 
 def R_separable_bound_at_energy(
-    K: np.ndarray,
-    omega: np.ndarray,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
     target_energy: float,
     n_samples: int = 1000,
     seed: int = 42,
@@ -157,7 +159,7 @@ def R_separable_bound_at_energy(
     return best_R
 
 
-def R_from_statevector(psi: np.ndarray, n_qubits: int) -> float:
+def R_from_statevector(psi: NDArray[np.complex128], n_qubits: int) -> float:
     """Compute order parameter R from a quantum state vector."""
     sv = Statevector(np.ascontiguousarray(psi))
     phases = np.zeros(n_qubits)
@@ -171,8 +173,8 @@ def R_from_statevector(psi: np.ndarray, n_qubits: int) -> float:
 
 
 def detect_entanglement_from_R(
-    K: np.ndarray,
-    omega: np.ndarray,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
     n_samples: int = 2000,
     seed: int = 42,
     *,
@@ -232,15 +234,15 @@ def _certified_entanglement_depth(is_entangled: bool) -> int:
 
 
 def R_entanglement_scan(
-    K: np.ndarray,
-    omega: np.ndarray,
-    K_base_range: np.ndarray | None = None,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
+    K_base_range: NDArray[np.float64] | None = None,
     n_K_values: int = 15,
     n_samples: int = 500,
     seed: int = 42,
     *,
     max_dense_gib: float | None = None,
-) -> dict:
+) -> dict[str, Any]:
     """Scan R and separable bound vs coupling strength.
 
     At each K_base, compute R_ground and R_sep_max(E_ground).
@@ -257,7 +259,7 @@ def R_entanglement_scan(
             label="R-witness scan dense eigensolver workspace",
         )
     if K_base_range is None:
-        K_base_range = np.linspace(0.01, 2.0, n_K_values)
+        K_base_range = np.linspace(0.01, 2.0, n_K_values, dtype=np.float64)
 
     R_ground_vals = []
     R_sep_vals = []
