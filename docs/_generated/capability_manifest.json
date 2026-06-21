@@ -14,7 +14,7 @@
     "python_model_source_modules": 887,
     "rust_pyo3_model_wrappers": 137,
     "rust_source_modules": 38,
-    "test_files": 2045
+    "test_files": 2046
   },
   "documentation": {
     "examples": [
@@ -11752,6 +11752,7 @@
       "tests/test_readout_matrix.py",
       "tests/test_readout_mitigation_eligibility_audit.py",
       "tests/test_real_data_sync_forecasting.py",
+      "tests/test_real_data_sync_validation.py",
       "tests/test_real_eeg_plv_validation_dataset.py",
       "tests/test_realtime_feedback.py",
       "tests/test_realtime_latency_scenarios.py",
