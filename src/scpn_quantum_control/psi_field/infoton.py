@@ -30,6 +30,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import numpy as np
+from numpy.typing import NDArray
 
 from .lattice import U1LatticGauge
 
@@ -48,7 +49,7 @@ class InfitonField:
     φ_i = re_i + i × im_i, stored as complex array.
     """
 
-    values: np.ndarray  # complex array, shape (n_sites,)
+    values: NDArray[np.complex128]  # complex array, shape (n_sites,)
     mass_sq: float  # m²
     coupling: float  # λ (quartic self-coupling)
     gauge_coupling: float  # g (gauge-matter coupling)
@@ -58,7 +59,7 @@ class InfitonField:
         """Number of lattice sites represented by the field."""
         return len(self.values)
 
-    def density(self) -> np.ndarray:
+    def density(self) -> NDArray[np.float64]:
         """Charge density |φ_i|² at each site."""
         return np.asarray(np.abs(self.values) ** 2)
 
@@ -137,7 +138,9 @@ def create_infoton(
     Small random perturbation around zero (symmetric phase).
     """
     rng = np.random.default_rng(seed)
-    values = amplitude * (rng.standard_normal(n_sites) + 1j * rng.standard_normal(n_sites))
+    values = (
+        amplitude * (rng.standard_normal(n_sites) + 1j * rng.standard_normal(n_sites))
+    ).astype(np.complex128)
     return InfitonField(
         values=values,
         mass_sq=mass_sq,

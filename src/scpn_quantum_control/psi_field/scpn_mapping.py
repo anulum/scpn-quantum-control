@@ -22,6 +22,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import numpy as np
+from numpy.typing import NDArray
 
 from ..bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
 from .infoton import InfitonField, create_infoton
@@ -34,14 +35,14 @@ class SCPNLattice:
 
     gauge: U1LatticGauge
     infoton: InfitonField
-    K: np.ndarray
-    omega: np.ndarray
+    K: NDArray[np.float64]
+    omega: NDArray[np.float64]
     n_layers: int
 
 
 def scpn_to_lattice(
-    K: np.ndarray | None = None,
-    omega: np.ndarray | None = None,
+    K: NDArray[np.float64] | None = None,
+    omega: NDArray[np.float64] | None = None,
     beta: float = 1.0,
     mass_sq: float = 1.0,
     quartic_coupling: float = 0.1,

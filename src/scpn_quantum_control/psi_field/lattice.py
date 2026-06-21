@@ -28,6 +28,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import numpy as np
+from numpy.typing import NDArray
 
 try:
     from scpn_quantum_engine import (
@@ -64,7 +65,7 @@ class U1LatticGauge:
 
     def __init__(
         self,
-        adjacency: np.ndarray,
+        adjacency: NDArray[np.float64],
         beta: float = 1.0,
         seed: int | None = None,
     ) -> None:
@@ -101,7 +102,7 @@ class U1LatticGauge:
         # Flat arrays for Rust acceleration
         self._tri_flat, self._tri_signs = self._build_flat_triangles()
 
-    def _find_triangles(self, adjacency: np.ndarray) -> list[list[tuple[int, int]]]:
+    def _find_triangles(self, adjacency: NDArray[np.float64]) -> list[list[tuple[int, int]]]:
         """Find all triangles in the graph.
 
         A triangle (i,j,k) contributes plaquette
@@ -119,7 +120,7 @@ class U1LatticGauge:
                         triangles.append([(i, j), (j, k), (i, k)])
         return triangles
 
-    def _build_flat_triangles(self) -> tuple[np.ndarray, np.ndarray]:
+    def _build_flat_triangles(self) -> tuple[NDArray[np.int64], NDArray[np.float64]]:
         """Build flat arrays of triangle edge indices and signs for Rust."""
         tri_flat = []
         tri_signs = []
@@ -210,7 +211,7 @@ class U1LatticGauge:
             beta=self.beta,
         )
 
-    def force(self) -> np.ndarray:
+    def force(self) -> NDArray[np.float64]:
         """Compute dS/dA for each link. Uses Rust when available."""
         if _HAS_RUST_GAUGE and len(self.plaquettes) > 0:
             return np.asarray(
