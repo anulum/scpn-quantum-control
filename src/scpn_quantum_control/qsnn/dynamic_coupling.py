@@ -27,7 +27,10 @@ for quantum biology and neuromorphic computing.
 
 from __future__ import annotations
 
+from typing import Any
+
 import numpy as np
+from numpy.typing import NDArray
 from qiskit.quantum_info import SparsePauliOp, Statevector
 
 from scpn_quantum_control.hardware.fast_classical import fast_sparse_evolution
@@ -46,8 +49,8 @@ class DynamicCouplingEngine:
     def __init__(
         self,
         n_qubits: int,
-        initial_K: np.ndarray,
-        omega: np.ndarray,
+        initial_K: NDArray[np.float64],
+        omega: NDArray[np.float64],
         learning_rate: float = 0.1,
         decay_rate: float = 0.05,
     ):
@@ -61,7 +64,9 @@ class DynamicCouplingEngine:
         self.K = (self.K + self.K.T) / 2.0
         np.fill_diagonal(self.K, 0.0)
 
-    def _measure_correlation_matrix(self, statevector: np.ndarray) -> np.ndarray:
+    def _measure_correlation_matrix(
+        self, statevector: NDArray[np.complex128]
+    ) -> NDArray[np.float64]:
         """Measure the XY correlation matrix from the quantum state.
 
         Uses Rust-accelerated bitwise computation when available,
@@ -69,9 +74,11 @@ class DynamicCouplingEngine:
         """
         psi = np.asarray(statevector, dtype=complex)
         if _HAS_RUST:  # pragma: no cover
-            return np.array(
-                _engine.correlation_matrix_xy(psi.real.copy(), psi.imag.copy(), self.n)
+            rust_corr: NDArray[np.float64] = np.array(
+                _engine.correlation_matrix_xy(psi.real.copy(), psi.imag.copy(), self.n),
+                dtype=np.float64,
             )
+            return rust_corr
 
         sv = Statevector(psi)
         C = np.zeros((self.n, self.n))
@@ -94,7 +101,7 @@ class DynamicCouplingEngine:
 
         return C
 
-    def step(self, dt: float) -> dict:
+    def step(self, dt: float) -> dict[str, Any]:
         """Perform one cycle of co-evolution.
 
         Evolve state for time dt -> Measure Correlators -> Update K.
@@ -113,7 +120,7 @@ class DynamicCouplingEngine:
 
         return {"K_updated": self.K.copy(), "correlation_matrix": C_nm, "statevector": psi_final}
 
-    def run_coevolution(self, steps: int, dt: float) -> list[dict]:
+    def run_coevolution(self, steps: int, dt: float) -> list[dict[str, Any]]:
         """Run the strange loop for a given number of steps."""
         history = []
         for _ in range(steps):

@@ -17,11 +17,12 @@ Maps sc-neurocore SCDenseLayer to a parameterized circuit:
 from __future__ import annotations
 
 import numpy as np
+from numpy.typing import NDArray
 
 from .qsynapse import QuantumSynapse
 
 
-def _apply_ry(state: np.ndarray, qubit: int, theta: float) -> None:
+def _apply_ry(state: NDArray[np.complex128], qubit: int, theta: float) -> None:
     """Apply an exact Ry rotation to ``qubit`` in-place."""
     cos = np.cos(theta / 2.0)
     sin = np.sin(theta / 2.0)
@@ -37,7 +38,9 @@ def _apply_ry(state: np.ndarray, qubit: int, theta: float) -> None:
             state[idx1] = sin * amp0 + cos * amp1
 
 
-def _apply_controlled_ry(state: np.ndarray, control: int, target: int, theta: float) -> None:
+def _apply_controlled_ry(
+    state: NDArray[np.complex128], control: int, target: int, theta: float
+) -> None:
     """Apply controlled Ry exactly using little-endian qubit indexing."""
     cos = np.cos(theta / 2.0)
     sin = np.sin(theta / 2.0)
@@ -53,7 +56,7 @@ def _apply_controlled_ry(state: np.ndarray, control: int, target: int, theta: fl
         state[idx1] = sin * amp0 + cos * amp1
 
 
-def _apply_cx(state: np.ndarray, control: int, target: int) -> None:
+def _apply_cx(state: NDArray[np.complex128], control: int, target: int) -> None:
     """Apply CX exactly using little-endian qubit indexing."""
     control_mask = 1 << control
     target_mask = 1 << target
@@ -64,7 +67,7 @@ def _apply_cx(state: np.ndarray, control: int, target: int) -> None:
         state[idx0], state[idx1] = state[idx1], state[idx0]
 
 
-def _probability_one(state: np.ndarray, qubit: int) -> float:
+def _probability_one(state: NDArray[np.complex128], qubit: int) -> float:
     """Return marginal P(qubit = 1)."""
     mask = 1 << qubit
     prob = sum(abs(amp) ** 2 for idx, amp in enumerate(state) if idx & mask)
@@ -83,7 +86,7 @@ class QuantumDenseLayer:
         self,
         n_neurons: int,
         n_inputs: int,
-        weights: np.ndarray | None = None,
+        weights: NDArray[np.float64] | None = None,
         spike_threshold: float = 0.5,
         seed: int | None = None,
     ):
@@ -100,7 +103,7 @@ class QuantumDenseLayer:
             for n in range(n_neurons)
         ]
 
-    def forward(self, input_values: np.ndarray) -> np.ndarray:
+    def forward(self, input_values: NDArray[np.float64]) -> NDArray[np.int64]:
         """Build circuit, measure neuron register, return spike array.
 
         Args:
@@ -128,12 +131,12 @@ class QuantumDenseLayer:
         for n in range(self.n_neurons):
             neuron_probs[n] = _probability_one(state, self.n_inputs + n)
 
-        result: np.ndarray = (neuron_probs > self.spike_threshold).astype(int)
+        result: NDArray[np.int64] = (neuron_probs > self.spike_threshold).astype(np.int64)
         return result
 
-    def get_weights(self) -> np.ndarray:
+    def get_weights(self) -> NDArray[np.float64]:
         """Return (n_neurons, n_inputs) weight matrix."""
-        result: np.ndarray = np.array(
+        result: NDArray[np.float64] = np.array(
             [
                 [self.synapses[n][i].weight for i in range(self.n_inputs)]
                 for n in range(self.n_neurons)

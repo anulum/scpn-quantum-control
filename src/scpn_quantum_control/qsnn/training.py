@@ -15,6 +15,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import numpy as np
+from numpy.typing import NDArray
 from qiskit import QuantumCircuit
 from qiskit.quantum_info import Statevector
 
@@ -148,7 +149,7 @@ class QSNNTrainer:
 
     def _build_circuit(
         self,
-        inputs: np.ndarray,
+        inputs: NDArray[np.float64],
         angle_override: tuple[int, int, float] | None = None,
     ) -> QuantumCircuit:
         """Build layer circuit with optional angle shift on one synapse."""
@@ -172,13 +173,13 @@ class QSNNTrainer:
 
     def _forward_probs(
         self,
-        inputs: np.ndarray,
+        inputs: NDArray[np.float64],
         angle_override: tuple[int, int, float] | None = None,
-    ) -> np.ndarray:
+    ) -> NDArray[np.float64]:
         """Forward pass returning neuron P(|1>) (continuous, not thresholded)."""
         qc = self._build_circuit(inputs, angle_override)
         sv = Statevector.from_instruction(qc)
-        probs: np.ndarray = np.array(
+        probs: NDArray[np.float64] = np.array(
             [
                 float(sv.probabilities([self.layer.n_inputs + n])[1])
                 for n in range(self.layer.n_neurons)
@@ -186,7 +187,9 @@ class QSNNTrainer:
         )
         return probs
 
-    def _validate_dataset(self, X: np.ndarray, y: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    def _validate_dataset(
+        self, X: NDArray[np.float64], y: NDArray[np.float64]
+    ) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
         """Return finite two-dimensional training arrays with compatible shapes."""
         features = np.asarray(X, dtype=float)
         targets = np.asarray(y, dtype=float)
@@ -228,7 +231,7 @@ class QSNNTrainer:
         weight = theta / np.pi * (w_max - w_min) + w_min
         synapse.update_weight(weight)
 
-    def _theta_values(self) -> np.ndarray:
+    def _theta_values(self) -> NDArray[np.float64]:
         """Return current synapse CRy angles as a flat parameter vector."""
         return np.array(
             [
@@ -239,7 +242,7 @@ class QSNNTrainer:
             dtype=np.float64,
         )
 
-    def _set_theta_values(self, values: np.ndarray) -> None:
+    def _set_theta_values(self, values: NDArray[np.float64]) -> None:
         """Set all synapse CRy angles from a flat parameter vector."""
         angles = np.asarray(values, dtype=float)
         expected = self.layer.n_neurons * self.layer.n_inputs
@@ -256,7 +259,9 @@ class QSNNTrainer:
                 )
                 flat_index += 1
 
-    def _batch_loss(self, X: np.ndarray, y: np.ndarray, values: np.ndarray) -> float:
+    def _batch_loss(
+        self, X: NDArray[np.float64], y: NDArray[np.float64], values: NDArray[np.float64]
+    ) -> float:
         """Return full-batch MSE loss for a flat synapse-angle vector."""
         self._set_theta_values(values)
         total_loss = 0.0
@@ -267,9 +272,9 @@ class QSNNTrainer:
 
     def parameter_shift_gradient(
         self,
-        inputs: np.ndarray,
-        target: np.ndarray,
-    ) -> np.ndarray:
+        inputs: NDArray[np.float64],
+        target: NDArray[np.float64],
+    ) -> NDArray[np.float64]:
         """Compute gradient of MSE loss w.r.t. all synapse angles.
 
         Returns (n_neurons, n_inputs) gradient array.
@@ -282,7 +287,7 @@ class QSNNTrainer:
             for ii in range(self.layer.n_inputs)
         ]
 
-        def objective(flat_values: np.ndarray) -> float:
+        def objective(flat_values: NDArray[np.float64]) -> float:
             flat_index = 0
             for ni in range(self.layer.n_neurons):
                 for ii in range(self.layer.n_inputs):
@@ -313,7 +318,7 @@ class QSNNTrainer:
 
         return result.gradient.reshape(shape)
 
-    def train_epoch(self, X: np.ndarray, y: np.ndarray) -> float:
+    def train_epoch(self, X: NDArray[np.float64], y: NDArray[np.float64]) -> float:
         """One epoch over dataset. Returns mean loss."""
         X, y = self._validate_dataset(X, y)
         total_loss = 0.0
@@ -357,7 +362,9 @@ class QSNNTrainer:
 
         return total_loss / len(X)
 
-    def train(self, X: np.ndarray, y: np.ndarray, epochs: int = 10) -> list[float]:
+    def train(
+        self, X: NDArray[np.float64], y: NDArray[np.float64], epochs: int = 10
+    ) -> list[float]:
         """Train for multiple epochs. Returns loss history."""
         epoch_count = self._validate_epochs(epochs)
         history: list[float] = []
@@ -367,8 +374,8 @@ class QSNNTrainer:
 
     def train_with_diagnostics(
         self,
-        X: np.ndarray,
-        y: np.ndarray,
+        X: NDArray[np.float64],
+        y: NDArray[np.float64],
         epochs: int = 10,
     ) -> QSNNTrainingRun:
         """Train and return structured convergence plus evaluation evidence."""
@@ -387,8 +394,8 @@ class QSNNTrainer:
 
     def train_with_parameter_shift_descent(
         self,
-        X: np.ndarray,
-        y: np.ndarray,
+        X: NDArray[np.float64],
+        y: NDArray[np.float64],
         *,
         backend: str = "statevector",
         max_steps: int = 100,
@@ -413,7 +420,7 @@ class QSNNTrainer:
             for ii in range(self.layer.n_inputs)
         ]
 
-        def objective(values: np.ndarray) -> float:
+        def objective(values: NDArray[np.float64]) -> float:
             return self._batch_loss(X, y, values)
 
         try:

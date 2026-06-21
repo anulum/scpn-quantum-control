@@ -38,25 +38,25 @@ IntArray: TypeAlias = NDArray[np.int64]
 
 
 def _as_finite_vector(
-    name: str, values: np.ndarray, expected_shape: tuple[int, ...]
+    name: str, values: NDArray[np.float64], expected_shape: tuple[int, ...]
 ) -> FloatArray:
-    arr = np.asarray(values, dtype=np.float64)
+    arr: FloatArray = np.asarray(values, dtype=np.float64)
     if arr.shape != expected_shape:
         raise ValueError(f"{name} shape must be {expected_shape}, got {arr.shape}")
     if not np.all(np.isfinite(arr)):
         raise ValueError(f"{name} must contain only finite values")
-    return cast(FloatArray, arr)
+    return arr
 
 
 def _as_finite_matrix(
-    name: str, values: np.ndarray, expected_shape: tuple[int, int]
+    name: str, values: NDArray[np.float64], expected_shape: tuple[int, int]
 ) -> FloatArray:
-    arr = np.asarray(values, dtype=np.float64)
+    arr: FloatArray = np.asarray(values, dtype=np.float64)
     if arr.shape != expected_shape:
         raise ValueError(f"{name} shape must be {expected_shape}, got {arr.shape}")
     if not np.all(np.isfinite(arr)):
         raise ValueError(f"{name} must contain only finite values")
-    return cast(FloatArray, arr)
+    return arr
 
 
 @dataclass(frozen=True)
@@ -133,8 +133,8 @@ class TraceSTDPState:
 
     n_pre: int
     n_post: int
-    pre_trace: np.ndarray | None = None
-    post_trace: np.ndarray | None = None
+    pre_trace: NDArray[np.float64] | None = None
+    post_trace: NDArray[np.float64] | None = None
 
     def __post_init__(self) -> None:
         if self.n_pre <= 0 or self.n_post <= 0:
@@ -160,7 +160,7 @@ class TraceSTDPState:
         self.pre_trace *= np.exp(-dt / tau_pre)
         self.post_trace *= np.exp(-dt / tau_post)
 
-    def update(self, pre_spikes: np.ndarray, post_spikes: np.ndarray) -> None:
+    def update(self, pre_spikes: NDArray[np.float64], post_spikes: NDArray[np.float64]) -> None:
         """Accumulate binary spike events into traces."""
 
         pre = _as_finite_vector("pre_spikes", pre_spikes, (self.n_pre,))
@@ -205,8 +205,8 @@ class QuantumNeuromorphicBridge:
         lif: QuantumLIFConfig | None = None,
         stdp: TraceSTDPConfig | None = None,
         coupling: DynamicCouplingConfig | None = None,
-        input_weights: np.ndarray | None = None,
-        recurrent_weights: np.ndarray | None = None,
+        input_weights: NDArray[np.float64] | None = None,
+        recurrent_weights: NDArray[np.float64] | None = None,
         seed: int | None = None,
         deterministic: bool = True,
     ) -> None:
@@ -250,22 +250,22 @@ class QuantumNeuromorphicBridge:
         self.recurrent_trace = TraceSTDPState(self.n_neurons, self.n_neurons)
         self._last_circuit = self._build_quantum_circuit(np.zeros(self.n_neurons))
 
-    def _clip_weights(self, weights: np.ndarray) -> FloatArray:
-        clipped = np.clip(weights, self.coupling.min_weight, self.coupling.max_weight).astype(
-            np.float64,
-            copy=False,
-        )
-        return cast(FloatArray, clipped)
+    def _clip_weights(self, weights: NDArray[np.float64]) -> FloatArray:
+        clipped: FloatArray = np.clip(
+            weights, self.coupling.min_weight, self.coupling.max_weight
+        ).astype(np.float64, copy=False)
+        return clipped
 
     def _membrane_to_angles(self) -> FloatArray:
         norm = (self.membrane - self.lif.v_rest) / (self.lif.v_threshold - self.lif.v_rest)
-        return cast(FloatArray, np.pi * np.clip(norm, 0.0, 1.0))
+        angles: FloatArray = np.pi * np.clip(norm, 0.0, 1.0)
+        return angles
 
     @staticmethod
-    def _probabilities_from_angles(theta: np.ndarray) -> FloatArray:
+    def _probabilities_from_angles(theta: NDArray[np.float64]) -> FloatArray:
         return cast(FloatArray, np.sin(theta / 2.0) ** 2)
 
-    def _build_quantum_circuit(self, theta: np.ndarray) -> QuantumCircuit:
+    def _build_quantum_circuit(self, theta: NDArray[np.float64]) -> QuantumCircuit:
         circuit = QuantumCircuit(self.n_neurons)
         for idx, angle in enumerate(theta):
             circuit.ry(float(angle), idx)
@@ -279,7 +279,7 @@ class QuantumNeuromorphicBridge:
                 circuit.cry(np.pi * weight, src, dst)
         return circuit
 
-    def _sample_spikes(self, probabilities: np.ndarray) -> FloatArray:
+    def _sample_spikes(self, probabilities: NDArray[np.float64]) -> FloatArray:
         refractory = self.refractory_count > 0
         effective = np.where(refractory, 0.0, probabilities)
         if self.deterministic or self.lif.n_shots == 0:
@@ -287,9 +287,10 @@ class QuantumNeuromorphicBridge:
         else:
             samples = self.rng.binomial(1, effective, size=(self.lif.n_shots, self.n_neurons))
             spikes = (np.mean(samples, axis=0) > 0.5).astype(np.float64)
-        return cast(FloatArray, spikes)
+        result: FloatArray = spikes
+        return result
 
-    def _apply_lif(self, synaptic_current: np.ndarray) -> tuple[FloatArray, FloatArray]:
+    def _apply_lif(self, synaptic_current: NDArray[np.float64]) -> tuple[FloatArray, FloatArray]:
         active = self.refractory_count <= 0
         leak = -(self.membrane - self.lif.v_rest) * (self.lif.dt / self.lif.tau_mem)
         drive = self.lif.resistance * synaptic_current * self.lif.dt
@@ -329,8 +330,8 @@ class QuantumNeuromorphicBridge:
     def _stdp_delta(
         self,
         state: TraceSTDPState,
-        pre_spikes: np.ndarray,
-        post_spikes: np.ndarray,
+        pre_spikes: NDArray[np.float64],
+        post_spikes: NDArray[np.float64],
     ) -> FloatArray:
         state.decay(self.stdp.dt, self.stdp.tau_pre, self.stdp.tau_post)
         assert state.pre_trace is not None
@@ -338,9 +339,12 @@ class QuantumNeuromorphicBridge:
         potentiation = self.stdp.a_plus * np.outer(post_spikes, state.pre_trace)
         depression = self.stdp.a_minus * np.outer(state.post_trace, pre_spikes)
         state.update(pre_spikes, post_spikes)
-        return cast(FloatArray, potentiation - depression)
+        delta: FloatArray = potentiation - depression
+        return delta
 
-    def apply_plasticity(self, pre_spikes: np.ndarray, post_spikes: np.ndarray) -> None:
+    def apply_plasticity(
+        self, pre_spikes: NDArray[np.float64], post_spikes: NDArray[np.float64]
+    ) -> None:
         """Apply input-synapse trace STDP without running a LIF step."""
 
         pre = _as_finite_vector("pre_spikes", pre_spikes, (self.n_inputs,))
@@ -352,11 +356,12 @@ class QuantumNeuromorphicBridge:
 
     def _update_recurrent_coupling(
         self,
-        spikes: np.ndarray,
-        probabilities: np.ndarray,
+        spikes: NDArray[np.float64],
+        probabilities: NDArray[np.float64],
     ) -> FloatArray:
         if not self.coupling.enabled:
-            return cast(FloatArray, np.zeros_like(self.recurrent_weights))
+            zeros: FloatArray = np.zeros_like(self.recurrent_weights)
+            return zeros
 
         coactivity = np.outer(spikes, self.last_spikes)
         coherence_vector = np.sqrt(np.clip(probabilities * (1.0 - probabilities), 0.0, 1.0))
@@ -369,11 +374,11 @@ class QuantumNeuromorphicBridge:
         updated = self._clip_weights(updated)
         np.fill_diagonal(updated, 0.0)
 
-        delta = updated - self.recurrent_weights
+        delta: FloatArray = updated - self.recurrent_weights
         self.recurrent_weights = updated
-        return cast(FloatArray, delta)
+        return delta
 
-    def step(self, external_current: np.ndarray) -> NeuromorphicStepResult:
+    def step(self, external_current: NDArray[np.float64]) -> NeuromorphicStepResult:
         """Advance the bridge by one time step."""
 
         external = _as_finite_vector("external_current", external_current, (self.n_inputs,))
@@ -404,7 +409,7 @@ class QuantumNeuromorphicBridge:
             quantum_circuit=self._last_circuit.copy(),
         )
 
-    def run(self, external_currents: np.ndarray) -> list[NeuromorphicStepResult]:
+    def run(self, external_currents: NDArray[np.float64]) -> list[NeuromorphicStepResult]:
         """Run a sequence of external currents with shape ``(steps, n_inputs)``."""
 
         currents = np.asarray(external_currents, dtype=np.float64)
