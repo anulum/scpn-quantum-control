@@ -15,14 +15,21 @@ import numpy as np
 import pytest
 from numpy.typing import NDArray
 
+import scpn_quantum_control as scpn
+from scpn_quantum_control import differentiable as differentiable_module
+from scpn_quantum_control import differentiable_levenberg_marquardt as lm_module
 from scpn_quantum_control.differentiable import (
+    CustomDerivativeRule,
     LevenbergMarquardtDampingUpdate,
     LevenbergMarquardtOptimizer,
     LevenbergMarquardtResult,
     LevenbergMarquardtStep,
     LevenbergMarquardtTrial,
+    NaturalGradientResult,
     Parameter,
     ParameterBounds,
+    custom_gauss_newton_gradient,
+    custom_levenberg_marquardt_step,
     evaluate_levenberg_marquardt_step,
     gauss_newton_gradient,
     huber_residual_weights,
@@ -45,6 +52,39 @@ def _assert_allclose(actual: object, expected: object, *, atol: float | None = N
         assert_allclose(actual, expected, atol=atol)
 
 
+def test_facade_and_package_root_reuse_extracted_lm_helpers() -> None:
+    """Facade and package-root exports should reuse the extracted LM module."""
+
+    assert (
+        differentiable_module.LevenbergMarquardtOptimizer is lm_module.LevenbergMarquardtOptimizer
+    )
+    assert differentiable_module.gauss_newton_gradient is lm_module.gauss_newton_gradient
+    assert (
+        differentiable_module.custom_gauss_newton_gradient
+        is lm_module.custom_gauss_newton_gradient
+    )
+    assert differentiable_module.levenberg_marquardt_step is lm_module.levenberg_marquardt_step
+    assert (
+        differentiable_module.custom_levenberg_marquardt_step
+        is lm_module.custom_levenberg_marquardt_step
+    )
+    assert (
+        differentiable_module.evaluate_levenberg_marquardt_step
+        is lm_module.evaluate_levenberg_marquardt_step
+    )
+    assert (
+        differentiable_module.update_levenberg_marquardt_damping
+        is lm_module.update_levenberg_marquardt_damping
+    )
+    assert scpn.LevenbergMarquardtOptimizer is lm_module.LevenbergMarquardtOptimizer
+    assert scpn.gauss_newton_gradient is lm_module.gauss_newton_gradient
+    assert scpn.custom_gauss_newton_gradient is lm_module.custom_gauss_newton_gradient
+    assert scpn.levenberg_marquardt_step is lm_module.levenberg_marquardt_step
+    assert scpn.custom_levenberg_marquardt_step is lm_module.custom_levenberg_marquardt_step
+    assert scpn.evaluate_levenberg_marquardt_step is lm_module.evaluate_levenberg_marquardt_step
+    assert scpn.update_levenberg_marquardt_damping is lm_module.update_levenberg_marquardt_damping
+
+
 def test_huber_residual_weights_feed_gauss_newton_metric() -> None:
     """Robust weights should plug directly into Gauss-Newton residual solves."""
 
@@ -59,6 +99,51 @@ def test_huber_residual_weights_feed_gauss_newton_metric() -> None:
     _assert_allclose(weights, [1.0, 0.2], atol=1.0e-6)
     _assert_allclose(result.base_gradient.gradient, [2.0, 20.0], atol=1.0e-6)
     assert result.condition_number > 1.0
+
+
+def test_gauss_newton_gradient_rejects_invalid_inputs() -> None:
+    """Gauss-Newton diagnostics require a validated JacobianResult and weights."""
+
+    invalid_jacobian = cast(Any, np.eye(2))
+    with pytest.raises(ValueError, match="JacobianResult"):
+        gauss_newton_gradient(invalid_jacobian)
+
+    jacobian_result = value_and_finite_difference_jacobian(
+        lambda values: np.array([values[0], values[1]]),
+        [1.0, 2.0],
+    )
+    with pytest.raises(ValueError, match="weights"):
+        gauss_newton_gradient(jacobian_result, weights=np.array([1.0]))
+    with pytest.raises(ValueError, match="non-negative"):
+        gauss_newton_gradient(jacobian_result, weights=np.array([1.0, -1.0]))
+
+
+def test_custom_gauss_newton_gradient_uses_exact_custom_jacobian() -> None:
+    """Exact custom residual Jacobians should feed Gauss-Newton directly."""
+
+    rule = CustomDerivativeRule(
+        name="scaled_residual",
+        value_fn=lambda values: np.array([2.0 * values[0] - 1.0, values[1] + 3.0]),
+        jvp_rule=lambda values, tangent: np.array([2.0 * tangent[0], tangent[1]]),
+        parameter_names=("theta", "frozen_phi"),
+        trainable=(True, False),
+    )
+
+    result = custom_gauss_newton_gradient(
+        rule,
+        [2.0, -1.0],
+        weights=[1.0, 4.0],
+        damping=1.0,
+    )
+
+    assert isinstance(result, NaturalGradientResult)
+    assert result.base_gradient.method == "gauss_newton:custom_jacobian:scaled_residual"
+    assert result.base_gradient.parameter_names == ("theta", "frozen_phi")
+    assert result.base_gradient.trainable == (True, False)
+    assert result.base_gradient.value == pytest.approx(12.5)
+    _assert_allclose(result.base_gradient.gradient, [6.0, 0.0])
+    _assert_allclose(result.metric, [[5.0, 0.0], [0.0, 1.0]])
+    _assert_allclose(result.natural_gradient, [1.2, 0.0])
 
 
 def test_soft_l1_residual_weights_feed_levenberg_marquardt_trial() -> None:
@@ -126,6 +211,33 @@ def test_levenberg_marquardt_step_caps_trainable_norm_and_projects_bounds() -> N
     _assert_allclose(result.step, [-0.5, 0.0], atol=1.0e-6)
     _assert_allclose(result.candidate_values, [2.5, 5.0], atol=1.0e-6)
     assert result.predicted_reduction == pytest.approx(0.875)
+
+
+def test_custom_levenberg_marquardt_step_uses_exact_custom_jacobian() -> None:
+    """Exact custom residual Jacobians should feed bounded LM candidates."""
+
+    rule = CustomDerivativeRule(
+        name="identity_residual",
+        value_fn=lambda values: np.array([values[0], 2.0 * values[1]]),
+        jvp_rule=lambda values, tangent: np.array([tangent[0], 2.0 * tangent[1]]),
+    )
+
+    result = custom_levenberg_marquardt_step(
+        rule,
+        [2.0, -1.0],
+        damping=1.0,
+        max_step_norm=1.0,
+    )
+
+    assert isinstance(result, LevenbergMarquardtStep)
+    assert (
+        result.gauss_newton.base_gradient.method
+        == "gauss_newton:custom_jacobian:identity_residual"
+    )
+    _assert_allclose(result.gauss_newton.base_gradient.gradient, [2.0, -4.0])
+    assert np.linalg.norm(result.step) == pytest.approx(1.0)
+    _assert_allclose(result.candidate_values, np.array([2.0, -1.0]) + result.step)
+    assert result.predicted_reduction > 0.0
 
 
 def test_levenberg_marquardt_step_rejects_invalid_controls() -> None:
@@ -375,6 +487,88 @@ def test_levenberg_marquardt_optimizer_converges_for_residual_map() -> None:
     _assert_allclose(result.values, [1.0, -0.5], atol=1.0e-5)
 
 
+def test_levenberg_marquardt_optimizer_converges_for_initial_residual() -> None:
+    """A residual already below tolerance should return without LM trials."""
+
+    optimizer = LevenbergMarquardtOptimizer(residual_tolerance=1.0e-6)
+    result = optimizer.minimize(lambda values: np.array([values[0]]), [0.0])
+
+    assert result.converged is True
+    assert result.reason == "residual_tolerance"
+    assert result.steps == 0
+    assert result.accepted_history == ()
+
+
+def test_levenberg_marquardt_optimizer_converges_for_step_tolerance() -> None:
+    """Accepted tiny LM steps should stop at the step-tolerance gate."""
+
+    optimizer = LevenbergMarquardtOptimizer(
+        damping=1.0,
+        residual_tolerance=0.0,
+        step_tolerance=0.75,
+        max_steps=3,
+    )
+    result = optimizer.minimize(lambda values: np.array([values[0] - 1.0]), [2.0])
+
+    assert result.converged is True
+    assert result.reason == "step_tolerance"
+
+
+def test_levenberg_marquardt_optimizer_converges_for_value_tolerance() -> None:
+    """Accepted low-improvement LM trials should stop at the value gate."""
+
+    optimizer = LevenbergMarquardtOptimizer(
+        damping=1.0e6,
+        residual_tolerance=0.0,
+        step_tolerance=0.0,
+        value_tolerance=1.0e-4,
+        max_steps=3,
+    )
+    result = optimizer.minimize(lambda values: np.array([values[0] - 1.0]), [2.0])
+
+    assert result.converged is True
+    assert result.reason == "value_tolerance"
+
+
+def test_levenberg_marquardt_optimizer_preserves_existing_best_on_equal_trial(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Accepted equal-value trials should not replace the existing best iterate."""
+
+    def equal_value_trial(
+        _objective: object,
+        step_result: LevenbergMarquardtStep,
+        *,
+        weights: object | None = None,
+        acceptance_threshold: float = 1.0e-4,
+    ) -> LevenbergMarquardtTrial:
+        del weights, acceptance_threshold
+        value = step_result.gauss_newton.base_gradient.value
+        return LevenbergMarquardtTrial(
+            step_result=step_result,
+            candidate_residual=np.array([np.sqrt(2.0 * value)]),
+            candidate_value=value,
+            actual_reduction=0.0,
+            reduction_ratio=1.0,
+            accepted=True,
+        )
+
+    monkeypatch.setattr(lm_module, "evaluate_levenberg_marquardt_step", equal_value_trial)
+    optimizer = LevenbergMarquardtOptimizer(
+        damping=1.0,
+        residual_tolerance=0.0,
+        step_tolerance=10.0,
+        max_steps=1,
+    )
+
+    result = optimizer.minimize(lambda values: np.array([values[0] - 1.0]), [2.0])
+
+    assert result.converged is True
+    assert result.reason == "step_tolerance"
+    _assert_allclose(result.best_values, [2.0])
+    assert result.best_value == pytest.approx(result.value_history[0])
+
+
 def test_levenberg_marquardt_optimizer_respects_bounds_and_weights() -> None:
     """Bounded weighted LM runs should stay inside the declared parameter domain."""
 
@@ -405,12 +599,28 @@ def test_levenberg_marquardt_optimizer_respects_bounds_and_weights() -> None:
 def test_levenberg_marquardt_optimizer_rejects_invalid_controls() -> None:
     """Full LM optimization controls and IRLS weights must fail closed."""
 
+    with pytest.raises(ValueError, match="damping"):
+        LevenbergMarquardtOptimizer(damping=-0.1)
     with pytest.raises(ValueError, match="max_steps"):
         LevenbergMarquardtOptimizer(max_steps=0)
     with pytest.raises(ValueError, match="tolerances"):
         LevenbergMarquardtOptimizer(residual_tolerance=-1.0)
+    with pytest.raises(ValueError, match="value_tolerance"):
+        LevenbergMarquardtOptimizer(value_tolerance=-1.0)
+    with pytest.raises(ValueError, match="acceptance_threshold"):
+        LevenbergMarquardtOptimizer(acceptance_threshold=-1.0)
+    with pytest.raises(ValueError, match="decrease_factor"):
+        LevenbergMarquardtOptimizer(decrease_factor=1.0)
+    with pytest.raises(ValueError, match="increase_factor"):
+        LevenbergMarquardtOptimizer(increase_factor=1.0)
+    with pytest.raises(ValueError, match="damping bounds"):
+        LevenbergMarquardtOptimizer(min_damping=2.0, max_damping=1.0)
+    with pytest.raises(ValueError, match="high_quality_ratio"):
+        LevenbergMarquardtOptimizer(high_quality_ratio=-1.0)
     with pytest.raises(ValueError, match="finite_difference_step"):
         LevenbergMarquardtOptimizer(finite_difference_step=0.0)
+    with pytest.raises(ValueError, match="max_step_norm"):
+        LevenbergMarquardtOptimizer(max_step_norm=0.0)
 
     optimizer = LevenbergMarquardtOptimizer(max_steps=1)
     with pytest.raises(ValueError, match="LM weights"):

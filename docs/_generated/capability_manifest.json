@@ -11,10 +11,10 @@
     "public_api_exports": 714,
     "public_documentation_pages": 254,
     "python_model_classes": 1840,
-    "python_model_source_modules": 884,
+    "python_model_source_modules": 885,
     "rust_pyo3_model_wrappers": 137,
     "rust_source_modules": 38,
-    "test_files": 2031
+    "test_files": 2034
   },
   "documentation": {
     "examples": [
@@ -3907,7 +3907,7 @@
       },
       {
         "name": "LevenbergMarquardtOptimizer",
-        "path": "src/scpn_quantum_control/differentiable.py"
+        "path": "src/scpn_quantum_control/differentiable_levenberg_marquardt.py"
       },
       {
         "name": "LevenbergMarquardtResult",
@@ -8575,6 +8575,7 @@
       "src/scpn_quantum_control/differentiable_gradient_descent.py",
       "src/scpn_quantum_control/differentiable_implicit_sensitivity.py",
       "src/scpn_quantum_control/differentiable_jax_adapter.py",
+      "src/scpn_quantum_control/differentiable_levenberg_marquardt.py",
       "src/scpn_quantum_control/differentiable_module_hardening_audit.py",
       "src/scpn_quantum_control/differentiable_natural_gradient.py",
       "src/scpn_quantum_control/differentiable_parameter_contracts.py",
@@ -10335,6 +10336,7 @@
       "tests/test_binding_spec.py",
       "tests/test_biological_cli.py",
       "tests/test_biological_diagnostics.py",
+      "tests/test_biological_diagnostics_internals.py",
       "tests/test_biological_pipeline.py",
       "tests/test_biological_surface_code.py",
       "tests/test_bkt_analysis.py",
@@ -10859,6 +10861,7 @@
       "tests/test_crypto_properties.py",
       "tests/test_crypto_topology_auth.py",
       "tests/test_cutting_runner.py",
+      "tests/test_dataset_catalog.py",
       "tests/test_dd.py",
       "tests/test_dense_budget.py",
       "tests/test_dependency_hygiene.py",
@@ -11708,6 +11711,7 @@
       "tests/test_qpu_compute.py",
       "tests/test_qpu_data_artifact.py",
       "tests/test_qrc_phase_detector.py",
+      "tests/test_qrng_stream.py",
       "tests/test_qsnn_native_parameter_shift.py",
       "tests/test_qsnn_training.py",
       "tests/test_qsnn_validation.py",

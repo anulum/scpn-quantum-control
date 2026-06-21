@@ -341,6 +341,14 @@ def differentiable_module_hardening_registry() -> tuple[DifferentiableModuleHard
             ("implicit stationary sensitivity", "fixed-point sensitivity solves"),
         ),
         _record(
+            "src/scpn_quantum_control/differentiable_levenberg_marquardt.py",
+            ("tests/test_differentiable_levenberg_marquardt.py",),
+            (
+                "Gauss-Newton residual solves",
+                "Levenberg-Marquardt trial and damping policy",
+            ),
+        ),
+        _record(
             "src/scpn_quantum_control/differentiable_module_hardening_audit.py",
             ("tests/test_differentiable_module_hardening_audit.py",),
             ("module inventory discovery", "module-specific test enforcement"),
