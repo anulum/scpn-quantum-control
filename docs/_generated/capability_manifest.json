@@ -11,10 +11,10 @@
     "public_api_exports": 714,
     "public_documentation_pages": 254,
     "python_model_classes": 1840,
-    "python_model_source_modules": 885,
+    "python_model_source_modules": 886,
     "rust_pyo3_model_wrappers": 137,
     "rust_source_modules": 38,
-    "test_files": 2036
+    "test_files": 2037
   },
   "documentation": {
     "examples": [
@@ -9242,6 +9242,7 @@
       "src/scpn_quantum_control/phase/xy_compiler.py",
       "src/scpn_quantum_control/phase/xy_kuramoto.py",
       "src/scpn_quantum_control/program_ad_adjoint.py",
+      "src/scpn_quantum_control/program_ad_adjoint_generation.py",
       "src/scpn_quantum_control/program_ad_alias_analysis.py",
       "src/scpn_quantum_control/program_ad_array_indexing.py",
       "src/scpn_quantum_control/program_ad_assembly_primitives.py",
@@ -11650,6 +11651,7 @@
       "tests/test_prepare_s1_ibm_live_readiness.py",
       "tests/test_probe_s1_generic_gate_metadata.py",
       "tests/test_probe_s1_ibm_metadata.py",
+      "tests/test_program_ad_adjoint_generation.py",
       "tests/test_program_ad_alias_effects.py",
       "tests/test_program_ad_array_indexing_registry.py",
       "tests/test_program_ad_binary_elementwise_registry.py",
