@@ -36,18 +36,19 @@ from dataclasses import dataclass, field
 from typing import Any
 
 import numpy as np
+from numpy.typing import NDArray
 
-ComplexArray = np.ndarray
-ComplexObjective = Callable[[np.ndarray], complex]
-RealObjective = Callable[[np.ndarray], float]
+ComplexArray = NDArray[np.complex128]
+ComplexObjective = Callable[[NDArray[np.complex128]], complex]
+RealObjective = Callable[[NDArray[np.complex128]], float]
 
 
 @dataclass(frozen=True)
 class WirtingerDerivative:
     """Wirtinger partials of ``f`` at a point, plus a holomorphicity residual."""
 
-    df_dz: np.ndarray
-    df_dconj_z: np.ndarray
+    df_dz: NDArray[np.complex128]
+    df_dconj_z: NDArray[np.complex128]
     holomorphic_residual: float
 
 
@@ -55,13 +56,13 @@ class WirtingerDerivative:
 class WirtingerOptimisationResult:
     """Trajectory of a complex steepest-descent run on a real-valued objective."""
 
-    parameters: np.ndarray
-    loss_history: np.ndarray
+    parameters: NDArray[np.complex128]
+    loss_history: NDArray[np.float64]
     final_loss: float
     provenance: dict[str, Any] = field(default_factory=dict)
 
 
-def _as_complex_vector(z: np.ndarray) -> np.ndarray:
+def _as_complex_vector(z: NDArray[np.complex128]) -> NDArray[np.complex128]:
     array = np.asarray(z, dtype=np.complex128)
     if array.ndim != 1 or array.size == 0:
         raise ValueError("z must be a non-empty one-dimensional complex vector")
@@ -78,7 +79,7 @@ def _validate_step(step: float) -> float:
 
 def wirtinger_partials(
     f: ComplexObjective,
-    z: np.ndarray,
+    z: NDArray[np.complex128],
     *,
     step: float = 1e-6,
 ) -> WirtingerDerivative:
@@ -113,7 +114,7 @@ def wirtinger_partials(
 
 def is_holomorphic(
     f: ComplexObjective,
-    z: np.ndarray,
+    z: NDArray[np.complex128],
     *,
     tolerance: float = 1e-6,
     step: float = 1e-6,
@@ -126,11 +127,11 @@ def is_holomorphic(
 
 def holomorphic_gradient(
     f: ComplexObjective,
-    z: np.ndarray,
+    z: NDArray[np.complex128],
     *,
     tolerance: float = 1e-6,
     step: float = 1e-6,
-) -> np.ndarray:
+) -> NDArray[np.complex128]:
     """Return the complex derivative ``df/dz`` of a holomorphic ``f`` at ``z``.
 
     Raises ``ValueError`` (fail-closed) when ``f`` is not holomorphic at ``z``, so
@@ -148,17 +149,17 @@ def holomorphic_gradient(
 
 def real_objective_gradient(
     loss: RealObjective,
-    z: np.ndarray,
+    z: NDArray[np.complex128],
     *,
     step: float = 1e-6,
-) -> np.ndarray:
+) -> NDArray[np.complex128]:
     """Return the CR steepest-descent gradient ``dL/dconj_z`` of a real loss.
 
     For ``L: C^n -> R`` the update ``z <- z - eta * gradient`` reduces ``L``; the
     gradient equals ``conj(dL/dz)``.
     """
 
-    def _complex_loss(vector: np.ndarray) -> complex:
+    def _complex_loss(vector: NDArray[np.complex128]) -> complex:
         return complex(float(np.real(loss(vector))), 0.0)
 
     return wirtinger_partials(_complex_loss, z, step=step).df_dconj_z
@@ -166,7 +167,7 @@ def real_objective_gradient(
 
 def minimise_real_objective(
     loss: RealObjective,
-    z0: np.ndarray,
+    z0: NDArray[np.complex128],
     *,
     learning_rate: float = 0.1,
     steps: int = 100,

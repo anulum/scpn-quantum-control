@@ -22,6 +22,7 @@ from __future__ import annotations
 from typing import Any
 
 import numpy as np
+from numpy.typing import NDArray
 
 _CURRENT_BACKEND = "numpy"
 _BACKEND_MODULES: dict[str, Any] = {"numpy": np}
@@ -68,19 +69,19 @@ def get_array_module() -> Any:
     return _BACKEND_MODULES.get(_CURRENT_BACKEND, np)
 
 
-def to_numpy(arr: Any) -> np.ndarray:
+def to_numpy(arr: Any) -> NDArray[Any]:
     """Convert any backend array to numpy."""
     if isinstance(arr, np.ndarray):
         return arr
     if _CURRENT_BACKEND == "jax":
         return np.array(arr, copy=False)
     if _CURRENT_BACKEND == "torch":
-        result: np.ndarray = arr.detach().cpu().numpy()
+        result: NDArray[Any] = arr.detach().cpu().numpy()
         return result
     return np.array(arr, copy=False)
 
 
-def from_numpy(arr: np.ndarray) -> Any:
+def from_numpy(arr: NDArray[Any]) -> Any:
     """Convert numpy array to current backend."""
     if _CURRENT_BACKEND == "numpy":
         return arr

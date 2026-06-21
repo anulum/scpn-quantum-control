@@ -16,6 +16,7 @@ from types import MappingProxyType
 from typing import TYPE_CHECKING, Any
 
 import numpy as np
+from numpy.typing import NDArray
 from qiskit import QuantumCircuit
 from qiskit.quantum_info import SparsePauliOp, Statevector
 
@@ -30,7 +31,7 @@ if TYPE_CHECKING:
 JsonScalar = str | int | float | bool | None
 
 
-def _as_real_numeric_array(name: str, values: Any) -> np.ndarray:
+def _as_real_numeric_array(name: str, values: Any) -> NDArray[np.float64]:
     """Return a real numeric array without implicit string/bool/object coercion."""
     try:
         raw = np.asarray(values)
@@ -51,8 +52,8 @@ def _as_real_numeric_array(name: str, values: Any) -> np.ndarray:
 class KuramotoProblem:
     """Validated coupling matrix, frequencies, and serialisable metadata."""
 
-    K_nm: np.ndarray
-    omega: np.ndarray
+    K_nm: NDArray[np.float64]
+    omega: NDArray[np.float64]
     metadata: Mapping[str, JsonScalar] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
@@ -75,7 +76,7 @@ class KuramotoProblem:
         return int(self.omega.shape[0])
 
     @property
-    def K(self) -> np.ndarray:
+    def K(self) -> NDArray[np.float64]:
         """Alias for the validated coupling matrix."""
 
         return self.K_nm
@@ -95,7 +96,9 @@ class KuramotoProblem:
         }
 
 
-def validate_kuramoto_inputs(K_nm: np.ndarray, omega: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+def validate_kuramoto_inputs(
+    K_nm: NDArray[np.float64], omega: NDArray[np.float64]
+) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
     """Validate and copy a symmetric Kuramoto coupling problem."""
     K_arr = _as_real_numeric_array("K_nm", K_nm)
     omega_arr = _as_real_numeric_array("omega", omega)
@@ -119,8 +122,8 @@ def validate_kuramoto_inputs(K_nm: np.ndarray, omega: np.ndarray) -> tuple[np.nd
 
 
 def build_kuramoto_problem(
-    K_nm: np.ndarray,
-    omega: np.ndarray,
+    K_nm: NDArray[np.float64],
+    omega: NDArray[np.float64],
     metadata: Mapping[str, JsonScalar] | None = None,
 ) -> KuramotoProblem:
     """Create a validated Kuramoto-XY problem from arbitrary arrays."""
@@ -136,7 +139,7 @@ def compile_dense_hamiltonian(
     problem: KuramotoProblem,
     *,
     max_dense_gib: float | None = None,
-) -> np.ndarray:
+) -> NDArray[np.complex128]:
     """Compile a dense Hamiltonian, using the Rust engine when installed."""
     return knm_to_dense_matrix(problem.K_nm, problem.omega, max_dense_gib=max_dense_gib)
 
@@ -211,13 +214,13 @@ def simulate_variant_trajectory(
     *,
     dt: float,
     n_steps: int,
-    theta0: np.ndarray | None = None,
-    hyperedges: np.ndarray | None = None,
-    hyper_weights: np.ndarray | None = None,
+    theta0: NDArray[np.float64] | None = None,
+    hyperedges: NDArray[np.int64] | None = None,
+    hyper_weights: NDArray[np.float64] | None = None,
     target_r: float = 0.75,
     monitor_gain: float = 0.8,
     measurement_strength: float = 0.2,
-    gain_loss: np.ndarray | None = None,
+    gain_loss: NDArray[np.float64] | None = None,
     prefer_rust: bool = True,
 ) -> KuramotoVariantResult:
     """Run a higher-order, monitored, or PT-symmetric Kuramoto variant."""

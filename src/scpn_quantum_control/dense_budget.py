@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import os
 from dataclasses import dataclass
-from typing import Final
+from typing import Any, Final
 
 import numpy as np
 
@@ -62,7 +62,7 @@ def hilbert_dimension(n_qubits: int) -> int:
 def dense_object_bytes(
     n_qubits: int,
     *,
-    dtype: np.dtype | type | str = np.complex128,
+    dtype: np.dtype[Any] | type | str = np.complex128,
     rank: int = 2,
 ) -> int:
     """Return bytes needed for a dense Hilbert vector/matrix/superoperator."""
@@ -115,7 +115,7 @@ def dense_budget_bytes(max_gib: float | None = None) -> int:
 def estimate_dense_allocation(
     n_qubits: int,
     *,
-    dtype: np.dtype | type | str = np.complex128,
+    dtype: np.dtype[Any] | type | str = np.complex128,
     rank: int = 2,
     object_count: int = 1,
     max_gib: float | None = None,
@@ -141,7 +141,7 @@ def estimate_dense_allocation(
 def require_dense_allocation(
     n_qubits: int,
     *,
-    dtype: np.dtype | type | str = np.complex128,
+    dtype: np.dtype[Any] | type | str = np.complex128,
     rank: int = 2,
     object_count: int = 1,
     max_gib: float | None = None,
@@ -175,7 +175,7 @@ def require_dense_allocation(
 def require_dense_eigensolver_workspace(
     n_qubits: int,
     *,
-    dtype: np.dtype | type | str = np.complex128,
+    dtype: np.dtype[Any] | type | str = np.complex128,
     max_gib: float | None = None,
     label: str = "dense eigensolver workspace",
 ) -> DenseAllocationEstimate:

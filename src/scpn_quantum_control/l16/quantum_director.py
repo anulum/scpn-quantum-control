@@ -34,6 +34,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import numpy as np
+from numpy.typing import NDArray
 
 from ..bridge.knm_hamiltonian import knm_to_dense_matrix, knm_to_hamiltonian
 from ..bridge.ssgf_adapter import quantum_to_ssgf_state
@@ -53,16 +54,18 @@ class L16Result:
     action: str  # "continue", "adjust", "halt"
 
 
-def _evolve_exact(psi: np.ndarray, H_mat: np.ndarray, t: float) -> np.ndarray:
+def _evolve_exact(
+    psi: NDArray[np.complex128], H_mat: NDArray[np.complex128], t: float
+) -> NDArray[np.complex128]:
     """Exact time evolution via matrix exponential."""
     U = expm(-1j * H_mat * t)
-    result: np.ndarray = U @ psi
+    result: NDArray[np.complex128] = U @ psi
     return result
 
 
 def loschmidt_echo(
-    K: np.ndarray,
-    omega: np.ndarray,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
     t: float = 0.5,
     *,
     max_dense_gib: float | None = None,
@@ -81,8 +84,8 @@ def loschmidt_echo(
 
 
 def energy_variance(
-    K: np.ndarray,
-    omega: np.ndarray,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
     *,
     max_dense_gib: float | None = None,
 ) -> float:
@@ -101,8 +104,8 @@ def energy_variance(
 
 
 def fidelity_susceptibility(
-    K: np.ndarray,
-    omega: np.ndarray,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
     epsilon: float = 0.005,
 ) -> float:
     """Fidelity susceptibility: -d²F/dε² at ε=0.
@@ -125,8 +128,8 @@ def fidelity_susceptibility(
 
 
 def compute_l16_lyapunov(
-    K: np.ndarray,
-    omega: np.ndarray,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
     t: float = 0.5,
 ) -> L16Result:
     """Full L16 Lyapunov monitoring assessment.
