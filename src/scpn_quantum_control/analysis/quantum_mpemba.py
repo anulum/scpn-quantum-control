@@ -37,6 +37,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import numpy as np
+from numpy.typing import NDArray
 from scipy.linalg import expm
 
 from ..bridge.knm_hamiltonian import knm_to_dense_matrix
@@ -47,11 +48,11 @@ from ..dense_budget import require_dense_allocation
 class MpembaResult:
     """Result of quantum Mpemba experiment."""
 
-    times: np.ndarray
-    fidelity_near: np.ndarray  # F(ρ(t), ρ_ss) for "near" initial state
-    fidelity_far: np.ndarray  # F(ρ(t), ρ_ss) for "far" initial state
-    R_near: np.ndarray  # order parameter for near
-    R_far: np.ndarray  # order parameter for far
+    times: NDArray[np.float64]
+    fidelity_near: NDArray[np.float64]  # F(ρ(t), ρ_ss) for "near" initial state
+    fidelity_far: NDArray[np.float64]  # F(ρ(t), ρ_ss) for "far" initial state
+    R_near: NDArray[np.float64]  # order parameter for near
+    R_far: NDArray[np.float64]  # order parameter for far
     initial_distance_near: float  # 1 - F(ρ_near, ρ_ss)
     initial_distance_far: float  # 1 - F(ρ_far, ρ_ss)
     has_mpemba: bool  # far state reaches equilibrium first
@@ -59,13 +60,13 @@ class MpembaResult:
 
 
 def _validate_mpemba_inputs(
-    omega: np.ndarray,
-    K_topology: np.ndarray,
+    omega: NDArray[np.float64],
+    K_topology: NDArray[np.float64],
     K_base: float,
     gamma: float,
     t_max: float,
     n_steps: int,
-) -> tuple[np.ndarray, np.ndarray, float, float, float, int]:
+) -> tuple[NDArray[np.float64], NDArray[np.float64], float, float, float, int]:
     omega_arr = np.asarray(omega, dtype=np.float64)
     topology_arr = np.asarray(K_topology, dtype=np.float64)
     if omega_arr.ndim != 1:
@@ -89,7 +90,9 @@ def _validate_mpemba_inputs(
     return omega_arr, topology_arr, float(K_base), float(gamma), float(t_max), n_steps
 
 
-def _lindblad_superoperator(H: np.ndarray, gamma: float, n_qubits: int) -> np.ndarray:
+def _lindblad_superoperator(
+    H: NDArray[np.complex128], gamma: float, n_qubits: int
+) -> NDArray[np.complex128]:
     """Build the Lindblad superoperator L such that dvec(ρ)/dt = L vec(ρ).
 
     Depolarizing noise: L_k = sqrt(γ) * σ_k^(q) for σ ∈ {X,Y,Z}, q ∈ qubits.
@@ -117,11 +120,11 @@ def _lindblad_superoperator(H: np.ndarray, gamma: float, n_qubits: int) -> np.nd
             - 0.5 * np.kron(I_d, L_k.T @ L_k.conj())
         )
 
-    result: np.ndarray = L_total
+    result: NDArray[np.complex128] = L_total.astype(np.complex128)
     return result
 
 
-def _fidelity(rho: np.ndarray, sigma: np.ndarray) -> float:
+def _fidelity(rho: NDArray[np.complex128], sigma: NDArray[np.complex128]) -> float:
     """State fidelity F(ρ, σ) = (Tr√(√ρ σ √ρ))²."""
     sqrt_rho = _matrix_sqrt(rho)
     product = sqrt_rho @ sigma @ sqrt_rho
@@ -129,16 +132,16 @@ def _fidelity(rho: np.ndarray, sigma: np.ndarray) -> float:
     return float(np.real(np.trace(sqrt_product)) ** 2)
 
 
-def _matrix_sqrt(A: np.ndarray) -> np.ndarray:
+def _matrix_sqrt(A: NDArray[np.complex128]) -> NDArray[np.complex128]:
     """Matrix square root via eigendecomposition."""
     eigvals, eigvecs = np.linalg.eigh(A)
     eigvals = np.maximum(eigvals, 0)  # clamp numerical negatives
     sqrt_diag = np.diag(np.sqrt(eigvals))
-    result: np.ndarray = eigvecs @ sqrt_diag @ eigvecs.conj().T
+    result: NDArray[np.complex128] = (eigvecs @ sqrt_diag @ eigvecs.conj().T).astype(np.complex128)
     return result
 
 
-def _R_from_density_matrix(rho: np.ndarray, n_qubits: int) -> float:
+def _R_from_density_matrix(rho: NDArray[np.complex128], n_qubits: int) -> float:
     """Order parameter R from density matrix."""
     phases = np.zeros(n_qubits)
 
@@ -164,8 +167,8 @@ def _R_from_density_matrix(rho: np.ndarray, n_qubits: int) -> float:
 
 
 def mpemba_experiment(
-    omega: np.ndarray,
-    K_topology: np.ndarray,
+    omega: NDArray[np.float64],
+    K_topology: NDArray[np.float64],
     K_base: float,
     gamma: float = 0.1,
     t_max: float = 5.0,
@@ -234,7 +237,7 @@ def mpemba_experiment(
 
     # Time evolution
     dt = t_max / n_steps
-    times = np.linspace(0, t_max, n_steps + 1)
+    times = np.linspace(0, t_max, n_steps + 1, dtype=np.float64)
     fid_near = np.zeros(n_steps + 1)
     fid_far = np.zeros(n_steps + 1)
     R_near_arr = np.zeros(n_steps + 1)

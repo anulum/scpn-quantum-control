@@ -36,6 +36,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import numpy as np
+from numpy.typing import NDArray
 
 from ..bridge.knm_hamiltonian import knm_to_dense_matrix, knm_to_hamiltonian
 from ..dense_budget import require_dense_allocation, require_dense_eigensolver_workspace
@@ -45,22 +46,22 @@ from ..dense_budget import require_dense_allocation, require_dense_eigensolver_w
 class BerryPhaseResult:
     """Berry phase analysis across coupling strength."""
 
-    k_values: np.ndarray
-    berry_connection: np.ndarray  # A(K) at each midpoint
-    berry_curvature: np.ndarray  # F(K) = dA/dK
-    accumulated_phase: np.ndarray  # γ(K) = cumulative integral
-    fidelity: np.ndarray  # |⟨ψ(K)|ψ(K+dK)⟩| at each step
-    fidelity_susceptibility: np.ndarray  # χ_F at each midpoint
-    spectral_gap: np.ndarray  # gap at each K
+    k_values: NDArray[np.float64]
+    berry_connection: NDArray[np.float64]  # A(K) at each midpoint
+    berry_curvature: NDArray[np.float64]  # F(K) = dA/dK
+    accumulated_phase: NDArray[np.float64]  # γ(K) = cumulative integral
+    fidelity: NDArray[np.float64]  # |⟨ψ(K)|ψ(K+dK)⟩| at each step
+    fidelity_susceptibility: NDArray[np.float64]  # χ_F at each midpoint
+    spectral_gap: NDArray[np.float64]  # gap at each K
     curvature_peak_k: float | None  # K where |F| is maximum
 
 
 def _ground_state(
-    K: np.ndarray,
-    omega: np.ndarray,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
     *,
     max_dense_gib: float | None = None,
-) -> tuple[np.ndarray, float]:
+) -> tuple[NDArray[np.complex128], float]:
     """Return (ground state vector, spectral gap)."""
     n = len(omega)
     require_dense_eigensolver_workspace(
@@ -76,7 +77,9 @@ def _ground_state(
     return psi0, gap
 
 
-def _fix_gauge(psi: np.ndarray, psi_ref: np.ndarray) -> np.ndarray:
+def _fix_gauge(
+    psi: NDArray[np.complex128], psi_ref: NDArray[np.complex128]
+) -> NDArray[np.complex128]:
     """Fix the U(1) gauge freedom by maximizing Re⟨psi_ref|psi⟩.
 
     Eigenvectors have arbitrary overall phase. This aligns
@@ -86,14 +89,14 @@ def _fix_gauge(psi: np.ndarray, psi_ref: np.ndarray) -> np.ndarray:
     if abs(overlap) < 1e-15:
         return psi
     phase = overlap / abs(overlap)
-    result: np.ndarray = psi / phase
+    result: NDArray[np.complex128] = psi / phase
     return result
 
 
 def berry_phase_scan(
-    omega: np.ndarray,
-    K_topology: np.ndarray,
-    k_range: np.ndarray | None = None,
+    omega: NDArray[np.float64],
+    K_topology: NDArray[np.float64],
+    k_range: NDArray[np.float64] | None = None,
     *,
     max_dense_gib: float | None = None,
 ) -> BerryPhaseResult:
@@ -103,7 +106,7 @@ def berry_phase_scan(
     max_dense_gib: optional GiB budget for dense eigensolver and retained states.
     """
     if k_range is None:
-        k_range = np.linspace(0.5, 5.0, 30)
+        k_range = np.linspace(0.5, 5.0, 30, dtype=np.float64)
 
     n = len(omega)
     n_k = len(k_range)
@@ -148,14 +151,14 @@ def berry_phase_scan(
 
     # Berry curvature: F = dA/dK (finite difference)
     if n_mid > 1:
-        curvature: np.ndarray = np.gradient(connection, k_range[:n_mid])
+        curvature: NDArray[np.float64] = np.gradient(connection, k_range[:n_mid])
     else:
         curvature = np.zeros(n_mid)
 
     # Accumulated phase: γ(K) = integral of A
     k_mid = (k_range[:-1] + k_range[1:]) / 2
     dk_arr = np.diff(k_range)
-    accumulated: np.ndarray = np.cumsum(connection * dk_arr)
+    accumulated: NDArray[np.float64] = np.cumsum(connection * dk_arr)
 
     # Peak curvature location
     peak_k = None
