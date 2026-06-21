@@ -14,7 +14,7 @@
     "python_model_source_modules": 888,
     "rust_pyo3_model_wrappers": 137,
     "rust_source_modules": 38,
-    "test_files": 2049
+    "test_files": 2050
   },
   "documentation": {
     "examples": [
@@ -10830,6 +10830,7 @@
       "tests/test_classical_irreproducibility.py",
       "tests/test_classical_reference_regression.py",
       "tests/test_closed_loop_analysis.py",
+      "tests/test_closed_loop_analysis_wall_clock.py",
       "tests/test_commutator_bounds.py",
       "tests/test_compare_eeg_plv_cohorts.py",
       "tests/test_compound_mitigation.py",
