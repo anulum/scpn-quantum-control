@@ -304,6 +304,11 @@ def differentiable_module_hardening_registry() -> tuple[DifferentiableModuleHard
             ("confidence interval validation", "fail-closed uncertainty policy"),
         ),
         _record(
+            "src/scpn_quantum_control/differentiable_transform_helpers.py",
+            ("tests/test_differentiable_transform_helpers.py",),
+            ("scalar transform helper contracts", "bounds and gradient clipping"),
+        ),
+        _record(
             "src/scpn_quantum_control/differentiable_rust_python_inventory.py",
             ("tests/test_differentiable_rust_python_inventory.py",),
             ("rustification classification rows", "claim-ledger readiness guards"),
