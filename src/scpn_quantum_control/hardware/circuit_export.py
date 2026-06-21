@@ -16,6 +16,7 @@ from __future__ import annotations
 from typing import Any
 
 import numpy as np
+from numpy.typing import NDArray
 from qiskit import QuantumCircuit
 from qiskit.circuit.library import PauliEvolutionGate
 from qiskit.synthesis import LieTrotter
@@ -24,8 +25,8 @@ from ..bridge.knm_hamiltonian import knm_to_hamiltonian
 
 
 def build_trotter_circuit(
-    K: np.ndarray,
-    omega: np.ndarray,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
     t: float = 0.1,
     reps: int = 5,
 ) -> QuantumCircuit:
@@ -59,7 +60,9 @@ def build_trotter_circuit(
     return qc
 
 
-def to_qasm3(K: np.ndarray, omega: np.ndarray, t: float = 0.1, reps: int = 5) -> str:
+def to_qasm3(
+    K: NDArray[np.float64], omega: NDArray[np.float64], t: float = 0.1, reps: int = 5
+) -> str:
     """Export circuit as OpenQASM string.
 
     Uses qasm2.dumps for Qiskit 2.x compatibility.
@@ -72,7 +75,9 @@ def to_qasm3(K: np.ndarray, omega: np.ndarray, t: float = 0.1, reps: int = 5) ->
     return str(qasm2.dumps(qc))
 
 
-def to_cirq(K: np.ndarray, omega: np.ndarray, t: float = 0.1, reps: int = 5) -> Any:
+def to_cirq(
+    K: NDArray[np.float64], omega: NDArray[np.float64], t: float = 0.1, reps: int = 5
+) -> Any:
     """Export circuit as Cirq Circuit object.
 
     Requires: pip install cirq-core
@@ -93,7 +98,9 @@ def to_cirq(K: np.ndarray, omega: np.ndarray, t: float = 0.1, reps: int = 5) -> 
     return result[0] if isinstance(result, tuple) else result
 
 
-def to_quil(K: np.ndarray, omega: np.ndarray, t: float = 0.1, reps: int = 5) -> str:
+def to_quil(
+    K: NDArray[np.float64], omega: NDArray[np.float64], t: float = 0.1, reps: int = 5
+) -> str:
     """Export circuit as Quil string (Rigetti PyQuil format).
 
     Requires: pip install pyquil
@@ -127,11 +134,11 @@ def to_quil(K: np.ndarray, omega: np.ndarray, t: float = 0.1, reps: int = 5) -> 
 
 
 def export_all(
-    K: np.ndarray,
-    omega: np.ndarray,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
     t: float = 0.1,
     reps: int = 5,
-) -> dict:
+) -> dict[str, Any]:
     """Export circuit in all supported formats.
 
     Returns dict with keys: qiskit, qasm3, quil.

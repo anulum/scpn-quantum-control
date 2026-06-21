@@ -128,7 +128,7 @@ class AsyncHardwareRunner:
         backend: str = "ibm_heron_r2",
         shots: int = 4096,
         mitigation: str = "GUESS",
-        **kwargs,
+        **kwargs: Any,
     ) -> None:
         self.backend = backend
         self.default_shots = shots
@@ -138,7 +138,7 @@ class AsyncHardwareRunner:
         # Accept either a single runner or any iterable of runners.
         if runners is not None:
             if hasattr(runners, "backend_name") and not hasattr(runners, "__iter__"):
-                runners = [runners]  # type: ignore[list-item]
+                runners = [runners]
             elif isinstance(runners, (list, tuple)):
                 runners = list(runners)
             else:
@@ -208,7 +208,7 @@ class AsyncHardwareRunner:
     # Public API
     # ------------------------------------------------------------------
 
-    def submit_circuit_batch(self, ansatz, observable, **kwargs):
+    def submit_circuit_batch(self, ansatz: Any, observable: Any, **kwargs: Any) -> Any:
         """Submit ``StructuredAnsatz`` jobs without fabricating unfinished results.
 
         Real QPU submissions return real job identifiers immediately when
@@ -220,15 +220,21 @@ class AsyncHardwareRunner:
         class JobWrapper:
             """Awaitable wrapper around simulator, ZNE, or submitted QPU work."""
 
-            def __init__(self, runner_obj, ansatz, observable, kwargs):
+            def __init__(
+                self,
+                runner_obj: AsyncHardwareRunner,
+                ansatz: Any,
+                observable: Any,
+                kwargs: dict[str, Any],
+            ) -> None:
                 self.runner_obj = runner_obj
                 self.ansatz = ansatz
                 self.observable = observable
                 self.kwargs = kwargs
-                self.job_id = None
+                self.job_id: str | None = None
                 self.submitted_at = time.time()
 
-            def _run_blocking(self):
+            def _run_blocking(self) -> dict[str, Any]:
                 import os
 
                 from qiskit.transpiler.passes import ALAPScheduleAnalysis, PadDynamicalDecoupling
@@ -331,7 +337,7 @@ class AsyncHardwareRunner:
 
                                 from scpn_quantum_control.analysis import SyncOrderParameter
 
-                                def _zne_executor(circ):
+                                def _zne_executor(circ: Any) -> float:
                                     """Run scaled circuit and return sync_order for extrapolation."""
                                     _job = sampler.run([circ])
                                     zne_job_id = str(_job.job_id())
@@ -405,7 +411,7 @@ class AsyncHardwareRunner:
                         self.job_id = None
                         status = "IBM_SUBMISSION_ERROR"
 
-                final_result = {}
+                final_result: dict[str, Any] = {}
                 if counts is not None:
                     observables = (
                         self.observable if isinstance(self.observable, list) else [self.observable]
@@ -431,7 +437,7 @@ class AsyncHardwareRunner:
 
                 return final_result
 
-            async def result(self):
+            async def result(self) -> dict[str, Any]:
                 import asyncio
 
                 return await asyncio.to_thread(self._run_blocking)

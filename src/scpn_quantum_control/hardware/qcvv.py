@@ -26,6 +26,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import numpy as np
+from numpy.typing import NDArray
 from qiskit import QuantumCircuit
 from qiskit.quantum_info import Statevector
 
@@ -43,15 +44,15 @@ class QCVVResult:
     n_qubits: int
 
 
-def state_fidelity(psi_ideal: np.ndarray, psi_actual: np.ndarray) -> float:
+def state_fidelity(psi_ideal: NDArray[np.complex128], psi_actual: NDArray[np.complex128]) -> float:
     """Pure state fidelity |<ideal|actual>|^2."""
     overlap = abs(np.dot(psi_ideal.conj(), psi_actual)) ** 2
     return float(overlap)
 
 
 def mirror_circuit_fidelity(
-    K: np.ndarray,
-    omega: np.ndarray,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
     t: float = 0.5,
     reps: int = 3,
 ) -> float:
@@ -82,8 +83,8 @@ def mirror_circuit_fidelity(
 
 
 def cross_entropy_score(
-    ideal_probs: np.ndarray,
-    measured_counts: np.ndarray,
+    ideal_probs: NDArray[np.float64],
+    measured_counts: NDArray[np.int64],
     n_shots: int,
 ) -> float:
     """Linear cross-entropy benchmarking score.
@@ -99,8 +100,8 @@ def cross_entropy_score(
 
 
 def simulate_xeb(
-    K: np.ndarray,
-    omega: np.ndarray,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
     t: float = 0.5,
     noise_level: float = 0.0,
     n_shots: int = 1000,
@@ -135,8 +136,8 @@ def simulate_xeb(
 
 
 def qcvv_certify(
-    K: np.ndarray,
-    omega: np.ndarray,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
     fidelity_threshold: float = 0.9,
     mirror_threshold: float = 0.9,
     xeb_threshold: float = 0.5,
