@@ -35,6 +35,7 @@ from dataclasses import dataclass, field
 from typing import Any
 
 import numpy as np
+from numpy.typing import NDArray
 
 from ..accel.rust_import import optional_rust_engine
 from ..dense_budget import require_dense_allocation
@@ -45,21 +46,23 @@ from .knm_partition import KnmPartition, partition_knm
 class CoSimulationResult:
     """Trajectories and order parameters from a quantum/classical co-simulation."""
 
-    times: np.ndarray
-    classical_phases: np.ndarray
-    quantum_expectation_x: np.ndarray
-    quantum_expectation_y: np.ndarray
-    quantum_order: np.ndarray
-    classical_order: np.ndarray
-    global_order: np.ndarray
-    baseline_classical_order: np.ndarray
-    baseline_global_order: np.ndarray
+    times: NDArray[np.float64]
+    classical_phases: NDArray[np.float64]
+    quantum_expectation_x: NDArray[np.float64]
+    quantum_expectation_y: NDArray[np.float64]
+    quantum_order: NDArray[np.float64]
+    classical_order: NDArray[np.float64]
+    global_order: NDArray[np.float64]
+    baseline_classical_order: NDArray[np.float64]
+    baseline_global_order: NDArray[np.float64]
     baseline_deviation: float
     partition: KnmPartition
     provenance: dict[str, Any] = field(default_factory=dict)
 
 
-def _qubit_view(state: np.ndarray, qubit: int, n_qubits: int) -> np.ndarray:
+def _qubit_view(
+    state: NDArray[np.complex128], qubit: int, n_qubits: int
+) -> NDArray[np.complex128]:
     """Reshape ``state`` so axis 1 selects ``qubit`` (bit = (idx >> qubit) & 1)."""
     high = 1 << (n_qubits - qubit - 1)
     low = 1 << qubit
@@ -67,15 +70,17 @@ def _qubit_view(state: np.ndarray, qubit: int, n_qubits: int) -> np.ndarray:
 
 
 def _apply_single_qubit(
-    state: np.ndarray, gate: np.ndarray, qubit: int, n_qubits: int
-) -> np.ndarray:
+    state: NDArray[np.complex128], gate: NDArray[np.complex128], qubit: int, n_qubits: int
+) -> NDArray[np.complex128]:
     view = _qubit_view(state, qubit, n_qubits)
     out = np.einsum("ab,xbz->xaz", gate, view)
-    result: np.ndarray = out.reshape(-1)
+    result: NDArray[np.complex128] = out.reshape(-1)
     return result
 
 
-def _expectation_xy(state: np.ndarray, n_qubits: int) -> tuple[np.ndarray, np.ndarray]:
+def _expectation_xy(
+    state: NDArray[np.complex128], n_qubits: int
+) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
     """Return per-qubit ``<X_i>`` and ``<Y_i>`` arrays."""
     exp_x = np.empty(n_qubits, dtype=np.float64)
     exp_y = np.empty(n_qubits, dtype=np.float64)
@@ -87,7 +92,7 @@ def _expectation_xy(state: np.ndarray, n_qubits: int) -> tuple[np.ndarray, np.nd
     return exp_x, exp_y
 
 
-def _drive_gate(field_x: float, field_y: float, dt: float) -> np.ndarray:
+def _drive_gate(field_x: float, field_y: float, dt: float) -> NDArray[np.complex128]:
     """exp(i dt (field_x X + field_y Y)) as a 2x2 unitary."""
     magnitude = float(np.hypot(field_x, field_y))
     if magnitude == 0.0:
@@ -105,7 +110,9 @@ def _drive_gate(field_x: float, field_y: float, dt: float) -> np.ndarray:
     )
 
 
-def _internal_half_propagator(K_q: np.ndarray, omega_q: np.ndarray, dt: float) -> np.ndarray:
+def _internal_half_propagator(
+    K_q: NDArray[np.float64], omega_q: NDArray[np.float64], dt: float
+) -> NDArray[np.complex128]:
     """Exact exp(-i H_internal dt/2) for the quantum core (H real symmetric)."""
     n = len(omega_q)
     require_dense_allocation(n, dtype=np.complex128, rank=2, label="co-simulation quantum core")
@@ -118,16 +125,18 @@ def _internal_half_propagator(K_q: np.ndarray, omega_q: np.ndarray, dt: float) -
                 n,
             )
         )
-        hamiltonian = flat.reshape(2**n, 2**n).astype(np.float64)
+        hamiltonian: NDArray[np.float64] = flat.reshape(2**n, 2**n).astype(np.float64)
     else:
         hamiltonian = _xy_hamiltonian_dense_python(K_q, omega_q)
     evals, evecs = np.linalg.eigh(hamiltonian)
     phase = np.exp(-0.5j * dt * evals)
-    propagator: np.ndarray = (evecs * phase) @ evecs.conj().T
+    propagator: NDArray[np.complex128] = (evecs * phase) @ evecs.conj().T
     return propagator
 
 
-def _xy_hamiltonian_dense_python(K: np.ndarray, omega: np.ndarray) -> np.ndarray:
+def _xy_hamiltonian_dense_python(
+    K: NDArray[np.float64], omega: NDArray[np.float64]
+) -> NDArray[np.float64]:
     """Pure-Python XY Hamiltonian, fallback for the Rust kernel.
 
     H = -sum_{i<j} K_ij (X_iX_j + Y_iY_j) - sum_i omega_i Z_i, bit i = (idx>>i)&1.
@@ -160,43 +169,50 @@ def _xy_hamiltonian_dense_python(K: np.ndarray, omega: np.ndarray) -> np.ndarray
 
 
 def _classical_substep(
-    theta: np.ndarray,
-    omega: np.ndarray,
-    K: np.ndarray,
-    drive_a: np.ndarray,
-    drive_b: np.ndarray,
+    theta: NDArray[np.float64],
+    omega: NDArray[np.float64],
+    K: NDArray[np.float64],
+    drive_a: NDArray[np.float64],
+    drive_b: NDArray[np.float64],
     dt: float,
-) -> np.ndarray:
+) -> NDArray[np.float64]:
     engine = optional_rust_engine()
     if engine is not None and hasattr(engine, "cosim_classical_substep"):
-        return np.asarray(engine.cosim_classical_substep(theta, omega, K, drive_a, drive_b, dt))
+        return np.asarray(
+            engine.cosim_classical_substep(theta, omega, K, drive_a, drive_b, dt),
+            dtype=np.float64,
+        )
     return _classical_substep_python(theta, omega, K, drive_a, drive_b, dt)
 
 
 def _classical_substep_python(
-    theta: np.ndarray,
-    omega: np.ndarray,
-    K: np.ndarray,
-    drive_a: np.ndarray,
-    drive_b: np.ndarray,
+    theta: NDArray[np.float64],
+    omega: NDArray[np.float64],
+    K: NDArray[np.float64],
+    drive_a: NDArray[np.float64],
+    drive_b: NDArray[np.float64],
     dt: float,
-) -> np.ndarray:
+) -> NDArray[np.float64]:
     diff = theta[None, :] - theta[:, None]
     internal = np.sum(K * np.sin(diff), axis=1)
     quantum = np.cos(theta) * drive_a - np.sin(theta) * drive_b
-    stepped: np.ndarray = theta + dt * (omega + internal + quantum)
+    stepped: NDArray[np.float64] = theta + dt * (omega + internal + quantum)
     return stepped
 
 
-def _order_parameter(phases: np.ndarray) -> float:
+def _order_parameter(phases: NDArray[np.float64]) -> float:
     if phases.size == 0:
         return 0.0
     return float(np.abs(np.mean(np.exp(1j * phases))))
 
 
 def _full_classical_order(
-    K: np.ndarray, omega: np.ndarray, theta0: np.ndarray, dt: float, n_steps: int
-) -> np.ndarray:
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
+    theta0: NDArray[np.float64],
+    dt: float,
+    n_steps: int,
+) -> NDArray[np.float64]:
     """All-classical Kuramoto reference order-parameter trajectory."""
     theta = theta0.copy()
     orders = np.empty(n_steps + 1, dtype=np.float64)
@@ -208,7 +224,9 @@ def _full_classical_order(
     return orders
 
 
-def _initial_quantum_state(n_qubits: int, override: np.ndarray | None) -> np.ndarray:
+def _initial_quantum_state(
+    n_qubits: int, override: NDArray[np.complex128] | None
+) -> NDArray[np.complex128]:
     if override is not None:
         state = np.asarray(override, dtype=np.complex128).reshape(-1)
         if state.shape[0] != 2**n_qubits:
@@ -216,23 +234,23 @@ def _initial_quantum_state(n_qubits: int, override: np.ndarray | None) -> np.nda
         norm = float(np.linalg.norm(state))
         if norm == 0.0:
             raise ValueError("quantum_state0 must be non-zero")
-        normalised: np.ndarray = state / norm
+        normalised: NDArray[np.complex128] = state / norm
         return normalised
     # Default |+>^{⊗n}: every core spin in-plane at phase 0 (<X>=1, <Y>=0).
     return np.full(2**n_qubits, 2.0 ** (-n_qubits / 2.0), dtype=np.complex128)
 
 
 def cosimulate(
-    K: np.ndarray,
-    omega: np.ndarray,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
     *,
     dt: float,
     n_steps: int,
     partition: KnmPartition | None = None,
     max_quantum_nodes: int = 8,
     coupling_threshold: float = 0.0,
-    theta0_classical: np.ndarray | None = None,
-    quantum_state0: np.ndarray | None = None,
+    theta0_classical: NDArray[np.float64] | None = None,
+    quantum_state0: NDArray[np.complex128] | None = None,
     seed: int | None = None,
 ) -> CoSimulationResult:
     """Run a mean-field quantum/classical co-simulation of a K_nm network.
@@ -359,7 +377,7 @@ def cosimulate(
     }
 
     return CoSimulationResult(
-        times=np.arange(n_steps + 1) * dt,
+        times=np.arange(n_steps + 1, dtype=np.float64) * dt,
         classical_phases=classical_phases,
         quantum_expectation_x=exp_x_traj,
         quantum_expectation_y=exp_y_traj,

@@ -26,6 +26,7 @@ from dataclasses import dataclass, field
 from typing import Any
 
 import numpy as np
+from numpy.typing import NDArray
 
 # Statevector ceiling for the quantum-strong core; above this the dense
 # co-simulation propagator is refused fail-closed.
@@ -58,11 +59,11 @@ class KnmPartition:
 
     quantum_indices: tuple[int, ...]
     classical_indices: tuple[int, ...]
-    quantum_coupling: np.ndarray
-    classical_coupling: np.ndarray
-    cross_coupling: np.ndarray
-    quantum_omega: np.ndarray
-    classical_omega: np.ndarray
+    quantum_coupling: NDArray[np.float64]
+    classical_coupling: NDArray[np.float64]
+    cross_coupling: NDArray[np.float64]
+    quantum_omega: NDArray[np.float64]
+    classical_omega: NDArray[np.float64]
     conservation: ConservationReport
     provenance: dict[str, Any] = field(default_factory=dict)
 
@@ -77,7 +78,9 @@ class KnmPartition:
         return len(self.classical_indices)
 
 
-def _validate(K: np.ndarray, omega: np.ndarray) -> tuple[np.ndarray, np.ndarray, float]:
+def _validate(
+    K: NDArray[np.float64], omega: NDArray[np.float64]
+) -> tuple[NDArray[np.float64], NDArray[np.float64], float]:
     K = np.asarray(K, dtype=np.float64)
     omega = np.asarray(omega, dtype=np.float64)
     if K.ndim != 2 or K.shape[0] != K.shape[1]:
@@ -97,7 +100,7 @@ def _validate(K: np.ndarray, omega: np.ndarray) -> tuple[np.ndarray, np.ndarray,
 
 
 def _grow_strong_core(
-    abs_k: np.ndarray,
+    abs_k: NDArray[np.float64],
     max_nodes: int,
     coupling_threshold: float,
 ) -> tuple[list[int], list[float]]:
@@ -131,7 +134,9 @@ def _grow_strong_core(
     return core, growth_scores
 
 
-def _conservation(abs_k: np.ndarray, q_idx: list[int], c_idx: list[int]) -> ConservationReport:
+def _conservation(
+    abs_k: NDArray[np.float64], q_idx: list[int], c_idx: list[int]
+) -> ConservationReport:
     triu = np.triu(abs_k, k=1)
     total = float(triu.sum())
     q_mask = np.zeros(abs_k.shape[0], dtype=bool)
@@ -155,8 +160,8 @@ def _conservation(abs_k: np.ndarray, q_idx: list[int], c_idx: list[int]) -> Cons
 
 
 def partition_knm(
-    K: np.ndarray,
-    omega: np.ndarray,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
     *,
     max_quantum_nodes: int = 8,
     coupling_threshold: float = 0.0,
