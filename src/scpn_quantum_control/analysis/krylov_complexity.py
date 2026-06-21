@@ -36,6 +36,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import numpy as np
+from numpy.typing import NDArray
 
 from ..bridge.knm_hamiltonian import knm_to_dense_matrix
 from ..dense_budget import require_dense_allocation
@@ -45,31 +46,33 @@ from ..dense_budget import require_dense_allocation
 class KrylovResult:
     """Krylov complexity computation result."""
 
-    lanczos_b: np.ndarray  # Lanczos coefficients b_n
-    times: np.ndarray
-    krylov_complexity: np.ndarray  # K(t) = Σ n |φ_n(t)|²
+    lanczos_b: NDArray[np.float64]  # Lanczos coefficients b_n
+    times: NDArray[np.float64]
+    krylov_complexity: NDArray[np.float64]  # K(t) = Σ n |φ_n(t)|²
     peak_complexity: float
     n_lanczos: int  # number of Lanczos steps before convergence
 
 
-def _liouvillian_action(H: np.ndarray, op: np.ndarray) -> np.ndarray:
+def _liouvillian_action(
+    H: NDArray[np.complex128], op: NDArray[np.complex128]
+) -> NDArray[np.complex128]:
     """L(op) = [H, op] = H·op - op·H."""
-    result: np.ndarray = H @ op - op @ H
+    result: NDArray[np.complex128] = H @ op - op @ H
     return result
 
 
-def _operator_inner_product(A: np.ndarray, B: np.ndarray) -> float:
+def _operator_inner_product(A: NDArray[np.complex128], B: NDArray[np.complex128]) -> float:
     """Hilbert-Schmidt inner product (A|B) = Tr(A† B) / d."""
     d = A.shape[0]
     return float(np.real(np.trace(A.conj().T @ B)) / d)
 
 
 def lanczos_coefficients(
-    H: np.ndarray,
-    O_init: np.ndarray,
+    H: NDArray[np.complex128],
+    O_init: NDArray[np.complex128],
     max_steps: int = 50,
     tol: float = 1e-12,
-) -> tuple[np.ndarray, list[np.ndarray]]:
+) -> tuple[NDArray[np.float64], list[NDArray[np.complex128]]]:
     """Compute Lanczos coefficients b_n and Krylov basis.
 
     Uses the operator Lanczos algorithm on the Liouvillian L = [H, ·].
@@ -83,11 +86,11 @@ def lanczos_coefficients(
 
 
 def _lanczos_b_coefficients_fast(
-    H: np.ndarray,
-    O_init: np.ndarray,
+    H: NDArray[np.complex128],
+    O_init: NDArray[np.complex128],
     max_steps: int,
     tol: float,
-) -> np.ndarray:
+) -> NDArray[np.float64]:
     """Return Lanczos coefficients using Rust when available."""
     try:
         import scpn_quantum_engine as _engine
@@ -113,12 +116,12 @@ def _lanczos_b_coefficients_fast(
 
 
 def _lanczos_coefficients_python(
-    H: np.ndarray,
-    O_init: np.ndarray,
+    H: NDArray[np.complex128],
+    O_init: NDArray[np.complex128],
     *,
     max_steps: int,
     tol: float,
-) -> tuple[np.ndarray, list[np.ndarray]]:
+) -> tuple[NDArray[np.float64], list[NDArray[np.complex128]]]:
     """Compute Lanczos coefficients and the real Krylov basis in Python."""
     # Normalize initial operator
     norm_0 = np.sqrt(_operator_inner_product(O_init, O_init))
@@ -156,8 +159,8 @@ def _lanczos_coefficients_python(
 
 
 def krylov_complexity(
-    H: np.ndarray,
-    O_init: np.ndarray,
+    H: NDArray[np.complex128],
+    O_init: NDArray[np.complex128],
     t_max: float = 10.0,
     n_times: int = 100,
     max_lanczos: int = 50,
@@ -172,7 +175,7 @@ def krylov_complexity(
     n_basis = len(b_coeffs) + 1  # basis has one more element than b_coeffs
 
     if n_basis < 2:
-        times = np.linspace(0, t_max, n_times)
+        times = np.linspace(0, t_max, n_times, dtype=np.float64)
         return KrylovResult(
             lanczos_b=b_coeffs,
             times=times,
@@ -188,11 +191,11 @@ def krylov_complexity(
         H_krylov[i + 1, i] = b_coeffs[i]
 
     # Time evolution: |φ(t)⟩ = e^{-iH_krylov t} |0⟩
-    times = np.linspace(0, t_max, n_times)
+    times = np.linspace(0, t_max, n_times, dtype=np.float64)
     phi_0 = np.zeros(n_basis)
     phi_0[0] = 1.0
 
-    K_t: np.ndarray = np.zeros(n_times)
+    K_t: NDArray[np.float64] = np.zeros(n_times)
     from scipy.linalg import expm
 
     for idx, t in enumerate(times):
@@ -211,9 +214,9 @@ def krylov_complexity(
 
 
 def krylov_vs_coupling(
-    omega: np.ndarray,
-    K_topology: np.ndarray,
-    k_range: np.ndarray | None = None,
+    omega: NDArray[np.float64],
+    K_topology: NDArray[np.float64],
+    k_range: NDArray[np.float64] | None = None,
     t_max: float = 10.0,
     n_times: int = 50,
     max_lanczos: int = 50,
@@ -225,7 +228,7 @@ def krylov_vs_coupling(
     Uses Z_0 (first qubit Pauli-Z) as the probe operator.
     """
     if k_range is None:
-        k_range = np.linspace(0.5, 5.0, 10)
+        k_range = np.linspace(0.5, 5.0, 10, dtype=np.float64)
 
     n = len(omega)
     require_dense_allocation(

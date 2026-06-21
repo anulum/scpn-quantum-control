@@ -40,6 +40,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import numpy as np
+from numpy.typing import NDArray
 
 from ..bridge.knm_hamiltonian import knm_to_dense_matrix
 from ..dense_budget import require_dense_allocation
@@ -62,8 +63,8 @@ class OTOC:
 
     def __init__(
         self,
-        K: np.ndarray | None = None,
-        omega: np.ndarray | None = None,
+        K: NDArray[np.float64] | None = None,
+        omega: NDArray[np.float64] | None = None,
         *,
         w_qubit: int = 0,
         v_qubit: int | None = None,
@@ -81,7 +82,7 @@ class OTOC:
 
     def compute(
         self,
-        times: np.ndarray | None = None,
+        times: NDArray[np.float64] | None = None,
         *,
         max_dense_gib: float | None = None,
     ) -> OTOCResult:
@@ -105,8 +106,8 @@ class OTOC:
 class OTOCResult:
     """OTOC measurement result."""
 
-    times: np.ndarray
-    otoc_values: np.ndarray  # F(t) = Re(<W†(t)V†W(t)V>)
+    times: NDArray[np.float64]
+    otoc_values: NDArray[np.float64]  # F(t) = Re(<W†(t)V†W(t)V>)
     lyapunov_estimate: float | None  # λ_Q from exponential fit
     scrambling_time: float | None  # t* where F drops to 1/e
     n_qubits: int
@@ -114,7 +115,7 @@ class OTOCResult:
     operator_v: str
 
 
-def _pauli_matrix(label: str, qubit: int, n: int) -> np.ndarray:
+def _pauli_matrix(label: str, qubit: int, n: int) -> NDArray[np.complex128]:
     """Build n-qubit Pauli matrix for single-qubit operator on given qubit."""
     I2 = np.eye(2, dtype=complex)
     paulis = {
@@ -126,14 +127,14 @@ def _pauli_matrix(label: str, qubit: int, n: int) -> np.ndarray:
     result = np.eye(1, dtype=complex)
     for i in range(n):
         result = np.kron(result, P if i == qubit else I2)
-    out: np.ndarray = result
+    out: NDArray[np.complex128] = result
     return out
 
 
 def compute_otoc(
-    K: np.ndarray,
-    omega: np.ndarray,
-    times: np.ndarray | None = None,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
+    times: NDArray[np.float64] | None = None,
     w_qubit: int = 0,
     v_qubit: int | None = None,
     w_pauli: str = "Z",
@@ -155,7 +156,7 @@ def compute_otoc(
     """
     n = K.shape[0]
     if times is None:
-        times = np.linspace(0, 2.0, 30)
+        times = np.linspace(0, 2.0, 30, dtype=np.float64)
     times = np.ascontiguousarray(times, dtype=np.float64)
     if v_qubit is None:
         v_qubit = min(w_qubit + 1, n - 1)
@@ -230,7 +231,7 @@ def compute_otoc(
     )
 
 
-def _estimate_lyapunov(times: np.ndarray, otoc: np.ndarray) -> float | None:
+def _estimate_lyapunov(times: NDArray[np.float64], otoc: NDArray[np.float64]) -> float | None:
     """Estimate quantum Lyapunov exponent from OTOC decay.
 
     Fits F(t) ≈ 1 - ε × exp(λ_Q × t) in the early-time regime.
@@ -254,7 +255,9 @@ def _estimate_lyapunov(times: np.ndarray, otoc: np.ndarray) -> float | None:
     return float(slope) if slope > 0 else None
 
 
-def _estimate_scrambling_time(times: np.ndarray, otoc: np.ndarray) -> float | None:
+def _estimate_scrambling_time(
+    times: NDArray[np.float64], otoc: NDArray[np.float64]
+) -> float | None:
     """Time where OTOC drops to 1/e of initial value."""
     f0 = otoc[0]
     if abs(f0) < 1e-10:
