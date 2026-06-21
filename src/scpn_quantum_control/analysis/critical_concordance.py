@@ -27,6 +27,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import numpy as np
+from numpy.typing import NDArray
 from qiskit.quantum_info import SparsePauliOp, Statevector
 
 from ..bridge.knm_hamiltonian import knm_to_dense_matrix, knm_to_hamiltonian
@@ -39,12 +40,12 @@ from .qfi_criticality import _qfi_from_eigendecomposition
 class ConcordanceResult:
     """Unified critical point analysis from multiple probes."""
 
-    k_values: np.ndarray
-    R_values: np.ndarray
-    qfi_values: np.ndarray
-    gap_values: np.ndarray
-    fiedler_values: np.ndarray
-    n_entangled_pairs: np.ndarray
+    k_values: NDArray[np.float64]
+    R_values: NDArray[np.float64]
+    qfi_values: NDArray[np.float64]
+    gap_values: NDArray[np.float64]
+    fiedler_values: NDArray[np.float64]
+    n_entangled_pairs: NDArray[np.float64]
 
     k_c_from_gap: float | None  # K where gap is minimum
     k_c_from_qfi: float | None  # K where QFI peaks
@@ -54,7 +55,7 @@ class ConcordanceResult:
     concordance_spread: float | None  # std of all K_c estimates
 
 
-def _R_from_ground_state(psi: np.ndarray, n: int) -> float:
+def _R_from_ground_state(psi: NDArray[np.complex128], n: int) -> float:
     """Order parameter R from ground state."""
     sv = Statevector(np.ascontiguousarray(psi))
     phases = np.zeros(n)
@@ -70,9 +71,9 @@ def _R_from_ground_state(psi: np.ndarray, n: int) -> float:
 
 
 def critical_concordance(
-    omega: np.ndarray,
-    K_topology: np.ndarray,
-    k_range: np.ndarray | None = None,
+    omega: NDArray[np.float64],
+    K_topology: NDArray[np.float64],
+    k_range: NDArray[np.float64] | None = None,
     concurrence_threshold: float = 1e-4,
     *,
     max_dense_gib: float | None = None,
@@ -83,7 +84,7 @@ def critical_concordance(
     max_dense_gib: optional GiB budget for exact dense probe workspaces.
     """
     if k_range is None:
-        k_range = np.linspace(0.5, 5.0, 15)
+        k_range = np.linspace(0.5, 5.0, 15, dtype=np.float64)
 
     n = len(omega)
     n_k = len(k_range)

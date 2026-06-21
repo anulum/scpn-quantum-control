@@ -45,8 +45,13 @@ This module's contribution: NISQ-hardware-ready witness trio with calibration.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
 
 import numpy as np
+from numpy.typing import NDArray
+
+if TYPE_CHECKING:
+    from qiskit.quantum_info import SparsePauliOp
 
 
 @dataclass
@@ -91,7 +96,7 @@ def correlation_witness_from_counts(
         return WitnessResult("correlation", threshold, threshold, False, 0.0, n_qubits)
 
     mean_xy_corr = (np.sum(np.triu(xx_corr, k=1)) + np.sum(np.triu(yy_corr, k=1))) / n_pairs
-    witness_val = threshold - mean_xy_corr
+    witness_val = float(threshold - mean_xy_corr)
 
     return WitnessResult(
         witness_name="correlation",
@@ -103,7 +108,7 @@ def correlation_witness_from_counts(
     )
 
 
-def _two_point_correlator(counts: dict[str, int], n_qubits: int) -> np.ndarray:
+def _two_point_correlator(counts: dict[str, int], n_qubits: int) -> NDArray[np.float64]:
     """Compute ⟨Z_iZ_j⟩ correlator matrix from measurement counts.
 
     Since we measure in a rotated basis (X or Y), Z_iZ_j in that
@@ -118,7 +123,7 @@ def _two_point_correlator(counts: dict[str, int], n_qubits: int) -> np.ndarray:
         corr += count * np.outer(vals, vals)
 
     corr /= total
-    result: np.ndarray = corr
+    result: NDArray[np.float64] = corr
     return result
 
 
@@ -128,7 +133,7 @@ def _two_point_correlator(counts: dict[str, int], n_qubits: int) -> np.ndarray:
 
 
 def fiedler_witness_from_correlator(
-    corr_matrix: np.ndarray,
+    corr_matrix: NDArray[np.float64],
     threshold: float = 0.0,
 ) -> WitnessResult:
     """Evaluate Fiedler-based synchronization witness.
@@ -184,7 +189,7 @@ def fiedler_witness_from_counts(
 
 
 def topological_witness_from_correlator(
-    corr_matrix: np.ndarray,
+    corr_matrix: NDArray[np.float64],
     threshold: float = 0.5,
     max_dim: int = 1,
 ) -> WitnessResult:
@@ -274,9 +279,9 @@ def evaluate_all_witnesses(
 
 
 def calibrate_thresholds(
-    K: np.ndarray,
-    omega: np.ndarray,
-    K_base_range: np.ndarray | None = None,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
+    K_base_range: NDArray[np.float64] | None = None,
     n_samples: int = 20,
 ) -> dict[str, float]:
     """Calibrate witness thresholds from classical Kuramoto simulation.
@@ -291,7 +296,7 @@ def calibrate_thresholds(
 
     n = K.shape[0]
     if K_base_range is None:
-        K_base_range = np.linspace(0.0, 2.0, n_samples)
+        K_base_range = np.linspace(0.0, 2.0, n_samples, dtype=np.float64)
 
     corr_vals = []
     fiedler_vals = []
@@ -318,7 +323,7 @@ def calibrate_thresholds(
         eigs = np.sort(np.linalg.eigvalsh(lap))
         fiedler_vals.append(float(eigs[1]) if n > 1 else 0.0)
 
-    R_arr: np.ndarray = np.array(R_vals)
+    R_arr: NDArray[np.float64] = np.array(R_vals)
 
     # Find transition index (R crosses 0.5)
     above = R_arr >= 0.5
@@ -334,7 +339,7 @@ def calibrate_thresholds(
     }
 
 
-def build_correlation_witness_operator(n_qubits: int, threshold: float = 0.0):
+def build_correlation_witness_operator(n_qubits: int, threshold: float = 0.0) -> SparsePauliOp:
     """Build the formal quantum synchronization witness operator W_corr.
 
     W_corr = R_c * I - (1/M) Σ_{i<j} (X_i X_j + Y_i Y_j)
