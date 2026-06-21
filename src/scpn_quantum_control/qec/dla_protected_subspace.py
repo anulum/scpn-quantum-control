@@ -514,9 +514,9 @@ def _default_sync_word(spec: DLAProtectedSubspaceSpec) -> tuple[int, ...]:
     ones = tuple(1 for _ in range(spec.n_logical))
     if sum(ones) % 2 == spec.target_parity:
         return ones
-    for word in protected_logical_words(spec):
-        return word
-    raise ValueError("no protected logical word exists")
+    # A spec with n_logical >= 1 always admits both parities, so the target
+    # sector is non-empty; take its first logical word.
+    return protected_logical_words(spec)[0]
 
 
 def _validate_logical_word(word: tuple[int, ...], spec: DLAProtectedSubspaceSpec) -> None:
