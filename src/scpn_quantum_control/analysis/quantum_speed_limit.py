@@ -41,8 +41,10 @@ References:
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Any
 
 import numpy as np
+from numpy.typing import NDArray
 from scipy.linalg import expm
 
 from ..bridge.knm_hamiltonian import knm_to_dense_matrix, knm_to_hamiltonian
@@ -82,8 +84,8 @@ def _validate_qsl_parameters(t_target: float, dt: float, R_threshold: float) -> 
 
 
 def compute_qsl(
-    K: np.ndarray,
-    omega: np.ndarray,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
     t_target: float = 2.0,
     dt: float = 0.01,
     R_threshold: float = 0.5,
@@ -187,15 +189,15 @@ def compute_qsl(
 
 
 def qsl_vs_coupling(
-    K: np.ndarray,
-    omega: np.ndarray,
-    K_base_range: np.ndarray | None = None,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
+    K_base_range: NDArray[np.float64] | None = None,
     n_K_values: int = 15,
     t_target: float = 5.0,
     R_threshold: float = 0.5,
     *,
     max_dense_gib: float | None = None,
-) -> dict:
+) -> dict[str, Any]:
     """Scan QSL across coupling strengths to reveal BKT singularity.
 
     At K_c, the QSL should show anomalous behaviour:
@@ -206,7 +208,7 @@ def qsl_vs_coupling(
     standard QPTs.
     """
     if K_base_range is None:
-        K_base_range = np.linspace(0.01, 3.0, n_K_values)
+        K_base_range = np.linspace(0.01, 3.0, n_K_values, dtype=np.float64)
 
     tau_MT_vals = []
     tau_ML_vals = []

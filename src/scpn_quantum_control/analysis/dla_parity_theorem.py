@@ -43,8 +43,10 @@ Prior art:
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Any
 
 import numpy as np
+from numpy.typing import NDArray
 
 
 @dataclass
@@ -118,7 +120,7 @@ def verify_all_known() -> list[DLAParityTheoremResult]:
     return [verify_theorem(n, dim) for n, dim in known.items()]
 
 
-def parity_operator(n_qubits: int) -> np.ndarray:
+def parity_operator(n_qubits: int) -> NDArray[np.float64]:
     """Build the parity operator P = ⊗_i Z_i as a 2^N × 2^N matrix.
 
     P|x⟩ = (-1)^{popcount(x)} |x⟩
@@ -131,11 +133,13 @@ def parity_operator(n_qubits: int) -> np.ndarray:
     for i in range(d):
         parity = bin(i).count("1") % 2
         P[i, i] = 1.0 - 2.0 * parity
-    result: np.ndarray = P
+    result: NDArray[np.float64] = P
     return result
 
 
-def project_to_parity_sector(state: np.ndarray, parity: int, n_qubits: int) -> np.ndarray:
+def project_to_parity_sector(
+    state: NDArray[np.complex128], parity: int, n_qubits: int
+) -> NDArray[np.complex128]:
     """Project a state vector into a specific parity sector.
 
     Args:
@@ -151,11 +155,11 @@ def project_to_parity_sector(state: np.ndarray, parity: int, n_qubits: int) -> n
     for i in range(d):
         if bin(i).count("1") % 2 == parity:
             projected[i] = state[i]
-    result: np.ndarray = projected
+    result: NDArray[np.complex128] = projected
     return result
 
 
-def decompose_state_by_parity(state: np.ndarray, n_qubits: int) -> dict:
+def decompose_state_by_parity(state: NDArray[np.complex128], n_qubits: int) -> dict[str, Any]:
     """Decompose a state into even and odd parity components.
 
     Returns dict with weights and projected states for each sector.
