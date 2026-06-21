@@ -386,5 +386,7 @@ exclude_lines = [
     "pragma: no cover",
     "if __name__",
     "raise NotImplementedError",
+    # Protocol / abstract / overload stub bodies are never executed.
+    "^\\s*\\.\\.\\.\\s*$",
 ]
 exclude_also = ["if TYPE_CHECKING:"]
