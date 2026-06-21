@@ -10,6 +10,7 @@
 from __future__ import annotations
 
 import numpy as np
+from numpy.typing import NDArray
 from qiskit import QuantumCircuit
 from qiskit.circuit.library import PauliEvolutionGate
 from qiskit.quantum_info import SparsePauliOp
@@ -18,7 +19,14 @@ from qiskit.synthesis import LieTrotter, SuzukiTrotter
 from ..bridge.knm_hamiltonian import knm_to_hamiltonian
 
 
-def _build_evo_base(n, K, omega, t, trotter_reps, trotter_order=1):
+def _build_evo_base(
+    n: int,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
+    t: float,
+    trotter_reps: int,
+    trotter_order: int = 1,
+) -> QuantumCircuit:
     """Build evolution circuit without measurement gates."""
     qc = QuantumCircuit(n)
     for i in range(n):
@@ -33,7 +41,9 @@ def _build_evo_base(n, K, omega, t, trotter_reps, trotter_order=1):
     return qc
 
 
-def _build_xyz_circuits(base_circuit, n):
+def _build_xyz_circuits(
+    base_circuit: QuantumCircuit, n: int
+) -> tuple[QuantumCircuit, QuantumCircuit, QuantumCircuit]:
     """Build 3 copies of base_circuit measuring in Z, X, Y bases.
 
     X-basis: H before measurement.
@@ -57,7 +67,9 @@ def _build_xyz_circuits(base_circuit, n):
     return qc_z, qc_x, qc_y
 
 
-def _expectation_per_qubit(counts, n_qubits):
+def _expectation_per_qubit(
+    counts: dict[str, int], n_qubits: int
+) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
     """Compute per-qubit <Z> and shot-noise standard deviation.
 
     Returns:
@@ -71,11 +83,25 @@ def _expectation_per_qubit(counts, n_qubits):
             bit = int(bits[-(q + 1)])
             exp_vals[q] += (1 - 2 * bit) * count
     exp_vals /= total
-    std_vals: np.ndarray = np.sqrt(np.maximum(1.0 - exp_vals**2, 0.0) / total)
+    std_vals: NDArray[np.float64] = np.sqrt(np.maximum(1.0 - exp_vals**2, 0.0) / total)
     return exp_vals, std_vals
 
 
-def _R_from_xyz(z_counts, x_counts, y_counts, n_qubits):
+def _R_from_xyz(
+    z_counts: dict[str, int],
+    x_counts: dict[str, int],
+    y_counts: dict[str, int],
+    n_qubits: int,
+) -> tuple[
+    float,
+    float,
+    NDArray[np.float64],
+    NDArray[np.float64],
+    NDArray[np.float64],
+    NDArray[np.float64],
+    NDArray[np.float64],
+    NDArray[np.float64],
+]:
     """Compute Kuramoto order parameter R from X, Y, Z basis measurements.
 
     Returns:
@@ -91,7 +117,9 @@ def _R_from_xyz(z_counts, x_counts, y_counts, n_qubits):
     return R, R_std, exp_x, exp_y, exp_z, std_x, std_y, std_z
 
 
-def _qaoa_cost_from_counts(counts: dict, cost_ham: SparsePauliOp, n_qubits: int) -> float:
+def _qaoa_cost_from_counts(
+    counts: dict[str, int], cost_ham: SparsePauliOp, n_qubits: int
+) -> float:
     """Evaluate QAOA cost Hamiltonian (diagonal in Z) from counts."""
     total = sum(counts.values())
     energy = 0.0
@@ -115,7 +143,7 @@ def _qaoa_cost_from_counts(counts: dict, cost_ham: SparsePauliOp, n_qubits: int)
     return energy
 
 
-def _correlator_from_counts(counts: dict, qubit_a: int, qubit_b: int) -> float:
+def _correlator_from_counts(counts: dict[str, int], qubit_a: int, qubit_b: int) -> float:
     """Compute <A B> from 2-qubit marginal of multi-qubit counts.
 
     E(A,B) = (N_same - N_diff) / N_total where same/diff refers to

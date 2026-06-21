@@ -33,6 +33,7 @@ import os as _os
 from typing import Any
 
 import numpy as np
+from numpy.typing import NDArray
 
 from ..dense_budget import require_dense_allocation
 
@@ -75,7 +76,7 @@ def jax_device_name() -> str:
     return "unavailable"
 
 
-def _build_xy_hamiltonian_jax(K, omega, n: int):
+def _build_xy_hamiltonian_jax(K: Any, omega: Any, n: int) -> Any:
     """Build XY Hamiltonian on JAX device. Same bitwise flip-flop as Rust."""
     dim = 1 << n
     if _jnp is None:
@@ -107,12 +108,12 @@ def _build_xy_hamiltonian_jax(K, omega, n: int):
 
 
 def eigensolve_batch_jax(
-    K_topo: np.ndarray,
-    omega: np.ndarray,
-    k_range: np.ndarray,
+    K_topo: NDArray[np.float64],
+    omega: NDArray[np.float64],
+    k_range: NDArray[np.float64],
     *,
     max_dense_gib: float | None = None,
-) -> dict:
+) -> dict[str, Any]:
     """Batch eigendecomposition across coupling values on GPU.
 
     Returns dict with eigenvalues and ground states for each K_base.
@@ -136,8 +137,8 @@ def eigensolve_batch_jax(
     omega_j = jnp.array(omega)
     k_range_j = jnp.array(k_range)
 
-    @jax.jit
-    def _eigvals_at_k(kb):
+    @jax.jit  # type: ignore[untyped-decorator]
+    def _eigvals_at_k(kb: Any) -> Any:
         K = kb * K_topo_j
         H = _build_xy_hamiltonian_jax(K, omega_j, n)
         return jnp.linalg.eigvalsh(H)
@@ -154,12 +155,12 @@ def eigensolve_batch_jax(
 
 
 def entanglement_scan_jax(
-    K_topo: np.ndarray,
-    omega: np.ndarray,
-    k_range: np.ndarray,
+    K_topo: NDArray[np.float64],
+    omega: NDArray[np.float64],
+    k_range: NDArray[np.float64],
     *,
     max_dense_gib: float | None = None,
-) -> dict:
+) -> dict[str, Any]:
     """Entanglement entropy + Schmidt gap scan on GPU via JAX.
 
     Builds dense Hamiltonians in numpy/Rust, transfers the batch to GPU,
@@ -196,8 +197,8 @@ def entanglement_scan_jax(
 
     H_batch_j = jnp.array(H_batch)
 
-    @jax.jit
-    def _entropy_from_H(H):
+    @jax.jit  # type: ignore[untyped-decorator]
+    def _entropy_from_H(H: Any) -> Any:
         eigvals, eigvecs = jnp.linalg.eigh(H)
         psi = eigvecs[:, 0]
         psi_mat = psi.reshape(dim_A, dim_B)

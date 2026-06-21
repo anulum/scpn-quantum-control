@@ -26,6 +26,7 @@ import os as _os
 from typing import Any
 
 import numpy as np
+from numpy.typing import NDArray
 
 _CUPY_AVAILABLE = False
 _cp: Any | None = None
@@ -34,7 +35,7 @@ _cp: Any | None = None
 def _detect_cupy_accelerator() -> tuple[bool, Any | None]:
     """Detect CuPy without hiding present-but-broken CUDA runtimes."""
     try:
-        import cupy as _cp_module  # type: ignore[import-untyped,import-not-found]
+        import cupy as _cp_module  # type: ignore[import-not-found]
     except ImportError:
         return False, None
 
@@ -62,18 +63,18 @@ def gpu_device_name() -> str:
     return "cpu"
 
 
-def eigvalsh(matrix: np.ndarray) -> np.ndarray:
+def eigvalsh(matrix: NDArray[Any]) -> NDArray[Any]:
     """Eigenvalues of Hermitian matrix, GPU-accelerated if available."""
     if _CUPY_AVAILABLE and _cp is not None and matrix.shape[0] >= 64:
         m_gpu = _cp.asarray(matrix)
         eigs_gpu = _cp.linalg.eigvalsh(m_gpu)
-        result: np.ndarray = _cp.asnumpy(eigs_gpu)
+        result: NDArray[Any] = _cp.asnumpy(eigs_gpu)
         return result
-    out: np.ndarray = np.linalg.eigvalsh(matrix)
+    out: NDArray[Any] = np.linalg.eigvalsh(matrix)
     return out
 
 
-def eigh(matrix: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+def eigh(matrix: NDArray[Any]) -> tuple[NDArray[Any], NDArray[Any]]:
     """Eigenvalues + eigenvectors of Hermitian matrix, GPU-accelerated."""
     if _CUPY_AVAILABLE and _cp is not None and matrix.shape[0] >= 64:
         m_gpu = _cp.asarray(matrix)
@@ -83,7 +84,7 @@ def eigh(matrix: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     return eigvals, eigvecs
 
 
-def expm(matrix: np.ndarray) -> np.ndarray:
+def expm(matrix: NDArray[Any]) -> NDArray[Any]:
     """Matrix exponential, GPU-accelerated if available.
 
     cupy doesn't have expm natively; uses eigendecomposition:
@@ -100,23 +101,23 @@ def expm(matrix: np.ndarray) -> np.ndarray:
         eigs, vecs = _cp.linalg.eigh(m_gpu)
         exp_diag = _cp.diag(_cp.exp(eigs))
         result_gpu = vecs @ exp_diag @ vecs.conj().T
-        result: np.ndarray = _cp.asnumpy(result_gpu)
+        result: NDArray[Any] = _cp.asnumpy(result_gpu)
         return result
 
     from scipy.linalg import expm as scipy_expm
 
-    out: np.ndarray = scipy_expm(matrix)
+    out: NDArray[Any] = scipy_expm(matrix)
     return out
 
 
-def matmul(a: np.ndarray, b: np.ndarray) -> np.ndarray:
+def matmul(a: NDArray[Any], b: NDArray[Any]) -> NDArray[Any]:
     """Matrix multiplication, GPU-accelerated if available."""
     if _CUPY_AVAILABLE and _cp is not None and a.shape[0] >= 64:
         a_gpu = _cp.asarray(a)
         b_gpu = _cp.asarray(b)
-        result: np.ndarray = _cp.asnumpy(a_gpu @ b_gpu)
+        result: NDArray[Any] = _cp.asnumpy(a_gpu @ b_gpu)
         return result
-    out: np.ndarray = a @ b
+    out: NDArray[Any] = a @ b
     return out
 
 
