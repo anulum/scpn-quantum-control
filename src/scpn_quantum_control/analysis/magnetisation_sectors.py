@@ -33,8 +33,10 @@ Inspired by QuSpin (Weinberg & Bukov, SciPost 2017).
 from __future__ import annotations
 
 from math import comb
+from typing import Any
 
 import numpy as np
+from numpy.typing import NDArray
 
 from ..bridge.sparse_hamiltonian import build_sparse_sector_hamiltonian
 from ..dense_budget import (
@@ -54,7 +56,7 @@ def _magnetisation(k: int, n: int) -> int:
     return n - 2 * n_ones
 
 
-def basis_by_magnetisation(n: int) -> dict[int, np.ndarray]:
+def basis_by_magnetisation(n: int) -> dict[int, NDArray[np.intp]]:
     """Partition computational basis by total magnetisation M.
 
     Returns dict mapping M → array of basis state indices.
@@ -105,9 +107,9 @@ def largest_sector_dim(n: int) -> int:
 
 
 def project_to_sector(
-    H_full: np.ndarray,
-    sector_indices: np.ndarray,
-) -> np.ndarray:
+    H_full: NDArray[np.complex128],
+    sector_indices: NDArray[np.intp],
+) -> NDArray[np.complex128]:
     """Project full Hamiltonian onto a magnetisation sector."""
     return np.asarray(H_full[np.ix_(sector_indices, sector_indices)])
 
@@ -133,12 +135,12 @@ def _require_sector_dense_workspace(
 
 
 def build_sector_hamiltonian(
-    K: np.ndarray,
-    omega: np.ndarray,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
     M: int,
     *,
     max_dense_gib: float | None = None,
-) -> tuple[np.ndarray, np.ndarray]:
+) -> tuple[NDArray[np.complex128], NDArray[np.intp]]:
     """Build Hamiltonian projected onto magnetisation sector M.
 
     Parameters
@@ -180,12 +182,12 @@ def build_sector_hamiltonian(
 
 
 def eigh_by_magnetisation(
-    K: np.ndarray,
-    omega: np.ndarray,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
     sectors: list[int] | None = None,
     *,
     max_dense_gib: float | None = None,
-) -> dict:
+) -> dict[str, Any]:
     """Diagonalise specified magnetisation sectors.
 
     Parameters
@@ -208,9 +210,9 @@ def eigh_by_magnetisation(
     if sectors is None:
         sectors = sorted(all_sectors.keys())
 
-    results: dict[int, dict] = {}
+    results: dict[int, dict[str, Any]] = {}
     all_eigvals: list[float] = []
-    selected_indices: dict[int, np.ndarray] = {}
+    selected_indices: dict[int, NDArray[np.intp]] = {}
 
     for m in sectors:
         if m not in all_sectors:
@@ -272,12 +274,12 @@ def eigh_by_magnetisation(
 
 
 def level_spacing_by_magnetisation(
-    K: np.ndarray,
-    omega: np.ndarray,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
     M: int | None = None,
     *,
     max_dense_gib: float | None = None,
-) -> dict:
+) -> dict[str, Any]:
     """Level-spacing ratio r̄ within a magnetisation sector.
 
     Computing r̄ within a single symmetry sector avoids the artefact of
@@ -314,7 +316,7 @@ def level_spacing_by_magnetisation(
     }
 
 
-def memory_estimate(n: int) -> dict:
+def memory_estimate(n: int) -> dict[str, Any]:
     """Memory estimates for different approaches.
 
     Returns dict with keys:
