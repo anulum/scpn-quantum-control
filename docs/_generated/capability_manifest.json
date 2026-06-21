@@ -14,7 +14,7 @@
     "python_model_source_modules": 886,
     "rust_pyo3_model_wrappers": 137,
     "rust_source_modules": 38,
-    "test_files": 2037
+    "test_files": 2041
   },
   "documentation": {
     "examples": [
@@ -11564,6 +11564,7 @@
       "tests/test_parametrized_sweeps.py",
       "tests/test_pea_mitigation.py",
       "tests/test_pec.py",
+      "tests/test_pec_rng_default.py",
       "tests/test_pennylane_adapter.py",
       "tests/test_pennylane_adapter_contracts.py",
       "tests/test_pennylane_vendor_backends.py",
@@ -11733,13 +11734,16 @@
       "tests/test_quantum_kuramoto_boundary_review.py",
       "tests/test_quantum_kuramoto_split_audit.py",
       "tests/test_quantum_mpemba.py",
+      "tests/test_quantum_mpemba_validation.py",
       "tests/test_quantum_neuromorphic_bridge.py",
       "tests/test_quantum_outer_cycle.py",
+      "tests/test_quantum_outer_cycle_branches.py",
       "tests/test_quantum_persistent_homology.py",
       "tests/test_quantum_phi.py",
       "tests/test_quantum_reservoir.py",
       "tests/test_quantum_sensing_readiness.py",
       "tests/test_quantum_speed_limit.py",
+      "tests/test_quantum_speed_limit_validation.py",
       "tests/test_quantum_thermo_readiness.py",
       "tests/test_qubit_mapper.py",
       "tests/test_readout_matrix.py",
