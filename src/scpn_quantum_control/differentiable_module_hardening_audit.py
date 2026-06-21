@@ -159,6 +159,17 @@ def differentiable_module_hardening_registry() -> tuple[DifferentiableModuleHard
             ("static interpolation direct rules", "piecewise VJP boundaries"),
         ),
         _record(
+            "src/scpn_quantum_control/program_ad_linalg_primitives.py",
+            (
+                "tests/test_program_ad_linalg_core.py",
+                "tests/test_program_ad_linalg_direct_rules.py",
+                "tests/test_program_ad_linalg_matrix_ops.py",
+                "tests/test_program_ad_linalg_registry.py",
+                "tests/test_program_ad_linalg_spectral.py",
+            ),
+            ("static linalg direct rules", "linalg registry dispatch boundaries"),
+        ),
+        _record(
             "src/scpn_quantum_control/program_ad_adjoint.py",
             ("tests/test_program_adjoint_replay.py",),
             ("reverse-adjoint result records", "input-token replay helpers"),

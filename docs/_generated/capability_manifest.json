@@ -11,7 +11,7 @@
     "public_api_exports": 713,
     "public_documentation_pages": 254,
     "python_model_classes": 1840,
-    "python_model_source_modules": 861,
+    "python_model_source_modules": 862,
     "rust_pyo3_model_wrappers": 137,
     "rust_source_modules": 38,
     "test_files": 2017
@@ -5663,7 +5663,7 @@
       },
       {
         "name": "ProgramADLinalgConditioningDiagnostic",
-        "path": "src/scpn_quantum_control/differentiable.py"
+        "path": "src/scpn_quantum_control/program_ad_linalg_primitives.py"
       },
       {
         "name": "ProgramADPhiNode",
@@ -9230,6 +9230,7 @@
       "src/scpn_quantum_control/program_ad_cumulative_primitives.py",
       "src/scpn_quantum_control/program_ad_effect_ir.py",
       "src/scpn_quantum_control/program_ad_interpolation_primitives.py",
+      "src/scpn_quantum_control/program_ad_linalg_primitives.py",
       "src/scpn_quantum_control/program_ad_registry.py",
       "src/scpn_quantum_control/program_ad_rust_bridge.py",
       "src/scpn_quantum_control/program_ad_shape_transforms.py",

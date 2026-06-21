@@ -14,6 +14,7 @@ from typing import Any, cast
 import numpy as np
 import pytest
 
+import scpn_quantum_control.program_ad_linalg_primitives as linalg_primitives
 from scpn_quantum_control.differentiable import (
     PrimitiveIdentity,
     custom_derivative_rule_for,
@@ -35,6 +36,27 @@ def _assert_allclose(
 
 def test_program_ad_linalg_primitive_derivative_rules_are_direct_kernels() -> None:
     """Feasible linalg primitive contracts should expose direct derivative kernels."""
+
+    assert (
+        program_ad_linalg_matrix_power_derivative_rule
+        is linalg_primitives.program_ad_linalg_matrix_power_derivative_rule
+    )
+    assert (
+        program_ad_linalg_multi_dot_derivative_rule
+        is linalg_primitives.program_ad_linalg_multi_dot_derivative_rule
+    )
+    assert (
+        program_ad_linalg_solve_derivative_rule
+        is linalg_primitives.program_ad_linalg_solve_derivative_rule
+    )
+    assert (
+        program_ad_linalg_trace_derivative_rule
+        is linalg_primitives.program_ad_linalg_trace_derivative_rule
+    )
+    assert (
+        program_ad_linalg_eig_derivative_rule
+        is linalg_primitives.program_ad_linalg_eig_derivative_rule
+    )
 
     matrix = np.array([[2.0, -0.5], [0.75, 1.5]], dtype=np.float64)
     tangent_matrix = np.array([[0.1, -0.2], [0.3, 0.4]], dtype=np.float64)
