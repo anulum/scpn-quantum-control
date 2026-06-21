@@ -29,6 +29,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import numpy as np
+from numpy.typing import NDArray
 
 from ..bridge.knm_hamiltonian import OMEGA_N_16, knm_to_dense_matrix
 from ..dense_budget import require_dense_eigensolver_workspace
@@ -46,9 +47,9 @@ class FSSResult:
 
 
 def _find_kc_from_gap(
-    omega: np.ndarray,
-    K_topology: np.ndarray,
-    k_range: np.ndarray,
+    omega: NDArray[np.float64],
+    K_topology: NDArray[np.float64],
+    k_range: NDArray[np.float64],
     *,
     max_dense_gib: float | None = None,
 ) -> tuple[float, float]:
@@ -73,18 +74,18 @@ def _find_kc_from_gap(
     return float(k_range[min_idx]), float(gaps[min_idx])
 
 
-def _ring_topology(n: int) -> np.ndarray:
+def _ring_topology(n: int) -> NDArray[np.float64]:
     T = np.zeros((n, n))
     for i in range(n):
         j = (i + 1) % n
         T[i, j] = T[j, i] = 1.0
-    result: np.ndarray = T
+    result: NDArray[np.float64] = T
     return result
 
 
 def finite_size_scaling(
     system_sizes: list[int] | None = None,
-    k_range: np.ndarray | None = None,
+    k_range: NDArray[np.float64] | None = None,
     *,
     max_dense_gib: float | None = None,
 ) -> FSSResult:
@@ -96,7 +97,7 @@ def finite_size_scaling(
     if system_sizes is None:
         system_sizes = [2, 3, 4]
     if k_range is None:
-        k_range = np.linspace(0.3, 6.0, 20)
+        k_range = np.linspace(0.3, 6.0, 20, dtype=np.float64)
 
     k_c_list: list[float] = []
     gap_min_list: list[float] = []

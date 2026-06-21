@@ -32,6 +32,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import numpy as np
+from numpy.typing import NDArray
 
 from .bkt_analysis import fiedler_eigenvalue
 
@@ -49,18 +50,18 @@ class PhaseBoundary:
 class PhaseDiagramResult:
     """Full phase diagram scan result."""
 
-    k_values: np.ndarray
-    t_eff_values: np.ndarray
-    order_parameter: np.ndarray  # R(K, T_eff) matrix
-    k_critical_curve: np.ndarray  # K_c(T_eff) boundary
-    t_eff_grid: np.ndarray
+    k_values: NDArray[np.float64]
+    t_eff_values: NDArray[np.float64]
+    order_parameter: NDArray[np.float64]  # R(K, T_eff) matrix
+    k_critical_curve: NDArray[np.float64]  # K_c(T_eff) boundary
+    t_eff_grid: NDArray[np.float64]
     bkt_temperature: float
     classical_k_c: float
     quantum_k_c: float  # K_c with decoherence correction
 
 
 def critical_coupling_finite_graph(
-    omega: np.ndarray,
+    omega: NDArray[np.float64],
     fiedler: float,
 ) -> float:
     """Critical coupling for synchronization on finite graph.
@@ -79,7 +80,7 @@ def critical_coupling_finite_graph(
     return delta_omega / fiedler
 
 
-def critical_coupling_mean_field(omega: np.ndarray) -> float:
+def critical_coupling_mean_field(omega: NDArray[np.float64]) -> float:
     """Classical Kuramoto K_c for complete graph: K_c = 2 / (π · g(0)).
 
     Approximates g(0) from the empirical frequency distribution using
@@ -120,7 +121,7 @@ def decoherence_temperature(t1: float, t2: float) -> float:
 
 
 def effective_temperature(
-    omega: np.ndarray,
+    omega: NDArray[np.float64],
     t1: float = np.inf,
     t2: float = np.inf,
 ) -> float:
@@ -148,8 +149,8 @@ def order_parameter_steady_state(
 
 
 def compute_phase_diagram(
-    K: np.ndarray,
-    omega: np.ndarray,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
     k_range: tuple[float, float] = (0.01, 2.0),
     n_k: int = 50,
     t2_range: tuple[float, float] = (1.0, 1000.0),
@@ -173,7 +174,7 @@ def compute_phase_diagram(
     fiedler = fiedler_eigenvalue(K)
     k_c_classical = critical_coupling_finite_graph(omega, fiedler)
 
-    k_values = np.linspace(k_range[0], k_range[1], n_k)
+    k_values = np.linspace(k_range[0], k_range[1], n_k, dtype=np.float64)
     t2_values = np.logspace(np.log10(t2_range[0]), np.log10(t2_range[1]), n_t)
 
     t_eff_grid = np.array(

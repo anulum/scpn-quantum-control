@@ -11,12 +11,13 @@ from operator import index
 from typing import Any
 
 import numpy as np
+from numpy.typing import NDArray
 
 _SUPPORTED_OBSERVABLES = frozenset({"sync_order", "dla_parity", "correlation"})
 
 
 def dla_truncated_tn(
-    K_nm: np.ndarray,
+    K_nm: NDArray[np.float64],
     max_bond_dim: int = 32,
     dla_cutoff: float = 1e-6,
     observable: str = "sync_order",
@@ -37,7 +38,7 @@ def dla_truncated_tn(
 
 
 def _validate_inputs(
-    K_nm: np.ndarray,
+    K_nm: NDArray[np.float64],
     max_bond_dim: Any,
     dla_cutoff: float,
     observable: str,

@@ -24,6 +24,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import numpy as np
+from numpy.typing import NDArray
 
 from .monte_carlo_xy import _mc_sweep
 from .persistent_homology import _RIPSER_AVAILABLE, compute_persistence
@@ -42,7 +43,9 @@ class GraphP_H1_Result:
     n_samples: int
 
 
-def _erdos_renyi_coupling(n: int, p: float, strength: float = 0.5, seed: int = 42) -> np.ndarray:
+def _erdos_renyi_coupling(
+    n: int, p: float, strength: float = 0.5, seed: int = 42
+) -> NDArray[np.float64]:
     """Erdős-Rényi random graph coupling matrix."""
     rng = np.random.default_rng(seed)
     K = np.zeros((n, n))
@@ -50,13 +53,13 @@ def _erdos_renyi_coupling(n: int, p: float, strength: float = 0.5, seed: int = 4
         for j in range(i + 1, n):
             if rng.random() < p:
                 K[i, j] = K[j, i] = strength
-    result: np.ndarray = K
+    result: NDArray[np.float64] = K
     return result
 
 
 def _watts_strogatz_coupling(
     n: int, k: int = 4, beta: float = 0.3, strength: float = 0.5, seed: int = 42
-) -> np.ndarray:
+) -> NDArray[np.float64]:
     """Watts-Strogatz small-world coupling matrix."""
     rng = np.random.default_rng(seed)
     K = np.zeros((n, n))
@@ -77,23 +80,23 @@ def _watts_strogatz_coupling(
                 K[i, (i + j) % n] = 0
                 K[(i + j) % n, i] = 0
                 K[i, new_j] = K[new_j, i] = strength
-    result: np.ndarray = K
+    result: NDArray[np.float64] = K
     return result
 
 
-def _ring_coupling(n: int, k: int = 2, strength: float = 0.5) -> np.ndarray:
+def _ring_coupling(n: int, k: int = 2, strength: float = 0.5) -> NDArray[np.float64]:
     """k-nearest-neighbour ring coupling."""
     K = np.zeros((n, n))
     for i in range(n):
         for j in range(1, k + 1):
             K[i, (i + j) % n] = strength
             K[(i + j) % n, i] = strength
-    result: np.ndarray = K
+    result: NDArray[np.float64] = K
     return result
 
 
 def _measure_p_h1_at_transition(
-    K: np.ndarray,
+    K: NDArray[np.float64],
     n_thermalize: int = 3000,
     n_samples: int = 30,
     persistence_threshold: float = 0.01,
@@ -123,7 +126,7 @@ def _measure_p_h1_at_transition(
         pass
 
     if _use_rust:
-        k_flat: np.ndarray = K.ravel().astype(np.float64)
+        k_flat: NDArray[np.float64] = K.ravel().astype(np.float64)
         best_r = 0.0
         for t in temps:
             _, r, _ = mc_xy_simulate(k_flat, n, t, n_thermalize, 10, seed + int(t * 1000))

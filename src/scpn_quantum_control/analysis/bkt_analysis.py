@@ -35,8 +35,10 @@ BKT universals:
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Any
 
 import numpy as np
+from numpy.typing import NDArray
 
 
 @dataclass
@@ -53,16 +55,16 @@ class BKTResult:
     p_h1_predicted: float | None
 
 
-def coupling_laplacian(K: np.ndarray) -> np.ndarray:
+def coupling_laplacian(K: NDArray[np.float64]) -> NDArray[np.float64]:
     """Coupling-weighted graph Laplacian: L = D - K where D_ii = Σ_j |K_ij|."""
     K_abs = np.abs(K)
     np.fill_diagonal(K_abs, 0.0)
     D = np.diag(np.sum(K_abs, axis=1))
-    L: np.ndarray = D - K_abs
+    L: NDArray[np.float64] = D - K_abs
     return L
 
 
-def fiedler_eigenvalue(K: np.ndarray) -> float:
+def fiedler_eigenvalue(K: NDArray[np.float64]) -> float:
     """Second-smallest eigenvalue of the coupling-weighted Laplacian.
 
     The Fiedler value measures algebraic connectivity of the coupling graph.
@@ -75,7 +77,7 @@ def fiedler_eigenvalue(K: np.ndarray) -> float:
     return float(eigenvalues[1])
 
 
-def estimate_t_bkt(K: np.ndarray) -> float:
+def estimate_t_bkt(K: NDArray[np.float64]) -> float:
     """Estimate BKT transition temperature from coupling matrix.
 
     Uses T_BKT = (π/2) × J_eff where J_eff = λ_2(L) / (2n).
@@ -88,8 +90,8 @@ def estimate_t_bkt(K: np.ndarray) -> float:
 
 
 def bkt_analysis(
-    K: np.ndarray,
-    omega: np.ndarray | None = None,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64] | None = None,
 ) -> BKTResult:
     """Full BKT transition analysis for a coupling matrix.
 
@@ -152,10 +154,10 @@ def bkt_analysis(
 
 
 def scan_synchronization_transition(
-    K_base_values: np.ndarray,
+    K_base_values: NDArray[np.float64],
     alpha: float = 0.3,
     n: int = 16,
-) -> dict:
+) -> dict[str, Any]:
     """Scan BKT observables across coupling strength K_base.
 
     Returns dict with K_base values and corresponding:
