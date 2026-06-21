@@ -233,8 +233,6 @@ from .program_ad_registry import (
     _PROGRAM_AD_CUMULATIVE_IDENTITIES,
     _PROGRAM_AD_CUMULATIVE_POLICY,
     _PROGRAM_AD_SELECTION_IDENTITIES,
-    _PROGRAM_AD_SHAPE_IDENTITIES,
-    _PROGRAM_AD_SHAPE_POLICY,
     _PROGRAM_AD_STENCIL_IDENTITIES,
     _PROGRAM_AD_STENCIL_POLICY,
     DEFAULT_CUSTOM_DERIVATIVE_REGISTRY,
@@ -277,18 +275,8 @@ from .program_ad_selection_primitives import (
     program_ad_selection_where_derivative_rule,
 )
 from .program_ad_shape_transforms import (
-    _program_ad_shape_atleast_target_shape,
-    _program_ad_shape_derivative_rule,
-    _program_ad_shape_insert_singleton_axes,
-    _program_ad_shape_normalise_expand_dims_axes,
-    _program_ad_shape_normalise_flip_axis,
-    _program_ad_shape_normalise_moveaxis_axes,
-    _program_ad_shape_normalise_repeat_signature,
-    _program_ad_shape_normalise_roll_signature,
-    _program_ad_shape_normalise_squeeze_axes,
-    _program_ad_shape_normalise_tile_signature,
-    _program_ad_shape_remove_axes,
-    _program_ad_shape_rot90_target_shape,
+    _register_program_ad_shape_primitive_contracts,
+    _require_program_ad_shape_contract,
     program_ad_shape_atleast_1d_derivative_rule,
     program_ad_shape_atleast_2d_derivative_rule,
     program_ad_shape_atleast_3d_derivative_rule,
@@ -6634,186 +6622,6 @@ def _program_ad_elementwise_unbroadcast(
     return _program_ad_float64_vector_result(result.reshape(target_shape))
 
 
-def _program_ad_shape_reshape_shape(args: tuple[object, ...]) -> tuple[int, ...]:
-    if len(args) != 2:
-        raise ValueError("program AD shape reshape rule requires array and target shape")
-    source_shape = _program_ad_array_shape_of(args[0])
-    return _normalise_trace_reshape_shape(args[1], int(np.prod(source_shape)))
-
-
-def _program_ad_shape_expand_dims_shape(args: tuple[object, ...]) -> tuple[int, ...]:
-    if len(args) != 2:
-        raise ValueError("program AD shape expand_dims rule requires array and axis")
-    source_shape = _program_ad_array_shape_of(args[0])
-    axes = _program_ad_shape_normalise_expand_dims_axes(source_shape, cast(Any, args[1]))
-    return _program_ad_shape_insert_singleton_axes(source_shape, axes)
-
-
-def _program_ad_shape_ravel_shape(args: tuple[object, ...]) -> tuple[int, ...]:
-    if len(args) != 1:
-        raise ValueError("program AD shape ravel rule requires one array")
-    return (int(np.prod(_program_ad_array_shape_of(args[0]))),)
-
-
-def _program_ad_shape_normalised_transpose_axes(
-    array_shape: tuple[int, ...],
-    axes: object,
-) -> tuple[int, ...]:
-    if len(array_shape) < 2:
-        return ()
-    if axes is None:
-        return tuple(reversed(range(len(array_shape))))
-    if not isinstance(axes, Sequence) or isinstance(axes, (str, bytes)):
-        raise ValueError("program AD shape transpose axes must be a static axis sequence")
-    raw_axes = tuple(cast(Any, axes))
-    if len(raw_axes) != len(array_shape):
-        raise ValueError("program AD shape transpose axes must match array rank")
-    normalised_axes = tuple(
-        _normalise_axis("axis", cast(int, axis), len(array_shape)) for axis in raw_axes
-    )
-    if sorted(normalised_axes) != list(range(len(array_shape))):
-        raise ValueError("program AD shape transpose axes must be a permutation")
-    return normalised_axes
-
-
-def _program_ad_shape_transpose_shape(args: tuple[object, ...]) -> tuple[int, ...]:
-    if len(args) not in {1, 2}:
-        raise ValueError("program AD shape transpose rule requires array and optional axes")
-    source_shape = _program_ad_array_shape_of(args[0])
-    axes = _program_ad_shape_normalised_transpose_axes(
-        source_shape, args[1] if len(args) == 2 else None
-    )
-    if not axes:
-        return source_shape
-    return tuple(source_shape[axis] for axis in axes)
-
-
-def _program_ad_shape_atleast_rank_shape(
-    args: tuple[object, ...], *, rank: Literal[1, 2, 3]
-) -> tuple[int, ...]:
-    if len(args) != 1:
-        raise ValueError(f"program AD shape atleast_{rank}d rule requires one array")
-    return _program_ad_shape_atleast_target_shape(_program_ad_array_shape_of(args[0]), rank)
-
-
-def _program_ad_shape_atleast_1d_shape(args: tuple[object, ...]) -> tuple[int, ...]:
-    return _program_ad_shape_atleast_rank_shape(args, rank=1)
-
-
-def _program_ad_shape_atleast_2d_shape(args: tuple[object, ...]) -> tuple[int, ...]:
-    return _program_ad_shape_atleast_rank_shape(args, rank=2)
-
-
-def _program_ad_shape_atleast_3d_shape(args: tuple[object, ...]) -> tuple[int, ...]:
-    return _program_ad_shape_atleast_rank_shape(args, rank=3)
-
-
-def _program_ad_shape_swapaxes_shape(args: tuple[object, ...]) -> tuple[int, ...]:
-    if len(args) != 3:
-        raise ValueError("program AD shape swapaxes rule requires array, axis1, and axis2")
-    source_shape = _program_ad_array_shape_of(args[0])
-    first = _normalise_axis_permutation_axis(
-        "swapaxes", cast(int, args[1]), rank=len(source_shape)
-    )
-    second = _normalise_axis_permutation_axis(
-        "swapaxes", cast(int, args[2]), rank=len(source_shape)
-    )
-    target = list(source_shape)
-    target[first], target[second] = target[second], target[first]
-    return tuple(target)
-
-
-def _program_ad_shape_moveaxis_shape(args: tuple[object, ...]) -> tuple[int, ...]:
-    if len(args) != 3:
-        raise ValueError("program AD shape moveaxis rule requires array, source, and destination")
-    source_shape = _program_ad_array_shape_of(args[0])
-    _, _, order = _program_ad_shape_normalise_moveaxis_axes(
-        source_shape, cast(Any, args[1]), cast(Any, args[2])
-    )
-    return tuple(source_shape[axis] for axis in order)
-
-
-def _program_ad_shape_roll_shape(args: tuple[object, ...]) -> tuple[int, ...]:
-    if len(args) not in {2, 3}:
-        raise ValueError("program AD shape roll rule requires array, shift, and optional axis")
-    source_shape = _program_ad_array_shape_of(args[0])
-    _program_ad_shape_normalise_roll_signature(
-        source_shape, args[1], args[2] if len(args) == 3 else None
-    )
-    return source_shape
-
-
-def _program_ad_shape_flip_shape(args: tuple[object, ...]) -> tuple[int, ...]:
-    if len(args) not in {1, 2}:
-        raise ValueError("program AD shape flip rule requires array and optional axis")
-    source_shape = _program_ad_array_shape_of(args[0])
-    _program_ad_shape_normalise_flip_axis(source_shape, args[1] if len(args) == 2 else None)
-    return source_shape
-
-
-def _program_ad_shape_flipud_shape(args: tuple[object, ...]) -> tuple[int, ...]:
-    if len(args) != 1:
-        raise ValueError("program AD shape flipud rule requires one array")
-    source_shape = _program_ad_array_shape_of(args[0])
-    if len(source_shape) < 1:
-        raise ValueError("program AD flipud requires at least rank-1 arrays")
-    return source_shape
-
-
-def _program_ad_shape_fliplr_shape(args: tuple[object, ...]) -> tuple[int, ...]:
-    if len(args) != 1:
-        raise ValueError("program AD shape fliplr rule requires one array")
-    source_shape = _program_ad_array_shape_of(args[0])
-    if len(source_shape) < 2:
-        raise ValueError("program AD fliplr requires at least rank-2 arrays")
-    return source_shape
-
-
-def _program_ad_shape_rot90_shape(args: tuple[object, ...]) -> tuple[int, ...]:
-    if len(args) not in {1, 2, 3}:
-        raise ValueError("program AD shape rot90 rule requires array, k, and axes")
-    source_shape = _program_ad_array_shape_of(args[0])
-    k_value = _normalise_rot90_k(args[1] if len(args) >= 2 else 1)
-    axes_value = _normalise_rot90_axes(
-        args[2] if len(args) == 3 else (0, 1), rank=len(source_shape)
-    )
-    return _program_ad_shape_rot90_target_shape(source_shape, k_value, axes_value)
-
-
-def _program_ad_shape_repeat_shape(args: tuple[object, ...]) -> tuple[int, ...]:
-    if len(args) not in {2, 3}:
-        raise ValueError("program AD shape repeat rule requires array, repeats, and optional axis")
-    source_shape = _program_ad_array_shape_of(args[0])
-    _, _, target_shape = _program_ad_shape_normalise_repeat_signature(
-        source_shape, args[1], args[2] if len(args) == 3 else None
-    )
-    return target_shape
-
-
-def _program_ad_shape_tile_shape(args: tuple[object, ...]) -> tuple[int, ...]:
-    if len(args) != 2:
-        raise ValueError("program AD shape tile rule requires array and reps")
-    source_shape = _program_ad_array_shape_of(args[0])
-    _, _, target_shape = _program_ad_shape_normalise_tile_signature(source_shape, args[1])
-    return target_shape
-
-
-def _program_ad_shape_squeeze_shape(args: tuple[object, ...]) -> tuple[int, ...]:
-    if len(args) not in {1, 2}:
-        raise ValueError("program AD shape squeeze rule requires array and optional axis")
-    source_shape = _program_ad_array_shape_of(args[0])
-    axes = _program_ad_shape_normalise_squeeze_axes(
-        source_shape, cast(Any, args[1]) if len(args) == 2 else None
-    )
-    return _program_ad_shape_remove_axes(source_shape, axes)
-
-
-def _program_ad_shape_dtype_rule(args: tuple[object, ...]) -> str:
-    if not args:
-        raise ValueError("program AD shape dtype rule requires an array operand")
-    return _program_ad_array_dtype_of(args[0])
-
-
 def _program_ad_cumulative_axis(args: tuple[object, ...]) -> int | None:
     if len(args) not in {1, 2, 3}:
         raise ValueError("program AD cumulative rule requires array and static parameters")
@@ -6866,127 +6674,6 @@ def _program_ad_cumulative_dtype_rule(args: tuple[object, ...]) -> str:
     return _program_ad_array_dtype_of(args[0])
 
 
-def _program_ad_shape_reshape_static_arguments(args: tuple[object, ...]) -> tuple[object, ...]:
-    if len(args) != 2:
-        raise ValueError("program AD shape reshape static rule requires array and target shape")
-    source_shape = _program_ad_array_shape_of(args[0])
-    return (_normalise_trace_reshape_shape(args[1], int(np.prod(source_shape))),)
-
-
-def _program_ad_shape_expand_dims_static_arguments(
-    args: tuple[object, ...],
-) -> tuple[object, ...]:
-    if len(args) != 2:
-        raise ValueError("program AD shape expand_dims static rule requires array and axis")
-    source_shape = _program_ad_array_shape_of(args[0])
-    return (_program_ad_shape_normalise_expand_dims_axes(source_shape, cast(Any, args[1])),)
-
-
-def _program_ad_shape_no_static_arguments(args: tuple[object, ...]) -> tuple[object, ...]:
-    if len(args) != 1:
-        raise ValueError("program AD shape static rule requires one array")
-    return ()
-
-
-def _program_ad_shape_atleast_static_arguments(args: tuple[object, ...]) -> tuple[object, ...]:
-    if len(args) != 1:
-        raise ValueError("program AD shape atleast static rule requires one array")
-    return ()
-
-
-def _program_ad_shape_transpose_static_arguments(args: tuple[object, ...]) -> tuple[object, ...]:
-    if len(args) not in {1, 2}:
-        raise ValueError("program AD shape transpose static rule requires array and optional axes")
-    source_shape = _program_ad_array_shape_of(args[0])
-    axes = _program_ad_shape_normalised_transpose_axes(
-        source_shape, args[1] if len(args) == 2 else None
-    )
-    return () if not axes else (axes,)
-
-
-def _program_ad_shape_swapaxes_static_arguments(args: tuple[object, ...]) -> tuple[object, ...]:
-    if len(args) != 3:
-        raise ValueError("program AD shape swapaxes static rule requires array, axis1, and axis2")
-    source_shape = _program_ad_array_shape_of(args[0])
-    return (
-        _normalise_axis_permutation_axis("swapaxes", cast(int, args[1]), rank=len(source_shape)),
-        _normalise_axis_permutation_axis("swapaxes", cast(int, args[2]), rank=len(source_shape)),
-    )
-
-
-def _program_ad_shape_moveaxis_static_arguments(args: tuple[object, ...]) -> tuple[object, ...]:
-    if len(args) != 3:
-        raise ValueError(
-            "program AD shape moveaxis static rule requires array, source, and destination"
-        )
-    source_shape = _program_ad_array_shape_of(args[0])
-    source_axes, destination_axes, _ = _program_ad_shape_normalise_moveaxis_axes(
-        source_shape, cast(Any, args[1]), cast(Any, args[2])
-    )
-    return source_axes, destination_axes
-
-
-def _program_ad_shape_roll_static_arguments(args: tuple[object, ...]) -> tuple[object, ...]:
-    if len(args) not in {2, 3}:
-        raise ValueError(
-            "program AD shape roll static rule requires array, shift, and optional axis"
-        )
-    source_shape = _program_ad_array_shape_of(args[0])
-    return _program_ad_shape_normalise_roll_signature(
-        source_shape, args[1], args[2] if len(args) == 3 else None
-    )
-
-
-def _program_ad_shape_flip_static_arguments(args: tuple[object, ...]) -> tuple[object, ...]:
-    if len(args) not in {1, 2}:
-        raise ValueError("program AD shape flip static rule requires array and optional axis")
-    source_shape = _program_ad_array_shape_of(args[0])
-    return (
-        _program_ad_shape_normalise_flip_axis(source_shape, args[1] if len(args) == 2 else None),
-    )
-
-
-def _program_ad_shape_rot90_static_arguments(args: tuple[object, ...]) -> tuple[object, ...]:
-    if len(args) not in {1, 2, 3}:
-        raise ValueError("program AD shape rot90 static rule requires array, k, and axes")
-    source_shape = _program_ad_array_shape_of(args[0])
-    return (
-        _normalise_rot90_k(args[1] if len(args) >= 2 else 1),
-        _normalise_rot90_axes(args[2] if len(args) == 3 else (0, 1), rank=len(source_shape)),
-    )
-
-
-def _program_ad_shape_repeat_static_arguments(args: tuple[object, ...]) -> tuple[object, ...]:
-    if len(args) not in {2, 3}:
-        raise ValueError(
-            "program AD shape repeat static rule requires array, repeats, and optional axis"
-        )
-    source_shape = _program_ad_array_shape_of(args[0])
-    repeat_counts, axis_index, _ = _program_ad_shape_normalise_repeat_signature(
-        source_shape, args[1], args[2] if len(args) == 3 else None
-    )
-    return repeat_counts, axis_index
-
-
-def _program_ad_shape_tile_static_arguments(args: tuple[object, ...]) -> tuple[object, ...]:
-    if len(args) != 2:
-        raise ValueError("program AD shape tile static rule requires array and reps")
-    source_shape = _program_ad_array_shape_of(args[0])
-    reps_tuple, _, _ = _program_ad_shape_normalise_tile_signature(source_shape, args[1])
-    return (reps_tuple,)
-
-
-def _program_ad_shape_squeeze_static_arguments(args: tuple[object, ...]) -> tuple[object, ...]:
-    if len(args) not in {1, 2}:
-        raise ValueError("program AD shape squeeze static rule requires array and optional axis")
-    source_shape = _program_ad_array_shape_of(args[0])
-    return (
-        _program_ad_shape_normalise_squeeze_axes(
-            source_shape, cast(Any, args[1]) if len(args) == 2 else None
-        ),
-    )
-
-
 def _program_ad_cumulative_scan_static_arguments(
     args: tuple[object, ...],
 ) -> tuple[object, ...]:
@@ -7002,47 +6689,6 @@ def _program_ad_cumulative_diff_static_arguments(args: tuple[object, ...]) -> tu
     return (order, axis_index)
 
 
-_PROGRAM_AD_SHAPE_SHAPE_RULES: Mapping[str, PrimitiveShapeRule] = {
-    "atleast_1d": _program_ad_shape_atleast_1d_shape,
-    "atleast_2d": _program_ad_shape_atleast_2d_shape,
-    "atleast_3d": _program_ad_shape_atleast_3d_shape,
-    "expand_dims": _program_ad_shape_expand_dims_shape,
-    "flip": _program_ad_shape_flip_shape,
-    "fliplr": _program_ad_shape_fliplr_shape,
-    "flipud": _program_ad_shape_flipud_shape,
-    "moveaxis": _program_ad_shape_moveaxis_shape,
-    "reshape": _program_ad_shape_reshape_shape,
-    "ravel": _program_ad_shape_ravel_shape,
-    "repeat": _program_ad_shape_repeat_shape,
-    "roll": _program_ad_shape_roll_shape,
-    "rot90": _program_ad_shape_rot90_shape,
-    "squeeze": _program_ad_shape_squeeze_shape,
-    "swapaxes": _program_ad_shape_swapaxes_shape,
-    "tile": _program_ad_shape_tile_shape,
-    "transpose": _program_ad_shape_transpose_shape,
-}
-
-_PROGRAM_AD_SHAPE_STATIC_ARGUMENT_RULES: Mapping[str, PrimitiveStaticArgumentRule] = {
-    "atleast_1d": _program_ad_shape_atleast_static_arguments,
-    "atleast_2d": _program_ad_shape_atleast_static_arguments,
-    "atleast_3d": _program_ad_shape_atleast_static_arguments,
-    "expand_dims": _program_ad_shape_expand_dims_static_arguments,
-    "flip": _program_ad_shape_flip_static_arguments,
-    "fliplr": _program_ad_shape_no_static_arguments,
-    "flipud": _program_ad_shape_no_static_arguments,
-    "moveaxis": _program_ad_shape_moveaxis_static_arguments,
-    "reshape": _program_ad_shape_reshape_static_arguments,
-    "ravel": _program_ad_shape_no_static_arguments,
-    "repeat": _program_ad_shape_repeat_static_arguments,
-    "roll": _program_ad_shape_roll_static_arguments,
-    "rot90": _program_ad_shape_rot90_static_arguments,
-    "squeeze": _program_ad_shape_squeeze_static_arguments,
-    "swapaxes": _program_ad_shape_swapaxes_static_arguments,
-    "tile": _program_ad_shape_tile_static_arguments,
-    "transpose": _program_ad_shape_transpose_static_arguments,
-}
-
-
 _PROGRAM_AD_CUMULATIVE_SHAPE_RULES: Mapping[str, PrimitiveShapeRule] = {
     "cumsum": _program_ad_cumulative_scan_shape,
     "cumprod": _program_ad_cumulative_scan_shape,
@@ -7054,106 +6700,6 @@ _PROGRAM_AD_CUMULATIVE_STATIC_ARGUMENT_RULES: Mapping[str, PrimitiveStaticArgume
     "cumprod": _program_ad_cumulative_scan_static_arguments,
     "diff": _program_ad_cumulative_diff_static_arguments,
 }
-
-
-def _program_ad_shape_batching_rule(
-    function: Callable[..., object],
-    args: tuple[object, ...],
-    axes: tuple[int | None, ...],
-    out_axes: int,
-) -> object:
-    if len(args) != len(axes):
-        raise ValueError("program AD shape batching axes must match argument count")
-    if not args:
-        raise ValueError("program AD shape batching requires an array operand")
-    array = _as_real_numeric_array("program AD shape batched operand", args[0])
-    axis = axes[0]
-    if axis is None:
-        return function(*args)
-    if any(item is not None for item in axes[1:]):
-        raise ValueError("program AD shape batching supports static non-array arguments only")
-    axis_index = _normalise_axis("axes[0]", axis, array.ndim)
-    outputs = [
-        _as_real_numeric_array(
-            "program AD shape batched output",
-            function(np.take(array, batch_index, axis=axis_index), *args[1:]),
-        )
-        for batch_index in range(int(array.shape[axis_index]))
-    ]
-    stacked = np.stack(outputs, axis=0)
-    return np.moveaxis(stacked, 0, _normalise_axis("out_axes", out_axes, stacked.ndim))
-
-
-def _program_ad_shape_lowering_metadata(name: str) -> Mapping[str, str]:
-    static_factory = {
-        "atleast_1d": "program_ad_shape_atleast_1d_derivative_rule",
-        "atleast_2d": "program_ad_shape_atleast_2d_derivative_rule",
-        "atleast_3d": "program_ad_shape_atleast_3d_derivative_rule",
-        "expand_dims": "program_ad_shape_expand_dims_derivative_rule",
-        "flip": "program_ad_shape_flip_derivative_rule",
-        "fliplr": "program_ad_shape_fliplr_derivative_rule",
-        "flipud": "program_ad_shape_flipud_derivative_rule",
-        "moveaxis": "program_ad_shape_moveaxis_derivative_rule",
-        "repeat": "program_ad_shape_repeat_derivative_rule",
-        "reshape": "program_ad_shape_reshape_derivative_rule",
-        "ravel": "program_ad_shape_ravel_derivative_rule",
-        "roll": "program_ad_shape_roll_derivative_rule",
-        "rot90": "program_ad_shape_rot90_derivative_rule",
-        "squeeze": "program_ad_shape_squeeze_derivative_rule",
-        "swapaxes": "program_ad_shape_swapaxes_derivative_rule",
-        "tile": "program_ad_shape_tile_derivative_rule",
-        "transpose": "program_ad_shape_transpose_derivative_rule",
-    }[name]
-    static_signature = {
-        "atleast_1d": "source_shape:ranked_tensor_shape",
-        "atleast_2d": "source_shape:ranked_tensor_shape",
-        "atleast_3d": "source_shape:ranked_tensor_shape",
-        "expand_dims": "source_shape:ranked_tensor_shape;axis",
-        "flip": "source_shape:ranked_tensor_shape;axis",
-        "fliplr": "source_shape:rank_ge_2",
-        "flipud": "source_shape:rank_ge_1",
-        "moveaxis": "source_shape:ranked_tensor_shape;source_destination",
-        "repeat": "source_shape:ranked_tensor_shape;repeats_axis",
-        "reshape": "source_shape:ranked_tensor_shape;target_shape",
-        "ravel": "source_shape:ranked_tensor_shape",
-        "roll": "source_shape:ranked_tensor_shape;shift_axis",
-        "rot90": "source_shape:ranked_tensor_shape;k_axes",
-        "squeeze": "source_shape:ranked_tensor_shape;axis",
-        "swapaxes": "source_shape:ranked_tensor_shape;axis1_axis2",
-        "tile": "source_shape:ranked_tensor_shape;reps",
-        "transpose": "source_shape:ranked_tensor_shape;axes",
-    }[name]
-    nondifferentiable_boundaries = {
-        "atleast_1d": "static_rank_promotion",
-        "atleast_2d": "static_rank_promotion",
-        "atleast_3d": "static_rank_promotion",
-        "expand_dims": "static_singleton_axis_insertion",
-        "flip": "static_axis_flip_permutation",
-        "fliplr": "static_second_axis_flip_permutation",
-        "flipud": "static_first_axis_flip_permutation",
-        "moveaxis": "static_axis_move_permutation",
-        "repeat": "static_repeat_scatter_add",
-        "reshape": "element_count_preserving_static_shape",
-        "ravel": "contiguous_flat_view_shape",
-        "roll": "static_integer_roll_permutation",
-        "rot90": "static_quarter_turn_axis_permutation",
-        "squeeze": "static_singleton_axis_removal",
-        "swapaxes": "static_axis_swap_permutation",
-        "tile": "static_tile_scatter_add",
-        "transpose": "static_axis_permutation",
-    }
-    return {
-        "program_ad": "operator_intercepted_trace",
-        "mlir": "available: scpn_diff shape dialect interchange; executable lowering blocked",
-        "mlir_op": f"scpn_diff.shape.{name}",
-        "llvm": "blocked_until_executable_shape_lowering",
-        "rust": "blocked_until_polyglot_shape_ad",
-        "static_argument_rule": "required",
-        "static_derivative_factory": static_factory,
-        "static_signature": static_signature,
-        "nondifferentiable_boundary": nondifferentiable_boundaries[name],
-        "nondifferentiable_boundary_policy": "fail_closed",
-    }
 
 
 def _program_ad_cumulative_batching_rule(
@@ -7212,25 +6758,6 @@ def _program_ad_cumulative_lowering_metadata(name: str) -> Mapping[str, str]:
         "nondifferentiable_boundary": nondifferentiable_boundaries[name],
         "nondifferentiable_boundary_policy": "fail_closed",
     }
-
-
-def _register_program_ad_shape_primitive_contracts() -> None:
-    for name, identity in _PROGRAM_AD_SHAPE_IDENTITIES.items():
-        if DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.contract_for(identity) is not None:
-            continue
-        DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.register_transform(
-            PrimitiveTransformRule(
-                identity=identity,
-                derivative_rule=_program_ad_shape_derivative_rule(name),
-                batching_rule=_program_ad_shape_batching_rule,
-                lowering_metadata=_program_ad_shape_lowering_metadata(name),
-                shape_rule=_PROGRAM_AD_SHAPE_SHAPE_RULES[name],
-                dtype_rule=_program_ad_shape_dtype_rule,
-                static_argument_rule=_PROGRAM_AD_SHAPE_STATIC_ARGUMENT_RULES[name],
-                nondifferentiable_policy=_PROGRAM_AD_SHAPE_POLICY,
-                effect="pure",
-            )
-        )
 
 
 def _register_program_ad_cumulative_primitive_contracts() -> None:
@@ -7327,19 +6854,6 @@ def _require_program_ad_runtime_contract(
     if args is not None:
         _validate_program_ad_primitive_contract_dispatch(contract, args)
     return contract
-
-
-def _require_program_ad_shape_contract(
-    name: str,
-    args: tuple[object, ...] | None = None,
-) -> PrimitiveContract:
-    return _require_program_ad_runtime_contract(
-        name,
-        family="shape",
-        identities=_PROGRAM_AD_SHAPE_IDENTITIES,
-        expected_policy=_PROGRAM_AD_SHAPE_POLICY,
-        args=args,
-    )
 
 
 def _require_program_ad_cumulative_contract(

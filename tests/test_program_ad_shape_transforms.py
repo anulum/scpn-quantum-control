@@ -111,6 +111,15 @@ def test_program_ad_shape_direct_factories_have_dedicated_module_path() -> None:
         differentiable_facade.program_ad_shape_atleast_3d_derivative_rule
         is program_ad_shape_atleast_3d_derivative_rule
     )
+    facade_exports = vars(differentiable_facade)
+    assert (
+        facade_exports["_register_program_ad_shape_primitive_contracts"]
+        is program_ad_shape_transforms._register_program_ad_shape_primitive_contracts
+    )
+    assert (
+        facade_exports["_require_program_ad_shape_contract"]
+        is program_ad_shape_transforms._require_program_ad_shape_contract
+    )
 
 
 def test_program_ad_shape_primitives_are_registry_policy_gated() -> None:
