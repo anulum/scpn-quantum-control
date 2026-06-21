@@ -138,7 +138,7 @@ def _parse_circuit(raw: dict[str, Any], idx: int) -> DlaParityCircuit:
         experiment=str(meta_raw["experiment"]),
         n_qubits=int(meta_raw["n_qubits"]),
         depth=int(meta_raw["depth"]),
-        sector=sector,  # type: ignore[arg-type]
+        sector=sector,
         initial=str(meta_raw["initial"]),
         rep=int(meta_raw["rep"]),
         shots=int(meta_raw["shots"]),

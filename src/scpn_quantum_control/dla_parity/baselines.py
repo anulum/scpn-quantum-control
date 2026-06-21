@@ -47,6 +47,7 @@ from dataclasses import dataclass
 from typing import Literal
 
 import numpy as np
+from numpy.typing import NDArray
 from scipy.linalg import expm
 
 Backend = Literal["auto", "numpy", "qutip"]
@@ -110,8 +111,8 @@ def available_baselines() -> dict[str, bool]:
     }
 
 
-def _build_k_matrix(n: int) -> np.ndarray:
-    k = np.zeros((n, n))
+def _build_k_matrix(n: int) -> NDArray[np.float64]:
+    k = np.zeros((n, n), dtype=np.float64)
     for i in range(n):
         for j in range(n):
             if i != j:
@@ -119,11 +120,11 @@ def _build_k_matrix(n: int) -> np.ndarray:
     return k
 
 
-def _build_omega(n: int) -> np.ndarray:
-    return np.linspace(0.8, 1.2, n)
+def _build_omega(n: int) -> NDArray[np.float64]:
+    return np.linspace(0.8, 1.2, n, dtype=np.float64)
 
 
-def _computational_basis_state(bitstring: str) -> np.ndarray:
+def _computational_basis_state(bitstring: str) -> NDArray[np.complex128]:
     idx = int(bitstring, 2)
     dim = 1 << len(bitstring)
     psi = np.zeros(dim, dtype=np.complex128)
@@ -131,33 +132,41 @@ def _computational_basis_state(bitstring: str) -> np.ndarray:
     return psi
 
 
-def _pauli_matrices() -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+def _pauli_matrices() -> tuple[
+    NDArray[np.complex128], NDArray[np.complex128], NDArray[np.complex128]
+]:
     X = np.array([[0, 1], [1, 0]], dtype=np.complex128)
     Y = np.array([[0, -1j], [1j, 0]], dtype=np.complex128)
     Z = np.array([[1, 0], [0, -1]], dtype=np.complex128)
     return X, Y, Z
 
 
-def _single_site(op: np.ndarray, i: int, n: int) -> np.ndarray:
-    m = np.array([[1.0 + 0j]])
+def _single_site(op: NDArray[np.complex128], i: int, n: int) -> NDArray[np.complex128]:
+    m: NDArray[np.complex128] = np.array([[1.0 + 0j]], dtype=np.complex128)
     for k in range(n):
-        m = np.kron(m, op if k == i else np.eye(2, dtype=np.complex128))
+        m = np.kron(m, op if k == i else np.eye(2, dtype=np.complex128)).astype(np.complex128)
     return m
 
 
-def _two_site(op1: np.ndarray, op2: np.ndarray, i: int, j: int, n: int) -> np.ndarray:
-    m = np.array([[1.0 + 0j]])
+def _two_site(
+    op1: NDArray[np.complex128],
+    op2: NDArray[np.complex128],
+    i: int,
+    j: int,
+    n: int,
+) -> NDArray[np.complex128]:
+    m: NDArray[np.complex128] = np.array([[1.0 + 0j]], dtype=np.complex128)
     for k in range(n):
         if k == i:
-            m = np.kron(m, op1)
+            m = np.kron(m, op1).astype(np.complex128)
         elif k == j:
-            m = np.kron(m, op2)
+            m = np.kron(m, op2).astype(np.complex128)
         else:
-            m = np.kron(m, np.eye(2, dtype=np.complex128))
+            m = np.kron(m, np.eye(2, dtype=np.complex128)).astype(np.complex128)
     return m
 
 
-def _build_hz(n: int, omega: np.ndarray) -> np.ndarray:
+def _build_hz(n: int, omega: NDArray[np.float64]) -> NDArray[np.complex128]:
     X, Y, Z = _pauli_matrices()
     del X, Y
     dim = 1 << n
@@ -167,7 +176,7 @@ def _build_hz(n: int, omega: np.ndarray) -> np.ndarray:
     return hz
 
 
-def _build_hxy_nn(n: int, k_matrix: np.ndarray) -> np.ndarray:
+def _build_hxy_nn(n: int, k_matrix: NDArray[np.float64]) -> NDArray[np.complex128]:
     X, Y, _ = _pauli_matrices()
     dim = 1 << n
     hxy = np.zeros((dim, dim), dtype=np.complex128)
@@ -179,7 +188,7 @@ def _build_hxy_nn(n: int, k_matrix: np.ndarray) -> np.ndarray:
     return hxy
 
 
-def _parity_mask(n: int, initial_parity: int) -> np.ndarray:
+def _parity_mask(n: int, initial_parity: int) -> NDArray[np.float64]:
     dim = 1 << n
     mask = np.zeros(dim, dtype=np.float64)
     for idx in range(dim):
@@ -189,19 +198,19 @@ def _parity_mask(n: int, initial_parity: int) -> np.ndarray:
 
 
 def _evolve_numpy(
-    psi0: np.ndarray,
-    hz: np.ndarray,
-    hxy: np.ndarray,
+    psi0: NDArray[np.complex128],
+    hz: NDArray[np.complex128],
+    hxy: NDArray[np.complex128],
     t_step: float,
     n_steps: int,
-) -> np.ndarray:
+) -> NDArray[np.complex128]:
     uz = expm(-1j * hz * t_step)
     uxy = expm(-1j * hxy * t_step)
     psi = psi0
     for _ in range(n_steps):
         psi = uz @ psi
         psi = uxy @ psi
-    return psi
+    return np.asarray(psi, dtype=np.complex128)
 
 
 def _leakage_numpy(
@@ -209,8 +218,8 @@ def _leakage_numpy(
     initial: str,
     depths: Sequence[int],
     t_step: float,
-    omega: np.ndarray,
-    k_matrix: np.ndarray,
+    omega: NDArray[np.float64],
+    k_matrix: NDArray[np.float64],
 ) -> dict[int, float]:
     psi0 = _computational_basis_state(initial)
     hz = _build_hz(n, omega)
@@ -229,10 +238,10 @@ def _leakage_qutip(
     initial: str,
     depths: Sequence[int],
     t_step: float,
-    omega: np.ndarray,
-    k_matrix: np.ndarray,
+    omega: NDArray[np.float64],
+    k_matrix: NDArray[np.float64],
 ) -> dict[int, float]:
-    import qutip as qt  # type: ignore[import-not-found,import-untyped]  # optional dependency
+    import qutip as qt  # type: ignore[import-untyped]  # optional dependency
 
     def _qt_kron(ops: list[qt.Qobj]) -> qt.Qobj:
         out = ops[0]
