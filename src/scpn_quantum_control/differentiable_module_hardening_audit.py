@@ -358,6 +358,11 @@ def differentiable_module_hardening_registry() -> tuple[DifferentiableModuleHard
             ("confidence interval validation", "fail-closed uncertainty policy"),
         ),
         _record(
+            "src/scpn_quantum_control/differentiable_stochastic_estimators.py",
+            ("tests/test_differentiable_stochastic_estimators.py",),
+            ("SPSA gradient estimation", "score-function and shot-budget estimators"),
+        ),
+        _record(
             "src/scpn_quantum_control/differentiable_transform_helpers.py",
             ("tests/test_differentiable_transform_helpers.py",),
             ("scalar transform helper contracts", "bounds and gradient clipping"),
