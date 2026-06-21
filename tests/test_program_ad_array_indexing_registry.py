@@ -15,6 +15,7 @@ import numpy as np
 import pytest
 
 from scpn_quantum_control import differentiable as differentiable_module
+from scpn_quantum_control import program_ad_array_indexing as array_indexing
 from scpn_quantum_control.differentiable import (
     Parameter,
     PrimitiveIdentity,
@@ -26,6 +27,18 @@ from scpn_quantum_control.differentiable import (
     program_adjoint_gradient,
     whole_program_value_and_grad,
 )
+from scpn_quantum_control.program_ad_array_indexing import (
+    program_ad_array_delete_derivative_rule as direct_delete_derivative_rule,
+)
+from scpn_quantum_control.program_ad_array_indexing import (
+    program_ad_array_getitem_derivative_rule as direct_getitem_derivative_rule,
+)
+from scpn_quantum_control.program_ad_array_indexing import (
+    program_ad_array_take_along_axis_derivative_rule as direct_take_along_axis_derivative_rule,
+)
+from scpn_quantum_control.program_ad_array_indexing import (
+    program_ad_array_take_derivative_rule as direct_take_derivative_rule,
+)
 
 
 def _assert_allclose(
@@ -34,6 +47,97 @@ def _assert_allclose(
     """Assert NumPy closeness across dynamically typed Program AD result payloads."""
 
     cast(Any, np.testing.assert_allclose)(actual, expected, rtol=rtol, atol=atol)
+
+
+def test_program_ad_array_indexing_direct_module_exports_match_facade() -> None:
+    """Static array-indexing factories should remain stable through the facade."""
+
+    assert program_ad_array_getitem_derivative_rule is direct_getitem_derivative_rule
+    assert program_ad_array_take_derivative_rule is direct_take_derivative_rule
+    assert (
+        program_ad_array_take_along_axis_derivative_rule is direct_take_along_axis_derivative_rule
+    )
+    assert (
+        differentiable_module.program_ad_array_delete_derivative_rule
+        is direct_delete_derivative_rule
+    )
+
+
+def test_program_ad_array_indexing_direct_module_fail_closed_boundaries() -> None:
+    """Static direct-rule helpers should reject malformed array-indexing contracts."""
+
+    contract_rule = array_indexing._program_ad_array_derivative_rule("getitem")
+    with pytest.raises(ValueError, match="operator-intercepted trace dispatch"):
+        contract_rule.value_fn(np.array([1.0], dtype=np.float64))
+    assert contract_rule.jvp_rule is not None
+    with pytest.raises(ValueError, match="operator-intercepted trace dispatch"):
+        contract_rule.jvp_rule(
+            np.array([1.0], dtype=np.float64),
+            np.array([0.5], dtype=np.float64),
+        )
+
+    assert array_indexing._program_ad_array_normalise_static_shape("getitem", (2, 0)) == (2, 0)
+    with pytest.raises(ValueError, match="non-negative dimensions"):
+        array_indexing._program_ad_array_normalise_static_shape("getitem", (2, -1))
+    assert array_indexing._program_ad_array_signature(()) == "scalar"
+    with pytest.raises(ValueError, match="with 3 values"):
+        array_indexing._program_ad_array_vector(
+            "take",
+            "values",
+            np.array([1.0, 2.0], dtype=np.float64),
+            expected_size=3,
+        )
+
+    with pytest.raises(ValueError, match="in-bounds indices"):
+        program_ad_array_getitem_derivative_rule((2, 3), (slice(None), 4))
+    with pytest.raises(ValueError, match="static integer slice bounds"):
+        program_ad_array_getitem_derivative_rule((2, 3), slice(None, 1.5))
+    with pytest.raises(ValueError, match="static integer or boolean"):
+        program_ad_array_getitem_derivative_rule((2, 3), object())
+    with pytest.raises(ValueError, match="static integer or boolean"):
+        program_ad_array_getitem_derivative_rule((2, 3), np.array(True))
+
+    with pytest.raises(ValueError, match="in-bounds indices"):
+        program_ad_array_take_derivative_rule((3,), (3,), mode="raise")
+    with pytest.raises(ValueError, match="out of bounds"):
+        program_ad_array_take_derivative_rule((2, 3), (0,), axis=5, mode="wrap")
+    with pytest.raises(ValueError, match="shape compatible"):
+        program_ad_array_take_along_axis_derivative_rule(
+            (2, 3),
+            np.array([[0, 1]], dtype=np.int64),
+            axis=0,
+        )
+    with pytest.raises(ValueError, match="static integer axis"):
+        program_ad_array_take_along_axis_derivative_rule(
+            (2, 3),
+            np.array([[0, 1, 2]], dtype=np.int64),
+            axis=cast(Any, True),
+        )
+
+    assert array_indexing._program_ad_array_delete_object(1, context="test") == 1
+    assert array_indexing._program_ad_array_delete_object(np.array(1), context="test") == 1
+    assert isinstance(
+        array_indexing._program_ad_array_delete_object(np.array([True, False]), context="test"),
+        np.ndarray,
+    )
+    assert isinstance(
+        array_indexing._program_ad_array_delete_object(slice(0, 2), context="test"),
+        slice,
+    )
+    with pytest.raises(ValueError, match="deletion selectors"):
+        array_indexing._program_ad_array_delete_object(True, context="test")
+    with pytest.raises(ValueError, match="slice bounds"):
+        array_indexing._program_ad_array_delete_object(slice(0.0, 2), context="test")
+    with pytest.raises(ValueError, match="deletion selectors"):
+        array_indexing._program_ad_array_delete_object(np.array(["x"]), context="test")
+    with pytest.raises(ValueError, match="in-bounds deletion selectors"):
+        differentiable_module.program_ad_array_delete_derivative_rule((3,), (5,))
+
+    assert array_indexing._normalise_axis("axis", -1, 2) == 1
+    with pytest.raises(ValueError, match="cannot map over a scalar"):
+        array_indexing._normalise_axis("axis", 0, 0)
+    with pytest.raises(ValueError, match="out of bounds"):
+        array_indexing._normalise_axis("axis", 2, 2)
 
 
 def test_program_ad_basic_slicing_preserves_static_adjoint_paths() -> None:

@@ -18,6 +18,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 
 DIFFERENTIABLE_MODULE_PATTERNS = (
     "src/scpn_quantum_control/differentiable*.py",
+    "src/scpn_quantum_control/program_ad*.py",
     "src/scpn_quantum_control/phase/differentiable*.py",
     "src/scpn_quantum_control/phase/*gradient*.py",
     "src/scpn_quantum_control/phase/*provider*.py",
@@ -111,6 +112,36 @@ def differentiable_module_hardening_registry() -> tuple[DifferentiableModuleHard
             "src/scpn_quantum_control/differentiable.py",
             ("tests/test_differentiable_package_exports.py",),
             ("facade export compatibility", "diagnostic-only finite differences"),
+        ),
+        _record(
+            "src/scpn_quantum_control/program_ad_array_indexing.py",
+            ("tests/test_program_ad_array_indexing_registry.py",),
+            ("static gather direct rules", "scatter-add VJP boundaries"),
+        ),
+        _record(
+            "src/scpn_quantum_control/program_ad_adjoint.py",
+            ("tests/test_program_adjoint_replay.py",),
+            ("reverse-adjoint result records", "input-token replay helpers"),
+        ),
+        _record(
+            "src/scpn_quantum_control/program_ad_alias_analysis.py",
+            ("tests/test_program_ad_alias_effects.py",),
+            ("alias/effect summaries", "static alias-lattice readiness"),
+        ),
+        _record(
+            "src/scpn_quantum_control/program_ad_effect_ir.py",
+            ("tests/test_program_ad_effect_ir.py",),
+            ("effect-IR record validation", "effect-IR parser contracts"),
+        ),
+        _record(
+            "src/scpn_quantum_control/program_ad_registry.py",
+            ("tests/test_program_ad_registry.py",),
+            ("primitive registry contracts", "dispatch coverage reports"),
+        ),
+        _record(
+            "src/scpn_quantum_control/program_ad_rust_bridge.py",
+            ("tests/test_program_ad_rust_bridge.py",),
+            ("Rust bridge result parsing", "extension fail-closed boundaries"),
         ),
         _record(
             "src/scpn_quantum_control/whole_program_frontend.py",
