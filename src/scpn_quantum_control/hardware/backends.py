@@ -579,7 +579,7 @@ class _BraketBackend:
     def is_available(self) -> bool:
         """Return whether the Amazon Braket SDK is importable."""
         try:
-            import braket.aws  # type: ignore[import-untyped,import-not-found]  # noqa: F401
+            import braket.aws  # noqa: F401
         except Exception:
             return False
         return True

@@ -31,6 +31,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import numpy as np
+from numpy.typing import NDArray
 from qiskit import QuantumCircuit
 from qiskit.circuit.library import PauliEvolutionGate
 from qiskit.quantum_info import Statevector
@@ -57,11 +58,11 @@ class CuttingRunResult:
 
 
 def _run_partition(
-    K_partition: np.ndarray,
-    omega_partition: np.ndarray,
+    K_partition: NDArray[np.float64],
+    omega_partition: NDArray[np.float64],
     t: float,
     reps: int,
-) -> tuple[float, float, np.ndarray]:
+) -> tuple[float, float, NDArray[np.float64]]:
     """Run Trotter on one partition, return (energy, R, phases)."""
     n = K_partition.shape[0]
     H = knm_to_hamiltonian(K_partition, omega_partition)
@@ -124,7 +125,7 @@ def run_cutting_simulation(
 
     partition_energies: list[float] = []
     partition_rs: list[float] = []
-    all_phases: list[np.ndarray] = []
+    all_phases: list[NDArray[np.float64]] = []
     sizes: list[int] = []
 
     for indices in partition:

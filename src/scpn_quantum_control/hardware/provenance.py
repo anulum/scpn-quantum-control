@@ -38,6 +38,7 @@ import subprocess
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import Any
 
 _REPO_ROOT = Path(__file__).resolve().parents[3]
 
@@ -104,7 +105,7 @@ def _anonymous_hostname_enabled() -> bool:
         return os.environ.get("SCPN_ANONYMOUS_HOSTNAME") == "1"
 
 
-def capture_provenance() -> dict:
+def capture_provenance() -> dict[str, Any]:
     """Return a JSON-serialisable dict describing the current run.
 
     All fields are best-effort; missing values fall back to

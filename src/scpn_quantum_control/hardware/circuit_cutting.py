@@ -32,6 +32,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import numpy as np
+from numpy.typing import NDArray
 
 
 @dataclass
@@ -48,7 +49,7 @@ class CircuitCuttingPlan:
 
 
 def count_inter_partition_couplings(
-    K: np.ndarray,
+    K: NDArray[np.float64],
     partition: list[list[int]],
 ) -> int:
     """Count non-zero coupling terms between partitions."""
@@ -63,7 +64,7 @@ def count_inter_partition_couplings(
 
 
 def optimal_partition(
-    K: np.ndarray,
+    K: NDArray[np.float64],
     max_partition_size: int = 16,
 ) -> list[list[int]]:
     """Partition oscillators to minimise inter-partition cuts.
@@ -81,7 +82,7 @@ def optimal_partition(
 
 
 def circuit_cutting_plan(
-    K: np.ndarray,
+    K: NDArray[np.float64],
     max_partition_size: int = 16,
     heron_qubits: int = 127,
 ) -> CircuitCuttingPlan:
@@ -113,14 +114,14 @@ def circuit_cutting_plan(
 def scaling_analysis(
     n_values: list[int] | None = None,
     max_partition_size: int = 16,
-) -> dict[str, list]:
+) -> dict[str, list[float]]:
     """Analyse circuit cutting overhead across system sizes."""
     from ..bridge.knm_hamiltonian import build_knm_paper27
 
     if n_values is None:
         n_values = [16, 24, 32, 48, 64]
 
-    results: dict[str, list] = {
+    results: dict[str, list[float]] = {
         "n_oscillators": [],
         "n_partitions": [],
         "n_cuts": [],

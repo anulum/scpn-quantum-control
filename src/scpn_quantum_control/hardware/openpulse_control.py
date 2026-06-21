@@ -19,6 +19,7 @@ from dataclasses import dataclass
 from typing import Any
 
 import numpy as np
+from numpy.typing import NDArray
 
 from ..accel.rust_import import optional_rust_engine
 from ..phase.pulse_shaping import HypergeometricPulse
@@ -32,7 +33,7 @@ class OpenPulseWaveform:
     """One waveform definition for an OpenPulse schedule."""
 
     name: str
-    samples: np.ndarray
+    samples: NDArray[np.float64]
 
     def __post_init__(self) -> None:
         if not self.name:

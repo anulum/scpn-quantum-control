@@ -17,7 +17,10 @@ and enables simulation of N=20 systems on standard hardware in seconds.
 
 from __future__ import annotations
 
+from typing import Any
+
 import numpy as np
+from numpy.typing import NDArray
 from scipy.sparse import csc_matrix
 from scipy.sparse.linalg import expm_multiply
 
@@ -29,13 +32,13 @@ _HAS_RUST = _engine is not None
 
 
 def fast_sparse_evolution(
-    K: np.ndarray,
-    omega: np.ndarray,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
     t_total: float,
     n_steps: int,
-    initial_state: np.ndarray | None = None,
+    initial_state: NDArray[np.complex128] | None = None,
     delta: float = 0.0,
-) -> dict:
+) -> dict[str, Any]:
     """Evolve a statevector using fast sparse matrix exponentiation.
 
     Args:
@@ -53,7 +56,7 @@ def fast_sparse_evolution(
     dim = 1 << n
 
     if initial_state is None:
-        psi: np.ndarray = np.zeros(dim, dtype=complex)
+        psi: NDArray[np.complex128] = np.zeros(dim, dtype=complex)
         psi[0] = 1.0
     else:
         psi = np.ascontiguousarray(initial_state, dtype=complex)
