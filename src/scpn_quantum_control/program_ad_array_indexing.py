@@ -228,6 +228,203 @@ def _program_ad_array_delete_flat_indices(
     return cast(NDArray[np.int64], np.asarray(selected, dtype=np.int64).reshape(-1))
 
 
+def _program_ad_array_pad_mode(mode: object, *, context: str) -> str:
+    if not isinstance(mode, str) or mode != "constant":
+        raise ValueError(f"program AD array pad {context} supports constant mode only")
+    return "constant"
+
+
+def _program_ad_array_pad_width(
+    pad_width: object,
+    ndim: int,
+    *,
+    context: str,
+) -> tuple[tuple[int, int], ...]:
+    raw_width = np.asarray(pad_width)
+    if raw_width.dtype.kind not in {"i", "u"}:
+        raise ValueError(
+            f"program AD array pad {context} requires static non-negative integer pad widths"
+        )
+    if ndim == 0:
+        if raw_width.size == 0:
+            return ()
+        raise ValueError("program AD array pad scalar sources require empty pad widths")
+    if raw_width.shape == ():
+        width = int(raw_width)
+        pairs = tuple((width, width) for _ in range(ndim))
+    elif raw_width.shape == (2,):
+        before, after = (int(item) for item in raw_width)
+        pairs = tuple((before, after) for _ in range(ndim))
+    elif raw_width.shape == (1, 2):
+        before, after = (int(item) for item in raw_width.reshape(2))
+        pairs = tuple((before, after) for _ in range(ndim))
+    elif raw_width.shape == (ndim, 2):
+        pairs = tuple((int(row[0]), int(row[1])) for row in raw_width)
+    else:
+        raise ValueError(
+            f"program AD array pad {context} requires scalar, pair, or per-axis pad widths"
+        )
+    if any(before < 0 or after < 0 for before, after in pairs):
+        raise ValueError(
+            f"program AD array pad {context} requires static non-negative integer pad widths"
+        )
+    return pairs
+
+
+def _program_ad_array_pad_constant_values(value: object, *, context: str) -> object:
+    raw_value = np.asarray(value)
+    if raw_value.dtype.kind in {"O", "S", "U", "c"}:
+        raise ValueError(
+            f"program AD array pad {context} requires static finite real constant_values"
+        )
+    constants = np.asarray(raw_value, dtype=np.float64)
+    if not np.all(np.isfinite(constants)):
+        raise ValueError(
+            f"program AD array pad {context} requires static finite real constant_values"
+        )
+    return value
+
+
+def _program_ad_array_pad_layout(
+    source_shape: tuple[int, ...],
+    pad_width: object,
+    constant_values: object,
+    *,
+    context: str,
+) -> tuple[NDArray[np.int64], NDArray[np.float64], tuple[int, ...]]:
+    pairs = _program_ad_array_pad_width(pad_width, len(source_shape), context=context)
+    constants = _program_ad_array_pad_constant_values(constant_values, context=context)
+    source_indices = np.arange(
+        _program_ad_array_static_size(source_shape), dtype=np.int64
+    ).reshape(source_shape)
+    source_zeros = np.zeros(source_shape, dtype=np.float64)
+    try:
+        padded_indices = np.pad(
+            source_indices,
+            pairs,
+            mode="constant",
+            constant_values=-1,
+        )
+        padded_constants = np.pad(
+            source_zeros,
+            pairs,
+            mode="constant",
+            constant_values=cast(Any, constants),
+        )
+    except (TypeError, ValueError) as exc:
+        raise ValueError(
+            "program AD array pad requires static pad widths and constant_values "
+            "compatible with the source rank"
+        ) from exc
+    return (
+        cast(NDArray[np.int64], np.asarray(padded_indices, dtype=np.int64).reshape(-1)),
+        cast(NDArray[np.float64], np.asarray(padded_constants, dtype=np.float64).reshape(-1)),
+        tuple(int(dimension) for dimension in np.asarray(padded_indices).shape),
+    )
+
+
+def _program_ad_array_insert_object(obj: object, *, context: str) -> object:
+    if isinstance(obj, (bool, np.bool_)):
+        raise ValueError(
+            f"program AD array insert {context} requires static integer insertion indices"
+        )
+    if isinstance(obj, (int, np.integer)):
+        return int(obj)
+    if isinstance(obj, slice):
+        components = (obj.start, obj.stop, obj.step)
+        if any(
+            component is not None
+            and (
+                isinstance(component, (bool, np.bool_))
+                or not isinstance(component, (int, np.integer))
+            )
+            for component in components
+        ):
+            raise ValueError(
+                f"program AD array insert {context} requires static integer insertion indices"
+            )
+        return slice(
+            None if obj.start is None else int(cast(int | np.integer, obj.start)),
+            None if obj.stop is None else int(cast(int | np.integer, obj.stop)),
+            None if obj.step is None else int(cast(int | np.integer, obj.step)),
+        )
+    raw_obj = np.asarray(obj)
+    if raw_obj.dtype.kind not in {"i", "u"}:
+        raise ValueError(
+            f"program AD array insert {context} requires static integer insertion indices"
+        )
+    if raw_obj.shape == ():
+        return int(raw_obj)
+    return np.asarray(raw_obj, dtype=np.int64)
+
+
+def _program_ad_array_insert_values(values: object, *, context: str) -> NDArray[np.float64]:
+    raw_values = np.asarray(values)
+    if raw_values.dtype.kind in {"O", "S", "U", "c"}:
+        raise ValueError(
+            f"program AD array insert {context} requires static finite real insert values"
+        )
+    insert_values = np.asarray(raw_values, dtype=np.float64)
+    if not np.all(np.isfinite(insert_values)):
+        raise ValueError(
+            f"program AD array insert {context} requires static finite real insert values"
+        )
+    return insert_values
+
+
+def _program_ad_array_insert_axis(axis: object, ndim: int, *, context: str) -> int | None:
+    if axis is None:
+        return None
+    if isinstance(axis, (bool, np.bool_)) or not isinstance(axis, (int, np.integer)):
+        raise ValueError(
+            f"program AD array insert {context} requires a static integer axis or None"
+        )
+    return _normalise_axis("axis", int(axis), ndim)
+
+
+def _program_ad_array_insert_layout(
+    source_shape: tuple[int, ...],
+    obj: object,
+    values: object,
+    axis: object,
+    *,
+    context: str,
+) -> tuple[NDArray[np.int64], NDArray[np.float64], tuple[int, ...]]:
+    insert_obj = _program_ad_array_insert_object(obj, context=context)
+    insert_values = _program_ad_array_insert_values(values, context=context)
+    normalised_axis = _program_ad_array_insert_axis(axis, len(source_shape), context=context)
+    source_indices = np.arange(
+        _program_ad_array_static_size(source_shape), dtype=np.int64
+    ).reshape(source_shape)
+    source_zeros = np.zeros(source_shape, dtype=np.float64)
+    marker_values: object
+    marker_values = -1 if insert_values.shape == () else np.full(insert_values.shape, -1)
+    source = source_indices.reshape(-1) if normalised_axis is None else source_indices
+    try:
+        inserted_indices = np.insert(
+            source,
+            cast(Any, insert_obj),
+            cast(Any, marker_values),
+            axis=normalised_axis,
+        )
+        inserted_constants = np.insert(
+            source_zeros.reshape(-1) if normalised_axis is None else source_zeros,
+            cast(Any, insert_obj),
+            insert_values,
+            axis=normalised_axis,
+        )
+    except (IndexError, TypeError, ValueError) as exc:
+        raise ValueError(
+            "program AD array insert requires static insertion indices and insert values "
+            "compatible with the source shape"
+        ) from exc
+    return (
+        cast(NDArray[np.int64], np.asarray(inserted_indices, dtype=np.int64).reshape(-1)),
+        cast(NDArray[np.float64], np.asarray(inserted_constants, dtype=np.float64).reshape(-1)),
+        tuple(int(dimension) for dimension in np.asarray(inserted_indices).shape),
+    )
+
+
 def _program_ad_array_direct_gather(
     primitive_name: str,
     values: NDArray[np.float64],
@@ -285,6 +482,74 @@ def _program_ad_array_direct_scatter_vjp(
     )
     result = np.zeros(source_size, dtype=np.float64)
     np.add.at(result, flat_indices, cotangent_vector)
+    return result
+
+
+def _program_ad_array_direct_pad_value(
+    primitive_name: str,
+    values: NDArray[np.float64],
+    *,
+    source_shape: tuple[int, ...],
+    flat_indices: NDArray[np.int64],
+    flat_constants: NDArray[np.float64],
+) -> NDArray[np.float64]:
+    vector = _program_ad_array_vector(
+        primitive_name,
+        "values",
+        values,
+        expected_size=_program_ad_array_static_size(source_shape),
+    )
+    result = np.array(flat_constants, dtype=np.float64, copy=True)
+    source_mask = flat_indices >= 0
+    result[source_mask] = vector[flat_indices[source_mask]]
+    return result
+
+
+def _program_ad_array_direct_pad_jvp(
+    primitive_name: str,
+    values: NDArray[np.float64],
+    tangent: NDArray[np.float64],
+    *,
+    source_shape: tuple[int, ...],
+    flat_indices: NDArray[np.int64],
+) -> NDArray[np.float64]:
+    _program_ad_array_vector(
+        primitive_name,
+        "values",
+        values,
+        expected_size=_program_ad_array_static_size(source_shape),
+    )
+    tangent_vector = _program_ad_array_vector(
+        primitive_name,
+        "tangent",
+        tangent,
+        expected_size=_program_ad_array_static_size(source_shape),
+    )
+    result = np.zeros(int(flat_indices.size), dtype=np.float64)
+    source_mask = flat_indices >= 0
+    result[source_mask] = tangent_vector[flat_indices[source_mask]]
+    return result
+
+
+def _program_ad_array_direct_pad_vjp(
+    primitive_name: str,
+    values: NDArray[np.float64],
+    cotangent: NDArray[np.float64],
+    *,
+    source_shape: tuple[int, ...],
+    flat_indices: NDArray[np.int64],
+) -> NDArray[np.float64]:
+    source_size = _program_ad_array_static_size(source_shape)
+    _program_ad_array_vector(primitive_name, "values", values, expected_size=source_size)
+    cotangent_vector = _program_ad_array_vector(
+        primitive_name,
+        "cotangent",
+        cotangent,
+        expected_size=int(flat_indices.size),
+    )
+    result = np.zeros(source_size, dtype=np.float64)
+    source_mask = flat_indices >= 0
+    np.add.at(result, flat_indices[source_mask], cotangent_vector[source_mask])
     return result
 
 
@@ -540,6 +805,157 @@ def program_ad_array_delete_derivative_rule(
         name=(
             "program_ad_array_delete_"
             f"{_program_ad_array_signature(source)}_axis_{axis_signature}_static_direct_rule"
+        ),
+        value_fn=value_fn,
+        jvp_rule=jvp_rule,
+        vjp_rule=vjp_rule,
+    )
+
+
+def program_ad_array_pad_derivative_rule(
+    source_shape: Sequence[int],
+    pad_width: object,
+    *,
+    constant_values: object = 0.0,
+) -> CustomDerivativeRule:
+    """Build an exact direct derivative rule for fixed constant padding.
+
+    Parameters
+    ----------
+    source_shape:
+        Static shape of the source array before padding.
+    pad_width:
+        Static NumPy-compatible pad-width declaration.
+    constant_values:
+        Static finite real constants used for padded cells.
+
+    Returns
+    -------
+    CustomDerivativeRule
+        Direct value, JVP, and source-scatter VJP rule over the flattened source.
+    """
+
+    source = _program_ad_array_normalise_static_shape("pad", source_shape)
+    flat_indices, flat_constants, _ = _program_ad_array_pad_layout(
+        source,
+        pad_width,
+        constant_values,
+        context="direct rule",
+    )
+
+    def value_fn(values: NDArray[np.float64]) -> NDArray[np.float64]:
+        return _program_ad_array_direct_pad_value(
+            "pad",
+            values,
+            source_shape=source,
+            flat_indices=flat_indices,
+            flat_constants=flat_constants,
+        )
+
+    def jvp_rule(values: NDArray[np.float64], tangent: NDArray[np.float64]) -> NDArray[np.float64]:
+        return _program_ad_array_direct_pad_jvp(
+            "pad",
+            values,
+            tangent,
+            source_shape=source,
+            flat_indices=flat_indices,
+        )
+
+    def vjp_rule(
+        values: NDArray[np.float64], cotangent: NDArray[np.float64]
+    ) -> NDArray[np.float64]:
+        return _program_ad_array_direct_pad_vjp(
+            "pad",
+            values,
+            cotangent,
+            source_shape=source,
+            flat_indices=flat_indices,
+        )
+
+    return CustomDerivativeRule(
+        name=(
+            "program_ad_array_pad_"
+            f"{_program_ad_array_signature(source)}_static_constant_direct_rule"
+        ),
+        value_fn=value_fn,
+        jvp_rule=jvp_rule,
+        vjp_rule=vjp_rule,
+    )
+
+
+def program_ad_array_insert_derivative_rule(
+    source_shape: Sequence[int],
+    obj: object,
+    values: object,
+    *,
+    axis: int | None = None,
+) -> CustomDerivativeRule:
+    """Build an exact direct derivative rule for fixed constant insertion.
+
+    Parameters
+    ----------
+    source_shape:
+        Static shape of the source array before insertion.
+    obj:
+        Static integer, slice, or integer-array insertion selector.
+    values:
+        Static finite real insertion values.
+    axis:
+        Axis supplied to ``np.insert``. ``None`` selects the flattened source.
+
+    Returns
+    -------
+    CustomDerivativeRule
+        Direct value, JVP, and source-scatter VJP rule over the flattened source.
+    """
+
+    source = _program_ad_array_normalise_static_shape("insert", source_shape)
+    flat_indices, flat_constants, _ = _program_ad_array_insert_layout(
+        source,
+        obj,
+        values,
+        axis,
+        context="direct rule",
+    )
+    normalised_axis = None if axis is None else _normalise_axis("axis", axis, len(source))
+    axis_signature = "flat" if normalised_axis is None else str(normalised_axis)
+
+    def value_fn(source_values: NDArray[np.float64]) -> NDArray[np.float64]:
+        return _program_ad_array_direct_pad_value(
+            "insert",
+            source_values,
+            source_shape=source,
+            flat_indices=flat_indices,
+            flat_constants=flat_constants,
+        )
+
+    def jvp_rule(
+        source_values: NDArray[np.float64], tangent: NDArray[np.float64]
+    ) -> NDArray[np.float64]:
+        return _program_ad_array_direct_pad_jvp(
+            "insert",
+            source_values,
+            tangent,
+            source_shape=source,
+            flat_indices=flat_indices,
+        )
+
+    def vjp_rule(
+        source_values: NDArray[np.float64], cotangent: NDArray[np.float64]
+    ) -> NDArray[np.float64]:
+        return _program_ad_array_direct_pad_vjp(
+            "insert",
+            source_values,
+            cotangent,
+            source_shape=source,
+            flat_indices=flat_indices,
+        )
+
+    return CustomDerivativeRule(
+        name=(
+            "program_ad_array_insert_"
+            f"{_program_ad_array_signature(source)}_axis_{axis_signature}"
+            "_static_constant_direct_rule"
         ),
         value_fn=value_fn,
         jvp_rule=jvp_rule,

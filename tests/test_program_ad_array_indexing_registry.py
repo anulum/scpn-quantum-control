@@ -34,6 +34,12 @@ from scpn_quantum_control.program_ad_array_indexing import (
     program_ad_array_getitem_derivative_rule as direct_getitem_derivative_rule,
 )
 from scpn_quantum_control.program_ad_array_indexing import (
+    program_ad_array_insert_derivative_rule as direct_insert_derivative_rule,
+)
+from scpn_quantum_control.program_ad_array_indexing import (
+    program_ad_array_pad_derivative_rule as direct_pad_derivative_rule,
+)
+from scpn_quantum_control.program_ad_array_indexing import (
     program_ad_array_take_along_axis_derivative_rule as direct_take_along_axis_derivative_rule,
 )
 from scpn_quantum_control.program_ad_array_indexing import (
@@ -60,6 +66,11 @@ def test_program_ad_array_indexing_direct_module_exports_match_facade() -> None:
     assert (
         differentiable_module.program_ad_array_delete_derivative_rule
         is direct_delete_derivative_rule
+    )
+    assert differentiable_module.program_ad_array_pad_derivative_rule is direct_pad_derivative_rule
+    assert (
+        differentiable_module.program_ad_array_insert_derivative_rule
+        is direct_insert_derivative_rule
     )
 
 
@@ -132,6 +143,59 @@ def test_program_ad_array_indexing_direct_module_fail_closed_boundaries() -> Non
         array_indexing._program_ad_array_delete_object(np.array(["x"]), context="test")
     with pytest.raises(ValueError, match="in-bounds deletion selectors"):
         differentiable_module.program_ad_array_delete_derivative_rule((3,), (5,))
+
+    assert array_indexing._program_ad_array_pad_mode("constant", context="test") == "constant"
+    with pytest.raises(ValueError, match="constant mode only"):
+        array_indexing._program_ad_array_pad_mode("edge", context="test")
+    assert array_indexing._program_ad_array_pad_width(1, 2, context="test") == ((1, 1), (1, 1))
+    assert array_indexing._program_ad_array_pad_width((1, 2), 2, context="test") == (
+        (1, 2),
+        (1, 2),
+    )
+    assert array_indexing._program_ad_array_pad_width(((1, 0), (0, 1)), 2, context="test") == (
+        (1, 0),
+        (0, 1),
+    )
+    assert (
+        array_indexing._program_ad_array_pad_width(np.array([], dtype=np.int64), 0, context="test")
+        == ()
+    )
+    with pytest.raises(ValueError, match="non-negative integer pad widths"):
+        array_indexing._program_ad_array_pad_width(-1, 1, context="test")
+    with pytest.raises(ValueError, match="scalar, pair, or per-axis"):
+        array_indexing._program_ad_array_pad_width((1, 2, 3), 2, context="test")
+    with pytest.raises(ValueError, match="static finite real constant_values"):
+        array_indexing._program_ad_array_pad_constant_values(np.inf, context="test")
+    with pytest.raises(ValueError, match="compatible with the source rank"):
+        differentiable_module.program_ad_array_pad_derivative_rule(
+            (2, 3),
+            ((1, 0), (0, 1)),
+            constant_values=np.array([1.0, 2.0, 3.0], dtype=np.float64),
+        )
+
+    assert array_indexing._program_ad_array_insert_object(1, context="test") == 1
+    assert isinstance(
+        array_indexing._program_ad_array_insert_object(slice(0, 2), context="test"), slice
+    )
+    assert array_indexing._program_ad_array_insert_axis(None, 2, context="test") is None
+    assert array_indexing._program_ad_array_insert_axis(-1, 2, context="test") == 1
+    with pytest.raises(ValueError, match="insertion indices"):
+        array_indexing._program_ad_array_insert_object(True, context="test")
+    with pytest.raises(ValueError, match="insertion indices"):
+        array_indexing._program_ad_array_insert_object(slice(0.0, 2), context="test")
+    with pytest.raises(ValueError, match="insertion indices"):
+        array_indexing._program_ad_array_insert_object(np.array(["x"]), context="test")
+    with pytest.raises(ValueError, match="static finite real insert values"):
+        array_indexing._program_ad_array_insert_values(np.nan, context="test")
+    with pytest.raises(ValueError, match="static integer axis or None"):
+        array_indexing._program_ad_array_insert_axis(True, 2, context="test")
+    with pytest.raises(ValueError, match="compatible with the source shape"):
+        differentiable_module.program_ad_array_insert_derivative_rule(
+            (2, 3),
+            1,
+            np.array([1.0, 2.0, 3.0], dtype=np.float64),
+            axis=1,
+        )
 
     assert array_indexing._normalise_axis("axis", -1, 2) == 1
     with pytest.raises(ValueError, match="cannot map over a scalar"):
