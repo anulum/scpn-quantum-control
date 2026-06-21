@@ -155,6 +155,9 @@ from .program_ad_array_indexing import (
     program_ad_array_take_along_axis_derivative_rule,
     program_ad_array_take_derivative_rule,
 )
+from .program_ad_array_indexing import (
+    _program_ad_array_shape_of as _program_ad_array_shape_of,
+)
 from .program_ad_assembly_primitives import (
     _register_program_ad_assembly_primitive_contracts,
     _require_program_ad_assembly_contract,
