@@ -10,7 +10,7 @@
 from __future__ import annotations
 
 import re
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 
 from .backends import QuantumBackendDescriptor, describe_hal_backend_profile
@@ -374,6 +374,15 @@ def built_in_aggregator_provider_routes() -> tuple[AggregatorProviderRoute, ...]
             notes=("compute_target_metadata_only",),
         ),
     )
+    _validate_routes_against_profiles(routes, profiles)
+    return tuple(sorted(routes, key=lambda route: route.route_id))
+
+
+def _validate_routes_against_profiles(
+    routes: tuple[AggregatorProviderRoute, ...],
+    profiles: Mapping[str, BackendProfile],
+) -> None:
+    """Assert every route only advertises IR formats its HAL profile supports."""
     for route in routes:
         profile = profiles[route.backend_id]
         if not set(route.ir_formats) <= set(profile.ir_formats):
@@ -381,7 +390,6 @@ def built_in_aggregator_provider_routes() -> tuple[AggregatorProviderRoute, ...]
                 f"route {route.route_id!r} advertises IR formats not supported by "
                 f"profile {profile.backend_id!r}"
             )
-    return tuple(sorted(routes, key=lambda route: route.route_id))
 
 
 def aggregator_provider_routes_for(
