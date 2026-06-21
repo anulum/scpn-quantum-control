@@ -25,6 +25,13 @@ class QuantumFisherInformation:
     """
 
     def __call__(self, counts: Mapping[str, int] | None = None, **kwargs: Any) -> dict[str, float]:
+        """Evaluate the quantum Fisher information from a wired spectral model.
+
+        Routes to the spectral QFI engine when both ``coupling_matrix`` and
+        ``natural_frequencies`` are supplied; otherwise the legacy
+        sync-order/DLA estimate is available only as an explicitly labelled
+        diagnostic proxy, never as a production QFI claim.
+        """
         coupling_matrix = kwargs.get("coupling_matrix")
         natural_frequencies = kwargs.get("natural_frequencies")
         if coupling_matrix is not None or natural_frequencies is not None:

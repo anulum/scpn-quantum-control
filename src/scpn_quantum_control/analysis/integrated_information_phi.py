@@ -22,6 +22,13 @@ class IntegratedInformationPhi:
     """
 
     def __call__(self, counts: Mapping[str, int] | None = None, **kwargs: Any) -> dict[str, float]:
+        """Evaluate integrated information Φ from a wired causal-state model.
+
+        Routes to the production Φ computation when both ``coupling_matrix`` and
+        ``natural_frequencies`` are supplied; otherwise fails closed unless
+        ``allow_entropy_proxy=True`` requests an explicitly labelled entropy
+        diagnostic (never returned under the ``phi`` key).
+        """
         coupling_matrix = kwargs.get("coupling_matrix")
         natural_frequencies = kwargs.get("natural_frequencies")
         if coupling_matrix is not None or natural_frequencies is not None:

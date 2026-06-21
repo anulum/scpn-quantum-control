@@ -184,6 +184,13 @@ class MultiLangDispatcher:
         self.last_tier: str | None = None
 
     def __call__(self, *args: Any, **kwargs: Any) -> Any:
+        """Invoke the dispatch chain, falling through to the next tier on failure.
+
+        Each tier implementation is tried in order; an ImportError, RuntimeError,
+        or ModuleNotFoundError records the tier as unavailable and advances to the
+        next, with the Python floor guaranteeing a result. The winning tier name
+        is recorded on ``last_tier``.
+        """
         errors: list[tuple[str, BaseException]] = []
         for tier_name, impl in self._chain:
             try:
