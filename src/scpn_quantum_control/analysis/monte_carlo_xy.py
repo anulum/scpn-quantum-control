@@ -29,6 +29,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import numpy as np
+from numpy.typing import NDArray
 
 
 @dataclass
@@ -53,17 +54,17 @@ class AHPResult:
     p_h1_square: float  # 0.8983 × sqrt(2/π) = 0.717
     deviation_from_072: float
     t_bkt: float
-    temperatures: np.ndarray
-    helicity_moduli: np.ndarray
-    order_parameters: np.ndarray
+    temperatures: NDArray[np.float64]
+    helicity_moduli: NDArray[np.float64]
+    order_parameters: NDArray[np.float64]
 
 
 def _mc_sweep(
-    theta: np.ndarray,
-    K: np.ndarray,
+    theta: NDArray[np.float64],
+    K: NDArray[np.float64],
     beta: float,
     rng: np.random.Generator,
-) -> np.ndarray:
+) -> NDArray[np.float64]:
     """One Metropolis sweep: propose random angle changes."""
     n = len(theta)
     for i in range(n):
@@ -84,7 +85,7 @@ def _mc_sweep(
 
 
 def mc_simulate(
-    K: np.ndarray,
+    K: NDArray[np.float64],
     temperature: float,
     n_thermalize: int = 5000,
     n_measure: int = 5000,
@@ -98,7 +99,7 @@ def mc_simulate(
         from scpn_quantum_engine import mc_xy_simulate
 
         n = K.shape[0]
-        k_flat: np.ndarray = K.ravel().astype(np.float64)
+        k_flat: NDArray[np.float64] = K.ravel().astype(np.float64)
         energy, order, rho_s = mc_xy_simulate(
             k_flat, n, temperature, n_thermalize, n_measure, seed
         )
@@ -173,7 +174,7 @@ def mc_simulate(
 
 
 def extract_a_hp(
-    K: np.ndarray,
+    K: NDArray[np.float64],
     t_range: tuple[float, float] = (0.01, 0.2),
     n_temps: int = 15,
     n_thermalize: int = 3000,
@@ -186,7 +187,7 @@ def extract_a_hp(
     ρ_s(T_BKT) = (2/π) × T_BKT, then extracts A_HP from the order
     parameter at T_BKT.
     """
-    temps = np.linspace(t_range[0], t_range[1], n_temps)
+    temps = np.linspace(t_range[0], t_range[1], n_temps, dtype=np.float64)
     rho_s_vals = np.zeros(n_temps)
     r_vals = np.zeros(n_temps)
 

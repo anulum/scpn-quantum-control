@@ -37,6 +37,7 @@ from dataclasses import dataclass
 from itertools import combinations
 
 import numpy as np
+from numpy.typing import NDArray
 
 from ..hardware.classical import classical_exact_diag
 
@@ -54,7 +55,7 @@ class PhiResult:
     total_entropy: float
 
 
-def von_neumann_entropy(rho: np.ndarray) -> float:
+def von_neumann_entropy(rho: NDArray[np.complex128]) -> float:
     """Von Neumann entropy S(ρ) = -Tr(ρ log ρ).
 
     Uses eigenvalue decomposition to avoid log(0).
@@ -64,7 +65,9 @@ def von_neumann_entropy(rho: np.ndarray) -> float:
     return float(-np.sum(eigenvalues * np.log2(eigenvalues)))
 
 
-def partial_trace(rho: np.ndarray, keep: list[int], n_qubits: int) -> np.ndarray:
+def partial_trace(
+    rho: NDArray[np.complex128], keep: list[int], n_qubits: int
+) -> NDArray[np.complex128]:
     """Trace out all qubits NOT in `keep` list.
 
     Args:
@@ -89,7 +92,7 @@ def partial_trace(rho: np.ndarray, keep: list[int], n_qubits: int) -> np.ndarray
 
 
 def mutual_information(
-    rho: np.ndarray,
+    rho: NDArray[np.complex128],
     subsystem_a: list[int],
     subsystem_b: list[int],
     n_qubits: int,
@@ -127,8 +130,8 @@ def _all_bipartitions(n: int) -> list[tuple[list[int], list[int]]]:
 
 
 def compute_quantum_phi(
-    K: np.ndarray,
-    omega: np.ndarray,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
 ) -> PhiResult:
     """Compute quantum Φ from ground state of K_nm Hamiltonian.
 
@@ -166,14 +169,14 @@ def compute_quantum_phi(
 
 
 def phi_vs_coupling_scan(
-    omega: np.ndarray,
-    k_base_values: np.ndarray | None = None,
+    omega: NDArray[np.float64],
+    k_base_values: NDArray[np.float64] | None = None,
 ) -> dict[str, list[float]]:
     """Scan Φ_Q vs coupling strength to find the criticality peak."""
     from ..bridge.knm_hamiltonian import build_knm_paper27
 
     if k_base_values is None:
-        k_base_values = np.linspace(0.01, 2.0, 20)
+        k_base_values = np.linspace(0.01, 2.0, 20, dtype=np.float64)
 
     n = len(omega)
     results: dict[str, list[float]] = {
