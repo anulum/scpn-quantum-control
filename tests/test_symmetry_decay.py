@@ -19,6 +19,7 @@ import importlib.util
 import sys
 import time
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 import pytest
@@ -84,7 +85,9 @@ class TestErrorHandling:
             [4.0, np.inf],
         ],
     )
-    def test_nonphysical_symmetry_decay_observations_are_rejected(self, noisy_values) -> None:
+    def test_nonphysical_symmetry_decay_observations_are_rejected(
+        self, noisy_values: list[float]
+    ) -> None:
         with pytest.raises(
             ValueError, match="noisy_symmetry_values must be finite and sign-consistent"
         ):
@@ -94,7 +97,7 @@ class TestErrorHandling:
         with pytest.raises(ValueError, match="Unknown initial state"):
             xy_magnetisation_ideal(4, "invalid")
 
-    def test_import_guard_without_rust(self, monkeypatch) -> None:
+    def test_import_guard_without_rust(self, monkeypatch: pytest.MonkeyPatch) -> None:
         """Import guard records absent Rust acceleration."""
         source = (
             Path(__file__).parents[1]
@@ -111,7 +114,7 @@ class TestErrorHandling:
 
         original_import = builtins.__import__
 
-        def blocked_import(name, *args, **kwargs):
+        def blocked_import(name: str, *args: Any, **kwargs: Any) -> Any:
             if name == "scpn_quantum_engine":
                 raise ModuleNotFoundError("blocked in test", name="scpn_quantum_engine")
             return original_import(name, *args, **kwargs)
@@ -151,20 +154,20 @@ class TestNegativeCases:
         model = learn_symmetry_decay(4.0, [4.1, 4.5], [1, 3])
         assert model.alpha < 0.0  # flag as unphysical
 
-    def test_python_fallback_repeated_scales(self, monkeypatch) -> None:
+    def test_python_fallback_repeated_scales(self, monkeypatch: pytest.MonkeyPatch) -> None:
         """Python fallback handles non-identifiable repeated scale factors."""
         module = importlib.import_module("scpn_quantum_control.mitigation.symmetry_decay")
-        monkeypatch.setattr(module, "_HAS_RUST", False)
+        monkeypatch.setattr(module, "_fit_rust", None)
 
         model = module.learn_symmetry_decay(4.0, [3.9, 3.7], [3, 3])
 
         assert model.alpha == 0.0
         assert model.fit_residual == 0.0
 
-    def test_python_fallback_log_linear_fit(self, monkeypatch) -> None:
+    def test_python_fallback_log_linear_fit(self, monkeypatch: pytest.MonkeyPatch) -> None:
         """Python fallback recovers an exponential symmetry-decay exponent."""
         module = importlib.import_module("scpn_quantum_control.mitigation.symmetry_decay")
-        monkeypatch.setattr(module, "_HAS_RUST", False)
+        monkeypatch.setattr(module, "_fit_rust", None)
 
         alpha_true = 0.2
         scales = [1, 3, 5, 7]
