@@ -31,6 +31,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import numpy as np
+from numpy.typing import NDArray
 from scipy.optimize import minimize
 
 from ..hardware.classical import classical_exact_diag
@@ -40,17 +41,17 @@ from ..hardware.classical import classical_exact_diag
 class HamiltonianLearningResult:
     """Result of Hamiltonian learning."""
 
-    K_learned: np.ndarray
-    omega_learned: np.ndarray
+    K_learned: NDArray[np.float64]
+    omega_learned: NDArray[np.float64]
     loss: float
     n_iterations: int
     correlator_error: float  # mean |C_measured - C_learned|
 
 
 def measure_correlators(
-    K: np.ndarray,
-    omega: np.ndarray,
-) -> np.ndarray:
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
+) -> NDArray[np.float64]:
     """Measure <X_i X_j + Y_i Y_j> from ground state.
 
     Returns n×n symmetric matrix of correlators.
@@ -79,30 +80,30 @@ def measure_correlators(
             val = float(sv.expectation_value(op).real)
             C[i, j] = C[j, i] = val
 
-    result: np.ndarray = C
+    result: NDArray[np.float64] = C
     return result
 
 
 def _correlators_from_K(
-    K: np.ndarray,
-    omega: np.ndarray,
-) -> np.ndarray:
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
+) -> NDArray[np.float64]:
     """Compute model correlators for given K, omega."""
     return measure_correlators(K, omega)
 
 
-def _pack_upper_triangle(K: np.ndarray) -> np.ndarray:
+def _pack_upper_triangle(K: NDArray[np.float64]) -> NDArray[np.float64]:
     """Pack upper triangle of K into a flat vector."""
     n = K.shape[0]
     params: list[float] = []
     for i in range(n):
         for j in range(i + 1, n):
             params.append(float(K[i, j]))
-    out: np.ndarray = np.array(params)
+    out: NDArray[np.float64] = np.array(params)
     return out
 
 
-def _unpack_upper_triangle(params: np.ndarray, n: int) -> np.ndarray:
+def _unpack_upper_triangle(params: NDArray[np.float64], n: int) -> NDArray[np.float64]:
     """Unpack flat vector into symmetric K matrix."""
     K = np.zeros((n, n))
     idx = 0
@@ -110,14 +111,14 @@ def _unpack_upper_triangle(params: np.ndarray, n: int) -> np.ndarray:
         for j in range(i + 1, n):
             K[i, j] = K[j, i] = params[idx]
             idx += 1
-    result: np.ndarray = K
+    result: NDArray[np.float64] = K
     return result
 
 
 def learn_hamiltonian(
-    C_measured: np.ndarray,
-    omega: np.ndarray,
-    K_init: np.ndarray | None = None,
+    C_measured: NDArray[np.float64],
+    omega: NDArray[np.float64],
+    K_init: NDArray[np.float64] | None = None,
     maxiter: int = 100,
 ) -> HamiltonianLearningResult:
     """Learn K_nm from measured correlators.
@@ -136,7 +137,7 @@ def learn_hamiltonian(
 
     x0 = _pack_upper_triangle(K_init)
 
-    def loss_fn(params: np.ndarray) -> float:
+    def loss_fn(params: NDArray[np.float64]) -> float:
         K_trial = _unpack_upper_triangle(np.abs(params), n)
         C_model = _correlators_from_K(K_trial, omega)
         return float(np.sum((C_measured - C_model) ** 2))

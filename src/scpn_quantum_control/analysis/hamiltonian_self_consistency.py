@@ -29,6 +29,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import numpy as np
+from numpy.typing import NDArray
 
 from .hamiltonian_learning import (
     HamiltonianLearningResult,
@@ -41,8 +42,8 @@ from .hamiltonian_learning import (
 class SelfConsistencyResult:
     """Result of the full self-consistency loop."""
 
-    K_true: np.ndarray
-    K_learned: np.ndarray
+    K_true: NDArray[np.float64]
+    K_learned: NDArray[np.float64]
     frobenius_error: float
     elementwise_max_error: float
     relative_error: float
@@ -56,7 +57,7 @@ def correlators_from_counts(
     x_counts: dict[str, int],
     y_counts: dict[str, int],
     n_qubits: int,
-) -> np.ndarray:
+) -> NDArray[np.float64]:
     """Extract ⟨X_iX_j⟩ + ⟨Y_iY_j⟩ correlator matrix from hardware counts.
 
     This is the bridge between hardware measurement data and the
@@ -64,25 +65,25 @@ def correlators_from_counts(
     """
     xx = _two_point_from_counts(x_counts, n_qubits)
     yy = _two_point_from_counts(y_counts, n_qubits)
-    C: np.ndarray = xx + yy
+    C: NDArray[np.float64] = xx + yy
     np.fill_diagonal(C, 0.0)
     return C
 
 
-def _two_point_from_counts(counts: dict[str, int], n: int) -> np.ndarray:
+def _two_point_from_counts(counts: dict[str, int], n: int) -> NDArray[np.float64]:
     """Compute ⟨Z_iZ_j⟩ from measurement counts in one basis."""
     total = sum(counts.values())
     if total == 0:
-        zeros: np.ndarray = np.zeros((n, n))
+        zeros: NDArray[np.float64] = np.zeros((n, n))
         return zeros
 
-    corr: np.ndarray = np.zeros((n, n))
+    corr: NDArray[np.float64] = np.zeros((n, n))
     for bitstring, count in counts.items():
         bits = bitstring.replace(" ", "")
         vals = np.array([1 - 2 * int(bits[-(q + 1)]) for q in range(min(n, len(bits)))])
         corr += count * np.outer(vals, vals)
     corr /= total
-    result: np.ndarray = corr
+    result: NDArray[np.float64] = corr
     return result
 
 
@@ -105,8 +106,8 @@ def correlator_shot_noise(
 
 
 def self_consistency_from_exact(
-    K_true: np.ndarray,
-    omega: np.ndarray,
+    K_true: NDArray[np.float64],
+    omega: NDArray[np.float64],
     maxiter: int = 100,
 ) -> SelfConsistencyResult:
     """Run self-consistency loop using exact (noiseless) correlators.
@@ -124,8 +125,8 @@ def self_consistency_from_exact(
 
 
 def self_consistency_from_counts(
-    K_true: np.ndarray,
-    omega: np.ndarray,
+    K_true: NDArray[np.float64],
+    omega: NDArray[np.float64],
     x_counts: dict[str, int],
     y_counts: dict[str, int],
     maxiter: int = 100,
@@ -147,8 +148,8 @@ def self_consistency_from_counts(
 
 
 def self_consistency_from_noisy_sim(
-    K_true: np.ndarray,
-    omega: np.ndarray,
+    K_true: NDArray[np.float64],
+    omega: NDArray[np.float64],
     noise_std: float = 0.05,
     n_shots: int = 8192,
     maxiter: int = 100,
@@ -174,7 +175,7 @@ def self_consistency_from_noisy_sim(
 
 
 def _build_result(
-    K_true: np.ndarray,
+    K_true: NDArray[np.float64],
     learning: HamiltonianLearningResult,
     shot_std: float,
     n: int,
