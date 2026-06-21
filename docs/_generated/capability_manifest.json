@@ -14,7 +14,7 @@
     "python_model_source_modules": 888,
     "rust_pyo3_model_wrappers": 137,
     "rust_source_modules": 38,
-    "test_files": 2051
+    "test_files": 2052
   },
   "documentation": {
     "examples": [
@@ -10295,6 +10295,7 @@
       "tests/test_adaptive_fim_feedback.py",
       "tests/test_adiabatic_preparation.py",
       "tests/test_advantage_protocol.py",
+      "tests/test_aggregators_branches.py",
       "tests/test_analog_kuramoto.py",
       "tests/test_analog_native_readiness.py",
       "tests/test_analyse_iqm_dla_parity.py",
