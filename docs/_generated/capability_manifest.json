@@ -14,7 +14,7 @@
     "python_model_source_modules": 889,
     "rust_pyo3_model_wrappers": 137,
     "rust_source_modules": 38,
-    "test_files": 2059
+    "test_files": 2060
   },
   "documentation": {
     "examples": [
@@ -12277,6 +12277,7 @@
       "tests/test_stable_core_preflight.py",
       "tests/test_stable_core_preflight_fixtures_gate.py",
       "tests/test_stable_core_release_gate.py",
+      "tests/test_stable_core_validation_edges.py",
       "tests/test_stochastic_gradient_failure_policy.py",
       "tests/test_stochastic_gradient_rust_parity.py",
       "tests/test_stress_scale.py",
