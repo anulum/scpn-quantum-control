@@ -16,7 +16,9 @@ import numpy as np
 import pytest
 from numpy.typing import NDArray
 
+import scpn_quantum_control as scpn
 from scpn_quantum_control import differentiable as differentiable_module
+from scpn_quantum_control import differentiable_parameter_shift as parameter_shift_module
 from scpn_quantum_control.differentiable import (
     GradientCheckResult,
     GradientResult,
@@ -39,6 +41,23 @@ from scpn_quantum_control.differentiable import (
 )
 
 FloatArray = NDArray[np.float64]
+
+
+def test_facade_and_package_root_reuse_extracted_parameter_shift_helpers() -> None:
+    """Facade and package-root exports should reuse the extracted helpers."""
+
+    moved_helpers = (
+        "parameter_shift_gradient",
+        "batch_parameter_shift_gradient",
+        "batch_value_and_parameter_shift_grad",
+        "value_and_parameter_shift_grad",
+        "parameter_shift_gradient_with_uncertainty",
+    )
+
+    for helper_name in moved_helpers:
+        extracted = getattr(parameter_shift_module, helper_name)
+        assert getattr(differentiable_module, helper_name) is extracted
+        assert getattr(scpn, helper_name) is extracted
 
 
 def _assert_allclose(
@@ -389,11 +408,33 @@ def test_parameter_shift_gradient_with_uncertainty_propagates_shot_noise() -> No
     assert len(cast(list[object], evidence["records"])) == 2
 
 
+def test_parameter_shift_uncertainty_reuses_plus_shots_when_minus_shots_omitted() -> None:
+    """Shot-noise gradients should default minus shots to plus shots."""
+
+    result = parameter_shift_gradient_with_uncertainty(
+        plus_values=[0.8],
+        minus_values=[0.2],
+        plus_variances=[0.36],
+        minus_variances=[0.16],
+        plus_shots=[900],
+        parameters=[Parameter("theta")],
+    )
+
+    _assert_allclose(result.gradient, [0.3])
+    _assert_allclose(result.shots, [[900.0], [900.0]])
+    assert result.records[0].plus_shots == 900
+    assert result.records[0].minus_shots == 900
+
+
 def test_parameter_shift_gradient_with_uncertainty_rejects_invalid_inputs() -> None:
     """Shot-noise gradients must fail closed on impossible measurement contracts."""
 
+    with pytest.raises(ValueError, match="minus_values shape"):
+        parameter_shift_gradient_with_uncertainty([1.0], [0.0, 0.0], [0.1], [0.1], [10])
     with pytest.raises(ValueError, match="variance shapes"):
         parameter_shift_gradient_with_uncertainty([1.0], [0.0], [0.1, 0.2], [0.1], [10])
+    with pytest.raises(ValueError, match="shot-count shapes"):
+        parameter_shift_gradient_with_uncertainty([1.0], [0.0], [0.1], [0.1], [10, 11])
     with pytest.raises(ValueError, match="shot variances"):
         parameter_shift_gradient_with_uncertainty([1.0], [0.0], [-0.1], [0.1], [10])
     with pytest.raises(ValueError, match="shot counts"):
@@ -508,6 +549,9 @@ def test_batch_parameter_shift_gradient_stacks_independent_objectives() -> None:
     )
 
     _assert_allclose(gradients[:, 0], [math.cos(0.25), -math.sin(0.25)])
+
+    with pytest.raises(ValueError, match="objectives"):
+        batch_parameter_shift_gradient([], [0.25])
 
 
 def test_batch_value_gradient_results_preserve_metadata() -> None:

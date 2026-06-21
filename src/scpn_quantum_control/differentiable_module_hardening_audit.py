@@ -351,6 +351,14 @@ def differentiable_module_hardening_registry() -> tuple[DifferentiableModuleHard
             ("parameter metadata validation", "multi-frequency shift conditioning"),
         ),
         _record(
+            "src/scpn_quantum_control/differentiable_parameter_shift.py",
+            ("tests/test_differentiable_parameter_shift.py",),
+            (
+                "parameter-shift transform wrappers",
+                "finite-shot uncertainty propagation",
+            ),
+        ),
+        _record(
             "src/scpn_quantum_control/differentiable_result_contracts.py",
             ("tests/test_differentiable_result_contracts.py",),
             ("derivative result validation", "facade export compatibility"),

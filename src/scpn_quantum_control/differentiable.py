@@ -22,9 +22,6 @@ from typing import Any, Literal, NoReturn, cast
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
 
-from .differentiable_batch_helpers import (
-    _as_parameter_shift_sample_tensor,
-)
 from .differentiable_consistency import (
     check_custom_derivative_consistency,
     check_parameter_shift_consistency,
@@ -115,6 +112,13 @@ from .differentiable_parameter_contracts import (
     _as_real_scalar,
     multi_frequency_parameter_shift_rule,
 )
+from .differentiable_parameter_shift import (
+    batch_parameter_shift_gradient,
+    batch_value_and_parameter_shift_grad,
+    parameter_shift_gradient,
+    parameter_shift_gradient_with_uncertainty,
+    value_and_parameter_shift_grad,
+)
 from .differentiable_registered_custom import (
     registered_custom_jacobian,
     registered_custom_jvp,
@@ -190,7 +194,6 @@ from .differentiable_stochastic_policy import (
     gradient_confidence_interval,
 )
 from .differentiable_transform_helpers import (
-    _as_scalar,
     _as_vector_output,
     _clip_gradient,
     _normalise_bounds,
@@ -7206,267 +7209,6 @@ class NaturalGradientOptimizer:
             parameters=parameters,
             rule=rule,
         )
-
-
-def parameter_shift_gradient(
-    objective: ScalarObjective,
-    values: ArrayLike,
-    *,
-    parameters: Sequence[Parameter] | None = None,
-    rule: ParameterShiftRule | None = None,
-) -> NDArray[np.float64]:
-    """Return the parameter-shift gradient of a scalar objective."""
-
-    result = value_and_parameter_shift_grad(
-        objective,
-        values,
-        parameters=parameters,
-        rule=rule,
-    )
-    return result.gradient
-
-
-def batch_parameter_shift_gradient(
-    objectives: Sequence[ScalarObjective],
-    values: ArrayLike,
-    *,
-    parameters: Sequence[Parameter] | None = None,
-    rule: ParameterShiftRule | None = None,
-) -> NDArray[np.float64]:
-    """Return stacked parameter-shift gradients for multiple scalar objectives."""
-
-    if not objectives:
-        raise ValueError("objectives must contain at least one scalar objective")
-    rows = [
-        parameter_shift_gradient(
-            objective,
-            values,
-            parameters=parameters,
-            rule=rule,
-        )
-        for objective in objectives
-    ]
-    return np.vstack(rows)
-
-
-def batch_value_and_parameter_shift_grad(
-    objectives: Sequence[ScalarObjective],
-    values: ArrayLike,
-    *,
-    parameters: Sequence[Parameter] | None = None,
-    rule: ParameterShiftRule | None = None,
-) -> tuple[GradientResult, ...]:
-    """Return full parameter-shift results for multiple scalar objectives."""
-
-    if not objectives:
-        raise ValueError("objectives must contain at least one scalar objective")
-    return tuple(
-        value_and_parameter_shift_grad(
-            objective,
-            values,
-            parameters=parameters,
-            rule=rule,
-        )
-        for objective in objectives
-    )
-
-
-def value_and_parameter_shift_grad(
-    objective: ScalarObjective,
-    values: ArrayLike,
-    *,
-    parameters: Sequence[Parameter] | None = None,
-    rule: ParameterShiftRule | None = None,
-) -> GradientResult:
-    """Evaluate a scalar objective and its native parameter-shift gradient."""
-
-    parameter_values = _as_parameter_array(values)
-    parameter_meta = _normalise_parameters(parameter_values, parameters)
-    shift_rule = rule or ParameterShiftRule()
-    terms = shift_rule.terms
-    gradient = np.zeros_like(parameter_values)
-    base_value = _as_scalar(objective(parameter_values.copy()))
-    evaluations = 1
-
-    for index, parameter in enumerate(parameter_meta):
-        if not parameter.trainable:
-            continue
-        for shift, coefficient in terms:
-            plus = parameter_values.copy()
-            minus = parameter_values.copy()
-            plus[index] += shift
-            minus[index] -= shift
-            plus_value = _as_scalar(objective(plus))
-            minus_value = _as_scalar(objective(minus))
-            evaluations += 2
-            gradient[index] += coefficient * (plus_value - minus_value)
-
-    return GradientResult(
-        value=base_value,
-        gradient=gradient,
-        method="parameter_shift"
-        if shift_rule.is_single_term
-        else "multi_frequency_parameter_shift",
-        shift=shift_rule.shift if shift_rule.is_single_term else None,
-        coefficient=shift_rule.coefficient if shift_rule.is_single_term else None,
-        evaluations=evaluations,
-        parameter_names=tuple(parameter.name for parameter in parameter_meta),
-        trainable=tuple(parameter.trainable for parameter in parameter_meta),
-    )
-
-
-def parameter_shift_gradient_with_uncertainty(
-    plus_values: ArrayLike,
-    minus_values: ArrayLike,
-    plus_variances: ArrayLike,
-    minus_variances: ArrayLike,
-    plus_shots: ArrayLike,
-    minus_shots: ArrayLike | None = None,
-    *,
-    value: float = 0.0,
-    parameters: Sequence[Parameter] | None = None,
-    rule: ParameterShiftRule | None = None,
-    confidence_level: float = 0.95,
-    confidence_z: float = 1.959963984540054,
-    failure_policy: GradientFailurePolicy | None = None,
-) -> StochasticGradientResult:
-    """Propagate independent shot noise through parameter-shift gradients."""
-
-    shift_rule = rule or ParameterShiftRule()
-    terms = shift_rule.terms
-    term_count = len(terms)
-    plus = _as_parameter_shift_sample_tensor(
-        "plus_values",
-        plus_values,
-        term_count=term_count,
-    )
-    minus = _as_parameter_shift_sample_tensor(
-        "minus_values",
-        minus_values,
-        term_count=term_count,
-    )
-    plus_var = _as_parameter_shift_sample_tensor(
-        "plus_variances",
-        plus_variances,
-        term_count=term_count,
-    )
-    minus_var = _as_parameter_shift_sample_tensor(
-        "minus_variances",
-        minus_variances,
-        term_count=term_count,
-    )
-    plus_count = _as_parameter_shift_sample_tensor(
-        "plus_shots",
-        plus_shots,
-        term_count=term_count,
-    )
-    minus_count = (
-        plus_count.copy()
-        if minus_shots is None
-        else _as_parameter_shift_sample_tensor(
-            "minus_shots",
-            minus_shots,
-            term_count=term_count,
-        )
-    )
-    if minus.shape != plus.shape:
-        raise ValueError("minus_values shape must match plus_values shape")
-    if plus_var.shape != plus.shape or minus_var.shape != plus.shape:
-        raise ValueError("variance shapes must match plus_values shape")
-    if plus_count.shape != plus.shape or minus_count.shape != plus.shape:
-        raise ValueError("shot-count shapes must match plus_values shape")
-    if np.any(plus_var < 0.0) or np.any(minus_var < 0.0):
-        raise ValueError("shot variances must be finite non-negative values")
-    if (
-        not np.all(plus_count > 0.0)
-        or not np.all(minus_count > 0.0)
-        or not np.allclose(plus_count, np.round(plus_count))
-        or not np.allclose(minus_count, np.round(minus_count))
-    ):
-        raise ValueError("shot counts must contain positive integers")
-    confidence = _as_real_scalar("confidence_level", confidence_level)
-    z_value = _as_real_scalar("confidence_z", confidence_z)
-    if confidence <= 0.0 or confidence >= 1.0:
-        raise ValueError("confidence_level must be between zero and one")
-    if z_value <= 0.0:
-        raise ValueError("confidence_z must be finite and positive")
-
-    parameter_meta = _normalise_parameters(plus[0], parameters)
-    gradient = np.zeros(plus.shape[1], dtype=np.float64)
-    variance = np.zeros(plus.shape[1], dtype=np.float64)
-    records: list[ParameterShiftSampleRecord] = []
-    for index, parameter in enumerate(parameter_meta):
-        for term_index, (_shift, coefficient) in enumerate(terms):
-            gradient_contribution = coefficient * (
-                plus[term_index, index] - minus[term_index, index]
-            )
-            variance_contribution = coefficient**2 * (
-                plus_var[term_index, index] / plus_count[term_index, index]
-                + minus_var[term_index, index] / minus_count[term_index, index]
-            )
-            if parameter.trainable:
-                gradient[index] += gradient_contribution
-                variance[index] += variance_contribution
-            records.append(
-                ParameterShiftSampleRecord(
-                    term_index=term_index,
-                    parameter_index=index,
-                    parameter_name=parameter.name,
-                    trainable=parameter.trainable,
-                    shift=_shift,
-                    coefficient=coefficient,
-                    plus_value=float(plus[term_index, index]),
-                    minus_value=float(minus[term_index, index]),
-                    plus_variance=float(plus_var[term_index, index]),
-                    minus_variance=float(minus_var[term_index, index]),
-                    plus_shots=int(plus_count[term_index, index]),
-                    minus_shots=int(minus_count[term_index, index]),
-                    gradient_contribution=float(
-                        gradient_contribution if parameter.trainable else 0.0
-                    ),
-                    variance_contribution=float(
-                        variance_contribution if parameter.trainable else 0.0
-                    ),
-                )
-            )
-    standard_error = np.sqrt(variance)
-    covariance = np.diag(variance)
-    confidence_interval = gradient_confidence_interval(
-        gradient,
-        standard_error,
-        confidence_z=z_value,
-        confidence_level=confidence,
-        trainable=tuple(parameter.trainable for parameter in parameter_meta),
-        failure_policy=failure_policy,
-    )
-    shots = (
-        np.vstack([plus_count[0], minus_count[0]])
-        if shift_rule.is_single_term
-        else np.stack([plus_count, minus_count], axis=1)
-    )
-    return StochasticGradientResult(
-        value=value,
-        gradient=gradient,
-        standard_error=standard_error,
-        covariance=covariance,
-        confidence_radius=z_value * standard_error,
-        shots=shots,
-        confidence_level=confidence,
-        method="parameter_shift_shot_noise"
-        if shift_rule.is_single_term
-        else "multi_frequency_parameter_shift_shot_noise",
-        shift=shift_rule.shift if shift_rule.is_single_term else None,
-        coefficient=shift_rule.coefficient if shift_rule.is_single_term else None,
-        evaluations=2 * term_count * sum(parameter.trainable for parameter in parameter_meta),
-        parameter_names=tuple(parameter.name for parameter in parameter_meta),
-        trainable=tuple(parameter.trainable for parameter in parameter_meta),
-        records=tuple(records),
-        claim_boundary=STOCHASTIC_PARAMETER_SHIFT_CLAIM_BOUNDARY,
-        hardware_execution=False,
-        confidence_interval=confidence_interval,
-        failure_policy_status=confidence_interval.status,
-        failure_reasons=confidence_interval.failure_reasons,
-    )
 
 
 def value_and_grad(
