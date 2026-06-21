@@ -139,6 +139,14 @@ def differentiable_module_hardening_registry() -> tuple[DifferentiableModuleHard
             ("static trapezoid direct rules", "static-grid trapezoid VJP boundaries"),
         ),
         _record(
+            "src/scpn_quantum_control/program_ad_reduction_primitives.py",
+            (
+                "tests/test_program_ad_reduction_norms.py",
+                "tests/test_program_ad_runtime_registry_dispatch.py",
+            ),
+            ("static reduction direct rules", "reduction registry dispatch boundaries"),
+        ),
+        _record(
             "src/scpn_quantum_control/program_ad_stack_block_assembly.py",
             ("tests/test_program_ad_stack_block_assembly.py",),
             ("static stack/block direct rules", "nested assembly VJP boundaries"),

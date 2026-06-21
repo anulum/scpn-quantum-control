@@ -16,6 +16,7 @@ from typing import Any, cast
 import numpy as np
 import pytest
 
+import scpn_quantum_control.program_ad_reduction_primitives as reduction_primitives
 from scpn_quantum_control.differentiable import (
     DEFAULT_CUSTOM_DERIVATIVE_REGISTRY,
     Parameter,
@@ -38,6 +39,51 @@ from scpn_quantum_control.differentiable import (
     program_adjoint_gradient,
     whole_program_value_and_grad,
 )
+
+
+def test_program_ad_reduction_derivative_rules_are_extracted_identities() -> None:
+    """Reduction factories should be re-exported through the compatibility facade."""
+
+    assert (
+        program_ad_reduction_sum_derivative_rule
+        is reduction_primitives.program_ad_reduction_sum_derivative_rule
+    )
+    assert (
+        program_ad_reduction_mean_derivative_rule
+        is reduction_primitives.program_ad_reduction_mean_derivative_rule
+    )
+    assert (
+        program_ad_reduction_prod_derivative_rule
+        is reduction_primitives.program_ad_reduction_prod_derivative_rule
+    )
+    assert (
+        program_ad_reduction_var_derivative_rule
+        is reduction_primitives.program_ad_reduction_var_derivative_rule
+    )
+    assert (
+        program_ad_reduction_std_derivative_rule
+        is reduction_primitives.program_ad_reduction_std_derivative_rule
+    )
+    assert (
+        program_ad_reduction_max_derivative_rule
+        is reduction_primitives.program_ad_reduction_max_derivative_rule
+    )
+    assert (
+        program_ad_reduction_min_derivative_rule
+        is reduction_primitives.program_ad_reduction_min_derivative_rule
+    )
+    assert (
+        program_ad_reduction_median_derivative_rule
+        is reduction_primitives.program_ad_reduction_median_derivative_rule
+    )
+    assert (
+        program_ad_reduction_quantile_derivative_rule
+        is reduction_primitives.program_ad_reduction_quantile_derivative_rule
+    )
+    assert (
+        program_ad_reduction_percentile_derivative_rule
+        is reduction_primitives.program_ad_reduction_percentile_derivative_rule
+    )
 
 
 def _assert_allclose(
