@@ -25,6 +25,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import numpy as np
+from numpy.typing import NDArray
 
 from ..bridge.knm_hamiltonian import knm_to_dense_matrix, knm_to_hamiltonian
 from ..dense_budget import require_dense_allocation
@@ -34,18 +35,18 @@ from ..dense_budget import require_dense_allocation
 class QFICriticalityResult:
     """QFI scan across coupling strength."""
 
-    k_values: np.ndarray
-    max_qfi: np.ndarray  # max diagonal QFI element at each K
-    spectral_gap: np.ndarray  # gap at each K
-    total_qfi: np.ndarray  # trace of QFI matrix at each K
+    k_values: NDArray[np.float64]
+    max_qfi: NDArray[np.float64]  # max diagonal QFI element at each K
+    spectral_gap: NDArray[np.float64]  # gap at each K
+    total_qfi: NDArray[np.float64]  # trace of QFI matrix at each K
     peak_k: float  # K_base where QFI peaks
     peak_qfi: float  # max QFI value at peak
 
 
 def _qfi_from_eigendecomposition(
-    K: np.ndarray,
-    eigenvalues: np.ndarray,
-    eigenvectors: np.ndarray,
+    K: NDArray[np.float64],
+    eigenvalues: NDArray[np.float64],
+    eigenvectors: NDArray[np.complex128],
 ) -> tuple[float, float, float]:
     """Compute coupling-parameter QFI from an existing exact eigendecomposition."""
     n = K.shape[0]
@@ -92,8 +93,8 @@ def _qfi_from_eigendecomposition(
 
 
 def qfi_single_coupling(
-    K: np.ndarray,
-    omega: np.ndarray,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
     *,
     max_dense_gib: float | None = None,
 ) -> tuple[float, float, float]:
@@ -122,9 +123,9 @@ def qfi_single_coupling(
 
 
 def qfi_vs_coupling(
-    omega: np.ndarray,
-    K_topology: np.ndarray,
-    k_range: np.ndarray | None = None,
+    omega: NDArray[np.float64],
+    K_topology: NDArray[np.float64],
+    k_range: NDArray[np.float64] | None = None,
     *,
     max_dense_gib: float | None = None,
 ) -> QFICriticalityResult:
@@ -134,7 +135,7 @@ def qfi_vs_coupling(
     At K_c, the spectral gap minimum and QFI maximum should coincide.
     """
     if k_range is None:
-        k_range = np.linspace(0.1, 3.0, 20)
+        k_range = np.linspace(0.1, 3.0, 20, dtype=np.float64)
 
     n_k = len(k_range)
     max_qfi = np.zeros(n_k)

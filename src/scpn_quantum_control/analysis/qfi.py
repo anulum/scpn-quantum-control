@@ -26,8 +26,10 @@ Reference: Braunstein & Caves, PRL 72, 3439 (1994).
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Any
 
 import numpy as np
+from numpy.typing import NDArray
 from qiskit.quantum_info import SparsePauliOp
 
 from ..bridge.knm_hamiltonian import knm_to_dense_matrix, knm_to_hamiltonian
@@ -38,9 +40,9 @@ from ..dense_budget import require_dense_allocation
 class QFIResult:
     """Quantum Fisher Information computation result."""
 
-    qfi_matrix: np.ndarray
+    qfi_matrix: NDArray[np.float64]
     coupling_pairs: list[tuple[int, int]]
-    precision_bounds: np.ndarray
+    precision_bounds: NDArray[np.float64]
     spectral_gap: float
     n_qubits: int
 
@@ -55,8 +57,8 @@ class QFIResult:
 
 
 def compute_qfi(
-    K: np.ndarray,
-    omega: np.ndarray,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
     pairs: list[tuple[int, int]] | None = None,
     *,
     max_dense_gib: float | None = None,
@@ -95,7 +97,7 @@ def compute_qfi(
     qfi = np.zeros((n_pairs, n_pairs))
 
     # Build derivative operators V_a = -(X_iX_j + Y_iY_j) for each pair
-    V_ops: list[np.ndarray] = []
+    V_ops: list[NDArray[np.complex128]] = []
     for i, j in pairs:
         xx = ["I"] * n
         xx[i] = "X"
@@ -111,7 +113,7 @@ def compute_qfi(
 
     # Compute matrix elements ⟨ψ_m|V_a|ψ_0⟩ for all m and a
     dim = len(eigenvalues)
-    mel: np.ndarray = np.zeros((dim, n_pairs), dtype=complex)
+    mel: NDArray[np.complex128] = np.zeros((dim, n_pairs), dtype=complex)
     for a in range(n_pairs):
         for m in range(dim):
             mel[m, a] = eigenvectors[:, m].conj() @ V_ops[a] @ psi0
@@ -143,11 +145,11 @@ def compute_qfi(
 
 
 def qfi_gap_tradeoff(
-    K: np.ndarray,
-    omega: np.ndarray,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
     *,
     max_dense_gib: float | None = None,
-) -> dict:
+) -> dict[str, Any]:
     """Analyze the QFI-gap tradeoff for the coupling topology.
 
     Large spectral gap → robust identity but imprecise estimation.

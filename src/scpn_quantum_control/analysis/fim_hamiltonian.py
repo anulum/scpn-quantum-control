@@ -12,6 +12,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import numpy as np
+from numpy.typing import NDArray
 
 
 @dataclass(frozen=True)
@@ -29,7 +30,7 @@ class SpectrumSummary:
     median_energy: float
 
 
-def computational_magnetisations(n_qubits: int) -> np.ndarray:
+def computational_magnetisations(n_qubits: int) -> NDArray[np.int64]:
     """Return total Z magnetisation for every computational basis state."""
 
     if n_qubits < 1:
@@ -42,14 +43,16 @@ def computational_magnetisations(n_qubits: int) -> np.ndarray:
     return values
 
 
-def fim_diagonal(n_qubits: int, lambda_fim: float) -> np.ndarray:
+def fim_diagonal(n_qubits: int, lambda_fim: float) -> NDArray[np.float64]:
     """Return the diagonal entries of H_FIM = -lambda * M^2 / n."""
 
     magnetisations = computational_magnetisations(n_qubits).astype(np.float64)
     return -float(lambda_fim) * magnetisations**2 / float(n_qubits)
 
 
-def add_fim_feedback(hamiltonian: np.ndarray, lambda_fim: float) -> np.ndarray:
+def add_fim_feedback(
+    hamiltonian: NDArray[np.complex128], lambda_fim: float
+) -> NDArray[np.complex128]:
     """Add the collective FIM-inspired feedback term to a dense Hamiltonian."""
 
     if hamiltonian.ndim != 2 or hamiltonian.shape[0] != hamiltonian.shape[1]:
@@ -65,7 +68,7 @@ def add_fim_feedback(hamiltonian: np.ndarray, lambda_fim: float) -> np.ndarray:
     return out
 
 
-def magnetisation_sector_indices(n_qubits: int) -> dict[int, np.ndarray]:
+def magnetisation_sector_indices(n_qubits: int) -> dict[int, NDArray[np.int64]]:
     """Group computational basis indices by total magnetisation."""
 
     magnetisations = computational_magnetisations(n_qubits)
@@ -79,7 +82,7 @@ def magnetisation_sector_indices(n_qubits: int) -> dict[int, np.ndarray]:
 
 
 def summarise_spectrum(
-    eigenvalues: np.ndarray, n_qubits: int, lambda_fim: float
+    eigenvalues: NDArray[np.float64], n_qubits: int, lambda_fim: float
 ) -> SpectrumSummary:
     """Summarise sorted real eigenvalues for one Hamiltonian instance."""
 
@@ -98,7 +101,9 @@ def summarise_spectrum(
     )
 
 
-def sector_spectrum_rows(hamiltonian: np.ndarray, lambda_fim: float) -> list[dict[str, object]]:
+def sector_spectrum_rows(
+    hamiltonian: NDArray[np.float64], lambda_fim: float
+) -> list[dict[str, object]]:
     """Compute exact spectrum summaries inside each magnetisation sector."""
 
     dimension = hamiltonian.shape[0]
@@ -106,7 +111,7 @@ def sector_spectrum_rows(hamiltonian: np.ndarray, lambda_fim: float) -> list[dic
     rows: list[dict[str, object]] = []
     for magnetisation, indices in magnetisation_sector_indices(n_qubits).items():
         block = hamiltonian[np.ix_(indices, indices)]
-        eigenvalues = np.linalg.eigvalsh(block)
+        eigenvalues = np.linalg.eigvalsh(block).astype(np.float64)
         summary = summarise_spectrum(eigenvalues, n_qubits, lambda_fim)
         rows.append(
             {
@@ -126,7 +131,9 @@ def sector_spectrum_rows(hamiltonian: np.ndarray, lambda_fim: float) -> list[dic
     return rows
 
 
-def adjacent_gap_ratio(eigenvalues: np.ndarray, tolerance: float = 1e-10) -> dict[str, object]:
+def adjacent_gap_ratio(
+    eigenvalues: NDArray[np.float64], tolerance: float = 1e-10
+) -> dict[str, object]:
     """Compute adjacent-gap ratio statistics after removing tiny spacings."""
 
     values = np.sort(np.asarray(eigenvalues, dtype=np.float64))
@@ -153,7 +160,7 @@ def adjacent_gap_ratio(eigenvalues: np.ndarray, tolerance: float = 1e-10) -> dic
 
 
 def bipartite_entropy_from_statevector(
-    statevector: np.ndarray,
+    statevector: NDArray[np.complex128],
     n_qubits: int,
     keep: list[int] | None = None,
     tolerance: float = 1e-15,
@@ -180,15 +187,15 @@ def bipartite_entropy_from_statevector(
     return float(-np.sum(probabilities * np.log2(probabilities)))
 
 
-def magnetisation_operator_diagonal(n_qubits: int) -> np.ndarray:
+def magnetisation_operator_diagonal(n_qubits: int) -> NDArray[np.float64]:
     """Return diagonal entries of the total magnetisation operator M."""
 
     return computational_magnetisations(n_qubits).astype(np.float64)
 
 
 def commutator_frobenius_norm_with_diagonal(
-    hamiltonian: np.ndarray,
-    diagonal_operator: np.ndarray,
+    hamiltonian: NDArray[np.complex128],
+    diagonal_operator: NDArray[np.float64],
 ) -> float:
     """Return ||[H, D]||_F for a diagonal operator D."""
 
@@ -200,7 +207,9 @@ def commutator_frobenius_norm_with_diagonal(
     return float(np.linalg.norm(commutator))
 
 
-def sector_coupling_rows(hamiltonian: np.ndarray, lambda_fim: float) -> list[dict[str, object]]:
+def sector_coupling_rows(
+    hamiltonian: NDArray[np.float64], lambda_fim: float
+) -> list[dict[str, object]]:
     """Measure off-sector Hamiltonian coupling for each magnetisation sector."""
 
     dimension = hamiltonian.shape[0]
