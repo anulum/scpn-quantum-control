@@ -45,35 +45,6 @@ def _assert_allclose(actual: object, expected: object, *, atol: float | None = N
         assert_allclose(actual, expected, atol=atol)
 
 
-def test_huber_residual_weights_downweight_outliers_for_residual_maps() -> None:
-    """Huber IRLS weights should preserve inliers and bound outlier influence."""
-
-    weights = huber_residual_weights(np.array([0.0, 0.5, -2.0, 10.0]), delta=1.0)
-
-    _assert_allclose(weights, [1.0, 1.0, 0.5, 0.1])
-
-
-def test_huber_residual_weights_support_floor_for_conditioning() -> None:
-    """A positive floor prevents outlier weights from collapsing to zero."""
-
-    weights = huber_residual_weights(np.array([1.0, 100.0]), delta=1.0, min_weight=0.05)
-
-    _assert_allclose(weights, [1.0, 0.05])
-
-
-def test_huber_residual_weights_reject_invalid_controls() -> None:
-    """Robust residual weighting must reject invalid residual and policy inputs."""
-
-    with pytest.raises(ValueError, match="one-dimensional"):
-        huber_residual_weights(np.array([[1.0]]))
-    with pytest.raises(ValueError, match="Huber delta"):
-        huber_residual_weights(np.array([1.0]), delta=0.0)
-    with pytest.raises(ValueError, match="Huber min_weight"):
-        huber_residual_weights(np.array([1.0]), min_weight=-0.1)
-    with pytest.raises(ValueError, match="Huber min_weight"):
-        huber_residual_weights(np.array([1.0]), min_weight=1.1)
-
-
 def test_huber_residual_weights_feed_gauss_newton_metric() -> None:
     """Robust weights should plug directly into Gauss-Newton residual solves."""
 
@@ -88,35 +59,6 @@ def test_huber_residual_weights_feed_gauss_newton_metric() -> None:
     _assert_allclose(weights, [1.0, 0.2], atol=1.0e-6)
     _assert_allclose(result.base_gradient.gradient, [2.0, 20.0], atol=1.0e-6)
     assert result.condition_number > 1.0
-
-
-def test_soft_l1_residual_weights_smoothly_downweight_outliers() -> None:
-    """Soft-L1 weights should provide a smooth influence curve for residuals."""
-
-    weights = soft_l1_residual_weights(np.array([0.0, 1.0, 3.0]), scale=1.0)
-
-    _assert_allclose(weights, [1.0, 1.0 / np.sqrt(2.0), 1.0 / np.sqrt(10.0)])
-
-
-def test_soft_l1_residual_weights_support_conditioning_floor() -> None:
-    """A positive floor keeps Soft-L1 weights usable in ill-scaled residual maps."""
-
-    weights = soft_l1_residual_weights(np.array([0.0, 100.0]), scale=1.0, min_weight=0.05)
-
-    _assert_allclose(weights, [1.0, 0.05])
-
-
-def test_soft_l1_residual_weights_reject_invalid_controls() -> None:
-    """Soft-L1 residual weighting must fail closed on invalid policy inputs."""
-
-    with pytest.raises(ValueError, match="one-dimensional"):
-        soft_l1_residual_weights(np.array([[1.0]]))
-    with pytest.raises(ValueError, match="Soft-L1 scale"):
-        soft_l1_residual_weights(np.array([1.0]), scale=0.0)
-    with pytest.raises(ValueError, match="Soft-L1 min_weight"):
-        soft_l1_residual_weights(np.array([1.0]), min_weight=-0.1)
-    with pytest.raises(ValueError, match="Soft-L1 min_weight"):
-        soft_l1_residual_weights(np.array([1.0]), min_weight=1.1)
 
 
 def test_soft_l1_residual_weights_feed_levenberg_marquardt_trial() -> None:

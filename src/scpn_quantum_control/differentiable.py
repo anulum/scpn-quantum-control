@@ -49,6 +49,10 @@ from .differentiable_registered_custom import (
     registered_custom_jvp,
     registered_custom_vjp,
 )
+from .differentiable_residual_weights import (
+    huber_residual_weights,
+    soft_l1_residual_weights,
+)
 from .differentiable_result_contracts import (
     DIFFERENTIABLE_RESULT_CLAIM_BOUNDARY,
     FINITE_DIFFERENCE_DIAGNOSTIC_CLAIM_BOUNDARY,
@@ -9506,54 +9510,6 @@ def least_squares_covariance(
         parameter_names=jacobian.parameter_names,
         trainable=jacobian.trainable,
     )
-
-
-def huber_residual_weights(
-    residuals: ArrayLike,
-    *,
-    delta: float = 1.0,
-    min_weight: float = 0.0,
-) -> NDArray[np.float64]:
-    """Return Huber IRLS weights for robust residual-map least squares."""
-
-    residual_arr = _as_vector_output(residuals)
-    delta_value = _as_real_scalar("Huber delta", delta)
-    if delta_value <= 0.0:
-        raise ValueError("Huber delta must be finite and positive")
-    min_weight_value = _as_real_scalar("Huber min_weight", min_weight)
-    if min_weight_value < 0.0 or min_weight_value > 1.0:
-        raise ValueError("Huber min_weight must be finite and in [0, 1]")
-
-    magnitudes = np.abs(residual_arr)
-    weights = np.ones_like(residual_arr, dtype=np.float64)
-    outliers = magnitudes > delta_value
-    weights[outliers] = delta_value / magnitudes[outliers]
-    if min_weight_value > 0.0:
-        weights = np.maximum(weights, min_weight_value)
-    return weights
-
-
-def soft_l1_residual_weights(
-    residuals: ArrayLike,
-    *,
-    scale: float = 1.0,
-    min_weight: float = 0.0,
-) -> NDArray[np.float64]:
-    """Return smooth Soft-L1 IRLS weights for residual-map least squares."""
-
-    residual_arr = _as_vector_output(residuals)
-    scale_value = _as_real_scalar("Soft-L1 scale", scale)
-    if scale_value <= 0.0:
-        raise ValueError("Soft-L1 scale must be finite and positive")
-    min_weight_value = _as_real_scalar("Soft-L1 min_weight", min_weight)
-    if min_weight_value < 0.0 or min_weight_value > 1.0:
-        raise ValueError("Soft-L1 min_weight must be finite and in [0, 1]")
-
-    scaled = residual_arr / scale_value
-    weights = 1.0 / np.sqrt(1.0 + scaled * scaled)
-    if min_weight_value > 0.0:
-        weights = np.maximum(weights, min_weight_value)
-    return weights
 
 
 def gauss_newton_gradient(

@@ -312,6 +312,11 @@ def differentiable_module_hardening_registry() -> tuple[DifferentiableModuleHard
             ("derivative result validation", "facade export compatibility"),
         ),
         _record(
+            "src/scpn_quantum_control/differentiable_residual_weights.py",
+            ("tests/test_differentiable_residual_weights.py",),
+            ("Huber residual weights", "Soft-L1 residual weights"),
+        ),
+        _record(
             "src/scpn_quantum_control/differentiable_registered_custom.py",
             ("tests/test_differentiable_registered_custom.py",),
             ("registry-backed custom JVP/VJP wrappers", "facade export compatibility"),
