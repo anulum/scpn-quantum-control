@@ -11,7 +11,7 @@
     "public_api_exports": 713,
     "public_documentation_pages": 254,
     "python_model_classes": 1840,
-    "python_model_source_modules": 867,
+    "python_model_source_modules": 868,
     "rust_pyo3_model_wrappers": 137,
     "rust_source_modules": 38,
     "test_files": 2017
@@ -8573,6 +8573,7 @@
       "src/scpn_quantum_control/differentiable_scalar_kernels.py",
       "src/scpn_quantum_control/differentiable_sota_scorecard.py",
       "src/scpn_quantum_control/differentiable_stochastic_policy.py",
+      "src/scpn_quantum_control/differentiable_vmap.py",
       "src/scpn_quantum_control/dla_parity/baselines.py",
       "src/scpn_quantum_control/dla_parity/dataset.py",
       "src/scpn_quantum_control/dla_parity/reproduce.py",
