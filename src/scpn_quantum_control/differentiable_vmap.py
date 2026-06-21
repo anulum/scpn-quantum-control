@@ -66,29 +66,27 @@ def _trace_value_context(value: object) -> object:
 
 
 def _trace_take_value(array: object, item: int, *, axis: int) -> object:
-    """Slice a facade-owned trace array without importing the facade at module load."""
+    """Slice a trace array via the trace runtime without a module-load import cycle."""
 
-    from . import differentiable as differentiable_facade
+    from .whole_program_trace_values import _trace_take
 
-    return differentiable_facade._trace_take(cast(Any, array), item, axis=axis, mode="raise")
+    return _trace_take(cast(Any, array), item, axis=axis, mode="raise")
 
 
 def _coerce_trace_array_value(value: object, context: object) -> object:
-    """Coerce a facade-owned trace scalar/array output into a trace array."""
+    """Coerce a trace scalar/array output into a trace array via the trace runtime."""
 
-    from . import differentiable as differentiable_facade
+    from .whole_program_trace_values import _coerce_trace_array
 
-    return differentiable_facade._coerce_trace_array(cast(Any, value), cast(Any, context))
+    return _coerce_trace_array(cast(Any, value), cast(Any, context))
 
 
 def _trace_stack_values(values: Sequence[object], context: object, *, axis: int) -> object:
-    """Stack facade-owned trace arrays without creating an import cycle."""
+    """Stack trace arrays via the trace runtime without creating an import cycle."""
 
-    from . import differentiable as differentiable_facade
+    from .whole_program_trace_values import _trace_stack
 
-    return differentiable_facade._trace_stack(
-        tuple(cast(Any, value) for value in values), cast(Any, context), axis=axis
-    )
+    return _trace_stack(tuple(cast(Any, value) for value in values), cast(Any, context), axis=axis)
 
 
 def vmap(

@@ -471,6 +471,15 @@ def differentiable_module_hardening_registry() -> tuple[DifferentiableModuleHard
             ),
         ),
         _record(
+            "src/scpn_quantum_control/whole_program_trace_values.py",
+            ("tests/test_whole_program_ad_contracts.py",),
+            (
+                "operator-intercepted trace value classes",
+                "NumPy __array_function__ trace dispatch",
+                "fail-closed nondifferentiability boundaries",
+            ),
+        ),
+        _record(
             "src/scpn_quantum_control/phase/differentiable_audit.py",
             ("tests/test_phase_differentiable_audit.py",),
             ("audit-suite failure rows", "bounded workflow diagnostics"),
