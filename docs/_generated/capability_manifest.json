@@ -14,7 +14,7 @@
     "python_model_source_modules": 889,
     "rust_pyo3_model_wrappers": 137,
     "rust_source_modules": 38,
-    "test_files": 2061
+    "test_files": 2062
   },
   "documentation": {
     "examples": [
@@ -11079,6 +11079,7 @@
       "tests/test_native_decomposition_readiness.py",
       "tests/test_negative_inputs.py",
       "tests/test_new_module_properties.py",
+      "tests/test_nist_sp800_22_guards.py",
       "tests/test_noise_model.py",
       "tests/test_notebook_workflows.py",
       "tests/test_nqs_ansatz.py",
