@@ -11,7 +11,7 @@
     "public_api_exports": 713,
     "public_documentation_pages": 254,
     "python_model_classes": 1840,
-    "python_model_source_modules": 851,
+    "python_model_source_modules": 852,
     "rust_pyo3_model_wrappers": 137,
     "rust_source_modules": 38,
     "test_files": 2017
@@ -1323,7 +1323,7 @@
       },
       {
         "name": "ArmijoLineSearchResult",
-        "path": "src/scpn_quantum_control/differentiable.py"
+        "path": "src/scpn_quantum_control/differentiable_result_contracts.py"
       },
       {
         "name": "ArtificialSentienceConfig",
@@ -2055,7 +2055,7 @@
       },
       {
         "name": "CustomDerivativeCheckResult",
-        "path": "src/scpn_quantum_control/differentiable.py"
+        "path": "src/scpn_quantum_control/differentiable_result_contracts.py"
       },
       {
         "name": "CustomDerivativeRegistry",
@@ -2867,7 +2867,7 @@
       },
       {
         "name": "FixedPointSensitivityResult",
-        "path": "src/scpn_quantum_control/differentiable.py"
+        "path": "src/scpn_quantum_control/differentiable_result_contracts.py"
       },
       {
         "name": "FloquetResult",
@@ -3055,7 +3055,7 @@
       },
       {
         "name": "GradientCheckResult",
-        "path": "src/scpn_quantum_control/differentiable.py"
+        "path": "src/scpn_quantum_control/differentiable_result_contracts.py"
       },
       {
         "name": "GradientFailurePolicy",
@@ -3063,7 +3063,7 @@
       },
       {
         "name": "GradientResult",
-        "path": "src/scpn_quantum_control/differentiable.py"
+        "path": "src/scpn_quantum_control/differentiable_result_contracts.py"
       },
       {
         "name": "GradientSupportCapability",
@@ -3131,7 +3131,7 @@
       },
       {
         "name": "HVPResult",
-        "path": "src/scpn_quantum_control/differentiable.py"
+        "path": "src/scpn_quantum_control/differentiable_result_contracts.py"
       },
       {
         "name": "HamiltonianIndexConfig",
@@ -3239,7 +3239,7 @@
       },
       {
         "name": "HessianResult",
-        "path": "src/scpn_quantum_control/differentiable.py"
+        "path": "src/scpn_quantum_control/differentiable_result_contracts.py"
       },
       {
         "name": "HessianVerificationResult",
@@ -3559,7 +3559,7 @@
       },
       {
         "name": "ImplicitSensitivityResult",
-        "path": "src/scpn_quantum_control/differentiable.py"
+        "path": "src/scpn_quantum_control/differentiable_result_contracts.py"
       },
       {
         "name": "InfitonField",
@@ -3743,11 +3743,11 @@
       },
       {
         "name": "JVPResult",
-        "path": "src/scpn_quantum_control/differentiable.py"
+        "path": "src/scpn_quantum_control/differentiable_result_contracts.py"
       },
       {
         "name": "JacobianResult",
-        "path": "src/scpn_quantum_control/differentiable.py"
+        "path": "src/scpn_quantum_control/differentiable_result_contracts.py"
       },
       {
         "name": "JobResult",
@@ -4439,7 +4439,7 @@
       },
       {
         "name": "NaturalGradientOptimizationResult",
-        "path": "src/scpn_quantum_control/differentiable.py"
+        "path": "src/scpn_quantum_control/differentiable_result_contracts.py"
       },
       {
         "name": "NaturalGradientOptimizer",
@@ -4447,7 +4447,7 @@
       },
       {
         "name": "NaturalGradientResult",
-        "path": "src/scpn_quantum_control/differentiable.py"
+        "path": "src/scpn_quantum_control/differentiable_result_contracts.py"
       },
       {
         "name": "NaturalGradientValidationResult",
@@ -4623,7 +4623,7 @@
       },
       {
         "name": "OptimizationResult",
-        "path": "src/scpn_quantum_control/differentiable.py"
+        "path": "src/scpn_quantum_control/differentiable_result_contracts.py"
       },
       {
         "name": "OptimizerComparisonSuiteResult",
@@ -4951,7 +4951,7 @@
       },
       {
         "name": "ParameterShiftSampleRecord",
-        "path": "src/scpn_quantum_control/differentiable.py"
+        "path": "src/scpn_quantum_control/differentiable_result_contracts.py"
       },
       {
         "name": "ParameterShiftTrainingCertificate",
@@ -6427,15 +6427,15 @@
       },
       {
         "name": "SPSAGradientResult",
-        "path": "src/scpn_quantum_control/differentiable.py"
+        "path": "src/scpn_quantum_control/differentiable_result_contracts.py"
       },
       {
         "name": "SPSAObjectiveSample",
-        "path": "src/scpn_quantum_control/differentiable.py"
+        "path": "src/scpn_quantum_control/differentiable_result_contracts.py"
       },
       {
         "name": "SPSAProbeRecord",
-        "path": "src/scpn_quantum_control/differentiable.py"
+        "path": "src/scpn_quantum_control/differentiable_result_contracts.py"
       },
       {
         "name": "SSBHierarchyGenesisConfig",
@@ -6499,11 +6499,11 @@
       },
       {
         "name": "ScoreFunctionGradientResult",
-        "path": "src/scpn_quantum_control/differentiable.py"
+        "path": "src/scpn_quantum_control/differentiable_result_contracts.py"
       },
       {
         "name": "ScoreFunctionSampleRecord",
-        "path": "src/scpn_quantum_control/differentiable.py"
+        "path": "src/scpn_quantum_control/differentiable_result_contracts.py"
       },
       {
         "name": "ScpnIitCorrespondenceConfig",
@@ -7183,7 +7183,7 @@
       },
       {
         "name": "ShotAllocationResult",
-        "path": "src/scpn_quantum_control/differentiable.py"
+        "path": "src/scpn_quantum_control/differentiable_result_contracts.py"
       },
       {
         "name": "SigmaIsTheQBallSolitonConfig",
@@ -7219,7 +7219,7 @@
       },
       {
         "name": "SparseMatrixResult",
-        "path": "src/scpn_quantum_control/differentiable.py"
+        "path": "src/scpn_quantum_control/differentiable_result_contracts.py"
       },
       {
         "name": "SparsePauliHamiltonian",
@@ -7275,7 +7275,7 @@
       },
       {
         "name": "StochasticGradientResult",
-        "path": "src/scpn_quantum_control/differentiable.py"
+        "path": "src/scpn_quantum_control/differentiable_result_contracts.py"
       },
       {
         "name": "StrangeworksComputeHALAdapter",
@@ -8183,7 +8183,7 @@
       },
       {
         "name": "VJPResult",
-        "path": "src/scpn_quantum_control/differentiable.py"
+        "path": "src/scpn_quantum_control/differentiable_result_contracts.py"
       },
       {
         "name": "VQLSGradShafranovResult",
@@ -8568,6 +8568,7 @@
       "src/scpn_quantum_control/differentiable_framework_overlay.py",
       "src/scpn_quantum_control/differentiable_module_hardening_audit.py",
       "src/scpn_quantum_control/differentiable_parameter_contracts.py",
+      "src/scpn_quantum_control/differentiable_result_contracts.py",
       "src/scpn_quantum_control/differentiable_rust_python_inventory.py",
       "src/scpn_quantum_control/differentiable_scalar_kernels.py",
       "src/scpn_quantum_control/differentiable_sota_scorecard.py",
