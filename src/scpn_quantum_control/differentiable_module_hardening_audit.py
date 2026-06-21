@@ -310,6 +310,14 @@ def differentiable_module_hardening_registry() -> tuple[DifferentiableModuleHard
             ("module inventory discovery", "module-specific test enforcement"),
         ),
         _record(
+            "src/scpn_quantum_control/differentiable_natural_gradient.py",
+            ("tests/test_differentiable_natural_gradient.py",),
+            (
+                "natural-gradient metric solves",
+                "Armijo line-search and weighted-gradient aggregation",
+            ),
+        ),
+        _record(
             "src/scpn_quantum_control/differentiable_parameter_contracts.py",
             ("tests/test_differentiable_parameter_contracts.py",),
             ("parameter metadata validation", "multi-frequency shift conditioning"),

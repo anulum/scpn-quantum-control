@@ -11,10 +11,10 @@
     "public_api_exports": 713,
     "public_documentation_pages": 254,
     "python_model_classes": 1840,
-    "python_model_source_modules": 876,
+    "python_model_source_modules": 877,
     "rust_pyo3_model_wrappers": 137,
     "rust_source_modules": 38,
-    "test_files": 2023
+    "test_files": 2024
   },
   "documentation": {
     "examples": [
@@ -8571,6 +8571,7 @@
       "src/scpn_quantum_control/differentiable_framework_overlay.py",
       "src/scpn_quantum_control/differentiable_jax_adapter.py",
       "src/scpn_quantum_control/differentiable_module_hardening_audit.py",
+      "src/scpn_quantum_control/differentiable_natural_gradient.py",
       "src/scpn_quantum_control/differentiable_parameter_contracts.py",
       "src/scpn_quantum_control/differentiable_registered_custom.py",
       "src/scpn_quantum_control/differentiable_residual_weights.py",
@@ -10876,6 +10877,7 @@
       "tests/test_differentiable_jax.py",
       "tests/test_differentiable_levenberg_marquardt.py",
       "tests/test_differentiable_module_hardening_audit.py",
+      "tests/test_differentiable_natural_gradient.py",
       "tests/test_differentiable_natural_gradient_line_search.py",
       "tests/test_differentiable_package_exports.py",
       "tests/test_differentiable_parameter_contracts.py",

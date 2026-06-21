@@ -25,7 +25,6 @@ from scpn_quantum_control.differentiable import (
     ParameterShiftSampleRecord,
     ShotAllocationResult,
     StochasticGradientResult,
-    WeightedGradientResult,
     allocate_parameter_shift_shots,
     batch_complex_step_gradient,
     batch_parameter_shift_gradient,
@@ -37,7 +36,6 @@ from scpn_quantum_control.differentiable import (
     parameter_shift_gradient,
     parameter_shift_gradient_with_uncertainty,
     value_and_parameter_shift_grad,
-    weighted_gradient_sum,
 )
 
 FloatArray = NDArray[np.float64]
@@ -496,50 +494,6 @@ def test_allocate_parameter_shift_shots_rejects_invalid_inputs() -> None:
             min_shots=10,
             max_shots_per_evaluation=5,
         )
-
-
-def test_weighted_gradient_sum_preserves_component_provenance() -> None:
-    """Weighted multi-objective aggregation should keep component metadata."""
-
-    components = batch_value_and_parameter_shift_grad(
-        [
-            lambda values: math.sin(values[0]),
-            lambda values: math.cos(values[0]),
-        ],
-        [0.25],
-        parameters=[Parameter("theta")],
-    )
-    result = weighted_gradient_sum(components, np.array([0.75, 0.25]))
-
-    assert isinstance(result, WeightedGradientResult)
-    assert result.components == components
-    assert result.evaluations == sum(component.evaluations for component in components)
-    assert result.parameter_names == ("theta",)
-    assert result.value == pytest.approx(0.75 * math.sin(0.25) + 0.25 * math.cos(0.25))
-    _assert_allclose(
-        result.gradient,
-        [0.75 * math.cos(0.25) - 0.25 * math.sin(0.25)],
-    )
-
-
-def test_weighted_gradient_sum_rejects_incompatible_components() -> None:
-    """Weighted aggregation must fail closed on metadata mismatches."""
-
-    first = value_and_parameter_shift_grad(
-        lambda values: math.sin(values[0]),
-        [0.1],
-        parameters=[Parameter("theta")],
-    )
-    second = value_and_parameter_shift_grad(
-        lambda values: math.sin(values[0]),
-        [0.1],
-        parameters=[Parameter("phi")],
-    )
-
-    with pytest.raises(ValueError, match="weights length"):
-        weighted_gradient_sum([first], np.array([1.0, 2.0]))
-    with pytest.raises(ValueError, match="parameter_names"):
-        weighted_gradient_sum([first, second], np.array([0.5, 0.5]))
 
 
 def test_batch_parameter_shift_gradient_stacks_independent_objectives() -> None:
