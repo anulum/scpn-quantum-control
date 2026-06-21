@@ -20,11 +20,11 @@ SCPN Quantum Control — Differentiable external-validation environment lock
 |---|---|---|---|
 | `pyproject.toml` | Package metadata and bounded dependency ranges | `6e3566be3e652fc8c6f60bca06d225fdaa93a3cbe2c66aec7721a93acbc43bc2` | 0 |
 | `requirements.txt` | Runtime dependency lock input | `0abcc72f24fedc10b57533334c5510e39430a67b8567100dc879c8b4107febd0` | 11 |
-| `requirements-dev.txt` | Developer verification dependency lock input | `9f8355a32fa6762931df15257bfa38a6304e83bd44ed008f8e45cb4a678ee01f` | 27 |
+| `requirements-dev.txt` | Developer verification dependency lock input | `c4ccd5989d909293fc81e7ffa8f8b5c81d68c34feac9aa11dd9bd11f6e824907` | 27 |
 | `requirements-ci-cross-platform-smoke.txt` | Cross-platform smoke CI lockfile | `42be13f99861c241f2fc980e95988cf7f6e9c7b132d8db24e00de92aa6f63464` | 17 |
-| `requirements-ci-py310-linux.txt` | Python 3.10 Linux CI lockfile | `e54e8869ac82a495906475af4e5c4e68bce352079abdf3ef29265d0ca0f3a6e0` | 157 |
-| `requirements-ci-py311-linux.txt` | Python 3.11 Linux CI lockfile | `b78e24e63c7bb344892e392b1e0be073b68f445483cd603d8c8842fdf9d10f4b` | 155 |
-| `requirements-ci-py312-linux.txt` | Python 3.12 Linux CI lockfile | `d3a7ffa4efe3af3ff7d36639279be9e8bcc34f37abcd59e0c33e1ed2c5ede4a4` | 155 |
-| `requirements-ci-py313-linux.txt` | Python 3.13 Linux CI lockfile | `5a3d6b43fca32f26b0f4f417460c6e73ae3687be557e03ca7d7b9181ed3602c9` | 155 |
+| `requirements-ci-py310-linux.txt` | Python 3.10 Linux CI lockfile | `1335b6badc28f0195928d655f4c7a41631c2b60178e798329e481edf79cfe6c2` | 157 |
+| `requirements-ci-py311-linux.txt` | Python 3.11 Linux CI lockfile | `f339f47ef39e1490074064bbe10d87fbc97050043c667bd4f6629340876c7922` | 155 |
+| `requirements-ci-py312-linux.txt` | Python 3.12 Linux CI lockfile | `fca0774e8a50b05c3f5021e30171cfd58e508ac885e794f40fbeaddbc68cf6e1` | 155 |
+| `requirements-ci-py313-linux.txt` | Python 3.13 Linux CI lockfile | `33b1f0b10d7cb78c7ec4ad1db8d3a30d7ffc4dbe1bbe4f68c9b00fc4c08b239f` | 155 |
 | `data/differentiable_phase_qnode/local_benchmark_20260616T0955Z/framework_overlay_freeze.txt` | CPU framework overlay freeze used for JAX, PyTorch, TensorFlow, and PennyLane rows | `11a15a483d2f8f602b8d052dc1cf0824d37a86a47853a66b1cda1ed93caa56c6` | 54 |
 | `data/differentiable_phase_qnode/local_benchmark_20260616T0955Z/enzyme_py39_freeze.txt` | Python 3.9 Enzyme/JAX runner freeze used for installed-toolchain hard-gap evidence | `2770738675e8ac3fbf3edd5f8b004a3c0d2621fd3324b77aa3a238437b947d32` | 10 |

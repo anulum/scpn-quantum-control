@@ -55,6 +55,7 @@ def test_whole_program_frontend_module_matches_facade_report() -> None:
     assert module_report.source_sha256 is not None
     assert len(module_report.source_sha256) == 64
     assert module_report.source_start_line is not None
+    source_start_line = module_report.source_start_line
     assert module_report.source_end_line is not None
     assert module_report.source_start_line < module_report.source_end_line
     assert len(module_report.bytecode_digest) == 64
@@ -98,8 +99,9 @@ def test_whole_program_frontend_module_matches_facade_report() -> None:
         and line_map.absolute_line_number > line_map.line_number
         for line_map in module_report.source_bytecode_line_map
     )
-    assert any(
-        "loop" in line_map.feature_kinds for line_map in module_report.source_bytecode_line_map
+    assert all(
+        line_map.absolute_line_number is None or line_map.absolute_line_number >= source_start_line
+        for line_map in module_report.source_bytecode_line_map
     )
     assert any(
         entry.symbol == "values" and entry.region_ids

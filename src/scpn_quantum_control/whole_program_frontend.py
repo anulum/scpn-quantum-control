@@ -34,6 +34,7 @@ class WholeProgramBytecodeInstruction:
     opname: str
     argrepr: str
     line_number: int | None
+    jump_target_offset: int | None = None
 
     def __post_init__(self) -> None:
         if self.offset < 0:
@@ -44,6 +45,8 @@ class WholeProgramBytecodeInstruction:
             raise ValueError("bytecode instruction argrepr must be a string")
         if self.line_number is not None and self.line_number <= 0:
             raise ValueError("bytecode instruction line_number must be positive or None")
+        if self.jump_target_offset is not None and self.jump_target_offset < 0:
+            raise ValueError("bytecode instruction jump_target_offset must be non-negative")
 
 
 @dataclass(frozen=True)
@@ -684,6 +687,7 @@ class WholeProgramCompilerFrontendReport:
                     "opname": instruction.opname,
                     "argrepr": instruction.argrepr,
                     "line_number": instruction.line_number,
+                    "jump_target_offset": instruction.jump_target_offset,
                 }
                 for instruction in self.bytecode_instructions
             ],
@@ -773,6 +777,12 @@ def _objective_bytecode(
             opname=instruction.opname,
             argrepr=instruction.argrepr,
             line_number=normalise_line_number(instruction.starts_line),
+            jump_target_offset=(
+                int(instruction.argval)
+                if isinstance(instruction.argval, int)
+                and ("JUMP" in instruction.opname or instruction.opname == "FOR_ITER")
+                else None
+            ),
         )
         for instruction in instructions
     )
@@ -1592,6 +1602,8 @@ def _bytecode_jump_target(instruction: WholeProgramBytecodeInstruction) -> int |
 
     if "JUMP" not in instruction.opname and instruction.opname != "FOR_ITER":
         return None
+    if instruction.jump_target_offset is not None:
+        return instruction.jump_target_offset
     pieces = instruction.argrepr.replace("(", " ").replace(")", " ").split()
     for index, piece in enumerate(pieces):
         if piece == "to" and index + 1 < len(pieces):
@@ -1612,6 +1624,7 @@ def _bytecode_instruction_digest(
             "opname": instruction.opname,
             "argrepr": instruction.argrepr,
             "line_number": instruction.line_number,
+            "jump_target_offset": instruction.jump_target_offset,
         }
         for instruction in instructions
     ]
@@ -1741,9 +1754,12 @@ def _source_bytecode_line_map(
     absolute_by_line: dict[int, set[int]] = {}
     for instruction in bytecode_instructions:
         if instruction.line_number is not None:
-            source_line = _source_relative_line(instruction.line_number, source_start_line)
+            absolute_line = instruction.line_number
+            source_line = _source_relative_line(absolute_line, source_start_line)
+            if source_start_line is not None and instruction.line_number < source_start_line:
+                absolute_line = source_start_line + source_line - 1
             offsets_by_line.setdefault(source_line, set()).add(instruction.offset)
-            absolute_by_line.setdefault(source_line, set()).add(instruction.line_number)
+            absolute_by_line.setdefault(source_line, set()).add(absolute_line)
 
     features_by_line: dict[int, set[str]] = {}
     for feature in source_ir_features:
