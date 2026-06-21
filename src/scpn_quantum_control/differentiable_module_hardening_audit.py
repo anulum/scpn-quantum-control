@@ -284,6 +284,11 @@ def differentiable_module_hardening_registry() -> tuple[DifferentiableModuleHard
             ("optional-dependency verification", "CPU-only overlay boundaries"),
         ),
         _record(
+            "src/scpn_quantum_control/differentiable_jax_adapter.py",
+            ("tests/test_differentiable_jax.py",),
+            ("optional-JAX dependency boundary", "JAX value-and-gradient validation"),
+        ),
+        _record(
             "src/scpn_quantum_control/differentiable_module_hardening_audit.py",
             ("tests/test_differentiable_module_hardening_audit.py",),
             ("module inventory discovery", "module-specific test enforcement"),

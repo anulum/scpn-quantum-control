@@ -27,6 +27,10 @@ from .differentiable_batch_helpers import (
     _as_batch_vector_array,
     _as_parameter_shift_sample_tensor,
 )
+from .differentiable_jax_adapter import (
+    is_jax_autodiff_available,
+    jax_value_and_grad,
+)
 from .differentiable_parameter_contracts import (
     Parameter,
     ParameterBounds,
@@ -10092,44 +10096,6 @@ def check_parameter_shift_consistency(
         tolerance=tolerance_value,
         passed=max_abs_error <= tolerance_value,
     )
-
-
-def is_jax_autodiff_available() -> bool:
-    """Return whether JAX autodiff can be imported in the active environment."""
-
-    try:
-        import jax  # noqa: F401
-        import jax.numpy as jnp  # noqa: F401
-    except ImportError:
-        return False
-    return True
-
-
-def jax_value_and_grad(
-    objective: Callable[[Any], Any],
-    values: ArrayLike,
-) -> tuple[float, NDArray[np.float64]]:
-    """Evaluate a JAX scalar objective and return ``(value, gradient)``."""
-
-    parameter_values = _as_parameter_array(values)
-
-    try:
-        import jax
-        import jax.numpy as jnp
-    except ImportError as exc:
-        raise ImportError("JAX autodiff is unavailable; install the [jax] extra") from exc
-
-    def wrapped(raw_values: Any) -> Any:
-        return objective(raw_values)
-
-    value, gradient = jax.value_and_grad(wrapped)(jnp.asarray(parameter_values))
-    result_value = _as_real_scalar("JAX objective value", value)
-    result_gradient = _as_real_numeric_array("JAX gradient", gradient)
-    if result_gradient.shape != parameter_values.shape:
-        raise ValueError("JAX gradient shape must match parameter shape")
-    if not np.all(np.isfinite(result_gradient)):
-        raise ValueError("JAX gradient must contain only finite values")
-    return result_value, result_gradient
 
 
 __all__ = [
