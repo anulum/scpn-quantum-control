@@ -134,6 +134,11 @@ def differentiable_module_hardening_registry() -> tuple[DifferentiableModuleHard
             ("static stencil direct rules", "gradient VJP boundary coefficients"),
         ),
         _record(
+            "src/scpn_quantum_control/program_ad_interpolation_primitives.py",
+            ("tests/test_program_ad_interpolation.py",),
+            ("static interpolation direct rules", "piecewise VJP boundaries"),
+        ),
+        _record(
             "src/scpn_quantum_control/program_ad_adjoint.py",
             ("tests/test_program_adjoint_replay.py",),
             ("reverse-adjoint result records", "input-token replay helpers"),

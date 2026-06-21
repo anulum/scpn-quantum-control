@@ -23,6 +23,9 @@ from scpn_quantum_control.differentiable import (
     program_adjoint_gradient,
     whole_program_value_and_grad,
 )
+from scpn_quantum_control.program_ad_interpolation_primitives import (
+    program_ad_interpolation_interp_derivative_rule as module_interp_derivative_rule,
+)
 
 FloatArray = NDArray[np.float64]
 
@@ -219,6 +222,84 @@ def test_program_ad_interp_primitive_contract_and_direct_rule() -> None:
     expected_vjp[5] += cotangent[1] * 0.5
     expected_vjp[6] += cotangent[2]
     _assert_allclose(rule.vjp_rule(source, cotangent), expected_vjp)
+
+
+def test_program_ad_interp_direct_rule_is_exposed_from_extracted_module() -> None:
+    """The interpolation facade should delegate fixed-grid direct rules to the module."""
+
+    samples = np.array([0.25, 1.75], dtype=np.float64)
+    grid = np.array([0.0, 1.0, 2.5], dtype=np.float64)
+    values = np.array([-1.0, 2.0, 0.5], dtype=np.float64)
+    source = np.concatenate([samples, values])
+    facade_rule = program_ad_interpolation_interp_derivative_rule(
+        samples.shape, grid, values.shape
+    )
+    module_rule = module_interp_derivative_rule(samples.shape, grid, values.shape)
+
+    assert facade_rule.name == module_rule.name
+    _assert_allclose(facade_rule.value_fn(source), module_rule.value_fn(source))
+
+
+def test_program_ad_interp_direct_rule_rejects_invalid_static_boundaries() -> None:
+    """Extracted interpolation direct rules should fail closed for invalid signatures."""
+
+    trace_value = type("TraceADScalar", (), {})()
+    grid = np.array([0.0, 1.0, 2.0], dtype=np.float64)
+    values = np.array([-1.0, 2.0, 0.5], dtype=np.float64)
+
+    with pytest.raises(ValueError, match="xp grid must be static"):
+        module_interp_derivative_rule((1,), trace_value, values.shape)
+    with pytest.raises(ValueError, match="one-dimensional"):
+        module_interp_derivative_rule((1,), np.array([[0.0, 1.0]], dtype=np.float64), (2,))
+    with pytest.raises(ValueError, match="at least two samples"):
+        module_interp_derivative_rule((1,), np.array([0.0], dtype=np.float64), (1,))
+    with pytest.raises(ValueError, match="finite values"):
+        module_interp_derivative_rule((1,), np.array([0.0, np.inf], dtype=np.float64), (2,))
+    with pytest.raises(ValueError, match="left boundary must be static"):
+        module_interp_derivative_rule((1,), grid, values.shape, left=trace_value)
+    with pytest.raises(ValueError, match="left must be finite"):
+        module_interp_derivative_rule((1,), grid, values.shape, left=np.nan)
+    with pytest.raises(ValueError, match="right must be finite"):
+        module_interp_derivative_rule((1,), grid, values.shape, right=np.inf)
+    with pytest.raises(ValueError, match="does not support period"):
+        module_interp_derivative_rule((1,), grid, values.shape, period=2.0)
+    with pytest.raises(ValueError, match="fp shape to match xp"):
+        module_interp_derivative_rule((1,), grid, (2,))
+
+    rule = module_interp_derivative_rule((2,), grid, values.shape, left=-5.0, right=7.0)
+    assert rule.jvp_rule is not None
+    assert rule.vjp_rule is not None
+    boundary_source = np.array([-0.5, 2.5, -1.0, 2.0, 0.5], dtype=np.float64)
+    boundary_tangent = np.array([1.0, -2.0, 0.25, -0.5, 1.5], dtype=np.float64)
+    _assert_allclose(rule.value_fn(boundary_source), np.array([-5.0, 7.0], dtype=np.float64))
+    _assert_allclose(rule.jvp_rule(boundary_source, boundary_tangent), np.zeros(2))
+    _assert_allclose(rule.vjp_rule(boundary_source, np.array([3.0, -4.0])), np.zeros(5))
+
+    default_boundary_rule = module_interp_derivative_rule((2,), grid, values.shape)
+    assert default_boundary_rule.vjp_rule is not None
+    default_boundary_source = np.array([-0.5, 2.5, -1.0, 2.0, 0.5], dtype=np.float64)
+    _assert_allclose(
+        default_boundary_rule.value_fn(default_boundary_source),
+        np.array([-1.0, 0.5], dtype=np.float64),
+    )
+    _assert_allclose(
+        default_boundary_rule.vjp_rule(default_boundary_source, np.array([3.0, -4.0])),
+        np.array([0.0, 0.0, 3.0, 0.0, -4.0], dtype=np.float64),
+    )
+
+    interior_rule = module_interp_derivative_rule((1,), grid, values.shape)
+    assert interior_rule.vjp_rule is not None
+    with pytest.raises(ValueError, match="4 values"):
+        interior_rule.value_fn(np.array([0.5, -1.0, 2.0], dtype=np.float64))
+    with pytest.raises(ValueError, match="samples must be finite"):
+        interior_rule.value_fn(np.array([np.nan, -1.0, 2.0, 0.5], dtype=np.float64))
+    with pytest.raises(ValueError, match="avoid grid knots"):
+        interior_rule.value_fn(np.array([1.0, -1.0, 2.0, 0.5], dtype=np.float64))
+    with pytest.raises(ValueError, match="cotangent matching sample size"):
+        interior_rule.vjp_rule(
+            np.array([0.5, -1.0, 2.0, 0.5], dtype=np.float64),
+            np.array([1.0, 2.0], dtype=np.float64),
+        )
 
 
 def test_program_ad_interp_batching_rule_maps_sample_batches() -> None:
