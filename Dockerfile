@@ -36,6 +36,7 @@ COPY tests/ tests/
 COPY tools/ tools/
 COPY .github/workflows/ .github/workflows/
 COPY scpn_quantum_engine/src/ scpn_quantum_engine/src/
+COPY scpn_quantum_engine/tests/ scpn_quantum_engine/tests/
 RUN printf '%s\n' \
     'raise ModuleNotFoundError("compiled scpn_quantum_engine extension is not installed in this image", name="scpn_quantum_engine")' \
     > scpn_quantum_engine/__init__.py

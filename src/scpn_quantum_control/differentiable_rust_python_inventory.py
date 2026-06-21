@@ -395,7 +395,11 @@ def _default_inventory_rows(
                 "scpn_quantum_engine/tests/program_ad_ir.rs",
             ),
             ("docs/differentiable_api.md",),
-            ("tests/test_phase_qnode_rust_parity.py", "tests/test_differentiable.py"),
+            (
+                "tests/test_phase_qnode_rust_parity.py",
+                "tests/test_program_ad_effect_ir.py",
+                "tests/test_program_ad_rust_bridge.py",
+            ),
             ("docs/differentiable_api.md", "docs/differentiable_programming.md"),
             (
                 "program_ad_rust_value_gradient_replay",
@@ -424,7 +428,7 @@ def _default_inventory_rows(
             ("src/scpn_quantum_control/whole_program_frontend.py",),
             ("scpn_quantum_engine/src/lib.rs",),
             ("docs/differentiable_api.md",),
-            ("tests/test_whole_program_frontend.py", "tests/test_differentiable.py"),
+            ("tests/test_whole_program_frontend.py", "tests/test_whole_program_ad_contracts.py"),
             ("docs/differentiable_api.md", "docs/differentiable_programming.md"),
             ("program_ad_bytecode_source_frontend",),
             ("module_hardening_audit", "support_surface_alignment"),

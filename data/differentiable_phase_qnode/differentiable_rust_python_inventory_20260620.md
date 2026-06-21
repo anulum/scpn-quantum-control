@@ -13,13 +13,14 @@ SCPN Quantum Control — Differentiable Rust/Python Surface Inventory
 - Schema: `scpn_qc_differentiable_rust_python_inventory_v1`
 - Artifact ID: `diff-rust-python-inventory-20260620`
 - Rustification ready: `False`
-- Ready surfaces: `0/9`
+- Ready surfaces: `0/10`
 - Claim boundary: Differentiable Rust/Python surface inventory for rustification planning; no broad rustification promotion, provider execution, hardware execution, LLVM/JIT execution, GPU execution, or isolated benchmark claim is implied.
 
 | Surface | Classification | Rust parity | Polyglot | Benchmark | Blockers |
 |---|---|---|---|---|---|
 | `unified_differentiable_api` | `python_reference` | `partial` | `partial` | `functional_non_isolated` | public orchestration remains Python-first<br>dashboard rows still include metadata-only and blocked routes |
 | `rust_program_ad_ir` | `rust_backed` | `partial` | `partial` | `functional_non_isolated` | array adjoints are missing<br>registry metadata mirror, LLVM/JIT lowering, and isolated benchmark evidence are missing |
+| `whole_program_frontend` | `python_reference` | `not_applicable` | `partial` | `not_applicable` | static Python source/bytecode metadata has no executable Rust parity requirement<br>compiler lowering remains blocked until a real Program AD backend exists |
 | `rust_compiler_ad_primitives` | `rust_backed` | `partial` | `partial` | `functional_non_isolated` | isolated compiler-AD benchmark ID is missing<br>broad LLVM/JIT lowering remains claim-blocked |
 | `differentiable_sota_scorecard` | `metadata_only` | `not_applicable` | `not_applicable` | `not_applicable` | governance evidence only; no executable Rust surface is required |
 | `pennylane_plugin_matrix` | `provider_blocked` | `not_applicable` | `partial` | `blocked` | provider-plugin execution artefacts are missing<br>hardware-plugin and provider-gradient parity artefacts are missing |

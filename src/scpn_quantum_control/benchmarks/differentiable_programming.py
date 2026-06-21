@@ -71,6 +71,7 @@ class DifferentiableProgrammingBenchmarkResult:
     adjoint_supported: bool
     max_abs_adjoint_error: float | None
     claim_boundary: str
+    blocked_reasons: tuple[str, ...] = ()
 
     def __post_init__(self) -> None:
         if not self.case_id:
@@ -93,6 +94,8 @@ class DifferentiableProgrammingBenchmarkResult:
             raise ValueError("benchmark max_abs_adjoint_error must be finite or None")
         if not self.claim_boundary:
             raise ValueError("benchmark claim_boundary must be non-empty")
+        if any(not isinstance(reason, str) or not reason for reason in self.blocked_reasons):
+            raise ValueError("benchmark blocked_reasons must contain non-empty strings")
         object.__setattr__(self, "gradient", gradient)
         object.__setattr__(self, "analytic_gradient", analytic)
 
@@ -100,8 +103,10 @@ class DifferentiableProgrammingBenchmarkResult:
     def passed(self) -> bool:
         """Return whether implemented gradients match the analytic reference."""
 
-        return self.max_abs_gradient_error <= 1.0e-12 and (
-            self.max_abs_adjoint_error is None or self.max_abs_adjoint_error <= 1.0e-12
+        return (
+            not self.blocked_reasons
+            and self.max_abs_gradient_error <= 1.0e-12
+            and (self.max_abs_adjoint_error is None or self.max_abs_adjoint_error <= 1.0e-12)
         )
 
 
@@ -784,26 +789,6 @@ def _program_ad_rust_scalar_interpreter_case() -> DifferentiableProgrammingBench
         raise ValueError("Rust Program AD interpreter case requires runtime branch metadata")
     if result.program_ir.alias_edges:
         raise ValueError("Rust Program AD interpreter case must not emit alias edges")
-    rust_result = interpret_program_ad_effect_ir_with_rust(result.program_ir, values)
-    if not rust_result.supported or rust_result.value is None:
-        blocked = ", ".join(rust_result.blocked_reasons)
-        raise ValueError(f"Rust Program AD scalar interpreter did not execute: {blocked}")
-    if abs(rust_result.value - result.value) > 1.0e-12:
-        raise ValueError("Rust Program AD scalar interpreter value diverged from Python trace")
-    if rust_result.supported_effect_count != len(result.program_ir.effects):
-        raise ValueError("Rust Program AD scalar interpreter did not execute every effect")
-
-    rust_value_gradient = value_and_grad_program_ad_effect_ir_with_rust(result.program_ir, values)
-    if not rust_value_gradient.supported or rust_value_gradient.value is None:
-        blocked = ", ".join(rust_value_gradient.blocked_reasons)
-        raise ValueError(
-            f"Rust Program AD scalar value+gradient replay did not execute: {blocked}"
-        )
-    if abs(rust_value_gradient.value - result.value) > 1.0e-12:
-        raise ValueError("Rust Program AD scalar value+gradient replay value diverged")
-    if rust_value_gradient.supported_effect_count != len(result.program_ir.effects):
-        raise ValueError("Rust Program AD scalar value+gradient replay missed effects")
-
     x, y, z, w = values
     analytic = np.array(
         [
@@ -814,6 +799,31 @@ def _program_ad_rust_scalar_interpreter_case() -> DifferentiableProgrammingBench
         ],
         dtype=np.float64,
     )
+    rust_result = interpret_program_ad_effect_ir_with_rust(result.program_ir, values)
+    if not rust_result.supported or rust_result.value is None:
+        return _blocked_program_ad_rust_scalar_interpreter_case(
+            result.value,
+            result.gradient,
+            analytic,
+            rust_result.blocked_reasons,
+        )
+    if abs(rust_result.value - result.value) > 1.0e-12:
+        raise ValueError("Rust Program AD scalar interpreter value diverged from Python trace")
+    if rust_result.supported_effect_count != len(result.program_ir.effects):
+        raise ValueError("Rust Program AD scalar interpreter did not execute every effect")
+
+    rust_value_gradient = value_and_grad_program_ad_effect_ir_with_rust(result.program_ir, values)
+    if not rust_value_gradient.supported or rust_value_gradient.value is None:
+        return _blocked_program_ad_rust_scalar_interpreter_case(
+            result.value,
+            result.gradient,
+            analytic,
+            rust_value_gradient.blocked_reasons,
+        )
+    if abs(rust_value_gradient.value - result.value) > 1.0e-12:
+        raise ValueError("Rust Program AD scalar value+gradient replay value diverged")
+    if rust_value_gradient.supported_effect_count != len(result.program_ir.effects):
+        raise ValueError("Rust Program AD scalar value+gradient replay missed effects")
     if _max_abs_error(rust_value_gradient.gradient, result.gradient) > 1.0e-12:
         raise ValueError("Rust Program AD scalar value+gradient replay gradient diverged")
     return DifferentiableProgrammingBenchmarkResult(
@@ -834,6 +844,32 @@ def _program_ad_rust_scalar_interpreter_case() -> DifferentiableProgrammingBench
             "and analytic gradients are local conformance references only; no wall-clock "
             "performance claim"
         ),
+    )
+
+
+def _blocked_program_ad_rust_scalar_interpreter_case(
+    value: float,
+    gradient: NDArray[np.float64],
+    analytic: NDArray[np.float64],
+    blocked_reasons: tuple[str, ...],
+) -> DifferentiableProgrammingBenchmarkResult:
+    return DifferentiableProgrammingBenchmarkResult(
+        case_id="program_ad_rust_scalar_interpreter_contracts",
+        category="rust-interpreter",
+        value=value,
+        gradient=gradient,
+        analytic_gradient=analytic,
+        max_abs_gradient_error=_max_abs_error(gradient, analytic),
+        adjoint_supported=False,
+        max_abs_adjoint_error=None,
+        claim_boundary=(
+            "Rust Program AD scalar interpreter conformance is blocked because "
+            "the optional scpn_quantum_engine native extension did not execute "
+            "in this environment; Python whole-program AD and analytic gradients "
+            "are reported only as local references, with no Rust execution, "
+            "LLVM/JIT, provider, hardware, isolated benchmark, or performance claim"
+        ),
+        blocked_reasons=blocked_reasons,
     )
 
 

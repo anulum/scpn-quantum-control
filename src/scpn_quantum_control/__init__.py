@@ -1350,7 +1350,6 @@ __all__ = [
     "value_and_finite_difference_jvp",
     "value_and_forward_mode_grad",
     "value_and_grad",
-    "value_and_grad_program_ad_effect_ir_with_rust",
     "whole_program_grad",
     "whole_program_value_and_grad",
     "DifferentiableDashboardCapabilityRow",

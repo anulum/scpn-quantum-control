@@ -43,7 +43,6 @@ def test_build_differentiable_benchmark_report_is_non_performance_evidence() -> 
 
     report = build_differentiable_benchmark_report()
 
-    assert report.supported
     assert report.method == DIFFERENTIABLE_BENCHMARK_REPORT_METHOD
     assert report.claim_boundary == DIFFERENTIABLE_BENCHMARK_REPORT_CLAIM_BOUNDARY
     program_ad_case_count = report.payload["program_ad_case_count"]
@@ -59,6 +58,16 @@ def test_build_differentiable_benchmark_report_is_non_performance_evidence() -> 
     first_program_case = program_ad_cases[0]
     assert isinstance(first_program_case, dict)
     assert first_program_case["passed"] is True
+    blocked_program_cases = [
+        case for case in program_ad_cases if isinstance(case, dict) and case.get("blocked_reasons")
+    ]
+    assert report.supported is (not blocked_program_cases)
+    if blocked_program_cases:
+        assert {
+            case["case_id"]
+            for case in blocked_program_cases
+            if isinstance(case.get("case_id"), str)
+        } == {"program_ad_rust_scalar_interpreter_contracts"}
 
 
 def test_unified_api_wraps_extracted_benchmark_report() -> None:
@@ -69,9 +78,14 @@ def test_unified_api_wraps_extracted_benchmark_report() -> None:
     report = differentiable_benchmark_report()
 
     assert report.operation == "benchmark_report"
-    assert report.supported
     assert report.method == DIFFERENTIABLE_BENCHMARK_REPORT_METHOD
     assert report.claim_boundary == DIFFERENTIABLE_BENCHMARK_REPORT_CLAIM_BOUNDARY
     assert report.payload["support_audit_passed"] is True
+    program_ad_cases = report.payload["program_ad_cases"]
+    assert isinstance(program_ad_cases, list)
+    blocked_program_cases = [
+        case for case in program_ad_cases if isinstance(case, dict) and case.get("blocked_reasons")
+    ]
+    assert report.supported is (not blocked_program_cases)
     assert scpn.DifferentiableBenchmarkReport is DifferentiableBenchmarkReport
     assert scpn.build_differentiable_benchmark_report is build_differentiable_benchmark_report

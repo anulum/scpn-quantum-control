@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import sys
 from types import ModuleType, SimpleNamespace
+from typing import Any
 
 import numpy as np
 import pytest
@@ -94,7 +95,19 @@ def test_differentiable_programming_benchmark_suite_matches_analytic_references(
     }
     for row in results:
         assert isinstance(row, DifferentiableProgrammingBenchmarkResult)
+        if row.case_id == "program_ad_rust_scalar_interpreter_contracts" and row.blocked_reasons:
+            assert row.passed is False
+            assert row.adjoint_supported is False
+            assert row.max_abs_adjoint_error is None
+            assert "optional scpn_quantum_engine native extension did not execute" in (
+                row.claim_boundary
+            )
+            assert any(
+                "scpn_quantum_engine native extension" in reason for reason in row.blocked_reasons
+            )
+            continue
         assert row.passed is True
+        assert row.blocked_reasons == ()
         assert row.max_abs_gradient_error <= 1.0e-12
         assert row.gradient.shape == row.analytic_gradient.shape
         assert (
@@ -289,6 +302,19 @@ def test_differentiable_programming_benchmark_result_validation_paths() -> None:
     )
 
     assert row.passed is True
+    blocked_row = DifferentiableProgrammingBenchmarkResult(
+        case_id="blocked",
+        category="rust-interpreter",
+        value=1.0,
+        gradient=valid_gradient,
+        analytic_gradient=valid_gradient.copy(),
+        max_abs_gradient_error=0.0,
+        adjoint_supported=False,
+        max_abs_adjoint_error=None,
+        claim_boundary="diagnostic conformance only, not a performance timing claim",
+        blocked_reasons=("optional native backend unavailable",),
+    )
+    assert blocked_row.passed is False
     with pytest.raises(ValueError, match="case_id"):
         DifferentiableProgrammingBenchmarkResult(
             case_id="",
@@ -592,7 +618,7 @@ def test_differentiable_programming_jax_reference_rows_use_contract_shims(
 ) -> None:
     """Optional JAX rows should construct explicit diagnostic records under backend shims."""
 
-    fake_jnp = ModuleType("jax.numpy")
+    fake_jnp: Any = ModuleType("jax.numpy")
     fake_jnp.asarray = np.asarray
     fake_jnp.diag = np.diag
     fake_jnp.sin = np.sin
@@ -611,7 +637,7 @@ def test_differentiable_programming_jax_reference_rows_use_contract_shims(
 
         return gradient
 
-    fake_jax = ModuleType("jax")
+    fake_jax: Any = ModuleType("jax")
     fake_jax.config = SimpleNamespace(update=lambda *_args, **_kwargs: None)
     fake_jax.grad = fake_grad
     fake_jax.vmap = fake_vmap
