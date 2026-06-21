@@ -58,6 +58,18 @@ def _assert_allclose(
 def test_program_ad_array_indexing_direct_module_exports_match_facade() -> None:
     """Static array-indexing factories should remain stable through the facade."""
 
+    facade_exports = vars(differentiable_module)
+    assert (
+        facade_exports["_register_program_ad_array_primitive_contracts"]
+        is array_indexing._register_program_ad_array_primitive_contracts
+    )
+    assert (
+        facade_exports["_require_program_ad_array_contract"]
+        is array_indexing._require_program_ad_array_contract
+    )
+    assert (
+        facade_exports["_program_ad_array_shape_of"] is array_indexing._program_ad_array_shape_of
+    )
     assert program_ad_array_getitem_derivative_rule is direct_getitem_derivative_rule
     assert program_ad_array_take_derivative_rule is direct_take_derivative_rule
     assert (

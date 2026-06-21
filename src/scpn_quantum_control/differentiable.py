@@ -106,17 +106,15 @@ from .program_ad_alias_analysis import (
 )
 from .program_ad_array_indexing import (
     _program_ad_array_delete_object,
-    _program_ad_array_derivative_rule,
-    _program_ad_array_insert_axis,
+    _program_ad_array_dtype_of,
     _program_ad_array_insert_layout,
-    _program_ad_array_insert_object,
-    _program_ad_array_insert_values,
-    _program_ad_array_pad_constant_values,
     _program_ad_array_pad_layout,
     _program_ad_array_pad_mode,
-    _program_ad_array_pad_width,
+    _program_ad_array_shape_of,
     _program_ad_array_take_indices,
     _program_ad_array_take_mode,
+    _register_program_ad_array_primitive_contracts,
+    _require_program_ad_array_contract,
     program_ad_array_delete_derivative_rule,
     program_ad_array_getitem_derivative_rule,
     program_ad_array_insert_derivative_rule,
@@ -232,8 +230,6 @@ from .program_ad_reduction_primitives import (
     program_ad_reduction_var_derivative_rule,
 )
 from .program_ad_registry import (
-    _PROGRAM_AD_ARRAY_IDENTITIES,
-    _PROGRAM_AD_ARRAY_POLICY,
     _PROGRAM_AD_CUMULATIVE_IDENTITIES,
     _PROGRAM_AD_CUMULATIVE_POLICY,
     _PROGRAM_AD_SELECTION_IDENTITIES,
@@ -6638,150 +6634,6 @@ def _program_ad_elementwise_unbroadcast(
     return _program_ad_float64_vector_result(result.reshape(target_shape))
 
 
-def _program_ad_array_shape_of(value: object) -> tuple[int, ...]:
-    if isinstance(value, TraceADArray):
-        return value.shape
-    return tuple(int(dim) for dim in np.asarray(value).shape)
-
-
-def _program_ad_array_dtype_of(value: object) -> str:
-    if isinstance(value, TraceADArray):
-        return "float64"
-    array = np.asarray(value)
-    if array.dtype.kind in {"O", "S", "U", "c"}:
-        raise ValueError("program AD array primitive dtype rule requires real numeric arrays")
-    return str(array.dtype)
-
-
-def _program_ad_array_getitem_shape(args: tuple[object, ...]) -> tuple[int, ...]:
-    if len(args) != 2:
-        raise ValueError("program AD array getitem shape rule requires array and index")
-    _validate_trace_basic_index(args[1])
-    source = np.arange(int(np.prod(_program_ad_array_shape_of(args[0]))), dtype=np.int64).reshape(
-        _program_ad_array_shape_of(args[0])
-    )
-    try:
-        selected = source[cast(Any, args[1])]
-    except (IndexError, TypeError, ValueError) as exc:
-        raise ValueError("program AD array getitem shape rule requires in-bounds indices") from exc
-    return tuple(int(dimension) for dimension in np.asarray(selected).shape)
-
-
-def _program_ad_array_take_shape(args: tuple[object, ...]) -> tuple[int, ...]:
-    if len(args) not in {2, 3, 4}:
-        raise ValueError(
-            "program AD array take shape rule requires array, indices, axis, and mode"
-        )
-    indices = args[1]
-    axis = cast(int | None, args[2]) if len(args) >= 3 else None
-    mode = cast(str, args[3]) if len(args) == 4 else "raise"
-    mode_name = _program_ad_array_take_mode(mode, context="shape rule")
-    raw_indices = np.asarray(indices)
-    if raw_indices.dtype.kind not in {"i", "u"}:
-        raise ValueError("program AD array take shape rule requires static integer indices")
-    source = np.arange(int(np.prod(_program_ad_array_shape_of(args[0]))), dtype=np.int64).reshape(
-        _program_ad_array_shape_of(args[0])
-    )
-    try:
-        selected = np.take(source, raw_indices, axis=axis, mode=mode_name)
-    except (IndexError, ValueError) as exc:
-        if mode_name == "raise":
-            raise ValueError("program AD array take shape rule indices must be in bounds") from exc
-        raise ValueError(
-            "program AD array take shape rule requires axis-compatible indices"
-        ) from exc
-    return tuple(int(dimension) for dimension in np.asarray(selected).shape)
-
-
-def _program_ad_array_take_along_axis_shape(args: tuple[object, ...]) -> tuple[int, ...]:
-    if len(args) != 3:
-        raise ValueError(
-            "program AD array take_along_axis shape rule requires array, indices, and axis"
-        )
-    axis = args[2]
-    if isinstance(axis, bool) or not isinstance(axis, (int, np.integer)):
-        raise ValueError(
-            "program AD array take_along_axis shape rule requires static integer axis"
-        )
-    raw_indices = np.asarray(args[1])
-    if raw_indices.dtype.kind not in {"i", "u"}:
-        raise ValueError(
-            "program AD array take_along_axis shape rule requires static integer indices"
-        )
-    source = np.arange(int(np.prod(_program_ad_array_shape_of(args[0]))), dtype=np.int64).reshape(
-        _program_ad_array_shape_of(args[0])
-    )
-    try:
-        selected = np.take_along_axis(source, raw_indices, axis=int(axis))
-    except (IndexError, ValueError) as exc:
-        raise ValueError(
-            "program AD array take_along_axis shape rule indices must be in bounds "
-            "and shape-compatible"
-        ) from exc
-    return tuple(int(dimension) for dimension in np.asarray(selected).shape)
-
-
-def _program_ad_array_delete_shape(args: tuple[object, ...]) -> tuple[int, ...]:
-    if len(args) not in {2, 3}:
-        raise ValueError("program AD array delete shape rule requires array, object, and axis")
-    source_shape = _program_ad_array_shape_of(args[0])
-    delete_obj = _program_ad_array_delete_object(args[1], context="shape rule")
-    axis = args[2] if len(args) == 3 else None
-    source: NDArray[np.int64]
-    if axis is None:
-        source = np.arange(int(np.prod(source_shape)), dtype=np.int64).reshape(-1)
-        normalised_axis = None
-    else:
-        if isinstance(axis, (bool, np.bool_)) or not isinstance(axis, (int, np.integer)):
-            raise ValueError("program AD array delete shape rule requires static integer axis")
-        normalised_axis = _normalise_axis("axis", int(axis), len(source_shape))
-        source = np.arange(int(np.prod(source_shape)), dtype=np.int64).reshape(source_shape)
-    try:
-        selected = np.delete(source, cast(Any, delete_obj), axis=normalised_axis)
-    except (IndexError, TypeError, ValueError) as exc:
-        raise ValueError(
-            "program AD array delete shape rule requires static in-bounds deletion selectors"
-        ) from exc
-    return tuple(int(dimension) for dimension in np.asarray(selected).shape)
-
-
-def _program_ad_array_pad_shape(args: tuple[object, ...]) -> tuple[int, ...]:
-    if len(args) not in {2, 3, 4}:
-        raise ValueError(
-            "program AD array pad shape rule requires array, pad_width, mode, and constants"
-        )
-    mode = args[2] if len(args) >= 3 else "constant"
-    _program_ad_array_pad_mode(mode, context="shape rule")
-    _, _, output_shape = _program_ad_array_pad_layout(
-        _program_ad_array_shape_of(args[0]),
-        args[1],
-        args[3] if len(args) == 4 else 0.0,
-        context="shape rule",
-    )
-    return output_shape
-
-
-def _program_ad_array_insert_shape(args: tuple[object, ...]) -> tuple[int, ...]:
-    if len(args) not in {3, 4}:
-        raise ValueError(
-            "program AD array insert shape rule requires array, object, values, and axis"
-        )
-    _, _, output_shape = _program_ad_array_insert_layout(
-        _program_ad_array_shape_of(args[0]),
-        args[1],
-        args[2],
-        args[3] if len(args) == 4 else None,
-        context="shape rule",
-    )
-    return output_shape
-
-
-def _program_ad_array_dtype_rule(args: tuple[object, ...]) -> str:
-    if not args:
-        raise ValueError("program AD array dtype rule requires an array operand")
-    return _program_ad_array_dtype_of(args[0])
-
-
 def _program_ad_shape_reshape_shape(args: tuple[object, ...]) -> tuple[int, ...]:
     if len(args) != 2:
         raise ValueError("program AD shape reshape rule requires array and target shape")
@@ -7014,186 +6866,6 @@ def _program_ad_cumulative_dtype_rule(args: tuple[object, ...]) -> str:
     return _program_ad_array_dtype_of(args[0])
 
 
-def _program_ad_array_getitem_static_arguments(args: tuple[object, ...]) -> tuple[object, ...]:
-    if len(args) != 2:
-        raise ValueError("program AD array getitem static rule requires array and index")
-    _validate_trace_basic_index(args[1])
-    index = args[1]
-    if isinstance(index, tuple):
-        return (tuple(_program_ad_array_static_index_component(item) for item in index),)
-    return (_program_ad_array_static_index_component(index),)
-
-
-def _program_ad_array_static_index_component(selector: object) -> object:
-    if selector is Ellipsis or selector is None:
-        return selector
-    if isinstance(selector, (int, np.integer)) and not isinstance(selector, (bool, np.bool_)):
-        return int(selector)
-    if isinstance(selector, slice):
-        return slice(
-            None if selector.start is None else int(selector.start),
-            None if selector.stop is None else int(selector.stop),
-            None if selector.step is None else int(selector.step),
-        )
-    if isinstance(selector, (np.ndarray, list)):
-        array = _trace_static_index_array(selector)
-        dtype_name = "bool" if array.dtype.kind == "b" else "int64"
-        values = tuple(
-            bool(item) if array.dtype.kind == "b" else int(item) for item in array.reshape(-1)
-        )
-        return (
-            "static_index_array",
-            dtype_name,
-            tuple(int(dimension) for dimension in array.shape),
-            values,
-        )
-    raise ValueError(_PROGRAM_AD_STATIC_INDEX_ERROR)
-
-
-def _program_ad_array_take_static_arguments(args: tuple[object, ...]) -> tuple[object, ...]:
-    if len(args) not in {2, 3, 4}:
-        raise ValueError(
-            "program AD array take static rule requires array, indices, axis, and mode"
-        )
-    raw_indices = np.asarray(args[1])
-    if raw_indices.dtype.kind not in {"i", "u"}:
-        raise ValueError("program AD array take static rule requires static integer indices")
-    axis = cast(int | None, args[2]) if len(args) >= 3 else None
-    if axis is not None and (isinstance(axis, bool) or not isinstance(axis, (int, np.integer))):
-        raise ValueError("program AD array take static rule requires static integer axis")
-    mode = cast(str, args[3]) if len(args) == 4 else "raise"
-    mode_name = _program_ad_array_take_mode(mode, context="static rule")
-    return (
-        tuple(int(index) for index in raw_indices.reshape(-1)),
-        None if axis is None else int(axis),
-        mode_name,
-    )
-
-
-def _program_ad_array_take_along_axis_static_arguments(
-    args: tuple[object, ...],
-) -> tuple[object, ...]:
-    if len(args) != 3:
-        raise ValueError(
-            "program AD array take_along_axis static rule requires array, indices, and axis"
-        )
-    raw_indices = np.asarray(args[1])
-    if raw_indices.dtype.kind not in {"i", "u"}:
-        raise ValueError(
-            "program AD array take_along_axis static rule requires static integer indices"
-        )
-    axis = args[2]
-    if isinstance(axis, bool) or not isinstance(axis, (int, np.integer)):
-        raise ValueError(
-            "program AD array take_along_axis static rule requires static integer axis"
-        )
-    normalised_axis = _normalise_axis("axis", int(axis), len(_program_ad_array_shape_of(args[0])))
-    return (
-        tuple(int(index) for index in raw_indices.reshape(-1)),
-        tuple(int(dimension) for dimension in raw_indices.shape),
-        normalised_axis,
-    )
-
-
-def _program_ad_array_delete_static_object(obj: object) -> object:
-    delete_obj = _program_ad_array_delete_object(obj, context="static rule")
-    if isinstance(delete_obj, int):
-        return delete_obj
-    if isinstance(delete_obj, slice):
-        return delete_obj
-    delete_array = np.asarray(delete_obj)
-    if delete_array.dtype.kind == "b":
-        return (
-            "static_delete_mask",
-            tuple(int(dimension) for dimension in delete_array.shape),
-            tuple(bool(item) for item in delete_array.reshape(-1)),
-        )
-    return tuple(int(index) for index in delete_array.reshape(-1))
-
-
-def _program_ad_array_delete_static_arguments(args: tuple[object, ...]) -> tuple[object, ...]:
-    if len(args) not in {2, 3}:
-        raise ValueError("program AD array delete static rule requires array, object, and axis")
-    axis = args[2] if len(args) == 3 else None
-    if axis is None:
-        normalised_axis = None
-    else:
-        if isinstance(axis, (bool, np.bool_)) or not isinstance(axis, (int, np.integer)):
-            raise ValueError("program AD array delete static rule requires static integer axis")
-        normalised_axis = _normalise_axis(
-            "axis", int(axis), len(_program_ad_array_shape_of(args[0]))
-        )
-    return (_program_ad_array_delete_static_object(args[1]), normalised_axis)
-
-
-def _program_ad_array_pad_static_constants(value: object) -> object:
-    constants = _program_ad_array_pad_constant_values(value, context="static rule")
-    constant_array = np.asarray(constants, dtype=np.float64)
-    if constant_array.shape == ():
-        return float(constant_array)
-    return (
-        "static_pad_constants",
-        tuple(int(dimension) for dimension in constant_array.shape),
-        tuple(float(item) for item in constant_array.reshape(-1)),
-    )
-
-
-def _program_ad_array_pad_static_arguments(args: tuple[object, ...]) -> tuple[object, ...]:
-    if len(args) not in {2, 3, 4}:
-        raise ValueError(
-            "program AD array pad static rule requires array, pad_width, mode, and constants"
-        )
-    mode = args[2] if len(args) >= 3 else "constant"
-    mode_name = _program_ad_array_pad_mode(mode, context="static rule")
-    pad_width = _program_ad_array_pad_width(
-        args[1],
-        len(_program_ad_array_shape_of(args[0])),
-        context="static rule",
-    )
-    return (
-        pad_width,
-        mode_name,
-        _program_ad_array_pad_static_constants(args[3] if len(args) == 4 else 0.0),
-    )
-
-
-def _program_ad_array_insert_static_object(obj: object) -> object:
-    insert_obj = _program_ad_array_insert_object(obj, context="static rule")
-    if isinstance(insert_obj, int):
-        return insert_obj
-    if isinstance(insert_obj, slice):
-        return insert_obj
-    return tuple(int(index) for index in np.asarray(insert_obj).reshape(-1))
-
-
-def _program_ad_array_insert_static_values(values: object) -> object:
-    insert_values = _program_ad_array_insert_values(values, context="static rule")
-    if insert_values.shape == ():
-        return float(insert_values)
-    return (
-        "static_insert_values",
-        tuple(int(dimension) for dimension in insert_values.shape),
-        tuple(float(item) for item in insert_values.reshape(-1)),
-    )
-
-
-def _program_ad_array_insert_static_arguments(args: tuple[object, ...]) -> tuple[object, ...]:
-    if len(args) not in {3, 4}:
-        raise ValueError(
-            "program AD array insert static rule requires array, object, values, and axis"
-        )
-    normalised_axis = _program_ad_array_insert_axis(
-        args[3] if len(args) == 4 else None,
-        len(_program_ad_array_shape_of(args[0])),
-        context="static rule",
-    )
-    return (
-        _program_ad_array_insert_static_object(args[1]),
-        _program_ad_array_insert_static_values(args[2]),
-        normalised_axis,
-    )
-
-
 def _program_ad_shape_reshape_static_arguments(args: tuple[object, ...]) -> tuple[object, ...]:
     if len(args) != 2:
         raise ValueError("program AD shape reshape static rule requires array and target shape")
@@ -7330,25 +7002,6 @@ def _program_ad_cumulative_diff_static_arguments(args: tuple[object, ...]) -> tu
     return (order, axis_index)
 
 
-_PROGRAM_AD_ARRAY_SHAPE_RULES: Mapping[str, PrimitiveShapeRule] = {
-    "getitem": _program_ad_array_getitem_shape,
-    "take": _program_ad_array_take_shape,
-    "take_along_axis": _program_ad_array_take_along_axis_shape,
-    "delete": _program_ad_array_delete_shape,
-    "pad": _program_ad_array_pad_shape,
-    "insert": _program_ad_array_insert_shape,
-}
-
-_PROGRAM_AD_ARRAY_STATIC_ARGUMENT_RULES: Mapping[str, PrimitiveStaticArgumentRule] = {
-    "getitem": _program_ad_array_getitem_static_arguments,
-    "take": _program_ad_array_take_static_arguments,
-    "take_along_axis": _program_ad_array_take_along_axis_static_arguments,
-    "delete": _program_ad_array_delete_static_arguments,
-    "pad": _program_ad_array_pad_static_arguments,
-    "insert": _program_ad_array_insert_static_arguments,
-}
-
-
 _PROGRAM_AD_SHAPE_SHAPE_RULES: Mapping[str, PrimitiveShapeRule] = {
     "atleast_1d": _program_ad_shape_atleast_1d_shape,
     "atleast_2d": _program_ad_shape_atleast_2d_shape,
@@ -7401,74 +7054,6 @@ _PROGRAM_AD_CUMULATIVE_STATIC_ARGUMENT_RULES: Mapping[str, PrimitiveStaticArgume
     "cumprod": _program_ad_cumulative_scan_static_arguments,
     "diff": _program_ad_cumulative_diff_static_arguments,
 }
-
-
-def _program_ad_array_batching_rule(
-    function: Callable[..., object],
-    args: tuple[object, ...],
-    axes: tuple[int | None, ...],
-    out_axes: int,
-) -> object:
-    if len(args) != len(axes):
-        raise ValueError("program AD array batching axes must match argument count")
-    if not args:
-        raise ValueError("program AD array batching requires an array operand")
-    array = _as_real_numeric_array("program AD array batched operand", args[0])
-    axis = axes[0]
-    if axis is None:
-        raise ValueError("program AD array batching requires the array operand to be mapped")
-    axis_index = _normalise_axis("axes[0]", axis, array.ndim)
-    batch_size = int(array.shape[axis_index])
-    if any(item is not None for item in axes[1:]):
-        raise ValueError("program AD array batching supports static non-array arguments only")
-    outputs = [
-        _as_real_numeric_array(
-            "program AD array batched output",
-            function(np.take(array, batch_index, axis=axis_index), *args[1:]),
-        )
-        for batch_index in range(batch_size)
-    ]
-    stacked = np.stack(outputs, axis=0)
-    return np.moveaxis(stacked, 0, _normalise_axis("out_axes", out_axes, stacked.ndim))
-
-
-def _program_ad_array_lowering_metadata(name: str) -> Mapping[str, str]:
-    static_signature = {
-        "getitem": "source_shape:ranked_tensor_shape;index:static_gather_index",
-        "take": "source_shape:ranked_tensor_shape;indices_axis_mode",
-        "take_along_axis": "source_shape:ranked_tensor_shape;indices_shape_axis",
-        "delete": "source_shape:ranked_tensor_shape;object_axis",
-        "pad": "source_shape:ranked_tensor_shape;pad_width_constant_values",
-        "insert": "source_shape:ranked_tensor_shape;object_values_axis",
-    }[name]
-    static_factory = {
-        "getitem": "program_ad_array_getitem_derivative_rule",
-        "take": "program_ad_array_take_derivative_rule",
-        "take_along_axis": "program_ad_array_take_along_axis_derivative_rule",
-        "delete": "program_ad_array_delete_derivative_rule",
-        "pad": "program_ad_array_pad_derivative_rule",
-        "insert": "program_ad_array_insert_derivative_rule",
-    }[name]
-    nondifferentiable_boundaries = {
-        "getitem": "static_gather_index_scatter_add",
-        "take": "static_integer_gather_scatter_add",
-        "take_along_axis": "static_along_axis_gather_scatter_add",
-        "delete": "static_delete_gather_scatter_add",
-        "pad": "static_constant_pad_scatter_add",
-        "insert": "static_constant_insert_scatter_add",
-    }
-    return {
-        "program_ad": "operator_intercepted_trace",
-        "mlir": "available: scpn_diff array dialect interchange; executable lowering blocked",
-        "mlir_op": f"scpn_diff.array.{name}",
-        "llvm": "blocked_until_executable_array_lowering",
-        "rust": "blocked_until_polyglot_array_ad",
-        "static_argument_rule": "required",
-        "static_derivative_factory": static_factory,
-        "static_signature": static_signature,
-        "nondifferentiable_boundary": nondifferentiable_boundaries[name],
-        "nondifferentiable_boundary_policy": "fail_closed",
-    }
 
 
 def _program_ad_shape_batching_rule(
@@ -7629,25 +7214,6 @@ def _program_ad_cumulative_lowering_metadata(name: str) -> Mapping[str, str]:
     }
 
 
-def _register_program_ad_array_primitive_contracts() -> None:
-    for name, identity in _PROGRAM_AD_ARRAY_IDENTITIES.items():
-        if DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.contract_for(identity) is not None:
-            continue
-        DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.register_transform(
-            PrimitiveTransformRule(
-                identity=identity,
-                derivative_rule=_program_ad_array_derivative_rule(name),
-                batching_rule=_program_ad_array_batching_rule,
-                lowering_metadata=_program_ad_array_lowering_metadata(name),
-                shape_rule=_PROGRAM_AD_ARRAY_SHAPE_RULES[name],
-                dtype_rule=_program_ad_array_dtype_rule,
-                static_argument_rule=_PROGRAM_AD_ARRAY_STATIC_ARGUMENT_RULES[name],
-                nondifferentiable_policy=_PROGRAM_AD_ARRAY_POLICY,
-                effect="pure",
-            )
-        )
-
-
 def _register_program_ad_shape_primitive_contracts() -> None:
     for name, identity in _PROGRAM_AD_SHAPE_IDENTITIES.items():
         if DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.contract_for(identity) is not None:
@@ -7761,19 +7327,6 @@ def _require_program_ad_runtime_contract(
     if args is not None:
         _validate_program_ad_primitive_contract_dispatch(contract, args)
     return contract
-
-
-def _require_program_ad_array_contract(
-    name: str,
-    args: tuple[object, ...] | None = None,
-) -> PrimitiveContract:
-    return _require_program_ad_runtime_contract(
-        name,
-        family="array",
-        identities=_PROGRAM_AD_ARRAY_IDENTITIES,
-        expected_policy=_PROGRAM_AD_ARRAY_POLICY,
-        args=args,
-    )
 
 
 def _require_program_ad_shape_contract(
