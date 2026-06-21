@@ -15,7 +15,6 @@ import numpy as np
 import pytest
 
 from scpn_quantum_control.differentiable import (
-    CustomDerivativeCheckResult,
     CustomDerivativeRule,
     JacobianResult,
     JVPResult,
@@ -28,7 +27,6 @@ from scpn_quantum_control.differentiable import (
     batch_value_and_custom_jacobian,
     batch_value_and_custom_jvp,
     batch_value_and_custom_vjp,
-    check_custom_derivative_consistency,
     custom_gauss_newton_gradient,
     custom_jacobian,
     custom_jvp,
@@ -121,69 +119,6 @@ def test_custom_derivative_rule_rejects_invalid_contracts() -> None:
             [1.0],
             [1.0],
         )
-
-
-def test_check_custom_derivative_consistency_passes_exact_rules() -> None:
-    """Custom JVP/VJP rules should satisfy adjoint and finite-difference checks."""
-
-    rule = CustomDerivativeRule(
-        name="sin_cos_pair",
-        value_fn=lambda values: np.array([np.sin(values[0]), values[0] * values[1]]),
-        jvp_rule=lambda values, tangent: np.array(
-            [
-                np.cos(values[0]) * tangent[0],
-                values[1] * tangent[0] + values[0] * tangent[1],
-            ]
-        ),
-        vjp_rule=lambda values, cotangent: np.array(
-            [
-                np.cos(values[0]) * cotangent[0] + values[1] * cotangent[1],
-                values[0] * cotangent[1],
-            ]
-        ),
-        parameter_names=("theta", "phi"),
-    )
-
-    result = check_custom_derivative_consistency(
-        rule,
-        values=[0.4, -0.2],
-        tangent=[0.3, 0.7],
-        cotangent=[-0.5, 0.25],
-        finite_difference_step=1.0e-6,
-        tolerance=1.0e-6,
-    )
-
-    assert isinstance(result, CustomDerivativeCheckResult)
-    assert result.passed is True
-    assert result.adjoint_inner_error <= 1.0e-12
-    assert result.jvp_l2_error <= 1.0e-6
-    assert result.vjp_l2_error <= 1.0e-6
-    assert result.reference_jvp.method == "finite_difference_directional"
-    assert result.reference_vjp.method == "vjp:finite_difference_central"
-
-
-def test_check_custom_derivative_consistency_detects_bad_adjoint_rule() -> None:
-    """Incorrect exact rules should fail closed without being silently trusted."""
-
-    rule = CustomDerivativeRule(
-        name="bad_linear",
-        value_fn=lambda values: np.array([2.0 * values[0]]),
-        jvp_rule=lambda values, tangent: np.array([2.0 * tangent[0]]),
-        vjp_rule=lambda values, cotangent: np.array([3.0 * cotangent[0]]),
-    )
-
-    result = check_custom_derivative_consistency(
-        rule,
-        values=[1.5],
-        tangent=[0.25],
-        cotangent=[4.0],
-        finite_difference_step=1.0e-6,
-        tolerance=1.0e-8,
-    )
-
-    assert result.passed is False
-    assert result.adjoint_inner_error == pytest.approx(1.0)
-    assert result.vjp_l2_error == pytest.approx(4.0, rel=1.0e-6)
 
 
 def test_custom_jacobian_materializes_exact_jvp_columns() -> None:

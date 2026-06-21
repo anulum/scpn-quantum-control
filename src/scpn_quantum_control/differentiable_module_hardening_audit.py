@@ -291,7 +291,10 @@ def differentiable_module_hardening_registry() -> tuple[DifferentiableModuleHard
         _record(
             "src/scpn_quantum_control/differentiable_consistency.py",
             ("tests/test_differentiable_consistency.py",),
-            ("parameter-shift consistency diagnostics", "facade export compatibility"),
+            (
+                "parameter-shift consistency diagnostics",
+                "custom derivative consistency diagnostics",
+            ),
         ),
         _record(
             "src/scpn_quantum_control/differentiable_module_hardening_audit.py",

@@ -27,7 +27,10 @@ from .differentiable_batch_helpers import (
     _as_batch_vector_array,
     _as_parameter_shift_sample_tensor,
 )
-from .differentiable_consistency import check_parameter_shift_consistency
+from .differentiable_consistency import (
+    check_custom_derivative_consistency,
+    check_parameter_shift_consistency,
+)
 from .differentiable_jax_adapter import (
     is_jax_autodiff_available,
     jax_value_and_grad,
@@ -8854,84 +8857,6 @@ def value_and_custom_vjp(
         evaluations=1,
         parameter_names=tuple(parameter.name for parameter in parameter_meta),
         trainable=tuple(parameter.trainable for parameter in parameter_meta),
-    )
-
-
-def check_custom_derivative_consistency(
-    rule: CustomDerivativeRule,
-    values: ArrayLike,
-    tangent: ArrayLike,
-    cotangent: ArrayLike,
-    *,
-    parameters: Sequence[Parameter] | None = None,
-    finite_difference_step: float = 1.0e-6,
-    tolerance: float = 1.0e-5,
-) -> CustomDerivativeCheckResult:
-    """Check custom JVP/VJP rules against adjoint and finite-difference identities."""
-
-    tolerance_value = _as_real_scalar("custom derivative tolerance", tolerance)
-    if tolerance_value < 0.0:
-        raise ValueError("custom derivative tolerance must be finite and non-negative")
-    step_value = _as_real_scalar(
-        "custom derivative finite_difference_step", finite_difference_step
-    )
-    if step_value <= 0.0:
-        raise ValueError("custom derivative finite_difference_step must be finite and positive")
-    custom_jvp_result = value_and_custom_jvp(
-        rule,
-        values,
-        tangent,
-        parameters=parameters,
-    )
-    custom_vjp_result = value_and_custom_vjp(
-        rule,
-        values,
-        cotangent,
-        parameters=parameters,
-    )
-    parameter_values = _as_parameter_array(values)
-    reference_parameters = tuple(
-        Parameter(name, trainable=flag)
-        for name, flag in zip(
-            custom_jvp_result.parameter_names,
-            custom_jvp_result.trainable,
-            strict=True,
-        )
-    )
-    reference_jvp = value_and_finite_difference_jvp(
-        rule.value_fn,
-        parameter_values,
-        custom_jvp_result.tangent,
-        parameters=reference_parameters,
-        step=step_value,
-    )
-    reference_vjp = finite_difference_vjp(
-        rule.value_fn,
-        parameter_values,
-        custom_vjp_result.cotangent,
-        parameters=reference_parameters,
-        step=step_value,
-    )
-    primal_inner = float(np.dot(custom_jvp_result.jvp, custom_vjp_result.cotangent))
-    adjoint_inner = float(np.dot(custom_jvp_result.tangent, custom_vjp_result.vjp))
-    adjoint_inner_error = abs(primal_inner - adjoint_inner)
-    jvp_l2_error = float(np.linalg.norm(custom_jvp_result.jvp - reference_jvp.jvp))
-    vjp_l2_error = float(np.linalg.norm(custom_vjp_result.vjp - reference_vjp.vjp))
-    passed = (
-        adjoint_inner_error <= tolerance_value
-        and jvp_l2_error <= tolerance_value
-        and vjp_l2_error <= tolerance_value
-    )
-    return CustomDerivativeCheckResult(
-        custom_jvp=custom_jvp_result,
-        custom_vjp=custom_vjp_result,
-        reference_jvp=reference_jvp,
-        reference_vjp=reference_vjp,
-        adjoint_inner_error=adjoint_inner_error,
-        jvp_l2_error=jvp_l2_error,
-        vjp_l2_error=vjp_l2_error,
-        tolerance=tolerance_value,
-        passed=passed,
     )
 
 
