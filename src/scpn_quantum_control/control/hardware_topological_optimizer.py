@@ -16,6 +16,7 @@ minimise topological vortices in the real hardware environment.
 from __future__ import annotations
 
 import numpy as np
+from numpy.typing import NDArray
 
 from scpn_quantum_control.control.topological_optimizer import TopologicalCouplingOptimizer
 from scpn_quantum_control.hardware.experiments import _build_evo_base, _build_xyz_circuits
@@ -29,8 +30,8 @@ class HardwareTopologicalOptimizer(TopologicalCouplingOptimizer):
         self,
         runner: HardwareRunner,
         n_qubits: int,
-        initial_K: np.ndarray,
-        omega: np.ndarray,
+        initial_K: NDArray[np.float64],
+        omega: NDArray[np.float64],
         learning_rate: float = 0.05,
         dt: float = 1.0,
     ):
@@ -39,11 +40,11 @@ class HardwareTopologicalOptimizer(TopologicalCouplingOptimizer):
 
     def _simulate_measurement_counts(
         self,
-        psi: np.ndarray,
+        psi: NDArray[np.complex128],
         shots: int = 5000,
         *,
-        K_candidate: np.ndarray | None = None,
-    ) -> tuple[dict, dict]:
+        K_candidate: NDArray[np.float64] | None = None,
+    ) -> tuple[dict[str, int], dict[str, int]]:
         """Override to use the HardwareRunner for evolution and measurement."""
         # Build Trotter circuit for current K and omega
         K_for_circuit = self.K if K_candidate is None else K_candidate

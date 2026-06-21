@@ -21,7 +21,10 @@ topology to achieve a globally synchronised, vortex-free 'conscious' state.
 
 from __future__ import annotations
 
+from typing import Any
+
 import numpy as np
+from numpy.typing import NDArray
 
 from scpn_quantum_control.analysis.quantum_persistent_homology import (
     _RIPSER_AVAILABLE,
@@ -36,8 +39,8 @@ class TopologicalCouplingOptimizer:
     def __init__(
         self,
         n_qubits: int,
-        initial_K: np.ndarray,
-        omega: np.ndarray,
+        initial_K: NDArray[np.float64],
+        omega: NDArray[np.float64],
         learning_rate: float = 0.05,
         dt: float = 1.0,
     ):
@@ -52,11 +55,11 @@ class TopologicalCouplingOptimizer:
 
     def _simulate_measurement_counts(
         self,
-        psi: np.ndarray,
+        psi: NDArray[np.complex128],
         shots: int = 5000,
         *,
-        K_candidate: np.ndarray | None = None,
-    ) -> tuple[dict, dict]:
+        K_candidate: NDArray[np.float64] | None = None,
+    ) -> tuple[dict[str, int], dict[str, int]]:
         """Simulate X and Y basis measurements from the statevector."""
         import qiskit.quantum_info as qi
         from qiskit.quantum_info import Statevector
@@ -80,7 +83,7 @@ class TopologicalCouplingOptimizer:
 
         return x_counts, y_counts
 
-    def step(self, n_samples: int = 5) -> dict:
+    def step(self, n_samples: int = 5) -> dict[str, Any]:
         """Perform one optimization step using finite-difference gradients on p_h1."""
         if not _RIPSER_AVAILABLE:
             raise ImportError("ripser not installed: pip install ripser")
@@ -142,7 +145,7 @@ class TopologicalCouplingOptimizer:
             "gradient_norm": float(np.linalg.norm(grad_K)),
         }
 
-    def optimize(self, steps: int = 10, n_samples: int = 3) -> list[dict]:
+    def optimize(self, steps: int = 10, n_samples: int = 3) -> list[dict[str, Any]]:
         """Run the topological optimization loop for a given number of steps."""
         history = []
         for _ in range(steps):

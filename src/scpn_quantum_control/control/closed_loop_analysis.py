@@ -28,6 +28,7 @@ from enum import Enum
 from typing import Any
 
 import numpy as np
+from numpy.typing import NDArray
 
 from .realtime_feedback import RealtimeSyncFeedbackController
 
@@ -89,8 +90,8 @@ class ClosedLoopExecutionDecision:
 class ClosedLoopControlEvidence:
     """Replayable evidence of a closed-loop control run."""
 
-    response: np.ndarray
-    feedback_signal: np.ndarray
+    response: NDArray[np.float64]
+    feedback_signal: NDArray[np.float64]
     target: float
     classification: ResponseClass
     performance: ControlPerformance
@@ -280,7 +281,7 @@ def evaluate_closed_loop_policy(
     )
 
 
-def _settling_round(error: np.ndarray, tolerance: float) -> int | None:
+def _settling_round(error: NDArray[np.float64], tolerance: float) -> int | None:
     """First round after which the response stays inside the tolerance band."""
     within = np.abs(error) <= tolerance
     if not within[-1]:
@@ -292,7 +293,7 @@ def _settling_round(error: np.ndarray, tolerance: float) -> int | None:
 
 
 def analyse_closed_loop_response(
-    response: np.ndarray,
+    response: NDArray[np.float64],
     target: float,
     *,
     tolerance: float,

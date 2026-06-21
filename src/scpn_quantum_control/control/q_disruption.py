@@ -15,6 +15,7 @@ and measures an ancilla qubit for disruption/safe classification.
 from __future__ import annotations
 
 import numpy as np
+from numpy.typing import NDArray
 from qiskit import QuantumCircuit
 from qiskit.quantum_info import Statevector
 
@@ -38,7 +39,7 @@ class QuantumDisruptionClassifier:
         n_params = n_layers * self.n_qubits * 2
         self.params = np.random.default_rng(seed).uniform(-np.pi, np.pi, n_params)
 
-    def encode_features(self, features: np.ndarray) -> QuantumCircuit:
+    def encode_features(self, features: NDArray[np.float64]) -> QuantumCircuit:
         """Amplitude-encode 11-D features into 4 qubits (pad to 16-D)."""
         dim = 2**self.n_data_qubits
         padded = np.zeros(dim)
@@ -53,7 +54,7 @@ class QuantumDisruptionClassifier:
         qc.initialize(padded, list(range(self.n_data_qubits)))
         return qc
 
-    def build_classifier(self, params: np.ndarray | None = None) -> QuantumCircuit:
+    def build_classifier(self, params: NDArray[np.float64] | None = None) -> QuantumCircuit:
         """Parameterized Ry/Rz + CX layers + ancilla readout."""
         if params is None:
             params = self.params
@@ -70,7 +71,7 @@ class QuantumDisruptionClassifier:
                 qc.cx(q, q + 1)
         return qc
 
-    def predict(self, features: np.ndarray) -> float:
+    def predict(self, features: NDArray[np.float64]) -> float:
         """Risk score from P(ancilla=|1>)."""
         enc = self.encode_features(features)
         clf = self.build_classifier()
@@ -79,7 +80,9 @@ class QuantumDisruptionClassifier:
         ancilla_probs = sv.probabilities([self.n_data_qubits])
         return float(ancilla_probs[1])
 
-    def train(self, X: np.ndarray, y: np.ndarray, epochs: int = 50, lr: float = 0.1) -> None:
+    def train(
+        self, X: NDArray[np.float64], y: NDArray[np.float64], epochs: int = 50, lr: float = 0.1
+    ) -> None:
         """Parameter-shift gradient training on labeled data.
 
         X: (n_samples, n_features)
@@ -109,7 +112,9 @@ class QuantumDisruptionClassifier:
             grad /= len(X)
             self.params -= lr * grad
 
-    def _forward_with_params(self, features: np.ndarray, params: np.ndarray) -> float:
+    def _forward_with_params(
+        self, features: NDArray[np.float64], params: NDArray[np.float64]
+    ) -> float:
         enc = self.encode_features(features)
         clf = self.build_classifier(params)
         qc = enc.compose(clf)

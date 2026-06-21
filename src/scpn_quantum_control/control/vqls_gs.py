@@ -18,6 +18,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import numpy as np
+from numpy.typing import NDArray
 from qiskit import QuantumCircuit
 from qiskit.circuit.library import n_local
 from qiskit.quantum_info import Statevector
@@ -30,14 +31,14 @@ from .._constants import VQLS_DENOMINATOR_EPS
 class VQLSGradShafranovResult:
     """Residual certificate for a Grad-Shafranov linear solve."""
 
-    solution: np.ndarray
+    solution: NDArray[np.float64]
     relative_residual: float
     residual_tolerance: float
     converged: bool
-    variational_solution: np.ndarray
+    variational_solution: NDArray[np.float64]
     variational_relative_residual: float
     variational_converged: bool
-    reference_solution: np.ndarray | None
+    reference_solution: NDArray[np.float64] | None
     reference_relative_error: float
     method: str
     cost: float
@@ -60,12 +61,12 @@ class VQLS_GradShafranov:
         self.grid_size = 2**n_qubits
         self.source_width = source_width
         self.imag_tol = imag_tol
-        self._A: np.ndarray | None = None
-        self._b: np.ndarray | None = None
-        self._optimal_params: np.ndarray | None = None
+        self._A: NDArray[np.float64] | None = None
+        self._b: NDArray[np.float64] | None = None
+        self._optimal_params: NDArray[np.float64] | None = None
         self.last_result: VQLSGradShafranovResult | None = None
 
-    def discretize(self) -> tuple[np.ndarray, np.ndarray]:
+    def discretize(self) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
         """Build finite-difference Laplacian and source vector."""
         N = self.grid_size
         dx = 1.0 / (N + 1)
@@ -108,7 +109,7 @@ class VQLS_GradShafranov:
         n_restarts: int = 1,
         residual_tol: float = 1e-10,
         allow_classical_refinement: bool = True,
-    ) -> np.ndarray:
+    ) -> NDArray[np.float64]:
         """Return a residual-certified Grad-Shafranov flux profile.
 
         Cost: C = 1 - |<b|A|x>|^2 / <x|A^dag A|x>
@@ -161,7 +162,7 @@ class VQLS_GradShafranov:
         b = self._b
         AtA = A.T @ A
 
-        def cost_fn(params):
+        def cost_fn(params: NDArray[np.float64]) -> float:
             bound = ansatz.assign_parameters(params)
             sv = Statevector.from_instruction(bound)
             x_vec = np.array(sv)
@@ -172,7 +173,7 @@ class VQLS_GradShafranov:
 
             if xAtAx < VQLS_DENOMINATOR_EPS:
                 return 1.0
-            return 1.0 - abs(bAx) ** 2 / xAtAx
+            return float(1.0 - abs(bAx) ** 2 / xAtAx)
 
         n_params = ansatz.num_parameters
         rng = np.random.default_rng(seed)
@@ -206,7 +207,9 @@ class VQLS_GradShafranov:
         # Bravo-Prieto et al., arXiv:1909.05820 (2019), post-processing step
         A_psi = A @ psi
         scale = np.vdot(b, b) / np.vdot(b, A_psi) if abs(np.vdot(b, A_psi)) > 1e-15 else 1.0
-        variational_solution: np.ndarray = psi * float(np.real(scale))
+        variational_solution: NDArray[np.float64] = (psi * float(np.real(scale))).astype(
+            np.float64
+        )
         variational_relative_residual = self._relative_residual(variational_solution)
 
         reference_solution = self._direct_solution_or_none()
@@ -250,7 +253,7 @@ class VQLS_GradShafranov:
         self.last_result = result
         return result
 
-    def _relative_residual(self, solution: np.ndarray) -> float:
+    def _relative_residual(self, solution: NDArray[np.float64]) -> float:
         if self._A is None or self._b is None:
             raise RuntimeError("call discretize() before residual evaluation")
         denominator = float(np.linalg.norm(self._b))
@@ -259,17 +262,17 @@ class VQLS_GradShafranov:
             return residual
         return residual / denominator
 
-    def _direct_solution_or_none(self) -> np.ndarray | None:
+    def _direct_solution_or_none(self) -> NDArray[np.float64] | None:
         if self._A is None or self._b is None:
             raise RuntimeError("call discretize() before direct solve")
         try:
-            return np.linalg.solve(self._A, self._b)
+            return np.linalg.solve(self._A, self._b).astype(np.float64)
         except np.linalg.LinAlgError:
             return None
 
     @staticmethod
     def _reference_relative_error(
-        solution: np.ndarray, reference_solution: np.ndarray | None
+        solution: NDArray[np.float64], reference_solution: NDArray[np.float64] | None
     ) -> float:
         if reference_solution is None:
             return float("nan")

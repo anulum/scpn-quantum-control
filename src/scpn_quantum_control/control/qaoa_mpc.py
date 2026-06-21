@@ -14,6 +14,7 @@ maps the quadratic cost to an Ising Hamiltonian, then solves via QAOA.
 from __future__ import annotations
 
 import numpy as np
+from numpy.typing import NDArray
 from qiskit import QuantumCircuit
 from qiskit.quantum_info import SparsePauliOp, Statevector
 from scipy.optimize import minimize
@@ -28,8 +29,8 @@ class QAOA_MPC:
 
     def __init__(
         self,
-        B_matrix: np.ndarray,
-        target_state: np.ndarray,
+        B_matrix: NDArray[np.float64],
+        target_state: NDArray[np.float64],
         horizon: int,
         p_layers: int = 2,
     ):
@@ -68,7 +69,9 @@ class QAOA_MPC:
         self._cost_ham = SparsePauliOp(list(labels), list(coeffs)).simplify()
         return self._cost_ham
 
-    def _build_qaoa_circuit(self, gamma: np.ndarray, beta: np.ndarray) -> QuantumCircuit:
+    def _build_qaoa_circuit(
+        self, gamma: NDArray[np.float64], beta: NDArray[np.float64]
+    ) -> QuantumCircuit:
         """Build p-layer QAOA circuit: initial |+>, alternating cost/mixer."""
         if self._cost_ham is None:
             self.build_cost_hamiltonian()
@@ -99,7 +102,7 @@ class QAOA_MPC:
 
         return qc
 
-    def optimize(self, seed: int | None = None) -> np.ndarray:
+    def optimize(self, seed: int | None = None) -> NDArray[np.int64]:
         """Run QAOA optimization, return binary action sequence.
 
         Returns:
@@ -110,7 +113,7 @@ class QAOA_MPC:
         if self._cost_ham is None:
             raise RuntimeError("cost Hamiltonian construction failed")
 
-        def cost_fn(params):
+        def cost_fn(params: NDArray[np.float64]) -> float:
             gamma = params[: self.p]
             beta = params[self.p :]
             qc = self._build_qaoa_circuit(gamma, beta)
@@ -126,5 +129,7 @@ class QAOA_MPC:
         sv = Statevector.from_instruction(qc)
         probs = sv.probabilities()
         best_bitstring = format(int(np.argmax(probs)), f"0{self.n_qubits}b")
-        actions: np.ndarray = np.array([int(b) for b in reversed(best_bitstring)])
+        actions: NDArray[np.int64] = np.array(
+            [int(b) for b in reversed(best_bitstring)], dtype=np.int64
+        )
         return actions

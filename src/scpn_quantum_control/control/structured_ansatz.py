@@ -8,20 +8,21 @@ from __future__ import annotations
 from typing import Any
 
 import numpy as np
+from numpy.typing import NDArray
 from qiskit import QuantumCircuit
 
 
 class StructuredAnsatz:
     """Physically-informed ansatz for heterogeneous Kuramoto-XY model."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.circuit: QuantumCircuit | None = None
         self.params: dict[str, Any] = {}
 
     @staticmethod
     def from_kuramoto(
-        K_nm: np.ndarray,
-        omega: np.ndarray | None = None,
+        K_nm: NDArray[np.float64],
+        omega: NDArray[np.float64] | None = None,
         trotter_depth: int = 6,
         time_step: float = 0.1,
         lambda_fim: float = 0.0,

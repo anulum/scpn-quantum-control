@@ -22,6 +22,7 @@ from dataclasses import dataclass, field
 from typing import Any
 
 import numpy as np
+from numpy.typing import NDArray
 
 from .q_disruption import QuantumDisruptionClassifier
 
@@ -94,10 +95,10 @@ class ITERFeatureSpec:
             "dIp_dt",  # MA/s, current ramp rate
         ]
     )
-    mins: np.ndarray = field(
+    mins: NDArray[np.float64] = field(
         default_factory=lambda: np.array([0.5, 1.5, 0.5, 0.0, 0.0, 0.0, 0.0, -2.0, 0.0, 1.0, -5.0])
     )
-    maxs: np.ndarray = field(
+    maxs: NDArray[np.float64] = field(
         default_factory=lambda: np.array(
             [17.0, 8.0, 2.0, 1.5, 4.0, 100.0, 0.01, 5.0, 400.0, 2.2, 5.0]
         )
@@ -114,13 +115,15 @@ _FUSION_CORE_KEY_MAP: dict[str, int] = {
 }
 
 
-def normalize_iter_features(raw: np.ndarray, spec: ITERFeatureSpec | None = None) -> np.ndarray:
+def normalize_iter_features(
+    raw: NDArray[np.float64], spec: ITERFeatureSpec | None = None
+) -> NDArray[np.float64]:
     """Min-max normalize using ITER physics ranges, clip to [0, 1]."""
     if spec is None:
         spec = ITERFeatureSpec()
     denom = spec.maxs - spec.mins
     denom = np.where(denom > 0, denom, 1.0)
-    normed: np.ndarray = np.clip((raw - spec.mins) / denom, 0.0, 1.0)
+    normed: NDArray[np.float64] = np.clip((raw - spec.mins) / denom, 0.0, 1.0)
     return normed
 
 
@@ -238,7 +241,7 @@ def generate_synthetic_iter_data(
     rng: np.random.Generator | None = None,
     *,
     allow_synthetic: bool = False,
-) -> tuple[np.ndarray, np.ndarray]:
+) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
     """Synthetic ITER disruption data for classifier benchmarking.
 
     Safe samples: drawn from normal distributions near ITER operational point.
@@ -285,11 +288,11 @@ def generate_synthetic_iter_data(
 
 
 def from_fusion_core_shot(
-    shot_data: dict,
+    shot_data: dict[str, Any],
     *,
     allow_center_defaults: bool = False,
     allow_density_proxy: bool = False,
-) -> tuple[np.ndarray, int, list[str]]:
+) -> tuple[NDArray[np.float64], int, list[str]]:
     """Convert a fusion-core NPZ disruption shot to ITER feature vector.
 
     shot_data: dict loaded from scpn_fusion.io.tokamak_disruption_archive
@@ -366,7 +369,7 @@ class DisruptionBenchmark:
         )
         self.classifier = QuantumDisruptionClassifier(seed=seed)
 
-    def run(self, epochs: int = 10, lr: float = 0.1) -> dict:
+    def run(self, epochs: int = 10, lr: float = 0.1) -> dict[str, Any]:
         """Train and evaluate. Returns accuracy + predictions."""
         self.classifier.train(self.X_train, self.y_train, epochs=epochs, lr=lr)
         predictions = np.array([self.classifier.predict(x) for x in self.X_test])
