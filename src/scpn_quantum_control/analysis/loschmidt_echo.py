@@ -27,6 +27,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import numpy as np
+from numpy.typing import NDArray
 
 from ..bridge.knm_hamiltonian import knm_to_dense_matrix
 from ..dense_budget import require_dense_allocation
@@ -36,9 +37,9 @@ from ..dense_budget import require_dense_allocation
 class LoschmidtResult:
     """Loschmidt echo / DQPT result."""
 
-    times: np.ndarray
-    loschmidt_amplitude: np.ndarray  # |G(t)| = |⟨ψ_i|e^{-iH_f t}|ψ_i⟩|
-    rate_function: np.ndarray  # g(t) = -log|G(t)|²/N
+    times: NDArray[np.float64]
+    loschmidt_amplitude: NDArray[np.float64]  # |G(t)| = |⟨ψ_i|e^{-iH_f t}|ψ_i⟩|
+    rate_function: NDArray[np.float64]  # g(t) = -log|G(t)|²/N
     n_cusps: int  # number of detected cusps in g(t)
     cusp_times: list[float]  # times of cusps
     K_initial: float
@@ -46,8 +47,8 @@ class LoschmidtResult:
 
 
 def loschmidt_quench(
-    omega: np.ndarray,
-    K_topology: np.ndarray,
+    omega: NDArray[np.float64],
+    K_topology: NDArray[np.float64],
     K_initial: float,
     K_final: float,
     t_max: float = 10.0,
@@ -84,15 +85,15 @@ def loschmidt_quench(
     overlaps = np.abs(eigvecs_f.conj().T @ psi_i) ** 2
 
     # Loschmidt amplitude
-    times = np.linspace(0, t_max, n_times)
-    G: np.ndarray = np.zeros(n_times, dtype=complex)
+    times = np.linspace(0, t_max, n_times, dtype=np.float64)
+    G: NDArray[np.complex128] = np.zeros(n_times, dtype=complex)
     for idx, t in enumerate(times):
         G[idx] = np.sum(overlaps * np.exp(-1j * eigvals_f * t))
 
-    amplitude: np.ndarray = np.abs(G)
+    amplitude: NDArray[np.float64] = np.abs(G)
 
     # Rate function g(t) = -log|G(t)|²/N
-    rate: np.ndarray = np.zeros(n_times)
+    rate: NDArray[np.float64] = np.zeros(n_times)
     for idx in range(n_times):
         if amplitude[idx] > 1e-15:
             rate[idx] = -2.0 * np.log(amplitude[idx]) / n
@@ -122,23 +123,23 @@ def loschmidt_quench(
 
 
 def quench_scan(
-    omega: np.ndarray,
-    K_topology: np.ndarray,
+    omega: NDArray[np.float64],
+    K_topology: NDArray[np.float64],
     K_initial: float,
-    K_final_range: np.ndarray | None = None,
+    K_final_range: NDArray[np.float64] | None = None,
     t_max: float = 10.0,
     n_times: int = 100,
     *,
     max_dense_gib: float | None = None,
-) -> dict[str, list]:
+) -> dict[str, list[float]]:
     """Scan quenches from fixed K_i to varying K_f.
 
     Tests whether crossing K_c produces more/fewer DQPTs.
     """
     if K_final_range is None:
-        K_final_range = np.linspace(0.5, 5.0, 10)
+        K_final_range = np.linspace(0.5, 5.0, 10, dtype=np.float64)
 
-    results: dict[str, list] = {
+    results: dict[str, list[float]] = {
         "K_final": [],
         "n_cusps": [],
         "max_rate": [],

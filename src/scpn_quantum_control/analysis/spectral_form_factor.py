@@ -34,6 +34,7 @@ from dataclasses import dataclass
 from typing import Literal
 
 import numpy as np
+from numpy.typing import NDArray
 
 from ..bridge.knm_hamiltonian import knm_to_dense_matrix, knm_to_hamiltonian
 from ..dense_budget import require_dense_eigensolver_workspace
@@ -48,8 +49,8 @@ class SFFResult:
     """SFF computation at a single coupling strength."""
 
     K_base: float
-    times: np.ndarray
-    sff: np.ndarray  # K(t) = |Tr(e^{-iHt})|² / Z²
+    times: NDArray[np.float64]
+    sff: NDArray[np.float64]  # K(t) = |Tr(e^{-iHt})|² / Z²
     level_spacing_ratio: float  # r̄ — chaos diagnostic
     spectral_gap: float
     level_spacing_basis: str = "magnetisation"
@@ -62,14 +63,14 @@ class SFFResult:
 class SFFScanResult:
     """SFF scan across coupling strength."""
 
-    k_values: np.ndarray
-    level_spacing_ratios: np.ndarray  # r̄ at each K
-    spectral_gaps: np.ndarray
-    sff_dip_depth: np.ndarray  # min(K(t))/K(0) — deeper dip = more chaotic
+    k_values: NDArray[np.float64]
+    level_spacing_ratios: NDArray[np.float64]  # r̄ at each K
+    spectral_gaps: NDArray[np.float64]
+    sff_dip_depth: NDArray[np.float64]  # min(K(t))/K(0) — deeper dip = more chaotic
     chaos_onset_K: float | None  # K where r̄ first exceeds Poisson threshold
 
 
-def _level_spacing_ratio(eigenvalues: np.ndarray) -> float:
+def _level_spacing_ratio(eigenvalues: NDArray[np.float64]) -> float:
     """Mean level spacing ratio r̄ = ⟨min(δ_n, δ_{n+1})/max(δ_n, δ_{n+1})⟩.
 
     Poisson: 0.386, GOE: 0.530, GUE: 0.603.
@@ -83,13 +84,13 @@ def _level_spacing_ratio(eigenvalues: np.ndarray) -> float:
 
 
 def _sector_level_spacing_ratio(
-    K: np.ndarray,
-    omega: np.ndarray,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
     *,
     basis: LevelSpacingBasis,
     magnetisation: int | None = None,
     parity: int | None = None,
-    full_eigenvalues: np.ndarray,
+    full_eigenvalues: NDArray[np.float64],
     max_dense_gib: float | None = None,
 ) -> tuple[float, int | None, int]:
     if basis == "full":
@@ -121,8 +122,8 @@ def _sector_level_spacing_ratio(
 
 
 def compute_sff(
-    K: np.ndarray,
-    omega: np.ndarray,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
     t_max: float = 20.0,
     n_times: int = 200,
     *,
@@ -145,7 +146,7 @@ def compute_sff(
     )
     knm_to_hamiltonian(K, omega)
     H_mat = knm_to_dense_matrix(K, omega, max_dense_gib=max_dense_gib)
-    eigenvalues = np.linalg.eigvalsh(H_mat)
+    eigenvalues = np.linalg.eigvalsh(H_mat).astype(np.float64)
 
     dim = len(eigenvalues)
     gap = float(eigenvalues[1] - eigenvalues[0])
@@ -161,8 +162,8 @@ def compute_sff(
     )
 
     # SFF: K(t) = |Σ_n exp(-iE_n t)|² / d²
-    times = np.linspace(0, t_max, n_times)
-    sff: np.ndarray = np.zeros(n_times)
+    times = np.linspace(0, t_max, n_times, dtype=np.float64)
+    sff: NDArray[np.float64] = np.zeros(n_times)
 
     for idx, t in enumerate(times):
         trace_val: complex = complex(np.sum(np.exp(-1j * eigenvalues * t)))
@@ -184,9 +185,9 @@ def compute_sff(
 
 
 def sff_vs_coupling(
-    omega: np.ndarray,
-    K_topology: np.ndarray,
-    k_range: np.ndarray | None = None,
+    omega: NDArray[np.float64],
+    K_topology: NDArray[np.float64],
+    k_range: NDArray[np.float64] | None = None,
     t_max: float = 20.0,
     n_times: int = 100,
     *,
@@ -200,7 +201,7 @@ def sff_vs_coupling(
     At K_c, look for r̄ transition from Poisson (0.386) toward GOE (0.530).
     """
     if k_range is None:
-        k_range = np.linspace(0.5, 5.0, 15)
+        k_range = np.linspace(0.5, 5.0, 15, dtype=np.float64)
 
     n_k = len(k_range)
     r_bars = np.zeros(n_k)
