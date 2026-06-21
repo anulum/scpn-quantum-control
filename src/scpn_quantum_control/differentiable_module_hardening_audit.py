@@ -235,6 +235,18 @@ def differentiable_module_hardening_registry() -> tuple[DifferentiableModuleHard
             ),
         ),
         _record(
+            "src/scpn_quantum_control/program_ad_adjoint_generation.py",
+            (
+                "tests/test_program_ad_adjoint_generation.py",
+                "tests/test_program_adjoint_replay.py",
+            ),
+            (
+                "reverse-adjoint contribution rules",
+                "adjoint generation dispatcher",
+                "reverse-replay driver boundaries",
+            ),
+        ),
+        _record(
             "src/scpn_quantum_control/program_ad_alias_analysis.py",
             ("tests/test_program_ad_alias_effects.py",),
             ("alias/effect summaries", "static alias-lattice readiness"),
@@ -441,6 +453,22 @@ def differentiable_module_hardening_registry() -> tuple[DifferentiableModuleHard
             "src/scpn_quantum_control/whole_program_trace_runtime.py",
             ("tests/test_whole_program_trace_runtime.py",),
             ("runtime SSA/effect metadata", "source-line trace capture"),
+        ),
+        _record(
+            "src/scpn_quantum_control/whole_program_trace_metadata.py",
+            ("tests/test_whole_program_trace_metadata.py",),
+            (
+                "trace operand shape normalisation",
+                "trace axis and reduction validation",
+            ),
+        ),
+        _record(
+            "src/scpn_quantum_control/whole_program_trace_predicates.py",
+            ("tests/test_whole_program_trace_predicates.py",),
+            (
+                "primal control-flow predicate recording",
+                "predicate-array shape boundaries",
+            ),
         ),
         _record(
             "src/scpn_quantum_control/phase/differentiable_audit.py",
