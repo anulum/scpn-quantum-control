@@ -38,11 +38,13 @@ When the system is incoherent:
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Any
 
 import numpy as np
+from numpy.typing import NDArray
 
 try:
-    from ripser import ripser  # type: ignore[import-untyped]
+    from ripser import ripser
 
     _RIPSER_AVAILABLE = True
 except ImportError:  # pragma: no cover - exercised only without the optional ripser extra.
@@ -59,15 +61,15 @@ class QuantumPHResult:
     n_h1_total: int
     h1_lifetimes: list[float]
     h0_components: int
-    correlation_matrix: np.ndarray
-    distance_matrix: np.ndarray
+    correlation_matrix: NDArray[np.float64]
+    distance_matrix: NDArray[np.float64]
 
 
 def correlation_matrix_from_counts(
     x_counts: dict[str, int],
     y_counts: dict[str, int],
     n_qubits: int,
-) -> np.ndarray:
+) -> NDArray[np.float64]:
     """Build qubit-qubit correlation matrix from X and Y basis measurements.
 
     C_ij = ⟨X_iX_j⟩ + ⟨Y_iY_j⟩
@@ -78,29 +80,29 @@ def correlation_matrix_from_counts(
     """
     xx = _correlator_from_counts(x_counts, n_qubits)
     yy = _correlator_from_counts(y_counts, n_qubits)
-    result: np.ndarray = xx + yy
+    result: NDArray[np.float64] = xx + yy
     return result
 
 
-def _correlator_from_counts(counts: dict[str, int], n_qubits: int) -> np.ndarray:
+def _correlator_from_counts(counts: dict[str, int], n_qubits: int) -> NDArray[np.float64]:
     """Compute ⟨Z_iZ_j⟩ from measurement counts in a given basis."""
     total = sum(counts.values())
     if total == 0:
-        zeros: np.ndarray = np.zeros((n_qubits, n_qubits))
+        zeros: NDArray[np.float64] = np.zeros((n_qubits, n_qubits))
         return zeros
 
-    corr: np.ndarray = np.zeros((n_qubits, n_qubits))
+    corr: NDArray[np.float64] = np.zeros((n_qubits, n_qubits))
     for bitstring, count in counts.items():
         bits = bitstring.replace(" ", "")
         n = min(n_qubits, len(bits))
         vals = np.array([1 - 2 * int(bits[-(q + 1)]) for q in range(n)])
         corr += count * np.outer(vals, vals)
     corr /= total
-    result: np.ndarray = corr
+    result: NDArray[np.float64] = corr
     return result
 
 
-def correlation_to_distance(corr: np.ndarray) -> np.ndarray:
+def correlation_to_distance(corr: NDArray[np.float64]) -> NDArray[np.float64]:
     """Convert correlation matrix to distance matrix for PH.
 
     d_ij = 1 - |C_ij| / max(|C|)
@@ -112,10 +114,10 @@ def correlation_to_distance(corr: np.ndarray) -> np.ndarray:
     np.fill_diagonal(abs_corr, 0.0)
     max_corr: float = float(np.max(abs_corr))
     if max_corr < 1e-15:
-        ones_minus_eye: np.ndarray = np.ones_like(corr) - np.eye(corr.shape[0])
+        ones_minus_eye: NDArray[np.float64] = np.ones_like(corr) - np.eye(corr.shape[0])
         return ones_minus_eye
 
-    dist: np.ndarray = 1.0 - abs_corr / max_corr
+    dist: NDArray[np.float64] = 1.0 - abs_corr / max_corr
     np.fill_diagonal(dist, 0.0)
     return dist
 
@@ -173,11 +175,11 @@ def compare_quantum_classical_ph(
     x_counts: dict[str, int],
     y_counts: dict[str, int],
     n_qubits: int,
-    K: np.ndarray,
-    omega: np.ndarray,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
     t: float = 1.0,
     persistence_threshold: float = 0.1,
-) -> dict:
+) -> dict[str, Any]:
     """Compare quantum vs classical persistent homology at same parameters.
 
     Runs the quantum PH pipeline on hardware counts and the classical
@@ -211,9 +213,9 @@ def ph_sync_scan(
     x_counts_list: list[dict[str, int]],
     y_counts_list: list[dict[str, int]],
     n_qubits: int,
-    K_base_values: np.ndarray,
+    K_base_values: NDArray[np.float64],
     persistence_threshold: float = 0.1,
-) -> dict:
+) -> dict[str, Any]:
     """Scan p_h1 across coupling strengths from hardware data.
 
     Takes lists of measurement counts at different K_base values

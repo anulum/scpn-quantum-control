@@ -31,9 +31,10 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import numpy as np
+from numpy.typing import NDArray
 
 try:
-    from ripser import ripser  # type: ignore[import-untyped]
+    from ripser import ripser
 
     _RIPSER_AVAILABLE = True
 except ImportError:
@@ -51,7 +52,7 @@ class PersistenceResult:
     n_oscillators: int
 
 
-def phase_distance_matrix(theta: np.ndarray) -> np.ndarray:
+def phase_distance_matrix(theta: NDArray[np.float64]) -> NDArray[np.float64]:
     """Build phase distance matrix: d_ij = 1 - cos(theta_j - theta_i)."""
     n = len(theta)
     D = np.zeros((n, n))
@@ -59,12 +60,12 @@ def phase_distance_matrix(theta: np.ndarray) -> np.ndarray:
         for j in range(i + 1, n):
             d = 1.0 - np.cos(theta[j] - theta[i])
             D[i, j] = D[j, i] = d
-    result: np.ndarray = D
+    result: NDArray[np.float64] = D
     return result
 
 
 def compute_persistence(
-    theta: np.ndarray,
+    theta: NDArray[np.float64],
     persistence_threshold: float = 0.1,
 ) -> PersistenceResult:
     """Compute persistent homology of a phase configuration.
@@ -105,7 +106,7 @@ def compute_persistence(
 
 
 def p_h1_vs_temperature(
-    K: np.ndarray,
+    K: NDArray[np.float64],
     t_range: tuple[float, float] = (0.01, 0.5),
     n_temps: int = 20,
     n_thermalize: int = 5000,

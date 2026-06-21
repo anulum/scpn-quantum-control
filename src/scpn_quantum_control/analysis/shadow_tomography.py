@@ -36,9 +36,10 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import numpy as np
+from numpy.typing import NDArray
 
 
-def _build_clifford_group() -> list[np.ndarray]:
+def _build_clifford_group() -> list[NDArray[np.complex128]]:
     """Generate all 24 single-qubit Clifford unitaries via BFS on generators H, S.
 
     Two matrices are considered the same element if they agree up to global phase
@@ -47,9 +48,9 @@ def _build_clifford_group() -> list[np.ndarray]:
     H = np.array([[1, 1], [1, -1]], dtype=complex) / np.sqrt(2)
     S = np.array([[1, 0], [0, 1j]], dtype=complex)
     generators = [H, S]
-    group: list[np.ndarray] = [np.eye(2, dtype=complex)]
+    group: list[NDArray[np.complex128]] = [np.eye(2, dtype=complex)]
 
-    def _same_up_to_phase(A: np.ndarray, B: np.ndarray) -> bool:
+    def _same_up_to_phase(A: NDArray[np.complex128], B: NDArray[np.complex128]) -> bool:
         tr = np.trace(B.conj().T @ A)
         if abs(tr) < 1e-10:
             return False
@@ -69,7 +70,7 @@ def _build_clifford_group() -> list[np.ndarray]:
 
 
 # Single-qubit Clifford group: all 24 elements generated from H and S.
-_CLIFFORD_GATES: list[np.ndarray] = _build_clifford_group()
+_CLIFFORD_GATES: list[NDArray[np.complex128]] = _build_clifford_group()
 
 
 @dataclass
@@ -82,17 +83,17 @@ class ShadowResult:
     shadow_norm_bound: float  # statistical error bound
 
 
-def _random_clifford_layer(n: int, rng: np.random.Generator) -> list[np.ndarray]:
+def _random_clifford_layer(n: int, rng: np.random.Generator) -> list[NDArray[np.complex128]]:
     """Sample random single-qubit Clifford for each qubit."""
     return [_CLIFFORD_GATES[rng.integers(len(_CLIFFORD_GATES))] for _ in range(n)]
 
 
 def _apply_clifford_and_measure(
-    psi: np.ndarray,
-    cliffords: list[np.ndarray],
+    psi: NDArray[np.complex128],
+    cliffords: list[NDArray[np.complex128]],
     n: int,
     rng: np.random.Generator,
-) -> np.ndarray:
+) -> NDArray[np.intp]:
     """Apply single-qubit Cliffords and simulate measurement.
 
     Returns bitstring as array of 0/1.
@@ -100,7 +101,7 @@ def _apply_clifford_and_measure(
     # Build full unitary: U = ⊗_i U_i
     U = cliffords[0]
     for i in range(1, n):
-        U = np.kron(U, cliffords[i])
+        U = np.kron(U, cliffords[i]).astype(np.complex128)
 
     # Rotated state
     psi_rot = U @ psi
@@ -109,15 +110,15 @@ def _apply_clifford_and_measure(
 
     # Sample outcome
     outcome = rng.choice(len(probs), p=probs)
-    bits: np.ndarray = np.array([(outcome >> (n - 1 - i)) & 1 for i in range(n)])
+    bits: NDArray[np.intp] = np.array([(outcome >> (n - 1 - i)) & 1 for i in range(n)])
     return bits
 
 
 def _snapshot_operator(
-    bits: np.ndarray,
-    cliffords: list[np.ndarray],
+    bits: NDArray[np.intp],
+    cliffords: list[NDArray[np.complex128]],
     n: int,
-) -> np.ndarray:
+) -> NDArray[np.complex128]:
     """Build classical shadow snapshot: ⊗_i (3 U_i†|b_i><b_i|U_i - I)."""
     result = np.array([[1.0]], dtype=complex)
     for i in range(n):
@@ -127,12 +128,12 @@ def _snapshot_operator(
         rotated_proj = U_i.conj().T @ proj @ U_i
         snapshot_i = 3.0 * rotated_proj - np.eye(2, dtype=complex)
         result = np.kron(result, snapshot_i)
-    out: np.ndarray = result
+    out: NDArray[np.complex128] = result
     return out
 
 
 def estimate_pauli_expectation(
-    psi: np.ndarray,
+    psi: NDArray[np.complex128],
     n: int,
     pauli_label: str,
     n_shots: int = 500,
@@ -158,7 +159,7 @@ def estimate_pauli_expectation(
     return float(np.median(estimates))
 
 
-def _pauli_from_label(label: str, n: int) -> np.ndarray:
+def _pauli_from_label(label: str, n: int) -> NDArray[np.complex128]:
     """Build n-qubit Pauli matrix from label string."""
     paulis = {
         "I": np.eye(2, dtype=complex),
@@ -169,12 +170,12 @@ def _pauli_from_label(label: str, n: int) -> np.ndarray:
     mat = paulis[label[0]]
     for i in range(1, n):
         mat = np.kron(mat, paulis[label[i]])
-    out: np.ndarray = mat
+    out: NDArray[np.complex128] = mat
     return out
 
 
 def classical_shadow_estimation(
-    psi: np.ndarray,
+    psi: NDArray[np.complex128],
     n: int,
     observables: dict[str, str],
     n_shots: int = 500,
