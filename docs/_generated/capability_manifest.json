@@ -11,7 +11,7 @@
     "public_api_exports": 714,
     "public_documentation_pages": 254,
     "python_model_classes": 1840,
-    "python_model_source_modules": 889,
+    "python_model_source_modules": 890,
     "rust_pyo3_model_wrappers": 137,
     "rust_source_modules": 38,
     "test_files": 2065
@@ -469,7 +469,7 @@
       {
         "package": "compiler",
         "path": "src/scpn_quantum_control/compiler",
-        "python_modules": 1
+        "python_modules": 2
       },
       {
         "package": "control",
@@ -2535,31 +2535,31 @@
       },
       {
         "name": "EnzymeMLIRBenchmarkAttachment",
-        "path": "src/scpn_quantum_control/compiler/mlir.py"
+        "path": "src/scpn_quantum_control/compiler/mlir_enzyme_evidence.py"
       },
       {
         "name": "EnzymeMLIRCompilerADBreadthArtifact",
-        "path": "src/scpn_quantum_control/compiler/mlir.py"
+        "path": "src/scpn_quantum_control/compiler/mlir_enzyme_evidence.py"
       },
       {
         "name": "EnzymeMLIRCompilerADBreadthCaseEvidence",
-        "path": "src/scpn_quantum_control/compiler/mlir.py"
+        "path": "src/scpn_quantum_control/compiler/mlir_enzyme_evidence.py"
       },
       {
         "name": "EnzymeMLIRCompilerADBreadthEvidence",
-        "path": "src/scpn_quantum_control/compiler/mlir.py"
+        "path": "src/scpn_quantum_control/compiler/mlir_enzyme_evidence.py"
       },
       {
         "name": "EnzymeMLIRMaturityAuditResult",
-        "path": "src/scpn_quantum_control/compiler/mlir.py"
+        "path": "src/scpn_quantum_control/compiler/mlir_enzyme_evidence.py"
       },
       {
         "name": "EnzymeMLIRToolchainStatus",
-        "path": "src/scpn_quantum_control/compiler/mlir.py"
+        "path": "src/scpn_quantum_control/compiler/mlir_enzyme_evidence.py"
       },
       {
         "name": "EnzymeNativeExecutionEvidence",
-        "path": "src/scpn_quantum_control/compiler/mlir.py"
+        "path": "src/scpn_quantum_control/compiler/mlir_enzyme_evidence.py"
       },
       {
         "name": "ErrorBudget",
@@ -4015,7 +4015,7 @@
       },
       {
         "name": "MLIRLLVMCorrectnessEvidence",
-        "path": "src/scpn_quantum_control/compiler/mlir.py"
+        "path": "src/scpn_quantum_control/compiler/mlir_enzyme_evidence.py"
       },
       {
         "name": "MLIRModule",
@@ -8533,6 +8533,7 @@
       "src/scpn_quantum_control/bridge/ssgf_w_adapter.py",
       "src/scpn_quantum_control/codegen/ultrascale_hls.py",
       "src/scpn_quantum_control/compiler/mlir.py",
+      "src/scpn_quantum_control/compiler/mlir_enzyme_evidence.py",
       "src/scpn_quantum_control/config.py",
       "src/scpn_quantum_control/control/adaptive_branching.py",
       "src/scpn_quantum_control/control/closed_loop_analysis.py",
