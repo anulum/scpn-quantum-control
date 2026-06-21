@@ -38,6 +38,30 @@ def _assert_allclose(
     cast(Any, np.testing.assert_allclose)(actual, expected, rtol=rtol, atol=atol)
 
 
+def test_program_ad_signal_direct_factories_have_dedicated_module_path() -> None:
+    """Signal direct-rule factories should be available outside the facade."""
+
+    from scpn_quantum_control import differentiable as differentiable_facade
+    from scpn_quantum_control import program_ad_signal_primitives
+
+    assert (
+        program_ad_signal_primitives.program_ad_signal_convolve_derivative_rule
+        is program_ad_signal_convolve_derivative_rule
+    )
+    assert (
+        differentiable_facade.program_ad_signal_convolve_derivative_rule
+        is program_ad_signal_convolve_derivative_rule
+    )
+    assert (
+        program_ad_signal_primitives.program_ad_signal_correlate_derivative_rule
+        is program_ad_signal_correlate_derivative_rule
+    )
+    assert (
+        differentiable_facade.program_ad_signal_correlate_derivative_rule
+        is program_ad_signal_correlate_derivative_rule
+    )
+
+
 def test_program_ad_convolve_matches_signal_kernel_adjoint() -> None:
     """Program AD np.convolve should replay exact signal and kernel adjoints."""
 
@@ -221,6 +245,25 @@ def test_program_ad_convolve_fails_closed_invalid_contracts() -> None:
         whole_program_value_and_grad(
             lambda values: np.sum(np.convolve(values[:0], np.array([1.0]))),
             np.array([1.0, 2.0, 3.0], dtype=np.float64),
+        )
+
+
+def test_program_ad_signal_convolve_direct_rule_fails_closed_invalid_static_contracts() -> None:
+    """Convolve direct rules should reject invalid static signatures and payloads."""
+
+    with pytest.raises(ValueError, match="rank-1 operands"):
+        program_ad_signal_convolve_derivative_rule((2, 2), (3,), mode="full")
+    with pytest.raises(ValueError, match="non-empty operands"):
+        program_ad_signal_convolve_derivative_rule((0,), (3,), mode="full")
+
+    rule = program_ad_signal_convolve_derivative_rule((4,), (3,), mode="same")
+    with pytest.raises(ValueError, match="requires 7 values"):
+        rule.value_fn(np.array([1.0, 2.0], dtype=np.float64))
+    assert rule.vjp_rule is not None
+    with pytest.raises(ValueError, match="cotangent matching output size"):
+        rule.vjp_rule(
+            np.arange(7.0, dtype=np.float64),
+            np.array([1.0, 2.0], dtype=np.float64),
         )
 
 
@@ -409,4 +452,23 @@ def test_program_ad_correlate_fails_closed_invalid_contracts() -> None:
         whole_program_value_and_grad(
             lambda values: np.sum(np.correlate(values[:0], np.array([1.0]))),
             np.array([1.0, 2.0, 3.0], dtype=np.float64),
+        )
+
+
+def test_program_ad_signal_correlate_direct_rule_fails_closed_invalid_static_contracts() -> None:
+    """Correlate direct rules should reject invalid static signatures and payloads."""
+
+    with pytest.raises(ValueError, match="rank-1 operands"):
+        program_ad_signal_correlate_derivative_rule((2, 2), (3,), mode="full")
+    with pytest.raises(ValueError, match="non-empty operands"):
+        program_ad_signal_correlate_derivative_rule((0,), (3,), mode="full")
+
+    rule = program_ad_signal_correlate_derivative_rule((4,), (3,), mode="same")
+    with pytest.raises(ValueError, match="requires 7 values"):
+        rule.value_fn(np.array([1.0, 2.0], dtype=np.float64))
+    assert rule.vjp_rule is not None
+    with pytest.raises(ValueError, match="cotangent matching output size"):
+        rule.vjp_rule(
+            np.arange(7.0, dtype=np.float64),
+            np.array([1.0, 2.0], dtype=np.float64),
         )
