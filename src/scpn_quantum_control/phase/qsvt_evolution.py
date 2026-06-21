@@ -43,6 +43,7 @@ from operator import index
 from typing import Any
 
 import numpy as np
+from numpy.typing import NDArray
 
 from ..bridge.knm_hamiltonian import (
     knm_to_dense_matrix,
@@ -69,7 +70,7 @@ class QSVTResourceEstimate:
     n_ancilla_qsvt: int  # ancilla qubits for block encoding
 
 
-def _as_real_numeric_array(name: str, values: object) -> np.ndarray:
+def _as_real_numeric_array(name: str, values: object) -> NDArray[np.float64]:
     """Return a real numeric array without implicit string/bool/object coercion."""
     try:
         raw = np.asarray(values)
@@ -94,7 +95,9 @@ def _as_real_scalar(name: str, value: object) -> float:
     return float(raw)
 
 
-def _validate_problem_inputs(K: np.ndarray, omega: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+def _validate_problem_inputs(
+    K: NDArray[np.float64], omega: NDArray[np.float64]
+) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
     K_arr = _as_real_numeric_array("K", K)
     omega_arr = _as_real_numeric_array("omega", omega)
     if K_arr.ndim != 2 or K_arr.shape[0] != K_arr.shape[1]:
@@ -125,7 +128,7 @@ def _validate_resource_budget(
     return alpha_value, time_value, epsilon_value
 
 
-def hamiltonian_1norm(K: np.ndarray, omega: np.ndarray) -> float:
+def hamiltonian_1norm(K: NDArray[np.float64], omega: NDArray[np.float64]) -> float:
     """1-norm of the Kuramoto-XY Hamiltonian: Σ |c_i| over Pauli terms.
 
     Computed directly from the SparsePauliOp for exactness.
@@ -136,8 +139,8 @@ def hamiltonian_1norm(K: np.ndarray, omega: np.ndarray) -> float:
 
 
 def hamiltonian_spectral_norm(
-    K: np.ndarray,
-    omega: np.ndarray,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
     *,
     max_dense_gib: float | None = None,
 ) -> float:
@@ -201,8 +204,8 @@ def trotter2_step_count(alpha: float, t: float, epsilon: float) -> int:
 
 
 def qsvt_resource_estimate(
-    K: np.ndarray,
-    omega: np.ndarray,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
     t: float = 1.0,
     epsilon: float = 0.01,
     *,
@@ -248,7 +251,7 @@ def qsvt_resource_estimate(
     )
 
 
-def qsp_phase_angles(degree: int, *, allow_initial_guess: bool = False) -> np.ndarray:
+def qsp_phase_angles(degree: int, *, allow_initial_guess: bool = False) -> NDArray[np.float64]:
     """Return QSP phase angles for a cosine polynomial only when explicit.
 
     Production QSP phase synthesis requires a complementary-polynomial
@@ -273,7 +276,7 @@ def qsp_phase_angles(degree: int, *, allow_initial_guess: bool = False) -> np.nd
     # Correct first and last for QSP convention
     phases[0] = np.pi / 4
     phases[-1] = np.pi / 4
-    result: np.ndarray = phases
+    result: NDArray[np.float64] = phases
     return result
 
 

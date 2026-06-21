@@ -25,7 +25,10 @@ Dalibard et al., PRL 68, 580 (1992).
 
 from __future__ import annotations
 
+from typing import Any
+
 import numpy as np
+from numpy.typing import NDArray
 from scipy import sparse
 from scipy.sparse.linalg import expm_multiply
 
@@ -34,24 +37,24 @@ from ..dense_budget import require_dense_allocation
 
 
 def _build_effective_hamiltonian(
-    H: np.ndarray,
-    lindblad_ops: list[np.ndarray],
-) -> np.ndarray:
+    H: NDArray[np.complex128],
+    lindblad_ops: list[NDArray[np.complex128]],
+) -> NDArray[np.complex128]:
     """Build H_eff = H - (i/2) Σ L†L."""
-    H_eff: np.ndarray = H.copy().astype(np.complex128)
+    H_eff: NDArray[np.complex128] = H.copy().astype(np.complex128)
     for L in lindblad_ops:
         H_eff -= 0.5j * (L.conj().T @ L)
     return H_eff
 
 
 def _validate_mcwf_inputs(
-    K: np.ndarray,
-    omega: np.ndarray,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
     gamma_amp: float,
     gamma_deph: float,
     t_max: float,
     dt: float,
-) -> tuple[np.ndarray, np.ndarray]:
+) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
     K_arr = np.asarray(K, dtype=np.float64)
     omega_arr = np.asarray(omega, dtype=np.float64)
     if K_arr.ndim != 2 or K_arr.shape[0] != K_arr.shape[1]:
@@ -104,7 +107,7 @@ def _build_sparse_lindblad_ops(
     return ops
 
 
-def _initial_product_state(omega: np.ndarray) -> np.ndarray:
+def _initial_product_state(omega: NDArray[np.float64]) -> NDArray[np.complex128]:
     psi = np.array([1.0 + 0.0j], dtype=np.complex128)
     for omega_i in omega:
         angle = float(omega_i) % (2 * np.pi)
@@ -115,8 +118,8 @@ def _initial_product_state(omega: np.ndarray) -> np.ndarray:
 
 
 def mcwf_trajectory(
-    K: np.ndarray,
-    omega: np.ndarray,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
     gamma_amp: float = 0.05,
     gamma_deph: float = 0.0,
     t_max: float = 1.0,
@@ -124,7 +127,7 @@ def mcwf_trajectory(
     seed: int | None = None,
     *,
     max_dense_gib: float | None = None,
-) -> dict:
+) -> dict[str, Any]:
     """Run a single MCWF trajectory.
 
     Parameters
@@ -217,8 +220,8 @@ def mcwf_trajectory(
 
 
 def mcwf_ensemble(
-    K: np.ndarray,
-    omega: np.ndarray,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
     gamma_amp: float = 0.05,
     gamma_deph: float = 0.0,
     t_max: float = 1.0,
@@ -227,7 +230,7 @@ def mcwf_ensemble(
     seed: int | None = None,
     *,
     max_dense_gib: float | None = None,
-) -> dict:
+) -> dict[str, Any]:
     """Run an ensemble of MCWF trajectories and average.
 
     Returns dict with keys: times, R_mean, R_std, R_trajectories, total_jumps
@@ -268,7 +271,7 @@ def mcwf_ensemble(
     }
 
 
-def _order_param_vec(psi: np.ndarray, n: int) -> float:
+def _order_param_vec(psi: NDArray[np.complex128], n: int) -> float:
     """Order parameter R from state vector in project Kronecker qubit order."""
     z = 0.0 + 0.0j
     dim = 2**n

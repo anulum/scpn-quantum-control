@@ -19,7 +19,10 @@ For production use, consider NetKet (https://netket.org).
 
 from __future__ import annotations
 
+from typing import Any
+
 import numpy as np
+from numpy.typing import NDArray
 
 from ..bridge.knm_hamiltonian import knm_to_dense_matrix
 from ..dense_budget import require_dense_allocation
@@ -49,16 +52,16 @@ class RBMWavefunction:
         self.b = self.rng.normal(0, scale, self.n_hid).astype(np.complex128)
         self.W = self.rng.normal(0, scale, (self.n_hid, self.n_vis)).astype(np.complex128)
 
-    def log_psi(self, sigma: np.ndarray) -> complex:
+    def log_psi(self, sigma: NDArray[np.float64]) -> complex:
         """Compute log(ψ(σ)) for a spin configuration σ ∈ {+1,-1}^n."""
         theta = self.W @ sigma + self.b
         return complex(np.sum(self.a * sigma) + np.sum(np.log(np.cosh(theta))))
 
-    def psi(self, sigma: np.ndarray) -> complex:
+    def psi(self, sigma: NDArray[np.float64]) -> complex:
         """Compute ψ(σ)."""
         return complex(np.exp(self.log_psi(sigma)))
 
-    def all_amplitudes(self) -> np.ndarray:
+    def all_amplitudes(self) -> NDArray[np.complex128]:
         """Compute ψ(σ) for all 2^n configurations (exact, for small n)."""
         dim = 2**self.n_vis
         amps = np.zeros(dim, dtype=np.complex128)
@@ -74,8 +77,8 @@ class RBMWavefunction:
 
 
 def vmc_ground_state(
-    K: np.ndarray,
-    omega: np.ndarray,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
     n_hidden: int | None = None,
     learning_rate: float = 0.01,
     n_iterations: int = 200,
@@ -83,7 +86,7 @@ def vmc_ground_state(
     seed: int | None = None,
     *,
     max_dense_gib: float | None = None,
-) -> dict:
+) -> dict[str, Any]:
     """Exact-enumeration RBM ground-state search with finite-difference gradients.
 
     For small systems (n<=12), uses exact summation over all configurations.

@@ -26,6 +26,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 
 import numpy as np
+from numpy.typing import NDArray
 from scipy.special import hyp2f1
 
 from ..accel.rust_import import optional_rust_engine
@@ -53,10 +54,10 @@ def _validate_grid_points(n_points: int) -> None:
 class ICIPulse:
     """ICI three-segment pulse envelope."""
 
-    times: np.ndarray  # time grid
-    omega_p: np.ndarray  # pump Rabi frequency Ω_P(t)
-    omega_s: np.ndarray  # Stokes Rabi frequency Ω_S(t)
-    theta: np.ndarray  # mixing angle θ(t)
+    times: NDArray[np.float64]  # time grid
+    omega_p: NDArray[np.float64]  # pump Rabi frequency Ω_P(t)
+    omega_s: NDArray[np.float64]  # Stokes Rabi frequency Ω_S(t)
+    theta: NDArray[np.float64]  # mixing angle θ(t)
     omega_total: float  # peak Rabi frequency Ω₀
     gamma_decay: float  # Lindblad decay rate γ
     fidelity: float  # achieved fidelity (from BVP solution)
@@ -66,8 +67,8 @@ class ICIPulse:
 class HypergeometricPulse:
     """(α,β)-hypergeometric pulse envelope."""
 
-    times: np.ndarray
-    envelope: np.ndarray  # Ω(t) / Ω₀
+    times: NDArray[np.float64]
+    envelope: NDArray[np.float64]  # Ω(t) / Ω₀
     alpha: float
     beta: float
     gamma_width: float  # pulse width parameter γ
@@ -90,10 +91,10 @@ class PulseSchedule:
 
 
 def ici_mixing_angle(
-    t: np.ndarray,
+    t: NDArray[np.float64],
     t_total: float,
     theta_jump: float = 0.3,
-) -> np.ndarray:
+) -> NDArray[np.float64]:
     """Compute ICI mixing angle θ(t) for three-segment trajectory.
 
     Segment 1 (intuitive): θ jumps from 0 to θ_jump
@@ -109,7 +110,7 @@ def ici_mixing_angle(
         theta_jump: jump angle at boundaries (controls speed vs. loss)
     """
     if _HAS_RUST and _ici_mixing_rust is not None:
-        result: np.ndarray = np.asarray(
+        result: NDArray[np.float64] = np.asarray(
             _ici_mixing_rust(np.asarray(t, dtype=np.float64), t_total, theta_jump)
         )
         return result
@@ -168,7 +169,7 @@ def build_ici_pulse(
     if not 0 < theta_jump < np.pi / 4:
         raise ValueError(f"theta_jump must be in (0, π/4), got {theta_jump}")
 
-    times = np.linspace(0, t_total, n_points)
+    times = np.linspace(0, t_total, n_points, dtype=np.float64)
     theta = ici_mixing_angle(times, t_total, theta_jump)
     omega_p = omega_0 * np.sin(theta)
     omega_s = omega_0 * np.cos(theta)
@@ -193,7 +194,7 @@ def build_ici_pulse(
 def ici_three_level_evolution(
     pulse: ICIPulse,
     gamma_decay: float | None = None,
-) -> np.ndarray:
+) -> NDArray[np.float64]:
     """Simulate 3-level Λ system under ICI pulse.
 
     States: |g⟩ (ground), |e⟩ (excited), |s⟩ (target).
@@ -205,7 +206,7 @@ def ici_three_level_evolution(
     gamma = gamma_decay if gamma_decay is not None else pulse.gamma_decay
 
     if _HAS_RUST and _ici_evol_rust is not None:
-        flat: np.ndarray = np.asarray(
+        flat: NDArray[np.float64] = np.asarray(
             _ici_evol_rust(
                 np.asarray(pulse.times, dtype=np.float64),
                 np.asarray(pulse.omega_p, dtype=np.float64),
@@ -271,11 +272,11 @@ def ici_three_level_evolution(
 
 
 def hypergeometric_envelope(
-    t: np.ndarray,
+    t: NDArray[np.float64],
     alpha: float,
     beta: float,
     gamma_width: float,
-) -> np.ndarray:
+) -> NDArray[np.float64]:
     """Compute (α,β)-hypergeometric pulse envelope.
 
     Ω(t)/Ω₀ = sech(γt) × ₂F₁(α, β; (α+β+1)/2; (1+tanh(γt))/2)
@@ -301,7 +302,7 @@ def hypergeometric_envelope(
         raise ValueError(f"alpha, beta must be >= 0, got ({alpha}, {beta})")
 
     if _HAS_RUST and _envelope_rust is not None:
-        result: np.ndarray = np.asarray(
+        result: NDArray[np.float64] = np.asarray(
             _envelope_rust(np.asarray(t, dtype=np.float64), alpha, beta, gamma_width)
         )
         return result
@@ -346,7 +347,7 @@ def build_hypergeometric_pulse(
     elif not np.isfinite(gamma_width) or gamma_width <= 0:
         raise ValueError("gamma_width must be finite and positive")
 
-    times = np.linspace(-t_total / 2, t_total / 2, n_points)
+    times = np.linspace(-t_total / 2, t_total / 2, n_points, dtype=np.float64)
     envelope = hypergeometric_envelope(times, alpha, beta, gamma_width)
 
     return HypergeometricPulse(
@@ -388,7 +389,7 @@ def infidelity_bound(
 
 def build_trotter_pulse_schedule(
     n_qubits: int,
-    k_matrix: np.ndarray,
+    k_matrix: NDArray[np.float64],
     t_step: float,
     omega_0: float = 10.0,
     alpha: float = 0.5,

@@ -19,6 +19,7 @@ from __future__ import annotations
 from typing import Any
 
 import numpy as np
+from numpy.typing import NDArray
 
 from ..dense_budget import require_dense_allocation
 
@@ -76,15 +77,15 @@ def jax_rbm_energy(
 
 
 def jax_vmc_ground_state(
-    K: np.ndarray,
-    omega: np.ndarray,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
     n_hidden: int | None = None,
     learning_rate: float = 0.01,
     n_iterations: int = 200,
     seed: int = 42,
     *,
     max_dense_gib: float | None = None,
-) -> dict:
+) -> dict[str, Any]:
     """VMC ground state search with JAX auto-differentiation.
 
     ~100× faster than numpy finite-difference version in nqs_ansatz.py.
@@ -125,8 +126,8 @@ def jax_vmc_ground_state(
         "W": 0.01 * jax.random.normal(k3, (n_hid, n)),
     }
 
-    @jit
-    def loss_fn(p: dict) -> Any:
+    @jit  # type: ignore[untyped-decorator]
+    def loss_fn(p: dict[str, Any]) -> Any:
         return jax_rbm_energy(p, H, n)
 
     grad_fn = jit(grad(loss_fn))

@@ -24,15 +24,16 @@ from __future__ import annotations
 from typing import Any
 
 import numpy as np
+from numpy.typing import NDArray
 
 from ..dense_budget import require_dense_allocation
 
 
 def batch_energy_numpy(
-    H: np.ndarray,
-    param_sets: np.ndarray,
+    H: NDArray[np.complex128],
+    param_sets: NDArray[np.float64],
     ansatz_fn: Any,
-) -> np.ndarray:
+) -> NDArray[np.float64]:
     """Evaluate energy for a batch of parameter sets (CPU baseline).
 
     Parameters
@@ -58,11 +59,11 @@ def batch_energy_numpy(
 
 
 def batch_energy_torch(
-    H: np.ndarray,
-    param_sets: np.ndarray,
+    H: NDArray[np.complex128],
+    param_sets: NDArray[np.float64],
     ansatz_fn: Any,
     device: str = "cuda",
-) -> np.ndarray:
+) -> NDArray[np.float64]:
     """Evaluate energy for a batch of parameter sets on GPU via PyTorch.
 
     Parameters
@@ -95,20 +96,20 @@ def batch_energy_torch(
         psi = psi / torch.linalg.norm(psi)
         energies[i] = torch.real(psi.conj() @ H_t @ psi)
 
-    result: np.ndarray = energies.detach().cpu().numpy()
+    result: NDArray[np.float64] = energies.detach().cpu().numpy()
     return result
 
 
 def batch_vqe_scan(
-    K: np.ndarray,
-    omega: np.ndarray,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
     n_samples: int = 100,
     n_params: int | None = None,
     seed: int = 42,
     use_gpu: bool = False,
     *,
     max_dense_gib: float | None = None,
-) -> dict:
+) -> dict[str, Any]:
     """Scan VQE landscape by evaluating random parameter sets in batch.
 
     Uses a product Ry-layer diagnostic ansatz and random parameter scan.
@@ -149,9 +150,9 @@ def batch_vqe_scan(
         raise ValueError("n_params must be >= 1")
 
     rng = np.random.default_rng(seed)
-    param_sets = rng.normal(0, 1.0, (n_samples, n_params)).astype(np.float32)
+    param_sets = rng.normal(0, 1.0, (n_samples, n_params)).astype(np.float64)
 
-    def numpy_ansatz(params: np.ndarray) -> np.ndarray:
+    def numpy_ansatz(params: NDArray[np.float64]) -> NDArray[np.complex128]:
         """Product Ry-layer diagnostic ansatz producing a statevector."""
         psi = np.zeros(dim, dtype=np.complex128)
         psi[0] = 1.0

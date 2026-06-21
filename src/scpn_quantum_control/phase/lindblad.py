@@ -18,14 +18,17 @@ compatible with the QuantumKuramotoSolver interface.
 
 from __future__ import annotations
 
+from typing import Any
+
 import numpy as np
+from numpy.typing import NDArray
 from scipy.integrate import solve_ivp
 
 from ..bridge.knm_hamiltonian import knm_to_dense_matrix
 from ..dense_budget import require_dense_allocation
 
 
-def _as_real_numeric_array(name: str, values: object) -> np.ndarray:
+def _as_real_numeric_array(name: str, values: object) -> NDArray[np.float64]:
     """Return a real numeric array without implicit string/bool/object coercion."""
     try:
         raw = np.asarray(values)
@@ -58,11 +61,11 @@ def _as_nonnegative_rate(name: str, value: object) -> float:
 
 def _validate_lindblad_inputs(
     n_oscillators: int,
-    K_coupling: np.ndarray,
-    omega_natural: np.ndarray,
+    K_coupling: NDArray[np.float64],
+    omega_natural: NDArray[np.float64],
     gamma_amp: float,
     gamma_deph: float,
-) -> tuple[int, np.ndarray, np.ndarray, float, float]:
+) -> tuple[int, NDArray[np.float64], NDArray[np.float64], float, float]:
     if isinstance(n_oscillators, bool) or not isinstance(n_oscillators, int):
         raise ValueError("n_oscillators must be a positive integer.")
     if n_oscillators < 1:
@@ -99,7 +102,7 @@ def _validate_time_grid(t_max: float, dt: float) -> tuple[float, float]:
     return t_max_value, dt_value
 
 
-def _sigma(pauli: str, qubit: int, n: int) -> np.ndarray:
+def _sigma(pauli: str, qubit: int, n: int) -> NDArray[np.complex128]:
     """Single-qubit Pauli operator on qubit `qubit` of `n`-qubit system."""
     matrices = {
         "X": np.array([[0, 1], [1, 0]], dtype=np.complex128),
@@ -108,12 +111,12 @@ def _sigma(pauli: str, qubit: int, n: int) -> np.ndarray:
         "+": np.array([[0, 1], [0, 0]], dtype=np.complex128),
         "-": np.array([[0, 0], [1, 0]], dtype=np.complex128),
     }
-    op: np.ndarray = np.eye(1, dtype=np.complex128)
+    op: NDArray[np.complex128] = np.eye(1, dtype=np.complex128)
     for i in range(n):
         if i == qubit:
-            op = np.kron(op, matrices[pauli])  # type: ignore[assignment]
+            op = np.kron(op, matrices[pauli]).astype(np.complex128)
         else:
-            op = np.kron(op, np.eye(2, dtype=np.complex128))  # type: ignore[assignment]
+            op = np.kron(op, np.eye(2, dtype=np.complex128)).astype(np.complex128)
     return op
 
 
@@ -137,8 +140,8 @@ class LindbladKuramotoSolver:
     def __init__(
         self,
         n_oscillators: int,
-        K_coupling: np.ndarray,
-        omega_natural: np.ndarray,
+        K_coupling: NDArray[np.float64],
+        omega_natural: NDArray[np.float64],
         gamma_amp: float = 0.0,
         gamma_deph: float = 0.0,
         *,
@@ -153,8 +156,8 @@ class LindbladKuramotoSolver:
         )
         self.max_dense_gib = max_dense_gib
         self.dim = 2**self.n
-        self._H: np.ndarray | None = None
-        self._lindblad_ops: list[np.ndarray] = []
+        self._H: NDArray[np.complex128] | None = None
+        self._lindblad_ops: list[NDArray[np.complex128]] = []
 
     def _dense_object_count(self) -> int:
         channel_count = 0
@@ -183,11 +186,12 @@ class LindbladKuramotoSolver:
             if self.gamma_deph > 0:
                 self._lindblad_ops.append(np.sqrt(self.gamma_deph / 2) * _sigma("Z", i, self.n))
 
-    def _rhs(self, _t: float, rho_flat: np.ndarray) -> np.ndarray:
+    def _rhs(self, _t: float, rho_flat: NDArray[np.complex128]) -> NDArray[np.complex128]:
         """Lindblad RHS in flattened form for scipy integrator."""
         rho = rho_flat.reshape(self.dim, self.dim)
 
         # Coherent part: -i[H, rho]
+        assert self._H is not None
         drho = -1j * (self._H @ rho - rho @ self._H)
 
         # Dissipative part
@@ -196,9 +200,9 @@ class LindbladKuramotoSolver:
             LdL = Ld @ L
             drho += L @ rho @ Ld - 0.5 * (LdL @ rho + rho @ LdL)
 
-        return np.asarray(drho.ravel())
+        return np.asarray(drho.ravel(), dtype=np.complex128)
 
-    def order_parameter(self, rho: np.ndarray) -> float:
+    def order_parameter(self, rho: NDArray[np.complex128]) -> float:
         """Extract Kuramoto R from density matrix."""
         z = 0.0 + 0.0j
         for i in range(self.n):
@@ -208,21 +212,21 @@ class LindbladKuramotoSolver:
         z /= self.n
         return float(abs(z))
 
-    def purity(self, rho: np.ndarray) -> float:
+    def purity(self, rho: NDArray[np.complex128]) -> float:
         """Tr(ρ²) — 1 for pure state, 1/dim for maximally mixed."""
         return float(np.trace(rho @ rho).real)
 
-    def _initial_density_matrix(self) -> np.ndarray:
+    def _initial_density_matrix(self) -> NDArray[np.complex128]:
         """Initial product state density matrix used by the Lindblad solver."""
         rho0 = np.zeros((self.dim, self.dim), dtype=np.complex128)
         rho0[0, 0] = 1.0
-        U: np.ndarray = np.eye(1, dtype=np.complex128)
+        U: NDArray[np.complex128] = np.eye(1, dtype=np.complex128)
         for i in range(self.n):
             angle = float(self.omega[i]) % (2 * np.pi)
             c, s = np.cos(angle / 2), np.sin(angle / 2)
             ry = np.array([[c, -s], [s, c]], dtype=np.complex128)
-            U = np.kron(U, ry)  # type: ignore[assignment]
-        result: np.ndarray = U @ rho0 @ U.conj().T
+            U = np.kron(U, ry).astype(np.complex128)
+        result: NDArray[np.complex128] = U @ rho0 @ U.conj().T
         return result
 
     def run(
@@ -232,7 +236,7 @@ class LindbladKuramotoSolver:
         method: str = "RK45",
         *,
         max_dense_gib: float | None = None,
-    ) -> dict:
+    ) -> dict[str, Any]:
         """Time-evolve under Lindblad dynamics.
 
         Returns dict with keys: times, R, purity, rho_final.

@@ -37,8 +37,9 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import numpy as np
+from numpy.typing import NDArray
 from qiskit import QuantumCircuit
-from qiskit.quantum_info import Statevector
+from qiskit.quantum_info import SparsePauliOp, Statevector
 
 from ..bridge.knm_hamiltonian import knm_to_ansatz, knm_to_hamiltonian
 from ..dense_budget import require_dense_allocation
@@ -55,7 +56,7 @@ class VarQITEResult:
     n_steps: int
     energy_history: list[float]
     converged: bool
-    optimal_params: np.ndarray
+    optimal_params: NDArray[np.float64]
 
 
 def _qubits_from_state_length(state_length: int) -> int:
@@ -67,12 +68,12 @@ def _qubits_from_state_length(state_length: int) -> int:
 
 def _varqite_matrices(
     ansatz: QuantumCircuit,
-    params: np.ndarray,
-    H_op,
+    params: NDArray[np.float64],
+    H_op: SparsePauliOp,
     epsilon: float = 1e-4,
     *,
     max_dense_gib: float | None = None,
-) -> tuple[np.ndarray, np.ndarray]:
+) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
     """Compute VarQITE A matrix and C vector.
 
     A_ij = Re(<∂_i ψ|∂_j ψ>)
@@ -103,7 +104,7 @@ def _varqite_matrices(
     e_mean = float(np.real(psi_0.conj() @ H_mat @ psi_0))
     H_shifted = H_mat - e_mean * np.eye(len(psi_0))
 
-    dpsi: np.ndarray = np.zeros((n_params, len(psi_0)), dtype=complex)
+    dpsi: NDArray[np.complex128] = np.zeros((n_params, len(psi_0)), dtype=np.complex128)
     for k in range(n_params):
         p_plus = params.copy()
         p_plus[k] += epsilon
@@ -127,8 +128,8 @@ def _varqite_matrices(
 
 
 def varqite_ground_state(
-    K: np.ndarray,
-    omega: np.ndarray,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
     tau_total: float = 3.0,
     n_steps: int = 30,
     ansatz_reps: int = 2,

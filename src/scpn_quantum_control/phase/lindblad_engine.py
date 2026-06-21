@@ -20,6 +20,7 @@ from __future__ import annotations
 from typing import Any
 
 import numpy as np
+from numpy.typing import NDArray
 from qiskit.quantum_info import SparsePauliOp
 from scipy.integrate import solve_ivp
 from scipy.sparse.linalg import expm_multiply
@@ -40,8 +41,8 @@ class LindbladSyncEngine:
 
     def __init__(
         self,
-        K: np.ndarray,
-        omega: np.ndarray,
+        K: NDArray[np.float64],
+        omega: NDArray[np.float64],
         gamma: float = 0.1,
         *,
         max_dense_gib: float | None = None,
@@ -54,8 +55,8 @@ class LindbladSyncEngine:
         self.max_dense_gib = max_dense_gib
 
         # Dense density-matrix components are built lazily by the density path.
-        self.H_dense: np.ndarray | None = None
-        self.L_ops_dense: list[np.ndarray] = []
+        self.H_dense: NDArray[np.complex128] | None = None
+        self.L_ops_dense: list[NDArray[np.complex128]] = []
 
         # Sparse components for trajectory path
         self.H_sparse = knm_to_sparse_matrix(K, omega)
@@ -81,12 +82,12 @@ class LindbladSyncEngine:
         self.H_dense = knm_to_dense_matrix(self.K, self.omega, max_dense_gib=budget_gib)
         self.L_ops_dense = self._build_jump_operators_dense()
 
-    def _build_jump_operators_dense(self) -> list[np.ndarray]:
-        L_ops = []
+    def _build_jump_operators_dense(self) -> list[NDArray[np.complex128]]:
+        L_ops: list[NDArray[np.complex128]] = []
         for i in range(self.n):
             for j in range(self.n):
                 if i != j and abs(self.K[i, j]) > 1e-5:
-                    L = np.zeros((self.dim, self.dim), dtype=complex)
+                    L = np.zeros((self.dim, self.dim), dtype=np.complex128)
                     for idx in range(self.dim):
                         if ((idx >> i) & 1) == 1 and ((idx >> j) & 1) == 0:
                             flipped = idx ^ ((1 << i) | (1 << j))
@@ -94,7 +95,7 @@ class LindbladSyncEngine:
                     L_ops.append(L)
         return L_ops
 
-    def _build_jump_operators_sparse(self) -> list:
+    def _build_jump_operators_sparse(self) -> list[Any]:
         from scipy.sparse import csr_matrix
 
         if _HAS_RUST:  # pragma: no cover
@@ -104,7 +105,7 @@ class LindbladSyncEngine:
             r_rows_a = np.array(r_rows)
             r_cols_a = np.array(r_cols)
             r_starts_a = np.array(r_starts)
-            rust_ops: list = []
+            rust_ops: list[Any] = []
             for k in range(r_n_ops):
                 s, e = int(r_starts_a[k]), int(r_starts_a[k + 1])
                 r_data = np.ones(e - s, dtype=complex)
@@ -116,7 +117,7 @@ class LindbladSyncEngine:
                 rust_ops.append(L)
             return rust_ops
 
-        L_ops: list = []
+        L_ops: list[Any] = []
         for i in range(self.n):
             for j in range(self.n):
                 if i != j and abs(self.K[i, j]) > 1e-5:
@@ -135,9 +136,12 @@ class LindbladSyncEngine:
                     L_ops.append(L)
         return L_ops
 
-    def _build_anti_hermitian_sum(self) -> np.ndarray:
+    def _build_anti_hermitian_sum(self) -> NDArray[np.float64]:
         if _HAS_RUST:  # pragma: no cover
-            return np.array(_engine.lindblad_anti_hermitian_diag(self.K.ravel(), self.n, 1e-5))
+            return np.array(
+                _engine.lindblad_anti_hermitian_diag(self.K.ravel(), self.n, 1e-5),
+                dtype=np.float64,
+            )
 
         diag = np.zeros(self.dim, dtype=float)
         for i in range(self.n):
@@ -148,7 +152,7 @@ class LindbladSyncEngine:
                             diag[idx] += 1.0
         return diag
 
-    def liouvillian(self, rho_flat: np.ndarray) -> np.ndarray:
+    def liouvillian(self, rho_flat: NDArray[np.complex128]) -> NDArray[np.complex128]:
         """Apply the Lindblad generator to a flattened density matrix."""
         if self.H_dense is None:
             self._ensure_density_matrix_components()
@@ -160,7 +164,7 @@ class LindbladSyncEngine:
             drho += self.gamma * (
                 L @ rho_mat @ L_dag - 0.5 * (L_dag @ L @ rho_mat + rho_mat @ L_dag @ L)
             )
-        result: np.ndarray = drho.flatten()
+        result: NDArray[np.complex128] = drho.flatten()
         return result
 
     def evolve(
@@ -168,7 +172,7 @@ class LindbladSyncEngine:
         t_max: float,
         n_steps: int = 100,
         method: str = "trajectory",
-        initial_state: np.ndarray | None = None,
+        initial_state: NDArray[np.complex128] | None = None,
         n_traj: int = 20,
         seed: int = 42,
         observables: list[SparsePauliOp] | None = None,
@@ -194,14 +198,15 @@ class LindbladSyncEngine:
         self,
         t_max: float,
         n_steps: int,
-        initial_rho: np.ndarray | None,
+        initial_rho: NDArray[np.complex128] | None,
         observables: list[SparsePauliOp] | None,
         *,
         max_dense_gib: float | None,
     ) -> dict[str, Any]:
         self._ensure_density_matrix_components(max_dense_gib)
+        rho0: NDArray[np.complex128]
         if initial_rho is None:
-            rho0 = np.zeros((self.dim, self.dim), dtype=complex)
+            rho0 = np.zeros((self.dim, self.dim), dtype=np.complex128)
             rho0[0, 0] = 1.0
         else:
             rho0 = initial_rho
@@ -238,7 +243,7 @@ class LindbladSyncEngine:
         t_max: float,
         n_steps: int,
         n_traj: int,
-        initial_psi: np.ndarray | None,
+        initial_psi: NDArray[np.complex128] | None,
         seed: int,
         observables: list[SparsePauliOp] | None,
     ) -> dict[str, Any]:
@@ -251,12 +256,14 @@ class LindbladSyncEngine:
         H_eff = self.H_sparse - 0.5j * self.gamma * diags(self.anti_hermitian_sum)
         A = -1j * H_eff * dt
 
-        obs_mats = [o.to_matrix(sparse=True) for o in (observables or [])]
-        obs_avg = {str(o): np.zeros(n_steps + 1) for o in (observables or [])}
+        obs_mats: list[Any] = [o.to_matrix(sparse=True) for o in (observables or [])]
+        obs_avg: dict[str, NDArray[np.float64]] = {
+            str(o): np.zeros(n_steps + 1) for o in (observables or [])
+        }
 
         # Only store density matrix if small N
-        avg_rho = (
-            [np.zeros((self.dim, self.dim), dtype=complex) for _ in range(n_steps + 1)]
+        avg_rho: list[NDArray[np.complex128]] | None = (
+            [np.zeros((self.dim, self.dim), dtype=np.complex128) for _ in range(n_steps + 1)]
             if self.n <= 10
             else None
         )
@@ -290,7 +297,15 @@ class LindbladSyncEngine:
             res["observables"] = {k: list(v) for k, v in obs_avg.items()}
         return res
 
-    def _update_stats(self, step, psi, avg_rho, obs_avg, obs_mats, n_traj):
+    def _update_stats(
+        self,
+        step: int,
+        psi: NDArray[np.complex128],
+        avg_rho: list[NDArray[np.complex128]] | None,
+        obs_avg: dict[str, NDArray[np.float64]],
+        obs_mats: list[Any],
+        n_traj: int,
+    ) -> None:
         if avg_rho is not None:
             avg_rho[step] += np.outer(psi, psi.conj()) / n_traj
         for i, M in enumerate(obs_mats):

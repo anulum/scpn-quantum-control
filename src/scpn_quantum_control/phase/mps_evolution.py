@@ -19,6 +19,7 @@ from __future__ import annotations
 from typing import Any
 
 import numpy as np
+from numpy.typing import NDArray
 
 try:
     import quimb
@@ -27,8 +28,8 @@ try:
     _QUIMB_AVAILABLE = True
 except Exception:
     _QUIMB_AVAILABLE = False
-    quimb = None  # type: ignore[assignment]
-    qtn = None  # type: ignore[assignment]
+    quimb = None
+    qtn = None
 
 
 def is_quimb_available() -> bool:
@@ -36,7 +37,7 @@ def is_quimb_available() -> bool:
     return _QUIMB_AVAILABLE
 
 
-def _long_range_coupling_l1(K: np.ndarray, *, tol: float = 1e-15) -> float:
+def _long_range_coupling_l1(K: NDArray[np.float64], *, tol: float = 1e-15) -> float:
     """Return upper-triangle L1 weight of couplings outside adjacent bonds."""
     n = K.shape[0]
     omitted = 0.0
@@ -48,7 +49,7 @@ def _long_range_coupling_l1(K: np.ndarray, *, tol: float = 1e-15) -> float:
 
 
 def _nearest_neighbour_scope(
-    K: np.ndarray, allow_long_range_truncation: bool
+    K: NDArray[np.float64], allow_long_range_truncation: bool
 ) -> tuple[str, float]:
     """Validate or label the nearest-neighbour quimb Hamiltonian scope."""
     omitted_l1 = _long_range_coupling_l1(K)
@@ -63,8 +64,8 @@ def _nearest_neighbour_scope(
 
 
 def _build_mpo_hamiltonian(
-    K: np.ndarray,
-    omega: np.ndarray,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
     *,
     allow_long_range_truncation: bool = False,
 ) -> Any:
@@ -95,13 +96,13 @@ def _build_mpo_hamiltonian(
 
 
 def dmrg_ground_state(
-    K: np.ndarray,
-    omega: np.ndarray,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
     bond_dim: int = 64,
     cutoff: float = 1e-10,
     max_sweeps: int = 20,
     allow_long_range_truncation: bool = False,
-) -> dict:
+) -> dict[str, Any]:
     """Find ground state via DMRG.
 
     Parameters
@@ -163,15 +164,15 @@ def dmrg_ground_state(
 
 
 def tebd_evolution(
-    K: np.ndarray,
-    omega: np.ndarray,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
     t_max: float = 1.0,
     dt: float = 0.05,
     bond_dim: int = 64,
     cutoff: float = 1e-10,
     order: int = 2,
     allow_long_range_truncation: bool = False,
-) -> dict:
+) -> dict[str, Any]:
     """Time evolution via TEBD (Time-Evolving Block Decimation).
 
     Parameters
