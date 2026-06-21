@@ -20,8 +20,10 @@ coupling parameters simultaneously.
 from __future__ import annotations
 
 import logging
+from typing import Any
 
 import numpy as np
+from numpy.typing import NDArray
 from qiskit.quantum_info import DensityMatrix, Statevector, partial_trace
 
 from .._constants import CONCURRENCE_EPS, QBER_SECURITY_THRESHOLD
@@ -31,7 +33,7 @@ __all__ = ["CONCURRENCE_EPS", "QBER_SECURITY_THRESHOLD"]
 _log = logging.getLogger(__name__)
 
 
-def depolarizing_channel(rho: np.ndarray, p: float) -> np.ndarray:
+def depolarizing_channel(rho: NDArray[np.complex128], p: float) -> NDArray[np.complex128]:
     """Apply depolarizing channel: rho → (1-p)*rho + p*I/d.
 
     Args:
@@ -39,11 +41,13 @@ def depolarizing_channel(rho: np.ndarray, p: float) -> np.ndarray:
         p: Depolarizing probability in [0, 1].
     """
     d = rho.shape[0]
-    result: np.ndarray = (1 - p) * rho + p * np.eye(d) / d
+    result: NDArray[np.complex128] = ((1 - p) * rho + p * np.eye(d) / d).astype(np.complex128)
     return result
 
 
-def amplitude_damping_single(rho_2x2: np.ndarray, gamma: float) -> np.ndarray:
+def amplitude_damping_single(
+    rho_2x2: NDArray[np.complex128], gamma: float
+) -> NDArray[np.complex128]:
     """Single-qubit amplitude damping: |1⟩ → |0⟩ with probability gamma.
 
     Kraus operators: K0 = [[1,0],[0,sqrt(1-gamma)]], K1 = [[0,sqrt(gamma)],[0,0]].
@@ -52,7 +56,9 @@ def amplitude_damping_single(rho_2x2: np.ndarray, gamma: float) -> np.ndarray:
     s1g = np.sqrt(1 - gamma)
     k0 = np.array([[1, 0], [0, s1g]])
     k1 = np.array([[0, sg], [0, 0]])
-    result: np.ndarray = np.asarray(k0 @ rho_2x2 @ k0.conj().T + k1 @ rho_2x2 @ k1.conj().T)
+    result: NDArray[np.complex128] = np.asarray(
+        k0 @ rho_2x2 @ k0.conj().T + k1 @ rho_2x2 @ k1.conj().T, dtype=np.complex128
+    )
     return result
 
 
@@ -75,7 +81,7 @@ def noisy_concurrence(
     return _concurrence_2qubit(rho_noisy)
 
 
-def _concurrence_2qubit(rho: np.ndarray) -> float:
+def _concurrence_2qubit(rho: NDArray[np.complex128]) -> float:
     """Wootters concurrence for a 4×4 density matrix."""
     sigma_y = np.array([[0, -1j], [1j, 0]])
     yy = np.kron(sigma_y, sigma_y)
@@ -156,8 +162,8 @@ def security_analysis(
     sv: Statevector,
     alice_qubits: list[int],
     bob_qubits: list[int],
-    p_depol_range: np.ndarray | None = None,
-) -> dict:
+    p_depol_range: NDArray[np.float64] | None = None,
+) -> dict[str, Any]:
     """Full security analysis: key rates vs noise for each qubit pair.
 
     Returns dict with:
@@ -167,7 +173,7 @@ def security_analysis(
     """
     n = int(np.log2(len(sv.data)))
     if p_depol_range is None:
-        p_depol_range = np.linspace(0, 0.3, 16)
+        p_depol_range = np.linspace(0, 0.3, 16, dtype=np.float64)
 
     pair_rates = {}
     critical_noise = {}

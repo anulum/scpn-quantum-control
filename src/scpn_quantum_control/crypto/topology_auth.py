@@ -21,15 +21,17 @@ from __future__ import annotations
 
 import hashlib
 import hmac
+from typing import Any
 
 import numpy as np
+from numpy.typing import NDArray
 from scipy.stats import entropy as scipy_entropy
 
 EIGENVALUE_ZERO_ATOL = 1e-12  # absolute tolerance for Laplacian zero eigenvalues
 EIGENVALUE_ZERO_RTOL = 1e-8  # relative tolerance for Laplacian eigenvalue ratios
 
 
-def spectral_fingerprint(K: np.ndarray) -> dict:
+def spectral_fingerprint(K: NDArray[np.float64]) -> dict[str, Any]:
     """Compute public spectral fingerprint of coupling matrix.
 
     Returns dict with:
@@ -67,7 +69,7 @@ def spectral_fingerprint(K: np.ndarray) -> dict:
     }
 
 
-def normalized_laplacian_fingerprint(K: np.ndarray) -> dict:
+def normalized_laplacian_fingerprint(K: NDArray[np.float64]) -> dict[str, Any]:
     """Fingerprint from the normalized Laplacian L_sym = I - D^{-1/2} K D^{-1/2}.
 
     More robust to degree heterogeneity than the combinatorial Laplacian.
@@ -99,7 +101,9 @@ def normalized_laplacian_fingerprint(K: np.ndarray) -> dict:
     }
 
 
-def verify_fingerprint(K: np.ndarray, fingerprint: dict, tol: float = 1e-6) -> bool:
+def verify_fingerprint(
+    K: NDArray[np.float64], fingerprint: dict[str, Any], tol: float = 1e-6
+) -> bool:
     """Check K against a claimed spectral fingerprint."""
     computed = spectral_fingerprint(K)
     return bool(
@@ -109,7 +113,7 @@ def verify_fingerprint(K: np.ndarray, fingerprint: dict, tol: float = 1e-6) -> b
     )
 
 
-def topology_distance(fp1: dict, fp2: dict) -> float:
+def topology_distance(fp1: dict[str, Any], fp2: dict[str, Any]) -> float:
     """L2 distance between two spectral fingerprints.
 
     Useful for detecting calibration drift or K_nm tampering.
@@ -124,7 +128,7 @@ def topology_distance(fp1: dict, fp2: dict) -> float:
 # --- Challenge-Response Authentication ---
 
 
-def topology_commitment(K: np.ndarray, nonce: bytes = b"") -> bytes:
+def topology_commitment(K: NDArray[np.float64], nonce: bytes = b"") -> bytes:
     """Commit to K_nm without revealing it.
 
     Returns SHA-256(K_nm_bytes || nonce). The commitment binds the prover
@@ -137,12 +141,12 @@ def topology_commitment(K: np.ndarray, nonce: bytes = b"") -> bytes:
     return h.digest()
 
 
-def verify_commitment(K: np.ndarray, nonce: bytes, commitment: bytes) -> bool:
+def verify_commitment(K: NDArray[np.float64], nonce: bytes, commitment: bytes) -> bool:
     """Verify that K_nm matches a previously issued commitment."""
     return topology_commitment(K, nonce) == commitment
 
 
-def challenge_response_prove(K: np.ndarray, challenge: bytes) -> bytes:
+def challenge_response_prove(K: NDArray[np.float64], challenge: bytes) -> bytes:
     """Prover: compute HMAC(K_nm, challenge) as proof of K_nm knowledge.
 
     The challenge is a random nonce from the verifier. The response
@@ -152,7 +156,7 @@ def challenge_response_prove(K: np.ndarray, challenge: bytes) -> bytes:
 
 
 def challenge_response_verify(
-    K: np.ndarray,
+    K: NDArray[np.float64],
     challenge: bytes,
     response: bytes,
 ) -> bool:
@@ -164,7 +168,9 @@ def challenge_response_verify(
 # --- Noise Tolerance ---
 
 
-def fingerprint_noise_tolerance(K: np.ndarray, n_trials: int = 100, sigma: float = 0.01) -> dict:
+def fingerprint_noise_tolerance(
+    K: NDArray[np.float64], n_trials: int = 100, sigma: float = 0.01
+) -> dict[str, Any]:
     """Estimate fingerprint stability under small perturbations to K.
 
     Adds Gaussian noise N(0, sigma²) to K, recomputes fingerprint,
@@ -191,7 +197,7 @@ def fingerprint_noise_tolerance(K: np.ndarray, n_trials: int = 100, sigma: float
     }
 
 
-def row_hash_fingerprint(K: np.ndarray) -> list[bytes]:
+def row_hash_fingerprint(K: NDArray[np.float64]) -> list[bytes]:
     """Per-row SHA-256 hashes of K_nm.
 
     Enables selective verification: prove knowledge of specific coupling
@@ -201,6 +207,6 @@ def row_hash_fingerprint(K: np.ndarray) -> list[bytes]:
     return [hashlib.sha256(K[i, :].tobytes()).digest() for i in range(K.shape[0])]
 
 
-def verify_row_hash(K: np.ndarray, row_idx: int, expected_hash: bytes) -> bool:
+def verify_row_hash(K: NDArray[np.float64], row_idx: int, expected_hash: bytes) -> bool:
     """Verify a single row of K_nm against its hash."""
     return hashlib.sha256(K[row_idx, :].tobytes()).digest() == expected_hash

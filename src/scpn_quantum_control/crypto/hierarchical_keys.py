@@ -22,13 +22,15 @@ from __future__ import annotations
 import hashlib
 import hmac
 import struct
+from typing import Any
 
 import numpy as np
+from numpy.typing import NDArray
 from scipy.integrate import solve_ivp
 
 
 def derive_master_key(
-    K: np.ndarray,
+    K: NDArray[np.float64],
     R_global: float,
     nonce: bytes = b"",
 ) -> bytes:
@@ -44,9 +46,9 @@ def derive_master_key(
 
 
 def derive_layer_key(
-    K: np.ndarray,
+    K: NDArray[np.float64],
     layer_idx: int,
-    phase_sequence: np.ndarray,
+    phase_sequence: NDArray[np.float64],
     nonce: bytes = b"",
 ) -> bytes:
     """Layer-specific subkey from coupling row + phase trajectory.
@@ -66,11 +68,11 @@ def derive_layer_key(
 
 
 def key_hierarchy(
-    K: np.ndarray,
-    phases: np.ndarray,
+    K: NDArray[np.float64],
+    phases: NDArray[np.float64],
     R_global: float,
     nonce: bytes = b"",
-) -> dict:
+) -> dict[str, Any]:
     """Full hierarchy: master key + all layer subkeys.
 
     Args:
@@ -92,8 +94,8 @@ def key_hierarchy(
 def verify_key_chain(
     master: bytes,
     layer_keys: dict[int, bytes],
-    K: np.ndarray,
-    phases: np.ndarray,
+    K: NDArray[np.float64],
+    phases: NDArray[np.float64],
     R_global: float,
     nonce: bytes = b"",
 ) -> bool:
@@ -110,10 +112,12 @@ def verify_key_chain(
 # --- Time-Evolving Key Rotation ---
 
 
-def _kuramoto_rhs(t: float, theta: np.ndarray, K: np.ndarray, omega: np.ndarray) -> np.ndarray:
+def _kuramoto_rhs(
+    t: float, theta: NDArray[np.float64], K: NDArray[np.float64], omega: NDArray[np.float64]
+) -> NDArray[np.float64]:
     """Kuramoto ODE right-hand side: dθ/dt = ω + Σ K_nm sin(θ_m - θ_n)."""
     n = len(theta)
-    dtheta: np.ndarray = omega.copy()
+    dtheta: NDArray[np.float64] = omega.copy()
     for i in range(n):
         for j in range(n):
             dtheta[i] += K[i, j] * np.sin(theta[j] - theta[i])
@@ -121,12 +125,12 @@ def _kuramoto_rhs(t: float, theta: np.ndarray, K: np.ndarray, omega: np.ndarray)
 
 
 def evolve_key_phases(
-    K: np.ndarray,
-    omega: np.ndarray,
-    theta_0: np.ndarray,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
+    theta_0: NDArray[np.float64],
     t_window: float,
     n_samples: int = 32,
-) -> np.ndarray:
+) -> NDArray[np.float64]:
     """Evolve Kuramoto dynamics and sample phase trajectory.
 
     Returns (n_layers, n_samples) array of phase values over the time window.
@@ -143,17 +147,17 @@ def evolve_key_phases(
     )
     if sol.status != 0:
         raise RuntimeError(f"Phase evolution failed: {sol.message}")
-    result: np.ndarray = np.asarray(sol.y)
+    result: NDArray[np.float64] = np.asarray(sol.y)
     return result  # shape (n_layers, n_samples)
 
 
 def rotating_key_schedule(
-    K: np.ndarray,
-    omega: np.ndarray,
-    theta_0: np.ndarray,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
+    theta_0: NDArray[np.float64],
     n_windows: int = 4,
     window_duration: float = 1.0,
-) -> list[dict]:
+) -> list[dict[str, Any]]:
     """Generate a sequence of key hierarchies from evolving Kuramoto dynamics.
 
     Each window produces a different key hierarchy because the phase
@@ -189,9 +193,9 @@ def rotating_key_schedule(
 
 
 def group_key(
-    K: np.ndarray,
+    K: NDArray[np.float64],
     member_layers: list[int],
-    phases: np.ndarray,
+    phases: NDArray[np.float64],
     nonce: bytes = b"",
 ) -> bytes:
     """Derive a shared key for a subset of SCPN layers.

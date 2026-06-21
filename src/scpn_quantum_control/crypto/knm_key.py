@@ -16,8 +16,10 @@ reproduce ground-state correlations.
 from __future__ import annotations
 
 import hashlib
+from typing import Any
 
 import numpy as np
+from numpy.typing import NDArray
 from qiskit.quantum_info import Statevector
 
 from .._constants import QBER_SECURITY_THRESHOLD
@@ -25,11 +27,11 @@ from ..phase.phase_vqe import PhaseVQE
 
 
 def prepare_key_state(
-    K: np.ndarray,
-    omega: np.ndarray,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
     ansatz_reps: int = 2,
     maxiter: int = 200,
-) -> dict:
+) -> dict[str, Any]:
     """Build VQE-optimized circuit encoding K_nm's ground state.
 
     Returns dict with 'circuit' (bound QuantumCircuit), 'energy' (float),
@@ -51,7 +53,7 @@ def extract_raw_key(
     counts: dict[str, int],
     basis: str,
     keep_qubits: list[int] | None = None,
-) -> np.ndarray:
+) -> NDArray[np.uint8]:
     """Sift measurement results into raw key bits.
 
     Args:
@@ -67,7 +69,7 @@ def extract_raw_key(
         keep_qubits = list(range(n_qubits))
 
     # Majority vote per qubit across all shots
-    bits: np.ndarray = np.zeros(len(keep_qubits), dtype=np.uint8)
+    bits: NDArray[np.uint8] = np.zeros(len(keep_qubits), dtype=np.uint8)
     for q_idx, q in enumerate(keep_qubits):
         ones = sum(c for bitstring, c in counts.items() if bitstring[-(q + 1)] == "1")
         zeros = sum(c for bitstring, c in counts.items() if bitstring[-(q + 1)] == "0")
@@ -75,7 +77,7 @@ def extract_raw_key(
     return bits
 
 
-def estimate_qber(alice_bits: np.ndarray, bob_bits: np.ndarray) -> float:
+def estimate_qber(alice_bits: NDArray[np.uint8], bob_bits: NDArray[np.uint8]) -> float:
     """Quantum bit error rate from shared verification subset.
 
     QBER = (number of disagreements) / (total compared bits).
@@ -86,7 +88,7 @@ def estimate_qber(alice_bits: np.ndarray, bob_bits: np.ndarray) -> float:
     return float(np.mean(alice_bits != bob_bits))
 
 
-def privacy_amplification(raw_key: np.ndarray, qber: float) -> bytes:
+def privacy_amplification(raw_key: NDArray[np.uint8], qber: float) -> bytes:
     """Universal₂ hash compression of raw key.
 
     Compression ratio: 1 - 2h(QBER) where h is binary entropy.

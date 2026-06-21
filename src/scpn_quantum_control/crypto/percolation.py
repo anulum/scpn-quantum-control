@@ -18,7 +18,10 @@ Refs:
 
 from __future__ import annotations
 
+from typing import Any
+
 import numpy as np
+from numpy.typing import NDArray
 from qiskit.quantum_info import DensityMatrix, Statevector, partial_trace
 
 from .._constants import CONCURRENCE_EPS, COUPLING_SPARSITY_EPS
@@ -29,7 +32,9 @@ _ENTROPY_CLAMP_EPS = COUPLING_SPARSITY_EPS
 _FIEDLER_DISCONNECT_EPS = CONCURRENCE_EPS
 
 
-def concurrence_map(K: np.ndarray, omega: np.ndarray, maxiter: int = 100) -> np.ndarray:
+def concurrence_map(
+    K: NDArray[np.float64], omega: NDArray[np.float64], maxiter: int = 100
+) -> NDArray[np.float64]:
     """Compute pairwise concurrence from ground state reduced density matrices.
 
     C(i,j) = max(0, sqrt(e1) - sqrt(e2) - sqrt(e3) - sqrt(e4))
@@ -43,7 +48,7 @@ def concurrence_map(K: np.ndarray, omega: np.ndarray, maxiter: int = 100) -> np.
     sv = Statevector.from_instruction(vqe.ansatz.assign_parameters(result["optimal_params"]))
 
     rho_full = DensityMatrix(sv)
-    conc: np.ndarray = np.zeros((n, n))
+    conc: NDArray[np.float64] = np.zeros((n, n))
 
     for i in range(n):
         for j in range(i + 1, n):
@@ -69,7 +74,7 @@ def _concurrence_2qubit(rho: DensityMatrix) -> float:
     return float(max(0, sqrt_eigvals[0] - sqrt_eigvals[1] - sqrt_eigvals[2] - sqrt_eigvals[3]))
 
 
-def percolation_threshold(K: np.ndarray) -> float:
+def percolation_threshold(K: NDArray[np.float64]) -> float:
     """Minimum K_nm value for end-to-end entanglement.
 
     Estimated from the Fiedler value of the coupling graph:
@@ -97,7 +102,7 @@ def percolation_threshold(K: np.ndarray) -> float:
     return float(sorted_vals[0])
 
 
-def active_channel_graph(K: np.ndarray, threshold: float) -> list[tuple[int, int, float]]:
+def active_channel_graph(K: NDArray[np.float64], threshold: float) -> list[tuple[int, int, float]]:
     """List of above-threshold entangled pairs usable as QKD channels.
 
     Returns list of (i, j, K_ij) tuples.
@@ -111,14 +116,14 @@ def active_channel_graph(K: np.ndarray, threshold: float) -> list[tuple[int, int
     return channels
 
 
-def key_rate_per_channel(conc_map: np.ndarray) -> np.ndarray:
+def key_rate_per_channel(conc_map: NDArray[np.float64]) -> NDArray[np.float64]:
     """Devetak-Winter key rate estimate for each link.
 
     r(i,j) = max(0, 1 - h(e(C))) where e = (1 - sqrt(1 - C^2)) / 2
     and h is binary entropy.
     """
     n = conc_map.shape[0]
-    rates: np.ndarray = np.zeros((n, n))
+    rates: NDArray[np.float64] = np.zeros((n, n))
     for i in range(n):
         for j in range(i + 1, n):
             C = conc_map[i, j]
@@ -138,7 +143,7 @@ def key_rate_per_channel(conc_map: np.ndarray) -> np.ndarray:
 # --- Network Robustness ---
 
 
-def robustness_random_removal(K: np.ndarray, n_trials: int = 50) -> dict:
+def robustness_random_removal(K: NDArray[np.float64], n_trials: int = 50) -> dict[str, float]:
     """Test connectivity under random edge removal.
 
     Removes edges one at a time in random order. Returns the fraction
@@ -178,7 +183,7 @@ def robustness_random_removal(K: np.ndarray, n_trials: int = 50) -> dict:
     }
 
 
-def robustness_targeted_removal(K: np.ndarray) -> dict:
+def robustness_targeted_removal(K: NDArray[np.float64]) -> dict[str, float]:
     """Test connectivity under targeted removal of strongest edges.
 
     Removes edges in decreasing weight order — worst-case attack.
@@ -213,10 +218,10 @@ def robustness_targeted_removal(K: np.ndarray) -> dict:
 
 
 def best_entanglement_path(
-    K: np.ndarray,
+    K: NDArray[np.float64],
     source: int,
     target: int,
-) -> dict:
+) -> dict[str, Any]:
     """Find the path from source to target maximizing minimum edge weight.
 
     In entanglement routing, the bottleneck link determines the path's

@@ -23,20 +23,23 @@ Refs:
 
 from __future__ import annotations
 
+from typing import Any
+
 import numpy as np
+from numpy.typing import NDArray
 from qiskit.quantum_info import SparsePauliOp, Statevector
 
 from .knm_key import estimate_qber, prepare_key_state, privacy_amplification
 
 
 def scpn_qkd_protocol(
-    K: np.ndarray,
-    omega: np.ndarray,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
     alice_qubits: list[int],
     bob_qubits: list[int],
     shots: int = 10000,
     seed: int = 42,
-) -> dict:
+) -> dict[str, Any]:
     """Execute SCPN-QKD protocol on statevector simulator.
 
     Returns dict with raw_key_alice, raw_key_bob, qber, secure_key_length,
@@ -83,16 +86,16 @@ def scpn_qkd_protocol(
 def _measure_in_basis(
     sv: Statevector,
     qubits: list[int],
-    bases: np.ndarray,
+    bases: NDArray[np.str_],
     n_total: int,
     shots: int,
     rng: np.random.Generator,
-) -> np.ndarray:
+) -> NDArray[np.uint8]:
     """Measure specified qubits in given bases via expectation values.
 
     Returns majority-vote bit array.
     """
-    bits: np.ndarray = np.zeros(len(qubits), dtype=np.uint8)
+    bits: NDArray[np.uint8] = np.zeros(len(qubits), dtype=np.uint8)
     for i, (q, basis) in enumerate(zip(qubits, bases)):
         label = ["I"] * n_total
         label[q] = basis
@@ -107,14 +110,14 @@ def correlator_matrix(
     sv: Statevector,
     alice_qubits: list[int],
     bob_qubits: list[int],
-) -> np.ndarray:
+) -> NDArray[np.float64]:
     """Cross-correlation matrix <Z_i Z_j> between Alice and Bob qubits.
 
     Element (i,j) = <Z_{alice_i} Z_{bob_j}> - <Z_{alice_i}><Z_{bob_j}>.
     Non-zero off-diagonal elements indicate entanglement.
     """
     n = int(np.log2(len(sv.data)))
-    corr: np.ndarray = np.zeros((len(alice_qubits), len(bob_qubits)))
+    corr: NDArray[np.float64] = np.zeros((len(alice_qubits), len(bob_qubits)))
 
     for i, qa in enumerate(alice_qubits):
         label_a = ["I"] * n
@@ -145,7 +148,7 @@ def bell_inequality_test(
     qubit_a: int,
     qubit_b: int,
     n_total: int,
-) -> dict:
+) -> dict[str, Any]:
     """CHSH inequality test for a qubit pair.
 
     S = |E(a,b) - E(a,b') + E(a',b) + E(a',b')|

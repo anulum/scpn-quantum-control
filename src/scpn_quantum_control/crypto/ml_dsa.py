@@ -23,6 +23,10 @@ from __future__ import annotations
 
 import hashlib
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from _hashlib import HASHXOF
 
 # --- ML-DSA-65 parameters (FIPS 204, Table 1) ------------------------------- #
 Q = 8380417
@@ -66,14 +70,14 @@ def _shake256(*chunks: bytes, length: int) -> bytes:
     return h.digest(length)
 
 
-def _shake128_xof(*chunks: bytes):
+def _shake128_xof(*chunks: bytes) -> HASHXOF:
     h = hashlib.shake_128()
     for chunk in chunks:
         h.update(chunk)
     return h
 
 
-def _shake256_xof(*chunks: bytes):
+def _shake256_xof(*chunks: bytes) -> HASHXOF:
     h = hashlib.shake_256()
     for chunk in chunks:
         h.update(chunk)
