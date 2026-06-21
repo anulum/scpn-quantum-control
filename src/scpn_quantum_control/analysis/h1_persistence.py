@@ -30,6 +30,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import numpy as np
+from numpy.typing import NDArray
 
 from ..bridge.knm_hamiltonian import build_knm_paper27
 from ..gauge.vortex_detector import measure_vortex_density
@@ -41,14 +42,14 @@ class H1PersistenceResult:
 
     k_critical: float  # K where d(vortex_density)/dK is maximum
     p_h1_at_critical: float  # vortex density at K_c
-    k_values: np.ndarray
-    vortex_densities: np.ndarray
-    derivative: np.ndarray
+    k_values: NDArray[np.float64]
+    vortex_densities: NDArray[np.float64]
+    derivative: NDArray[np.float64]
     deviation_from_target: float  # |p_h1 - 0.72|
 
 
 def scan_h1_persistence(
-    omega: np.ndarray,
+    omega: NDArray[np.float64],
     k_range: tuple[float, float] = (0.01, 3.0),
     n_points: int = 25,
 ) -> H1PersistenceResult:
@@ -58,7 +59,7 @@ def scan_h1_persistence(
     most rapidly (maximum |d(rho_v)/dK|).
     """
     n = len(omega)
-    k_values = np.linspace(k_range[0], k_range[1], n_points)
+    k_values = np.linspace(k_range[0], k_range[1], n_points, dtype=np.float64)
     densities = np.zeros(n_points)
 
     for i, kb in enumerate(k_values):

@@ -45,6 +45,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import numpy as np
+from numpy.typing import NDArray
 
 from .bkt_analysis import bkt_analysis
 from .bkt_universals import HASENBUSCH_PINN, NK_RATIO, P_H1_TARGET, check_all_candidates
@@ -82,8 +83,8 @@ class P_H1_Derivation:
 
 
 def derive_p_h1(
-    K: np.ndarray | None = None,
-    omega: np.ndarray | None = None,
+    K: NDArray[np.float64] | None = None,
+    omega: NDArray[np.float64] | None = None,
 ) -> P_H1_Derivation:
     """Audit the p_h1 candidate derivation.
 

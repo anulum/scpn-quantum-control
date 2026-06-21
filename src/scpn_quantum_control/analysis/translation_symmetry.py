@@ -26,7 +26,10 @@ Inspired by QuSpin (Weinberg & Bukov, SciPost 2017).
 
 from __future__ import annotations
 
+from typing import Any
+
 import numpy as np
+from numpy.typing import NDArray
 from scipy import sparse
 
 from ..bridge.sparse_hamiltonian import build_sparse_hamiltonian
@@ -39,7 +42,9 @@ def _cyclic_shift(k: int, n: int) -> int:
     return ((k << 1) & ((1 << n) - 1)) | msb
 
 
-def is_translation_invariant(K: np.ndarray, omega: np.ndarray, tol: float = 1e-10) -> bool:
+def is_translation_invariant(
+    K: NDArray[np.float64], omega: NDArray[np.float64], tol: float = 1e-10
+) -> bool:
     """Check whether system has cyclic translation symmetry.
 
     Requires: K_ij = K(|i-j| mod N) and ω_i = ω for all i.
@@ -150,12 +155,12 @@ def _bloch_projector(n: int, reps: list[int], phase: complex) -> sparse.csr_matr
 
 
 def eigh_with_translation(
-    K: np.ndarray,
-    omega: np.ndarray,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
     momentum: int = 0,
     *,
     max_dense_gib: float | None = None,
-) -> dict:
+) -> dict[str, Any]:
     """Diagonalise in a specific momentum sector using Bloch's theorem.
 
     For the k=0 (totally symmetric) sector, the projected Hamiltonian

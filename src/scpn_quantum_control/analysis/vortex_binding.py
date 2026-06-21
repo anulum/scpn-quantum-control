@@ -36,6 +36,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import numpy as np
+from numpy.typing import NDArray
 
 from .bkt_analysis import bkt_analysis
 
@@ -98,8 +99,8 @@ def kosterlitz_rg_step(
 
 
 def compute_vortex_binding(
-    K: np.ndarray,
-    omega: np.ndarray,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
     temperature: float | None = None,
 ) -> VortexBindingResult:
     """Full vortex binding analysis.
