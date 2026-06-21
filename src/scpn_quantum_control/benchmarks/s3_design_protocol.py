@@ -14,6 +14,7 @@ from dataclasses import dataclass
 from typing import Any, Literal
 
 import numpy as np
+from numpy.typing import NDArray
 
 from scpn_quantum_control.control.structured_ansatz import StructuredAnsatz
 from scpn_quantum_control.phase.pulse_shaping import build_trotter_pulse_schedule
@@ -143,8 +144,8 @@ def default_s3_design_protocol() -> S3DesignProtocol:
 
 def score_s3_candidates(
     protocol: S3DesignProtocol,
-    k_matrix: np.ndarray,
-    omega: np.ndarray,
+    k_matrix: NDArray[np.float64],
+    omega: NDArray[np.float64],
 ) -> tuple[S3DesignRow, ...]:
     """Score all S3 candidates against deterministic no-QPU proxies."""
     k = np.asarray(k_matrix, dtype=np.float64)
@@ -190,14 +191,16 @@ def validate_s3_design_rows(
 
 
 def _score_candidate(
-    candidate: S3DesignCandidate, k: np.ndarray, omega: np.ndarray
+    candidate: S3DesignCandidate, k: NDArray[np.float64], omega: NDArray[np.float64]
 ) -> S3DesignRow:
     if candidate.family == "ansatz":
         return _score_ansatz(candidate, k, omega)
     return _score_pulse(candidate, k)
 
 
-def _score_ansatz(candidate: S3DesignCandidate, k: np.ndarray, omega: np.ndarray) -> S3DesignRow:
+def _score_ansatz(
+    candidate: S3DesignCandidate, k: NDArray[np.float64], omega: NDArray[np.float64]
+) -> S3DesignRow:
     params = candidate.parameters
     ansatz = StructuredAnsatz.from_kuramoto(
         k,
@@ -231,7 +234,7 @@ def _score_ansatz(candidate: S3DesignCandidate, k: np.ndarray, omega: np.ndarray
     )
 
 
-def _score_pulse(candidate: S3DesignCandidate, k: np.ndarray) -> S3DesignRow:
+def _score_pulse(candidate: S3DesignCandidate, k: NDArray[np.float64]) -> S3DesignRow:
     params = candidate.parameters
     schedule = build_trotter_pulse_schedule(
         int(k.shape[0]),
@@ -261,7 +264,7 @@ def _score_pulse(candidate: S3DesignCandidate, k: np.ndarray) -> S3DesignRow:
     )
 
 
-def _validate_problem(k: np.ndarray, omega: np.ndarray) -> None:
+def _validate_problem(k: NDArray[np.float64], omega: NDArray[np.float64]) -> None:
     if k.ndim != 2 or k.shape[0] != k.shape[1]:
         raise ValueError("k_matrix must be square")
     if omega.shape != (k.shape[0],):

@@ -23,6 +23,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 import numpy as np
+from numpy.typing import NDArray
 from scipy import __version__ as scipy_version
 from scipy.optimize import curve_fit
 
@@ -77,16 +78,16 @@ class AdvantageResult:
     n_qubits: int
     t_classical_ms: float
     t_quantum_ms: float
-    errors: dict = field(default_factory=dict)
+    errors: dict[str, float] = field(default_factory=dict)
     crossover_predicted: int | None = None
     backend: str = "python-scipy-qiskit-local"
     machine: str = field(default_factory=platform.platform)
     command: str = field(default_factory=_default_command)
-    dependency: dict = field(default_factory=_default_dependency_versions)
+    dependency: dict[str, str] = field(default_factory=_default_dependency_versions)
     git_commit: str = field(default_factory=_git_commit)
 
 
-def classical_benchmark(n: int, t_max: float = 1.0, dt: float = 0.1) -> dict:
+def classical_benchmark(n: int, t_max: float = 1.0, dt: float = 0.1) -> dict[str, float | None]:
     """Time classical exact evolution of XY Hamiltonian.
 
     For n > MAX_CLASSICAL_QUBITS, returns inf (matrix expm infeasible).
@@ -117,7 +118,7 @@ def quantum_benchmark(
     t_max: float = 1.0,
     dt: float = 0.1,
     trotter_reps: int = 5,
-) -> dict:
+) -> dict[str, float]:
     """Time Trotter evolution on statevector simulator."""
     from qiskit import QuantumCircuit
     from qiskit.circuit.library import PauliEvolutionGate
@@ -165,8 +166,8 @@ def estimate_crossover(results: list[AdvantageResult]) -> int | None:
     t_c = np.array([r.t_classical_ms for r in feasible])
     t_q = np.array([r.t_quantum_ms for r in feasible])
 
-    def exp_fit(x: np.ndarray, a: float, b: float) -> np.ndarray:
-        result: np.ndarray = a * np.exp(b * x)
+    def exp_fit(x: NDArray[np.float64], a: float, b: float) -> NDArray[np.float64]:
+        result: NDArray[np.float64] = np.asarray(a * np.exp(b * x), dtype=np.float64)
         return result
 
     try:
@@ -215,10 +216,11 @@ def run_scaling_benchmark(
         c = classical_benchmark(n, t_max, dt)
         q = quantum_benchmark(n, t_max, dt)
 
+        c_total = c["t_total_ms"]
         results.append(
             AdvantageResult(
                 n_qubits=n,
-                t_classical_ms=c["t_total_ms"],
+                t_classical_ms=c_total if c_total is not None else float("inf"),
                 t_quantum_ms=q["t_total_ms"],
                 backend=backend,
                 machine=machine,

@@ -30,6 +30,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import numpy as np
+from numpy.typing import NDArray
 from qiskit.quantum_info import Statevector
 
 from ..bridge.knm_hamiltonian import knm_to_hamiltonian
@@ -49,7 +50,7 @@ class AppQSimMetrics:
     circuit_depth: int
 
 
-def _exact_order_parameter(K: np.ndarray, omega: np.ndarray) -> float:
+def _exact_order_parameter(K: NDArray[np.float64], omega: NDArray[np.float64]) -> float:
     """R_global from exact ground state."""
     n = K.shape[0]
     exact = classical_exact_diag(n, K=K, omega=omega)
@@ -59,7 +60,7 @@ def _exact_order_parameter(K: np.ndarray, omega: np.ndarray) -> float:
     return float(state["R_global"])
 
 
-def _exact_correlators(K: np.ndarray, omega: np.ndarray) -> np.ndarray:
+def _exact_correlators(K: NDArray[np.float64], omega: NDArray[np.float64]) -> NDArray[np.float64]:
     """Exact <XX+YY> correlator matrix."""
     from ..analysis.hamiltonian_learning import measure_correlators
 
@@ -67,8 +68,8 @@ def _exact_correlators(K: np.ndarray, omega: np.ndarray) -> np.ndarray:
 
 
 def appqsim_benchmark(
-    K: np.ndarray,
-    omega: np.ndarray,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
     circuit_sv: Statevector | None = None,
     n_gates: int = 0,
     circuit_depth: int = 0,

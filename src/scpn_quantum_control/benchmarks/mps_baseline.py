@@ -33,6 +33,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import numpy as np
+from numpy.typing import NDArray
 
 from ..analysis.entanglement_spectrum import entanglement_entropy_half_chain
 
@@ -93,8 +94,8 @@ def quantum_advantage_n(
 
 
 def mps_baseline_comparison(
-    K: np.ndarray,
-    omega: np.ndarray,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
     chi_max: int = 256,
 ) -> MPSBaselineResult:
     """Compare exact simulation with MPS classical baseline."""

@@ -120,12 +120,12 @@ def gpu_baseline_comparison(
 
 def scaling_comparison(
     n_values: list[int] | None = None,
-) -> dict[str, list]:
+) -> dict[str, list[float]]:
     """Compare GPU vs QPU across system sizes."""
     if n_values is None:
         n_values = [4, 8, 16, 24, 32, 40]
 
-    results: dict[str, list] = {
+    results: dict[str, list[float]] = {
         "n": [],
         "gpu_time_s": [],
         "qpu_time_s": [],

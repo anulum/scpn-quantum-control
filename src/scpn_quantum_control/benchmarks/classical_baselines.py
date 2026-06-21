@@ -23,6 +23,7 @@ from dataclasses import dataclass, field
 from typing import Any
 
 import numpy as np
+from numpy.typing import NDArray
 from scipy.integrate import solve_ivp
 
 from scpn_quantum_control.phase import mps_evolution
@@ -37,8 +38,10 @@ class ClassicalBaselineRun:
     n_oscillators: int
     available: bool
     elapsed_ms: float
-    times: np.ndarray = field(default_factory=lambda: np.array([], dtype=float))
-    order_parameter: np.ndarray = field(default_factory=lambda: np.array([], dtype=float))
+    times: NDArray[np.float64] = field(default_factory=lambda: np.array([], dtype=np.float64))
+    order_parameter: NDArray[np.float64] = field(
+        default_factory=lambda: np.array([], dtype=np.float64)
+    )
     metadata: dict[str, Any] = field(default_factory=dict)
     unavailable_reason: str | None = None
 
@@ -60,12 +63,12 @@ def available_baselines() -> dict[str, bool]:
 
 
 def scipy_ode_baseline(
-    K: np.ndarray,
-    omega: np.ndarray,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
     *,
     t_max: float = 1.0,
     dt: float = 0.05,
-    theta0: np.ndarray | None = None,
+    theta0: NDArray[np.float64] | None = None,
     rtol: float = 1e-8,
     atol: float = 1e-10,
 ) -> ClassicalBaselineRun:
@@ -90,10 +93,10 @@ def scipy_ode_baseline(
 
     times = _times(t_max, dt)
 
-    def rhs(_t: float, theta: np.ndarray) -> np.ndarray:
+    def rhs(_t: float, theta: NDArray[np.float64]) -> NDArray[np.float64]:
         phase_delta = theta[None, :] - theta[:, None]
         coupling = np.sum(K_arr * np.sin(phase_delta), axis=1)
-        return np.asarray(omega_arr + coupling, dtype=float)
+        return np.asarray(omega_arr + coupling, dtype=np.float64)
 
     start = time.perf_counter()
     solution = solve_ivp(
@@ -129,8 +132,8 @@ def scipy_ode_baseline(
 
 
 def qutip_lindblad_baseline(
-    K: np.ndarray,
-    omega: np.ndarray,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
     *,
     gamma: float = 0.05,
     t_max: float = 0.5,
@@ -181,8 +184,8 @@ def qutip_lindblad_baseline(
 
 
 def mps_tebd_baseline(
-    K: np.ndarray,
-    omega: np.ndarray,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
     *,
     t_max: float = 0.5,
     dt: float = 0.1,
@@ -229,8 +232,8 @@ def mps_tebd_baseline(
 
 
 def run_documented_classical_baselines(
-    K: np.ndarray,
-    omega: np.ndarray,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
     *,
     t_max: float = 0.5,
     dt: float = 0.1,
@@ -244,7 +247,9 @@ def run_documented_classical_baselines(
     return runs
 
 
-def _validate_inputs(K: np.ndarray, omega: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+def _validate_inputs(
+    K: NDArray[np.float64], omega: NDArray[np.float64]
+) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
     K_arr = np.asarray(K, dtype=float)
     omega_arr = np.asarray(omega, dtype=float)
     if K_arr.ndim != 2 or K_arr.shape[0] != K_arr.shape[1]:
@@ -265,12 +270,12 @@ def _validate_time_grid(t_max: float, dt: float) -> None:
         raise ValueError(f"dt must be finite and positive, got {dt}")
 
 
-def _times(t_max: float, dt: float) -> np.ndarray:
+def _times(t_max: float, dt: float) -> NDArray[np.float64]:
     n_steps = max(1, round(t_max / dt))
-    return np.linspace(0.0, float(t_max), n_steps + 1)
+    return np.linspace(0.0, float(t_max), n_steps + 1, dtype=np.float64)
 
 
-def _phase_order_parameter(theta: np.ndarray) -> float:
+def _phase_order_parameter(theta: NDArray[np.float64]) -> float:
     return float(abs(np.mean(np.exp(1j * theta))))
 
 
@@ -298,7 +303,7 @@ def _qutip_pair(qutip: Any, n: int, first: int, second: int, op1: Any, op2: Any)
     return qutip.tensor(list(reversed(ops)))
 
 
-def _qutip_xy_hamiltonian(qutip: Any, K: np.ndarray, omega: np.ndarray) -> Any:
+def _qutip_xy_hamiltonian(qutip: Any, K: NDArray[np.float64], omega: NDArray[np.float64]) -> Any:
     n = K.shape[0]
     hamiltonian = qutip.Qobj(np.zeros((2**n, 2**n), dtype=complex), dims=[[2] * n, [2] * n])
     sx = qutip.sigmax()
