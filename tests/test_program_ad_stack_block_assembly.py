@@ -15,6 +15,7 @@ import numpy as np
 import pytest
 from numpy.typing import NDArray
 
+import scpn_quantum_control.program_ad_stack_block_assembly as stack_block_assembly
 from scpn_quantum_control.differentiable import (
     CustomDerivativeRule,
     Parameter,
@@ -32,6 +33,9 @@ from scpn_quantum_control.differentiable import (
     program_adjoint_gradient,
     whole_program_value_and_grad,
 )
+from scpn_quantum_control.program_ad_stack_block_assembly import (
+    program_ad_assembly_concatenate_derivative_rule as extracted_concatenate_rule,
+)
 
 FloatArray = NDArray[np.float64]
 IntArray = NDArray[np.int64]
@@ -45,6 +49,70 @@ def _assert_allclose(
     """Assert NumPy closeness across dynamically typed Program AD result payloads."""
 
     cast(Any, np.testing.assert_allclose)(actual, expected, rtol=rtol, atol=atol)
+
+
+def test_program_ad_stack_block_direct_rules_are_exposed_from_extracted_module() -> None:
+    """Facade and extracted stack/block assembly factories should share identity."""
+
+    assert extracted_concatenate_rule is program_ad_assembly_concatenate_derivative_rule
+
+
+def test_program_ad_stack_block_extracted_module_fail_closed_branches() -> None:
+    """Extracted stack/block helpers should reject malformed static contracts."""
+
+    with pytest.raises(ValueError, match="unsupported"):
+        stack_block_assembly._program_ad_assembly_stack_convenience_numpy("row_stack", ())
+    with pytest.raises(ValueError, match="requires operands"):
+        stack_block_assembly._program_ad_assembly_stack_convenience_selected_indices("hstack", ())
+    with pytest.raises(ValueError, match="shape-compatible"):
+        stack_block_assembly._program_ad_assembly_stack_convenience_selected_indices(
+            "hstack", ((2, 2), (3,))
+        )
+    with pytest.raises(ValueError, match="requires operands"):
+        program_ad_assembly_concatenate_derivative_rule(())
+    with pytest.raises(ValueError, match="static integer axis"):
+        program_ad_assembly_concatenate_derivative_rule(((2,), (2,)), axis=True)
+    with pytest.raises(ValueError, match="ranked operands"):
+        stack_block_assembly._program_ad_assembly_concatenate_axis(0, rank=0)
+    assert stack_block_assembly._program_ad_assembly_concatenate_axis(None, rank=1) is None
+    with pytest.raises(ValueError, match="equal operand ranks"):
+        program_ad_assembly_concatenate_derivative_rule(((2,), (1, 2)), axis=0)
+    with pytest.raises(ValueError, match="matching non-concatenate"):
+        program_ad_assembly_concatenate_derivative_rule(((2, 1), (3, 1)), axis=1)
+    with pytest.raises(ValueError, match="requires operands"):
+        program_ad_assembly_stack_derivative_rule(())
+    with pytest.raises(ValueError, match="matching operand shapes"):
+        program_ad_assembly_stack_derivative_rule(((2,), (3,)))
+    with pytest.raises(ValueError, match="static integer axis"):
+        program_ad_assembly_stack_derivative_rule(((2,), (2,)), axis=False)
+
+    flat_rule = cast(Any, program_ad_assembly_concatenate_derivative_rule(((2,), (1,)), axis=None))
+    _assert_allclose(
+        flat_rule.vjp_rule(np.array([1.0, 2.0, 3.0]), np.array([0.5, -1.0, 2.0])), [0.5, -1.0, 2.0]
+    )
+
+    for bad_layout in ((2, 2), ()):
+        with pytest.raises(ValueError, match="nested layout shapes"):
+            program_ad_assembly_block_derivative_rule(bad_layout)
+    with pytest.raises(ValueError, match="shape-compatible"):
+        program_ad_assembly_block_derivative_rule((((2, 2), (3, 1)),))
+    with pytest.raises(ValueError, match="nested layout shapes"):
+        stack_block_assembly._program_ad_assembly_block_shapes((2, 2))
+    with pytest.raises(ValueError, match="nested layout shapes"):
+        stack_block_assembly._program_ad_assembly_block_shapes(object())
+    with pytest.raises(ValueError, match="nested layout shapes"):
+        stack_block_assembly._program_ad_assembly_block_shapes(((object(),),))
+    with pytest.raises(ValueError, match="nested layout shapes"):
+        stack_block_assembly._program_ad_assembly_block_shape_leaves(object())
+    assert stack_block_assembly._program_ad_assembly_block_shape_leaves(((2,), ())) == (
+        (2,),
+        (),
+    )
+    probe_leaf = stack_block_assembly._program_ad_assembly_block_probe_layout((2,))
+    assert isinstance(probe_leaf, np.ndarray)
+    assert probe_leaf.shape == (2,)
+    with pytest.raises(ValueError, match="nested layout shapes"):
+        stack_block_assembly._program_ad_assembly_block_probe_layout(object())
 
 
 def test_program_ad_concatenate_and_stack_general_static_axes() -> None:
