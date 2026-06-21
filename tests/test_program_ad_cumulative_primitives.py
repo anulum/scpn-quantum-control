@@ -59,6 +59,8 @@ def _transform_rule_from_contract(contract: PrimitiveContract) -> PrimitiveTrans
 def test_program_ad_cumulative_direct_rules_are_exposed_from_extracted_module() -> None:
     """The facade and extracted cumulative module should expose identical factories."""
 
+    from scpn_quantum_control import differentiable as differentiable_facade
+    from scpn_quantum_control import program_ad_cumulative_primitives
     from scpn_quantum_control.program_ad_cumulative_primitives import (
         program_ad_cumulative_cumprod_derivative_rule as module_cumprod_rule,
     )
@@ -72,6 +74,15 @@ def test_program_ad_cumulative_direct_rules_are_exposed_from_extracted_module() 
     assert module_cumsum_rule is program_ad_cumulative_cumsum_derivative_rule
     assert module_cumprod_rule is program_ad_cumulative_cumprod_derivative_rule
     assert module_diff_rule is program_ad_cumulative_diff_derivative_rule
+    facade_exports = vars(differentiable_facade)
+    assert (
+        facade_exports["_register_program_ad_cumulative_primitive_contracts"]
+        is program_ad_cumulative_primitives._register_program_ad_cumulative_primitive_contracts
+    )
+    assert (
+        facade_exports["_require_program_ad_cumulative_contract"]
+        is program_ad_cumulative_primitives._require_program_ad_cumulative_contract
+    )
 
 
 def test_program_ad_cumulative_primitives_are_registry_policy_gated() -> None:
