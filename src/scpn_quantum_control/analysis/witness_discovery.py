@@ -465,7 +465,7 @@ def _bayesian_ucb(
 ) -> FloatArray:
     mean, std = _rbf_surrogate_predict(X_train, y_train, X_pool)
     novelty = _nearest_distance(X_train, X_pool)
-    return cast(FloatArray, mean + spec.ucb_beta * std + spec.novelty_weight * novelty)
+    return mean + spec.ucb_beta * std + spec.novelty_weight * novelty
 
 
 def _rbf_surrogate_predict(
@@ -494,7 +494,7 @@ def _rbf_surrogate_predict(
         v = K_inv @ Ks.T
     mean = Ks @ alpha + float(np.mean(y_train))
     variance = np.maximum(1.0 - np.sum(Ks * v.T, axis=1), 0.0)
-    return cast(FloatArray, mean), cast(FloatArray, np.sqrt(variance))
+    return mean, np.sqrt(variance)
 
 
 def _proposal_pool(

@@ -29,8 +29,10 @@ OTOC on NISQ: Swingle (2018), Mi et al. (Google, Science 2021).
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Any
 
 import numpy as np
+from numpy.typing import NDArray
 
 from .otoc import compute_otoc
 
@@ -49,9 +51,9 @@ class OTOCSyncScanResult:
 
 
 def otoc_sync_scan(
-    K: np.ndarray,
-    omega: np.ndarray,
-    K_base_range: np.ndarray | None = None,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
+    K_base_range: NDArray[np.float64] | None = None,
     n_K_values: int = 15,
     t_max: float = 2.0,
     n_time_points: int = 20,
@@ -67,9 +69,9 @@ def otoc_sync_scan(
 
     n = K.shape[0]
     if K_base_range is None:
-        K_base_range = np.linspace(0.01, 2.0, n_K_values)
+        K_base_range = np.linspace(0.01, 2.0, n_K_values, dtype=np.float64)
 
-    times = np.linspace(0, t_max, n_time_points)
+    times = np.linspace(0, t_max, n_time_points, dtype=np.float64)
 
     lyapunov_vals: list[float | None] = []
     scrambling_vals: list[float | None] = []
@@ -112,7 +114,7 @@ def otoc_sync_scan(
     )
 
 
-def compare_otoc_vs_R(scan: OTOCSyncScanResult) -> dict:
+def compare_otoc_vs_R(scan: OTOCSyncScanResult) -> dict[str, Any]:
     """Analyze correlation between OTOC scrambling and classical R.
 
     If scrambling peaks where R transitions (0.3 < R < 0.7), the
