@@ -45,6 +45,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 
 import numpy as np
+from numpy.typing import NDArray
 
 try:
     from scpn_quantum_engine import (
@@ -68,10 +69,10 @@ class FreeEnergyResult:
 
 
 def kl_divergence_gaussian(
-    mu_q: np.ndarray,
-    sigma_q: np.ndarray,
-    mu_p: np.ndarray,
-    sigma_p: np.ndarray,
+    mu_q: NDArray[np.float64],
+    sigma_q: NDArray[np.float64],
+    mu_p: NDArray[np.float64],
+    sigma_p: NDArray[np.float64],
 ) -> float:
     """KL divergence between two multivariate Gaussians.
 
@@ -91,22 +92,22 @@ def kl_divergence_gaussian(
 
 
 def _complexity_term(
-    mu: np.ndarray,
-    sigma: np.ndarray,
-    K_precision: np.ndarray,
+    mu: NDArray[np.float64],
+    sigma: NDArray[np.float64],
+    K_precision: NDArray[np.float64],
 ) -> float:
     """KL[q(z) || prior] where prior = N(0, K⁻¹)."""
     n = len(mu)
     K_reg = K_precision + 1e-10 * np.eye(n)
-    prior_cov = np.linalg.inv(K_reg)
+    prior_cov = np.linalg.inv(K_reg).astype(np.float64)
     return kl_divergence_gaussian(mu, sigma, np.zeros(n), prior_cov)
 
 
 def _accuracy_term(
-    mu: np.ndarray,
-    x_observed: np.ndarray,
-    sensory_precision: np.ndarray,
-    generative_fn: Callable[..., np.ndarray] | None = None,
+    mu: NDArray[np.float64],
+    x_observed: NDArray[np.float64],
+    sensory_precision: NDArray[np.float64],
+    generative_fn: Callable[..., NDArray[np.float64]] | None = None,
 ) -> float:
     """Prediction error energy: 0.5 × (x − g(μ))ᵀ Γ (x − g(μ))."""
     predicted = generative_fn(mu) if generative_fn is not None else mu
@@ -115,12 +116,12 @@ def _accuracy_term(
 
 
 def variational_free_energy(
-    mu: np.ndarray,
-    sigma: np.ndarray,
-    x_observed: np.ndarray,
-    K_precision: np.ndarray,
-    sensory_precision: np.ndarray | None = None,
-    generative_fn: Callable[..., np.ndarray] | None = None,
+    mu: NDArray[np.float64],
+    sigma: NDArray[np.float64],
+    x_observed: NDArray[np.float64],
+    K_precision: NDArray[np.float64],
+    sensory_precision: NDArray[np.float64] | None = None,
+    generative_fn: Callable[..., NDArray[np.float64]] | None = None,
 ) -> FreeEnergyResult:
     """Compute variational free energy F = complexity + accuracy."""
     n = len(mu)
@@ -141,10 +142,10 @@ def variational_free_energy(
 
 
 def evidence_lower_bound(
-    mu: np.ndarray,
-    sigma: np.ndarray,
-    x_observed: np.ndarray,
-    K_precision: np.ndarray,
+    mu: NDArray[np.float64],
+    sigma: NDArray[np.float64],
+    x_observed: NDArray[np.float64],
+    K_precision: NDArray[np.float64],
 ) -> float:
     """ELBO = −F (shorthand for optimisation targets)."""
     result = variational_free_energy(mu, sigma, x_observed, K_precision)
@@ -152,14 +153,14 @@ def evidence_lower_bound(
 
 
 def free_energy_gradient(
-    mu: np.ndarray,
-    sigma: np.ndarray,
-    x_observed: np.ndarray,
-    K_precision: np.ndarray,
-    sensory_precision: np.ndarray | None = None,
-    generative_fn: Callable[..., np.ndarray] | None = None,
-    generative_jac: Callable[..., np.ndarray] | None = None,
-) -> np.ndarray:
+    mu: NDArray[np.float64],
+    sigma: NDArray[np.float64],
+    x_observed: NDArray[np.float64],
+    K_precision: NDArray[np.float64],
+    sensory_precision: NDArray[np.float64] | None = None,
+    generative_fn: Callable[..., NDArray[np.float64]] | None = None,
+    generative_jac: Callable[..., NDArray[np.float64]] | None = None,
+) -> NDArray[np.float64]:
     """Gradient ∂F/∂μ for belief update dynamics.
 
     dμ/dt = −∂F/∂μ = −Π_z μ + Jᵀ Γ (x − g(μ))
@@ -176,7 +177,10 @@ def free_energy_gradient(
 
     # Rust path for identity generative model
     if _HAS_RUST and generative_fn is None and generative_jac is None:
-        return np.asarray(_grad_rust(mu, x_observed, K_precision, sensory_precision, 1e-10))
+        return np.asarray(
+            _grad_rust(mu, x_observed, K_precision, sensory_precision, 1e-10),
+            dtype=np.float64,
+        )
 
     K_reg = K_precision + 1e-10 * np.eye(n)
 
@@ -197,4 +201,4 @@ def free_energy_gradient(
     error = x_observed - predicted
     grad -= J.T @ sensory_precision @ error
 
-    return np.asarray(grad)
+    return np.asarray(grad, dtype=np.float64)

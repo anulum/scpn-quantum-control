@@ -36,6 +36,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import numpy as np
+from numpy.typing import NDArray
 
 from .variational_free_energy import free_energy_gradient, variational_free_energy
 
@@ -53,17 +54,17 @@ except ImportError:
 class PredictiveCodingResult:
     """Result of one predictive coding cycle across layers."""
 
-    prediction_errors: np.ndarray  # ε_i per layer
-    beliefs: np.ndarray  # updated μ_i per layer
+    prediction_errors: NDArray[np.float64]  # ε_i per layer
+    beliefs: NDArray[np.float64]  # updated μ_i per layer
     free_energy: float  # total F across all layers
     total_error_norm: float  # ||ε||
 
 
 def hierarchical_prediction_error(
-    observations: np.ndarray,
-    beliefs: np.ndarray,
-    K: np.ndarray,
-) -> np.ndarray:
+    observations: NDArray[np.float64],
+    beliefs: NDArray[np.float64],
+    K: NDArray[np.float64],
+) -> NDArray[np.float64]:
     """Compute precision-weighted prediction errors across layers.
 
     For each layer i, the prediction from layer i+1 is:
@@ -84,7 +85,7 @@ def hierarchical_prediction_error(
         Precision-weighted prediction errors ε_i, shape (n,)
     """
     if _HAS_RUST:
-        return np.asarray(_pe_rust(observations, beliefs, K))
+        return np.asarray(_pe_rust(observations, beliefs, K), dtype=np.float64)
 
     n = len(observations)
     errors = np.zeros(n)
@@ -105,11 +106,11 @@ def hierarchical_prediction_error(
 
 
 def predictive_coding_step(
-    observations: np.ndarray,
-    beliefs: np.ndarray,
-    K: np.ndarray,
+    observations: NDArray[np.float64],
+    beliefs: NDArray[np.float64],
+    K: NDArray[np.float64],
     learning_rate: float = 0.01,
-    sigma: np.ndarray | None = None,
+    sigma: NDArray[np.float64] | None = None,
 ) -> PredictiveCodingResult:
     """Single predictive coding update step.
 
