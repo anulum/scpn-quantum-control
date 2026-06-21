@@ -29,7 +29,7 @@ from typing import cast
 import numpy as np
 from numpy.typing import NDArray
 
-from .program_ad_adjoint import _program_adjoint_input_value
+from .program_ad_adjoint import _program_adjoint_input_value, _program_adjoint_is_ir_value
 from .program_ad_linalg_primitives import (
     _program_ad_linalg_det_cofactor_matrix,
     _program_ad_linalg_eig_eigenvector_jvp_matrix,
@@ -794,3 +794,215 @@ def _program_adjoint_pinv_contributions(
         for row in range(rows)
         for col in range(cols)
     )
+
+
+def _program_adjoint_node_contributions(
+    node: WholeProgramIRNode,
+    node_by_name: Mapping[str, WholeProgramIRNode],
+) -> tuple[tuple[str, float], ...]:
+    """Return local reverse-mode contributions for one captured IR node."""
+
+    if node.op == "parameter":
+        return ()
+    if node.op.startswith("branch:"):
+        return ()
+    if node.op == "mutation:setitem":
+        return ()
+    if node.op.startswith("mutation:"):
+        raise ValueError("mutation adjoints require alias/effect semantics")
+    if node.op == "neg":
+        return ((node.inputs[0], -1.0),)
+    if node.op in {
+        "sin",
+        "cos",
+        "exp",
+        "expm1",
+        "log",
+        "log1p",
+        "sqrt",
+        "tan",
+        "tanh",
+        "arcsin",
+        "arccos",
+        "reciprocal",
+        "square",
+        "abs",
+    }:
+        arg_name = node.inputs[0]
+        arg_value = _program_adjoint_input_value(arg_name, node_by_name)
+        if node.op == "sin":
+            return ((arg_name, float(np.cos(arg_value))),)
+        if node.op == "cos":
+            return ((arg_name, -float(np.sin(arg_value))),)
+        if node.op == "exp":
+            return ((arg_name, node.value),)
+        if node.op == "expm1":
+            return ((arg_name, float(np.exp(arg_value))),)
+        if node.op == "log":
+            return ((arg_name, 1.0 / arg_value),)
+        if node.op == "log1p":
+            if arg_value <= -1.0:
+                raise ValueError("log1p adjoint requires input greater than -1")
+            return ((arg_name, 1.0 / (1.0 + arg_value)),)
+        if node.op == "sqrt":
+            return ((arg_name, 1.0 / (2.0 * node.value)),)
+        if node.op == "tan":
+            cosine = float(np.cos(arg_value))
+            if abs(cosine) <= 1.0e-15:
+                raise ValueError("tan adjoint requires non-zero cosine")
+            return ((arg_name, 1.0 / cosine**2),)
+        if node.op == "tanh":
+            return ((arg_name, 1.0 - node.value**2),)
+        if node.op in {"arcsin", "arccos"}:
+            if abs(arg_value) >= 1.0:
+                raise ValueError(f"{node.op} adjoint requires input strictly inside (-1, 1)")
+            scale = 1.0 / float(np.sqrt(1.0 - arg_value**2))
+            if node.op == "arccos":
+                scale = -scale
+            return ((arg_name, scale),)
+        if node.op == "reciprocal":
+            if arg_value == 0.0:
+                raise ValueError("reciprocal adjoint requires non-zero input")
+            return ((arg_name, -1.0 / arg_value**2),)
+        if node.op == "square":
+            return ((arg_name, 2.0 * arg_value),)
+        # ``abs`` is the final unary op in the guarding set, so reaching here
+        # implies ``node.op == "abs"``.
+        if arg_value == 0.0:
+            raise ValueError("abs adjoint is undefined at zero")
+        return ((arg_name, 1.0 if arg_value > 0.0 else -1.0),)
+    if node.op in {
+        "add",
+        "sub",
+        "mul",
+        "div",
+        "pow",
+        "maximum",
+        "minimum",
+        "where",
+        "clip",
+        "choose",
+    }:
+        return _program_adjoint_binary_or_selection_contributions(node, node_by_name)
+    if node.op.startswith("linalg:det:"):
+        return _program_adjoint_det_contributions(node, node_by_name)
+    if node.op.startswith("linalg:inv:"):
+        return _program_adjoint_inv_contributions(node, node_by_name)
+    if node.op.startswith("linalg:solve:"):
+        return _program_adjoint_solve_contributions(node, node_by_name)
+    if node.op.startswith("linalg:trace:"):
+        return _program_adjoint_trace_contributions(node)
+    if node.op.startswith("linalg:diag:"):
+        return _program_adjoint_diag_contributions(node)
+    if node.op.startswith("linalg:diagflat:"):
+        return _program_adjoint_diagflat_contributions(node)
+    if node.op.startswith("linalg:matrix_power:"):
+        return _program_adjoint_matrix_power_contributions(node, node_by_name)
+    if node.op.startswith("linalg:multi_dot:"):
+        return _program_adjoint_multi_dot_contributions(node, node_by_name)
+    if node.op.startswith("linalg:eigh:eigenvalue:"):
+        return _program_adjoint_eigh_eigenvalue_contributions(node, node_by_name)
+    if node.op.startswith("linalg:eigh:eigenvector:"):
+        return _program_adjoint_eigh_eigenvector_contributions(node, node_by_name)
+    if node.op.startswith("linalg:eig:eigenvalue:"):
+        return _program_adjoint_eig_eigenvalue_contributions(node, node_by_name)
+    if node.op.startswith("linalg:eig:eigenvector:"):
+        return _program_adjoint_eig_eigenvector_contributions(node, node_by_name)
+    if node.op.startswith("linalg:eigvalsh:"):
+        return _program_adjoint_eigvalsh_contributions(node, node_by_name)
+    if node.op.startswith("linalg:eigvals:"):
+        return _program_adjoint_eigvals_contributions(node, node_by_name)
+    if node.op.startswith("linalg:svdvals:"):
+        return _program_adjoint_svdvals_contributions(node, node_by_name)
+    if node.op.startswith("linalg:pinv:"):
+        return _program_adjoint_pinv_contributions(node, node_by_name)
+    raise ValueError(f"unsupported program AD adjoint op {node.op}")
+
+
+def _program_adjoint_binary_or_selection_contributions(
+    node: WholeProgramIRNode,
+    node_by_name: Mapping[str, WholeProgramIRNode],
+) -> tuple[tuple[str, float], ...]:
+    """Return local reverse contributions for a binary or selection primitive.
+
+    Covers the elementwise binary operations (``add``, ``sub``, ``mul``,
+    ``div``, ``pow``, ``maximum``, ``minimum``) and the selection primitives
+    (``where``, ``clip``, ``choose``), routing each to its closed-form local
+    partial derivatives. Ties, clipping boundaries, and non-positive ``pow``
+    bases with a variable exponent fail closed with a ``ValueError``.
+    """
+
+    if node.op == "where":
+        if len(node.inputs) != 3:
+            raise ValueError("where adjoint requires predicate, true value, and false value")
+        predicate_truth = _program_adjoint_where_predicate_truth(node.inputs[0])
+        left_name = node.inputs[1]
+        right_name = node.inputs[2]
+        return ((left_name, 1.0),) if predicate_truth else ((right_name, 1.0),)
+    if node.op == "clip":
+        if len(node.inputs) != 3:
+            raise ValueError("clip adjoint requires value, lower, and upper inputs")
+        value_name, lower_name, upper_name = node.inputs
+        value = _program_adjoint_input_value(value_name, node_by_name)
+        lower = _program_adjoint_input_value(lower_name, node_by_name)
+        upper = _program_adjoint_input_value(upper_name, node_by_name)
+        if value < lower:
+            return ((lower_name, 1.0),)
+        if value > upper:
+            return ((upper_name, 1.0),)
+        if value in (lower, upper):
+            raise ValueError("clip adjoint is undefined at clipping boundary")
+        return ((value_name, 1.0),)
+    if node.op == "choose":
+        if len(node.inputs) != 2 or not node.inputs[0].startswith("static_selector:"):
+            raise ValueError("choose adjoint requires static selector and selected value")
+        return ((node.inputs[1], 1.0),)
+    left_name = node.inputs[0]
+    right_name = node.inputs[1] if len(node.inputs) > 1 else ""
+    left = _program_adjoint_input_value(left_name, node_by_name)
+    right = _program_adjoint_input_value(right_name, node_by_name) if right_name else 0.0
+    if node.op == "add":
+        return ((left_name, 1.0), (right_name, 1.0))
+    if node.op == "sub":
+        return ((left_name, 1.0), (right_name, -1.0))
+    if node.op == "mul":
+        return ((left_name, right), (right_name, left))
+    if node.op == "div":
+        return ((left_name, 1.0 / right), (right_name, -left / right**2))
+    if node.op == "pow":
+        if left <= 0.0 and _program_adjoint_is_ir_value(right_name):
+            raise ValueError("variable exponent adjoint requires positive base")
+        primal = node.value
+        contributions = [(left_name, right * left ** (right - 1.0))]
+        if _program_adjoint_is_ir_value(right_name):
+            contributions.append((right_name, primal * float(np.log(left))))
+        return tuple(contributions)
+    if node.op == "maximum":
+        if left == right:
+            raise ValueError("maximum adjoint is undefined at ties")
+        return ((left_name, 1.0),) if node.value == left else ((right_name, 1.0),)
+    if node.op == "minimum":
+        if left == right:
+            raise ValueError("minimum adjoint is undefined at ties")
+        return ((left_name, 1.0),) if node.value == left else ((right_name, 1.0),)
+    raise ValueError(f"unsupported program AD adjoint op {node.op}")
+
+
+def _program_adjoint_where_predicate_truth(predicate_name: str) -> bool:
+    """Resolve a recorded ``where`` predicate token to its taken branch.
+
+    Returns ``True`` when the predicate selected its true value and ``False``
+    when it selected its false value, decoded from the ``:truth:1`` / ``:truth:0``
+    suffix or a ``constant:True`` / ``constant:False`` token. An unrecorded
+    predicate fails closed with a ``ValueError``.
+    """
+
+    if predicate_name.endswith(":truth:1"):
+        return True
+    if predicate_name.endswith(":truth:0"):
+        return False
+    if predicate_name == "constant:True":
+        return True
+    if predicate_name == "constant:False":
+        return False
+    raise ValueError("where adjoint requires recorded predicate branch")

@@ -25,6 +25,7 @@ from numpy.typing import ArrayLike, NDArray
 
 import scpn_quantum_control.program_ad_adjoint_generation as generation
 from scpn_quantum_control.program_ad_adjoint_generation import (
+    _program_adjoint_binary_or_selection_contributions,
     _program_adjoint_det_contributions,
     _program_adjoint_diag_contributions,
     _program_adjoint_diagflat_contributions,
@@ -38,11 +39,13 @@ from scpn_quantum_control.program_ad_adjoint_generation import (
     _program_adjoint_matrix_power_contributions,
     _program_adjoint_multi_dot_contributions,
     _program_adjoint_multi_dot_output_metadata,
+    _program_adjoint_node_contributions,
     _program_adjoint_parse_shape_label,
     _program_adjoint_pinv_contributions,
     _program_adjoint_solve_contributions,
     _program_adjoint_svdvals_contributions,
     _program_adjoint_trace_contributions,
+    _program_adjoint_where_predicate_truth,
 )
 from scpn_quantum_control.whole_program_ad_result import WholeProgramIRNode
 
@@ -990,3 +993,318 @@ def test_multi_dot_output_metadata_rejects_degenerate_shape(
     monkeypatch.setattr(generation, "_program_adjoint_parse_shape_label", lambda label: ())
     with pytest.raises(ValueError, match="must not be empty"):
         _program_adjoint_multi_dot_output_metadata(["2x3", "0"])
+
+
+# ------------------------------------------------ node-contributions dispatcher
+
+
+def _op_node(op: str, inputs: Sequence[str], value: float = 0.0) -> WholeProgramIRNode:
+    """Build an operation IR node carrying a primal value for adjoint rules."""
+
+    return WholeProgramIRNode(
+        index=7, op=op, inputs=tuple(inputs), value=float(value), tangent=np.zeros(1)
+    )
+
+
+@pytest.mark.parametrize("op", ["parameter", "branch:cond", "mutation:setitem"])
+def test_dispatch_zero_contribution_ops(op: str) -> None:
+    """Dispatch zero contribution ops."""
+    assert _program_adjoint_node_contributions(_op_node(op, ("%0",)), {}) == ()
+
+
+def test_dispatch_mutation_requires_alias_semantics() -> None:
+    """Dispatch mutation requires alias semantics."""
+    with pytest.raises(ValueError, match="alias/effect semantics"):
+        _program_adjoint_node_contributions(_op_node("mutation:append", ("%0",)), {})
+
+
+def test_dispatch_neg_contribution() -> None:
+    """Dispatch neg contribution."""
+    assert _program_adjoint_node_contributions(_op_node("neg", ("1.5",)), {}) == (("1.5", -1.0),)
+
+
+_UNARY: dict[str, tuple[float, Callable[[float], float], Callable[[float], float]]] = {
+    "sin": (1.3, np.sin, np.cos),
+    "cos": (1.3, np.cos, lambda a: -np.sin(a)),
+    "exp": (0.7, np.exp, np.exp),
+    "expm1": (0.7, np.expm1, np.exp),
+    "log": (2.0, np.log, lambda a: 1.0 / a),
+    "log1p": (0.5, np.log1p, lambda a: 1.0 / (1.0 + a)),
+    "sqrt": (4.0, np.sqrt, lambda a: 1.0 / (2.0 * np.sqrt(a))),
+    "tan": (0.6, np.tan, lambda a: 1.0 / np.cos(a) ** 2),
+    "tanh": (0.6, np.tanh, lambda a: 1.0 - np.tanh(a) ** 2),
+    "arcsin": (0.4, np.arcsin, lambda a: 1.0 / np.sqrt(1.0 - a**2)),
+    "arccos": (0.4, np.arccos, lambda a: -1.0 / np.sqrt(1.0 - a**2)),
+    "reciprocal": (2.0, lambda a: 1.0 / a, lambda a: -1.0 / a**2),
+    "square": (3.0, lambda a: a**2, lambda a: 2.0 * a),
+    "abs": (-2.0, np.abs, lambda a: -1.0),
+}
+
+
+@pytest.mark.parametrize("op", list(_UNARY))
+def test_dispatch_unary_op_matches_derivative(op: str) -> None:
+    """Dispatch unary op matches derivative."""
+    arg, value_fn, deriv_fn = _UNARY[op]
+    node = _op_node(op, (str(arg),), float(value_fn(arg)))
+    contributions = _program_adjoint_node_contributions(node, {})
+    assert contributions[0][0] == str(arg)
+    assert contributions[0][1] == pytest.approx(float(deriv_fn(arg)))
+
+
+def test_dispatch_log1p_rejects_input_at_or_below_minus_one() -> None:
+    """Dispatch log1p rejects input at or below minus one."""
+    with pytest.raises(ValueError, match="greater than -1"):
+        _program_adjoint_node_contributions(_op_node("log1p", ("-1.0",)), {})
+
+
+def test_dispatch_tan_rejects_zero_cosine() -> None:
+    """Dispatch tan rejects zero cosine."""
+    half_pi = float(np.pi / 2.0)
+    with pytest.raises(ValueError, match="non-zero cosine"):
+        _program_adjoint_node_contributions(_op_node("tan", (str(half_pi),)), {})
+
+
+@pytest.mark.parametrize("op", ["arcsin", "arccos"])
+def test_dispatch_inverse_trig_rejects_boundary(op: str) -> None:
+    """Dispatch inverse trig rejects boundary."""
+    with pytest.raises(ValueError, match="strictly inside"):
+        _program_adjoint_node_contributions(_op_node(op, ("1.0",)), {})
+
+
+def test_dispatch_reciprocal_rejects_zero() -> None:
+    """Dispatch reciprocal rejects zero."""
+    with pytest.raises(ValueError, match="non-zero input"):
+        _program_adjoint_node_contributions(_op_node("reciprocal", ("0.0",)), {})
+
+
+def test_dispatch_abs_undefined_at_zero() -> None:
+    """Dispatch abs undefined at zero."""
+    with pytest.raises(ValueError, match="undefined at zero"):
+        _program_adjoint_node_contributions(_op_node("abs", ("0.0",)), {})
+
+
+def _linalg_dispatch_case(op: str) -> tuple[WholeProgramIRNode, dict[str, WholeProgramIRNode]]:
+    """Build a valid IR node and table for one linear-algebra dispatch route."""
+
+    symmetric = _symmetric(np.array([[3.0, 1.0], [1.0, 2.0]]))
+    general = np.array([[2.0, 0.3], [0.1, 3.0]])
+    rect = np.array([[3.0, 1.0], [0.5, 2.0], [1.0, 0.2]])
+    if op.startswith("linalg:eigh") or op == "linalg:eigvalsh:1":
+        names, table = _flat_inputs(symmetric)
+    elif op.startswith("linalg:svdvals") or op.startswith("linalg:pinv"):
+        names, table = _flat_inputs(rect)
+    else:
+        names, table = _flat_inputs(general)
+    return _node(op, names), table
+
+
+_LINALG_ROUTES = [
+    "linalg:det:2x2",
+    "linalg:inv:2x2:0:0",
+    "linalg:solve:2x2:rhs:2:0",
+    "linalg:trace:2x2:offset:0",
+    "linalg:diag:2x2:offset:0:extract:0",
+    "linalg:diagflat:2:offset:0:construct:0",
+    "linalg:matrix_power:2x2:power:2:0:0",
+    "linalg:multi_dot:2x2__2x2:out:2x2:0",
+    "linalg:eigh:eigenvalue:2x2:L:0",
+    "linalg:eigh:eigenvector:2x2:L:0:0",
+    "linalg:eig:eigenvalue:2x2:0",
+    "linalg:eig:eigenvector:2x2:0:0",
+    "linalg:eigvalsh:1",
+    "linalg:eigvals:2x2:0",
+    "linalg:svdvals:3x2:0",
+    "linalg:pinv:3x2:0.0:0:0",
+]
+
+
+@pytest.mark.parametrize("op", _LINALG_ROUTES)
+def test_dispatch_routes_linalg_op(op: str) -> None:
+    """Dispatch routes linalg op."""
+    if op.startswith("linalg:solve"):
+        matrix = np.array([[4.0, 1.0], [2.0, 3.0]])
+        rhs = np.array([1.0, -2.0])
+        names, table = _flat_inputs(np.concatenate([matrix.reshape(-1), rhs]))
+        node = _node(op, names)
+    elif op.startswith("linalg:multi_dot"):
+        flat = np.array([1.0, 2.0, 0.5, 1.5, 2.0, 0.0, 1.0, 3.0])
+        names, table = _flat_inputs(flat)
+        node = _node(op, names)
+    elif op.startswith("linalg:trace:"):
+        names, table = _flat_inputs(np.arange(2.0))
+        node = _node(op, names)
+    elif op.startswith(("linalg:diag:", "linalg:diagflat:")):
+        node, table = _node(op, ("%0",)), {}
+    else:
+        node, table = _linalg_dispatch_case(op)
+    contributions = _program_adjoint_node_contributions(node, table)
+    assert isinstance(contributions, tuple)
+
+
+def test_dispatch_routes_binary_selection() -> None:
+    """Dispatch routes binary selection."""
+    node = _op_node("add", ("1.0", "2.0"))
+    assert _program_adjoint_node_contributions(node, {}) == (("1.0", 1.0), ("2.0", 1.0))
+
+
+def test_dispatch_unsupported_op_raises() -> None:
+    """Dispatch unsupported op raises."""
+    with pytest.raises(ValueError, match="unsupported program AD adjoint op"):
+        _program_adjoint_node_contributions(_op_node("convolve", ("1.0", "2.0")), {})
+
+
+# --------------------------------------------------- binary/selection contributions
+
+
+def test_binary_where_selects_branch() -> None:
+    """Binary where selects branch."""
+    true_branch = _op_node("where", ("p:truth:1", "1.0", "2.0"))
+    false_branch = _op_node("where", ("p:truth:0", "1.0", "2.0"))
+    assert _program_adjoint_binary_or_selection_contributions(true_branch, {}) == (("1.0", 1.0),)
+    assert _program_adjoint_binary_or_selection_contributions(false_branch, {}) == (("2.0", 1.0),)
+
+
+def test_binary_where_rejects_wrong_arity() -> None:
+    """Binary where rejects wrong arity."""
+    with pytest.raises(ValueError, match="predicate, true value, and false value"):
+        _program_adjoint_binary_or_selection_contributions(_op_node("where", ("p:truth:1",)), {})
+
+
+def test_binary_clip_below_lower() -> None:
+    """Binary clip below lower."""
+    node = _op_node("clip", ("0.0", "1.0", "5.0"))
+    assert _program_adjoint_binary_or_selection_contributions(node, {}) == (("1.0", 1.0),)
+
+
+def test_binary_clip_above_upper() -> None:
+    """Binary clip above upper."""
+    node = _op_node("clip", ("9.0", "1.0", "5.0"))
+    assert _program_adjoint_binary_or_selection_contributions(node, {}) == (("5.0", 1.0),)
+
+
+def test_binary_clip_inside_range() -> None:
+    """Binary clip inside range."""
+    node = _op_node("clip", ("3.0", "1.0", "5.0"))
+    assert _program_adjoint_binary_or_selection_contributions(node, {}) == (("3.0", 1.0),)
+
+
+def test_binary_clip_rejects_boundary() -> None:
+    """Binary clip rejects boundary."""
+    with pytest.raises(ValueError, match="clipping boundary"):
+        _program_adjoint_binary_or_selection_contributions(
+            _op_node("clip", ("1.0", "1.0", "5.0")), {}
+        )
+
+
+def test_binary_clip_rejects_wrong_arity() -> None:
+    """Binary clip rejects wrong arity."""
+    with pytest.raises(ValueError, match="value, lower, and upper"):
+        _program_adjoint_binary_or_selection_contributions(_op_node("clip", ("1.0", "5.0")), {})
+
+
+def test_binary_choose_selects_value() -> None:
+    """Binary choose selects value."""
+    node = _op_node("choose", ("static_selector:0", "4.0"))
+    assert _program_adjoint_binary_or_selection_contributions(node, {}) == (("4.0", 1.0),)
+
+
+def test_binary_choose_rejects_dynamic_selector() -> None:
+    """Binary choose rejects dynamic selector."""
+    with pytest.raises(ValueError, match="static selector"):
+        _program_adjoint_binary_or_selection_contributions(_op_node("choose", ("3.0", "4.0")), {})
+
+
+def test_binary_elementwise_partials() -> None:
+    """Binary elementwise partials."""
+    add = _op_node("add", ("2.0", "3.0"))
+    sub = _op_node("sub", ("2.0", "3.0"))
+    mul = _op_node("mul", ("2.0", "3.0"))
+    div = _op_node("div", ("6.0", "3.0"))
+    assert _program_adjoint_binary_or_selection_contributions(add, {}) == (
+        ("2.0", 1.0),
+        ("3.0", 1.0),
+    )
+    assert _program_adjoint_binary_or_selection_contributions(sub, {}) == (
+        ("2.0", 1.0),
+        ("3.0", -1.0),
+    )
+    assert _program_adjoint_binary_or_selection_contributions(mul, {}) == (
+        ("2.0", 3.0),
+        ("3.0", 2.0),
+    )
+    div_result = _program_adjoint_binary_or_selection_contributions(div, {})
+    assert div_result[0][1] == pytest.approx(1.0 / 3.0)
+    assert div_result[1][1] == pytest.approx(-6.0 / 9.0)
+
+
+def test_binary_pow_constant_exponent() -> None:
+    """Binary pow constant exponent."""
+    node = _op_node("pow", ("2.0", "3.0"), value=8.0)
+    contributions = _program_adjoint_binary_or_selection_contributions(node, {})
+    assert len(contributions) == 1
+    assert contributions[0][0] == "2.0"
+    assert contributions[0][1] == pytest.approx(12.0)
+
+
+def test_binary_pow_variable_exponent() -> None:
+    """Binary pow variable exponent."""
+    table = {"%0": _value_node(0, 2.0), "%1": _value_node(1, 3.0)}
+    node = _op_node("pow", ("%0", "%1"), value=8.0)
+    contributions = _program_adjoint_binary_or_selection_contributions(node, table)
+    assert len(contributions) == 2
+    assert contributions[0][1] == pytest.approx(12.0)
+    assert contributions[1][1] == pytest.approx(8.0 * np.log(2.0))
+
+
+def test_binary_pow_rejects_nonpositive_base_with_variable_exponent() -> None:
+    """Binary pow rejects nonpositive base with variable exponent."""
+    table = {"%0": _value_node(0, -2.0), "%1": _value_node(1, 3.0)}
+    node = _op_node("pow", ("%0", "%1"), value=-8.0)
+    with pytest.raises(ValueError, match="positive base"):
+        _program_adjoint_binary_or_selection_contributions(node, table)
+
+
+@pytest.mark.parametrize(
+    ("op", "value", "selected"), [("maximum", 5.0, "5.0"), ("minimum", 2.0, "2.0")]
+)
+def test_binary_extremum_selects_active_input(op: str, value: float, selected: str) -> None:
+    """Binary extremum selects active input."""
+    node = _op_node(op, ("2.0", "5.0"), value=value)
+    assert _program_adjoint_binary_or_selection_contributions(node, {}) == ((selected, 1.0),)
+
+
+@pytest.mark.parametrize("op", ["maximum", "minimum"])
+def test_binary_extremum_rejects_ties(op: str) -> None:
+    """Binary extremum rejects ties."""
+    node = _op_node(op, ("4.0", "4.0"), value=4.0)
+    with pytest.raises(ValueError, match="undefined at ties"):
+        _program_adjoint_binary_or_selection_contributions(node, {})
+
+
+def test_binary_unsupported_op_raises() -> None:
+    """Binary unsupported op raises."""
+    with pytest.raises(ValueError, match="unsupported program AD adjoint op"):
+        _program_adjoint_binary_or_selection_contributions(_op_node("hypot", ("1.0", "2.0")), {})
+
+
+# ----------------------------------------------------------- where-predicate truth
+
+
+@pytest.mark.parametrize(
+    ("token", "expected"),
+    [
+        ("p:truth:1", True),
+        ("p:truth:0", False),
+        ("constant:True", True),
+        ("constant:False", False),
+    ],
+)
+def test_where_predicate_truth_decodes_recorded_branch(token: str, expected: bool) -> None:
+    """Where predicate truth decodes recorded branch."""
+    assert _program_adjoint_where_predicate_truth(token) is expected
+
+
+def test_where_predicate_truth_rejects_unrecorded_branch() -> None:
+    """Where predicate truth rejects unrecorded branch."""
+    with pytest.raises(ValueError, match="recorded predicate branch"):
+        _program_adjoint_where_predicate_truth("p:unknown")
