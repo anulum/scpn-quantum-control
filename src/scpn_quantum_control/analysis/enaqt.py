@@ -34,6 +34,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import numpy as np
+from numpy.typing import NDArray
 
 from ..bridge.knm_hamiltonian import knm_to_dense_matrix, knm_to_hamiltonian
 from ..dense_budget import require_dense_allocation
@@ -45,14 +46,14 @@ class ENAQTResult:
 
     optimal_gamma: float  # dephasing rate that maximises R
     optimal_r: float  # R_global at optimal γ
-    gamma_values: np.ndarray
-    r_values: np.ndarray
+    gamma_values: NDArray[np.float64]
+    r_values: NDArray[np.float64]
     coherent_r: float  # R at γ=0
     classical_r: float  # R at large γ
     enhancement: float  # optimal_r / coherent_r
 
 
-def _build_z_signs(n_qubits: int) -> np.ndarray:
+def _build_z_signs(n_qubits: int) -> NDArray[np.float64]:
     """Precompute Z_k sign vectors for vectorised dephasing.
 
     Z_k is diagonal with entries ±1. Z_k ρ Z_k flips signs:
@@ -70,13 +71,13 @@ def _build_z_signs(n_qubits: int) -> np.ndarray:
 
 
 def _lindblad_evolve(
-    rho: np.ndarray,
-    H_mat: np.ndarray,
+    rho: NDArray[np.complex128],
+    H_mat: NDArray[np.complex128],
     gamma: float,
     dt: float,
     n_qubits: int,
-    z_signs: np.ndarray | None = None,
-) -> np.ndarray:
+    z_signs: NDArray[np.float64] | None = None,
+) -> NDArray[np.complex128]:
     """One step of Lindblad master equation with Z-dephasing.
 
     dρ/dt = -i[H, ρ] + γ Σ_k (Z_k ρ Z_k - ρ)
@@ -101,11 +102,11 @@ def _lindblad_evolve(
     # Enforce trace = 1 and Hermiticity
     rho_new = (rho_new + rho_new.conj().T) / 2.0
     rho_new /= np.trace(rho_new)
-    result: np.ndarray = rho_new
+    result: NDArray[np.complex128] = rho_new
     return result
 
 
-def _r_from_density_matrix(rho: np.ndarray, n_qubits: int) -> float:
+def _r_from_density_matrix(rho: NDArray[np.complex128], n_qubits: int) -> float:
     """Extract R_global from density matrix via X,Y expectations."""
     phases = np.zeros(n_qubits)
     for k in range(n_qubits):
@@ -127,9 +128,9 @@ def _r_from_density_matrix(rho: np.ndarray, n_qubits: int) -> float:
 
 
 def enaqt_scan(
-    K: np.ndarray,
-    omega: np.ndarray,
-    gamma_range: np.ndarray | None = None,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
+    gamma_range: NDArray[np.float64] | None = None,
     t_evolve: float = 1.0,
     n_steps: int = 50,
     *,
@@ -148,7 +149,7 @@ def enaqt_scan(
     """
     n = K.shape[0]
     if gamma_range is None:
-        gamma_range = np.logspace(-3, 1, 20)
+        gamma_range = np.logspace(-3, 1, 20, dtype=np.float64)
 
     require_dense_allocation(
         n,

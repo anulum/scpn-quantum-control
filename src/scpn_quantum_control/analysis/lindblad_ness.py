@@ -25,6 +25,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import numpy as np
+from numpy.typing import NDArray
 from scipy.linalg import expm
 
 from ..bridge.knm_hamiltonian import knm_to_dense_matrix, knm_to_hamiltonian
@@ -37,7 +38,7 @@ class NESSResult:
     """NESS computation result at a single coupling strength."""
 
     K_base: float
-    rho_ness: np.ndarray
+    rho_ness: NDArray[np.complex128]
     R_ness: float
     R_ideal: float
     purity: float  # Tr(ρ²) — 1 for pure, 1/d for maximally mixed
@@ -48,19 +49,23 @@ class NESSResult:
 class NESSScanResult:
     """NESS scan across coupling strength."""
 
-    k_values: np.ndarray
-    R_ness: np.ndarray
-    R_ideal: np.ndarray
-    purity: np.ndarray
-    gap_R: np.ndarray  # R_ideal - R_ness at each K
+    k_values: NDArray[np.float64]
+    R_ness: NDArray[np.float64]
+    R_ideal: NDArray[np.float64]
+    purity: NDArray[np.float64]
+    gap_R: NDArray[np.float64]  # R_ideal - R_ness at each K
     noise_resilience: float  # K where gap_R is minimized
 
 
-def _lindblad_superoperator(H: np.ndarray, gamma: float, n_qubits: int) -> np.ndarray:
+def _lindblad_superoperator(
+    H: NDArray[np.complex128], gamma: float, n_qubits: int
+) -> NDArray[np.complex128]:
     """Lindblad superoperator with amplitude damping."""
     dim = H.shape[0]
     I_d = np.eye(dim)
-    L_total: np.ndarray = -1j * (np.kron(H, I_d) - np.kron(I_d, H.T))
+    L_total: NDArray[np.complex128] = (-1j * (np.kron(H, I_d) - np.kron(I_d, H.T))).astype(
+        np.complex128
+    )
 
     lowering = np.array([[0, 1], [0, 0]], dtype=complex)
     for q in range(n_qubits):
@@ -77,7 +82,7 @@ def _lindblad_superoperator(H: np.ndarray, gamma: float, n_qubits: int) -> np.nd
     return L_total
 
 
-def _R_from_statevector(psi: np.ndarray, n: int) -> float:
+def _R_from_statevector(psi: NDArray[np.complex128], n: int) -> float:
     """R from pure state."""
     from qiskit.quantum_info import SparsePauliOp, Statevector
 
@@ -95,8 +100,8 @@ def _R_from_statevector(psi: np.ndarray, n: int) -> float:
 
 
 def compute_ness(
-    omega: np.ndarray,
-    K_topology: np.ndarray,
+    omega: NDArray[np.float64],
+    K_topology: NDArray[np.float64],
     K_base: float,
     gamma: float = 0.1,
     t_relax: float = 50.0,
@@ -152,16 +157,16 @@ def compute_ness(
 
 
 def ness_vs_coupling(
-    omega: np.ndarray,
-    K_topology: np.ndarray,
-    k_range: np.ndarray | None = None,
+    omega: NDArray[np.float64],
+    K_topology: NDArray[np.float64],
+    k_range: NDArray[np.float64] | None = None,
     gamma: float = 0.1,
     *,
     max_dense_gib: float | None = None,
 ) -> NESSScanResult:
     """Scan NESS across coupling strength."""
     if k_range is None:
-        k_range = np.linspace(0.5, 5.0, 15)
+        k_range = np.linspace(0.5, 5.0, 15, dtype=np.float64)
 
     n_k = len(k_range)
     R_ness = np.zeros(n_k)
