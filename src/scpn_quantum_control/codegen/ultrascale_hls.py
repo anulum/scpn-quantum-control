@@ -28,6 +28,7 @@ from typing import Literal, get_args
 
 import numpy as np
 from jinja2 import Environment, FileSystemLoader, StrictUndefined
+from numpy.typing import NDArray
 
 TargetSku = Literal["zu3eg", "zu9eg"]
 
@@ -151,7 +152,7 @@ def _render_xdc(target_sku: TargetSku, sample_rate_hz: float) -> str:
 
 
 def pulse_to_vivado_hls(
-    pulse_waveform: np.ndarray,
+    pulse_waveform: NDArray[np.float64],
     sample_rate_hz: float,
     target_sku: TargetSku = "zu3eg",
     *,

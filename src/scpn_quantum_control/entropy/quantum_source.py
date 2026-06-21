@@ -30,7 +30,7 @@ Physical Review Letters 121, 100403 (2018).
 
 from __future__ import annotations
 
-from typing import Literal, Protocol
+from typing import Any, Literal, Protocol
 
 import numpy as np
 from numpy.typing import NDArray
@@ -90,7 +90,7 @@ class AerQuantumEntropySource:
         """Return the number of measured bits produced per Aer shot."""
         return self._register_qubits
 
-    def _build_circuit(self):
+    def _build_circuit(self) -> Any:
         from qiskit import QuantumCircuit
 
         w = self._register_qubits
@@ -117,7 +117,7 @@ class AerQuantumEntropySource:
             qc.measure(control, i)
         return qc
 
-    def _build_simulator(self):
+    def _build_simulator(self) -> Any:
         from qiskit_aer import AerSimulator
 
         return AerSimulator(method=self._method, seed_simulator=self._seed)

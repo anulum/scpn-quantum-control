@@ -34,6 +34,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import numpy as np
+from numpy.typing import NDArray
 
 from ..hardware.classical import classical_exact_diag
 
@@ -42,25 +43,25 @@ from ..hardware.classical import classical_exact_diag
 class PGBOResult:
     """Quantum PGBO tensor result."""
 
-    metric_tensor: np.ndarray  # h_μν = Re(Q_μν), n_params × n_params
-    berry_curvature: np.ndarray  # F_μν = -2 Im(Q_μν)
+    metric_tensor: NDArray[np.float64]  # h_μν = Re(Q_μν), n_params × n_params
+    berry_curvature: NDArray[np.float64]  # F_μν = -2 Im(Q_μν)
     metric_determinant: float  # det(h) — volume element
     total_curvature: float  # Σ |F_μν|
     n_parameters: int
     parameter_labels: list[str]
 
 
-def _ground_state(K: np.ndarray, omega: np.ndarray) -> np.ndarray:
+def _ground_state(K: NDArray[np.float64], omega: NDArray[np.float64]) -> NDArray[np.complex128]:
     """Get ground state vector."""
     n = K.shape[0]
     exact = classical_exact_diag(n, K=K, omega=omega)
-    result: np.ndarray = np.ascontiguousarray(exact["ground_state"])
+    result: NDArray[np.complex128] = np.ascontiguousarray(exact["ground_state"])
     return result
 
 
 def compute_pgbo_tensor(
-    K: np.ndarray,
-    omega: np.ndarray,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
     epsilon: float = 0.005,
 ) -> PGBOResult:
     """Compute the quantum geometric tensor Q_μν for K_ij parameters.
@@ -79,7 +80,7 @@ def compute_pgbo_tensor(
             labels.append(f"K_{i}{j}")
 
     n_params = len(params)
-    dpsi: np.ndarray = np.zeros((n_params, len(psi_0)), dtype=complex)
+    dpsi: NDArray[np.complex128] = np.zeros((n_params, len(psi_0)), dtype=complex)
 
     # Compute ∂|ψ>/∂K_ij via finite differences
     for mu, (i, j) in enumerate(params):
@@ -100,7 +101,7 @@ def compute_pgbo_tensor(
         dpsi[mu] = (psi_plus - psi_minus) / (2.0 * epsilon)
 
     # Quantum geometric tensor: Q_μν = <∂_μ|∂_ν> - <∂_μ|ψ><ψ|∂_ν>
-    Q: np.ndarray = np.zeros((n_params, n_params), dtype=complex)
+    Q: NDArray[np.complex128] = np.zeros((n_params, n_params), dtype=complex)
     for mu in range(n_params):
         for nu in range(n_params):
             inner = np.dot(dpsi[mu].conj(), dpsi[nu])

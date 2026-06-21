@@ -33,6 +33,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import numpy as np
+from numpy.typing import NDArray
 from qiskit.quantum_info import SparsePauliOp, Statevector
 
 from ..analysis.quantum_phi import partial_trace, von_neumann_entropy
@@ -52,7 +53,9 @@ class TCBOResult:
     betti_1_proxy: float  # loop proxy (= p_h1)
 
 
-def _string_order_parameter(psi: np.ndarray, n: int, i: int = 0, j: int | None = None) -> float:
+def _string_order_parameter(
+    psi: NDArray[np.complex128], n: int, i: int = 0, j: int | None = None
+) -> float:
     """String order parameter: <Z_i × Π X_k × Z_j> for k in (i,j)."""
     if j is None:
         j = n - 1
@@ -69,7 +72,7 @@ def _string_order_parameter(psi: np.ndarray, n: int, i: int = 0, j: int | None =
     return float(sv.expectation_value(op).real)
 
 
-def _topological_entanglement_entropy(psi: np.ndarray, n: int) -> float:
+def _topological_entanglement_entropy(psi: NDArray[np.complex128], n: int) -> float:
     """Topological entanglement entropy via Kitaev-Preskill construction.
 
     For 3 contiguous regions A, B, C:
@@ -80,7 +83,7 @@ def _topological_entanglement_entropy(psi: np.ndarray, n: int) -> float:
     if n < 4:
         return 0.0
 
-    rho = np.outer(psi, psi.conj())
+    rho = np.outer(psi, psi.conj()).astype(np.complex128)
     size_a = n // 3
     size_b = n // 3
 
@@ -103,7 +106,7 @@ def _topological_entanglement_entropy(psi: np.ndarray, n: int) -> float:
     return float(tee)
 
 
-def _betti_0_proxy(psi: np.ndarray, n: int) -> float:
+def _betti_0_proxy(psi: NDArray[np.complex128], n: int) -> float:
     """β_0 proxy: fraction of qubits with |<Z>| > 0.5 (non-trivially polarised).
 
     High β_0 = many connected components = desynchronised.
@@ -120,8 +123,8 @@ def _betti_0_proxy(psi: np.ndarray, n: int) -> float:
 
 
 def compute_tcbo_observables(
-    K: np.ndarray,
-    omega: np.ndarray,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
 ) -> TCBOResult:
     """Compute all quantum TCBO observables from ground state."""
     n = K.shape[0]
