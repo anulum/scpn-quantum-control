@@ -15,6 +15,7 @@ import numpy as np
 import pytest
 from numpy.typing import NDArray
 
+from scpn_quantum_control import program_ad_broadcast_assembly as broadcast_assembly
 from scpn_quantum_control.differentiable import (
     Parameter,
     PrimitiveIdentity,
@@ -24,6 +25,12 @@ from scpn_quantum_control.differentiable import (
     program_ad_assembly_broadcast_to_derivative_rule,
     program_adjoint_gradient,
     whole_program_value_and_grad,
+)
+from scpn_quantum_control.program_ad_broadcast_assembly import (
+    program_ad_assembly_broadcast_arrays_derivative_rule as extracted_broadcast_arrays_rule,
+)
+from scpn_quantum_control.program_ad_broadcast_assembly import (
+    program_ad_assembly_broadcast_to_derivative_rule as extracted_broadcast_to_rule,
 )
 
 FloatArray = NDArray[np.float64]
@@ -35,6 +42,51 @@ def _assert_allclose(
     """Assert NumPy closeness across dynamically typed Program AD result payloads."""
 
     cast(Any, np.testing.assert_allclose)(actual, expected, rtol=rtol, atol=atol)
+
+
+def test_program_ad_broadcast_direct_rules_are_exposed_from_extracted_module() -> None:
+    """Facade and extracted broadcast assembly factories should share identity."""
+
+    assert extracted_broadcast_to_rule is program_ad_assembly_broadcast_to_derivative_rule
+    assert extracted_broadcast_arrays_rule is program_ad_assembly_broadcast_arrays_derivative_rule
+
+
+def test_program_ad_broadcast_direct_rules_fail_closed_on_static_shapes() -> None:
+    """Extracted broadcast direct rules should reject malformed static shapes."""
+
+    assert broadcast_assembly._normalise_program_ad_broadcast_shape(3) == (3,)
+    with pytest.raises(ValueError, match="requires an integer shape"):
+        broadcast_assembly._normalise_program_ad_broadcast_shape("2")
+    with pytest.raises(ValueError, match="non-negative"):
+        broadcast_assembly._normalise_program_ad_broadcast_shape((2, -1))
+    with pytest.raises(ValueError, match="compatible with source broadcasting"):
+        extracted_broadcast_to_rule((2, 3), (2, 2))
+    with pytest.raises(ValueError, match="requires operands"):
+        extracted_broadcast_arrays_rule(())
+    with pytest.raises(ValueError, match="broadcast-compatible operands"):
+        extracted_broadcast_arrays_rule(((2,), (3,)))
+
+
+def test_program_ad_broadcast_direct_adjoint_rejects_impossible_cotangents() -> None:
+    """Extracted broadcast adjoint reductions should reject impossible cotangent layouts."""
+
+    _assert_allclose(
+        broadcast_assembly._program_ad_assembly_broadcast_adjoint(
+            np.ones((2, 3), dtype=np.float64),
+            source_shape=(),
+        ),
+        np.array(6.0, dtype=np.float64),
+    )
+    with pytest.raises(ValueError, match="rank mismatch"):
+        broadcast_assembly._program_ad_assembly_broadcast_adjoint(
+            np.ones((2,), dtype=np.float64),
+            source_shape=(2, 2),
+        )
+    with pytest.raises(ValueError, match="shape mismatch"):
+        broadcast_assembly._program_ad_assembly_broadcast_adjoint(
+            np.ones((2, 3), dtype=np.float64),
+            source_shape=(2, 2),
+        )
 
 
 def test_program_ad_assembly_broadcast_to_contract_and_direct_rule() -> None:

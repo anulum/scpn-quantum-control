@@ -144,6 +144,11 @@ def differentiable_module_hardening_registry() -> tuple[DifferentiableModuleHard
             ("static stack/block direct rules", "nested assembly VJP boundaries"),
         ),
         _record(
+            "src/scpn_quantum_control/program_ad_broadcast_assembly.py",
+            ("tests/test_program_ad_broadcast_assembly.py",),
+            ("static broadcast direct rules", "broadcast VJP reduction boundaries"),
+        ),
+        _record(
             "src/scpn_quantum_control/program_ad_stencil_primitives.py",
             ("tests/test_program_ad_finite_difference_stencils.py",),
             ("static stencil direct rules", "gradient VJP boundary coefficients"),
