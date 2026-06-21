@@ -16,6 +16,7 @@ from dataclasses import asdict, dataclass
 from typing import Any, cast
 
 import numpy as np
+from numpy.typing import NDArray
 from scipy.integrate import solve_ivp
 from scipy.linalg import expm
 
@@ -66,12 +67,12 @@ class BenchmarkResultRow:
         return payload
 
 
-def ring_coupling_matrix(n_oscillators: int = 4, coupling: float = 0.45) -> np.ndarray:
+def ring_coupling_matrix(n_oscillators: int = 4, coupling: float = 0.45) -> NDArray[np.float64]:
     """Return a nearest-neighbour ring coupling matrix."""
 
     if n_oscillators < 3:
         raise ValueError("ring benchmark requires at least three oscillators")
-    matrix = np.zeros((n_oscillators, n_oscillators), dtype=float)
+    matrix = np.zeros((n_oscillators, n_oscillators), dtype=np.float64)
     for index in range(n_oscillators):
         matrix[index, (index - 1) % n_oscillators] = coupling
         matrix[index, (index + 1) % n_oscillators] = coupling
@@ -80,32 +81,32 @@ def ring_coupling_matrix(n_oscillators: int = 4, coupling: float = 0.45) -> np.n
 
 def decaying_chain_coupling_matrix(
     n_oscillators: int = 8, coupling: float = 0.45, decay: float = 0.3
-) -> np.ndarray:
+) -> NDArray[np.float64]:
     """Return an exponential-distance decaying chain coupling matrix."""
 
     if n_oscillators < 2:
         raise ValueError("chain benchmark requires at least two oscillators")
     indices = np.arange(n_oscillators, dtype=float)
     distance = np.abs(indices[:, None] - indices[None, :])
-    matrix = cast(np.ndarray, coupling * np.exp(-decay * distance))
+    matrix = cast("NDArray[np.float64]", coupling * np.exp(-decay * distance))
     np.fill_diagonal(matrix, 0.0)
     return matrix
 
 
-def natural_frequencies(n_oscillators: int = 4) -> np.ndarray:
+def natural_frequencies(n_oscillators: int = 4) -> NDArray[np.float64]:
     """Return the canonical linear frequency grid."""
 
-    return np.linspace(0.8, 1.2, n_oscillators, dtype=float)
+    return np.linspace(0.8, 1.2, n_oscillators, dtype=np.float64)
 
 
-def kuramoto_order_parameter(phases: np.ndarray) -> float:
+def kuramoto_order_parameter(phases: NDArray[np.float64]) -> float:
     """Return the Kuramoto order parameter magnitude."""
 
     return float(abs(np.mean(np.exp(1j * phases))))
 
 
 def run_classical_reference(
-    *, coupling: np.ndarray | None = None, t_final: float = 1.0
+    *, coupling: NDArray[np.float64] | None = None, t_final: float = 1.0
 ) -> ObservableRow:
     """Run the classical Kuramoto ODE reference for the n=4 ring."""
 
@@ -113,10 +114,10 @@ def run_classical_reference(
     omega = natural_frequencies(coupling.shape[0])
     initial = np.linspace(0.0, 1.5 * math.pi, coupling.shape[0], dtype=float)
 
-    def rhs(_time: float, theta: np.ndarray) -> np.ndarray:
+    def rhs(_time: float, theta: NDArray[np.float64]) -> NDArray[np.float64]:
         delta = theta[None, :] - theta[:, None]
         derivative = cast(
-            np.ndarray,
+            "NDArray[np.float64]",
             np.asarray(
                 omega + np.sum(coupling * np.sin(delta), axis=1),
                 dtype=float,
@@ -145,19 +146,25 @@ def run_classical_reference(
     )
 
 
-def _single_qubit_operator(op: np.ndarray, index: int, n_qubits: int) -> np.ndarray:
-    eye = np.eye(2, dtype=complex)
-    out = np.array([[1.0 + 0.0j]])
+def _single_qubit_operator(
+    op: NDArray[np.complex128], index: int, n_qubits: int
+) -> NDArray[np.complex128]:
+    eye = np.eye(2, dtype=np.complex128)
+    out: NDArray[np.complex128] = np.array([[1.0 + 0.0j]], dtype=np.complex128)
     for pos in range(n_qubits):
-        out = np.kron(out, op if pos == index else eye)
+        out = np.kron(out, op if pos == index else eye).astype(np.complex128)
     return out
 
 
 def _two_qubit_operator(
-    op_a: np.ndarray, i: int, op_b: np.ndarray, j: int, n_qubits: int
-) -> np.ndarray:
-    eye = np.eye(2, dtype=complex)
-    out = np.array([[1.0 + 0.0j]])
+    op_a: NDArray[np.complex128],
+    i: int,
+    op_b: NDArray[np.complex128],
+    j: int,
+    n_qubits: int,
+) -> NDArray[np.complex128]:
+    eye = np.eye(2, dtype=np.complex128)
+    out: NDArray[np.complex128] = np.array([[1.0 + 0.0j]], dtype=np.complex128)
     for pos in range(n_qubits):
         if pos == i:
             op = op_a
@@ -165,11 +172,13 @@ def _two_qubit_operator(
             op = op_b
         else:
             op = eye
-        out = np.kron(out, op)
+        out = np.kron(out, op).astype(np.complex128)
     return out
 
 
-def xy_hamiltonian(coupling: np.ndarray, omega: np.ndarray) -> np.ndarray:
+def xy_hamiltonian(
+    coupling: NDArray[np.float64], omega: NDArray[np.float64]
+) -> NDArray[np.complex128]:
     """Build the dense XY Hamiltonian for the canonical benchmark."""
 
     n_qubits = int(coupling.shape[0])
@@ -177,11 +186,11 @@ def xy_hamiltonian(coupling: np.ndarray, omega: np.ndarray) -> np.ndarray:
         raise ValueError("coupling must be square")
     if omega.shape != (n_qubits,):
         raise ValueError("omega length must match coupling size")
-    x_gate = np.array([[0, 1], [1, 0]], dtype=complex)
-    y_gate = np.array([[0, -1j], [1j, 0]], dtype=complex)
-    z_gate = np.array([[1, 0], [0, -1]], dtype=complex)
+    x_gate = np.array([[0, 1], [1, 0]], dtype=np.complex128)
+    y_gate = np.array([[0, -1j], [1j, 0]], dtype=np.complex128)
+    z_gate = np.array([[1, 0], [0, -1]], dtype=np.complex128)
     dim = 2**n_qubits
-    hamiltonian = np.zeros((dim, dim), dtype=complex)
+    hamiltonian = np.zeros((dim, dim), dtype=np.complex128)
     for i in range(n_qubits):
         hamiltonian -= float(omega[i]) * _single_qubit_operator(z_gate, i, n_qubits)
     for i in range(n_qubits):
@@ -197,7 +206,7 @@ def xy_hamiltonian(coupling: np.ndarray, omega: np.ndarray) -> np.ndarray:
 
 
 def run_exact_reference(
-    *, coupling: np.ndarray | None = None, t_final: float = 1.0
+    *, coupling: NDArray[np.float64] | None = None, t_final: float = 1.0
 ) -> tuple[ObservableRow, ObservableRow]:
     """Run dense exact XY evolution for the n=4 ring benchmark."""
 
