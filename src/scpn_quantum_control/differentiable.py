@@ -27,6 +27,7 @@ from .differentiable_batch_helpers import (
     _as_batch_vector_array,
     _as_parameter_shift_sample_tensor,
 )
+from .differentiable_consistency import check_parameter_shift_consistency
 from .differentiable_jax_adapter import (
     is_jax_autodiff_available,
     jax_value_and_grad,
@@ -10057,47 +10058,6 @@ def implicit_fixed_point_sensitivity(
         parameter_names=tuple(parameter_info.name for parameter_info in parameter_meta),
         trainable=tuple(parameter_info.trainable for parameter_info in parameter_meta),
         hyperparameter_names=hyper_names,
-    )
-
-
-def check_parameter_shift_consistency(
-    objective: ScalarObjective,
-    values: ArrayLike,
-    *,
-    parameters: Sequence[Parameter] | None = None,
-    rule: ParameterShiftRule | None = None,
-    finite_difference_step: float = 1.0e-6,
-    tolerance: float = 1.0e-5,
-) -> GradientCheckResult:
-    """Compare parameter-shift gradients against central finite differences."""
-
-    tolerance_value = _as_real_scalar("gradient check tolerance", tolerance)
-    if tolerance_value < 0.0:
-        raise ValueError("gradient check tolerance must be finite and non-negative")
-    candidate = value_and_parameter_shift_grad(
-        objective,
-        values,
-        parameters=parameters,
-        rule=rule,
-    )
-    reference = value_and_finite_difference_grad(
-        objective,
-        values,
-        parameters=parameters,
-        step=finite_difference_step,
-    )
-    delta = candidate.gradient - reference.gradient
-    max_abs_error = float(np.max(np.abs(delta))) if delta.size else 0.0
-    l2_error = float(np.linalg.norm(delta, ord=2))
-    value_delta = float(abs(candidate.value - reference.value))
-    return GradientCheckResult(
-        reference=reference,
-        candidate=candidate,
-        max_abs_error=max_abs_error,
-        l2_error=l2_error,
-        value_delta=value_delta,
-        tolerance=tolerance_value,
-        passed=max_abs_error <= tolerance_value,
     )
 
 

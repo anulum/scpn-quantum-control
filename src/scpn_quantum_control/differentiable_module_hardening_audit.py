@@ -289,6 +289,11 @@ def differentiable_module_hardening_registry() -> tuple[DifferentiableModuleHard
             ("optional-JAX dependency boundary", "JAX value-and-gradient validation"),
         ),
         _record(
+            "src/scpn_quantum_control/differentiable_consistency.py",
+            ("tests/test_differentiable_consistency.py",),
+            ("parameter-shift consistency diagnostics", "facade export compatibility"),
+        ),
+        _record(
             "src/scpn_quantum_control/differentiable_module_hardening_audit.py",
             ("tests/test_differentiable_module_hardening_audit.py",),
             ("module inventory discovery", "module-specific test enforcement"),
