@@ -13,7 +13,10 @@ quantum hardware result should approximate.
 
 from __future__ import annotations
 
+from typing import Any
+
 import numpy as np
+from numpy.typing import NDArray
 from scipy.linalg import expm
 from scipy.sparse import csc_matrix
 from scipy.sparse.linalg import eigsh, expm_multiply
@@ -31,10 +34,10 @@ def classical_kuramoto_reference(
     n_osc: int,
     t_max: float,
     dt: float,
-    K: np.ndarray | None = None,
-    omega: np.ndarray | None = None,
-    theta0: np.ndarray | None = None,
-) -> dict:
+    K: NDArray[np.float64] | None = None,
+    omega: NDArray[np.float64] | None = None,
+    theta0: NDArray[np.float64] | None = None,
+) -> dict[str, Any]:
     """Euler integration of classical Kuramoto with Paper 27 parameters.
 
     Returns times, theta(t), R(t) for direct comparison with quantum results.
@@ -94,7 +97,7 @@ def classical_kuramoto_reference(
     return {"times": times, "theta": theta_history, "R": R_history}
 
 
-def _order_param(theta: np.ndarray) -> float:
+def _order_param(theta: NDArray[np.float64]) -> float:
     """Kuramoto order parameter R = |<exp(i theta)>|.
 
     Delegates to :func:`scpn_quantum_control.accel.order_parameter`,
@@ -117,10 +120,10 @@ def _order_param(theta: np.ndarray) -> float:
 
 def classical_exact_diag(
     n_osc: int,
-    K: np.ndarray | None = None,
-    omega: np.ndarray | None = None,
+    K: NDArray[np.float64] | None = None,
+    omega: NDArray[np.float64] | None = None,
     k_eigenvalues: int | None = None,
-) -> dict:
+) -> dict[str, Any]:
     """Exact diagonalization of the XY Kuramoto Hamiltonian.
 
     For n_osc >= 14 (2^14 = 16384 entries), uses scipy.sparse.linalg.eigsh
@@ -168,11 +171,11 @@ def classical_exact_evolution(
     n_osc: int,
     t_max: float,
     dt: float,
-    K: np.ndarray | None = None,
-    omega: np.ndarray | None = None,
+    K: NDArray[np.float64] | None = None,
+    omega: NDArray[np.float64] | None = None,
     *,
     max_dense_gib: float | None = None,
-) -> dict:
+) -> dict[str, Any]:
     """Exact matrix exponential evolution of XY Hamiltonian.
 
     Returns per-qubit X,Y expectations and reconstructed R(t).
@@ -214,13 +217,13 @@ def classical_exact_evolution(
     return {"times": times, "R": R_history}
 
 
-def _build_initial_state(n_osc: int, omega: np.ndarray) -> np.ndarray:
+def _build_initial_state(n_osc: int, omega: NDArray[np.float64]) -> NDArray[np.complex128]:
     """Tensor product of Ry(omega_i mod 2pi)|0> in Qiskit little-endian order.
 
     Qiskit stores |b_{n-1}...b_1 b_0> with qubit 0 as the LSB, so the
     kron order must be q_{n-1} ⊗ ... ⊗ q_1 ⊗ q_0.
     """
-    state: np.ndarray = np.array([1.0 + 0j])
+    state: NDArray[np.complex128] = np.array([1.0 + 0j])
     for i in reversed(range(n_osc)):
         angle = float(omega[i]) % (2 * np.pi)
         q = np.array([np.cos(angle / 2), np.sin(angle / 2)], dtype=complex)
@@ -228,7 +231,7 @@ def _build_initial_state(n_osc: int, omega: np.ndarray) -> np.ndarray:
     return state
 
 
-def _state_order_param(psi: np.ndarray, n_osc: int) -> float:
+def _state_order_param(psi: NDArray[np.complex128], n_osc: int) -> float:
     """Compute R from statevector via X,Y expectations per qubit.
 
     Tries Rust fast path first (vectorised bitwise ops), falls back to
@@ -253,7 +256,7 @@ def _state_order_param(psi: np.ndarray, n_osc: int) -> float:
     return float(abs(z_complex))
 
 
-def _state_order_param_sparse(psi: np.ndarray, n_osc: int) -> float:
+def _state_order_param_sparse(psi: NDArray[np.complex128], n_osc: int) -> float:
     """Compute R from statevector using vectorised bitwise Pauli application.
 
     Tries Rust fast path first (SIMD-friendly loop), falls back to numpy
@@ -279,7 +282,9 @@ def _state_order_param_sparse(psi: np.ndarray, n_osc: int) -> float:
     return float(abs(z_complex))
 
 
-def _xy_expectations_vectorized(psi: np.ndarray, n: int) -> tuple[np.ndarray, np.ndarray]:
+def _xy_expectations_vectorized(
+    psi: NDArray[np.complex128], n: int
+) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
     """Return all single-qubit X and Y expectations using bitwise indexing.
 
     This is the Python fallback for the Rust expectation hot path. It avoids
@@ -306,7 +311,7 @@ def _xy_expectations_vectorized(psi: np.ndarray, n: int) -> tuple[np.ndarray, np
     return exp_x, exp_y
 
 
-def _expectation_pauli(psi: np.ndarray, n: int, qubit: int, pauli: str) -> float:
+def _expectation_pauli(psi: NDArray[np.complex128], n: int, qubit: int, pauli: str) -> float:
     """<psi| P_qubit |psi> where P acts on one qubit, identity elsewhere.
 
     Tries Rust bitwise fast path first, falls back to NumPy bitwise indexing.
@@ -343,7 +348,7 @@ def _expectation_pauli(psi: np.ndarray, n: int, qubit: int, pauli: str) -> float
     raise ValueError(f"unsupported Pauli label: {pauli!r}")
 
 
-def bloch_vectors_from_json(path: str) -> dict:
+def bloch_vectors_from_json(path: str) -> dict[str, Any]:
     """Extract per-qubit Bloch vector magnitudes from a hardware result JSON.
 
     Expects keys 'exp_x', 'exp_y', 'exp_z' (lists of per-qubit expectations).
@@ -370,10 +375,10 @@ def bloch_vectors_from_json(path: str) -> dict:
 
 
 def classical_brute_mpc(
-    B_matrix: np.ndarray,
-    target: np.ndarray,
+    B_matrix: NDArray[np.float64],
+    target: NDArray[np.float64],
     horizon: int,
-) -> dict:
+) -> dict[str, Any]:
     """Brute-force optimal binary MPC: enumerate all 2^horizon action sequences.
 
     Tries Rust parallel path first (rayon), falls back to Python.
@@ -401,7 +406,7 @@ def classical_brute_mpc(
 
     n_actions = 2**horizon
     best_cost = np.inf
-    best_actions: np.ndarray = np.zeros(horizon, dtype=int)
+    best_actions: NDArray[np.int64] = np.zeros(horizon, dtype=int)
     all_costs = np.zeros(n_actions)
 
     b_norm = float(np.linalg.norm(B_matrix))

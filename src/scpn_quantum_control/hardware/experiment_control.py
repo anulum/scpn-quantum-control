@@ -9,7 +9,10 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING, Any
+
 import numpy as np
+from numpy.typing import NDArray
 from scipy.optimize import minimize
 
 from ..bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
@@ -27,11 +30,15 @@ from ._experiment_helpers import (
     _expectation_per_qubit,
     _qaoa_cost_from_counts,
     _R_from_xyz,
+    _require_counts,
 )
 from .classical import classical_brute_mpc, classical_exact_evolution
 
+if TYPE_CHECKING:
+    from .runner import HardwareRunner
 
-def qaoa_mpc_4_experiment(runner, shots: int = 10000) -> dict:
+
+def qaoa_mpc_4_experiment(runner: HardwareRunner, shots: int = 10000) -> dict[str, Any]:
     """QAOA-MPC binary control, horizon=4, p=1 and p=2.
 
     Cost Hamiltonian is diagonal in Z, so Z-basis measurement is exact.
@@ -64,7 +71,7 @@ def qaoa_mpc_4_experiment(runner, shots: int = 10000) -> dict:
         mpc = QAOA_MPC(B, target, horizon=horizon, p_layers=p)
         mpc.build_cost_hamiltonian()
 
-        def cost_fn(params, _p=p, _mpc=mpc):
+        def cost_fn(params: NDArray[np.float64], _p: int = p, _mpc: Any = mpc) -> float:
             gamma = params[:_p]
             beta = params[_p:]
             qc = _mpc._build_qaoa_circuit(gamma, beta)
@@ -81,8 +88,8 @@ def qaoa_mpc_4_experiment(runner, shots: int = 10000) -> dict:
         final_qc = mpc._build_qaoa_circuit(gamma_opt, beta_opt)
         final_qc.measure_all()
         final_hw = runner.run_sampler(final_qc, shots=shots, name=f"qaoa_p{p}_final")
-        counts = final_hw[0].counts
-        best_bitstring = max(counts, key=counts.get)
+        counts = _require_counts(final_hw[0])
+        best_bitstring = max(counts, key=lambda k: counts[k])
         actions = np.array([int(b) for b in reversed(best_bitstring)])
 
         print(f"  QAOA p={p}: cost={opt.fun:.6f}, actions={actions}, iters={opt.nfev}")
@@ -104,7 +111,9 @@ def qaoa_mpc_4_experiment(runner, shots: int = 10000) -> dict:
     return result
 
 
-def upde_16_snapshot_experiment(runner, shots: int = 20000, trotter_steps: int = 1) -> dict:
+def upde_16_snapshot_experiment(
+    runner: HardwareRunner, shots: int = 20000, trotter_steps: int = 1
+) -> dict[str, Any]:
     """Full 16-layer UPDE single Trotter snapshot.
 
     Measures in X, Y, Z bases. Compares R against exact evolution.
@@ -162,7 +171,9 @@ def upde_16_snapshot_experiment(runner, shots: int = 20000, trotter_steps: int =
     return result
 
 
-def bell_test_4q_experiment(runner, shots: int = 10000, maxiter: int = 100) -> dict:
+def bell_test_4q_experiment(
+    runner: HardwareRunner, shots: int = 10000, maxiter: int = 100
+) -> dict[str, Any]:
     """CHSH Bell test on 4-qubit K_nm ground state.
 
     Certifies entanglement between qubits 0 and 1 via CHSH inequality
@@ -231,7 +242,9 @@ def bell_test_4q_experiment(runner, shots: int = 10000, maxiter: int = 100) -> d
     }
 
 
-def correlator_4q_experiment(runner, shots: int = 10000, maxiter: int = 100) -> dict:
+def correlator_4q_experiment(
+    runner: HardwareRunner, shots: int = 10000, maxiter: int = 100
+) -> dict[str, Any]:
     """ZZ cross-correlation of 4-qubit K_nm ground state on hardware.
 
     Validates that the K_ij coupling topology maps to measurable quantum
@@ -294,7 +307,9 @@ def correlator_4q_experiment(runner, shots: int = 10000, maxiter: int = 100) -> 
     }
 
 
-def qkd_qber_4q_experiment(runner, shots: int = 10000, maxiter: int = 100) -> dict:
+def qkd_qber_4q_experiment(
+    runner: HardwareRunner, shots: int = 10000, maxiter: int = 100
+) -> dict[str, Any]:
     """QBER measurement from hardware for BB84-family security validation.
 
     Measures in Z and X bases, extracts Alice (qubits 0,1) and Bob (qubits 2,3)
@@ -331,10 +346,12 @@ def qkd_qber_4q_experiment(runner, shots: int = 10000, maxiter: int = 100) -> di
 
     hw_results = runner.run_sampler([qc_z, qc_x], shots=shots, name="qkd_qber_4q")
 
-    alice_z = extract_raw_key(hw_results[0].counts, "Z", [0, 1])
-    bob_z = extract_raw_key(hw_results[0].counts, "Z", [2, 3])
-    alice_x = extract_raw_key(hw_results[1].counts, "X", [0, 1])
-    bob_x = extract_raw_key(hw_results[1].counts, "X", [2, 3])
+    z_counts = _require_counts(hw_results[0])
+    x_counts = _require_counts(hw_results[1])
+    alice_z = extract_raw_key(z_counts, "Z", [0, 1])
+    bob_z = extract_raw_key(z_counts, "Z", [2, 3])
+    alice_x = extract_raw_key(x_counts, "X", [0, 1])
+    bob_x = extract_raw_key(x_counts, "X", [2, 3])
 
     qber_z_hw = estimate_qber(alice_z, bob_z)
     qber_x_hw = estimate_qber(alice_x, bob_x)

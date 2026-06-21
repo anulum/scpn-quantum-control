@@ -9,6 +9,8 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING, Any
+
 import numpy as np
 
 from ..bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
@@ -19,10 +21,13 @@ from ._experiment_helpers import (
 )
 from .classical import classical_exact_evolution
 
+if TYPE_CHECKING:
+    from .runner import HardwareRunner
+
 
 def kuramoto_4osc_zne_experiment(
-    runner, shots: int = 10000, dt: float = 0.1, scales: list[int] | None = None
-) -> dict:
+    runner: HardwareRunner, shots: int = 10000, dt: float = 0.1, scales: list[int] | None = None
+) -> dict[str, Any]:
     """4-oscillator Kuramoto with ZNE error mitigation.
 
     Runs the evolution at multiple noise scales via unitary folding,
@@ -79,7 +84,7 @@ def kuramoto_4osc_zne_experiment(
     }
 
 
-def noise_baseline_experiment(runner, shots: int = 10000) -> dict:
+def noise_baseline_experiment(runner: HardwareRunner, shots: int = 10000) -> dict[str, Any]:
     """4-qubit near-identity circuit for calibration drift detection.
 
     Single Trotter step at dt=0.01 (near-identity). Measures R + per-qubit
@@ -132,8 +137,8 @@ def noise_baseline_experiment(runner, shots: int = 10000) -> dict:
 
 
 def kuramoto_8osc_zne_experiment(
-    runner, shots: int = 10000, dt: float = 0.1, scales: list[int] | None = None
-) -> dict:
+    runner: HardwareRunner, shots: int = 10000, dt: float = 0.1, scales: list[int] | None = None
+) -> dict[str, Any]:
     """8-oscillator Kuramoto with ZNE error mitigation.
 
     Gate-fold at each noise scale, Richardson extrapolation to zero noise.
@@ -192,7 +197,9 @@ def kuramoto_8osc_zne_experiment(
     }
 
 
-def upde_16_dd_experiment(runner, shots: int = 20000, trotter_steps: int = 1) -> dict:
+def upde_16_dd_experiment(
+    runner: HardwareRunner, shots: int = 20000, trotter_steps: int = 1
+) -> dict[str, Any]:
     """16-layer UPDE with dynamical decoupling.
 
     Same structure as upde_16_snapshot but applies DD (XY4) to each
@@ -257,12 +264,12 @@ def upde_16_dd_experiment(runner, shots: int = 20000, trotter_steps: int = 1) ->
 
 
 def zne_higher_order_experiment(
-    runner,
+    runner: HardwareRunner,
     shots: int = 10000,
     dt: float = 0.1,
     scales: list[int] | None = None,
     poly_order: int = 2,
-) -> dict:
+) -> dict[str, Any]:
     """ZNE with extended noise scales and higher-order polynomial extrapolation.
 
     Default: scales=[1,3,5,7,9], quadratic fit. Tests whether 5-point
@@ -330,10 +337,10 @@ def zne_higher_order_experiment(
 
 
 def decoherence_scaling_experiment(
-    runner,
+    runner: HardwareRunner,
     shots: int = 10000,
     qubit_counts: list[int] | None = None,
-) -> dict:
+) -> dict[str, Any]:
     """Systematic decoherence scaling: R vs circuit depth across qubit counts.
 
     Runs 1-Trotter-step evolution at fixed dt=0.1 for each qubit count,

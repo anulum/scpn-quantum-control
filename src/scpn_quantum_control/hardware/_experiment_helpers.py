@@ -9,6 +9,8 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import numpy as np
 from numpy.typing import NDArray
 from qiskit import QuantumCircuit
@@ -17,6 +19,31 @@ from qiskit.quantum_info import SparsePauliOp
 from qiskit.synthesis import LieTrotter, SuzukiTrotter
 
 from ..bridge.knm_hamiltonian import knm_to_hamiltonian
+
+if TYPE_CHECKING:
+    from .runner import JobResult
+
+
+def _require_counts(job_result: JobResult) -> dict[str, int]:
+    """Return a sampler JobResult's measurement counts, raising if absent.
+
+    Estimator results carry expectation values rather than counts; the
+    count-consuming reductions here cannot operate on that ``None`` case.
+    """
+    if job_result.counts is None:
+        raise ValueError("measurement counts are required")
+    return job_result.counts
+
+
+def _require_expectations(job_result: JobResult) -> NDArray[np.float64]:
+    """Return a JobResult's expectation values, raising if absent.
+
+    Sampler results carry counts rather than expectation values; the
+    estimator-energy readouts here cannot operate on that ``None`` case.
+    """
+    if job_result.expectation_values is None:
+        raise ValueError("expectation values are required")
+    return job_result.expectation_values
 
 
 def _build_evo_base(
@@ -68,13 +95,15 @@ def _build_xyz_circuits(
 
 
 def _expectation_per_qubit(
-    counts: dict[str, int], n_qubits: int
+    counts: dict[str, int] | None, n_qubits: int
 ) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
     """Compute per-qubit <Z> and shot-noise standard deviation.
 
     Returns:
         (exp_vals, std_vals) where std = sqrt((1 - exp^2) / N_shots).
     """
+    if counts is None:
+        raise ValueError("measurement counts are required")
     total = sum(counts.values())
     exp_vals = np.zeros(n_qubits)
     for bitstring, count in counts.items():
@@ -88,9 +117,9 @@ def _expectation_per_qubit(
 
 
 def _R_from_xyz(
-    z_counts: dict[str, int],
-    x_counts: dict[str, int],
-    y_counts: dict[str, int],
+    z_counts: dict[str, int] | None,
+    x_counts: dict[str, int] | None,
+    y_counts: dict[str, int] | None,
     n_qubits: int,
 ) -> tuple[
     float,
@@ -118,9 +147,11 @@ def _R_from_xyz(
 
 
 def _qaoa_cost_from_counts(
-    counts: dict[str, int], cost_ham: SparsePauliOp, n_qubits: int
+    counts: dict[str, int] | None, cost_ham: SparsePauliOp, n_qubits: int
 ) -> float:
     """Evaluate QAOA cost Hamiltonian (diagonal in Z) from counts."""
+    if counts is None:
+        raise ValueError("measurement counts are required")
     total = sum(counts.values())
     energy = 0.0
     for pauli, coeff in zip(cost_ham.paulis, cost_ham.coeffs):
@@ -143,12 +174,14 @@ def _qaoa_cost_from_counts(
     return energy
 
 
-def _correlator_from_counts(counts: dict[str, int], qubit_a: int, qubit_b: int) -> float:
+def _correlator_from_counts(counts: dict[str, int] | None, qubit_a: int, qubit_b: int) -> float:
     """Compute <A B> from 2-qubit marginal of multi-qubit counts.
 
     E(A,B) = (N_same - N_diff) / N_total where same/diff refers to
     the measurement outcomes of qubits a and b.
     """
+    if counts is None:
+        raise ValueError("measurement counts are required")
     n_same = 0
     n_diff = 0
     for bitstring, count in counts.items():

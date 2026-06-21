@@ -9,7 +9,11 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
+from typing import TYPE_CHECKING, Any
+
 import numpy as np
+from numpy.typing import NDArray
 from qiskit.quantum_info import Statevector
 from scipy.optimize import minimize
 
@@ -19,10 +23,14 @@ from ..bridge.knm_hamiltonian import (
     knm_to_ansatz,
     knm_to_hamiltonian,
 )
+from ._experiment_helpers import _require_expectations
 from .classical import classical_exact_diag
 
+if TYPE_CHECKING:
+    from .runner import HardwareRunner
 
-def _run_vqe(n: int, maxiter: int = 200) -> dict:
+
+def _run_vqe(n: int, maxiter: int = 200) -> dict[str, Any]:
     """Statevector VQE on the n-oscillator XY Hamiltonian."""
     K = build_knm_paper27(L=n)
     omega = OMEGA_N_16[:n]
@@ -37,7 +45,7 @@ def _run_vqe(n: int, maxiter: int = 200) -> dict:
 
     energy_history: list[float] = []
 
-    def cost_fn(params):
+    def cost_fn(params: NDArray[np.float64]) -> float:
         bound = ansatz.assign_parameters(params)
         sv = Statevector.from_instruction(bound)
         energy = float(sv.expectation_value(H).real)
@@ -66,7 +74,9 @@ def _run_vqe(n: int, maxiter: int = 200) -> dict:
     }
 
 
-def vqe_4q_experiment(runner, shots: int = 10000, maxiter: int = 200) -> dict:
+def vqe_4q_experiment(
+    runner: HardwareRunner, shots: int = 10000, maxiter: int = 200
+) -> dict[str, Any]:
     """VQE ground state of 4-oscillator XY Hamiltonian.
 
     Returns:
@@ -83,7 +93,9 @@ def vqe_4q_experiment(runner, shots: int = 10000, maxiter: int = 200) -> dict:
     return _run_vqe(4, maxiter)
 
 
-def vqe_8q_experiment(runner, shots: int = 10000, maxiter: int = 150) -> dict:
+def vqe_8q_experiment(
+    runner: HardwareRunner, shots: int = 10000, maxiter: int = 150
+) -> dict[str, Any]:
     """VQE ground state of 8-oscillator XY Hamiltonian.
 
     Returns:
@@ -100,7 +112,9 @@ def vqe_8q_experiment(runner, shots: int = 10000, maxiter: int = 150) -> dict:
     return _run_vqe(8, maxiter)
 
 
-def vqe_8q_hardware_experiment(runner, shots: int = 10000, maxiter: int = 150) -> dict:
+def vqe_8q_hardware_experiment(
+    runner: HardwareRunner, shots: int = 10000, maxiter: int = 150
+) -> dict[str, Any]:
     """VQE 8-qubit: Statevector optimization -> hardware energy evaluation.
 
     1. COBYLA on Statevector -> optimal params
@@ -131,7 +145,7 @@ def vqe_8q_hardware_experiment(runner, shots: int = 10000, maxiter: int = 150) -
     print(f"  Exact ground energy: {exact['ground_energy']:.6f}")
 
     # Step 1: classical VQE on Statevector
-    def cost_fn(params):
+    def cost_fn(params: NDArray[np.float64]) -> float:
         bound = ansatz.assign_parameters(params)
         sv = Statevector.from_instruction(bound)
         return float(sv.expectation_value(H).real)
@@ -144,7 +158,7 @@ def vqe_8q_hardware_experiment(runner, shots: int = 10000, maxiter: int = 150) -
     # Step 2: bind optimal params and evaluate on hardware
     bound_circuit = ansatz.assign_parameters(opt.x)
     hw_result = runner.run_estimator(bound_circuit, [H], name="vqe_8q_hw")
-    hw_energy = float(hw_result.expectation_values[0])
+    hw_energy = float(_require_expectations(hw_result)[0])
     print(f"  HW energy: {hw_energy:.6f}")
 
     return {
@@ -159,7 +173,9 @@ def vqe_8q_hardware_experiment(runner, shots: int = 10000, maxiter: int = 150) -
     }
 
 
-def ansatz_comparison_hw_experiment(runner, shots: int = 10000, maxiter: int = 100) -> dict:
+def ansatz_comparison_hw_experiment(
+    runner: HardwareRunner, shots: int = 10000, maxiter: int = 100
+) -> dict[str, Any]:
     """VQE ansatz comparison on hardware: Knm-informed vs TwoLocal vs EfficientSU2.
 
     For each ansatz:
@@ -189,7 +205,7 @@ def ansatz_comparison_hw_experiment(runner, shots: int = 10000, maxiter: int = 1
 
     print(f"\n=== Ansatz comparison (hw), exact E={exact['ground_energy']:.6f} ===")
 
-    ansatz_builders = {
+    ansatz_builders: dict[str, Callable[[], Any]] = {
         "knm_informed": lambda: knm_to_ansatz(K, reps=2),
         "two_local": lambda: n_local(
             n, rotation_blocks=["ry", "rz"], entanglement_blocks="cz", reps=2
@@ -201,7 +217,7 @@ def ansatz_comparison_hw_experiment(runner, shots: int = 10000, maxiter: int = 1
     for name, build_fn in ansatz_builders.items():
         ansatz = build_fn()
 
-        def cost_fn(params, _a=ansatz, _H=H):
+        def cost_fn(params: NDArray[np.float64], _a: Any = ansatz, _H: Any = H) -> float:
             bound = _a.assign_parameters(params)
             sv = Statevector.from_instruction(bound)
             return float(sv.expectation_value(_H).real)
@@ -212,7 +228,7 @@ def ansatz_comparison_hw_experiment(runner, shots: int = 10000, maxiter: int = 1
 
         bound = ansatz.assign_parameters(opt.x)
         hw_result = runner.run_estimator(bound, [H], name=f"ansatz_{name}")
-        hw_energy = float(hw_result.expectation_values[0])
+        hw_energy = float(_require_expectations(hw_result)[0])
 
         entry = {
             "ansatz": name,
@@ -235,7 +251,9 @@ def ansatz_comparison_hw_experiment(runner, shots: int = 10000, maxiter: int = 1
     }
 
 
-def vqe_landscape_experiment(runner, shots: int = 10000, n_samples: int = 50) -> dict:
+def vqe_landscape_experiment(
+    runner: HardwareRunner, shots: int = 10000, n_samples: int = 50
+) -> dict[str, Any]:
     """Sample VQE cost landscape to detect barren plateaus.
 
     Evaluates the 4-qubit Hamiltonian at random parameter vectors and

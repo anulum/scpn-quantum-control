@@ -24,6 +24,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 import numpy as np
+from numpy.typing import NDArray
 from qiskit import QuantumCircuit
 from qiskit.quantum_info import SparsePauliOp
 from qiskit.transpiler.preset_passmanagers import generate_preset_pass_manager
@@ -64,7 +65,7 @@ def _require_local_statevector_simulator(
     )
 
 
-def _extract_counts(pub_result: Any) -> dict:
+def _extract_counts(pub_result: Any) -> dict[str, int]:
     """Extract counts from a SamplerV2 PubResult DataBin.
 
     Handles both 'meas' (legacy) and user-named classical registers
@@ -76,7 +77,7 @@ def _extract_counts(pub_result: Any) -> dict:
     for reg_name in ("readout", "meas", "c", "cr", "c0"):
         reg = getattr(data, reg_name, None)
         if reg is not None and hasattr(reg, "get_counts"):
-            counts: dict = reg.get_counts()
+            counts: dict[str, int] = reg.get_counts()
             return counts
     # Fallback: introspect all attributes
     for attr in dir(data):
@@ -84,7 +85,7 @@ def _extract_counts(pub_result: Any) -> dict:
             continue
         obj = getattr(data, attr, None)
         if obj is not None and hasattr(obj, "get_counts"):
-            counts_fb: dict = obj.get_counts()
+            counts_fb: dict[str, int] = obj.get_counts()
             return counts_fb
     raise RuntimeError(
         f"Could not find classical register with counts in DataBin "
@@ -99,13 +100,13 @@ class JobResult:
     job_id: str
     backend_name: str
     experiment_name: str
-    counts: dict | None = None
-    expectation_values: np.ndarray | None = None
-    metadata: dict = field(default_factory=dict)
+    counts: dict[str, int] | None = None
+    expectation_values: NDArray[np.float64] | None = None
+    metadata: dict[str, Any] = field(default_factory=dict)
     wall_time_s: float = 0.0
     timestamp: str = ""
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize to JSON-compatible dict."""
         d = {
             "job_id": self.job_id,
@@ -164,9 +165,9 @@ class HardwareRunner:
         resilience_level: int = 2,
         use_fractional_gates: bool = True,
         results_dir: str = "results",
-        noise_model=None,
+        noise_model: Any = None,
         max_dense_gib: float | None = None,
-    ):
+    ) -> None:
         """Configure runner. Call connect() before submitting jobs.
 
         resilience_level: IBM Runtime error mitigation level.
@@ -286,7 +287,7 @@ class HardwareRunner:
         )
 
     @property
-    def backend(self):
+    def backend(self) -> Any:
         """Active Qiskit backend (None before connect())."""
         return self._backend
 
@@ -316,7 +317,7 @@ class HardwareRunner:
         """Map observable to transpiled circuit layout."""
         return obs.apply_layout(isa_circuit.layout)
 
-    def circuit_stats(self, isa_circuit: QuantumCircuit) -> dict:
+    def circuit_stats(self, isa_circuit: QuantumCircuit) -> dict[str, int]:
         """Return depth, gate counts, qubit count for transpiled circuit."""
         ops = isa_circuit.count_ops()
         return {
@@ -329,7 +330,7 @@ class HardwareRunner:
     def _log_job(self, job_id: str, name: str) -> None:
         """Append job metadata to jobs.json for recovery."""
         jobs_path = self.results_dir / "jobs.json"
-        entries: list[dict] = []
+        entries: list[dict[str, Any]] = []
         if jobs_path.exists():
             with open(jobs_path) as f:
                 entries = json.load(f)
@@ -444,7 +445,7 @@ class HardwareRunner:
         estimator = Estimator(mode=self._backend)
         estimator.options.resilience_level = self.resilience_level
 
-        pubs: list = [(isa_circuit, isa_obs)]
+        pubs: list[Any] = [(isa_circuit, isa_obs)]
         if parameter_values is not None:
             pubs = [(isa_circuit, isa_obs, pv) for pv in parameter_values]
 
@@ -475,7 +476,9 @@ class HardwareRunner:
             metadata=stats,
         )
 
-    def _run_sampler_simulator(self, isa_circuits, shots, name) -> list[JobResult]:
+    def _run_sampler_simulator(
+        self, isa_circuits: list[Any], shots: int, name: str
+    ) -> list[JobResult]:
         from qiskit import transpile as qk_transpile
 
         results = []
@@ -499,7 +502,12 @@ class HardwareRunner:
         return results
 
     def _run_estimator_simulator(
-        self, isa_circuit, isa_obs, parameter_values, name, stats
+        self,
+        isa_circuit: Any,
+        isa_obs: Any,
+        parameter_values: Any,
+        name: str,
+        stats: dict[str, Any],
     ) -> JobResult:
         from qiskit.quantum_info import Statevector
 
@@ -606,7 +614,7 @@ class HardwareRunner:
         """
         from .provenance import capture_provenance
 
-        payload: dict
+        payload: dict[str, Any]
         if isinstance(result, list):
             payload = {
                 "results": [r.to_dict() for r in result],

@@ -9,6 +9,8 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING, Any
+
 import numpy as np
 from qiskit import QuantumCircuit
 
@@ -20,10 +22,13 @@ from ._experiment_helpers import (
 )
 from .classical import classical_exact_evolution
 
+if TYPE_CHECKING:
+    from .runner import HardwareRunner
+
 
 def kuramoto_4osc_experiment(
-    runner, shots: int = 10000, n_time_steps: int = 8, dt: float = 0.1
-) -> dict:
+    runner: HardwareRunner, shots: int = 10000, n_time_steps: int = 8, dt: float = 0.1
+) -> dict[str, Any]:
     """4-oscillator Kuramoto XY dynamics on hardware.
 
     Measures order parameter R(t) via X, Y, Z basis shots at each time step.
@@ -94,8 +99,8 @@ def kuramoto_4osc_experiment(
 
 
 def kuramoto_8osc_experiment(
-    runner, shots: int = 10000, n_time_steps: int = 6, dt: float = 0.1
-) -> dict:
+    runner: HardwareRunner, shots: int = 10000, n_time_steps: int = 6, dt: float = 0.1
+) -> dict[str, Any]:
     """8-oscillator Kuramoto XY dynamics.
 
     Returns:
@@ -159,8 +164,8 @@ def kuramoto_8osc_experiment(
 
 
 def kuramoto_4osc_trotter2_experiment(
-    runner, shots: int = 10000, n_time_steps: int = 8, dt: float = 0.1
-) -> dict:
+    runner: HardwareRunner, shots: int = 10000, n_time_steps: int = 8, dt: float = 0.1
+) -> dict[str, Any]:
     """4-oscillator Kuramoto with second-order Suzuki-Trotter.
 
     Same structure as kuramoto_4osc_experiment but uses SuzukiTrotter(order=2).
@@ -231,10 +236,10 @@ def kuramoto_4osc_trotter2_experiment(
 
 
 def sync_threshold_experiment(
-    runner,
+    runner: HardwareRunner,
     shots: int = 10000,
     k_values: list[float] | None = None,
-) -> dict:
+) -> dict[str, Any]:
     """Kuramoto synchronization phase transition on quantum hardware.
 
     Sweeps coupling strength K_base and measures R at fixed t=0.1.
