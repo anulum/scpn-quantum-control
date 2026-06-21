@@ -19,16 +19,18 @@ Usage:
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Any
 
 import numpy as np
+from numpy.typing import NDArray
 
 try:
-    import cirq  # type: ignore[import-untyped,import-not-found]
+    import cirq
 
     _CIRQ_AVAILABLE = True
 except ImportError:
     _CIRQ_AVAILABLE = False
-    cirq = None  # type: ignore[assignment]
+    cirq = None
 
 
 @dataclass
@@ -54,8 +56,8 @@ class CirqRunner:
 
     def __init__(
         self,
-        K: np.ndarray,
-        omega: np.ndarray,
+        K: NDArray[np.float64],
+        omega: NDArray[np.float64],
         device: str = "simulator",
     ):
         if not _CIRQ_AVAILABLE:
@@ -69,7 +71,7 @@ class CirqRunner:
 
     def _build_trotter_step(self, dt: float) -> cirq.Circuit:
         """One Trotter step: XX+YY coupling + Z field."""
-        ops: list = []
+        ops: list[Any] = []
         n = self.n
 
         # XX+YY coupling gates
@@ -117,7 +119,7 @@ class CirqRunner:
             device_name=self.device_name,
         )
 
-    def _compute_energy(self, sv: np.ndarray) -> float:
+    def _compute_energy(self, sv: NDArray[np.complex128]) -> float:
         """Compute <H> from statevector."""
         n = self.n
         dim = 2**n

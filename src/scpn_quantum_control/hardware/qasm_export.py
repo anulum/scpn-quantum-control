@@ -22,6 +22,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import numpy as np
+from numpy.typing import NDArray
 from qiskit import QuantumCircuit
 from qiskit.circuit.library import PauliEvolutionGate
 from qiskit.qasm3 import dumps as qasm3_dumps
@@ -42,7 +43,7 @@ class QASMExportResult:
 
 
 def _build_trotter_circuit(
-    K: np.ndarray, omega: np.ndarray, t: float, reps: int
+    K: NDArray[np.float64], omega: NDArray[np.float64], t: float, reps: int
 ) -> QuantumCircuit:
     """Build Trotter evolution circuit from K, omega."""
     n = K.shape[0]
@@ -55,8 +56,8 @@ def _build_trotter_circuit(
 
 
 def export_trotter_qasm(
-    K: np.ndarray,
-    omega: np.ndarray,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
     t: float = 1.0,
     reps: int = 5,
 ) -> QASMExportResult:
@@ -75,7 +76,7 @@ def export_trotter_qasm(
 
 
 def export_ansatz_qasm(
-    K: np.ndarray,
+    K: NDArray[np.float64],
     reps: int = 2,
 ) -> QASMExportResult:
     """Export K_nm-informed VQE ansatz as OpenQASM 3."""
@@ -97,8 +98,8 @@ def export_ansatz_qasm(
 
 
 def export_measurement_qasm(
-    K: np.ndarray,
-    omega: np.ndarray,
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
     t: float = 1.0,
     reps: int = 5,
 ) -> QASMExportResult:

@@ -18,6 +18,7 @@ Usage: import from here instead of qiskit directly for forward-compat.
 from __future__ import annotations
 
 import importlib.metadata
+from typing import Any
 
 
 def qiskit_version() -> str:
@@ -30,7 +31,7 @@ def qiskit_major() -> int:
     return int(qiskit_version().split(".")[0])
 
 
-def get_pauli_evolution_gate():
+def get_pauli_evolution_gate() -> Any:
     """Import PauliEvolutionGate from correct location."""
     try:
         from qiskit.circuit.library import PauliEvolutionGate
@@ -38,38 +39,38 @@ def get_pauli_evolution_gate():
         return PauliEvolutionGate
     except ImportError:
         # Qiskit 2.x may move this
-        from qiskit.circuit.library import PauliEvolutionGate  # type: ignore[no-redef]
+        from qiskit.circuit.library import PauliEvolutionGate
 
         return PauliEvolutionGate
 
 
-def get_lie_trotter():
+def get_lie_trotter() -> Any:
     """Import LieTrotter from correct location."""
     try:
         from qiskit.synthesis import LieTrotter
 
         return LieTrotter
     except ImportError:
-        from qiskit.synthesis.evolution import LieTrotter  # type: ignore[no-redef]
+        from qiskit.synthesis.evolution import LieTrotter
 
         return LieTrotter
 
 
-def get_statevector():
+def get_statevector() -> Any:
     """Import Statevector from correct location."""
     from qiskit.quantum_info import Statevector
 
     return Statevector
 
 
-def get_sparse_pauli_op():
+def get_sparse_pauli_op() -> Any:
     """Import SparsePauliOp from correct location."""
     from qiskit.quantum_info import SparsePauliOp
 
     return SparsePauliOp
 
 
-def check_qiskit_compatibility() -> dict:
+def check_qiskit_compatibility() -> dict[str, Any]:
     """Check Qiskit installation and compatibility."""
     version = qiskit_version()
     major = qiskit_major()
