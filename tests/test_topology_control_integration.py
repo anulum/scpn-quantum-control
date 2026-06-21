@@ -15,6 +15,7 @@ from types import SimpleNamespace
 
 import numpy as np
 import pytest
+from numpy.typing import NDArray
 
 import scpn_quantum_control.control.topological_optimizer as legacy_topology
 import scpn_quantum_control.topology_control as topology_control
@@ -32,7 +33,7 @@ from scpn_quantum_control.topology_control import (
 )
 
 
-def _square_coupling() -> np.ndarray:
+def _square_coupling() -> NDArray[np.float64]:
     return np.array(
         [
             [0.0, 0.25, 0.0, 0.25],
@@ -164,3 +165,50 @@ def test_legacy_wrapper_has_no_cross_repo_dependency() -> None:
     for token in forbidden:
         assert token not in legacy_source.lower()
         assert token not in inspect.getsource(topology_control).lower()
+
+
+def _valid_manifest(**overrides: object) -> TopologyHardwareManifest:
+    """Build a fully valid no-submit topology hardware manifest, with overrides."""
+    fields: dict[str, object] = {
+        "backend_name": "local_aer",
+        "qubits": (0, 1, 2, 3),
+        "coupling_edges": ((0, 1), (1, 2), (2, 3)),
+        "shots": 1024,
+        "qpu_minute_ceiling": 0.0,
+        "preregistration_id": "no-qpu-smoke",
+        "objective_sha256": "b" * 64,
+        "require_readout_calibration": False,
+    }
+    fields.update(overrides)
+    return TopologyHardwareManifest(**fields)  # type: ignore[arg-type]
+
+
+@pytest.mark.parametrize(
+    ("overrides", "message"),
+    [
+        ({"backend_name": ""}, "backend_name is required"),
+        ({"qubits": (0,), "coupling_edges": ()}, "at least two qubits"),
+        ({"qubits": (0, 0), "coupling_edges": ()}, "qubits must be unique"),
+        ({"shots": 0}, "shots must be positive"),
+        ({"qpu_minute_ceiling": -1.0}, "qpu_minute_ceiling must be non-negative"),
+        ({"objective_sha256": "abc"}, "objective_sha256 must be a SHA-256 hex digest"),
+    ],
+)
+def test_hardware_manifest_field_rejections(overrides: dict[str, object], message: str) -> None:
+    """Each invalid manifest field is reported by the no-submit validator."""
+    with pytest.raises(ValueError, match=message):
+        validate_topology_hardware_manifest(_valid_manifest(**overrides))
+
+
+def test_hardware_manifest_rejects_out_of_range_edges() -> None:
+    """Coupling edges must reference logical qubit indices within range."""
+    manifest = _valid_manifest(coupling_edges=((0, 9),))
+    with pytest.raises(ValueError, match="logical qubit indices"):
+        validate_topology_hardware_manifest(manifest)
+
+
+def test_hardware_manifest_rejects_descriptor_with_too_few_qubits() -> None:
+    """A backend descriptor exposing fewer qubits than required fails closed."""
+    descriptor = SimpleNamespace(capabilities=SimpleNamespace(n_qubits=2))
+    with pytest.raises(ValueError, match="enough qubits"):
+        validate_topology_hardware_manifest(_valid_manifest(), backend_descriptor=descriptor)
