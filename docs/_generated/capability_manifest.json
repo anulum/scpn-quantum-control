@@ -11,10 +11,10 @@
     "public_api_exports": 714,
     "public_documentation_pages": 254,
     "python_model_classes": 1840,
-    "python_model_source_modules": 887,
+    "python_model_source_modules": 888,
     "rust_pyo3_model_wrappers": 137,
     "rust_source_modules": 38,
-    "test_files": 2046
+    "test_files": 2047
   },
   "documentation": {
     "examples": [
@@ -8071,7 +8071,7 @@
       },
       {
         "name": "TraceADPredicateArray",
-        "path": "src/scpn_quantum_control/differentiable.py"
+        "path": "src/scpn_quantum_control/whole_program_trace_predicates.py"
       },
       {
         "name": "TraceADScalar",
@@ -9308,6 +9308,7 @@
       "src/scpn_quantum_control/whole_program_ad_result.py",
       "src/scpn_quantum_control/whole_program_frontend.py",
       "src/scpn_quantum_control/whole_program_trace_metadata.py",
+      "src/scpn_quantum_control/whole_program_trace_predicates.py",
       "src/scpn_quantum_control/whole_program_trace_runtime.py",
       "src/scpn_quantum_control/wirtinger_calculus.py"
     ],
@@ -12321,6 +12322,7 @@
       "tests/test_whole_program_ad_runtime.py",
       "tests/test_whole_program_frontend.py",
       "tests/test_whole_program_trace_metadata.py",
+      "tests/test_whole_program_trace_predicates.py",
       "tests/test_whole_program_trace_runtime.py",
       "tests/test_wilson_loop.py",
       "tests/test_wirtinger_calculus.py",

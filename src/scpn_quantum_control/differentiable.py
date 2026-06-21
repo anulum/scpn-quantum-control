@@ -504,6 +504,10 @@ from .whole_program_trace_metadata import (
     _normalise_trace_reshape_shape,
     _normalise_trapezoid_axis,
 )
+from .whole_program_trace_predicates import (
+    TraceADPredicateArray,
+    _TracePredicate,
+)
 from .whole_program_trace_runtime import (
     _trace_whole_program_objective,
     _WholeProgramTraceContext,
@@ -640,43 +644,6 @@ def whole_program_value_and_grad(
         program_ir=program_ir,
         adjoint_result=adjoint_result,
     )
-
-
-class _TracePredicate:
-    """Primal control-flow predicate recorded by whole-program AD."""
-
-    def __init__(self, value: bool, context: _WholeProgramTraceContext, label: str) -> None:
-        self.value = bool(value)
-        self.context = context
-        self.label = label
-
-    def __bool__(self) -> bool:
-        tangent = np.zeros(self.context.parameter_count, dtype=np.float64)
-        self.context.make(f"branch:{self.label}:{self.value}", (), float(self.value), tangent)
-        return self.value
-
-
-class TraceADPredicateArray:
-    """Derivative-safe vector of primal predicates for piecewise whole-program AD."""
-
-    def __init__(
-        self,
-        predicates: tuple[_TracePredicate, ...],
-        shape: tuple[int, ...],
-        context: _WholeProgramTraceContext,
-    ) -> None:
-        if int(np.prod(shape)) != len(predicates):
-            raise ValueError("predicate array shape must match predicate count")
-        if any(predicate.context is not context for predicate in predicates):
-            raise ValueError("predicate array items must belong to the same trace")
-        self.predicates = predicates
-        self.shape = shape
-        self.context = context
-
-    def __bool__(self) -> bool:
-        if self.shape != () or len(self.predicates) != 1:
-            raise ValueError("whole-program AD vector predicates cannot be used as scalar bools")
-        return bool(self.predicates[0])
 
 
 class TraceADScalar:
