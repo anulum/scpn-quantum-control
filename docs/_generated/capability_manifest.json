@@ -14,7 +14,7 @@
     "python_model_source_modules": 901,
     "rust_pyo3_model_wrappers": 137,
     "rust_source_modules": 38,
-    "test_files": 2106
+    "test_files": 2107
   },
   "documentation": {
     "examples": [
@@ -10313,6 +10313,7 @@
       "tests/test_accelerator_detection_boundaries.py",
       "tests/test_adapt_vqe.py",
       "tests/test_adaptive_branching.py",
+      "tests/test_adaptive_branching_branches.py",
       "tests/test_adaptive_fim_feedback.py",
       "tests/test_adiabatic_preparation.py",
       "tests/test_advantage_protocol.py",
