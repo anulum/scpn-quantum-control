@@ -14,7 +14,7 @@
     "python_model_source_modules": 900,
     "rust_pyo3_model_wrappers": 137,
     "rust_source_modules": 38,
-    "test_files": 2098
+    "test_files": 2099
   },
   "documentation": {
     "examples": [
@@ -12303,6 +12303,7 @@
       "tests/test_snn_backward.py",
       "tests/test_snn_neurocore_e2e.py",
       "tests/test_sparse_hamiltonian.py",
+      "tests/test_sparse_hamiltonian_branches.py",
       "tests/test_spectral_bridge.py",
       "tests/test_spectral_form_factor.py",
       "tests/test_spn_to_qcircuit.py",
