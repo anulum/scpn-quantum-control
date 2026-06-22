@@ -792,6 +792,28 @@ fn accumulate_reverse_effect(
             add_adjoint(&effect.inputs[3], cotangent * a, values, adjoints)?;
             Ok(())
         }
+        "linalg:det:3x3" => {
+            // d(det)/dA_{ij} is the (i,j) cofactor of the row-major 3x3 matrix.
+            if effect.inputs.len() != 9 {
+                return Err(format!("effect {} linalg:det:3x3 requires nine operands", effect.index));
+            }
+            let [a, b, c, d, e, f, g, h, i] = read_3x3(effect, values)?;
+            let cofactors = [
+                e * i - f * h,
+                f * g - d * i,
+                d * h - e * g,
+                c * h - b * i,
+                a * i - c * g,
+                b * g - a * h,
+                b * f - c * e,
+                c * d - a * f,
+                a * e - b * d,
+            ];
+            for (input, cofactor) in effect.inputs.iter().zip(cofactors.iter()) {
+                add_adjoint(input, cotangent * cofactor, values, adjoints)?;
+            }
+            Ok(())
+        }
         name if name.starts_with("linalg:inv:2x2:") => {
             // d(A^{-1})_{ij}/dA_{kl} = -(A^{-1})_{ik} (A^{-1})_{lj}.
             if effect.inputs.len() != 4 {
@@ -1040,6 +1062,15 @@ fn evaluate_effect(
             let c = operand_value(&effect.inputs[2], values)?;
             let d = operand_value(&effect.inputs[3], values)?;
             Ok(a * d - b * c)
+        }
+        "linalg:det:3x3" => {
+            // Row-major operands [a,b,c, d,e,f, g,h,i]; Laplace expansion along the first row.
+            if effect.inputs.len() != 9 {
+                return Err(format!("effect {} linalg:det:3x3 requires nine operands", effect.index));
+            }
+            let m = read_3x3(effect, values)?;
+            let [a, b, c, d, e, f, g, h, i] = m;
+            Ok(a * (e * i - f * h) - b * (d * i - f * g) + c * (d * h - e * g))
         }
         name if name.starts_with("linalg:inv:2x2:") => {
             // Each opcode emits one element (row, column) of the closed-form 2x2 inverse.
@@ -1297,6 +1328,15 @@ fn invert_2x2(a: f64, b: f64, c: f64, d: f64) -> Result<[f64; 4], String> {
         return Err("linalg 2x2 matrix is singular".to_owned());
     }
     Ok([d / det, -b / det, -c / det, a / det])
+}
+
+/// Read the nine row-major operands of a 3x3 linalg opcode as `[a, b, c, d, e, f, g, h, i]`.
+fn read_3x3(effect: &ProgramADEffect, values: &HashMap<String, f64>) -> Result<[f64; 9], String> {
+    let mut matrix = [0.0_f64; 9];
+    for (slot, input) in matrix.iter_mut().zip(effect.inputs.iter()) {
+        *slot = operand_value(input, values)?;
+    }
+    Ok(matrix)
 }
 
 /// Parse the `(row, column)` output index from a `linalg:inv:2x2:I:J` opcode.

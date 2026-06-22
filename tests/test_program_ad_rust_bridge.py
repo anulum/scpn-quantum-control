@@ -790,3 +790,23 @@ def test_bridge_fails_closed_on_indexed_multi_output_linalg_with_real_engine() -
     rust = value_and_grad_program_ad_effect_ir_with_rust(result.program_ir, sample)
     assert rust.supported is False
     assert any("indexed multi-output linalg" in reason for reason in rust.blocked_reasons)
+
+
+def _objective_det_3x3(values: Any) -> Any:
+    return np.linalg.det(np.reshape(values, (3, 3)))
+
+
+def test_bridge_replays_linalg_det_3x3_with_real_engine() -> None:
+    """With the real engine, a 3x3 determinant program replays within float64 tolerance."""
+
+    pytest.importorskip("scpn_quantum_engine")
+    from scpn_quantum_control import program_adjoint_value_and_grad
+
+    sample = np.array([2.0, 0.0, 1.0, 1.0, 3.0, 2.0, 0.0, 1.0, 4.0], dtype=np.float64)
+    result = whole_program_value_and_grad(_objective_det_3x3, sample)
+    assert result.program_ir is not None
+    rust = value_and_grad_program_ad_effect_ir_with_rust(result.program_ir, sample)
+    if not rust.supported:
+        pytest.skip(f"installed engine lacks linalg:det:3x3 replay: {rust.blocked_reasons}")
+    _, reference = program_adjoint_value_and_grad(_objective_det_3x3, sample)
+    np.testing.assert_allclose(np.asarray(rust.gradient), reference, atol=1.0e-12)

@@ -614,3 +614,53 @@ fn program_ad_effect_ir_rust_value_and_gradient_fails_closed_on_indexed_multi_ou
     assert!(result.gradient.is_empty());
     assert!(result.blocked_reasons[0].contains("indexed multi-output linalg"));
 }
+
+const LINALG_DET_3X3_PROGRAM_AD_IR: &str = r#"{
+  "format": "program_ad_effect_ir.v1",
+  "ssa_values": [
+    {"name": "%0", "producer": 0, "version": 0, "shape": [], "dtype": "float64", "effect": 0},
+    {"name": "%1", "producer": 1, "version": 0, "shape": [], "dtype": "float64", "effect": 1},
+    {"name": "%2", "producer": 2, "version": 0, "shape": [], "dtype": "float64", "effect": 2},
+    {"name": "%3", "producer": 3, "version": 0, "shape": [], "dtype": "float64", "effect": 3},
+    {"name": "%4", "producer": 4, "version": 0, "shape": [], "dtype": "float64", "effect": 4},
+    {"name": "%5", "producer": 5, "version": 0, "shape": [], "dtype": "float64", "effect": 5},
+    {"name": "%6", "producer": 6, "version": 0, "shape": [], "dtype": "float64", "effect": 6},
+    {"name": "%7", "producer": 7, "version": 0, "shape": [], "dtype": "float64", "effect": 7},
+    {"name": "%8", "producer": 8, "version": 0, "shape": [], "dtype": "float64", "effect": 8},
+    {"name": "%9", "producer": 9, "version": 0, "shape": [], "dtype": "float64", "effect": 9}
+  ],
+  "effects": [
+    {"index": 0, "kind": "parameter", "target": "%0", "inputs": ["a"], "version": 0, "ordering": 0, "operation": "parameter"},
+    {"index": 1, "kind": "parameter", "target": "%1", "inputs": ["b"], "version": 0, "ordering": 1, "operation": "parameter"},
+    {"index": 2, "kind": "parameter", "target": "%2", "inputs": ["c"], "version": 0, "ordering": 2, "operation": "parameter"},
+    {"index": 3, "kind": "parameter", "target": "%3", "inputs": ["d"], "version": 0, "ordering": 3, "operation": "parameter"},
+    {"index": 4, "kind": "parameter", "target": "%4", "inputs": ["e"], "version": 0, "ordering": 4, "operation": "parameter"},
+    {"index": 5, "kind": "parameter", "target": "%5", "inputs": ["f"], "version": 0, "ordering": 5, "operation": "parameter"},
+    {"index": 6, "kind": "parameter", "target": "%6", "inputs": ["g"], "version": 0, "ordering": 6, "operation": "parameter"},
+    {"index": 7, "kind": "parameter", "target": "%7", "inputs": ["h"], "version": 0, "ordering": 7, "operation": "parameter"},
+    {"index": 8, "kind": "parameter", "target": "%8", "inputs": ["i"], "version": 0, "ordering": 8, "operation": "parameter"},
+    {"index": 9, "kind": "pure", "target": "%9", "inputs": ["%0", "%1", "%2", "%3", "%4", "%5", "%6", "%7", "%8"], "version": 0, "ordering": 9, "operation": "linalg:det:3x3"}
+  ],
+  "alias_edges": [],
+  "control_regions": [],
+  "phi_nodes": [],
+  "bytecode_offsets": [0]
+}"#;
+
+#[test]
+fn program_ad_effect_ir_rust_value_and_gradient_replays_linalg_det_3x3() {
+    // det of [[2,0,1],[1,3,2],[0,1,4]] = 21; gradient is the cofactor matrix.
+    let result = interpret_program_ad_effect_ir_value_and_gradient(
+        LINALG_DET_3X3_PROGRAM_AD_IR,
+        &[2.0, 0.0, 1.0, 1.0, 3.0, 2.0, 0.0, 1.0, 4.0],
+    )
+    .unwrap();
+
+    assert!(result.supported, "{:?}", result.blocked_reasons);
+    assert!((result.value.unwrap() - 21.0_f64).abs() <= 1.0e-12);
+    let expected = [10.0_f64, -4.0, 1.0, 1.0, 8.0, -2.0, -3.0, -3.0, 6.0];
+    assert_eq!(result.gradient.len(), 9);
+    for (got, want) in result.gradient.iter().zip(expected.iter()) {
+        assert!((got - want).abs() <= 1.0e-12, "{got} vs {want}");
+    }
+}
