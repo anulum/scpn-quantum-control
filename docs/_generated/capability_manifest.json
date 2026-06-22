@@ -14,7 +14,7 @@
     "python_model_source_modules": 901,
     "rust_pyo3_model_wrappers": 137,
     "rust_source_modules": 38,
-    "test_files": 2108
+    "test_files": 2109
   },
   "documentation": {
     "examples": [
@@ -11081,6 +11081,7 @@
       "tests/test_josephson_array.py",
       "tests/test_josephson_array_contracts.py",
       "tests/test_knm_hamiltonian.py",
+      "tests/test_knm_hamiltonian_branches.py",
       "tests/test_knm_hamiltonian_mutation_kills.py",
       "tests/test_knm_measured_candidate_gate.py",
       "tests/test_knm_parity.py",
