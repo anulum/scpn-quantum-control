@@ -14,7 +14,7 @@
     "python_model_source_modules": 901,
     "rust_pyo3_model_wrappers": 137,
     "rust_source_modules": 38,
-    "test_files": 2110
+    "test_files": 2111
   },
   "documentation": {
     "examples": [
@@ -11644,6 +11644,7 @@
       "tests/test_phase_artifact_fuzz.py",
       "tests/test_phase_coupling_learning.py",
       "tests/test_phase_diagram.py",
+      "tests/test_phase_diagram_branches.py",
       "tests/test_phase_differentiable_audit.py",
       "tests/test_phase_differentiable_readiness.py",
       "tests/test_phase_domain_benchmark_datasets.py",
