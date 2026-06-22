@@ -14,7 +14,7 @@
     "python_model_source_modules": 900,
     "rust_pyo3_model_wrappers": 137,
     "rust_source_modules": 38,
-    "test_files": 2077
+    "test_files": 2078
   },
   "documentation": {
     "examples": [
@@ -10844,6 +10844,7 @@
       "tests/test_cirq_adapter.py",
       "tests/test_classical.py",
       "tests/test_classical_baselines.py",
+      "tests/test_classical_baselines_branches.py",
       "tests/test_classical_irreproducibility.py",
       "tests/test_classical_pauli_unsupported.py",
       "tests/test_classical_reference_regression.py",
