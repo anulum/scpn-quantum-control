@@ -14,7 +14,7 @@
     "python_model_source_modules": 900,
     "rust_pyo3_model_wrappers": 137,
     "rust_source_modules": 38,
-    "test_files": 2092
+    "test_files": 2093
   },
   "documentation": {
     "examples": [
@@ -10355,6 +10355,7 @@
       "tests/test_berry_phase.py",
       "tests/test_binding_spec.py",
       "tests/test_biological_cli.py",
+      "tests/test_biological_cli_branches.py",
       "tests/test_biological_diagnostics.py",
       "tests/test_biological_diagnostics_internals.py",
       "tests/test_biological_pipeline.py",
