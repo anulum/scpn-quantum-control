@@ -14,7 +14,7 @@
     "python_model_source_modules": 901,
     "rust_pyo3_model_wrappers": 137,
     "rust_source_modules": 38,
-    "test_files": 2112
+    "test_files": 2113
   },
   "documentation": {
     "examples": [
@@ -11816,6 +11816,7 @@
       "tests/test_quantum_thermo_readiness_branches.py",
       "tests/test_qubit_mapper.py",
       "tests/test_readout_matrix.py",
+      "tests/test_readout_matrix_branches.py",
       "tests/test_readout_mitigation_eligibility_audit.py",
       "tests/test_real_data_sync_forecasting.py",
       "tests/test_real_data_sync_validation.py",
