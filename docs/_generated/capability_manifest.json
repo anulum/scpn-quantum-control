@@ -14,7 +14,7 @@
     "python_model_source_modules": 900,
     "rust_pyo3_model_wrappers": 137,
     "rust_source_modules": 38,
-    "test_files": 2080
+    "test_files": 2081
   },
   "documentation": {
     "examples": [
@@ -10961,6 +10961,7 @@
       "tests/test_entropy_qrng.py",
       "tests/test_error_budget.py",
       "tests/test_example_workflows.py",
+      "tests/test_execution_surface_branches.py",
       "tests/test_execution_surface_policy.py",
       "tests/test_experiment_dynamics.py",
       "tests/test_experiment_mitigation.py",
