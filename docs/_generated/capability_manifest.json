@@ -14,7 +14,7 @@
     "python_model_source_modules": 901,
     "rust_pyo3_model_wrappers": 137,
     "rust_source_modules": 38,
-    "test_files": 2111
+    "test_files": 2112
   },
   "documentation": {
     "examples": [
@@ -11829,6 +11829,7 @@
       "tests/test_regression_baselines.py",
       "tests/test_report_s2_scaling_claim_boundary.py",
       "tests/test_retrieve_phase3_large_system_ibm.py",
+      "tests/test_rl_discovery_agent_branches.py",
       "tests/test_robustness_certificate.py",
       "tests/test_run_dla_parity_suite_cli.py",
       "tests/test_run_paper0_a_cascade_of_directed_couplings_fixture.py",
