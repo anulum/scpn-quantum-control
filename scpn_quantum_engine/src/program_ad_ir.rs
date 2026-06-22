@@ -309,6 +309,20 @@ fn has_non_view_alias(ir: &ProgramADEffectIR) -> bool {
     ir.alias_edges.iter().any(|edge| edge.kind != "view_alias")
 }
 
+/// Return true when the final effect is a raw element of a multi-output linalg op.
+///
+/// Inverse and linear solve emit one effect per output element. The IR does not record
+/// which element a program ultimately returns, so the last-ordered effect is not a reliable
+/// proxy when the result is an indexed element (for example `solve(A, b)[0]`); such programs
+/// fail closed rather than replaying the wrong component. Single-output linalg ops
+/// (determinant, trace) are unaffected because their one effect is the result.
+fn final_effect_is_indexed_multi_output_linalg(effect: &ProgramADEffect) -> bool {
+    effect
+        .operation
+        .as_deref()
+        .is_some_and(|op| op.starts_with("linalg:inv:") || op.starts_with("linalg:solve:"))
+}
+
 /// Interpret a scalar opcode-bearing Program AD IR payload in Rust.
 pub fn interpret_program_ad_effect_ir_forward(
     serialization: &str,
@@ -402,6 +416,16 @@ pub fn interpret_program_ad_effect_ir_forward(
             vec!["Program AD IR has no final effect".to_owned()],
         ));
     };
+    if final_effect_is_indexed_multi_output_linalg(final_effect) {
+        return Ok(ProgramADRustInterpreterResult::unsupported(
+            ir.effects.len(),
+            supported_effect_count,
+            vec![
+                "indexed multi-output linalg result (inverse/solve) is outside bounded Rust replay"
+                    .to_owned(),
+            ],
+        ));
+    }
     let Some(value) = values.get(&final_effect.target) else {
         return Ok(ProgramADRustInterpreterResult::unsupported(
             ir.effects.len(),
@@ -440,6 +464,16 @@ pub fn interpret_program_ad_effect_ir_value_and_gradient(
             vec!["Program AD IR has no final effect".to_owned()],
         ));
     };
+    if final_effect_is_indexed_multi_output_linalg(final_effect) {
+        return Ok(ProgramADRustValueAndGradientResult::unsupported(
+            ir.effects.len(),
+            supported_effect_count,
+            vec![
+                "indexed multi-output linalg result (inverse/solve) is outside bounded Rust replay"
+                    .to_owned(),
+            ],
+        ));
+    }
     let Some(final_value) = values.get(&final_effect.target) else {
         return Ok(ProgramADRustValueAndGradientResult::unsupported(
             ir.effects.len(),
@@ -758,6 +792,51 @@ fn accumulate_reverse_effect(
             add_adjoint(&effect.inputs[3], cotangent * a, values, adjoints)?;
             Ok(())
         }
+        name if name.starts_with("linalg:inv:2x2:") => {
+            // d(A^{-1})_{ij}/dA_{kl} = -(A^{-1})_{ik} (A^{-1})_{lj}.
+            if effect.inputs.len() != 4 {
+                return Err(format!("effect {} {name} requires four operands", effect.index));
+            }
+            let (row, column) = parse_inv_2x2_index(name)
+                .ok_or_else(|| format!("effect {} {name} has no 2x2 element index", effect.index))?;
+            let a = operand_value(&effect.inputs[0], values)?;
+            let b = operand_value(&effect.inputs[1], values)?;
+            let c = operand_value(&effect.inputs[2], values)?;
+            let d = operand_value(&effect.inputs[3], values)?;
+            let m = invert_2x2(a, b, c, d)?;
+            for k in 0..2 {
+                for l in 0..2 {
+                    let contribution = cotangent * (-m[row * 2 + k] * m[l * 2 + column]);
+                    add_adjoint(&effect.inputs[k * 2 + l], contribution, values, adjoints)?;
+                }
+            }
+            Ok(())
+        }
+        name if name.starts_with("linalg:solve:2x2:rhs:") => {
+            // x = A^{-1} b: dx_i/db_j = (A^{-1})_{ij}; dx_i/dA_{kl} = -(A^{-1})_{ik} x_l.
+            if effect.inputs.len() != 6 {
+                return Err(format!("effect {} {name} requires six operands", effect.index));
+            }
+            let row = parse_solve_2x2_index(name)
+                .ok_or_else(|| format!("effect {} {name} has no solution index", effect.index))?;
+            let a = operand_value(&effect.inputs[0], values)?;
+            let b = operand_value(&effect.inputs[1], values)?;
+            let c = operand_value(&effect.inputs[2], values)?;
+            let d = operand_value(&effect.inputs[3], values)?;
+            let r0 = operand_value(&effect.inputs[4], values)?;
+            let r1 = operand_value(&effect.inputs[5], values)?;
+            let m = invert_2x2(a, b, c, d)?;
+            let x = [m[0] * r0 + m[1] * r1, m[2] * r0 + m[3] * r1];
+            add_adjoint(&effect.inputs[4], cotangent * m[row * 2], values, adjoints)?;
+            add_adjoint(&effect.inputs[5], cotangent * m[row * 2 + 1], values, adjoints)?;
+            for k in 0..2 {
+                for l in 0..2 {
+                    let contribution = cotangent * (-m[row * 2 + k] * x[l]);
+                    add_adjoint(&effect.inputs[k * 2 + l], contribution, values, adjoints)?;
+                }
+            }
+            Ok(())
+        }
         _ => Err(format!(
             "effect {} operation {operation} is outside bounded Rust scalar value+gradient replay",
             effect.index
@@ -961,6 +1040,35 @@ fn evaluate_effect(
             let c = operand_value(&effect.inputs[2], values)?;
             let d = operand_value(&effect.inputs[3], values)?;
             Ok(a * d - b * c)
+        }
+        name if name.starts_with("linalg:inv:2x2:") => {
+            // Each opcode emits one element (row, column) of the closed-form 2x2 inverse.
+            if effect.inputs.len() != 4 {
+                return Err(format!("effect {} {name} requires four operands", effect.index));
+            }
+            let (row, column) = parse_inv_2x2_index(name)
+                .ok_or_else(|| format!("effect {} {name} has no 2x2 element index", effect.index))?;
+            let a = operand_value(&effect.inputs[0], values)?;
+            let b = operand_value(&effect.inputs[1], values)?;
+            let c = operand_value(&effect.inputs[2], values)?;
+            let d = operand_value(&effect.inputs[3], values)?;
+            Ok(invert_2x2(a, b, c, d)?[row * 2 + column])
+        }
+        name if name.starts_with("linalg:solve:2x2:rhs:") => {
+            // Each opcode emits one component i of x = A^{-1} b for the 2x2 system.
+            if effect.inputs.len() != 6 {
+                return Err(format!("effect {} {name} requires six operands", effect.index));
+            }
+            let row = parse_solve_2x2_index(name)
+                .ok_or_else(|| format!("effect {} {name} has no solution index", effect.index))?;
+            let a = operand_value(&effect.inputs[0], values)?;
+            let b = operand_value(&effect.inputs[1], values)?;
+            let c = operand_value(&effect.inputs[2], values)?;
+            let d = operand_value(&effect.inputs[3], values)?;
+            let r0 = operand_value(&effect.inputs[4], values)?;
+            let r1 = operand_value(&effect.inputs[5], values)?;
+            let inverse = invert_2x2(a, b, c, d)?;
+            Ok(inverse[row * 2] * r0 + inverse[row * 2 + 1] * r1)
         }
         _ => Err(format!(
             "effect {} operation {operation} is outside the bounded Rust scalar interpreter",
@@ -1177,6 +1285,35 @@ fn operand_value(name: &str, values: &HashMap<String, f64>) -> Result<f64, Strin
     }
     name.parse::<f64>()
         .map_err(|_| format!("operand {name} is neither an SSA value nor a scalar literal"))
+}
+
+/// Invert a row-major 2x2 matrix `[a, b; c, d]`, returning `[m00, m01, m10, m11]`.
+///
+/// Fails closed on a singular or non-finite determinant so a degenerate inverse is never
+/// silently replayed.
+fn invert_2x2(a: f64, b: f64, c: f64, d: f64) -> Result<[f64; 4], String> {
+    let det = a * d - b * c;
+    if det == 0.0 || !det.is_finite() {
+        return Err("linalg 2x2 matrix is singular".to_owned());
+    }
+    Ok([d / det, -b / det, -c / det, a / det])
+}
+
+/// Parse the `(row, column)` output index from a `linalg:inv:2x2:I:J` opcode.
+fn parse_inv_2x2_index(operation: &str) -> Option<(usize, usize)> {
+    let parts: Vec<&str> = operation.split(':').collect();
+    if parts.len() != 5 {
+        return None;
+    }
+    let row: usize = parts[3].parse().ok()?;
+    let column: usize = parts[4].parse().ok()?;
+    (row < 2 && column < 2).then_some((row, column))
+}
+
+/// Parse the solution component index from a `linalg:solve:2x2:rhs:<m>:I` opcode.
+fn parse_solve_2x2_index(operation: &str) -> Option<usize> {
+    let index: usize = operation.rsplit(':').next()?.parse().ok()?;
+    (index < 2).then_some(index)
 }
 
 fn require_non_empty(value: &str, name: &str) -> Result<(), String> {

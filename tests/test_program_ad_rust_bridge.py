@@ -733,3 +733,60 @@ def test_bridge_replays_linalg_det_2x2_with_real_engine() -> None:
     assert rust.claim_boundary.endswith(
         "scalar_and_static_linalg_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit"
     )
+
+
+def _objective_inv_2x2_sum(values: Any) -> Any:
+    return np.sum(np.linalg.inv(np.reshape(values, (2, 2))))
+
+
+def _objective_solve_2x2_sum(values: Any) -> Any:
+    return np.sum(np.linalg.solve(np.reshape(values[:4], (2, 2)), values[4:]))
+
+
+def _objective_solve_2x2_indexed(values: Any) -> Any:
+    return np.linalg.solve(np.reshape(values[:4], (2, 2)), values[4:])[0]
+
+
+def test_bridge_replays_linalg_inverse_with_real_engine() -> None:
+    """With the real engine, a reduced 2x2 inverse program replays within tolerance."""
+
+    pytest.importorskip("scpn_quantum_engine")
+    from scpn_quantum_control import program_adjoint_value_and_grad
+
+    sample = np.array([2.0, 1.0, 1.0, 3.0], dtype=np.float64)
+    result = whole_program_value_and_grad(_objective_inv_2x2_sum, sample)
+    assert result.program_ir is not None
+    rust = value_and_grad_program_ad_effect_ir_with_rust(result.program_ir, sample)
+    if not rust.supported:
+        pytest.skip(f"installed engine lacks linalg:inv replay: {rust.blocked_reasons}")
+    _, reference = program_adjoint_value_and_grad(_objective_inv_2x2_sum, sample)
+    np.testing.assert_allclose(np.asarray(rust.gradient), reference, atol=1.0e-12)
+
+
+def test_bridge_replays_linalg_solve_with_real_engine() -> None:
+    """With the real engine, a reduced 2x2 linear solve replays within tolerance."""
+
+    pytest.importorskip("scpn_quantum_engine")
+    from scpn_quantum_control import program_adjoint_value_and_grad
+
+    sample = np.array([2.0, 1.0, 1.0, 3.0, 1.0, 2.0], dtype=np.float64)
+    result = whole_program_value_and_grad(_objective_solve_2x2_sum, sample)
+    assert result.program_ir is not None
+    rust = value_and_grad_program_ad_effect_ir_with_rust(result.program_ir, sample)
+    if not rust.supported:
+        pytest.skip(f"installed engine lacks linalg:solve replay: {rust.blocked_reasons}")
+    _, reference = program_adjoint_value_and_grad(_objective_solve_2x2_sum, sample)
+    np.testing.assert_allclose(np.asarray(rust.gradient), reference, atol=1.0e-12)
+
+
+def test_bridge_fails_closed_on_indexed_multi_output_linalg_with_real_engine() -> None:
+    """A bare indexed solve component stays outside the bounded Rust replay."""
+
+    pytest.importorskip("scpn_quantum_engine")
+
+    sample = np.array([3.0, 1.0, 2.0, 4.0, 5.0, 6.0], dtype=np.float64)
+    result = whole_program_value_and_grad(_objective_solve_2x2_indexed, sample)
+    assert result.program_ir is not None
+    rust = value_and_grad_program_ad_effect_ir_with_rust(result.program_ir, sample)
+    assert rust.supported is False
+    assert any("indexed multi-output linalg" in reason for reason in rust.blocked_reasons)

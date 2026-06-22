@@ -534,3 +534,83 @@ fn program_ad_effect_ir_rust_value_and_gradient_replays_linalg_det_2x2() {
     assert!((result.gradient[2] - (-1.0_f64)).abs() <= 1.0e-12);
     assert!((result.gradient[3] - 2.0_f64).abs() <= 1.0e-12);
 }
+
+const LINALG_INV_2X2_ELEMENT_PROGRAM_AD_IR: &str = r#"{
+  "format": "program_ad_effect_ir.v1",
+  "ssa_values": [
+    {"name": "%0", "producer": 0, "version": 0, "shape": [], "dtype": "float64", "effect": 0},
+    {"name": "%1", "producer": 1, "version": 0, "shape": [], "dtype": "float64", "effect": 1},
+    {"name": "%2", "producer": 2, "version": 0, "shape": [], "dtype": "float64", "effect": 2},
+    {"name": "%3", "producer": 3, "version": 0, "shape": [], "dtype": "float64", "effect": 3},
+    {"name": "%4", "producer": 4, "version": 0, "shape": [], "dtype": "float64", "effect": 4},
+    {"name": "%5", "producer": 5, "version": 0, "shape": [], "dtype": "float64", "effect": 5}
+  ],
+  "effects": [
+    {"index": 0, "kind": "parameter", "target": "%0", "inputs": ["a"], "version": 0, "ordering": 0, "operation": "parameter"},
+    {"index": 1, "kind": "parameter", "target": "%1", "inputs": ["b"], "version": 0, "ordering": 1, "operation": "parameter"},
+    {"index": 2, "kind": "parameter", "target": "%2", "inputs": ["c"], "version": 0, "ordering": 2, "operation": "parameter"},
+    {"index": 3, "kind": "parameter", "target": "%3", "inputs": ["d"], "version": 0, "ordering": 3, "operation": "parameter"},
+    {"index": 4, "kind": "pure", "target": "%4", "inputs": ["%0", "%1", "%2", "%3"], "version": 0, "ordering": 4, "operation": "linalg:inv:2x2:0:0"},
+    {"index": 5, "kind": "pure", "target": "%5", "inputs": ["%4", "1.0"], "version": 0, "ordering": 5, "operation": "mul"}
+  ],
+  "alias_edges": [],
+  "control_regions": [],
+  "phi_nodes": [],
+  "bytecode_offsets": [0]
+}"#;
+
+const LINALG_SOLVE_2X2_FINAL_PROGRAM_AD_IR: &str = r#"{
+  "format": "program_ad_effect_ir.v1",
+  "ssa_values": [
+    {"name": "%0", "producer": 0, "version": 0, "shape": [], "dtype": "float64", "effect": 0},
+    {"name": "%1", "producer": 1, "version": 0, "shape": [], "dtype": "float64", "effect": 1},
+    {"name": "%2", "producer": 2, "version": 0, "shape": [], "dtype": "float64", "effect": 2},
+    {"name": "%3", "producer": 3, "version": 0, "shape": [], "dtype": "float64", "effect": 3},
+    {"name": "%4", "producer": 4, "version": 0, "shape": [], "dtype": "float64", "effect": 4},
+    {"name": "%5", "producer": 5, "version": 0, "shape": [], "dtype": "float64", "effect": 5},
+    {"name": "%6", "producer": 6, "version": 0, "shape": [], "dtype": "float64", "effect": 6}
+  ],
+  "effects": [
+    {"index": 0, "kind": "parameter", "target": "%0", "inputs": ["a"], "version": 0, "ordering": 0, "operation": "parameter"},
+    {"index": 1, "kind": "parameter", "target": "%1", "inputs": ["b"], "version": 0, "ordering": 1, "operation": "parameter"},
+    {"index": 2, "kind": "parameter", "target": "%2", "inputs": ["c"], "version": 0, "ordering": 2, "operation": "parameter"},
+    {"index": 3, "kind": "parameter", "target": "%3", "inputs": ["d"], "version": 0, "ordering": 3, "operation": "parameter"},
+    {"index": 4, "kind": "parameter", "target": "%4", "inputs": ["r0"], "version": 0, "ordering": 4, "operation": "parameter"},
+    {"index": 5, "kind": "parameter", "target": "%5", "inputs": ["r1"], "version": 0, "ordering": 5, "operation": "parameter"},
+    {"index": 6, "kind": "pure", "target": "%6", "inputs": ["%0", "%1", "%2", "%3", "%4", "%5"], "version": 0, "ordering": 6, "operation": "linalg:solve:2x2:rhs:2:0"}
+  ],
+  "alias_edges": [],
+  "control_regions": [],
+  "phi_nodes": [],
+  "bytecode_offsets": [0]
+}"#;
+
+#[test]
+fn program_ad_effect_ir_rust_value_and_gradient_replays_linalg_inverse_element() {
+    // inv([[a,b],[c,d]])[0,0] = d/det; reduced by *1.0 so it is the program value.
+    // For [2,1,1,3]: det=5, M=[0.6,-0.2,-0.2,0.4]; d(M00)/dA = [-0.36, 0.12, 0.12, -0.04].
+    let result =
+        interpret_program_ad_effect_ir_value_and_gradient(LINALG_INV_2X2_ELEMENT_PROGRAM_AD_IR, &[2.0, 1.0, 1.0, 3.0])
+            .unwrap();
+
+    assert!(result.supported, "{:?}", result.blocked_reasons);
+    assert!((result.value.unwrap() - 0.6_f64).abs() <= 1.0e-12);
+    let expected = [-0.36_f64, 0.12, 0.12, -0.04];
+    assert_eq!(result.gradient.len(), 4);
+    for (got, want) in result.gradient.iter().zip(expected.iter()) {
+        assert!((got - want).abs() <= 1.0e-12, "{got} vs {want}");
+    }
+}
+
+#[test]
+fn program_ad_effect_ir_rust_value_and_gradient_fails_closed_on_indexed_multi_output_linalg() {
+    // A bare solve element as the final effect: the IR does not record which component the
+    // program returned, so the replay fails closed rather than replaying the wrong element.
+    let result =
+        interpret_program_ad_effect_ir_value_and_gradient(LINALG_SOLVE_2X2_FINAL_PROGRAM_AD_IR, &[3.0, 1.0, 2.0, 4.0, 5.0, 6.0])
+            .unwrap();
+
+    assert!(!result.supported);
+    assert!(result.gradient.is_empty());
+    assert!(result.blocked_reasons[0].contains("indexed multi-output linalg"));
+}
