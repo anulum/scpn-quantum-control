@@ -88,20 +88,50 @@ from .mlir_executable_kernel import (
 from .mlir_executable_kernel import (
     make_executable_ad_kernel_batching_rule as make_executable_ad_kernel_batching_rule,
 )
-from .mlir_matrix_native_compilation import (
+from .mlir_matrix_2x2_native_compilation import (
     compile_matrix_2x2_determinant_ad_to_native_llvm_jit as compile_matrix_2x2_determinant_ad_to_native_llvm_jit,
 )
-from .mlir_matrix_native_compilation import (
+from .mlir_matrix_2x2_native_compilation import (
     compile_matrix_2x2_eigensystem_ad_to_native_llvm_jit as compile_matrix_2x2_eigensystem_ad_to_native_llvm_jit,
 )
-from .mlir_matrix_native_compilation import (
+from .mlir_matrix_2x2_native_compilation import (
     compile_matrix_2x2_eigenvalues_ad_to_native_llvm_jit as compile_matrix_2x2_eigenvalues_ad_to_native_llvm_jit,
 )
-from .mlir_matrix_native_compilation import (
+from .mlir_matrix_2x2_native_compilation import (
     compile_matrix_2x2_inverse_ad_to_native_llvm_jit as compile_matrix_2x2_inverse_ad_to_native_llvm_jit,
 )
-from .mlir_matrix_native_compilation import (
+from .mlir_matrix_2x2_native_compilation import (
     compile_matrix_2x2_solve_ad_to_native_llvm_jit as compile_matrix_2x2_solve_ad_to_native_llvm_jit,
+)
+from .mlir_matrix_2x2_native_compilation import (
+    make_matrix_2x2_determinant_native_llvm_jit_lowering_rule as make_matrix_2x2_determinant_native_llvm_jit_lowering_rule,
+)
+from .mlir_matrix_2x2_native_compilation import (
+    make_matrix_2x2_determinant_native_llvm_jit_primitive_transform as make_matrix_2x2_determinant_native_llvm_jit_primitive_transform,
+)
+from .mlir_matrix_2x2_native_compilation import (
+    make_matrix_2x2_eigensystem_native_llvm_jit_lowering_rule as make_matrix_2x2_eigensystem_native_llvm_jit_lowering_rule,
+)
+from .mlir_matrix_2x2_native_compilation import (
+    make_matrix_2x2_eigensystem_native_llvm_jit_primitive_transform as make_matrix_2x2_eigensystem_native_llvm_jit_primitive_transform,
+)
+from .mlir_matrix_2x2_native_compilation import (
+    make_matrix_2x2_eigenvalues_native_llvm_jit_lowering_rule as make_matrix_2x2_eigenvalues_native_llvm_jit_lowering_rule,
+)
+from .mlir_matrix_2x2_native_compilation import (
+    make_matrix_2x2_eigenvalues_native_llvm_jit_primitive_transform as make_matrix_2x2_eigenvalues_native_llvm_jit_primitive_transform,
+)
+from .mlir_matrix_2x2_native_compilation import (
+    make_matrix_2x2_inverse_native_llvm_jit_lowering_rule as make_matrix_2x2_inverse_native_llvm_jit_lowering_rule,
+)
+from .mlir_matrix_2x2_native_compilation import (
+    make_matrix_2x2_inverse_native_llvm_jit_primitive_transform as make_matrix_2x2_inverse_native_llvm_jit_primitive_transform,
+)
+from .mlir_matrix_2x2_native_compilation import (
+    make_matrix_2x2_solve_native_llvm_jit_lowering_rule as make_matrix_2x2_solve_native_llvm_jit_lowering_rule,
+)
+from .mlir_matrix_2x2_native_compilation import (
+    make_matrix_2x2_solve_native_llvm_jit_primitive_transform as make_matrix_2x2_solve_native_llvm_jit_primitive_transform,
 )
 from .mlir_matrix_native_compilation import (
     compile_matrix_frobenius_norm_squared_ad_to_native_llvm_jit as compile_matrix_frobenius_norm_squared_ad_to_native_llvm_jit,
@@ -117,36 +147,6 @@ from .mlir_matrix_native_compilation import (
 )
 from .mlir_matrix_native_compilation import (
     compile_matrix_vector_product_ad_to_native_llvm_jit as compile_matrix_vector_product_ad_to_native_llvm_jit,
-)
-from .mlir_matrix_native_compilation import (
-    make_matrix_2x2_determinant_native_llvm_jit_lowering_rule as make_matrix_2x2_determinant_native_llvm_jit_lowering_rule,
-)
-from .mlir_matrix_native_compilation import (
-    make_matrix_2x2_determinant_native_llvm_jit_primitive_transform as make_matrix_2x2_determinant_native_llvm_jit_primitive_transform,
-)
-from .mlir_matrix_native_compilation import (
-    make_matrix_2x2_eigensystem_native_llvm_jit_lowering_rule as make_matrix_2x2_eigensystem_native_llvm_jit_lowering_rule,
-)
-from .mlir_matrix_native_compilation import (
-    make_matrix_2x2_eigensystem_native_llvm_jit_primitive_transform as make_matrix_2x2_eigensystem_native_llvm_jit_primitive_transform,
-)
-from .mlir_matrix_native_compilation import (
-    make_matrix_2x2_eigenvalues_native_llvm_jit_lowering_rule as make_matrix_2x2_eigenvalues_native_llvm_jit_lowering_rule,
-)
-from .mlir_matrix_native_compilation import (
-    make_matrix_2x2_eigenvalues_native_llvm_jit_primitive_transform as make_matrix_2x2_eigenvalues_native_llvm_jit_primitive_transform,
-)
-from .mlir_matrix_native_compilation import (
-    make_matrix_2x2_inverse_native_llvm_jit_lowering_rule as make_matrix_2x2_inverse_native_llvm_jit_lowering_rule,
-)
-from .mlir_matrix_native_compilation import (
-    make_matrix_2x2_inverse_native_llvm_jit_primitive_transform as make_matrix_2x2_inverse_native_llvm_jit_primitive_transform,
-)
-from .mlir_matrix_native_compilation import (
-    make_matrix_2x2_solve_native_llvm_jit_lowering_rule as make_matrix_2x2_solve_native_llvm_jit_lowering_rule,
-)
-from .mlir_matrix_native_compilation import (
-    make_matrix_2x2_solve_native_llvm_jit_primitive_transform as make_matrix_2x2_solve_native_llvm_jit_primitive_transform,
 )
 from .mlir_matrix_native_compilation import (
     make_matrix_frobenius_norm_squared_native_llvm_jit_lowering_rule as make_matrix_frobenius_norm_squared_native_llvm_jit_lowering_rule,
