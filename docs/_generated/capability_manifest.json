@@ -11,7 +11,7 @@
     "public_api_exports": 714,
     "public_documentation_pages": 254,
     "python_model_classes": 1840,
-    "python_model_source_modules": 893,
+    "python_model_source_modules": 898,
     "rust_pyo3_model_wrappers": 137,
     "rust_source_modules": 38,
     "test_files": 2075
@@ -469,7 +469,7 @@
       {
         "package": "compiler",
         "path": "src/scpn_quantum_control/compiler",
-        "python_modules": 5
+        "python_modules": 10
       },
       {
         "package": "control",
@@ -2611,7 +2611,7 @@
       },
       {
         "name": "ExecutableCompilerADKernel",
-        "path": "src/scpn_quantum_control/compiler/mlir.py"
+        "path": "src/scpn_quantum_control/compiler/mlir_executable_kernel.py"
       },
       {
         "name": "ExecutableWholeProgramADBatchResult",
@@ -8534,8 +8534,13 @@
       "src/scpn_quantum_control/codegen/ultrascale_hls.py",
       "src/scpn_quantum_control/compiler/mlir.py",
       "src/scpn_quantum_control/compiler/mlir_enzyme_evidence.py",
+      "src/scpn_quantum_control/compiler/mlir_executable_kernel.py",
+      "src/scpn_quantum_control/compiler/mlir_matrix_native_compilation.py",
       "src/scpn_quantum_control/compiler/mlir_native_primitives.py",
       "src/scpn_quantum_control/compiler/mlir_records.py",
+      "src/scpn_quantum_control/compiler/mlir_scalar_native_compilation.py",
+      "src/scpn_quantum_control/compiler/mlir_symmetric_native_compilation.py",
+      "src/scpn_quantum_control/compiler/mlir_vector_native_compilation.py",
       "src/scpn_quantum_control/compiler/mlir_whole_program_native.py",
       "src/scpn_quantum_control/config.py",
       "src/scpn_quantum_control/control/adaptive_branching.py",
