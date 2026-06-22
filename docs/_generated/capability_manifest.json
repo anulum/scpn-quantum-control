@@ -14,7 +14,7 @@
     "python_model_source_modules": 900,
     "rust_pyo3_model_wrappers": 137,
     "rust_source_modules": 38,
-    "test_files": 2099
+    "test_files": 2100
   },
   "documentation": {
     "examples": [
@@ -11774,6 +11774,7 @@
       "tests/test_qsvt_evolution.py",
       "tests/test_qsynapse.py",
       "tests/test_quantum_advantage.py",
+      "tests/test_quantum_advantage_branches.py",
       "tests/test_quantum_advantage_crossover_figure.py",
       "tests/test_quantum_advantage_gap_audit.py",
       "tests/test_quantum_costs.py",
