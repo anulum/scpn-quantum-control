@@ -102,13 +102,13 @@ has a defined commercial licensing route.
 | Paper 0 validation modules | 466 |
 | Domain package families | 32 |
 | API documentation pages | 0 |
-| Rust PyO3 function bindings | 138 |
+| Rust PyO3 function bindings | 139 |
 | Rust source modules | 38 |
 | Notebook files | 98 |
 | Example files | 30 |
 | Optional extras | 42 |
 | Python test files | 2146 |
-| Public documentation pages | 254 |
+| Public documentation pages | 255 |
 | GitHub Actions workflows | 19 |
 
 Evidence boundary: this snapshot is a static inventory. Performance, coverage, hardware, and scientific-fidelity claims require their own committed evidence artefacts.
