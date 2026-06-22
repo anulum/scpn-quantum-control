@@ -19,7 +19,6 @@ from __future__ import annotations
 
 import ctypes
 import hashlib
-import importlib
 import json
 import shutil
 import subprocess
@@ -83,6 +82,33 @@ from .mlir_enzyme_evidence import (
 from .mlir_enzyme_evidence import (
     build_enzyme_mlir_compiler_ad_breadth_gap_artifact as build_enzyme_mlir_compiler_ad_breadth_gap_artifact,
 )
+from .mlir_native_primitives import (
+    _as_finite_vector as _as_finite_vector,
+)
+from .mlir_native_primitives import (
+    _compile_native_llvm_jit_functions as _compile_native_llvm_jit_functions,
+)
+from .mlir_native_primitives import (
+    _copy_float_array as _copy_float_array,
+)
+from .mlir_native_primitives import (
+    _escape_mlir_string as _escape_mlir_string,
+)
+from .mlir_native_primitives import (
+    _fmt_bool as _fmt_bool,
+)
+from .mlir_native_primitives import (
+    _fmt_float as _fmt_float,
+)
+from .mlir_native_primitives import (
+    _load_llvmlite_binding as _load_llvmlite_binding,
+)
+from .mlir_native_primitives import (
+    _max_abs_error as _max_abs_error,
+)
+from .mlir_native_primitives import (
+    _safe_llvm_symbol as _safe_llvm_symbol,
+)
 from .mlir_records import (
     CompilerADExecutableConfig as CompilerADExecutableConfig,
 )
@@ -106,11 +132,6 @@ from .mlir_records import (
 )
 
 FloatArray: TypeAlias = NDArray[np.float64]
-
-
-def _copy_float_array(values: FloatArray) -> FloatArray:
-    copied: object = values.copy()
-    return cast(FloatArray, copied)
 
 
 def _status_has_native_llvm_jit_backend(status: PrimitiveLoweringStatus) -> bool:
@@ -1421,26 +1442,6 @@ def _compile_scalar_gradient_llvm_ir(
     lines.append("  ret void")
     lines.append("}")
     return "\n".join(lines) + "\n"
-
-
-def _load_llvmlite_binding() -> Any:
-    try:
-        llvm = importlib.import_module("llvmlite.binding")
-    except ModuleNotFoundError as exc:
-        raise ValueError(
-            "native_llvm_jit backend requires llvmlite.binding to be installed"
-        ) from exc
-
-    for initializer in (
-        llvm.initialize_native_target,
-        llvm.initialize_native_asmprinter,
-    ):
-        try:
-            initializer()
-        except RuntimeError as exc:
-            if "already" not in str(exc).lower():
-                raise
-    return llvm
 
 
 def _compile_scalar_quadratic_native_llvm_ir(
@@ -4011,59 +4012,6 @@ def _compile_matrix_2x2_eigensystem_native_llvm_ir(rule_name: str) -> str:
             "",
         ]
     )
-
-
-def _compile_native_llvm_jit_functions(
-    llvm_ir: str,
-    base_symbol: str,
-) -> Mapping[str, Any]:
-    llvm = _load_llvmlite_binding()
-    module = llvm.parse_assembly(llvm_ir)
-    module.verify()
-    target = llvm.Target.from_default_triple()
-    target_machine = target.create_target_machine()
-    backing_module = llvm.parse_assembly("")
-    engine = llvm.create_mcjit_compiler(backing_module, target_machine)
-    engine.add_module(module)
-    engine.finalize_object()
-    engine.run_static_constructors()
-
-    double_pointer = ctypes.POINTER(ctypes.c_double)
-    unary_function = ctypes.CFUNCTYPE(None, double_pointer, double_pointer)
-    binary_function = ctypes.CFUNCTYPE(None, double_pointer, double_pointer, double_pointer)
-    batch_value_gradient_function = ctypes.CFUNCTYPE(
-        None,
-        double_pointer,
-        ctypes.c_int64,
-        double_pointer,
-        double_pointer,
-    )
-    batch_binary_function = ctypes.CFUNCTYPE(
-        None,
-        double_pointer,
-        double_pointer,
-        ctypes.c_int64,
-        double_pointer,
-    )
-    functions: dict[str, Any] = {"engine": engine}
-    for name, signature in (
-        ("value", unary_function),
-        ("gradient", unary_function),
-        ("jvp", binary_function),
-        ("vjp", binary_function),
-    ):
-        address = engine.get_function_address(f"{base_symbol}_{name}")
-        if address == 0:
-            raise ValueError(f"native_llvm_jit symbol {base_symbol}_{name} was not emitted")
-        functions[name] = signature(address)
-    batch_address = engine.get_function_address(f"{base_symbol}_batch_value_gradient")
-    if batch_address != 0:
-        functions["batch_value_gradient"] = batch_value_gradient_function(batch_address)
-    for name in ("batch_jvp", "batch_vjp"):
-        address = engine.get_function_address(f"{base_symbol}_{name}")
-        if address != 0:
-            functions[name] = batch_binary_function(address)
-    return MappingProxyType(functions)
 
 
 def _call_native_scalar_unary(
@@ -8811,15 +8759,6 @@ def make_matrix_quadratic_form_native_llvm_jit_primitive_transform(
     )
 
 
-def _safe_llvm_symbol(value: str) -> str:
-    symbol = "".join(
-        character if character.isalnum() or character == "_" else "_" for character in value
-    )
-    if not symbol or symbol[0].isdigit():
-        symbol = f"_{symbol}"
-    return symbol
-
-
 def compile_whole_program_ad_trace_to_mlir(
     result: WholeProgramADResult,
     config: DifferentiableMLIRCompileConfig | None = None,
@@ -13278,39 +13217,6 @@ def _coupling_terms(K_nm: FloatArray) -> tuple[tuple[int, int, float], ...]:
             if abs(value) > 1e-15:
                 terms.append((left, right, value))
     return tuple(terms)
-
-
-def _as_finite_vector(name: str, value: object) -> NDArray[np.float64]:
-    array = np.asarray(value, dtype=np.float64)
-    if array.ndim == 0:
-        array = array.reshape(1)
-    if array.ndim != 1:
-        raise ValueError(f"{name} must be one-dimensional")
-    if not np.all(np.isfinite(array)):
-        raise ValueError(f"{name} must contain only finite values")
-    return _copy_float_array(array)
-
-
-def _max_abs_error(left: FloatArray, right: FloatArray) -> float:
-    if left.shape != right.shape:
-        return float("inf")
-    if left.size == 0:
-        return 0.0
-    return float(np.max(np.abs(left - right)))
-
-
-def _fmt_float(value: float) -> str:
-    if not np.isfinite(value):
-        raise ValueError("MLIR numeric attributes must be finite")
-    return format(value, ".17g")
-
-
-def _fmt_bool(value: bool) -> str:
-    return "true" if value else "false"
-
-
-def _escape_mlir_string(value: str) -> str:
-    return value.replace("\\", "\\\\").replace('"', '\\"')
 
 
 @dataclass(frozen=True)
