@@ -47,10 +47,6 @@ from ..differentiable import (
     whole_program_value_and_grad,
 )
 from ..kuramoto_core import KuramotoProblem, build_kuramoto_problem
-from ..phase.qnode_affinity_benchmark import PhaseQNodeAffinityArtifactValidation
-from .mlir_enzyme_evidence import (
-    ENZYME_MLIR_COMPILER_AD_BREADTH_CASES,
-)
 from .mlir_enzyme_evidence import (
     EnzymeMLIRBenchmarkAttachment as EnzymeMLIRBenchmarkAttachment,
 )
@@ -74,6 +70,18 @@ from .mlir_enzyme_evidence import (
 )
 from .mlir_enzyme_evidence import (
     MLIRLLVMCorrectnessEvidence as MLIRLLVMCorrectnessEvidence,
+)
+from .mlir_enzyme_evidence import (
+    build_enzyme_mlir_benchmark_attachment as build_enzyme_mlir_benchmark_attachment,
+)
+from .mlir_enzyme_evidence import (
+    build_enzyme_mlir_compiler_ad_breadth_artifact as build_enzyme_mlir_compiler_ad_breadth_artifact,
+)
+from .mlir_enzyme_evidence import (
+    build_enzyme_mlir_compiler_ad_breadth_evidence as build_enzyme_mlir_compiler_ad_breadth_evidence,
+)
+from .mlir_enzyme_evidence import (
+    build_enzyme_mlir_compiler_ad_breadth_gap_artifact as build_enzyme_mlir_compiler_ad_breadth_gap_artifact,
 )
 from .mlir_records import (
     CompilerADExecutableConfig as CompilerADExecutableConfig,
@@ -13370,231 +13378,6 @@ class PhaseQNodeMLIRRuntimeExecutable:
             "interpreter_fallback": self.verification["interpreter_fallback"],
             "claim_boundary": self.claim_boundary,
         }
-
-
-def build_enzyme_mlir_benchmark_attachment(
-    *,
-    validation: PhaseQNodeAffinityArtifactValidation,
-    required_breadth_cases: Sequence[str],
-    claim_boundary: str,
-) -> EnzymeMLIRBenchmarkAttachment:
-    """Build a fail-closed Enzyme/MLIR isolated benchmark attachment.
-
-    Parameters
-    ----------
-    validation:
-        Existing Phase-QNode affinity artefact validation. The resulting
-        attachment is promotional only when this validation is already
-        ``isolated_affinity`` and promotion-ready.
-    required_breadth_cases:
-        Breadth cases represented by the benchmark attachment. The set must
-        match the Enzyme/MLIR compiler-AD breadth contract exactly.
-    claim_boundary:
-        Claim boundary stored in the serialized maturity audit.
-
-    Returns
-    -------
-    EnzymeMLIRBenchmarkAttachment
-        Validated benchmark attachment for maturity-audit input.
-
-    Raises
-    ------
-    ValueError
-        If the validation type, breadth cases, or claim boundary are malformed.
-    """
-
-    return EnzymeMLIRBenchmarkAttachment(
-        validation=validation,
-        required_breadth_cases=tuple(required_breadth_cases),
-        claim_boundary=claim_boundary,
-    )
-
-
-def build_enzyme_mlir_compiler_ad_breadth_artifact(
-    *,
-    artifact_id: str,
-    cases: Sequence[EnzymeMLIRCompilerADBreadthCaseEvidence],
-    isolated_benchmark_evidence: EnzymeMLIRBenchmarkAttachment,
-    claim_boundary: str,
-) -> EnzymeMLIRCompilerADBreadthArtifact:
-    """Build a validated raw Enzyme/MLIR compiler-AD breadth artefact.
-
-    Parameters
-    ----------
-    artifact_id:
-        Stable raw artefact identifier.
-    cases:
-        Case rows that must exactly cover every required Enzyme/MLIR breadth
-        case.
-    isolated_benchmark_evidence:
-        Promotion-ready isolated benchmark attachment for the same evidence
-        chain. Non-promotional benchmark evidence keeps the artefact blocked.
-    claim_boundary:
-        Claim boundary serialized into the artifact and derived evidence.
-
-    Returns
-    -------
-    EnzymeMLIRCompilerADBreadthArtifact
-        Validated raw breadth artefact.
-    """
-
-    return EnzymeMLIRCompilerADBreadthArtifact(
-        artifact_id=artifact_id,
-        cases=tuple(cases),
-        isolated_benchmark_evidence=isolated_benchmark_evidence,
-        claim_boundary=claim_boundary,
-    )
-
-
-def build_enzyme_mlir_compiler_ad_breadth_gap_artifact(
-    *,
-    artifact_id: str,
-    observed_cases: Sequence[EnzymeMLIRCompilerADBreadthCaseEvidence],
-    isolated_benchmark_evidence: EnzymeMLIRBenchmarkAttachment,
-    default_transform_modes: Sequence[str] = ("forward", "reverse", "jvp", "vjp"),
-    default_frontend_language: str = "mlir",
-    missing_case_failure_class: str = "missing_case_evidence",
-    missing_case_setup_instructions: str = (
-        "Attach raw Enzyme/MLIR compiler-AD case evidence before promotion."
-    ),
-    claim_boundary: str = (
-        "bounded Enzyme/MLIR compiler-AD breadth artifact; missing cases remain explicit hard gaps"
-    ),
-) -> EnzymeMLIRCompilerADBreadthArtifact:
-    """Build a complete raw breadth artefact from partial observed case rows.
-
-    Parameters
-    ----------
-    artifact_id:
-        Stable raw artefact identifier.
-    observed_cases:
-        Captured raw case rows. Duplicate case identifiers are rejected. Any
-        required Enzyme/MLIR breadth case not present here is filled as a
-        ``hard_gap`` row rather than silently omitted.
-    isolated_benchmark_evidence:
-        Benchmark attachment for the same evidence chain. Non-promotional
-        benchmark evidence keeps the resulting artefact blocked.
-    default_transform_modes:
-        Transform modes assigned to generated hard-gap rows.
-    default_frontend_language:
-        Frontend or IR surface assigned to generated hard-gap rows.
-    missing_case_failure_class:
-        Failure class assigned to generated hard-gap rows.
-    missing_case_setup_instructions:
-        Remediation text assigned to generated hard-gap rows.
-    claim_boundary:
-        Claim boundary serialized into the artifact and generated hard-gap
-        rows.
-
-    Returns
-    -------
-    EnzymeMLIRCompilerADBreadthArtifact
-        Complete 11-case breadth artefact. It is promotion-ready only when all
-        rows pass and the benchmark attachment is promotion-ready.
-
-    Raises
-    ------
-    ValueError
-        If observed rows are duplicated or any default hard-gap metadata is
-        malformed.
-    """
-
-    observed_by_case: dict[str, EnzymeMLIRCompilerADBreadthCaseEvidence] = {}
-    for case in observed_cases:
-        if not isinstance(case, EnzymeMLIRCompilerADBreadthCaseEvidence):
-            raise ValueError("observed_cases must contain EnzymeMLIRCompilerADBreadthCaseEvidence")
-        if case.case_id in observed_by_case:
-            raise ValueError("observed_cases must not contain duplicate case identifiers")
-        observed_by_case[case.case_id] = case
-    if not missing_case_failure_class.strip():
-        raise ValueError("missing_case_failure_class must be non-empty")
-    if not missing_case_setup_instructions.strip():
-        raise ValueError("missing_case_setup_instructions must be non-empty")
-    rows: list[EnzymeMLIRCompilerADBreadthCaseEvidence] = []
-    for case_id in sorted(ENZYME_MLIR_COMPILER_AD_BREADTH_CASES):
-        observed = observed_by_case.get(case_id)
-        if observed is not None:
-            rows.append(observed)
-            continue
-        rows.append(
-            EnzymeMLIRCompilerADBreadthCaseEvidence(
-                case_id=case_id,
-                status="hard_gap",
-                transform_modes=tuple(default_transform_modes),
-                frontend_language=default_frontend_language,
-                value_error=None,
-                gradient_error=None,
-                runtime_seconds=None,
-                artifact_refs={"missing_case": f"enzyme_mlir_compiler_ad_breadth:{case_id}"},
-                failure_class=missing_case_failure_class,
-                setup_instructions=missing_case_setup_instructions,
-                claim_boundary=claim_boundary,
-            )
-        )
-    return build_enzyme_mlir_compiler_ad_breadth_artifact(
-        artifact_id=artifact_id,
-        cases=tuple(rows),
-        isolated_benchmark_evidence=isolated_benchmark_evidence,
-        claim_boundary=claim_boundary,
-    )
-
-
-def build_enzyme_mlir_compiler_ad_breadth_evidence(
-    *,
-    artifact_id: str,
-    cases: Mapping[str, bool],
-    transform_modes: Sequence[str],
-    frontend_languages: Sequence[str],
-    isolated_benchmark_artifact_id: str,
-    max_abs_error: float,
-    runtime_seconds: float,
-    claim_boundary: str,
-) -> EnzymeMLIRCompilerADBreadthEvidence:
-    """Build validated Enzyme/MLIR compiler AD breadth evidence.
-
-    Parameters
-    ----------
-    artifact_id:
-        Stable identifier for the captured breadth evidence bundle.
-    cases:
-        Required breadth-case pass/fail map. It must cover every case in the
-        Enzyme/MLIR compiler AD breadth contract.
-    transform_modes:
-        Compiler AD transform modes covered by the captured evidence.
-    frontend_languages:
-        Frontend or IR surfaces represented by the evidence bundle.
-    isolated_benchmark_artifact_id:
-        Matching isolated benchmark artefact identifier.
-    max_abs_error:
-        Maximum absolute correctness error across the captured cases.
-    runtime_seconds:
-        Positive runtime for the captured evidence runner.
-    claim_boundary:
-        Explicit boundary that prevents breadth evidence from becoming a
-        provider, hardware, or fabricated performance claim.
-
-    Returns
-    -------
-    EnzymeMLIRCompilerADBreadthEvidence
-        Validated evidence ready for maturity-audit attachment.
-
-    Raises
-    ------
-    ValueError
-        If case coverage, transform modes, languages, benchmark linkage,
-        errors, runtime, or claim boundary are malformed.
-    """
-
-    return EnzymeMLIRCompilerADBreadthEvidence(
-        artifact_id=artifact_id,
-        cases=cases,
-        transform_modes=tuple(transform_modes),
-        frontend_languages=tuple(frontend_languages),
-        isolated_benchmark_artifact_id=isolated_benchmark_artifact_id,
-        max_abs_error=max_abs_error,
-        runtime_seconds=runtime_seconds,
-        claim_boundary=claim_boundary,
-    )
 
 
 def run_enzyme_mlir_maturity_audit(
