@@ -14,7 +14,7 @@
     "python_model_source_modules": 901,
     "rust_pyo3_model_wrappers": 137,
     "rust_source_modules": 38,
-    "test_files": 2107
+    "test_files": 2108
   },
   "documentation": {
     "examples": [
@@ -11821,6 +11821,7 @@
       "tests/test_realtime_feedback.py",
       "tests/test_realtime_feedback_fallback_branches.py",
       "tests/test_realtime_latency_scenarios.py",
+      "tests/test_realtime_latency_scenarios_branches.py",
       "tests/test_realtime_runtime_branches.py",
       "tests/test_reconcile_paper0_validation_coverage.py",
       "tests/test_regression_baselines.py",
