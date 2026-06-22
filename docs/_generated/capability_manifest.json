@@ -14,7 +14,7 @@
     "python_model_source_modules": 901,
     "rust_pyo3_model_wrappers": 137,
     "rust_source_modules": 38,
-    "test_files": 2104
+    "test_files": 2105
   },
   "documentation": {
     "examples": [
@@ -12309,6 +12309,7 @@
       "tests/test_s4_neutral_atom_preregistration.py",
       "tests/test_s4_provider_preregistration.py",
       "tests/test_sc_to_quantum.py",
+      "tests/test_sensing_branches.py",
       "tests/test_serialization_surface_audit.py",
       "tests/test_setup_isolated_benchmark_runner.py",
       "tests/test_shadow_tomography.py",

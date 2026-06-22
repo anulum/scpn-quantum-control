@@ -17,7 +17,7 @@
 | Notebook files | 98 |
 | Example files | 30 |
 | Optional extras | 42 |
-| Python test files | 2104 |
+| Python test files | 2105 |
 | Public documentation pages | 254 |
 | GitHub Actions workflows | 19 |
 
