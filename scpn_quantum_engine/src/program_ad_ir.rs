@@ -24,9 +24,9 @@ use serde_json::Value;
 const PROGRAM_AD_EFFECT_IR_FORMAT: &str = "program_ad_effect_ir.v1";
 const PROGRAM_AD_IR_CLAIM_BOUNDARY: &str = "metadata_only_no_program_execution";
 const PROGRAM_AD_RUST_INTERPRETER_CLAIM_BOUNDARY: &str =
-    "bounded_rust_program_ad_ir_scalar_primitives_executed_branch_view_alias_only_no_llvm_jit";
+    "bounded_rust_program_ad_ir_scalar_and_static_linalg_primitives_executed_branch_view_alias_only_no_llvm_jit";
 const PROGRAM_AD_RUST_VALUE_AND_GRADIENT_CLAIM_BOUNDARY: &str =
-    "bounded_rust_program_ad_ir_scalar_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit";
+    "bounded_rust_program_ad_ir_scalar_and_static_linalg_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit";
 
 /// One SSA value record from Python-emitted Program AD metadata.
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize)]
@@ -733,6 +733,31 @@ fn accumulate_reverse_effect(
             |value| value.signum(),
             "abs gradient is undefined at zero",
         ),
+        name if name.starts_with("linalg:trace:") => {
+            // d(trace)/d(diagonal element) = 1 for each on-diagonal operand.
+            for input in &effect.inputs {
+                add_adjoint(input, cotangent, values, adjoints)?;
+            }
+            Ok(())
+        }
+        "linalg:det:2x2" => {
+            // Cofactor adjoints for det = a*d - b*c: d/da = d, d/db = -c, d/dc = -b, d/dd = a.
+            if effect.inputs.len() != 4 {
+                return Err(format!(
+                    "effect {} linalg:det:2x2 requires four operands",
+                    effect.index
+                ));
+            }
+            let a = operand_value(&effect.inputs[0], values)?;
+            let b = operand_value(&effect.inputs[1], values)?;
+            let c = operand_value(&effect.inputs[2], values)?;
+            let d = operand_value(&effect.inputs[3], values)?;
+            add_adjoint(&effect.inputs[0], cotangent * d, values, adjoints)?;
+            add_adjoint(&effect.inputs[1], cotangent * (-c), values, adjoints)?;
+            add_adjoint(&effect.inputs[2], cotangent * (-b), values, adjoints)?;
+            add_adjoint(&effect.inputs[3], cotangent * a, values, adjoints)?;
+            Ok(())
+        }
         _ => Err(format!(
             "effect {} operation {operation} is outside bounded Rust scalar value+gradient replay",
             effect.index
@@ -915,6 +940,28 @@ fn evaluate_effect(
             "reciprocal input must be non-zero",
         ),
         "abs" => unary(effect, values, f64::abs),
+        name if name.starts_with("linalg:trace:") => {
+            // The trace opcode carries the on-diagonal element operands; its value is their sum.
+            let mut total = 0.0;
+            for input in &effect.inputs {
+                total += operand_value(input, values)?;
+            }
+            Ok(total)
+        }
+        "linalg:det:2x2" => {
+            // Row-major operands [a, b, c, d]; det = a*d - b*c.
+            if effect.inputs.len() != 4 {
+                return Err(format!(
+                    "effect {} linalg:det:2x2 requires four operands",
+                    effect.index
+                ));
+            }
+            let a = operand_value(&effect.inputs[0], values)?;
+            let b = operand_value(&effect.inputs[1], values)?;
+            let c = operand_value(&effect.inputs[2], values)?;
+            let d = operand_value(&effect.inputs[3], values)?;
+            Ok(a * d - b * c)
+        }
         _ => Err(format!(
             "effect {} operation {operation} is outside the bounded Rust scalar interpreter",
             effect.index

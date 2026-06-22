@@ -56,7 +56,7 @@ def test_value_and_gradient_bridge_is_shared_by_module_and_facade(
                 "effect_count": 4,
                 "supported_effect_count": 4,
                 "blocked_reasons": [],
-                "claim_boundary": "bounded_rust_program_ad_ir_scalar_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit",
+                "claim_boundary": "bounded_rust_program_ad_ir_scalar_and_static_linalg_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit",
             }
         )
 
@@ -108,7 +108,7 @@ def test_forward_interpreter_bridge_normalises_payload(
                 "effect_count": 3,
                 "supported_effect_count": 3,
                 "blocked_reasons": [],
-                "claim_boundary": "bounded_rust_program_ad_ir_scalar_primitives_executed_branch_view_alias_only_no_llvm_jit",
+                "claim_boundary": "bounded_rust_program_ad_ir_scalar_and_static_linalg_primitives_executed_branch_view_alias_only_no_llvm_jit",
             }
         )
 
@@ -152,7 +152,7 @@ def test_rust_program_ad_value_and_gradient_replay_matches_python_trace() -> Non
     assert rust_result.supported_effect_count == len(result.program_ir.effects)
     assert (
         rust_result.claim_boundary
-        == "bounded_rust_program_ad_ir_scalar_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit"
+        == "bounded_rust_program_ad_ir_scalar_and_static_linalg_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit"
     )
 
 
@@ -190,7 +190,7 @@ def test_rust_program_ad_value_and_gradient_replays_executed_branch_trace() -> N
     assert rust_result.supported_effect_count == len(result.program_ir.effects)
     assert (
         rust_result.claim_boundary
-        == "bounded_rust_program_ad_ir_scalar_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit"
+        == "bounded_rust_program_ad_ir_scalar_and_static_linalg_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit"
     )
 
 
@@ -246,7 +246,7 @@ def test_rust_program_ad_value_and_gradient_replays_scalar_primitive_family_trac
     assert rust_result.supported_effect_count == len(result.program_ir.effects)
     assert (
         rust_result.claim_boundary
-        == "bounded_rust_program_ad_ir_scalar_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit"
+        == "bounded_rust_program_ad_ir_scalar_and_static_linalg_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit"
     )
 
 
@@ -690,3 +690,46 @@ def test_bridge_fails_closed_on_mutation_alias_with_real_engine() -> None:
     rust = value_and_grad_program_ad_effect_ir_with_rust(result.program_ir, sample)
     assert rust.supported is False
     assert any("non-view alias" in reason for reason in rust.blocked_reasons)
+
+
+def _objective_trace_2x2(values: Any) -> Any:
+    return np.trace(np.reshape(values, (2, 2)))
+
+
+def _objective_det_2x2(values: Any) -> Any:
+    return np.linalg.det(np.reshape(values, (2, 2)))
+
+
+def test_bridge_replays_linalg_trace_with_real_engine() -> None:
+    """With the real engine, a 2x2 trace program replays bit-exact."""
+
+    pytest.importorskip("scpn_quantum_engine")
+    from scpn_quantum_control import program_adjoint_value_and_grad
+
+    sample = np.array([1.0, 2.0, 3.0, 4.0], dtype=np.float64)
+    result = whole_program_value_and_grad(_objective_trace_2x2, sample)
+    assert result.program_ir is not None
+    rust = value_and_grad_program_ad_effect_ir_with_rust(result.program_ir, sample)
+    if not rust.supported:
+        pytest.skip(f"installed engine lacks linalg:trace replay: {rust.blocked_reasons}")
+    _, reference = program_adjoint_value_and_grad(_objective_trace_2x2, sample)
+    np.testing.assert_array_equal(np.asarray(rust.gradient), reference)
+
+
+def test_bridge_replays_linalg_det_2x2_with_real_engine() -> None:
+    """With the real engine, a 2x2 determinant program replays within float64 tolerance."""
+
+    pytest.importorskip("scpn_quantum_engine")
+    from scpn_quantum_control import program_adjoint_value_and_grad
+
+    sample = np.array([2.0, 1.0, 1.0, 3.0], dtype=np.float64)
+    result = whole_program_value_and_grad(_objective_det_2x2, sample)
+    assert result.program_ir is not None
+    rust = value_and_grad_program_ad_effect_ir_with_rust(result.program_ir, sample)
+    if not rust.supported:
+        pytest.skip(f"installed engine lacks linalg:det replay: {rust.blocked_reasons}")
+    _, reference = program_adjoint_value_and_grad(_objective_det_2x2, sample)
+    np.testing.assert_allclose(np.asarray(rust.gradient), reference, atol=1.0e-12)
+    assert rust.claim_boundary.endswith(
+        "scalar_and_static_linalg_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit"
+    )
