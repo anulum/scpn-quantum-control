@@ -14,7 +14,7 @@
     "python_model_source_modules": 900,
     "rust_pyo3_model_wrappers": 137,
     "rust_source_modules": 38,
-    "test_files": 2100
+    "test_files": 2101
   },
   "documentation": {
     "examples": [
@@ -12346,6 +12346,7 @@
       "tests/test_synchronisation_benchmark_compare.py",
       "tests/test_synchronisation_benchmark_registry.py",
       "tests/test_synchronisation_compare_branches.py",
+      "tests/test_synchronisation_runner_branches.py",
       "tests/test_tcbo_observer.py",
       "tests/test_tcbo_observer_edge_cases.py",
       "tests/test_tcbo_reproduction_audit.py",
