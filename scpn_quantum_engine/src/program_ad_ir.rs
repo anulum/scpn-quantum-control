@@ -24,9 +24,9 @@ use serde_json::Value;
 const PROGRAM_AD_EFFECT_IR_FORMAT: &str = "program_ad_effect_ir.v1";
 const PROGRAM_AD_IR_CLAIM_BOUNDARY: &str = "metadata_only_no_program_execution";
 const PROGRAM_AD_RUST_INTERPRETER_CLAIM_BOUNDARY: &str =
-    "bounded_rust_program_ad_ir_scalar_primitives_executed_branch_no_alias_no_llvm_jit";
+    "bounded_rust_program_ad_ir_scalar_primitives_executed_branch_view_alias_only_no_llvm_jit";
 const PROGRAM_AD_RUST_VALUE_AND_GRADIENT_CLAIM_BOUNDARY: &str =
-    "bounded_rust_program_ad_ir_scalar_primitives_value_and_gradient_executed_branch_no_alias_no_llvm_jit";
+    "bounded_rust_program_ad_ir_scalar_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit";
 
 /// One SSA value record from Python-emitted Program AD metadata.
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize)]
@@ -297,6 +297,18 @@ fn validate_program_ad_effect_ir(ir: &ProgramADEffectIR) -> Result<(), String> {
     Ok(())
 }
 
+/// Return true if the IR carries an alias edge that is not an inert read-only view.
+///
+/// `view_alias` edges record reshape, transpose and slice views. The forward-AD trace has
+/// already resolved those views into canonical scalar SSA targets, so the scalar replay is
+/// unaffected: an op-effect that still referenced a view name would fail closed in
+/// [`operand_value`] rather than read a wrong value. Every other alias kind (mutation,
+/// control-path, rebinding, list) can change a value's content and stays outside the bounded
+/// scalar replay.
+fn has_non_view_alias(ir: &ProgramADEffectIR) -> bool {
+    ir.alias_edges.iter().any(|edge| edge.kind != "view_alias")
+}
+
 /// Interpret a scalar opcode-bearing Program AD IR payload in Rust.
 pub fn interpret_program_ad_effect_ir_forward(
     serialization: &str,
@@ -317,12 +329,12 @@ pub fn interpret_program_ad_effect_ir_forward(
             vec!["Rust Program AD interpreter inputs must be finite".to_owned()],
         ));
     }
-    if !ir.alias_edges.is_empty() {
+    if has_non_view_alias(&ir) {
         return Ok(ProgramADRustInterpreterResult::unsupported(
             ir.effects.len(),
             0,
             vec![
-                "alias-bearing Program AD IR is outside the bounded Rust scalar interpreter"
+                "non-view alias-bearing Program AD IR is outside the bounded Rust scalar interpreter"
                     .to_owned(),
             ],
         ));
@@ -518,12 +530,12 @@ fn evaluate_scalar_program_ad_ir<'a>(
             vec!["Rust Program AD value+gradient inputs must be finite".to_owned()],
         )));
     }
-    if !ir.alias_edges.is_empty() {
+    if has_non_view_alias(ir) {
         return Err(Box::new(ProgramADRustValueAndGradientResult::unsupported(
             ir.effects.len(),
             0,
             vec![
-                "alias-bearing Program AD IR is outside bounded Rust scalar value+gradient replay"
+                "non-view alias-bearing Program AD IR is outside bounded Rust scalar value+gradient replay"
                     .to_owned(),
             ],
         )));

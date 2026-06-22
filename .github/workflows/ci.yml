@@ -428,6 +428,8 @@ jobs:
           cargo install cargo-audit --locked --version 0.22.1
       - name: Audit Rust dependency advisories
         run: cargo audit --deny warnings
+      - name: Run Rust engine tests
+        run: cargo test --locked
 
   hardware-smoke:
     needs: test

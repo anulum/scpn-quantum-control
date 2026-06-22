@@ -24,9 +24,9 @@ import numpy as np
 from numpy.typing import NDArray
 
 _FORWARD_CLAIM_BOUNDARY = (
-    "bounded_rust_program_ad_ir_scalar_primitives_executed_branch_no_alias_no_llvm_jit"
+    "bounded_rust_program_ad_ir_scalar_primitives_executed_branch_view_alias_only_no_llvm_jit"
 )
-_VALUE_AND_GRAD_CLAIM_BOUNDARY = "bounded_rust_program_ad_ir_scalar_primitives_value_and_gradient_executed_branch_no_alias_no_llvm_jit"
+_VALUE_AND_GRAD_CLAIM_BOUNDARY = "bounded_rust_program_ad_ir_scalar_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit"
 
 
 class ProgramADEffectIRLike(Protocol):

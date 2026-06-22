@@ -247,7 +247,7 @@ fn program_ad_effect_ir_rust_interpreter_executes_opcode_bearing_scalar_subset()
     assert!((result.value.unwrap() - expected).abs() <= 1.0e-12);
     assert_eq!(
         result.claim_boundary,
-        "bounded_rust_program_ad_ir_scalar_primitives_executed_branch_no_alias_no_llvm_jit"
+        "bounded_rust_program_ad_ir_scalar_primitives_executed_branch_view_alias_only_no_llvm_jit"
     );
 }
 
@@ -265,7 +265,7 @@ fn program_ad_effect_ir_rust_interpreter_replays_executed_branch_metadata() {
     assert!((result.value.unwrap() - expected).abs() <= 1.0e-12);
     assert_eq!(
         result.claim_boundary,
-        "bounded_rust_program_ad_ir_scalar_primitives_executed_branch_no_alias_no_llvm_jit"
+        "bounded_rust_program_ad_ir_scalar_primitives_executed_branch_view_alias_only_no_llvm_jit"
     );
 }
 
@@ -289,7 +289,7 @@ fn program_ad_effect_ir_rust_value_and_gradient_replays_scalar_reverse_subset() 
     assert_eq!(result.parameter_targets, vec!["%0", "%1"]);
     assert_eq!(
         result.claim_boundary,
-        "bounded_rust_program_ad_ir_scalar_primitives_value_and_gradient_executed_branch_no_alias_no_llvm_jit"
+        "bounded_rust_program_ad_ir_scalar_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit"
     );
 }
 
@@ -313,7 +313,7 @@ fn program_ad_effect_ir_rust_value_and_gradient_replays_executed_branch_metadata
     assert_eq!(result.parameter_targets, vec!["%0", "%1"]);
     assert_eq!(
         result.claim_boundary,
-        "bounded_rust_program_ad_ir_scalar_primitives_value_and_gradient_executed_branch_no_alias_no_llvm_jit"
+        "bounded_rust_program_ad_ir_scalar_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit"
     );
 }
 
@@ -356,7 +356,7 @@ fn program_ad_effect_ir_rust_value_and_gradient_replays_scalar_primitive_family(
     assert_eq!(result.parameter_targets, vec!["%0", "%1", "%2", "%3"]);
     assert_eq!(
         result.claim_boundary,
-        "bounded_rust_program_ad_ir_scalar_primitives_value_and_gradient_executed_branch_no_alias_no_llvm_jit"
+        "bounded_rust_program_ad_ir_scalar_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit"
     );
 }
 
@@ -384,4 +384,81 @@ fn program_ad_effect_ir_rust_value_and_gradient_fails_closed_on_abs_cusp() {
     assert_eq!(result.value, None);
     assert!(result.gradient.is_empty());
     assert!(result.blocked_reasons[0].contains("abs gradient is undefined at zero"));
+}
+
+const INERT_VIEW_ALIAS_PROGRAM_AD_IR: &str = r#"{
+  "format": "program_ad_effect_ir.v1",
+  "ssa_values": [
+    {"name": "%0", "producer": 0, "version": 0, "shape": [], "dtype": "float64", "effect": 0},
+    {"name": "%1", "producer": 1, "version": 0, "shape": [], "dtype": "float64", "effect": 1},
+    {"name": "%2", "producer": 2, "version": 0, "shape": [], "dtype": "float64", "effect": 2},
+    {"name": "%3", "producer": 3, "version": 0, "shape": [], "dtype": "float64", "effect": 3},
+    {"name": "%4", "producer": 4, "version": 0, "shape": [], "dtype": "float64", "effect": 4}
+  ],
+  "effects": [
+    {"index": 0, "kind": "parameter", "target": "%0", "inputs": ["x"], "version": 0, "ordering": 0, "operation": "parameter"},
+    {"index": 1, "kind": "parameter", "target": "%1", "inputs": ["y"], "version": 0, "ordering": 1, "operation": "parameter"},
+    {"index": 2, "kind": "pure", "target": "%2", "inputs": ["%0", "%0"], "version": 0, "ordering": 2, "operation": "mul"},
+    {"index": 3, "kind": "pure", "target": "%3", "inputs": ["%1", "%1"], "version": 0, "ordering": 3, "operation": "mul"},
+    {"index": 4, "kind": "pure", "target": "%4", "inputs": ["%2", "%3"], "version": 0, "ordering": 4, "operation": "add"}
+  ],
+  "alias_edges": [
+    {"source": "%array[0]", "target": "view:reshape:0[0]", "kind": "view_alias", "version": 0}
+  ],
+  "control_regions": [],
+  "phi_nodes": [],
+  "bytecode_offsets": [0, 2]
+}"#;
+
+const MUTATION_ALIAS_PROGRAM_AD_IR: &str = r#"{
+  "format": "program_ad_effect_ir.v1",
+  "ssa_values": [
+    {"name": "%0", "producer": 0, "version": 0, "shape": [], "dtype": "float64", "effect": 0},
+    {"name": "%1", "producer": 1, "version": 0, "shape": [], "dtype": "float64", "effect": 1},
+    {"name": "%2", "producer": 2, "version": 0, "shape": [], "dtype": "float64", "effect": 2}
+  ],
+  "effects": [
+    {"index": 0, "kind": "parameter", "target": "%0", "inputs": ["x"], "version": 0, "ordering": 0, "operation": "parameter"},
+    {"index": 1, "kind": "parameter", "target": "%1", "inputs": ["y"], "version": 0, "ordering": 1, "operation": "parameter"},
+    {"index": 2, "kind": "pure", "target": "%2", "inputs": ["%0", "%1"], "version": 0, "ordering": 2, "operation": "mul"}
+  ],
+  "alias_edges": [
+    {"source": "%0", "target": "%0", "kind": "mutation_version", "version": 1}
+  ],
+  "control_regions": [],
+  "phi_nodes": [],
+  "bytecode_offsets": [0, 2]
+}"#;
+
+#[test]
+fn program_ad_effect_ir_rust_value_and_gradient_replays_inert_view_alias() {
+    // A reshape/transpose/slice view leaves an inert view_alias edge while the op-effects
+    // keep referencing canonical scalar SSA, so the bounded Rust replay stays exact.
+    let result =
+        interpret_program_ad_effect_ir_value_and_gradient(INERT_VIEW_ALIAS_PROGRAM_AD_IR, &[3.0, -2.0])
+            .unwrap();
+
+    assert!(result.supported);
+    assert!(result.blocked_reasons.is_empty());
+    assert!((result.value.unwrap() - 13.0_f64).abs() <= 1.0e-12);
+    assert_eq!(result.gradient.len(), 2);
+    assert!((result.gradient[0] - 6.0_f64).abs() <= 1.0e-12);
+    assert!((result.gradient[1] - (-4.0_f64)).abs() <= 1.0e-12);
+    assert_eq!(
+        result.claim_boundary,
+        "bounded_rust_program_ad_ir_scalar_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit"
+    );
+}
+
+#[test]
+fn program_ad_effect_ir_rust_value_and_gradient_fails_closed_on_mutation_alias() {
+    // Non-view alias kinds (here a mutation_version edge) can change a value's content and
+    // stay outside the bounded scalar replay.
+    let result =
+        interpret_program_ad_effect_ir_value_and_gradient(MUTATION_ALIAS_PROGRAM_AD_IR, &[2.0, 3.0])
+            .unwrap();
+
+    assert!(!result.supported);
+    assert!(result.gradient.is_empty());
+    assert!(result.blocked_reasons[0].contains("non-view alias-bearing"));
 }
