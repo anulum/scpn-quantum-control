@@ -14,7 +14,7 @@
     "python_model_source_modules": 900,
     "rust_pyo3_model_wrappers": 137,
     "rust_source_modules": 38,
-    "test_files": 2091
+    "test_files": 2092
   },
   "documentation": {
     "examples": [
@@ -11077,6 +11077,7 @@
       "tests/test_koopman_rust_generator_branches.py",
       "tests/test_krylov_complexity.py",
       "tests/test_kuramoto_core.py",
+      "tests/test_kuramoto_core_branches.py",
       "tests/test_kuramoto_variants.py",
       "tests/test_l16_director.py",
       "tests/test_layer_selective_comparator_matrix.py",
