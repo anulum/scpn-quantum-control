@@ -14,7 +14,7 @@
     "python_model_source_modules": 892,
     "rust_pyo3_model_wrappers": 137,
     "rust_source_modules": 38,
-    "test_files": 2072
+    "test_files": 2073
   },
   "documentation": {
     "examples": [
@@ -10338,6 +10338,7 @@
       "tests/test_backend_selector_contracts.py",
       "tests/test_behavioural_test_audit.py",
       "tests/test_bench_cli.py",
+      "tests/test_bench_cli_branches.py",
       "tests/test_bench_s2_scaling_lite.py",
       "tests/test_benchmark_harness_public.py",
       "tests/test_benchmark_harness_registry.py",
