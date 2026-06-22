@@ -14,7 +14,7 @@
     "python_model_source_modules": 898,
     "rust_pyo3_model_wrappers": 137,
     "rust_source_modules": 38,
-    "test_files": 2075
+    "test_files": 2076
   },
   "documentation": {
     "examples": [
@@ -11036,6 +11036,7 @@
       "tests/test_hardware_runner_contracts.py",
       "tests/test_hardware_topological_optimizer.py",
       "tests/test_hybrid_digital_analog.py",
+      "tests/test_hybrid_digital_analog_branches.py",
       "tests/test_hypothesis_properties.py",
       "tests/test_ibm_latency_probe.py",
       "tests/test_ibm_public_artifact_anonymizer.py",
