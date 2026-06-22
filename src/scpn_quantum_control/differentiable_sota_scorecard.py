@@ -400,11 +400,14 @@ def _default_scorecard_rows(
             "enzyme_compiler_ad",
             "Enzyme LLVM/MLIR AD over statically analyzable programs, reverse-mode compiler AD, "
             "GPU-kernel AD evidence, and compiler-native benchmarks.",
-            "Bounded native LLVM Enzyme scalar execution and MLIR maturity artefacts exist; raw breadth "
-            "artifacts, derived full breadth evidence, and isolated benchmark IDs remain open.",
+            "The real Enzyme/LLVM toolchain now executes reverse-mode AD over scalar, vector and "
+            "matrix C kernels with bit-exact gradients on the reference toolchain (2026-06-22 "
+            "slice 2a, captured as gated evidence when the toolchain is absent), alongside the "
+            "native LLVM scalar execution and MLIR maturity artefacts; operator breadth beyond "
+            "those kernel families and isolated benchmark IDs remain open.",
             ("external_framework_comparison", "phase_qnode_claim_boundary"),
             (
-                "11-case compiler-AD breadth evidence is incomplete",
+                "compiler-AD breadth beyond scalar/vector/matrix kernels is incomplete",
                 "isolated Enzyme/MLIR benchmark attachment is missing",
             ),
             ("Round 4 compiler AD and Program AD", "Round 6 benchmark promotion"),
@@ -413,13 +416,16 @@ def _default_scorecard_rows(
             "rust_native_program_ad",
             "Rust-native Program AD value and gradient replay, executed control-flow replay, "
             "array adjoints, registry metadata mirror, and safe PyO3 bindings.",
-            "Rust Program AD metadata parsing plus bounded scalar primitive-family forward/"
-            "value+gradient replay and executed runtime branch replay exist; array adjoints "
-            "and registry mirror remain open.",
+            "Rust Program AD now replays scalar primitives, view-aliasing (reshape, transpose, "
+            "slice, matmul, matvec) and static linear algebra of arbitrary dimension (trace, "
+            "determinant, inverse, solve; closed-form 2x2/3x3 and LU/Gauss-Jordan for 4x4 and up) "
+            "through the unrolled scalar SSA, parity-verified against the Python/NumPy reference "
+            "and CI-checked via cargo tests (2026-06-22 slices 2b-1..2b-6); a native ndarray "
+            "adjoint engine, registry metadata mirror and Rust-side LLVM/JIT lowering remain open.",
             ("phase_qnode_claim_boundary",),
             (
-                "array adjoints are missing",
-                "registry metadata mirror, LLVM/JIT lowering, and isolated benchmark evidence are missing",
+                "a native ndarray broadcast-adjoint engine beyond the unrolled scalar SSA is missing",
+                "registry metadata mirror, Rust-side LLVM/JIT lowering, and isolated benchmark evidence are missing",
             ),
             ("Round 4 compiler AD and Program AD", "Round 5 Rustification readiness"),
         ),

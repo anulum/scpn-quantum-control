@@ -243,7 +243,7 @@
         "diff-sota-scorecard-20260620"
       ],
       "blockers": [
-        "11-case compiler-AD breadth evidence is incomplete",
+        "compiler-AD breadth beyond scalar/vector/matrix kernels is incomplete",
         "isolated Enzyme/MLIR benchmark attachment is missing"
       ],
       "category": "enzyme_compiler_ad",
@@ -252,7 +252,7 @@
         "external_framework_comparison",
         "phase_qnode_claim_boundary"
       ],
-      "current_evidence": "Bounded native LLVM Enzyme scalar execution and MLIR maturity artefacts exist; raw breadth artifacts, derived full breadth evidence, and isolated benchmark IDs remain open.",
+      "current_evidence": "The real Enzyme/LLVM toolchain now executes reverse-mode AD over scalar, vector and matrix C kernels with bit-exact gradients on the reference toolchain (2026-06-22 slice 2a, captured as gated evidence when the toolchain is absent), alongside the native LLVM scalar execution and MLIR maturity artefacts; operator breadth beyond those kernel families and isolated benchmark IDs remain open.",
       "docs_surface": [
         "docs/differentiable_programming.md",
         "data/differentiable_phase_qnode/claim_ledger.md",
@@ -289,15 +289,15 @@
         "diff-sota-scorecard-20260620"
       ],
       "blockers": [
-        "array adjoints are missing",
-        "registry metadata mirror, LLVM/JIT lowering, and isolated benchmark evidence are missing"
+        "a native ndarray broadcast-adjoint engine beyond the unrolled scalar SSA is missing",
+        "registry metadata mirror, Rust-side LLVM/JIT lowering, and isolated benchmark evidence are missing"
       ],
       "category": "rust_native_program_ad",
       "claim_boundary": "Differentiable state-of-art scorecard governance only; the lane remains SOTA-candidate until category rows have promoted claim-ledger evidence, isolated benchmark artefacts, and external baseline comparisons.",
       "claim_ids": [
         "phase_qnode_claim_boundary"
       ],
-      "current_evidence": "Rust Program AD metadata parsing plus bounded scalar primitive-family forward/value+gradient replay and executed runtime branch replay exist; array adjoints and registry mirror remain open.",
+      "current_evidence": "Rust Program AD now replays scalar primitives, view-aliasing (reshape, transpose, slice, matmul, matvec) and static linear algebra of arbitrary dimension (trace, determinant, inverse, solve; closed-form 2x2/3x3 and LU/Gauss-Jordan for 4x4 and up) through the unrolled scalar SSA, parity-verified against the Python/NumPy reference and CI-checked via cargo tests (2026-06-22 slices 2b-1..2b-6); a native ndarray adjoint engine, registry metadata mirror and Rust-side LLVM/JIT lowering remain open.",
       "docs_surface": [
         "README.md",
         "docs/differentiable_programming.md",
@@ -516,65 +516,5 @@
     }
   ],
   "schema": "scpn_qc_differentiable_sota_scorecard_v1",
-  "total_category_count": 11,
-  "validation": {
-    "checked_categories": [
-      "jax_native_transforms",
-      "pytorch_autograd_compile",
-      "pennylane_qnode_device_plugin",
-      "qiskit_runtime_provider_gradients",
-      "catalyst_compiler_workflows",
-      "enzyme_compiler_ad",
-      "rust_native_program_ad",
-      "provider_hardware_gradients",
-      "benchmark_promotion",
-      "docs_api_maintainability",
-      "adoption_licensing"
-    ],
-    "checked_claim_ids": [
-      "ci_benchmark_evidence",
-      "external_framework_comparison",
-      "external_validation_artifact_bundle",
-      "hardening_slice_gate",
-      "module_hardening_audit",
-      "phase_qnode_claim_boundary",
-      "public_claim_table",
-      "support_surface_alignment"
-    ],
-    "checked_paths": [
-      ".github/workflows/ci.yml",
-      "README.md",
-      "data/differentiable_phase_qnode/claim_ledger.md",
-      "data/differentiable_phase_qnode/differentiable_sota_scorecard_20260620.md",
-      "data/differentiable_phase_qnode/external_validation_artifact_bundle_20260616.md",
-      "data/differentiable_phase_qnode/public_claim_table_20260616.md",
-      "docs/benchmarks_api.md",
-      "docs/differentiable_api.md",
-      "docs/differentiable_programming.md",
-      "scripts/run_differentiable_benchmark_evidence.py",
-      "src/scpn_quantum_control/benchmarks/differentiable_evidence.py",
-      "src/scpn_quantum_control/benchmarks/differentiable_external_comparison.py",
-      "src/scpn_quantum_control/benchmarks/differentiable_hardening_gate.py",
-      "src/scpn_quantum_control/differentiable_claim_ledger.py",
-      "src/scpn_quantum_control/differentiable_external_validation.py",
-      "src/scpn_quantum_control/differentiable_module_hardening_audit.py",
-      "src/scpn_quantum_control/phase/qnode_tape.py",
-      "src/scpn_quantum_control/phase/qnode_transforms.py",
-      "src/scpn_quantum_control/phase/qnode_vector_transforms.py",
-      "tests/test_differentiable_benchmark_evidence.py",
-      "tests/test_differentiable_benchmark_workflow.py",
-      "tests/test_differentiable_claim_ledger.py",
-      "tests/test_differentiable_external_comparisons.py",
-      "tests/test_differentiable_external_validation.py",
-      "tests/test_differentiable_hardening_gate.py",
-      "tests/test_differentiable_module_hardening_audit.py",
-      "tests/test_differentiable_sota_scorecard.py",
-      "tests/test_phase_qnode_tape.py",
-      "tests/test_phase_qnode_transforms.py",
-      "tests/test_phase_qnode_vector_transforms.py"
-    ],
-    "claim_boundary": "SOTA scorecard validation only; validates category coverage and claim-ledger consistency without promoting performance, provider, hardware, QPU, GPU, or isolated_affinity claims",
-    "errors": [],
-    "passed": true
-  }
+  "total_category_count": 11
 }
