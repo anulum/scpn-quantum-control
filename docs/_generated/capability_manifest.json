@@ -14,7 +14,7 @@
     "python_model_source_modules": 900,
     "rust_pyo3_model_wrappers": 137,
     "rust_source_modules": 38,
-    "test_files": 2082
+    "test_files": 2083
   },
   "documentation": {
     "examples": [
@@ -11741,6 +11741,7 @@
       "tests/test_q_disruption_iter_contract.py",
       "tests/test_qaoa_mpc.py",
       "tests/test_qaoa_pulsed_cost.py",
+      "tests/test_qaoa_pulsed_cost_branches.py",
       "tests/test_qasm_export.py",
       "tests/test_qcvv.py",
       "tests/test_qec_properties.py",
