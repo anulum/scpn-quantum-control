@@ -11,10 +11,10 @@
     "public_api_exports": 714,
     "public_documentation_pages": 254,
     "python_model_classes": 1840,
-    "python_model_source_modules": 892,
+    "python_model_source_modules": 893,
     "rust_pyo3_model_wrappers": 137,
     "rust_source_modules": 38,
-    "test_files": 2073
+    "test_files": 2074
   },
   "documentation": {
     "examples": [
@@ -469,7 +469,7 @@
       {
         "package": "compiler",
         "path": "src/scpn_quantum_control/compiler",
-        "python_modules": 4
+        "python_modules": 5
       },
       {
         "package": "control",
@@ -2615,11 +2615,11 @@
       },
       {
         "name": "ExecutableWholeProgramADBatchResult",
-        "path": "src/scpn_quantum_control/compiler/mlir.py"
+        "path": "src/scpn_quantum_control/compiler/mlir_whole_program_native.py"
       },
       {
         "name": "ExecutableWholeProgramADKernel",
-        "path": "src/scpn_quantum_control/compiler/mlir.py"
+        "path": "src/scpn_quantum_control/compiler/mlir_whole_program_native.py"
       },
       {
         "name": "ExecutionMode",
@@ -4427,7 +4427,7 @@
       },
       {
         "name": "NativeWholeProgramADKernel",
-        "path": "src/scpn_quantum_control/compiler/mlir.py"
+        "path": "src/scpn_quantum_control/compiler/mlir_whole_program_native.py"
       },
       {
         "name": "NaturalGradientConfig",
@@ -8315,7 +8315,7 @@
       },
       {
         "name": "WholeProgramADNativeLoweringReport",
-        "path": "src/scpn_quantum_control/compiler/mlir.py"
+        "path": "src/scpn_quantum_control/compiler/mlir_whole_program_native.py"
       },
       {
         "name": "WholeProgramADResult",
@@ -8536,6 +8536,7 @@
       "src/scpn_quantum_control/compiler/mlir_enzyme_evidence.py",
       "src/scpn_quantum_control/compiler/mlir_native_primitives.py",
       "src/scpn_quantum_control/compiler/mlir_records.py",
+      "src/scpn_quantum_control/compiler/mlir_whole_program_native.py",
       "src/scpn_quantum_control/config.py",
       "src/scpn_quantum_control/control/adaptive_branching.py",
       "src/scpn_quantum_control/control/closed_loop_analysis.py",
@@ -11025,6 +11026,7 @@
       "tests/test_hardware_result_pack_evidence.py",
       "tests/test_hardware_result_packs.py",
       "tests/test_hardware_runner.py",
+      "tests/test_hardware_runner_branches.py",
       "tests/test_hardware_runner_contracts.py",
       "tests/test_hardware_topological_optimizer.py",
       "tests/test_hybrid_digital_analog.py",
