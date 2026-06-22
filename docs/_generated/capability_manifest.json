@@ -14,7 +14,7 @@
     "python_model_source_modules": 901,
     "rust_pyo3_model_wrappers": 137,
     "rust_source_modules": 38,
-    "test_files": 2122
+    "test_files": 2123
   },
   "documentation": {
     "examples": [
@@ -12329,6 +12329,7 @@
       "tests/test_setup_isolated_benchmark_runner.py",
       "tests/test_shadow_tomography.py",
       "tests/test_snn_adapter.py",
+      "tests/test_snn_adapter_branches.py",
       "tests/test_snn_backward.py",
       "tests/test_snn_neurocore_e2e.py",
       "tests/test_sparse_hamiltonian.py",
