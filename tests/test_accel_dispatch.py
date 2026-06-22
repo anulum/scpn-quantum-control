@@ -514,3 +514,223 @@ class TestJuliaNegativePaths:
         theta_batch = np.zeros((3, 4))
         out = order_parameters_batch(theta_batch)
         np.testing.assert_allclose(out, np.ones(3), atol=1e-12)
+
+
+# ---------------------------------------------------------------------------
+# Order parameter gradient — analytic floor, parity, and dispatch
+# ---------------------------------------------------------------------------
+
+
+def _order_parameter_value(theta: np.ndarray) -> float:
+    """Reference scalar order parameter ``R = |<exp(i theta)>|``."""
+    return float(abs(np.mean(np.exp(1j * np.asarray(theta, dtype=np.float64)))))
+
+
+def _finite_difference_gradient(theta: np.ndarray, step: float = 1e-6) -> np.ndarray:
+    """Central-difference gradient of the order parameter for cross-checking."""
+    grad = np.zeros(theta.size, dtype=np.float64)
+    for j in range(theta.size):
+        plus = theta.astype(np.float64).copy()
+        minus = theta.astype(np.float64).copy()
+        plus[j] += step
+        minus[j] -= step
+        grad[j] = (_order_parameter_value(plus) - _order_parameter_value(minus)) / (2.0 * step)
+    return grad
+
+
+class TestPythonGradientFloor:
+    def test_matches_synchronisation_force_identity(self) -> None:
+        rng = np.random.default_rng(11)
+        theta = rng.uniform(-math.pi, math.pi, size=17)
+        grad = d._python_order_parameter_gradient(theta)
+        cos_mean = float(np.mean(np.cos(theta)))
+        sin_mean = float(np.mean(np.sin(theta)))
+        psi = math.atan2(sin_mean, cos_mean)
+        identity = np.sin(psi - theta) / theta.size
+        np.testing.assert_allclose(grad, identity, atol=1e-15)
+
+    @_GLOBAL_SETTINGS
+    @given(
+        n=st.integers(min_value=1, max_value=48),
+        seed=st.integers(min_value=0, max_value=2**31 - 1),
+    )
+    def test_matches_finite_difference(self, n: int, seed: int) -> None:
+        rng = np.random.default_rng(seed)
+        theta = rng.uniform(-math.pi, math.pi, size=n)
+        if _order_parameter_value(theta) < 1e-3:
+            return  # near-incoherent: ill-conditioned, excluded from the FD check
+        grad = d._python_order_parameter_gradient(theta)
+        np.testing.assert_allclose(grad, _finite_difference_gradient(theta), atol=1e-6)
+
+    @_GLOBAL_SETTINGS
+    @given(
+        n=st.integers(min_value=1, max_value=64),
+        seed=st.integers(min_value=0, max_value=2**31 - 1),
+    )
+    def test_gradient_sums_to_zero(self, n: int, seed: int) -> None:
+        # A global phase shift leaves R invariant, so the gradient sums to zero.
+        rng = np.random.default_rng(seed)
+        theta = rng.uniform(-math.pi, math.pi, size=n)
+        assert abs(float(np.sum(d._python_order_parameter_gradient(theta)))) < 1e-12
+
+    @_GLOBAL_SETTINGS
+    @given(
+        n=st.integers(min_value=2, max_value=64),
+        seed=st.integers(min_value=0, max_value=2**31 - 1),
+    )
+    def test_gradient_is_bounded_by_inverse_n(self, n: int, seed: int) -> None:
+        # |partial R / partial theta_j| = |sin(psi - theta_j)| / N <= 1/N everywhere,
+        # including arbitrarily close to the incoherent state.
+        rng = np.random.default_rng(seed)
+        theta = rng.uniform(-math.pi, math.pi, size=n)
+        grad = d._python_order_parameter_gradient(theta)
+        assert np.all(np.abs(grad) <= 1.0 / n + 1e-12)
+
+    def test_aligned_state_has_zero_gradient(self) -> None:
+        grad = d._python_order_parameter_gradient(np.full(8, 0.7))
+        np.testing.assert_allclose(grad, np.zeros(8), atol=1e-15)
+
+    def test_single_oscillator_has_zero_gradient(self) -> None:
+        grad = d._python_order_parameter_gradient(np.array([2.7]))
+        assert grad.shape == (1,)
+        assert abs(float(grad[0])) < 1e-15
+
+    def test_empty_input_returns_empty(self) -> None:
+        assert d._python_order_parameter_gradient(np.array([])).shape == (0,)
+
+    def test_exact_incoherent_state_returns_zero_subgradient(self) -> None:
+        # [0, pi, 0, -pi] gives C = S = 0 exactly (cos(+-pi) = -1; sin(pi), sin(-pi)
+        # are IEEE-exact negatives that cancel), so R = 0 and the zero subgradient
+        # is returned rather than a 0/0 NaN.
+        theta = np.array([0.0, math.pi, 0.0, -math.pi])
+        assert float(np.hypot(np.mean(np.cos(theta)), np.mean(np.sin(theta)))) == 0.0
+        grad = d._python_order_parameter_gradient(theta)
+        np.testing.assert_array_equal(grad, np.zeros(4))
+
+
+class TestRustGradientTier:
+    @_GLOBAL_SETTINGS
+    @given(
+        n=st.integers(min_value=1, max_value=64),
+        seed=st.integers(min_value=0, max_value=2**31 - 1),
+    )
+    def test_rust_matches_python_floor(self, n: int, seed: int) -> None:
+        engine = pytest.importorskip("scpn_quantum_engine")
+        if not callable(getattr(engine, "order_parameter_gradient", None)):
+            pytest.skip("scpn_quantum_engine.order_parameter_gradient unavailable")
+        rng = np.random.default_rng(seed)
+        theta = rng.uniform(-10 * math.pi, 10 * math.pi, size=n)
+        rust = d._rust_order_parameter_gradient(theta)
+        floor = d._python_order_parameter_gradient(theta)
+        np.testing.assert_allclose(rust, floor, atol=1e-12)
+
+    def test_partial_rust_engine_falls_through_to_python(
+        self,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        class PartialEngine:
+            pass
+
+        monkeypatch.setattr(d, "optional_rust_engine", lambda: PartialEngine())
+        disp = d.MultiLangDispatcher(
+            [
+                ("rust", d._rust_order_parameter_gradient),
+                ("python", d._python_order_parameter_gradient),
+            ],
+        )
+        out = disp(np.full(4, 0.7))
+        np.testing.assert_allclose(out, np.zeros(4), atol=1e-15)
+        assert disp.last_tier == "python"
+
+    def test_rust_engine_absence_raises_module_not_found(
+        self,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        monkeypatch.setattr(d, "optional_rust_engine", lambda: None)
+        with pytest.raises(ModuleNotFoundError, match="scpn_quantum_engine"):
+            d._rust_order_parameter_gradient(np.zeros(3))
+
+
+class TestJuliaGradientTier:
+    def test_julia_matches_python_floor(self) -> None:
+        pytest.importorskip("juliacall")
+        from scpn_quantum_control.accel.julia import order_parameter_gradient as julia_grad
+
+        rng = np.random.default_rng(20260622)
+        theta = rng.uniform(-math.pi, math.pi, size=9)
+        np.testing.assert_allclose(
+            julia_grad(theta),
+            d._python_order_parameter_gradient(theta),
+            atol=1e-10,
+        )
+
+    def test_julia_full_dispatch_reaches_julia_when_rust_disabled(
+        self,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        pytest.importorskip("juliacall")
+
+        def _sim_rust_gone(_theta: np.ndarray) -> np.ndarray:
+            raise ImportError("rust wheel simulated missing")
+
+        disp = d.MultiLangDispatcher(
+            [
+                ("rust", _sim_rust_gone),
+                ("julia", d._julia_order_parameter_gradient),
+                ("python", d._python_order_parameter_gradient),
+            ],
+        )
+        rng = np.random.default_rng(7)
+        theta = rng.uniform(0.0, 2 * math.pi, size=6)
+        out = disp(theta)
+        assert disp.last_tier == "julia"
+        np.testing.assert_allclose(out, d._python_order_parameter_gradient(theta), atol=1e-10)
+
+
+class TestGradientCrossTierAndDispatch:
+    @_GLOBAL_SETTINGS
+    @given(
+        n=st.integers(min_value=2, max_value=32),
+        seed=st.integers(min_value=0, max_value=2**31 - 1),
+    )
+    def test_all_available_tiers_agree(self, n: int, seed: int) -> None:
+        rng = np.random.default_rng(seed)
+        theta = rng.uniform(-math.pi, math.pi, size=n)
+        reference = d._python_order_parameter_gradient(theta)
+        for name, impl in d._ORDER_PARAMETER_GRADIENT_CHAIN:
+            try:
+                out = impl(theta)
+            except (ImportError, ModuleNotFoundError, RuntimeError):
+                continue
+            np.testing.assert_allclose(out, reference, atol=1e-10, err_msg=f"tier {name!r}")
+
+    def test_registry_contains_gradient(self) -> None:
+        out = d.dispatch("order_parameter_gradient", np.full(4, 0.3))
+        np.testing.assert_allclose(out, np.zeros(4), atol=1e-15)
+
+    def test_public_api_and_last_gradient_tier(self) -> None:
+        from scpn_quantum_control.accel import (
+            last_gradient_tier_used,
+            order_parameter_gradient,
+        )
+
+        rng = np.random.default_rng(99)
+        theta = rng.uniform(0.0, 2 * math.pi, size=24)
+        grad = order_parameter_gradient(theta)
+        assert grad.shape == (24,)
+        assert last_gradient_tier_used() in {"rust", "julia", "python"}
+
+    def test_gradient_chain_ends_with_python_floor(self) -> None:
+        assert d._ORDER_PARAMETER_GRADIENT_CHAIN[-1][0] == "python"
+
+
+class TestRustValueTierAbsence:
+    def test_rust_order_parameter_absence_raises_module_not_found(
+        self,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        # Mirrors the gradient-tier absence test so both Rust entry points cover
+        # the engine-missing branch deterministically on an engine-present host.
+        monkeypatch.setattr(d, "optional_rust_engine", lambda: None)
+        with pytest.raises(ModuleNotFoundError, match="scpn_quantum_engine"):
+            d._rust_order_parameter(np.zeros(3))

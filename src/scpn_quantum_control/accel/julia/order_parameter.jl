@@ -39,3 +39,31 @@ function order_parameters_batch(theta_batch::AbstractMatrix{<:Real})::Vector{Flo
     end
     return out
 end
+
+function order_parameter_gradient(theta::AbstractVector{<:Real})::Vector{Float64}
+    # Gradient ∂r/∂θ_j of the Kuramoto order parameter r = |<exp(i θ)>|.
+    # With C = <cos θ>, S = <sin θ> and r = hypot(C, S):
+    #     ∂r/∂θ_j = (S cos θ_j - C sin θ_j) / (N r) = (1/N) sin(ψ - θ_j),
+    # where ψ = atan2(S, C). The incoherent state r = 0 returns the zero subgradient.
+    n = length(theta)
+    out = Vector{Float64}(undef, n)
+    n == 0 && return out
+    c = 0.0
+    s = 0.0
+    @inbounds for k in 1:n
+        c += cos(Float64(theta[k]))
+        s += sin(Float64(theta[k]))
+    end
+    c /= n
+    s /= n
+    r = sqrt(c * c + s * s)
+    if r == 0.0
+        fill!(out, 0.0)
+        return out
+    end
+    scale = 1.0 / (n * r)
+    @inbounds for j in 1:n
+        out[j] = (s * cos(Float64(theta[j])) - c * sin(Float64(theta[j]))) * scale
+    end
+    return out
+end

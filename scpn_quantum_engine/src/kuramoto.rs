@@ -78,6 +78,47 @@ pub fn order_parameter_inner(theta: &[f64]) -> f64 {
     (re * re + im * im).sqrt() / n
 }
 
+/// Compute the gradient ∂R/∂θ of the Kuramoto order parameter R = (1/N)|Σ exp(i θ)|.
+///
+/// With C = ⟨cos θ⟩, S = ⟨sin θ⟩ and R = hypot(C, S):
+///   ∂R/∂θ_j = (S cos θ_j - C sin θ_j) / (N R) = (1/N) sin(ψ - θ_j),
+/// where ψ = atan2(S, C) is the mean phase. The incoherent state R = 0 has an
+/// undefined mean phase and returns the zero subgradient.
+#[pyfunction]
+pub fn order_parameter_gradient<'py>(
+    py: Python<'py>,
+    theta: PyReadonlyArray1<'_, f64>,
+) -> PyResult<Bound<'py, PyArray1<f64>>> {
+    let theta = validate_phase_vector(&theta, "theta")?;
+    let gradient = Array1::from_vec(order_parameter_gradient_inner(theta));
+    Ok(PyArray1::from_owned_array(py, gradient))
+}
+
+/// Pure Rust order parameter gradient (no PyO3).
+pub fn order_parameter_gradient_inner(theta: &[f64]) -> Vec<f64> {
+    let mut out = vec![0.0_f64; theta.len()];
+    if theta.is_empty() {
+        return out;
+    }
+    let (mut re, mut im) = (0.0_f64, 0.0_f64);
+    for &t in theta {
+        re += t.cos();
+        im += t.sin();
+    }
+    let count = theta.len() as f64;
+    let cos_mean = re / count;
+    let sin_mean = im / count;
+    let magnitude = (cos_mean * cos_mean + sin_mean * sin_mean).sqrt();
+    if magnitude == 0.0 {
+        return out;
+    }
+    let scale = 1.0 / (count * magnitude);
+    for (slot, &t) in out.iter_mut().zip(theta.iter()) {
+        *slot = (sin_mean * t.cos() - cos_mean * t.sin()) * scale;
+    }
+    out
+}
+
 fn validate_finite_slice(values: &[f64], name: &str) -> PyResult<()> {
     if values.iter().any(|value| !value.is_finite()) {
         return Err(pyo3::exceptions::PyValueError::new_err(format!(
@@ -636,6 +677,62 @@ mod tests {
         let theta = vec![2.7];
         let r = order_parameter_inner(&theta);
         assert!((r - 1.0).abs() < 1e-12, "single oscillator → R = 1");
+    }
+
+    #[test]
+    fn test_order_parameter_gradient_matches_finite_difference() {
+        let theta = vec![0.1, 0.5, 1.2, 2.5, 3.8, 5.0];
+        let grad = order_parameter_gradient_inner(&theta);
+        let h = 1e-6;
+        for j in 0..theta.len() {
+            let mut plus = theta.clone();
+            let mut minus = theta.clone();
+            plus[j] += h;
+            minus[j] -= h;
+            let fd = (order_parameter_inner(&plus) - order_parameter_inner(&minus)) / (2.0 * h);
+            assert!((grad[j] - fd).abs() < 1e-7, "grad[{j}]={} fd={fd}", grad[j]);
+        }
+    }
+
+    #[test]
+    fn test_order_parameter_gradient_matches_sync_force_identity() {
+        // ∂R/∂θ_j = (1/N) sin(ψ - θ_j) with ψ = atan2(S, C).
+        let theta = vec![0.3, -1.1, 2.0, 0.7, 4.2];
+        let grad = order_parameter_gradient_inner(&theta);
+        let n = theta.len() as f64;
+        let cos_mean: f64 = theta.iter().map(|t| t.cos()).sum::<f64>() / n;
+        let sin_mean: f64 = theta.iter().map(|t| t.sin()).sum::<f64>() / n;
+        let psi = sin_mean.atan2(cos_mean);
+        for (j, &t) in theta.iter().enumerate() {
+            let expected = (psi - t).sin() / n;
+            assert!((grad[j] - expected).abs() < 1e-12);
+        }
+    }
+
+    #[test]
+    fn test_order_parameter_gradient_sums_to_zero() {
+        // A global phase shift leaves R invariant, so the gradient sums to zero.
+        let theta = vec![0.1, 0.9, 2.3, 3.1, 5.5, 6.0];
+        let total: f64 = order_parameter_gradient_inner(&theta).iter().sum();
+        assert!(total.abs() < 1e-12, "gradient sum = {total}");
+    }
+
+    #[test]
+    fn test_order_parameter_gradient_aligned_is_zero() {
+        let grad = order_parameter_gradient_inner(&[0.7; 8]);
+        assert!(grad.iter().all(|g| g.abs() < 1e-12));
+    }
+
+    #[test]
+    fn test_order_parameter_gradient_single_is_zero() {
+        let grad = order_parameter_gradient_inner(&[2.7]);
+        assert_eq!(grad.len(), 1);
+        assert!(grad[0].abs() < 1e-12, "single oscillator → ∂R/∂θ = 0");
+    }
+
+    #[test]
+    fn test_order_parameter_gradient_empty() {
+        assert!(order_parameter_gradient_inner(&[]).is_empty());
     }
 
     #[test]

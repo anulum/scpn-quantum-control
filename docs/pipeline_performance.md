@@ -1320,6 +1320,53 @@ a smaller FFI overhead), update the chain comment at the top of
 `_ORDER_PARAMETER_CHAIN` in
 `src/scpn_quantum_control/accel/dispatcher.py` to match.
 
+### `order_parameter_gradient(theta)`
+
+Gradient of the order parameter, `∂r/∂θ_j = (1/N) sin(ψ − θ_j)` with
+mean phase `ψ`. Measured 2026-06-22 on the local Linux runner (Intel
+i5-11600K @ 3.90 GHz, Python 3.12.3, juliacall, scpn-quantum-engine
+local build). Inner loop: 100 calls per sample × 7 samples; reported
+value is the per-call median. Raw JSON:
+`docs/benchmarks/order_parameter_gradient_tiers.json`.
+
+|     N |      Rust |    Julia |   Python |
+|------:|----------:|---------:|---------:|
+|     4 |   1.18 µs | 14.86 µs | 18.27 µs |
+|    16 |   1.18 µs | 13.76 µs | 16.42 µs |
+|    64 |   2.12 µs | 19.16 µs | 22.87 µs |
+|   256 |   6.68 µs | 37.40 µs | 20.39 µs |
+|  1024 |  22.94 µs | 41.92 µs | 44.45 µs |
+|  4096 | 124.24 µs | 284.09 µs | 227.41 µs |
+| 16384 | 651.37 µs | 904.09 µs | 902.60 µs |
+
+Read-offs:
+
+* Rust wins at every measured N (15.5× faster than Python at N = 4,
+  1.39× at N = 16 384), so the dispatcher places it first — matching
+  measurement.
+* Julia and the Python floor are close for the gradient: Julia is
+  ahead for small N (the gradient's extra per-element trigonometry
+  amortises the FFI crossing sooner than the scalar value does), but
+  the Python floor overtakes at N = 256 and N = 4096 where NumPy's
+  vectorised `cos`/`sin` is competitive. The chain still places Julia
+  before the Python floor, consistent with the value chain: it is the
+  "some acceleration when Rust is unavailable" default, and callers
+  who cannot use the Rust tier and run mid-sized inputs should import
+  `_python_order_parameter_gradient` directly.
+* The gradient touches the same per-oscillator `cos`/`sin` work as the
+  scalar value plus one fused multiply-add per element, so its tier
+  ordering tracks the value chain (Rust → Julia → Python).
+
+Re-run with:
+
+```bash
+python scripts/bench_order_parameter_gradient_tiers.py
+```
+
+If the measured ordering changes, update the chain comment at
+`_ORDER_PARAMETER_GRADIENT_CHAIN` in
+`src/scpn_quantum_control/accel/dispatcher.py` to match.
+
 ### S4 multi-hardware readiness
 
 Command:

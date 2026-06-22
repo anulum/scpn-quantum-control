@@ -147,6 +147,58 @@ _ORDER_PARAMETER_CHAIN: list[tuple[str, Callable[[NDArray[np.float64]], float]]]
 ]
 
 
+def _rust_order_parameter_gradient(theta: NDArray[np.float64]) -> NDArray[np.float64]:
+    engine = optional_rust_engine()
+    if engine is None:
+        raise ModuleNotFoundError("scpn_quantum_engine")
+    rust_grad = getattr(engine, "order_parameter_gradient", None)
+    if not callable(rust_grad):
+        raise ImportError("scpn_quantum_engine.order_parameter_gradient is unavailable")
+
+    return np.asarray(rust_grad(np.ascontiguousarray(theta, dtype=np.float64)), dtype=np.float64)
+
+
+def _julia_order_parameter_gradient(theta: NDArray[np.float64]) -> NDArray[np.float64]:
+    from .julia import order_parameter_gradient as julia_grad
+
+    return julia_grad(theta)
+
+
+def _python_order_parameter_gradient(theta: NDArray[np.float64]) -> NDArray[np.float64]:
+    # Correctness floor — analytic gradient of r = |<exp(i θ)>| with respect to
+    # each phase, no acceleration. With C = <cos θ>, S = <sin θ> and r = hypot(C, S):
+    #     ∂r/∂θ_j = (S cos θ_j - C sin θ_j) / (N r) = (1/N) sin(ψ - θ_j),
+    # where ψ = atan2(S, C) is the mean phase. At the incoherent state r = 0 the mean
+    # phase is undefined, so the gradient is the zero subgradient there.
+    phases = np.ascontiguousarray(theta, dtype=np.float64)
+    count = phases.size
+    if count == 0:
+        return np.zeros(0, dtype=np.float64)
+    cos_mean = float(np.mean(np.cos(phases)))
+    sin_mean = float(np.mean(np.sin(phases)))
+    magnitude = float(np.hypot(cos_mean, sin_mean))
+    if magnitude == 0.0:
+        return np.zeros(count, dtype=np.float64)
+    gradient = (sin_mean * np.cos(phases) - cos_mean * np.sin(phases)) / (count * magnitude)
+    return np.ascontiguousarray(gradient, dtype=np.float64)
+
+
+# Ordering for order_parameter_gradient mirrors the order_parameter value chain
+# (Rust -> Julia -> Python floor); the gradient touches the same per-oscillator
+# trigonometric work, so the measured value ordering carries over. The dedicated
+# gradient micro-benchmark is recorded in
+# ``docs/benchmarks/order_parameter_gradient_tiers.json`` and summarised in
+# ``docs/pipeline_performance.md``. Rerun
+# ``python scripts/bench_order_parameter_gradient_tiers.py`` when this chain is edited.
+_ORDER_PARAMETER_GRADIENT_CHAIN: list[
+    tuple[str, Callable[[NDArray[np.float64]], NDArray[np.float64]]]
+] = [
+    ("rust", _rust_order_parameter_gradient),
+    ("julia", _julia_order_parameter_gradient),
+    ("python", _python_order_parameter_gradient),
+]
+
+
 # ---------------------------------------------------------------------------
 # Dispatcher
 # ---------------------------------------------------------------------------
@@ -216,6 +268,7 @@ class MultiLangDispatcher:
 # ---------------------------------------------------------------------------
 
 _order_parameter_dispatcher = MultiLangDispatcher(_ORDER_PARAMETER_CHAIN)
+_order_parameter_gradient_dispatcher = MultiLangDispatcher(_ORDER_PARAMETER_GRADIENT_CHAIN)
 
 
 def order_parameter(theta: NDArray[np.float64]) -> float:
@@ -227,9 +280,43 @@ def order_parameter(theta: NDArray[np.float64]) -> float:
     return float(_order_parameter_dispatcher(theta))
 
 
+def order_parameter_gradient(theta: NDArray[np.float64]) -> NDArray[np.float64]:
+    r"""Gradient of the Kuramoto order parameter with multi-language dispatch.
+
+    Returns :math:`\partial r / \partial \theta_j` for the order parameter
+    :math:`r = |\langle e^{i\theta} \rangle|`, where each component is the
+    synchronisation force :math:`(1/N)\sin(\psi - \theta_j)` pulling oscillator
+    ``j`` towards the mean phase :math:`\psi`. At the incoherent state
+    (:math:`r = 0`) the mean phase is undefined and the zero subgradient is
+    returned.
+
+    Parameters
+    ----------
+    theta : numpy.ndarray
+        One-dimensional array of oscillator phases in radians.
+
+    Returns
+    -------
+    numpy.ndarray
+        One-dimensional float64 array of the same length as ``theta`` holding
+        the per-phase gradient. An empty input yields an empty array.
+
+    Notes
+    -----
+    Chain (measured fastest first): Rust → Julia → Python floor. The served
+    tier is recorded on :func:`last_gradient_tier_used`.
+    """
+    return np.asarray(_order_parameter_gradient_dispatcher(theta), dtype=np.float64)
+
+
 def last_tier_used() -> str | None:
     """Return the tier that served the most recent ``order_parameter``."""
     return _order_parameter_dispatcher.last_tier
+
+
+def last_gradient_tier_used() -> str | None:
+    """Return the tier that served the most recent ``order_parameter_gradient``."""
+    return _order_parameter_gradient_dispatcher.last_tier
 
 
 # ---------------------------------------------------------------------------
@@ -238,6 +325,7 @@ def last_tier_used() -> str | None:
 
 _REGISTRY: dict[str, MultiLangDispatcher] = {
     "order_parameter": _order_parameter_dispatcher,
+    "order_parameter_gradient": _order_parameter_gradient_dispatcher,
 }
 
 
@@ -253,6 +341,8 @@ __all__ = [
     "MultiLangDispatcher",
     "available_tiers",
     "dispatch",
+    "last_gradient_tier_used",
     "last_tier_used",
     "order_parameter",
+    "order_parameter_gradient",
 ]

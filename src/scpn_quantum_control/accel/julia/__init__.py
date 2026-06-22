@@ -79,8 +79,27 @@ def order_parameters_batch(theta_batch: NDArray[np.float64]) -> NDArray[np.float
     return np.asarray(jl.order_parameters_batch(arr), dtype=np.float64)
 
 
+def order_parameter_gradient(theta: NDArray[np.float64]) -> NDArray[np.float64]:
+    """Julia-tier gradient of the Kuramoto order parameter.
+
+    Parameters
+    ----------
+    theta : numpy.ndarray
+        One-dimensional array of oscillator phases in radians.
+
+    Returns
+    -------
+    numpy.ndarray
+        One-dimensional float64 array of per-phase gradient components.
+    """
+    jl = _load()
+    arr = np.ascontiguousarray(theta, dtype=np.float64)
+    return np.asarray(jl.order_parameter_gradient(arr), dtype=np.float64)
+
+
 __all__ = [
     "is_available",
     "order_parameter",
+    "order_parameter_gradient",
     "order_parameters_batch",
 ]

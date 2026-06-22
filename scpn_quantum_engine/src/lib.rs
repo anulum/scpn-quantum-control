@@ -77,6 +77,7 @@ fn scpn_quantum_engine(m: &Bound<'_, PyModule>) -> PyResult<()> {
     // Kuramoto
     m.add_function(wrap_pyfunction!(kuramoto::kuramoto_euler, m)?)?;
     m.add_function(wrap_pyfunction!(kuramoto::order_parameter, m)?)?;
+    m.add_function(wrap_pyfunction!(kuramoto::order_parameter_gradient, m)?)?;
     m.add_function(wrap_pyfunction!(kuramoto::kuramoto_trajectory, m)?)?;
     m.add_function(wrap_pyfunction!(
         kuramoto::higher_order_kuramoto_trajectory,

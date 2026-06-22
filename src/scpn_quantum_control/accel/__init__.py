@@ -38,16 +38,20 @@ from .dispatcher import (
     MultiLangDispatcher,
     available_tiers,
     dispatch,
+    last_gradient_tier_used,
     last_tier_used,
     order_parameter,
+    order_parameter_gradient,
 )
 
 __all__ = [
     "MultiLangDispatcher",
     "available_tiers",
     "dispatch",
+    "last_gradient_tier_used",
     "last_tier_used",
     "order_parameter",
+    "order_parameter_gradient",
 ]
 
 import numpy as np
