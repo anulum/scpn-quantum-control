@@ -14,7 +14,7 @@
     "python_model_source_modules": 891,
     "rust_pyo3_model_wrappers": 137,
     "rust_source_modules": 38,
-    "test_files": 2066
+    "test_files": 2067
   },
   "documentation": {
     "examples": [
@@ -10926,6 +10926,7 @@
       "tests/test_dla_parity_schema.py",
       "tests/test_dla_parity_theorem.py",
       "tests/test_dla_protected_scar.py",
+      "tests/test_dla_protected_scar_branches.py",
       "tests/test_dla_protected_subspace.py",
       "tests/test_dla_protected_subspace_branches.py",
       "tests/test_doc_claim_boundaries.py",
