@@ -14,7 +14,7 @@
     "python_model_source_modules": 902,
     "rust_pyo3_model_wrappers": 137,
     "rust_source_modules": 38,
-    "test_files": 2131
+    "test_files": 2135
   },
   "documentation": {
     "examples": [
@@ -10380,6 +10380,7 @@
       "tests/test_biological_diagnostics.py",
       "tests/test_biological_diagnostics_internals.py",
       "tests/test_biological_pipeline.py",
+      "tests/test_biological_pipeline_branches.py",
       "tests/test_biological_surface_code.py",
       "tests/test_biological_surface_code_branches.py",
       "tests/test_bkt_analysis.py",
@@ -11800,6 +11801,8 @@
       "tests/test_qpetri_branches.py",
       "tests/test_qpetri_superposition.py",
       "tests/test_qpu_compute.py",
+      "tests/test_qpu_compute_cli_branch.py",
+      "tests/test_qpu_compute_runtime_branches.py",
       "tests/test_qpu_compute_types_guards.py",
       "tests/test_qpu_data_artifact.py",
       "tests/test_qpu_data_artifact_branches.py",
@@ -12357,6 +12360,7 @@
       "tests/test_ssgf_16osc.py",
       "tests/test_ssgf_adapter.py",
       "tests/test_ssgf_quantum_gradient.py",
+      "tests/test_ssgf_quantum_spectral_branches.py",
       "tests/test_ssgf_spectral.py",
       "tests/test_ssgf_w_adapter.py",
       "tests/test_stable_core.py",
