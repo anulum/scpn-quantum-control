@@ -14,7 +14,7 @@
     "python_model_source_modules": 901,
     "rust_pyo3_model_wrappers": 137,
     "rust_source_modules": 38,
-    "test_files": 2123
+    "test_files": 2124
   },
   "documentation": {
     "examples": [
@@ -10351,6 +10351,7 @@
       "tests/test_automate_paper0_promotion_slice.py",
       "tests/test_avqds.py",
       "tests/test_backend_dispatch.py",
+      "tests/test_backend_dispatch_branches.py",
       "tests/test_backend_dispatch_integration.py",
       "tests/test_backend_registry.py",
       "tests/test_backend_selector.py",
