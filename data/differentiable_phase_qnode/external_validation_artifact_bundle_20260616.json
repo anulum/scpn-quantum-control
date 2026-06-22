@@ -24,14 +24,14 @@
     {
       "path": "data/differentiable_phase_qnode/differentiable_sota_scorecard_20260620.json",
       "role": "Differentiable SOTA category scorecard artefact",
-      "sha256": "5364b173b066094d3d93da4998420fb6be1fa7aa61f9d9f245b88fb3a360e2b1",
-      "size_bytes": 28112
+      "sha256": "a8c20f29ca5d91057c274019d89ca728a01f5dfb9e9b0c6aa46f3b68943a52fd",
+      "size_bytes": 25978
     },
     {
       "path": "data/differentiable_phase_qnode/differentiable_sota_scorecard_20260620.md",
       "role": "Differentiable SOTA category scorecard reviewer summary",
-      "sha256": "254fbc085d4a4bfc8ddd0b800c98af64d589e9d70a1e702f43bbe53a8d22d49b",
-      "size_bytes": 7486
+      "sha256": "5c4e8b6b493f308746fe881d90741ab29a8ae90973af40f4b1125dc929e6d3fe",
+      "size_bytes": 8097
     },
     {
       "path": "data/differentiable_phase_qnode/differentiable_rust_python_inventory_20260620.json",
@@ -112,29 +112,5 @@
       "size_bytes": 424
     }
   ],
-  "schema": "scpn_qc_differentiable_external_validation_artifact_bundle_v1",
-  "validation": {
-    "checked_paths": [
-      "data/differentiable_phase_qnode/claim_ledger.json",
-      "data/differentiable_phase_qnode/claim_ledger.md",
-      "data/differentiable_phase_qnode/public_claim_table_20260616.md",
-      "data/differentiable_phase_qnode/differentiable_sota_scorecard_20260620.json",
-      "data/differentiable_phase_qnode/differentiable_sota_scorecard_20260620.md",
-      "data/differentiable_phase_qnode/differentiable_rust_python_inventory_20260620.json",
-      "data/differentiable_phase_qnode/differentiable_rust_python_inventory_20260620.md",
-      "data/differentiable_phase_qnode/external_validation_environment_lock_20260616.json",
-      "data/differentiable_phase_qnode/external_validation_environment_lock_20260616.md",
-      "data/differentiable_phase_qnode/domain_benchmark_dataset_closure_20260616.json",
-      "data/differentiable_phase_qnode/identical_circuit_gradient_comparison_20260616.json",
-      "data/differentiable_phase_qnode/torch_maturity_audit_20260616.json",
-      "data/differentiable_phase_qnode/enzyme_mlir_maturity_audit_20260616.json",
-      "data/differentiable_phase_qnode/local_benchmark_20260616T0955Z/README.md",
-      "data/differentiable_phase_qnode/local_benchmark_20260616T0955Z/diff-qnode-ci-evidence-schema-v1.json",
-      "data/differentiable_phase_qnode/local_benchmark_20260616T0955Z/diff-qnode-external-comparison.json",
-      "data/differentiable_phase_qnode/local_benchmark_20260616T0955Z/phase_qnode_affinity.json",
-      "data/differentiable_phase_qnode/local_benchmark_20260616T0955Z/host_readiness.json"
-    ],
-    "errors": [],
-    "passed": true
-  }
+  "schema": "scpn_qc_differentiable_external_validation_artifact_bundle_v1"
 }
