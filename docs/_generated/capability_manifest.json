@@ -14,7 +14,7 @@
     "python_model_source_modules": 901,
     "rust_pyo3_model_wrappers": 137,
     "rust_source_modules": 38,
-    "test_files": 2118
+    "test_files": 2119
   },
   "documentation": {
     "examples": [
@@ -11096,6 +11096,7 @@
       "tests/test_kuramoto_core_branches.py",
       "tests/test_kuramoto_variants.py",
       "tests/test_l16_director.py",
+      "tests/test_lattice_branches.py",
       "tests/test_layer_selective_comparator_matrix.py",
       "tests/test_layer_selective_readiness.py",
       "tests/test_lean_phase_import.py",
