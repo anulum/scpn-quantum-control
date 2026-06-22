@@ -5,7 +5,10 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Phase QNode Circuit Registry
-"""Bounded statevector Phase-QNode circuit execution and support reports."""
+"""Bounded statevector Phase-QNode circuit execution and support reports.
+
+Module size note: this module is intentionally kept whole. Its top-level definitions form a single connected QNode-circuit cluster, so it is sized by responsibility rather than line count. See ``docs/architecture.md`` ("Module size and single-responsibility policy").
+"""
 
 from __future__ import annotations
 

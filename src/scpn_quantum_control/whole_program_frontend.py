@@ -12,6 +12,8 @@ bytecode rows, source-region summaries, symbol scopes, semantic diagnostics,
 and deterministic report digests. Runtime operator interception remains in
 ``scpn_quantum_control.differentiable``; this module is the static preflight
 boundary used by that facade and by package-root exports.
+
+Module size note: this module is intentionally kept whole. Its top-level definitions form a single connected compiler-frontend cluster, so it is sized by responsibility rather than line count. See ``docs/architecture.md`` ("Module size and single-responsibility policy").
 """
 
 from __future__ import annotations

@@ -24,6 +24,46 @@ The architecture intentionally separates:
 This split is why the same repository can support both reproducible research
 workflows and integration-oriented development.
 
+## Module size and single-responsibility policy
+
+Module boundaries in this codebase are governed by **single responsibility, not line
+count**. A file is split when it holds two or more *independent* responsibility clusters;
+a file whose definitions form a single connected, mutually-coupled dependency cluster is
+kept whole, because splitting it would introduce artificial seams or import cycles without
+improving cohesion. Line-count thresholds are treated as a prompt to ask "is this still one
+thing?", not as an automatic limit.
+
+The test is structural. Each module's internal call graph (top-level definition to
+referenced top-level definition) is decomposed into connected components; a second pass
+removes the most-referenced shared symbols to confirm the remaining definitions are still
+one cluster rather than independent groups joined by a single shared helper. The
+`compiler` package was decomposed on exactly this basis: the former `mlir` module mixed
+records, lowering logic, text builders, validation, native lowering, evidence adapters and
+the public facade — seven independent concerns — and was split into a thin facade plus
+cohesive leaves (`mlir_records`, `mlir_executable_kernel`, `mlir_native_primitives`, the
+`mlir_*_native_compilation` operand-class leaves, `mlir_whole_program_native` and its
+`mlir_whole_program_emitter` engine, `mlir_enzyme_evidence`).
+
+The following modules are **intentionally retained at their current size** because each is
+a single connected responsibility cluster. They are deliberate architecture, not pending
+refactors:
+
+| Module | Single responsibility | Why it stays whole |
+|--------|-----------------------|--------------------|
+| `whole_program_trace_values.py` | Operator-intercepted forward-AD trace value runtime (`TraceADScalar`/`TraceADArray` and helpers) | Mutually recursive; splitting creates import cycles |
+| `phase/jax_bridge.py` | JAX bridge: lowering, transform algebra and maturity audits | One connected cluster around shared coercion helpers |
+| `phase/torch_bridge.py` | Torch bridge: training-loop, ecosystem and maturity audits | One connected cluster |
+| `benchmarks/differentiable_programming.py` | Differentiable-programming benchmark suite | Cases share one case/result-record framework |
+| `program_ad_linalg_primitives.py` | Program-AD linear-algebra primitive rules and conditioning diagnostics | One dominant cluster; satellites are registry-dispatched rules |
+| `hardware/provider_capability_discovery.py` | Per-provider capability snapshot extraction | One discovery framework shared across providers |
+| `phase/qnode_circuit.py` | Phase QNode circuit support, gate matrices and parameter-shift planning | One dominant cluster plus registry accessors |
+| `whole_program_frontend.py` | Whole-program compiler frontend report and assembly | One connected cluster |
+| `program_ad_assembly_primitives.py` | Program-AD assembly primitive rules (stack/concat/triu/tril) | One dominant cluster |
+
+A reviewer encountering one of these files will find the same statement in its module
+docstring. An entry is re-opened only if a future change makes the module mix an
+additional, independent responsibility.
+
 ## Package Statistics (v0.9.8)
 
 | Metric | Count |

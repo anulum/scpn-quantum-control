@@ -5,7 +5,10 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # scpn-quantum-control -- Program AD linalg primitive rules
-"""Static linear-algebra derivative rules and registry contracts for Program AD."""
+"""Static linear-algebra derivative rules and registry contracts for Program AD.
+
+Module size note: this module is intentionally kept whole. Its top-level definitions form a single connected linear-algebra primitive-rule cluster, so it is sized by responsibility rather than line count. See ``docs/architecture.md`` ("Module size and single-responsibility policy").
+"""
 
 from __future__ import annotations
 

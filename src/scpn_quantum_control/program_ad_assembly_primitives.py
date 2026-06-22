@@ -5,7 +5,10 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # scpn-quantum-control -- Program AD assembly registry primitives
-"""Program AD assembly derivative factories and registry contracts."""
+"""Program AD assembly derivative factories and registry contracts.
+
+Module size note: this module is intentionally kept whole. Its top-level definitions form a single connected assembly primitive-rule cluster, so it is sized by responsibility rather than line count. See ``docs/architecture.md`` ("Module size and single-responsibility policy").
+"""
 
 from __future__ import annotations
 
