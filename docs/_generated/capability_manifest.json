@@ -14,7 +14,7 @@
     "python_model_source_modules": 902,
     "rust_pyo3_model_wrappers": 137,
     "rust_source_modules": 38,
-    "test_files": 2127
+    "test_files": 2131
   },
   "documentation": {
     "examples": [
@@ -10331,6 +10331,7 @@
       "tests/test_analog_kuramoto.py",
       "tests/test_analog_kuramoto_helper_branches.py",
       "tests/test_analog_native_readiness.py",
+      "tests/test_analog_native_readiness_branches.py",
       "tests/test_analyse_iqm_dla_parity.py",
       "tests/test_analyse_iqm_layout_campaign.py",
       "tests/test_analyse_iqm_layout_pinned_repeat.py",
@@ -10984,6 +10985,7 @@
       "tests/test_entanglement_spectrum_branches.py",
       "tests/test_entanglement_tomography_readiness.py",
       "tests/test_entropy_qrng.py",
+      "tests/test_enzyme_toolchain_execution_evidence.py",
       "tests/test_error_budget.py",
       "tests/test_example_workflows.py",
       "tests/test_execution_surface_branches.py",
@@ -11008,6 +11010,7 @@
       "tests/test_feedback_loop.py",
       "tests/test_feedback_loop_branches.py",
       "tests/test_feedback_provider_metadata.py",
+      "tests/test_feedback_provider_metadata_branches.py",
       "tests/test_feedback_submission.py",
       "tests/test_feedback_submission_branches.py",
       "tests/test_fep.py",
@@ -11646,6 +11649,7 @@
       "tests/test_percolation_edge_cases.py",
       "tests/test_perf_regression.py",
       "tests/test_persistent_homology.py",
+      "tests/test_persistent_homology_branches.py",
       "tests/test_pgbo_bridge.py",
       "tests/test_phase1_dla_parity_reproduces.py",
       "tests/test_phase3_entanglement_paper_assets.py",
