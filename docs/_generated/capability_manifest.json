@@ -14,7 +14,7 @@
     "python_model_source_modules": 901,
     "rust_pyo3_model_wrappers": 137,
     "rust_source_modules": 38,
-    "test_files": 2115
+    "test_files": 2116
   },
   "documentation": {
     "examples": [
@@ -12347,6 +12347,7 @@
       "tests/test_stochastic_gradient_rust_parity.py",
       "tests/test_stress_scale.py",
       "tests/test_structured_ansatz.py",
+      "tests/test_structured_ansatz_branches.py",
       "tests/test_sub_us_tracker.py",
       "tests/test_submit_fim_replication_zne_ibm.py",
       "tests/test_submit_phase3_large_system_ibm.py",
