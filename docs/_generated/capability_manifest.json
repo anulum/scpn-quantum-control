@@ -14,7 +14,7 @@
     "python_model_source_modules": 900,
     "rust_pyo3_model_wrappers": 137,
     "rust_source_modules": 38,
-    "test_files": 2101
+    "test_files": 2102
   },
   "documentation": {
     "examples": [
@@ -11781,6 +11781,7 @@
       "tests/test_quantum_entropy_source.py",
       "tests/test_quantum_evs.py",
       "tests/test_quantum_kernel.py",
+      "tests/test_quantum_kernel_branches.py",
       "tests/test_quantum_kuramoto_api_contract.py",
       "tests/test_quantum_kuramoto_boundary_review.py",
       "tests/test_quantum_kuramoto_split_audit.py",
