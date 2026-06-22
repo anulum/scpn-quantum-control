@@ -171,7 +171,8 @@ def test_live_rust_crate_records_threading_without_simd_promotion() -> None:
     audit = scan_crate(crate)
 
     assert audit.status == "pass"
-    assert audit.pyfunction_count == 137
+    # 137 original kernels plus the Kuramoto order-parameter gradient and Hessian PyO3 exports.
+    assert audit.pyfunction_count == 139
     assert audit.rayon_threaded_count > 0
     assert audit.explicit_simd_count == 0
     assert audit.performance_claim_eligible_count == 0
