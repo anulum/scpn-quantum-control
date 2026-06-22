@@ -14,7 +14,7 @@
     "python_model_source_modules": 901,
     "rust_pyo3_model_wrappers": 137,
     "rust_source_modules": 38,
-    "test_files": 2105
+    "test_files": 2106
   },
   "documentation": {
     "examples": [
@@ -11700,6 +11700,7 @@
       "tests/test_plan_paper0_promotion_slices.py",
       "tests/test_plugin_registry.py",
       "tests/test_power_grid.py",
+      "tests/test_power_grid_branches.py",
       "tests/test_power_grid_measured_couplings.py",
       "tests/test_pre_commit_documentation_surface_gate.py",
       "tests/test_preflight_tool.py",
