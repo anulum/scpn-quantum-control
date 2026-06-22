@@ -14,7 +14,7 @@
     "python_model_source_modules": 891,
     "rust_pyo3_model_wrappers": 137,
     "rust_source_modules": 38,
-    "test_files": 2069
+    "test_files": 2070
   },
   "documentation": {
     "examples": [
@@ -12260,6 +12260,7 @@
       "tests/test_s2_slice_progress_report.py",
       "tests/test_s3_ansatz_observables.py",
       "tests/test_s3_design_protocol.py",
+      "tests/test_s3_design_protocol_guards.py",
       "tests/test_s3_design_surrogate.py",
       "tests/test_s3_hardware_dossiers.py",
       "tests/test_s4_multi_hardware_readiness.py",
