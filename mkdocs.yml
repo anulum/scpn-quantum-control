@@ -52,6 +52,7 @@ nav:
   - Onboarding: onboarding.md
   - Installation: installation.md
   - Quickstart: quickstart.md
+  - Example Gallery: examples_gallery.md
   - Theory:
       - SCPN Foundations: theory.md
       - Equations: equations.md
