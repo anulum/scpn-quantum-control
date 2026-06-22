@@ -14,7 +14,7 @@
     "python_model_source_modules": 901,
     "rust_pyo3_model_wrappers": 137,
     "rust_source_modules": 38,
-    "test_files": 2113
+    "test_files": 2114
   },
   "documentation": {
     "examples": [
@@ -11754,6 +11754,7 @@
       "tests/test_psi_field.py",
       "tests/test_public_api.py",
       "tests/test_pulse_feasibility.py",
+      "tests/test_pulse_feasibility_branches.py",
       "tests/test_pulse_shaping.py",
       "tests/test_pulse_shaping_python_fallback.py",
       "tests/test_python_fallback_contracts.py",
