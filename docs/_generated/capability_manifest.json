@@ -14,7 +14,7 @@
     "python_model_source_modules": 891,
     "rust_pyo3_model_wrappers": 137,
     "rust_source_modules": 38,
-    "test_files": 2068
+    "test_files": 2069
   },
   "documentation": {
     "examples": [
@@ -10992,6 +10992,7 @@
       "tests/test_hamiltonian_learning.py",
       "tests/test_hamiltonian_self_consistency.py",
       "tests/test_hardware_adapter_contracts.py",
+      "tests/test_hardware_backends_branches.py",
       "tests/test_hardware_classical_fuzz.py",
       "tests/test_hardware_experiments_contracts.py",
       "tests/test_hardware_hal.py",
