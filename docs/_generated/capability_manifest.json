@@ -11,10 +11,10 @@
     "public_api_exports": 714,
     "public_documentation_pages": 254,
     "python_model_classes": 1840,
-    "python_model_source_modules": 898,
+    "python_model_source_modules": 900,
     "rust_pyo3_model_wrappers": 137,
     "rust_source_modules": 38,
-    "test_files": 2076
+    "test_files": 2077
   },
   "documentation": {
     "examples": [
@@ -469,7 +469,7 @@
       {
         "package": "compiler",
         "path": "src/scpn_quantum_control/compiler",
-        "python_modules": 10
+        "python_modules": 12
       },
       {
         "package": "control",
@@ -8535,12 +8535,14 @@
       "src/scpn_quantum_control/compiler/mlir.py",
       "src/scpn_quantum_control/compiler/mlir_enzyme_evidence.py",
       "src/scpn_quantum_control/compiler/mlir_executable_kernel.py",
+      "src/scpn_quantum_control/compiler/mlir_matrix_2x2_native_compilation.py",
       "src/scpn_quantum_control/compiler/mlir_matrix_native_compilation.py",
       "src/scpn_quantum_control/compiler/mlir_native_primitives.py",
       "src/scpn_quantum_control/compiler/mlir_records.py",
       "src/scpn_quantum_control/compiler/mlir_scalar_native_compilation.py",
       "src/scpn_quantum_control/compiler/mlir_symmetric_native_compilation.py",
       "src/scpn_quantum_control/compiler/mlir_vector_native_compilation.py",
+      "src/scpn_quantum_control/compiler/mlir_whole_program_emitter.py",
       "src/scpn_quantum_control/compiler/mlir_whole_program_native.py",
       "src/scpn_quantum_control/config.py",
       "src/scpn_quantum_control/control/adaptive_branching.py",
@@ -10356,6 +10358,7 @@
       "tests/test_biological_diagnostics_internals.py",
       "tests/test_biological_pipeline.py",
       "tests/test_biological_surface_code.py",
+      "tests/test_biological_surface_code_branches.py",
       "tests/test_bkt_analysis.py",
       "tests/test_bkt_universals.py",
       "tests/test_bridge_feedback_contracts.py",
