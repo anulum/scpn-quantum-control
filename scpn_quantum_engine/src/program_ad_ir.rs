@@ -814,47 +814,59 @@ fn accumulate_reverse_effect(
             }
             Ok(())
         }
-        name if name.starts_with("linalg:inv:2x2:") => {
+        name if name.starts_with("linalg:inv:") => {
             // d(A^{-1})_{ij}/dA_{kl} = -(A^{-1})_{ik} (A^{-1})_{lj}.
-            if effect.inputs.len() != 4 {
-                return Err(format!("effect {} {name} requires four operands", effect.index));
+            let (n, row, column) = parse_inv_index(name)
+                .ok_or_else(|| format!("effect {} {name} has no inverse index", effect.index))?;
+            if effect.inputs.len() != n * n {
+                return Err(format!(
+                    "effect {} {name} requires {} operands",
+                    effect.index,
+                    n * n
+                ));
             }
-            let (row, column) = parse_inv_2x2_index(name)
-                .ok_or_else(|| format!("effect {} {name} has no 2x2 element index", effect.index))?;
-            let a = operand_value(&effect.inputs[0], values)?;
-            let b = operand_value(&effect.inputs[1], values)?;
-            let c = operand_value(&effect.inputs[2], values)?;
-            let d = operand_value(&effect.inputs[3], values)?;
-            let m = invert_2x2(a, b, c, d)?;
-            for k in 0..2 {
-                for l in 0..2 {
-                    let contribution = cotangent * (-m[row * 2 + k] * m[l * 2 + column]);
-                    add_adjoint(&effect.inputs[k * 2 + l], contribution, values, adjoints)?;
+            let matrix = effect
+                .inputs
+                .iter()
+                .map(|input| operand_value(input, values))
+                .collect::<Result<Vec<f64>, String>>()?;
+            let m = invert_square(&matrix, n)?;
+            for k in 0..n {
+                for l in 0..n {
+                    let contribution = cotangent * (-m[row * n + k] * m[l * n + column]);
+                    add_adjoint(&effect.inputs[k * n + l], contribution, values, adjoints)?;
                 }
             }
             Ok(())
         }
-        name if name.starts_with("linalg:solve:2x2:rhs:") => {
+        name if name.starts_with("linalg:solve:") => {
             // x = A^{-1} b: dx_i/db_j = (A^{-1})_{ij}; dx_i/dA_{kl} = -(A^{-1})_{ik} x_l.
-            if effect.inputs.len() != 6 {
-                return Err(format!("effect {} {name} requires six operands", effect.index));
-            }
-            let row = parse_solve_2x2_index(name)
+            let (n, row) = parse_solve_index(name)
                 .ok_or_else(|| format!("effect {} {name} has no solution index", effect.index))?;
-            let a = operand_value(&effect.inputs[0], values)?;
-            let b = operand_value(&effect.inputs[1], values)?;
-            let c = operand_value(&effect.inputs[2], values)?;
-            let d = operand_value(&effect.inputs[3], values)?;
-            let r0 = operand_value(&effect.inputs[4], values)?;
-            let r1 = operand_value(&effect.inputs[5], values)?;
-            let m = invert_2x2(a, b, c, d)?;
-            let x = [m[0] * r0 + m[1] * r1, m[2] * r0 + m[3] * r1];
-            add_adjoint(&effect.inputs[4], cotangent * m[row * 2], values, adjoints)?;
-            add_adjoint(&effect.inputs[5], cotangent * m[row * 2 + 1], values, adjoints)?;
-            for k in 0..2 {
-                for l in 0..2 {
-                    let contribution = cotangent * (-m[row * 2 + k] * x[l]);
-                    add_adjoint(&effect.inputs[k * 2 + l], contribution, values, adjoints)?;
+            if effect.inputs.len() != n * n + n {
+                return Err(format!(
+                    "effect {} {name} requires {} operands",
+                    effect.index,
+                    n * n + n
+                ));
+            }
+            let operands = effect
+                .inputs
+                .iter()
+                .map(|input| operand_value(input, values))
+                .collect::<Result<Vec<f64>, String>>()?;
+            let m = invert_square(&operands[..n * n], n)?;
+            let rhs = &operands[n * n..];
+            let x: Vec<f64> = (0..n)
+                .map(|i| (0..n).map(|j| m[i * n + j] * rhs[j]).sum())
+                .collect();
+            for j in 0..n {
+                add_adjoint(&effect.inputs[n * n + j], cotangent * m[row * n + j], values, adjoints)?;
+            }
+            for k in 0..n {
+                for l in 0..n {
+                    let contribution = cotangent * (-m[row * n + k] * x[l]);
+                    add_adjoint(&effect.inputs[k * n + l], contribution, values, adjoints)?;
                 }
             }
             Ok(())
@@ -1072,34 +1084,43 @@ fn evaluate_effect(
             let [a, b, c, d, e, f, g, h, i] = m;
             Ok(a * (e * i - f * h) - b * (d * i - f * g) + c * (d * h - e * g))
         }
-        name if name.starts_with("linalg:inv:2x2:") => {
-            // Each opcode emits one element (row, column) of the closed-form 2x2 inverse.
-            if effect.inputs.len() != 4 {
-                return Err(format!("effect {} {name} requires four operands", effect.index));
+        name if name.starts_with("linalg:inv:") => {
+            // Each opcode emits one element (row, column) of the matrix inverse.
+            let (n, row, column) = parse_inv_index(name)
+                .ok_or_else(|| format!("effect {} {name} has no inverse index", effect.index))?;
+            if effect.inputs.len() != n * n {
+                return Err(format!(
+                    "effect {} {name} requires {} operands",
+                    effect.index,
+                    n * n
+                ));
             }
-            let (row, column) = parse_inv_2x2_index(name)
-                .ok_or_else(|| format!("effect {} {name} has no 2x2 element index", effect.index))?;
-            let a = operand_value(&effect.inputs[0], values)?;
-            let b = operand_value(&effect.inputs[1], values)?;
-            let c = operand_value(&effect.inputs[2], values)?;
-            let d = operand_value(&effect.inputs[3], values)?;
-            Ok(invert_2x2(a, b, c, d)?[row * 2 + column])
+            let matrix = effect
+                .inputs
+                .iter()
+                .map(|input| operand_value(input, values))
+                .collect::<Result<Vec<f64>, String>>()?;
+            Ok(invert_square(&matrix, n)?[row * n + column])
         }
-        name if name.starts_with("linalg:solve:2x2:rhs:") => {
-            // Each opcode emits one component i of x = A^{-1} b for the 2x2 system.
-            if effect.inputs.len() != 6 {
-                return Err(format!("effect {} {name} requires six operands", effect.index));
-            }
-            let row = parse_solve_2x2_index(name)
+        name if name.starts_with("linalg:solve:") => {
+            // Each opcode emits one component i of x = A^{-1} b.
+            let (n, row) = parse_solve_index(name)
                 .ok_or_else(|| format!("effect {} {name} has no solution index", effect.index))?;
-            let a = operand_value(&effect.inputs[0], values)?;
-            let b = operand_value(&effect.inputs[1], values)?;
-            let c = operand_value(&effect.inputs[2], values)?;
-            let d = operand_value(&effect.inputs[3], values)?;
-            let r0 = operand_value(&effect.inputs[4], values)?;
-            let r1 = operand_value(&effect.inputs[5], values)?;
-            let inverse = invert_2x2(a, b, c, d)?;
-            Ok(inverse[row * 2] * r0 + inverse[row * 2 + 1] * r1)
+            if effect.inputs.len() != n * n + n {
+                return Err(format!(
+                    "effect {} {name} requires {} operands",
+                    effect.index,
+                    n * n + n
+                ));
+            }
+            let operands = effect
+                .inputs
+                .iter()
+                .map(|input| operand_value(input, values))
+                .collect::<Result<Vec<f64>, String>>()?;
+            let inverse = invert_square(&operands[..n * n], n)?;
+            let rhs = &operands[n * n..];
+            Ok((0..n).map(|j| inverse[row * n + j] * rhs[j]).sum())
         }
         _ => Err(format!(
             "effect {} operation {operation} is outside the bounded Rust scalar interpreter",
@@ -1339,21 +1360,70 @@ fn read_3x3(effect: &ProgramADEffect, values: &HashMap<String, f64>) -> Result<[
     Ok(matrix)
 }
 
-/// Parse the `(row, column)` output index from a `linalg:inv:2x2:I:J` opcode.
-fn parse_inv_2x2_index(operation: &str) -> Option<(usize, usize)> {
+/// Invert a row-major 3x3 matrix via the adjugate, returning the inverse row-major.
+///
+/// Fails closed on a singular or non-finite determinant.
+fn invert_3x3(m: [f64; 9]) -> Result<[f64; 9], String> {
+    let [a, b, c, d, e, f, g, h, i] = m;
+    let det = a * (e * i - f * h) - b * (d * i - f * g) + c * (d * h - e * g);
+    if det == 0.0 || !det.is_finite() {
+        return Err("linalg 3x3 matrix is singular".to_owned());
+    }
+    // inverse = adjugate / det = cofactor-transpose / det.
+    Ok([
+        (e * i - f * h) / det,
+        (c * h - b * i) / det,
+        (b * f - c * e) / det,
+        (f * g - d * i) / det,
+        (a * i - c * g) / det,
+        (c * d - a * f) / det,
+        (d * h - e * g) / det,
+        (b * g - a * h) / det,
+        (a * e - b * d) / det,
+    ])
+}
+
+/// Invert an `n x n` row-major matrix for the bounded dimensions; fail closed otherwise.
+fn invert_square(matrix: &[f64], n: usize) -> Result<Vec<f64>, String> {
+    match n {
+        2 => invert_2x2(matrix[0], matrix[1], matrix[2], matrix[3]).map(|m| m.to_vec()),
+        3 => {
+            let mut m = [0.0_f64; 9];
+            m.copy_from_slice(&matrix[..9]);
+            invert_3x3(m).map(|inv| inv.to_vec())
+        }
+        _ => Err(format!("linalg inverse of dimension {n} is outside bounded Rust replay")),
+    }
+}
+
+/// Parse the square dimension `n` from an `NxN` opcode token.
+fn parse_square_dim(token: &str) -> Option<usize> {
+    let (rows, columns) = token.split_once('x')?;
+    let n: usize = rows.parse().ok()?;
+    (n > 0 && columns.parse::<usize>().ok()? == n).then_some(n)
+}
+
+/// Parse `(n, row, column)` from a `linalg:inv:NxN:I:J` opcode.
+fn parse_inv_index(operation: &str) -> Option<(usize, usize, usize)> {
     let parts: Vec<&str> = operation.split(':').collect();
     if parts.len() != 5 {
         return None;
     }
+    let n = parse_square_dim(parts[2])?;
     let row: usize = parts[3].parse().ok()?;
     let column: usize = parts[4].parse().ok()?;
-    (row < 2 && column < 2).then_some((row, column))
+    (row < n && column < n).then_some((n, row, column))
 }
 
-/// Parse the solution component index from a `linalg:solve:2x2:rhs:<m>:I` opcode.
-fn parse_solve_2x2_index(operation: &str) -> Option<usize> {
-    let index: usize = operation.rsplit(':').next()?.parse().ok()?;
-    (index < 2).then_some(index)
+/// Parse `(n, component)` from a `linalg:solve:NxN:rhs:<m>:I` opcode.
+fn parse_solve_index(operation: &str) -> Option<(usize, usize)> {
+    let parts: Vec<&str> = operation.split(':').collect();
+    if parts.len() != 6 {
+        return None;
+    }
+    let n = parse_square_dim(parts[2])?;
+    let component: usize = parts[5].parse().ok()?;
+    (component < n).then_some((n, component))
 }
 
 fn require_non_empty(value: &str, name: &str) -> Result<(), String> {

@@ -810,3 +810,45 @@ def test_bridge_replays_linalg_det_3x3_with_real_engine() -> None:
         pytest.skip(f"installed engine lacks linalg:det:3x3 replay: {rust.blocked_reasons}")
     _, reference = program_adjoint_value_and_grad(_objective_det_3x3, sample)
     np.testing.assert_allclose(np.asarray(rust.gradient), reference, atol=1.0e-12)
+
+
+def _objective_inv_3x3_sum(values: Any) -> Any:
+    return np.sum(np.linalg.inv(np.reshape(values, (3, 3))))
+
+
+def _objective_solve_3x3_sum(values: Any) -> Any:
+    return np.sum(np.linalg.solve(np.reshape(values[:9], (3, 3)), values[9:]))
+
+
+def test_bridge_replays_linalg_inverse_3x3_with_real_engine() -> None:
+    """With the real engine, a reduced 3x3 inverse program replays bit-exact."""
+
+    pytest.importorskip("scpn_quantum_engine")
+    from scpn_quantum_control import program_adjoint_value_and_grad
+
+    sample = np.array([2.0, 0.0, 1.0, 1.0, 3.0, 2.0, 0.0, 1.0, 4.0], dtype=np.float64)
+    result = whole_program_value_and_grad(_objective_inv_3x3_sum, sample)
+    assert result.program_ir is not None
+    rust = value_and_grad_program_ad_effect_ir_with_rust(result.program_ir, sample)
+    if not rust.supported:
+        pytest.skip(f"installed engine lacks linalg:inv:3x3 replay: {rust.blocked_reasons}")
+    _, reference = program_adjoint_value_and_grad(_objective_inv_3x3_sum, sample)
+    np.testing.assert_allclose(np.asarray(rust.gradient), reference, atol=1.0e-12)
+
+
+def test_bridge_replays_linalg_solve_3x3_with_real_engine() -> None:
+    """With the real engine, a reduced 3x3 linear solve replays within tolerance."""
+
+    pytest.importorskip("scpn_quantum_engine")
+    from scpn_quantum_control import program_adjoint_value_and_grad
+
+    sample = np.array(
+        [2.0, 0.0, 1.0, 1.0, 3.0, 2.0, 0.0, 1.0, 4.0, 1.0, 2.0, 3.0], dtype=np.float64
+    )
+    result = whole_program_value_and_grad(_objective_solve_3x3_sum, sample)
+    assert result.program_ir is not None
+    rust = value_and_grad_program_ad_effect_ir_with_rust(result.program_ir, sample)
+    if not rust.supported:
+        pytest.skip(f"installed engine lacks linalg:solve:3x3 replay: {rust.blocked_reasons}")
+    _, reference = program_adjoint_value_and_grad(_objective_solve_3x3_sum, sample)
+    np.testing.assert_allclose(np.asarray(rust.gradient), reference, atol=1.0e-12)
