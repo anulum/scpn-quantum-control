@@ -14,7 +14,7 @@
     "python_model_source_modules": 900,
     "rust_pyo3_model_wrappers": 137,
     "rust_source_modules": 38,
-    "test_files": 2081
+    "test_files": 2082
   },
   "documentation": {
     "examples": [
@@ -10863,6 +10863,7 @@
       "tests/test_control_qec.py",
       "tests/test_control_structured_ansatz.py",
       "tests/test_cosimulation.py",
+      "tests/test_cosimulation_branches.py",
       "tests/test_count_integrity.py",
       "tests/test_cpdr.py",
       "tests/test_critical_concordance.py",
