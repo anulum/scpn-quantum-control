@@ -10,11 +10,11 @@
     "paper0_validation_modules": 466,
     "public_api_exports": 714,
     "public_documentation_pages": 254,
-    "python_model_classes": 1840,
-    "python_model_source_modules": 900,
+    "python_model_classes": 1842,
+    "python_model_source_modules": 901,
     "rust_pyo3_model_wrappers": 137,
     "rust_source_modules": 38,
-    "test_files": 2102
+    "test_files": 2104
   },
   "documentation": {
     "examples": [
@@ -469,7 +469,7 @@
       {
         "package": "compiler",
         "path": "src/scpn_quantum_control/compiler",
-        "python_modules": 12
+        "python_modules": 13
       },
       {
         "package": "control",
@@ -4424,6 +4424,14 @@
       {
         "name": "NVQuantumSensingFixtureResult",
         "path": "src/scpn_quantum_control/paper0/nv_quantum_sensing_validation.py"
+      },
+      {
+        "name": "NativeWholeProgramADExecutionCase",
+        "path": "src/scpn_quantum_control/compiler/mlir_native_execution_evidence.py"
+      },
+      {
+        "name": "NativeWholeProgramADExecutionEvidence",
+        "path": "src/scpn_quantum_control/compiler/mlir_native_execution_evidence.py"
       },
       {
         "name": "NativeWholeProgramADKernel",
@@ -8537,6 +8545,7 @@
       "src/scpn_quantum_control/compiler/mlir_executable_kernel.py",
       "src/scpn_quantum_control/compiler/mlir_matrix_2x2_native_compilation.py",
       "src/scpn_quantum_control/compiler/mlir_matrix_native_compilation.py",
+      "src/scpn_quantum_control/compiler/mlir_native_execution_evidence.py",
       "src/scpn_quantum_control/compiler/mlir_native_primitives.py",
       "src/scpn_quantum_control/compiler/mlir_records.py",
       "src/scpn_quantum_control/compiler/mlir_scalar_native_compilation.py",
@@ -10953,6 +10962,7 @@
       "tests/test_dynamical_lie_algebra_contracts.py",
       "tests/test_e2e_contract_boundary_audit.py",
       "tests/test_eeg_benchmark.py",
+      "tests/test_eeg_benchmark_branches.py",
       "tests/test_eeg_classification.py",
       "tests/test_eeg_classification_validation.py",
       "tests/test_enaqt.py",
@@ -11108,6 +11118,7 @@
       "tests/test_multiplatform_export_workflow.py",
       "tests/test_multiscale_qec.py",
       "tests/test_native_decomposition_readiness.py",
+      "tests/test_native_whole_program_ad_execution_evidence.py",
       "tests/test_negative_inputs.py",
       "tests/test_new_module_properties.py",
       "tests/test_nist_sp800_22_guards.py",
