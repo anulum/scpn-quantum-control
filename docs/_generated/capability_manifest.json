@@ -14,7 +14,7 @@
     "python_model_source_modules": 891,
     "rust_pyo3_model_wrappers": 137,
     "rust_source_modules": 38,
-    "test_files": 2067
+    "test_files": 2068
   },
   "documentation": {
     "examples": [
@@ -11072,6 +11072,7 @@
       "tests/test_magnetisation_sectors.py",
       "tests/test_magnetisation_sectors_empty_guard.py",
       "tests/test_mitiq_integration.py",
+      "tests/test_ml_dsa_branches.py",
       "tests/test_ml_dsa_pqc.py",
       "tests/test_mlir_realtime_cloud.py",
       "tests/test_monte_carlo_xy.py",
