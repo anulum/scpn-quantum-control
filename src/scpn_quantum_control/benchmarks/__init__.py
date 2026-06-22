@@ -55,6 +55,11 @@ from .quantum_advantage import (
     quantum_benchmark,
     run_scaling_benchmark,
 )
+from .reproducible_comparison import (
+    ComparisonMethodRow,
+    ReproducibleKuramotoComparison,
+    run_reproducible_kuramoto_comparison,
+)
 
 __all__ = [
     "ClassicalBaselineRun",
@@ -95,4 +100,7 @@ __all__ = [
     "estimate_crossover",
     "quantum_benchmark",
     "run_scaling_benchmark",
+    "ComparisonMethodRow",
+    "ReproducibleKuramotoComparison",
+    "run_reproducible_kuramoto_comparison",
 ]

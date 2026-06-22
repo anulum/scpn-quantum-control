@@ -15,8 +15,12 @@ Hamiltonian on statevector simulator. Demonstrates that at NISQ scale
 
 from __future__ import annotations
 
+import argparse
+import json
 import time
+from pathlib import Path
 
+from scpn_quantum_control.benchmarks import run_reproducible_kuramoto_comparison
 from scpn_quantum_control.bridge import OMEGA_N_16, build_knm_paper27
 from scpn_quantum_control.hardware.classical import (
     classical_exact_diag,
@@ -26,7 +30,7 @@ from scpn_quantum_control.hardware.classical import (
 from scpn_quantum_control.phase import QuantumKuramotoSolver
 
 
-def _benchmark_dynamics(n: int, t_max: float = 1.0, dt: float = 0.1) -> dict:
+def _benchmark_dynamics(n: int, t_max: float = 1.0, dt: float = 0.1) -> dict[str, float]:
     K = build_knm_paper27(L=n)
     omega = OMEGA_N_16[:n]
 
@@ -63,7 +67,7 @@ def _benchmark_dynamics(n: int, t_max: float = 1.0, dt: float = 0.1) -> dict:
     }
 
 
-def _benchmark_ground_state(n: int) -> dict:
+def _benchmark_ground_state(n: int) -> dict[str, float]:
     K = build_knm_paper27(L=n)
     omega = OMEGA_N_16[:n]
 
@@ -93,7 +97,28 @@ def _benchmark_ground_state(n: int) -> dict:
     }
 
 
+def _write_artifact(path: Path) -> None:
+    """Emit a deterministic, reproducible head-to-head comparison artifact.
+
+    The order-parameter values and their error against the exact reference are
+    reproducible byte-for-byte; the embedded timing is advisory. The artifact
+    also carries the documented failure modes and claim boundary.
+    """
+    comparison = run_reproducible_kuramoto_comparison(8, t_max=1.0, dt=0.1, seed=42)
+    path.write_text(json.dumps(comparison.to_dict(), indent=2) + "\n", encoding="utf-8")
+    print(f"\nReproducible comparison artifact written to {path}")
+
+
 def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--artifact",
+        type=Path,
+        default=None,
+        help="write a deterministic, reproducible comparison artifact to this path",
+    )
+    args = parser.parse_args()
+
     print("=" * 72)
     print("Classical vs Quantum Kuramoto Benchmark (statevector simulator)")
     print("=" * 72)
@@ -164,6 +189,9 @@ def main() -> None:
     print("faster and produce exact results. Quantum Trotter introduces O(dt^2)")
     print("discretization error. VQE converges to <0.1% on 4q but slows at 8q.")
     print("Quantum advantage for Kuramoto requires N>>20 with error correction.")
+
+    if args.artifact is not None:
+        _write_artifact(args.artifact)
 
 
 if __name__ == "__main__":

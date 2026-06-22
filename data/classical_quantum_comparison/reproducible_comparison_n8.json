@@ -1,0 +1,50 @@
+{
+  "n_oscillators": 8,
+  "t_max": 1.0,
+  "dt": 0.1,
+  "trotter_per_step": 5,
+  "seed": 42,
+  "initial_condition": "omega_phase",
+  "reference_method": "classical_exact",
+  "rows": [
+    {
+      "method": "classical_exact",
+      "backend": "scipy matrix exponential / sparse Krylov",
+      "available": true,
+      "r_final": 0.25916072998431283,
+      "r_error_vs_exact": null,
+      "elapsed_ms": 329.70336207654327,
+      "unavailable_reason": null
+    },
+    {
+      "method": "classical_ode",
+      "backend": "scipy.solve_ivp(RK45)",
+      "available": true,
+      "r_final": 0.7339274277159895,
+      "r_error_vs_exact": 0.4747666977316767,
+      "elapsed_ms": 2.767613041214645,
+      "unavailable_reason": null
+    },
+    {
+      "method": "quantum_trotter",
+      "backend": "statevector Trotter (QuantumKuramotoSolver)",
+      "available": true,
+      "r_final": 0.259160729984313,
+      "r_error_vs_exact": 1.6653345369377348e-16,
+      "elapsed_ms": 1134.8438389832154,
+      "unavailable_reason": null
+    }
+  ],
+  "failure_modes": [
+    "quantum_trotter: first-order Trotter introduces O(dt^2) discretisation error that grows with dt and shrinks as trotter_per_step rises.",
+    "classical_exact: the dense propagator path costs O(2^2n) memory below n=13 and switches to a sparse Krylov path above it; both become infeasible well before n=30.",
+    "classical_ode: the SciPy route integrates the classical phase model, not the quantum XY Hamiltonian, so order-parameter agreement is an approximate cross-check rather than a derivation.",
+    "scope: at n<=16 there is no quantum advantage on this path; the classical exact route is faster and exact, so timing must not be read as a speed-up claim."
+  ],
+  "claim_boundary": "Reproducible quantities are the order-parameter values and their error against the exact reference; timing is advisory. The comparison documents agreement and discretisation error, not quantum speed-up.",
+  "determinism": "RNG-free given identical inputs; the recorded seed governs only the optional randomised initial-phase mode. Timing is excluded from the reproducible-quantity set.",
+  "metadata": {
+    "coupling_source": "paper27",
+    "omega_source": "omega_n_16"
+  }
+}

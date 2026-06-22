@@ -54,6 +54,11 @@ from .benchmarks.quantum_advantage import (
     quantum_benchmark,
     run_scaling_benchmark,
 )
+from .benchmarks.reproducible_comparison import (
+    ComparisonMethodRow,
+    ReproducibleKuramotoComparison,
+    run_reproducible_kuramoto_comparison,
+)
 from .bridge.control_plasma_knm import (
     build_knm_plasma,
     build_knm_plasma_from_config,
@@ -1474,6 +1479,9 @@ __all__ = [
     "quantum_benchmark",
     "estimate_crossover",
     "run_scaling_benchmark",
+    "ComparisonMethodRow",
+    "ReproducibleKuramotoComparison",
+    "run_reproducible_kuramoto_comparison",
     "analysis",
     "applications",
     "entropy",
