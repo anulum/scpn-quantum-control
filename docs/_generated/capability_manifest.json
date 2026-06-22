@@ -14,7 +14,7 @@
     "python_model_source_modules": 891,
     "rust_pyo3_model_wrappers": 137,
     "rust_source_modules": 38,
-    "test_files": 2065
+    "test_files": 2066
   },
   "documentation": {
     "examples": [
@@ -10997,6 +10997,7 @@
       "tests/test_hardware_hal_azure_adapters.py",
       "tests/test_hardware_hal_braket_adapters.py",
       "tests/test_hardware_hal_cirq_adapters.py",
+      "tests/test_hardware_hal_contract_guards.py",
       "tests/test_hardware_hal_count_integrity_contract.py",
       "tests/test_hardware_hal_dwave_adapters.py",
       "tests/test_hardware_hal_ionq_adapters.py",
