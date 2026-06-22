@@ -14,7 +14,7 @@
     "python_model_source_modules": 900,
     "rust_pyo3_model_wrappers": 137,
     "rust_source_modules": 38,
-    "test_files": 2093
+    "test_files": 2094
   },
   "documentation": {
     "examples": [
@@ -12329,6 +12329,7 @@
       "tests/test_surface_code_upde.py",
       "tests/test_symmetry_decay.py",
       "tests/test_symmetry_sector_compiler.py",
+      "tests/test_symmetry_sector_compiler_branches.py",
       "tests/test_symmetry_sector_fixtures_branches.py",
       "tests/test_symmetry_sector_mitigation_fixtures.py",
       "tests/test_symmetry_sector_replay.py",
