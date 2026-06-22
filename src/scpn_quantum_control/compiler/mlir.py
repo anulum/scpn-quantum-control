@@ -73,6 +73,15 @@ from .mlir_enzyme_evidence import (
 from .mlir_enzyme_evidence import (
     build_enzyme_mlir_compiler_ad_breadth_gap_artifact as build_enzyme_mlir_compiler_ad_breadth_gap_artifact,
 )
+from .mlir_enzyme_execution_runner import (
+    EnzymeToolchainADCase as EnzymeToolchainADCase,
+)
+from .mlir_enzyme_execution_runner import (
+    EnzymeToolchainADExecutionEvidence as EnzymeToolchainADExecutionEvidence,
+)
+from .mlir_enzyme_execution_runner import (
+    run_enzyme_toolchain_execution_evidence as run_enzyme_toolchain_execution_evidence,
+)
 from .mlir_executable_kernel import (
     ExecutableCompilerADKernel as ExecutableCompilerADKernel,
 )
@@ -1674,6 +1683,8 @@ __all__ = [
     "EnzymeMLIRCompilerADBreadthEvidence",
     "EnzymeMLIRMaturityAuditResult",
     "EnzymeNativeExecutionEvidence",
+    "EnzymeToolchainADCase",
+    "EnzymeToolchainADExecutionEvidence",
     "EnzymeMLIRToolchainStatus",
     "MLIRLLVMCorrectnessEvidence",
     "MLIRCompileConfig",
@@ -1720,6 +1731,7 @@ __all__ = [
     "compile_kuramoto_to_mlir",
     "lower_phase_qnode_circuit_to_mlir",
     "run_enzyme_mlir_maturity_audit",
+    "run_enzyme_toolchain_execution_evidence",
     "make_executable_ad_kernel_batching_rule",
     "make_matrix_2x2_determinant_native_llvm_jit_lowering_rule",
     "make_matrix_2x2_determinant_native_llvm_jit_primitive_transform",

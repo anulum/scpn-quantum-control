@@ -19,6 +19,8 @@ from .mlir import (
     EnzymeMLIRMaturityAuditResult,
     EnzymeMLIRToolchainStatus,
     EnzymeNativeExecutionEvidence,
+    EnzymeToolchainADCase,
+    EnzymeToolchainADExecutionEvidence,
     ExecutableCompilerADKernel,
     ExecutableWholeProgramADBatchResult,
     ExecutableWholeProgramADKernel,
@@ -87,6 +89,7 @@ from .mlir import (
     native_whole_program_ad_compile_cache_stats,
     native_whole_program_ad_linalg_support,
     run_enzyme_mlir_maturity_audit,
+    run_enzyme_toolchain_execution_evidence,
     run_native_whole_program_ad_execution_evidence,
 )
 
@@ -102,6 +105,8 @@ __all__ = [
     "EnzymeMLIRMaturityAuditResult",
     "EnzymeMLIRToolchainStatus",
     "EnzymeNativeExecutionEvidence",
+    "EnzymeToolchainADCase",
+    "EnzymeToolchainADExecutionEvidence",
     "ExecutableCompilerADKernel",
     "ExecutableWholeProgramADBatchResult",
     "ExecutableWholeProgramADKernel",
@@ -170,5 +175,6 @@ __all__ = [
     "native_whole_program_ad_compile_cache_stats",
     "native_whole_program_ad_linalg_support",
     "run_enzyme_mlir_maturity_audit",
+    "run_enzyme_toolchain_execution_evidence",
     "run_native_whole_program_ad_execution_evidence",
 ]
