@@ -14,7 +14,7 @@
     "python_model_source_modules": 900,
     "rust_pyo3_model_wrappers": 137,
     "rust_source_modules": 38,
-    "test_files": 2083
+    "test_files": 2084
   },
   "documentation": {
     "examples": [
@@ -10325,6 +10325,7 @@
       "tests/test_ansatz_bench.py",
       "tests/test_ansatz_methodology.py",
       "tests/test_ansatz_scaling_tn_benchmark.py",
+      "tests/test_app_plugins_branches.py",
       "tests/test_application_plugins.py",
       "tests/test_applications_benchmark_contracts.py",
       "tests/test_appqsim.py",
