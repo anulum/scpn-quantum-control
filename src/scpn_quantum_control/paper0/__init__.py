@@ -6050,6 +6050,6 @@ __all__ = [
     "validate_stage_order",
     "validate_validation_strategy_fixture",
     "validation_domain_coverage",
-    "SectionSection27TheFisherInfoMetricTheGeometryOfInteractionFixtureResult",
-    "SectionSection27TheFisherInfoMetricTheGeometryOfInteractionConfig",
+    "Section27TheFisherInfoMetricTheGeometryOfInteractionFixtureResult",
+    "Section27TheFisherInfoMetricTheGeometryOfInteractionConfig",
 ]

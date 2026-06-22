@@ -15,7 +15,7 @@ runtime dependency of the core package.
 from __future__ import annotations
 
 from collections.abc import Callable, Sequence
-from typing import Any, NoReturn, cast
+from typing import Any, cast
 
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
@@ -728,14 +728,6 @@ def whole_program_value_and_grad(
         semantics_report=semantics_report,
         program_ir=program_ir,
         adjoint_result=adjoint_result,
-    )
-
-
-def _raise_spectral_linalg_boundary(function_name: str) -> NoReturn:
-    raise ValueError(
-        f"program AD np.linalg.{function_name} spectral semantics require an explicit "
-        "differentiable primitive rule for eigenvalue degeneracy, singular-value "
-        "multiplicity, and nondifferentiable selection policy"
     )
 
 
