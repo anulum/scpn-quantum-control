@@ -13,7 +13,7 @@ build-backend = "maturin"
 name = "scpn-quantum-engine"
 version = "0.2.0"
 description = "Rust acceleration engine for scpn-quantum-control (PyO3 + rayon)"
-readme = "../README.md"
+readme = "README.md"
 license = "AGPL-3.0-or-later"
 requires-python = ">=3.10"
 authors = [
