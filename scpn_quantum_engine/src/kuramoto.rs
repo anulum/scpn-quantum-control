@@ -119,6 +119,56 @@ pub fn order_parameter_gradient_inner(theta: &[f64]) -> Vec<f64> {
     out
 }
 
+/// Compute the Hessian ∂²R/∂θ_i∂θ_j of the Kuramoto order parameter.
+///
+/// With C = ⟨cos θ⟩, S = ⟨sin θ⟩, R = hypot(C, S) and the alignment
+/// a_j = cos(ψ − θ_j) = (C cos θ_j + S sin θ_j) / R:
+///   H_ij = a_i a_j / (N² R) − δ_ij a_j / N.
+/// The matrix is symmetric and every row sums to zero; the incoherent state R = 0
+/// returns the zero matrix.
+#[pyfunction]
+pub fn order_parameter_hessian<'py>(
+    py: Python<'py>,
+    theta: PyReadonlyArray1<'_, f64>,
+) -> PyResult<Bound<'py, PyArray2<f64>>> {
+    let theta = validate_phase_vector(&theta, "theta")?;
+    let hessian = order_parameter_hessian_inner(theta);
+    Ok(PyArray2::from_owned_array(py, hessian))
+}
+
+/// Pure Rust order parameter Hessian (no PyO3), returned as a row-major N×N array.
+pub fn order_parameter_hessian_inner(theta: &[f64]) -> Array2<f64> {
+    let n = theta.len();
+    let mut out = Array2::<f64>::zeros((n, n));
+    if n == 0 {
+        return out;
+    }
+    let (mut re, mut im) = (0.0_f64, 0.0_f64);
+    for &t in theta {
+        re += t.cos();
+        im += t.sin();
+    }
+    let count = n as f64;
+    let cos_mean = re / count;
+    let sin_mean = im / count;
+    let magnitude = (cos_mean * cos_mean + sin_mean * sin_mean).sqrt();
+    if magnitude == 0.0 {
+        return out;
+    }
+    let aligned: Vec<f64> = theta
+        .iter()
+        .map(|&t| (cos_mean * t.cos() + sin_mean * t.sin()) / magnitude)
+        .collect();
+    let scale = 1.0 / (count * count * magnitude);
+    for i in 0..n {
+        for j in 0..n {
+            out[[i, j]] = aligned[i] * aligned[j] * scale;
+        }
+        out[[i, i]] -= aligned[i] / count;
+    }
+    out
+}
+
 fn validate_finite_slice(values: &[f64], name: &str) -> PyResult<()> {
     if values.iter().any(|value| !value.is_finite()) {
         return Err(pyo3::exceptions::PyValueError::new_err(format!(
@@ -733,6 +783,80 @@ mod tests {
     #[test]
     fn test_order_parameter_gradient_empty() {
         assert!(order_parameter_gradient_inner(&[]).is_empty());
+    }
+
+    #[test]
+    fn test_order_parameter_hessian_matches_finite_difference_of_gradient() {
+        let theta = vec![0.3, -1.1, 2.0, 0.7, 4.2];
+        let hessian = order_parameter_hessian_inner(&theta);
+        let h = 1e-6;
+        for i in 0..theta.len() {
+            let mut plus = theta.clone();
+            let mut minus = theta.clone();
+            plus[i] += h;
+            minus[i] -= h;
+            let grad_plus = order_parameter_gradient_inner(&plus);
+            let grad_minus = order_parameter_gradient_inner(&minus);
+            for j in 0..theta.len() {
+                let fd = (grad_plus[j] - grad_minus[j]) / (2.0 * h);
+                assert!((hessian[[i, j]] - fd).abs() < 1e-6, "H[{i},{j}]");
+            }
+        }
+    }
+
+    #[test]
+    fn test_order_parameter_hessian_is_symmetric() {
+        let theta = vec![0.1, 0.9, 2.3, 3.1, 5.5];
+        let hessian = order_parameter_hessian_inner(&theta);
+        for i in 0..theta.len() {
+            for j in 0..theta.len() {
+                assert!((hessian[[i, j]] - hessian[[j, i]]).abs() < 1e-15);
+            }
+        }
+    }
+
+    #[test]
+    fn test_order_parameter_hessian_rows_sum_to_zero() {
+        // A global phase shift leaves R invariant, so every Hessian row sums to zero.
+        let theta = vec![0.1, 0.9, 2.3, 3.1, 5.5, 6.0];
+        let hessian = order_parameter_hessian_inner(&theta);
+        let n = theta.len();
+        for i in 0..n {
+            let row_sum: f64 = (0..n).map(|j| hessian[[i, j]]).sum();
+            assert!(row_sum.abs() < 1e-12, "row {i} sum = {row_sum}");
+        }
+    }
+
+    #[test]
+    fn test_order_parameter_hessian_aligned_curvature() {
+        // Fully synchronised (R = 1): the gradient vanishes but the Hessian does not.
+        // Every alignment equals 1, so H_ij = 1/N² off the diagonal and 1/N² − 1/N on it
+        // — a negative semidefinite matrix, since R = 1 is the maximum.
+        let n = 6usize;
+        let hessian = order_parameter_hessian_inner(&[0.7; 6]);
+        let count = n as f64;
+        for i in 0..n {
+            for j in 0..n {
+                let expected = if i == j {
+                    1.0 / (count * count) - 1.0 / count
+                } else {
+                    1.0 / (count * count)
+                };
+                assert!((hessian[[i, j]] - expected).abs() < 1e-12, "H[{i},{j}]");
+            }
+        }
+    }
+
+    #[test]
+    fn test_order_parameter_hessian_single_is_zero() {
+        let hessian = order_parameter_hessian_inner(&[2.7]);
+        assert_eq!(hessian.shape(), &[1, 1]);
+        assert!(hessian[[0, 0]].abs() < 1e-12, "single oscillator → ∂²R/∂θ² = 0");
+    }
+
+    #[test]
+    fn test_order_parameter_hessian_empty() {
+        assert_eq!(order_parameter_hessian_inner(&[]).shape(), &[0, 0]);
     }
 
     #[test]

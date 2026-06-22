@@ -97,9 +97,28 @@ def order_parameter_gradient(theta: NDArray[np.float64]) -> NDArray[np.float64]:
     return np.asarray(jl.order_parameter_gradient(arr), dtype=np.float64)
 
 
+def order_parameter_hessian(theta: NDArray[np.float64]) -> NDArray[np.float64]:
+    """Julia-tier Hessian of the Kuramoto order parameter.
+
+    Parameters
+    ----------
+    theta : numpy.ndarray
+        One-dimensional array of oscillator phases in radians.
+
+    Returns
+    -------
+    numpy.ndarray
+        Two-dimensional ``(N, N)`` float64 Hessian matrix.
+    """
+    jl = _load()
+    arr = np.ascontiguousarray(theta, dtype=np.float64)
+    return np.asarray(jl.order_parameter_hessian(arr), dtype=np.float64)
+
+
 __all__ = [
     "is_available",
     "order_parameter",
     "order_parameter_gradient",
+    "order_parameter_hessian",
     "order_parameters_batch",
 ]

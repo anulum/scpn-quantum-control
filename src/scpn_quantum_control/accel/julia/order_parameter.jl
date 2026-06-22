@@ -67,3 +67,39 @@ function order_parameter_gradient(theta::AbstractVector{<:Real})::Vector{Float64
     end
     return out
 end
+
+function order_parameter_hessian(theta::AbstractVector{<:Real})::Matrix{Float64}
+    # Hessian ∂²r/∂θ_i∂θ_j of the Kuramoto order parameter r = |<exp(i θ)>|.
+    # With C = <cos θ>, S = <sin θ>, r = hypot(C, S) and alignment
+    # a_j = cos(ψ − θ_j) = (C cos θ_j + S sin θ_j) / r:
+    #     H_ij = a_i a_j / (N² r) − δ_ij a_j / N.
+    # Symmetric, row sums zero; the incoherent state r = 0 returns the zero matrix.
+    n = length(theta)
+    out = Matrix{Float64}(undef, n, n)
+    n == 0 && return out
+    c = 0.0
+    s = 0.0
+    @inbounds for k in 1:n
+        c += cos(Float64(theta[k]))
+        s += sin(Float64(theta[k]))
+    end
+    c /= n
+    s /= n
+    r = sqrt(c * c + s * s)
+    if r == 0.0
+        fill!(out, 0.0)
+        return out
+    end
+    aligned = Vector{Float64}(undef, n)
+    @inbounds for j in 1:n
+        aligned[j] = (c * cos(Float64(theta[j])) + s * sin(Float64(theta[j]))) / r
+    end
+    scale = 1.0 / (n * n * r)
+    @inbounds for i in 1:n, j in 1:n
+        out[i, j] = aligned[i] * aligned[j] * scale
+    end
+    @inbounds for i in 1:n
+        out[i, i] -= aligned[i] / n
+    end
+    return out
+end

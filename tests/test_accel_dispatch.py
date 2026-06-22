@@ -734,3 +734,189 @@ class TestRustValueTierAbsence:
         monkeypatch.setattr(d, "optional_rust_engine", lambda: None)
         with pytest.raises(ModuleNotFoundError, match="scpn_quantum_engine"):
             d._rust_order_parameter(np.zeros(3))
+
+
+# ---------------------------------------------------------------------------
+# Order parameter Hessian — analytic floor, invariants, parity, and dispatch
+# ---------------------------------------------------------------------------
+
+
+def _finite_difference_hessian(theta: np.ndarray, step: float = 1e-6) -> np.ndarray:
+    """Central-difference Hessian from the analytic gradient floor."""
+    n = theta.size
+    out = np.zeros((n, n), dtype=np.float64)
+    for i in range(n):
+        plus = theta.astype(np.float64).copy()
+        minus = theta.astype(np.float64).copy()
+        plus[i] += step
+        minus[i] -= step
+        out[i] = (
+            d._python_order_parameter_gradient(plus) - d._python_order_parameter_gradient(minus)
+        ) / (2.0 * step)
+    return out
+
+
+class TestPythonHessianFloor:
+    def test_matches_closed_form(self) -> None:
+        rng = np.random.default_rng(13)
+        theta = rng.uniform(-math.pi, math.pi, size=11)
+        cos_mean = float(np.mean(np.cos(theta)))
+        sin_mean = float(np.mean(np.sin(theta)))
+        magnitude = float(np.hypot(cos_mean, sin_mean))
+        aligned = (cos_mean * np.cos(theta) + sin_mean * np.sin(theta)) / magnitude
+        expected = np.outer(aligned, aligned) / (theta.size**2 * magnitude) - np.diag(
+            aligned / theta.size
+        )
+        np.testing.assert_allclose(d._python_order_parameter_hessian(theta), expected, atol=1e-15)
+
+    @_GLOBAL_SETTINGS
+    @given(
+        n=st.integers(min_value=1, max_value=32),
+        seed=st.integers(min_value=0, max_value=2**31 - 1),
+    )
+    def test_is_symmetric(self, n: int, seed: int) -> None:
+        rng = np.random.default_rng(seed)
+        theta = rng.uniform(-math.pi, math.pi, size=n)
+        hessian = d._python_order_parameter_hessian(theta)
+        np.testing.assert_allclose(hessian, hessian.T, atol=1e-15)
+
+    @_GLOBAL_SETTINGS
+    @given(
+        n=st.integers(min_value=1, max_value=48),
+        seed=st.integers(min_value=0, max_value=2**31 - 1),
+    )
+    def test_rows_sum_to_zero(self, n: int, seed: int) -> None:
+        # A global phase shift leaves r invariant, so each Hessian row sums to zero.
+        rng = np.random.default_rng(seed)
+        theta = rng.uniform(-math.pi, math.pi, size=n)
+        hessian = d._python_order_parameter_hessian(theta)
+        np.testing.assert_allclose(hessian.sum(axis=1), np.zeros(n), atol=1e-12)
+
+    @_GLOBAL_SETTINGS
+    @given(
+        n=st.integers(min_value=2, max_value=24),
+        seed=st.integers(min_value=0, max_value=2**31 - 1),
+    )
+    def test_matches_finite_difference_of_gradient(self, n: int, seed: int) -> None:
+        rng = np.random.default_rng(seed)
+        theta = rng.uniform(-math.pi, math.pi, size=n)
+        if _order_parameter_value(theta) < 1e-2:
+            return  # near-incoherent: the second derivative is ill-conditioned
+        hessian = d._python_order_parameter_hessian(theta)
+        np.testing.assert_allclose(hessian, _finite_difference_hessian(theta), atol=1e-5)
+
+    def test_fully_synchronised_curvature(self) -> None:
+        # r = 1: the gradient is zero but the Hessian is 11^T/N^2 - I/N (negative
+        # semidefinite, since perfect synchronisation is the maximum of r).
+        n = 6
+        hessian = d._python_order_parameter_hessian(np.full(n, 0.4))
+        expected = np.full((n, n), 1.0 / n**2) - np.eye(n) / n
+        np.testing.assert_allclose(hessian, expected, atol=1e-12)
+        eigenvalues = np.linalg.eigvalsh(hessian)
+        assert np.all(eigenvalues <= 1e-12)
+
+    def test_single_oscillator_is_zero(self) -> None:
+        hessian = d._python_order_parameter_hessian(np.array([2.7]))
+        assert hessian.shape == (1, 1)
+        assert abs(float(hessian[0, 0])) < 1e-15
+
+    def test_empty_input_returns_empty_matrix(self) -> None:
+        assert d._python_order_parameter_hessian(np.array([])).shape == (0, 0)
+
+    def test_exact_incoherent_returns_zero_matrix(self) -> None:
+        theta = np.array([0.0, math.pi, 0.0, -math.pi])
+        assert float(np.hypot(np.mean(np.cos(theta)), np.mean(np.sin(theta)))) == 0.0
+        np.testing.assert_array_equal(d._python_order_parameter_hessian(theta), np.zeros((4, 4)))
+
+
+class TestRustHessianTier:
+    @_GLOBAL_SETTINGS
+    @given(
+        n=st.integers(min_value=1, max_value=48),
+        seed=st.integers(min_value=0, max_value=2**31 - 1),
+    )
+    def test_rust_matches_python_floor(self, n: int, seed: int) -> None:
+        engine = pytest.importorskip("scpn_quantum_engine")
+        if not callable(getattr(engine, "order_parameter_hessian", None)):
+            pytest.skip("scpn_quantum_engine.order_parameter_hessian unavailable")
+        rng = np.random.default_rng(seed)
+        theta = rng.uniform(-10 * math.pi, 10 * math.pi, size=n)
+        np.testing.assert_allclose(
+            d._rust_order_parameter_hessian(theta),
+            d._python_order_parameter_hessian(theta),
+            atol=1e-12,
+        )
+
+    def test_rust_engine_absence_raises_module_not_found(
+        self,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        monkeypatch.setattr(d, "optional_rust_engine", lambda: None)
+        with pytest.raises(ModuleNotFoundError, match="scpn_quantum_engine"):
+            d._rust_order_parameter_hessian(np.zeros(3))
+
+    def test_partial_rust_engine_falls_through_to_python(
+        self,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        class PartialEngine:
+            pass
+
+        monkeypatch.setattr(d, "optional_rust_engine", lambda: PartialEngine())
+        disp = d.MultiLangDispatcher(
+            [
+                ("rust", d._rust_order_parameter_hessian),
+                ("python", d._python_order_parameter_hessian),
+            ],
+        )
+        out = disp(np.full(4, 0.7))
+        np.testing.assert_allclose(out, d._python_order_parameter_hessian(np.full(4, 0.7)), atol=0)
+        assert disp.last_tier == "python"
+
+
+class TestJuliaHessianTier:
+    def test_julia_matches_python_floor(self) -> None:
+        pytest.importorskip("juliacall")
+        from scpn_quantum_control.accel.julia import order_parameter_hessian as julia_hessian
+
+        rng = np.random.default_rng(20260623)
+        theta = rng.uniform(-math.pi, math.pi, size=7)
+        np.testing.assert_allclose(
+            julia_hessian(theta),
+            d._python_order_parameter_hessian(theta),
+            atol=1e-10,
+        )
+
+
+class TestHessianCrossTierAndDispatch:
+    @_GLOBAL_SETTINGS
+    @given(
+        n=st.integers(min_value=2, max_value=24),
+        seed=st.integers(min_value=0, max_value=2**31 - 1),
+    )
+    def test_all_available_tiers_agree(self, n: int, seed: int) -> None:
+        rng = np.random.default_rng(seed)
+        theta = rng.uniform(-math.pi, math.pi, size=n)
+        reference = d._python_order_parameter_hessian(theta)
+        for name, impl in d._ORDER_PARAMETER_HESSIAN_CHAIN:
+            try:
+                out = impl(theta)
+            except (ImportError, ModuleNotFoundError, RuntimeError):
+                continue
+            np.testing.assert_allclose(out, reference, atol=1e-10, err_msg=f"tier {name!r}")
+
+    def test_registry_contains_hessian(self) -> None:
+        out = d.dispatch("order_parameter_hessian", np.full(4, 0.3))
+        assert out.shape == (4, 4)
+
+    def test_public_api_and_last_hessian_tier(self) -> None:
+        from scpn_quantum_control.accel import last_hessian_tier_used, order_parameter_hessian
+
+        rng = np.random.default_rng(77)
+        theta = rng.uniform(0.0, 2 * math.pi, size=20)
+        hessian = order_parameter_hessian(theta)
+        assert hessian.shape == (20, 20)
+        assert last_hessian_tier_used() in {"rust", "julia", "python"}
+
+    def test_hessian_chain_ends_with_python_floor(self) -> None:
+        assert d._ORDER_PARAMETER_HESSIAN_CHAIN[-1][0] == "python"

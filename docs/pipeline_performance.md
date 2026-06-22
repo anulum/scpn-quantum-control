@@ -1367,6 +1367,51 @@ If the measured ordering changes, update the chain comment at
 `_ORDER_PARAMETER_GRADIENT_CHAIN` in
 `src/scpn_quantum_control/accel/dispatcher.py` to match.
 
+### `order_parameter_hessian(theta)`
+
+Hessian of the order parameter, `∂²r/∂θ_i∂θ_j = a_i a_j/(N²r) − δ_ij a_j/N`
+with alignment `a_j = cos(ψ − θ_j)`. Symmetric, rows sum to zero. The result
+is an `N × N` matrix, so per-call cost grows quadratically and the benchmark
+stops at N = 2048 (~32 MB per matrix). Measured 2026-06-22 on the local Linux
+runner (Intel i5-11600K @ 3.90 GHz, Python 3.12.3, juliacall,
+scpn-quantum-engine local build). Inner loop: 100 calls per sample × 7 samples;
+per-call median. Raw JSON:
+`docs/benchmarks/order_parameter_hessian_tiers.json`.
+
+|     N |        Rust |      Julia |     Python |
+|------:|------------:|-----------:|-----------:|
+|     4 |     1.11 µs |   16.17 µs |   21.79 µs |
+|    16 |     1.56 µs |   12.33 µs |   22.24 µs |
+|    64 |     3.60 µs |   75.54 µs |   43.73 µs |
+|   256 |    42.99 µs |  378.29 µs |  203.12 µs |
+|  1024 |  2663.10 µs | 7685.32 µs | 8069.54 µs |
+|  2048 | 14237.46 µs | 53647.20 µs | 33803.40 µs |
+
+Read-offs:
+
+* Rust wins at every measured N (19.6× faster than Python at N = 4,
+  2.4× at N = 2048); the dispatcher places it first, matching measurement.
+* The Python floor beats Julia from N = 64 upward: NumPy builds the rank-one
+  `outer(a, a)` matrix with a single vectorised BLAS-style kernel, whereas the
+  juliacall crossing plus the per-element matrix fill dominate here. The chain
+  still lists Julia before the Python floor for consistency with the value and
+  gradient chains (the "some acceleration when Rust is unavailable" default);
+  callers that cannot use the Rust tier and need the Hessian at N ≥ 64 should
+  import `_python_order_parameter_hessian` directly.
+* Cost is quadratic in N for every tier (the N × N matrix fill dominates the
+  shared O(N) trigonometric pre-pass), so the gap to the scalar value and the
+  vector gradient widens with N.
+
+Re-run with:
+
+```bash
+python scripts/bench_order_parameter_hessian_tiers.py
+```
+
+If the measured ordering changes, update the chain comment at
+`_ORDER_PARAMETER_HESSIAN_CHAIN` in
+`src/scpn_quantum_control/accel/dispatcher.py` to match.
+
 ### S4 multi-hardware readiness
 
 Command:

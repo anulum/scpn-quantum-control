@@ -39,9 +39,11 @@ from .dispatcher import (
     available_tiers,
     dispatch,
     last_gradient_tier_used,
+    last_hessian_tier_used,
     last_tier_used,
     order_parameter,
     order_parameter_gradient,
+    order_parameter_hessian,
 )
 
 __all__ = [
@@ -49,9 +51,11 @@ __all__ = [
     "available_tiers",
     "dispatch",
     "last_gradient_tier_used",
+    "last_hessian_tier_used",
     "last_tier_used",
     "order_parameter",
     "order_parameter_gradient",
+    "order_parameter_hessian",
 ]
 
 import numpy as np
