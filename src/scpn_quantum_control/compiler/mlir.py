@@ -178,6 +178,18 @@ from .mlir_matrix_native_compilation import (
 from .mlir_matrix_native_compilation import (
     make_matrix_vector_product_native_llvm_jit_primitive_transform as make_matrix_vector_product_native_llvm_jit_primitive_transform,
 )
+from .mlir_native_execution_evidence import (
+    NativeWholeProgramADExecutionCase as NativeWholeProgramADExecutionCase,
+)
+from .mlir_native_execution_evidence import (
+    NativeWholeProgramADExecutionEvidence as NativeWholeProgramADExecutionEvidence,
+)
+from .mlir_native_execution_evidence import (
+    build_native_whole_program_ad_execution_evidence as build_native_whole_program_ad_execution_evidence,
+)
+from .mlir_native_execution_evidence import (
+    run_native_whole_program_ad_execution_evidence as run_native_whole_program_ad_execution_evidence,
+)
 from .mlir_native_primitives import (
     _as_finite_vector as _as_finite_vector,
 )
@@ -1666,11 +1678,15 @@ __all__ = [
     "MLIRLLVMCorrectnessEvidence",
     "MLIRCompileConfig",
     "NativeWholeProgramADKernel",
+    "NativeWholeProgramADExecutionCase",
+    "NativeWholeProgramADExecutionEvidence",
     "PhaseQNodeMLIRRuntimeExecutable",
     "PrimitiveLoweringStatus",
     "WholeProgramADNativeLoweringReport",
     "MLIRModule",
     "analyse_whole_program_ad_native_lowering",
+    "build_native_whole_program_ad_execution_evidence",
+    "run_native_whole_program_ad_execution_evidence",
     "build_enzyme_mlir_benchmark_attachment",
     "build_enzyme_mlir_compiler_ad_breadth_artifact",
     "build_enzyme_mlir_compiler_ad_breadth_evidence",

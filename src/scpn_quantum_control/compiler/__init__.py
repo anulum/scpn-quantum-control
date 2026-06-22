@@ -25,6 +25,8 @@ from .mlir import (
     MLIRCompileConfig,
     MLIRLLVMCorrectnessEvidence,
     MLIRModule,
+    NativeWholeProgramADExecutionCase,
+    NativeWholeProgramADExecutionEvidence,
     NativeWholeProgramADKernel,
     PhaseQNodeMLIRRuntimeExecutable,
     PrimitiveLoweringStatus,
@@ -35,6 +37,7 @@ from .mlir import (
     build_enzyme_mlir_compiler_ad_breadth_artifact,
     build_enzyme_mlir_compiler_ad_breadth_evidence,
     build_enzyme_mlir_compiler_ad_breadth_gap_artifact,
+    build_native_whole_program_ad_execution_evidence,
     clear_native_whole_program_ad_compile_cache,
     compile_compiler_ad_transform_plan_to_mlir,
     compile_custom_derivative_rule_to_executable,
@@ -84,6 +87,7 @@ from .mlir import (
     native_whole_program_ad_compile_cache_stats,
     native_whole_program_ad_linalg_support,
     run_enzyme_mlir_maturity_audit,
+    run_native_whole_program_ad_execution_evidence,
 )
 
 __all__ = [
@@ -103,6 +107,8 @@ __all__ = [
     "ExecutableWholeProgramADKernel",
     "MLIRLLVMCorrectnessEvidence",
     "MLIRCompileConfig",
+    "NativeWholeProgramADExecutionCase",
+    "NativeWholeProgramADExecutionEvidence",
     "NativeWholeProgramADKernel",
     "PhaseQNodeMLIRRuntimeExecutable",
     "PrimitiveLoweringStatus",
@@ -113,6 +119,7 @@ __all__ = [
     "build_enzyme_mlir_compiler_ad_breadth_artifact",
     "build_enzyme_mlir_compiler_ad_breadth_evidence",
     "build_enzyme_mlir_compiler_ad_breadth_gap_artifact",
+    "build_native_whole_program_ad_execution_evidence",
     "build_compiler_ad_transform_plan",
     "compile_compiler_ad_transform_plan_to_mlir",
     "compile_custom_derivative_rule_to_executable",
@@ -163,4 +170,5 @@ __all__ = [
     "native_whole_program_ad_compile_cache_stats",
     "native_whole_program_ad_linalg_support",
     "run_enzyme_mlir_maturity_audit",
+    "run_native_whole_program_ad_execution_evidence",
 ]

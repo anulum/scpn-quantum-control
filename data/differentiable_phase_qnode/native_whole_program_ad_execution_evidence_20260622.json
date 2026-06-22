@@ -1,0 +1,167 @@
+{
+  "artifact_id": "native-whole-program-ad-execution-20260622",
+  "beyond_scalar_executed": true,
+  "cases": [
+    {
+      "case_id": "scalar_poly_3",
+      "claim_boundary": "Bounded SCPN-native llvmlite whole-program AD execution: static dense scalar and linear-algebra (determinant, inverse, linear solve, trace) value and gradient checked against the interpreted Program AD reference within float64 tolerance; no Enzyme, provider, hardware, performance, or beyond-declared-size promotion claim.",
+      "failure_class": null,
+      "gradient_error": 0.0,
+      "native_symbol": "whole_program_ad_3_2_whole_program_ad",
+      "operand_dimension": 3,
+      "operation_family": "scalar",
+      "runtime_seconds": 0.017663537990301847,
+      "status": "executed",
+      "value_error": 0.0
+    },
+    {
+      "case_id": "determinant_2x2",
+      "claim_boundary": "Bounded SCPN-native llvmlite whole-program AD execution: static dense scalar and linear-algebra (determinant, inverse, linear solve, trace) value and gradient checked against the interpreted Program AD reference within float64 tolerance; no Enzyme, provider, hardware, performance, or beyond-declared-size promotion claim.",
+      "failure_class": null,
+      "gradient_error": 8.881784197001252e-16,
+      "native_symbol": "whole_program_ad_4_2_whole_program_ad",
+      "operand_dimension": 2,
+      "operation_family": "determinant",
+      "runtime_seconds": 0.018146971939131618,
+      "status": "executed",
+      "value_error": 3.552713678800501e-15
+    },
+    {
+      "case_id": "determinant_3x3",
+      "claim_boundary": "Bounded SCPN-native llvmlite whole-program AD execution: static dense scalar and linear-algebra (determinant, inverse, linear solve, trace) value and gradient checked against the interpreted Program AD reference within float64 tolerance; no Enzyme, provider, hardware, performance, or beyond-declared-size promotion claim.",
+      "failure_class": null,
+      "gradient_error": 1.0658141036401503e-14,
+      "native_symbol": "whole_program_ad_9_2_whole_program_ad",
+      "operand_dimension": 3,
+      "operation_family": "determinant",
+      "runtime_seconds": 0.03302298404742032,
+      "status": "executed",
+      "value_error": 8.526512829121202e-14
+    },
+    {
+      "case_id": "determinant_4x4",
+      "claim_boundary": "Bounded SCPN-native llvmlite whole-program AD execution: static dense scalar and linear-algebra (determinant, inverse, linear solve, trace) value and gradient checked against the interpreted Program AD reference within float64 tolerance; no Enzyme, provider, hardware, performance, or beyond-declared-size promotion claim.",
+      "failure_class": null,
+      "gradient_error": 3.410605131648481e-13,
+      "native_symbol": "whole_program_ad_16_2_whole_program_ad",
+      "operand_dimension": 4,
+      "operation_family": "determinant",
+      "runtime_seconds": 0.0955708110705018,
+      "status": "executed",
+      "value_error": 9.094947017729282e-13
+    },
+    {
+      "case_id": "inverse_2x2",
+      "claim_boundary": "Bounded SCPN-native llvmlite whole-program AD execution: static dense scalar and linear-algebra (determinant, inverse, linear solve, trace) value and gradient checked against the interpreted Program AD reference within float64 tolerance; no Enzyme, provider, hardware, performance, or beyond-declared-size promotion claim.",
+      "failure_class": null,
+      "gradient_error": 6.938893903907228e-18,
+      "native_symbol": "whole_program_ad_4_2_whole_program_ad",
+      "operand_dimension": 2,
+      "operation_family": "inverse",
+      "runtime_seconds": 0.02893980802036822,
+      "status": "executed",
+      "value_error": 0.0
+    },
+    {
+      "case_id": "inverse_3x3",
+      "claim_boundary": "Bounded SCPN-native llvmlite whole-program AD execution: static dense scalar and linear-algebra (determinant, inverse, linear solve, trace) value and gradient checked against the interpreted Program AD reference within float64 tolerance; no Enzyme, provider, hardware, performance, or beyond-declared-size promotion claim.",
+      "failure_class": null,
+      "gradient_error": 6.938893903907228e-18,
+      "native_symbol": "whole_program_ad_9_2_whole_program_ad",
+      "operand_dimension": 3,
+      "operation_family": "inverse",
+      "runtime_seconds": 0.3841708939289674,
+      "status": "executed",
+      "value_error": 0.0
+    },
+    {
+      "case_id": "solve_2x2",
+      "claim_boundary": "Bounded SCPN-native llvmlite whole-program AD execution: static dense scalar and linear-algebra (determinant, inverse, linear solve, trace) value and gradient checked against the interpreted Program AD reference within float64 tolerance; no Enzyme, provider, hardware, performance, or beyond-declared-size promotion claim.",
+      "failure_class": null,
+      "gradient_error": 1.3877787807814457e-17,
+      "native_symbol": "whole_program_ad_6_2_whole_program_ad",
+      "operand_dimension": 2,
+      "operation_family": "solve",
+      "runtime_seconds": 0.04277361696586013,
+      "status": "executed",
+      "value_error": 0.0
+    },
+    {
+      "case_id": "solve_3x3",
+      "claim_boundary": "Bounded SCPN-native llvmlite whole-program AD execution: static dense scalar and linear-algebra (determinant, inverse, linear solve, trace) value and gradient checked against the interpreted Program AD reference within float64 tolerance; no Enzyme, provider, hardware, performance, or beyond-declared-size promotion claim.",
+      "failure_class": null,
+      "gradient_error": 6.938893903907228e-18,
+      "native_symbol": "whole_program_ad_12_2_whole_program_ad",
+      "operand_dimension": 3,
+      "operation_family": "solve",
+      "runtime_seconds": 0.21208178903907537,
+      "status": "executed",
+      "value_error": 0.0
+    },
+    {
+      "case_id": "trace_2x2",
+      "claim_boundary": "Bounded SCPN-native llvmlite whole-program AD execution: static dense scalar and linear-algebra (determinant, inverse, linear solve, trace) value and gradient checked against the interpreted Program AD reference within float64 tolerance; no Enzyme, provider, hardware, performance, or beyond-declared-size promotion claim.",
+      "failure_class": null,
+      "gradient_error": 0.0,
+      "native_symbol": "whole_program_ad_4_2_whole_program_ad",
+      "operand_dimension": 2,
+      "operation_family": "trace",
+      "runtime_seconds": 0.013993088039569557,
+      "status": "executed",
+      "value_error": 0.0
+    },
+    {
+      "case_id": "trace_3x3",
+      "claim_boundary": "Bounded SCPN-native llvmlite whole-program AD execution: static dense scalar and linear-algebra (determinant, inverse, linear solve, trace) value and gradient checked against the interpreted Program AD reference within float64 tolerance; no Enzyme, provider, hardware, performance, or beyond-declared-size promotion claim.",
+      "failure_class": null,
+      "gradient_error": 0.0,
+      "native_symbol": "whole_program_ad_9_2_whole_program_ad",
+      "operand_dimension": 3,
+      "operation_family": "trace",
+      "runtime_seconds": 0.020246153930202127,
+      "status": "executed",
+      "value_error": 0.0
+    },
+    {
+      "case_id": "determinant_20x20_fail_closed",
+      "claim_boundary": "Bounded SCPN-native llvmlite whole-program AD execution: static dense scalar and linear-algebra (determinant, inverse, linear solve, trace) value and gradient checked against the interpreted Program AD reference within float64 tolerance; no Enzyme, provider, hardware, performance, or beyond-declared-size promotion claim.",
+      "failure_class": "native whole-program AD lowering failed closed: unsupported native ops: linalg:det:20x20",
+      "gradient_error": null,
+      "native_symbol": null,
+      "operand_dimension": 20,
+      "operation_family": "determinant",
+      "runtime_seconds": null,
+      "status": "fail_closed",
+      "value_error": null
+    },
+    {
+      "case_id": "inverse_7x7_fail_closed",
+      "claim_boundary": "Bounded SCPN-native llvmlite whole-program AD execution: static dense scalar and linear-algebra (determinant, inverse, linear solve, trace) value and gradient checked against the interpreted Program AD reference within float64 tolerance; no Enzyme, provider, hardware, performance, or beyond-declared-size promotion claim.",
+      "failure_class": "native whole-program AD lowering failed closed: unsupported native ops: linalg:inv:7x7:0:0, linalg:inv:7x7:0:1, linalg:inv:7x7:0:2, linalg:inv:7x7:0:3, linalg:inv:7x7:0:4, linalg:inv:7x7:0:5, linalg:inv:7x7:0:6, linalg:inv:7x7:1:0, linalg:inv:7x7:1:1, linalg:inv:7x7:1:2, linalg:inv:7x7:1:3, linalg:inv:7x7:1:4, linalg:inv:7x7:1:5, linalg:inv:7x7:1:6, linalg:inv:7x7:2:0, linalg:inv:7x7:2:1, linalg:inv:7x7:2:2, linalg:inv:7x7:2:3, linalg:inv:7x7:2:4, linalg:inv:7x7:2:5, linalg:inv:7x7:2:6, linalg:inv:7x7:3:0, linalg:inv:7x7:3:1, linalg:inv:7x7:3:2, linalg:inv:7x7:3:3, linalg:inv:7x7:3:4, linalg:inv:7x7:3:5, linalg:inv:7x7:3:6, linalg:inv:7x7:4:0, linalg:inv:7x7:4:1, linalg:inv:7x7:4:2, linalg:inv:7x7:4:3, linalg:inv:7x7:4:4, linalg:inv:7x7:4:5, linalg:inv:7x7:4:6, linalg:inv:7x7:5:0, linalg:inv:7x7:5:1, linalg:inv:7x7:5:2, linalg:inv:7x7:5:3, linalg:inv:7x7:5:4, linalg:inv:7x7:5:5, linalg:inv:7x7:5:6, linalg:inv:7x7:6:0, linalg:inv:7x7:6:1, linalg:inv:7x7:6:2, linalg:inv:7x7:6:3, linalg:inv:7x7:6:4, linalg:inv:7x7:6:5, linalg:inv:7x7:6:6",
+      "gradient_error": null,
+      "native_symbol": null,
+      "operand_dimension": 7,
+      "operation_family": "inverse",
+      "runtime_seconds": null,
+      "status": "fail_closed",
+      "value_error": null
+    }
+  ],
+  "claim_boundary": "Bounded SCPN-native llvmlite whole-program AD execution: static dense scalar and linear-algebra (determinant, inverse, linear solve, trace) value and gradient checked against the interpreted Program AD reference within float64 tolerance; no Enzyme, provider, hardware, performance, or beyond-declared-size promotion claim.",
+  "executed_operation_families": [
+    "scalar",
+    "determinant",
+    "inverse",
+    "solve",
+    "trace"
+  ],
+  "fail_closed_boundaries": {
+    "determinant": 20,
+    "inverse": 7,
+    "solve": 7
+  },
+  "gradient_parity_tolerance": 1e-06,
+  "max_gradient_error": 3.410605131648481e-13,
+  "max_value_error": 9.094947017729282e-13,
+  "total_runtime_seconds": 0.8666096549713984
+}
