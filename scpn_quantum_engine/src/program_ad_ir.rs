@@ -814,6 +814,33 @@ fn accumulate_reverse_effect(
             }
             Ok(())
         }
+        name if name.starts_with("linalg:det:") => {
+            // General determinant (4x4 and up): d(det)/dA_{ij} = det * (A^{-1})_{ji}.
+            let n = parse_det_dim(name).ok_or_else(|| {
+                format!("effect {} {name} has no determinant dimension", effect.index)
+            })?;
+            if effect.inputs.len() != n * n {
+                return Err(format!(
+                    "effect {} {name} requires {} operands",
+                    effect.index,
+                    n * n
+                ));
+            }
+            let matrix = effect
+                .inputs
+                .iter()
+                .map(|input| operand_value(input, values))
+                .collect::<Result<Vec<f64>, String>>()?;
+            let determinant = determinant_general(&matrix, n)?;
+            let inverse = invert_square(&matrix, n)?;
+            for i in 0..n {
+                for j in 0..n {
+                    let cofactor = determinant * inverse[j * n + i];
+                    add_adjoint(&effect.inputs[i * n + j], cotangent * cofactor, values, adjoints)?;
+                }
+            }
+            Ok(())
+        }
         name if name.starts_with("linalg:inv:") => {
             // d(A^{-1})_{ij}/dA_{kl} = -(A^{-1})_{ik} (A^{-1})_{lj}.
             let (n, row, column) = parse_inv_index(name)
@@ -1083,6 +1110,25 @@ fn evaluate_effect(
             let m = read_3x3(effect, values)?;
             let [a, b, c, d, e, f, g, h, i] = m;
             Ok(a * (e * i - f * h) - b * (d * i - f * g) + c * (d * h - e * g))
+        }
+        name if name.starts_with("linalg:det:") => {
+            // General determinant (4x4 and up) via LU factorisation with partial pivoting.
+            let n = parse_det_dim(name).ok_or_else(|| {
+                format!("effect {} {name} has no determinant dimension", effect.index)
+            })?;
+            if effect.inputs.len() != n * n {
+                return Err(format!(
+                    "effect {} {name} requires {} operands",
+                    effect.index,
+                    n * n
+                ));
+            }
+            let matrix = effect
+                .inputs
+                .iter()
+                .map(|input| operand_value(input, values))
+                .collect::<Result<Vec<f64>, String>>()?;
+            determinant_general(&matrix, n)
         }
         name if name.starts_with("linalg:inv:") => {
             // Each opcode emits one element (row, column) of the matrix inverse.
@@ -1392,8 +1438,116 @@ fn invert_square(matrix: &[f64], n: usize) -> Result<Vec<f64>, String> {
             m.copy_from_slice(&matrix[..9]);
             invert_3x3(m).map(|inv| inv.to_vec())
         }
-        _ => Err(format!("linalg inverse of dimension {n} is outside bounded Rust replay")),
+        _ => invert_general(matrix, n),
     }
+}
+
+/// Invert an `n x n` row-major matrix by Gauss-Jordan elimination with partial pivoting.
+///
+/// Fails closed on a singular or non-finite system. Used for dimensions above the closed-form
+/// 2x2/3x3 paths.
+fn invert_general(matrix: &[f64], n: usize) -> Result<Vec<f64>, String> {
+    let width = 2 * n;
+    let mut augmented = vec![0.0_f64; n * width];
+    for row in 0..n {
+        for column in 0..n {
+            augmented[row * width + column] = matrix[row * n + column];
+        }
+        augmented[row * width + n + row] = 1.0;
+    }
+    for column in 0..n {
+        let mut pivot = column;
+        let mut best = augmented[column * width + column].abs();
+        for row in (column + 1)..n {
+            let candidate = augmented[row * width + column].abs();
+            if candidate > best {
+                best = candidate;
+                pivot = row;
+            }
+        }
+        if best == 0.0 || !best.is_finite() {
+            return Err(format!("linalg {n}x{n} matrix is singular"));
+        }
+        if pivot != column {
+            for c in 0..width {
+                augmented.swap(pivot * width + c, column * width + c);
+            }
+        }
+        let pivot_value = augmented[column * width + column];
+        for c in 0..width {
+            augmented[column * width + c] /= pivot_value;
+        }
+        for row in 0..n {
+            if row != column {
+                let factor = augmented[row * width + column];
+                if factor != 0.0 {
+                    for c in 0..width {
+                        augmented[row * width + c] -= factor * augmented[column * width + c];
+                    }
+                }
+            }
+        }
+    }
+    let mut inverse = vec![0.0_f64; n * n];
+    for row in 0..n {
+        for column in 0..n {
+            inverse[row * n + column] = augmented[row * width + n + column];
+        }
+    }
+    if inverse.iter().any(|value| !value.is_finite()) {
+        return Err(format!("linalg {n}x{n} inverse is non-finite"));
+    }
+    Ok(inverse)
+}
+
+/// Determinant of an `n x n` row-major matrix by LU factorisation with partial pivoting.
+fn determinant_general(matrix: &[f64], n: usize) -> Result<f64, String> {
+    let mut work = matrix.to_vec();
+    let mut sign = 1.0_f64;
+    for column in 0..n {
+        let mut pivot = column;
+        let mut best = work[column * n + column].abs();
+        for row in (column + 1)..n {
+            let candidate = work[row * n + column].abs();
+            if candidate > best {
+                best = candidate;
+                pivot = row;
+            }
+        }
+        if best == 0.0 {
+            return Ok(0.0);
+        }
+        if pivot != column {
+            for c in 0..n {
+                work.swap(pivot * n + c, column * n + c);
+            }
+            sign = -sign;
+        }
+        let pivot_value = work[column * n + column];
+        for row in (column + 1)..n {
+            let factor = work[row * n + column] / pivot_value;
+            for c in column..n {
+                work[row * n + c] -= factor * work[column * n + c];
+            }
+        }
+    }
+    let mut determinant = sign;
+    for k in 0..n {
+        determinant *= work[k * n + k];
+    }
+    if !determinant.is_finite() {
+        return Err(format!("linalg {n}x{n} determinant is non-finite"));
+    }
+    Ok(determinant)
+}
+
+/// Parse the square dimension `n` from a `linalg:det:NxN` opcode.
+fn parse_det_dim(operation: &str) -> Option<usize> {
+    let parts: Vec<&str> = operation.split(':').collect();
+    if parts.len() != 3 {
+        return None;
+    }
+    parse_square_dim(parts[2])
 }
 
 /// Parse the square dimension `n` from an `NxN` opcode token.

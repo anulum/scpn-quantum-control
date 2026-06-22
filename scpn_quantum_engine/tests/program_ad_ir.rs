@@ -715,3 +715,29 @@ fn program_ad_effect_ir_rust_value_and_gradient_replays_linalg_inverse_3x3_eleme
     assert_eq!(result.gradient.len(), 9);
     assert!((result.gradient[0] - (-m00 * m00)).abs() <= 1.0e-12);
 }
+
+const LINALG_DET_4X4_DIAGONAL_PROGRAM_AD_IR: &str = r#"{"format": "program_ad_effect_ir.v1", "ssa_values": [{"name": "%0", "producer": 0, "version": 0, "shape": [], "dtype": "float64", "effect": 0}, {"name": "%1", "producer": 1, "version": 0, "shape": [], "dtype": "float64", "effect": 1}, {"name": "%2", "producer": 2, "version": 0, "shape": [], "dtype": "float64", "effect": 2}, {"name": "%3", "producer": 3, "version": 0, "shape": [], "dtype": "float64", "effect": 3}, {"name": "%4", "producer": 4, "version": 0, "shape": [], "dtype": "float64", "effect": 4}, {"name": "%5", "producer": 5, "version": 0, "shape": [], "dtype": "float64", "effect": 5}, {"name": "%6", "producer": 6, "version": 0, "shape": [], "dtype": "float64", "effect": 6}, {"name": "%7", "producer": 7, "version": 0, "shape": [], "dtype": "float64", "effect": 7}, {"name": "%8", "producer": 8, "version": 0, "shape": [], "dtype": "float64", "effect": 8}, {"name": "%9", "producer": 9, "version": 0, "shape": [], "dtype": "float64", "effect": 9}, {"name": "%10", "producer": 10, "version": 0, "shape": [], "dtype": "float64", "effect": 10}, {"name": "%11", "producer": 11, "version": 0, "shape": [], "dtype": "float64", "effect": 11}, {"name": "%12", "producer": 12, "version": 0, "shape": [], "dtype": "float64", "effect": 12}, {"name": "%13", "producer": 13, "version": 0, "shape": [], "dtype": "float64", "effect": 13}, {"name": "%14", "producer": 14, "version": 0, "shape": [], "dtype": "float64", "effect": 14}, {"name": "%15", "producer": 15, "version": 0, "shape": [], "dtype": "float64", "effect": 15}, {"name": "%16", "producer": 16, "version": 0, "shape": [], "dtype": "float64", "effect": 16}], "effects": [{"index": 0, "kind": "parameter", "target": "%0", "inputs": ["a"], "version": 0, "ordering": 0, "operation": "parameter"}, {"index": 1, "kind": "parameter", "target": "%1", "inputs": ["b"], "version": 0, "ordering": 1, "operation": "parameter"}, {"index": 2, "kind": "parameter", "target": "%2", "inputs": ["c"], "version": 0, "ordering": 2, "operation": "parameter"}, {"index": 3, "kind": "parameter", "target": "%3", "inputs": ["d"], "version": 0, "ordering": 3, "operation": "parameter"}, {"index": 4, "kind": "parameter", "target": "%4", "inputs": ["e"], "version": 0, "ordering": 4, "operation": "parameter"}, {"index": 5, "kind": "parameter", "target": "%5", "inputs": ["f"], "version": 0, "ordering": 5, "operation": "parameter"}, {"index": 6, "kind": "parameter", "target": "%6", "inputs": ["g"], "version": 0, "ordering": 6, "operation": "parameter"}, {"index": 7, "kind": "parameter", "target": "%7", "inputs": ["h"], "version": 0, "ordering": 7, "operation": "parameter"}, {"index": 8, "kind": "parameter", "target": "%8", "inputs": ["i"], "version": 0, "ordering": 8, "operation": "parameter"}, {"index": 9, "kind": "parameter", "target": "%9", "inputs": ["j"], "version": 0, "ordering": 9, "operation": "parameter"}, {"index": 10, "kind": "parameter", "target": "%10", "inputs": ["k"], "version": 0, "ordering": 10, "operation": "parameter"}, {"index": 11, "kind": "parameter", "target": "%11", "inputs": ["l"], "version": 0, "ordering": 11, "operation": "parameter"}, {"index": 12, "kind": "parameter", "target": "%12", "inputs": ["m"], "version": 0, "ordering": 12, "operation": "parameter"}, {"index": 13, "kind": "parameter", "target": "%13", "inputs": ["n"], "version": 0, "ordering": 13, "operation": "parameter"}, {"index": 14, "kind": "parameter", "target": "%14", "inputs": ["o"], "version": 0, "ordering": 14, "operation": "parameter"}, {"index": 15, "kind": "parameter", "target": "%15", "inputs": ["p"], "version": 0, "ordering": 15, "operation": "parameter"}, {"index": 16, "kind": "pure", "target": "%16", "inputs": ["%0", "%1", "%2", "%3", "%4", "%5", "%6", "%7", "%8", "%9", "%10", "%11", "%12", "%13", "%14", "%15"], "version": 0, "ordering": 16, "operation": "linalg:det:4x4"}], "alias_edges": [], "control_regions": [], "phi_nodes": [], "bytecode_offsets": [0]}
+"#;
+
+#[test]
+fn program_ad_effect_ir_rust_value_and_gradient_replays_general_linalg_det_4x4() {
+    // det(diag(2,3,4,5)) = 120 via the LU general path; gradient is the adjugate,
+    // diag(60, 40, 30, 24), zero off the diagonal.
+    let result = interpret_program_ad_effect_ir_value_and_gradient(
+        LINALG_DET_4X4_DIAGONAL_PROGRAM_AD_IR,
+        &[
+            2.0, 0.0, 0.0, 0.0, 0.0, 3.0, 0.0, 0.0, 0.0, 0.0, 4.0, 0.0, 0.0, 0.0, 0.0, 5.0,
+        ],
+    )
+    .unwrap();
+
+    assert!(result.supported, "{:?}", result.blocked_reasons);
+    assert!((result.value.unwrap() - 120.0_f64).abs() <= 1.0e-9);
+    let expected = [
+        60.0_f64, 0.0, 0.0, 0.0, 0.0, 40.0, 0.0, 0.0, 0.0, 0.0, 30.0, 0.0, 0.0, 0.0, 0.0, 24.0,
+    ];
+    assert_eq!(result.gradient.len(), 16);
+    for (got, want) in result.gradient.iter().zip(expected.iter()) {
+        assert!((got - want).abs() <= 1.0e-9, "{got} vs {want}");
+    }
+}
