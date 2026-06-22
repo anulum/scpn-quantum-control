@@ -14,7 +14,7 @@
     "python_model_source_modules": 893,
     "rust_pyo3_model_wrappers": 137,
     "rust_source_modules": 38,
-    "test_files": 2074
+    "test_files": 2075
   },
   "documentation": {
     "examples": [
@@ -10973,6 +10973,7 @@
       "tests/test_feedback_loop_branches.py",
       "tests/test_feedback_provider_metadata.py",
       "tests/test_feedback_submission.py",
+      "tests/test_feedback_submission_branches.py",
       "tests/test_fep.py",
       "tests/test_fim_hamiltonian.py",
       "tests/test_fim_mechanism.py",
