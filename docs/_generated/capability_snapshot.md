@@ -7,7 +7,7 @@
 |---|---:|
 | Package version | 0.9.12 |
 | Public API exports | 714 |
-| Python source modules | 891 |
+| Python source modules | 892 |
 | Public Python classes | 1840 |
 | Paper 0 validation modules | 466 |
 | Domain package families | 32 |
@@ -17,7 +17,7 @@
 | Notebook files | 98 |
 | Example files | 30 |
 | Optional extras | 42 |
-| Python test files | 2071 |
+| Python test files | 2072 |
 | Public documentation pages | 254 |
 | GitHub Actions workflows | 19 |
 

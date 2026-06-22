@@ -11,10 +11,10 @@
     "public_api_exports": 714,
     "public_documentation_pages": 254,
     "python_model_classes": 1840,
-    "python_model_source_modules": 891,
+    "python_model_source_modules": 892,
     "rust_pyo3_model_wrappers": 137,
     "rust_source_modules": 38,
-    "test_files": 2071
+    "test_files": 2072
   },
   "documentation": {
     "examples": [
@@ -469,7 +469,7 @@
       {
         "package": "compiler",
         "path": "src/scpn_quantum_control/compiler",
-        "python_modules": 3
+        "python_modules": 4
       },
       {
         "package": "control",
@@ -8534,6 +8534,7 @@
       "src/scpn_quantum_control/codegen/ultrascale_hls.py",
       "src/scpn_quantum_control/compiler/mlir.py",
       "src/scpn_quantum_control/compiler/mlir_enzyme_evidence.py",
+      "src/scpn_quantum_control/compiler/mlir_native_primitives.py",
       "src/scpn_quantum_control/compiler/mlir_records.py",
       "src/scpn_quantum_control/config.py",
       "src/scpn_quantum_control/control/adaptive_branching.py",
@@ -10967,6 +10968,7 @@
       "tests/test_feedback_dryrun.py",
       "tests/test_feedback_hardware_scheduler.py",
       "tests/test_feedback_loop.py",
+      "tests/test_feedback_loop_branches.py",
       "tests/test_feedback_provider_metadata.py",
       "tests/test_feedback_submission.py",
       "tests/test_fep.py",
