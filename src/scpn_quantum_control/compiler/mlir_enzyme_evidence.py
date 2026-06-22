@@ -222,7 +222,7 @@ class EnzymeMLIRBenchmarkAttachment:
         if not isinstance(self.validation, PhaseQNodeAffinityArtifactValidation):
             raise ValueError("validation must be PhaseQNodeAffinityArtifactValidation")
         cases = tuple(sorted(case.strip() for case in self.required_breadth_cases))
-        if set(cases) != ENZYME_MLIR_COMPILER_AD_BREADTH_CASES:
+        if frozenset(cases) != ENZYME_MLIR_COMPILER_AD_BREADTH_CASES:
             missing = sorted(ENZYME_MLIR_COMPILER_AD_BREADTH_CASES.difference(cases))
             extra = sorted(set(cases).difference(ENZYME_MLIR_COMPILER_AD_BREADTH_CASES))
             details = ", ".join(
@@ -420,7 +420,7 @@ class EnzymeMLIRCompilerADBreadthArtifact:
         if any(not isinstance(case, EnzymeMLIRCompilerADBreadthCaseEvidence) for case in cases):
             raise ValueError("cases must be EnzymeMLIRCompilerADBreadthCaseEvidence rows")
         case_ids = tuple(case.case_id for case in cases)
-        if set(case_ids) != ENZYME_MLIR_COMPILER_AD_BREADTH_CASES or len(case_ids) != len(
+        if frozenset(case_ids) != ENZYME_MLIR_COMPILER_AD_BREADTH_CASES or len(case_ids) != len(
             set(case_ids)
         ):
             missing = sorted(ENZYME_MLIR_COMPILER_AD_BREADTH_CASES.difference(case_ids))
@@ -488,7 +488,7 @@ class EnzymeMLIRCompilerADBreadthArtifact:
         return (
             self.isolated_benchmark_evidence.promotion_ready
             and all(case.passed for case in self.cases)
-            and set(self.transform_modes) == ENZYME_MLIR_COMPILER_AD_TRANSFORM_MODES
+            and frozenset(self.transform_modes) == ENZYME_MLIR_COMPILER_AD_TRANSFORM_MODES
             and self.runtime_seconds > 0.0
         )
 
@@ -584,7 +584,7 @@ class EnzymeMLIRCompilerADBreadthEvidence:
             raise ValueError("artifact_id must be non-empty")
         object.__setattr__(self, "artifact_id", artifact_id)
         cases = dict(self.cases)
-        if set(cases) != ENZYME_MLIR_COMPILER_AD_BREADTH_CASES or not all(cases.values()):
+        if frozenset(cases) != ENZYME_MLIR_COMPILER_AD_BREADTH_CASES or not all(cases.values()):
             missing = sorted(ENZYME_MLIR_COMPILER_AD_BREADTH_CASES.difference(cases))
             failed = sorted(key for key, value in cases.items() if not value)
             extra = sorted(set(cases).difference(ENZYME_MLIR_COMPILER_AD_BREADTH_CASES))
@@ -602,7 +602,7 @@ class EnzymeMLIRCompilerADBreadthEvidence:
             raise ValueError("compiler AD breadth cases must map to booleans")
         object.__setattr__(self, "cases", MappingProxyType(cases))
         modes = tuple(sorted(mode.strip().lower() for mode in self.transform_modes))
-        if set(modes) != ENZYME_MLIR_COMPILER_AD_TRANSFORM_MODES:
+        if frozenset(modes) != ENZYME_MLIR_COMPILER_AD_TRANSFORM_MODES:
             raise ValueError("transform_modes must cover forward, reverse, jvp, and vjp")
         object.__setattr__(self, "transform_modes", modes)
         languages = tuple(sorted(language.strip().lower() for language in self.frontend_languages))
@@ -633,9 +633,9 @@ class EnzymeMLIRCompilerADBreadthEvidence:
         """Return whether all required compiler-AD breadth cases passed."""
 
         return (
-            set(self.cases) == ENZYME_MLIR_COMPILER_AD_BREADTH_CASES
+            frozenset(self.cases) == ENZYME_MLIR_COMPILER_AD_BREADTH_CASES
             and all(self.cases.values())
-            and set(self.transform_modes) == ENZYME_MLIR_COMPILER_AD_TRANSFORM_MODES
+            and frozenset(self.transform_modes) == ENZYME_MLIR_COMPILER_AD_TRANSFORM_MODES
         )
 
     def to_dict(self) -> dict[str, object]:

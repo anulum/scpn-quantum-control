@@ -1360,7 +1360,7 @@ def _normalise_provider_gradient_workflow_artifacts(
     artifact_tuple = tuple(artifacts)
     if not artifact_tuple:
         return ()
-    methods = {artifact.gradient_method for artifact in artifact_tuple}
+    methods = frozenset(artifact.gradient_method for artifact in artifact_tuple)
     if methods != QISKIT_PROVIDER_GRADIENT_METHODS:
         missing = sorted(QISKIT_PROVIDER_GRADIENT_METHODS - methods)
         extra = sorted(methods - QISKIT_PROVIDER_GRADIENT_METHODS)
