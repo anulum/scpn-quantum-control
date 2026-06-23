@@ -361,6 +361,56 @@ def kuramoto_interaction_energy_gradient(
     return np.asarray(jl.kuramoto_interaction_energy_gradient(phases, matrix), dtype=np.float64)
 
 
+def sakaguchi_force(
+    theta: NDArray[np.float64], coupling: NDArray[np.float64], frustration: float
+) -> NDArray[np.float64]:
+    """Julia-tier Kuramoto–Sakaguchi frustrated force.
+
+    Parameters
+    ----------
+    theta : numpy.ndarray
+        One-dimensional array of ``N`` oscillator phases in radians.
+    coupling : numpy.ndarray
+        Two-dimensional ``(N, N)`` coupling matrix.
+    frustration : float
+        The phase-frustration angle ``α`` in radians.
+
+    Returns
+    -------
+    numpy.ndarray
+        One-dimensional float64 force array of length ``N``.
+    """
+    jl = _load()
+    phases = np.ascontiguousarray(theta, dtype=np.float64)
+    matrix = np.ascontiguousarray(coupling, dtype=np.float64)
+    return np.asarray(jl.sakaguchi_force(phases, matrix, float(frustration)), dtype=np.float64)
+
+
+def sakaguchi_jacobian(
+    theta: NDArray[np.float64], coupling: NDArray[np.float64], frustration: float
+) -> NDArray[np.float64]:
+    """Julia-tier Kuramoto–Sakaguchi stability Jacobian.
+
+    Parameters
+    ----------
+    theta : numpy.ndarray
+        One-dimensional array of ``N`` oscillator phases in radians.
+    coupling : numpy.ndarray
+        Two-dimensional ``(N, N)`` coupling matrix.
+    frustration : float
+        The phase-frustration angle ``α`` in radians.
+
+    Returns
+    -------
+    numpy.ndarray
+        Two-dimensional ``(N, N)`` float64 Jacobian matrix.
+    """
+    jl = _load()
+    phases = np.ascontiguousarray(theta, dtype=np.float64)
+    matrix = np.ascontiguousarray(coupling, dtype=np.float64)
+    return np.asarray(jl.sakaguchi_jacobian(phases, matrix, float(frustration)), dtype=np.float64)
+
+
 __all__ = [
     "daido_order_parameter",
     "daido_order_parameter_gradient",
@@ -379,4 +429,6 @@ __all__ = [
     "order_parameter_gradient",
     "order_parameter_hessian",
     "order_parameters_batch",
+    "sakaguchi_force",
+    "sakaguchi_jacobian",
 ]

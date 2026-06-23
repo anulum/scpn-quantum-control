@@ -8,12 +8,12 @@
     "notebook_files": 98,
     "optional_extras": 42,
     "public_api_exports": 717,
-    "public_documentation_pages": 248,
+    "public_documentation_pages": 249,
     "python_model_classes": 826,
-    "python_model_source_modules": 441,
-    "rust_pyo3_model_wrappers": 151,
+    "python_model_source_modules": 442,
+    "rust_pyo3_model_wrappers": 153,
     "rust_source_modules": 38,
-    "test_files": 748
+    "test_files": 749
   },
   "documentation": {
     "examples": [
@@ -165,6 +165,7 @@
       "docs/api.md",
       "docs/application_benchmarks.md",
       "docs/architecture.md",
+      "docs/architecture_map.md",
       "docs/artifact_storage.md",
       "docs/autodoc.md",
       "docs/backend_selector.md",
@@ -426,7 +427,7 @@
       {
         "package": "accel",
         "path": "src/scpn_quantum_control/accel",
-        "python_modules": 9
+        "python_modules": 10
       },
       {
         "package": "analysis",
@@ -3897,6 +3898,7 @@
       "src/scpn_quantum_control/accel/order_parameter_observables.py",
       "src/scpn_quantum_control/accel/rust_import.py",
       "src/scpn_quantum_control/accel/rust_kuramoto_classical.py",
+      "src/scpn_quantum_control/accel/sakaguchi_kuramoto.py",
       "src/scpn_quantum_control/analysis/adaptive_fim_feedback.py",
       "src/scpn_quantum_control/analysis/berry_phase.py",
       "src/scpn_quantum_control/analysis/bkt_analysis.py",
@@ -4456,6 +4458,8 @@
       "quantise_q_format",
       "rabi_pi_amplitude_fit",
       "run_realtime_feedback_loop",
+      "sakaguchi_force",
+      "sakaguchi_jacobian",
       "score_function_gradient_rust",
       "score_regions_batch",
       "spsa_gradient_rust",
@@ -5953,6 +5957,7 @@
       "tests/test_s4_multi_hardware_readiness.py",
       "tests/test_s4_neutral_atom_preregistration.py",
       "tests/test_s4_provider_preregistration.py",
+      "tests/test_sakaguchi_kuramoto.py",
       "tests/test_sc_to_quantum.py",
       "tests/test_sensing_branches.py",
       "tests/test_serialization_surface_audit.py",

@@ -1733,6 +1733,54 @@ If the measured ordering changes, update the chain comments at
 `_KURAMOTO_INTERACTION_ENERGY_CHAIN` and `_KURAMOTO_INTERACTION_ENERGY_GRADIENT_CHAIN` in
 `src/scpn_quantum_control/accel/kuramoto_energy.py` to match.
 
+### `sakaguchi_force(theta, K, α)` and `sakaguchi_jacobian(theta, K, α)`
+
+The Kuramoto–Sakaguchi frustrated force `F_j = Σ_{k≠j} K_jk sin(θ_k − θ_j − α)` and its
+stability Jacobian (`J_jl = K_jl cos(θ_l − θ_j − α)`, `l ≠ j`;
+`J_jj = −Σ_{k≠j} K_jk cos(θ_k − θ_j − α)`). The frustration `α` breaks reciprocity, so the
+Jacobian is asymmetric for `α ≠ 0`. Both routes are O(N²), so the sizes stop at N = 2048.
+Measured 2026-06-23 on a dense symmetric random coupling matrix at α = 0.3 on the local Linux
+runner (Intel i5-11600K @ 3.90 GHz, Python 3.12.3, juliacall, scpn-quantum-engine local
+build). Inner loop: 50 calls per sample × 7 samples; per-call median. Raw JSON:
+`docs/benchmarks/sakaguchi_kuramoto_tiers.json`.
+
+`sakaguchi_force` (α = 0.3):
+
+|    N |       Rust |      Julia |     Python |
+|-----:|-----------:|-----------:|-----------:|
+|    4 |    1.35 µs |   16.01 µs |   10.07 µs |
+|   64 |   38.04 µs |   47.10 µs |   46.91 µs |
+|  256 |  907.02 µs |  647.75 µs | 1105.99 µs |
+| 2048 | 66216.15 µs | 59439.56 µs | 92195.17 µs |
+
+`sakaguchi_jacobian` (α = 0.3):
+
+|    N |       Rust |      Julia |     Python |
+|-----:|-----------:|-----------:|-----------:|
+|    4 |    2.45 µs |   17.18 µs |    6.67 µs |
+|   64 |   35.03 µs |   56.54 µs |   42.25 µs |
+|  256 |  977.16 µs |  900.20 µs |  945.40 µs |
+| 2048 | 85922.89 µs | 85880.37 µs | 119125.31 µs |
+
+Read-offs:
+
+* Rust is first at small-to-mid N for both routes. As with the networked force, Julia's
+  BLAS-backed reduction edges the force ahead from N = 256 (648 vs 907 µs) to N = 2048
+  (59 vs 66 ms); the Jacobian is a near-tie at large N (Rust and Julia within 0.05% at
+  N = 2048). The chain keeps Rust first because it wins every small workload, and the large-N
+  gaps are small. The frustration angle adds no measurable cost over the networked kernels —
+  it is a constant offset inside the existing trigonometric argument.
+
+Re-run with:
+
+```bash
+python scripts/bench_sakaguchi_kuramoto_tiers.py
+```
+
+If the measured ordering changes, update the chain comments at `_SAKAGUCHI_FORCE_CHAIN`
+and `_SAKAGUCHI_JACOBIAN_CHAIN` in
+`src/scpn_quantum_control/accel/sakaguchi_kuramoto.py` to match.
+
 ### S4 multi-hardware readiness
 
 Command:

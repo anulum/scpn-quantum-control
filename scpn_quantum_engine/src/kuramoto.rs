@@ -660,6 +660,102 @@ pub fn kuramoto_interaction_energy_gradient_inner(
     out
 }
 
+/// Compute the Kuramoto–Sakaguchi frustrated force F_j = Σ_{k≠j} K_jk sin(θ_k − θ_j − α).
+///
+/// ``coupling`` is the N×N matrix K and ``frustration`` is the angle α. The self-coupling
+/// term is excluded. For α = 0 this is the networked-Kuramoto force.
+#[pyfunction]
+pub fn sakaguchi_force<'py>(
+    py: Python<'py>,
+    theta: PyReadonlyArray1<'_, f64>,
+    coupling: PyReadonlyArray2<'_, f64>,
+    frustration: f64,
+) -> PyResult<Bound<'py, PyArray1<f64>>> {
+    let theta = validate_phase_vector(&theta, "theta")?;
+    let matrix = coupling.as_array();
+    let n = theta.len();
+    if matrix.shape() != [n, n] {
+        return Err(PyValueError::new_err(format!(
+            "coupling must be a square matrix of order {n}, got shape {:?}",
+            matrix.shape()
+        )));
+    }
+    Ok(PyArray1::from_owned_array(
+        py,
+        sakaguchi_force_inner(theta, &matrix, frustration),
+    ))
+}
+
+/// Pure Rust Kuramoto–Sakaguchi force (no PyO3).
+pub fn sakaguchi_force_inner(
+    theta: &[f64],
+    coupling: &ArrayView2<'_, f64>,
+    frustration: f64,
+) -> Array1<f64> {
+    let n = theta.len();
+    let mut out = Array1::<f64>::zeros(n);
+    for j in 0..n {
+        let mut acc = 0.0_f64;
+        for k in 0..n {
+            if k == j {
+                continue;
+            }
+            acc += coupling[[j, k]] * (theta[k] - theta[j] - frustration).sin();
+        }
+        out[j] = acc;
+    }
+    out
+}
+
+/// Compute the Kuramoto–Sakaguchi stability Jacobian J_jl = ∂F_j/∂θ_l.
+///
+/// J_jl = K_jl cos(θ_l − θ_j − α) for l ≠ j, with J_jj = −Σ_{k≠j} K_jk cos(θ_k − θ_j − α).
+/// Every row sums to zero; for α ≠ 0 the matrix is asymmetric even for symmetric K.
+#[pyfunction]
+pub fn sakaguchi_jacobian<'py>(
+    py: Python<'py>,
+    theta: PyReadonlyArray1<'_, f64>,
+    coupling: PyReadonlyArray2<'_, f64>,
+    frustration: f64,
+) -> PyResult<Bound<'py, PyArray2<f64>>> {
+    let theta = validate_phase_vector(&theta, "theta")?;
+    let matrix = coupling.as_array();
+    let n = theta.len();
+    if matrix.shape() != [n, n] {
+        return Err(PyValueError::new_err(format!(
+            "coupling must be a square matrix of order {n}, got shape {:?}",
+            matrix.shape()
+        )));
+    }
+    Ok(PyArray2::from_owned_array(
+        py,
+        sakaguchi_jacobian_inner(theta, &matrix, frustration),
+    ))
+}
+
+/// Pure Rust Kuramoto–Sakaguchi stability Jacobian (no PyO3), returned row-major.
+pub fn sakaguchi_jacobian_inner(
+    theta: &[f64],
+    coupling: &ArrayView2<'_, f64>,
+    frustration: f64,
+) -> Array2<f64> {
+    let n = theta.len();
+    let mut out = Array2::<f64>::zeros((n, n));
+    for j in 0..n {
+        let mut diagonal = 0.0_f64;
+        for l in 0..n {
+            if l == j {
+                continue;
+            }
+            let entry = coupling[[j, l]] * (theta[l] - theta[j] - frustration).cos();
+            out[[j, l]] = entry;
+            diagonal -= entry;
+        }
+        out[[j, j]] = diagonal;
+    }
+    out
+}
+
 fn validate_finite_slice(values: &[f64], name: &str) -> PyResult<()> {
     if values.iter().any(|value| !value.is_finite()) {
         return Err(pyo3::exceptions::PyValueError::new_err(format!(
@@ -1753,6 +1849,78 @@ mod tests {
         let empty = Array2::<f64>::zeros((0, 0));
         assert_eq!(kuramoto_interaction_energy_inner(&[], &empty.view()), 0.0);
         assert!(kuramoto_interaction_energy_gradient_inner(&[], &empty.view()).is_empty());
+    }
+
+    #[test]
+    fn test_sakaguchi_force_matches_closed_form() {
+        let theta = vec![0.3, -1.1, 2.0, 0.7];
+        let k = _symmetric_coupling(4, 0.37);
+        let alpha = 0.4;
+        let force = sakaguchi_force_inner(&theta, &k.view(), alpha);
+        for (j, &tj) in theta.iter().enumerate() {
+            let expected: f64 = (0..4)
+                .filter(|&kk| kk != j)
+                .map(|kk| k[[j, kk]] * (theta[kk] - tj - alpha).sin())
+                .sum();
+            assert!((force[j] - expected).abs() < 1e-12);
+        }
+    }
+
+    #[test]
+    fn test_sakaguchi_jacobian_matches_finite_difference() {
+        let theta = vec![0.3, -1.1, 2.0, 0.7, 4.2];
+        let k = _symmetric_coupling(5, 0.21);
+        let alpha = 0.7;
+        let jacobian = sakaguchi_jacobian_inner(&theta, &k.view(), alpha);
+        let h = 1e-6;
+        for l in 0..theta.len() {
+            let mut plus = theta.clone();
+            let mut minus = theta.clone();
+            plus[l] += h;
+            minus[l] -= h;
+            let force_plus = sakaguchi_force_inner(&plus, &k.view(), alpha);
+            let force_minus = sakaguchi_force_inner(&minus, &k.view(), alpha);
+            for j in 0..theta.len() {
+                let fd = (force_plus[j] - force_minus[j]) / (2.0 * h);
+                assert!((jacobian[[j, l]] - fd).abs() < 1e-6, "J[{j},{l}]");
+            }
+        }
+    }
+
+    #[test]
+    fn test_sakaguchi_jacobian_rows_sum_to_zero_and_break_symmetry() {
+        let theta = vec![0.1, 0.9, 2.3, 3.1, 5.5];
+        let k = _symmetric_coupling(5, 0.5);
+        let jacobian = sakaguchi_jacobian_inner(&theta, &k.view(), 0.6);
+        let n = theta.len();
+        let mut max_asymmetry = 0.0_f64;
+        for i in 0..n {
+            let row_sum: f64 = (0..n).map(|j| jacobian[[i, j]]).sum();
+            assert!(row_sum.abs() < 1e-12, "row {i} sum = {row_sum}");
+            for j in 0..n {
+                max_asymmetry = max_asymmetry.max((jacobian[[i, j]] - jacobian[[j, i]]).abs());
+            }
+        }
+        // frustration breaks reciprocity even for symmetric coupling
+        assert!(max_asymmetry > 1e-2);
+    }
+
+    #[test]
+    fn test_sakaguchi_reduces_to_networked_at_zero_frustration() {
+        let theta = vec![0.3, -1.1, 2.0, 0.7, 4.2];
+        let k = _symmetric_coupling(5, 0.31);
+        let sakaguchi = sakaguchi_force_inner(&theta, &k.view(), 0.0);
+        let networked = networked_kuramoto_force_inner(&theta, &k.view());
+        for j in 0..theta.len() {
+            assert!((sakaguchi[j] - networked[j]).abs() < 1e-12);
+        }
+    }
+
+    #[test]
+    fn test_sakaguchi_empty() {
+        let empty = Array2::<f64>::zeros((0, 0));
+        assert!(sakaguchi_force_inner(&[], &empty.view(), 0.5).is_empty());
+        assert_eq!(sakaguchi_jacobian_inner(&[], &empty.view(), 0.5).shape(), &[0, 0]);
     }
 
     #[test]

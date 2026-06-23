@@ -81,6 +81,12 @@ from .order_parameter_observables import (
     order_parameter_gradient,
     order_parameter_hessian,
 )
+from .sakaguchi_kuramoto import (
+    last_sakaguchi_force_tier_used,
+    last_sakaguchi_jacobian_tier_used,
+    sakaguchi_force,
+    sakaguchi_jacobian,
+)
 
 __all__ = [
     "MultiLangDispatcher",
@@ -116,6 +122,10 @@ __all__ = [
     "order_parameter",
     "order_parameter_gradient",
     "order_parameter_hessian",
+    "sakaguchi_force",
+    "sakaguchi_jacobian",
+    "last_sakaguchi_force_tier_used",
+    "last_sakaguchi_jacobian_tier_used",
 ]
 
 import numpy as np

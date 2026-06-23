@@ -174,9 +174,9 @@ def test_live_rust_crate_records_threading_without_simd_promotion() -> None:
     # 137 original kernels plus the Kuramoto order-parameter gradient and Hessian, the
     # mean-phase value, gradient and Hessian, the Daido order-parameter value, gradient
     # and Hessian, the mean-field force and stability Jacobian, the networked-Kuramoto
-    # force and stability Jacobian, and the Kuramoto interaction energy and its gradient
-    # PyO3 exports.
-    assert audit.pyfunction_count == 151
+    # force and stability Jacobian, the Kuramoto interaction energy and its gradient, and
+    # the Kuramoto–Sakaguchi frustrated force and stability Jacobian PyO3 exports.
+    assert audit.pyfunction_count == 153
     assert audit.rayon_threaded_count > 0
     assert audit.explicit_simd_count == 0
     assert audit.performance_claim_eligible_count == 0
