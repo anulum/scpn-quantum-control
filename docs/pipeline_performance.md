@@ -1634,6 +1634,56 @@ If the measured ordering changes, update the chain comments at `_MEAN_FIELD_FORC
 and `_MEAN_FIELD_JACOBIAN_CHAIN` in
 `src/scpn_quantum_control/accel/kuramoto_mean_field.py` to match.
 
+### `networked_kuramoto_force(theta, K)` and `networked_kuramoto_jacobian(theta, K)`
+
+The general (graph) Kuramoto force `F_j = Σ_k K_jk sin(θ_k − θ_j)` for a coupling matrix
+`K` and its stability Jacobian (`J_jl = K_jl cos(θ_l − θ_j)`, `l ≠ j`;
+`J_jj = −Σ_{k≠j} K_jk cos(θ_k − θ_j)`). Both routes are O(N²) — the force sums over the
+full coupling row — so the sizes stop at N = 2048. Measured 2026-06-23 on a dense symmetric
+random coupling matrix on the local Linux runner (Intel i5-11600K @ 3.90 GHz, Python 3.12.3,
+juliacall, scpn-quantum-engine local build). Inner loop: 50 calls per sample × 7 samples;
+per-call median. Raw JSON: `docs/benchmarks/networked_kuramoto_tiers.json`.
+
+`networked_kuramoto_force`:
+
+|    N |       Rust |      Julia |     Python |
+|-----:|-----------:|-----------:|-----------:|
+|    4 |    2.56 µs |   19.29 µs |    4.96 µs |
+|   64 |   31.69 µs |   48.40 µs |   53.82 µs |
+|  256 |  825.17 µs |  739.25 µs |  915.51 µs |
+| 2048 | 99005.61 µs | 87903.85 µs | 100478.17 µs |
+
+`networked_kuramoto_jacobian`:
+
+|    N |       Rust |      Julia |     Python |
+|-----:|-----------:|-----------:|-----------:|
+|    4 |    1.58 µs |  276.80 µs |   14.58 µs |
+|   64 |   60.96 µs |   78.91 µs |   54.11 µs |
+|  256 |  968.56 µs | 1724.86 µs | 1043.65 µs |
+| 2048 | 71741.98 µs | 77389.81 µs | 110316.76 µs |
+
+Read-offs:
+
+* Rust is first at small-to-mid N for both routes and wins the Jacobian at N = 2048. For the
+  force, Julia's BLAS-backed reduction edges ahead from N = 256 (739 vs 825 µs) to N = 2048
+  (88 vs 99 ms, within ~11%); the chain still places Rust first because it wins every small
+  workload and the whole Jacobian route, and the large-N force gap is small. Callers running
+  the force at N ≥ 256 with Julia installed can call `_julia_networked_kuramoto_force`
+  directly.
+* Julia's Jacobian is dominated by FFI overhead at small N (277 µs at N = 4 to marshal the
+  N × N matrix), so it only becomes competitive past N ≈ 1024; Rust and the vectorised NumPy
+  floor both avoid that fixed cost.
+
+Re-run with:
+
+```bash
+python scripts/bench_networked_kuramoto_tiers.py
+```
+
+If the measured ordering changes, update the chain comments at `_NETWORKED_KURAMOTO_FORCE_CHAIN`
+and `_NETWORKED_KURAMOTO_JACOBIAN_CHAIN` in
+`src/scpn_quantum_control/accel/networked_kuramoto.py` to match.
+
 ### S4 multi-hardware readiness
 
 Command:

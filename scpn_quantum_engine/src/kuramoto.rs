@@ -14,7 +14,7 @@
 //! Includes order parameter R = (1/N)|��_i exp(iθ_i)| computation
 //! and full trajectory recording.
 
-use ndarray::{Array1, Array2};
+use ndarray::{Array1, Array2, ArrayView2};
 use numpy::{PyArray1, PyArray2, PyReadonlyArray1, PyReadonlyArray2};
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
@@ -493,6 +493,93 @@ pub fn mean_field_jacobian_inner(theta: &[f64], coupling: f64) -> Array2<f64> {
             out[[i, j]] = scale * (theta[i] - theta[j]).cos();
         }
         out[[i, i]] -= coupling * (cos_mean * theta[i].cos() + sin_mean * theta[i].sin());
+    }
+    out
+}
+
+/// Compute the networked Kuramoto coupling force F_j = Σ_k K_jk sin(θ_k − θ_j).
+///
+/// ``coupling`` is the N×N coupling matrix K. The k = j term is sin(0) = 0, so the force
+/// is independent of the diagonal of K.
+#[pyfunction]
+pub fn networked_kuramoto_force<'py>(
+    py: Python<'py>,
+    theta: PyReadonlyArray1<'_, f64>,
+    coupling: PyReadonlyArray2<'_, f64>,
+) -> PyResult<Bound<'py, PyArray1<f64>>> {
+    let theta = validate_phase_vector(&theta, "theta")?;
+    let matrix = coupling.as_array();
+    let n = theta.len();
+    if matrix.shape() != [n, n] {
+        return Err(PyValueError::new_err(format!(
+            "coupling must be a square matrix of order {n}, got shape {:?}",
+            matrix.shape()
+        )));
+    }
+    Ok(PyArray1::from_owned_array(
+        py,
+        networked_kuramoto_force_inner(theta, &matrix),
+    ))
+}
+
+/// Pure Rust networked Kuramoto force (no PyO3).
+pub fn networked_kuramoto_force_inner(theta: &[f64], coupling: &ArrayView2<'_, f64>) -> Array1<f64> {
+    let n = theta.len();
+    let mut out = Array1::<f64>::zeros(n);
+    for j in 0..n {
+        let mut acc = 0.0_f64;
+        for k in 0..n {
+            acc += coupling[[j, k]] * (theta[k] - theta[j]).sin();
+        }
+        out[j] = acc;
+    }
+    out
+}
+
+/// Compute the networked Kuramoto stability Jacobian J_jl = ∂F_j/∂θ_l.
+///
+/// J_jl = K_jl cos(θ_l − θ_j) for l ≠ j, with J_jj = −Σ_{k≠j} K_jk cos(θ_k − θ_j). The
+/// matrix is symmetric when K is, and every row sums to zero (the global-phase Goldstone
+/// mode). It is independent of the diagonal of K.
+#[pyfunction]
+pub fn networked_kuramoto_jacobian<'py>(
+    py: Python<'py>,
+    theta: PyReadonlyArray1<'_, f64>,
+    coupling: PyReadonlyArray2<'_, f64>,
+) -> PyResult<Bound<'py, PyArray2<f64>>> {
+    let theta = validate_phase_vector(&theta, "theta")?;
+    let matrix = coupling.as_array();
+    let n = theta.len();
+    if matrix.shape() != [n, n] {
+        return Err(PyValueError::new_err(format!(
+            "coupling must be a square matrix of order {n}, got shape {:?}",
+            matrix.shape()
+        )));
+    }
+    Ok(PyArray2::from_owned_array(
+        py,
+        networked_kuramoto_jacobian_inner(theta, &matrix),
+    ))
+}
+
+/// Pure Rust networked Kuramoto stability Jacobian (no PyO3), returned row-major.
+pub fn networked_kuramoto_jacobian_inner(
+    theta: &[f64],
+    coupling: &ArrayView2<'_, f64>,
+) -> Array2<f64> {
+    let n = theta.len();
+    let mut out = Array2::<f64>::zeros((n, n));
+    for j in 0..n {
+        let mut diagonal = 0.0_f64;
+        for l in 0..n {
+            if l == j {
+                continue;
+            }
+            let entry = coupling[[j, l]] * (theta[l] - theta[j]).cos();
+            out[[j, l]] = entry;
+            diagonal -= entry;
+        }
+        out[[j, j]] = diagonal;
     }
     out
 }
@@ -1451,6 +1538,91 @@ mod tests {
     fn test_mean_field_empty() {
         assert!(mean_field_force_inner(&[], 1.0).is_empty());
         assert_eq!(mean_field_jacobian_inner(&[], 1.0).shape(), &[0, 0]);
+    }
+
+    fn _symmetric_coupling(n: usize, seed: f64) -> Array2<f64> {
+        let mut k = Array2::<f64>::zeros((n, n));
+        for i in 0..n {
+            for j in 0..n {
+                k[[i, j]] = ((i as f64 + 1.0) * (j as f64 + 1.0) * seed).sin().abs();
+            }
+        }
+        (&k + &k.t()) * 0.5
+    }
+
+    #[test]
+    fn test_networked_force_matches_closed_form() {
+        let theta = vec![0.3, -1.1, 2.0, 0.7];
+        let k = _symmetric_coupling(4, 0.37);
+        let force = networked_kuramoto_force_inner(&theta, &k.view());
+        for (j, &tj) in theta.iter().enumerate() {
+            let expected: f64 = (0..4).map(|kk| k[[j, kk]] * (theta[kk] - tj).sin()).sum();
+            assert!((force[j] - expected).abs() < 1e-12);
+        }
+    }
+
+    #[test]
+    fn test_networked_jacobian_matches_finite_difference_of_force() {
+        let theta = vec![0.3, -1.1, 2.0, 0.7, 4.2];
+        let k = _symmetric_coupling(5, 0.21);
+        let jacobian = networked_kuramoto_jacobian_inner(&theta, &k.view());
+        let h = 1e-6;
+        for l in 0..theta.len() {
+            let mut plus = theta.clone();
+            let mut minus = theta.clone();
+            plus[l] += h;
+            minus[l] -= h;
+            let force_plus = networked_kuramoto_force_inner(&plus, &k.view());
+            let force_minus = networked_kuramoto_force_inner(&minus, &k.view());
+            for j in 0..theta.len() {
+                let fd = (force_plus[j] - force_minus[j]) / (2.0 * h);
+                assert!((jacobian[[j, l]] - fd).abs() < 1e-6, "J[{j},{l}]");
+            }
+        }
+    }
+
+    #[test]
+    fn test_networked_jacobian_symmetric_for_symmetric_coupling_with_zero_rows() {
+        let theta = vec![0.1, 0.9, 2.3, 3.1, 5.5];
+        let k = _symmetric_coupling(5, 0.5);
+        let jacobian = networked_kuramoto_jacobian_inner(&theta, &k.view());
+        let n = theta.len();
+        for i in 0..n {
+            for j in 0..n {
+                assert!((jacobian[[i, j]] - jacobian[[j, i]]).abs() < 1e-15);
+            }
+            let row_sum: f64 = (0..n).map(|j| jacobian[[i, j]]).sum();
+            assert!(row_sum.abs() < 1e-12, "row {i} sum = {row_sum}");
+        }
+    }
+
+    #[test]
+    fn test_networked_independent_of_coupling_diagonal() {
+        let theta = vec![0.4, 1.2, 2.9, 0.1];
+        let mut k = _symmetric_coupling(4, 0.8);
+        let force_a = networked_kuramoto_force_inner(&theta, &k.view());
+        let jacobian_a = networked_kuramoto_jacobian_inner(&theta, &k.view());
+        for i in 0..4 {
+            k[[i, i]] = 7.0;
+        }
+        let force_b = networked_kuramoto_force_inner(&theta, &k.view());
+        let jacobian_b = networked_kuramoto_jacobian_inner(&theta, &k.view());
+        for j in 0..4 {
+            assert!((force_a[j] - force_b[j]).abs() < 1e-15);
+            for l in 0..4 {
+                assert!((jacobian_a[[j, l]] - jacobian_b[[j, l]]).abs() < 1e-15);
+            }
+        }
+    }
+
+    #[test]
+    fn test_networked_empty() {
+        let empty = Array2::<f64>::zeros((0, 0));
+        assert!(networked_kuramoto_force_inner(&[], &empty.view()).is_empty());
+        assert_eq!(
+            networked_kuramoto_jacobian_inner(&[], &empty.view()).shape(),
+            &[0, 0]
+        );
     }
 
     #[test]

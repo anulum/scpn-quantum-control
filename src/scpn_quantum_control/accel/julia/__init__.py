@@ -269,6 +269,52 @@ def mean_field_jacobian(theta: NDArray[np.float64], coupling: float) -> NDArray[
     return np.asarray(jl.mean_field_jacobian(arr, float(coupling)), dtype=np.float64)
 
 
+def networked_kuramoto_force(
+    theta: NDArray[np.float64], coupling: NDArray[np.float64]
+) -> NDArray[np.float64]:
+    """Julia-tier networked Kuramoto coupling force.
+
+    Parameters
+    ----------
+    theta : numpy.ndarray
+        One-dimensional array of ``N`` oscillator phases in radians.
+    coupling : numpy.ndarray
+        Two-dimensional ``(N, N)`` coupling matrix.
+
+    Returns
+    -------
+    numpy.ndarray
+        One-dimensional float64 force array of length ``N``.
+    """
+    jl = _load()
+    phases = np.ascontiguousarray(theta, dtype=np.float64)
+    matrix = np.ascontiguousarray(coupling, dtype=np.float64)
+    return np.asarray(jl.networked_kuramoto_force(phases, matrix), dtype=np.float64)
+
+
+def networked_kuramoto_jacobian(
+    theta: NDArray[np.float64], coupling: NDArray[np.float64]
+) -> NDArray[np.float64]:
+    """Julia-tier networked Kuramoto stability Jacobian.
+
+    Parameters
+    ----------
+    theta : numpy.ndarray
+        One-dimensional array of ``N`` oscillator phases in radians.
+    coupling : numpy.ndarray
+        Two-dimensional ``(N, N)`` coupling matrix.
+
+    Returns
+    -------
+    numpy.ndarray
+        Two-dimensional ``(N, N)`` float64 Jacobian matrix.
+    """
+    jl = _load()
+    phases = np.ascontiguousarray(theta, dtype=np.float64)
+    matrix = np.ascontiguousarray(coupling, dtype=np.float64)
+    return np.asarray(jl.networked_kuramoto_jacobian(phases, matrix), dtype=np.float64)
+
+
 __all__ = [
     "daido_order_parameter",
     "daido_order_parameter_gradient",
@@ -276,6 +322,8 @@ __all__ = [
     "is_available",
     "mean_field_force",
     "mean_field_jacobian",
+    "networked_kuramoto_force",
+    "networked_kuramoto_jacobian",
     "mean_phase",
     "mean_phase_gradient",
     "mean_phase_hessian",

@@ -8,12 +8,12 @@
     "notebook_files": 98,
     "optional_extras": 42,
     "public_api_exports": 717,
-    "public_documentation_pages": 247,
-    "python_model_classes": 825,
-    "python_model_source_modules": 438,
-    "rust_pyo3_model_wrappers": 147,
+    "public_documentation_pages": 248,
+    "python_model_classes": 826,
+    "python_model_source_modules": 440,
+    "rust_pyo3_model_wrappers": 149,
     "rust_source_modules": 38,
-    "test_files": 745
+    "test_files": 747
   },
   "documentation": {
     "examples": [
@@ -149,6 +149,7 @@
       "notebooks/colab/kaggle_water_coupling.ipynb"
     ],
     "public_pages": [
+      "docs/ARCHITECTURE_DECISIONS.md",
       "docs/EXPERIMENT_ROADMAP.md",
       "docs/EXPORT_CONTROL.md",
       "docs/PAPER_CLAIMS.md",
@@ -425,7 +426,7 @@
       {
         "package": "accel",
         "path": "src/scpn_quantum_control/accel",
-        "python_modules": 7
+        "python_modules": 8
       },
       {
         "package": "analysis",
@@ -525,7 +526,7 @@
       {
         "package": "mitigation",
         "path": "src/scpn_quantum_control/mitigation",
-        "python_modules": 12
+        "python_modules": 13
       },
       {
         "package": "pgbo",
@@ -3878,6 +3879,10 @@
       {
         "name": "ZNEResult",
         "path": "src/scpn_quantum_control/mitigation/zne.py"
+      },
+      {
+        "name": "ZNEUncertaintyResult",
+        "path": "src/scpn_quantum_control/mitigation/zne_uncertainty.py"
       }
     ],
     "python_source_modules": [
@@ -3887,6 +3892,7 @@
       "src/scpn_quantum_control/accel/dispatcher.py",
       "src/scpn_quantum_control/accel/kuramoto_mean_field.py",
       "src/scpn_quantum_control/accel/mean_phase_observables.py",
+      "src/scpn_quantum_control/accel/networked_kuramoto.py",
       "src/scpn_quantum_control/accel/order_parameter_observables.py",
       "src/scpn_quantum_control/accel/rust_import.py",
       "src/scpn_quantum_control/accel/rust_kuramoto_classical.py",
@@ -4172,6 +4178,7 @@
       "src/scpn_quantum_control/mitigation/symmetry_sector_replay.py",
       "src/scpn_quantum_control/mitigation/symmetry_verification.py",
       "src/scpn_quantum_control/mitigation/zne.py",
+      "src/scpn_quantum_control/mitigation/zne_uncertainty.py",
       "src/scpn_quantum_control/pgbo/quantum_bridge.py",
       "src/scpn_quantum_control/phase/adapt_vqe.py",
       "src/scpn_quantum_control/phase/adiabatic_preparation.py",
@@ -4411,6 +4418,8 @@
       "ml_dsa_intt",
       "ml_dsa_ntt",
       "monitored_kuramoto_trajectory",
+      "networked_kuramoto_force",
+      "networked_kuramoto_jacobian",
       "nist_berlekamp_massey",
       "nist_block_longest_runs",
       "nist_monobit_sum",
@@ -5675,6 +5684,7 @@
       "tests/test_native_decomposition_readiness.py",
       "tests/test_native_whole_program_ad_execution_evidence.py",
       "tests/test_negative_inputs.py",
+      "tests/test_networked_kuramoto.py",
       "tests/test_new_module_properties.py",
       "tests/test_nist_sp800_22_guards.py",
       "tests/test_noise_model.py",
@@ -6052,7 +6062,8 @@
       "tests/test_xy_compiler_contracts.py",
       "tests/test_xy_kuramoto.py",
       "tests/test_zne.py",
-      "tests/test_zne_branches.py"
+      "tests/test_zne_branches.py",
+      "tests/test_zne_uncertainty.py"
     ]
   },
   "schema_version": "capability-manifest.v1"

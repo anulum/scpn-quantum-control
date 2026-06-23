@@ -61,6 +61,12 @@ from .mean_phase_observables import (
     mean_phase_gradient,
     mean_phase_hessian,
 )
+from .networked_kuramoto import (
+    last_networked_kuramoto_force_tier_used,
+    last_networked_kuramoto_jacobian_tier_used,
+    networked_kuramoto_force,
+    networked_kuramoto_jacobian,
+)
 from .order_parameter_observables import (
     last_gradient_tier_used,
     last_hessian_tier_used,
@@ -93,6 +99,10 @@ __all__ = [
     "mean_phase",
     "mean_phase_gradient",
     "mean_phase_hessian",
+    "networked_kuramoto_force",
+    "networked_kuramoto_jacobian",
+    "last_networked_kuramoto_force_tier_used",
+    "last_networked_kuramoto_jacobian_tier_used",
     "order_parameter",
     "order_parameter_gradient",
     "order_parameter_hessian",
