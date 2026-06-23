@@ -5,6 +5,14 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-06-23 — Added a sparse Pauli-operator construction budget guard
+  (`scpn_quantum_control.compile_budget`): `require_pauli_operator_budget`,
+  `estimate_pauli_operator`, `pauli_term_upper_bound`, and `pauli_budget_bytes`,
+  with the `SCPN_MAX_PAULI_GIB` override. `knm_to_xxz_hamiltonian` now fails
+  closed before an `O(n**2)` Pauli list is built and `knm_to_sparse_matrix`
+  fails closed (with a new `max_gib` argument) before a `2**n` materialisation,
+  so a pathological `n` from arbitrary `K_nm`/`omega` cannot exhaust memory
+  across the sparse Hamiltonian and Trotter-circuit compile paths.
 - 2026-06-21 — Added a SCPN-FUSION-CORE FRC calibration bridge
   (`scpn_quantum_control.bridge.fusion_core_frc`):
   `calibrate_frc_surrogate_from_equilibrium`, `calibrate_frc_surrogate_from_inputs`,

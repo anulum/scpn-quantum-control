@@ -25,6 +25,7 @@ from scipy import sparse
 
 from .._constants import COUPLING_SPARSITY_EPS
 from ..accel.rust_import import optional_rust_engine
+from ..compile_budget import require_pauli_operator_budget
 from ..dense_budget import require_dense_allocation
 
 KNM_SPARSITY_EPS = COUPLING_SPARSITY_EPS
@@ -126,6 +127,12 @@ def knm_to_xxz_hamiltonian(
     if K.shape[0] != n:
         raise ValueError(f"K has {K.shape[0]} rows but omega has {n} elements")
 
+    require_pauli_operator_budget(
+        n,
+        include_zz=abs(delta) > KNM_SPARSITY_EPS,
+        label="XY/XXZ Pauli Hamiltonian",
+    )
+
     # Enforce symmetry (Finding #7: K Symmetry Broken by Gradient Training)
     K = (K + K.T) / 2.0
 
@@ -176,9 +183,28 @@ def knm_to_hamiltonian(K: NDArray[np.float64], omega: NDArray[np.float64]) -> Sp
 
 
 def knm_to_sparse_matrix(
-    K: NDArray[np.float64], omega: NDArray[np.float64], delta: float = 0.0
+    K: NDArray[np.float64],
+    omega: NDArray[np.float64],
+    delta: float = 0.0,
+    *,
+    max_gib: float | None = None,
 ) -> sparse.csc_matrix:
-    """Build sparse XY/XXZ Hamiltonian matrix in CSC format."""
+    """Build sparse XY/XXZ Hamiltonian matrix in CSC format.
+
+    ``SparsePauliOp.to_matrix`` materialises a ``2**n``-dimensional operator
+    whose non-zero count scales as ``O(n * 2**n)``; this fails closed before
+    that allocation for pathological ``n``. Pass ``max_gib`` to override the
+    active dense budget for this call.
+    """
+    n = len(omega)
+    require_dense_allocation(
+        n,
+        dtype=np.complex128,
+        rank=1,
+        object_count=max(1, n),
+        max_gib=max_gib,
+        label="sparse XY Hamiltonian matrix (2^n nnz-scale)",
+    )
     H_op = knm_to_xxz_hamiltonian(K, omega, delta)
     # to_matrix(sparse=True) returns a scipy.sparse.csr_matrix
     raw = H_op.to_matrix(sparse=True)
