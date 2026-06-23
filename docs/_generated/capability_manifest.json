@@ -3,18 +3,18 @@
   "counts": {
     "domain_package_families": 32,
     "example_files": 30,
-    "github_workflows": 19,
+    "github_workflows": 20,
     "model_documentation_pages": 0,
     "notebook_files": 98,
     "optional_extras": 42,
     "paper0_validation_modules": 466,
     "public_api_exports": 717,
-    "public_documentation_pages": 255,
+    "public_documentation_pages": 257,
     "python_model_classes": 1846,
     "python_model_source_modules": 903,
     "rust_pyo3_model_wrappers": 141,
     "rust_source_modules": 38,
-    "test_files": 2146
+    "test_files": 2149
   },
   "documentation": {
     "examples": [
@@ -313,12 +313,14 @@
       "docs/literature/README.md",
       "docs/literature/literature_survey_2024_2026.md",
       "docs/logical_dla_parity.md",
+      "docs/methodology.md",
       "docs/methods_benchmark_dashboard.md",
       "docs/mitigation_api.md",
       "docs/ml_dsa_pqc.md",
       "docs/multi_platform.md",
       "docs/multiscale_qec.md",
       "docs/mutation_testing.md",
+      "docs/native_speedup_benchmark.md",
       "docs/neural_quantum_states.md",
       "docs/new_modules.md",
       "docs/notebooks.md",
@@ -10313,6 +10315,7 @@
   "quality_gates": {
     "github_workflows": [
       ".github/workflows/actions-history-audit.yml",
+      ".github/workflows/benchmark-native-speedup.yml",
       ".github/workflows/ci.yml",
       ".github/workflows/codeql.yml",
       ".github/workflows/commit-trailers.yml",
@@ -10389,6 +10392,8 @@
       "tests/test_bench_s2_scaling_lite.py",
       "tests/test_benchmark_harness_public.py",
       "tests/test_benchmark_harness_registry.py",
+      "tests/test_benchmark_native_speedup_gate.py",
+      "tests/test_benchmark_native_speedup_harness.py",
       "tests/test_benchmark_scaling_contracts.py",
       "tests/test_berry_phase.py",
       "tests/test_binding_spec.py",
@@ -11793,6 +11798,7 @@
       "tests/test_program_ad_unary_ufuncs.py",
       "tests/test_program_adjoint_replay.py",
       "tests/test_project_paths.py",
+      "tests/test_project_paths_and_version_fallbacks.py",
       "tests/test_provenance.py",
       "tests/test_provider_capability_discovery.py",
       "tests/test_provider_isolated_smoke_workflow.py",
