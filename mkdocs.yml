@@ -58,6 +58,7 @@ nav:
       - SCPN Foundations: theory.md
       - Equations: equations.md
       - Architecture: architecture.md
+      - Architecture Decisions: ARCHITECTURE_DECISIONS.md
       - Research Gems: research_gems.md
       - Literature Catalogue: literature/README.md
       - Literature Survey 2024-2026: literature/literature_survey_2024_2026.md

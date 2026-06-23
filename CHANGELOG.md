@@ -5,6 +5,15 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-06-23 — Added an Architecture Decision Records page
+  (`docs/ARCHITECTURE_DECISIONS.md`, in the Theory nav) recording the reasoning
+  behind six major design decisions: single-responsibility module boundaries,
+  measured-fastest-first multi-language acceleration with a Python floor,
+  publication-faithful Kuramoto→XY mapping and solver selection, the five-class
+  evidence/claim taxonomy with falsification culture, the small stable-core
+  contract versus churning internals, and fail-closed resource budgets. It
+  complements the existing Architecture page (structure) with context,
+  alternatives, and trade-offs.
 - 2026-06-23 — Added shot-noise uncertainty quantification for synchronisation
   metrics (`scpn_quantum_control.analysis.sync_uncertainty`): `UncertaintyInterval`,
   `order_parameter_shot_noise` (analytic delta-method interval), `order_parameter_bootstrap`
