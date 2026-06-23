@@ -34,23 +34,29 @@ compute-module actually needs them):
 
 from __future__ import annotations
 
+from .daido_observables import (
+    daido_order_parameter,
+    daido_order_parameter_gradient,
+    last_daido_gradient_tier_used,
+    last_daido_tier_used,
+)
 from .dispatcher import (
     MultiLangDispatcher,
     available_tiers,
-    daido_order_parameter,
-    daido_order_parameter_gradient,
     dispatch,
-    last_daido_gradient_tier_used,
-    last_daido_tier_used,
-    last_gradient_tier_used,
-    last_hessian_tier_used,
+)
+from .mean_phase_observables import (
     last_mean_phase_gradient_tier_used,
     last_mean_phase_hessian_tier_used,
     last_mean_phase_tier_used,
-    last_tier_used,
     mean_phase,
     mean_phase_gradient,
     mean_phase_hessian,
+)
+from .order_parameter_observables import (
+    last_gradient_tier_used,
+    last_hessian_tier_used,
+    last_tier_used,
     order_parameter,
     order_parameter_gradient,
     order_parameter_hessian,

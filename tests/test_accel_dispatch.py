@@ -37,7 +37,10 @@ import pytest
 from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 
+import scpn_quantum_control.accel.daido_observables as da_obs
 import scpn_quantum_control.accel.dispatcher as d
+import scpn_quantum_control.accel.mean_phase_observables as mp_obs
+import scpn_quantum_control.accel.order_parameter_observables as op_obs
 
 _GLOBAL_SETTINGS = settings(
     max_examples=30,
@@ -115,7 +118,7 @@ class TestRegistry:
         # After a fresh module-import + at least one call via another
         # test, this may already be set — we only assert it's either
         # None or one of the known tier names.
-        value = d.last_tier_used()
+        value = op_obs.last_tier_used()
         assert value is None or value in {"rust", "julia", "python"}
 
 
@@ -161,11 +164,11 @@ class TestAccelerationPackageContracts:
 class TestPythonFloor:
     def test_zero_vector_has_R_one(self) -> None:
         # All phases aligned at 0 → perfectly coherent.
-        assert d._python_order_parameter(np.zeros(8)) == pytest.approx(1.0)
+        assert op_obs._python_order_parameter(np.zeros(8)) == pytest.approx(1.0)
 
     def test_antipodal_pair_has_R_zero(self) -> None:
         theta = np.array([0.0, math.pi])
-        assert d._python_order_parameter(theta) == pytest.approx(0.0, abs=1e-12)
+        assert op_obs._python_order_parameter(theta) == pytest.approx(0.0, abs=1e-12)
 
     @_GLOBAL_SETTINGS
     @given(
@@ -175,7 +178,7 @@ class TestPythonFloor:
     def test_python_floor_in_unit_interval(self, n: int, seed: int) -> None:
         rng = np.random.default_rng(seed)
         theta = rng.uniform(-10 * math.pi, 10 * math.pi, size=n)
-        r = d._python_order_parameter(theta)
+        r = op_obs._python_order_parameter(theta)
         assert 0.0 - 1e-12 <= r <= 1.0 + 1e-12
 
 
@@ -246,8 +249,8 @@ class TestRustTier:
         monkeypatch.setattr(d, "optional_rust_engine", lambda: PartialEngine())
         disp = d.MultiLangDispatcher(
             [
-                ("rust", d._rust_order_parameter),
-                ("python", d._python_order_parameter),
+                ("rust", op_obs._rust_order_parameter),
+                ("python", op_obs._python_order_parameter),
             ],
         )
         assert disp(np.zeros(4)) == pytest.approx(1.0)
@@ -264,8 +267,8 @@ class TestRustTier:
             pytest.skip("scpn_quantum_engine.order_parameter unavailable")
         rng = np.random.default_rng(seed)
         theta = rng.uniform(-10 * math.pi, 10 * math.pi, size=n)
-        r_rust = d._rust_order_parameter(theta)
-        r_py = d._python_order_parameter(theta)
+        r_rust = op_obs._rust_order_parameter(theta)
+        r_py = op_obs._python_order_parameter(theta)
         assert abs(r_rust - r_py) < 1e-12
 
 
@@ -294,7 +297,7 @@ class TestJuliaTier:
         rng = np.random.default_rng(20260417)
         theta = rng.uniform(-math.pi, math.pi, size=8)
         r_julia = julia_op(theta)
-        r_py = d._python_order_parameter(theta)
+        r_py = op_obs._python_order_parameter(theta)
         assert abs(r_julia - r_py) < 1e-10
 
     def test_julia_full_dispatch_reaches_julia_when_rust_disabled(
@@ -311,8 +314,8 @@ class TestJuliaTier:
         disp = d.MultiLangDispatcher(
             [
                 ("rust", _sim_rust_gone),
-                ("julia", d._julia_order_parameter),
-                ("python", d._python_order_parameter),
+                ("julia", op_obs._julia_order_parameter),
+                ("python", op_obs._python_order_parameter),
             ],
         )
         rng = np.random.default_rng(7)
@@ -336,8 +339,8 @@ class TestCrossTierAgreement:
     def test_all_available_tiers_agree(self, n: int, seed: int) -> None:
         rng = np.random.default_rng(seed)
         theta = rng.uniform(-math.pi, math.pi, size=n)
-        reference = d._python_order_parameter(theta)
-        for name, impl in d._ORDER_PARAMETER_CHAIN:
+        reference = op_obs._python_order_parameter(theta)
+        for name, impl in op_obs._ORDER_PARAMETER_CHAIN:
             try:
                 r = impl(theta)
             except (ImportError, ModuleNotFoundError, RuntimeError):
@@ -542,7 +545,7 @@ class TestPythonGradientFloor:
     def test_matches_synchronisation_force_identity(self) -> None:
         rng = np.random.default_rng(11)
         theta = rng.uniform(-math.pi, math.pi, size=17)
-        grad = d._python_order_parameter_gradient(theta)
+        grad = op_obs._python_order_parameter_gradient(theta)
         cos_mean = float(np.mean(np.cos(theta)))
         sin_mean = float(np.mean(np.sin(theta)))
         psi = math.atan2(sin_mean, cos_mean)
@@ -559,7 +562,7 @@ class TestPythonGradientFloor:
         theta = rng.uniform(-math.pi, math.pi, size=n)
         if _order_parameter_value(theta) < 1e-3:
             return  # near-incoherent: ill-conditioned, excluded from the FD check
-        grad = d._python_order_parameter_gradient(theta)
+        grad = op_obs._python_order_parameter_gradient(theta)
         np.testing.assert_allclose(grad, _finite_difference_gradient(theta), atol=1e-6)
 
     @_GLOBAL_SETTINGS
@@ -571,7 +574,7 @@ class TestPythonGradientFloor:
         # A global phase shift leaves R invariant, so the gradient sums to zero.
         rng = np.random.default_rng(seed)
         theta = rng.uniform(-math.pi, math.pi, size=n)
-        assert abs(float(np.sum(d._python_order_parameter_gradient(theta)))) < 1e-12
+        assert abs(float(np.sum(op_obs._python_order_parameter_gradient(theta)))) < 1e-12
 
     @_GLOBAL_SETTINGS
     @given(
@@ -583,20 +586,20 @@ class TestPythonGradientFloor:
         # including arbitrarily close to the incoherent state.
         rng = np.random.default_rng(seed)
         theta = rng.uniform(-math.pi, math.pi, size=n)
-        grad = d._python_order_parameter_gradient(theta)
+        grad = op_obs._python_order_parameter_gradient(theta)
         assert np.all(np.abs(grad) <= 1.0 / n + 1e-12)
 
     def test_aligned_state_has_zero_gradient(self) -> None:
-        grad = d._python_order_parameter_gradient(np.full(8, 0.7))
+        grad = op_obs._python_order_parameter_gradient(np.full(8, 0.7))
         np.testing.assert_allclose(grad, np.zeros(8), atol=1e-15)
 
     def test_single_oscillator_has_zero_gradient(self) -> None:
-        grad = d._python_order_parameter_gradient(np.array([2.7]))
+        grad = op_obs._python_order_parameter_gradient(np.array([2.7]))
         assert grad.shape == (1,)
         assert abs(float(grad[0])) < 1e-15
 
     def test_empty_input_returns_empty(self) -> None:
-        assert d._python_order_parameter_gradient(np.array([])).shape == (0,)
+        assert op_obs._python_order_parameter_gradient(np.array([])).shape == (0,)
 
     def test_exact_incoherent_state_returns_zero_subgradient(self) -> None:
         # [0, pi, 0, -pi] gives C = S = 0 exactly (cos(+-pi) = -1; sin(pi), sin(-pi)
@@ -604,7 +607,7 @@ class TestPythonGradientFloor:
         # is returned rather than a 0/0 NaN.
         theta = np.array([0.0, math.pi, 0.0, -math.pi])
         assert float(np.hypot(np.mean(np.cos(theta)), np.mean(np.sin(theta)))) == 0.0
-        grad = d._python_order_parameter_gradient(theta)
+        grad = op_obs._python_order_parameter_gradient(theta)
         np.testing.assert_array_equal(grad, np.zeros(4))
 
 
@@ -620,8 +623,8 @@ class TestRustGradientTier:
             pytest.skip("scpn_quantum_engine.order_parameter_gradient unavailable")
         rng = np.random.default_rng(seed)
         theta = rng.uniform(-10 * math.pi, 10 * math.pi, size=n)
-        rust = d._rust_order_parameter_gradient(theta)
-        floor = d._python_order_parameter_gradient(theta)
+        rust = op_obs._rust_order_parameter_gradient(theta)
+        floor = op_obs._python_order_parameter_gradient(theta)
         np.testing.assert_allclose(rust, floor, atol=1e-12)
 
     def test_partial_rust_engine_falls_through_to_python(
@@ -634,8 +637,8 @@ class TestRustGradientTier:
         monkeypatch.setattr(d, "optional_rust_engine", lambda: PartialEngine())
         disp = d.MultiLangDispatcher(
             [
-                ("rust", d._rust_order_parameter_gradient),
-                ("python", d._python_order_parameter_gradient),
+                ("rust", op_obs._rust_order_parameter_gradient),
+                ("python", op_obs._python_order_parameter_gradient),
             ],
         )
         out = disp(np.full(4, 0.7))
@@ -648,7 +651,7 @@ class TestRustGradientTier:
     ) -> None:
         monkeypatch.setattr(d, "optional_rust_engine", lambda: None)
         with pytest.raises(ModuleNotFoundError, match="scpn_quantum_engine"):
-            d._rust_order_parameter_gradient(np.zeros(3))
+            op_obs._rust_order_parameter_gradient(np.zeros(3))
 
 
 class TestJuliaGradientTier:
@@ -660,7 +663,7 @@ class TestJuliaGradientTier:
         theta = rng.uniform(-math.pi, math.pi, size=9)
         np.testing.assert_allclose(
             julia_grad(theta),
-            d._python_order_parameter_gradient(theta),
+            op_obs._python_order_parameter_gradient(theta),
             atol=1e-10,
         )
 
@@ -676,15 +679,15 @@ class TestJuliaGradientTier:
         disp = d.MultiLangDispatcher(
             [
                 ("rust", _sim_rust_gone),
-                ("julia", d._julia_order_parameter_gradient),
-                ("python", d._python_order_parameter_gradient),
+                ("julia", op_obs._julia_order_parameter_gradient),
+                ("python", op_obs._python_order_parameter_gradient),
             ],
         )
         rng = np.random.default_rng(7)
         theta = rng.uniform(0.0, 2 * math.pi, size=6)
         out = disp(theta)
         assert disp.last_tier == "julia"
-        np.testing.assert_allclose(out, d._python_order_parameter_gradient(theta), atol=1e-10)
+        np.testing.assert_allclose(out, op_obs._python_order_parameter_gradient(theta), atol=1e-10)
 
 
 class TestGradientCrossTierAndDispatch:
@@ -696,8 +699,8 @@ class TestGradientCrossTierAndDispatch:
     def test_all_available_tiers_agree(self, n: int, seed: int) -> None:
         rng = np.random.default_rng(seed)
         theta = rng.uniform(-math.pi, math.pi, size=n)
-        reference = d._python_order_parameter_gradient(theta)
-        for name, impl in d._ORDER_PARAMETER_GRADIENT_CHAIN:
+        reference = op_obs._python_order_parameter_gradient(theta)
+        for name, impl in op_obs._ORDER_PARAMETER_GRADIENT_CHAIN:
             try:
                 out = impl(theta)
             except (ImportError, ModuleNotFoundError, RuntimeError):
@@ -721,7 +724,7 @@ class TestGradientCrossTierAndDispatch:
         assert last_gradient_tier_used() in {"rust", "julia", "python"}
 
     def test_gradient_chain_ends_with_python_floor(self) -> None:
-        assert d._ORDER_PARAMETER_GRADIENT_CHAIN[-1][0] == "python"
+        assert op_obs._ORDER_PARAMETER_GRADIENT_CHAIN[-1][0] == "python"
 
 
 class TestRustValueTierAbsence:
@@ -733,7 +736,7 @@ class TestRustValueTierAbsence:
         # the engine-missing branch deterministically on an engine-present host.
         monkeypatch.setattr(d, "optional_rust_engine", lambda: None)
         with pytest.raises(ModuleNotFoundError, match="scpn_quantum_engine"):
-            d._rust_order_parameter(np.zeros(3))
+            op_obs._rust_order_parameter(np.zeros(3))
 
 
 # ---------------------------------------------------------------------------
@@ -751,7 +754,8 @@ def _finite_difference_hessian(theta: np.ndarray, step: float = 1e-6) -> np.ndar
         plus[i] += step
         minus[i] -= step
         out[i] = (
-            d._python_order_parameter_gradient(plus) - d._python_order_parameter_gradient(minus)
+            op_obs._python_order_parameter_gradient(plus)
+            - op_obs._python_order_parameter_gradient(minus)
         ) / (2.0 * step)
     return out
 
@@ -767,7 +771,9 @@ class TestPythonHessianFloor:
         expected = np.outer(aligned, aligned) / (theta.size**2 * magnitude) - np.diag(
             aligned / theta.size
         )
-        np.testing.assert_allclose(d._python_order_parameter_hessian(theta), expected, atol=1e-15)
+        np.testing.assert_allclose(
+            op_obs._python_order_parameter_hessian(theta), expected, atol=1e-15
+        )
 
     @_GLOBAL_SETTINGS
     @given(
@@ -777,7 +783,7 @@ class TestPythonHessianFloor:
     def test_is_symmetric(self, n: int, seed: int) -> None:
         rng = np.random.default_rng(seed)
         theta = rng.uniform(-math.pi, math.pi, size=n)
-        hessian = d._python_order_parameter_hessian(theta)
+        hessian = op_obs._python_order_parameter_hessian(theta)
         np.testing.assert_allclose(hessian, hessian.T, atol=1e-15)
 
     @_GLOBAL_SETTINGS
@@ -789,7 +795,7 @@ class TestPythonHessianFloor:
         # A global phase shift leaves r invariant, so each Hessian row sums to zero.
         rng = np.random.default_rng(seed)
         theta = rng.uniform(-math.pi, math.pi, size=n)
-        hessian = d._python_order_parameter_hessian(theta)
+        hessian = op_obs._python_order_parameter_hessian(theta)
         np.testing.assert_allclose(hessian.sum(axis=1), np.zeros(n), atol=1e-12)
 
     @_GLOBAL_SETTINGS
@@ -802,31 +808,33 @@ class TestPythonHessianFloor:
         theta = rng.uniform(-math.pi, math.pi, size=n)
         if _order_parameter_value(theta) < 1e-2:
             return  # near-incoherent: the second derivative is ill-conditioned
-        hessian = d._python_order_parameter_hessian(theta)
+        hessian = op_obs._python_order_parameter_hessian(theta)
         np.testing.assert_allclose(hessian, _finite_difference_hessian(theta), atol=1e-5)
 
     def test_fully_synchronised_curvature(self) -> None:
         # r = 1: the gradient is zero but the Hessian is 11^T/N^2 - I/N (negative
         # semidefinite, since perfect synchronisation is the maximum of r).
         n = 6
-        hessian = d._python_order_parameter_hessian(np.full(n, 0.4))
+        hessian = op_obs._python_order_parameter_hessian(np.full(n, 0.4))
         expected = np.full((n, n), 1.0 / n**2) - np.eye(n) / n
         np.testing.assert_allclose(hessian, expected, atol=1e-12)
         eigenvalues = np.linalg.eigvalsh(hessian)
         assert np.all(eigenvalues <= 1e-12)
 
     def test_single_oscillator_is_zero(self) -> None:
-        hessian = d._python_order_parameter_hessian(np.array([2.7]))
+        hessian = op_obs._python_order_parameter_hessian(np.array([2.7]))
         assert hessian.shape == (1, 1)
         assert abs(float(hessian[0, 0])) < 1e-15
 
     def test_empty_input_returns_empty_matrix(self) -> None:
-        assert d._python_order_parameter_hessian(np.array([])).shape == (0, 0)
+        assert op_obs._python_order_parameter_hessian(np.array([])).shape == (0, 0)
 
     def test_exact_incoherent_returns_zero_matrix(self) -> None:
         theta = np.array([0.0, math.pi, 0.0, -math.pi])
         assert float(np.hypot(np.mean(np.cos(theta)), np.mean(np.sin(theta)))) == 0.0
-        np.testing.assert_array_equal(d._python_order_parameter_hessian(theta), np.zeros((4, 4)))
+        np.testing.assert_array_equal(
+            op_obs._python_order_parameter_hessian(theta), np.zeros((4, 4))
+        )
 
 
 class TestRustHessianTier:
@@ -842,8 +850,8 @@ class TestRustHessianTier:
         rng = np.random.default_rng(seed)
         theta = rng.uniform(-10 * math.pi, 10 * math.pi, size=n)
         np.testing.assert_allclose(
-            d._rust_order_parameter_hessian(theta),
-            d._python_order_parameter_hessian(theta),
+            op_obs._rust_order_parameter_hessian(theta),
+            op_obs._python_order_parameter_hessian(theta),
             atol=1e-12,
         )
 
@@ -853,7 +861,7 @@ class TestRustHessianTier:
     ) -> None:
         monkeypatch.setattr(d, "optional_rust_engine", lambda: None)
         with pytest.raises(ModuleNotFoundError, match="scpn_quantum_engine"):
-            d._rust_order_parameter_hessian(np.zeros(3))
+            op_obs._rust_order_parameter_hessian(np.zeros(3))
 
     def test_partial_rust_engine_falls_through_to_python(
         self,
@@ -865,12 +873,14 @@ class TestRustHessianTier:
         monkeypatch.setattr(d, "optional_rust_engine", lambda: PartialEngine())
         disp = d.MultiLangDispatcher(
             [
-                ("rust", d._rust_order_parameter_hessian),
-                ("python", d._python_order_parameter_hessian),
+                ("rust", op_obs._rust_order_parameter_hessian),
+                ("python", op_obs._python_order_parameter_hessian),
             ],
         )
         out = disp(np.full(4, 0.7))
-        np.testing.assert_allclose(out, d._python_order_parameter_hessian(np.full(4, 0.7)), atol=0)
+        np.testing.assert_allclose(
+            out, op_obs._python_order_parameter_hessian(np.full(4, 0.7)), atol=0
+        )
         assert disp.last_tier == "python"
 
 
@@ -883,7 +893,7 @@ class TestJuliaHessianTier:
         theta = rng.uniform(-math.pi, math.pi, size=7)
         np.testing.assert_allclose(
             julia_hessian(theta),
-            d._python_order_parameter_hessian(theta),
+            op_obs._python_order_parameter_hessian(theta),
             atol=1e-10,
         )
 
@@ -897,8 +907,8 @@ class TestHessianCrossTierAndDispatch:
     def test_all_available_tiers_agree(self, n: int, seed: int) -> None:
         rng = np.random.default_rng(seed)
         theta = rng.uniform(-math.pi, math.pi, size=n)
-        reference = d._python_order_parameter_hessian(theta)
-        for name, impl in d._ORDER_PARAMETER_HESSIAN_CHAIN:
+        reference = op_obs._python_order_parameter_hessian(theta)
+        for name, impl in op_obs._ORDER_PARAMETER_HESSIAN_CHAIN:
             try:
                 out = impl(theta)
             except (ImportError, ModuleNotFoundError, RuntimeError):
@@ -919,7 +929,7 @@ class TestHessianCrossTierAndDispatch:
         assert last_hessian_tier_used() in {"rust", "julia", "python"}
 
     def test_hessian_chain_ends_with_python_floor(self) -> None:
-        assert d._ORDER_PARAMETER_HESSIAN_CHAIN[-1][0] == "python"
+        assert op_obs._ORDER_PARAMETER_HESSIAN_CHAIN[-1][0] == "python"
 
 
 # ---------------------------------------------------------------------------
@@ -935,7 +945,7 @@ def _finite_difference_mean_phase_gradient(theta: np.ndarray, step: float = 1e-6
         minus = theta.astype(np.float64).copy()
         plus[j] += step
         minus[j] -= step
-        delta = d._python_mean_phase(plus) - d._python_mean_phase(minus)
+        delta = mp_obs._python_mean_phase(plus) - mp_obs._python_mean_phase(minus)
         delta = (delta + math.pi) % (2.0 * math.pi) - math.pi
         grad[j] = delta / (2.0 * step)
     return grad
@@ -946,13 +956,13 @@ class TestPythonMeanPhaseFloor:
         rng = np.random.default_rng(31)
         theta = rng.uniform(-math.pi, math.pi, size=13)
         expected = math.atan2(float(np.mean(np.sin(theta))), float(np.mean(np.cos(theta))))
-        assert d._python_mean_phase(theta) == pytest.approx(expected, abs=1e-12)
+        assert mp_obs._python_mean_phase(theta) == pytest.approx(expected, abs=1e-12)
 
     def test_single_oscillator_is_identity(self) -> None:
-        assert d._python_mean_phase(np.array([2.7])) == pytest.approx(2.7, abs=1e-12)
+        assert mp_obs._python_mean_phase(np.array([2.7])) == pytest.approx(2.7, abs=1e-12)
 
     def test_empty_input_is_zero(self) -> None:
-        assert d._python_mean_phase(np.array([])) == 0.0
+        assert mp_obs._python_mean_phase(np.array([])) == 0.0
 
     def test_gradient_matches_closed_form(self) -> None:
         rng = np.random.default_rng(17)
@@ -963,7 +973,7 @@ class TestPythonMeanPhaseFloor:
         expected = (cos_mean * np.cos(theta) + sin_mean * np.sin(theta)) / (
             theta.size * magnitude**2
         )
-        np.testing.assert_allclose(d._python_mean_phase_gradient(theta), expected, atol=1e-15)
+        np.testing.assert_allclose(mp_obs._python_mean_phase_gradient(theta), expected, atol=1e-15)
 
     @_GLOBAL_SETTINGS
     @given(
@@ -974,7 +984,9 @@ class TestPythonMeanPhaseFloor:
         # A global phase shift advances ψ identically, so the gradient sums to one.
         rng = np.random.default_rng(seed)
         theta = rng.uniform(-math.pi, math.pi, size=n)
-        assert float(np.sum(d._python_mean_phase_gradient(theta))) == pytest.approx(1.0, abs=1e-12)
+        assert float(np.sum(mp_obs._python_mean_phase_gradient(theta))) == pytest.approx(
+            1.0, abs=1e-12
+        )
 
     @_GLOBAL_SETTINGS
     @given(
@@ -987,27 +999,27 @@ class TestPythonMeanPhaseFloor:
         if _order_parameter_value(theta) < 1e-2:
             return  # near-incoherent: ψ is ill-conditioned
         np.testing.assert_allclose(
-            d._python_mean_phase_gradient(theta),
+            mp_obs._python_mean_phase_gradient(theta),
             _finite_difference_mean_phase_gradient(theta),
             atol=1e-6,
         )
 
     def test_single_oscillator_gradient_is_one(self) -> None:
         np.testing.assert_allclose(
-            d._python_mean_phase_gradient(np.array([2.7])), [1.0], atol=1e-15
+            mp_obs._python_mean_phase_gradient(np.array([2.7])), [1.0], atol=1e-15
         )
 
     def test_aligned_gradient_is_uniform(self) -> None:
         # All oscillators aligned: ψ = θ and ∂ψ/∂θ_j = 1/N for every j.
-        grad = d._python_mean_phase_gradient(np.full(8, 0.7))
+        grad = mp_obs._python_mean_phase_gradient(np.full(8, 0.7))
         np.testing.assert_allclose(grad, np.full(8, 1.0 / 8), atol=1e-15)
 
     def test_empty_gradient_is_empty(self) -> None:
-        assert d._python_mean_phase_gradient(np.array([])).shape == (0,)
+        assert mp_obs._python_mean_phase_gradient(np.array([])).shape == (0,)
 
     def test_exact_incoherent_gradient_is_zero(self) -> None:
         theta = np.array([0.0, math.pi, 0.0, -math.pi])
-        np.testing.assert_array_equal(d._python_mean_phase_gradient(theta), np.zeros(4))
+        np.testing.assert_array_equal(mp_obs._python_mean_phase_gradient(theta), np.zeros(4))
 
 
 class TestRustMeanPhaseTier:
@@ -1022,22 +1034,24 @@ class TestRustMeanPhaseTier:
             pytest.skip("scpn_quantum_engine.mean_phase_gradient unavailable")
         rng = np.random.default_rng(seed)
         theta = rng.uniform(-10 * math.pi, 10 * math.pi, size=n)
-        assert d._rust_mean_phase(theta) == pytest.approx(d._python_mean_phase(theta), abs=1e-12)
+        assert mp_obs._rust_mean_phase(theta) == pytest.approx(
+            mp_obs._python_mean_phase(theta), abs=1e-12
+        )
         np.testing.assert_allclose(
-            d._rust_mean_phase_gradient(theta),
-            d._python_mean_phase_gradient(theta),
+            mp_obs._rust_mean_phase_gradient(theta),
+            mp_obs._python_mean_phase_gradient(theta),
             atol=1e-12,
         )
 
     def test_rust_value_absence_raises(self, monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.setattr(d, "optional_rust_engine", lambda: None)
         with pytest.raises(ModuleNotFoundError, match="scpn_quantum_engine"):
-            d._rust_mean_phase(np.zeros(3))
+            mp_obs._rust_mean_phase(np.zeros(3))
 
     def test_rust_gradient_absence_raises(self, monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.setattr(d, "optional_rust_engine", lambda: None)
         with pytest.raises(ModuleNotFoundError, match="scpn_quantum_engine"):
-            d._rust_mean_phase_gradient(np.zeros(3))
+            mp_obs._rust_mean_phase_gradient(np.zeros(3))
 
 
 class TestJuliaMeanPhaseTier:
@@ -1048,9 +1062,9 @@ class TestJuliaMeanPhaseTier:
 
         rng = np.random.default_rng(20260623)
         theta = rng.uniform(-math.pi, math.pi, size=9)
-        assert julia_value(theta) == pytest.approx(d._python_mean_phase(theta), abs=1e-10)
+        assert julia_value(theta) == pytest.approx(mp_obs._python_mean_phase(theta), abs=1e-10)
         np.testing.assert_allclose(
-            julia_grad(theta), d._python_mean_phase_gradient(theta), atol=1e-10
+            julia_grad(theta), mp_obs._python_mean_phase_gradient(theta), atol=1e-10
         )
 
 
@@ -1063,14 +1077,14 @@ class TestMeanPhaseDispatch:
     def test_all_available_tiers_agree(self, n: int, seed: int) -> None:
         rng = np.random.default_rng(seed)
         theta = rng.uniform(-math.pi, math.pi, size=n)
-        value_reference = d._python_mean_phase(theta)
-        grad_reference = d._python_mean_phase_gradient(theta)
-        for name, impl in d._MEAN_PHASE_CHAIN:
+        value_reference = mp_obs._python_mean_phase(theta)
+        grad_reference = mp_obs._python_mean_phase_gradient(theta)
+        for name, impl in mp_obs._MEAN_PHASE_CHAIN:
             try:
                 assert impl(theta) == pytest.approx(value_reference, abs=1e-10), name
             except (ImportError, ModuleNotFoundError, RuntimeError):
                 continue
-        for name, impl in d._MEAN_PHASE_GRADIENT_CHAIN:
+        for name, impl in mp_obs._MEAN_PHASE_GRADIENT_CHAIN:
             try:
                 out = impl(theta)
             except (ImportError, ModuleNotFoundError, RuntimeError):
@@ -1095,8 +1109,8 @@ class TestMeanPhaseDispatch:
         assert last_mean_phase_gradient_tier_used() in {"rust", "julia", "python"}
 
     def test_chains_end_with_python_floor(self) -> None:
-        assert d._MEAN_PHASE_CHAIN[-1][0] == "python"
-        assert d._MEAN_PHASE_GRADIENT_CHAIN[-1][0] == "python"
+        assert mp_obs._MEAN_PHASE_CHAIN[-1][0] == "python"
+        assert mp_obs._MEAN_PHASE_GRADIENT_CHAIN[-1][0] == "python"
 
 
 class TestMeanPhasePartialEngine:
@@ -1109,7 +1123,7 @@ class TestMeanPhasePartialEngine:
 
         monkeypatch.setattr(d, "optional_rust_engine", lambda: PartialEngine())
         disp = d.MultiLangDispatcher(
-            [("rust", d._rust_mean_phase), ("python", d._python_mean_phase)],
+            [("rust", mp_obs._rust_mean_phase), ("python", mp_obs._python_mean_phase)],
         )
         assert disp(np.zeros(4)) == pytest.approx(0.0)
         assert disp.last_tier == "python"
@@ -1123,10 +1137,13 @@ class TestMeanPhasePartialEngine:
 
         monkeypatch.setattr(d, "optional_rust_engine", lambda: PartialEngine())
         disp = d.MultiLangDispatcher(
-            [("rust", d._rust_mean_phase_gradient), ("python", d._python_mean_phase_gradient)],
+            [
+                ("rust", mp_obs._rust_mean_phase_gradient),
+                ("python", mp_obs._python_mean_phase_gradient),
+            ],
         )
         np.testing.assert_allclose(
-            disp(np.full(4, 0.5)), d._python_mean_phase_gradient(np.full(4, 0.5))
+            disp(np.full(4, 0.5)), mp_obs._python_mean_phase_gradient(np.full(4, 0.5))
         )
         assert disp.last_tier == "python"
 
@@ -1145,9 +1162,9 @@ def _finite_difference_mean_phase_hessian(theta: np.ndarray, step: float = 1e-6)
         minus = theta.astype(np.float64).copy()
         plus[i] += step
         minus[i] -= step
-        out[i] = (d._python_mean_phase_gradient(plus) - d._python_mean_phase_gradient(minus)) / (
-            2.0 * step
-        )
+        out[i] = (
+            mp_obs._python_mean_phase_gradient(plus) - mp_obs._python_mean_phase_gradient(minus)
+        ) / (2.0 * step)
     return out
 
 
@@ -1163,7 +1180,7 @@ class TestPythonMeanPhaseHessianFloor:
         expected = -(np.outer(aligned_sin, aligned_cos) + np.outer(aligned_cos, aligned_sin)) / (
             theta.size**2 * magnitude**2
         ) + np.diag(aligned_sin / (theta.size * magnitude))
-        np.testing.assert_allclose(d._python_mean_phase_hessian(theta), expected, atol=1e-15)
+        np.testing.assert_allclose(mp_obs._python_mean_phase_hessian(theta), expected, atol=1e-15)
 
     @_GLOBAL_SETTINGS
     @given(
@@ -1173,7 +1190,7 @@ class TestPythonMeanPhaseHessianFloor:
     def test_is_symmetric(self, n: int, seed: int) -> None:
         rng = np.random.default_rng(seed)
         theta = rng.uniform(-math.pi, math.pi, size=n)
-        hessian = d._python_mean_phase_hessian(theta)
+        hessian = mp_obs._python_mean_phase_hessian(theta)
         np.testing.assert_allclose(hessian, hessian.T, atol=1e-15)
 
     @_GLOBAL_SETTINGS
@@ -1184,7 +1201,7 @@ class TestPythonMeanPhaseHessianFloor:
     def test_rows_sum_to_zero(self, n: int, seed: int) -> None:
         rng = np.random.default_rng(seed)
         theta = rng.uniform(-math.pi, math.pi, size=n)
-        hessian = d._python_mean_phase_hessian(theta)
+        hessian = mp_obs._python_mean_phase_hessian(theta)
         np.testing.assert_allclose(hessian.sum(axis=1), np.zeros(n), atol=1e-12)
 
     @_GLOBAL_SETTINGS
@@ -1197,22 +1214,22 @@ class TestPythonMeanPhaseHessianFloor:
         theta = rng.uniform(-math.pi, math.pi, size=n)
         if _order_parameter_value(theta) < 1e-2:
             return
-        hessian = d._python_mean_phase_hessian(theta)
+        hessian = mp_obs._python_mean_phase_hessian(theta)
         np.testing.assert_allclose(
             hessian, _finite_difference_mean_phase_hessian(theta), atol=1e-5
         )
 
     def test_single_oscillator_is_zero(self) -> None:
-        hessian = d._python_mean_phase_hessian(np.array([2.7]))
+        hessian = mp_obs._python_mean_phase_hessian(np.array([2.7]))
         assert hessian.shape == (1, 1)
         assert abs(float(hessian[0, 0])) < 1e-15
 
     def test_empty_input_returns_empty_matrix(self) -> None:
-        assert d._python_mean_phase_hessian(np.array([])).shape == (0, 0)
+        assert mp_obs._python_mean_phase_hessian(np.array([])).shape == (0, 0)
 
     def test_exact_incoherent_returns_zero_matrix(self) -> None:
         theta = np.array([0.0, math.pi, 0.0, -math.pi])
-        np.testing.assert_array_equal(d._python_mean_phase_hessian(theta), np.zeros((4, 4)))
+        np.testing.assert_array_equal(mp_obs._python_mean_phase_hessian(theta), np.zeros((4, 4)))
 
 
 class TestRustMeanPhaseHessianTier:
@@ -1228,13 +1245,15 @@ class TestRustMeanPhaseHessianTier:
         rng = np.random.default_rng(seed)
         theta = rng.uniform(-10 * math.pi, 10 * math.pi, size=n)
         np.testing.assert_allclose(
-            d._rust_mean_phase_hessian(theta), d._python_mean_phase_hessian(theta), atol=1e-11
+            mp_obs._rust_mean_phase_hessian(theta),
+            mp_obs._python_mean_phase_hessian(theta),
+            atol=1e-11,
         )
 
     def test_rust_absence_raises(self, monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.setattr(d, "optional_rust_engine", lambda: None)
         with pytest.raises(ModuleNotFoundError, match="scpn_quantum_engine"):
-            d._rust_mean_phase_hessian(np.zeros(3))
+            mp_obs._rust_mean_phase_hessian(np.zeros(3))
 
     def test_partial_engine_falls_through(self, monkeypatch: pytest.MonkeyPatch) -> None:
         class PartialEngine:
@@ -1242,10 +1261,13 @@ class TestRustMeanPhaseHessianTier:
 
         monkeypatch.setattr(d, "optional_rust_engine", lambda: PartialEngine())
         disp = d.MultiLangDispatcher(
-            [("rust", d._rust_mean_phase_hessian), ("python", d._python_mean_phase_hessian)],
+            [
+                ("rust", mp_obs._rust_mean_phase_hessian),
+                ("python", mp_obs._python_mean_phase_hessian),
+            ],
         )
         np.testing.assert_allclose(
-            disp(np.full(4, 0.5)), d._python_mean_phase_hessian(np.full(4, 0.5))
+            disp(np.full(4, 0.5)), mp_obs._python_mean_phase_hessian(np.full(4, 0.5))
         )
         assert disp.last_tier == "python"
 
@@ -1258,7 +1280,7 @@ class TestJuliaMeanPhaseHessianTier:
         rng = np.random.default_rng(20260623)
         theta = rng.uniform(-math.pi, math.pi, size=7)
         np.testing.assert_allclose(
-            julia_hessian(theta), d._python_mean_phase_hessian(theta), atol=1e-10
+            julia_hessian(theta), mp_obs._python_mean_phase_hessian(theta), atol=1e-10
         )
 
 
@@ -1271,8 +1293,8 @@ class TestMeanPhaseHessianDispatch:
     def test_all_available_tiers_agree(self, n: int, seed: int) -> None:
         rng = np.random.default_rng(seed)
         theta = rng.uniform(-math.pi, math.pi, size=n)
-        reference = d._python_mean_phase_hessian(theta)
-        for name, impl in d._MEAN_PHASE_HESSIAN_CHAIN:
+        reference = mp_obs._python_mean_phase_hessian(theta)
+        for name, impl in mp_obs._MEAN_PHASE_HESSIAN_CHAIN:
             try:
                 out = impl(theta)
             except (ImportError, ModuleNotFoundError, RuntimeError):
@@ -1292,7 +1314,7 @@ class TestMeanPhaseHessianDispatch:
         assert last_mean_phase_hessian_tier_used() in {"rust", "julia", "python"}
 
     def test_chain_ends_with_python_floor(self) -> None:
-        assert d._MEAN_PHASE_HESSIAN_CHAIN[-1][0] == "python"
+        assert mp_obs._MEAN_PHASE_HESSIAN_CHAIN[-1][0] == "python"
 
 
 # ---------------------------------------------------------------------------
@@ -1319,15 +1341,15 @@ class TestPythonDaidoFloor:
     def test_two_cluster_state_is_detected(self) -> None:
         # Two antipodal clusters: r_1 = 0 (first harmonic cancels), r_2 = 1.
         theta = np.array([0.0, 0.0, math.pi, math.pi])
-        assert d._python_daido_order_parameter(theta, 1) == pytest.approx(0.0, abs=1e-10)
-        assert d._python_daido_order_parameter(theta, 2) == pytest.approx(1.0, abs=1e-10)
+        assert da_obs._python_daido_order_parameter(theta, 1) == pytest.approx(0.0, abs=1e-10)
+        assert da_obs._python_daido_order_parameter(theta, 2) == pytest.approx(1.0, abs=1e-10)
 
     def test_three_cluster_state_is_detected(self) -> None:
         # Three evenly spaced clusters: r_1 = r_2 = 0 but r_3 = 1.
         theta = np.repeat([0.0, 2.0 * math.pi / 3.0, 4.0 * math.pi / 3.0], 3)
-        assert d._python_daido_order_parameter(theta, 1) == pytest.approx(0.0, abs=1e-10)
-        assert d._python_daido_order_parameter(theta, 2) == pytest.approx(0.0, abs=1e-10)
-        assert d._python_daido_order_parameter(theta, 3) == pytest.approx(1.0, abs=1e-10)
+        assert da_obs._python_daido_order_parameter(theta, 1) == pytest.approx(0.0, abs=1e-10)
+        assert da_obs._python_daido_order_parameter(theta, 2) == pytest.approx(0.0, abs=1e-10)
+        assert da_obs._python_daido_order_parameter(theta, 3) == pytest.approx(1.0, abs=1e-10)
 
     @_GLOBAL_SETTINGS
     @given(
@@ -1337,12 +1359,12 @@ class TestPythonDaidoFloor:
     def test_m1_reduces_to_order_parameter(self, n: int, seed: int) -> None:
         rng = np.random.default_rng(seed)
         theta = rng.uniform(-math.pi, math.pi, size=n)
-        assert d._python_daido_order_parameter(theta, 1) == pytest.approx(
-            d._python_order_parameter(theta), abs=1e-12
+        assert da_obs._python_daido_order_parameter(theta, 1) == pytest.approx(
+            op_obs._python_order_parameter(theta), abs=1e-12
         )
         np.testing.assert_allclose(
-            d._python_daido_order_parameter_gradient(theta, 1),
-            d._python_order_parameter_gradient(theta),
+            da_obs._python_daido_order_parameter_gradient(theta, 1),
+            op_obs._python_order_parameter_gradient(theta),
             atol=1e-12,
         )
 
@@ -1358,7 +1380,7 @@ class TestPythonDaidoFloor:
         if _daido_value(theta, m) < 1e-2:
             return
         np.testing.assert_allclose(
-            d._python_daido_order_parameter_gradient(theta, m),
+            da_obs._python_daido_order_parameter_gradient(theta, m),
             _finite_difference_daido_gradient(theta, m),
             atol=1e-5,
         )
@@ -1372,30 +1394,30 @@ class TestPythonDaidoFloor:
     def test_gradient_sums_to_zero(self, n: int, m: int, seed: int) -> None:
         rng = np.random.default_rng(seed)
         theta = rng.uniform(-math.pi, math.pi, size=n)
-        assert abs(float(np.sum(d._python_daido_order_parameter_gradient(theta, m)))) < 1e-12
+        assert abs(float(np.sum(da_obs._python_daido_order_parameter_gradient(theta, m)))) < 1e-12
 
     def test_value_in_unit_interval(self) -> None:
         rng = np.random.default_rng(3)
         theta = rng.uniform(-math.pi, math.pi, size=40)
         for m in (1, 2, 3, 4):
-            assert 0.0 - 1e-12 <= d._python_daido_order_parameter(theta, m) <= 1.0 + 1e-12
+            assert 0.0 - 1e-12 <= da_obs._python_daido_order_parameter(theta, m) <= 1.0 + 1e-12
 
     def test_rejects_non_positive_harmonic(self) -> None:
         theta = np.zeros(4)
         for bad in (0, -1, -3):
             with pytest.raises(ValueError, match="positive integer"):
-                d._python_daido_order_parameter(theta, bad)
+                da_obs._python_daido_order_parameter(theta, bad)
             with pytest.raises(ValueError, match="positive integer"):
-                d._python_daido_order_parameter_gradient(theta, bad)
+                da_obs._python_daido_order_parameter_gradient(theta, bad)
 
     def test_empty_input(self) -> None:
-        assert d._python_daido_order_parameter(np.array([]), 2) == 0.0
-        assert d._python_daido_order_parameter_gradient(np.array([]), 2).shape == (0,)
+        assert da_obs._python_daido_order_parameter(np.array([]), 2) == 0.0
+        assert da_obs._python_daido_order_parameter_gradient(np.array([]), 2).shape == (0,)
 
     def test_exact_incoherent_gradient_is_zero(self) -> None:
         theta = np.array([0.0, math.pi, 0.0, -math.pi])
         np.testing.assert_array_equal(
-            d._python_daido_order_parameter_gradient(theta, 1), np.zeros(4)
+            da_obs._python_daido_order_parameter_gradient(theta, 1), np.zeros(4)
         )
 
 
@@ -1412,28 +1434,28 @@ class TestRustDaidoTier:
             pytest.skip("scpn_quantum_engine.daido_order_parameter_gradient unavailable")
         rng = np.random.default_rng(seed)
         theta = rng.uniform(-10 * math.pi, 10 * math.pi, size=n)
-        assert d._rust_daido_order_parameter(theta, m) == pytest.approx(
-            d._python_daido_order_parameter(theta, m), abs=1e-12
+        assert da_obs._rust_daido_order_parameter(theta, m) == pytest.approx(
+            da_obs._python_daido_order_parameter(theta, m), abs=1e-12
         )
         np.testing.assert_allclose(
-            d._rust_daido_order_parameter_gradient(theta, m),
-            d._python_daido_order_parameter_gradient(theta, m),
+            da_obs._rust_daido_order_parameter_gradient(theta, m),
+            da_obs._python_daido_order_parameter_gradient(theta, m),
             atol=1e-12,
         )
 
     def test_rust_value_absence_raises(self, monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.setattr(d, "optional_rust_engine", lambda: None)
         with pytest.raises(ModuleNotFoundError, match="scpn_quantum_engine"):
-            d._rust_daido_order_parameter(np.zeros(3), 2)
+            da_obs._rust_daido_order_parameter(np.zeros(3), 2)
 
     def test_rust_gradient_absence_raises(self, monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.setattr(d, "optional_rust_engine", lambda: None)
         with pytest.raises(ModuleNotFoundError, match="scpn_quantum_engine"):
-            d._rust_daido_order_parameter_gradient(np.zeros(3), 2)
+            da_obs._rust_daido_order_parameter_gradient(np.zeros(3), 2)
 
     def test_rust_rejects_non_positive_harmonic(self) -> None:
         with pytest.raises(ValueError, match="positive integer"):
-            d._rust_daido_order_parameter(np.zeros(3), 0)
+            da_obs._rust_daido_order_parameter(np.zeros(3), 0)
 
 
 class TestJuliaDaidoTier:
@@ -1446,11 +1468,11 @@ class TestJuliaDaidoTier:
         theta = rng.uniform(-math.pi, math.pi, size=9)
         for m in (1, 2, 3):
             assert julia_value(theta, m) == pytest.approx(
-                d._python_daido_order_parameter(theta, m), abs=1e-10
+                da_obs._python_daido_order_parameter(theta, m), abs=1e-10
             )
             np.testing.assert_allclose(
                 julia_grad(theta, m),
-                d._python_daido_order_parameter_gradient(theta, m),
+                da_obs._python_daido_order_parameter_gradient(theta, m),
                 atol=1e-10,
             )
 
@@ -1465,14 +1487,14 @@ class TestDaidoDispatch:
     def test_all_available_tiers_agree(self, n: int, m: int, seed: int) -> None:
         rng = np.random.default_rng(seed)
         theta = rng.uniform(-math.pi, math.pi, size=n)
-        value_ref = d._python_daido_order_parameter(theta, m)
-        grad_ref = d._python_daido_order_parameter_gradient(theta, m)
-        for name, impl in d._DAIDO_ORDER_PARAMETER_CHAIN:
+        value_ref = da_obs._python_daido_order_parameter(theta, m)
+        grad_ref = da_obs._python_daido_order_parameter_gradient(theta, m)
+        for name, impl in da_obs._DAIDO_ORDER_PARAMETER_CHAIN:
             try:
                 assert impl(theta, m) == pytest.approx(value_ref, abs=1e-10), name
             except (ImportError, ModuleNotFoundError, RuntimeError):
                 continue
-        for name, impl in d._DAIDO_ORDER_PARAMETER_GRADIENT_CHAIN:
+        for name, impl in da_obs._DAIDO_ORDER_PARAMETER_GRADIENT_CHAIN:
             try:
                 out = impl(theta, m)
             except (ImportError, ModuleNotFoundError, RuntimeError):
@@ -1497,8 +1519,8 @@ class TestDaidoDispatch:
         assert last_daido_gradient_tier_used() in {"rust", "julia", "python"}
 
     def test_chains_end_with_python_floor(self) -> None:
-        assert d._DAIDO_ORDER_PARAMETER_CHAIN[-1][0] == "python"
-        assert d._DAIDO_ORDER_PARAMETER_GRADIENT_CHAIN[-1][0] == "python"
+        assert da_obs._DAIDO_ORDER_PARAMETER_CHAIN[-1][0] == "python"
+        assert da_obs._DAIDO_ORDER_PARAMETER_GRADIENT_CHAIN[-1][0] == "python"
 
 
 class TestDaidoPartialEngine:
@@ -1508,7 +1530,10 @@ class TestDaidoPartialEngine:
 
         monkeypatch.setattr(d, "optional_rust_engine", lambda: PartialEngine())
         disp = d.MultiLangDispatcher(
-            [("rust", d._rust_daido_order_parameter), ("python", d._python_daido_order_parameter)],
+            [
+                ("rust", da_obs._rust_daido_order_parameter),
+                ("python", da_obs._python_daido_order_parameter),
+            ],
         )
         assert disp(np.zeros(4), 2) == pytest.approx(1.0)
         assert disp.last_tier == "python"
@@ -1520,12 +1545,12 @@ class TestDaidoPartialEngine:
         monkeypatch.setattr(d, "optional_rust_engine", lambda: PartialEngine())
         disp = d.MultiLangDispatcher(
             [
-                ("rust", d._rust_daido_order_parameter_gradient),
-                ("python", d._python_daido_order_parameter_gradient),
+                ("rust", da_obs._rust_daido_order_parameter_gradient),
+                ("python", da_obs._python_daido_order_parameter_gradient),
             ],
         )
         out = disp(np.full(4, 0.5), 2)
         np.testing.assert_allclose(
-            out, d._python_daido_order_parameter_gradient(np.full(4, 0.5), 2)
+            out, da_obs._python_daido_order_parameter_gradient(np.full(4, 0.5), 2)
         )
         assert disp.last_tier == "python"
