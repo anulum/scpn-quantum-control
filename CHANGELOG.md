@@ -5,6 +5,14 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-06-23 — Added uncertainty propagation for zero-noise extrapolation
+  (`scpn_quantum_control.mitigation.zne_uncertainty`): `zne_extrapolate_with_uncertainty`
+  and `ZNEUncertaintyResult` attach a propagated standard error and coverage interval
+  to the ZNE zero-noise estimate. Per-scale shot-noise errors (for example from
+  `analysis.sync_uncertainty`) propagate through a weighted-least-squares fit; without
+  them an ordinary-least-squares residual variance is used. The point estimate matches
+  `zne_extrapolate` for the unweighted case. Mitigated results now carry defensible
+  error bars instead of bare point estimates.
 - 2026-06-23 — Added an Architecture Decision Records page
   (`docs/ARCHITECTURE_DECISIONS.md`, in the Theory nav) recording the reasoning
   behind six major design decisions: single-responsibility module boundaries,

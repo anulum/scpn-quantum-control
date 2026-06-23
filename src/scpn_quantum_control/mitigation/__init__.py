@@ -55,11 +55,14 @@ from .symmetry_verification import (
     symmetry_expand,
 )
 from .zne import ZNEResult, gate_fold_circuit, zne_extrapolate
+from .zne_uncertainty import ZNEUncertaintyResult, zne_extrapolate_with_uncertainty
 
 __all__ = [
     "gate_fold_circuit",
     "zne_extrapolate",
     "ZNEResult",
+    "ZNEUncertaintyResult",
+    "zne_extrapolate_with_uncertainty",
     "DDSequence",
     "insert_dd_sequence",
     "PECResult",
