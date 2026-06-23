@@ -37,7 +37,9 @@ from __future__ import annotations
 from .daido_observables import (
     daido_order_parameter,
     daido_order_parameter_gradient,
+    daido_order_parameter_hessian,
     last_daido_gradient_tier_used,
+    last_daido_hessian_tier_used,
     last_daido_tier_used,
 )
 from .dispatcher import (
@@ -67,8 +69,10 @@ __all__ = [
     "available_tiers",
     "daido_order_parameter",
     "daido_order_parameter_gradient",
+    "daido_order_parameter_hessian",
     "dispatch",
     "last_daido_gradient_tier_used",
+    "last_daido_hessian_tier_used",
     "last_daido_tier_used",
     "last_gradient_tier_used",
     "last_hessian_tier_used",

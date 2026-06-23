@@ -124,9 +124,75 @@ _DAIDO_ORDER_PARAMETER_GRADIENT_CHAIN: list[
 ]
 
 
+def _rust_daido_order_parameter_hessian(theta: NDArray[np.float64], m: int) -> NDArray[np.float64]:
+    _validate_harmonic(m)
+    engine = dispatcher.optional_rust_engine()
+    if engine is None:
+        raise ModuleNotFoundError("scpn_quantum_engine")
+    rust_hessian = getattr(engine, "daido_order_parameter_hessian", None)
+    if not callable(rust_hessian):
+        raise ImportError("scpn_quantum_engine.daido_order_parameter_hessian is unavailable")
+
+    return np.asarray(
+        rust_hessian(np.ascontiguousarray(theta, dtype=np.float64), m), dtype=np.float64
+    )
+
+
+def _julia_daido_order_parameter_hessian(
+    theta: NDArray[np.float64], m: int
+) -> NDArray[np.float64]:
+    _validate_harmonic(m)
+    from .julia import daido_order_parameter_hessian as julia_hessian
+
+    return julia_hessian(theta, m)
+
+
+def _python_daido_order_parameter_hessian(
+    theta: NDArray[np.float64], m: int
+) -> NDArray[np.float64]:
+    # Correctness floor — Hessian of the m-th Daido order parameter. With C_m = <cos(m θ)>,
+    # S_m = <sin(m θ)>, r_m = hypot(C_m, S_m) and a_k = cos(ψ_m − m θ_k) =
+    # (C_m cos(m θ_k) + S_m sin(m θ_k)) / r_m:
+    #     ∂²r_m/∂θ_i∂θ_j = m² (a_i a_j / (N² r_m) − δ_ij a_j / N).
+    # The matrix is symmetric and each row sums to zero. The incoherent state r_m = 0
+    # returns the zero matrix. For m = 1 this reduces to ``order_parameter_hessian``.
+    _validate_harmonic(m)
+    phases = np.ascontiguousarray(theta, dtype=np.float64)
+    count = phases.size
+    if count == 0:
+        return np.zeros((0, 0), dtype=np.float64)
+    scaled = m * phases
+    cos_mean = float(np.mean(np.cos(scaled)))
+    sin_mean = float(np.mean(np.sin(scaled)))
+    magnitude = float(np.hypot(cos_mean, sin_mean))
+    if magnitude == 0.0:
+        return np.zeros((count, count), dtype=np.float64)
+    aligned = (cos_mean * np.cos(scaled) + sin_mean * np.sin(scaled)) / magnitude
+    hessian = (m * m) * (
+        np.outer(aligned, aligned) / (count * count * magnitude) - np.diag(aligned / count)
+    )
+    return np.ascontiguousarray(hessian, dtype=np.float64)
+
+
+# The Daido Hessian chain mirrors the order-parameter Hessian chain at the m-th harmonic.
+# Its micro-benchmark (at m = 2) is recorded in
+# ``docs/benchmarks/daido_order_parameter_hessian_tiers.json``; rerun
+# ``python scripts/bench_daido_order_parameter_hessian_tiers.py`` when this chain is edited.
+_DAIDO_ORDER_PARAMETER_HESSIAN_CHAIN: list[
+    tuple[str, Callable[[NDArray[np.float64], int], NDArray[np.float64]]]
+] = [
+    ("rust", _rust_daido_order_parameter_hessian),
+    ("julia", _julia_daido_order_parameter_hessian),
+    ("python", _python_daido_order_parameter_hessian),
+]
+
+
 _daido_order_parameter_dispatcher = MultiLangDispatcher(_DAIDO_ORDER_PARAMETER_CHAIN)
 _daido_order_parameter_gradient_dispatcher = MultiLangDispatcher(
     _DAIDO_ORDER_PARAMETER_GRADIENT_CHAIN
+)
+_daido_order_parameter_hessian_dispatcher = MultiLangDispatcher(
+    _DAIDO_ORDER_PARAMETER_HESSIAN_CHAIN
 )
 
 
@@ -207,14 +273,57 @@ def last_daido_gradient_tier_used() -> str | None:
     return _daido_order_parameter_gradient_dispatcher.last_tier
 
 
+def daido_order_parameter_hessian(theta: NDArray[np.float64], m: int) -> NDArray[np.float64]:
+    r"""Hessian of the m-th Daido order parameter with multi-language dispatch.
+
+    Returns :math:`\partial^2 r_m / \partial \theta_i \partial \theta_j = m^2 (a_i a_j /
+    (N^2 r_m) - \delta_{ij} a_j / N)`, with :math:`a_k = \cos(\psi_m - m \theta_k)`. The
+    matrix is symmetric and every row sums to zero. At the incoherent state
+    (:math:`r_m = 0`) the zero matrix is returned. For :math:`m = 1` it reduces to
+    :func:`~scpn_quantum_control.accel.order_parameter_observables.order_parameter_hessian`.
+
+    Parameters
+    ----------
+    theta : numpy.ndarray
+        One-dimensional array of oscillator phases in radians.
+    m : int
+        Harmonic order, a positive integer.
+
+    Returns
+    -------
+    numpy.ndarray
+        Two-dimensional ``(N, N)`` float64 Hessian matrix. An empty input yields a
+        ``(0, 0)`` array.
+
+    Raises
+    ------
+    ValueError
+        If ``m`` is not a positive integer.
+
+    Notes
+    -----
+    Chain (measured fastest first): Rust → Julia → Python floor. The served tier is
+    recorded on :func:`last_daido_hessian_tier_used`.
+    """
+    return np.asarray(_daido_order_parameter_hessian_dispatcher(theta, m), dtype=np.float64)
+
+
+def last_daido_hessian_tier_used() -> str | None:
+    """Return the tier that served the most recent ``daido_order_parameter_hessian``."""
+    return _daido_order_parameter_hessian_dispatcher.last_tier
+
+
 # Register the dispatchers for name-keyed ``dispatch`` lookups.
 register_dispatcher("daido_order_parameter", _daido_order_parameter_dispatcher)
 register_dispatcher("daido_order_parameter_gradient", _daido_order_parameter_gradient_dispatcher)
+register_dispatcher("daido_order_parameter_hessian", _daido_order_parameter_hessian_dispatcher)
 
 
 __all__ = [
     "daido_order_parameter",
     "daido_order_parameter_gradient",
+    "daido_order_parameter_hessian",
     "last_daido_gradient_tier_used",
+    "last_daido_hessian_tier_used",
     "last_daido_tier_used",
 ]

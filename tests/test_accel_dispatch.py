@@ -1554,3 +1554,190 @@ class TestDaidoPartialEngine:
             out, da_obs._python_daido_order_parameter_gradient(np.full(4, 0.5), 2)
         )
         assert disp.last_tier == "python"
+
+
+# ---------------------------------------------------------------------------
+# Daido Hessian — analytic floor, reduction, invariants, parity, dispatch
+# ---------------------------------------------------------------------------
+
+
+def _finite_difference_daido_hessian(theta: np.ndarray, m: int, step: float = 1e-6) -> np.ndarray:
+    n = theta.size
+    out = np.zeros((n, n), dtype=np.float64)
+    for i in range(n):
+        plus = theta.astype(np.float64).copy()
+        minus = theta.astype(np.float64).copy()
+        plus[i] += step
+        minus[i] -= step
+        out[i] = (
+            da_obs._python_daido_order_parameter_gradient(plus, m)
+            - da_obs._python_daido_order_parameter_gradient(minus, m)
+        ) / (2.0 * step)
+    return out
+
+
+class TestPythonDaidoHessianFloor:
+    def test_matches_closed_form(self) -> None:
+        rng = np.random.default_rng(43)
+        theta = rng.uniform(-math.pi, math.pi, size=11)
+        m = 2
+        scaled = m * theta
+        cos_mean = float(np.mean(np.cos(scaled)))
+        sin_mean = float(np.mean(np.sin(scaled)))
+        magnitude = float(np.hypot(cos_mean, sin_mean))
+        aligned = (cos_mean * np.cos(scaled) + sin_mean * np.sin(scaled)) / magnitude
+        expected = (m * m) * (
+            np.outer(aligned, aligned) / (theta.size**2 * magnitude)
+            - np.diag(aligned / theta.size)
+        )
+        np.testing.assert_allclose(
+            da_obs._python_daido_order_parameter_hessian(theta, m), expected, atol=1e-15
+        )
+
+    @_GLOBAL_SETTINGS
+    @given(
+        n=st.integers(min_value=1, max_value=32),
+        seed=st.integers(min_value=0, max_value=2**31 - 1),
+    )
+    def test_m1_reduces_to_order_parameter_hessian(self, n: int, seed: int) -> None:
+        rng = np.random.default_rng(seed)
+        theta = rng.uniform(-math.pi, math.pi, size=n)
+        np.testing.assert_allclose(
+            da_obs._python_daido_order_parameter_hessian(theta, 1),
+            op_obs._python_order_parameter_hessian(theta),
+            atol=1e-12,
+        )
+
+    @_GLOBAL_SETTINGS
+    @given(
+        n=st.integers(min_value=1, max_value=32),
+        m=st.integers(min_value=1, max_value=4),
+        seed=st.integers(min_value=0, max_value=2**31 - 1),
+    )
+    def test_symmetric_and_rows_sum_to_zero(self, n: int, m: int, seed: int) -> None:
+        rng = np.random.default_rng(seed)
+        theta = rng.uniform(-math.pi, math.pi, size=n)
+        hessian = da_obs._python_daido_order_parameter_hessian(theta, m)
+        np.testing.assert_allclose(hessian, hessian.T, atol=1e-15)
+        np.testing.assert_allclose(hessian.sum(axis=1), np.zeros(n), atol=1e-11)
+
+    @_GLOBAL_SETTINGS
+    @given(
+        n=st.integers(min_value=2, max_value=20),
+        m=st.integers(min_value=1, max_value=3),
+        seed=st.integers(min_value=0, max_value=2**31 - 1),
+    )
+    def test_matches_finite_difference_of_gradient(self, n: int, m: int, seed: int) -> None:
+        rng = np.random.default_rng(seed)
+        theta = rng.uniform(-math.pi, math.pi, size=n)
+        if _daido_value(theta, m) < 1e-2:
+            return
+        np.testing.assert_allclose(
+            da_obs._python_daido_order_parameter_hessian(theta, m),
+            _finite_difference_daido_hessian(theta, m),
+            atol=1e-4,
+        )
+
+    def test_rejects_non_positive_harmonic(self) -> None:
+        with pytest.raises(ValueError, match="positive integer"):
+            da_obs._python_daido_order_parameter_hessian(np.zeros(4), 0)
+
+    def test_empty_and_incoherent(self) -> None:
+        assert da_obs._python_daido_order_parameter_hessian(np.array([]), 2).shape == (0, 0)
+        theta = np.array([0.0, math.pi, 0.0, -math.pi])
+        np.testing.assert_array_equal(
+            da_obs._python_daido_order_parameter_hessian(theta, 1), np.zeros((4, 4))
+        )
+
+
+class TestRustDaidoHessianTier:
+    @_GLOBAL_SETTINGS
+    @given(
+        n=st.integers(min_value=1, max_value=40),
+        m=st.integers(min_value=1, max_value=4),
+        seed=st.integers(min_value=0, max_value=2**31 - 1),
+    )
+    def test_rust_matches_python_floor(self, n: int, m: int, seed: int) -> None:
+        engine = pytest.importorskip("scpn_quantum_engine")
+        if not callable(getattr(engine, "daido_order_parameter_hessian", None)):
+            pytest.skip("scpn_quantum_engine.daido_order_parameter_hessian unavailable")
+        rng = np.random.default_rng(seed)
+        theta = rng.uniform(-10 * math.pi, 10 * math.pi, size=n)
+        np.testing.assert_allclose(
+            da_obs._rust_daido_order_parameter_hessian(theta, m),
+            da_obs._python_daido_order_parameter_hessian(theta, m),
+            atol=1e-11,
+        )
+
+    def test_rust_absence_raises(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.setattr(d, "optional_rust_engine", lambda: None)
+        with pytest.raises(ModuleNotFoundError, match="scpn_quantum_engine"):
+            da_obs._rust_daido_order_parameter_hessian(np.zeros(3), 2)
+
+    def test_partial_engine_falls_through(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        class PartialEngine:
+            pass
+
+        monkeypatch.setattr(d, "optional_rust_engine", lambda: PartialEngine())
+        disp = da_obs.MultiLangDispatcher(
+            [
+                ("rust", da_obs._rust_daido_order_parameter_hessian),
+                ("python", da_obs._python_daido_order_parameter_hessian),
+            ],
+        )
+        out = disp(np.full(4, 0.5), 2)
+        np.testing.assert_allclose(
+            out, da_obs._python_daido_order_parameter_hessian(np.full(4, 0.5), 2)
+        )
+        assert disp.last_tier == "python"
+
+
+class TestJuliaDaidoHessianTier:
+    def test_julia_matches_python_floor(self) -> None:
+        pytest.importorskip("juliacall")
+        from scpn_quantum_control.accel.julia import (
+            daido_order_parameter_hessian as julia_hessian,
+        )
+
+        rng = np.random.default_rng(20260623)
+        theta = rng.uniform(-math.pi, math.pi, size=7)
+        for m in (1, 2, 3):
+            np.testing.assert_allclose(
+                julia_hessian(theta, m),
+                da_obs._python_daido_order_parameter_hessian(theta, m),
+                atol=1e-10,
+            )
+
+
+class TestDaidoHessianDispatch:
+    @_GLOBAL_SETTINGS
+    @given(
+        n=st.integers(min_value=2, max_value=20),
+        m=st.integers(min_value=1, max_value=3),
+        seed=st.integers(min_value=0, max_value=2**31 - 1),
+    )
+    def test_all_available_tiers_agree(self, n: int, m: int, seed: int) -> None:
+        rng = np.random.default_rng(seed)
+        theta = rng.uniform(-math.pi, math.pi, size=n)
+        reference = da_obs._python_daido_order_parameter_hessian(theta, m)
+        for name, impl in da_obs._DAIDO_ORDER_PARAMETER_HESSIAN_CHAIN:
+            try:
+                out = impl(theta, m)
+            except (ImportError, ModuleNotFoundError, RuntimeError):
+                continue
+            np.testing.assert_allclose(out, reference, atol=1e-10, err_msg=name)
+
+    def test_registry_and_public_api(self) -> None:
+        from scpn_quantum_control.accel import (
+            daido_order_parameter_hessian,
+            last_daido_hessian_tier_used,
+        )
+
+        assert d.dispatch("daido_order_parameter_hessian", np.full(4, 0.3), 2).shape == (4, 4)
+        rng = np.random.default_rng(55)
+        theta = rng.uniform(0.0, 2 * math.pi, size=16)
+        assert daido_order_parameter_hessian(theta, 3).shape == (16, 16)
+        assert last_daido_hessian_tier_used() in {"rust", "julia", "python"}
+
+    def test_chain_ends_with_python_floor(self) -> None:
+        assert da_obs._DAIDO_ORDER_PARAMETER_HESSIAN_CHAIN[-1][0] == "python"

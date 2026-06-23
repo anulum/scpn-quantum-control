@@ -10,8 +10,8 @@
     "public_api_exports": 717,
     "public_documentation_pages": 247,
     "python_model_classes": 822,
-    "python_model_source_modules": 432,
-    "rust_pyo3_model_wrappers": 144,
+    "python_model_source_modules": 435,
+    "rust_pyo3_model_wrappers": 145,
     "rust_source_modules": 38,
     "test_files": 741
   },
@@ -425,7 +425,7 @@
       {
         "package": "accel",
         "path": "src/scpn_quantum_control/accel",
-        "python_modules": 3
+        "python_modules": 6
       },
       {
         "package": "analysis",
@@ -3871,7 +3871,10 @@
     "python_source_modules": [
       "src/scpn_quantum_control/_constants.py",
       "src/scpn_quantum_control/_paths.py",
+      "src/scpn_quantum_control/accel/daido_observables.py",
       "src/scpn_quantum_control/accel/dispatcher.py",
+      "src/scpn_quantum_control/accel/mean_phase_observables.py",
+      "src/scpn_quantum_control/accel/order_parameter_observables.py",
       "src/scpn_quantum_control/accel/rust_import.py",
       "src/scpn_quantum_control/accel/rust_kuramoto_classical.py",
       "src/scpn_quantum_control/analysis/adaptive_fim_feedback.py",
@@ -4315,6 +4318,7 @@
       "cosim_classical_substep",
       "daido_order_parameter",
       "daido_order_parameter_gradient",
+      "daido_order_parameter_hessian",
       "dla_dimension",
       "dla_protected_memory_mask",
       "dla_protected_memory_metrics",

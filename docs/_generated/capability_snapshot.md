@@ -7,11 +7,11 @@
 |---|---:|
 | Package version | 0.9.12 |
 | Public API exports | 717 |
-| Python source modules | 432 |
+| Python source modules | 435 |
 | Public Python classes | 822 |
 | Domain package families | 31 |
 | API documentation pages | 0 |
-| Rust PyO3 function bindings | 144 |
+| Rust PyO3 function bindings | 145 |
 | Rust source modules | 38 |
 | Notebook files | 98 |
 | Example files | 30 |

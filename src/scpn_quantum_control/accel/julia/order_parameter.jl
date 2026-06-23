@@ -220,3 +220,38 @@ function daido_order_parameter_gradient(theta::AbstractVector{<:Real}, m::Intege
     end
     return out
 end
+
+function daido_order_parameter_hessian(theta::AbstractVector{<:Real}, m::Integer)::Matrix{Float64}
+    # Hessian ∂²r_m/∂θ_i∂θ_j = m² (a_i a_j/(N² r_m) − δ_ij a_j/N) with
+    # a_k = cos(ψ_m − m θ_k). Symmetric, row sums zero; the incoherent state returns zeros.
+    n = length(theta)
+    out = Matrix{Float64}(undef, n, n)
+    n == 0 && return out
+    mf = Float64(m)
+    c = 0.0
+    s = 0.0
+    @inbounds for k in 1:n
+        c += cos(mf * Float64(theta[k]))
+        s += sin(mf * Float64(theta[k]))
+    end
+    c /= n
+    s /= n
+    r = sqrt(c * c + s * s)
+    if r == 0.0
+        fill!(out, 0.0)
+        return out
+    end
+    a = Vector{Float64}(undef, n)
+    @inbounds for k in 1:n
+        a[k] = (c * cos(mf * Float64(theta[k])) + s * sin(mf * Float64(theta[k]))) / r
+    end
+    m2 = mf * mf
+    scale = m2 / (n * n * r)
+    @inbounds for i in 1:n, j in 1:n
+        out[i, j] = a[i] * a[j] * scale
+    end
+    @inbounds for i in 1:n
+        out[i, i] -= m2 * a[i] / n
+    end
+    return out
+end

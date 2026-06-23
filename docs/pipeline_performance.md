@@ -1318,7 +1318,7 @@ Default arguments: 7 outer repeats × 100 inner reps, sizes
 ordering changes (e.g. Julia overtakes Rust on a future runner with
 a smaller FFI overhead), update the chain comment at the top of
 `_ORDER_PARAMETER_CHAIN` in
-`src/scpn_quantum_control/accel/dispatcher.py` to match.
+`src/scpn_quantum_control/accel/order_parameter_observables.py` to match.
 
 ### `order_parameter_gradient(theta)`
 
@@ -1365,7 +1365,7 @@ python scripts/bench_order_parameter_gradient_tiers.py
 
 If the measured ordering changes, update the chain comment at
 `_ORDER_PARAMETER_GRADIENT_CHAIN` in
-`src/scpn_quantum_control/accel/dispatcher.py` to match.
+`src/scpn_quantum_control/accel/order_parameter_observables.py` to match.
 
 ### `order_parameter_hessian(theta)`
 
@@ -1410,7 +1410,7 @@ python scripts/bench_order_parameter_hessian_tiers.py
 
 If the measured ordering changes, update the chain comment at
 `_ORDER_PARAMETER_HESSIAN_CHAIN` in
-`src/scpn_quantum_control/accel/dispatcher.py` to match.
+`src/scpn_quantum_control/accel/order_parameter_observables.py` to match.
 
 ### `mean_phase(theta)` and `mean_phase_gradient(theta)`
 
@@ -1458,7 +1458,7 @@ python scripts/bench_mean_phase_tiers.py
 
 If the measured ordering changes, update the chain comment at `_MEAN_PHASE_CHAIN`
 and `_MEAN_PHASE_GRADIENT_CHAIN` in
-`src/scpn_quantum_control/accel/dispatcher.py` to match.
+`src/scpn_quantum_control/accel/mean_phase_observables.py` to match.
 
 ### `mean_phase_hessian(theta)`
 
@@ -1495,7 +1495,7 @@ python scripts/bench_mean_phase_hessian_tiers.py
 
 If the measured ordering changes, update the chain comment at
 `_MEAN_PHASE_HESSIAN_CHAIN` in
-`src/scpn_quantum_control/accel/dispatcher.py` to match.
+`src/scpn_quantum_control/accel/mean_phase_observables.py` to match.
 
 ### `daido_order_parameter(theta, m)` and `daido_order_parameter_gradient(theta, m)`
 
@@ -1548,7 +1548,44 @@ python scripts/bench_daido_order_parameter_tiers.py
 
 If the measured ordering changes, update the chain comment at
 `_DAIDO_ORDER_PARAMETER_CHAIN` and `_DAIDO_ORDER_PARAMETER_GRADIENT_CHAIN` in
-`src/scpn_quantum_control/accel/dispatcher.py` to match.
+`src/scpn_quantum_control/accel/daido_observables.py` to match.
+
+### `daido_order_parameter_hessian(theta, m)`
+
+Hessian `∂²r_m/∂θ_i∂θ_j = m² (a_i a_j/(N² r_m) − δ_ij a_j/N)` of the m-th Daido
+order parameter, with `a_k = cos(ψ_m − m θ_k)`. Symmetric, rows sum to zero; for
+m = 1 it equals `order_parameter_hessian`. The result is an `N × N` matrix, so the
+benchmark stops at N = 2048. Measured 2026-06-23 at the fixed harmonic m = 2 on the
+local Linux runner (Intel i5-11600K @ 3.90 GHz, Python 3.12.3, juliacall,
+scpn-quantum-engine local build). Inner loop: 100 calls per sample × 7 samples;
+per-call median. Raw JSON:
+`docs/benchmarks/daido_order_parameter_hessian_tiers.json`.
+
+|     N |       Rust |      Julia |     Python |
+|------:|-----------:|-----------:|-----------:|
+|     4 |    1.02 µs |    9.17 µs |   19.37 µs |
+|    64 |    3.20 µs |   24.49 µs |   32.75 µs |
+|   256 |   27.02 µs |  201.31 µs |  149.48 µs |
+|  1024 |  937.20 µs | 5106.65 µs | 4113.88 µs |
+|  2048 | 9636.63 µs | 38547.01 µs | 30616.84 µs |
+
+Read-offs:
+
+* Rust wins at every measured N (19.0× faster than Python at N = 4, 3.2× at
+  N = 2048); the dispatcher places it first, matching measurement. The Daido
+  Hessian carries the same rank-one structure as the order-parameter Hessian plus
+  the extra `m·θ` multiply per element, so the per-call cost is quadratic in N for
+  every tier and Rust's lead is widest here.
+
+Re-run with:
+
+```bash
+python scripts/bench_daido_order_parameter_hessian_tiers.py
+```
+
+If the measured ordering changes, update the chain comment at
+`_DAIDO_ORDER_PARAMETER_HESSIAN_CHAIN` in
+`src/scpn_quantum_control/accel/daido_observables.py` to match.
 
 ### S4 multi-hardware readiness
 

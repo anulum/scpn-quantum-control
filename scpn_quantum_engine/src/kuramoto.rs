@@ -361,6 +361,62 @@ pub fn daido_order_parameter_gradient_inner(theta: &[f64], m: f64) -> Vec<f64> {
     out
 }
 
+/// Compute the Hessian ∂²r_m/∂θ_i∂θ_j of the m-th Daido order parameter.
+///
+/// With a_k = cos(ψ_m − m θ_k) = (C_m cos(m θ_k) + S_m sin(m θ_k)) / R_m:
+///   H_ij = m² (a_i a_j / (N² R_m) − δ_ij a_j / N).
+/// The matrix is symmetric and every row sums to zero; the incoherent state R_m = 0
+/// returns the zero matrix. For m = 1 it is the order-parameter Hessian.
+#[pyfunction]
+pub fn daido_order_parameter_hessian<'py>(
+    py: Python<'py>,
+    theta: PyReadonlyArray1<'_, f64>,
+    m: i64,
+) -> PyResult<Bound<'py, PyArray2<f64>>> {
+    if m < 1 {
+        return Err(PyValueError::new_err(format!(
+            "Daido harmonic order m must be a positive integer, got {m}"
+        )));
+    }
+    let theta = validate_phase_vector(&theta, "theta")?;
+    let hessian = daido_order_parameter_hessian_inner(theta, m as f64);
+    Ok(PyArray2::from_owned_array(py, hessian))
+}
+
+/// Pure Rust m-th Daido order parameter Hessian (no PyO3), returned row-major.
+pub fn daido_order_parameter_hessian_inner(theta: &[f64], m: f64) -> Array2<f64> {
+    let n = theta.len();
+    let mut out = Array2::<f64>::zeros((n, n));
+    if n == 0 {
+        return out;
+    }
+    let (mut re, mut im) = (0.0_f64, 0.0_f64);
+    for &t in theta {
+        re += (m * t).cos();
+        im += (m * t).sin();
+    }
+    let count = n as f64;
+    let cos_mean = re / count;
+    let sin_mean = im / count;
+    let magnitude = (cos_mean * cos_mean + sin_mean * sin_mean).sqrt();
+    if magnitude == 0.0 {
+        return out;
+    }
+    let aligned: Vec<f64> = theta
+        .iter()
+        .map(|&t| (cos_mean * (m * t).cos() + sin_mean * (m * t).sin()) / magnitude)
+        .collect();
+    let m_squared = m * m;
+    let scale = m_squared / (count * count * magnitude);
+    for i in 0..n {
+        for j in 0..n {
+            out[[i, j]] = aligned[i] * aligned[j] * scale;
+        }
+        out[[i, i]] -= m_squared * aligned[i] / count;
+    }
+    out
+}
+
 fn validate_finite_slice(values: &[f64], name: &str) -> PyResult<()> {
     if values.iter().any(|value| !value.is_finite()) {
         return Err(pyo3::exceptions::PyValueError::new_err(format!(
@@ -1210,6 +1266,57 @@ mod tests {
     fn test_daido_empty() {
         assert_eq!(daido_order_parameter_inner(&[], 2.0), 0.0);
         assert!(daido_order_parameter_gradient_inner(&[], 2.0).is_empty());
+    }
+
+    #[test]
+    fn test_daido_hessian_m1_matches_order_parameter_hessian() {
+        let theta = vec![0.3, -1.1, 2.0, 0.7, 4.2];
+        let daido = daido_order_parameter_hessian_inner(&theta, 1.0);
+        let order = order_parameter_hessian_inner(&theta);
+        for i in 0..theta.len() {
+            for j in 0..theta.len() {
+                assert!((daido[[i, j]] - order[[i, j]]).abs() < 1e-12);
+            }
+        }
+    }
+
+    #[test]
+    fn test_daido_hessian_matches_finite_difference_of_gradient() {
+        let theta = vec![0.3, -1.1, 2.0, 0.7, 4.2];
+        let m = 2.0;
+        let hessian = daido_order_parameter_hessian_inner(&theta, m);
+        let h = 1e-6;
+        for i in 0..theta.len() {
+            let mut plus = theta.clone();
+            let mut minus = theta.clone();
+            plus[i] += h;
+            minus[i] -= h;
+            let grad_plus = daido_order_parameter_gradient_inner(&plus, m);
+            let grad_minus = daido_order_parameter_gradient_inner(&minus, m);
+            for j in 0..theta.len() {
+                let fd = (grad_plus[j] - grad_minus[j]) / (2.0 * h);
+                assert!((hessian[[i, j]] - fd).abs() < 1e-6, "H[{i},{j}]");
+            }
+        }
+    }
+
+    #[test]
+    fn test_daido_hessian_is_symmetric_and_rows_sum_to_zero() {
+        let theta = vec![0.1, 0.9, 2.3, 3.1, 5.5, 6.0];
+        let hessian = daido_order_parameter_hessian_inner(&theta, 3.0);
+        let n = theta.len();
+        for i in 0..n {
+            for j in 0..n {
+                assert!((hessian[[i, j]] - hessian[[j, i]]).abs() < 1e-15);
+            }
+            let row_sum: f64 = (0..n).map(|j| hessian[[i, j]]).sum();
+            assert!(row_sum.abs() < 1e-12, "row {i} sum = {row_sum}");
+        }
+    }
+
+    #[test]
+    fn test_daido_hessian_empty() {
+        assert_eq!(daido_order_parameter_hessian_inner(&[], 2.0).shape(), &[0, 0]);
     }
 
     #[test]
