@@ -440,6 +440,12 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   `tests/test_phase_qgnn.py`. Bounded local model: small statevector circuits,
   no arbitrary-graph, depth, provider, hardware, or production convergence claim.
 
+### Changed
+- 2026-06-23 — Set the PyPI `Development Status` classifier to `4 - Beta`
+  (from `5 - Production/Stable`) to match the pre-1.0 `0.9.x` line and the
+  package's own Active Development notice. The `5 - Production/Stable`
+  declaration is restored at the v1.0 API-stability gate.
+
 ### Fixed
 - 2026-06-15 — Corrected the registered Phase-QNode parameter-shift rule for
   controlled rotations (`crx`, `cry`, `crz`). Their generator eigenvalues are
