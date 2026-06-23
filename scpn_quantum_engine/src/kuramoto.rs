@@ -756,6 +756,106 @@ pub fn sakaguchi_jacobian_inner(
     out
 }
 
+/// Compute the network-local Kuramoto order parameter r_j = |Σ_k A_jk e^{iθ_k}| / Σ_k A_jk.
+///
+/// ``adjacency`` is the N×N non-negative adjacency matrix A. A zero-degree node has r_j = 0.
+#[pyfunction]
+pub fn local_order_parameter<'py>(
+    py: Python<'py>,
+    theta: PyReadonlyArray1<'_, f64>,
+    adjacency: PyReadonlyArray2<'_, f64>,
+) -> PyResult<Bound<'py, PyArray1<f64>>> {
+    let theta = validate_phase_vector(&theta, "theta")?;
+    let matrix = adjacency.as_array();
+    let n = theta.len();
+    if matrix.shape() != [n, n] {
+        return Err(PyValueError::new_err(format!(
+            "adjacency must be a square matrix of order {n}, got shape {:?}",
+            matrix.shape()
+        )));
+    }
+    Ok(PyArray1::from_owned_array(
+        py,
+        local_order_parameter_inner(theta, &matrix),
+    ))
+}
+
+/// Pure Rust network-local order parameter (no PyO3).
+pub fn local_order_parameter_inner(theta: &[f64], adjacency: &ArrayView2<'_, f64>) -> Array1<f64> {
+    let n = theta.len();
+    let mut out = Array1::<f64>::zeros(n);
+    let cos: Vec<f64> = theta.iter().map(|&t| t.cos()).collect();
+    let sin: Vec<f64> = theta.iter().map(|&t| t.sin()).collect();
+    for j in 0..n {
+        let (mut c, mut s, mut d) = (0.0_f64, 0.0_f64, 0.0_f64);
+        for k in 0..n {
+            let a = adjacency[[j, k]];
+            c += a * cos[k];
+            s += a * sin[k];
+            d += a;
+        }
+        if d != 0.0 {
+            out[j] = (c * c + s * s).sqrt() / d;
+        }
+    }
+    out
+}
+
+/// Compute the Jacobian ∂r_j/∂θ_l = (A_jl / d_j) sin(ψ_j − θ_l) of the local order parameter.
+///
+/// A zero-degree node or an incoherent neighbourhood (|Σ_k A_jk e^{iθ_k}| = 0) yields a zero
+/// subgradient row.
+#[pyfunction]
+pub fn local_order_parameter_jacobian<'py>(
+    py: Python<'py>,
+    theta: PyReadonlyArray1<'_, f64>,
+    adjacency: PyReadonlyArray2<'_, f64>,
+) -> PyResult<Bound<'py, PyArray2<f64>>> {
+    let theta = validate_phase_vector(&theta, "theta")?;
+    let matrix = adjacency.as_array();
+    let n = theta.len();
+    if matrix.shape() != [n, n] {
+        return Err(PyValueError::new_err(format!(
+            "adjacency must be a square matrix of order {n}, got shape {:?}",
+            matrix.shape()
+        )));
+    }
+    Ok(PyArray2::from_owned_array(
+        py,
+        local_order_parameter_jacobian_inner(theta, &matrix),
+    ))
+}
+
+/// Pure Rust local order parameter Jacobian (no PyO3), returned row-major.
+pub fn local_order_parameter_jacobian_inner(
+    theta: &[f64],
+    adjacency: &ArrayView2<'_, f64>,
+) -> Array2<f64> {
+    let n = theta.len();
+    let mut out = Array2::<f64>::zeros((n, n));
+    let cos: Vec<f64> = theta.iter().map(|&t| t.cos()).collect();
+    let sin: Vec<f64> = theta.iter().map(|&t| t.sin()).collect();
+    for j in 0..n {
+        let (mut c, mut s, mut d) = (0.0_f64, 0.0_f64, 0.0_f64);
+        for k in 0..n {
+            let a = adjacency[[j, k]];
+            c += a * cos[k];
+            s += a * sin[k];
+            d += a;
+        }
+        let magnitude = (c * c + s * s).sqrt();
+        let denominator = d * magnitude;
+        if denominator == 0.0 {
+            continue;
+        }
+        let inverse = 1.0 / denominator;
+        for l in 0..n {
+            out[[j, l]] = adjacency[[j, l]] * inverse * (s * cos[l] - c * sin[l]);
+        }
+    }
+    out
+}
+
 fn validate_finite_slice(values: &[f64], name: &str) -> PyResult<()> {
     if values.iter().any(|value| !value.is_finite()) {
         return Err(pyo3::exceptions::PyValueError::new_err(format!(
@@ -1921,6 +2021,82 @@ mod tests {
         let empty = Array2::<f64>::zeros((0, 0));
         assert!(sakaguchi_force_inner(&[], &empty.view(), 0.5).is_empty());
         assert_eq!(sakaguchi_jacobian_inner(&[], &empty.view(), 0.5).shape(), &[0, 0]);
+    }
+
+    #[test]
+    fn test_local_order_parameter_matches_closed_form() {
+        let theta = vec![0.3, -1.1, 2.0, 0.7];
+        let a = _symmetric_coupling(4, 0.37);
+        let local = local_order_parameter_inner(&theta, &a.view());
+        for j in 0..4 {
+            let mut c = 0.0;
+            let mut s = 0.0;
+            let mut d = 0.0;
+            for k in 0..4 {
+                c += a[[j, k]] * theta[k].cos();
+                s += a[[j, k]] * theta[k].sin();
+                d += a[[j, k]];
+            }
+            assert!((local[j] - (c * c + s * s).sqrt() / d).abs() < 1e-12);
+        }
+    }
+
+    #[test]
+    fn test_local_order_parameter_all_to_all_equals_global() {
+        let theta = vec![0.3, -1.1, 2.0, 0.7, 4.2, 1.3];
+        let ones = Array2::<f64>::ones((6, 6));
+        let local = local_order_parameter_inner(&theta, &ones.view());
+        let global = order_parameter_inner(&theta);
+        for value in local.iter() {
+            assert!((value - global).abs() < 1e-12);
+        }
+    }
+
+    #[test]
+    fn test_local_order_parameter_jacobian_matches_finite_difference() {
+        let theta = vec![0.3, -1.1, 2.0, 0.7, 4.2];
+        let a = _symmetric_coupling(5, 0.21);
+        let jacobian = local_order_parameter_jacobian_inner(&theta, &a.view());
+        let h = 1e-6;
+        for l in 0..theta.len() {
+            let mut plus = theta.clone();
+            let mut minus = theta.clone();
+            plus[l] += h;
+            minus[l] -= h;
+            let value_plus = local_order_parameter_inner(&plus, &a.view());
+            let value_minus = local_order_parameter_inner(&minus, &a.view());
+            for j in 0..theta.len() {
+                let fd = (value_plus[j] - value_minus[j]) / (2.0 * h);
+                assert!((jacobian[[j, l]] - fd).abs() < 1e-6, "J[{j},{l}]");
+            }
+        }
+    }
+
+    #[test]
+    fn test_local_order_parameter_zero_degree_node() {
+        let theta = vec![0.3, 1.1, 2.0];
+        let mut a = _symmetric_coupling(3, 0.4);
+        // isolate node 1: zero its row and column
+        for k in 0..3 {
+            a[[1, k]] = 0.0;
+            a[[k, 1]] = 0.0;
+        }
+        let local = local_order_parameter_inner(&theta, &a.view());
+        let jacobian = local_order_parameter_jacobian_inner(&theta, &a.view());
+        assert_eq!(local[1], 0.0);
+        for l in 0..3 {
+            assert_eq!(jacobian[[1, l]], 0.0);
+        }
+    }
+
+    #[test]
+    fn test_local_order_parameter_empty() {
+        let empty = Array2::<f64>::zeros((0, 0));
+        assert!(local_order_parameter_inner(&[], &empty.view()).is_empty());
+        assert_eq!(
+            local_order_parameter_jacobian_inner(&[], &empty.view()).shape(),
+            &[0, 0]
+        );
     }
 
     #[test]

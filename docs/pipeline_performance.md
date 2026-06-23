@@ -1781,6 +1781,54 @@ If the measured ordering changes, update the chain comments at `_SAKAGUCHI_FORCE
 and `_SAKAGUCHI_JACOBIAN_CHAIN` in
 `src/scpn_quantum_control/accel/sakaguchi_kuramoto.py` to match.
 
+### `local_order_parameter(theta, A)` and `local_order_parameter_jacobian(theta, A)`
+
+The network-local order parameter `r_j = |Σ_k A_jk e^{iθ_k}| / Σ_k A_jk` (the degree-
+normalised local coherence, the standard chimera diagnostic) and its Jacobian
+`∂r_j/∂θ_l = (A_jl/d_j) sin(ψ_j − θ_l)`. Both routes are O(N²) — each node sums over its full
+adjacency row — so the sizes stop at N = 2048. Measured 2026-06-23 on a dense random
+adjacency matrix on the local Linux runner (Intel i5-11600K @ 3.90 GHz, Python 3.12.3,
+juliacall, scpn-quantum-engine local build). Inner loop: 50 calls per sample × 7 samples;
+per-call median. Raw JSON: `docs/benchmarks/local_order_parameter_tiers.json`.
+
+`local_order_parameter`:
+
+|    N |       Rust |      Julia |     Python |
+|-----:|-----------:|-----------:|-----------:|
+|    4 |    2.05 µs |   49.34 µs |   17.66 µs |
+|   64 |   11.50 µs |   43.40 µs |   15.17 µs |
+| 1024 | 1563.27 µs | 1701.95 µs | 15253.64 µs |
+| 2048 | 6625.78 µs | 6680.90 µs | 22416.56 µs |
+
+`local_order_parameter_jacobian`:
+
+|    N |       Rust |      Julia |     Python |
+|-----:|-----------:|-----------:|-----------:|
+|    4 |    2.96 µs |  132.39 µs |   28.97 µs |
+|   64 |   14.16 µs |   80.50 µs |   62.46 µs |
+| 1024 | 4139.15 µs | 10770.38 µs | 35449.13 µs |
+| 2048 | 25476.57 µs | 74026.61 µs | 153172.53 µs |
+
+Read-offs:
+
+* Rust is first at every N for both routes. The value is a near-tie with Julia at large N
+  (6.63 vs 6.68 ms at N = 2048), but Rust wins the Jacobian decisively (2.9× faster than
+  Julia and 6× faster than NumPy at N = 2048): the floor builds the full N × N `sin(ψ_j − θ_l)`
+  basis as a temporary, whereas Rust accumulates each node's degree, local mean phase and
+  Jacobian row in a single fused pass. The Python value path stays competitive to N ≈ 256
+  (its `A @ cos θ` reduction is BLAS) but the per-node division and the materialised basis
+  cost it the large-N range.
+
+Re-run with:
+
+```bash
+python scripts/bench_local_order_parameter_tiers.py
+```
+
+If the measured ordering changes, update the chain comments at `_LOCAL_ORDER_PARAMETER_CHAIN`
+and `_LOCAL_ORDER_PARAMETER_JACOBIAN_CHAIN` in
+`src/scpn_quantum_control/accel/local_order.py` to match.
+
 ### S4 multi-hardware readiness
 
 Command:

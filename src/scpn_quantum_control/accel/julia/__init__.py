@@ -411,6 +411,52 @@ def sakaguchi_jacobian(
     return np.asarray(jl.sakaguchi_jacobian(phases, matrix, float(frustration)), dtype=np.float64)
 
 
+def local_order_parameter(
+    theta: NDArray[np.float64], adjacency: NDArray[np.float64]
+) -> NDArray[np.float64]:
+    """Julia-tier network-local Kuramoto order parameter.
+
+    Parameters
+    ----------
+    theta : numpy.ndarray
+        One-dimensional array of ``N`` oscillator phases in radians.
+    adjacency : numpy.ndarray
+        Two-dimensional ``(N, N)`` non-negative adjacency matrix.
+
+    Returns
+    -------
+    numpy.ndarray
+        One-dimensional float64 array of ``N`` local order parameters.
+    """
+    jl = _load()
+    phases = np.ascontiguousarray(theta, dtype=np.float64)
+    matrix = np.ascontiguousarray(adjacency, dtype=np.float64)
+    return np.asarray(jl.local_order_parameter(phases, matrix), dtype=np.float64)
+
+
+def local_order_parameter_jacobian(
+    theta: NDArray[np.float64], adjacency: NDArray[np.float64]
+) -> NDArray[np.float64]:
+    """Julia-tier Jacobian of the network-local Kuramoto order parameter.
+
+    Parameters
+    ----------
+    theta : numpy.ndarray
+        One-dimensional array of ``N`` oscillator phases in radians.
+    adjacency : numpy.ndarray
+        Two-dimensional ``(N, N)`` non-negative adjacency matrix.
+
+    Returns
+    -------
+    numpy.ndarray
+        Two-dimensional ``(N, N)`` float64 Jacobian matrix.
+    """
+    jl = _load()
+    phases = np.ascontiguousarray(theta, dtype=np.float64)
+    matrix = np.ascontiguousarray(adjacency, dtype=np.float64)
+    return np.asarray(jl.local_order_parameter_jacobian(phases, matrix), dtype=np.float64)
+
+
 __all__ = [
     "daido_order_parameter",
     "daido_order_parameter_gradient",
@@ -418,6 +464,8 @@ __all__ = [
     "is_available",
     "kuramoto_interaction_energy",
     "kuramoto_interaction_energy_gradient",
+    "local_order_parameter",
+    "local_order_parameter_jacobian",
     "mean_field_force",
     "mean_field_jacobian",
     "networked_kuramoto_force",

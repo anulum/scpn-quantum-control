@@ -59,6 +59,12 @@ from .kuramoto_mean_field import (
     mean_field_force,
     mean_field_jacobian,
 )
+from .local_order import (
+    last_local_order_parameter_jacobian_tier_used,
+    last_local_order_parameter_tier_used,
+    local_order_parameter,
+    local_order_parameter_jacobian,
+)
 from .mean_phase_observables import (
     last_mean_phase_gradient_tier_used,
     last_mean_phase_hessian_tier_used,
@@ -104,6 +110,10 @@ __all__ = [
     "last_daido_tier_used",
     "last_gradient_tier_used",
     "last_hessian_tier_used",
+    "last_local_order_parameter_jacobian_tier_used",
+    "last_local_order_parameter_tier_used",
+    "local_order_parameter",
+    "local_order_parameter_jacobian",
     "last_mean_field_force_tier_used",
     "last_mean_field_jacobian_tier_used",
     "last_mean_phase_gradient_tier_used",
