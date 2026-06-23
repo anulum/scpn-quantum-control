@@ -170,6 +170,9 @@ filterwarnings = [
 [tool.ruff]
 target-version = "py39"
 line-length = 99
+# Paper 0 is the generated source-accounting research trajectory; it is excluded
+# from the wheel/sdist and from coverage, so it is excluded from linting too.
+extend-exclude = ["src/scpn_quantum_control/paper0"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "UP", "B", "SIM"]
@@ -202,6 +205,11 @@ check_untyped_defs = true
 ignore_missing_imports = false
 files = [
     "src/scpn_quantum_control/",
+]
+# Paper 0 is the generated source-accounting research trajectory; it is excluded
+# from the wheel/sdist and from coverage, so it is excluded from type-checking too.
+exclude = [
+    "src/scpn_quantum_control/paper0/",
 ]
 
 [[tool.mypy.overrides]]

@@ -5,12 +5,18 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Paper 0 source registers
-"""Generated Paper 0 source-validation register.
+"""Paper 0 source-accounting register — the foundational manuscript as code.
 
-The package exports source-accounting helpers generated from the canonical
-Paper 0 ledger. Each validation module is bounded by a ledger span, exposes the
-generated configuration/result types for that span, and validates that fixture
-artefacts preserve their recorded source metadata.
+This package is the systematic, machine-checked extraction of GOTM-SCPN Paper 0,
+*The Foundational Framework* — the manuscript that is the canonical source of the
+SCPN theories and their mathematics and physics. It is the upstream from which the
+workbench's ``K_nm``, XY mapping, and UPDE constructs descend, and it is excluded
+by design from the wheel, coverage, linting, and type-checking (see
+``paper0/README.md`` and ``docs/paper0/``).
+
+Each validation module is bounded by a ledger span, exposes the generated
+configuration/result types for that span, and validates that fixture artefacts
+preserve their recorded source metadata.
 
 This package is intentionally a register, not a scientific-evidence promotion
 layer. Passing helpers confirm source ingestion, spec consistency, fixture
