@@ -58,6 +58,7 @@ nav:
       - SCPN Foundations: theory.md
       - Equations: equations.md
       - Architecture: architecture.md
+      - Architecture Map: architecture_map.md
       - Architecture Decisions: ARCHITECTURE_DECISIONS.md
       - Research Gems: research_gems.md
       - Literature Catalogue: literature/README.md

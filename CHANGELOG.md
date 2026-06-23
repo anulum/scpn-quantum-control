@@ -5,6 +5,12 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-06-23 — Added an Architecture Map page (`docs/architecture_map.md`, in the
+  Theory nav): a capability/input-output/backend map for sibling repositories and
+  STUDIO design — the canonical data pipeline with per-stage IO contracts, the stable
+  public surface, per-lane capabilities with honest SOTA grades, the backend/dispatch
+  wiring (including the verified 151 Rust PyO3 kernels), cross-repo integration points,
+  and explicit honest scope boundaries (executed vs bounded vs feasibility-only/closed).
 - 2026-06-23 — Added uncertainty propagation for zero-noise extrapolation
   (`scpn_quantum_control.mitigation.zne_uncertainty`): `zne_extrapolate_with_uncertainty`
   and `ZNEUncertaintyResult` attach a propagated standard error and coverage interval
