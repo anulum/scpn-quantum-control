@@ -5,6 +5,14 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-06-23 — Added shot-noise uncertainty quantification for synchronisation
+  metrics (`scpn_quantum_control.analysis.sync_uncertainty`): `UncertaintyInterval`,
+  `order_parameter_shot_noise` (analytic delta-method interval), `order_parameter_bootstrap`
+  and `metric_bootstrap` (distribution-free bootstrap percentile intervals for the
+  order parameter and any count-to-scalar metric such as witnesses), and
+  `order_parameter_estimate`. Hardware-derived sync metrics now carry defensible
+  error bars at a stated coverage level instead of bare point estimates; empirical
+  coverage is checked against a known distribution in the tests.
 - 2026-06-23 — Added a sparse Pauli-operator construction budget guard
   (`scpn_quantum_control.compile_budget`): `require_pauli_operator_budget`,
   `estimate_pauli_operator`, `pauli_term_upper_bound`, and `pauli_budget_bytes`,

@@ -109,6 +109,13 @@ from .sync_entanglement_witness import (
     R_separable_bound,
 )
 from .sync_order_parameter import SyncOrderParameter
+from .sync_uncertainty import (
+    UncertaintyInterval,
+    metric_bootstrap,
+    order_parameter_bootstrap,
+    order_parameter_estimate,
+    order_parameter_shot_noise,
+)
 from .sync_witness import WitnessResult, evaluate_all_witnesses
 from .tcbo_weighted_complex import (
     TCBOWeightedComplexResult,
@@ -133,6 +140,11 @@ from .xxz_phase_diagram import AnisotropyScanResult, anisotropy_phase_diagram
 __all__ = [
     "DLAParityWitness",
     "SyncOrderParameter",
+    "UncertaintyInterval",
+    "metric_bootstrap",
+    "order_parameter_bootstrap",
+    "order_parameter_estimate",
+    "order_parameter_shot_noise",
     "IntegratedInformationPhi",
     "QuantumFisherInformation",
     "ThermodynamicWitness",
