@@ -1,0 +1,58 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
+# © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
+# © Code 2020–2026 Miroslav Šotek. All rights reserved.
+# ORCID: 0009-0009-3560-0851
+# Contact: www.anulum.li | protoscience@anulum.li
+# SCPN Quantum Control — Native dense-Hamiltonian speedup benchmark
+#
+# Regenerates the canonical Rust-vs-Qiskit dense XY-Hamiltonian construction
+# benchmark on a fixed runner per agentic-shared/BENCHMARK_STANDARD.md.
+# workflow_dispatch is enabled so the canonical figure can be regenerated on
+# demand; the artefact is uploaded for download and reconciliation.
+
+name: Native Speedup Benchmark
+
+on:
+  schedule:
+    - cron: '0 7 * * 1'
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "scripts/benchmark_native_speedup.py"
+      - "scpn_quantum_engine/**"
+      - ".github/workflows/benchmark-native-speedup.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  native-speedup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6
+
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405  # v6
+        with:
+          python-version: "3.12"
+
+      - name: Install package and dependencies
+        run: pip install -e .
+
+      - name: Build and install the Rust engine
+        uses: PyO3/maturin-action@e83996d129638aa358a18fbd1dfb82f0b0fb5d3b  # v1.51.0
+        with:
+          command: develop
+          args: --release -m scpn_quantum_engine/Cargo.toml
+
+      - name: Run the native speedup benchmark
+        run: |
+          python scripts/benchmark_native_speedup.py \
+            --out data/native_speedup/native_speedup_ci.json
+
+      - name: Upload benchmark artefact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        with:
+          name: native-speedup-benchmark
+          path: data/native_speedup/native_speedup_ci.json
+          retention-days: 90

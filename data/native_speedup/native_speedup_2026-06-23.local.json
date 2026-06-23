@@ -1,0 +1,183 @@
+{
+  "schema": "scpn_quantum_control.native_speedup.v1",
+  "generated_at": "2026-06-23T01:46:53.657095+00:00",
+  "platform": {
+    "python": "3.12.3",
+    "platform": "Linux-6.17.0-35-generic-x86_64-with-glibc2.39",
+    "machine": "x86_64",
+    "cpu_model": "11th Gen Intel(R) Core(TM) i5-11600K @ 3.90GHz"
+  },
+  "commit": "4d02e562",
+  "engine": "installed",
+  "note": "Re-measures the dense XY-Hamiltonian construction kernel for the retired '5401x faster than Qiskit' headline. rust_pyo3 builds the real float64 operator; qiskit_sparsepauliop builds via SparsePauliOp. Both are parity-checked. The production knm_to_dense_matrix wrapper adds a float64->complex128 cast that dominates at large L; it is a downstream cost, excluded here. Local workstation run; for the canonical figure regenerate on the fixed CI runner.",
+  "results": [
+    {
+      "name": "dense_xy_hamiltonian",
+      "system_size": 4,
+      "hilbert_dim": 16,
+      "backend": "qiskit_sparsepauliop",
+      "stats": {
+        "p50_us": 401.703,
+        "p95_us": 978.537,
+        "p99_us": 2290.379,
+        "mean_us": 494.75686,
+        "min_us": 266.901,
+        "max_us": 3851.435,
+        "throughput_khz": 2.021194814762144
+      },
+      "parameters": {
+        "warmup": 5,
+        "repeats": 200
+      },
+      "status": "measured"
+    },
+    {
+      "name": "dense_xy_hamiltonian",
+      "system_size": 4,
+      "hilbert_dim": 16,
+      "backend": "rust_pyo3",
+      "stats": {
+        "p50_us": 3.627,
+        "p95_us": 4.007,
+        "p99_us": 4.676,
+        "mean_us": 3.6944600000000003,
+        "min_us": 3.239,
+        "max_us": 9.235,
+        "throughput_khz": 270.67555204278835
+      },
+      "parameters": {
+        "warmup": 5,
+        "repeats": 200
+      },
+      "status": "measured",
+      "parity_vs_qiskit": true,
+      "speedup_p50_vs_qiskit": 110.7535153019024
+    },
+    {
+      "name": "dense_xy_hamiltonian",
+      "system_size": 8,
+      "hilbert_dim": 256,
+      "backend": "qiskit_sparsepauliop",
+      "stats": {
+        "p50_us": 905.835,
+        "p95_us": 1588.466,
+        "p99_us": 1917.089,
+        "mean_us": 1007.100925,
+        "min_us": 765.66,
+        "max_us": 2127.173,
+        "throughput_khz": 0.9929491426095156
+      },
+      "parameters": {
+        "warmup": 3,
+        "repeats": 80
+      },
+      "status": "measured"
+    },
+    {
+      "name": "dense_xy_hamiltonian",
+      "system_size": 8,
+      "hilbert_dim": 256,
+      "backend": "rust_pyo3",
+      "stats": {
+        "p50_us": 23.436,
+        "p95_us": 29.014,
+        "p99_us": 33.184,
+        "mean_us": 24.509700000000002,
+        "min_us": 23.21,
+        "max_us": 43.828,
+        "throughput_khz": 40.800172992733486
+      },
+      "parameters": {
+        "warmup": 3,
+        "repeats": 80
+      },
+      "status": "measured",
+      "parity_vs_qiskit": true,
+      "speedup_p50_vs_qiskit": 38.651433691756274
+    },
+    {
+      "name": "dense_xy_hamiltonian",
+      "system_size": 10,
+      "hilbert_dim": 1024,
+      "backend": "qiskit_sparsepauliop",
+      "stats": {
+        "p50_us": 2322.288,
+        "p95_us": 3083.018,
+        "p99_us": 3124.155,
+        "mean_us": 2383.32444,
+        "min_us": 1882.968,
+        "max_us": 3338.537,
+        "throughput_khz": 0.4195819852373939
+      },
+      "parameters": {
+        "warmup": 2,
+        "repeats": 25
+      },
+      "status": "measured"
+    },
+    {
+      "name": "dense_xy_hamiltonian",
+      "system_size": 10,
+      "hilbert_dim": 1024,
+      "backend": "rust_pyo3",
+      "stats": {
+        "p50_us": 890.213,
+        "p95_us": 1200.08,
+        "p99_us": 1475.976,
+        "mean_us": 939.46144,
+        "min_us": 581.969,
+        "max_us": 1543.449,
+        "throughput_khz": 1.0644396432066439
+      },
+      "parameters": {
+        "warmup": 2,
+        "repeats": 25
+      },
+      "status": "measured",
+      "parity_vs_qiskit": true,
+      "speedup_p50_vs_qiskit": 2.6086880330887103
+    },
+    {
+      "name": "dense_xy_hamiltonian",
+      "system_size": 12,
+      "hilbert_dim": 4096,
+      "backend": "qiskit_sparsepauliop",
+      "stats": {
+        "p50_us": 35681.777,
+        "p95_us": 39334.159,
+        "p99_us": 39334.159,
+        "mean_us": 37304.95375,
+        "min_us": 34036.669,
+        "max_us": 41508.34,
+        "throughput_khz": 0.026806091402807326
+      },
+      "parameters": {
+        "warmup": 2,
+        "repeats": 8
+      },
+      "status": "measured"
+    },
+    {
+      "name": "dense_xy_hamiltonian",
+      "system_size": 12,
+      "hilbert_dim": 4096,
+      "backend": "rust_pyo3",
+      "stats": {
+        "p50_us": 38258.171,
+        "p95_us": 40767.111,
+        "p99_us": 40767.111,
+        "mean_us": 38943.758,
+        "min_us": 36235.459,
+        "max_us": 45152.3,
+        "throughput_khz": 0.025678056031469793
+      },
+      "parameters": {
+        "warmup": 2,
+        "repeats": 8
+      },
+      "status": "measured",
+      "parity_vs_qiskit": true,
+      "speedup_p50_vs_qiskit": 0.9326576798456988
+    }
+  ]
+}
