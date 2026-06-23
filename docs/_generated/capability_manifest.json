@@ -10,10 +10,10 @@
     "public_api_exports": 717,
     "public_documentation_pages": 249,
     "python_model_classes": 826,
-    "python_model_source_modules": 446,
-    "rust_pyo3_model_wrappers": 155,
+    "python_model_source_modules": 445,
+    "rust_pyo3_model_wrappers": 153,
     "rust_source_modules": 38,
-    "test_files": 751
+    "test_files": 750
   },
   "documentation": {
     "examples": [
@@ -427,7 +427,7 @@
       {
         "package": "accel",
         "path": "src/scpn_quantum_control/accel",
-        "python_modules": 11
+        "python_modules": 10
       },
       {
         "package": "analysis",
@@ -3898,7 +3898,6 @@
       "src/scpn_quantum_control/accel/dispatcher.py",
       "src/scpn_quantum_control/accel/kuramoto_energy.py",
       "src/scpn_quantum_control/accel/kuramoto_mean_field.py",
-      "src/scpn_quantum_control/accel/local_order.py",
       "src/scpn_quantum_control/accel/mean_phase_observables.py",
       "src/scpn_quantum_control/accel/networked_kuramoto.py",
       "src/scpn_quantum_control/accel/order_parameter_observables.py",
@@ -4382,8 +4381,6 @@
       "lanczos_b_coefficients",
       "lindblad_anti_hermitian_diag",
       "lindblad_jump_ops_coo",
-      "local_order_parameter",
-      "local_order_parameter_jacobian",
       "magnetisation_labels",
       "matrix_2x2_determinant_gradient",
       "matrix_2x2_determinant_jvp",
@@ -5684,7 +5681,6 @@
       "tests/test_lindblad_ness.py",
       "tests/test_lindblad_trajectory.py",
       "tests/test_link_check_history_audit.py",
-      "tests/test_local_order.py",
       "tests/test_logging_setup.py",
       "tests/test_logical_dla_parity.py",
       "tests/test_logical_dla_parity_branches.py",
