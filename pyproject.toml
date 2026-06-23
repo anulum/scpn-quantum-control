@@ -60,9 +60,11 @@ scpn-generate-hardware-pack-evidence = "scpn_quantum_control.hardware_result_pac
 scpn-provider-smoke = "scpn_quantum_control.hardware.provider_smoke:main"
 scpn-biological-qec-report = "scpn_quantum_control.qec.biological_cli:main"
 install-differentiable-framework-overlay = "scpn_quantum_control.differentiable_framework_overlay:main"
+scpn-emit-studio-manifest = "scpn_quantum_control.studio.federation:main"
 
 [project.optional-dependencies]
 viz = ["matplotlib>=3.5,<4.0"]
+studio = ["scpn-studio-platform>=0.2,<0.3"]
 gpu = ["cupy-cuda12x>=13.0"]
 jax = ["jax[cuda12]>=0.4.30"]
 torch = ["torch>=2.2,<3.0"]
@@ -196,6 +198,15 @@ files = [
 [[tool.mypy.overrides]]
 module = "numpy.*"
 ignore_missing_imports = true
+
+# scpn-studio-platform ships py.typed but its StrEnum members resolve to `str`
+# under our pinned mypy, producing false "incompatible type str" arg-type errors
+# at every Verb/CapabilityManifest construction. Treat the SDK as untyped so the
+# studio federation surface type-checks; our own studio code stays strict.
+[[tool.mypy.overrides]]
+module = "scpn_studio_platform.*"
+ignore_missing_imports = true
+follow_imports = "skip"
 
 [[tool.mypy.overrides]]
 module = "scipy.*"

@@ -5,6 +5,16 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-06-24 — Added the Studio federation surface (`scpn_quantum_control.studio`): a
+  schema-A `CapabilityManifest` on the SCPN-STUDIO platform contract
+  (`scpn-studio-platform` 0.2.x, the `studio` extra) declaring eight verbs
+  (`compile`/`simulate`/`analyse`/`validate`/`benchmark`/`replay` from the core spine
+  plus `mitigate`/`execute`), nine `studio.*.v1` evidence schemas mapped from the
+  five-class hardware ledger, and a content-addressed digest. The emitted
+  `docs/_generated/studio_manifest.json` (via `scpn-emit-studio-manifest`) carries the
+  schema-A federation block plus an additive `architecture_map` extension block
+  (per-stage IO pipeline, backend/dispatch matrix, interfaces, cross-repo wire formats,
+  honest scope boundaries) for STUDIO/Hub ingestion.
 - 2026-06-23 — Added an Architecture Map page (`docs/architecture_map.md`, in the
   Theory nav): a capability/input-output/backend map for sibling repositories and
   STUDIO design — the canonical data pipeline with per-stage IO contracts, the stable

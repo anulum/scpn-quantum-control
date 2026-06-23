@@ -1,0 +1,374 @@
+{
+  "architecture_map": {
+    "backends": [
+      {
+        "build_vs_runtime": "build",
+        "dispatch_order": 1,
+        "language": "rust",
+        "name": "rust",
+        "role": "hot kernels",
+        "runtime": "scpn_quantum_engine PyO3 0.29, 151 kernels"
+      },
+      {
+        "build_vs_runtime": "runtime-jit",
+        "dispatch_order": 2,
+        "language": "julia",
+        "name": "julia",
+        "role": "order-parameter / mean-field",
+        "runtime": "juliacall"
+      },
+      {
+        "build_vs_runtime": "runtime",
+        "dispatch_order": 3,
+        "language": "python",
+        "name": "python",
+        "role": "guaranteed floor"
+      },
+      {
+        "build_vs_runtime": "runtime",
+        "language": "python",
+        "name": "qiskit-runtime",
+        "role": "IBM execution"
+      },
+      {
+        "build_vs_runtime": "runtime",
+        "language": "python",
+        "name": "provider-hal",
+        "role": "16 approval-gated providers"
+      }
+    ],
+    "boundaries": {
+      "bounded": [
+        "whole-program AD compiler (scalar + static dense-linalg, fail-closed)",
+        "tensor-network evolution (nearest-neighbour only)",
+        "analysis (small-N exact)"
+      ],
+      "closed": [
+        "lab-control instrumentation",
+        "broad quantum advantage (classical faster/more accurate at n<=16)"
+      ],
+      "executed": [
+        "Hamiltonian compilation",
+        "Trotter/VQE/analysis on simulators",
+        "IBM Runtime (approval-gated)",
+        "error mitigation",
+        "evidence ledger",
+        "ML-DSA signing",
+        "QRNG"
+      ],
+      "feasibility_only": [
+        "pulse-level optimal control",
+        "analog/neutral-atom execution",
+        "real-time intra-shot feedback",
+        "FPGA/HLS deployment",
+        "NV-magnetometry hardware"
+      ]
+    },
+    "cross_repo": [
+      {
+        "adapter": "bridge.snn_adapter",
+        "sibling": "sc-neurocore",
+        "wire_format": "spike trains <-> Ry angles / quantum dense layer"
+      },
+      {
+        "adapter": "bridge.control_plasma_knm",
+        "sibling": "scpn-control",
+        "wire_format": "plasma-native K/omega -> KuramotoProblem"
+      },
+      {
+        "adapter": "bridge.fusion_core_frc",
+        "sibling": "scpn-fusion-core",
+        "wire_format": "FRC equilibrium -> pulsed-shot QAOA surrogate"
+      },
+      {
+        "adapter": "bridge.orchestrator_adapter",
+        "sibling": "scpn-phase-orchestrator",
+        "wire_format": "orchestrator state <-> UPDEPhaseArtifact; quantum R -> advance/hold/rollback"
+      }
+    ],
+    "interfaces": {
+      "cli": [
+        "scpn-bench",
+        "scpn-verify-hardware-packs",
+        "scpn-generate-hardware-pack-evidence",
+        "scpn-provider-smoke",
+        "scpn-biological-qec-report",
+        "install-differentiable-framework-overlay"
+      ],
+      "grpc": null,
+      "library": "scpn_quantum_control",
+      "rest": null,
+      "studio_feed": "docs/_generated/studio_manifest.json"
+    },
+    "pipeline": [
+      {
+        "backends": [
+          "python"
+        ],
+        "inputs": [
+          "K_nm:(n,n) float64 square+finite+symmetric",
+          "omega:(n,)",
+          "metadata:json"
+        ],
+        "outputs": [
+          "KuramotoProblem (frozen, diagonal zeroed)"
+        ],
+        "processing_model": "validate + freeze; K symmetrised (K+K.T)/2",
+        "stage": "problem"
+      },
+      {
+        "backends": [
+          "rust",
+          "qiskit",
+          "python"
+        ],
+        "inputs": [
+          "KuramotoProblem"
+        ],
+        "outputs": [
+          "SparsePauliOp (XY)",
+          "dense (2^n,2^n) complex128",
+          "sparse CSC"
+        ],
+        "processing_model": "Kuramoto->XY: K sin(theta_j-theta_i) -> -J(XX+YY), omega -> -h Z",
+        "stage": "hamiltonian"
+      },
+      {
+        "backends": [
+          "qiskit",
+          "rust"
+        ],
+        "inputs": [
+          "KuramotoProblem",
+          "time",
+          "trotter_steps"
+        ],
+        "outputs": [
+          "QuantumCircuit",
+          "Statevector",
+          "trajectory"
+        ],
+        "processing_model": "Lie/Suzuki Trotter synthesis",
+        "stage": "circuit"
+      },
+      {
+        "backends": [
+          "qiskit-runtime",
+          "16 provider adapters"
+        ],
+        "inputs": [
+          "circuit",
+          "shots",
+          "approval_id"
+        ],
+        "outputs": [
+          "raw counts",
+          "job_id",
+          "provenance dossier"
+        ],
+        "processing_model": "SamplerV2 / provider HAL (approval-gated, fail-closed)",
+        "stage": "execution"
+      },
+      {
+        "backends": [
+          "numpy"
+        ],
+        "inputs": [
+          "counts",
+          "per-scale estimates + standard errors"
+        ],
+        "outputs": [
+          "mitigated estimate",
+          "uncertainty interval"
+        ],
+        "processing_model": "ZNE/PEC/DD/readout/Z2 + propagated uncertainty",
+        "stage": "mitigation"
+      },
+      {
+        "backends": [
+          "numpy",
+          "rust"
+        ],
+        "inputs": [
+          "counts dict",
+          "Statevector",
+          "dense H"
+        ],
+        "outputs": [
+          "order parameter R",
+          "witnesses",
+          "OTOC",
+          "DLA parity",
+          "metrics"
+        ],
+        "processing_model": "small-N exact diagonalisation gated by dense_budget",
+        "stage": "analysis"
+      },
+      {
+        "backends": [
+          "python"
+        ],
+        "inputs": [
+          "observables",
+          "provenance"
+        ],
+        "outputs": [
+          "claim-classified, artefact-backed evidence"
+        ],
+        "processing_model": "five-class hardware-status ledger",
+        "stage": "ledger"
+      }
+    ]
+  },
+  "schema_a": {
+    "content_digest": "sha256:719192c2948f477f1cd71683bbe82c7a68965bf680bdd94c193219ec26e30bd4",
+    "contract_era": "v1",
+    "enumeration": "language-agnostic",
+    "evidence_types": [
+      "studio.kuramoto-compilation.v1",
+      "studio.quantum-evolution.v1",
+      "studio.sync-analysis.v1",
+      "studio.dla-parity.v1",
+      "studio.physics-validation.v1",
+      "studio.native-speedup.v1",
+      "studio.evidence-replay.v1",
+      "studio.mitigation.v1",
+      "studio.hardware-result-pack.v1"
+    ],
+    "platform_sdk": ">=0.2,<0.3",
+    "protocol_version": "1",
+    "studio": "scpn-quantum-control",
+    "studio_version": "0.9.11",
+    "transport_profile": "local-first",
+    "verbs": [
+      {
+        "backends": [
+          "rust",
+          "qiskit",
+          "python"
+        ],
+        "fidelity": "first-principles",
+        "produces": [
+          "studio.kuramoto-compilation.v1"
+        ],
+        "safety_tier": "research",
+        "side_effect": "read-only",
+        "timing": {
+          "class": "interactive"
+        },
+        "verb": "compile"
+      },
+      {
+        "backends": [
+          "qiskit",
+          "rust",
+          "python"
+        ],
+        "fidelity": "first-principles",
+        "produces": [
+          "studio.quantum-evolution.v1"
+        ],
+        "safety_tier": "research",
+        "side_effect": "simulated",
+        "timing": {
+          "class": "batch"
+        },
+        "verb": "simulate"
+      },
+      {
+        "backends": [
+          "numpy",
+          "rust"
+        ],
+        "fidelity": "analytic",
+        "produces": [
+          "studio.sync-analysis.v1",
+          "studio.dla-parity.v1"
+        ],
+        "safety_tier": "research",
+        "side_effect": "read-only",
+        "timing": {
+          "class": "batch"
+        },
+        "verb": "analyse"
+      },
+      {
+        "backends": [
+          "python"
+        ],
+        "fidelity": "analytic",
+        "produces": [
+          "studio.physics-validation.v1"
+        ],
+        "safety_tier": "research",
+        "side_effect": "read-only",
+        "timing": {
+          "class": "batch"
+        },
+        "verb": "validate"
+      },
+      {
+        "backends": [
+          "rust",
+          "python"
+        ],
+        "fidelity": "analytic",
+        "produces": [
+          "studio.native-speedup.v1"
+        ],
+        "safety_tier": "research",
+        "side_effect": "simulated",
+        "timing": {
+          "class": "batch"
+        },
+        "verb": "benchmark"
+      },
+      {
+        "backends": [
+          "python"
+        ],
+        "fidelity": "analytic",
+        "produces": [
+          "studio.evidence-replay.v1"
+        ],
+        "safety_tier": "research",
+        "side_effect": "read-only",
+        "timing": {
+          "class": "batch"
+        },
+        "verb": "replay"
+      },
+      {
+        "backends": [
+          "numpy"
+        ],
+        "fidelity": "analytic",
+        "produces": [
+          "studio.mitigation.v1"
+        ],
+        "safety_tier": "research",
+        "side_effect": "read-only",
+        "timing": {
+          "class": "batch"
+        },
+        "verb": "mitigate"
+      },
+      {
+        "backends": [
+          "qiskit-runtime",
+          "provider-hal"
+        ],
+        "fidelity": "first-principles",
+        "produces": [
+          "studio.hardware-result-pack.v1"
+        ],
+        "safety_tier": "certified",
+        "side_effect": "live-hardware",
+        "timing": {
+          "class": "batch"
+        },
+        "verb": "execute"
+      }
+    ]
+  }
+}
