@@ -35,6 +35,14 @@
 **Version:** 0.9.12
 **Status:** Kuramoto-XY compiler + hardware runners + analysis stack + bounded differentiable-programming surface | generated capability inventory below | CI coverage gate 90% | IBM Heron r2 evidence ledgered
 
+> **Honest scope — read first.** At the system sizes reachable today
+> (n ≤ 16 qubits) classical ODE and exact solvers are **faster and more accurate**
+> than the quantum routes here; there is **no demonstrated broad quantum
+> advantage**. The value of the quantum approach is characterisation
+> (entanglement, MBL, synchronisation witnesses, DLA parity) and auditable
+> hardware evidence, not speed. See the Limitations section below for the full
+> disclosure.
+
 ## What this repository is for
 
 `scpn-quantum-control` is an evidence-governed workbench for turning

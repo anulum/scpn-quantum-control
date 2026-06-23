@@ -457,6 +457,11 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   no arbitrary-graph, depth, provider, hardware, or production convergence claim.
 
 ### Changed
+- 2026-06-23 — Surfaced the honest-scope caveat to the top of the README: at the
+  reachable system sizes (n ≤ 16 qubits) classical solvers are faster and more
+  accurate and there is no demonstrated broad quantum advantage. The disclosure
+  already existed lower in the README; it is now a read-first callout under the
+  status line.
 - 2026-06-23 — Set the PyPI `Development Status` classifier to `4 - Beta`
   (from `5 - Production/Stable`) to match the pre-1.0 `0.9.x` line and the
   package's own Active Development notice. The `5 - Production/Stable`
