@@ -384,8 +384,8 @@ See [Rust Engine](rust_engine.md) for full API.
 
 | Function | n | Rust | Reference | Speedup |
 |----------|---|------|-----------|---------|
-| Hamiltonian construction | 4 | 0.004 ms | 20.9 ms (Qiskit) | **5401×** |
-| Hamiltonian construction | 8 | 0.4 ms | 63 ms (Qiskit) | **158×** |
+| Hamiltonian construction | 4 | 0.0036 ms | 0.40 ms (Qiskit) | **111×** |
+| Hamiltonian construction | 8 | 0.023 ms | 0.90 ms (Qiskit) | **39×** |
 | OTOC (30 time points) | 4 | 0.3 ms | 74.7 ms (scipy) | **264×** |
 | OTOC (30 time points) | 6 | 48 ms | 5.66 s (scipy) | **118×** |
 | Lanczos (50 steps) | 3 | 0.05 ms | 1.3 ms (numpy) | **27×** |

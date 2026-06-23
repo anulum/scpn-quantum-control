@@ -94,9 +94,9 @@ python -m venv .venv-provider-dwave
 # D-Wave, IQM, QuEra, and Strangeworks lanes in separate virtual environments.
 # It is offline: no credentials, authentication, provider clients, or job submission.
 
-# Rust acceleration (158–5,401× faster Hamiltonian construction;
-# 1,665× faster ICI three-level evolution; 44× faster (α,β)-hypergeometric
-# envelope; 2–10× across Pauli expectations and OTOC)
+# Rust acceleration (dense Hamiltonian construction ~111× faster at L=4, to
+# parity at L=12; 1,665× faster ICI three-level evolution; 44× faster
+# (α,β)-hypergeometric envelope; 2–10× across Pauli expectations and OTOC)
 pip install scpn-quantum-engine
 
 # Or build from source (requires Rust toolchain):
@@ -134,7 +134,7 @@ pip install -e ".[accelerated]"
 
 ## Rust Acceleration
 
-The optional `scpn-quantum-engine` package provides 55 Rust-accelerated PyO3 bindings
+The optional `scpn-quantum-engine` package provides 141 Rust-accelerated PyO3 bindings
 via PyO3. When installed, all analysis modules transparently use the Rust fast
 paths. When not installed, everything works via pure Python/NumPy.
 

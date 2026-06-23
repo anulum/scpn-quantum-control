@@ -451,7 +451,7 @@ Returns `f64` — mean coupling between domains.
 ## 7. Performance Benchmarks
 
 All benchmarks measured on Intel i5-11600K, Python 3.12, Rust engine
-(scpn-quantum-engine 0.2.0, PyO3 0.25).
+(scpn-quantum-engine 0.2.0, PyO3 0.29).
 
 | Function | n=16 | Engine | Budget |
 |----------|------|--------|--------|
@@ -474,7 +474,7 @@ The speedup comes from two Rust functions in `scpn_quantum_engine`:
 | `concatenated_logical_rate_rust` | `concatenated_logical_rate` | Avoids Python loop + float overhead |
 | `knm_domain_coupling` | `knm_between_domains` | Avoids nested Python loop over K matrix |
 
-Both are bound via PyO3 0.25 with numpy integration. The Rust functions
+Both are bound via PyO3 0.29 with numpy integration. The Rust functions
 are in `scpn_quantum_engine/src/concat_qec.rs` (164 lines, 7 unit tests).
 
 ### Scaling with Number of Levels

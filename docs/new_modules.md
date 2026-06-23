@@ -730,7 +730,7 @@ R = eng.order_param_from_statevector(psi.real, psi.imag, n)
 
 | Function | Category | Speedup |
 |----------|----------|--------:|
-| `build_xy_hamiltonian_dense` | Hamiltonian | 5,401× |
+| `build_xy_hamiltonian_dense` | Hamiltonian | ~111× (L=4) → parity (L=12) |
 | `build_sparse_xy_hamiltonian` | Hamiltonian | 80× |
 | `order_param_from_statevector` | Order param | 851× |
 | `otoc_from_eigendecomp` | OTOC | 264× |

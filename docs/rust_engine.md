@@ -24,7 +24,7 @@ Requires Rust toolchain (rustup) and a C compiler for PyO3.
 
 ## Architecture
 
-- **PyO3 0.25** — Python bindings
+- **PyO3 0.29** — Python bindings
 - **rayon 1.10** — data parallelism (PEC sampling, MPC, OTOC time loop, GUESS batch extrapolation, hypergeometric envelope, ICI mixing angle)
 - **ndarray 0.16** — N-dimensional arrays (real and complex via `num-complex`)
 - **numpy 0.25** — zero-copy array exchange with Python
@@ -297,17 +297,27 @@ pulse-schedule construction.
 Verified parity vs the Python reference implementation: max absolute
 difference $4.97 \times 10^{-14}$ for $n_\text{points} = 500$.
 
-## Measured Benchmarks (2026-03-28)
+## Measured Benchmarks (2026-06-23)
 
-Windows 11, Python 3.12, Rust release build, i7 CPU.
+i5-11600K @ 3.90 GHz, Python 3.12, Rust release build. Warm-up then repeats with
+P50 reported, per `agentic-shared/BENCHMARK_STANDARD.md`; both backends are fed
+identical `K`/`omega` and parity-checked. Artefact:
+[`data/native_speedup/`](../data/native_speedup/).
 
-### Hamiltonian Construction
+### Dense XY Hamiltonian Construction
 
-| System | Rust `build_xy_hamiltonian_dense` | Qiskit `SparsePauliOp.to_matrix()` | Speedup |
+| System | Rust `build_xy_hamiltonian_dense` (p50) | Qiskit `SparsePauliOp.to_matrix()` (p50) | Speedup |
 |--------|------|--------|---------|
-| n=4 (16×16) | 0.004 ms | 20.9 ms | **5401×** |
-| n=6 (64×64) | 0.008 ms | 37.1 ms | **4589×** |
-| n=8 (256×256) | 0.399 ms | 63.0 ms | **158×** |
+| L=4 (16×16) | 0.0036 ms | 0.40 ms | **111×** |
+| L=8 (256×256) | 0.023 ms | 0.90 ms | **39×** |
+| L=10 (1024×1024) | 0.89 ms | 2.32 ms | **2.6×** |
+| L=12 (4096×4096) | 38.3 ms | 35.6 ms | **0.93×** |
+
+The earlier "5401×" headline was a cold-start artefact (an un-warmed Qiskit
+first-call timed at ~20.9 ms). With warm-up the Rust kernel advantage is large
+for small systems and shrinks to parity as the dense `2^n × 2^n` fill dominates.
+The production `knm_to_dense_matrix` wrapper additionally casts float64 to
+complex128 (a downstream cost excluded from this construction-kernel comparison).
 
 ### OTOC (30 time points)
 
@@ -492,7 +502,7 @@ Which Python module calls which Rust function:
 
 ```
 bridge/knm_hamiltonian.py
-  └── build_xy_hamiltonian_dense()    → 5,401× speedup
+  └── build_xy_hamiltonian_dense()    → ~111× at L=4, parity by L=12
 
 bridge/sparse_hamiltonian.py
   └── build_sparse_xy_hamiltonian()   → 80× speedup

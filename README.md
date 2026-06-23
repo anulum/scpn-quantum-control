@@ -33,7 +33,7 @@
 > non-artefact scientific claims. APIs may evolve as this work progresses.
 
 **Version:** 0.9.12
-**Status:** Kuramoto-XY compiler + hardware runners + analysis stack + bounded differentiable-programming surface | generated capability inventory below | CI coverage gate 91.5% | IBM Heron r2 evidence ledgered
+**Status:** Kuramoto-XY compiler + hardware runners + analysis stack + bounded differentiable-programming surface | generated capability inventory below | CI coverage gate 90% | IBM Heron r2 evidence ledgered
 
 ## What this repository is for
 
@@ -476,7 +476,9 @@ The package provides:
 
 1. **A Kuramoto-to-quantum compiler** — any coupling matrix K_nm and natural
    frequencies omega compile directly into executable Qiskit circuits for IBM
-   hardware. Rust-accelerated Hamiltonian construction (5,401× faster than Qiskit).
+   hardware. Rust-accelerated dense Hamiltonian construction is ~111× faster than
+   the Qiskit `SparsePauliOp` path at L=4, falling with system size to parity by
+   L=12 (parity-checked; see [`data/native_speedup/`](data/native_speedup/)).
 
 2. **Tracked research module families** probing the synchronisation phase
    transition — synchronisation witnesses, OTOC scrambling, Krylov complexity,
@@ -539,11 +541,11 @@ information scrambles*, and *whether the system thermalises*.
 
 | Metric | Value |
 |--------|-------|
-| Rust engine bindings | **49** exported `#[pyfunction]` bindings in the tracked Rust crate; low-level helper `fn` definitions are an implementation detail. |
-| Source package surface | **697** tracked Python source files under `src/scpn_quantum_control`, excluding package initialisers; **470** of these are generated Paper 0 source-accounting validation modules. |
+| Rust engine bindings | **141** exported `#[pyfunction]` bindings in the tracked Rust crate; low-level helper `fn` definitions are an implementation detail. |
+| Source package surface | **903** tracked Python source files under `src/scpn_quantum_control`, excluding package initialisers; **471** of these are generated Paper 0 source-accounting validation modules. |
 | Research module families | Analysis, phase, hardware, bridge, mitigation, QEC, applications, forecasting, and Paper 0 validation families; exact current counts are listed in the package map below. |
 | Publication figures | **17** (simulation + hardware, including the Phase 1 DLA parity panels and exact-simulation crossover) |
-| Test suite | CI-gated suite with a 91.5% aggregate coverage gate after module-specific test-policy cleanup; current tracked test-function count is **9,139** by `tests/test_*.py` collection. |
+| Test suite | CI-gated suite at a **90%** aggregate coverage gate (`--cov-fail-under=90`); the non-refactor source tree is at 100% line coverage. See the generated capability inventory above for the current tracked test-file count. |
 | Reproducibility CLI | `scpn-bench reproduce-methods`, `scpn-bench fim-all`, and `scpn-bench all` regenerate committed methods/FIM artefacts without IBM submission |
 
 ### Exact-Simulation Wall-Time (Not broad quantum-advantage claim)
@@ -814,7 +816,7 @@ graph LR
 
 ## Examples
 
-24 standalone scripts in [`examples/`](examples/):
+29 standalone scripts in [`examples/`](examples/):
 
 | # | Script | What it demonstrates |
 |:-:|--------|---------------------|
@@ -890,7 +892,7 @@ scpn_quantum_control/
 ├── tcbo/            1 module  — TCBO quantum observer
 ├── pgbo/            1 module  — PGBO quantum bridge
 ├── l16/             1 module  — Layer 16 quantum director
-└── scpn_quantum_engine/  Rust crate (PyO3 0.25, 55 exported PyO3 bindings)
+└── scpn_quantum_engine/  Rust crate (PyO3 0.29, 141 exported PyO3 bindings)
 ```
 
 ## Dependencies

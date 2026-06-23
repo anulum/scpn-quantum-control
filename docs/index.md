@@ -158,8 +158,8 @@ like* at the transition, *how hard it is* to prepare, *what its topology reveals
 | Research modules | See generated capability inventory for current package counts |
 | IBM hardware evidence | Legacy ibm_fez artifact rows + 342-circuit ibm_kingston Phase 1 DLA-parity raw-count dataset |
 | DLA parity asymmetry (hardware) | $+10.8\,\%$ mean for depths $\ge 4$, peak $+17.5\,\%$ at depth 6, reproduced from `data/phase1_dla_parity/` |
-| Test suite | CI-gated suite, 91.5% aggregate coverage gate |
-| Python modules | 766 Python source modules + 1 Rust crate (134 PyO3 bindings) + Julia tier (`accel/julia/*.jl`) |
+| Test suite | CI-gated suite, 90% aggregate coverage gate (non-refactor tree at 100%) |
+| Python modules | 903 Python source modules + 1 Rust crate (141 PyO3 bindings) + Julia tier (`accel/julia/*.jl`) |
 
 ## Package map
 
@@ -168,7 +168,7 @@ like* at the transition, *how hard it is* to prepare, *what its topology reveals
 | `paper0` | 471 | Source-accounting validation modules and fixtures for processed Paper 0 records |
 | `analysis` | 58 | Synchronisation probes: witnesses, witness discovery, QFI, PH, OTOC, Krylov, magic, BKT, DLA |
 | `hardware` | 63 | IBM Quantum runner, plugin backends registry, AsyncHardwareRunner, trapped-ion backend, GPU offload, circuit cutting, fast sparse, qubit mapper (DynQ), provenance |
-| `phase` | 29 | Time evolution: Trotter, VQE, ADAPT-VQE, VarQITE, AVQDS, QSVT, Floquet DTC, Lindblad, Kuramoto variants |
+| `phase` | 75 | Time evolution: Trotter, VQE, ADAPT-VQE, VarQITE, AVQDS, QSVT, Floquet DTC, Lindblad, Kuramoto variants, differentiable/gradient surfaces |
 | `bridge` | 13 | $K_{nm}$ → Hamiltonian, cross-repo adapters (sc-neurocore, SSGF, orchestrator) |
 | `applications` | 13 | FMO photosynthesis, power grid, Josephson array, EEG, ITER, quantum EVS, application benchmark plugins |
 | `mitigation` | 12 | ZNE, PEC, dynamical decoupling, Z₂ parity, CPDR, symmetry verification, GUESS, compound |
@@ -251,10 +251,10 @@ for name, w in results.items():
 - [Equations](equations.md) — every equation in the codebase
 - [Architecture](architecture.md) — dependency graph + 20 subpackages
 - [Hardware Status Ledger](hardware_status_ledger.md) — claim classes and campaign evidence paths
-- [Analysis API](analysis_api.md) — advanced reference for 46 analysis modules
+- [Analysis API](analysis_api.md) — advanced reference for the analysis modules
 - [Witness Discovery](witness_discovery.md) — Bayesian/bandit search over synchronisation witness candidates
 - [Application Benchmark Plugins](application_benchmarks.md) — EEG, plasma, power-grid, and FEP datasets through the QPU artifact contract
-- [Phase API](phase_api.md) — advanced reference for 29 evolution algorithms
+- [Phase API](phase_api.md) — advanced reference for the phase evolution and gradient modules
 - [Kuramoto Variants](kuramoto_variants.md) — higher-order, monitored, and PT-symmetric trajectory APIs
 - [Classical Baselines](classical_baselines.md) — SciPy ODE, QuTiP Lindblad, and MPS TEBD provenance surfaces
 - [Hardware Guide](hardware_guide.md) — IBM Quantum setup

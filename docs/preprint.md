@@ -36,8 +36,9 @@ This legacy preprint records artifact-backed legacy hardware evidence for
 Kuramoto-XY synchronisation workflows with heterogeneous natural frequencies on
 IBM's ibm_fez (Heron r2, 156 qubits). It is retained as historical experiment
 context and is not promoted as broad hardware validation. Using a
-Rust-accelerated simulation pipeline (5,401× faster than Qiskit for Hamiltonian
-construction), we compute entanglement entropy, Krylov complexity, OTOC
+Rust-accelerated simulation pipeline (dense Hamiltonian construction ~111×
+faster than Qiskit for small systems, falling to parity for large dense
+builds), we compute entanglement entropy, Krylov complexity, OTOC
 scrambling, and Floquet discrete time crystal diagnostics across the
 synchronisation transition for systems of 2–16 qubits. Legacy hardware snapshots
 include CHSH Bell inequality violation ($S = 2.165$), QKD bit error rate of 5.5%
@@ -99,8 +100,9 @@ $$H_{k, k \oplus \text{mask}_{ij}} = -2K_{ij} \quad \text{when } b_i(k) \neq b_j
 
 $$H_{kk} = -\sum_i \omega_i (1 - 2b_i(k))$$
 
-This Rust implementation (PyO3) is **5,401×** faster than Qiskit SparsePauliOp
-at $n=4$ and **158×** at $n=8$ (measured, Table 1).
+This Rust implementation (PyO3) is **111×** faster than Qiskit SparsePauliOp
+at $L=4$ and **39×** at $L=8$, falling to parity by $L=12$ (measured with warm-up,
+Table 1; artefact `data/native_speedup/`).
 
 ### 2.2 Analysis Pipeline
 
@@ -374,12 +376,13 @@ coupled-oscillator synchronisation with heterogeneous natural frequencies.
 Promoted claims should be drawn only from committed raw-count artefacts,
 analysis scripts, and ledger rows; the ibm_fez material remains descriptive
 unless a later review promotes a specific result. The Rust-accelerated pipeline
-enables 5,401× faster Hamiltonian construction and 264× faster OTOC computation
+enables ~111× faster small-system Hamiltonian construction (parity at large dense
+builds) and 264× faster OTOC computation
 vs the measured standard-tool baselines.
 
 All code, data, and figures are open-source:
 
-- **Code:** [github.com/anulum/scpn-quantum-control](https://github.com/anulum/scpn-quantum-control) (v0.9.5, AGPL-3.0)
+- **Code:** [github.com/anulum/scpn-quantum-control](https://github.com/anulum/scpn-quantum-control) (v0.9.12, AGPL-3.0)
 - **Results:** `results/publication_scans_2026-03-27.json`, `results/ibm_hardware_2026-03-{18,28}/`
 - **Docs:** [anulum.github.io/scpn-quantum-control](https://anulum.github.io/scpn-quantum-control)
 

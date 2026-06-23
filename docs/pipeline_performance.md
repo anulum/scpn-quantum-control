@@ -1196,7 +1196,7 @@ Reproducible from `data/phase1_dla_parity/*.json` via
 ## 21. Measured Rust speedups vs. Python baseline
 
 Re-run from `tests/test_rust_path_benchmarks.py` on 2026-04-17
-(ML350 Gen8, scpn-quantum-engine 0.2.0, PyO3 0.25 + rayon 1.10).
+(ML350 Gen8, scpn-quantum-engine 0.2.0, PyO3 0.29 + rayon 1.10).
 These are the only cross-language acceleration numbers we publish;
 they are measured, not estimated.
 

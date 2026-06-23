@@ -64,24 +64,26 @@ A reviewer encountering one of these files will find the same statement in its m
 docstring. An entry is re-opened only if a future change makes the module mix an
 additional, independent responsibility.
 
-## Package Statistics (v0.9.8)
+## Package Statistics (v0.9.12)
+
+These counts mirror the generated capability inventory in the README; that
+auto-generated block is the source of truth if the two ever drift.
 
 | Metric | Count |
 |--------|-------|
-| Python modules | 766 |
-| Rust crate | 1 (PyO3 0.25, **55 bindings**, 27 Rust source files including `validation.rs`, `symmetry_decay.rs`, `community.rs`, `pulse_shaping.rs`) |
+| Python modules | 903 (excluding package initialisers) |
+| Rust crate | 1 (PyO3 0.29, **141 bindings**, 37 Rust source files including `validation.rs`, `symmetry_decay.rs`, `community.rs`, `pulse_shaping.rs`) |
 | Julia tier | 1 (`accel/julia/order_parameter.jl`; juliacall-bridged, opt-in via `[julia]` extra) |
-| Tests | CI-gated suite (91.5% aggregate coverage gate) |
-| Lines of code | ~30,000 |
-| Subpackages | 28 domain package families |
+| Tests | CI-gated suite (90% aggregate coverage gate; non-refactor tree at 100%) |
+| Subpackages | domain package families (see the package map below) |
 | Research gems | See generated capability inventory and module-level docs |
-| Examples | 23 |
+| Examples | 29 |
 | Notebooks | 98 tracked notebooks |
-| Doc pages | 235 public Markdown pages |
+| Doc pages | See the generated capability inventory |
 
 ## Subpackage Dependency Graph
 
-The 20 subpackages form a directed acyclic graph. `bridge/` is the foundation —
+The subpackages form a directed acyclic graph. `bridge/` is the foundation —
 every other subpackage depends on it for Hamiltonian construction and data
 conversion. `analysis/` is the largest consumer, using `phase/` for state
 preparation and `bridge/` for Hamiltonian access.
@@ -235,7 +237,7 @@ bridge/                                    ← Foundation: K_nm → quantum obje
 ├── sc_to_quantum.py                         Angle/probability conversion
 └── spn_to_qcircuit.py                       SPN token → circuit amplitude
 
-analysis/                                  ← 41 modules: probes of the sync transition
+analysis/                                  ← 58 modules: probes of the sync transition
 ├── sync_witness.py                          ★ Synchronization witnesses (Gem 1)
 ├── sync_entanglement_witness.py             ★ R as entanglement witness (Gem 12)
 ├── quantum_persistent_homology.py           ★ Full PH pipeline from counts (Gem 5)
@@ -251,7 +253,7 @@ analysis/                                  ← 41 modules: probes of the sync tr
 ├── entanglement_percolation.py              ★ Percolation = sync threshold (Gem 16)
 ├── qrc_phase_detector.py                    ★ Self-probing reservoir (Gem 17)
 ├── critical_concordance.py                  ★ Multi-probe K_c agreement (Gem 19)
-├── berry_fidelity.py                        ★ Berry phase / χ_F at BKT (Gem 20)
+├── berry_phase.py                           ★ Berry phase / χ_F at BKT (Gem 20)
 ├── quantum_mpemba.py                        ★ Quantum Mpemba effect (Gem 21)
 ├── lindblad_ness.py                         ★ Lindblad NESS (Gem 22)
 ├── adiabatic_gap.py                         ★ Adiabatic preparation hardness (Gem 23)
@@ -279,7 +281,7 @@ analysis/                                  ← 41 modules: probes of the sync tr
 ├── vortex_binding.py                          Kosterlitz RG flow
 └── enaqt.py                                   Environment-assisted quantum transport
 
-phase/                                     ← 14 modules: time evolution + variational
+phase/                                     ← 75 modules: time evolution + variational
 ├── xy_kuramoto.py                             Trotterised XY solver
 ├── trotter_upde.py                            Full 16-layer UPDE solver
 ├── trotter_error.py                           Trotter error analysis
@@ -386,8 +388,8 @@ pgbo/                                      ← PGBO quantum bridge
 l16/                                       ← Layer 16 quantum director
 └── quantum_director.py                        Loschmidt echo, stability score
 
-scpn_quantum_engine/                       ← Rust crate (PyO3 0.25, rayon parallel)
-└── src/lib.rs                                 15 functions: kuramoto_euler, kuramoto_trajectory,
+scpn_quantum_engine/                       ← Rust crate (PyO3 0.29, rayon parallel)
+└── src/lib.rs                                 141 PyO3 bindings across 37 source files, including: kuramoto_euler, kuramoto_trajectory,
                                                order_parameter, build_knm, pec_coefficients,
                                                pec_sample_parallel, dla_dimension, mc_xy_simulate,
                                                state_order_param_sparse, expectation_pauli_fast,
