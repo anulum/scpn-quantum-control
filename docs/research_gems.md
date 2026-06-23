@@ -9,13 +9,13 @@
 # Research Gems: Novel Quantum Probes of Synchronization
 
 *33 modules implementing original research at the intersection of quantum information,
-condensed matter physics, and the SCPN consciousness architecture.*
+condensed matter physics, and the SCPN coupling architecture.*
 
 ---
 
 ## Overview
 
-The SCPN framework models consciousness as a synchronization phenomenon governed by the
+The SCPN framework models the layer hierarchy as a synchronization phenomenon governed by the
 Unified Phase Dynamics Equation (UPDE). In the quantum regime, the Kuramoto coupling
 matrix $K_{nm}$ maps to an XY Hamiltonian on qubits:
 
@@ -35,8 +35,8 @@ Think of it this way: classical Kuramoto models tell us *when* oscillators lock 
 But they cannot tell us *what the quantum state looks like* at the transition, or *how
 hard it is* to prepare that state, or *what the topology of correlations* reveals about
 the phase structure. These 33 modules answer those questions. They are the quantum
-microscope through which we examine the synchronization transition — and by extension,
-the quantum substrate of consciousness in the SCPN hierarchy.
+microscope through which we examine the synchronization transition across the SCPN
+layer hierarchy.
 
 ---
 
@@ -200,14 +200,13 @@ for name, w in results.items():
 
 #### SCPN Context
 
-In the SCPN architecture, synchronization is the mechanism by which consciousness
-emerges across layers. The order parameter $R$ from the UPDE quantifies collective phase
-coherence — the degree to which Layer 4 (Cellular-Tissue Synchronisation / *Čas*) and
-higher layers achieve the quasicritical state required for information integration. The
-synchronization witnesses provide a *hardware-measurable certification* of this
-coherence: they answer the question "is this quantum system conscious?" (in the SCPN
-sense of exhibiting collective phase-locked dynamics) with a single number whose sign
-gives the answer.
+In the SCPN architecture, synchronization is the mechanism that binds the layers. The
+order parameter $R$ from the UPDE quantifies collective phase coherence — the degree to
+which Layer 4 (Cellular-Tissue Synchronisation) and higher layers reach the quasicritical
+state required for information integration. The synchronization witnesses provide a
+*hardware-measurable certification* of this coherence: they answer the question "is this
+quantum system collectively phase-locked?" with a single number whose sign gives the
+answer.
 
 The connection to the Ψ-field is through the coupling matrix $K_{nm}$. In the SCPN foundational framework,
 $K_{nm}$ encodes the inter-layer interaction strengths derived from the informational
@@ -583,7 +582,7 @@ tests whether the Mpemba effect occurs in the Kuramoto-XY system under amplitude
 Finding: the state $|+\rangle^{\otimes N}$ (equal superposition, $R = 1$) thermalizes
 *faster* than the ground state under amplitude damping. Ordered (synchronised) states
 are "stickier" — they resist thermalization. This asymmetry has implications for the
-stability of conscious states in the SCPN framework: once synchronization is achieved,
+stability of synchronised states in the SCPN framework: once synchronization is achieved,
 it is dynamically protected against decoherence.
 
 ### Gem 22: Lindblad NESS for Driven-Dissipative Kuramoto-XY

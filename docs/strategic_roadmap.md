@@ -99,7 +99,7 @@ scientific landscape moves.
 | **S42** | Symplectic structure-preserving Trotterization | medium | 5–7 weeks | Rust pulse ✓, geometric-integrator theory |
 | **S43** | Full resource theory of quantum synchronisation | medium-high | 6–8 weeks | witnesses ✓, OTOC ✓, DLA ✓ |
 | **S44** | Objective collapse / macroscopic foundations testbed (GRW, Penrose OR, CSL; Quantum Darwinism angle) | high (foundations) | 8–12 weeks | DLA parity ✓, large-N hardware time |
-| **S45** | Biologically faithful Kuramoto simulator + IIT consciousness angle | medium-high | 6–8 weeks | EEG / connectome benchmarks ✓, applications/ ✓ |
+| **S45** | Biologically faithful Kuramoto simulator + integrated-information (IIT) angle | medium-high | 6–8 weeks | EEG / connectome benchmarks ✓, applications/ ✓ |
 | **S46** | Phase-transition / attractor-landscape quantum programming | medium-high (paradigm) | 6–8 weeks | witnesses ✓, floquet_kuramoto ✓ |
 | **S47** | Analogue gravity: relativistic metrics, cosmological phase transitions, baryogenesis, emergent spacetime | high (foundations) | 10–12 weeks | QKFT (S38), theorist pass |
 | **S48** | Self-healing qubit fabrics + continuous QEC via sync | medium-high | 6–8 weeks | qec/ ✓, S18 sync memories (prereq) |
@@ -2470,8 +2470,8 @@ exponent off by > tolerance.
 without external controller. Extension of S34 (autonomous drive)
 where the *coupling matrix itself* is the feedback target rather
 than just the drive amplitude. Closed self-maintaining loops
-directly model origins-of-life, synthetic biology, and consciousness
-patterns as physical realisations inside quantum hardware.
+directly model origins-of-life and synthetic-biology patterns as physical
+realisations inside quantum hardware.
 
 **Deliverables.** `control/autopoietic_loop.py` — closed loop where
 measurement at shot n computes the K_nm to use at shot n+1; demo at
@@ -2640,7 +2640,7 @@ bound on CSL collapse rate tighter than the pre-registered
 reference benchmark. Falsifier — no tightening beyond reference
 within the campaign budget.
 
-## S45 — Biologically faithful Kuramoto simulator + IIT consciousness angle
+## S45 — Biologically faithful Kuramoto simulator + integrated-information (IIT) angle
 
 **Motivation.** Ingest real structural-biology data (protein
 interaction graphs, microtubule lattices, photosynthetic antenna
@@ -2915,7 +2915,7 @@ to target.
 |---|---|
 | Fusion plasma stabilisation (ITER disruption forecasting + real-time control) | S1 + S8 + S27 (feedback + branching + inverse design), S41 (causal discovery of plasma mode coupling), S48 (self-healing qubit fabric for control-loop latency) |
 | Tipping-point early-warning (power grids, climate, neural seizures) | S14 (hybrid forecasting), S24 (quantum speed limits for early warning), S31 (MBL / tipping precursor), S53 (SOC + avalanche statistics) |
-| IIT consciousness testbed (connectomes, microtubules) | S45 (direct) + S21 (multi-scale) + S50 (kernels on connectome sync data) |
+| IIT integrated-information testbed (connectomes, microtubules) | S45 (direct) + S21 (multi-scale) + S50 (kernels on connectome sync data) |
 | Quantum biology engineering (photosynthesis, protein folding, collective cell) | S45 + S43 (sync-as-resource for bio-simulation) + S10 / S13 (analog + CV platforms) |
 | Quantum internet infrastructure | S4 (multi-vendor) + S26 (entanglement-mediated sync) + S52 (distributed consensus) |
 | Autonomous AI physicist (discovery engine) | S12 (Bayesian phase-diagram) + S39 (autopoietic) + S58-class concepts from S34 / S53 + S50 ML kernel |

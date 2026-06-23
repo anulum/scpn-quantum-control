@@ -132,10 +132,13 @@ For claim classes, raw-artefact pointers, and promotion rules, see the
 
 `scpn-quantum-control` turns a coupled-oscillator network into quantum
 circuits, simulator workflows, hardware-result ledgers, and analysis tools.
-The first supported physics lane is the Kuramoto-XY mapping: provide a coupling
-matrix `K_nm` and oscillator frequencies `omega`, then compile the matching XY
-Hamiltonian, run local or provider-backed circuits, measure synchronisation,
-and compare the result against classical and exact-simulation baselines.
+SCPN here denotes the **Scale-Coupled Phase Network** — a generalised-Kuramoto
+coupling model whose `K_nm` matrix provides a structured, reproducible test
+problem. The first supported physics lane is the Kuramoto-XY mapping: provide a
+coupling matrix `K_nm` and oscillator frequencies `omega`, then compile the
+matching XY Hamiltonian, run local or provider-backed circuits, measure
+synchronisation, and compare the result against classical and exact-simulation
+baselines.
 
 The repository is not only a circuit generator. It also carries the operational
 surfaces needed to use the software responsibly:

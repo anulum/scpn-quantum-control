@@ -111,9 +111,9 @@ This package provides three things:
    Kuramoto-XY; the rest are standard many-body diagnostics.
 
 3. **The SCPN 16-layer network** as a built-in benchmark — the coupling matrix from
-   Paper 27 of the Sentient-Consciousness Projection Network framework, where
-   synchronization is the mechanism by which consciousness emerges across 16
-   ontological layers.
+   the Scale-Coupled Phase Network framework, a 16-layer generalised-Kuramoto
+   model whose synchronisation across scales provides a structured, reproducible
+   test problem.
 
 4. **A differentiable computation lane** for supported scalar, vector, and
    matrix primitive kernels, including compiler-AD metadata and native Rust

@@ -8,40 +8,46 @@
 
 # Theoretical Foundations
 
-*The Self-Consistent Phase Network (SCPN) and its quantum simulation.*
+*The Scale-Coupled Phase Network (SCPN) and its quantum simulation.*
 
 ---
 
 ## The SCPN Framework
 
-The Sentient-Consciousness Projection Network (Šotek, 2025) is a 15+1 layer
+The Scale-Coupled Phase Network (SCPN) (Šotek, 2025) is a 15+1 layer
 architecture modelling coupled oscillatory dynamics across physical scales. Each
-layer represents a distinct ontological domain — from quantum biology (L1) through
-neural synchronisation (L4) to collective dynamics (L12) and meta-universal
-closure (L16). The mathematical backbone is the **Unified Phase Dynamics Equation**
-(UPDE), a generalised Kuramoto model with layer-specific couplings.
+layer represents a distinct dynamical scale — from quantum biology (L1) through
+neural synchronisation (L4) to collective dynamics (L12) and abstract
+boundary-closure (L16). The mathematical backbone is the **Unified Phase Dynamics
+Equation** (UPDE), a generalised Kuramoto model with layer-specific couplings.
 
-**Source:** "God of the Math — The SCPN Master Publications" (Šotek, 2025),
-DOI: [10.5281/zenodo.17419678](https://doi.org/10.5281/zenodo.17419678)
+**Originating framework:** "God of the Math — The SCPN Master Publications"
+(Šotek, 2025), DOI: [10.5281/zenodo.17419678](https://doi.org/10.5281/zenodo.17419678).
+This package implements only the UPDE coupling mathematics and its quantum
+simulation; it makes no biological, clinical, or consciousness claims (see
+[Onboarding](onboarding.md)).
 
 ### The 15+1 Layers
 
-| Domain | Layers | Physical Content |
+The model indexes scales as layers; this package uses only their coupling matrix
+$K_{nm}$ and natural frequencies $\omega_i$ (numbers), not the layer labels.
+
+| Domain | Layers | Dynamical Content |
 |--------|--------|-----------------|
 | I: Biological Substrate | L1–L4 | Quantum bio → neurochemical → genomic → cellular sync |
-| II: Organismal & Planetary | L5–L8 | Self → biosphere → symbolic → cosmic phase-locking |
-| III–IV: Memory & Control | L9–L12 | Memory → boundary control → noosphere → Gaian sync |
-| V: Meta-Universal | L13–L15 | Source-field → transdimensional → Consilium |
-| VI: Cybernetic Closure | L16 | The Anulum — recursive self-observation loop |
+| II: Organismal & Planetary | L5–L8 | Cellular → biosphere → symbolic → planetary phase-locking |
+| III–IV: Memory & Control | L9–L12 | Memory → boundary control → collective → planetary sync |
+| V: Meta-scale | L13–L15 | Abstract cross-scale coupling layers |
+| VI: Cybernetic Closure | L16 | Recursive boundary-closure / self-observation loop |
 
-### Three Axioms
+### Modelling Principles
 
-1. **Primacy of Consciousness (Ψ):** Consciousness is the primary, irreducible
-   ground of being — not emergent from matter.
-2. **Language of Information Geometry:** The native language is geometric. Meaning
-   is encoded in the geometry of informational spaces (Fisher Information Metric).
-3. **Teleological Optimisation:** The universe is guided by an inherent drive to
-   maximise future possibilities (Causal Entropic Forces).
+1. **Phase-coupling dynamics:** each layer carries a phase variable; inter-layer
+   interaction is a generalised Kuramoto coupling $K_{nm}$.
+2. **Information geometry:** distinguishability between configurations is measured
+   with the Fisher Information Metric, used for sensitivity and design analysis.
+3. **Generative coupling:** $K_{nm}$ is generated from a distance-decay law with
+   calibration anchors rather than hand-tuned per pair.
 
 ---
 
@@ -64,7 +70,7 @@ with calibration anchors from Paper 27 Table 2:
 Parameters: $K_{\text{base}} = 0.45$, $\alpha = 0.3$ (Paper 27, Eq. 3).
 
 The 16 natural frequencies $\omega_i$ encode the characteristic timescales of each
-ontological layer:
+layer:
 
 $$\omega = [1.329, 2.610, 0.844, 1.520, 0.710, 3.780, 1.055, 0.625, \\
 2.210, 1.740, 0.480, 3.210, 0.915, 1.410, 2.830, 0.991] \text{ rad/s}$$

@@ -232,9 +232,9 @@ graph LR
 
 The full 16-oscillator SCPN network simulated as a 16-qubit spin chain. This is
 the quantum version of the Unified Phase Dynamics Equation — the master equation
-governing all 16 layers of the SCPN consciousness model.
+governing all 16 layers of the SCPN coupling model.
 
-Each qubit represents one ontological layer. The coupling between qubits follows
+Each qubit represents one layer. The coupling between qubits follows
 the exponential decay $K_{nm} = 0.45 \cdot e^{-0.3|n-m|}$ with cross-hierarchy
 boosts (L1-L16 = 0.05, L5-L7 = 0.15). The notebook evolves this system under
 Trotter decomposition and measures per-layer coherence $\langle X_n \rangle$,

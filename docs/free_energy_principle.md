@@ -146,8 +146,8 @@ where higher layers predict lower layers' activity.
 
 ### Why FEP in the SCPN?
 
-The SCPN's third axiom (Teleological Optimisation) posits that
-consciousness optimises a quantity across the hierarchy. The FEP provides
+The SCPN dynamics can be cast as optimisation across the hierarchy of
+layers. The FEP provides
 the mathematical framework: the UPDE dynamics (Kuramoto coupling) can be
 reinterpreted as belief updating under the FEP — oscillator phases are
 sufficient statistics, and synchronisation is free energy minimisation.

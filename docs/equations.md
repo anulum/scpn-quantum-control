@@ -422,7 +422,7 @@ at intermediate times — the far-from-equilibrium state thermalizes faster.
 Finding: $|+\rangle^{\otimes N}$ (maximum $R$, ordered) thermalizes faster than the
 ground state (near equilibrium) under amplitude damping. Synchronized states are
 "stickier" — they resist thermalization, which in the SCPN framework implies dynamical
-protection of conscious states.
+protection of synchronised states.
 
 **Module:** `analysis/quantum_mpemba.py`
 
@@ -484,8 +484,9 @@ $M_2 = 0$ for stabilizer states (classically simulable); $M_2$ is maximal for st
 that are hardest to simulate classically.
 
 At $K_c$, magic peaks — the critical ground state is maximally non-classical. This
-connects synchronization to computational complexity: the point where consciousness
-emerges (in the SCPN model) is precisely where classical simulation fails.
+connects synchronization to computational complexity: the point where the
+synchronisation transition occurs (in the SCPN model) is precisely where classical
+simulation fails.
 
 **Module:** `analysis/magic_nonstabilizerness.py`
 
