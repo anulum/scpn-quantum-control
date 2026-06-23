@@ -1129,3 +1129,167 @@ class TestMeanPhasePartialEngine:
             disp(np.full(4, 0.5)), d._python_mean_phase_gradient(np.full(4, 0.5))
         )
         assert disp.last_tier == "python"
+
+
+# ---------------------------------------------------------------------------
+# Mean phase Hessian — analytic floor, invariants, parity, and dispatch
+# ---------------------------------------------------------------------------
+
+
+def _finite_difference_mean_phase_hessian(theta: np.ndarray, step: float = 1e-6) -> np.ndarray:
+    """Central-difference Hessian from the analytic mean-phase gradient floor."""
+    n = theta.size
+    out = np.zeros((n, n), dtype=np.float64)
+    for i in range(n):
+        plus = theta.astype(np.float64).copy()
+        minus = theta.astype(np.float64).copy()
+        plus[i] += step
+        minus[i] -= step
+        out[i] = (d._python_mean_phase_gradient(plus) - d._python_mean_phase_gradient(minus)) / (
+            2.0 * step
+        )
+    return out
+
+
+class TestPythonMeanPhaseHessianFloor:
+    def test_matches_closed_form(self) -> None:
+        rng = np.random.default_rng(41)
+        theta = rng.uniform(-math.pi, math.pi, size=11)
+        cos_mean = float(np.mean(np.cos(theta)))
+        sin_mean = float(np.mean(np.sin(theta)))
+        magnitude = float(np.hypot(cos_mean, sin_mean))
+        aligned_cos = (cos_mean * np.cos(theta) + sin_mean * np.sin(theta)) / magnitude
+        aligned_sin = (sin_mean * np.cos(theta) - cos_mean * np.sin(theta)) / magnitude
+        expected = -(np.outer(aligned_sin, aligned_cos) + np.outer(aligned_cos, aligned_sin)) / (
+            theta.size**2 * magnitude**2
+        ) + np.diag(aligned_sin / (theta.size * magnitude))
+        np.testing.assert_allclose(d._python_mean_phase_hessian(theta), expected, atol=1e-15)
+
+    @_GLOBAL_SETTINGS
+    @given(
+        n=st.integers(min_value=1, max_value=32),
+        seed=st.integers(min_value=0, max_value=2**31 - 1),
+    )
+    def test_is_symmetric(self, n: int, seed: int) -> None:
+        rng = np.random.default_rng(seed)
+        theta = rng.uniform(-math.pi, math.pi, size=n)
+        hessian = d._python_mean_phase_hessian(theta)
+        np.testing.assert_allclose(hessian, hessian.T, atol=1e-15)
+
+    @_GLOBAL_SETTINGS
+    @given(
+        n=st.integers(min_value=1, max_value=48),
+        seed=st.integers(min_value=0, max_value=2**31 - 1),
+    )
+    def test_rows_sum_to_zero(self, n: int, seed: int) -> None:
+        rng = np.random.default_rng(seed)
+        theta = rng.uniform(-math.pi, math.pi, size=n)
+        hessian = d._python_mean_phase_hessian(theta)
+        np.testing.assert_allclose(hessian.sum(axis=1), np.zeros(n), atol=1e-12)
+
+    @_GLOBAL_SETTINGS
+    @given(
+        n=st.integers(min_value=2, max_value=24),
+        seed=st.integers(min_value=0, max_value=2**31 - 1),
+    )
+    def test_matches_finite_difference_of_gradient(self, n: int, seed: int) -> None:
+        rng = np.random.default_rng(seed)
+        theta = rng.uniform(-math.pi, math.pi, size=n)
+        if _order_parameter_value(theta) < 1e-2:
+            return
+        hessian = d._python_mean_phase_hessian(theta)
+        np.testing.assert_allclose(
+            hessian, _finite_difference_mean_phase_hessian(theta), atol=1e-5
+        )
+
+    def test_single_oscillator_is_zero(self) -> None:
+        hessian = d._python_mean_phase_hessian(np.array([2.7]))
+        assert hessian.shape == (1, 1)
+        assert abs(float(hessian[0, 0])) < 1e-15
+
+    def test_empty_input_returns_empty_matrix(self) -> None:
+        assert d._python_mean_phase_hessian(np.array([])).shape == (0, 0)
+
+    def test_exact_incoherent_returns_zero_matrix(self) -> None:
+        theta = np.array([0.0, math.pi, 0.0, -math.pi])
+        np.testing.assert_array_equal(d._python_mean_phase_hessian(theta), np.zeros((4, 4)))
+
+
+class TestRustMeanPhaseHessianTier:
+    @_GLOBAL_SETTINGS
+    @given(
+        n=st.integers(min_value=1, max_value=40),
+        seed=st.integers(min_value=0, max_value=2**31 - 1),
+    )
+    def test_rust_matches_python_floor(self, n: int, seed: int) -> None:
+        engine = pytest.importorskip("scpn_quantum_engine")
+        if not callable(getattr(engine, "mean_phase_hessian", None)):
+            pytest.skip("scpn_quantum_engine.mean_phase_hessian unavailable")
+        rng = np.random.default_rng(seed)
+        theta = rng.uniform(-10 * math.pi, 10 * math.pi, size=n)
+        np.testing.assert_allclose(
+            d._rust_mean_phase_hessian(theta), d._python_mean_phase_hessian(theta), atol=1e-11
+        )
+
+    def test_rust_absence_raises(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.setattr(d, "optional_rust_engine", lambda: None)
+        with pytest.raises(ModuleNotFoundError, match="scpn_quantum_engine"):
+            d._rust_mean_phase_hessian(np.zeros(3))
+
+    def test_partial_engine_falls_through(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        class PartialEngine:
+            pass
+
+        monkeypatch.setattr(d, "optional_rust_engine", lambda: PartialEngine())
+        disp = d.MultiLangDispatcher(
+            [("rust", d._rust_mean_phase_hessian), ("python", d._python_mean_phase_hessian)],
+        )
+        np.testing.assert_allclose(
+            disp(np.full(4, 0.5)), d._python_mean_phase_hessian(np.full(4, 0.5))
+        )
+        assert disp.last_tier == "python"
+
+
+class TestJuliaMeanPhaseHessianTier:
+    def test_julia_matches_python_floor(self) -> None:
+        pytest.importorskip("juliacall")
+        from scpn_quantum_control.accel.julia import mean_phase_hessian as julia_hessian
+
+        rng = np.random.default_rng(20260623)
+        theta = rng.uniform(-math.pi, math.pi, size=7)
+        np.testing.assert_allclose(
+            julia_hessian(theta), d._python_mean_phase_hessian(theta), atol=1e-10
+        )
+
+
+class TestMeanPhaseHessianDispatch:
+    @_GLOBAL_SETTINGS
+    @given(
+        n=st.integers(min_value=2, max_value=24),
+        seed=st.integers(min_value=0, max_value=2**31 - 1),
+    )
+    def test_all_available_tiers_agree(self, n: int, seed: int) -> None:
+        rng = np.random.default_rng(seed)
+        theta = rng.uniform(-math.pi, math.pi, size=n)
+        reference = d._python_mean_phase_hessian(theta)
+        for name, impl in d._MEAN_PHASE_HESSIAN_CHAIN:
+            try:
+                out = impl(theta)
+            except (ImportError, ModuleNotFoundError, RuntimeError):
+                continue
+            np.testing.assert_allclose(out, reference, atol=1e-10, err_msg=name)
+
+    def test_registry_and_public_api(self) -> None:
+        from scpn_quantum_control.accel import (
+            last_mean_phase_hessian_tier_used,
+            mean_phase_hessian,
+        )
+
+        assert d.dispatch("mean_phase_hessian", np.full(4, 0.3)).shape == (4, 4)
+        rng = np.random.default_rng(55)
+        theta = rng.uniform(0.0, 2 * math.pi, size=16)
+        assert mean_phase_hessian(theta).shape == (16, 16)
+        assert last_mean_phase_hessian_tier_used() in {"rust", "julia", "python"}
+
+    def test_chain_ends_with_python_floor(self) -> None:
+        assert d._MEAN_PHASE_HESSIAN_CHAIN[-1][0] == "python"

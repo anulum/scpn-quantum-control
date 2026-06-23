@@ -101,7 +101,7 @@ has a defined commercial licensing route.
 | Public Python classes | 822 |
 | Domain package families | 31 |
 | API documentation pages | 0 |
-| Rust PyO3 function bindings | 141 |
+| Rust PyO3 function bindings | 142 |
 | Rust source modules | 38 |
 | Notebook files | 98 |
 | Example files | 30 |

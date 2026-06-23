@@ -233,6 +233,61 @@ pub fn mean_phase_gradient_inner(theta: &[f64]) -> Vec<f64> {
     out
 }
 
+/// Compute the Hessian ∂²ψ/∂θ_i∂θ_j of the Kuramoto mean phase.
+///
+/// With c_k = cos(ψ − θ_k) = (C cos θ_k + S sin θ_k) / R and
+/// s_k = sin(ψ − θ_k) = (S cos θ_k − C sin θ_k) / R:
+///   H_ij = δ_ij s_j / (N R) − (s_i c_j + c_i s_j) / (N² R²).
+/// The matrix is symmetric and every row sums to zero; the incoherent state R = 0
+/// returns the zero matrix.
+#[pyfunction]
+pub fn mean_phase_hessian<'py>(
+    py: Python<'py>,
+    theta: PyReadonlyArray1<'_, f64>,
+) -> PyResult<Bound<'py, PyArray2<f64>>> {
+    let theta = validate_phase_vector(&theta, "theta")?;
+    let hessian = mean_phase_hessian_inner(theta);
+    Ok(PyArray2::from_owned_array(py, hessian))
+}
+
+/// Pure Rust mean phase Hessian (no PyO3), returned as a row-major N×N array.
+pub fn mean_phase_hessian_inner(theta: &[f64]) -> Array2<f64> {
+    let n = theta.len();
+    let mut out = Array2::<f64>::zeros((n, n));
+    if n == 0 {
+        return out;
+    }
+    let (mut re, mut im) = (0.0_f64, 0.0_f64);
+    for &t in theta {
+        re += t.cos();
+        im += t.sin();
+    }
+    let count = n as f64;
+    let cos_mean = re / count;
+    let sin_mean = im / count;
+    let magnitude = (cos_mean * cos_mean + sin_mean * sin_mean).sqrt();
+    if magnitude == 0.0 {
+        return out;
+    }
+    let aligned_cos: Vec<f64> = theta
+        .iter()
+        .map(|&t| (cos_mean * t.cos() + sin_mean * t.sin()) / magnitude)
+        .collect();
+    let aligned_sin: Vec<f64> = theta
+        .iter()
+        .map(|&t| (sin_mean * t.cos() - cos_mean * t.sin()) / magnitude)
+        .collect();
+    let scale = 1.0 / (count * count * magnitude * magnitude);
+    for i in 0..n {
+        for j in 0..n {
+            out[[i, j]] =
+                -(aligned_sin[i] * aligned_cos[j] + aligned_cos[i] * aligned_sin[j]) * scale;
+        }
+        out[[i, i]] += aligned_sin[i] / (count * magnitude);
+    }
+    out
+}
+
 fn validate_finite_slice(values: &[f64], name: &str) -> PyResult<()> {
     if values.iter().any(|value| !value.is_finite()) {
         return Err(pyo3::exceptions::PyValueError::new_err(format!(
@@ -974,6 +1029,59 @@ mod tests {
     #[test]
     fn test_mean_phase_gradient_empty() {
         assert!(mean_phase_gradient_inner(&[]).is_empty());
+    }
+
+    #[test]
+    fn test_mean_phase_hessian_matches_finite_difference_of_gradient() {
+        let theta = vec![0.3, -1.1, 2.0, 0.7, 4.2];
+        let hessian = mean_phase_hessian_inner(&theta);
+        let h = 1e-6;
+        for i in 0..theta.len() {
+            let mut plus = theta.clone();
+            let mut minus = theta.clone();
+            plus[i] += h;
+            minus[i] -= h;
+            let grad_plus = mean_phase_gradient_inner(&plus);
+            let grad_minus = mean_phase_gradient_inner(&minus);
+            for j in 0..theta.len() {
+                let fd = (grad_plus[j] - grad_minus[j]) / (2.0 * h);
+                assert!((hessian[[i, j]] - fd).abs() < 1e-6, "H[{i},{j}]");
+            }
+        }
+    }
+
+    #[test]
+    fn test_mean_phase_hessian_is_symmetric() {
+        let hessian = mean_phase_hessian_inner(&[0.1, 0.9, 2.3, 3.1, 5.5]);
+        for i in 0..5 {
+            for j in 0..5 {
+                assert!((hessian[[i, j]] - hessian[[j, i]]).abs() < 1e-15);
+            }
+        }
+    }
+
+    #[test]
+    fn test_mean_phase_hessian_rows_sum_to_zero() {
+        // The second derivative along a global phase shift vanishes, so each row sums to zero.
+        let theta = vec![0.1, 0.9, 2.3, 3.1, 5.5, 6.0];
+        let hessian = mean_phase_hessian_inner(&theta);
+        let n = theta.len();
+        for i in 0..n {
+            let row_sum: f64 = (0..n).map(|j| hessian[[i, j]]).sum();
+            assert!(row_sum.abs() < 1e-12, "row {i} sum = {row_sum}");
+        }
+    }
+
+    #[test]
+    fn test_mean_phase_hessian_single_is_zero() {
+        let hessian = mean_phase_hessian_inner(&[2.7]);
+        assert_eq!(hessian.shape(), &[1, 1]);
+        assert!(hessian[[0, 0]].abs() < 1e-12, "∂²ψ/∂θ² = 0 for one oscillator");
+    }
+
+    #[test]
+    fn test_mean_phase_hessian_empty() {
+        assert_eq!(mean_phase_hessian_inner(&[]).shape(), &[0, 0]);
     }
 
     #[test]

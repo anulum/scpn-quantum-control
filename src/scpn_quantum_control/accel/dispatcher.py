@@ -338,6 +338,64 @@ _MEAN_PHASE_GRADIENT_CHAIN: list[
 ]
 
 
+def _rust_mean_phase_hessian(theta: NDArray[np.float64]) -> NDArray[np.float64]:
+    engine = optional_rust_engine()
+    if engine is None:
+        raise ModuleNotFoundError("scpn_quantum_engine")
+    rust_hessian = getattr(engine, "mean_phase_hessian", None)
+    if not callable(rust_hessian):
+        raise ImportError("scpn_quantum_engine.mean_phase_hessian is unavailable")
+
+    return np.asarray(
+        rust_hessian(np.ascontiguousarray(theta, dtype=np.float64)), dtype=np.float64
+    )
+
+
+def _julia_mean_phase_hessian(theta: NDArray[np.float64]) -> NDArray[np.float64]:
+    from .julia import mean_phase_hessian as julia_hessian
+
+    return julia_hessian(theta)
+
+
+def _python_mean_phase_hessian(theta: NDArray[np.float64]) -> NDArray[np.float64]:
+    # Correctness floor — analytic Hessian of the mean phase ψ = atan2(S, C), no
+    # acceleration. With c_k = cos(ψ − θ_k) = (C cos θ_k + S sin θ_k) / r and
+    # s_k = sin(ψ − θ_k) = (S cos θ_k − C sin θ_k) / r:
+    #     ∂²ψ/∂θ_i∂θ_j = δ_ij s_j / (N r) − (s_i c_j + c_i s_j) / (N² r²).
+    # The matrix is symmetric and each row sums to zero (the second derivative along a
+    # global phase shift vanishes). At the incoherent state r = 0 the zero matrix is
+    # returned.
+    phases = np.ascontiguousarray(theta, dtype=np.float64)
+    count = phases.size
+    if count == 0:
+        return np.zeros((0, 0), dtype=np.float64)
+    cos_mean = float(np.mean(np.cos(phases)))
+    sin_mean = float(np.mean(np.sin(phases)))
+    magnitude = float(np.hypot(cos_mean, sin_mean))
+    if magnitude == 0.0:
+        return np.zeros((count, count), dtype=np.float64)
+    aligned_cos = (cos_mean * np.cos(phases) + sin_mean * np.sin(phases)) / magnitude
+    aligned_sin = (sin_mean * np.cos(phases) - cos_mean * np.sin(phases)) / magnitude
+    hessian = -(np.outer(aligned_sin, aligned_cos) + np.outer(aligned_cos, aligned_sin)) / (
+        count * count * magnitude * magnitude
+    )
+    hessian += np.diag(aligned_sin / (count * magnitude))
+    return np.ascontiguousarray(hessian, dtype=np.float64)
+
+
+# The mean-phase Hessian chain mirrors the order-parameter and mean-phase chains
+# (Rust → Julia → Python floor). Its micro-benchmark is recorded in
+# ``docs/benchmarks/mean_phase_hessian_tiers.json``; rerun
+# ``python scripts/bench_mean_phase_hessian_tiers.py`` when this chain is edited.
+_MEAN_PHASE_HESSIAN_CHAIN: list[
+    tuple[str, Callable[[NDArray[np.float64]], NDArray[np.float64]]]
+] = [
+    ("rust", _rust_mean_phase_hessian),
+    ("julia", _julia_mean_phase_hessian),
+    ("python", _python_mean_phase_hessian),
+]
+
+
 # ---------------------------------------------------------------------------
 # Dispatcher
 # ---------------------------------------------------------------------------
@@ -411,6 +469,7 @@ _order_parameter_gradient_dispatcher = MultiLangDispatcher(_ORDER_PARAMETER_GRAD
 _order_parameter_hessian_dispatcher = MultiLangDispatcher(_ORDER_PARAMETER_HESSIAN_CHAIN)
 _mean_phase_dispatcher = MultiLangDispatcher(_MEAN_PHASE_CHAIN)
 _mean_phase_gradient_dispatcher = MultiLangDispatcher(_MEAN_PHASE_GRADIENT_CHAIN)
+_mean_phase_hessian_dispatcher = MultiLangDispatcher(_MEAN_PHASE_HESSIAN_CHAIN)
 
 
 def order_parameter(theta: NDArray[np.float64]) -> float:
@@ -554,9 +613,43 @@ def last_mean_phase_tier_used() -> str | None:
     return _mean_phase_dispatcher.last_tier
 
 
+def mean_phase_hessian(theta: NDArray[np.float64]) -> NDArray[np.float64]:
+    r"""Hessian of the Kuramoto mean phase with multi-language dispatch.
+
+    Returns the second-derivative matrix :math:`\partial^2 \psi / \partial \theta_i
+    \partial \theta_j` for the mean phase :math:`\psi`. With :math:`s_k = \sin(\psi -
+    \theta_k)` and :math:`c_k = \cos(\psi - \theta_k)`, the entries are
+    :math:`\delta_{ij} s_j / (N r) - (s_i c_j + c_i s_j) / (N^2 r^2)`. The matrix is
+    symmetric and every row sums to zero (the second derivative along a global phase
+    shift vanishes). At the incoherent state (:math:`r = 0`) the zero matrix is returned.
+
+    Parameters
+    ----------
+    theta : numpy.ndarray
+        One-dimensional array of oscillator phases in radians.
+
+    Returns
+    -------
+    numpy.ndarray
+        Two-dimensional ``(N, N)`` float64 Hessian matrix. An empty input yields a
+        ``(0, 0)`` array.
+
+    Notes
+    -----
+    Chain (measured fastest first): Rust → Julia → Python floor. The served tier is
+    recorded on :func:`last_mean_phase_hessian_tier_used`.
+    """
+    return np.asarray(_mean_phase_hessian_dispatcher(theta), dtype=np.float64)
+
+
 def last_mean_phase_gradient_tier_used() -> str | None:
     """Return the tier that served the most recent ``mean_phase_gradient``."""
     return _mean_phase_gradient_dispatcher.last_tier
+
+
+def last_mean_phase_hessian_tier_used() -> str | None:
+    """Return the tier that served the most recent ``mean_phase_hessian``."""
+    return _mean_phase_hessian_dispatcher.last_tier
 
 
 # ---------------------------------------------------------------------------
@@ -569,6 +662,7 @@ _REGISTRY: dict[str, MultiLangDispatcher] = {
     "order_parameter_hessian": _order_parameter_hessian_dispatcher,
     "mean_phase": _mean_phase_dispatcher,
     "mean_phase_gradient": _mean_phase_gradient_dispatcher,
+    "mean_phase_hessian": _mean_phase_hessian_dispatcher,
 }
 
 
@@ -587,10 +681,12 @@ __all__ = [
     "last_gradient_tier_used",
     "last_hessian_tier_used",
     "last_mean_phase_gradient_tier_used",
+    "last_mean_phase_hessian_tier_used",
     "last_mean_phase_tier_used",
     "last_tier_used",
     "mean_phase",
     "mean_phase_gradient",
+    "mean_phase_hessian",
     "order_parameter",
     "order_parameter_gradient",
     "order_parameter_hessian",

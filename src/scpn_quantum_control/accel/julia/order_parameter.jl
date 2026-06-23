@@ -143,3 +143,41 @@ function mean_phase_gradient(theta::AbstractVector{<:Real})::Vector{Float64}
     end
     return out
 end
+
+function mean_phase_hessian(theta::AbstractVector{<:Real})::Matrix{Float64}
+    # Hessian ∂²ψ/∂θ_i∂θ_j of the mean phase ψ = atan2(S, C). With c_k = cos(ψ − θ_k),
+    # s_k = sin(ψ − θ_k): H_ij = δ_ij s_j/(N r) − (s_i c_j + c_i s_j)/(N² r²).
+    # Symmetric, row sums zero; the incoherent state r = 0 returns the zero matrix.
+    n = length(theta)
+    out = Matrix{Float64}(undef, n, n)
+    n == 0 && return out
+    c = 0.0
+    s = 0.0
+    @inbounds for k in 1:n
+        c += cos(Float64(theta[k]))
+        s += sin(Float64(theta[k]))
+    end
+    c /= n
+    s /= n
+    r = sqrt(c * c + s * s)
+    if r == 0.0
+        fill!(out, 0.0)
+        return out
+    end
+    ac = Vector{Float64}(undef, n)
+    as = Vector{Float64}(undef, n)
+    @inbounds for k in 1:n
+        ck = cos(Float64(theta[k]))
+        sk = sin(Float64(theta[k]))
+        ac[k] = (c * ck + s * sk) / r
+        as[k] = (s * ck - c * sk) / r
+    end
+    scale = 1.0 / (n * n * r * r)
+    @inbounds for i in 1:n, j in 1:n
+        out[i, j] = -(as[i] * ac[j] + ac[i] * as[j]) * scale
+    end
+    @inbounds for i in 1:n
+        out[i, i] += as[i] / (n * r)
+    end
+    return out
+end

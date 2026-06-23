@@ -81,6 +81,7 @@ fn scpn_quantum_engine(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(kuramoto::order_parameter_hessian, m)?)?;
     m.add_function(wrap_pyfunction!(kuramoto::mean_phase, m)?)?;
     m.add_function(wrap_pyfunction!(kuramoto::mean_phase_gradient, m)?)?;
+    m.add_function(wrap_pyfunction!(kuramoto::mean_phase_hessian, m)?)?;
     m.add_function(wrap_pyfunction!(kuramoto::kuramoto_trajectory, m)?)?;
     m.add_function(wrap_pyfunction!(
         kuramoto::higher_order_kuramoto_trajectory,

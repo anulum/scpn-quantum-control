@@ -1460,6 +1460,43 @@ If the measured ordering changes, update the chain comment at `_MEAN_PHASE_CHAIN
 and `_MEAN_PHASE_GRADIENT_CHAIN` in
 `src/scpn_quantum_control/accel/dispatcher.py` to match.
 
+### `mean_phase_hessian(theta)`
+
+Hessian `∂²ψ/∂θ_i∂θ_j = δ_ij s_j/(N r) − (s_i c_j + c_i s_j)/(N² r²)` of the mean
+phase, with `s_k = sin(ψ − θ_k)`, `c_k = cos(ψ − θ_k)`. Symmetric, rows sum to
+zero. The result is an `N × N` matrix, so per-call cost grows quadratically and the
+benchmark stops at N = 2048. Measured 2026-06-23 on the local Linux runner (Intel
+i5-11600K @ 3.90 GHz, Python 3.12.3, juliacall, scpn-quantum-engine local build).
+Inner loop: 100 calls per sample × 7 samples; per-call median. Raw JSON:
+`docs/benchmarks/mean_phase_hessian_tiers.json`.
+
+|     N |        Rust |      Julia |     Python |
+|------:|------------:|-----------:|-----------:|
+|     4 |     1.54 µs |   11.84 µs |   28.28 µs |
+|    64 |     7.14 µs |   43.37 µs |   59.55 µs |
+|   256 |    44.04 µs |  248.43 µs |  255.57 µs |
+|  1024 |  1696.71 µs | 5686.97 µs | 9760.51 µs |
+|  2048 | 11849.49 µs | 45918.33 µs | 57458.32 µs |
+
+Read-offs:
+
+* Rust wins at every measured N (18.4× faster than Python at N = 4, 4.8× at
+  N = 2048); the dispatcher places it first, matching measurement.
+* The mean-phase Hessian forms two rank-one outer products, so it is heavier per
+  element than the order-parameter Hessian's single one; Rust's lead over the
+  interpreted tiers therefore stays wider here than for the scalar and vector
+  routes. Cost is quadratic in N for every tier.
+
+Re-run with:
+
+```bash
+python scripts/bench_mean_phase_hessian_tiers.py
+```
+
+If the measured ordering changes, update the chain comment at
+`_MEAN_PHASE_HESSIAN_CHAIN` in
+`src/scpn_quantum_control/accel/dispatcher.py` to match.
+
 ### S4 multi-hardware readiness
 
 Command:
