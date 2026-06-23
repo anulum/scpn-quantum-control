@@ -25,7 +25,6 @@ on:
       - "tools/**"
       - "scripts/**"
       - "docs/**"
-      - "paper/**"
       - "examples/**"
       - "notebooks/**"
       - "results/**"

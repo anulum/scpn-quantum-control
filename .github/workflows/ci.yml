@@ -237,10 +237,9 @@ jobs:
           src/scpn_quantum_control/phase/contraction_optimiser.py
           src/scpn_quantum_control/phase/cross_domain_transfer.py
           src/scpn_quantum_control/phase/floquet_kuramoto.py
-      # Repo-wide strict gate: every src/ module except the paper0 source-
-      # validation suite must pass mypy --strict (the explicit list above is a
-      # subset kept for targeted failure attribution).
-      - run: mypy --strict src/scpn_quantum_control/ --exclude '(^|/)paper0/'
+      # Repo-wide strict gate: every src/ module must pass mypy --strict (the
+      # explicit list above is a subset kept for targeted failure attribution).
+      - run: mypy --strict src/scpn_quantum_control/
       - run: mypy
 
   wheel-check:
