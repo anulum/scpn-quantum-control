@@ -21,4 +21,3 @@ submission packages but are not themselves submission source packages.
 
 Submission-ready paper sources belong under `paper/submissions/`.
 JOSS-specific material belongs under `paper/submissions_joss/`.
-Book II source-processing packages belong under `paper/gotm_scpn_master_publications/`.

@@ -8,9 +8,8 @@
 # paper/ - publication sources
 
 Each manuscript or venue package has its own numbered subdirectory. Keep
-publication submissions under `paper/submissions/`, JOSS submissions under
-`paper/submissions_joss/`, and Book II source-processing packages under
-`paper/gotm_scpn_master_publications/`.
+publication submissions under `paper/submissions/` and JOSS submissions under
+`paper/submissions_joss/`.
 
 ## Directory map
 
@@ -24,9 +23,6 @@ publication submissions under `paper/submissions/`, JOSS submissions under
 | `submissions/submission_005_phase3_reduced_pauli_entanglement/` | Reduced-Pauli entanglement REVTeX manuscript, bibliography, PDF, and local `figures/phase3/`. | Completed multi-backend IBM run; venue-style source package. |
 | `submissions/submission_006_s1_feedback_control/` | Monitored feedback versus open-loop dynamic-circuit manuscript, bibliography, PDF, and local `figures/s1_feedback_control/`. | Multi-backend dynamic-circuit control-boundary paper. |
 | `submissions_joss/submission_joss_001_software_framework_note/` | Current JOSS software-framework note and preview files. | One JOSS submission package; future JOSS notes get sibling directories. |
-| `gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/` | Paper 0 extraction dumps and assessments. | Processed with the tuned Paper 0 method; see `docs/paper0/paper0_processing_methodology.md`. |
-| `gotm_scpn_master_publications/gotm-scpn_paper-01_layer-1_quantum-biological/` | Paper 1 extraction dumps, assessments, and v1 archive. | Legacy or partial extraction attempt; pending rerun with the tuned Paper 0 method. |
-| `gotm_scpn_master_publications/gotm-scpn_paper-02_layer-2_neurochemical-neurological/` | Paper 2 dump and assessment. | Raw or early-stage material; pending tuned extraction. |
 
 ## Build commands
 
