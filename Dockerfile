@@ -41,6 +41,7 @@ RUN printf '%s\n' \
     'raise ModuleNotFoundError("compiled scpn_quantum_engine extension is not installed in this image", name="scpn_quantum_engine")' \
     > scpn_quantum_engine/__init__.py
 COPY docs/ docs/
+COPY paper/ paper/
 COPY examples/ examples/
 COPY notebooks/ notebooks/
 COPY results/ results/
