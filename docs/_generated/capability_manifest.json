@@ -13,7 +13,7 @@
     "python_model_source_modules": 437,
     "rust_pyo3_model_wrappers": 147,
     "rust_source_modules": 38,
-    "test_files": 742
+    "test_files": 744
   },
   "documentation": {
     "examples": [
@@ -5401,6 +5401,7 @@
       "tests/test_cloud_native_branches.py",
       "tests/test_commutator_bounds.py",
       "tests/test_compare_eeg_plv_cohorts.py",
+      "tests/test_compile_budget.py",
       "tests/test_compound_mitigation.py",
       "tests/test_config.py",
       "tests/test_confinement.py",
@@ -5636,6 +5637,7 @@
       "tests/test_krylov_complexity.py",
       "tests/test_kuramoto_core.py",
       "tests/test_kuramoto_core_branches.py",
+      "tests/test_kuramoto_input_hardening.py",
       "tests/test_kuramoto_mean_field.py",
       "tests/test_kuramoto_variants.py",
       "tests/test_l16_director.py",
