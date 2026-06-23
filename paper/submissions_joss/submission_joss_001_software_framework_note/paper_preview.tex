@@ -1,0 +1,320 @@
+% SPDX-License-Identifier: AGPL-3.0-or-later
+% Commercial license available
+% © Concepts 1996-2026 Miroslav Sotek. All rights reserved.
+% © Code 2020-2026 Miroslav Sotek. All rights reserved.
+% ORCID: 0009-0009-3560-0851
+% Contact: www.anulum.li | protoscience@anulum.li
+% scpn-quantum-control -- JOSS paper preview PDF
+
+\documentclass[11pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{url}
+\usepackage{enumitem}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue,
+  citecolor=blue,
+  urlcolor=blue,
+}
+
+\title{\texttt{scpn-quantum-control}: reproducible Kuramoto--XY quantum-control workflows with Rust acceleration and hardware artefact packaging}
+\author{Miroslav Sotek\\ANULUM, Marbach SG, Switzerland\\ORCID: 0009-0009-3560-0851}
+\date{8 May 2026}
+
+\newcommand{\paperdoi}{Zenodo DOI: \href{https://doi.org/10.5281/zenodo.20382333}{10.5281/zenodo.20382333}}
+
+\begin{document}
+\maketitle
+
+\section*{Summary}
+
+\texttt{scpn-quantum-control} is a research software package for constructing,
+simulating, benchmarking, and packaging quantum-control experiments derived from
+heterogeneous Kuramoto oscillator networks and their corresponding XY spin
+Hamiltonians. The package maps coupling matrices and natural frequencies to
+Qiskit Hamiltonians, variational ansatze, Trotter circuits, simulator workflows,
+and IBM Quantum hardware execution records. It combines a Python/Qiskit front
+end with Rust/PyO3 acceleration for selected hot-path kernels and includes
+scripts that regenerate benchmark tables into JSON and CSV artefacts.
+
+The package has been used to produce a companion IBM Heron r2 hardware preprint
+and public validation package on parity-sector and excitation-number correlated
+decoherence asymmetry in heterogeneous XY circuits. The same repository now
+includes generated artefacts for Rust kernel timings, topology-informed ansatz
+construction, VQE comparisons, multi-language coupling-matrix benchmarks,
+cross-machine CPU runs, and Vertex T4 GPU batched expectation benchmarks.
+
+\section*{Statement of need}
+
+NISQ quantum-simulation studies often contain a gap between the mathematical
+model and the artefacts needed to verify a hardware claim. A complete workflow
+must specify how the coupling matrix was generated, how the Hamiltonian was
+constructed, how circuits were compiled, which classical baselines were used,
+which hardware jobs were submitted, and how raw-count dictionaries were
+analysed. Without this chain, small changes in ansatz topology, transpilation,
+readout processing, or benchmark implementation can dominate the reported
+result.
+
+\texttt{scpn-quantum-control} addresses this gap for Kuramoto--XY and SCPN phase
+dynamics experiments. Its target users are quantum software researchers, NISQ
+experimentalists, and computational physicists who need reproducible pipelines
+connecting oscillator-network models to circuits, simulators, hardware runs,
+and published artefacts. The software is not presented as a quantum advantage
+engine; rather, it is an auditable workflow for small- and medium-scale hardware
+experiments where honest classical baselines and raw data provenance are
+essential.
+
+A typical user is a graduate student or hardware-methods researcher who wants
+to reproduce a small Kuramoto--XY benchmark without rebuilding the full
+artefact chain by hand. From a clean checkout, that user can install the
+package, regenerate the $n=4$ VQE comparison, inspect the submitted IBM job
+metadata, and rerun the count reducer that produced the manuscript table. This
+use case is intentionally narrower than general-purpose SDK development: the
+package is designed to make one class of oscillator-network hardware study
+auditable end to end.
+
+\section*{State of the field}
+
+Qiskit provides the general quantum-circuit, operator, transpilation, and
+execution infrastructure used by the package. Variational workflows such as VQE
+and hardware-efficient ansatze are also well established. Existing tools,
+however, do not provide an end-to-end Kuramoto--XY workflow that joins
+oscillator coupling construction, topology-informed ansatz generation,
+Rust-accelerated kernels, IBM raw-count packaging, and generated performance
+artefacts in one repository.
+
+The contribution of \texttt{scpn-quantum-control} is therefore not to replace
+Qiskit, but to specialise it for a research programme in heterogeneous
+oscillator networks, XY Hamiltonians, and symmetry-aware NISQ validation. The
+package keeps Qiskit as the circuit and operator layer while adding
+domain-specific Hamiltonian construction, experiment manifests, integrity
+hashing, and benchmark harnesses.
+
+\section*{Quickstart}
+
+The package can be installed from the repository checkout with the standard
+Python packaging path:
+
+\begin{verbatim}
+git clone https://github.com/anulum/scpn-quantum-control
+cd scpn-quantum-control
+python -m pip install -e ".[dev,providers]"
+python -m pytest tests/test_s1_feedback_ibm.py
+\end{verbatim}
+
+The optional provider extras are deliberately separated from the core package.
+They enable local smoke checks and provider-specific adapters where the
+corresponding SDK is available; authenticated hardware submission still
+requires explicit credentials, readiness artefacts, and approval records.
+
+The core workflow constructs a coupling matrix, maps it to a Hamiltonian, and
+generates a topology-informed ansatz whose entangling graph follows the
+non-zero coupling structure:
+
+\begin{verbatim}
+from scpn_quantum_control.bridge.knm_hamiltonian import (
+    OMEGA_N_16,
+    build_knm_paper27,
+    knm_to_ansatz,
+    knm_to_hamiltonian,
+)
+
+n = 4
+k_matrix = build_knm_paper27(n)
+hamiltonian = knm_to_hamiltonian(k_matrix, OMEGA_N_16[:n])
+ansatz = knm_to_ansatz(k_matrix, reps=2)
+\end{verbatim}
+
+The same artefacts can then be passed to VQE routines, simulator workflows,
+hardware runners, or benchmark scripts. For hardware execution and packaging,
+the repository provides runner and manifest utilities that archive job
+identifiers, raw counts, circuit metadata, and integrity hashes.
+
+\section*{Software design}
+
+The architecture separates orchestration from hot kernels. Python modules
+provide the public research interface: coupling-matrix construction,
+Hamiltonian conversion, ansatz generation, VQE workflows, IBM execution
+packaging, and analysis scripts. Rust/PyO3 modules provide deterministic
+low-overhead kernels for selected performance-sensitive paths. This design
+keeps the package usable by Python-based quantum researchers while allowing
+kernel-level optimisation where repeated allocation or object dispatch would
+otherwise dominate.
+
+The methods-paper benchmark harnesses follow an artefact-first rule: numerical
+tables are regenerated from scripts and committed as JSON/CSV summaries rather
+than copied manually into prose. The current generated artefacts include:
+Rust/core kernel summaries, ansatz construction summaries, VQE aggregate
+tables, multi-language coupling-matrix comparisons, local/ML350/Vertex CPU
+runs, and a Vertex T4 batched state-vector expectation benchmark. The GPU
+benchmark is intentionally separated from the Rust CPU benchmarks because it
+targets batched dense linear algebra for classical validation, not scalar
+coupling-matrix construction.
+
+The main public workflow modules include \texttt{bridge/knm\_hamiltonian.py}
+for Kuramoto--XY matrix and Hamiltonian conversion,
+\texttt{control/structured\_ansatz.py} for topology-informed circuit
+construction, \texttt{phase/phase\_vqe.py} for VQE-style workflows, and
+hardware runner utilities for simulator/IBM execution. The benchmark harnesses
+under \texttt{scripts/} regenerate the paper artefacts rather than requiring
+manual table editing.
+
+\section*{Validation and comparison}
+
+The repository is tested as a research workflow rather than as a single
+algorithm demo. At the time of this preview, a direct tracked test-function
+inventory over \texttt{tests/test\_*.py} finds more than 9500 test functions.
+The exact CI count can vary with optional provider SDKs and Python versions,
+so this manuscript uses the rounded value rather than a stale hard-coded
+integer. The tests cover Hamiltonian construction, ansatz generation,
+hardware-readiness gates, raw-count reducers, provider-route metadata,
+autodiff helpers, mitigation utilities, figure builders, and publication
+artefact regeneration.
+
+\begin{center}
+\small
+\begin{tabular}{p{0.23\linewidth}p{0.28\linewidth}p{0.36\linewidth}}
+\hline
+Tool & Primary role & Relation to this package \\
+\hline
+Qiskit & Circuit/operator/transpiler stack & Used as the main circuit and IBM execution layer. \\
+PennyLane & Differentiable quantum programming & Interoperability route; native framework autodiff is also exposed for scalar objectives. \\
+Cirq & Circuit simulation and Google-style circuit model & Supported through local adapter paths where installed. \\
+tket & Compiler/toolchain ecosystem & Complementary compiler layer; not the artefact-lineage system used here. \\
+\texttt{scpn-quantum-control} & Kuramoto--XY workflow and artefact packaging & Adds domain Hamiltonians, topology-informed ansatze, gated hardware packaging, SHA256 artefact lineage, and paper reducers. \\
+\hline
+\end{tabular}
+\end{center}
+
+\begin{center}
+\small
+\begin{tabular}{lrr}
+\hline
+Benchmark row & Reported result & Artefact source \\
+\hline
+Rust/Python $K_{ij}$, local $n=16$ & $44.1\times$ & combined methods summary \\
+Rust/Python $K_{ij}$, ML350 $n=16$ & $15.5\times$ & remote ML350 summary \\
+Rust/Python $K_{ij}$, Vertex CPU $n=16$ & $18.1\times$ & remote Vertex summary \\
+Vertex T4 batched expectation, $n=8$ & $0.176$ ms & GPU methods summary \\
+VQE $n=4$, topology-informed median error & $0.372\,\%$ & VQE benchmark summary \\
+\hline
+\end{tabular}
+\end{center}
+
+These rows are intentionally small and auditable. They are sufficient to show
+that the package generates reproducible artefacts and useful implementation
+ordering, but they are not quantum advantage claims and not a replacement for
+larger provider-backed validation.
+
+The $44.1\times$ local $K_{ij}$ row is a kernel result, not an end-to-end VQE
+speedup. It matters because coupling construction is a repeated inner-loop
+operation in topology sweeps, ansatz generation, Hamiltonian export, and
+benchmark regeneration. The manuscript therefore reports it as a bounded
+software-engineering gain under an Amdahl-law caveat: once Qiskit
+transpilation, provider queueing, optimiser evaluations, and raw-count
+analysis dominate, kernel acceleration improves workflow latency and
+reproducibility rather than becoming a full-stack performance claim.
+
+\section*{Artefact workflow}
+
+The package treats a hardware or benchmark claim as incomplete until the raw
+artefact, reducer, and manuscript row can be regenerated together. A typical
+non-submitting workflow is:
+
+\begin{verbatim}
+python scripts/summarise_rust_vqe_method_artifacts.py
+python scripts/export_synchronisation_benchmark_registry.py
+python scripts/analyse_phase1_dla_parity.py
+\end{verbatim}
+
+Hardware submission scripts use a stricter pattern. They first write a
+readiness JSON file containing backend, circuit count, transpiled depth,
+physical layout where relevant, QPU budget ceiling, and claim boundary. A live
+job is then submitted only through a separate command path with explicit
+budget confirmation. The resulting raw-count package records provider job
+identifiers, shot counts, circuit metadata, raw counts, and SHA256 hashes; the
+analysis script consumes that package rather than querying the provider again.
+
+\begin{center}
+\small
+\begin{tabular}{p{0.25\linewidth}p{0.62\linewidth}}
+\hline
+Gate & Purpose \\
+\hline
+Readiness JSON & Freezes backend, circuit family, depth, shots, and budget before submission. \\
+Raw-count archive & Preserves provider job IDs and count dictionaries for independent replay. \\
+Reducer script & Converts raw counts to the published statistic with no manual table editing. \\
+Digest field & Binds generated tables and manuscript rows to exact artefact content. \\
+Claim boundary & Blocks quantum advantage or cross-provider wording unless matching evidence exists. \\
+\hline
+\end{tabular}
+\end{center}
+
+This workflow is intentionally heavier than a notebook-only demonstration. Its
+purpose is to make small-N NISQ claims reviewable: a reader can inspect which
+circuits were submitted, which counts were returned, which reducer generated
+the row, and which claims were explicitly excluded.
+
+\section*{Scope and non-goals}
+
+\texttt{scpn-quantum-control} is not a replacement for general-purpose quantum
+SDKs. It depends on them. Qiskit remains the primary circuit and IBM execution
+surface; optional routes cover other provider SDKs when available. The package
+also does not claim production cryptography, quantum advantage, or validated
+large-scale hardware control. Its role is narrower: turn Kuramoto--XY and SCPN
+phase-dynamics questions into reproducible circuit, simulator, benchmark, and
+hardware artefacts with enough metadata to survive external review.
+
+\section*{Research impact statement}
+
+The companion hardware study provides raw-count archives, job identifiers,
+SHA256 integrity hashes, reproduction commands, and bounded statistical claims.
+The benchmark artefacts generated on 5 May 2026 show that the project is also
+usable as a reproducible methods platform: at $n=16$, the self-contained
+coupling-matrix benchmark reports Rust/Python median speedups of 44.1x on the
+local workstation, 15.5x on the ML350 server, and 18.1x on Vertex AI CPU. A
+separate Vertex Tesla T4 run reports CUDA median times of 0.176--0.905 ms for
+batched expectation evaluation at $n=8$--$11$. These results support a hybrid
+software strategy in which Rust handles low-latency CPU kernels, GPUs handle
+batched dense expectation evaluation, and QPU time is reserved for
+hardware-noise questions that classical simulation cannot answer directly.
+
+The package fills a narrow but reusable niche: transparent Kuramoto--XY quantum
+simulation workflows with benchmarked software paths and hardware artefact
+lineage. This makes it useful both as research infrastructure for future SCPN
+experiments and as an example of how small-N NISQ studies can publish their
+software, raw data, and performance claims without relying on unverifiable
+manual tables.
+
+The current live hardware evidence in the companion papers is IBM-limited
+because authenticated QPU access for those campaigns was available only through
+IBM Quantum at the time of execution. The package nevertheless exposes
+provider-neutral execution and artefact-packaging surfaces for other
+gate-model, trapped-ion, neutral-atom, photonic, annealing, analogue, and
+simulator targets. These routes are readiness infrastructure, not live
+non-IBM evidence. A planned use of the package is to rerun the same
+preregistered payloads across additional hardware families when compute
+allocations and provider access become available.
+
+\section*{AI usage disclosure}
+
+AI-assisted tools were used for drafting and editing support. Numerical claims,
+artefact provenance, scientific framing, authorship, and final responsibility
+were verified and retained by the author.
+
+\section*{References}
+
+\begin{enumerate}[leftmargin=*]
+  \item M. Sotek, \emph{\texttt{scpn-quantum-control}: Quantum-Native SCPN Phase Dynamics and Control}, version 0.9.6, Zenodo record 18821929 (2026).
+  \item M. Sotek, ``Replicated hardware observation of parity-sector and excitation-number correlated decoherence asymmetry in the XY Hamiltonian,'' preprint manuscript (2026).
+  \item M. Sotek, \emph{DLA parity hardware validation package for heterogeneous Kuramoto--XY circuits}, Zenodo record 19098792 (2026).
+  \item Qiskit contributors, \emph{Qiskit: An Open-source Framework for Quantum Computing}, Zenodo record 2573505.
+  \item A. Peruzzo et al., ``A variational eigenvalue solver on a photonic quantum processor,'' \emph{Nature Communications} 5, 4213 (2014), doi:10.1038/ncomms5213.
+  \item A. Kandala et al., ``Hardware-efficient variational quantum eigensolver for small molecules and quantum magnets,'' \emph{Nature} 549, 242--246 (2017), doi:10.1038/nature23879.
+  \item Y. Kuramoto, \emph{Chemical Oscillations, Waves, and Turbulence}, Springer (1984), doi:10.1007/978-3-642-69689-3.
+\end{enumerate}
+
+\end{document}
