@@ -9,8 +9,8 @@
     {
       "path": "pyproject.toml",
       "role": "Package metadata and bounded dependency ranges",
-      "sha256": "d7539712db78d0a5c8b3d11560dd5eb4203767115617d140bdd191a0700a1461",
-      "size_bytes": 13772,
+      "sha256": "fc8266947a7bbb3472f00a363cdbe34853c2e299a147d8e0b9691f4ffe429aec",
+      "size_bytes": 13759,
       "line_count": 374,
       "pinned_package_count": 0
     },
