@@ -11,7 +11,7 @@
     "public_documentation_pages": 247,
     "python_model_classes": 822,
     "python_model_source_modules": 432,
-    "rust_pyo3_model_wrappers": 142,
+    "rust_pyo3_model_wrappers": 144,
     "rust_source_modules": 38,
     "test_files": 741
   },
@@ -4313,6 +4313,8 @@
       "concatenated_logical_rate_rust",
       "correlation_matrix_xy",
       "cosim_classical_substep",
+      "daido_order_parameter",
+      "daido_order_parameter_gradient",
       "dla_dimension",
       "dla_protected_memory_mask",
       "dla_protected_memory_metrics",

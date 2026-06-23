@@ -1497,6 +1497,59 @@ If the measured ordering changes, update the chain comment at
 `_MEAN_PHASE_HESSIAN_CHAIN` in
 `src/scpn_quantum_control/accel/dispatcher.py` to match.
 
+### `daido_order_parameter(theta, m)` and `daido_order_parameter_gradient(theta, m)`
+
+The m-th Daido order parameter `r_m = |⟨exp(i m θ)⟩|` detects m-cluster
+synchronisation (`r_1 = 0` but `r_m = 1` for m evenly spaced clusters), with
+gradient `∂r_m/∂θ_j = (m/N) sin(ψ_m − m θ_j)`. Both are `O(N)`; for m = 1 they
+equal `order_parameter` and its gradient. Measured 2026-06-23 at the fixed
+harmonic m = 2 on the local Linux runner (Intel i5-11600K @ 3.90 GHz, Python
+3.12.3, juliacall, scpn-quantum-engine local build). Inner loop: 100 calls per
+sample × 7 samples; per-call median. Raw JSON:
+`docs/benchmarks/daido_order_parameter_tiers.json`.
+
+`daido_order_parameter` (m = 2):
+
+|     N |      Rust |    Julia |   Python |
+|------:|----------:|---------:|---------:|
+|     4 |   0.68 µs |  7.57 µs |  4.97 µs |
+|    64 |   1.25 µs |  7.20 µs |  5.61 µs |
+|  1024 |  10.04 µs | 14.40 µs | 21.79 µs |
+|  4096 |  67.80 µs | 40.63 µs | 96.12 µs |
+| 16384 | 289.61 µs | 263.23 µs | 413.67 µs |
+
+`daido_order_parameter_gradient` (m = 2):
+
+|     N |      Rust |    Julia |   Python |
+|------:|----------:|---------:|---------:|
+|     4 |   0.96 µs |  8.35 µs | 10.80 µs |
+|    64 |   2.17 µs | 10.56 µs | 13.02 µs |
+|  1024 |  20.52 µs | 32.94 µs | 42.35 µs |
+|  4096 | 129.95 µs | 168.62 µs | 179.64 µs |
+| 16384 | 579.87 µs | 674.50 µs | 868.64 µs |
+
+Read-offs:
+
+* Rust wins the gradient at every N and the value through N = 1024. For the
+  value at N ≥ 4096 Julia's BLAS-backed reduction edges ahead (40.63 vs 67.80 µs
+  at N = 4096; 263 vs 290 µs at N = 16 384, within ~10%) — the extra `m·θ`
+  multiply makes the value loop reduction-bound at large N. The chain still places
+  Rust first: it wins every small-to-mid workload and the whole gradient route,
+  and the large-N value gap is small. Callers running the value at N ≥ 4096 who
+  have Julia installed can call `_julia_daido_order_parameter` directly.
+* The value sums one complex exponential per oscillator; the gradient adds the
+  per-oscillator `sin(ψ_m − m θ_j)` term, so Rust's lead is widest on the gradient.
+
+Re-run with:
+
+```bash
+python scripts/bench_daido_order_parameter_tiers.py
+```
+
+If the measured ordering changes, update the chain comment at
+`_DAIDO_ORDER_PARAMETER_CHAIN` and `_DAIDO_ORDER_PARAMETER_GRADIENT_CHAIN` in
+`src/scpn_quantum_control/accel/dispatcher.py` to match.
+
 ### S4 multi-hardware readiness
 
 Command:

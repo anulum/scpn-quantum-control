@@ -169,7 +169,49 @@ def mean_phase_hessian(theta: NDArray[np.float64]) -> NDArray[np.float64]:
     return np.asarray(jl.mean_phase_hessian(arr), dtype=np.float64)
 
 
+def daido_order_parameter(theta: NDArray[np.float64], m: int) -> float:
+    """Julia-tier m-th Daido order parameter.
+
+    Parameters
+    ----------
+    theta : numpy.ndarray
+        One-dimensional array of oscillator phases in radians.
+    m : int
+        Harmonic order, a positive integer.
+
+    Returns
+    -------
+    float
+        The Daido order parameter ``r_m``.
+    """
+    jl = _load()
+    arr = np.ascontiguousarray(theta, dtype=np.float64)
+    return float(jl.daido_order_parameter(arr, m))
+
+
+def daido_order_parameter_gradient(theta: NDArray[np.float64], m: int) -> NDArray[np.float64]:
+    """Julia-tier gradient of the m-th Daido order parameter.
+
+    Parameters
+    ----------
+    theta : numpy.ndarray
+        One-dimensional array of oscillator phases in radians.
+    m : int
+        Harmonic order, a positive integer.
+
+    Returns
+    -------
+    numpy.ndarray
+        One-dimensional float64 array of per-phase gradient components.
+    """
+    jl = _load()
+    arr = np.ascontiguousarray(theta, dtype=np.float64)
+    return np.asarray(jl.daido_order_parameter_gradient(arr, m), dtype=np.float64)
+
+
 __all__ = [
+    "daido_order_parameter",
+    "daido_order_parameter_gradient",
     "is_available",
     "mean_phase",
     "mean_phase_gradient",

@@ -288,6 +288,79 @@ pub fn mean_phase_hessian_inner(theta: &[f64]) -> Array2<f64> {
     out
 }
 
+/// Compute the m-th Daido order parameter r_m = (1/N)|Σ exp(i m θ)|.
+///
+/// Detects m-cluster synchronisation; for m = 1 it is the ordinary Kuramoto order
+/// parameter. The harmonic order m must be a positive integer.
+#[pyfunction]
+pub fn daido_order_parameter(theta: PyReadonlyArray1<'_, f64>, m: i64) -> PyResult<f64> {
+    if m < 1 {
+        return Err(PyValueError::new_err(format!(
+            "Daido harmonic order m must be a positive integer, got {m}"
+        )));
+    }
+    let theta = validate_phase_vector(&theta, "theta")?;
+    Ok(daido_order_parameter_inner(theta, m as f64))
+}
+
+/// Pure Rust m-th Daido order parameter (no PyO3).
+pub fn daido_order_parameter_inner(theta: &[f64], m: f64) -> f64 {
+    if theta.is_empty() {
+        return 0.0;
+    }
+    let (mut re, mut im) = (0.0_f64, 0.0_f64);
+    for &t in theta {
+        re += (m * t).cos();
+        im += (m * t).sin();
+    }
+    (re * re + im * im).sqrt() / theta.len() as f64
+}
+
+/// Compute the gradient ∂r_m/∂θ of the m-th Daido order parameter.
+///
+/// ∂r_m/∂θ_j = (m/N) sin(ψ_m − m θ_j) = (m / (N R_m)) (S_m cos(m θ_j) − C_m sin(m θ_j)).
+/// The components sum to zero; the incoherent state R_m = 0 returns the zero gradient.
+#[pyfunction]
+pub fn daido_order_parameter_gradient<'py>(
+    py: Python<'py>,
+    theta: PyReadonlyArray1<'_, f64>,
+    m: i64,
+) -> PyResult<Bound<'py, PyArray1<f64>>> {
+    if m < 1 {
+        return Err(PyValueError::new_err(format!(
+            "Daido harmonic order m must be a positive integer, got {m}"
+        )));
+    }
+    let theta = validate_phase_vector(&theta, "theta")?;
+    let gradient = Array1::from_vec(daido_order_parameter_gradient_inner(theta, m as f64));
+    Ok(PyArray1::from_owned_array(py, gradient))
+}
+
+/// Pure Rust m-th Daido order parameter gradient (no PyO3).
+pub fn daido_order_parameter_gradient_inner(theta: &[f64], m: f64) -> Vec<f64> {
+    let mut out = vec![0.0_f64; theta.len()];
+    if theta.is_empty() {
+        return out;
+    }
+    let (mut re, mut im) = (0.0_f64, 0.0_f64);
+    for &t in theta {
+        re += (m * t).cos();
+        im += (m * t).sin();
+    }
+    let count = theta.len() as f64;
+    let cos_mean = re / count;
+    let sin_mean = im / count;
+    let magnitude = (cos_mean * cos_mean + sin_mean * sin_mean).sqrt();
+    if magnitude == 0.0 {
+        return out;
+    }
+    let scale = m / (count * magnitude);
+    for (slot, &t) in out.iter_mut().zip(theta.iter()) {
+        *slot = (sin_mean * (m * t).cos() - cos_mean * (m * t).sin()) * scale;
+    }
+    out
+}
+
 fn validate_finite_slice(values: &[f64], name: &str) -> PyResult<()> {
     if values.iter().any(|value| !value.is_finite()) {
         return Err(pyo3::exceptions::PyValueError::new_err(format!(
@@ -1082,6 +1155,61 @@ mod tests {
     #[test]
     fn test_mean_phase_hessian_empty() {
         assert_eq!(mean_phase_hessian_inner(&[]).shape(), &[0, 0]);
+    }
+
+    #[test]
+    fn test_daido_m1_matches_order_parameter() {
+        let theta = vec![0.3, -1.1, 2.0, 0.7, 4.2];
+        assert!(
+            (daido_order_parameter_inner(&theta, 1.0) - order_parameter_inner(&theta)).abs()
+                < 1e-12
+        );
+        let daido_grad = daido_order_parameter_gradient_inner(&theta, 1.0);
+        let order_grad = order_parameter_gradient_inner(&theta);
+        for (a, b) in daido_grad.iter().zip(order_grad.iter()) {
+            assert!((a - b).abs() < 1e-12);
+        }
+    }
+
+    #[test]
+    fn test_daido_detects_two_clusters() {
+        // Two antipodal clusters: the first harmonic cancels (r_1 = 0) but the second is
+        // perfectly coherent (r_2 = 1).
+        let theta = vec![0.0, 0.0, std::f64::consts::PI, std::f64::consts::PI];
+        assert!(daido_order_parameter_inner(&theta, 1.0) < 1e-10);
+        assert!((daido_order_parameter_inner(&theta, 2.0) - 1.0).abs() < 1e-10);
+    }
+
+    #[test]
+    fn test_daido_gradient_matches_finite_difference() {
+        let theta = vec![0.3, -1.1, 2.0, 0.7, 4.2];
+        let m = 3.0;
+        let grad = daido_order_parameter_gradient_inner(&theta, m);
+        let h = 1e-6;
+        for j in 0..theta.len() {
+            let mut plus = theta.clone();
+            let mut minus = theta.clone();
+            plus[j] += h;
+            minus[j] -= h;
+            let fd = (daido_order_parameter_inner(&plus, m)
+                - daido_order_parameter_inner(&minus, m))
+                / (2.0 * h);
+            assert!((grad[j] - fd).abs() < 1e-6, "grad[{j}]");
+        }
+    }
+
+    #[test]
+    fn test_daido_gradient_sums_to_zero() {
+        let total: f64 = daido_order_parameter_gradient_inner(&[0.1, 0.9, 2.3, 3.1, 5.5], 2.0)
+            .iter()
+            .sum();
+        assert!(total.abs() < 1e-12, "sum = {total}");
+    }
+
+    #[test]
+    fn test_daido_empty() {
+        assert_eq!(daido_order_parameter_inner(&[], 2.0), 0.0);
+        assert!(daido_order_parameter_gradient_inner(&[], 2.0).is_empty());
     }
 
     #[test]

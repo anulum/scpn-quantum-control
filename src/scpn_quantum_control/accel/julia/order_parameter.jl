@@ -181,3 +181,42 @@ function mean_phase_hessian(theta::AbstractVector{<:Real})::Matrix{Float64}
     end
     return out
 end
+
+function daido_order_parameter(theta::AbstractVector{<:Real}, m::Integer)::Float64
+    # m-th Daido order parameter r_m = |<exp(i m θ)>|, detecting m-cluster synchronisation.
+    n = length(theta)
+    n == 0 && return 0.0
+    mf = Float64(m)
+    z = zero(ComplexF64)
+    @inbounds for k in 1:n
+        z += cis(mf * Float64(theta[k]))
+    end
+    return abs(z) / n
+end
+
+function daido_order_parameter_gradient(theta::AbstractVector{<:Real}, m::Integer)::Vector{Float64}
+    # Gradient ∂r_m/∂θ_j = (m/N) sin(ψ_m − m θ_j) = (m/(N r_m))(S_m cos(m θ_j) − C_m sin(m θ_j)).
+    # Components sum to zero; the incoherent state r_m = 0 returns zeros.
+    n = length(theta)
+    out = Vector{Float64}(undef, n)
+    n == 0 && return out
+    mf = Float64(m)
+    c = 0.0
+    s = 0.0
+    @inbounds for k in 1:n
+        c += cos(mf * Float64(theta[k]))
+        s += sin(mf * Float64(theta[k]))
+    end
+    c /= n
+    s /= n
+    r = sqrt(c * c + s * s)
+    if r == 0.0
+        fill!(out, 0.0)
+        return out
+    end
+    scale = mf / (n * r)
+    @inbounds for j in 1:n
+        out[j] = (s * cos(mf * Float64(theta[j])) - c * sin(mf * Float64(theta[j]))) * scale
+    end
+    return out
+end

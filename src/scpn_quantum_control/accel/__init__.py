@@ -37,7 +37,11 @@ from __future__ import annotations
 from .dispatcher import (
     MultiLangDispatcher,
     available_tiers,
+    daido_order_parameter,
+    daido_order_parameter_gradient,
     dispatch,
+    last_daido_gradient_tier_used,
+    last_daido_tier_used,
     last_gradient_tier_used,
     last_hessian_tier_used,
     last_mean_phase_gradient_tier_used,
@@ -55,7 +59,11 @@ from .dispatcher import (
 __all__ = [
     "MultiLangDispatcher",
     "available_tiers",
+    "daido_order_parameter",
+    "daido_order_parameter_gradient",
     "dispatch",
+    "last_daido_gradient_tier_used",
+    "last_daido_tier_used",
     "last_gradient_tier_used",
     "last_hessian_tier_used",
     "last_mean_phase_gradient_tier_used",
