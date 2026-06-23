@@ -27,6 +27,10 @@ route has a defined evidence burden. A useful result in this repository is not
 only a plot or a notebook output; it is a result with inputs, code path,
 dependency context, claim class, and promotion rule.
 
+The full set of claim classes, ledgers, preregistration records, and runtime
+contracts is gathered behind one entry point — see [Methodology](methodology.md).
+You do not need it to run the examples.
+
 ## One-Sentence Description
 
 `scpn-quantum-control` is a quantum-control and differentiable-computation

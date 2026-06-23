@@ -53,6 +53,7 @@ nav:
   - Installation: installation.md
   - Quickstart: quickstart.md
   - Example Gallery: examples_gallery.md
+  - Methodology: methodology.md
   - Theory:
       - SCPN Foundations: theory.md
       - Equations: equations.md
