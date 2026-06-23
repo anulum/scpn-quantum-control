@@ -97,8 +97,8 @@ has a defined commercial licensing route.
 |---|---:|
 | Package version | 0.9.12 |
 | Public API exports | 717 |
-| Python source modules | 437 |
-| Public Python classes | 824 |
+| Python source modules | 438 |
+| Public Python classes | 825 |
 | Domain package families | 31 |
 | API documentation pages | 0 |
 | Rust PyO3 function bindings | 147 |
@@ -106,7 +106,7 @@ has a defined commercial licensing route.
 | Notebook files | 98 |
 | Example files | 30 |
 | Optional extras | 42 |
-| Python test files | 744 |
+| Python test files | 745 |
 | Public documentation pages | 247 |
 | GitHub Actions workflows | 20 |
 
@@ -859,24 +859,24 @@ All run on local AerSimulator. No IBM credentials needed.
 
 ```
 scpn_quantum_control/
-├── analysis/       58 modules — synchronisation probes
+├── analysis/       59 modules — synchronisation probes
 ├── hardware/       63 modules — IBM runner, backends, GPU, cutting, provenance
-├── phase/          29 modules — time evolution + variational + Lindblad
-├── bridge/         13 modules — K_nm → quantum objects + cross-repo
+├── phase/          75 modules — time evolution + variational + Lindblad
+├── bridge/         14 modules — K_nm → quantum objects + cross-repo
 ├── applications/   13 modules — physical system benchmarks
-├── control/        11 modules — QAOA-MPC, residual VQLS-GS, Petri, ITER, topological
+├── control/        14 modules — QAOA-MPC, residual VQLS-GS, Petri, ITER, topological
 ├── mitigation/     12 modules — ZNE, PEC, DD, Z2, CPDR, symmetry
 ├── qec/            13 modules — error correction + biological surface code
-├── benchmarks/      7 modules — performance baselines
+├── benchmarks/     13 modules — performance baselines
 ├── identity/        6 modules — identity continuity analysis
 ├── qsnn/            7 modules — quantum spiking neural networks + neuromorphic bridge
-├── crypto/          6 modules — QKD, Bell tests, key hierarchy
+├── crypto/          8 modules — QKD, Bell tests, key hierarchy
 ├── gauge/           5 modules — U(1) gauge theory probes
 ├── ssgf/            4 modules — SSGF quantum integration
 ├── tcbo/            1 module  — TCBO quantum observer
 ├── pgbo/            1 module  — PGBO quantum bridge
 ├── l16/             1 module  — Layer 16 quantum director
-└── scpn_quantum_engine/  Rust crate (PyO3 0.29, 141 exported PyO3 bindings)
+└── scpn_quantum_engine/  Rust crate (PyO3 0.29, 147 exported PyO3 bindings)
 ```
 
 ## Dependencies
@@ -948,10 +948,10 @@ Full docs at **[anulum.github.io/scpn-quantum-control](https://anulum.github.io/
 
 | Repository | Description |
 |-----------|-------------|
-| [sc-neurocore](https://github.com/anulum/sc-neurocore) | Classical SCPN spiking neural network engine (v3.13.3, 2155+ tests) |
-| `scpn-fusion-core` | Classical SCPN algorithms: Kuramoto solvers, coupling calibration, transport (v3.9.3, 3300+ tests) |
-| [scpn-phase-orchestrator](https://github.com/anulum/scpn-phase-orchestrator) | SCPN phase orchestration: regime detection, UPDE engine, Petri-net supervisor (v0.5.0, 2321 tests) |
-| `scpn-control` | SCPN control systems: plasma MPC, disruption mitigation (v0.18.0, 3015 tests) |
+| [sc-neurocore](https://github.com/anulum/sc-neurocore) | Classical SCPN spiking neural network engine (v3.15.34) |
+| `scpn-fusion-core` | Classical SCPN algorithms: Kuramoto solvers, coupling calibration, transport (v3.9.11) |
+| [scpn-phase-orchestrator](https://github.com/anulum/scpn-phase-orchestrator) | SCPN phase orchestration: regime detection, UPDE engine, Petri-net supervisor (v0.9.0) |
+| `scpn-control` | SCPN control systems: plasma MPC, disruption mitigation (v0.21.0) |
 
 ## Citation
 
