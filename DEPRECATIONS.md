@@ -19,7 +19,9 @@ Until v1.0.0 the project follows the pre-1.0 clause of SemVer 2.0.0
 The following is stable and covered by this contract:
 
 - Every name exported from `scpn_quantum_control.__all__`
-  (currently 104 symbols).
+  (currently 717 symbols; the exact set frozen at v1.0 is being finalised
+  before the 1.0.0 tag, since the present surface spans the research workbench
+  as well as the durable contract).
 - Every name exported from a subpackage `__init__.__all__`.
 - The CLI entry points declared in `pyproject.toml` (`project.scripts`).
 - The command-line arguments of scripts in `scripts/` that are

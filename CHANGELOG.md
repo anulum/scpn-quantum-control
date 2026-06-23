@@ -466,6 +466,10 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   no arbitrary-graph, depth, provider, hardware, or production convergence claim.
 
 ### Changed
+- 2026-06-23 — Corrected the stale public-API symbol count in the deprecation/SemVer
+  policy (`DEPRECATIONS.md`): the top-level `__all__` is 717 symbols, not 104, and
+  the exact set frozen at v1.0 is noted as being finalised before the 1.0.0 tag
+  (the present surface spans the research workbench, not only the durable contract).
 - 2026-06-23 — Surfaced the honest-scope caveat to the top of the README: at the
   reachable system sizes (n ≤ 16 qubits) classical solvers are faster and more
   accurate and there is no demonstrated broad quantum advantage. The disclosure
