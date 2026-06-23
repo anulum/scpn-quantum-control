@@ -52,7 +52,6 @@ OFFLINE_HARNESS_POLICY = ExecutionSurfacePolicy(
         "data/stable_core",
         "data/synchronisation_benchmarks",
         "data/symmetry_sector_mitigation",
-        "data/paper0_knm_preregistered_replay.json",
         "docs",
     ),
     subprocess_allowed=True,
@@ -276,21 +275,6 @@ HARNESS_REGISTRY: tuple[Harness, ...] = (
         frozenset({"stable-core-release-gate"}),
     ),
     Harness(
-        "paper0-lane-registry-gate",
-        "scripts/run_paper0_lane_registry_gate.py",
-        frozenset({"paper0-lane-registry-gate"}),
-    ),
-    Harness(
-        "paper0-knm-preregistered-replay-gate",
-        "scripts/run_paper0_knm_preregistered_replay_gate.py",
-        frozenset({"paper0-knm-preregistered-replay-gate"}),
-    ),
-    Harness(
-        "knm-measured-candidate-gate",
-        "scripts/run_knm_measured_candidate_gate.py",
-        frozenset({"knm-measured-candidate-gate"}),
-    ),
-    Harness(
         "capability-manifest-check",
         "scripts/run_capability_manifest_gate.py",
         frozenset({"capability-manifest-check"}),
@@ -314,7 +298,6 @@ ARTEFACT_PATHS = (
     "data/stable_core",
     "data/synchronisation_benchmarks",
     "data/symmetry_sector_mitigation",
-    "data/paper0_knm_preregistered_replay.json",
     "docs/_generated",
     "docs/stable_core_backend_capability_matrix.md",
     "README.md",
@@ -382,33 +365,6 @@ def _parse_args(argv: Sequence[str]) -> argparse.Namespace:
         help="Run and check the stable-core release gate fixture set.",
     )
     _add_run_options(stable_core_release_gate, default_group="stable-core-release-gate")
-
-    paper0_lane_registry_gate = subparsers.add_parser(
-        "paper0-lane-registry-gate",
-        help="Run and check the Paper 0 lane registry gate.",
-    )
-    _add_run_options(
-        paper0_lane_registry_gate,
-        default_group="paper0-lane-registry-gate",
-    )
-
-    paper0_knm_preregistered_replay_gate = subparsers.add_parser(
-        "paper0-knm-preregistered-replay-gate",
-        help="Run and check the Paper 0 K_nm preregistered replay gate.",
-    )
-    _add_run_options(
-        paper0_knm_preregistered_replay_gate,
-        default_group="paper0-knm-preregistered-replay-gate",
-    )
-
-    knm_measured_candidate_gate = subparsers.add_parser(
-        "knm-measured-candidate-gate",
-        help="Check K_nm measured-candidate audit artifacts remain non-promotional.",
-    )
-    _add_run_options(
-        knm_measured_candidate_gate,
-        default_group="knm-measured-candidate-gate",
-    )
 
     capability_manifest_check = subparsers.add_parser(
         "capability-manifest-check",

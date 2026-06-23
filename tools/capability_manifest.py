@@ -49,7 +49,6 @@ def _default_labels() -> dict[str, str]:
         "public_api_exports": "Public API exports",
         "python_model_source_modules": "Python model source modules",
         "python_model_classes": "Python model classes",
-        "paper0_validation_modules": "Paper 0 validation modules",
         "domain_package_families": "Domain package families",
         "model_documentation_pages": "Model documentation pages",
         "rust_pyo3_model_wrappers": "Rust PyO3 model wrappers",
@@ -186,14 +185,12 @@ def load_config(repo: Path, config_path: Path | None = None) -> CapabilityManife
                     r"control/\s*\([89]\)",
                     r"mitigation/\s*\(9\)",
                     r"qec/\s*\([89]\)",
-                    r"paper0/\s*\(470\)",
                     r"\|\s*`analysis`\s*\|\s*57\s*\|",
                     r"\|\s*`hardware`\s*\|\s*37\s*\|",
                     r"\|\s*`phase`\s*\|\s*28\s*\|",
                     r"\|\s*`control`\s*\|\s*[89]\s*\|",
                     r"\|\s*`mitigation`\s*\|\s*9\s*\|",
                     r"\|\s*`qec`\s*\|\s*[89]\s*\|",
-                    r"\|\s*`paper0`\s*\|\s*470\s*\|",
                 ],
             )
         ),
@@ -240,7 +237,6 @@ def build_capability_manifest(
     python_model_sources = _python_model_sources(paths.models_root, repo=repo)
     python_model_classes = _python_model_classes(paths.models_root, repo=repo)
     domain_package_counts = _domain_package_counts(paths.package_root, repo=repo)
-    paper0_validation_modules = _paper0_validation_modules(paths.package_root, repo=repo)
     rust_pyo3_wrappers = (
         _rust_pyo3_wrapper_names(paths.pyo3_wrappers) if paths.pyo3_wrappers.exists() else []
     )
@@ -281,7 +277,6 @@ def build_capability_manifest(
             "public_api_exports": len(public_exports),
             "python_model_source_modules": len(python_model_sources),
             "python_model_classes": len(python_model_classes),
-            "paper0_validation_modules": len(paper0_validation_modules),
             "domain_package_families": len(domain_package_counts),
             "model_documentation_pages": len(model_docs),
             "rust_pyo3_model_wrappers": len(rust_pyo3_wrappers),
@@ -298,7 +293,6 @@ def build_capability_manifest(
             "python_source_modules": python_model_sources,
             "python_classes": python_model_classes,
             "domain_package_counts": domain_package_counts,
-            "paper0_validation_modules": paper0_validation_modules,
             "documentation_pages": model_docs,
             "rust_pyo3_wrappers": rust_pyo3_wrappers,
             "rust_source_modules": rust_sources,
@@ -338,7 +332,6 @@ def render_markdown_snapshot(manifest: dict[str, Any]) -> str:
         (labels["public_api_exports"], counts["public_api_exports"]),
         (labels["python_model_source_modules"], counts["python_model_source_modules"]),
         (labels["python_model_classes"], counts["python_model_classes"]),
-        (labels["paper0_validation_modules"], counts["paper0_validation_modules"]),
         (labels["domain_package_families"], counts["domain_package_families"]),
         (labels["model_documentation_pages"], counts["model_documentation_pages"]),
         (labels["rust_pyo3_model_wrappers"], counts["rust_pyo3_model_wrappers"]),
@@ -461,12 +454,6 @@ def validate_manifest(payload: dict[str, Any]) -> dict[str, Any]:
             models.get("python_source_modules"),
         )
         _check_count(errors, counts, "python_model_classes", models.get("python_classes"))
-        _check_count(
-            errors,
-            counts,
-            "paper0_validation_modules",
-            models.get("paper0_validation_modules"),
-        )
         _check_count(
             errors,
             counts,
@@ -629,17 +616,6 @@ def _domain_package_counts(package_root: Path, *, repo: Path) -> list[dict[str, 
                 }
             )
     return rows
-
-
-def _paper0_validation_modules(package_root: Path, *, repo: Path) -> list[str]:
-    paper0_root = package_root / "paper0"
-    if not paper0_root.exists():
-        return []
-    return [
-        _rel(path, repo)
-        for path in sorted(paper0_root.rglob("*_validation.py"))
-        if "__pycache__" not in path.parts
-    ]
 
 
 def _rust_files(root: Path, *, repo: Path) -> list[str]:

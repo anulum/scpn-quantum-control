@@ -90,8 +90,6 @@ when the central question is whether a result can be promoted as hardware eviden
 | Package line | Version `0.9.12`, Python `>=3.10`, Qiskit `>=2.2,<3.0`. |
 | Generic compiler surface | `scpn_quantum_control.kuramoto_core` validates arbitrary `K_nm`/`omega` inputs and compiles Hamiltonians, dense matrices, Trotter circuits, order-parameter measurements, and Kuramoto variant trajectories. |
 | Hardware evidence | Promoted raw-count campaigns: `ibm_kingston` DLA parity Phase 1, selected Phase 2 A+G/B-C/popcount controls, and the SCPN/FIM negative/falsification result for the tested digital circuit family. Legacy `ibm_fez` rows require artefact-level citation. |
-| Paper 0 source-validation register | Fully promoted through the source-accounting register from `P0R00001` through `P0R06211`; the planner reports `0` remaining work orders and `0` remaining records. This is source-bounded ingestion and fixture preservation, not external validation evidence. |
-| Paper 0 downstream programme | [Paper 0 Experimental Pathway](paper0/paper0_experimental_pathway.md) defines the longer-term experimental agenda and methodology-paper route. Paper 27 is treated as a bounded implementation candidate, not the definitive programme source. |
 | Claim source | [Hardware Status Ledger](hardware_status_ledger.md). |
 
 ## What this package does
@@ -117,12 +115,7 @@ This package provides three things:
    synchronization is the mechanism by which consciousness emerges across 16
    ontological layers.
 
-4. **The Paper 0 source-validation register** as a source-accounting layer —
-   generated validation modules, spec loaders, fixtures, and tests preserve
-   ledger-bounded Paper 0 claims under an explicit non-hardware, non-external
-   validation boundary.
-
-5. **A differentiable computation lane** for supported scalar, vector, and
+4. **A differentiable computation lane** for supported scalar, vector, and
    matrix primitive kernels, including compiler-AD metadata and native Rust
    backend parity for selected primitives. Supported scalar program traces also
    expose native lowering reports before LLVM/JIT compilation, with strict
@@ -165,7 +158,6 @@ like* at the transition, *how hard it is* to prepare, *what its topology reveals
 
 | Subpackage | Modules | Purpose |
 |------------|:-------:|---------|
-| `paper0` | 471 | Source-accounting validation modules and fixtures for processed Paper 0 records |
 | `analysis` | 58 | Synchronisation probes: witnesses, witness discovery, QFI, PH, OTOC, Krylov, magic, BKT, DLA |
 | `hardware` | 63 | IBM Quantum runner, plugin backends registry, AsyncHardwareRunner, trapped-ion backend, GPU offload, circuit cutting, fast sparse, qubit mapper (DynQ), provenance |
 | `phase` | 75 | Time evolution: Trotter, VQE, ADAPT-VQE, VarQITE, AVQDS, QSVT, Floquet DTC, Lindblad, Kuramoto variants, differentiable/gradient surfaces |
@@ -239,9 +231,6 @@ for name, w in results.items():
 - [Differentiable API](differentiable_api.md) — public `scpn_quantum_control.differentiable` namespace map
 - [Differentiable Roadmap](differentiable_roadmap.md) — staged plan for framework adapters, advanced gradients, benchmarks, verification, and dashboards
 - [API Overview](api.md) — stable facade route first, advanced module references second
-- [Paper 0 Validation Register](paper0/paper0_validation_register.md) — completed Paper 0 source-accounting register and generated API contract
-- [Paper 0 Processing Methodology](paper0/paper0_processing_methodology.md) — repeatable extraction, ledger, fixture, gate, and claim-boundary method for future Book II papers
-- [Paper 0 Experimental Pathway](paper0/paper0_experimental_pathway.md) — downstream methodology-paper route and experimental programme derived from Paper 0 ingestion
 - [Campaign Artefacts](campaigns/README.md) — dated preregistration, readiness, manifest, and result notes
 - [Publication Operations](publication/README.md) — submission checklists, source packaging, and venue-readiness notes
 - [Release Readiness Gate](release_readiness.md) — deterministic tag-readiness audit for version, licensing, coverage, behavioural quality, and claim-boundary artefacts

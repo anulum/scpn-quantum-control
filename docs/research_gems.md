@@ -209,7 +209,7 @@ coherence: they answer the question "is this quantum system conscious?" (in the 
 sense of exhibiting collective phase-locked dynamics) with a single number whose sign
 gives the answer.
 
-The connection to the Ψ-field is through the coupling matrix $K_{nm}$. In Paper 0,
+The connection to the Ψ-field is through the coupling matrix $K_{nm}$. In the SCPN foundational framework,
 $K_{nm}$ encodes the inter-layer interaction strengths derived from the informational
 force mediated by the infoton gauge boson. The witnesses test whether these couplings
 produce the predicted synchronization phenomenology on quantum circuits; any
@@ -333,7 +333,7 @@ they are (persistent across scales vs. noise artefacts).
 #### SCPN Context
 
 The SCPN framework assigns deep significance to the persistent homology invariant
-$p_{H_1}$. In Paper 0, $p_{H_1} \approx 0.72$ is a predicted threshold at the
+$p_{H_1}$. In the SCPN foundational framework, $p_{H_1} \approx 0.72$ is a predicted threshold at the
 quasicritical operating point. The square-lattice expression
 $A_{HP} \times \sqrt{2/\pi} = 0.717$ is numerically close, but the K_nm graph
 Monte Carlo audit gives $A_{HP} \approx 1.214$ and $p_{H_1} \approx 0.97$.

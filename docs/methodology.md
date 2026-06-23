@@ -54,19 +54,6 @@ map to where each rule and record lives.
   raw-count-backed artefacts and how they are promoted.
 - [IBM Guide](hardware_guide.md) — running on real devices.
 
-## Preregistration and replay
-
-- [GOTM-SCPN Paper 0 Index](paper0/README.md) — the entry to the preregistration
-  corpus.
-- [Processing Methodology](paper0/paper0_processing_methodology.md) and
-  [Validation Register](paper0/paper0_validation_register.md).
-- [Experimental Pathway](paper0/paper0_experimental_pathway.md) and
-  [Lane Registry](paper0/paper0_lane_registry.md).
-- [First Preregistered Downstream Experiment](paper0/paper0_first_preregistered_downstream_experiment.md).
-- [K_nm Preregistered Replay](paper0/paper0_knm_preregistered_replay.md), its
-  [Replay Contract](paper0/paper0_knm_preregistered_replay_contract.md), and the
-  [Measured-Coupling Evidence Checklist](paper0/paper0_knm_measured_coupling_evidence_checklist.md).
-
 ## Runtime contracts
 
 - [QPU Data Artifact](qpu_data_artifact.md) — the typed, hash-bound input

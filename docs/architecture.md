@@ -90,8 +90,7 @@ preparation and `bridge/` for Hamiltonian access.
 
 ```mermaid
 graph TD
-    bridge["bridge/ (13)\nK_nm → quantum objects"]
-    paper0["paper0/ (471)\nSource-accounting validation"]
+    bridge["bridge/ (14)\nK_nm → quantum objects"]
     phase["phase/ (29)\nTime evolution"]
     analysis["analysis/ (58)\nSync probes"]
     control["control/ (11)\nQuantum control"]
@@ -114,7 +113,6 @@ graph TD
 
     bridge --> phase
     bridge --> analysis
-    paper0 --> bridge
     bridge --> control
     bridge --> qsnn
     bridge --> identity

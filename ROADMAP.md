@@ -232,38 +232,6 @@ is copied here.
   adapter, and `scpn-bench symmetry-sector-mitigation-gate` locks planner and
   replay fixtures before execution-path integration.
 
-### Current strategic programme: GOTM-SCPN Paper 0 downstream experimental pathway
-
-- [x] **GOTM-SCPN Paper 0 source-ingestion completion.** Completed 2026-05-18:
-  GOTM-SCPN Paper 0: The Foundational Framework is fully promoted through the
-  source-accounting register from `P0R00001` through `P0R06211`, with `0` remaining work orders
-  and `0` remaining source records. This remains source-bounded
-  ingestion, not external validation evidence.
-- [x] **GOTM-SCPN Paper 0 experimental-pathway and methodology-paper route.**
-  Implemented 2026-05-18: `docs/paper0/paper0_experimental_pathway.md`
-  defines GOTM-SCPN Paper 0: The Foundational Framework as the upstream
-  programme source, reclassifies Paper 27 as a bounded implementation candidate rather than the
-  definitive source of truth, and records the methodology-paper
-  acceptance gates, experimental tiers, candidate lanes, and immediate
-  implementation queue.
-- [x] **GOTM-SCPN Paper 0 lane registry generator.** Implemented 2026-05-19:
-  `scpn-bench paper0-lane-registry-gate` regenerates and compares a
-  public source-bounded lane artefact with lane, evidence class,
-  blocker, related spec path, and hardware-boundary fields. The
-  registry remains a programme-planning artefact, not external
-  validation evidence or hardware readiness.
-- [x] **Methodology-paper outline.** Implemented 2026-05-19:
-  `docs/paper0/paper0_methodology_paper_outline.md` defines the source-bounded
-  methodology-paper structure, required artefacts, evidence classes,
-  figure/table regeneration commands, and acceptance gates while keeping
-  fixture preservation separate from external validation.
-- [x] **First preregistered downstream experiment.** Implemented 2026-05-19:
-  `docs/paper0/paper0_first_preregistered_downstream_experiment.md` selects the
-  K_nm causal-efficacy and coupling-affinity lane as a no-QPU measured-system
-  replay design with EEG alpha PLV as the primary candidate, IEEE 5-bus power
-  grid as a negative control, explicit acceptance gates, falsifiers, and
-  hardware-spend blockers.
-
 ### Current top priority: repository hygiene and release safety
 
 - [x] **GitHub Actions history audit.** Completed 2026-05-06:

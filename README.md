@@ -97,18 +97,17 @@ has a defined commercial licensing route.
 |---|---:|
 | Package version | 0.9.12 |
 | Public API exports | 717 |
-| Python source modules | 903 |
-| Public Python classes | 1846 |
-| Paper 0 validation modules | 466 |
-| Domain package families | 32 |
+| Python source modules | 432 |
+| Public Python classes | 822 |
+| Domain package families | 31 |
 | API documentation pages | 0 |
 | Rust PyO3 function bindings | 141 |
 | Rust source modules | 38 |
 | Notebook files | 98 |
 | Example files | 30 |
 | Optional extras | 42 |
-| Python test files | 2149 |
-| Public documentation pages | 257 |
+| Python test files | 741 |
+| Public documentation pages | 247 |
 | GitHub Actions workflows | 20 |
 
 Evidence boundary: this snapshot is a static inventory. Performance, coverage, hardware, and scientific-fidelity claims require their own committed evidence artefacts.
@@ -124,7 +123,6 @@ Evidence boundary: this snapshot is a static inventory. Performance, coverage, h
 | Release and reproducibility scope | Stable core contracts and backend capability artefacts for Kuramoto-XY synchronisation are included in release/readiness checks and promoted only with deterministic evidence manifests. |
 | Hardware evidence | `ibm_fez` baseline rows are legacy artefact-backed observations; `ibm_kingston` Phase 1, Phase 2 A+G, Phase 2 B-C, and popcount DLA datasets are promoted with raw-count artefacts. The SCPN/FIM `ibm_kingston` result is promoted as a negative/falsification result for the tested digital circuit family. |
 | Simulator and methods evidence | BKT, OTOC, Floquet, MBL, FIM, VQE, GPU, tensor-network, and classical comparison claims stay marked as simulator/classical/methods unless a hardware artefact is named. Generated benchmark artefacts are indexed from the benchmark dashboard and reproducibility CLI. |
-| Paper 0 research trajectory | Paper 0 is the maintainer/creator research trajectory and source-accounting register. The repository keeps the generated register visible for review: the planner reports `0` remaining work orders and `0` remaining source records after `P0R00001`-`P0R06211`. The generated register contains 466 validation modules with colocated specs, fixtures, loaders, and tests; this is source-bounded ingestion, not external validation evidence, and it is intentionally excluded from pip wheel and sdist artefacts. |
 | Licence boundary | The possible lightweight core split is documented, but all in-repository code remains AGPL/commercial unless a future release changes metadata and SPDX headers. |
 
 For claim classes, raw-artefact pointers, and promotion rules, see the
@@ -148,7 +146,6 @@ surfaces needed to use the software responsibly:
   scalar, vector, matrix, broadcast, selection, shape, assembly, cumulative, and reduction
   primitives;
 - no-QPU release gates and hardware-result pack verifiers;
-- source-bounded Paper 0 validation fixtures in the repository checkout;
 - claim-boundary documentation that separates simulator, hardware, and open
   scientific questions.
 
@@ -408,9 +405,6 @@ Direct entry points:
   benchmarks, verification, and dashboards
 - [Stable Facades API](docs/stable_facades_api.md)
   — mkdocstrings reference for first-path public facades
-- [Paper 0 Validation Register](docs/paper0/paper0_validation_register.md)
-  — source-accounting register status, claim boundary, and generated API
-  contract for Paper 0 ingestion
 - [Phase 1 Results](https://anulum.li/scpn-quantum-control/phase1-results.html)
   — raw-count reproduction of the DLA parity asymmetry on
   ibm_kingston, April 2026, with full Welch table and interactive
@@ -484,8 +478,8 @@ The package provides:
 
 2. **Tracked research module families** probing the synchronisation phase
    transition — synchronisation witnesses, OTOC scrambling, Krylov complexity,
-   persistent homology, DLA parity theorem, Paper 0 source-accounting fixtures,
-   and more. Novel constructions and first applications are documented in the
+   persistent homology, DLA parity theorem, and more. Novel constructions and
+   first applications are documented in the
    research-gems and API pages; exact file counts use the package table below.
 
 3. **Hardware evidence with claim classes** — legacy `ibm_fez` baseline rows,
@@ -495,14 +489,6 @@ The package provides:
    Stable core contracts and backend capability artefacts are included in this
    hardening boundary and are replayed via reproducibility tooling.
 
-4. **Paper 0 research trajectory** — Paper 0 is the maintainer/creator research
-   trajectory and source-accounting register. Source-bounded ingestion is
-   complete across `P0R00001`-`P0R06211`; the repository checkout keeps the
-   generated validation modules, spec loaders, fixture runners, and focused
-   tests under `src/scpn_quantum_control/paper0`. The pip wheel and sdist
-   intentionally exclude this tree. The register records what the source ledger
-   says and what generated fixtures preserve; it does not promote those source
-   statements into measured hardware or external scientific validation.
 
 Think of it as a **quantum microscope for synchronisation**: classical Kuramoto
 tells you *when* oscillators lock in step; this package tells you *what the
@@ -544,8 +530,8 @@ information scrambles*, and *whether the system thermalises*.
 | Metric | Value |
 |--------|-------|
 | Rust engine bindings | **141** exported `#[pyfunction]` bindings in the tracked Rust crate; low-level helper `fn` definitions are an implementation detail. |
-| Source package surface | **903** tracked Python source files under `src/scpn_quantum_control`, excluding package initialisers; **471** of these are generated Paper 0 source-accounting validation modules. |
-| Research module families | Analysis, phase, hardware, bridge, mitigation, QEC, applications, forecasting, and Paper 0 validation families; exact current counts are listed in the package map below. |
+| Source package surface | **903** tracked Python source files under `src/scpn_quantum_control`, excluding package initialisers. |
+| Research module families | Analysis, phase, hardware, bridge, mitigation, QEC, applications, forecasting, and benchmark families; exact current counts are listed in the package map below. |
 | Publication figures | **17** (simulation + hardware, including the Phase 1 DLA parity panels and exact-simulation crossover) |
 | Test suite | CI-gated suite at a **90%** aggregate coverage gate (`--cov-fail-under=90`); the non-refactor source tree is at 100% line coverage. See the generated capability inventory above for the current tracked test-file count. |
 | Reproducibility CLI | `scpn-bench reproduce-methods`, `scpn-bench fim-all`, and `scpn-bench all` regenerate committed methods/FIM artefacts without IBM submission |
@@ -668,16 +654,12 @@ noise-dominated (> 400).*
 ## Package Map
 
 Counts below are tracked Python source files under `src/scpn_quantum_control`,
-excluding package initialisers. Generated Paper 0 files are kept visible in the
-public repository because Paper 0 is the maintainer/creator research trajectory
-and source-accounting register. They are excluded from pip wheel and sdist
-artefacts and are not external scientific validation evidence.
+excluding package initialisers.
 
 ```mermaid
 graph TD
     subgraph Foundation
         bridge["bridge/ (13)\nK_nm → Hamiltonian\ncross-repo adapters"]
-        paper0["paper0/ (471)\nsource-accounting validation\nregister fixtures"]
     end
 
     subgraph "Core Physics"
@@ -706,7 +688,6 @@ graph TD
     bridge --> analysis
     bridge --> control
     bridge --> qsnn
-    paper0 --> bridge
     phase --> analysis
     phase --> apps
     hw --> phase
@@ -721,7 +702,6 @@ graph TD
 
 | Subpackage | Modules | Purpose |
 |------------|:-------:|---------|
-| `paper0` | 471 | Checkout-only source-accounting register for the maintainer/creator Paper 0 research trajectory; excluded from pip wheel and sdist artefacts |
 | `analysis` | 58 | Synchronisation probes: witnesses, QFI, PH, OTOC, Krylov, magic, BKT, DLA |
 | `hardware` | 63 | IBM Quantum runner, plugin backends registry, AsyncHardwareRunner, trapped-ion backend, GPU offload, circuit cutting, fast sparse, qubit mapper (DynQ), provenance |
 | `phase` | 29 | Time evolution: Trotter, VQE, ADAPT-VQE, VarQITE, AVQDS, QSVT, Floquet DTC, Lindblad |
@@ -876,7 +856,6 @@ All run on local AerSimulator. No IBM credentials needed.
 
 ```
 scpn_quantum_control/
-├── paper0/        471 modules — checkout-only Paper 0 research register
 ├── analysis/       58 modules — synchronisation probes
 ├── hardware/       63 modules — IBM runner, backends, GPU, cutting, provenance
 ├── phase/          29 modules — time evolution + variational + Lindblad

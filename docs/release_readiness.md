@@ -58,7 +58,7 @@ single place to prove that the same route is repeatable across machines.
 | Check | Release meaning |
 |---|---|
 | Version consistency | `pyproject.toml`, package `__version__`, `CITATION.cff`, and `.zenodo.json` carry the same version. |
-| Required release artefacts | Paper 0, coverage, behavioural-test, K_nm, stable core contracts, stable core contract fixtures, backend capability artefacts, release coverage exclusions, and S2 blocker artefacts are present. |
+| Required release artefacts | Coverage, behavioural-test, K_nm, stable core contracts, stable core contract fixtures, backend capability artefacts, release coverage exclusions, and S2 blocker artefacts are present. |
 | Coverage gap gate | A fresh `coverage.xml` exists, aggregate package coverage meets the release threshold, and unjustified missing files are blocked. Intentional CPU-only omissions must be listed in [`release_coverage_exclusions.json`](release_coverage_exclusions.json). Per-file gaps remain reported; `--fail-on-file-gap` can promote them to hard blockers. |
 | Behavioural quality gate | Tests satisfy the smoke-only, assertion-density, and exception-contract-density thresholds. |
 | Licence readiness gate | `pyproject.toml`, `LICENSE`, README, [`core_package_boundary.md`](core_package_boundary.md), [`licensing_faq.md`](licensing_faq.md), and source/tool SPDX headers agree that this repository is `AGPL-3.0-or-later` with a commercial route until an approved split changes all surfaces. |
@@ -79,19 +79,6 @@ The bundle is a no-QPU reproducibility command that composes:
 
 Use component gates only for targeted component-only verification.
 
-## Paper 0 lane registry gate
-
-For release notes, API docs, or pathway text that touch Paper 0 downstream
-lanes, run:
-
-```bash
-scpn-bench paper0-lane-registry-gate
-```
-
-This is a no-QPU reproducibility gate. It confirms that the public Paper 0 lane
-registry and its JSON companion are regenerated from repository artefacts. It
-does not establish external validation, measured-system evidence, or hardware
-readiness for any Paper 0 lane.
 
 ## Coverage and test-quality closure boundary
 
@@ -135,7 +122,6 @@ boundaries are enforced by hard gates. The current release boundary is:
 | K_nm measured-system validation | Required release artefacts include the EEG PLV, IEEE 5-bus, and IEEE 14-bus comparison payloads plus the measured-coupling checklist. Physical-validation promotion remains blocked unless units, uncertainty, full pairwise coverage, tolerance, response, and null-model requirements pass. |
 | TCBO `p_H1` reproduction | Promotion remains blocked without a named preregistered dataset and uncertainty crossing the threshold gate. |
 | S2/S5 broad advantage | IBM advantage readiness remains blocked until the full benchmark matrix, hardware rows, and claim-boundary requirements pass. |
-| Paper 0 downstream programme | Paper 0 is processed as source-bounded ingestion; downstream experiments require lane registry, methodology outline, and preregistered measured-system design before stronger claims. |
 | S7 logical-level DLA parity | Required release artefacts include the logical-DLA roadmap JSON and Markdown note. DLA parity survival under logical encoding remains blocked until the theory, logical-observable, and simulation prerequisites pass. |
 | S8 adaptive branching | Required release artefacts include the adaptive-branching readiness JSON and Markdown note. Adaptive advantage remains blocked until backend dynamic-circuit support, preregistration, and equal-depth open-loop falsification pass. |
 | S9 quantum thermodynamics | Required release artefacts include the quantum-thermodynamics readiness JSON and Markdown note. Entropy-production peak claims remain blocked until theory review, classical reference, raw-count execution, and falsification controls pass. |
@@ -302,9 +288,6 @@ Before tagging:
    preflight fixtures or preflight-facing API/docs text.
 5. Run `scpn-bench symmetry-sector-mitigation-gate` if the release touches
    symmetry-sector mitigation planning, planner fixtures, or mitigation claims.
-6. Run `scpn-bench knm-measured-candidate-gate` if the release touches Paper 0
-   K_nm measured-system audit artefacts, unit-class promotion logic, or
-   measured-candidate claim text.
 7. If the release cites promoted hardware evidence, generate the hardware
    result-pack evidence packet and pass it to the release audit.
 8. Confirm intentional CPU-only coverage omissions are justified in

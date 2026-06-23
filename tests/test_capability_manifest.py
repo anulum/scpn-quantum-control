@@ -53,7 +53,6 @@ def test_manifest_scans_public_capability_surfaces() -> None:
         manifest["models"]["python_source_modules"]
     )
     assert manifest["counts"]["python_model_classes"] == len(manifest["models"]["python_classes"])
-    assert manifest["counts"]["paper0_validation_modules"] == 466
     assert manifest["counts"]["domain_package_families"] == len(
         manifest["models"]["domain_package_counts"]
     )
@@ -66,7 +65,6 @@ def test_manifest_scans_public_capability_surfaces() -> None:
     assert manifest["counts"]["notebook_files"] == len(manifest["documentation"]["notebooks"])
     assert manifest["counts"]["example_files"] == len(manifest["documentation"]["examples"])
     assert "ibm" in manifest["packaging"]["optional_extras"]
-    assert "docs/paper0/paper0_validation_register.md" in manifest["documentation"]["public_pages"]
     assert "tests/test_bench_cli.py" in manifest["quality_gates"]["test_files"]
 
 

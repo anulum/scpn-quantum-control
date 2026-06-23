@@ -135,21 +135,10 @@ exclude = [
     "results/",
     "figures/",
     "notebooks/",
-    "data/paper0_*",
-    "docs/paper0/",
-    "docs/paper0/**",
-    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/",
-    "paper/gotm_scpn_master_publications/gotm-scpn_paper-00_the_foundational_framework/**",
-    "scripts/*paper0*.py",
-    "src/scpn_quantum_control/paper0/",
-    "src/scpn_quantum_control/paper0/**",
-    "tests/test_*paper0*.py",
-    "tests/test_reconcile_paper0_validation_coverage.py",
 ]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/scpn_quantum_control"]
-exclude = ["src/scpn_quantum_control/paper0/**"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -170,9 +159,6 @@ filterwarnings = [
 [tool.ruff]
 target-version = "py39"
 line-length = 99
-# Paper 0 is the generated source-accounting research trajectory; it is excluded
-# from the wheel/sdist and from coverage, so it is excluded from linting too.
-extend-exclude = ["src/scpn_quantum_control/paper0"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "UP", "B", "SIM"]
@@ -205,11 +191,6 @@ check_untyped_defs = true
 ignore_missing_imports = false
 files = [
     "src/scpn_quantum_control/",
-]
-# Paper 0 is the generated source-accounting research trajectory; it is excluded
-# from the wheel/sdist and from coverage, so it is excluded from type-checking too.
-exclude = [
-    "src/scpn_quantum_control/paper0/",
 ]
 
 [[tool.mypy.overrides]]
@@ -340,12 +321,6 @@ omit = [
     # fallthrough path; the Julia-side wrapper is exercised locally
     # via the [julia] extra.
     "*/scpn_quantum_control/accel/julia/*",
-    # Paper 0 source-validation modules are generated source-accounting
-    # artefacts. Register reconciliation and generated-loader tests cover
-    # their production contract; per-file line coverage is tracked through
-    # the explicit release exclusions document instead of inflating the
-    # hand-maintained source denominator.
-    "*/scpn_quantum_control/paper0/*",
     # Provider-specific HAL adapters are exercised through contract and
     # conformance tests with injected provider objects. Live SDK branches
     # require cloud credentials, account resources, or vendor runtimes and
@@ -377,7 +352,6 @@ omit = [
 [tool.coverage.report]
 omit = [
     "*/scpn_quantum_control/accel/julia/*",
-    "*/scpn_quantum_control/paper0/*",
     "*/scpn_quantum_control/hardware/hal_*.py",
     "*/scpn_quantum_control/hardware/provider_capability_discovery.py",
     "*/scpn_quantum_control/hardware/provider_smoke.py",

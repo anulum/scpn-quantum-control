@@ -150,14 +150,14 @@ scpn-provider-smoke --help
 
 See [QPU Provider Readiness](qpu_provider_readiness.md).
 
-## 10. Evidence-ledger replay
+## 10. Evidence replay
 
-**What:** replay the preregistered `K_nm` downstream experiment gate against its
-committed contract.
-**When:** you want to reproduce a ledger-promoted result from committed inputs.
+**What:** regenerate the committed methods/FIM benchmark artefacts from source,
+without any IBM submission, so a ledger-promoted result can be reproduced.
+**When:** you want to reproduce committed evidence from committed inputs.
 
 ```bash
-scpn-bench paper0-knm-preregistered-replay-gate
+scpn-bench reproduce-methods
 ```
 
 See the [Hardware Status Ledger](hardware_status_ledger.md).
