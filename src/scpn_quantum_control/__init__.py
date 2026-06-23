@@ -778,10 +778,21 @@ from .wirtinger_calculus import (
     wirtinger_partials,
 )
 
-try:
-    __version__ = version("scpn-quantum-control")
-except PackageNotFoundError:
-    __version__ = "0.0.0+local"
+
+def _resolve_version() -> str:
+    """Return the installed distribution version, or a local fallback.
+
+    The fallback path is taken when the package is imported from a source tree
+    that was never installed (no distribution metadata), so ``version`` raises
+    :class:`PackageNotFoundError`.
+    """
+    try:
+        return version("scpn-quantum-control")
+    except PackageNotFoundError:
+        return "0.0.0+local"
+
+
+__version__ = _resolve_version()
 
 __all__ = [
     "eeg_plv_to_vqe",
