@@ -1,19 +1,19 @@
 {
   "SPDX-License-Identifier": "AGPL-3.0-or-later",
   "counts": {
-    "domain_package_families": 31,
+    "domain_package_families": 32,
     "example_files": 30,
     "github_workflows": 20,
     "model_documentation_pages": 0,
     "notebook_files": 98,
-    "optional_extras": 42,
+    "optional_extras": 43,
     "public_api_exports": 717,
     "public_documentation_pages": 249,
     "python_model_classes": 826,
-    "python_model_source_modules": 442,
-    "rust_pyo3_model_wrappers": 153,
+    "python_model_source_modules": 446,
+    "rust_pyo3_model_wrappers": 155,
     "rust_source_modules": 38,
-    "test_files": 749
+    "test_files": 751
   },
   "documentation": {
     "examples": [
@@ -427,7 +427,7 @@
       {
         "package": "accel",
         "path": "src/scpn_quantum_control/accel",
-        "python_modules": 10
+        "python_modules": 11
       },
       {
         "package": "analysis",
@@ -563,6 +563,11 @@
         "package": "ssgf",
         "path": "src/scpn_quantum_control/ssgf",
         "python_modules": 4
+      },
+      {
+        "package": "studio",
+        "path": "src/scpn_quantum_control/studio",
+        "python_modules": 3
       },
       {
         "package": "tcbo",
@@ -3893,6 +3898,7 @@
       "src/scpn_quantum_control/accel/dispatcher.py",
       "src/scpn_quantum_control/accel/kuramoto_energy.py",
       "src/scpn_quantum_control/accel/kuramoto_mean_field.py",
+      "src/scpn_quantum_control/accel/local_order.py",
       "src/scpn_quantum_control/accel/mean_phase_observables.py",
       "src/scpn_quantum_control/accel/networked_kuramoto.py",
       "src/scpn_quantum_control/accel/order_parameter_observables.py",
@@ -4313,6 +4319,9 @@
       "src/scpn_quantum_control/ssgf/quantum_spectral.py",
       "src/scpn_quantum_control/stable_core.py",
       "src/scpn_quantum_control/stable_core_preflight.py",
+      "src/scpn_quantum_control/studio/federation.py",
+      "src/scpn_quantum_control/studio/manifest.py",
+      "src/scpn_quantum_control/studio/verbs.py",
       "src/scpn_quantum_control/tcbo/quantum_observer.py",
       "src/scpn_quantum_control/thermodynamics/readiness.py",
       "src/scpn_quantum_control/topology_control/artefacts.py",
@@ -4373,6 +4382,8 @@
       "lanczos_b_coefficients",
       "lindblad_anti_hermitian_diag",
       "lindblad_jump_ops_coo",
+      "local_order_parameter",
+      "local_order_parameter_jacobian",
       "magnetisation_labels",
       "matrix_2x2_determinant_gradient",
       "matrix_2x2_determinant_jvp",
@@ -5283,6 +5294,7 @@
       "rigetti",
       "rust",
       "strangeworks",
+      "studio",
       "tensor",
       "tensorflow",
       "topology",
@@ -5672,6 +5684,7 @@
       "tests/test_lindblad_ness.py",
       "tests/test_lindblad_trajectory.py",
       "tests/test_link_check_history_audit.py",
+      "tests/test_local_order.py",
       "tests/test_logging_setup.py",
       "tests/test_logical_dla_parity.py",
       "tests/test_logical_dla_parity_branches.py",
@@ -5992,6 +6005,7 @@
       "tests/test_stress_scale.py",
       "tests/test_structured_ansatz.py",
       "tests/test_structured_ansatz_branches.py",
+      "tests/test_studio_manifest.py",
       "tests/test_sub_us_tracker.py",
       "tests/test_submit_fim_replication_zne_ibm.py",
       "tests/test_submit_phase3_large_system_ibm.py",
