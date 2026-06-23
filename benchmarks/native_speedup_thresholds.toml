@@ -1,0 +1,22 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
+# © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
+# © Code 2020–2026 Miroslav Šotek. All rights reserved.
+# ORCID: 0009-0009-3560-0851
+# Contact: www.anulum.li | protoscience@anulum.li
+# SCPN Quantum Control — native dense-Hamiltonian benchmark regression policy.
+#
+# Ratios are regression guards, not performance targets. Latency metrics
+# (p50/p95/p99) are upper-bounded: the current value may be at most
+# `baseline * ratio`. Throughput is lower-bounded: the current value must be at
+# least `baseline * ratio`. The margins are deliberately wide because the
+# baseline is captured on a non-isolated developer workstation whose timing
+# swings with CPU pinning, BLAS threading, and host load; they catch
+# order-of-magnitude regressions, not microbenchmark noise. Tighten per
+# benchmark once a baseline exists on declared, isolated target hardware.
+
+[default]
+p50_us = 2.00
+p95_us = 2.50
+p99_us = 3.00
+throughput_ops_s = 0.50

@@ -476,9 +476,11 @@ The package provides:
 
 1. **A Kuramoto-to-quantum compiler** — any coupling matrix K_nm and natural
    frequencies omega compile directly into executable Qiskit circuits for IBM
-   hardware. Rust-accelerated dense Hamiltonian construction is ~111× faster than
-   the Qiskit `SparsePauliOp` path at L=4, falling with system size to parity by
-   L=12 (parity-checked; see [`data/native_speedup/`](data/native_speedup/)).
+   hardware. Rust-accelerated dense Hamiltonian construction is faster than the
+   Qiskit `SparsePauliOp` path for small systems (a parity-checked local
+   regression guard, ~96× at L=4 on the i5-11600K baseline, shrinking with
+   system size) — reproducible and gated; see
+   [Native Speedup Benchmark](docs/native_speedup_benchmark.md).
 
 2. **Tracked research module families** probing the synchronisation phase
    transition — synchronisation witnesses, OTOC scrambling, Krylov complexity,

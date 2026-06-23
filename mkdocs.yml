@@ -125,6 +125,7 @@ nav:
           - Benchmarks API: benchmarks_api.md
           - Isolated Benchmark Runner: isolated_benchmark_runner.md
           - Rust Engine: rust_engine.md
+          - Native Speedup Benchmark: native_speedup_benchmark.md
           - "Bench: Dynamic Coupling": bench_dynamic_coupling.md
           - "Bench: Structured Ansatz": bench_structured_ansatz.md
           - "Bench: HW Topological Optimizer": bench_hw_topological_optimizer.md

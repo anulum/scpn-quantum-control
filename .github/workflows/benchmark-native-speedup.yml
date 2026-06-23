@@ -4,12 +4,16 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — Native dense-Hamiltonian speedup benchmark
+# SCPN Quantum Control — Native dense-Hamiltonian speedup benchmark + regression gate.
 #
-# Regenerates the canonical Rust-vs-Qiskit dense XY-Hamiltonian construction
-# benchmark on a fixed runner per agentic-shared/BENCHMARK_STANDARD.md.
-# workflow_dispatch is enabled so the canonical figure can be regenerated on
-# demand; the artefact is uploaded for download and reconciliation.
+# Regenerates the Rust-vs-Qiskit dense XY-Hamiltonian construction benchmark on a
+# fixed runner per agentic-shared/BENCHMARK_STANDARD.md, then runs the regression
+# gate against the committed baseline in evidence-only mode: a GitHub-hosted
+# runner's CPU differs from the declared-hardware baseline, so the latency
+# comparison is collected and uploaded but does not block (the gate's
+# hardware_mismatch guard flags it). workflow_dispatch is enabled so the evidence
+# can be regenerated on demand; anyone can run scripts/benchmark_native_speedup.py
+# locally and compare against the baseline the same way.
 
 name: Native Speedup Benchmark
 
@@ -20,15 +24,22 @@ on:
   pull_request:
     paths:
       - "scripts/benchmark_native_speedup.py"
+      - "tools/benchmark_native_speedup_gate.py"
+      - "benchmarks/native_speedup_thresholds.toml"
+      - "benchmarks/baselines/native_speedup.json"
       - "scpn_quantum_engine/**"
       - ".github/workflows/benchmark-native-speedup.yml"
 
-permissions:
-  contents: read
+permissions: {}
+
+concurrency:
+  group: native-speedup-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   native-speedup:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6
 
@@ -48,11 +59,20 @@ jobs:
       - name: Run the native speedup benchmark
         run: |
           python scripts/benchmark_native_speedup.py \
-            --out data/native_speedup/native_speedup_ci.json
+            --json-out artifacts/benchmarks/native_speedup_ci.json
 
-      - name: Upload benchmark artefact
+      - name: Regression gate (evidence-only on hosted runner)
+        run: |
+          python tools/benchmark_native_speedup_gate.py \
+            --report artifacts/benchmarks/native_speedup_ci.json \
+            --baseline benchmarks/baselines/native_speedup.json \
+            --json-out artifacts/benchmarks/native_speedup_verdict.json \
+            --evidence-only
+
+      - name: Upload benchmark evidence
+        if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
         with:
           name: native-speedup-benchmark
-          path: data/native_speedup/native_speedup_ci.json
+          path: artifacts/benchmarks/
           retention-days: 90

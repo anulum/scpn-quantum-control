@@ -1,4 +1,6 @@
 {
+  "baseline_commit": "1703c4bccd4e2fce0dcd397189eeba7e99eb328b",
+  "baseline_sha256": "3d2013f76c6b62e0b0fab55d487ab7c8965e05ba57b2ccb5876e4473a0011447",
   "benchmarks": {
     "dense_xy_hamiltonian_L10": {
       "cross_language_parity": true,
@@ -90,9 +92,7 @@
     }
   },
   "evidence_class": "local_regression",
-  "generated_utc": "2026-06-23T02:22:05Z",
-  "note": "Dense XY-Hamiltonian construction kernel: rust_pyo3 (real float64) vs qiskit_sparsepauliop, parity-checked. The production knm_to_dense_matrix wrapper adds a float64->complex128 cast that dominates at large L (excluded here). Environment-dependent; not a published claim.",
-  "payload_sha256": "ff30c2e1f7d9bec533e98c50a5f5726466b2b90774ebcef179fe962306e7e24b",
+  "measured_utc": "2026-06-23T02:22:05Z",
   "production_claim_allowed": false,
   "provenance": {
     "commit": "1703c4bccd4e2fce0dcd397189eeba7e99eb328b",
@@ -123,5 +123,5 @@
       "strip": "debuginfo"
     }
   },
-  "schema_version": "scpn-quantum-control.native-speedup.v1"
+  "schema_version": "scpn-quantum-control.native-speedup-baseline.v1"
 }

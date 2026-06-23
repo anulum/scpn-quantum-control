@@ -297,27 +297,26 @@ pulse-schedule construction.
 Verified parity vs the Python reference implementation: max absolute
 difference $4.97 \times 10^{-14}$ for $n_\text{points} = 500$.
 
-## Measured Benchmarks (2026-06-23)
+## Measured Benchmarks
 
-i5-11600K @ 3.90 GHz, Python 3.12, Rust release build. Warm-up then repeats with
-P50 reported, per `agentic-shared/BENCHMARK_STANDARD.md`; both backends are fed
-identical `K`/`omega` and parity-checked. Artefact:
-[`data/native_speedup/`](../data/native_speedup/).
+Dense XY-Hamiltonian construction is measured by a reproducible, gated harness;
+the numbers, methodology, side-by-side CI vs declared-hardware comparison, and
+reproduction steps live in the **[Native Speedup Benchmark](native_speedup_benchmark.md)**
+page. The declared-hardware baseline (i5-11600K, pinned, warm-up + repeats,
+parity-checked) is committed at `benchmarks/baselines/native_speedup.json`:
 
-### Dense XY Hamiltonian Construction
-
-| System | Rust `build_xy_hamiltonian_dense` (p50) | Qiskit `SparsePauliOp.to_matrix()` (p50) | Speedup |
+| System | Rust kernel p50 | Qiskit p50 | Speedup (p50) |
 |--------|------|--------|---------|
-| L=4 (16×16) | 0.0036 ms | 0.40 ms | **111×** |
-| L=8 (256×256) | 0.023 ms | 0.90 ms | **39×** |
-| L=10 (1024×1024) | 0.89 ms | 2.32 ms | **2.6×** |
-| L=12 (4096×4096) | 38.3 ms | 35.6 ms | **0.93×** |
+| L=4 (16×16) | 2.79 µs | 269.5 µs | **96.5×** |
+| L=8 (256×256) | 23.1 µs | 779.0 µs | **33.7×** |
+| L=10 (1024×1024) | 635.3 µs | 2131.3 µs | **3.35×** |
+| L=12 (4096×4096) | 42.2 ms | 93.0 ms | **2.20×** |
 
-The earlier "5401×" headline was a cold-start artefact (an un-warmed Qiskit
-first-call timed at ~20.9 ms). With warm-up the Rust kernel advantage is large
-for small systems and shrinks to parity as the dense `2^n × 2^n` fill dominates.
-The production `knm_to_dense_matrix` wrapper additionally casts float64 to
-complex128 (a downstream cost excluded from this construction-kernel comparison).
+These are a **local regression guard, not a published claim**
+(`production_claim_allowed: false`) — the ratios are environment-dependent. The
+earlier "5401×" headline was a cold-start artefact (an un-warmed Qiskit
+first-call). The production `knm_to_dense_matrix` wrapper additionally casts
+float64 to complex128 (a downstream cost excluded from the kernel comparison).
 
 ### OTOC (30 time points)
 
