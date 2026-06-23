@@ -229,11 +229,53 @@ def daido_order_parameter_hessian(theta: NDArray[np.float64], m: int) -> NDArray
     return np.asarray(jl.daido_order_parameter_hessian(arr, m), dtype=np.float64)
 
 
+def mean_field_force(theta: NDArray[np.float64], coupling: float) -> NDArray[np.float64]:
+    """Julia-tier Kuramoto mean-field coupling force.
+
+    Parameters
+    ----------
+    theta : numpy.ndarray
+        One-dimensional array of oscillator phases in radians.
+    coupling : float
+        The coupling strength ``K``.
+
+    Returns
+    -------
+    numpy.ndarray
+        One-dimensional float64 force array.
+    """
+    jl = _load()
+    arr = np.ascontiguousarray(theta, dtype=np.float64)
+    return np.asarray(jl.mean_field_force(arr, float(coupling)), dtype=np.float64)
+
+
+def mean_field_jacobian(theta: NDArray[np.float64], coupling: float) -> NDArray[np.float64]:
+    """Julia-tier Kuramoto synchronisation stability Jacobian.
+
+    Parameters
+    ----------
+    theta : numpy.ndarray
+        One-dimensional array of oscillator phases in radians.
+    coupling : float
+        The coupling strength ``K``.
+
+    Returns
+    -------
+    numpy.ndarray
+        Two-dimensional ``(N, N)`` float64 Jacobian matrix.
+    """
+    jl = _load()
+    arr = np.ascontiguousarray(theta, dtype=np.float64)
+    return np.asarray(jl.mean_field_jacobian(arr, float(coupling)), dtype=np.float64)
+
+
 __all__ = [
     "daido_order_parameter",
     "daido_order_parameter_gradient",
     "daido_order_parameter_hessian",
     "is_available",
+    "mean_field_force",
+    "mean_field_jacobian",
     "mean_phase",
     "mean_phase_gradient",
     "mean_phase_hessian",

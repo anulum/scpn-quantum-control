@@ -1587,6 +1587,53 @@ If the measured ordering changes, update the chain comment at
 `_DAIDO_ORDER_PARAMETER_HESSIAN_CHAIN` in
 `src/scpn_quantum_control/accel/daido_observables.py` to match.
 
+### `mean_field_force(theta, K)` and `mean_field_jacobian(theta, K)`
+
+The Kuramoto mean-field force `F_j = K (S cos θ_j − C sin θ_j)` is the phase-coupling
+term of the dynamics `θ̇_j = ω_j + F_j`; its stability Jacobian
+`J_jk = (K/N) cos(θ_j − θ_k) − K δ_jk (C cos θ_j + S sin θ_j)` is symmetric with a
+zero row sum (the global-phase Goldstone mode). The force is `O(N)`; the Jacobian is an
+`N × N` matrix, so the benchmark stops at N = 2048. Measured 2026-06-23 at the fixed
+coupling K = 1 on the local Linux runner (Intel i5-11600K @ 3.90 GHz, Python 3.12.3,
+juliacall, scpn-quantum-engine local build). Inner loop: 100 calls per sample × 7 samples;
+per-call median. Raw JSON: `docs/benchmarks/mean_field_tiers.json`.
+
+`mean_field_force` (K = 1):
+
+|    N |     Rust |    Julia |   Python |
+|-----:|---------:|---------:|---------:|
+|    4 |  1.11 µs | 14.66 µs | 11.36 µs |
+|   64 |  3.52 µs | 19.99 µs | 18.25 µs |
+| 1024 | 35.34 µs | 51.55 µs | 50.73 µs |
+| 2048 | 72.27 µs | 110.81 µs | 97.58 µs |
+
+`mean_field_jacobian` (K = 1):
+
+|    N |       Rust |       Julia |     Python |
+|-----:|-----------:|------------:|-----------:|
+|    4 |    2.38 µs |    25.26 µs |   18.88 µs |
+|   64 |   41.02 µs |    59.42 µs |   64.66 µs |
+|  256 |  814.42 µs |   963.25 µs |  999.19 µs |
+| 2048 | 65468.84 µs | 88843.01 µs | 128051.96 µs |
+
+Read-offs:
+
+* Rust is first for both routes at every N, matching the chain ordering. The force lead
+  is the FFI-vs-vectorised-NumPy gap (~10× at small N narrowing to ~1.3× at N = 2048 where
+  the work is bandwidth-bound); the Jacobian builds the full pairwise `cos(θ_j − θ_k)`
+  matrix, where Rust's elementwise loop avoids NumPy's temporary broadcast and stays
+  ~2× ahead at N = 2048.
+
+Re-run with:
+
+```bash
+python scripts/bench_mean_field_tiers.py
+```
+
+If the measured ordering changes, update the chain comments at `_MEAN_FIELD_FORCE_CHAIN`
+and `_MEAN_FIELD_JACOBIAN_CHAIN` in
+`src/scpn_quantum_control/accel/kuramoto_mean_field.py` to match.
+
 ### S4 multi-hardware readiness
 
 Command:

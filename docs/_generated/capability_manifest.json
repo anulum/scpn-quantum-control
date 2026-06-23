@@ -9,11 +9,11 @@
     "optional_extras": 42,
     "public_api_exports": 717,
     "public_documentation_pages": 247,
-    "python_model_classes": 822,
-    "python_model_source_modules": 435,
-    "rust_pyo3_model_wrappers": 145,
+    "python_model_classes": 824,
+    "python_model_source_modules": 437,
+    "rust_pyo3_model_wrappers": 147,
     "rust_source_modules": 38,
-    "test_files": 741
+    "test_files": 742
   },
   "documentation": {
     "examples": [
@@ -425,7 +425,7 @@
       {
         "package": "accel",
         "path": "src/scpn_quantum_control/accel",
-        "python_modules": 6
+        "python_modules": 7
       },
       {
         "package": "analysis",
@@ -2396,6 +2396,14 @@
         "path": "src/scpn_quantum_control/phase/qnode_circuit.py"
       },
       {
+        "name": "PauliOperatorBudgetError",
+        "path": "src/scpn_quantum_control/compile_budget.py"
+      },
+      {
+        "name": "PauliOperatorEstimate",
+        "path": "src/scpn_quantum_control/compile_budget.py"
+      },
+      {
         "name": "PauliTerm",
         "path": "src/scpn_quantum_control/phase/qnode_circuit.py"
       },
@@ -3873,6 +3881,7 @@
       "src/scpn_quantum_control/_paths.py",
       "src/scpn_quantum_control/accel/daido_observables.py",
       "src/scpn_quantum_control/accel/dispatcher.py",
+      "src/scpn_quantum_control/accel/kuramoto_mean_field.py",
       "src/scpn_quantum_control/accel/mean_phase_observables.py",
       "src/scpn_quantum_control/accel/order_parameter_observables.py",
       "src/scpn_quantum_control/accel/rust_import.py",
@@ -3982,6 +3991,7 @@
       "src/scpn_quantum_control/bridge/ssgf_adapter.py",
       "src/scpn_quantum_control/bridge/ssgf_w_adapter.py",
       "src/scpn_quantum_control/codegen/ultrascale_hls.py",
+      "src/scpn_quantum_control/compile_budget.py",
       "src/scpn_quantum_control/compiler/mlir.py",
       "src/scpn_quantum_control/compiler/mlir_enzyme_evidence.py",
       "src/scpn_quantum_control/compiler/mlir_enzyme_execution_runner.py",
@@ -4388,6 +4398,8 @@
       "matrix_vector_product_value",
       "matrix_vector_product_vjp",
       "mc_xy_simulate",
+      "mean_field_force",
+      "mean_field_jacobian",
       "mean_phase",
       "mean_phase_gradient",
       "mean_phase_hessian",
@@ -5624,6 +5636,7 @@
       "tests/test_krylov_complexity.py",
       "tests/test_kuramoto_core.py",
       "tests/test_kuramoto_core_branches.py",
+      "tests/test_kuramoto_mean_field.py",
       "tests/test_kuramoto_variants.py",
       "tests/test_l16_director.py",
       "tests/test_lattice_branches.py",

@@ -417,6 +417,86 @@ pub fn daido_order_parameter_hessian_inner(theta: &[f64], m: f64) -> Array2<f64>
     out
 }
 
+/// Compute the Kuramoto mean-field coupling force F_j = K (S cos θ_j − C sin θ_j).
+///
+/// This is the phase-coupling term of the all-to-all Kuramoto dynamics, with
+/// C = <cos θ> and S = <sin θ>.
+#[pyfunction]
+pub fn mean_field_force<'py>(
+    py: Python<'py>,
+    theta: PyReadonlyArray1<'_, f64>,
+    coupling: f64,
+) -> PyResult<Bound<'py, PyArray1<f64>>> {
+    let theta = validate_phase_vector(&theta, "theta")?;
+    Ok(PyArray1::from_owned_array(
+        py,
+        mean_field_force_inner(theta, coupling),
+    ))
+}
+
+/// Pure Rust mean-field force (no PyO3).
+pub fn mean_field_force_inner(theta: &[f64], coupling: f64) -> Array1<f64> {
+    let n = theta.len();
+    if n == 0 {
+        return Array1::zeros(0);
+    }
+    let (mut c, mut s) = (0.0_f64, 0.0_f64);
+    for &t in theta {
+        c += t.cos();
+        s += t.sin();
+    }
+    let count = n as f64;
+    let cos_mean = c / count;
+    let sin_mean = s / count;
+    Array1::from_iter(
+        theta
+            .iter()
+            .map(|&t| coupling * (sin_mean * t.cos() - cos_mean * t.sin())),
+    )
+}
+
+/// Compute the Kuramoto synchronisation stability Jacobian J_jk = ∂F_j/∂θ_k.
+///
+/// J_jk = (K/N) cos(θ_j − θ_k) − K δ_jk (C cos θ_j + S sin θ_j). The matrix is symmetric
+/// and every row sums to zero (the global-phase Goldstone mode).
+#[pyfunction]
+pub fn mean_field_jacobian<'py>(
+    py: Python<'py>,
+    theta: PyReadonlyArray1<'_, f64>,
+    coupling: f64,
+) -> PyResult<Bound<'py, PyArray2<f64>>> {
+    let theta = validate_phase_vector(&theta, "theta")?;
+    Ok(PyArray2::from_owned_array(
+        py,
+        mean_field_jacobian_inner(theta, coupling),
+    ))
+}
+
+/// Pure Rust mean-field stability Jacobian (no PyO3), returned row-major.
+pub fn mean_field_jacobian_inner(theta: &[f64], coupling: f64) -> Array2<f64> {
+    let n = theta.len();
+    let mut out = Array2::<f64>::zeros((n, n));
+    if n == 0 {
+        return out;
+    }
+    let (mut c, mut s) = (0.0_f64, 0.0_f64);
+    for &t in theta {
+        c += t.cos();
+        s += t.sin();
+    }
+    let count = n as f64;
+    let cos_mean = c / count;
+    let sin_mean = s / count;
+    let scale = coupling / count;
+    for i in 0..n {
+        for j in 0..n {
+            out[[i, j]] = scale * (theta[i] - theta[j]).cos();
+        }
+        out[[i, i]] -= coupling * (cos_mean * theta[i].cos() + sin_mean * theta[i].sin());
+    }
+    out
+}
+
 fn validate_finite_slice(values: &[f64], name: &str) -> PyResult<()> {
     if values.iter().any(|value| !value.is_finite()) {
         return Err(pyo3::exceptions::PyValueError::new_err(format!(
@@ -1317,6 +1397,60 @@ mod tests {
     #[test]
     fn test_daido_hessian_empty() {
         assert_eq!(daido_order_parameter_hessian_inner(&[], 2.0).shape(), &[0, 0]);
+    }
+
+    #[test]
+    fn test_mean_field_force_matches_closed_form() {
+        let theta = vec![0.3, -1.1, 2.0, 0.7];
+        let k = 1.7;
+        let force = mean_field_force_inner(&theta, k);
+        let n = theta.len() as f64;
+        let c: f64 = theta.iter().map(|t| t.cos()).sum::<f64>() / n;
+        let s: f64 = theta.iter().map(|t| t.sin()).sum::<f64>() / n;
+        for (j, &t) in theta.iter().enumerate() {
+            let expected = k * (s * t.cos() - c * t.sin());
+            assert!((force[j] - expected).abs() < 1e-12);
+        }
+    }
+
+    #[test]
+    fn test_mean_field_jacobian_matches_finite_difference_of_force() {
+        let theta = vec![0.3, -1.1, 2.0, 0.7, 4.2];
+        let k = 2.5;
+        let jacobian = mean_field_jacobian_inner(&theta, k);
+        let h = 1e-6;
+        for kk in 0..theta.len() {
+            let mut plus = theta.clone();
+            let mut minus = theta.clone();
+            plus[kk] += h;
+            minus[kk] -= h;
+            let force_plus = mean_field_force_inner(&plus, k);
+            let force_minus = mean_field_force_inner(&minus, k);
+            for j in 0..theta.len() {
+                let fd = (force_plus[j] - force_minus[j]) / (2.0 * h);
+                assert!((jacobian[[j, kk]] - fd).abs() < 1e-6, "J[{j},{kk}]");
+            }
+        }
+    }
+
+    #[test]
+    fn test_mean_field_jacobian_is_symmetric_and_rows_sum_to_zero() {
+        let theta = vec![0.1, 0.9, 2.3, 3.1, 5.5];
+        let jacobian = mean_field_jacobian_inner(&theta, 1.3);
+        let n = theta.len();
+        for i in 0..n {
+            for j in 0..n {
+                assert!((jacobian[[i, j]] - jacobian[[j, i]]).abs() < 1e-15);
+            }
+            let row_sum: f64 = (0..n).map(|j| jacobian[[i, j]]).sum();
+            assert!(row_sum.abs() < 1e-12, "row {i} sum = {row_sum}");
+        }
+    }
+
+    #[test]
+    fn test_mean_field_empty() {
+        assert!(mean_field_force_inner(&[], 1.0).is_empty());
+        assert_eq!(mean_field_jacobian_inner(&[], 1.0).shape(), &[0, 0]);
     }
 
     #[test]

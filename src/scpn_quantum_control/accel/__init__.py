@@ -47,6 +47,12 @@ from .dispatcher import (
     available_tiers,
     dispatch,
 )
+from .kuramoto_mean_field import (
+    last_mean_field_force_tier_used,
+    last_mean_field_jacobian_tier_used,
+    mean_field_force,
+    mean_field_jacobian,
+)
 from .mean_phase_observables import (
     last_mean_phase_gradient_tier_used,
     last_mean_phase_hessian_tier_used,
@@ -76,10 +82,14 @@ __all__ = [
     "last_daido_tier_used",
     "last_gradient_tier_used",
     "last_hessian_tier_used",
+    "last_mean_field_force_tier_used",
+    "last_mean_field_jacobian_tier_used",
     "last_mean_phase_gradient_tier_used",
     "last_mean_phase_hessian_tier_used",
     "last_mean_phase_tier_used",
     "last_tier_used",
+    "mean_field_force",
+    "mean_field_jacobian",
     "mean_phase",
     "mean_phase_gradient",
     "mean_phase_hessian",
