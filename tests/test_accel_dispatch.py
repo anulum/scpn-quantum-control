@@ -920,3 +920,212 @@ class TestHessianCrossTierAndDispatch:
 
     def test_hessian_chain_ends_with_python_floor(self) -> None:
         assert d._ORDER_PARAMETER_HESSIAN_CHAIN[-1][0] == "python"
+
+
+# ---------------------------------------------------------------------------
+# Mean phase and its gradient — analytic floor, invariants, parity, dispatch
+# ---------------------------------------------------------------------------
+
+
+def _finite_difference_mean_phase_gradient(theta: np.ndarray, step: float = 1e-6) -> np.ndarray:
+    """Central-difference gradient of the circular mean phase, unwrapped at ±π."""
+    grad = np.zeros(theta.size, dtype=np.float64)
+    for j in range(theta.size):
+        plus = theta.astype(np.float64).copy()
+        minus = theta.astype(np.float64).copy()
+        plus[j] += step
+        minus[j] -= step
+        delta = d._python_mean_phase(plus) - d._python_mean_phase(minus)
+        delta = (delta + math.pi) % (2.0 * math.pi) - math.pi
+        grad[j] = delta / (2.0 * step)
+    return grad
+
+
+class TestPythonMeanPhaseFloor:
+    def test_value_matches_atan2(self) -> None:
+        rng = np.random.default_rng(31)
+        theta = rng.uniform(-math.pi, math.pi, size=13)
+        expected = math.atan2(float(np.mean(np.sin(theta))), float(np.mean(np.cos(theta))))
+        assert d._python_mean_phase(theta) == pytest.approx(expected, abs=1e-12)
+
+    def test_single_oscillator_is_identity(self) -> None:
+        assert d._python_mean_phase(np.array([2.7])) == pytest.approx(2.7, abs=1e-12)
+
+    def test_empty_input_is_zero(self) -> None:
+        assert d._python_mean_phase(np.array([])) == 0.0
+
+    def test_gradient_matches_closed_form(self) -> None:
+        rng = np.random.default_rng(17)
+        theta = rng.uniform(-math.pi, math.pi, size=15)
+        cos_mean = float(np.mean(np.cos(theta)))
+        sin_mean = float(np.mean(np.sin(theta)))
+        magnitude = float(np.hypot(cos_mean, sin_mean))
+        expected = (cos_mean * np.cos(theta) + sin_mean * np.sin(theta)) / (
+            theta.size * magnitude**2
+        )
+        np.testing.assert_allclose(d._python_mean_phase_gradient(theta), expected, atol=1e-15)
+
+    @_GLOBAL_SETTINGS
+    @given(
+        n=st.integers(min_value=1, max_value=48),
+        seed=st.integers(min_value=0, max_value=2**31 - 1),
+    )
+    def test_gradient_sums_to_one(self, n: int, seed: int) -> None:
+        # A global phase shift advances ψ identically, so the gradient sums to one.
+        rng = np.random.default_rng(seed)
+        theta = rng.uniform(-math.pi, math.pi, size=n)
+        assert float(np.sum(d._python_mean_phase_gradient(theta))) == pytest.approx(1.0, abs=1e-12)
+
+    @_GLOBAL_SETTINGS
+    @given(
+        n=st.integers(min_value=1, max_value=32),
+        seed=st.integers(min_value=0, max_value=2**31 - 1),
+    )
+    def test_gradient_matches_finite_difference(self, n: int, seed: int) -> None:
+        rng = np.random.default_rng(seed)
+        theta = rng.uniform(-math.pi, math.pi, size=n)
+        if _order_parameter_value(theta) < 1e-2:
+            return  # near-incoherent: ψ is ill-conditioned
+        np.testing.assert_allclose(
+            d._python_mean_phase_gradient(theta),
+            _finite_difference_mean_phase_gradient(theta),
+            atol=1e-6,
+        )
+
+    def test_single_oscillator_gradient_is_one(self) -> None:
+        np.testing.assert_allclose(
+            d._python_mean_phase_gradient(np.array([2.7])), [1.0], atol=1e-15
+        )
+
+    def test_aligned_gradient_is_uniform(self) -> None:
+        # All oscillators aligned: ψ = θ and ∂ψ/∂θ_j = 1/N for every j.
+        grad = d._python_mean_phase_gradient(np.full(8, 0.7))
+        np.testing.assert_allclose(grad, np.full(8, 1.0 / 8), atol=1e-15)
+
+    def test_empty_gradient_is_empty(self) -> None:
+        assert d._python_mean_phase_gradient(np.array([])).shape == (0,)
+
+    def test_exact_incoherent_gradient_is_zero(self) -> None:
+        theta = np.array([0.0, math.pi, 0.0, -math.pi])
+        np.testing.assert_array_equal(d._python_mean_phase_gradient(theta), np.zeros(4))
+
+
+class TestRustMeanPhaseTier:
+    @_GLOBAL_SETTINGS
+    @given(
+        n=st.integers(min_value=1, max_value=48),
+        seed=st.integers(min_value=0, max_value=2**31 - 1),
+    )
+    def test_rust_matches_python_floor(self, n: int, seed: int) -> None:
+        engine = pytest.importorskip("scpn_quantum_engine")
+        if not callable(getattr(engine, "mean_phase_gradient", None)):
+            pytest.skip("scpn_quantum_engine.mean_phase_gradient unavailable")
+        rng = np.random.default_rng(seed)
+        theta = rng.uniform(-10 * math.pi, 10 * math.pi, size=n)
+        assert d._rust_mean_phase(theta) == pytest.approx(d._python_mean_phase(theta), abs=1e-12)
+        np.testing.assert_allclose(
+            d._rust_mean_phase_gradient(theta),
+            d._python_mean_phase_gradient(theta),
+            atol=1e-12,
+        )
+
+    def test_rust_value_absence_raises(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.setattr(d, "optional_rust_engine", lambda: None)
+        with pytest.raises(ModuleNotFoundError, match="scpn_quantum_engine"):
+            d._rust_mean_phase(np.zeros(3))
+
+    def test_rust_gradient_absence_raises(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.setattr(d, "optional_rust_engine", lambda: None)
+        with pytest.raises(ModuleNotFoundError, match="scpn_quantum_engine"):
+            d._rust_mean_phase_gradient(np.zeros(3))
+
+
+class TestJuliaMeanPhaseTier:
+    def test_julia_matches_python_floor(self) -> None:
+        pytest.importorskip("juliacall")
+        from scpn_quantum_control.accel.julia import mean_phase as julia_value
+        from scpn_quantum_control.accel.julia import mean_phase_gradient as julia_grad
+
+        rng = np.random.default_rng(20260623)
+        theta = rng.uniform(-math.pi, math.pi, size=9)
+        assert julia_value(theta) == pytest.approx(d._python_mean_phase(theta), abs=1e-10)
+        np.testing.assert_allclose(
+            julia_grad(theta), d._python_mean_phase_gradient(theta), atol=1e-10
+        )
+
+
+class TestMeanPhaseDispatch:
+    @_GLOBAL_SETTINGS
+    @given(
+        n=st.integers(min_value=2, max_value=32),
+        seed=st.integers(min_value=0, max_value=2**31 - 1),
+    )
+    def test_all_available_tiers_agree(self, n: int, seed: int) -> None:
+        rng = np.random.default_rng(seed)
+        theta = rng.uniform(-math.pi, math.pi, size=n)
+        value_reference = d._python_mean_phase(theta)
+        grad_reference = d._python_mean_phase_gradient(theta)
+        for name, impl in d._MEAN_PHASE_CHAIN:
+            try:
+                assert impl(theta) == pytest.approx(value_reference, abs=1e-10), name
+            except (ImportError, ModuleNotFoundError, RuntimeError):
+                continue
+        for name, impl in d._MEAN_PHASE_GRADIENT_CHAIN:
+            try:
+                out = impl(theta)
+            except (ImportError, ModuleNotFoundError, RuntimeError):
+                continue
+            np.testing.assert_allclose(out, grad_reference, atol=1e-10, err_msg=name)
+
+    def test_registry_and_public_api(self) -> None:
+        from scpn_quantum_control.accel import (
+            last_mean_phase_gradient_tier_used,
+            last_mean_phase_tier_used,
+            mean_phase,
+            mean_phase_gradient,
+        )
+
+        assert d.dispatch("mean_phase", np.zeros(4)) == pytest.approx(0.0)
+        assert d.dispatch("mean_phase_gradient", np.full(4, 0.3)).shape == (4,)
+        rng = np.random.default_rng(55)
+        theta = rng.uniform(0.0, 2 * math.pi, size=18)
+        assert isinstance(mean_phase(theta), float)
+        assert mean_phase_gradient(theta).shape == (18,)
+        assert last_mean_phase_tier_used() in {"rust", "julia", "python"}
+        assert last_mean_phase_gradient_tier_used() in {"rust", "julia", "python"}
+
+    def test_chains_end_with_python_floor(self) -> None:
+        assert d._MEAN_PHASE_CHAIN[-1][0] == "python"
+        assert d._MEAN_PHASE_GRADIENT_CHAIN[-1][0] == "python"
+
+
+class TestMeanPhasePartialEngine:
+    def test_partial_engine_value_falls_through_to_python(
+        self,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        class PartialEngine:
+            pass
+
+        monkeypatch.setattr(d, "optional_rust_engine", lambda: PartialEngine())
+        disp = d.MultiLangDispatcher(
+            [("rust", d._rust_mean_phase), ("python", d._python_mean_phase)],
+        )
+        assert disp(np.zeros(4)) == pytest.approx(0.0)
+        assert disp.last_tier == "python"
+
+    def test_partial_engine_gradient_falls_through_to_python(
+        self,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        class PartialEngine:
+            pass
+
+        monkeypatch.setattr(d, "optional_rust_engine", lambda: PartialEngine())
+        disp = d.MultiLangDispatcher(
+            [("rust", d._rust_mean_phase_gradient), ("python", d._python_mean_phase_gradient)],
+        )
+        np.testing.assert_allclose(
+            disp(np.full(4, 0.5)), d._python_mean_phase_gradient(np.full(4, 0.5))
+        )
+        assert disp.last_tier == "python"

@@ -1412,6 +1412,54 @@ If the measured ordering changes, update the chain comment at
 `_ORDER_PARAMETER_HESSIAN_CHAIN` in
 `src/scpn_quantum_control/accel/dispatcher.py` to match.
 
+### `mean_phase(theta)` and `mean_phase_gradient(theta)`
+
+Circular mean phase `ψ = atan2(⟨sin θ⟩, ⟨cos θ⟩)` — the collective phase of the
+complex order parameter `z = r e^{iψ}` — and its gradient
+`∂ψ/∂θ_j = cos(ψ − θ_j)/(N r) = (C cos θ_j + S sin θ_j)/(N r²)`, whose components
+sum to one. Both are `O(N)`. Measured 2026-06-23 on the local Linux runner (Intel
+i5-11600K @ 3.90 GHz, Python 3.12.3, juliacall, scpn-quantum-engine local build).
+Inner loop: 100 calls per sample × 7 samples; per-call median. Raw JSON:
+`docs/benchmarks/mean_phase_tiers.json`.
+
+`mean_phase`:
+
+|     N |      Rust |    Julia |   Python |
+|------:|----------:|---------:|---------:|
+|     4 |   0.80 µs |  7.85 µs |  7.28 µs |
+|    64 |   1.04 µs |  7.39 µs | 10.82 µs |
+|  1024 |  15.12 µs | 18.48 µs | 21.16 µs |
+| 16384 | 245.31 µs | 286.42 µs | 413.35 µs |
+
+`mean_phase_gradient`:
+
+|     N |      Rust |    Julia |   Python |
+|------:|----------:|---------:|---------:|
+|     4 |   0.78 µs |  9.80 µs | 11.48 µs |
+|    64 |   3.23 µs | 12.03 µs | 13.05 µs |
+|  1024 |  22.01 µs | 36.89 µs | 41.53 µs |
+| 16384 | 509.11 µs | 596.23 µs | 734.89 µs |
+
+Read-offs:
+
+* Rust wins at every measured N for both routes; the dispatcher places it first,
+  matching measurement.
+* Julia and the Python floor are close — the mean-phase routes do the same per
+  oscillator trigonometric pre-pass as the order parameter, so the FFI crossing
+  and NumPy's vectorised reductions trade places much as they do there. The chain
+  keeps Julia before the Python floor for consistency with the order-parameter
+  chains.
+
+Re-run with:
+
+```bash
+python scripts/bench_mean_phase_tiers.py
+```
+
+If the measured ordering changes, update the chain comment at `_MEAN_PHASE_CHAIN`
+and `_MEAN_PHASE_GRADIENT_CHAIN` in
+`src/scpn_quantum_control/accel/dispatcher.py` to match.
+
 ### S4 multi-hardware readiness
 
 Command:

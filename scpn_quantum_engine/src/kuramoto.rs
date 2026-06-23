@@ -169,6 +169,70 @@ pub fn order_parameter_hessian_inner(theta: &[f64]) -> Array2<f64> {
     out
 }
 
+/// Compute the circular mean phase ψ = atan2(⟨sin θ⟩, ⟨cos θ⟩) of a Kuramoto ensemble.
+///
+/// The 1/N scaling cancels inside atan2, so the raw sums are used. An empty input and
+/// the incoherent state both report 0.0.
+#[pyfunction]
+pub fn mean_phase(theta: PyReadonlyArray1<'_, f64>) -> PyResult<f64> {
+    let theta = validate_phase_vector(&theta, "theta")?;
+    Ok(mean_phase_inner(theta))
+}
+
+/// Pure Rust mean phase (no PyO3).
+pub fn mean_phase_inner(theta: &[f64]) -> f64 {
+    if theta.is_empty() {
+        return 0.0;
+    }
+    let (mut re, mut im) = (0.0_f64, 0.0_f64);
+    for &t in theta {
+        re += t.cos();
+        im += t.sin();
+    }
+    im.atan2(re)
+}
+
+/// Compute the gradient ∂ψ/∂θ of the Kuramoto mean phase.
+///
+/// With C = ⟨cos θ⟩, S = ⟨sin θ⟩ and R = hypot(C, S):
+///   ∂ψ/∂θ_j = cos(ψ − θ_j) / (N R) = (C cos θ_j + S sin θ_j) / (N R²).
+/// The components sum to one (a global phase shift advances ψ identically). The
+/// incoherent state R = 0 returns the zero gradient.
+#[pyfunction]
+pub fn mean_phase_gradient<'py>(
+    py: Python<'py>,
+    theta: PyReadonlyArray1<'_, f64>,
+) -> PyResult<Bound<'py, PyArray1<f64>>> {
+    let theta = validate_phase_vector(&theta, "theta")?;
+    let gradient = Array1::from_vec(mean_phase_gradient_inner(theta));
+    Ok(PyArray1::from_owned_array(py, gradient))
+}
+
+/// Pure Rust mean phase gradient (no PyO3).
+pub fn mean_phase_gradient_inner(theta: &[f64]) -> Vec<f64> {
+    let mut out = vec![0.0_f64; theta.len()];
+    if theta.is_empty() {
+        return out;
+    }
+    let (mut re, mut im) = (0.0_f64, 0.0_f64);
+    for &t in theta {
+        re += t.cos();
+        im += t.sin();
+    }
+    let count = theta.len() as f64;
+    let cos_mean = re / count;
+    let sin_mean = im / count;
+    let magnitude = (cos_mean * cos_mean + sin_mean * sin_mean).sqrt();
+    if magnitude == 0.0 {
+        return out;
+    }
+    let scale = 1.0 / (count * magnitude * magnitude);
+    for (slot, &t) in out.iter_mut().zip(theta.iter()) {
+        *slot = (cos_mean * t.cos() + sin_mean * t.sin()) * scale;
+    }
+    out
+}
+
 fn validate_finite_slice(values: &[f64], name: &str) -> PyResult<()> {
     if values.iter().any(|value| !value.is_finite()) {
         return Err(pyo3::exceptions::PyValueError::new_err(format!(
@@ -857,6 +921,59 @@ mod tests {
     #[test]
     fn test_order_parameter_hessian_empty() {
         assert_eq!(order_parameter_hessian_inner(&[]).shape(), &[0, 0]);
+    }
+
+    #[test]
+    fn test_mean_phase_matches_atan2() {
+        let theta: Vec<f64> = vec![0.3, -1.1, 2.0, 0.7];
+        let n = theta.len() as f64;
+        let cos_mean: f64 = theta.iter().map(|t| t.cos()).sum::<f64>() / n;
+        let sin_mean: f64 = theta.iter().map(|t| t.sin()).sum::<f64>() / n;
+        assert!((mean_phase_inner(&theta) - sin_mean.atan2(cos_mean)).abs() < 1e-12);
+    }
+
+    #[test]
+    fn test_mean_phase_single_is_identity() {
+        assert!((mean_phase_inner(&[2.7]) - 2.7).abs() < 1e-12, "ψ of one oscillator is its phase");
+    }
+
+    #[test]
+    fn test_mean_phase_empty_is_zero() {
+        assert_eq!(mean_phase_inner(&[]), 0.0);
+    }
+
+    #[test]
+    fn test_mean_phase_gradient_matches_finite_difference() {
+        let theta = vec![0.3, -1.1, 2.0, 0.7, 4.2];
+        let grad = mean_phase_gradient_inner(&theta);
+        let h = 1e-6;
+        for j in 0..theta.len() {
+            let mut plus = theta.clone();
+            let mut minus = theta.clone();
+            plus[j] += h;
+            minus[j] -= h;
+            let fd = (mean_phase_inner(&plus) - mean_phase_inner(&minus)) / (2.0 * h);
+            assert!((grad[j] - fd).abs() < 1e-7, "grad[{j}]");
+        }
+    }
+
+    #[test]
+    fn test_mean_phase_gradient_sums_to_one() {
+        // A global phase shift advances ψ identically, so the gradient sums to one.
+        let total: f64 = mean_phase_gradient_inner(&[0.1, 0.9, 2.3, 3.1, 5.5]).iter().sum();
+        assert!((total - 1.0).abs() < 1e-12, "sum = {total}");
+    }
+
+    #[test]
+    fn test_mean_phase_gradient_single_is_one() {
+        let grad = mean_phase_gradient_inner(&[2.7]);
+        assert_eq!(grad.len(), 1);
+        assert!((grad[0] - 1.0).abs() < 1e-12, "∂ψ/∂θ = 1 for one oscillator");
+    }
+
+    #[test]
+    fn test_mean_phase_gradient_empty() {
+        assert!(mean_phase_gradient_inner(&[]).is_empty());
     }
 
     #[test]

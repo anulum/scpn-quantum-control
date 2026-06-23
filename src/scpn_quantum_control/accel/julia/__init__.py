@@ -115,8 +115,46 @@ def order_parameter_hessian(theta: NDArray[np.float64]) -> NDArray[np.float64]:
     return np.asarray(jl.order_parameter_hessian(arr), dtype=np.float64)
 
 
+def mean_phase(theta: NDArray[np.float64]) -> float:
+    """Julia-tier circular mean phase of a Kuramoto ensemble.
+
+    Parameters
+    ----------
+    theta : numpy.ndarray
+        One-dimensional array of oscillator phases in radians.
+
+    Returns
+    -------
+    float
+        The mean phase in radians.
+    """
+    jl = _load()
+    arr = np.ascontiguousarray(theta, dtype=np.float64)
+    return float(jl.mean_phase(arr))
+
+
+def mean_phase_gradient(theta: NDArray[np.float64]) -> NDArray[np.float64]:
+    """Julia-tier gradient of the Kuramoto mean phase.
+
+    Parameters
+    ----------
+    theta : numpy.ndarray
+        One-dimensional array of oscillator phases in radians.
+
+    Returns
+    -------
+    numpy.ndarray
+        One-dimensional float64 array of per-phase gradient components.
+    """
+    jl = _load()
+    arr = np.ascontiguousarray(theta, dtype=np.float64)
+    return np.asarray(jl.mean_phase_gradient(arr), dtype=np.float64)
+
+
 __all__ = [
     "is_available",
+    "mean_phase",
+    "mean_phase_gradient",
     "order_parameter",
     "order_parameter_gradient",
     "order_parameter_hessian",

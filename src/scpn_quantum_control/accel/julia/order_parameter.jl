@@ -103,3 +103,43 @@ function order_parameter_hessian(theta::AbstractVector{<:Real})::Matrix{Float64}
     end
     return out
 end
+
+function mean_phase(theta::AbstractVector{<:Real})::Float64
+    # Circular mean phase ψ = atan2(<sin θ>, <cos θ>). The 1/N scaling cancels inside
+    # atan2, so the raw sums suffice. Empty input and the incoherent state map to 0.0.
+    n = length(theta)
+    n == 0 && return 0.0
+    c = 0.0
+    s = 0.0
+    @inbounds for k in 1:n
+        c += cos(Float64(theta[k]))
+        s += sin(Float64(theta[k]))
+    end
+    return atan(s, c)
+end
+
+function mean_phase_gradient(theta::AbstractVector{<:Real})::Vector{Float64}
+    # Gradient ∂ψ/∂θ_j = (C cos θ_j + S sin θ_j) / (N r²) with C = <cos θ>, S = <sin θ>,
+    # r = hypot(C, S). The components sum to one; the incoherent state r = 0 returns zeros.
+    n = length(theta)
+    out = Vector{Float64}(undef, n)
+    n == 0 && return out
+    c = 0.0
+    s = 0.0
+    @inbounds for k in 1:n
+        c += cos(Float64(theta[k]))
+        s += sin(Float64(theta[k]))
+    end
+    c /= n
+    s /= n
+    r = sqrt(c * c + s * s)
+    if r == 0.0
+        fill!(out, 0.0)
+        return out
+    end
+    scale = 1.0 / (n * r * r)
+    @inbounds for j in 1:n
+        out[j] = (c * cos(Float64(theta[j])) + s * sin(Float64(theta[j]))) * scale
+    end
+    return out
+end
