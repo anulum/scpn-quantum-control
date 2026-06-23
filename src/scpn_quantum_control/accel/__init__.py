@@ -47,6 +47,12 @@ from .dispatcher import (
     available_tiers,
     dispatch,
 )
+from .kuramoto_energy import (
+    kuramoto_interaction_energy,
+    kuramoto_interaction_energy_gradient,
+    last_kuramoto_interaction_energy_gradient_tier_used,
+    last_kuramoto_interaction_energy_tier_used,
+)
 from .kuramoto_mean_field import (
     last_mean_field_force_tier_used,
     last_mean_field_jacobian_tier_used,
@@ -83,6 +89,10 @@ __all__ = [
     "daido_order_parameter_gradient",
     "daido_order_parameter_hessian",
     "dispatch",
+    "kuramoto_interaction_energy",
+    "kuramoto_interaction_energy_gradient",
+    "last_kuramoto_interaction_energy_gradient_tier_used",
+    "last_kuramoto_interaction_energy_tier_used",
     "last_daido_gradient_tier_used",
     "last_daido_hessian_tier_used",
     "last_daido_tier_used",

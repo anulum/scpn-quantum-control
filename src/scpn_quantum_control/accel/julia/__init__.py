@@ -315,11 +315,59 @@ def networked_kuramoto_jacobian(
     return np.asarray(jl.networked_kuramoto_jacobian(phases, matrix), dtype=np.float64)
 
 
+def kuramoto_interaction_energy(
+    theta: NDArray[np.float64], coupling: NDArray[np.float64]
+) -> float:
+    """Julia-tier Kuramoto interaction energy.
+
+    Parameters
+    ----------
+    theta : numpy.ndarray
+        One-dimensional array of ``N`` oscillator phases in radians.
+    coupling : numpy.ndarray
+        Two-dimensional ``(N, N)`` coupling matrix.
+
+    Returns
+    -------
+    float
+        The scalar interaction energy.
+    """
+    jl = _load()
+    phases = np.ascontiguousarray(theta, dtype=np.float64)
+    matrix = np.ascontiguousarray(coupling, dtype=np.float64)
+    return float(jl.kuramoto_interaction_energy(phases, matrix))
+
+
+def kuramoto_interaction_energy_gradient(
+    theta: NDArray[np.float64], coupling: NDArray[np.float64]
+) -> NDArray[np.float64]:
+    """Julia-tier gradient of the Kuramoto interaction energy.
+
+    Parameters
+    ----------
+    theta : numpy.ndarray
+        One-dimensional array of ``N`` oscillator phases in radians.
+    coupling : numpy.ndarray
+        Two-dimensional ``(N, N)`` coupling matrix.
+
+    Returns
+    -------
+    numpy.ndarray
+        One-dimensional float64 gradient array of length ``N``.
+    """
+    jl = _load()
+    phases = np.ascontiguousarray(theta, dtype=np.float64)
+    matrix = np.ascontiguousarray(coupling, dtype=np.float64)
+    return np.asarray(jl.kuramoto_interaction_energy_gradient(phases, matrix), dtype=np.float64)
+
+
 __all__ = [
     "daido_order_parameter",
     "daido_order_parameter_gradient",
     "daido_order_parameter_hessian",
     "is_available",
+    "kuramoto_interaction_energy",
+    "kuramoto_interaction_energy_gradient",
     "mean_field_force",
     "mean_field_jacobian",
     "networked_kuramoto_force",

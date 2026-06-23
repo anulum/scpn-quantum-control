@@ -10,10 +10,10 @@
     "public_api_exports": 717,
     "public_documentation_pages": 248,
     "python_model_classes": 826,
-    "python_model_source_modules": 440,
-    "rust_pyo3_model_wrappers": 149,
+    "python_model_source_modules": 441,
+    "rust_pyo3_model_wrappers": 151,
     "rust_source_modules": 38,
-    "test_files": 747
+    "test_files": 748
   },
   "documentation": {
     "examples": [
@@ -426,7 +426,7 @@
       {
         "package": "accel",
         "path": "src/scpn_quantum_control/accel",
-        "python_modules": 8
+        "python_modules": 9
       },
       {
         "package": "analysis",
@@ -3890,6 +3890,7 @@
       "src/scpn_quantum_control/_paths.py",
       "src/scpn_quantum_control/accel/daido_observables.py",
       "src/scpn_quantum_control/accel/dispatcher.py",
+      "src/scpn_quantum_control/accel/kuramoto_energy.py",
       "src/scpn_quantum_control/accel/kuramoto_mean_field.py",
       "src/scpn_quantum_control/accel/mean_phase_observables.py",
       "src/scpn_quantum_control/accel/networked_kuramoto.py",
@@ -4363,6 +4364,8 @@
       "knm_domain_coupling",
       "koopman_generator",
       "kuramoto_euler",
+      "kuramoto_interaction_energy",
+      "kuramoto_interaction_energy_gradient",
       "kuramoto_trajectory",
       "kuramoto_witness_candidate_features",
       "lanczos_b_coefficients",
@@ -5651,6 +5654,7 @@
       "tests/test_krylov_complexity.py",
       "tests/test_kuramoto_core.py",
       "tests/test_kuramoto_core_branches.py",
+      "tests/test_kuramoto_energy.py",
       "tests/test_kuramoto_input_hardening.py",
       "tests/test_kuramoto_mean_field.py",
       "tests/test_kuramoto_variants.py",

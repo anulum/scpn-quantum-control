@@ -1684,6 +1684,55 @@ If the measured ordering changes, update the chain comments at `_NETWORKED_KURAM
 and `_NETWORKED_KURAMOTO_JACOBIAN_CHAIN` in
 `src/scpn_quantum_control/accel/networked_kuramoto.py` to match.
 
+### `kuramoto_interaction_energy(theta, K)` and `kuramoto_interaction_energy_gradient(theta, K)`
+
+The Kuramoto interaction energy `E = −½ Σ_jk K_jk cos(θ_j − θ_k)` (the Lyapunov function
+whose gradient flow is the dynamics for symmetric `K`) and its gradient
+`∂E/∂θ_j = ½ Σ_k (K_jk + K_kj) sin(θ_j − θ_k)`, the symmetrised force whose components sum to
+zero. Both routes are O(N²) — the energy sums over the full coupling matrix — so the sizes
+stop at N = 2048. Measured 2026-06-23 on a dense symmetric random coupling matrix on the
+local Linux runner (Intel i5-11600K @ 3.90 GHz, Python 3.12.3, juliacall,
+scpn-quantum-engine local build). Inner loop: 50 calls per sample × 7 samples; per-call
+median. Raw JSON: `docs/benchmarks/kuramoto_energy_tiers.json`.
+
+`kuramoto_interaction_energy`:
+
+|    N |       Rust |      Julia |     Python |
+|-----:|-----------:|-----------:|-----------:|
+|    4 |    1.01 µs |   11.93 µs |    5.23 µs |
+|   64 |   31.38 µs |   35.24 µs |   34.02 µs |
+|  256 |  755.49 µs |  702.97 µs |  813.99 µs |
+| 2048 | 62674.97 µs | 55525.42 µs | 92159.01 µs |
+
+`kuramoto_interaction_energy_gradient`:
+
+|    N |       Rust |      Julia |     Python |
+|-----:|-----------:|-----------:|-----------:|
+|    4 |    1.39 µs |  200.60 µs |    6.46 µs |
+|   64 |   46.67 µs |  188.95 µs |   41.53 µs |
+|  256 |  902.28 µs |  850.53 µs |  935.60 µs |
+| 2048 | 98877.77 µs | 128429.11 µs | 127980.36 µs |
+
+Read-offs:
+
+* Rust is first at small-to-mid N for both routes and wins the gradient at N = 2048. As with
+  the networked force, Julia's BLAS reduction edges the scalar energy ahead from N = 256
+  (703 vs 755 µs) to N = 2048 (56 vs 63 ms); the chain keeps Rust first because it wins every
+  small workload and the gradient route, and the large-N energy gap is small.
+* The gradient is the same O(N²) shape but builds the per-oscillator `(K_jk + K_kj)` term;
+  Julia's marshalling cost (201 µs at N = 4) dominates until N ≈ 1024, so Rust and the
+  vectorised NumPy floor lead the small-to-mid range.
+
+Re-run with:
+
+```bash
+python scripts/bench_kuramoto_energy_tiers.py
+```
+
+If the measured ordering changes, update the chain comments at
+`_KURAMOTO_INTERACTION_ENERGY_CHAIN` and `_KURAMOTO_INTERACTION_ENERGY_GRADIENT_CHAIN` in
+`src/scpn_quantum_control/accel/kuramoto_energy.py` to match.
+
 ### S4 multi-hardware readiness
 
 Command:

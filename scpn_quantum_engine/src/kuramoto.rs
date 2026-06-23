@@ -584,6 +584,82 @@ pub fn networked_kuramoto_jacobian_inner(
     out
 }
 
+/// Compute the Kuramoto interaction energy E = −½ Σ_jk K_jk cos(θ_j − θ_k).
+///
+/// ``coupling`` is the N×N coupling matrix K. For symmetric K this is the Lyapunov
+/// function whose gradient flow is the dynamics.
+#[pyfunction]
+pub fn kuramoto_interaction_energy(
+    theta: PyReadonlyArray1<'_, f64>,
+    coupling: PyReadonlyArray2<'_, f64>,
+) -> PyResult<f64> {
+    let theta = validate_phase_vector(&theta, "theta")?;
+    let matrix = coupling.as_array();
+    let n = theta.len();
+    if matrix.shape() != [n, n] {
+        return Err(PyValueError::new_err(format!(
+            "coupling must be a square matrix of order {n}, got shape {:?}",
+            matrix.shape()
+        )));
+    }
+    Ok(kuramoto_interaction_energy_inner(theta, &matrix))
+}
+
+/// Pure Rust Kuramoto interaction energy (no PyO3).
+pub fn kuramoto_interaction_energy_inner(theta: &[f64], coupling: &ArrayView2<'_, f64>) -> f64 {
+    let n = theta.len();
+    let mut acc = 0.0_f64;
+    for j in 0..n {
+        for k in 0..n {
+            acc += coupling[[j, k]] * (theta[j] - theta[k]).cos();
+        }
+    }
+    -0.5 * acc
+}
+
+/// Compute the gradient ∂E/∂θ_j = ½ Σ_k (K_jk + K_kj) sin(θ_j − θ_k) of the interaction
+/// energy.
+///
+/// The components sum to zero (E is invariant under a global phase shift). For symmetric K
+/// this equals the negated networked-Kuramoto force.
+#[pyfunction]
+pub fn kuramoto_interaction_energy_gradient<'py>(
+    py: Python<'py>,
+    theta: PyReadonlyArray1<'_, f64>,
+    coupling: PyReadonlyArray2<'_, f64>,
+) -> PyResult<Bound<'py, PyArray1<f64>>> {
+    let theta = validate_phase_vector(&theta, "theta")?;
+    let matrix = coupling.as_array();
+    let n = theta.len();
+    if matrix.shape() != [n, n] {
+        return Err(PyValueError::new_err(format!(
+            "coupling must be a square matrix of order {n}, got shape {:?}",
+            matrix.shape()
+        )));
+    }
+    Ok(PyArray1::from_owned_array(
+        py,
+        kuramoto_interaction_energy_gradient_inner(theta, &matrix),
+    ))
+}
+
+/// Pure Rust Kuramoto interaction-energy gradient (no PyO3).
+pub fn kuramoto_interaction_energy_gradient_inner(
+    theta: &[f64],
+    coupling: &ArrayView2<'_, f64>,
+) -> Array1<f64> {
+    let n = theta.len();
+    let mut out = Array1::<f64>::zeros(n);
+    for j in 0..n {
+        let mut acc = 0.0_f64;
+        for k in 0..n {
+            acc += (coupling[[j, k]] + coupling[[k, j]]) * (theta[j] - theta[k]).sin();
+        }
+        out[j] = 0.5 * acc;
+    }
+    out
+}
+
 fn validate_finite_slice(values: &[f64], name: &str) -> PyResult<()> {
     if values.iter().any(|value| !value.is_finite()) {
         return Err(pyo3::exceptions::PyValueError::new_err(format!(
@@ -1623,6 +1699,60 @@ mod tests {
             networked_kuramoto_jacobian_inner(&[], &empty.view()).shape(),
             &[0, 0]
         );
+    }
+
+    #[test]
+    fn test_interaction_energy_matches_closed_form() {
+        let theta = vec![0.3, -1.1, 2.0, 0.7];
+        let k = _symmetric_coupling(4, 0.37);
+        let energy = kuramoto_interaction_energy_inner(&theta, &k.view());
+        let mut expected = 0.0;
+        for j in 0..4 {
+            for kk in 0..4 {
+                expected += k[[j, kk]] * (theta[j] - theta[kk]).cos();
+            }
+        }
+        assert!((energy - (-0.5 * expected)).abs() < 1e-12);
+    }
+
+    #[test]
+    fn test_interaction_energy_gradient_matches_finite_difference() {
+        let theta = vec![0.3, -1.1, 2.0, 0.7, 4.2];
+        // asymmetric coupling to exercise the (K_jk + K_kj) symmetrisation
+        let mut k = _symmetric_coupling(5, 0.21);
+        k[[0, 1]] += 0.9;
+        let gradient = kuramoto_interaction_energy_gradient_inner(&theta, &k.view());
+        let h = 1e-6;
+        for j in 0..theta.len() {
+            let mut plus = theta.clone();
+            let mut minus = theta.clone();
+            plus[j] += h;
+            minus[j] -= h;
+            let energy_plus = kuramoto_interaction_energy_inner(&plus, &k.view());
+            let energy_minus = kuramoto_interaction_energy_inner(&minus, &k.view());
+            let fd = (energy_plus - energy_minus) / (2.0 * h);
+            assert!((gradient[j] - fd).abs() < 1e-6, "grad[{j}]");
+        }
+    }
+
+    #[test]
+    fn test_interaction_energy_gradient_sums_to_zero_and_equals_negated_force() {
+        let theta = vec![0.1, 0.9, 2.3, 3.1, 5.5];
+        let k = _symmetric_coupling(5, 0.5);
+        let gradient = kuramoto_interaction_energy_gradient_inner(&theta, &k.view());
+        let force = networked_kuramoto_force_inner(&theta, &k.view());
+        let sum: f64 = gradient.iter().sum();
+        assert!(sum.abs() < 1e-12);
+        for j in 0..theta.len() {
+            assert!((gradient[j] + force[j]).abs() < 1e-12, "grad != -force at {j}");
+        }
+    }
+
+    #[test]
+    fn test_interaction_energy_empty() {
+        let empty = Array2::<f64>::zeros((0, 0));
+        assert_eq!(kuramoto_interaction_energy_inner(&[], &empty.view()), 0.0);
+        assert!(kuramoto_interaction_energy_gradient_inner(&[], &empty.view()).is_empty());
     }
 
     #[test]
