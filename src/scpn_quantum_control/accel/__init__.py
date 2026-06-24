@@ -93,6 +93,12 @@ from .kuramoto_chimera import (
     metastability_index,
     metastability_index_gradient,
 )
+from .kuramoto_clusters import (
+    ClusterPartition,
+    cluster_count,
+    cluster_partition,
+    phase_clusters,
+)
 from .kuramoto_coherence_matrix import (
     coherence_matrix,
     coherence_spectrum,
@@ -478,6 +484,10 @@ __all__ = [
     "leading_coherence_eigenvector",
     "mean_coherence_matrix",
     "phase_locking_matrix",
+    "ClusterPartition",
+    "cluster_count",
+    "cluster_partition",
+    "phase_clusters",
     "mean_phase",
     "mean_phase_gradient",
     "mean_phase_hessian",
