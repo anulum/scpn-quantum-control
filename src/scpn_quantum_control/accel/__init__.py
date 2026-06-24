@@ -79,7 +79,15 @@ from .kuramoto_control import (
     interaction_energy_objective,
     phase_target_objective,
     synchronisation_value_and_grad,
+    terminal_objective_value,
     terminal_objective_value_and_grad,
+)
+from .kuramoto_coupling_design import (
+    CouplingDesignResult,
+    CouplingProjection,
+    design_synchronising_coupling,
+    optimise_coupling,
+    symmetric_nonnegative_projection,
 )
 from .kuramoto_energy import (
     kuramoto_interaction_energy,
@@ -170,7 +178,13 @@ __all__ = [
     "interaction_energy_objective",
     "phase_target_objective",
     "synchronisation_value_and_grad",
+    "terminal_objective_value",
     "terminal_objective_value_and_grad",
+    "CouplingDesignResult",
+    "CouplingProjection",
+    "design_synchronising_coupling",
+    "optimise_coupling",
+    "symmetric_nonnegative_projection",
     "kuramoto_euler_trajectory",
     "kuramoto_euler_vjp",
     "kuramoto_rk4_trajectory",

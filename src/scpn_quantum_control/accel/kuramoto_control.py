@@ -193,6 +193,43 @@ def terminal_objective_value_and_grad(
     return cost, grad_theta0, grad_omega, grad_coupling
 
 
+def terminal_objective_value(
+    objective: TerminalObjective,
+    theta0: NDArray[np.float64],
+    omega: NDArray[np.float64],
+    coupling: NDArray[np.float64],
+    dt: float,
+    n_steps: int,
+    *,
+    integrator: str = "rk4",
+) -> float:
+    """Integrate and evaluate a terminal objective without its gradient.
+
+    The value-only companion of :func:`terminal_objective_value_and_grad` — runs the forward
+    integrator and returns only ``objective``'s cost on the final phase, skipping the adjoint.
+    Useful for line searches and objective sweeps. Parameters and ``integrator`` choices are as
+    in :func:`terminal_objective_value_and_grad`.
+
+    Returns
+    -------
+    float
+        The objective cost at the integrated final phase.
+
+    Raises
+    ------
+    ValueError
+        If ``integrator`` is not ``"rk4"`` or ``"euler"``.
+    """
+    if integrator == "rk4":
+        trajectory = kuramoto_rk4_trajectory(theta0, omega, coupling, dt, n_steps)
+    elif integrator == "euler":
+        trajectory = kuramoto_euler_trajectory(theta0, omega, coupling, dt, n_steps)
+    else:
+        raise ValueError(f"integrator must be 'rk4' or 'euler', got {integrator!r}")
+    cost, _ = objective(trajectory[-1])
+    return cost
+
+
 def synchronisation_value_and_grad(
     theta0: NDArray[np.float64],
     omega: NDArray[np.float64],
@@ -218,5 +255,6 @@ __all__ = [
     "interaction_energy_objective",
     "phase_target_objective",
     "synchronisation_value_and_grad",
+    "terminal_objective_value",
     "terminal_objective_value_and_grad",
 ]

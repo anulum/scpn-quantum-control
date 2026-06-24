@@ -191,3 +191,24 @@ class TestValueAndGrad:
             )
         )
         assert radius_final > radius_initial + 0.05
+
+
+class TestTerminalObjectiveValue:
+    @pytest.mark.parametrize("integrator", ["rk4", "euler"])
+    def test_matches_value_and_grad_cost(self, integrator: str) -> None:
+        theta0, omega, coupling = _random_problem(6, 31)
+        dt, n_steps = 0.05, 12
+        value = kc.terminal_objective_value(
+            kc.coherence_objective, theta0, omega, coupling, dt, n_steps, integrator=integrator
+        )
+        cost, *_ = kc.terminal_objective_value_and_grad(
+            kc.coherence_objective, theta0, omega, coupling, dt, n_steps, integrator=integrator
+        )
+        assert abs(value - cost) < 1e-12
+
+    def test_rejects_unknown_integrator(self) -> None:
+        theta0, omega, coupling = _random_problem(3, 1)
+        with pytest.raises(ValueError, match="integrator must be 'rk4' or 'euler'"):
+            kc.terminal_objective_value(
+                kc.coherence_objective, theta0, omega, coupling, 0.05, 5, integrator="midpoint"
+            )

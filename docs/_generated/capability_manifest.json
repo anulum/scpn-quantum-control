@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 717,
     "public_documentation_pages": 249,
-    "python_model_classes": 826,
-    "python_model_source_modules": 454,
+    "python_model_classes": 827,
+    "python_model_source_modules": 455,
     "rust_pyo3_model_wrappers": 171,
     "rust_source_modules": 42,
-    "test_files": 761
+    "test_files": 762
   },
   "documentation": {
     "examples": [
@@ -427,7 +427,7 @@
       {
         "package": "accel",
         "path": "src/scpn_quantum_control/accel",
-        "python_modules": 19
+        "python_modules": 20
       },
       {
         "package": "analysis",
@@ -1025,6 +1025,10 @@
       {
         "name": "ControlQEC",
         "path": "src/scpn_quantum_control/qec/control_qec.py"
+      },
+      {
+        "name": "CouplingDesignResult",
+        "path": "src/scpn_quantum_control/accel/kuramoto_coupling_design.py"
       },
       {
         "name": "CouplingGradientVerificationResult",
@@ -3901,6 +3905,7 @@
       "src/scpn_quantum_control/accel/diff_kuramoto_rk4.py",
       "src/scpn_quantum_control/accel/dispatcher.py",
       "src/scpn_quantum_control/accel/kuramoto_control.py",
+      "src/scpn_quantum_control/accel/kuramoto_coupling_design.py",
       "src/scpn_quantum_control/accel/kuramoto_energy.py",
       "src/scpn_quantum_control/accel/kuramoto_mean_field.py",
       "src/scpn_quantum_control/accel/local_order.py",
@@ -5704,6 +5709,7 @@
       "tests/test_kuramoto_control.py",
       "tests/test_kuramoto_core.py",
       "tests/test_kuramoto_core_branches.py",
+      "tests/test_kuramoto_coupling_design.py",
       "tests/test_kuramoto_energy.py",
       "tests/test_kuramoto_input_hardening.py",
       "tests/test_kuramoto_mean_field.py",
