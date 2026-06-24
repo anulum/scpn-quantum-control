@@ -634,6 +634,59 @@ def local_mean_phase_jacobian(
     return np.asarray(jl.local_mean_phase_jacobian(phases, matrix), dtype=np.float64)
 
 
+def sakaguchi_mean_field_force(
+    theta: NDArray[np.float64], coupling: float, frustration: float
+) -> NDArray[np.float64]:
+    """Julia-tier Sakaguchi–Kuramoto mean-field force.
+
+    Parameters
+    ----------
+    theta : numpy.ndarray
+        One-dimensional array of oscillator phases in radians.
+    coupling : float
+        The coupling strength ``K``.
+    frustration : float
+        The phase-frustration angle ``α`` in radians.
+
+    Returns
+    -------
+    numpy.ndarray
+        One-dimensional float64 force array.
+    """
+    jl = _load()
+    arr = np.ascontiguousarray(theta, dtype=np.float64)
+    return np.asarray(
+        jl.sakaguchi_mean_field_force(arr, float(coupling), float(frustration)), dtype=np.float64
+    )
+
+
+def sakaguchi_mean_field_jacobian(
+    theta: NDArray[np.float64], coupling: float, frustration: float
+) -> NDArray[np.float64]:
+    """Julia-tier Sakaguchi–Kuramoto mean-field stability Jacobian.
+
+    Parameters
+    ----------
+    theta : numpy.ndarray
+        One-dimensional array of oscillator phases in radians.
+    coupling : float
+        The coupling strength ``K``.
+    frustration : float
+        The phase-frustration angle ``α`` in radians.
+
+    Returns
+    -------
+    numpy.ndarray
+        Two-dimensional ``(N, N)`` float64 Jacobian matrix.
+    """
+    jl = _load()
+    arr = np.ascontiguousarray(theta, dtype=np.float64)
+    return np.asarray(
+        jl.sakaguchi_mean_field_jacobian(arr, float(coupling), float(frustration)),
+        dtype=np.float64,
+    )
+
+
 __all__ = [
     "daido_order_parameter",
     "daido_order_parameter_gradient",
@@ -664,4 +717,6 @@ __all__ = [
     "order_parameters_batch",
     "sakaguchi_force",
     "sakaguchi_jacobian",
+    "sakaguchi_mean_field_force",
+    "sakaguchi_mean_field_jacobian",
 ]

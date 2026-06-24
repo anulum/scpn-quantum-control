@@ -10,10 +10,10 @@
     "public_api_exports": 717,
     "public_documentation_pages": 249,
     "python_model_classes": 826,
-    "python_model_source_modules": 449,
-    "rust_pyo3_model_wrappers": 163,
+    "python_model_source_modules": 450,
+    "rust_pyo3_model_wrappers": 165,
     "rust_source_modules": 41,
-    "test_files": 756
+    "test_files": 757
   },
   "documentation": {
     "examples": [
@@ -427,7 +427,7 @@
       {
         "package": "accel",
         "path": "src/scpn_quantum_control/accel",
-        "python_modules": 14
+        "python_modules": 15
       },
       {
         "package": "analysis",
@@ -3908,6 +3908,7 @@
       "src/scpn_quantum_control/accel/rust_import.py",
       "src/scpn_quantum_control/accel/rust_kuramoto_classical.py",
       "src/scpn_quantum_control/accel/sakaguchi_kuramoto.py",
+      "src/scpn_quantum_control/accel/sakaguchi_mean_field.py",
       "src/scpn_quantum_control/analysis/adaptive_fim_feedback.py",
       "src/scpn_quantum_control/analysis/berry_phase.py",
       "src/scpn_quantum_control/analysis/bkt_analysis.py",
@@ -4482,6 +4483,8 @@
       "run_realtime_feedback_loop",
       "sakaguchi_force",
       "sakaguchi_jacobian",
+      "sakaguchi_mean_field_force",
+      "sakaguchi_mean_field_jacobian",
       "score_function_gradient_rust",
       "score_regions_batch",
       "spsa_gradient_rust",
@@ -5990,6 +5993,7 @@
       "tests/test_s4_neutral_atom_preregistration.py",
       "tests/test_s4_provider_preregistration.py",
       "tests/test_sakaguchi_kuramoto.py",
+      "tests/test_sakaguchi_mean_field.py",
       "tests/test_sc_to_quantum.py",
       "tests/test_sensing_branches.py",
       "tests/test_serialization_surface_audit.py",

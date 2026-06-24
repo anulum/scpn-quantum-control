@@ -1738,6 +1738,53 @@ If the measured ordering changes, update the chain comments at `_DAIDO_MEAN_FIEL
 and `_DAIDO_MEAN_FIELD_JACOBIAN_CHAIN` in
 `src/scpn_quantum_control/accel/daido_mean_field.py` to match.
 
+### `sakaguchi_mean_field_force(theta, K, α)` and `sakaguchi_mean_field_jacobian(theta, K, α)`
+
+The Sakaguchi–Kuramoto mean field adds a phase frustration α to the all-to-all coupling,
+`F_j = K r sin(ψ − θ_j − α)` (the frustrated travelling-wave drive); its stability Jacobian
+`J_jl = (K/N) cos(θ_j − θ_l + α) − δ_jl K r cos(ψ − θ_j − α)` is non-symmetric for α ≠ 0 (the
+dynamics are non-variational) yet keeps a zero row sum (the global-phase Goldstone mode). The
+force is `O(N)`; the Jacobian is an `N × N` matrix, so the benchmark stops at N = 2048. Measured
+2026-06-24 at the fixed coupling K = 1 and frustration α = 0.5 on the local Linux runner (Intel
+i5-11600K @ 3.90 GHz, Python 3.12.3, juliacall, scpn-quantum-engine local build). Inner loop:
+100 calls per sample × 7 samples; per-call median. Raw JSON:
+`docs/benchmarks/sakaguchi_mean_field_tiers.json`.
+
+`sakaguchi_mean_field_force` (K = 1, α = 0.5):
+
+|    N |     Rust |    Julia |   Python |
+|-----:|---------:|---------:|---------:|
+|    4 |  1.01 µs |  9.65 µs | 14.28 µs |
+|   64 |  2.18 µs | 13.14 µs | 15.81 µs |
+| 1024 | 20.42 µs | 36.27 µs | 44.56 µs |
+| 2048 | 38.96 µs | 75.27 µs | 92.30 µs |
+
+`sakaguchi_mean_field_jacobian` (K = 1, α = 0.5):
+
+|    N |       Rust |      Julia |     Python |
+|-----:|-----------:|-----------:|-----------:|
+|    4 |    1.29 µs |   11.08 µs |   16.79 µs |
+|   64 |   32.72 µs |   54.29 µs |   53.25 µs |
+|  256 |  753.43 µs |  823.70 µs |  867.11 µs |
+| 2048 | 66737.71 µs | 71708.45 µs | 93044.18 µs |
+
+Read-offs:
+
+* Rust is first for both routes at every N, matching the chain ordering. The force is the
+  frustrated analogue of the mean-field force, with the same FFI-vs-vectorised-NumPy lead; the
+  Jacobian builds the full `cos(θ_j − θ_l + α)` matrix in a fused loop and stays ahead of both
+  the Julia tier and NumPy's broadcast temporary at N = 2048.
+
+Re-run with:
+
+```bash
+python scripts/bench_sakaguchi_mean_field_tiers.py
+```
+
+If the measured ordering changes, update the chain comments at `_SAKAGUCHI_MEAN_FIELD_FORCE_CHAIN`
+and `_SAKAGUCHI_MEAN_FIELD_JACOBIAN_CHAIN` in
+`src/scpn_quantum_control/accel/sakaguchi_mean_field.py` to match.
+
 ### `networked_kuramoto_force(theta, K)` and `networked_kuramoto_jacobian(theta, K)`
 
 The general (graph) Kuramoto force `F_j = Σ_k K_jk sin(θ_k − θ_j)` for a coupling matrix

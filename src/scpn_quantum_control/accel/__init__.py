@@ -115,6 +115,12 @@ from .sakaguchi_kuramoto import (
     sakaguchi_force,
     sakaguchi_jacobian,
 )
+from .sakaguchi_mean_field import (
+    last_sakaguchi_mean_field_force_tier_used,
+    last_sakaguchi_mean_field_jacobian_tier_used,
+    sakaguchi_mean_field_force,
+    sakaguchi_mean_field_jacobian,
+)
 
 __all__ = [
     "MultiLangDispatcher",
@@ -170,6 +176,10 @@ __all__ = [
     "order_parameter",
     "order_parameter_gradient",
     "order_parameter_hessian",
+    "sakaguchi_mean_field_force",
+    "sakaguchi_mean_field_jacobian",
+    "last_sakaguchi_mean_field_force_tier_used",
+    "last_sakaguchi_mean_field_jacobian_tier_used",
     "sakaguchi_force",
     "sakaguchi_jacobian",
     "last_sakaguchi_force_tier_used",

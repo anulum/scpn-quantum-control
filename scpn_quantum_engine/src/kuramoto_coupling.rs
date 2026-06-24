@@ -693,6 +693,100 @@ pub fn daido_mean_field_jacobian_inner(theta: &[f64], coupling: f64, m: f64) -> 
     out
 }
 
+/// Compute the Sakaguchi–Kuramoto mean-field force F_j = K r sin(ψ − θ_j − α).
+///
+/// Expanded as K [(S cos θ_j − C sin θ_j) cos α − (C cos θ_j + S sin θ_j) sin α] with
+/// C = ⟨cos θ⟩, S = ⟨sin θ⟩. For α = 0 this is the mean-field force.
+#[pyfunction]
+pub fn sakaguchi_mean_field_force<'py>(
+    py: Python<'py>,
+    theta: PyReadonlyArray1<'_, f64>,
+    coupling: f64,
+    frustration: f64,
+) -> PyResult<Bound<'py, PyArray1<f64>>> {
+    let theta = validate_phase_vector(&theta, "theta")?;
+    Ok(PyArray1::from_owned_array(
+        py,
+        sakaguchi_mean_field_force_inner(theta, coupling, frustration),
+    ))
+}
+
+/// Pure Rust Sakaguchi–Kuramoto mean-field force (no PyO3).
+pub fn sakaguchi_mean_field_force_inner(
+    theta: &[f64],
+    coupling: f64,
+    frustration: f64,
+) -> Array1<f64> {
+    let n = theta.len();
+    if n == 0 {
+        return Array1::zeros(0);
+    }
+    let (mut c, mut s) = (0.0_f64, 0.0_f64);
+    for &t in theta {
+        c += t.cos();
+        s += t.sin();
+    }
+    let count = n as f64;
+    let cos_mean = c / count;
+    let sin_mean = s / count;
+    let cos_a = frustration.cos();
+    let sin_a = frustration.sin();
+    Array1::from_iter(theta.iter().map(|&t| {
+        let in_phase = sin_mean * t.cos() - cos_mean * t.sin();
+        let quadrature = cos_mean * t.cos() + sin_mean * t.sin();
+        coupling * (in_phase * cos_a - quadrature * sin_a)
+    }))
+}
+
+/// Compute the Sakaguchi–Kuramoto mean-field stability Jacobian J_jl = ∂F_j/∂θ_l.
+///
+/// J_jl = (K/N) cos(θ_j − θ_l + α) − δ_jl K (C cos(θ_j + α) + S sin(θ_j + α)). Non-symmetric for
+/// α ≠ 0 (the dynamics are non-variational), yet every row sums to zero.
+#[pyfunction]
+pub fn sakaguchi_mean_field_jacobian<'py>(
+    py: Python<'py>,
+    theta: PyReadonlyArray1<'_, f64>,
+    coupling: f64,
+    frustration: f64,
+) -> PyResult<Bound<'py, PyArray2<f64>>> {
+    let theta = validate_phase_vector(&theta, "theta")?;
+    Ok(PyArray2::from_owned_array(
+        py,
+        sakaguchi_mean_field_jacobian_inner(theta, coupling, frustration),
+    ))
+}
+
+/// Pure Rust Sakaguchi–Kuramoto mean-field stability Jacobian (no PyO3), returned row-major.
+pub fn sakaguchi_mean_field_jacobian_inner(
+    theta: &[f64],
+    coupling: f64,
+    frustration: f64,
+) -> Array2<f64> {
+    let n = theta.len();
+    let mut out = Array2::<f64>::zeros((n, n));
+    if n == 0 {
+        return out;
+    }
+    let (mut c, mut s) = (0.0_f64, 0.0_f64);
+    for &t in theta {
+        c += t.cos();
+        s += t.sin();
+    }
+    let count = n as f64;
+    let cos_mean = c / count;
+    let sin_mean = s / count;
+    let scale = coupling / count;
+    for i in 0..n {
+        for j in 0..n {
+            out[[i, j]] = scale * (theta[i] - theta[j] + frustration).cos();
+        }
+        out[[i, i]] -= coupling
+            * (cos_mean * (theta[i] + frustration).cos()
+                + sin_mean * (theta[i] + frustration).sin());
+    }
+    out
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -807,6 +901,68 @@ mod tests {
         assert!(daido_mean_field_force_inner(&[], 1.0, 2.0).is_empty());
         assert_eq!(
             daido_mean_field_jacobian_inner(&[], 1.0, 2.0).shape(),
+            &[0, 0]
+        );
+    }
+
+    #[test]
+    fn test_sakaguchi_mean_field_zero_frustration_matches_mean_field() {
+        let theta = vec![0.3, -1.1, 2.0, 0.7, 4.2];
+        let k = 1.7;
+        let sak_force = sakaguchi_mean_field_force_inner(&theta, k, 0.0);
+        let mean_force = mean_field_force_inner(&theta, k);
+        let sak_jac = sakaguchi_mean_field_jacobian_inner(&theta, k, 0.0);
+        let mean_jac = mean_field_jacobian_inner(&theta, k);
+        for j in 0..theta.len() {
+            assert!((sak_force[j] - mean_force[j]).abs() < 1e-12);
+            for l in 0..theta.len() {
+                assert!((sak_jac[[j, l]] - mean_jac[[j, l]]).abs() < 1e-12);
+            }
+        }
+    }
+
+    #[test]
+    fn test_sakaguchi_mean_field_jacobian_matches_finite_difference() {
+        let theta = vec![0.3, -1.1, 2.0, 0.7, 4.2];
+        let (k, alpha) = (2.5, 0.8);
+        let jacobian = sakaguchi_mean_field_jacobian_inner(&theta, k, alpha);
+        let h = 1e-6;
+        for l in 0..theta.len() {
+            let mut plus = theta.clone();
+            let mut minus = theta.clone();
+            plus[l] += h;
+            minus[l] -= h;
+            let force_plus = sakaguchi_mean_field_force_inner(&plus, k, alpha);
+            let force_minus = sakaguchi_mean_field_force_inner(&minus, k, alpha);
+            for j in 0..theta.len() {
+                let fd = (force_plus[j] - force_minus[j]) / (2.0 * h);
+                assert!((jacobian[[j, l]] - fd).abs() < 1e-6, "J[{j},{l}]");
+            }
+        }
+    }
+
+    #[test]
+    fn test_sakaguchi_mean_field_jacobian_rows_sum_to_zero_and_break_symmetry() {
+        let theta = vec![0.1, 0.9, 2.3, 3.1, 5.5];
+        let jacobian = sakaguchi_mean_field_jacobian_inner(&theta, 1.3, 0.7);
+        let n = theta.len();
+        let mut asymmetry = 0.0_f64;
+        for i in 0..n {
+            let row_sum: f64 = (0..n).map(|j| jacobian[[i, j]]).sum();
+            assert!(row_sum.abs() < 1e-12, "row {i} sum = {row_sum}");
+            for j in 0..n {
+                asymmetry += (jacobian[[i, j]] - jacobian[[j, i]]).abs();
+            }
+        }
+        // Frustration breaks the variational symmetry.
+        assert!(asymmetry > 1e-3);
+    }
+
+    #[test]
+    fn test_sakaguchi_mean_field_empty() {
+        assert!(sakaguchi_mean_field_force_inner(&[], 1.0, 0.5).is_empty());
+        assert_eq!(
+            sakaguchi_mean_field_jacobian_inner(&[], 1.0, 0.5).shape(),
             &[0, 0]
         );
     }

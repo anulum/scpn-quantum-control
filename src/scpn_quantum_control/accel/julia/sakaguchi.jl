@@ -49,3 +49,62 @@ function sakaguchi_jacobian(
     end
     return out
 end
+
+function sakaguchi_mean_field_force(
+    theta::AbstractVector{<:Real},
+    coupling::Real,
+    frustration::Real,
+)::Vector{Float64}
+    # F_j = K [(S cos θ_j − C sin θ_j) cos α − (C cos θ_j + S sin θ_j) sin α].
+    n = length(theta)
+    out = zeros(Float64, n)
+    n == 0 && return out
+    c = 0.0
+    s = 0.0
+    @inbounds for k in 1:n
+        c += cos(Float64(theta[k]))
+        s += sin(Float64(theta[k]))
+    end
+    c /= n
+    s /= n
+    kf = Float64(coupling)
+    cos_a = cos(Float64(frustration))
+    sin_a = sin(Float64(frustration))
+    @inbounds for j in 1:n
+        ct = cos(Float64(theta[j]))
+        st = sin(Float64(theta[j]))
+        in_phase = s * ct - c * st
+        quadrature = c * ct + s * st
+        out[j] = kf * (in_phase * cos_a - quadrature * sin_a)
+    end
+    return out
+end
+
+function sakaguchi_mean_field_jacobian(
+    theta::AbstractVector{<:Real},
+    coupling::Real,
+    frustration::Real,
+)::Matrix{Float64}
+    # J_jl = (K/N) cos(θ_j − θ_l + α) − δ_jl K (C cos(θ_j + α) + S sin(θ_j + α)).
+    n = length(theta)
+    out = zeros(Float64, n, n)
+    n == 0 && return out
+    c = 0.0
+    s = 0.0
+    @inbounds for k in 1:n
+        c += cos(Float64(theta[k]))
+        s += sin(Float64(theta[k]))
+    end
+    c /= n
+    s /= n
+    kf = Float64(coupling)
+    af = Float64(frustration)
+    scale = kf / n
+    @inbounds for i in 1:n, j in 1:n
+        out[i, j] = scale * cos(Float64(theta[i]) - Float64(theta[j]) + af)
+    end
+    @inbounds for i in 1:n
+        out[i, i] -= kf * (c * cos(Float64(theta[i]) + af) + s * sin(Float64(theta[i]) + af))
+    end
+    return out
+end

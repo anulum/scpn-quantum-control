@@ -151,6 +151,14 @@ fn scpn_quantum_engine(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(kuramoto_coupling::sakaguchi_force, m)?)?;
     m.add_function(wrap_pyfunction!(kuramoto_coupling::sakaguchi_jacobian, m)?)?;
     m.add_function(wrap_pyfunction!(
+        kuramoto_coupling::sakaguchi_mean_field_force,
+        m
+    )?)?;
+    m.add_function(wrap_pyfunction!(
+        kuramoto_coupling::sakaguchi_mean_field_jacobian,
+        m
+    )?)?;
+    m.add_function(wrap_pyfunction!(
         kuramoto_coupling::local_order_parameter,
         m
     )?)?;
