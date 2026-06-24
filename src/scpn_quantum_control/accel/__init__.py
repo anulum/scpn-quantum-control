@@ -83,6 +83,16 @@ from .kuramoto_adaptive import (
     hebbian_plasticity_rate,
     integrate_adaptive_kuramoto,
 )
+from .kuramoto_chimera import (
+    ChimeraDiagnostics,
+    chimera_diagnostics,
+    chimera_index,
+    chimera_index_gradient,
+    community_metastability,
+    community_order_parameters,
+    metastability_index,
+    metastability_index_gradient,
+)
 from .kuramoto_control import (
     TerminalObjective,
     coherence_objective,
@@ -436,6 +446,14 @@ __all__ = [
     "frequency_order_diagnostics",
     "frequency_synchronisation_index",
     "frequency_synchronisation_index_gradient",
+    "ChimeraDiagnostics",
+    "chimera_diagnostics",
+    "chimera_index",
+    "chimera_index_gradient",
+    "community_metastability",
+    "community_order_parameters",
+    "metastability_index",
+    "metastability_index_gradient",
     "mean_phase",
     "mean_phase_gradient",
     "mean_phase_hessian",
