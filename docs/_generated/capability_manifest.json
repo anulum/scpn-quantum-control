@@ -10,10 +10,10 @@
     "public_api_exports": 717,
     "public_documentation_pages": 249,
     "python_model_classes": 844,
-    "python_model_source_modules": 479,
+    "python_model_source_modules": 480,
     "rust_pyo3_model_wrappers": 171,
     "rust_source_modules": 42,
-    "test_files": 786
+    "test_files": 787
   },
   "documentation": {
     "examples": [
@@ -4277,6 +4277,7 @@
       "src/scpn_quantum_control/identity/ground_state.py",
       "src/scpn_quantum_control/identity/identity_key.py",
       "src/scpn_quantum_control/identity/robustness.py",
+      "src/scpn_quantum_control/kuramoto.py",
       "src/scpn_quantum_control/kuramoto_core.py",
       "src/scpn_quantum_control/l16/quantum_director.py",
       "src/scpn_quantum_control/logging_setup.py",
@@ -5812,6 +5813,7 @@
       "tests/test_kuramoto_delayed_mean_field.py",
       "tests/test_kuramoto_energy.py",
       "tests/test_kuramoto_explosive_continuation.py",
+      "tests/test_kuramoto_facade.py",
       "tests/test_kuramoto_frequency_order.py",
       "tests/test_kuramoto_heterogeneous.py",
       "tests/test_kuramoto_hyperedge.py",
