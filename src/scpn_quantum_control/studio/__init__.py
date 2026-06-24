@@ -14,6 +14,13 @@ and :mod:`scpn_quantum_control.studio.verbs`.
 
 from __future__ import annotations
 
+from .coverage_frontier import (
+    ANSWERED_STATUSES,
+    CoverageFrontierReport,
+    map_claim_status,
+    measure_coverage_frontier,
+    render_coverage_frontier_markdown,
+)
 from .federation import (
     build_architecture_map_extension,
     build_federation_document,
@@ -23,6 +30,8 @@ from .manifest import build_manifest, declared_surface
 from .verbs import QUANTUM_VERBS, STUDIO_ID, evidence_schemas
 
 __all__ = [
+    "ANSWERED_STATUSES",
+    "CoverageFrontierReport",
     "QUANTUM_VERBS",
     "STUDIO_ID",
     "build_architecture_map_extension",
@@ -30,5 +39,8 @@ __all__ = [
     "build_manifest",
     "declared_surface",
     "evidence_schemas",
+    "map_claim_status",
+    "measure_coverage_frontier",
+    "render_coverage_frontier_markdown",
     "write_federation_document",
 ]
