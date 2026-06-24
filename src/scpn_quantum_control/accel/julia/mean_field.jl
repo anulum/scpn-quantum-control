@@ -49,3 +49,57 @@ function mean_field_jacobian(theta::AbstractVector{<:Real}, coupling::Real)::Mat
     end
     return out
 end
+
+function daido_mean_field_force(
+    theta::AbstractVector{<:Real},
+    coupling::Real,
+    m::Integer,
+)::Vector{Float64}
+    # F_j = K (S_m cos m θ_j − C_m sin m θ_j), C_m = ⟨cos m θ⟩, S_m = ⟨sin m θ⟩.
+    n = length(theta)
+    out = zeros(Float64, n)
+    n == 0 && return out
+    c = 0.0
+    s = 0.0
+    mf = Float64(m)
+    @inbounds for k in 1:n
+        c += cos(mf * Float64(theta[k]))
+        s += sin(mf * Float64(theta[k]))
+    end
+    c /= n
+    s /= n
+    kf = Float64(coupling)
+    @inbounds for j in 1:n
+        out[j] = kf * (s * cos(mf * Float64(theta[j])) - c * sin(mf * Float64(theta[j])))
+    end
+    return out
+end
+
+function daido_mean_field_jacobian(
+    theta::AbstractVector{<:Real},
+    coupling::Real,
+    m::Integer,
+)::Matrix{Float64}
+    # J_jl = K m [(1/N) cos(m(θ_j − θ_l)) − δ_jl (C_m cos m θ_j + S_m sin m θ_j)].
+    n = length(theta)
+    out = zeros(Float64, n, n)
+    n == 0 && return out
+    c = 0.0
+    s = 0.0
+    mf = Float64(m)
+    @inbounds for k in 1:n
+        c += cos(mf * Float64(theta[k]))
+        s += sin(mf * Float64(theta[k]))
+    end
+    c /= n
+    s /= n
+    kf = Float64(coupling)
+    scale = kf * mf / n
+    @inbounds for i in 1:n, j in 1:n
+        out[i, j] = scale * cos(mf * (Float64(theta[i]) - Float64(theta[j])))
+    end
+    @inbounds for i in 1:n
+        out[i, i] -= kf * mf * (c * cos(mf * Float64(theta[i])) + s * sin(mf * Float64(theta[i])))
+    end
+    return out
+end

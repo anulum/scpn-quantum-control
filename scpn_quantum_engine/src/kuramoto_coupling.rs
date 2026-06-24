@@ -505,6 +505,98 @@ pub fn local_order_parameter_jacobian_inner(
     out
 }
 
+/// Compute the Daido m-th-harmonic mean-field force F_j = K (S_m cos m θ_j − C_m sin m θ_j).
+///
+/// With C_m = ⟨cos m θ⟩, S_m = ⟨sin m θ⟩. For m = 1 this is the mean-field force.
+#[pyfunction]
+pub fn daido_mean_field_force<'py>(
+    py: Python<'py>,
+    theta: PyReadonlyArray1<'_, f64>,
+    coupling: f64,
+    m: i64,
+) -> PyResult<Bound<'py, PyArray1<f64>>> {
+    if m < 1 {
+        return Err(PyValueError::new_err(format!(
+            "harmonic order m must be a positive integer, got {m}"
+        )));
+    }
+    let theta = validate_phase_vector(&theta, "theta")?;
+    Ok(PyArray1::from_owned_array(
+        py,
+        daido_mean_field_force_inner(theta, coupling, m as f64),
+    ))
+}
+
+/// Pure Rust Daido m-th-harmonic mean-field force (no PyO3).
+pub fn daido_mean_field_force_inner(theta: &[f64], coupling: f64, m: f64) -> Array1<f64> {
+    let n = theta.len();
+    if n == 0 {
+        return Array1::zeros(0);
+    }
+    let (mut c, mut s) = (0.0_f64, 0.0_f64);
+    for &t in theta {
+        c += (m * t).cos();
+        s += (m * t).sin();
+    }
+    let count = n as f64;
+    let cos_mean = c / count;
+    let sin_mean = s / count;
+    Array1::from_iter(
+        theta
+            .iter()
+            .map(|&t| coupling * (sin_mean * (m * t).cos() - cos_mean * (m * t).sin())),
+    )
+}
+
+/// Compute the Daido m-th-harmonic mean-field stability Jacobian J_jl = ∂F_j/∂θ_l.
+///
+/// J_jl = K m [(1/N) cos(m(θ_j − θ_l)) − δ_jl (C_m cos m θ_j + S_m sin m θ_j)]. The matrix is
+/// symmetric and every row sums to zero (the global-phase Goldstone mode).
+#[pyfunction]
+pub fn daido_mean_field_jacobian<'py>(
+    py: Python<'py>,
+    theta: PyReadonlyArray1<'_, f64>,
+    coupling: f64,
+    m: i64,
+) -> PyResult<Bound<'py, PyArray2<f64>>> {
+    if m < 1 {
+        return Err(PyValueError::new_err(format!(
+            "harmonic order m must be a positive integer, got {m}"
+        )));
+    }
+    let theta = validate_phase_vector(&theta, "theta")?;
+    Ok(PyArray2::from_owned_array(
+        py,
+        daido_mean_field_jacobian_inner(theta, coupling, m as f64),
+    ))
+}
+
+/// Pure Rust Daido m-th-harmonic mean-field stability Jacobian (no PyO3), returned row-major.
+pub fn daido_mean_field_jacobian_inner(theta: &[f64], coupling: f64, m: f64) -> Array2<f64> {
+    let n = theta.len();
+    let mut out = Array2::<f64>::zeros((n, n));
+    if n == 0 {
+        return out;
+    }
+    let (mut c, mut s) = (0.0_f64, 0.0_f64);
+    for &t in theta {
+        c += (m * t).cos();
+        s += (m * t).sin();
+    }
+    let count = n as f64;
+    let cos_mean = c / count;
+    let sin_mean = s / count;
+    let scale = coupling * m / count;
+    for i in 0..n {
+        for j in 0..n {
+            out[[i, j]] = scale * (m * (theta[i] - theta[j])).cos();
+        }
+        out[[i, i]] -=
+            coupling * m * (cos_mean * (m * theta[i]).cos() + sin_mean * (m * theta[i]).sin());
+    }
+    out
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -562,6 +654,65 @@ mod tests {
     fn test_mean_field_empty() {
         assert!(mean_field_force_inner(&[], 1.0).is_empty());
         assert_eq!(mean_field_jacobian_inner(&[], 1.0).shape(), &[0, 0]);
+    }
+
+    #[test]
+    fn test_daido_mean_field_m1_matches_mean_field() {
+        let theta = vec![0.3, -1.1, 2.0, 0.7, 4.2];
+        let k = 1.7;
+        let daido_force = daido_mean_field_force_inner(&theta, k, 1.0);
+        let mean_force = mean_field_force_inner(&theta, k);
+        let daido_jac = daido_mean_field_jacobian_inner(&theta, k, 1.0);
+        let mean_jac = mean_field_jacobian_inner(&theta, k);
+        for j in 0..theta.len() {
+            assert!((daido_force[j] - mean_force[j]).abs() < 1e-12);
+            for l in 0..theta.len() {
+                assert!((daido_jac[[j, l]] - mean_jac[[j, l]]).abs() < 1e-12);
+            }
+        }
+    }
+
+    #[test]
+    fn test_daido_mean_field_jacobian_matches_finite_difference() {
+        let theta = vec![0.3, -1.1, 2.0, 0.7, 4.2];
+        let (k, m) = (2.5, 2.0);
+        let jacobian = daido_mean_field_jacobian_inner(&theta, k, m);
+        let h = 1e-6;
+        for l in 0..theta.len() {
+            let mut plus = theta.clone();
+            let mut minus = theta.clone();
+            plus[l] += h;
+            minus[l] -= h;
+            let force_plus = daido_mean_field_force_inner(&plus, k, m);
+            let force_minus = daido_mean_field_force_inner(&minus, k, m);
+            for j in 0..theta.len() {
+                let fd = (force_plus[j] - force_minus[j]) / (2.0 * h);
+                assert!((jacobian[[j, l]] - fd).abs() < 1e-6, "J[{j},{l}]");
+            }
+        }
+    }
+
+    #[test]
+    fn test_daido_mean_field_jacobian_symmetric_and_rows_sum_to_zero() {
+        let theta = vec![0.1, 0.9, 2.3, 3.1, 5.5];
+        let jacobian = daido_mean_field_jacobian_inner(&theta, 1.3, 3.0);
+        let n = theta.len();
+        for i in 0..n {
+            for j in 0..n {
+                assert!((jacobian[[i, j]] - jacobian[[j, i]]).abs() < 1e-15);
+            }
+            let row_sum: f64 = (0..n).map(|j| jacobian[[i, j]]).sum();
+            assert!(row_sum.abs() < 1e-12, "row {i} sum = {row_sum}");
+        }
+    }
+
+    #[test]
+    fn test_daido_mean_field_empty() {
+        assert!(daido_mean_field_force_inner(&[], 1.0, 2.0).is_empty());
+        assert_eq!(
+            daido_mean_field_jacobian_inner(&[], 1.0, 2.0).shape(),
+            &[0, 0]
+        );
     }
 
     fn _symmetric_coupling(n: usize, seed: f64) -> Array2<f64> {

@@ -34,6 +34,12 @@ compute-module actually needs them):
 
 from __future__ import annotations
 
+from .daido_mean_field import (
+    daido_mean_field_force,
+    daido_mean_field_jacobian,
+    last_daido_mean_field_force_tier_used,
+    last_daido_mean_field_jacobian_tier_used,
+)
 from .daido_observables import (
     daido_order_parameter,
     daido_order_parameter_gradient,
@@ -107,6 +113,10 @@ from .sakaguchi_kuramoto import (
 __all__ = [
     "MultiLangDispatcher",
     "available_tiers",
+    "daido_mean_field_force",
+    "daido_mean_field_jacobian",
+    "last_daido_mean_field_force_tier_used",
+    "last_daido_mean_field_jacobian_tier_used",
     "daido_mode_phase",
     "daido_mode_phase_gradient",
     "daido_mode_phase_hessian",

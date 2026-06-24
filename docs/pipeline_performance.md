@@ -1691,6 +1691,53 @@ If the measured ordering changes, update the chain comments at `_MEAN_FIELD_FORC
 and `_MEAN_FIELD_JACOBIAN_CHAIN` in
 `src/scpn_quantum_control/accel/kuramoto_mean_field.py` to match.
 
+### `daido_mean_field_force(theta, K, m)` and `daido_mean_field_jacobian(theta, K, m)`
+
+The Daido m-th-harmonic mean field couples each oscillator to the m-th Fourier mode of the
+ensemble, `F_j = K (S_m cos m θ_j − C_m sin m θ_j) = K r_m sin(ψ_m − m θ_j)` (the all-to-all
+mean field at m = 1), driving m-cluster synchronisation; its stability Jacobian
+`J_jl = K m [(1/N) cos(m(θ_j − θ_l)) − δ_jl r_m cos(ψ_m − m θ_j)]` is symmetric with a zero
+row sum (the global-phase Goldstone mode). The force is `O(N)`; the Jacobian is an `N × N`
+matrix, so the benchmark stops at N = 2048. Measured 2026-06-24 at the fixed coupling K = 1
+and harmonic m = 2 on the local Linux runner (Intel i5-11600K @ 3.90 GHz, Python 3.12.3,
+juliacall, scpn-quantum-engine local build). Inner loop: 100 calls per sample × 7 samples;
+per-call median. Raw JSON: `docs/benchmarks/daido_mean_field_tiers.json`.
+
+`daido_mean_field_force` (K = 1, m = 2):
+
+|    N |     Rust |    Julia |   Python |
+|-----:|---------:|---------:|---------:|
+|    4 |  1.01 µs | 10.96 µs | 10.51 µs |
+|   64 |  2.24 µs | 10.25 µs | 12.81 µs |
+| 1024 | 21.51 µs | 35.02 µs | 40.99 µs |
+| 2048 | 43.99 µs | 125.11 µs | 69.25 µs |
+
+`daido_mean_field_jacobian` (K = 1, m = 2):
+
+|    N |       Rust |       Julia |     Python |
+|-----:|-----------:|------------:|-----------:|
+|    4 |    1.23 µs |     8.76 µs |   14.80 µs |
+|   64 |   31.70 µs |   140.87 µs |   51.28 µs |
+|  256 |  823.90 µs |  1067.48 µs |  960.32 µs |
+| 2048 | 69508.77 µs | 85901.52 µs | 94583.11 µs |
+
+Read-offs:
+
+* Rust is first for both routes at every N, matching the chain ordering. The force is the
+  m-scaled analogue of the mean-field force, with the same FFI-vs-vectorised-NumPy lead; the
+  Jacobian builds the full pairwise `cos(m(θ_j − θ_l))` matrix in a fused loop and stays
+  ahead of both the Julia tier and NumPy's broadcast temporary at N = 2048.
+
+Re-run with:
+
+```bash
+python scripts/bench_daido_mean_field_tiers.py
+```
+
+If the measured ordering changes, update the chain comments at `_DAIDO_MEAN_FIELD_FORCE_CHAIN`
+and `_DAIDO_MEAN_FIELD_JACOBIAN_CHAIN` in
+`src/scpn_quantum_control/accel/daido_mean_field.py` to match.
+
 ### `networked_kuramoto_force(theta, K)` and `networked_kuramoto_jacobian(theta, K)`
 
 The general (graph) Kuramoto force `F_j = Σ_k K_jk sin(θ_k − θ_j)` for a coupling matrix

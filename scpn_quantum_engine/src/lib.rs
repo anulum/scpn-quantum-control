@@ -121,6 +121,14 @@ fn scpn_quantum_engine(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(kuramoto_coupling::mean_field_force, m)?)?;
     m.add_function(wrap_pyfunction!(kuramoto_coupling::mean_field_jacobian, m)?)?;
     m.add_function(wrap_pyfunction!(
+        kuramoto_coupling::daido_mean_field_force,
+        m
+    )?)?;
+    m.add_function(wrap_pyfunction!(
+        kuramoto_coupling::daido_mean_field_jacobian,
+        m
+    )?)?;
+    m.add_function(wrap_pyfunction!(
         kuramoto_coupling::networked_kuramoto_force,
         m
     )?)?;
