@@ -11,7 +11,7 @@
     "public_documentation_pages": 249,
     "python_model_classes": 826,
     "python_model_source_modules": 447,
-    "rust_pyo3_model_wrappers": 158,
+    "rust_pyo3_model_wrappers": 159,
     "rust_source_modules": 38,
     "test_files": 752
   },
@@ -4353,6 +4353,7 @@
       "cosim_classical_substep",
       "daido_mode_phase",
       "daido_mode_phase_gradient",
+      "daido_mode_phase_hessian",
       "daido_order_parameter",
       "daido_order_parameter_gradient",
       "daido_order_parameter_hessian",

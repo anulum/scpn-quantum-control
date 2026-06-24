@@ -45,7 +45,9 @@ from .daido_observables import (
 from .daido_phase import (
     daido_mode_phase,
     daido_mode_phase_gradient,
+    daido_mode_phase_hessian,
     last_daido_mode_phase_gradient_tier_used,
+    last_daido_mode_phase_hessian_tier_used,
     last_daido_mode_phase_tier_used,
 )
 from .dispatcher import (
@@ -107,7 +109,9 @@ __all__ = [
     "available_tiers",
     "daido_mode_phase",
     "daido_mode_phase_gradient",
+    "daido_mode_phase_hessian",
     "last_daido_mode_phase_gradient_tier_used",
+    "last_daido_mode_phase_hessian_tier_used",
     "last_daido_mode_phase_tier_used",
     "daido_order_parameter",
     "daido_order_parameter_gradient",

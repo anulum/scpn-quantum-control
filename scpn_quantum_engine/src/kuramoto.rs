@@ -523,7 +523,10 @@ pub fn networked_kuramoto_force<'py>(
 }
 
 /// Pure Rust networked Kuramoto force (no PyO3).
-pub fn networked_kuramoto_force_inner(theta: &[f64], coupling: &ArrayView2<'_, f64>) -> Array1<f64> {
+pub fn networked_kuramoto_force_inner(
+    theta: &[f64],
+    coupling: &ArrayView2<'_, f64>,
+) -> Array1<f64> {
     let n = theta.len();
     let mut out = Array1::<f64>::zeros(n);
     for j in 0..n {
@@ -699,8 +702,7 @@ pub fn kuramoto_interaction_energy_hessian_inner(
             if l == i {
                 continue;
             }
-            let entry =
-                -0.5 * (coupling[[i, l]] + coupling[[l, i]]) * (theta[i] - theta[l]).cos();
+            let entry = -0.5 * (coupling[[i, l]] + coupling[[l, i]]) * (theta[i] - theta[l]).cos();
             out[[i, l]] = entry;
             diagonal -= entry;
         }
@@ -974,6 +976,69 @@ pub fn daido_mode_phase_gradient_inner(theta: &[f64], m: f64) -> Vec<f64> {
     let scale = m / (count * magnitude_squared);
     for (slot, &t) in out.iter_mut().zip(theta.iter()) {
         *slot = scale * (cos_mean * (m * t).cos() + sin_mean * (m * t).sin());
+    }
+    out
+}
+
+/// Compute the Hessian ∂²ψ_m/∂θ_i∂θ_j of the m-th Fourier-mode phase.
+///
+/// H_ij = m² [δ_ij s_j/(N r_m) − (s_i c_j + c_i s_j)/(N² r_m²)] with s_k = sin(ψ_m − m θ_k),
+/// c_k = cos(ψ_m − m θ_k). The matrix is symmetric and every row sums to zero; for m = 1 it
+/// is the mean-phase Hessian.
+#[pyfunction]
+pub fn daido_mode_phase_hessian<'py>(
+    py: Python<'py>,
+    theta: PyReadonlyArray1<'_, f64>,
+    m: i64,
+) -> PyResult<Bound<'py, PyArray2<f64>>> {
+    if m < 1 {
+        return Err(PyValueError::new_err(format!(
+            "harmonic order m must be a positive integer, got {m}"
+        )));
+    }
+    let theta = validate_phase_vector(&theta, "theta")?;
+    Ok(PyArray2::from_owned_array(
+        py,
+        daido_mode_phase_hessian_inner(theta, m as f64),
+    ))
+}
+
+/// Pure Rust m-th Fourier-mode phase Hessian (no PyO3), returned row-major.
+pub fn daido_mode_phase_hessian_inner(theta: &[f64], m: f64) -> Array2<f64> {
+    let n = theta.len();
+    let mut out = Array2::<f64>::zeros((n, n));
+    if n == 0 {
+        return out;
+    }
+    let (mut re, mut im) = (0.0_f64, 0.0_f64);
+    for &t in theta {
+        re += (m * t).cos();
+        im += (m * t).sin();
+    }
+    let count = n as f64;
+    let cos_mean = re / count;
+    let sin_mean = im / count;
+    let magnitude = (cos_mean * cos_mean + sin_mean * sin_mean).sqrt();
+    if magnitude == 0.0 {
+        return out;
+    }
+    let sin_aligned: Vec<f64> = theta
+        .iter()
+        .map(|&t| (sin_mean * (m * t).cos() - cos_mean * (m * t).sin()) / magnitude)
+        .collect();
+    let cos_aligned: Vec<f64> = theta
+        .iter()
+        .map(|&t| (cos_mean * (m * t).cos() + sin_mean * (m * t).sin()) / magnitude)
+        .collect();
+    let m_squared = m * m;
+    let diagonal_scale = m_squared / (count * magnitude);
+    let off_scale = m_squared / (count * count * magnitude * magnitude);
+    for i in 0..n {
+        for j in 0..n {
+            out[[i, j]] =
+                -off_scale * (sin_aligned[i] * cos_aligned[j] + cos_aligned[i] * sin_aligned[j]);
+        }
+        out[[i, i]] += diagonal_scale * sin_aligned[i];
     }
     out
 }
@@ -1660,7 +1725,10 @@ mod tests {
     fn test_order_parameter_hessian_single_is_zero() {
         let hessian = order_parameter_hessian_inner(&[2.7]);
         assert_eq!(hessian.shape(), &[1, 1]);
-        assert!(hessian[[0, 0]].abs() < 1e-12, "single oscillator → ∂²R/∂θ² = 0");
+        assert!(
+            hessian[[0, 0]].abs() < 1e-12,
+            "single oscillator → ∂²R/∂θ² = 0"
+        );
     }
 
     #[test]
@@ -1679,7 +1747,10 @@ mod tests {
 
     #[test]
     fn test_mean_phase_single_is_identity() {
-        assert!((mean_phase_inner(&[2.7]) - 2.7).abs() < 1e-12, "ψ of one oscillator is its phase");
+        assert!(
+            (mean_phase_inner(&[2.7]) - 2.7).abs() < 1e-12,
+            "ψ of one oscillator is its phase"
+        );
     }
 
     #[test]
@@ -1705,7 +1776,9 @@ mod tests {
     #[test]
     fn test_mean_phase_gradient_sums_to_one() {
         // A global phase shift advances ψ identically, so the gradient sums to one.
-        let total: f64 = mean_phase_gradient_inner(&[0.1, 0.9, 2.3, 3.1, 5.5]).iter().sum();
+        let total: f64 = mean_phase_gradient_inner(&[0.1, 0.9, 2.3, 3.1, 5.5])
+            .iter()
+            .sum();
         assert!((total - 1.0).abs() < 1e-12, "sum = {total}");
     }
 
@@ -1713,7 +1786,10 @@ mod tests {
     fn test_mean_phase_gradient_single_is_one() {
         let grad = mean_phase_gradient_inner(&[2.7]);
         assert_eq!(grad.len(), 1);
-        assert!((grad[0] - 1.0).abs() < 1e-12, "∂ψ/∂θ = 1 for one oscillator");
+        assert!(
+            (grad[0] - 1.0).abs() < 1e-12,
+            "∂ψ/∂θ = 1 for one oscillator"
+        );
     }
 
     #[test]
@@ -1766,7 +1842,10 @@ mod tests {
     fn test_mean_phase_hessian_single_is_zero() {
         let hessian = mean_phase_hessian_inner(&[2.7]);
         assert_eq!(hessian.shape(), &[1, 1]);
-        assert!(hessian[[0, 0]].abs() < 1e-12, "∂²ψ/∂θ² = 0 for one oscillator");
+        assert!(
+            hessian[[0, 0]].abs() < 1e-12,
+            "∂²ψ/∂θ² = 0 for one oscillator"
+        );
     }
 
     #[test]
@@ -1877,7 +1956,10 @@ mod tests {
 
     #[test]
     fn test_daido_hessian_empty() {
-        assert_eq!(daido_order_parameter_hessian_inner(&[], 2.0).shape(), &[0, 0]);
+        assert_eq!(
+            daido_order_parameter_hessian_inner(&[], 2.0).shape(),
+            &[0, 0]
+        );
     }
 
     #[test]
@@ -1919,6 +2001,57 @@ mod tests {
     fn test_daido_mode_phase_empty() {
         assert_eq!(daido_mode_phase_inner(&[], 2.0), 0.0);
         assert!(daido_mode_phase_gradient_inner(&[], 2.0).is_empty());
+    }
+
+    #[test]
+    fn test_daido_mode_phase_hessian_m1_matches_mean_phase_hessian() {
+        let theta = vec![0.3, -1.1, 2.0, 0.7, 4.2];
+        let daido = daido_mode_phase_hessian_inner(&theta, 1.0);
+        let mean = mean_phase_hessian_inner(&theta);
+        for i in 0..theta.len() {
+            for j in 0..theta.len() {
+                assert!((daido[[i, j]] - mean[[i, j]]).abs() < 1e-12);
+            }
+        }
+    }
+
+    #[test]
+    fn test_daido_mode_phase_hessian_matches_finite_difference_of_gradient() {
+        let theta = vec![0.3, -1.1, 2.0, 0.7, 4.2];
+        let m = 2.0;
+        let hessian = daido_mode_phase_hessian_inner(&theta, m);
+        let h = 1e-6;
+        for l in 0..theta.len() {
+            let mut plus = theta.clone();
+            let mut minus = theta.clone();
+            plus[l] += h;
+            minus[l] -= h;
+            let grad_plus = daido_mode_phase_gradient_inner(&plus, m);
+            let grad_minus = daido_mode_phase_gradient_inner(&minus, m);
+            for i in 0..theta.len() {
+                let fd = (grad_plus[i] - grad_minus[i]) / (2.0 * h);
+                assert!((hessian[[i, l]] - fd).abs() < 1e-6, "H[{i},{l}]");
+            }
+        }
+    }
+
+    #[test]
+    fn test_daido_mode_phase_hessian_symmetric_and_rows_sum_to_zero() {
+        let theta = vec![0.1, 0.9, 2.3, 3.1, 5.5, 6.0];
+        let hessian = daido_mode_phase_hessian_inner(&theta, 3.0);
+        let n = theta.len();
+        for i in 0..n {
+            for j in 0..n {
+                assert!((hessian[[i, j]] - hessian[[j, i]]).abs() < 1e-15);
+            }
+            let row_sum: f64 = (0..n).map(|j| hessian[[i, j]]).sum();
+            assert!(row_sum.abs() < 1e-12, "row {i} sum = {row_sum}");
+        }
+    }
+
+    #[test]
+    fn test_daido_mode_phase_hessian_empty() {
+        assert_eq!(daido_mode_phase_hessian_inner(&[], 2.0).shape(), &[0, 0]);
     }
 
     #[test]
@@ -2103,7 +2236,10 @@ mod tests {
         let sum: f64 = gradient.iter().sum();
         assert!(sum.abs() < 1e-12);
         for j in 0..theta.len() {
-            assert!((gradient[j] + force[j]).abs() < 1e-12, "grad != -force at {j}");
+            assert!(
+                (gradient[j] + force[j]).abs() < 1e-12,
+                "grad != -force at {j}"
+            );
         }
     }
 
@@ -2231,7 +2367,10 @@ mod tests {
     fn test_sakaguchi_empty() {
         let empty = Array2::<f64>::zeros((0, 0));
         assert!(sakaguchi_force_inner(&[], &empty.view(), 0.5).is_empty());
-        assert_eq!(sakaguchi_jacobian_inner(&[], &empty.view(), 0.5).shape(), &[0, 0]);
+        assert_eq!(
+            sakaguchi_jacobian_inner(&[], &empty.view(), 0.5).shape(),
+            &[0, 0]
+        );
     }
 
     #[test]

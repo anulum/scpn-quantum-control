@@ -44,3 +44,40 @@ function daido_mode_phase_gradient(theta::AbstractVector{<:Real}, m::Integer)::V
     end
     return out
 end
+
+function daido_mode_phase_hessian(theta::AbstractVector{<:Real}, m::Integer)::Matrix{Float64}
+    # H_ij = m² [δ_ij s_j/(N r_m) − (s_i c_j + c_i s_j)/(N² r_m²)], s_k = sin(ψ_m − m θ_k),
+    # c_k = cos(ψ_m − m θ_k). Symmetric, rows sum to zero; the incoherent mode returns zeros.
+    n = length(theta)
+    out = zeros(Float64, n, n)
+    n == 0 && return out
+    re = 0.0
+    im = 0.0
+    mf = Float64(m)
+    @inbounds for k in 1:n
+        re += cos(mf * Float64(theta[k]))
+        im += sin(mf * Float64(theta[k]))
+    end
+    cos_mean = re / n
+    sin_mean = im / n
+    magnitude = sqrt(cos_mean * cos_mean + sin_mean * sin_mean)
+    magnitude == 0.0 && return out
+    s = Vector{Float64}(undef, n)
+    c = Vector{Float64}(undef, n)
+    @inbounds for k in 1:n
+        ck = cos(mf * Float64(theta[k]))
+        sk = sin(mf * Float64(theta[k]))
+        s[k] = (sin_mean * ck - cos_mean * sk) / magnitude
+        c[k] = (cos_mean * ck + sin_mean * sk) / magnitude
+    end
+    m2 = mf * mf
+    diagonal_scale = m2 / (n * magnitude)
+    off_scale = m2 / (n * n * magnitude * magnitude)
+    @inbounds for i in 1:n, j in 1:n
+        out[i, j] = -off_scale * (s[i] * c[j] + c[i] * s[j])
+    end
+    @inbounds for i in 1:n
+        out[i, i] += diagonal_scale * s[i]
+    end
+    return out
+end

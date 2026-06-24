@@ -131,8 +131,70 @@ _DAIDO_MODE_PHASE_GRADIENT_CHAIN: list[
 ]
 
 
+def _rust_daido_mode_phase_hessian(theta: NDArray[np.float64], m: int) -> NDArray[np.float64]:
+    _validate_harmonic(m)
+    engine = dispatcher.optional_rust_engine()
+    if engine is None:
+        raise ModuleNotFoundError("scpn_quantum_engine")
+    rust_hessian = getattr(engine, "daido_mode_phase_hessian", None)
+    if not callable(rust_hessian):
+        raise ImportError("scpn_quantum_engine.daido_mode_phase_hessian is unavailable")
+
+    return np.asarray(
+        rust_hessian(np.ascontiguousarray(theta, dtype=np.float64), m), dtype=np.float64
+    )
+
+
+def _julia_daido_mode_phase_hessian(theta: NDArray[np.float64], m: int) -> NDArray[np.float64]:
+    _validate_harmonic(m)
+    from .julia import daido_mode_phase_hessian as julia_hessian
+
+    return julia_hessian(theta, m)
+
+
+def _python_daido_mode_phase_hessian(theta: NDArray[np.float64], m: int) -> NDArray[np.float64]:
+    # Correctness floor — H_ij = m² [δ_ij s_j/(N r_m) − (s_i c_j + c_i s_j)/(N² r_m²)], with
+    # s_k = sin(ψ_m − m θ_k), c_k = cos(ψ_m − m θ_k). The matrix is symmetric and every row
+    # sums to zero (the mode-phase gradient sums to the constant m). The incoherent mode
+    # r_m = 0 returns the zero matrix. For m = 1 this reduces to ``mean_phase_hessian``.
+    _validate_harmonic(m)
+    phases = np.ascontiguousarray(theta, dtype=np.float64)
+    count = phases.size
+    if count == 0:
+        return np.zeros((0, 0), dtype=np.float64)
+    scaled = m * phases
+    cos_scaled = np.cos(scaled)
+    sin_scaled = np.sin(scaled)
+    cos_mean = float(np.mean(cos_scaled))
+    sin_mean = float(np.mean(sin_scaled))
+    magnitude = float(np.hypot(cos_mean, sin_mean))
+    if magnitude == 0.0:
+        return np.zeros((count, count), dtype=np.float64)
+    sin_aligned = (sin_mean * cos_scaled - cos_mean * sin_scaled) / magnitude
+    cos_aligned = (cos_mean * cos_scaled + sin_mean * sin_scaled) / magnitude
+    hessian = (m * m) * (
+        np.diag(sin_aligned / (count * magnitude))
+        - (np.outer(sin_aligned, cos_aligned) + np.outer(cos_aligned, sin_aligned))
+        / (count * count * magnitude * magnitude)
+    )
+    return np.ascontiguousarray(hessian, dtype=np.float64)
+
+
+# The Hessian chain mirrors the value/gradient chains. Its micro-benchmark (at m = 2) is
+# recorded in ``docs/benchmarks/daido_mode_phase_tiers.json``; rerun
+# ``python scripts/bench_daido_mode_phase_tiers.py`` when this chain is edited.
+_DAIDO_MODE_PHASE_HESSIAN_CHAIN: list[
+    tuple[str, Callable[[NDArray[np.float64], int], NDArray[np.float64]]]
+] = [
+    ("rust", _rust_daido_mode_phase_hessian),
+    ("julia", _julia_daido_mode_phase_hessian),
+    ("python", _python_daido_mode_phase_hessian),
+]
+
+
 _daido_mode_phase_dispatcher = MultiLangDispatcher(_DAIDO_MODE_PHASE_CHAIN)
 _daido_mode_phase_gradient_dispatcher = MultiLangDispatcher(_DAIDO_MODE_PHASE_GRADIENT_CHAIN)
+_daido_mode_phase_hessian_dispatcher = MultiLangDispatcher(_DAIDO_MODE_PHASE_HESSIAN_CHAIN)
 
 
 def daido_mode_phase(theta: NDArray[np.float64], m: int) -> float:
@@ -213,14 +275,58 @@ def last_daido_mode_phase_gradient_tier_used() -> str | None:
     return _daido_mode_phase_gradient_dispatcher.last_tier
 
 
+def daido_mode_phase_hessian(theta: NDArray[np.float64], m: int) -> NDArray[np.float64]:
+    r"""Hessian of the m-th Fourier-mode phase with multi-language dispatch.
+
+    Returns :math:`\partial^2 \psi_m / \partial \theta_i \partial \theta_j = m^2 [\delta_{ij}
+    s_j / (N r_m) - (s_i c_j + c_i s_j) / (N^2 r_m^2)]`, with :math:`s_k = \sin(\psi_m -
+    m\theta_k)` and :math:`c_k = \cos(\psi_m - m\theta_k)`. The matrix is symmetric and every
+    row sums to zero (the gradient sums to the constant m). At the incoherent mode
+    (:math:`r_m = 0`) the zero matrix is returned. For :math:`m = 1` it reduces to
+    :func:`~scpn_quantum_control.accel.mean_phase_observables.mean_phase_hessian`.
+
+    Parameters
+    ----------
+    theta : numpy.ndarray
+        One-dimensional array of oscillator phases in radians.
+    m : int
+        Harmonic order, a positive integer.
+
+    Returns
+    -------
+    numpy.ndarray
+        Two-dimensional ``(N, N)`` float64 Hessian matrix. An empty input yields a
+        ``(0, 0)`` array.
+
+    Raises
+    ------
+    ValueError
+        If ``m`` is not a positive integer.
+
+    Notes
+    -----
+    Chain (measured fastest first): Rust → Julia → Python floor. The served tier is
+    recorded on :func:`last_daido_mode_phase_hessian_tier_used`.
+    """
+    return np.asarray(_daido_mode_phase_hessian_dispatcher(theta, m), dtype=np.float64)
+
+
+def last_daido_mode_phase_hessian_tier_used() -> str | None:
+    """Return the tier that served the most recent ``daido_mode_phase_hessian``."""
+    return _daido_mode_phase_hessian_dispatcher.last_tier
+
+
 # Register the dispatchers for name-keyed ``dispatch`` lookups.
 register_dispatcher("daido_mode_phase", _daido_mode_phase_dispatcher)
 register_dispatcher("daido_mode_phase_gradient", _daido_mode_phase_gradient_dispatcher)
+register_dispatcher("daido_mode_phase_hessian", _daido_mode_phase_hessian_dispatcher)
 
 
 __all__ = [
     "daido_mode_phase",
     "daido_mode_phase_gradient",
+    "daido_mode_phase_hessian",
     "last_daido_mode_phase_gradient_tier_used",
+    "last_daido_mode_phase_hessian_tier_used",
     "last_daido_mode_phase_tier_used",
 ]

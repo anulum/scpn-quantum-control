@@ -520,12 +520,33 @@ def daido_mode_phase_gradient(theta: NDArray[np.float64], m: int) -> NDArray[np.
     return np.asarray(jl.daido_mode_phase_gradient(arr, m), dtype=np.float64)
 
 
+def daido_mode_phase_hessian(theta: NDArray[np.float64], m: int) -> NDArray[np.float64]:
+    """Julia-tier Hessian of the m-th Fourier-mode phase.
+
+    Parameters
+    ----------
+    theta : numpy.ndarray
+        One-dimensional array of oscillator phases in radians.
+    m : int
+        Harmonic order, a positive integer.
+
+    Returns
+    -------
+    numpy.ndarray
+        Two-dimensional ``(N, N)`` float64 Hessian matrix.
+    """
+    jl = _load()
+    arr = np.ascontiguousarray(theta, dtype=np.float64)
+    return np.asarray(jl.daido_mode_phase_hessian(arr, m), dtype=np.float64)
+
+
 __all__ = [
     "daido_order_parameter",
     "daido_order_parameter_gradient",
     "daido_order_parameter_hessian",
     "daido_mode_phase",
     "daido_mode_phase_gradient",
+    "daido_mode_phase_hessian",
     "is_available",
     "kuramoto_interaction_energy",
     "kuramoto_interaction_energy_gradient",

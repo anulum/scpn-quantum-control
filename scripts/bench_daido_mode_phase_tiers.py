@@ -167,6 +167,13 @@ def main(argv: list[str] | None = None) -> int:
         "julia": partial(dp._julia_daido_mode_phase_gradient, m=2) if julia_ok else None,
         "python": partial(dp._python_daido_mode_phase_gradient, m=2),
     }
+    hessian_tiers: dict[str, _Tier | None] = {
+        "rust": partial(dp._rust_daido_mode_phase_hessian, m=2) if rust_ok else None,
+        "julia": partial(dp._julia_daido_mode_phase_hessian, m=2) if julia_ok else None,
+        "python": partial(dp._python_daido_mode_phase_hessian, m=2),
+    }
+    # The value and gradient are O(N); the Hessian is an N×N matrix, so cap it at N ≤ 2048.
+    hessian_sizes = [n for n in sizes if n <= 2048]
 
     if julia_ok:
         print("[bench] warming Julia JIT …", file=sys.stderr, flush=True)
@@ -192,6 +199,9 @@ def main(argv: list[str] | None = None) -> int:
         ),
         "daido_mode_phase_gradient": _bench_function(
             "daido_mode_phase_gradient (m=2)", gradient_tiers, sizes, args, rng
+        ),
+        "daido_mode_phase_hessian": _bench_function(
+            "daido_mode_phase_hessian (m=2)", hessian_tiers, hessian_sizes, args, rng
         ),
     }
 

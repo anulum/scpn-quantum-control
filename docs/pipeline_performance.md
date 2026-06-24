@@ -1550,39 +1550,52 @@ If the measured ordering changes, update the chain comment at
 `_DAIDO_ORDER_PARAMETER_CHAIN` and `_DAIDO_ORDER_PARAMETER_GRADIENT_CHAIN` in
 `src/scpn_quantum_control/accel/daido_observables.py` to match.
 
-### `daido_mode_phase(theta, m)` and `daido_mode_phase_gradient(theta, m)`
+### `daido_mode_phase(theta, m)`, its gradient and its Hessian
 
 The phase of the m-th Fourier mode, `ψ_m = atan2(⟨sin mθ⟩, ⟨cos mθ⟩)` (the phase partner of
-the Daido magnitude `r_m`; for m = 1 it is the Kuramoto mean phase) and its gradient
-`∂ψ_m/∂θ_j = (m/(N r_m)) cos(ψ_m − m θ_j)` (components sum to m). Both are `O(N)`. Measured
-2026-06-24 at the fixed harmonic m = 2 on the local Linux runner (Intel i5-11600K @ 3.90 GHz,
-Python 3.12.3, juliacall, scpn-quantum-engine local build). Inner loop: 100 calls per
-sample × 7 samples; per-call median. Raw JSON: `docs/benchmarks/daido_mode_phase_tiers.json`.
+the Daido magnitude `r_m`; for m = 1 it is the Kuramoto mean phase), its gradient
+`∂ψ_m/∂θ_j = (m/(N r_m)) cos(ψ_m − m θ_j)` (components sum to m) and its Hessian
+`H_ij = m²[δ_ij s_j/(N r_m) − (s_i c_j + c_i s_j)/(N² r_m²)]` (symmetric, zero-row-sum; for
+m = 1 the mean-phase Hessian). The value and gradient are `O(N)`; the Hessian is an N × N
+matrix, so it stops at N = 1024. Measured 2026-06-24 at the fixed harmonic m = 2 on the local
+Linux runner (Intel i5-11600K @ 3.90 GHz, Python 3.12.3, juliacall, scpn-quantum-engine local
+build). Inner loop: 100 calls per sample × 7 samples; per-call median. Raw JSON:
+`docs/benchmarks/daido_mode_phase_tiers.json`.
 
 `daido_mode_phase` (m = 2):
 
 |     N |      Rust |    Julia |   Python |
 |------:|----------:|---------:|---------:|
-|     4 |   0.68 µs |  8.61 µs |  6.52 µs |
-|    64 |   1.44 µs |  8.88 µs |  7.69 µs |
-|  1024 |  12.99 µs | 19.74 µs | 23.50 µs |
-| 16384 | 355.15 µs | 393.19 µs | 527.68 µs |
+|     4 |   0.72 µs |  9.03 µs |  9.83 µs |
+|    64 |   1.41 µs |  8.75 µs |  8.39 µs |
+|  1024 |  12.67 µs | 20.27 µs | 25.79 µs |
+| 16384 | 357.03 µs | 385.04 µs | 551.87 µs |
 
 `daido_mode_phase_gradient` (m = 2):
 
 |     N |      Rust |    Julia |    Python |
 |------:|----------:|---------:|----------:|
-|     4 |   1.97 µs |  9.87 µs |  14.50 µs |
-|    64 |   2.42 µs | 11.13 µs |  13.61 µs |
-|  1024 |  27.26 µs | 37.46 µs |  49.42 µs |
-| 16384 | 668.69 µs | 795.21 µs | 1000.55 µs |
+|     4 |   1.28 µs | 13.50 µs |  14.28 µs |
+|    64 |   2.87 µs | 14.16 µs |  16.19 µs |
+|  1024 |  25.64 µs | 42.14 µs |  51.56 µs |
+| 16384 | 694.88 µs | 836.39 µs | 1076.42 µs |
+
+`daido_mode_phase_hessian` (m = 2):
+
+|    N |      Rust |    Julia |   Python |
+|-----:|----------:|---------:|---------:|
+|    4 |   1.26 µs | 13.62 µs | 24.12 µs |
+|   64 |   4.76 µs | 20.69 µs | 41.64 µs |
+|  256 |  37.03 µs | 238.92 µs | 283.44 µs |
+| 1024 | 1559.57 µs | 6513.39 µs | 9842.16 µs |
 
 Read-offs:
 
-* Rust is first at every N for both routes (the value is a single complex-mean reduction plus
-  an `atan2`; the gradient adds the per-oscillator `cos(ψ_m − m θ_j)` term). Julia closes to
-  within ~10% on the value at N = 16384 but stays behind on the gradient; the chain places
-  Rust first, matching measurement.
+* Rust is first at every N for all three routes. The value and gradient are `O(N)` reductions
+  where Julia closes to within ~10% on the value at N = 16384; the Hessian is `O(N²)` and
+  Rust wins it decisively (4.2× faster than Julia and 6.3× faster than NumPy at N = 1024)
+  because its fused outer-product loop avoids the materialised `s⊗c` temporaries. The chain
+  places Rust first, matching measurement.
 
 Re-run with:
 
@@ -1590,8 +1603,8 @@ Re-run with:
 python scripts/bench_daido_mode_phase_tiers.py
 ```
 
-If the measured ordering changes, update the chain comments at `_DAIDO_MODE_PHASE_CHAIN` and
-`_DAIDO_MODE_PHASE_GRADIENT_CHAIN` in
+If the measured ordering changes, update the chain comments at `_DAIDO_MODE_PHASE_CHAIN`,
+`_DAIDO_MODE_PHASE_GRADIENT_CHAIN` and `_DAIDO_MODE_PHASE_HESSIAN_CHAIN` in
 `src/scpn_quantum_control/accel/daido_phase.py` to match.
 
 ### `daido_order_parameter_hessian(theta, m)`
