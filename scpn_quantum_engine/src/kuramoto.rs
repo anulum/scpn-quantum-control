@@ -905,6 +905,79 @@ pub fn local_order_parameter_jacobian_inner(
     out
 }
 
+/// Compute the m-th Fourier-mode phase ψ_m = atan2(⟨sin mθ⟩, ⟨cos mθ⟩).
+///
+/// For m = 1 this is the Kuramoto mean phase. An empty input and the incoherent mode both
+/// report 0.0.
+#[pyfunction]
+pub fn daido_mode_phase(theta: PyReadonlyArray1<'_, f64>, m: i64) -> PyResult<f64> {
+    if m < 1 {
+        return Err(PyValueError::new_err(format!(
+            "harmonic order m must be a positive integer, got {m}"
+        )));
+    }
+    let theta = validate_phase_vector(&theta, "theta")?;
+    Ok(daido_mode_phase_inner(theta, m as f64))
+}
+
+/// Pure Rust m-th Fourier-mode phase (no PyO3).
+pub fn daido_mode_phase_inner(theta: &[f64], m: f64) -> f64 {
+    if theta.is_empty() {
+        return 0.0;
+    }
+    let (mut re, mut im) = (0.0_f64, 0.0_f64);
+    for &t in theta {
+        re += (m * t).cos();
+        im += (m * t).sin();
+    }
+    im.atan2(re)
+}
+
+/// Compute the gradient ∂ψ_m/∂θ_j = (m / (N r_m²)) (C_m cos mθ_j + S_m sin mθ_j) of the
+/// m-th Fourier-mode phase.
+///
+/// The components sum to m; the incoherent mode r_m = 0 returns the zero subgradient.
+#[pyfunction]
+pub fn daido_mode_phase_gradient<'py>(
+    py: Python<'py>,
+    theta: PyReadonlyArray1<'_, f64>,
+    m: i64,
+) -> PyResult<Bound<'py, PyArray1<f64>>> {
+    if m < 1 {
+        return Err(PyValueError::new_err(format!(
+            "harmonic order m must be a positive integer, got {m}"
+        )));
+    }
+    let theta = validate_phase_vector(&theta, "theta")?;
+    let gradient = Array1::from_vec(daido_mode_phase_gradient_inner(theta, m as f64));
+    Ok(PyArray1::from_owned_array(py, gradient))
+}
+
+/// Pure Rust m-th Fourier-mode phase gradient (no PyO3).
+pub fn daido_mode_phase_gradient_inner(theta: &[f64], m: f64) -> Vec<f64> {
+    let mut out = vec![0.0_f64; theta.len()];
+    if theta.is_empty() {
+        return out;
+    }
+    let (mut re, mut im) = (0.0_f64, 0.0_f64);
+    for &t in theta {
+        re += (m * t).cos();
+        im += (m * t).sin();
+    }
+    let count = theta.len() as f64;
+    let cos_mean = re / count;
+    let sin_mean = im / count;
+    let magnitude_squared = cos_mean * cos_mean + sin_mean * sin_mean;
+    if magnitude_squared == 0.0 {
+        return out;
+    }
+    let scale = m / (count * magnitude_squared);
+    for (slot, &t) in out.iter_mut().zip(theta.iter()) {
+        *slot = scale * (cos_mean * (m * t).cos() + sin_mean * (m * t).sin());
+    }
+    out
+}
+
 fn validate_finite_slice(values: &[f64], name: &str) -> PyResult<()> {
     if values.iter().any(|value| !value.is_finite()) {
         return Err(pyo3::exceptions::PyValueError::new_err(format!(
@@ -1805,6 +1878,47 @@ mod tests {
     #[test]
     fn test_daido_hessian_empty() {
         assert_eq!(daido_order_parameter_hessian_inner(&[], 2.0).shape(), &[0, 0]);
+    }
+
+    #[test]
+    fn test_daido_mode_phase_m1_matches_mean_phase() {
+        let theta = vec![0.3, -1.1, 2.0, 0.7, 4.2];
+        assert!((daido_mode_phase_inner(&theta, 1.0) - mean_phase_inner(&theta)).abs() < 1e-12);
+    }
+
+    #[test]
+    fn test_daido_mode_phase_gradient_matches_finite_difference() {
+        let theta = vec![0.3, -1.1, 2.0, 0.7, 4.2];
+        let m = 2.0;
+        let gradient = daido_mode_phase_gradient_inner(&theta, m);
+        let h = 1e-6;
+        for j in 0..theta.len() {
+            let mut plus = theta.clone();
+            let mut minus = theta.clone();
+            plus[j] += h;
+            minus[j] -= h;
+            let mut delta = daido_mode_phase_inner(&plus, m) - daido_mode_phase_inner(&minus, m);
+            // unwrap the atan2 branch cut
+            delta = (delta + std::f64::consts::PI).rem_euclid(2.0 * std::f64::consts::PI)
+                - std::f64::consts::PI;
+            let fd = delta / (2.0 * h);
+            assert!((gradient[j] - fd).abs() < 1e-6, "grad[{j}]");
+        }
+    }
+
+    #[test]
+    fn test_daido_mode_phase_gradient_sums_to_m() {
+        let theta = vec![0.1, 0.9, 2.3, 3.1, 5.5, 6.0];
+        for m in [1.0, 2.0, 3.0] {
+            let sum: f64 = daido_mode_phase_gradient_inner(&theta, m).iter().sum();
+            assert!((sum - m).abs() < 1e-12, "m={m} sum={sum}");
+        }
+    }
+
+    #[test]
+    fn test_daido_mode_phase_empty() {
+        assert_eq!(daido_mode_phase_inner(&[], 2.0), 0.0);
+        assert!(daido_mode_phase_gradient_inner(&[], 2.0).is_empty());
     }
 
     #[test]

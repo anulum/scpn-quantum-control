@@ -1550,6 +1550,50 @@ If the measured ordering changes, update the chain comment at
 `_DAIDO_ORDER_PARAMETER_CHAIN` and `_DAIDO_ORDER_PARAMETER_GRADIENT_CHAIN` in
 `src/scpn_quantum_control/accel/daido_observables.py` to match.
 
+### `daido_mode_phase(theta, m)` and `daido_mode_phase_gradient(theta, m)`
+
+The phase of the m-th Fourier mode, `ψ_m = atan2(⟨sin mθ⟩, ⟨cos mθ⟩)` (the phase partner of
+the Daido magnitude `r_m`; for m = 1 it is the Kuramoto mean phase) and its gradient
+`∂ψ_m/∂θ_j = (m/(N r_m)) cos(ψ_m − m θ_j)` (components sum to m). Both are `O(N)`. Measured
+2026-06-24 at the fixed harmonic m = 2 on the local Linux runner (Intel i5-11600K @ 3.90 GHz,
+Python 3.12.3, juliacall, scpn-quantum-engine local build). Inner loop: 100 calls per
+sample × 7 samples; per-call median. Raw JSON: `docs/benchmarks/daido_mode_phase_tiers.json`.
+
+`daido_mode_phase` (m = 2):
+
+|     N |      Rust |    Julia |   Python |
+|------:|----------:|---------:|---------:|
+|     4 |   0.68 µs |  8.61 µs |  6.52 µs |
+|    64 |   1.44 µs |  8.88 µs |  7.69 µs |
+|  1024 |  12.99 µs | 19.74 µs | 23.50 µs |
+| 16384 | 355.15 µs | 393.19 µs | 527.68 µs |
+
+`daido_mode_phase_gradient` (m = 2):
+
+|     N |      Rust |    Julia |    Python |
+|------:|----------:|---------:|----------:|
+|     4 |   1.97 µs |  9.87 µs |  14.50 µs |
+|    64 |   2.42 µs | 11.13 µs |  13.61 µs |
+|  1024 |  27.26 µs | 37.46 µs |  49.42 µs |
+| 16384 | 668.69 µs | 795.21 µs | 1000.55 µs |
+
+Read-offs:
+
+* Rust is first at every N for both routes (the value is a single complex-mean reduction plus
+  an `atan2`; the gradient adds the per-oscillator `cos(ψ_m − m θ_j)` term). Julia closes to
+  within ~10% on the value at N = 16384 but stays behind on the gradient; the chain places
+  Rust first, matching measurement.
+
+Re-run with:
+
+```bash
+python scripts/bench_daido_mode_phase_tiers.py
+```
+
+If the measured ordering changes, update the chain comments at `_DAIDO_MODE_PHASE_CHAIN` and
+`_DAIDO_MODE_PHASE_GRADIENT_CHAIN` in
+`src/scpn_quantum_control/accel/daido_phase.py` to match.
+
 ### `daido_order_parameter_hessian(theta, m)`
 
 Hessian `∂²r_m/∂θ_i∂θ_j = m² (a_i a_j/(N² r_m) − δ_ij a_j/N)` of the m-th Daido

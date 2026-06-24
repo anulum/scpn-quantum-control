@@ -480,10 +480,52 @@ def local_order_parameter_jacobian(
     return np.asarray(jl.local_order_parameter_jacobian(phases, matrix), dtype=np.float64)
 
 
+def daido_mode_phase(theta: NDArray[np.float64], m: int) -> float:
+    """Julia-tier m-th Fourier-mode phase.
+
+    Parameters
+    ----------
+    theta : numpy.ndarray
+        One-dimensional array of oscillator phases in radians.
+    m : int
+        Harmonic order, a positive integer.
+
+    Returns
+    -------
+    float
+        The mode phase ``ψ_m`` in radians.
+    """
+    jl = _load()
+    arr = np.ascontiguousarray(theta, dtype=np.float64)
+    return float(jl.daido_mode_phase(arr, m))
+
+
+def daido_mode_phase_gradient(theta: NDArray[np.float64], m: int) -> NDArray[np.float64]:
+    """Julia-tier gradient of the m-th Fourier-mode phase.
+
+    Parameters
+    ----------
+    theta : numpy.ndarray
+        One-dimensional array of oscillator phases in radians.
+    m : int
+        Harmonic order, a positive integer.
+
+    Returns
+    -------
+    numpy.ndarray
+        One-dimensional float64 array of per-phase gradient components.
+    """
+    jl = _load()
+    arr = np.ascontiguousarray(theta, dtype=np.float64)
+    return np.asarray(jl.daido_mode_phase_gradient(arr, m), dtype=np.float64)
+
+
 __all__ = [
     "daido_order_parameter",
     "daido_order_parameter_gradient",
     "daido_order_parameter_hessian",
+    "daido_mode_phase",
+    "daido_mode_phase_gradient",
     "is_available",
     "kuramoto_interaction_energy",
     "kuramoto_interaction_energy_gradient",

@@ -42,6 +42,12 @@ from .daido_observables import (
     last_daido_hessian_tier_used,
     last_daido_tier_used,
 )
+from .daido_phase import (
+    daido_mode_phase,
+    daido_mode_phase_gradient,
+    last_daido_mode_phase_gradient_tier_used,
+    last_daido_mode_phase_tier_used,
+)
 from .dispatcher import (
     MultiLangDispatcher,
     available_tiers,
@@ -99,6 +105,10 @@ from .sakaguchi_kuramoto import (
 __all__ = [
     "MultiLangDispatcher",
     "available_tiers",
+    "daido_mode_phase",
+    "daido_mode_phase_gradient",
+    "last_daido_mode_phase_gradient_tier_used",
+    "last_daido_mode_phase_tier_used",
     "daido_order_parameter",
     "daido_order_parameter_gradient",
     "daido_order_parameter_hessian",

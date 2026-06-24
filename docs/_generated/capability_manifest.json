@@ -10,10 +10,10 @@
     "public_api_exports": 717,
     "public_documentation_pages": 249,
     "python_model_classes": 826,
-    "python_model_source_modules": 446,
-    "rust_pyo3_model_wrappers": 156,
+    "python_model_source_modules": 447,
+    "rust_pyo3_model_wrappers": 158,
     "rust_source_modules": 38,
-    "test_files": 751
+    "test_files": 752
   },
   "documentation": {
     "examples": [
@@ -427,7 +427,7 @@
       {
         "package": "accel",
         "path": "src/scpn_quantum_control/accel",
-        "python_modules": 11
+        "python_modules": 12
       },
       {
         "package": "analysis",
@@ -3895,6 +3895,7 @@
       "src/scpn_quantum_control/_constants.py",
       "src/scpn_quantum_control/_paths.py",
       "src/scpn_quantum_control/accel/daido_observables.py",
+      "src/scpn_quantum_control/accel/daido_phase.py",
       "src/scpn_quantum_control/accel/dispatcher.py",
       "src/scpn_quantum_control/accel/kuramoto_energy.py",
       "src/scpn_quantum_control/accel/kuramoto_mean_field.py",
@@ -4350,6 +4351,8 @@
       "concatenated_logical_rate_rust",
       "correlation_matrix_xy",
       "cosim_classical_substep",
+      "daido_mode_phase",
+      "daido_mode_phase_gradient",
       "daido_order_parameter",
       "daido_order_parameter_gradient",
       "daido_order_parameter_hessian",
@@ -5469,6 +5472,7 @@
       "tests/test_crypto_properties.py",
       "tests/test_crypto_topology_auth.py",
       "tests/test_cutting_runner.py",
+      "tests/test_daido_phase.py",
       "tests/test_dataset_catalog.py",
       "tests/test_dd.py",
       "tests/test_dense_budget.py",

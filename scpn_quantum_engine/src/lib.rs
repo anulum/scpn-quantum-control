@@ -85,6 +85,8 @@ fn scpn_quantum_engine(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(kuramoto::daido_order_parameter, m)?)?;
     m.add_function(wrap_pyfunction!(kuramoto::daido_order_parameter_gradient, m)?)?;
     m.add_function(wrap_pyfunction!(kuramoto::daido_order_parameter_hessian, m)?)?;
+    m.add_function(wrap_pyfunction!(kuramoto::daido_mode_phase, m)?)?;
+    m.add_function(wrap_pyfunction!(kuramoto::daido_mode_phase_gradient, m)?)?;
     m.add_function(wrap_pyfunction!(kuramoto::mean_field_force, m)?)?;
     m.add_function(wrap_pyfunction!(kuramoto::mean_field_jacobian, m)?)?;
     m.add_function(wrap_pyfunction!(kuramoto::networked_kuramoto_force, m)?)?;
