@@ -137,6 +137,15 @@ from .kuramoto_pinning_control import (
     pinning_coherence_value,
     pinning_coherence_value_and_grad,
 )
+from .kuramoto_ring_basins import (
+    BasinEstimate,
+    estimate_ring_basins,
+    is_twisted_state_stable,
+    ring_coupling_matrix,
+    twisted_state,
+    twisted_state_eigenvalues,
+    winding_number,
+)
 from .kuramoto_stability_spectrum import (
     StabilitySpectrum,
     is_synchronisation_stable,
@@ -263,6 +272,13 @@ __all__ = [
     "continuation_sweep",
     "hysteresis_loop",
     "triadic_hysteresis_loop",
+    "BasinEstimate",
+    "estimate_ring_basins",
+    "is_twisted_state_stable",
+    "ring_coupling_matrix",
+    "twisted_state",
+    "twisted_state_eigenvalues",
+    "winding_number",
     "kuramoto_euler_trajectory",
     "kuramoto_euler_vjp",
     "kuramoto_rk4_trajectory",

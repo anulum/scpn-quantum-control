@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 717,
     "public_documentation_pages": 249,
-    "python_model_classes": 832,
-    "python_model_source_modules": 462,
+    "python_model_classes": 833,
+    "python_model_source_modules": 463,
     "rust_pyo3_model_wrappers": 171,
     "rust_source_modules": 42,
-    "test_files": 769
+    "test_files": 770
   },
   "documentation": {
     "examples": [
@@ -427,7 +427,7 @@
       {
         "package": "accel",
         "path": "src/scpn_quantum_control/accel",
-        "python_modules": 27
+        "python_modules": 28
       },
       {
         "package": "analysis",
@@ -797,6 +797,10 @@
       {
         "name": "BackwardResult",
         "path": "src/scpn_quantum_control/bridge/snn_backward.py"
+      },
+      {
+        "name": "BasinEstimate",
+        "path": "src/scpn_quantum_control/accel/kuramoto_ring_basins.py"
       },
       {
         "name": "BenchmarkFamily",
@@ -3933,6 +3937,7 @@
       "src/scpn_quantum_control/accel/kuramoto_mean_field.py",
       "src/scpn_quantum_control/accel/kuramoto_ott_antonsen.py",
       "src/scpn_quantum_control/accel/kuramoto_pinning_control.py",
+      "src/scpn_quantum_control/accel/kuramoto_ring_basins.py",
       "src/scpn_quantum_control/accel/kuramoto_stability_spectrum.py",
       "src/scpn_quantum_control/accel/kuramoto_system_id.py",
       "src/scpn_quantum_control/accel/local_order.py",
@@ -5745,6 +5750,7 @@
       "tests/test_kuramoto_mean_field.py",
       "tests/test_kuramoto_ott_antonsen.py",
       "tests/test_kuramoto_pinning_control.py",
+      "tests/test_kuramoto_ring_basins.py",
       "tests/test_kuramoto_stability_spectrum.py",
       "tests/test_kuramoto_system_id.py",
       "tests/test_kuramoto_variants.py",
