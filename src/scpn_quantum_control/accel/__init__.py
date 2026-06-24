@@ -208,6 +208,13 @@ from .kuramoto_ott_antonsen import (
     ott_antonsen_terminal_order_parameter_value_and_grad,
     ott_antonsen_trajectory,
 )
+from .kuramoto_phase_information import (
+    mutual_information_matrix,
+    normalised_phase_entropy,
+    pairwise_mutual_information,
+    phase_entropy,
+    phase_entropy_series,
+)
 from .kuramoto_pinning_control import (
     PinningDesignResult,
     design_pinning,
@@ -454,6 +461,11 @@ __all__ = [
     "community_order_parameters",
     "metastability_index",
     "metastability_index_gradient",
+    "mutual_information_matrix",
+    "normalised_phase_entropy",
+    "pairwise_mutual_information",
+    "phase_entropy",
+    "phase_entropy_series",
     "mean_phase",
     "mean_phase_gradient",
     "mean_phase_hessian",

@@ -10,10 +10,10 @@
     "public_api_exports": 717,
     "public_documentation_pages": 249,
     "python_model_classes": 840,
-    "python_model_source_modules": 474,
+    "python_model_source_modules": 475,
     "rust_pyo3_model_wrappers": 171,
     "rust_source_modules": 42,
-    "test_files": 781
+    "test_files": 782
   },
   "documentation": {
     "examples": [
@@ -427,7 +427,7 @@
       {
         "package": "accel",
         "path": "src/scpn_quantum_control/accel",
-        "python_modules": 39
+        "python_modules": 40
       },
       {
         "package": "analysis",
@@ -3974,6 +3974,7 @@
       "src/scpn_quantum_control/accel/kuramoto_noisy.py",
       "src/scpn_quantum_control/accel/kuramoto_noisy_mean_field.py",
       "src/scpn_quantum_control/accel/kuramoto_ott_antonsen.py",
+      "src/scpn_quantum_control/accel/kuramoto_phase_information.py",
       "src/scpn_quantum_control/accel/kuramoto_pinning_control.py",
       "src/scpn_quantum_control/accel/kuramoto_ring_basins.py",
       "src/scpn_quantum_control/accel/kuramoto_simplex_mean_field.py",
@@ -5798,6 +5799,7 @@
       "tests/test_kuramoto_noisy.py",
       "tests/test_kuramoto_noisy_mean_field.py",
       "tests/test_kuramoto_ott_antonsen.py",
+      "tests/test_kuramoto_phase_information.py",
       "tests/test_kuramoto_pinning_control.py",
       "tests/test_kuramoto_ring_basins.py",
       "tests/test_kuramoto_simplex_mean_field.py",
