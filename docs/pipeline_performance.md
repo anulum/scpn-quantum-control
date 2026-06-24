@@ -2088,6 +2088,54 @@ If the measured ordering changes, update the chain comments at `_LOCAL_MEAN_PHAS
 and `_LOCAL_MEAN_PHASE_JACOBIAN_CHAIN` in
 `src/scpn_quantum_control/accel/local_phase.py` to match.
 
+### `kuramoto_euler_trajectory(...)` and `kuramoto_euler_vjp(...)`
+
+The differentiable networked-Kuramoto Euler integrator: the forward
+`θ_{n+1} = θ_n + dt(ω + F(θ_n))` with `F_j = Σ_k K_jk sin(θ_k − θ_j)` recording the full
+trajectory, and its reverse-mode adjoint `λ_n = λ_{n+1} + dt J(θ_n)ᵀ λ_{n+1}` returning
+`∂L/∂{θ₀, ω, K}` for a terminal objective `L`. Both routes are `O(n_steps · N²)`; measured
+2026-06-24 at a fixed step budget `n_steps = 50` on a dense random coupling matrix on the local
+Linux runner (Intel i5-11600K @ 3.90 GHz, Python 3.12.3, juliacall, scpn-quantum-engine local
+build). Inner loop: 20 calls per sample × 7 samples; per-call median; sizes stop at N = 512. Raw
+JSON: `docs/benchmarks/diff_kuramoto_euler_tiers.json`.
+
+`kuramoto_euler_trajectory` (n_steps = 50):
+
+|   N |       Rust |      Julia |     Python |
+|----:|-----------:|-----------:|-----------:|
+|   4 |    7.49 µs |   25.11 µs |  295.91 µs |
+|  64 |  1736.83 µs | 1600.64 µs | 2280.07 µs |
+| 256 | 32278.06 µs | 32304.33 µs | 39970.61 µs |
+| 512 | 180532.94 µs | 239200.05 µs | 279290.74 µs |
+
+`kuramoto_euler_vjp` (n_steps = 50):
+
+|   N |       Rust |      Julia |     Python |
+|----:|-----------:|-----------:|-----------:|
+|   4 |   34.03 µs |  125.09 µs |  688.89 µs |
+|  64 |  2932.06 µs | 3041.90 µs | 5610.73 µs |
+| 256 | 73920.12 µs | 71299.27 µs | 77958.85 µs |
+| 512 | 391885.99 µs | 388681.18 µs | 427163.48 µs |
+
+Read-offs:
+
+* Rust is decisively first at small N (3–4× faster than Julia at N = 4, where its allocation-free
+  flat-slice loop pays off against per-call overhead) and is the chain's first tier. Both Rust
+  and Julia compile to tight `O(n_steps · N²)` loops, so at large N they converge to within a few
+  percent and trade the lead run-to-run (e.g. the forward at N = 512 favours Rust, the adjoint at
+  N = 256/512 favours Julia by ≲ 4%, inside the host-noise band of a non-isolated workstation).
+  Both stay well ahead of the NumPy floor, which pays Python-loop overhead per step.
+
+Re-run with:
+
+```bash
+python scripts/bench_diff_kuramoto_euler_tiers.py
+```
+
+If the measured ordering changes, update the chain comments at `_KURAMOTO_EULER_TRAJECTORY_CHAIN`
+and `_KURAMOTO_EULER_VJP_CHAIN` in
+`src/scpn_quantum_control/accel/diff_kuramoto_euler.py` to match.
+
 ### S4 multi-hardware readiness
 
 Command:

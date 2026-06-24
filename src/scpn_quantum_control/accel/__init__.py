@@ -56,6 +56,12 @@ from .daido_phase import (
     last_daido_mode_phase_hessian_tier_used,
     last_daido_mode_phase_tier_used,
 )
+from .diff_kuramoto_euler import (
+    kuramoto_euler_trajectory,
+    kuramoto_euler_vjp,
+    last_kuramoto_euler_trajectory_tier_used,
+    last_kuramoto_euler_vjp_tier_used,
+)
 from .dispatcher import (
     MultiLangDispatcher,
     available_tiers,
@@ -145,6 +151,10 @@ __all__ = [
     "daido_order_parameter_gradient",
     "daido_order_parameter_hessian",
     "dispatch",
+    "kuramoto_euler_trajectory",
+    "kuramoto_euler_vjp",
+    "last_kuramoto_euler_trajectory_tier_used",
+    "last_kuramoto_euler_vjp_tier_used",
     "kuramoto_interaction_energy",
     "kuramoto_interaction_energy_gradient",
     "kuramoto_interaction_energy_hessian",

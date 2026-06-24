@@ -180,8 +180,9 @@ def test_live_rust_crate_records_threading_without_simd_promotion() -> None:
     # its gradient and Hessian, the Daido m-th-harmonic mean-field force and stability
     # Jacobian, the network-local mean phase and its Jacobian, and the Sakaguchi–Kuramoto
     # mean-field force and stability Jacobian, and the triadic (2-simplex) mean-field force and
-    # stability Jacobian PyO3 exports.
-    assert audit.pyfunction_count == 167
+    # stability Jacobian, and the differentiable networked-Kuramoto Euler trajectory and its
+    # reverse-mode adjoint VJP PyO3 exports.
+    assert audit.pyfunction_count == 169
     assert audit.rayon_threaded_count > 0
     assert audit.explicit_simd_count == 0
     assert audit.performance_claim_eligible_count == 0

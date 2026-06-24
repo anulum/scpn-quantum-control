@@ -47,6 +47,7 @@ pub mod knm;
 pub mod koopman;
 pub mod krylov;
 pub mod kuramoto;
+pub mod kuramoto_autodiff;
 pub mod kuramoto_common;
 pub mod kuramoto_coupling;
 pub mod kuramoto_observables;
@@ -180,6 +181,11 @@ fn scpn_quantum_engine(m: &Bound<'_, PyModule>) -> PyResult<()> {
         m
     )?)?;
     m.add_function(wrap_pyfunction!(kuramoto::kuramoto_trajectory, m)?)?;
+    m.add_function(wrap_pyfunction!(
+        kuramoto_autodiff::kuramoto_euler_trajectory,
+        m
+    )?)?;
+    m.add_function(wrap_pyfunction!(kuramoto_autodiff::kuramoto_euler_vjp, m)?)?;
     m.add_function(wrap_pyfunction!(
         kuramoto::higher_order_kuramoto_trajectory,
         m

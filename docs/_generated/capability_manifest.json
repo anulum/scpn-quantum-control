@@ -10,10 +10,10 @@
     "public_api_exports": 717,
     "public_documentation_pages": 249,
     "python_model_classes": 826,
-    "python_model_source_modules": 451,
-    "rust_pyo3_model_wrappers": 167,
-    "rust_source_modules": 41,
-    "test_files": 758
+    "python_model_source_modules": 452,
+    "rust_pyo3_model_wrappers": 169,
+    "rust_source_modules": 42,
+    "test_files": 759
   },
   "documentation": {
     "examples": [
@@ -427,7 +427,7 @@
       {
         "package": "accel",
         "path": "src/scpn_quantum_control/accel",
-        "python_modules": 16
+        "python_modules": 17
       },
       {
         "package": "analysis",
@@ -3897,6 +3897,7 @@
       "src/scpn_quantum_control/accel/daido_mean_field.py",
       "src/scpn_quantum_control/accel/daido_observables.py",
       "src/scpn_quantum_control/accel/daido_phase.py",
+      "src/scpn_quantum_control/accel/diff_kuramoto_euler.py",
       "src/scpn_quantum_control/accel/dispatcher.py",
       "src/scpn_quantum_control/accel/kuramoto_energy.py",
       "src/scpn_quantum_control/accel/kuramoto_mean_field.py",
@@ -4385,6 +4386,8 @@
       "knm_domain_coupling",
       "koopman_generator",
       "kuramoto_euler",
+      "kuramoto_euler_trajectory",
+      "kuramoto_euler_vjp",
       "kuramoto_interaction_energy",
       "kuramoto_interaction_energy_gradient",
       "kuramoto_interaction_energy_hessian",
@@ -4534,6 +4537,7 @@
       "scpn_quantum_engine/src/koopman.rs",
       "scpn_quantum_engine/src/krylov.rs",
       "scpn_quantum_engine/src/kuramoto.rs",
+      "scpn_quantum_engine/src/kuramoto_autodiff.rs",
       "scpn_quantum_engine/src/kuramoto_common.rs",
       "scpn_quantum_engine/src/kuramoto_coupling.rs",
       "scpn_quantum_engine/src/kuramoto_observables.rs",
@@ -5497,6 +5501,7 @@
       "tests/test_dependency_hygiene.py",
       "tests/test_dependency_security_closure.py",
       "tests/test_determinism.py",
+      "tests/test_diff_kuramoto_euler.py",
       "tests/test_differentiable_api.py",
       "tests/test_differentiable_batch_helpers.py",
       "tests/test_differentiable_benchmark_evidence.py",
