@@ -114,6 +114,16 @@ from .kuramoto_explosive_continuation import (
     hysteresis_loop,
     triadic_hysteresis_loop,
 )
+from .kuramoto_inertial import (
+    InertialTrajectory,
+    PhaseForce,
+    PhaseJacobian,
+    PhasePotential,
+    inertial_energy,
+    inertial_jacobian,
+    inertial_vector_field,
+    integrate_inertial,
+)
 from .kuramoto_lyapunov import (
     lyapunov_spectrum,
     maximal_lyapunov_exponent,
@@ -272,6 +282,14 @@ __all__ = [
     "continuation_sweep",
     "hysteresis_loop",
     "triadic_hysteresis_loop",
+    "InertialTrajectory",
+    "PhaseForce",
+    "PhaseJacobian",
+    "PhasePotential",
+    "inertial_energy",
+    "inertial_jacobian",
+    "inertial_vector_field",
+    "integrate_inertial",
     "BasinEstimate",
     "estimate_ring_basins",
     "is_twisted_state_stable",

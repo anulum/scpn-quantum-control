@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 717,
     "public_documentation_pages": 249,
-    "python_model_classes": 833,
-    "python_model_source_modules": 463,
+    "python_model_classes": 834,
+    "python_model_source_modules": 464,
     "rust_pyo3_model_wrappers": 171,
     "rust_source_modules": 42,
-    "test_files": 770
+    "test_files": 771
   },
   "documentation": {
     "examples": [
@@ -427,7 +427,7 @@
       {
         "package": "accel",
         "path": "src/scpn_quantum_control/accel",
-        "python_modules": 28
+        "python_modules": 29
       },
       {
         "package": "analysis",
@@ -1893,6 +1893,10 @@
       {
         "name": "ImplicitSensitivityResult",
         "path": "src/scpn_quantum_control/differentiable_result_contracts.py"
+      },
+      {
+        "name": "InertialTrajectory",
+        "path": "src/scpn_quantum_control/accel/kuramoto_inertial.py"
       },
       {
         "name": "InfitonField",
@@ -3933,6 +3937,7 @@
       "src/scpn_quantum_control/accel/kuramoto_critical_coupling.py",
       "src/scpn_quantum_control/accel/kuramoto_energy.py",
       "src/scpn_quantum_control/accel/kuramoto_explosive_continuation.py",
+      "src/scpn_quantum_control/accel/kuramoto_inertial.py",
       "src/scpn_quantum_control/accel/kuramoto_lyapunov.py",
       "src/scpn_quantum_control/accel/kuramoto_mean_field.py",
       "src/scpn_quantum_control/accel/kuramoto_ott_antonsen.py",
@@ -5745,6 +5750,7 @@
       "tests/test_kuramoto_critical_coupling.py",
       "tests/test_kuramoto_energy.py",
       "tests/test_kuramoto_explosive_continuation.py",
+      "tests/test_kuramoto_inertial.py",
       "tests/test_kuramoto_input_hardening.py",
       "tests/test_kuramoto_lyapunov.py",
       "tests/test_kuramoto_mean_field.py",
