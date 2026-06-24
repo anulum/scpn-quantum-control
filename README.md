@@ -105,8 +105,8 @@ has a defined commercial licensing route.
 |---|---:|
 | Package version | 0.9.12 |
 | Public API exports | 717 |
-| Python source modules | 480 |
-| Public Python classes | 844 |
+| Python source modules | 482 |
+| Public Python classes | 849 |
 | Domain package families | 32 |
 | API documentation pages | 0 |
 | Rust PyO3 function bindings | 171 |
@@ -114,9 +114,9 @@ has a defined commercial licensing route.
 | Notebook files | 98 |
 | Example files | 30 |
 | Optional extras | 43 |
-| Python test files | 787 |
-| Public documentation pages | 249 |
-| GitHub Actions workflows | 20 |
+| Python test files | 791 |
+| Public documentation pages | 250 |
+| GitHub Actions workflows | 21 |
 
 Evidence boundary: this snapshot is a static inventory. Performance, coverage, hardware, and scientific-fidelity claims require their own committed evidence artefacts.
 <!-- capability-snapshot:end -->
