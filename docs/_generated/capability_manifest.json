@@ -13,7 +13,7 @@
     "python_model_source_modules": 447,
     "rust_pyo3_model_wrappers": 159,
     "rust_source_modules": 41,
-    "test_files": 752
+    "test_files": 754
   },
   "documentation": {
     "examples": [
@@ -5476,6 +5476,7 @@
       "tests/test_crypto_properties.py",
       "tests/test_crypto_topology_auth.py",
       "tests/test_cutting_runner.py",
+      "tests/test_daido_observables.py",
       "tests/test_daido_phase.py",
       "tests/test_dataset_catalog.py",
       "tests/test_dd.py",
@@ -5701,6 +5702,7 @@
       "tests/test_magic_nonstabilizerness.py",
       "tests/test_magnetisation_sectors.py",
       "tests/test_magnetisation_sectors_empty_guard.py",
+      "tests/test_mean_phase_observables.py",
       "tests/test_mitiq_integration.py",
       "tests/test_ml_dsa_branches.py",
       "tests/test_ml_dsa_pqc.py",
