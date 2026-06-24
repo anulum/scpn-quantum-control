@@ -73,6 +73,16 @@ from .dispatcher import (
     available_tiers,
     dispatch,
 )
+from .kuramoto_adaptive import (
+    AdaptivePhaseForce,
+    AdaptiveTrajectory,
+    PlasticityRule,
+    adaptive_vector_field,
+    hebbian_adaptive_jacobian,
+    hebbian_coupling_equilibrium,
+    hebbian_plasticity_rate,
+    integrate_adaptive_kuramoto,
+)
 from .kuramoto_control import (
     TerminalObjective,
     coherence_objective,
@@ -376,6 +386,14 @@ __all__ = [
     "synchronised_branch_stability",
     "synchronised_frequency_residual",
     "synchronised_frequency_roots",
+    "AdaptivePhaseForce",
+    "AdaptiveTrajectory",
+    "PlasticityRule",
+    "adaptive_vector_field",
+    "hebbian_adaptive_jacobian",
+    "hebbian_coupling_equilibrium",
+    "hebbian_plasticity_rate",
+    "integrate_adaptive_kuramoto",
     "mean_phase",
     "mean_phase_gradient",
     "mean_phase_hessian",

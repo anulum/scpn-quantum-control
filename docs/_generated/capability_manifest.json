@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 717,
     "public_documentation_pages": 249,
-    "python_model_classes": 836,
-    "python_model_source_modules": 468,
+    "python_model_classes": 837,
+    "python_model_source_modules": 469,
     "rust_pyo3_model_wrappers": 171,
     "rust_source_modules": 42,
-    "test_files": 775
+    "test_files": 776
   },
   "documentation": {
     "examples": [
@@ -427,7 +427,7 @@
       {
         "package": "accel",
         "path": "src/scpn_quantum_control/accel",
-        "python_modules": 33
+        "python_modules": 34
       },
       {
         "package": "analysis",
@@ -621,6 +621,10 @@
       {
         "name": "AdaptiveFIMStep",
         "path": "src/scpn_quantum_control/analysis/adaptive_fim_feedback.py"
+      },
+      {
+        "name": "AdaptiveTrajectory",
+        "path": "src/scpn_quantum_control/accel/kuramoto_adaptive.py"
       },
       {
         "name": "AdiabaticResult",
@@ -3940,6 +3944,7 @@
       "src/scpn_quantum_control/accel/diff_kuramoto_euler.py",
       "src/scpn_quantum_control/accel/diff_kuramoto_rk4.py",
       "src/scpn_quantum_control/accel/dispatcher.py",
+      "src/scpn_quantum_control/accel/kuramoto_adaptive.py",
       "src/scpn_quantum_control/accel/kuramoto_control.py",
       "src/scpn_quantum_control/accel/kuramoto_coupling_design.py",
       "src/scpn_quantum_control/accel/kuramoto_critical_coupling.py",
@@ -5755,6 +5760,7 @@
       "tests/test_koopman.py",
       "tests/test_koopman_rust_generator_branches.py",
       "tests/test_krylov_complexity.py",
+      "tests/test_kuramoto_adaptive.py",
       "tests/test_kuramoto_control.py",
       "tests/test_kuramoto_core.py",
       "tests/test_kuramoto_core_branches.py",
