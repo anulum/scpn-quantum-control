@@ -313,7 +313,7 @@
     "platform_sdk": ">=0.8,<0.9",
     "protocol_version": "1",
     "studio": "scpn-quantum-control",
-    "studio_version": "0.9.11",
+    "studio_version": "0.9.12",
     "transport_profile": "local-first",
     "verbs": [
       {

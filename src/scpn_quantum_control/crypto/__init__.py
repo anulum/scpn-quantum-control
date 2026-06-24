@@ -27,7 +27,7 @@ from .hierarchical_keys import (
     verify_key_chain,
 )
 from .knm_key import estimate_qber, extract_raw_key, prepare_key_state, privacy_amplification
-from .ml_dsa_seal import SEAL_CONTEXT, MLDSASigner, MLDSAVerifier
+from .ml_dsa_seal import MLDSASigner, MLDSAVerifier
 from .noise_analysis import (
     amplitude_damping_single,
     depolarizing_channel,
@@ -69,7 +69,6 @@ __all__ = [
     "Signature",
     "MLDSASigner",
     "MLDSAVerifier",
-    "SEAL_CONTEXT",
     "prepare_key_state",
     "extract_raw_key",
     "estimate_qber",
