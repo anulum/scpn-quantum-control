@@ -106,6 +106,14 @@ from .kuramoto_energy import (
     last_kuramoto_interaction_energy_hessian_tier_used,
     last_kuramoto_interaction_energy_tier_used,
 )
+from .kuramoto_explosive_continuation import (
+    ContinuationBranch,
+    HysteresisLoop,
+    MeanFieldForce,
+    continuation_sweep,
+    hysteresis_loop,
+    triadic_hysteresis_loop,
+)
 from .kuramoto_lyapunov import (
     lyapunov_spectrum,
     maximal_lyapunov_exponent,
@@ -249,6 +257,12 @@ __all__ = [
     "ott_antonsen_trajectory",
     "lyapunov_spectrum",
     "maximal_lyapunov_exponent",
+    "ContinuationBranch",
+    "HysteresisLoop",
+    "MeanFieldForce",
+    "continuation_sweep",
+    "hysteresis_loop",
+    "triadic_hysteresis_loop",
     "kuramoto_euler_trajectory",
     "kuramoto_euler_vjp",
     "kuramoto_rk4_trajectory",

@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 717,
     "public_documentation_pages": 249,
-    "python_model_classes": 830,
-    "python_model_source_modules": 461,
+    "python_model_classes": 832,
+    "python_model_source_modules": 462,
     "rust_pyo3_model_wrappers": 171,
     "rust_source_modules": 42,
-    "test_files": 768
+    "test_files": 769
   },
   "documentation": {
     "examples": [
@@ -427,7 +427,7 @@
       {
         "package": "accel",
         "path": "src/scpn_quantum_control/accel",
-        "python_modules": 26
+        "python_modules": 27
       },
       {
         "package": "analysis",
@@ -1009,6 +1009,10 @@
       {
         "name": "ContainerResources",
         "path": "src/scpn_quantum_control/deployment/cloud_native.py"
+      },
+      {
+        "name": "ContinuationBranch",
+        "path": "src/scpn_quantum_control/accel/kuramoto_explosive_continuation.py"
       },
       {
         "name": "ContractionBenchmarkResult",
@@ -1837,6 +1841,10 @@
       {
         "name": "HypergeometricPulse",
         "path": "src/scpn_quantum_control/phase/pulse_shaping.py"
+      },
+      {
+        "name": "HysteresisLoop",
+        "path": "src/scpn_quantum_control/accel/kuramoto_explosive_continuation.py"
       },
       {
         "name": "ICIPulse",
@@ -3920,6 +3928,7 @@
       "src/scpn_quantum_control/accel/kuramoto_coupling_design.py",
       "src/scpn_quantum_control/accel/kuramoto_critical_coupling.py",
       "src/scpn_quantum_control/accel/kuramoto_energy.py",
+      "src/scpn_quantum_control/accel/kuramoto_explosive_continuation.py",
       "src/scpn_quantum_control/accel/kuramoto_lyapunov.py",
       "src/scpn_quantum_control/accel/kuramoto_mean_field.py",
       "src/scpn_quantum_control/accel/kuramoto_ott_antonsen.py",
@@ -5730,6 +5739,7 @@
       "tests/test_kuramoto_coupling_design.py",
       "tests/test_kuramoto_critical_coupling.py",
       "tests/test_kuramoto_energy.py",
+      "tests/test_kuramoto_explosive_continuation.py",
       "tests/test_kuramoto_input_hardening.py",
       "tests/test_kuramoto_lyapunov.py",
       "tests/test_kuramoto_mean_field.py",
