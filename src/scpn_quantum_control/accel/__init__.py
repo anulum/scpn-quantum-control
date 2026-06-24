@@ -144,6 +144,7 @@ from .kuramoto_frequency_order import (
     frequency_locked_fraction,
     frequency_order_diagnostics,
     frequency_synchronisation_index,
+    frequency_synchronisation_index_gradient,
 )
 from .kuramoto_heterogeneous import (
     CouplingTerm,
@@ -434,6 +435,7 @@ __all__ = [
     "frequency_locked_fraction",
     "frequency_order_diagnostics",
     "frequency_synchronisation_index",
+    "frequency_synchronisation_index_gradient",
     "mean_phase",
     "mean_phase_gradient",
     "mean_phase_hessian",

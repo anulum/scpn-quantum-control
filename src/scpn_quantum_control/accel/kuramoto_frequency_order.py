@@ -138,6 +138,65 @@ def frequency_synchronisation_index(phases: NDArray[np.float64], *, dt: float) -
     return float(np.std(effective_frequencies(phases, dt=dt)))
 
 
+def frequency_synchronisation_index_gradient(
+    phases: NDArray[np.float64], *, dt: float
+) -> NDArray[np.float64]:
+    r"""Gradient of the frequency-synchronisation index with respect to the trajectory.
+
+    Returns :math:`\partial\,\sigma_\Omega / \partial\,\theta_{k,i}` for the
+    synchronisation index :math:`\sigma_\Omega = \operatorname{std}\{\Omega_i\}`, shaped
+    like the input ``(T, N)`` trajectory. Because each effective frequency telescopes to
+    its endpoints, :math:`\Omega_i = (\theta_i(t_{\mathrm{end}}) - \theta_i(t_0))/(T\Delta
+    t)` below the rotational Nyquist limit, the gradient is non-zero **only in the first
+    and last time rows** — the interior samples cancel — with
+
+    .. math::
+
+        \frac{\partial\,\sigma_\Omega}{\partial\,\theta_{T-1,i}}
+            = \frac{\Omega_i - \langle\Omega\rangle}{N\,\sigma_\Omega\,T\Delta t}
+            = -\,\frac{\partial\,\sigma_\Omega}{\partial\,\theta_{0,i}} .
+
+    It is the first link of the adjoint chain for steering an ensemble towards frequency
+    locking. At a frequency-locked state (:math:`\sigma_\Omega \to 0`) the standard
+    deviation is non-differentiable, so the zero subgradient is returned, mirroring the
+    incoherent-state convention of
+    :func:`~scpn_quantum_control.accel.order_parameter_observables.order_parameter_gradient`.
+
+    Parameters
+    ----------
+    phases : numpy.ndarray
+        Two-dimensional ``(T, N)`` array of oscillator phases in radians.
+    dt : float
+        The sampling step in time units; must be strictly positive.
+
+    Returns
+    -------
+    numpy.ndarray
+        Two-dimensional ``(T, N)`` float64 gradient; only rows ``0`` and ``T-1`` are
+        non-zero and they are negatives of one another.
+
+    Raises
+    ------
+    ValueError
+        Propagated from :func:`effective_frequencies`.
+    """
+    trajectory = _validate_trajectory(phases, dt)
+    samples, count = trajectory.shape
+    span = (samples - 1) * dt
+    frequencies = _wrap(np.diff(trajectory, axis=0)).sum(axis=0) / span
+    spread = float(np.std(frequencies))
+    gradient = np.zeros_like(trajectory)
+    scale = max(1.0, float(np.max(np.abs(frequencies))))
+    if spread <= 1e-12 * scale:
+        # Frequency-locked: the standard deviation has a kink at zero spread; the zero
+        # subgradient is the honest derivative of a non-differentiable point.
+        return gradient
+    endpoint = (frequencies - float(np.mean(frequencies))) / (count * spread * span)
+    gradient[-1] = endpoint
+    gradient[0] = -endpoint
+    return np.ascontiguousarray(gradient, dtype=np.float64)
+
+
 def frequency_locked_fraction(
     phases: NDArray[np.float64], *, dt: float, tolerance: float = 1e-3
 ) -> float:
@@ -241,4 +300,5 @@ __all__ = [
     "frequency_locked_fraction",
     "frequency_order_diagnostics",
     "frequency_synchronisation_index",
+    "frequency_synchronisation_index_gradient",
 ]

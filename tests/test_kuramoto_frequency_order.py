@@ -29,6 +29,7 @@ from scpn_quantum_control.accel.kuramoto_frequency_order import (
     frequency_locked_fraction,
     frequency_order_diagnostics,
     frequency_synchronisation_index,
+    frequency_synchronisation_index_gradient,
 )
 
 
@@ -124,6 +125,77 @@ def test_index_grows_monotonically_with_spread() -> None:
 def test_index_is_zero_for_single_oscillator() -> None:
     trajectory = _linear_trajectory(np.array([1.7]), np.array([0.2]), dt=0.01, steps=300)
     assert frequency_synchronisation_index(trajectory, dt=0.01) == 0.0
+
+
+# --------------------------------------------------------------------------- index gradient
+
+
+def _smooth_trajectory(rates: np.ndarray, *, dt: float, steps: int, seed: int) -> np.ndarray:
+    """A drift-plus-bounded-ripple trajectory with no per-step advance near ``±π``."""
+    rng = np.random.default_rng(seed)
+    grid = np.arange(steps + 1) * dt
+    ripple = 0.05 * np.sin(
+        2.0 * np.pi * grid[:, None] + rng.uniform(0.0, 1.0, rates.size)[None, :]
+    )
+    return (
+        rates[None, :] * grid[:, None]
+        + ripple
+        + rng.uniform(0.0, 2.0 * np.pi, rates.size)[None, :]
+    )
+
+
+def test_index_gradient_is_nonzero_only_at_the_endpoints() -> None:
+    rates = np.random.default_rng(20).standard_normal(9)
+    trajectory = _smooth_trajectory(rates, dt=0.01, steps=300, seed=21)
+    gradient = frequency_synchronisation_index_gradient(trajectory, dt=0.01)
+    assert gradient.shape == trajectory.shape
+    assert np.allclose(gradient[1:-1], 0.0, atol=1e-14)
+    assert np.allclose(gradient[0], -gradient[-1], atol=1e-15)
+
+
+def test_index_gradient_matches_central_difference() -> None:
+    rates = np.random.default_rng(22).standard_normal(7)
+    trajectory = _smooth_trajectory(rates, dt=0.01, steps=120, seed=23)
+    analytic = frequency_synchronisation_index_gradient(trajectory, dt=0.01)
+    numeric = np.zeros_like(trajectory)
+    step = 1e-6
+    flat_numeric = numeric.reshape(-1)
+    base = trajectory.reshape(-1)
+    for index in range(base.size):
+        forward = base.copy()
+        forward[index] += step
+        backward = base.copy()
+        backward[index] -= step
+        flat_numeric[index] = (
+            frequency_synchronisation_index(forward.reshape(trajectory.shape), dt=0.01)
+            - frequency_synchronisation_index(backward.reshape(trajectory.shape), dt=0.01)
+        ) / (2.0 * step)
+    assert np.allclose(analytic, numeric, atol=1e-7)
+
+
+def test_index_gradient_vanishes_for_a_frequency_locked_state() -> None:
+    # An integrated, supercritically coupled ensemble is frequency-locked to floating
+    # precision, so the standard deviation sits at its non-differentiable point.
+    count = 10
+    rng = np.random.default_rng(24)
+    omega = rng.normal(0.0, 1.0, count)
+    theta0 = rng.uniform(0.0, 2.0 * np.pi, count)
+    trajectory = kuramoto_rk4_trajectory(
+        theta0, omega, np.full((count, count), 8.0 / count), 0.01, 3000
+    )
+    gradient = frequency_synchronisation_index_gradient(trajectory[1500:], dt=0.01)
+    assert np.array_equal(gradient, np.zeros_like(gradient))
+
+
+def test_index_gradient_vanishes_for_a_single_oscillator() -> None:
+    trajectory = _linear_trajectory(np.array([1.7]), np.array([0.4]), dt=0.01, steps=200)
+    gradient = frequency_synchronisation_index_gradient(trajectory, dt=0.01)
+    assert np.array_equal(gradient, np.zeros_like(gradient))
+
+
+def test_index_gradient_rejects_non_two_dimensional_phases() -> None:
+    with pytest.raises(ValueError, match="two-dimensional"):
+        frequency_synchronisation_index_gradient(np.zeros(5), dt=0.01)
 
 
 # --------------------------------------------------------------------------- locked fraction
