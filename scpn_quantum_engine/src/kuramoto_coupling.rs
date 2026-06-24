@@ -787,6 +787,94 @@ pub fn sakaguchi_mean_field_jacobian_inner(
     out
 }
 
+/// Compute the triadic (2-simplex) Kuramoto mean-field force F_j = K r² sin(2ψ − 2θ_j).
+///
+/// Expanded as K [2 C S cos 2θ_j − (C² − S²) sin 2θ_j] with C = ⟨cos θ⟩, S = ⟨sin θ⟩. The r²
+/// scaling drives explosive (abrupt) synchronisation.
+#[pyfunction]
+pub fn triadic_mean_field_force<'py>(
+    py: Python<'py>,
+    theta: PyReadonlyArray1<'_, f64>,
+    coupling: f64,
+) -> PyResult<Bound<'py, PyArray1<f64>>> {
+    let theta = validate_phase_vector(&theta, "theta")?;
+    Ok(PyArray1::from_owned_array(
+        py,
+        triadic_mean_field_force_inner(theta, coupling),
+    ))
+}
+
+/// Pure Rust triadic Kuramoto mean-field force (no PyO3).
+pub fn triadic_mean_field_force_inner(theta: &[f64], coupling: f64) -> Array1<f64> {
+    let n = theta.len();
+    if n == 0 {
+        return Array1::zeros(0);
+    }
+    let (mut c, mut s) = (0.0_f64, 0.0_f64);
+    for &t in theta {
+        c += t.cos();
+        s += t.sin();
+    }
+    let count = n as f64;
+    let cos_mean = c / count;
+    let sin_mean = s / count;
+    let in_phase = 2.0 * cos_mean * sin_mean;
+    let quadrature = cos_mean * cos_mean - sin_mean * sin_mean;
+    Array1::from_iter(
+        theta
+            .iter()
+            .map(|&t| coupling * (in_phase * (2.0 * t).cos() - quadrature * (2.0 * t).sin())),
+    )
+}
+
+/// Compute the triadic Kuramoto mean-field stability Jacobian J_jl = ∂F_j/∂θ_l.
+///
+/// J_jl = (2K/N) (C cos(2θ_j − θ_l) + S sin(2θ_j − θ_l)) on the off-diagonal, with the
+/// −2K (2 C S sin 2θ_j + (C² − S²) cos 2θ_j) curvature added on the diagonal. Non-symmetric
+/// (the higher-order mean field is non-variational), yet every row sums to zero.
+#[pyfunction]
+pub fn triadic_mean_field_jacobian<'py>(
+    py: Python<'py>,
+    theta: PyReadonlyArray1<'_, f64>,
+    coupling: f64,
+) -> PyResult<Bound<'py, PyArray2<f64>>> {
+    let theta = validate_phase_vector(&theta, "theta")?;
+    Ok(PyArray2::from_owned_array(
+        py,
+        triadic_mean_field_jacobian_inner(theta, coupling),
+    ))
+}
+
+/// Pure Rust triadic Kuramoto mean-field stability Jacobian (no PyO3), returned row-major.
+pub fn triadic_mean_field_jacobian_inner(theta: &[f64], coupling: f64) -> Array2<f64> {
+    let n = theta.len();
+    let mut out = Array2::<f64>::zeros((n, n));
+    if n == 0 {
+        return out;
+    }
+    let (mut c, mut s) = (0.0_f64, 0.0_f64);
+    for &t in theta {
+        c += t.cos();
+        s += t.sin();
+    }
+    let count = n as f64;
+    let cos_mean = c / count;
+    let sin_mean = s / count;
+    let scale = 2.0 * coupling / count;
+    for i in 0..n {
+        for j in 0..n {
+            let offset = 2.0 * theta[i] - theta[j];
+            out[[i, j]] = scale * (cos_mean * offset.cos() + sin_mean * offset.sin());
+        }
+        let in_phase = 2.0 * cos_mean * sin_mean;
+        let quadrature = cos_mean * cos_mean - sin_mean * sin_mean;
+        out[[i, i]] -= 2.0
+            * coupling
+            * (in_phase * (2.0 * theta[i]).sin() + quadrature * (2.0 * theta[i]).cos());
+    }
+    out
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -965,6 +1053,66 @@ mod tests {
             sakaguchi_mean_field_jacobian_inner(&[], 1.0, 0.5).shape(),
             &[0, 0]
         );
+    }
+
+    #[test]
+    fn test_triadic_mean_field_force_matches_squared_first_moment() {
+        let theta = vec![0.3, -1.1, 2.0, 0.7, 4.2];
+        let k = 1.7;
+        let force = triadic_mean_field_force_inner(&theta, k);
+        let n = theta.len() as f64;
+        let c: f64 = theta.iter().map(|&t| t.cos()).sum::<f64>() / n;
+        let s: f64 = theta.iter().map(|&t| t.sin()).sum::<f64>() / n;
+        // F_j = K r² sin(2ψ − 2θ_j), r² e^{2iψ} = (C + iS)².
+        let r2 = c * c + s * s;
+        let psi = s.atan2(c);
+        for (j, &t) in theta.iter().enumerate() {
+            let expected = k * r2 * (2.0 * psi - 2.0 * t).sin();
+            assert!((force[j] - expected).abs() < 1e-12, "F[{j}]");
+        }
+    }
+
+    #[test]
+    fn test_triadic_mean_field_jacobian_matches_finite_difference() {
+        let theta = vec![0.3, -1.1, 2.0, 0.7, 4.2];
+        let k = 2.5;
+        let jacobian = triadic_mean_field_jacobian_inner(&theta, k);
+        let h = 1e-6;
+        for l in 0..theta.len() {
+            let mut plus = theta.clone();
+            let mut minus = theta.clone();
+            plus[l] += h;
+            minus[l] -= h;
+            let force_plus = triadic_mean_field_force_inner(&plus, k);
+            let force_minus = triadic_mean_field_force_inner(&minus, k);
+            for j in 0..theta.len() {
+                let fd = (force_plus[j] - force_minus[j]) / (2.0 * h);
+                assert!((jacobian[[j, l]] - fd).abs() < 1e-6, "J[{j},{l}]");
+            }
+        }
+    }
+
+    #[test]
+    fn test_triadic_mean_field_jacobian_rows_sum_to_zero_and_break_symmetry() {
+        let theta = vec![0.1, 0.9, 2.3, 3.1, 5.5];
+        let jacobian = triadic_mean_field_jacobian_inner(&theta, 1.3);
+        let n = theta.len();
+        let mut asymmetry = 0.0_f64;
+        for i in 0..n {
+            let row_sum: f64 = (0..n).map(|j| jacobian[[i, j]]).sum();
+            assert!(row_sum.abs() < 1e-12, "row {i} sum = {row_sum}");
+            for j in 0..n {
+                asymmetry += (jacobian[[i, j]] - jacobian[[j, i]]).abs();
+            }
+        }
+        // The higher-order mean field is non-variational.
+        assert!(asymmetry > 1e-3);
+    }
+
+    #[test]
+    fn test_triadic_mean_field_empty() {
+        assert!(triadic_mean_field_force_inner(&[], 1.0).is_empty());
+        assert_eq!(triadic_mean_field_jacobian_inner(&[], 1.0).shape(), &[0, 0]);
     }
 
     fn _symmetric_coupling(n: usize, seed: f64) -> Array2<f64> {

@@ -687,6 +687,48 @@ def sakaguchi_mean_field_jacobian(
     )
 
 
+def triadic_mean_field_force(theta: NDArray[np.float64], coupling: float) -> NDArray[np.float64]:
+    """Julia-tier triadic (2-simplex) Kuramoto mean-field force.
+
+    Parameters
+    ----------
+    theta : numpy.ndarray
+        One-dimensional array of oscillator phases in radians.
+    coupling : float
+        The triadic coupling strength ``K``.
+
+    Returns
+    -------
+    numpy.ndarray
+        One-dimensional float64 force array.
+    """
+    jl = _load()
+    arr = np.ascontiguousarray(theta, dtype=np.float64)
+    return np.asarray(jl.triadic_mean_field_force(arr, float(coupling)), dtype=np.float64)
+
+
+def triadic_mean_field_jacobian(
+    theta: NDArray[np.float64], coupling: float
+) -> NDArray[np.float64]:
+    """Julia-tier triadic (2-simplex) Kuramoto mean-field stability Jacobian.
+
+    Parameters
+    ----------
+    theta : numpy.ndarray
+        One-dimensional array of oscillator phases in radians.
+    coupling : float
+        The triadic coupling strength ``K``.
+
+    Returns
+    -------
+    numpy.ndarray
+        Two-dimensional ``(N, N)`` float64 Jacobian matrix.
+    """
+    jl = _load()
+    arr = np.ascontiguousarray(theta, dtype=np.float64)
+    return np.asarray(jl.triadic_mean_field_jacobian(arr, float(coupling)), dtype=np.float64)
+
+
 __all__ = [
     "daido_order_parameter",
     "daido_order_parameter_gradient",
@@ -719,4 +761,6 @@ __all__ = [
     "sakaguchi_jacobian",
     "sakaguchi_mean_field_force",
     "sakaguchi_mean_field_jacobian",
+    "triadic_mean_field_force",
+    "triadic_mean_field_jacobian",
 ]

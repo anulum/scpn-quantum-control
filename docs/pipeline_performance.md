@@ -1785,6 +1785,55 @@ If the measured ordering changes, update the chain comments at `_SAKAGUCHI_MEAN_
 and `_SAKAGUCHI_MEAN_FIELD_JACOBIAN_CHAIN` in
 `src/scpn_quantum_control/accel/sakaguchi_mean_field.py` to match.
 
+### `triadic_mean_field_force(theta, K)` and `triadic_mean_field_jacobian(theta, K)`
+
+The triadic (2-simplex) higher-order Kuramoto mean field couples each oscillator through the
+*squared* first moment, `F_j = K r² sin(2ψ − 2θ_j)` (the Skardal–Arenas drive behind explosive
+synchronisation, distinct from the second Daido harmonic, which uses the second moment
+`⟨e^{2iθ}⟩` rather than `⟨e^{iθ}⟩²`); its Jacobian
+`J_jl = (2K/N) r cos(2θ_j − θ_l − ψ) − δ_jl 2K r² cos(2ψ − 2θ_j)` is non-symmetric (the
+higher-order mean field is non-variational) yet keeps a zero row sum (the global-phase
+Goldstone mode). The force is `O(N)`; the Jacobian is an `N × N` matrix, so the benchmark stops
+at N = 2048. Measured 2026-06-24 at the fixed coupling K = 1 on the local Linux runner (Intel
+i5-11600K @ 3.90 GHz, Python 3.12.3, juliacall, scpn-quantum-engine local build). Inner loop:
+100 calls per sample × 7 samples; per-call median. Raw JSON:
+`docs/benchmarks/triadic_mean_field_tiers.json`.
+
+`triadic_mean_field_force` (K = 1):
+
+|    N |     Rust |    Julia |   Python |
+|-----:|---------:|---------:|---------:|
+|    4 |  1.94 µs |  9.44 µs | 10.74 µs |
+|   64 |  2.25 µs | 10.92 µs | 13.40 µs |
+| 1024 | 22.81 µs | 41.70 µs | 45.45 µs |
+| 2048 | 41.43 µs | 80.32 µs | 95.08 µs |
+
+`triadic_mean_field_jacobian` (K = 1):
+
+|    N |       Rust |       Julia |     Python |
+|-----:|-----------:|------------:|-----------:|
+|    4 |    1.31 µs |    11.75 µs |   19.47 µs |
+|   64 |   51.12 µs |    83.50 µs |  117.88 µs |
+|  256 | 1219.62 µs |  1268.54 µs | 1938.60 µs |
+| 2048 | 92926.71 µs | 97702.08 µs | 179851.22 µs |
+
+Read-offs:
+
+* Rust is first for both routes at every N, matching the chain ordering. The force is an
+  `O(N)` reduction with the usual FFI-vs-vectorised-NumPy lead; the Jacobian builds the full
+  `cos(2θ_j − θ_l)` / `sin(2θ_j − θ_l)` matrix in a fused loop and stays ahead of both the Julia
+  tier and NumPy's broadcast temporary (≈1.9× faster than NumPy at N = 2048).
+
+Re-run with:
+
+```bash
+python scripts/bench_triadic_mean_field_tiers.py
+```
+
+If the measured ordering changes, update the chain comments at `_TRIADIC_MEAN_FIELD_FORCE_CHAIN`
+and `_TRIADIC_MEAN_FIELD_JACOBIAN_CHAIN` in
+`src/scpn_quantum_control/accel/triadic_mean_field.py` to match.
+
 ### `networked_kuramoto_force(theta, K)` and `networked_kuramoto_jacobian(theta, K)`
 
 The general (graph) Kuramoto force `F_j = Σ_k K_jk sin(θ_k − θ_j)` for a coupling matrix

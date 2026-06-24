@@ -103,3 +103,61 @@ function daido_mean_field_jacobian(
     end
     return out
 end
+
+function triadic_mean_field_force(
+    theta::AbstractVector{<:Real},
+    coupling::Real,
+)::Vector{Float64}
+    # F_j = K [2 C S cos 2θ_j − (C² − S²) sin 2θ_j], C = ⟨cos θ⟩, S = ⟨sin θ⟩.
+    n = length(theta)
+    out = zeros(Float64, n)
+    n == 0 && return out
+    c = 0.0
+    s = 0.0
+    @inbounds for k in 1:n
+        c += cos(Float64(theta[k]))
+        s += sin(Float64(theta[k]))
+    end
+    c /= n
+    s /= n
+    kf = Float64(coupling)
+    in_phase = 2.0 * c * s
+    quadrature = c * c - s * s
+    @inbounds for j in 1:n
+        tj = Float64(theta[j])
+        out[j] = kf * (in_phase * cos(2.0 * tj) - quadrature * sin(2.0 * tj))
+    end
+    return out
+end
+
+function triadic_mean_field_jacobian(
+    theta::AbstractVector{<:Real},
+    coupling::Real,
+)::Matrix{Float64}
+    # J_jl = (2K/N) (C cos(2θ_j − θ_l) + S sin(2θ_j − θ_l)) off-diagonal; the diagonal adds
+    # −2K (2 C S sin 2θ_j + (C² − S²) cos 2θ_j). Non-symmetric, every row sums to zero.
+    n = length(theta)
+    out = zeros(Float64, n, n)
+    n == 0 && return out
+    c = 0.0
+    s = 0.0
+    @inbounds for k in 1:n
+        c += cos(Float64(theta[k]))
+        s += sin(Float64(theta[k]))
+    end
+    c /= n
+    s /= n
+    kf = Float64(coupling)
+    scale = 2.0 * kf / n
+    @inbounds for i in 1:n, j in 1:n
+        offset = 2.0 * Float64(theta[i]) - Float64(theta[j])
+        out[i, j] = scale * (c * cos(offset) + s * sin(offset))
+    end
+    in_phase = 2.0 * c * s
+    quadrature = c * c - s * s
+    @inbounds for i in 1:n
+        ti = Float64(theta[i])
+        out[i, i] -= 2.0 * kf * (in_phase * sin(2.0 * ti) + quadrature * cos(2.0 * ti))
+    end
+    return out
+end

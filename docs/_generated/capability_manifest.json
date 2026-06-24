@@ -10,10 +10,10 @@
     "public_api_exports": 717,
     "public_documentation_pages": 249,
     "python_model_classes": 826,
-    "python_model_source_modules": 450,
-    "rust_pyo3_model_wrappers": 165,
+    "python_model_source_modules": 451,
+    "rust_pyo3_model_wrappers": 167,
     "rust_source_modules": 41,
-    "test_files": 757
+    "test_files": 758
   },
   "documentation": {
     "examples": [
@@ -427,7 +427,7 @@
       {
         "package": "accel",
         "path": "src/scpn_quantum_control/accel",
-        "python_modules": 15
+        "python_modules": 16
       },
       {
         "package": "analysis",
@@ -3909,6 +3909,7 @@
       "src/scpn_quantum_control/accel/rust_kuramoto_classical.py",
       "src/scpn_quantum_control/accel/sakaguchi_kuramoto.py",
       "src/scpn_quantum_control/accel/sakaguchi_mean_field.py",
+      "src/scpn_quantum_control/accel/triadic_mean_field.py",
       "src/scpn_quantum_control/analysis/adaptive_fim_feedback.py",
       "src/scpn_quantum_control/analysis/berry_phase.py",
       "src/scpn_quantum_control/analysis/bkt_analysis.py",
@@ -4500,6 +4501,8 @@
       "symmetric_2x2_eigenvalues_value",
       "symmetric_2x2_eigenvalues_vjp",
       "topological_charge_rust",
+      "triadic_mean_field_force",
+      "triadic_mean_field_jacobian",
       "variational_free_energy_rust",
       "vector_dot_gradient",
       "vector_dot_jvp",
@@ -6077,6 +6080,7 @@
       "tests/test_translation_symmetry_branches.py",
       "tests/test_translation_symmetry_contracts.py",
       "tests/test_trapped_ion.py",
+      "tests/test_triadic_mean_field.py",
       "tests/test_trotter_error.py",
       "tests/test_trotter_upde.py",
       "tests/test_ultrascale_hls.py",

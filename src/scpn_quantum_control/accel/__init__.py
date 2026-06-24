@@ -121,6 +121,12 @@ from .sakaguchi_mean_field import (
     sakaguchi_mean_field_force,
     sakaguchi_mean_field_jacobian,
 )
+from .triadic_mean_field import (
+    last_triadic_mean_field_force_tier_used,
+    last_triadic_mean_field_jacobian_tier_used,
+    triadic_mean_field_force,
+    triadic_mean_field_jacobian,
+)
 
 __all__ = [
     "MultiLangDispatcher",
@@ -178,6 +184,10 @@ __all__ = [
     "order_parameter_hessian",
     "sakaguchi_mean_field_force",
     "sakaguchi_mean_field_jacobian",
+    "triadic_mean_field_force",
+    "triadic_mean_field_jacobian",
+    "last_triadic_mean_field_force_tier_used",
+    "last_triadic_mean_field_jacobian_tier_used",
     "last_sakaguchi_mean_field_force_tier_used",
     "last_sakaguchi_mean_field_jacobian_tier_used",
     "sakaguchi_force",
