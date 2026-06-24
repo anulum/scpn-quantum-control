@@ -138,6 +138,15 @@ from .kuramoto_explosive_continuation import (
     hysteresis_loop,
     triadic_hysteresis_loop,
 )
+from .kuramoto_heterogeneous import (
+    CouplingTerm,
+    heterogeneous_force,
+    heterogeneous_force_components,
+    heterogeneous_jacobian,
+    hyperedge_term,
+    pairwise_term,
+    simplex_mean_field_term,
+)
 from .kuramoto_hyperedge import (
     hyperedge_force,
     hyperedge_jacobian,
@@ -406,6 +415,13 @@ __all__ = [
     "simplex_mean_field_jacobian",
     "hyperedge_force",
     "hyperedge_jacobian",
+    "CouplingTerm",
+    "heterogeneous_force",
+    "heterogeneous_force_components",
+    "heterogeneous_jacobian",
+    "hyperedge_term",
+    "pairwise_term",
+    "simplex_mean_field_term",
     "mean_phase",
     "mean_phase_gradient",
     "mean_phase_hessian",

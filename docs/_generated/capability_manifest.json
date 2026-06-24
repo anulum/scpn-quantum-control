@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 717,
     "public_documentation_pages": 249,
-    "python_model_classes": 837,
-    "python_model_source_modules": 471,
+    "python_model_classes": 838,
+    "python_model_source_modules": 472,
     "rust_pyo3_model_wrappers": 171,
     "rust_source_modules": 42,
-    "test_files": 778
+    "test_files": 779
   },
   "documentation": {
     "examples": [
@@ -427,7 +427,7 @@
       {
         "package": "accel",
         "path": "src/scpn_quantum_control/accel",
-        "python_modules": 36
+        "python_modules": 37
       },
       {
         "package": "analysis",
@@ -1053,6 +1053,10 @@
       {
         "name": "CouplingLearningResult",
         "path": "src/scpn_quantum_control/phase/coupling_learning.py"
+      },
+      {
+        "name": "CouplingTerm",
+        "path": "src/scpn_quantum_control/accel/kuramoto_heterogeneous.py"
       },
       {
         "name": "CouplingTopologyObjective",
@@ -3952,6 +3956,7 @@
       "src/scpn_quantum_control/accel/kuramoto_delayed_mean_field.py",
       "src/scpn_quantum_control/accel/kuramoto_energy.py",
       "src/scpn_quantum_control/accel/kuramoto_explosive_continuation.py",
+      "src/scpn_quantum_control/accel/kuramoto_heterogeneous.py",
       "src/scpn_quantum_control/accel/kuramoto_hyperedge.py",
       "src/scpn_quantum_control/accel/kuramoto_inertial.py",
       "src/scpn_quantum_control/accel/kuramoto_lyapunov.py",
@@ -5772,6 +5777,7 @@
       "tests/test_kuramoto_delayed_mean_field.py",
       "tests/test_kuramoto_energy.py",
       "tests/test_kuramoto_explosive_continuation.py",
+      "tests/test_kuramoto_heterogeneous.py",
       "tests/test_kuramoto_hyperedge.py",
       "tests/test_kuramoto_inertial.py",
       "tests/test_kuramoto_input_hardening.py",
