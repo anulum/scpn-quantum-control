@@ -11,7 +11,7 @@
     "public_documentation_pages": 249,
     "python_model_classes": 826,
     "python_model_source_modules": 446,
-    "rust_pyo3_model_wrappers": 155,
+    "rust_pyo3_model_wrappers": 156,
     "rust_source_modules": 38,
     "test_files": 751
   },
@@ -4377,6 +4377,7 @@
       "kuramoto_euler",
       "kuramoto_interaction_energy",
       "kuramoto_interaction_energy_gradient",
+      "kuramoto_interaction_energy_hessian",
       "kuramoto_trajectory",
       "kuramoto_witness_candidate_features",
       "lanczos_b_coefficients",

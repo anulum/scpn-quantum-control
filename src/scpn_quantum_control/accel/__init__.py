@@ -50,7 +50,9 @@ from .dispatcher import (
 from .kuramoto_energy import (
     kuramoto_interaction_energy,
     kuramoto_interaction_energy_gradient,
+    kuramoto_interaction_energy_hessian,
     last_kuramoto_interaction_energy_gradient_tier_used,
+    last_kuramoto_interaction_energy_hessian_tier_used,
     last_kuramoto_interaction_energy_tier_used,
 )
 from .kuramoto_mean_field import (
@@ -103,7 +105,9 @@ __all__ = [
     "dispatch",
     "kuramoto_interaction_energy",
     "kuramoto_interaction_energy_gradient",
+    "kuramoto_interaction_energy_hessian",
     "last_kuramoto_interaction_energy_gradient_tier_used",
+    "last_kuramoto_interaction_energy_hessian_tier_used",
     "last_kuramoto_interaction_energy_tier_used",
     "last_daido_gradient_tier_used",
     "last_daido_hessian_tier_used",

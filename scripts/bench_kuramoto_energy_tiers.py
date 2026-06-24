@@ -180,6 +180,11 @@ def main(argv: list[str] | None = None) -> int:
         "julia": ke._julia_kuramoto_interaction_energy_gradient if julia_ok else None,
         "python": ke._python_kuramoto_interaction_energy_gradient,
     }
+    hessian_tiers: dict[str, _Tier | None] = {
+        "rust": ke._rust_kuramoto_interaction_energy_hessian if rust_ok else None,
+        "julia": ke._julia_kuramoto_interaction_energy_hessian if julia_ok else None,
+        "python": ke._python_kuramoto_interaction_energy_hessian,
+    }
 
     if julia_ok:
         print("[bench] warming Julia JIT …", file=sys.stderr, flush=True)
@@ -206,6 +211,9 @@ def main(argv: list[str] | None = None) -> int:
         ),
         "kuramoto_interaction_energy_gradient": _bench_function(
             "kuramoto_interaction_energy_gradient", gradient_tiers, sizes, args, rng
+        ),
+        "kuramoto_interaction_energy_hessian": _bench_function(
+            "kuramoto_interaction_energy_hessian", hessian_tiers, sizes, args, rng
         ),
     }
 

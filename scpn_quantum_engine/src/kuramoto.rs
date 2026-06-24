@@ -660,6 +660,55 @@ pub fn kuramoto_interaction_energy_gradient_inner(
     out
 }
 
+/// Compute the Hessian ∂²E/∂θ_i∂θ_l of the Kuramoto interaction energy.
+///
+/// H_il = −½(K_il + K_li) cos(θ_i − θ_l) for l ≠ i, with H_ii = −Σ_{l≠i} H_il. The matrix
+/// is symmetric and every row sums to zero; for symmetric K it equals the negated networked
+/// Jacobian.
+#[pyfunction]
+pub fn kuramoto_interaction_energy_hessian<'py>(
+    py: Python<'py>,
+    theta: PyReadonlyArray1<'_, f64>,
+    coupling: PyReadonlyArray2<'_, f64>,
+) -> PyResult<Bound<'py, PyArray2<f64>>> {
+    let theta = validate_phase_vector(&theta, "theta")?;
+    let matrix = coupling.as_array();
+    let n = theta.len();
+    if matrix.shape() != [n, n] {
+        return Err(PyValueError::new_err(format!(
+            "coupling must be a square matrix of order {n}, got shape {:?}",
+            matrix.shape()
+        )));
+    }
+    Ok(PyArray2::from_owned_array(
+        py,
+        kuramoto_interaction_energy_hessian_inner(theta, &matrix),
+    ))
+}
+
+/// Pure Rust Kuramoto interaction-energy Hessian (no PyO3), returned row-major.
+pub fn kuramoto_interaction_energy_hessian_inner(
+    theta: &[f64],
+    coupling: &ArrayView2<'_, f64>,
+) -> Array2<f64> {
+    let n = theta.len();
+    let mut out = Array2::<f64>::zeros((n, n));
+    for i in 0..n {
+        let mut diagonal = 0.0_f64;
+        for l in 0..n {
+            if l == i {
+                continue;
+            }
+            let entry =
+                -0.5 * (coupling[[i, l]] + coupling[[l, i]]) * (theta[i] - theta[l]).cos();
+            out[[i, l]] = entry;
+            diagonal -= entry;
+        }
+        out[[i, i]] = diagonal;
+    }
+    out
+}
+
 /// Compute the Kuramoto–Sakaguchi frustrated force F_j = Σ_{k≠j} K_jk sin(θ_k − θ_j − α).
 ///
 /// ``coupling`` is the N×N matrix K and ``frustration`` is the angle α. The self-coupling
@@ -1949,6 +1998,54 @@ mod tests {
         let empty = Array2::<f64>::zeros((0, 0));
         assert_eq!(kuramoto_interaction_energy_inner(&[], &empty.view()), 0.0);
         assert!(kuramoto_interaction_energy_gradient_inner(&[], &empty.view()).is_empty());
+    }
+
+    #[test]
+    fn test_interaction_energy_hessian_matches_finite_difference_of_gradient() {
+        let theta = vec![0.3, -1.1, 2.0, 0.7, 4.2];
+        let mut k = _symmetric_coupling(5, 0.21);
+        k[[0, 1]] += 0.9; // asymmetric to exercise the (K_il + K_li) symmetrisation
+        let hessian = kuramoto_interaction_energy_hessian_inner(&theta, &k.view());
+        let h = 1e-6;
+        for l in 0..theta.len() {
+            let mut plus = theta.clone();
+            let mut minus = theta.clone();
+            plus[l] += h;
+            minus[l] -= h;
+            let grad_plus = kuramoto_interaction_energy_gradient_inner(&plus, &k.view());
+            let grad_minus = kuramoto_interaction_energy_gradient_inner(&minus, &k.view());
+            for i in 0..theta.len() {
+                let fd = (grad_plus[i] - grad_minus[i]) / (2.0 * h);
+                assert!((hessian[[i, l]] - fd).abs() < 1e-6, "H[{i},{l}]");
+            }
+        }
+    }
+
+    #[test]
+    fn test_interaction_energy_hessian_symmetric_rows_zero_equals_negated_jacobian() {
+        let theta = vec![0.1, 0.9, 2.3, 3.1, 5.5];
+        let k = _symmetric_coupling(5, 0.5);
+        let hessian = kuramoto_interaction_energy_hessian_inner(&theta, &k.view());
+        let jacobian = networked_kuramoto_jacobian_inner(&theta, &k.view());
+        let n = theta.len();
+        for i in 0..n {
+            let row_sum: f64 = (0..n).map(|j| hessian[[i, j]]).sum();
+            assert!(row_sum.abs() < 1e-12, "row {i} sum = {row_sum}");
+            for j in 0..n {
+                assert!((hessian[[i, j]] - hessian[[j, i]]).abs() < 1e-15);
+                // symmetric K => Hessian = -networked Jacobian
+                assert!((hessian[[i, j]] + jacobian[[i, j]]).abs() < 1e-12);
+            }
+        }
+    }
+
+    #[test]
+    fn test_interaction_energy_hessian_empty() {
+        let empty = Array2::<f64>::zeros((0, 0));
+        assert_eq!(
+            kuramoto_interaction_energy_hessian_inner(&[], &empty.view()).shape(),
+            &[0, 0]
+        );
     }
 
     #[test]
