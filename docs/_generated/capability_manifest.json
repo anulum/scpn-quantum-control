@@ -10,10 +10,10 @@
     "public_api_exports": 717,
     "public_documentation_pages": 249,
     "python_model_classes": 837,
-    "python_model_source_modules": 469,
+    "python_model_source_modules": 471,
     "rust_pyo3_model_wrappers": 171,
     "rust_source_modules": 42,
-    "test_files": 776
+    "test_files": 778
   },
   "documentation": {
     "examples": [
@@ -427,7 +427,7 @@
       {
         "package": "accel",
         "path": "src/scpn_quantum_control/accel",
-        "python_modules": 34
+        "python_modules": 36
       },
       {
         "package": "analysis",
@@ -3952,6 +3952,7 @@
       "src/scpn_quantum_control/accel/kuramoto_delayed_mean_field.py",
       "src/scpn_quantum_control/accel/kuramoto_energy.py",
       "src/scpn_quantum_control/accel/kuramoto_explosive_continuation.py",
+      "src/scpn_quantum_control/accel/kuramoto_hyperedge.py",
       "src/scpn_quantum_control/accel/kuramoto_inertial.py",
       "src/scpn_quantum_control/accel/kuramoto_lyapunov.py",
       "src/scpn_quantum_control/accel/kuramoto_mean_field.py",
@@ -3960,6 +3961,7 @@
       "src/scpn_quantum_control/accel/kuramoto_ott_antonsen.py",
       "src/scpn_quantum_control/accel/kuramoto_pinning_control.py",
       "src/scpn_quantum_control/accel/kuramoto_ring_basins.py",
+      "src/scpn_quantum_control/accel/kuramoto_simplex_mean_field.py",
       "src/scpn_quantum_control/accel/kuramoto_stability_spectrum.py",
       "src/scpn_quantum_control/accel/kuramoto_system_id.py",
       "src/scpn_quantum_control/accel/local_order.py",
@@ -5770,6 +5772,7 @@
       "tests/test_kuramoto_delayed_mean_field.py",
       "tests/test_kuramoto_energy.py",
       "tests/test_kuramoto_explosive_continuation.py",
+      "tests/test_kuramoto_hyperedge.py",
       "tests/test_kuramoto_inertial.py",
       "tests/test_kuramoto_input_hardening.py",
       "tests/test_kuramoto_lyapunov.py",
@@ -5779,6 +5782,7 @@
       "tests/test_kuramoto_ott_antonsen.py",
       "tests/test_kuramoto_pinning_control.py",
       "tests/test_kuramoto_ring_basins.py",
+      "tests/test_kuramoto_simplex_mean_field.py",
       "tests/test_kuramoto_stability_spectrum.py",
       "tests/test_kuramoto_system_id.py",
       "tests/test_kuramoto_variants.py",

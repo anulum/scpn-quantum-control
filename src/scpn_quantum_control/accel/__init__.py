@@ -138,6 +138,10 @@ from .kuramoto_explosive_continuation import (
     hysteresis_loop,
     triadic_hysteresis_loop,
 )
+from .kuramoto_hyperedge import (
+    hyperedge_force,
+    hyperedge_jacobian,
+)
 from .kuramoto_inertial import (
     InertialTrajectory,
     PhaseForce,
@@ -191,6 +195,10 @@ from .kuramoto_ring_basins import (
     twisted_state,
     twisted_state_eigenvalues,
     winding_number,
+)
+from .kuramoto_simplex_mean_field import (
+    simplex_mean_field_force,
+    simplex_mean_field_jacobian,
 )
 from .kuramoto_stability_spectrum import (
     StabilitySpectrum,
@@ -394,6 +402,10 @@ __all__ = [
     "hebbian_coupling_equilibrium",
     "hebbian_plasticity_rate",
     "integrate_adaptive_kuramoto",
+    "simplex_mean_field_force",
+    "simplex_mean_field_jacobian",
+    "hyperedge_force",
+    "hyperedge_jacobian",
     "mean_phase",
     "mean_phase_gradient",
     "mean_phase_hessian",
