@@ -89,6 +89,15 @@ from .kuramoto_coupling_design import (
     optimise_coupling,
     symmetric_nonnegative_projection,
 )
+from .kuramoto_critical_coupling import (
+    critical_coupling,
+    gaussian_critical_coupling,
+    gaussian_density,
+    lorentzian_critical_coupling,
+    lorentzian_density,
+    lorentzian_order_parameter,
+    synchronised_order_parameter,
+)
 from .kuramoto_energy import (
     kuramoto_interaction_energy,
     kuramoto_interaction_energy_gradient,
@@ -215,6 +224,13 @@ __all__ = [
     "is_synchronisation_stable",
     "stability_spectrum",
     "synchronisation_rate",
+    "critical_coupling",
+    "gaussian_critical_coupling",
+    "gaussian_density",
+    "lorentzian_critical_coupling",
+    "lorentzian_density",
+    "lorentzian_order_parameter",
+    "synchronised_order_parameter",
     "kuramoto_euler_trajectory",
     "kuramoto_euler_vjp",
     "kuramoto_rk4_trajectory",
