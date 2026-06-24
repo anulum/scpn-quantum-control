@@ -109,6 +109,12 @@ from .kuramoto_pinning_control import (
     pinning_coherence_value,
     pinning_coherence_value_and_grad,
 )
+from .kuramoto_system_id import (
+    SystemIdentificationResult,
+    learn_coupling,
+    trajectory_match_value,
+    trajectory_match_value_and_grad,
+)
 from .local_order import (
     last_local_order_parameter_jacobian_tier_used,
     last_local_order_parameter_tier_used,
@@ -195,6 +201,10 @@ __all__ = [
     "design_pinning",
     "pinning_coherence_value",
     "pinning_coherence_value_and_grad",
+    "SystemIdentificationResult",
+    "learn_coupling",
+    "trajectory_match_value",
+    "trajectory_match_value_and_grad",
     "kuramoto_euler_trajectory",
     "kuramoto_euler_vjp",
     "kuramoto_rk4_trajectory",
