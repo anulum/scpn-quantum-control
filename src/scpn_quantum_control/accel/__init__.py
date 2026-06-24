@@ -112,6 +112,13 @@ from .kuramoto_mean_field import (
     mean_field_force,
     mean_field_jacobian,
 )
+from .kuramoto_ott_antonsen import (
+    ott_antonsen_field,
+    ott_antonsen_order_parameter,
+    ott_antonsen_steady_state,
+    ott_antonsen_terminal_order_parameter_value_and_grad,
+    ott_antonsen_trajectory,
+)
 from .kuramoto_pinning_control import (
     PinningDesignResult,
     design_pinning,
@@ -231,6 +238,11 @@ __all__ = [
     "lorentzian_density",
     "lorentzian_order_parameter",
     "synchronised_order_parameter",
+    "ott_antonsen_field",
+    "ott_antonsen_order_parameter",
+    "ott_antonsen_steady_state",
+    "ott_antonsen_terminal_order_parameter_value_and_grad",
+    "ott_antonsen_trajectory",
     "kuramoto_euler_trajectory",
     "kuramoto_euler_vjp",
     "kuramoto_rk4_trajectory",
