@@ -310,7 +310,7 @@
       "studio.mitigation.v1",
       "studio.hardware-result-pack.v1"
     ],
-    "platform_sdk": ">=0.4,<0.5",
+    "platform_sdk": ">=0.8,<0.9",
     "protocol_version": "1",
     "studio": "scpn-quantum-control",
     "studio_version": "0.9.11",

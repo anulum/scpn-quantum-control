@@ -117,3 +117,20 @@ def test_write_federation_document(tmp_path: Path) -> None:
     assert out == tmp_path / federation.STUDIO_MANIFEST_PATH
     written = json.loads(out.read_text(encoding="utf-8"))
     assert written["schema_a"]["studio"] == "scpn-quantum-control"
+
+
+def test_manifest_passes_studio_conformance_gate() -> None:
+    """The CapabilityManifest is admitted by the platform ``validate_studio_manifest`` gate.
+
+    Keeps the federation contract honest in CI: any schema-A drift (bad digest form,
+    duplicate verb, unversioned evidence schema, unknown contract era) reds the build.
+    """
+    from scpn_studio_platform import manifest as platform_manifest
+
+    validate = getattr(platform_manifest, "validate_studio_manifest", None)
+    if validate is None:  # pragma: no cover - only on SDK < 0.8
+        pytest.skip("validate_studio_manifest unavailable (scpn-studio-platform < 0.8)")
+    verdict = validate(manifest.build_manifest().to_dict())
+    assert verdict.admitted, f"manifest rejected: {verdict.rejections}"
+    assert verdict.rejections == ()
+    assert verdict.warnings == ()
