@@ -134,6 +134,18 @@ from .kuramoto_mean_field import (
     mean_field_force,
     mean_field_jacobian,
 )
+from .kuramoto_noisy import (
+    NoisyKuramotoRun,
+    StochasticForce,
+    integrate_noisy_kuramoto,
+    noisy_kuramoto_step,
+)
+from .kuramoto_noisy_mean_field import (
+    FrequencyDensity,
+    lorentzian_noisy_critical_coupling,
+    noisy_critical_coupling,
+    noisy_stationary_order_parameter,
+)
 from .kuramoto_ott_antonsen import (
     ott_antonsen_field,
     ott_antonsen_order_parameter,
@@ -332,6 +344,14 @@ __all__ = [
     "last_tier_used",
     "mean_field_force",
     "mean_field_jacobian",
+    "NoisyKuramotoRun",
+    "StochasticForce",
+    "integrate_noisy_kuramoto",
+    "noisy_kuramoto_step",
+    "FrequencyDensity",
+    "lorentzian_noisy_critical_coupling",
+    "noisy_critical_coupling",
+    "noisy_stationary_order_parameter",
     "mean_phase",
     "mean_phase_gradient",
     "mean_phase_hessian",

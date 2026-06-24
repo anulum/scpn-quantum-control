@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 717,
     "public_documentation_pages": 249,
-    "python_model_classes": 834,
-    "python_model_source_modules": 464,
+    "python_model_classes": 835,
+    "python_model_source_modules": 466,
     "rust_pyo3_model_wrappers": 171,
     "rust_source_modules": 42,
-    "test_files": 771
+    "test_files": 773
   },
   "documentation": {
     "examples": [
@@ -427,7 +427,7 @@
       {
         "package": "accel",
         "path": "src/scpn_quantum_control/accel",
-        "python_modules": 29
+        "python_modules": 31
       },
       {
         "package": "analysis",
@@ -2157,6 +2157,10 @@
       {
         "name": "NistTestResult",
         "path": "src/scpn_quantum_control/entropy/nist_sp800_22.py"
+      },
+      {
+        "name": "NoisyKuramotoRun",
+        "path": "src/scpn_quantum_control/accel/kuramoto_noisy.py"
       },
       {
         "name": "OQCHALAdapter",
@@ -3940,6 +3944,8 @@
       "src/scpn_quantum_control/accel/kuramoto_inertial.py",
       "src/scpn_quantum_control/accel/kuramoto_lyapunov.py",
       "src/scpn_quantum_control/accel/kuramoto_mean_field.py",
+      "src/scpn_quantum_control/accel/kuramoto_noisy.py",
+      "src/scpn_quantum_control/accel/kuramoto_noisy_mean_field.py",
       "src/scpn_quantum_control/accel/kuramoto_ott_antonsen.py",
       "src/scpn_quantum_control/accel/kuramoto_pinning_control.py",
       "src/scpn_quantum_control/accel/kuramoto_ring_basins.py",
@@ -5754,6 +5760,8 @@
       "tests/test_kuramoto_input_hardening.py",
       "tests/test_kuramoto_lyapunov.py",
       "tests/test_kuramoto_mean_field.py",
+      "tests/test_kuramoto_noisy.py",
+      "tests/test_kuramoto_noisy_mean_field.py",
       "tests/test_kuramoto_ott_antonsen.py",
       "tests/test_kuramoto_pinning_control.py",
       "tests/test_kuramoto_ring_basins.py",
