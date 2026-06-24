@@ -98,6 +98,20 @@ from .kuramoto_critical_coupling import (
     lorentzian_order_parameter,
     synchronised_order_parameter,
 )
+from .kuramoto_delayed import (
+    DelayedForce,
+    DelayedTrajectory,
+    delayed_mean_field_force,
+    delayed_networked_force,
+    integrate_delayed_kuramoto,
+)
+from .kuramoto_delayed_mean_field import (
+    is_synchronised_branch_stable,
+    stable_synchronised_frequencies,
+    synchronised_branch_stability,
+    synchronised_frequency_residual,
+    synchronised_frequency_roots,
+)
 from .kuramoto_energy import (
     kuramoto_interaction_energy,
     kuramoto_interaction_energy_gradient,
@@ -352,6 +366,16 @@ __all__ = [
     "lorentzian_noisy_critical_coupling",
     "noisy_critical_coupling",
     "noisy_stationary_order_parameter",
+    "DelayedForce",
+    "DelayedTrajectory",
+    "delayed_mean_field_force",
+    "delayed_networked_force",
+    "integrate_delayed_kuramoto",
+    "is_synchronised_branch_stable",
+    "stable_synchronised_frequencies",
+    "synchronised_branch_stability",
+    "synchronised_frequency_residual",
+    "synchronised_frequency_roots",
     "mean_phase",
     "mean_phase_gradient",
     "mean_phase_hessian",

@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 717,
     "public_documentation_pages": 249,
-    "python_model_classes": 835,
-    "python_model_source_modules": 466,
+    "python_model_classes": 836,
+    "python_model_source_modules": 468,
     "rust_pyo3_model_wrappers": 171,
     "rust_source_modules": 42,
-    "test_files": 773
+    "test_files": 775
   },
   "documentation": {
     "examples": [
@@ -427,7 +427,7 @@
       {
         "package": "accel",
         "path": "src/scpn_quantum_control/accel",
-        "python_modules": 31
+        "python_modules": 33
       },
       {
         "package": "analysis",
@@ -1137,6 +1137,10 @@
       {
         "name": "DegeneracyMode",
         "path": "src/scpn_quantum_control/topology_control/objectives.py"
+      },
+      {
+        "name": "DelayedTrajectory",
+        "path": "src/scpn_quantum_control/accel/kuramoto_delayed.py"
       },
       {
         "name": "DenseAllocationError",
@@ -3939,6 +3943,8 @@
       "src/scpn_quantum_control/accel/kuramoto_control.py",
       "src/scpn_quantum_control/accel/kuramoto_coupling_design.py",
       "src/scpn_quantum_control/accel/kuramoto_critical_coupling.py",
+      "src/scpn_quantum_control/accel/kuramoto_delayed.py",
+      "src/scpn_quantum_control/accel/kuramoto_delayed_mean_field.py",
       "src/scpn_quantum_control/accel/kuramoto_energy.py",
       "src/scpn_quantum_control/accel/kuramoto_explosive_continuation.py",
       "src/scpn_quantum_control/accel/kuramoto_inertial.py",
@@ -5754,6 +5760,8 @@
       "tests/test_kuramoto_core_branches.py",
       "tests/test_kuramoto_coupling_design.py",
       "tests/test_kuramoto_critical_coupling.py",
+      "tests/test_kuramoto_delayed.py",
+      "tests/test_kuramoto_delayed_mean_field.py",
       "tests/test_kuramoto_energy.py",
       "tests/test_kuramoto_explosive_continuation.py",
       "tests/test_kuramoto_inertial.py",
