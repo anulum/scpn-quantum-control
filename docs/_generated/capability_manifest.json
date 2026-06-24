@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 717,
     "public_documentation_pages": 249,
-    "python_model_classes": 827,
-    "python_model_source_modules": 455,
+    "python_model_classes": 828,
+    "python_model_source_modules": 456,
     "rust_pyo3_model_wrappers": 171,
     "rust_source_modules": 42,
-    "test_files": 762
+    "test_files": 763
   },
   "documentation": {
     "examples": [
@@ -427,7 +427,7 @@
       {
         "package": "accel",
         "path": "src/scpn_quantum_control/accel",
-        "python_modules": 20
+        "python_modules": 21
       },
       {
         "package": "analysis",
@@ -2815,6 +2815,10 @@
         "path": "src/scpn_quantum_control/phase/cross_domain_transfer.py"
       },
       {
+        "name": "PinningDesignResult",
+        "path": "src/scpn_quantum_control/accel/kuramoto_pinning_control.py"
+      },
+      {
         "name": "PlaquetteResult",
         "path": "src/scpn_quantum_control/psi_field/lattice.py"
       },
@@ -3908,6 +3912,7 @@
       "src/scpn_quantum_control/accel/kuramoto_coupling_design.py",
       "src/scpn_quantum_control/accel/kuramoto_energy.py",
       "src/scpn_quantum_control/accel/kuramoto_mean_field.py",
+      "src/scpn_quantum_control/accel/kuramoto_pinning_control.py",
       "src/scpn_quantum_control/accel/local_order.py",
       "src/scpn_quantum_control/accel/local_phase.py",
       "src/scpn_quantum_control/accel/mean_phase_observables.py",
@@ -5713,6 +5718,7 @@
       "tests/test_kuramoto_energy.py",
       "tests/test_kuramoto_input_hardening.py",
       "tests/test_kuramoto_mean_field.py",
+      "tests/test_kuramoto_pinning_control.py",
       "tests/test_kuramoto_variants.py",
       "tests/test_l16_director.py",
       "tests/test_lattice_branches.py",

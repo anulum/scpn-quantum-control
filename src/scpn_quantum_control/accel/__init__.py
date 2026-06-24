@@ -103,6 +103,12 @@ from .kuramoto_mean_field import (
     mean_field_force,
     mean_field_jacobian,
 )
+from .kuramoto_pinning_control import (
+    PinningDesignResult,
+    design_pinning,
+    pinning_coherence_value,
+    pinning_coherence_value_and_grad,
+)
 from .local_order import (
     last_local_order_parameter_jacobian_tier_used,
     last_local_order_parameter_tier_used,
@@ -185,6 +191,10 @@ __all__ = [
     "design_synchronising_coupling",
     "optimise_coupling",
     "symmetric_nonnegative_projection",
+    "PinningDesignResult",
+    "design_pinning",
+    "pinning_coherence_value",
+    "pinning_coherence_value_and_grad",
     "kuramoto_euler_trajectory",
     "kuramoto_euler_vjp",
     "kuramoto_rk4_trajectory",
