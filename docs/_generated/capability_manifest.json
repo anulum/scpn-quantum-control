@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 717,
     "public_documentation_pages": 249,
-    "python_model_classes": 838,
-    "python_model_source_modules": 472,
+    "python_model_classes": 839,
+    "python_model_source_modules": 473,
     "rust_pyo3_model_wrappers": 171,
     "rust_source_modules": 42,
-    "test_files": 779
+    "test_files": 780
   },
   "documentation": {
     "examples": [
@@ -427,7 +427,7 @@
       {
         "package": "accel",
         "path": "src/scpn_quantum_control/accel",
-        "python_modules": 37
+        "python_modules": 38
       },
       {
         "package": "analysis",
@@ -1645,6 +1645,10 @@
       {
         "name": "FreeEnergyResult",
         "path": "src/scpn_quantum_control/fep/variational_free_energy.py"
+      },
+      {
+        "name": "FrequencyOrder",
+        "path": "src/scpn_quantum_control/accel/kuramoto_frequency_order.py"
       },
       {
         "name": "FusionCoreFRCCalibration",
@@ -3956,6 +3960,7 @@
       "src/scpn_quantum_control/accel/kuramoto_delayed_mean_field.py",
       "src/scpn_quantum_control/accel/kuramoto_energy.py",
       "src/scpn_quantum_control/accel/kuramoto_explosive_continuation.py",
+      "src/scpn_quantum_control/accel/kuramoto_frequency_order.py",
       "src/scpn_quantum_control/accel/kuramoto_heterogeneous.py",
       "src/scpn_quantum_control/accel/kuramoto_hyperedge.py",
       "src/scpn_quantum_control/accel/kuramoto_inertial.py",
@@ -5777,6 +5782,7 @@
       "tests/test_kuramoto_delayed_mean_field.py",
       "tests/test_kuramoto_energy.py",
       "tests/test_kuramoto_explosive_continuation.py",
+      "tests/test_kuramoto_frequency_order.py",
       "tests/test_kuramoto_heterogeneous.py",
       "tests/test_kuramoto_hyperedge.py",
       "tests/test_kuramoto_inertial.py",

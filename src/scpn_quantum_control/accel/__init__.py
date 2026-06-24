@@ -138,6 +138,13 @@ from .kuramoto_explosive_continuation import (
     hysteresis_loop,
     triadic_hysteresis_loop,
 )
+from .kuramoto_frequency_order import (
+    FrequencyOrder,
+    effective_frequencies,
+    frequency_locked_fraction,
+    frequency_order_diagnostics,
+    frequency_synchronisation_index,
+)
 from .kuramoto_heterogeneous import (
     CouplingTerm,
     heterogeneous_force,
@@ -422,6 +429,11 @@ __all__ = [
     "hyperedge_term",
     "pairwise_term",
     "simplex_mean_field_term",
+    "FrequencyOrder",
+    "effective_frequencies",
+    "frequency_locked_fraction",
+    "frequency_order_diagnostics",
+    "frequency_synchronisation_index",
     "mean_phase",
     "mean_phase_gradient",
     "mean_phase_hessian",
