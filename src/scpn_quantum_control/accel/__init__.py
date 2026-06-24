@@ -106,6 +106,10 @@ from .kuramoto_energy import (
     last_kuramoto_interaction_energy_hessian_tier_used,
     last_kuramoto_interaction_energy_tier_used,
 )
+from .kuramoto_lyapunov import (
+    lyapunov_spectrum,
+    maximal_lyapunov_exponent,
+)
 from .kuramoto_mean_field import (
     last_mean_field_force_tier_used,
     last_mean_field_jacobian_tier_used,
@@ -243,6 +247,8 @@ __all__ = [
     "ott_antonsen_steady_state",
     "ott_antonsen_terminal_order_parameter_value_and_grad",
     "ott_antonsen_trajectory",
+    "lyapunov_spectrum",
+    "maximal_lyapunov_exponent",
     "kuramoto_euler_trajectory",
     "kuramoto_euler_vjp",
     "kuramoto_rk4_trajectory",
