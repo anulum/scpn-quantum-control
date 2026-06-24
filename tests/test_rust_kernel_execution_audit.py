@@ -177,9 +177,9 @@ def test_live_rust_crate_records_threading_without_simd_promotion() -> None:
     # force and stability Jacobian, the Kuramoto interaction energy, its gradient and
     # Hessian, the Kuramoto–Sakaguchi frustrated force and stability Jacobian, the
     # network-local order parameter and its Jacobian, and the Daido m-th Fourier-mode phase,
-    # its gradient and Hessian, and the Daido m-th-harmonic mean-field force and stability
-    # Jacobian PyO3 exports.
-    assert audit.pyfunction_count == 161
+    # its gradient and Hessian, the Daido m-th-harmonic mean-field force and stability
+    # Jacobian, and the network-local mean phase and its Jacobian PyO3 exports.
+    assert audit.pyfunction_count == 163
     assert audit.rayon_threaded_count > 0
     assert audit.explicit_simd_count == 0
     assert audit.performance_claim_eligible_count == 0

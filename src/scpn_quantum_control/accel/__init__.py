@@ -81,6 +81,12 @@ from .local_order import (
     local_order_parameter,
     local_order_parameter_jacobian,
 )
+from .local_phase import (
+    last_local_mean_phase_jacobian_tier_used,
+    last_local_mean_phase_tier_used,
+    local_mean_phase,
+    local_mean_phase_jacobian,
+)
 from .mean_phase_observables import (
     last_mean_phase_gradient_tier_used,
     last_mean_phase_hessian_tier_used,
@@ -140,6 +146,10 @@ __all__ = [
     "last_hessian_tier_used",
     "last_local_order_parameter_jacobian_tier_used",
     "last_local_order_parameter_tier_used",
+    "local_mean_phase",
+    "local_mean_phase_jacobian",
+    "last_local_mean_phase_tier_used",
+    "last_local_mean_phase_jacobian_tier_used",
     "local_order_parameter",
     "local_order_parameter_jacobian",
     "last_mean_field_force_tier_used",

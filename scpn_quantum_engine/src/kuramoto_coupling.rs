@@ -505,6 +505,102 @@ pub fn local_order_parameter_jacobian_inner(
     out
 }
 
+/// Compute the network-local mean phase ψ_j = atan2(Σ_k A_jk sin θ_k, Σ_k A_jk cos θ_k).
+///
+/// A zero-degree node or an incoherent neighbourhood (|Σ_k A_jk e^{iθ_k}| = 0) yields ψ_j = 0.
+#[pyfunction]
+pub fn local_mean_phase<'py>(
+    py: Python<'py>,
+    theta: PyReadonlyArray1<'_, f64>,
+    adjacency: PyReadonlyArray2<'_, f64>,
+) -> PyResult<Bound<'py, PyArray1<f64>>> {
+    let theta = validate_phase_vector(&theta, "theta")?;
+    let matrix = adjacency.as_array();
+    let n = theta.len();
+    if matrix.shape() != [n, n] {
+        return Err(PyValueError::new_err(format!(
+            "adjacency must be a square matrix of order {n}, got shape {:?}",
+            matrix.shape()
+        )));
+    }
+    Ok(PyArray1::from_owned_array(
+        py,
+        local_mean_phase_inner(theta, &matrix),
+    ))
+}
+
+/// Pure Rust network-local mean phase (no PyO3).
+pub fn local_mean_phase_inner(theta: &[f64], adjacency: &ArrayView2<'_, f64>) -> Array1<f64> {
+    let n = theta.len();
+    let mut out = Array1::<f64>::zeros(n);
+    let cos: Vec<f64> = theta.iter().map(|&t| t.cos()).collect();
+    let sin: Vec<f64> = theta.iter().map(|&t| t.sin()).collect();
+    for j in 0..n {
+        let (mut c, mut s) = (0.0_f64, 0.0_f64);
+        for k in 0..n {
+            let a = adjacency[[j, k]];
+            c += a * cos[k];
+            s += a * sin[k];
+        }
+        if c * c + s * s != 0.0 {
+            out[j] = s.atan2(c);
+        }
+    }
+    out
+}
+
+/// Compute the Jacobian ∂ψ_j/∂θ_l = A_jl cos(ψ_j − θ_l) / |Z_j| of the local mean phase.
+///
+/// A zero-degree node or an incoherent neighbourhood (|Z_j| = 0) yields a zero subgradient row.
+#[pyfunction]
+pub fn local_mean_phase_jacobian<'py>(
+    py: Python<'py>,
+    theta: PyReadonlyArray1<'_, f64>,
+    adjacency: PyReadonlyArray2<'_, f64>,
+) -> PyResult<Bound<'py, PyArray2<f64>>> {
+    let theta = validate_phase_vector(&theta, "theta")?;
+    let matrix = adjacency.as_array();
+    let n = theta.len();
+    if matrix.shape() != [n, n] {
+        return Err(PyValueError::new_err(format!(
+            "adjacency must be a square matrix of order {n}, got shape {:?}",
+            matrix.shape()
+        )));
+    }
+    Ok(PyArray2::from_owned_array(
+        py,
+        local_mean_phase_jacobian_inner(theta, &matrix),
+    ))
+}
+
+/// Pure Rust local mean phase Jacobian (no PyO3), returned row-major.
+pub fn local_mean_phase_jacobian_inner(
+    theta: &[f64],
+    adjacency: &ArrayView2<'_, f64>,
+) -> Array2<f64> {
+    let n = theta.len();
+    let mut out = Array2::<f64>::zeros((n, n));
+    let cos: Vec<f64> = theta.iter().map(|&t| t.cos()).collect();
+    let sin: Vec<f64> = theta.iter().map(|&t| t.sin()).collect();
+    for j in 0..n {
+        let (mut c, mut s) = (0.0_f64, 0.0_f64);
+        for k in 0..n {
+            let a = adjacency[[j, k]];
+            c += a * cos[k];
+            s += a * sin[k];
+        }
+        let magnitude_squared = c * c + s * s;
+        if magnitude_squared == 0.0 {
+            continue;
+        }
+        let inverse = 1.0 / magnitude_squared;
+        for l in 0..n {
+            out[[j, l]] = adjacency[[j, l]] * inverse * (c * cos[l] + s * sin[l]);
+        }
+    }
+    out
+}
+
 /// Compute the Daido m-th-harmonic mean-field force F_j = K (S_m cos m θ_j − C_m sin m θ_j).
 ///
 /// With C_m = ⟨cos m θ⟩, S_m = ⟨sin m θ⟩. For m = 1 this is the mean-field force.
@@ -1052,6 +1148,77 @@ mod tests {
         assert!(local_order_parameter_inner(&[], &empty.view()).is_empty());
         assert_eq!(
             local_order_parameter_jacobian_inner(&[], &empty.view()).shape(),
+            &[0, 0]
+        );
+    }
+
+    #[test]
+    fn test_local_mean_phase_all_to_all_equals_global() {
+        let theta = vec![0.2, 1.1, -0.7, 2.4, 3.3];
+        let n = theta.len();
+        let mut adjacency = Array2::<f64>::ones((n, n));
+        for i in 0..n {
+            adjacency[[i, i]] = 0.0;
+        }
+        let local = local_mean_phase_inner(&theta, &adjacency.view());
+        // With the all-to-all adjacency the local complex order excludes only the self term,
+        // so the per-node phase tracks the global mean phase of the remaining oscillators.
+        for j in 0..n {
+            let (mut c, mut s) = (0.0_f64, 0.0_f64);
+            for k in 0..n {
+                if k != j {
+                    c += theta[k].cos();
+                    s += theta[k].sin();
+                }
+            }
+            assert!((local[j] - s.atan2(c)).abs() < 1e-12);
+        }
+    }
+
+    #[test]
+    fn test_local_mean_phase_jacobian_matches_finite_difference() {
+        let theta = vec![0.2, 1.1, -0.7, 2.4, 3.3];
+        let adjacency = _symmetric_coupling(theta.len(), 0.37);
+        let jacobian = local_mean_phase_jacobian_inner(&theta, &adjacency.view());
+        let h = 1e-6;
+        for l in 0..theta.len() {
+            let mut plus = theta.clone();
+            let mut minus = theta.clone();
+            plus[l] += h;
+            minus[l] -= h;
+            let psi_plus = local_mean_phase_inner(&plus, &adjacency.view());
+            let psi_minus = local_mean_phase_inner(&minus, &adjacency.view());
+            for j in 0..theta.len() {
+                let mut delta = psi_plus[j] - psi_minus[j];
+                delta = (delta + std::f64::consts::PI).rem_euclid(2.0 * std::f64::consts::PI)
+                    - std::f64::consts::PI;
+                let fd = delta / (2.0 * h);
+                assert!((jacobian[[j, l]] - fd).abs() < 1e-6, "J[{j},{l}]");
+            }
+        }
+    }
+
+    #[test]
+    fn test_local_mean_phase_zero_degree_node() {
+        let theta = vec![0.3, 1.2, 2.1];
+        let mut adjacency = Array2::<f64>::ones((3, 3));
+        for k in 0..3 {
+            adjacency[[1, k]] = 0.0;
+        }
+        let phase = local_mean_phase_inner(&theta, &adjacency.view());
+        let jacobian = local_mean_phase_jacobian_inner(&theta, &adjacency.view());
+        assert_eq!(phase[1], 0.0);
+        for l in 0..3 {
+            assert_eq!(jacobian[[1, l]], 0.0);
+        }
+    }
+
+    #[test]
+    fn test_local_mean_phase_empty() {
+        let empty = Array2::<f64>::zeros((0, 0));
+        assert!(local_mean_phase_inner(&[], &empty.view()).is_empty());
+        assert_eq!(
+            local_mean_phase_jacobian_inner(&[], &empty.view()).shape(),
             &[0, 0]
         );
     }

@@ -61,3 +61,56 @@ function local_order_parameter_jacobian(
     end
     return out
 end
+
+function local_mean_phase(
+    theta::AbstractVector{<:Real},
+    adjacency::AbstractMatrix{<:Real},
+)::Vector{Float64}
+    # ψ_j = atan2(Σ_k A_jk sin θ_k, Σ_k A_jk cos θ_k). |Z_j| = 0 yields ψ_j = 0.
+    n = length(theta)
+    out = zeros(Float64, n)
+    n == 0 && return out
+    cosv = cos.(Float64.(theta))
+    sinv = sin.(Float64.(theta))
+    @inbounds for j in 1:n
+        c = 0.0
+        s = 0.0
+        for k in 1:n
+            a = Float64(adjacency[j, k])
+            c += a * cosv[k]
+            s += a * sinv[k]
+        end
+        if c * c + s * s != 0.0
+            out[j] = atan(s, c)
+        end
+    end
+    return out
+end
+
+function local_mean_phase_jacobian(
+    theta::AbstractVector{<:Real},
+    adjacency::AbstractMatrix{<:Real},
+)::Matrix{Float64}
+    # ∂ψ_j/∂θ_l = A_jl (C_j cos θ_l + S_j sin θ_l) / |Z_j|². |Z_j| = 0 yields a zero row.
+    n = length(theta)
+    out = zeros(Float64, n, n)
+    n == 0 && return out
+    cosv = cos.(Float64.(theta))
+    sinv = sin.(Float64.(theta))
+    @inbounds for j in 1:n
+        c = 0.0
+        s = 0.0
+        for k in 1:n
+            a = Float64(adjacency[j, k])
+            c += a * cosv[k]
+            s += a * sinv[k]
+        end
+        magnitude_squared = c * c + s * s
+        magnitude_squared == 0.0 && continue
+        inverse = 1.0 / magnitude_squared
+        for l in 1:n
+            out[j, l] = Float64(adjacency[j, l]) * inverse * (c * cosv[l] + s * sinv[l])
+        end
+    end
+    return out
+end

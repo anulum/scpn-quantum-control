@@ -588,6 +588,52 @@ def daido_mean_field_jacobian(
     return np.asarray(jl.daido_mean_field_jacobian(arr, float(coupling), m), dtype=np.float64)
 
 
+def local_mean_phase(
+    theta: NDArray[np.float64], adjacency: NDArray[np.float64]
+) -> NDArray[np.float64]:
+    """Julia-tier network-local Kuramoto mean phase.
+
+    Parameters
+    ----------
+    theta : numpy.ndarray
+        One-dimensional array of ``N`` oscillator phases in radians.
+    adjacency : numpy.ndarray
+        Two-dimensional ``(N, N)`` non-negative adjacency/coupling matrix.
+
+    Returns
+    -------
+    numpy.ndarray
+        One-dimensional float64 array of ``N`` local mean phases.
+    """
+    jl = _load()
+    phases = np.ascontiguousarray(theta, dtype=np.float64)
+    matrix = np.ascontiguousarray(adjacency, dtype=np.float64)
+    return np.asarray(jl.local_mean_phase(phases, matrix), dtype=np.float64)
+
+
+def local_mean_phase_jacobian(
+    theta: NDArray[np.float64], adjacency: NDArray[np.float64]
+) -> NDArray[np.float64]:
+    """Julia-tier Jacobian of the network-local Kuramoto mean phase.
+
+    Parameters
+    ----------
+    theta : numpy.ndarray
+        One-dimensional array of ``N`` oscillator phases in radians.
+    adjacency : numpy.ndarray
+        Two-dimensional ``(N, N)`` non-negative adjacency/coupling matrix.
+
+    Returns
+    -------
+    numpy.ndarray
+        Two-dimensional ``(N, N)`` float64 Jacobian matrix.
+    """
+    jl = _load()
+    phases = np.ascontiguousarray(theta, dtype=np.float64)
+    matrix = np.ascontiguousarray(adjacency, dtype=np.float64)
+    return np.asarray(jl.local_mean_phase_jacobian(phases, matrix), dtype=np.float64)
+
+
 __all__ = [
     "daido_order_parameter",
     "daido_order_parameter_gradient",
@@ -603,6 +649,8 @@ __all__ = [
     "kuramoto_interaction_energy_hessian",
     "local_order_parameter",
     "local_order_parameter_jacobian",
+    "local_mean_phase",
+    "local_mean_phase_jacobian",
     "mean_field_force",
     "mean_field_jacobian",
     "networked_kuramoto_force",

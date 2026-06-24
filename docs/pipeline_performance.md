@@ -1944,6 +1944,54 @@ If the measured ordering changes, update the chain comments at `_LOCAL_ORDER_PAR
 and `_LOCAL_ORDER_PARAMETER_JACOBIAN_CHAIN` in
 `src/scpn_quantum_control/accel/local_order.py` to match.
 
+### `local_mean_phase(theta, A)` and `local_mean_phase_jacobian(theta, A)`
+
+The network-local mean phase `ψ_j = atan2(Σ_k A_jk sin θ_k, Σ_k A_jk cos θ_k)` — the argument
+of the local complex order `Z_j = Σ_k A_jk e^{iθ_k}` and the phase partner of the local order
+parameter `r_j` (together `Z_j/d_j = r_j e^{iψ_j}`) — and its Jacobian
+`∂ψ_j/∂θ_l = A_jl cos(ψ_j − θ_l) / |Z_j|`. Both routes are O(N²) — each node sums over its full
+adjacency row — so the sizes stop at N = 2048. Measured 2026-06-24 on a dense random adjacency
+matrix on the local Linux runner (Intel i5-11600K @ 3.90 GHz, Python 3.12.3, juliacall,
+scpn-quantum-engine local build). Inner loop: 50 calls per sample × 7 samples; per-call median.
+Raw JSON: `docs/benchmarks/local_mean_phase_tiers.json`.
+
+`local_mean_phase`:
+
+|    N |       Rust |      Julia |     Python |
+|-----:|-----------:|-----------:|-----------:|
+|    4 |    3.24 µs |   29.22 µs |   13.15 µs |
+|   64 |   11.57 µs |   36.57 µs |   17.29 µs |
+|  256 |   96.91 µs |  129.55 µs |   50.50 µs |
+| 2048 | 5850.38 µs | 6637.53 µs | 13492.91 µs |
+
+`local_mean_phase_jacobian`:
+
+|    N |       Rust |      Julia |     Python |
+|-----:|-----------:|-----------:|-----------:|
+|    4 |    2.94 µs |   31.40 µs |   30.99 µs |
+|   64 |   12.36 µs |   39.98 µs |   32.22 µs |
+|  256 |  160.76 µs |  427.28 µs |  440.01 µs |
+| 2048 | 26838.08 µs | 62790.56 µs | 125376.61 µs |
+
+Read-offs:
+
+* Rust is first at every N for the Jacobian (2.3× faster than Julia and 4.7× faster than NumPy
+  at N = 2048): Rust accumulates each node's local complex order and Jacobian row in a single
+  fused pass, where the floor materialises the full `cos(ψ_j − θ_l)` basis. For the value the
+  Python floor's `A @ cos θ` reduction is BLAS and edges ahead in the mid-N band (≈50 vs 97 µs
+  at N = 256), but the per-node `atan2` and the masking cost it the large-N range, so the chain
+  keeps Rust first — fastest at the small and large N that dominate use.
+
+Re-run with:
+
+```bash
+python scripts/bench_local_mean_phase_tiers.py
+```
+
+If the measured ordering changes, update the chain comments at `_LOCAL_MEAN_PHASE_CHAIN`
+and `_LOCAL_MEAN_PHASE_JACOBIAN_CHAIN` in
+`src/scpn_quantum_control/accel/local_phase.py` to match.
+
 ### S4 multi-hardware readiness
 
 Command:
