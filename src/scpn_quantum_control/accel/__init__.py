@@ -109,6 +109,12 @@ from .kuramoto_pinning_control import (
     pinning_coherence_value,
     pinning_coherence_value_and_grad,
 )
+from .kuramoto_stability_spectrum import (
+    StabilitySpectrum,
+    is_synchronisation_stable,
+    stability_spectrum,
+    synchronisation_rate,
+)
 from .kuramoto_system_id import (
     SystemIdentificationResult,
     learn_coupling,
@@ -205,6 +211,10 @@ __all__ = [
     "learn_coupling",
     "trajectory_match_value",
     "trajectory_match_value_and_grad",
+    "StabilitySpectrum",
+    "is_synchronisation_stable",
+    "stability_spectrum",
+    "synchronisation_rate",
     "kuramoto_euler_trajectory",
     "kuramoto_euler_vjp",
     "kuramoto_rk4_trajectory",
