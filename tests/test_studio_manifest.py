@@ -67,10 +67,19 @@ def test_federation_document_has_both_blocks() -> None:
 
 
 def test_architecture_map_extension_shape() -> None:
-    """The extension block carries the pipeline, backends, interfaces, cross-repo, boundaries."""
+    """The v2 extension block carries the fleet-aligned field set (peer-aligned with SC-NEUROCORE)."""
     ext = federation.build_architecture_map_extension()
-    assert {"pipeline", "backends", "interfaces", "cross_repo", "boundaries"} <= set(ext)
-    stages = [s["stage"] for s in ext["pipeline"]]
+    assert ext["version"] == "architecture-map.v2"
+    assert {
+        "pipeline_stages",
+        "capabilities",
+        "backends",
+        "interfaces",
+        "wire_formats",
+        "cross_repo",
+        "boundaries",
+    } <= set(ext)
+    stages = [s["stage"] for s in ext["pipeline_stages"]]
     assert stages == [
         "problem",
         "hamiltonian",
@@ -81,6 +90,19 @@ def test_architecture_map_extension_shape() -> None:
         "ledger",
     ]
     assert {b["name"] for b in ext["backends"]} >= {"rust", "julia", "python"}
+    assert {b["status"] for b in ext["backends"]} <= {
+        "runtime-active",
+        "build-available",
+        "declared",
+    }
+    assert {c["status"] for c in ext["capabilities"]} <= {
+        "wired",
+        "library-only",
+        "stub",
+        "feasibility-only",
+    }
+    assert all({"kind", "entry"} <= set(i) for i in ext["interfaces"])
+    assert all({"name", "schema_ref"} <= set(w) for w in ext["wire_formats"])
 
 
 def test_federation_document_is_json_serialisable() -> None:

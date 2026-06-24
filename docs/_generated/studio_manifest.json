@@ -2,39 +2,39 @@
   "architecture_map": {
     "backends": [
       {
-        "build_vs_runtime": "build",
         "dispatch_order": 1,
-        "language": "rust",
+        "language": "Rust",
         "name": "rust",
-        "role": "hot kernels",
-        "runtime": "scpn_quantum_engine PyO3 0.29, 151 kernels"
+        "role": "hot kernels (scpn_quantum_engine, 151 PyO3)",
+        "status": "runtime-active"
       },
       {
-        "build_vs_runtime": "runtime-jit",
         "dispatch_order": 2,
-        "language": "julia",
+        "language": "Julia",
         "name": "julia",
-        "role": "order-parameter / mean-field",
-        "runtime": "juliacall"
+        "role": "order-parameter / mean-field (juliacall)",
+        "status": "build-available"
       },
       {
-        "build_vs_runtime": "runtime",
         "dispatch_order": 3,
-        "language": "python",
+        "language": "Python",
         "name": "python",
-        "role": "guaranteed floor"
+        "role": "guaranteed numerical floor",
+        "status": "runtime-active"
       },
       {
-        "build_vs_runtime": "runtime",
-        "language": "python",
+        "dispatch_order": 4,
+        "language": "Python",
         "name": "qiskit-runtime",
-        "role": "IBM execution"
+        "role": "IBM Quantum execution",
+        "status": "declared"
       },
       {
-        "build_vs_runtime": "runtime",
-        "language": "python",
+        "dispatch_order": 5,
+        "language": "Python",
         "name": "provider-hal",
-        "role": "16 approval-gated providers"
+        "role": "16 approval-gated provider adapters",
+        "status": "declared"
       }
     ],
     "boundaries": {
@@ -64,6 +64,68 @@
         "NV-magnetometry hardware"
       ]
     },
+    "capabilities": [
+      {
+        "domain": "Compilation",
+        "name": "kuramoto-compilation",
+        "status": "wired",
+        "tier": "core"
+      },
+      {
+        "domain": "Simulation",
+        "name": "quantum-evolution",
+        "status": "wired",
+        "tier": "core"
+      },
+      {
+        "domain": "Analysis",
+        "name": "synchronisation-analysis",
+        "status": "wired",
+        "tier": "core"
+      },
+      {
+        "domain": "Mitigation",
+        "name": "error-mitigation",
+        "status": "wired",
+        "tier": "core"
+      },
+      {
+        "domain": "Hardware",
+        "name": "hardware-execution",
+        "status": "wired",
+        "tier": "core"
+      },
+      {
+        "domain": "Provenance",
+        "name": "evidence-ledger",
+        "status": "wired",
+        "tier": "core"
+      },
+      {
+        "domain": "Differentiable",
+        "name": "whole-program-ad",
+        "status": "library-only",
+        "tier": "extended"
+      },
+      {
+        "domain": "Simulation",
+        "name": "tensor-network-evolution",
+        "status": "library-only",
+        "tier": "extended"
+      },
+      {
+        "domain": "Control",
+        "name": "pulse-level-control",
+        "status": "feasibility-only",
+        "tier": "research"
+      },
+      {
+        "domain": "Hardware",
+        "name": "analog-execution",
+        "status": "feasibility-only",
+        "tier": "research"
+      }
+    ],
     "cross_repo": [
       {
         "adapter": "bridge.snn_adapter",
@@ -86,25 +148,42 @@
         "wire_format": "orchestrator state <-> UPDEPhaseArtifact; quantum R -> advance/hold/rollback"
       }
     ],
-    "interfaces": {
-      "cli": [
-        "scpn-bench",
-        "scpn-verify-hardware-packs",
-        "scpn-generate-hardware-pack-evidence",
-        "scpn-provider-smoke",
-        "scpn-biological-qec-report",
-        "install-differentiable-framework-overlay"
-      ],
-      "grpc": null,
-      "library": "scpn_quantum_control",
-      "rest": null,
-      "studio_feed": "docs/_generated/studio_manifest.json"
-    },
-    "pipeline": [
+    "interfaces": [
       {
-        "backends": [
-          "python"
-        ],
+        "entry": "scpn-bench = scpn_quantum_control.bench_cli:main",
+        "kind": "cli"
+      },
+      {
+        "entry": "scpn-verify-hardware-packs = scpn_quantum_control.hardware_result_packs:main",
+        "kind": "cli"
+      },
+      {
+        "entry": "scpn-generate-hardware-pack-evidence = scpn_quantum_control.hardware_result_pack_evidence:main",
+        "kind": "cli"
+      },
+      {
+        "entry": "scpn-provider-smoke = scpn_quantum_control.hardware.provider_smoke:main",
+        "kind": "cli"
+      },
+      {
+        "entry": "scpn-biological-qec-report = scpn_quantum_control.qec.biological_cli:main",
+        "kind": "cli"
+      },
+      {
+        "entry": "scpn-emit-studio-manifest = scpn_quantum_control.studio.federation:main",
+        "kind": "cli"
+      },
+      {
+        "entry": "scpn_quantum_control",
+        "kind": "library"
+      },
+      {
+        "entry": "docs/_generated/studio_manifest.json",
+        "kind": "studio_feed"
+      }
+    ],
+    "pipeline_stages": [
+      {
         "inputs": [
           "K_nm:(n,n) float64 square+finite+symmetric",
           "omega:(n,)",
@@ -117,11 +196,6 @@
         "stage": "problem"
       },
       {
-        "backends": [
-          "rust",
-          "qiskit",
-          "python"
-        ],
         "inputs": [
           "KuramotoProblem"
         ],
@@ -134,10 +208,6 @@
         "stage": "hamiltonian"
       },
       {
-        "backends": [
-          "qiskit",
-          "rust"
-        ],
         "inputs": [
           "KuramotoProblem",
           "time",
@@ -152,10 +222,6 @@
         "stage": "circuit"
       },
       {
-        "backends": [
-          "qiskit-runtime",
-          "16 provider adapters"
-        ],
         "inputs": [
           "circuit",
           "shots",
@@ -170,9 +236,6 @@
         "stage": "execution"
       },
       {
-        "backends": [
-          "numpy"
-        ],
         "inputs": [
           "counts",
           "per-scale estimates + standard errors"
@@ -185,10 +248,6 @@
         "stage": "mitigation"
       },
       {
-        "backends": [
-          "numpy",
-          "rust"
-        ],
         "inputs": [
           "counts dict",
           "Statevector",
@@ -205,9 +264,6 @@
         "stage": "analysis"
       },
       {
-        "backends": [
-          "python"
-        ],
         "inputs": [
           "observables",
           "provenance"
@@ -217,6 +273,25 @@
         ],
         "processing_model": "five-class hardware-status ledger",
         "stage": "ledger"
+      }
+    ],
+    "version": "architecture-map.v2",
+    "wire_formats": [
+      {
+        "name": "KuramotoProblem",
+        "schema_ref": "scpn_quantum_control.bridge.kuramoto_problem (frozen K_nm/omega problem)"
+      },
+      {
+        "name": "studio-evidence",
+        "schema_ref": "studio.*.v1 (9 evidence schemas from the five-class hardware ledger)"
+      },
+      {
+        "name": "UPDEPhaseArtifact",
+        "schema_ref": "scpn_quantum_control.bridge.orchestrator_adapter (quantum R -> advance/hold/rollback)"
+      },
+      {
+        "name": "spike-train<->Ry",
+        "schema_ref": "scpn_quantum_control.bridge.snn_adapter (sc-neurocore spike trains <-> Ry angles)"
       }
     ]
   },

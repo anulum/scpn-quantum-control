@@ -13,9 +13,10 @@ The federation document is one JSON with two blocks, per the locked fleet conven
   (verbs, evidence schemas, content digest). This is the federation contract the Hub
   ingests; its vocabulary is the locked SDK enums emitted verbatim.
 * ``architecture_map`` — an additive superset block the Hub ignores for federation but
-  the architecture docs consume: the per-stage IO pipeline, the backend/dispatch
-  matrix, the interface surface, the cross-repo wire formats, and the honest scope
-  boundaries. It mirrors ``docs/architecture_map.md``.
+  the architecture docs consume: the per-stage IO pipeline, the capability inventory,
+  the backend/dispatch matrix, the interface surface, the cross-repo wire formats, and
+  the honest scope boundaries. The field set is the fleet ``architecture-map.v2`` schema
+  (peer-aligned with SC-NEUROCORE, 2026-06-24); it mirrors ``docs/architecture_map.md``.
 
 This is emitted to a dedicated file so it never collides with the repository
 inventory manifest (``docs/_generated/capability_manifest.json``).
@@ -32,170 +33,274 @@ from .manifest import build_manifest
 #: Where the federation document is written, relative to the repository root.
 STUDIO_MANIFEST_PATH = Path("docs/_generated/studio_manifest.json")
 
+#: The fleet architecture-map extension schema version (peer-aligned with SC-NEUROCORE).
+ARCHITECTURE_MAP_VERSION = "architecture-map.v2"
+
+
+def _pipeline_stages() -> list[dict[str, Any]]:
+    """Return the canonical data pipeline with per-stage IO contracts."""
+    return [
+        {
+            "stage": "problem",
+            "inputs": [
+                "K_nm:(n,n) float64 square+finite+symmetric",
+                "omega:(n,)",
+                "metadata:json",
+            ],
+            "outputs": ["KuramotoProblem (frozen, diagonal zeroed)"],
+            "processing_model": "validate + freeze; K symmetrised (K+K.T)/2",
+        },
+        {
+            "stage": "hamiltonian",
+            "inputs": ["KuramotoProblem"],
+            "outputs": ["SparsePauliOp (XY)", "dense (2^n,2^n) complex128", "sparse CSC"],
+            "processing_model": "Kuramoto->XY: K sin(theta_j-theta_i) -> -J(XX+YY), omega -> -h Z",
+        },
+        {
+            "stage": "circuit",
+            "inputs": ["KuramotoProblem", "time", "trotter_steps"],
+            "outputs": ["QuantumCircuit", "Statevector", "trajectory"],
+            "processing_model": "Lie/Suzuki Trotter synthesis",
+        },
+        {
+            "stage": "execution",
+            "inputs": ["circuit", "shots", "approval_id"],
+            "outputs": ["raw counts", "job_id", "provenance dossier"],
+            "processing_model": "SamplerV2 / provider HAL (approval-gated, fail-closed)",
+        },
+        {
+            "stage": "mitigation",
+            "inputs": ["counts", "per-scale estimates + standard errors"],
+            "outputs": ["mitigated estimate", "uncertainty interval"],
+            "processing_model": "ZNE/PEC/DD/readout/Z2 + propagated uncertainty",
+        },
+        {
+            "stage": "analysis",
+            "inputs": ["counts dict", "Statevector", "dense H"],
+            "outputs": ["order parameter R", "witnesses", "OTOC", "DLA parity", "metrics"],
+            "processing_model": "small-N exact diagonalisation gated by dense_budget",
+        },
+        {
+            "stage": "ledger",
+            "inputs": ["observables", "provenance"],
+            "outputs": ["claim-classified, artefact-backed evidence"],
+            "processing_model": "five-class hardware-status ledger",
+        },
+    ]
+
+
+def _capabilities() -> list[dict[str, str]]:
+    """Return the capability inventory with honest per-capability status."""
+    return [
+        {
+            "name": "kuramoto-compilation",
+            "domain": "Compilation",
+            "tier": "core",
+            "status": "wired",
+        },
+        {"name": "quantum-evolution", "domain": "Simulation", "tier": "core", "status": "wired"},
+        {
+            "name": "synchronisation-analysis",
+            "domain": "Analysis",
+            "tier": "core",
+            "status": "wired",
+        },
+        {"name": "error-mitigation", "domain": "Mitigation", "tier": "core", "status": "wired"},
+        {"name": "hardware-execution", "domain": "Hardware", "tier": "core", "status": "wired"},
+        {"name": "evidence-ledger", "domain": "Provenance", "tier": "core", "status": "wired"},
+        {
+            "name": "whole-program-ad",
+            "domain": "Differentiable",
+            "tier": "extended",
+            "status": "library-only",
+        },
+        {
+            "name": "tensor-network-evolution",
+            "domain": "Simulation",
+            "tier": "extended",
+            "status": "library-only",
+        },
+        {
+            "name": "pulse-level-control",
+            "domain": "Control",
+            "tier": "research",
+            "status": "feasibility-only",
+        },
+        {
+            "name": "analog-execution",
+            "domain": "Hardware",
+            "tier": "research",
+            "status": "feasibility-only",
+        },
+    ]
+
+
+def _backends() -> list[dict[str, Any]]:
+    """Return the backend/dispatch matrix with runtime-availability status."""
+    return [
+        {
+            "name": "rust",
+            "language": "Rust",
+            "role": "hot kernels (scpn_quantum_engine, 151 PyO3)",
+            "dispatch_order": 1,
+            "status": "runtime-active",
+        },
+        {
+            "name": "julia",
+            "language": "Julia",
+            "role": "order-parameter / mean-field (juliacall)",
+            "dispatch_order": 2,
+            "status": "build-available",
+        },
+        {
+            "name": "python",
+            "language": "Python",
+            "role": "guaranteed numerical floor",
+            "dispatch_order": 3,
+            "status": "runtime-active",
+        },
+        {
+            "name": "qiskit-runtime",
+            "language": "Python",
+            "role": "IBM Quantum execution",
+            "dispatch_order": 4,
+            "status": "declared",
+        },
+        {
+            "name": "provider-hal",
+            "language": "Python",
+            "role": "16 approval-gated provider adapters",
+            "dispatch_order": 5,
+            "status": "declared",
+        },
+    ]
+
+
+def _interfaces() -> list[dict[str, str]]:
+    """Return the interface surface (CLI entry points, library, studio feed)."""
+    return [
+        {"kind": "cli", "entry": "scpn-bench = scpn_quantum_control.bench_cli:main"},
+        {
+            "kind": "cli",
+            "entry": "scpn-verify-hardware-packs = scpn_quantum_control.hardware_result_packs:main",
+        },
+        {
+            "kind": "cli",
+            "entry": "scpn-generate-hardware-pack-evidence = scpn_quantum_control.hardware_result_pack_evidence:main",
+        },
+        {
+            "kind": "cli",
+            "entry": "scpn-provider-smoke = scpn_quantum_control.hardware.provider_smoke:main",
+        },
+        {
+            "kind": "cli",
+            "entry": "scpn-biological-qec-report = scpn_quantum_control.qec.biological_cli:main",
+        },
+        {
+            "kind": "cli",
+            "entry": "scpn-emit-studio-manifest = scpn_quantum_control.studio.federation:main",
+        },
+        {"kind": "library", "entry": "scpn_quantum_control"},
+        {"kind": "studio_feed", "entry": STUDIO_MANIFEST_PATH.as_posix()},
+    ]
+
+
+def _wire_formats() -> list[dict[str, str]]:
+    """Return the named cross-boundary wire formats with schema references."""
+    return [
+        {
+            "name": "KuramotoProblem",
+            "schema_ref": "scpn_quantum_control.bridge.kuramoto_problem (frozen K_nm/omega problem)",
+        },
+        {
+            "name": "studio-evidence",
+            "schema_ref": "studio.*.v1 (9 evidence schemas from the five-class hardware ledger)",
+        },
+        {
+            "name": "UPDEPhaseArtifact",
+            "schema_ref": "scpn_quantum_control.bridge.orchestrator_adapter (quantum R -> advance/hold/rollback)",
+        },
+        {
+            "name": "spike-train<->Ry",
+            "schema_ref": "scpn_quantum_control.bridge.snn_adapter (sc-neurocore spike trains <-> Ry angles)",
+        },
+    ]
+
+
+def _cross_repo() -> list[dict[str, str]]:
+    """Return the cross-repository sibling adapters and their wire formats."""
+    return [
+        {
+            "sibling": "sc-neurocore",
+            "adapter": "bridge.snn_adapter",
+            "wire_format": "spike trains <-> Ry angles / quantum dense layer",
+        },
+        {
+            "sibling": "scpn-control",
+            "adapter": "bridge.control_plasma_knm",
+            "wire_format": "plasma-native K/omega -> KuramotoProblem",
+        },
+        {
+            "sibling": "scpn-fusion-core",
+            "adapter": "bridge.fusion_core_frc",
+            "wire_format": "FRC equilibrium -> pulsed-shot QAOA surrogate",
+        },
+        {
+            "sibling": "scpn-phase-orchestrator",
+            "adapter": "bridge.orchestrator_adapter",
+            "wire_format": "orchestrator state <-> UPDEPhaseArtifact; quantum R -> advance/hold/rollback",
+        },
+    ]
+
+
+def _boundaries() -> dict[str, list[str]]:
+    """Return the honest scope boundaries (executed / bounded / feasibility-only / closed)."""
+    return {
+        "executed": [
+            "Hamiltonian compilation",
+            "Trotter/VQE/analysis on simulators",
+            "IBM Runtime (approval-gated)",
+            "error mitigation",
+            "evidence ledger",
+            "ML-DSA signing",
+            "QRNG",
+        ],
+        "bounded": [
+            "whole-program AD compiler (scalar + static dense-linalg, fail-closed)",
+            "tensor-network evolution (nearest-neighbour only)",
+            "analysis (small-N exact)",
+        ],
+        "feasibility_only": [
+            "pulse-level optimal control",
+            "analog/neutral-atom execution",
+            "real-time intra-shot feedback",
+            "FPGA/HLS deployment",
+            "NV-magnetometry hardware",
+        ],
+        "closed": [
+            "lab-control instrumentation",
+            "broad quantum advantage (classical faster/more accurate at n<=16)",
+        ],
+    }
+
 
 def build_architecture_map_extension() -> dict[str, Any]:
-    """Return the architecture-map extension block (additive superset over schema A).
+    """Return the architecture-map extension block (fleet ``architecture-map.v2`` schema).
 
-    Mirrors ``docs/architecture_map.md``: the canonical data pipeline with per-stage
-    IO contracts, the backend/dispatch matrix, the interface surface, the cross-repo
-    wire formats, and the honest scope boundaries.
+    Additive superset over schema A: the pipeline, capability inventory, backend/dispatch
+    matrix, interface surface, cross-repo wire formats, and honest scope boundaries. The
+    field set is peer-aligned with SC-NEUROCORE (2026-06-24); the Hub ignores it for
+    federation, the architecture docs consume it.
     """
     return {
-        "pipeline": [
-            {
-                "stage": "problem",
-                "inputs": [
-                    "K_nm:(n,n) float64 square+finite+symmetric",
-                    "omega:(n,)",
-                    "metadata:json",
-                ],
-                "outputs": ["KuramotoProblem (frozen, diagonal zeroed)"],
-                "processing_model": "validate + freeze; K symmetrised (K+K.T)/2",
-                "backends": ["python"],
-            },
-            {
-                "stage": "hamiltonian",
-                "inputs": ["KuramotoProblem"],
-                "outputs": ["SparsePauliOp (XY)", "dense (2^n,2^n) complex128", "sparse CSC"],
-                "processing_model": "Kuramoto->XY: K sin(theta_j-theta_i) -> -J(XX+YY), omega -> -h Z",
-                "backends": ["rust", "qiskit", "python"],
-            },
-            {
-                "stage": "circuit",
-                "inputs": ["KuramotoProblem", "time", "trotter_steps"],
-                "outputs": ["QuantumCircuit", "Statevector", "trajectory"],
-                "processing_model": "Lie/Suzuki Trotter synthesis",
-                "backends": ["qiskit", "rust"],
-            },
-            {
-                "stage": "execution",
-                "inputs": ["circuit", "shots", "approval_id"],
-                "outputs": ["raw counts", "job_id", "provenance dossier"],
-                "processing_model": "SamplerV2 / provider HAL (approval-gated, fail-closed)",
-                "backends": ["qiskit-runtime", "16 provider adapters"],
-            },
-            {
-                "stage": "mitigation",
-                "inputs": ["counts", "per-scale estimates + standard errors"],
-                "outputs": ["mitigated estimate", "uncertainty interval"],
-                "processing_model": "ZNE/PEC/DD/readout/Z2 + propagated uncertainty",
-                "backends": ["numpy"],
-            },
-            {
-                "stage": "analysis",
-                "inputs": ["counts dict", "Statevector", "dense H"],
-                "outputs": ["order parameter R", "witnesses", "OTOC", "DLA parity", "metrics"],
-                "processing_model": "small-N exact diagonalisation gated by dense_budget",
-                "backends": ["numpy", "rust"],
-            },
-            {
-                "stage": "ledger",
-                "inputs": ["observables", "provenance"],
-                "outputs": ["claim-classified, artefact-backed evidence"],
-                "processing_model": "five-class hardware-status ledger",
-                "backends": ["python"],
-            },
-        ],
-        "backends": [
-            {
-                "name": "rust",
-                "language": "rust",
-                "role": "hot kernels",
-                "dispatch_order": 1,
-                "runtime": "scpn_quantum_engine PyO3 0.29, 151 kernels",
-                "build_vs_runtime": "build",
-            },
-            {
-                "name": "julia",
-                "language": "julia",
-                "role": "order-parameter / mean-field",
-                "dispatch_order": 2,
-                "runtime": "juliacall",
-                "build_vs_runtime": "runtime-jit",
-            },
-            {
-                "name": "python",
-                "language": "python",
-                "role": "guaranteed floor",
-                "dispatch_order": 3,
-                "build_vs_runtime": "runtime",
-            },
-            {
-                "name": "qiskit-runtime",
-                "language": "python",
-                "role": "IBM execution",
-                "build_vs_runtime": "runtime",
-            },
-            {
-                "name": "provider-hal",
-                "language": "python",
-                "role": "16 approval-gated providers",
-                "build_vs_runtime": "runtime",
-            },
-        ],
-        "interfaces": {
-            "cli": [
-                "scpn-bench",
-                "scpn-verify-hardware-packs",
-                "scpn-generate-hardware-pack-evidence",
-                "scpn-provider-smoke",
-                "scpn-biological-qec-report",
-                "install-differentiable-framework-overlay",
-            ],
-            "library": "scpn_quantum_control",
-            "rest": None,
-            "grpc": None,
-            "studio_feed": STUDIO_MANIFEST_PATH.as_posix(),
-        },
-        "cross_repo": [
-            {
-                "sibling": "sc-neurocore",
-                "adapter": "bridge.snn_adapter",
-                "wire_format": "spike trains <-> Ry angles / quantum dense layer",
-            },
-            {
-                "sibling": "scpn-control",
-                "adapter": "bridge.control_plasma_knm",
-                "wire_format": "plasma-native K/omega -> KuramotoProblem",
-            },
-            {
-                "sibling": "scpn-fusion-core",
-                "adapter": "bridge.fusion_core_frc",
-                "wire_format": "FRC equilibrium -> pulsed-shot QAOA surrogate",
-            },
-            {
-                "sibling": "scpn-phase-orchestrator",
-                "adapter": "bridge.orchestrator_adapter",
-                "wire_format": "orchestrator state <-> UPDEPhaseArtifact; quantum R -> advance/hold/rollback",
-            },
-        ],
-        "boundaries": {
-            "executed": [
-                "Hamiltonian compilation",
-                "Trotter/VQE/analysis on simulators",
-                "IBM Runtime (approval-gated)",
-                "error mitigation",
-                "evidence ledger",
-                "ML-DSA signing",
-                "QRNG",
-            ],
-            "bounded": [
-                "whole-program AD compiler (scalar + static dense-linalg, fail-closed)",
-                "tensor-network evolution (nearest-neighbour only)",
-                "analysis (small-N exact)",
-            ],
-            "feasibility_only": [
-                "pulse-level optimal control",
-                "analog/neutral-atom execution",
-                "real-time intra-shot feedback",
-                "FPGA/HLS deployment",
-                "NV-magnetometry hardware",
-            ],
-            "closed": [
-                "lab-control instrumentation",
-                "broad quantum advantage (classical faster/more accurate at n<=16)",
-            ],
-        },
+        "version": ARCHITECTURE_MAP_VERSION,
+        "pipeline_stages": _pipeline_stages(),
+        "capabilities": _capabilities(),
+        "backends": _backends(),
+        "interfaces": _interfaces(),
+        "wire_formats": _wire_formats(),
+        "cross_repo": _cross_repo(),
+        "boundaries": _boundaries(),
     }
 
 
