@@ -10,10 +10,10 @@
     "public_api_exports": 717,
     "public_documentation_pages": 249,
     "python_model_classes": 840,
-    "python_model_source_modules": 475,
+    "python_model_source_modules": 476,
     "rust_pyo3_model_wrappers": 171,
     "rust_source_modules": 42,
-    "test_files": 782
+    "test_files": 783
   },
   "documentation": {
     "examples": [
@@ -427,7 +427,7 @@
       {
         "package": "accel",
         "path": "src/scpn_quantum_control/accel",
-        "python_modules": 40
+        "python_modules": 41
       },
       {
         "package": "analysis",
@@ -3958,6 +3958,7 @@
       "src/scpn_quantum_control/accel/dispatcher.py",
       "src/scpn_quantum_control/accel/kuramoto_adaptive.py",
       "src/scpn_quantum_control/accel/kuramoto_chimera.py",
+      "src/scpn_quantum_control/accel/kuramoto_coherence_matrix.py",
       "src/scpn_quantum_control/accel/kuramoto_control.py",
       "src/scpn_quantum_control/accel/kuramoto_coupling_design.py",
       "src/scpn_quantum_control/accel/kuramoto_critical_coupling.py",
@@ -5780,6 +5781,7 @@
       "tests/test_krylov_complexity.py",
       "tests/test_kuramoto_adaptive.py",
       "tests/test_kuramoto_chimera.py",
+      "tests/test_kuramoto_coherence_matrix.py",
       "tests/test_kuramoto_control.py",
       "tests/test_kuramoto_core.py",
       "tests/test_kuramoto_core_branches.py",

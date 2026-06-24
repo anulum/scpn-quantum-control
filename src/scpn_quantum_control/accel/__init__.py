@@ -93,6 +93,13 @@ from .kuramoto_chimera import (
     metastability_index,
     metastability_index_gradient,
 )
+from .kuramoto_coherence_matrix import (
+    coherence_matrix,
+    coherence_spectrum,
+    leading_coherence_eigenvector,
+    mean_coherence_matrix,
+    phase_locking_matrix,
+)
 from .kuramoto_control import (
     TerminalObjective,
     coherence_objective,
@@ -466,6 +473,11 @@ __all__ = [
     "pairwise_mutual_information",
     "phase_entropy",
     "phase_entropy_series",
+    "coherence_matrix",
+    "coherence_spectrum",
+    "leading_coherence_eigenvector",
+    "mean_coherence_matrix",
+    "phase_locking_matrix",
     "mean_phase",
     "mean_phase_gradient",
     "mean_phase_hessian",
