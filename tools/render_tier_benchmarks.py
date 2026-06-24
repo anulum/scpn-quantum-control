@@ -1,0 +1,226 @@
+#!/usr/bin/env python
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
+# © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
+# © Code 2020–2026 Miroslav Šotek. All rights reserved.
+# ORCID: 0009-0009-3560-0851
+# Contact: www.anulum.li | protoscience@anulum.li
+# SCPN Quantum Control — Side-by-side renderer for the multi-tier benchmark
+"""Render the CI-vs-local tier-benchmark comparison from the JSON artefacts.
+
+Consumes the ``scpn-quantum-control.tier-benchmark.v1`` artefacts emitted by
+``scripts/bench_kuramoto_tiers.py`` for the ``ci`` and ``local`` environments
+and writes a single Markdown document that places the two side by side, per the
+unified benchmark standard (``agentic-shared/BENCHMARK_STANDARD.md`` §5). The
+document carries:
+
+* the toolchain and host provenance of both runs, so a reader can see exactly
+  which CPU, commit, and tier versions produced each column;
+* the per-tier availability of each run (the canonical CI run builds the Rust
+  engine from source and measures every tier; a workstation run against a stale
+  installed wheel honestly marks the missing Rust tiers unavailable);
+* one ``P50`` latency row per (operation, size), Rust / Julia / Python in the CI
+  and local columns, with the fastest CI backend and the worst cross-tier parity
+  deviation.
+
+Either artefact may be absent — the renderer degrades to the columns it has and
+says so — so the document can be regenerated locally before the first CI run has
+landed.
+
+Language policy: EXEMPT from the Rust-path rule. Pure JSON-to-Markdown
+formatting with no compute hot loop. See docs/language_policy.md §"Current-state
+audit".
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import sys
+from collections.abc import Mapping, Sequence
+from pathlib import Path
+from typing import Any
+
+TIER_ORDER = ("rust", "julia", "python")
+
+
+def _load(path: Path | None) -> dict[str, Any] | None:
+    """Load a tier-benchmark artefact, or return ``None`` when absent."""
+
+    if path is None or not path.exists():
+        return None
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def _index(artifact: dict[str, Any] | None) -> dict[tuple[str, int], dict[str, Any]]:
+    """Index an artefact's results by ``(operation, size)`` → backend → row."""
+
+    index: dict[tuple[str, int], dict[str, Any]] = {}
+    if artifact is None:
+        return index
+    for result in artifact.get("results", []):
+        key = (result["operation"], result["size"])
+        index[key] = {row["backend"]: row for row in result["rows"]}
+    return index
+
+
+def _p50(backends: Mapping[str, Any] | None, tier: str) -> str:
+    """Format the ``P50`` microseconds of one backend, or a placeholder."""
+
+    if backends is None:
+        return "—"
+    row = backends.get(tier)
+    if row is None or row.get("stats") is None:
+        return "—"
+    return f"{row['stats']['p50_us']:.3f}"
+
+
+def _provenance_rows(ci: dict[str, Any] | None, local: dict[str, Any] | None) -> list[str]:
+    """Build the provenance comparison table lines."""
+
+    fields = (
+        ("CPU model", "cpu_model"),
+        ("Platform", "platform"),
+        ("Commit", "commit"),
+        ("Python", "python"),
+        ("NumPy", "numpy"),
+        ("Rust engine", "engine"),
+        ("juliacall", "juliacall"),
+        ("rustc", "rustc"),
+    )
+
+    def _value(artifact: dict[str, Any] | None, key: str) -> str:
+        if artifact is None:
+            return "—"
+        return str(artifact.get("provenance", {}).get(key, "—"))
+
+    lines = ["| Field | CI | Local |", "|---|---|---|"]
+    for label, key in fields:
+        lines.append(f"| {label} | {_value(ci, key)} | {_value(local, key)} |")
+    return lines
+
+
+def _availability_rows(ci: dict[str, Any] | None, local: dict[str, Any] | None) -> list[str]:
+    """Build the per-environment parameter / tier-subset summary lines."""
+
+    def _params(artifact: dict[str, Any] | None) -> str:
+        if artifact is None:
+            return "—"
+        params = artifact.get("parameters", {})
+        tiers = ",".join(params.get("tiers", []))
+        sizes = ",".join(str(size) for size in params.get("sizes", []))
+        return f"tiers=[{tiers}] sizes=[{sizes}] warmup={params.get('warmup')} repeats={params.get('repeats')}"
+
+    return [
+        "| Environment | Generated (UTC) | Parameters |",
+        "|---|---|---|",
+        f"| CI | {ci.get('generated_utc', '—') if ci else '—'} | {_params(ci)} |",
+        f"| Local | {local.get('generated_utc', '—') if local else '—'} | {_params(local)} |",
+    ]
+
+
+def render(ci: dict[str, Any] | None, local: dict[str, Any] | None) -> str:
+    """Render the full side-by-side Markdown document."""
+
+    ci_index = _index(ci)
+    local_index = _index(local)
+    keys = sorted(set(ci_index) | set(local_index), key=lambda key: (key[0], key[1]))
+
+    lines: list[str] = [
+        "<!-- Generated by tools/render_tier_benchmarks.py — do not edit by hand. -->",
+        "# Multi-language Kuramoto tier benchmark — CI vs local",
+        "",
+        "Per-call **P50** latency (microseconds) of every registered Kuramoto compute",
+        "primitive across the Rust, Julia, and Python tiers, measured by",
+        "`scripts/bench_kuramoto_tiers.py`. The canonical column is the fixed CI runner",
+        "(Rust engine built from source); the local column is the GOTM workstation. Both",
+        "are reproducible evidence, not published latency claims — hosted-runner CPU",
+        "differs from the workstation. A `—` marks a tier not measured in that run",
+        "(excluded subset or unavailable binding); see the per-environment artefacts",
+        "under `docs/benchmarks/tiers/` for the full percentile set and parity data.",
+        "",
+        "## Provenance",
+        "",
+        *_provenance_rows(ci, local),
+        "",
+        "## Runs",
+        "",
+        *_availability_rows(ci, local),
+        "",
+        "## Per-primitive P50 latency (µs)",
+        "",
+        "| Operation | N | Rust (CI) | Rust (local) | Julia (CI) | Python (CI) | Python (local) | Fastest (CI) | Parity (CI) |",
+        "|---|--:|--:|--:|--:|--:|--:|:--|--:|",
+    ]
+
+    for operation, size in keys:
+        ci_backends = ci_index.get((operation, size))
+        local_backends = local_index.get((operation, size))
+        fastest = _fastest(ci, operation, size)
+        parity = _parity(ci, operation, size)
+        lines.append(
+            f"| `{operation}` | {size} "
+            f"| {_p50(ci_backends, 'rust')} | {_p50(local_backends, 'rust')} "
+            f"| {_p50(ci_backends, 'julia')} "
+            f"| {_p50(ci_backends, 'python')} | {_p50(local_backends, 'python')} "
+            f"| {fastest} | {parity} |"
+        )
+
+    lines.append("")
+    return "\n".join(lines)
+
+
+def _result_for(
+    artifact: dict[str, Any] | None, operation: str, size: int
+) -> dict[str, Any] | None:
+    """Return the raw result entry for one (operation, size), or ``None``."""
+
+    if artifact is None:
+        return None
+    for result in artifact.get("results", []):
+        if result["operation"] == operation and result["size"] == size:
+            return result
+    return None
+
+
+def _fastest(artifact: dict[str, Any] | None, operation: str, size: int) -> str:
+    """Return the fastest-backend label recorded by the CI artefact."""
+
+    result = _result_for(artifact, operation, size)
+    if result is None or result.get("fastest_backend") is None:
+        return "—"
+    return str(result["fastest_backend"])
+
+
+def _parity(artifact: dict[str, Any] | None, operation: str, size: int) -> str:
+    """Format the worst cross-tier parity deviation recorded by the CI artefact."""
+
+    result = _result_for(artifact, operation, size)
+    if result is None or result.get("parity_max_abs_diff") is None:
+        return "—"
+    return f"{result['parity_max_abs_diff']:.2e}"
+
+
+def main(argv: Sequence[str] | None = None) -> int:
+    """Render the side-by-side comparison document and write it to ``--output``."""
+
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--ci", type=Path, default=None, help="CI artefact JSON")
+    parser.add_argument("--local", type=Path, default=None, help="local artefact JSON")
+    parser.add_argument("--output", type=Path, required=True, help="Markdown output path")
+    args = parser.parse_args(list(sys.argv[1:] if argv is None else argv))
+
+    ci = _load(args.ci)
+    local = _load(args.local)
+    if ci is None and local is None:
+        parser.error("at least one of --ci / --local must point to an existing artefact")
+
+    document = render(ci, local)
+    args.output.parent.mkdir(parents=True, exist_ok=True)
+    args.output.write_text(document + "\n", encoding="utf-8")
+    print(f"[render] wrote {args.output}")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

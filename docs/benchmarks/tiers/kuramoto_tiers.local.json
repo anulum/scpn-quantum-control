@@ -1,0 +1,5555 @@
+{
+  "environment": "local",
+  "generated_utc": "2026-06-24T23:33:33Z",
+  "parameters": {
+    "daido_mode": 2,
+    "repeats": 5,
+    "sakaguchi_frustration": 0.3,
+    "seed": 20260625,
+    "sizes": [
+      8,
+      32,
+      128,
+      512
+    ],
+    "tiers": [
+      "python",
+      "rust"
+    ],
+    "trajectory_dt": 0.01,
+    "trajectory_steps": 64,
+    "warmup": 2
+  },
+  "payload_sha256": "5971833633f2362f8243375a344db9c100ad7e64704e61e26bb4747c28813714",
+  "production_claim_allowed": false,
+  "provenance": {
+    "commit": "cf0c693ab0de1c468c3732c7d87eac137de77218",
+    "cpu_affinity": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11
+    ],
+    "cpu_count": 12,
+    "cpu_model": "11th Gen Intel(R) Core(TM) i5-11600K @ 3.90GHz",
+    "engine": "installed",
+    "juliacall": "0.9.31",
+    "loadavg": [
+      8.68,
+      9.8,
+      13.7
+    ],
+    "machine": "x86_64",
+    "numpy": "2.2.6",
+    "platform": "Linux-6.17.0-35-generic-x86_64-with-glibc2.39",
+    "python": "3.12.3",
+    "rustc": "rustc 1.96.0 (ac68faa20 2026-05-25)"
+  },
+  "results": [
+    {
+      "extra": {
+        "cost_class": "scalar",
+        "inner": 50
+      },
+      "fastest_backend": "rust",
+      "operation": "order_parameter",
+      "parity_max_abs_diff": 5.551115123125783e-17,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 3.24978,
+            "mean_us": 3.0733559999999995,
+            "min_us": 3.0210399999999997,
+            "p50_us": 3.02482,
+            "p95_us": 3.05,
+            "p99_us": 3.05,
+            "samples": 5,
+            "throughput_ops_s": 325377.2097993204
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 4.71092,
+            "mean_us": 4.623323999999999,
+            "min_us": 4.54688,
+            "p50_us": 4.6326600000000004,
+            "p95_us": 4.66332,
+            "p99_us": 4.66332,
+            "samples": 5,
+            "throughput_ops_s": 216294.5967014209
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 8
+    },
+    {
+      "extra": {
+        "cost_class": "scalar",
+        "inner": 50
+      },
+      "fastest_backend": "rust",
+      "operation": "order_parameter",
+      "parity_max_abs_diff": 2.7755575615628914e-17,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 3.6711,
+            "mean_us": 3.6230640000000003,
+            "min_us": 3.5775799999999998,
+            "p50_us": 3.61414,
+            "p95_us": 3.6501799999999998,
+            "p99_us": 3.6501799999999998,
+            "samples": 5,
+            "throughput_ops_s": 276009.4770614044
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 5.03642,
+            "mean_us": 4.9443399999999995,
+            "min_us": 4.81784,
+            "p50_us": 4.9655000000000005,
+            "p95_us": 5.00394,
+            "p99_us": 5.00394,
+            "samples": 5,
+            "throughput_ops_s": 202251.4632893369
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 32
+    },
+    {
+      "extra": {
+        "cost_class": "scalar",
+        "inner": 50
+      },
+      "fastest_backend": "rust",
+      "operation": "order_parameter",
+      "parity_max_abs_diff": 2.0816681711721685e-17,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 5.50928,
+            "mean_us": 5.33116,
+            "min_us": 5.21576,
+            "p50_us": 5.2851,
+            "p95_us": 5.37968,
+            "p99_us": 5.37968,
+            "samples": 5,
+            "throughput_ops_s": 187576.4373982398
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 6.69308,
+            "mean_us": 6.5149159999999995,
+            "min_us": 6.40634,
+            "p50_us": 6.47544,
+            "p95_us": 6.555,
+            "p99_us": 6.555,
+            "samples": 5,
+            "throughput_ops_s": 153493.92071977598
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 128
+    },
+    {
+      "extra": {
+        "cost_class": "scalar",
+        "inner": 50
+      },
+      "fastest_backend": "rust",
+      "operation": "order_parameter",
+      "parity_max_abs_diff": 2.0816681711721685e-17,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 12.32734,
+            "mean_us": 12.143632,
+            "min_us": 11.9506,
+            "p50_us": 12.181959999999998,
+            "p95_us": 12.3005,
+            "p99_us": 12.3005,
+            "samples": 5,
+            "throughput_ops_s": 82347.68642528035
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 14.55234,
+            "mean_us": 13.381651999999999,
+            "min_us": 12.64132,
+            "p50_us": 13.0483,
+            "p95_us": 13.92222,
+            "p99_us": 13.92222,
+            "samples": 5,
+            "throughput_ops_s": 74729.18889237294
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 512
+    },
+    {
+      "extra": {
+        "cost_class": "scalar",
+        "inner": 50
+      },
+      "fastest_backend": "python",
+      "operation": "order_parameter_gradient",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.order_parameter_gradient is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 11.6349,
+            "mean_us": 10.656780000000001,
+            "min_us": 10.1346,
+            "p50_us": 10.39406,
+            "p95_us": 10.76846,
+            "p99_us": 10.76846,
+            "samples": 5,
+            "throughput_ops_s": 93836.97514633875
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 8
+    },
+    {
+      "extra": {
+        "cost_class": "scalar",
+        "inner": 50
+      },
+      "fastest_backend": "python",
+      "operation": "order_parameter_gradient",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.order_parameter_gradient is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 11.25442,
+            "mean_us": 10.963336000000002,
+            "min_us": 10.71214,
+            "p50_us": 10.968060000000001,
+            "p95_us": 10.976780000000002,
+            "p99_us": 10.976780000000002,
+            "samples": 5,
+            "throughput_ops_s": 91213.11250517177
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 32
+    },
+    {
+      "extra": {
+        "cost_class": "scalar",
+        "inner": 50
+      },
+      "fastest_backend": "python",
+      "operation": "order_parameter_gradient",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.order_parameter_gradient is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 19.3865,
+            "mean_us": 17.544144,
+            "min_us": 15.74642,
+            "p50_us": 17.06906,
+            "p95_us": 18.71374,
+            "p99_us": 18.71374,
+            "samples": 5,
+            "throughput_ops_s": 56999.07615897362
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 128
+    },
+    {
+      "extra": {
+        "cost_class": "scalar",
+        "inner": 50
+      },
+      "fastest_backend": "python",
+      "operation": "order_parameter_gradient",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.order_parameter_gradient is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 52.38336,
+            "mean_us": 35.424236,
+            "min_us": 26.29384,
+            "p50_us": 32.43168,
+            "p95_us": 36.389140000000005,
+            "p99_us": 36.389140000000005,
+            "samples": 5,
+            "throughput_ops_s": 28229.260893587092
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 512
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "python",
+      "operation": "order_parameter_hessian",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.order_parameter_hessian is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 34.9517,
+            "mean_us": 23.555320000000002,
+            "min_us": 15.883000000000001,
+            "p50_us": 17.6469,
+            "p95_us": 33.0854,
+            "p99_us": 33.0854,
+            "samples": 5,
+            "throughput_ops_s": 42453.254721226454
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 8
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "python",
+      "operation": "order_parameter_hessian",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.order_parameter_hessian is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 24.0858,
+            "mean_us": 20.54,
+            "min_us": 18.2497,
+            "p50_us": 19.940199999999997,
+            "p95_us": 21.6314,
+            "p99_us": 21.6314,
+            "samples": 5,
+            "throughput_ops_s": 48685.49172346641
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 32
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "python",
+      "operation": "order_parameter_hessian",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.order_parameter_hessian is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 54.137,
+            "mean_us": 52.615959999999994,
+            "min_us": 50.445499999999996,
+            "p50_us": 52.898,
+            "p95_us": 53.538199999999996,
+            "p99_us": 53.538199999999996,
+            "samples": 5,
+            "throughput_ops_s": 19005.64011376016
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 128
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "python",
+      "operation": "order_parameter_hessian",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.order_parameter_hessian is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 1451.7242,
+            "mean_us": 935.5309800000001,
+            "min_us": 694.9761000000001,
+            "p50_us": 866.6847,
+            "p95_us": 894.2573,
+            "p99_us": 894.2573,
+            "samples": 5,
+            "throughput_ops_s": 1068.9116890602595
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 512
+    },
+    {
+      "extra": {
+        "cost_class": "scalar",
+        "inner": 50
+      },
+      "fastest_backend": "python",
+      "operation": "mean_phase",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.mean_phase is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 10.12598,
+            "mean_us": 9.027911999999999,
+            "min_us": 7.915299999999999,
+            "p50_us": 9.407119999999999,
+            "p95_us": 9.64076,
+            "p99_us": 9.64076,
+            "samples": 5,
+            "throughput_ops_s": 110767.58391087553
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 8
+    },
+    {
+      "extra": {
+        "cost_class": "scalar",
+        "inner": 50
+      },
+      "fastest_backend": "python",
+      "operation": "mean_phase",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.mean_phase is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 10.8901,
+            "mean_us": 9.998776000000001,
+            "min_us": 9.325560000000001,
+            "p50_us": 9.93098,
+            "p95_us": 10.19058,
+            "p99_us": 10.19058,
+            "samples": 5,
+            "throughput_ops_s": 100012.24149835939
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 32
+    },
+    {
+      "extra": {
+        "cost_class": "scalar",
+        "inner": 50
+      },
+      "fastest_backend": "python",
+      "operation": "mean_phase",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.mean_phase is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 15.45894,
+            "mean_us": 13.51774,
+            "min_us": 9.81678,
+            "p50_us": 14.51048,
+            "p95_us": 15.277080000000002,
+            "p99_us": 15.277080000000002,
+            "samples": 5,
+            "throughput_ops_s": 73976.86299632926
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 128
+    },
+    {
+      "extra": {
+        "cost_class": "scalar",
+        "inner": 50
+      },
+      "fastest_backend": "python",
+      "operation": "mean_phase",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.mean_phase is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 21.358040000000003,
+            "mean_us": 17.706992,
+            "min_us": 16.06834,
+            "p50_us": 16.2962,
+            "p95_us": 18.6542,
+            "p99_us": 18.6542,
+            "samples": 5,
+            "throughput_ops_s": 56474.86597384807
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 512
+    },
+    {
+      "extra": {
+        "cost_class": "scalar",
+        "inner": 50
+      },
+      "fastest_backend": "python",
+      "operation": "mean_phase_gradient",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.mean_phase_gradient is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 19.71504,
+            "mean_us": 15.025224,
+            "min_us": 11.76474,
+            "p50_us": 15.19712,
+            "p95_us": 16.63286,
+            "p99_us": 16.63286,
+            "samples": 5,
+            "throughput_ops_s": 66554.74820209004
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 8
+    },
+    {
+      "extra": {
+        "cost_class": "scalar",
+        "inner": 50
+      },
+      "fastest_backend": "python",
+      "operation": "mean_phase_gradient",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.mean_phase_gradient is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 24.85922,
+            "mean_us": 19.719828,
+            "min_us": 16.62586,
+            "p50_us": 17.56194,
+            "p95_us": 22.27016,
+            "p99_us": 22.27016,
+            "samples": 5,
+            "throughput_ops_s": 50710.38144957451
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 32
+    },
+    {
+      "extra": {
+        "cost_class": "scalar",
+        "inner": 50
+      },
+      "fastest_backend": "python",
+      "operation": "mean_phase_gradient",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.mean_phase_gradient is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 30.705920000000003,
+            "mean_us": 27.899396000000003,
+            "min_us": 24.835279999999997,
+            "p50_us": 27.71322,
+            "p95_us": 28.5597,
+            "p99_us": 28.5597,
+            "samples": 5,
+            "throughput_ops_s": 35843.06986430817
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 128
+    },
+    {
+      "extra": {
+        "cost_class": "scalar",
+        "inner": 50
+      },
+      "fastest_backend": "python",
+      "operation": "mean_phase_gradient",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.mean_phase_gradient is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 59.97626,
+            "mean_us": 46.021292,
+            "min_us": 39.06742,
+            "p50_us": 41.028819999999996,
+            "p95_us": 50.14462,
+            "p99_us": 50.14462,
+            "samples": 5,
+            "throughput_ops_s": 21729.072708345517
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 512
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "python",
+      "operation": "mean_phase_hessian",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.mean_phase_hessian is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 36.8977,
+            "mean_us": 32.79996,
+            "min_us": 30.325599999999998,
+            "p50_us": 32.2846,
+            "p95_us": 33.1668,
+            "p99_us": 33.1668,
+            "samples": 5,
+            "throughput_ops_s": 30487.842058343977
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 8
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "python",
+      "operation": "mean_phase_hessian",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.mean_phase_hessian is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 49.1772,
+            "mean_us": 36.850139999999996,
+            "min_us": 29.120600000000003,
+            "p50_us": 33.1961,
+            "p95_us": 40.0658,
+            "p99_us": 40.0658,
+            "samples": 5,
+            "throughput_ops_s": 27136.938964139623
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 32
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "python",
+      "operation": "mean_phase_hessian",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.mean_phase_hessian is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 122.22940000000001,
+            "mean_us": 109.6754,
+            "min_us": 93.3795,
+            "p50_us": 112.4931,
+            "p95_us": 116.76110000000001,
+            "p99_us": 116.76110000000001,
+            "samples": 5,
+            "throughput_ops_s": 9117.814933886724
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 128
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "python",
+      "operation": "mean_phase_hessian",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.mean_phase_hessian is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 1293.4538,
+            "mean_us": 1215.1165,
+            "min_us": 1077.1787,
+            "p50_us": 1228.4913000000001,
+            "p95_us": 1283.1480999999999,
+            "p99_us": 1283.1480999999999,
+            "samples": 5,
+            "throughput_ops_s": 822.9663575467866
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 512
+    },
+    {
+      "extra": {
+        "cost_class": "scalar",
+        "inner": 50
+      },
+      "fastest_backend": "python",
+      "operation": "daido_order_parameter",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.daido_order_parameter is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 7.49968,
+            "mean_us": 6.40058,
+            "min_us": 5.64442,
+            "p50_us": 6.2938,
+            "p95_us": 6.3453,
+            "p99_us": 6.3453,
+            "samples": 5,
+            "throughput_ops_s": 156235.8411268979
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 8
+    },
+    {
+      "extra": {
+        "cost_class": "scalar",
+        "inner": 50
+      },
+      "fastest_backend": "python",
+      "operation": "daido_order_parameter",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.daido_order_parameter is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 6.07172,
+            "mean_us": 5.928032,
+            "min_us": 5.80014,
+            "p50_us": 5.90866,
+            "p95_us": 6.05612,
+            "p99_us": 6.05612,
+            "samples": 5,
+            "throughput_ops_s": 168690.0475570982
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 32
+    },
+    {
+      "extra": {
+        "cost_class": "scalar",
+        "inner": 50
+      },
+      "fastest_backend": "python",
+      "operation": "daido_order_parameter",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.daido_order_parameter is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 9.08188,
+            "mean_us": 8.916336,
+            "min_us": 8.55822,
+            "p50_us": 8.9832,
+            "p95_us": 9.02362,
+            "p99_us": 9.02362,
+            "samples": 5,
+            "throughput_ops_s": 112153.69183036621
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 128
+    },
+    {
+      "extra": {
+        "cost_class": "scalar",
+        "inner": 50
+      },
+      "fastest_backend": "python",
+      "operation": "daido_order_parameter",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.daido_order_parameter is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 17.5528,
+            "mean_us": 17.121552,
+            "min_us": 16.34756,
+            "p50_us": 17.3243,
+            "p95_us": 17.40288,
+            "p99_us": 17.40288,
+            "samples": 5,
+            "throughput_ops_s": 58405.920210971526
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 512
+    },
+    {
+      "extra": {
+        "cost_class": "scalar",
+        "inner": 50
+      },
+      "fastest_backend": "python",
+      "operation": "daido_order_parameter_gradient",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.daido_order_parameter_gradient is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 14.1826,
+            "mean_us": 13.687928,
+            "min_us": 12.34952,
+            "p50_us": 13.99038,
+            "p95_us": 14.07718,
+            "p99_us": 14.07718,
+            "samples": 5,
+            "throughput_ops_s": 73057.07627918558
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 8
+    },
+    {
+      "extra": {
+        "cost_class": "scalar",
+        "inner": 50
+      },
+      "fastest_backend": "python",
+      "operation": "daido_order_parameter_gradient",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.daido_order_parameter_gradient is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 17.279700000000002,
+            "mean_us": 15.453912000000003,
+            "min_us": 14.13624,
+            "p50_us": 14.74182,
+            "p95_us": 16.47556,
+            "p99_us": 16.47556,
+            "samples": 5,
+            "throughput_ops_s": 64708.53464158459
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 32
+    },
+    {
+      "extra": {
+        "cost_class": "scalar",
+        "inner": 50
+      },
+      "fastest_backend": "python",
+      "operation": "daido_order_parameter_gradient",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.daido_order_parameter_gradient is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 18.78214,
+            "mean_us": 17.472687999999998,
+            "min_us": 16.48916,
+            "p50_us": 17.216920000000002,
+            "p95_us": 17.78124,
+            "p99_us": 17.78124,
+            "samples": 5,
+            "throughput_ops_s": 57232.17858637435
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 128
+    },
+    {
+      "extra": {
+        "cost_class": "scalar",
+        "inner": 50
+      },
+      "fastest_backend": "python",
+      "operation": "daido_order_parameter_gradient",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.daido_order_parameter_gradient is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 44.74526,
+            "mean_us": 32.899128000000005,
+            "min_us": 27.972080000000002,
+            "p50_us": 28.19286,
+            "p95_us": 35.45496,
+            "p99_us": 35.45496,
+            "samples": 5,
+            "throughput_ops_s": 30395.942409172665
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 512
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "python",
+      "operation": "daido_order_parameter_hessian",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.daido_order_parameter_hessian is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 33.3562,
+            "mean_us": 30.3368,
+            "min_us": 25.3267,
+            "p50_us": 31.1804,
+            "p95_us": 32.8347,
+            "p99_us": 32.8347,
+            "samples": 5,
+            "throughput_ops_s": 32963.26573666306
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 8
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "python",
+      "operation": "daido_order_parameter_hessian",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.daido_order_parameter_hessian is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 36.7292,
+            "mean_us": 32.69184,
+            "min_us": 28.616000000000003,
+            "p50_us": 33.3349,
+            "p95_us": 33.5715,
+            "p99_us": 33.5715,
+            "samples": 5,
+            "throughput_ops_s": 30588.672892073373
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 32
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "python",
+      "operation": "daido_order_parameter_hessian",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.daido_order_parameter_hessian is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 88.194,
+            "mean_us": 83.44268,
+            "min_us": 80.8254,
+            "p50_us": 82.44919999999999,
+            "p95_us": 83.5442,
+            "p99_us": 83.5442,
+            "samples": 5,
+            "throughput_ops_s": 11984.274714091158
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 128
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "python",
+      "operation": "daido_order_parameter_hessian",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.daido_order_parameter_hessian is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 721.4347,
+            "mean_us": 646.86038,
+            "min_us": 528.8294,
+            "p50_us": 717.0971,
+            "p95_us": 719.1058,
+            "p99_us": 719.1058,
+            "samples": 5,
+            "throughput_ops_s": 1545.9286592881142
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 512
+    },
+    {
+      "extra": {
+        "cost_class": "scalar",
+        "inner": 50
+      },
+      "fastest_backend": "python",
+      "operation": "daido_mode_phase",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.daido_mode_phase is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 8.18212,
+            "mean_us": 7.198335999999999,
+            "min_us": 6.84874,
+            "p50_us": 6.936459999999999,
+            "p95_us": 7.153379999999999,
+            "p99_us": 7.153379999999999,
+            "samples": 5,
+            "throughput_ops_s": 138920.9950744172
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 8
+    },
+    {
+      "extra": {
+        "cost_class": "scalar",
+        "inner": 50
+      },
+      "fastest_backend": "python",
+      "operation": "daido_mode_phase",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.daido_mode_phase is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 11.96794,
+            "mean_us": 10.841187999999999,
+            "min_us": 8.04612,
+            "p50_us": 11.3222,
+            "p95_us": 11.67624,
+            "p99_us": 11.67624,
+            "samples": 5,
+            "throughput_ops_s": 92240.81346066503
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 32
+    },
+    {
+      "extra": {
+        "cost_class": "scalar",
+        "inner": 50
+      },
+      "fastest_backend": "python",
+      "operation": "daido_mode_phase",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.daido_mode_phase is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 13.13096,
+            "mean_us": 9.633604,
+            "min_us": 7.99474,
+            "p50_us": 8.23716,
+            "p95_us": 10.677380000000001,
+            "p99_us": 10.677380000000001,
+            "samples": 5,
+            "throughput_ops_s": 103803.31182390307
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 128
+    },
+    {
+      "extra": {
+        "cost_class": "scalar",
+        "inner": 50
+      },
+      "fastest_backend": "python",
+      "operation": "daido_mode_phase",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.daido_mode_phase is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 14.779100000000001,
+            "mean_us": 14.24854,
+            "min_us": 13.8823,
+            "p50_us": 14.17262,
+            "p95_us": 14.30722,
+            "p99_us": 14.30722,
+            "samples": 5,
+            "throughput_ops_s": 70182.62923780261
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 512
+    },
+    {
+      "extra": {
+        "cost_class": "scalar",
+        "inner": 50
+      },
+      "fastest_backend": "python",
+      "operation": "daido_mode_phase_gradient",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.daido_mode_phase_gradient is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 11.21218,
+            "mean_us": 11.053448,
+            "min_us": 10.944659999999999,
+            "p50_us": 11.01386,
+            "p95_us": 11.14714,
+            "p99_us": 11.14714,
+            "samples": 5,
+            "throughput_ops_s": 90469.50779521467
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 8
+    },
+    {
+      "extra": {
+        "cost_class": "scalar",
+        "inner": 50
+      },
+      "fastest_backend": "python",
+      "operation": "daido_mode_phase_gradient",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.daido_mode_phase_gradient is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 12.65146,
+            "mean_us": 11.824496,
+            "min_us": 11.40816,
+            "p50_us": 11.59112,
+            "p95_us": 12.0404,
+            "p99_us": 12.0404,
+            "samples": 5,
+            "throughput_ops_s": 84570.20070876594
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 32
+    },
+    {
+      "extra": {
+        "cost_class": "scalar",
+        "inner": 50
+      },
+      "fastest_backend": "python",
+      "operation": "daido_mode_phase_gradient",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.daido_mode_phase_gradient is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 15.50008,
+            "mean_us": 14.474872,
+            "min_us": 14.084359999999998,
+            "p50_us": 14.20474,
+            "p95_us": 14.38328,
+            "p99_us": 14.38328,
+            "samples": 5,
+            "throughput_ops_s": 69085.23957932064
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 128
+    },
+    {
+      "extra": {
+        "cost_class": "scalar",
+        "inner": 50
+      },
+      "fastest_backend": "python",
+      "operation": "daido_mode_phase_gradient",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.daido_mode_phase_gradient is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 26.91168,
+            "mean_us": 25.909095999999998,
+            "min_us": 25.576060000000002,
+            "p50_us": 25.670659999999998,
+            "p95_us": 25.79272,
+            "p99_us": 25.79272,
+            "samples": 5,
+            "throughput_ops_s": 38596.48364419971
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 512
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "python",
+      "operation": "daido_mode_phase_hessian",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.daido_mode_phase_hessian is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 22.4857,
+            "mean_us": 21.3408,
+            "min_us": 20.596600000000002,
+            "p50_us": 21.2511,
+            "p95_us": 21.7534,
+            "p99_us": 21.7534,
+            "samples": 5,
+            "throughput_ops_s": 46858.599490178436
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 8
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "python",
+      "operation": "daido_mode_phase_hessian",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.daido_mode_phase_hessian is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 38.4055,
+            "mean_us": 31.609680000000004,
+            "min_us": 28.5594,
+            "p50_us": 30.351799999999997,
+            "p95_us": 31.4384,
+            "p99_us": 31.4384,
+            "samples": 5,
+            "throughput_ops_s": 31635.87862958435
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 32
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "python",
+      "operation": "daido_mode_phase_hessian",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.daido_mode_phase_hessian is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 98.4074,
+            "mean_us": 87.39862000000001,
+            "min_us": 80.88680000000001,
+            "p50_us": 82.0329,
+            "p95_us": 93.6812,
+            "p99_us": 93.6812,
+            "samples": 5,
+            "throughput_ops_s": 11441.828257700177
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 128
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "python",
+      "operation": "daido_mode_phase_hessian",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.daido_mode_phase_hessian is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 1580.951,
+            "mean_us": 1199.5102,
+            "min_us": 972.6209999999999,
+            "p50_us": 1160.5299,
+            "p95_us": 1267.2602000000002,
+            "p99_us": 1267.2602000000002,
+            "samples": 5,
+            "throughput_ops_s": 833.673611112269
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 512
+    },
+    {
+      "extra": {
+        "cost_class": "scalar",
+        "inner": 50
+      },
+      "fastest_backend": "python",
+      "operation": "mean_field_force",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.mean_field_force is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 17.38162,
+            "mean_us": 16.093248,
+            "min_us": 15.4526,
+            "p50_us": 15.912519999999999,
+            "p95_us": 16.16536,
+            "p99_us": 16.16536,
+            "samples": 5,
+            "throughput_ops_s": 62137.86054872205
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 8
+    },
+    {
+      "extra": {
+        "cost_class": "scalar",
+        "inner": 50
+      },
+      "fastest_backend": "python",
+      "operation": "mean_field_force",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.mean_field_force is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 19.27248,
+            "mean_us": 17.425504,
+            "min_us": 15.18126,
+            "p50_us": 18.4412,
+            "p95_us": 18.56362,
+            "p99_us": 18.56362,
+            "samples": 5,
+            "throughput_ops_s": 57387.149318607946
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 32
+    },
+    {
+      "extra": {
+        "cost_class": "scalar",
+        "inner": 50
+      },
+      "fastest_backend": "python",
+      "operation": "mean_field_force",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.mean_field_force is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 19.69172,
+            "mean_us": 16.337052,
+            "min_us": 13.781659999999999,
+            "p50_us": 15.63734,
+            "p95_us": 17.96406,
+            "p99_us": 17.96406,
+            "samples": 5,
+            "throughput_ops_s": 61210.55377677686
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 128
+    },
+    {
+      "extra": {
+        "cost_class": "scalar",
+        "inner": 50
+      },
+      "fastest_backend": "python",
+      "operation": "mean_field_force",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.mean_field_force is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 33.28274,
+            "mean_us": 30.145400000000002,
+            "min_us": 27.61056,
+            "p50_us": 29.72518,
+            "p95_us": 31.50324,
+            "p99_us": 31.50324,
+            "samples": 5,
+            "throughput_ops_s": 33172.55700703921
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 512
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "python",
+      "operation": "mean_field_jacobian",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.mean_field_jacobian is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 24.7065,
+            "mean_us": 23.64546,
+            "min_us": 22.3609,
+            "p50_us": 23.964,
+            "p95_us": 24.2485,
+            "p99_us": 24.2485,
+            "samples": 5,
+            "throughput_ops_s": 42291.416618665906
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 8
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "python",
+      "operation": "mean_field_jacobian",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.mean_field_jacobian is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 37.0593,
+            "mean_us": 30.31524,
+            "min_us": 22.7502,
+            "p50_us": 33.6706,
+            "p95_us": 35.0378,
+            "p99_us": 35.0378,
+            "samples": 5,
+            "throughput_ops_s": 32986.70899521165
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 32
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "python",
+      "operation": "mean_field_jacobian",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.mean_field_jacobian is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 232.50889999999998,
+            "mean_us": 217.99117999999999,
+            "min_us": 207.66770000000002,
+            "p50_us": 213.0166,
+            "p95_us": 225.78339999999997,
+            "p99_us": 225.78339999999997,
+            "samples": 5,
+            "throughput_ops_s": 4587.341561250322
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 128
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "python",
+      "operation": "mean_field_jacobian",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.mean_field_jacobian is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 4429.824,
+            "mean_us": 4111.10772,
+            "min_us": 3693.2643,
+            "p50_us": 4140.4429,
+            "p95_us": 4206.234399999999,
+            "p99_us": 4206.234399999999,
+            "samples": 5,
+            "throughput_ops_s": 243.24344388621373
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 512
+    },
+    {
+      "extra": {
+        "cost_class": "scalar",
+        "inner": 50
+      },
+      "fastest_backend": "python",
+      "operation": "triadic_mean_field_force",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.triadic_mean_field_force is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 13.01702,
+            "mean_us": 12.624716,
+            "min_us": 12.19146,
+            "p50_us": 12.755719999999998,
+            "p95_us": 12.90732,
+            "p99_us": 12.90732,
+            "samples": 5,
+            "throughput_ops_s": 79209.70261826088
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 8
+    },
+    {
+      "extra": {
+        "cost_class": "scalar",
+        "inner": 50
+      },
+      "fastest_backend": "python",
+      "operation": "triadic_mean_field_force",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.triadic_mean_field_force is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 13.21548,
+            "mean_us": 12.982116,
+            "min_us": 12.719079999999998,
+            "p50_us": 13.01144,
+            "p95_us": 13.11572,
+            "p99_us": 13.11572,
+            "samples": 5,
+            "throughput_ops_s": 77029.04518801096
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 32
+    },
+    {
+      "extra": {
+        "cost_class": "scalar",
+        "inner": 50
+      },
+      "fastest_backend": "python",
+      "operation": "triadic_mean_field_force",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.triadic_mean_field_force is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 18.64276,
+            "mean_us": 17.5945,
+            "min_us": 16.36044,
+            "p50_us": 17.7869,
+            "p95_us": 17.82336,
+            "p99_us": 17.82336,
+            "samples": 5,
+            "throughput_ops_s": 56835.94305038506
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 128
+    },
+    {
+      "extra": {
+        "cost_class": "scalar",
+        "inner": 50
+      },
+      "fastest_backend": "python",
+      "operation": "triadic_mean_field_force",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.triadic_mean_field_force is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 29.680619999999998,
+            "mean_us": 27.023899999999998,
+            "min_us": 24.796979999999998,
+            "p50_us": 26.67594,
+            "p95_us": 28.11028,
+            "p99_us": 28.11028,
+            "samples": 5,
+            "throughput_ops_s": 37004.281395357444
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 512
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "python",
+      "operation": "triadic_mean_field_jacobian",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.triadic_mean_field_jacobian is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 21.1588,
+            "mean_us": 20.28266,
+            "min_us": 18.7408,
+            "p50_us": 20.7601,
+            "p95_us": 20.8724,
+            "p99_us": 20.8724,
+            "samples": 5,
+            "throughput_ops_s": 49303.197904022454
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 8
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "python",
+      "operation": "triadic_mean_field_jacobian",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.triadic_mean_field_jacobian is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 45.4351,
+            "mean_us": 40.63984,
+            "min_us": 34.208800000000004,
+            "p50_us": 42.986399999999996,
+            "p95_us": 44.827,
+            "p99_us": 44.827,
+            "samples": 5,
+            "throughput_ops_s": 24606.396088173577
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 32
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "python",
+      "operation": "triadic_mean_field_jacobian",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.triadic_mean_field_jacobian is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 520.3396,
+            "mean_us": 493.74431999999996,
+            "min_us": 481.1689,
+            "p50_us": 489.6897,
+            "p95_us": 494.62039999999996,
+            "p99_us": 494.62039999999996,
+            "samples": 5,
+            "throughput_ops_s": 2025.3397547945465
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 128
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "python",
+      "operation": "triadic_mean_field_jacobian",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.triadic_mean_field_jacobian is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 10747.5847,
+            "mean_us": 8928.04766,
+            "min_us": 7886.6553,
+            "p50_us": 8714.4534,
+            "p95_us": 8991.8634,
+            "p99_us": 8991.8634,
+            "samples": 5,
+            "throughput_ops_s": 112.00657053840145
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 512
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "python",
+      "operation": "networked_kuramoto_force",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.networked_kuramoto_force is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 4.9606,
+            "mean_us": 4.84758,
+            "min_us": 4.7944,
+            "p50_us": 4.8259,
+            "p95_us": 4.8494,
+            "p99_us": 4.8494,
+            "samples": 5,
+            "throughput_ops_s": 206288.49859104957
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 8
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "python",
+      "operation": "networked_kuramoto_force",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.networked_kuramoto_force is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 39.435,
+            "mean_us": 19.287020000000002,
+            "min_us": 12.8537,
+            "p50_us": 13.562299999999999,
+            "p95_us": 17.552,
+            "p99_us": 17.552,
+            "samples": 5,
+            "throughput_ops_s": 51848.34152709957
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 32
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "python",
+      "operation": "networked_kuramoto_force",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.networked_kuramoto_force is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 224.15619999999998,
+            "mean_us": 197.82782,
+            "min_us": 183.4658,
+            "p50_us": 192.6583,
+            "p95_us": 197.373,
+            "p99_us": 197.373,
+            "samples": 5,
+            "throughput_ops_s": 5054.90077179236
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 128
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "python",
+      "operation": "networked_kuramoto_force",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.networked_kuramoto_force is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 4889.1241,
+            "mean_us": 4364.8207999999995,
+            "min_us": 3851.8021,
+            "p50_us": 4209.2458,
+            "p95_us": 4671.7405,
+            "p99_us": 4671.7405,
+            "samples": 5,
+            "throughput_ops_s": 229.10448007395863
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 512
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "python",
+      "operation": "networked_kuramoto_jacobian",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.networked_kuramoto_jacobian is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 12.1188,
+            "mean_us": 10.51244,
+            "min_us": 8.482899999999999,
+            "p50_us": 11.095600000000001,
+            "p95_us": 11.8492,
+            "p99_us": 11.8492,
+            "samples": 5,
+            "throughput_ops_s": 95125.39429475936
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 8
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "python",
+      "operation": "networked_kuramoto_jacobian",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.networked_kuramoto_jacobian is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 19.9819,
+            "mean_us": 18.742579999999997,
+            "min_us": 17.714,
+            "p50_us": 18.6509,
+            "p95_us": 18.898,
+            "p99_us": 18.898,
+            "samples": 5,
+            "throughput_ops_s": 53354.44746667749
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 32
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "python",
+      "operation": "networked_kuramoto_jacobian",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.networked_kuramoto_jacobian is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 211.55689999999998,
+            "mean_us": 201.09822,
+            "min_us": 193.8188,
+            "p50_us": 201.5812,
+            "p95_us": 202.4836,
+            "p99_us": 202.4836,
+            "samples": 5,
+            "throughput_ops_s": 4972.6944375738385
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 128
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "python",
+      "operation": "networked_kuramoto_jacobian",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.networked_kuramoto_jacobian is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 5253.9684,
+            "mean_us": 4826.0947,
+            "min_us": 4418.0105,
+            "p50_us": 4767.0788999999995,
+            "p95_us": 4934.7794,
+            "p99_us": 4934.7794,
+            "samples": 5,
+            "throughput_ops_s": 207.20687474284333
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 512
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "python",
+      "operation": "kuramoto_interaction_energy",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.kuramoto_interaction_energy is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 7.339700000000001,
+            "mean_us": 5.93154,
+            "min_us": 5.299799999999999,
+            "p50_us": 5.7822000000000005,
+            "p95_us": 5.8402,
+            "p99_us": 5.8402,
+            "samples": 5,
+            "throughput_ops_s": 168590.28178179698
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 8
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "python",
+      "operation": "kuramoto_interaction_energy",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.kuramoto_interaction_energy is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 17.5123,
+            "mean_us": 16.1495,
+            "min_us": 14.4395,
+            "p50_us": 16.425800000000002,
+            "p95_us": 16.9837,
+            "p99_us": 16.9837,
+            "samples": 5,
+            "throughput_ops_s": 61921.421715842596
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 32
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "python",
+      "operation": "kuramoto_interaction_energy",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.kuramoto_interaction_energy is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 261.2051,
+            "mean_us": 247.50657999999999,
+            "min_us": 233.54299999999998,
+            "p50_us": 245.8837,
+            "p95_us": 252.55509999999998,
+            "p99_us": 252.55509999999998,
+            "samples": 5,
+            "throughput_ops_s": 4040.2966256493064
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 128
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "python",
+      "operation": "kuramoto_interaction_energy",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.kuramoto_interaction_energy is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 4614.1419000000005,
+            "mean_us": 4234.0152800000005,
+            "min_us": 3939.2352,
+            "p50_us": 4062.5564,
+            "p95_us": 4599.2796,
+            "p99_us": 4599.2796,
+            "samples": 5,
+            "throughput_ops_s": 236.18242586975262
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 512
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "python",
+      "operation": "kuramoto_interaction_energy_gradient",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.kuramoto_interaction_energy_gradient is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 11.2166,
+            "mean_us": 8.94004,
+            "min_us": 7.1649,
+            "p50_us": 8.291599999999999,
+            "p95_us": 9.7701,
+            "p99_us": 9.7701,
+            "samples": 5,
+            "throughput_ops_s": 111856.32279050206
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 8
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "python",
+      "operation": "kuramoto_interaction_energy_gradient",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.kuramoto_interaction_energy_gradient is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 17.3139,
+            "mean_us": 16.92144,
+            "min_us": 16.210900000000002,
+            "p50_us": 17.199199999999998,
+            "p95_us": 17.2135,
+            "p99_us": 17.2135,
+            "samples": 5,
+            "throughput_ops_s": 59096.625346306224
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 32
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "python",
+      "operation": "kuramoto_interaction_energy_gradient",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.kuramoto_interaction_energy_gradient is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 251.3186,
+            "mean_us": 214.30895999999998,
+            "min_us": 174.4183,
+            "p50_us": 224.1942,
+            "p95_us": 240.4708,
+            "p99_us": 240.4708,
+            "samples": 5,
+            "throughput_ops_s": 4666.160481577625
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 128
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "python",
+      "operation": "kuramoto_interaction_energy_gradient",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.kuramoto_interaction_energy_gradient is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 5532.257,
+            "mean_us": 5211.264819999999,
+            "min_us": 4712.6227,
+            "p50_us": 5336.8295,
+            "p95_us": 5486.1583,
+            "p99_us": 5486.1583,
+            "samples": 5,
+            "throughput_ops_s": 191.89199446594236
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 512
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "python",
+      "operation": "kuramoto_interaction_energy_hessian",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.kuramoto_interaction_energy_hessian is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 9.024899999999999,
+            "mean_us": 8.885079999999999,
+            "min_us": 8.7425,
+            "p50_us": 8.8749,
+            "p95_us": 8.9665,
+            "p99_us": 8.9665,
+            "samples": 5,
+            "throughput_ops_s": 112548.2269152332
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 8
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "python",
+      "operation": "kuramoto_interaction_energy_hessian",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.kuramoto_interaction_energy_hessian is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 18.693199999999997,
+            "mean_us": 18.16892,
+            "min_us": 17.7719,
+            "p50_us": 18.1708,
+            "p95_us": 18.222900000000003,
+            "p99_us": 18.222900000000003,
+            "samples": 5,
+            "throughput_ops_s": 55039.04469830898
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 32
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "python",
+      "operation": "kuramoto_interaction_energy_hessian",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.kuramoto_interaction_energy_hessian is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 228.311,
+            "mean_us": 218.34272,
+            "min_us": 207.38240000000002,
+            "p50_us": 216.05720000000002,
+            "p95_us": 226.0918,
+            "p99_us": 226.0918,
+            "samples": 5,
+            "throughput_ops_s": 4579.955768619168
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 128
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "python",
+      "operation": "kuramoto_interaction_energy_hessian",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.kuramoto_interaction_energy_hessian is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 5918.5949,
+            "mean_us": 5342.83872,
+            "min_us": 4859.6665,
+            "p50_us": 5501.6858,
+            "p95_us": 5561.4335,
+            "p99_us": 5561.4335,
+            "samples": 5,
+            "throughput_ops_s": 187.1664207749097
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 512
+    },
+    {
+      "extra": {
+        "cost_class": "scalar",
+        "inner": 50
+      },
+      "fastest_backend": "python",
+      "operation": "daido_mean_field_force",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.daido_mean_field_force is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 21.5143,
+            "mean_us": 17.130696,
+            "min_us": 12.67146,
+            "p50_us": 18.34278,
+            "p95_us": 18.77782,
+            "p99_us": 18.77782,
+            "samples": 5,
+            "throughput_ops_s": 58374.74437699437
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 8
+    },
+    {
+      "extra": {
+        "cost_class": "scalar",
+        "inner": 50
+      },
+      "fastest_backend": "python",
+      "operation": "daido_mean_field_force",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.daido_mean_field_force is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 14.5979,
+            "mean_us": 13.71114,
+            "min_us": 12.918299999999999,
+            "p50_us": 13.71566,
+            "p95_us": 13.824919999999999,
+            "p99_us": 13.824919999999999,
+            "samples": 5,
+            "throughput_ops_s": 72933.3957643201
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 32
+    },
+    {
+      "extra": {
+        "cost_class": "scalar",
+        "inner": 50
+      },
+      "fastest_backend": "python",
+      "operation": "daido_mean_field_force",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.daido_mean_field_force is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 22.52574,
+            "mean_us": 19.993536,
+            "min_us": 18.619320000000002,
+            "p50_us": 19.30166,
+            "p95_us": 20.749340000000004,
+            "p99_us": 20.749340000000004,
+            "samples": 5,
+            "throughput_ops_s": 50016.16522460059
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 128
+    },
+    {
+      "extra": {
+        "cost_class": "scalar",
+        "inner": 50
+      },
+      "fastest_backend": "python",
+      "operation": "daido_mean_field_force",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.daido_mean_field_force is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 37.82096,
+            "mean_us": 32.581156,
+            "min_us": 28.92536,
+            "p50_us": 30.86466,
+            "p95_us": 34.76232,
+            "p99_us": 34.76232,
+            "samples": 5,
+            "throughput_ops_s": 30692.588071460694
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 512
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "python",
+      "operation": "daido_mean_field_jacobian",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.daido_mean_field_jacobian is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 25.9435,
+            "mean_us": 21.34486,
+            "min_us": 17.2164,
+            "p50_us": 19.7437,
+            "p95_us": 24.664099999999998,
+            "p99_us": 24.664099999999998,
+            "samples": 5,
+            "throughput_ops_s": 46849.686528747436
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 8
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "python",
+      "operation": "daido_mean_field_jacobian",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.daido_mean_field_jacobian is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 26.809800000000003,
+            "mean_us": 25.88148,
+            "min_us": 25.4884,
+            "p50_us": 25.6286,
+            "p95_us": 25.8765,
+            "p99_us": 25.8765,
+            "samples": 5,
+            "throughput_ops_s": 38637.66677948865
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 32
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "python",
+      "operation": "daido_mean_field_jacobian",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.daido_mean_field_jacobian is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 275.39160000000004,
+            "mean_us": 265.04666000000003,
+            "min_us": 250.0314,
+            "p50_us": 266.7425,
+            "p95_us": 274.7596,
+            "p99_us": 274.7596,
+            "samples": 5,
+            "throughput_ops_s": 3772.920586888361
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 128
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "python",
+      "operation": "daido_mean_field_jacobian",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.daido_mean_field_jacobian is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 4824.8808,
+            "mean_us": 4440.80022,
+            "min_us": 4238.1203000000005,
+            "p50_us": 4373.1119,
+            "p95_us": 4488.4078,
+            "p99_us": 4488.4078,
+            "samples": 5,
+            "throughput_ops_s": 225.18464025837216
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 512
+    },
+    {
+      "extra": {
+        "cost_class": "scalar",
+        "inner": 50
+      },
+      "fastest_backend": "python",
+      "operation": "sakaguchi_mean_field_force",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.sakaguchi_mean_field_force is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 16.70586,
+            "mean_us": 14.828211999999999,
+            "min_us": 13.62892,
+            "p50_us": 13.93128,
+            "p95_us": 16.20422,
+            "p99_us": 16.20422,
+            "samples": 5,
+            "throughput_ops_s": 67439.01422504615
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 8
+    },
+    {
+      "extra": {
+        "cost_class": "scalar",
+        "inner": 50
+      },
+      "fastest_backend": "python",
+      "operation": "sakaguchi_mean_field_force",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.sakaguchi_mean_field_force is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 25.023939999999996,
+            "mean_us": 20.310512,
+            "min_us": 15.80672,
+            "p50_us": 20.08448,
+            "p95_us": 20.61082,
+            "p99_us": 20.61082,
+            "samples": 5,
+            "throughput_ops_s": 49235.58795563598
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 32
+    },
+    {
+      "extra": {
+        "cost_class": "scalar",
+        "inner": 50
+      },
+      "fastest_backend": "python",
+      "operation": "sakaguchi_mean_field_force",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.sakaguchi_mean_field_force is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 18.51626,
+            "mean_us": 17.714728,
+            "min_us": 16.9486,
+            "p50_us": 17.8119,
+            "p95_us": 18.02174,
+            "p99_us": 18.02174,
+            "samples": 5,
+            "throughput_ops_s": 56450.20346911338
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 128
+    },
+    {
+      "extra": {
+        "cost_class": "scalar",
+        "inner": 50
+      },
+      "fastest_backend": "python",
+      "operation": "sakaguchi_mean_field_force",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.sakaguchi_mean_field_force is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 33.32792,
+            "mean_us": 30.706404,
+            "min_us": 28.09954,
+            "p50_us": 29.86342,
+            "p95_us": 32.66012,
+            "p99_us": 32.66012,
+            "samples": 5,
+            "throughput_ops_s": 32566.49655231528
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 512
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "python",
+      "operation": "sakaguchi_mean_field_jacobian",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.sakaguchi_mean_field_jacobian is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 25.2453,
+            "mean_us": 21.048840000000002,
+            "min_us": 18.8851,
+            "p50_us": 20.3266,
+            "p95_us": 20.9625,
+            "p99_us": 20.9625,
+            "samples": 5,
+            "throughput_ops_s": 47508.556290988
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 8
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "python",
+      "operation": "sakaguchi_mean_field_jacobian",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.sakaguchi_mean_field_jacobian is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 29.1678,
+            "mean_us": 27.770400000000002,
+            "min_us": 25.509999999999998,
+            "p50_us": 28.6685,
+            "p95_us": 29.082100000000004,
+            "p99_us": 29.082100000000004,
+            "samples": 5,
+            "throughput_ops_s": 36009.56414023564
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 32
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "python",
+      "operation": "sakaguchi_mean_field_jacobian",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.sakaguchi_mean_field_jacobian is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 235.2081,
+            "mean_us": 207.40722,
+            "min_us": 178.9654,
+            "p50_us": 198.3547,
+            "p95_us": 227.4442,
+            "p99_us": 227.4442,
+            "samples": 5,
+            "throughput_ops_s": 4821.43292793761
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 128
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "python",
+      "operation": "sakaguchi_mean_field_jacobian",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.sakaguchi_mean_field_jacobian is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 5156.9057,
+            "mean_us": 4702.89872,
+            "min_us": 4113.3161,
+            "p50_us": 4801.8988,
+            "p95_us": 4972.2997000000005,
+            "p99_us": 4972.2997000000005,
+            "samples": 5,
+            "throughput_ops_s": 212.63481515077152
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 512
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "python",
+      "operation": "sakaguchi_force",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.sakaguchi_force is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 10.4454,
+            "mean_us": 8.267900000000001,
+            "min_us": 6.2726,
+            "p50_us": 7.9813,
+            "p95_us": 9.0546,
+            "p99_us": 9.0546,
+            "samples": 5,
+            "throughput_ops_s": 120949.69702100895
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 8
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "python",
+      "operation": "sakaguchi_force",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.sakaguchi_force is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 20.448,
+            "mean_us": 18.415680000000002,
+            "min_us": 15.5698,
+            "p50_us": 18.8577,
+            "p95_us": 19.4881,
+            "p99_us": 19.4881,
+            "samples": 5,
+            "throughput_ops_s": 54301.55172114198
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 32
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "python",
+      "operation": "sakaguchi_force",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.sakaguchi_force is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 242.6383,
+            "mean_us": 191.6681,
+            "min_us": 169.57760000000002,
+            "p50_us": 183.26069999999999,
+            "p95_us": 183.6841,
+            "p99_us": 183.6841,
+            "samples": 5,
+            "throughput_ops_s": 5217.3522876263705
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 128
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "python",
+      "operation": "sakaguchi_force",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.sakaguchi_force is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 4714.8743,
+            "mean_us": 4457.0768,
+            "min_us": 4210.5058,
+            "p50_us": 4470.1914,
+            "p95_us": 4489.609399999999,
+            "p99_us": 4489.609399999999,
+            "samples": 5,
+            "throughput_ops_s": 224.3622995233109
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 512
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "python",
+      "operation": "sakaguchi_jacobian",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.sakaguchi_jacobian is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 9.736,
+            "mean_us": 8.79226,
+            "min_us": 8.2854,
+            "p50_us": 8.7887,
+            "p95_us": 8.841,
+            "p99_us": 8.841,
+            "samples": 5,
+            "throughput_ops_s": 113736.39996997359
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 8
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "python",
+      "operation": "sakaguchi_jacobian",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.sakaguchi_jacobian is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 31.902300000000004,
+            "mean_us": 22.26498,
+            "min_us": 18.0886,
+            "p50_us": 18.9714,
+            "p95_us": 24.151699999999998,
+            "p99_us": 24.151699999999998,
+            "samples": 5,
+            "throughput_ops_s": 44913.581777302286
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 32
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "python",
+      "operation": "sakaguchi_jacobian",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.sakaguchi_jacobian is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 194.9983,
+            "mean_us": 181.93346,
+            "min_us": 171.7866,
+            "p50_us": 179.8031,
+            "p95_us": 184.9774,
+            "p99_us": 184.9774,
+            "samples": 5,
+            "throughput_ops_s": 5496.515044566294
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 128
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "python",
+      "operation": "sakaguchi_jacobian",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.sakaguchi_jacobian is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 5268.326,
+            "mean_us": 4350.54644,
+            "min_us": 3674.78,
+            "p50_us": 4215.294,
+            "p95_us": 4489.8793,
+            "p99_us": 4489.8793,
+            "samples": 5,
+            "throughput_ops_s": 229.8561833074008
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 512
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "python",
+      "operation": "local_order_parameter",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.local_order_parameter is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 7.3122,
+            "mean_us": 7.11406,
+            "min_us": 6.8406,
+            "p50_us": 7.2122,
+            "p95_us": 7.2401,
+            "p99_us": 7.2401,
+            "samples": 5,
+            "throughput_ops_s": 140566.70874296816
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 8
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "python",
+      "operation": "local_order_parameter",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.local_order_parameter is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 9.3027,
+            "mean_us": 8.453880000000002,
+            "min_us": 7.980200000000001,
+            "p50_us": 8.4906,
+            "p95_us": 8.4992,
+            "p99_us": 8.4992,
+            "samples": 5,
+            "throughput_ops_s": 118288.88037208948
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 32
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "python",
+      "operation": "local_order_parameter",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.local_order_parameter is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 19.5317,
+            "mean_us": 18.47592,
+            "min_us": 18.0918,
+            "p50_us": 18.1908,
+            "p95_us": 18.4053,
+            "p99_us": 18.4053,
+            "samples": 5,
+            "throughput_ops_s": 54124.50367830128
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 128
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "python",
+      "operation": "local_order_parameter",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.local_order_parameter is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 171.14960000000002,
+            "mean_us": 165.71676000000002,
+            "min_us": 161.3073,
+            "p50_us": 163.46620000000001,
+            "p95_us": 169.71210000000002,
+            "p99_us": 169.71210000000002,
+            "samples": 5,
+            "throughput_ops_s": 6034.392658895817
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 512
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "python",
+      "operation": "local_order_parameter_jacobian",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.local_order_parameter_jacobian is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 24.952199999999998,
+            "mean_us": 23.633139999999997,
+            "min_us": 21.6938,
+            "p50_us": 24.1789,
+            "p95_us": 24.5976,
+            "p99_us": 24.5976,
+            "samples": 5,
+            "throughput_ops_s": 42313.46321309822
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 8
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "python",
+      "operation": "local_order_parameter_jacobian",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.local_order_parameter_jacobian is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 33.3701,
+            "mean_us": 32.62476,
+            "min_us": 32.0985,
+            "p50_us": 32.4173,
+            "p95_us": 32.8983,
+            "p99_us": 32.8983,
+            "samples": 5,
+            "throughput_ops_s": 30651.566478956473
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 32
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "python",
+      "operation": "local_order_parameter_jacobian",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.local_order_parameter_jacobian is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 111.42080000000001,
+            "mean_us": 93.08520000000001,
+            "min_us": 79.7055,
+            "p50_us": 84.9739,
+            "p95_us": 107.9453,
+            "p99_us": 107.9453,
+            "samples": 5,
+            "throughput_ops_s": 10742.846338623109
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 128
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "python",
+      "operation": "local_order_parameter_jacobian",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.local_order_parameter_jacobian is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 1148.1093,
+            "mean_us": 1011.0630800000001,
+            "min_us": 870.7296,
+            "p50_us": 1046.0826,
+            "p95_us": 1105.6753,
+            "p99_us": 1105.6753,
+            "samples": 5,
+            "throughput_ops_s": 989.0579725253145
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 512
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "python",
+      "operation": "local_mean_phase",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.local_mean_phase is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 6.5105,
+            "mean_us": 6.2118400000000005,
+            "min_us": 5.9958,
+            "p50_us": 6.0591,
+            "p95_us": 6.4816,
+            "p99_us": 6.4816,
+            "samples": 5,
+            "throughput_ops_s": 160982.8971770039
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 8
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "python",
+      "operation": "local_mean_phase",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.local_mean_phase is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 10.8151,
+            "mean_us": 7.758799999999999,
+            "min_us": 6.489400000000001,
+            "p50_us": 7.3892,
+            "p95_us": 7.402200000000001,
+            "p99_us": 7.402200000000001,
+            "samples": 5,
+            "throughput_ops_s": 128885.9101922978
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 32
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "python",
+      "operation": "local_mean_phase",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.local_mean_phase is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 14.7015,
+            "mean_us": 13.573640000000001,
+            "min_us": 12.7583,
+            "p50_us": 13.6262,
+            "p95_us": 13.8749,
+            "p99_us": 13.8749,
+            "samples": 5,
+            "throughput_ops_s": 73672.20583424933
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 128
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "python",
+      "operation": "local_mean_phase",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.local_mean_phase is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 106.8039,
+            "mean_us": 105.21119999999999,
+            "min_us": 103.9156,
+            "p50_us": 104.91099999999999,
+            "p95_us": 106.3578,
+            "p99_us": 106.3578,
+            "samples": 5,
+            "throughput_ops_s": 9504.691515732165
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 512
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "python",
+      "operation": "local_mean_phase_jacobian",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.local_mean_phase_jacobian is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 13.3627,
+            "mean_us": 12.06202,
+            "min_us": 11.578700000000001,
+            "p50_us": 11.6899,
+            "p95_us": 12.0046,
+            "p99_us": 12.0046,
+            "samples": 5,
+            "throughput_ops_s": 82904.85341592868
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 8
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "python",
+      "operation": "local_mean_phase_jacobian",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.local_mean_phase_jacobian is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 16.4737,
+            "mean_us": 15.827519999999998,
+            "min_us": 15.4101,
+            "p50_us": 15.861099999999999,
+            "p95_us": 15.8646,
+            "p99_us": 15.8646,
+            "samples": 5,
+            "throughput_ops_s": 63181.09217363176
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 32
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "python",
+      "operation": "local_mean_phase_jacobian",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.local_mean_phase_jacobian is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 81.815,
+            "mean_us": 75.56098,
+            "min_us": 68.9241,
+            "p50_us": 77.3193,
+            "p95_us": 79.74969999999999,
+            "p99_us": 79.74969999999999,
+            "samples": 5,
+            "throughput_ops_s": 13234.343969599124
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 128
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "python",
+      "operation": "local_mean_phase_jacobian",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.local_mean_phase_jacobian is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 1455.7418,
+            "mean_us": 1182.11518,
+            "min_us": 975.6793,
+            "p50_us": 1056.3008,
+            "p95_us": 1429.9442999999999,
+            "p99_us": 1429.9442999999999,
+            "samples": 5,
+            "throughput_ops_s": 845.9412559104435
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 512
+    },
+    {
+      "extra": {
+        "cost_class": "trajectory",
+        "inner": 1
+      },
+      "fastest_backend": "python",
+      "operation": "kuramoto_euler_trajectory",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.kuramoto_euler_trajectory is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 534.418,
+            "mean_us": 462.97860000000003,
+            "min_us": 329.079,
+            "p50_us": 523.171,
+            "p95_us": 525.585,
+            "p99_us": 525.585,
+            "samples": 5,
+            "throughput_ops_s": 2159.927046304084
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 8
+    },
+    {
+      "extra": {
+        "cost_class": "trajectory",
+        "inner": 1
+      },
+      "fastest_backend": "python",
+      "operation": "kuramoto_euler_trajectory",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.kuramoto_euler_trajectory is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 1004.881,
+            "mean_us": 930.1546000000001,
+            "min_us": 894.032,
+            "p50_us": 915.578,
+            "p95_us": 929.662,
+            "p99_us": 929.662,
+            "samples": 5,
+            "throughput_ops_s": 1075.0900979256567
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 32
+    },
+    {
+      "extra": {
+        "cost_class": "trajectory",
+        "inner": 1
+      },
+      "fastest_backend": "python",
+      "operation": "kuramoto_euler_trajectory",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.kuramoto_euler_trajectory is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 12235.926,
+            "mean_us": 11753.9054,
+            "min_us": 11421.308,
+            "p50_us": 11666.447,
+            "p95_us": 11797.131,
+            "p99_us": 11797.131,
+            "samples": 5,
+            "throughput_ops_s": 85.0781051887656
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 128
+    },
+    {
+      "extra": {
+        "cost_class": "trajectory",
+        "inner": 1
+      },
+      "fastest_backend": "python",
+      "operation": "kuramoto_euler_trajectory",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.kuramoto_euler_trajectory is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 307763.667,
+            "mean_us": 266518.108,
+            "min_us": 246325.732,
+            "p50_us": 261098.232,
+            "p95_us": 267011.185,
+            "p99_us": 267011.185,
+            "samples": 5,
+            "throughput_ops_s": 3.7520902707293717
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 512
+    },
+    {
+      "extra": {
+        "cost_class": "trajectory",
+        "inner": 1
+      },
+      "fastest_backend": "python",
+      "operation": "kuramoto_rk4_trajectory",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.kuramoto_rk4_trajectory is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 1749.515,
+            "mean_us": 1591.2486000000001,
+            "min_us": 1467.127,
+            "p50_us": 1523.617,
+            "p95_us": 1708.957,
+            "p99_us": 1708.957,
+            "samples": 5,
+            "throughput_ops_s": 628.4373164570262
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 8
+    },
+    {
+      "extra": {
+        "cost_class": "trajectory",
+        "inner": 1
+      },
+      "fastest_backend": "python",
+      "operation": "kuramoto_rk4_trajectory",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.kuramoto_rk4_trajectory is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 4243.388,
+            "mean_us": 3724.4705999999996,
+            "min_us": 3476.844,
+            "p50_us": 3604.616,
+            "p95_us": 3783.541,
+            "p99_us": 3783.541,
+            "samples": 5,
+            "throughput_ops_s": 268.4945344984063
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 32
+    },
+    {
+      "extra": {
+        "cost_class": "trajectory",
+        "inner": 1
+      },
+      "fastest_backend": "python",
+      "operation": "kuramoto_rk4_trajectory",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.kuramoto_rk4_trajectory is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 55816.637,
+            "mean_us": 50107.967599999996,
+            "min_us": 47150.228,
+            "p50_us": 48389.19,
+            "p95_us": 51274.21,
+            "p99_us": 51274.21,
+            "samples": 5,
+            "throughput_ops_s": 19.95690601508252
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 128
+    },
+    {
+      "extra": {
+        "cost_class": "trajectory",
+        "inner": 1
+      },
+      "fastest_backend": "python",
+      "operation": "kuramoto_rk4_trajectory",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.kuramoto_rk4_trajectory is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 1213238.719,
+            "mean_us": 1150041.5824000002,
+            "min_us": 1086990.449,
+            "p50_us": 1148928.548,
+            "p95_us": 1165788.105,
+            "p99_us": 1165788.105,
+            "samples": 5,
+            "throughput_ops_s": 0.8695337762597408
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 512
+    },
+    {
+      "extra": {
+        "cost_class": "trajectory",
+        "inner": 1
+      },
+      "fastest_backend": "python",
+      "operation": "kuramoto_euler_vjp",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.kuramoto_euler_vjp is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 966.322,
+            "mean_us": 901.0346,
+            "min_us": 820.275,
+            "p50_us": 909.367,
+            "p95_us": 939.14,
+            "p99_us": 939.14,
+            "samples": 5,
+            "throughput_ops_s": 1109.8352937833909
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 8
+    },
+    {
+      "extra": {
+        "cost_class": "trajectory",
+        "inner": 1
+      },
+      "fastest_backend": "python",
+      "operation": "kuramoto_euler_vjp",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.kuramoto_euler_vjp is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 2918.736,
+            "mean_us": 2774.232,
+            "min_us": 2584.96,
+            "p50_us": 2810.819,
+            "p95_us": 2857.932,
+            "p99_us": 2857.932,
+            "samples": 5,
+            "throughput_ops_s": 360.46012013414884
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 32
+    },
+    {
+      "extra": {
+        "cost_class": "trajectory",
+        "inner": 1
+      },
+      "fastest_backend": "python",
+      "operation": "kuramoto_euler_vjp",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.kuramoto_euler_vjp is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 38910.904,
+            "mean_us": 34747.2942,
+            "min_us": 32589.482,
+            "p50_us": 34070.67,
+            "p95_us": 35046.458,
+            "p99_us": 35046.458,
+            "samples": 5,
+            "throughput_ops_s": 28.779219303930724
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 128
+    },
+    {
+      "extra": {
+        "cost_class": "trajectory",
+        "inner": 1
+      },
+      "fastest_backend": "python",
+      "operation": "kuramoto_euler_vjp",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.kuramoto_euler_vjp is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 675902.953,
+            "mean_us": 620399.5082,
+            "min_us": 590773.983,
+            "p50_us": 597896.783,
+            "p95_us": 642945.939,
+            "p99_us": 642945.939,
+            "samples": 5,
+            "throughput_ops_s": 1.6118645917392105
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 512
+    },
+    {
+      "extra": {
+        "cost_class": "trajectory",
+        "inner": 1
+      },
+      "fastest_backend": "python",
+      "operation": "kuramoto_rk4_vjp",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.kuramoto_rk4_vjp is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 5260.564,
+            "mean_us": 4649.1172,
+            "min_us": 4275.116,
+            "p50_us": 4639.838,
+            "p95_us": 4688.217,
+            "p99_us": 4688.217,
+            "samples": 5,
+            "throughput_ops_s": 215.09459903484475
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 8
+    },
+    {
+      "extra": {
+        "cost_class": "trajectory",
+        "inner": 1
+      },
+      "fastest_backend": "python",
+      "operation": "kuramoto_rk4_vjp",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.kuramoto_rk4_vjp is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 12187.958,
+            "mean_us": 11767.814199999999,
+            "min_us": 11017.157,
+            "p50_us": 11940.603,
+            "p95_us": 11996.972,
+            "p99_us": 11996.972,
+            "samples": 5,
+            "throughput_ops_s": 84.97754833688657
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 32
+    },
+    {
+      "extra": {
+        "cost_class": "trajectory",
+        "inner": 1
+      },
+      "fastest_backend": "python",
+      "operation": "kuramoto_rk4_vjp",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.kuramoto_rk4_vjp is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 174256.717,
+            "mean_us": 158360.7754,
+            "min_us": 151308.268,
+            "p50_us": 156705.51,
+            "p95_us": 157921.328,
+            "p99_us": 157921.328,
+            "samples": 5,
+            "throughput_ops_s": 6.31469502137838
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 128
+    },
+    {
+      "extra": {
+        "cost_class": "trajectory",
+        "inner": 1
+      },
+      "fastest_backend": "python",
+      "operation": "kuramoto_rk4_vjp",
+      "parity_max_abs_diff": null,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": "ImportError: scpn_quantum_engine.kuramoto_rk4_vjp is unavailable",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 3635058.483,
+            "mean_us": 3199605.6642,
+            "min_us": 2884685.705,
+            "p50_us": 3131194.482,
+            "p95_us": 3252278.755,
+            "p99_us": 3252278.755,
+            "samples": 5,
+            "throughput_ops_s": 0.3125385141015591
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 512
+    }
+  ],
+  "schema_version": "scpn-quantum-control.tier-benchmark.v1"
+}

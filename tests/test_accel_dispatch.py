@@ -98,6 +98,16 @@ class TestDispatcherMechanics:
         disp = d.MultiLangDispatcher([("python", lambda x: x)])
         assert disp.tiers() == ["python"]
 
+    def test_chain_exposes_read_only_copy_with_callables(self) -> None:
+        floor = lambda x: x  # noqa: E731 — terse stand-in tier for the test.
+        disp = d.MultiLangDispatcher([("rust", lambda x: x), ("python", floor)])
+        chain = disp.chain
+        assert [name for name, _ in chain] == ["rust", "python"]
+        assert dict(chain)["python"] is floor
+        # The exposed chain is a copy: mutating it cannot corrupt the dispatcher.
+        assert isinstance(chain, tuple)
+        assert disp.chain is not disp._chain
+
 
 # ---------------------------------------------------------------------------
 # Registry + convenience wrappers
@@ -111,6 +121,14 @@ class TestRegistry:
     def test_registry_rejects_unknown(self) -> None:
         with pytest.raises(KeyError, match="no dispatcher"):
             d.dispatch("no_such_thing", None)
+
+    def test_registered_dispatchers_returns_independent_copy(self) -> None:
+        registry = d.registered_dispatchers()
+        assert "order_parameter" in registry
+        assert isinstance(registry["order_parameter"], d.MultiLangDispatcher)
+        # Mutating the returned mapping must not affect the live registry.
+        registry.clear()
+        assert "order_parameter" in d.registered_dispatchers()
 
     def test_last_tier_used_is_none_before_any_call(self) -> None:
         # After a fresh module-import + at least one call via another

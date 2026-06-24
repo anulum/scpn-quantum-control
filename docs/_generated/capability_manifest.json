@@ -3,17 +3,17 @@
   "counts": {
     "domain_package_families": 32,
     "example_files": 30,
-    "github_workflows": 20,
+    "github_workflows": 21,
     "model_documentation_pages": 0,
     "notebook_files": 98,
     "optional_extras": 43,
     "public_api_exports": 717,
-    "public_documentation_pages": 249,
-    "python_model_classes": 844,
-    "python_model_source_modules": 480,
+    "public_documentation_pages": 250,
+    "python_model_classes": 849,
+    "python_model_source_modules": 482,
     "rust_pyo3_model_wrappers": 171,
     "rust_source_modules": 42,
-    "test_files": 787
+    "test_files": 791
   },
   "documentation": {
     "examples": [
@@ -391,6 +391,7 @@
       "docs/tensor_networks.md",
       "docs/test_infrastructure.md",
       "docs/theory.md",
+      "docs/tier_benchmarks.md",
       "docs/triage.md",
       "docs/tutorials.md",
       "docs/ultrascale_hls.md",
@@ -427,7 +428,7 @@
       {
         "package": "accel",
         "path": "src/scpn_quantum_control/accel",
-        "python_modules": 43
+        "python_modules": 44
       },
       {
         "package": "analysis",
@@ -567,7 +568,7 @@
       {
         "package": "studio",
         "path": "src/scpn_quantum_control/studio",
-        "python_modules": 3
+        "python_modules": 4
       },
       {
         "package": "tcbo",
@@ -797,6 +798,10 @@
       {
         "name": "BackendRegistry",
         "path": "src/scpn_quantum_control/hardware/backends.py"
+      },
+      {
+        "name": "BackendRow",
+        "path": "src/scpn_quantum_control/accel/tier_benchmark.py"
       },
       {
         "name": "BackwardResult",
@@ -1069,6 +1074,10 @@
       {
         "name": "CouplingTopologyObjective",
         "path": "src/scpn_quantum_control/topology_control/objectives.py"
+      },
+      {
+        "name": "CoverageFrontierReport",
+        "path": "src/scpn_quantum_control/studio/coverage_frontier.py"
       },
       {
         "name": "CrossDomainResult",
@@ -2919,6 +2928,10 @@
         "path": "src/scpn_quantum_control/compiler/mlir_records.py"
       },
       {
+        "name": "PrimitiveResult",
+        "path": "src/scpn_quantum_control/accel/tier_benchmark.py"
+      },
+      {
         "name": "PrimitiveTransformRule",
         "path": "src/scpn_quantum_control/program_ad_registry.py"
       },
@@ -3005,6 +3018,10 @@
       {
         "name": "ProportionalMetricObserver",
         "path": "src/scpn_quantum_control/hardware/feedback_loop.py"
+      },
+      {
+        "name": "Provenance",
+        "path": "src/scpn_quantum_control/accel/tier_benchmark.py"
       },
       {
         "name": "ProviderAnalogExecutionPlan",
@@ -3735,6 +3752,10 @@
         "path": "src/scpn_quantum_control/analysis/thermodynamic_witness.py"
       },
       {
+        "name": "TierStats",
+        "path": "src/scpn_quantum_control/accel/tier_benchmark.py"
+      },
+      {
         "name": "TopologicalCouplingOptimizer",
         "path": "src/scpn_quantum_control/control/topological_optimizer.py"
       },
@@ -4008,6 +4029,7 @@
       "src/scpn_quantum_control/accel/rust_kuramoto_classical.py",
       "src/scpn_quantum_control/accel/sakaguchi_kuramoto.py",
       "src/scpn_quantum_control/accel/sakaguchi_mean_field.py",
+      "src/scpn_quantum_control/accel/tier_benchmark.py",
       "src/scpn_quantum_control/accel/triadic_mean_field.py",
       "src/scpn_quantum_control/analysis/adaptive_fim_feedback.py",
       "src/scpn_quantum_control/analysis/berry_phase.py",
@@ -4425,6 +4447,7 @@
       "src/scpn_quantum_control/ssgf/quantum_spectral.py",
       "src/scpn_quantum_control/stable_core.py",
       "src/scpn_quantum_control/stable_core_preflight.py",
+      "src/scpn_quantum_control/studio/coverage_frontier.py",
       "src/scpn_quantum_control/studio/federation.py",
       "src/scpn_quantum_control/studio/manifest.py",
       "src/scpn_quantum_control/studio/verbs.py",
@@ -5441,6 +5464,7 @@
   "quality_gates": {
     "github_workflows": [
       ".github/workflows/actions-history-audit.yml",
+      ".github/workflows/benchmark-kuramoto-tiers.yml",
       ".github/workflows/benchmark-native-speedup.yml",
       ".github/workflows/ci.yml",
       ".github/workflows/codeql.yml",
@@ -5514,6 +5538,7 @@
       "tests/test_behavioural_test_audit.py",
       "tests/test_bench_cli.py",
       "tests/test_bench_cli_branches.py",
+      "tests/test_bench_kuramoto_tiers.py",
       "tests/test_bench_s2_scaling_lite.py",
       "tests/test_benchmark_harness_public.py",
       "tests/test_benchmark_harness_registry.py",
@@ -5574,6 +5599,7 @@
       "tests/test_cosimulation.py",
       "tests/test_cosimulation_branches.py",
       "tests/test_count_integrity.py",
+      "tests/test_coverage_frontier.py",
       "tests/test_cpdr.py",
       "tests/test_critical_concordance.py",
       "tests/test_cross_domain.py",
@@ -6104,6 +6130,7 @@
       "tests/test_realtime_latency_scenarios_branches.py",
       "tests/test_realtime_runtime_branches.py",
       "tests/test_regression_baselines.py",
+      "tests/test_render_tier_benchmarks.py",
       "tests/test_report_s2_scaling_claim_boundary.py",
       "tests/test_reproducible_comparison.py",
       "tests/test_retrieve_phase3_large_system_ibm.py",
@@ -6201,6 +6228,7 @@
       "tests/test_tensor_jump.py",
       "tests/test_tensor_jump_contracts.py",
       "tests/test_thermodynamic_witness.py",
+      "tests/test_tier_benchmark.py",
       "tests/test_topological_coupling_guard.py",
       "tests/test_topological_optimizer.py",
       "tests/test_topology_auth_edge.py",

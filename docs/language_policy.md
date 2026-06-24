@@ -115,6 +115,7 @@ applicable for this module.
 | `qpu_compute.py` | **No** | **Exempt now** | Qiskit / Rust shadow path | Qiskit / provider emulators | Provider adapters | Request/result schema plus deterministic statevector dry-run orchestration. The heavy simulation is delegated to Qiskit; hardware adapters will own provider-specific compiled paths. |
 | `analysis/dla_truncated_tn.py` | **No** | **Exempt now** | TBD | TBD | — | Fail-fast interface only with validated coupling matrix, bond dimension, DLA cutoff, and observable selection. A real tensor-network implementation will need its own benchmark and language-tier row. |
 | `analysis/rl_pulse_optimizer.py` | **No** | **Exempt now** | — | TBD | TBD | Fail-fast interface only with validated runner, target-sync, and episode configuration. A real optimiser will need objective benchmarks and a training trace before publication use. |
+| `accel/tier_benchmark.py` | **No** | **Exempt** | — | — | — | Benchmark instrumentation: timing loops, percentile reduction, and JSON assembly over the already-compiled tiers it measures. No compute hot loop of its own. |
 
 Every new module added to this repository must appear in this audit
 table as either a compiled-path row or an explicit exempt row.

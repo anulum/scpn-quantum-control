@@ -103,6 +103,16 @@ class MultiLangDispatcher:
         self._chain = chain
         self.last_tier: str | None = None
 
+    @property
+    def chain(self) -> tuple[tuple[str, Callable[..., Any]], ...]:
+        """Return the ordered ``(tier_name, callable)`` chain as a read-only copy.
+
+        Exposes the per-tier implementations to in-repo instrumentation (the
+        tier-benchmark runner measures every tier in the chain individually)
+        without handing out the mutable internal list.
+        """
+        return tuple(self._chain)
+
     def __call__(self, *args: Any, **kwargs: Any) -> Any:
         """Invoke the dispatch chain, falling through to the next tier on failure.
 
@@ -156,10 +166,22 @@ def dispatch(name: str, *args: Any, **kwargs: Any) -> Any:
     return dispatcher(*args, **kwargs)
 
 
+def registered_dispatchers() -> dict[str, MultiLangDispatcher]:
+    """Return a shallow copy of the name-keyed dispatcher registry.
+
+    Lets in-repo instrumentation enumerate every registered compute primitive
+    and its per-tier chain (via :attr:`MultiLangDispatcher.chain`) without
+    mutating the live registry. The dispatcher objects themselves are shared,
+    not copied — callers must treat them as read-only.
+    """
+    return dict(_REGISTRY)
+
+
 __all__ = [
     "MultiLangDispatcher",
     "available_tiers",
     "dispatch",
     "optional_rust_engine",
     "register_dispatcher",
+    "registered_dispatchers",
 ]
