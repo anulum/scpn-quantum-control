@@ -73,6 +73,14 @@ from .dispatcher import (
     available_tiers,
     dispatch,
 )
+from .kuramoto_control import (
+    TerminalObjective,
+    coherence_objective,
+    interaction_energy_objective,
+    phase_target_objective,
+    synchronisation_value_and_grad,
+    terminal_objective_value_and_grad,
+)
 from .kuramoto_energy import (
     kuramoto_interaction_energy,
     kuramoto_interaction_energy_gradient,
@@ -157,6 +165,12 @@ __all__ = [
     "daido_order_parameter_gradient",
     "daido_order_parameter_hessian",
     "dispatch",
+    "TerminalObjective",
+    "coherence_objective",
+    "interaction_energy_objective",
+    "phase_target_objective",
+    "synchronisation_value_and_grad",
+    "terminal_objective_value_and_grad",
     "kuramoto_euler_trajectory",
     "kuramoto_euler_vjp",
     "kuramoto_rk4_trajectory",

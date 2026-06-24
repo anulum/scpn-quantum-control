@@ -10,10 +10,10 @@
     "public_api_exports": 717,
     "public_documentation_pages": 249,
     "python_model_classes": 826,
-    "python_model_source_modules": 453,
+    "python_model_source_modules": 454,
     "rust_pyo3_model_wrappers": 171,
     "rust_source_modules": 42,
-    "test_files": 760
+    "test_files": 761
   },
   "documentation": {
     "examples": [
@@ -427,7 +427,7 @@
       {
         "package": "accel",
         "path": "src/scpn_quantum_control/accel",
-        "python_modules": 18
+        "python_modules": 19
       },
       {
         "package": "analysis",
@@ -3900,6 +3900,7 @@
       "src/scpn_quantum_control/accel/diff_kuramoto_euler.py",
       "src/scpn_quantum_control/accel/diff_kuramoto_rk4.py",
       "src/scpn_quantum_control/accel/dispatcher.py",
+      "src/scpn_quantum_control/accel/kuramoto_control.py",
       "src/scpn_quantum_control/accel/kuramoto_energy.py",
       "src/scpn_quantum_control/accel/kuramoto_mean_field.py",
       "src/scpn_quantum_control/accel/local_order.py",
@@ -5700,6 +5701,7 @@
       "tests/test_koopman.py",
       "tests/test_koopman_rust_generator_branches.py",
       "tests/test_krylov_complexity.py",
+      "tests/test_kuramoto_control.py",
       "tests/test_kuramoto_core.py",
       "tests/test_kuramoto_core_branches.py",
       "tests/test_kuramoto_energy.py",
