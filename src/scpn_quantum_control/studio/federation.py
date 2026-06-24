@@ -24,7 +24,10 @@ inventory manifest (``docs/_generated/capability_manifest.json``).
 
 from __future__ import annotations
 
+import argparse
 import json
+import sys
+from collections.abc import Sequence
 from pathlib import Path
 from typing import Any
 
@@ -312,6 +315,11 @@ def build_federation_document() -> dict[str, Any]:
     }
 
 
+def _serialised_document() -> str:
+    """Return the canonical serialised federation document (the on-disk form)."""
+    return json.dumps(build_federation_document(), indent=2, sort_keys=True) + "\n"
+
+
 def write_federation_document(repo_root: Path | None = None) -> Path:
     """Write the federation document to :data:`STUDIO_MANIFEST_PATH` and return the path.
 
@@ -328,15 +336,42 @@ def write_federation_document(repo_root: Path | None = None) -> Path:
     root = repo_root or Path.cwd()
     out = root / STUDIO_MANIFEST_PATH
     out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text(
-        json.dumps(build_federation_document(), indent=2, sort_keys=True) + "\n",
-        encoding="utf-8",
-    )
+    out.write_text(_serialised_document(), encoding="utf-8")
     return out
 
 
-def main() -> int:
-    """CLI entry point: write the federation document and report its path + digest."""
+def studio_manifest_drift(repo_root: Path | None = None) -> str | None:
+    """Return a drift description if the committed studio manifest is stale, else ``None``.
+
+    The committed ``docs/_generated/studio_manifest.json`` must byte-match the generator
+    output, so an edit to the verbs/evidence/architecture-map that forgets to re-emit
+    cannot ship a stale federation artefact for the keeper gate to ingest.
+    """
+    root = repo_root or Path.cwd()
+    out = root / STUDIO_MANIFEST_PATH
+    if not out.exists():
+        return f"missing generated studio manifest: {STUDIO_MANIFEST_PATH.as_posix()}"
+    if out.read_text(encoding="utf-8") != _serialised_document():
+        return f"stale generated studio manifest: {STUDIO_MANIFEST_PATH.as_posix()}"
+    return None
+
+
+def main(argv: Sequence[str] | None = None) -> int:
+    """CLI entry point: emit the federation document, or ``--check`` it for drift."""
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--check",
+        action="store_true",
+        help="verify the committed studio manifest is current without writing it",
+    )
+    args = parser.parse_args(argv)
+    if args.check:
+        drift = studio_manifest_drift()
+        if drift is not None:
+            print(f"studio manifest drift: {drift}", file=sys.stderr)
+            return 1
+        print(f"studio manifest is current ({STUDIO_MANIFEST_PATH.as_posix()})")
+        return 0
     path = write_federation_document()
     digest = build_manifest().to_dict()["content_digest"]
     print(f"Wrote {path} (schema_a content_digest={digest})")

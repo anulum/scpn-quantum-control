@@ -134,3 +134,14 @@ def test_manifest_passes_studio_conformance_gate() -> None:
     assert verdict.admitted, f"manifest rejected: {verdict.rejections}"
     assert verdict.rejections == ()
     assert verdict.warnings == ()
+
+
+def test_committed_studio_manifest_is_current() -> None:
+    """The committed studio_manifest.json byte-matches the generator (no stale drift).
+
+    Mirrors the capability-manifest drift guard: an edit to verbs/evidence/architecture-map
+    that forgets to re-emit cannot ship a stale federation artefact for the keeper gate.
+    """
+    repo_root = Path(__file__).resolve().parents[1]
+    drift = federation.studio_manifest_drift(repo_root)
+    assert drift is None, drift
