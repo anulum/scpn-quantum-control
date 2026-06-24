@@ -181,8 +181,9 @@ def test_live_rust_crate_records_threading_without_simd_promotion() -> None:
     # Jacobian, the network-local mean phase and its Jacobian, and the Sakaguchi–Kuramoto
     # mean-field force and stability Jacobian, and the triadic (2-simplex) mean-field force and
     # stability Jacobian, and the differentiable networked-Kuramoto Euler trajectory and its
-    # reverse-mode adjoint VJP PyO3 exports.
-    assert audit.pyfunction_count == 169
+    # reverse-mode adjoint VJP, and the differentiable RK4 trajectory and its adjoint VJP PyO3
+    # exports.
+    assert audit.pyfunction_count == 171
     assert audit.rayon_threaded_count > 0
     assert audit.explicit_simd_count == 0
     assert audit.performance_claim_eligible_count == 0

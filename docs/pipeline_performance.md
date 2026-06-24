@@ -2136,6 +2136,55 @@ If the measured ordering changes, update the chain comments at `_KURAMOTO_EULER_
 and `_KURAMOTO_EULER_VJP_CHAIN` in
 `src/scpn_quantum_control/accel/diff_kuramoto_euler.py` to match.
 
+### `kuramoto_rk4_trajectory(...)` and `kuramoto_rk4_vjp(...)`
+
+The differentiable networked-Kuramoto fourth-order Runge–Kutta integrator: the forward
+`θ_{n+1} = θ_n + (dt/6)(k1 + 2k2 + 2k3 + k4)` (four stages of `f = ω + F`) recording the full
+trajectory, and its reverse-mode adjoint backpropagating a terminal cotangent through the four
+stages to return `∂L/∂{θ₀, ω, K}`. Fourth-order accurate where the Euler integrator is
+first-order, at four force evaluations per step. Both routes are `O(n_steps · N²)`; measured
+2026-06-24 at a fixed step budget `n_steps = 50` on a dense random coupling matrix on the local
+Linux runner (Intel i5-11600K @ 3.90 GHz, Python 3.12.3, juliacall, scpn-quantum-engine local
+build). Inner loop: 20 calls per sample × 7 samples; per-call median; sizes stop at N = 512. Raw
+JSON: `docs/benchmarks/diff_kuramoto_rk4_tiers.json`.
+
+`kuramoto_rk4_trajectory` (n_steps = 50):
+
+|   N |       Rust |      Julia |     Python |
+|----:|-----------:|-----------:|-----------:|
+|   4 |   25.48 µs |   38.67 µs | 1173.61 µs |
+|  64 |  4990.44 µs | 4961.62 µs | 6561.66 µs |
+| 256 | 62255.51 µs | 72447.83 µs | 85494.35 µs |
+| 512 | 577108.01 µs | 363119.40 µs | 682349.46 µs |
+
+`kuramoto_rk4_vjp` (n_steps = 50):
+
+|   N |        Rust |       Julia |      Python |
+|----:|------------:|------------:|------------:|
+|   4 |    66.30 µs |   645.83 µs |  3290.90 µs |
+|  64 |  13126.00 µs | 55235.22 µs | 21583.15 µs |
+| 256 | 190324.76 µs | 845643.18 µs | 245770.48 µs |
+| 512 | 1462893.30 µs | 4408806.10 µs | 1663594.63 µs |
+
+Read-offs:
+
+* Rust is first for the adjoint at every N — decisively so (3× faster than the Julia tier and
+  ahead of NumPy at N = 512): its buffer-reused four-stage backward pass stays allocation-free,
+  where the Julia VJP allocates the stage cotangents each step. The forward trades the lead with
+  Julia (both compile to four `O(N²)` stage loops; the forward favours Julia at the largest N,
+  inside the host-noise band), and the chain keeps Rust first — fastest on the adjoint, which is
+  the gradient path that dominates optimisation. The NumPy floor stays the slowest tier.
+
+Re-run with:
+
+```bash
+python scripts/bench_diff_kuramoto_rk4_tiers.py
+```
+
+If the measured ordering changes, update the chain comments at `_KURAMOTO_RK4_TRAJECTORY_CHAIN`
+and `_KURAMOTO_RK4_VJP_CHAIN` in
+`src/scpn_quantum_control/accel/diff_kuramoto_rk4.py` to match.
+
 ### S4 multi-hardware readiness
 
 Command:

@@ -105,16 +105,16 @@ has a defined commercial licensing route.
 |---|---:|
 | Package version | 0.9.12 |
 | Public API exports | 717 |
-| Python source modules | 452 |
+| Python source modules | 453 |
 | Public Python classes | 826 |
 | Domain package families | 32 |
 | API documentation pages | 0 |
-| Rust PyO3 function bindings | 169 |
+| Rust PyO3 function bindings | 171 |
 | Rust source modules | 42 |
 | Notebook files | 98 |
 | Example files | 30 |
 | Optional extras | 43 |
-| Python test files | 759 |
+| Python test files | 760 |
 | Public documentation pages | 249 |
 | GitHub Actions workflows | 20 |
 

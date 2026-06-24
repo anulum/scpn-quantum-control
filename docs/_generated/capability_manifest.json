@@ -10,10 +10,10 @@
     "public_api_exports": 717,
     "public_documentation_pages": 249,
     "python_model_classes": 826,
-    "python_model_source_modules": 452,
-    "rust_pyo3_model_wrappers": 169,
+    "python_model_source_modules": 453,
+    "rust_pyo3_model_wrappers": 171,
     "rust_source_modules": 42,
-    "test_files": 759
+    "test_files": 760
   },
   "documentation": {
     "examples": [
@@ -427,7 +427,7 @@
       {
         "package": "accel",
         "path": "src/scpn_quantum_control/accel",
-        "python_modules": 17
+        "python_modules": 18
       },
       {
         "package": "analysis",
@@ -3898,6 +3898,7 @@
       "src/scpn_quantum_control/accel/daido_observables.py",
       "src/scpn_quantum_control/accel/daido_phase.py",
       "src/scpn_quantum_control/accel/diff_kuramoto_euler.py",
+      "src/scpn_quantum_control/accel/diff_kuramoto_rk4.py",
       "src/scpn_quantum_control/accel/dispatcher.py",
       "src/scpn_quantum_control/accel/kuramoto_energy.py",
       "src/scpn_quantum_control/accel/kuramoto_mean_field.py",
@@ -4391,6 +4392,8 @@
       "kuramoto_interaction_energy",
       "kuramoto_interaction_energy_gradient",
       "kuramoto_interaction_energy_hessian",
+      "kuramoto_rk4_trajectory",
+      "kuramoto_rk4_vjp",
       "kuramoto_trajectory",
       "kuramoto_witness_candidate_features",
       "lanczos_b_coefficients",
@@ -5502,6 +5505,7 @@
       "tests/test_dependency_security_closure.py",
       "tests/test_determinism.py",
       "tests/test_diff_kuramoto_euler.py",
+      "tests/test_diff_kuramoto_rk4.py",
       "tests/test_differentiable_api.py",
       "tests/test_differentiable_batch_helpers.py",
       "tests/test_differentiable_benchmark_evidence.py",

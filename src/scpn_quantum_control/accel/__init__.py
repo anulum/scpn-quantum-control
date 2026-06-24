@@ -62,6 +62,12 @@ from .diff_kuramoto_euler import (
     last_kuramoto_euler_trajectory_tier_used,
     last_kuramoto_euler_vjp_tier_used,
 )
+from .diff_kuramoto_rk4 import (
+    kuramoto_rk4_trajectory,
+    kuramoto_rk4_vjp,
+    last_kuramoto_rk4_trajectory_tier_used,
+    last_kuramoto_rk4_vjp_tier_used,
+)
 from .dispatcher import (
     MultiLangDispatcher,
     available_tiers,
@@ -153,6 +159,10 @@ __all__ = [
     "dispatch",
     "kuramoto_euler_trajectory",
     "kuramoto_euler_vjp",
+    "kuramoto_rk4_trajectory",
+    "kuramoto_rk4_vjp",
+    "last_kuramoto_rk4_trajectory_tier_used",
+    "last_kuramoto_rk4_vjp_tier_used",
     "last_kuramoto_euler_trajectory_tier_used",
     "last_kuramoto_euler_vjp_tier_used",
     "kuramoto_interaction_energy",

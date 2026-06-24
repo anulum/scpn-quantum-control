@@ -187,6 +187,11 @@ fn scpn_quantum_engine(m: &Bound<'_, PyModule>) -> PyResult<()> {
     )?)?;
     m.add_function(wrap_pyfunction!(kuramoto_autodiff::kuramoto_euler_vjp, m)?)?;
     m.add_function(wrap_pyfunction!(
+        kuramoto_autodiff::kuramoto_rk4_trajectory,
+        m
+    )?)?;
+    m.add_function(wrap_pyfunction!(kuramoto_autodiff::kuramoto_rk4_vjp, m)?)?;
+    m.add_function(wrap_pyfunction!(
         kuramoto::higher_order_kuramoto_trajectory,
         m
     )?)?;

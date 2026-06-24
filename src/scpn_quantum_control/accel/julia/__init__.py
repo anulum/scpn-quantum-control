@@ -807,6 +807,88 @@ def kuramoto_euler_vjp(
     )
 
 
+def kuramoto_rk4_trajectory(
+    theta0: NDArray[np.float64],
+    omega: NDArray[np.float64],
+    coupling: NDArray[np.float64],
+    dt: float,
+    n_steps: int,
+) -> NDArray[np.float64]:
+    """Julia-tier forward networked-Kuramoto RK4 trajectory.
+
+    Parameters
+    ----------
+    theta0 : numpy.ndarray
+        One-dimensional array of ``N`` initial phases in radians.
+    omega : numpy.ndarray
+        One-dimensional array of ``N`` natural frequencies.
+    coupling : numpy.ndarray
+        Two-dimensional ``(N, N)`` coupling matrix.
+    dt : float
+        The RK4 step size.
+    n_steps : int
+        The number of integration steps.
+
+    Returns
+    -------
+    numpy.ndarray
+        Two-dimensional ``(n_steps + 1, N)`` float64 trajectory.
+    """
+    jl = _load()
+    return np.ascontiguousarray(
+        jl.kuramoto_rk4_trajectory(
+            np.ascontiguousarray(theta0, dtype=np.float64),
+            np.ascontiguousarray(omega, dtype=np.float64),
+            np.ascontiguousarray(coupling, dtype=np.float64),
+            float(dt),
+            int(n_steps),
+        ),
+        dtype=np.float64,
+    )
+
+
+def kuramoto_rk4_vjp(
+    trajectory: NDArray[np.float64],
+    omega: NDArray[np.float64],
+    coupling: NDArray[np.float64],
+    dt: float,
+    cotangent: NDArray[np.float64],
+) -> tuple[NDArray[np.float64], NDArray[np.float64], NDArray[np.float64]]:
+    """Julia-tier reverse-mode adjoint of the networked-Kuramoto RK4 integrator.
+
+    Parameters
+    ----------
+    trajectory : numpy.ndarray
+        Two-dimensional ``(n_steps + 1, N)`` forward trajectory.
+    omega : numpy.ndarray
+        One-dimensional ``(N,)`` natural frequencies.
+    coupling : numpy.ndarray
+        Two-dimensional ``(N, N)`` coupling matrix.
+    dt : float
+        The RK4 step size.
+    cotangent : numpy.ndarray
+        One-dimensional ``(N,)`` cotangent on the final phase.
+
+    Returns
+    -------
+    tuple of numpy.ndarray
+        ``(grad_theta0, grad_omega, grad_coupling)``.
+    """
+    jl = _load()
+    grad_theta0, grad_omega, grad_coupling = jl.kuramoto_rk4_vjp(
+        np.ascontiguousarray(trajectory, dtype=np.float64),
+        np.ascontiguousarray(omega, dtype=np.float64),
+        np.ascontiguousarray(coupling, dtype=np.float64),
+        float(dt),
+        np.ascontiguousarray(cotangent, dtype=np.float64),
+    )
+    return (
+        np.ascontiguousarray(grad_theta0, dtype=np.float64),
+        np.ascontiguousarray(grad_omega, dtype=np.float64),
+        np.ascontiguousarray(grad_coupling, dtype=np.float64),
+    )
+
+
 __all__ = [
     "daido_order_parameter",
     "daido_order_parameter_gradient",
@@ -843,4 +925,6 @@ __all__ = [
     "triadic_mean_field_jacobian",
     "kuramoto_euler_trajectory",
     "kuramoto_euler_vjp",
+    "kuramoto_rk4_trajectory",
+    "kuramoto_rk4_vjp",
 ]

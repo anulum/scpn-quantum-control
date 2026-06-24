@@ -475,6 +475,20 @@ def kuramoto_euler_vjp(
     dt: float,
     cotangent: _F64Array,
 ) -> tuple[_F64Array, _F64Array, _F64Array]: ...
+def kuramoto_rk4_trajectory(
+    theta0: _F64Array,
+    omega: _F64Array,
+    coupling: _F64Array,
+    dt: float,
+    n_steps: int,
+) -> _F64Array: ...
+def kuramoto_rk4_vjp(
+    trajectory: _F64Array,
+    omega: _F64Array,
+    coupling: _F64Array,
+    dt: float,
+    cotangent: _F64Array,
+) -> tuple[_F64Array, _F64Array, _F64Array]: ...
 def local_order_parameter(theta: _F64Array, adjacency: _F64Array) -> _F64Array: ...
 def local_order_parameter_jacobian(theta: _F64Array, adjacency: _F64Array) -> _F64Array: ...
 def local_mean_phase(theta: _F64Array, adjacency: _F64Array) -> _F64Array: ...
