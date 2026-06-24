@@ -7,8 +7,8 @@
 |---|---:|
 | Package version | 0.9.12 |
 | Public API exports | 717 |
-| Python source modules | 477 |
-| Public Python classes | 841 |
+| Python source modules | 479 |
+| Public Python classes | 844 |
 | Domain package families | 32 |
 | API documentation pages | 0 |
 | Rust PyO3 function bindings | 171 |
@@ -16,7 +16,7 @@
 | Notebook files | 98 |
 | Example files | 30 |
 | Optional extras | 43 |
-| Python test files | 784 |
+| Python test files | 786 |
 | Public documentation pages | 249 |
 | GitHub Actions workflows | 20 |
 

@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 717,
     "public_documentation_pages": 249,
-    "python_model_classes": 841,
-    "python_model_source_modules": 477,
+    "python_model_classes": 844,
+    "python_model_source_modules": 479,
     "rust_pyo3_model_wrappers": 171,
     "rust_source_modules": 42,
-    "test_files": 784
+    "test_files": 786
   },
   "documentation": {
     "examples": [
@@ -427,7 +427,7 @@
       {
         "package": "accel",
         "path": "src/scpn_quantum_control/accel",
-        "python_modules": 42
+        "python_modules": 43
       },
       {
         "package": "analysis",
@@ -477,7 +477,7 @@
       {
         "package": "crypto",
         "path": "src/scpn_quantum_control/crypto",
-        "python_modules": 8
+        "python_modules": 9
       },
       {
         "package": "deployment",
@@ -1351,6 +1351,10 @@
         "path": "src/scpn_quantum_control/dla_parity/schema.py"
       },
       {
+        "name": "DopriTrajectory",
+        "path": "src/scpn_quantum_control/accel/diff_kuramoto_dopri.py"
+      },
+      {
         "name": "DualNumber",
         "path": "src/scpn_quantum_control/differentiable_scalar_kernels.py"
       },
@@ -2065,6 +2069,14 @@
       {
         "name": "MLDSAKeyPair",
         "path": "src/scpn_quantum_control/crypto/ml_dsa.py"
+      },
+      {
+        "name": "MLDSASigner",
+        "path": "src/scpn_quantum_control/crypto/ml_dsa_seal.py"
+      },
+      {
+        "name": "MLDSAVerifier",
+        "path": "src/scpn_quantum_control/crypto/ml_dsa_seal.py"
       },
       {
         "name": "MLFrameworkGradientAuditRecord",
@@ -3957,6 +3969,7 @@
       "src/scpn_quantum_control/accel/daido_mean_field.py",
       "src/scpn_quantum_control/accel/daido_observables.py",
       "src/scpn_quantum_control/accel/daido_phase.py",
+      "src/scpn_quantum_control/accel/diff_kuramoto_dopri.py",
       "src/scpn_quantum_control/accel/diff_kuramoto_euler.py",
       "src/scpn_quantum_control/accel/diff_kuramoto_rk4.py",
       "src/scpn_quantum_control/accel/dispatcher.py",
@@ -4138,6 +4151,7 @@
       "src/scpn_quantum_control/crypto/hierarchical_keys.py",
       "src/scpn_quantum_control/crypto/knm_key.py",
       "src/scpn_quantum_control/crypto/ml_dsa.py",
+      "src/scpn_quantum_control/crypto/ml_dsa_seal.py",
       "src/scpn_quantum_control/crypto/noise_analysis.py",
       "src/scpn_quantum_control/crypto/percolation.py",
       "src/scpn_quantum_control/crypto/pqc_trigger.py",
@@ -5588,6 +5602,7 @@
       "tests/test_dependency_hygiene.py",
       "tests/test_dependency_security_closure.py",
       "tests/test_determinism.py",
+      "tests/test_diff_kuramoto_dopri.py",
       "tests/test_diff_kuramoto_euler.py",
       "tests/test_diff_kuramoto_rk4.py",
       "tests/test_differentiable_api.py",
@@ -5837,6 +5852,7 @@
       "tests/test_mitiq_integration.py",
       "tests/test_ml_dsa_branches.py",
       "tests/test_ml_dsa_pqc.py",
+      "tests/test_ml_dsa_seal.py",
       "tests/test_mlir_realtime_cloud.py",
       "tests/test_monte_carlo_xy.py",
       "tests/test_mps_baseline.py",

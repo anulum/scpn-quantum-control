@@ -56,6 +56,11 @@ from .daido_phase import (
     last_daido_mode_phase_hessian_tier_used,
     last_daido_mode_phase_tier_used,
 )
+from .diff_kuramoto_dopri import (
+    DopriTrajectory,
+    kuramoto_dopri_trajectory,
+    kuramoto_dopri_vjp,
+)
 from .diff_kuramoto_euler import (
     kuramoto_euler_trajectory,
     kuramoto_euler_vjp,
@@ -388,6 +393,9 @@ __all__ = [
     "twisted_state",
     "twisted_state_eigenvalues",
     "winding_number",
+    "DopriTrajectory",
+    "kuramoto_dopri_trajectory",
+    "kuramoto_dopri_vjp",
     "kuramoto_euler_trajectory",
     "kuramoto_euler_vjp",
     "kuramoto_rk4_trajectory",
