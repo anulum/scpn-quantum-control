@@ -12,7 +12,7 @@
     "python_model_classes": 826,
     "python_model_source_modules": 447,
     "rust_pyo3_model_wrappers": 159,
-    "rust_source_modules": 38,
+    "rust_source_modules": 41,
     "test_files": 752
   },
   "documentation": {
@@ -4522,6 +4522,9 @@
       "scpn_quantum_engine/src/koopman.rs",
       "scpn_quantum_engine/src/krylov.rs",
       "scpn_quantum_engine/src/kuramoto.rs",
+      "scpn_quantum_engine/src/kuramoto_common.rs",
+      "scpn_quantum_engine/src/kuramoto_coupling.rs",
+      "scpn_quantum_engine/src/kuramoto_observables.rs",
       "scpn_quantum_engine/src/lib.rs",
       "scpn_quantum_engine/src/lindblad.rs",
       "scpn_quantum_engine/src/ml_dsa.rs",

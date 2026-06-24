@@ -47,6 +47,9 @@ pub mod knm;
 pub mod koopman;
 pub mod krylov;
 pub mod kuramoto;
+pub mod kuramoto_common;
+pub mod kuramoto_coupling;
+pub mod kuramoto_observables;
 pub mod lindblad;
 pub mod ml_dsa;
 pub mod monte_carlo;
@@ -76,42 +79,75 @@ fn scpn_quantum_engine(m: &Bound<'_, PyModule>) -> PyResult<()> {
 
     // Kuramoto
     m.add_function(wrap_pyfunction!(kuramoto::kuramoto_euler, m)?)?;
-    m.add_function(wrap_pyfunction!(kuramoto::order_parameter, m)?)?;
-    m.add_function(wrap_pyfunction!(kuramoto::order_parameter_gradient, m)?)?;
-    m.add_function(wrap_pyfunction!(kuramoto::order_parameter_hessian, m)?)?;
-    m.add_function(wrap_pyfunction!(kuramoto::mean_phase, m)?)?;
-    m.add_function(wrap_pyfunction!(kuramoto::mean_phase_gradient, m)?)?;
-    m.add_function(wrap_pyfunction!(kuramoto::mean_phase_hessian, m)?)?;
-    m.add_function(wrap_pyfunction!(kuramoto::daido_order_parameter, m)?)?;
+    m.add_function(wrap_pyfunction!(kuramoto_observables::order_parameter, m)?)?;
     m.add_function(wrap_pyfunction!(
-        kuramoto::daido_order_parameter_gradient,
+        kuramoto_observables::order_parameter_gradient,
         m
     )?)?;
     m.add_function(wrap_pyfunction!(
-        kuramoto::daido_order_parameter_hessian,
+        kuramoto_observables::order_parameter_hessian,
         m
     )?)?;
-    m.add_function(wrap_pyfunction!(kuramoto::daido_mode_phase, m)?)?;
-    m.add_function(wrap_pyfunction!(kuramoto::daido_mode_phase_gradient, m)?)?;
-    m.add_function(wrap_pyfunction!(kuramoto::daido_mode_phase_hessian, m)?)?;
-    m.add_function(wrap_pyfunction!(kuramoto::mean_field_force, m)?)?;
-    m.add_function(wrap_pyfunction!(kuramoto::mean_field_jacobian, m)?)?;
-    m.add_function(wrap_pyfunction!(kuramoto::networked_kuramoto_force, m)?)?;
-    m.add_function(wrap_pyfunction!(kuramoto::networked_kuramoto_jacobian, m)?)?;
-    m.add_function(wrap_pyfunction!(kuramoto::kuramoto_interaction_energy, m)?)?;
+    m.add_function(wrap_pyfunction!(kuramoto_observables::mean_phase, m)?)?;
     m.add_function(wrap_pyfunction!(
-        kuramoto::kuramoto_interaction_energy_gradient,
+        kuramoto_observables::mean_phase_gradient,
         m
     )?)?;
     m.add_function(wrap_pyfunction!(
-        kuramoto::kuramoto_interaction_energy_hessian,
+        kuramoto_observables::mean_phase_hessian,
         m
     )?)?;
-    m.add_function(wrap_pyfunction!(kuramoto::sakaguchi_force, m)?)?;
-    m.add_function(wrap_pyfunction!(kuramoto::sakaguchi_jacobian, m)?)?;
-    m.add_function(wrap_pyfunction!(kuramoto::local_order_parameter, m)?)?;
     m.add_function(wrap_pyfunction!(
-        kuramoto::local_order_parameter_jacobian,
+        kuramoto_observables::daido_order_parameter,
+        m
+    )?)?;
+    m.add_function(wrap_pyfunction!(
+        kuramoto_observables::daido_order_parameter_gradient,
+        m
+    )?)?;
+    m.add_function(wrap_pyfunction!(
+        kuramoto_observables::daido_order_parameter_hessian,
+        m
+    )?)?;
+    m.add_function(wrap_pyfunction!(kuramoto_observables::daido_mode_phase, m)?)?;
+    m.add_function(wrap_pyfunction!(
+        kuramoto_observables::daido_mode_phase_gradient,
+        m
+    )?)?;
+    m.add_function(wrap_pyfunction!(
+        kuramoto_observables::daido_mode_phase_hessian,
+        m
+    )?)?;
+    m.add_function(wrap_pyfunction!(kuramoto_coupling::mean_field_force, m)?)?;
+    m.add_function(wrap_pyfunction!(kuramoto_coupling::mean_field_jacobian, m)?)?;
+    m.add_function(wrap_pyfunction!(
+        kuramoto_coupling::networked_kuramoto_force,
+        m
+    )?)?;
+    m.add_function(wrap_pyfunction!(
+        kuramoto_coupling::networked_kuramoto_jacobian,
+        m
+    )?)?;
+    m.add_function(wrap_pyfunction!(
+        kuramoto_coupling::kuramoto_interaction_energy,
+        m
+    )?)?;
+    m.add_function(wrap_pyfunction!(
+        kuramoto_coupling::kuramoto_interaction_energy_gradient,
+        m
+    )?)?;
+    m.add_function(wrap_pyfunction!(
+        kuramoto_coupling::kuramoto_interaction_energy_hessian,
+        m
+    )?)?;
+    m.add_function(wrap_pyfunction!(kuramoto_coupling::sakaguchi_force, m)?)?;
+    m.add_function(wrap_pyfunction!(kuramoto_coupling::sakaguchi_jacobian, m)?)?;
+    m.add_function(wrap_pyfunction!(
+        kuramoto_coupling::local_order_parameter,
+        m
+    )?)?;
+    m.add_function(wrap_pyfunction!(
+        kuramoto_coupling::local_order_parameter_jacobian,
         m
     )?)?;
     m.add_function(wrap_pyfunction!(kuramoto::kuramoto_trajectory, m)?)?;
