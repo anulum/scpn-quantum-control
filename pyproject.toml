@@ -64,7 +64,7 @@ scpn-emit-studio-manifest = "scpn_quantum_control.studio.federation:main"
 
 [project.optional-dependencies]
 viz = ["matplotlib>=3.5,<4.0"]
-studio = ["scpn-studio-platform>=0.8,<0.9"]
+studio = ["scpn-studio-platform>=0.9,<0.11"]
 gpu = ["cupy-cuda12x>=13.0"]
 jax = ["jax[cuda12]>=0.4.30"]
 torch = ["torch>=2.2,<3.0"]
