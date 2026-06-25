@@ -19,7 +19,7 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 COPY .pre-commit-config.yaml pyproject.toml requirements.txt requirements-dev.txt README.md LICENSE ./
-COPY requirements-ci-cross-platform-smoke.txt requirements-ci-py310-linux.txt requirements-ci-py311-linux.txt requirements-ci-py312-linux.txt requirements-ci-py313-linux.txt ./
+COPY requirements-ci-cross-platform-smoke.txt requirements-ci-py311-linux.txt requirements-ci-py312-linux.txt requirements-ci-py313-linux.txt ./
 COPY src/ src/
 
 ENV PYTHONPATH=/app/src:/app

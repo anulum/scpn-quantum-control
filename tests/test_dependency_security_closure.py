@@ -14,7 +14,7 @@ from pathlib import Path
 
 if sys.version_info >= (3, 11):
     import tomllib
-else:  # pragma: no cover - exercised by the Python 3.10 CI lane
+else:  # pragma: no cover - retained for older local interpreters
     import tomli as tomllib
 from packaging.requirements import Requirement
 from packaging.version import Version

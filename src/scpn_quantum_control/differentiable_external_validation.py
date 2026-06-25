@@ -39,7 +39,6 @@ DEFAULT_ENVIRONMENT_LOCK_INPUTS: tuple[tuple[str, str], ...] = (
     ("requirements.txt", "Runtime dependency lock input"),
     ("requirements-dev.txt", "Developer verification dependency lock input"),
     ("requirements-ci-cross-platform-smoke.txt", "Cross-platform smoke CI lockfile"),
-    ("requirements-ci-py310-linux.txt", "Python 3.10 Linux CI lockfile"),
     ("requirements-ci-py311-linux.txt", "Python 3.11 Linux CI lockfile"),
     ("requirements-ci-py312-linux.txt", "Python 3.12 Linux CI lockfile"),
     ("requirements-ci-py313-linux.txt", "Python 3.13 Linux CI lockfile"),

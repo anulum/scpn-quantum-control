@@ -217,7 +217,7 @@ class BackendRegistry:
             return []
 
         loaded: list[str] = []
-        # ``requires-python = ">=3.10"`` — the ``group=`` kwarg is always
+        # ``requires-python = ">=3.11"`` — the ``group=`` kwarg is always
         # available, no legacy fallback needed.
         entries = importlib.metadata.entry_points(group=ENTRY_POINT_GROUP)
 

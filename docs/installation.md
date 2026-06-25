@@ -144,7 +144,7 @@ benchmark results.
 
 ## Requirements
 
-- Python 3.10+
+- Python 3.11+
 - Qiskit 2.2+
 - qiskit-aer 0.15+
 - NumPy 1.24+

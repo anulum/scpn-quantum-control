@@ -9,9 +9,9 @@
     {
       "path": "pyproject.toml",
       "role": "Package metadata and bounded dependency ranges",
-      "sha256": "320be1ebc157b27ad37e5db2f0b1bac1d199bdd9c38a167c779edc13e687480b",
-      "size_bytes": 14307,
-      "line_count": 385,
+      "sha256": "cd9bff816e878a4155b1666b54146c1d7c041a73827c9a77fb7b93fe8ea06ded",
+      "size_bytes": 14261,
+      "line_count": 384,
       "pinned_package_count": 0
     },
     {
@@ -37,14 +37,6 @@
       "size_bytes": 20978,
       "line_count": 278,
       "pinned_package_count": 17
-    },
-    {
-      "path": "requirements-ci-py310-linux.txt",
-      "role": "Python 3.10 Linux CI lockfile",
-      "sha256": "416145a6ca9a37196044512b329313e198a243177519cf19c4e3311494a7d6e2",
-      "size_bytes": 211707,
-      "line_count": 2883,
-      "pinned_package_count": 157
     },
     {
       "path": "requirements-ci-py311-linux.txt",

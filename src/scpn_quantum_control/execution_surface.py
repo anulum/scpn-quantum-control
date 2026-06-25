@@ -17,7 +17,7 @@ from pathlib import Path
 
 if sys.version_info >= (3, 11):
     import tomllib
-else:  # pragma: no cover - exercised on Python 3.10
+else:  # pragma: no cover - retained for static analyzers and older local interpreters
     import tomli as tomllib
 
 

@@ -44,7 +44,7 @@ def test_build_external_validation_environment_lock_records_exact_lockfiles() ->
     assert manifest.classification == "functional_non_isolated"
     assert "isolated_affinity benchmark claims" in manifest.claim_boundary
     assert "pyproject.toml" in paths
-    assert "requirements-ci-py310-linux.txt" in paths
+    assert "requirements-ci-py311-linux.txt" in paths
     assert "requirements-ci-py313-linux.txt" in paths
     assert (
         "data/differentiable_phase_qnode/local_benchmark_20260616T0955Z/"
