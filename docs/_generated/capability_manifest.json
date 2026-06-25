@@ -10,10 +10,10 @@
     "public_api_exports": 717,
     "public_documentation_pages": 250,
     "python_model_classes": 849,
-    "python_model_source_modules": 482,
+    "python_model_source_modules": 483,
     "rust_pyo3_model_wrappers": 171,
     "rust_source_modules": 42,
-    "test_files": 791
+    "test_files": 792
   },
   "documentation": {
     "examples": [
@@ -568,7 +568,7 @@
       {
         "package": "studio",
         "path": "src/scpn_quantum_control/studio",
-        "python_modules": 4
+        "python_modules": 5
       },
       {
         "package": "tcbo",
@@ -4450,6 +4450,7 @@
       "src/scpn_quantum_control/studio/coverage_frontier.py",
       "src/scpn_quantum_control/studio/federation.py",
       "src/scpn_quantum_control/studio/manifest.py",
+      "src/scpn_quantum_control/studio/result_pack_seal.py",
       "src/scpn_quantum_control/studio/verbs.py",
       "src/scpn_quantum_control/tcbo/quantum_observer.py",
       "src/scpn_quantum_control/thermodynamics/readiness.py",
@@ -6133,6 +6134,7 @@
       "tests/test_render_tier_benchmarks.py",
       "tests/test_report_s2_scaling_claim_boundary.py",
       "tests/test_reproducible_comparison.py",
+      "tests/test_result_pack_seal.py",
       "tests/test_retrieve_phase3_large_system_ibm.py",
       "tests/test_rl_discovery_agent_branches.py",
       "tests/test_robustness_certificate.py",

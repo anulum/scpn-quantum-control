@@ -105,7 +105,7 @@ has a defined commercial licensing route.
 |---|---:|
 | Package version | 0.9.12 |
 | Public API exports | 717 |
-| Python source modules | 482 |
+| Python source modules | 483 |
 | Public Python classes | 849 |
 | Domain package families | 32 |
 | API documentation pages | 0 |
@@ -114,7 +114,7 @@ has a defined commercial licensing route.
 | Notebook files | 98 |
 | Example files | 30 |
 | Optional extras | 43 |
-| Python test files | 791 |
+| Python test files | 792 |
 | Public documentation pages | 250 |
 | GitHub Actions workflows | 21 |
 

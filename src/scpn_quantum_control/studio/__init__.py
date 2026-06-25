@@ -27,6 +27,11 @@ from .federation import (
     write_federation_document,
 )
 from .manifest import build_manifest, declared_surface
+from .result_pack_seal import (
+    build_provider_attestation,
+    build_result_pack_unit,
+    seal_result_pack,
+)
 from .verbs import QUANTUM_VERBS, STUDIO_ID, evidence_schemas
 
 __all__ = [
@@ -37,10 +42,13 @@ __all__ = [
     "build_architecture_map_extension",
     "build_federation_document",
     "build_manifest",
+    "build_provider_attestation",
+    "build_result_pack_unit",
     "declared_surface",
     "evidence_schemas",
     "map_claim_status",
     "measure_coverage_frontier",
     "render_coverage_frontier_markdown",
+    "seal_result_pack",
     "write_federation_document",
 ]
