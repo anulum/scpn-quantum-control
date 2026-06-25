@@ -1,0 +1,27 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later | Commercial license available
+# © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
+# © Code 2020–2026 Miroslav Šotek. All rights reserved.
+# ORCID: 0009-0009-3560-0851
+# Contact: www.anulum.li | protoscience@anulum.li
+# scpn-quantum-control — Julia Tier CI Hashed Dependency Lock
+#
+# This lock covers the optional Julia tier installed by
+# .github/workflows/benchmark-kuramoto-tiers.yml after the base CI lock.
+filelock==3.29.0 \
+    --hash=sha256:96f5f6344709aa1572bbf631c640e4ebeeb519e08da902c39a001882f30ac258
+    # via juliapkg
+juliacall==0.9.35 \
+    --hash=sha256:fd58e7858b12a8e1aa44f9f9eeaea05ff8029dd9a19d98521a5451ca94f2f81a
+    # via -r requirements-ci-julia-tier.txt
+juliapkg==0.1.24 \
+    --hash=sha256:cc3d39ccd26c82aa1fcaea413c6d7be062bbabdda07b922ac73a1abb7f38b7f8
+    # via juliacall
+semver==3.0.4 \
+    --hash=sha256:9c824d87ba7f7ab4a1890799cec8596f15c1241cb473404ea1cb0c55e4b04746
+    # via juliapkg
+tomli==2.4.1 \
+    --hash=sha256:136443dbd7e1dee43c68ac2694fde36b2849865fa258d39bf822c10e8068eac5
+    # via juliapkg
+tomlkit==0.15.0 \
+    --hash=sha256:4dbc8f0fc024412b57ced8757ac7461305126a648ff8c2c807fcb8e133a78738
+    # via juliapkg

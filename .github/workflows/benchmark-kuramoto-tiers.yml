@@ -71,7 +71,7 @@ jobs:
 
       - name: Install the Julia tier
         if: contains(steps.tiers.outputs.value, 'julia')
-        run: python -m pip install "juliacall>=0.9,<2"
+        run: python -m pip install --require-hashes -r requirements-ci-julia-tier.txt
 
       - name: Cache the Julia depot
         if: contains(steps.tiers.outputs.value, 'julia')
