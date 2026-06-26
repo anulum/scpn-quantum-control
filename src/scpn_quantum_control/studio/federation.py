@@ -144,7 +144,7 @@ def _backends() -> list[dict[str, Any]]:
         {
             "name": "rust",
             "language": "Rust",
-            "role": "hot kernels (scpn_quantum_engine, 151 PyO3)",
+            "role": "hot kernels (scpn_quantum_engine, 171 PyO3)",
             "dispatch_order": 1,
             "status": "runtime-active",
         },
