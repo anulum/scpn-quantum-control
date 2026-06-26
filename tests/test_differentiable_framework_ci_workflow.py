@@ -31,7 +31,7 @@ def test_differentiable_framework_workflow_declares_sparse_and_full_matrices() -
     assert "schedule" in text
     assert "taskset" in text
     assert "upload-artifact" in text
-    assert "actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10" in text
+    assert "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0" in text
     assert "actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405" in text
     assert "install-differentiable-framework-overlay --overlay-path" in text
     assert "--install" in text
