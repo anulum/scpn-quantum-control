@@ -7,9 +7,9 @@
     "model_documentation_pages": 0,
     "notebook_files": 99,
     "optional_extras": 43,
-    "public_api_exports": 717,
+    "public_api_exports": 719,
     "public_documentation_pages": 253,
-    "python_model_classes": 855,
+    "python_model_classes": 856,
     "python_model_source_modules": 489,
     "rust_pyo3_model_wrappers": 171,
     "rust_source_modules": 42,
@@ -1319,6 +1319,10 @@
       {
         "name": "DifferentiableRustPythonInventoryValidation",
         "path": "src/scpn_quantum_control/differentiable_rust_python_inventory.py"
+      },
+      {
+        "name": "DifferentiableSOTAPromotionLanguageAudit",
+        "path": "src/scpn_quantum_control/differentiable_sota_scorecard.py"
       },
       {
         "name": "DifferentiableSOTAScorecard",
@@ -4782,6 +4786,7 @@
     "DifferentiableRustPythonInventoryRustParityStatus",
     "DifferentiableRustPythonInventoryValidation",
     "DifferentiableSOTACategory",
+    "DifferentiableSOTAPromotionLanguageAudit",
     "DifferentiableSOTAScorecard",
     "DifferentiableSOTAScorecardRow",
     "DifferentiableSOTAScorecardValidation",
@@ -5003,6 +5008,7 @@
     "applications",
     "armijo_backtracking_line_search",
     "assess_provider_capability_snapshot",
+    "audit_differentiable_sota_promotion_language",
     "available_baselines",
     "azure_openqasm3_to_workload",
     "backend_capability_matrix",

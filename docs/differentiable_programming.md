@@ -122,6 +122,13 @@ and `data/differentiable_phase_qnode/differentiable_sota_scorecard_20260620.md`.
 Every current category remains `behind_baseline`; the scorecard is governance
 evidence only and does not promote performance, provider, QPU, GPU, hardware,
 or `isolated_affinity` claims.
+`audit_differentiable_sota_promotion_language()` is the release-blocking
+public-language gate for that scorecard. It scans the public differentiable
+surfaces used by CI and fails when unbounded `state-of-the-art`, exceedance,
+production-performance, or promotion-ready wording appears without a matching
+ready scorecard row and promoted claim-ledger rows. Bounded `SOTA-candidate`
+wording remains allowed so roadmap and reviewer documentation can describe
+the governance lane without upgrading claims.
 `run_differentiable_rust_python_inventory()` adds the rustification surface
 inventory required before broad Rust migration. It classifies each current
 differentiable route as `rust_backed`, `python_reference`, `metadata_only`,

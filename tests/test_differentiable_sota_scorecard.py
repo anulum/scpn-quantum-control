@@ -14,6 +14,7 @@ from typing import get_args
 from scpn_quantum_control import (
     DifferentiableSOTACategory,
     DifferentiableSOTAScorecardRow,
+    audit_differentiable_sota_promotion_language,
     differentiable_api,
     render_differentiable_sota_scorecard_markdown,
     run_differentiable_sota_scorecard,
@@ -86,6 +87,38 @@ def test_differentiable_sota_scorecard_validation_rejects_unpromoted_ready_rows(
 
     assert not validation.passed
     assert any("requires promoted ledger rows" in error for error in validation.errors)
+
+
+def test_differentiable_sota_promotion_language_rejects_unbacked_public_claims() -> None:
+    """Public SOTA wording must fail until scorecard and ledger rows are promoted."""
+    audit = audit_differentiable_sota_promotion_language(
+        public_texts={
+            "README.md": (
+                "The differentiable stack is state-of-the-art for JAX native transforms."
+            )
+        }
+    )
+
+    assert not audit.passed
+    assert audit.checked_paths == ("README.md",)
+    assert audit.checked_promotional_categories == ("jax_native_transforms",)
+    assert any("jax_native_transforms" in error for error in audit.errors)
+
+
+def test_differentiable_sota_promotion_language_allows_bounded_candidate_wording() -> None:
+    """Bounded candidate language may mention SOTA governance without promotion."""
+    audit = audit_differentiable_sota_promotion_language(
+        public_texts={
+            "docs/differentiable_programming.md": (
+                "The differentiable Phase-QNode lane remains SOTA-candidate "
+                "until isolated benchmark evidence and promoted ledger rows exist."
+            )
+        }
+    )
+
+    assert audit.passed
+    assert audit.errors == ()
+    assert audit.checked_promotional_categories == ()
 
 
 def test_differentiable_sota_scorecard_markdown_and_facade_dispatch() -> None:

@@ -65,6 +65,60 @@ REQUIRED_SOTA_CATEGORIES: tuple[DifferentiableSOTACategory, ...] = (
 READY_STATUSES: frozenset[DifferentiableSOTAStatus] = frozenset(
     {"at_baseline", "exceeds_baseline"}
 )
+DEFAULT_PUBLIC_SOTA_LANGUAGE_PATHS: tuple[str, ...] = (
+    "README.md",
+    "docs/differentiable_api.md",
+    "docs/differentiable_programming.md",
+    "docs/differentiable_external_validation_report.md",
+    "docs/onboarding.md",
+)
+PROMOTIONAL_LANGUAGE_PHRASES: tuple[str, ...] = (
+    "state-of-the-art",
+    "state of the art",
+    "world-class",
+    "world-leading",
+    "production performance",
+    "promotion-ready",
+    "promotion ready",
+    "promotion_ready=true",
+    "at_baseline",
+    "at baseline",
+    "exceeds_baseline",
+    "exceeds baseline",
+)
+BOUNDED_PROMOTION_LANGUAGE_MARKERS: tuple[str, ...] = (
+    "sota-candidate",
+    "behind_baseline",
+    "non-promotional",
+    "not a promotion",
+    "not yet suitable",
+    "not suitable",
+    "not claim",
+    "no claim",
+    "does not promote",
+    "fails when",
+    "fails unless",
+    "without promoting",
+    "without a matching",
+    "keeps promotion blocked",
+    "remain blocked",
+    "remains blocked",
+    "blocked until",
+    "fail-closed",
+)
+_CATEGORY_LANGUAGE_MARKERS: Mapping[DifferentiableSOTACategory, tuple[str, ...]] = {
+    "jax_native_transforms": ("jax", "native transforms", "pytree", "openxla"),
+    "pytorch_autograd_compile": ("pytorch", "torch", "autograd", "torch.compile"),
+    "pennylane_qnode_device_plugin": ("pennylane", "qnode", "device plugin"),
+    "qiskit_runtime_provider_gradients": ("qiskit", "runtime", "estimator", "sampler"),
+    "catalyst_compiler_workflows": ("catalyst", "qjit"),
+    "enzyme_compiler_ad": ("enzyme", "compiler ad", "llvm", "mlir"),
+    "rust_native_program_ad": ("rust", "program ad"),
+    "provider_hardware_gradients": ("provider", "hardware", "qpu"),
+    "benchmark_promotion": ("benchmark", "isolated affinity", "performance"),
+    "docs_api_maintainability": ("docs", "api", "maintainability"),
+    "adoption_licensing": ("adoption", "licensing", "license"),
+}
 
 
 @dataclass(frozen=True)
@@ -85,6 +139,7 @@ class DifferentiableSOTAScorecardRow:
     claim_boundary: str
 
     def __post_init__(self) -> None:
+        """Validate category, status, and evidence invariants."""
         if self.category not in REQUIRED_SOTA_CATEGORIES:
             raise ValueError(f"unknown SOTA category: {self.category}")
         if self.status not in {
@@ -120,12 +175,10 @@ class DifferentiableSOTAScorecardRow:
     @property
     def ready_for_promotion(self) -> bool:
         """Return whether this category is at or beyond the external baseline."""
-
         return self.status in READY_STATUSES
 
     def to_dict(self) -> dict[str, object]:
         """Return a JSON-ready scorecard row."""
-
         return {
             "category": self.category,
             "baseline": self.baseline,
@@ -157,7 +210,6 @@ class DifferentiableSOTAScorecard:
 
     def to_dict(self) -> dict[str, object]:
         """Return a JSON-ready scorecard payload."""
-
         return {
             "schema": self.schema,
             "artifact_id": self.artifact_id,
@@ -182,13 +234,35 @@ class DifferentiableSOTAScorecardValidation:
 
     def to_dict(self) -> dict[str, object]:
         """Return JSON-ready validation evidence."""
-
         return {
             "passed": self.passed,
             "errors": list(self.errors),
             "checked_categories": list(self.checked_categories),
             "checked_claim_ids": list(self.checked_claim_ids),
             "checked_paths": list(self.checked_paths),
+            "claim_boundary": self.claim_boundary,
+        }
+
+
+@dataclass(frozen=True)
+class DifferentiableSOTAPromotionLanguageAudit:
+    """Audit result for public differentiable SOTA promotion wording."""
+
+    passed: bool
+    errors: tuple[str, ...]
+    checked_paths: tuple[str, ...]
+    checked_promotional_categories: tuple[DifferentiableSOTACategory, ...]
+    checked_claim_ids: tuple[str, ...]
+    claim_boundary: str
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready public-language audit evidence."""
+        return {
+            "passed": self.passed,
+            "errors": list(self.errors),
+            "checked_paths": list(self.checked_paths),
+            "checked_promotional_categories": list(self.checked_promotional_categories),
+            "checked_claim_ids": list(self.checked_claim_ids),
             "claim_boundary": self.claim_boundary,
         }
 
@@ -209,7 +283,6 @@ def run_differentiable_sota_scorecard(
     ledger_path: Path = DEFAULT_LEDGER_PATH,
 ) -> DifferentiableSOTAScorecard:
     """Build the deterministic SOTA-category scorecard from committed evidence."""
-
     loaded_ledger = load_differentiable_claim_ledger(ledger_path) if ledger is None else ledger
     claim_rows = {row.claim_id: row for row in loaded_ledger.rows}
     rows = _default_scorecard_rows(claim_rows)
@@ -233,7 +306,6 @@ def validate_differentiable_sota_scorecard(
     repo_root: Path = REPO_ROOT,
 ) -> DifferentiableSOTAScorecardValidation:
     """Validate category coverage, path evidence, and promotion invariants."""
-
     loaded_ledger = load_differentiable_claim_ledger(ledger_path) if ledger is None else ledger
     claim_rows = {row.claim_id: row for row in loaded_ledger.rows}
     errors: list[str] = []
@@ -277,11 +349,89 @@ def validate_differentiable_sota_scorecard(
     )
 
 
+def audit_differentiable_sota_promotion_language(
+    *,
+    public_texts: Mapping[str, str] | None = None,
+    public_paths: Iterable[str] = DEFAULT_PUBLIC_SOTA_LANGUAGE_PATHS,
+    scorecard: DifferentiableSOTAScorecard | None = None,
+    ledger: ClaimLedger | None = None,
+    ledger_path: Path = DEFAULT_LEDGER_PATH,
+    repo_root: Path = REPO_ROOT,
+) -> DifferentiableSOTAPromotionLanguageAudit:
+    """Reject public SOTA wording that lacks promoted scorecard evidence.
+
+    Bounded governance language such as ``SOTA-candidate`` remains allowed. Any
+    unbounded public wording that claims state-of-art, exceedance, or promotion
+    readiness must reference categories whose scorecard rows are ready and whose
+    claim-ledger rows are all promoted.
+    """
+    loaded_ledger = load_differentiable_claim_ledger(ledger_path) if ledger is None else ledger
+    loaded_scorecard = (
+        run_differentiable_sota_scorecard(ledger=loaded_ledger) if scorecard is None else scorecard
+    )
+    texts = (
+        _load_public_sota_texts(public_paths=public_paths, repo_root=repo_root)
+        if public_texts is None
+        else dict(public_texts)
+    )
+    scorecard_validation = validate_differentiable_sota_scorecard(
+        loaded_scorecard,
+        ledger=loaded_ledger,
+        repo_root=repo_root,
+    )
+    errors: list[str] = [
+        f"scorecard validation failed: {error}" for error in scorecard_validation.errors
+    ]
+    promoted_claim_ids = {
+        row.claim_id for row in loaded_ledger.rows if row.promotion_status == "promoted"
+    }
+    rows_by_category = {row.category: row for row in loaded_scorecard.rows}
+    checked_categories: set[DifferentiableSOTACategory] = set()
+    checked_claim_ids: set[str] = set()
+
+    for path, text in texts.items():
+        for line_number, line in enumerate(text.splitlines(), start=1):
+            phrases = _promotional_phrases(line)
+            if not phrases or _is_bounded_promotion_language(line):
+                continue
+            categories = _referenced_sota_categories(line)
+            if not categories:
+                categories = tuple(row.category for row in loaded_scorecard.rows)
+            for category in categories:
+                row = rows_by_category[category]
+                checked_categories.add(category)
+                checked_claim_ids.update(row.claim_ids)
+                missing_promoted_claims = tuple(
+                    claim_id for claim_id in row.claim_ids if claim_id not in promoted_claim_ids
+                )
+                if row.ready_for_promotion and not missing_promoted_claims:
+                    continue
+                errors.append(
+                    f"{path}:{line_number}: public SOTA wording for {category} "
+                    f"({', '.join(phrases)}) requires a ready scorecard row and "
+                    f"promoted claim-ledger rows; status={row.status}, "
+                    f"unpromoted_claim_ids={', '.join(missing_promoted_claims) or 'none'}"
+                )
+
+    return DifferentiableSOTAPromotionLanguageAudit(
+        passed=not errors,
+        errors=tuple(errors),
+        checked_paths=tuple(sorted(texts)),
+        checked_promotional_categories=tuple(sorted(checked_categories)),
+        checked_claim_ids=tuple(sorted(checked_claim_ids)),
+        claim_boundary=(
+            "public SOTA promotion-language audit only; rejects unbounded "
+            "state-of-art, exceedance, production-performance, or promotion-ready "
+            "wording unless the referenced scorecard rows and claim-ledger rows "
+            "are promoted"
+        ),
+    )
+
+
 def render_differentiable_sota_scorecard_markdown(
     scorecard: DifferentiableSOTAScorecard,
 ) -> str:
     """Render a reviewer-facing Markdown summary of the scorecard."""
-
     lines = [
         "<!--",
         "SPDX-License-Identifier: AGPL-3.0-or-later",
@@ -581,17 +731,58 @@ def _markdown_cell(value: str) -> str:
     return value.replace("\n", " ").replace("|", "\\|")
 
 
+def _load_public_sota_texts(
+    *,
+    public_paths: Iterable[str],
+    repo_root: Path,
+) -> dict[str, str]:
+    texts: dict[str, str] = {}
+    for relative_path in public_paths:
+        path = repo_root / relative_path
+        if path.exists():
+            texts[relative_path] = path.read_text(encoding="utf-8")
+    return texts
+
+
+def _promotional_phrases(line: str) -> tuple[str, ...]:
+    lowered = line.casefold()
+    return tuple(phrase for phrase in PROMOTIONAL_LANGUAGE_PHRASES if phrase in lowered)
+
+
+def _is_bounded_promotion_language(line: str) -> bool:
+    lowered = line.casefold()
+    return any(marker in lowered for marker in BOUNDED_PROMOTION_LANGUAGE_MARKERS)
+
+
+def _referenced_sota_categories(line: str) -> tuple[DifferentiableSOTACategory, ...]:
+    lowered = line.casefold()
+    categories: list[DifferentiableSOTACategory] = []
+    for category, markers in _CATEGORY_LANGUAGE_MARKERS.items():
+        category_marker = category.replace("_", " ")
+        if category in lowered or category_marker in lowered:
+            categories.append(category)
+            continue
+        if any(marker in lowered for marker in markers):
+            categories.append(category)
+    return tuple(dict.fromkeys(categories))
+
+
 __all__ = [
+    "BOUNDED_PROMOTION_LANGUAGE_MARKERS",
+    "DEFAULT_PUBLIC_SOTA_LANGUAGE_PATHS",
     "DIFFERENTIABLE_SOTA_SCORECARD_ARTIFACT_ID",
     "DIFFERENTIABLE_SOTA_SCORECARD_CLAIM_BOUNDARY",
     "DIFFERENTIABLE_SOTA_SCORECARD_SCHEMA",
+    "PROMOTIONAL_LANGUAGE_PHRASES",
     "READY_STATUSES",
     "REQUIRED_SOTA_CATEGORIES",
     "DifferentiableSOTACategory",
+    "DifferentiableSOTAPromotionLanguageAudit",
     "DifferentiableSOTAScorecard",
     "DifferentiableSOTAScorecardRow",
     "DifferentiableSOTAScorecardValidation",
     "DifferentiableSOTAStatus",
+    "audit_differentiable_sota_promotion_language",
     "render_differentiable_sota_scorecard_markdown",
     "run_differentiable_sota_scorecard",
     "validate_differentiable_sota_scorecard",

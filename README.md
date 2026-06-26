@@ -105,9 +105,9 @@ has a defined commercial licensing route.
 | Surface | Current inventory |
 |---|---:|
 | Package version | 0.10.0 |
-| Public API exports | 717 |
+| Public API exports | 719 |
 | Python source modules | 489 |
-| Public Python classes | 855 |
+| Public Python classes | 856 |
 | Domain package families | 32 |
 | API documentation pages | 0 |
 | Rust PyO3 function bindings | 171 |
@@ -553,9 +553,9 @@ information scrambles*, and *whether the system thermalises*.
 
 This section covers exact Hilbert-space simulation crossover only.
 No broad observable-level quantum-advantage claim is closed yet.
-Any broader advantage claim requires comparison against state-of-the-art
-tensor-network or GPU baselines and explicit accounting for data-loading and
-state-preparation cost.
+Any broader advantage claim remains blocked until external tensor-network or
+GPU baselines and explicit data-loading plus state-preparation costs are
+accounted for.
 
 No quantum advantage at n ≤ 16 in this exact-simulation path. Classical ODE is
 faster for all accessible sizes. The value of the quantum approach is

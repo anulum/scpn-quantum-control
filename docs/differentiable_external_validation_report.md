@@ -16,8 +16,8 @@ comparison rows, the claim ledger, and isolated benchmark artefacts all pass.
 ## Claim Boundary
 
 Current evidence is `functional_non_isolated` unless an artefact explicitly says
-otherwise. The report does not claim hardware execution, provider execution,
-QPU execution, GPU execution, production performance, quantum advantage, or
+otherwise. The report does not claim production performance, quantum advantage,
+hardware execution, provider execution, QPU execution, GPU execution, or
 `isolated_affinity` benchmark status.
 
 The public wording source is
