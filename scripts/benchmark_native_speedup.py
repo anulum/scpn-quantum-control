@@ -46,7 +46,7 @@ from numpy.typing import NDArray
 
 if sys.version_info >= (3, 11):
     import tomllib
-else:  # pragma: no cover - exercised on Python 3.10
+else:  # pragma: no cover - retained for downstream legacy interpreters
     import tomli as tomllib
 
 from scpn_quantum_control.accel.rust_import import optional_rust_engine

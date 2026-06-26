@@ -12,7 +12,7 @@ from __future__ import annotations
 from pathlib import Path
 
 WORKFLOW = Path(".github/workflows/differentiable-frameworks.yml")
-PYTHON_VERSIONS = ("3.10", "3.11", "3.12", "3.13")
+PYTHON_VERSIONS = ("3.11", "3.12", "3.13")
 
 
 def test_differentiable_framework_workflow_declares_sparse_and_full_matrices() -> None:

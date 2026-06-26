@@ -87,7 +87,7 @@ when the central question is whether a result can be promoted as hardware eviden
 
 | Area | Public status |
 |---|---|
-| Package line | Version `0.9.12`, Python `>=3.10`, Qiskit `>=2.2,<3.0`. |
+| Package line | Version `0.9.12`, Python `>=3.11`, Qiskit `>=2.2,<3.0`. |
 | Generic compiler surface | `scpn_quantum_control.kuramoto_core` validates arbitrary `K_nm`/`omega` inputs and compiles Hamiltonians, dense matrices, Trotter circuits, order-parameter measurements, and Kuramoto variant trajectories. |
 | Hardware evidence | Promoted raw-count campaigns: `ibm_kingston` DLA parity Phase 1, selected Phase 2 A+G/B-C/popcount controls, and the SCPN/FIM negative/falsification result for the tested digital circuit family. Legacy `ibm_fez` rows require artefact-level citation. |
 | Claim source | [Hardware Status Ledger](hardware_status_ledger.md). |

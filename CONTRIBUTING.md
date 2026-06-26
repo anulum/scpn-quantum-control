@@ -8,7 +8,7 @@ no live hardware side effects in automated checks.
 
 ## Setup
 
-Use Python 3.10 or newer.
+Use Python 3.11 or newer.
 
 ```bash
 python -m pip install -e ".[dev]"

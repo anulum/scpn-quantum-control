@@ -84,13 +84,13 @@ scpn-bench = scpn_quantum_control.bench_cli:main
 
 Host requirements:
 
-- `python >=3.10`
+- `python >=3.11`
 - `pip`
 - `hatchling`
 
 Run requirements:
 
-- `python >=3.10`
+- `python >=3.11`
 - `qiskit >=2.2,<3.0`
 - `qiskit-aer >=0.15,<1.0`
 - `numpy >=1.24,<3.0`
