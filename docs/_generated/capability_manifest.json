@@ -8,12 +8,12 @@
     "notebook_files": 99,
     "optional_extras": 43,
     "public_api_exports": 717,
-    "public_documentation_pages": 252,
-    "python_model_classes": 849,
-    "python_model_source_modules": 483,
+    "public_documentation_pages": 253,
+    "python_model_classes": 850,
+    "python_model_source_modules": 484,
     "rust_pyo3_model_wrappers": 171,
     "rust_source_modules": 42,
-    "test_files": 795
+    "test_files": 796
   },
   "documentation": {
     "examples": [
@@ -385,6 +385,7 @@
       "docs/stable_facades_api.md",
       "docs/status_normalisation_policy.md",
       "docs/strategic_roadmap.md",
+      "docs/studio_federation.md",
       "docs/symmetry.md",
       "docs/symmetry_decay_guess.md",
       "docs/symmetry_sector_mitigation_compiler.md",
@@ -572,7 +573,7 @@
       {
         "package": "studio",
         "path": "src/scpn_quantum_control/studio",
-        "python_modules": 5
+        "python_modules": 6
       },
       {
         "package": "tcbo",
@@ -3652,6 +3653,10 @@
         "path": "src/scpn_quantum_control/control/structured_ansatz.py"
       },
       {
+        "name": "StudioBundleValidation",
+        "path": "src/scpn_quantum_control/studio/evidence_bundle.py"
+      },
+      {
         "name": "SubMicrosecondReport",
         "path": "src/scpn_quantum_control/control/realtime_runtime.py"
       },
@@ -4452,6 +4457,7 @@
       "src/scpn_quantum_control/stable_core.py",
       "src/scpn_quantum_control/stable_core_preflight.py",
       "src/scpn_quantum_control/studio/coverage_frontier.py",
+      "src/scpn_quantum_control/studio/evidence_bundle.py",
       "src/scpn_quantum_control/studio/federation.py",
       "src/scpn_quantum_control/studio/manifest.py",
       "src/scpn_quantum_control/studio/result_pack_seal.py",
@@ -6202,6 +6208,7 @@
       "tests/test_stress_scale.py",
       "tests/test_structured_ansatz.py",
       "tests/test_structured_ansatz_branches.py",
+      "tests/test_studio_evidence_bundle.py",
       "tests/test_studio_manifest.py",
       "tests/test_sub_us_tracker.py",
       "tests/test_submit_fim_replication_zne_ibm.py",

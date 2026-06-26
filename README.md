@@ -106,8 +106,8 @@ has a defined commercial licensing route.
 |---|---:|
 | Package version | 0.10.0 |
 | Public API exports | 717 |
-| Python source modules | 483 |
-| Public Python classes | 849 |
+| Python source modules | 484 |
+| Public Python classes | 850 |
 | Domain package families | 32 |
 | API documentation pages | 0 |
 | Rust PyO3 function bindings | 171 |
@@ -115,8 +115,8 @@ has a defined commercial licensing route.
 | Notebook files | 99 |
 | Example files | 31 |
 | Optional extras | 43 |
-| Python test files | 795 |
-| Public documentation pages | 252 |
+| Python test files | 796 |
+| Public documentation pages | 253 |
 | GitHub Actions workflows | 21 |
 
 Evidence boundary: this snapshot is a static inventory. Performance, coverage, hardware, and scientific-fidelity claims require their own committed evidence artefacts.
@@ -129,7 +129,7 @@ Evidence boundary: this snapshot is a static inventory. Performance, coverage, h
 | Area | Public status |
 |---|---|
 | Generic compiler surface | `scpn_quantum_control.kuramoto_core` validates arbitrary `K_nm`/`omega` inputs and compiles Hamiltonians, dense matrices, Trotter circuits, and order-parameter measurements. |
-| v0.10 public surfaces | QRNG streaming and health reports, ML-DSA-65 trigger signing, UltraScale+ HLS pulse emission, realtime loop telemetry, NV magnetometry simulation, FRC pulsed-shot QAOA scheduling, and Studio federation manifests. |
+| v0.10 public surfaces | QRNG streaming and health reports, ML-DSA-65 trigger signing, UltraScale+ HLS pulse emission, realtime loop telemetry, NV magnetometry simulation, FRC pulsed-shot QAOA scheduling, and Studio federation manifests plus evidence bundles. |
 | Release and reproducibility scope | Stable core contracts and backend capability artefacts for Kuramoto-XY synchronisation are included in release/readiness checks and promoted only with deterministic evidence manifests. |
 | Hardware evidence | `ibm_fez` baseline rows are legacy artefact-backed observations; `ibm_kingston` Phase 1, Phase 2 A+G, Phase 2 B-C, and popcount DLA datasets are promoted with raw-count artefacts. The SCPN/FIM `ibm_kingston` result is promoted as a negative/falsification result for the tested digital circuit family. |
 | Simulator and methods evidence | BKT, OTOC, Floquet, MBL, FIM, VQE, GPU, tensor-network, and classical comparison claims stay marked as simulator/classical/methods unless a hardware artefact is named. Generated benchmark artefacts are indexed from the benchmark dashboard and reproducibility CLI. |

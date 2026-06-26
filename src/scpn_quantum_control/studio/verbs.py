@@ -47,6 +47,12 @@ EVIDENCE_REPLAY_SCHEMA = "studio.evidence-replay.v1"
 MITIGATION_SCHEMA = "studio.mitigation.v1"
 HARDWARE_RESULT_PACK_SCHEMA = "studio.hardware-result-pack.v1"
 
+VERB_SUBSTRATES: dict[str, tuple[str, ...]] = {
+    "analyse": ("classical-reference", "numerical-model", "simulator"),
+    "execute": ("hardware-unmitigated", "hardware-mitigated"),
+}
+"""Schema-B execution-substrate axes for verbs whose bundles cross the Hub boundary."""
+
 
 # ── core-spine verbs ───────────────────────────────────────────────────
 COMPILE = Verb(
@@ -175,3 +181,15 @@ def evidence_schemas() -> tuple[str, ...]:
         MITIGATION_SCHEMA,
         HARDWARE_RESULT_PACK_SCHEMA,
     )
+
+
+def verb_substrates() -> dict[str, tuple[str, ...]]:
+    """Return the substrate axes declared for substrate-bearing verbs.
+
+    Returns
+    -------
+    dict[str, tuple[str, ...]]
+        Mapping of verb name to the schema-B substrate values that emitted
+        bundles may carry for that verb.
+    """
+    return {verb: tuple(substrates) for verb, substrates in VERB_SUBSTRATES.items()}

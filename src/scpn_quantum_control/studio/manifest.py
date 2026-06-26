@@ -32,7 +32,7 @@ from scpn_studio_platform.manifest import (
     content_digest,
 )
 
-from .verbs import QUANTUM_VERBS, STUDIO_ID, evidence_schemas
+from .verbs import QUANTUM_VERBS, STUDIO_ID, evidence_schemas, verb_substrates
 
 PLATFORM_SDK_RANGE = ">=0.9,<0.11"
 """The platform SDK SemVer range the studio builds on (matches the ``studio`` extra)."""
@@ -89,6 +89,11 @@ def declared_surface() -> dict[str, bytes]:
     }
     surface["evidence/schemas"] = json.dumps(
         list(evidence_schemas()), sort_keys=True, separators=(",", ":")
+    ).encode("utf-8")
+    surface["evidence/substrates"] = json.dumps(
+        {key: list(value) for key, value in verb_substrates().items()},
+        sort_keys=True,
+        separators=(",", ":"),
     ).encode("utf-8")
     return surface
 

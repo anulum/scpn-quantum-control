@@ -41,6 +41,16 @@ def test_evidence_schemas_match_verb_outputs() -> None:
     assert produced == declared
 
 
+def test_declared_surface_includes_substrate_axes() -> None:
+    """The schema-A digest covers substrate-axis declarations as well as schemas."""
+    surface = manifest.declared_surface()
+    assert "evidence/substrates" in surface
+    assert verbs.verb_substrates() == {
+        "analyse": ("classical-reference", "numerical-model", "simulator"),
+        "execute": ("hardware-unmitigated", "hardware-mitigated"),
+    }
+
+
 def test_verb_vocabulary_uses_locked_enums() -> None:
     """Verb attributes serialise to the locked SDK enum value strings."""
     data = manifest.build_manifest().to_dict()
@@ -76,6 +86,7 @@ def test_architecture_map_extension_shape() -> None:
         "backends",
         "interfaces",
         "wire_formats",
+        "verb_substrates",
         "cross_repo",
         "boundaries",
     } <= set(ext)
@@ -103,6 +114,10 @@ def test_architecture_map_extension_shape() -> None:
     }
     assert all({"kind", "entry"} <= set(i) for i in ext["interfaces"])
     assert all({"name", "schema_ref"} <= set(w) for w in ext["wire_formats"])
+    assert ext["verb_substrates"] == {
+        "analyse": ["classical-reference", "numerical-model", "simulator"],
+        "execute": ["hardware-unmitigated", "hardware-mitigated"],
+    }
 
 
 def test_federation_document_is_json_serialisable() -> None:

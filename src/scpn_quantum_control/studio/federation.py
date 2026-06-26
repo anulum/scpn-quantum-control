@@ -32,6 +32,7 @@ from pathlib import Path
 from typing import Any
 
 from .manifest import build_manifest
+from .verbs import verb_substrates
 
 #: Where the federation document is written, relative to the repository root.
 STUDIO_MANIFEST_PATH = Path("docs/_generated/studio_manifest.json")
@@ -217,7 +218,7 @@ def _wire_formats() -> list[dict[str, str]]:
         },
         {
             "name": "studio-evidence",
-            "schema_ref": "studio.*.v1 (9 evidence schemas from the five-class hardware ledger)",
+            "schema_ref": "scpn_quantum_control.studio.evidence_bundle (schema-B EvidenceBundle emitter for ledger + hardware packs)",
         },
         {
             "name": "UPDEPhaseArtifact",
@@ -228,6 +229,11 @@ def _wire_formats() -> list[dict[str, str]]:
             "schema_ref": "scpn_quantum_control.bridge.snn_adapter (sc-neurocore spike trains <-> Ry angles)",
         },
     ]
+
+
+def _verb_substrates() -> dict[str, list[str]]:
+    """Return schema-B substrate declarations for substrate-bearing verbs."""
+    return {verb: list(substrates) for verb, substrates in verb_substrates().items()}
 
 
 def _cross_repo() -> list[dict[str, str]]:
@@ -302,6 +308,7 @@ def build_architecture_map_extension() -> dict[str, Any]:
         "backends": _backends(),
         "interfaces": _interfaces(),
         "wire_formats": _wire_formats(),
+        "verb_substrates": _verb_substrates(),
         "cross_repo": _cross_repo(),
         "boundaries": _boundaries(),
     }

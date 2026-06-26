@@ -275,6 +275,17 @@
         "stage": "ledger"
       }
     ],
+    "verb_substrates": {
+      "analyse": [
+        "classical-reference",
+        "numerical-model",
+        "simulator"
+      ],
+      "execute": [
+        "hardware-unmitigated",
+        "hardware-mitigated"
+      ]
+    },
     "version": "architecture-map.v2",
     "wire_formats": [
       {
@@ -283,7 +294,7 @@
       },
       {
         "name": "studio-evidence",
-        "schema_ref": "studio.*.v1 (9 evidence schemas from the five-class hardware ledger)"
+        "schema_ref": "scpn_quantum_control.studio.evidence_bundle (schema-B EvidenceBundle emitter for ledger + hardware packs)"
       },
       {
         "name": "UPDEPhaseArtifact",
@@ -296,7 +307,7 @@
     ]
   },
   "schema_a": {
-    "content_digest": "sha256:719192c2948f477f1cd71683bbe82c7a68965bf680bdd94c193219ec26e30bd4",
+    "content_digest": "sha256:307e7bb4d8e858329318a4b72a188fdd670b576d87cf1fe7a5a278a45ff909ed",
     "contract_era": "v1",
     "enumeration": "language-agnostic",
     "evidence_types": [

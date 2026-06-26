@@ -24,7 +24,7 @@ reading the older module-by-module notes.
 | FRC pulsed-shot scheduling | `scpn_quantum_control.phase.frc_pulsed_qaoa` | [FRC Pulsed-Shot QAOA](frc_pulsed_qaoa.md) | Control-grade surrogate unless physics-derived provenance is attached. |
 | Realtime loop telemetry | `scpn_quantum_control.realtime` | [Realtime Runtime](realtime_runtime.md) | Software-loop timing, not intra-shot QPU latency. |
 | Kuramoto variants and acceleration | `scpn_quantum_control.variants`, `scpn_quantum_control.accel` | [Kuramoto Variants](kuramoto_variants.md) | Benchmark wording follows the local/isolated evidence classifier. |
-| Studio federation | `scpn-emit-studio-manifest` | [Architecture Map](architecture_map.md) | Manifest describes existing package capabilities and evidence classes. |
+| Studio federation | `scpn-emit-studio-manifest`, `scpn_quantum_control.studio.evidence_bundle` | [Studio Federation](studio_federation.md) | Schema-A manifest plus schema-B bundles for existing ledgers and result packs; no new evidence promotion. |
 
 ## Historical March 2026 module batch
 

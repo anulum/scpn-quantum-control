@@ -21,6 +21,16 @@ from .coverage_frontier import (
     measure_coverage_frontier,
     render_coverage_frontier_markdown,
 )
+from .evidence_bundle import (
+    StudioBundleValidation,
+    build_claim_ledger_bundle,
+    build_claim_ledger_bundles,
+    build_hardware_result_pack_bundle,
+    build_hardware_result_pack_bundles,
+    evidence_axes,
+    validate_bundle,
+    validate_bundles,
+)
 from .federation import (
     build_architecture_map_extension,
     build_federation_document,
@@ -32,23 +42,32 @@ from .result_pack_seal import (
     build_result_pack_unit,
     seal_result_pack,
 )
-from .verbs import QUANTUM_VERBS, STUDIO_ID, evidence_schemas
+from .verbs import QUANTUM_VERBS, STUDIO_ID, evidence_schemas, verb_substrates
 
 __all__ = [
     "ANSWERED_STATUSES",
     "CoverageFrontierReport",
     "QUANTUM_VERBS",
     "STUDIO_ID",
+    "StudioBundleValidation",
     "build_architecture_map_extension",
+    "build_claim_ledger_bundle",
+    "build_claim_ledger_bundles",
     "build_federation_document",
+    "build_hardware_result_pack_bundle",
+    "build_hardware_result_pack_bundles",
     "build_manifest",
     "build_provider_attestation",
     "build_result_pack_unit",
     "declared_surface",
     "evidence_schemas",
+    "evidence_axes",
     "map_claim_status",
     "measure_coverage_frontier",
     "render_coverage_frontier_markdown",
     "seal_result_pack",
+    "validate_bundle",
+    "validate_bundles",
+    "verb_substrates",
     "write_federation_document",
 ]

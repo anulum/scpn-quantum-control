@@ -119,7 +119,7 @@ contracts for persisted QPU data, and advanced references for subsystem extensio
 | Realtime loop telemetry | `RealtimeRuntimeConfig`, `VirtualRealtimeClock`, `run_realtime_control_loop`, and `SubMicrosecondTracker` | Software-loop latency accounting and benchmark evidence; not an intra-shot QPU feedback guarantee. |
 | FRC pulsed-shot QAOA | `scpn_quantum_control.bridge.fusion_core_frc` and `scpn_quantum_control.phase.frc_pulsed_qaoa` | Simulator/control-grade bridge for FRC scheduling and surrogate calibration; fusion-core physics provenance must be recorded before promotion. |
 | NV-centre magnetometry | `scpn_quantum_control.sensing.nv_magnetometry_20T` | Simulation and calibration contracts for 0-20 T ODMR workflows; hardware calibration remains gated by explicit evidence. |
-| Studio federation manifests | `scpn-emit-studio-manifest` and `scpn_quantum_control.studio.federation` | Emits schema-A capability and architecture-map manifest for STUDIO/Hub ingestion; the manifest describes existing evidence classes, not new evidence. |
+| Studio federation | `scpn-emit-studio-manifest`, `scpn_quantum_control.studio.federation`, and `scpn_quantum_control.studio.evidence_bundle` | Emits schema-A capability and architecture-map manifests plus schema-B `EvidenceBundle` objects for committed differentiable claim-ledger rows and hardware result packs. Bundles preserve existing claim boundaries; they do not promote new evidence. |
 | Kuramoto acceleration and variants | `scpn_quantum_control.accel.*`, `scpn_quantum_control.variants`, and the Rust engine optional extra | Use benchmark classification and parity tests before quoting acceleration beyond local functional evidence. |
 | Hardware result packaging | `scpn_quantum_control.hardware_result_packs` and QPU artefact contracts | Raw counts and manifests must pass release gates before public promotion. |
 | Cross-repository integration | Stable facade pages and runtime contracts | Avoid internal module paths unless the contract page names them. |
@@ -151,6 +151,26 @@ Validate an arbitrary symmetric Kuramoto coupling problem, attach serialisable
 metadata, and compile the common Hamiltonian/circuit objects used by simulator,
 witness, and hardware workflows. See [Kuramoto Core Facade](kuramoto_core_facade.md)
 for the workflow page.
+
+### `studio`
+
+The Studio surface publishes QUANTUM capabilities and emits concrete evidence
+bundles for existing committed artefacts:
+
+```python
+build_manifest()
+build_federation_document()
+write_federation_document(repo_root=None)
+build_claim_ledger_bundles(rows_or_ledger=None, reference_validated_claim_ids=())
+build_hardware_result_pack_bundles(manifest_path=None)
+validate_bundle(bundle)
+validate_bundles(bundles)
+verb_substrates()
+evidence_axes(source)
+```
+
+Use [Studio Federation](studio_federation.md) for the schema-A/schema-B workflow,
+substrate axes, and claim-boundary rules.
 
 ### `compiler.mlir`
 
