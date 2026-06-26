@@ -225,6 +225,10 @@ def _wire_formats() -> list[dict[str, str]]:
             "schema_ref": "scpn_quantum_control.bridge.orchestrator_adapter (quantum R -> advance/hold/rollback)",
         },
         {
+            "name": "knm.scpn-upde",
+            "schema_ref": "scpn_quantum_control.bridge.scpn_upde_edge (16-oscillator K_nm/omega edge; computational-agreement only)",
+        },
+        {
             "name": "spike-train<->Ry",
             "schema_ref": "scpn_quantum_control.bridge.snn_adapter (sc-neurocore spike trains <-> Ry angles)",
         },
@@ -256,8 +260,8 @@ def _cross_repo() -> list[dict[str, str]]:
         },
         {
             "sibling": "scpn-phase-orchestrator",
-            "adapter": "bridge.orchestrator_adapter",
-            "wire_format": "orchestrator state <-> UPDEPhaseArtifact; quantum R -> advance/hold/rollback",
+            "adapter": "bridge.orchestrator_adapter; bridge.scpn_upde_edge",
+            "wire_format": "orchestrator state <-> UPDEPhaseArtifact; knm.scpn-upde K_nm/omega edge; quantum R -> advance/hold/rollback",
         },
     ]
 

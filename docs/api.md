@@ -118,6 +118,7 @@ contracts for persisted QPU data, and advanced references for subsystem extensio
 | Pulse to FPGA source generation | `scpn_quantum_control.codegen.ultrascale_hls.pulse_to_vivado_hls` and `write_bundle` | Emits Vivado/Vitis HLS source and host co-simulation assets; synthesis stays gated by the self-hosted Vivado runner. |
 | Realtime loop telemetry | `RealtimeRuntimeConfig`, `VirtualRealtimeClock`, `run_realtime_control_loop`, and `SubMicrosecondTracker` | Software-loop latency accounting and benchmark evidence; not an intra-shot QPU feedback guarantee. |
 | FRC pulsed-shot QAOA | `scpn_quantum_control.bridge.fusion_core_frc` and `scpn_quantum_control.phase.frc_pulsed_qaoa` | Simulator/control-grade bridge for FRC scheduling and surrogate calibration; fusion-core physics provenance must be recorded before promotion. |
+| SPO `knm.scpn-upde` handoff | `scpn_quantum_control.bridge.scpn_upde_edge` | Emits the 16-oscillator Paper-27 `K_nm`/`omega` edge for SPO computational agreement only; QPU execution and actuation permissions remain false. |
 | NV-centre magnetometry | `scpn_quantum_control.sensing.nv_magnetometry_20T` | Simulation and calibration contracts for 0-20 T ODMR workflows; hardware calibration remains gated by explicit evidence. |
 | Studio federation | `scpn-emit-studio-manifest`, `scpn_quantum_control.studio.federation`, and `scpn_quantum_control.studio.evidence_bundle` | Emits schema-A capability and architecture-map manifests plus schema-B `EvidenceBundle` objects for committed differentiable claim-ledger rows and hardware result packs. Bundles preserve existing claim boundaries; they do not promote new evidence. |
 | Kuramoto acceleration and variants | `scpn_quantum_control.accel.*`, `scpn_quantum_control.variants`, and the Rust engine optional extra | Use benchmark classification and parity tests before quoting acceleration beyond local functional evidence. |
@@ -173,6 +174,19 @@ evidence_axes(source)
 
 Use [Studio Federation](studio_federation.md) for the schema-A/schema-B workflow,
 substrate axes, and claim-boundary rules.
+
+### `bridge.scpn_upde_edge`
+
+```python
+build_paper27_scpn_upde_edge(time=0.1, trotter_steps=1, trotter_order=1) -> SCPNUPDEEdge
+build_scpn_upde_edge(K_nm, omega, time=0.1, trotter_steps=1, trotter_order=1) -> SCPNUPDEEdge
+validate_scpn_upde_edge_payload(payload) -> None
+```
+
+The edge schema is `knm.scpn-upde.v1`. It gives
+`scpn-phase-orchestrator` a digest-locked `K_nm`/`omega` payload and Trotter
+compile metadata while preserving the `computational-agreement` envelope. Do
+not use this edge as hardware evidence or a canonical physics claim.
 
 ### `compiler.mlir`
 

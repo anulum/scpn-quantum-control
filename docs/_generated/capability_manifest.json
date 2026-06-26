@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 717,
     "public_documentation_pages": 253,
-    "python_model_classes": 853,
-    "python_model_source_modules": 485,
+    "python_model_classes": 854,
+    "python_model_source_modules": 486,
     "rust_pyo3_model_wrappers": 171,
     "rust_source_modules": 42,
-    "test_files": 797
+    "test_files": 798
   },
   "documentation": {
     "examples": [
@@ -458,7 +458,7 @@
       {
         "package": "bridge",
         "path": "src/scpn_quantum_control/bridge",
-        "python_modules": 14
+        "python_modules": 15
       },
       {
         "package": "codegen",
@@ -3549,6 +3549,10 @@
         "path": "src/scpn_quantum_control/psi_field/scpn_mapping.py"
       },
       {
+        "name": "SCPNUPDEEdge",
+        "path": "src/scpn_quantum_control/bridge/scpn_upde_edge.py"
+      },
+      {
         "name": "SFFResult",
         "path": "src/scpn_quantum_control/analysis/spectral_form_factor.py"
       },
@@ -4151,6 +4155,7 @@
       "src/scpn_quantum_control/bridge/phase_artifact.py",
       "src/scpn_quantum_control/bridge/qpu_data_artifact.py",
       "src/scpn_quantum_control/bridge/sc_to_quantum.py",
+      "src/scpn_quantum_control/bridge/scpn_upde_edge.py",
       "src/scpn_quantum_control/bridge/snn_adapter.py",
       "src/scpn_quantum_control/bridge/snn_backward.py",
       "src/scpn_quantum_control/bridge/sparse_hamiltonian.py",
@@ -6188,6 +6193,7 @@
       "tests/test_sakaguchi_kuramoto.py",
       "tests/test_sakaguchi_mean_field.py",
       "tests/test_sc_to_quantum.py",
+      "tests/test_scpn_upde_edge.py",
       "tests/test_sensing_branches.py",
       "tests/test_serialization_surface_audit.py",
       "tests/test_setup_isolated_benchmark_runner.py",

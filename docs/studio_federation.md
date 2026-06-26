@@ -125,6 +125,43 @@ certification row must name a known ledger claim whose `promotion_status` is
 already `promoted`; candidate, unknown, or duplicate certification rows fail
 closed before they can reach the WS-6 measurement.
 
+## SPO `knm.scpn-upde` edge
+
+The SPO federation edge is available from the bridge facade:
+
+```python
+from scpn_quantum_control.bridge import (
+    build_paper27_scpn_upde_edge,
+    validate_scpn_upde_edge_payload,
+)
+
+payload = build_paper27_scpn_upde_edge(
+    time=0.1,
+    trotter_steps=1,
+    trotter_order=1,
+).to_payload()
+validate_scpn_upde_edge_payload(payload)
+```
+
+The payload schema is `knm.scpn-upde.v1`. It carries the 16-oscillator Paper-27
+`K_nm` matrix, `omega` vector, Trotter compile metadata, SHA-256 integrity
+digests, and explicit permissions:
+
+```json
+{
+  "scope_envelope": "computational-agreement",
+  "permissions": {
+    "qpu_execution_permitted": false,
+    "actuation_permitted": false
+  }
+}
+```
+
+That boundary is load-bearing. The Paper-27 matrix is provisional, so this edge
+is only for QUANTUM/SPO computational agreement and reviewable compiler handoff.
+It is not physical validation, not a canonical `K_nm` claim, and not live
+actuation authority.
+
 ## Substrate axes
 
 The Studio manifest publishes the schema-B substrate axes for verbs that carry

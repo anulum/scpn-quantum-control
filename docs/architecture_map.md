@@ -218,7 +218,7 @@ Go and Mojo tiers exist as probes only (return `False`).
 | sc-neurocore | `bridge/snn_adapter`, `snn_backward`, `spn_to_qcircuit` | spike trains ↔ Ry angles / quantum dense layer |
 | scpn-control | `bridge/control_plasma_knm` | plasma-native `K`/`omega` → problem |
 | scpn-fusion-core | `bridge/fusion_core_frc` | FRC equilibrium → pulsed-shot QAOA surrogate |
-| scpn-phase-orchestrator | `bridge/orchestrator_adapter`, `orchestrator_feedback`, `phase_artifact` | orchestrator state ⇄ `UPDEPhaseArtifact`; quantum R → advance/hold/rollback |
+| scpn-phase-orchestrator | `bridge/orchestrator_adapter`, `orchestrator_feedback`, `phase_artifact`, `scpn_upde_edge` | orchestrator state ⇄ `UPDEPhaseArtifact`; `knm.scpn-upde` K_nm/omega edge; quantum R → advance/hold/rollback |
 | SSGF | `bridge/ssgf_adapter`, `ssgf_w_adapter` | geometry `W` ↔ Hamiltonian |
 
 A provider-neutral `qpu_compute_types` schema family (content-addressed, idempotency-keyed) exists

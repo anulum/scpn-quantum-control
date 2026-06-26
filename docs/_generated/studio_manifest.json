@@ -143,9 +143,9 @@
         "wire_format": "FRC equilibrium -> pulsed-shot QAOA surrogate"
       },
       {
-        "adapter": "bridge.orchestrator_adapter",
+        "adapter": "bridge.orchestrator_adapter; bridge.scpn_upde_edge",
         "sibling": "scpn-phase-orchestrator",
-        "wire_format": "orchestrator state <-> UPDEPhaseArtifact; quantum R -> advance/hold/rollback"
+        "wire_format": "orchestrator state <-> UPDEPhaseArtifact; knm.scpn-upde K_nm/omega edge; quantum R -> advance/hold/rollback"
       }
     ],
     "interfaces": [
@@ -299,6 +299,10 @@
       {
         "name": "UPDEPhaseArtifact",
         "schema_ref": "scpn_quantum_control.bridge.orchestrator_adapter (quantum R -> advance/hold/rollback)"
+      },
+      {
+        "name": "knm.scpn-upde",
+        "schema_ref": "scpn_quantum_control.bridge.scpn_upde_edge (16-oscillator K_nm/omega edge; computational-agreement only)"
       },
       {
         "name": "spike-train<->Ry",

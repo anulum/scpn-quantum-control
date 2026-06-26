@@ -33,6 +33,10 @@ or debugging a subsystem, not as the default path for tutorial code.
     options:
       members: [OMEGA_N_16, build_knm_paper27, build_kuramoto_ring, knm_to_hamiltonian, knm_to_ansatz]
 
+::: scpn_quantum_control.bridge.scpn_upde_edge
+    options:
+      members: [SCPNUPDEEdge, build_paper27_scpn_upde_edge, build_scpn_upde_edge, validate_scpn_upde_edge_payload]
+
 ::: scpn_quantum_control.bridge.snn_adapter
     options:
       members: [spike_train_to_rotations, quantum_measurement_to_current, SNNQuantumBridge, ArcaneNeuronBridge]

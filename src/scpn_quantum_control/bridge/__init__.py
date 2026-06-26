@@ -49,6 +49,16 @@ from .sc_to_quantum import (
     measurement_to_bitstream,
     probability_to_angle,
 )
+from .scpn_upde_edge import (
+    PAPER27_PROVISIONAL_BOUNDARY,
+    SCPN_UPDE_EDGE_SCHEMA,
+    SCPN_UPDE_SCOPE_ENVELOPE,
+    SCPNUPDEEdge,
+    build_paper27_scpn_upde_edge,
+    build_scpn_upde_edge,
+    edge_content_digest,
+    validate_scpn_upde_edge_payload,
+)
 from .snn_adapter import SNNQuantumBridge, quantum_measurement_to_current, spike_train_to_rotations
 from .spn_to_qcircuit import inhibitor_anti_control, spn_to_circuit
 from .ssgf_adapter import quantum_to_ssgf_state, ssgf_state_to_quantum, ssgf_w_to_hamiltonian
@@ -73,6 +83,14 @@ __all__ = [
     "LockSignatureArtifact",
     "LayerStateArtifact",
     "UPDEPhaseArtifact",
+    "PAPER27_PROVISIONAL_BOUNDARY",
+    "SCPNUPDEEdge",
+    "SCPN_UPDE_EDGE_SCHEMA",
+    "SCPN_UPDE_SCOPE_ENVELOPE",
+    "build_paper27_scpn_upde_edge",
+    "build_scpn_upde_edge",
+    "edge_content_digest",
+    "validate_scpn_upde_edge_payload",
     "QPUDataArtifact",
     "artifact_from_arrays",
     "read_qpu_data_artifact",
