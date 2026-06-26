@@ -39,7 +39,7 @@ import json
 import sys
 from collections.abc import Mapping, Sequence
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 TIER_ORDER = ("rust", "julia", "python")
 
@@ -49,7 +49,7 @@ def _load(path: Path | None) -> dict[str, Any] | None:
 
     if path is None or not path.exists():
         return None
-    return json.loads(path.read_text(encoding="utf-8"))
+    return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
 
 
 def _index(artifact: dict[str, Any] | None) -> dict[tuple[str, int], dict[str, Any]]:
@@ -119,6 +119,73 @@ def _availability_rows(ci: dict[str, Any] | None, local: dict[str, Any] | None) 
     ]
 
 
+def _competitive_framing(ci: dict[str, Any] | None) -> list[str]:
+    """Render the fail-closed competitive-baseline interpretation block."""
+
+    if ci is None:
+        row_count = 0
+        fastest_counts = "—"
+        speedup_summary = "—"
+    else:
+        results = list(ci.get("results", []))
+        row_count = len(results)
+        counts = {tier: 0 for tier in TIER_ORDER}
+        speedups: list[float] = []
+        for result in results:
+            fastest = result.get("fastest_backend")
+            if fastest in counts:
+                counts[str(fastest)] += 1
+            rows = {
+                row["backend"]: row
+                for row in result.get("rows", [])
+                if isinstance(row, dict) and row.get("stats") is not None
+            }
+            python_stats = rows.get("python", {}).get("stats")
+            fastest_stats = (
+                rows.get(str(fastest), {}).get("stats") if fastest is not None else None
+            )
+            if (
+                isinstance(python_stats, dict)
+                and isinstance(fastest_stats, dict)
+                and fastest != "python"
+            ):
+                python_p50 = float(python_stats["p50_us"])
+                fastest_p50 = float(fastest_stats["p50_us"])
+                if fastest_p50 > 0.0:
+                    speedups.append(python_p50 / fastest_p50)
+        fastest_counts = ", ".join(f"{tier}={counts[tier]}" for tier in TIER_ORDER)
+        if speedups:
+            speedup_summary = f"{_median(speedups):.2f}x median over {len(speedups)} CI rows"
+        else:
+            speedup_summary = "no non-Python fastest rows measured"
+
+    return [
+        "## Competitive Baseline Framing",
+        "",
+        "This section is the Phase 5.5 claim boundary for the tier benchmark. It",
+        "separates measured in-repository tier competition from unmeasured external",
+        "package comparisons and production-latency claims.",
+        "",
+        "| Surface | Current evidence | Claim boundary |",
+        "|---|---|---|",
+        f"| Internal tier competition | CI measures {row_count} primitive-size rows; fastest counts: {fastest_counts}. | Supports dispatch-order and drift-detection decisions inside this package. |",
+        f"| Python floor baseline | Same-algorithm Python floor is measured in CI; fastest non-Python tiers show {speedup_summary} against that floor. | This is not a claim of superiority over third-party Kuramoto, ODE, graph, or differentiable-solver packages. |",
+        "| External package baselines | Not measured by this artefact. | No external competitive claim is allowed until a separate harness records package names, versions, equations, tolerances, hardware, and raw artefacts. |",
+        "| Production latency | Every committed tier artefact sets `production_claim_allowed: false`. | No SLA, universal hardware, or customer deployment latency claim follows from this page. |",
+        "",
+    ]
+
+
+def _median(values: Sequence[float]) -> float:
+    """Return the median of a non-empty float sequence."""
+
+    ordered = sorted(values)
+    midpoint = len(ordered) // 2
+    if len(ordered) % 2 == 1:
+        return ordered[midpoint]
+    return 0.5 * (ordered[midpoint - 1] + ordered[midpoint])
+
+
 def render(ci: dict[str, Any] | None, local: dict[str, Any] | None) -> str:
     """Render the full side-by-side Markdown document."""
 
@@ -147,6 +214,7 @@ def render(ci: dict[str, Any] | None, local: dict[str, Any] | None) -> str:
         "",
         *_availability_rows(ci, local),
         "",
+        *_competitive_framing(ci),
         "## Per-primitive P50 latency (µs)",
         "",
         "| Operation | N | Rust (CI) | Rust (local) | Julia (CI) | Python (CI) | Python (local) | Fastest (CI) | Parity (CI) |",
@@ -179,7 +247,7 @@ def _result_for(
         return None
     for result in artifact.get("results", []):
         if result["operation"] == operation and result["size"] == size:
-            return result
+            return cast(dict[str, Any], result)
     return None
 
 

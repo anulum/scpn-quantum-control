@@ -30,6 +30,19 @@ under `docs/benchmarks/tiers/` for the full percentile set and parity data.
 | CI | 2026-06-26T15:47:00Z | tiers=[julia,python,rust] sizes=[8,32,128,512] warmup=2 repeats=5 |
 | Local | 2026-06-24T23:56:12Z | tiers=[python,rust] sizes=[8,32,128,512] warmup=2 repeats=5 |
 
+## Competitive Baseline Framing
+
+This section is the Phase 5.5 claim boundary for the tier benchmark. It
+separates measured in-repository tier competition from unmeasured external
+package comparisons and production-latency claims.
+
+| Surface | Current evidence | Claim boundary |
+|---|---|---|
+| Internal tier competition | CI measures 140 primitive-size rows; fastest counts: rust=108, julia=29, python=3. | Supports dispatch-order and drift-detection decisions inside this package. |
+| Python floor baseline | Same-algorithm Python floor is measured in CI; fastest non-Python tiers show 3.90x median over 137 CI rows against that floor. | This is not a claim of superiority over third-party Kuramoto, ODE, graph, or differentiable-solver packages. |
+| External package baselines | Not measured by this artefact. | No external competitive claim is allowed until a separate harness records package names, versions, equations, tolerances, hardware, and raw artefacts. |
+| Production latency | Every committed tier artefact sets `production_claim_allowed: false`. | No SLA, universal hardware, or customer deployment latency claim follows from this page. |
+
 ## Per-primitive P50 latency (µs)
 
 | Operation | N | Rust (CI) | Rust (local) | Julia (CI) | Python (CI) | Python (local) | Fastest (CI) | Parity (CI) |
