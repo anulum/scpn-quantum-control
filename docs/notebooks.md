@@ -8,11 +8,12 @@
 
 # Interactive Notebooks
 
-*98 tracked Jupyter notebooks covering the full journey from basic Kuramoto dynamics to
+*99 tracked Jupyter notebooks covering the full journey from basic Kuramoto dynamics to
 frontier research. Notebooks 01-13 cover core quantum simulation. Notebooks 14-47
 document the FIM (Fisher Information Metric) strange loop investigation campaign
 (2026-03-29) with 19 findings (6 negative) including hardware-artefact
-dual protection on ibm_fez.*
+dual protection on ibm_fez. Notebook 48 is the Phase 5 Kuramoto handbook
+workflow companion.*
 
 ---
 
@@ -30,7 +31,8 @@ Recommended first path:
 2. `02_vqe_ground_state.ipynb` for variational ground states.
 3. `03_error_mitigation.ipynb` for ZNE concepts.
 4. `10_qsnn_training.ipynb` for the current gradient-training notebook lane.
-5. `13_cross_repo_bridges.ipynb` for integration boundaries.
+5. `48_kuramoto_handbook_workflow.ipynb` for the Phase 5 Kuramoto facade path.
+6. `13_cross_repo_bridges.ipynb` for integration boundaries.
 
 ## Notebook governance
 
@@ -111,6 +113,7 @@ graph TD
 | 11 | Surface Code Budget | QEC resource estimation | Advanced | Rep vs surface code table, feasibility |
 | 12 | Trapped Ion Comparison | Superconducting vs ion trap noise | Advanced | Transpilation comparison, noisy $\langle Z \rangle$ |
 | 13 | Cross-Repo Bridges | SNN adapter, SSGF, orchestrator | Integration | Phase roundtrip plot, warning report |
+| 48 | Kuramoto Handbook Workflow | RK4, diagnostics, stability, clustering, and coupling design | Intermediate | JSON-aligned workflow summary |
 
 ---
 

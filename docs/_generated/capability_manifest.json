@@ -2,10 +2,10 @@
   "SPDX-License-Identifier": "AGPL-3.0-or-later",
   "counts": {
     "domain_package_families": 32,
-    "example_files": 30,
+    "example_files": 31,
     "github_workflows": 21,
     "model_documentation_pages": 0,
-    "notebook_files": 98,
+    "notebook_files": 99,
     "optional_extras": 43,
     "public_api_exports": 717,
     "public_documentation_pages": 251,
@@ -13,7 +13,7 @@
     "python_model_source_modules": 483,
     "rust_pyo3_model_wrappers": 171,
     "rust_source_modules": 42,
-    "test_files": 793
+    "test_files": 794
   },
   "documentation": {
     "examples": [
@@ -46,6 +46,7 @@
       "examples/26_nv_magnetometry_20T_demo.py",
       "examples/27_pqc_trigger_signer_demo.py",
       "examples/28_pulse_to_hls_quickstart.py",
+      "examples/29_kuramoto_handbook_workflow.py",
       "examples/README.md"
     ],
     "notebooks": [
@@ -96,6 +97,7 @@
       "notebooks/45_noise_as_purification.ipynb",
       "notebooks/46_metabolic_scaling_prediction.ipynb",
       "notebooks/47_winding_number_topological.ipynb",
+      "notebooks/48_kuramoto_handbook_workflow.ipynb",
       "notebooks/colab/kaggle_aging_k_decay.ipynb",
       "notebooks/colab/kaggle_anaesthesia_consciousness.ipynb",
       "notebooks/colab/kaggle_biochemical_validation.ipynb",
@@ -5843,6 +5845,7 @@
       "tests/test_kuramoto_explosive_continuation.py",
       "tests/test_kuramoto_facade.py",
       "tests/test_kuramoto_frequency_order.py",
+      "tests/test_kuramoto_handbook_workflow_example.py",
       "tests/test_kuramoto_heterogeneous.py",
       "tests/test_kuramoto_hyperedge.py",
       "tests/test_kuramoto_inertial.py",

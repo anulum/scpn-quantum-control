@@ -13,10 +13,10 @@
 | API documentation pages | 0 |
 | Rust PyO3 function bindings | 171 |
 | Rust source modules | 42 |
-| Notebook files | 98 |
-| Example files | 30 |
+| Notebook files | 99 |
+| Example files | 31 |
 | Optional extras | 43 |
-| Python test files | 793 |
+| Python test files | 794 |
 | Public documentation pages | 251 |
 | GitHub Actions workflows | 21 |
 

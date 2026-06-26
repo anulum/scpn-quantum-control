@@ -112,10 +112,10 @@ has a defined commercial licensing route.
 | API documentation pages | 0 |
 | Rust PyO3 function bindings | 171 |
 | Rust source modules | 42 |
-| Notebook files | 98 |
-| Example files | 30 |
+| Notebook files | 99 |
+| Example files | 31 |
 | Optional extras | 43 |
-| Python test files | 793 |
+| Python test files | 794 |
 | Public documentation pages | 251 |
 | GitHub Actions workflows | 21 |
 
@@ -811,7 +811,7 @@ graph LR
 
 ## Examples
 
-29 standalone scripts in [`examples/`](examples/):
+30 standalone scripts in [`examples/`](examples/):
 
 | # | Script | What it demonstrates |
 |:-:|--------|---------------------|
@@ -828,7 +828,8 @@ graph LR
 | 11 | `pec_demo` | Probabilistic error cancellation |
 | 12 | `trapped_ion_demo` | Ion trap noise model comparison |
 | 13 | `iter_disruption_demo` | ITER plasma disruption classification |
-| 14 | `quantum_advantage_demo` | Advantage threshold estimation |
+| 14a | `frc_pulsed_shot_qaoa_demo` | FRC pulsed-shot QAOA schedule |
+| 14b | `quantum_advantage_demo` | Advantage threshold estimation |
 | 15 | `qsnn_training_demo` | QSNN training loop with parameter-shift |
 | 16 | `fault_tolerant_demo` | Repetition code UPDE |
 | 17 | `snn_ssgf_bridges_demo` | Cross-repo bridge roundtrips |
@@ -839,12 +840,17 @@ graph LR
 | 22 | `quantum_neuromorphic_bridge` | QSNN quantum LIF + trace STDP + dynamic coupling bridge |
 | 23 | `differentiable_api_workflow` | Unified differentiable API, diagnostics, compiler report, and bounded QNN training |
 | 24 | `differentiable_benchmark_reproduction` | Local differentiable benchmark evidence bundle reproduction with non-isolated classification |
+| 25 | `qrng_streaming_quickstart` | QRNG stream-health checks |
+| 26 | `nv_magnetometry_20T_demo` | NV-centre 20 T calibration surface |
+| 27 | `pqc_trigger_signer_demo` | ML-DSA trigger signing |
+| 28 | `pulse_to_hls_quickstart` | UltraScale+ HLS pulse source generation |
+| 29 | `kuramoto_handbook_workflow` | Kuramoto facade diagnostics, stability, clusters, and coupling design |
 
 All examples run on statevector simulation (no QPU needed).
 
 ## Notebooks
 
-98 tracked Jupyter notebooks in [`notebooks/`](notebooks/) — including the
+99 tracked Jupyter notebooks in [`notebooks/`](notebooks/) — including the
 core tutorials and retained investigation notebooks. Core notebooks:
 
 | # | Notebook | Level | Key Output |
@@ -862,6 +868,7 @@ core tutorials and retained investigation notebooks. Core notebooks:
 | 11 | Surface Code Budget | Advanced | QEC resource estimation |
 | 12 | Trapped Ion Comparison | Advanced | Noise model comparison |
 | 13 | Cross-Repo Bridges | Integration | Phase roundtrip, adapter demos |
+| 48 | Kuramoto Handbook Workflow | Intermediate | Phase 5 facade workflow summary |
 
 All run on local AerSimulator. No IBM credentials needed.
 

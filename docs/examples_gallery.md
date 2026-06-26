@@ -8,7 +8,7 @@
 
 # Example Gallery
 
-Twenty-nine task-shaped entry points, ordered from the fastest
+Thirty task-shaped entry points, ordered from the fastest
 no-credential run to hardware-evidence, integration, and release-readiness
 surfaces. Each entry states what it does, when to reach for it, and the fastest
 safe command. Every command here runs on the statevector simulator or on
@@ -96,7 +96,21 @@ print(len(hamiltonian))
 See [Pipeline Performance](pipeline_performance.md) for the measured backend
 ordering.
 
-## 6. Hardware-pack verification
+## 6. Kuramoto handbook workflow
+
+**What:** run the deterministic six-oscillator handbook workflow through the
+public Kuramoto facade and print stable JSON diagnostics for integration,
+frequency locking, stability, clusters, critical coupling, and coupling design.
+**When:** you need the Phase 5 API path in one executable, no-credential command.
+
+```bash
+python examples/29_kuramoto_handbook_workflow.py
+```
+
+See the [Kuramoto Handbook](kuramoto_handbook.md) and the companion notebook
+`notebooks/48_kuramoto_handbook_workflow.ipynb`.
+
+## 7. Hardware-pack verification
 
 **What:** verify the integrity and promotion status of committed hardware result
 packs through the packaged CLI.
@@ -109,7 +123,7 @@ scpn-verify-hardware-packs --help
 
 See [Hardware Result Packs](hardware_result_packs.md).
 
-## 7. Classical baseline comparison
+## 8. Classical baseline comparison
 
 **What:** compare the exact reference, the SciPy ODE baseline, and the
 statevector Trotter route, and emit a reproducible artefact with documented
@@ -126,7 +140,7 @@ For the system sizes this comparison can run (`n <= 16`) the classical exact
 route is faster and exact; the quantum route is an evidence and falsification
 surface, not a generic speed-up. See [Classical Baselines](classical_baselines.md).
 
-## 8. Differentiable parameter-shift
+## 9. Differentiable parameter-shift
 
 **What:** walk the unified differentiable API, including parameter-shift
 gradients with fail-closed framework boundaries.
@@ -138,7 +152,7 @@ python examples/23_differentiable_api_workflow.py
 
 See the [Differentiable API](differentiable_api.md).
 
-## 9. Provider / HAL dry-run
+## 10. Provider / HAL dry-run
 
 **What:** exercise the provider hardware-abstraction layer without submitting a
 job, recording capability and fail-closed boundaries.
@@ -150,7 +164,7 @@ scpn-provider-smoke --help
 
 See [QPU Provider Readiness](qpu_provider_readiness.md).
 
-## 10. Evidence replay
+## 11. Evidence replay
 
 **What:** regenerate the committed methods/FIM benchmark artefacts from source,
 without any IBM submission, so a ledger-promoted result can be reproduced.
@@ -162,7 +176,7 @@ scpn-bench reproduce-methods
 
 See the [Hardware Status Ledger](hardware_status_ledger.md).
 
-## 11. Probabilistic error cancellation
+## 12. Probabilistic error cancellation
 
 **What:** demonstrate PEC mitigation accounting on a local simulator route.
 **When:** you need mitigation vocabulary and artefact shape before a hardware
@@ -172,7 +186,7 @@ campaign.
 python examples/11_pec_demo.py
 ```
 
-## 12. Trapped-ion workflow
+## 13. Trapped-ion workflow
 
 **What:** exercise the trapped-ion-oriented compilation/demo path without a live
 provider submission.
@@ -182,7 +196,7 @@ provider submission.
 python examples/12_trapped_ion_demo.py
 ```
 
-## 13. ITER disruption workflow
+## 14. ITER disruption workflow
 
 **What:** run the plasma-control demonstration path for ITER-style disruption
 risk modelling.
@@ -193,7 +207,7 @@ validated fusion control.
 python examples/13_iter_disruption_demo.py
 ```
 
-## 14. FRC pulsed-shot QAOA
+## 15. FRC pulsed-shot QAOA
 
 **What:** build a pulsed-shot QAOA schedule for the FRC surrogate lane.
 **When:** you need the control-scheduler contract before importing
@@ -205,7 +219,7 @@ python examples/14_frc_pulsed_shot_qaoa_demo.py
 
 See [FRC Pulsed-Shot QAOA](frc_pulsed_qaoa.md).
 
-## 15. Quantum-advantage boundary check
+## 16. Quantum-advantage boundary check
 
 **What:** compare the current quantum route against classical baselines under
 the package's explicit no-broad-advantage boundary.
@@ -216,7 +230,7 @@ marketing.
 python examples/14_quantum_advantage_demo.py
 ```
 
-## 16. QSNN training
+## 17. QSNN training
 
 **What:** run the quantum spiking-neural-network training demonstration.
 **When:** you are testing differentiable-training evidence surfaces.
@@ -225,7 +239,7 @@ python examples/14_quantum_advantage_demo.py
 python examples/15_qsnn_training_demo.py
 ```
 
-## 17. Fault-tolerant planning
+## 18. Fault-tolerant planning
 
 **What:** inspect the fault-tolerant workflow scaffold and its claim boundary.
 **When:** you need planning artefacts without implying deployed logical
@@ -235,7 +249,7 @@ hardware.
 python examples/16_fault_tolerant_demo.py
 ```
 
-## 18. SNN / SSGF bridges
+## 19. SNN / SSGF bridges
 
 **What:** demonstrate bridge contracts between quantum-control outputs and
 spiking/field-model consumers.
@@ -245,7 +259,7 @@ spiking/field-model consumers.
 python examples/17_snn_ssgf_bridges_demo.py
 ```
 
-## 19. End-to-end pipeline
+## 20. End-to-end pipeline
 
 **What:** run the local no-credential pipeline from model input to analysis
 output.
@@ -255,7 +269,7 @@ output.
 python examples/18_end_to_end_pipeline.py
 ```
 
-## 20. Sync witness operator
+## 21. Sync witness operator
 
 **What:** construct and evaluate synchronisation witness operators.
 **When:** you need observable evidence instead of raw state amplitudes.
@@ -264,7 +278,7 @@ python examples/18_end_to_end_pipeline.py
 python examples/19_sync_witness_operator.py
 ```
 
-## 21. Quantum persistent homology
+## 22. Quantum persistent homology
 
 **What:** run the topology-analysis demonstration for quantum-state or network
 features.
@@ -274,7 +288,7 @@ features.
 python examples/20_quantum_persistent_homology.py
 ```
 
-## 22. Biological QEC
+## 23. Biological QEC
 
 **What:** exercise the SCPN-16 biological-QEC reporting path.
 **When:** you need the bounded report format without promoting biological or
@@ -284,7 +298,7 @@ clinical claims.
 python examples/21_biological_qec_scpn16.py
 ```
 
-## 23. Quantum neuromorphic bridge
+## 24. Quantum neuromorphic bridge
 
 **What:** demonstrate neuromorphic bridge payloads and conversion surfaces.
 **When:** you are integrating with downstream neuromorphic packages.
@@ -293,7 +307,7 @@ python examples/21_biological_qec_scpn16.py
 python examples/22_quantum_neuromorphic_bridge.py
 ```
 
-## 24. Differentiable API workflow
+## 25. Differentiable API workflow
 
 **What:** walk the differentiable API from objective definition to evidence
 record.
@@ -303,7 +317,7 @@ record.
 python examples/23_differentiable_api_workflow.py
 ```
 
-## 25. Differentiable benchmark reproduction
+## 26. Differentiable benchmark reproduction
 
 **What:** reproduce committed differentiable benchmark evidence.
 **When:** you need local regression evidence tied to the classification ledger.
@@ -312,7 +326,7 @@ python examples/23_differentiable_api_workflow.py
 python examples/24_differentiable_benchmark_reproduction.py
 ```
 
-## 26. QRNG streaming quickstart
+## 27. QRNG streaming quickstart
 
 **What:** sample simulator-backed quantum random bits and run FIPS/NIST health
 checks.
@@ -324,7 +338,7 @@ python examples/25_qrng_streaming_quickstart.py
 
 See [Quantum Random-Number Generation](entropy_qrng.md).
 
-## 27. NV-centre 20 T magnetometry
+## 28. NV-centre 20 T magnetometry
 
 **What:** simulate ODMR resonances and calibration across the high-field
 magnetometry range.
@@ -337,7 +351,7 @@ python examples/26_nv_magnetometry_20T_demo.py
 
 See [NV-Centre 20 T Magnetometry](nv_magnetometry_20T.md).
 
-## 28. PQC trigger signer
+## 29. PQC trigger signer
 
 **What:** generate ML-DSA-65 keys and sign a capacitor-bank trigger payload.
 **When:** you need pre-arm authorisation evidence and freshness checks.
@@ -348,7 +362,7 @@ python examples/27_pqc_trigger_signer_demo.py
 
 See [Post-Quantum Trigger Signer](ml_dsa_pqc.md).
 
-## 29. Pulse to UltraScale+ HLS
+## 30. Pulse to UltraScale+ HLS
 
 **What:** convert a pulse envelope into Vivado/Vitis HLS source and host
 co-simulation files.

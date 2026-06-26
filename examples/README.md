@@ -30,6 +30,7 @@ Recommended researcher quick path:
 - `25_qrng_streaming_quickstart.py` for QRNG stream-health checks.
 - `27_pqc_trigger_signer_demo.py` for ML-DSA trigger signing.
 - `28_pulse_to_hls_quickstart.py` for UltraScale+ pulse-code generation.
+- `29_kuramoto_handbook_workflow.py` for the Phase 5 Kuramoto handbook path.
 
 ## Route by Goal
 
@@ -48,6 +49,7 @@ Recommended researcher quick path:
 | Inspect QRNG stream readiness | `25_qrng_streaming_quickstart.py` |
 | Inspect post-quantum trigger signing | `27_pqc_trigger_signer_demo.py` |
 | Generate pulse HLS artefacts | `28_pulse_to_hls_quickstart.py` |
+| Run the Kuramoto handbook workflow | `29_kuramoto_handbook_workflow.py` |
 
 Examples are onboarding aids. Reusable production logic belongs in `src/`,
 scripts, committed fixtures, and release gates.
@@ -343,4 +345,16 @@ set and reports the fixed-point range used by the generated source.
 
 ```bash
 python examples/28_pulse_to_hls_quickstart.py
+```
+
+## 29_kuramoto_handbook_workflow.py — Kuramoto Handbook Workflow
+
+Runs the deterministic six-oscillator Phase 5 handbook path through the public
+`scpn_quantum_control.kuramoto` facade: RK4 integration, frequency-locking
+diagnostics, stability spectrum, coherence clustering, Gaussian critical
+coupling, and projected synchronising-coupling design. The output is stable
+JSON for quick inspection and CI regression checks.
+
+```bash
+python examples/29_kuramoto_handbook_workflow.py
 ```

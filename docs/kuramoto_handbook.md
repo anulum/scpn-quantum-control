@@ -191,6 +191,23 @@ value, gradient = kuramoto.synchronisation_value_and_grad(theta0, omega, couplin
 Use `kuramoto.capabilities()` to inspect the grouped API and
 `kuramoto.describe("analysis")` to list one group programmatically.
 
+## Worked Workflow
+
+Run the deterministic six-oscillator companion workflow when you need
+one executable Phase 5 path covering RK4 integration, frequency-locking
+diagnostics, stability spectrum, coherence clustering, Gaussian critical
+coupling, and projected synchronising-coupling design:
+
+```bash
+python examples/29_kuramoto_handbook_workflow.py
+```
+
+The matching notebook is
+`notebooks/48_kuramoto_handbook_workflow.ipynb`. Both surfaces use the
+public `scpn_quantum_control.kuramoto` facade and emit or preserve
+diagnostics that can be compared with this handbook's capability and
+benchmark tables.
+
 ## Claim Boundaries
 
 - The local benchmark artefact is functional and reproducibility evidence, not
