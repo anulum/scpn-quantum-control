@@ -203,12 +203,15 @@ def test_whole_program_ad_is_exported_from_package_root() -> None:
     assert (
         scpn.WholeProgramUnsupportedSemanticDiagnostic is WholeProgramUnsupportedSemanticDiagnostic
     )
-    assert scpn.program_adjoint_grad is program_adjoint_grad
+    assert adjoint_module.program_adjoint_grad is program_adjoint_grad
+    assert adjoint_module.program_adjoint_value_and_grad is program_adjoint_value_and_grad
+    assert differentiable.program_adjoint_grad is adjoint_module.program_adjoint_grad
+    assert scpn.program_adjoint_grad is adjoint_module.program_adjoint_grad
     assert differentiable.program_adjoint_gradient is adjoint_module.program_adjoint_gradient
     assert differentiable.program_adjoint_result is adjoint_module.program_adjoint_result
     assert scpn.program_adjoint_gradient is adjoint_module.program_adjoint_gradient
     assert scpn.program_adjoint_result is adjoint_module.program_adjoint_result
-    assert scpn.program_adjoint_value_and_grad is program_adjoint_value_and_grad
+    assert scpn.program_adjoint_value_and_grad is adjoint_module.program_adjoint_value_and_grad
     assert scpn.analyze_program_ad_alias_effects is analyze_program_ad_alias_effects
     assert scpn.program_ad_static_alias_lattice_report is program_ad_static_alias_lattice_report
     assert scpn.parse_program_ad_effect_ir is parse_program_ad_effect_ir

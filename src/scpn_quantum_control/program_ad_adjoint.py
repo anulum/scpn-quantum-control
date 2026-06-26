@@ -9,15 +9,16 @@
 
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from numbers import Real
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING, Any, cast
 
 import numpy as np
-from numpy.typing import NDArray
+from numpy.typing import ArrayLike, NDArray
 
 if TYPE_CHECKING:
+    from .differentiable_parameter_contracts import Parameter
     from .whole_program_ad_result import WholeProgramIRNode
 
 
@@ -390,6 +391,96 @@ def program_adjoint_gradient(result: object) -> NDArray[np.float64]:
     return gradient
 
 
+def program_adjoint_grad(
+    objective: Callable[[Any], object],
+    values: ArrayLike,
+    parameters: Sequence[Parameter] | None = None,
+    *,
+    trace: bool = True,
+) -> NDArray[np.float64]:
+    """Return the reverse-mode program AD gradient for supported captured IR.
+
+    Parameters
+    ----------
+    objective:
+        Scalar objective that accepts Program AD trace values.
+    values:
+        Initial numeric parameter values.
+    parameters:
+        Optional named parameter metadata. Frozen parameters keep zero
+        cotangents in the generated adjoint gradient.
+    trace:
+        Whether to keep runtime trace-event evidence in the captured
+        whole-program result.
+
+    Returns
+    -------
+    numpy.ndarray
+        Reverse-adjoint generation gradient for the captured Program AD IR.
+
+    Raises
+    ------
+    ValueError
+        If the objective does not produce a scalar Program AD result or if the
+        captured IR contains unsupported adjoint-generation operations.
+    """
+
+    from .differentiable import whole_program_value_and_grad
+
+    result = whole_program_value_and_grad(
+        objective,
+        values,
+        parameters=parameters,
+        trace=trace,
+    )
+    return program_adjoint_gradient(result)
+
+
+def program_adjoint_value_and_grad(
+    objective: Callable[[Any], object],
+    values: ArrayLike,
+    parameters: Sequence[Parameter] | None = None,
+    *,
+    trace: bool = True,
+) -> tuple[float, NDArray[np.float64]]:
+    """Return the objective value and reverse-mode Program AD gradient.
+
+    Parameters
+    ----------
+    objective:
+        Scalar objective that accepts Program AD trace values.
+    values:
+        Initial numeric parameter values.
+    parameters:
+        Optional named parameter metadata. Frozen parameters keep zero
+        cotangents in the generated adjoint gradient.
+    trace:
+        Whether to keep runtime trace-event evidence in the captured
+        whole-program result.
+
+    Returns
+    -------
+    tuple[float, numpy.ndarray]
+        Objective value and reverse-adjoint generation gradient.
+
+    Raises
+    ------
+    ValueError
+        If the objective does not produce a scalar Program AD result or if the
+        captured IR contains unsupported adjoint-generation operations.
+    """
+
+    from .differentiable import whole_program_value_and_grad
+
+    result = whole_program_value_and_grad(
+        objective,
+        values,
+        parameters=parameters,
+        trace=trace,
+    )
+    return result.value, program_adjoint_gradient(result)
+
+
 def _program_adjoint_input_value(
     name: str,
     node_by_name: Mapping[str, WholeProgramIRNode],
@@ -417,6 +508,8 @@ def _program_adjoint_is_ir_value(name: str) -> bool:
 __all__ = [
     "ProgramADAdjointResult",
     "ProgramADAdjointStep",
+    "program_adjoint_grad",
     "program_adjoint_gradient",
     "program_adjoint_result",
+    "program_adjoint_value_and_grad",
 ]

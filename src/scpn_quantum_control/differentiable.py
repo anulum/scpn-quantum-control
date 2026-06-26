@@ -231,8 +231,10 @@ from .differentiable_vmap import vmap
 from .program_ad_adjoint import (
     ProgramADAdjointResult,
     ProgramADAdjointStep,
+    program_adjoint_grad,
     program_adjoint_gradient,
     program_adjoint_result,
+    program_adjoint_value_and_grad,
 )
 from .program_ad_adjoint import (
     _program_adjoint_input_value as _program_adjoint_input_value,
@@ -743,53 +745,6 @@ def whole_program_grad(
     return whole_program_value_and_grad(
         objective, values, parameters=parameters, trace=trace
     ).gradient
-
-
-def program_adjoint_grad(
-    objective: Callable[[Any], object],
-    values: ArrayLike,
-    parameters: Sequence[Parameter] | None = None,
-    *,
-    trace: bool = True,
-) -> NDArray[np.float64]:
-    """Return the reverse-mode program AD gradient for supported captured IR.
-
-    The execution path first captures the operator-intercepted Program AD trace,
-    then returns the reverse adjoint generation gradient. If generation does
-    not support every captured IR node, this function fails closed instead of
-    substituting a forward-mode tangent or finite-difference result.
-    """
-
-    result = whole_program_value_and_grad(
-        objective,
-        values,
-        parameters=parameters,
-        trace=trace,
-    )
-    return program_adjoint_gradient(result)
-
-
-def program_adjoint_value_and_grad(
-    objective: Callable[[Any], object],
-    values: ArrayLike,
-    parameters: Sequence[Parameter] | None = None,
-    *,
-    trace: bool = True,
-) -> tuple[float, NDArray[np.float64]]:
-    """Return the program value and reverse-mode adjoint generation gradient.
-
-    This is the first-class reverse-mode program AD API. It keeps the same
-    fail-closed generation boundary as :func:`program_adjoint_grad` and does not
-    claim executable compiler lowering or arbitrary Python differentiation.
-    """
-
-    result = whole_program_value_and_grad(
-        objective,
-        values,
-        parameters=parameters,
-        trace=trace,
-    )
-    return result.value, program_adjoint_gradient(result)
 
 
 def _program_ad_float64_vector_result(values: object) -> NDArray[np.float64]:

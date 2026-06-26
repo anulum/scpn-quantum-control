@@ -28,8 +28,9 @@ Linear-algebra VJP rules are sourced from
 :mod:`scpn_quantum_control.program_ad_linalg_primitives`; IR-node and result
 records come from :mod:`scpn_quantum_control.program_ad_effect_ir` and
 :mod:`scpn_quantum_control.program_ad_adjoint`. The public reverse-mode wrappers
-(``program_adjoint_grad`` and friends) remain in
-:mod:`scpn_quantum_control.differentiable` and call into this module.
+(``program_adjoint_grad`` and friends) live in
+:mod:`scpn_quantum_control.program_ad_adjoint`, while
+:mod:`scpn_quantum_control.differentiable` keeps compatibility imports.
 """
 
 from __future__ import annotations
