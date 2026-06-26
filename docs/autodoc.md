@@ -107,6 +107,12 @@ or debugging a subsystem, not as the default path for tutorial code.
     options:
       members: [QuantumUPDESolver]
 
+## Studio
+
+::: scpn_quantum_control.studio.recompute_kernel
+    options:
+      members: [XYCompileRecomputeUnit, build_xy_compile_recompute_unit, canonical_xy_compile_input_bytes, verify_xy_compile_recompute_unit, xy_compile_digest_python]
+
 ## Control
 
 ::: scpn_quantum_control.control.qaoa_mpc

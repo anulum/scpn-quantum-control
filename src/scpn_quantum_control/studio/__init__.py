@@ -38,6 +38,17 @@ from .federation import (
     write_federation_document,
 )
 from .manifest import build_manifest, declared_surface
+from .recompute_kernel import (
+    XY_COMPILE_INPUT_VERSION,
+    XY_COMPILE_RECOMPUTE_SCHEMA,
+    XY_COMPILE_WASM_CRATE,
+    XY_COMPILE_WASM_EXPORT,
+    XYCompileRecomputeUnit,
+    build_xy_compile_recompute_unit,
+    canonical_xy_compile_input_bytes,
+    verify_xy_compile_recompute_unit,
+    xy_compile_digest_python,
+)
 from .reference_validation import (
     DEFAULT_REFERENCE_VALIDATION_PATH,
     REFERENCE_VALIDATION_SCHEMA,
@@ -64,6 +75,11 @@ __all__ = [
     "ReferenceValidationRegistryValidation",
     "STUDIO_ID",
     "StudioBundleValidation",
+    "XY_COMPILE_INPUT_VERSION",
+    "XY_COMPILE_RECOMPUTE_SCHEMA",
+    "XY_COMPILE_WASM_CRATE",
+    "XY_COMPILE_WASM_EXPORT",
+    "XYCompileRecomputeUnit",
     "build_architecture_map_extension",
     "build_claim_ledger_bundle",
     "build_claim_ledger_bundles",
@@ -73,6 +89,8 @@ __all__ = [
     "build_manifest",
     "build_provider_attestation",
     "build_result_pack_unit",
+    "build_xy_compile_recompute_unit",
+    "canonical_xy_compile_input_bytes",
     "declared_surface",
     "evidence_schemas",
     "evidence_axes",
@@ -84,6 +102,8 @@ __all__ = [
     "load_reference_validation_registry",
     "validate_bundle",
     "validate_bundles",
+    "verify_xy_compile_recompute_unit",
     "verb_substrates",
     "write_federation_document",
+    "xy_compile_digest_python",
 ]

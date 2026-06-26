@@ -162,6 +162,43 @@ is only for QUANTUM/SPO computational agreement and reviewable compiler handoff.
 It is not physical validation, not a canonical `K_nm` claim, and not live
 actuation authority.
 
+## WS-1 recompute kernel
+
+Compile-path claims can now be emitted as recompute-verifiable units:
+
+```python
+from scpn_quantum_control.bridge import OMEGA_N_16, build_knm_paper27
+from scpn_quantum_control.studio import (
+    build_xy_compile_recompute_unit,
+    verify_xy_compile_recompute_unit,
+)
+
+unit = build_xy_compile_recompute_unit(
+    build_knm_paper27(L=16),
+    OMEGA_N_16,
+    time=0.1,
+    trotter_steps=1,
+    trotter_order=1,
+)
+assert verify_xy_compile_recompute_unit(unit).value == "match"
+```
+
+The unit schema is `studio.xy-compile-recompute.v1`. It declares
+`verifiability_mode = recompute`, `exactness_class = bit-exact`, and the WASM
+kernel source:
+
+```text
+scpn_quantum_engine/studio_wasm_kernel
+```
+
+That Rust crate is dependency-light and builds to `wasm32-unknown-unknown`. Its
+exported `scpn_xy_compile_digest` function recomputes the SHA-256 digest over
+the structural XY compile terms from the canonical little-endian byte payload.
+The Python wrapper mirrors the same byte encoding for local tests and signed
+unit construction; browser verification uses the Rust/WASM kernel. This covers
+the bit-exact compile decision path only. Continuous simulator values and QPU
+counts remain separate tolerance or attestation evidence.
+
 ## Substrate axes
 
 The Studio manifest publishes the schema-B substrate axes for verbs that carry

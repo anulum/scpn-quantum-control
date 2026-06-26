@@ -46,6 +46,7 @@ NATIVE_SPEEDUP_SCHEMA = "studio.native-speedup.v1"
 EVIDENCE_REPLAY_SCHEMA = "studio.evidence-replay.v1"
 MITIGATION_SCHEMA = "studio.mitigation.v1"
 HARDWARE_RESULT_PACK_SCHEMA = "studio.hardware-result-pack.v1"
+XY_COMPILE_RECOMPUTE_SCHEMA = "studio.xy-compile-recompute.v1"
 
 VERB_SUBSTRATES: dict[str, tuple[str, ...]] = {
     "analyse": ("classical-reference", "numerical-model", "simulator"),
@@ -61,7 +62,7 @@ COMPILE = Verb(
     side_effect=SideEffect.READ_ONLY,
     timing=Timing(TimingClass.INTERACTIVE),
     fidelity=Fidelity.FIRST_PRINCIPLES,
-    produces=(KURAMOTO_COMPILATION_SCHEMA,),
+    produces=(KURAMOTO_COMPILATION_SCHEMA, XY_COMPILE_RECOMPUTE_SCHEMA),
     backends=("rust", "qiskit", "python"),
 )
 """Compile an arbitrary ``K_nm``/``omega`` network into XY/XXZ Hamiltonians and circuits."""
@@ -180,6 +181,7 @@ def evidence_schemas() -> tuple[str, ...]:
         EVIDENCE_REPLAY_SCHEMA,
         MITIGATION_SCHEMA,
         HARDWARE_RESULT_PACK_SCHEMA,
+        XY_COMPILE_RECOMPUTE_SCHEMA,
     )
 
 

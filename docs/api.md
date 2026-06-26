@@ -119,6 +119,7 @@ contracts for persisted QPU data, and advanced references for subsystem extensio
 | Realtime loop telemetry | `RealtimeRuntimeConfig`, `VirtualRealtimeClock`, `run_realtime_control_loop`, and `SubMicrosecondTracker` | Software-loop latency accounting and benchmark evidence; not an intra-shot QPU feedback guarantee. |
 | FRC pulsed-shot QAOA | `scpn_quantum_control.bridge.fusion_core_frc` and `scpn_quantum_control.phase.frc_pulsed_qaoa` | Simulator/control-grade bridge for FRC scheduling and surrogate calibration; fusion-core physics provenance must be recorded before promotion. |
 | SPO `knm.scpn-upde` handoff | `scpn_quantum_control.bridge.scpn_upde_edge` | Emits the 16-oscillator Paper-27 `K_nm`/`omega` edge for SPO computational agreement only; QPU execution and actuation permissions remain false. |
+| Studio recompute verification | `scpn_quantum_control.studio.recompute_kernel` and `scpn_quantum_engine/studio_wasm_kernel` | Emits bit-exact `studio.xy-compile-recompute.v1` units for structural XY compile claims; continuous values use tolerance evidence and hardware counts use attestation. |
 | NV-centre magnetometry | `scpn_quantum_control.sensing.nv_magnetometry_20T` | Simulation and calibration contracts for 0-20 T ODMR workflows; hardware calibration remains gated by explicit evidence. |
 | Studio federation | `scpn-emit-studio-manifest`, `scpn_quantum_control.studio.federation`, and `scpn_quantum_control.studio.evidence_bundle` | Emits schema-A capability and architecture-map manifests plus schema-B `EvidenceBundle` objects for committed differentiable claim-ledger rows and hardware result packs. Bundles preserve existing claim boundaries; they do not promote new evidence. |
 | Kuramoto acceleration and variants | `scpn_quantum_control.accel.*`, `scpn_quantum_control.variants`, and the Rust engine optional extra | Use benchmark classification and parity tests before quoting acceleration beyond local functional evidence. |
@@ -170,6 +171,8 @@ validate_bundle(bundle)
 validate_bundles(bundles)
 verb_substrates()
 evidence_axes(source)
+build_xy_compile_recompute_unit(K_nm, omega, time, trotter_steps, trotter_order)
+verify_xy_compile_recompute_unit(unit)
 ```
 
 Use [Studio Federation](studio_federation.md) for the schema-A/schema-B workflow,

@@ -311,7 +311,7 @@
     ]
   },
   "schema_a": {
-    "content_digest": "sha256:307e7bb4d8e858329318a4b72a188fdd670b576d87cf1fe7a5a278a45ff909ed",
+    "content_digest": "sha256:a44b859f67011075ea678073f4b350f63fd954e8c84fc16b6951ec6edb2aa21a",
     "contract_era": "v1",
     "enumeration": "language-agnostic",
     "evidence_types": [
@@ -323,7 +323,8 @@
       "studio.native-speedup.v1",
       "studio.evidence-replay.v1",
       "studio.mitigation.v1",
-      "studio.hardware-result-pack.v1"
+      "studio.hardware-result-pack.v1",
+      "studio.xy-compile-recompute.v1"
     ],
     "platform_sdk": ">=0.9,<0.11",
     "protocol_version": "1",
@@ -339,7 +340,8 @@
         ],
         "fidelity": "first-principles",
         "produces": [
-          "studio.kuramoto-compilation.v1"
+          "studio.kuramoto-compilation.v1",
+          "studio.xy-compile-recompute.v1"
         ],
         "safety_tier": "research",
         "side_effect": "read-only",

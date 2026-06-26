@@ -39,6 +39,23 @@ across the FFI boundary). Python wrappers handle the conversion transparently.
 Pure Rust inner functions are kept separate so the algorithms can be
 unit-tested without a Python interpreter.
 
+## Studio WASM verifier kernel
+
+`scpn_quantum_engine/studio_wasm_kernel` is intentionally separate from the
+PyO3 extension crate. It has no Python or NumPy dependency and builds to
+`wasm32-unknown-unknown`:
+
+```bash
+cargo build --release --target wasm32-unknown-unknown \
+  --manifest-path scpn_quantum_engine/studio_wasm_kernel/Cargo.toml
+```
+
+The exported `scpn_xy_compile_digest` ABI consumes the canonical
+little-endian `studio.xy-compile-recompute.v1` byte payload and writes a
+32-byte SHA-256 digest over the structural XY compile terms. This is the WS-1
+bit-exact recompute path for compile claims only; it does not execute QPU jobs
+or grade continuous simulator values.
+
 **Static FFI safety audit (2026-06-26):** `tools/audit_rust_ffi_safety.py`
 inventories the Rust `src/*.rs` boundary before binding expansion. The current
 committed artefact,
