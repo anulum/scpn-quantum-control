@@ -29,6 +29,7 @@ from .differentiable_batch_helpers import (
 from .differentiable_batch_helpers import (
     _as_parameter_shift_sample_tensor as _as_parameter_shift_sample_tensor,
 )
+from .differentiable_canonical_api import grad, value_and_grad
 from .differentiable_consistency import (
     check_custom_derivative_consistency,
     check_parameter_shift_consistency,
@@ -603,7 +604,6 @@ from .whole_program_trace_values import (
 )
 
 VectorObjective = Callable[[NDArray[np.float64]], ArrayLike]
-ComplexStepObjective = Callable[[NDArray[np.complex128]], object]
 CustomJVPRule = Callable[[NDArray[np.float64], NDArray[np.float64]], ArrayLike]
 CustomVJPRule = Callable[[NDArray[np.float64], NDArray[np.float64]], ArrayLike]
 
@@ -779,85 +779,6 @@ _register_program_ad_selection_primitive_contracts()
 _register_program_ad_product_primitive_contracts()
 _register_program_ad_cumulative_primitive_contracts()
 _register_program_ad_linalg_primitive_contracts()
-
-
-def value_and_grad(
-    objective: Callable[[Any], Any],
-    values: ArrayLike,
-    *,
-    parameters: Sequence[Parameter] | None = None,
-    method: str = "parameter_shift",
-    rule: ParameterShiftRule | None = None,
-    step: float | None = None,
-) -> GradientResult | WholeProgramADResult:
-    """Evaluate a scalar objective and gradient through a canonical transform API."""
-
-    if method == "parameter_shift":
-        return value_and_parameter_shift_grad(
-            cast(ScalarObjective, objective),
-            values,
-            parameters=parameters,
-            rule=rule,
-        )
-    if method == "finite_difference":
-        return value_and_finite_difference_grad(
-            cast(ScalarObjective, objective),
-            values,
-            parameters=parameters,
-            step=1.0e-6 if step is None else step,
-        )
-    if method == "complex_step":
-        return value_and_complex_step_grad(
-            cast(ComplexStepObjective, objective),
-            values,
-            parameters=parameters,
-            step=1.0e-30 if step is None else step,
-        )
-    if method == "forward_mode":
-        return value_and_forward_mode_grad(
-            cast(Callable[[tuple[DualNumber, ...]], object], objective),
-            values,
-            parameters=parameters,
-        )
-    if method == "reverse_mode":
-        return value_and_reverse_mode_grad(
-            cast(Callable[[tuple[ReverseNode, ...]], object], objective),
-            values,
-            parameters=parameters,
-        )
-    if method == "whole_program":
-        return whole_program_value_and_grad(
-            objective,
-            values,
-            parameters=parameters,
-            trace=True,
-        )
-    raise ValueError(
-        "gradient method must be one of: parameter_shift, finite_difference, complex_step, "
-        "forward_mode, reverse_mode, whole_program"
-    )
-
-
-def grad(
-    objective: Callable[[Any], Any],
-    values: ArrayLike,
-    *,
-    parameters: Sequence[Parameter] | None = None,
-    method: str = "parameter_shift",
-    rule: ParameterShiftRule | None = None,
-    step: float | None = None,
-) -> NDArray[np.float64]:
-    """Return a scalar-objective gradient through the canonical transform API."""
-
-    result = value_and_grad(
-        objective,
-        values,
-        parameters=parameters,
-        method=method,
-        rule=rule,
-        step=step,
-    )
-    return result.gradient
 
 
 __all__ = [

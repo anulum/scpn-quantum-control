@@ -9,6 +9,7 @@
 
 from __future__ import annotations
 
+import scpn_quantum_control.differentiable_canonical_api as canonical_api
 from scpn_quantum_control.differentiable import (
     ArmijoLineSearchResult,
     CustomDerivativeCheckResult,
@@ -201,6 +202,8 @@ def test_differentiable_api_exported_from_package_root() -> None:
     assert scpn.finite_difference_vjp is finite_difference_vjp
     assert scpn.forward_mode_gradient is forward_mode_gradient
     assert scpn.gauss_newton_gradient is gauss_newton_gradient
+    assert canonical_api.grad is grad
+    assert canonical_api.value_and_grad is value_and_grad
     assert scpn.grad is grad
     assert scpn.hessian is hessian
     assert scpn.implicit_fixed_point_sensitivity is implicit_fixed_point_sensitivity

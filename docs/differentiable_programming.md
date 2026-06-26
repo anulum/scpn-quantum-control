@@ -43,6 +43,11 @@ This repository now documents those questions directly. Current support is delib
 
 ## Current capability map
 
+The canonical `grad(...)` and `value_and_grad(...)` dispatcher implementation
+lives in `scpn_quantum_control.differentiable_canonical_api`. The legacy
+`scpn_quantum_control.differentiable` facade and package root continue to
+re-export those functions as the stable user import path.
+
 | Surface | Status | Evidence route |
 |---|---|---|
 | Unified differentiable API | Available through `scpn_quantum_control.differentiable_api` for value, gradient, Jacobian, Hessian, support, diagnostics, compile, local conformance benchmark, and GUI/audit-dashboard status reports using one JSON-ready evidence envelope. Local conformance benchmark evidence is built by `scpn_quantum_control.differentiable_benchmark_report` and wrapped by the facade without changing payload keys or promoting non-isolated evidence. Dashboard status rows label executable, metadata-only, diagnostic, conformance-backed, planned, blocked, and unsupported routes without promoting Program AD metadata, bounded `program_ad_effect_ir.v1` round-trip parsing, higher-order transform evidence, Rust/LLVM compiler paths, provider routes, hardware routes, or local conformance rows beyond their evidence class. | [Differentiable API](differentiable_api.md) |

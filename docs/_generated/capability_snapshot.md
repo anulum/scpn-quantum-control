@@ -7,7 +7,7 @@
 |---|---:|
 | Package version | 0.10.0 |
 | Public API exports | 717 |
-| Python source modules | 487 |
+| Python source modules | 488 |
 | Public Python classes | 855 |
 | Domain package families | 32 |
 | API documentation pages | 0 |
