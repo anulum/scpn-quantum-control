@@ -52,6 +52,10 @@ def test_handbook_render_uses_live_facade_and_benchmark_artifact() -> None:
 
     assert "Production performance claim allowed: `no`." in document
     assert "[Multi-language Kuramoto tier benchmark](tier_benchmarks.md)" in document
+    assert (
+        "[Kuramoto Standalone Package Decision](kuramoto_standalone_package_decision.md)"
+        in document
+    )
 
 
 def test_checked_in_handbook_matches_renderer_output() -> None:

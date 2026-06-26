@@ -344,7 +344,8 @@ def render_handbook(artifact: BenchmarkArtifact) -> str:
         "  preregistered campaign gates.",
         "- The standalone package split remains a CEO/IP decision. This handbook",
         "  documents the current in-repository facade and does not create a new",
-        "  distribution boundary.",
+        "  distribution boundary. See",
+        "  [Kuramoto Standalone Package Decision](kuramoto_standalone_package_decision.md).",
         "",
     ]
     return "\n".join(lines)

@@ -115,8 +115,8 @@ has a defined commercial licensing route.
 | Notebook files | 99 |
 | Example files | 31 |
 | Optional extras | 43 |
-| Python test files | 794 |
-| Public documentation pages | 251 |
+| Python test files | 795 |
+| Public documentation pages | 252 |
 | GitHub Actions workflows | 21 |
 
 Evidence boundary: this snapshot is a static inventory. Performance, coverage, hardware, and scientific-fidelity claims require their own committed evidence artefacts.
@@ -945,6 +945,7 @@ Full docs at **[anulum.github.io/scpn-quantum-control](https://anulum.github.io/
 - [Differentiable Roadmap](docs/differentiable_roadmap.md) — staged gradient, adapter, benchmark, verification, and control roadmap
 - [Tutorials](docs/tutorials.md) — 4-level learning path, 14 tutorials
 - [Stable Facades API](docs/stable_facades_api.md) — first-path public API for notebooks, tutorials, and integrations
+- [Kuramoto Standalone Package Decision](docs/kuramoto_standalone_package_decision.md) — Phase 5.6 package-split decision boundary
 - [API Overview](docs/api.md) — stable facade route first, advanced module references second
 - [Research Gems](docs/research_gems.md) — **33 analysis modules with theory and API**
 - [Equations](docs/equations.md) — every equation in the codebase
@@ -954,7 +955,7 @@ Full docs at **[anulum.github.io/scpn-quantum-control](https://anulum.github.io/
 - [Application Benchmark Plugins](docs/application_benchmarks.md) — EEG, plasma, power-grid, and FEP datasets through QPU artefacts
 - [Classical Baselines](docs/classical_baselines.md) — SciPy ODE, QuTiP Lindblad, and MPS TEBD provenance surfaces
 - [Hardware Guide](docs/hardware_guide.md) — IBM Quantum setup
-- [Notebooks](docs/notebooks.md) — 98 tracked notebooks (47 core + 51 Colab)
+- [Notebooks](docs/notebooks.md) — 99 tracked notebooks
 - [Bridges](docs/bridges_api.md) — cross-repo integrations
 - [Language Policy](docs/language_policy.md) — Rust / Julia / Go / Mojo accel chain
 - [Pipeline Performance](docs/pipeline_performance.md) — every module's measured wall-time + multi-language benchmarks

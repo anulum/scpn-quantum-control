@@ -8,12 +8,12 @@
     "notebook_files": 99,
     "optional_extras": 43,
     "public_api_exports": 717,
-    "public_documentation_pages": 251,
+    "public_documentation_pages": 252,
     "python_model_classes": 849,
     "python_model_source_modules": 483,
     "rust_pyo3_model_wrappers": 171,
     "rust_source_modules": 42,
-    "test_files": 794
+    "test_files": 795
   },
   "documentation": {
     "examples": [
@@ -310,6 +310,7 @@
       "docs/isolated_benchmark_runner.md",
       "docs/kuramoto_core_facade.md",
       "docs/kuramoto_handbook.md",
+      "docs/kuramoto_standalone_package_decision.md",
       "docs/kuramoto_variants.md",
       "docs/language_policy.md",
       "docs/licensing_faq.md",
@@ -5860,6 +5861,7 @@
       "tests/test_kuramoto_ring_basins.py",
       "tests/test_kuramoto_simplex_mean_field.py",
       "tests/test_kuramoto_stability_spectrum.py",
+      "tests/test_kuramoto_standalone_package_decision.py",
       "tests/test_kuramoto_system_id.py",
       "tests/test_kuramoto_variants.py",
       "tests/test_l16_director.py",

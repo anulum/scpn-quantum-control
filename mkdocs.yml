@@ -151,6 +151,7 @@ nav:
       - Tutorials: tutorials.md
       - Physics-First Kuramoto-XY: physics_first_kuramoto_xy.md
       - Kuramoto Handbook: kuramoto_handbook.md
+      - Kuramoto Standalone Package Decision: kuramoto_standalone_package_decision.md
       - Differentiable Programming: differentiable_programming.md
       - Differentiable Tutorials: differentiable_tutorials.md
       - Quantum Gradients: quantum_gradients.md

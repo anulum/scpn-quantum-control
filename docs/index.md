@@ -226,6 +226,7 @@ for name, w in results.items():
 - [Kuramoto Core Facade](kuramoto_core_facade.md) — stable `K_nm`/`omega` compiler entry point
 - [Stable Facades API](stable_facades_api.md) — mkdocstrings reference for first-path public facades
 - [Physics-First Kuramoto-XY](physics_first_kuramoto_xy.md) — start from arbitrary oscillator networks before SCPN-specific layers
+- [Kuramoto Standalone Package Decision](kuramoto_standalone_package_decision.md) — Phase 5.6 package-split decision boundary
 - [Differentiable Tutorials](differentiable_tutorials.md) — unified differentiable API workflow
 - [Differentiable Programming](differentiable_programming.md) — current AD capabilities, boundaries, and user routes
 - [Quantum Gradients](quantum_gradients.md) — parameter-shift gradients, VQE convergence route, and verification evidence
@@ -250,7 +251,7 @@ for name, w in results.items():
 - [Hardware Guide](hardware_guide.md) — IBM Quantum setup
 - [Bridges](bridges_api.md) — cross-repo integrations
 - [Tutorials](tutorials.md) — 4-level learning path, 14 tutorials
-- [Notebooks](notebooks.md) — 98 tracked notebooks (47 core + 51 Colab)
+- [Notebooks](notebooks.md) — 99 tracked notebooks
 - [Language Policy](language_policy.md) — Rust / Julia / Go / Mojo accel-chain rules
 - [Pipeline Performance](pipeline_performance.md) — measured wall-times + multi-language benchmarks
 - [Methods Benchmark Dashboard](methods_benchmark_dashboard.md) — one-command artefact regeneration and paper-supporting benchmark provenance
