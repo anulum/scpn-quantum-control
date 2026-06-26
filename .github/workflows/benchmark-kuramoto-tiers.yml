@@ -85,8 +85,11 @@ jobs:
       - name: Build and install the Rust engine
         uses: PyO3/maturin-action@e83996d129638aa358a18fbd1dfb82f0b0fb5d3b  # v1.51.0
         with:
-          command: develop
-          args: --release -m scpn_quantum_engine/Cargo.toml
+          command: build
+          args: --release --features extension-module --out dist -m scpn_quantum_engine/Cargo.toml
+
+      - name: Install the built Rust engine
+        run: python -m pip install --force-reinstall --no-deps dist/scpn_quantum_engine-*.whl
 
       - name: Run the consolidated tier benchmark
         run: |

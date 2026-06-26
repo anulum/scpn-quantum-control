@@ -5,7 +5,7 @@
         "dispatch_order": 1,
         "language": "Rust",
         "name": "rust",
-        "role": "hot kernels (scpn_quantum_engine, 151 PyO3)",
+        "role": "hot kernels (scpn_quantum_engine, 171 PyO3)",
         "status": "runtime-active"
       },
       {

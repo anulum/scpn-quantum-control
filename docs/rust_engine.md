@@ -39,12 +39,12 @@ across the FFI boundary). Python wrappers handle the conversion transparently.
 Pure Rust inner functions are kept separate so the algorithms can be
 unit-tested without a Python interpreter.
 
-**Static FFI safety audit (2026-06-16):** `tools/audit_rust_ffi_safety.py`
+**Static FFI safety audit (2026-06-26):** `tools/audit_rust_ffi_safety.py`
 inventories the Rust `src/*.rs` boundary before binding expansion. The current
 committed artefact,
-`data/rust_ffi_safety/rust_ffi_safety_audit_2026-06-16.json`, reports:
+`data/rust_ffi_safety/rust_ffi_safety_audit_2026-06-26.json`, reports:
 
-- 137 exported `#[pyfunction]` boundaries.
+- 171 exported `#[pyfunction]` boundaries.
 - 1 `#[pymodule]` initializer.
 - 0 unregistered PyO3 functions.
 - 0 `unsafe` occurrences.
@@ -63,19 +63,19 @@ claim boundary is static source inventory only; it does not replace Miri,
 sanitizer, fuzzing, or formal memory-safety evidence if unsafe Rust is ever
 introduced.
 
-**Static execution-mode audit (2026-06-16):**
+**Static execution-mode audit (2026-06-26):**
 `tools/audit_rust_kernel_execution.py` records whether each Rust PyO3 kernel is
 currently tagged as `scalar_or_unknown`, `ndarray_dot`, `rayon_threaded`, or
 `explicit_simd` before any performance promotion. The current committed
 artefact,
-`data/rust_kernel_execution/rust_kernel_execution_audit_2026-06-16.json`,
+`data/rust_kernel_execution/rust_kernel_execution_audit_2026-06-26.json`,
 reports:
 
-- 137 PyO3 kernel records.
+- 171 PyO3 kernel records.
 - 19 `rayon_threaded` records.
 - 1 `ndarray_dot` record.
 - 0 `explicit_simd` records.
-- 117 `scalar_or_unknown` records.
+- 151 `scalar_or_unknown` records.
 - 0 performance-claim-eligible records.
 
 Run the gate with:
@@ -90,9 +90,9 @@ are historical local regression evidence unless a row is explicitly tied to a
 separate `isolated_affinity` benchmark artefact with CPU affinity, host-load,
 governor/frequency, runner labels, and heavy-job metadata.
 
-## Functions (137)
+## Functions (171)
 
-The Rust crate exports 137 PyO3 bindings across 37 Rust source files. They are organised
+The Rust crate exports 171 PyO3 bindings across 37 Rust source files. They are organised
 below by topic.
 
 ### Classical Kuramoto

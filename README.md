@@ -115,7 +115,7 @@ has a defined commercial licensing route.
 | Notebook files | 98 |
 | Example files | 30 |
 | Optional extras | 43 |
-| Python test files | 792 |
+| Python test files | 793 |
 | Public documentation pages | 250 |
 | GitHub Actions workflows | 21 |
 
@@ -886,7 +886,7 @@ scpn_quantum_control/
 ├── tcbo/            1 module  — TCBO quantum observer
 ├── pgbo/            1 module  — PGBO quantum bridge
 ├── l16/             1 module  — Layer 16 quantum director
-└── scpn_quantum_engine/  Rust crate (PyO3 0.29, 147 exported PyO3 bindings)
+└── scpn_quantum_engine/  Rust crate (PyO3 0.29, 171 exported PyO3 bindings)
 ```
 
 ## Dependencies

@@ -22,6 +22,10 @@ The facade deliberately avoids SCPN-specific constants. Domain pipelines such as
 power-grid, EEG, plasma, or connectome workflows should compile their source data
 into `K_nm` and `omega`, then call this layer.
 
+For the complete generated Kuramoto surface, including model families,
+diagnostics, analysis/control routines, and tier-benchmark evidence, see
+[Kuramoto Handbook](kuramoto_handbook.md).
+
 ## Minimal Example
 
 ```python

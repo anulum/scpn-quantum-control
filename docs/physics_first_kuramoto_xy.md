@@ -143,6 +143,8 @@ and metadata first; then call `build_kuramoto_problem()`.
 ## 7. Next Steps
 
 - Use [Kuramoto Core Facade](kuramoto_core_facade.md) for the stable public API.
+- Use [Kuramoto Handbook](kuramoto_handbook.md) for the full generated facade
+  inventory, model-family map, benchmark evidence, and claim boundaries.
 - Use [QPU Data Artifact](qpu_data_artifact.md) when the source data comes from
   another repository or experiment.
 - Use [Hardware Status Ledger](hardware_status_ledger.md) to decide whether a
