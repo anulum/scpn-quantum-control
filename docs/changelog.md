@@ -18,6 +18,27 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 Full detailed changelog: [CHANGELOG.md](https://github.com/anulum/scpn-quantum-control/blob/main/CHANGELOG.md).
 
+## [0.10.0] - 2026-06-26
+
+### Added
+- Released the v0.10 public surface set: QRNG streaming and FIPS/NIST health
+  reports, ML-DSA-65/PQC trigger signing, UltraScale+ HLS pulse-source
+  generation, NV-centre 20 T magnetometry simulation, FRC pulsed-shot QAOA
+  scheduling, realtime loop telemetry, Studio federation manifests, and
+  Kuramoto variant/acceleration routes.
+- Refreshed the API selector, tutorial routes, example gallery, new-module
+  index, README, site home, reproducibility metadata, citation metadata,
+  release-readiness scope, and generated capability manifests for the 0.10.0
+  package line.
+
+### Changed
+- Removed obsolete Paper 0 artifact requirements from the package release
+  readiness gate after Paper 0 was intentionally extracted from this repository
+  into the GOTM root register.
+- Kept hardware, RNG, cryptographic, HLS, realtime, and benchmark wording bound
+  to existing evidence classes rather than promoting new hardware or production
+  cryptographic claims.
+
 ## [0.9.12] - 2026-06-15
 
 ### Added

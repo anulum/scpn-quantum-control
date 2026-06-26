@@ -203,4 +203,5 @@ def test_odmr_spectrum_rust_parity(n_freqs, fwhm_mhz, contrast):
     reason="hardware NV magnetometry gated by MIF_NV_HARDWARE_CI=1",
 )
 def test_hardware_nv_calibration():  # pragma: no cover - hardware only
+    assert os.environ.get("MIF_NV_HARDWARE_CI") == "1"
     raise AssertionError("NV hardware calibration requires a magnet and is not run in CI")

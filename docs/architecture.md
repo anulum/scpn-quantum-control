@@ -64,7 +64,7 @@ A reviewer encountering one of these files will find the same statement in its m
 docstring. An entry is re-opened only if a future change makes the module mix an
 additional, independent responsibility.
 
-## Package Statistics (v0.9.12)
+## Package Statistics (v0.10.0)
 
 These counts mirror the generated capability inventory in the README; that
 auto-generated block is the source of truth if the two ever drift.

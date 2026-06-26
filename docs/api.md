@@ -113,6 +113,14 @@ contracts for persisted QPU data, and advanced references for subsystem extensio
 |---|---|---|
 | First local coupled-oscillator run | `scpn_quantum_control.kuramoto_core` and `QuantumKuramotoSolver` | Simulator evidence until a hardware ledger row is promoted. |
 | Differentiable optimisation | `scpn_quantum_control.phase.param_shift`, `scpn_quantum_control.phase.qnn_training`, and `scpn_quantum_control.differentiable` | Use support matrices and verification records before claiming gradient support. |
+| Quantum random-number streams | `scpn_quantum_control.entropy.QRNGStream`, `AerQuantumEntropySource`, `EntropyHealthReport` | Simulator-backed entropy source with FIPS/NIST health checks; not a device-independent hardware RNG claim. |
+| Post-quantum trigger authorisation | `scpn_quantum_control.crypto.ml_dsa` and `scpn_quantum_control.crypto.pqc_trigger.PqcTriggerSigner` | FIPS 204 vector-conformant ML-DSA-65 implementation for signed pre-arm authorisation; not a FIPS-140 validated cryptographic module. |
+| Pulse to FPGA source generation | `scpn_quantum_control.codegen.ultrascale_hls.pulse_to_vivado_hls` and `write_bundle` | Emits Vivado/Vitis HLS source and host co-simulation assets; synthesis stays gated by the self-hosted Vivado runner. |
+| Realtime loop telemetry | `RealtimeRuntimeConfig`, `VirtualRealtimeClock`, `run_realtime_control_loop`, and `SubMicrosecondTracker` | Software-loop latency accounting and benchmark evidence; not an intra-shot QPU feedback guarantee. |
+| FRC pulsed-shot QAOA | `scpn_quantum_control.bridge.fusion_core_frc` and `scpn_quantum_control.phase.frc_pulsed_qaoa` | Simulator/control-grade bridge for FRC scheduling and surrogate calibration; fusion-core physics provenance must be recorded before promotion. |
+| NV-centre magnetometry | `scpn_quantum_control.sensing.nv_magnetometry_20T` | Simulation and calibration contracts for 0-20 T ODMR workflows; hardware calibration remains gated by explicit evidence. |
+| Studio federation manifests | `scpn-emit-studio-manifest` and `scpn_quantum_control.studio.federation` | Emits schema-A capability and architecture-map manifest for STUDIO/Hub ingestion; the manifest describes existing evidence classes, not new evidence. |
+| Kuramoto acceleration and variants | `scpn_quantum_control.accel.*`, `scpn_quantum_control.variants`, and the Rust engine optional extra | Use benchmark classification and parity tests before quoting acceleration beyond local functional evidence. |
 | Hardware result packaging | `scpn_quantum_control.hardware_result_packs` and QPU artefact contracts | Raw counts and manifests must pass release gates before public promotion. |
 | Cross-repository integration | Stable facade pages and runtime contracts | Avoid internal module paths unless the contract page names them. |
 | Commercial pilot | Stable facades, examples, release-readiness gates, and licence boundary docs | Closed-source or SaaS use requires commercial licensing. |
@@ -721,7 +729,7 @@ from scpn_quantum_control import generate_cloud_manifests
 bundle = generate_cloud_manifests(
     CloudDeploymentSpec(
         name="scpn-qc",
-        image="registry.example/scpn-quantum-control:0.9.12",
+        image="registry.example/scpn-quantum-control:0.10.0",
         command=("scpn-bench", "stable-core-contract-gate"),
         resources=ContainerResources(cpu="1000m", memory="1Gi"),
         env={"SCPN_EXECUTION_MODE": "offline"},

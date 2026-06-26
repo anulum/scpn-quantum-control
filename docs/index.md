@@ -83,12 +83,13 @@ Use [Differentiable Tutorials](differentiable_tutorials.md),
 workflow can be trained or optimised. Use [Hardware Status Ledger](hardware_status_ledger.md)
 when the central question is whether a result can be promoted as hardware evidence.
 
-## Status Snapshot — 2026-05-18
+## Status Snapshot — 2026-06-26
 
 | Area | Public status |
 |---|---|
-| Package line | Version `0.9.12`, Python `>=3.11`, Qiskit `>=2.2,<3.0`. |
+| Package line | Version `0.10.0`, Python `>=3.11`, Qiskit `>=2.2,<3.0`. |
 | Generic compiler surface | `scpn_quantum_control.kuramoto_core` validates arbitrary `K_nm`/`omega` inputs and compiles Hamiltonians, dense matrices, Trotter circuits, order-parameter measurements, and Kuramoto variant trajectories. |
+| v0.10 public surfaces | QRNG streaming, ML-DSA/PQC trigger signing, UltraScale+ HLS pulse emission, realtime telemetry, NV magnetometry, FRC pulsed-shot QAOA scheduling, and Studio federation manifest emission are documented from API, tutorial, and example routes. |
 | Hardware evidence | Promoted raw-count campaigns: `ibm_kingston` DLA parity Phase 1, selected Phase 2 A+G/B-C/popcount controls, and the SCPN/FIM negative/falsification result for the tested digital circuit family. Legacy `ibm_fez` rows require artefact-level citation. |
 | Claim source | [Hardware Status Ledger](hardware_status_ledger.md). |
 

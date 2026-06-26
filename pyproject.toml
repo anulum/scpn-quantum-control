@@ -11,7 +11,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "scpn-quantum-control"
-version = "0.9.12"
+version = "0.10.0"
 description = "Evidence-governed Kuramoto-XY quantum-control and differentiable-computation workbench"
 readme = "README.md"
 license = "AGPL-3.0-or-later"
@@ -132,8 +132,15 @@ Documentation = "https://anulum.github.io/scpn-quantum-control"
 [tool.hatch.build.targets.sdist]
 exclude = [
     ".github/",
+    ".coverage",
+    ".mypy_cache/",
+    ".pytest_cache/",
+    ".ruff_cache/",
+    ".venv*/",
+    "coverage.xml",
     "dist/",
     "results/",
+    "site/",
     "figures/",
     "notebooks/",
 ]

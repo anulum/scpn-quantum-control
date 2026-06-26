@@ -27,9 +27,6 @@ VERSION_PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
 )
 
 REQUIRED_RELEASE_ARTIFACTS: tuple[str, ...] = (
-    "docs/paper0/paper0_validation_register.md",
-    "docs/paper0/paper0_experimental_pathway.md",
-    "docs/paper0/paper0_knm_measured_coupling_evidence_checklist.md",
     "data/knm_physical_validation/eeg_alpha_plv_knm_comparison.json",
     "data/knm_physical_validation/power_grid_ieee5bus_knm_comparison.json",
     "data/knm_physical_validation/measured_couplings_power_grid_ieee14bus.json",

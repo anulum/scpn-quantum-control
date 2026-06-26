@@ -5459,7 +5459,7 @@
     "name": "scpn-quantum-control",
     "readme": "README.md",
     "requires_python": ">=3.11",
-    "version": "0.9.12"
+    "version": "0.10.0"
   },
   "project_label": "scpn-quantum-control",
   "quality_gates": {

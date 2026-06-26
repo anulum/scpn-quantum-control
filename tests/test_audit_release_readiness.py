@@ -501,14 +501,15 @@ def test_release_readiness_requires_synchronisation_benchmark_artifacts() -> Non
 
 
 def test_release_readiness_requires_knm_measured_candidate_artifacts() -> None:
-    """Release artefact gate includes K_nm measured-candidate surfaces."""
+    """Release artefact gate includes package-owned K_nm candidate surfaces."""
 
     required = set(_audit_release_readiness.REQUIRED_RELEASE_ARTIFACTS)
 
     assert "data/knm_physical_validation/eeg_alpha_plv_knm_comparison.json" in required
     assert "data/knm_physical_validation/power_grid_ieee5bus_knm_comparison.json" in required
+    assert "data/knm_physical_validation/measured_couplings_power_grid_ieee14bus.json" in required
     assert "data/knm_physical_validation/power_grid_ieee14bus_knm_comparison.json" in required
-    assert "docs/paper0/paper0_knm_measured_coupling_evidence_checklist.md" in required
+    assert not any(path.startswith("docs/paper0/") for path in required)
 
 
 def test_release_readiness_requires_s7_logical_dla_roadmap_artifacts() -> None:

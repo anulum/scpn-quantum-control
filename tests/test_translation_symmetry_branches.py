@@ -28,7 +28,7 @@ _OMEGA = np.array([1.0, 1.0], dtype=np.float64)
 
 def test_budget_guard_skips_empty_sector() -> None:
     """A sub-unit sector dimension skips the workspace budget check without raising."""
-    _require_momentum_sector_budget(0, max_dense_gib=None)
+    assert _require_momentum_sector_budget(0, max_dense_gib=None) is None
 
 
 def test_eigh_rejects_non_integer_momentum() -> None:

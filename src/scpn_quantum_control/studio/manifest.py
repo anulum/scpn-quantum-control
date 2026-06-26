@@ -23,7 +23,9 @@ from __future__ import annotations
 
 import json
 from importlib.metadata import PackageNotFoundError, version
+from pathlib import Path
 
+import tomllib
 from scpn_studio_platform.manifest import (
     CapabilityManifest,
     TransportProfile,
@@ -40,14 +42,22 @@ PROTOCOL_VERSION = "1"
 
 
 def _resolve_studio_version() -> str:
-    """Return the installed ``scpn-quantum-control`` version, or a local sentinel.
+    """Return the source-tree or installed ``scpn-quantum-control`` version.
 
     Returns
     -------
     str
-        The distribution version when installed, otherwise ``"0+unknown"`` so the
-        manifest never carries a fabricated version.
+        The source-tree ``pyproject.toml`` version when available, then the
+        installed distribution version, otherwise ``"0+unknown"`` so the manifest
+        never carries a fabricated version.
     """
+    pyproject = Path(__file__).resolve().parents[3] / "pyproject.toml"
+    if pyproject.exists():
+        metadata = tomllib.loads(pyproject.read_text(encoding="utf-8"))
+        project = metadata.get("project", {})
+        source_version = project.get("version")
+        if isinstance(source_version, str) and source_version:
+            return source_version
     try:
         return version("scpn-quantum-control")
     except PackageNotFoundError:  # pragma: no cover - only in a non-installed tree

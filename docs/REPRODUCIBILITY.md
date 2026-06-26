@@ -54,7 +54,7 @@ evidence chain for bounded campaign claims.
 | mitiq | 1.0.0 |
 | cirq-core | 1.6.1 |
 | matplotlib | 3.10.9 (pip) |
-| scpn-quantum-control | Source tree v0.9.12; public release artefacts may lag until the next tagged package release |
+| scpn-quantum-control | Source tree v0.10.0; public release artefacts may lag until the next tagged package release |
 
 Install the exact environment:
 ```bash

@@ -32,7 +32,7 @@
 > artefacts are now part of release/repro hardening and are kept separate from
 > non-artefact scientific claims. APIs may evolve as this work progresses.
 
-**Version:** 0.9.12
+**Version:** 0.10.0
 **Status:** Kuramoto-XY compiler + hardware runners + analysis stack + bounded differentiable-programming surface | generated capability inventory below | CI coverage gate 90% | IBM Heron r2 evidence ledgered
 
 > **Honest scope — read first.** At the system sizes reachable today
@@ -74,6 +74,7 @@ than implied coverage.
 | Bring your own coupled system | [Physics-First Kuramoto-XY](docs/physics_first_kuramoto_xy.md) | A validated `K_nm`/`omega` problem compiled to simulator-ready quantum objects. |
 | Train or inspect gradients | [Differentiable Tutorials](docs/differentiable_tutorials.md) -> [Differentiable Programming](docs/differentiable_programming.md) -> [Quantum Gradients](docs/quantum_gradients.md) | Exact, finite-shot, framework-comparison, or fail-closed gradient evidence. |
 | Review hardware claims | [Hardware Status Ledger](docs/hardware_status_ledger.md) -> [Hardware Result Packs](docs/hardware_result_packs.md) | Raw-count-backed evidence or an explicit blocked promotion route. |
+| Use v0.10 control surfaces | [API Overview](docs/api.md) -> [Tutorials](docs/tutorials.md) -> [Example Gallery](docs/examples_gallery.md) | QRNG health checks, PQC trigger signing, UltraScale+ HLS emission, realtime telemetry, Studio federation, and sensing workflows. |
 | Evaluate adoption | [API Overview](docs/api.md) -> [Release Readiness Gate](docs/release_readiness.md) | Stable integration surfaces, release gates, and licensing boundaries. |
 
 ## Application and commercial value
@@ -103,7 +104,7 @@ has a defined commercial licensing route.
 
 | Surface | Current inventory |
 |---|---:|
-| Package version | 0.9.12 |
+| Package version | 0.10.0 |
 | Public API exports | 717 |
 | Python source modules | 483 |
 | Public Python classes | 849 |
@@ -123,11 +124,12 @@ Evidence boundary: this snapshot is a static inventory. Performance, coverage, h
 
 ---
 
-## Status Snapshot — 2026-05-18
+## Status Snapshot — 2026-06-26
 
 | Area | Public status |
 |---|---|
 | Generic compiler surface | `scpn_quantum_control.kuramoto_core` validates arbitrary `K_nm`/`omega` inputs and compiles Hamiltonians, dense matrices, Trotter circuits, and order-parameter measurements. |
+| v0.10 public surfaces | QRNG streaming and health reports, ML-DSA-65 trigger signing, UltraScale+ HLS pulse emission, realtime loop telemetry, NV magnetometry simulation, FRC pulsed-shot QAOA scheduling, and Studio federation manifests. |
 | Release and reproducibility scope | Stable core contracts and backend capability artefacts for Kuramoto-XY synchronisation are included in release/readiness checks and promoted only with deterministic evidence manifests. |
 | Hardware evidence | `ibm_fez` baseline rows are legacy artefact-backed observations; `ibm_kingston` Phase 1, Phase 2 A+G, Phase 2 B-C, and popcount DLA datasets are promoted with raw-count artefacts. The SCPN/FIM `ibm_kingston` result is promoted as a negative/falsification result for the tested digital circuit family. |
 | Simulator and methods evidence | BKT, OTOC, Floquet, MBL, FIM, VQE, GPU, tensor-network, and classical comparison claims stay marked as simulator/classical/methods unless a hardware artefact is named. Generated benchmark artefacts are indexed from the benchmark dashboard and reproducibility CLI. |

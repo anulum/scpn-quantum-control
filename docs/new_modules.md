@@ -4,9 +4,29 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# scpn-quantum-control — New Modules Documentation (v0.9.5+)
+# scpn-quantum-control — New Module Index
 
-# New Modules (March 2026)
+# New Module Index
+
+This page preserves the historical March 2026 module notes and now routes the
+newer v0.10 public surfaces to their maintained guides. Use the guide pages
+below for current examples, evidence boundaries, and API contracts before
+reading the older module-by-module notes.
+
+## v0.10 public surfaces
+
+| Surface | Primary module or command | Current guide | Evidence boundary |
+|---|---|---|---|
+| QRNG streaming and health reports | `scpn_quantum_control.entropy.QRNGStream` | [Quantum Random-Number Generation](entropy_qrng.md) | Aer simulator entropy with FIPS/NIST health checks, not hardware RNG promotion. |
+| ML-DSA-65 trigger authorisation | `scpn_quantum_control.crypto.ml_dsa`, `PqcTriggerSigner` | [Post-Quantum Trigger Signer](ml_dsa_pqc.md) | FIPS 204 vector-conformant, not FIPS-140 validated. |
+| UltraScale+ HLS pulse emission | `scpn_quantum_control.codegen.ultrascale_hls` | [Pulse -> UltraScale+ HLS Codegen](ultrascale_hls.md) | Emits source and co-simulation bundle; synthesis is self-hosted-runner gated. |
+| NV-centre ODMR magnetometry | `scpn_quantum_control.sensing.nv_magnetometry_20T` | [NV-Centre 20 T Magnetometry](nv_magnetometry_20T.md) | Simulation and calibration contract; hardware calibration needs evidence. |
+| FRC pulsed-shot scheduling | `scpn_quantum_control.phase.frc_pulsed_qaoa` | [FRC Pulsed-Shot QAOA](frc_pulsed_qaoa.md) | Control-grade surrogate unless physics-derived provenance is attached. |
+| Realtime loop telemetry | `scpn_quantum_control.realtime` | [Realtime Runtime](realtime_runtime.md) | Software-loop timing, not intra-shot QPU latency. |
+| Kuramoto variants and acceleration | `scpn_quantum_control.variants`, `scpn_quantum_control.accel` | [Kuramoto Variants](kuramoto_variants.md) | Benchmark wording follows the local/isolated evidence classifier. |
+| Studio federation | `scpn-emit-studio-manifest` | [Architecture Map](architecture_map.md) | Manifest describes existing package capabilities and evidence classes. |
+
+## Historical March 2026 module batch
 
 11 modules added in the 2026-03-30 session, closing gaps identified by
 competitive analysis against QuSpin, quimb, Mitiq, MISTIQS, Tequila, and NetKet.

@@ -8,11 +8,11 @@
 
 # Example Gallery
 
-Ten task-shaped entry points, ordered from the fastest no-credential run to the
-hardware-evidence and replay surfaces. Each entry states what it does, when to
-reach for it, and the fastest safe command. Every command here runs on the
-statevector simulator or on committed artefacts; none needs IBM Quantum
-credentials.
+Twenty-nine task-shaped entry points, ordered from the fastest
+no-credential run to hardware-evidence, integration, and release-readiness
+surfaces. Each entry states what it does, when to reach for it, and the fastest
+safe command. Every command here runs on the statevector simulator or on
+committed artefacts; none needs IBM Quantum credentials.
 
 Install the development extra once:
 
@@ -161,3 +161,201 @@ scpn-bench reproduce-methods
 ```
 
 See the [Hardware Status Ledger](hardware_status_ledger.md).
+
+## 11. Probabilistic error cancellation
+
+**What:** demonstrate PEC mitigation accounting on a local simulator route.
+**When:** you need mitigation vocabulary and artefact shape before a hardware
+campaign.
+
+```bash
+python examples/11_pec_demo.py
+```
+
+## 12. Trapped-ion workflow
+
+**What:** exercise the trapped-ion-oriented compilation/demo path without a live
+provider submission.
+**When:** you are comparing provider-specific feasibility surfaces.
+
+```bash
+python examples/12_trapped_ion_demo.py
+```
+
+## 13. ITER disruption workflow
+
+**What:** run the plasma-control demonstration path for ITER-style disruption
+risk modelling.
+**When:** you are evaluating application-plugin assumptions, not claiming
+validated fusion control.
+
+```bash
+python examples/13_iter_disruption_demo.py
+```
+
+## 14. FRC pulsed-shot QAOA
+
+**What:** build a pulsed-shot QAOA schedule for the FRC surrogate lane.
+**When:** you need the control-scheduler contract before importing
+SCPN-FUSION-CORE-derived calibration inputs.
+
+```bash
+python examples/14_frc_pulsed_shot_qaoa_demo.py
+```
+
+See [FRC Pulsed-Shot QAOA](frc_pulsed_qaoa.md).
+
+## 15. Quantum-advantage boundary check
+
+**What:** compare the current quantum route against classical baselines under
+the package's explicit no-broad-advantage boundary.
+**When:** you need falsification or due-diligence language rather than speed-up
+marketing.
+
+```bash
+python examples/14_quantum_advantage_demo.py
+```
+
+## 16. QSNN training
+
+**What:** run the quantum spiking-neural-network training demonstration.
+**When:** you are testing differentiable-training evidence surfaces.
+
+```bash
+python examples/15_qsnn_training_demo.py
+```
+
+## 17. Fault-tolerant planning
+
+**What:** inspect the fault-tolerant workflow scaffold and its claim boundary.
+**When:** you need planning artefacts without implying deployed logical
+hardware.
+
+```bash
+python examples/16_fault_tolerant_demo.py
+```
+
+## 18. SNN / SSGF bridges
+
+**What:** demonstrate bridge contracts between quantum-control outputs and
+spiking/field-model consumers.
+**When:** you are checking cross-repository payload shape.
+
+```bash
+python examples/17_snn_ssgf_bridges_demo.py
+```
+
+## 19. End-to-end pipeline
+
+**What:** run the local no-credential pipeline from model input to analysis
+output.
+**When:** you need a single command for integration smoke testing.
+
+```bash
+python examples/18_end_to_end_pipeline.py
+```
+
+## 20. Sync witness operator
+
+**What:** construct and evaluate synchronisation witness operators.
+**When:** you need observable evidence instead of raw state amplitudes.
+
+```bash
+python examples/19_sync_witness_operator.py
+```
+
+## 21. Quantum persistent homology
+
+**What:** run the topology-analysis demonstration for quantum-state or network
+features.
+**When:** you are exploring topological diagnostics as method evidence.
+
+```bash
+python examples/20_quantum_persistent_homology.py
+```
+
+## 22. Biological QEC
+
+**What:** exercise the SCPN-16 biological-QEC reporting path.
+**When:** you need the bounded report format without promoting biological or
+clinical claims.
+
+```bash
+python examples/21_biological_qec_scpn16.py
+```
+
+## 23. Quantum neuromorphic bridge
+
+**What:** demonstrate neuromorphic bridge payloads and conversion surfaces.
+**When:** you are integrating with downstream neuromorphic packages.
+
+```bash
+python examples/22_quantum_neuromorphic_bridge.py
+```
+
+## 24. Differentiable API workflow
+
+**What:** walk the differentiable API from objective definition to evidence
+record.
+**When:** you need the supported user path before dropping into internals.
+
+```bash
+python examples/23_differentiable_api_workflow.py
+```
+
+## 25. Differentiable benchmark reproduction
+
+**What:** reproduce committed differentiable benchmark evidence.
+**When:** you need local regression evidence tied to the classification ledger.
+
+```bash
+python examples/24_differentiable_benchmark_reproduction.py
+```
+
+## 26. QRNG streaming quickstart
+
+**What:** sample simulator-backed quantum random bits and run FIPS/NIST health
+checks.
+**When:** you need entropy stream plumbing and health-report contracts.
+
+```bash
+python examples/25_qrng_streaming_quickstart.py
+```
+
+See [Quantum Random-Number Generation](entropy_qrng.md).
+
+## 27. NV-centre 20 T magnetometry
+
+**What:** simulate ODMR resonances and calibration across the high-field
+magnetometry range.
+**When:** you need the sensing contract before attaching real calibration
+evidence.
+
+```bash
+python examples/26_nv_magnetometry_20T_demo.py
+```
+
+See [NV-Centre 20 T Magnetometry](nv_magnetometry_20T.md).
+
+## 28. PQC trigger signer
+
+**What:** generate ML-DSA-65 keys and sign a capacitor-bank trigger payload.
+**When:** you need pre-arm authorisation evidence and freshness checks.
+
+```bash
+python examples/27_pqc_trigger_signer_demo.py
+```
+
+See [Post-Quantum Trigger Signer](ml_dsa_pqc.md).
+
+## 29. Pulse to UltraScale+ HLS
+
+**What:** convert a pulse envelope into Vivado/Vitis HLS source and host
+co-simulation files.
+**When:** you need FPGA source generation without invoking Vivado.
+
+```bash
+python examples/28_pulse_to_hls_quickstart.py
+```
+
+See [Pulse -> UltraScale+ HLS Codegen](ultrascale_hls.md).

@@ -382,7 +382,7 @@ vs the measured standard-tool baselines.
 
 All code, data, and figures are open-source:
 
-- **Code:** [github.com/anulum/scpn-quantum-control](https://github.com/anulum/scpn-quantum-control) (v0.9.12, AGPL-3.0)
+- **Code:** [github.com/anulum/scpn-quantum-control](https://github.com/anulum/scpn-quantum-control) (v0.10.0, AGPL-3.0)
 - **Results:** `results/publication_scans_2026-03-27.json`, `results/ibm_hardware_2026-03-{18,28}/`
 - **Docs:** [anulum.github.io/scpn-quantum-control](https://anulum.github.io/scpn-quantum-control)
 

@@ -4,6 +4,8 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+## [0.10.0] - 2026-06-26
+
 ### Added
 - 2026-06-24 — Added the Studio federation surface (`scpn_quantum_control.studio`): a
   schema-A `CapabilityManifest` on the SCPN-STUDIO platform contract

@@ -117,9 +117,33 @@ graph TD
 | Hardware operator | Hardware Status Ledger -> Hardware Guide -> Hardware Result Packs -> Release Readiness Gate |
 | API integrator | Stable Facades API -> API Overview -> Kuramoto Core Facade |
 | Optimisation or AD user | Differentiable Programming -> Quantum Gradients -> Differentiable API -> CPU framework overlay -> external comparison rows -> claim ledger -> release gates before public claims |
+| Entropy and security user | Quantum RNG -> Post-Quantum Trigger Signer -> Example Gallery entries 11 and 12 -> Release Readiness Gate |
+| Control-hardware integrator | Pulse -> UltraScale+ HLS Codegen -> Realtime Runtime -> Architecture Map -> Example Gallery entries 13 and 14 |
+| Studio or hub integrator | Architecture Map -> API Overview -> `scpn-emit-studio-manifest` -> generated Studio manifest |
 
 Every route keeps the same rule: simulator output, hardware evidence, and open
 scientific claims are separate evidence classes.
+
+## v0.10 workflow routes
+
+The v0.10 surfaces are usable from no-credential examples and are documented
+before the lower-level module index:
+
+| Workflow | Start with | Safe first command |
+|---|---|---|
+| QRNG stream and health checks | [Quantum Random-Number Generation](entropy_qrng.md) | `python examples/25_qrng_streaming_quickstart.py` |
+| ML-DSA-65 trigger signing | [Post-Quantum Trigger Signer](ml_dsa_pqc.md) | `python examples/27_pqc_trigger_signer_demo.py` |
+| UltraScale+ pulse source generation | [Pulse -> UltraScale+ HLS Codegen](ultrascale_hls.md) | `python examples/28_pulse_to_hls_quickstart.py` |
+| NV-centre ODMR calibration | [NV-Centre 20 T Magnetometry](nv_magnetometry_20T.md) | `python examples/26_nv_magnetometry_20T_demo.py` |
+| FRC pulsed-shot scheduling | [FRC Pulsed-Shot QAOA](frc_pulsed_qaoa.md) | `python examples/14_frc_pulsed_shot_qaoa_demo.py` |
+| Kuramoto variants and acceleration | [Kuramoto Variants](kuramoto_variants.md) | `scpn-bench stable-core-release-gate --help` |
+| Studio federation | [Architecture Map](architecture_map.md) | `scpn-emit-studio-manifest --help` |
+
+These routes are integration tutorials, not claim promotion. QRNG examples use
+simulated Aer entropy; the ML-DSA implementation is vector-conformant but not a
+FIPS-140 module; HLS generation emits source but does not invoke Vivado unless
+the gated runner is configured; and Studio manifests describe evidence already
+owned by this repository.
 
 ## Differentiable Learning Route
 

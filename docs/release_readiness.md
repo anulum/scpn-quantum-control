@@ -288,15 +288,40 @@ Before tagging:
    preflight fixtures or preflight-facing API/docs text.
 5. Run `scpn-bench symmetry-sector-mitigation-gate` if the release touches
    symmetry-sector mitigation planning, planner fixtures, or mitigation claims.
-7. If the release cites promoted hardware evidence, generate the hardware
+6. If the release cites promoted hardware evidence, generate the hardware
    result-pack evidence packet and pass it to the release audit.
-8. Confirm intentional CPU-only coverage omissions are justified in
+7. Confirm intentional CPU-only coverage omissions are justified in
    [`release_coverage_exclusions.json`](release_coverage_exclusions.json).
-9. Run `tools/audit_release_readiness.py --fail-on-blocker` with the hardware
+8. Run `tools/audit_release_readiness.py --fail-on-blocker` with the hardware
    result-pack evidence argument when applicable.
-10. Run the scoped docs build and version-consistency checks.
-11. Commit with the required authorship line after staged-diff audit.
-12. Push the commit and wait for CI before creating a release tag.
+9. Run the scoped docs build and version-consistency checks.
+10. Commit with the required authorship line after staged-diff audit.
+11. Push the commit and wait for CI before creating a release tag.
+
+## 0.10.0 release, v0.10 surface, and documentation scope
+
+The `0.10.0` source release packages the post-0.9.12 control-surface expansion
+and documentation alignment. It does not promote broad quantum advantage, live
+hardware RNG, FIPS-140 cryptographic validation, Vivado synthesis on public CI,
+intra-shot QPU feedback, clinical validation, or unbounded hardware-gradient
+execution.
+
+The release scope is:
+
+- version-consistent `pyproject.toml`, `CITATION.cff`, `.zenodo.json`, README,
+  capability manifest, Studio federation manifest, documentation site pages,
+  changelog entries, and reproducibility metadata;
+- public guide routes for QRNG streaming, ML-DSA-65/PQC trigger signing,
+  UltraScale+ HLS pulse generation, NV-centre 20 T magnetometry, FRC pulsed-shot
+  QAOA scheduling, realtime loop telemetry, Studio federation, and Kuramoto
+  variant/acceleration workflows;
+- an expanded example gallery covering every numbered example file, including
+  the no-credential v0.10 quickstarts;
+- a release-readiness gate that reflects the current repository ownership:
+  Paper 0 artefacts are no longer package release blockers because the Paper 0
+  register was intentionally extracted to the GOTM root;
+- local documentation, version, behaviour-quality, release-readiness, build, and
+  package checks before push, followed by green GitHub Actions before tagging.
 
 ## 0.9.12 release, documentation, and repository-hygiene scope
 
