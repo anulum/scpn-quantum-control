@@ -45,6 +45,11 @@ from ..differentiable_claim_ledger import (
     ClaimLedger,
     ClaimLedgerRow,
     PromotionStatus,
+    load_differentiable_claim_ledger,
+)
+from .reference_validation import (
+    ReferenceValidationRegistry,
+    load_reference_validation_registry,
 )
 
 ANSWERED_STATUSES: frozenset[ClaimStatus] = frozenset(
@@ -239,6 +244,37 @@ def measure_coverage_frontier(
     )
 
 
+def measure_coverage_frontier_from_certifications(
+    rows_or_ledger: ClaimLedger | Iterable[ClaimLedgerRow] | None = None,
+    *,
+    registry: ReferenceValidationRegistry | None = None,
+) -> CoverageFrontierReport:
+    """Measure WS-6 coverage from a validated WS-3 certification registry.
+
+    Parameters
+    ----------
+    rows_or_ledger
+        The loaded ledger or its rows. Defaults to the committed differentiable
+        claim ledger.
+    registry
+        Optional pre-loaded WS-3 registry. Defaults to the committed empty
+        registry. Invalid registries fail closed before any claim ID reaches
+        :func:`measure_coverage_frontier`.
+
+    Returns
+    -------
+    CoverageFrontierReport
+        The coverage report measured with the registry-certified claim IDs.
+    """
+    ledger_input = load_differentiable_claim_ledger() if rows_or_ledger is None else rows_or_ledger
+    rows = tuple(ledger_input.rows if isinstance(ledger_input, ClaimLedger) else ledger_input)
+    certification_registry = registry or load_reference_validation_registry()
+    return measure_coverage_frontier(
+        rows,
+        reference_validated_claim_ids=certification_registry.reference_validated_claim_ids(rows),
+    )
+
+
 def render_coverage_frontier_markdown(report: CoverageFrontierReport) -> str:
     """Render the coverage-frontier report as the WS-6 release artefact.
 
@@ -301,5 +337,6 @@ __all__ = [
     "CoverageFrontierReport",
     "map_claim_status",
     "measure_coverage_frontier",
+    "measure_coverage_frontier_from_certifications",
     "render_coverage_frontier_markdown",
 ]

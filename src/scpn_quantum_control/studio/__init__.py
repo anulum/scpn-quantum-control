@@ -19,6 +19,7 @@ from .coverage_frontier import (
     CoverageFrontierReport,
     map_claim_status,
     measure_coverage_frontier,
+    measure_coverage_frontier_from_certifications,
     render_coverage_frontier_markdown,
 )
 from .evidence_bundle import (
@@ -37,6 +38,14 @@ from .federation import (
     write_federation_document,
 )
 from .manifest import build_manifest, declared_surface
+from .reference_validation import (
+    DEFAULT_REFERENCE_VALIDATION_PATH,
+    REFERENCE_VALIDATION_SCHEMA,
+    ReferenceValidationCertification,
+    ReferenceValidationRegistry,
+    ReferenceValidationRegistryValidation,
+    load_reference_validation_registry,
+)
 from .result_pack_seal import (
     build_provider_attestation,
     build_result_pack_unit,
@@ -47,7 +56,12 @@ from .verbs import QUANTUM_VERBS, STUDIO_ID, evidence_schemas, verb_substrates
 __all__ = [
     "ANSWERED_STATUSES",
     "CoverageFrontierReport",
+    "DEFAULT_REFERENCE_VALIDATION_PATH",
     "QUANTUM_VERBS",
+    "REFERENCE_VALIDATION_SCHEMA",
+    "ReferenceValidationCertification",
+    "ReferenceValidationRegistry",
+    "ReferenceValidationRegistryValidation",
     "STUDIO_ID",
     "StudioBundleValidation",
     "build_architecture_map_extension",
@@ -64,8 +78,10 @@ __all__ = [
     "evidence_axes",
     "map_claim_status",
     "measure_coverage_frontier",
+    "measure_coverage_frontier_from_certifications",
     "render_coverage_frontier_markdown",
     "seal_result_pack",
+    "load_reference_validation_registry",
     "validate_bundle",
     "validate_bundles",
     "verb_substrates",

@@ -1,0 +1,12 @@
+{
+  "SPDX-License-Identifier": "AGPL-3.0-or-later",
+  "commercial_license": "available",
+  "contact": "www.anulum.li | protoscience@anulum.li",
+  "copyright_code": "\u00a9 Code 2020\u20132026 Miroslav \u0160otek. All rights reserved.",
+  "copyright_concepts": "\u00a9 Concepts 1996\u20132026 Miroslav \u0160otek. All rights reserved.",
+  "orcid": "0009-0009-3560-0851",
+  "title": "SCPN Quantum Control \u2014 WS-3 Reference-Validation Certifications",
+  "schema": "studio.reference-validation-certifications.v1",
+  "generated_from": "No per-claim WS-3 reference-validation certifications are committed for the differentiable claim ledger yet; the honest WS-6 answer rate therefore remains zero.",
+  "certifications": []
+}

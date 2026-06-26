@@ -30,7 +30,12 @@ from scpn_quantum_control.studio.coverage_frontier import (  # noqa: E402
     CoverageFrontierReport,
     map_claim_status,
     measure_coverage_frontier,
+    measure_coverage_frontier_from_certifications,
     render_coverage_frontier_markdown,
+)
+from scpn_quantum_control.studio.reference_validation import (  # noqa: E402
+    ReferenceValidationCertification,
+    ReferenceValidationRegistry,
 )
 
 
@@ -118,6 +123,28 @@ def test_attaching_evidence_advances_the_frontier() -> None:
     }
     # One candidate still rests at bounded-model, so the gate remains off-frontier.
     assert report.off_frontier is True
+
+
+def test_certification_registry_feeds_reference_validated_claim_ids() -> None:
+    """WS-3 per-claim certifications are the approved feed into the WS-6 frontier."""
+    registry = ReferenceValidationRegistry(
+        schema="studio.reference-validation-certifications.v1",
+        certifications=(
+            ReferenceValidationCertification(
+                claim_id="p1",
+                certificate_ref="studio.ws3/p1",
+                reference_artifact_digest="sha256:" + "a" * 64,
+                adjudicated_at="2026-06-26T00:00:00Z",
+            ),
+        ),
+    )
+    report = measure_coverage_frontier_from_certifications(
+        [_row("p1", "promoted"), _row("c1", "SOTA-candidate")],
+        registry=registry,
+    )
+
+    assert report.claim_status_by_id["p1"] == "reference-validated"
+    assert report.answer_rate == 0.5
 
 
 def test_fully_validated_ledger_is_on_frontier() -> None:

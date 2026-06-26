@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 717,
     "public_documentation_pages": 253,
-    "python_model_classes": 850,
-    "python_model_source_modules": 484,
+    "python_model_classes": 853,
+    "python_model_source_modules": 485,
     "rust_pyo3_model_wrappers": 171,
     "rust_source_modules": 42,
-    "test_files": 796
+    "test_files": 797
   },
   "documentation": {
     "examples": [
@@ -573,7 +573,7 @@
       {
         "package": "studio",
         "path": "src/scpn_quantum_control/studio",
-        "python_modules": 6
+        "python_modules": 7
       },
       {
         "package": "tcbo",
@@ -3449,6 +3449,18 @@
         "path": "src/scpn_quantum_control/control/realtime_runtime.py"
       },
       {
+        "name": "ReferenceValidationCertification",
+        "path": "src/scpn_quantum_control/studio/reference_validation.py"
+      },
+      {
+        "name": "ReferenceValidationRegistry",
+        "path": "src/scpn_quantum_control/studio/reference_validation.py"
+      },
+      {
+        "name": "ReferenceValidationRegistryValidation",
+        "path": "src/scpn_quantum_control/studio/reference_validation.py"
+      },
+      {
         "name": "RegisteredDifferentiableTrainingSuiteAuditResult",
         "path": "src/scpn_quantum_control/phase/model_training_evidence.py"
       },
@@ -4460,6 +4472,7 @@
       "src/scpn_quantum_control/studio/evidence_bundle.py",
       "src/scpn_quantum_control/studio/federation.py",
       "src/scpn_quantum_control/studio/manifest.py",
+      "src/scpn_quantum_control/studio/reference_validation.py",
       "src/scpn_quantum_control/studio/result_pack_seal.py",
       "src/scpn_quantum_control/studio/verbs.py",
       "src/scpn_quantum_control/tcbo/quantum_observer.py",
@@ -6210,6 +6223,7 @@
       "tests/test_structured_ansatz_branches.py",
       "tests/test_studio_evidence_bundle.py",
       "tests/test_studio_manifest.py",
+      "tests/test_studio_reference_validation.py",
       "tests/test_sub_us_tracker.py",
       "tests/test_submit_fim_replication_zne_ibm.py",
       "tests/test_submit_phase3_large_system_ibm.py",

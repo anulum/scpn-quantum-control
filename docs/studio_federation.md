@@ -54,6 +54,8 @@ from pathlib import Path
 from scpn_quantum_control.studio import (
     build_claim_ledger_bundles,
     build_hardware_result_pack_bundles,
+    load_reference_validation_registry,
+    measure_coverage_frontier_from_certifications,
     validate_bundles,
 )
 
@@ -66,6 +68,9 @@ claim_verdicts = validate_bundles(claim_bundles)
 hardware_verdicts = validate_bundles(hardware_bundles)
 assert all(verdict.verdict.admitted for verdict in claim_verdicts)
 assert all(verdict.verdict.admitted for verdict in hardware_verdicts)
+
+registry = load_reference_validation_registry()
+frontier = measure_coverage_frontier_from_certifications(registry=registry)
 ```
 
 The emitted dataclasses are `scpn_studio_platform.evidence.EvidenceBundle`
@@ -90,6 +95,35 @@ The hardware builder loads:
 ```text
 data/hardware_result_packs/manifest.json
 ```
+
+## WS-3 reference-validation feed
+
+WS-6 coverage must advance from attached reference-validation evidence, not from
+claim relabelling. QUANTUM therefore keeps a separate WS-3 registry:
+
+```text
+data/differentiable_phase_qnode/reference_validation_certifications.json
+```
+
+The registry uses schema `studio.reference-validation-certifications.v1` and is
+loaded with:
+
+```python
+from scpn_quantum_control.studio import (
+    load_reference_validation_registry,
+    measure_coverage_frontier_from_certifications,
+)
+
+registry = load_reference_validation_registry()
+report = measure_coverage_frontier_from_certifications(registry=registry)
+```
+
+The committed registry is currently empty. That is intentional: no per-claim
+WS-3 certifications are committed yet, so the real differentiable claim ledger
+still reports `0.0` answer rate and 13 `bounded-model` rows. A future
+certification row must name a known ledger claim whose `promotion_status` is
+already `promoted`; candidate, unknown, or duplicate certification rows fail
+closed before they can reach the WS-6 measurement.
 
 ## Substrate axes
 
@@ -116,6 +150,8 @@ The local emitter maps source classes through `evidence_axes(...)`:
 
 - Current differentiable claim-ledger rows remain bounded model evidence until
   isolated benchmark artefacts and external comparison rows are attached.
+- WS-3 reference-validation certifications are the only committed feed that can
+  move a promoted ledger row to `reference-validated` in the WS-6 frontier.
 - Hardware result packs preserve committed raw-count artefacts and reproduction
   commands; they do not submit QPU jobs and do not create broader hardware claims.
 - Blocked or dependency-gated rows retain explicit upstream blockers in the
