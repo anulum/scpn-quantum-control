@@ -96,6 +96,9 @@ jobs:
           python scripts/bench_kuramoto_tiers.py \
             --environment ci \
             --tiers "${{ steps.tiers.outputs.value }}" \
+            --sizes 8,32,128,512 \
+            --warmup 2 \
+            --repeats 5 \
             --output-dir artifacts/benchmarks/tiers
 
       - name: Render the side-by-side comparison
