@@ -17,7 +17,7 @@
     {
       "path": "requirements.txt",
       "role": "Runtime dependency lock input",
-      "sha256": "0abcc72f24fedc10b57533334c5510e39430a67b8567100dc879c8b4107febd0",
+      "sha256": "1b6003edef261b2877b6de9ebef9c5a23441428d7b65d8becd6fc12e83ead3ce",
       "size_bytes": 750,
       "line_count": 21,
       "pinned_package_count": 11
@@ -25,7 +25,7 @@
     {
       "path": "requirements-dev.txt",
       "role": "Developer verification dependency lock input",
-      "sha256": "c4ccd5989d909293fc81e7ffa8f8b5c81d68c34feac9aa11dd9bd11f6e824907",
+      "sha256": "78c1b9ab666af031ef2620fc3e7753c81a83f75a7818adbcd08e04208e82fea4",
       "size_bytes": 966,
       "line_count": 39,
       "pinned_package_count": 27
@@ -33,10 +33,10 @@
     {
       "path": "requirements-ci-cross-platform-smoke.txt",
       "role": "Cross-platform smoke CI lockfile",
-      "sha256": "42be13f99861c241f2fc980e95988cf7f6e9c7b132d8db24e00de92aa6f63464",
-      "size_bytes": 20978,
-      "line_count": 278,
-      "pinned_package_count": 17
+      "sha256": "5817fd38f104b55dd82864e6b51cbf4ed96054f0533eb6a1ee81612112919f3c",
+      "size_bytes": 25270,
+      "line_count": 335,
+      "pinned_package_count": 19
     },
     {
       "path": "requirements-ci-py311-linux.txt",
