@@ -1,0 +1,1597 @@
+{
+  "generated_utc": "2026-06-26T15:47:00Z",
+  "parameters": {
+    "daido_mode": 2,
+    "repeats": 5,
+    "sakaguchi_frustration": 0.3,
+    "seed": 20260625,
+    "sizes": [
+      8,
+      32,
+      128,
+      512
+    ],
+    "tiers": [
+      "julia",
+      "python",
+      "rust"
+    ],
+    "trajectory_dt": 0.01,
+    "trajectory_steps": 64,
+    "warmup": 2
+  },
+  "payload_sha256": "02eb8f614900282e33fb5e5afc316bc9068fbb5c293df8b2b501ae93e15ed589",
+  "primitive_count": 140,
+  "primitives": [
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "order_parameter",
+      "parity_max_abs_diff": 5.551115123125783e-17,
+      "size": 8
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "order_parameter",
+      "parity_max_abs_diff": 2.7755575615628914e-17,
+      "size": 32
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "order_parameter",
+      "parity_max_abs_diff": 2.0816681711721685e-17,
+      "size": 128
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "order_parameter",
+      "parity_max_abs_diff": 2.0816681711721685e-17,
+      "size": 512
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "order_parameter_gradient",
+      "parity_max_abs_diff": 1.3877787807814457e-17,
+      "size": 8
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "order_parameter_gradient",
+      "parity_max_abs_diff": 5.204170427930421e-18,
+      "size": 32
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "order_parameter_gradient",
+      "parity_max_abs_diff": 2.6020852139652106e-18,
+      "size": 128
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "order_parameter_gradient",
+      "parity_max_abs_diff": 8.673617379884035e-19,
+      "size": 512
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "order_parameter_hessian",
+      "parity_max_abs_diff": 2.7755575615628914e-17,
+      "size": 8
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "order_parameter_hessian",
+      "parity_max_abs_diff": 6.938893903907228e-18,
+      "size": 32
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "order_parameter_hessian",
+      "parity_max_abs_diff": 3.469446951953614e-18,
+      "size": 128
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "order_parameter_hessian",
+      "parity_max_abs_diff": 8.673617379884035e-19,
+      "size": 512
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "mean_phase",
+      "parity_max_abs_diff": 3.122502256758253e-17,
+      "size": 8
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "mean_phase",
+      "parity_max_abs_diff": 0.0,
+      "size": 32
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "mean_phase",
+      "parity_max_abs_diff": 8.326672684688674e-17,
+      "size": 128
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "mean_phase",
+      "parity_max_abs_diff": 4.440892098500626e-16,
+      "size": 512
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "mean_phase_gradient",
+      "parity_max_abs_diff": 1.1102230246251565e-16,
+      "size": 8
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "mean_phase_gradient",
+      "parity_max_abs_diff": 1.1102230246251565e-16,
+      "size": 32
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "mean_phase_gradient",
+      "parity_max_abs_diff": 1.1102230246251565e-16,
+      "size": 128
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "mean_phase_gradient",
+      "parity_max_abs_diff": 1.734723475976807e-17,
+      "size": 512
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "mean_phase_hessian",
+      "parity_max_abs_diff": 1.1102230246251565e-16,
+      "size": 8
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "mean_phase_hessian",
+      "parity_max_abs_diff": 8.326672684688674e-17,
+      "size": 32
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "mean_phase_hessian",
+      "parity_max_abs_diff": 1.249000902703301e-16,
+      "size": 128
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "mean_phase_hessian",
+      "parity_max_abs_diff": 2.0816681711721685e-17,
+      "size": 512
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "daido_order_parameter",
+      "parity_max_abs_diff": 0.0,
+      "size": 8
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "daido_order_parameter",
+      "parity_max_abs_diff": 1.3877787807814457e-17,
+      "size": 32
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "daido_order_parameter",
+      "parity_max_abs_diff": 0.0,
+      "size": 128
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "daido_order_parameter",
+      "parity_max_abs_diff": 1.3877787807814457e-17,
+      "size": 512
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "daido_order_parameter_gradient",
+      "parity_max_abs_diff": 2.7755575615628914e-17,
+      "size": 8
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "daido_order_parameter_gradient",
+      "parity_max_abs_diff": 1.3877787807814457e-17,
+      "size": 32
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "daido_order_parameter_gradient",
+      "parity_max_abs_diff": 1.496198998029996e-17,
+      "size": 128
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "daido_order_parameter_gradient",
+      "parity_max_abs_diff": 2.6020852139652106e-18,
+      "size": 512
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "daido_order_parameter_hessian",
+      "parity_max_abs_diff": 5.551115123125783e-17,
+      "size": 8
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "daido_order_parameter_hessian",
+      "parity_max_abs_diff": 5.551115123125783e-17,
+      "size": 32
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "daido_order_parameter_hessian",
+      "parity_max_abs_diff": 4.85722573273506e-17,
+      "size": 128
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "daido_order_parameter_hessian",
+      "parity_max_abs_diff": 5.204170427930421e-18,
+      "size": 512
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "daido_mode_phase",
+      "parity_max_abs_diff": 1.1102230246251565e-16,
+      "size": 8
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "daido_mode_phase",
+      "parity_max_abs_diff": 0.0,
+      "size": 32
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "daido_mode_phase",
+      "parity_max_abs_diff": 1.1102230246251565e-15,
+      "size": 128
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "daido_mode_phase",
+      "parity_max_abs_diff": 4.440892098500626e-16,
+      "size": 512
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "daido_mode_phase_gradient",
+      "parity_max_abs_diff": 2.220446049250313e-16,
+      "size": 8
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "daido_mode_phase_gradient",
+      "parity_max_abs_diff": 3.3306690738754696e-16,
+      "size": 32
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "daido_mode_phase_gradient",
+      "parity_max_abs_diff": 9.992007221626409e-16,
+      "size": 128
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "daido_mode_phase_gradient",
+      "parity_max_abs_diff": 4.85722573273506e-17,
+      "size": 512
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "daido_mode_phase_hessian",
+      "parity_max_abs_diff": 3.3306690738754696e-16,
+      "size": 8
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "daido_mode_phase_hessian",
+      "parity_max_abs_diff": 6.661338147750939e-16,
+      "size": 32
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "daido_mode_phase_hessian",
+      "parity_max_abs_diff": 3.9968028886505635e-15,
+      "size": 128
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "daido_mode_phase_hessian",
+      "parity_max_abs_diff": 9.71445146547012e-17,
+      "size": 512
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "mean_field_force",
+      "parity_max_abs_diff": 2.220446049250313e-16,
+      "size": 8
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "mean_field_force",
+      "parity_max_abs_diff": 5.551115123125783e-17,
+      "size": 32
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "mean_field_force",
+      "parity_max_abs_diff": 2.7755575615628914e-17,
+      "size": 128
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "mean_field_force",
+      "parity_max_abs_diff": 5.551115123125783e-17,
+      "size": 512
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "mean_field_jacobian",
+      "parity_max_abs_diff": 1.1102230246251565e-16,
+      "size": 8
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "mean_field_jacobian",
+      "parity_max_abs_diff": 1.1102230246251565e-16,
+      "size": 32
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "julia",
+      "operation": "mean_field_jacobian",
+      "parity_max_abs_diff": 2.7755575615628914e-17,
+      "size": 128
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "mean_field_jacobian",
+      "parity_max_abs_diff": 5.551115123125783e-17,
+      "size": 512
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "triadic_mean_field_force",
+      "parity_max_abs_diff": 8.326672684688674e-17,
+      "size": 8
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "triadic_mean_field_force",
+      "parity_max_abs_diff": 1.734723475976807e-17,
+      "size": 32
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "triadic_mean_field_force",
+      "parity_max_abs_diff": 2.168404344971009e-18,
+      "size": 128
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "triadic_mean_field_force",
+      "parity_max_abs_diff": 4.336808689942018e-18,
+      "size": 512
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "triadic_mean_field_jacobian",
+      "parity_max_abs_diff": 2.7755575615628914e-16,
+      "size": 8
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "triadic_mean_field_jacobian",
+      "parity_max_abs_diff": 4.163336342344337e-17,
+      "size": 32
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "triadic_mean_field_jacobian",
+      "parity_max_abs_diff": 4.336808689942018e-18,
+      "size": 128
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "triadic_mean_field_jacobian",
+      "parity_max_abs_diff": 7.806255641895632e-18,
+      "size": 512
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "networked_kuramoto_force",
+      "parity_max_abs_diff": 1.1102230246251565e-16,
+      "size": 8
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "networked_kuramoto_force",
+      "parity_max_abs_diff": 8.881784197001252e-16,
+      "size": 32
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "julia",
+      "operation": "networked_kuramoto_force",
+      "parity_max_abs_diff": 5.329070518200751e-15,
+      "size": 128
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "julia",
+      "operation": "networked_kuramoto_force",
+      "parity_max_abs_diff": 2.4868995751603507e-14,
+      "size": 512
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "networked_kuramoto_jacobian",
+      "parity_max_abs_diff": 2.220446049250313e-16,
+      "size": 8
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "networked_kuramoto_jacobian",
+      "parity_max_abs_diff": 8.881784197001252e-16,
+      "size": 32
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "julia",
+      "operation": "networked_kuramoto_jacobian",
+      "parity_max_abs_diff": 5.329070518200751e-15,
+      "size": 128
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "julia",
+      "operation": "networked_kuramoto_jacobian",
+      "parity_max_abs_diff": 2.1316282072803006e-14,
+      "size": 512
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "kuramoto_interaction_energy",
+      "parity_max_abs_diff": 4.440892098500626e-16,
+      "size": 8
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "kuramoto_interaction_energy",
+      "parity_max_abs_diff": 3.4416913763379853e-15,
+      "size": 32
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "julia",
+      "operation": "kuramoto_interaction_energy",
+      "parity_max_abs_diff": 3.552713678800501e-15,
+      "size": 128
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "julia",
+      "operation": "kuramoto_interaction_energy",
+      "parity_max_abs_diff": 6.338041202980094e-12,
+      "size": 512
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "kuramoto_interaction_energy_gradient",
+      "parity_max_abs_diff": 5.551115123125783e-17,
+      "size": 8
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "kuramoto_interaction_energy_gradient",
+      "parity_max_abs_diff": 8.881784197001252e-16,
+      "size": 32
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "julia",
+      "operation": "kuramoto_interaction_energy_gradient",
+      "parity_max_abs_diff": 8.881784197001252e-15,
+      "size": 128
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "julia",
+      "operation": "kuramoto_interaction_energy_gradient",
+      "parity_max_abs_diff": 3.019806626980426e-14,
+      "size": 512
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "kuramoto_interaction_energy_hessian",
+      "parity_max_abs_diff": 2.220446049250313e-16,
+      "size": 8
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "kuramoto_interaction_energy_hessian",
+      "parity_max_abs_diff": 8.881784197001252e-16,
+      "size": 32
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "julia",
+      "operation": "kuramoto_interaction_energy_hessian",
+      "parity_max_abs_diff": 5.329070518200751e-15,
+      "size": 128
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "julia",
+      "operation": "kuramoto_interaction_energy_hessian",
+      "parity_max_abs_diff": 2.1316282072803006e-14,
+      "size": 512
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "daido_mean_field_force",
+      "parity_max_abs_diff": 1.1102230246251565e-16,
+      "size": 8
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "daido_mean_field_force",
+      "parity_max_abs_diff": 8.326672684688674e-17,
+      "size": 32
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "daido_mean_field_force",
+      "parity_max_abs_diff": 4.163336342344337e-17,
+      "size": 128
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "daido_mean_field_force",
+      "parity_max_abs_diff": 5.551115123125783e-17,
+      "size": 512
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "daido_mean_field_jacobian",
+      "parity_max_abs_diff": 2.220446049250313e-16,
+      "size": 8
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "daido_mean_field_jacobian",
+      "parity_max_abs_diff": 1.6653345369377348e-16,
+      "size": 32
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "julia",
+      "operation": "daido_mean_field_jacobian",
+      "parity_max_abs_diff": 8.326672684688674e-17,
+      "size": 128
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "julia",
+      "operation": "daido_mean_field_jacobian",
+      "parity_max_abs_diff": 9.71445146547012e-17,
+      "size": 512
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "sakaguchi_mean_field_force",
+      "parity_max_abs_diff": 1.1102230246251565e-16,
+      "size": 8
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "sakaguchi_mean_field_force",
+      "parity_max_abs_diff": 6.245004513516506e-17,
+      "size": 32
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "sakaguchi_mean_field_force",
+      "parity_max_abs_diff": 2.7755575615628914e-17,
+      "size": 128
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "sakaguchi_mean_field_force",
+      "parity_max_abs_diff": 4.163336342344337e-17,
+      "size": 512
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "sakaguchi_mean_field_jacobian",
+      "parity_max_abs_diff": 1.1102230246251565e-16,
+      "size": 8
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "sakaguchi_mean_field_jacobian",
+      "parity_max_abs_diff": 1.1102230246251565e-16,
+      "size": 32
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "julia",
+      "operation": "sakaguchi_mean_field_jacobian",
+      "parity_max_abs_diff": 2.7755575615628914e-17,
+      "size": 128
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "julia",
+      "operation": "sakaguchi_mean_field_jacobian",
+      "parity_max_abs_diff": 5.551115123125783e-17,
+      "size": 512
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "sakaguchi_force",
+      "parity_max_abs_diff": 2.220446049250313e-16,
+      "size": 8
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "sakaguchi_force",
+      "parity_max_abs_diff": 8.881784197001252e-16,
+      "size": 32
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "julia",
+      "operation": "sakaguchi_force",
+      "parity_max_abs_diff": 7.549516567451064e-15,
+      "size": 128
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "julia",
+      "operation": "sakaguchi_force",
+      "parity_max_abs_diff": 2.842170943040401e-14,
+      "size": 512
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "sakaguchi_jacobian",
+      "parity_max_abs_diff": 2.220446049250313e-16,
+      "size": 8
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "sakaguchi_jacobian",
+      "parity_max_abs_diff": 8.881784197001252e-16,
+      "size": 32
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "julia",
+      "operation": "sakaguchi_jacobian",
+      "parity_max_abs_diff": 4.440892098500626e-15,
+      "size": 128
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "julia",
+      "operation": "sakaguchi_jacobian",
+      "parity_max_abs_diff": 2.5757174171303632e-14,
+      "size": 512
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "local_order_parameter",
+      "parity_max_abs_diff": 0.0,
+      "size": 8
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "local_order_parameter",
+      "parity_max_abs_diff": 5.551115123125783e-17,
+      "size": 32
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "local_order_parameter",
+      "parity_max_abs_diff": 8.326672684688674e-17,
+      "size": 128
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "python",
+      "operation": "local_order_parameter",
+      "parity_max_abs_diff": 8.326672684688674e-17,
+      "size": 512
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "local_order_parameter_jacobian",
+      "parity_max_abs_diff": 1.1102230246251565e-16,
+      "size": 8
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "local_order_parameter_jacobian",
+      "parity_max_abs_diff": 4.163336342344337e-17,
+      "size": 32
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "local_order_parameter_jacobian",
+      "parity_max_abs_diff": 9.226560487851643e-17,
+      "size": 128
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "local_order_parameter_jacobian",
+      "parity_max_abs_diff": 2.2171934427328566e-17,
+      "size": 512
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "local_mean_phase",
+      "parity_max_abs_diff": 4.440892098500626e-16,
+      "size": 8
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "local_mean_phase",
+      "parity_max_abs_diff": 4.440892098500626e-16,
+      "size": 32
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "python",
+      "operation": "local_mean_phase",
+      "parity_max_abs_diff": 5.329070518200751e-15,
+      "size": 128
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "python",
+      "operation": "local_mean_phase",
+      "parity_max_abs_diff": 4.440892098500626e-15,
+      "size": 512
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "local_mean_phase_jacobian",
+      "parity_max_abs_diff": 4.440892098500626e-16,
+      "size": 8
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "local_mean_phase_jacobian",
+      "parity_max_abs_diff": 2.1094237467877974e-15,
+      "size": 32
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "local_mean_phase_jacobian",
+      "parity_max_abs_diff": 1.1879386363489175e-14,
+      "size": 128
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "local_mean_phase_jacobian",
+      "parity_max_abs_diff": 3.774758283725532e-15,
+      "size": 512
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "kuramoto_euler_trajectory",
+      "parity_max_abs_diff": 4.440892098500626e-16,
+      "size": 8
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "julia",
+      "operation": "kuramoto_euler_trajectory",
+      "parity_max_abs_diff": 4.440892098500626e-16,
+      "size": 32
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "julia",
+      "operation": "kuramoto_euler_trajectory",
+      "parity_max_abs_diff": 1.3322676295501878e-15,
+      "size": 128
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "julia",
+      "operation": "kuramoto_euler_trajectory",
+      "parity_max_abs_diff": 1.3766765505351941e-14,
+      "size": 512
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "julia",
+      "operation": "kuramoto_rk4_trajectory",
+      "parity_max_abs_diff": 1.3877787807814457e-17,
+      "size": 8
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "julia",
+      "operation": "kuramoto_rk4_trajectory",
+      "parity_max_abs_diff": 8.881784197001252e-16,
+      "size": 32
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "julia",
+      "operation": "kuramoto_rk4_trajectory",
+      "parity_max_abs_diff": 1.9984014443252818e-15,
+      "size": 128
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "julia",
+      "operation": "kuramoto_rk4_trajectory",
+      "parity_max_abs_diff": 4.3076653355456074e-14,
+      "size": 512
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "kuramoto_euler_vjp",
+      "parity_max_abs_diff": 4.440892098500626e-15,
+      "size": 8
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "julia",
+      "operation": "kuramoto_euler_vjp",
+      "parity_max_abs_diff": 9.947598300641403e-14,
+      "size": 32
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "julia",
+      "operation": "kuramoto_euler_vjp",
+      "parity_max_abs_diff": 1.1652900866465643e-12,
+      "size": 128
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "julia",
+      "operation": "kuramoto_euler_vjp",
+      "parity_max_abs_diff": 4.802132025361061e-10,
+      "size": 512
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "kuramoto_rk4_vjp",
+      "parity_max_abs_diff": 8.881784197001252e-16,
+      "size": 8
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "kuramoto_rk4_vjp",
+      "parity_max_abs_diff": 6.661338147750939e-16,
+      "size": 32
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "kuramoto_rk4_vjp",
+      "parity_max_abs_diff": 5.861977570020827e-14,
+      "size": 128
+    },
+    {
+      "backends": [
+        "rust",
+        "julia",
+        "python"
+      ],
+      "fastest_backend": "rust",
+      "operation": "kuramoto_rk4_vjp",
+      "parity_max_abs_diff": 4.190951585769653e-09,
+      "size": 512
+    }
+  ],
+  "production_claim_allowed": false,
+  "provenance": {
+    "commit": "f9249f83c025d043bf84145ed1d6d79d6ec6fab2",
+    "cpu_affinity": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "cpu_count": 4,
+    "cpu_model": "AMD EPYC 7763 64-Core Processor",
+    "engine": "installed",
+    "juliacall": "0.9.35",
+    "loadavg": [
+      1.98,
+      0.75,
+      0.27
+    ],
+    "machine": "x86_64",
+    "numpy": "2.2.6",
+    "platform": "Linux-6.17.0-1018-azure-x86_64-with-glibc2.39",
+    "python": "3.12.13",
+    "rustc": "rustc 1.96.0 (ac68faa20 2026-05-25)"
+  },
+  "schema_version": "scpn-quantum-control.tier-benchmark-manifest.v1",
+  "tier_availability": {
+    "julia": "available",
+    "python": "available",
+    "rust": "available"
+  }
+}

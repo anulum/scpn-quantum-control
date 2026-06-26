@@ -14,164 +14,164 @@ under `docs/benchmarks/tiers/` for the full percentile set and parity data.
 
 | Field | CI | Local |
 |---|---|---|
-| CPU model | — | 11th Gen Intel(R) Core(TM) i5-11600K @ 3.90GHz |
-| Platform | — | Linux-6.17.0-35-generic-x86_64-with-glibc2.39 |
-| Commit | — | 352547b92161c3c28d4d6116b5ed3ecaea786a9d |
-| Python | — | 3.12.3 |
-| NumPy | — | 2.2.6 |
-| Rust engine | — | installed |
-| juliacall | — | 0.9.31 |
-| rustc | — | rustc 1.96.0 (ac68faa20 2026-05-25) |
+| CPU model | AMD EPYC 7763 64-Core Processor | 11th Gen Intel(R) Core(TM) i5-11600K @ 3.90GHz |
+| Platform | Linux-6.17.0-1018-azure-x86_64-with-glibc2.39 | Linux-6.17.0-35-generic-x86_64-with-glibc2.39 |
+| Commit | f9249f83c025d043bf84145ed1d6d79d6ec6fab2 | 352547b92161c3c28d4d6116b5ed3ecaea786a9d |
+| Python | 3.12.13 | 3.12.3 |
+| NumPy | 2.2.6 | 2.2.6 |
+| Rust engine | installed | installed |
+| juliacall | 0.9.35 | 0.9.31 |
+| rustc | rustc 1.96.0 (ac68faa20 2026-05-25) | rustc 1.96.0 (ac68faa20 2026-05-25) |
 
 ## Runs
 
 | Environment | Generated (UTC) | Parameters |
 |---|---|---|
-| CI | — | — |
+| CI | 2026-06-26T15:47:00Z | tiers=[julia,python,rust] sizes=[8,32,128,512] warmup=2 repeats=5 |
 | Local | 2026-06-24T23:56:12Z | tiers=[python,rust] sizes=[8,32,128,512] warmup=2 repeats=5 |
 
 ## Per-primitive P50 latency (µs)
 
 | Operation | N | Rust (CI) | Rust (local) | Julia (CI) | Python (CI) | Python (local) | Fastest (CI) | Parity (CI) |
 |---|--:|--:|--:|--:|--:|--:|:--|--:|
-| `daido_mean_field_force` | 8 | — | 0.981 | — | — | 10.851 | — | — |
-| `daido_mean_field_force` | 32 | — | 1.413 | — | — | 11.452 | — | — |
-| `daido_mean_field_force` | 128 | — | 3.342 | — | — | 16.331 | — | — |
-| `daido_mean_field_force` | 512 | — | 10.514 | — | — | 24.997 | — | — |
-| `daido_mean_field_jacobian` | 8 | — | 1.505 | — | — | 15.579 | — | — |
-| `daido_mean_field_jacobian` | 32 | — | 8.186 | — | — | 25.124 | — | — |
-| `daido_mean_field_jacobian` | 128 | — | 178.621 | — | — | 224.765 | — | — |
-| `daido_mean_field_jacobian` | 512 | — | 3970.465 | — | — | 4079.830 | — | — |
-| `daido_mode_phase` | 8 | — | 0.625 | — | — | 6.670 | — | — |
-| `daido_mode_phase` | 32 | — | 0.836 | — | — | 7.043 | — | — |
-| `daido_mode_phase` | 128 | — | 1.812 | — | — | 9.364 | — | — |
-| `daido_mode_phase` | 512 | — | 5.699 | — | — | 14.019 | — | — |
-| `daido_mode_phase_gradient` | 8 | — | 0.863 | — | — | 10.904 | — | — |
-| `daido_mode_phase_gradient` | 32 | — | 1.420 | — | — | 11.674 | — | — |
-| `daido_mode_phase_gradient` | 128 | — | 3.260 | — | — | 15.715 | — | — |
-| `daido_mode_phase_gradient` | 512 | — | 11.560 | — | — | 27.368 | — | — |
-| `daido_mode_phase_hessian` | 8 | — | 1.174 | — | — | 21.122 | — | — |
-| `daido_mode_phase_hessian` | 32 | — | 2.268 | — | — | 25.917 | — | — |
-| `daido_mode_phase_hessian` | 128 | — | 10.571 | — | — | 76.121 | — | — |
-| `daido_mode_phase_hessian` | 512 | — | 157.005 | — | — | 1072.336 | — | — |
-| `daido_order_parameter` | 8 | — | 0.942 | — | — | 5.314 | — | — |
-| `daido_order_parameter` | 32 | — | 0.929 | — | — | 5.639 | — | — |
-| `daido_order_parameter` | 128 | — | 1.792 | — | — | 7.394 | — | — |
-| `daido_order_parameter` | 512 | — | 5.699 | — | — | 14.110 | — | — |
-| `daido_order_parameter_gradient` | 8 | — | 0.914 | — | — | 11.812 | — | — |
-| `daido_order_parameter_gradient` | 32 | — | 1.410 | — | — | 12.213 | — | — |
-| `daido_order_parameter_gradient` | 128 | — | 3.218 | — | — | 14.689 | — | — |
-| `daido_order_parameter_gradient` | 512 | — | 10.595 | — | — | 35.873 | — | — |
-| `daido_order_parameter_hessian` | 8 | — | 1.532 | — | — | 17.627 | — | — |
-| `daido_order_parameter_hessian` | 32 | — | 1.731 | — | — | 21.021 | — | — |
-| `daido_order_parameter_hessian` | 128 | — | 7.364 | — | — | 53.201 | — | — |
-| `daido_order_parameter_hessian` | 512 | — | 170.593 | — | — | 635.933 | — | — |
-| `kuramoto_euler_trajectory` | 8 | — | 26.781 | — | — | 329.749 | — | — |
-| `kuramoto_euler_trajectory` | 32 | — | 437.308 | — | — | 864.166 | — | — |
-| `kuramoto_euler_trajectory` | 128 | — | 9203.602 | — | — | 10976.205 | — | — |
-| `kuramoto_euler_trajectory` | 512 | — | 204884.303 | — | — | 242535.154 | — | — |
-| `kuramoto_euler_vjp` | 8 | — | 89.415 | — | — | 1068.443 | — | — |
-| `kuramoto_euler_vjp` | 32 | — | 1119.381 | — | — | 2261.333 | — | — |
-| `kuramoto_euler_vjp` | 128 | — | 23078.208 | — | — | 28149.560 | — | — |
-| `kuramoto_euler_vjp` | 512 | — | 489273.842 | — | — | 569460.991 | — | — |
-| `kuramoto_interaction_energy` | 8 | — | 1.315 | — | — | 6.936 | — | — |
-| `kuramoto_interaction_energy` | 32 | — | 7.028 | — | — | 12.082 | — | — |
-| `kuramoto_interaction_energy` | 128 | — | 158.591 | — | — | 164.070 | — | — |
-| `kuramoto_interaction_energy` | 512 | — | 3114.691 | — | — | 3521.759 | — | — |
-| `kuramoto_interaction_energy_gradient` | 8 | — | 2.017 | — | — | 7.428 | — | — |
-| `kuramoto_interaction_energy_gradient` | 32 | — | 9.263 | — | — | 16.715 | — | — |
-| `kuramoto_interaction_energy_gradient` | 128 | — | 115.183 | — | — | 171.820 | — | — |
-| `kuramoto_interaction_energy_gradient` | 512 | — | 3504.444 | — | — | 4133.745 | — | — |
-| `kuramoto_interaction_energy_hessian` | 8 | — | 1.631 | — | — | 8.298 | — | — |
-| `kuramoto_interaction_energy_hessian` | 32 | — | 8.720 | — | — | 16.748 | — | — |
-| `kuramoto_interaction_energy_hessian` | 128 | — | 172.773 | — | — | 221.272 | — | — |
-| `kuramoto_interaction_energy_hessian` | 512 | — | 4182.478 | — | — | 5058.333 | — | — |
-| `kuramoto_rk4_trajectory` | 8 | — | 96.755 | — | — | 1852.538 | — | — |
-| `kuramoto_rk4_trajectory` | 32 | — | 1621.924 | — | — | 3292.183 | — | — |
-| `kuramoto_rk4_trajectory` | 128 | — | 35132.240 | — | — | 45412.649 | — | — |
-| `kuramoto_rk4_trajectory` | 512 | — | 841726.505 | — | — | 1072889.518 | — | — |
-| `kuramoto_rk4_vjp` | 8 | — | 279.688 | — | — | 4760.977 | — | — |
-| `kuramoto_rk4_vjp` | 32 | — | 5590.547 | — | — | 11174.701 | — | — |
-| `kuramoto_rk4_vjp` | 128 | — | 116512.887 | — | — | 143605.952 | — | — |
-| `kuramoto_rk4_vjp` | 512 | — | 2544101.383 | — | — | 2957652.493 | — | — |
-| `local_mean_phase` | 8 | — | 1.427 | — | — | 5.538 | — | — |
-| `local_mean_phase` | 32 | — | 2.594 | — | — | 6.119 | — | — |
-| `local_mean_phase` | 128 | — | 18.652 | — | — | 13.889 | — | — |
-| `local_mean_phase` | 512 | — | 264.788 | — | — | 79.737 | — | — |
-| `local_mean_phase_jacobian` | 8 | — | 2.808 | — | — | 22.424 | — | — |
-| `local_mean_phase_jacobian` | 32 | — | 5.272 | — | — | 30.011 | — | — |
-| `local_mean_phase_jacobian` | 128 | — | 32.179 | — | — | 67.555 | — | — |
-| `local_mean_phase_jacobian` | 512 | — | 380.471 | — | — | 1032.108 | — | — |
-| `local_order_parameter` | 8 | — | 1.252 | — | — | 7.118 | — | — |
-| `local_order_parameter` | 32 | — | 2.314 | — | — | 8.456 | — | — |
-| `local_order_parameter` | 128 | — | 15.932 | — | — | 17.008 | — | — |
-| `local_order_parameter` | 512 | — | 242.960 | — | — | 139.451 | — | — |
-| `local_order_parameter_jacobian` | 8 | — | 2.695 | — | — | 13.266 | — | — |
-| `local_order_parameter_jacobian` | 32 | — | 3.043 | — | — | 17.244 | — | — |
-| `local_order_parameter_jacobian` | 128 | — | 24.665 | — | — | 75.314 | — | — |
-| `local_order_parameter_jacobian` | 512 | — | 408.834 | — | — | 958.829 | — | — |
-| `mean_field_force` | 8 | — | 0.891 | — | — | 10.119 | — | — |
-| `mean_field_force` | 32 | — | 1.309 | — | — | 10.678 | — | — |
-| `mean_field_force` | 128 | — | 2.699 | — | — | 15.281 | — | — |
-| `mean_field_force` | 512 | — | 9.222 | — | — | 22.291 | — | — |
-| `mean_field_jacobian` | 8 | — | 1.450 | — | — | 16.256 | — | — |
-| `mean_field_jacobian` | 32 | — | 7.223 | — | — | 22.538 | — | — |
-| `mean_field_jacobian` | 128 | — | 130.693 | — | — | 168.044 | — | — |
-| `mean_field_jacobian` | 512 | — | 3140.961 | — | — | 3783.719 | — | — |
-| `mean_phase` | 8 | — | 0.600 | — | — | 8.900 | — | — |
-| `mean_phase` | 32 | — | 0.827 | — | — | 9.142 | — | — |
-| `mean_phase` | 128 | — | 1.623 | — | — | 10.131 | — | — |
-| `mean_phase` | 512 | — | 4.748 | — | — | 16.353 | — | — |
-| `mean_phase_gradient` | 8 | — | 0.900 | — | — | 11.580 | — | — |
-| `mean_phase_gradient` | 32 | — | 1.359 | — | — | 11.949 | — | — |
-| `mean_phase_gradient` | 128 | — | 3.199 | — | — | 13.603 | — | — |
-| `mean_phase_gradient` | 512 | — | 9.165 | — | — | 23.045 | — | — |
-| `mean_phase_hessian` | 8 | — | 1.138 | — | — | 21.409 | — | — |
-| `mean_phase_hessian` | 32 | — | 2.051 | — | — | 25.261 | — | — |
-| `mean_phase_hessian` | 128 | — | 9.897 | — | — | 77.038 | — | — |
-| `mean_phase_hessian` | 512 | — | 125.741 | — | — | 702.525 | — | — |
-| `networked_kuramoto_force` | 8 | — | 2.277 | — | — | 4.747 | — | — |
-| `networked_kuramoto_force` | 32 | — | 7.134 | — | — | 11.116 | — | — |
-| `networked_kuramoto_force` | 128 | — | 111.525 | — | — | 138.955 | — | — |
-| `networked_kuramoto_force` | 512 | — | 3090.903 | — | — | 3421.909 | — | — |
-| `networked_kuramoto_jacobian` | 8 | — | 1.740 | — | — | 7.185 | — | — |
-| `networked_kuramoto_jacobian` | 32 | — | 9.362 | — | — | 14.404 | — | — |
-| `networked_kuramoto_jacobian` | 128 | — | 166.728 | — | — | 165.645 | — | — |
-| `networked_kuramoto_jacobian` | 512 | — | 3744.613 | — | — | 3832.477 | — | — |
-| `order_parameter` | 8 | — | 0.561 | — | — | 5.513 | — | — |
-| `order_parameter` | 32 | — | 0.748 | — | — | 6.816 | — | — |
-| `order_parameter` | 128 | — | 1.516 | — | — | 7.403 | — | — |
-| `order_parameter` | 512 | — | 5.537 | — | — | 13.615 | — | — |
-| `order_parameter_gradient` | 8 | — | 0.909 | — | — | 10.763 | — | — |
-| `order_parameter_gradient` | 32 | — | 1.328 | — | — | 11.471 | — | — |
-| `order_parameter_gradient` | 128 | — | 3.089 | — | — | 15.022 | — | — |
-| `order_parameter_gradient` | 512 | — | 12.786 | — | — | 24.471 | — | — |
-| `order_parameter_hessian` | 8 | — | 0.996 | — | — | 16.731 | — | — |
-| `order_parameter_hessian` | 32 | — | 1.613 | — | — | 19.861 | — | — |
-| `order_parameter_hessian` | 128 | — | 6.733 | — | — | 50.051 | — | — |
-| `order_parameter_hessian` | 512 | — | 124.214 | — | — | 629.773 | — | — |
-| `sakaguchi_force` | 8 | — | 1.581 | — | — | 5.981 | — | — |
-| `sakaguchi_force` | 32 | — | 7.740 | — | — | 13.139 | — | — |
-| `sakaguchi_force` | 128 | — | 129.766 | — | — | 139.121 | — | — |
-| `sakaguchi_force` | 512 | — | 3492.361 | — | — | 3534.242 | — | — |
-| `sakaguchi_jacobian` | 8 | — | 2.607 | — | — | 8.620 | — | — |
-| `sakaguchi_jacobian` | 32 | — | 9.416 | — | — | 16.777 | — | — |
-| `sakaguchi_jacobian` | 128 | — | 176.519 | — | — | 170.657 | — | — |
-| `sakaguchi_jacobian` | 512 | — | 3813.868 | — | — | 3802.934 | — | — |
-| `sakaguchi_mean_field_force` | 8 | — | 0.918 | — | — | 15.898 | — | — |
-| `sakaguchi_mean_field_force` | 32 | — | 2.080 | — | — | 15.392 | — | — |
-| `sakaguchi_mean_field_force` | 128 | — | 2.999 | — | — | 16.534 | — | — |
-| `sakaguchi_mean_field_force` | 512 | — | 9.419 | — | — | 30.452 | — | — |
-| `sakaguchi_mean_field_jacobian` | 8 | — | 1.491 | — | — | 18.378 | — | — |
-| `sakaguchi_mean_field_jacobian` | 32 | — | 7.437 | — | — | 24.501 | — | — |
-| `sakaguchi_mean_field_jacobian` | 128 | — | 135.615 | — | — | 174.131 | — | — |
-| `sakaguchi_mean_field_jacobian` | 512 | — | 3136.367 | — | — | 4158.522 | — | — |
-| `triadic_mean_field_force` | 8 | — | 0.903 | — | — | 11.086 | — | — |
-| `triadic_mean_field_force` | 32 | — | 1.303 | — | — | 11.665 | — | — |
-| `triadic_mean_field_force` | 128 | — | 3.114 | — | — | 14.228 | — | — |
-| `triadic_mean_field_force` | 512 | — | 10.290 | — | — | 28.797 | — | — |
-| `triadic_mean_field_jacobian` | 8 | — | 2.705 | — | — | 32.938 | — | — |
-| `triadic_mean_field_jacobian` | 32 | — | 18.336 | — | — | 37.492 | — | — |
-| `triadic_mean_field_jacobian` | 128 | — | 258.240 | — | — | 442.142 | — | — |
-| `triadic_mean_field_jacobian` | 512 | — | 4600.139 | — | — | 8020.405 | — | — |
+| `daido_mean_field_force` | 8 | 1.683 | 0.981 | 14.386 | 16.872 | 10.851 | rust | 1.11e-16 |
+| `daido_mean_field_force` | 32 | 2.073 | 1.413 | 15.239 | 18.031 | 11.452 | rust | 8.33e-17 |
+| `daido_mean_field_force` | 128 | 4.975 | 3.342 | 17.436 | 22.161 | 16.331 | rust | 4.16e-17 |
+| `daido_mean_field_force` | 512 | 16.955 | 10.514 | 27.718 | 40.573 | 24.997 | rust | 5.55e-17 |
+| `daido_mean_field_jacobian` | 8 | 3.657 | 1.505 | 14.912 | 25.624 | 15.579 | rust | 2.22e-16 |
+| `daido_mean_field_jacobian` | 32 | 13.206 | 8.186 | 22.991 | 40.651 | 25.124 | rust | 1.67e-16 |
+| `daido_mean_field_jacobian` | 128 | 189.100 | 178.621 | 148.591 | 257.792 | 224.765 | julia | 8.33e-17 |
+| `daido_mean_field_jacobian` | 512 | 4549.686 | 3970.465 | 4132.213 | 4945.642 | 4079.830 | julia | 9.71e-17 |
+| `daido_mode_phase` | 8 | 1.030 | 0.625 | 11.315 | 10.287 | 6.670 | rust | 1.11e-16 |
+| `daido_mode_phase` | 32 | 1.767 | 0.836 | 11.669 | 10.530 | 7.043 | rust | 0.00e+00 |
+| `daido_mode_phase` | 128 | 2.704 | 1.812 | 13.077 | 13.031 | 9.364 | rust | 1.11e-15 |
+| `daido_mode_phase` | 512 | 8.555 | 5.699 | 17.450 | 21.738 | 14.019 | rust | 4.44e-16 |
+| `daido_mode_phase_gradient` | 8 | 1.335 | 0.863 | 14.941 | 16.950 | 10.904 | rust | 2.22e-16 |
+| `daido_mode_phase_gradient` | 32 | 2.103 | 1.420 | 14.965 | 18.386 | 11.674 | rust | 3.33e-16 |
+| `daido_mode_phase_gradient` | 128 | 4.950 | 3.260 | 17.309 | 22.752 | 15.715 | rust | 9.99e-16 |
+| `daido_mode_phase_gradient` | 512 | 16.719 | 11.560 | 28.753 | 41.224 | 27.368 | rust | 4.86e-17 |
+| `daido_mode_phase_hessian` | 8 | 2.913 | 1.174 | 14.515 | 34.842 | 21.122 | rust | 3.33e-16 |
+| `daido_mode_phase_hessian` | 32 | 5.390 | 2.268 | 17.523 | 40.331 | 25.917 | rust | 6.66e-16 |
+| `daido_mode_phase_hessian` | 128 | 13.791 | 10.571 | 75.351 | 95.044 | 76.121 | rust | 4.00e-15 |
+| `daido_mode_phase_hessian` | 512 | 153.538 | 157.005 | 2530.514 | 832.890 | 1072.336 | rust | 9.71e-17 |
+| `daido_order_parameter` | 8 | 1.208 | 0.942 | 11.039 | 7.503 | 5.314 | rust | 0.00e+00 |
+| `daido_order_parameter` | 32 | 1.259 | 0.929 | 11.315 | 8.176 | 5.639 | rust | 1.39e-17 |
+| `daido_order_parameter` | 128 | 2.697 | 1.792 | 12.423 | 10.520 | 7.394 | rust | 0.00e+00 |
+| `daido_order_parameter` | 512 | 8.706 | 5.699 | 16.513 | 20.333 | 14.110 | rust | 1.39e-17 |
+| `daido_order_parameter_gradient` | 8 | 1.332 | 0.914 | 14.259 | 18.556 | 11.812 | rust | 2.78e-17 |
+| `daido_order_parameter_gradient` | 32 | 2.117 | 1.410 | 15.075 | 19.693 | 12.213 | rust | 1.39e-17 |
+| `daido_order_parameter_gradient` | 128 | 4.995 | 3.218 | 17.597 | 23.867 | 14.689 | rust | 1.50e-17 |
+| `daido_order_parameter_gradient` | 512 | 16.604 | 10.595 | 28.056 | 41.926 | 35.873 | rust | 2.60e-18 |
+| `daido_order_parameter_hessian` | 8 | 2.786 | 1.532 | 14.416 | 29.452 | 17.627 | rust | 5.55e-17 |
+| `daido_order_parameter_hessian` | 32 | 4.420 | 1.731 | 17.101 | 33.572 | 21.021 | rust | 5.55e-17 |
+| `daido_order_parameter_hessian` | 128 | 9.649 | 7.364 | 69.608 | 72.258 | 53.201 | rust | 4.86e-17 |
+| `daido_order_parameter_hessian` | 512 | 117.453 | 170.593 | 2530.195 | 582.438 | 635.933 | rust | 5.20e-18 |
+| `kuramoto_euler_trajectory` | 8 | 44.103 | 26.781 | 64.049 | 518.758 | 329.749 | rust | 4.44e-16 |
+| `kuramoto_euler_trajectory` | 32 | 674.097 | 437.308 | 545.357 | 1325.482 | 864.166 | julia | 4.44e-16 |
+| `kuramoto_euler_trajectory` | 128 | 11629.453 | 9203.602 | 8839.670 | 14046.759 | 10976.205 | julia | 1.33e-15 |
+| `kuramoto_euler_trajectory` | 512 | 245285.731 | 204884.303 | 185975.370 | 272385.100 | 242535.154 | julia | 1.38e-14 |
+| `kuramoto_euler_vjp` | 8 | 90.048 | 89.415 | 97.462 | 1237.979 | 1068.443 | rust | 4.44e-15 |
+| `kuramoto_euler_vjp` | 32 | 1528.351 | 1119.381 | 1062.422 | 2982.642 | 2261.333 | julia | 9.95e-14 |
+| `kuramoto_euler_vjp` | 128 | 28012.724 | 23078.208 | 19304.252 | 30590.731 | 28149.560 | julia | 1.17e-12 |
+| `kuramoto_euler_vjp` | 512 | 563958.844 | 489273.842 | 445186.589 | 567717.732 | 569460.991 | julia | 4.80e-10 |
+| `kuramoto_interaction_energy` | 8 | 1.941 | 1.315 | 17.478 | 8.087 | 6.936 | rust | 4.44e-16 |
+| `kuramoto_interaction_energy` | 32 | 11.606 | 7.028 | 24.424 | 19.747 | 12.082 | rust | 3.44e-15 |
+| `kuramoto_interaction_energy` | 128 | 169.783 | 158.591 | 138.626 | 208.441 | 164.070 | julia | 3.55e-15 |
+| `kuramoto_interaction_energy` | 512 | 3621.024 | 3114.691 | 2700.310 | 4028.653 | 3521.759 | julia | 6.34e-12 |
+| `kuramoto_interaction_energy_gradient` | 8 | 3.933 | 2.017 | 20.232 | 10.631 | 7.428 | rust | 5.55e-17 |
+| `kuramoto_interaction_energy_gradient` | 32 | 11.961 | 9.263 | 28.356 | 24.207 | 16.715 | rust | 8.88e-16 |
+| `kuramoto_interaction_energy_gradient` | 128 | 170.532 | 115.183 | 150.760 | 232.399 | 171.820 | julia | 8.88e-15 |
+| `kuramoto_interaction_energy_gradient` | 512 | 3739.369 | 3504.444 | 2808.568 | 5031.270 | 4133.745 | julia | 3.02e-14 |
+| `kuramoto_interaction_energy_hessian` | 8 | 4.162 | 1.631 | 21.259 | 13.141 | 8.298 | rust | 2.22e-16 |
+| `kuramoto_interaction_energy_hessian` | 32 | 14.629 | 8.720 | 29.538 | 28.821 | 16.748 | rust | 8.88e-16 |
+| `kuramoto_interaction_energy_hessian` | 128 | 228.605 | 172.773 | 171.623 | 269.153 | 221.272 | julia | 5.33e-15 |
+| `kuramoto_interaction_energy_hessian` | 512 | 4932.920 | 4182.478 | 3341.814 | 5355.621 | 5058.333 | julia | 2.13e-14 |
+| `kuramoto_rk4_trajectory` | 8 | 166.080 | 96.755 | 160.209 | 2288.617 | 1852.538 | julia | 1.39e-17 |
+| `kuramoto_rk4_trajectory` | 32 | 2639.882 | 1621.924 | 1989.028 | 5468.826 | 3292.183 | julia | 8.88e-16 |
+| `kuramoto_rk4_trajectory` | 128 | 43863.286 | 35132.240 | 33117.973 | 53739.508 | 45412.649 | julia | 2.00e-15 |
+| `kuramoto_rk4_trajectory` | 512 | 990456.318 | 841726.505 | 775927.352 | 1089860.615 | 1072889.518 | julia | 4.31e-14 |
+| `kuramoto_rk4_vjp` | 8 | 472.872 | 279.688 | 2174.882 | 6825.638 | 4760.977 | rust | 8.88e-16 |
+| `kuramoto_rk4_vjp` | 32 | 7682.094 | 5590.547 | 27383.004 | 16080.444 | 11174.701 | rust | 6.66e-16 |
+| `kuramoto_rk4_vjp` | 128 | 140636.165 | 116512.887 | 424203.501 | 161272.117 | 143605.952 | rust | 5.86e-14 |
+| `kuramoto_rk4_vjp` | 512 | 2860566.657 | 2544101.383 | 7219909.881 | 3037485.262 | 2957652.493 | rust | 4.19e-09 |
+| `local_mean_phase` | 8 | 2.067 | 1.427 | 20.262 | 9.030 | 5.538 | rust | 4.44e-16 |
+| `local_mean_phase` | 32 | 3.809 | 2.594 | 22.043 | 10.545 | 6.119 | rust | 4.44e-16 |
+| `local_mean_phase` | 128 | 23.456 | 18.652 | 41.296 | 18.674 | 13.889 | python | 5.33e-15 |
+| `local_mean_phase` | 512 | 276.424 | 264.788 | 297.123 | 119.686 | 79.737 | python | 4.44e-15 |
+| `local_mean_phase_jacobian` | 8 | 1.983 | 2.808 | 20.871 | 17.974 | 22.424 | rust | 4.44e-16 |
+| `local_mean_phase_jacobian` | 32 | 4.112 | 5.272 | 23.511 | 23.671 | 30.011 | rust | 2.11e-15 |
+| `local_mean_phase_jacobian` | 128 | 29.633 | 32.179 | 76.960 | 77.797 | 67.555 | rust | 1.19e-14 |
+| `local_mean_phase_jacobian` | 512 | 400.209 | 380.471 | 2892.268 | 822.568 | 1032.108 | rust | 3.77e-15 |
+| `local_order_parameter` | 8 | 1.916 | 1.252 | 19.828 | 10.888 | 7.118 | rust | 0.00e+00 |
+| `local_order_parameter` | 32 | 3.939 | 2.314 | 21.669 | 12.937 | 8.456 | rust | 5.55e-17 |
+| `local_order_parameter` | 128 | 19.993 | 15.932 | 38.286 | 24.519 | 17.008 | rust | 8.33e-17 |
+| `local_order_parameter` | 512 | 262.964 | 242.960 | 280.346 | 178.904 | 139.451 | python | 8.33e-17 |
+| `local_order_parameter_jacobian` | 8 | 2.705 | 2.695 | 20.544 | 20.043 | 13.266 | rust | 1.11e-16 |
+| `local_order_parameter_jacobian` | 32 | 4.306 | 3.043 | 25.435 | 26.722 | 17.244 | rust | 4.16e-17 |
+| `local_order_parameter_jacobian` | 128 | 29.451 | 24.665 | 79.093 | 85.316 | 75.314 | rust | 9.23e-17 |
+| `local_order_parameter_jacobian` | 512 | 407.359 | 408.834 | 2820.087 | 901.474 | 958.829 | rust | 2.22e-17 |
+| `mean_field_force` | 8 | 1.245 | 0.891 | 14.641 | 15.551 | 10.119 | rust | 2.22e-16 |
+| `mean_field_force` | 32 | 2.124 | 1.309 | 15.045 | 16.563 | 10.678 | rust | 5.55e-17 |
+| `mean_field_force` | 128 | 4.552 | 2.699 | 17.555 | 20.950 | 15.281 | rust | 2.78e-17 |
+| `mean_field_force` | 512 | 15.466 | 9.222 | 27.121 | 38.469 | 22.291 | rust | 5.55e-17 |
+| `mean_field_jacobian` | 8 | 3.209 | 1.450 | 14.946 | 23.129 | 16.256 | rust | 1.11e-16 |
+| `mean_field_jacobian` | 32 | 12.372 | 7.223 | 22.322 | 37.532 | 22.538 | rust | 1.11e-16 |
+| `mean_field_jacobian` | 128 | 173.826 | 130.693 | 135.594 | 232.760 | 168.044 | julia | 2.78e-17 |
+| `mean_field_jacobian` | 512 | 3564.021 | 3140.961 | 3626.747 | 4195.702 | 3783.719 | rust | 5.55e-17 |
+| `mean_phase` | 8 | 0.844 | 0.600 | 10.916 | 11.955 | 8.900 | rust | 3.12e-17 |
+| `mean_phase` | 32 | 1.417 | 0.827 | 11.042 | 12.612 | 9.142 | rust | 0.00e+00 |
+| `mean_phase` | 128 | 2.450 | 1.623 | 12.356 | 14.304 | 10.131 | rust | 8.33e-17 |
+| `mean_phase` | 512 | 8.010 | 4.748 | 16.647 | 23.200 | 16.353 | rust | 4.44e-16 |
+| `mean_phase_gradient` | 8 | 1.553 | 0.900 | 14.126 | 17.203 | 11.580 | rust | 1.11e-16 |
+| `mean_phase_gradient` | 32 | 1.940 | 1.359 | 14.674 | 18.258 | 11.949 | rust | 1.11e-16 |
+| `mean_phase_gradient` | 128 | 4.491 | 3.199 | 16.848 | 22.408 | 13.603 | rust | 1.11e-16 |
+| `mean_phase_gradient` | 512 | 15.219 | 9.165 | 26.873 | 40.232 | 23.045 | rust | 1.73e-17 |
+| `mean_phase_hessian` | 8 | 2.888 | 1.138 | 14.139 | 34.959 | 21.409 | rust | 1.11e-16 |
+| `mean_phase_hessian` | 32 | 4.809 | 2.051 | 16.368 | 42.307 | 25.261 | rust | 8.33e-17 |
+| `mean_phase_hessian` | 128 | 13.430 | 9.897 | 68.012 | 96.186 | 77.038 | rust | 1.25e-16 |
+| `mean_phase_hessian` | 512 | 159.185 | 125.741 | 2492.929 | 812.134 | 702.525 | rust | 2.08e-17 |
+| `networked_kuramoto_force` | 8 | 2.268 | 2.277 | 20.349 | 6.878 | 4.747 | rust | 1.11e-16 |
+| `networked_kuramoto_force` | 32 | 11.746 | 7.134 | 27.132 | 18.197 | 11.116 | rust | 8.88e-16 |
+| `networked_kuramoto_force` | 128 | 167.713 | 111.525 | 144.444 | 191.147 | 138.955 | julia | 5.33e-15 |
+| `networked_kuramoto_force` | 512 | 3556.274 | 3090.903 | 2692.222 | 3993.759 | 3421.909 | julia | 2.49e-14 |
+| `networked_kuramoto_jacobian` | 8 | 2.379 | 1.740 | 20.874 | 10.481 | 7.185 | rust | 2.22e-16 |
+| `networked_kuramoto_jacobian` | 32 | 14.447 | 9.362 | 29.431 | 23.662 | 14.404 | rust | 8.88e-16 |
+| `networked_kuramoto_jacobian` | 128 | 223.885 | 166.728 | 169.338 | 222.582 | 165.645 | julia | 5.33e-15 |
+| `networked_kuramoto_jacobian` | 512 | 4950.946 | 3744.613 | 3208.239 | 4165.714 | 3832.477 | julia | 2.13e-14 |
+| `order_parameter` | 8 | 0.801 | 0.561 | 10.937 | 7.600 | 5.513 | rust | 5.55e-17 |
+| `order_parameter` | 32 | 1.129 | 0.748 | 10.950 | 7.994 | 6.816 | rust | 2.78e-17 |
+| `order_parameter` | 128 | 2.380 | 1.516 | 12.149 | 10.543 | 7.403 | rust | 2.08e-17 |
+| `order_parameter` | 512 | 7.574 | 5.537 | 15.804 | 19.754 | 13.615 | rust | 2.08e-17 |
+| `order_parameter_gradient` | 8 | 1.261 | 0.909 | 14.396 | 16.758 | 10.763 | rust | 1.39e-17 |
+| `order_parameter_gradient` | 32 | 1.947 | 1.328 | 14.908 | 17.950 | 11.471 | rust | 5.20e-18 |
+| `order_parameter_gradient` | 128 | 4.496 | 3.089 | 17.238 | 22.043 | 15.022 | rust | 2.60e-18 |
+| `order_parameter_gradient` | 512 | 15.229 | 12.786 | 27.357 | 39.601 | 24.471 | rust | 8.67e-19 |
+| `order_parameter_hessian` | 8 | 1.428 | 0.996 | 13.642 | 25.641 | 16.731 | rust | 2.78e-17 |
+| `order_parameter_hessian` | 32 | 4.348 | 1.613 | 16.226 | 32.065 | 19.861 | rust | 6.94e-18 |
+| `order_parameter_hessian` | 128 | 9.292 | 6.733 | 114.014 | 61.868 | 50.051 | rust | 3.47e-18 |
+| `order_parameter_hessian` | 512 | 112.524 | 124.214 | 2435.191 | 461.172 | 629.773 | rust | 8.67e-19 |
+| `sakaguchi_force` | 8 | 3.380 | 1.581 | 21.395 | 13.913 | 5.981 | rust | 2.22e-16 |
+| `sakaguchi_force` | 32 | 12.692 | 7.740 | 27.119 | 21.963 | 13.139 | rust | 8.88e-16 |
+| `sakaguchi_force` | 128 | 193.576 | 129.766 | 151.912 | 208.158 | 139.121 | julia | 7.55e-15 |
+| `sakaguchi_force` | 512 | 4402.744 | 3492.361 | 2932.638 | 4096.955 | 3534.242 | julia | 2.84e-14 |
+| `sakaguchi_jacobian` | 8 | 4.006 | 2.607 | 20.509 | 11.447 | 8.620 | rust | 2.22e-16 |
+| `sakaguchi_jacobian` | 32 | 14.584 | 9.416 | 30.179 | 24.912 | 16.777 | rust | 8.88e-16 |
+| `sakaguchi_jacobian` | 128 | 221.988 | 176.519 | 167.316 | 216.512 | 170.657 | julia | 4.44e-15 |
+| `sakaguchi_jacobian` | 512 | 4896.611 | 3813.868 | 3304.589 | 4080.802 | 3802.934 | julia | 2.58e-14 |
+| `sakaguchi_mean_field_force` | 8 | 1.298 | 0.918 | 14.376 | 22.189 | 15.898 | rust | 1.11e-16 |
+| `sakaguchi_mean_field_force` | 32 | 1.976 | 2.080 | 14.907 | 23.052 | 15.392 | rust | 6.25e-17 |
+| `sakaguchi_mean_field_force` | 128 | 4.601 | 2.999 | 17.438 | 27.794 | 16.534 | rust | 2.78e-17 |
+| `sakaguchi_mean_field_force` | 512 | 15.589 | 9.419 | 28.255 | 46.546 | 30.452 | rust | 4.16e-17 |
+| `sakaguchi_mean_field_jacobian` | 8 | 3.521 | 1.491 | 14.702 | 26.712 | 18.378 | rust | 1.11e-16 |
+| `sakaguchi_mean_field_jacobian` | 32 | 12.430 | 7.437 | 23.219 | 41.721 | 24.501 | rust | 1.11e-16 |
+| `sakaguchi_mean_field_jacobian` | 128 | 173.776 | 135.615 | 140.861 | 234.290 | 174.131 | julia | 2.78e-17 |
+| `sakaguchi_mean_field_jacobian` | 512 | 3458.771 | 3136.367 | 2880.023 | 4069.705 | 4158.522 | julia | 5.55e-17 |
+| `triadic_mean_field_force` | 8 | 1.514 | 0.903 | 14.198 | 16.497 | 11.086 | rust | 8.33e-17 |
+| `triadic_mean_field_force` | 32 | 2.308 | 1.303 | 15.217 | 17.624 | 11.665 | rust | 1.73e-17 |
+| `triadic_mean_field_force` | 128 | 4.716 | 3.114 | 17.545 | 21.844 | 14.228 | rust | 2.17e-18 |
+| `triadic_mean_field_force` | 512 | 16.035 | 10.290 | 27.313 | 39.899 | 28.797 | rust | 4.34e-18 |
+| `triadic_mean_field_jacobian` | 8 | 3.064 | 2.705 | 15.463 | 34.184 | 32.938 | rust | 2.78e-16 |
+| `triadic_mean_field_jacobian` | 32 | 17.772 | 18.336 | 30.631 | 58.581 | 37.492 | rust | 4.16e-17 |
+| `triadic_mean_field_jacobian` | 128 | 270.705 | 258.240 | 277.521 | 516.023 | 442.142 | rust | 4.34e-18 |
+| `triadic_mean_field_jacobian` | 512 | 6336.235 | 4600.139 | 6448.571 | 9538.710 | 8020.405 | rust | 7.81e-18 |
 
