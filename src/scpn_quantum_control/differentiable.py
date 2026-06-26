@@ -14,12 +14,6 @@ runtime dependency of the core package.
 
 from __future__ import annotations
 
-from collections.abc import Callable, Sequence
-from typing import Any, cast
-
-import numpy as np
-from numpy.typing import ArrayLike, NDArray
-
 from .differentiable_batch_helpers import (
     _as_batch_parameter_array as _as_batch_parameter_array,
 )
@@ -53,6 +47,9 @@ from .differentiable_exact_modes import (
     reverse_mode_gradient,
     value_and_forward_mode_grad,
     value_and_reverse_mode_grad,
+)
+from .differentiable_finite_difference import (
+    VectorObjective as VectorObjective,
 )
 from .differentiable_finite_difference import (
     batch_complex_step_gradient,
@@ -126,7 +123,6 @@ from .differentiable_parameter_contracts import (
     Parameter,
     ParameterBounds,
     ParameterShiftRule,
-    _as_parameter_array,
     multi_frequency_parameter_shift_rule,
 )
 from .differentiable_parameter_contracts import (
@@ -226,7 +222,7 @@ from .differentiable_transform_helpers import (
     _clip_gradient as _clip_gradient,
 )
 from .differentiable_transform_helpers import (
-    _normalise_parameters,
+    _normalise_parameters as _normalise_parameters,
 )
 from .differentiable_vmap import vmap
 from .program_ad_adjoint import (
@@ -244,7 +240,7 @@ from .program_ad_adjoint import (
     _program_adjoint_is_ir_value as _program_adjoint_is_ir_value,
 )
 from .program_ad_adjoint_generation import (
-    _program_adjoint_result_from_nodes,
+    _program_adjoint_result_from_nodes as _program_adjoint_result_from_nodes,
 )
 from .program_ad_alias_analysis import (
     PROGRAM_AD_ALIAS_EFFECT_CLAIM_BOUNDARY as PROGRAM_AD_ALIAS_EFFECT_CLAIM_BOUNDARY,
@@ -565,6 +561,10 @@ from .program_ad_stencil_primitives import (
 from .program_ad_trapezoid_primitives import (
     program_ad_reduction_trapezoid_derivative_rule,
 )
+from .whole_program_ad_api import (
+    whole_program_grad,
+    whole_program_value_and_grad,
+)
 from .whole_program_ad_result import (
     WholeProgramADResult,
     WholeProgramIRNode,
@@ -580,18 +580,7 @@ from .whole_program_frontend import (
     WholeProgramSourceRegion,
     WholeProgramSymbolScopeEntry,
     WholeProgramUnsupportedSemanticDiagnostic,
-    _accepted_python_semantics,
-    _objective_bytecode,
-    _objective_source,
-    _source_ir_features,
-    _source_mentions_numpy,
-    _unsupported_python_semantics,
-    _whole_program_semantics_report,
     compile_whole_program_frontend,
-)
-from .whole_program_trace_runtime import (
-    _trace_whole_program_objective,
-    _WholeProgramTraceContext,
 )
 from .whole_program_trace_values import (
     ScalarObjective as ScalarObjective,
@@ -602,170 +591,6 @@ from .whole_program_trace_values import (
 from .whole_program_trace_values import (
     TraceADScalar as TraceADScalar,
 )
-
-VectorObjective = Callable[[NDArray[np.float64]], ArrayLike]
-CustomJVPRule = Callable[[NDArray[np.float64], NDArray[np.float64]], ArrayLike]
-CustomVJPRule = Callable[[NDArray[np.float64], NDArray[np.float64]], ArrayLike]
-
-
-def whole_program_value_and_grad(
-    objective: Callable[[Any], object],
-    values: ArrayLike,
-    parameters: Sequence[Parameter] | None = None,
-    *,
-    trace: bool = True,
-) -> WholeProgramADResult:
-    """Differentiate the executed Python/NumPy program by operator-intercepted AD.
-
-    This is the whole-program AD boundary for differentiable Python programs
-    that execute through traceable scalar values. It preserves Python execution
-    semantics for loops, executed control-flow branches, local aliases, list
-    mutation, and supported NumPy scalar ufuncs. Operations that would erase
-    derivative information fail closed instead of falling back to finite
-    differences or silently returning approximate gradients.
-    """
-
-    if not callable(objective):
-        raise ValueError("whole-program objective must be callable")
-    parameter_values = _as_parameter_array(values)
-    parameter_meta = _normalise_parameters(parameter_values, parameters)
-    source = _objective_source(objective)
-    bytecode_instructions = _objective_bytecode(objective)
-    accepted_python_semantics = _accepted_python_semantics(objective, source)
-    unsupported_python_semantics = _unsupported_python_semantics(objective, source)
-    source_ir_features = _source_ir_features(
-        source,
-        accepted_python_semantics=accepted_python_semantics,
-        unsupported_python_semantics=unsupported_python_semantics,
-    )
-    if unsupported_python_semantics:
-        unsupported = ", ".join(unsupported_python_semantics)
-        raise ValueError(f"unsupported whole-program AD Python semantics: {unsupported}")
-    context = _WholeProgramTraceContext(
-        parameter_values.size,
-        scalar_factory=TraceADScalar,
-    )
-    traced_values: list[TraceADScalar] = []
-    for index, (value, parameter) in enumerate(zip(parameter_values, parameter_meta, strict=True)):
-        tangent = np.zeros(parameter_values.size, dtype=np.float64)
-        if parameter.trainable:
-            tangent[index] = 1.0
-        traced_values.append(context.make("parameter", (parameter.name,), float(value), tangent))
-    raw = objective(
-        TraceADArray(
-            tuple(traced_values),
-            (len(traced_values),),
-            context,
-            tuple(range(len(traced_values))),
-        )
-    )
-    if isinstance(raw, TraceADArray):
-        if raw.shape != ():
-            raise ValueError("whole-program objective must return a whole-program AD scalar")
-        raw = raw.item()
-    if not isinstance(raw, TraceADScalar):
-        raise ValueError("whole-program objective must return a whole-program AD scalar")
-    trace_events = (
-        _trace_whole_program_objective(cast(ScalarObjective, objective), parameter_values)
-        if trace
-        else ()
-    )
-    semantics_report = _whole_program_semantics_report(
-        bytecode_instructions=bytecode_instructions,
-        source_ir_features=source_ir_features,
-        trace_events=trace_events,
-        source=source,
-        accepted_python_semantics=accepted_python_semantics,
-        unsupported_python_semantics=unsupported_python_semantics,
-        numpy_observed=_source_mentions_numpy(source)
-        or any(node.op in {"sin", "cos", "exp", "log"} for node in context.nodes),
-        differentiation_semantics=(
-            "operator-intercepted exact forward AD over the executed Python program; "
-            "loops, branches, local aliasing, list mutation, closure/default/keyword "
-            "calling semantics, and supported NumPy scalar ufuncs execute with "
-            "derivative-carrying values, while unsupported derivative-losing or "
-            "interpreter-level Python semantics fail closed"
-        ),
-    )
-    program_ir = context.program_ir(
-        source_ir_features=source_ir_features,
-        bytecode_instructions=bytecode_instructions,
-    )
-    adjoint_result = _program_adjoint_result_from_nodes(
-        nodes=tuple(context.nodes),
-        output_name=raw.name,
-        parameter_names=tuple(parameter.name for parameter in parameter_meta),
-        trainable=tuple(parameter.trainable for parameter in parameter_meta),
-        program_ir=program_ir,
-    )
-    return WholeProgramADResult(
-        value=raw.primal,
-        gradient=raw.tangent.copy(),
-        method="whole_program_ad",
-        step=0.0,
-        evaluations=1 + (1 if trace else 0),
-        parameter_names=tuple(parameter.name for parameter in parameter_meta),
-        trainable=tuple(parameter.trainable for parameter in parameter_meta),
-        trace_events=trace_events,
-        ir_nodes=tuple(context.nodes),
-        source=source,
-        control_flow_observed=semantics_report.control_flow_observed,
-        numpy_observed=semantics_report.numpy_observed,
-        polyglot_targets={
-            "python": "operator-intercepted forward AD and supported scalar adjoint replay available",
-            "mlir": "SSA/effect program AD interchange available; executable lowering blocked",
-            "rust": "blocked: no Rust whole-program AD interpreter/lowering backend",
-            "llvm": "blocked: no LLVM/JIT whole-program AD interpreter/lowering backend",
-        },
-        claim_boundary=(
-            "whole-program operator-intercepted AD for executed Python scalar arithmetic, "
-            "loops, local aliasing, list mutation, supported closure/default/keyword calling "
-            "semantics, supported NumPy scalar ufuncs, and executed-branch control flow with "
-            "deterministic SSA/effect IR evidence; unsupported interpreter-level Python "
-            "constructs fail closed before execution; no finite-difference fallback and no "
-            "executable Rust, LLVM, or JIT AD lowering claim"
-        ),
-        bytecode_instructions=bytecode_instructions,
-        source_ir_features=source_ir_features,
-        semantics_report=semantics_report,
-        program_ir=program_ir,
-        adjoint_result=adjoint_result,
-    )
-
-
-def whole_program_grad(
-    objective: Callable[[Any], object],
-    values: ArrayLike,
-    parameters: Sequence[Parameter] | None = None,
-    *,
-    trace: bool = True,
-) -> NDArray[np.float64]:
-    """Return only the exact whole-program AD gradient."""
-
-    return whole_program_value_and_grad(
-        objective, values, parameters=parameters, trace=trace
-    ).gradient
-
-
-def _program_ad_float64_vector_result(values: object) -> NDArray[np.float64]:
-    return cast(NDArray[np.float64], np.asarray(values, dtype=np.float64).reshape(-1))
-
-
-def _program_ad_elementwise_unbroadcast(
-    values: NDArray[np.float64],
-    *,
-    target_shape: tuple[int, ...],
-) -> NDArray[np.float64]:
-    result = np.asarray(values, dtype=np.float64)
-    if target_shape == ():
-        return np.array([float(np.sum(result))], dtype=np.float64)
-    while result.ndim > len(target_shape):
-        result = np.sum(result, axis=0)
-    for axis, dimension in enumerate(target_shape):
-        if dimension == 1 and result.shape[axis] != 1:
-            result = np.sum(result, axis=axis, keepdims=True)
-    return _program_ad_float64_vector_result(result.reshape(target_shape))
-
 
 _register_program_ad_array_primitive_contracts()
 _register_program_ad_interpolation_primitive_contracts()

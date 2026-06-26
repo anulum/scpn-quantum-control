@@ -47,6 +47,9 @@ The canonical `grad(...)` and `value_and_grad(...)` dispatcher implementation
 lives in `scpn_quantum_control.differentiable_canonical_api`. The legacy
 `scpn_quantum_control.differentiable` facade and package root continue to
 re-export those functions as the stable user import path.
+Whole-program dispatch now follows the same pattern:
+`whole_program_value_and_grad(...)` and `whole_program_grad(...)` are owned by
+`scpn_quantum_control.whole_program_ad_api` and re-exported by the facade.
 
 | Surface | Status | Evidence route |
 |---|---|---|

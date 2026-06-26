@@ -15,6 +15,7 @@ import numpy as np
 import pytest
 
 import scpn_quantum_control.differentiable as differentiable
+import scpn_quantum_control.whole_program_ad_api as whole_program_api
 from scpn_quantum_control import program_ad_adjoint as adjoint_module
 from scpn_quantum_control.differentiable import (
     Parameter,
@@ -215,6 +216,13 @@ def test_whole_program_ad_is_exported_from_package_root() -> None:
     assert scpn.analyze_program_ad_alias_effects is analyze_program_ad_alias_effects
     assert scpn.program_ad_static_alias_lattice_report is program_ad_static_alias_lattice_report
     assert scpn.parse_program_ad_effect_ir is parse_program_ad_effect_ir
+    assert whole_program_api.whole_program_grad is whole_program_grad
+    assert whole_program_api.whole_program_value_and_grad is whole_program_value_and_grad
+    assert differentiable.whole_program_grad is whole_program_api.whole_program_grad
+    assert (
+        differentiable.whole_program_value_and_grad
+        is whole_program_api.whole_program_value_and_grad
+    )
     assert scpn.whole_program_grad is whole_program_grad
     assert scpn.whole_program_value_and_grad is whole_program_value_and_grad
     assert scpn.compile_whole_program_frontend is compile_whole_program_frontend

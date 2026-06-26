@@ -20,8 +20,9 @@ Static operand normalisation comes from
 event recording from :mod:`~scpn_quantum_control.whole_program_trace_runtime`, and
 the per-primitive derivative rules from the ``program_ad_*`` primitive modules.
 The public reverse/forward-mode entry points
-(``value_and_grad``/``grad``/``whole_program_value_and_grad`` and friends) remain
-in :mod:`~scpn_quantum_control.differentiable` and call into this runtime.
+(``value_and_grad``/``grad``/``whole_program_value_and_grad`` and friends) are
+owned by focused API modules and re-exported by
+:mod:`~scpn_quantum_control.differentiable` for compatibility.
 
 Module size note: this module is intentionally kept whole. Its top-level definitions form a single connected operator-intercepted forward-AD trace-value cluster, so it is sized by responsibility rather than line count. Its classes are mutually recursive, so splitting would introduce import cycles. See ``docs/architecture.md`` ("Module size and single-responsibility policy").
 """

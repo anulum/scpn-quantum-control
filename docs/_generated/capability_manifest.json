@@ -10,7 +10,7 @@
     "public_api_exports": 717,
     "public_documentation_pages": 253,
     "python_model_classes": 855,
-    "python_model_source_modules": 488,
+    "python_model_source_modules": 489,
     "rust_pyo3_model_wrappers": 171,
     "rust_source_modules": 42,
     "test_files": 799
@@ -4495,6 +4495,7 @@
       "src/scpn_quantum_control/topology_control/objectives.py",
       "src/scpn_quantum_control/topology_control/optimizers.py",
       "src/scpn_quantum_control/topology_control/qsnn_integration.py",
+      "src/scpn_quantum_control/whole_program_ad_api.py",
       "src/scpn_quantum_control/whole_program_ad_result.py",
       "src/scpn_quantum_control/whole_program_frontend.py",
       "src/scpn_quantum_control/whole_program_trace_metadata.py",
