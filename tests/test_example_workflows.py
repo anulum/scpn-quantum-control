@@ -22,6 +22,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 EXAMPLES = ROOT / "examples"
 README = EXAMPLES / "README.md"
+EXPECTED_EXAMPLE_SCRIPT_COUNT = 31
 
 
 def _example_scripts() -> tuple[Path, ...]:
@@ -53,7 +54,7 @@ def test_all_example_scripts_are_documented_and_import_safe() -> None:
     scripts = _example_scripts()
     readme = README.read_text(encoding="utf-8")
 
-    assert len(scripts) == 30
+    assert len(scripts) == EXPECTED_EXAMPLE_SCRIPT_COUNT
     for script in scripts:
         tree = ast.parse(script.read_text(encoding="utf-8"), filename=str(script))
         public_functions = {node.name for node in tree.body if isinstance(node, ast.FunctionDef)}

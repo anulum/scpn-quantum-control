@@ -812,7 +812,7 @@ graph LR
 
 ## Examples
 
-30 standalone scripts in [`examples/`](examples/):
+31 standalone scripts in [`examples/`](examples/):
 
 | # | Script | What it demonstrates |
 |:-:|--------|---------------------|
@@ -846,6 +846,7 @@ graph LR
 | 27 | `pqc_trigger_signer_demo` | ML-DSA trigger signing |
 | 28 | `pulse_to_hls_quickstart` | UltraScale+ HLS pulse source generation |
 | 29 | `kuramoto_handbook_workflow` | Kuramoto facade diagnostics, stability, clusters, and coupling design |
+| 30 | `diff_first_path` | Canonical differentiable namespace path and compatibility facade |
 
 All examples run on statevector simulation (no QPU needed).
 

@@ -765,7 +765,7 @@ in JSON alongside the QASM files.
 
 ## Examples
 
-24 standalone scripts in `examples/`, each runnable with `python examples/XX_*.py`:
+31 standalone scripts in `examples/`, each runnable with `python examples/XX_*.py`:
 
 | # | Script | What it demonstrates |
 |---|--------|---------------------|
@@ -793,3 +793,9 @@ in JSON alongside the QASM files.
 | 22 | `quantum_neuromorphic_bridge` | QSNN LIF, trace STDP, and dynamic coupling bridge |
 | 23 | `differentiable_api_workflow` | Unified differentiable API, diagnostics, compiler report, and bounded QNN training |
 | 24 | `differentiable_benchmark_reproduction` | Local differentiable benchmark evidence bundle reproduction with non-isolated classification |
+| 25 | `qrng_streaming_quickstart` | QRNG stream-health checks |
+| 26 | `nv_magnetometry_20T_demo` | NV-centre 20 T calibration surface |
+| 27 | `pqc_trigger_signer_demo` | ML-DSA trigger signing |
+| 28 | `pulse_to_hls_quickstart` | UltraScale+ HLS pulse source generation |
+| 29 | `kuramoto_handbook_workflow` | Kuramoto facade diagnostics, stability, clusters, and coupling design |
+| 30 | `diff_first_path` | Canonical differentiable namespace path and compatibility facade |
