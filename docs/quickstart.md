@@ -117,6 +117,40 @@ parameter. For general Python callables that are not sinusoidal quantum
 expectations, use finite-difference checks as a diagnostic rather than a
 claim of exact quantum-gradient semantics.
 
+## 2b. Canonical differentiable namespace
+
+New differentiable examples should start from `scpn_quantum_control.diff`:
+
+```python
+import numpy as np
+
+from scpn_quantum_control import diff
+
+
+def phase_cost(params: np.ndarray) -> float:
+    return float(np.sin(params[0]) + params[1] ** 2)
+
+
+circuit = diff.differentiable_circuit(
+    phase_cost,
+    name="phase_cost_first_path",
+    parameter_names=("theta", "bias"),
+)
+params = np.array([0.3, 0.5], dtype=np.float64)
+print(circuit(params))
+print(circuit.grad(params, method="finite_difference"))
+print(diff.jit_or_explain(circuit).to_dict())
+```
+
+Run the same path from the command line with:
+
+```bash
+python examples/30_diff_first_path.py
+```
+
+The short compatibility import `scpn.diff` exposes the same surface for
+notebooks and external examples.
+
 ## 3. Run a hardware experiment on simulator
 
 ```python

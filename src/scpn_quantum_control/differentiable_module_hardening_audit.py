@@ -535,6 +535,11 @@ def differentiable_module_hardening_registry() -> tuple[DifferentiableModuleHard
             ("tape support records", "provider-boundary records"),
         ),
         _record(
+            "src/scpn_quantum_control/diff.py",
+            ("tests/test_diff_namespace.py",),
+            ("canonical namespace imports", "fail-closed circuit diagnostics"),
+        ),
+        _record(
             "src/scpn_quantum_control/phase/hardware_gradient_campaign.py",
             ("tests/test_phase_hardware_gradient_campaign.py",),
             ("live-ticket gates", "raw-count replay requirements"),

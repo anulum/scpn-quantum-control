@@ -445,6 +445,9 @@ Unsupported does not mean ignored. Current public boundaries include:
 - arbitrary Python/NumPy program AD beyond supported trace operations;
 - full native compiler AD for every MLIR/LLVM/JIT path;
 - complete gradient tape semantics beyond supported phase parameter-shift and QNode-style phase records;
+- first-path namespace routes outside `scpn_quantum_control.diff` and `scpn.diff`
+  when they bypass `DifferentiableCircuitDiagnostics`, `ShotPolicy`, and
+  explicit fail-closed JIT explanation metadata;
 - public JAX/PyTorch/TensorFlow adapters beyond the documented bounded-model and deterministic registered statevector routes;
 - hardware gradient jobs without hardware-gradient policy approval, required evidence IDs, and live-execution ticketing where applicable;
 - provider callbacks that omit finite-shot variance or shifted-sample provenance;

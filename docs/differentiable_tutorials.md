@@ -24,6 +24,12 @@ Run the local benchmark evidence reproduction script:
 python examples/24_differentiable_benchmark_reproduction.py
 ```
 
+Run the canonical first-path namespace smoke:
+
+```bash
+python examples/30_diff_first_path.py
+```
+
 The script is deliberately small. It is a tutorial and integration smoke path,
 not a benchmark, not a hardware claim, and not a claim that arbitrary simulator
 kernels are framework-native differentiable.
@@ -42,6 +48,41 @@ kernels are framework-native differentiable.
 | Compiler report | `differentiable_compile_report(...)` | Primitive-level compiler-AD planning and MLIR evidence for a selected registered primitive. |
 | Training evidence | `train_parameter_shift_qnn_classifier(...)`, `verify_parameter_shift_qnn_classifier_gradient(...)` | Tiny bounded phase-QNN training run plus finite-difference gradient verification. |
 | Benchmark reproduction | `write_differentiable_benchmark_evidence_bundle(...)` | Temporary local benchmark evidence bundle with explicit `functional_non_isolated` classification unless run under the isolated benchmark CI contract. |
+| Canonical namespace | `scpn_quantum_control.diff`, `scpn.diff`, `DifferentiableCircuit`, `jit_or_explain(...)` | No-credential first-path value/gradient execution, serializable diagnostics, shot policy, estimator provenance, and explicit fail-closed JIT metadata. |
+
+## Canonical Differentiable Namespace
+
+Use `scpn_quantum_control.diff` for new code and `scpn.diff` when a shorter
+compatibility import helps notebooks or external examples. Both expose the same
+first-path transforms:
+
+```python
+import numpy as np
+
+from scpn_quantum_control import diff
+
+
+def phase_cost(params: np.ndarray) -> float:
+    return float(np.sin(params[0]) + params[1] ** 2)
+
+
+circuit = diff.differentiable_circuit(
+    phase_cost,
+    name="phase_cost_first_path",
+    parameter_names=("theta", "bias"),
+)
+params = np.array([0.3, 0.5], dtype=np.float64)
+
+print(circuit(params))
+print(circuit.grad(params, method="finite_difference"))
+print(circuit.diagnostics.to_dict())
+print(diff.jit_or_explain(circuit).to_dict())
+```
+
+For older code that imports directly from `scpn_quantum_control.differentiable`
+or `scpn_quantum_control.differentiable_api`, keep those imports when you need
+low-level result contracts or JSON envelopes. Use `diff` when you want the
+stable user-facing path with circuit metadata and fail-closed route diagnostics.
 
 ## Minimal QNode
 

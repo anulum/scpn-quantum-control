@@ -31,6 +31,7 @@ Recommended researcher quick path:
 - `27_pqc_trigger_signer_demo.py` for ML-DSA trigger signing.
 - `28_pulse_to_hls_quickstart.py` for UltraScale+ pulse-code generation.
 - `29_kuramoto_handbook_workflow.py` for the Phase 5 Kuramoto handbook path.
+- `30_diff_first_path.py` for the canonical differentiable namespace path.
 
 ## Route by Goal
 
@@ -50,6 +51,7 @@ Recommended researcher quick path:
 | Inspect post-quantum trigger signing | `27_pqc_trigger_signer_demo.py` |
 | Generate pulse HLS artefacts | `28_pulse_to_hls_quickstart.py` |
 | Run the Kuramoto handbook workflow | `29_kuramoto_handbook_workflow.py` |
+| Exercise the canonical differentiable namespace | `30_diff_first_path.py` |
 
 Examples are onboarding aids. Reusable production logic belongs in `src/`,
 scripts, committed fixtures, and release gates.

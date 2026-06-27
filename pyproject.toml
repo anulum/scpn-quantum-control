@@ -146,7 +146,7 @@ exclude = [
 ]
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/scpn_quantum_control"]
+packages = ["src/scpn_quantum_control", "src/scpn"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

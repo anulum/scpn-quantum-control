@@ -6,17 +6,17 @@
 | Surface | Current inventory |
 |---|---:|
 | Package version | 0.10.0 |
-| Public API exports | 757 |
-| Python source modules | 493 |
-| Public Python classes | 871 |
+| Public API exports | 769 |
+| Python source modules | 494 |
+| Public Python classes | 877 |
 | Domain package families | 32 |
 | API documentation pages | 0 |
 | Rust PyO3 function bindings | 171 |
 | Rust source modules | 42 |
-| Notebook files | 99 |
-| Example files | 31 |
+| Notebook files | 100 |
+| Example files | 32 |
 | Optional extras | 43 |
-| Python test files | 805 |
+| Python test files | 806 |
 | Public documentation pages | 253 |
 | GitHub Actions workflows | 21 |
 

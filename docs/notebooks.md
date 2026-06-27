@@ -8,12 +8,12 @@
 
 # Interactive Notebooks
 
-*99 tracked Jupyter notebooks covering the full journey from basic Kuramoto dynamics to
+*100 tracked Jupyter notebooks covering the full journey from basic Kuramoto dynamics to
 frontier research. Notebooks 01-13 cover core quantum simulation. Notebooks 14-47
 document the FIM (Fisher Information Metric) strange loop investigation campaign
 (2026-03-29) with 19 findings (6 negative) including hardware-artefact
 dual protection on ibm_fez. Notebook 48 is the Phase 5 Kuramoto handbook
-workflow companion.*
+workflow companion. Notebook 49 is the differentiable first-path companion.*
 
 ---
 
@@ -51,6 +51,9 @@ before treating JAX, PyTorch, TensorFlow, or PennyLane comparison rows as
 reproducible. Notebook curves are exploratory until the underlying gradient
 certificates, support-matrix plans, external comparison rows, benchmark
 classifications, and claim-ledger artefact IDs are committed.
+Use `49_differentiable_first_path.ipynb` for the no-credential
+`scpn_quantum_control.diff` and `scpn.diff` first-path API before moving into
+framework-specific notebooks.
 
 For Phase-QNode performance language, notebooks are never enough by themselves:
 the CI evidence bundle must report `isolated_affinity` from a self-hosted
@@ -114,6 +117,7 @@ graph TD
 | 12 | Trapped Ion Comparison | Superconducting vs ion trap noise | Advanced | Transpilation comparison, noisy $\langle Z \rangle$ |
 | 13 | Cross-Repo Bridges | SNN adapter, SSGF, orchestrator | Integration | Phase roundtrip plot, warning report |
 | 48 | Kuramoto Handbook Workflow | RK4, diagnostics, stability, clustering, and coupling design | Intermediate | JSON-aligned workflow summary |
+| 49 | Differentiable First Path | Canonical `diff` namespace, circuit diagnostics, and fail-closed JIT metadata | Beginner | Value/gradient plus serialized route diagnostics |
 
 ---
 

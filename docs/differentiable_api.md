@@ -19,6 +19,7 @@ finite differences or pretending that a hardware/provider gradient exists.
 
 | Namespace | Role |
 |---|---|
+| `scpn_quantum_control.diff` / `scpn.diff` | Canonical first-path namespace for `grad`, `value_and_grad`, `jacfwd`, `jacrev`, `jacobian`, `hessian`, `jvp`, `vjp`, `vmap`, `jit_or_explain`, `gradient_tape`, and `differentiable_circuit`. It wraps existing supported local routes and returns fail-closed diagnostics for unsupported JIT, provider, hardware, and performance routes. |
 | `scpn_quantum_control.differentiable_api` | Unified façade for value, gradient, Jacobian, Hessian, support, diagnostics, compile, local conformance benchmark, and dashboard-status reports with one JSON evidence envelope. |
 | `scpn_quantum_control.differentiable` | AD data structures, compatibility re-exports, optimisation helpers, program-AD metadata, and support reports. |
 | `scpn_quantum_control.program_ad_registry` | Primitive identity, custom-derivative registry, transform-contract, and registry-dispatch coverage contracts for Program AD primitive families. |
@@ -1316,6 +1317,36 @@ print(interval.lower, interval.upper, interval.status, interval.failure_reasons)
 or all-false trainable mask is rejected when trainability is required, while
 excess standard error or confidence radius returns a `failed` interval with
 machine-readable reasons.
+
+## Canonical first-path namespace
+
+```python
+import numpy as np
+
+from scpn_quantum_control import diff
+
+
+def cost(params: np.ndarray) -> float:
+    return float(np.sin(params[0]) + params[1] ** 2)
+
+
+circuit = diff.differentiable_circuit(
+    cost,
+    name="two_parameter_phase_objective",
+    parameter_names=("theta", "bias"),
+)
+
+params = np.array([0.3, 0.5])
+print(circuit(params))
+print(circuit.grad(params, method="finite_difference"))
+print(circuit.diagnostics.to_dict()["supported"])
+print(diff.jit_or_explain(circuit).to_dict()["fail_closed"])
+```
+
+`DifferentiableCircuit` serializes metadata, backend capability, shot policy,
+and estimator provenance, but it does not serialize executable Python code.
+Unsupported routes fail closed through `DifferentiableCircuitDiagnostics` and
+`JITExplanation` instead of falling back silently.
 
 ## Minimal gradient tape
 

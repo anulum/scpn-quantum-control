@@ -2,18 +2,18 @@
   "SPDX-License-Identifier": "AGPL-3.0-or-later",
   "counts": {
     "domain_package_families": 32,
-    "example_files": 31,
+    "example_files": 32,
     "github_workflows": 21,
     "model_documentation_pages": 0,
-    "notebook_files": 99,
+    "notebook_files": 100,
     "optional_extras": 43,
-    "public_api_exports": 757,
+    "public_api_exports": 769,
     "public_documentation_pages": 253,
-    "python_model_classes": 871,
-    "python_model_source_modules": 493,
+    "python_model_classes": 877,
+    "python_model_source_modules": 494,
     "rust_pyo3_model_wrappers": 171,
     "rust_source_modules": 42,
-    "test_files": 805
+    "test_files": 806
   },
   "documentation": {
     "examples": [
@@ -47,6 +47,7 @@
       "examples/27_pqc_trigger_signer_demo.py",
       "examples/28_pulse_to_hls_quickstart.py",
       "examples/29_kuramoto_handbook_workflow.py",
+      "examples/30_diff_first_path.py",
       "examples/README.md"
     ],
     "notebooks": [
@@ -98,6 +99,7 @@
       "notebooks/46_metabolic_scaling_prediction.ipynb",
       "notebooks/47_winding_number_topological.ipynb",
       "notebooks/48_kuramoto_handbook_workflow.ipynb",
+      "notebooks/49_differentiable_first_path.ipynb",
       "notebooks/colab/kaggle_aging_k_decay.ipynb",
       "notebooks/colab/kaggle_anaesthesia_consciousness.ipynb",
       "notebooks/colab/kaggle_biochemical_validation.ipynb",
@@ -781,6 +783,10 @@
         "path": "src/scpn_quantum_control/hardware/hal.py"
       },
       {
+        "name": "BackendCapabilityMetadata",
+        "path": "src/scpn_quantum_control/diff.py"
+      },
+      {
         "name": "BackendCapabilitySnapshot",
         "path": "src/scpn_quantum_control/hardware/feedback_capability_probe.py"
       },
@@ -1229,6 +1235,14 @@
         "path": "src/scpn_quantum_control/differentiable_benchmark_report.py"
       },
       {
+        "name": "DifferentiableCircuit",
+        "path": "src/scpn_quantum_control/diff.py"
+      },
+      {
+        "name": "DifferentiableCircuitDiagnostics",
+        "path": "src/scpn_quantum_control/diff.py"
+      },
+      {
         "name": "DifferentiableDashboardCapabilityRow",
         "path": "src/scpn_quantum_control/differentiable_api.py"
       },
@@ -1523,6 +1537,10 @@
       {
         "name": "ErrorBudget",
         "path": "src/scpn_quantum_control/qec/error_budget.py"
+      },
+      {
+        "name": "EstimatorProvenance",
+        "path": "src/scpn_quantum_control/diff.py"
       },
       {
         "name": "ExecutableCompilerADKernel",
@@ -2019,6 +2037,10 @@
       {
         "name": "IsolatedProviderSmokeLane",
         "path": "src/scpn_quantum_control/hardware/provider_smoke.py"
+      },
+      {
+        "name": "JITExplanation",
+        "path": "src/scpn_quantum_control/diff.py"
       },
       {
         "name": "JVPResult",
@@ -3685,6 +3707,10 @@
         "path": "src/scpn_quantum_control/differentiable_result_contracts.py"
       },
       {
+        "name": "ShotPolicy",
+        "path": "src/scpn_quantum_control/diff.py"
+      },
+      {
         "name": "Signature",
         "path": "src/scpn_quantum_control/crypto/pqc_trigger.py"
       },
@@ -4275,6 +4301,7 @@
       "src/scpn_quantum_control/crypto/topology_auth.py",
       "src/scpn_quantum_control/dense_budget.py",
       "src/scpn_quantum_control/deployment/cloud_native.py",
+      "src/scpn_quantum_control/diff.py",
       "src/scpn_quantum_control/differentiable.py",
       "src/scpn_quantum_control/differentiable_api.py",
       "src/scpn_quantum_control/differentiable_architecture_map.py",
@@ -4801,6 +4828,7 @@
     "AzureQuantumHALAdapter",
     "Backend",
     "BackendCapabilities",
+    "BackendCapabilityMetadata",
     "BackendProfile",
     "BiologicalMWPMDecoder",
     "BiologicalQecBatchExecution",
@@ -4841,6 +4869,8 @@
     "DifferentiableArchitectureMapValidation",
     "DifferentiableBenchmarkClassificationCase",
     "DifferentiableBenchmarkReport",
+    "DifferentiableCircuit",
+    "DifferentiableCircuitDiagnostics",
     "DifferentiableDashboardCapabilityRow",
     "DifferentiableDashboardCapabilityState",
     "DifferentiableDashboardStatus",
@@ -4885,6 +4915,7 @@
     "EnzymeMLIRMaturityAuditResult",
     "EnzymeMLIRToolchainStatus",
     "EnzymeNativeExecutionEvidence",
+    "EstimatorProvenance",
     "ExecutableCompilerADKernel",
     "ExecutableWholeProgramADBatchResult",
     "ExecutableWholeProgramADKernel",
@@ -4914,6 +4945,7 @@
     "IdentityAttractor",
     "ImplicitSensitivityResult",
     "IonQCloudHALAdapter",
+    "JITExplanation",
     "JVPResult",
     "JacobianResult",
     "JobResult",
@@ -5003,6 +5035,7 @@
     "QuantumBackend",
     "QuantumDenseLayer",
     "QuantumDisruptionClassifier",
+    "QuantumFunction",
     "QuantumGradientBenchmarkResult",
     "QuantumJobRef",
     "QuantumJobResult",
@@ -5038,6 +5071,7 @@
     "ScoreFunctionGradientResult",
     "ScoreFunctionSampleRecord",
     "ShotAllocationResult",
+    "ShotPolicy",
     "SparseMatrixResult",
     "StableCorePreflightResult",
     "StochasticGradientConfidenceInterval",
@@ -5192,9 +5226,11 @@
     "cw_odmr_dc_sensitivity_t_per_sqrt_hz",
     "dense_to_sparse_matrix",
     "diagnose_program_ad_linalg_conditioning",
+    "diff",
     "differentiable_api",
     "differentiable_architecture_map_report",
     "differentiable_benchmark_report",
+    "differentiable_circuit",
     "differentiable_competitive_baseline_refresh_report",
     "differentiable_compile_report",
     "differentiable_dashboard_status",
@@ -5264,6 +5300,7 @@
     "jacobian",
     "jacrev",
     "jax_value_and_grad",
+    "jit_or_explain",
     "jvp",
     "knm_to_ansatz",
     "knm_to_hamiltonian",
@@ -5312,6 +5349,7 @@
     "minimise_real_objective",
     "mps_tebd_baseline",
     "multi_frequency_parameter_shift_rule",
+    "namespace_metadata",
     "native_whole_program_ad_compile_cache_stats",
     "native_whole_program_ad_linalg_support",
     "natural_gradient",
@@ -5503,6 +5541,7 @@
     "stable_core_preflight_fixtures_payload",
     "strangeworks_program_to_workload",
     "summarise_cycle_samples",
+    "supported_transforms",
     "syndrome_flow_analysis",
     "tcbo",
     "transpile_for_trapped_ion",
@@ -5776,6 +5815,7 @@
       "tests/test_diff_kuramoto_dopri.py",
       "tests/test_diff_kuramoto_euler.py",
       "tests/test_diff_kuramoto_rk4.py",
+      "tests/test_diff_namespace.py",
       "tests/test_differentiable_api.py",
       "tests/test_differentiable_architecture_map.py",
       "tests/test_differentiable_batch_helpers.py",
