@@ -13,7 +13,7 @@
     "python_model_source_modules": 496,
     "rust_pyo3_model_wrappers": 171,
     "rust_source_modules": 42,
-    "test_files": 808
+    "test_files": 809
   },
   "documentation": {
     "examples": [
@@ -6097,6 +6097,7 @@
       "tests/test_ml_dsa_pqc.py",
       "tests/test_ml_dsa_seal.py",
       "tests/test_mlir_realtime_cloud.py",
+      "tests/test_mlir_toolchain_probe_hardening.py",
       "tests/test_monte_carlo_xy.py",
       "tests/test_mps_baseline.py",
       "tests/test_mps_evolution.py",

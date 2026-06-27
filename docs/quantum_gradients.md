@@ -2226,6 +2226,13 @@ raw-plus-derived compiler-AD breadth evidence. Partial breadth captures are
 represented as complete artifacts with explicit case hard gaps. A string
 benchmark ID without the validated attachment is still a hard gap.
 
+The maturity audit resolves live `enzyme`, `opt`, `mlir-opt`, and `clang`
+commands to absolute executable files before it captures version metadata.
+Relative or non-executable tool paths are recorded as unavailable toolchain
+evidence instead of being passed to a subprocess. Synthetic `toolchain_probe`
+and `version_probe` callbacks remain available for deterministic tests and
+pre-collected evidence rows where no subprocess is launched.
+
 The real Enzyme/LLVM execution runner resolves `clang` and `opt` to executable
 absolute paths before any compiler subprocess is started, and it requires
 `SCPN_ENZYME_PLUGIN`, when set, to point at an absolute existing

@@ -19,10 +19,14 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import shutil
-import subprocess
+
+# Subprocess is used only for admitted local toolchain version probes.
+import subprocess  # nosec B404
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
+from pathlib import Path
 from types import MappingProxyType
 from typing import Any, TypeAlias, cast
 
@@ -366,7 +370,6 @@ def build_compiler_ad_transform_plan(
     transform: str = "jvp_vjp_adjoint",
 ) -> CompilerADTransformPlan:
     """Build a deterministic compiler AD plan from registered primitive rules."""
-
     if not isinstance(registry, CustomDerivativeRegistry):
         raise ValueError("registry must be a CustomDerivativeRegistry")
     statuses = []
@@ -455,7 +458,6 @@ def build_compiler_ad_transform_plan(
 
 def compile_compiler_ad_transform_plan_to_mlir(plan: CompilerADTransformPlan) -> MLIRModule:
     """Emit deterministic MLIR-style dialect metadata for compiler-backed AD planning."""
-
     if not isinstance(plan, CompilerADTransformPlan):
         raise ValueError("compiler AD MLIR lowering requires a CompilerADTransformPlan")
     lines = [
@@ -990,7 +992,6 @@ def compile_kuramoto_to_mlir(
     matrix when ``omega`` is supplied. Raw arrays are validated through the
     public Kuramoto facade before IR generation.
     """
-
     if isinstance(problem, KuramotoProblem):
         validated = problem
     else:
@@ -1060,7 +1061,6 @@ def compile_custom_derivative_rule_to_executable(
     against the source custom derivative rule before returning. Native LLVM/JIT
     kernels use primitive-specific lowering entrypoints.
     """
-
     if not isinstance(rule, CustomDerivativeRule):
         raise ValueError("executable AD lowering requires a CustomDerivativeRule")
     compile_config = CompilerADExecutableConfig() if config is None else config
@@ -1138,7 +1138,6 @@ def compile_registered_primitive_to_executable(
     sample_cotangent: Sequence[float] | FloatArray | None = None,
 ) -> ExecutableCompilerADKernel:
     """Compile a registered primitive identity into an executable AD kernel."""
-
     if not isinstance(registry, CustomDerivativeRegistry):
         raise ValueError("registry must be a CustomDerivativeRegistry")
     primitive_identity = PrimitiveIdentity.parse(identity)
@@ -1176,7 +1175,6 @@ def make_program_ad_linalg_matrix_power_executable_lowering_rule(
     sample_tangent: Sequence[float] | FloatArray | None = None,
 ) -> Callable[[CustomDerivativeRule], ExecutableCompilerADKernel]:
     """Build a verified executable lowering rule for a fixed matrix_power signature."""
-
     direct_rule = program_ad_linalg_matrix_power_derivative_rule(power)
     values = _as_finite_vector("sample_values", sample_values)
     compile_config = CompilerADExecutableConfig() if config is None else config
@@ -1202,7 +1200,6 @@ def make_program_ad_linalg_multi_dot_executable_lowering_rule(
     sample_tangent: Sequence[float] | FloatArray | None = None,
 ) -> Callable[[CustomDerivativeRule], ExecutableCompilerADKernel]:
     """Build a verified executable lowering rule for a fixed multi_dot signature."""
-
     direct_rule = program_ad_linalg_multi_dot_derivative_rule(operand_shapes)
     values = _as_finite_vector("sample_values", sample_values)
     compile_config = CompilerADExecutableConfig() if config is None else config
@@ -1249,6 +1246,7 @@ class PhaseQNodeMLIRRuntimeExecutable:
     )
 
     def __post_init__(self) -> None:
+        """Validate the executable MLIR-runtime adapter invariants."""
         if not isinstance(self.mlir_module, MLIRModule):
             raise ValueError("mlir_module must be an MLIRModule")
         if not callable(self.value_kernel):
@@ -1313,7 +1311,6 @@ def run_enzyme_mlir_maturity_audit(
     compiler_ad_breadth_artifact: EnzymeMLIRCompilerADBreadthArtifact | None = None,
 ) -> EnzymeMLIRMaturityAuditResult:
     """Audit Enzyme/MLIR maturity without promoting unsupported compiler-AD claims."""
-
     executable = compile_phase_qnode_circuit_to_mlir_runtime(
         _default_enzyme_mlir_audit_circuit() if circuit is None else circuit,
         np.array([0.2, -0.3], dtype=np.float64) if parameters is None else parameters,
@@ -1405,7 +1402,11 @@ def _enzyme_mlir_toolchain_status(
     toolchain_probe: Callable[[str], str | None] | None,
     version_probe: Callable[[str], str | None] | None,
 ) -> EnzymeMLIRToolchainStatus:
-    executable = shutil.which(command) if toolchain_probe is None else toolchain_probe(command)
+    executable = (
+        _resolve_toolchain_executable(command)
+        if toolchain_probe is None
+        else toolchain_probe(command)
+    )
     if executable is None:
         return EnzymeMLIRToolchainStatus(
             command=command,
@@ -1445,15 +1446,39 @@ def _enzyme_mlir_toolchain_status(
     )
 
 
+def _resolve_toolchain_executable(command: str) -> str | None:
+    """Return an absolute executable path for a PATH-discovered toolchain command."""
+    resolved = shutil.which(command)
+    if not resolved:
+        return None
+    try:
+        path = Path(resolved).resolve(strict=True)
+    except OSError:
+        return None
+    if not path.is_file() or not os.access(path, os.X_OK):
+        return None
+    return str(path)
+
+
 def _probe_toolchain_version(executable: str) -> str | None:
+    executable_path = Path(executable)
+    if not executable_path.is_absolute():
+        return None
+    try:
+        executable_path = executable_path.resolve(strict=True)
+    except OSError:
+        return None
+    if not executable_path.is_file() or not os.access(executable_path, os.X_OK):
+        return None
     for flag in ("--version", "-version"):
         try:
-            completed = subprocess.run(
-                (executable, flag),
+            completed = subprocess.run(  # nosec B603
+                (str(executable_path), flag),
                 check=False,
                 capture_output=True,
                 text=True,
                 timeout=5.0,
+                shell=False,
             )
         except (OSError, subprocess.TimeoutExpired):
             continue
