@@ -156,9 +156,11 @@ class LindbladSyncEngine:
         """Apply the Lindblad generator to a flattened density matrix."""
         if self.H_dense is None:
             self._ensure_density_matrix_components()
-        assert self.H_dense is not None
+        hamiltonian = self.H_dense
+        if hamiltonian is None:
+            raise RuntimeError("Lindblad liouvillian requires a dense Hamiltonian.")
         rho_mat = rho_flat.reshape((self.dim, self.dim))
-        drho = -1j * (self.H_dense @ rho_mat - rho_mat @ self.H_dense)
+        drho = -1j * (hamiltonian @ rho_mat - rho_mat @ hamiltonian)
         for L in self.L_ops_dense:
             L_dag = L.conj().T
             drho += self.gamma * (
@@ -220,11 +222,12 @@ class LindbladSyncEngine:
             method="RK45",
         )
 
-        results: dict[str, Any] = {"times": res.t}
-        if self.n <= 10:
-            states = [res.y[:, i].reshape((self.dim, self.dim)) for i in range(len(res.t))]
-            results["states"] = states
-            results["final_state"] = states[-1]
+        states = [res.y[:, i].reshape((self.dim, self.dim)) for i in range(len(res.t))]
+        results: dict[str, Any] = {
+            "times": res.t,
+            "states": states,
+            "final_state": states[-1],
+        }
 
         if observables:
             obs_history: dict[str, list[float]] = {str(o): [] for o in observables}
