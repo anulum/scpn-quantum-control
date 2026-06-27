@@ -229,7 +229,10 @@ PYTHONPATH=src:. python scripts/install_differentiable_framework_overlay.py \
 
 The generated manifest prints the exact `PYTHONPATH` for parity runs, records
 package versions when verification succeeds, and lists only CPU wheels:
-`jax[cpu]`, `torch`, `tensorflow-cpu`, and `pennylane`.
+`jax[cpu]`, `torch`, `tensorflow-cpu`, and `pennylane`. The installer rejects
+relative overlay targets, filesystem-root targets, and existing non-directory
+targets before invoking `pip`; use an absolute directory path on the working
+ext4 disk for reproducible framework-overlay evidence.
 
 The external-validation package also has an exact environment lock manifest at
 `data/differentiable_phase_qnode/external_validation_environment_lock_20260616.json`

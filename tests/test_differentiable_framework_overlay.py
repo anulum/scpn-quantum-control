@@ -10,11 +10,11 @@
 from __future__ import annotations
 
 import json
+import subprocess
 from pathlib import Path
 
 import pytest
 
-import scpn_quantum_control.differentiable_framework_overlay as overlay_module
 from scpn_quantum_control.differentiable_framework_overlay import (
     CPU_FRAMEWORK_WHEELS,
     FrameworkOverlayManifest,
@@ -26,6 +26,7 @@ from scpn_quantum_control.differentiable_framework_overlay import (
 
 
 def test_framework_overlay_manifest_uses_explicit_ext4_backed_target(tmp_path: Path) -> None:
+    """The manifest should record an explicit CPU-only overlay target."""
     overlay = tmp_path / "scpn-qc-framework-site-py312"
     manifest = build_framework_overlay_manifest(overlay_path=overlay, python_version="3.12")
 
@@ -49,6 +50,7 @@ def test_framework_overlay_manifest_uses_explicit_ext4_backed_target(tmp_path: P
 
 
 def test_framework_overlay_manifest_round_trips_and_reports_missing_state(tmp_path: Path) -> None:
+    """The manifest should round-trip and report missing overlay state."""
     overlay = tmp_path / "overlay"
     manifest = build_framework_overlay_manifest(overlay_path=overlay, python_version="3.12")
     manifest_path = tmp_path / "manifest.json"
@@ -76,6 +78,7 @@ def test_framework_overlay_manifest_round_trips_and_reports_missing_state(tmp_pa
 def test_framework_overlay_install_records_versions_without_hidden_state(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
+    """The installer should record versions discovered from the target overlay."""
     overlay = tmp_path / "overlay"
     calls: list[tuple[str, ...]] = []
 
@@ -89,7 +92,7 @@ def test_framework_overlay_install_records_versions_without_hidden_state(
             dist.mkdir(exist_ok=True)
             (dist / "METADATA").write_text("Name: test\nVersion: 1.2.3\n", encoding="utf-8")
 
-    monkeypatch.setattr(overlay_module.subprocess, "run", fake_run)
+    monkeypatch.setattr(subprocess, "run", fake_run)
 
     manifest = install_framework_overlay(overlay)
 
@@ -108,6 +111,37 @@ def test_framework_overlay_install_records_versions_without_hidden_state(
     }
 
 
+def test_framework_overlay_install_rejects_relative_path_before_subprocess(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """The installer should reject relative targets before invoking pip."""
+
+    def fail_run(command: tuple[str, ...], *, check: bool) -> None:
+        raise AssertionError(f"unexpected subprocess call: {command!r}, check={check!r}")
+
+    monkeypatch.setattr(subprocess, "run", fail_run)
+
+    with pytest.raises(ValueError, match="absolute directory path"):
+        install_framework_overlay(Path("relative-overlay"))
+
+
+def test_framework_overlay_install_rejects_existing_file_before_subprocess(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The installer should reject file targets before invoking pip."""
+    target = tmp_path / "overlay-file"
+    target.write_text("not a directory\n", encoding="utf-8")
+
+    def fail_run(command: tuple[str, ...], *, check: bool) -> None:
+        raise AssertionError(f"unexpected subprocess call: {command!r}, check={check!r}")
+
+    monkeypatch.setattr(subprocess, "run", fail_run)
+
+    with pytest.raises(ValueError, match="must be a directory"):
+        install_framework_overlay(target)
+
+
 def test_framework_overlay_pythonpath_requires_existing_manifest(tmp_path: Path) -> None:
+    """The PYTHONPATH helper should require an existing manifest file."""
     with pytest.raises(FileNotFoundError):
         framework_overlay_pythonpath(tmp_path / "missing.json")

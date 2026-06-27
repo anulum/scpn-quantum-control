@@ -13,7 +13,7 @@ import argparse
 import json
 import os
 import platform
-import subprocess
+import subprocess  # nosec B404
 import sys
 from dataclasses import dataclass
 from pathlib import Path
@@ -49,7 +49,6 @@ class FrameworkOverlayManifest:
 
     def to_dict(self) -> dict[str, Any]:
         """Return a JSON-ready manifest payload."""
-
         return {
             "schema": FRAMEWORK_OVERLAY_SCHEMA,
             "artifact_id": self.artifact_id,
@@ -71,7 +70,6 @@ class FrameworkOverlayManifest:
     @classmethod
     def from_json(cls, path: Path) -> FrameworkOverlayManifest:
         """Load a manifest from disk."""
-
         payload = json.loads(path.read_text(encoding="utf-8"))
         return cls(
             overlay_path=Path(str(payload["overlay_path"])),
@@ -104,7 +102,6 @@ class FrameworkOverlayVerification:
 
     def to_dict(self) -> dict[str, Any]:
         """Return JSON-ready verification metadata."""
-
         return {
             "ready": self.ready,
             "status": self.status,
@@ -117,7 +114,6 @@ class FrameworkOverlayVerification:
 
 def default_framework_overlay_path() -> Path:
     """Return the documented local overlay target path."""
-
     cache_home = Path(os.environ.get("XDG_CACHE_HOME", Path.home() / ".cache"))
     return cache_home / DEFAULT_OVERLAY_BASENAME
 
@@ -130,8 +126,7 @@ def build_framework_overlay_manifest(
     verification_status: str = "not_verified",
 ) -> FrameworkOverlayManifest:
     """Build a CPU-wheel overlay manifest without performing installation."""
-
-    target = overlay_path or default_framework_overlay_path()
+    target = _validated_overlay_install_path(overlay_path or default_framework_overlay_path())
     version = python_version or f"{sys.version_info.major}.{sys.version_info.minor}"
     command = (
         "python",
@@ -161,17 +156,31 @@ def build_framework_overlay_manifest(
     )
 
 
+def _validated_overlay_install_path(overlay_path: Path) -> Path:
+    raw = str(overlay_path)
+    if "\x00" in raw:
+        raise ValueError("overlay_path cannot contain a null byte")
+    target = overlay_path.expanduser()
+    if not target.is_absolute():
+        raise ValueError("overlay_path must be an absolute directory path")
+    if target == Path(target.anchor):
+        raise ValueError("overlay_path cannot be the filesystem root")
+    if target.exists() and not target.is_dir():
+        raise ValueError("overlay_path must be a directory when it already exists")
+    return target
+
+
 def install_framework_overlay(overlay_path: Path) -> FrameworkOverlayManifest:
     """Install the CPU-only optional-framework overlay and return its manifest."""
-
-    overlay_path.mkdir(parents=True, exist_ok=True)
+    target = _validated_overlay_install_path(overlay_path)
+    target.mkdir(parents=True, exist_ok=True)
     base_command = (
         sys.executable,
         "-m",
         "pip",
         "install",
         "--target",
-        str(overlay_path),
+        str(target),
         "--upgrade",
         "jax[cpu]",
         "tensorflow-cpu",
@@ -183,17 +192,17 @@ def install_framework_overlay(overlay_path: Path) -> FrameworkOverlayManifest:
         "pip",
         "install",
         "--target",
-        str(overlay_path),
+        str(target),
         "--upgrade",
         "--index-url",
         PYTORCH_CPU_INDEX_URL,
         "torch",
     )
-    subprocess.run(base_command, check=True)
-    subprocess.run(torch_command, check=True)
-    verification = verify_framework_overlay_path(overlay_path)
+    subprocess.run(base_command, check=True)  # nosec B603
+    subprocess.run(torch_command, check=True)  # nosec B603
+    verification = verify_framework_overlay_path(target)
     return build_framework_overlay_manifest(
-        overlay_path=overlay_path,
+        overlay_path=target,
         package_versions=verification.package_versions,
         verification_status=verification.status,
     )
@@ -201,7 +210,6 @@ def install_framework_overlay(overlay_path: Path) -> FrameworkOverlayManifest:
 
 def verify_framework_overlay_manifest(manifest_path: Path) -> FrameworkOverlayVerification:
     """Verify that the overlay directory and required package roots exist."""
-
     manifest = FrameworkOverlayManifest.from_json(manifest_path)
     return verify_framework_overlay_path(manifest.overlay_path, pythonpath=manifest.pythonpath)
 
@@ -210,7 +218,6 @@ def verify_framework_overlay_path(
     overlay_path: Path, *, pythonpath: str | None = None
 ) -> FrameworkOverlayVerification:
     """Verify that an overlay directory contains required package roots."""
-
     resolved_pythonpath = pythonpath or str(overlay_path)
     if not overlay_path.exists():
         return FrameworkOverlayVerification(
@@ -246,7 +253,6 @@ def verify_framework_overlay_path(
 
 def _discover_overlay_versions(overlay_path: Path) -> dict[str, str]:
     """Return installed package versions discoverable from overlay dist-info."""
-
     versions: dict[str, str] = {}
     for package in CPU_FRAMEWORK_PACKAGE_ROOTS:
         for dist_info in overlay_path.glob(f"{package.replace('_', '-')}*.dist-info"):
@@ -272,7 +278,6 @@ def _metadata_version(metadata_path: Path) -> str:
 
 def framework_overlay_pythonpath(manifest_path: Path) -> str:
     """Return the exact PYTHONPATH from an existing overlay manifest."""
-
     if not manifest_path.exists():
         raise FileNotFoundError(manifest_path)
     return FrameworkOverlayManifest.from_json(manifest_path).pythonpath
@@ -280,7 +285,6 @@ def framework_overlay_pythonpath(manifest_path: Path) -> str:
 
 def main(argv: list[str] | None = None) -> int:
     """Emit or verify the CPU-framework overlay manifest."""
-
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--overlay-path", type=Path, default=default_framework_overlay_path())
     parser.add_argument("--manifest-path", type=Path, default=None)
