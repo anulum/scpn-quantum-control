@@ -25,18 +25,26 @@ _qpetri_sample_marking_rust: Any = None
 _qpetri_state_metrics_rust: Any = None
 _qpetri_transition_activity_rust: Any = None
 _qpetri_campaign_aggregate_rust: Any = None
+_qpetri_rust_import_error: ImportError | None = None
 
 try:
-    from scpn_quantum_engine import qpetri_campaign_aggregate as _qpetri_campaign_aggregate_rust
     from scpn_quantum_engine import (
-        qpetri_sample_marking as _qpetri_sample_marking_rust,
+        qpetri_campaign_aggregate as _imported_qpetri_campaign_aggregate,
     )
-    from scpn_quantum_engine import qpetri_state_metrics as _qpetri_state_metrics_rust
     from scpn_quantum_engine import (
-        qpetri_transition_activity as _qpetri_transition_activity_rust,
+        qpetri_sample_marking as _imported_qpetri_sample_marking,
     )
-except Exception:
-    pass
+    from scpn_quantum_engine import qpetri_state_metrics as _imported_qpetri_state_metrics
+    from scpn_quantum_engine import (
+        qpetri_transition_activity as _imported_qpetri_transition_activity,
+    )
+except ImportError as exc:
+    _qpetri_rust_import_error = exc
+else:
+    _qpetri_sample_marking_rust = _imported_qpetri_sample_marking
+    _qpetri_state_metrics_rust = _imported_qpetri_state_metrics
+    _qpetri_transition_activity_rust = _imported_qpetri_transition_activity
+    _qpetri_campaign_aggregate_rust = _imported_qpetri_campaign_aggregate
 
 
 @dataclass(frozen=True)

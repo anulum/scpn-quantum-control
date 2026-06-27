@@ -142,3 +142,4 @@ def test_import_guard_without_rust(monkeypatch: pytest.MonkeyPatch) -> None:
     spec.loader.exec_module(module)
 
     assert module._qpetri_transition_activity_rust is None
+    assert isinstance(module._qpetri_rust_import_error, ModuleNotFoundError)
