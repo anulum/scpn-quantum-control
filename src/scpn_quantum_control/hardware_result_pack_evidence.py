@@ -18,8 +18,10 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import shlex
-import subprocess
+import shutil
+import subprocess  # nosec B404
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -30,11 +32,39 @@ DEFAULT_OUTPUT_DIR = REPO_ROOT / "docs" / "internal" / "releases"
 DEFAULT_EXPORT_DIR = REPO_ROOT / "dist" / "hardware-result-packs"
 MANIFEST_PATH = REPO_ROOT / "data" / "hardware_result_packs" / "manifest.json"
 VERIFY_SCRIPT = REPO_ROOT / "scripts" / "verify_hardware_result_packs.py"
+_Command = tuple[str, ...]
+
+
+def _resolve_executable(command: str) -> str | None:
+    """Resolve a command name or absolute path to an executable file."""
+    try:
+        command_path = Path(command)
+    except (OSError, ValueError):
+        return None
+    located = command if command_path.is_absolute() else shutil.which(command)
+    if located is None:
+        return None
+    try:
+        resolved = Path(located).resolve(strict=True)
+    except (OSError, ValueError):
+        return None
+    if not resolved.is_file() or not os.access(resolved, os.X_OK):
+        return None
+    return str(resolved)
+
+
+def _admit_command(command: list[str]) -> _Command:
+    """Return a command tuple with an absolute executable path."""
+    if not command:
+        raise RuntimeError("executable not found: empty command")
+    executable = _resolve_executable(command[0])
+    if executable is None:
+        raise RuntimeError(f"executable not found: {command[0]}")
+    return (executable, *command[1:])
 
 
 def sha256(path: Path) -> str:
     """Return the SHA-256 hex digest for a file."""
-
     digest = hashlib.sha256()
     with path.open("rb") as handle:
         for block in iter(lambda: handle.read(1024 * 1024), b""):
@@ -44,23 +74,28 @@ def sha256(path: Path) -> str:
 
 def utc_stamp() -> str:
     """Return a filesystem-safe UTC timestamp."""
-
     return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H%M%SZ")
 
 
 def run_json_command(command: list[str], *, cwd: Path, output_path: Path) -> dict[str, Any]:
     """Run a command expected to emit JSON and persist stdout exactly."""
-
-    completed = subprocess.run(
-        command,
+    error_path = output_path.with_suffix(output_path.suffix + ".stderr.log")
+    try:
+        admitted = _admit_command(command)
+    except RuntimeError as exc:
+        output_path.write_text("", encoding="utf-8")
+        error_path.write_text(str(exc), encoding="utf-8")
+        raise
+    completed = subprocess.run(  # nosec B603
+        admitted,
         cwd=cwd,
         check=False,
         text=True,
         capture_output=True,
+        shell=False,
     )
     output_path.write_text(completed.stdout, encoding="utf-8")
     if completed.returncode != 0:
-        error_path = output_path.with_suffix(output_path.suffix + ".stderr.log")
         error_path.write_text(completed.stderr, encoding="utf-8")
         raise RuntimeError(
             f"command failed ({completed.returncode}): {' '.join(command)}; stderr: {error_path}"
@@ -76,14 +111,20 @@ def run_json_command(command: list[str], *, cwd: Path, output_path: Path) -> dic
 
 def run_log_command(command: str, *, cwd: Path, log_path: Path) -> None:
     """Run a reproduction command and capture stdout/stderr into one log file."""
-
-    completed = subprocess.run(
-        shlex.split(command),
+    parsed = shlex.split(command)
+    try:
+        admitted = _admit_command(parsed)
+    except RuntimeError as exc:
+        log_path.write_text(str(exc), encoding="utf-8")
+        raise
+    completed = subprocess.run(  # nosec B603
+        admitted,
         cwd=cwd,
         check=False,
         text=True,
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
+        shell=False,
     )
     log_path.write_text(completed.stdout, encoding="utf-8")
     if completed.returncode != 0:
@@ -94,14 +135,12 @@ def run_log_command(command: str, *, cwd: Path, log_path: Path) -> None:
 
 def load_manifest() -> dict[str, Any]:
     """Load the hardware result-pack manifest."""
-
     payload: dict[str, Any] = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
     return payload
 
 
 def select_packs(manifest: dict[str, Any], pack_ids: set[str] | None) -> list[dict[str, Any]]:
     """Select packs from the manifest, failing closed on unknown IDs."""
-
     packs = manifest.get("packs", [])
     by_id = {str(pack.get("id")): pack for pack in packs}
     if pack_ids is None:
@@ -114,13 +153,11 @@ def select_packs(manifest: dict[str, Any], pack_ids: set[str] | None) -> list[di
 
 def rel(path: Path) -> str:
     """Return a repository-relative POSIX path."""
-
     return path.resolve().relative_to(REPO_ROOT).as_posix()
 
 
 def parse_pack_ids(values: list[str]) -> set[str] | None:
     """Parse repeated comma-separated pack filters."""
-
     if not values:
         return None
     pack_ids: set[str] = set()
@@ -131,7 +168,6 @@ def parse_pack_ids(values: list[str]) -> set[str] | None:
 
 def main(argv: list[str] | None = None) -> int:
     """Generate the hardware result-pack release evidence packet."""
-
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--pack-id", action="append", default=[], help="pack ID to include")
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)

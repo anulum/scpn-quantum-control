@@ -139,6 +139,25 @@ def test_run_json_command_raises_on_failure(tmp_path: Path) -> None:
     assert (tmp_path / "out.json.stderr.log").read_text(encoding="utf-8") == "boom"
 
 
+def test_run_json_command_rejects_missing_executable(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A JSON command with no admitted executable fails closed with a stderr log."""
+    empty_path = tmp_path / "empty-path"
+    empty_path.mkdir()
+    monkeypatch.setenv("PATH", str(empty_path))
+    output = tmp_path / "out.json"
+
+    with pytest.raises(RuntimeError, match="executable not found"):
+        evidence.run_json_command(
+            ["python", "-c", "print('{}')"],
+            cwd=tmp_path,
+            output_path=output,
+        )
+
+    assert "executable not found" in (tmp_path / "out.json.stderr.log").read_text(encoding="utf-8")
+
+
 def test_run_log_command_captures_and_raises(tmp_path: Path) -> None:
     """The reproduction runner logs output and fails closed on non-zero exit."""
     log_path = tmp_path / "run.log"
@@ -153,6 +172,21 @@ def test_run_log_command_captures_and_raises(tmp_path: Path) -> None:
             cwd=tmp_path,
             log_path=tmp_path / "fail.log",
         )
+
+
+def test_run_log_command_rejects_missing_executable(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A reproduction command with no admitted executable fails closed in the log."""
+    empty_path = tmp_path / "empty-path"
+    empty_path.mkdir()
+    monkeypatch.setenv("PATH", str(empty_path))
+    log_path = tmp_path / "missing.log"
+
+    with pytest.raises(RuntimeError, match="executable not found"):
+        evidence.run_log_command("python -c \"print('hello')\"", cwd=tmp_path, log_path=log_path)
+
+    assert "executable not found" in log_path.read_text(encoding="utf-8")
 
 
 def test_load_manifest_reads_committed_manifest() -> None:

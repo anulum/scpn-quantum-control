@@ -39,6 +39,11 @@ computes log SHA-256 digests, and writes the evidence packet. Manual verifier
 and export commands remain acceptable only when the packet matches the schema
 below.
 
+The generator admits each verifier, export, and reproduction command only after
+resolving the executable token to an absolute executable file. Missing or
+non-executable commands fail closed and write the stderr/log evidence beside
+the release packet outputs.
+
 ## Evidence packet schema
 
 Pass the packet to the release audit with
