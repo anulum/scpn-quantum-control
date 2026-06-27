@@ -226,12 +226,30 @@ def test_markdown_on_frontier_omits_the_reason_line() -> None:
 # ── the real committed ledger (real numbers, no fabrication) ────────────
 
 
-def test_real_committed_ledger_is_thirteen_candidates_at_zero() -> None:
-    """The shipped ledger is 13 candidates: honest answer rate 0.0, off-frontier."""
+def test_real_committed_ledger_is_sixteen_candidates_at_zero() -> None:
+    """The shipped ledger is 16 candidates: honest answer rate 0.0, off-frontier."""
     ledger = load_differentiable_claim_ledger()
     report = measure_coverage_frontier(ledger)
-    assert report.total == 13
+    assert report.total == 16
     assert report.answer_rate == 0.0
-    assert report.grade_distribution == {"bounded-model": 13}
+    assert report.grade_distribution == {"bounded-model": 16}
+    assert set(report.claim_status_by_id) == {
+        "ci_benchmark_evidence",
+        "differentiable_architecture_rustification_map",
+        "differentiable_dependency_environment_map",
+        "differentiable_isolated_benchmark_plan",
+        "differentiable_rust_python_inventory",
+        "differentiable_sota_scorecard",
+        "external_framework_comparison",
+        "external_validation_artifact_bundle",
+        "external_validation_environment_lock",
+        "external_validation_technical_report",
+        "framework_overlay_parity",
+        "hardening_slice_gate",
+        "module_hardening_audit",
+        "phase_qnode_claim_boundary",
+        "public_claim_table",
+        "support_surface_alignment",
+    }
     assert report.off_frontier is True
     assert isinstance(report, CoverageFrontierReport)
