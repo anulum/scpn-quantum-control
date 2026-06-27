@@ -30,6 +30,8 @@ from numpy.typing import NDArray
 from scipy import sparse
 from scipy.sparse.linalg import eigsh
 
+from ..dense_budget import require_dense_allocation
+
 
 def _canonical_xy_coupling(K: NDArray[np.float64]) -> NDArray[np.float64]:
     """Return a validated XY coupling matrix with its Hermitian component.
@@ -81,6 +83,8 @@ def _try_rust_sparse(
 def build_sparse_hamiltonian(
     K: NDArray[np.float64],
     omega: NDArray[np.float64],
+    *,
+    max_sparse_gib: float | None = None,
 ) -> sparse.csc_matrix:
     """Build the XY Hamiltonian as a sparse CSC matrix.
 
@@ -93,6 +97,10 @@ def build_sparse_hamiltonian(
         Coupling matrix.
     omega : array (n,)
         Natural frequencies.
+    max_sparse_gib : float, optional
+        Maximum Python fallback COO workspace in GiB. The Rust fast path is
+        attempted first; this guard applies before the fallback enters any
+        full Hilbert-basis loops.
 
     Returns
     -------
@@ -107,6 +115,16 @@ def build_sparse_hamiltonian(
     rust_result = _try_rust_sparse(K, omega, n)
     if rust_result is not None:
         return rust_result
+
+    coupling_edges = int(np.count_nonzero(np.triu(np.abs(K) >= 1e-15, k=1)))
+    require_dense_allocation(
+        n,
+        dtype=np.float64,
+        rank=1,
+        object_count=max(1, 3 * (1 + 2 * coupling_edges)),
+        max_gib=max_sparse_gib,
+        label="sparse XY Python builder COO workspace",
+    )
 
     rows: list[int] = []
     cols: list[int] = []

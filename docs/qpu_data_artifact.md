@@ -172,6 +172,7 @@ also require either `source_timestamp` or `replay_id`.
 ```python
 from scpn_quantum_control.bridge import (
     artifact_from_arrays,
+    artifact_to_kuramoto_problem,
     read_qpu_data_artifact,
     validate_qpu_data_artifact,
     write_qpu_data_artifact,
@@ -189,9 +190,14 @@ artifact = artifact_from_arrays(
 )
 
 validate_qpu_data_artifact(artifact, require_publication_safe=True)
+problem = artifact_to_kuramoto_problem(artifact)
 write_qpu_data_artifact("artifact.json", artifact)
 loaded = read_qpu_data_artifact("artifact.json")
 ```
+
+`artifact_to_kuramoto_problem()` copies `K_nm` and `omega` into the
+`KuramotoProblem` facade and carries scalar provenance fields, including the
+artifact SHA-256 digest, into `problem.metadata`.
 
 SC-NeuroCore datastream smoke payloads can be adapted with:
 

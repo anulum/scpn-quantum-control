@@ -19,7 +19,7 @@ and [Kuramoto Core Facade](kuramoto_core_facade.md).
 
 ::: scpn_quantum_control.kuramoto_core
     options:
-      members: [KuramotoProblem, build_kuramoto_problem, validate_kuramoto_inputs, compile_hamiltonian, compile_dense_hamiltonian, compile_trotter_circuit, measure_order_parameter, simulate_variant_trajectory]
+      members: [KuramotoProblem, build_kuramoto_problem, validate_kuramoto_inputs, compile_hamiltonian, compile_dense_hamiltonian, compile_trotter_circuit, compile_analog_program, compile_hybrid_program, measure_order_parameter, simulate_variant_trajectory]
       show_root_heading: true
 
 ## Advanced Module Reference
@@ -32,6 +32,10 @@ or debugging a subsystem, not as the default path for tutorial code.
 ::: scpn_quantum_control.bridge.knm_hamiltonian
     options:
       members: [OMEGA_N_16, build_knm_paper27, build_kuramoto_ring, knm_to_hamiltonian, knm_to_ansatz]
+
+::: scpn_quantum_control.bridge.qpu_data_artifact
+    options:
+      members: [QPUDataArtifact, artifact_from_arrays, artifact_to_kuramoto_problem, validate_qpu_data_artifact, read_qpu_data_artifact, write_qpu_data_artifact]
 
 ::: scpn_quantum_control.bridge.scpn_upde_edge
     options:

@@ -17,6 +17,7 @@ import pytest
 from scpn_quantum_control.bridge.qpu_data_artifact import (
     QPUDataArtifact,
     artifact_from_arrays,
+    artifact_to_kuramoto_problem,
     read_qpu_data_artifact,
     validate_qpu_data_artifact,
     write_qpu_data_artifact,
@@ -89,6 +90,33 @@ def test_publication_gate_requires_timestamp_or_replay_id():
 
     with pytest.raises(ValueError, match="source_timestamp or replay_id"):
         artifact.require_publication_safe()
+
+
+def test_artifact_to_kuramoto_problem_preserves_provenance_metadata():
+    artifact = artifact_from_arrays(
+        domain="power-grid",
+        source_name="ieee5bus_power_grid",
+        source_mode="recorded",
+        K_nm=_valid_knm(3),
+        omega=[0.1, 0.2, 0.3],
+        normalization="per-unit max coupling",
+        extraction_method="documented-topology-loader",
+        source_timestamp="2026-04-29T00:00:00Z",
+        metadata={"operator": "distribution"},
+    )
+
+    problem = artifact_to_kuramoto_problem(artifact)
+
+    assert problem.n_oscillators == artifact.n_oscillators
+    np.testing.assert_allclose(problem.K_nm, artifact.K_nm)
+    np.testing.assert_allclose(problem.omega, artifact.omega)
+    assert problem.metadata["domain"] == "power-grid"
+    assert problem.metadata["source_name"] == "ieee5bus_power_grid"
+    assert problem.metadata["source_mode"] == "recorded"
+    assert problem.metadata["normalization"] == "per-unit max coupling"
+    assert problem.metadata["extraction_method"] == "documented-topology-loader"
+    assert problem.metadata["source_timestamp"] == "2026-04-29T00:00:00Z"
+    assert problem.metadata["artifact_sha256"] == artifact.to_dict()["artifact_sha256"]
 
 
 def test_rejects_invalid_knm_invariants():

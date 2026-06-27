@@ -89,6 +89,8 @@ later caller-side mutation cannot alter the compiled problem.
 | `compile_hamiltonian` | Build the sparse XY `SparsePauliOp`. |
 | `compile_dense_hamiltonian` | Build the dense Hamiltonian, using the Rust engine when installed. |
 | `compile_trotter_circuit` | Build a gate-model Trotter evolution circuit. |
+| `compile_analog_program` | Build a native analog hardware programme from an existing `KuramotoProblem`. |
+| `compile_hybrid_program` | Build a split analog-native plus digital-residual programme from an existing `KuramotoProblem`. |
 | `measure_order_parameter` | Return `(R, psi)` from a statevector. |
 | `simulate_variant_trajectory` | Dispatch higher-order, monitored, and PT-symmetric Kuramoto variant trajectories. |
 

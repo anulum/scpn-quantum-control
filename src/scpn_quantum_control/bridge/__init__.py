@@ -39,6 +39,7 @@ from .phase_artifact import LayerStateArtifact, LockSignatureArtifact, UPDEPhase
 from .qpu_data_artifact import (
     QPUDataArtifact,
     artifact_from_arrays,
+    artifact_to_kuramoto_problem,
     read_qpu_data_artifact,
     validate_qpu_data_artifact,
     write_qpu_data_artifact,
@@ -93,6 +94,7 @@ __all__ = [
     "validate_scpn_upde_edge_payload",
     "QPUDataArtifact",
     "artifact_from_arrays",
+    "artifact_to_kuramoto_problem",
     "read_qpu_data_artifact",
     "validate_qpu_data_artifact",
     "write_qpu_data_artifact",

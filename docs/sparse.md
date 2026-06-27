@@ -58,6 +58,9 @@ dimension *and* non-zero count. For $n=20$, $M=0$: dim = 184,756 with
 The function `build_sparse_hamiltonian` uses the Rust function
 `build_sparse_xy_hamiltonian` when the engine is installed. Returns COO
 triplets (rows, cols, vals) that are assembled into a scipy CSC matrix.
+If the Rust function is unavailable, the Python fallback checks the shared
+dense-allocation budget before entering its full-basis COO loops. Use
+`max_sparse_gib` to set a per-call fallback budget.
 
 Measured speedup: **80×** at $n=8$ (0.024 ms vs 1.9 ms).
 
@@ -80,6 +83,7 @@ from scpn_quantum_control.bridge.sparse_hamiltonian import (
 H = build_sparse_hamiltonian(
     K: np.ndarray,       # (n, n) coupling matrix
     omega: np.ndarray,   # (n,) natural frequencies
+    max_sparse_gib: float | None = None,
 ) -> scipy.sparse.csc_matrix
 ```
 

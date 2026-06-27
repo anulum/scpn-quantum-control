@@ -15,7 +15,7 @@ from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
 from types import MappingProxyType
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 from numpy.typing import NDArray
@@ -27,6 +27,9 @@ SYNTHETIC_SOURCE_MODES = frozenset({"synthetic", "simulation", "fixture"})
 ALL_SOURCE_MODES = REAL_SOURCE_MODES | SYNTHETIC_SOURCE_MODES
 ARRAY_HASH_KEYS = frozenset({"K_nm_sha256", "omega_sha256", "theta0_sha256"})
 SHA256_HEX_CHARS = frozenset("0123456789abcdef")
+
+if TYPE_CHECKING:
+    from ..kuramoto_core import KuramotoProblem
 
 
 def _array_sha256(array: NDArray[np.float64]) -> str:
@@ -447,6 +450,41 @@ def validate_qpu_data_artifact(
     return parsed
 
 
+def artifact_to_kuramoto_problem(artifact: QPUDataArtifact) -> KuramotoProblem:
+    """Adapt a validated QPU data artifact to the public Kuramoto facade.
+
+    Parameters
+    ----------
+    artifact : QPUDataArtifact
+        Hash-locked oscillator artifact carrying a symmetric ``K_nm`` matrix
+        and natural-frequency vector.
+
+    Returns
+    -------
+    KuramotoProblem
+        Immutable Kuramoto facade with provenance metadata copied from the
+        artifact identity fields and artifact digest.
+    """
+    from ..kuramoto_core import build_kuramoto_problem
+
+    artifact_digest = str(artifact.to_dict()["artifact_sha256"])
+    metadata: dict[str, str | None] = {
+        "artifact_sha256": artifact_digest,
+        "domain": artifact.domain,
+        "extraction_method": artifact.extraction_method,
+        "normalization": artifact.normalization,
+        "replay_id": artifact.replay_id,
+        "source_mode": artifact.source_mode,
+        "source_name": artifact.source_name,
+        "source_timestamp": artifact.source_timestamp,
+    }
+    return build_kuramoto_problem(
+        np.array(artifact.K_nm, dtype=np.float64, copy=True),
+        np.array(artifact.omega, dtype=np.float64, copy=True),
+        metadata=metadata,
+    )
+
+
 def artifact_from_arrays(
     *,
     domain: str,
@@ -486,6 +524,7 @@ __all__ = [
     "SCHEMA_VERSION",
     "SC_NEUROCORE_STREAM_SCHEMA",
     "SYNTHETIC_SOURCE_MODES",
+    "artifact_to_kuramoto_problem",
     "artifact_from_arrays",
     "read_qpu_data_artifact",
     "validate_qpu_data_artifact",

@@ -43,9 +43,9 @@ K_nm,omega ─▶ PROBLEM ─▶ HAMILTONIAN ─▶ CIRCUIT/KERNEL ─▶ EXECUT
 
 | Stage | Entry symbol(s) | INPUT | OUTPUT | Backend |
 |---|---|---|---|---|
-| Problem | `build_kuramoto_problem(K_nm, omega, metadata)` · `QPUDataArtifact` | `K_nm:(n,n) float64` square/finite/**symmetric**, `omega:(n,)`, JSON metadata | frozen read-only `KuramotoProblem` (diagonal zeroed); or hash-locked on-disk artefact | Python |
-| Hamiltonian | `compile_hamiltonian` · `compile_dense_hamiltonian` · `knm_to_sparse_matrix` | `KuramotoProblem` | `SparsePauliOp` (XY, Δ=0) · dense `(2ⁿ,2ⁿ) complex128` · sparse CSC | **Rust→Qiskit** (dense Δ=0); budget-guarded |
-| Circuit/kernel | `compile_trotter_circuit` · `phase/*` solvers | `KuramotoProblem`, `time`, `trotter_steps` | `qiskit.QuantumCircuit` · `Statevector` · trajectory | Qiskit (+Rust order-parameter) |
+| Problem | `build_kuramoto_problem(K_nm, omega, metadata)` · `QPUDataArtifact` · `artifact_to_kuramoto_problem` | `K_nm:(n,n) float64` square/finite/**symmetric**, `omega:(n,)`, JSON metadata | frozen read-only `KuramotoProblem` (diagonal zeroed); or hash-locked on-disk artefact adapted with scalar provenance metadata | Python |
+| Hamiltonian | `compile_hamiltonian` · `compile_dense_hamiltonian` · `knm_to_sparse_matrix` · `build_sparse_hamiltonian` | `KuramotoProblem` or arrays | `SparsePauliOp` (XY, Δ=0) · dense `(2ⁿ,2ⁿ) complex128` · sparse CSC | **Rust→Qiskit** (dense Δ=0); budget-guarded |
+| Circuit/kernel | `compile_trotter_circuit` · `compile_analog_program` · `compile_hybrid_program` · `phase/*` solvers | `KuramotoProblem`, time/duration, backend route | `qiskit.QuantumCircuit` · analog programme · hybrid programme · trajectory | Qiskit/hardware planners (+Rust order-parameter) |
 | Execution | `hardware/runner` · `hardware/hal_*` adapters | circuit + shots + approval | raw counts + job IDs + provenance | IBM Runtime SamplerV2 / 16 provider adapters (approval-gated) |
 | Mitigation | `mitigation/*` | counts / per-scale estimates | mitigated estimates **+ uncertainty** | NumPy (citation-backed) |
 | Observables | `analysis/*` | counts dict / `Statevector` / dense H | metric dataclasses (R, witnesses, OTOC, DLA…) | NumPy (+Rust on hot probes) |
@@ -55,9 +55,12 @@ The IO contract of the **programmatic entry** (the load-bearing surface a siblin
 
 ```python
 build_kuramoto_problem(K_nm, omega, metadata)        # validate → frozen KuramotoProblem
+  → artifact_to_kuramoto_problem(artifact)           # validated artifact → KuramotoProblem + provenance
   → compile_hamiltonian(problem)        -> SparsePauliOp                 # XY, Δ=0
   → compile_dense_hamiltonian(problem)  -> ndarray[complex128] (2ⁿ,2ⁿ)  # Rust fast path, budgeted
   → compile_trotter_circuit(problem, time, trotter_steps, trotter_order) -> QuantumCircuit
+  → compile_analog_program(problem, platform, duration)                  -> native analog plan
+  → compile_hybrid_program(problem, platform, duration)                  -> analog/digital split plan
 ```
 
 `K_nm` is **symmetrised** `(K+Kᵀ)/2` inside the compiler (the gate-model XY mapping is
@@ -93,7 +96,8 @@ Each lane: purpose · INPUTS · OUTPUTS · processing model · backends · wirin
 - **Processing** Kuramoto↔XY: `K·sin(θⱼ−θᵢ) ↔ −J(XᵢXⱼ+YᵢYⱼ)`, `ωᵢ ↔ −hᵢZᵢ`; XXZ adds `Δ·ZZ`.
 - **Backends** dense Δ=0 has a **Rust fast path** → Qiskit fallback; sparse has Rust + ARPACK + U(1)
   magnetisation sectors. **Budget guards** (`require_dense_allocation`, `require_pauli_operator_budget`)
-  fire before any `2ⁿ` allocation — fail-closed, RAM-aware, env-overridable.
+  fire before dense Hilbert allocations, Pauli-operator expansion, and the Python sparse fallback's
+  full-basis COO loops — fail-closed, RAM-aware, env-overridable.
 - **Provenance** `QPUDataArtifact` (hash-locked arrays, synthetic-vs-real + publication-safety gates).
 - **SOTA** *mature* (strict validation, budgeted, Rust-accelerated; textbook-correct mapping).
 

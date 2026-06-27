@@ -15,9 +15,9 @@ from pathlib import Path
 from scpn_quantum_control._paths import project_data_root
 from scpn_quantum_control.bridge.qpu_data_artifact import (
     QPUDataArtifact,
+    artifact_to_kuramoto_problem,
     read_qpu_data_artifact,
 )
-from scpn_quantum_control.kuramoto_core import KuramotoProblem, build_kuramoto_problem
 
 _REPO_ROOT = project_data_root("data/public_application_benchmarks")
 APPLICATION_BENCHMARK_DIR = _REPO_ROOT / "data" / "public_application_benchmarks"
@@ -120,20 +120,6 @@ def load_application_benchmark_artifact(dataset_id: str) -> QPUDataArtifact:
         )
     artifact.require_publication_safe()
     return artifact
-
-
-def artifact_to_kuramoto_problem(artifact: QPUDataArtifact) -> KuramotoProblem:
-    """Adapt a QPU data artifact to the public Kuramoto facade."""
-    return build_kuramoto_problem(
-        artifact.K_nm,
-        artifact.omega,
-        metadata={
-            "domain": artifact.domain,
-            "source_name": artifact.source_name,
-            "source_mode": artifact.source_mode,
-            "normalization": artifact.normalization,
-        },
-    )
 
 
 __all__ = [

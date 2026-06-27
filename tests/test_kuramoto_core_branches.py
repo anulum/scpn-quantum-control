@@ -85,3 +85,13 @@ def test_compile_hybrid_program_delegates() -> None:
         _problem(), platform=AnalogKuramotoPlatform.NEUTRAL_ATOMS, duration=1.0
     )
     assert program.duration == 1.0
+
+
+def test_package_exports_analog_and_hybrid_compilers() -> None:
+    """The stable package API exports the Kuramoto analog/hybrid compilers."""
+    import scpn_quantum_control as sqc
+
+    assert sqc.compile_analog_program is compile_analog_program
+    assert sqc.compile_hybrid_program is compile_hybrid_program
+    assert "compile_analog_program" in sqc.__all__
+    assert "compile_hybrid_program" in sqc.__all__

@@ -148,6 +148,8 @@ build_kuramoto_problem(K_nm, omega, metadata=None) -> KuramotoProblem
 compile_hamiltonian(problem) -> SparsePauliOp
 compile_dense_hamiltonian(problem) -> np.ndarray
 compile_trotter_circuit(problem, time, trotter_steps=10, trotter_order=1) -> QuantumCircuit
+compile_analog_program(problem, platform, duration, coupling_scale=1.0)
+compile_hybrid_program(problem, platform, duration, ...)
 measure_order_parameter(problem, statevector) -> tuple[float, float]
 ```
 

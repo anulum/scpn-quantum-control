@@ -54,6 +54,7 @@ The public helpers are:
 |--------|---------|
 | `QPUDataArtifact` | Immutable validated artifact object. |
 | `artifact_from_arrays` | Convenience constructor for loaders/tests. |
+| `artifact_to_kuramoto_problem` | Converts a validated artifact into `KuramotoProblem` with scalar provenance metadata. |
 | `validate_qpu_data_artifact` | Enforces schema and optional publication gate. |
 | `read_qpu_data_artifact` | Reads artifact JSON from disk. |
 | `write_qpu_data_artifact` | Writes artifact JSON to disk. |
@@ -197,6 +198,10 @@ Constructs the full-space sparse Hamiltonian. Matrix elements:
 - **Off-diagonal**: `H[k, k XOR mask_ij] = -2*K[i,j]` when bits i and j differ in state k
 
 Rust fast path via `scpn_quantum_engine.build_sparse_xy_hamiltonian()` at 80x speedup.
+When the Rust path is unavailable, the Python fallback checks
+`require_dense_allocation(..., label="sparse XY Python builder COO workspace")`
+before it enters the full `2^n` basis loops. Pass `max_sparse_gib` to lower or
+raise that fallback workspace budget for a specific call.
 
 #### `build_sparse_sector_hamiltonian(K, omega, M)`
 

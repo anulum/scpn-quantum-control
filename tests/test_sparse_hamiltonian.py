@@ -10,6 +10,7 @@
 from __future__ import annotations
 
 import numpy as np
+import pytest
 
 from scpn_quantum_control.bridge.sparse_hamiltonian import (
     build_sparse_hamiltonian,
@@ -17,6 +18,7 @@ from scpn_quantum_control.bridge.sparse_hamiltonian import (
     sparse_eigsh,
     sparsity_stats,
 )
+from scpn_quantum_control.dense_budget import DenseAllocationError
 
 
 def _system(n: int = 4):
@@ -208,6 +210,20 @@ class TestPythonFallback:
             H = build_sparse_hamiltonian(K, omega)
             assert H.nnz < 2**n * 2**n
 
+    def test_python_fallback_budget_guard_rejects_before_basis_loops(self):
+        """The Python fallback fails closed before allocating COO basis arrays."""
+        from unittest.mock import patch
+
+        K, omega = _system(4)
+        with (
+            patch(
+                "scpn_quantum_control.bridge.sparse_hamiltonian._try_rust_sparse",
+                return_value=None,
+            ),
+            pytest.raises(DenseAllocationError, match="sparse XY Python builder COO workspace"),
+        ):
+            build_sparse_hamiltonian(K, omega, max_sparse_gib=1e-12)
+
     def test_missing_rust_symbol_falls_back(self):
         """_try_rust_sparse returns None when the optional symbol is absent."""
         # Mock scpn_quantum_engine to raise inside
@@ -225,8 +241,6 @@ class TestPythonFallback:
         """A present but failing Rust sparse builder must not be hidden."""
         from unittest.mock import MagicMock, patch
 
-        import pytest
-
         from scpn_quantum_control.bridge.sparse_hamiltonian import _try_rust_sparse
 
         mock_eng = MagicMock()
@@ -240,8 +254,6 @@ class TestPythonFallback:
 
 class TestSectorErrors:
     def test_invalid_m_raises(self):
-        import pytest
-
         K, omega = _system(4)
         with pytest.raises(ValueError, match="not valid"):
             build_sparse_sector_hamiltonian(K, omega, M=3)
