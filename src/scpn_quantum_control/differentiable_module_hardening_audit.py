@@ -18,6 +18,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 
 DIFFERENTIABLE_MODULE_PATTERNS = (
     "src/scpn_quantum_control/differentiable*.py",
+    "src/scpn_quantum_control/diff.py",
     "src/scpn_quantum_control/program_ad*.py",
     "src/scpn_quantum_control/phase/differentiable*.py",
     "src/scpn_quantum_control/phase/*gradient*.py",
@@ -373,6 +374,14 @@ def differentiable_module_hardening_registry() -> tuple[DifferentiableModuleHard
             "src/scpn_quantum_control/differentiable_module_hardening_audit.py",
             ("tests/test_differentiable_module_hardening_audit.py",),
             ("module inventory discovery", "module-specific test enforcement"),
+        ),
+        _record(
+            "src/scpn_quantum_control/differentiable_transform_algebra.py",
+            ("tests/test_differentiable_transform_algebra.py",),
+            (
+                "transform-algebra metamorphic identities",
+                "fail-closed unsupported transform boundaries",
+            ),
         ),
         _record(
             "src/scpn_quantum_control/differentiable_natural_gradient.py",

@@ -546,6 +546,7 @@ from .differentiable_api import (
     differentiable_rust_python_inventory_report,
     differentiable_sota_scorecard_report,
     differentiable_support_report,
+    differentiable_transform_algebra_report,
     differentiable_value,
     explain_differentiability,
 )
@@ -614,6 +615,13 @@ from .differentiable_sota_scorecard import (
     render_differentiable_sota_scorecard_markdown,
     run_differentiable_sota_scorecard,
     validate_differentiable_sota_scorecard,
+)
+from .differentiable_transform_algebra import (
+    TransformAlgebraAudit,
+    TransformAlgebraCase,
+    TransformAlgebraStatus,
+    assert_transform_algebra_audit_passes,
+    run_transform_algebra_audit,
 )
 from .entropy import AerQuantumEntropySource, EntropyHealthReport, QRNGStream
 from .forecasting import (
@@ -1477,9 +1485,15 @@ __all__ = [
     "differentiable_sota_scorecard_report",
     "differentiable_module_hardening_registry",
     "differentiable_support_report",
+    "differentiable_transform_algebra_report",
     "differentiable_value",
     "explain_differentiability",
     "run_differentiable_module_hardening_audit",
+    "TransformAlgebraAudit",
+    "TransformAlgebraCase",
+    "TransformAlgebraStatus",
+    "assert_transform_algebra_audit_passes",
+    "run_transform_algebra_audit",
     "DifferentiableArchitectureLayerId",
     "DifferentiableArchitectureMap",
     "DifferentiableArchitectureMapLayer",

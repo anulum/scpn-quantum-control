@@ -7,13 +7,13 @@
     "model_documentation_pages": 0,
     "notebook_files": 100,
     "optional_extras": 43,
-    "public_api_exports": 769,
+    "public_api_exports": 775,
     "public_documentation_pages": 253,
-    "python_model_classes": 877,
-    "python_model_source_modules": 494,
+    "python_model_classes": 879,
+    "python_model_source_modules": 495,
     "rust_pyo3_model_wrappers": 171,
     "rust_source_modules": 42,
-    "test_files": 806
+    "test_files": 807
   },
   "documentation": {
     "examples": [
@@ -3931,6 +3931,14 @@
         "path": "src/scpn_quantum_control/phase/cross_domain_transfer.py"
       },
       {
+        "name": "TransformAlgebraAudit",
+        "path": "src/scpn_quantum_control/differentiable_transform_algebra.py"
+      },
+      {
+        "name": "TransformAlgebraCase",
+        "path": "src/scpn_quantum_control/differentiable_transform_algebra.py"
+      },
+      {
         "name": "TrotterEvolutionConfig",
         "path": "src/scpn_quantum_control/phase/xy_kuramoto.py"
       },
@@ -4335,6 +4343,7 @@
       "src/scpn_quantum_control/differentiable_sparse_derivatives.py",
       "src/scpn_quantum_control/differentiable_stochastic_estimators.py",
       "src/scpn_quantum_control/differentiable_stochastic_policy.py",
+      "src/scpn_quantum_control/differentiable_transform_algebra.py",
       "src/scpn_quantum_control/differentiable_transform_helpers.py",
       "src/scpn_quantum_control/differentiable_vmap.py",
       "src/scpn_quantum_control/dla_parity/baselines.py",
@@ -5090,6 +5099,9 @@
     "TraceSTDPConfig",
     "TraceSTDPState",
     "TrajectoryResult",
+    "TransformAlgebraAudit",
+    "TransformAlgebraCase",
+    "TransformAlgebraStatus",
     "TrotterEvolutionConfig",
     "UPDEPhaseArtifact",
     "UnifiedDifferentiableAPIResult",
@@ -5123,6 +5135,7 @@
     "analyze_program_ad_alias_effects",
     "applications",
     "armijo_backtracking_line_search",
+    "assert_transform_algebra_audit_passes",
     "assess_provider_capability_snapshot",
     "audit_competitive_baseline_promotion_gate",
     "audit_differentiable_sota_promotion_language",
@@ -5244,6 +5257,7 @@
     "differentiable_rust_python_inventory_report",
     "differentiable_sota_scorecard_report",
     "differentiable_support_report",
+    "differentiable_transform_algebra_report",
     "differentiable_value",
     "disposition_entanglement_map",
     "dual_cos",
@@ -5500,6 +5514,7 @@
     "run_reproducible_kuramoto_comparison",
     "run_scaling_benchmark",
     "run_stable_core_preflight",
+    "run_transform_algebra_audit",
     "scipy_ode_baseline",
     "score_function_gradient_estimate",
     "scpn_control_bridge_dependency_contract",
@@ -5859,6 +5874,7 @@
       "tests/test_differentiable_sparse_derivatives.py",
       "tests/test_differentiable_spsa.py",
       "tests/test_differentiable_stochastic_estimators.py",
+      "tests/test_differentiable_transform_algebra.py",
       "tests/test_differentiable_transform_helpers.py",
       "tests/test_differentiable_vmap.py",
       "tests/test_disruption_classifier.py",

@@ -43,6 +43,7 @@ from .differentiable_dependency_environment_map import (
 )
 from .differentiable_rust_python_inventory import run_differentiable_rust_python_inventory
 from .differentiable_sota_scorecard import run_differentiable_sota_scorecard
+from .differentiable_transform_algebra import run_transform_algebra_audit
 from .phase.gradient_backend import (
     plan_quantum_gradient_backend,
     quantum_gradient_backend_capability,
@@ -68,6 +69,7 @@ UnifiedDifferentiableOperation = Literal[
     "architecture_rustification_map",
     "dependency_environment_map",
     "isolated_benchmark_plan",
+    "transform_algebra_report",
 ]
 DifferentiableDashboardCapabilityState = Literal[
     "planned",
@@ -168,6 +170,7 @@ class DifferentiableDashboardCapabilityRow:
     claim_boundary: str
 
     def __post_init__(self) -> None:
+        """Validate dashboard row identifiers and claim-boundary metadata."""
         if not self.surface:
             raise ValueError("dashboard status surface must be non-empty")
         if not self.backing_api:
@@ -207,6 +210,7 @@ class DifferentiableDashboardStatus:
     claim_boundary: str
 
     def __post_init__(self) -> None:
+        """Validate dashboard status row collection and metadata."""
         if not self.rows:
             raise ValueError("dashboard status rows must be non-empty")
         if any(not isinstance(row, DifferentiableDashboardCapabilityRow) for row in self.rows):
@@ -594,6 +598,22 @@ def differentiable_isolated_benchmark_plan_report() -> UnifiedDifferentiableAPIR
     )
 
 
+def differentiable_transform_algebra_report() -> UnifiedDifferentiableAPIResult:
+    """Return executable local transform-algebra metamorphic evidence."""
+    audit = run_transform_algebra_audit()
+    return UnifiedDifferentiableAPIResult(
+        operation="transform_algebra_report",
+        supported=audit.passed,
+        method="differentiable_transform_algebra",
+        value=None,
+        gradient=None,
+        jacobian=None,
+        hessian=None,
+        payload=audit.to_dict(),
+        claim_boundary=audit.claim_boundary,
+    )
+
+
 def differentiable_frontend_report(
     objective: Callable[..., object],
 ) -> UnifiedDifferentiableAPIResult:
@@ -604,7 +624,6 @@ def differentiable_frontend_report(
     metadata without promoting executable compiler lowering, provider, hardware,
     or performance claims.
     """
-
     report = compile_whole_program_frontend(objective)
     return UnifiedDifferentiableAPIResult(
         operation="frontend_report",
@@ -1281,6 +1300,8 @@ def differentiable_api(
         return differentiable_dependency_environment_map_report()
     if operation == "isolated_benchmark_plan":
         return differentiable_isolated_benchmark_plan_report()
+    if operation == "transform_algebra_report":
+        return differentiable_transform_algebra_report()
     if operation == "frontend_report":
         return differentiable_frontend_report(_require_objective(objective))
     if operation == "dashboard_status":
@@ -1426,6 +1447,7 @@ __all__ = [
     "differentiable_rust_python_inventory_report",
     "differentiable_sota_scorecard_report",
     "differentiable_support_report",
+    "differentiable_transform_algebra_report",
     "differentiable_value",
     "explain_differentiability",
 ]

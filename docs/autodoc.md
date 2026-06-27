@@ -159,6 +159,10 @@ or debugging a subsystem, not as the default path for tutorial code.
     options:
       members: [DifferentiableModuleHardeningAuditResult, DifferentiableModuleHardeningRecord, differentiable_module_hardening_registry, run_differentiable_module_hardening_audit]
 
+::: scpn_quantum_control.differentiable_transform_algebra
+    options:
+      members: [TransformAlgebraAudit, TransformAlgebraCase, run_transform_algebra_audit, assert_transform_algebra_audit_passes]
+
 ::: scpn_quantum_control.differentiable_benchmark_report
     options:
       members: [DifferentiableBenchmarkReport, build_differentiable_benchmark_report]

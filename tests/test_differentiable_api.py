@@ -9,8 +9,11 @@
 
 from __future__ import annotations
 
+from typing import Any, cast
+
 import numpy as np
 import pytest
+from numpy.typing import NDArray
 
 import scpn_quantum_control as scpn
 from scpn_quantum_control.differentiable_api import (
@@ -28,16 +31,26 @@ from scpn_quantum_control.differentiable_api import (
     differentiable_hessian,
     differentiable_jacobian,
     differentiable_support_report,
+    differentiable_transform_algebra_report,
     differentiable_value,
     explain_differentiability,
 )
+from scpn_quantum_control.differentiable_transform_algebra import (
+    REQUIRED_TRANSFORM_ALGEBRA_CATEGORIES,
+    TransformAlgebraAudit,
+    TransformAlgebraCase,
+    assert_transform_algebra_audit_passes,
+    run_transform_algebra_audit,
+)
+
+FloatArray = NDArray[np.float64]
 
 
-def _scalar_objective(values: np.ndarray) -> float:
+def _scalar_objective(values: FloatArray) -> float:
     return float(values[0] ** 2 + 3.0 * values[1])
 
 
-def _vector_objective(values: np.ndarray) -> np.ndarray:
+def _vector_objective(values: FloatArray) -> FloatArray:
     return np.array([values[0] + values[1], values[0] * values[1]], dtype=float)
 
 
@@ -60,6 +73,7 @@ def test_unified_differentiable_value_and_gradient_share_schema() -> None:
 
     assert gradient.operation == "gradient"
     assert gradient.supported
+    assert gradient.gradient is not None
     np.testing.assert_allclose(gradient.gradient, np.array([4.0, 3.0]), atol=1e-5)
     assert gradient.to_dict()["gradient"] == pytest.approx([4.0, 3.0], abs=1e-5)
     assert "no hardware execution" in gradient.claim_boundary
@@ -72,6 +86,7 @@ def test_unified_differentiable_jacobian_and_hessian_routes_are_explicit() -> No
     hessian = differentiable_hessian(_scalar_objective, values)
 
     assert jacobian.operation == "jacobian"
+    assert jacobian.jacobian is not None
     np.testing.assert_allclose(
         jacobian.jacobian,
         np.array([[1.0, 1.0], [-1.0, 2.0]], dtype=float),
@@ -80,6 +95,7 @@ def test_unified_differentiable_jacobian_and_hessian_routes_are_explicit() -> No
     assert jacobian.payload["objective_value"] == pytest.approx([1.0, -2.0])
 
     assert hessian.operation == "hessian"
+    assert hessian.hessian is not None
     np.testing.assert_allclose(
         hessian.hessian,
         np.array([[2.0, 0.0], [0.0, 0.0]], dtype=float),
@@ -98,7 +114,8 @@ def test_unified_differentiable_support_report_fails_closed_for_unsupported_rout
     assert report.fail_closed
     assert report.payload["supported"] is False
     assert "no registered parameter-shift generator" in report.payload["blocked_reasons"][0]
-    assert report.to_dict()["payload"]["requires_hardware_policy"] is False
+    payload = cast(dict[str, object], report.to_dict()["payload"])
+    assert payload["requires_hardware_policy"] is False
 
 
 def test_explain_differentiability_reports_reasons_and_matrices() -> None:
@@ -129,7 +146,9 @@ def test_explain_differentiability_reports_reasons_and_matrices() -> None:
     backend_rows = {str(row["backend"]): row for row in report.backend_matrix}
     assert backend_rows["hardware_qpu"]["fail_closed"] is True
     assert backend_rows["finite_shot_simulator"]["method"] == "stochastic_parameter_shift"
-    assert report.to_dict()["dependency_matrix"][0]["framework"] == "jax"
+    report_payload = report.to_dict()
+    dependency_payload = cast(list[dict[str, object]], report_payload["dependency_matrix"])
+    assert dependency_payload[0]["framework"] == "jax"
 
 
 def test_unified_differentiable_compile_report_filters_registered_primitives() -> None:
@@ -145,6 +164,22 @@ def test_unified_differentiable_compile_report_filters_registered_primitives() -
 
     with pytest.raises(ValueError, match="unknown primitive identities"):
         differentiable_compile_report(primitive_identities=("missing:primitive@1",))
+
+
+def test_unified_differentiable_transform_algebra_report_is_bounded() -> None:
+    report = differentiable_transform_algebra_report()
+    dispatched = differentiable_api("transform_algebra_report")
+
+    assert report.operation == "transform_algebra_report"
+    assert report.supported is True
+    assert report.method == "differentiable_transform_algebra"
+    assert report.payload["missing_categories"] == []
+    categories = cast(list[str], report.payload["categories"])
+    blocked_count = cast(int, report.payload["blocked_count"])
+    assert set(categories) == set(REQUIRED_TRANSFORM_ALGEBRA_CATEGORIES)
+    assert blocked_count >= 4
+    assert "finite differences remain diagnostic" in report.claim_boundary
+    assert dispatched.to_dict() == report.to_dict()
 
 
 def test_unified_differentiable_benchmark_report_is_non_performance_evidence() -> None:
@@ -166,7 +201,8 @@ def test_differentiable_dashboard_status_is_claim_bounded_for_gui_consumers() ->
     assert isinstance(status, DifferentiableDashboardStatus)
     assert status.status_api_ready is True
     payload = status.to_dict()
-    rows = {str(row["surface"]): row for row in payload["rows"]}
+    payload_rows = cast(list[dict[str, Any]], payload["rows"])
+    rows = {str(row["surface"]): row for row in payload_rows}
 
     assert rows["unified_differentiable_api"]["state"] == "executable"
     assert rows["unified_differentiable_api"]["fail_closed"] is False
@@ -447,7 +483,8 @@ def test_differentiable_dashboard_status_is_claim_bounded_for_gui_consumers() ->
     )
     assert rows["provider_and_hardware_gradients"]["state"] == "blocked"
     assert rows["gui_frontend"]["state"] == "planned"
-    assert "program_ad_effect_ir.v1" in payload["generated_from"]
+    generated_from = cast(list[str], payload["generated_from"])
+    assert "program_ad_effect_ir.v1" in generated_from
     assert "without upgrading" in str(payload["claim_boundary"])
 
 
@@ -579,7 +616,7 @@ def test_unified_differentiable_dispatcher_and_root_exports() -> None:
     values = np.array([2.0, -1.0], dtype=float)
     calls = {"count": 0}
 
-    def frontend_objective(inputs: np.ndarray) -> object:
+    def frontend_objective(inputs: FloatArray) -> object:
         calls["count"] += 1
         return np.sin(inputs[0]) + inputs[1]
 
@@ -604,6 +641,7 @@ def test_unified_differentiable_dispatcher_and_root_exports() -> None:
     frontend_direct = differentiable_frontend_report(frontend_objective)
     frontend_dispatched = differentiable_api("frontend_report", objective=frontend_objective)
 
+    assert gradient.gradient is not None
     np.testing.assert_allclose(gradient.gradient, np.array([4.0, 3.0]), atol=1e-5)
     assert calls == {"count": 0}
     assert support.supported
@@ -639,10 +677,15 @@ def test_unified_differentiable_dispatcher_and_root_exports() -> None:
     assert scpn.DifferentiableDashboardCapabilityState is DifferentiableDashboardCapabilityState
     assert scpn.differentiable_dashboard_status is differentiable_dashboard_status
     assert scpn.differentiable_frontend_report is differentiable_frontend_report
+    assert scpn.differentiable_transform_algebra_report is differentiable_transform_algebra_report
     assert scpn.explain_differentiability is explain_differentiability
     assert scpn.differentiable_api is differentiable_api
     assert scpn.differentiable_gradient is differentiable_gradient
     assert scpn.differentiable_value is differentiable_value
+    assert scpn.TransformAlgebraAudit is TransformAlgebraAudit
+    assert scpn.TransformAlgebraCase is TransformAlgebraCase
+    assert scpn.run_transform_algebra_audit is run_transform_algebra_audit
+    assert scpn.assert_transform_algebra_audit_passes is assert_transform_algebra_audit_passes
 
     with pytest.raises(ValueError, match="objective is required"):
         differentiable_api("gradient", values=values)
