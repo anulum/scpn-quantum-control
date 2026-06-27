@@ -1038,6 +1038,41 @@ def test_torch_maturity_audit_records_bounded_passes_and_provider_gaps(
     assert payload["claim_boundary"] == "bounded_torch_provider_maturity_audit"
 
 
+def test_torch_maturity_audit_rejects_invalid_lowering_matrix(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Torch maturity aggregation should fail closed on invalid lowering evidence."""
+    fake_torch = _FakeTorch()
+    monkeypatch.setattr(torch_bridge, "_load_torch", lambda: fake_torch)
+    monkeypatch.setattr(
+        torch_bridge,
+        "plan_torch_cloud_validation_batch",
+        lambda: PhaseTorchCloudValidationRunSpec(
+            runner="local",
+            local_execution_status="skipped",
+            local_skip_reason="unit test",
+            torch_version="fake",
+            cuda_available=False,
+            cuda_device_count=0,
+            cuda_device_names=(),
+            blocked_local_routes=(),
+            required_artifacts=(),
+            required_environment={},
+            commands=(),
+            ready_for_cloud_dispatch=False,
+        ),
+    )
+    monkeypatch.setattr(torch_bridge, "run_torch_phase_qnode_lowering_matrix", lambda: object())
+
+    with pytest.raises(RuntimeError, match="phase-QNode lowering matrix"):
+        run_torch_maturity_audit(
+            features=np.array([[0.0], [np.pi]], dtype=float),
+            labels=np.array([0.0, 1.0], dtype=float),
+            params=np.array([0.45], dtype=float),
+            params_batch=np.array([[0.25], [0.45], [0.65]], dtype=float),
+        )
+
+
 def test_torch_ecosystem_maturity_audit_records_broad_module_func_compile_device_gaps(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

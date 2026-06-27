@@ -2720,7 +2720,8 @@ def run_torch_maturity_audit(
         }
     )
     lowering_matrix = evidence["phase_qnode_lowering_matrix"]
-    assert isinstance(lowering_matrix, PhaseTorchPhaseQNodeLoweringMatrixResult)
+    if not isinstance(lowering_matrix, PhaseTorchPhaseQNodeLoweringMatrixResult):
+        raise RuntimeError("PyTorch maturity audit requires a phase-QNode lowering matrix.")
     required_capabilities = {
         "analytic_tensor": "passed" if analytic_tensor.passed else "failed",
         "custom_autograd": "passed" if custom_autograd.passed else "failed",
