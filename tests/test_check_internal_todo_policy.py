@@ -163,6 +163,44 @@ def test_exported_source_tree_without_git_still_scans_filesystem(tmp_path: Path)
     assert main(["--root", str(tmp_path)]) == 1
 
 
+def test_repo_root_falls_back_when_git_executable_is_unavailable(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    """Repository-root discovery does not launch a partial git command."""
+    monkeypatch.setenv("PATH", "")
+
+    assert _guard._repo_root(tmp_path) == tmp_path
+
+
+def test_tracked_local_only_paths_falls_back_when_git_executable_is_unavailable(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    """Tracked internal-path discovery treats unavailable git as no tracked paths."""
+    monkeypatch.setenv("PATH", "")
+
+    assert _guard.tracked_local_only_paths(tmp_path) == []
+
+
+def test_git_resolver_rejects_stale_path(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """A stale PATH lookup result is not admitted as a git executable."""
+    missing = tmp_path / "missing-git"
+    monkeypatch.setattr(_guard.shutil, "which", lambda _name: str(missing))
+
+    assert _guard._resolve_git_executable() is None
+
+
+def test_git_resolver_rejects_non_executable_file(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    """A non-executable file is not admitted as a git executable."""
+    candidate = tmp_path / "git"
+    candidate.write_text("#!/bin/sh\n", encoding="utf-8")
+    candidate.chmod(0o644)
+    monkeypatch.setattr(_guard.shutil, "which", lambda _name: str(candidate))
+
+    assert _guard._resolve_git_executable() is None
+
+
 def test_format_findings_reports_clean_state() -> None:
     assert "OK" in format_findings([])
 

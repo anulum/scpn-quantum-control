@@ -32,7 +32,8 @@ from __future__ import annotations
 import argparse
 import os
 import re
-import subprocess
+import shutil
+import subprocess  # nosec B404
 import sys
 from collections.abc import Iterator
 from dataclasses import dataclass
@@ -68,13 +69,36 @@ class Finding:
     blocking: bool
 
 
-def _repo_root(start: Path) -> Path:
-    result = subprocess.run(
-        ["git", "-C", str(start), "rev-parse", "--show-toplevel"],
+def _resolve_git_executable() -> str | None:
+    """Return an absolute executable path for git when available."""
+    located = shutil.which("git")
+    if located is None:
+        return None
+    try:
+        resolved = Path(located).resolve(strict=True)
+    except (OSError, ValueError):
+        return None
+    if not resolved.is_file() or not os.access(resolved, os.X_OK):
+        return None
+    return str(resolved)
+
+
+def _run_git(git_executable: str, root: Path, *args: str) -> subprocess.CompletedProcess[str]:
+    """Run an admitted git command for ``root`` without shell expansion."""
+    return subprocess.run(  # nosec B603
+        [git_executable, "-C", str(root), *args],
         capture_output=True,
         text=True,
         check=False,
+        shell=False,
     )
+
+
+def _repo_root(start: Path) -> Path:
+    git_executable = _resolve_git_executable()
+    if git_executable is None:
+        return start
+    result = _run_git(git_executable, start, "rev-parse", "--show-toplevel")
     if result.returncode != 0:
         return start
     return Path(result.stdout.strip())
@@ -82,12 +106,10 @@ def _repo_root(start: Path) -> Path:
 
 def tracked_local_only_paths(root: Path) -> list[str]:
     """Return git-tracked paths under the local-only trees (policy violations)."""
-    result = subprocess.run(
-        ["git", "-C", str(root), "ls-files", "--", *LOCAL_ONLY_TREES],
-        capture_output=True,
-        text=True,
-        check=False,
-    )
+    git_executable = _resolve_git_executable()
+    if git_executable is None:
+        return []
+    result = _run_git(git_executable, root, "ls-files", "--", *LOCAL_ONLY_TREES)
     if result.returncode != 0:
         return []
     return [line for line in result.stdout.splitlines() if line]
