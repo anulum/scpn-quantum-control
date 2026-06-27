@@ -61,13 +61,13 @@ def fast_sparse_evolution(
     else:
         psi = np.ascontiguousarray(initial_state, dtype=complex)
 
-    # Rust-accelerated Hamiltonian construction for XY model (delta=0)
-    if _HAS_RUST and delta == 0.0:  # pragma: no cover
-        assert _engine is not None
-        rows, cols, vals = _engine.build_sparse_xy_hamiltonian(K.ravel(), omega, n)
-        rows = np.array(rows)
-        cols = np.array(cols)
-        vals = np.array(vals)
+    # Rust-accelerated Hamiltonian construction for XY model (delta=0).
+    engine = _engine
+    if engine is not None and delta == 0.0:  # pragma: no cover
+        rows, cols, vals = engine.build_sparse_xy_hamiltonian(K.ravel(), omega, n)
+        rows = np.asarray(rows)
+        cols = np.asarray(cols)
+        vals = np.asarray(vals)
         H_sparse = csc_matrix((vals, (rows, cols)), shape=(dim, dim))
     else:
         H_op = knm_to_xxz_hamiltonian(K, omega, delta)

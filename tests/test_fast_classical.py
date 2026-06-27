@@ -9,10 +9,18 @@
 
 from __future__ import annotations
 
+import ast
 import builtins
 import importlib
+import inspect
+import textwrap
+from collections.abc import Sequence
+from types import ModuleType
+from typing import Protocol, cast
 
 import numpy as np
+import pytest
+from numpy.typing import NDArray
 
 import scpn_quantum_control.hardware.fast_classical as fast_classical
 from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
@@ -24,14 +32,32 @@ from scpn_quantum_control.hardware.classical import (
 from scpn_quantum_control.hardware.fast_classical import fast_sparse_evolution
 
 
+class _SparseXYHamiltonianEngine(Protocol):
+    """Runtime protocol for the optional Rust sparse Hamiltonian builder."""
+
+    def build_sparse_xy_hamiltonian(
+        self,
+        k_flat: NDArray[np.float64],
+        omega: NDArray[np.float64],
+        n: int,
+    ) -> tuple[Sequence[int], Sequence[int], Sequence[float]]:
+        """Build sparse XY Hamiltonian triplets."""
+
+
 class TestFastSparseEvolution:
-    def test_missing_rust_engine_uses_python_path(self, monkeypatch):
+    def test_missing_rust_engine_uses_python_path(self, monkeypatch: pytest.MonkeyPatch) -> None:
         real_import = builtins.__import__
 
-        def guarded_import(name, *args, **kwargs):
+        def guarded_import(
+            name: str,
+            globals: dict[str, object] | None = None,
+            locals: dict[str, object] | None = None,
+            fromlist: Sequence[str] = (),
+            level: int = 0,
+        ) -> ModuleType:
             if name == "scpn_quantum_engine":
                 raise ModuleNotFoundError("blocked engine", name="scpn_quantum_engine")
-            return real_import(name, *args, **kwargs)
+            return real_import(name, globals, locals, fromlist, level)
 
         monkeypatch.setattr(builtins, "__import__", guarded_import)
         try:
@@ -47,7 +73,13 @@ class TestFastSparseEvolution:
             importlib.reload(fast_classical)
             globals()["fast_sparse_evolution"] = fast_classical.fast_sparse_evolution
 
-    def test_fast_sparse_matches_exact_evolution(self):
+    def test_fast_sparse_evolution_uses_explicit_runtime_validation(self) -> None:
+        """Optional Rust dispatch must not rely on optimisable assert statements."""
+        source = textwrap.dedent(inspect.getsource(fast_sparse_evolution))
+        syntax_tree = ast.parse(source)
+        assert not any(isinstance(node, ast.Assert) for node in ast.walk(syntax_tree))
+
+    def test_fast_sparse_matches_exact_evolution(self) -> None:
         """Verify that the high-performance sparse engine matches Exact Diagonalization."""
         n = 3
         dt = 0.5
@@ -67,7 +99,7 @@ class TestFastSparseEvolution:
         # Compare Order Parameter R
         assert abs(fast_r - exact_r) < 1e-10
 
-    def test_n_steps_evolution(self):
+    def test_n_steps_evolution(self) -> None:
         """Verify multiple time steps are stored correctly."""
         n = 2
         K = build_knm_paper27(L=n)
@@ -79,14 +111,14 @@ class TestFastSparseEvolution:
         assert res["times"][0] == 0.0
         assert res["times"][-1] == 1.0
 
-    def test_n_qubits(self):
+    def test_n_qubits(self) -> None:
         n = 2
         K = np.ones((n, n))
         omega = np.ones(n)
         res = fast_sparse_evolution(K, omega, t_total=1.0, n_steps=1)
         assert res["n_qubits"] == 2
 
-    def test_unitarity_preserves_norm(self):
+    def test_unitarity_preserves_norm(self) -> None:
         """Evolution under Hermitian H must preserve state norm at every step."""
         n = 3
         K = build_knm_paper27(L=n)
@@ -95,7 +127,7 @@ class TestFastSparseEvolution:
         for psi in res["states"]:
             assert abs(np.vdot(psi, psi).real - 1.0) < 1e-10
 
-    def test_custom_initial_state(self):
+    def test_custom_initial_state(self) -> None:
         """Custom initial state is propagated, not overwritten."""
         n = 2
         K = build_knm_paper27(L=n)
@@ -104,7 +136,7 @@ class TestFastSparseEvolution:
         res = fast_sparse_evolution(K, omega, t_total=0.0, n_steps=1, initial_state=psi0)
         np.testing.assert_allclose(res["states"][0], psi0)
 
-    def test_superposition_initial_state_norm(self):
+    def test_superposition_initial_state_norm(self) -> None:
         """Superposition initial state stays normalised throughout evolution."""
         n = 2
         K = build_knm_paper27(L=n)
@@ -114,7 +146,7 @@ class TestFastSparseEvolution:
         for psi in res["states"]:
             assert abs(np.linalg.norm(psi) - 1.0) < 1e-10
 
-    def test_zero_time_identity(self):
+    def test_zero_time_identity(self) -> None:
         """t=0 evolution returns the initial state unchanged."""
         n = 3
         K = build_knm_paper27(L=n)
@@ -123,7 +155,7 @@ class TestFastSparseEvolution:
         res = fast_sparse_evolution(K, omega, t_total=0.0, n_steps=1, initial_state=psi0)
         np.testing.assert_allclose(res["final_state"], psi0, atol=1e-12)
 
-    def test_time_reversal_symmetry(self):
+    def test_time_reversal_symmetry(self) -> None:
         """Evolving forward then backward recovers the initial state."""
         n = 3
         K = build_knm_paper27(L=n)
@@ -134,7 +166,7 @@ class TestFastSparseEvolution:
         res_bwd = fast_sparse_evolution(K, omega, t_total=-2.0, n_steps=20, initial_state=psi_mid)
         np.testing.assert_allclose(np.abs(res_bwd["final_state"]), np.abs(psi0), atol=1e-8)
 
-    def test_xxz_delta_zero_matches_xy(self):
+    def test_xxz_delta_zero_matches_xy(self) -> None:
         """delta=0 and default (no delta) produce identical evolution."""
         n = 3
         K = build_knm_paper27(L=n)
@@ -143,7 +175,7 @@ class TestFastSparseEvolution:
         res_d0 = fast_sparse_evolution(K, omega, t_total=1.0, n_steps=10, delta=0.0)
         np.testing.assert_allclose(res_default["final_state"], res_d0["final_state"], atol=1e-12)
 
-    def test_xxz_nonzero_delta_differs(self):
+    def test_xxz_nonzero_delta_differs(self) -> None:
         """delta != 0 adds ZZ coupling, so results diverge from XY."""
         n = 2
         K = build_knm_paper27(L=n)
@@ -152,7 +184,7 @@ class TestFastSparseEvolution:
         res_xxz = fast_sparse_evolution(K, omega, t_total=1.0, n_steps=10, delta=1.0)
         assert not np.allclose(res_xy["final_state"], res_xxz["final_state"])
 
-    def test_scaling_n8(self):
+    def test_scaling_n8(self) -> None:
         """N=8 (256-dim Hilbert space) completes and preserves norm."""
         n = 8
         rng = np.random.default_rng(42)
@@ -168,12 +200,10 @@ class TestFastSparseEvolution:
 class TestFastClassicalRustParity:
     """Verify Rust-accelerated Hamiltonian matches Qiskit fallback."""
 
-    def test_rust_hamiltonian_matches_qiskit(self):
+    def test_rust_hamiltonian_matches_qiskit(self) -> None:
         try:
             import scpn_quantum_engine as eng
         except ImportError:
-            import pytest
-
             pytest.skip("Rust engine not available")
 
         from scipy.sparse import csc_matrix
@@ -184,7 +214,8 @@ class TestFastClassicalRustParity:
         omega = OMEGA_N_16[:4]
         n = 4
 
-        rows, cols, vals = eng.build_sparse_xy_hamiltonian(K.ravel(), omega, n)
+        engine = cast(_SparseXYHamiltonianEngine, eng)
+        rows, cols, vals = engine.build_sparse_xy_hamiltonian(K.ravel(), omega, n)
         H_rust = csc_matrix(
             (np.array(vals), (np.array(rows), np.array(cols))),
             shape=(2**n, 2**n),

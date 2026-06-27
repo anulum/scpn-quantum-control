@@ -2059,6 +2059,14 @@ fast_sparse_evolution(K, omega, t_total, n_steps, initial_state=None, delta=0.0)
 ```
 High-performance sparse evolution engine. Bypasses circuit overhead; supports N=20 systems.
 
+For the XY model (`delta == 0.0`), the function uses the optional Rust
+`build_sparse_xy_hamiltonian` backend when the extension is importable at module
+load time. When the extension is absent, or when nonzero XXZ anisotropy is
+requested, it deterministically falls back to the Python/Qiskit
+`knm_to_xxz_hamiltonian` sparse path. Runtime dispatch uses explicit
+`None` checks rather than optimisation-sensitive assertions, so the fallback
+contract is the same under normal and optimised Python execution.
+
 ### `runner.HardwareRunner`
 
 ```python
