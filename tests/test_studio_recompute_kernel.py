@@ -13,7 +13,6 @@ import copy
 
 import numpy as np
 import pytest
-from scpn_studio_platform.exactness import ReproVerdict
 
 from scpn_quantum_control.studio import (
     XY_COMPILE_RECOMPUTE_SCHEMA,
@@ -24,6 +23,12 @@ from scpn_quantum_control.studio import (
     verify_xy_compile_recompute_unit,
     xy_compile_digest_python,
 )
+
+_studio_exactness = pytest.importorskip(
+    "scpn_studio_platform.exactness",
+    reason="Studio recompute exactness package requires Python >=3.12.",
+)
+ReproVerdict = _studio_exactness.ReproVerdict
 
 
 def _problem() -> tuple[np.ndarray, np.ndarray]:
