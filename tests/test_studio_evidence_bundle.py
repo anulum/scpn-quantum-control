@@ -81,7 +81,7 @@ def test_committed_claim_ledger_bundles_validate_through_platform() -> None:
     bundles = build_claim_ledger_bundles()
     validations = validate_bundles(bundles)
 
-    assert len(validations) == 13
+    assert len(validations) == 16
     assert all(validation.verdict.admitted for validation in validations)
     assert all(validation.verdict.rejections == () for validation in validations)
     assert {bundle.schema for bundle in bundles} == {"studio.evidence-replay.v1"}

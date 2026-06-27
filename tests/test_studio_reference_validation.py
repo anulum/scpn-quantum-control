@@ -81,9 +81,9 @@ def test_committed_empty_registry_keeps_real_ledger_unanswered() -> None:
     assert validation.passed
     assert validation.certificate_count == 0
     assert validation.reference_validated_claim_ids == ()
-    assert report.total == 13
+    assert report.total == 16
     assert report.answer_rate == 0.0
-    assert report.grade_distribution == {"bounded-model": 13}
+    assert report.grade_distribution == {"bounded-model": 16}
 
 
 def test_promoted_claim_certificate_advances_frontier() -> None:

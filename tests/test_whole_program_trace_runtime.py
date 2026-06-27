@@ -36,10 +36,10 @@ def _context() -> ExtractedWholeProgramTraceContext:
     return ExtractedWholeProgramTraceContext(2, scalar_factory=TraceADScalar)
 
 
-def test_trace_context_facade_identity_and_factory_binding() -> None:
-    """The facade should expose the extracted context and require a scalar factory."""
+def test_trace_context_factory_binding_uses_public_facade_scalar() -> None:
+    """The extracted context requires and accepts the public facade scalar."""
 
-    assert vars(differentiable)["_WholeProgramTraceContext"] is ExtractedWholeProgramTraceContext
+    assert TraceADScalar is differentiable.TraceADScalar
     context = ExtractedWholeProgramTraceContext(1)
     with pytest.raises(RuntimeError, match="no scalar factory"):
         context.make("parameter", ("theta",), 1.0, np.array([1.0], dtype=np.float64))
