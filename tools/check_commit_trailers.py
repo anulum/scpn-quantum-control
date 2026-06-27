@@ -36,8 +36,10 @@ that cannot be rewritten without violating branch protection.
 
 from __future__ import annotations
 
+import os
 import re
-import subprocess
+import shutil
+import subprocess  # nosec B404
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -149,7 +151,12 @@ def _message_violations(
     matches = BANNED_WORDS_RE.findall(scope)
     if matches:
         seen: set[str] = set()
-        unique = [m for m in matches if not (m in seen or seen.add(m))]
+        unique: list[str] = []
+        for match in matches:
+            if match in seen:
+                continue
+            seen.add(match)
+            unique.append(match)
         where = "message" if check_body_banned else "subject"
         violations.append(f"banned word(s) in {where}: {', '.join(unique)}")
     return violations
@@ -181,17 +188,41 @@ def _commit_msg_hook(path: Path) -> int:
 DEFAULT_AUDIT_RANGE = "v0.9.6..HEAD"
 
 
+def _resolve_git_executable() -> str | None:
+    """Return an absolute executable path for git when it is available."""
+    located = shutil.which("git")
+    if located is None:
+        return None
+    try:
+        resolved = Path(located).resolve(strict=True)
+    except (OSError, ValueError):
+        return None
+    if not resolved.is_file() or not os.access(resolved, os.X_OK):
+        return None
+    return str(resolved)
+
+
+def _run_git(git_executable: str, *args: str) -> subprocess.CompletedProcess[str]:
+    """Run an admitted git command without shell expansion."""
+    return subprocess.run(  # nosec B603
+        [git_executable, *args],
+        capture_output=True,
+        text=True,
+        check=True,
+        shell=False,
+    )
+
+
 def _ci_audit(range_spec: str = DEFAULT_AUDIT_RANGE) -> int:
     # Pipe the SHAs through a second git call that fetches each
     # message cleanly — avoids the newline-quoting pitfalls of
     # `git log --format=%B` piped through a single invocation.
+    git_executable = _resolve_git_executable()
+    if git_executable is None:
+        print("git executable unavailable", file=sys.stderr)
+        return 2
     try:
-        sha_result = subprocess.run(
-            ["git", "rev-list", range_spec],
-            capture_output=True,
-            text=True,
-            check=True,
-        )
+        sha_result = _run_git(git_executable, "rev-list", range_spec)
     except subprocess.CalledProcessError as exc:
         print(f"git rev-list failed: {exc.stderr}", file=sys.stderr)
         return 2
@@ -203,18 +234,8 @@ def _ci_audit(range_spec: str = DEFAULT_AUDIT_RANGE) -> int:
         if short in HISTORICAL_EXEMPT_SHAS:
             exempt_hits.append(short)
             continue
-        msg_result = subprocess.run(
-            ["git", "log", "-1", "--format=%B", sha],
-            capture_output=True,
-            text=True,
-            check=True,
-        )
-        date_result = subprocess.run(
-            ["git", "log", "-1", "--format=%cI", sha],
-            capture_output=True,
-            text=True,
-            check=True,
-        )
+        msg_result = _run_git(git_executable, "log", "-1", "--format=%B", sha)
+        date_result = _run_git(git_executable, "log", "-1", "--format=%cI", sha)
         committed_at = datetime.fromisoformat(date_result.stdout.strip())
         violations = _message_violations(
             msg_result.stdout,
