@@ -29,7 +29,7 @@ Orchestrator state      ──→  orchestrator_adapter  ──→  UPDEPhaseArt
 Quantum observables     ──→  orchestrator_feedback ──→  advance/hold/rollback
 SC bitstreams           ←→   sc_to_quantum         ←→   Ry angles / statevectors
 SNN spike trains        ──→  snn_adapter           ──→  QuantumDenseLayer output
-Loss gradient           ←──  snn_backward          ←──  Parameter-shift rule
+Loss gradient           ←──  snn_backward          ←──  Ry angle parameter shift
 SPN weight matrices     ──→  spn_to_qcircuit       ──→  QuantumCircuit (CRy/anti-CRy)
 SSGF W + theta          ←→   ssgf_adapter          ←→   Trotter evolution
 SSGF W adaptation       ←──  ssgf_w_adapter        ←──  Quantum correlators
@@ -418,34 +418,39 @@ binding mechanism from the Arcane Sapience specification.
 
 ---
 
-### 9. `snn_backward` — Parameter-Shift Gradient
+### 9. `snn_backward` — Ry Angle Parameter-Shift Gradient
 
-Enables end-to-end training of the SNN-quantum hybrid via the parameter-shift
-rule.
+Enables end-to-end training of the SNN-quantum hybrid via the exact Ry
+parameter-shift rule. The ordinary forward path still clamps spike-rate inputs
+to `[0, 1]`, but shifted derivative probes are evaluated in angle space and are
+not clipped back to the spike-rate interval.
 
 #### Gradient Chain
 
 ```
-SNN forward → spike rates → theta (Ry angles) → quantum evolution → y
-                                                                    ↓
-Loss L(y, target) ← dL/dy ← dy/dtheta (param-shift) ← dtheta/d(rates) = pi
+SNN forward -> spike rates -> theta (Ry angles) -> quantum evolution -> y
+                                                                    |
+Loss L(y, target) <- dL/dy <- dy/dtheta (Ry shift) <- dtheta/d(rates) = pi
 ```
 
-#### `parameter_shift_gradient(layer, input_values, target, shift=0.25)`
+#### `parameter_shift_gradient(layer, input_values, target, shift=pi/2)`
 
-Computes `dL/d(input)` for MSE loss:
+Computes `dL/dtheta` and `dL/d(spike_rate)` for MSE loss:
 
 ```
-dL/dtheta_k = [L(theta_k + pi/4) - L(theta_k - pi/4)] / (actual_shift)
-dL/d(spike_rate) = dL/dtheta * pi
+dy/dtheta_k = [y(theta_k + pi/2) - y(theta_k - pi/2)] / 2
+dL/dtheta_k = dot(dL/dy, dy/dtheta_k)
+dL/d(spike_rate_k) = dL/dtheta_k * pi
 ```
 
 Cost: 2 quantum forward passes per parameter (2n total for n inputs).
 
 Returns `BackwardResult`: `grad_params`, `grad_spikes`, `loss`, `n_evaluations`.
 
-Boundary handling: shift is clamped to [0, 1] value range to prevent
-invalid rotation angles. If both bounds are hit, gradient is zero.
+Boundary handling: the base spike-rate input is clamped before conversion to
+theta, but the plus/minus derivative probes are not clamped. If a caller passes
+a singular custom shift where `sin(shift)` is effectively zero, the derivative
+coefficient is zero.
 
 ---
 

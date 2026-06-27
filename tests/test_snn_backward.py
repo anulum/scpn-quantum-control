@@ -19,14 +19,14 @@ from scpn_quantum_control.qsnn.qlayer import QuantumDenseLayer
 
 
 class TestParameterShiftGradient:
-    def test_returns_result(self):
+    def test_returns_result(self) -> None:
         layer = QuantumDenseLayer(n_neurons=2, n_inputs=2)
         vals = np.array([0.5, 0.3])
         target = np.array([0.8, 0.2])
         result = parameter_shift_gradient(layer, vals, target)
         assert isinstance(result, BackwardResult)
 
-    def test_grad_shape(self):
+    def test_grad_shape(self) -> None:
         layer = QuantumDenseLayer(n_neurons=3, n_inputs=3)
         vals = np.array([0.5, 0.3, 0.7])
         target = np.array([0.5, 0.5, 0.5])
@@ -34,14 +34,14 @@ class TestParameterShiftGradient:
         assert result.grad_params.shape == (3,)
         assert result.grad_spikes.shape == (3,)
 
-    def test_loss_non_negative(self):
+    def test_loss_non_negative(self) -> None:
         layer = QuantumDenseLayer(n_neurons=2, n_inputs=2)
         vals = np.array([0.5, 0.3])
         target = np.array([0.5, 0.5])
         result = parameter_shift_gradient(layer, vals, target)
         assert result.loss >= 0
 
-    def test_n_evaluations(self):
+    def test_n_evaluations(self) -> None:
         """2 per parameter."""
         layer = QuantumDenseLayer(n_neurons=3, n_inputs=3)
         vals = np.array([0.5, 0.3, 0.7])
@@ -49,7 +49,7 @@ class TestParameterShiftGradient:
         result = parameter_shift_gradient(layer, vals, target)
         assert result.n_evaluations == 6  # 2 × 3
 
-    def test_grad_finite(self):
+    def test_grad_finite(self) -> None:
         layer = QuantumDenseLayer(n_neurons=2, n_inputs=2)
         vals = np.array([0.5, 0.3])
         target = np.array([0.8, 0.2])
@@ -57,15 +57,15 @@ class TestParameterShiftGradient:
         assert np.all(np.isfinite(result.grad_params))
         assert np.all(np.isfinite(result.grad_spikes))
 
-    def test_grad_spikes_scaled(self):
-        """grad_spikes = grad_params × π."""
+    def test_grad_spikes_scaled(self) -> None:
+        """grad_spikes = grad_params times pi."""
         layer = QuantumDenseLayer(n_neurons=2, n_inputs=2)
         vals = np.array([0.5, 0.3])
         target = np.array([0.8, 0.2])
         result = parameter_shift_gradient(layer, vals, target)
         np.testing.assert_allclose(result.grad_spikes, result.grad_params * np.pi, atol=1e-12)
 
-    def test_zero_loss_small_gradient(self):
+    def test_zero_loss_small_gradient(self) -> None:
         """If output matches target, gradients should be small."""
         layer = QuantumDenseLayer(n_neurons=2, n_inputs=2)
         vals = np.array([0.0, 0.0])
@@ -76,7 +76,7 @@ class TestParameterShiftGradient:
         assert result.loss < 1e-10
 
 
-def test_gradient_shape_matches_params():
+def test_gradient_shape_matches_params() -> None:
     layer = QuantumDenseLayer(n_neurons=2, n_inputs=3)
     vals = np.array([0.5, 0.3, 0.8])
     target = np.array([0.7, 0.2])
@@ -85,7 +85,7 @@ def test_gradient_shape_matches_params():
     assert result.grad_params.ndim == 1
 
 
-def test_gradient_finite():
+def test_gradient_finite() -> None:
     layer = QuantumDenseLayer(n_neurons=2, n_inputs=2)
     vals = np.array([0.5, 0.5])
     target = np.array([0.8, 0.2])
@@ -93,7 +93,7 @@ def test_gradient_finite():
     assert np.all(np.isfinite(result.grad_params))
 
 
-def test_loss_nonnegative():
+def test_loss_nonnegative() -> None:
     layer = QuantumDenseLayer(n_neurons=2, n_inputs=2)
     vals = np.array([0.5, 0.5])
     target = np.array([0.5, 0.5])
@@ -101,7 +101,7 @@ def test_loss_nonnegative():
     assert result.loss >= 0
 
 
-def test_gradient_3x3():
+def test_gradient_3x3() -> None:
     layer = QuantumDenseLayer(n_neurons=3, n_inputs=3)
     vals = np.array([0.1, 0.5, 0.9])
     target = np.array([0.5, 0.5, 0.5])
@@ -109,7 +109,7 @@ def test_gradient_3x3():
     assert len(result.grad_params) > 0
 
 
-def test_boundary_zero_shift():
+def test_boundary_zero_shift() -> None:
     """When input is at 0.0 with large shift, vals_minus clips to 0.0 and
     vals_plus goes up, but both should still yield finite gradients.
     When actual_shift ≈ 0, the gradient falls back to zeros."""
@@ -124,3 +124,48 @@ def test_boundary_zero_shift():
     result = parameter_shift_gradient(layer, np.array([1.0, 1.0]), np.array([0.5, 0.5]), shift=0.0)
     # With shift=0, all gradients should be 0
     np.testing.assert_allclose(result.grad_params, 0.0, atol=1e-12)
+
+
+def test_single_input_gradient_matches_exact_ry_parameter_shift() -> None:
+    """One-input bridge gradient matches the analytic Ry derivative."""
+    weight = 0.6
+    input_value = 0.3
+    target_value = 0.1
+    layer = QuantumDenseLayer(
+        n_neurons=1,
+        n_inputs=1,
+        weights=np.array([[weight]], dtype=np.float64),
+    )
+
+    result = parameter_shift_gradient(
+        layer,
+        np.array([input_value], dtype=np.float64),
+        np.array([target_value], dtype=np.float64),
+    )
+
+    theta = np.pi * input_value
+    synapse_probability = np.sin(np.pi * weight / 2.0) ** 2
+    output_probability = np.sin(theta / 2.0) ** 2 * synapse_probability
+    loss_gradient = 2.0 * (output_probability - target_value)
+    expected_dy_dtheta = 0.5 * np.sin(theta) * synapse_probability
+    expected_grad_theta = loss_gradient * expected_dy_dtheta
+
+    np.testing.assert_allclose(result.grad_params, [expected_grad_theta], atol=1e-12)
+    np.testing.assert_allclose(result.grad_spikes, [expected_grad_theta * np.pi], atol=1e-12)
+
+
+def test_parameter_shift_does_not_clip_shifted_boundary_angles() -> None:
+    """At theta=pi the true Ry derivative is zero despite shifted probes."""
+    layer = QuantumDenseLayer(
+        n_neurons=1,
+        n_inputs=1,
+        weights=np.array([[0.6]], dtype=np.float64),
+    )
+
+    result = parameter_shift_gradient(
+        layer,
+        np.array([1.0], dtype=np.float64),
+        np.array([0.0], dtype=np.float64),
+    )
+
+    np.testing.assert_allclose(result.grad_params, [0.0], atol=1e-12)

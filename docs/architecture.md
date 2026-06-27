@@ -225,7 +225,7 @@ graph LR
 bridge/                                    ← Foundation: K_nm → quantum objects
 ├── knm_hamiltonian.py                       Canonical K_nm data, XY + XXZ Hamiltonians, ansatz
 ├── snn_adapter.py                           sc-neurocore ArcaneNeuron bridge (optional)
-├── snn_backward.py                          Parameter-shift gradient through quantum layer
+├── snn_backward.py                          Ry angle parameter-shift gradient through quantum layer
 ├── ssgf_adapter.py                          SSGF geometry engine bridge (optional)
 ├── ssgf_w_adapter.py                        Correlator-weighted geometry W update
 ├── control_plasma_knm.py                    scpn-control plasma K_nm bridge (optional)
@@ -441,7 +441,7 @@ graph LR
 | `orchestrator_adapter` | scpn-phase-orchestrator | State payload (regime, phases) | UPDEPhaseArtifact |
 | `orchestrator_feedback` | scpn-phase-orchestrator | Quantum $R$, fidelity | Advance/hold/rollback |
 | `control_plasma_knm` | scpn-control | Plasma-native $K_{nm}$ | Standard $K_{nm}$ array |
-| `snn_backward` | sc-neurocore | Loss gradient | Parameter-shift $\nabla\theta$ |
+| `snn_backward` | sc-neurocore | Loss gradient | Ry angle parameter-shift $\nabla\theta$ |
 
 ## Data Flow: Knm → Hamiltonian → Circuit → Measurement → R
 

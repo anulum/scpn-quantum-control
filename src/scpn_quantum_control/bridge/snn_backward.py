@@ -5,24 +5,24 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Snn Backward
-"""SNN backward pass: parameter-shift gradient through quantum layer.
+"""SNN backward pass: Ry parameter-shift gradient through the quantum layer.
 
 The forward pass (snn_adapter.py) maps spike trains → quantum rotation
 angles → quantum evolution → measurement → SNN currents.
 
-The backward pass computes dL/dθ (gradient of a loss function w.r.t.
-quantum circuit parameters) via the parameter-shift rule:
+The backward pass computes dL/dtheta (gradient of a loss function with respect
+to input Ry angles) via the exact Ry parameter-shift rule:
 
-    dL/dθ_k = [L(θ_k + π/2) - L(θ_k - π/2)] / 2
+    dy/dtheta_k = [y(theta_k + pi/2) - y(theta_k - pi/2)] / 2
 
 For the SNN-quantum hybrid:
-    1. SNN forward → spike rates → θ (rotation angles)
-    2. Quantum forward → measurements → y (output)
+    1. SNN forward -> spike rates -> theta (Ry rotation angles)
+    2. Quantum forward -> measurements -> y (output)
     3. Loss L(y, target)
     4. dL/dy (from loss)
     5. dy/dθ via parameter-shift (this module)
-    6. dθ/d(spike_rates) = π (linear mapping)
-    7. Chain: dL/d(spike_rates) = dL/dy × dy/dθ × π
+    6. dtheta/d(spike_rates) = pi (linear mapping)
+    7. Chain: dL/d(spike_rates) = dL/dy * dy/dtheta * pi
 
 This enables end-to-end training of the SNN-quantum hybrid.
 """
@@ -41,28 +41,23 @@ from ..qsnn.qlayer import QuantumDenseLayer
 class BackwardResult:
     """SNN-quantum backward pass result."""
 
-    grad_params: NDArray[np.float64]  # dL/dθ for quantum circuit parameters
-    grad_spikes: NDArray[np.float64]  # dL/d(spike_rates) for SNN
+    grad_params: NDArray[np.float64]  # dL/dtheta for Ry input angles
+    grad_spikes: NDArray[np.float64]  # dL/d(spike_rates) for the SNN bridge
     loss: float
-    n_evaluations: int  # 2 per parameter (parameter-shift)
+    n_evaluations: int  # two shifted quantum evaluations per input angle
 
 
-def _quantum_forward(
+def _quantum_forward_angles(
     layer: QuantumDenseLayer,
-    input_values: NDArray[np.float64],
+    angles: NDArray[np.float64],
 ) -> NDArray[np.float64]:
-    """Run quantum layer forward and return neuron P(|1>) probabilities.
-
-    Rebuilds the circuit internally to get continuous probabilities
-    (not thresholded spikes).
-    """
+    """Run the quantum layer for raw Ry angles and return P(|1>) probabilities."""
     from qiskit import QuantumCircuit
     from qiskit.quantum_info import Statevector as SV
 
     qc = QuantumCircuit(layer.n_qubits)
-    for i, val in enumerate(input_values):
-        theta = np.pi * float(np.clip(val, 0.0, 1.0))
-        qc.ry(theta, i)
+    for i, angle in enumerate(angles):
+        qc.ry(float(angle), i)
     for n_idx in range(layer.n_neurons):
         neuron_qubit = layer.n_inputs + n_idx
         for i in range(layer.n_inputs):
@@ -77,6 +72,20 @@ def _quantum_forward(
         probs[n_idx] = marginal[1]
     result: NDArray[np.float64] = probs
     return result
+
+
+def _quantum_forward(
+    layer: QuantumDenseLayer,
+    input_values: NDArray[np.float64],
+) -> NDArray[np.float64]:
+    """Run clamped value-domain quantum forward and return probabilities.
+
+    This is the ordinary bridge forward path: SNN spike-rate values are clamped
+    to ``[0, 1]`` and converted to Ry angles. Parameter-shift evaluations use
+    :func:`_quantum_forward_angles` so shifted angles are not clamped.
+    """
+    angles = np.pi * np.clip(input_values, 0.0, 1.0)
+    return _quantum_forward_angles(layer, angles.astype(np.float64, copy=False))
 
 
 def _mse_loss(y: NDArray[np.float64], target: NDArray[np.float64]) -> float:
@@ -94,15 +103,15 @@ def parameter_shift_gradient(
     layer: QuantumDenseLayer,
     input_values: NDArray[np.float64],
     target: NDArray[np.float64],
-    shift: float = 0.25,
+    shift: float = np.pi / 2.0,
 ) -> BackwardResult:
-    """Compute dL/d(input) via parameter-shift rule.
+    """Compute SNN bridge gradients via the exact Ry parameter-shift rule.
 
     Args:
         layer: quantum dense layer
         input_values: input values in [0, 1] from SNN spike rates
         target: target output for MSE loss
-        shift: value-space shift (0.25 → π/4 angle shift for Ry)
+        shift: angle-domain shift in radians; ``pi / 2`` is the exact Ry rule
     """
     y_forward = _quantum_forward(layer, input_values)
     loss = _mse_loss(y_forward, target)
@@ -111,26 +120,23 @@ def parameter_shift_gradient(
     n_params = len(input_values)
     grad_params = np.zeros(n_params)
     n_evals = 0
+    base_angles = np.pi * np.clip(input_values, 0.0, 1.0)
+    coefficient = 0.0 if abs(np.sin(shift)) <= 1e-12 else 1.0 / (2.0 * np.sin(shift))
 
     for k in range(n_params):
-        vals_plus = input_values.copy()
-        vals_plus[k] = min(vals_plus[k] + shift, 1.0)
-        vals_minus = input_values.copy()
-        vals_minus[k] = max(vals_minus[k] - shift, 0.0)
+        angles_plus = base_angles.copy()
+        angles_plus[k] += shift
+        angles_minus = base_angles.copy()
+        angles_minus[k] -= shift
 
-        y_plus = _quantum_forward(layer, vals_plus)
-        y_minus = _quantum_forward(layer, vals_minus)
+        y_plus = _quantum_forward_angles(layer, angles_plus.astype(np.float64, copy=False))
+        y_minus = _quantum_forward_angles(layer, angles_minus.astype(np.float64, copy=False))
 
-        actual_shift = vals_plus[k] - vals_minus[k]
-        if actual_shift > 1e-10:
-            dy_dv = (y_plus - y_minus) / actual_shift
-        else:
-            dy_dv = np.zeros_like(y_plus)
-
-        grad_params[k] = float(np.dot(dl_dy, dy_dv))
+        dy_dtheta = coefficient * (y_plus - y_minus)
+        grad_params[k] = float(np.dot(dl_dy, dy_dtheta))
         n_evals += 2
 
-    # Gradient w.r.t. spike rates: input_values = spike_rates directly
+    # input_values are spike rates and theta = pi * spike_rate.
     grad_spikes = grad_params * np.pi
 
     return BackwardResult(
