@@ -33,8 +33,9 @@ import importlib
 import importlib.metadata
 import os
 import platform
+import shutil
 import socket
-import subprocess
+import subprocess  # nosec B404
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -45,17 +46,35 @@ _REPO_ROOT = Path(__file__).resolve().parents[3]
 __all__ = ["capture_provenance"]
 
 
-def _git(*args: str) -> str:
+def _resolve_git_executable() -> str | None:
+    """Return the absolute git executable path when git is available."""
+    located = shutil.which("git")
+    if located is None:
+        return None
     try:
-        out = subprocess.run(
-            ["git", "-C", str(_REPO_ROOT), *args],
+        resolved = Path(located).resolve(strict=True)
+    except (OSError, ValueError):
+        return None
+    if not resolved.is_file() or not os.access(resolved, os.X_OK):
+        return None
+    return str(resolved)
+
+
+def _git(*args: str) -> str:
+    git_executable = _resolve_git_executable()
+    if git_executable is None:
+        return "unknown"
+    try:
+        out = subprocess.run(  # nosec B603
+            [git_executable, "-C", str(_REPO_ROOT), *args],
             capture_output=True,
             text=True,
             timeout=2.0,
             check=True,
+            shell=False,
         )
         return out.stdout.strip()
-    except (subprocess.CalledProcessError, subprocess.TimeoutExpired, FileNotFoundError):
+    except (OSError, subprocess.CalledProcessError, subprocess.TimeoutExpired):
         return "unknown"
 
 

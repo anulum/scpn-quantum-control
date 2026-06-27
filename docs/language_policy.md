@@ -190,7 +190,7 @@ Is the module performing numerical compute or structured parsing?
 | `order_parameter` | sum of cis(θ_k) over N values | Rust (measured), Julia provisional | see §"Multi-language accel chain" in `docs/pipeline_performance.md` |
 | `_xy_hamiltonian_pl` (PennyLane) | Pauli string assembly + coefficient lookup | Python only | Pennylane's own kernel is already compiled; re-wrapping is pure overhead |
 | DLA commutator closure | dense matrix product over 2^(2N-1) basis | Rust today; Julia + GPU candidates for large N | `feedback_rust_everything.md` covers exactly this |
-| `capture_provenance` | dict assembly + git subprocess | Python only | I/O adapter; no compute |
+| `capture_provenance` | dict assembly + admitted absolute-path git subprocess | Python only | I/O adapter; no compute |
 
 ## Tier-specific guidance
 
