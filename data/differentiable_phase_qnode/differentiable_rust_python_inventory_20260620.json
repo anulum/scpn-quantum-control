@@ -506,11 +506,11 @@
     {
       "benchmark_status": "blocked",
       "benchmark_surface": [
-        "catalyst_comparison_missing",
+        "catalyst_runner_missing",
         "diff-sota-scorecard-20260620"
       ],
       "blockers": [
-        "dedicated Catalyst comparison row is missing",
+        "configured Catalyst qjit/MLIR/QIR runner evidence is missing",
         "compiled quantum-classical workflow parity is unimplemented"
       ],
       "claim_boundary": "Differentiable Rust/Python surface inventory for rustification planning; no broad rustification promotion, provider execution, hardware execution, LLVM/JIT execution, GPU execution, or isolated benchmark claim is implied.",
@@ -527,21 +527,21 @@
         "data/differentiable_phase_qnode/differentiable_rust_python_inventory_20260620.md"
       ],
       "docstring_status": "complete_for_inventory_surface",
-      "mypy_target": "src/scpn_quantum_control/compiler/mlir.py",
+      "mypy_target": "src/scpn_quantum_control/benchmarks/differentiable_external_comparison.py",
       "next_hardening_rounds": [
         "Round 0 surface integrity and maintainability",
         "Round 5 Rustification readiness"
       ],
-      "owner_module": "src/scpn_quantum_control/compiler/mlir.py",
-      "polyglot_status": "missing",
+      "owner_module": "src/scpn_quantum_control/benchmarks/differentiable_external_comparison.py",
+      "polyglot_status": "partial",
       "polyglot_surface": [
         "docs/differentiable_programming.md"
       ],
       "public_api": [
-        "compile_compiler_ad_transform_plan_to_mlir"
+        "run_differentiable_external_comparison_suite"
       ],
       "python_surface": [
-        "src/scpn_quantum_control/compiler/mlir.py",
+        "src/scpn_quantum_control/benchmarks/differentiable_external_comparison.py",
         "src/scpn_quantum_control/differentiable_sota_scorecard.py",
         "src/scpn_quantum_control/differentiable_api.py"
       ],
@@ -552,10 +552,10 @@
       "rustification_ready": false,
       "surface_id": "catalyst_compiler_comparison",
       "test_surface": [
-        "tests/test_phase_qnode_compiler_lowering.py",
+        "tests/test_differentiable_external_comparisons.py",
         "tests/test_differentiable_sota_scorecard.py"
       ],
-      "title": "Catalyst-style compiler workflow comparison placeholder"
+      "title": "Catalyst-style compiler workflow comparison row"
     },
     {
       "benchmark_status": "functional_non_isolated",
@@ -622,84 +622,5 @@
   ],
   "rustification_ready": false,
   "schema": "scpn_qc_differentiable_rust_python_inventory_v1",
-  "total_surface_count": 10,
-  "validation": {
-    "checked_claim_ids": [
-      "differentiable_sota_scorecard",
-      "external_framework_comparison",
-      "module_hardening_audit",
-      "phase_qnode_claim_boundary",
-      "support_surface_alignment"
-    ],
-    "checked_paths": [
-      "README.md",
-      "data/differentiable_phase_qnode/claim_ledger.md",
-      "data/differentiable_phase_qnode/differentiable_rust_python_inventory_20260620.md",
-      "data/differentiable_phase_qnode/differentiable_sota_scorecard_20260620.md",
-      "data/differentiable_phase_qnode/enzyme_mlir_maturity_audit_20260616.md",
-      "docs/differentiable_api.md",
-      "docs/differentiable_programming.md",
-      "docs/qpu_system_capability_dossier.md",
-      "docs/quantum_gradients.md",
-      "docs/rust_engine.md",
-      "scpn_quantum_engine/src/compiler_ad.rs",
-      "scpn_quantum_engine/src/lib.rs",
-      "scpn_quantum_engine/src/program_ad_ir.rs",
-      "scpn_quantum_engine/tests/program_ad_ir.rs",
-      "src/scpn_quantum_control/benchmarks/differentiable_external_comparison.py",
-      "src/scpn_quantum_control/compiler/mlir.py",
-      "src/scpn_quantum_control/differentiable.py",
-      "src/scpn_quantum_control/differentiable_api.py",
-      "src/scpn_quantum_control/differentiable_claim_ledger.py",
-      "src/scpn_quantum_control/differentiable_module_hardening_audit.py",
-      "src/scpn_quantum_control/differentiable_sota_scorecard.py",
-      "src/scpn_quantum_control/phase/hardware_gradient_campaign.py",
-      "src/scpn_quantum_control/phase/hardware_gradient_policy.py",
-      "src/scpn_quantum_control/phase/pennylane_bridge.py",
-      "src/scpn_quantum_control/phase/pennylane_import.py",
-      "src/scpn_quantum_control/phase/provider_hardware_gradient_audit.py",
-      "src/scpn_quantum_control/phase/qiskit_bridge.py",
-      "src/scpn_quantum_control/phase/qnode_tape.py",
-      "src/scpn_quantum_control/phase/qnode_transforms.py",
-      "src/scpn_quantum_control/phase/qnode_vector_transforms.py",
-      "src/scpn_quantum_control/whole_program_frontend.py",
-      "src/scpn_quantum_engine.pyi",
-      "tests/test_differentiable_api.py",
-      "tests/test_differentiable_claim_ledger.py",
-      "tests/test_differentiable_external_comparisons.py",
-      "tests/test_differentiable_module_hardening_audit.py",
-      "tests/test_differentiable_sota_scorecard.py",
-      "tests/test_phase_hardware_gradient_campaign.py",
-      "tests/test_phase_hardware_gradient_policy.py",
-      "tests/test_phase_pennylane_bridge.py",
-      "tests/test_phase_pennylane_import.py",
-      "tests/test_phase_provider_hardware_gradient_audit.py",
-      "tests/test_phase_qiskit_bridge.py",
-      "tests/test_phase_qnode_compiler_lowering.py",
-      "tests/test_phase_qnode_rust_parity.py",
-      "tests/test_phase_qnode_tape.py",
-      "tests/test_phase_qnode_transforms.py",
-      "tests/test_phase_qnode_vector_transforms.py",
-      "tests/test_program_ad_effect_ir.py",
-      "tests/test_program_ad_rust_bridge.py",
-      "tests/test_rust_new_functions.py",
-      "tests/test_whole_program_ad_contracts.py",
-      "tests/test_whole_program_frontend.py"
-    ],
-    "checked_surface_ids": [
-      "unified_differentiable_api",
-      "rust_program_ad_ir",
-      "whole_program_frontend",
-      "rust_compiler_ad_primitives",
-      "differentiable_sota_scorecard",
-      "pennylane_plugin_matrix",
-      "qiskit_runtime_provider_gradients",
-      "hardware_gradient_campaigns",
-      "catalyst_compiler_comparison",
-      "enzyme_mlir_compiler_ad"
-    ],
-    "claim_boundary": "Rust/Python inventory validation only; validates declared surfaces, claim-ledger references, and readiness invariants without promoting provider, hardware, GPU, LLVM/JIT, or isolated benchmark claims.",
-    "errors": [],
-    "passed": true
-  }
+  "total_surface_count": 10
 }

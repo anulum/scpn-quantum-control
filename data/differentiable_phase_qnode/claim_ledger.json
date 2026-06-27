@@ -67,7 +67,7 @@
     },
     {
       "claim_id": "external_framework_comparison",
-      "claim_text": "The bounded Phase-QNode objective has explicit comparison rows for JAX, PyTorch, TensorFlow, PennyLane, and optional Enzyme.",
+      "claim_text": "The bounded Phase-QNode objective has explicit comparison rows for JAX, PyTorch, TensorFlow, PennyLane, optional Enzyme, and optional Catalyst.",
       "implementation_surface": [
         "src/scpn_quantum_control/benchmarks/differentiable_external_comparison.py"
       ],
@@ -86,7 +86,7 @@
       ],
       "known_gaps": [
         "Missing framework dependencies are hard_gap rows.",
-        "Unconfigured LLVM/Enzyme tooling remains dependency_missing; configured runners must pass strict JSON, timeout, toolchain, and correctness gates."
+        "Unconfigured LLVM/Enzyme or Catalyst tooling remains dependency_missing; configured runners must pass strict JSON, timeout, toolchain, and correctness gates."
       ],
       "promotion_status": "SOTA-candidate",
       "claim_boundary": "External comparison rows are bounded CPU diagnostic evidence only; they do not claim provider or QPU execution."

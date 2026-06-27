@@ -100,7 +100,6 @@ class DifferentiableRustPythonInventoryRow:
 
     def __post_init__(self) -> None:
         """Validate one inventory row before it can enter governance artefacts."""
-
         if self.classification not in REQUIRED_INVENTORY_CLASSIFICATIONS:
             raise ValueError(f"unknown inventory classification: {self.classification}")
         for field_name in (
@@ -131,7 +130,6 @@ class DifferentiableRustPythonInventoryRow:
     @property
     def rustification_ready(self) -> bool:
         """Return whether this row can be used as a Rust promotion input."""
-
         return (
             self.classification == "rust_backed"
             and self.rust_parity_status == "complete"
@@ -142,7 +140,6 @@ class DifferentiableRustPythonInventoryRow:
 
     def to_dict(self) -> dict[str, object]:
         """Return a JSON-ready inventory row."""
-
         return {
             "surface_id": self.surface_id,
             "title": self.title,
@@ -183,7 +180,6 @@ class DifferentiableRustPythonInventory:
 
     def to_dict(self) -> dict[str, object]:
         """Return a JSON-ready inventory payload."""
-
         return {
             "schema": self.schema,
             "artifact_id": self.artifact_id,
@@ -209,7 +205,6 @@ class DifferentiableRustPythonInventoryValidation:
 
     def to_dict(self) -> dict[str, object]:
         """Return JSON-ready inventory validation evidence."""
-
         return {
             "passed": self.passed,
             "errors": list(self.errors),
@@ -226,7 +221,6 @@ def run_differentiable_rust_python_inventory(
     ledger_path: Path = DEFAULT_LEDGER_PATH,
 ) -> DifferentiableRustPythonInventory:
     """Build the deterministic rustification inventory from committed surfaces."""
-
     loaded_ledger = load_differentiable_claim_ledger(ledger_path) if ledger is None else ledger
     claim_rows = {row.claim_id: row for row in loaded_ledger.rows}
     rows = _default_inventory_rows(claim_rows)
@@ -256,7 +250,6 @@ def validate_differentiable_rust_python_inventory(
     repo_root: Path = REPO_ROOT,
 ) -> DifferentiableRustPythonInventoryValidation:
     """Validate rustification inventory paths, claims, and readiness invariants."""
-
     loaded_ledger = load_differentiable_claim_ledger(ledger_path) if ledger is None else ledger
     claim_rows = {row.claim_id: row for row in loaded_ledger.rows}
     errors: list[str] = []
@@ -309,7 +302,6 @@ def render_differentiable_rust_python_inventory_markdown(
     inventory: DifferentiableRustPythonInventory,
 ) -> str:
     """Render a reviewer-facing Markdown summary of the Rust/Python inventory."""
-
     lines = [
         "<!--",
         "SPDX-License-Identifier: AGPL-3.0-or-later",
@@ -350,7 +342,6 @@ def render_differentiable_rust_python_inventory_markdown(
         "`rustification_ready` does not by itself promote public performance, "
         "provider, hardware, GPU, LLVM/JIT, or isolated benchmark claims."
     )
-    lines.append("")
     return "\n".join(lines)
 
 
@@ -562,22 +553,22 @@ def _default_inventory_rows(
         ),
         _inventory_row(
             "catalyst_compiler_comparison",
-            "Catalyst-style compiler workflow comparison placeholder",
+            "Catalyst-style compiler workflow comparison row",
             "deprecate_before_promotion",
-            "src/scpn_quantum_control/compiler/mlir.py",
-            ("compile_compiler_ad_transform_plan_to_mlir",),
-            ("src/scpn_quantum_control/compiler/mlir.py",),
+            "src/scpn_quantum_control/benchmarks/differentiable_external_comparison.py",
+            ("run_differentiable_external_comparison_suite",),
+            ("src/scpn_quantum_control/benchmarks/differentiable_external_comparison.py",),
             ("scpn_quantum_engine/src/compiler_ad.rs",),
             ("docs/differentiable_programming.md",),
-            ("tests/test_phase_qnode_compiler_lowering.py",),
+            ("tests/test_differentiable_external_comparisons.py",),
             ("docs/differentiable_programming.md", "docs/differentiable_api.md"),
-            ("catalyst_comparison_missing",),
+            ("catalyst_runner_missing",),
             ("differentiable_sota_scorecard",),
             "blocked",
             "partial",
-            "missing",
+            "partial",
             (
-                "dedicated Catalyst comparison row is missing",
+                "configured Catalyst qjit/MLIR/QIR runner evidence is missing",
                 "compiled quantum-classical workflow parity is unimplemented",
             ),
         ),

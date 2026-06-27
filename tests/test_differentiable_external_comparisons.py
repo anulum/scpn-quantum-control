@@ -10,9 +10,12 @@
 from __future__ import annotations
 
 import json
+from pathlib import Path
 from types import SimpleNamespace
+from typing import Any
 
 import numpy as np
+import pytest
 
 import scpn_quantum_control.benchmarks.differentiable_external_comparison as comparison
 from scpn_quantum_control.benchmarks.differentiable_external_comparison import (
@@ -27,16 +30,21 @@ from scpn_quantum_control.benchmarks.differentiable_external_comparison import (
     write_differentiable_external_comparison,
     write_identical_circuit_gradient_comparison,
 )
+from scpn_quantum_control.phase.qnode_circuit import (
+    execute_phase_qnode_circuit,
+    parameter_shift_phase_qnode_gradient,
+)
 
 
 def test_external_comparison_suite_records_success_rows_and_enzyme_hard_gap(
-    monkeypatch,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     monkeypatch.setattr(comparison, "is_phase_jax_available", lambda: True)
     monkeypatch.setattr(comparison, "is_phase_torch_available", lambda: True)
     monkeypatch.setattr(comparison, "is_phase_tensorflow_available", lambda: True)
     monkeypatch.setattr(comparison, "is_phase_pennylane_available", lambda: True)
     monkeypatch.setattr(comparison, "_enzyme_runner_configured", lambda: False)
+    monkeypatch.setattr(comparison, "_catalyst_runner_configured", lambda: False)
     monkeypatch.setattr(
         comparison,
         "_run_jax_reference",
@@ -73,15 +81,23 @@ def test_external_comparison_suite_records_success_rows_and_enzyme_hard_gap(
     rows = run_differentiable_external_comparison_suite()
     by_backend = {row.backend: row for row in rows if row.case_id == "bounded_phase_objective"}
 
-    assert set(by_backend) == {"jax", "pytorch", "tensorflow", "pennylane", "enzyme"}
+    assert set(by_backend) == {
+        "jax",
+        "pytorch",
+        "tensorflow",
+        "pennylane",
+        "enzyme",
+        "catalyst",
+    }
     for backend in ("jax", "pytorch", "tensorflow", "pennylane"):
-        assert by_backend[backend].status == "success"
-        assert by_backend[backend].failure_class is None
-        assert by_backend[backend].value_error <= 1e-12
-        assert by_backend[backend].gradient_error <= 1e-12
-        assert by_backend[backend].artifact_fields_ready
-        assert by_backend[backend].source_of_truth == "scpn_reference"
-        assert by_backend[backend].dependency_versions
+        row = by_backend[backend]
+        assert row.status == "success"
+        assert row.failure_class is None
+        assert row.value_error is not None and row.value_error <= 1e-12
+        assert row.gradient_error is not None and row.gradient_error <= 1e-12
+        assert row.artifact_fields_ready
+        assert row.source_of_truth == "scpn_reference"
+        assert row.dependency_versions
     assert by_backend["jax"].batching_support == "vmap"
     assert by_backend["pytorch"].batching_support == "torch.func.vmap"
     assert by_backend["tensorflow"].transform_support == "GradientTape"
@@ -89,6 +105,9 @@ def test_external_comparison_suite_records_success_rows_and_enzyme_hard_gap(
     assert by_backend["enzyme"].status == "hard_gap"
     assert by_backend["enzyme"].failure_class == "dependency_missing"
     assert "LLVM/Enzyme" in str(by_backend["enzyme"].setup_instructions)
+    assert by_backend["catalyst"].status == "hard_gap"
+    assert by_backend["catalyst"].failure_class == "dependency_missing"
+    assert "Catalyst" in str(by_backend["catalyst"].setup_instructions)
     failure_classes = {row.failure_class for row in rows if row.status == "hard_gap"}
     assert {
         "unsupported_batching",
@@ -124,7 +143,7 @@ def test_identical_circuit_gradient_comparison_records_live_backend_boundaries()
 
 
 def test_identical_circuit_gradient_comparison_success_rows_are_deterministic(
-    monkeypatch,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     class FakeQiskitResult:
         value = np.cos(0.4)
@@ -180,16 +199,15 @@ def test_identical_circuit_gradient_comparison_success_rows_are_deterministic(
 
 
 def test_identical_circuit_gradient_comparison_writer_marks_ready_not_promoted(
-    tmp_path,
+    tmp_path: Path,
 ) -> None:
     output = tmp_path / "identical-circuit.json"
     circuit, values, operations, observable_label, fingerprint = (
         comparison._identical_circuit_problem()
     )
-    scpn_value = comparison.execute_phase_qnode_circuit(circuit, values).value
+    scpn_value = execute_phase_qnode_circuit(circuit, values).value
     scpn_gradient = tuple(
-        float(item)
-        for item in comparison.parameter_shift_phase_qnode_gradient(circuit, values).gradient
+        float(item) for item in parameter_shift_phase_qnode_gradient(circuit, values).gradient
     )
     rows = (
         comparison._identical_circuit_success_row(
@@ -260,14 +278,19 @@ def test_identical_circuit_gradient_comparison_row_requires_success_evidence() -
         raise AssertionError("success row without backend gradient was accepted")
 
 
-def test_external_comparison_suite_classifies_runtime_failures(monkeypatch) -> None:
+def test_external_comparison_suite_classifies_runtime_failures(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     monkeypatch.setattr(comparison, "is_phase_jax_available", lambda: True)
     monkeypatch.setattr(comparison, "is_phase_torch_available", lambda: False)
     monkeypatch.setattr(comparison, "is_phase_tensorflow_available", lambda: False)
     monkeypatch.setattr(comparison, "is_phase_pennylane_available", lambda: False)
     monkeypatch.setattr(comparison, "_enzyme_runner_configured", lambda: False)
+    monkeypatch.setattr(comparison, "_catalyst_runner_configured", lambda: False)
 
-    def broken_runner(values):
+    def broken_runner(
+        values: np.ndarray[Any, np.dtype[np.float64]],
+    ) -> tuple[float, np.ndarray[Any, np.dtype[np.float64]]]:
         raise RuntimeError("framework callback failed")
 
     monkeypatch.setattr(comparison, "_run_jax_reference", broken_runner)
@@ -332,12 +355,15 @@ def test_external_comparison_row_rejects_success_without_numeric_evidence() -> N
         raise AssertionError("success row without gradient evidence was accepted")
 
 
-def test_external_comparison_suite_records_dependency_missing_rows(monkeypatch) -> None:
+def test_external_comparison_suite_records_dependency_missing_rows(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     monkeypatch.setattr(comparison, "is_phase_jax_available", lambda: False)
     monkeypatch.setattr(comparison, "is_phase_torch_available", lambda: False)
     monkeypatch.setattr(comparison, "is_phase_tensorflow_available", lambda: False)
     monkeypatch.setattr(comparison, "is_phase_pennylane_available", lambda: False)
     monkeypatch.setattr(comparison, "_enzyme_runner_configured", lambda: False)
+    monkeypatch.setattr(comparison, "_catalyst_runner_configured", lambda: False)
 
     rows = run_differentiable_external_comparison_suite()
 
@@ -347,7 +373,10 @@ def test_external_comparison_suite_records_dependency_missing_rows(monkeypatch) 
     assert np.isfinite(len(rows))
 
 
-def test_external_comparison_runs_configured_enzyme_runner(tmp_path, monkeypatch) -> None:
+def test_external_comparison_runs_configured_enzyme_runner(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     runner = tmp_path / "enzyme_runner.py"
     runner.write_text(
         "\n".join(
@@ -381,8 +410,8 @@ def test_external_comparison_runs_configured_enzyme_runner(tmp_path, monkeypatch
 
     assert row.status == "success"
     assert row.failure_class is None
-    assert row.value_error <= 1e-12
-    assert row.gradient_error <= 1e-12
+    assert row.value_error is not None and row.value_error <= 1e-12
+    assert row.gradient_error is not None and row.gradient_error <= 1e-12
     assert row.batching_support == "not_supported"
     assert row.transform_support == "LLVM Enzyme runner"
     assert "Enzyme" in row.claim_boundary
@@ -390,9 +419,55 @@ def test_external_comparison_runs_configured_enzyme_runner(tmp_path, monkeypatch
     assert payload["dependency_versions"]
 
 
+def test_external_comparison_runs_configured_catalyst_runner(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    runner = tmp_path / "catalyst_runner.py"
+    runner.write_text(
+        "\n".join(
+            (
+                "#!/usr/bin/env python3",
+                "# SPDX-License-Identifier: AGPL-3.0-or-later",
+                "# Commercial license available",
+                "# © Concepts 1996-2026 Miroslav Sotek. All rights reserved.",
+                "# © Code 2020-2026 Miroslav Sotek. All rights reserved.",
+                "# ORCID: 0009-0009-3560-0851",
+                "# Contact: www.anulum.li | protoscience@anulum.li",
+                "import json, math, sys",
+                "payload = json.load(sys.stdin)",
+                "values = payload['values']",
+                "print(json.dumps({",
+                "    'value': math.cos(values[0]) + 0.25 * math.sin(values[1]),",
+                "    'gradient': [-math.sin(values[0]), 0.25 * math.cos(values[1])],",
+                "    'toolchain': {'catalyst': 'test-runner', 'mlir': 'test-mlir'},",
+                "}))",
+            )
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    runner.chmod(0o755)
+    monkeypatch.setenv("SCPN_CATALYST_RUNNER", str(runner))
+    monkeypatch.setattr(comparison, "_catalyst_tooling_available", lambda: True)
+
+    row = comparison._catalyst_row()
+    payload = row.to_dict()
+
+    assert row.status == "success"
+    assert row.failure_class is None
+    assert row.value_error is not None and row.value_error <= 1e-12
+    assert row.gradient_error is not None and row.gradient_error <= 1e-12
+    assert row.batching_support == "not_supported"
+    assert row.transform_support == "Catalyst qjit/MLIR/QIR runner"
+    assert "Catalyst" in row.claim_boundary
+    assert payload["toolchain"] == {"catalyst": "test-runner", "mlir": "test-mlir"}
+    assert payload["dependency_versions"]
+
+
 def test_external_comparison_records_enzyme_jax_tooling_paths(
-    tmp_path,
-    monkeypatch,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     plugin = tmp_path / "enzyme_call.so"
     runner = tmp_path / "enzyme_runner.py"
@@ -417,7 +492,35 @@ def test_external_comparison_records_enzyme_jax_tooling_paths(
     assert versions["enzyme_runner"] == f"executable:{runner}"
 
 
-def test_external_comparison_classifies_enzyme_bad_json(tmp_path, monkeypatch) -> None:
+def test_external_comparison_records_catalyst_tooling_paths(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    runner = tmp_path / "catalyst_runner.py"
+    runner.write_text("#!/usr/bin/env python3\n", encoding="utf-8")
+    runner.chmod(0o755)
+    monkeypatch.setenv("SCPN_CATALYST_RUNNER", str(runner))
+    monkeypatch.setattr(
+        comparison,
+        "_installed_version",
+        lambda package: {
+            "pennylane-catalyst": "0.13.0",
+            "catalyst": "importable_unknown_version",
+            "mlir": "executable:/usr/bin/mlir-opt",
+            "llvm": "executable:/usr/bin/llvm-config",
+        }[package],
+    )
+
+    versions = comparison._backend_dependency_versions("catalyst")
+
+    assert versions["pennylane-catalyst"] == "0.13.0"
+    assert versions["catalyst_runner"] == f"executable:{runner}"
+
+
+def test_external_comparison_classifies_enzyme_bad_json(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     runner = tmp_path / "bad_enzyme_runner.py"
     runner.write_text("#!/usr/bin/env python3\nprint('not-json')\n", encoding="utf-8")
     runner.chmod(0o755)
@@ -431,7 +534,27 @@ def test_external_comparison_classifies_enzyme_bad_json(tmp_path, monkeypatch) -
     assert "valid JSON" in str(row.setup_instructions)
 
 
-def test_external_comparison_rejects_enzyme_wrong_gradient(tmp_path, monkeypatch) -> None:
+def test_external_comparison_classifies_catalyst_bad_json(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    runner = tmp_path / "bad_catalyst_runner.py"
+    runner.write_text("#!/usr/bin/env python3\nprint('not-json')\n", encoding="utf-8")
+    runner.chmod(0o755)
+    monkeypatch.setenv("SCPN_CATALYST_RUNNER", str(runner))
+    monkeypatch.setattr(comparison, "_catalyst_tooling_available", lambda: True)
+
+    row = comparison._catalyst_row()
+
+    assert row.status == "hard_gap"
+    assert row.failure_class == "runtime_error"
+    assert "valid JSON" in str(row.setup_instructions)
+
+
+def test_external_comparison_rejects_enzyme_wrong_gradient(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     runner = tmp_path / "wrong_enzyme_runner.py"
     runner.write_text(
         "#!/usr/bin/env python3\n"
@@ -498,11 +621,15 @@ def test_external_comparison_row_rejects_empty_dependency_metadata() -> None:
         raise AssertionError("empty dependency metadata was accepted")
 
 
-def test_external_comparison_dependency_version_falls_back_to_import(monkeypatch) -> None:
-    def missing_distribution(package):
-        raise comparison.metadata.PackageNotFoundError(package)
+def test_external_comparison_dependency_version_falls_back_to_import(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    metadata_module: Any = comparison.__dict__["metadata"]
 
-    monkeypatch.setattr(comparison.metadata, "version", missing_distribution)
+    def missing_distribution(package: str) -> str:
+        raise metadata_module.PackageNotFoundError(package)
+
+    monkeypatch.setattr(metadata_module, "version", missing_distribution)
     monkeypatch.setattr(
         comparison,
         "import_module",
@@ -512,7 +639,7 @@ def test_external_comparison_dependency_version_falls_back_to_import(monkeypatch
     assert comparison._installed_version("tensorflow") == "2.21.0"
 
 
-def test_external_comparison_writer_records_non_promotional_artifact(tmp_path) -> None:
+def test_external_comparison_writer_records_non_promotional_artifact(tmp_path: Path) -> None:
     rows = (
         ExternalComparisonRow(
             case_id="bounded_phase_objective",
@@ -579,7 +706,7 @@ def test_external_comparison_writer_records_non_promotional_artifact(tmp_path) -
     assert "not isolated benchmark evidence" in payload["claim_boundary"]
 
 
-def test_external_comparison_writer_rejects_incomplete_row_payload(tmp_path) -> None:
+def test_external_comparison_writer_rejects_incomplete_row_payload(tmp_path: Path) -> None:
     class IncompleteExternalRow:
         case_id = "bounded_phase_objective"
         backend = "jax"
@@ -604,7 +731,7 @@ def test_external_comparison_writer_rejects_incomplete_row_payload(tmp_path) -> 
         raise AssertionError("incomplete external comparison row was accepted")
 
 
-def test_external_comparison_writer_rejects_invalid_outputs(tmp_path) -> None:
+def test_external_comparison_writer_rejects_invalid_outputs(tmp_path: Path) -> None:
     row = ExternalComparisonRow(
         case_id="bounded_phase_objective",
         backend="jax",

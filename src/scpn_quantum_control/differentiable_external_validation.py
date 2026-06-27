@@ -500,7 +500,6 @@ def render_external_validation_environment_lock_markdown(
             f"| `{lockfile.path}` | {lockfile.role} | `{lockfile.sha256}` | "
             f"{lockfile.pinned_package_count} |"
         )
-    lines.append("")
     return "\n".join(lines)
 
 
@@ -530,7 +529,6 @@ def render_external_validation_artifact_bundle_markdown(
     ]
     for entry in bundle.entries:
         lines.append(f"| `{entry.path}` | {entry.role} | `{entry.sha256}` | {entry.size_bytes} |")
-    lines.append("")
     return "\n".join(lines)
 
 

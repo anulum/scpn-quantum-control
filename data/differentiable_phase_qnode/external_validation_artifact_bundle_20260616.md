@@ -16,15 +16,15 @@ SCPN Quantum Control — Differentiable external-validation artefact bundle
 
 | Artefact | Role | SHA-256 | Size bytes |
 |---|---|---|---:|
-| `data/differentiable_phase_qnode/claim_ledger.json` | Claim-ledger source of truth | `a7abf26e3162ee1ffad1e397220d1662145b21c3358ca145d612c1b7fafb30d0` | 24564 |
-| `data/differentiable_phase_qnode/claim_ledger.md` | Reviewer claim-ledger summary | `b76292a5f351b20d3b18d67b5129d6e4b3e1f4a77c175f14c113f5c6630037e7` | 6619 |
+| `data/differentiable_phase_qnode/claim_ledger.json` | Claim-ledger source of truth | `13ac761741b7ae624b01b51b887f24d87c0b735cbcb48256fdeb2e3eda2930a0` | 24595 |
+| `data/differentiable_phase_qnode/claim_ledger.md` | Reviewer claim-ledger summary | `b0e9ff4d91ef7f581c8adaa12fc8dfbd6139685625d9d123ad716783a474ff4c` | 6631 |
 | `data/differentiable_phase_qnode/public_claim_table_20260616.md` | Public-safe claim wording table | `567b45340b14be9cf0cee30e890fa6f15f857d6bb0c7902f1c497f6f347f0728` | 7119 |
-| `data/differentiable_phase_qnode/differentiable_sota_scorecard_20260620.json` | Differentiable SOTA category scorecard artefact | `a8c20f29ca5d91057c274019d89ca728a01f5dfb9e9b0c6aa46f3b68943a52fd` | 25978 |
-| `data/differentiable_phase_qnode/differentiable_sota_scorecard_20260620.md` | Differentiable SOTA category scorecard reviewer summary | `5c4e8b6b493f308746fe881d90741ab29a8ae90973af40f4b1125dc929e6d3fe` | 8097 |
-| `data/differentiable_phase_qnode/differentiable_rust_python_inventory_20260620.json` | Differentiable Rust/Python rustification surface inventory artefact | `f02e76ceb8e19b32a919108b22063f3d4093f05cbb69afd4a2144edfa128cb15` | 30240 |
-| `data/differentiable_phase_qnode/differentiable_rust_python_inventory_20260620.md` | Differentiable Rust/Python rustification surface inventory reviewer summary | `d2e04744e906c0428d0775406500fa27d910bc59e905f59b351590ccd4bc7a3f` | 3259 |
-| `data/differentiable_phase_qnode/differentiable_architecture_map_20260627.json` | Differentiable architecture and Rustification routing map artefact | `a0b6da8128e4f8c24ee83ecd830160902b0d2e2e0d5faa68db04abbc1e1afc88` | 17952 |
-| `data/differentiable_phase_qnode/differentiable_architecture_map_20260627.md` | Differentiable architecture and Rustification routing map reviewer summary | `8309ad4a8f5fe4b0ccb260f195e6fe5ea444dbf7dcc390a4d36f970288966bbe` | 3697 |
+| `data/differentiable_phase_qnode/differentiable_sota_scorecard_20260620.json` | Differentiable SOTA category scorecard artefact | `4f0c5846ce9b6bc796cb251ef21e05cd79be42bac8e517066ffd1d07bb548f1b` | 26012 |
+| `data/differentiable_phase_qnode/differentiable_sota_scorecard_20260620.md` | Differentiable SOTA category scorecard reviewer summary | `bdd9cb31dd1e320b80a8205e2e4992d342a08f89e8069c2d85c8a010b0a33f45` | 8131 |
+| `data/differentiable_phase_qnode/differentiable_rust_python_inventory_20260620.json` | Differentiable Rust/Python rustification surface inventory artefact | `7480aef14c1c44767d864abfcb0e7b1dbeb0df91cb79537597995ab95da1a025` | 26560 |
+| `data/differentiable_phase_qnode/differentiable_rust_python_inventory_20260620.md` | Differentiable Rust/Python rustification surface inventory reviewer summary | `f3247e1b29c68b551049910e1e3914e2dd4649ce365ee8331037cf15834a6493` | 3275 |
+| `data/differentiable_phase_qnode/differentiable_architecture_map_20260627.json` | Differentiable architecture and Rustification routing map artefact | `323d89eddc7e95745576911fa99d2a90eac484f72e16246dcaac2df815782e68` | 18049 |
+| `data/differentiable_phase_qnode/differentiable_architecture_map_20260627.md` | Differentiable architecture and Rustification routing map reviewer summary | `7b562f3e93b1b9ad88402ce72cbd0805b5e25359383b654e7ebb2c9a21ec7790` | 3713 |
 | `data/differentiable_phase_qnode/differentiable_dependency_environment_map_20260627.json` | Differentiable dependency and environment evidence map artefact | `d7b815674d64d00601ef42f1899bdb47de2047ad75f6527b6f10f13f0da0e793` | 4895 |
 | `data/differentiable_phase_qnode/differentiable_dependency_environment_map_20260627.md` | Differentiable dependency and environment evidence map reviewer summary | `3e980d9f729f75efa8b3c73e2d85421dd8b611f9896b86b313ab5af49eaf1448` | 1918 |
 | `data/differentiable_phase_qnode/differentiable_isolated_benchmark_plan_20260627.json` | Reserved-host isolated benchmark batch plan artefact | `091bc537ec47ced78b9fa2bb76a0ede9780d549feff6af51b75d3f9655479fc6` | 13273 |

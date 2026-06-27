@@ -215,7 +215,7 @@
         "diff-qnode-external-comparison-schema-v1",
         "diff-qnode-claim-ledger-v1",
         "enzyme_mlir_maturity_audit_20260616",
-        "catalyst_comparison_missing",
+        "catalyst_runner_missing",
         "diff-sota-scorecard-20260620"
       ],
       "blockers": [
@@ -223,7 +223,7 @@
         "broad LLVM/JIT lowering remains claim-blocked",
         "11-case compiler-AD breadth evidence is incomplete",
         "isolated Enzyme/MLIR benchmark attachment is missing",
-        "dedicated Catalyst comparison row is missing",
+        "configured Catalyst qjit/MLIR/QIR runner evidence is missing",
         "compiled quantum-classical workflow parity is unimplemented"
       ],
       "claim_boundary": "Differentiable architecture and Rustification routing map only; no broad Rustification promotion, provider execution, hardware execution, GPU execution, LLVM/JIT execution, or isolated benchmark claim is implied.",
@@ -248,7 +248,8 @@
         "Round 5 Rustification readiness"
       ],
       "owner_modules": [
-        "src/scpn_quantum_control/compiler/mlir.py"
+        "src/scpn_quantum_control/compiler/mlir.py",
+        "src/scpn_quantum_control/benchmarks/differentiable_external_comparison.py"
       ],
       "polyglot_surfaces": [
         "docs/differentiable_api.md",

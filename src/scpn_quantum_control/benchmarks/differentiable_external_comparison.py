@@ -86,6 +86,7 @@ class ExternalComparisonRow:
     toolchain: dict[str, str] | None = None
 
     def __post_init__(self) -> None:
+        """Validate external comparison row evidence invariants."""
         if not self.case_id:
             raise ValueError("case_id must be non-empty")
         if not self.backend:
@@ -128,7 +129,6 @@ class ExternalComparisonRow:
     @property
     def artifact_fields_ready(self) -> bool:
         """Return whether this row is serializable as an evidence artefact."""
-
         payload = self.to_dict()
         return bool(
             self.case_id
@@ -140,7 +140,6 @@ class ExternalComparisonRow:
 
     def to_dict(self) -> dict[str, Any]:
         """Return a JSON-ready row."""
-
         return {
             "case_id": self.case_id,
             "backend": self.backend,
@@ -178,7 +177,6 @@ class ExternalComparisonArtifact:
 
     def to_dict(self) -> dict[str, Any]:
         """Return a JSON-ready artefact summary."""
-
         return {
             "artifact_id": self.artifact_id,
             "path": str(self.path),
@@ -216,6 +214,7 @@ class IdenticalCircuitGradientComparisonRow:
     performance_claim_eligible: bool = False
 
     def __post_init__(self) -> None:
+        """Validate same-circuit comparison row evidence invariants."""
         if not self.case_id:
             raise ValueError("case_id must be non-empty")
         if self.backend not in {"qiskit", "pennylane"}:
@@ -256,7 +255,6 @@ class IdenticalCircuitGradientComparisonRow:
     @property
     def artifact_fields_ready(self) -> bool:
         """Return whether the row carries the required same-circuit fields."""
-
         return bool(
             self.case_id
             and self.backend
@@ -269,7 +267,6 @@ class IdenticalCircuitGradientComparisonRow:
 
     def to_dict(self) -> dict[str, Any]:
         """Return a JSON-ready row."""
-
         return {
             "case_id": self.case_id,
             "backend": self.backend,
@@ -314,7 +311,6 @@ class IdenticalCircuitGradientComparisonArtifact:
 
     def to_dict(self) -> dict[str, Any]:
         """Return a JSON-ready artefact summary."""
-
         return {
             "artifact_id": self.artifact_id,
             "path": str(self.path),
@@ -335,7 +331,6 @@ def run_differentiable_external_comparison_suite() -> tuple[ExternalComparisonRo
     Missing optional tooling is recorded as hard-gap evidence instead of being
     silently omitted.
     """
-
     rows: list[ExternalComparisonRow] = []
     for backend, available, runner, batching, transform, setup in (
         (
@@ -386,6 +381,16 @@ def run_differentiable_external_comparison_suite() -> tuple[ExternalComparisonRo
             "Install LLVM/Enzyme tooling and configure the Enzyme runner.",
         )
     )
+    rows.append(
+        _catalyst_row()
+        if _catalyst_runner_configured()
+        else _dependency_gap_row(
+            "catalyst",
+            "not_evaluated",
+            "Catalyst qjit/MLIR/QIR",
+            "Install PennyLane Catalyst and configure SCPN_CATALYST_RUNNER.",
+        )
+    )
     rows.extend(external_comparison_failure_mode_rows())
     return tuple(rows)
 
@@ -397,7 +402,6 @@ def write_differentiable_external_comparison(
     artifact_id: str = "differentiable-external-comparison-local",
 ) -> ExternalComparisonArtifact:
     """Write external comparison rows as a bounded JSON evidence artefact."""
-
     destination = Path(output_path)
     if destination.suffix.lower() != ".json":
         raise ValueError("output_path must end with .json")
@@ -477,7 +481,6 @@ def run_identical_circuit_gradient_comparison_suite() -> tuple[
     IdenticalCircuitGradientComparisonRow, ...
 ]:
     """Run exact-state same-circuit gradient comparisons for Qiskit and PennyLane."""
-
     circuit, values, operations, observable_label, fingerprint = _identical_circuit_problem()
     scpn_value = execute_phase_qnode_circuit(circuit, values).value
     scpn_gradient_result = parameter_shift_phase_qnode_gradient(circuit, values)
@@ -510,7 +513,6 @@ def write_identical_circuit_gradient_comparison(
     artifact_id: str = "identical-circuit-gradient-comparison-local",
 ) -> IdenticalCircuitGradientComparisonArtifact:
     """Write exact-state same-circuit comparison rows as JSON evidence."""
-
     destination = Path(output_path)
     if destination.suffix.lower() != ".json":
         raise ValueError("output_path must end with .json")
@@ -590,7 +592,6 @@ def write_identical_circuit_gradient_comparison(
 
 def external_comparison_failure_mode_rows() -> tuple[ExternalComparisonRow, ...]:
     """Return explicit unsupported-route rows for promotion-evidence artefacts."""
-
     return (
         _unsupported_gap_row(
             backend="jax",
@@ -760,6 +761,89 @@ def _enzyme_row() -> ExternalComparisonRow:
             "no provider, QPU, GPU, arbitrary-program AD, or production performance claim."
         ),
         dependency_versions=_backend_dependency_versions("enzyme"),
+        toolchain=toolchain,
+    )
+
+
+def _catalyst_row() -> ExternalComparisonRow:
+    if not _catalyst_runner_configured():
+        return _dependency_gap_row(
+            "catalyst",
+            "not_evaluated",
+            "Catalyst qjit/MLIR/QIR runner",
+            "Configure SCPN_CATALYST_RUNNER to an executable Catalyst comparison runner.",
+        )
+    values = np.array([0.2, -0.4], dtype=np.float64)
+    reference_value = _bounded_phase_objective(values)
+    reference_gradient = _bounded_phase_gradient(values)
+    tracemalloc.start()
+    start = time.perf_counter()
+    try:
+        external_value, external_gradient, toolchain = _run_catalyst_reference(values)
+    except TimeoutError as exc:
+        tracemalloc.stop()
+        return _runtime_gap_row(
+            "catalyst",
+            "not_supported",
+            "Catalyst qjit/MLIR/QIR runner",
+            str(exc),
+        )
+    except (RuntimeError, ValueError) as exc:
+        tracemalloc.stop()
+        return _runtime_gap_row(
+            "catalyst",
+            "not_supported",
+            "Catalyst qjit/MLIR/QIR runner",
+            str(exc),
+        )
+    runtime = time.perf_counter() - start
+    _, peak = tracemalloc.get_traced_memory()
+    tracemalloc.stop()
+    value_error = abs(reference_value - external_value)
+    gradient_error = float(np.max(np.abs(reference_gradient - external_gradient)))
+    if value_error > 1.0e-8 or gradient_error > 1.0e-8:
+        return ExternalComparisonRow(
+            case_id="bounded_phase_objective",
+            backend="catalyst",
+            status="hard_gap",
+            failure_class="correctness_mismatch",
+            value_error=None,
+            gradient_error=None,
+            runtime_seconds=None,
+            memory_peak_bytes=None,
+            batching_support="not_supported",
+            transform_support="Catalyst qjit/MLIR/QIR runner",
+            dtype="float64",
+            device="cpu",
+            source_of_truth="scpn_reference",
+            setup_instructions=(
+                "Configured Catalyst runner output did not match the SCPN reference "
+                f"(value_error={value_error:.3e}, gradient_error={gradient_error:.3e})."
+            ),
+            claim_boundary="Correctness hard gap only; no hidden success or promoted claim.",
+            dependency_versions=_backend_dependency_versions("catalyst"),
+            toolchain=toolchain,
+        )
+    return ExternalComparisonRow(
+        case_id="bounded_phase_objective",
+        backend="catalyst",
+        status="success",
+        failure_class=None,
+        value_error=value_error,
+        gradient_error=gradient_error,
+        runtime_seconds=runtime,
+        memory_peak_bytes=max(int(peak), int(values.nbytes + reference_gradient.nbytes)),
+        batching_support="not_supported",
+        transform_support="Catalyst qjit/MLIR/QIR runner",
+        dtype="float64",
+        device="cpu",
+        source_of_truth="scpn_reference",
+        setup_instructions=None,
+        claim_boundary=(
+            "Bounded CPU Catalyst qjit/MLIR/QIR comparison against the SCPN reference; "
+            "no provider, QPU, GPU, arbitrary-program AD, or production performance claim."
+        ),
+        dependency_versions=_backend_dependency_versions("catalyst"),
         toolchain=toolchain,
     )
 
@@ -1208,7 +1292,51 @@ def _run_enzyme_reference(
         raise ValueError("Configured Enzyme runner JSON must be an object")
     value = _as_finite_scalar("Enzyme runner value", result.get("value"))
     gradient = _as_gradient_vector("Enzyme runner gradient", result.get("gradient"), values.size)
-    toolchain = _as_toolchain_metadata(result.get("toolchain"))
+    toolchain = _as_toolchain_metadata(result.get("toolchain"), label="Enzyme")
+    return value, gradient, toolchain
+
+
+def _run_catalyst_reference(
+    values: NDArray[np.float64],
+) -> tuple[float, NDArray[np.float64], dict[str, str]]:
+    runner = os.environ.get("SCPN_CATALYST_RUNNER")
+    if not runner:
+        raise RuntimeError("SCPN_CATALYST_RUNNER is not configured")
+    payload = json.dumps(
+        {
+            "schema": "scpn_qc_catalyst_runner_request_v1",
+            "case_id": "bounded_phase_objective",
+            "values": values.tolist(),
+            "objective": "cos(x0)+0.25*sin(x1)",
+            "gradient_contract": ["-sin(x0)", "0.25*cos(x1)"],
+            "dtype": "float64",
+            "compiler_workflow": "catalyst_qjit_mlir_qir",
+        },
+        sort_keys=True,
+    )
+    try:
+        completed = subprocess.run(
+            [runner],
+            input=payload,
+            text=True,
+            capture_output=True,
+            check=False,
+            timeout=_catalyst_runner_timeout_seconds(),
+        )
+    except subprocess.TimeoutExpired as exc:
+        raise TimeoutError("Configured Catalyst runner timed out") from exc
+    if completed.returncode != 0:
+        stderr = completed.stderr.strip() or "no stderr"
+        raise RuntimeError(f"Configured Catalyst runner failed: {stderr}")
+    try:
+        result = json.loads(completed.stdout)
+    except json.JSONDecodeError as exc:
+        raise RuntimeError("Configured Catalyst runner did not emit valid JSON") from exc
+    if not isinstance(result, dict):
+        raise ValueError("Configured Catalyst runner JSON must be an object")
+    value = _as_finite_scalar("Catalyst runner value", result.get("value"))
+    gradient = _as_gradient_vector("Catalyst runner gradient", result.get("gradient"), values.size)
+    toolchain = _as_toolchain_metadata(result.get("toolchain"), label="Catalyst")
     return value, gradient, toolchain
 
 
@@ -1234,14 +1362,14 @@ def _as_gradient_vector(name: str, value: object, width: int) -> NDArray[np.floa
     return gradient.astype(np.float64, copy=True)
 
 
-def _as_toolchain_metadata(value: object) -> dict[str, str]:
+def _as_toolchain_metadata(value: object, *, label: str) -> dict[str, str]:
     if value is None:
-        return {"enzyme": "configured-runner", "llvm": "configured-runner"}
+        return {label.lower(): "configured-runner"}
     if not isinstance(value, dict):
-        raise ValueError("Enzyme runner toolchain metadata must be an object")
+        raise ValueError(f"{label} runner toolchain metadata must be an object")
     metadata = {str(key): str(item) for key, item in value.items()}
     if any(not key or not item for key, item in metadata.items()):
-        raise ValueError("Enzyme runner toolchain metadata cannot contain empty keys or values")
+        raise ValueError(f"{label} runner toolchain metadata cannot contain empty keys or values")
     return metadata
 
 
@@ -1253,6 +1381,7 @@ def _backend_dependency_versions(backend: str) -> dict[str, str]:
         "pennylane": ("pennylane",),
         "qiskit": ("qiskit",),
         "enzyme": ("llvm", "enzyme", "enzyme_ad"),
+        "catalyst": ("pennylane-catalyst", "catalyst", "mlir", "llvm"),
     }
     versions = {
         package: _installed_version(package) for package in packages_by_backend.get(backend, ())
@@ -1268,12 +1397,18 @@ def _backend_dependency_versions(backend: str) -> dict[str, str]:
             versions["enzyme_runner"] = (
                 f"executable:{runner}" if os.path.exists(runner) else f"missing:{runner}"
             )
+    if backend == "catalyst":
+        runner = os.environ.get("SCPN_CATALYST_RUNNER")
+        if runner:
+            versions["catalyst_runner"] = (
+                f"executable:{runner}" if os.path.exists(runner) else f"missing:{runner}"
+            )
     return versions
 
 
 def _installed_version(package: str) -> str:
     binary = shutil.which(package)
-    if package in {"llvm", "enzyme"} and binary:
+    if package in {"llvm", "enzyme", "mlir"} and binary:
         return f"executable:{binary}"
     try:
         return metadata.version(package)
@@ -1298,6 +1433,17 @@ def _enzyme_runner_timeout_seconds() -> float:
     return timeout
 
 
+def _catalyst_runner_timeout_seconds() -> float:
+    raw = os.environ.get("SCPN_CATALYST_RUNNER_TIMEOUT_SECONDS", "10")
+    try:
+        timeout = float(raw)
+    except ValueError as exc:
+        raise ValueError("SCPN_CATALYST_RUNNER_TIMEOUT_SECONDS must be numeric") from exc
+    if not np.isfinite(timeout) or timeout <= 0.0:
+        raise ValueError("SCPN_CATALYST_RUNNER_TIMEOUT_SECONDS must be positive")
+    return timeout
+
+
 def _enzyme_tooling_available() -> bool:
     configured_plugin = os.environ.get("ENZYME_LLVM_PLUGIN")
     return shutil.which("enzyme") is not None or bool(
@@ -1305,9 +1451,22 @@ def _enzyme_tooling_available() -> bool:
     )
 
 
+def _catalyst_tooling_available() -> bool:
+    try:
+        import_module("catalyst")
+    except Exception:
+        return shutil.which("catalyst") is not None or shutil.which("mlir-opt") is not None
+    return True
+
+
 def _enzyme_runner_configured() -> bool:
     runner = os.environ.get("SCPN_ENZYME_RUNNER")
     return bool(runner and os.path.exists(runner) and _enzyme_tooling_available())
+
+
+def _catalyst_runner_configured() -> bool:
+    runner = os.environ.get("SCPN_CATALYST_RUNNER")
+    return bool(runner and os.path.exists(runner) and _catalyst_tooling_available())
 
 
 __all__ = [

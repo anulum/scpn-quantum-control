@@ -26,7 +26,7 @@ SCPN Quantum Control — Differentiable Rust/Python Surface Inventory
 | `pennylane_plugin_matrix` | `provider_blocked` | `not_applicable` | `partial` | `blocked` | provider-plugin execution artefacts are missing<br>hardware-plugin and provider-gradient parity artefacts are missing |
 | `qiskit_runtime_provider_gradients` | `provider_blocked` | `not_applicable` | `partial` | `blocked` | live-ticket Runtime/QPU evidence is missing<br>provider-gradient methods are not attached to a live-ticket run |
 | `hardware_gradient_campaigns` | `hardware_blocked` | `not_applicable` | `partial` | `blocked` | live-ticket hardware execution is missing<br>raw counts, calibration, and reference simulator attachments are missing |
-| `catalyst_compiler_comparison` | `deprecate_before_promotion` | `partial` | `missing` | `blocked` | dedicated Catalyst comparison row is missing<br>compiled quantum-classical workflow parity is unimplemented |
+| `catalyst_compiler_comparison` | `deprecate_before_promotion` | `partial` | `partial` | `blocked` | configured Catalyst qjit/MLIR/QIR runner evidence is missing<br>compiled quantum-classical workflow parity is unimplemented |
 | `enzyme_mlir_compiler_ad` | `compiler_native_not_rust` | `partial` | `partial` | `functional_non_isolated` | 11-case compiler-AD breadth evidence is incomplete<br>isolated Enzyme/MLIR benchmark attachment is missing |
 
 Rows are planning evidence for the rustification queue. A row becoming `rustification_ready` does not by itself promote public performance, provider, hardware, GPU, LLVM/JIT, or isolated benchmark claims.

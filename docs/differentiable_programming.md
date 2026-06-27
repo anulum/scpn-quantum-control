@@ -300,14 +300,15 @@ performance wording requires a self-hosted runner labelled
 matches the requested CPU set, host-load context, governor or frequency
 context, and no concurrent heavy jobs. The remote CI job is the benchmark gate:
 the repository may not promote the claim unless that job uploads an artefact
-classified as `isolated_affinity`. Unconfigured Enzyme tooling is a recorded
-`dependency_missing` hard gap, not a hidden success. When
-`SCPN_ENZYME_RUNNER` is configured and LLVM/Enzyme tooling is present, the
-external comparison row sends a strict JSON request, enforces a timeout, records
-runner toolchain metadata, and accepts success only when value and gradient
-match the SCPN analytic reference. Accelerator benchmark claims are also
-fail-closed: the benchmark evidence bundle always records explicit accelerator
-metadata. CPU-only runs are labelled CPU-only; CUDA or ROCm requested through
+classified as `isolated_affinity`. Unconfigured Enzyme and Catalyst tooling is
+recorded as `dependency_missing` hard-gap evidence, not a hidden success. When
+`SCPN_ENZYME_RUNNER` or `SCPN_CATALYST_RUNNER` is configured with the matching
+tooling present, the external comparison row sends a strict JSON request,
+enforces a timeout, records runner toolchain metadata, and accepts success only
+when value and gradient match the SCPN analytic reference. Accelerator benchmark
+claims are also fail-closed: the benchmark evidence bundle always records
+explicit accelerator metadata. CPU-only runs are labelled CPU-only; CUDA or ROCm
+requested through
 `SCPN_BENCH_ACCELERATOR_BACKEND` must expose matching visible-device metadata
 (`SCPN_BENCH_ACCELERATOR_DEVICE_IDS`, `CUDA_VISIBLE_DEVICES`,
 `ROCR_VISIBLE_DEVICES`, `HIP_VISIBLE_DEVICES`, or JAX CUDA device discovery)

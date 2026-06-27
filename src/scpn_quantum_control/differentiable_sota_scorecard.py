@@ -472,7 +472,6 @@ def render_differentiable_sota_scorecard_markdown(
         "unless the matching claim-ledger rows are promoted with artefact and "
         "benchmark evidence."
     )
-    lines.append("")
     return "\n".join(lines)
 
 
@@ -537,11 +536,12 @@ def _default_scorecard_rows(
             "catalyst_compiler_workflows",
             "Catalyst-style MLIR/LLVM/QIR compiled quantum-classical workflows, qjit, "
             "compiled control flow, compiled differentiation, and device support.",
-            "SCPN has MLIR interchange and bounded compiler-AD metadata, but no dedicated Catalyst "
-            "comparison row or compiled quantum-classical workflow parity artefact.",
+            "SCPN has MLIR interchange, bounded compiler-AD metadata, and a dedicated "
+            "Catalyst external-comparison row that remains hard-gap evidence until a "
+            "configured Catalyst qjit/MLIR/QIR runner passes.",
             ("external_framework_comparison", "phase_qnode_claim_boundary"),
             (
-                "dedicated Catalyst comparison coverage is missing",
+                "Catalyst comparison runner evidence is missing",
                 "compiled workflow, finite-shot, and device-support parity are unscored",
             ),
             ("Round 4 compiler AD and Program AD", "Round 7 documentation/API readiness"),

@@ -329,7 +329,6 @@ def render_differentiable_architecture_map_markdown(
         "promote Rust, LLVM/JIT, provider, hardware, GPU, performance, or "
         "isolated benchmark claims."
     )
-    lines.append("")
     return "\n".join(lines)
 
 

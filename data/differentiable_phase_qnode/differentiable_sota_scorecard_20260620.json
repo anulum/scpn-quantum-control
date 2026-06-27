@@ -196,7 +196,7 @@
         "diff-sota-scorecard-20260620"
       ],
       "blockers": [
-        "dedicated Catalyst comparison coverage is missing",
+        "Catalyst comparison runner evidence is missing",
         "compiled workflow, finite-shot, and device-support parity are unscored"
       ],
       "category": "catalyst_compiler_workflows",
@@ -205,7 +205,7 @@
         "external_framework_comparison",
         "phase_qnode_claim_boundary"
       ],
-      "current_evidence": "SCPN has MLIR interchange and bounded compiler-AD metadata, but no dedicated Catalyst comparison row or compiled quantum-classical workflow parity artefact.",
+      "current_evidence": "SCPN has MLIR interchange, bounded compiler-AD metadata, and a dedicated Catalyst external-comparison row that remains hard-gap evidence until a configured Catalyst qjit/MLIR/QIR runner passes.",
       "docs_surface": [
         "docs/differentiable_programming.md",
         "data/differentiable_phase_qnode/claim_ledger.md",

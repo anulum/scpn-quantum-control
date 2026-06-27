@@ -415,9 +415,9 @@ wall-clock performance.
 #### `run_differentiable_external_comparison_suite()`
 
 Runs optional external comparison rows for JAX, PyTorch, TensorFlow,
-PennyLane, and LLVM/Enzyme runner evidence. The SCPN analytic reference remains
-the source of truth. Missing optional dependencies are emitted as `hard_gap`
-rows instead of being omitted.
+PennyLane, LLVM/Enzyme runner evidence, and Catalyst qjit/MLIR/QIR runner
+evidence. The SCPN analytic reference remains the source of truth. Missing
+optional dependencies are emitted as `hard_gap` rows instead of being omitted.
 
 Every row carries dependency-version metadata for the backend being classified.
 The suite also emits explicit unsupported-route rows for promotion-blocking
