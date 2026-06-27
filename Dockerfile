@@ -19,7 +19,7 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 COPY .pre-commit-config.yaml pyproject.toml requirements.txt requirements-dev.txt README.md LICENSE ./
-COPY requirements-ci-cross-platform-smoke.txt requirements-ci-py311-linux.txt requirements-ci-py312-linux.txt requirements-ci-py313-linux.txt ./
+COPY requirements-ci-cross-platform-smoke.txt requirements-ci-py311-linux.txt requirements-ci-py312-linux.txt requirements-ci-py313-linux.txt requirements-ci-studio-platform.txt ./
 COPY src/ src/
 
 ENV PYTHONPATH=/app/src:/app
@@ -30,7 +30,8 @@ ENV MPLCONFIGDIR=/home/sqc/.config/matplotlib
 # cache locators can fail in copied container layers, so Docker CI disables JIT.
 ENV NUMBA_DISABLE_JIT=1
 
-RUN pip install --no-cache-dir --require-hashes -r requirements-ci-py312-linux.txt
+RUN pip install --no-cache-dir --require-hashes -r requirements-ci-py312-linux.txt \
+    && pip install --no-cache-dir --no-deps --require-hashes -r requirements-ci-studio-platform.txt
 
 COPY tests/ tests/
 COPY tools/ tools/
