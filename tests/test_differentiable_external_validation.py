@@ -195,6 +195,10 @@ def test_build_external_validation_artifact_bundle_records_committed_evidence() 
     assert "isolated_affinity benchmark claims" in bundle.claim_boundary
     assert "data/differentiable_phase_qnode/claim_ledger.json" in paths
     assert "data/differentiable_phase_qnode/public_claim_table_20260616.md" in paths
+    assert (
+        "data/differentiable_phase_qnode/differentiable_support_surface_alignment_20260627.json"
+        in paths
+    )
     assert "data/differentiable_phase_qnode/differentiable_architecture_map_20260627.json" in paths
     assert (
         "data/differentiable_phase_qnode/differentiable_dependency_environment_map_20260627.json"

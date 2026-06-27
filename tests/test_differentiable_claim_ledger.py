@@ -15,10 +15,13 @@ from typing import cast
 import pytest
 
 from scpn_quantum_control.differentiable_claim_ledger import (
+    DEFAULT_SUPPORT_SURFACE_ALIGNMENT_PATH,
     ClaimLedgerRow,
     PromotionStatus,
     load_differentiable_claim_ledger,
+    load_differentiable_support_surface_alignment,
     render_claim_ledger_markdown,
+    render_differentiable_support_surface_alignment_markdown,
     render_public_claim_table,
     validate_claim_ledger,
     validate_differentiable_support_surface_alignment,
@@ -178,6 +181,29 @@ def test_support_surface_alignment_audit_matches_committed_manifest_and_ledger()
     assert "docs/differentiable_programming.md" in alignment.checked_paths
     assert "docs/_generated/capability_manifest.json" in alignment.checked_paths
     assert "support-surface alignment audit" in alignment.claim_boundary
+
+
+def test_committed_support_surface_alignment_artifact_matches_rerun() -> None:
+    committed = load_differentiable_support_surface_alignment()
+    rerun = validate_differentiable_support_surface_alignment()
+
+    assert DEFAULT_SUPPORT_SURFACE_ALIGNMENT_PATH.exists()
+    assert committed == rerun
+    assert committed.passed
+    assert "differentiable_sota_scorecard" in committed.checked_claim_ids
+    assert "differentiable_rust_python_inventory" in committed.checked_claim_ids
+    assert "data/differentiable_phase_qnode/claim_ledger.md" in committed.checked_paths
+
+
+def test_support_surface_alignment_markdown_lists_claim_boundary() -> None:
+    alignment = load_differentiable_support_surface_alignment()
+    markdown = render_differentiable_support_surface_alignment_markdown(alignment)
+
+    assert "# Differentiable Support-Surface Alignment" in markdown
+    assert "`passed`: `True`" in markdown
+    assert "support-surface alignment audit" in markdown
+    assert "differentiable_dependency_environment_map" in markdown
+    assert "docs/_generated/capability_manifest.json" in markdown
 
 
 def test_support_surface_alignment_audit_rejects_missing_manifest_path() -> None:

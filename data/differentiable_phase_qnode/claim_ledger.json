@@ -135,7 +135,9 @@
       "docs_surface": [
         "docs/differentiable_api.md",
         "docs/differentiable_programming.md",
-        "data/differentiable_phase_qnode/claim_ledger.md"
+        "data/differentiable_phase_qnode/claim_ledger.md",
+        "data/differentiable_phase_qnode/differentiable_support_surface_alignment_20260627.json",
+        "data/differentiable_phase_qnode/differentiable_support_surface_alignment_20260627.md"
       ],
       "evidence_artifact_ids": [
         "diff-support-surface-alignment-audit-v1"

@@ -20,6 +20,13 @@ PromotionStatus = Literal["promoted", "SOTA-candidate", "hard_gap", "blocked"]
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_LEDGER_PATH = REPO_ROOT / "data" / "differentiable_phase_qnode" / "claim_ledger.json"
 DEFAULT_CAPABILITY_MANIFEST_PATH = REPO_ROOT / "docs" / "_generated" / "capability_manifest.json"
+SUPPORT_SURFACE_ALIGNMENT_SCHEMA = "scpn_qc_differentiable_support_surface_alignment_v1"
+DEFAULT_SUPPORT_SURFACE_ALIGNMENT_PATH = (
+    REPO_ROOT
+    / "data"
+    / "differentiable_phase_qnode"
+    / "differentiable_support_surface_alignment_20260627.json"
+)
 
 
 @dataclass(frozen=True)
@@ -38,6 +45,7 @@ class ClaimLedgerRow:
     claim_boundary: str
 
     def __post_init__(self) -> None:
+        """Validate row identity, status, surfaces, and boundary text."""
         if not self.claim_id:
             raise ValueError("claim_id must be non-empty")
         if not self.claim_text:
@@ -59,7 +67,6 @@ class ClaimLedgerRow:
     @classmethod
     def from_dict(cls, payload: MappingLike) -> ClaimLedgerRow:
         """Build a row from JSON data."""
-
         return cls(
             claim_id=str(payload["claim_id"]),
             claim_text=str(payload["claim_text"]),
@@ -77,7 +84,6 @@ class ClaimLedgerRow:
 
     def to_dict(self) -> dict[str, Any]:
         """Return a JSON-ready row."""
-
         return {
             "claim_id": self.claim_id,
             "claim_text": self.claim_text,
@@ -101,6 +107,7 @@ class ClaimLedger:
     rows: tuple[ClaimLedgerRow, ...]
 
     def __iter__(self) -> Iterator[ClaimLedgerRow]:
+        """Iterate over claim-ledger rows."""
         return iter(self.rows)
 
 
@@ -121,10 +128,30 @@ class DifferentiableSupportSurfaceAlignment:
     checked_claim_ids: tuple[str, ...]
     checked_paths: tuple[str, ...]
     claim_boundary: str
+    schema: str = SUPPORT_SURFACE_ALIGNMENT_SCHEMA
+    artifact_id: str = "diff-support-surface-alignment-audit-v1"
+
+    @classmethod
+    def from_dict(cls, payload: MappingLike) -> DifferentiableSupportSurfaceAlignment:
+        """Build support-surface alignment evidence from JSON data."""
+        schema = str(payload.get("schema", SUPPORT_SURFACE_ALIGNMENT_SCHEMA))
+        if schema != SUPPORT_SURFACE_ALIGNMENT_SCHEMA:
+            raise ValueError(f"unknown support-surface alignment schema: {schema}")
+        return cls(
+            passed=bool(payload["passed"]),
+            errors=_string_tuple(payload["errors"]),
+            checked_claim_ids=_string_tuple(payload["checked_claim_ids"]),
+            checked_paths=_string_tuple(payload["checked_paths"]),
+            claim_boundary=str(payload["claim_boundary"]),
+            schema=schema,
+            artifact_id=str(payload.get("artifact_id", "diff-support-surface-alignment-audit-v1")),
+        )
 
     def to_dict(self) -> dict[str, Any]:
         """Return JSON-ready support-surface alignment evidence."""
         return {
+            "schema": self.schema,
+            "artifact_id": self.artifact_id,
             "passed": self.passed,
             "errors": list(self.errors),
             "checked_claim_ids": list(self.checked_claim_ids),
@@ -138,7 +165,6 @@ MappingLike = dict[str, Any]
 
 def _string_tuple(value: Any) -> tuple[str, ...]:
     """Return a tuple of strings from a JSON list-like value."""
-
     if not isinstance(value, list | tuple):
         raise ValueError("expected a list-like JSON value")
     return tuple(str(item) for item in value)
@@ -146,7 +172,6 @@ def _string_tuple(value: Any) -> tuple[str, ...]:
 
 def load_differentiable_claim_ledger(path: Path = DEFAULT_LEDGER_PATH) -> ClaimLedger:
     """Load the committed differentiable claim ledger."""
-
     payload = json.loads(path.read_text(encoding="utf-8"))
     return ClaimLedger(
         schema=str(payload["schema"]),
@@ -155,13 +180,20 @@ def load_differentiable_claim_ledger(path: Path = DEFAULT_LEDGER_PATH) -> ClaimL
     )
 
 
+def load_differentiable_support_surface_alignment(
+    path: Path = DEFAULT_SUPPORT_SURFACE_ALIGNMENT_PATH,
+) -> DifferentiableSupportSurfaceAlignment:
+    """Load the committed differentiable support-surface alignment artefact."""
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    return DifferentiableSupportSurfaceAlignment.from_dict(payload)
+
+
 def validate_claim_ledger(
     rows_or_ledger: ClaimLedger | Sequence[ClaimLedgerRow],
     *,
     artifact_statuses: MappingLike | None = None,
 ) -> ClaimLedgerValidation:
     """Validate claim ledger promotion invariants."""
-
     rows = (
         rows_or_ledger.rows if isinstance(rows_or_ledger, ClaimLedger) else tuple(rows_or_ledger)
     )
@@ -192,7 +224,6 @@ def validate_public_language_against_ledger(
     public_texts: Iterable[str],
 ) -> ClaimLedgerValidation:
     """Reject public SOTA wording when the ledger has no promoted claim."""
-
     rows = (
         rows_or_ledger.rows if isinstance(rows_or_ledger, ClaimLedger) else tuple(rows_or_ledger)
     )
@@ -216,7 +247,6 @@ def validate_differentiable_support_surface_alignment(
     manifest_path: Path = DEFAULT_CAPABILITY_MANIFEST_PATH,
 ) -> DifferentiableSupportSurfaceAlignment:
     """Validate that claim-ledger surfaces exist and match generated inventory."""
-
     ledger = load_differentiable_claim_ledger(ledger_path) if rows is None else None
     claim_rows = ledger.rows if ledger is not None else tuple(rows or ())
     manifest_paths, manifest_errors = _load_manifest_paths(manifest_path)
@@ -292,7 +322,6 @@ def _requires_manifest_membership(path: str) -> bool:
 
 def render_claim_ledger_markdown(rows_or_ledger: ClaimLedger | Iterable[ClaimLedgerRow]) -> str:
     """Render a compact Markdown summary for reviewers."""
-
     rows = (
         rows_or_ledger.rows if isinstance(rows_or_ledger, ClaimLedger) else tuple(rows_or_ledger)
     )
@@ -327,13 +356,58 @@ def render_claim_ledger_markdown(rows_or_ledger: ClaimLedger | Iterable[ClaimLed
         "Bounded language: the differentiable lane is SOTA-candidate unless isolated "
         "CI benchmark evidence and external comparison artefacts pass."
     )
-    lines.append("")
+    return "\n".join(lines)
+
+
+def render_differentiable_support_surface_alignment_markdown(
+    alignment: DifferentiableSupportSurfaceAlignment,
+) -> str:
+    """Render support-surface alignment evidence for reviewers."""
+    lines = [
+        "<!--",
+        "SPDX-License-Identifier: AGPL-3.0-or-later",
+        "Commercial license available",
+        "© Concepts 1996–2026 Miroslav Šotek. All rights reserved.",
+        "© Code 2020–2026 Miroslav Šotek. All rights reserved.",
+        "ORCID: 0009-0009-3560-0851",
+        "Contact: www.anulum.li | protoscience@anulum.li",
+        "SCPN Quantum Control — Differentiable support-surface alignment",
+        "-->",
+        "",
+        "# Differentiable Support-Surface Alignment",
+        "",
+        f"- Schema: `{alignment.schema}`",
+        f"- Artifact ID: `{alignment.artifact_id}`",
+        f"- `passed`: `{alignment.passed}`",
+        f"- Claim boundary: {alignment.claim_boundary}",
+        "",
+        "## Checked Claims",
+        "",
+        "| Claim ID |",
+        "|---|",
+    ]
+    for claim_id in alignment.checked_claim_ids:
+        lines.append(f"| `{claim_id}` |")
+    lines.extend(
+        [
+            "",
+            "## Checked Paths",
+            "",
+            "| Path |",
+            "|---|",
+        ]
+    )
+    for path in alignment.checked_paths:
+        lines.append(f"| `{path}` |")
+    if alignment.errors:
+        lines.extend(["", "## Errors", "", "| Error |", "|---|"])
+        for error in alignment.errors:
+            lines.append(f"| {error} |")
     return "\n".join(lines)
 
 
 def render_public_claim_table(rows_or_ledger: ClaimLedger | Iterable[ClaimLedgerRow]) -> str:
     """Render public-safe differentiable claim wording from the ledger."""
-
     rows = (
         rows_or_ledger.rows if isinstance(rows_or_ledger, ClaimLedger) else tuple(rows_or_ledger)
     )
@@ -367,7 +441,6 @@ def render_public_claim_table(rows_or_ledger: ClaimLedger | Iterable[ClaimLedger
             "",
             "Global boundary: no differentiable row is promoted until the claim ledger,",
             "external comparison rows, and isolated CI benchmark artefacts all pass.",
-            "",
         ]
     )
     return "\n".join(lines)
@@ -378,7 +451,6 @@ def validate_public_claim_table(
     markdown: str,
 ) -> ClaimLedgerValidation:
     """Validate that the public claim table stays within ledger boundaries."""
-
     rows = (
         rows_or_ledger.rows if isinstance(rows_or_ledger, ClaimLedger) else tuple(rows_or_ledger)
     )
@@ -434,9 +506,13 @@ __all__ = [
     "ClaimLedgerValidation",
     "DEFAULT_CAPABILITY_MANIFEST_PATH",
     "DEFAULT_LEDGER_PATH",
+    "DEFAULT_SUPPORT_SURFACE_ALIGNMENT_PATH",
     "DifferentiableSupportSurfaceAlignment",
+    "SUPPORT_SURFACE_ALIGNMENT_SCHEMA",
+    "load_differentiable_support_surface_alignment",
     "load_differentiable_claim_ledger",
     "render_claim_ledger_markdown",
+    "render_differentiable_support_surface_alignment_markdown",
     "render_public_claim_table",
     "validate_differentiable_support_surface_alignment",
     "validate_claim_ledger",

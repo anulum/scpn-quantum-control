@@ -177,7 +177,7 @@ or debugging a subsystem, not as the default path for tutorial code.
 
 ::: scpn_quantum_control.differentiable_claim_ledger
     options:
-      members: [ClaimLedger, ClaimLedgerRow, ClaimLedgerValidation, DifferentiableSupportSurfaceAlignment, load_differentiable_claim_ledger, render_claim_ledger_markdown, validate_claim_ledger, validate_differentiable_support_surface_alignment, validate_public_language_against_ledger]
+      members: [ClaimLedger, ClaimLedgerRow, ClaimLedgerValidation, DifferentiableSupportSurfaceAlignment, load_differentiable_claim_ledger, load_differentiable_support_surface_alignment, render_claim_ledger_markdown, render_differentiable_support_surface_alignment_markdown, validate_claim_ledger, validate_differentiable_support_surface_alignment, validate_public_language_against_ledger]
 
 ::: scpn_quantum_control.differentiable_architecture_map
     options:

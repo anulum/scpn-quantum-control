@@ -6,8 +6,8 @@
     {
       "path": "data/differentiable_phase_qnode/claim_ledger.json",
       "role": "Claim-ledger source of truth",
-      "sha256": "13ac761741b7ae624b01b51b887f24d87c0b735cbcb48256fdeb2e3eda2930a0",
-      "size_bytes": 24595
+      "sha256": "d933f927c82be54723f34e5b1db03f70304a01c55044efa77e6db236deae742f",
+      "size_bytes": 24789
     },
     {
       "path": "data/differentiable_phase_qnode/claim_ledger.md",
@@ -20,6 +20,18 @@
       "role": "Public-safe claim wording table",
       "sha256": "567b45340b14be9cf0cee30e890fa6f15f857d6bb0c7902f1c497f6f347f0728",
       "size_bytes": 7119
+    },
+    {
+      "path": "data/differentiable_phase_qnode/differentiable_support_surface_alignment_20260627.json",
+      "role": "Differentiable support-surface alignment rerun artefact",
+      "sha256": "12735a382d95d6e0141f23b4bb93177a94a40471fff4d71ab73363f4adcb639f",
+      "size_bytes": 4338
+    },
+    {
+      "path": "data/differentiable_phase_qnode/differentiable_support_surface_alignment_20260627.md",
+      "role": "Differentiable support-surface alignment reviewer summary",
+      "sha256": "326491dd5114a39b38fd759f46c4125fb710ba159b6f4f474f9b7f9eaad47a8d",
+      "size_bytes": 4646
     },
     {
       "path": "data/differentiable_phase_qnode/differentiable_sota_scorecard_20260620.json",

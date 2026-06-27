@@ -159,7 +159,13 @@ candidate evidence.
 row still points to existing implementation, test, and documentation surfaces
 and that source/test/docs paths are present in the generated capability
 manifest. This is a consistency gate only; it does not promote hardware,
-provider, or performance claims.
+provider, or performance claims. The committed rerun artefacts live at
+`data/differentiable_phase_qnode/differentiable_support_surface_alignment_20260627.json`
+and
+`data/differentiable_phase_qnode/differentiable_support_surface_alignment_20260627.md`;
+`load_differentiable_support_surface_alignment()` reloads the JSON evidence and
+`render_differentiable_support_surface_alignment_markdown()` renders the
+reviewer summary.
 `run_differentiable_hardening_slice_gate(...)` records the required closeout
 checklist for each differentiable hardening slice: focused Ruff formatting and
 linting, mypy over changed source targets, module-specific pytest targets,

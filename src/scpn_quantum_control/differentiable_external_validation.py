@@ -60,6 +60,14 @@ DEFAULT_ARTIFACT_BUNDLE_INPUTS: tuple[tuple[str, str], ...] = (
         "Public-safe claim wording table",
     ),
     (
+        "data/differentiable_phase_qnode/differentiable_support_surface_alignment_20260627.json",
+        "Differentiable support-surface alignment rerun artefact",
+    ),
+    (
+        "data/differentiable_phase_qnode/differentiable_support_surface_alignment_20260627.md",
+        "Differentiable support-surface alignment reviewer summary",
+    ),
+    (
         "data/differentiable_phase_qnode/differentiable_sota_scorecard_20260620.json",
         "Differentiable SOTA category scorecard artefact",
     ),
