@@ -61,35 +61,27 @@ def _build_wilson_operator(loop: list[int], n_qubits: int) -> SparsePauliOp:
     if len(loop) < 2:
         raise ValueError(f"Loop must have at least 2 sites, got {len(loop)}")
 
-    # Build link operators for each edge (i, i+1) in the loop
-    # Each link: (X_i X_j + Y_i Y_j) / 2
-    result = None
-    for k in range(len(loop)):
-        i = loop[k]
-        j = loop[(k + 1) % len(loop)]
-
-        # X_i X_j term
+    def link_operator(i: int, j: int) -> SparsePauliOp:
+        """Build the two-site XY link term for one loop edge."""
         xx_label = ["I"] * n_qubits
         xx_label[i] = "X"
         xx_label[j] = "X"
         xx_op = SparsePauliOp("".join(reversed(xx_label)), coeffs=[0.5])
 
-        # Y_i Y_j term
         yy_label = ["I"] * n_qubits
         yy_label[i] = "Y"
         yy_label[j] = "Y"
         yy_op = SparsePauliOp("".join(reversed(yy_label)), coeffs=[0.5])
 
-        link = (xx_op + yy_op).simplify()
+        return (xx_op + yy_op).simplify()
 
-        if result is None:
-            result = link
-        else:
-            result = (result @ link).simplify()
+    result = link_operator(loop[0], loop[1 % len(loop)])
+    for k in range(1, len(loop)):
+        i = loop[k]
+        j = loop[(k + 1) % len(loop)]
+        link = link_operator(i, j)
+        result = (result @ link).simplify()
 
-    # The len(loop) >= 2 guard above guarantees the loop ran and set result;
-    # assert it so the SparsePauliOp | None accumulator narrows for the return.
-    assert result is not None
     return result
 
 

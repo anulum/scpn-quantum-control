@@ -250,6 +250,18 @@ The two packages are complementary: `gauge/` provides exact quantum
 answers for small systems, while `psi_field/` provides statistical
 mechanics answers for arbitrary-size systems.
 
+### Quantum Wilson Loop API
+
+Use `scpn_quantum_control.gauge.wilson_loop` when the observable must be
+evaluated on an exact Kuramoto-XY statevector. `_build_wilson_operator(loop,
+n_qubits)` constructs the closed-loop operator from two-site XY links and
+rejects loops shorter than two sites. `wilson_loop_expectation(psi, loop,
+n_qubits)` evaluates the operator on an explicitly supplied statevector, while
+`compute_wilson_loops(K, omega, max_length=4, max_loops=20)` finds graph loops
+and routes them through the package exact-diagonalisation path. This is the
+quantum, small-system counterpart to the classical phase-circulation observables
+below.
+
 ## 5. Usage Examples
 
 ### Build SCPN Lattice
