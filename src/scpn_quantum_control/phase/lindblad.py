@@ -191,8 +191,10 @@ class LindbladKuramotoSolver:
         rho = rho_flat.reshape(self.dim, self.dim)
 
         # Coherent part: -i[H, rho]
-        assert self._H is not None
-        drho = -1j * (self._H @ rho - rho @ self._H)
+        hamiltonian = self._H
+        if hamiltonian is None:
+            raise RuntimeError("Lindblad RHS requires build() before evaluation.")
+        drho = -1j * (hamiltonian @ rho - rho @ hamiltonian)
 
         # Dissipative part
         for L in self._lindblad_ops:
