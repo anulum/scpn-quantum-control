@@ -37,6 +37,7 @@ from .differentiable import (
 )
 from .differentiable_architecture_map import run_differentiable_architecture_map
 from .differentiable_benchmark_report import build_differentiable_benchmark_report
+from .differentiable_competitive_baselines import run_competitive_baseline_refresh
 from .differentiable_dependency_environment_map import (
     run_differentiable_dependency_environment_map,
 )
@@ -62,6 +63,7 @@ UnifiedDifferentiableOperation = Literal[
     "benchmark_report",
     "dashboard_status",
     "sota_scorecard",
+    "competitive_baseline_refresh",
     "rust_python_inventory",
     "architecture_rustification_map",
     "dependency_environment_map",
@@ -509,6 +511,22 @@ def differentiable_sota_scorecard_report() -> UnifiedDifferentiableAPIResult:
         hessian=None,
         payload=scorecard.to_dict(),
         claim_boundary=scorecard.claim_boundary,
+    )
+
+
+def differentiable_competitive_baseline_refresh_report() -> UnifiedDifferentiableAPIResult:
+    """Return claim-bounded competitive-baseline freshness evidence."""
+    refresh = run_competitive_baseline_refresh()
+    return UnifiedDifferentiableAPIResult(
+        operation="competitive_baseline_refresh",
+        supported=False,
+        method="differentiable_competitive_baselines",
+        value=None,
+        gradient=None,
+        jacobian=None,
+        hessian=None,
+        payload=refresh.to_dict(),
+        claim_boundary=refresh.claim_boundary,
     )
 
 
@@ -1253,6 +1271,8 @@ def differentiable_api(
         return differentiable_benchmark_report()
     if operation == "sota_scorecard":
         return differentiable_sota_scorecard_report()
+    if operation == "competitive_baseline_refresh":
+        return differentiable_competitive_baseline_refresh_report()
     if operation == "rust_python_inventory":
         return differentiable_rust_python_inventory_report()
     if operation == "architecture_rustification_map":
@@ -1395,6 +1415,7 @@ __all__ = [
     "differentiable_architecture_map_report",
     "differentiable_benchmark_report",
     "differentiable_compile_report",
+    "differentiable_competitive_baseline_refresh_report",
     "differentiable_dashboard_status",
     "differentiable_dependency_environment_map_report",
     "differentiable_frontend_report",

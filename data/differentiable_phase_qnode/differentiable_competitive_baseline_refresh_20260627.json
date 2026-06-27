@@ -1,0 +1,245 @@
+{
+  "artifact_id": "diff-competitive-baseline-refresh-20260627",
+  "claim_boundary": "Competitive baseline freshness evidence only; it does not promote state-of-art, world-class, provider, hardware, GPU, QPU, production-performance, or isolated_affinity claims.",
+  "generated_on": "2026-06-27",
+  "max_age_days": 45,
+  "rows": [
+    {
+      "baseline_id": "jax",
+      "checked_on": "2026-06-27",
+      "claim_boundary": "Official baseline source only; this row records comparison coverage and does not promote SCPN differentiable claims.",
+      "classification": "baseline_refresh_evidence",
+      "display_name": "JAX",
+      "hardening_implications": [
+        "Keep JAX rows behind_baseline until transform breadth and isolated evidence exist.",
+        "Refresh PyTree, sharding, and export blockers before any promotion wording."
+      ],
+      "max_age_days": 45,
+      "refresh_due_on": "2026-08-11",
+      "required_capabilities": [
+        "grad/value_and_grad",
+        "jacfwd/jacrev/hessian",
+        "jvp/vjp",
+        "jit/vmap/pmap",
+        "PyTrees/sharding/export"
+      ],
+      "scorecard_categories": [
+        "jax_native_transforms",
+        "benchmark_promotion"
+      ],
+      "source_kind": "official_docs",
+      "source_url": "https://docs.jax.dev/",
+      "upstream_version": "PyPI jax 0.10.2; official docs checked 2026-06-27"
+    },
+    {
+      "baseline_id": "pytorch",
+      "checked_on": "2026-06-27",
+      "claim_boundary": "Official baseline source only; this row records comparison coverage and does not promote SCPN differentiable claims.",
+      "classification": "baseline_refresh_evidence",
+      "display_name": "PyTorch",
+      "hardening_implications": [
+        "Keep PyTorch rows behind_baseline until compile/device/training evidence exists.",
+        "Require CUDA and fullgraph classification before performance wording."
+      ],
+      "max_age_days": 45,
+      "refresh_due_on": "2026-08-11",
+      "required_capabilities": [
+        "autograd",
+        "torch.func",
+        "torch.compile",
+        "AOTAutograd/Dynamo boundaries",
+        "device and training-loop maturity"
+      ],
+      "scorecard_categories": [
+        "pytorch_autograd_compile",
+        "benchmark_promotion"
+      ],
+      "source_kind": "official_docs",
+      "source_url": "https://docs.pytorch.org/",
+      "upstream_version": "PyPI torch 2.12.1; official stable docs checked 2026-06-27"
+    },
+    {
+      "baseline_id": "tensorflow",
+      "checked_on": "2026-06-27",
+      "claim_boundary": "Official baseline source only; this row records comparison coverage and does not promote SCPN differentiable claims.",
+      "classification": "baseline_refresh_evidence",
+      "display_name": "TensorFlow",
+      "hardening_implications": [
+        "Use TensorFlow as a maintained compatibility route or explicitly rescope it.",
+        "Remove stale Graph/XLA wording when dependency support changes."
+      ],
+      "max_age_days": 45,
+      "refresh_due_on": "2026-08-11",
+      "required_capabilities": [
+        "GradientTape",
+        "tf.function",
+        "XLA route classification",
+        "Keras layer integration"
+      ],
+      "scorecard_categories": [
+        "pytorch_autograd_compile",
+        "docs_api_maintainability"
+      ],
+      "source_kind": "official_docs",
+      "source_url": "https://www.tensorflow.org/guide/autodiff",
+      "upstream_version": "PyPI tensorflow 2.21.0; official docs checked 2026-06-27"
+    },
+    {
+      "baseline_id": "pennylane",
+      "checked_on": "2026-06-27",
+      "claim_boundary": "Official baseline source only; this row records comparison coverage and does not promote SCPN differentiable claims.",
+      "classification": "baseline_refresh_evidence",
+      "display_name": "PennyLane",
+      "hardening_implications": [
+        "Attach real provider-plugin artefacts before provider-backed wording.",
+        "Keep hardware plugin rows blocked until live-ticket artefacts exist."
+      ],
+      "max_age_days": 45,
+      "refresh_due_on": "2026-08-11",
+      "required_capabilities": [
+        "QNode interfaces",
+        "diff_method routing",
+        "finite-shot gradients",
+        "device/plugin execution"
+      ],
+      "scorecard_categories": [
+        "pennylane_qnode_device_plugin",
+        "provider_hardware_gradients"
+      ],
+      "source_kind": "official_docs",
+      "source_url": "https://docs.pennylane.ai/",
+      "upstream_version": "PyPI pennylane 0.45.1; official docs checked 2026-06-27"
+    },
+    {
+      "baseline_id": "qiskit_algorithms",
+      "checked_on": "2026-06-27",
+      "claim_boundary": "Official baseline source only; this row records comparison coverage and does not promote SCPN differentiable claims.",
+      "classification": "baseline_refresh_evidence",
+      "display_name": "Qiskit Algorithms",
+      "hardening_implications": [
+        "Require matched Runtime, raw-count, calibration, and gradient-workflow artefacts.",
+        "Keep no-submit evidence distinct from live QPU evidence."
+      ],
+      "max_age_days": 45,
+      "refresh_due_on": "2026-08-11",
+      "required_capabilities": [
+        "Estimator/Sampler primitives",
+        "parameter-shift gradients",
+        "finite-difference/LCU/SPSA gradients",
+        "QGT/QFI workflows"
+      ],
+      "scorecard_categories": [
+        "qiskit_runtime_provider_gradients",
+        "provider_hardware_gradients"
+      ],
+      "source_kind": "official_docs",
+      "source_url": "https://qiskit-community.github.io/qiskit-algorithms/",
+      "upstream_version": "PyPI qiskit-algorithms 0.4.0; official docs checked 2026-06-27"
+    },
+    {
+      "baseline_id": "catalyst",
+      "checked_on": "2026-06-27",
+      "claim_boundary": "Official baseline source only; this row records comparison coverage and does not promote SCPN differentiable claims.",
+      "classification": "baseline_refresh_evidence",
+      "display_name": "PennyLane Catalyst",
+      "hardening_implications": [
+        "Keep Catalyst parity a hard gap until configured qjit runner evidence exists.",
+        "Compare compiled finite-shot and device routes separately."
+      ],
+      "max_age_days": 45,
+      "refresh_due_on": "2026-08-11",
+      "required_capabilities": [
+        "qjit",
+        "compiled quantum-classical workflows",
+        "compiled control flow",
+        "compiled differentiation"
+      ],
+      "scorecard_categories": [
+        "catalyst_compiler_workflows",
+        "enzyme_compiler_ad"
+      ],
+      "source_kind": "official_docs",
+      "source_url": "https://docs.pennylane.ai/projects/catalyst/",
+      "upstream_version": "PyPI pennylane-catalyst 0.15.0; official docs checked 2026-06-27"
+    },
+    {
+      "baseline_id": "enzyme_mlir",
+      "checked_on": "2026-06-27",
+      "claim_boundary": "Official baseline source only; this row records comparison coverage and does not promote SCPN differentiable claims.",
+      "classification": "baseline_refresh_evidence",
+      "display_name": "Enzyme/MLIR",
+      "hardening_implications": [
+        "Attach raw breadth artefacts before compiler-AD exceedance wording.",
+        "Require isolated benchmark IDs for native compiler-performance wording."
+      ],
+      "max_age_days": 45,
+      "refresh_due_on": "2026-08-11",
+      "required_capabilities": [
+        "LLVM AD",
+        "MLIR-oriented AD",
+        "reverse-mode compiler AD",
+        "native compiler benchmark evidence"
+      ],
+      "scorecard_categories": [
+        "enzyme_compiler_ad",
+        "rust_native_program_ad"
+      ],
+      "source_kind": "official_project_docs",
+      "source_url": "https://enzyme.mit.edu/",
+      "upstream_version": "GitHub EnzymeAD/Enzyme v0.0.276; official docs checked 2026-06-27"
+    },
+    {
+      "baseline_id": "julia_ad",
+      "checked_on": "2026-06-27",
+      "claim_boundary": "Official baseline source only; this row records comparison coverage and does not promote SCPN differentiable claims.",
+      "classification": "baseline_refresh_evidence",
+      "display_name": "Julia AD ecosystem",
+      "hardening_implications": [
+        "Track custom-rule ergonomics and mutation blockers against Julia AD references.",
+        "Keep Program AD alias/effect semantics explicit before promotion."
+      ],
+      "max_age_days": 45,
+      "refresh_due_on": "2026-08-11",
+      "required_capabilities": [
+        "custom rules",
+        "source-to-source AD",
+        "mutation boundary documentation",
+        "compiler-backed AD interop"
+      ],
+      "scorecard_categories": [
+        "rust_native_program_ad",
+        "docs_api_maintainability"
+      ],
+      "source_kind": "official_project_docs",
+      "source_url": "https://juliadiff.org/ChainRulesCore.jl/stable/",
+      "upstream_version": "ChainRulesCore.jl v1.26.1; Zygote.jl v0.7.11; Reactant.jl v0.2.269; PyPI juliacall 0.9.35"
+    },
+    {
+      "baseline_id": "emerging_ad",
+      "checked_on": "2026-06-27",
+      "claim_boundary": "Official baseline source only; this row records comparison coverage and does not promote SCPN differentiable claims.",
+      "classification": "baseline_refresh_evidence",
+      "display_name": "Emerging AD systems",
+      "hardening_implications": [
+        "Refresh emergent compiler/AD references before long-horizon promotion plans.",
+        "Tie adoption claims to license and packaging decisions."
+      ],
+      "max_age_days": 45,
+      "refresh_due_on": "2026-08-11",
+      "required_capabilities": [
+        "compiler IR interop",
+        "stable extension points",
+        "licensing/install ergonomics",
+        "reviewer reproduction bundles"
+      ],
+      "scorecard_categories": [
+        "adoption_licensing",
+        "docs_api_maintainability"
+      ],
+      "source_kind": "official_repository",
+      "source_url": "https://mlir.llvm.org/docs/Dialects/EmitC/",
+      "upstream_version": "PyPI tinygrad 0.13.0; MLIR EmitC docs checked 2026-06-27"
+    }
+  ],
+  "schema": "scpn_qc_differentiable_competitive_baseline_refresh_v1"
+}

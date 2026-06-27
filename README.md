@@ -105,9 +105,9 @@ has a defined commercial licensing route.
 | Surface | Current inventory |
 |---|---:|
 | Package version | 0.10.0 |
-| Public API exports | 745 |
-| Python source modules | 492 |
-| Public Python classes | 867 |
+| Public API exports | 757 |
+| Python source modules | 493 |
+| Public Python classes | 871 |
 | Domain package families | 32 |
 | API documentation pages | 0 |
 | Rust PyO3 function bindings | 171 |
@@ -115,7 +115,7 @@ has a defined commercial licensing route.
 | Notebook files | 99 |
 | Example files | 31 |
 | Optional extras | 43 |
-| Python test files | 804 |
+| Python test files | 805 |
 | Public documentation pages | 253 |
 | GitHub Actions workflows | 21 |
 

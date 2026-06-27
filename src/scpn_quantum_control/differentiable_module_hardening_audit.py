@@ -460,6 +460,11 @@ def differentiable_module_hardening_registry() -> tuple[DifferentiableModuleHard
             ("category promotion blockers", "claim-ledger promotion guards"),
         ),
         _record(
+            "src/scpn_quantum_control/differentiable_competitive_baselines.py",
+            ("tests/test_differentiable_competitive_baselines.py",),
+            ("competitive baseline freshness", "public promotion freshness gate"),
+        ),
+        _record(
             "src/scpn_quantum_control/whole_program_ad_result.py",
             ("tests/test_whole_program_ad_contracts.py",),
             ("whole-program result validation", "facade export compatibility"),

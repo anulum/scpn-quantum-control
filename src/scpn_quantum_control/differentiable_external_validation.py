@@ -76,6 +76,14 @@ DEFAULT_ARTIFACT_BUNDLE_INPUTS: tuple[tuple[str, str], ...] = (
         "Differentiable SOTA category scorecard reviewer summary",
     ),
     (
+        "data/differentiable_phase_qnode/differentiable_competitive_baseline_refresh_20260627.json",
+        "Differentiable competitive-baseline freshness artefact",
+    ),
+    (
+        "data/differentiable_phase_qnode/differentiable_competitive_baseline_refresh_20260627.md",
+        "Differentiable competitive-baseline freshness reviewer summary",
+    ),
+    (
         "data/differentiable_phase_qnode/differentiable_rust_python_inventory_20260620.json",
         "Differentiable Rust/Python rustification surface inventory artefact",
     ),

@@ -7,13 +7,13 @@
     "model_documentation_pages": 0,
     "notebook_files": 99,
     "optional_extras": 43,
-    "public_api_exports": 745,
+    "public_api_exports": 757,
     "public_documentation_pages": 253,
-    "python_model_classes": 867,
-    "python_model_source_modules": 492,
+    "python_model_classes": 871,
+    "python_model_source_modules": 493,
     "rust_pyo3_model_wrappers": 171,
     "rust_source_modules": 42,
-    "test_files": 804
+    "test_files": 805
   },
   "documentation": {
     "examples": [
@@ -967,6 +967,22 @@
       {
         "name": "ComparisonMethodRow",
         "path": "src/scpn_quantum_control/benchmarks/reproducible_comparison.py"
+      },
+      {
+        "name": "CompetitiveBaselinePromotionGate",
+        "path": "src/scpn_quantum_control/differentiable_competitive_baselines.py"
+      },
+      {
+        "name": "CompetitiveBaselineRefresh",
+        "path": "src/scpn_quantum_control/differentiable_competitive_baselines.py"
+      },
+      {
+        "name": "CompetitiveBaselineRow",
+        "path": "src/scpn_quantum_control/differentiable_competitive_baselines.py"
+      },
+      {
+        "name": "CompetitiveBaselineValidation",
+        "path": "src/scpn_quantum_control/differentiable_competitive_baselines.py"
       },
       {
         "name": "CompilerADExecutableConfig",
@@ -4266,6 +4282,7 @@
       "src/scpn_quantum_control/differentiable_benchmark_report.py",
       "src/scpn_quantum_control/differentiable_canonical_api.py",
       "src/scpn_quantum_control/differentiable_claim_ledger.py",
+      "src/scpn_quantum_control/differentiable_competitive_baselines.py",
       "src/scpn_quantum_control/differentiable_consistency.py",
       "src/scpn_quantum_control/differentiable_custom_derivatives.py",
       "src/scpn_quantum_control/differentiable_dependency_environment_map.py",
@@ -4800,6 +4817,12 @@
     "CloudManifestBundle",
     "CoSimulationResult",
     "ComparisonMethodRow",
+    "CompetitiveBaselineId",
+    "CompetitiveBaselinePromotionGate",
+    "CompetitiveBaselineRefresh",
+    "CompetitiveBaselineRow",
+    "CompetitiveBaselineSourceKind",
+    "CompetitiveBaselineValidation",
     "CompilerADExecutableConfig",
     "CompilerADKernelVerification",
     "CompilerADTransformPlan",
@@ -5067,6 +5090,7 @@
     "applications",
     "armijo_backtracking_line_search",
     "assess_provider_capability_snapshot",
+    "audit_competitive_baseline_promotion_gate",
     "audit_differentiable_sota_promotion_language",
     "available_baselines",
     "azure_openqasm3_to_workload",
@@ -5171,6 +5195,7 @@
     "differentiable_api",
     "differentiable_architecture_map_report",
     "differentiable_benchmark_report",
+    "differentiable_competitive_baseline_refresh_report",
     "differentiable_compile_report",
     "differentiable_dashboard_status",
     "differentiable_dependency_environment_map_report",
@@ -5246,6 +5271,7 @@
     "learn_symmetry_decay",
     "least_squares_covariance",
     "levenberg_marquardt_step",
+    "load_competitive_baseline_refresh",
     "load_hardware_kuramoto_4osc_trace",
     "load_ieee5bus_sync_forecast_case",
     "make_executable_ad_kernel_batching_rule",
@@ -5402,6 +5428,7 @@
     "registered_custom_jacobian",
     "registered_custom_jvp",
     "registered_custom_vjp",
+    "render_competitive_baseline_refresh_markdown",
     "render_differentiable_architecture_map_markdown",
     "render_differentiable_dependency_environment_map_markdown",
     "render_differentiable_isolated_benchmark_plan_markdown",
@@ -5416,6 +5443,7 @@
     "rigetti_quil_workload",
     "run_biological_qec_batch_execution",
     "run_biological_qec_execution",
+    "run_competitive_baseline_refresh",
     "run_differentiable_architecture_map",
     "run_differentiable_dependency_environment_map",
     "run_differentiable_hardening_slice_gate",
@@ -5480,6 +5508,7 @@
     "transpile_for_trapped_ion",
     "trapped_ion_noise_model",
     "update_levenberg_marquardt_damping",
+    "validate_competitive_baseline_refresh",
     "validate_differentiable_architecture_map",
     "validate_differentiable_dependency_environment_map",
     "validate_differentiable_isolated_benchmark_plan",
@@ -5755,6 +5784,7 @@
       "tests/test_differentiable_benchmark_workflow.py",
       "tests/test_differentiable_canonical_modes.py",
       "tests/test_differentiable_claim_ledger.py",
+      "tests/test_differentiable_competitive_baselines.py",
       "tests/test_differentiable_consistency.py",
       "tests/test_differentiable_custom_derivatives.py",
       "tests/test_differentiable_dependency_environment_map.py",

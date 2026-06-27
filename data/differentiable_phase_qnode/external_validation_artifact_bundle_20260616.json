@@ -46,6 +46,18 @@
       "size_bytes": 8131
     },
     {
+      "path": "data/differentiable_phase_qnode/differentiable_competitive_baseline_refresh_20260627.json",
+      "role": "Differentiable competitive-baseline freshness artefact",
+      "sha256": "f9ef1772c91f2897b65ea60528f61158536fdeff45d243f29f0d939f1eb8e507",
+      "size_bytes": 10015
+    },
+    {
+      "path": "data/differentiable_phase_qnode/differentiable_competitive_baseline_refresh_20260627.md",
+      "role": "Differentiable competitive-baseline freshness reviewer summary",
+      "sha256": "c5f67005401128a20535c32ed3cb193f23f798c7cbee8e6e0812d3af48221be4",
+      "size_bytes": 3009
+    },
+    {
       "path": "data/differentiable_phase_qnode/differentiable_rust_python_inventory_20260620.json",
       "role": "Differentiable Rust/Python rustification surface inventory artefact",
       "sha256": "7480aef14c1c44767d864abfcb0e7b1dbeb0df91cb79537597995ab95da1a025",

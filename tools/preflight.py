@@ -12,14 +12,15 @@ Gates (in order):
   2. ruff format     — formatting drift
   3. docs surface    — public docs/docstring surface regression gate
   4. diff-sota-lang  — differentiable SOTA promotion-language evidence gate
-  5. ruff D ratchet  — NumPy-style docstring ratchet for differentiable hardening
-  6. test-quality    — forbid coverage-bucket pytest modules
-  7. version-sync    — version string consistency across 5 carrier files
-  8. rust-pyi        — Rust PyO3 exports match local typing contract
-  9. mypy            — type errors
-  10. mypy-strict-dp — strict typing ratchet for differentiable programming
-  11. pytest+coverage — tests + temporary coverage threshold (--cov-fail-under=70)
-  12. bandit         — security scan
+  5. diff-baselines  — differentiable competitive-baseline freshness gate
+  6. ruff D ratchet  — NumPy-style docstring ratchet for differentiable hardening
+  7. test-quality    — forbid coverage-bucket pytest modules
+  8. version-sync    — version string consistency across 5 carrier files
+  9. rust-pyi        — Rust PyO3 exports match local typing contract
+  10. mypy           — type errors
+  11. mypy-strict-dp — strict typing ratchet for differentiable programming
+  12. pytest+coverage — tests + temporary coverage threshold (--cov-fail-under=70)
+  13. bandit         — security scan
 
 Usage:
   python tools/preflight.py                # all gates (default)
@@ -39,6 +40,7 @@ _PY = sys.executable
 
 DIFFERENTIABLE_DOCSTRING_RATCHET = [
     "src/scpn_quantum_control/differentiable_architecture_map.py",
+    "src/scpn_quantum_control/differentiable_competitive_baselines.py",
     "src/scpn_quantum_control/differentiable_dependency_environment_map.py",
     "src/scpn_quantum_control/differentiable_sota_scorecard.py",
     "src/scpn_quantum_control/differentiable_external_validation.py",
@@ -46,6 +48,7 @@ DIFFERENTIABLE_DOCSTRING_RATCHET = [
     "src/scpn_quantum_control/benchmarks/differentiable_isolated_benchmark_plan.py",
     "src/scpn_quantum_control/benchmarks/differentiable_hardening_gate.py",
     "tests/test_differentiable_external_validation.py",
+    "tests/test_differentiable_competitive_baselines.py",
     "tests/test_differentiable_module_hardening_audit.py",
     "tests/test_differentiable_hardening_gate.py",
 ]
@@ -85,6 +88,10 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
         [_PY, "tools/check_differentiable_sota_promotion_language.py"],
     ),
     (
+        "differentiable-competitive-baselines",
+        [_PY, "tools/check_differentiable_competitive_baselines.py"],
+    ),
+    (
         "ruff D differentiable module-hardening ratchet",
         [
             _PY,
@@ -110,6 +117,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
             "src/scpn_quantum_control/differentiable.py",
             "src/scpn_quantum_control/differentiable_claim_ledger.py",
             "src/scpn_quantum_control/differentiable_architecture_map.py",
+            "src/scpn_quantum_control/differentiable_competitive_baselines.py",
             "src/scpn_quantum_control/differentiable_dependency_environment_map.py",
             "src/scpn_quantum_control/differentiable_sota_scorecard.py",
             "src/scpn_quantum_control/differentiable_api.py",

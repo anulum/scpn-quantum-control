@@ -129,6 +129,15 @@ production-performance, or promotion-ready wording appears without a matching
 ready scorecard row and promoted claim-ledger rows. Bounded `SOTA-candidate`
 wording remains allowed so roadmap and reviewer documentation can describe
 the governance lane without upgrading claims.
+`run_competitive_baseline_refresh()` records the official upstream source
+streams used to refresh that scorecard. The committed artefacts live at
+`data/differentiable_phase_qnode/differentiable_competitive_baseline_refresh_20260627.json`
+and
+`data/differentiable_phase_qnode/differentiable_competitive_baseline_refresh_20260627.md`.
+`audit_competitive_baseline_promotion_gate()` validates the refresh window and
+combines it with the public-language audit, so promotion wording remains blocked
+unless fresh upstream baseline evidence, ready scorecard rows, and promoted
+claim-ledger rows all agree.
 `run_differentiable_rust_python_inventory()` adds the rustification surface
 inventory required before broad Rust migration. It classifies each current
 differentiable route as `rust_backed`, `python_reference`, `metadata_only`,
