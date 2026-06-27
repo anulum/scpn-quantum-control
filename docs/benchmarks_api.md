@@ -469,8 +469,8 @@ circuit, same parameters, same observable, and exact-state shot policy. It is a
 correctness artefact only: `promotion_ready` remains false until separate
 isolated benchmark evidence and claim-ledger promotion metadata exist.
 
-For LLVM/Enzyme, set `SCPN_ENZYME_RUNNER` to an executable that reads a JSON
-request on stdin and writes JSON with:
+For LLVM/Enzyme, set `SCPN_ENZYME_RUNNER` to an absolute path for an executable
+file that reads a JSON request on stdin and writes JSON with:
 
 ```json
 {
@@ -480,12 +480,14 @@ request on stdin and writes JSON with:
 }
 ```
 
-The runner row enforces a timeout (`SCPN_ENZYME_RUNNER_TIMEOUT_SECONDS`,
-default `10`), validates finite scalar/vector outputs, records toolchain
-metadata, and reports `correctness_mismatch` unless value and gradient match
-the SCPN reference. These rows are comparison evidence only; they do not claim
-provider execution, QPU execution, GPU execution, arbitrary-program AD, or
-production performance.
+The runner row rejects relative paths, missing files, and non-executable files
+before subprocess execution. It enforces a timeout
+(`SCPN_ENZYME_RUNNER_TIMEOUT_SECONDS`, default `10`), validates finite
+scalar/vector outputs, records toolchain metadata, and reports
+`correctness_mismatch` unless value and gradient match the SCPN reference. These
+rows are comparison evidence only; they do not claim provider execution, QPU
+execution, GPU execution, arbitrary-program AD, or production performance. Use
+the same absolute-executable rule for `SCPN_CATALYST_RUNNER`.
 
 When Enzyme is supplied through the Enzyme-JAX package rather than a standalone
 `enzyme` executable, set `ENZYME_LLVM_PLUGIN` to the installed native extension

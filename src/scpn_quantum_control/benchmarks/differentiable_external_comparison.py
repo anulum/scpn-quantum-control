@@ -15,7 +15,7 @@ import math
 import os
 import platform
 import shutil
-import subprocess
+import subprocess  # nosec B404
 import sys
 import time
 import tracemalloc
@@ -1256,9 +1256,7 @@ def _run_pennylane_reference(values: NDArray[np.float64]) -> tuple[float, NDArra
 def _run_enzyme_reference(
     values: NDArray[np.float64],
 ) -> tuple[float, NDArray[np.float64], dict[str, str]]:
-    runner = os.environ.get("SCPN_ENZYME_RUNNER")
-    if not runner:
-        raise RuntimeError("SCPN_ENZYME_RUNNER is not configured")
+    runner = _validated_runner_from_env("SCPN_ENZYME_RUNNER", label="Enzyme")
     payload = json.dumps(
         {
             "schema": "scpn_qc_enzyme_runner_request_v1",
@@ -1271,7 +1269,7 @@ def _run_enzyme_reference(
         sort_keys=True,
     )
     try:
-        completed = subprocess.run(
+        completed = subprocess.run(  # nosec B603
             [runner],
             input=payload,
             text=True,
@@ -1299,9 +1297,7 @@ def _run_enzyme_reference(
 def _run_catalyst_reference(
     values: NDArray[np.float64],
 ) -> tuple[float, NDArray[np.float64], dict[str, str]]:
-    runner = os.environ.get("SCPN_CATALYST_RUNNER")
-    if not runner:
-        raise RuntimeError("SCPN_CATALYST_RUNNER is not configured")
+    runner = _validated_runner_from_env("SCPN_CATALYST_RUNNER", label="Catalyst")
     payload = json.dumps(
         {
             "schema": "scpn_qc_catalyst_runner_request_v1",
@@ -1315,7 +1311,7 @@ def _run_catalyst_reference(
         sort_keys=True,
     )
     try:
-        completed = subprocess.run(
+        completed = subprocess.run(  # nosec B603
             [runner],
             input=payload,
             text=True,
@@ -1392,17 +1388,13 @@ def _backend_dependency_versions(backend: str) -> dict[str, str]:
             versions["enzyme_llvm_plugin"] = (
                 f"file:{plugin}" if os.path.exists(plugin) else f"missing:{plugin}"
             )
-        runner = os.environ.get("SCPN_ENZYME_RUNNER")
-        if runner:
-            versions["enzyme_runner"] = (
-                f"executable:{runner}" if os.path.exists(runner) else f"missing:{runner}"
-            )
+        runner_metadata = _runner_metadata_from_env("SCPN_ENZYME_RUNNER", label="Enzyme")
+        if runner_metadata:
+            versions["enzyme_runner"] = runner_metadata
     if backend == "catalyst":
-        runner = os.environ.get("SCPN_CATALYST_RUNNER")
-        if runner:
-            versions["catalyst_runner"] = (
-                f"executable:{runner}" if os.path.exists(runner) else f"missing:{runner}"
-            )
+        runner_metadata = _runner_metadata_from_env("SCPN_CATALYST_RUNNER", label="Catalyst")
+        if runner_metadata:
+            versions["catalyst_runner"] = runner_metadata
     return versions
 
 
@@ -1444,6 +1436,33 @@ def _catalyst_runner_timeout_seconds() -> float:
     return timeout
 
 
+def _validated_runner_from_env(env_var: str, *, label: str) -> str:
+    raw = os.environ.get(env_var)
+    if not raw:
+        raise RuntimeError(f"{env_var} is not configured")
+    if "\x00" in raw:
+        raise RuntimeError(f"{env_var} contains a null byte")
+    runner = Path(raw).expanduser()
+    if not runner.is_absolute():
+        raise RuntimeError(f"{env_var} must be an absolute executable path")
+    if not runner.is_file():
+        raise RuntimeError(f"{env_var} must point to an existing executable file")
+    if not os.access(runner, os.X_OK):
+        raise RuntimeError(f"{label} runner path is not executable: {runner}")
+    return str(runner)
+
+
+def _runner_metadata_from_env(env_var: str, *, label: str) -> str | None:
+    raw = os.environ.get(env_var)
+    if not raw:
+        return None
+    try:
+        runner = _validated_runner_from_env(env_var, label=label)
+    except RuntimeError as exc:
+        return f"invalid:{exc}"
+    return f"executable:{runner}"
+
+
 def _enzyme_tooling_available() -> bool:
     configured_plugin = os.environ.get("ENZYME_LLVM_PLUGIN")
     return shutil.which("enzyme") is not None or bool(
@@ -1460,13 +1479,19 @@ def _catalyst_tooling_available() -> bool:
 
 
 def _enzyme_runner_configured() -> bool:
-    runner = os.environ.get("SCPN_ENZYME_RUNNER")
-    return bool(runner and os.path.exists(runner) and _enzyme_tooling_available())
+    try:
+        _validated_runner_from_env("SCPN_ENZYME_RUNNER", label="Enzyme")
+    except RuntimeError:
+        return False
+    return _enzyme_tooling_available()
 
 
 def _catalyst_runner_configured() -> bool:
-    runner = os.environ.get("SCPN_CATALYST_RUNNER")
-    return bool(runner and os.path.exists(runner) and _catalyst_tooling_available())
+    try:
+        _validated_runner_from_env("SCPN_CATALYST_RUNNER", label="Catalyst")
+    except RuntimeError:
+        return False
+    return _catalyst_tooling_available()
 
 
 __all__ = [

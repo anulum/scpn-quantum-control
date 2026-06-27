@@ -319,9 +319,11 @@ the repository may not promote the claim unless that job uploads an artefact
 classified as `isolated_affinity`. Unconfigured Enzyme and Catalyst tooling is
 recorded as `dependency_missing` hard-gap evidence, not a hidden success. When
 `SCPN_ENZYME_RUNNER` or `SCPN_CATALYST_RUNNER` is configured with the matching
-tooling present, the external comparison row sends a strict JSON request,
-enforces a timeout, records runner toolchain metadata, and accepts success only
-when value and gradient match the SCPN analytic reference. Accelerator benchmark
+tooling present, it must be an absolute path to an executable file. The external
+comparison row sends a strict JSON request, enforces a timeout, records runner
+toolchain metadata, and accepts success only when value and gradient match the
+SCPN analytic reference. Invalid runner paths stay `dependency_missing` hard
+gaps with explicit metadata rather than being executed. Accelerator benchmark
 claims are also fail-closed: the benchmark evidence bundle always records
 explicit accelerator metadata. CPU-only runs are labelled CPU-only; CUDA or ROCm
 requested through

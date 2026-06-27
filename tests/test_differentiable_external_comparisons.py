@@ -12,7 +12,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 from types import SimpleNamespace
-from typing import Any
+from typing import Any, cast
 
 import numpy as np
 import pytest
@@ -39,6 +39,7 @@ from scpn_quantum_control.phase.qnode_circuit import (
 def test_external_comparison_suite_records_success_rows_and_enzyme_hard_gap(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """The external comparison suite should emit success and hard-gap rows."""
     monkeypatch.setattr(comparison, "is_phase_jax_available", lambda: True)
     monkeypatch.setattr(comparison, "is_phase_torch_available", lambda: True)
     monkeypatch.setattr(comparison, "is_phase_tensorflow_available", lambda: True)
@@ -118,6 +119,7 @@ def test_external_comparison_suite_records_success_rows_and_enzyme_hard_gap(
 
 
 def test_identical_circuit_gradient_comparison_records_live_backend_boundaries() -> None:
+    """Identical-circuit rows should record live optional-backend boundaries."""
     rows = run_identical_circuit_gradient_comparison_suite()
     by_backend = {row.backend: row for row in rows}
 
@@ -145,6 +147,8 @@ def test_identical_circuit_gradient_comparison_records_live_backend_boundaries()
 def test_identical_circuit_gradient_comparison_success_rows_are_deterministic(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """Synthetic identical-circuit successes should remain deterministic."""
+
     class FakeQiskitResult:
         value = np.cos(0.4)
         gradient = np.array([-np.sin(0.4)], dtype=np.float64)
@@ -201,6 +205,7 @@ def test_identical_circuit_gradient_comparison_success_rows_are_deterministic(
 def test_identical_circuit_gradient_comparison_writer_marks_ready_not_promoted(
     tmp_path: Path,
 ) -> None:
+    """The identical-circuit writer should mark readiness without promotion."""
     output = tmp_path / "identical-circuit.json"
     circuit, values, operations, observable_label, fingerprint = (
         comparison._identical_circuit_problem()
@@ -250,6 +255,7 @@ def test_identical_circuit_gradient_comparison_writer_marks_ready_not_promoted(
 
 
 def test_identical_circuit_gradient_comparison_row_requires_success_evidence() -> None:
+    """Success rows should reject missing backend value or gradient evidence."""
     try:
         IdenticalCircuitGradientComparisonRow(
             case_id="case",
@@ -281,6 +287,7 @@ def test_identical_circuit_gradient_comparison_row_requires_success_evidence() -
 def test_external_comparison_suite_classifies_runtime_failures(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """Framework callback failures should become runtime hard-gap rows."""
     monkeypatch.setattr(comparison, "is_phase_jax_available", lambda: True)
     monkeypatch.setattr(comparison, "is_phase_torch_available", lambda: False)
     monkeypatch.setattr(comparison, "is_phase_tensorflow_available", lambda: False)
@@ -307,6 +314,7 @@ def test_external_comparison_suite_classifies_runtime_failures(
 
 
 def test_external_comparison_row_requires_hard_gap_fields() -> None:
+    """Hard-gap rows should preserve required setup and failure metadata."""
     row = ExternalComparisonRow(
         case_id="bounded_phase_objective",
         backend="enzyme",
@@ -331,6 +339,7 @@ def test_external_comparison_row_requires_hard_gap_fields() -> None:
 
 
 def test_external_comparison_row_rejects_success_without_numeric_evidence() -> None:
+    """Success rows should reject incomplete numeric evidence."""
     try:
         ExternalComparisonRow(
             case_id="bounded_phase_objective",
@@ -358,6 +367,7 @@ def test_external_comparison_row_rejects_success_without_numeric_evidence() -> N
 def test_external_comparison_suite_records_dependency_missing_rows(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """Missing optional dependencies should produce dependency hard gaps."""
     monkeypatch.setattr(comparison, "is_phase_jax_available", lambda: False)
     monkeypatch.setattr(comparison, "is_phase_torch_available", lambda: False)
     monkeypatch.setattr(comparison, "is_phase_tensorflow_available", lambda: False)
@@ -377,6 +387,7 @@ def test_external_comparison_runs_configured_enzyme_runner(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """A configured Enzyme runner should execute through the comparison row."""
     runner = tmp_path / "enzyme_runner.py"
     runner.write_text(
         "\n".join(
@@ -423,6 +434,7 @@ def test_external_comparison_runs_configured_catalyst_runner(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """A configured Catalyst runner should execute through the comparison row."""
     runner = tmp_path / "catalyst_runner.py"
     runner.write_text(
         "\n".join(
@@ -465,14 +477,50 @@ def test_external_comparison_runs_configured_catalyst_runner(
     assert payload["dependency_versions"]
 
 
+def test_external_comparison_rejects_relative_enzyme_runner_path(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Enzyme runner admission should fail closed for relative executable paths."""
+    monkeypatch.setenv("SCPN_ENZYME_RUNNER", "relative/enzyme-runner")
+    monkeypatch.setattr(comparison, "_enzyme_tooling_available", lambda: True)
+
+    row = comparison._enzyme_row()
+    versions = comparison._backend_dependency_versions("enzyme")
+
+    assert row.status == "hard_gap"
+    assert row.failure_class == "dependency_missing"
+    assert "absolute executable path" in str(versions["enzyme_runner"])
+
+
+def test_external_comparison_rejects_non_executable_catalyst_runner(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Catalyst runner admission should fail closed for non-executable files."""
+    runner = tmp_path / "catalyst_runner.py"
+    runner.write_text("#!/usr/bin/env python3\n", encoding="utf-8")
+    runner.chmod(0o644)
+    monkeypatch.setenv("SCPN_CATALYST_RUNNER", str(runner))
+    monkeypatch.setattr(comparison, "_catalyst_tooling_available", lambda: True)
+
+    row = comparison._catalyst_row()
+    versions = comparison._backend_dependency_versions("catalyst")
+
+    assert row.status == "hard_gap"
+    assert row.failure_class == "dependency_missing"
+    assert "not executable" in str(versions["catalyst_runner"])
+
+
 def test_external_comparison_records_enzyme_jax_tooling_paths(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """Enzyme dependency metadata should record plugin and runner paths."""
     plugin = tmp_path / "enzyme_call.so"
     runner = tmp_path / "enzyme_runner.py"
     plugin.write_bytes(b"native-extension-placeholder")
     runner.write_text("#!/usr/bin/env python3\n", encoding="utf-8")
+    runner.chmod(0o755)
     monkeypatch.setenv("ENZYME_LLVM_PLUGIN", str(plugin))
     monkeypatch.setenv("SCPN_ENZYME_RUNNER", str(runner))
     monkeypatch.setattr(
@@ -496,6 +544,7 @@ def test_external_comparison_records_catalyst_tooling_paths(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """Catalyst dependency metadata should record the runner path."""
     runner = tmp_path / "catalyst_runner.py"
     runner.write_text("#!/usr/bin/env python3\n", encoding="utf-8")
     runner.chmod(0o755)
@@ -521,6 +570,7 @@ def test_external_comparison_classifies_enzyme_bad_json(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """Malformed Enzyme runner output should become a runtime hard gap."""
     runner = tmp_path / "bad_enzyme_runner.py"
     runner.write_text("#!/usr/bin/env python3\nprint('not-json')\n", encoding="utf-8")
     runner.chmod(0o755)
@@ -538,6 +588,7 @@ def test_external_comparison_classifies_catalyst_bad_json(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """Malformed Catalyst runner output should become a runtime hard gap."""
     runner = tmp_path / "bad_catalyst_runner.py"
     runner.write_text("#!/usr/bin/env python3\nprint('not-json')\n", encoding="utf-8")
     runner.chmod(0o755)
@@ -555,6 +606,7 @@ def test_external_comparison_rejects_enzyme_wrong_gradient(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """Enzyme runner gradients must match the SCPN reference."""
     runner = tmp_path / "wrong_enzyme_runner.py"
     runner.write_text(
         "#!/usr/bin/env python3\n"
@@ -574,6 +626,7 @@ def test_external_comparison_rejects_enzyme_wrong_gradient(
 
 
 def test_external_comparison_failure_mode_rows_cover_required_taxonomy() -> None:
+    """Failure-mode rows should cover the required comparison taxonomy."""
     rows = external_comparison_failure_mode_rows()
     by_failure = {row.failure_class: row for row in rows}
 
@@ -596,6 +649,7 @@ def test_external_comparison_failure_mode_rows_cover_required_taxonomy() -> None
 
 
 def test_external_comparison_row_rejects_empty_dependency_metadata() -> None:
+    """Dependency metadata should reject empty keys or values."""
     try:
         ExternalComparisonRow(
             case_id="bounded_phase_objective",
@@ -624,6 +678,7 @@ def test_external_comparison_row_rejects_empty_dependency_metadata() -> None:
 def test_external_comparison_dependency_version_falls_back_to_import(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """Dependency version lookup should fall back to import metadata."""
     metadata_module: Any = comparison.__dict__["metadata"]
 
     def missing_distribution(package: str) -> str:
@@ -640,6 +695,7 @@ def test_external_comparison_dependency_version_falls_back_to_import(
 
 
 def test_external_comparison_writer_records_non_promotional_artifact(tmp_path: Path) -> None:
+    """The external-comparison writer should emit non-promotional evidence."""
     rows = (
         ExternalComparisonRow(
             case_id="bounded_phase_objective",
@@ -684,7 +740,7 @@ def test_external_comparison_writer_records_non_promotional_artifact(tmp_path: P
         rows,
         artifact_id="unit-external-comparison",
     )
-    payload = json.loads(artifact.path.read_text(encoding="utf-8"))
+    payload = cast(dict[str, Any], json.loads(artifact.path.read_text(encoding="utf-8")))
 
     assert isinstance(artifact, ExternalComparisonArtifact)
     assert artifact.artifact_id == "unit-external-comparison"
@@ -700,14 +756,22 @@ def test_external_comparison_writer_records_non_promotional_artifact(tmp_path: P
     assert payload["summary"]["hard_gap_count"] == 1
     assert payload["summary"]["failure_classes"] == ["unsupported_dtype"]
     assert payload["rows"][0]["dependency_versions"] == {"jax": "0.0", "jaxlib": "0.0"}
-    assert set(payload["row_schema"]["required_fields"]) == REQUIRED_EXTERNAL_COMPARISON_ROW_FIELDS
-    for row in payload["rows"]:
+    assert (
+        frozenset(payload["row_schema"]["required_fields"])
+        == REQUIRED_EXTERNAL_COMPARISON_ROW_FIELDS
+    )
+    payload_rows = cast(list[dict[str, Any]], payload["rows"])
+    for row in payload_rows:
         assert set(row) >= REQUIRED_EXTERNAL_COMPARISON_ROW_FIELDS
     assert "not isolated benchmark evidence" in payload["claim_boundary"]
 
 
 def test_external_comparison_writer_rejects_incomplete_row_payload(tmp_path: Path) -> None:
+    """The writer should reject rows missing required artefact fields."""
+
     class IncompleteExternalRow:
+        """Row-like object that intentionally omits required fields."""
+
         case_id = "bounded_phase_objective"
         backend = "jax"
         status = "success"
@@ -732,6 +796,7 @@ def test_external_comparison_writer_rejects_incomplete_row_payload(tmp_path: Pat
 
 
 def test_external_comparison_writer_rejects_invalid_outputs(tmp_path: Path) -> None:
+    """The writer should reject invalid output paths and artefact IDs."""
     row = ExternalComparisonRow(
         case_id="bounded_phase_objective",
         backend="jax",
