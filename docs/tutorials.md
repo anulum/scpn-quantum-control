@@ -745,7 +745,7 @@ in JSON alongside the QASM files.
 
 ## Jupyter Notebooks
 
-13 interactive notebooks in `notebooks/`, each executable with outputs:
+13 core tutorial notebooks in `notebooks/`, each executable with outputs:
 
 | # | Notebook | Topic | Level |
 |---|----------|-------|-------|

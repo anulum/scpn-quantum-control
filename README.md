@@ -852,7 +852,7 @@ All examples run on statevector simulation (no QPU needed).
 
 ## Notebooks
 
-99 tracked Jupyter notebooks in [`notebooks/`](notebooks/) — including the
+100 tracked Jupyter notebooks in [`notebooks/`](notebooks/) — including the
 core tutorials and retained investigation notebooks. Core notebooks:
 
 | # | Notebook | Level | Key Output |
