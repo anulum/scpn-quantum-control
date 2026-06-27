@@ -101,6 +101,10 @@ Statevector simulation is O(2^n × n_gates) — exponential in n but polynomial
 in circuit depth. For n=20, the statevector is 16 MB (feasible); for n=30
 it is 16 GB (GPU territory).
 
+Benchmark result provenance records the current git commit through an admitted
+absolute-path `git` executable. Missing, non-executable, or failing `git`
+commands fail closed to `unknown` without blocking benchmark execution.
+
 #### `estimate_crossover(results)`
 
 Fits exponential scaling `t = a * exp(b * n)` to both classical and quantum

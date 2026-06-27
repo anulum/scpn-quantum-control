@@ -14,8 +14,10 @@ Measures wall-clock time for classical (exact diag + matrix exp) vs quantum
 from __future__ import annotations
 
 import logging
+import os
 import platform
-import subprocess
+import shutil
+import subprocess  # nosec B404
 import sys
 import time
 import warnings
@@ -34,13 +36,33 @@ log = logging.getLogger(__name__)
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
-def _git_commit() -> str:
+def _resolve_git_executable() -> str | None:
+    """Return the absolute git executable path when git is available."""
+    located = shutil.which("git")
+    if located is None:
+        return None
     try:
-        return subprocess.check_output(
-            ["git", "-C", str(REPO_ROOT), "rev-parse", "HEAD"],
+        resolved = Path(located).resolve(strict=True)
+    except (OSError, ValueError):
+        return None
+    if not resolved.is_file() or not os.access(resolved, os.X_OK):
+        return None
+    return str(resolved)
+
+
+def _git_commit() -> str:
+    git_executable = _resolve_git_executable()
+    if git_executable is None:
+        return "unknown"
+    try:
+        completed = subprocess.run(  # nosec B603
+            [git_executable, "-C", str(REPO_ROOT), "rev-parse", "HEAD"],
+            capture_output=True,
+            check=True,
             text=True,
-            stderr=subprocess.DEVNULL,
-        ).strip()
+            shell=False,
+        )
+        return completed.stdout.strip()
     except (OSError, subprocess.CalledProcessError):
         return "unknown"
 
