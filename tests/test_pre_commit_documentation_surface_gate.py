@@ -32,6 +32,7 @@ def test_pre_push_hook_gates_differentiable_strict_mypy_ratchet() -> None:
     assert '"--strict"' in config
     assert "src/scpn_quantum_control/differentiable.py" in config
     assert "src/scpn_quantum_control/differentiable_claim_ledger.py" in config
+    assert "src/scpn_quantum_control/differentiable_architecture_map.py" in config
     assert "src/scpn_quantum_control/differentiable_sota_scorecard.py" in config
     assert "src/scpn_quantum_control/differentiable_api.py" in config
     assert "src/scpn_quantum_control/benchmarks/differentiable_programming.py" in config

@@ -42,6 +42,7 @@ jobs:
       - name: Ruff docstring ratchet for differentiable module hardening
         run: >-
           ruff check --select D
+          src/scpn_quantum_control/differentiable_architecture_map.py
           src/scpn_quantum_control/differentiable_sota_scorecard.py
           src/scpn_quantum_control/differentiable_external_validation.py
           src/scpn_quantum_control/differentiable_module_hardening_audit.py
@@ -166,6 +167,7 @@ jobs:
           mypy --strict
           src/scpn_quantum_control/differentiable.py
           src/scpn_quantum_control/differentiable_claim_ledger.py
+          src/scpn_quantum_control/differentiable_architecture_map.py
           src/scpn_quantum_control/differentiable_sota_scorecard.py
           src/scpn_quantum_control/differentiable_api.py
           src/scpn_quantum_control/benchmarks/differentiable_programming.py

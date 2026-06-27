@@ -10,11 +10,13 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import cast
 
 import pytest
 
 from scpn_quantum_control.differentiable_claim_ledger import (
     ClaimLedgerRow,
+    PromotionStatus,
     load_differentiable_claim_ledger,
     render_claim_ledger_markdown,
     render_public_claim_table,
@@ -36,6 +38,7 @@ def test_committed_claim_ledger_has_required_rows_and_artefact_ids() -> None:
         "ci_benchmark_evidence",
         "external_framework_comparison",
         "phase_qnode_claim_boundary",
+        "differentiable_architecture_rustification_map",
     } <= claim_ids
     for row in ledger.rows:
         assert row.implementation_surface
@@ -97,6 +100,7 @@ def test_claim_ledger_markdown_summary_maps_rows_to_status(tmp_path: Path) -> No
     text = output.read_text(encoding="utf-8")
     assert "| Claim | Status | Artefact IDs | Benchmark IDs | Known gaps |" in text
     assert "framework_overlay_parity" in text
+    assert "differentiable_architecture_rustification_map" in text
     assert "SOTA-candidate" in text
 
 
@@ -111,7 +115,7 @@ def test_claim_ledger_rejects_unknown_status() -> None:
             evidence_artifact_ids=("artefact-1",),
             benchmark_artifact_ids=("artefact-1",),
             known_gaps=("none",),
-            promotion_status="done",
+            promotion_status=cast(PromotionStatus, "done"),
             claim_boundary="bounded",
         )
 
@@ -136,6 +140,7 @@ def test_public_claim_table_is_generated_from_committed_ledger() -> None:
     assert validation.passed
     assert "# Differentiable Public Claim Table" in markdown
     assert "`framework_overlay_parity`" in markdown
+    assert "`differentiable_architecture_rustification_map`" in markdown
     assert "`external_validation_environment_lock`" in markdown
     assert "bounded-candidate" in markdown
     assert "No hardware, provider, QPU, GPU, production-performance" in markdown
@@ -159,6 +164,7 @@ def test_support_surface_alignment_audit_matches_committed_manifest_and_ledger()
         "ci_benchmark_evidence",
         "external_framework_comparison",
         "phase_qnode_claim_boundary",
+        "differentiable_architecture_rustification_map",
     } <= set(alignment.checked_claim_ids)
     assert "README.md" in alignment.checked_paths
     assert "docs/differentiable_programming.md" in alignment.checked_paths

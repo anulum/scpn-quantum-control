@@ -7,13 +7,13 @@
     "model_documentation_pages": 0,
     "notebook_files": 99,
     "optional_extras": 43,
-    "public_api_exports": 719,
+    "public_api_exports": 727,
     "public_documentation_pages": 253,
-    "python_model_classes": 856,
-    "python_model_source_modules": 489,
+    "python_model_classes": 859,
+    "python_model_source_modules": 490,
     "rust_pyo3_model_wrappers": 171,
     "rust_source_modules": 42,
-    "test_files": 799
+    "test_files": 800
   },
   "documentation": {
     "examples": [
@@ -1187,6 +1187,18 @@
       {
         "name": "DifferentiabilityDiagnosticReport",
         "path": "src/scpn_quantum_control/differentiable_api.py"
+      },
+      {
+        "name": "DifferentiableArchitectureMap",
+        "path": "src/scpn_quantum_control/differentiable_architecture_map.py"
+      },
+      {
+        "name": "DifferentiableArchitectureMapLayer",
+        "path": "src/scpn_quantum_control/differentiable_architecture_map.py"
+      },
+      {
+        "name": "DifferentiableArchitectureMapValidation",
+        "path": "src/scpn_quantum_control/differentiable_architecture_map.py"
       },
       {
         "name": "DifferentiableBenchmarkClassificationCase",
@@ -4216,6 +4228,7 @@
       "src/scpn_quantum_control/deployment/cloud_native.py",
       "src/scpn_quantum_control/differentiable.py",
       "src/scpn_quantum_control/differentiable_api.py",
+      "src/scpn_quantum_control/differentiable_architecture_map.py",
       "src/scpn_quantum_control/differentiable_batch_helpers.py",
       "src/scpn_quantum_control/differentiable_benchmark_report.py",
       "src/scpn_quantum_control/differentiable_canonical_api.py",
@@ -4765,6 +4778,10 @@
     "DEFAULT_CUSTOM_DERIVATIVE_REGISTRY",
     "DWaveLeapHALAdapter",
     "DifferentiabilityDiagnosticReport",
+    "DifferentiableArchitectureLayerId",
+    "DifferentiableArchitectureMap",
+    "DifferentiableArchitectureMapLayer",
+    "DifferentiableArchitectureMapValidation",
     "DifferentiableBenchmarkClassificationCase",
     "DifferentiableBenchmarkReport",
     "DifferentiableDashboardCapabilityRow",
@@ -5108,6 +5125,7 @@
     "dense_to_sparse_matrix",
     "diagnose_program_ad_linalg_conditioning",
     "differentiable_api",
+    "differentiable_architecture_map_report",
     "differentiable_benchmark_report",
     "differentiable_compile_report",
     "differentiable_dashboard_status",
@@ -5338,6 +5356,7 @@
     "registered_custom_jacobian",
     "registered_custom_jvp",
     "registered_custom_vjp",
+    "render_differentiable_architecture_map_markdown",
     "render_differentiable_rust_python_inventory_markdown",
     "render_differentiable_sota_scorecard_markdown",
     "resolve_aggregator_provider_route",
@@ -5349,6 +5368,7 @@
     "rigetti_quil_workload",
     "run_biological_qec_batch_execution",
     "run_biological_qec_execution",
+    "run_differentiable_architecture_map",
     "run_differentiable_hardening_slice_gate",
     "run_differentiable_module_hardening_audit",
     "run_differentiable_programming_benchmark_suite",
@@ -5410,6 +5430,7 @@
     "transpile_for_trapped_ion",
     "trapped_ion_noise_model",
     "update_levenberg_marquardt_damping",
+    "validate_differentiable_architecture_map",
     "validate_differentiable_rust_python_inventory",
     "validate_differentiable_sota_scorecard",
     "validate_kuramoto_inputs",
@@ -5675,6 +5696,7 @@
       "tests/test_diff_kuramoto_euler.py",
       "tests/test_diff_kuramoto_rk4.py",
       "tests/test_differentiable_api.py",
+      "tests/test_differentiable_architecture_map.py",
       "tests/test_differentiable_batch_helpers.py",
       "tests/test_differentiable_benchmark_evidence.py",
       "tests/test_differentiable_benchmark_report.py",

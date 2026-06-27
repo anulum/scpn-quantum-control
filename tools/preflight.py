@@ -38,6 +38,7 @@ ROOT = Path(__file__).resolve().parent.parent
 _PY = sys.executable
 
 DIFFERENTIABLE_DOCSTRING_RATCHET = [
+    "src/scpn_quantum_control/differentiable_architecture_map.py",
     "src/scpn_quantum_control/differentiable_sota_scorecard.py",
     "src/scpn_quantum_control/differentiable_external_validation.py",
     "src/scpn_quantum_control/differentiable_module_hardening_audit.py",
@@ -106,6 +107,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
             "--strict",
             "src/scpn_quantum_control/differentiable.py",
             "src/scpn_quantum_control/differentiable_claim_ledger.py",
+            "src/scpn_quantum_control/differentiable_architecture_map.py",
             "src/scpn_quantum_control/differentiable_sota_scorecard.py",
             "src/scpn_quantum_control/differentiable_api.py",
             "src/scpn_quantum_control/benchmarks/differentiable_programming.py",

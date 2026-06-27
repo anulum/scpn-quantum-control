@@ -1,26 +1,25 @@
 {
-  "schema": "scpn_qc_differentiable_external_validation_artifact_bundle_v1",
   "artifact_id": "diff-external-validation-artifact-bundle-20260616",
-  "classification": "functional_non_isolated",
   "claim_boundary": "Reproducible artefact-bundle manifest only; it records committed evidence file checksums and does not promote performance, provider, QPU, GPU, hardware, or isolated_affinity benchmark claims.",
+  "classification": "functional_non_isolated",
   "entries": [
     {
       "path": "data/differentiable_phase_qnode/claim_ledger.json",
       "role": "Claim-ledger source of truth",
-      "sha256": "b68a61478e408f15b428e7799ced2446bc76c4522d489177b7b667df609b4521",
-      "size_bytes": 18314
+      "sha256": "7cace110bd743b118d9842548feb1b7a9fe3b79d755589a67944e9f282445d37",
+      "size_bytes": 20377
     },
     {
       "path": "data/differentiable_phase_qnode/claim_ledger.md",
       "role": "Reviewer claim-ledger summary",
-      "sha256": "23338517ecb21945f01c6100baddbab59e35d4467f387a180fe421b0f0fae8bf",
-      "size_bytes": 5155
+      "sha256": "dac1f269ba066c82ce08d66c88e6d1ea955a8139e25d7f81d41d89894a4b7e84",
+      "size_bytes": 5665
     },
     {
       "path": "data/differentiable_phase_qnode/public_claim_table_20260616.md",
       "role": "Public-safe claim wording table",
-      "sha256": "a4761afdb653ac81fb87917d6fe5386e63bfe37fc0af7f7f55cf236380980a10",
-      "size_bytes": 5877
+      "sha256": "83900490881bf585ac3e2ff8989d213223e3c3248eadb922f9a6ae43f0298917",
+      "size_bytes": 6302
     },
     {
       "path": "data/differentiable_phase_qnode/differentiable_sota_scorecard_20260620.json",
@@ -45,6 +44,18 @@
       "role": "Differentiable Rust/Python rustification surface inventory reviewer summary",
       "sha256": "d2e04744e906c0428d0775406500fa27d910bc59e905f59b351590ccd4bc7a3f",
       "size_bytes": 3259
+    },
+    {
+      "path": "data/differentiable_phase_qnode/differentiable_architecture_map_20260627.json",
+      "role": "Differentiable architecture and Rustification routing map artefact",
+      "sha256": "a0b6da8128e4f8c24ee83ecd830160902b0d2e2e0d5faa68db04abbc1e1afc88",
+      "size_bytes": 17952
+    },
+    {
+      "path": "data/differentiable_phase_qnode/differentiable_architecture_map_20260627.md",
+      "role": "Differentiable architecture and Rustification routing map reviewer summary",
+      "sha256": "8309ad4a8f5fe4b0ccb260f195e6fe5ea444dbf7dcc390a4d36f970288966bbe",
+      "size_bytes": 3697
     },
     {
       "path": "data/differentiable_phase_qnode/external_validation_environment_lock_20260616.json",
@@ -112,5 +123,6 @@
       "sha256": "16bc50f32fc5bb7fbca2bb4282dfcc4c3ac9198d33afa920220938c593b30b68",
       "size_bytes": 424
     }
-  ]
+  ],
+  "schema": "scpn_qc_differentiable_external_validation_artifact_bundle_v1"
 }

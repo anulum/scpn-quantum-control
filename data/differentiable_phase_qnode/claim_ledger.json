@@ -380,6 +380,40 @@
       ],
       "promotion_status": "SOTA-candidate",
       "claim_boundary": "Differentiable Rust/Python inventory governance only; no Rust promotion, provider execution, QPU execution, accelerator execution, hardware execution, LLVM/JIT execution, or production benchmark promotion is implied."
+    },
+    {
+      "claim_id": "differentiable_architecture_rustification_map",
+      "claim_text": "The differentiable lane has a deterministic architecture and Rustification routing map that links public API, QNode bridge, Program AD, compiler/native, provider/hardware, and benchmark/claim-governance layers to existing inventory and scorecard evidence.",
+      "implementation_surface": [
+        "src/scpn_quantum_control/differentiable_architecture_map.py",
+        "src/scpn_quantum_control/differentiable_api.py",
+        "src/scpn_quantum_control/differentiable_rust_python_inventory.py",
+        "src/scpn_quantum_control/differentiable_sota_scorecard.py"
+      ],
+      "test_surface": [
+        "tests/test_differentiable_architecture_map.py",
+        "tests/test_differentiable_external_validation.py"
+      ],
+      "docs_surface": [
+        "README.md",
+        "docs/differentiable_api.md",
+        "docs/differentiable_programming.md",
+        "docs/differentiable_external_validation_report.md",
+        "data/differentiable_phase_qnode/differentiable_architecture_map_20260627.md",
+        "data/differentiable_phase_qnode/claim_ledger.md"
+      ],
+      "evidence_artifact_ids": [
+        "diff-architecture-rustification-map-20260627"
+      ],
+      "benchmark_artifact_ids": [
+        "diff-architecture-rustification-map-20260627"
+      ],
+      "known_gaps": [
+        "The map is governance evidence and does not execute Rust migrations, provider jobs, hardware jobs, LLVM/JIT lowerings, or isolated benchmarks.",
+        "Layer readiness remains blocked until Rust parity, polyglot parity, provider/hardware evidence, Enzyme/MLIR evidence, promoted claim-ledger rows, and isolated benchmark artefacts exist where required."
+      ],
+      "promotion_status": "SOTA-candidate",
+      "claim_boundary": "Differentiable architecture and Rustification routing governance only; no Rust promotion, provider execution, QPU execution, accelerator execution, hardware execution, LLVM/JIT execution, or production benchmark promotion is implied."
     }
   ]
 }

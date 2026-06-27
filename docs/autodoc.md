@@ -175,6 +175,10 @@ or debugging a subsystem, not as the default path for tutorial code.
     options:
       members: [ClaimLedger, ClaimLedgerRow, ClaimLedgerValidation, DifferentiableSupportSurfaceAlignment, load_differentiable_claim_ledger, render_claim_ledger_markdown, validate_claim_ledger, validate_differentiable_support_surface_alignment, validate_public_language_against_ledger]
 
+::: scpn_quantum_control.differentiable_architecture_map
+    options:
+      members: [DifferentiableArchitectureMap, DifferentiableArchitectureMapLayer, DifferentiableArchitectureMapValidation, render_differentiable_architecture_map_markdown, run_differentiable_architecture_map, validate_differentiable_architecture_map]
+
 ## MLIR Compiler
 
 ::: scpn_quantum_control.compiler.mlir

@@ -140,6 +140,16 @@ provider/hardware evidence exists. The committed artefacts live at
 `data/differentiable_phase_qnode/differentiable_rust_python_inventory_20260620.json`
 and
 `data/differentiable_phase_qnode/differentiable_rust_python_inventory_20260620.md`.
+`run_differentiable_architecture_map()` connects that inventory to the
+scorecard as six Rustification routing layers: public API facade, QNode
+framework bridges, Program AD core, compiler/native execution, provider and
+hardware boundary, and benchmark/claim governance. The committed artefacts live
+at `data/differentiable_phase_qnode/differentiable_architecture_map_20260627.json`
+and `data/differentiable_phase_qnode/differentiable_architecture_map_20260627.md`.
+The map validates layer IDs, inventory surface references, SOTA categories,
+source/test/docs paths, and blocker state before broad Rust migration starts.
+It is routing evidence only and does not promote Rust, LLVM/JIT, provider,
+hardware, GPU, performance, or `isolated_affinity` claims.
 The current public technical report is
 [Differentiable External-Validation Technical Report](differentiable_external_validation_report.md).
 It summarizes the comparison package, provider-family status, reproducibility

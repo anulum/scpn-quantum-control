@@ -32,6 +32,7 @@ from .differentiable import (
     value_and_hessian,
     value_and_jacobian,
 )
+from .differentiable_architecture_map import run_differentiable_architecture_map
 from .differentiable_benchmark_report import build_differentiable_benchmark_report
 from .differentiable_rust_python_inventory import run_differentiable_rust_python_inventory
 from .differentiable_sota_scorecard import run_differentiable_sota_scorecard
@@ -56,6 +57,7 @@ UnifiedDifferentiableOperation = Literal[
     "dashboard_status",
     "sota_scorecard",
     "rust_python_inventory",
+    "architecture_rustification_map",
 ]
 DifferentiableDashboardCapabilityState = Literal[
     "planned",
@@ -515,6 +517,22 @@ def differentiable_rust_python_inventory_report() -> UnifiedDifferentiableAPIRes
         hessian=None,
         payload=inventory.to_dict(),
         claim_boundary=inventory.claim_boundary,
+    )
+
+
+def differentiable_architecture_map_report() -> UnifiedDifferentiableAPIResult:
+    """Return claim-bounded architecture and Rustification routing evidence."""
+    architecture_map = run_differentiable_architecture_map()
+    return UnifiedDifferentiableAPIResult(
+        operation="architecture_rustification_map",
+        supported=architecture_map.rustification_ready,
+        method="differentiable_architecture_map",
+        value=None,
+        gradient=None,
+        jacobian=None,
+        hessian=None,
+        payload=architecture_map.to_dict(),
+        claim_boundary=architecture_map.claim_boundary,
     )
 
 
@@ -1197,6 +1215,8 @@ def differentiable_api(
         return differentiable_sota_scorecard_report()
     if operation == "rust_python_inventory":
         return differentiable_rust_python_inventory_report()
+    if operation == "architecture_rustification_map":
+        return differentiable_architecture_map_report()
     if operation == "frontend_report":
         return differentiable_frontend_report(_require_objective(objective))
     if operation == "dashboard_status":
@@ -1328,6 +1348,7 @@ __all__ = [
     "UnifiedDifferentiableAPIResult",
     "UnifiedDifferentiableOperation",
     "differentiable_api",
+    "differentiable_architecture_map_report",
     "differentiable_benchmark_report",
     "differentiable_compile_report",
     "differentiable_dashboard_status",

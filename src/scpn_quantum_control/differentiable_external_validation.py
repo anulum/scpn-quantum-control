@@ -76,6 +76,14 @@ DEFAULT_ARTIFACT_BUNDLE_INPUTS: tuple[tuple[str, str], ...] = (
         "Differentiable Rust/Python rustification surface inventory reviewer summary",
     ),
     (
+        "data/differentiable_phase_qnode/differentiable_architecture_map_20260627.json",
+        "Differentiable architecture and Rustification routing map artefact",
+    ),
+    (
+        "data/differentiable_phase_qnode/differentiable_architecture_map_20260627.md",
+        "Differentiable architecture and Rustification routing map reviewer summary",
+    ),
+    (
         "data/differentiable_phase_qnode/external_validation_environment_lock_20260616.json",
         "Exact environment-lock manifest",
     ),

@@ -50,6 +50,7 @@ def test_static_gates_include_differentiable_docstring_ratchet() -> None:
 
     assert "--select" in docstring_cmd
     assert "D" in docstring_cmd
+    assert "src/scpn_quantum_control/differentiable_architecture_map.py" in docstring_cmd
     assert "src/scpn_quantum_control/differentiable_sota_scorecard.py" in docstring_cmd
     assert "src/scpn_quantum_control/differentiable_external_validation.py" in (docstring_cmd)
     assert "src/scpn_quantum_control/differentiable_module_hardening_audit.py" in (docstring_cmd)
@@ -71,6 +72,7 @@ def test_static_gates_include_differentiable_strict_mypy_ratchet() -> None:
     assert "tools/check_differentiable_sota_promotion_language.py" in language_gate
     assert "src/scpn_quantum_control/differentiable.py" in strict_cmd
     assert "src/scpn_quantum_control/differentiable_claim_ledger.py" in strict_cmd
+    assert "src/scpn_quantum_control/differentiable_architecture_map.py" in strict_cmd
     assert "src/scpn_quantum_control/differentiable_sota_scorecard.py" in strict_cmd
     assert "src/scpn_quantum_control/differentiable_api.py" in strict_cmd
     assert "src/scpn_quantum_control/benchmarks/differentiable_programming.py" in strict_cmd
