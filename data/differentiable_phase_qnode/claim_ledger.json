@@ -447,6 +447,45 @@
       ],
       "promotion_status": "SOTA-candidate",
       "claim_boundary": "Differentiable dependency and environment map governance only; no dependency promotion, framework parity promotion, Enzyme promotion, provider execution, QPU execution, accelerator execution, hardware execution, or production benchmark promotion is implied."
+    },
+    {
+      "claim_id": "differentiable_isolated_benchmark_plan",
+      "claim_text": "The differentiable lane has a deterministic reserved-host isolated benchmark batch plan over the current non-isolated benchmark and evidence artefacts before any benchmark promotion.",
+      "implementation_surface": [
+        "src/scpn_quantum_control/benchmarks/differentiable_isolated_benchmark_plan.py",
+        "src/scpn_quantum_control/benchmarks/differentiable_evidence.py",
+        "src/scpn_quantum_control/phase/qnode_affinity_benchmark.py",
+        "src/scpn_quantum_control/differentiable_api.py"
+      ],
+      "test_surface": [
+        "tests/test_differentiable_isolated_benchmark_plan.py",
+        "tests/test_differentiable_benchmark_evidence.py",
+        "tests/test_phase_qnode_affinity_benchmark.py",
+        "tests/test_differentiable_external_validation.py",
+        "tests/test_differentiable_claim_ledger.py"
+      ],
+      "docs_surface": [
+        "README.md",
+        "docs/differentiable_api.md",
+        "docs/differentiable_programming.md",
+        "docs/benchmarks_api.md",
+        "docs/differentiable_external_validation_report.md",
+        "data/differentiable_phase_qnode/differentiable_isolated_benchmark_plan_20260627.md",
+        "data/differentiable_phase_qnode/claim_ledger.md"
+      ],
+      "evidence_artifact_ids": [
+        "diff-isolated-benchmark-plan-20260627"
+      ],
+      "benchmark_artifact_ids": [
+        "diff-isolated-benchmark-plan-20260627"
+      ],
+      "known_gaps": [
+        "The plan records reserved-host rerun commands and readiness blockers; it does not execute benchmark jobs.",
+        "Current committed source artefacts remain functional_non_isolated or hard_gap until a self-hosted isolated-benchmark runner emits validated isolated_affinity artefacts.",
+        "The current local host is not used for promotion because observed load and affinity do not satisfy the reserved-host policy."
+      ],
+      "promotion_status": "SOTA-candidate",
+      "claim_boundary": "Differentiable isolated benchmark batch planning governance only; no isolated_affinity evidence, production-performance claim, provider execution, QPU execution, GPU execution, Enzyme promotion, or claim-ledger promotion is implied."
     }
   ]
 }

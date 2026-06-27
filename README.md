@@ -105,9 +105,9 @@ has a defined commercial licensing route.
 | Surface | Current inventory |
 |---|---:|
 | Package version | 0.10.0 |
-| Public API exports | 736 |
-| Python source modules | 491 |
-| Public Python classes | 862 |
+| Public API exports | 743 |
+| Python source modules | 492 |
+| Public Python classes | 865 |
 | Domain package families | 32 |
 | API documentation pages | 0 |
 | Rust PyO3 function bindings | 171 |
@@ -115,7 +115,7 @@ has a defined commercial licensing route.
 | Notebook files | 99 |
 | Example files | 31 |
 | Optional extras | 43 |
-| Python test files | 801 |
+| Python test files | 802 |
 | Public documentation pages | 253 |
 | GitHub Actions workflows | 21 |
 
@@ -328,6 +328,7 @@ CI benchmark artefacts all pass:
 | Differentiable external-validation lock | The external-validation package records exact SHA-256 digests for runtime, development, Python 3.11-3.13 CI, CPU framework-overlay, and Enzyme-runner lockfiles. The artefact is reviewer reproduction evidence only and remains `functional_non_isolated`. | [Differentiable Programming](docs/differentiable_programming.md), [Environment Lock](data/differentiable_phase_qnode/external_validation_environment_lock_20260616.md) |
 | Differentiable CI reproducibility | The differentiable framework workflow runs sparse and full CPU profiles across Python 3.11-3.13, enforces the module-specific test audit, uploads scheduled benchmark metadata, and exposes a manual optional GPU contract lane that remains `functional_non_isolated`. | [Differentiable Programming](docs/differentiable_programming.md), [Workflow](.github/workflows/differentiable-frameworks.yml) |
 | Differentiable artefact bundle | The external-validation package records a reproducible manifest over the committed claim ledger, public claim table, environment lock, domain dataset closure, gradient comparison, maturity audit, and local benchmark evidence. The bundle is checksum provenance only and remains `functional_non_isolated`. | [Artefact Bundle](data/differentiable_phase_qnode/external_validation_artifact_bundle_20260616.md) |
+| Differentiable isolated benchmark plan | `run_differentiable_isolated_benchmark_plan()` maps every current non-isolated differentiable benchmark/evidence artefact to a reserved-host rerun command, required runner labels, expected output paths, and explicit blockers. It is planning evidence only and returns `promotion_ready=False` until validated `isolated_affinity` artefacts exist. | [Batch Plan](data/differentiable_phase_qnode/differentiable_isolated_benchmark_plan_20260627.md), [Benchmark API](docs/benchmarks_api.md) |
 | Differentiable external-validation report | The technical report summarizes the comparison package, provider-family status, reproducibility artefacts, and remaining promotion blockers without upgrading any row beyond bounded-candidate evidence. | [External Validation Report](docs/differentiable_external_validation_report.md) |
 | Hardening-slice gate | `run_differentiable_hardening_slice_gate(...)` records the required Ruff, mypy, module-specific pytest, test-quality audit, claim-ledger validation, and benchmark-classification checks for each differentiable hardening slice. CI, local preflight, and the pre-push hook additionally enforce a module-specific strict-mypy ratchet across the closed differentiable API, claim-ledger, benchmark-evidence, QNN/QGNN/QSNN training and evidence satellites, objective/domain evidence, optimizer-baseline, backend selection, parameter-shift/VQE foundations, structured-ansatz/methodology/benchmark/Kuramoto/UPDE solver foundations, typed trajectory-result containers, layered ADAPT-VQE, Trotter-error bounds, framework-overlay, provider/hardware-gradient safety, Phase-QNode, framework-bridge, transform-nesting, external-comparison, XY compiler, and PennyLane import modules while repository-wide strict mode remains open debt. The same gates now enforce a scoped NumPy-style Ruff docstring ratchet for the differentiable external-validation, module-hardening audit, and hardening-slice gate surfaces while repository-wide docstring enforcement remains open debt. It is checklist/classification evidence only, not benchmark execution. | [Differentiable Programming](docs/differentiable_programming.md), [Differentiable API](docs/differentiable_api.md) |
 | Module-hardening audit | `run_differentiable_module_hardening_audit()` discovers every differentiable/gradient/QNode/bridge/compiler module in the promotion scope and verifies a module-specific test plus declared fail-closed diagnostics for each. | [Differentiable Programming](docs/differentiable_programming.md), [Differentiable API](docs/differentiable_api.md) |

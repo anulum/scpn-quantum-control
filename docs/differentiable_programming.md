@@ -244,10 +244,26 @@ with a reviewer summary at
 `data/differentiable_phase_qnode/external_validation_artifact_bundle_20260616.md`.
 `build_external_validation_artifact_bundle()` records SHA-256 digests for the
 claim ledger, public claim table, environment lock, domain dataset closure,
-identical-circuit comparison, PyTorch maturity audit, and local benchmark
-evidence files. `validate_external_validation_artifact_bundle()` rechecks those
-digests against the current checkout. The bundle is checksum provenance only
-and remains `functional_non_isolated`.
+identical-circuit comparison, PyTorch maturity audit, isolated benchmark batch
+plan, and local benchmark evidence files.
+`validate_external_validation_artifact_bundle()` rechecks those digests against
+the current checkout. The bundle is checksum provenance only and remains
+`functional_non_isolated`.
+
+`run_differentiable_isolated_benchmark_plan()` produces the reserved-host batch
+plan at
+`data/differentiable_phase_qnode/differentiable_isolated_benchmark_plan_20260627.json`
+with a reviewer summary at
+`data/differentiable_phase_qnode/differentiable_isolated_benchmark_plan_20260627.md`.
+The plan covers the current local benchmark bundle, Phase-QNode affinity row,
+identical-circuit comparison, domain dataset closure, PyTorch maturity audit,
+and Enzyme/MLIR maturity audit. Each row records the required
+`self-hosted`, `linux`, and `isolated-benchmark` runner labels, a `taskset` plus
+`chrt` rerun command, expected output paths, source classifications, and host
+blockers. The current workstation is not promoted by this plan: high observed
+load and non-reserved affinity keep `promotion_ready=False`, and the committed
+source artefacts remain `functional_non_isolated` or `hard_gap` until a
+validated isolated runner emits `isolated_affinity` outputs.
 
 CI, local preflight, and the pre-push hook now include the external-validation
 module and its module-specific tests in the scoped NumPy-style Ruff docstring

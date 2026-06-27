@@ -40,6 +40,7 @@ def test_committed_claim_ledger_has_required_rows_and_artefact_ids() -> None:
         "phase_qnode_claim_boundary",
         "differentiable_architecture_rustification_map",
         "differentiable_dependency_environment_map",
+        "differentiable_isolated_benchmark_plan",
     } <= claim_ids
     for row in ledger.rows:
         assert row.implementation_surface
@@ -103,6 +104,7 @@ def test_claim_ledger_markdown_summary_maps_rows_to_status(tmp_path: Path) -> No
     assert "framework_overlay_parity" in text
     assert "differentiable_architecture_rustification_map" in text
     assert "differentiable_dependency_environment_map" in text
+    assert "differentiable_isolated_benchmark_plan" in text
     assert "SOTA-candidate" in text
 
 
@@ -144,6 +146,7 @@ def test_public_claim_table_is_generated_from_committed_ledger() -> None:
     assert "`framework_overlay_parity`" in markdown
     assert "`differentiable_architecture_rustification_map`" in markdown
     assert "`differentiable_dependency_environment_map`" in markdown
+    assert "`differentiable_isolated_benchmark_plan`" in markdown
     assert "`external_validation_environment_lock`" in markdown
     assert "bounded-candidate" in markdown
     assert "No hardware, provider, QPU, GPU, production-performance" in markdown
@@ -169,6 +172,7 @@ def test_support_surface_alignment_audit_matches_committed_manifest_and_ledger()
         "phase_qnode_claim_boundary",
         "differentiable_architecture_rustification_map",
         "differentiable_dependency_environment_map",
+        "differentiable_isolated_benchmark_plan",
     } <= set(alignment.checked_claim_ids)
     assert "README.md" in alignment.checked_paths
     assert "docs/differentiable_programming.md" in alignment.checked_paths

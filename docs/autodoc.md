@@ -163,6 +163,10 @@ or debugging a subsystem, not as the default path for tutorial code.
     options:
       members: [DifferentiableBenchmarkClassificationCase, DifferentiableHardeningGateCheck, DifferentiableHardeningSliceGateResult, run_differentiable_hardening_slice_gate]
 
+::: scpn_quantum_control.benchmarks.differentiable_isolated_benchmark_plan
+    options:
+      members: [DifferentiableIsolatedBenchmarkPlan, DifferentiableIsolatedBenchmarkPlanRow, DifferentiableIsolatedBenchmarkPlanValidation, render_differentiable_isolated_benchmark_plan_markdown, run_differentiable_isolated_benchmark_plan, validate_differentiable_isolated_benchmark_plan]
+
 ::: scpn_quantum_control.benchmarks.differentiable_external_comparison
     options:
       members: [ExternalComparisonArtifact, ExternalComparisonRow, IdenticalCircuitGradientComparisonArtifact, IdenticalCircuitGradientComparisonRow, run_differentiable_external_comparison_suite, run_identical_circuit_gradient_comparison_suite, write_differentiable_external_comparison, write_identical_circuit_gradient_comparison]

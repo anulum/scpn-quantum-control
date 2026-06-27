@@ -282,6 +282,11 @@ def differentiable_module_hardening_registry() -> tuple[DifferentiableModuleHard
             ("local conformance bundle", "non-isolated benchmark claim boundary"),
         ),
         _record(
+            "src/scpn_quantum_control/differentiable_canonical_api.py",
+            ("tests/test_differentiable_package_exports.py",),
+            ("canonical transform exports", "unsupported method rejection"),
+        ),
+        _record(
             "src/scpn_quantum_control/differentiable_claim_ledger.py",
             ("tests/test_differentiable_claim_ledger.py",),
             ("public-language guard", "support-surface alignment errors"),
@@ -460,6 +465,11 @@ def differentiable_module_hardening_registry() -> tuple[DifferentiableModuleHard
             ("whole-program result validation", "facade export compatibility"),
         ),
         _record(
+            "src/scpn_quantum_control/whole_program_ad_api.py",
+            ("tests/test_program_adjoint_replay.py",),
+            ("whole-program API exports", "adjoint replay provenance"),
+        ),
+        _record(
             "src/scpn_quantum_control/whole_program_trace_runtime.py",
             ("tests/test_whole_program_trace_runtime.py",),
             ("runtime SSA/effect metadata", "source-line trace capture"),
@@ -588,6 +598,11 @@ def differentiable_module_hardening_registry() -> tuple[DifferentiableModuleHard
             "src/scpn_quantum_control/phase/qnode_affinity_benchmark.py",
             ("tests/test_phase_qnode_affinity_benchmark.py",),
             ("isolation metadata boundaries", "non-isolated benchmark labels"),
+        ),
+        _record(
+            "src/scpn_quantum_control/benchmarks/differentiable_isolated_benchmark_plan.py",
+            ("tests/test_differentiable_isolated_benchmark_plan.py",),
+            ("isolated benchmark batch rows", "promotion readiness guards"),
         ),
         _record(
             "src/scpn_quantum_control/phase/qnode_circuit.py",

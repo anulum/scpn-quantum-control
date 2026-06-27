@@ -47,6 +47,7 @@ jobs:
           src/scpn_quantum_control/differentiable_sota_scorecard.py
           src/scpn_quantum_control/differentiable_external_validation.py
           src/scpn_quantum_control/differentiable_module_hardening_audit.py
+          src/scpn_quantum_control/benchmarks/differentiable_isolated_benchmark_plan.py
           src/scpn_quantum_control/benchmarks/differentiable_hardening_gate.py
           tests/test_differentiable_external_validation.py
           tests/test_differentiable_module_hardening_audit.py
@@ -176,6 +177,7 @@ jobs:
           src/scpn_quantum_control/differentiable_external_validation.py
           src/scpn_quantum_control/differentiable_framework_overlay.py
           src/scpn_quantum_control/differentiable_module_hardening_audit.py
+          src/scpn_quantum_control/benchmarks/differentiable_isolated_benchmark_plan.py
           src/scpn_quantum_control/benchmarks/differentiable_hardening_gate.py
           src/scpn_quantum_control/benchmarks/differentiable_evidence.py
           src/scpn_quantum_control/phase/differentiable_readiness.py

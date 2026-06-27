@@ -39,6 +39,14 @@ from .benchmarks.differentiable_hardening_gate import (
     DifferentiableHardeningSliceGateResult,
     run_differentiable_hardening_slice_gate,
 )
+from .benchmarks.differentiable_isolated_benchmark_plan import (
+    DifferentiableIsolatedBenchmarkPlan,
+    DifferentiableIsolatedBenchmarkPlanRow,
+    DifferentiableIsolatedBenchmarkPlanValidation,
+    render_differentiable_isolated_benchmark_plan_markdown,
+    run_differentiable_isolated_benchmark_plan,
+    validate_differentiable_isolated_benchmark_plan,
+)
 from .benchmarks.differentiable_programming import (
     DifferentiableProgrammingBenchmarkResult,
     DifferentiableProgrammingExternalReferenceResult,
@@ -518,6 +526,7 @@ from .differentiable_api import (
     differentiable_frontend_report,
     differentiable_gradient,
     differentiable_hessian,
+    differentiable_isolated_benchmark_plan_report,
     differentiable_jacobian,
     differentiable_rust_python_inventory_report,
     differentiable_sota_scorecard_report,
@@ -1407,6 +1416,7 @@ __all__ = [
     "differentiable_frontend_report",
     "differentiable_gradient",
     "differentiable_hessian",
+    "differentiable_isolated_benchmark_plan_report",
     "differentiable_jacobian",
     "differentiable_rust_python_inventory_report",
     "differentiable_sota_scorecard_report",
@@ -1422,6 +1432,12 @@ __all__ = [
     "render_differentiable_architecture_map_markdown",
     "run_differentiable_architecture_map",
     "validate_differentiable_architecture_map",
+    "DifferentiableIsolatedBenchmarkPlan",
+    "DifferentiableIsolatedBenchmarkPlanRow",
+    "DifferentiableIsolatedBenchmarkPlanValidation",
+    "render_differentiable_isolated_benchmark_plan_markdown",
+    "run_differentiable_isolated_benchmark_plan",
+    "validate_differentiable_isolated_benchmark_plan",
     "DifferentiableDependencyEnvironmentMap",
     "DifferentiableDependencyEnvironmentMapValidation",
     "DifferentiableDependencyEnvironmentProfile",

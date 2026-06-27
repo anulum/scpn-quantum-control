@@ -16,6 +16,9 @@ from typing import Any, Literal, TypeAlias, cast
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
 
+from .benchmarks.differentiable_isolated_benchmark_plan import (
+    run_differentiable_isolated_benchmark_plan,
+)
 from .compiler.mlir import (
     build_compiler_ad_transform_plan,
     compile_compiler_ad_transform_plan_to_mlir,
@@ -62,6 +65,7 @@ UnifiedDifferentiableOperation = Literal[
     "rust_python_inventory",
     "architecture_rustification_map",
     "dependency_environment_map",
+    "isolated_benchmark_plan",
 ]
 DifferentiableDashboardCapabilityState = Literal[
     "planned",
@@ -553,6 +557,22 @@ def differentiable_dependency_environment_map_report() -> UnifiedDifferentiableA
         hessian=None,
         payload=environment_map.to_dict(),
         claim_boundary=environment_map.claim_boundary,
+    )
+
+
+def differentiable_isolated_benchmark_plan_report() -> UnifiedDifferentiableAPIResult:
+    """Return claim-bounded isolated benchmark batch planning evidence."""
+    plan = run_differentiable_isolated_benchmark_plan()
+    return UnifiedDifferentiableAPIResult(
+        operation="isolated_benchmark_plan",
+        supported=plan.promotion_ready,
+        method="differentiable_isolated_benchmark_plan",
+        value=None,
+        gradient=None,
+        jacobian=None,
+        hessian=None,
+        payload=plan.to_dict(),
+        claim_boundary=plan.claim_boundary,
     )
 
 
@@ -1239,6 +1259,8 @@ def differentiable_api(
         return differentiable_architecture_map_report()
     if operation == "dependency_environment_map":
         return differentiable_dependency_environment_map_report()
+    if operation == "isolated_benchmark_plan":
+        return differentiable_isolated_benchmark_plan_report()
     if operation == "frontend_report":
         return differentiable_frontend_report(_require_objective(objective))
     if operation == "dashboard_status":
@@ -1378,6 +1400,7 @@ __all__ = [
     "differentiable_frontend_report",
     "differentiable_gradient",
     "differentiable_hessian",
+    "differentiable_isolated_benchmark_plan_report",
     "differentiable_jacobian",
     "differentiable_rust_python_inventory_report",
     "differentiable_sota_scorecard_report",

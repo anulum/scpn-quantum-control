@@ -57,6 +57,9 @@ def test_static_gates_include_differentiable_docstring_ratchet() -> None:
     assert "src/scpn_quantum_control/differentiable_sota_scorecard.py" in docstring_cmd
     assert "src/scpn_quantum_control/differentiable_external_validation.py" in (docstring_cmd)
     assert "src/scpn_quantum_control/differentiable_module_hardening_audit.py" in (docstring_cmd)
+    assert "src/scpn_quantum_control/benchmarks/differentiable_isolated_benchmark_plan.py" in (
+        docstring_cmd
+    )
     assert "src/scpn_quantum_control/benchmarks/differentiable_hardening_gate.py" in (
         docstring_cmd
     )
@@ -83,6 +86,9 @@ def test_static_gates_include_differentiable_strict_mypy_ratchet() -> None:
     assert "src/scpn_quantum_control/differentiable_external_validation.py" in strict_cmd
     assert "src/scpn_quantum_control/differentiable_framework_overlay.py" in strict_cmd
     assert "src/scpn_quantum_control/differentiable_module_hardening_audit.py" in strict_cmd
+    assert "src/scpn_quantum_control/benchmarks/differentiable_isolated_benchmark_plan.py" in (
+        strict_cmd
+    )
     assert "src/scpn_quantum_control/benchmarks/differentiable_hardening_gate.py" in strict_cmd
     assert "src/scpn_quantum_control/benchmarks/differentiable_evidence.py" in strict_cmd
     assert "src/scpn_quantum_control/phase/differentiable_readiness.py" in strict_cmd

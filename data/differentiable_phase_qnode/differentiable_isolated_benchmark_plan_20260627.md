@@ -1,0 +1,28 @@
+<!--
+SPDX-License-Identifier: AGPL-3.0-or-later
+Commercial license available
+© Concepts 1996–2026 Miroslav Šotek. All rights reserved.
+© Code 2020–2026 Miroslav Šotek. All rights reserved.
+ORCID: 0009-0009-3560-0851
+Contact: www.anulum.li | protoscience@anulum.li
+SCPN Quantum Control — Differentiable Isolated Benchmark Batch Plan
+-->
+
+# Differentiable Isolated Benchmark Batch Plan
+
+- Schema: `scpn_qc_differentiable_isolated_benchmark_plan_v1`
+- Artifact ID: `diff-isolated-benchmark-plan-20260627`
+- Promotion ready: `False`
+- Ready rows: `0/6`
+- Claim boundary: Differentiable isolated benchmark batch plan only; no isolated_affinity benchmark evidence, production-performance claim, provider execution, QPU execution, GPU execution, Enzyme promotion, or claim-ledger promotion is implied.
+
+| Row | Source classifications | Command | Blockers |
+|---|---|---|---|
+| `ci_external_comparison_bundle` | functional_non_isolated<br>functional_non_isolated | `taskset -c 2 chrt -f 1 .venv/bin/python scripts/run_differentiable_benchmark_evidence.py --output-dir data/differentiable_phase_qnode/isolated_benchmark_batch_20260627 --cpu-affinity 2 --isolation-method taskset+chrt` | reserved host readiness blocker: cpu0 governor is 'powersave'; set it to 'performance' for stable benchmark timing<br>reserved host readiness blocker: host load 11.15 exceeds the isolated threshold 1.00; quiesce concurrent jobs<br>data/differentiable_phase_qnode/local_benchmark_20260616T0955Z/diff-qnode-ci-evidence-schema-v1.json is functional_non_isolated, not isolated_affinity<br>data/differentiable_phase_qnode/local_benchmark_20260616T0955Z/diff-qnode-external-comparison.json is functional_non_isolated, not isolated_affinity |
+| `phase_qnode_affinity` | functional_non_isolated | `taskset -c 2 chrt -f 1 .venv/bin/python tools/run_phase_qnode_affinity_benchmark.py --reserved-cpus 2 --output data/differentiable_phase_qnode/isolated_benchmark_batch_20260627/phase_qnode_affinity.json` | reserved host readiness blocker: cpu0 governor is 'powersave'; set it to 'performance' for stable benchmark timing<br>reserved host readiness blocker: host load 11.15 exceeds the isolated threshold 1.00; quiesce concurrent jobs<br>data/differentiable_phase_qnode/local_benchmark_20260616T0955Z/phase_qnode_affinity.json is functional_non_isolated, not isolated_affinity |
+| `identical_circuit_gradient_comparison` | functional_non_isolated | `taskset -c 2 chrt -f 1 .venv/bin/python scripts/run_differentiable_benchmark_evidence.py --output-dir data/differentiable_phase_qnode/isolated_benchmark_batch_20260627` | reserved host readiness blocker: cpu0 governor is 'powersave'; set it to 'performance' for stable benchmark timing<br>reserved host readiness blocker: host load 11.15 exceeds the isolated threshold 1.00; quiesce concurrent jobs<br>data/differentiable_phase_qnode/identical_circuit_gradient_comparison_20260616.json is functional_non_isolated, not isolated_affinity |
+| `domain_benchmark_dataset_closure` | functional_non_isolated | `taskset -c 2 chrt -f 1 .venv/bin/python scripts/run_differentiable_benchmark_evidence.py --output-dir data/differentiable_phase_qnode/isolated_benchmark_batch_20260627` | reserved host readiness blocker: cpu0 governor is 'powersave'; set it to 'performance' for stable benchmark timing<br>reserved host readiness blocker: host load 11.15 exceeds the isolated threshold 1.00; quiesce concurrent jobs<br>data/differentiable_phase_qnode/domain_benchmark_dataset_closure_20260616.json is functional_non_isolated, not isolated_affinity |
+| `torch_maturity_audit` | functional_non_isolated | `taskset -c 2 chrt -f 1 .venv/bin/python scripts/run_differentiable_benchmark_evidence.py --output-dir data/differentiable_phase_qnode/isolated_benchmark_batch_20260627` | reserved host readiness blocker: cpu0 governor is 'powersave'; set it to 'performance' for stable benchmark timing<br>reserved host readiness blocker: host load 11.15 exceeds the isolated threshold 1.00; quiesce concurrent jobs<br>data/differentiable_phase_qnode/torch_maturity_audit_20260616.json is functional_non_isolated, not isolated_affinity |
+| `enzyme_mlir_maturity_audit` | hard_gap | `taskset -c 2 chrt -f 1 .venv/bin/python scripts/run_differentiable_benchmark_evidence.py --output-dir data/differentiable_phase_qnode/isolated_benchmark_batch_20260627` | reserved host readiness blocker: cpu0 governor is 'powersave'; set it to 'performance' for stable benchmark timing<br>reserved host readiness blocker: host load 11.15 exceeds the isolated threshold 1.00; quiesce concurrent jobs<br>Enzyme/MLIR compiler-native breadth remains hard_gap until raw 11-case breadth, native execution, and isolated benchmark attachments pass.<br>data/differentiable_phase_qnode/enzyme_mlir_maturity_audit_20260616.json is hard_gap, not isolated_affinity |
+
+This plan is a reserved-host execution queue. It does not promote any performance, provider, QPU, GPU, Enzyme, or claim-ledger row until the listed commands produce validated isolated_affinity artifacts.

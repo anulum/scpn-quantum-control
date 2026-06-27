@@ -7,13 +7,13 @@
     "model_documentation_pages": 0,
     "notebook_files": 99,
     "optional_extras": 43,
-    "public_api_exports": 736,
+    "public_api_exports": 743,
     "public_documentation_pages": 253,
-    "python_model_classes": 862,
-    "python_model_source_modules": 491,
+    "python_model_classes": 865,
+    "python_model_source_modules": 492,
     "rust_pyo3_model_wrappers": 171,
     "rust_source_modules": 42,
-    "test_files": 801
+    "test_files": 802
   },
   "documentation": {
     "examples": [
@@ -453,7 +453,7 @@
       {
         "package": "benchmarks",
         "path": "src/scpn_quantum_control/benchmarks",
-        "python_modules": 13
+        "python_modules": 14
       },
       {
         "package": "bridge",
@@ -1251,6 +1251,18 @@
       {
         "name": "DifferentiableHardeningSliceGateResult",
         "path": "src/scpn_quantum_control/benchmarks/differentiable_hardening_gate.py"
+      },
+      {
+        "name": "DifferentiableIsolatedBenchmarkPlan",
+        "path": "src/scpn_quantum_control/benchmarks/differentiable_isolated_benchmark_plan.py"
+      },
+      {
+        "name": "DifferentiableIsolatedBenchmarkPlanRow",
+        "path": "src/scpn_quantum_control/benchmarks/differentiable_isolated_benchmark_plan.py"
+      },
+      {
+        "name": "DifferentiableIsolatedBenchmarkPlanValidation",
+        "path": "src/scpn_quantum_control/benchmarks/differentiable_isolated_benchmark_plan.py"
       },
       {
         "name": "DifferentiableKuramotoExactAnswerCase",
@@ -4172,6 +4184,7 @@
       "src/scpn_quantum_control/benchmarks/differentiable_evidence.py",
       "src/scpn_quantum_control/benchmarks/differentiable_external_comparison.py",
       "src/scpn_quantum_control/benchmarks/differentiable_hardening_gate.py",
+      "src/scpn_quantum_control/benchmarks/differentiable_isolated_benchmark_plan.py",
       "src/scpn_quantum_control/benchmarks/differentiable_programming.py",
       "src/scpn_quantum_control/benchmarks/gpu_baseline.py",
       "src/scpn_quantum_control/benchmarks/isolated_host_readiness.py",
@@ -4807,6 +4820,9 @@
     "DifferentiableDependencyEnvironmentStatus",
     "DifferentiableHardeningGateCheck",
     "DifferentiableHardeningSliceGateResult",
+    "DifferentiableIsolatedBenchmarkPlan",
+    "DifferentiableIsolatedBenchmarkPlanRow",
+    "DifferentiableIsolatedBenchmarkPlanValidation",
     "DifferentiableMLIRCompileConfig",
     "DifferentiableModuleHardeningAuditResult",
     "DifferentiableModuleHardeningRecord",
@@ -5151,6 +5167,7 @@
     "differentiable_frontend_report",
     "differentiable_gradient",
     "differentiable_hessian",
+    "differentiable_isolated_benchmark_plan_report",
     "differentiable_jacobian",
     "differentiable_module_hardening_registry",
     "differentiable_rust_python_inventory_report",
@@ -5377,6 +5394,7 @@
     "registered_custom_vjp",
     "render_differentiable_architecture_map_markdown",
     "render_differentiable_dependency_environment_map_markdown",
+    "render_differentiable_isolated_benchmark_plan_markdown",
     "render_differentiable_rust_python_inventory_markdown",
     "render_differentiable_sota_scorecard_markdown",
     "resolve_aggregator_provider_route",
@@ -5391,6 +5409,7 @@
     "run_differentiable_architecture_map",
     "run_differentiable_dependency_environment_map",
     "run_differentiable_hardening_slice_gate",
+    "run_differentiable_isolated_benchmark_plan",
     "run_differentiable_module_hardening_audit",
     "run_differentiable_programming_benchmark_suite",
     "run_differentiable_programming_external_reference_suite",
@@ -5453,6 +5472,7 @@
     "update_levenberg_marquardt_damping",
     "validate_differentiable_architecture_map",
     "validate_differentiable_dependency_environment_map",
+    "validate_differentiable_isolated_benchmark_plan",
     "validate_differentiable_rust_python_inventory",
     "validate_differentiable_sota_scorecard",
     "validate_kuramoto_inputs",
@@ -5739,6 +5759,7 @@
       "tests/test_differentiable_gradient_descent_optimizer.py",
       "tests/test_differentiable_hardening_gate.py",
       "tests/test_differentiable_implicit_sensitivity.py",
+      "tests/test_differentiable_isolated_benchmark_plan.py",
       "tests/test_differentiable_jax.py",
       "tests/test_differentiable_levenberg_marquardt.py",
       "tests/test_differentiable_module_hardening_audit.py",

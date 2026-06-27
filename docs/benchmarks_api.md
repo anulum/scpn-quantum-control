@@ -510,6 +510,25 @@ execution without visible device evidence remains `silent_accelerator_fallback`.
 This API does not execute the listed commands and does not promote any
 benchmark row to production evidence.
 
+#### `run_differentiable_isolated_benchmark_plan()`
+
+Returns a JSON-ready `DifferentiableIsolatedBenchmarkPlan` for the current
+differentiable benchmark and evidence artefacts that are not yet
+promotion-grade. The plan covers the committed local benchmark bundle,
+Phase-QNode affinity row, identical-circuit gradient comparison, domain dataset
+closure, PyTorch maturity audit, and Enzyme/MLIR maturity audit. Each row
+records source artefact paths, source classifications, the required
+`self-hosted`, `linux`, and `isolated-benchmark` runner labels, a `taskset` plus
+`chrt` rerun command, required host context, expected output paths, and blockers.
+
+The committed artefact
+`data/differentiable_phase_qnode/differentiable_isolated_benchmark_plan_20260627.json`
+is a batch plan, not a benchmark result. `promotion_ready` remains false until
+every row has validated `isolated_affinity` output artefacts and no host or
+source-classification blockers. The companion validator checks paths, rerun
+commands, labels, output locations, and source classifications without executing
+benchmarks or changing claim-ledger promotion status.
+
 The CI benchmark evidence writer records accelerator metadata in every bundle.
 The default is explicit CPU-only evidence. To request accelerator evidence, set
 `SCPN_BENCH_ACCELERATOR_BACKEND=cuda` or `rocm` and provide visible-device

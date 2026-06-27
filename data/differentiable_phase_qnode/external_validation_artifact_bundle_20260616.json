@@ -6,20 +6,20 @@
     {
       "path": "data/differentiable_phase_qnode/claim_ledger.json",
       "role": "Claim-ledger source of truth",
-      "sha256": "f46c95b501f99d89405c310270e16d4a2fef075e0ce2675a9b4beedcefee8c6b",
-      "size_bytes": 22296
+      "sha256": "a7abf26e3162ee1ffad1e397220d1662145b21c3358ca145d612c1b7fafb30d0",
+      "size_bytes": 24564
     },
     {
       "path": "data/differentiable_phase_qnode/claim_ledger.md",
       "role": "Reviewer claim-ledger summary",
-      "sha256": "a005daf74364b359d20a8bbe7d07583c7a7866264789b078309993a7fe2db8a2",
-      "size_bytes": 6071
+      "sha256": "b76292a5f351b20d3b18d67b5129d6e4b3e1f4a77c175f14c113f5c6630037e7",
+      "size_bytes": 6619
     },
     {
       "path": "data/differentiable_phase_qnode/public_claim_table_20260616.md",
       "role": "Public-safe claim wording table",
-      "sha256": "9086495695425035b71b6308484ff0fb72a3199e2b7b928c1b789cb9cdf58c93",
-      "size_bytes": 6715
+      "sha256": "567b45340b14be9cf0cee30e890fa6f15f857d6bb0c7902f1c497f6f347f0728",
+      "size_bytes": 7119
     },
     {
       "path": "data/differentiable_phase_qnode/differentiable_sota_scorecard_20260620.json",
@@ -68,6 +68,18 @@
       "role": "Differentiable dependency and environment evidence map reviewer summary",
       "sha256": "3e980d9f729f75efa8b3c73e2d85421dd8b611f9896b86b313ab5af49eaf1448",
       "size_bytes": 1918
+    },
+    {
+      "path": "data/differentiable_phase_qnode/differentiable_isolated_benchmark_plan_20260627.json",
+      "role": "Reserved-host isolated benchmark batch plan artefact",
+      "sha256": "091bc537ec47ced78b9fa2bb76a0ede9780d549feff6af51b75d3f9655479fc6",
+      "size_bytes": 13273
+    },
+    {
+      "path": "data/differentiable_phase_qnode/differentiable_isolated_benchmark_plan_20260627.md",
+      "role": "Reserved-host isolated benchmark batch plan reviewer summary",
+      "sha256": "3dc4b65fc8fa3e4b850a92be81fb632e807d9362887e64dba41e2826b731a98c",
+      "size_bytes": 5043
     },
     {
       "path": "data/differentiable_phase_qnode/external_validation_environment_lock_20260616.json",

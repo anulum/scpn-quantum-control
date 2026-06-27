@@ -33,6 +33,14 @@ from .differentiable_hardening_gate import (
     DifferentiableHardeningSliceGateResult,
     run_differentiable_hardening_slice_gate,
 )
+from .differentiable_isolated_benchmark_plan import (
+    DifferentiableIsolatedBenchmarkPlan,
+    DifferentiableIsolatedBenchmarkPlanRow,
+    DifferentiableIsolatedBenchmarkPlanValidation,
+    render_differentiable_isolated_benchmark_plan_markdown,
+    run_differentiable_isolated_benchmark_plan,
+    validate_differentiable_isolated_benchmark_plan,
+)
 from .differentiable_programming import (
     DifferentiableProgrammingBenchmarkResult,
     DifferentiableProgrammingExternalReferenceResult,
@@ -85,6 +93,12 @@ __all__ = [
     "DifferentiableHardeningGateCheck",
     "DifferentiableHardeningSliceGateResult",
     "run_differentiable_hardening_slice_gate",
+    "DifferentiableIsolatedBenchmarkPlan",
+    "DifferentiableIsolatedBenchmarkPlanRow",
+    "DifferentiableIsolatedBenchmarkPlanValidation",
+    "render_differentiable_isolated_benchmark_plan_markdown",
+    "run_differentiable_isolated_benchmark_plan",
+    "validate_differentiable_isolated_benchmark_plan",
     "run_differentiable_programming_benchmark_suite",
     "run_differentiable_programming_external_reference_suite",
     "run_quantum_gradient_benchmark_suite",

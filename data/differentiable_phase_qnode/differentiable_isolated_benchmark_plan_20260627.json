@@ -1,0 +1,317 @@
+{
+  "artifact_id": "diff-isolated-benchmark-plan-20260627",
+  "claim_boundary": "Differentiable isolated benchmark batch plan only; no isolated_affinity benchmark evidence, production-performance claim, provider execution, QPU execution, GPU execution, Enzyme promotion, or claim-ledger promotion is implied.",
+  "promotion_ready": false,
+  "ready_row_count": 0,
+  "rows": [
+    {
+      "benchmark_family": "external_comparison",
+      "blockers": [
+        "reserved host readiness blocker: cpu0 governor is 'powersave'; set it to 'performance' for stable benchmark timing",
+        "reserved host readiness blocker: host load 11.15 exceeds the isolated threshold 1.00; quiesce concurrent jobs",
+        "data/differentiable_phase_qnode/local_benchmark_20260616T0955Z/diff-qnode-ci-evidence-schema-v1.json is functional_non_isolated, not isolated_affinity",
+        "data/differentiable_phase_qnode/local_benchmark_20260616T0955Z/diff-qnode-external-comparison.json is functional_non_isolated, not isolated_affinity"
+      ],
+      "claim_boundary": "Differentiable isolated benchmark batch plan only; no isolated_affinity benchmark evidence, production-performance claim, provider execution, QPU execution, GPU execution, Enzyme promotion, or claim-ledger promotion is implied.",
+      "expected_output_paths": [
+        "data/differentiable_phase_qnode/isolated_benchmark_batch_20260627/diff-qnode-ci-evidence-schema-v1.json",
+        "data/differentiable_phase_qnode/isolated_benchmark_batch_20260627/diff-qnode-ci-evidence-schema-v1.csv",
+        "data/differentiable_phase_qnode/isolated_benchmark_batch_20260627/diff-qnode-external-comparison.json"
+      ],
+      "promotion_ready": false,
+      "required_host_context": [
+        "reserved_cpu_affinity",
+        "observed_process_affinity",
+        "host_load_before_after",
+        "performance_governor_or_frequency",
+        "no_heavy_concurrent_jobs",
+        "raw_timing_rows"
+      ],
+      "required_runner_labels": [
+        "self-hosted",
+        "linux",
+        "isolated-benchmark"
+      ],
+      "rerun_command": [
+        "taskset",
+        "-c",
+        "2",
+        "chrt",
+        "-f",
+        "1",
+        ".venv/bin/python",
+        "scripts/run_differentiable_benchmark_evidence.py",
+        "--output-dir",
+        "data/differentiable_phase_qnode/isolated_benchmark_batch_20260627",
+        "--cpu-affinity",
+        "2",
+        "--isolation-method",
+        "taskset+chrt"
+      ],
+      "row_id": "ci_external_comparison_bundle",
+      "source_artifact_ids": [
+        "diff-qnode-ci-evidence-schema-v1",
+        "diff-qnode-external-comparison-local"
+      ],
+      "source_artifact_paths": [
+        "data/differentiable_phase_qnode/local_benchmark_20260616T0955Z/diff-qnode-ci-evidence-schema-v1.json",
+        "data/differentiable_phase_qnode/local_benchmark_20260616T0955Z/diff-qnode-external-comparison.json"
+      ],
+      "source_classifications": [
+        "functional_non_isolated",
+        "functional_non_isolated"
+      ],
+      "title": "CI external comparison bundle"
+    },
+    {
+      "benchmark_family": "phase_qnode_affinity",
+      "blockers": [
+        "reserved host readiness blocker: cpu0 governor is 'powersave'; set it to 'performance' for stable benchmark timing",
+        "reserved host readiness blocker: host load 11.15 exceeds the isolated threshold 1.00; quiesce concurrent jobs",
+        "data/differentiable_phase_qnode/local_benchmark_20260616T0955Z/phase_qnode_affinity.json is functional_non_isolated, not isolated_affinity"
+      ],
+      "claim_boundary": "Differentiable isolated benchmark batch plan only; no isolated_affinity benchmark evidence, production-performance claim, provider execution, QPU execution, GPU execution, Enzyme promotion, or claim-ledger promotion is implied.",
+      "expected_output_paths": [
+        "data/differentiable_phase_qnode/isolated_benchmark_batch_20260627/phase_qnode_affinity.json"
+      ],
+      "promotion_ready": false,
+      "required_host_context": [
+        "reserved_cpu_affinity",
+        "observed_process_affinity",
+        "host_load_before_after",
+        "performance_governor_or_frequency",
+        "no_heavy_concurrent_jobs",
+        "raw_timing_rows"
+      ],
+      "required_runner_labels": [
+        "self-hosted",
+        "linux",
+        "isolated-benchmark"
+      ],
+      "rerun_command": [
+        "taskset",
+        "-c",
+        "2",
+        "chrt",
+        "-f",
+        "1",
+        ".venv/bin/python",
+        "tools/run_phase_qnode_affinity_benchmark.py",
+        "--reserved-cpus",
+        "2",
+        "--output",
+        "data/differentiable_phase_qnode/isolated_benchmark_batch_20260627/phase_qnode_affinity.json"
+      ],
+      "row_id": "phase_qnode_affinity",
+      "source_artifact_ids": [
+        "phase-qnode-affinity-local-functional"
+      ],
+      "source_artifact_paths": [
+        "data/differentiable_phase_qnode/local_benchmark_20260616T0955Z/phase_qnode_affinity.json"
+      ],
+      "source_classifications": [
+        "functional_non_isolated"
+      ],
+      "title": "Phase-QNode affinity timing"
+    },
+    {
+      "benchmark_family": "gradient_comparison",
+      "blockers": [
+        "reserved host readiness blocker: cpu0 governor is 'powersave'; set it to 'performance' for stable benchmark timing",
+        "reserved host readiness blocker: host load 11.15 exceeds the isolated threshold 1.00; quiesce concurrent jobs",
+        "data/differentiable_phase_qnode/identical_circuit_gradient_comparison_20260616.json is functional_non_isolated, not isolated_affinity"
+      ],
+      "claim_boundary": "Differentiable isolated benchmark batch plan only; no isolated_affinity benchmark evidence, production-performance claim, provider execution, QPU execution, GPU execution, Enzyme promotion, or claim-ledger promotion is implied.",
+      "expected_output_paths": [
+        "data/differentiable_phase_qnode/isolated_benchmark_batch_20260627/identical_circuit_gradient_comparison_20260616.json"
+      ],
+      "promotion_ready": false,
+      "required_host_context": [
+        "reserved_cpu_affinity",
+        "observed_process_affinity",
+        "host_load_before_after",
+        "performance_governor_or_frequency",
+        "no_heavy_concurrent_jobs",
+        "raw_timing_rows"
+      ],
+      "required_runner_labels": [
+        "self-hosted",
+        "linux",
+        "isolated-benchmark"
+      ],
+      "rerun_command": [
+        "taskset",
+        "-c",
+        "2",
+        "chrt",
+        "-f",
+        "1",
+        ".venv/bin/python",
+        "scripts/run_differentiable_benchmark_evidence.py",
+        "--output-dir",
+        "data/differentiable_phase_qnode/isolated_benchmark_batch_20260627"
+      ],
+      "row_id": "identical_circuit_gradient_comparison",
+      "source_artifact_ids": [
+        "identical-circuit-gradient-comparison-20260616"
+      ],
+      "source_artifact_paths": [
+        "data/differentiable_phase_qnode/identical_circuit_gradient_comparison_20260616.json"
+      ],
+      "source_classifications": [
+        "functional_non_isolated"
+      ],
+      "title": "Identical-circuit gradient comparison"
+    },
+    {
+      "benchmark_family": "domain_dataset",
+      "blockers": [
+        "reserved host readiness blocker: cpu0 governor is 'powersave'; set it to 'performance' for stable benchmark timing",
+        "reserved host readiness blocker: host load 11.15 exceeds the isolated threshold 1.00; quiesce concurrent jobs",
+        "data/differentiable_phase_qnode/domain_benchmark_dataset_closure_20260616.json is functional_non_isolated, not isolated_affinity"
+      ],
+      "claim_boundary": "Differentiable isolated benchmark batch plan only; no isolated_affinity benchmark evidence, production-performance claim, provider execution, QPU execution, GPU execution, Enzyme promotion, or claim-ledger promotion is implied.",
+      "expected_output_paths": [
+        "data/differentiable_phase_qnode/isolated_benchmark_batch_20260627/domain_benchmark_dataset_closure_20260616.json"
+      ],
+      "promotion_ready": false,
+      "required_host_context": [
+        "reserved_cpu_affinity",
+        "observed_process_affinity",
+        "host_load_before_after",
+        "performance_governor_or_frequency",
+        "no_heavy_concurrent_jobs",
+        "raw_timing_rows"
+      ],
+      "required_runner_labels": [
+        "self-hosted",
+        "linux",
+        "isolated-benchmark"
+      ],
+      "rerun_command": [
+        "taskset",
+        "-c",
+        "2",
+        "chrt",
+        "-f",
+        "1",
+        ".venv/bin/python",
+        "scripts/run_differentiable_benchmark_evidence.py",
+        "--output-dir",
+        "data/differentiable_phase_qnode/isolated_benchmark_batch_20260627"
+      ],
+      "row_id": "domain_benchmark_dataset_closure",
+      "source_artifact_ids": [
+        "differentiable-domain-benchmark-closure-20260616"
+      ],
+      "source_artifact_paths": [
+        "data/differentiable_phase_qnode/domain_benchmark_dataset_closure_20260616.json"
+      ],
+      "source_classifications": [
+        "functional_non_isolated"
+      ],
+      "title": "Domain benchmark dataset closure"
+    },
+    {
+      "benchmark_family": "torch_maturity",
+      "blockers": [
+        "reserved host readiness blocker: cpu0 governor is 'powersave'; set it to 'performance' for stable benchmark timing",
+        "reserved host readiness blocker: host load 11.15 exceeds the isolated threshold 1.00; quiesce concurrent jobs",
+        "data/differentiable_phase_qnode/torch_maturity_audit_20260616.json is functional_non_isolated, not isolated_affinity"
+      ],
+      "claim_boundary": "Differentiable isolated benchmark batch plan only; no isolated_affinity benchmark evidence, production-performance claim, provider execution, QPU execution, GPU execution, Enzyme promotion, or claim-ledger promotion is implied.",
+      "expected_output_paths": [
+        "data/differentiable_phase_qnode/isolated_benchmark_batch_20260627/torch_maturity_audit_20260616.json"
+      ],
+      "promotion_ready": false,
+      "required_host_context": [
+        "reserved_cpu_affinity",
+        "observed_process_affinity",
+        "host_load_before_after",
+        "performance_governor_or_frequency",
+        "no_heavy_concurrent_jobs",
+        "raw_timing_rows"
+      ],
+      "required_runner_labels": [
+        "self-hosted",
+        "linux",
+        "isolated-benchmark"
+      ],
+      "rerun_command": [
+        "taskset",
+        "-c",
+        "2",
+        "chrt",
+        "-f",
+        "1",
+        ".venv/bin/python",
+        "scripts/run_differentiable_benchmark_evidence.py",
+        "--output-dir",
+        "data/differentiable_phase_qnode/isolated_benchmark_batch_20260627"
+      ],
+      "row_id": "torch_maturity_audit",
+      "source_artifact_ids": [
+        "torch-maturity-audit-20260616"
+      ],
+      "source_artifact_paths": [
+        "data/differentiable_phase_qnode/torch_maturity_audit_20260616.json"
+      ],
+      "source_classifications": [
+        "functional_non_isolated"
+      ],
+      "title": "PyTorch maturity audit"
+    },
+    {
+      "benchmark_family": "enzyme_mlir",
+      "blockers": [
+        "reserved host readiness blocker: cpu0 governor is 'powersave'; set it to 'performance' for stable benchmark timing",
+        "reserved host readiness blocker: host load 11.15 exceeds the isolated threshold 1.00; quiesce concurrent jobs",
+        "Enzyme/MLIR compiler-native breadth remains hard_gap until raw 11-case breadth, native execution, and isolated benchmark attachments pass.",
+        "data/differentiable_phase_qnode/enzyme_mlir_maturity_audit_20260616.json is hard_gap, not isolated_affinity"
+      ],
+      "claim_boundary": "Differentiable isolated benchmark batch plan only; no isolated_affinity benchmark evidence, production-performance claim, provider execution, QPU execution, GPU execution, Enzyme promotion, or claim-ledger promotion is implied.",
+      "expected_output_paths": [
+        "data/differentiable_phase_qnode/isolated_benchmark_batch_20260627/enzyme_mlir_maturity_audit_20260616.json"
+      ],
+      "promotion_ready": false,
+      "required_host_context": [
+        "reserved_cpu_affinity",
+        "observed_process_affinity",
+        "host_load_before_after",
+        "performance_governor_or_frequency",
+        "no_heavy_concurrent_jobs",
+        "raw_timing_rows"
+      ],
+      "required_runner_labels": [
+        "self-hosted",
+        "linux",
+        "isolated-benchmark"
+      ],
+      "rerun_command": [
+        "taskset",
+        "-c",
+        "2",
+        "chrt",
+        "-f",
+        "1",
+        ".venv/bin/python",
+        "scripts/run_differentiable_benchmark_evidence.py",
+        "--output-dir",
+        "data/differentiable_phase_qnode/isolated_benchmark_batch_20260627"
+      ],
+      "row_id": "enzyme_mlir_maturity_audit",
+      "source_artifact_ids": [
+        "enzyme-mlir-maturity-audit-20260616"
+      ],
+      "source_artifact_paths": [
+        "data/differentiable_phase_qnode/enzyme_mlir_maturity_audit_20260616.json"
+      ],
+      "source_classifications": [
+        "hard_gap"
+      ],
+      "title": "Enzyme/MLIR maturity audit"
+    }
+  ],
+  "schema": "scpn_qc_differentiable_isolated_benchmark_plan_v1",
+  "total_row_count": 6
+}
