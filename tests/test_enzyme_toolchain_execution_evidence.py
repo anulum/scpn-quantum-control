@@ -11,9 +11,11 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from typing import Any, cast
 
 import pytest
 
+import scpn_quantum_control.compiler.mlir_enzyme_execution_runner as runner
 from scpn_quantum_control.compiler import (
     EnzymeToolchainADCase,
     EnzymeToolchainADExecutionEvidence,
@@ -25,35 +27,56 @@ _EVIDENCE_DIR = Path(__file__).resolve().parents[1] / "data" / "differentiable_p
 
 
 def _rebuild(payload: dict[str, object]) -> EnzymeToolchainADExecutionEvidence:
+    """Rebuild Enzyme toolchain evidence from a JSON-like payload."""
+    rows = tuple(cast("list[dict[str, object]]", payload["cases"]))
     cases = tuple(
         EnzymeToolchainADCase(
-            case_id=row["case_id"],
-            operation_family=row["operation_family"],
-            operand_dimension=row["operand_dimension"],
-            status=row["status"],
-            gradient_error=row["gradient_error"],
-            runtime_seconds=row["runtime_seconds"],
-            failure_class=row["failure_class"],
-            claim_boundary=row["claim_boundary"],
+            case_id=cast("str", row["case_id"]),
+            operation_family=cast("str", row["operation_family"]),
+            operand_dimension=cast("int", row["operand_dimension"]),
+            status=cast("str", row["status"]),
+            gradient_error=cast("float | None", row["gradient_error"]),
+            runtime_seconds=cast("float | None", row["runtime_seconds"]),
+            failure_class=cast("str | None", row["failure_class"]),
+            claim_boundary=cast("str", row["claim_boundary"]),
         )
-        for row in payload["cases"]
+        for row in rows
     )
     return EnzymeToolchainADExecutionEvidence(
-        artifact_id=payload["artifact_id"],
-        toolchain_available=payload["toolchain_available"],
-        toolchain=payload["toolchain"],
+        artifact_id=cast("str", payload["artifact_id"]),
+        toolchain_available=cast("bool", payload["toolchain_available"]),
+        toolchain=cast("dict[str, str]", payload["toolchain"]),
         cases=cases,
-        beyond_scalar_executed=payload["beyond_scalar_executed"],
-        executed_operation_families=tuple(payload["executed_operation_families"]),
-        max_gradient_error=payload["max_gradient_error"],
-        gradient_parity_tolerance=payload["gradient_parity_tolerance"],
-        claim_boundary=payload["claim_boundary"],
+        beyond_scalar_executed=cast("bool", payload["beyond_scalar_executed"]),
+        executed_operation_families=tuple(
+            cast("list[str]", payload["executed_operation_families"])
+        ),
+        max_gradient_error=cast("float", payload["max_gradient_error"]),
+        gradient_parity_tolerance=cast("float", payload["gradient_parity_tolerance"]),
+        claim_boundary=cast("str", payload["claim_boundary"]),
     )
+
+
+def _write_executable(path: Path, body: str = "printf 'fake LLVM 18.1.3\\n'\n") -> None:
+    """Create a tiny executable script for resolver tests."""
+    path.write_text(f"#!/bin/sh\n{body}", encoding="utf-8")
+    path.chmod(0o700)
+
+
+def _patch_which(
+    monkeypatch: pytest.MonkeyPatch,
+    commands: dict[str, str],
+) -> None:
+    """Patch the runner's PATH resolver with a typed command map."""
+
+    def which(command: str) -> str | None:
+        return commands.get(command)
+
+    monkeypatch.setattr(cast("Any", runner).shutil, "which", which)
 
 
 def test_runner_is_gated_or_executes_beyond_scalar() -> None:
     """The runner either executes the battery beyond scalar or fails closed as gated."""
-
     evidence = run_enzyme_toolchain_execution_evidence()
     if evidence.toolchain_available:
         assert evidence.beyond_scalar_executed is True
@@ -73,14 +96,12 @@ def test_runner_is_gated_or_executes_beyond_scalar() -> None:
 
 def test_runner_matches_toolchain_detection() -> None:
     """The evidence toolchain flag agrees with the toolchain resolver."""
-
     evidence = run_enzyme_toolchain_execution_evidence()
     assert evidence.toolchain_available is (resolve_enzyme_toolchain() is not None)
 
 
 def test_runner_evidence_round_trips_through_json() -> None:
     """The captured evidence serialises and rebuilds into an equivalent record."""
-
     evidence = run_enzyme_toolchain_execution_evidence()
     payload = json.loads(json.dumps(evidence.to_dict(), sort_keys=True))
     rebuilt = _rebuild(payload)
@@ -91,7 +112,6 @@ def test_runner_evidence_round_trips_through_json() -> None:
 
 def test_executed_case_requires_finite_metrics() -> None:
     """An executed case must carry finite non-negative metrics and no failure_class."""
-
     with pytest.raises(ValueError, match="finite non-negative"):
         EnzymeToolchainADCase(
             case_id="x",
@@ -118,7 +138,6 @@ def test_executed_case_requires_finite_metrics() -> None:
 
 def test_hard_gap_case_requires_reason_and_no_metrics() -> None:
     """A hard-gap case must carry a reason and no execution metrics."""
-
     with pytest.raises(ValueError, match="failure_class"):
         EnzymeToolchainADCase(
             case_id="x",
@@ -145,7 +164,6 @@ def test_hard_gap_case_requires_reason_and_no_metrics() -> None:
 
 def test_unavailable_toolchain_cannot_record_executed_cases() -> None:
     """An evidence marked toolchain-unavailable cannot hold executed rows."""
-
     executed = EnzymeToolchainADCase(
         case_id="vec",
         operation_family="vector",
@@ -172,7 +190,6 @@ def test_unavailable_toolchain_cannot_record_executed_cases() -> None:
 
 def test_aggregate_rejects_gradient_error_over_tolerance() -> None:
     """Evidence cannot be built when an executed gradient error exceeds tolerance."""
-
     over = EnzymeToolchainADCase(
         case_id="vec",
         operation_family="vector",
@@ -197,9 +214,71 @@ def test_aggregate_rejects_gradient_error_over_tolerance() -> None:
         )
 
 
+def test_toolchain_resolver_rejects_relative_plugin_override(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    """Relative Enzyme plugin overrides are rejected before subprocess probing."""
+    clang = tmp_path / "clang"
+    opt = tmp_path / "opt"
+    _write_executable(clang)
+    _write_executable(opt)
+    commands = {"clang": str(clang), "opt": str(opt)}
+
+    monkeypatch.setenv("SCPN_ENZYME_PLUGIN", "relative/LLVMEnzyme-18.so")
+    _patch_which(monkeypatch, commands)
+
+    assert resolve_enzyme_toolchain() is None
+
+
+def test_toolchain_resolver_rejects_non_executable_compiler(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    """Compiler command paths must point at executable files."""
+    clang = tmp_path / "clang"
+    opt = tmp_path / "opt"
+    plugin = tmp_path / "LLVMEnzyme-18.so"
+    clang.write_text("#!/bin/sh\n", encoding="utf-8")
+    opt.write_text("#!/bin/sh\n", encoding="utf-8")
+    opt.chmod(0o700)
+    plugin.write_text("plugin", encoding="utf-8")
+    commands = {"clang": str(clang), "opt": str(opt)}
+
+    monkeypatch.setenv("SCPN_ENZYME_PLUGIN", str(plugin))
+    _patch_which(monkeypatch, commands)
+
+    assert resolve_enzyme_toolchain() is None
+
+
+def test_toolchain_resolver_accepts_absolute_admitted_toolchain(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    """Absolute executable compiler paths and absolute plugins are admitted."""
+    clang = tmp_path / "clang"
+    opt = tmp_path / "opt"
+    plugin = tmp_path / "LLVMEnzyme-18.so"
+    _write_executable(clang, "printf 'fake clang 18.1.3\\n'\n")
+    _write_executable(opt, "printf 'fake opt 18.1.3\\n'\n")
+    plugin.write_text("plugin", encoding="utf-8")
+    commands = {"clang": str(clang), "opt": str(opt)}
+
+    monkeypatch.setenv("SCPN_ENZYME_PLUGIN", str(plugin))
+    _patch_which(monkeypatch, commands)
+
+    toolchain = resolve_enzyme_toolchain()
+
+    assert toolchain is not None
+    assert toolchain.clang == str(clang.resolve())
+    assert toolchain.opt == str(opt.resolve())
+    assert toolchain.plugin == str(plugin.resolve())
+    assert toolchain.metadata["clang"] == "fake clang 18.1.3"
+    assert toolchain.metadata["opt"] == "fake opt 18.1.3"
+
+
 def test_committed_evidence_artifacts_are_valid() -> None:
     """Every committed Enzyme-execution artefact reloads into valid evidence."""
-
     artifacts = sorted(_EVIDENCE_DIR.glob("enzyme_toolchain_ad_execution_evidence_*.json"))
     assert artifacts, "expected at least one committed Enzyme-execution evidence artefact"
     for path in artifacts:

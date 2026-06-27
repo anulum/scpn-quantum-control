@@ -2226,6 +2226,14 @@ raw-plus-derived compiler-AD breadth evidence. Partial breadth captures are
 represented as complete artifacts with explicit case hard gaps. A string
 benchmark ID without the validated attachment is still a hard gap.
 
+The real Enzyme/LLVM execution runner resolves `clang` and `opt` to executable
+absolute paths before any compiler subprocess is started, and it requires
+`SCPN_ENZYME_PLUGIN`, when set, to point at an absolute existing
+`LLVMEnzyme-*.so` file. Invalid overrides fail closed instead of falling back to
+another local plugin. The generated native executable is also validated before
+it is run, and every subprocess is launched without a shell. Missing or invalid
+tooling is recorded as `hard_gap` evidence, not as an execution success.
+
 ## Verification requirements
 
 Before a new quantum-gradient path is promoted, it needs visible evidence:

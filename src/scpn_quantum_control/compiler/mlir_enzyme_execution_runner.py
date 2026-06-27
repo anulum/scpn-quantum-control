@@ -24,7 +24,9 @@ from __future__ import annotations
 
 import os
 import shutil
-import subprocess
+
+# Subprocess is used only through _run_admitted_subprocess.
+import subprocess  # nosec B404
 import tempfile
 import time
 from collections.abc import Callable, Mapping
@@ -37,6 +39,7 @@ import numpy as np
 from numpy.typing import NDArray
 
 FloatArray = NDArray[np.float64]
+_Command = tuple[str, ...]
 
 ENZYME_TOOLCHAIN_AD_STATUSES = frozenset({"executed", "hard_gap"})
 
@@ -67,6 +70,7 @@ class EnzymeToolchainADCase:
     claim_boundary: str
 
     def __post_init__(self) -> None:
+        """Validate the execution-case evidence invariants."""
         if not self.case_id.strip():
             raise ValueError("case_id must be non-empty")
         if not self.operation_family.strip():
@@ -94,7 +98,6 @@ class EnzymeToolchainADCase:
 
     def to_dict(self) -> dict[str, object]:
         """Return JSON-ready execution-case metadata."""
-
         return {
             "case_id": self.case_id,
             "operation_family": self.operation_family,
@@ -122,6 +125,7 @@ class EnzymeToolchainADExecutionEvidence:
     claim_boundary: str
 
     def __post_init__(self) -> None:
+        """Validate aggregate Enzyme execution evidence invariants."""
         if not self.artifact_id.strip():
             raise ValueError("artifact_id must be non-empty")
         if not self.cases:
@@ -154,7 +158,6 @@ class EnzymeToolchainADExecutionEvidence:
 
     def to_dict(self) -> dict[str, object]:
         """Return JSON-ready aggregate Enzyme execution evidence."""
-
         return {
             "artifact_id": self.artifact_id,
             "toolchain_available": self.toolchain_available,
@@ -180,31 +183,61 @@ class _EnzymeToolchain:
 
 def _resolve_enzyme_plugin() -> str | None:
     """Return the LLVMEnzyme plugin path from the environment or a known prefix."""
-
     override = os.environ.get("SCPN_ENZYME_PLUGIN")
-    if override and Path(override).is_file():
-        return override
+    if override:
+        candidate = Path(override).expanduser()
+        if candidate.is_absolute() and candidate.is_file():
+            return str(candidate.resolve(strict=True))
+        return None
     candidates = sorted(
         glob(str(Path.home() / ".local" / "opt" / "enzyme-*" / "lib" / "LLVMEnzyme-*.so"))
     )
-    for candidate in reversed(candidates):
-        if Path(candidate).is_file():
-            return candidate
+    for plugin_candidate in reversed(candidates):
+        path = Path(plugin_candidate)
+        if path.is_absolute() and path.is_file():
+            return str(path.resolve(strict=True))
     return None
+
+
+def _resolve_executable(command: str) -> str | None:
+    """Return an absolute executable path for a PATH-resolved command."""
+    resolved = shutil.which(command)
+    if not resolved:
+        return None
+    path = Path(resolved).resolve(strict=True)
+    if not path.is_file() or not os.access(path, os.X_OK):
+        return None
+    return str(path)
+
+
+def _run_admitted_subprocess(
+    command: _Command,
+    *,
+    timeout_seconds: int,
+) -> subprocess.CompletedProcess[str]:
+    """Run a prevalidated no-shell subprocess and capture text output."""
+    if not command:
+        raise ValueError("subprocess command must be non-empty")
+    executable = Path(command[0]).resolve(strict=True)
+    if not executable.is_file() or not os.access(executable, os.X_OK):
+        raise ValueError(f"subprocess executable is not executable: {command[0]}")
+    admitted = (str(executable), *command[1:])
+    # The executable is absolute, validated, and always run with shell=False.
+    return subprocess.run(  # nosec B603
+        admitted,
+        capture_output=True,
+        text=True,
+        timeout=timeout_seconds,
+        check=False,
+        shell=False,
+    )
 
 
 def _probe_version(executable: str) -> str:
     """Return the first --version line for an executable, or 'unknown'."""
-
     try:
-        completed = subprocess.run(
-            [executable, "--version"],
-            capture_output=True,
-            text=True,
-            timeout=30,
-            check=False,
-        )
-    except (OSError, subprocess.TimeoutExpired):
+        completed = _run_admitted_subprocess((executable, "--version"), timeout_seconds=30)
+    except (OSError, subprocess.TimeoutExpired, ValueError):
         return "unknown"
     line = completed.stdout.strip().splitlines()
     return line[0].strip() if line else "unknown"
@@ -212,9 +245,8 @@ def _probe_version(executable: str) -> str:
 
 def resolve_enzyme_toolchain() -> _EnzymeToolchain | None:
     """Resolve clang, opt and the Enzyme plugin, or return None when any is absent."""
-
-    clang = shutil.which("clang")
-    opt = shutil.which("opt")
+    clang = _resolve_executable("clang")
+    opt = _resolve_executable("opt")
     plugin = _resolve_enzyme_plugin()
     if not clang or not opt or not plugin:
         return None
@@ -254,7 +286,6 @@ class _EnzymeCase:
 
 def _battery() -> tuple[_EnzymeCase, ...]:
     """Return the scalar, vector and matrix Enzyme execution battery."""
-
     return (
         _EnzymeCase(
             "scalar_square",
@@ -300,7 +331,6 @@ def _battery() -> tuple[_EnzymeCase, ...]:
 
 def _run_enzyme_case(case: _EnzymeCase, toolchain: _EnzymeToolchain) -> EnzymeToolchainADCase:
     """Compile, differentiate, link and run one case through the real toolchain."""
-
     dimension = int(case.inputs.size)
     inputs = ", ".join(f"{value:.17g}" for value in case.inputs.tolist())
     zeros = ", ".join("0.0" for _ in range(dimension))
@@ -313,8 +343,8 @@ def _run_enzyme_case(case: _EnzymeCase, toolchain: _EnzymeToolchain) -> EnzymeTo
             ir = base / "kernel.ll"
             ad = base / "kernel_ad.ll"
             exe = base / "kernel.exe"
-            steps = (
-                [
+            steps: tuple[_Command, ...] = (
+                (
                     toolchain.clang,
                     "-S",
                     "-emit-llvm",
@@ -322,8 +352,8 @@ def _run_enzyme_case(case: _EnzymeCase, toolchain: _EnzymeToolchain) -> EnzymeTo
                     str(base / "kernel.c"),
                     "-o",
                     str(ir),
-                ],
-                [
+                ),
+                (
                     toolchain.opt,
                     f"-load-pass-plugin={toolchain.plugin}",
                     "-passes=enzyme",
@@ -331,13 +361,11 @@ def _run_enzyme_case(case: _EnzymeCase, toolchain: _EnzymeToolchain) -> EnzymeTo
                     "-S",
                     "-o",
                     str(ad),
-                ],
-                [toolchain.clang, str(ad), "-o", str(exe), "-lm"],
+                ),
+                (toolchain.clang, str(ad), "-o", str(exe), "-lm"),
             )
             for command in steps:
-                completed = subprocess.run(
-                    command, capture_output=True, text=True, timeout=120, check=False
-                )
+                completed = _run_admitted_subprocess(command, timeout_seconds=120)
                 if completed.returncode != 0:
                     stage = Path(command[0]).name
                     detail = completed.stderr.strip().splitlines()
@@ -352,9 +380,7 @@ def _run_enzyme_case(case: _EnzymeCase, toolchain: _EnzymeToolchain) -> EnzymeTo
                         failure_class=f"{stage}: {reason}"[:200],
                         claim_boundary=_ENZYME_EXECUTION_CLAIM_BOUNDARY,
                     )
-            run = subprocess.run(
-                [str(exe)], capture_output=True, text=True, timeout=60, check=False
-            )
+            run = _run_admitted_subprocess((str(exe),), timeout_seconds=60)
             runtime_seconds = time.perf_counter() - start
             if run.returncode != 0:
                 return EnzymeToolchainADCase(
@@ -404,7 +430,6 @@ def run_enzyme_toolchain_execution_evidence(
     battery through it. When the toolchain is absent every case is recorded as a gated
     hard gap with setup instructions instead of being fabricated.
     """
-
     battery = _battery()
     toolchain = resolve_enzyme_toolchain()
     if toolchain is None:
