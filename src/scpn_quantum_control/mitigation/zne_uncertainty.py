@@ -10,8 +10,8 @@
 :func:`~scpn_quantum_control.mitigation.zne.zne_extrapolate` returns a point
 zero-noise estimate from a polynomial fit over noise-scaled expectation values; it
 carries no error bar, so a mitigated result looks exact when it is not. This module
-propagates the per-scale shot-noise uncertainties (for example the order-parameter
-standard errors from
+propagates the per-scale shot-noise uncertainties (for example the Z-basis
+magnetisation proxy standard errors from
 :mod:`scpn_quantum_control.analysis.sync_uncertainty`) through the same polynomial
 extrapolation to attach a defensible standard error and coverage interval to the
 zero-noise estimate.
@@ -138,7 +138,7 @@ def zne_extrapolate_with_uncertainty(
     expectation_values:
         Measured expectation value at each noise scale.
     standard_errors:
-        Optional per-scale standard errors (for example shot-noise errors from
+        Optional per-scale standard errors (for example Z-basis proxy shot-noise errors from
         :mod:`scpn_quantum_control.analysis.sync_uncertainty`). When given, a
         weighted least-squares covariance propagates them; when omitted, an
         ordinary least-squares residual variance is used and at least

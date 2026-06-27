@@ -7,8 +7,8 @@
 # scpn-quantum-control — Shot-noise uncertainty for synchronisation metrics
 """Shot-noise uncertainty quantification for synchronisation metrics.
 
-The count-based synchronisation metrics in this package — the Kuramoto order
-parameter in
+The count-based synchronisation metrics in this package — the Z-basis
+magnetisation synchronisation proxy in
 :class:`~scpn_quantum_control.analysis.sync_order_parameter.SyncOrderParameter`
 and the witnesses in :mod:`scpn_quantum_control.analysis.sync_witness` — return a
 point estimate from a finite-shot measurement record. On hardware those records
@@ -17,13 +17,13 @@ carry shot noise, so a bare point estimate overstates what the data support.
 This module attaches defensible error bars to those metrics two ways:
 
 * :func:`order_parameter_shot_noise` — an analytic shot-noise (delta-method)
-  standard error and normal interval for the order parameter, exact for the
-  per-shot-magnetisation estimator, and
+  standard error and normal interval for the Z-basis proxy, exact for the
+  per-shot magnetisation estimator, and
 * :func:`order_parameter_bootstrap` / :func:`metric_bootstrap` — a
-  distribution-free bootstrap percentile interval for the order parameter or any
+  distribution-free bootstrap percentile interval for the Z-basis proxy or any
   count-to-scalar metric (witnesses included). The bootstrap stays valid where the
-  delta-method linearisation does not: the order parameter is ``|·|`` of a mean and
-  is non-smooth at zero.
+  delta-method linearisation does not: the proxy is ``|·|`` of a mean and is
+  non-smooth at zero.
 
 Both report a stated ``coverage`` level; the bootstrap interval's empirical coverage
 is exercised against a known distribution in the tests, which is the certified-
@@ -142,12 +142,12 @@ def _magnetisations(bitstrings: list[str]) -> NDArray[np.float64]:
 
 
 def order_parameter_estimate(counts: Mapping[str, int]) -> float:
-    """Return the order parameter ``|mean per-shot magnetisation|`` in ``[0, 1]``.
+    """Return the Z-basis proxy ``|mean per-shot magnetisation|`` in ``[0, 1]``.
 
     Identical in value to
     :class:`~scpn_quantum_control.analysis.sync_order_parameter.SyncOrderParameter`
-    for the same counts; provided so an interval and its point estimate share one
-    code path.
+    for the same counts. This is not the X/Y Kuramoto order parameter; it is
+    provided so an interval and its point estimate share one code path.
     """
     bitstrings, weights, n_shots = _counts_arrays(counts)
     mags = _magnetisations(bitstrings)
@@ -172,13 +172,13 @@ def _order_parameter_interval_from_mean(mean: float, half_width: float) -> tuple
 def order_parameter_shot_noise(
     counts: Mapping[str, int], *, coverage: float = 0.95
 ) -> UncertaintyInterval:
-    """Analytic shot-noise interval for the Kuramoto order parameter.
+    """Analytic shot-noise interval for the Z-basis synchronisation proxy.
 
     The per-shot magnetisations are independent and identically distributed; the
-    order parameter is ``|m̄|`` with ``m̄`` their mean. The standard error of ``m̄``
+    proxy is ``|m_bar|`` with ``m_bar`` their mean. The standard error of ``m_bar``
     is ``s / sqrt(S)`` with ``s`` the Bessel-corrected sample standard deviation and
-    ``S`` the shot count, and the reported interval is the image under ``|·|`` of the
-    normal interval for ``m̄``.
+    ``S`` the shot count, and the reported interval is the image under ``|.|`` of the
+    normal interval for ``m_bar``.
 
     Parameters
     ----------
@@ -228,7 +228,7 @@ def order_parameter_bootstrap(
     n_resamples: int = DEFAULT_BOOTSTRAP_RESAMPLES,
     seed: int = 0,
 ) -> UncertaintyInterval:
-    """Bootstrap percentile interval for the Kuramoto order parameter.
+    """Bootstrap percentile interval for the Z-basis synchronisation proxy.
 
     Resamples the shot record ``n_resamples`` times from the empirical bitstring
     distribution (one vectorised multinomial draw) and reports the percentile

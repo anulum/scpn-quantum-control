@@ -21,6 +21,28 @@ needed.
 
 ## Synchronization Detection
 
+### `sync_order_parameter` — Z-Basis Synchronisation Proxy
+
+`SyncOrderParameter` consumes computational-basis counts and returns the absolute
+mean Z-basis spin per shot. The compatibility key `sync_order` is preserved for
+existing result artefacts, but it is an alias of `sync_order_z_magnetisation`.
+The callable also emits `is_xy_kuramoto_order_parameter = 0.0` because a counts-only
+Z-basis record does not measure the continuous Kuramoto
+$R = \|(1/N)\sum_j(\langle X_j\rangle+i\langle Y_j\rangle)\|$.
+
+```python
+from scpn_quantum_control.analysis.sync_order_parameter import SyncOrderParameter
+
+observable = SyncOrderParameter()
+result = observable({"000": 75, "111": 25})
+
+assert result["sync_order"] == result["sync_order_z_magnetisation"]
+assert result["is_xy_kuramoto_order_parameter"] == 0.0
+```
+
+Use `analysis.sync_witness` for X/Y-count witnesses and `phase` statevector
+helpers for true Kuramoto-R calculations.
+
 ### `sync_witness` — Synchronization Witness Operators
 
 Three Hermitian witness constructions that certify quantum synchronization from

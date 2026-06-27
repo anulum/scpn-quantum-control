@@ -9,6 +9,8 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping
+
 import numpy as np
 import pytest
 
@@ -36,10 +38,12 @@ def _binary_counts(n_qubits: int, p_one: float, n_shots: int, seed: int) -> dict
 
 
 def test_point_estimate_matches_sync_order_parameter() -> None:
-    """The interval point estimate equals the existing SyncOrderParameter value."""
+    """The interval point estimate equals the public Z-magnetisation proxy."""
     counts = {"000": 60, "111": 40, "010": 20}
-    expected = SyncOrderParameter()(counts)["sync_order"]
+    sync_result = SyncOrderParameter()(counts)
+    expected = sync_result["sync_order_z_magnetisation"]
     assert order_parameter_estimate(counts) == pytest.approx(expected)
+    assert sync_result["is_xy_kuramoto_order_parameter"] == 0.0
 
 
 def test_point_estimate_all_aligned_is_one() -> None:
@@ -222,7 +226,7 @@ def test_bootstrap_empirical_coverage_is_close_to_target() -> None:
 # --- generic metric bootstrap (witnesses and any count metric) -----------------
 
 
-def _fraction_all_zero(counts: dict[str, int]) -> float:
+def _fraction_all_zero(counts: Mapping[str, int]) -> float:
     """Fraction of shots in the all-zero outcome — a simple count-to-scalar metric."""
     total = sum(counts.values())
     if total == 0:

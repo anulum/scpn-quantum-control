@@ -115,7 +115,13 @@ def execute_simulator_request(
     classification: dict[str, str] = {}
     if request.kernel in {"sync_witness", "sync_dla"}:
         observables.update(SyncOrderParameter()(counts=counts))
-        classification["sync_order"] = "simulated_exact_statevector"
+        classification.update(
+            {
+                "sync_order": "simulated_exact_statevector",
+                "sync_order_z_magnetisation": "z_magnetisation_proxy_from_counts",
+                "is_xy_kuramoto_order_parameter": "claim_boundary_flag",
+            }
+        )
     if request.kernel in {"dla_parity", "sync_dla"}:
         dla_values = DLAParityWitness()(counts=counts)
         observables.update({key: float(value) for key, value in dla_values.items()})

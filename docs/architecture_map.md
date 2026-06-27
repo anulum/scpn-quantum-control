@@ -123,8 +123,11 @@ Each lane: purpose · INPUTS · OUTPUTS · processing model · backends · wirin
   entropy/spectrum, magic (SRE), Mpemba/NESS, DLA-parity theorem (closed-form, N≤5).
 - **Functional**: Loschmidt, BKT, persistent homology (ripser), Hamiltonian learning, Berry, QRC,
   Φ (IIT), ENAQT, gauge/Wilson probes, Monte-Carlo XY.
-- **Honest caveats**: `sync_order_parameter` returns **Z-magnetisation, not the true X/Y Kuramoto
-  R** (the true R exists in `phase` but is not wired to the counts entry point); `shadow_tomography`
+- **Honest caveats**: `sync_order_parameter` returns the compatibility key `sync_order`
+  plus `sync_order_z_magnetisation`, both backed by **Z-magnetisation, not the true X/Y
+  Kuramoto R**; `is_xy_kuramoto_order_parameter = 0.0` records that claim boundary in
+  result artefacts. The true R exists in `phase` but is not wired to the counts entry point.
+  `shadow_tomography`
   is an O(4ⁿ) faithful simulation, **not** the measurement-efficient algorithm; several guarded
   probes fail-closed and refuse synthetic output.
 - **Backends** NumPy (+Rust on OTOC/Krylov/DLA/Koopman/MC/sectors).

@@ -225,7 +225,7 @@ from mitiq.zne.inference import RichardsonFactory
 
 def _zne_executor(circ):
     counts = sampler.run([circ]).result()[0].data.meas.get_counts()
-    return SyncOrderParameter()(counts=counts)["sync_order"]  # scalar float
+    return SyncOrderParameter()(counts=counts)["sync_order_z_magnetisation"]  # scalar float
 
 zne_sync_order = zne.execute_with_zne(
     isa_qc,
@@ -234,7 +234,8 @@ zne_sync_order = zne.execute_with_zne(
     scale_noise=fold_global,
 )
 ```
-ZNE runs 3 circuits (scale=1,2,3), extrapolates `sync_order` to zero-noise limit.
+ZNE runs 3 circuits (scale=1,2,3), extrapolates the Z-basis magnetisation proxy to
+the zero-noise limit.
 A final scale=1 run collects full counts for `DLAParityWitness`, `IntegratedInformationPhi`.
 Result JSON includes `zne_applied=True`, `zne_scale_factors=[1,2,3]`, `zne_factory="RichardsonFactory"`.
 
@@ -265,7 +266,7 @@ the phase-coherent regime (Kuramoto critical point ~K_c ≈ 2σ_ω/π).
 
 | Class | Computes from real counts | Description |
 |-------|--------------------------|-------------|
-| `SyncOrderParameter` | ✅ YES | Kuramoto order parameter from bitstring marginals |
+| `SyncOrderParameter` | ✅ YES | Z-basis magnetisation proxy from bitstring marginals; emits legacy `sync_order`, explicit `sync_order_z_magnetisation`, and `is_xy_kuramoto_order_parameter = 0.0` |
 | `DLAParityWitness` | ✅ YES | Odd/even Hamming-weight parity asymmetry |
 | `IntegratedInformationPhi` | ❌ NO | No production IIT/causal-state implementation is wired; entropy is available only as an explicitly labelled diagnostic |
 | `QuantumFisherInformation` | ✅ YES, when Hamiltonian inputs are supplied | Routes explicit coupling matrix and natural frequencies through the spectral QFI engine; the sync-order/DLA estimate is available only as an explicitly labelled diagnostic proxy |
