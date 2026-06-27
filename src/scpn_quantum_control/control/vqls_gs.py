@@ -5,12 +5,14 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Vqls Gs
-"""VQLS for Grad-Shafranov equilibrium.
+"""Residual-certified VQLS surface for a bounded Grad-Shafranov proxy.
 
 Discretized Laplacian del^2(Psi) = source on N grid points -> sparse linear
 system Ax=b.  The solver evaluates the VQLS ansatz with the variational cost
 C = 1 - |<b|A|x>|^2 / <x|A^dag A|x>, then returns only a residual-certified
-finite-difference solution.
+finite-difference solution. This module does not solve the full axisymmetric
+Grad-Shafranov equilibrium; it exposes a 1-D Poisson/Laplacian proxy and records
+that boundary in every diagnostics result.
 """
 
 from __future__ import annotations
@@ -29,7 +31,7 @@ from .._constants import VQLS_DENOMINATOR_EPS
 
 @dataclass(frozen=True)
 class VQLSGradShafranovResult:
-    """Residual certificate for a Grad-Shafranov linear solve."""
+    """Residual certificate for the bounded VQLS Grad-Shafranov proxy."""
 
     solution: NDArray[np.float64]
     relative_residual: float
@@ -46,13 +48,18 @@ class VQLSGradShafranovResult:
     optimizer_success: bool
     optimizer_message: str
     condition_number: float
+    model_boundary: str = "1d_poisson_laplacian_proxy"
+    is_full_grad_shafranov_equilibrium: bool = False
 
 
 class VQLS_GradShafranov:
-    """Variational Quantum Linear Solver for 1D Grad-Shafranov.
+    """Variational Quantum Linear Solver for a 1-D Grad-Shafranov proxy.
 
     Grid: N = 2^n_qubits points, uniform spacing on [0, 1].
     Source: peaked Gaussian J(x) = exp(-(x - 0.5)^2 / 0.05).
+    The class name is retained for API compatibility; diagnostics label the
+    bounded model as ``1d_poisson_laplacian_proxy`` and set
+    ``is_full_grad_shafranov_equilibrium`` to ``False``.
     """
 
     def __init__(self, n_qubits: int = 4, source_width: float = 0.05, imag_tol: float = 0.1):
@@ -110,7 +117,7 @@ class VQLS_GradShafranov:
         residual_tol: float = 1e-10,
         allow_classical_refinement: bool = True,
     ) -> NDArray[np.float64]:
-        """Return a residual-certified Grad-Shafranov flux profile.
+        """Return a residual-certified proxy flux profile.
 
         Cost: C = 1 - |<b|A|x>|^2 / <x|A^dag A|x>
         """
@@ -145,6 +152,8 @@ class VQLS_GradShafranov:
         When the variational ansatz does not meet ``residual_tol`` for the
         SPD finite-difference system, the default path repairs the result with
         the direct linear solve and records ``method="direct_spd_residual_repair"``.
+        The returned diagnostics always identify the model as a 1-D
+        Poisson/Laplacian proxy, not a full Grad-Shafranov equilibrium.
         """
         if self._A is None:
             self.discretize()

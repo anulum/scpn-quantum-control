@@ -194,7 +194,8 @@ $$|\gamma, \beta\rangle = \prod_{p=1}^{P} \left[e^{-i\beta_p H_{\text{mixer}}}\,
 
 ## VQLS Cost Function
 
-For the finite-difference Grad-Shafranov linear system $Ax = b$:
+For the bounded one-dimensional Poisson/Laplacian proxy used by
+`VQLS_GradShafranov`, the finite-difference linear system is $Ax = b$:
 
 $$C_{\text{VQLS}} = 1 - \frac{|\langle b|A|x\rangle|^2}{\langle x|A^\dagger A|x\rangle}$$
 
@@ -208,7 +209,10 @@ configured tolerance.  If the variational ansatz misses the tolerance for the
 SPD tridiagonal Laplacian assembled by `discretize()`, the default runtime path
 returns the direct finite-difference solve and labels the diagnostic method as
 `direct_spd_residual_repair`; the raw variational residual remains available in
-`VQLSGradShafranovResult`.
+`VQLSGradShafranovResult`. The result also records
+`model_boundary="1d_poisson_laplacian_proxy"` and
+`is_full_grad_shafranov_equilibrium=False`; this surface is not a full
+axisymmetric Grad-Shafranov equilibrium solver.
 
 ## Probabilistic Error Cancellation (PEC)
 

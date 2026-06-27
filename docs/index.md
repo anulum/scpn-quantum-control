@@ -166,7 +166,7 @@ like* at the transition, *how hard it is* to prepare, *what its topology reveals
 | `applications` | 13 | FMO photosynthesis, power grid, Josephson array, EEG, ITER, quantum EVS, application benchmark plugins |
 | `mitigation` | 12 | ZNE, PEC, dynamical decoupling, Z₂ parity, CPDR, symmetry verification, GUESS, compound |
 | `qec` | 13 | Toric code, repetition code UPDE, surface code, biological surface code, DLA-protected memory/scar prototypes, error budget, multi-scale, syndrome flow |
-| `control` | 11 | QAOA-MPC, residual-certified VQLS Grad-Shafranov, Petri nets, ITER disruption, topological optimiser |
+| `control` | 11 | QAOA-MPC, residual-certified VQLS Grad-Shafranov proxy, Petri nets, ITER disruption, topological optimiser |
 | `identity` | 6 | VQE attractor, coherence budget, entanglement witness, fingerprint |
 | `qsnn` | 7 | Quantum spiking neural networks (LIF, STDP, synapses, dynamic coupling, training) |
 | `crypto` | 6 | BB84, Bell tests, topology-authenticated QKD, key hierarchy |

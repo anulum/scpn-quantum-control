@@ -1955,8 +1955,8 @@ VQLS_GradShafranov(n_qubits=4, source_width=0.05, imag_tol=0.1)
     .solve_with_diagnostics(...) -> VQLSGradShafranovResult
 ```
 
-`solve()` first evaluates the variational VQLS ansatz against the
-finite-difference Grad-Shafranov system `A x = b`.  The returned vector is
+`solve()` first evaluates the variational VQLS ansatz against the bounded
+one-dimensional Poisson/Laplacian proxy system `A x = b`.  The returned vector is
 accepted only when its relative residual is within `residual_tol`; otherwise,
 for the SPD Laplacian system built by `discretize()`, the default path repairs
 the result with `np.linalg.solve(A, b)` and records
@@ -1968,7 +1968,9 @@ unverified high-residual profile.
 `VQLSGradShafranovResult` exposes the returned solution, relative residual,
 residual tolerance, variational candidate, variational residual, convergence
 flags, direct-reference error, optimiser metadata, restart count, method label,
-and condition number.
+condition number, `model_boundary="1d_poisson_laplacian_proxy"`, and
+`is_full_grad_shafranov_equilibrium=False`. The class name remains for API
+compatibility; this surface is not a full Grad-Shafranov equilibrium solver.
 
 ### `qpetri.QuantumPetriNet`
 

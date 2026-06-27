@@ -183,10 +183,13 @@ Each lane: purpose · INPUTS · OUTPUTS · processing model · backends · wirin
   `q_disruption` (PQC + parameter-shift).
 
 ### 4.8 Control — `control/`
-- QAOA-MPC, residual VQLS-GS, Petri-net supervisor, ITER disruption, realtime/closed-loop.
-- **Honest caveats**: `vqls_gs` "Grad-Shafranov" is a 1-D Poisson/Laplacian and the default path
-  falls back to a classical `np.linalg.solve` repair; `qaoa_mpc` reduces to single-qubit Z
-  (separable Ising). Closed-loop analysis is software-in-the-loop, fail-closed without a live ticket.
+- QAOA-MPC, residual VQLS-GS proxy, Petri-net supervisor, ITER disruption, realtime/closed-loop.
+- **Honest caveats**: `vqls_gs` keeps the historical "Grad-Shafranov" API name but emits
+  `model_boundary="1d_poisson_laplacian_proxy"` and
+  `is_full_grad_shafranov_equilibrium=False`; the default path falls back to a classical
+  `np.linalg.solve` repair when the VQLS ansatz misses the residual tolerance. `qaoa_mpc`
+  reduces to single-qubit Z (separable Ising). Closed-loop analysis is software-in-the-loop,
+  fail-closed without a live ticket.
 
 ### 4.9 Crypto / QEC / QSNN / gauge — `crypto/`, `qec/`, `qsnn/`, `gauge/`, `psi_field/`
 - **Standout** (*mature/production*): `crypto/ml_dsa` is a genuine from-spec **FIPS 204 ML-DSA-65**
