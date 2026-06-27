@@ -10,6 +10,7 @@
 from __future__ import annotations
 
 import subprocess
+from pathlib import Path
 
 import pytest
 
@@ -434,21 +435,20 @@ def test_capability_manifest_check_dry_run_selects_gate_harness(
 def test_diff_summary_returns_two_when_artifacts_changed(
     monkeypatch: pytest.MonkeyPatch,
     capsys: pytest.CaptureFixture[str],
+    tmp_path: Path,
 ) -> None:
-    def fake_run(
-        command: list[str],
-        **kwargs: object,
-    ) -> subprocess.CompletedProcess[str]:
-        if "--stat" in command:
-            return subprocess.CompletedProcess(command, 0, stdout="", stderr="")
-        return subprocess.CompletedProcess(
-            command,
-            0,
-            stdout="data/rust_vqe_methods/example.json\n",
-            stderr="",
-        )
+    artifact = tmp_path / "data" / "rust_vqe_methods" / "example.json"
+    artifact.parent.mkdir(parents=True)
+    artifact.write_text('{"value": 1}\n', encoding="utf-8")
+    _run_git(tmp_path, "init", "-q")
+    _run_git(tmp_path, "config", "user.email", "test@example.test")
+    _run_git(tmp_path, "config", "user.name", "Benchmark Test")
+    _run_git(tmp_path, "add", "data/rust_vqe_methods/example.json")
+    _run_git(tmp_path, "commit", "-q", "-m", "baseline")
+    artifact.write_text('{"value": 2}\n', encoding="utf-8")
 
-    monkeypatch.setattr(bench_cli.subprocess, "run", fake_run)
+    monkeypatch.setattr(bench_cli, "REPO_ROOT", tmp_path)
+    monkeypatch.setattr(bench_cli, "ARTEFACT_PATHS", ("data/rust_vqe_methods/example.json",))
 
     rc = bench_cli._print_diff_summary()
 
@@ -458,25 +458,38 @@ def test_diff_summary_returns_two_when_artifacts_changed(
     assert "data/rust_vqe_methods/example.json" in captured.out
 
 
-def test_diff_summary_propagates_git_failure(monkeypatch: pytest.MonkeyPatch) -> None:
-    def fake_run(command: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
-        return subprocess.CompletedProcess(command, 128, stdout="", stderr="fatal")
+def _run_git(root: Path, *args: str) -> None:
+    subprocess.run(("git", *args), cwd=root, check=True)
 
-    monkeypatch.setattr(bench_cli.subprocess, "run", fake_run)
 
-    assert bench_cli._print_diff_summary() == 128
+def test_diff_summary_propagates_missing_git(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    empty_path = tmp_path / "empty-path"
+    empty_path.mkdir()
+    monkeypatch.setenv("PATH", str(empty_path))
+    monkeypatch.setattr(bench_cli, "REPO_ROOT", tmp_path)
+
+    assert bench_cli._print_diff_summary() == 127
 
 
 def test_run_harness_dispatches_repo_script_with_current_python(
     monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
 ) -> None:
-    calls: list[tuple[list[str], object]] = []
-
-    def fake_run(command: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
-        calls.append((command, kwargs.get("cwd")))
-        return subprocess.CompletedProcess(command, 0)
-
-    monkeypatch.setattr(bench_cli.subprocess, "run", fake_run)
+    script = tmp_path / "scripts" / "benchmark_rust_core_methods.py"
+    script.parent.mkdir(parents=True)
+    script.write_text(
+        "\n".join(
+            (
+                "from pathlib import Path",
+                "Path('data/rust_vqe_methods').mkdir(parents=True, exist_ok=True)",
+                "Path('data/rust_vqe_methods/ran.txt').write_text('ok', encoding='utf-8')",
+            )
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(bench_cli, "REPO_ROOT", tmp_path)
 
     rc = bench_cli._run_harness(
         bench_cli.Harness(
@@ -487,15 +500,31 @@ def test_run_harness_dispatches_repo_script_with_current_python(
     )
 
     assert rc == 0
-    assert calls == [
-        (
-            [
-                bench_cli.PYTHON,
-                str(bench_cli.REPO_ROOT / "scripts/benchmark_rust_core_methods.py"),
-            ],
-            bench_cli.REPO_ROOT,
+    assert (tmp_path / "data" / "rust_vqe_methods" / "ran.txt").read_text(encoding="utf-8") == "ok"
+
+
+def test_run_harness_rejects_non_executable_python(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    script = tmp_path / "scripts" / "benchmark_rust_core_methods.py"
+    script.parent.mkdir(parents=True)
+    script.write_text("raise SystemExit(0)\n", encoding="utf-8")
+    python = tmp_path / "python"
+    python.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
+    python.chmod(0o644)
+    monkeypatch.setattr(bench_cli, "REPO_ROOT", tmp_path)
+    monkeypatch.setattr(bench_cli, "PYTHON", str(python))
+
+    rc = bench_cli._run_harness(
+        bench_cli.Harness(
+            "unit",
+            "scripts/benchmark_rust_core_methods.py",
+            frozenset({"unit"}),
         )
-    ]
+    )
+
+    assert rc == 127
 
 
 def test_run_returns_two_when_dispatch_selects_no_harnesses(
@@ -529,7 +558,7 @@ def test_run_returns_diff_status_when_harnesses_pass(monkeypatch: pytest.MonkeyP
     assert bench_cli.run(["reproduce-methods"]) == 2
 
 
-def test_run_stops_after_first_failure_without_keep_going(monkeypatch: pytest.MonkeyPatch):
+def test_run_stops_after_first_failure_without_keep_going(monkeypatch: pytest.MonkeyPatch) -> None:
     selected = [
         bench_cli.Harness("broken", "scripts/broken.py", frozenset({"methods"})),
         bench_cli.Harness("skipped", "scripts/skipped.py", frozenset({"methods"})),
@@ -548,7 +577,9 @@ def test_run_stops_after_first_failure_without_keep_going(monkeypatch: pytest.Mo
     assert calls == ["broken"]
 
 
-def test_run_keep_going_executes_later_harnesses_after_failure(monkeypatch: pytest.MonkeyPatch):
+def test_run_keep_going_executes_later_harnesses_after_failure(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     selected = [
         bench_cli.Harness("broken", "scripts/broken.py", frozenset({"methods"})),
         bench_cli.Harness("later", "scripts/later.py", frozenset({"methods"})),
@@ -567,7 +598,7 @@ def test_run_keep_going_executes_later_harnesses_after_failure(monkeypatch: pyte
     assert calls == ["broken", "later"]
 
 
-def test_run_no_diff_skips_diff_summary(monkeypatch: pytest.MonkeyPatch):
+def test_run_no_diff_skips_diff_summary(monkeypatch: pytest.MonkeyPatch) -> None:
     selected = [bench_cli.Harness("ok", "scripts/ok.py", frozenset({"methods"}))]
     diff_called = False
 

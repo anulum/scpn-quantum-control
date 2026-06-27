@@ -10,7 +10,9 @@
 from __future__ import annotations
 
 import argparse
-import subprocess
+import os
+import shutil
+import subprocess  # nosec B404
 import sys
 from collections.abc import Sequence
 from dataclasses import dataclass
@@ -72,6 +74,7 @@ class Harness:
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 PYTHON = sys.executable
+_Command = tuple[str, ...]
 
 HARNESS_REGISTRY: tuple[Harness, ...] = (
     Harness("methods-rust-core", "scripts/benchmark_rust_core_methods.py", frozenset({"methods"})),
@@ -593,21 +596,64 @@ def _selected_harnesses(
     return selected
 
 
+def _resolve_executable(command: str) -> str | None:
+    """Resolve a command name or absolute path to an executable file."""
+    try:
+        command_path = Path(command)
+    except (OSError, ValueError):
+        return None
+    located = command if command_path.is_absolute() else shutil.which(command)
+    if located is None:
+        return None
+    try:
+        resolved = Path(located).resolve(strict=True)
+    except (OSError, ValueError):
+        return None
+    if not resolved.is_file() or not os.access(resolved, os.X_OK):
+        return None
+    return str(resolved)
+
+
+def _run_admitted_process(
+    command: _Command,
+    *,
+    cwd: Path,
+    capture_output: bool = False,
+) -> subprocess.CompletedProcess[str]:
+    """Run a fixed command after executable admission."""
+    if not command:
+        raise ValueError("command must contain an executable")
+    executable = _resolve_executable(command[0])
+    if executable is None:
+        return subprocess.CompletedProcess(command, 127, stdout="", stderr="executable not found")
+    admitted = (executable, *command[1:])
+    try:
+        return subprocess.run(  # nosec B603
+            admitted,
+            cwd=cwd,
+            check=False,
+            capture_output=capture_output,
+            text=True,
+            shell=False,
+        )
+    except OSError as exc:
+        return subprocess.CompletedProcess(admitted, 127, stdout="", stderr=str(exc))
+
+
 def _run_harness(harness: Harness) -> int:
     try:
-        _validate_harness_policy(harness)
+        script_path = _validated_harness_script(harness)
     except FileNotFoundError as exc:
         print(f"[scpn-bench] missing harness script: {exc}", file=sys.stderr)
         return 2
-    script_path = REPO_ROOT / harness.script
-    command = [PYTHON, str(script_path)]
+    command = (PYTHON, str(script_path))
     print(f"[scpn-bench] run {harness.label}: {' '.join(command)}", flush=True)
-    completed = subprocess.run(command, cwd=REPO_ROOT, check=False)
+    completed = _run_admitted_process(command, cwd=REPO_ROOT)
     return completed.returncode
 
 
-def _validate_harness_policy(harness: Harness) -> None:
-    """Fail closed before launching a fixed benchmark harness."""
+def _validated_harness_script(harness: Harness) -> Path:
+    """Return the validated repository-local script path for a harness."""
     if harness.policy.classification != "trusted_offline_executable":
         raise PermissionError(f"harness {harness.label!r} is not executable by scpn-bench")
     if harness.policy.network_allowed:
@@ -627,19 +673,23 @@ def _validate_harness_policy(harness: Harness) -> None:
         root_path = (REPO_ROOT / root).resolve()
         if not root_path.is_relative_to(REPO_ROOT):
             raise ValueError(f"allowed write root must stay inside repository: {root}")
+    return script_path
+
+
+def _validate_harness_policy(harness: Harness) -> None:
+    """Fail closed before launching a fixed benchmark harness."""
+    _validated_harness_script(harness)
 
 
 def _print_diff_summary() -> int:
-    command = ["git", "diff", "--stat", "--", *ARTEFACT_PATHS]
-    completed = subprocess.run(command, cwd=REPO_ROOT, check=False, text=True)
+    command = ("git", "diff", "--stat", "--", *ARTEFACT_PATHS)
+    completed = _run_admitted_process(command, cwd=REPO_ROOT)
     if completed.returncode != 0:
         return completed.returncode
-    name_only = subprocess.run(
-        ["git", "diff", "--name-only", "--", *ARTEFACT_PATHS],
+    name_only = _run_admitted_process(
+        ("git", "diff", "--name-only", "--", *ARTEFACT_PATHS),
         cwd=REPO_ROOT,
-        check=False,
         capture_output=True,
-        text=True,
     )
     if name_only.returncode != 0:
         return name_only.returncode
@@ -696,7 +746,6 @@ def run(argv: Sequence[str] | None = None) -> int:
 
 def main() -> int:
     """Console-script entry point."""
-
     return run()
 
 

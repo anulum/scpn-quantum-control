@@ -28,6 +28,11 @@ script path stays inside the repository, that the script exists, that the
 policy is executable, and that declared write roots do not escape the
 repository.
 
+`scpn-bench` also resolves the Python interpreter and the post-run `git diff`
+command to absolute executable file paths before process launch. Missing or
+non-executable tools fail closed with a non-zero CLI status instead of running
+partially resolved commands from ambient `PATH` state.
+
 Notebook and publication scripts are scanned without execution by
 `scpn_quantum_control.execution_surface.scan_execution_surface_path`.
 The scanner reports machine-readable findings for shell magic,
