@@ -32,6 +32,7 @@ def test_ci_gates_differentiable_strict_mypy_ratchet() -> None:
     assert "src/scpn_quantum_control/differentiable.py" in workflow
     assert "src/scpn_quantum_control/differentiable_claim_ledger.py" in workflow
     assert "src/scpn_quantum_control/differentiable_architecture_map.py" in workflow
+    assert "src/scpn_quantum_control/differentiable_dependency_environment_map.py" in workflow
     assert "src/scpn_quantum_control/differentiable_sota_scorecard.py" in workflow
     assert "src/scpn_quantum_control/differentiable_api.py" in workflow
     assert "src/scpn_quantum_control/benchmarks/differentiable_programming.py" in workflow

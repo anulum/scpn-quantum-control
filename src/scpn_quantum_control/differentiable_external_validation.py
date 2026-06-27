@@ -84,6 +84,14 @@ DEFAULT_ARTIFACT_BUNDLE_INPUTS: tuple[tuple[str, str], ...] = (
         "Differentiable architecture and Rustification routing map reviewer summary",
     ),
     (
+        "data/differentiable_phase_qnode/differentiable_dependency_environment_map_20260627.json",
+        "Differentiable dependency and environment evidence map artefact",
+    ),
+    (
+        "data/differentiable_phase_qnode/differentiable_dependency_environment_map_20260627.md",
+        "Differentiable dependency and environment evidence map reviewer summary",
+    ),
+    (
         "data/differentiable_phase_qnode/external_validation_environment_lock_20260616.json",
         "Exact environment-lock manifest",
     ),

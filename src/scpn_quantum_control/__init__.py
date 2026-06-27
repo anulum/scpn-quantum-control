@@ -514,6 +514,7 @@ from .differentiable_api import (
     differentiable_benchmark_report,
     differentiable_compile_report,
     differentiable_dashboard_status,
+    differentiable_dependency_environment_map_report,
     differentiable_frontend_report,
     differentiable_gradient,
     differentiable_hessian,
@@ -536,6 +537,16 @@ from .differentiable_architecture_map import (
 from .differentiable_benchmark_report import (
     DifferentiableBenchmarkReport,
     build_differentiable_benchmark_report,
+)
+from .differentiable_dependency_environment_map import (
+    DifferentiableDependencyEnvironmentMap,
+    DifferentiableDependencyEnvironmentMapValidation,
+    DifferentiableDependencyEnvironmentProfile,
+    DifferentiableDependencyEnvironmentProfileId,
+    DifferentiableDependencyEnvironmentStatus,
+    render_differentiable_dependency_environment_map_markdown,
+    run_differentiable_dependency_environment_map,
+    validate_differentiable_dependency_environment_map,
 )
 from .differentiable_module_hardening_audit import (
     DifferentiableModuleHardeningAuditResult,
@@ -1392,6 +1403,7 @@ __all__ = [
     "differentiable_benchmark_report",
     "differentiable_compile_report",
     "differentiable_dashboard_status",
+    "differentiable_dependency_environment_map_report",
     "differentiable_frontend_report",
     "differentiable_gradient",
     "differentiable_hessian",
@@ -1410,6 +1422,14 @@ __all__ = [
     "render_differentiable_architecture_map_markdown",
     "run_differentiable_architecture_map",
     "validate_differentiable_architecture_map",
+    "DifferentiableDependencyEnvironmentMap",
+    "DifferentiableDependencyEnvironmentMapValidation",
+    "DifferentiableDependencyEnvironmentProfile",
+    "DifferentiableDependencyEnvironmentProfileId",
+    "DifferentiableDependencyEnvironmentStatus",
+    "render_differentiable_dependency_environment_map_markdown",
+    "run_differentiable_dependency_environment_map",
+    "validate_differentiable_dependency_environment_map",
     "DifferentiableRustPythonInventory",
     "DifferentiableRustPythonInventoryBenchmarkStatus",
     "DifferentiableRustPythonInventoryClassification",

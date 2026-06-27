@@ -179,6 +179,10 @@ or debugging a subsystem, not as the default path for tutorial code.
     options:
       members: [DifferentiableArchitectureMap, DifferentiableArchitectureMapLayer, DifferentiableArchitectureMapValidation, render_differentiable_architecture_map_markdown, run_differentiable_architecture_map, validate_differentiable_architecture_map]
 
+::: scpn_quantum_control.differentiable_dependency_environment_map
+    options:
+      members: [DifferentiableDependencyEnvironmentMap, DifferentiableDependencyEnvironmentProfile, DifferentiableDependencyEnvironmentMapValidation, render_differentiable_dependency_environment_map_markdown, run_differentiable_dependency_environment_map, validate_differentiable_dependency_environment_map]
+
 ## MLIR Compiler
 
 ::: scpn_quantum_control.compiler.mlir

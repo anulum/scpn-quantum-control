@@ -1,0 +1,103 @@
+{
+  "artifact_id": "diff-dependency-environment-map-20260627",
+  "claim_boundary": "Differentiable dependency and environment evidence map only; no dependency or benchmark promotion, framework parity promotion, provider execution, hardware execution, GPU execution, Enzyme promotion, or isolated benchmark claim is implied.",
+  "environment_ready": false,
+  "profiles": [
+    {
+      "blockers": [],
+      "checksum_count": 1,
+      "claim_boundary": "Differentiable dependency and environment evidence map only; no dependency or benchmark promotion, framework parity promotion, provider execution, hardware execution, GPU execution, Enzyme promotion, or isolated benchmark claim is implied.",
+      "environment_ready": true,
+      "evidence_paths": [
+        "requirements.txt"
+      ],
+      "evidence_status": "locked",
+      "lockfile_paths": [
+        "requirements.txt"
+      ],
+      "pinned_package_count": 11,
+      "profile_id": "runtime_baseline",
+      "role": "Runtime dependency baseline for bounded differentiable imports.",
+      "title": "Runtime baseline"
+    },
+    {
+      "blockers": [],
+      "checksum_count": 1,
+      "claim_boundary": "Differentiable dependency and environment evidence map only; no dependency or benchmark promotion, framework parity promotion, provider execution, hardware execution, GPU execution, Enzyme promotion, or isolated benchmark claim is implied.",
+      "environment_ready": true,
+      "evidence_paths": [
+        "requirements-dev.txt"
+      ],
+      "evidence_status": "locked",
+      "lockfile_paths": [
+        "requirements-dev.txt"
+      ],
+      "pinned_package_count": 27,
+      "profile_id": "development_verification",
+      "role": "Developer verification lock input for local quality gates.",
+      "title": "Development verification"
+    },
+    {
+      "blockers": [],
+      "checksum_count": 4,
+      "claim_boundary": "Differentiable dependency and environment evidence map only; no dependency or benchmark promotion, framework parity promotion, provider execution, hardware execution, GPU execution, Enzyme promotion, or isolated benchmark claim is implied.",
+      "environment_ready": true,
+      "evidence_paths": [
+        "requirements-ci-cross-platform-smoke.txt",
+        "requirements-ci-py311-linux.txt",
+        "requirements-ci-py312-linux.txt",
+        "requirements-ci-py313-linux.txt"
+      ],
+      "evidence_status": "locked",
+      "lockfile_paths": [
+        "requirements-ci-cross-platform-smoke.txt",
+        "requirements-ci-py311-linux.txt",
+        "requirements-ci-py312-linux.txt",
+        "requirements-ci-py313-linux.txt"
+      ],
+      "pinned_package_count": 484,
+      "profile_id": "ci_python_matrix",
+      "role": "Cross-platform smoke and Linux Python 3.11/3.12/3.13 CI locks.",
+      "title": "CI Python matrix"
+    },
+    {
+      "blockers": [],
+      "checksum_count": 1,
+      "claim_boundary": "Differentiable dependency and environment evidence map only; no dependency or benchmark promotion, framework parity promotion, provider execution, hardware execution, GPU execution, Enzyme promotion, or isolated benchmark claim is implied.",
+      "environment_ready": true,
+      "evidence_paths": [
+        "data/differentiable_phase_qnode/local_benchmark_20260616T0955Z/framework_overlay_freeze.txt"
+      ],
+      "evidence_status": "locked",
+      "lockfile_paths": [
+        "data/differentiable_phase_qnode/local_benchmark_20260616T0955Z/framework_overlay_freeze.txt"
+      ],
+      "pinned_package_count": 54,
+      "profile_id": "framework_overlay_cpu",
+      "role": "CPU-only framework overlay freeze for JAX, PyTorch, TensorFlow, and PennyLane rows.",
+      "title": "CPU framework overlay"
+    },
+    {
+      "blockers": [
+        "Enzyme/JAX runner lockfiles exist, but native Enzyme/LLVM/MLIR toolchain execution remains explicit hard-gap evidence until configured runner artefacts pass."
+      ],
+      "checksum_count": 1,
+      "claim_boundary": "Differentiable dependency and environment evidence map only; no dependency or benchmark promotion, framework parity promotion, provider execution, hardware execution, GPU execution, Enzyme promotion, or isolated benchmark claim is implied.",
+      "environment_ready": false,
+      "evidence_paths": [
+        "data/differentiable_phase_qnode/local_benchmark_20260616T0955Z/enzyme_py39_freeze.txt"
+      ],
+      "evidence_status": "hard_gap",
+      "lockfile_paths": [
+        "data/differentiable_phase_qnode/local_benchmark_20260616T0955Z/enzyme_py39_freeze.txt"
+      ],
+      "pinned_package_count": 10,
+      "profile_id": "enzyme_runner_py39",
+      "role": "Optional Enzyme/JAX runner freeze for installed-toolchain hard-gap evidence.",
+      "title": "Python 3.9 Enzyme runner"
+    }
+  ],
+  "ready_profile_count": 4,
+  "schema": "scpn_qc_differentiable_dependency_environment_map_v1",
+  "total_profile_count": 5
+}

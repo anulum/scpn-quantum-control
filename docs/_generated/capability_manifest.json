@@ -7,13 +7,13 @@
     "model_documentation_pages": 0,
     "notebook_files": 99,
     "optional_extras": 43,
-    "public_api_exports": 727,
+    "public_api_exports": 736,
     "public_documentation_pages": 253,
-    "python_model_classes": 859,
-    "python_model_source_modules": 490,
+    "python_model_classes": 862,
+    "python_model_source_modules": 491,
     "rust_pyo3_model_wrappers": 171,
     "rust_source_modules": 42,
-    "test_files": 800
+    "test_files": 801
   },
   "documentation": {
     "examples": [
@@ -1219,6 +1219,18 @@
       {
         "name": "DifferentiableDashboardStatus",
         "path": "src/scpn_quantum_control/differentiable_api.py"
+      },
+      {
+        "name": "DifferentiableDependencyEnvironmentMap",
+        "path": "src/scpn_quantum_control/differentiable_dependency_environment_map.py"
+      },
+      {
+        "name": "DifferentiableDependencyEnvironmentMapValidation",
+        "path": "src/scpn_quantum_control/differentiable_dependency_environment_map.py"
+      },
+      {
+        "name": "DifferentiableDependencyEnvironmentProfile",
+        "path": "src/scpn_quantum_control/differentiable_dependency_environment_map.py"
       },
       {
         "name": "DifferentiableDomainBenchmarkDatasetSuite",
@@ -4235,6 +4247,7 @@
       "src/scpn_quantum_control/differentiable_claim_ledger.py",
       "src/scpn_quantum_control/differentiable_consistency.py",
       "src/scpn_quantum_control/differentiable_custom_derivatives.py",
+      "src/scpn_quantum_control/differentiable_dependency_environment_map.py",
       "src/scpn_quantum_control/differentiable_exact_modes.py",
       "src/scpn_quantum_control/differentiable_external_validation.py",
       "src/scpn_quantum_control/differentiable_finite_difference.py",
@@ -4787,6 +4800,11 @@
     "DifferentiableDashboardCapabilityRow",
     "DifferentiableDashboardCapabilityState",
     "DifferentiableDashboardStatus",
+    "DifferentiableDependencyEnvironmentMap",
+    "DifferentiableDependencyEnvironmentMapValidation",
+    "DifferentiableDependencyEnvironmentProfile",
+    "DifferentiableDependencyEnvironmentProfileId",
+    "DifferentiableDependencyEnvironmentStatus",
     "DifferentiableHardeningGateCheck",
     "DifferentiableHardeningSliceGateResult",
     "DifferentiableMLIRCompileConfig",
@@ -5129,6 +5147,7 @@
     "differentiable_benchmark_report",
     "differentiable_compile_report",
     "differentiable_dashboard_status",
+    "differentiable_dependency_environment_map_report",
     "differentiable_frontend_report",
     "differentiable_gradient",
     "differentiable_hessian",
@@ -5357,6 +5376,7 @@
     "registered_custom_jvp",
     "registered_custom_vjp",
     "render_differentiable_architecture_map_markdown",
+    "render_differentiable_dependency_environment_map_markdown",
     "render_differentiable_rust_python_inventory_markdown",
     "render_differentiable_sota_scorecard_markdown",
     "resolve_aggregator_provider_route",
@@ -5369,6 +5389,7 @@
     "run_biological_qec_batch_execution",
     "run_biological_qec_execution",
     "run_differentiable_architecture_map",
+    "run_differentiable_dependency_environment_map",
     "run_differentiable_hardening_slice_gate",
     "run_differentiable_module_hardening_audit",
     "run_differentiable_programming_benchmark_suite",
@@ -5431,6 +5452,7 @@
     "trapped_ion_noise_model",
     "update_levenberg_marquardt_damping",
     "validate_differentiable_architecture_map",
+    "validate_differentiable_dependency_environment_map",
     "validate_differentiable_rust_python_inventory",
     "validate_differentiable_sota_scorecard",
     "validate_kuramoto_inputs",
@@ -5705,6 +5727,7 @@
       "tests/test_differentiable_claim_ledger.py",
       "tests/test_differentiable_consistency.py",
       "tests/test_differentiable_custom_derivatives.py",
+      "tests/test_differentiable_dependency_environment_map.py",
       "tests/test_differentiable_exact_modes.py",
       "tests/test_differentiable_external_comparisons.py",
       "tests/test_differentiable_external_validation.py",

@@ -197,6 +197,10 @@ def test_build_external_validation_artifact_bundle_records_committed_evidence() 
     assert "data/differentiable_phase_qnode/public_claim_table_20260616.md" in paths
     assert "data/differentiable_phase_qnode/differentiable_architecture_map_20260627.json" in paths
     assert (
+        "data/differentiable_phase_qnode/differentiable_dependency_environment_map_20260627.json"
+        in paths
+    )
+    assert (
         "data/differentiable_phase_qnode/local_benchmark_20260616T0955Z/"
         "diff-qnode-external-comparison.json"
     ) in paths
@@ -214,6 +218,10 @@ def test_committed_external_validation_artifact_bundle_matches_files() -> None:
     assert "data/differentiable_phase_qnode/claim_ledger.json" in validation.checked_paths
     assert (
         "data/differentiable_phase_qnode/differentiable_architecture_map_20260627.md"
+        in validation.checked_paths
+    )
+    assert (
+        "data/differentiable_phase_qnode/differentiable_dependency_environment_map_20260627.md"
         in validation.checked_paths
     )
 

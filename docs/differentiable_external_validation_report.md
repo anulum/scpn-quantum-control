@@ -34,6 +34,7 @@ ledger is `data/differentiable_phase_qnode/claim_ledger.md`.
 | `data/differentiable_phase_qnode/identical_circuit_gradient_comparison_20260616.json` | Same-circuit gradient comparison artefact for Qiskit and PennyLane routes. | Correctness comparison, not hardware execution. |
 | `data/differentiable_phase_qnode/domain_benchmark_dataset_closure_20260616.json` | Exact-answer domain dataset closure artefact. | Dataset validation, not production benchmark promotion. |
 | `data/differentiable_phase_qnode/differentiable_architecture_map_20260627.json` | Architecture and Rustification routing map over inventory rows and scorecard categories. | Routing evidence only, not Rust or performance promotion. |
+| `data/differentiable_phase_qnode/differentiable_dependency_environment_map_20260627.json` | Dependency and environment evidence map over runtime, development, CI matrix, framework overlay, and Enzyme runner lock profiles. | Lockfile provenance only, not framework, Enzyme, hardware, or benchmark promotion. |
 | `data/differentiable_phase_qnode/enzyme_mlir_maturity_audit_20260616.json` | Enzyme/MLIR maturity audit with MLIR-runtime correctness evidence, native Enzyme scalar evidence, and missing raw compiler-AD breadth artifact plus derived breadth evidence recorded as hard gaps. Partial breadth captures are represented through complete artifacts with explicit case hard gaps before promotion. | Hard-gap evidence, not Enzyme parity promotion. |
 
 ## Provider Comparison Status

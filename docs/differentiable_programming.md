@@ -227,6 +227,17 @@ digests against the current checkout. This is reproducibility evidence only:
 the artefact remains `functional_non_isolated` and does not promote hardware,
 provider, GPU, QPU, production-performance, or `isolated_affinity` benchmark
 claims.
+`run_differentiable_dependency_environment_map()` groups that lock evidence into
+runtime, development, CI Python matrix, CPU framework overlay, and Enzyme runner
+profiles. The generated map is committed at
+`data/differentiable_phase_qnode/differentiable_dependency_environment_map_20260627.json`
+with a reviewer summary at
+`data/differentiable_phase_qnode/differentiable_dependency_environment_map_20260627.md`.
+The Enzyme runner remains a hard-gap profile until configured native
+Enzyme/LLVM/MLIR runner artefacts pass; the map is dependency provenance only
+and does not promote framework parity, Enzyme parity, provider execution,
+hardware execution, GPU execution, production-performance, or isolated
+benchmark claims.
 The reproducible artefact-bundle manifest is committed at
 `data/differentiable_phase_qnode/external_validation_artifact_bundle_20260616.json`
 with a reviewer summary at

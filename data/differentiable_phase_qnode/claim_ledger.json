@@ -414,6 +414,39 @@
       ],
       "promotion_status": "SOTA-candidate",
       "claim_boundary": "Differentiable architecture and Rustification routing governance only; no Rust promotion, provider execution, QPU execution, accelerator execution, hardware execution, LLVM/JIT execution, or production benchmark promotion is implied."
+    },
+    {
+      "claim_id": "differentiable_dependency_environment_map",
+      "claim_text": "The differentiable lane has a deterministic dependency and environment evidence map that groups runtime, development, CI Python matrix, CPU framework overlay, and Enzyme runner lock profiles before dependency or benchmark promotion.",
+      "implementation_surface": [
+        "src/scpn_quantum_control/differentiable_dependency_environment_map.py",
+        "src/scpn_quantum_control/differentiable_external_validation.py",
+        "src/scpn_quantum_control/differentiable_api.py"
+      ],
+      "test_surface": [
+        "tests/test_differentiable_dependency_environment_map.py",
+        "tests/test_differentiable_external_validation.py"
+      ],
+      "docs_surface": [
+        "README.md",
+        "docs/differentiable_api.md",
+        "docs/differentiable_programming.md",
+        "docs/differentiable_external_validation_report.md",
+        "data/differentiable_phase_qnode/differentiable_dependency_environment_map_20260627.md",
+        "data/differentiable_phase_qnode/claim_ledger.md"
+      ],
+      "evidence_artifact_ids": [
+        "diff-dependency-environment-map-20260627"
+      ],
+      "benchmark_artifact_ids": [
+        "diff-dependency-environment-map-20260627"
+      ],
+      "known_gaps": [
+        "The map is lockfile provenance and does not execute framework, Enzyme, provider, hardware, accelerator, or isolated benchmark jobs.",
+        "The Enzyme runner remains a hard-gap dependency profile until configured native Enzyme/LLVM/MLIR runner artefacts pass."
+      ],
+      "promotion_status": "SOTA-candidate",
+      "claim_boundary": "Differentiable dependency and environment map governance only; no dependency promotion, framework parity promotion, Enzyme promotion, provider execution, QPU execution, accelerator execution, hardware execution, or production benchmark promotion is implied."
     }
   ]
 }

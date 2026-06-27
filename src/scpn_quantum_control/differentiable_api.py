@@ -34,6 +34,9 @@ from .differentiable import (
 )
 from .differentiable_architecture_map import run_differentiable_architecture_map
 from .differentiable_benchmark_report import build_differentiable_benchmark_report
+from .differentiable_dependency_environment_map import (
+    run_differentiable_dependency_environment_map,
+)
 from .differentiable_rust_python_inventory import run_differentiable_rust_python_inventory
 from .differentiable_sota_scorecard import run_differentiable_sota_scorecard
 from .phase.gradient_backend import (
@@ -58,6 +61,7 @@ UnifiedDifferentiableOperation = Literal[
     "sota_scorecard",
     "rust_python_inventory",
     "architecture_rustification_map",
+    "dependency_environment_map",
 ]
 DifferentiableDashboardCapabilityState = Literal[
     "planned",
@@ -533,6 +537,22 @@ def differentiable_architecture_map_report() -> UnifiedDifferentiableAPIResult:
         hessian=None,
         payload=architecture_map.to_dict(),
         claim_boundary=architecture_map.claim_boundary,
+    )
+
+
+def differentiable_dependency_environment_map_report() -> UnifiedDifferentiableAPIResult:
+    """Return claim-bounded dependency and environment evidence."""
+    environment_map = run_differentiable_dependency_environment_map()
+    return UnifiedDifferentiableAPIResult(
+        operation="dependency_environment_map",
+        supported=environment_map.environment_ready,
+        method="differentiable_dependency_environment_map",
+        value=None,
+        gradient=None,
+        jacobian=None,
+        hessian=None,
+        payload=environment_map.to_dict(),
+        claim_boundary=environment_map.claim_boundary,
     )
 
 
@@ -1217,6 +1237,8 @@ def differentiable_api(
         return differentiable_rust_python_inventory_report()
     if operation == "architecture_rustification_map":
         return differentiable_architecture_map_report()
+    if operation == "dependency_environment_map":
+        return differentiable_dependency_environment_map_report()
     if operation == "frontend_report":
         return differentiable_frontend_report(_require_objective(objective))
     if operation == "dashboard_status":
@@ -1352,6 +1374,7 @@ __all__ = [
     "differentiable_benchmark_report",
     "differentiable_compile_report",
     "differentiable_dashboard_status",
+    "differentiable_dependency_environment_map_report",
     "differentiable_frontend_report",
     "differentiable_gradient",
     "differentiable_hessian",
