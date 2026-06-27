@@ -148,6 +148,11 @@ class TraceSTDPState:
         else:
             self.post_trace = _as_finite_vector("post_trace", self.post_trace, (self.n_post,))
 
+    def _trace_buffers(self) -> tuple[FloatArray, FloatArray]:
+        if self.pre_trace is None or self.post_trace is None:
+            raise RuntimeError("trace buffers are not initialized")
+        return self.pre_trace, self.post_trace
+
     def decay(self, dt: float, tau_pre: float, tau_post: float) -> None:
         """Apply exponential trace decay in-place."""
 
@@ -155,10 +160,9 @@ class TraceSTDPState:
             raise ValueError("dt must be positive")
         if tau_pre <= 0.0 or tau_post <= 0.0:
             raise ValueError("trace time constants must be positive")
-        assert self.pre_trace is not None
-        assert self.post_trace is not None
-        self.pre_trace *= np.exp(-dt / tau_pre)
-        self.post_trace *= np.exp(-dt / tau_post)
+        pre_trace, post_trace = self._trace_buffers()
+        pre_trace *= np.exp(-dt / tau_pre)
+        post_trace *= np.exp(-dt / tau_post)
 
     def update(self, pre_spikes: NDArray[np.float64], post_spikes: NDArray[np.float64]) -> None:
         """Accumulate binary spike events into traces."""
@@ -167,10 +171,9 @@ class TraceSTDPState:
         post = _as_finite_vector("post_spikes", post_spikes, (self.n_post,))
         if np.any((pre < 0.0) | (pre > 1.0)) or np.any((post < 0.0) | (post > 1.0)):
             raise ValueError("STDP spikes must be in [0, 1]")
-        assert self.pre_trace is not None
-        assert self.post_trace is not None
-        self.pre_trace += pre
-        self.post_trace += post
+        pre_trace, post_trace = self._trace_buffers()
+        pre_trace += pre
+        post_trace += post
 
 
 @dataclass(frozen=True)
@@ -334,10 +337,9 @@ class QuantumNeuromorphicBridge:
         post_spikes: NDArray[np.float64],
     ) -> FloatArray:
         state.decay(self.stdp.dt, self.stdp.tau_pre, self.stdp.tau_post)
-        assert state.pre_trace is not None
-        assert state.post_trace is not None
-        potentiation = self.stdp.a_plus * np.outer(post_spikes, state.pre_trace)
-        depression = self.stdp.a_minus * np.outer(state.post_trace, pre_spikes)
+        pre_trace, post_trace = state._trace_buffers()
+        potentiation = self.stdp.a_plus * np.outer(post_spikes, pre_trace)
+        depression = self.stdp.a_minus * np.outer(post_trace, pre_spikes)
         state.update(pre_spikes, post_spikes)
         delta: FloatArray = potentiation - depression
         return delta

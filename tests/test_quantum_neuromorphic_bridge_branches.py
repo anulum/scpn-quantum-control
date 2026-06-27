@@ -107,11 +107,32 @@ def test_trace_state_decay_guards() -> None:
         state.decay(1.0, 0.0, 20.0)
 
 
+def test_trace_state_decay_fails_closed_when_trace_buffers_are_missing() -> None:
+    """Trace decay rejects corrupted state before mutating buffers."""
+    state = TraceSTDPState(n_pre=2, n_post=2)
+    state.pre_trace = None
+
+    with pytest.raises(RuntimeError, match="trace buffers are not initialized"):
+        state.decay(1.0, 20.0, 20.0)
+
+
 def test_trace_state_update_rejects_out_of_range_spikes() -> None:
     """Trace update rejects spikes outside the unit interval."""
     state = TraceSTDPState(n_pre=2, n_post=2)
     with pytest.raises(ValueError, match=r"STDP spikes must be in \[0, 1\]"):
         state.update(np.array([2.0, 0.0]), np.array([0.0, 0.0]))
+
+
+def test_trace_state_update_fails_closed_when_trace_buffers_are_missing() -> None:
+    """Trace updates reject corrupted state before accumulating spikes."""
+    state = TraceSTDPState(n_pre=2, n_post=2)
+    state.post_trace = None
+
+    with pytest.raises(RuntimeError, match="trace buffers are not initialized"):
+        state.update(
+            np.array([1.0, 0.0], dtype=np.float64),
+            np.array([0.0, 1.0], dtype=np.float64),
+        )
 
 
 def test_bridge_rejects_non_positive_inputs() -> None:
@@ -149,6 +170,26 @@ def test_apply_plasticity_is_noop_when_stdp_disabled() -> None:
     before = bridge.input_weights.copy()
     bridge.apply_plasticity(np.ones(2, dtype=np.float64), np.ones(2, dtype=np.float64))
     np.testing.assert_array_equal(bridge.input_weights, before)
+
+
+def test_apply_plasticity_fails_closed_when_trace_buffers_are_missing() -> None:
+    """The public plasticity path rejects corrupted trace state."""
+    bridge = _bridge(stdp=TraceSTDPConfig(enabled=True))
+    bridge.input_trace.pre_trace = None
+
+    with pytest.raises(RuntimeError, match="trace buffers are not initialized"):
+        bridge.apply_plasticity(
+            np.ones(2, dtype=np.float64),
+            np.ones(2, dtype=np.float64),
+        )
+
+
+def test_bridge_accepts_explicit_zero_recurrent_weights() -> None:
+    """Explicit zero recurrent weights produce no controlled recurrent rotations."""
+    bridge = _bridge(recurrent_weights=np.zeros((2, 2), dtype=np.float64))
+    circuit = bridge.get_circuit()
+
+    assert circuit.count_ops().get("cry", 0) == 0
 
 
 def test_step_zero_coupling_delta_when_disabled() -> None:
