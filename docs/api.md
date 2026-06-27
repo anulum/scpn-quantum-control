@@ -79,8 +79,10 @@ no-submit `QiskitRuntimeQPUExecutionArtifact` before attaching live-QPU
 evidence to the maturity audit.
 Use `build_qiskit_runtime_qpu_provider_evidence_bundle(...)` when Runtime QPU,
 raw-count replay, calibration/statevector comparison, and isolated benchmark
-artefact IDs need to be attached as one validated evidence chain; omitting the
-isolated benchmark artefact ID keeps benchmark promotion blocked.
+artefact IDs need to be attached as one validated evidence chain. The bundle
+requires UTC capture and expiry timestamps, and the maturity audit rejects it
+when the expiry is stale for the review cutoff; omitting the isolated benchmark
+artefact ID keeps benchmark promotion blocked.
 Use `build_qiskit_provider_gradient_workflow_artifact(...)` to attach captured
 Qiskit Runtime provider-gradient workflow metadata for parameter-shift,
 finite-difference, LCU, SPSA, QGT, and QFI routes. The maturity audit requires
@@ -1369,12 +1371,12 @@ build_enzyme_mlir_compiler_ad_breadth_gap_artifact(*, artifact_id, observed_case
 run_enzyme_mlir_maturity_audit(circuit=None, parameters=None, *, toolchain_probe=None, version_probe=None, isolated_benchmark_artifact_id=None, isolated_benchmark_evidence=None, native_enzyme_execution_artifact_id=None, native_enzyme_execution_evidence=None, mlir_llvm_correctness_artifact_id=None, compiler_ad_breadth_evidence=None, compiler_ad_breadth_artifact=None) -> EnzymeMLIRMaturityAuditResult
 is_phase_pennylane_available() -> bool
 check_pennylane_parameter_shift_agreement(objective, pennylane_gradient, values, tolerance=1e-6, parameters=None, rule=None) -> PennyLaneGradientAgreementResult
-run_pennylane_plugin_matrix(provider_execution_artifact=None, provider_gradient_parity_artifact=None, hardware_execution_artifact=None) -> PennyLanePluginMatrixResult
-run_pennylane_maturity_audit(objective, pennylane_objective, pennylane_gradient, values, circuit, phase_qnode_values, import_tape=None, device_name="default.qubit", shots=None, interface="autograd", diff_method="parameter-shift", value_tolerance=1e-8, gradient_tolerance=1e-6, parameters=None, rule=None, provider_execution_artifact=None, provider_gradient_parity_artifact=None, hardware_execution_artifact=None) -> PennyLaneMaturityAuditResult
+run_pennylane_plugin_matrix(provider_execution_artifact=None, provider_gradient_parity_artifact=None, hardware_execution_artifact=None, provider_evidence_bundle=None, evidence_freshness_as_of_utc="2026-06-27T00:00:00Z") -> PennyLanePluginMatrixResult
+run_pennylane_maturity_audit(objective, pennylane_objective, pennylane_gradient, values, circuit, phase_qnode_values, import_tape=None, device_name="default.qubit", shots=None, interface="autograd", diff_method="parameter-shift", value_tolerance=1e-8, gradient_tolerance=1e-6, parameters=None, rule=None, provider_execution_artifact=None, provider_gradient_parity_artifact=None, hardware_execution_artifact=None, provider_evidence_bundle=None, evidence_freshness_as_of_utc="2026-06-27T00:00:00Z") -> PennyLaneMaturityAuditResult
 build_qiskit_runtime_qpu_execution_artifact(*, artifact_id, provider_name, primitive_name, backend_name, job_id, session_id, circuit_fingerprint, observable_fingerprint, parameter_digest, result_digest, metadata_digest, transpiled_circuit_digest, live_execution_ticket, backend_allowlist_id, shot_budget_id, runtime_session_mode, shots) -> QiskitRuntimeQPUExecutionArtifact
 build_qiskit_provider_gradient_workflow_artifact(*, artifact_id, provider_name, backend_name, job_id, primitive_name, gradient_method, circuit_fingerprint, observable_fingerprint, parameter_digest, gradient_digest, metadata_digest, shots, parameter_count, gradient_dimension, hardware_execution, live_ticket_id, claim_boundary="qiskit_provider_gradient_workflow_capture") -> QiskitProviderGradientWorkflowArtifact
-build_qiskit_runtime_qpu_provider_evidence_bundle(*, artifact_id, runtime_qpu_execution_artifact, raw_count_replay_artifact, calibration_comparison_artifact, isolated_benchmark_artifact_id=None) -> QiskitRuntimeQPUProviderEvidenceBundle
-run_qiskit_maturity_audit(circuit, observable, parameters, values, shots, rule=None, shift=1.5707963267948966, confidence_level=0.95, confidence_z=1.959963984540054, provider_preparation_audit=None, runtime_primitive_artifact=None, runtime_qpu_execution_artifact=None, raw_count_replay_artifact=None, calibration_comparison_artifact=None, qpu_provider_evidence_bundle=None, provider_gradient_workflow_artifacts=None) -> QiskitMaturityAuditResult
+build_qiskit_runtime_qpu_provider_evidence_bundle(*, artifact_id, runtime_qpu_execution_artifact, raw_count_replay_artifact, calibration_comparison_artifact, captured_at_utc, valid_until_utc, isolated_benchmark_artifact_id=None) -> QiskitRuntimeQPUProviderEvidenceBundle
+run_qiskit_maturity_audit(circuit, observable, parameters, values, shots, rule=None, shift=1.5707963267948966, confidence_level=0.95, confidence_z=1.959963984540054, provider_preparation_audit=None, runtime_primitive_artifact=None, runtime_qpu_execution_artifact=None, raw_count_replay_artifact=None, calibration_comparison_artifact=None, qpu_provider_evidence_bundle=None, provider_gradient_workflow_artifacts=None, evidence_freshness_as_of_utc="2026-06-27T00:00:00Z") -> QiskitMaturityAuditResult
 run_differentiable_provider_hardware_safety_audit(*, live_execution_ticket=None, raw_count_replay_artifact_id=None, calibration_snapshot_artifact_id=None, statevector_comparison_artifact_id=None, isolated_benchmark_artifact_id=None) -> DifferentiableProviderHardwareSafetyAuditResult
 build_registered_phase_qnode_circuit(n_qubits, operations, observable, max_depth=None, max_operations=None) -> PhaseQNodeRegisteredCircuitSpec
 build_phase_qnode_template(name, n_qubits, n_layers=1, entangler="chain", observable=None) -> PhaseQNodeTemplateSpec
@@ -1513,9 +1515,11 @@ promotion remains a separate evidence requirement.
 for a matching Runtime QPU execution artefact, raw-count replay artefact, and
 calibration/statevector comparison artefact. Build it with
 `build_qiskit_runtime_qpu_provider_evidence_bundle(...)` when a reviewer needs
-one chain identifier in the maturity audit. The bundle only clears the isolated
-benchmark gate when `isolated_benchmark_artifact_id` is present; otherwise the
-benchmark promotion gate remains blocked.
+one chain identifier in the maturity audit. The bundle requires
+`captured_at_utc` and `valid_until_utc`; inverted windows are rejected at
+construction and expired bundles are rejected during maturity audit. The bundle
+only clears the isolated benchmark gate when `isolated_benchmark_artifact_id`
+is present; otherwise the benchmark promotion gate remains blocked.
 `QiskitProviderGradientWorkflowArtifact` validates captured provider-gradient
 workflow metadata for `parameter_shift`, `finite_difference`, `lcu`, `spsa`,
 `qgt`, and `qfi`. Build it with

@@ -17,6 +17,7 @@ import pytest
 from scpn_quantum_control.phase import (
     PennyLaneHardwarePluginExecutionArtifact,
     PennyLanePluginMatrixResult,
+    PennyLaneProviderEvidenceBundle,
     PennyLaneProviderGradientParityArtifact,
     PennyLaneProviderPluginExecutionArtifact,
 )
@@ -93,9 +94,23 @@ def _hardware_plugin_execution_artifact() -> PennyLaneHardwarePluginExecutionArt
     )
 
 
+def _provider_evidence_bundle(
+    *,
+    valid_until_utc: str = "2026-07-20T00:00:00Z",
+    hardware_execution_artifact: PennyLaneHardwarePluginExecutionArtifact | None = None,
+) -> PennyLaneProviderEvidenceBundle:
+    return PennyLaneProviderEvidenceBundle(
+        artifact_id="pl-provider-evidence-bundle-20260620",
+        provider_execution_artifact=_provider_plugin_execution_artifact(),
+        captured_at_utc="2026-06-20T12:00:00Z",
+        valid_until_utc=valid_until_utc,
+        provider_gradient_parity_artifact=_provider_gradient_parity_artifact(),
+        hardware_execution_artifact=hardware_execution_artifact,
+    )
+
+
 def test_pennylane_provider_plugin_matrix_fails_closed_without_artifacts() -> None:
     """Provider-plugin routes remain blocked without explicit evidence artifacts."""
-
     result = run_pennylane_plugin_matrix()
 
     assert isinstance(result, PennyLanePluginMatrixResult)
@@ -111,7 +126,6 @@ def test_pennylane_provider_plugin_matrix_fails_closed_without_artifacts() -> No
 
 def test_pennylane_provider_plugin_matrix_accepts_paired_provider_artifacts() -> None:
     """Same-circuit provider execution and gradient parity artifacts pass their routes."""
-
     execution_artifact = _provider_plugin_execution_artifact()
     gradient_artifact = _provider_gradient_parity_artifact()
 
@@ -135,9 +149,67 @@ def test_pennylane_provider_plugin_matrix_accepts_paired_provider_artifacts() ->
     assert gradient_payload["max_abs_error"] == pytest.approx(1e-9)
 
 
+def test_pennylane_provider_plugin_matrix_accepts_provider_evidence_bundle() -> None:
+    """Fresh bundled provider evidence passes provider execution and parity routes."""
+    bundle = _provider_evidence_bundle()
+
+    result = run_pennylane_plugin_matrix(provider_evidence_bundle=bundle)
+
+    assert result.provider_evidence_bundle is bundle
+    assert result.provider_execution_artifact is bundle.provider_execution_artifact
+    assert result.provider_gradient_parity_artifact is bundle.provider_gradient_parity_artifact
+    assert result.provider_plugin_execution_ready
+    assert result.provider_plugin_gradient_parity_ready
+    assert not result.ready_for_provider_exceedance
+    payload = result.to_dict()
+    bundle_payload = cast(dict[str, object], payload["provider_evidence_bundle"])
+    assert bundle_payload["valid_until_utc"] == "2026-07-20T00:00:00Z"
+
+
+def test_pennylane_provider_plugin_matrix_rejects_stale_provider_evidence_bundle() -> None:
+    """Expired provider evidence bundles fail closed before route promotion."""
+    bundle = _provider_evidence_bundle(valid_until_utc="2026-06-21T00:00:00Z")
+
+    with pytest.raises(ValueError, match="provider_evidence_bundle.valid_until_utc"):
+        run_pennylane_plugin_matrix(provider_evidence_bundle=bundle)
+
+
+def test_pennylane_provider_evidence_bundle_rejects_mismatched_hardware_chain() -> None:
+    """Bundled hardware evidence must cite the same provider chain and circuit."""
+    hardware_artifact = PennyLaneHardwarePluginExecutionArtifact(
+        artifact_id="pl-hardware-exec-20260620",
+        plugin_name="pennylane-provider-hardware",
+        provider_name="other-provider",
+        device_name="example.qpu",
+        backend_name="example_qpu_v1",
+        circuit_fingerprint="phase-qnode:ry-rx-pauli-z:v1",
+        execution_mode="provider_live_qpu",
+        shots=4096,
+        live_execution_ticket="ticket-pl-hw-20260620",
+        provider_allowlist_id="allowlist-pl-hw-20260620",
+        shot_budget_id="shot-budget-pl-hw-20260620",
+        hardware_evidence_id="hardware-evidence-pl-hw-20260620",
+        result_digest="sha256:" + "e" * 64,
+        raw_counts_digest="sha256:" + "f" * 64,
+        calibration_snapshot_digest="sha256:" + "1" * 64,
+        metadata_digest="sha256:" + "2" * 64,
+    )
+
+    with pytest.raises(ValueError, match="hardware_execution_artifact.provider_name"):
+        _provider_evidence_bundle(hardware_execution_artifact=hardware_artifact)
+
+
+def test_pennylane_provider_plugin_matrix_rejects_bundle_mixed_with_artifacts() -> None:
+    """Provider evidence bundles cannot be mixed with individual attachments."""
+    with pytest.raises(ValueError, match="provider_evidence_bundle"):
+        run_pennylane_plugin_matrix(
+            provider_evidence_bundle=_provider_evidence_bundle(),
+            provider_execution_artifact=_provider_plugin_execution_artifact(),
+        )
+
+
 def test_pennylane_provider_plugin_matrix_accepts_ticketed_hardware_artifact() -> None:
     """Hardware plugin execution can be recorded without benchmark promotion."""
-
     hardware_artifact = _hardware_plugin_execution_artifact()
 
     result = run_pennylane_plugin_matrix(hardware_execution_artifact=hardware_artifact)
@@ -153,14 +225,12 @@ def test_pennylane_provider_plugin_matrix_accepts_ticketed_hardware_artifact() -
 
 def test_pennylane_provider_plugin_matrix_rejects_unknown_route() -> None:
     """Unknown plugin matrix routes fail closed instead of returning defaults."""
-
     with pytest.raises(KeyError, match="unknown PennyLane plugin route"):
         run_pennylane_plugin_matrix().route_status("missing_route")
 
 
 def test_pennylane_provider_plugin_matrix_rejects_unpaired_or_mismatched_parity() -> None:
     """Gradient parity evidence must match the provider execution artifact exactly."""
-
     with pytest.raises(ValueError, match="provider execution artefact"):
         run_pennylane_plugin_matrix(
             provider_gradient_parity_artifact=_provider_gradient_parity_artifact()
@@ -435,13 +505,11 @@ def test_pennylane_provider_plugin_artifacts_reject_malformed_evidence(
     match: str,
 ) -> None:
     """Provider-plugin evidence objects reject malformed or promoted metadata."""
-
     with pytest.raises(ValueError, match=match):
         factory()
 
 
 def test_pennylane_provider_plugin_exports_remain_compatible() -> None:
     """Old bridge and package-level imports keep resolving to the extracted builder."""
-
     assert bridge_run_pennylane_plugin_matrix is run_pennylane_plugin_matrix
     assert facade_run_pennylane_plugin_matrix is run_pennylane_plugin_matrix

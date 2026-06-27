@@ -603,12 +603,15 @@ def test_qiskit_maturity_audit_accepts_paired_qpu_raw_count_and_calibration_with
 def _qiskit_qpu_provider_evidence_bundle(
     *,
     isolated_benchmark_artifact_id: str | None = "isolated-qiskit-benchmark-20260619",
+    valid_until_utc: str = "2026-07-19T00:00:00Z",
 ) -> QiskitRuntimeQPUProviderEvidenceBundle:
     return build_qiskit_runtime_qpu_provider_evidence_bundle(
         artifact_id="qiskit-provider-evidence-bundle-20260619",
         runtime_qpu_execution_artifact=_qiskit_runtime_qpu_execution_artifact(),
         raw_count_replay_artifact=_qiskit_raw_count_replay_artifact(),
         calibration_comparison_artifact=_qiskit_calibration_comparison_artifact(),
+        captured_at_utc="2026-06-19T18:00:00Z",
+        valid_until_utc=valid_until_utc,
         isolated_benchmark_artifact_id=isolated_benchmark_artifact_id,
     )
 
@@ -683,6 +686,7 @@ def test_qiskit_provider_evidence_bundle_keeps_gradient_workflow_gate_blocked() 
     )
     payload = bundle.to_dict()
     assert payload["artifact_id"] == bundle.artifact_id
+    assert payload["valid_until_utc"] == "2026-07-19T00:00:00Z"
     assert payload["isolated_benchmark_artifact_id"] == "isolated-qiskit-benchmark-20260619"
 
 
@@ -802,7 +806,32 @@ def test_qiskit_provider_evidence_bundle_rejects_mismatched_raw_count_chain() ->
                 job_id="runtime-qpu-job-other"
             ),
             calibration_comparison_artifact=_qiskit_calibration_comparison_artifact(),
+            captured_at_utc="2026-06-19T18:00:00Z",
+            valid_until_utc="2026-07-19T00:00:00Z",
             isolated_benchmark_artifact_id="isolated-qiskit-benchmark-20260619",
+        )
+
+
+def test_qiskit_provider_evidence_bundle_rejects_inverted_freshness_window() -> None:
+    """Provider bundles require a valid capture-to-expiry evidence window."""
+    with pytest.raises(ValueError, match="valid_until_utc"):
+        _qiskit_qpu_provider_evidence_bundle(valid_until_utc="2026-06-18T00:00:00Z")
+
+
+def test_qiskit_maturity_audit_rejects_stale_provider_evidence_bundle() -> None:
+    """Qiskit provider-exceedance audits reject expired provider evidence bundles."""
+    circuit, parameters, observable = _single_rotation_problem()
+    bundle = _qiskit_qpu_provider_evidence_bundle(valid_until_utc="2026-06-27T00:00:00Z")
+
+    with pytest.raises(ValueError, match="qpu_provider_evidence_bundle.valid_until_utc"):
+        run_qiskit_maturity_audit(
+            circuit,
+            observable,
+            parameters,
+            np.array([0.4], dtype=float),
+            shots=400,
+            qpu_provider_evidence_bundle=bundle,
+            provider_gradient_workflow_artifacts=_qiskit_provider_gradient_workflow_suite(),
         )
 
 

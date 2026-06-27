@@ -10,8 +10,11 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import datetime, timezone
 
 import numpy as np
+
+PENNYLANE_PROVIDER_EVIDENCE_REVIEW_AS_OF_UTC = "2026-06-27T00:00:00Z"
 
 
 @dataclass(frozen=True)
@@ -291,6 +294,75 @@ class PennyLaneHardwarePluginExecutionArtifact:
 
 
 @dataclass(frozen=True)
+class PennyLaneProviderEvidenceBundle:
+    """Validated PennyLane provider execution, parity, and hardware evidence bundle."""
+
+    artifact_id: str
+    provider_execution_artifact: PennyLaneProviderPluginExecutionArtifact
+    captured_at_utc: str
+    valid_until_utc: str
+    provider_gradient_parity_artifact: PennyLaneProviderGradientParityArtifact | None = None
+    hardware_execution_artifact: PennyLaneHardwarePluginExecutionArtifact | None = None
+    claim_boundary: str = "pennylane_provider_evidence_bundle"
+
+    def __post_init__(self) -> None:
+        """Validate bundle identity, evidence chain, and freshness metadata."""
+        object.__setattr__(
+            self,
+            "artifact_id",
+            _normalise_metadata_text("artifact_id", self.artifact_id),
+        )
+        object.__setattr__(
+            self,
+            "captured_at_utc",
+            _normalise_utc_timestamp("captured_at_utc", self.captured_at_utc),
+        )
+        object.__setattr__(
+            self,
+            "valid_until_utc",
+            _normalise_utc_timestamp("valid_until_utc", self.valid_until_utc),
+        )
+        object.__setattr__(
+            self,
+            "claim_boundary",
+            _normalise_metadata_text("claim_boundary", self.claim_boundary),
+        )
+        if _utc_timestamp("valid_until_utc", self.valid_until_utc) <= _utc_timestamp(
+            "captured_at_utc",
+            self.captured_at_utc,
+        ):
+            raise ValueError("valid_until_utc must be after captured_at_utc")
+        _validate_provider_gradient_parity_pair(
+            self.provider_execution_artifact,
+            self.provider_gradient_parity_artifact,
+        )
+        _validate_provider_bundle_hardware_chain(
+            self.provider_execution_artifact,
+            self.hardware_execution_artifact,
+        )
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready PennyLane provider evidence bundle metadata."""
+        return {
+            "artifact_id": self.artifact_id,
+            "provider_execution_artifact": self.provider_execution_artifact.to_dict(),
+            "provider_gradient_parity_artifact": (
+                None
+                if self.provider_gradient_parity_artifact is None
+                else self.provider_gradient_parity_artifact.to_dict()
+            ),
+            "hardware_execution_artifact": (
+                None
+                if self.hardware_execution_artifact is None
+                else self.hardware_execution_artifact.to_dict()
+            ),
+            "captured_at_utc": self.captured_at_utc,
+            "valid_until_utc": self.valid_until_utc,
+            "claim_boundary": self.claim_boundary,
+        }
+
+
+@dataclass(frozen=True)
 class PennyLanePluginMatrixResult:
     """Fail-closed PennyLane plugin/provider parity matrix."""
 
@@ -298,6 +370,7 @@ class PennyLanePluginMatrixResult:
     provider_execution_artifact: PennyLaneProviderPluginExecutionArtifact | None = None
     provider_gradient_parity_artifact: PennyLaneProviderGradientParityArtifact | None = None
     hardware_execution_artifact: PennyLaneHardwarePluginExecutionArtifact | None = None
+    provider_evidence_bundle: PennyLaneProviderEvidenceBundle | None = None
     claim_boundary: str = "bounded_pennylane_plugin_matrix"
 
     @property
@@ -367,6 +440,11 @@ class PennyLanePluginMatrixResult:
                 if self.hardware_execution_artifact is None
                 else self.hardware_execution_artifact.to_dict()
             ),
+            "provider_evidence_bundle": (
+                None
+                if self.provider_evidence_bundle is None
+                else self.provider_evidence_bundle.to_dict()
+            ),
             "routes": {route.name: route.to_dict() for route in self.routes},
             "open_gaps": list(self.open_gaps),
             "claim_boundary": self.claim_boundary,
@@ -378,6 +456,8 @@ def run_pennylane_plugin_matrix(
     provider_execution_artifact: PennyLaneProviderPluginExecutionArtifact | None = None,
     provider_gradient_parity_artifact: PennyLaneProviderGradientParityArtifact | None = None,
     hardware_execution_artifact: PennyLaneHardwarePluginExecutionArtifact | None = None,
+    provider_evidence_bundle: PennyLaneProviderEvidenceBundle | None = None,
+    evidence_freshness_as_of_utc: str = PENNYLANE_PROVIDER_EVIDENCE_REVIEW_AS_OF_UTC,
 ) -> PennyLanePluginMatrixResult:
     """Return a fail-closed PennyLane plugin/provider parity matrix.
 
@@ -387,7 +467,25 @@ def run_pennylane_plugin_matrix(
     execution, live hardware execution, and promotion evidence remain blocked
     until concrete artefacts are attached.
     """
-
+    if provider_evidence_bundle is not None:
+        if (
+            provider_execution_artifact is not None
+            or provider_gradient_parity_artifact is not None
+            or hardware_execution_artifact is not None
+        ):
+            raise ValueError(
+                "provider_evidence_bundle cannot be combined with individual "
+                "PennyLane provider artefacts"
+            )
+        _validate_provider_evidence_bundle_freshness(
+            provider_evidence_bundle,
+            as_of_utc=evidence_freshness_as_of_utc,
+        )
+        provider_execution_artifact = provider_evidence_bundle.provider_execution_artifact
+        provider_gradient_parity_artifact = (
+            provider_evidence_bundle.provider_gradient_parity_artifact
+        )
+        hardware_execution_artifact = provider_evidence_bundle.hardware_execution_artifact
     _validate_provider_gradient_parity_pair(
         provider_execution_artifact,
         provider_gradient_parity_artifact,
@@ -477,6 +575,7 @@ def run_pennylane_plugin_matrix(
         provider_execution_artifact=provider_execution_artifact,
         provider_gradient_parity_artifact=provider_gradient_parity_artifact,
         hardware_execution_artifact=hardware_execution_artifact,
+        provider_evidence_bundle=provider_evidence_bundle,
     )
 
 
@@ -536,6 +635,55 @@ def _validate_provider_gradient_parity_pair(
             )
 
 
+def _validate_provider_bundle_hardware_chain(
+    provider_execution_artifact: PennyLaneProviderPluginExecutionArtifact,
+    hardware_execution_artifact: PennyLaneHardwarePluginExecutionArtifact | None,
+) -> None:
+    if hardware_execution_artifact is None:
+        return
+    expected = {
+        "provider_name": provider_execution_artifact.provider_name,
+        "circuit_fingerprint": provider_execution_artifact.circuit_fingerprint,
+        "shots": provider_execution_artifact.shots,
+    }
+    for field_name, expected_value in expected.items():
+        actual_value = getattr(hardware_execution_artifact, field_name)
+        if actual_value != expected_value:
+            raise ValueError(
+                "hardware execution artefact does not match provider execution "
+                f"artefact field hardware_execution_artifact.{field_name}"
+            )
+
+
+def _normalise_utc_timestamp(field_name: str, value: object) -> str:
+    timestamp = _utc_timestamp(field_name, value)
+    return timestamp.isoformat().replace("+00:00", "Z")
+
+
+def _utc_timestamp(field_name: str, value: object) -> datetime:
+    text = _normalise_metadata_text(field_name, value)
+    try:
+        timestamp = datetime.fromisoformat(text.replace("Z", "+00:00"))
+    except ValueError as exc:
+        raise ValueError(f"{field_name} must be an ISO-8601 UTC timestamp") from exc
+    if timestamp.tzinfo is None:
+        raise ValueError(f"{field_name} must include a UTC offset")
+    return timestamp.astimezone(timezone.utc).replace(microsecond=0)
+
+
+def _validate_provider_evidence_bundle_freshness(
+    provider_evidence_bundle: PennyLaneProviderEvidenceBundle,
+    *,
+    as_of_utc: str,
+) -> None:
+    valid_until = _utc_timestamp(
+        "provider_evidence_bundle.valid_until_utc",
+        provider_evidence_bundle.valid_until_utc,
+    )
+    if valid_until <= _utc_timestamp("evidence_freshness_as_of_utc", as_of_utc):
+        raise ValueError("provider_evidence_bundle.valid_until_utc is stale for the review cutoff")
+
+
 def _validate_provider_plugin_execution_mode(execution_mode: str) -> None:
     mode = execution_mode.lower()
     if mode in {"hardware", "qpu", "live_qpu", "provider_qpu"}:
@@ -554,6 +702,7 @@ def _validate_hardware_plugin_execution_mode(execution_mode: str) -> None:
 
 __all__ = [
     "PennyLaneHardwarePluginExecutionArtifact",
+    "PennyLaneProviderEvidenceBundle",
     "PennyLanePluginMatrixResult",
     "PennyLanePluginMatrixRoute",
     "PennyLaneProviderGradientParityArtifact",

@@ -9,7 +9,7 @@
     "optional_extras": 43,
     "public_api_exports": 743,
     "public_documentation_pages": 253,
-    "python_model_classes": 865,
+    "python_model_classes": 866,
     "python_model_source_modules": 492,
     "rust_pyo3_model_wrappers": 171,
     "rust_source_modules": 42,
@@ -2558,6 +2558,10 @@
       },
       {
         "name": "PennyLanePluginMatrixRoute",
+        "path": "src/scpn_quantum_control/phase/pennylane_provider_plugin.py"
+      },
+      {
+        "name": "PennyLaneProviderEvidenceBundle",
         "path": "src/scpn_quantum_control/phase/pennylane_provider_plugin.py"
       },
       {

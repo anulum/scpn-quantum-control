@@ -386,6 +386,11 @@ diagnostic.
 - Require ticketed live hardware, allowlist, shot-budget, raw-count,
   calibration, and metadata evidence before PennyLane hardware-plugin execution
   can pass; keep promotion blocked until isolated benchmark evidence exists.
+- Use `PennyLaneProviderEvidenceBundle` when reviewing PennyLane provider
+  execution, provider-gradient parity, and optional hardware evidence as one
+  attachment. Bundles must cite UTC capture and expiry timestamps, cannot be
+  mixed with individual provider artefacts, and fail closed when the expiry is
+  stale for the review cutoff.
 - Split Qiskit Runtime evidence into no-submit primitive metadata and live QPU
   EstimatorV2/SamplerV2 artefacts; live QPU evidence must carry ticket,
   backend-allowlist, shot-budget, ISA/transpiled-circuit, Runtime result, and
@@ -395,10 +400,12 @@ diagnostic.
   attached to the same Runtime QPU provider/backend/circuit/live-ticket chain
   before their gates can pass. Use the provider evidence bundle when attaching
   Runtime QPU, raw-count, calibration, and isolated benchmark artefacts
-  together; omitting the isolated benchmark ID keeps benchmark promotion
-  blocked. Attach provider-gradient workflow artefacts for the complete
-  parameter-shift, finite-difference, LCU, SPSA, QGT, and QFI method set before
-  the Qiskit maturity audit can pass the provider-gradient workflow gate.
+  together; the bundle must include UTC capture and expiry timestamps, and the
+  audit rejects stale bundles before readiness can pass. Omitting the isolated
+  benchmark ID keeps benchmark promotion blocked. Attach provider-gradient
+  workflow artefacts for the complete parameter-shift, finite-difference, LCU,
+  SPSA, QGT, and QFI method set before the Qiskit maturity audit can pass the
+  provider-gradient workflow gate.
 - Compare gradients against finite differences, analytic references, and cross-framework references where practical.
 - Document failed or unsuitable scenarios because they are research evidence.
 

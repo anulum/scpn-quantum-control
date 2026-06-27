@@ -11,6 +11,7 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from typing import TypeAlias
 
 import numpy as np
@@ -34,6 +35,7 @@ FloatArray: TypeAlias = NDArray[np.float64]
 QISKIT_PROVIDER_GRADIENT_METHODS = frozenset(
     {"parameter_shift", "finite_difference", "lcu", "spsa", "qgt", "qfi"}
 )
+QISKIT_PROVIDER_EVIDENCE_REVIEW_AS_OF_UTC = "2026-06-27T00:00:00Z"
 
 
 @dataclass(frozen=True)
@@ -51,6 +53,7 @@ class QiskitParameterShiftRecord:
     minus_circuit: QuantumCircuit
 
     def __post_init__(self) -> None:
+        """Validate shifted-circuit metadata and bound circuit values."""
         if isinstance(self.parameter_index, bool) or self.parameter_index < 0:
             raise ValueError("parameter_index must be a non-negative integer")
         if isinstance(self.shift_index, bool) or self.shift_index < 0:
@@ -99,6 +102,7 @@ class QiskitParameterShiftGradientResult:
     claim_boundary: str
 
     def __post_init__(self) -> None:
+        """Validate local Qiskit gradient result metadata."""
         value = _as_finite_scalar("value", self.value)
         gradient = _as_finite_vector("gradient", self.gradient)
         if self.evaluations <= 0:
@@ -140,6 +144,7 @@ class QiskitRuntimePrimitiveExecutionArtifact:
     raw_result_replay_artifact_id: str | None = None
 
     def __post_init__(self) -> None:
+        """Validate no-submit Runtime primitive execution metadata."""
         for field_name in (
             "artifact_id",
             "provider_name",
@@ -210,6 +215,7 @@ class QiskitRuntimeQPUExecutionArtifact:
     hardware_execution: bool = True
 
     def __post_init__(self) -> None:
+        """Validate ticketed Runtime QPU execution evidence metadata."""
         for field_name in (
             "artifact_id",
             "provider_name",
@@ -353,6 +359,7 @@ class QiskitRawCountReplayArtifact:
     live_ticket_id: str
 
     def __post_init__(self) -> None:
+        """Validate raw-count replay evidence against live QPU metadata."""
         for field_name in (
             "artifact_id",
             "provider_name",
@@ -416,6 +423,7 @@ class QiskitCalibrationStatevectorComparisonArtifact:
     live_ticket_id: str
 
     def __post_init__(self) -> None:
+        """Validate calibration/statevector comparison evidence metadata."""
         for field_name in (
             "artifact_id",
             "provider_name",
@@ -487,6 +495,7 @@ class QiskitProviderGradientWorkflowArtifact:
     claim_boundary: str = "qiskit_provider_gradient_workflow_capture"
 
     def __post_init__(self) -> None:
+        """Validate captured Runtime provider-gradient workflow metadata."""
         for field_name in (
             "artifact_id",
             "provider_name",
@@ -651,10 +660,13 @@ class QiskitRuntimeQPUProviderEvidenceBundle:
     runtime_qpu_execution_artifact: QiskitRuntimeQPUExecutionArtifact
     raw_count_replay_artifact: QiskitRawCountReplayArtifact
     calibration_comparison_artifact: QiskitCalibrationStatevectorComparisonArtifact
+    captured_at_utc: str
+    valid_until_utc: str
     isolated_benchmark_artifact_id: str | None = None
     claim_boundary: str = "qiskit_runtime_qpu_provider_evidence_bundle"
 
     def __post_init__(self) -> None:
+        """Validate bundled Runtime QPU provider evidence metadata."""
         object.__setattr__(
             self,
             "artifact_id",
@@ -665,6 +677,21 @@ class QiskitRuntimeQPUProviderEvidenceBundle:
             "claim_boundary",
             _normalise_metadata_text("claim_boundary", self.claim_boundary),
         )
+        object.__setattr__(
+            self,
+            "captured_at_utc",
+            _normalise_utc_timestamp("captured_at_utc", self.captured_at_utc),
+        )
+        object.__setattr__(
+            self,
+            "valid_until_utc",
+            _normalise_utc_timestamp("valid_until_utc", self.valid_until_utc),
+        )
+        if _utc_timestamp("valid_until_utc", self.valid_until_utc) <= _utc_timestamp(
+            "captured_at_utc",
+            self.captured_at_utc,
+        ):
+            raise ValueError("valid_until_utc must be after captured_at_utc")
         if self.isolated_benchmark_artifact_id is not None:
             object.__setattr__(
                 self,
@@ -687,6 +714,8 @@ class QiskitRuntimeQPUProviderEvidenceBundle:
             "runtime_qpu_execution_artifact": (self.runtime_qpu_execution_artifact.to_dict()),
             "raw_count_replay_artifact": self.raw_count_replay_artifact.to_dict(),
             "calibration_comparison_artifact": (self.calibration_comparison_artifact.to_dict()),
+            "captured_at_utc": self.captured_at_utc,
+            "valid_until_utc": self.valid_until_utc,
             "isolated_benchmark_artifact_id": self.isolated_benchmark_artifact_id,
             "claim_boundary": self.claim_boundary,
         }
@@ -698,6 +727,8 @@ def build_qiskit_runtime_qpu_provider_evidence_bundle(
     runtime_qpu_execution_artifact: QiskitRuntimeQPUExecutionArtifact,
     raw_count_replay_artifact: QiskitRawCountReplayArtifact,
     calibration_comparison_artifact: QiskitCalibrationStatevectorComparisonArtifact,
+    captured_at_utc: str,
+    valid_until_utc: str,
     isolated_benchmark_artifact_id: str | None = None,
 ) -> QiskitRuntimeQPUProviderEvidenceBundle:
     """Build a no-submit Qiskit Runtime QPU provider evidence bundle.
@@ -705,13 +736,17 @@ def build_qiskit_runtime_qpu_provider_evidence_bundle(
     The bundle ties one Runtime QPU execution artefact to its matching
     raw-count replay and calibration/statevector comparison artefacts. An
     isolated benchmark artefact ID may be attached when benchmark evidence has
-    been produced under the repository benchmark-isolation policy.
+    been produced under the repository benchmark-isolation policy. Capture and
+    expiry timestamps bound the review window used by provider-exceedance
+    audits.
     """
     return QiskitRuntimeQPUProviderEvidenceBundle(
         artifact_id=artifact_id,
         runtime_qpu_execution_artifact=runtime_qpu_execution_artifact,
         raw_count_replay_artifact=raw_count_replay_artifact,
         calibration_comparison_artifact=calibration_comparison_artifact,
+        captured_at_utc=captured_at_utc,
+        valid_until_utc=valid_until_utc,
         isolated_benchmark_artifact_id=isolated_benchmark_artifact_id,
     )
 
@@ -884,6 +919,7 @@ def run_qiskit_maturity_audit(
     qpu_provider_evidence_bundle: QiskitRuntimeQPUProviderEvidenceBundle | None = None,
     provider_gradient_workflow_artifacts: Sequence[QiskitProviderGradientWorkflowArtifact]
     | None = None,
+    evidence_freshness_as_of_utc: str = QISKIT_PROVIDER_EVIDENCE_REVIEW_AS_OF_UTC,
 ) -> QiskitMaturityAuditResult:
     """Aggregate Qiskit local-gradient evidence and provider-level blockers.
 
@@ -896,7 +932,6 @@ def run_qiskit_maturity_audit(
     artifact IDs and keeps the corresponding gate blocked when evidence is
     absent.
     """
-
     parameter_tuple = _normalise_parameters(parameters)
     values_vector = _as_finite_vector("values", values, width=len(parameter_tuple))
     shot_count = _normalise_shots(shots)
@@ -910,6 +945,10 @@ def run_qiskit_maturity_audit(
             raise ValueError(
                 "qpu_provider_evidence_bundle cannot be combined with individual QPU artefacts"
             )
+        _validate_qiskit_provider_evidence_bundle_freshness(
+            qpu_provider_evidence_bundle,
+            as_of_utc=evidence_freshness_as_of_utc,
+        )
         runtime_qpu_execution_artifact = (
             qpu_provider_evidence_bundle.runtime_qpu_execution_artifact
         )
@@ -1022,6 +1061,12 @@ def run_qiskit_maturity_audit(
     if qpu_provider_evidence_bundle is not None:
         local_reference_metadata["qpu_provider_evidence_bundle_id"] = (
             qpu_provider_evidence_bundle.artifact_id
+        )
+        local_reference_metadata["qpu_provider_evidence_captured_at_utc"] = (
+            qpu_provider_evidence_bundle.captured_at_utc
+        )
+        local_reference_metadata["qpu_provider_evidence_valid_until_utc"] = (
+            qpu_provider_evidence_bundle.valid_until_utc
         )
     if isolated_benchmark_artifact_id is not None:
         local_reference_metadata["isolated_benchmark_artifact_id"] = isolated_benchmark_artifact_id
@@ -1244,6 +1289,37 @@ def _normalise_metadata_text(field_name: str, value: object) -> str:
     if any(ord(character) < 32 or ord(character) == 127 for character in text):
         raise ValueError(f"{field_name} must not contain control characters")
     return text
+
+
+def _normalise_utc_timestamp(field_name: str, value: object) -> str:
+    timestamp = _utc_timestamp(field_name, value)
+    return timestamp.isoformat().replace("+00:00", "Z")
+
+
+def _utc_timestamp(field_name: str, value: object) -> datetime:
+    text = _normalise_metadata_text(field_name, value)
+    try:
+        timestamp = datetime.fromisoformat(text.replace("Z", "+00:00"))
+    except ValueError as exc:
+        raise ValueError(f"{field_name} must be an ISO-8601 UTC timestamp") from exc
+    if timestamp.tzinfo is None:
+        raise ValueError(f"{field_name} must include a UTC offset")
+    return timestamp.astimezone(timezone.utc).replace(microsecond=0)
+
+
+def _validate_qiskit_provider_evidence_bundle_freshness(
+    qpu_provider_evidence_bundle: QiskitRuntimeQPUProviderEvidenceBundle,
+    *,
+    as_of_utc: str,
+) -> None:
+    valid_until = _utc_timestamp(
+        "qpu_provider_evidence_bundle.valid_until_utc",
+        qpu_provider_evidence_bundle.valid_until_utc,
+    )
+    if valid_until <= _utc_timestamp("evidence_freshness_as_of_utc", as_of_utc):
+        raise ValueError(
+            "qpu_provider_evidence_bundle.valid_until_utc is stale for the review cutoff"
+        )
 
 
 def _normalise_qiskit_runtime_primitive(primitive_name: str) -> str:

@@ -22,6 +22,7 @@ from .pennylane_provider_plugin import (
     PennyLaneHardwarePluginExecutionArtifact,
     PennyLanePluginMatrixResult,
     PennyLanePluginMatrixRoute,
+    PennyLaneProviderEvidenceBundle,
     PennyLaneProviderGradientParityArtifact,
     PennyLaneProviderPluginExecutionArtifact,
     _normalise_metadata_text,
@@ -493,6 +494,8 @@ def run_pennylane_maturity_audit(
     provider_execution_artifact: PennyLaneProviderPluginExecutionArtifact | None = None,
     provider_gradient_parity_artifact: PennyLaneProviderGradientParityArtifact | None = None,
     hardware_execution_artifact: PennyLaneHardwarePluginExecutionArtifact | None = None,
+    provider_evidence_bundle: PennyLaneProviderEvidenceBundle | None = None,
+    evidence_freshness_as_of_utc: str = "2026-06-27T00:00:00Z",
 ) -> PennyLaneMaturityAuditResult:
     """Aggregate PennyLane agreement, export, and optional import evidence.
 
@@ -503,7 +506,6 @@ def run_pennylane_maturity_audit(
     hardware execution, or benchmark claims until those routes have their own
     artefacts.
     """
-
     value_tol = _as_non_negative_tolerance(value_tolerance)
     gradient_tol = _as_non_negative_tolerance(gradient_tolerance)
     scalar_values = _as_parameter_vector("values", values)
@@ -579,6 +581,8 @@ def run_pennylane_maturity_audit(
         provider_execution_artifact=provider_execution_artifact,
         provider_gradient_parity_artifact=provider_gradient_parity_artifact,
         hardware_execution_artifact=hardware_execution_artifact,
+        provider_evidence_bundle=provider_evidence_bundle,
+        evidence_freshness_as_of_utc=evidence_freshness_as_of_utc,
     )
 
     import_passed = bool(
@@ -784,6 +788,7 @@ __all__ = [
     "PennyLaneMaturityAuditResult",
     "PennyLanePluginMatrixResult",
     "PennyLanePluginMatrixRoute",
+    "PennyLaneProviderEvidenceBundle",
     "PennyLaneProviderGradientParityArtifact",
     "PennyLaneProviderPluginExecutionArtifact",
     "PennyLaneQNodeConversionResult",

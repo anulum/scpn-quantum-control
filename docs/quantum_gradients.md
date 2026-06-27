@@ -871,9 +871,12 @@ their corresponding Runtime/QPU, raw-count replay, and calibration/statevector
 comparison gates. The audit keeps `ready_for_provider_exceedance=False` until
 isolated benchmark evidence exists.
 `QiskitRuntimeQPUProviderEvidenceBundle` validates that whole attachable chain
-as one no-submit audit input and can carry an isolated benchmark artefact ID.
-Without that ID, benchmark promotion remains blocked even when the Runtime QPU,
-raw-count, and calibration comparison artefacts match.
+as one no-submit audit input, requires explicit `captured_at_utc` and
+`valid_until_utc` metadata, rejects inverted freshness windows, and can carry
+an isolated benchmark artefact ID. The Qiskit maturity audit rejects expired
+provider bundles before provider-exceedance readiness is evaluated. Without an
+isolated benchmark ID, benchmark promotion remains blocked even when the
+Runtime QPU, raw-count, and calibration comparison artefacts match.
 `QiskitProviderGradientWorkflowArtifact` covers captured Runtime
 provider-gradient workflow evidence for parameter-shift, finite-difference,
 LCU, SPSA, QGT, and QFI methods. Build those artefacts with
@@ -1918,6 +1921,12 @@ routes as passed. Passing a validated provider execution artefact marks
 passed. Hardware-plugin execution remains blocked until its own ticketed
 artefact is attached, and isolated-benchmark promotion remains blocked with
 required artefacts listed per route.
+Passing a `PennyLaneProviderEvidenceBundle` keeps provider execution,
+provider-gradient parity, and optional ticketed hardware execution in one
+exclusive attachment. The bundle requires explicit UTC capture/expiry metadata,
+rejects inverted freshness windows, rejects hardware evidence whose provider,
+circuit fingerprint, or shot count no longer matches the provider execution
+chain, and fails closed when the bundle has expired at the review cutoff.
 Passing a validated `PennyLaneHardwarePluginExecutionArtifact` marks only
 `hardware_plugin_execution` as passed; it must carry ticket, allowlist,
 shot-budget, hardware evidence, raw-count, calibration, and metadata

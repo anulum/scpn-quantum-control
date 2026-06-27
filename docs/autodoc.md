@@ -173,7 +173,7 @@ or debugging a subsystem, not as the default path for tutorial code.
 
 ::: scpn_quantum_control.phase.pennylane_provider_plugin
     options:
-      members: [PennyLaneHardwarePluginExecutionArtifact, PennyLanePluginMatrixResult, PennyLanePluginMatrixRoute, PennyLaneProviderGradientParityArtifact, PennyLaneProviderPluginExecutionArtifact, run_pennylane_plugin_matrix]
+      members: [PennyLaneHardwarePluginExecutionArtifact, PennyLaneProviderEvidenceBundle, PennyLanePluginMatrixResult, PennyLanePluginMatrixRoute, PennyLaneProviderGradientParityArtifact, PennyLaneProviderPluginExecutionArtifact, run_pennylane_plugin_matrix]
 
 ::: scpn_quantum_control.differentiable_claim_ledger
     options:
