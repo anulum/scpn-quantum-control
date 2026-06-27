@@ -43,6 +43,37 @@ assert result["is_xy_kuramoto_order_parameter"] == 0.0
 Use `analysis.sync_witness` for X/Y-count witnesses and `phase` statevector
 helpers for true Kuramoto-R calculations.
 
+### `thermodynamic_witness` — Calibrated Work Samples
+
+`ThermodynamicWitness` summarizes explicitly supplied work values from a
+calibrated protocol. It rejects counts-only calls and does not infer work from
+bitstrings; callers must provide either `work_samples_joule` or `work_joule`.
+All work, free-energy, and inverse-temperature inputs are validated at runtime
+with explicit exceptions, so the fail-closed contract is unchanged under
+optimized Python bytecode.
+
+```python
+from scpn_quantum_control.analysis.thermodynamic_witness import ThermodynamicWitness
+
+witness = ThermodynamicWitness()
+result = witness(
+    counts={"0": 10, "1": 6},
+    work_samples_joule=[1.0e-21, 1.2e-21, 0.8e-21],
+    delta_free_energy_joule=0.9e-21,
+    beta_per_joule=2.5e20,
+)
+
+assert result["mean_work_joule"] > 0.0
+assert "jarzynski_delta_free_energy_joule" in result
+```
+
+| Input | Requirement |
+|-------|-------------|
+| `work_samples_joule` | Non-empty finite iterable of calibrated work samples |
+| `work_joule` | Finite scalar work value when no sample iterable is supplied |
+| `delta_free_energy_joule` | Optional finite free-energy difference |
+| `beta_per_joule` | Optional finite positive inverse temperature |
+
 ### `sync_witness` — Synchronization Witness Operators
 
 Three Hermitian witness constructions that certify quantum synchronization from

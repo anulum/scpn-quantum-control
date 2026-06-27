@@ -6,7 +6,7 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
-from typing import Any
+from typing import Any, cast
 
 import numpy as np
 
@@ -42,10 +42,7 @@ class ThermodynamicWitness:
         if samples_raw is not None:
             samples = np.asarray(list(samples_raw), dtype=float)
         else:
-            # The outer guard guarantees scalar_raw is not None here; assert it
-            # so the type narrows (kwargs.get returns Any | None).
-            assert scalar_raw is not None
-            samples = np.asarray([float(scalar_raw)], dtype=float)
+            samples = np.asarray([float(cast(Any, scalar_raw))], dtype=float)
 
         if samples.size == 0:
             raise ValueError("work_samples_joule must contain at least one sample.")

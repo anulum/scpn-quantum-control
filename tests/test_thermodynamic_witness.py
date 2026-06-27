@@ -14,7 +14,10 @@ Jarzynski free-energy branches including their finiteness/positivity guards.
 
 from __future__ import annotations
 
+import ast
+import inspect
 import math
+import textwrap
 
 import numpy as np
 import pytest
@@ -39,6 +42,13 @@ class TestInputContract:
         """Non-finite work samples are rejected."""
         with pytest.raises(ValueError, match="finite joule"):
             ThermodynamicWitness()(work_samples_joule=[1.0, math.inf])
+
+    def test_call_contract_uses_explicit_runtime_validation(self) -> None:
+        """The callable has no optimized-bytecode-stripped assert checks."""
+        source = textwrap.dedent(inspect.getsource(ThermodynamicWitness.__call__))
+        syntax_tree = ast.parse(source)
+
+        assert not any(isinstance(node, ast.Assert) for node in ast.walk(syntax_tree))
 
 
 class TestWorkStatistics:
