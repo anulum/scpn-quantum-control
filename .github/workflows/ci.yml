@@ -75,7 +75,9 @@ jobs:
           python-version: ${{ matrix.python-version }}
           cache: 'pip'
       - name: Install dependencies
-        run: python -m pip install --require-hashes -r ${{ matrix.requirements-file }}
+        run: |
+          python -m pip install --require-hashes -r ${{ matrix.requirements-file }}
+          python -m pip install --no-deps --require-hashes -r requirements-ci-studio-platform.txt
       - name: Run tests
         run: pytest tests/ -v --tb=short -x -m "not slow and not hardware and not internal_corpus and not performance"
       - name: Audit test quality

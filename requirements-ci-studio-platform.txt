@@ -5,7 +5,7 @@
 # Contact: www.anulum.li | protoscience@anulum.li
 # scpn-quantum-control — Studio Platform CI Hashed Dependency Lock
 #
-# The studio-conformance workflow installs this after the base CI lock with
-# --no-deps; requirements-ci-py312-linux.txt already pins cryptography.
+# CI jobs that exercise Studio recompute surfaces install this after their
+# base CI lock with --no-deps; the base locks already pin cryptography.
 scpn-studio-platform==0.10.0 \
     --hash=sha256:4ae25cd795fa97e8386d1204c7aa49499fb135b11ec7d86e2af3f9b081d4cd43
