@@ -1361,6 +1361,7 @@ is_jax_autodiff_available() -> bool
 jax_value_and_grad(objective, values) -> tuple[float, np.ndarray]
 is_phase_jax_available() -> bool
 jax_parameter_shift_value_and_grad(objective, values, jit=False, parameters=None, rule=None) -> PhaseJAXParameterShiftResult
+plan_jax_cloud_validation_batch(runner="jarvislabs", accelerator_backend="cuda") -> PhaseJAXCloudValidationRunSpec
 run_jax_phase_qnode_lowering_matrix() -> PhaseJAXPhaseQNodeLoweringMatrixResult
 run_jax_nested_transform_algebra_audit(features, labels, params_batch, params_pytree, tolerance=1e-6) -> PhaseJAXNestedTransformAlgebraResult
 run_jax_maturity_audit(features, labels, params, params_batch, params_pytree, tolerance=1e-6) -> PhaseJAXMaturityAuditResult

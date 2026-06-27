@@ -9,6 +9,8 @@
 
 from __future__ import annotations
 
+import json
+
 import numpy as np
 import pytest
 
@@ -17,6 +19,7 @@ from scpn_quantum_control.phase import (
     DenseHermitianObservable,
     PauliCovarianceObservable,
     PauliTerm,
+    PhaseJAXCloudValidationRunSpec,
     PhaseJAXCustomVJPQNNGradientResult,
     PhaseJAXGradientAgreementResult,
     PhaseJAXJITCompatibilityResult,
@@ -45,6 +48,7 @@ from scpn_quantum_control.phase import (
     multi_frequency_parameter_shift_rule,
     parameter_shift_phase_qnode_gradient,
     parameter_shift_qnn_classifier_gradient,
+    plan_jax_cloud_validation_batch,
     run_jax_jit_compatibility_audit,
     run_jax_maturity_audit,
     run_jax_nested_transform_algebra_audit,
@@ -785,11 +789,41 @@ def test_phase_jax_maturity_audit_records_bounded_passes_and_provider_gaps(
     assert result.evidence["vmap"].passed
     assert result.evidence["pmap_sharding"].passed
     assert result.evidence["pytree"].passed
+    assert result.evidence["cloud_validation_batch"].ready_for_cloud_dispatch
     assert "arbitrary_quantum_kernel_jax_lowering" in result.open_gaps
     assert "hardware_or_provider_callback_transform_safety" in result.open_gaps
     assert payload["required_capabilities"]["jit"] == "passed"
+    assert payload["required_capabilities"]["cloud_validation_batch"] == "scheduled"
     assert payload["required_capabilities"]["arbitrary_quantum_kernel_jax_lowering"] == "blocked"
     assert payload["claim_boundary"] == "bounded_jax_provider_maturity_audit"
+
+
+def test_phase_jax_cloud_validation_batch_schedules_gtx1060_gap(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    fake_jax = _FakeJAX()
+    fake_jax.local_device_count_value = 1
+    fake_jax.local_devices = lambda: ("NVIDIA GeForce GTX 1060",)
+    monkeypatch.setattr(jax_bridge, "_load_jax", lambda: (fake_jax, np))
+
+    result = plan_jax_cloud_validation_batch(runner="jarvislabs")
+
+    assert isinstance(result, PhaseJAXCloudValidationRunSpec)
+    assert result.runner == "jarvislabs"
+    assert result.ready_for_cloud_dispatch
+    assert result.local_execution_status == "skipped_incompatible_local_hardware"
+    assert "GTX 1060" in result.local_skip_reason
+    assert "jax_cuda_accelerator_device" in result.blocked_local_routes
+    assert "registered_phase_qnode_pmap_multi_device_lowering" in result.blocked_local_routes
+    assert "jax_cuda_device_metadata_artifact" in result.required_artifacts
+    assert "registered_phase_qnode_jax_pmap_sharding_artifact" in result.required_artifacts
+    assert "isolated_benchmark_artifact" in result.required_artifacts
+    assert any("test_phase_jax_bridge.py" in command for command in result.commands)
+    assert result.required_environment["accelerator_backend"] == "cuda"
+    assert result.claim_boundary == "jax_cloud_validation_batch_plan"
+    payload = result.to_dict()
+    assert payload["local_execution_status"] == "skipped_incompatible_local_hardware"
+    json.dumps(payload)
 
 
 def test_phase_jax_nested_transform_algebra_audit_verifies_bounded_routes(

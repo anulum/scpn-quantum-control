@@ -5,8 +5,10 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Phase Dynamics Solvers
-"""Phase dynamics solvers: Kuramoto-XY Trotterisation, VQE ground-state search,
-UPDE Trotter integration, Trotter error analysis, and ansatz benchmarking.
+"""Phase dynamics solver public exports.
+
+Includes Kuramoto-XY Trotterisation, VQE ground-state search, UPDE Trotter
+integration, Trotter error analysis, and ansatz benchmarking.
 """
 
 from .adapt_vqe import ADAPTResult, adapt_vqe
@@ -119,6 +121,7 @@ from .hardware_gradient_publication import (
     build_hardware_gradient_publication_package,
 )
 from .jax_bridge import (
+    PhaseJAXCloudValidationRunSpec,
     PhaseJAXCustomVJPQNNGradientResult,
     PhaseJAXGradientAgreementResult,
     PhaseJAXJITCompatibilityResult,
@@ -145,6 +148,7 @@ from .jax_bridge import (
     jax_phase_qnode_pytree_transform_audit,
     jax_phase_qnode_sharding_transform_audit,
     jax_phase_qnode_value_and_grad,
+    plan_jax_cloud_validation_batch,
     run_jax_jit_compatibility_audit,
     run_jax_maturity_audit,
     run_jax_nested_transform_algebra_audit,
@@ -788,6 +792,7 @@ __all__ = [
     "run_phase_qnode_vector_transform_readiness_suite",
     "is_phase_jax_available",
     "check_jax_parameter_shift_agreement",
+    "plan_jax_cloud_validation_batch",
     "jax_custom_vjp_qnn_value_and_grad",
     "jax_native_qnn_value_and_grad",
     "jax_parameter_shift_value_and_grad",
@@ -799,6 +804,7 @@ __all__ = [
     "run_jax_maturity_audit",
     "run_jax_nested_transform_algebra_audit",
     "run_jax_phase_qnode_lowering_matrix",
+    "PhaseJAXCloudValidationRunSpec",
     "PhaseJAXCustomVJPQNNGradientResult",
     "PhaseJAXGradientAgreementResult",
     "PhaseJAXJITCompatibilityResult",

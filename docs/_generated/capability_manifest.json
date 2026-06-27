@@ -9,7 +9,7 @@
     "optional_extras": 43,
     "public_api_exports": 743,
     "public_documentation_pages": 253,
-    "python_model_classes": 866,
+    "python_model_classes": 867,
     "python_model_source_modules": 492,
     "rust_pyo3_model_wrappers": 171,
     "rust_source_modules": 42,
@@ -2619,6 +2619,10 @@
       {
         "name": "PhaseGradientBenchmarkSuiteResult",
         "path": "src/scpn_quantum_control/phase/differentiable_audit.py"
+      },
+      {
+        "name": "PhaseJAXCloudValidationRunSpec",
+        "path": "src/scpn_quantum_control/phase/jax_bridge.py"
       },
       {
         "name": "PhaseJAXCustomVJPQNNGradientResult",

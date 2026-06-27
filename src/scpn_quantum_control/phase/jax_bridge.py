@@ -619,7 +619,6 @@ class PhaseJAXMaturityAuditResult:
 
     def to_dict(self) -> dict[str, object]:
         """Return JSON-ready JAX maturity evidence."""
-
         return {
             "bounded_model_ready": self.bounded_model_ready,
             "ready_for_provider_exceedance": self.ready_for_provider_exceedance,
@@ -713,6 +712,47 @@ class PhaseJAXNestedTransformAlgebraResult:
             "ready_for_provider_exceedance": self.ready_for_provider_exceedance,
             "routes": {route.name: route.to_dict() for route in self.routes},
             "open_gaps": list(self.open_gaps),
+            "claim_boundary": self.claim_boundary,
+        }
+
+
+@dataclass(frozen=True)
+class PhaseJAXCloudValidationRunSpec:
+    """Cloud validation batch plan for JAX device and sharding promotion.
+
+    The plan records local JAX device evidence, why local GTX 1060 or
+    single-device runs cannot promote accelerator routes, and the exact
+    artefacts that a compatible cloud runner must produce before any JAX GPU,
+    multi-device, or accelerator-performance claim is made.
+    """
+
+    runner: str
+    local_execution_status: str
+    local_skip_reason: str
+    accelerator_backend: str
+    local_device_count: int
+    device_descriptions: tuple[str, ...]
+    blocked_local_routes: tuple[str, ...]
+    required_artifacts: tuple[str, ...]
+    required_environment: dict[str, object]
+    commands: tuple[str, ...]
+    ready_for_cloud_dispatch: bool
+    claim_boundary: str = "jax_cloud_validation_batch_plan"
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready JAX cloud validation scheduling metadata."""
+        return {
+            "runner": self.runner,
+            "local_execution_status": self.local_execution_status,
+            "local_skip_reason": self.local_skip_reason,
+            "accelerator_backend": self.accelerator_backend,
+            "local_device_count": self.local_device_count,
+            "device_descriptions": list(self.device_descriptions),
+            "blocked_local_routes": list(self.blocked_local_routes),
+            "required_artifacts": list(self.required_artifacts),
+            "required_environment": dict(self.required_environment),
+            "commands": list(self.commands),
+            "ready_for_cloud_dispatch": self.ready_for_cloud_dispatch,
             "claim_boundary": self.claim_boundary,
         }
 
@@ -1597,7 +1637,6 @@ def jax_phase_qnode_native_transform_audit(
     and does not promote finite-shot, provider, hardware, density/noise, or
     dynamic-circuit lowering.
     """
-
     jax_module, jnp = _load_jax()
     _enable_jax_x64(jax_module)
     _require_jax_phase_qnode_transform_support(jax_module)
@@ -1812,7 +1851,6 @@ def jax_phase_qnode_pytree_transform_audit(
     lowering, no provider execution, no hardware submission, and no
     dynamic-circuit claim.
     """
-
     jax_module, jnp = _load_jax()
     _enable_jax_x64(jax_module)
     _require_jax_phase_qnode_pytree_transform_support(jax_module)
@@ -2074,7 +2112,6 @@ def jax_phase_qnode_sharding_transform_audit(
     no host callbacks, no finite-shot lowering, no provider execution, no
     hardware submission, and no wall-clock performance promotion.
     """
-
     jax_module, jnp = _load_jax()
     _enable_jax_x64(jax_module)
     _require_jax_pmap_support(jax_module)
@@ -2854,7 +2891,6 @@ def run_jax_nested_transform_algebra_audit(
     promote arbitrary Phase-QNode lowering, full `jacfwd`/`jacrev` coverage,
     hardware/provider callbacks, or isolated benchmark evidence.
     """
-
     jax_module, jnp = _load_jax()
     _require_jax_nested_transform_support(jax_module)
     tolerance_value = _as_non_negative_tolerance(tolerance)
@@ -2995,7 +3031,6 @@ def run_jax_phase_qnode_lowering_matrix() -> PhaseJAXPhaseQNodeLoweringMatrixRes
     evidence. Arbitrary registered Phase-QNode circuit lowering remains blocked
     until native JAX lowering rules and parity artefacts exist.
     """
-
     routes = (
         PhaseJAXPhaseQNodeLoweringRoute(
             name="bounded_qnn_native_value_and_grad",
@@ -3122,6 +3157,144 @@ def run_jax_phase_qnode_lowering_matrix() -> PhaseJAXPhaseQNodeLoweringMatrixRes
     return PhaseJAXPhaseQNodeLoweringMatrixResult(routes=routes)
 
 
+def plan_jax_cloud_validation_batch(
+    *,
+    runner: str = "jarvislabs",
+    accelerator_backend: str = "cuda",
+) -> PhaseJAXCloudValidationRunSpec:
+    """Plan the JAX cloud validation batch for blocked local accelerator routes.
+
+    Parameters
+    ----------
+    runner:
+        Human-readable runner label used in the downstream validation queue.
+    accelerator_backend:
+        Accelerator runtime requested for the cloud rerun. The differentiable
+        lane currently accepts ``"cuda"`` and ``"rocm"`` plans.
+
+    Returns
+    -------
+    PhaseJAXCloudValidationRunSpec
+        JSON-ready scheduling metadata with local skip status, required cloud
+        artefacts, environment constraints, and reproduction commands.
+    """
+    clean_runner = runner.strip()
+    if not clean_runner:
+        raise ValueError("runner must be a non-empty string")
+    clean_backend = accelerator_backend.strip().lower()
+    if clean_backend not in {"cuda", "rocm"}:
+        raise ValueError("accelerator_backend must be 'cuda' or 'rocm'")
+
+    jax_module, _ = _load_jax()
+    local_device_count_fn = getattr(jax_module, "local_device_count", None)
+    local_device_count = int(local_device_count_fn()) if callable(local_device_count_fn) else 0
+    device_descriptions = _jax_local_devices(jax_module, max(local_device_count, 0))
+    local_skip_reason = _jax_cloud_local_skip_reason(
+        accelerator_backend=clean_backend,
+        local_device_count=local_device_count,
+        device_descriptions=device_descriptions,
+    )
+    blocked_local_routes = _jax_cloud_blocked_routes(
+        accelerator_backend=clean_backend,
+        local_skip_reason=local_skip_reason,
+        local_device_count=local_device_count,
+    )
+    local_execution_status = (
+        "local_accelerator_ready"
+        if not blocked_local_routes
+        else "skipped_incompatible_local_hardware"
+    )
+    commands = (
+        ".venv/bin/python -m pytest "
+        "tests/test_phase_jax_bridge.py::"
+        "test_phase_jax_registered_qnode_sharding_transform_audit_uses_no_callback "
+        "tests/test_phase_jax_bridge.py::"
+        "test_phase_jax_sharding_compatibility_audit_batches_native_and_custom_vjp "
+        "tests/test_phase_jax_bridge.py::"
+        "test_phase_jax_phase_qnode_lowering_matrix_fails_closed_for_arbitrary_qnodes -q",
+        ".venv/bin/python -m pytest "
+        "tests/test_differentiable_programming_benchmarks.py::"
+        "test_quantum_gradient_benchmark_suite_matches_analytic_references -q",
+        ".venv/bin/python - <<'PY'\n"
+        "from scpn_quantum_control.phase import plan_jax_cloud_validation_batch\n"
+        "print(plan_jax_cloud_validation_batch().to_dict())\n"
+        "PY",
+    )
+    return PhaseJAXCloudValidationRunSpec(
+        runner=clean_runner,
+        local_execution_status=local_execution_status,
+        local_skip_reason=local_skip_reason,
+        accelerator_backend=clean_backend,
+        local_device_count=local_device_count,
+        device_descriptions=device_descriptions,
+        blocked_local_routes=blocked_local_routes,
+        required_artifacts=(
+            "jax_cuda_device_metadata_artifact",
+            "jax_xla_gpu_compile_artifact",
+            "registered_phase_qnode_jax_pmap_sharding_artifact",
+            "jax_multi_device_value_and_gradient_artifact",
+            "isolated_benchmark_artifact",
+            "host_load_and_affinity_metadata",
+        ),
+        required_environment={
+            "accelerator_backend": clean_backend,
+            "minimum_cuda_compute_capability": "7.5" if clean_backend == "cuda" else None,
+            "minimum_visible_device_count": 2,
+            "blocked_local_device_patterns": ("GTX 1060",),
+            "visible_device_metadata_required": True,
+            "host_load_metadata_required": True,
+            "isolated_affinity_required_for_promotion": True,
+            "network_required": False,
+            "hardware_submission_allowed": False,
+        },
+        commands=commands,
+        ready_for_cloud_dispatch=bool(blocked_local_routes),
+    )
+
+
+def _jax_cloud_local_skip_reason(
+    *,
+    accelerator_backend: str,
+    local_device_count: int,
+    device_descriptions: tuple[str, ...],
+) -> str:
+    joined_devices = " ".join(device_descriptions)
+    lower_devices = joined_devices.lower()
+    reasons: list[str] = []
+    if local_device_count < 2:
+        reasons.append(
+            "JAX PMAP promotion requires at least two visible accelerator devices; "
+            f"local_device_count={local_device_count}"
+        )
+    if accelerator_backend == "cuda":
+        if "gtx 1060" in lower_devices:
+            reasons.append(
+                "local GTX 1060 does not satisfy the CUDA cloud validation floor "
+                "or current JAX CUDA wheel route"
+            )
+        elif not any(token in lower_devices for token in ("cuda", "gpu", "nvidia")):
+            reasons.append("no CUDA/GPU JAX device metadata is visible locally")
+    elif not any(token in lower_devices for token in ("rocm", "amd", "gpu")):
+        reasons.append("no ROCm/GPU JAX device metadata is visible locally")
+    return "; ".join(reasons)
+
+
+def _jax_cloud_blocked_routes(
+    *,
+    accelerator_backend: str,
+    local_skip_reason: str,
+    local_device_count: int,
+) -> tuple[str, ...]:
+    routes: list[str] = []
+    if local_skip_reason:
+        routes.append(f"jax_{accelerator_backend}_accelerator_device")
+    if local_device_count < 2 or local_skip_reason:
+        routes.append("registered_phase_qnode_pmap_multi_device_lowering")
+    if routes:
+        routes.append("isolated_benchmark_artifact")
+    return tuple(dict.fromkeys(routes))
+
+
 def run_jax_maturity_audit(
     *,
     features: ArrayLike,
@@ -3138,7 +3311,6 @@ def run_jax_maturity_audit(
     not promote arbitrary quantum kernels, provider callbacks, hardware
     gradients, or benchmark claims until those routes have their own artefacts.
     """
-
     tolerance_value = _as_non_negative_tolerance(tolerance)
     feature_matrix = _as_feature_matrix(features)
     label_vector = _as_label_vector(labels, n_samples=feature_matrix.shape[0])
@@ -3191,6 +3363,7 @@ def run_jax_maturity_audit(
         tolerance=tolerance_value,
     )
     phase_qnode_lowering_matrix = run_jax_phase_qnode_lowering_matrix()
+    cloud_validation_batch = plan_jax_cloud_validation_batch()
 
     evidence: dict[str, object] = {
         "custom_vjp": custom_vjp,
@@ -3200,11 +3373,16 @@ def run_jax_maturity_audit(
         "pytree": pytree,
         "nested_transform_algebra": nested_transform_algebra,
         "phase_qnode_lowering_matrix": phase_qnode_lowering_matrix,
+        "cloud_validation_batch": cloud_validation_batch,
     }
     bounded_model_ready = all(
         bool(getattr(result, "passed", False))
         for name, result in evidence.items()
-        if name != "phase_qnode_lowering_matrix"
+        if name
+        not in {
+            "phase_qnode_lowering_matrix",
+            "cloud_validation_batch",
+        }
     )
     required_capabilities = {
         "custom_vjp": "passed" if custom_vjp.passed else "failed",
@@ -3215,6 +3393,9 @@ def run_jax_maturity_audit(
         "nested_transform_algebra": "passed" if nested_transform_algebra.passed else "failed",
         "phase_qnode_lowering_matrix": (
             "passed" if phase_qnode_lowering_matrix.ready_for_provider_exceedance else "blocked"
+        ),
+        "cloud_validation_batch": (
+            "scheduled" if cloud_validation_batch.ready_for_cloud_dispatch else "not_required"
         ),
         "arbitrary_quantum_kernel_jax_lowering": "blocked",
         "hardware_or_provider_callback_transform_safety": "blocked",
@@ -3252,6 +3433,7 @@ def _result_to_dict(result: object) -> object:
 
 
 __all__ = [
+    "PhaseJAXCloudValidationRunSpec",
     "PhaseJAXCustomVJPQNNGradientResult",
     "PhaseJAXGradientAgreementResult",
     "PhaseJAXJITCompatibilityResult",
@@ -3278,6 +3460,7 @@ __all__ = [
     "jax_phase_qnode_pytree_transform_audit",
     "jax_phase_qnode_sharding_transform_audit",
     "jax_phase_qnode_value_and_grad",
+    "plan_jax_cloud_validation_batch",
     "run_jax_jit_compatibility_audit",
     "run_jax_maturity_audit",
     "run_jax_nested_transform_algebra_audit",

@@ -1978,16 +1978,18 @@ value/gradient tolerances are rejected before the round-trip comparison runs.
 Mid-circuit measurement, channel, template, provider, and hardware import
 remain explicit non-claims.
 
-## Optional PyTorch and TensorFlow tensor bridges
+## Optional framework tensor bridges and cloud validation plans
 
 For ML pipelines that need framework tensors, the phase namespace exposes
-host-boundary adapters plus the deterministic PyTorch registered statevector
-route:
+host-boundary adapters, deterministic registered statevector routes, and
+non-promotional cloud-validation plans for accelerator routes blocked by local
+hardware:
 
 ```python
 import numpy as np
 
 from scpn_quantum_control.phase import (
+    plan_jax_cloud_validation_batch,
     run_tensorflow_function_compatibility_audit,
     run_tensorflow_gradient_tape_compatibility_audit,
     run_tensorflow_keras_layer_wrapper_audit,
@@ -2056,6 +2058,7 @@ torch_training_loop = run_torch_training_loop_audit(
 )
 torch_ecosystem = run_torch_ecosystem_maturity_audit()
 torch_lowering = run_torch_phase_qnode_lowering_matrix()
+jax_cloud_batch = plan_jax_cloud_validation_batch(runner="jarvislabs")
 torch_cloud_batch = plan_torch_cloud_validation_batch(runner="jarvislabs")
 
 print(torch_result.torch_gradient, torch_result.host_boundary)
@@ -2064,6 +2067,7 @@ print(torch_maturity.bounded_model_ready, torch_maturity.ready_for_provider_exce
 print(torch_ecosystem.route_status("cuda_accelerator_device"))
 print(torch_lowering.route_status("registered_phase_qnode_statevector_lowering"))
 print(torch_lowering.route_status("registered_phase_qnode_torch_func_transform_lowering"))
+print(jax_cloud_batch.local_execution_status, jax_cloud_batch.required_artifacts)
 print(torch_cloud_batch.local_execution_status, torch_cloud_batch.required_artifacts)
 print(tf_maturity.bounded_model_ready, tf_maturity.ready_for_provider_exceedance)
 print(tf_result.tensorflow_gradient, tf_result.host_boundary)
@@ -2122,6 +2126,13 @@ exist. The aggregate audit also includes the
 CUDA/device skip reasons, blocked PyTorch Phase-QNode routes, required
 JarvisLabs/cloud artefacts, and reproduction commands for the deferred
 accelerator validation batch. The separate
+`plan_jax_cloud_validation_batch(...)` run spec records local JAX device
+metadata, GTX 1060 or single-device skip reasons, blocked JAX accelerator and
+PMAP routes, required CUDA/XLA/pmap and isolated-benchmark artefacts, and
+reproduction commands for the deferred JarvisLabs/cloud validation batch. Both
+cloud plans are scheduling/runbook evidence only; they do not submit network or
+hardware jobs and do not promote GPU, multi-device, hardware, or performance
+claims without returned artefacts. The separate
 `run_torch_phase_qnode_lowering_matrix(...)` route makes that boundary explicit:
 bounded QNN tensor, custom-autograd, `torch.func`, `torch.compile`, and
 module/layer routes plus deterministic registered statevector, `torch.func`
