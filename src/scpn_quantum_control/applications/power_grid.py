@@ -156,7 +156,7 @@ def ieee_14bus_admittance_coupling_matrix(
 
 @dataclass
 class PowerGridBenchmarkResult:
-    """Power grid vs SCPN comparison result."""
+    """Power grid vs SCPN structural-comparison result."""
 
     n_generators: int
     topology_correlation: float  # Spearman rho of coupling matrices
@@ -166,6 +166,11 @@ class PowerGridBenchmarkResult:
     summary: str
     source_mode: str
     publication_safe: bool
+
+    @property
+    def topology_similarity_proxy(self) -> float:
+        """Spearman grid-coupling-vs-K_nm proxy, not a grid-dynamics reproduction."""
+        return self.topology_correlation
 
 
 def _validated_square_matrix(
@@ -336,7 +341,7 @@ def power_grid_benchmark(
         freq_corr = 0.0
 
     summary = (
-        f"SCPN vs {grid_name}: topology ρ={topo_corr:.3f}, "
+        f"SCPN vs {grid_name}: topology similarity proxy ρ={topo_corr:.3f}, "
         f"coupling ratio={ratio:.3f}, freq r={freq_corr:.3f}"
     )
 

@@ -82,7 +82,7 @@ def fmo_coupling_matrix(
 
 @dataclass
 class FMOBenchmarkResult:
-    """Comparison between SCPN and FMO coupling structures."""
+    """Structural comparison between SCPN and FMO coupling matrices."""
 
     topology_correlation: float
     frequency_correlation: float
@@ -92,6 +92,11 @@ class FMOBenchmarkResult:
     summary: str
     source_mode: str
     publication_safe: bool
+
+    @property
+    def topology_similarity_proxy(self) -> float:
+        """Spearman FMO-coupling-vs-K_nm proxy, not an exciton model reproduction."""
+        return self.topology_correlation
 
 
 def _validated_square_matrix(
@@ -146,7 +151,7 @@ def fmo_benchmark(
     """Compare SCPN coupling structure (7-oscillator subset) against FMO.
 
     Computes:
-    1. Topology correlation: Spearman rank correlation of off-diagonal K values
+    1. Topology similarity proxy: Spearman rank correlation of off-diagonal K values
     2. Frequency correlation: Pearson correlation of natural frequencies
     3. Coupling ratio: mean(K_scpn) / mean(K_fmo)
     4. Frequency ratio: mean(ω_scpn) / mean(ω_fmo)
@@ -217,15 +222,15 @@ def fmo_benchmark(
 
     # Interpret
     if abs(rho_topo) > 0.5:
-        topo_verdict = "significant correlation"
+        topo_verdict = "high proxy agreement"
     elif abs(rho_topo) > 0.3:
-        topo_verdict = "weak correlation"
+        topo_verdict = "weak proxy agreement"
     else:
-        topo_verdict = "no correlation"
+        topo_verdict = "no proxy agreement"
 
     summary = (
         f"SCPN vs FMO ({n} oscillators): "
-        f"topology rho={rho_topo:.3f} ({topo_verdict}), "
+        f"topology similarity proxy rho={rho_topo:.3f} ({topo_verdict}), "
         f"frequency r={rho_freq:.3f}, "
         f"coupling scale {coupling_ratio:.2e}x, "
         f"frequency scale {freq_ratio:.2e}x"

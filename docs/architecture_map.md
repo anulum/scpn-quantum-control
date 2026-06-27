@@ -178,10 +178,12 @@ Each lane: purpose · INPUTS · OUTPUTS · processing model · backends · wirin
 
 ### 4.7 Domain applications — `applications/`
 - **Honest grade (review-confirmed)**: most domain "applications" (FMO, power-grid, ITER, EEG,
-  Josephson) are **topology-correlation proxies, not model reproductions** — they compute the
+  Josephson) are **topology-similarity proxies, not model reproductions** — they compute the
   Spearman ρ of `K_nm` vs a reference coupling matrix + magnitude/frequency ratios; **no** FMO
-  transport, swing equation, or MHD dynamics is solved. They are honestly gated
-  (`publication_safe=False`, `source_mode`). ITER/EEG references are synthetic ("arbitrary units").
+  transport, swing equation, neural dynamics, Josephson device physics, or MHD dynamics is solved.
+  Plugin payloads expose this coefficient as `topology_similarity_proxy`; legacy result objects keep
+  `topology_correlation` only as a compatibility alias. They are honestly gated
+  (`publication_safe=False`, `source_mode`).
 - **Real quantum-compute apps** (*functional, exact statevector*): `quantum_kernel` (Havlíček
   QSVM), `quantum_reservoir` (Fujii–Nakajima), `eeg_classification` (structured-ansatz VQE),
   `q_disruption` (PQC + parameter-shift).
@@ -246,7 +248,7 @@ for an eventual multi-provider broker but is **not yet wired** to a producer/con
   execution, real-time intra-shot feedback, FPGA/HLS deployment, NV-magnetometry hardware.
 - **Not present**: lab-control instrumentation; broad quantum advantage (classical solvers are
   faster and more accurate at the reachable sizes n ≤ 16).
-- **Domain applications**: mostly topology-correlation proxies, not model reproductions — do not
+- **Domain applications**: mostly topology-similarity proxies, not model reproductions — do not
   cite as solved physics.
 
 For the **per-component SOTA audit, the verified over-claims/gaps, and the systematic per-lane

@@ -235,7 +235,7 @@ class EEGApplicationPlugin(_PackagedDatasetPlugin):
             artifact,
             backend="scipy.stats.spearmanr+numpy",
             metrics={
-                "topology_correlation": result.topology_correlation,
+                "topology_similarity_proxy": result.topology_similarity_proxy,
                 "frequency_correlation": result.frequency_correlation,
                 "coupling_ratio": result.coupling_ratio,
             },
@@ -270,7 +270,7 @@ class PlasmaApplicationPlugin(_PackagedDatasetPlugin):
             artifact,
             backend="scipy.stats.spearmanr+numpy",
             metrics={
-                "topology_correlation": result.topology_correlation,
+                "topology_similarity_proxy": result.topology_similarity_proxy,
                 "frequency_correlation": result.frequency_correlation,
                 "coupling_ratio": result.coupling_ratio,
                 "mode_locking_risk": result.mode_locking_risk,
@@ -306,7 +306,7 @@ class PowerGridApplicationPlugin(_PackagedDatasetPlugin):
             artifact,
             backend="scipy.stats.spearmanr+numpy",
             metrics={
-                "topology_correlation": result.topology_correlation,
+                "topology_similarity_proxy": result.topology_similarity_proxy,
                 "frequency_correlation": result.frequency_correlation,
                 "coupling_ratio": result.coupling_ratio,
             },

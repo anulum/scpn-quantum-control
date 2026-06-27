@@ -71,7 +71,7 @@ class JosephsonArrayParameters:
 
 @dataclass
 class JosephsonBenchmarkResult:
-    """Josephson junction array vs SCPN comparison."""
+    """Josephson junction array vs SCPN structural-comparison result."""
 
     n_junctions: int
     topology_correlation: float
@@ -82,6 +82,11 @@ class JosephsonBenchmarkResult:
     parameter_source: str
     topology_source: str
     summary: str
+
+    @property
+    def topology_similarity_proxy(self) -> float:
+        """Spearman JJA-coupling-vs-K_nm proxy, not a device model reproduction."""
+        return self.topology_correlation
 
 
 def jja_coupling_matrix(
@@ -197,7 +202,7 @@ def josephson_benchmark(
     )
 
     summary = (
-        f"SCPN vs JJA ({topology_source}): topology ρ={topo_corr:.3f}, "
+        f"SCPN vs JJA ({topology_source}): topology similarity proxy ρ={topo_corr:.3f}, "
         f"coupling ratio={ratio:.4f}, E_J/E_C={ej_ec:.1f} ({'transmon' if is_transmon else 'charge'})"
     )
 

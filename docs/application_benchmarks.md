@@ -46,6 +46,16 @@ The packaged benchmark JSON files do not require those extras. The
 extras are for users who plug in external raw archives and want the
 same registry path to build a QPU-ready artifact.
 
+## Metric Boundary
+
+The EEG, plasma, and power-grid plugins emit `topology_similarity_proxy`, a
+Spearman rank coefficient between the artifact `K_nm` matrix and a reference
+coupling matrix. This metric is a structural proxy only. It is not an EEG
+neural-dynamics reproduction, tokamak MHD solve, power-grid swing-equation
+simulation, FMO transport model, or Josephson device model. Legacy benchmark
+result objects still expose `topology_correlation` as a compatibility attribute,
+but new plugin payloads use the proxy label.
+
 ## Packaged Datasets
 
 The in-repo artifacts live in `data/public_application_benchmarks/`.

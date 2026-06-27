@@ -75,6 +75,9 @@ def test_builtin_application_benchmark_suite_runs_all_domains() -> None:
         assert result.summary
         assert result.artifact_hashes["omega_sha256"]
         assert all(math.isfinite(value) for value in result.metrics.values())
+        if result.domain != "fep":
+            assert "topology_similarity_proxy" in result.metrics
+            assert "topology_correlation" not in result.metrics
 
 
 def test_domain_plugins_emit_expected_metrics() -> None:
@@ -83,10 +86,13 @@ def test_domain_plugins_emit_expected_metrics() -> None:
     grid = get_application_plugin("power_grid_ieee5").benchmark_dataset()
     fep = get_application_plugin("friston_fep").benchmark_dataset()
 
-    assert eeg.metrics["topology_correlation"] == pytest.approx(1.0)
+    assert eeg.metrics["topology_similarity_proxy"] == pytest.approx(1.0)
+    assert "topology_correlation" not in eeg.metrics
+    assert "topology_similarity_proxy" in plasma.metrics
     assert plasma.metrics["mode_locking_risk"] > 0.0
     assert plasma.metadata["reference_source_mode"] == "curated"
     assert plasma.metadata["reference_publication_safe"] is True
+    assert "topology_similarity_proxy" in grid.metrics
     assert grid.metrics["coupling_ratio"] == pytest.approx(1.0)
     assert grid.metadata["reference_source_mode"] == "curated"
     assert grid.metadata["reference_publication_safe"] is True

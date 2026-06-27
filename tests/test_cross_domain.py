@@ -30,6 +30,7 @@ class TestCrossDomainValidation:
         result = run_cross_domain_validation()
         for r in result.topology_correlations:
             assert -1 <= r <= 1
+        assert result.topology_similarity_proxies == result.topology_correlations
 
     def test_best_system_in_list(self):
         result = run_cross_domain_validation()
@@ -38,6 +39,7 @@ class TestCrossDomainValidation:
     def test_mean_correlation_positive(self):
         result = run_cross_domain_validation()
         assert result.mean_correlation >= 0
+        assert result.mean_similarity_proxy == result.mean_correlation
 
     def test_n_above_threshold_bounded(self):
         result = run_cross_domain_validation()
@@ -75,6 +77,7 @@ def test_cross_domain_frequency_correlations_bounded():
 def test_cross_domain_best_correlation_positive():
     result = run_cross_domain_validation()
     assert result.best_correlation > 0
+    assert result.best_similarity_proxy == result.best_correlation
 
 
 def test_cross_domain_correlations_count():

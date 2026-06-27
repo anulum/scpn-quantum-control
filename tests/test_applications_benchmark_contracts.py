@@ -46,6 +46,8 @@ def test_eeg_benchmark_small_scpn():
     omega = np.array([10.0, 12.0])
     result = eeg_benchmark(K, omega, allow_builtin_reference=True)
     assert result.topology_correlation == 0.0
+    assert result.topology_similarity_proxy == result.topology_correlation
+    assert "topology similarity proxy" in result.summary
 
 
 def test_eeg_benchmark_freq_corr_small():
@@ -66,6 +68,8 @@ def test_iter_benchmark_small_scpn():
     omega = np.array([1.0, 2.0])
     result = iter_benchmark(K, omega, allow_synthetic_reference=True)
     assert result.topology_correlation == 0.0
+    assert result.topology_similarity_proxy == result.topology_correlation
+    assert "topology similarity proxy" in result.summary
 
 
 def test_iter_benchmark_freq_corr_small():
@@ -112,6 +116,8 @@ def test_josephson_benchmark_small():
         allow_illustrative_topology=True,
     )
     assert result.topology_correlation == 0.0
+    assert result.topology_similarity_proxy == result.topology_correlation
+    assert "topology similarity proxy" in result.summary
 
 
 def test_josephson_freq_corr_small():
@@ -152,6 +158,8 @@ def test_power_grid_small_scpn():
     omega = np.array([60.0, 60.0])
     result = power_grid_benchmark(K, omega, allow_builtin_reference=True)
     assert result.topology_correlation == 0.0
+    assert result.topology_similarity_proxy == result.topology_correlation
+    assert "topology similarity proxy" in result.summary
 
 
 def test_power_grid_freq_corr_small():

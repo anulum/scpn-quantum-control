@@ -74,7 +74,7 @@ ITER_MODE_COUPLING = np.array(
 
 @dataclass
 class ITERBenchmarkResult:
-    """ITER MHD vs SCPN comparison result."""
+    """ITER MHD vs SCPN structural-comparison result."""
 
     n_modes: int
     topology_correlation: float
@@ -84,6 +84,11 @@ class ITERBenchmarkResult:
     summary: str
     source_mode: str
     publication_safe: bool
+
+    @property
+    def topology_similarity_proxy(self) -> float:
+        """Spearman MHD-coupling-vs-K_nm proxy, not a plasma model reproduction."""
+        return self.topology_correlation
 
 
 def _validated_square_matrix(
@@ -225,7 +230,7 @@ def iter_benchmark(
     locking_risk = strong_pairs / max(total_pairs, 1)
 
     summary = (
-        f"SCPN vs ITER MHD: topology ρ={topo_corr:.3f}, "
+        f"SCPN vs ITER MHD: topology similarity proxy ρ={topo_corr:.3f}, "
         f"freq r={freq_corr:.3f}, locking risk={locking_risk:.2f}"
     )
 

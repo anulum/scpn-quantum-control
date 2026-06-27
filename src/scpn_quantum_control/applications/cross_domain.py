@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Cross Domain
-"""Cross-domain validation: compare SCPN K_nm against all physical systems.
+"""Cross-domain structural comparison for SCPN K_nm and domain matrices.
 
 Runs all 5 physical system benchmarks and produces a summary table:
     1. FMO photosynthetic complex (7 chromophores)
@@ -14,10 +14,8 @@ Runs all 5 physical system benchmarks and produces a summary table:
     4. EEG alpha-band neural oscillators (8 channels)
     5. ITER MHD mode coupling (8 modes)
 
-If any system shows strong topology correlation (ρ > 0.5), Gap 1
-is partially closed. If multiple show moderate correlation (ρ > 0.3),
-the K_nm exponential-decay pattern is a universal feature of coupled
-oscillator systems — which would be the actual finding.
+The reported topology values are Spearman structural-similarity proxies. They
+do not close measured-coupling, domain-dynamics, or model-reproduction claims.
 """
 
 from __future__ import annotations
@@ -36,7 +34,7 @@ from .power_grid import power_grid_benchmark
 
 @dataclass
 class CrossDomainResult:
-    """Cross-domain validation summary."""
+    """Cross-domain structural-similarity summary."""
 
     system_names: list[str]
     topology_correlations: list[float]
@@ -46,11 +44,26 @@ class CrossDomainResult:
     mean_correlation: float
     n_above_threshold: int  # systems with |ρ| > 0.3
 
+    @property
+    def topology_similarity_proxies(self) -> list[float]:
+        """Spearman topology-similarity proxies for each domain system."""
+        return list(self.topology_correlations)
+
+    @property
+    def best_similarity_proxy(self) -> float:
+        """Largest absolute topology-similarity proxy in the comparison set."""
+        return self.best_correlation
+
+    @property
+    def mean_similarity_proxy(self) -> float:
+        """Mean absolute topology-similarity proxy across compared systems."""
+        return self.mean_correlation
+
 
 def run_cross_domain_validation(
     n_max: int = 16,
 ) -> CrossDomainResult:
-    """Run all 5 physical system benchmarks against SCPN K_nm.
+    """Run all five structural-comparison benchmarks against SCPN K_nm.
 
     Uses the appropriate oscillator count for each system.
     """

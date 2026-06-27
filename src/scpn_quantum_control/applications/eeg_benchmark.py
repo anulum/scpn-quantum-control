@@ -66,7 +66,7 @@ EEG_ALPHA_FREQ = np.array([9.5, 9.5, 10.0, 10.0, 10.5, 10.5, 11.0, 11.0])
 
 @dataclass
 class EEGBenchmarkResult:
-    """EEG vs SCPN comparison result."""
+    """EEG vs SCPN structural-comparison result."""
 
     n_channels: int
     topology_correlation: float
@@ -76,6 +76,11 @@ class EEGBenchmarkResult:
     summary: str
     source_mode: str
     publication_safe: bool
+
+    @property
+    def topology_similarity_proxy(self) -> float:
+        """Spearman PLV-vs-K_nm similarity proxy, not a neural model reproduction."""
+        return self.topology_correlation
 
 
 def _validated_square_matrix(
@@ -209,7 +214,7 @@ def eeg_benchmark(
     ratio = e_mean / max(s_mean, 1e-15)
 
     summary = (
-        f"SCPN vs EEG ({band}): topology ρ={topo_corr:.3f}, "
+        f"SCPN vs EEG ({band}): topology similarity proxy ρ={topo_corr:.3f}, "
         f"freq r={freq_corr:.3f}, coupling ratio={ratio:.3f}"
     )
 

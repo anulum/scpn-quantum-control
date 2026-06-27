@@ -77,7 +77,7 @@ class TestFMOBenchmark:
         np.fill_diagonal(K, 0.0)
         result = fmo_benchmark(K, OMEGA_N_16[:7], allow_builtin_reference=True)
         assert abs(result.topology_correlation) <= 0.3
-        assert "no correlation" in result.summary
+        assert "no proxy agreement" in result.summary
 
     def test_benchmark_refuses_implicit_builtin_reference(self):
         K = build_knm_paper27(L=7)
