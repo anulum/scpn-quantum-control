@@ -339,9 +339,11 @@ PYTHONPATH=src:. python tools/setup_isolated_benchmark_runner.py \
 ```
 
 The helper prints the labels, runner directory, runner version, and download
-URL without mutating the host. Add `--install` only on the reserved Linux x64
-benchmark host. A claim is still not promoted until the CI artefact itself
-reports `isolated_affinity`. If the repository has no registered
+URL without mutating the host. The installer validates the repository slug,
+runner label tokens, dotted numeric runner version, HTTPS scheme, GitHub host,
+and `actions/runner` release path before any archive download. Add `--install`
+only on the reserved Linux x64 benchmark host. A claim is still not promoted
+until the CI artefact itself reports `isolated_affinity`. If the repository has no registered
 self-hosted runner with the `isolated-benchmark` label, the benchmark gate is
 not executable and the claim remains unpromoted.
 

@@ -41,6 +41,12 @@ configures the runner with the `self-hosted,linux,isolated-benchmark` labels,
 installs it as a systemd service, and sets the reserved core to the
 `performance` governor.
 
+The Python setup helper used for dry-run metadata and manual installation is
+fail-closed before any network operation: repository slugs must be
+`owner/repository`, labels must be alphanumeric/dot/underscore/hyphen tokens,
+runner versions must be dotted numeric release identifiers, and the archive URL
+must resolve to the GitHub `actions/runner` release path over HTTPS.
+
 For a fully reserved core, add `isolcpus=0 nohz_full=0` to the kernel command
 line and reboot before benchmarking, so the scheduler keeps other work off the
 benchmark core.
