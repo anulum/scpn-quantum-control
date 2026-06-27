@@ -49,7 +49,8 @@ import json
 import math
 import os
 import platform
-import subprocess
+import shutil
+import subprocess  # nosec B404
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
 from importlib import metadata
@@ -72,6 +73,7 @@ STATUS_UNAVAILABLE = "unavailable"
 
 _REPO_ROOT = Path(__file__).resolve().parents[3]
 _RUST_CARGO = _REPO_ROOT / "scpn_quantum_engine" / "Cargo.toml"
+_Command = tuple[str, ...]
 
 
 # ---------------------------------------------------------------------------
@@ -99,7 +101,6 @@ class TierStats:
 
     def to_dict(self) -> dict[str, float | int]:
         """Return a JSON-ready mapping of the statistics."""
-
         return {
             "p50_us": self.p50_us,
             "p95_us": self.p95_us,
@@ -118,7 +119,6 @@ def _percentile(ordered: Sequence[float], fraction: float) -> float:
     Uses the nearest-rank convention on the closed index range, matching
     ``scripts/benchmark_native_speedup.py`` so the two harnesses agree.
     """
-
     count = len(ordered)
     index = min(count - 1, int(fraction * (count - 1)))
     return float(ordered[index])
@@ -130,7 +130,6 @@ def compute_stats(samples_us: Sequence[float]) -> TierStats:
     Raises :class:`ValueError` on an empty sample list — a measurement with no
     samples is a bug in the caller, not a zero-cost call.
     """
-
     if not samples_us:
         raise ValueError("cannot compute statistics from an empty sample list")
     ordered = sorted(float(value) for value in samples_us)
@@ -162,7 +161,6 @@ def measure(
     the loop overhead would otherwise dominate a single call — are measured
     against a hot loop. ``inner`` defaults to 1 for coarse kernels.
     """
-
     if warmup < 0 or repeats < 1 or inner < 1:
         raise ValueError("require warmup >= 0, repeats >= 1, inner >= 1")
     from time import perf_counter_ns
@@ -200,7 +198,6 @@ class BackendRow:
 
     def to_dict(self) -> dict[str, Any]:
         """Return a JSON-ready mapping of the backend row."""
-
         return {
             "backend": self.backend,
             "status": self.status,
@@ -211,13 +208,11 @@ class BackendRow:
 
 def measured_row(backend: str, stats: TierStats) -> BackendRow:
     """Return a measured backend row carrying ``stats``."""
-
     return BackendRow(backend=backend, status=STATUS_MEASURED, stats=stats)
 
 
 def unavailable_row(backend: str, reason: str) -> BackendRow:
     """Return an unavailable backend row carrying ``reason``."""
-
     return BackendRow(backend=backend, status=STATUS_UNAVAILABLE, reason=reason)
 
 
@@ -238,7 +233,6 @@ class PrimitiveResult:
 
     def fastest_backend(self) -> str | None:
         """Return the measured backend with the lowest P50, or ``None``."""
-
         measured = [row for row in self.rows if row.stats is not None]
         if not measured:
             return None
@@ -246,7 +240,6 @@ class PrimitiveResult:
 
     def to_dict(self) -> dict[str, Any]:
         """Return a JSON-ready mapping of the primitive result."""
-
         return {
             "operation": self.operation,
             "size": self.size,
@@ -264,7 +257,6 @@ class PrimitiveResult:
 
 def _cpu_model() -> str:
     """Return the CPU model string from ``/proc/cpuinfo`` when available."""
-
     cpuinfo = Path("/proc/cpuinfo")
     if cpuinfo.exists():
         for line in cpuinfo.read_text(encoding="utf-8").splitlines():
@@ -275,7 +267,6 @@ def _cpu_model() -> str:
 
 def _affinity() -> list[int] | None:
     """Return the CPU affinity set, or ``None`` where it is unavailable."""
-
     getaffinity = getattr(os, "sched_getaffinity", None)
     if getaffinity is None:
         return None
@@ -284,47 +275,69 @@ def _affinity() -> list[int] | None:
 
 def _loadavg() -> list[float] | None:
     """Return the 1/5/15-minute load average, or ``None`` where unavailable."""
-
     try:
         return [round(value, 2) for value in os.getloadavg()]
     except (OSError, AttributeError):
         return None
 
 
-def _git_commit() -> str:
-    """Return the HEAD commit, or ``unknown`` outside a checkout."""
-
+def _resolve_executable(command: str) -> str | None:
+    """Resolve an executable name to an absolute, executable file path."""
+    located = shutil.which(command)
+    if located is None:
+        return None
     try:
-        result = subprocess.run(
-            ["git", "rev-parse", "HEAD"],
-            cwd=_REPO_ROOT,
+        resolved = Path(located).resolve(strict=True)
+    except OSError:
+        return None
+    if not resolved.is_file() or not os.access(resolved, os.X_OK):
+        return None
+    return str(resolved)
+
+
+def _run_admitted_command(
+    command: _Command,
+    *,
+    cwd: Path | None = None,
+) -> subprocess.CompletedProcess[str] | None:
+    """Run a fixed provenance command only after executable admission."""
+    if not command:
+        raise ValueError("command must contain an executable")
+    executable = _resolve_executable(command[0])
+    if executable is None:
+        return None
+    admitted = (executable, *command[1:])
+    try:
+        return subprocess.run(  # nosec B603
+            admitted,
+            cwd=cwd,
             capture_output=True,
             text=True,
             check=False,
+            shell=False,
         )
     except OSError:
+        return None
+
+
+def _git_commit() -> str:
+    """Return the HEAD commit, or ``unknown`` outside a checkout."""
+    result = _run_admitted_command(("git", "rev-parse", "HEAD"), cwd=_REPO_ROOT)
+    if result is None:
         return "unknown"
     return result.stdout.strip() or "unknown"
 
 
 def _rustc_version() -> str:
     """Return the host ``rustc`` version line, or ``absent`` when not installed."""
-
-    try:
-        result = subprocess.run(
-            ["rustc", "--version"],
-            capture_output=True,
-            text=True,
-            check=False,
-        )
-    except OSError:
+    result = _run_admitted_command(("rustc", "--version"))
+    if result is None:
         return "absent"
     return result.stdout.strip() or "absent"
 
 
 def _engine_label() -> str:
     """Return an identifier for the installed Rust engine, or its absence."""
-
     engine = optional_rust_engine()
     if engine is None:
         return "absent"
@@ -333,7 +346,6 @@ def _engine_label() -> str:
 
 def _distribution_version(name: str) -> str:
     """Return an installed distribution version, or ``absent`` when missing."""
-
     try:
         return metadata.version(name)
     except metadata.PackageNotFoundError:
@@ -359,7 +371,6 @@ class Provenance:
 
     def to_dict(self) -> dict[str, Any]:
         """Return a JSON-ready mapping of the provenance block."""
-
         return {
             "cpu_model": self.cpu_model,
             "cpu_count": self.cpu_count,
@@ -378,7 +389,6 @@ class Provenance:
 
 def capture_provenance() -> Provenance:
     """Capture the current host, toolchain, and revision provenance."""
-
     return Provenance(
         cpu_model=_cpu_model(),
         cpu_count=os.cpu_count(),
@@ -402,7 +412,6 @@ def capture_provenance() -> Provenance:
 
 def payload_digest(payload: Mapping[str, Any]) -> str:
     """Return the SHA-256 of a payload, excluding any existing digest field."""
-
     body = {key: value for key, value in payload.items() if key != "payload_sha256"}
     serialised = json.dumps(body, sort_keys=True, separators=(",", ":")).encode()
     return hashlib.sha256(serialised).hexdigest()
@@ -422,7 +431,6 @@ def build_primitive_artifact(
     to place the run in the side-by-side comparison. ``parameters`` records the
     sizes, warm-up, repeats, and seed so the run is regenerable.
     """
-
     artifact: dict[str, Any] = {
         "schema_version": PRIMITIVE_SCHEMA,
         "environment": environment,
@@ -454,7 +462,6 @@ def build_manifest(
     per-environment artefact — but it is sufficient to know exactly what ran,
     where, against which toolchain, and which tier won each primitive.
     """
-
     index = [
         {
             "operation": result.operation,

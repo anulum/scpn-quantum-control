@@ -38,6 +38,15 @@ The harness loads committed raw-count JSON files, recomputes the published Phase
 
 New public benchmarks must include raw-data provenance, a typed loader, a reproducer with tolerances, a classical or simulator baseline where scientifically meaningful, and an artefact emitted by `scpn-bench`.
 
+## Tier Benchmark Provenance
+
+The Kuramoto tier benchmark provenance layer records `git rev-parse HEAD` and
+`rustc --version` only after resolving each executable to an absolute,
+executable file path. Missing or non-executable tools are recorded as
+`unknown` for the commit and `absent` for `rustc`, preserving offline
+reconstruction without running partially resolved commands from ambient `PATH`
+state.
+
 ## Registry
 
 ```python

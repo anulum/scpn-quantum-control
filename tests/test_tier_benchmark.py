@@ -16,7 +16,10 @@ branch, and the schema / digest shape of the assembled artefact and manifest.
 
 from __future__ import annotations
 
-import subprocess
+import os
+import platform
+from importlib import metadata
+from pathlib import Path
 
 import pytest
 
@@ -149,6 +152,11 @@ def test_primitive_result_without_measured_rows_has_no_fastest() -> None:
 # ---------------------------------------------------------------------------
 
 
+def _write_executable(path: Path, body: str) -> None:
+    path.write_text(f"#!/bin/sh\n{body}", encoding="utf-8")
+    path.chmod(0o755)
+
+
 def test_cpu_model_reads_proc_or_falls_back(monkeypatch: pytest.MonkeyPatch) -> None:
     # The live path returns a non-empty string on the test host.
     assert isinstance(tb._cpu_model(), str)
@@ -161,9 +169,9 @@ def test_cpu_model_reads_proc_or_falls_back(monkeypatch: pytest.MonkeyPatch) -> 
             return False
 
     monkeypatch.setattr(tb, "Path", _FakePath)
-    monkeypatch.setattr(tb.platform, "processor", lambda: "fallback-cpu")
+    monkeypatch.setattr(platform, "processor", lambda: "fallback-cpu")
     assert tb._cpu_model() == "fallback-cpu"
-    monkeypatch.setattr(tb.platform, "processor", lambda: "")
+    monkeypatch.setattr(platform, "processor", lambda: "")
     assert tb._cpu_model() == "unknown"
 
 
@@ -179,7 +187,7 @@ def test_cpu_model_handles_cpuinfo_without_model_name(
         },
     )
     monkeypatch.setattr(tb, "Path", lambda *_: fake())
-    monkeypatch.setattr(tb.platform, "processor", lambda: "x86-fallback")
+    monkeypatch.setattr(platform, "processor", lambda: "x86-fallback")
     assert tb._cpu_model() == "x86-fallback"
 
 
@@ -187,65 +195,50 @@ def test_affinity_returns_sorted_or_none(monkeypatch: pytest.MonkeyPatch) -> Non
     affinity = tb._affinity()
     assert affinity is None or affinity == sorted(affinity)
 
-    monkeypatch.delattr(tb.os, "sched_getaffinity", raising=False)
+    monkeypatch.delattr(os, "sched_getaffinity", raising=False)
     assert tb._affinity() is None
 
 
 def test_loadavg_success_and_failure(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(tb.os, "getloadavg", lambda: (1.234, 2.0, 3.0))
+    monkeypatch.setattr(os, "getloadavg", lambda: (1.234, 2.0, 3.0))
     assert tb._loadavg() == [1.23, 2.0, 3.0]
 
     def _raise() -> object:
         raise OSError("no load average")
 
-    monkeypatch.setattr(tb.os, "getloadavg", _raise)
+    monkeypatch.setattr(os, "getloadavg", _raise)
     assert tb._loadavg() is None
 
 
-def test_git_commit_paths(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_git_commit_paths(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     commit = tb._git_commit()
     assert isinstance(commit, str) and commit
 
-    monkeypatch.setattr(
-        tb.subprocess,
-        "run",
-        lambda *a, **k: subprocess.CompletedProcess(a, 0, stdout="  deadbeef  \n", stderr=""),
+    git = tmp_path / "git"
+    _write_executable(
+        git,
+        'test "$1" = "rev-parse" && test "$2" = "HEAD" && printf "  deadbeef  \\n"',
     )
+    monkeypatch.setenv("PATH", str(tmp_path))
     assert tb._git_commit() == "deadbeef"
 
-    monkeypatch.setattr(
-        tb.subprocess,
-        "run",
-        lambda *a, **k: subprocess.CompletedProcess(a, 0, stdout="", stderr=""),
-    )
+    _write_executable(git, 'test "$1" = "rev-parse" && test "$2" = "HEAD"')
     assert tb._git_commit() == "unknown"
 
-    def _raise(*_a: object, **_k: object) -> object:
-        raise OSError("git missing")
-
-    monkeypatch.setattr(tb.subprocess, "run", _raise)
+    git.chmod(0o644)
     assert tb._git_commit() == "unknown"
 
 
-def test_rustc_version_paths(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(
-        tb.subprocess,
-        "run",
-        lambda *a, **k: subprocess.CompletedProcess(a, 0, stdout="rustc 1.96.0\n", stderr=""),
-    )
+def test_rustc_version_paths(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    rustc = tmp_path / "rustc"
+    _write_executable(rustc, 'test "$1" = "--version" && printf "rustc 1.96.0\\n"')
+    monkeypatch.setenv("PATH", str(tmp_path))
     assert tb._rustc_version() == "rustc 1.96.0"
 
-    monkeypatch.setattr(
-        tb.subprocess,
-        "run",
-        lambda *a, **k: subprocess.CompletedProcess(a, 0, stdout="", stderr=""),
-    )
+    _write_executable(rustc, 'test "$1" = "--version"')
     assert tb._rustc_version() == "absent"
 
-    def _raise(*_a: object, **_k: object) -> object:
-        raise OSError("no rustc")
-
-    monkeypatch.setattr(tb.subprocess, "run", _raise)
+    rustc.chmod(0o644)
     assert tb._rustc_version() == "absent"
 
 
@@ -261,13 +254,13 @@ def test_engine_label_paths(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 def test_distribution_version_found_and_absent(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(tb.metadata, "version", lambda name: "1.2.3")
+    monkeypatch.setattr(metadata, "version", lambda name: "1.2.3")
     assert tb._distribution_version("numpy") == "1.2.3"
 
     def _raise(name: str) -> str:
-        raise tb.metadata.PackageNotFoundError(name)
+        raise metadata.PackageNotFoundError(name)
 
-    monkeypatch.setattr(tb.metadata, "version", _raise)
+    monkeypatch.setattr(metadata, "version", _raise)
     assert tb._distribution_version("ghost") == "absent"
 
 
