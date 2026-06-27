@@ -68,6 +68,7 @@ def test_ci_gates_differentiable_strict_mypy_ratchet() -> None:
     assert "src/scpn_quantum_control/phase/jax_bridge.py" in workflow
     assert "src/scpn_quantum_control/phase/torch_bridge.py" in workflow
     assert "src/scpn_quantum_control/phase/tensorflow_bridge.py" in workflow
+    assert "src/scpn_quantum_control/phase/tensorflow_maintenance.py" in workflow
     assert "src/scpn_quantum_control/phase/qiskit_bridge.py" in workflow
     assert "src/scpn_quantum_control/phase/qnn_framework_bridge_matrix.py" in workflow
     assert "src/scpn_quantum_control/phase/transform_nesting.py" in workflow
@@ -83,12 +84,14 @@ def test_ci_gates_differentiable_docstring_ratchet() -> None:
     assert "ruff check --select D" in workflow
     assert "src/scpn_quantum_control/differentiable_external_validation.py" in workflow
     assert "src/scpn_quantum_control/differentiable_module_hardening_audit.py" in workflow
+    assert "src/scpn_quantum_control/phase/tensorflow_maintenance.py" in workflow
     assert "src/scpn_quantum_control/benchmarks/differentiable_isolated_benchmark_plan.py" in (
         workflow
     )
     assert "src/scpn_quantum_control/benchmarks/differentiable_hardening_gate.py" in (workflow)
     assert "tests/test_differentiable_external_validation.py" in workflow
     assert "tests/test_differentiable_module_hardening_audit.py" in workflow
+    assert "tests/test_phase_tensorflow_maintenance.py" in workflow
     assert "tests/test_differentiable_hardening_gate.py" in workflow
 
 

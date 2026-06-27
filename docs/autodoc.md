@@ -175,6 +175,10 @@ or debugging a subsystem, not as the default path for tutorial code.
     options:
       members: [DifferentiableBenchmarkClassificationCase, DifferentiableHardeningGateCheck, DifferentiableHardeningSliceGateResult, run_differentiable_hardening_slice_gate]
 
+::: scpn_quantum_control.phase.tensorflow_maintenance
+    options:
+      members: [PhaseTensorFlowMaintenanceReport, PhaseTensorFlowMaintenanceRoute, run_tensorflow_maintenance_decision]
+
 ::: scpn_quantum_control.benchmarks.differentiable_isolated_benchmark_plan
     options:
       members: [DifferentiableIsolatedBenchmarkPlan, DifferentiableIsolatedBenchmarkPlanRow, DifferentiableIsolatedBenchmarkPlanValidation, render_differentiable_isolated_benchmark_plan_markdown, run_differentiable_isolated_benchmark_plan, validate_differentiable_isolated_benchmark_plan]

@@ -9,6 +9,8 @@
 
 from __future__ import annotations
 
+from typing import Any, cast
+
 import pytest
 
 from scpn_quantum_control.phase import (
@@ -64,11 +66,13 @@ def test_bounded_qnn_framework_bridge_matrix_declares_supported_routes() -> None
         ",run_tensorflow_xla_compatibility_audit"
         ",tensorflow_bounded_qnn_keras_layer"
         ",run_tensorflow_keras_layer_wrapper_audit"
+        ",run_tensorflow_maintenance_decision"
     )
     assert "bounded_tensorflow_gradient_tape_gradient" in tensorflow.gradient_route
     assert "bounded_tensorflow_function_gradient" in tensorflow.gradient_route
     assert "bounded_tensorflow_xla_gradient" in tensorflow.gradient_route
     assert "bounded_tensorflow_keras_layer_gradient" in tensorflow.gradient_route
+    assert "tensorflow_compatibility_only_decision" in tensorflow.gradient_route
 
 
 def test_bounded_qnn_framework_bridge_matrix_records_fail_closed_gaps() -> None:
@@ -112,7 +116,8 @@ def test_bounded_qnn_framework_bridge_matrix_to_dict_is_json_ready() -> None:
     assert payload["native_framework_autodiff_count"] == 2
     assert payload["tensor_output_count"] == 1
     assert "not arbitrary framework autodiff" in str(payload["claim_boundary"])
-    assert [item["framework"] for item in payload["capabilities"]] == [
+    capabilities = cast(list[dict[str, Any]], payload["capabilities"])
+    assert [item["framework"] for item in capabilities] == [
         "jax",
         "tensorflow",
     ]

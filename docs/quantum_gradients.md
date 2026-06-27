@@ -2163,9 +2163,13 @@ listed in the returned route metadata. `run_tensorflow_maturity_audit(...)`
 aggregates the bounded TensorFlow evidence plus that matrix into a
 provider-maturity record while keeping arbitrary Phase-QNode TensorFlow
 lowering, full graph autodiff-through-simulator, provider callbacks, hardware
-gradients, and isolated benchmark promotion blocked. All remain outside
-arbitrary provider or simulator autodiff and do not claim broad XLA or
-unrestricted Keras training-loop coverage.
+gradients, and isolated benchmark promotion blocked.
+`run_tensorflow_maintenance_decision()` records the adopted maintenance
+strategy: TensorFlow stays maintained for bounded compatibility routes only.
+Broad Graph/XLA parity, arbitrary TensorFlow simulator autodiff, provider
+callbacks, hardware gradients, unrestricted Keras training-loop coverage, and
+performance promotion remain blocked until their route-specific artefacts
+exist.
 
 ## Enzyme/MLIR compiler maturity audit
 

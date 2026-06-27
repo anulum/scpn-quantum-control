@@ -47,12 +47,14 @@ DIFFERENTIABLE_DOCSTRING_RATCHET = [
     "src/scpn_quantum_control/differentiable_external_validation.py",
     "src/scpn_quantum_control/differentiable_module_hardening_audit.py",
     "src/scpn_quantum_control/differentiable_transform_algebra.py",
+    "src/scpn_quantum_control/phase/tensorflow_maintenance.py",
     "src/scpn_quantum_control/benchmarks/differentiable_isolated_benchmark_plan.py",
     "src/scpn_quantum_control/benchmarks/differentiable_hardening_gate.py",
     "tests/test_differentiable_external_validation.py",
     "tests/test_differentiable_competitive_baselines.py",
     "tests/test_differentiable_module_hardening_audit.py",
     "tests/test_differentiable_transform_algebra.py",
+    "tests/test_phase_tensorflow_maintenance.py",
     "tests/test_differentiable_hardening_gate.py",
 ]
 
@@ -164,6 +166,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
             "src/scpn_quantum_control/phase/jax_bridge.py",
             "src/scpn_quantum_control/phase/torch_bridge.py",
             "src/scpn_quantum_control/phase/tensorflow_bridge.py",
+            "src/scpn_quantum_control/phase/tensorflow_maintenance.py",
             "src/scpn_quantum_control/phase/qiskit_bridge.py",
             "src/scpn_quantum_control/phase/qnn_framework_bridge_matrix.py",
             "src/scpn_quantum_control/phase/transform_nesting.py",

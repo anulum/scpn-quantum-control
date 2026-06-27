@@ -26,6 +26,7 @@ DIFFERENTIABLE_MODULE_PATTERNS = (
     "src/scpn_quantum_control/phase/*qnode*.py",
     "src/scpn_quantum_control/phase/*bridge*.py",
     "src/scpn_quantum_control/phase/*compiler*.py",
+    "src/scpn_quantum_control/phase/*maintenance*.py",
     "src/scpn_quantum_control/whole_program*.py",
     "src/scpn_quantum_control/benchmarks/differentiable*.py",
 )
@@ -657,6 +658,11 @@ def differentiable_module_hardening_registry() -> tuple[DifferentiableModuleHard
             "src/scpn_quantum_control/phase/tensorflow_bridge.py",
             ("tests/test_phase_framework_bridges.py",),
             ("missing-TensorFlow dependency records", "host-boundary diagnostics"),
+        ),
+        _record(
+            "src/scpn_quantum_control/phase/tensorflow_maintenance.py",
+            ("tests/test_phase_tensorflow_maintenance.py",),
+            ("compatibility-only decision", "Graph/XLA promotion blockers"),
         ),
         _record(
             "src/scpn_quantum_control/phase/torch_bridge.py",

@@ -69,6 +69,7 @@ def test_pre_push_hook_gates_differentiable_strict_mypy_ratchet() -> None:
     assert "src/scpn_quantum_control/phase/jax_bridge.py" in config
     assert "src/scpn_quantum_control/phase/torch_bridge.py" in config
     assert "src/scpn_quantum_control/phase/tensorflow_bridge.py" in config
+    assert "src/scpn_quantum_control/phase/tensorflow_maintenance.py" in config
     assert "src/scpn_quantum_control/phase/qiskit_bridge.py" in config
     assert "src/scpn_quantum_control/phase/qnn_framework_bridge_matrix.py" in config
     assert "src/scpn_quantum_control/phase/transform_nesting.py" in config
@@ -85,10 +86,12 @@ def test_pre_push_hook_gates_differentiable_docstring_ratchet() -> None:
     assert '"D"' in config
     assert "src/scpn_quantum_control/differentiable_external_validation.py" in config
     assert "src/scpn_quantum_control/differentiable_module_hardening_audit.py" in config
+    assert "src/scpn_quantum_control/phase/tensorflow_maintenance.py" in config
     assert "src/scpn_quantum_control/benchmarks/differentiable_isolated_benchmark_plan.py" in (
         config
     )
     assert "src/scpn_quantum_control/benchmarks/differentiable_hardening_gate.py" in config
     assert "tests/test_differentiable_external_validation.py" in config
     assert "tests/test_differentiable_module_hardening_audit.py" in config
+    assert "tests/test_phase_tensorflow_maintenance.py" in config
     assert "tests/test_differentiable_hardening_gate.py" in config

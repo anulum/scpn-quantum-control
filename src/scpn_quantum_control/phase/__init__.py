@@ -516,6 +516,14 @@ from .tensorflow_bridge import (
     tensorflow_bounded_qnn_value_and_grad,
     tensorflow_parameter_shift_value_and_grad,
 )
+from .tensorflow_maintenance import (
+    TENSORFLOW_MAINTENANCE_CLAIM_BOUNDARY,
+    PhaseTensorFlowMaintenanceReport,
+    PhaseTensorFlowMaintenanceRoute,
+    TensorFlowMaintenanceDecision,
+    TensorFlowMaintenanceStrategy,
+    run_tensorflow_maintenance_decision,
+)
 from .torch_bridge import (
     PhaseTorchAutogradQNNGradientResult,
     PhaseTorchCloudValidationRunSpec,
@@ -992,6 +1000,12 @@ __all__ = [
     "PhaseTensorFlowPhaseQNodeLoweringRoute",
     "PhaseTensorFlowQNNGradientResult",
     "PhaseTensorFlowXLACompatibilityResult",
+    "TENSORFLOW_MAINTENANCE_CLAIM_BOUNDARY",
+    "PhaseTensorFlowMaintenanceReport",
+    "PhaseTensorFlowMaintenanceRoute",
+    "TensorFlowMaintenanceDecision",
+    "TensorFlowMaintenanceStrategy",
+    "run_tensorflow_maintenance_decision",
     "build_structured_ansatz",
     "LindbladSyncEngine",
     "multi_frequency_parameter_shift_rule",
