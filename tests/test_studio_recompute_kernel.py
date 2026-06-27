@@ -10,25 +10,24 @@
 from __future__ import annotations
 
 import copy
+from typing import Any
 
 import numpy as np
 import pytest
-
-from scpn_quantum_control.studio import (
-    XY_COMPILE_RECOMPUTE_SCHEMA,
-    XY_COMPILE_WASM_CRATE,
-    XY_COMPILE_WASM_EXPORT,
-    build_xy_compile_recompute_unit,
-    canonical_xy_compile_input_bytes,
-    verify_xy_compile_recompute_unit,
-    xy_compile_digest_python,
-)
 
 _studio_exactness = pytest.importorskip(
     "scpn_studio_platform.exactness",
     reason="Studio recompute exactness package requires Python >=3.12.",
 )
+_studio = pytest.importorskip("scpn_quantum_control.studio")
 ReproVerdict = _studio_exactness.ReproVerdict
+XY_COMPILE_RECOMPUTE_SCHEMA: str = _studio.XY_COMPILE_RECOMPUTE_SCHEMA
+XY_COMPILE_WASM_CRATE: str = _studio.XY_COMPILE_WASM_CRATE
+XY_COMPILE_WASM_EXPORT: str = _studio.XY_COMPILE_WASM_EXPORT
+build_xy_compile_recompute_unit: Any = _studio.build_xy_compile_recompute_unit
+canonical_xy_compile_input_bytes: Any = _studio.canonical_xy_compile_input_bytes
+verify_xy_compile_recompute_unit: Any = _studio.verify_xy_compile_recompute_unit
+xy_compile_digest_python: Any = _studio.xy_compile_digest_python
 
 
 def _problem() -> tuple[np.ndarray, np.ndarray]:
