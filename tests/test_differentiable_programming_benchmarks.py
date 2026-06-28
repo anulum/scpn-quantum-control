@@ -10,11 +10,13 @@
 from __future__ import annotations
 
 import sys
+from collections.abc import Callable
 from types import ModuleType, SimpleNamespace
-from typing import Any
+from typing import Any, cast
 
 import numpy as np
 import pytest
+from numpy.typing import NDArray
 
 from scpn_quantum_control.benchmarks import (
     DifferentiableProgrammingBenchmarkResult,
@@ -429,17 +431,18 @@ def test_quantum_gradient_benchmark_suite_matches_analytic_references() -> None:
     """Quantum-gradient rows should expose parameter-shift verification evidence."""
 
     results = run_quantum_gradient_benchmark_suite()
+    dp_any = cast(Any, dp_benchmarks)
 
     expected_case_ids = [
         "single_rotation_parameter_shift",
         "two_parameter_phase_expectation",
         "sparse_ising_chain_six_qubit_expectation",
     ]
-    if dp_benchmarks.is_phase_torch_available():
+    if dp_any.is_phase_torch_available():
         expected_case_ids.append("torch_registered_phase_qnode_statevector_lowering")
         expected_case_ids.append("torch_registered_phase_qnode_func_transform_lowering")
         expected_case_ids.append("torch_registered_phase_qnode_compile_lowering")
-    if dp_benchmarks.is_phase_jax_available():
+    if dp_any.is_phase_jax_available():
         expected_case_ids.append("jax_registered_phase_qnode_native_transform_lowering")
         expected_case_ids.append("jax_registered_phase_qnode_pytree_transform_lowering")
         expected_case_ids.append("jax_registered_phase_qnode_pmap_sharding_lowering")
@@ -463,7 +466,7 @@ def test_quantum_gradient_benchmark_suite_matches_analytic_references() -> None:
     assert sparse_row.parameter_shift_gradient.shape == (6,)
     assert sparse_row.evaluations >= 24
     assert "sparse Hamiltonian" in sparse_row.claim_boundary
-    if dp_benchmarks.is_phase_torch_available():
+    if dp_any.is_phase_torch_available():
         torch_row = next(row for row in results if row.case_id.startswith("torch_registered"))
         assert torch_row.parameter_shift_gradient.shape == (2,)
         assert torch_row.max_abs_reference_error <= 1.0e-8
@@ -471,7 +474,7 @@ def test_quantum_gradient_benchmark_suite_matches_analytic_references() -> None:
         assert "no provider, hardware, isolated benchmark, or performance promotion" in (
             torch_row.claim_boundary
         )
-    if dp_benchmarks.is_phase_jax_available():
+    if dp_any.is_phase_jax_available():
         jax_row = next(row for row in results if row.case_id.startswith("jax_registered"))
         assert jax_row.parameter_shift_gradient.shape == (2,)
         assert jax_row.max_abs_reference_error <= 1.0e-8
@@ -626,11 +629,18 @@ def test_differentiable_programming_jax_reference_rows_use_contract_shims(
     fake_jnp.real = np.real
     fake_jnp.linalg = np.linalg
 
-    def fake_vmap(function):
-        return lambda values: np.asarray([function(row) for row in values], dtype=np.float64)
+    def fake_vmap(
+        function: Callable[[NDArray[np.float64]], float],
+    ) -> Callable[[NDArray[np.float64]], NDArray[np.float64]]:
+        def mapped(values: NDArray[np.float64]) -> NDArray[np.float64]:
+            return np.asarray([function(row) for row in values], dtype=np.float64)
 
-    def fake_grad(function):
-        def gradient(row):
+        return mapped
+
+    def fake_grad(
+        function: Callable[[NDArray[np.float64]], float],
+    ) -> Callable[[NDArray[np.float64]], NDArray[np.float64]]:
+        def gradient(row: NDArray[np.float64]) -> NDArray[np.float64]:
             _ = function(row)
             row_array = np.asarray(row, dtype=np.float64)
             return np.array([2.0 * row_array[0], np.cos(row_array[1])], dtype=np.float64)
@@ -645,11 +655,18 @@ def test_differentiable_programming_jax_reference_rows_use_contract_shims(
     monkeypatch.setitem(sys.modules, "jax", fake_jax)
     monkeypatch.setitem(sys.modules, "jax.numpy", fake_jnp)
 
-    def fake_value_and_grad(objective, values):
+    def fake_value_and_grad(
+        objective: Callable[[NDArray[np.float64]], float],
+        values: NDArray[np.float64],
+    ) -> tuple[float, NDArray[np.float64]]:
         objective(values)
         return 1.0, np.ones(np.asarray(values, dtype=np.float64).size, dtype=np.float64)
 
-    def fake_program_value_and_grad(objective, values, **_kwargs):
+    def fake_program_value_and_grad(
+        objective: Callable[[NDArray[np.float64]], float],
+        values: NDArray[np.float64],
+        **_kwargs: object,
+    ) -> SimpleNamespace:
         objective(values)
         return SimpleNamespace(
             value=1.0,
