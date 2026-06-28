@@ -11,8 +11,10 @@ from __future__ import annotations
 
 import argparse
 import dataclasses
+import os
 import re
-import subprocess
+import shutil
+import subprocess  # nosec B404
 import sys
 from collections.abc import Iterable
 from pathlib import Path
@@ -100,15 +102,12 @@ def audit_test_paths(paths: Iterable[Path]) -> list[TestQualityFinding]:
 def repository_test_paths(root: Path) -> list[Path]:
     """Return tracked and worktree pytest modules below ``tests``."""
 
+    git_executable = _resolve_git_executable()
+    tracked: set[Path] = set()
     try:
-        proc = subprocess.run(
-            ["git", "ls-files", "tests/*.py"],
-            check=True,
-            cwd=root,
-            text=True,
-            capture_output=True,
-        )
-        tracked = {Path(line) for line in proc.stdout.splitlines() if line}
+        if git_executable is not None:
+            proc = _run_git(root, git_executable, "ls-files", "tests/*.py")
+            tracked = {Path(line) for line in proc.stdout.splitlines() if line}
     except (FileNotFoundError, subprocess.CalledProcessError):
         tracked = set()
     worktree = {path.relative_to(root) for path in (root / "tests").glob("*.py")}
@@ -122,6 +121,34 @@ def format_findings(findings: Iterable[TestQualityFinding]) -> str:
     if not rows:
         return "test-quality audit passed: no forbidden non-specific test modules"
     return "test-quality audit failed:\n" + "\n".join(f"- {row}" for row in rows)
+
+
+def _resolve_git_executable() -> str | None:
+    """Return an absolute executable path for git when available."""
+
+    located = shutil.which("git")
+    if located is None:
+        return None
+    try:
+        resolved = Path(located).resolve(strict=True)
+    except (OSError, ValueError):
+        return None
+    if not resolved.is_file() or not os.access(resolved, os.X_OK):
+        return None
+    return str(resolved)
+
+
+def _run_git(root: Path, git_executable: str, *args: str) -> subprocess.CompletedProcess[str]:
+    """Run an admitted git command for ``root`` without shell expansion."""
+
+    return subprocess.run(  # nosec B603
+        [git_executable, *args],
+        check=True,
+        cwd=root,
+        text=True,
+        capture_output=True,
+        shell=False,
+    )
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -141,5 +168,5 @@ def main(argv: list[str] | None = None) -> int:
     return 1 if findings else 0
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     raise SystemExit(main(sys.argv[1:]))
