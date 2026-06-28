@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 775,
     "public_documentation_pages": 254,
-    "python_model_classes": 886,
-    "python_model_source_modules": 499,
+    "python_model_classes": 887,
+    "python_model_source_modules": 500,
     "rust_pyo3_model_wrappers": 171,
     "rust_source_modules": 42,
-    "test_files": 828
+    "test_files": 829
   },
   "documentation": {
     "examples": [
@@ -436,7 +436,7 @@
       {
         "package": "accel",
         "path": "src/scpn_quantum_control/accel",
-        "python_modules": 46
+        "python_modules": 47
       },
       {
         "package": "analysis",
@@ -2308,6 +2308,10 @@
         "path": "src/scpn_quantum_control/entropy/nist_sp800_22.py"
       },
       {
+        "name": "NoisyGradients",
+        "path": "src/scpn_quantum_control/accel/diff_kuramoto_noisy.py"
+      },
+      {
         "name": "NoisyKuramotoRun",
         "path": "src/scpn_quantum_control/accel/kuramoto_noisy.py"
       },
@@ -4150,6 +4154,7 @@
       "src/scpn_quantum_control/accel/diff_kuramoto_dopri.py",
       "src/scpn_quantum_control/accel/diff_kuramoto_euler.py",
       "src/scpn_quantum_control/accel/diff_kuramoto_inertial.py",
+      "src/scpn_quantum_control/accel/diff_kuramoto_noisy.py",
       "src/scpn_quantum_control/accel/diff_kuramoto_rk4.py",
       "src/scpn_quantum_control/accel/dispatcher.py",
       "src/scpn_quantum_control/accel/kuramoto_adaptive.py",
@@ -5866,6 +5871,7 @@
       "tests/test_diff_kuramoto_dopri.py",
       "tests/test_diff_kuramoto_euler.py",
       "tests/test_diff_kuramoto_inertial.py",
+      "tests/test_diff_kuramoto_noisy.py",
       "tests/test_diff_kuramoto_rk4.py",
       "tests/test_diff_namespace.py",
       "tests/test_differentiable_api.py",
