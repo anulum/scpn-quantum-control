@@ -9,15 +9,24 @@
 
 from __future__ import annotations
 
+import builtins
+import importlib.metadata as importlib_metadata
+import os
 from pathlib import Path
+from types import ModuleType
 
 import numpy as np
+import pytest
 
+from scpn_quantum_control.benchmarks import differentiable_evidence as _evidence
 from scpn_quantum_control.benchmarks.differentiable_evidence import (
     AcceleratorEvidenceMetadata,
     BenchmarkIsolationMetadata,
     capture_accelerator_metadata,
+    capture_host_load,
     infer_heavy_jobs_running,
+    read_cpu_frequency_mhz,
+    read_cpu_governor,
     write_differentiable_benchmark_evidence_bundle,
 )
 
@@ -47,6 +56,7 @@ def test_github_hosted_benchmark_metadata_downgrades_to_functional_non_isolated(
     assert not metadata.production_eligible
     assert metadata.github_run_id == "12345"
     assert metadata.commit_sha == "abc123"
+    assert metadata.gap_reason is not None
     assert "self-hosted isolated benchmark runner" in metadata.gap_reason
 
 
@@ -204,6 +214,7 @@ def test_requested_cuda_without_visible_device_is_hard_gap() -> None:
     assert metadata.classification == "hard_gap"
     assert metadata.failure_class == "silent_accelerator_fallback"
     assert not metadata.production_eligible
+    assert metadata.gap_reason is not None
     assert "requested cuda" in metadata.gap_reason
 
 
@@ -258,6 +269,93 @@ def test_requested_cuda_accepts_explicit_device_metadata() -> None:
     assert accelerator_metadata.device_ids == ("0", "1")
     assert accelerator_metadata.device_names == ("NVIDIA L40S", "NVIDIA L40S")
     assert not accelerator_metadata.cpu_fallback_detected
+
+
+def test_requested_rocm_uses_visible_rocm_devices() -> None:
+    accelerator_metadata = capture_accelerator_metadata(
+        {
+            "SCPN_BENCH_ACCELERATOR_BACKEND": "hip",
+            "ROCR_VISIBLE_DEVICES": "0,none,1",
+            "SCPN_BENCH_ACCELERATOR_RUNTIME": "rocm=6.1,hip",
+            "SCPN_BENCH_ACCELERATOR_DISABLE_DISCOVERY": "1",
+        }
+    )
+
+    assert accelerator_metadata.requested_backend == "rocm"
+    assert accelerator_metadata.detected_backend == "rocm"
+    assert accelerator_metadata.device_ids == ("0", "1")
+    assert accelerator_metadata.runtime_versions == {"rocm": "6.1", "hip": "unknown"}
+    assert "rocm accelerator metadata is present" in accelerator_metadata.claim_boundary
+
+
+def test_detected_backend_uses_visible_accelerators_without_requested_backend() -> None:
+    cuda_metadata = capture_accelerator_metadata(
+        {
+            "SCPN_BENCH_ACCELERATOR_DISABLE_DISCOVERY": "1",
+            "CUDA_VISIBLE_DEVICES": "2",
+        }
+    )
+    rocm_metadata = capture_accelerator_metadata(
+        {
+            "SCPN_BENCH_ACCELERATOR_DISABLE_DISCOVERY": "1",
+            "HIP_VISIBLE_DEVICES": "3",
+        }
+    )
+
+    assert cuda_metadata.detected_backend == "cuda"
+    assert not cuda_metadata.cpu_fallback_detected
+    assert rocm_metadata.detected_backend == "rocm"
+    assert not rocm_metadata.cpu_fallback_detected
+
+
+def test_cuda_probe_without_jax_returns_empty_metadata(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    original_import = builtins.__import__
+
+    def fake_import(
+        name: str,
+        globals_: dict[str, object] | None = None,
+        locals_: dict[str, object] | None = None,
+        fromlist: tuple[str, ...] = (),
+        level: int = 0,
+    ) -> object:
+        if name == "jax":
+            raise ImportError("jax unavailable")
+        return original_import(name, globals_, locals_, fromlist, level)
+
+    monkeypatch.setattr(builtins, "__import__", fake_import)
+
+    assert _evidence._probe_requested_accelerator("cuda") == ((), (), {})
+
+
+def test_cuda_probe_records_runtime_versions_when_device_probe_fails(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    fake_jax = ModuleType("jax")
+
+    def fake_devices(_kind: str) -> tuple[object, ...]:
+        raise RuntimeError("gpu probe failed")
+
+    fake_jax.devices = fake_devices  # type: ignore[attr-defined]
+    monkeypatch.setitem(__import__("sys").modules, "jax", fake_jax)
+    monkeypatch.setattr(_evidence, "_jax_runtime_versions", lambda: {"jax": "test"})
+
+    assert _evidence._probe_requested_accelerator("cuda") == ((), (), {"jax": "test"})
+
+
+def test_jax_runtime_versions_skip_missing_packages(monkeypatch: pytest.MonkeyPatch) -> None:
+    def fake_version(package: str) -> str:
+        if package == "jax":
+            return "1.2.3"
+        raise importlib_metadata.PackageNotFoundError(package)
+
+    monkeypatch.setattr(
+        "scpn_quantum_control.benchmarks.differentiable_evidence.importlib_metadata.version",
+        fake_version,
+    )
+
+    assert _evidence._jax_runtime_versions() == {"jax": "1.2.3"}
 
 
 def test_evidence_bundle_serialises_accelerator_metadata(tmp_path: Path) -> None:
@@ -331,8 +429,109 @@ def test_benchmark_evidence_bundle_writes_json_csv_and_markdown_with_artifact_id
     assert np.isfinite(bundle.generated_at_epoch)
 
 
-def test_heavy_job_inference_uses_cpu_scaled_load(monkeypatch) -> None:
+def test_heavy_job_inference_uses_cpu_scaled_load(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr("os.cpu_count", lambda: 4)
 
     assert infer_heavy_jobs_running((4.0, 1.0, 1.0))
     assert not infer_heavy_jobs_running((1.0, 1.0, 1.0))
+
+
+def test_capture_host_load_returns_float_tuple(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(os, "getloadavg", lambda: (1, 2, 3))
+
+    assert capture_host_load() == (1.0, 2.0, 3.0)
+
+
+def test_capture_host_load_returns_none_when_unavailable(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def missing_load() -> tuple[float, float, float]:
+        raise OSError("load unavailable")
+
+    monkeypatch.setattr(os, "getloadavg", missing_load)
+
+    assert capture_host_load() is None
+
+
+class _FakeSystemPath:
+    def __init__(self, value: str, files: dict[str, str]) -> None:
+        self._value = value
+        self._files = files
+
+    def exists(self) -> bool:
+        return self._value in self._files
+
+    def read_text(self, *, encoding: str, errors: str = "strict") -> str:
+        return self._files[self._value]
+
+
+def _fake_system_path_factory(files: dict[str, str]) -> type[_FakeSystemPath]:
+    class FakeSystemPath(_FakeSystemPath):
+        def __init__(self, value: str) -> None:
+            super().__init__(value, files)
+
+    return FakeSystemPath
+
+
+def test_read_cpu_governor_handles_present_empty_and_missing_sysfs(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    files = {"/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor": "performance\n"}
+    monkeypatch.setattr(_evidence, "Path", _fake_system_path_factory(files))
+    assert read_cpu_governor() == "performance"
+
+    files["/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor"] = "\n"
+    assert read_cpu_governor() is None
+
+    files.clear()
+    assert read_cpu_governor() is None
+
+
+def test_read_cpu_frequency_prefers_sysfs_and_falls_back_to_cpuinfo(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    files = {"/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq": "3200000\n"}
+    monkeypatch.setattr(_evidence, "Path", _fake_system_path_factory(files))
+    assert read_cpu_frequency_mhz() == 3200.0
+
+    files.clear()
+    files["/proc/cpuinfo"] = "processor: 0\ncpu MHz\t\t: 2419.250\n"
+    assert read_cpu_frequency_mhz() == 2419.25
+
+    files.clear()
+    assert read_cpu_frequency_mhz() is None
+
+
+def test_read_cpu_frequency_ignores_empty_sysfs_before_cpuinfo(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    files = {
+        "/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq": "\n",
+        "/proc/cpuinfo": "cpu MHz\t\t: 1000.000\n",
+    }
+    monkeypatch.setattr(_evidence, "Path", _fake_system_path_factory(files))
+
+    assert read_cpu_frequency_mhz() == 1000.0
+
+
+def test_read_cpu_frequency_returns_none_when_cpuinfo_has_no_frequency(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    files = {
+        "/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq": "\n",
+        "/proc/cpuinfo": "processor: 0\nmodel name: test\n",
+    }
+    monkeypatch.setattr(_evidence, "Path", _fake_system_path_factory(files))
+
+    assert read_cpu_frequency_mhz() is None
+
+
+def test_runtime_version_metadata_ignores_incomplete_pairs() -> None:
+    metadata = capture_accelerator_metadata(
+        {
+            "SCPN_BENCH_ACCELERATOR_DISABLE_DISCOVERY": "1",
+            "SCPN_BENCH_ACCELERATOR_RUNTIME": "valid=1.0,missing_version=,=missing_key",
+        }
+    )
+
+    assert metadata.runtime_versions == {"valid": "1.0"}
