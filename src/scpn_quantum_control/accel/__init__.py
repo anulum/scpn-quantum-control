@@ -56,6 +56,11 @@ from .daido_phase import (
     last_daido_mode_phase_hessian_tier_used,
     last_daido_mode_phase_tier_used,
 )
+from .diff_kuramoto_adaptive import (
+    AdaptiveGradients,
+    adaptive_state_sensitivity,
+    adaptive_terminal_value_and_grad,
+)
 from .diff_kuramoto_dopri import (
     DopriTrajectory,
     kuramoto_dopri_trajectory,
@@ -394,6 +399,9 @@ __all__ = [
     "InertialGradients",
     "inertial_state_sensitivity",
     "inertial_terminal_value_and_grad",
+    "AdaptiveGradients",
+    "adaptive_state_sensitivity",
+    "adaptive_terminal_value_and_grad",
     "BasinEstimate",
     "estimate_ring_basins",
     "is_twisted_state_stable",

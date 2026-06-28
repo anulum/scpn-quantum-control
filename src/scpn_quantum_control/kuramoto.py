@@ -56,6 +56,7 @@ from collections.abc import Mapping
 from types import MappingProxyType
 
 from .accel import (
+    AdaptiveGradients,
     AdaptivePhaseForce,
     AdaptiveTrajectory,
     BasinEstimate,
@@ -85,6 +86,8 @@ from .accel import (
     StochasticForce,
     SystemIdentificationResult,
     TerminalObjective,
+    adaptive_state_sensitivity,
+    adaptive_terminal_value_and_grad,
     adaptive_vector_field,
     available_tiers,
     chimera_diagnostics,
@@ -317,6 +320,7 @@ _CAPABILITIES: dict[str, tuple[str, ...]] = {
         "hebbian_adaptive_jacobian",
         "hebbian_coupling_equilibrium",
         "hebbian_plasticity_rate",
+        "adaptive_state_sensitivity",
         "ott_antonsen_trajectory",
     ),
     "observables": (
@@ -430,6 +434,8 @@ _CAPABILITIES: dict[str, tuple[str, ...]] = {
         "trajectory_match_value_and_grad",
         "InertialGradients",
         "inertial_terminal_value_and_grad",
+        "AdaptiveGradients",
+        "adaptive_terminal_value_and_grad",
     ),
     "types": (
         "PhaseForce",
@@ -528,6 +534,7 @@ def describe(category: str | None = None) -> str:
 
 
 __all__ = [
+    "AdaptiveGradients",
     "AdaptivePhaseForce",
     "AdaptiveTrajectory",
     "BasinEstimate",
@@ -556,6 +563,8 @@ __all__ = [
     "StochasticForce",
     "SystemIdentificationResult",
     "TerminalObjective",
+    "adaptive_state_sensitivity",
+    "adaptive_terminal_value_and_grad",
     "adaptive_vector_field",
     "available_tiers",
     "chimera_diagnostics",

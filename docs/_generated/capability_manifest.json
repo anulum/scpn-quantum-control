@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 775,
     "public_documentation_pages": 254,
-    "python_model_classes": 885,
-    "python_model_source_modules": 498,
+    "python_model_classes": 886,
+    "python_model_source_modules": 499,
     "rust_pyo3_model_wrappers": 171,
     "rust_source_modules": 42,
-    "test_files": 827
+    "test_files": 828
   },
   "documentation": {
     "examples": [
@@ -436,7 +436,7 @@
       {
         "package": "accel",
         "path": "src/scpn_quantum_control/accel",
-        "python_modules": 45
+        "python_modules": 46
       },
       {
         "package": "analysis",
@@ -630,6 +630,10 @@
       {
         "name": "AdaptiveFIMStep",
         "path": "src/scpn_quantum_control/analysis/adaptive_fim_feedback.py"
+      },
+      {
+        "name": "AdaptiveGradients",
+        "path": "src/scpn_quantum_control/accel/diff_kuramoto_adaptive.py"
       },
       {
         "name": "AdaptiveTrajectory",
@@ -4142,6 +4146,7 @@
       "src/scpn_quantum_control/accel/daido_mean_field.py",
       "src/scpn_quantum_control/accel/daido_observables.py",
       "src/scpn_quantum_control/accel/daido_phase.py",
+      "src/scpn_quantum_control/accel/diff_kuramoto_adaptive.py",
       "src/scpn_quantum_control/accel/diff_kuramoto_dopri.py",
       "src/scpn_quantum_control/accel/diff_kuramoto_euler.py",
       "src/scpn_quantum_control/accel/diff_kuramoto_inertial.py",
@@ -5857,6 +5862,7 @@
       "tests/test_dependency_hygiene.py",
       "tests/test_dependency_security_closure.py",
       "tests/test_determinism.py",
+      "tests/test_diff_kuramoto_adaptive.py",
       "tests/test_diff_kuramoto_dopri.py",
       "tests/test_diff_kuramoto_euler.py",
       "tests/test_diff_kuramoto_inertial.py",
