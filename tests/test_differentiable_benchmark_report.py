@@ -9,7 +9,13 @@
 
 from __future__ import annotations
 
+import importlib
+from dataclasses import dataclass
+from types import SimpleNamespace
+
+import numpy as np
 import pytest
+from numpy.typing import NDArray
 
 import scpn_quantum_control as scpn
 from scpn_quantum_control.differentiable_api import differentiable_benchmark_report
@@ -19,6 +25,21 @@ from scpn_quantum_control.differentiable_benchmark_report import (
     DifferentiableBenchmarkReport,
     build_differentiable_benchmark_report,
 )
+
+benchmark_report_module = importlib.import_module(
+    "scpn_quantum_control.differentiable_benchmark_report",
+)
+
+
+@dataclass(frozen=True)
+class _ControlledBenchmarkRow:
+    """Controlled benchmark row for exercising report serialization branches."""
+
+    case_id: str
+    values: NDArray[np.float64]
+    tags: list[tuple[str, int]]
+    metadata: dict[str, tuple[NDArray[np.float64], ...]]
+    passed: object
 
 
 def _require_torch_backend() -> None:
@@ -34,6 +55,61 @@ def test_differentiable_benchmark_report_validates_required_payload_keys() -> No
             method=DIFFERENTIABLE_BENCHMARK_REPORT_METHOD,
             payload={"program_ad_case_count": 1},
         )
+
+
+@pytest.mark.parametrize(
+    ("kwargs", "match"),
+    (
+        ({"supported": "yes"}, "supported must be boolean"),
+        ({"method": ""}, "method must be non-empty"),
+        ({"claim_boundary": ""}, "claim_boundary must be non-empty"),
+    ),
+)
+def test_differentiable_benchmark_report_rejects_invalid_claim_metadata(
+    kwargs: dict[str, object],
+    match: str,
+) -> None:
+    """Report construction should reject malformed claim-boundary metadata."""
+
+    params: dict[str, object] = {
+        "supported": True,
+        "method": DIFFERENTIABLE_BENCHMARK_REPORT_METHOD,
+        "payload": {
+            "program_ad_case_count": 0,
+            "quantum_gradient_case_count": 0,
+            "support_audit_passed": True,
+            "program_ad_cases": [],
+            "quantum_gradient_cases": [],
+        },
+        "claim_boundary": DIFFERENTIABLE_BENCHMARK_REPORT_CLAIM_BOUNDARY,
+    }
+    params.update(kwargs)
+
+    with pytest.raises(ValueError, match=match):
+        DifferentiableBenchmarkReport(**params)  # type: ignore[arg-type]  # malformed metadata guard
+
+
+def test_differentiable_benchmark_report_to_dict_preserves_payload() -> None:
+    """Report dictionaries should preserve the bounded evidence envelope."""
+
+    report = DifferentiableBenchmarkReport(
+        supported=True,
+        method=DIFFERENTIABLE_BENCHMARK_REPORT_METHOD,
+        payload={
+            "program_ad_case_count": 0,
+            "quantum_gradient_case_count": 0,
+            "support_audit_passed": True,
+            "program_ad_cases": [],
+            "quantum_gradient_cases": [],
+        },
+    )
+
+    payload = report.to_dict()
+
+    assert payload["supported"] is True
+    assert payload["method"] == DIFFERENTIABLE_BENCHMARK_REPORT_METHOD
+    assert payload["claim_boundary"] == DIFFERENTIABLE_BENCHMARK_REPORT_CLAIM_BOUNDARY
+    assert payload["payload"] == report.payload
 
 
 def test_build_differentiable_benchmark_report_is_non_performance_evidence() -> None:
@@ -89,3 +165,81 @@ def test_unified_api_wraps_extracted_benchmark_report() -> None:
     assert report.supported is (not blocked_program_cases)
     assert scpn.DifferentiableBenchmarkReport is DifferentiableBenchmarkReport
     assert scpn.build_differentiable_benchmark_report is build_differentiable_benchmark_report
+
+
+def test_builder_serializes_nested_dataclass_payloads(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """The public builder should serialize arrays, tuples, lists, and mappings."""
+
+    program_row = _ControlledBenchmarkRow(
+        case_id="controlled_program_row",
+        values=np.array([1.0, 2.0], dtype=np.float64),
+        tags=[("alpha", 1)],
+        metadata={"nested": (np.array([3.0], dtype=np.float64),)},
+        passed="metadata-only",
+    )
+    quantum_row = _ControlledBenchmarkRow(
+        case_id="controlled_quantum_row",
+        values=np.array([4.0], dtype=np.float64),
+        tags=[("beta", 2)],
+        metadata={"nested": (np.array([5.0], dtype=np.float64),)},
+        passed=True,
+    )
+    monkeypatch.setattr(
+        benchmark_report_module,
+        "run_differentiable_programming_benchmark_suite",
+        lambda: (program_row,),
+    )
+    monkeypatch.setattr(
+        benchmark_report_module,
+        "run_quantum_gradient_benchmark_suite",
+        lambda: (quantum_row,),
+    )
+    monkeypatch.setattr(
+        benchmark_report_module,
+        "run_gradient_support_matrix_audit",
+        lambda: SimpleNamespace(passed=True),
+    )
+
+    report = build_differentiable_benchmark_report()
+
+    program_cases = report.payload["program_ad_cases"]
+    quantum_cases = report.payload["quantum_gradient_cases"]
+    assert isinstance(program_cases, list)
+    assert isinstance(quantum_cases, list)
+    assert program_cases == [
+        {
+            "case_id": "controlled_program_row",
+            "values": [1.0, 2.0],
+            "tags": [["alpha", 1]],
+            "metadata": {"nested": [[3.0]]},
+            "passed": "metadata-only",
+        },
+    ]
+    assert quantum_cases[0]["passed"] is True
+
+
+def test_builder_rejects_non_dataclass_benchmark_rows(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """The public builder should fail closed if a suite returns non-dataclass rows."""
+
+    monkeypatch.setattr(
+        benchmark_report_module,
+        "run_differentiable_programming_benchmark_suite",
+        lambda: (SimpleNamespace(passed=True),),
+    )
+    monkeypatch.setattr(
+        benchmark_report_module,
+        "run_quantum_gradient_benchmark_suite",
+        lambda: (),
+    )
+    monkeypatch.setattr(
+        benchmark_report_module,
+        "run_gradient_support_matrix_audit",
+        lambda: SimpleNamespace(passed=True),
+    )
+
+    with pytest.raises(TypeError, match="dataclass"):
+        build_differentiable_benchmark_report()
