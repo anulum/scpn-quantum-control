@@ -11,8 +11,10 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
-import subprocess
+import shutil
+import subprocess  # nosec B404
 from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 from pathlib import Path
@@ -137,16 +139,44 @@ def _is_default_excluded(path: Path) -> bool:
     return any(part in _DEFAULT_EXCLUDED_PARTS or part.startswith(".venv") for part in path.parts)
 
 
-def _git_tracked_files(project_root: Path) -> tuple[Path, ...]:
-    """Return git-tracked files relative to the project root."""
-    completed = subprocess.run(
-        ["git", "ls-files"],
+def _git_tracked_files(project_root: Path) -> tuple[Path, ...] | None:
+    """Return git-tracked files relative to the project root when git is available."""
+    git_executable = _resolve_git_executable()
+    if git_executable is None:
+        return None
+    try:
+        completed = _run_git(project_root, git_executable, "ls-files")
+    except (FileNotFoundError, subprocess.CalledProcessError):
+        return None
+    return tuple(Path(line) for line in completed.stdout.splitlines() if line.strip())
+
+
+def _resolve_git_executable() -> str | None:
+    """Return an absolute executable path for git when available."""
+    located = shutil.which("git")
+    if located is None:
+        return None
+    try:
+        resolved = Path(located).resolve(strict=True)
+    except (OSError, ValueError):
+        return None
+    if not resolved.is_file() or not os.access(resolved, os.X_OK):
+        return None
+    return str(resolved)
+
+
+def _run_git(
+    project_root: Path, git_executable: str, *args: str
+) -> subprocess.CompletedProcess[str]:
+    """Run an admitted git command for ``project_root`` without shell expansion."""
+    return subprocess.run(  # nosec B603
+        [git_executable, *args],
         cwd=project_root,
         check=True,
         text=True,
         capture_output=True,
+        shell=False,
     )
-    return tuple(Path(line) for line in completed.stdout.splitlines() if line.strip())
 
 
 def candidate_files(
@@ -159,6 +189,12 @@ def candidate_files(
     """Return deterministic candidate files for public IBM exposure scanning."""
     if tracked_only:
         files = _git_tracked_files(project_root)
+        if files is None:
+            files = tuple(
+                path.relative_to(project_root)
+                for path in project_root.rglob("*")
+                if path.is_file()
+            )
     else:
         files = tuple(
             path.relative_to(project_root) for path in project_root.rglob("*") if path.is_file()
@@ -517,5 +553,5 @@ def main(argv: Sequence[str] | None = None) -> int:
     return 0
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     raise SystemExit(main())
