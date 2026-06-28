@@ -67,6 +67,11 @@ from .diff_kuramoto_euler import (
     last_kuramoto_euler_trajectory_tier_used,
     last_kuramoto_euler_vjp_tier_used,
 )
+from .diff_kuramoto_inertial import (
+    InertialGradients,
+    inertial_state_sensitivity,
+    inertial_terminal_value_and_grad,
+)
 from .diff_kuramoto_rk4 import (
     kuramoto_rk4_trajectory,
     kuramoto_rk4_vjp,
@@ -386,6 +391,9 @@ __all__ = [
     "inertial_jacobian",
     "inertial_vector_field",
     "integrate_inertial",
+    "InertialGradients",
+    "inertial_state_sensitivity",
+    "inertial_terminal_value_and_grad",
     "BasinEstimate",
     "estimate_ring_basins",
     "is_twisted_state_stable",

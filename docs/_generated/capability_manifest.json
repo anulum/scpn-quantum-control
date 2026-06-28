@@ -8,12 +8,12 @@
     "notebook_files": 100,
     "optional_extras": 43,
     "public_api_exports": 775,
-    "public_documentation_pages": 253,
-    "python_model_classes": 881,
-    "python_model_source_modules": 496,
+    "public_documentation_pages": 254,
+    "python_model_classes": 885,
+    "python_model_source_modules": 498,
     "rust_pyo3_model_wrappers": 171,
     "rust_source_modules": 42,
-    "test_files": 809
+    "test_files": 827
   },
   "documentation": {
     "examples": [
@@ -310,6 +310,7 @@
       "docs/index.md",
       "docs/installation.md",
       "docs/isolated_benchmark_runner.md",
+      "docs/kuramoto_competitive_benchmark.md",
       "docs/kuramoto_core_facade.md",
       "docs/kuramoto_handbook.md",
       "docs/kuramoto_standalone_package_decision.md",
@@ -435,7 +436,7 @@
       {
         "package": "accel",
         "path": "src/scpn_quantum_control/accel",
-        "python_modules": 44
+        "python_modules": 45
       },
       {
         "package": "analysis",
@@ -455,7 +456,7 @@
       {
         "package": "benchmarks",
         "path": "src/scpn_quantum_control/benchmarks",
-        "python_modules": 14
+        "python_modules": 15
       },
       {
         "package": "bridge",
@@ -989,6 +990,10 @@
       {
         "name": "CompetitiveBaselineValidation",
         "path": "src/scpn_quantum_control/differentiable_competitive_baselines.py"
+      },
+      {
+        "name": "CompetitorRow",
+        "path": "src/scpn_quantum_control/benchmarks/kuramoto_competitive_benchmark.py"
       },
       {
         "name": "CompilerADExecutableConfig",
@@ -2011,6 +2016,10 @@
         "path": "src/scpn_quantum_control/differentiable_result_contracts.py"
       },
       {
+        "name": "InertialGradients",
+        "path": "src/scpn_quantum_control/accel/diff_kuramoto_inertial.py"
+      },
+      {
         "name": "InertialTrajectory",
         "path": "src/scpn_quantum_control/accel/kuramoto_inertial.py"
       },
@@ -2077,6 +2086,14 @@
       {
         "name": "KrylovResult",
         "path": "src/scpn_quantum_control/analysis/krylov_complexity.py"
+      },
+      {
+        "name": "KuramotoCompetitiveComparison",
+        "path": "src/scpn_quantum_control/benchmarks/kuramoto_competitive_benchmark.py"
+      },
+      {
+        "name": "KuramotoProblem",
+        "path": "src/scpn_quantum_control/benchmarks/kuramoto_competitive_benchmark.py"
       },
       {
         "name": "KuramotoProblem",
@@ -4127,6 +4144,7 @@
       "src/scpn_quantum_control/accel/daido_phase.py",
       "src/scpn_quantum_control/accel/diff_kuramoto_dopri.py",
       "src/scpn_quantum_control/accel/diff_kuramoto_euler.py",
+      "src/scpn_quantum_control/accel/diff_kuramoto_inertial.py",
       "src/scpn_quantum_control/accel/diff_kuramoto_rk4.py",
       "src/scpn_quantum_control/accel/dispatcher.py",
       "src/scpn_quantum_control/accel/kuramoto_adaptive.py",
@@ -4254,6 +4272,7 @@
       "src/scpn_quantum_control/benchmarks/differentiable_programming.py",
       "src/scpn_quantum_control/benchmarks/gpu_baseline.py",
       "src/scpn_quantum_control/benchmarks/isolated_host_readiness.py",
+      "src/scpn_quantum_control/benchmarks/kuramoto_competitive_benchmark.py",
       "src/scpn_quantum_control/benchmarks/mps_baseline.py",
       "src/scpn_quantum_control/benchmarks/quantum_advantage.py",
       "src/scpn_quantum_control/benchmarks/reproducible_comparison.py",
@@ -5693,6 +5712,8 @@
       ".github/workflows/stale.yml"
     ],
     "test_files": [
+      "tests/_differentiable_external_comparison_edges.py",
+      "tests/_differentiable_programming_benchmark_edge_helpers.py",
       "tests/_internal_corpus_markers.py",
       "tests/conftest.py",
       "tests/test_accel_dispatch.py",
@@ -5838,6 +5859,7 @@
       "tests/test_determinism.py",
       "tests/test_diff_kuramoto_dopri.py",
       "tests/test_diff_kuramoto_euler.py",
+      "tests/test_diff_kuramoto_inertial.py",
       "tests/test_diff_kuramoto_rk4.py",
       "tests/test_diff_namespace.py",
       "tests/test_differentiable_api.py",
@@ -5853,6 +5875,9 @@
       "tests/test_differentiable_custom_derivatives.py",
       "tests/test_differentiable_dependency_environment_map.py",
       "tests/test_differentiable_exact_modes.py",
+      "tests/test_differentiable_external_comparison_framework_edges.py",
+      "tests/test_differentiable_external_comparison_row_edges.py",
+      "tests/test_differentiable_external_comparison_runner_edges.py",
       "tests/test_differentiable_external_comparisons.py",
       "tests/test_differentiable_external_validation.py",
       "tests/test_differentiable_finite_difference.py",
@@ -5862,8 +5887,10 @@
       "tests/test_differentiable_framework_overlay.py",
       "tests/test_differentiable_gradient_descent_optimizer.py",
       "tests/test_differentiable_hardening_gate.py",
+      "tests/test_differentiable_identical_circuit_import_edges.py",
       "tests/test_differentiable_implicit_sensitivity.py",
       "tests/test_differentiable_isolated_benchmark_plan.py",
+      "tests/test_differentiable_isolated_benchmark_plan_edges.py",
       "tests/test_differentiable_jax.py",
       "tests/test_differentiable_levenberg_marquardt.py",
       "tests/test_differentiable_module_hardening_audit.py",
@@ -5872,6 +5899,10 @@
       "tests/test_differentiable_package_exports.py",
       "tests/test_differentiable_parameter_contracts.py",
       "tests/test_differentiable_parameter_shift.py",
+      "tests/test_differentiable_programming_benchmark_alias_edges.py",
+      "tests/test_differentiable_programming_benchmark_metadata_edges.py",
+      "tests/test_differentiable_programming_benchmark_program_ir_edges.py",
+      "tests/test_differentiable_programming_benchmark_rust_edges.py",
       "tests/test_differentiable_programming_benchmarks.py",
       "tests/test_differentiable_registered_custom.py",
       "tests/test_differentiable_residual_weights.py",
@@ -6043,6 +6074,7 @@
       "tests/test_kuramoto_chimera.py",
       "tests/test_kuramoto_clusters.py",
       "tests/test_kuramoto_coherence_matrix.py",
+      "tests/test_kuramoto_competitive_benchmark.py",
       "tests/test_kuramoto_control.py",
       "tests/test_kuramoto_core.py",
       "tests/test_kuramoto_core_branches.py",
@@ -6078,7 +6110,9 @@
       "tests/test_layer_selective_readiness.py",
       "tests/test_lean_phase_import.py",
       "tests/test_lindblad.py",
+      "tests/test_lindblad_branches.py",
       "tests/test_lindblad_engine.py",
+      "tests/test_lindblad_engine_branches.py",
       "tests/test_lindblad_ness.py",
       "tests/test_lindblad_trajectory.py",
       "tests/test_link_check_history_audit.py",
@@ -6208,6 +6242,9 @@
       "tests/test_phase_qnode_vector_transforms.py",
       "tests/test_phase_results.py",
       "tests/test_phase_tensorflow_maintenance.py",
+      "tests/test_phase_torch_bridge_qnode_edge_routes.py",
+      "tests/test_phase_torch_bridge_runtime_boundaries.py",
+      "tests/test_phase_torch_bridge_validation_edges.py",
       "tests/test_phase_transform_nesting.py",
       "tests/test_phase_vqe.py",
       "tests/test_physics_accuracy.py",
