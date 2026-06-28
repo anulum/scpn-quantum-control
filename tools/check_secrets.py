@@ -45,7 +45,8 @@ from __future__ import annotations
 import argparse
 import os
 import re
-import subprocess  # noqa: S404
+import shutil
+import subprocess  # nosec B404
 import sys
 from pathlib import Path
 
@@ -148,15 +149,38 @@ def extract_vault_tokens(vault_path: Path) -> set[str]:
     return tokens
 
 
+def _resolve_git_executable() -> str | None:
+    """Return an absolute executable path for git when available."""
+    located = shutil.which("git")
+    if located is None:
+        return None
+    try:
+        resolved = Path(located).resolve(strict=True)
+    except (OSError, ValueError):
+        return None
+    if not resolved.is_file() or not os.access(resolved, os.X_OK):
+        return None
+    return str(resolved)
+
+
+def _run_git(git_executable: str, *args: str) -> subprocess.CompletedProcess[str]:
+    """Run an admitted git command without shell expansion."""
+    return subprocess.run(  # nosec B603
+        [git_executable, *args],
+        capture_output=True,
+        text=True,
+        check=False,
+        shell=False,
+    )
+
+
 def get_staged_diff() -> str:
     """Return the cached diff of staged changes."""
+    git_executable = _resolve_git_executable()
+    if git_executable is None:
+        return ""
     try:
-        result = subprocess.run(
-            ["git", "diff", "--cached", "--unified=0"],
-            capture_output=True,
-            text=True,
-            check=False,
-        )
+        result = _run_git(git_executable, "diff", "--cached", "--unified=0")
     except FileNotFoundError:
         return ""
     return result.stdout or ""
@@ -164,13 +188,11 @@ def get_staged_diff() -> str:
 
 def get_working_tree_content() -> str:
     """Return the concatenated content of all tracked files."""
+    git_executable = _resolve_git_executable()
+    if git_executable is None:
+        return ""
     try:
-        result = subprocess.run(
-            ["git", "ls-files"],
-            capture_output=True,
-            text=True,
-            check=False,
-        )
+        result = _run_git(git_executable, "ls-files")
     except FileNotFoundError:
         return ""
     out = []
@@ -327,12 +349,6 @@ def scan_keyword_passwords(content: str) -> list[tuple[str, str, int]]:
             # (e.g. `token=api_key`, `password=pwd`)
             if value.isidentifier():
                 continue
-            # Skip obvious variable names (snake_case or camelCase letters only)
-            if re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", value):
-                continue
-            # Skip markdown emphasis / formatting
-            if value in {"none", "n/a", "na", "tbd", "pending"}:
-                continue
             hits.append((keyword, value, lineno))
     return hits
 
@@ -425,5 +441,5 @@ def main() -> int:
     return rc
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     sys.exit(main())
