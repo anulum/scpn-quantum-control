@@ -1,0 +1,144 @@
+{
+  "n_oscillators": 12,
+  "t_max": 6.0,
+  "dt": 0.01,
+  "seed": 20260628,
+  "reference_method": "scipy_solve_ivp",
+  "generated_utc": "2026-06-28T21:43:08Z",
+  "rows": [
+    {
+      "method": "ours_rk4",
+      "backend": "scpn kuramoto.kuramoto_rk4_trajectory",
+      "family": "ours",
+      "language": "python",
+      "available": true,
+      "version": "0.9.6",
+      "r_final": 0.7756241917136463,
+      "r_error_vs_reference": 2.955113931335518e-11,
+      "elapsed_ms": 3.0360380187630653,
+      "install_command": null,
+      "unavailable_reason": null
+    },
+    {
+      "method": "ours_dopri",
+      "backend": "scpn kuramoto.kuramoto_dopri_trajectory",
+      "family": "ours",
+      "language": "python",
+      "available": true,
+      "version": "0.9.6",
+      "r_final": 0.7756255831224587,
+      "r_error_vs_reference": 1.3914383635293959e-06,
+      "elapsed_ms": 2.325867011677474,
+      "install_command": null,
+      "unavailable_reason": null
+    },
+    {
+      "method": "scipy_solve_ivp",
+      "backend": "scipy.solve_ivp(RK45)",
+      "family": "external",
+      "language": "python",
+      "available": true,
+      "version": "1.15.3",
+      "r_final": 0.7756241916840951,
+      "r_error_vs_reference": null,
+      "elapsed_ms": 19.62689100764692,
+      "install_command": null,
+      "unavailable_reason": null
+    },
+    {
+      "method": "julia_diffeq",
+      "backend": "DifferentialEquations.jl(Tsit5)",
+      "family": "external",
+      "language": "julia",
+      "available": true,
+      "version": "7.17.0",
+      "r_final": 0.7756241934479086,
+      "r_error_vs_reference": 1.763813428645733e-09,
+      "elapsed_ms": 8.689165115356445,
+      "install_command": null,
+      "unavailable_reason": null
+    },
+    {
+      "method": "networkdynamics_jl",
+      "backend": "NetworkDynamics.jl",
+      "family": "external",
+      "language": "julia",
+      "available": false,
+      "version": null,
+      "r_final": null,
+      "r_error_vs_reference": null,
+      "elapsed_ms": null,
+      "install_command": "julia -e 'using Pkg; Pkg.add(\"NetworkDynamics\")'",
+      "unavailable_reason": "NetworkDynamics not installed; install with: julia -e 'using Pkg; Pkg.add(\"NetworkDynamics\")'"
+    },
+    {
+      "method": "dynamicalsystems_jl",
+      "backend": "DynamicalSystems.jl",
+      "family": "external",
+      "language": "julia",
+      "available": false,
+      "version": null,
+      "r_final": null,
+      "r_error_vs_reference": null,
+      "elapsed_ms": null,
+      "install_command": "julia -e 'using Pkg; Pkg.add(\"DynamicalSystems\")'",
+      "unavailable_reason": "DynamicalSystems not installed; install with: julia -e 'using Pkg; Pkg.add(\"DynamicalSystems\")'"
+    },
+    {
+      "method": "scimlsensitivity_jl",
+      "backend": "SciMLSensitivity.jl",
+      "family": "external",
+      "language": "julia",
+      "available": false,
+      "version": null,
+      "r_final": null,
+      "r_error_vs_reference": null,
+      "elapsed_ms": null,
+      "install_command": "julia -e 'using Pkg; Pkg.add(\"SciMLSensitivity\")'",
+      "unavailable_reason": "SciMLSensitivity not installed; install with: julia -e 'using Pkg; Pkg.add(\"SciMLSensitivity\")'"
+    },
+    {
+      "method": "jitcdde",
+      "backend": "jitcdde (just-in-time C)",
+      "family": "external",
+      "language": "python",
+      "available": false,
+      "version": null,
+      "r_final": null,
+      "r_error_vs_reference": null,
+      "elapsed_ms": null,
+      "install_command": "pip install jitcdde",
+      "unavailable_reason": "jitcdde not installed; install with: pip install jitcdde"
+    }
+  ],
+  "host_readiness": {
+    "ready": false,
+    "reserved_core": 0,
+    "governor": "powersave",
+    "governor_is_stable": false,
+    "frequency_mhz": 3900.0,
+    "load_average": [
+      14.6630859375,
+      14.5771484375,
+      12.876953125
+    ],
+    "load_is_low": false,
+    "blockers": [
+      "cpu0 governor is 'powersave'; set it to 'performance' for stable benchmark timing",
+      "host load 14.66 exceeds the isolated threshold 1.00; quiesce concurrent jobs"
+    ]
+  },
+  "failure_modes": [
+    "external_unavailable: a competitor that is not installed yields an available=False row with its install command, not a number; absent rows do not contribute to the verdict.",
+    "julia_cold_start: the first DifferentialEquations.jl call pays package precompilation, so its timing is discarded unless a warm run is requested.",
+    "reference_accuracy: the accuracy error is measured against the reference solver only; if the reference itself is biased the error column is relative, not absolute ground truth.",
+    "fixed_vs_adaptive: fixed-step rows (our RK4) and adaptive rows (SciPy RK45, our DOPRI5) trade accuracy for time differently, so a faster row is not automatically better without reading its error column."
+  ],
+  "claim_boundary": "Timings are functional and reproducibility evidence on the recorded host, not a production-latency, SLA, or universal-hardware claim. Competitor package versions and numerical tolerances are recorded; the verdict states honestly where a competitor is faster than our toolkit.",
+  "determinism": "The Kuramoto problem is built deterministically from the recorded seed, so the order-parameter values are reproducible across runs and machines. Wall-clock timing is host-dependent and excluded from the reproducible set.",
+  "metadata": {
+    "n_steps": 600,
+    "available_count": 4,
+    "competitor_count": 8
+  }
+}

@@ -55,6 +55,14 @@ from .isolated_host_readiness import (
     assess_host_readiness,
     capture_host_readiness,
 )
+from .kuramoto_competitive_benchmark import (
+    CompetitorRow,
+    KuramotoCompetitiveComparison,
+    KuramotoProblem,
+    build_default_problem,
+    default_julia_runner,
+    run_kuramoto_competitive_comparison,
+)
 from .mps_baseline import MPSBaselineResult, mps_baseline_comparison
 from .quantum_advantage import (
     AdvantageResult,
@@ -117,4 +125,10 @@ __all__ = [
     "ComparisonMethodRow",
     "ReproducibleKuramotoComparison",
     "run_reproducible_kuramoto_comparison",
+    "CompetitorRow",
+    "KuramotoCompetitiveComparison",
+    "KuramotoProblem",
+    "build_default_problem",
+    "default_julia_runner",
+    "run_kuramoto_competitive_comparison",
 ]
