@@ -61,6 +61,11 @@ from .diff_kuramoto_adaptive import (
     adaptive_state_sensitivity,
     adaptive_terminal_value_and_grad,
 )
+from .diff_kuramoto_delayed import (
+    DelayedGradients,
+    delayed_phase_sensitivity,
+    delayed_terminal_value_and_grad,
+)
 from .diff_kuramoto_dopri import (
     DopriTrajectory,
     kuramoto_dopri_trajectory,
@@ -410,6 +415,9 @@ __all__ = [
     "NoisyGradients",
     "noisy_phase_sensitivity",
     "noisy_terminal_value_and_grad",
+    "DelayedGradients",
+    "delayed_phase_sensitivity",
+    "delayed_terminal_value_and_grad",
     "BasinEstimate",
     "estimate_ring_basins",
     "is_twisted_state_stable",
