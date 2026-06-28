@@ -31,9 +31,10 @@ Usage:
 
 from __future__ import annotations
 
-import subprocess  # noqa: S404
+import subprocess  # nosec B404
 import sys
 import time
+from os import X_OK, access
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -218,10 +219,43 @@ BANDIT_GATE: tuple[str, list[str]] = (
 )
 
 
+def _admit_gate_command(cmd: list[str]) -> list[str]:
+    """Return a shell-free command with a verified executable path."""
+    if not cmd:
+        raise ValueError("gate command is empty")
+    executable = Path(cmd[0])
+    if not executable.is_absolute():
+        raise ValueError(f"gate executable is not absolute: {cmd[0]}")
+    try:
+        exists = executable.exists()
+    except (OSError, ValueError) as exc:
+        raise ValueError(f"gate executable is not resolvable: {cmd[0]}") from exc
+    if not exists:
+        raise ValueError(f"gate executable is not resolvable: {cmd[0]}")
+    if not executable.is_file():
+        raise ValueError(f"gate executable is not a file: {executable}")
+    if not access(executable, X_OK):
+        raise ValueError(f"gate executable is not executable: {executable}")
+    return [str(executable), *cmd[1:]]
+
+
 def run_gate(name: str, cmd: list[str]) -> bool:
     """Run a named preflight command and print a compact result summary."""
     t0 = time.monotonic()
-    result = subprocess.run(cmd, cwd=ROOT, capture_output=True, text=True)  # noqa: S603
+    try:
+        admitted_cmd = _admit_gate_command(cmd)
+    except ValueError as exc:
+        elapsed = time.monotonic() - t0
+        print(f"  FAIL  {name} ({elapsed:.1f}s)")
+        print(f"        {exc}")
+        return False
+    result = subprocess.run(  # nosec B603
+        admitted_cmd,
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        shell=False,
+    )
     elapsed = time.monotonic() - t0
     if result.returncode == 0:
         print(f"  PASS  {name} ({elapsed:.1f}s)")
@@ -271,5 +305,5 @@ def main() -> int:
     return 0
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     sys.exit(main())

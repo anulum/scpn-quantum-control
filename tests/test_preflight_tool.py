@@ -171,14 +171,19 @@ def test_run_gate_reports_pass(
     capsys: pytest.CaptureFixture[str],
 ) -> None:
     """Passing gates should print a compact pass summary."""
+    observed: dict[str, object] = {}
 
     def fake_run(cmd: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
+        observed["cmd"] = cmd
+        observed["shell"] = kwargs.get("shell")
         return subprocess.CompletedProcess(cmd, 0, stdout="", stderr="")
 
     monkeypatch.setattr(_preflight.subprocess, "run", fake_run)
 
-    assert _preflight.run_gate("unit", ["tool"]) is True
+    assert _preflight.run_gate("unit", [sys.executable, "-c", "pass"]) is True
     assert "PASS  unit" in capsys.readouterr().out
+    assert observed["cmd"] == [sys.executable, "-c", "pass"]
+    assert observed["shell"] is False
 
 
 def test_run_gate_reports_failure_tail(
@@ -197,7 +202,7 @@ def test_run_gate_reports_failure_tail(
 
     monkeypatch.setattr(_preflight.subprocess, "run", fake_run)
 
-    assert _preflight.run_gate("unit", ["tool"]) is False
+    assert _preflight.run_gate("unit", [sys.executable, "-c", "fail"]) is False
     output = capsys.readouterr().out
     assert "FAIL  unit" in output
     assert "out-2" in output
@@ -205,6 +210,99 @@ def test_run_gate_reports_failure_tail(
     assert "err-2" in output
     assert "err-11" in output
     assert "        out-1\n" not in output
+
+
+def test_run_gate_rejects_empty_gate_commands(capsys: pytest.CaptureFixture[str]) -> None:
+    """Empty gate commands should fail before subprocess execution."""
+    assert _preflight.run_gate("unit", []) is False
+
+    output = capsys.readouterr().out
+    assert "FAIL  unit" in output
+    assert "gate command is empty" in output
+
+
+def test_run_gate_rejects_missing_gate_executables(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """Missing executable paths should fail before subprocess execution."""
+    missing = tmp_path / "missing-python"
+
+    assert _preflight.run_gate("unit", [str(missing), "-m", "pytest"]) is False
+
+    output = capsys.readouterr().out
+    assert "FAIL  unit" in output
+    assert "gate executable is not resolvable" in output
+
+
+def test_run_gate_rejects_unstatable_gate_executables(
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """Filesystem errors during executable admission should fail the gate."""
+
+    def raising_exists(_path: Path) -> bool:
+        raise OSError("stat failed")
+
+    monkeypatch.setattr(_preflight.Path, "exists", raising_exists)
+
+    assert _preflight.run_gate("unit", [sys.executable]) is False
+
+    output = capsys.readouterr().out
+    assert "FAIL  unit" in output
+    assert "gate executable is not resolvable" in output
+
+
+def test_run_gate_rejects_relative_gate_executables(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """Relative executable paths should fail admission before subprocess execution."""
+    assert _preflight.run_gate("unit", ["python", "-m", "pytest"]) is False
+
+    output = capsys.readouterr().out
+    assert "FAIL  unit" in output
+    assert "gate executable is not absolute" in output
+
+
+def test_run_gate_rejects_directory_gate_executables(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """Directory paths should fail executable admission before subprocess execution."""
+    assert _preflight.run_gate("unit", [str(tmp_path)]) is False
+
+    output = capsys.readouterr().out
+    assert "FAIL  unit" in output
+    assert "gate executable is not a file" in output
+
+
+def test_run_gate_rejects_non_executable_gate_files(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """Non-executable files should fail admission before subprocess execution."""
+    candidate = tmp_path / "python"
+    candidate.write_text("#!/bin/sh\n", encoding="utf-8")
+    candidate.chmod(0o644)
+
+    assert _preflight.run_gate("unit", [str(candidate)]) is False
+
+    output = capsys.readouterr().out
+    assert "FAIL  unit" in output
+    assert "gate executable is not executable" in output
+
+
+def test_run_gate_reports_failure_without_output(
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """Failing gates without captured output should still report the gate name."""
+
+    def fake_run(cmd: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
+        return subprocess.CompletedProcess(cmd, 1, stdout="", stderr="")
+
+    monkeypatch.setattr(_preflight.subprocess, "run", fake_run)
+
+    assert _preflight.run_gate("unit", [sys.executable, "-c", "fail"]) is False
+    output = capsys.readouterr().out
+    assert "FAIL  unit" in output
 
 
 def test_main_skips_tests_with_no_tests_flag(
@@ -245,6 +343,25 @@ def test_main_uses_plain_pytest_when_coverage_is_disabled(
 
     assert _preflight.main() == 0
     assert calls == ["lint", "pytest", "bandit"]
+
+
+def test_main_uses_coverage_pytest_by_default(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Default preflight should use the coverage-enforced pytest gate."""
+    calls: list[str] = []
+    monkeypatch.setattr(_preflight, "STATIC_GATES", [("lint", ["lint"])])
+    monkeypatch.setattr(_preflight, "BANDIT_GATE", ("bandit", ["bandit"]))
+    monkeypatch.setattr(sys, "argv", ["preflight.py"])
+
+    def fake_run_gate(name: str, cmd: list[str]) -> bool:
+        calls.append(name)
+        return True
+
+    monkeypatch.setattr(_preflight, "run_gate", fake_run_gate)
+
+    assert _preflight.main() == 0
+    assert calls == ["lint", "pytest + coverage", "bandit"]
 
 
 def test_main_stops_on_first_failed_gate(
