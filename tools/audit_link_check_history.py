@@ -11,14 +11,13 @@ from __future__ import annotations
 
 import argparse
 import json
-import subprocess
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 
 from audit_github_actions_history import (
-    RUN_LIST_FIELDS,
     WorkflowRun,
+    _load_runs_from_gh,
     workflow_runs_from_json,
 )
 
@@ -213,23 +212,6 @@ def format_classified_link_runs(classified: Sequence[ClassifiedLinkRun]) -> str:
     return "\n".join(lines)
 
 
-def _load_runs_from_gh(repo: str, limit: int) -> tuple[WorkflowRun, ...]:
-    """Load workflow history through the GitHub CLI."""
-    command = [
-        "gh",
-        "run",
-        "list",
-        "--repo",
-        repo,
-        "--limit",
-        str(limit),
-        "--json",
-        RUN_LIST_FIELDS,
-    ]
-    completed = subprocess.run(command, check=True, text=True, capture_output=True)
-    return workflow_runs_from_json(completed.stdout)
-
-
 def main(argv: Sequence[str] | None = None) -> int:
     """CLI entry point."""
     parser = argparse.ArgumentParser(description=__doc__)
@@ -274,5 +256,5 @@ def main(argv: Sequence[str] | None = None) -> int:
     return 1 if any(item.bucket == "live_link_failure" for item in classified) else 0
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     raise SystemExit(main())

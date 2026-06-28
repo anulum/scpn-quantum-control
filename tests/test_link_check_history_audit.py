@@ -94,6 +94,17 @@ def test_link_check_audit_ignores_other_workflows() -> None:
     assert classify_link_check_runs(runs) == ()
 
 
+def test_link_check_audit_reports_in_progress_runs_as_not_deletable() -> None:
+    runs = workflow_runs_from_json(
+        json.dumps([_run(25, "", "2026-05-06T00:00:00Z", status="in_progress")])
+    )
+
+    classified = classify_link_check_runs(runs)
+
+    assert classified[0].bucket == "in_progress"
+    assert not classified[0].safe_delete_candidate
+
+
 def test_link_check_audit_records_accepted_external_transient_failures() -> None:
     runs = workflow_runs_from_json(json.dumps([_run(30, "failure", "2026-05-06T00:00:00Z")]))
     accepted = accepted_failures_from_json(
@@ -114,8 +125,36 @@ def test_link_check_audit_records_accepted_external_transient_failures() -> None
     assert not classified[0].safe_delete_candidate
 
 
+def test_link_check_audit_classifies_cancelled_runs_by_later_success_evidence() -> None:
+    runs = workflow_runs_from_json(
+        json.dumps(
+            [
+                _run(35, "cancelled", "2026-05-06T00:00:00Z"),
+                _run(36, "cancelled", "2026-05-06T00:30:00Z", branch="docs"),
+                _run(37, "success", "2026-05-06T01:00:00Z"),
+            ]
+        )
+    )
+
+    classified = classify_link_check_runs(runs)
+
+    assert classified[0].bucket == "superseded_cancelled"
+    assert classified[0].safe_delete_candidate
+    assert classified[1].bucket == "unresolved_cancelled"
+    assert not classified[1].safe_delete_candidate
+
+
+def test_link_check_audit_classifies_other_completed_conclusions() -> None:
+    runs = workflow_runs_from_json(json.dumps([_run(38, "skipped", "2026-05-06T00:00:00Z")]))
+
+    classified = classify_link_check_runs(runs)
+
+    assert classified[0].bucket == "other_completed"
+    assert not classified[0].safe_delete_candidate
+
+
 def test_link_check_audit_cli_returns_nonzero_for_live_failures(
-    tmp_path: Path, capsys: object
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
     fixture = tmp_path / "runs.json"
     fixture.write_text(
@@ -163,7 +202,7 @@ def test_link_check_audit_json_output_preserves_live_failure_contract() -> None:
 
 
 def test_link_check_audit_cli_accepts_external_transient_file(
-    tmp_path: Path, capsys: object
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
     fixture = tmp_path / "runs.json"
     accepted = tmp_path / "accepted.json"
@@ -180,6 +219,29 @@ def test_link_check_audit_cli_accepts_external_transient_file(
     decoded = json.loads(capsys.readouterr().out)
     assert decoded[0]["bucket"] == "accepted_external_transient"
     assert decoded[0]["reason"] == "External HTTP 429 transient."
+
+
+def test_link_check_audit_accepts_empty_external_transient_file() -> None:
+    assert accepted_failures_from_json("") == {}
+    assert accepted_failures_from_json("   \n") == {}
+
+
+def test_link_check_audit_cli_requires_repo_without_input() -> None:
+    with pytest.raises(SystemExit):
+        main([])
+
+
+def test_link_check_audit_cli_loads_runs_from_gh_when_input_is_absent(
+    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    runs = workflow_runs_from_json(json.dumps([_run(75, "success", "2026-05-06T00:00:00Z")]))
+    monkeypatch.setattr(_MODULE, "_load_runs_from_gh", lambda _repo, _limit: runs)
+
+    assert main(["--repo", "owner/repo", "--json"]) == 0
+
+    decoded = json.loads(capsys.readouterr().out)
+    assert decoded[0]["databaseId"] == 75
+    assert decoded[0]["bucket"] == "clean_success"
 
 
 def test_link_check_audit_rejects_non_array_accepted_failure_json() -> None:

@@ -11,7 +11,9 @@ from __future__ import annotations
 
 import argparse
 import json
-import subprocess
+import os
+import shutil
+import subprocess  # nosec B404
 from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -207,10 +209,38 @@ def format_classified_runs(classified: Sequence[ClassifiedRun]) -> str:
     return "\n".join(lines)
 
 
+def _resolve_gh_executable() -> str | None:
+    """Return an absolute executable path for the GitHub CLI when available."""
+    located = shutil.which("gh")
+    if located is None:
+        return None
+    try:
+        resolved = Path(located).resolve(strict=True)
+    except (OSError, ValueError):
+        return None
+    if not resolved.is_file() or not os.access(resolved, os.X_OK):
+        return None
+    return str(resolved)
+
+
+def _run_gh(gh_executable: str, *args: str) -> subprocess.CompletedProcess[str]:
+    """Run an admitted GitHub CLI command without shell expansion."""
+    return subprocess.run(  # nosec B603
+        [gh_executable, *args],
+        check=True,
+        text=True,
+        capture_output=True,
+        shell=False,
+    )
+
+
 def _load_runs_from_gh(repo: str, limit: int) -> tuple[WorkflowRun, ...]:
     """Load workflow history through the GitHub CLI."""
-    command = [
-        "gh",
+    gh_executable = _resolve_gh_executable()
+    if gh_executable is None:
+        raise RuntimeError("gh executable is required when --input is not provided.")
+    completed = _run_gh(
+        gh_executable,
         "run",
         "list",
         "--repo",
@@ -219,8 +249,7 @@ def _load_runs_from_gh(repo: str, limit: int) -> tuple[WorkflowRun, ...]:
         str(limit),
         "--json",
         RUN_LIST_FIELDS,
-    ]
-    completed = subprocess.run(command, check=True, text=True, capture_output=True)
+    )
     return workflow_runs_from_json(completed.stdout)
 
 
@@ -249,5 +278,5 @@ def main(argv: Sequence[str] | None = None) -> int:
     return 1 if any(item.bucket.startswith("unresolved") for item in classified) else 0
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     raise SystemExit(main())
