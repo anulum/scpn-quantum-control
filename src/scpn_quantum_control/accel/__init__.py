@@ -409,6 +409,13 @@ from .stuart_landau import (
     stuart_landau_jacobian,
     stuart_landau_order_parameter,
 )
+from .swarmalators import (
+    SwarmalatorOrderParameters,
+    SwarmalatorTrajectory,
+    integrate_swarmalators,
+    swarmalator_field,
+    swarmalator_order_parameters,
+)
 from .triadic_mean_field import (
     last_triadic_mean_field_force_tier_used,
     last_triadic_mean_field_jacobian_tier_used,
@@ -554,6 +561,11 @@ __all__ = [
     "amplitudes",
     "stuart_landau_order_parameter",
     "is_oscillation_death",
+    "SwarmalatorTrajectory",
+    "SwarmalatorOrderParameters",
+    "swarmalator_field",
+    "integrate_swarmalators",
+    "swarmalator_order_parameters",
     "BasinEstimate",
     "estimate_ring_basins",
     "is_twisted_state_stable",

@@ -115,6 +115,51 @@ pt = simulate_pt_symmetric_kuramoto(
 The stable facade also exposes `simulate_variant_trajectory(problem, variant, ...)`
 for callers that already use `KuramotoProblem`.
 
+## Swarmalators
+
+`scpn_quantum_control.kuramoto` also exposes the Swarmalator model family:
+`swarmalator_field`, `integrate_swarmalators`, and
+`swarmalator_order_parameters`. This is the O'Keeffe-Hong-Strogatz
+space-phase extension of Kuramoto dynamics: each oscillator carries a planar
+position and a phase, phase similarity modulates spatial attraction, and
+spatial distance modulates phase synchronisation.
+
+The shipped surface is a deterministic NumPy reference path with fail-closed
+validation for finite, pairwise-distinct positions. It reports both the ordinary
+phase coherence and the rainbow order parameters `S_+` and `S_-`, so static
+synchrony, static phase waves, and static asynchrony are distinguishable without
+claiming a phase-only reduction. This slice does not add a Rust kernel or a
+performance benchmark row; any future accelerated route must ship with parity
+tests and benchmark provenance before it is documented as a faster tier.
+
+```python
+import numpy as np
+
+from scpn_quantum_control.kuramoto import (
+    integrate_swarmalators,
+    swarmalator_order_parameters,
+)
+
+positions = np.array(
+    [[-0.5, -0.2], [0.2, -0.4], [0.4, 0.3], [-0.3, 0.5]],
+    dtype=np.float64,
+)
+phases = np.array([0.0, 1.1, 2.3, 4.0], dtype=np.float64)
+
+trajectory = integrate_swarmalators(
+    positions,
+    phases,
+    coupling_phase=1.0,
+    coupling_space=0.0,
+    dt=0.05,
+    n_steps=200,
+)
+order = swarmalator_order_parameters(
+    trajectory.terminal_positions,
+    trajectory.terminal_phases,
+)
+```
+
 ## Rust Kernels
 
 | Variant | Rust function | Returned diagnostics |

@@ -106,8 +106,8 @@ has a defined commercial licensing route.
 |---|---:|
 | Package version | 0.10.0 |
 | Public API exports | 775 |
-| Python source modules | 513 |
-| Public Python classes | 905 |
+| Python source modules | 514 |
+| Public Python classes | 907 |
 | Domain package families | 32 |
 | API documentation pages | 0 |
 | Rust PyO3 function bindings | 171 |
@@ -115,7 +115,7 @@ has a defined commercial licensing route.
 | Notebook files | 100 |
 | Example files | 32 |
 | Optional extras | 43 |
-| Python test files | 842 |
+| Python test files | 843 |
 | Public documentation pages | 254 |
 | GitHub Actions workflows | 21 |
 

@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 775,
     "public_documentation_pages": 254,
-    "python_model_classes": 905,
-    "python_model_source_modules": 513,
+    "python_model_classes": 907,
+    "python_model_source_modules": 514,
     "rust_pyo3_model_wrappers": 171,
     "rust_source_modules": 42,
-    "test_files": 842
+    "test_files": 843
   },
   "documentation": {
     "examples": [
@@ -436,7 +436,7 @@
       {
         "package": "accel",
         "path": "src/scpn_quantum_control/accel",
-        "python_modules": 60
+        "python_modules": 61
       },
       {
         "package": "analysis",
@@ -3880,6 +3880,14 @@
         "path": "src/scpn_quantum_control/qec/surface_code_upde.py"
       },
       {
+        "name": "SwarmalatorOrderParameters",
+        "path": "src/scpn_quantum_control/accel/swarmalators.py"
+      },
+      {
+        "name": "SwarmalatorTrajectory",
+        "path": "src/scpn_quantum_control/accel/swarmalators.py"
+      },
+      {
         "name": "SymmetryDecayModel",
         "path": "src/scpn_quantum_control/mitigation/symmetry_decay.py"
       },
@@ -4277,6 +4285,7 @@
       "src/scpn_quantum_control/accel/sakaguchi_kuramoto.py",
       "src/scpn_quantum_control/accel/sakaguchi_mean_field.py",
       "src/scpn_quantum_control/accel/stuart_landau.py",
+      "src/scpn_quantum_control/accel/swarmalators.py",
       "src/scpn_quantum_control/accel/tier_benchmark.py",
       "src/scpn_quantum_control/accel/triadic_mean_field.py",
       "src/scpn_quantum_control/analysis/adaptive_fim_feedback.py",
@@ -6571,6 +6580,7 @@
       "tests/test_submit_s1_readout_zne_ibm.py",
       "tests/test_submit_s1b_xy_observable_pair.py",
       "tests/test_surface_code_upde.py",
+      "tests/test_swarmalators.py",
       "tests/test_symmetry_decay.py",
       "tests/test_symmetry_sector_compiler.py",
       "tests/test_symmetry_sector_compiler_branches.py",
