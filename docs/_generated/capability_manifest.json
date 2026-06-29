@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 775,
     "public_documentation_pages": 254,
-    "python_model_classes": 899,
-    "python_model_source_modules": 509,
+    "python_model_classes": 901,
+    "python_model_source_modules": 510,
     "rust_pyo3_model_wrappers": 171,
     "rust_source_modules": 42,
-    "test_files": 838
+    "test_files": 839
   },
   "documentation": {
     "examples": [
@@ -436,7 +436,7 @@
       {
         "package": "accel",
         "path": "src/scpn_quantum_control/accel",
-        "python_modules": 56
+        "python_modules": 57
       },
       {
         "package": "analysis",
@@ -1110,6 +1110,14 @@
       {
         "name": "CouplingDesignResult",
         "path": "src/scpn_quantum_control/accel/kuramoto_coupling_design.py"
+      },
+      {
+        "name": "CouplingFunctionEstimate",
+        "path": "src/scpn_quantum_control/accel/kuramoto_coupling_function_inference.py"
+      },
+      {
+        "name": "CouplingFunctionGradients",
+        "path": "src/scpn_quantum_control/accel/kuramoto_coupling_function_inference.py"
       },
       {
         "name": "CouplingGradientVerificationResult",
@@ -4215,6 +4223,7 @@
       "src/scpn_quantum_control/accel/kuramoto_control.py",
       "src/scpn_quantum_control/accel/kuramoto_coordinated_reset.py",
       "src/scpn_quantum_control/accel/kuramoto_coupling_design.py",
+      "src/scpn_quantum_control/accel/kuramoto_coupling_function_inference.py",
       "src/scpn_quantum_control/accel/kuramoto_critical_coupling.py",
       "src/scpn_quantum_control/accel/kuramoto_delayed.py",
       "src/scpn_quantum_control/accel/kuramoto_delayed_mean_field.py",
@@ -6152,6 +6161,7 @@
       "tests/test_kuramoto_core.py",
       "tests/test_kuramoto_core_branches.py",
       "tests/test_kuramoto_coupling_design.py",
+      "tests/test_kuramoto_coupling_function_inference.py",
       "tests/test_kuramoto_critical_coupling.py",
       "tests/test_kuramoto_delayed.py",
       "tests/test_kuramoto_delayed_mean_field.py",

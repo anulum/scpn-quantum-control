@@ -166,6 +166,14 @@ from .kuramoto_coupling_design import (
     optimise_coupling,
     symmetric_nonnegative_projection,
 )
+from .kuramoto_coupling_function_inference import (
+    CouplingFunctionEstimate,
+    CouplingFunctionGradients,
+    coupling_function_trajectory_value_and_grad,
+    coupling_function_value,
+    infer_coupling_function,
+    refine_coupling_function,
+)
 from .kuramoto_critical_coupling import (
     critical_coupling,
     gaussian_critical_coupling,
@@ -508,6 +516,12 @@ __all__ = [
     "integrate_controlled_network",
     "network_control_value_and_grad",
     "optimise_network_control",
+    "CouplingFunctionEstimate",
+    "CouplingFunctionGradients",
+    "coupling_function_value",
+    "infer_coupling_function",
+    "coupling_function_trajectory_value_and_grad",
+    "refine_coupling_function",
     "BasinEstimate",
     "estimate_ring_basins",
     "is_twisted_state_stable",
