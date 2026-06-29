@@ -374,6 +374,14 @@ from .mean_phase_observables import (
     mean_phase_gradient,
     mean_phase_hessian,
 )
+from .multiplex_kuramoto import (
+    MultiplexTrajectory,
+    integrate_multiplex,
+    interlayer_synchronisation,
+    layer_order_parameters,
+    multiplex_field,
+    multiplex_jacobian,
+)
 from .networked_kuramoto import (
     last_networked_kuramoto_force_tier_used,
     last_networked_kuramoto_jacobian_tier_used,
@@ -576,6 +584,12 @@ __all__ = [
     "winfree_field",
     "winfree_jacobian",
     "integrate_winfree",
+    "MultiplexTrajectory",
+    "multiplex_field",
+    "multiplex_jacobian",
+    "integrate_multiplex",
+    "layer_order_parameters",
+    "interlayer_synchronisation",
     "BasinEstimate",
     "estimate_ring_basins",
     "is_twisted_state_stable",

@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 775,
     "public_documentation_pages": 254,
-    "python_model_classes": 908,
-    "python_model_source_modules": 515,
+    "python_model_classes": 909,
+    "python_model_source_modules": 516,
     "rust_pyo3_model_wrappers": 171,
     "rust_source_modules": 42,
-    "test_files": 844
+    "test_files": 845
   },
   "documentation": {
     "examples": [
@@ -436,7 +436,7 @@
       {
         "package": "accel",
         "path": "src/scpn_quantum_control/accel",
-        "python_modules": 62
+        "python_modules": 63
       },
       {
         "package": "analysis",
@@ -2282,6 +2282,10 @@
       {
         "name": "MultiLangDispatcher",
         "path": "src/scpn_quantum_control/accel/dispatcher.py"
+      },
+      {
+        "name": "MultiplexTrajectory",
+        "path": "src/scpn_quantum_control/accel/multiplex_kuramoto.py"
       },
       {
         "name": "MultiscaleComparison",
@@ -4282,6 +4286,7 @@
       "src/scpn_quantum_control/accel/local_order.py",
       "src/scpn_quantum_control/accel/local_phase.py",
       "src/scpn_quantum_control/accel/mean_phase_observables.py",
+      "src/scpn_quantum_control/accel/multiplex_kuramoto.py",
       "src/scpn_quantum_control/accel/networked_kuramoto.py",
       "src/scpn_quantum_control/accel/order_parameter_observables.py",
       "src/scpn_quantum_control/accel/rust_import.py",
@@ -6260,6 +6265,7 @@
       "tests/test_mps_evolution.py",
       "tests/test_multicircuit_qec_readiness.py",
       "tests/test_multiplatform_export_workflow.py",
+      "tests/test_multiplex_kuramoto.py",
       "tests/test_multiscale_qec.py",
       "tests/test_native_decomposition_readiness.py",
       "tests/test_native_whole_program_ad_execution_evidence.py",
