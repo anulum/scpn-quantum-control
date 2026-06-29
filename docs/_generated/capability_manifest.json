@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 775,
     "public_documentation_pages": 254,
-    "python_model_classes": 914,
-    "python_model_source_modules": 521,
+    "python_model_classes": 915,
+    "python_model_source_modules": 522,
     "rust_pyo3_model_wrappers": 171,
     "rust_source_modules": 42,
-    "test_files": 850
+    "test_files": 851
   },
   "documentation": {
     "examples": [
@@ -436,7 +436,7 @@
       {
         "package": "accel",
         "path": "src/scpn_quantum_control/accel",
-        "python_modules": 68
+        "python_modules": 69
       },
       {
         "package": "analysis",
@@ -3576,6 +3576,10 @@
         "path": "src/scpn_quantum_control/phase/trotter_upde.py"
       },
       {
+        "name": "QuantumVanDerPolTrajectory",
+        "path": "src/scpn_quantum_control/accel/quantum_synchronisation.py"
+      },
+      {
         "name": "QuantumWorkload",
         "path": "src/scpn_quantum_control/hardware/hal.py"
       },
@@ -4314,6 +4318,7 @@
       "src/scpn_quantum_control/accel/networked_kuramoto.py",
       "src/scpn_quantum_control/accel/order_parameter_observables.py",
       "src/scpn_quantum_control/accel/oscillator_ising_machine.py",
+      "src/scpn_quantum_control/accel/quantum_synchronisation.py",
       "src/scpn_quantum_control/accel/rust_import.py",
       "src/scpn_quantum_control/accel/rust_kuramoto_classical.py",
       "src/scpn_quantum_control/accel/sakaguchi_kuramoto.py",
@@ -6528,6 +6533,7 @@
       "tests/test_quantum_sensing_readiness.py",
       "tests/test_quantum_speed_limit.py",
       "tests/test_quantum_speed_limit_validation.py",
+      "tests/test_quantum_synchronisation.py",
       "tests/test_quantum_thermo_readiness.py",
       "tests/test_quantum_thermo_readiness_branches.py",
       "tests/test_qubit_mapper.py",

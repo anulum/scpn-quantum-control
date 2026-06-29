@@ -425,6 +425,15 @@ from .oscillator_ising_machine import (
     oscillator_ising_energy,
     oscillator_ising_field,
 )
+from .quantum_synchronisation import (
+    QuantumVanDerPolTrajectory,
+    coherent_amplitude,
+    integrate_quantum_vanderpol,
+    mean_photon_number,
+    phase_distribution,
+    phase_synchronisation,
+    vacuum_state,
+)
 from .sakaguchi_kuramoto import (
     last_sakaguchi_force_tier_used,
     last_sakaguchi_jacobian_tier_used,
@@ -609,6 +618,13 @@ __all__ = [
     "ising_hamiltonian",
     "cut_value",
     "integrate_oscillator_ising_machine",
+    "QuantumVanDerPolTrajectory",
+    "vacuum_state",
+    "integrate_quantum_vanderpol",
+    "coherent_amplitude",
+    "mean_photon_number",
+    "phase_distribution",
+    "phase_synchronisation",
     "SparseDynamicsModel",
     "discover_phase_dynamics",
     "StuartLandauTrajectory",
