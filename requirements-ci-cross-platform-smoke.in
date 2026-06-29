@@ -4,7 +4,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # scpn-quantum-control -- Cross-platform CI smoke dependency input
-numpy==2.2.6
+numpy==2.4.6
 networkx==3.4.2
 jinja2==3.1.6
 qiskit==2.4.2

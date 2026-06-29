@@ -12,7 +12,7 @@ qiskit==2.4.2
 qiskit-aer==0.17.2
 qiskit-qasm3-import==0.6.0
 symengine==0.14.1
-numpy==2.2.6
+numpy==2.4.6
 scipy==1.15.3
 networkx==3.4.2
 jinja2==3.1.6
