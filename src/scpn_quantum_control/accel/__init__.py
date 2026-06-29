@@ -112,6 +112,12 @@ from .kuramoto_basin_stability import (
     BasinStabilityEstimate,
     synchronisation_basin_stability,
 )
+from .kuramoto_bayesian_inference import (
+    DynamicalBayesianPosterior,
+    TimeVaryingCouplingHistory,
+    infer_network_bayesian,
+    track_time_varying_coupling,
+)
 from .kuramoto_chimera import (
     ChimeraDiagnostics,
     chimera_diagnostics,
@@ -522,6 +528,10 @@ __all__ = [
     "infer_coupling_function",
     "coupling_function_trajectory_value_and_grad",
     "refine_coupling_function",
+    "DynamicalBayesianPosterior",
+    "TimeVaryingCouplingHistory",
+    "infer_network_bayesian",
+    "track_time_varying_coupling",
     "BasinEstimate",
     "estimate_ring_basins",
     "is_twisted_state_stable",

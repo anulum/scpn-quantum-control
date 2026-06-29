@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 775,
     "public_documentation_pages": 254,
-    "python_model_classes": 901,
-    "python_model_source_modules": 510,
+    "python_model_classes": 903,
+    "python_model_source_modules": 511,
     "rust_pyo3_model_wrappers": 171,
     "rust_source_modules": 42,
-    "test_files": 839
+    "test_files": 840
   },
   "documentation": {
     "examples": [
@@ -436,7 +436,7 @@
       {
         "package": "accel",
         "path": "src/scpn_quantum_control/accel",
-        "python_modules": 57
+        "python_modules": 58
       },
       {
         "package": "analysis",
@@ -1490,6 +1490,10 @@
       {
         "name": "DynamicCouplingEngine",
         "path": "src/scpn_quantum_control/qsnn/dynamic_coupling.py"
+      },
+      {
+        "name": "DynamicalBayesianPosterior",
+        "path": "src/scpn_quantum_control/accel/kuramoto_bayesian_inference.py"
       },
       {
         "name": "EEGApplicationPlugin",
@@ -3956,6 +3960,10 @@
         "path": "src/scpn_quantum_control/accel/tier_benchmark.py"
       },
       {
+        "name": "TimeVaryingCouplingHistory",
+        "path": "src/scpn_quantum_control/accel/kuramoto_bayesian_inference.py"
+      },
+      {
         "name": "TopologicalCouplingOptimizer",
         "path": "src/scpn_quantum_control/control/topological_optimizer.py"
       },
@@ -4216,6 +4224,7 @@
       "src/scpn_quantum_control/accel/dispatcher.py",
       "src/scpn_quantum_control/accel/kuramoto_adaptive.py",
       "src/scpn_quantum_control/accel/kuramoto_basin_stability.py",
+      "src/scpn_quantum_control/accel/kuramoto_bayesian_inference.py",
       "src/scpn_quantum_control/accel/kuramoto_chimera.py",
       "src/scpn_quantum_control/accel/kuramoto_clusters.py",
       "src/scpn_quantum_control/accel/kuramoto_coherence_matrix.py",
@@ -6151,6 +6160,7 @@
       "tests/test_krylov_complexity.py",
       "tests/test_kuramoto_adaptive.py",
       "tests/test_kuramoto_basin_stability.py",
+      "tests/test_kuramoto_bayesian_inference.py",
       "tests/test_kuramoto_chimera.py",
       "tests/test_kuramoto_clusters.py",
       "tests/test_kuramoto_coherence_matrix.py",
