@@ -382,6 +382,11 @@ from .multiplex_kuramoto import (
     multiplex_field,
     multiplex_jacobian,
 )
+from .multiplex_master_stability import (
+    MultiplexSynchronisationStability,
+    master_stability_function,
+    multiplex_synchronisation_stability,
+)
 from .networked_kuramoto import (
     last_networked_kuramoto_force_tier_used,
     last_networked_kuramoto_jacobian_tier_used,
@@ -590,6 +595,9 @@ __all__ = [
     "integrate_multiplex",
     "layer_order_parameters",
     "interlayer_synchronisation",
+    "MultiplexSynchronisationStability",
+    "master_stability_function",
+    "multiplex_synchronisation_stability",
     "BasinEstimate",
     "estimate_ring_basins",
     "is_twisted_state_stable",
