@@ -297,6 +297,14 @@ from .kuramoto_system_id import (
     trajectory_match_value,
     trajectory_match_value_and_grad,
 )
+from .kuramoto_watanabe_strogatz import (
+    WatanabeStrogatzTrajectory,
+    integrate_watanabe_strogatz,
+    watanabe_strogatz_constants,
+    watanabe_strogatz_invariant,
+    watanabe_strogatz_order_parameter,
+    watanabe_strogatz_phases,
+)
 from .local_order import (
     last_local_order_parameter_jacobian_tier_used,
     last_local_order_parameter_tier_used,
@@ -442,6 +450,12 @@ __all__ = [
     "qif_mean_field_terminal_value_and_grad",
     "qif_potential_from_theta",
     "theta_from_qif_potential",
+    "WatanabeStrogatzTrajectory",
+    "integrate_watanabe_strogatz",
+    "watanabe_strogatz_constants",
+    "watanabe_strogatz_invariant",
+    "watanabe_strogatz_order_parameter",
+    "watanabe_strogatz_phases",
     "BasinEstimate",
     "estimate_ring_basins",
     "is_twisted_state_stable",

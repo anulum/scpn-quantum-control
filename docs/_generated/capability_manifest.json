@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 775,
     "public_documentation_pages": 254,
-    "python_model_classes": 890,
-    "python_model_source_modules": 502,
+    "python_model_classes": 891,
+    "python_model_source_modules": 503,
     "rust_pyo3_model_wrappers": 171,
     "rust_source_modules": 42,
-    "test_files": 831
+    "test_files": 832
   },
   "documentation": {
     "examples": [
@@ -436,7 +436,7 @@
       {
         "package": "accel",
         "path": "src/scpn_quantum_control/accel",
-        "python_modules": 49
+        "python_modules": 50
       },
       {
         "package": "analysis",
@@ -4052,6 +4052,10 @@
         "path": "src/scpn_quantum_control/bridge/ssgf_w_adapter.py"
       },
       {
+        "name": "WatanabeStrogatzTrajectory",
+        "path": "src/scpn_quantum_control/accel/kuramoto_watanabe_strogatz.py"
+      },
+      {
         "name": "WeightedGradientResult",
         "path": "src/scpn_quantum_control/differentiable_result_contracts.py"
       },
@@ -4197,6 +4201,7 @@
       "src/scpn_quantum_control/accel/kuramoto_simplex_mean_field.py",
       "src/scpn_quantum_control/accel/kuramoto_stability_spectrum.py",
       "src/scpn_quantum_control/accel/kuramoto_system_id.py",
+      "src/scpn_quantum_control/accel/kuramoto_watanabe_strogatz.py",
       "src/scpn_quantum_control/accel/local_order.py",
       "src/scpn_quantum_control/accel/local_phase.py",
       "src/scpn_quantum_control/accel/mean_phase_observables.py",
@@ -6132,6 +6137,7 @@
       "tests/test_kuramoto_standalone_package_decision.py",
       "tests/test_kuramoto_system_id.py",
       "tests/test_kuramoto_variants.py",
+      "tests/test_kuramoto_watanabe_strogatz.py",
       "tests/test_l16_director.py",
       "tests/test_lattice_branches.py",
       "tests/test_layer_selective_comparator_matrix.py",

@@ -90,6 +90,7 @@ from .accel import (
     StochasticForce,
     SystemIdentificationResult,
     TerminalObjective,
+    WatanabeStrogatzTrajectory,
     adaptive_state_sensitivity,
     adaptive_terminal_value_and_grad,
     adaptive_vector_field,
@@ -149,6 +150,7 @@ from .accel import (
     integrate_inertial,
     integrate_noisy_kuramoto,
     integrate_qif_mean_field,
+    integrate_watanabe_strogatz,
     interaction_energy_objective,
     is_synchronisation_stable,
     is_synchronised_branch_stable,
@@ -278,6 +280,10 @@ from .accel import (
     triadic_mean_field_jacobian,
     twisted_state,
     twisted_state_eigenvalues,
+    watanabe_strogatz_constants,
+    watanabe_strogatz_invariant,
+    watanabe_strogatz_order_parameter,
+    watanabe_strogatz_phases,
     winding_number,
 )
 
@@ -345,6 +351,8 @@ _CAPABILITIES: dict[str, tuple[str, ...]] = {
         "ott_antonsen_trajectory",
         "integrate_qif_mean_field",
         "QifMeanFieldTrajectory",
+        "integrate_watanabe_strogatz",
+        "WatanabeStrogatzTrajectory",
     ),
     "observables": (
         "order_parameter",
@@ -440,6 +448,10 @@ _CAPABILITIES: dict[str, tuple[str, ...]] = {
         "macro_from_kuramoto_order_parameter",
         "qif_potential_from_theta",
         "theta_from_qif_potential",
+        "watanabe_strogatz_constants",
+        "watanabe_strogatz_phases",
+        "watanabe_strogatz_order_parameter",
+        "watanabe_strogatz_invariant",
     ),
     "control_and_design": (
         "terminal_objective_value",
@@ -568,6 +580,12 @@ def describe(category: str | None = None) -> str:
 
 
 __all__ = [
+    "WatanabeStrogatzTrajectory",
+    "integrate_watanabe_strogatz",
+    "watanabe_strogatz_constants",
+    "watanabe_strogatz_invariant",
+    "watanabe_strogatz_order_parameter",
+    "watanabe_strogatz_phases",
     "QifMeanFieldGradients",
     "QifMeanFieldTrajectory",
     "integrate_qif_mean_field",
