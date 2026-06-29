@@ -10,10 +10,10 @@
     "public_api_exports": 775,
     "public_documentation_pages": 254,
     "python_model_classes": 894,
-    "python_model_source_modules": 505,
+    "python_model_source_modules": 506,
     "rust_pyo3_model_wrappers": 171,
     "rust_source_modules": 42,
-    "test_files": 834
+    "test_files": 835
   },
   "documentation": {
     "examples": [
@@ -436,7 +436,7 @@
       {
         "package": "accel",
         "path": "src/scpn_quantum_control/accel",
-        "python_modules": 52
+        "python_modules": 53
       },
       {
         "package": "analysis",
@@ -4214,6 +4214,7 @@
       "src/scpn_quantum_control/accel/kuramoto_ring_basins.py",
       "src/scpn_quantum_control/accel/kuramoto_simplex_mean_field.py",
       "src/scpn_quantum_control/accel/kuramoto_stability_spectrum.py",
+      "src/scpn_quantum_control/accel/kuramoto_symplectic_inertial.py",
       "src/scpn_quantum_control/accel/kuramoto_system_id.py",
       "src/scpn_quantum_control/accel/kuramoto_watanabe_strogatz.py",
       "src/scpn_quantum_control/accel/local_order.py",
@@ -6151,6 +6152,7 @@
       "tests/test_kuramoto_simplex_mean_field.py",
       "tests/test_kuramoto_stability_spectrum.py",
       "tests/test_kuramoto_standalone_package_decision.py",
+      "tests/test_kuramoto_symplectic_inertial.py",
       "tests/test_kuramoto_system_id.py",
       "tests/test_kuramoto_variants.py",
       "tests/test_kuramoto_watanabe_strogatz.py",

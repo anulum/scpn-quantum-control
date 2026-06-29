@@ -157,6 +157,7 @@ from .accel import (
     integrate_inertial,
     integrate_noisy_kuramoto,
     integrate_qif_mean_field,
+    integrate_symplectic_inertial,
     integrate_watanabe_strogatz,
     interaction_energy_objective,
     is_synchronisation_stable,
@@ -345,6 +346,7 @@ _CAPABILITIES: dict[str, tuple[str, ...]] = {
         "inertial_jacobian",
         "inertial_energy",
         "inertial_state_sensitivity",
+        "integrate_symplectic_inertial",
         "integrate_noisy_kuramoto",
         "noisy_kuramoto_step",
         "noisy_phase_sensitivity",
@@ -597,6 +599,7 @@ def describe(category: str | None = None) -> str:
 
 __all__ = [
     "BasinStabilityEstimate",
+    "integrate_symplectic_inertial",
     "synchronisation_basin_stability",
     "CoordinatedResetGradients",
     "CoordinatedResetTrajectory",

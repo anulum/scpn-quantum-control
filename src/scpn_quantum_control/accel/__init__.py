@@ -303,6 +303,7 @@ from .kuramoto_stability_spectrum import (
     stability_spectrum,
     synchronisation_rate,
 )
+from .kuramoto_symplectic_inertial import integrate_symplectic_inertial
 from .kuramoto_system_id import (
     SystemIdentificationResult,
     learn_coupling,
@@ -476,6 +477,7 @@ __all__ = [
     "integrate_coordinated_reset",
     "BasinStabilityEstimate",
     "synchronisation_basin_stability",
+    "integrate_symplectic_inertial",
     "BasinEstimate",
     "estimate_ring_basins",
     "is_twisted_state_stable",
