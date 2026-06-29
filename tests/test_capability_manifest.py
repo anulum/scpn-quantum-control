@@ -108,6 +108,62 @@ def test_public_docs_do_not_reintroduce_known_stale_inventory_claims() -> None:
     assert not findings, "\n".join(findings)
 
 
+def test_mkdocs_nav_omission_report_triages_public_docs() -> None:
+    """Expose public docs that are absent from MkDocs navigation."""
+
+    tool = _load_tool()
+    repo = _repo_root()
+    manifest = tool.build_capability_manifest(repo)
+
+    report = tool.mkdocs_nav_omission_report(repo)
+
+    assert report["counts"]["public_documentation_pages"] == len(
+        manifest["documentation"]["public_pages"]
+    )
+    assert report["counts"]["mkdocs_nav_pages"] == len(report["nav_pages"])
+    assert report["counts"]["unresolved_nav_pages"] == 0
+    assert report["unresolved_nav_pages"] == []
+    assert "docs/index.md" in report["nav_pages"]
+    assert "docs/EXPORT_CONTROL.md" in report["omitted_public_pages"]
+    assert (
+        "docs/campaigns/adaptive_fim_qpu_protocol_2026-05-06.md"
+        in (report["ignored_omitted_public_pages"])
+    )
+    assert all(
+        not path.startswith(tuple(report["ignored_prefixes"]))
+        for path in report["omitted_public_pages"]
+    )
+
+
+def test_mkdocs_nav_markdown_parser_handles_nested_and_quoted_labels(tmp_path: Path) -> None:
+    """Parse MkDocs nav entries without requiring a YAML dependency."""
+
+    tool = _load_tool()
+    (tmp_path / "site.yml").write_text(
+        "\n".join(
+            [
+                "site_name: parser fixture",
+                "nav:",
+                "  - Home: index.md",
+                "  - API:",
+                '      - "Bench: Dynamic Coupling": bench_dynamic_coupling.md',
+                "      - Nested: sub/path.md",
+                "  - Already Prefixed: docs/prefixed.md",
+                "markdown_extensions:",
+                "  - toc",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    assert tool.mkdocs_nav_markdown_pages(tmp_path, mkdocs_path=Path("site.yml")) == [
+        "docs/bench_dynamic_coupling.md",
+        "docs/index.md",
+        "docs/prefixed.md",
+        "docs/sub/path.md",
+    ]
+
+
 def test_capability_manifest_cli_writes_review_artifacts() -> None:
     tool_path = _repo_root() / "tools" / "capability_manifest.py"
     with tempfile.TemporaryDirectory() as directory:

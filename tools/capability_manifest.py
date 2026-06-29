@@ -37,8 +37,15 @@ DEFAULT_JSON_OUTPUT = Path("docs/_generated/capability_manifest.json")
 DEFAULT_MARKDOWN_OUTPUT = Path("docs/_generated/capability_snapshot.md")
 DEFAULT_CONFIG = Path("tools/capability_manifest.toml")
 DEFAULT_README = Path("README.md")
+DEFAULT_MKDOCS_CONFIG = Path("mkdocs.yml")
 DEFAULT_MARKER_START = "<!-- capability-snapshot:start -->"
 DEFAULT_MARKER_END = "<!-- capability-snapshot:end -->"
+DEFAULT_NAV_OMISSION_PREFIX_ALLOWLIST = (
+    "docs/campaigns/",
+    "docs/grants/",
+    "docs/literature/",
+    "docs/publication/",
+)
 
 
 def _default_labels() -> dict[str, str]:
@@ -519,6 +526,95 @@ def public_inventory_claim_findings(
             if re.search(pattern, text, flags=re.IGNORECASE):
                 findings.append(f"stale public inventory claim: {relative_path} matches {pattern}")
     return findings
+
+
+def mkdocs_nav_omission_report(
+    repo: Path,
+    *,
+    config: CapabilityManifestConfig | None = None,
+    mkdocs_path: Path = DEFAULT_MKDOCS_CONFIG,
+    ignored_prefixes: tuple[str, ...] = DEFAULT_NAV_OMISSION_PREFIX_ALLOWLIST,
+) -> dict[str, Any]:
+    """Return public documentation pages missing from MkDocs navigation."""
+
+    repo = repo.resolve()
+    config = config or load_config(repo)
+    paths = capability_paths(repo, config)
+    public_pages = _markdown_docs(
+        paths.docs_root,
+        repo=repo,
+        exclude_parts=config.exclude_doc_parts,
+    )
+    nav_pages = mkdocs_nav_markdown_pages(repo, mkdocs_path=mkdocs_path)
+    omitted = sorted(set(public_pages) - set(nav_pages))
+    unresolved_nav_pages = sorted(set(nav_pages) - set(public_pages))
+    ignored_omissions = [
+        page for page in omitted if any(page.startswith(prefix) for prefix in ignored_prefixes)
+    ]
+    actionable_omissions = [
+        page for page in omitted if not any(page.startswith(prefix) for prefix in ignored_prefixes)
+    ]
+    return {
+        "counts": {
+            "public_documentation_pages": len(public_pages),
+            "mkdocs_nav_pages": len(nav_pages),
+            "omitted_public_pages": len(omitted),
+            "actionable_omitted_public_pages": len(actionable_omissions),
+            "ignored_omitted_public_pages": len(ignored_omissions),
+            "unresolved_nav_pages": len(unresolved_nav_pages),
+        },
+        "nav_pages": nav_pages,
+        "omitted_public_pages": actionable_omissions,
+        "ignored_omitted_public_pages": ignored_omissions,
+        "unresolved_nav_pages": unresolved_nav_pages,
+        "ignored_prefixes": list(ignored_prefixes),
+    }
+
+
+def mkdocs_nav_markdown_pages(
+    repo: Path, *, mkdocs_path: Path = DEFAULT_MKDOCS_CONFIG
+) -> list[str]:
+    """Return Markdown pages referenced from the configured MkDocs nav block."""
+
+    path = repo / mkdocs_path
+    if not path.exists():
+        return []
+    pages = {
+        page
+        for line in _mkdocs_nav_block_lines(path.read_text(encoding="utf-8"))
+        if (page := _mkdocs_nav_markdown_page(line)) is not None
+    }
+    return sorted(pages)
+
+
+def _mkdocs_nav_block_lines(text: str) -> list[str]:
+    lines: list[str] = []
+    in_nav = False
+    for line in text.splitlines():
+        if line.startswith("nav:"):
+            in_nav = True
+            continue
+        if in_nav and line and not line.startswith((" ", "\t", "-")):
+            break
+        if in_nav:
+            lines.append(line)
+    return lines
+
+
+def _mkdocs_nav_markdown_page(line: str) -> str | None:
+    candidate = line.split("#", maxsplit=1)[0].strip()
+    if not candidate:
+        return None
+    if candidate.startswith("- "):
+        candidate = candidate[2:].strip()
+    if ":" in candidate:
+        candidate = candidate.rsplit(":", maxsplit=1)[1].strip()
+    candidate = candidate.strip("\"'")
+    if not candidate.endswith(".md"):
+        return None
+    if candidate.startswith("docs/"):
+        return candidate
+    return f"docs/{candidate.lstrip('/')}"
 
 
 def _check_count(
