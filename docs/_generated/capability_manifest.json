@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 775,
     "public_documentation_pages": 254,
-    "python_model_classes": 903,
-    "python_model_source_modules": 511,
+    "python_model_classes": 904,
+    "python_model_source_modules": 512,
     "rust_pyo3_model_wrappers": 171,
     "rust_source_modules": 42,
-    "test_files": 840
+    "test_files": 841
   },
   "documentation": {
     "examples": [
@@ -436,7 +436,7 @@
       {
         "package": "accel",
         "path": "src/scpn_quantum_control/accel",
-        "python_modules": 58
+        "python_modules": 59
       },
       {
         "package": "analysis",
@@ -3804,6 +3804,10 @@
         "path": "src/scpn_quantum_control/crypto/pqc_trigger.py"
       },
       {
+        "name": "SparseDynamicsModel",
+        "path": "src/scpn_quantum_control/accel/kuramoto_sparse_identification.py"
+      },
+      {
         "name": "SparseMatrixResult",
         "path": "src/scpn_quantum_control/differentiable_result_contracts.py"
       },
@@ -4254,6 +4258,7 @@
       "src/scpn_quantum_control/accel/kuramoto_qif_mean_field.py",
       "src/scpn_quantum_control/accel/kuramoto_ring_basins.py",
       "src/scpn_quantum_control/accel/kuramoto_simplex_mean_field.py",
+      "src/scpn_quantum_control/accel/kuramoto_sparse_identification.py",
       "src/scpn_quantum_control/accel/kuramoto_stability_spectrum.py",
       "src/scpn_quantum_control/accel/kuramoto_symplectic_inertial.py",
       "src/scpn_quantum_control/accel/kuramoto_system_id.py",
@@ -6196,6 +6201,7 @@
       "tests/test_kuramoto_qif_mean_field.py",
       "tests/test_kuramoto_ring_basins.py",
       "tests/test_kuramoto_simplex_mean_field.py",
+      "tests/test_kuramoto_sparse_identification.py",
       "tests/test_kuramoto_stability_spectrum.py",
       "tests/test_kuramoto_standalone_package_decision.py",
       "tests/test_kuramoto_symplectic_inertial.py",

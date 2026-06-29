@@ -329,6 +329,10 @@ from .kuramoto_simplex_mean_field import (
     simplex_mean_field_force,
     simplex_mean_field_jacobian,
 )
+from .kuramoto_sparse_identification import (
+    SparseDynamicsModel,
+    discover_phase_dynamics,
+)
 from .kuramoto_stability_spectrum import (
     StabilitySpectrum,
     is_synchronisation_stable,
@@ -532,6 +536,8 @@ __all__ = [
     "TimeVaryingCouplingHistory",
     "infer_network_bayesian",
     "track_time_varying_coupling",
+    "SparseDynamicsModel",
+    "discover_phase_dynamics",
     "BasinEstimate",
     "estimate_ring_basins",
     "is_twisted_state_stable",
