@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 775,
     "public_documentation_pages": 254,
-    "python_model_classes": 918,
-    "python_model_source_modules": 523,
+    "python_model_classes": 919,
+    "python_model_source_modules": 524,
     "rust_pyo3_model_wrappers": 171,
     "rust_source_modules": 42,
-    "test_files": 852
+    "test_files": 853
   },
   "documentation": {
     "examples": [
@@ -436,7 +436,7 @@
       {
         "package": "accel",
         "path": "src/scpn_quantum_control/accel",
-        "python_modules": 70
+        "python_modules": 71
       },
       {
         "package": "analysis",
@@ -3956,6 +3956,10 @@
         "path": "src/scpn_quantum_control/benchmark_harness/synchronisation.py"
       },
       {
+        "name": "SynchronisationCertificate",
+        "path": "src/scpn_quantum_control/accel/synchronisation_certificate.py"
+      },
+      {
         "name": "SynchronisationForecastBenchmarkResult",
         "path": "src/scpn_quantum_control/forecasting/real_data_sync.py"
       },
@@ -4337,6 +4341,7 @@
       "src/scpn_quantum_control/accel/sakaguchi_mean_field.py",
       "src/scpn_quantum_control/accel/stuart_landau.py",
       "src/scpn_quantum_control/accel/swarmalators.py",
+      "src/scpn_quantum_control/accel/synchronisation_certificate.py",
       "src/scpn_quantum_control/accel/tier_benchmark.py",
       "src/scpn_quantum_control/accel/topological_synchronisation.py",
       "src/scpn_quantum_control/accel/triadic_mean_field.py",
@@ -6659,6 +6664,7 @@
       "tests/test_sync_witness.py",
       "tests/test_synchronisation_benchmark_compare.py",
       "tests/test_synchronisation_benchmark_registry.py",
+      "tests/test_synchronisation_certificate.py",
       "tests/test_synchronisation_compare_branches.py",
       "tests/test_synchronisation_runner_branches.py",
       "tests/test_tcbo_observer.py",

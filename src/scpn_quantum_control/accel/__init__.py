@@ -462,6 +462,14 @@ from .swarmalators import (
     swarmalator_field,
     swarmalator_order_parameters,
 )
+from .synchronisation_certificate import (
+    SynchronisationCertificate,
+    certify_synchronisation,
+    contraction_rate,
+    phase_cohesiveness,
+    potential_decrease_rate,
+    synchronisation_potential,
+)
 from .topological_synchronisation import (
     HodgeComponents,
     HodgeStructure,
@@ -643,6 +651,12 @@ __all__ = [
     "topological_kuramoto_field",
     "integrate_topological_kuramoto",
     "topological_order_parameter",
+    "SynchronisationCertificate",
+    "phase_cohesiveness",
+    "contraction_rate",
+    "synchronisation_potential",
+    "potential_decrease_rate",
+    "certify_synchronisation",
     "SparseDynamicsModel",
     "discover_phase_dynamics",
     "StuartLandauTrajectory",
