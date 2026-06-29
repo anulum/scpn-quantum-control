@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 775,
     "public_documentation_pages": 254,
-    "python_model_classes": 915,
-    "python_model_source_modules": 522,
+    "python_model_classes": 918,
+    "python_model_source_modules": 523,
     "rust_pyo3_model_wrappers": 171,
     "rust_source_modules": 42,
-    "test_files": 851
+    "test_files": 852
   },
   "documentation": {
     "examples": [
@@ -436,7 +436,7 @@
       {
         "package": "accel",
         "path": "src/scpn_quantum_control/accel",
-        "python_modules": 69
+        "python_modules": 70
       },
       {
         "package": "analysis",
@@ -1986,6 +1986,14 @@
       {
         "name": "HigherOrderWatanabeStrogatzTrajectory",
         "path": "src/scpn_quantum_control/accel/kuramoto_higher_order_watanabe_strogatz.py"
+      },
+      {
+        "name": "HodgeComponents",
+        "path": "src/scpn_quantum_control/accel/topological_synchronisation.py"
+      },
+      {
+        "name": "HodgeStructure",
+        "path": "src/scpn_quantum_control/accel/topological_synchronisation.py"
       },
       {
         "name": "HostReadiness",
@@ -4016,6 +4024,10 @@
         "path": "src/scpn_quantum_control/topology_control/qsnn_integration.py"
       },
       {
+        "name": "TopologicalKuramotoTrajectory",
+        "path": "src/scpn_quantum_control/accel/topological_synchronisation.py"
+      },
+      {
         "name": "TopologyConstraintLedger",
         "path": "src/scpn_quantum_control/topology_control/constraints.py"
       },
@@ -4326,6 +4338,7 @@
       "src/scpn_quantum_control/accel/stuart_landau.py",
       "src/scpn_quantum_control/accel/swarmalators.py",
       "src/scpn_quantum_control/accel/tier_benchmark.py",
+      "src/scpn_quantum_control/accel/topological_synchronisation.py",
       "src/scpn_quantum_control/accel/triadic_mean_field.py",
       "src/scpn_quantum_control/accel/winfree.py",
       "src/scpn_quantum_control/analysis/adaptive_fim_feedback.py",
@@ -6659,6 +6672,7 @@
       "tests/test_tier_benchmark.py",
       "tests/test_topological_coupling_guard.py",
       "tests/test_topological_optimizer.py",
+      "tests/test_topological_synchronisation.py",
       "tests/test_topology_auth_edge.py",
       "tests/test_topology_complexes.py",
       "tests/test_topology_constraints_guards.py",

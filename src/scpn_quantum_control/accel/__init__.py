@@ -462,6 +462,16 @@ from .swarmalators import (
     swarmalator_field,
     swarmalator_order_parameters,
 )
+from .topological_synchronisation import (
+    HodgeComponents,
+    HodgeStructure,
+    TopologicalKuramotoTrajectory,
+    hodge_decomposition,
+    integrate_topological_kuramoto,
+    simplicial_hodge_structure,
+    topological_kuramoto_field,
+    topological_order_parameter,
+)
 from .triadic_mean_field import (
     last_triadic_mean_field_force_tier_used,
     last_triadic_mean_field_jacobian_tier_used,
@@ -625,6 +635,14 @@ __all__ = [
     "mean_photon_number",
     "phase_distribution",
     "phase_synchronisation",
+    "HodgeStructure",
+    "HodgeComponents",
+    "TopologicalKuramotoTrajectory",
+    "simplicial_hodge_structure",
+    "hodge_decomposition",
+    "topological_kuramoto_field",
+    "integrate_topological_kuramoto",
+    "topological_order_parameter",
     "SparseDynamicsModel",
     "discover_phase_dynamics",
     "StuartLandauTrajectory",
