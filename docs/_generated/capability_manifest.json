@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 775,
     "public_documentation_pages": 254,
-    "python_model_classes": 913,
-    "python_model_source_modules": 520,
+    "python_model_classes": 914,
+    "python_model_source_modules": 521,
     "rust_pyo3_model_wrappers": 171,
     "rust_source_modules": 42,
-    "test_files": 849
+    "test_files": 850
   },
   "documentation": {
     "examples": [
@@ -436,7 +436,7 @@
       {
         "package": "accel",
         "path": "src/scpn_quantum_control/accel",
-        "python_modules": 67
+        "python_modules": 68
       },
       {
         "package": "analysis",
@@ -2452,6 +2452,10 @@
         "path": "src/scpn_quantum_control/bridge/orchestrator_feedback.py"
       },
       {
+        "name": "OscillatorIsingTrajectory",
+        "path": "src/scpn_quantum_control/accel/oscillator_ising_machine.py"
+      },
+      {
         "name": "OuterCycleResult",
         "path": "src/scpn_quantum_control/ssgf/quantum_outer_cycle.py"
       },
@@ -4309,6 +4313,7 @@
       "src/scpn_quantum_control/accel/multiplex_master_stability.py",
       "src/scpn_quantum_control/accel/networked_kuramoto.py",
       "src/scpn_quantum_control/accel/order_parameter_observables.py",
+      "src/scpn_quantum_control/accel/oscillator_ising_machine.py",
       "src/scpn_quantum_control/accel/rust_import.py",
       "src/scpn_quantum_control/accel/rust_kuramoto_classical.py",
       "src/scpn_quantum_control/accel/sakaguchi_kuramoto.py",
@@ -6309,6 +6314,7 @@
       "tests/test_orchestrator_adapter_errors.py",
       "tests/test_orchestrator_adapter_helpers.py",
       "tests/test_orchestrator_feedback.py",
+      "tests/test_oscillator_ising_machine.py",
       "tests/test_otoc.py",
       "tests/test_otoc_mutation_kills.py",
       "tests/test_otoc_sync_probe.py",

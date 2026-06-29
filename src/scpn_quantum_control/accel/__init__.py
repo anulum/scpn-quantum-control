@@ -416,6 +416,15 @@ from .order_parameter_observables import (
     order_parameter_gradient,
     order_parameter_hessian,
 )
+from .oscillator_ising_machine import (
+    OscillatorIsingTrajectory,
+    cut_value,
+    integrate_oscillator_ising_machine,
+    ising_hamiltonian,
+    ising_spins,
+    oscillator_ising_energy,
+    oscillator_ising_field,
+)
 from .sakaguchi_kuramoto import (
     last_sakaguchi_force_tier_used,
     last_sakaguchi_jacobian_tier_used,
@@ -593,6 +602,13 @@ __all__ = [
     "PolicyRolloutGradients",
     "policy_rollout_value_and_grad",
     "learn_desynchronising_policy",
+    "OscillatorIsingTrajectory",
+    "oscillator_ising_field",
+    "oscillator_ising_energy",
+    "ising_spins",
+    "ising_hamiltonian",
+    "cut_value",
+    "integrate_oscillator_ising_machine",
     "SparseDynamicsModel",
     "discover_phase_dynamics",
     "StuartLandauTrajectory",
