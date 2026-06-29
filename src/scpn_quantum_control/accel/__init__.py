@@ -400,6 +400,15 @@ from .sakaguchi_mean_field import (
     sakaguchi_mean_field_force,
     sakaguchi_mean_field_jacobian,
 )
+from .stuart_landau import (
+    StuartLandauTrajectory,
+    amplitudes,
+    integrate_stuart_landau,
+    is_oscillation_death,
+    stuart_landau_field,
+    stuart_landau_jacobian,
+    stuart_landau_order_parameter,
+)
 from .triadic_mean_field import (
     last_triadic_mean_field_force_tier_used,
     last_triadic_mean_field_jacobian_tier_used,
@@ -538,6 +547,13 @@ __all__ = [
     "track_time_varying_coupling",
     "SparseDynamicsModel",
     "discover_phase_dynamics",
+    "StuartLandauTrajectory",
+    "stuart_landau_field",
+    "stuart_landau_jacobian",
+    "integrate_stuart_landau",
+    "amplitudes",
+    "stuart_landau_order_parameter",
+    "is_oscillation_death",
     "BasinEstimate",
     "estimate_ring_basins",
     "is_twisted_state_stable",

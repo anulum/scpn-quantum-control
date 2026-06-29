@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 775,
     "public_documentation_pages": 254,
-    "python_model_classes": 904,
-    "python_model_source_modules": 512,
+    "python_model_classes": 905,
+    "python_model_source_modules": 513,
     "rust_pyo3_model_wrappers": 171,
     "rust_source_modules": 42,
-    "test_files": 841
+    "test_files": 842
   },
   "documentation": {
     "examples": [
@@ -436,7 +436,7 @@
       {
         "package": "accel",
         "path": "src/scpn_quantum_control/accel",
-        "python_modules": 59
+        "python_modules": 60
       },
       {
         "package": "analysis",
@@ -3852,6 +3852,10 @@
         "path": "src/scpn_quantum_control/control/structured_ansatz.py"
       },
       {
+        "name": "StuartLandauTrajectory",
+        "path": "src/scpn_quantum_control/accel/stuart_landau.py"
+      },
+      {
         "name": "StudioBundleValidation",
         "path": "src/scpn_quantum_control/studio/evidence_bundle.py"
       },
@@ -4272,6 +4276,7 @@
       "src/scpn_quantum_control/accel/rust_kuramoto_classical.py",
       "src/scpn_quantum_control/accel/sakaguchi_kuramoto.py",
       "src/scpn_quantum_control/accel/sakaguchi_mean_field.py",
+      "src/scpn_quantum_control/accel/stuart_landau.py",
       "src/scpn_quantum_control/accel/tier_benchmark.py",
       "src/scpn_quantum_control/accel/triadic_mean_field.py",
       "src/scpn_quantum_control/analysis/adaptive_fim_feedback.py",
@@ -6554,6 +6559,7 @@
       "tests/test_stress_scale.py",
       "tests/test_structured_ansatz.py",
       "tests/test_structured_ansatz_branches.py",
+      "tests/test_stuart_landau.py",
       "tests/test_studio_evidence_bundle.py",
       "tests/test_studio_manifest.py",
       "tests/test_studio_recompute_kernel.py",
