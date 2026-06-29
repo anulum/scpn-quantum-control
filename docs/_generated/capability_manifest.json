@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 775,
     "public_documentation_pages": 254,
-    "python_model_classes": 910,
-    "python_model_source_modules": 517,
+    "python_model_classes": 911,
+    "python_model_source_modules": 518,
     "rust_pyo3_model_wrappers": 171,
     "rust_source_modules": 42,
-    "test_files": 846
+    "test_files": 847
   },
   "documentation": {
     "examples": [
@@ -436,7 +436,7 @@
       {
         "package": "accel",
         "path": "src/scpn_quantum_control/accel",
-        "python_modules": 64
+        "python_modules": 65
       },
       {
         "package": "analysis",
@@ -1978,6 +1978,10 @@
       {
         "name": "HigherOrderKuramotoSpec",
         "path": "src/scpn_quantum_control/phase/kuramoto_variants.py"
+      },
+      {
+        "name": "HigherOrderWatanabeStrogatzTrajectory",
+        "path": "src/scpn_quantum_control/accel/kuramoto_higher_order_watanabe_strogatz.py"
       },
       {
         "name": "HostReadiness",
@@ -4268,6 +4272,7 @@
       "src/scpn_quantum_control/accel/kuramoto_explosive_continuation.py",
       "src/scpn_quantum_control/accel/kuramoto_frequency_order.py",
       "src/scpn_quantum_control/accel/kuramoto_heterogeneous.py",
+      "src/scpn_quantum_control/accel/kuramoto_higher_order_watanabe_strogatz.py",
       "src/scpn_quantum_control/accel/kuramoto_hyperedge.py",
       "src/scpn_quantum_control/accel/kuramoto_inertial.py",
       "src/scpn_quantum_control/accel/kuramoto_lyapunov.py",
@@ -6215,6 +6220,7 @@
       "tests/test_kuramoto_frequency_order.py",
       "tests/test_kuramoto_handbook_workflow_example.py",
       "tests/test_kuramoto_heterogeneous.py",
+      "tests/test_kuramoto_higher_order_watanabe_strogatz.py",
       "tests/test_kuramoto_hyperedge.py",
       "tests/test_kuramoto_inertial.py",
       "tests/test_kuramoto_input_hardening.py",

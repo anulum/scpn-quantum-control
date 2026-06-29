@@ -236,6 +236,10 @@ from .kuramoto_heterogeneous import (
     pairwise_term,
     simplex_mean_field_term,
 )
+from .kuramoto_higher_order_watanabe_strogatz import (
+    HigherOrderWatanabeStrogatzTrajectory,
+    integrate_higher_order_watanabe_strogatz,
+)
 from .kuramoto_hyperedge import (
     hyperedge_force,
     hyperedge_jacobian,
@@ -598,6 +602,8 @@ __all__ = [
     "MultiplexSynchronisationStability",
     "master_stability_function",
     "multiplex_synchronisation_stability",
+    "HigherOrderWatanabeStrogatzTrajectory",
+    "integrate_higher_order_watanabe_strogatz",
     "BasinEstimate",
     "estimate_ring_basins",
     "is_twisted_state_stable",
