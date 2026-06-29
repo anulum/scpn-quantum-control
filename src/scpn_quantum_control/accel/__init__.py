@@ -271,6 +271,10 @@ from .kuramoto_pinning_control import (
     pinning_coherence_value,
     pinning_coherence_value_and_grad,
 )
+from .kuramoto_pseudo_arclength import (
+    PseudoArclengthBranch,
+    pseudo_arclength_continuation,
+)
 from .kuramoto_qif_mean_field import (
     QifMeanFieldGradients,
     QifMeanFieldTrajectory,
@@ -478,6 +482,8 @@ __all__ = [
     "BasinStabilityEstimate",
     "synchronisation_basin_stability",
     "integrate_symplectic_inertial",
+    "PseudoArclengthBranch",
+    "pseudo_arclength_continuation",
     "BasinEstimate",
     "estimate_ring_basins",
     "is_twisted_state_stable",

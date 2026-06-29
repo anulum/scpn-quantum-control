@@ -87,6 +87,7 @@ from .accel import (
     PhasePotential,
     PinningDesignResult,
     PlasticityRule,
+    PseudoArclengthBranch,
     QifMeanFieldGradients,
     QifMeanFieldTrajectory,
     StabilitySpectrum,
@@ -256,6 +257,7 @@ from .accel import (
     phase_target_objective,
     pinning_coherence_value,
     pinning_coherence_value_and_grad,
+    pseudo_arclength_continuation,
     qif_mean_field_fixed_point,
     qif_mean_field_jacobian,
     qif_mean_field_rates,
@@ -436,6 +438,8 @@ _CAPABILITIES: dict[str, tuple[str, ...]] = {
         "ContinuationBranch",
         "HysteresisLoop",
         "continuation_sweep",
+        "PseudoArclengthBranch",
+        "pseudo_arclength_continuation",
         "hysteresis_loop",
         "triadic_hysteresis_loop",
         "BasinEstimate",
@@ -598,6 +602,8 @@ def describe(category: str | None = None) -> str:
 
 
 __all__ = [
+    "PseudoArclengthBranch",
+    "pseudo_arclength_continuation",
     "BasinStabilityEstimate",
     "integrate_symplectic_inertial",
     "synchronisation_basin_stability",
