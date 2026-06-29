@@ -107,6 +107,7 @@ from .accel import (
     TerminalObjective,
     TimeVaryingCouplingHistory,
     WatanabeStrogatzTrajectory,
+    WinfreeTrajectory,
     adaptive_state_sensitivity,
     adaptive_terminal_value_and_grad,
     adaptive_vector_field,
@@ -183,6 +184,7 @@ from .accel import (
     integrate_swarmalators,
     integrate_symplectic_inertial,
     integrate_watanabe_strogatz,
+    integrate_winfree,
     interaction_energy_objective,
     is_oscillation_death,
     is_synchronisation_stable,
@@ -330,6 +332,8 @@ from .accel import (
     watanabe_strogatz_order_parameter,
     watanabe_strogatz_phases,
     winding_number,
+    winfree_field,
+    winfree_jacobian,
 )
 
 # The capability map — each group lists the public symbols (by name) of one coherent part of the
@@ -367,6 +371,8 @@ _CAPABILITIES: dict[str, tuple[str, ...]] = {
         "stuart_landau_field",
         "stuart_landau_jacobian",
         "swarmalator_field",
+        "winfree_field",
+        "winfree_jacobian",
     ),
     "integrators": (
         "kuramoto_euler_trajectory",
@@ -406,6 +412,8 @@ _CAPABILITIES: dict[str, tuple[str, ...]] = {
         "StuartLandauTrajectory",
         "integrate_swarmalators",
         "SwarmalatorTrajectory",
+        "integrate_winfree",
+        "WinfreeTrajectory",
     ),
     "observables": (
         "order_parameter",
@@ -704,6 +712,10 @@ __all__ = [
     "swarmalator_field",
     "integrate_swarmalators",
     "swarmalator_order_parameters",
+    "WinfreeTrajectory",
+    "winfree_field",
+    "winfree_jacobian",
+    "integrate_winfree",
     "PseudoArclengthBranch",
     "pseudo_arclength_continuation",
     "BasinStabilityEstimate",

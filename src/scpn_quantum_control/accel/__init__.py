@@ -422,6 +422,12 @@ from .triadic_mean_field import (
     triadic_mean_field_force,
     triadic_mean_field_jacobian,
 )
+from .winfree import (
+    WinfreeTrajectory,
+    integrate_winfree,
+    winfree_field,
+    winfree_jacobian,
+)
 
 __all__ = [
     "MultiLangDispatcher",
@@ -566,6 +572,10 @@ __all__ = [
     "swarmalator_field",
     "integrate_swarmalators",
     "swarmalator_order_parameters",
+    "WinfreeTrajectory",
+    "winfree_field",
+    "winfree_jacobian",
+    "integrate_winfree",
     "BasinEstimate",
     "estimate_ring_basins",
     "is_twisted_state_stable",

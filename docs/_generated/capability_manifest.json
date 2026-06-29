@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 775,
     "public_documentation_pages": 254,
-    "python_model_classes": 907,
-    "python_model_source_modules": 514,
+    "python_model_classes": 908,
+    "python_model_source_modules": 515,
     "rust_pyo3_model_wrappers": 171,
     "rust_source_modules": 42,
-    "test_files": 843
+    "test_files": 844
   },
   "documentation": {
     "examples": [
@@ -436,7 +436,7 @@
       {
         "package": "accel",
         "path": "src/scpn_quantum_control/accel",
-        "python_modules": 61
+        "python_modules": 62
       },
       {
         "package": "analysis",
@@ -4180,6 +4180,10 @@
         "path": "src/scpn_quantum_control/gauge/wilson_loop.py"
       },
       {
+        "name": "WinfreeTrajectory",
+        "path": "src/scpn_quantum_control/accel/winfree.py"
+      },
+      {
         "name": "WirtingerDerivative",
         "path": "src/scpn_quantum_control/wirtinger_calculus.py"
       },
@@ -4288,6 +4292,7 @@
       "src/scpn_quantum_control/accel/swarmalators.py",
       "src/scpn_quantum_control/accel/tier_benchmark.py",
       "src/scpn_quantum_control/accel/triadic_mean_field.py",
+      "src/scpn_quantum_control/accel/winfree.py",
       "src/scpn_quantum_control/analysis/adaptive_fim_feedback.py",
       "src/scpn_quantum_control/analysis/berry_phase.py",
       "src/scpn_quantum_control/analysis/bkt_analysis.py",
@@ -6648,6 +6653,7 @@
       "tests/test_whole_program_trace_predicates.py",
       "tests/test_whole_program_trace_runtime.py",
       "tests/test_wilson_loop.py",
+      "tests/test_winfree.py",
       "tests/test_wirtinger_calculus.py",
       "tests/test_witness_discovery.py",
       "tests/test_witness_discovery_engine_fallback.py",
