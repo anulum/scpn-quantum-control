@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 775,
     "public_documentation_pages": 254,
-    "python_model_classes": 897,
-    "python_model_source_modules": 508,
+    "python_model_classes": 899,
+    "python_model_source_modules": 509,
     "rust_pyo3_model_wrappers": 171,
     "rust_source_modules": 42,
-    "test_files": 837
+    "test_files": 838
   },
   "documentation": {
     "examples": [
@@ -436,7 +436,7 @@
       {
         "package": "accel",
         "path": "src/scpn_quantum_control/accel",
-        "python_modules": 55
+        "python_modules": 56
       },
       {
         "package": "analysis",
@@ -1094,6 +1094,10 @@
       {
         "name": "ControlQEC",
         "path": "src/scpn_quantum_control/qec/control_qec.py"
+      },
+      {
+        "name": "ControlledNetworkTrajectory",
+        "path": "src/scpn_quantum_control/accel/kuramoto_network_control.py"
       },
       {
         "name": "CoordinatedResetGradients",
@@ -2318,6 +2322,10 @@
       {
         "name": "NaturalGradientResult",
         "path": "src/scpn_quantum_control/differentiable_result_contracts.py"
+      },
+      {
+        "name": "NetworkControlGradients",
+        "path": "src/scpn_quantum_control/accel/kuramoto_network_control.py"
       },
       {
         "name": "NetworkCycleBackend",
@@ -4218,6 +4226,7 @@
       "src/scpn_quantum_control/accel/kuramoto_inertial.py",
       "src/scpn_quantum_control/accel/kuramoto_lyapunov.py",
       "src/scpn_quantum_control/accel/kuramoto_mean_field.py",
+      "src/scpn_quantum_control/accel/kuramoto_network_control.py",
       "src/scpn_quantum_control/accel/kuramoto_noisy.py",
       "src/scpn_quantum_control/accel/kuramoto_noisy_mean_field.py",
       "src/scpn_quantum_control/accel/kuramoto_ott_antonsen.py",
@@ -6157,6 +6166,7 @@
       "tests/test_kuramoto_input_hardening.py",
       "tests/test_kuramoto_lyapunov.py",
       "tests/test_kuramoto_mean_field.py",
+      "tests/test_kuramoto_network_control.py",
       "tests/test_kuramoto_noisy.py",
       "tests/test_kuramoto_noisy_mean_field.py",
       "tests/test_kuramoto_ott_antonsen.py",

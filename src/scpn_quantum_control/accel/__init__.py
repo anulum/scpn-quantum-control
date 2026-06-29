@@ -246,6 +246,13 @@ from .kuramoto_mean_field import (
     mean_field_force,
     mean_field_jacobian,
 )
+from .kuramoto_network_control import (
+    ControlledNetworkTrajectory,
+    NetworkControlGradients,
+    integrate_controlled_network,
+    network_control_value_and_grad,
+    optimise_network_control,
+)
 from .kuramoto_noisy import (
     NoisyKuramotoRun,
     StochasticForce,
@@ -496,6 +503,11 @@ __all__ = [
     "collective_control_value_and_grad",
     "integrate_forced_collective",
     "optimise_collective_forcing",
+    "ControlledNetworkTrajectory",
+    "NetworkControlGradients",
+    "integrate_controlled_network",
+    "network_control_value_and_grad",
+    "optimise_network_control",
     "BasinEstimate",
     "estimate_ring_basins",
     "is_twisted_state_stable",
