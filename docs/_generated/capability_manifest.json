@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 775,
     "public_documentation_pages": 254,
-    "python_model_classes": 895,
-    "python_model_source_modules": 507,
+    "python_model_classes": 897,
+    "python_model_source_modules": 508,
     "rust_pyo3_model_wrappers": 171,
     "rust_source_modules": 42,
-    "test_files": 836
+    "test_files": 837
   },
   "documentation": {
     "examples": [
@@ -436,7 +436,7 @@
       {
         "package": "accel",
         "path": "src/scpn_quantum_control/accel",
-        "python_modules": 54
+        "python_modules": 55
       },
       {
         "package": "analysis",
@@ -978,6 +978,10 @@
       {
         "name": "CoSimulationResult",
         "path": "src/scpn_quantum_control/cosimulation/quantum_classical.py"
+      },
+      {
+        "name": "CollectiveControlGradients",
+        "path": "src/scpn_quantum_control/accel/kuramoto_collective_control.py"
       },
       {
         "name": "ComparisonMethodRow",
@@ -1754,6 +1758,10 @@
       {
         "name": "FloquetResult",
         "path": "src/scpn_quantum_control/phase/floquet_kuramoto.py"
+      },
+      {
+        "name": "ForcedCollectiveTrajectory",
+        "path": "src/scpn_quantum_control/accel/kuramoto_collective_control.py"
       },
       {
         "name": "ForecastModelRun",
@@ -4195,6 +4203,7 @@
       "src/scpn_quantum_control/accel/kuramoto_chimera.py",
       "src/scpn_quantum_control/accel/kuramoto_clusters.py",
       "src/scpn_quantum_control/accel/kuramoto_coherence_matrix.py",
+      "src/scpn_quantum_control/accel/kuramoto_collective_control.py",
       "src/scpn_quantum_control/accel/kuramoto_control.py",
       "src/scpn_quantum_control/accel/kuramoto_coordinated_reset.py",
       "src/scpn_quantum_control/accel/kuramoto_coupling_design.py",
@@ -6127,6 +6136,7 @@
       "tests/test_kuramoto_chimera.py",
       "tests/test_kuramoto_clusters.py",
       "tests/test_kuramoto_coherence_matrix.py",
+      "tests/test_kuramoto_collective_control.py",
       "tests/test_kuramoto_competitive_benchmark.py",
       "tests/test_kuramoto_control.py",
       "tests/test_kuramoto_coordinated_reset.py",

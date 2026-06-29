@@ -135,6 +135,13 @@ from .kuramoto_coherence_matrix import (
     mean_coherence_matrix,
     phase_locking_matrix,
 )
+from .kuramoto_collective_control import (
+    CollectiveControlGradients,
+    ForcedCollectiveTrajectory,
+    collective_control_value_and_grad,
+    integrate_forced_collective,
+    optimise_collective_forcing,
+)
 from .kuramoto_control import (
     TerminalObjective,
     coherence_objective,
@@ -484,6 +491,11 @@ __all__ = [
     "integrate_symplectic_inertial",
     "PseudoArclengthBranch",
     "pseudo_arclength_continuation",
+    "CollectiveControlGradients",
+    "ForcedCollectiveTrajectory",
+    "collective_control_value_and_grad",
+    "integrate_forced_collective",
+    "optimise_collective_forcing",
     "BasinEstimate",
     "estimate_ring_basins",
     "is_twisted_state_stable",
