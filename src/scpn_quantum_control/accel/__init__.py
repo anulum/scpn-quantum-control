@@ -108,6 +108,10 @@ from .kuramoto_adaptive import (
     hebbian_plasticity_rate,
     integrate_adaptive_kuramoto,
 )
+from .kuramoto_basin_stability import (
+    BasinStabilityEstimate,
+    synchronisation_basin_stability,
+)
 from .kuramoto_chimera import (
     ChimeraDiagnostics,
     chimera_diagnostics,
@@ -470,6 +474,8 @@ __all__ = [
     "coordinated_reset_sites",
     "coordinated_reset_terminal_value_and_grad",
     "integrate_coordinated_reset",
+    "BasinStabilityEstimate",
+    "synchronisation_basin_stability",
     "BasinEstimate",
     "estimate_ring_basins",
     "is_twisted_state_stable",

@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 775,
     "public_documentation_pages": 254,
-    "python_model_classes": 893,
-    "python_model_source_modules": 504,
+    "python_model_classes": 894,
+    "python_model_source_modules": 505,
     "rust_pyo3_model_wrappers": 171,
     "rust_source_modules": 42,
-    "test_files": 833
+    "test_files": 834
   },
   "documentation": {
     "examples": [
@@ -436,7 +436,7 @@
       {
         "package": "accel",
         "path": "src/scpn_quantum_control/accel",
-        "python_modules": 51
+        "python_modules": 52
       },
       {
         "package": "analysis",
@@ -826,6 +826,10 @@
       {
         "name": "BasinEstimate",
         "path": "src/scpn_quantum_control/accel/kuramoto_ring_basins.py"
+      },
+      {
+        "name": "BasinStabilityEstimate",
+        "path": "src/scpn_quantum_control/accel/kuramoto_basin_stability.py"
       },
       {
         "name": "BenchmarkFamily",
@@ -4183,6 +4187,7 @@
       "src/scpn_quantum_control/accel/diff_kuramoto_rk4.py",
       "src/scpn_quantum_control/accel/dispatcher.py",
       "src/scpn_quantum_control/accel/kuramoto_adaptive.py",
+      "src/scpn_quantum_control/accel/kuramoto_basin_stability.py",
       "src/scpn_quantum_control/accel/kuramoto_chimera.py",
       "src/scpn_quantum_control/accel/kuramoto_clusters.py",
       "src/scpn_quantum_control/accel/kuramoto_coherence_matrix.py",
@@ -6112,6 +6117,7 @@
       "tests/test_koopman_rust_generator_branches.py",
       "tests/test_krylov_complexity.py",
       "tests/test_kuramoto_adaptive.py",
+      "tests/test_kuramoto_basin_stability.py",
       "tests/test_kuramoto_chimera.py",
       "tests/test_kuramoto_clusters.py",
       "tests/test_kuramoto_coherence_matrix.py",

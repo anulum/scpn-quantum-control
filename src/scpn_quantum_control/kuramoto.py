@@ -60,6 +60,7 @@ from .accel import (
     AdaptivePhaseForce,
     AdaptiveTrajectory,
     BasinEstimate,
+    BasinStabilityEstimate,
     ChimeraDiagnostics,
     ClusterPartition,
     ContinuationBranch,
@@ -270,6 +271,7 @@ from .accel import (
     stability_spectrum,
     stable_synchronised_frequencies,
     symmetric_nonnegative_projection,
+    synchronisation_basin_stability,
     synchronisation_rate,
     synchronisation_value_and_grad,
     synchronised_branch_stability,
@@ -436,6 +438,8 @@ _CAPABILITIES: dict[str, tuple[str, ...]] = {
         "triadic_hysteresis_loop",
         "BasinEstimate",
         "estimate_ring_basins",
+        "BasinStabilityEstimate",
+        "synchronisation_basin_stability",
         "ring_coupling_matrix",
         "twisted_state",
         "twisted_state_eigenvalues",
@@ -592,6 +596,8 @@ def describe(category: str | None = None) -> str:
 
 
 __all__ = [
+    "BasinStabilityEstimate",
+    "synchronisation_basin_stability",
     "CoordinatedResetGradients",
     "CoordinatedResetTrajectory",
     "coordinated_reset_phases",
