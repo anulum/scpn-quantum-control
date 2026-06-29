@@ -5,29 +5,43 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Avqds
-"""Adaptive Variational Quantum Dynamics Simulation (AVQDS).
+"""McLachlan variational quantum real-time dynamics with a fixed ansatz.
 
-AVQDS (Yao et al., PRX Quantum 2, 030307 (2021)) simulates real-time
-dynamics using a variational ansatz that adapts at each time step:
+The state is evolved in real time with McLachlan's time-dependent variational
+principle (TDVP). For a parametrised ansatz A(θ)|0>, the parameters follow the
+equation of motion that minimises the McLachlan distance
+||d/dt|ψ> + iH|ψ>||²:
 
-    |ψ(t+dt)> ≈ A(θ + dθ)|0>
+    M(θ) × dθ/dt = V(θ),
+    M_ij = Re(<∂_i ψ|∂_j ψ>),   V_i = -Im(<∂_i ψ|H|ψ>),
 
-where dθ is found by minimising the McLachlan distance:
+where M is the real part of the quantum geometric tensor (the Fubini–Study
+metric) and V is the force projected onto the tangent space. Integrating this
+ODE propagates θ(t) so that A(θ(t))|0> tracks e^{-iHt}|ψ_0>.
 
-    ||d/dt|ψ> + iH|ψ>||² → min
+Relationship to AVQDS (Yao et al., PRX Quantum 2, 030307 (2021))
+----------------------------------------------------------------
+The McLachlan equation of motion above is the dynamical core of AVQDS. The full
+AVQDS algorithm additionally grows the ansatz *adaptively*: at each step it
+draws from an operator pool and appends the operator that most reduces the
+McLachlan distance, so the parameter count rises on demand. This module does
+NOT perform that operator-pool growth — the ansatz is fixed at construction
+(see :func:`scpn_quantum_control.bridge.knm_hamiltonian.knm_to_ansatz`: a
+physics-informed hardware-efficient circuit of RY/RZ rotations with CZ
+entanglers on K_nm-connected pairs), so the parameter count is constant for the
+whole trajectory. It is therefore fixed-ansatz variational quantum real-time
+evolution (VarQRTE) — the non-adaptive special case of AVQDS, retaining the
+historical name and acronym for the cited lineage.
 
-This gives the equation of motion:
-    M × dθ/dt = V
+Two honesty caveats on fidelity to the publication:
+    - M is built from central finite-difference parameter derivatives
+      (``epsilon`` below), not the analytic quantum geometric tensor.
+    - Circuit depth is set by the ansatz and is independent of ``t_total``; this
+      follows from using any fixed-ansatz variational propagator, not from
+      operator growth.
 
-where M_ij = Re(<∂_i ψ|∂_j ψ>) and V_i = -Im(<∂_i ψ|H|ψ>).
-
-Advantages over Trotter:
-    - Circuit depth independent of simulation time (only ansatz depth)
-    - Adapts to the actual dynamics (adds operators when needed)
-    - 100x shallower than Trotter for same accuracy at long times
-
-For the Kuramoto-XY system, AVQDS tracks synchronisation dynamics
-in real time without deep Trotter circuits.
+For the Kuramoto-XY system this tracks synchronisation dynamics in real time
+with a depth fixed by the ansatz rather than by a Trotter step count.
 """
 
 from __future__ import annotations
@@ -57,7 +71,20 @@ class _SparseMatrixLike(Protocol):
 
 @dataclass
 class AVQDSResult:
-    """AVQDS simulation result."""
+    """Result of a fixed-ansatz McLachlan variational real-time simulation.
+
+    Attributes:
+        times: sample times of the trajectory, shape ``(n_steps + 1,)``.
+        energies: ``<ψ(t)|H|ψ(t)>`` at each sample time.
+        fidelities: squared overlap ``|<ψ_exact(t)|ψ(t)>|²`` against the
+            exact reference evolution at each sample time.
+        parameters_history: ansatz parameter vectors θ(t) at each sample time.
+            Every entry has the same length ``n_params`` — the ansatz is fixed,
+            so the count never grows (no adaptive operator pool).
+        n_params: number of variational parameters of the fixed ansatz.
+        final_energy: energy at the final sample time.
+        final_fidelity: fidelity against the exact reference at the final time.
+    """
 
     times: FloatArray
     energies: FloatArray
@@ -152,17 +179,28 @@ def avqds_simulate(
     *,
     max_dense_gib: float | None = None,
 ) -> AVQDSResult:
-    """Run AVQDS simulation of the Kuramoto-XY dynamics.
+    """Evolve the Kuramoto-XY dynamics by fixed-ansatz McLachlan variational propagation.
+
+    Builds the fixed physics-informed ansatz once, then time-steps its
+    parameters by solving the McLachlan equation of motion
+    ``M(θ) dθ/dt = V(θ)`` (regularised linear solve) while propagating an exact
+    reference state for the fidelity comparison. The ansatz structure is never
+    modified, so ``n_params`` is constant across the whole trajectory; this is
+    not the adaptive operator-pool growth of full AVQDS.
 
     Args:
-        K: coupling matrix
-        omega: natural frequencies
-        t_total: total simulation time
-        n_steps: number of variational time steps
-        ansatz_reps: ansatz circuit repetitions
-        seed: random seed for initial parameters
+        K: coupling matrix.
+        omega: natural frequencies.
+        t_total: total simulation time.
+        n_steps: number of variational time steps.
+        ansatz_reps: ansatz circuit repetitions (sets the fixed parameter count).
+        seed: random seed for initial parameters.
         max_dense_gib: dense exact-simulation budget for Hamiltonian,
-            statevector, and propagator allocations
+            statevector, and propagator allocations.
+
+    Returns:
+        AVQDSResult with the time grid, energies, fidelities against the exact
+        reference, the parameter history, and the final-step summaries.
     """
     from ..hardware.gpu_accel import expm
 

@@ -286,7 +286,7 @@ phase/                                     ← 75 modules: time evolution + vari
 ├── phase_vqe.py                               Variational eigensolver
 ├── adapt_vqe.py                             ★ Adaptive layered VQE (exact-GS)
 ├── varqite.py                                 Imaginary time evolution
-├── avqds.py                                   Adaptive variational dynamics
+├── avqds.py                                   Fixed-ansatz McLachlan variational dynamics
 ├── qsvt_evolution.py                          QSVT resource estimation (260× speedup)
 ├── adiabatic_preparation.py                   Adiabatic ground state prep
 ├── cross_domain_transfer.py                 ★ VQE parameter warm-starting (Gem 8)

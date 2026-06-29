@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Tests for Avqds
-"""Tests for AVQDS adaptive variational dynamics."""
+"""Tests for fixed-ansatz McLachlan variational real-time dynamics."""
 
 from __future__ import annotations
 
@@ -108,6 +108,24 @@ class TestAVQDS:
         omega = OMEGA_N_16[:3]
         result = avqds_simulate(K, omega, t_total=0.1, n_steps=2, seed=42)
         assert result.n_params > 0
+
+    def test_ansatz_parameter_count_is_constant_not_adaptive(self):
+        """The fixed ansatz must never grow: it is not the adaptive AVQDS.
+
+        Guards the docstring claim against the behaviour. Adaptive operator-pool
+        growth would lengthen the parameter vector on demand; here every entry
+        of the trajectory has the same length ``n_params`` across all steps.
+        """
+        K = build_knm_paper27(L=3)
+        omega = OMEGA_N_16[:3]
+        n_steps = 6
+        result = avqds_simulate(K, omega, t_total=0.2, n_steps=n_steps, seed=42)
+
+        # n*2*reps = 3*2*2 = 12 fixed parameters of the physics-informed ansatz.
+        assert result.n_params == 12
+        assert len(result.parameters_history) == n_steps + 1
+        sizes = {vector.size for vector in result.parameters_history}
+        assert sizes == {result.n_params}
 
     def test_short_time_high_fidelity(self):
         """Very short evolution should maintain high fidelity."""

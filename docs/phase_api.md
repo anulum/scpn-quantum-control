@@ -225,10 +225,14 @@ excited-state components exponentially in $\tau$, so the state inevitably relaxe
 ground state. The variational implementation avoids the non-unitary evolution problem
 by projecting the dynamics onto a parametric circuit manifold.
 
-### `avqds` — Adaptive Variational Quantum Dynamics Simulation
+### `avqds` — Fixed-ansatz McLachlan variational real-time dynamics
 
-McLachlan variational principle for *real*-time dynamics. Circuit depth is independent of
-simulation time $t$ (unlike Trotter, where depth $\propto t/\Delta t$).
+McLachlan's time-dependent variational principle for *real*-time dynamics. Circuit depth is
+independent of simulation time $t$ (unlike Trotter, where depth $\propto t/\Delta t$) because the
+ansatz is fixed at construction. This is the non-adaptive special case of AVQDS (Yao et al., PRX
+Quantum 2, 030307, 2021): it runs the McLachlan equation of motion on a fixed parameter set and does
+**not** grow the ansatz from an operator pool, so `n_params` is constant across the trajectory. The
+metric $M$ is built by finite differences, not the analytic quantum geometric tensor.
 
 ```python
 from scpn_quantum_control.phase.avqds import (
