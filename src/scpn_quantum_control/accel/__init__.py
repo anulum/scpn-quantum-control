@@ -303,6 +303,12 @@ from .kuramoto_pinning_control import (
     pinning_coherence_value,
     pinning_coherence_value_and_grad,
 )
+from .kuramoto_policy_learning import (
+    DesynchronisingPolicy,
+    PolicyRolloutGradients,
+    learn_desynchronising_policy,
+    policy_rollout_value_and_grad,
+)
 from .kuramoto_pseudo_arclength import (
     PseudoArclengthBranch,
     pseudo_arclength_continuation,
@@ -583,6 +589,10 @@ __all__ = [
     "kuramoto_sdre_gain",
     "sdre_control_input",
     "integrate_sdre_controlled_kuramoto",
+    "DesynchronisingPolicy",
+    "PolicyRolloutGradients",
+    "policy_rollout_value_and_grad",
+    "learn_desynchronising_policy",
     "SparseDynamicsModel",
     "discover_phase_dynamics",
     "StuartLandauTrajectory",

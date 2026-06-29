@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 775,
     "public_documentation_pages": 254,
-    "python_model_classes": 911,
-    "python_model_source_modules": 519,
+    "python_model_classes": 913,
+    "python_model_source_modules": 520,
     "rust_pyo3_model_wrappers": 171,
     "rust_source_modules": 42,
-    "test_files": 848
+    "test_files": 849
   },
   "documentation": {
     "examples": [
@@ -436,7 +436,7 @@
       {
         "package": "accel",
         "path": "src/scpn_quantum_control/accel",
-        "python_modules": 66
+        "python_modules": 67
       },
       {
         "package": "analysis",
@@ -1246,6 +1246,10 @@
       {
         "name": "DenseHermitianObservable",
         "path": "src/scpn_quantum_control/phase/qnode_circuit.py"
+      },
+      {
+        "name": "DesynchronisingPolicy",
+        "path": "src/scpn_quantum_control/accel/kuramoto_policy_learning.py"
       },
       {
         "name": "DifferentiabilityDiagnosticReport",
@@ -3080,6 +3084,10 @@
         "path": "src/scpn_quantum_control/hardware/plugin_registry.py"
       },
       {
+        "name": "PolicyRolloutGradients",
+        "path": "src/scpn_quantum_control/accel/kuramoto_policy_learning.py"
+      },
+      {
         "name": "PowerGridApplicationPlugin",
         "path": "src/scpn_quantum_control/applications/app_plugins.py"
       },
@@ -4283,6 +4291,7 @@
       "src/scpn_quantum_control/accel/kuramoto_ott_antonsen.py",
       "src/scpn_quantum_control/accel/kuramoto_phase_information.py",
       "src/scpn_quantum_control/accel/kuramoto_pinning_control.py",
+      "src/scpn_quantum_control/accel/kuramoto_policy_learning.py",
       "src/scpn_quantum_control/accel/kuramoto_pseudo_arclength.py",
       "src/scpn_quantum_control/accel/kuramoto_qif_mean_field.py",
       "src/scpn_quantum_control/accel/kuramoto_ring_basins.py",
@@ -6233,6 +6242,7 @@
       "tests/test_kuramoto_ott_antonsen.py",
       "tests/test_kuramoto_phase_information.py",
       "tests/test_kuramoto_pinning_control.py",
+      "tests/test_kuramoto_policy_learning.py",
       "tests/test_kuramoto_pseudo_arclength.py",
       "tests/test_kuramoto_qif_mean_field.py",
       "tests/test_kuramoto_ring_basins.py",
