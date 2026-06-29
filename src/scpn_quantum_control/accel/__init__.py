@@ -329,6 +329,11 @@ from .kuramoto_ring_basins import (
     twisted_state_eigenvalues,
     winding_number,
 )
+from .kuramoto_sdre_control import (
+    integrate_sdre_controlled_kuramoto,
+    kuramoto_sdre_gain,
+    sdre_control_input,
+)
 from .kuramoto_simplex_mean_field import (
     simplex_mean_field_force,
     simplex_mean_field_jacobian,
@@ -575,6 +580,9 @@ __all__ = [
     "TimeVaryingCouplingHistory",
     "infer_network_bayesian",
     "track_time_varying_coupling",
+    "kuramoto_sdre_gain",
+    "sdre_control_input",
+    "integrate_sdre_controlled_kuramoto",
     "SparseDynamicsModel",
     "discover_phase_dynamics",
     "StuartLandauTrajectory",

@@ -10,10 +10,10 @@
     "public_api_exports": 775,
     "public_documentation_pages": 254,
     "python_model_classes": 911,
-    "python_model_source_modules": 518,
+    "python_model_source_modules": 519,
     "rust_pyo3_model_wrappers": 171,
     "rust_source_modules": 42,
-    "test_files": 847
+    "test_files": 848
   },
   "documentation": {
     "examples": [
@@ -436,7 +436,7 @@
       {
         "package": "accel",
         "path": "src/scpn_quantum_control/accel",
-        "python_modules": 65
+        "python_modules": 66
       },
       {
         "package": "analysis",
@@ -4286,6 +4286,7 @@
       "src/scpn_quantum_control/accel/kuramoto_pseudo_arclength.py",
       "src/scpn_quantum_control/accel/kuramoto_qif_mean_field.py",
       "src/scpn_quantum_control/accel/kuramoto_ring_basins.py",
+      "src/scpn_quantum_control/accel/kuramoto_sdre_control.py",
       "src/scpn_quantum_control/accel/kuramoto_simplex_mean_field.py",
       "src/scpn_quantum_control/accel/kuramoto_sparse_identification.py",
       "src/scpn_quantum_control/accel/kuramoto_stability_spectrum.py",
@@ -6235,6 +6236,7 @@
       "tests/test_kuramoto_pseudo_arclength.py",
       "tests/test_kuramoto_qif_mean_field.py",
       "tests/test_kuramoto_ring_basins.py",
+      "tests/test_kuramoto_sdre_control.py",
       "tests/test_kuramoto_simplex_mean_field.py",
       "tests/test_kuramoto_sparse_identification.py",
       "tests/test_kuramoto_stability_spectrum.py",
