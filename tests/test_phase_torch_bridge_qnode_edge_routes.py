@@ -26,6 +26,8 @@ from scpn_quantum_control.phase import (
     torch_phase_qnode_value_and_grad,
 )
 
+pytest.importorskip("torch")  # the torch bridge is an optional extra; skip when torch is absent
+
 FloatArray = NDArray[np.float64]
 
 
