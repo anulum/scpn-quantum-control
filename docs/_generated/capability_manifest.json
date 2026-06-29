@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 775,
     "public_documentation_pages": 254,
-    "python_model_classes": 891,
-    "python_model_source_modules": 503,
+    "python_model_classes": 893,
+    "python_model_source_modules": 504,
     "rust_pyo3_model_wrappers": 171,
     "rust_source_modules": 42,
-    "test_files": 832
+    "test_files": 833
   },
   "documentation": {
     "examples": [
@@ -436,7 +436,7 @@
       {
         "package": "accel",
         "path": "src/scpn_quantum_control/accel",
-        "python_modules": 50
+        "python_modules": 51
       },
       {
         "package": "analysis",
@@ -1086,6 +1086,14 @@
       {
         "name": "ControlQEC",
         "path": "src/scpn_quantum_control/qec/control_qec.py"
+      },
+      {
+        "name": "CoordinatedResetGradients",
+        "path": "src/scpn_quantum_control/accel/kuramoto_coordinated_reset.py"
+      },
+      {
+        "name": "CoordinatedResetTrajectory",
+        "path": "src/scpn_quantum_control/accel/kuramoto_coordinated_reset.py"
       },
       {
         "name": "CouplingDesignResult",
@@ -4179,6 +4187,7 @@
       "src/scpn_quantum_control/accel/kuramoto_clusters.py",
       "src/scpn_quantum_control/accel/kuramoto_coherence_matrix.py",
       "src/scpn_quantum_control/accel/kuramoto_control.py",
+      "src/scpn_quantum_control/accel/kuramoto_coordinated_reset.py",
       "src/scpn_quantum_control/accel/kuramoto_coupling_design.py",
       "src/scpn_quantum_control/accel/kuramoto_critical_coupling.py",
       "src/scpn_quantum_control/accel/kuramoto_delayed.py",
@@ -6108,6 +6117,7 @@
       "tests/test_kuramoto_coherence_matrix.py",
       "tests/test_kuramoto_competitive_benchmark.py",
       "tests/test_kuramoto_control.py",
+      "tests/test_kuramoto_coordinated_reset.py",
       "tests/test_kuramoto_core.py",
       "tests/test_kuramoto_core_branches.py",
       "tests/test_kuramoto_coupling_design.py",

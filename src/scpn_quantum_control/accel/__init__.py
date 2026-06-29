@@ -140,6 +140,14 @@ from .kuramoto_control import (
     terminal_objective_value,
     terminal_objective_value_and_grad,
 )
+from .kuramoto_coordinated_reset import (
+    CoordinatedResetGradients,
+    CoordinatedResetTrajectory,
+    coordinated_reset_phases,
+    coordinated_reset_sites,
+    coordinated_reset_terminal_value_and_grad,
+    integrate_coordinated_reset,
+)
 from .kuramoto_coupling_design import (
     CouplingDesignResult,
     CouplingProjection,
@@ -456,6 +464,12 @@ __all__ = [
     "watanabe_strogatz_invariant",
     "watanabe_strogatz_order_parameter",
     "watanabe_strogatz_phases",
+    "CoordinatedResetGradients",
+    "CoordinatedResetTrajectory",
+    "coordinated_reset_phases",
+    "coordinated_reset_sites",
+    "coordinated_reset_terminal_value_and_grad",
+    "integrate_coordinated_reset",
     "BasinEstimate",
     "estimate_ring_basins",
     "is_twisted_state_stable",
