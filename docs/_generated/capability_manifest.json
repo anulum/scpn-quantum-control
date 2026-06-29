@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 775,
     "public_documentation_pages": 254,
-    "python_model_classes": 919,
-    "python_model_source_modules": 524,
+    "python_model_classes": 921,
+    "python_model_source_modules": 525,
     "rust_pyo3_model_wrappers": 171,
     "rust_source_modules": 42,
-    "test_files": 853
+    "test_files": 854
   },
   "documentation": {
     "examples": [
@@ -511,7 +511,7 @@
       {
         "package": "forecasting",
         "path": "src/scpn_quantum_control/forecasting",
-        "python_modules": 1
+        "python_modules": 2
       },
       {
         "package": "gauge",
@@ -2150,6 +2150,10 @@
       {
         "name": "KuramotoCompetitiveComparison",
         "path": "src/scpn_quantum_control/benchmarks/kuramoto_competitive_benchmark.py"
+      },
+      {
+        "name": "KuramotoOperatorDataset",
+        "path": "src/scpn_quantum_control/forecasting/kuramoto_neural_operator.py"
       },
       {
         "name": "KuramotoProblem",
@@ -4072,6 +4076,10 @@
         "path": "src/scpn_quantum_control/qsnn/quantum_neuromorphic_bridge.py"
       },
       {
+        "name": "TrainedKuramotoOperator",
+        "path": "src/scpn_quantum_control/forecasting/kuramoto_neural_operator.py"
+      },
+      {
         "name": "TrajectoryResult",
         "path": "src/scpn_quantum_control/phase/results.py"
       },
@@ -4546,6 +4554,7 @@
       "src/scpn_quantum_control/execution_surface.py",
       "src/scpn_quantum_control/fep/predictive_coding.py",
       "src/scpn_quantum_control/fep/variational_free_energy.py",
+      "src/scpn_quantum_control/forecasting/kuramoto_neural_operator.py",
       "src/scpn_quantum_control/forecasting/real_data_sync.py",
       "src/scpn_quantum_control/gauge/cft_analysis.py",
       "src/scpn_quantum_control/gauge/confinement.py",
@@ -6265,6 +6274,7 @@
       "tests/test_kuramoto_lyapunov.py",
       "tests/test_kuramoto_mean_field.py",
       "tests/test_kuramoto_network_control.py",
+      "tests/test_kuramoto_neural_operator.py",
       "tests/test_kuramoto_noisy.py",
       "tests/test_kuramoto_noisy_mean_field.py",
       "tests/test_kuramoto_ott_antonsen.py",
