@@ -71,8 +71,8 @@ auto-generated block is the source of truth if the two ever drift.
 
 | Metric | Count |
 |--------|-------|
-| Python modules | 903 (excluding package initialisers) |
-| Rust crate | 1 (PyO3 0.29, **141 bindings**, 37 Rust source files including `validation.rs`, `symmetry_decay.rs`, `community.rs`, `pulse_shaping.rs`) |
+| Python modules | 525 (excluding package initialisers) |
+| Rust crate | 1 (PyO3 0.29, **171 bindings**, 42 Rust source files including `validation.rs`, `symmetry_decay.rs`, `community.rs`, `pulse_shaping.rs`) |
 | Julia tier | 1 (`accel/julia/order_parameter.jl`; juliacall-bridged, opt-in via `[julia]` extra) |
 | Tests | CI-gated suite (90% aggregate coverage gate; non-refactor tree at 100%) |
 | Subpackages | domain package families (see the package map below) |
@@ -90,22 +90,22 @@ preparation and `bridge/` for Hamiltonian access.
 
 ```mermaid
 graph TD
-    bridge["bridge/ (14)\nK_nm → quantum objects"]
-    phase["phase/ (29)\nTime evolution"]
-    analysis["analysis/ (58)\nSync probes"]
-    control["control/ (11)\nQuantum control"]
+    bridge["bridge/ (15)\nK_nm → quantum objects"]
+    phase["phase/ (76)\nTime evolution"]
+    analysis["analysis/ (59)\nSync probes"]
+    control["control/ (14)\nQuantum control"]
     qsnn["qsnn/ (7)\nQuantum SNN"]
     identity["identity/ (6)\nIdentity analysis"]
     hardware["hardware/ (63)\nBackends + registry + async + provenance"]
-    mitigation["mitigation/ (12)\nError mitigation"]
+    mitigation["mitigation/ (13)\nError mitigation"]
     qec["qec/ (13)\nError correction"]
     gauge["gauge/ (5)\nGauge theory"]
     apps["applications/ (13)\nBenchmarks"]
-    crypto["crypto/ (6)\nQKD"]
-    benchmarks["benchmarks/ (7)\nPerformance"]
+    crypto["crypto/ (9)\nQKD + PQC"]
+    benchmarks["benchmarks/ (15)\nPerformance"]
     ssgf["ssgf/ (4)\nGeometry"]
     psi_field["psi_field/ (4)\nU(1) lattice gauge"]
-    accel["accel/ (3)\nRust → Julia → Python dispatcher"]
+    accel["accel/ (71)\nRust → Julia → Python dispatcher"]
     fep["fep/ (2)\nFree Energy Principle"]
     tcbo["tcbo/ (1)\nTCBO observer"]
     pgbo["pgbo/ (1)\nPGBO bridge"]
@@ -371,11 +371,16 @@ hardware/                                  ← Backend + experiments
 ├── qcvv.py                                    State fidelity + mirror circuits + XEB
 └── cirq_adapter.py                            Cirq backend adapter (optional)
 
-crypto/                                    ← Quantum key distribution
-├── qkd_bb84.py                                BB84 protocol
-├── bell_test.py                               CHSH test
-├── topology_auth.py                           Topology-authenticated QKD
-└── percolation.py                             Key rate percolation
+crypto/                                    ← Quantum-safe crypto (QKD + PQC signatures)
+├── entanglement_qkd.py                        Topology-authenticated quantum key distribution
+├── hierarchical_keys.py                       SCPN layer hierarchy → key-derivation tree
+├── knm_key.py                                 K_nm coupling matrix → key-material pipeline
+├── ml_dsa.py                                  ML-DSA-65 module-lattice digital signatures
+├── ml_dsa_seal.py                             Post-quantum signing back-end for the studio honesty seal
+├── noise_analysis.py                          Security analysis under noise and eavesdropping
+├── percolation.py                             Entanglement percolation on the K_nm coupling graph
+├── pqc_trigger.py                             FIPS 204 ML-DSA-65 signer for high-voltage triggers
+└── topology_auth.py                           Spectral-fingerprint authentication for K_nm topology
 
 tcbo/                                      ← TCBO quantum observer
 └── quantum_observer.py                        p_h1, TEE, string order, Betti proxies
@@ -387,7 +392,7 @@ l16/                                       ← Layer 16 quantum director
 └── quantum_director.py                        Loschmidt echo, stability score
 
 scpn_quantum_engine/                       ← Rust crate (PyO3 0.29, rayon parallel)
-└── src/lib.rs                                 141 PyO3 bindings across 37 source files, including: kuramoto_euler, kuramoto_trajectory,
+└── src/lib.rs                                 171 PyO3 bindings across 42 source files, including: kuramoto_euler, kuramoto_trajectory,
                                                order_parameter, build_knm, pec_coefficients,
                                                pec_sample_parallel, dla_dimension, mc_xy_simulate,
                                                state_order_param_sparse, expectation_pauli_fast,

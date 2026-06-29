@@ -134,7 +134,7 @@ pip install -e ".[accelerated]"
 
 ## Rust Acceleration
 
-The optional `scpn-quantum-engine` package provides 141 Rust-accelerated PyO3 bindings
+The optional `scpn-quantum-engine` package provides 171 Rust-accelerated PyO3 bindings
 via PyO3. When installed, all analysis modules transparently use the Rust fast
 paths. When not installed, everything works via pure Python/NumPy.
 

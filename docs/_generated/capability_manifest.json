@@ -13,7 +13,7 @@
     "python_model_source_modules": 525,
     "rust_pyo3_model_wrappers": 171,
     "rust_source_modules": 42,
-    "test_files": 854
+    "test_files": 855
   },
   "documentation": {
     "examples": [
@@ -6103,6 +6103,7 @@
       "tests/test_dla_protected_subspace.py",
       "tests/test_dla_protected_subspace_branches.py",
       "tests/test_doc_claim_boundaries.py",
+      "tests/test_documentation_inventory_consistency.py",
       "tests/test_documentation_surface_audit.py",
       "tests/test_dynamic_coupling.py",
       "tests/test_dynamical_lie_algebra.py",

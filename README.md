@@ -115,7 +115,7 @@ has a defined commercial licensing route.
 | Notebook files | 100 |
 | Example files | 32 |
 | Optional extras | 43 |
-| Python test files | 854 |
+| Python test files | 855 |
 | Public documentation pages | 254 |
 | GitHub Actions workflows | 21 |
 
@@ -543,8 +543,8 @@ information scrambles*, and *whether the system thermalises*.
 
 | Metric | Value |
 |--------|-------|
-| Rust engine bindings | **141** exported `#[pyfunction]` bindings in the tracked Rust crate; low-level helper `fn` definitions are an implementation detail. |
-| Source package surface | **903** tracked Python source files under `src/scpn_quantum_control`, excluding package initialisers. |
+| Rust engine bindings | **171** exported `#[pyfunction]` bindings in the tracked Rust crate; low-level helper `fn` definitions are an implementation detail. |
+| Source package surface | **525** tracked Python source files under `src/scpn_quantum_control`, excluding package initialisers. |
 | Research module families | Analysis, phase, hardware, bridge, mitigation, QEC, applications, forecasting, and benchmark families; exact current counts are listed in the package map below. |
 | Publication figures | **17** (simulation + hardware, including the Phase 1 DLA parity panels and exact-simulation crossover) |
 | Test suite | CI-gated suite at a **90%** aggregate coverage gate (`--cov-fail-under=90`); the non-refactor source tree is at 100% line coverage. See the generated capability inventory above for the current tracked test-file count. |
