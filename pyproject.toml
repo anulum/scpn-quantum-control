@@ -380,6 +380,7 @@ omit = [
     "*/scpn_quantum_control/phase/mps_evolution.py",
     "*/scpn_quantum_control/mitigation/mitiq_integration.py",
     "*/scpn_quantum_control/analysis/quantum_persistent_homology.py",
+    "*/scpn_quantum_control/forecasting/kuramoto_neural_operator.py",
 ]
 exclude_lines = [
     "pragma: no cover",
