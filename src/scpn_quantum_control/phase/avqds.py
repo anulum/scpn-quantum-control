@@ -33,9 +33,13 @@ whole trajectory. It is therefore fixed-ansatz variational quantum real-time
 evolution (VarQRTE) — the non-adaptive special case of AVQDS, retaining the
 historical name and acronym for the cited lineage.
 
-Two honesty caveats on fidelity to the publication:
-    - M is built from central finite-difference parameter derivatives
-      (``epsilon`` below), not the analytic quantum geometric tensor.
+The metric M is the **analytic** quantum geometric tensor of the ansatz: the
+state derivatives ``∂_i ψ`` are evaluated exactly via the π-shift identity
+``∂_k|ψ> = ½|ψ(θ + π e_k)>`` (see
+:mod:`scpn_quantum_control.phase.variational_metric`), so there is no
+finite-difference bias or step-size hyperparameter.
+
+One caveat on fidelity to the publication:
     - Circuit depth is set by the ansatz and is independent of ``t_total``; this
       follows from using any fixed-ansatz variational propagator, not from
       operator growth.
@@ -46,6 +50,7 @@ with a depth fixed by the ansatz rather than by a Trotter step count.
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Protocol, TypeAlias, runtime_checkable
 
@@ -56,6 +61,12 @@ from qiskit.quantum_info import SparsePauliOp, Statevector
 
 from ..bridge.knm_hamiltonian import knm_to_ansatz, knm_to_hamiltonian
 from ..dense_budget import require_dense_allocation
+from .variational_metric import (
+    analytic_state_derivatives,
+    assert_single_parameter_rotations,
+    mclachlan_metric,
+    real_time_force,
+)
 
 FloatArray: TypeAlias = NDArray[np.float64]
 ComplexArray: TypeAlias = NDArray[np.complex128]
@@ -109,18 +120,32 @@ def _dense_complex_matrix(matrix: object) -> ComplexArray:
     return np.asarray(matrix, dtype=np.complex128)
 
 
+def _state_evaluator(ansatz: QuantumCircuit) -> Callable[[FloatArray], ComplexArray]:
+    """Return a callable mapping parameter values to the ansatz statevector."""
+
+    def state_of(values: FloatArray) -> ComplexArray:
+        assigned = ansatz.assign_parameters(values)
+        return np.asarray(Statevector.from_instruction(assigned).data, dtype=np.complex128)
+
+    return state_of
+
+
 def _mclachlan_matrices(
     ansatz: QuantumCircuit,
     params: FloatArray,
     H_op: SparsePauliOp,
-    epsilon: float = 1e-4,
     *,
     max_dense_gib: float | None = None,
 ) -> tuple[FloatArray, FloatArray]:
-    """Compute McLachlan M matrix and V vector.
+    """Compute the McLachlan M matrix and V vector with exact state derivatives.
 
     M_ij = Re(<∂_i ψ|∂_j ψ>)
     V_i = -Im(<∂_i ψ|H|ψ>)
+
+    The state derivatives ``∂_i ψ`` are evaluated exactly through the π-shift
+    identity (:func:`...variational_metric.analytic_state_derivatives`); the metric
+    M is therefore the analytic quantum geometric tensor of the ansatz, free of the
+    finite-difference bias and step-size hyperparameter of a naive estimator.
     """
     ansatz_qubits = getattr(ansatz, "num_qubits", None)
     if ansatz_qubits is not None:
@@ -130,9 +155,11 @@ def _mclachlan_matrices(
             max_gib=max_dense_gib,
             label="AVQDS dense Hamiltonian",
         )
-    n_params = len(params)
-    sv_0 = Statevector.from_instruction(ansatz.assign_parameters(params))
-    psi_0 = sv_0.data
+
+    assert_single_parameter_rotations(ansatz)
+    state_of = _state_evaluator(ansatz)
+    theta = np.asarray(params, dtype=np.float64)
+    psi_0 = state_of(theta)
     if ansatz_qubits is None:
         require_dense_allocation(
             _qubits_from_state_length(len(psi_0)),
@@ -141,31 +168,11 @@ def _mclachlan_matrices(
             label="AVQDS dense Hamiltonian",
         )
 
-    # Compute parameter derivatives via finite differences
-    dpsi: ComplexArray = np.zeros((n_params, len(psi_0)), dtype=np.complex128)
-    for k in range(n_params):
-        p_plus = params.copy()
-        p_plus[k] += epsilon
-        p_minus = params.copy()
-        p_minus[k] -= epsilon
-        psi_plus = Statevector.from_instruction(ansatz.assign_parameters(p_plus)).data
-        psi_minus = Statevector.from_instruction(ansatz.assign_parameters(p_minus)).data
-        dpsi[k] = (psi_plus - psi_minus) / (2.0 * epsilon)
+    dpsi = analytic_state_derivatives(state_of, theta)
+    M = mclachlan_metric(dpsi)
 
-    # M matrix
-    M = np.zeros((n_params, n_params), dtype=np.float64)
-    for i in range(n_params):
-        for j in range(n_params):
-            M[i, j] = float(np.real(np.dot(dpsi[i].conj(), dpsi[j])))
-
-    # V vector
     H_mat = _dense_complex_matrix(H_op.to_matrix())
-    H_psi = H_mat @ psi_0
-
-    V = np.zeros(n_params, dtype=np.float64)
-    for i in range(n_params):
-        V[i] = -float(np.imag(np.dot(dpsi[i].conj(), H_psi)))
-
+    V = real_time_force(dpsi, H_mat @ psi_0)
     return M, V
 
 

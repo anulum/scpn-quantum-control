@@ -71,7 +71,7 @@ auto-generated block is the source of truth if the two ever drift.
 
 | Metric | Count |
 |--------|-------|
-| Python modules | 525 (excluding package initialisers) |
+| Python modules | 526 (excluding package initialisers) |
 | Rust crate | 1 (PyO3 0.29, **171 bindings**, 42 Rust source files including `validation.rs`, `symmetry_decay.rs`, `community.rs`, `pulse_shaping.rs`) |
 | Julia tier | 1 (`accel/julia/order_parameter.jl`; juliacall-bridged, opt-in via `[julia]` extra) |
 | Tests | CI-gated suite (90% aggregate coverage gate; non-refactor tree at 100%) |
@@ -91,7 +91,7 @@ preparation and `bridge/` for Hamiltonian access.
 ```mermaid
 graph TD
     bridge["bridge/ (15)\nK_nm → quantum objects"]
-    phase["phase/ (76)\nTime evolution"]
+    phase["phase/ (77)\nTime evolution"]
     analysis["analysis/ (59)\nSync probes"]
     control["control/ (14)\nQuantum control"]
     qsnn["qsnn/ (7)\nQuantum SNN"]
@@ -279,7 +279,7 @@ analysis/                                  ← 58 modules: probes of the sync tr
 ├── vortex_binding.py                          Kosterlitz RG flow
 └── enaqt.py                                   Environment-assisted quantum transport
 
-phase/                                     ← 75 modules: time evolution + variational
+phase/                                     ← 77 modules: time evolution + variational
 ├── xy_kuramoto.py                             Trotterised XY solver
 ├── trotter_upde.py                            Full 16-layer UPDE solver
 ├── trotter_error.py                           Trotter error analysis
@@ -287,6 +287,7 @@ phase/                                     ← 75 modules: time evolution + vari
 ├── adapt_vqe.py                             ★ Adaptive layered VQE (exact-GS)
 ├── varqite.py                                 Imaginary time evolution
 ├── avqds.py                                   Fixed-ansatz McLachlan variational dynamics
+├── variational_metric.py                      Analytic quantum geometric tensor (π-shift)
 ├── qsvt_evolution.py                          QSVT resource estimation (260× speedup)
 ├── adiabatic_preparation.py                   Adiabatic ground state prep
 ├── cross_domain_transfer.py                 ★ VQE parameter warm-starting (Gem 8)

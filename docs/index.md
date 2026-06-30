@@ -153,7 +153,7 @@ like* at the transition, *how hard it is* to prepare, *what its topology reveals
 | IBM hardware evidence | Legacy ibm_fez artifact rows + 342-circuit ibm_kingston Phase 1 DLA-parity raw-count dataset |
 | DLA parity asymmetry (hardware) | $+10.8\,\%$ mean for depths $\ge 4$, peak $+17.5\,\%$ at depth 6, reproduced from `data/phase1_dla_parity/` |
 | Test suite | CI-gated suite, 90% aggregate coverage gate (non-refactor tree at 100%) |
-| Python modules | 525 Python source modules + 1 Rust crate (171 PyO3 bindings) + Julia tier (`accel/julia/*.jl`) |
+| Python modules | 526 Python source modules + 1 Rust crate (171 PyO3 bindings) + Julia tier (`accel/julia/*.jl`) |
 
 ## Package map
 
@@ -161,7 +161,7 @@ like* at the transition, *how hard it is* to prepare, *what its topology reveals
 |------------|:-------:|---------|
 | `analysis` | 58 | Synchronisation probes: witnesses, witness discovery, QFI, PH, OTOC, Krylov, magic, BKT, DLA |
 | `hardware` | 63 | IBM Quantum runner, plugin backends registry, AsyncHardwareRunner, trapped-ion backend, GPU offload, circuit cutting, fast sparse, qubit mapper (DynQ), provenance |
-| `phase` | 75 | Time evolution: Trotter, VQE, ADAPT-VQE, VarQITE, AVQDS, QSVT, Floquet DTC, Lindblad, Kuramoto variants, differentiable/gradient surfaces |
+| `phase` | 77 | Time evolution: Trotter, VQE, ADAPT-VQE, VarQITE, AVQDS, QSVT, Floquet DTC, Lindblad, Kuramoto variants, differentiable/gradient surfaces |
 | `bridge` | 13 | $K_{nm}$ → Hamiltonian, cross-repo adapters (sc-neurocore, SSGF, orchestrator) |
 | `applications` | 13 | FMO photosynthesis, power grid, Josephson array, EEG, ITER, quantum EVS, application benchmark plugins |
 | `mitigation` | 12 | ZNE, PEC, dynamical decoupling, Z₂ parity, CPDR, symmetry verification, GUESS, compound |

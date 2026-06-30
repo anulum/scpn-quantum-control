@@ -277,8 +277,10 @@ def test_varqite_matrices_densify_sparse_hamiltonian(monkeypatch):
 
         @classmethod
         def from_instruction(cls, assigned):
+            # RY(θ)|0> = [cos(θ/2), sin(θ/2)] — a genuine single-Pauli rotation,
+            # so the exact π-shift derivative identity applies to this double.
             theta = float(np.asarray(assigned)[0])
-            return cls(np.array([np.cos(theta), np.sin(theta)], dtype=complex))
+            return cls(np.array([np.cos(theta / 2), np.sin(theta / 2)], dtype=complex))
 
     monkeypatch.setattr(module, "Statevector", FakeStatevector)
 
@@ -286,13 +288,13 @@ def test_varqite_matrices_densify_sparse_hamiltonian(monkeypatch):
         Ansatz(),
         np.array([0.2]),
         Hamiltonian(),
-        epsilon=1e-5,
     )
 
     assert toarray_calls == [(2, 2)]
     assert A.shape == (1, 1)
     assert C.shape == (1,)
-    assert A[0, 0] == pytest.approx(1.0, rel=1e-8)
+    # Analytic QGT of a single RY parameter: |∂_θ RY(θ)|0>|² = 1/4.
+    assert A[0, 0] == pytest.approx(0.25, rel=1e-8)
     assert np.all(np.isfinite(C))
 
 

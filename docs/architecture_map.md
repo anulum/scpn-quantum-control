@@ -105,9 +105,11 @@ Each lane: purpose · INPUTS · OUTPUTS · processing model · backends · wirin
 - **Time evolution** (*mature*): Qiskit Lie/Suzuki Trotter + native XX+YY compiler; Rust
   order-parameter path; rigorous Trotter-error spectral-norm bounds (Childs et al.).
 - **Variational** (*mixed*): functional VQE; **ADAPT-VQE is layered VQE, not gradient-selected**
-  (self-disclosed); VarQITE/AVQDS use a **finite-difference metric, not analytic QGT**; NQS is a
-  toy (exact enumeration). `avqds` is fixed-ansatz McLachlan VarQRTE and its docstring now states so
-  explicitly (no operator-pool growth; parameter count constant, guarded by a test).
+  (self-disclosed); VarQITE/AVQDS now use the **analytic quantum geometric tensor** — the state
+  derivatives are exact via the π-shift identity ``∂_k|ψ> = ½|ψ(θ+π e_k)>`` (shared
+  `phase/variational_metric.py`), with no finite-difference bias or step-size; NQS is a toy (exact
+  enumeration). `avqds` is fixed-ansatz McLachlan VarQRTE and its docstring states so explicitly
+  (no operator-pool growth; parameter count constant, guarded by a test).
 - **Open-system** (*strong breadth*): T1/T2 Lindblad, synchronising-dissipator MCWF, collision
   model, PMP/STIRAP pulse shaping. `tensor_jump` honestly **disclaims it is not MPS** (O(2ⁿ)).
 - **Tensor-network** (*scope-limited*): real quimb DMRG/TEBD but **nearest-neighbour only**;

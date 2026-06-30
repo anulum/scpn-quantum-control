@@ -232,7 +232,8 @@ independent of simulation time $t$ (unlike Trotter, where depth $\propto t/\Delt
 ansatz is fixed at construction. This is the non-adaptive special case of AVQDS (Yao et al., PRX
 Quantum 2, 030307, 2021): it runs the McLachlan equation of motion on a fixed parameter set and does
 **not** grow the ansatz from an operator pool, so `n_params` is constant across the trajectory. The
-metric $M$ is built by finite differences, not the analytic quantum geometric tensor.
+metric $M$ is the **analytic** quantum geometric tensor (see `variational_metric` below): the state
+derivatives are exact, not finite-difference estimates.
 
 ```python
 from scpn_quantum_control.phase.avqds import (
@@ -247,6 +248,34 @@ from scpn_quantum_control.phase.avqds import (
 The result arrays and parameter history use explicit `float64` array contracts;
 the dense Hamiltonian and exact-reference evolution are converted through a
 single sparse-compatible `complex128` matrix boundary before time stepping.
+
+### `variational_metric` — analytic quantum geometric tensor
+
+Shared exact linear-system assembly used by both `avqds` (real time) and `varqite`
+(imaginary time). The state derivatives $\partial_k|\psi\rangle$ are computed
+exactly through the π-shift identity $\partial_k|\psi(\theta)\rangle =
+\tfrac{1}{2}|\psi(\theta + \pi e_k)\rangle$, valid because every ansatz parameter
+drives a single Pauli-generated rotation. This removes the $O(\varepsilon^2)$ bias
+and step-size hyperparameter of a finite-difference metric.
+
+```python
+from scpn_quantum_control.phase.variational_metric import (
+    analytic_state_derivatives,
+    assert_single_parameter_rotations,
+    mclachlan_metric,
+    real_time_force,
+    imaginary_time_force,
+)
+```
+
+- `analytic_state_derivatives(state_of, params)` → rows $\partial_k|\psi\rangle$
+  from a `state_of(values) → statevector` callable (the caller supplies the
+  simulator).
+- `mclachlan_metric(state_derivatives)` → $G_{ij} = \mathrm{Re}\langle\partial_i\psi|\partial_j\psi\rangle$.
+- `real_time_force(state_derivatives, H|ψ⟩)` → $V_i = -\mathrm{Im}\langle\partial_i\psi|H|\psi\rangle$.
+- `imaginary_time_force(state_derivatives, (H-\langle H\rangle)|ψ⟩)` → $C_i = -\mathrm{Re}\langle\partial_i\psi|(H-\langle H\rangle)|\psi\rangle$.
+- `assert_single_parameter_rotations(ansatz)` validates the π-shift precondition
+  (each parameter in exactly one `rx`/`ry`/`rz` gate) on real circuits.
 
 ---
 

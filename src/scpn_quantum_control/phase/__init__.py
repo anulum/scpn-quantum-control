@@ -569,6 +569,13 @@ from .transform_nesting import (
 )
 from .trotter_error import trotter_error_norm, trotter_error_sweep
 from .trotter_upde import QuantumUPDESolver, UPDEStepResult, UPDETrajectoryResult
+from .variational_metric import (
+    analytic_state_derivatives,
+    assert_single_parameter_rotations,
+    imaginary_time_force,
+    mclachlan_metric,
+    real_time_force,
+)
 from .varqite import VarQITEResult, varqite_ground_state
 from .xy_kuramoto import QuantumKuramotoSolver, TrotterEvolutionConfig
 
@@ -630,6 +637,11 @@ __all__ = [
     "PhaseGradientBenchmarkSuiteResult",
     "varqite_ground_state",
     "VarQITEResult",
+    "analytic_state_derivatives",
+    "assert_single_parameter_rotations",
+    "mclachlan_metric",
+    "real_time_force",
+    "imaginary_time_force",
     "floquet_evolve",
     "scan_drive_amplitude",
     "FloquetResult",

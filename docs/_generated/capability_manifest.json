@@ -10,10 +10,10 @@
     "public_api_exports": 775,
     "public_documentation_pages": 254,
     "python_model_classes": 921,
-    "python_model_source_modules": 525,
+    "python_model_source_modules": 526,
     "rust_pyo3_model_wrappers": 171,
     "rust_source_modules": 42,
-    "test_files": 855
+    "test_files": 856
   },
   "documentation": {
     "examples": [
@@ -546,7 +546,7 @@
       {
         "package": "phase",
         "path": "src/scpn_quantum_control/phase",
-        "python_modules": 76
+        "python_modules": 77
       },
       {
         "package": "psi_field",
@@ -4723,6 +4723,7 @@
       "src/scpn_quantum_control/phase/transform_nesting.py",
       "src/scpn_quantum_control/phase/trotter_error.py",
       "src/scpn_quantum_control/phase/trotter_upde.py",
+      "src/scpn_quantum_control/phase/variational_metric.py",
       "src/scpn_quantum_control/phase/varqite.py",
       "src/scpn_quantum_control/phase/xy_compiler.py",
       "src/scpn_quantum_control/phase/xy_kuramoto.py",
@@ -6708,6 +6709,7 @@
       "tests/test_ultrascale_hls.py",
       "tests/test_ultrascale_hls_branch.py",
       "tests/test_universality.py",
+      "tests/test_variational_metric.py",
       "tests/test_variational_workflow.py",
       "tests/test_varqite.py",
       "tests/test_vortex_binding.py",

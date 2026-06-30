@@ -17,6 +17,7 @@ from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_pa
 from scpn_quantum_control.dense_budget import DenseAllocationError
 from scpn_quantum_control.phase.varqite import (
     VarQITEResult,
+    _qubits_from_state_length,
     varqite_ground_state,
 )
 
@@ -145,3 +146,9 @@ class TestVarQITEPipeline:
         print(f"\n  PIPELINE Knm→VarQITE (3q, 5 steps): {dt:.1f} ms")
         print(f"  E: {result.energy_history[0]:.4f} → {result.energy:.4f}")
         print(f"  Exact: {result.exact_energy:.4f}, error: {result.relative_error_pct:.1f}%")
+
+
+def test_rejects_non_power_of_two_statevector_length():
+    """Qubit inference rejects a statevector length that is not a power of two."""
+    with pytest.raises(ValueError, match="positive power of two"):
+        _qubits_from_state_length(3)

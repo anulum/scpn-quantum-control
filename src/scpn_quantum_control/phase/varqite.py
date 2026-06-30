@@ -21,7 +21,10 @@ The variational version uses McLachlan's principle:
 giving the equation of motion:
     A × dθ/dτ = C
 
-where A_ij = Re(<∂_i ψ|∂_j ψ>) and C_i = -Re(<∂_i ψ|(H - <H>)|ψ>).
+where A_ij = Re(<∂_i ψ|∂_j ψ>) and C_i = -Re(<∂_i ψ|(H - <H>)|ψ>). The state
+derivatives ``∂_i ψ`` are evaluated exactly via the π-shift identity (see
+:mod:`scpn_quantum_control.phase.variational_metric`), so A is the analytic
+quantum geometric tensor of the ansatz rather than a finite-difference estimate.
 
 Advantages over COBYLA VQE:
     - Guaranteed convergence to ground state (no local minima)
@@ -34,7 +37,9 @@ configuration without the barren plateau problem of VQE.
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
+from typing import TypeAlias
 
 import numpy as np
 from numpy.typing import NDArray
@@ -44,6 +49,15 @@ from qiskit.quantum_info import SparsePauliOp, Statevector
 from ..bridge.knm_hamiltonian import knm_to_ansatz, knm_to_hamiltonian
 from ..dense_budget import require_dense_allocation
 from ..hardware.classical import classical_exact_diag
+from .variational_metric import (
+    analytic_state_derivatives,
+    assert_single_parameter_rotations,
+    imaginary_time_force,
+    mclachlan_metric,
+)
+
+FloatArray: TypeAlias = NDArray[np.float64]
+ComplexArray: TypeAlias = NDArray[np.complex128]
 
 
 @dataclass
@@ -66,18 +80,32 @@ def _qubits_from_state_length(state_length: int) -> int:
     return state_length.bit_length() - 1
 
 
+def _state_evaluator(ansatz: QuantumCircuit) -> Callable[[FloatArray], ComplexArray]:
+    """Return a callable mapping parameter values to the ansatz statevector."""
+
+    def state_of(values: FloatArray) -> ComplexArray:
+        assigned = ansatz.assign_parameters(values)
+        return np.asarray(Statevector.from_instruction(assigned).data, dtype=np.complex128)
+
+    return state_of
+
+
 def _varqite_matrices(
     ansatz: QuantumCircuit,
     params: NDArray[np.float64],
     H_op: SparsePauliOp,
-    epsilon: float = 1e-4,
     *,
     max_dense_gib: float | None = None,
 ) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
-    """Compute VarQITE A matrix and C vector.
+    """Compute the VarQITE A matrix and C vector with exact state derivatives.
 
     A_ij = Re(<∂_i ψ|∂_j ψ>)
     C_i = -Re(<∂_i ψ|(H - <H>)|ψ>)
+
+    The state derivatives ``∂_i ψ`` are evaluated exactly through the π-shift
+    identity (:func:`...variational_metric.analytic_state_derivatives`); the metric
+    A is therefore the analytic quantum geometric tensor of the ansatz, free of the
+    finite-difference bias and step-size hyperparameter of a naive estimator.
     """
     ansatz_qubits = getattr(ansatz, "num_qubits", None)
     if ansatz_qubits is not None:
@@ -87,9 +115,11 @@ def _varqite_matrices(
             max_gib=max_dense_gib,
             label="VarQITE dense Hamiltonian",
         )
-    n_params = len(params)
-    sv_0 = Statevector.from_instruction(ansatz.assign_parameters(params))
-    psi_0 = sv_0.data
+
+    assert_single_parameter_rotations(ansatz)
+    state_of = _state_evaluator(ansatz)
+    theta = np.asarray(params, dtype=np.float64)
+    psi_0 = state_of(theta)
     if ansatz_qubits is None:
         require_dense_allocation(
             _qubits_from_state_length(len(psi_0)),
@@ -104,26 +134,9 @@ def _varqite_matrices(
     e_mean = float(np.real(psi_0.conj() @ H_mat @ psi_0))
     H_shifted = H_mat - e_mean * np.eye(len(psi_0))
 
-    dpsi: NDArray[np.complex128] = np.zeros((n_params, len(psi_0)), dtype=np.complex128)
-    for k in range(n_params):
-        p_plus = params.copy()
-        p_plus[k] += epsilon
-        p_minus = params.copy()
-        p_minus[k] -= epsilon
-        psi_plus = Statevector.from_instruction(ansatz.assign_parameters(p_plus)).data
-        psi_minus = Statevector.from_instruction(ansatz.assign_parameters(p_minus)).data
-        dpsi[k] = (psi_plus - psi_minus) / (2.0 * epsilon)
-
-    A = np.zeros((n_params, n_params))
-    for i in range(n_params):
-        for j in range(n_params):
-            A[i, j] = float(np.real(np.dot(dpsi[i].conj(), dpsi[j])))
-
-    H_psi = H_shifted @ psi_0
-    C = np.zeros(n_params)
-    for i in range(n_params):
-        C[i] = -float(np.real(np.dot(dpsi[i].conj(), H_psi)))
-
+    dpsi = analytic_state_derivatives(state_of, theta)
+    A = mclachlan_metric(dpsi)
+    C = imaginary_time_force(dpsi, H_shifted @ psi_0)
     return A, C
 
 
