@@ -184,6 +184,26 @@ def _confidence_interval(
     )
 
 
+def _centered_confidence_interval(
+    center: NDArray[np.float64],
+    radius: NDArray[np.float64],
+    *,
+    status: str = "failed",
+    reasons: tuple[str, ...] = ("too_wide",),
+) -> StochasticGradientConfidenceInterval:
+    """Build a confidence interval whose bounds are centered on a gradient."""
+
+    return StochasticGradientConfidenceInterval(
+        lower=center - radius,
+        upper=center + radius,
+        confidence_z=1.96,
+        confidence_level=0.95,
+        policy=_failure_policy(),
+        status=status,
+        failure_reasons=reasons,
+    )
+
+
 def _spsa_sample() -> result_contracts.SPSAObjectiveSample:
     return result_contracts.SPSAObjectiveSample(value=1.0, variance=0.1, shots=16)
 
@@ -534,7 +554,7 @@ def test_differentiable_result_contracts_cover_fail_closed_metadata_boundaries()
             value=1.0,
             gradient=np.array([1.0, 2.0]),
             standard_error=np.array([0.1, 0.2]),
-            covariance=np.eye(2),
+            covariance=np.diag([0.01, 0.04]),
             confidence_radius=np.array([0.2, 0.4]),
             shots=np.array([[16.0, 32.0], [16.0, 32.0]]),
             confidence_level=0.95,
@@ -995,11 +1015,17 @@ def test_shift_spsa_and_score_function_records_cover_evidence_serialisation() ->
     shift_record = _parameter_shift_record()
     spsa_probe = _spsa_probe()
     score_records = (_score_sample(0), _score_sample(1))
-    interval = _confidence_interval()
-    shift_interval = _confidence_interval(shape=(1,))
+    two_parameter_gradient = np.array([0.5, -0.25], dtype=np.float64)
+    two_parameter_radius = np.array([0.2, 0.2], dtype=np.float64)
+    interval = _centered_confidence_interval(two_parameter_gradient, two_parameter_radius)
     shift_standard_error = np.array(
         [math.sqrt(shift_record.variance_contribution)],
         dtype=np.float64,
+    )
+    shift_radius = 1.96 * shift_standard_error
+    shift_interval = _centered_confidence_interval(
+        np.array([shift_record.gradient_contribution], dtype=np.float64),
+        shift_radius,
     )
 
     stochastic = result_contracts.StochasticGradientResult(
@@ -1007,7 +1033,7 @@ def test_shift_spsa_and_score_function_records_cover_evidence_serialisation() ->
         gradient=np.array([shift_record.gradient_contribution], dtype=np.float64),
         standard_error=shift_standard_error,
         covariance=np.diag([shift_record.variance_contribution]),
-        confidence_radius=1.96 * shift_standard_error,
+        confidence_radius=shift_radius,
         shots=np.array([[[32.0], [32.0]]], dtype=np.float64),
         confidence_level=0.95,
         method="shot_noise_parameter_shift",
@@ -1022,10 +1048,10 @@ def test_shift_spsa_and_score_function_records_cover_evidence_serialisation() ->
         failure_reasons=("too_wide",),
     )
     spsa = result_contracts.SPSAGradientResult(
-        gradient=np.array([0.5, -0.25]),
+        gradient=two_parameter_gradient,
         standard_error=np.array([0.1, 0.1]),
-        covariance=np.eye(2),
-        confidence_radius=np.array([0.2, 0.2]),
+        covariance=np.diag([0.01, 0.01]),
+        confidence_radius=two_parameter_radius,
         records=(spsa_probe,),
         perturbation_radius=0.1,
         repetitions=1,
@@ -1043,10 +1069,10 @@ def test_shift_spsa_and_score_function_records_cover_evidence_serialisation() ->
         failure_reasons=("too_wide",),
     )
     score = result_contracts.ScoreFunctionGradientResult(
-        gradient=np.array([0.5, -0.25]),
+        gradient=two_parameter_gradient,
         standard_error=np.array([0.1, 0.1]),
-        covariance=np.eye(2),
-        confidence_radius=np.array([0.2, 0.2]),
+        covariance=np.diag([0.01, 0.01]),
+        confidence_radius=two_parameter_radius,
         records=score_records,
         baseline=0.75,
         sample_count=2,
@@ -1077,6 +1103,125 @@ def test_shift_spsa_and_score_function_records_cover_evidence_serialisation() ->
     assert stochastic_records[0]["plus_shots"] == 32
     assert spsa_interval["status"] == "failed"
     assert score_interval["failure_reasons"] == ["too_wide"]
+
+
+def test_stochastic_gradient_rejects_moment_and_interval_inconsistency() -> None:
+    """Parameter-shift stochastic evidence must bind moments to intervals."""
+
+    gradient = np.array([0.5], dtype=np.float64)
+    standard_error = np.array([0.1], dtype=np.float64)
+    confidence_radius = np.array([0.2], dtype=np.float64)
+    interval = _centered_confidence_interval(
+        gradient,
+        confidence_radius,
+        status="passed",
+        reasons=(),
+    )
+
+    with pytest.raises(ValueError, match="standard_error must match covariance diagonal"):
+        result_contracts.StochasticGradientResult(
+            value=1.0,
+            gradient=gradient,
+            standard_error=standard_error,
+            covariance=np.array([[0.04]], dtype=np.float64),
+            confidence_radius=confidence_radius,
+            shots=np.array([[32.0], [32.0]], dtype=np.float64),
+            confidence_level=0.95,
+            method="shot_noise_parameter_shift",
+            shift=math.pi / 2.0,
+            coefficient=0.5,
+            evaluations=2,
+            parameter_names=("x",),
+            trainable=(True,),
+            confidence_interval=interval,
+            failure_policy_status="passed",
+        )
+
+    bad_interval = _centered_confidence_interval(
+        gradient,
+        np.array([0.3], dtype=np.float64),
+        status="passed",
+        reasons=(),
+    )
+    with pytest.raises(ValueError, match="confidence_radius must match confidence_interval"):
+        result_contracts.StochasticGradientResult(
+            value=1.0,
+            gradient=gradient,
+            standard_error=standard_error,
+            covariance=np.array([[0.01]], dtype=np.float64),
+            confidence_radius=confidence_radius,
+            shots=np.array([[32.0], [32.0]], dtype=np.float64),
+            confidence_level=0.95,
+            method="shot_noise_parameter_shift",
+            shift=math.pi / 2.0,
+            coefficient=0.5,
+            evaluations=2,
+            parameter_names=("x",),
+            trainable=(True,),
+            confidence_interval=bad_interval,
+            failure_policy_status="passed",
+        )
+
+
+def test_spsa_and_score_results_reject_moment_inconsistency() -> None:
+    """Stochastic estimator results must expose self-consistent uncertainty."""
+
+    gradient = np.array([0.5, -0.25], dtype=np.float64)
+    standard_error = np.array([0.1, 0.1], dtype=np.float64)
+    confidence_radius = np.array([0.2, 0.2], dtype=np.float64)
+    interval = _centered_confidence_interval(
+        gradient,
+        confidence_radius,
+        status="passed",
+        reasons=(),
+    )
+
+    with pytest.raises(ValueError, match="SPSA standard_error must match covariance diagonal"):
+        result_contracts.SPSAGradientResult(
+            gradient=gradient,
+            standard_error=standard_error,
+            covariance=np.eye(2),
+            confidence_radius=confidence_radius,
+            records=(_spsa_probe(),),
+            perturbation_radius=0.1,
+            repetitions=1,
+            seed=123,
+            confidence_z=1.96,
+            method="seeded_spsa",
+            evaluations=2,
+            total_shots=32,
+            parameter_names=("x", "y"),
+            trainable=(True, True),
+            claim_boundary="finite-shot SPSA simulation evidence",
+            hardware_execution=False,
+            confidence_interval=interval,
+            failure_policy_status="passed",
+        )
+
+    bad_interval = _centered_confidence_interval(
+        gradient,
+        np.array([0.3, 0.2], dtype=np.float64),
+        status="passed",
+        reasons=(),
+    )
+    with pytest.raises(ValueError, match="score-function confidence_radius"):
+        result_contracts.ScoreFunctionGradientResult(
+            gradient=gradient,
+            standard_error=standard_error,
+            covariance=np.diag([0.01, 0.01]),
+            confidence_radius=confidence_radius,
+            records=(_score_sample(0), _score_sample(1)),
+            baseline=0.75,
+            sample_count=2,
+            confidence_z=1.96,
+            method="score_function",
+            parameter_names=("x", "y"),
+            trainable=(True, True),
+            claim_boundary="score-function simulation evidence",
+            hardware_execution=False,
+            confidence_interval=bad_interval,
+            failure_policy_status="passed",
+        )
 
 
 def test_result_contracts_reject_stochastic_record_and_interval_mismatches() -> None:

@@ -110,6 +110,45 @@ def _validate_parameter_shift_record_reconstruction(
         raise ValueError("stochastic gradient records require diagonal independent covariance")
 
 
+def _validate_stochastic_uncertainty_moments(
+    label: str,
+    gradient: NDArray[np.float64],
+    standard_error: NDArray[np.float64],
+    covariance: NDArray[np.float64],
+    confidence_radius: NDArray[np.float64],
+    confidence_interval: StochasticGradientConfidenceInterval | None,
+) -> None:
+    covariance_diagonal = np.diag(covariance)
+    if np.any(covariance_diagonal < -_PARAMETER_SHIFT_RECORD_TOLERANCE):
+        raise ValueError(f"{label} covariance diagonal must be non-negative")
+    if not np.allclose(
+        standard_error**2,
+        covariance_diagonal,
+        rtol=_PARAMETER_SHIFT_RECORD_TOLERANCE,
+        atol=_PARAMETER_SHIFT_RECORD_TOLERANCE,
+    ):
+        raise ValueError(f"{label} standard_error must match covariance diagonal")
+    if confidence_interval is None:
+        return
+
+    interval_center = 0.5 * (confidence_interval.lower + confidence_interval.upper)
+    interval_radius = 0.5 * (confidence_interval.upper - confidence_interval.lower)
+    if not np.allclose(
+        interval_center,
+        gradient,
+        rtol=_PARAMETER_SHIFT_RECORD_TOLERANCE,
+        atol=_PARAMETER_SHIFT_RECORD_TOLERANCE,
+    ):
+        raise ValueError(f"{label} confidence_interval must be centered on gradient")
+    if not np.allclose(
+        confidence_radius,
+        interval_radius,
+        rtol=_PARAMETER_SHIFT_RECORD_TOLERANCE,
+        atol=_PARAMETER_SHIFT_RECORD_TOLERANCE,
+    ):
+        raise ValueError(f"{label} confidence_radius must match confidence_interval bounds")
+
+
 def _as_vector_output(value: object) -> NDArray[np.float64]:
     vector = _as_real_numeric_array("vector output", value)
     if vector.ndim != 1:
@@ -385,6 +424,14 @@ class StochasticGradientResult:
                 raise ValueError("failure_reasons must match confidence_interval")
         elif self.failure_policy_status != "not_evaluated":
             raise ValueError("failure_policy_status requires confidence_interval")
+        _validate_stochastic_uncertainty_moments(
+            "stochastic gradient",
+            gradient,
+            standard_error,
+            covariance,
+            confidence_radius,
+            self.confidence_interval,
+        )
         object.__setattr__(self, "value", value)
         object.__setattr__(self, "gradient", gradient)
         object.__setattr__(self, "standard_error", standard_error)
@@ -565,6 +612,14 @@ class SPSAGradientResult:
                 raise ValueError("SPSA failure_reasons must match confidence_interval")
         elif self.failure_policy_status != "not_evaluated":
             raise ValueError("SPSA failure_policy_status requires confidence_interval")
+        _validate_stochastic_uncertainty_moments(
+            "SPSA",
+            gradient,
+            standard_error,
+            covariance,
+            confidence_radius,
+            self.confidence_interval,
+        )
         object.__setattr__(self, "gradient", gradient)
         object.__setattr__(self, "standard_error", standard_error)
         object.__setattr__(self, "covariance", covariance)
@@ -696,6 +751,14 @@ class ScoreFunctionGradientResult:
                 raise ValueError("score-function failure_reasons must match confidence_interval")
         elif self.failure_policy_status != "not_evaluated":
             raise ValueError("score-function failure_policy_status requires interval")
+        _validate_stochastic_uncertainty_moments(
+            "score-function",
+            gradient,
+            standard_error,
+            covariance,
+            confidence_radius,
+            self.confidence_interval,
+        )
         object.__setattr__(self, "gradient", gradient)
         object.__setattr__(self, "standard_error", standard_error)
         object.__setattr__(self, "covariance", covariance)
