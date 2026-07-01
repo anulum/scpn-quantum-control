@@ -118,6 +118,15 @@ HISTORICAL_EXEMPT_SHAS: frozenset[str] = frozenset(
         "04bd5aa",  # "comprehensive v0.9.5 update"
         "5fe9998",  # "robust counts extraction"
         "b97d5fb",  # "elite docs"
+        # 2026-07-01: the actions/cache 4.2.4->6.1.0 Dependabot PR (#117)
+        # was squash-merged with the auto-generated GitHub message, which
+        # omitted the required authorship line. `main` has
+        # `allow_force_pushes` disabled, so the merge commit cannot be
+        # amended without a destructive, protection-defeating rewrite under
+        # a live co-agent. Recorded as immutable debt; the remaining
+        # Dependabot merges pass the trailer via `--body`. Waiver in
+        # docs/internal/AUDIT_INDEX.md.
+        "9bf247c",  # "build(deps): bump actions/cache from 4.2.4 to 6.1.0 (#117)"
     }
 )
 
