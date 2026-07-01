@@ -1233,7 +1233,7 @@ def differentiable_api(
         )
     if operation == "jacobian":
         return differentiable_jacobian(
-            cast(VectorObjective, _require_objective(objective)),
+            _require_objective(objective),
             _require_values(values),
             method="finite_difference" if method is None else method,
             step=1.0e-6 if step is None else step,
