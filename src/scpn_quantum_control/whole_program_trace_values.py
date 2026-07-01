@@ -4625,7 +4625,7 @@ def _trace_norm(
         return norm
 
     if axis is None:
-        if ord_value not in {None, 2, 2.0, "fro"}:
+        if ord_value not in {None, 2, "fro"}:
             raise ValueError("whole-program AD np.linalg.norm supports only Euclidean norm")
         if ord_value == "fro" and array.ndim < 2:
             raise ValueError("whole-program AD np.linalg.norm matrix norms require rank >= 2")
@@ -4684,7 +4684,7 @@ def _trace_norm(
                 )
             )
         return TraceADArray(tuple(frobenius_items), reduced_shape, context)
-    if ord_value not in {None, 2, 2.0}:
+    if ord_value not in {None, 2}:
         raise ValueError("whole-program AD np.linalg.norm supports only Euclidean norm")
     if isinstance(axis, bool) or not isinstance(axis, (int, np.integer)):
         raise ValueError("whole-program AD np.linalg.norm axis must be a static integer")
