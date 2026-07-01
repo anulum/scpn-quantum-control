@@ -2285,15 +2285,12 @@ def _trace_trapezoid_widths(
             raise ValueError("program AD np.trapezoid x must match the integration axis")
         reshape = [1 for _ in array.shape]
         reshape[axis] = axis_size - 1
-        return cast(
-            NDArray[np.float64],
-            np.broadcast_to(np.diff(x_array).reshape(tuple(reshape)), width_shape).copy(),
-        )
+        return np.broadcast_to(np.diff(x_array).reshape(tuple(reshape)), width_shape).copy()
     if tuple(x_array.shape) != array.shape:
         raise ValueError(
             "program AD np.trapezoid x must match the integration axis or full array shape"
         )
-    return cast(NDArray[np.float64], np.diff(x_array, axis=axis))
+    return np.diff(x_array, axis=axis)
 
 
 def _trace_trapezoid(

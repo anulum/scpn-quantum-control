@@ -88,7 +88,7 @@ def decaying_chain_coupling_matrix(
         raise ValueError("chain benchmark requires at least two oscillators")
     indices = np.arange(n_oscillators, dtype=float)
     distance = np.abs(indices[:, None] - indices[None, :])
-    matrix = cast("NDArray[np.float64]", coupling * np.exp(-decay * distance))
+    matrix = coupling * np.exp(-decay * distance)
     np.fill_diagonal(matrix, 0.0)
     return matrix
 

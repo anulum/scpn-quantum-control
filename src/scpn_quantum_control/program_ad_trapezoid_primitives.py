@@ -10,7 +10,6 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
-from typing import cast
 
 import numpy as np
 from numpy.typing import NDArray
@@ -182,15 +181,12 @@ def _program_ad_reduction_trapezoid_static_widths(
             raise ValueError("program AD reduction trapezoid x must match the integration axis")
         reshape = [1 for _ in source_shape]
         reshape[axis] = axis_size - 1
-        return cast(
-            NDArray[np.float64],
-            np.broadcast_to(np.diff(x_array).reshape(tuple(reshape)), width_shape).copy(),
-        )
+        return np.broadcast_to(np.diff(x_array).reshape(tuple(reshape)), width_shape).copy()
     if tuple(x_array.shape) != source_shape:
         raise ValueError(
             "program AD reduction trapezoid x must match the integration axis or full array shape"
         )
-    return cast(NDArray[np.float64], np.diff(x_array, axis=axis))
+    return np.diff(x_array, axis=axis)
 
 
 def _program_ad_reduction_trapezoid_static_weights(

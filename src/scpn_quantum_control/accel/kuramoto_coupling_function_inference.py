@@ -157,7 +157,7 @@ def _validate_dataset(
         raise ValueError(f"coupling must have shape ({count}, {count}), got {coupling.shape}")
     if n_harmonics < 1:
         raise ValueError(f"n_harmonics must be positive, got {n_harmonics}")
-    return count
+    return int(count)
 
 
 def infer_coupling_function(

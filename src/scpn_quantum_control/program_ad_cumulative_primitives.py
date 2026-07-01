@@ -271,7 +271,7 @@ def _program_ad_cumulative_cumprod_static_jvp_array(
                 product = 1.0
                 for factor_index in range(end_index + 1):
                     full_index = output_index[:axis] + (factor_index,) + output_index[axis:]
-                    product *= (
+                    product *= float(
                         tangent_array[full_index]
                         if factor_index == tangent_index
                         else values_array[full_index]
@@ -301,9 +301,9 @@ def _program_ad_cumulative_cumprod_static_vjp_array(
                 for factor_index in range(end_index + 1):
                     if factor_index != input_index:
                         full_index = output_index[:axis] + (factor_index,) + output_index[axis:]
-                        product *= values_array[full_index]
+                        product *= float(values_array[full_index])
                 full_output_index = output_index[:axis] + (end_index,) + output_index[axis:]
-                total += cotangent_array[full_output_index] * product
+                total += float(cotangent_array[full_output_index]) * product
             result[output_index[:axis] + (input_index,) + output_index[axis:]] = total
     return result
 

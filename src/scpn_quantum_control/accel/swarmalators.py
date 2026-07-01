@@ -113,7 +113,7 @@ def _validate(
     off_diagonal = ~np.eye(count, dtype=bool)
     if np.any(squared_distance[off_diagonal] == 0.0):
         raise ValueError("positions must be pairwise distinct")
-    return count
+    return int(count)
 
 
 def _field(
