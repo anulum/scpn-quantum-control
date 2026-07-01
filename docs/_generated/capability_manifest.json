@@ -13,7 +13,7 @@
     "python_model_source_modules": 526,
     "rust_pyo3_model_wrappers": 171,
     "rust_source_modules": 42,
-    "test_files": 857
+    "test_files": 858
   },
   "documentation": {
     "examples": [
@@ -6489,6 +6489,7 @@
       "tests/test_program_ad_split_assembly.py",
       "tests/test_program_ad_stack_block_assembly.py",
       "tests/test_program_ad_static_array_assembly.py",
+      "tests/test_program_ad_structural_finite_difference_gradient_check.py",
       "tests/test_program_ad_trapezoid.py",
       "tests/test_program_ad_triangular_diagonal_assembly.py",
       "tests/test_program_ad_unary_ufuncs.py",
