@@ -13,7 +13,7 @@
     "python_model_source_modules": 526,
     "rust_pyo3_model_wrappers": 171,
     "rust_source_modules": 42,
-    "test_files": 856
+    "test_files": 857
   },
   "documentation": {
     "examples": [
@@ -6466,6 +6466,7 @@
       "tests/test_program_ad_effect_ir.py",
       "tests/test_program_ad_elementwise_registry.py",
       "tests/test_program_ad_fail_closed_boundaries.py",
+      "tests/test_program_ad_finite_difference_gradient_check.py",
       "tests/test_program_ad_finite_difference_stencils.py",
       "tests/test_program_ad_interpolation.py",
       "tests/test_program_ad_like_constructors.py",
