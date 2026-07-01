@@ -68,6 +68,32 @@ def _assert_allclose(
     cast(Any, np.testing.assert_allclose)(actual, expected, rtol=rtol, atol=atol)
 
 
+def _single_parameter_shift_record(
+    *,
+    trainable: bool = True,
+    gradient_contribution: float = 0.5,
+    variance_contribution: float = 0.001,
+) -> ParameterShiftSampleRecord:
+    """Build a one-parameter shifted-sample record with known shot variance."""
+
+    return ParameterShiftSampleRecord(
+        term_index=0,
+        parameter_index=0,
+        parameter_name="theta",
+        trainable=trainable,
+        shift=math.pi / 2.0,
+        coefficient=0.5,
+        plus_value=1.0,
+        minus_value=0.0,
+        plus_variance=0.2,
+        minus_variance=0.2,
+        plus_shots=100,
+        minus_shots=100,
+        gradient_contribution=gradient_contribution,
+        variance_contribution=variance_contribution,
+    )
+
+
 def test_parameter_shift_matches_sine_derivative() -> None:
     """Single-parameter shift should recover the exact derivative of sin."""
 
@@ -406,6 +432,63 @@ def test_parameter_shift_gradient_with_uncertainty_propagates_shot_noise() -> No
     )
     assert evidence["hardware_execution"] is False
     assert len(cast(list[object], evidence["records"])) == 2
+
+
+def test_parameter_shift_sample_record_rejects_inconsistent_shift_math() -> None:
+    """Shifted-sample records must match their finite-shot contribution math."""
+
+    with pytest.raises(ValueError, match="gradient_contribution"):
+        _single_parameter_shift_record(gradient_contribution=0.25)
+    with pytest.raises(ValueError, match="variance_contribution"):
+        _single_parameter_shift_record(variance_contribution=0.002)
+    with pytest.raises(ValueError, match="non-trainable"):
+        _single_parameter_shift_record(
+            trainable=False,
+            gradient_contribution=0.5,
+            variance_contribution=0.001,
+        )
+
+
+def test_stochastic_gradient_records_must_reconstruct_result() -> None:
+    """Parameter-shift evidence must be reconstructable from shifted records."""
+
+    record = _single_parameter_shift_record()
+    standard_error = np.array([math.sqrt(0.001)], dtype=np.float64)
+
+    with pytest.raises(ValueError, match="reconstruct gradient"):
+        StochasticGradientResult(
+            value=0.0,
+            gradient=np.array([0.25], dtype=np.float64),
+            standard_error=standard_error,
+            covariance=np.array([[0.001]], dtype=np.float64),
+            confidence_radius=1.959963984540054 * standard_error,
+            shots=np.array([[100.0], [100.0]], dtype=np.float64),
+            confidence_level=0.95,
+            method="parameter_shift_shot_noise",
+            shift=math.pi / 2.0,
+            coefficient=0.5,
+            evaluations=2,
+            parameter_names=("theta",),
+            trainable=(True,),
+            records=(record,),
+        )
+    with pytest.raises(ValueError, match="reconstruct covariance"):
+        StochasticGradientResult(
+            value=0.0,
+            gradient=np.array([0.5], dtype=np.float64),
+            standard_error=standard_error,
+            covariance=np.array([[0.002]], dtype=np.float64),
+            confidence_radius=1.959963984540054 * standard_error,
+            shots=np.array([[100.0], [100.0]], dtype=np.float64),
+            confidence_level=0.95,
+            method="parameter_shift_shot_noise",
+            shift=math.pi / 2.0,
+            coefficient=0.5,
+            evaluations=2,
+            parameter_names=("theta",),
+            trainable=(True,),
+            records=(record,),
+        )
 
 
 def test_parameter_shift_uncertainty_reuses_plus_shots_when_minus_shots_omitted() -> None:

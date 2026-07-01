@@ -122,22 +122,40 @@ def _levenberg_marquardt_result(
     )
 
 
-def _parameter_shift_record() -> result_contracts.ParameterShiftSampleRecord:
+def _parameter_shift_record(
+    *,
+    parameter_index: int = 0,
+    parameter_name: str = "x",
+    trainable: bool = True,
+    plus_value: float = 1.0,
+    minus_value: float = 0.5,
+    plus_variance: float = 0.1,
+    minus_variance: float = 0.2,
+    plus_shots: int = 32,
+    minus_shots: int = 32,
+    coefficient: float = 0.5,
+) -> result_contracts.ParameterShiftSampleRecord:
+    """Build a self-consistent finite-shot parameter-shift evidence record."""
+
+    gradient_contribution = coefficient * (plus_value - minus_value)
+    variance_contribution = coefficient**2 * (
+        plus_variance / float(plus_shots) + minus_variance / float(minus_shots)
+    )
     return result_contracts.ParameterShiftSampleRecord(
         term_index=0,
-        parameter_index=0,
-        parameter_name="x",
-        trainable=True,
+        parameter_index=parameter_index,
+        parameter_name=parameter_name,
+        trainable=trainable,
         shift=math.pi / 2.0,
-        coefficient=0.5,
-        plus_value=1.0,
-        minus_value=0.5,
-        plus_variance=0.1,
-        minus_variance=0.2,
-        plus_shots=32,
-        minus_shots=32,
-        gradient_contribution=0.25,
-        variance_contribution=0.075,
+        coefficient=coefficient,
+        plus_value=plus_value,
+        minus_value=minus_value,
+        plus_variance=plus_variance,
+        minus_variance=minus_variance,
+        plus_shots=plus_shots,
+        minus_shots=minus_shots,
+        gradient_contribution=gradient_contribution if trainable else 0.0,
+        variance_contribution=variance_contribution if trainable else 0.0,
     )
 
 
@@ -978,23 +996,28 @@ def test_shift_spsa_and_score_function_records_cover_evidence_serialisation() ->
     spsa_probe = _spsa_probe()
     score_records = (_score_sample(0), _score_sample(1))
     interval = _confidence_interval()
+    shift_interval = _confidence_interval(shape=(1,))
+    shift_standard_error = np.array(
+        [math.sqrt(shift_record.variance_contribution)],
+        dtype=np.float64,
+    )
 
     stochastic = result_contracts.StochasticGradientResult(
         value=1.0,
-        gradient=np.array([0.25, -0.1]),
-        standard_error=np.array([0.05, 0.04]),
-        covariance=np.eye(2),
-        confidence_radius=np.array([0.1, 0.08]),
-        shots=np.array([[[32.0, 32.0], [32.0, 32.0]]]),
+        gradient=np.array([shift_record.gradient_contribution], dtype=np.float64),
+        standard_error=shift_standard_error,
+        covariance=np.diag([shift_record.variance_contribution]),
+        confidence_radius=1.96 * shift_standard_error,
+        shots=np.array([[[32.0], [32.0]]], dtype=np.float64),
         confidence_level=0.95,
         method="shot_noise_parameter_shift",
         shift=math.pi / 2.0,
         coefficient=0.5,
         evaluations=2,
-        parameter_names=("x", "y"),
-        trainable=(True, True),
+        parameter_names=("x",),
+        trainable=(True,),
         records=(shift_record,),
-        confidence_interval=interval,
+        confidence_interval=shift_interval,
         failure_policy_status="failed",
         failure_reasons=("too_wide",),
     )

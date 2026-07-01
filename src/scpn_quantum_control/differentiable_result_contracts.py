@@ -35,6 +35,7 @@ FINITE_DIFFERENCE_DIAGNOSTIC_CLAIM_BOUNDARY = (
     "finite-difference diagnostic only; not analytic, parameter-shift, native-framework, "
     "whole-program AD, provider, hardware, or production benchmark evidence"
 )
+_PARAMETER_SHIFT_RECORD_TOLERANCE = 1.0e-12
 
 
 def _normalise_claim_boundary(label: str, claim_boundary: str) -> str:
@@ -59,6 +60,54 @@ def _require_zero_frozen_entries(
     selected = np.take(values, np.flatnonzero(frozen), axis=axis)
     if np.any(selected != 0.0):
         raise ValueError(f"{name} must be zero for non-trainable parameters")
+
+
+def _record_values_close(actual: float, expected: float) -> bool:
+    return bool(
+        np.isclose(
+            actual,
+            expected,
+            rtol=_PARAMETER_SHIFT_RECORD_TOLERANCE,
+            atol=_PARAMETER_SHIFT_RECORD_TOLERANCE,
+        )
+    )
+
+
+def _validate_parameter_shift_record_reconstruction(
+    gradient: NDArray[np.float64],
+    covariance: NDArray[np.float64],
+    records: tuple[ParameterShiftSampleRecord, ...],
+) -> None:
+    if not records:
+        return
+
+    reconstructed_gradient = np.zeros_like(gradient)
+    reconstructed_variance = np.zeros_like(gradient)
+    for record in records:
+        reconstructed_gradient[record.parameter_index] += record.gradient_contribution
+        reconstructed_variance[record.parameter_index] += record.variance_contribution
+
+    if not np.allclose(
+        reconstructed_gradient,
+        gradient,
+        rtol=_PARAMETER_SHIFT_RECORD_TOLERANCE,
+        atol=_PARAMETER_SHIFT_RECORD_TOLERANCE,
+    ):
+        raise ValueError("stochastic gradient records must reconstruct gradient")
+    if not np.allclose(
+        reconstructed_variance,
+        np.diag(covariance),
+        rtol=_PARAMETER_SHIFT_RECORD_TOLERANCE,
+        atol=_PARAMETER_SHIFT_RECORD_TOLERANCE,
+    ):
+        raise ValueError("stochastic gradient records must reconstruct covariance diagonal")
+    if not np.allclose(
+        covariance,
+        np.diag(np.diag(covariance)),
+        rtol=0.0,
+        atol=_PARAMETER_SHIFT_RECORD_TOLERANCE,
+    ):
+        raise ValueError("stochastic gradient records require diagonal independent covariance")
 
 
 def _as_vector_output(value: object) -> NDArray[np.float64]:
@@ -179,6 +228,23 @@ class ParameterShiftSampleRecord:
             or self.minus_shots <= 0
         ):
             raise ValueError("parameter-shift record shots must be positive integers")
+        expected_gradient = coefficient * (plus_value - minus_value)
+        expected_variance = coefficient**2 * (
+            plus_variance / float(self.plus_shots) + minus_variance / float(self.minus_shots)
+        )
+        if self.trainable:
+            if not _record_values_close(gradient_contribution, expected_gradient):
+                raise ValueError(
+                    "parameter-shift record gradient_contribution must match shifted values"
+                )
+            if not _record_values_close(variance_contribution, expected_variance):
+                raise ValueError(
+                    "parameter-shift record variance_contribution must match shifted variances"
+                )
+        elif gradient_contribution != 0.0 or variance_contribution != 0.0:
+            raise ValueError(
+                "parameter-shift record contributions must be zero for non-trainable parameters"
+            )
         object.__setattr__(self, "shift", shift)
         object.__setattr__(self, "coefficient", coefficient)
         object.__setattr__(self, "plus_value", plus_value)
@@ -300,6 +366,7 @@ class StochasticGradientResult:
                 raise ValueError("stochastic gradient record parameter_name mismatch")
             if record.trainable != self.trainable[record.parameter_index]:
                 raise ValueError("stochastic gradient record trainable mismatch")
+        _validate_parameter_shift_record_reconstruction(gradient, covariance, records)
         claim_boundary = _normalise_claim_boundary(
             "stochastic gradient result",
             self.claim_boundary,
