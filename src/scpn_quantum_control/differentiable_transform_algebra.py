@@ -50,6 +50,7 @@ REQUIRED_TRANSFORM_ALGEBRA_CATEGORIES: Final[tuple[str, ...]] = (
     "jvp_vjp_duality",
     "linearity",
     "chain_rule",
+    "periodicity",
     "finite_difference_diagnostic_boundary",
     "nondifferentiable_boundary",
     "dtype_promotion",
@@ -204,6 +205,7 @@ def run_transform_algebra_audit(
         _jvp_vjp_duality_case(tolerance),
         _linearity_case(tolerance),
         _chain_rule_case(tolerance),
+        _periodicity_case(tolerance),
         _finite_difference_boundary_case(tolerance),
         _blocked_case(
             "nondifferentiable_abs_zero_boundary",
@@ -424,6 +426,25 @@ def _chain_rule_case(tolerance: float) -> TransformAlgebraCase:
         rhs,
         tolerance,
         ("jacobian", "chain_rule", "finite_difference_diagnostic"),
+    )
+
+
+def _periodicity_case(tolerance: float) -> TransformAlgebraCase:
+    values = np.array([np.pi - 0.02, -np.pi + 0.04], dtype=np.float64)
+    periods = np.array([2.0 * np.pi, -2.0 * np.pi], dtype=np.float64)
+
+    def objective(x: FloatArray) -> float:
+        return float(np.sin(x[0]) + 0.25 * np.cos(x[1]) + 0.1 * np.sin(x[0] - x[1]))
+
+    lhs = grad(objective, values, method="parameter_shift")
+    rhs = grad(objective, values + periods, method="parameter_shift")
+    return _executed_case(
+        "parameter_shift_gradient_is_phase_periodic",
+        "periodicity",
+        lhs,
+        rhs,
+        tolerance,
+        ("grad", "parameter_shift", "phase_wraparound"),
     )
 
 

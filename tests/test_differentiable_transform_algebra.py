@@ -44,6 +44,7 @@ def test_transform_algebra_cases_preserve_diagnostic_boundaries() -> None:
     cases = {case.case_id: case for case in audit.cases}
 
     finite = cases["finite_difference_result_keeps_diagnostic_claim_boundary"]
+    periodic = cases["parameter_shift_gradient_is_phase_periodic"]
     nondiff = cases["nondifferentiable_abs_zero_boundary"]
     custom = cases["custom_jvp_vjp_unregistered_boundary"]
     container = cases["structured_parameter_container_boundary"]
@@ -51,6 +52,11 @@ def test_transform_algebra_cases_preserve_diagnostic_boundaries() -> None:
     assert finite.status == "passed"
     assert finite.residual == pytest.approx(0.0)
     assert "finite_difference_diagnostic_only" in finite.evidence
+    assert periodic.status == "passed"
+    assert periodic.category == "periodicity"
+    assert periodic.residual == pytest.approx(0.0, abs=1.0e-12)
+    assert "parameter_shift" in periodic.evidence
+    assert "phase_wraparound" in periodic.evidence
     assert nondiff.status == "blocked"
     assert "cannot promote differentiability" in nondiff.blocked_reasons[0]
     assert custom.status == "blocked"
