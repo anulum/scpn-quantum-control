@@ -11,8 +11,9 @@ from __future__ import annotations
 
 import numpy as np
 import pytest
+from numpy.typing import NDArray
 
-from scpn_quantum_control.differentiable import multi_frequency_parameter_shift_rule
+from scpn_quantum_control.differentiable import Parameter, multi_frequency_parameter_shift_rule
 from scpn_quantum_control.phase import (
     PhaseQNodeTape,
     PhaseQNodeTapeRecord,
@@ -20,9 +21,13 @@ from scpn_quantum_control.phase import (
     run_phase_qnode_tape_readiness_suite,
 )
 
+FloatArray = NDArray[np.float64]
+
 
 def test_phase_qnode_tape_records_deterministic_parameter_shift() -> None:
-    def energy(params: np.ndarray) -> float:
+    """Deterministic QNode tape records should preserve parameter-shift metadata."""
+
+    def energy(params: FloatArray) -> float:
         return float(np.cos(params[0]) + 0.25 * np.sin(params[1]))
 
     params = np.array([0.2, -0.4], dtype=float)
@@ -54,6 +59,8 @@ def test_phase_qnode_tape_records_deterministic_parameter_shift() -> None:
 
 
 def test_phase_qnode_tape_records_multi_term_finite_shot_replay() -> None:
+    """Finite-shot QNode tape records should expose shifted-sample provenance."""
+
     rule = multi_frequency_parameter_shift_rule([1.0, 2.0])
     plus_values = np.array([[1.2, -0.3], [0.9, 0.4]], dtype=float)
     minus_values = np.array([[0.8, -0.7], [0.5, -0.2]], dtype=float)
@@ -73,13 +80,14 @@ def test_phase_qnode_tape_records_multi_term_finite_shot_replay() -> None:
             minus_values=minus_values,
             plus_variances=plus_variances,
             minus_variances=minus_variances,
+            parameters=[Parameter("theta"), Parameter("frozen", trainable=False)],
             rule=rule,
             value=0.375,
         )
 
     expected = np.zeros(plus_values.shape[1], dtype=float)
     for term_index, (_, coefficient) in enumerate(rule.terms):
-        expected += coefficient * (plus_values[term_index] - minus_values[term_index])
+        expected[0] += coefficient * (plus_values[term_index, 0] - minus_values[term_index, 0])
 
     np.testing.assert_allclose(record.gradient, expected, atol=1e-12)
     assert record.kind == "finite_shot"
@@ -89,13 +97,35 @@ def test_phase_qnode_tape_records_multi_term_finite_shot_replay() -> None:
     assert record.parameter_shift_evaluations == 8
     assert record.total_shots == 8192
     assert record.standard_error is not None
-    assert np.all(record.standard_error > 0.0)
+    assert record.standard_error[0] > 0.0
+    assert record.standard_error[1] == pytest.approx(0.0)
     assert record.confidence_radius is not None
-    assert np.all(record.confidence_radius > 0.0)
-    assert record.to_dict()["total_shots"] == 8192
+    assert record.confidence_radius[0] > 0.0
+    assert record.confidence_radius[1] == pytest.approx(0.0)
+    assert record.sample_record_count == len(rule.terms) * plus_values.shape[1]
+    assert {sample.parameter_name for sample in record.sample_records} == {"theta", "frozen"}
+    assert all(
+        sample.trainable == (sample.parameter_name == "theta") for sample in record.sample_records
+    )
+    assert all(
+        sample.gradient_contribution == 0.0
+        for sample in record.sample_records
+        if sample.parameter_index == 1
+    )
+    payload = record.to_dict()
+    sample_records = payload["sample_records"]
+    assert payload["sample_record_count"] == len(rule.terms) * plus_values.shape[1]
+    assert payload["total_shots"] == 8192
+    assert isinstance(sample_records, list)
+    assert sample_records[0]["plus_shots"] == 1024
+    assert sample_records[0]["minus_shots"] == 1024
+    assert sample_records[0]["term_index"] == 0
+    assert sample_records[-1]["parameter_index"] == 1
 
 
 def test_phase_qnode_tape_records_fail_closed_provider_boundary() -> None:
+    """Provider-boundary QNode tape records should fail closed before submission."""
+
     with phase_qnode_tape(
         qnode_name="hardware_vqe_candidate",
         observable="energy",
@@ -127,6 +157,8 @@ def test_phase_qnode_tape_records_fail_closed_provider_boundary() -> None:
 
 
 def test_phase_qnode_tape_readiness_suite_reports_supported_and_blocked_routes() -> None:
+    """The readiness suite should aggregate supported local and blocked provider routes."""
+
     suite = run_phase_qnode_tape_readiness_suite()
 
     assert suite.passed
@@ -145,6 +177,8 @@ def test_phase_qnode_tape_readiness_suite_reports_supported_and_blocked_routes()
 
 
 def test_phase_qnode_tape_fails_closed_on_invalid_inputs() -> None:
+    """QNode tape construction and finite-shot records should reject invalid inputs."""
+
     with pytest.raises(ValueError, match="qnode_name"):
         PhaseQNodeTape(qnode_name="", observable="energy")
 

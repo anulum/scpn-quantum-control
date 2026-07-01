@@ -18,6 +18,10 @@ import numpy as np
 from numpy.typing import ArrayLike, NDArray
 
 from ..differentiable import Parameter, ParameterShiftRule
+from ..differentiable_result_contracts import (
+    ParameterShiftSampleRecord,
+    StochasticGradientResult,
+)
 from .gradient_backend import QuantumGradientPlan, plan_quantum_gradient_backend
 from .gradient_tape import TapeGradientRecord, gradient_tape
 
@@ -52,6 +56,7 @@ class PhaseQNodeTapeRecord:
     requested_job_id: str | None
     failure_reason: str
     alternatives: tuple[str, ...]
+    sample_records: tuple[ParameterShiftSampleRecord, ...] = ()
     evidence_class: str = EVIDENCE_CLASS
     claim_boundary: str = CLAIM_BOUNDARY
     hardware_execution: bool = False
@@ -91,6 +96,18 @@ class PhaseQNodeTapeRecord:
         )
         object.__setattr__(self, "failure_reason", str(self.failure_reason))
         object.__setattr__(self, "alternatives", tuple(str(item) for item in self.alternatives))
+        sample_records = tuple(self.sample_records)
+        for sample in sample_records:
+            if not isinstance(sample, ParameterShiftSampleRecord):
+                raise ValueError("sample_records must contain ParameterShiftSampleRecord values")
+            if sample.parameter_index >= gradient.size:
+                raise ValueError("sample_records parameter_index must fit the gradient shape")
+        if self.kind == "finite_shot" and self.plan.supported and not self.failure_reason:
+            if not sample_records:
+                raise ValueError("finite-shot QNode tape records must include sample_records")
+        elif sample_records:
+            raise ValueError("sample_records are only valid for finite-shot QNode tape records")
+        object.__setattr__(self, "sample_records", sample_records)
         object.__setattr__(
             self,
             "evidence_class",
@@ -116,6 +133,11 @@ class PhaseQNodeTapeRecord:
     def parameter_shift_evaluations(self) -> int:
         """Return planned objective evaluations for the recorded derivative."""
         return self.plan.evaluations
+
+    @property
+    def sample_record_count(self) -> int:
+        """Return shifted plus/minus sample records attached to the tape record."""
+        return len(self.sample_records)
 
     @property
     def total_shots(self) -> int | None:
@@ -149,6 +171,8 @@ class PhaseQNodeTapeRecord:
             "requested_job_id": self.requested_job_id,
             "failure_reason": self.failure_reason,
             "alternatives": list(self.alternatives),
+            "sample_record_count": self.sample_record_count,
+            "sample_records": [sample.to_dict() for sample in self.sample_records],
             "parameter_shift_evaluations": self.parameter_shift_evaluations,
             "total_shots": self.total_shots,
             "evidence_class": self.evidence_class,
@@ -414,6 +438,9 @@ class PhaseQNodeTape:
     ) -> PhaseQNodeTapeRecord:
         standard_error = inner.standard_error
         confidence_radius = inner.confidence_radius
+        sample_records = (
+            inner.result.records if isinstance(inner.result, StochasticGradientResult) else ()
+        )
         record = PhaseQNodeTapeRecord(
             qnode_name=self.qnode_name,
             objective_name=objective_name,
@@ -431,6 +458,7 @@ class PhaseQNodeTape:
             requested_job_id=None,
             failure_reason="" if inner.plan.supported else "; ".join(inner.plan.reasons),
             alternatives=inner.plan.alternatives,
+            sample_records=sample_records,
             hardware_execution=False,
         )
         self._records.append(record)

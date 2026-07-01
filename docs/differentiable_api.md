@@ -52,7 +52,7 @@ finite differences or pretending that a hardware/provider gradient exists.
 | `scpn_quantum_control.phase.provider_gradient_audit` | Executable provider-gradient readiness audit for deterministic, finite-shot, multi-frequency, hardware-blocked, unknown-backend, and malformed-sample routes. |
 | `scpn_quantum_control.phase.provider_hardware_safety_audit` | Aggregate differentiable provider/hardware safety gate over provider-gradient readiness, provider hardware-gradient preparation, provider QNode transforms, QNode tape records, and hardware-gradient campaign readiness. It verifies zero hardware execution and zero hardware-gradient production, then keeps promotion blocked until live-ticket, raw-count replay, calibration snapshot, statevector comparison, and isolated benchmark artefacts are attached. |
 | `scpn_quantum_control.phase.gradient_tape` | Context-managed recording of supported deterministic and finite-shot quantum-gradient evaluations. |
-| `scpn_quantum_control.phase.qnode_tape` | QNode-style differentiable tape records for supported phase objectives, seeded finite-shot replay, and provider-boundary routes that fail closed before hardware submission. |
+| `scpn_quantum_control.phase.qnode_tape` | QNode-style differentiable tape records for supported phase objectives, seeded finite-shot replay with serialized plus/minus shifted-sample provenance, and provider-boundary routes that fail closed before hardware submission. |
 | `scpn_quantum_control.phase.qnode_circuit` | Registered local Phase-QNode statevector and density-matrix circuit family with supported gates, bounded single-qubit Kraus noise channels, controlled-gate decomposition helpers, arbitrary-depth registered circuit builders with deterministic depth/resource profiles, multi-qubit template constructors, dense Hermitian observables, Pauli observables, Pauli covariance observables, sparse Pauli Hamiltonians, sparse Ising-chain Hamiltonian construction, gate-aware parameter-shift evaluation planning, parameter-shift gradients for pure-state routes, exact computational-basis classical Fisher metrics with optional local finite-shot uncertainty and raw-count replay evidence, pure-state QFI/Fubini-Study metrics, natural-gradient metric providers, and strict route support reports for value, density, gradient, metric, and Fisher paths. |
 | `scpn_quantum_control.phase.qnode_framework_parity` | Bounded real-framework parity suite for SCPN, JAX, PyTorch, TensorFlow, and PennyLane with dependency-sparse classifications. |
 | `scpn_quantum_control.phase.qnode_affinity_benchmark` | Affinity-labelled local benchmark metadata harness for registered Phase-QNode execution, including raw timing rows, host isolation context, and fail-closed raw-artifact attachment validation. |
@@ -1381,6 +1381,14 @@ print(record.gradient, record.plan.method)
 
 The tape records only supported phase-gradient evaluations. Unsupported
 hardware routes fail closed through the same backend planner.
+
+QNode-style tape records keep the same boundary but attach reviewer-facing
+finite-shot provenance. A finite-shot `PhaseQNodeTapeRecord` serializes
+`sample_record_count` plus `sample_records` with term index, parameter index,
+trainable mask, plus/minus estimates, variances, shot counts, and gradient and
+variance contributions. These records prove local stochastic replay; they do not
+promote provider submission, live hardware execution, or isolated benchmark
+performance.
 
 ## Minimal JAX host-callback bridge
 
