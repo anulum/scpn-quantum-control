@@ -765,7 +765,7 @@ in JSON alongside the QASM files.
 
 ## Examples
 
-31 standalone scripts in `examples/`, each runnable with `python examples/XX_*.py`:
+32 standalone scripts in `examples/`, each runnable with `python examples/XX_*.py`:
 
 | # | Script | What it demonstrates |
 |---|--------|---------------------|
@@ -799,3 +799,4 @@ in JSON alongside the QASM files.
 | 28 | `pulse_to_hls_quickstart` | UltraScale+ HLS pulse source generation |
 | 29 | `kuramoto_handbook_workflow` | Kuramoto facade diagnostics, stability, clusters, and coupling design |
 | 30 | `diff_first_path` | Canonical differentiable namespace path and compatibility facade |
+| 31 | `qfi_fss_differentiable_report` | Bounded QFI/FSS finite-size evidence report |

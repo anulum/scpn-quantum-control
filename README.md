@@ -113,9 +113,9 @@ has a defined commercial licensing route.
 | Rust PyO3 function bindings | 171 |
 | Rust source modules | 42 |
 | Notebook files | 100 |
-| Example files | 32 |
+| Example files | 33 |
 | Optional extras | 43 |
-| Python test files | 858 |
+| Python test files | 859 |
 | Public documentation pages | 254 |
 | GitHub Actions workflows | 21 |
 

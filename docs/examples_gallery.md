@@ -373,3 +373,16 @@ python examples/28_pulse_to_hls_quickstart.py
 ```
 
 See [Pulse -> UltraScale+ HLS Codegen](ultrascale_hls.md).
+
+## 31. QFI/FSS differentiable evidence
+
+**What:** run the unified differentiable QFI/FSS finite-size report and inspect
+bounded BKT and inverse-size fit diagnostics.
+**When:** you need small local Kuramoto-XY criticality evidence with explicit
+non-hardware, non-performance, and non-thermodynamic-limit boundaries.
+
+```bash
+python examples/31_qfi_fss_differentiable_report.py
+```
+
+See [Differentiable API](differentiable_api.md).

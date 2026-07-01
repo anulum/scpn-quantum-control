@@ -2,7 +2,7 @@
   "SPDX-License-Identifier": "AGPL-3.0-or-later",
   "counts": {
     "domain_package_families": 32,
-    "example_files": 32,
+    "example_files": 33,
     "github_workflows": 21,
     "model_documentation_pages": 0,
     "notebook_files": 100,
@@ -13,7 +13,7 @@
     "python_model_source_modules": 526,
     "rust_pyo3_model_wrappers": 171,
     "rust_source_modules": 42,
-    "test_files": 858
+    "test_files": 859
   },
   "documentation": {
     "examples": [
@@ -48,6 +48,7 @@
       "examples/28_pulse_to_hls_quickstart.py",
       "examples/29_kuramoto_handbook_workflow.py",
       "examples/30_diff_first_path.py",
+      "examples/31_qfi_fss_differentiable_report.py",
       "examples/README.md"
     ],
     "notebooks": [
@@ -6524,6 +6525,7 @@
       "tests/test_qec_validators_fuzz.py",
       "tests/test_qfi.py",
       "tests/test_qfi_criticality.py",
+      "tests/test_qfi_fss_differentiable_example.py",
       "tests/test_qiskit_compat.py",
       "tests/test_qlayer.py",
       "tests/test_qlif.py",

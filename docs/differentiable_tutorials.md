@@ -30,9 +30,15 @@ Run the canonical first-path namespace smoke:
 python examples/30_diff_first_path.py
 ```
 
-The script is deliberately small. It is a tutorial and integration smoke path,
-not a benchmark, not a hardware claim, and not a claim that arbitrary simulator
-kernels are framework-native differentiable.
+Run the bounded QFI/FSS finite-size evidence smoke:
+
+```bash
+python examples/31_qfi_fss_differentiable_report.py
+```
+
+These scripts are deliberately small. They are tutorial and integration smoke
+paths, not benchmarks, not hardware claims, and not claims that arbitrary
+simulator kernels are framework-native differentiable.
 
 ## What The Workflow Covers
 
@@ -49,6 +55,7 @@ kernels are framework-native differentiable.
 | Training evidence | `train_parameter_shift_qnn_classifier(...)`, `verify_parameter_shift_qnn_classifier_gradient(...)` | Tiny bounded phase-QNN training run plus finite-difference gradient verification. |
 | Benchmark reproduction | `write_differentiable_benchmark_evidence_bundle(...)` | Temporary local benchmark evidence bundle with explicit `functional_non_isolated` classification unless run under the isolated benchmark CI contract. |
 | Canonical namespace | `scpn_quantum_control.diff`, `scpn.diff`, `DifferentiableCircuit`, `jit_or_explain(...)` | No-credential first-path value/gradient execution, serializable diagnostics, shot policy, estimator provenance, and explicit fail-closed JIT metadata. |
+| QFI/FSS evidence | `differentiable_qfi_fss_report()`, `differentiable_api("qfi_fss_report")` | Small local Kuramoto-XY finite-size gap scan with BKT and inverse-size residual diagnostics plus non-hardware, non-performance, and non-thermodynamic-limit claim boundaries. |
 
 ## Canonical Differentiable Namespace
 

@@ -32,6 +32,7 @@ Recommended researcher quick path:
 - `28_pulse_to_hls_quickstart.py` for UltraScale+ pulse-code generation.
 - `29_kuramoto_handbook_workflow.py` for the Phase 5 Kuramoto handbook path.
 - `30_diff_first_path.py` for the canonical differentiable namespace path.
+- `31_qfi_fss_differentiable_report.py` for bounded QFI/FSS finite-size evidence.
 
 ## Route by Goal
 
@@ -52,6 +53,7 @@ Recommended researcher quick path:
 | Generate pulse HLS artefacts | `28_pulse_to_hls_quickstart.py` |
 | Run the Kuramoto handbook workflow | `29_kuramoto_handbook_workflow.py` |
 | Exercise the canonical differentiable namespace | `30_diff_first_path.py` |
+| Inspect QFI/FSS finite-size evidence | `31_qfi_fss_differentiable_report.py` |
 
 Examples are onboarding aids. Reusable production logic belongs in `src/`,
 scripts, committed fixtures, and release gates.
@@ -359,4 +361,15 @@ JSON for quick inspection and CI regression checks.
 
 ```bash
 python examples/29_kuramoto_handbook_workflow.py
+```
+
+## 31_qfi_fss_differentiable_report.py — QFI/FSS Differentiable Evidence
+
+Runs the no-credential unified differentiable QFI/FSS report for small local
+Kuramoto-XY finite-size scans. The output exposes BKT and inverse-size fit
+diagnostics plus the claim boundary; it is not hardware, isolated-performance,
+or thermodynamic-limit evidence.
+
+```bash
+python examples/31_qfi_fss_differentiable_report.py
 ```
