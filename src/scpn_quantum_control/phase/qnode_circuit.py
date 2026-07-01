@@ -639,7 +639,14 @@ class PhaseQNodeMetricTensorResult:
 
 @dataclass(frozen=True)
 class PhaseQNodeClassicalFisherResult:
-    """Exact computational-basis Fisher evidence for a supported Phase-QNode."""
+    """Computational-basis Fisher evidence for a supported Phase-QNode.
+
+    ``classical_fisher_information`` is always the exact statevector reference.
+    When ``shot_count`` or ``observed_counts`` is supplied, the optional
+    finite-shot fields carry a multinomial plug-in estimate, delta-method
+    standard errors, and confidence radii for the same computational-basis
+    measurement route.
+    """
 
     classical_fisher_information: FloatArray
     probabilities: FloatArray
@@ -648,6 +655,15 @@ class PhaseQNodeClassicalFisherResult:
     min_probability: float
     support_report: PhaseQNodeSupportReport
     claim_boundary: str
+    shot_count: int | None = None
+    count_record: tuple[int, ...] | None = None
+    empirical_probabilities: FloatArray | None = None
+    finite_shot_classical_fisher_information: FloatArray | None = None
+    fisher_standard_error: FloatArray | None = None
+    fisher_confidence_radius: FloatArray | None = None
+    confidence_level: float | None = None
+    confidence_z: float | None = None
+    sampling_model: str | None = None
 
     def to_dict(self) -> dict[str, object]:
         """Return JSON-ready classical Fisher evidence."""
@@ -659,7 +675,35 @@ class PhaseQNodeClassicalFisherResult:
             "min_probability": self.min_probability,
             "support_report": self.support_report.to_dict(),
             "claim_boundary": self.claim_boundary,
+            "shot_count": self.shot_count,
+            "count_record": None if self.count_record is None else list(self.count_record),
+            "empirical_probabilities": _optional_float_array_to_list(self.empirical_probabilities),
+            "finite_shot_classical_fisher_information": _optional_float_array_to_list(
+                self.finite_shot_classical_fisher_information
+            ),
+            "fisher_standard_error": _optional_float_array_to_list(self.fisher_standard_error),
+            "fisher_confidence_radius": _optional_float_array_to_list(
+                self.fisher_confidence_radius
+            ),
+            "confidence_level": self.confidence_level,
+            "confidence_z": self.confidence_z,
+            "sampling_model": self.sampling_model,
         }
+
+
+@dataclass(frozen=True)
+class _FiniteShotFisherEvidence:
+    """Optional finite-shot Fisher evidence attached to an exact Fisher result."""
+
+    shot_count: int | None
+    count_record: tuple[int, ...] | None
+    empirical_probabilities: FloatArray | None
+    finite_shot_classical_fisher_information: FloatArray | None
+    fisher_standard_error: FloatArray | None
+    fisher_confidence_radius: FloatArray | None
+    confidence_level: float | None
+    confidence_z: float | None
+    sampling_model: str | None
 
 
 def registered_phase_qnode_gates() -> tuple[str, ...]:
@@ -1442,10 +1486,24 @@ def phase_qnode_computational_basis_fisher_information(
     parameters: ArrayLike,
     *,
     min_probability: float = 1e-15,
+    shot_count: int | None = None,
+    observed_counts: ArrayLike | None = None,
+    confidence_level: float = 0.95,
+    confidence_z: float = 1.959963984540054,
 ) -> PhaseQNodeClassicalFisherResult:
-    """Compute exact classical Fisher information for basis probabilities."""
+    """Compute computational-basis classical Fisher information.
+
+    The returned ``classical_fisher_information`` is always the exact local
+    statevector reference. ``shot_count`` adds a multinomial delta-method
+    uncertainty model around that reference distribution. ``observed_counts``
+    replays a strictly positive raw-count record as a plug-in finite-shot
+    Fisher estimate while preserving the exact analytic reference matrix.
+    """
     values = _as_parameter_vector(parameters)
     threshold = _as_min_probability(min_probability)
+    shots = _as_shot_count(shot_count)
+    confidence = _as_confidence_level(confidence_level)
+    z_value = _as_confidence_z(confidence_z)
     report = phase_qnode_computational_basis_fisher_support_report(
         circuit,
         values,
@@ -1461,12 +1519,32 @@ def phase_qnode_computational_basis_fisher_information(
         [2.0 * np.real(np.conj(state) * derivative) for derivative in derivatives],
         dtype=np.float64,
     )
-    weighted = probability_derivatives / probabilities[np.newaxis, :]
-    fisher: FloatArray = np.asarray(
-        probability_derivatives @ weighted.T,
-        dtype=np.float64,
+    fisher = _classical_fisher_from_probabilities(
+        probability_derivatives,
+        probabilities,
     )
-    fisher = np.asarray(0.5 * (fisher + fisher.T), dtype=np.float64)
+    finite_shot = _finite_shot_fisher_evidence(
+        probabilities,
+        probability_derivatives,
+        shots,
+        observed_counts,
+        confidence,
+        z_value,
+    )
+    claim_boundary = (
+        "exact classical Fisher information for computational-basis "
+        "probabilities from the registered local statevector Phase-QNode "
+        "family; no finite-shot estimator, hardware sampling, adaptive "
+        "measurement, or optimal-measurement claim"
+    )
+    if finite_shot.sampling_model is not None:
+        claim_boundary = (
+            "exact computational-basis classical Fisher reference plus "
+            "finite-shot multinomial uncertainty/replay evidence for the "
+            "registered local statevector Phase-QNode family; no hardware "
+            "submission, backend calibration, adaptive measurement, "
+            "optimal-measurement, or provider-runtime claim"
+        )
     return PhaseQNodeClassicalFisherResult(
         classical_fisher_information=fisher,
         probabilities=probabilities,
@@ -1474,12 +1552,18 @@ def phase_qnode_computational_basis_fisher_information(
         measurement="computational_basis",
         min_probability=threshold,
         support_report=report,
-        claim_boundary=(
-            "exact classical Fisher information for computational-basis "
-            "probabilities from the registered local statevector Phase-QNode "
-            "family; no finite-shot estimator, hardware sampling, adaptive "
-            "measurement, or optimal-measurement claim"
+        claim_boundary=claim_boundary,
+        shot_count=finite_shot.shot_count,
+        count_record=finite_shot.count_record,
+        empirical_probabilities=finite_shot.empirical_probabilities,
+        finite_shot_classical_fisher_information=(
+            finite_shot.finite_shot_classical_fisher_information
         ),
+        fisher_standard_error=finite_shot.fisher_standard_error,
+        fisher_confidence_radius=finite_shot.fisher_confidence_radius,
+        confidence_level=finite_shot.confidence_level,
+        confidence_z=finite_shot.confidence_z,
+        sampling_model=finite_shot.sampling_model,
     )
 
 
@@ -1808,6 +1892,153 @@ def _as_min_probability(value: float) -> float:
     if scalar < 0.0 or not np.isfinite(scalar):
         raise ValueError("min_probability must be a non-negative finite scalar")
     return scalar
+
+
+def _as_shot_count(value: int | None) -> int | None:
+    """Return a validated optional positive shot count."""
+    if value is None:
+        return None
+    raw = np.asarray(value)
+    if raw.shape != () or raw.dtype.kind not in {"i", "u"}:
+        raise ValueError("shot_count must be a positive integer")
+    count = int(raw.item())
+    if count < 1:
+        raise ValueError("shot_count must be a positive integer")
+    return count
+
+
+def _as_confidence_level(value: float) -> float:
+    """Return a validated open-interval confidence level."""
+    confidence = _as_finite_scalar("confidence_level", value)
+    if confidence <= 0.0 or confidence >= 1.0:
+        raise ValueError("confidence_level must be between zero and one")
+    return confidence
+
+
+def _as_confidence_z(value: float) -> float:
+    """Return a validated positive normal-approximation multiplier."""
+    z_value = _as_finite_scalar("confidence_z", value)
+    if z_value <= 0.0:
+        raise ValueError("confidence_z must be finite and positive")
+    return z_value
+
+
+def _as_observed_count_record(
+    observed_counts: ArrayLike,
+    width: int,
+    shot_count: int | None,
+) -> tuple[tuple[int, ...], int]:
+    """Return a strict positive raw-count record and its total shots."""
+    raw = np.asarray(observed_counts)
+    if raw.shape != (width,):
+        raise ValueError(f"observed_counts must have shape ({width},), got {raw.shape}")
+    if raw.dtype.kind not in {"i", "u"}:
+        raise ValueError("observed_counts must be integer counts")
+    counts = np.asarray(raw, dtype=np.int64)
+    if np.any(counts <= 0):
+        raise ValueError("observed_counts must be strictly positive for finite-shot Fisher replay")
+    total = int(np.sum(counts, dtype=np.int64))
+    if shot_count is not None and total != shot_count:
+        raise ValueError("observed_counts sum must equal shot_count")
+    return tuple(int(item) for item in counts.tolist()), total
+
+
+def _classical_fisher_from_probabilities(
+    probability_derivatives: FloatArray,
+    probabilities: FloatArray,
+) -> FloatArray:
+    """Return the computational-basis Fisher matrix for probability derivatives."""
+    weighted = probability_derivatives / probabilities[np.newaxis, :]
+    fisher = np.asarray(probability_derivatives @ weighted.T, dtype=np.float64)
+    return np.asarray(0.5 * (fisher + fisher.T), dtype=np.float64)
+
+
+def _classical_fisher_delta_method_standard_error(
+    probability_derivatives: FloatArray,
+    probabilities: FloatArray,
+    shot_count: int,
+) -> FloatArray:
+    """Return multinomial delta-method standard errors for Fisher entries."""
+    width = probability_derivatives.shape[0]
+    standard_error = np.zeros((width, width), dtype=np.float64)
+    for row in range(width):
+        for column in range(row, width):
+            weights = probability_derivatives[row] * probability_derivatives[column]
+            sensitivity = -weights / np.square(probabilities)
+            mean = float(np.dot(probabilities, sensitivity))
+            second_moment = float(np.dot(probabilities, sensitivity * sensitivity))
+            variance = max(0.0, (second_moment - mean * mean) / float(shot_count))
+            value = float(np.sqrt(variance))
+            standard_error[row, column] = value
+            standard_error[column, row] = value
+    return standard_error
+
+
+def _finite_shot_fisher_evidence(
+    probabilities: FloatArray,
+    probability_derivatives: FloatArray,
+    shot_count: int | None,
+    observed_counts: ArrayLike | None,
+    confidence_level: float,
+    confidence_z: float,
+) -> _FiniteShotFisherEvidence:
+    """Return optional finite-shot Fisher uncertainty and replay evidence."""
+    if observed_counts is None and shot_count is None:
+        return _FiniteShotFisherEvidence(
+            shot_count=None,
+            count_record=None,
+            empirical_probabilities=None,
+            finite_shot_classical_fisher_information=None,
+            fisher_standard_error=None,
+            fisher_confidence_radius=None,
+            confidence_level=None,
+            confidence_z=None,
+            sampling_model=None,
+        )
+    count_record: tuple[int, ...] | None = None
+    effective_shots = shot_count
+    if observed_counts is not None:
+        count_record, effective_shots = _as_observed_count_record(
+            observed_counts,
+            probabilities.size,
+            shot_count,
+        )
+        counts = np.asarray(count_record, dtype=np.float64)
+        empirical_probabilities = np.asarray(counts / float(effective_shots), dtype=np.float64)
+        sampling_model = "multinomial_delta_method_raw_count_replay"
+    else:
+        if effective_shots is None:
+            raise ValueError("shot_count is required when observed_counts are not supplied")
+        empirical_probabilities = np.asarray(probabilities.copy(), dtype=np.float64)
+        sampling_model = "multinomial_delta_method_expected_counts"
+    finite_shot_fisher = _classical_fisher_from_probabilities(
+        probability_derivatives,
+        empirical_probabilities,
+    )
+    standard_error = _classical_fisher_delta_method_standard_error(
+        probability_derivatives,
+        empirical_probabilities,
+        effective_shots,
+    )
+    confidence_radius = np.asarray(confidence_z * standard_error, dtype=np.float64)
+    return _FiniteShotFisherEvidence(
+        shot_count=effective_shots,
+        count_record=count_record,
+        empirical_probabilities=empirical_probabilities,
+        finite_shot_classical_fisher_information=finite_shot_fisher,
+        fisher_standard_error=standard_error,
+        fisher_confidence_radius=confidence_radius,
+        confidence_level=confidence_level,
+        confidence_z=confidence_z,
+        sampling_model=sampling_model,
+    )
+
+
+def _optional_float_array_to_list(value: FloatArray | None) -> object:
+    """Return a JSON-ready list for an optional float array."""
+    if value is None:
+        return None
+    return value.tolist()
 
 
 def _as_optional_positive_int(name: str, value: int | None) -> int | None:

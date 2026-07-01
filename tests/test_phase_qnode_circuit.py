@@ -508,6 +508,129 @@ def test_phase_qnode_computational_basis_fisher_is_bounded_by_qfi() -> None:
     assert np.min(np.linalg.eigvalsh(gap)) >= -1e-10
 
 
+def test_phase_qnode_computational_basis_fisher_reports_finite_shot_uncertainty() -> None:
+    circuit = PhaseQNodeCircuit(
+        n_qubits=1,
+        operations=(("ry", (0,), 0),),
+        observable="pauli_z",
+    )
+
+    result = phase_qnode_computational_basis_fisher_information(
+        circuit,
+        np.array([0.31], dtype=float),
+        shot_count=4096,
+        confidence_z=2.0,
+    )
+
+    assert result.shot_count == 4096
+    assert result.count_record is None
+    assert result.sampling_model == "multinomial_delta_method_expected_counts"
+    finite_shot = result.finite_shot_classical_fisher_information
+    assert finite_shot is not None
+    np.testing.assert_allclose(
+        finite_shot,
+        result.classical_fisher_information,
+        atol=1e-12,
+    )
+    standard_error = result.fisher_standard_error
+    confidence_radius = result.fisher_confidence_radius
+    assert standard_error is not None
+    assert confidence_radius is not None
+    assert standard_error.shape == (1, 1)
+    assert standard_error[0, 0] > 0.0
+    np.testing.assert_allclose(
+        confidence_radius,
+        2.0 * standard_error,
+        atol=1e-12,
+    )
+    payload = result.to_dict()
+    assert payload["shot_count"] == 4096
+    assert payload["count_record"] is None
+    assert payload["sampling_model"] == "multinomial_delta_method_expected_counts"
+    assert payload["fisher_standard_error"] == standard_error.tolist()
+    assert "finite-shot" in result.claim_boundary
+
+
+def test_phase_qnode_computational_basis_fisher_replays_raw_count_record() -> None:
+    circuit = PhaseQNodeCircuit(
+        n_qubits=1,
+        operations=(("ry", (0,), 0),),
+        observable="pauli_z",
+    )
+    params = np.array([0.31], dtype=float)
+    counts = np.array([3900, 196], dtype=np.int64)
+
+    result = phase_qnode_computational_basis_fisher_information(
+        circuit,
+        params,
+        observed_counts=counts,
+        confidence_z=1.5,
+    )
+
+    empirical_probabilities = counts / counts.sum()
+    exact = phase_qnode_computational_basis_fisher_information(circuit, params)
+    expected = (
+        exact.probability_derivatives
+        @ (exact.probability_derivatives / empirical_probabilities[np.newaxis, :]).T
+    )
+
+    assert result.shot_count == int(counts.sum())
+    assert result.count_record == (3900, 196)
+    assert result.sampling_model == "multinomial_delta_method_raw_count_replay"
+    replay_probabilities = result.empirical_probabilities
+    finite_shot = result.finite_shot_classical_fisher_information
+    standard_error = result.fisher_standard_error
+    confidence_radius = result.fisher_confidence_radius
+    assert replay_probabilities is not None
+    assert finite_shot is not None
+    assert standard_error is not None
+    assert confidence_radius is not None
+    np.testing.assert_allclose(replay_probabilities, empirical_probabilities)
+    np.testing.assert_allclose(finite_shot, expected)
+    np.testing.assert_allclose(
+        confidence_radius,
+        1.5 * standard_error,
+        atol=1e-12,
+    )
+
+
+def test_phase_qnode_computational_basis_fisher_validates_finite_shot_inputs() -> None:
+    circuit = PhaseQNodeCircuit(
+        n_qubits=1,
+        operations=(("ry", (0,), 0),),
+        observable="pauli_z",
+    )
+    params = np.array([0.31], dtype=float)
+
+    with pytest.raises(ValueError, match="shot_count must be a positive integer"):
+        phase_qnode_computational_basis_fisher_information(circuit, params, shot_count=0)
+    with pytest.raises(ValueError, match="observed_counts must have shape"):
+        phase_qnode_computational_basis_fisher_information(
+            circuit,
+            params,
+            observed_counts=np.array([1, 2, 3]),
+        )
+    with pytest.raises(ValueError, match="observed_counts must be integer counts"):
+        phase_qnode_computational_basis_fisher_information(
+            circuit,
+            params,
+            observed_counts=np.array([1.5, 2.5]),
+        )
+    with pytest.raises(ValueError, match="observed_counts sum must equal shot_count"):
+        phase_qnode_computational_basis_fisher_information(
+            circuit,
+            params,
+            shot_count=12,
+            observed_counts=np.array([5, 6]),
+        )
+    with pytest.raises(ValueError, match="strictly positive"):
+        phase_qnode_computational_basis_fisher_information(
+            circuit,
+            params,
+            observed_counts=np.array([4096, 0]),
+        )
+
+
 def test_phase_qnode_computational_basis_fisher_fails_closed_at_singular_probability() -> None:
     circuit = PhaseQNodeCircuit(
         n_qubits=1,

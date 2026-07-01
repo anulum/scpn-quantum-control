@@ -1133,9 +1133,32 @@ metric, provider metric, or hardware metric claim.
 the exact classical Fisher matrix for computational-basis statevector
 probabilities using the same analytic state derivatives. It fails closed at
 zero-probability outcomes because the probability-space Fisher expression is
-singular there. The result is deterministic local evidence only; finite-shot
-uncertainty, hardware sampling, adaptive measurements, and optimal measurement
-selection remain outside this route.
+singular there. The result keeps this exact matrix as the reference even when
+finite-shot evidence is requested.
+
+Passing `shot_count=...` adds a multinomial delta-method uncertainty model for
+the exact computational-basis probability distribution:
+
+```python
+fisher = phase_qnode_computational_basis_fisher_information(
+    circuit,
+    params,
+    shot_count=4096,
+)
+
+print(fisher.classical_fisher_information)
+print(fisher.fisher_standard_error)
+print(fisher.fisher_confidence_radius)
+```
+
+Passing `observed_counts=...` replays a strictly positive raw-count record as a
+plug-in finite-shot Fisher estimate while preserving
+`classical_fisher_information` as the exact statevector reference. The returned
+evidence records `shot_count`, `count_record`, `empirical_probabilities`,
+`finite_shot_classical_fisher_information`, confidence metadata, and a
+non-promotional claim boundary. Hardware sampling, backend calibration,
+adaptive measurements, provider runtime, and optimal measurement selection
+remain outside this local route.
 
 The optional Rust extension exposes parity kernels for the materialised metric
 evidence as `phase_qnode_fubini_study_metric_rust(...)` and
