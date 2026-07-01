@@ -30,6 +30,7 @@ from scpn_quantum_control.differentiable_api import (
     differentiable_gradient,
     differentiable_hessian,
     differentiable_jacobian,
+    differentiable_qfi_fss_report,
     differentiable_support_report,
     differentiable_transform_algebra_report,
     differentiable_value,
@@ -180,6 +181,28 @@ def test_unified_differentiable_transform_algebra_report_is_bounded() -> None:
     assert blocked_count >= 4
     assert "finite differences remain diagnostic" in report.claim_boundary
     assert dispatched.to_dict() == report.to_dict()
+
+
+def test_unified_differentiable_qfi_fss_report_is_bounded() -> None:
+    report = differentiable_qfi_fss_report(
+        system_sizes=[2, 3],
+        k_range=np.linspace(0.5, 3.0, 6),
+    )
+    dispatched = differentiable_api(
+        "qfi_fss_report",
+        system_sizes=[2, 3],
+        k_range=np.linspace(0.5, 3.0, 6),
+    )
+
+    assert report.operation == "qfi_fss_report"
+    assert report.supported is True
+    assert report.method == "qfi_finite_size_scaling"
+    assert report.payload["system_sizes"] == [2, 3]
+    assert report.payload["bkt_fit"]["model"] == "bkt_log_correction"
+    assert report.payload["power_fit"]["model"] == "power_law_nu_1"
+    assert "no hardware" in report.claim_boundary
+    assert dispatched.to_dict() == report.to_dict()
+    assert scpn.differentiable_qfi_fss_report is differentiable_qfi_fss_report
 
 
 def test_unified_differentiable_benchmark_report_is_non_performance_evidence() -> None:

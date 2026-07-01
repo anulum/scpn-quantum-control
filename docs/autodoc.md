@@ -397,7 +397,7 @@ or debugging a subsystem, not as the default path for tutorial code.
 
 ::: scpn_quantum_control.analysis.finite_size_scaling
     options:
-      members: [FSSResult, finite_size_scaling]
+      members: [FSSFitDiagnostics, FSSResult, finite_size_scaling]
 
 ::: scpn_quantum_control.analysis.krylov_complexity
     options:

@@ -245,6 +245,7 @@ $K_c(N) = K_c(\infty) + a/(\ln N)^2$ ansatz and a power-law comparison model.
 
 ```python
 from scpn_quantum_control.analysis.finite_size_scaling import (
+    FSSFitDiagnostics,
     finite_size_scaling,
     FSSResult,
 )
@@ -252,7 +253,16 @@ from scpn_quantum_control.analysis.finite_size_scaling import (
 
 `finite_size_scaling(system_sizes=None, k_range=None, *, max_dense_gib=None)` → `FSSResult`
 with: `system_sizes`, `k_c_values`, `gap_min_values`,
-`k_c_extrapolated_bkt`, and `k_c_extrapolated_power`.
+`k_c_extrapolated_bkt`, `k_c_extrapolated_power`, `bkt_fit`, `power_fit`,
+and `claim_boundary`. The optional `FSSFitDiagnostics` records expose the
+linearized ansatz name, extrapolated intercept, correction coefficient,
+pointwise residuals, residual norm, maximum absolute residual, design-matrix
+condition number, rank, point count, and the same non-promotional claim
+boundary. `system_sizes` must be unique integer qubit counts from 2 through
+the available frequency table; `k_range` must be one-dimensional, finite,
+strictly increasing, and at least two points. The scan is local dense exact
+finite-size evidence only, not hardware execution, isolated performance
+evidence, or a thermodynamic-limit proof.
 
 ### `adiabatic_preparation` — Adiabatic State Preparation
 

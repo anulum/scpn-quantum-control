@@ -7,9 +7,9 @@
     "model_documentation_pages": 0,
     "notebook_files": 100,
     "optional_extras": 43,
-    "public_api_exports": 775,
+    "public_api_exports": 776,
     "public_documentation_pages": 254,
-    "python_model_classes": 921,
+    "python_model_classes": 922,
     "python_model_source_modules": 526,
     "rust_pyo3_model_wrappers": 171,
     "rust_source_modules": 42,
@@ -1682,6 +1682,10 @@
       {
         "name": "FRCScheduleResult",
         "path": "src/scpn_quantum_control/control/frc_pulsed_qaoa.py"
+      },
+      {
+        "name": "FSSFitDiagnostics",
+        "path": "src/scpn_quantum_control/analysis/finite_size_scaling.py"
       },
       {
         "name": "FSSResult",
@@ -5454,6 +5458,7 @@
     "differentiable_isolated_benchmark_plan_report",
     "differentiable_jacobian",
     "differentiable_module_hardening_registry",
+    "differentiable_qfi_fss_report",
     "differentiable_rust_python_inventory_report",
     "differentiable_sota_scorecard_report",
     "differentiable_support_report",

@@ -16,6 +16,7 @@ from typing import Any, Literal, TypeAlias, cast
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
 
+from .analysis.finite_size_scaling import FSS_CLAIM_BOUNDARY, finite_size_scaling
 from .benchmarks.differentiable_isolated_benchmark_plan import (
     run_differentiable_isolated_benchmark_plan,
 )
@@ -70,6 +71,7 @@ UnifiedDifferentiableOperation = Literal[
     "dependency_environment_map",
     "isolated_benchmark_plan",
     "transform_algebra_report",
+    "qfi_fss_report",
 ]
 DifferentiableDashboardCapabilityState = Literal[
     "planned",
@@ -611,6 +613,50 @@ def differentiable_transform_algebra_report() -> UnifiedDifferentiableAPIResult:
         hessian=None,
         payload=audit.to_dict(),
         claim_boundary=audit.claim_boundary,
+    )
+
+
+def differentiable_qfi_fss_report(
+    *,
+    system_sizes: Sequence[int] | None = None,
+    k_range: ArrayLike | None = None,
+    max_dense_gib: float | None = None,
+) -> UnifiedDifferentiableAPIResult:
+    """Return bounded QFI/FSS finite-size evidence for differentiable dashboards.
+
+    Parameters
+    ----------
+    system_sizes:
+        Optional finite-size qubit counts forwarded to the local dense FSS scan.
+    k_range:
+        Optional coupling grid. Values are converted to ``float64`` and
+        validated by :func:`finite_size_scaling`.
+    max_dense_gib:
+        Optional dense workspace budget forwarded to each exact gap scan.
+
+    Returns
+    -------
+    UnifiedDifferentiableAPIResult
+        Supported ``qfi_fss_report`` result whose payload contains serialized
+        finite-size-scaling evidence and whose claim boundary prevents hardware,
+        performance, or thermodynamic-limit promotion.
+    """
+    scan_range = None if k_range is None else np.asarray(k_range, dtype=np.float64)
+    result = finite_size_scaling(
+        system_sizes=None if system_sizes is None else list(system_sizes),
+        k_range=scan_range,
+        max_dense_gib=max_dense_gib,
+    )
+    return UnifiedDifferentiableAPIResult(
+        operation="qfi_fss_report",
+        supported=True,
+        method="qfi_finite_size_scaling",
+        value=None,
+        gradient=None,
+        jacobian=None,
+        hessian=None,
+        payload=result.to_dict(),
+        claim_boundary=FSS_CLAIM_BOUNDARY,
     )
 
 
@@ -1215,6 +1261,9 @@ def differentiable_api(
     allow_hardware: bool = False,
     primitive_identities: Sequence[str | PrimitiveIdentity] | None = None,
     registry: CustomDerivativeRegistry = DEFAULT_CUSTOM_DERIVATIVE_REGISTRY,
+    system_sizes: Sequence[int] | None = None,
+    k_range: ArrayLike | None = None,
+    max_dense_gib: float | None = None,
 ) -> UnifiedDifferentiableAPIResult:
     """Dispatch one supported unified differentiable operation."""
     if operation == "value":
@@ -1302,6 +1351,12 @@ def differentiable_api(
         return differentiable_isolated_benchmark_plan_report()
     if operation == "transform_algebra_report":
         return differentiable_transform_algebra_report()
+    if operation == "qfi_fss_report":
+        return differentiable_qfi_fss_report(
+            system_sizes=system_sizes,
+            k_range=k_range,
+            max_dense_gib=max_dense_gib,
+        )
     if operation == "frontend_report":
         return differentiable_frontend_report(_require_objective(objective))
     if operation == "dashboard_status":
@@ -1444,6 +1499,7 @@ __all__ = [
     "differentiable_hessian",
     "differentiable_isolated_benchmark_plan_report",
     "differentiable_jacobian",
+    "differentiable_qfi_fss_report",
     "differentiable_rust_python_inventory_report",
     "differentiable_sota_scorecard_report",
     "differentiable_support_report",

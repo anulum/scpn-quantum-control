@@ -54,7 +54,7 @@ from .fim_hamiltonian import (
     sector_spectrum_rows,
     summarise_spectrum,
 )
-from .finite_size_scaling import FSSResult
+from .finite_size_scaling import FSSFitDiagnostics, FSSResult
 from .finite_size_scaling import finite_size_scaling as compute_finite_size_scaling
 from .h1_persistence import H1PersistenceResult, scan_h1_persistence
 from .hamiltonian_learning import HamiltonianLearningResult, learn_hamiltonian
@@ -209,6 +209,7 @@ __all__ = [
     "PercolationScanResult",
     "percolation_scan",
     "FSSResult",
+    "FSSFitDiagnostics",
     "compute_finite_size_scaling",
     "SpectrumSummary",
     "add_fim_feedback",
