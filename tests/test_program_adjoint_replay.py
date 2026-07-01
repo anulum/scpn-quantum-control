@@ -13,6 +13,7 @@ from typing import Any, cast
 
 import numpy as np
 import pytest
+from numpy.typing import NDArray
 
 import scpn_quantum_control.differentiable as differentiable
 import scpn_quantum_control.whole_program_ad_api as whole_program_api
@@ -313,6 +314,10 @@ def test_program_adjoint_replay_matches_forward_program_ad_for_supported_ir() ->
     assert branch_step.control_region_entered is True
     assert branch_step.phi_node is not None
     assert branch_step.phi_selected == "executed_true"
+    assert branch_step.non_executed_phi_inputs == ("executed_false",)
+    assert branch_step.contribution_inputs == ()
+    assert adjoint.executed_branch_replay_count == 1
+    assert adjoint.blocked_non_executed_phi_input_count == 1
     effect_ordering = tuple(
         step.effect_ordering for step in adjoint.adjoint_steps if step.effect_ordering is not None
     )
@@ -341,8 +346,64 @@ def test_program_adjoint_replay_matches_forward_program_ad_for_supported_ir() ->
     assert payload_branch["control_region_entered"] is True
     assert payload_branch["phi_node"] == branch_step.phi_node
     assert payload_branch["phi_selected"] == "executed_true"
+    assert payload_branch["non_executed_phi_inputs"] == ["executed_false"]
+    assert payload["executed_branch_replay_count"] == 1
+    assert payload["blocked_non_executed_phi_input_count"] == 1
     _assert_allclose(adjoint.gradient, result.gradient, rtol=1.0e-12, atol=1.0e-12)
     _assert_allclose(program_adjoint_gradient(result), result.gradient, rtol=1.0e-12, atol=1.0e-12)
+
+
+@pytest.mark.parametrize(
+    ("values", "selected", "blocked", "expected_gradient"),
+    (
+        (
+            np.array([2.0, 1.0, 0.5], dtype=np.float64),
+            "executed_true",
+            ("executed_false",),
+            np.array([1.0, 0.0, 1.0], dtype=np.float64),
+        ),
+        (
+            np.array([-1.0, 0.25, 0.5], dtype=np.float64),
+            "executed_false",
+            ("executed_true",),
+            np.array([0.0, 1.0, 1.0], dtype=np.float64),
+        ),
+    ),
+)
+def test_program_adjoint_branch_replay_blocks_non_executed_phi_inputs(
+    values: NDArray[np.float64],
+    selected: str,
+    blocked: tuple[str, ...],
+    expected_gradient: NDArray[np.float64],
+) -> None:
+    """Runtime branch adjoints should replay only the entered phi input."""
+
+    def objective(trace_values: Any) -> object:
+        x, y, z = trace_values
+        branch = x if x > y else y
+        return branch + z
+
+    result = whole_program_value_and_grad(
+        objective,
+        values,
+        parameters=(Parameter("x"), Parameter("y"), Parameter("z")),
+    )
+    adjoint = program_adjoint_result(result)
+    branch_steps = tuple(
+        step for step in adjoint.adjoint_steps if step.operation.startswith("branch:")
+    )
+
+    assert len(branch_steps) == 1
+    branch_step = branch_steps[0]
+    assert branch_step.control_region_kind == "runtime_branch"
+    assert branch_step.control_region_entered is (selected == "executed_true")
+    assert branch_step.phi_selected == selected
+    assert branch_step.non_executed_phi_inputs == blocked
+    assert branch_step.contribution_inputs == ()
+    assert adjoint.executed_branch_replay_count == 1
+    assert adjoint.blocked_non_executed_phi_input_count == len(blocked)
+    _assert_allclose(result.gradient, expected_gradient, atol=1.0e-12)
+    _assert_allclose(program_adjoint_gradient(result), expected_gradient, atol=1.0e-12)
 
 
 def test_program_adjoint_generation_steps_record_local_pullback_flow() -> None:
@@ -464,9 +525,20 @@ def test_program_adjoint_result_validation_paths() -> None:
         contribution_inputs=(),
         supported=True,
     )
+    branch_replay_step = valid_step(
+        operation="branch:%0:True",
+        input_values=(),
+        control_region=0,
+        control_region_kind="runtime_branch",
+        control_region_entered=True,
+        phi_node=0,
+        phi_selected="executed_true",
+        non_executed_phi_inputs=("executed_false",),
+    )
     assert result.supported is True
     assert no_effect_step.primal_effect is None
     assert no_effect_step.effect_kind is None
+    assert branch_replay_step.non_executed_phi_inputs == ("executed_false",)
     assert result.replay_ir_format == "program_ad_effect_ir.v1"
     assert result.adjoint_step_count == 1
     assert first_step["operation"] == "parameter"
@@ -478,6 +550,7 @@ def test_program_adjoint_result_validation_paths() -> None:
     assert first_step["control_region_entered"] is None
     assert first_step["phi_node"] is None
     assert first_step["phi_selected"] is None
+    assert first_step["non_executed_phi_inputs"] == []
     assert first_step["incoming_cotangent"] == 0.0
     assert first_step["contribution_scales"] == []
     assert first_step["contribution_cotangents"] == []
@@ -546,6 +619,28 @@ def test_program_adjoint_result_validation_paths() -> None:
             method="program_adjoint_replay",
             claim_boundary="supported scalar replay",
             replay_node_count=-1,
+        )
+    with pytest.raises(ValueError, match="executed_branch_replay_count"):
+        ProgramADAdjointResult(
+            gradient=np.array([1.0], dtype=np.float64),
+            supported=True,
+            unsupported_ops=(),
+            method="program_adjoint_ir_generation",
+            claim_boundary="supported scalar replay",
+            executed_branch_replay_count=0,
+            blocked_non_executed_phi_input_count=1,
+            adjoint_steps=(branch_replay_step,),
+        )
+    with pytest.raises(ValueError, match="blocked_non_executed_phi_input_count"):
+        ProgramADAdjointResult(
+            gradient=np.array([1.0], dtype=np.float64),
+            supported=True,
+            unsupported_ops=(),
+            method="program_adjoint_ir_generation",
+            claim_boundary="supported scalar replay",
+            executed_branch_replay_count=1,
+            blocked_non_executed_phi_input_count=0,
+            adjoint_steps=(branch_replay_step,),
         )
     with pytest.raises(ValueError, match="replay_ir_format"):
         ProgramADAdjointResult(
@@ -670,6 +765,21 @@ def test_program_adjoint_result_validation_paths() -> None:
             control_region_entered=True,
             phi_node=0,
             phi_selected="",
+        )
+    with pytest.raises(ValueError, match="non_executed_phi_inputs entries"):
+        valid_step(non_executed_phi_inputs=("",))
+    with pytest.raises(ValueError, match="non_executed_phi_inputs must be unique"):
+        valid_step(non_executed_phi_inputs=("executed_false", "executed_false"))
+    with pytest.raises(ValueError, match="non_executed_phi_inputs requires phi metadata"):
+        valid_step(non_executed_phi_inputs=("executed_false",))
+    with pytest.raises(ValueError, match="cannot include the selected phi input"):
+        valid_step(
+            control_region=0,
+            control_region_kind="runtime_branch",
+            control_region_entered=True,
+            phi_node=0,
+            phi_selected="executed_true",
+            non_executed_phi_inputs=("executed_true",),
         )
     with pytest.raises(ValueError, match="operation"):
         valid_step(operation="")

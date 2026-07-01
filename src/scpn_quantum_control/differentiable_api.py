@@ -939,9 +939,10 @@ def differentiable_dashboard_status(
                 "program_ad_effect_ir.v1 for supported executed scalar IR only, "
                 "with generated adjoint steps, finite local pullback scales, "
                 "cotangent-flow rows, reverse effect-order rows, and "
-                "node/effect/runtime control/phi row bindings; not full reverse-mode "
-                "compiler AD, non-executed branch adjoints, Rust/LLVM executable "
-                "lowering, hardware, or performance promotion"
+                "node/effect/runtime control/phi row bindings, with blocked "
+                "non-executed phi inputs; not full reverse-mode compiler AD, "
+                "non-executed branch adjoints, Rust/LLVM executable lowering, "
+                "hardware, or performance promotion"
             ),
         ),
         DifferentiableDashboardCapabilityRow(

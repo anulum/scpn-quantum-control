@@ -22,7 +22,8 @@ programs:
 - The replay driver :func:`_program_adjoint_result_from_nodes` (and its
   :func:`_program_adjoint_steps_from_ir` helper) that propagates cotangents
   backward over the captured nodes, assembles the parameter gradient, and emits
-  the per-step reverse-adjoint record over ``program_ad_effect_ir.v1`` metadata.
+  the per-step reverse-adjoint record over ``program_ad_effect_ir.v1`` metadata,
+  including replayed runtime branch rows and blocked non-executed phi inputs.
 
 Linear-algebra VJP rules are sourced from
 :mod:`scpn_quantum_control.program_ad_linalg_primitives`; IR-node and result
@@ -1105,6 +1106,17 @@ def _program_adjoint_result_from_nodes(
         replay_effect_count=replay_effect_count,
         replay_control_region_count=replay_control_region_count,
         replay_phi_node_count=replay_phi_node_count,
+        executed_branch_replay_count=sum(
+            1
+            for step in adjoint_steps
+            if step.operation.startswith("branch:")
+            and step.control_region_kind == "runtime_branch"
+            and step.phi_node is not None
+            and step.phi_selected is not None
+        ),
+        blocked_non_executed_phi_input_count=sum(
+            len(step.non_executed_phi_inputs) for step in adjoint_steps
+        ),
         replay_ir_format="program_ad_effect_ir.v1",
         adjoint_steps=adjoint_steps,
     )
@@ -1155,6 +1167,7 @@ def _program_adjoint_steps_from_ir(
         control_region_entered: bool | None = None
         phi_node_index: int | None = None
         phi_selected: str | None = None
+        non_executed_phi_inputs: tuple[str, ...] = ()
         if node.op.startswith("branch:"):
             runtime_regions = tuple(runtime_regions_by_predicate.get(node.op, ()))
             if len(runtime_regions) == 1:
@@ -1166,6 +1179,12 @@ def _program_adjoint_steps_from_ir(
                 if runtime_phi is not None:
                     phi_node_index = runtime_phi.index
                     phi_selected = runtime_phi.selected
+                    if runtime_phi.selected is not None:
+                        non_executed_phi_inputs = tuple(
+                            incoming
+                            for incoming in runtime_phi.incoming
+                            if incoming != runtime_phi.selected
+                        )
         if ssa_value is None:
             supported = False
             unsupported_reason = "missing_ssa_value"
@@ -1202,6 +1221,7 @@ def _program_adjoint_steps_from_ir(
                 control_region_entered=control_region_entered,
                 phi_node=phi_node_index,
                 phi_selected=phi_selected,
+                non_executed_phi_inputs=non_executed_phi_inputs,
                 operation=node.op,
                 input_values=node.inputs,
                 contribution_inputs=contribution_inputs,

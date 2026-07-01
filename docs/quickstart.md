@@ -292,9 +292,10 @@ functions execute program capture, then require supported adjoint generation
 over the captured scalar IR. Generated `ProgramADAdjointStep` rows bind the
 local pullback inputs, finite pullback coefficients, cotangent-flow rows,
 reverse effect-order metadata, and executed runtime control/phi row bindings
-to `program_ad_effect_ir.v1`; unsupported generation operations fail closed.
-The API does not substitute finite differences or claim a general
-arbitrary-Python MLIR/LLVM compiler.
+to `program_ad_effect_ir.v1`, while non-executed phi inputs are recorded as
+blocked adjoints. Unsupported generation operations fail closed. The API does
+not substitute finite differences or claim a general arbitrary-Python
+MLIR/LLVM compiler.
 
 Alias/effect audits can be inspected with
 `program_ad_static_alias_lattice_report(...)`. The report builds a static

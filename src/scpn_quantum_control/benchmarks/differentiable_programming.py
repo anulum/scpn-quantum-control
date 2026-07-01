@@ -1086,11 +1086,16 @@ def _program_adjoint_replay_provenance_case() -> DifferentiableProgrammingBenchm
     branch_steps = tuple(
         step for step in adjoint.adjoint_steps if step.operation.startswith("branch:")
     )
+    blocked_phi_inputs = tuple(
+        blocked_input for step in branch_steps for blocked_input in step.non_executed_phi_inputs
+    )
     if (
         adjoint.replay_node_count != len(result.ir_nodes)
         or adjoint.replay_effect_count != len(result.program_ir.effects)
         or adjoint.replay_control_region_count != len(result.program_ir.control_regions)
         or adjoint.replay_phi_node_count != len(result.program_ir.phi_nodes)
+        or adjoint.executed_branch_replay_count != len(branch_steps)
+        or adjoint.blocked_non_executed_phi_input_count != len(blocked_phi_inputs)
         or adjoint.replay_ir_format != "program_ad_effect_ir.v1"
         or adjoint.adjoint_step_count != len(result.ir_nodes)
         or any(not step.supported for step in adjoint.adjoint_steps)
@@ -1115,6 +1120,7 @@ def _program_adjoint_replay_provenance_case() -> DifferentiableProgrammingBenchm
             or step.control_region_entered is not True
             or step.phi_node is None
             or step.phi_selected != "executed_true"
+            or step.non_executed_phi_inputs != ("executed_false",)
             for step in branch_steps
         )
         or not any(abs(step.incoming_cotangent) > 0.0 for step in adjoint.adjoint_steps)
@@ -1146,7 +1152,8 @@ def _program_adjoint_replay_provenance_case() -> DifferentiableProgrammingBenchm
             "ProgramADAdjointResult and ProgramADAdjointStep generation provenance "
             "over supported executed scalar IR nodes, finite local pullback scales, "
             "cotangent-flow rows, reverse effect-order rows, control regions, and "
-            "runtime control/phi row bindings in program_ad_effect_ir.v1; local "
+            "runtime control/phi row bindings in program_ad_effect_ir.v1, with "
+            "non-executed phi inputs recorded as blocked adjoints; local "
             "conformance only, not full reverse-mode compiler AD, non-executed "
             "branch adjoints, Rust, LLVM/JIT, hardware, or performance evidence; "
             "no wall-clock performance claim"

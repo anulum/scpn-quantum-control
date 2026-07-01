@@ -29,8 +29,9 @@ class ProgramADAdjointStep:
     The step binds a primal SSA value and stabilized effect row to the local
     pullback inputs, finite incoming cotangent, local pullback coefficients,
     emitted contribution cotangents, effect ordering metadata, and any
-    unambiguous executed runtime control/phi row used by reverse-mode adjoint
-    generation. It is an auditable generation plan over
+    unambiguous runtime control/phi row used by reverse-mode adjoint
+    generation. Non-executed phi inputs are recorded as blocked adjoints rather
+    than replay contributions. It is an auditable generation plan over
     ``program_ad_effect_ir.v1`` metadata; it does not add non-executed branch
     adjoints or executable compiler lowering.
     """
@@ -50,6 +51,7 @@ class ProgramADAdjointStep:
     control_region_entered: bool | None = None
     phi_node: int | None = None
     phi_selected: str | None = None
+    non_executed_phi_inputs: tuple[str, ...] = ()
     incoming_cotangent: float = 0.0
     contribution_scales: tuple[float, ...] = ()
     contribution_cotangents: tuple[float, ...] = ()
@@ -134,6 +136,22 @@ class ProgramADAdjointStep:
                 raise ValueError(
                     "program AD adjoint step phi_selected must be non-empty when phi_node "
                     "is present"
+                )
+        if any(not isinstance(value, str) or not value for value in self.non_executed_phi_inputs):
+            raise ValueError(
+                "program AD adjoint step non_executed_phi_inputs entries must be non-empty strings"
+            )
+        if len(set(self.non_executed_phi_inputs)) != len(self.non_executed_phi_inputs):
+            raise ValueError("program AD adjoint step non_executed_phi_inputs must be unique")
+        if self.non_executed_phi_inputs:
+            if self.phi_node is None or self.phi_selected is None:
+                raise ValueError(
+                    "program AD adjoint step non_executed_phi_inputs requires phi metadata"
+                )
+            if self.phi_selected in self.non_executed_phi_inputs:
+                raise ValueError(
+                    "program AD adjoint step non_executed_phi_inputs cannot include "
+                    "the selected phi input"
                 )
         if not self.operation:
             raise ValueError("program AD adjoint step operation must be non-empty")
@@ -228,6 +246,7 @@ class ProgramADAdjointStep:
             "control_region_entered": self.control_region_entered,
             "phi_node": self.phi_node,
             "phi_selected": self.phi_selected,
+            "non_executed_phi_inputs": list(self.non_executed_phi_inputs),
             "operation": self.operation,
             "input_values": list(self.input_values),
             "contribution_inputs": list(self.contribution_inputs),
@@ -252,6 +271,8 @@ class ProgramADAdjointResult:
     replay_effect_count: int = 0
     replay_control_region_count: int = 0
     replay_phi_node_count: int = 0
+    executed_branch_replay_count: int = 0
+    blocked_non_executed_phi_input_count: int = 0
     replay_ir_format: str = "program_ad_effect_ir.v1"
     adjoint_steps: tuple[ProgramADAdjointStep, ...] = ()
 
@@ -276,6 +297,8 @@ class ProgramADAdjointResult:
             "replay_effect_count",
             "replay_control_region_count",
             "replay_phi_node_count",
+            "executed_branch_replay_count",
+            "blocked_non_executed_phi_input_count",
         ):
             value = getattr(self, name)
             if isinstance(value, bool) or not isinstance(value, int) or value < 0:
@@ -292,6 +315,27 @@ class ProgramADAdjointResult:
         unsupported_step_ops = {
             step.operation for step in self.adjoint_steps if not step.supported
         }
+        actual_executed_branch_replays = sum(
+            1
+            for step in self.adjoint_steps
+            if step.operation.startswith("branch:")
+            and step.control_region_kind == "runtime_branch"
+            and step.phi_node is not None
+            and step.phi_selected is not None
+        )
+        if self.executed_branch_replay_count != actual_executed_branch_replays:
+            raise ValueError(
+                "program AD adjoint executed_branch_replay_count must match "
+                "generated branch replay steps"
+            )
+        actual_blocked_phi_inputs = sum(
+            len(step.non_executed_phi_inputs) for step in self.adjoint_steps
+        )
+        if self.blocked_non_executed_phi_input_count != actual_blocked_phi_inputs:
+            raise ValueError(
+                "program AD adjoint blocked_non_executed_phi_input_count must match "
+                "generated non-executed phi blockers"
+            )
         if self.supported and unsupported_step_ops:
             raise ValueError("supported program AD adjoint cannot carry unsupported steps")
         if unsupported_step_ops and not unsupported_step_ops.issubset(set(self.unsupported_ops)):
@@ -319,6 +363,8 @@ class ProgramADAdjointResult:
             "replay_effect_count": self.replay_effect_count,
             "replay_control_region_count": self.replay_control_region_count,
             "replay_phi_node_count": self.replay_phi_node_count,
+            "executed_branch_replay_count": self.executed_branch_replay_count,
+            "blocked_non_executed_phi_input_count": self.blocked_non_executed_phi_input_count,
             "replay_ir_format": self.replay_ir_format,
             "adjoint_step_count": self.adjoint_step_count,
             "adjoint_steps": [step.to_dict() for step in self.adjoint_steps],
