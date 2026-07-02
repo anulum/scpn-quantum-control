@@ -299,6 +299,9 @@ state replay and classifies CUDA replay only after a real CUDA smoke succeeds,
 `run_torch_module_checkpoint_audit(...)`, which writes a real `torch.save`
 checkpoint and reloads it on CPU with `weights_only=True` before strict module
 plus Adam optimizer-state replay,
+`run_torch_long_lived_checkpoint_matrix(...)`, which records a versioned
+checkpoint schema, tensor metadata manifest, runtime fingerprint, and repeated
+local CPU weights-only loads for that checkpoint route,
 `run_torch_module_export_audit(...)`, which exports the same bounded module with
 `torch.export.export(...)`, persists it with `torch.export.save(...)`, reloads it
 with `torch.export.load(...)`, and replays the local CPU value route through
@@ -310,7 +313,8 @@ parameter-shift reference. These are intentionally narrow bridge promotions:
 arbitrary autodiff-through-simulator kernels, unrestricted QNN architectures,
 incompatible CUDA/device placement guarantees, AOTAutograd gradient-export
 persistence, dynamic-shape export promotion, cross-runtime checkpoint/export
-portability, and live provider gradients remain outside the promoted surface.
+portability, external checkpoint-corpus promotion, and live provider gradients
+remain outside the promoted surface.
 
 ## Bounded QNN convergence evidence
 
@@ -2151,6 +2155,10 @@ replay and attempts CUDA `module.to(...)` state replay only after the installed
 PyTorch runtime passes a real CUDA smoke. `run_torch_module_checkpoint_audit(...)`
 writes a real `torch.save` checkpoint and reloads it on CPU with
 `weights_only=True` before strict module plus Adam optimizer-state replay.
+`run_torch_long_lived_checkpoint_matrix(...)` records the checkpoint schema,
+tensor metadata manifest, runtime fingerprint, and repeated local CPU
+weights-only loads without promoting cross-runtime, CUDA, or external
+checkpoint-corpus replay.
 `run_torch_module_export_audit(...)` exports the same bounded module with
 `torch.export.export(...)`, saves and reloads the `ExportedProgram`, and replays
 the local CPU value route through `ExportedProgram.module()`. Incompatible CUDA,

@@ -688,6 +688,14 @@ def differentiable_module_hardening_registry() -> tuple[DifferentiableModuleHard
             ("weights-only checkpoint replay", "cross-runtime checkpoint blockers"),
         ),
         _record(
+            "src/scpn_quantum_control/phase/torch_checkpoint_matrix.py",
+            ("tests/test_phase_torch_checkpoint_matrix.py",),
+            (
+                "long-lived checkpoint matrix replay",
+                "cross-runtime checkpoint matrix blockers",
+            ),
+        ),
+        _record(
             "src/scpn_quantum_control/phase/torch_export.py",
             ("tests/test_phase_torch_export.py",),
             ("torch.export value replay", "AOTAutograd and dynamic-shape blockers"),

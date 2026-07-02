@@ -1043,6 +1043,34 @@ def differentiable_dashboard_status(
             ),
         ),
         DifferentiableDashboardCapabilityRow(
+            surface="torch_bounded_qnn_long_lived_checkpoint_matrix",
+            state="conformance_backed" if conformance_passed else "diagnostic",
+            backing_api="run_torch_long_lived_checkpoint_matrix",
+            evidence=(
+                "PhaseTorchCheckpointMatrixResult",
+                "checkpoint tensor metadata manifest",
+                "runtime fingerprint",
+                "repeated weights_only CPU checkpoint loads",
+            ),
+            blocked_reasons=()
+            if conformance_passed
+            else (
+                "conformance suite not run in this status call",
+                "cross-runtime checkpoint replay remains blocked",
+                "CUDA checkpoint replay remains blocked",
+                "long-lived external checkpoint artifact remains blocked",
+                "provider, hardware, isolated benchmark, and performance promotion remain blocked",
+            ),
+            claim_boundary=(
+                "bounded PyTorch long-lived checkpoint matrix for the phase-QNN "
+                "nn.Module route only; schema, tensor metadata, runtime "
+                "fingerprint, and repeated local CPU weights_only loads are "
+                "recorded with no cross-runtime, CUDA, provider, hardware, "
+                "external long-lived artefact, isolated benchmark, or "
+                "performance claim"
+            ),
+        ),
+        DifferentiableDashboardCapabilityRow(
             surface="torch_bounded_qnn_module_export_audit",
             state="conformance_backed" if conformance_passed else "diagnostic",
             backing_api="run_torch_module_export_audit",

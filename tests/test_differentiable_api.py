@@ -639,6 +639,28 @@ def test_differentiable_dashboard_status_is_claim_bounded_for_gui_consumers() ->
     assert (
         "weights_only=True" in rows["torch_bounded_qnn_module_checkpoint_audit"]["claim_boundary"]
     )
+    assert rows["torch_bounded_qnn_long_lived_checkpoint_matrix"]["state"] == "diagnostic"
+    assert rows["torch_bounded_qnn_long_lived_checkpoint_matrix"]["fail_closed"] is True
+    assert (
+        rows["torch_bounded_qnn_long_lived_checkpoint_matrix"]["backing_api"]
+        == "run_torch_long_lived_checkpoint_matrix"
+    )
+    assert (
+        "PhaseTorchCheckpointMatrixResult"
+        in rows["torch_bounded_qnn_long_lived_checkpoint_matrix"]["evidence"]
+    )
+    assert (
+        "checkpoint tensor metadata manifest"
+        in rows["torch_bounded_qnn_long_lived_checkpoint_matrix"]["evidence"]
+    )
+    assert (
+        "long-lived external checkpoint artifact remains blocked"
+        in rows["torch_bounded_qnn_long_lived_checkpoint_matrix"]["blocked_reasons"]
+    )
+    assert (
+        "no cross-runtime"
+        in rows["torch_bounded_qnn_long_lived_checkpoint_matrix"]["claim_boundary"]
+    )
     assert rows["torch_bounded_qnn_module_export_audit"]["state"] == "diagnostic"
     assert rows["torch_bounded_qnn_module_export_audit"]["fail_closed"] is True
     assert (
