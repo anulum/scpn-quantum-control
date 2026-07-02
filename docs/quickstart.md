@@ -416,9 +416,11 @@ For bounded PyTorch phase-QNN modules, `run_torch_module_state_audit(...)`
 checks strict module `state_dict` replay and Adam optimizer-state replay on
 local CPU-compatible tensors. `run_torch_module_device_state_audit(...)` checks
 CPU `module.to(...)` state replay and attempts CUDA replay only after a real
-CUDA smoke succeeds. Incompatible CUDA, durable checkpoint portability,
-provider, hardware, isolated benchmark, and performance promotion remain
-blocked until their own artefacts exist.
+CUDA smoke succeeds. `run_torch_module_checkpoint_audit(...)` writes a real
+`torch.save` checkpoint and reloads it on CPU with `weights_only=True` before
+strict module plus Adam optimizer replay. Incompatible CUDA, cross-runtime
+checkpoint portability, provider, hardware, isolated benchmark, and performance
+promotion remain blocked until their own artefacts exist.
 
 ## GUESS error mitigation in 5 lines (added April 2026)
 

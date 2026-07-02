@@ -981,14 +981,14 @@ def differentiable_dashboard_status(
             if conformance_passed
             else (
                 "conformance suite not run in this status call",
-                "CUDA device transfer and checkpoint-portability remain blocked",
+                "CUDA device transfer and cross-runtime checkpoint portability remain blocked",
                 "provider, hardware, CUDA, isolated benchmark, and performance promotion remain blocked",
             ),
             claim_boundary=(
                 "bounded PyTorch module-state audit for the phase-QNN nn.Module "
                 "route only; strict state_dict and Adam optimizer-state replay "
                 "are local CPU-compatible evidence, while CUDA device transfer, "
-                "durable checkpoint-portability, provider, hardware, CUDA, "
+                "cross-runtime checkpoint portability, provider, hardware, CUDA, "
                 "isolated benchmark, and performance promotion remain blocked"
             ),
         ),
@@ -1006,14 +1006,40 @@ def differentiable_dashboard_status(
             else (
                 "conformance suite not run in this status call",
                 "CUDA transfer remains blocked when the local PyTorch runtime cannot execute a CUDA smoke",
-                "durable checkpoint-portability, provider, hardware, isolated benchmark, and performance promotion remain blocked",
+                "cross-runtime checkpoint portability, provider, hardware, isolated benchmark, and performance promotion remain blocked",
             ),
             claim_boundary=(
                 "bounded PyTorch device-state audit for the phase-QNN nn.Module "
                 "route only; CPU module.to(...) state replay is local functional "
                 "evidence and CUDA replay is smoke-gated device evidence, while "
-                "durable checkpoint-portability, provider, hardware, isolated "
-                "benchmark, and performance promotion remain blocked"
+                "cross-runtime checkpoint portability, provider, hardware, "
+                "isolated benchmark, and performance promotion remain blocked"
+            ),
+        ),
+        DifferentiableDashboardCapabilityRow(
+            surface="torch_bounded_qnn_module_checkpoint_audit",
+            state="conformance_backed" if conformance_passed else "diagnostic",
+            backing_api="run_torch_module_checkpoint_audit",
+            evidence=(
+                "PhaseTorchCheckpointAuditResult",
+                "torch.save checkpoint round-trip",
+                "torch.load(weights_only=True, map_location='cpu') replay",
+                "Adam optimizer checkpoint replay",
+            ),
+            blocked_reasons=()
+            if conformance_passed
+            else (
+                "conformance suite not run in this status call",
+                "cross-runtime checkpoint portability remains blocked",
+                "CUDA, provider, hardware, isolated benchmark, and performance promotion remain blocked",
+            ),
+            claim_boundary=(
+                "bounded PyTorch checkpoint audit for the phase-QNN nn.Module "
+                "route only; torch.save checkpoints are reloaded on CPU with "
+                "weights_only=True and replayed through strict module plus Adam "
+                "optimizer state loading, while cross-runtime portability, CUDA, "
+                "provider, hardware, isolated benchmark, and performance "
+                "promotion remain blocked"
             ),
         ),
         DifferentiableDashboardCapabilityRow(

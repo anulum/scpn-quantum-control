@@ -1407,6 +1407,7 @@ run_torch_module_wrapper_audit(features, labels, initial_params, tolerance=1e-6)
 validate_torch_bounded_qnn_state_dict(module, state_dict) -> PhaseTorchModuleStateValidationResult
 run_torch_module_state_audit(features, labels, initial_params, learning_rate=0.05, tolerance=1e-6) -> PhaseTorchModuleStateAuditResult
 run_torch_module_device_state_audit(features, labels, initial_params, target_devices=("cpu", "cuda"), tolerance=1e-6) -> PhaseTorchDeviceStateAuditResult
+run_torch_module_checkpoint_audit(features, labels, initial_params, checkpoint_path=None, learning_rate=0.05, tolerance=1e-6) -> PhaseTorchCheckpointAuditResult
 run_torch_training_loop_audit(features, labels, initial_params, learning_rate=0.1, steps=4, tolerance=1e-6, fullgraph=True, dynamic=False) -> PhaseTorchTrainingLoopAuditResult
 run_torch_phase_qnode_lowering_matrix() -> PhaseTorchPhaseQNodeLoweringMatrixResult
 torch_phase_qnode_compile_audit(circuit, params, tolerance=1e-6, fullgraph=False, dynamic=False) -> PhaseTorchPhaseQNodeCompileResult

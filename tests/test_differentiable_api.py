@@ -614,10 +614,31 @@ def test_differentiable_dashboard_status_is_claim_bounded_for_gui_consumers() ->
         in rows["torch_bounded_qnn_module_device_state_audit"]["evidence"]
     )
     assert (
-        "durable checkpoint-portability, provider, hardware, isolated benchmark, and performance promotion remain blocked"
+        "cross-runtime checkpoint portability, provider, hardware, isolated benchmark, and performance promotion remain blocked"
         in rows["torch_bounded_qnn_module_device_state_audit"]["blocked_reasons"]
     )
     assert "CPU module.to" in rows["torch_bounded_qnn_module_device_state_audit"]["claim_boundary"]
+    assert rows["torch_bounded_qnn_module_checkpoint_audit"]["state"] == "diagnostic"
+    assert rows["torch_bounded_qnn_module_checkpoint_audit"]["fail_closed"] is True
+    assert (
+        rows["torch_bounded_qnn_module_checkpoint_audit"]["backing_api"]
+        == "run_torch_module_checkpoint_audit"
+    )
+    assert (
+        "PhaseTorchCheckpointAuditResult"
+        in rows["torch_bounded_qnn_module_checkpoint_audit"]["evidence"]
+    )
+    assert (
+        "torch.load(weights_only=True, map_location='cpu') replay"
+        in rows["torch_bounded_qnn_module_checkpoint_audit"]["evidence"]
+    )
+    assert (
+        "cross-runtime checkpoint portability remains blocked"
+        in rows["torch_bounded_qnn_module_checkpoint_audit"]["blocked_reasons"]
+    )
+    assert (
+        "weights_only=True" in rows["torch_bounded_qnn_module_checkpoint_audit"]["claim_boundary"]
+    )
     assert rows["provider_and_hardware_gradients"]["state"] == "blocked"
     assert rows["gui_frontend"]["state"] == "planned"
     generated_from = cast(list[str], payload["generated_from"])

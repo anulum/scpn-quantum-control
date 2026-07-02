@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 777,
     "public_documentation_pages": 254,
-    "python_model_classes": 932,
-    "python_model_source_modules": 528,
+    "python_model_classes": 934,
+    "python_model_source_modules": 529,
     "rust_pyo3_model_wrappers": 171,
     "rust_source_modules": 42,
-    "test_files": 864
+    "test_files": 865
   },
   "documentation": {
     "examples": [
@@ -547,7 +547,7 @@
       {
         "package": "phase",
         "path": "src/scpn_quantum_control/phase",
-        "python_modules": 79
+        "python_modules": 80
       },
       {
         "package": "psi_field",
@@ -3021,6 +3021,14 @@
         "path": "src/scpn_quantum_control/phase/torch_bridge.py"
       },
       {
+        "name": "PhaseTorchCheckpointAuditResult",
+        "path": "src/scpn_quantum_control/phase/torch_checkpoint.py"
+      },
+      {
+        "name": "PhaseTorchCheckpointRoute",
+        "path": "src/scpn_quantum_control/phase/torch_checkpoint.py"
+      },
+      {
         "name": "PhaseTorchCloudValidationRunSpec",
         "path": "src/scpn_quantum_control/phase/torch_bridge.py"
       },
@@ -4774,6 +4782,7 @@
       "src/scpn_quantum_control/phase/tensorflow_bridge.py",
       "src/scpn_quantum_control/phase/tensorflow_maintenance.py",
       "src/scpn_quantum_control/phase/torch_bridge.py",
+      "src/scpn_quantum_control/phase/torch_checkpoint.py",
       "src/scpn_quantum_control/phase/torch_device_state.py",
       "src/scpn_quantum_control/phase/torch_module_state.py",
       "src/scpn_quantum_control/phase/transform_nesting.py",
@@ -6500,6 +6509,7 @@
       "tests/test_phase_torch_bridge_qnode_edge_routes.py",
       "tests/test_phase_torch_bridge_runtime_boundaries.py",
       "tests/test_phase_torch_bridge_validation_edges.py",
+      "tests/test_phase_torch_checkpoint.py",
       "tests/test_phase_torch_device_state.py",
       "tests/test_phase_torch_module_state.py",
       "tests/test_phase_transform_nesting.py",

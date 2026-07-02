@@ -296,13 +296,16 @@ wrapper compatibility,
 surface,
 `run_torch_module_device_state_audit(...)`, which checks CPU module-device
 state replay and classifies CUDA replay only after a real CUDA smoke succeeds,
+`run_torch_module_checkpoint_audit(...)`, which writes a real `torch.save`
+checkpoint and reloads it on CPU with `weights_only=True` before strict module
+plus Adam optimizer-state replay,
 and
 `tensorflow_bounded_qnn_value_and_grad(...)`, which returns TensorFlow tensors
 from the analytic bounded-model gradient. Each route checks the same
 parameter-shift reference. These are intentionally narrow bridge promotions:
 arbitrary autodiff-through-simulator kernels, unrestricted QNN architectures,
-incompatible CUDA/device placement guarantees, durable checkpoint portability,
-and live provider gradients remain outside the promoted surface.
+incompatible CUDA/device placement guarantees, cross-runtime checkpoint
+portability, and live provider gradients remain outside the promoted surface.
 
 ## Bounded QNN convergence evidence
 
@@ -2140,8 +2143,11 @@ CPU-compatible tensors, while `validate_torch_bounded_qnn_state_dict(...)`
 checks candidate keys, shapes, and dtypes without loading them.
 `run_torch_module_device_state_audit(...)` checks CPU `module.to(...)` state
 replay and attempts CUDA `module.to(...)` state replay only after the installed
-PyTorch runtime passes a real CUDA smoke. Incompatible CUDA and durable
-checkpoint portability remain blocked until dedicated artefacts exist. The
+PyTorch runtime passes a real CUDA smoke. `run_torch_module_checkpoint_audit(...)`
+writes a real `torch.save` checkpoint and reloads it on CPU with
+`weights_only=True` before strict module plus Adam optimizer-state replay.
+Incompatible CUDA and cross-runtime checkpoint portability remain blocked until
+dedicated artefacts exist. The
 separate `run_torch_ecosystem_maturity_audit(...)` route records
 installed `nn.Module`/`Parameter`, `torch.func`, `torch.compile`, and CUDA-device
 capability state. A visible CUDA device is still blocked if the installed

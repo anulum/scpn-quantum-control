@@ -49,7 +49,7 @@ def test_bounded_qnn_framework_bridge_matrix_declares_supported_routes() -> None
         ",run_torch_func_compatibility_audit,run_torch_compile_compatibility_audit"
         ",torch_bounded_qnn_module,torch_bounded_qnn_layer,run_torch_module_wrapper_audit"
         ",validate_torch_bounded_qnn_state_dict,run_torch_module_state_audit"
-        ",run_torch_module_device_state_audit"
+        ",run_torch_module_device_state_audit,run_torch_module_checkpoint_audit"
     )
     assert "torch_bounded_phase_qnn_custom_autograd_function" in pytorch.gradient_route
     assert "bounded_torch_func_grad_vmap_jacrev" in pytorch.gradient_route
@@ -57,6 +57,7 @@ def test_bounded_qnn_framework_bridge_matrix_declares_supported_routes() -> None
     assert "bounded_torch_module_layer_wrapper_gradient" in pytorch.gradient_route
     assert "bounded_torch_module_optimizer_state_replay" in pytorch.gradient_route
     assert "bounded_torch_module_device_state_replay" in pytorch.gradient_route
+    assert "bounded_torch_module_checkpoint_replay" in pytorch.gradient_route
 
     tensorflow = result.capability_by_framework("tensorflow")
     assert tensorflow.supported
