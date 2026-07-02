@@ -217,13 +217,19 @@ def test_python_module_present_true_and_false() -> None:
     assert m._python_module_present("definitely_not_a_real_module_xyz") is False
 
 
-def test_our_integrator_adapters_match_each_other() -> None:
+def test_ours_python_and_dopri_rows_agree_on_order_parameter() -> None:
     problem = _small_problem()
-    rk4_r, rk4_ms = m._run_ours_rk4(problem)
-    dopri_r, dopri_ms = m._run_ours_dopri(problem)
-    assert rk4_ms >= 0.0 and dopri_ms >= 0.0
-    assert abs(rk4_r - dopri_r) < 1e-3
-    assert 0.0 <= rk4_r <= 1.0
+    python_row = m._ours_rk4_python_row(problem)
+    dopri_row = m._ours_dopri_row(problem)
+    assert python_row.available and dopri_row.available
+    assert python_row.method == "ours_rk4_python" and dopri_row.method == "ours_dopri"
+    assert python_row.language == "python" and dopri_row.language == "python"
+    assert python_row.version == m._package_version()
+    assert python_row.elapsed_ms is not None and python_row.elapsed_ms >= 0.0
+    assert dopri_row.elapsed_ms is not None and dopri_row.elapsed_ms >= 0.0
+    assert python_row.r_final is not None and dopri_row.r_final is not None
+    assert abs(python_row.r_final - dopri_row.r_final) < 1e-3
+    assert 0.0 <= python_row.r_final <= 1.0
 
 
 def test_final_r_from_trajectory_synchronised_is_one() -> None:
@@ -242,7 +248,8 @@ def test_scipy_row_available_and_matches_ours() -> None:
     assert row.available is True
     assert row.family == "external" and row.language == "python"
     assert row.version is not None
-    rk4_r, _ = m._run_ours_rk4(problem)
+    rk4_r = m._ours_rk4_python_row(problem).r_final
+    assert rk4_r is not None
     assert row.r_final is not None and abs(row.r_final - rk4_r) < 1e-2
 
 
@@ -428,6 +435,155 @@ def test_with_error_fills_absolute_error() -> None:
 
 
 # --------------------------------------------------------------------------- #
+# Timing + version + engine helpers
+# --------------------------------------------------------------------------- #
+
+
+def test_measure_call_returns_positive_p50() -> None:
+    stats = m._measure_call(lambda: sum(range(10)))
+    assert stats.samples == m._TIMING_REPEATS
+    assert stats.p50_us >= 0.0
+
+
+def test_package_version_matches_distribution() -> None:
+    from scpn_quantum_control import __version__ as expected
+
+    assert m._package_version() == str(expected)
+
+
+def test_rust_engine_version_is_a_string() -> None:
+    assert isinstance(m._rust_engine_version(), str)
+    assert m._rust_engine_version() != ""
+
+
+def test_rust_engine_version_falls_back_when_metadata_absent(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def _raise(_name: str) -> str:
+        raise m.PackageNotFoundError(_name)
+
+    monkeypatch.setattr(m, "_distribution_version", _raise)
+    assert m._rust_engine_version() == "installed"
+
+
+def test_rk4_forced_returns_full_trajectory() -> None:
+    problem = _small_problem()
+    trajectory = m._rk4_forced(m._rk4._python_kuramoto_rk4_trajectory, problem)
+    assert trajectory.shape == (problem.n_steps + 1, problem.n_oscillators)
+
+
+def test_dispatched_rk4_tier_reports_served_tier() -> None:
+    tier = m._dispatched_rk4_tier(_small_problem())
+    assert tier in {"rust", "julia", "python"}
+
+
+# --------------------------------------------------------------------------- #
+# Rust / Python-floor tier rows (engine boundary mocked for determinism)
+# --------------------------------------------------------------------------- #
+
+
+class _FakeEngine:
+    """Stand-in Rust engine exposing (or omitting) the RK4 kernel attribute."""
+
+    def __init__(self, *, with_kernel: bool) -> None:
+        if with_kernel:
+            self.kuramoto_rk4_trajectory = lambda *a, **k: None
+
+
+def _install_fake_rust(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Make the Rust tier appear built and route its kernel to the Python floor."""
+    monkeypatch.setattr(
+        m._dispatcher, "optional_rust_engine", lambda: _FakeEngine(with_kernel=True)
+    )
+    monkeypatch.setattr(
+        m._rk4, "_rust_kuramoto_rk4_trajectory", m._rk4._python_kuramoto_rk4_trajectory
+    )
+
+
+def test_rust_rk4_kernel_present_absent_and_stub(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(m._dispatcher, "optional_rust_engine", lambda: None)
+    assert m._rust_rk4_kernel() is None
+    monkeypatch.setattr(
+        m._dispatcher, "optional_rust_engine", lambda: _FakeEngine(with_kernel=False)
+    )
+    assert m._rust_rk4_kernel() is None
+    monkeypatch.setattr(
+        m._dispatcher, "optional_rust_engine", lambda: _FakeEngine(with_kernel=True)
+    )
+    assert m._rust_rk4_kernel() is not None
+
+
+def test_ours_rk4_rust_row_available_records_true_tier(monkeypatch: pytest.MonkeyPatch) -> None:
+    _install_fake_rust(monkeypatch)
+    problem = _small_problem()
+    row = m._ours_rk4_rust_row(problem)
+    assert row.available is True
+    assert row.method == "ours_rk4_rust" and row.family == "ours"
+    assert row.language == "rust"
+    assert row.version == m._rust_engine_version()
+    assert row.elapsed_ms is not None and row.elapsed_ms >= 0.0
+    # Routed to the Python floor, so it must equal the floor's order parameter.
+    assert row.r_final == pytest.approx(m._ours_rk4_python_row(problem).r_final)
+
+
+def test_ours_rk4_rust_row_fails_closed_when_engine_absent(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(m._dispatcher, "optional_rust_engine", lambda: None)
+    row = m._ours_rk4_rust_row(_small_problem())
+    assert row.available is False
+    assert row.language == "rust"
+    assert row.install_command == m.RUST_ENGINE_BUILD_COMMAND
+    assert "not built" in (row.unavailable_reason or "")
+
+
+def test_ours_rk4_rust_row_fails_closed_when_kernel_missing(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        m._dispatcher, "optional_rust_engine", lambda: _FakeEngine(with_kernel=False)
+    )
+    row = m._ours_rk4_rust_row(_small_problem())
+    assert row.available is False
+    assert "lacks the" in (row.unavailable_reason or "")
+    assert row.install_command == m.RUST_ENGINE_BUILD_COMMAND
+
+
+def test_rk4_rust_python_parity_present_and_absent(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(m._dispatcher, "optional_rust_engine", lambda: None)
+    assert m._rk4_rust_python_parity(_small_problem()) is None
+    _install_fake_rust(monkeypatch)
+    parity = m._rk4_rust_python_parity(_small_problem())
+    assert parity is not None and parity == pytest.approx(0.0, abs=1e-12)
+
+
+def _row(method: str, *, available: bool, elapsed_ms: float | None) -> m.CompetitorRow:
+    return m.CompetitorRow(
+        method=method,
+        backend="b",
+        family="ours",
+        language="rust" if "rust" in method else "python",
+        available=available,
+        version="v" if available else None,
+        r_final=0.5 if available else None,
+        r_error_vs_reference=None,
+        elapsed_ms=elapsed_ms,
+    )
+
+
+def test_rk4_rust_speedup_ratio_and_none_paths() -> None:
+    rust = _row("ours_rk4_rust", available=True, elapsed_ms=2.0)
+    python = _row("ours_rk4_python", available=True, elapsed_ms=18.0)
+    assert m._rk4_rust_speedup(rust, python) == pytest.approx(9.0)
+    absent = _row("ours_rk4_rust", available=False, elapsed_ms=None)
+    assert m._rk4_rust_speedup(absent, python) is None
+    zero = _row("ours_rk4_rust", available=True, elapsed_ms=0.0)
+    assert m._rk4_rust_speedup(zero, python) is None
+    no_python = _row("ours_rk4_python", available=True, elapsed_ms=None)
+    assert m._rk4_rust_speedup(rust, no_python) is None
+
+
+# --------------------------------------------------------------------------- #
 # Full orchestration
 # --------------------------------------------------------------------------- #
 
@@ -442,11 +598,24 @@ def test_run_comparison_scipy_reference_and_errors() -> None:
     assert comp.reference_method == "scipy_solve_ivp"
     assert comp.generated_utc == "2026-06-28T00:00:00Z"
     assert comp.row("scipy_solve_ivp").r_error_vs_reference is None
-    rk4_error = comp.row("ours_rk4").r_error_vs_reference
+    rk4_error = comp.row("ours_rk4_python").r_error_vs_reference
     assert rk4_error is not None
     assert rk4_error < 1e-2
+    # Both fixed-step tiers are present, one row per language.
+    assert comp.row("ours_rk4_python").language == "python"
+    assert comp.row("ours_rk4_rust").language == "rust"
     assert comp.metadata["competitor_count"] == len(comp.rows)
-    assert comp.metadata["available_count"] >= 3  # rk4, dopri, scipy, julia(fake)
+    assert comp.metadata["available_count"] >= 3  # python rk4, dopri, scipy, julia(fake)
+    # The dispatched tier and timing methodology are recorded for provenance.
+    assert comp.metadata["dispatched_rk4_tier"] in {"rust", "julia", "python"}
+    assert comp.metadata["timing_repeats"] == m._TIMING_REPEATS
+    assert comp.metadata["timing_warmup"] == m._TIMING_WARMUP
+    assert set(comp.metadata["build_provenance"]) == {
+        "rust_engine",
+        "rustc",
+        "juliacall",
+        "commit",
+    }
     assert json.dumps(comp.to_dict())
 
 
@@ -469,4 +638,4 @@ def test_run_comparison_falls_back_to_dopri_reference(monkeypatch: pytest.Monkey
     )
     assert comp.reference_method == "ours_dopri"
     assert comp.row("scipy_solve_ivp").available is False
-    assert comp.row("ours_rk4").r_error_vs_reference is not None
+    assert comp.row("ours_rk4_python").r_error_vs_reference is not None

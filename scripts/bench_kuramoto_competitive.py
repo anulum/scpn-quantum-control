@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Kuramoto external competitive benchmark runner
-"""Run the Kuramoto external competitive comparison and serialise the artifact.
+"""Run the Kuramoto external competitive comparison and serialise the artefact.
 
 Integrates one deterministic Kuramoto problem through our RK4 and DOPRI5
 integrators and through every available external competitor (SciPy
@@ -15,7 +15,7 @@ its wall-clock time, and writes the full provenance-carrying record as JSON.
 
 Absent competitors (NetworkDynamics.jl, DynamicalSystems.jl, SciMLSensitivity.jl,
 jitcdde) are recorded as fail-closed rows with their install commands rather than
-fabricated, so the artifact is complete and reproducible on any host. The timings
+fabricated, so the artefact is complete and reproducible on any host. The timings
 are functional/reproducibility evidence on the recorded host, not a
 production-latency claim — run on a quiesced, core-reserved host for clean
 numbers (see ``docs/internal`` isolation guidance).
@@ -55,7 +55,7 @@ def _parse_args(argv: list[str]) -> argparse.Namespace:
         "--output",
         type=Path,
         default=_DEFAULT_OUTPUT,
-        help=f"artifact path (default {_DEFAULT_OUTPUT})",
+        help=f"artefact path (default {_DEFAULT_OUTPUT})",
     )
     return parser.parse_args(argv)
 
@@ -65,22 +65,29 @@ def _print_summary(record: dict[str, object]) -> None:
     rows = record["rows"]
     assert isinstance(rows, list)
     print(f"reference: {record['reference_method']}  (n={record['n_oscillators']})")
-    print(f"{'method':22} {'avail':5} {'r_final':>12} {'err_vs_ref':>12} {'ms':>10}")
+    print(f"{'method':22} {'avail':5} {'lang':7} {'r_final':>12} {'err_vs_ref':>12} {'ms':>10}")
     for row in rows:
         assert isinstance(row, dict)
         r_final = row["r_final"]
         err = row["r_error_vs_reference"]
         ms = row["elapsed_ms"]
         print(
-            f"{row['method']:22} {str(row['available']):5} "
+            f"{row['method']:22} {str(row['available']):5} {str(row['language']):7} "
             f"{('' if r_final is None else f'{r_final:.8f}'):>12} "
             f"{('' if err is None else f'{err:.2e}'):>12} "
             f"{('' if ms is None else f'{ms:.3f}'):>10}"
         )
+    metadata = record["metadata"]
+    assert isinstance(metadata, dict)
+    print(
+        f"\ndispatched RK4 tier: {metadata['dispatched_rk4_tier']}  "
+        f"rust/python-floor speedup: {metadata['rk4_rust_speedup_vs_python_floor']}  "
+        f"parity: {metadata['rk4_rust_python_parity_max_abs_diff']}"
+    )
 
 
 def main(argv: list[str] | None = None) -> int:
-    """Run the competitive comparison and write the JSON artifact."""
+    """Run the competitive comparison and write the JSON artefact."""
     args = _parse_args(sys.argv[1:] if argv is None else argv)
     problem = build_default_problem(
         n_oscillators=args.n, seed=args.seed, t_max=args.t_max, dt=args.dt

@@ -15,9 +15,15 @@ reference, and its wall-clock time, and serialises the whole comparison with the
 provenance a credible cross-package claim requires (package versions, numerical
 tolerances, host-load context, and an explicit claim boundary).
 
-It does not reimplement any solver. Our rows call the public
-``scpn_quantum_control.kuramoto`` facade; the SciPy row reuses
-:func:`scipy_ode_baseline`; the Julia row shells out to ``DifferentialEquations.jl``.
+It does not reimplement any solver. Our fixed-step rows run the production RK4
+integrator on each installed tier explicitly — the accelerated Rust
+``scpn_quantum_engine`` kernel and the NumPy Python floor — so the head-to-head
+reflects the accelerated kernel and records the true executing language rather
+than the dispatcher's default choice; the Rust row fails closed to a build
+command when the engine tier is not built, exactly as the external competitors
+do. Our adaptive row runs the pure-Python DOPRI5 orchestration (which has no
+accelerated tier). The SciPy row reuses :func:`scipy_ode_baseline`; the Julia
+row shells out to ``DifferentialEquations.jl``.
 
 Fail-closed contract
 --------------------
@@ -41,16 +47,20 @@ from __future__ import annotations
 import json
 import shutil
 import subprocess
-import time
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
+from importlib.metadata import PackageNotFoundError
+from importlib.metadata import version as _distribution_version
 from typing import Any
 
 import numpy as np
 from numpy.typing import NDArray
 
 from scpn_quantum_control import kuramoto
+from scpn_quantum_control.accel import diff_kuramoto_rk4 as _rk4
+from scpn_quantum_control.accel import dispatcher as _dispatcher
+from scpn_quantum_control.accel import tier_benchmark as _tier
 
 from .classical_baselines import scipy_ode_baseline
 from .isolated_host_readiness import HostReadiness, capture_host_readiness
@@ -65,7 +75,7 @@ INSTALL_COMMANDS: Mapping[str, str] = {
     "jitcdde": "pip install jitcdde",
 }
 
-#: Documented failure modes shared by every competitive-comparison artifact.
+#: Documented failure modes shared by every competitive-comparison artefact.
 FAILURE_MODES: tuple[str, ...] = (
     "external_unavailable: a competitor that is not installed yields an "
     "available=False row with its install command, not a number; absent rows "
@@ -80,7 +90,7 @@ FAILURE_MODES: tuple[str, ...] = (
     "not automatically better without reading its error column.",
 )
 
-#: Bounded-claim statement embedded in every comparison artifact.
+#: Bounded-claim statement embedded in every comparison artefact.
 CLAIM_BOUNDARY = (
     "Timings are functional and reproducibility evidence on the recorded host, "
     "not a production-latency, SLA, or universal-hardware claim. Competitor "
@@ -88,11 +98,29 @@ CLAIM_BOUNDARY = (
     "honestly where a competitor is faster than our toolkit."
 )
 
-#: Determinism statement embedded in every comparison artifact.
+#: Determinism statement embedded in every comparison artefact.
 DETERMINISM = (
     "The Kuramoto problem is built deterministically from the recorded seed, so "
     "the order-parameter values are reproducible across runs and machines. "
     "Wall-clock timing is host-dependent and excluded from the reproducible set."
+)
+
+#: Documented command that builds the Rust ``scpn_quantum_engine`` tier when absent.
+RUST_ENGINE_BUILD_COMMAND = "cd scpn_quantum_engine && maturin develop --release"
+
+#: Discarded warm-up iterations before our in-process integrators are timed.
+_TIMING_WARMUP = 3
+#: Timed repeats whose median (P50) per-call wall time is recorded for our rows.
+_TIMING_REPEATS = 15
+
+#: Per-family timing methodology, recorded in the artefact so the comparison is honest.
+TIMING_METHOD = (
+    "Our in-process integrator rows report the median (P50) per-call wall time "
+    f"over {_TIMING_REPEATS} timed repeats after {_TIMING_WARMUP} discarded "
+    "warm-ups; the SciPy row reports its single high-precision solve; the Julia "
+    "row reports its second (warm) in-Julia solve. Absolute times are inflated "
+    "under host load, so the reproducible timing quantity is the within-toolkit "
+    "Rust-over-Python-floor ratio, not the absolute milliseconds."
 )
 
 
@@ -343,25 +371,181 @@ def _final_r_from_trajectory(trajectory: NDArray[np.float64]) -> float:
     return float(kuramoto.order_parameter(np.asarray(trajectory[-1], dtype=np.float64)))
 
 
-def _run_ours_rk4(problem: KuramotoProblem) -> tuple[float, float]:
-    """Integrate the problem with our facade RK4 and return ``(r_final, ms)``."""
-    start = time.perf_counter()
-    trajectory = kuramoto.kuramoto_rk4_trajectory(
+def _measure_call(call: Callable[[], object]) -> _tier.TierStats:
+    """Return warm-up-then-repeat timing statistics for a zero-argument callable.
+
+    Reuses the tier-benchmark measurement loop so our in-process integrator rows
+    report a median-of-repeats per-call wall time rather than a single noisy
+    ``perf_counter`` reading, which for a few-millisecond kernel is dominated by
+    scheduler jitter under host load.
+    """
+    return _tier.measure(call, warmup=_TIMING_WARMUP, repeats=_TIMING_REPEATS)
+
+
+def _package_version() -> str:
+    """Return the installed ``scpn_quantum_control`` version for our Python-floor rows."""
+    from scpn_quantum_control import __version__ as our_version
+
+    return str(our_version)
+
+
+def _rust_engine_version() -> str:
+    """Return the installed Rust engine distribution version, or a coarse label."""
+    try:
+        return _distribution_version("scpn_quantum_engine")
+    except PackageNotFoundError:  # pragma: no cover - the engine is packaged when built
+        return "installed"
+
+
+def _rust_rk4_kernel() -> Callable[..., Any] | None:
+    """Return the built Rust RK4 kernel, or ``None`` when the engine/kernel is absent.
+
+    ``dispatcher.available_tiers`` cannot answer this: it probes only the engine's
+    ``order_parameter`` export, so an older engine build lacking the
+    ``kuramoto_rk4_trajectory`` kernel still reports ``rust`` as available. This
+    checks the specific kernel the Rust row actually runs.
+    """
+    engine = _dispatcher.optional_rust_engine()
+    if engine is None:
+        return None
+    kernel = getattr(engine, "kuramoto_rk4_trajectory", None)
+    return kernel if callable(kernel) else None
+
+
+_Rk4Tier = Callable[
+    [NDArray[np.float64], NDArray[np.float64], NDArray[np.float64], float, int],
+    NDArray[np.float64],
+]
+
+
+def _rk4_forced(tier_call: _Rk4Tier, problem: KuramotoProblem) -> NDArray[np.float64]:
+    """Run one forced-tier RK4 trajectory for ``problem`` (bypassing the dispatcher)."""
+    return np.asarray(
+        tier_call(problem.theta0, problem.omega, problem.coupling, problem.dt, problem.n_steps),
+        dtype=np.float64,
+    )
+
+
+def _dispatched_rk4_tier(problem: KuramotoProblem) -> str | None:
+    """Return the tier the RK4 facade serves by default for ``problem``.
+
+    This is the accelerated kernel the toolkit runs when the caller does not force
+    a tier; the ``ours_rk4_rust`` / ``ours_rk4_python`` rows then force each tier
+    explicitly so the artefact carries a head-to-head, not just the served choice.
+    """
+    kuramoto.kuramoto_rk4_trajectory(
         problem.theta0, problem.omega, problem.coupling, problem.dt, problem.n_steps
     )
-    elapsed_ms = (time.perf_counter() - start) * 1000.0
-    return _final_r_from_trajectory(np.asarray(trajectory, dtype=np.float64)), elapsed_ms
+    return kuramoto.last_kuramoto_rk4_trajectory_tier_used()
 
 
-def _run_ours_dopri(problem: KuramotoProblem) -> tuple[float, float]:
-    """Integrate the problem with our facade DOPRI5 and return ``(r_final, ms)``."""
-    start = time.perf_counter()
+def _rk4_rust_python_parity(problem: KuramotoProblem) -> float | None:
+    """Return ``max|rust − python|`` over the RK4 trajectory, or ``None`` if Rust absent.
+
+    Cross-tier agreement evidence: the accelerated kernel is only a credible
+    substitute for the floor when the two trajectories coincide to machine
+    precision on the same input.
+    """
+    if _rust_rk4_kernel() is None:
+        return None
+    rust = _rk4_forced(_rk4._rust_kuramoto_rk4_trajectory, problem)
+    python = _rk4_forced(_rk4._python_kuramoto_rk4_trajectory, problem)
+    return float(np.max(np.abs(rust - python)))
+
+
+def _rk4_rust_speedup(rust_row: CompetitorRow, python_row: CompetitorRow) -> float | None:
+    """Return the Python-floor-over-Rust median-time ratio, or ``None`` when Rust absent.
+
+    The absolute milliseconds are host-load-dependent, but this within-toolkit
+    ratio — both tiers measured back-to-back under the same contention — is the
+    reproducible timing quantity the artefact stands behind.
+    """
+    if not rust_row.available or rust_row.elapsed_ms is None or rust_row.elapsed_ms <= 0.0:
+        return None
+    if python_row.elapsed_ms is None:
+        return None
+    return python_row.elapsed_ms / rust_row.elapsed_ms
+
+
+def _ours_rk4_rust_row(problem: KuramotoProblem) -> CompetitorRow:
+    """Time the Rust RK4 tier, or fail closed with the build command when absent."""
+    if _rust_rk4_kernel() is None:
+        engine_present = _dispatcher.optional_rust_engine() is not None
+        reason = (
+            "scpn_quantum_engine is installed but this build lacks the "
+            "kuramoto_rk4_trajectory kernel; rebuild it to enable the Rust tier"
+            if engine_present
+            else "scpn_quantum_engine (Rust tier) is not built"
+        )
+        return CompetitorRow(
+            method="ours_rk4_rust",
+            backend="scpn kuramoto_rk4_trajectory [Rust tier]",
+            family="ours",
+            language="rust",
+            available=False,
+            version=None,
+            r_final=None,
+            r_error_vs_reference=None,
+            elapsed_ms=None,
+            install_command=RUST_ENGINE_BUILD_COMMAND,
+            unavailable_reason=reason,
+        )
+    stats = _measure_call(lambda: _rk4_forced(_rk4._rust_kuramoto_rk4_trajectory, problem))
+    trajectory = _rk4_forced(_rk4._rust_kuramoto_rk4_trajectory, problem)
+    return CompetitorRow(
+        method="ours_rk4_rust",
+        backend="scpn kuramoto_rk4_trajectory [Rust tier]",
+        family="ours",
+        language="rust",
+        available=True,
+        version=_rust_engine_version(),
+        r_final=_final_r_from_trajectory(trajectory),
+        r_error_vs_reference=None,
+        elapsed_ms=stats.p50_us / 1000.0,
+    )
+
+
+def _ours_rk4_python_row(problem: KuramotoProblem) -> CompetitorRow:
+    """Time the Python RK4 floor — the always-available correctness reference tier."""
+    stats = _measure_call(lambda: _rk4_forced(_rk4._python_kuramoto_rk4_trajectory, problem))
+    trajectory = _rk4_forced(_rk4._python_kuramoto_rk4_trajectory, problem)
+    return CompetitorRow(
+        method="ours_rk4_python",
+        backend="scpn kuramoto_rk4_trajectory [Python floor]",
+        family="ours",
+        language="python",
+        available=True,
+        version=_package_version(),
+        r_final=_final_r_from_trajectory(trajectory),
+        r_error_vs_reference=None,
+        elapsed_ms=stats.p50_us / 1000.0,
+    )
+
+
+def _ours_dopri_row(problem: KuramotoProblem) -> CompetitorRow:
+    """Time our adaptive DOPRI5 — a pure-Python orchestration with no accelerated tier."""
+
+    def _call() -> object:
+        return kuramoto.kuramoto_dopri_trajectory(
+            problem.theta0, problem.omega, problem.coupling, t_end=problem.t_max
+        )
+
+    stats = _measure_call(_call)
     result = kuramoto.kuramoto_dopri_trajectory(
         problem.theta0, problem.omega, problem.coupling, t_end=problem.t_max
     )
-    elapsed_ms = (time.perf_counter() - start) * 1000.0
     phases = np.asarray(result.phases, dtype=np.float64)
-    return float(kuramoto.order_parameter(phases[-1])), elapsed_ms
+    return CompetitorRow(
+        method="ours_dopri",
+        backend="scpn kuramoto_dopri_trajectory [Python, adaptive — no accelerated tier]",
+        family="ours",
+        language="python",
+        available=True,
+        version=_package_version(),
+        r_final=float(kuramoto.order_parameter(phases[-1])),
+        r_error_vs_reference=None,
+        elapsed_ms=stats.p50_us / 1000.0,
+    )
 
 
 def default_julia_runner(problem: KuramotoProblem, timeout: float) -> dict[str, Any]:
@@ -467,23 +651,6 @@ def _python_module_present(module: str) -> bool:
     import importlib.util
 
     return importlib.util.find_spec(module) is not None
-
-
-def _ours_row(method: str, backend: str, r_final: float, elapsed_ms: float) -> CompetitorRow:
-    """Build an available row for one of our integrators."""
-    from scpn_quantum_control import __version__ as our_version
-
-    return CompetitorRow(
-        method=method,
-        backend=backend,
-        family="ours",
-        language="python",
-        available=True,
-        version=str(our_version),
-        r_final=r_final,
-        r_error_vs_reference=None,
-        elapsed_ms=elapsed_ms,
-    )
 
 
 def _unavailable_row(method: str, backend: str, language: str, reason: str) -> CompetitorRow:
@@ -628,10 +795,14 @@ def run_kuramoto_competitive_comparison(
 ) -> KuramotoCompetitiveComparison:
     """Run the Kuramoto external competitive comparison.
 
-    Integrates the shared problem with our RK4 and DOPRI5 integrators and with
-    every available external competitor, designates the SciPy high-precision run
-    as the accuracy reference when present (otherwise our DOPRI5), fills each
-    available row's error against that reference, and records the full provenance.
+    Integrates the shared problem with our RK4 fixed-step integrator on each
+    installed tier explicitly (``ours_rk4_rust`` forcing the Rust kernel,
+    ``ours_rk4_python`` forcing the NumPy floor), with our adaptive DOPRI5, and
+    with every available external competitor; records which tier the RK4 facade
+    serves by default and the Rust-over-Python-floor speedup and cross-tier
+    parity; designates the SciPy high-precision run as the accuracy reference
+    when present (otherwise our DOPRI5), fills each available row's error against
+    that reference, and records the full build and host provenance.
 
     Parameters
     ----------
@@ -655,22 +826,26 @@ def run_kuramoto_competitive_comparison(
     """
     resolved = problem if problem is not None else build_default_problem()
 
-    rk4_r, rk4_ms = _run_ours_rk4(resolved)
-    dopri_r, dopri_ms = _run_ours_dopri(resolved)
+    dispatched_tier = _dispatched_rk4_tier(resolved)
+    rust_rk4 = _ours_rk4_rust_row(resolved)
+    python_rk4 = _ours_rk4_python_row(resolved)
     rows: list[CompetitorRow] = [
-        _ours_row("ours_rk4", "scpn kuramoto.kuramoto_rk4_trajectory", rk4_r, rk4_ms),
-        _ours_row("ours_dopri", "scpn kuramoto.kuramoto_dopri_trajectory", dopri_r, dopri_ms),
+        rust_rk4,
+        python_rk4,
+        _ours_dopri_row(resolved),
         _scipy_row(resolved),
         _julia_diffeq_row(resolved, timeout=julia_timeout, runner=julia_runner),
     ]
     rows.extend(_declared_target_rows(julia_present))
 
-    reference_method = "scipy_solve_ivp" if rows[2].available else "ours_dopri"
+    scipy_available = next(r for r in rows if r.method == "scipy_solve_ivp").available
+    reference_method = "scipy_solve_ivp" if scipy_available else "ours_dopri"
     reference_row = next(r for r in rows if r.method == reference_method)
     reference_r = reference_row.r_final
 
     scored = tuple(_with_error(row, reference_method, reference_r) for row in rows)
 
+    provenance = _tier.capture_provenance()
     return KuramotoCompetitiveComparison(
         n_oscillators=resolved.n_oscillators,
         t_max=resolved.t_max,
@@ -684,6 +859,18 @@ def run_kuramoto_competitive_comparison(
             "n_steps": resolved.n_steps,
             "available_count": sum(1 for r in scored if r.available),
             "competitor_count": len(scored),
+            "dispatched_rk4_tier": dispatched_tier,
+            "rk4_rust_python_parity_max_abs_diff": _rk4_rust_python_parity(resolved),
+            "rk4_rust_speedup_vs_python_floor": _rk4_rust_speedup(rust_rk4, python_rk4),
+            "timing_method": TIMING_METHOD,
+            "timing_warmup": _TIMING_WARMUP,
+            "timing_repeats": _TIMING_REPEATS,
+            "build_provenance": {
+                "rust_engine": _rust_engine_version(),
+                "rustc": provenance.rustc,
+                "juliacall": provenance.juliacall,
+                "commit": provenance.commit,
+            },
         },
     )
 
