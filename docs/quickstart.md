@@ -431,9 +431,12 @@ with `torch.export.save(...)`, reloads it with `torch.export.load(...)`, and
 replays the local CPU value route through `ExportedProgram.module()`.
 `run_torch_export_shape_matrix(...)` wraps that route across deterministic
 one- and two-parameter static feature shapes, records per-shape export
-artifacts, and keeps dynamic-shape constraints and dynamic-shape replay blocked.
-Incompatible CUDA, AOTAutograd gradient-export persistence, dynamic-shape export
-promotion, cross-runtime checkpoint/export portability, provider, hardware,
+artifacts, and keeps broader dynamic-shape promotion outside the static matrix.
+`run_torch_dynamic_shape_export_audit(...)` exports one input-driven bounded
+phase-QNN module with symbolic batch constraints, saves and reloads the
+`ExportedProgram`, and replays multiple concrete batch sizes locally.
+Incompatible CUDA, AOTAutograd gradient-export persistence, dynamic feature-width
+export, cross-runtime checkpoint/export portability, provider, hardware,
 isolated benchmark, and performance promotion remain blocked until their own
 artefacts exist.
 
