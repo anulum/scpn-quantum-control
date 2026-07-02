@@ -304,9 +304,11 @@ including bounded local object-attribute, expression-rebinding, and
 branch-local control-path alias metadata. The report records mutation effects,
 non-executed phi inputs, control-path aliases, and frontend unsupported
 Python semantics with source-region and bytecode-offset diagnostics as
-blockers; it is not captured/global object-attribute aliasing, mutation
-adjoints, arbitrary dynamic-Python frontend lowering, non-executed branch
-adjoints, or executable compiler lowering.
+blockers. Captured/global object-attribute diagnostics are retained as
+roots/details with the static object-model blocker; this is not promoted
+captured/global object-attribute alias sets, mutation adjoints, arbitrary
+dynamic-Python frontend lowering, non-executed branch adjoints, or executable
+compiler lowering.
 
 Supported captured scalar program traces can also be promoted to an executable
 replay kernel with `compile_whole_program_ad_trace_to_executable(...)`. The

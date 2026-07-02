@@ -2703,6 +2703,63 @@ def _static_alias_lattice_report_case() -> DifferentiableProgrammingBenchmarkRes
     ):
         raise ValueError("static alias lattice benchmark missing unsupported-semantics blocker")
 
+    class CapturedState:
+        """Captured object whose attributes require static object-model aliases."""
+
+        scale: float
+
+    captured = CapturedState()
+    captured.scale = 2.0
+
+    def unsupported_object_attribute_boundary(trace_values: Any) -> object:
+        return captured.scale * trace_values[0]
+
+    object_attribute_frontend = compile_whole_program_frontend(
+        unsupported_object_attribute_boundary
+    )
+    object_attribute_semantics = (
+        object_attribute_frontend.semantics_report.unsupported_python_semantics
+    )
+    if "object_attribute" not in object_attribute_semantics:
+        raise ValueError(
+            "static alias lattice benchmark missing object-attribute frontend semantics"
+        )
+    object_attribute_diagnostics = object_attribute_frontend.unsupported_semantic_diagnostics
+    if not any(
+        diagnostic.semantic == "object_attribute"
+        and diagnostic.detail == "object_attribute:captured"
+        and diagnostic.region_ids
+        and diagnostic.bytecode_offsets
+        for diagnostic in object_attribute_diagnostics
+    ):
+        raise ValueError(
+            "static alias lattice benchmark missing object-attribute frontend diagnostics"
+        )
+    object_attribute_report = program_ad_static_alias_lattice_report(
+        alias_result.program_ir,
+        unsupported_python_semantics=object_attribute_semantics,
+        unsupported_semantic_diagnostics=object_attribute_diagnostics,
+    )
+    if object_attribute_report.complete:
+        raise ValueError(
+            "static alias lattice benchmark must not promote captured/global object attributes"
+        )
+    if object_attribute_report.unsupported_object_attribute_roots != ("captured",):
+        raise ValueError(
+            "static alias lattice benchmark lost captured/global object-attribute roots"
+        )
+    if object_attribute_report.unsupported_object_attribute_details != (
+        "object_attribute:captured",
+    ):
+        raise ValueError(
+            "static alias lattice benchmark lost captured/global object-attribute diagnostics"
+        )
+    if (
+        "object_attributes_require_static_object_model"
+        not in object_attribute_report.blocker_reasons
+    ):
+        raise ValueError("static alias lattice benchmark missing object-attribute blocker")
+
     def mutation_objective(trace_values: Any) -> object:
         work = trace_values.copy()
         work[0] = trace_values[1] + trace_values[2]
@@ -2768,11 +2825,12 @@ def _static_alias_lattice_report_case() -> DifferentiableProgrammingBenchmarkRes
             "static alias-lattice readiness over emitted program_ad_effect_ir.v1 "
             "components, including view-alias, bounded local object-attribute, "
             "expression-rebinding classification, explicit non-executed phi, and "
-            "mutation/control-path/unsupported-Python diagnostic blocker reporting; "
-            "not captured/global object-attribute aliasing, arbitrary dynamic Python "
-            "frontend lowering, non-executed branch adjoints, Rust/LLVM executable "
-            "lowering, hardware, or performance evidence; no wall-clock performance "
-            "claim"
+            "mutation/control-path/unsupported-Python diagnostic blocker reporting, "
+            "with captured/global object-attribute diagnostics pinned to static "
+            "object-model blockers; not captured/global object-attribute alias sets, "
+            "arbitrary dynamic Python frontend lowering, non-executed branch adjoints, "
+            "Rust/LLVM executable lowering, hardware, or performance evidence; no "
+            "wall-clock performance claim"
         ),
     )
 

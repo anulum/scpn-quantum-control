@@ -227,6 +227,8 @@ def test_program_ad_alias_analysis_validation_paths() -> None:
     )
     assert valid_report.as_dict()["components"]
     assert valid_report.as_dict()["unsupported_python_semantics"] == []
+    assert valid_report.as_dict()["unsupported_object_attribute_roots"] == []
+    assert valid_report.as_dict()["unsupported_object_attribute_details"] == []
     mutation_blocked_report = ProgramADStaticAliasLatticeReport(
         components=(component,),
         mutation_effects=(0,),
@@ -258,11 +260,16 @@ def test_program_ad_alias_analysis_validation_paths() -> None:
         non_executed_phi_nodes=(),
         non_executed_control_alias_edges=(),
         unknown_alias_edge_kinds=(),
-        blocker_reasons=("unsupported_python_semantics_require_frontend_lowering",),
+        blocker_reasons=(
+            "object_attributes_require_static_object_model",
+            "unsupported_python_semantics_require_frontend_lowering",
+        ),
         complete=False,
         claim_boundary="static_alias_lattice_over_emitted_program_ad_ir",
         unsupported_python_semantics=("object_attribute",),
         unsupported_semantic_diagnostics=(unsupported_diagnostic,),
+        unsupported_object_attribute_roots=("captured",),
+        unsupported_object_attribute_details=("object_attribute:captured",),
     )
     assert unsupported_diagnostic_report.unsupported_semantic_diagnostics == (
         unsupported_diagnostic,
@@ -456,6 +463,42 @@ def test_program_ad_alias_analysis_validation_paths() -> None:
             unsupported_python_semantics=("filtered_comprehension",),
             unsupported_semantic_diagnostics=(unsupported_diagnostic,),
         )
+    with pytest.raises(ValueError, match="unsupported_object_attribute_roots"):
+        ProgramADStaticAliasLatticeReport(
+            components=(),
+            mutation_effects=(),
+            non_executed_phi_nodes=(),
+            non_executed_control_alias_edges=(),
+            unknown_alias_edge_kinds=(),
+            blocker_reasons=(
+                "object_attributes_require_static_object_model",
+                "unsupported_python_semantics_require_frontend_lowering",
+            ),
+            complete=False,
+            claim_boundary="static_alias_lattice_over_emitted_program_ad_ir",
+            unsupported_python_semantics=("object_attribute",),
+            unsupported_semantic_diagnostics=(unsupported_diagnostic,),
+            unsupported_object_attribute_roots=("",),
+            unsupported_object_attribute_details=("object_attribute:captured",),
+        )
+    with pytest.raises(ValueError, match="unsupported_object_attribute_details"):
+        ProgramADStaticAliasLatticeReport(
+            components=(),
+            mutation_effects=(),
+            non_executed_phi_nodes=(),
+            non_executed_control_alias_edges=(),
+            unknown_alias_edge_kinds=(),
+            blocker_reasons=(
+                "object_attributes_require_static_object_model",
+                "unsupported_python_semantics_require_frontend_lowering",
+            ),
+            complete=False,
+            claim_boundary="static_alias_lattice_over_emitted_program_ad_ir",
+            unsupported_python_semantics=("object_attribute",),
+            unsupported_semantic_diagnostics=(unsupported_diagnostic,),
+            unsupported_object_attribute_roots=("captured",),
+            unsupported_object_attribute_details=("object_attribute:other",),
+        )
     with pytest.raises(ValueError, match="complete must be boolean"):
         ProgramADStaticAliasLatticeReport(
             components=(),
@@ -532,6 +575,32 @@ def test_program_ad_alias_analysis_validation_paths() -> None:
             non_executed_control_alias_edges=(),
             unknown_alias_edge_kinds=(),
             blocker_reasons=("unsupported_python_semantics_require_frontend_lowering",),
+            complete=False,
+            claim_boundary="static_alias_lattice_over_emitted_program_ad_ir",
+        )
+    with pytest.raises(ValueError, match="unsupported object attributes require"):
+        ProgramADStaticAliasLatticeReport(
+            components=(),
+            mutation_effects=(),
+            non_executed_phi_nodes=(),
+            non_executed_control_alias_edges=(),
+            unknown_alias_edge_kinds=(),
+            blocker_reasons=("unsupported_python_semantics_require_frontend_lowering",),
+            complete=False,
+            claim_boundary="static_alias_lattice_over_emitted_program_ad_ir",
+            unsupported_python_semantics=("object_attribute",),
+            unsupported_semantic_diagnostics=(unsupported_diagnostic,),
+            unsupported_object_attribute_roots=("captured",),
+            unsupported_object_attribute_details=("object_attribute:captured",),
+        )
+    with pytest.raises(ValueError, match="object attribute blocker requires"):
+        ProgramADStaticAliasLatticeReport(
+            components=(),
+            mutation_effects=(),
+            non_executed_phi_nodes=(),
+            non_executed_control_alias_edges=(),
+            unknown_alias_edge_kinds=(),
+            blocker_reasons=("object_attributes_require_static_object_model",),
             complete=False,
             claim_boundary="static_alias_lattice_over_emitted_program_ad_ir",
         )
@@ -691,6 +760,8 @@ def test_program_ad_static_alias_lattice_preserves_unsupported_diagnostics() -> 
 
     assert report.complete is False
     assert report.unsupported_python_semantics == ("object_attribute",)
+    assert report.unsupported_object_attribute_roots == ("captured",)
+    assert report.unsupported_object_attribute_details == ("object_attribute:captured",)
     assert len(report.unsupported_semantic_diagnostics) == 1
     diagnostic = report.unsupported_semantic_diagnostics[0]
     assert diagnostic.semantic == "object_attribute"
@@ -701,7 +772,10 @@ def test_program_ad_static_alias_lattice_preserves_unsupported_diagnostics() -> 
     assert diagnostic.bytecode_offsets
     payload = report.as_dict()
     assert payload["unsupported_semantic_diagnostics"] == [diagnostic.to_dict()]
+    assert payload["unsupported_object_attribute_roots"] == ["captured"]
+    assert payload["unsupported_object_attribute_details"] == ["object_attribute:captured"]
     assert "unsupported_python_semantics_require_frontend_lowering" in report.blocker_reasons
+    assert "object_attributes_require_static_object_model" in report.blocker_reasons
 
 
 def test_program_ad_alias_effect_analysis_summarizes_alias_sets_and_mutations() -> None:

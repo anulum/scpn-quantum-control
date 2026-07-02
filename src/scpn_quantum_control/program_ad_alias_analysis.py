@@ -185,6 +185,8 @@ class ProgramADStaticAliasLatticeReport:
     claim_boundary: str
     unsupported_python_semantics: tuple[str, ...] = ()
     unsupported_semantic_diagnostics: tuple[WholeProgramUnsupportedSemanticDiagnostic, ...] = ()
+    unsupported_object_attribute_roots: tuple[str, ...] = ()
+    unsupported_object_attribute_details: tuple[str, ...] = ()
 
     def __post_init__(self) -> None:
         """Validate static alias-lattice report contents at construction time."""
@@ -272,6 +274,32 @@ class ProgramADStaticAliasLatticeReport:
                 "program AD static alias lattice unsupported_semantic_diagnostics "
                 "must match unsupported_python_semantics"
             )
+        for name in ("unsupported_object_attribute_roots", "unsupported_object_attribute_details"):
+            values = getattr(self, name)
+            if any(not isinstance(value, str) or not value for value in values):
+                raise ValueError(
+                    f"program AD static alias lattice {name} must contain non-empty strings"
+                )
+            if tuple(sorted(set(values))) != values:
+                raise ValueError(
+                    f"program AD static alias lattice {name} must be sorted and unique"
+                )
+        expected_object_attribute_details = _unsupported_object_attribute_details(
+            self.unsupported_semantic_diagnostics
+        )
+        if self.unsupported_object_attribute_details != expected_object_attribute_details:
+            raise ValueError(
+                "program AD static alias lattice unsupported_object_attribute_details "
+                "must match object-attribute diagnostics"
+            )
+        expected_object_attribute_roots = _unsupported_object_attribute_roots(
+            expected_object_attribute_details
+        )
+        if self.unsupported_object_attribute_roots != expected_object_attribute_roots:
+            raise ValueError(
+                "program AD static alias lattice unsupported_object_attribute_roots "
+                "must match object-attribute diagnostics"
+            )
         if any(not isinstance(reason, str) or not reason for reason in self.blocker_reasons):
             raise ValueError(
                 "program AD static alias lattice blocker_reasons must be non-empty strings"
@@ -297,6 +325,11 @@ class ProgramADStaticAliasLatticeReport:
                 "complete program AD static alias lattice cannot carry "
                 "unsupported_python_semantics"
             )
+        if self.complete and self.unsupported_object_attribute_roots:
+            raise ValueError(
+                "complete program AD static alias lattice cannot carry "
+                "unsupported_object_attribute_roots"
+            )
         if self.mutation_effects and mutation_blocker not in self.blocker_reasons:
             raise ValueError(
                 "program AD static alias lattice mutation_effects require a blocker reason"
@@ -321,6 +354,23 @@ class ProgramADStaticAliasLatticeReport:
                 "program AD static alias lattice unsupported semantics blocker requires "
                 "unsupported_python_semantics"
             )
+        object_attribute_blocker = "object_attributes_require_static_object_model"
+        if (
+            self.unsupported_object_attribute_roots
+            and object_attribute_blocker not in self.blocker_reasons
+        ):
+            raise ValueError(
+                "program AD static alias lattice unsupported object attributes require "
+                "a blocker reason"
+            )
+        if (
+            not self.unsupported_object_attribute_roots
+            and object_attribute_blocker in self.blocker_reasons
+        ):
+            raise ValueError(
+                "program AD static alias lattice object attribute blocker requires "
+                "unsupported object-attribute diagnostics"
+            )
         _normalise_claim_boundary("program AD static alias lattice", self.claim_boundary)
 
     def as_dict(self) -> dict[str, object]:
@@ -336,6 +386,10 @@ class ProgramADStaticAliasLatticeReport:
             "unsupported_semantic_diagnostics": [
                 diagnostic.to_dict() for diagnostic in self.unsupported_semantic_diagnostics
             ],
+            "unsupported_object_attribute_roots": list(self.unsupported_object_attribute_roots),
+            "unsupported_object_attribute_details": list(
+                self.unsupported_object_attribute_details
+            ),
             "blocker_reasons": list(self.blocker_reasons),
             "complete": self.complete,
             "claim_boundary": self.claim_boundary,
@@ -471,6 +525,12 @@ def program_ad_static_alias_lattice_report(
             )
         )
     )
+    unsupported_object_attribute_details = _unsupported_object_attribute_details(
+        unsupported_diagnostics
+    )
+    unsupported_object_attribute_roots = _unsupported_object_attribute_roots(
+        unsupported_object_attribute_details
+    )
 
     def find(member: str) -> str:
         parent.setdefault(member, member)
@@ -557,6 +617,8 @@ def program_ad_static_alias_lattice_report(
         blocker_reasons.add("control_path_aliases_require_branch_semantics")
     if unsupported_semantics:
         blocker_reasons.add("unsupported_python_semantics_require_frontend_lowering")
+    if unsupported_object_attribute_roots:
+        blocker_reasons.add("object_attributes_require_static_object_model")
     complete = not blocker_reasons
     return ProgramADStaticAliasLatticeReport(
         components=tuple(components),
@@ -569,7 +631,38 @@ def program_ad_static_alias_lattice_report(
         claim_boundary=PROGRAM_AD_STATIC_ALIAS_LATTICE_CLAIM_BOUNDARY,
         unsupported_python_semantics=unsupported_semantics,
         unsupported_semantic_diagnostics=unsupported_diagnostics,
+        unsupported_object_attribute_roots=unsupported_object_attribute_roots,
+        unsupported_object_attribute_details=unsupported_object_attribute_details,
     )
+
+
+def _unsupported_object_attribute_details(
+    diagnostics: Sequence[WholeProgramUnsupportedSemanticDiagnostic],
+) -> tuple[str, ...]:
+    """Return sorted frontend object-attribute diagnostic detail strings."""
+
+    return tuple(
+        sorted(
+            {
+                diagnostic.detail
+                for diagnostic in diagnostics
+                if diagnostic.semantic == "object_attribute"
+            }
+        )
+    )
+
+
+def _unsupported_object_attribute_roots(details: Sequence[str]) -> tuple[str, ...]:
+    """Return captured or global object roots from object-attribute details."""
+
+    roots: set[str] = set()
+    prefix = "object_attribute:"
+    for detail in details:
+        if detail.startswith(prefix) and detail != prefix:
+            roots.add(detail.removeprefix(prefix))
+        else:
+            roots.add(detail)
+    return tuple(sorted(roots))
 
 
 def _normalise_claim_boundary(label: str, claim_boundary: str) -> str:

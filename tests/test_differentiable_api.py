@@ -323,7 +323,7 @@ def test_differentiable_dashboard_status_is_claim_bounded_for_gui_consumers() ->
         in (rows["program_ad_alias_effects"]["claim_boundary"])
     )
     assert (
-        "non-executed phi inputs are explicit blockers"
+        "captured/global object-attribute diagnostics are explicit blockers"
         in rows["program_ad_alias_effects"]["claim_boundary"]
     )
     assert "ProgramADStaticAliasLatticeReport" in rows["program_ad_alias_effects"]["evidence"]
@@ -335,6 +335,10 @@ def test_differentiable_dashboard_status_is_claim_bounded_for_gui_consumers() ->
     assert "control-path alias blocker metadata" in rows["program_ad_alias_effects"]["evidence"]
     assert (
         "unsupported-Python frontend diagnostic metadata"
+        in rows["program_ad_alias_effects"]["evidence"]
+    )
+    assert (
+        "captured/global object-attribute blocker metadata"
         in rows["program_ad_alias_effects"]["evidence"]
     )
     assert "shape_view_alias_metadata_contracts" in rows["program_ad_alias_effects"]["evidence"]
@@ -349,7 +353,7 @@ def test_differentiable_dashboard_status_is_claim_bounded_for_gui_consumers() ->
         "program_ad_static_alias_lattice_contracts" in rows["program_ad_alias_effects"]["evidence"]
     )
     assert (
-        "captured/global object-attribute aliasing remains unsupported"
+        "captured/global object attributes require static object-model alias sets"
         in (rows["program_ad_alias_effects"]["blocked_reasons"])
     )
     assert (

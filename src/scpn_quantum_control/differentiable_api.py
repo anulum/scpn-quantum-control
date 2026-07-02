@@ -852,13 +852,14 @@ def differentiable_dashboard_status(
                 "mutation-effect blocker metadata",
                 "control-path alias blocker metadata",
                 "unsupported-Python frontend diagnostic metadata",
+                "captured/global object-attribute blocker metadata",
                 "shape_view_alias_metadata_contracts",
                 "slice_mutation_alias_metadata_contracts",
                 "loop_carried_state_alias_metadata_contracts",
                 "program_ad_static_alias_lattice_contracts",
             ),
             blocked_reasons=(
-                "captured/global object-attribute aliasing remains unsupported",
+                "captured/global object attributes require static object-model alias sets",
                 "mutation effects require versioned alias semantics",
                 "control-path aliases require non-executed branch semantics",
                 "unsupported Python semantics require executable frontend lowering",
@@ -869,8 +870,9 @@ def differentiable_dashboard_status(
                 "bounded local object-attribute and expression-rebinding aliases are "
                 "metadata only; mutation effects, control-path aliases, unsupported "
                 "Python semantics with source/region/bytecode diagnostics, and "
-                "non-executed phi inputs are explicit blockers, not promoted mutation, "
-                "branch, or arbitrary dynamic-Python frontend lowering"
+                "captured/global object-attribute diagnostics are explicit blockers, "
+                "not promoted static object-model alias sets, mutation, branch, or "
+                "arbitrary dynamic-Python frontend lowering"
             ),
         ),
         DifferentiableDashboardCapabilityRow(

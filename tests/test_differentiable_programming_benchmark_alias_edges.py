@@ -206,16 +206,30 @@ def test_static_alias_lattice_benchmark_fails_closed(
         region_ids=("body",),
         bytecode_offsets=(8,),
     )
-    monkeypatch.setattr(
-        dp,
-        "compile_whole_program_frontend",
-        lambda _objective: SimpleNamespace(
+    object_attribute_semantics = ("object_attribute",)
+    object_attribute_diagnostic = SimpleNamespace(
+        semantic="object_attribute",
+        detail="object_attribute:captured",
+        region_ids=("body",),
+        bytecode_offsets=(12,),
+    )
+
+    def fake_frontend(objective: Callable[[Any], object]) -> SimpleNamespace:
+        if objective.__name__ == "unsupported_object_attribute_boundary":
+            return SimpleNamespace(
+                semantics_report=SimpleNamespace(
+                    unsupported_python_semantics=object_attribute_semantics,
+                ),
+                unsupported_semantic_diagnostics=(object_attribute_diagnostic,),
+            )
+        return SimpleNamespace(
             semantics_report=SimpleNamespace(
                 unsupported_python_semantics=unsupported_semantics,
             ),
             unsupported_semantic_diagnostics=(unsupported_diagnostic,),
-        ),
-    )
+        )
+
+    monkeypatch.setattr(dp, "compile_whole_program_frontend", fake_frontend)
     complete_report = SimpleNamespace(
         complete=True,
         components=(view_component, object_component, expression_component),
@@ -230,6 +244,17 @@ def test_static_alias_lattice_benchmark_fails_closed(
         unsupported_python_semantics=unsupported_semantics,
         unsupported_semantic_diagnostics=(unsupported_diagnostic,),
         blocker_reasons=("unsupported_python_semantics_require_frontend_lowering",),
+    )
+    object_attribute_blocked_report = SimpleNamespace(
+        complete=False,
+        unsupported_python_semantics=object_attribute_semantics,
+        unsupported_semantic_diagnostics=(object_attribute_diagnostic,),
+        unsupported_object_attribute_roots=("captured",),
+        unsupported_object_attribute_details=("object_attribute:captured",),
+        blocker_reasons=(
+            "object_attributes_require_static_object_model",
+            "unsupported_python_semantics_require_frontend_lowering",
+        ),
     )
     for unsupported_report, match in (
         (
@@ -270,6 +295,67 @@ def test_static_alias_lattice_benchmark_fails_closed(
         ),
     ):
         reports = iter((complete_report, unsupported_report))
+        monkeypatch.setattr(
+            dp,
+            "program_ad_static_alias_lattice_report",
+            lambda _ir, reports=reports, **_kwargs: next(reports),
+        )
+        with pytest.raises(ValueError, match=match):
+            dp._static_alias_lattice_report_case()
+
+    for object_attribute_report, match in (
+        (
+            SimpleNamespace(
+                complete=True,
+                unsupported_python_semantics=object_attribute_semantics,
+                unsupported_semantic_diagnostics=(object_attribute_diagnostic,),
+                unsupported_object_attribute_roots=("captured",),
+                unsupported_object_attribute_details=("object_attribute:captured",),
+                blocker_reasons=(),
+            ),
+            "must not promote captured/global object attributes",
+        ),
+        (
+            SimpleNamespace(
+                complete=False,
+                unsupported_python_semantics=object_attribute_semantics,
+                unsupported_semantic_diagnostics=(object_attribute_diagnostic,),
+                unsupported_object_attribute_roots=(),
+                unsupported_object_attribute_details=("object_attribute:captured",),
+                blocker_reasons=(
+                    "object_attributes_require_static_object_model",
+                    "unsupported_python_semantics_require_frontend_lowering",
+                ),
+            ),
+            "lost captured/global object-attribute roots",
+        ),
+        (
+            SimpleNamespace(
+                complete=False,
+                unsupported_python_semantics=object_attribute_semantics,
+                unsupported_semantic_diagnostics=(object_attribute_diagnostic,),
+                unsupported_object_attribute_roots=("captured",),
+                unsupported_object_attribute_details=(),
+                blocker_reasons=(
+                    "object_attributes_require_static_object_model",
+                    "unsupported_python_semantics_require_frontend_lowering",
+                ),
+            ),
+            "lost captured/global object-attribute diagnostics",
+        ),
+        (
+            SimpleNamespace(
+                complete=False,
+                unsupported_python_semantics=object_attribute_semantics,
+                unsupported_semantic_diagnostics=(object_attribute_diagnostic,),
+                unsupported_object_attribute_roots=("captured",),
+                unsupported_object_attribute_details=("object_attribute:captured",),
+                blocker_reasons=("unsupported_python_semantics_require_frontend_lowering",),
+            ),
+            "object-attribute blocker",
+        ),
+    ):
+        reports = iter((complete_report, unsupported_blocked_report, object_attribute_report))
         monkeypatch.setattr(
             dp,
             "program_ad_static_alias_lattice_report",
@@ -332,7 +418,13 @@ def test_static_alias_lattice_benchmark_fails_closed(
         ),
     ):
         reports = iter(
-            (complete_report, unsupported_blocked_report, mutation_blocked_report, branch_report)
+            (
+                complete_report,
+                unsupported_blocked_report,
+                object_attribute_blocked_report,
+                mutation_blocked_report,
+                branch_report,
+            )
         )
         monkeypatch.setattr(
             dp,
@@ -386,10 +478,23 @@ def test_static_alias_lattice_branch_ir_fails_closed(
         return next(results)
 
     monkeypatch.setattr(dp, "whole_program_value_and_grad", fake_whole_program)
-    monkeypatch.setattr(
-        dp,
-        "compile_whole_program_frontend",
-        lambda _objective: SimpleNamespace(
+
+    def fake_frontend(objective: Callable[[Any], object]) -> SimpleNamespace:
+        if objective.__name__ == "unsupported_object_attribute_boundary":
+            return SimpleNamespace(
+                semantics_report=SimpleNamespace(
+                    unsupported_python_semantics=("object_attribute",),
+                ),
+                unsupported_semantic_diagnostics=(
+                    SimpleNamespace(
+                        semantic="object_attribute",
+                        detail="object_attribute:captured",
+                        region_ids=("body",),
+                        bytecode_offsets=(12,),
+                    ),
+                ),
+            )
+        return SimpleNamespace(
             semantics_report=SimpleNamespace(
                 unsupported_python_semantics=("filtered_comprehension",),
             ),
@@ -401,8 +506,9 @@ def test_static_alias_lattice_branch_ir_fails_closed(
                     bytecode_offsets=(8,),
                 ),
             ),
-        ),
-    )
+        )
+
+    monkeypatch.setattr(dp, "compile_whole_program_frontend", fake_frontend)
     reports = iter(
         (
             SimpleNamespace(
@@ -421,6 +527,24 @@ def test_static_alias_lattice_branch_ir_fails_closed(
                     ),
                 ),
                 blocker_reasons=("unsupported_python_semantics_require_frontend_lowering",),
+            ),
+            SimpleNamespace(
+                complete=False,
+                unsupported_python_semantics=("object_attribute",),
+                unsupported_semantic_diagnostics=(
+                    SimpleNamespace(
+                        semantic="object_attribute",
+                        detail="object_attribute:captured",
+                        region_ids=("body",),
+                        bytecode_offsets=(12,),
+                    ),
+                ),
+                unsupported_object_attribute_roots=("captured",),
+                unsupported_object_attribute_details=("object_attribute:captured",),
+                blocker_reasons=(
+                    "object_attributes_require_static_object_model",
+                    "unsupported_python_semantics_require_frontend_lowering",
+                ),
             ),
             SimpleNamespace(
                 complete=False,
