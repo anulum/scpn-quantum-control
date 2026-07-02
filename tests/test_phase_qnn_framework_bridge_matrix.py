@@ -46,6 +46,7 @@ def test_bounded_qnn_framework_bridge_matrix_declares_supported_routes() -> None
     assert pytorch.analytic_framework_gradient
     assert (
         pytorch.public_api == "torch_bounded_qnn_value_and_grad,torch_autograd_qnn_value_and_grad"
+        ",torch_autograd_function_qnn_loss,run_torch_autograd_function_audit"
         ",run_torch_func_compatibility_audit,run_torch_compile_compatibility_audit"
         ",torch_bounded_qnn_module,torch_bounded_qnn_layer,run_torch_module_wrapper_audit"
         ",validate_torch_bounded_qnn_state_dict,run_torch_module_state_audit"
@@ -56,6 +57,7 @@ def test_bounded_qnn_framework_bridge_matrix_declares_supported_routes() -> None
         ",run_torch_aot_autograd_export_audit"
     )
     assert "torch_bounded_phase_qnn_custom_autograd_function" in pytorch.gradient_route
+    assert "bounded_torch_autograd_function_backward_audit" in pytorch.gradient_route
     assert "bounded_torch_func_grad_vmap_jacrev" in pytorch.gradient_route
     assert "bounded_torch_compile_gradient" in pytorch.gradient_route
     assert "bounded_torch_module_layer_wrapper_gradient" in pytorch.gradient_route

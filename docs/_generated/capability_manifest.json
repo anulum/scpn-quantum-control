@@ -9,7 +9,7 @@
     "optional_extras": 43,
     "public_api_exports": 777,
     "public_documentation_pages": 254,
-    "python_model_classes": 958,
+    "python_model_classes": 959,
     "python_model_source_modules": 537,
     "rust_pyo3_model_wrappers": 171,
     "rust_source_modules": 42,
@@ -547,7 +547,7 @@
       {
         "package": "phase",
         "path": "src/scpn_quantum_control/phase",
-        "python_modules": 86
+        "python_modules": 87
       },
       {
         "package": "psi_field",
@@ -3033,6 +3033,14 @@
         "path": "src/scpn_quantum_control/phase/torch_aot_autograd_export.py"
       },
       {
+        "name": "PhaseTorchAutogradFunctionResult",
+        "path": "src/scpn_quantum_control/phase/torch_autograd_function.py"
+      },
+      {
+        "name": "PhaseTorchAutogradFunctionRoute",
+        "path": "src/scpn_quantum_control/phase/torch_autograd_function.py"
+      },
+      {
         "name": "PhaseTorchAutogradQNNGradientResult",
         "path": "src/scpn_quantum_control/phase/torch_bridge.py"
       },
@@ -4871,6 +4879,7 @@
       "src/scpn_quantum_control/phase/tensorflow_bridge.py",
       "src/scpn_quantum_control/phase/tensorflow_maintenance.py",
       "src/scpn_quantum_control/phase/torch_aot_autograd_export.py",
+      "src/scpn_quantum_control/phase/torch_autograd_function.py",
       "src/scpn_quantum_control/phase/torch_bridge.py",
       "src/scpn_quantum_control/phase/torch_checkpoint.py",
       "src/scpn_quantum_control/phase/torch_checkpoint_matrix.py",
@@ -6602,6 +6611,7 @@
       "tests/test_phase_results.py",
       "tests/test_phase_tensorflow_maintenance.py",
       "tests/test_phase_torch_aot_autograd_export.py",
+      "tests/test_phase_torch_autograd_function.py",
       "tests/test_phase_torch_bridge_compile_boundaries.py",
       "tests/test_phase_torch_bridge_qnode_edge_routes.py",
       "tests/test_phase_torch_bridge_runtime_boundaries.py",

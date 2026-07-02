@@ -968,6 +968,33 @@ def differentiable_dashboard_status(
             ),
         ),
         DifferentiableDashboardCapabilityRow(
+            surface="torch_bounded_qnn_autograd_function_audit",
+            state="conformance_backed" if conformance_passed else "diagnostic",
+            backing_api="run_torch_autograd_function_audit",
+            evidence=(
+                "PhaseTorchAutogradFunctionResult",
+                "torch_autograd_function_qnn_loss",
+                "Tensor.backward parameter-gradient parity",
+                "torch.optim.SGD custom-backward integration",
+            ),
+            blocked_reasons=()
+            if conformance_passed
+            else (
+                "conformance suite not run in this status call",
+                "higher-order autograd graph transformation remains blocked",
+                "CUDA custom-autograd execution remains blocked",
+                "provider, hardware, arbitrary-simulator, isolated benchmark, and performance promotion remain blocked",
+            ),
+            claim_boundary=(
+                "bounded PyTorch torch.autograd.Function route for the local "
+                "phase-QNN classifier loss only; Tensor.backward and SGD "
+                "optimizer integration are checked against SCPN "
+                "parameter-shift references with no higher-order autograd, "
+                "CUDA, provider, hardware, arbitrary-simulator, isolated "
+                "benchmark, or performance claim"
+            ),
+        ),
+        DifferentiableDashboardCapabilityRow(
             surface="torch_bounded_qnn_module_state_audit",
             state="conformance_backed" if conformance_passed else "diagnostic",
             backing_api="run_torch_module_state_audit",

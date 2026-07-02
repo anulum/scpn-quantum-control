@@ -412,7 +412,11 @@ For PyTorch registered Phase-QNode routes,
 `torch.compile` correctness and keeps dynamic-shape, fullgraph compiled-frame,
 AOTAutograd/export, CUDA, provider, hardware, isolated-benchmark, and
 performance promotion blocked until artefacts exist.
-For bounded PyTorch phase-QNN modules, `run_torch_module_state_audit(...)`
+For bounded PyTorch phase-QNN modules, `run_torch_autograd_function_audit(...)`
+records a custom `torch.autograd.Function` backward route through direct
+`Tensor.backward()` and `torch.optim.SGD` integration while keeping
+higher-order autograd, CUDA, provider/hardware, arbitrary-simulator,
+isolated-benchmark, and performance routes blocked. `run_torch_module_state_audit(...)`
 checks strict module `state_dict` replay and Adam optimizer-state replay on
 local CPU-compatible tensors. `run_torch_module_device_state_audit(...)` checks
 CPU `module.to(...)` state replay and attempts CUDA replay only after a real

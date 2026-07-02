@@ -284,6 +284,9 @@ reference, plus `torch_bounded_qnn_value_and_grad(...)`, which returns PyTorch
 tensors from the analytic bounded-model gradient,
 `torch_autograd_qnn_value_and_grad(...)`, which wraps the bounded model in a
 custom `torch.autograd.Function`,
+`run_torch_autograd_function_audit(...)`, which records direct
+`Tensor.backward()` gradient parity and `torch.optim.SGD` integration for that
+custom backward route,
 `run_torch_func_compatibility_audit(...)`, which checks bounded
 `torch.func.grad`, `torch.func.vmap`, and `torch.func.jacrev` compatibility,
 `run_torch_compile_compatibility_audit(...)`, which checks bounded
@@ -2051,6 +2054,7 @@ from scpn_quantum_control.phase import (
     run_torch_ecosystem_maturity_audit,
     run_torch_maturity_audit,
     run_torch_phase_qnode_lowering_matrix,
+    run_torch_autograd_function_audit,
     run_torch_export_shape_matrix,
     run_torch_dynamic_shape_export_audit,
     run_torch_aot_autograd_export_audit,
@@ -2112,6 +2116,11 @@ torch_training_loop = run_torch_training_loop_audit(
     labels=np.array([0.0, 1.0], dtype=float),
     initial_params=np.array([0.45], dtype=float),
 )
+torch_autograd_function_audit = run_torch_autograd_function_audit(
+    features=np.array([[0.0], [np.pi]], dtype=float),
+    labels=np.array([0.0, 1.0], dtype=float),
+    initial_params=np.array([0.45], dtype=float),
+)
 torch_training_loop_matrix = run_torch_training_loop_matrix()
 torch_export_shape_matrix = run_torch_export_shape_matrix(
     export_dir=Path("bounded_phase_qnn_export_shapes"),
@@ -2132,6 +2141,7 @@ torch_cloud_batch = plan_torch_cloud_validation_batch(runner="jarvislabs")
 
 print(torch_result.torch_gradient, torch_result.host_boundary)
 print(torch_training_loop.final_loss, torch_training_loop.passed)
+print(torch_autograd_function_audit.gradient_shape, torch_autograd_function_audit.open_gaps)
 print(torch_training_loop_matrix.scenario_count, torch_training_loop_matrix.passed)
 print(torch_export_shape_matrix.scenario_count, torch_export_shape_matrix.open_gaps)
 print(torch_dynamic_shape_export.batch_sizes, torch_dynamic_shape_export.open_gaps)
@@ -2152,6 +2162,11 @@ framework tensor payloads. Multi-frequency rules preserve the native method and
 shift-term count in the adapter result. The separate
 `torch_autograd_qnn_value_and_grad(...)` route is native PyTorch autograd only
 for the bounded phase-QNN model. The separate
+`run_torch_autograd_function_audit(...)` route checks the promoted custom
+`torch.autograd.Function` loss through direct `Tensor.backward()` and
+`torch.optim.SGD` integration, with higher-order autograd, CUDA, provider,
+hardware, arbitrary-simulator, isolated-benchmark, and performance routes kept
+blocked. The separate
 `torch_phase_qnode_value_and_grad(...)` route lowers deterministic registered
 local Phase-QNode statevector execution into native PyTorch autograd without
 host callbacks and checks the value and gradient against the SCPN

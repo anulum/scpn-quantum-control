@@ -534,6 +534,14 @@ from .torch_aot_autograd_export import (
     PhaseTorchAOTAutogradGraphRecord,
     run_torch_aot_autograd_export_audit,
 )
+from .torch_autograd_function import (
+    TORCH_AUTOGRAD_FUNCTION_CLAIM_BOUNDARY,
+    TORCH_AUTOGRAD_FUNCTION_SCHEMA,
+    PhaseTorchAutogradFunctionResult,
+    PhaseTorchAutogradFunctionRoute,
+    run_torch_autograd_function_audit,
+    torch_autograd_function_qnn_loss,
+)
 from .torch_bridge import (
     PhaseTorchAutogradQNNGradientResult,
     PhaseTorchCloudValidationRunSpec,
@@ -1062,6 +1070,8 @@ __all__ = [
     "PhaseTorchAOTAutogradExportResult",
     "PhaseTorchAOTAutogradExportRoute",
     "PhaseTorchAOTAutogradGraphRecord",
+    "PhaseTorchAutogradFunctionResult",
+    "PhaseTorchAutogradFunctionRoute",
     "PhaseTorchDynamicShapeExportRecord",
     "PhaseTorchDynamicShapeExportReplayCase",
     "PhaseTorchDynamicShapeExportResult",
@@ -1105,6 +1115,8 @@ __all__ = [
     "TORCH_DEVICE_STATE_CLAIM_BOUNDARY",
     "TORCH_AOT_AUTOGRAD_EXPORT_CLAIM_BOUNDARY",
     "TORCH_AOT_AUTOGRAD_EXPORT_SCHEMA",
+    "TORCH_AUTOGRAD_FUNCTION_CLAIM_BOUNDARY",
+    "TORCH_AUTOGRAD_FUNCTION_SCHEMA",
     "TORCH_DYNAMIC_SHAPE_EXPORT_CLAIM_BOUNDARY",
     "TORCH_DYNAMIC_SHAPE_EXPORT_SCHEMA",
     "TORCH_EXPORT_CLAIM_BOUNDARY",
@@ -1118,6 +1130,7 @@ __all__ = [
     "default_torch_training_loop_scenarios",
     "run_torch_maturity_audit",
     "run_torch_aot_autograd_export_audit",
+    "run_torch_autograd_function_audit",
     "run_torch_dynamic_shape_export_audit",
     "run_torch_long_lived_checkpoint_matrix",
     "run_torch_module_checkpoint_audit",
@@ -1128,6 +1141,7 @@ __all__ = [
     "run_torch_phase_qnode_lowering_matrix",
     "run_torch_training_loop_audit",
     "run_torch_training_loop_matrix",
+    "torch_autograd_function_qnn_loss",
     "validate_torch_bounded_qnn_state_dict",
     "torch_phase_qnode_value_and_grad",
     "GradientTransformNestingPlan",

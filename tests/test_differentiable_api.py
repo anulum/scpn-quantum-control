@@ -580,6 +580,28 @@ def test_differentiable_dashboard_status_is_claim_bounded_for_gui_consumers() ->
         "no persistent export"
         in rows["torch_phase_qnode_compile_boundary_diagnostic"]["claim_boundary"]
     )
+    assert rows["torch_bounded_qnn_autograd_function_audit"]["state"] == "diagnostic"
+    assert rows["torch_bounded_qnn_autograd_function_audit"]["fail_closed"] is True
+    assert (
+        rows["torch_bounded_qnn_autograd_function_audit"]["backing_api"]
+        == "run_torch_autograd_function_audit"
+    )
+    assert (
+        "PhaseTorchAutogradFunctionResult"
+        in rows["torch_bounded_qnn_autograd_function_audit"]["evidence"]
+    )
+    assert (
+        "Tensor.backward parameter-gradient parity"
+        in rows["torch_bounded_qnn_autograd_function_audit"]["evidence"]
+    )
+    assert (
+        "higher-order autograd graph transformation remains blocked"
+        in rows["torch_bounded_qnn_autograd_function_audit"]["blocked_reasons"]
+    )
+    assert (
+        "torch.autograd.Function"
+        in rows["torch_bounded_qnn_autograd_function_audit"]["claim_boundary"]
+    )
     assert rows["torch_bounded_qnn_module_state_audit"]["state"] == "diagnostic"
     assert rows["torch_bounded_qnn_module_state_audit"]["fail_closed"] is True
     assert (

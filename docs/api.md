@@ -1399,6 +1399,8 @@ is_phase_torch_available() -> bool
 torch_parameter_shift_value_and_grad(objective, values, parameters=None, rule=None) -> PhaseTorchParameterShiftResult
 torch_bounded_qnn_value_and_grad(features, labels, params, tolerance=1e-6) -> PhaseTorchQNNGradientResult
 torch_autograd_qnn_value_and_grad(features, labels, params, tolerance=1e-6) -> PhaseTorchAutogradQNNGradientResult
+torch_autograd_function_qnn_loss(features, labels, params, tolerance=1e-6) -> torch.Tensor
+run_torch_autograd_function_audit(features, labels, initial_params, learning_rate=0.05, tolerance=1e-6) -> PhaseTorchAutogradFunctionResult
 run_torch_func_compatibility_audit(features, labels, params, params_batch, tolerance=1e-6) -> PhaseTorchFuncCompatibilityResult
 run_torch_compile_compatibility_audit(features, labels, params, tolerance=1e-6, fullgraph=True, dynamic=False) -> PhaseTorchCompileCompatibilityResult
 torch_bounded_qnn_module(features, labels, initial_params, trainable=True) -> torch.nn.Module
