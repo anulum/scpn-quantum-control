@@ -183,6 +183,8 @@ ignore = [
 "tests/test_mps_evolution.py" = ["E402", "I001"]  # importorskip before local import
 "tests/test_phase_pennylane_import.py" = ["E402", "I001"]  # importorskip before local import
 "tests/test_mitiq_integration.py" = ["E402", "I001"]  # importorskip before local import
+"tests/kuramoto_autodiff_witness.py" = ["E402", "I001"]  # importorskip(jax) before local import
+"tests/test_diff_kuramoto_autodiff_witness.py" = ["E402", "I001"]  # importorskip(jax) before local import
 
 [tool.ruff.lint.isort]
 known-first-party = ["scpn_quantum_control"]

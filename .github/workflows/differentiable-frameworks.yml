@@ -12,8 +12,12 @@ on:
     paths:
       - "src/scpn_quantum_control/phase/**"
       - "src/scpn_quantum_control/compiler/mlir.py"
+      - "src/scpn_quantum_control/accel/diff_kuramoto_*.py"
+      - "src/scpn_quantum_control/accel/kuramoto_ott_antonsen.py"
       - "tests/test_phase_qnode_*.py"
       - "tests/test_phase_model_training_evidence.py"
+      - "tests/test_diff_kuramoto_autodiff_witness.py"
+      - "tests/kuramoto_autodiff_witness.py"
       - ".github/workflows/differentiable-frameworks.yml"
   workflow_dispatch:
   schedule:
@@ -75,6 +79,7 @@ jobs:
             tests/test_phase_qnode_framework_parity.py \
             tests/test_phase_model_training_evidence.py \
             tests/test_phase_qnode_compiler_lowering.py \
+            tests/test_diff_kuramoto_autodiff_witness.py \
             -m "not hardware and not performance" \
             -q
 
