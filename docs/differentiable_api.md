@@ -1641,7 +1641,9 @@ metadata with non-empty plugin/provider/device/backend identities, a
 circuit-fingerprint string, replay metadata when present, explicit PennyLane
 `interface`, `diff_method`, and `shot_policy` metadata, canonical interface
 values (`auto`, `autograd`, `jax`, `tf`, `torch`) instead of undocumented
-aliases, `shot_policy="analytic"` with `shots=None` or
+aliases, documented QNode diff methods (`adjoint`, `backprop`, `best`,
+`device`, `finite-diff`, `hadamard`, `parameter-shift`, `spsa`) instead of
+undocumented aliases, `shot_policy="analytic"` with `shots=None` or
 `shot_policy="finite_shot"` with a positive shot count, SHA-256 result and
 metadata digests, non-hardware execution mode, and
 `hardware_execution=False`.

@@ -16,6 +16,18 @@ import numpy as np
 
 PENNYLANE_PROVIDER_EVIDENCE_REVIEW_AS_OF_UTC = "2026-06-27T00:00:00Z"
 _PENNYLANE_PROVIDER_INTERFACES = frozenset(("auto", "autograd", "jax", "tf", "torch"))
+_PENNYLANE_PROVIDER_DIFF_METHODS = frozenset(
+    (
+        "adjoint",
+        "backprop",
+        "best",
+        "device",
+        "finite-diff",
+        "hadamard",
+        "parameter-shift",
+        "spsa",
+    )
+)
 
 
 @dataclass(frozen=True)
@@ -61,8 +73,10 @@ class PennyLaneProviderPluginExecutionArtifact:
 
     Provider evidence records the PennyLane interface, differentiation method,
     and analytic versus finite-shot policy used for the captured provider route.
-    Those fields are part of the evidence chain, so provider-gradient parity
-    must cite the same values before the route can pass.
+    Interface and differentiation method identifiers are constrained to
+    documented PennyLane QNode strings. Those fields are part of the evidence
+    chain, so provider-gradient parity must cite the same values before the
+    route can pass.
     """
 
     artifact_id: str
@@ -91,7 +105,6 @@ class PennyLaneProviderPluginExecutionArtifact:
             "backend_name",
             "circuit_fingerprint",
             "execution_mode",
-            "diff_method",
         ):
             object.__setattr__(
                 self,
@@ -99,6 +112,7 @@ class PennyLaneProviderPluginExecutionArtifact:
                 _normalise_metadata_text(field_name, getattr(self, field_name)),
             )
         object.__setattr__(self, "interface", _normalise_provider_interface(self.interface))
+        object.__setattr__(self, "diff_method", _normalise_provider_diff_method(self.diff_method))
         if self.shots is not None and (
             isinstance(self.shots, bool) or not isinstance(self.shots, int) or self.shots <= 0
         ):
@@ -189,7 +203,6 @@ class PennyLaneProviderGradientParityArtifact:
             "device_name",
             "backend_name",
             "circuit_fingerprint",
-            "diff_method",
             "replay_artifact_id",
         ):
             object.__setattr__(
@@ -198,6 +211,7 @@ class PennyLaneProviderGradientParityArtifact:
                 _normalise_metadata_text(field_name, getattr(self, field_name)),
             )
         object.__setattr__(self, "interface", _normalise_provider_interface(self.interface))
+        object.__setattr__(self, "diff_method", _normalise_provider_diff_method(self.diff_method))
         if self.shots is not None and (
             isinstance(self.shots, bool) or not isinstance(self.shots, int) or self.shots <= 0
         ):
@@ -694,6 +708,15 @@ def _normalise_provider_interface(interface: object) -> str:
         supported = ", ".join(sorted(_PENNYLANE_PROVIDER_INTERFACES))
         raise ValueError(f"interface must be one of {supported}")
     return canonical_interface
+
+
+def _normalise_provider_diff_method(diff_method: object) -> str:
+    """Return a canonical PennyLane provider differentiation method."""
+    canonical_diff_method = _normalise_metadata_text("diff_method", diff_method).lower()
+    if canonical_diff_method not in _PENNYLANE_PROVIDER_DIFF_METHODS:
+        supported = ", ".join(sorted(_PENNYLANE_PROVIDER_DIFF_METHODS))
+        raise ValueError(f"diff_method must be one of {supported}")
+    return canonical_diff_method
 
 
 def _normalise_shot_policy(shot_policy: object, shots: int | None) -> str:

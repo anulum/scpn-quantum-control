@@ -1500,7 +1500,9 @@ or numeric string. Provider-plugin execution artefacts use the same shot-count
 boundary, must identify provider-plugin execution in `execution_mode`, must
 carry explicit PennyLane `interface`, `diff_method`, and `shot_policy` metadata,
 must use canonical PennyLane interfaces (`auto`, `autograd`, `jax`, `tf`,
-`torch`) instead of undocumented aliases, and must keep
+`torch`) and documented QNode diff methods (`adjoint`, `backprop`, `best`,
+`device`, `finite-diff`, `hadamard`, `parameter-shift`, `spsa`) instead of
+undocumented aliases, and must keep
 `shot_policy="analytic"` paired with `shots=None` or `shot_policy="finite_shot"`
 paired with a positive shot count. Provider execution evidence still does not
 promote provider-gradient or hardware execution.

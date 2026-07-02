@@ -255,6 +255,68 @@ def test_pennylane_provider_plugin_matrix_rejects_undocumented_interfaces(
         _provider_gradient_parity_artifact(interface=interface)
 
 
+@pytest.mark.parametrize(
+    "diff_method",
+    [
+        "adjoint",
+        "backprop",
+        "best",
+        "device",
+        "finite-diff",
+        "hadamard",
+        "parameter-shift",
+        "spsa",
+    ],
+)
+def test_pennylane_provider_plugin_matrix_accepts_documented_diff_methods(
+    diff_method: str,
+) -> None:
+    """Provider evidence accepts documented PennyLane QNode diff methods."""
+    execution_artifact = _provider_plugin_execution_artifact(diff_method=diff_method)
+    gradient_artifact = _provider_gradient_parity_artifact(diff_method=diff_method)
+
+    result = run_pennylane_plugin_matrix(
+        provider_execution_artifact=execution_artifact,
+        provider_gradient_parity_artifact=gradient_artifact,
+    )
+
+    assert result.provider_plugin_execution_ready
+    assert result.provider_plugin_gradient_parity_ready
+    payload = result.to_dict()
+    provider_payload = cast(dict[str, object], payload["provider_execution_artifact"])
+    gradient_payload = cast(dict[str, object], payload["provider_gradient_parity_artifact"])
+    assert provider_payload["diff_method"] == diff_method
+    assert gradient_payload["diff_method"] == diff_method
+
+
+def test_pennylane_provider_plugin_matrix_canonicalises_diff_method() -> None:
+    """Provider evidence canonicalises PennyLane diff-method metadata."""
+    execution_artifact = _provider_plugin_execution_artifact(diff_method=" SPSA ")
+    gradient_artifact = _provider_gradient_parity_artifact(diff_method=" SPSA ")
+
+    result = run_pennylane_plugin_matrix(
+        provider_execution_artifact=execution_artifact,
+        provider_gradient_parity_artifact=gradient_artifact,
+    )
+
+    payload = result.to_dict()
+    provider_payload = cast(dict[str, object], payload["provider_execution_artifact"])
+    gradient_payload = cast(dict[str, object], payload["provider_gradient_parity_artifact"])
+    assert provider_payload["diff_method"] == "spsa"
+    assert gradient_payload["diff_method"] == "spsa"
+
+
+@pytest.mark.parametrize("diff_method", ["parameter_shift", "finite_diff", "stoch-pulse"])
+def test_pennylane_provider_plugin_matrix_rejects_undocumented_diff_methods(
+    diff_method: str,
+) -> None:
+    """Provider evidence rejects undocumented PennyLane diff-method aliases."""
+    with pytest.raises(ValueError, match="diff_method"):
+        _provider_plugin_execution_artifact(diff_method=diff_method)
+    with pytest.raises(ValueError, match="diff_method"):
+        _provider_gradient_parity_artifact(diff_method=diff_method)
+
+
 def test_pennylane_provider_plugin_matrix_accepts_provider_evidence_bundle() -> None:
     """Fresh bundled provider evidence passes provider execution and parity routes."""
     bundle = _provider_evidence_bundle()

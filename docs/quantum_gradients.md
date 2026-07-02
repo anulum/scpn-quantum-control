@@ -2011,7 +2011,9 @@ metadata with non-empty plugin/provider/device/backend identities, positive
 shots when present, SHA-256 result and metadata digests, optional replay
 metadata, explicit PennyLane `interface`, `diff_method`, and `shot_policy`
 metadata, canonical interface values (`auto`, `autograd`, `jax`, `tf`, `torch`)
-instead of undocumented aliases, `shot_policy="analytic"` with `shots=None` or
+and documented QNode diff methods (`adjoint`, `backprop`, `best`, `device`,
+`finite-diff`, `hadamard`, `parameter-shift`, `spsa`) instead of undocumented
+aliases, `shot_policy="analytic"` with `shots=None` or
 `shot_policy="finite_shot"` with a positive shot count,
 non-hardware execution mode, and `hardware_execution=False`.
 `run_pennylane_plugin_matrix(...)` records local `default.qubit` exact-state,
