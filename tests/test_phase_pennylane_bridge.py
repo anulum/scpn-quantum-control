@@ -707,8 +707,8 @@ def test_pennylane_plugin_matrix_accepts_provider_execution_artifact_without_pro
 
 
 def test_pennylane_plugin_matrix_accepts_provider_gradient_parity_without_promotion() -> None:
-    execution_artifact = _provider_plugin_execution_artifact()
-    gradient_artifact = _provider_gradient_parity_artifact()
+    execution_artifact = _provider_plugin_execution_artifact(interface="tf")
+    gradient_artifact = _provider_gradient_parity_artifact(interface="tf")
 
     result = run_pennylane_plugin_matrix(
         provider_execution_artifact=execution_artifact,
@@ -727,7 +727,7 @@ def test_pennylane_plugin_matrix_accepts_provider_gradient_parity_without_promot
     payload = cast(dict[str, Any], result.to_dict())
     gradient_payload = cast(dict[str, object], payload["provider_gradient_parity_artifact"])
     assert gradient_payload["artifact_id"] == gradient_artifact.artifact_id
-    assert gradient_payload["interface"] == "autograd"
+    assert gradient_payload["interface"] == "tf"
     assert gradient_payload["diff_method"] == "parameter-shift"
     assert gradient_payload["shot_policy"] == "finite_shot"
     assert gradient_payload["max_abs_error"] == gradient_artifact.max_abs_error
@@ -1102,8 +1102,8 @@ def test_pennylane_maturity_audit_records_provider_gradient_parity_without_promo
         (("ry", (0,), 0), ("rx", (0,), 1)),
         PauliTerm(1.0, ((0, "z"),)),
     )
-    execution_artifact = _provider_plugin_execution_artifact()
-    gradient_artifact = _provider_gradient_parity_artifact()
+    execution_artifact = _provider_plugin_execution_artifact(interface="tf")
+    gradient_artifact = _provider_gradient_parity_artifact(interface="tf")
 
     result = run_pennylane_maturity_audit(
         objective=_objective,
@@ -1119,7 +1119,12 @@ def test_pennylane_maturity_audit_records_provider_gradient_parity_without_promo
     plugin_matrix = cast(PennyLanePluginMatrixResult, result.evidence["pennylane_plugin_matrix"])
     assert result.required_capabilities["provider_plugin_execution"] == "passed"
     assert result.required_capabilities["provider_plugin_gradient_parity"] == "passed"
-    assert plugin_matrix.provider_gradient_parity_artifact is gradient_artifact
+    provider_artifact = plugin_matrix.provider_execution_artifact
+    parity_artifact = plugin_matrix.provider_gradient_parity_artifact
+    assert provider_artifact is execution_artifact
+    assert parity_artifact is gradient_artifact
+    assert provider_artifact.interface == "tf"
+    assert parity_artifact.interface == "tf"
     assert not result.ready_for_provider_exceedance
     assert "provider_plugin_gradient_parity" not in result.open_gaps
     assert "hardware_execution" in result.open_gaps

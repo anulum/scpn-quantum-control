@@ -205,6 +205,56 @@ def test_pennylane_provider_plugin_matrix_accepts_analytic_shot_policy() -> None
     assert gradient_payload["shots"] is None
 
 
+@pytest.mark.parametrize("interface", ["auto", "autograd", "jax", "torch", "tf"])
+def test_pennylane_provider_plugin_matrix_accepts_documented_interfaces(
+    interface: str,
+) -> None:
+    """Provider evidence accepts only canonical PennyLane QNode interfaces."""
+    execution_artifact = _provider_plugin_execution_artifact(interface=interface)
+    gradient_artifact = _provider_gradient_parity_artifact(interface=interface)
+
+    result = run_pennylane_plugin_matrix(
+        provider_execution_artifact=execution_artifact,
+        provider_gradient_parity_artifact=gradient_artifact,
+    )
+
+    assert result.provider_plugin_execution_ready
+    assert result.provider_plugin_gradient_parity_ready
+    payload = result.to_dict()
+    provider_payload = cast(dict[str, object], payload["provider_execution_artifact"])
+    gradient_payload = cast(dict[str, object], payload["provider_gradient_parity_artifact"])
+    assert provider_payload["interface"] == interface
+    assert gradient_payload["interface"] == interface
+
+
+def test_pennylane_provider_plugin_matrix_canonicalises_provider_interface() -> None:
+    """Provider evidence canonicalises PennyLane interface metadata."""
+    execution_artifact = _provider_plugin_execution_artifact(interface=" JAX ")
+    gradient_artifact = _provider_gradient_parity_artifact(interface=" JAX ")
+
+    result = run_pennylane_plugin_matrix(
+        provider_execution_artifact=execution_artifact,
+        provider_gradient_parity_artifact=gradient_artifact,
+    )
+
+    payload = result.to_dict()
+    provider_payload = cast(dict[str, object], payload["provider_execution_artifact"])
+    gradient_payload = cast(dict[str, object], payload["provider_gradient_parity_artifact"])
+    assert provider_payload["interface"] == "jax"
+    assert gradient_payload["interface"] == "jax"
+
+
+@pytest.mark.parametrize("interface", ["tensorflow", "numpy", "jax-jit"])
+def test_pennylane_provider_plugin_matrix_rejects_undocumented_interfaces(
+    interface: str,
+) -> None:
+    """Provider evidence rejects undocumented PennyLane interface aliases."""
+    with pytest.raises(ValueError, match="interface"):
+        _provider_plugin_execution_artifact(interface=interface)
+    with pytest.raises(ValueError, match="interface"):
+        _provider_gradient_parity_artifact(interface=interface)
+
+
 def test_pennylane_provider_plugin_matrix_accepts_provider_evidence_bundle() -> None:
     """Fresh bundled provider evidence passes provider execution and parity routes."""
     bundle = _provider_evidence_bundle()

@@ -15,6 +15,7 @@ from datetime import datetime, timezone
 import numpy as np
 
 PENNYLANE_PROVIDER_EVIDENCE_REVIEW_AS_OF_UTC = "2026-06-27T00:00:00Z"
+_PENNYLANE_PROVIDER_INTERFACES = frozenset(("auto", "autograd", "jax", "tf", "torch"))
 
 
 @dataclass(frozen=True)
@@ -90,7 +91,6 @@ class PennyLaneProviderPluginExecutionArtifact:
             "backend_name",
             "circuit_fingerprint",
             "execution_mode",
-            "interface",
             "diff_method",
         ):
             object.__setattr__(
@@ -98,6 +98,7 @@ class PennyLaneProviderPluginExecutionArtifact:
                 field_name,
                 _normalise_metadata_text(field_name, getattr(self, field_name)),
             )
+        object.__setattr__(self, "interface", _normalise_provider_interface(self.interface))
         if self.shots is not None and (
             isinstance(self.shots, bool) or not isinstance(self.shots, int) or self.shots <= 0
         ):
@@ -188,7 +189,6 @@ class PennyLaneProviderGradientParityArtifact:
             "device_name",
             "backend_name",
             "circuit_fingerprint",
-            "interface",
             "diff_method",
             "replay_artifact_id",
         ):
@@ -197,6 +197,7 @@ class PennyLaneProviderGradientParityArtifact:
                 field_name,
                 _normalise_metadata_text(field_name, getattr(self, field_name)),
             )
+        object.__setattr__(self, "interface", _normalise_provider_interface(self.interface))
         if self.shots is not None and (
             isinstance(self.shots, bool) or not isinstance(self.shots, int) or self.shots <= 0
         ):
@@ -686,7 +687,17 @@ def _normalise_sha256_digest(field_name: str, value: object) -> str:
     return f"sha256:{hex_digest.lower()}"
 
 
+def _normalise_provider_interface(interface: object) -> str:
+    """Return a canonical PennyLane provider interface identifier."""
+    canonical_interface = _normalise_metadata_text("interface", interface).lower()
+    if canonical_interface not in _PENNYLANE_PROVIDER_INTERFACES:
+        supported = ", ".join(sorted(_PENNYLANE_PROVIDER_INTERFACES))
+        raise ValueError(f"interface must be one of {supported}")
+    return canonical_interface
+
+
 def _normalise_shot_policy(shot_policy: object, shots: int | None) -> str:
+    """Return a canonical shot policy consistent with the supplied shot count."""
     policy = _normalise_metadata_text("shot_policy", shot_policy)
     if policy not in {"analytic", "finite_shot"}:
         raise ValueError("shot_policy must be analytic or finite_shot")

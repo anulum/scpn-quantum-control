@@ -1639,9 +1639,11 @@ same objects for compatibility with older imports.
 `PennyLaneProviderPluginExecutionArtifact` validates provider-plugin execution
 metadata with non-empty plugin/provider/device/backend identities, a
 circuit-fingerprint string, replay metadata when present, explicit PennyLane
-`interface`, `diff_method`, and `shot_policy` metadata, `shot_policy="analytic"`
-with `shots=None` or `shot_policy="finite_shot"` with a positive shot count,
-SHA-256 result and metadata digests, non-hardware execution mode, and
+`interface`, `diff_method`, and `shot_policy` metadata, canonical interface
+values (`auto`, `autograd`, `jax`, `tf`, `torch`) instead of undocumented
+aliases, `shot_policy="analytic"` with `shots=None` or
+`shot_policy="finite_shot"` with a positive shot count, SHA-256 result and
+metadata digests, non-hardware execution mode, and
 `hardware_execution=False`.
 `run_pennylane_plugin_matrix` records local `default.qubit` exact-state,
 shot-policy metadata, generated Phase-QNode export, and supported tape-import

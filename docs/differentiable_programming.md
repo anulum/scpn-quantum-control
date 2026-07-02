@@ -415,9 +415,10 @@ diagnostic.
 - Require PennyLane provider-plugin artefact `execution_mode` values to be
   provider-scoped while still rejecting hardware/QPU execution modes. Provider
   execution artefacts must also carry explicit PennyLane `interface` and
-  `diff_method` metadata, plus `shot_policy="analytic"` with `shots=None` or
-  `shot_policy="finite_shot"` with a positive shot count, before the provider
-  route can pass.
+  `diff_method` metadata, canonical interface values (`auto`, `autograd`,
+  `jax`, `tf`, `torch`) rather than undocumented aliases, plus
+  `shot_policy="analytic"` with `shots=None` or `shot_policy="finite_shot"`
+  with a positive shot count, before the provider route can pass.
 - Keep PennyLane plugin-matrix route evidence canonical: statuses are
   `passed`, `blocked`, or `failed`, and route metadata is control-clean.
 - Pair PennyLane provider-gradient parity evidence to the same provider
