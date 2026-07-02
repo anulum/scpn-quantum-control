@@ -87,7 +87,10 @@ Use `build_qiskit_provider_gradient_workflow_artifact(...)` to attach captured
 Qiskit Runtime provider-gradient workflow metadata for parameter-shift,
 finite-difference, LCU, SPSA, QGT, and QFI routes. The maturity audit requires
 the complete method set and, when Runtime QPU evidence is attached, the same
-provider/backend/job/circuit/live-ticket chain.
+provider/backend/job/circuit/live-ticket chain. Each workflow artefact must
+also carry method-specific provenance metadata: shift-rule metadata for
+parameter-shift, stencil metadata for finite-difference, generator metadata for
+LCU, perturbation metadata for SPSA, and matrix metadata for QGT/QFI.
 
 For first-path user workflows, start with the
 [Stable Facades API](stable_facades_api.md). It is the mkdocstrings reference
@@ -1377,7 +1380,7 @@ check_pennylane_parameter_shift_agreement(objective, pennylane_gradient, values,
 run_pennylane_plugin_matrix(provider_execution_artifact=None, provider_gradient_parity_artifact=None, hardware_execution_artifact=None, provider_evidence_bundle=None, evidence_freshness_as_of_utc="2026-06-27T00:00:00Z") -> PennyLanePluginMatrixResult
 run_pennylane_maturity_audit(objective, pennylane_objective, pennylane_gradient, values, circuit, phase_qnode_values, import_tape=None, device_name="default.qubit", shots=None, interface="autograd", diff_method="parameter-shift", value_tolerance=1e-8, gradient_tolerance=1e-6, parameters=None, rule=None, provider_execution_artifact=None, provider_gradient_parity_artifact=None, hardware_execution_artifact=None, provider_evidence_bundle=None, evidence_freshness_as_of_utc="2026-06-27T00:00:00Z") -> PennyLaneMaturityAuditResult
 build_qiskit_runtime_qpu_execution_artifact(*, artifact_id, provider_name, primitive_name, backend_name, job_id, session_id, circuit_fingerprint, observable_fingerprint, parameter_digest, result_digest, metadata_digest, transpiled_circuit_digest, live_execution_ticket, backend_allowlist_id, shot_budget_id, runtime_session_mode, shots) -> QiskitRuntimeQPUExecutionArtifact
-build_qiskit_provider_gradient_workflow_artifact(*, artifact_id, provider_name, backend_name, job_id, primitive_name, gradient_method, circuit_fingerprint, observable_fingerprint, parameter_digest, gradient_digest, metadata_digest, shots, parameter_count, gradient_dimension, hardware_execution, live_ticket_id, claim_boundary="qiskit_provider_gradient_workflow_capture") -> QiskitProviderGradientWorkflowArtifact
+build_qiskit_provider_gradient_workflow_artifact(*, artifact_id, provider_name, backend_name, job_id, primitive_name, gradient_method, circuit_fingerprint, observable_fingerprint, parameter_digest, gradient_digest, metadata_digest, shots, parameter_count, gradient_dimension, hardware_execution, live_ticket_id, method_metadata=None, claim_boundary="qiskit_provider_gradient_workflow_capture") -> QiskitProviderGradientWorkflowArtifact
 build_qiskit_runtime_qpu_provider_evidence_bundle(*, artifact_id, runtime_qpu_execution_artifact, raw_count_replay_artifact, calibration_comparison_artifact, captured_at_utc, valid_until_utc, isolated_benchmark_artifact_id=None) -> QiskitRuntimeQPUProviderEvidenceBundle
 run_qiskit_maturity_audit(circuit, observable, parameters, values, shots, rule=None, shift=1.5707963267948966, confidence_level=0.95, confidence_z=1.959963984540054, provider_preparation_audit=None, runtime_primitive_artifact=None, runtime_qpu_execution_artifact=None, raw_count_replay_artifact=None, calibration_comparison_artifact=None, qpu_provider_evidence_bundle=None, provider_gradient_workflow_artifacts=None, evidence_freshness_as_of_utc="2026-06-27T00:00:00Z") -> QiskitMaturityAuditResult
 run_differentiable_provider_hardware_safety_audit(*, live_execution_ticket=None, raw_count_replay_artifact_id=None, calibration_snapshot_artifact_id=None, statevector_comparison_artifact_id=None, isolated_benchmark_artifact_id=None) -> DifferentiableProviderHardwareSafetyAuditResult
@@ -1550,7 +1553,12 @@ is present; otherwise the benchmark promotion gate remains blocked.
 workflow metadata for `parameter_shift`, `finite_difference`, `lcu`, `spsa`,
 `qgt`, and `qfi`. Build it with
 `build_qiskit_provider_gradient_workflow_artifact(...)` from captured Runtime
-job IDs, digests, shot counts, parameter dimensions, and live-ticket evidence.
+job IDs, digests, shot counts, parameter dimensions, live-ticket evidence, and
+method-specific provenance metadata. The metadata must name the expected method
+schema, workflow version, provenance artefact ID, and the per-method payload:
+shift rule/count for parameter-shift, stencil/step size for finite-difference,
+generator digest/count for LCU, perturbation seed/count for SPSA, and matrix
+digest/dimension for QGT/QFI.
 The maturity audit accepts provider-gradient workflow evidence only when the
 complete method set is attached and, if Runtime QPU evidence is present, every
 workflow artefact matches the same provider, backend, job, circuit, live ticket,

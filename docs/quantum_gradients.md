@@ -958,6 +958,13 @@ circuit, primitive family, observable fingerprint, parameter digest,
 live-ticket, and shot-count chain. Any drift in those fields fails closed
 before the audit can clear the provider-gradient workflow gate.
 
+Each workflow artefact also carries method-specific provenance metadata. The
+builder rejects missing, ambiguous, or cross-method metadata: parameter-shift
+requires a shift-rule ID and shifted-circuit count, finite-difference requires
+the stencil and positive step size, LCU requires a generator digest and term
+count, SPSA requires perturbation seed/count metadata, and QGT/QFI require
+matrix digests plus a matrix dimension matching the parameter count.
+
 ## Gradient Tape Boundary
 
 For local simulator workflows, `gradient_tape` records deterministic and

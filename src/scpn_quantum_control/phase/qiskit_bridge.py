@@ -9,8 +9,8 @@
 
 from __future__ import annotations
 
-from collections.abc import Sequence
-from dataclasses import dataclass
+from collections.abc import Mapping, Sequence
+from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import TypeAlias
 
@@ -36,6 +36,25 @@ QISKIT_PROVIDER_GRADIENT_METHODS = frozenset(
     {"parameter_shift", "finite_difference", "lcu", "spsa", "qgt", "qfi"}
 )
 QISKIT_PROVIDER_EVIDENCE_REVIEW_AS_OF_UTC = "2026-06-27T00:00:00Z"
+_QISKIT_PROVIDER_GRADIENT_METHOD_COMMON_METADATA_KEYS = frozenset(
+    {"method_schema", "method_artifact_id", "workflow_version"}
+)
+_QISKIT_PROVIDER_GRADIENT_METHOD_SCHEMAS: dict[str, str] = {
+    "parameter_shift": "parameter_shift_shift_rule",
+    "finite_difference": "finite_difference_stencil",
+    "lcu": "linear_combination_unitary",
+    "spsa": "spsa_perturbation",
+    "qgt": "quantum_geometric_tensor",
+    "qfi": "quantum_fisher_information",
+}
+_QISKIT_PROVIDER_GRADIENT_METHOD_SPECIFIC_METADATA_KEYS: dict[str, frozenset[str]] = {
+    "parameter_shift": frozenset({"shift_rule_id", "shift_count"}),
+    "finite_difference": frozenset({"stencil", "step_size"}),
+    "lcu": frozenset({"generator_digest", "term_count"}),
+    "spsa": frozenset({"perturbation_seed", "perturbation_count"}),
+    "qgt": frozenset({"qgt_digest", "matrix_dimension"}),
+    "qfi": frozenset({"qfi_digest", "matrix_dimension"}),
+}
 
 
 @dataclass(frozen=True)
@@ -492,6 +511,7 @@ class QiskitProviderGradientWorkflowArtifact:
     gradient_dimension: int
     hardware_execution: bool
     live_ticket_id: str
+    method_metadata: Mapping[str, object] = field(default_factory=dict)
     claim_boundary: str = "qiskit_provider_gradient_workflow_capture"
 
     def __post_init__(self) -> None:
@@ -544,6 +564,16 @@ class QiskitProviderGradientWorkflowArtifact:
             raise ValueError("provider-gradient workflow artefacts must cite hardware execution")
         for field_name in ("parameter_digest", "gradient_digest", "metadata_digest"):
             _validate_sha256_digest(field_name, str(getattr(self, field_name)))
+        method_metadata = _normalise_provider_gradient_method_metadata(
+            gradient_method,
+            self.method_metadata,
+        )
+        _validate_provider_gradient_method_metadata_consistency(
+            gradient_method,
+            method_metadata,
+            parameter_count=self.parameter_count,
+        )
+        object.__setattr__(self, "method_metadata", method_metadata)
 
     def to_dict(self) -> dict[str, object]:
         """Return JSON-compatible Qiskit provider-gradient workflow metadata."""
@@ -564,6 +594,7 @@ class QiskitProviderGradientWorkflowArtifact:
             "gradient_dimension": self.gradient_dimension,
             "hardware_execution": self.hardware_execution,
             "live_ticket_id": self.live_ticket_id,
+            "method_metadata": dict(self.method_metadata),
             "claim_boundary": self.claim_boundary,
         }
 
@@ -586,6 +617,7 @@ def build_qiskit_provider_gradient_workflow_artifact(
     gradient_dimension: int,
     hardware_execution: bool,
     live_ticket_id: str,
+    method_metadata: Mapping[str, object] | None = None,
     claim_boundary: str = "qiskit_provider_gradient_workflow_capture",
 ) -> QiskitProviderGradientWorkflowArtifact:
     """Build no-submit evidence for a captured Qiskit provider-gradient workflow.
@@ -617,6 +649,12 @@ def build_qiskit_provider_gradient_workflow_artifact(
         provider-gradient evidence.
     live_ticket_id:
         Approval ticket for the captured live workflow.
+    method_metadata:
+        Method-specific provenance for the captured gradient workflow. Each
+        method requires a matching schema name, artifact ID, workflow version,
+        and method-specific fields: shift-rule metadata for parameter-shift,
+        stencil metadata for finite-difference, generator metadata for LCU,
+        perturbation metadata for SPSA, and matrix metadata for QGT/QFI.
     claim_boundary:
         Explicit boundary label retained in serialized evidence.
 
@@ -648,6 +686,7 @@ def build_qiskit_provider_gradient_workflow_artifact(
         gradient_dimension=gradient_dimension,
         hardware_execution=hardware_execution,
         live_ticket_id=live_ticket_id,
+        method_metadata={} if method_metadata is None else dict(method_metadata),
         claim_boundary=claim_boundary,
     )
 
@@ -1077,6 +1116,12 @@ def run_qiskit_maturity_audit(
         local_reference_metadata["provider_gradient_workflow_methods"] = tuple(
             sorted(artifact.gradient_method for artifact in provider_gradient_workflow_tuple)
         )
+        local_reference_metadata["provider_gradient_workflow_method_schemas"] = tuple(
+            sorted(
+                f"{artifact.gradient_method}:{artifact.method_metadata['method_schema']}"
+                for artifact in provider_gradient_workflow_tuple
+            )
+        )
     evidence: dict[str, object] = {
         "shifted_circuit_records": shifted_records,
         "statevector_reference": statevector_reference,
@@ -1355,6 +1400,166 @@ def _normalise_qiskit_provider_gradient_method(gradient_method: str) -> str:
         ) from exc
 
 
+def _normalise_provider_gradient_method_metadata(
+    gradient_method: str,
+    method_metadata: Mapping[str, object],
+) -> dict[str, object]:
+    """Validate and normalise method-specific provider-gradient provenance."""
+    if not method_metadata:
+        raise ValueError("method_metadata is required for provider-gradient workflow artefacts")
+    required_keys = (
+        _QISKIT_PROVIDER_GRADIENT_METHOD_COMMON_METADATA_KEYS
+        | _QISKIT_PROVIDER_GRADIENT_METHOD_SPECIFIC_METADATA_KEYS[gradient_method]
+    )
+    metadata_keys = frozenset(method_metadata)
+    unsupported_keys = sorted(metadata_keys - required_keys)
+    if unsupported_keys:
+        joined_keys = ", ".join(unsupported_keys)
+        raise ValueError(f"method_metadata contains unsupported keys: {joined_keys}")
+    missing_keys = sorted(required_keys - metadata_keys)
+    if missing_keys:
+        joined_keys = ", ".join(missing_keys)
+        raise ValueError(f"method_metadata is missing required keys: {joined_keys}")
+
+    normalised: dict[str, object] = {
+        "method_schema": _normalise_metadata_text(
+            "method_metadata.method_schema",
+            _require_provider_gradient_method_metadata_value(
+                method_metadata,
+                "method_schema",
+            ),
+        ),
+        "method_artifact_id": _normalise_metadata_text(
+            "method_metadata.method_artifact_id",
+            _require_provider_gradient_method_metadata_value(
+                method_metadata,
+                "method_artifact_id",
+            ),
+        ),
+        "workflow_version": _normalise_metadata_text(
+            "method_metadata.workflow_version",
+            _require_provider_gradient_method_metadata_value(
+                method_metadata,
+                "workflow_version",
+            ),
+        ),
+    }
+    expected_schema = _QISKIT_PROVIDER_GRADIENT_METHOD_SCHEMAS[gradient_method]
+    if normalised["method_schema"] != expected_schema:
+        raise ValueError(
+            f"method_metadata.method_schema must be {expected_schema!r} for {gradient_method}"
+        )
+
+    if gradient_method == "parameter_shift":
+        normalised["shift_rule_id"] = _normalise_metadata_text(
+            "method_metadata.shift_rule_id",
+            _require_provider_gradient_method_metadata_value(
+                method_metadata,
+                "shift_rule_id",
+            ),
+        )
+        normalised["shift_count"] = _normalise_positive_int(
+            "method_metadata.shift_count",
+            _require_provider_gradient_method_metadata_value(method_metadata, "shift_count"),
+        )
+    elif gradient_method == "finite_difference":
+        normalised["stencil"] = _normalise_metadata_text(
+            "method_metadata.stencil",
+            _require_provider_gradient_method_metadata_value(method_metadata, "stencil"),
+        )
+        normalised["step_size"] = _as_positive_scalar(
+            "method_metadata.step_size",
+            _require_provider_gradient_method_metadata_value(method_metadata, "step_size"),
+        )
+    elif gradient_method == "lcu":
+        normalised["generator_digest"] = _normalise_sha256_metadata_digest(
+            "method_metadata.generator_digest",
+            _require_provider_gradient_method_metadata_value(
+                method_metadata,
+                "generator_digest",
+            ),
+        )
+        normalised["term_count"] = _normalise_positive_int(
+            "method_metadata.term_count",
+            _require_provider_gradient_method_metadata_value(method_metadata, "term_count"),
+        )
+    elif gradient_method == "spsa":
+        normalised["perturbation_seed"] = _normalise_non_negative_int(
+            "method_metadata.perturbation_seed",
+            _require_provider_gradient_method_metadata_value(
+                method_metadata,
+                "perturbation_seed",
+            ),
+        )
+        normalised["perturbation_count"] = _normalise_positive_int(
+            "method_metadata.perturbation_count",
+            _require_provider_gradient_method_metadata_value(
+                method_metadata,
+                "perturbation_count",
+            ),
+        )
+    elif gradient_method == "qgt":
+        normalised["qgt_digest"] = _normalise_sha256_metadata_digest(
+            "method_metadata.qgt_digest",
+            _require_provider_gradient_method_metadata_value(method_metadata, "qgt_digest"),
+        )
+        normalised["matrix_dimension"] = _normalise_positive_int(
+            "method_metadata.matrix_dimension",
+            _require_provider_gradient_method_metadata_value(
+                method_metadata,
+                "matrix_dimension",
+            ),
+        )
+    elif gradient_method == "qfi":
+        normalised["qfi_digest"] = _normalise_sha256_metadata_digest(
+            "method_metadata.qfi_digest",
+            _require_provider_gradient_method_metadata_value(method_metadata, "qfi_digest"),
+        )
+        normalised["matrix_dimension"] = _normalise_positive_int(
+            "method_metadata.matrix_dimension",
+            _require_provider_gradient_method_metadata_value(
+                method_metadata,
+                "matrix_dimension",
+            ),
+        )
+    else:  # pragma: no cover - guarded by _normalise_qiskit_provider_gradient_method.
+        raise ValueError("gradient_method must be a supported provider-gradient method")
+    return normalised
+
+
+def _require_provider_gradient_method_metadata_value(
+    method_metadata: Mapping[str, object],
+    key: str,
+) -> object:
+    """Return a required method-metadata value with a stable error message."""
+    if key not in method_metadata:
+        raise ValueError(f"method_metadata.{key} is required")
+    return method_metadata[key]
+
+
+def _normalise_sha256_metadata_digest(field_name: str, value: object) -> str:
+    """Return a normalised sha256 digest captured inside method metadata."""
+    digest = _normalise_metadata_text(field_name, value)
+    _validate_sha256_digest(field_name, digest)
+    return digest
+
+
+def _validate_provider_gradient_method_metadata_consistency(
+    gradient_method: str,
+    method_metadata: Mapping[str, object],
+    *,
+    parameter_count: int,
+) -> None:
+    """Validate metadata fields that depend on the workflow parameter width."""
+    if gradient_method not in {"qgt", "qfi"}:
+        return
+    matrix_dimension = method_metadata["matrix_dimension"]
+    if matrix_dimension != parameter_count:
+        raise ValueError(
+            f"method_metadata.matrix_dimension must match parameter_count for {gradient_method}"
+        )
+
+
 def _validate_runtime_qpu_mode(runtime_session_mode: str) -> None:
     mode = runtime_session_mode.lower()
     if not any(token in mode for token in ("qpu", "hardware", "live")):
@@ -1521,9 +1726,15 @@ def _require_matching_optional_evidence_field(
         raise ValueError(f"{field_name} must match Runtime QPU evidence")
 
 
-def _normalise_positive_int(name: str, value: int) -> int:
+def _normalise_positive_int(name: str, value: object) -> int:
     if isinstance(value, bool) or not isinstance(value, int) or value <= 0:
         raise ValueError(f"{name} must be a positive integer")
+    return value
+
+
+def _normalise_non_negative_int(name: str, value: object) -> int:
+    if isinstance(value, bool) or not isinstance(value, int) or value < 0:
+        raise ValueError(f"{name} must be a non-negative integer")
     return value
 
 

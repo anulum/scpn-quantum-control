@@ -616,6 +616,56 @@ def _qiskit_qpu_provider_evidence_bundle(
     )
 
 
+def _qiskit_provider_gradient_method_metadata(gradient_method: str) -> dict[str, object]:
+    common_metadata: dict[str, object] = {
+        "method_artifact_id": f"qiskit-gradient-{gradient_method}-provenance-20260619",
+        "workflow_version": "qiskit-runtime-gradient-workflow-v1",
+    }
+    if gradient_method == "parameter_shift":
+        return {
+            **common_metadata,
+            "method_schema": "parameter_shift_shift_rule",
+            "shift_rule_id": "ry-half-pi-shift-rule-v1",
+            "shift_count": 2,
+        }
+    if gradient_method == "finite_difference":
+        return {
+            **common_metadata,
+            "method_schema": "finite_difference_stencil",
+            "stencil": "central-two-point",
+            "step_size": 0.001,
+        }
+    if gradient_method == "lcu":
+        return {
+            **common_metadata,
+            "method_schema": "linear_combination_unitary",
+            "generator_digest": "sha256:" + "d" * 64,
+            "term_count": 1,
+        }
+    if gradient_method == "spsa":
+        return {
+            **common_metadata,
+            "method_schema": "spsa_perturbation",
+            "perturbation_seed": 0,
+            "perturbation_count": 32,
+        }
+    if gradient_method == "qgt":
+        return {
+            **common_metadata,
+            "method_schema": "quantum_geometric_tensor",
+            "qgt_digest": "sha256:" + "e" * 64,
+            "matrix_dimension": 1,
+        }
+    if gradient_method == "qfi":
+        return {
+            **common_metadata,
+            "method_schema": "quantum_fisher_information",
+            "qfi_digest": "sha256:" + "f" * 64,
+            "matrix_dimension": 1,
+        }
+    raise ValueError(f"unsupported test gradient method: {gradient_method}")
+
+
 def _qiskit_provider_gradient_workflow_artifact(
     gradient_method: str,
     *,
@@ -624,7 +674,18 @@ def _qiskit_provider_gradient_workflow_artifact(
     observable_fingerprint: str | None = "SparsePauliOp:Z:v1",
     parameter_digest: str = "sha256:" + "8" * 64,
     live_ticket_id: str = "live-ticket-20260619",
+    method_metadata: dict[str, object] | None = None,
 ) -> QiskitProviderGradientWorkflowArtifact:
+    metadata_payload = method_metadata
+    if metadata_payload is None and gradient_method in (
+        "parameter_shift",
+        "finite_difference",
+        "lcu",
+        "spsa",
+        "qgt",
+        "qfi",
+    ):
+        metadata_payload = _qiskit_provider_gradient_method_metadata(gradient_method)
     return build_qiskit_provider_gradient_workflow_artifact(
         artifact_id=artifact_id or f"qiskit-gradient-workflow-{gradient_method}-20260619",
         provider_name="ibm_quantum",
@@ -642,6 +703,7 @@ def _qiskit_provider_gradient_workflow_artifact(
         gradient_dimension=1,
         hardware_execution=True,
         live_ticket_id=live_ticket_id,
+        method_metadata=metadata_payload,
         claim_boundary="qiskit_provider_gradient_workflow_capture",
     )
 
@@ -720,9 +782,121 @@ def test_qiskit_gradient_workflow_suite_clears_provider_workflow_gate() -> None:
         "spsa",
     )
     assert result.local_reference_metadata["provider_gradient_workflow_artifact_count"] == 6
+    assert result.local_reference_metadata["provider_gradient_workflow_method_schemas"] == (
+        "finite_difference:finite_difference_stencil",
+        "lcu:linear_combination_unitary",
+        "parameter_shift:parameter_shift_shift_rule",
+        "qfi:quantum_fisher_information",
+        "qgt:quantum_geometric_tensor",
+        "spsa:spsa_perturbation",
+    )
     payload = gradient_artifacts[0].to_dict()
     assert payload["gradient_method"] == "parameter_shift"
     assert payload["hardware_execution"] is True
+    method_metadata = cast(dict[str, object], payload["method_metadata"])
+    assert method_metadata["method_schema"] == "parameter_shift_shift_rule"
+    assert method_metadata["shift_rule_id"] == "ry-half-pi-shift-rule-v1"
+
+
+def test_qiskit_gradient_workflow_artifact_requires_method_metadata() -> None:
+    """Provider-gradient workflow artefacts must carry method-specific provenance."""
+    with pytest.raises(ValueError, match="method_metadata"):
+        build_qiskit_provider_gradient_workflow_artifact(
+            artifact_id="qiskit-gradient-workflow-qgt-20260619",
+            provider_name="ibm_quantum",
+            backend_name="ibm_brisbane",
+            job_id="runtime-qpu-job-20260619",
+            primitive_name="EstimatorV2",
+            gradient_method="qgt",
+            circuit_fingerprint="qiskit:ry(theta):z:v1",
+            observable_fingerprint="SparsePauliOp:Z:v1",
+            parameter_digest="sha256:" + "8" * 64,
+            gradient_digest="sha256:" + "b" * 64,
+            metadata_digest="sha256:" + "c" * 64,
+            shots=4096,
+            parameter_count=1,
+            gradient_dimension=1,
+            hardware_execution=True,
+            live_ticket_id="live-ticket-20260619",
+        )
+
+
+def test_qiskit_gradient_workflow_artifact_rejects_incomplete_method_metadata() -> None:
+    """Provider-gradient provenance must include all required common fields."""
+    method_metadata = _qiskit_provider_gradient_method_metadata("qgt")
+    del method_metadata["method_artifact_id"]
+
+    with pytest.raises(ValueError, match="missing required keys"):
+        _qiskit_provider_gradient_workflow_artifact(
+            "qgt",
+            method_metadata=method_metadata,
+        )
+
+
+@pytest.mark.parametrize(
+    ("gradient_method", "method_metadata", "match"),
+    [
+        (
+            "parameter_shift",
+            {
+                **_qiskit_provider_gradient_method_metadata("parameter_shift"),
+                "method_schema": "finite_difference_stencil",
+            },
+            "method_schema",
+        ),
+        (
+            "finite_difference",
+            {
+                **_qiskit_provider_gradient_method_metadata("finite_difference"),
+                "step_size": 0.0,
+            },
+            "step_size",
+        ),
+        (
+            "lcu",
+            {
+                **_qiskit_provider_gradient_method_metadata("lcu"),
+                "generator_digest": "sha256:not-a-digest",
+            },
+            "generator_digest",
+        ),
+        (
+            "spsa",
+            {
+                **_qiskit_provider_gradient_method_metadata("spsa"),
+                "perturbation_seed": -1,
+            },
+            "perturbation_seed",
+        ),
+        (
+            "qgt",
+            {
+                **_qiskit_provider_gradient_method_metadata("qgt"),
+                "matrix_dimension": 2,
+            },
+            "matrix_dimension",
+        ),
+        (
+            "qfi",
+            {
+                **_qiskit_provider_gradient_method_metadata("qfi"),
+                "unexpected_capture": "ambiguous",
+            },
+            "unsupported keys",
+        ),
+    ],
+)
+def test_qiskit_gradient_workflow_artifact_rejects_invalid_method_metadata(
+    gradient_method: str,
+    method_metadata: dict[str, object],
+    match: str,
+) -> None:
+    """Provider-gradient workflow metadata stays method-specific and fail-closed."""
+    with pytest.raises(ValueError, match=match):
+        _qiskit_provider_gradient_workflow_artifact(
+            gradient_method,
+            method_metadata=method_metadata,
+        )
 
 
 def test_qiskit_gradient_workflow_suite_rejects_missing_method() -> None:
