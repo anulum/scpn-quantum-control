@@ -851,7 +851,7 @@ def differentiable_dashboard_status(
                 "expression-rebinding alias metadata",
                 "mutation-effect blocker metadata",
                 "control-path alias blocker metadata",
-                "unsupported-Python frontend blocker metadata",
+                "unsupported-Python frontend diagnostic metadata",
                 "shape_view_alias_metadata_contracts",
                 "slice_mutation_alias_metadata_contracts",
                 "loop_carried_state_alias_metadata_contracts",
@@ -868,9 +868,9 @@ def differentiable_dashboard_status(
                 "static alias-lattice readiness over emitted Program AD IR metadata; "
                 "bounded local object-attribute and expression-rebinding aliases are "
                 "metadata only; mutation effects, control-path aliases, unsupported "
-                "Python semantics, and non-executed phi inputs are explicit blockers, "
-                "not promoted mutation, branch, or arbitrary dynamic-Python frontend "
-                "lowering"
+                "Python semantics with source/region/bytecode diagnostics, and "
+                "non-executed phi inputs are explicit blockers, not promoted mutation, "
+                "branch, or arbitrary dynamic-Python frontend lowering"
             ),
         ),
         DifferentiableDashboardCapabilityRow(

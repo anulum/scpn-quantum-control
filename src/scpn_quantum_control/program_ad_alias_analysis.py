@@ -13,6 +13,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 
 from .program_ad_effect_ir import ProgramADAliasEdge, ProgramADEffectIR
+from .whole_program_frontend import WholeProgramUnsupportedSemanticDiagnostic
 
 PROGRAM_AD_ALIAS_EFFECT_CLAIM_BOUNDARY = "metadata_only_no_general_alias_lattice"
 PROGRAM_AD_STATIC_ALIAS_LATTICE_CLAIM_BOUNDARY = (
@@ -170,7 +171,8 @@ class ProgramADStaticAliasLatticeReport:
     The report builds deterministic alias components from the emitted
     ``program_ad_effect_ir.v1`` metadata and records the exact blockers that
     prevent promotion to full static alias, mutation, or non-executed branch
-    semantics.
+    semantics. Unsupported whole-program frontend diagnostics are preserved as
+    static source/region/bytecode provenance for the corresponding blockers.
     """
 
     components: tuple[ProgramADStaticAliasLatticeComponent, ...]
@@ -182,6 +184,7 @@ class ProgramADStaticAliasLatticeReport:
     complete: bool
     claim_boundary: str
     unsupported_python_semantics: tuple[str, ...] = ()
+    unsupported_semantic_diagnostics: tuple[WholeProgramUnsupportedSemanticDiagnostic, ...] = ()
 
     def __post_init__(self) -> None:
         """Validate static alias-lattice report contents at construction time."""
@@ -242,6 +245,32 @@ class ProgramADStaticAliasLatticeReport:
             raise ValueError(
                 "program AD static alias lattice unsupported_python_semantics "
                 "must be sorted and unique"
+            )
+        if any(
+            not isinstance(diagnostic, WholeProgramUnsupportedSemanticDiagnostic)
+            for diagnostic in self.unsupported_semantic_diagnostics
+        ):
+            raise ValueError(
+                "program AD static alias lattice unsupported_semantic_diagnostics "
+                "must contain WholeProgramUnsupportedSemanticDiagnostic entries"
+            )
+        diagnostic_order = tuple(
+            (diagnostic.line_number, diagnostic.semantic, diagnostic.detail)
+            for diagnostic in self.unsupported_semantic_diagnostics
+        )
+        if tuple(sorted(set(diagnostic_order))) != diagnostic_order:
+            raise ValueError(
+                "program AD static alias lattice unsupported_semantic_diagnostics "
+                "must be sorted and unique"
+            )
+        unsupported_semantics = set(self.unsupported_python_semantics)
+        if any(
+            diagnostic.semantic not in unsupported_semantics
+            for diagnostic in self.unsupported_semantic_diagnostics
+        ):
+            raise ValueError(
+                "program AD static alias lattice unsupported_semantic_diagnostics "
+                "must match unsupported_python_semantics"
             )
         if any(not isinstance(reason, str) or not reason for reason in self.blocker_reasons):
             raise ValueError(
@@ -304,6 +333,9 @@ class ProgramADStaticAliasLatticeReport:
             "non_executed_control_alias_edges": list(self.non_executed_control_alias_edges),
             "unknown_alias_edge_kinds": list(self.unknown_alias_edge_kinds),
             "unsupported_python_semantics": list(self.unsupported_python_semantics),
+            "unsupported_semantic_diagnostics": [
+                diagnostic.to_dict() for diagnostic in self.unsupported_semantic_diagnostics
+            ],
             "blocker_reasons": list(self.blocker_reasons),
             "complete": self.complete,
             "claim_boundary": self.claim_boundary,
@@ -395,14 +427,16 @@ def program_ad_static_alias_lattice_report(
     program_ir: ProgramADEffectIR,
     *,
     unsupported_python_semantics: Sequence[str] = (),
+    unsupported_semantic_diagnostics: Sequence[WholeProgramUnsupportedSemanticDiagnostic] = (),
 ) -> ProgramADStaticAliasLatticeReport:
     """Build a static alias-lattice readiness report from emitted Program AD IR.
 
     The report is complete only for the alias metadata actually emitted in
     ``program_ad_effect_ir.v1``. Mutation effects, unknown alias edge kinds,
     non-selected phi inputs, and unsupported whole-program frontend semantics
-    are recorded as hard blockers instead of being promoted into full mutation,
-    non-executed branch, or arbitrary Python compiler semantics.
+    and diagnostics are recorded as hard blockers instead of being promoted
+    into full mutation, non-executed branch, or arbitrary Python compiler
+    semantics.
     """
 
     if not isinstance(program_ir, ProgramADEffectIR):
@@ -421,7 +455,22 @@ def program_ad_static_alias_lattice_report(
             }
         )
     )
-    unsupported_semantics = tuple(sorted(set(unsupported_python_semantics)))
+    unsupported_diagnostics = tuple(unsupported_semantic_diagnostics)
+    if any(
+        not isinstance(diagnostic, WholeProgramUnsupportedSemanticDiagnostic)
+        for diagnostic in unsupported_diagnostics
+    ):
+        raise ValueError(
+            "program AD static alias lattice unsupported_semantic_diagnostics "
+            "must contain WholeProgramUnsupportedSemanticDiagnostic entries"
+        )
+    unsupported_semantics = tuple(
+        sorted(
+            set(unsupported_python_semantics).union(
+                diagnostic.semantic for diagnostic in unsupported_diagnostics
+            )
+        )
+    )
 
     def find(member: str) -> str:
         parent.setdefault(member, member)
@@ -519,6 +568,7 @@ def program_ad_static_alias_lattice_report(
         complete=complete,
         claim_boundary=PROGRAM_AD_STATIC_ALIAS_LATTICE_CLAIM_BOUNDARY,
         unsupported_python_semantics=unsupported_semantics,
+        unsupported_semantic_diagnostics=unsupported_diagnostics,
     )
 
 

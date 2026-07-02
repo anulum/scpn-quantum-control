@@ -200,13 +200,20 @@ def test_static_alias_lattice_benchmark_fails_closed(
         members=("name:combined",),
     )
     unsupported_semantics = ("filtered_comprehension",)
+    unsupported_diagnostic = SimpleNamespace(
+        semantic="filtered_comprehension",
+        detail="filtered_comprehension",
+        region_ids=("body",),
+        bytecode_offsets=(8,),
+    )
     monkeypatch.setattr(
         dp,
         "compile_whole_program_frontend",
         lambda _objective: SimpleNamespace(
             semantics_report=SimpleNamespace(
                 unsupported_python_semantics=unsupported_semantics,
-            )
+            ),
+            unsupported_semantic_diagnostics=(unsupported_diagnostic,),
         ),
     )
     complete_report = SimpleNamespace(
@@ -221,6 +228,7 @@ def test_static_alias_lattice_benchmark_fails_closed(
     unsupported_blocked_report = SimpleNamespace(
         complete=False,
         unsupported_python_semantics=unsupported_semantics,
+        unsupported_semantic_diagnostics=(unsupported_diagnostic,),
         blocker_reasons=("unsupported_python_semantics_require_frontend_lowering",),
     )
     for unsupported_report, match in (
@@ -228,6 +236,7 @@ def test_static_alias_lattice_benchmark_fails_closed(
             SimpleNamespace(
                 complete=True,
                 unsupported_python_semantics=unsupported_semantics,
+                unsupported_semantic_diagnostics=(unsupported_diagnostic,),
                 blocker_reasons=(),
             ),
             "must not promote unsupported semantics",
@@ -236,6 +245,7 @@ def test_static_alias_lattice_benchmark_fails_closed(
             SimpleNamespace(
                 complete=False,
                 unsupported_python_semantics=(),
+                unsupported_semantic_diagnostics=(unsupported_diagnostic,),
                 blocker_reasons=("unsupported_python_semantics_require_frontend_lowering",),
             ),
             "lost unsupported frontend semantics",
@@ -244,6 +254,16 @@ def test_static_alias_lattice_benchmark_fails_closed(
             SimpleNamespace(
                 complete=False,
                 unsupported_python_semantics=unsupported_semantics,
+                unsupported_semantic_diagnostics=(),
+                blocker_reasons=("unsupported_python_semantics_require_frontend_lowering",),
+            ),
+            "lost unsupported frontend diagnostics",
+        ),
+        (
+            SimpleNamespace(
+                complete=False,
+                unsupported_python_semantics=unsupported_semantics,
+                unsupported_semantic_diagnostics=(unsupported_diagnostic,),
                 blocker_reasons=(),
             ),
             "unsupported-semantics blocker",
@@ -372,7 +392,15 @@ def test_static_alias_lattice_branch_ir_fails_closed(
         lambda _objective: SimpleNamespace(
             semantics_report=SimpleNamespace(
                 unsupported_python_semantics=("filtered_comprehension",),
-            )
+            ),
+            unsupported_semantic_diagnostics=(
+                SimpleNamespace(
+                    semantic="filtered_comprehension",
+                    detail="filtered_comprehension",
+                    region_ids=("body",),
+                    bytecode_offsets=(8,),
+                ),
+            ),
         ),
     )
     reports = iter(
@@ -384,6 +412,14 @@ def test_static_alias_lattice_branch_ir_fails_closed(
             SimpleNamespace(
                 complete=False,
                 unsupported_python_semantics=("filtered_comprehension",),
+                unsupported_semantic_diagnostics=(
+                    SimpleNamespace(
+                        semantic="filtered_comprehension",
+                        detail="filtered_comprehension",
+                        region_ids=("body",),
+                        bytecode_offsets=(8,),
+                    ),
+                ),
                 blocker_reasons=("unsupported_python_semantics_require_frontend_lowering",),
             ),
             SimpleNamespace(

@@ -303,9 +303,10 @@ alias-lattice readiness view over emitted `program_ad_effect_ir.v1` components
 including bounded local object-attribute, expression-rebinding, and
 branch-local control-path alias metadata. The report records mutation effects,
 non-executed phi inputs, control-path aliases, and frontend unsupported
-Python semantics as blockers; it is not captured/global object-attribute
-aliasing, mutation adjoints, arbitrary dynamic-Python frontend lowering,
-non-executed branch adjoints, or executable compiler lowering.
+Python semantics with source-region and bytecode-offset diagnostics as
+blockers; it is not captured/global object-attribute aliasing, mutation
+adjoints, arbitrary dynamic-Python frontend lowering, non-executed branch
+adjoints, or executable compiler lowering.
 
 Supported captured scalar program traces can also be promoted to an executable
 replay kernel with `compile_whole_program_ad_trace_to_executable(...)`. The

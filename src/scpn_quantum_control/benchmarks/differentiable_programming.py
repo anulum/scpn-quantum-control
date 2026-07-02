@@ -2677,14 +2677,26 @@ def _static_alias_lattice_report_case() -> DifferentiableProgrammingBenchmarkRes
     unsupported_semantics = unsupported_frontend.semantics_report.unsupported_python_semantics
     if "filtered_comprehension" not in unsupported_semantics:
         raise ValueError("static alias lattice benchmark missing unsupported frontend semantics")
+    unsupported_diagnostics = unsupported_frontend.unsupported_semantic_diagnostics
+    if not any(
+        diagnostic.semantic == "filtered_comprehension"
+        and diagnostic.detail == "filtered_comprehension"
+        and diagnostic.region_ids
+        and diagnostic.bytecode_offsets
+        for diagnostic in unsupported_diagnostics
+    ):
+        raise ValueError("static alias lattice benchmark missing unsupported frontend diagnostics")
     unsupported_report = program_ad_static_alias_lattice_report(
         alias_result.program_ir,
         unsupported_python_semantics=unsupported_semantics,
+        unsupported_semantic_diagnostics=unsupported_diagnostics,
     )
     if unsupported_report.complete:
         raise ValueError("static alias lattice benchmark must not promote unsupported semantics")
     if unsupported_report.unsupported_python_semantics != unsupported_semantics:
         raise ValueError("static alias lattice benchmark lost unsupported frontend semantics")
+    if unsupported_report.unsupported_semantic_diagnostics != unsupported_diagnostics:
+        raise ValueError("static alias lattice benchmark lost unsupported frontend diagnostics")
     if (
         "unsupported_python_semantics_require_frontend_lowering"
         not in unsupported_report.blocker_reasons
@@ -2756,8 +2768,8 @@ def _static_alias_lattice_report_case() -> DifferentiableProgrammingBenchmarkRes
             "static alias-lattice readiness over emitted program_ad_effect_ir.v1 "
             "components, including view-alias, bounded local object-attribute, "
             "expression-rebinding classification, explicit non-executed phi, and "
-            "mutation/control-path/unsupported-Python blocker reporting; not "
-            "captured/global object-attribute aliasing, arbitrary dynamic Python "
+            "mutation/control-path/unsupported-Python diagnostic blocker reporting; "
+            "not captured/global object-attribute aliasing, arbitrary dynamic Python "
             "frontend lowering, non-executed branch adjoints, Rust/LLVM executable "
             "lowering, hardware, or performance evidence; no wall-clock performance "
             "claim"
