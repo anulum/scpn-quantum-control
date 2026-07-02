@@ -26,6 +26,8 @@ from .pennylane_provider_plugin import (
     PennyLaneProviderGradientParityArtifact,
     PennyLaneProviderPluginExecutionArtifact,
     _normalise_metadata_text,
+    _normalise_provider_diff_method,
+    _normalise_provider_interface,
     run_pennylane_plugin_matrix,
 )
 from .qnode_circuit import (
@@ -347,8 +349,8 @@ def build_pennylane_qnode_from_phase_qnode(
     """
     qml = _load_pennylane()
     canonical_device_name = _normalise_metadata_text("device_name", device_name)
-    canonical_interface = _normalise_metadata_text("interface", interface)
-    canonical_diff_method = _normalise_metadata_text("diff_method", diff_method)
+    canonical_interface = _normalise_provider_interface(interface)
+    canonical_diff_method = _normalise_provider_diff_method(diff_method)
     shot_policy = _as_optional_shots(shots)
     parameter_count = _phase_qnode_parameter_count(circuit)
     support_report = phase_qnode_support_report(circuit, np.zeros(parameter_count, dtype=float))

@@ -2000,9 +2000,12 @@ PennyLane equivalents, including CH, Toffoli, Fredkin, and controlled phase
 equivalents for CS/CT/CCZ where the optional dependency is installed. Provider
 submission, hardware execution, dynamic circuits, noise models, and covariance
 observable conversion remain explicit non-claims.
-Device, interface, and diff-method metadata is trimmed and rejected when empty
-or when it contains control characters before `qml.device(...)` or QNode
-construction is reached.
+Device metadata is trimmed and rejected when empty or when it contains control
+characters before `qml.device(...)` or QNode construction is reached. Interface
+and diff-method metadata is constrained to canonical PennyLane interfaces
+(`auto`, `autograd`, `jax`, `tf`, `torch`) and documented QNode diff methods
+(`adjoint`, `backprop`, `best`, `device`, `finite-diff`, `hadamard`,
+`parameter-shift`, `spsa`) before QNode construction.
 `scpn_quantum_control.phase.pennylane_provider_plugin` owns the provider-plugin
 artefact types and fail-closed plugin matrix; `pennylane_bridge` re-exports the
 same objects for compatibility with older imports.

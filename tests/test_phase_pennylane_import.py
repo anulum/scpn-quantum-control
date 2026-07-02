@@ -19,6 +19,7 @@ from numpy.typing import NDArray
 qml: Any = pytest.importorskip("pennylane")
 
 from scpn_quantum_control.phase.pennylane_bridge import run_pennylane_maturity_audit
+from scpn_quantum_control.phase.pennylane_bridge import build_pennylane_qnode_from_phase_qnode
 from scpn_quantum_control.phase.pennylane_import import (
     PennyLaneImportResult,
     PennyLaneImportRoundTripResult,
@@ -126,6 +127,41 @@ def test_import_round_trip_parameterless() -> None:
     assert result.value_match
     assert result.gradient_match
     assert result.n_parameters == 0
+
+
+def test_generated_phase_qnode_export_import_round_trip_preserves_value_and_gradient() -> None:
+    """Generated PennyLane QNodes import back into equivalent Phase-QNode circuits."""
+
+    circuit = PhaseQNodeCircuit(
+        2,
+        (("ry", (0,), 0), ("cnot", (0, 1)), ("rzz", (0, 1), 1)),
+        SparsePauliHamiltonian(
+            (
+                PauliTerm(0.5, ((0, "z"),)),
+                PauliTerm(-0.25, ((0, "x"), (1, "x"))),
+            )
+        ),
+    )
+    params = np.array([0.41, -0.23], dtype=float)
+    conversion = build_pennylane_qnode_from_phase_qnode(circuit)
+    trainable = qml.numpy.array(params, requires_grad=True)
+
+    exported_tape = qml.workflow.construct_tape(conversion.qnode)(trainable)
+    imported = import_phase_qnode_from_pennylane(exported_tape)
+    round_trip = check_pennylane_phase_qnode_import_round_trip(exported_tape)
+
+    assert imported.n_qubits == circuit.n_qubits
+    assert np.allclose(imported.parameter_values, params)
+    assert tuple(cast(PhaseQNodeOperation, op).gate for op in imported.circuit.operations) == (
+        "ry",
+        "cnot",
+        "rzz",
+    )
+    assert isinstance(imported.circuit.observable, SparsePauliHamiltonian)
+    assert imported.provenance["source"] == "pennylane.tape.QuantumScript"
+    assert round_trip.value_match
+    assert round_trip.gradient_match
+    assert round_trip.n_parameters == params.size
 
 
 def test_pennylane_maturity_audit_records_live_import_round_trip() -> None:

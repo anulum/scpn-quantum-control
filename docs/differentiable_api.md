@@ -1630,9 +1630,13 @@ The generated-QNode route covers the registered static gate family and direct
 expectation observables with PennyLane equivalents. It does not claim provider
 submission, hardware execution, dynamic circuits, noise models, or covariance
 observable conversion.
-Generated-QNode `device_name`, `interface`, and `diff_method` metadata is
-trimmed and rejected when empty or when it contains control characters before
-PennyLane device creation, so plugin selection remains explicit and auditable.
+Generated-QNode `device_name` metadata is trimmed and rejected when empty or
+when it contains control characters before PennyLane device creation.
+Generated-QNode `interface` and `diff_method` metadata is also constrained to
+canonical PennyLane interfaces (`auto`, `autograd`, `jax`, `tf`, `torch`) and
+documented QNode diff methods (`adjoint`, `backprop`, `best`, `device`,
+`finite-diff`, `hadamard`, `parameter-shift`, `spsa`), so plugin selection
+remains explicit and auditable.
 `scpn_quantum_control.phase.pennylane_provider_plugin` owns the provider-plugin
 artefact types and fail-closed plugin matrix; `pennylane_bridge` re-exports the
 same objects for compatibility with older imports.

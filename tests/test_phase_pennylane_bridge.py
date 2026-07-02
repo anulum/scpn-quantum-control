@@ -392,6 +392,48 @@ def test_pennylane_bridge_rejects_unsafe_conversion_metadata(
     assert fake_qml.devices == []
 
 
+@pytest.mark.parametrize("interface", ["numpy", "tensorflow", "jax-jit"])
+def test_pennylane_bridge_rejects_undocumented_conversion_interfaces(
+    monkeypatch: pytest.MonkeyPatch,
+    interface: str,
+) -> None:
+    """Generated-QNode conversion accepts only documented PennyLane interfaces."""
+
+    fake_qml = _FakePennyLane()
+    monkeypatch.setattr(pennylane_bridge, "_load_pennylane", lambda: fake_qml)
+    circuit = PhaseQNodeCircuit(
+        1,
+        (("ry", (0,), 0),),
+        PauliTerm(1.0, ((0, "z"),)),
+    )
+
+    with pytest.raises(ValueError, match="interface"):
+        build_pennylane_qnode_from_phase_qnode(circuit, interface=interface)
+
+    assert fake_qml.devices == []
+
+
+@pytest.mark.parametrize("diff_method", ["parameter_shift", "finite_diff", "stoch-pulse"])
+def test_pennylane_bridge_rejects_undocumented_conversion_diff_methods(
+    monkeypatch: pytest.MonkeyPatch,
+    diff_method: str,
+) -> None:
+    """Generated-QNode conversion accepts only documented PennyLane diff methods."""
+
+    fake_qml = _FakePennyLane()
+    monkeypatch.setattr(pennylane_bridge, "_load_pennylane", lambda: fake_qml)
+    circuit = PhaseQNodeCircuit(
+        1,
+        (("ry", (0,), 0),),
+        PauliTerm(1.0, ((0, "z"),)),
+    )
+
+    with pytest.raises(ValueError, match="diff_method"):
+        build_pennylane_qnode_from_phase_qnode(circuit, diff_method=diff_method)
+
+    assert fake_qml.devices == []
+
+
 @pytest.mark.parametrize(
     "shots", [cast(Any, True), cast(Any, 0), cast(Any, -1), cast(Any, 1.5), cast(Any, "64")]
 )

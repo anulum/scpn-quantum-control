@@ -412,6 +412,10 @@ diagnostic.
 - Treat PennyLane finite-shot metadata as non-coercive: analytic mode is
   `shots=None`, and finite-shot mode requires an explicit positive integer
   before plugin/device dispatch.
+- Constrain generated PennyLane QNode exports to canonical interfaces (`auto`,
+  `autograd`, `jax`, `tf`, `torch`) and documented QNode diff methods
+  (`adjoint`, `backprop`, `best`, `device`, `finite-diff`, `hadamard`,
+  `parameter-shift`, `spsa`) before device/QNode construction.
 - Require PennyLane provider-plugin artefact `execution_mode` values to be
   provider-scoped while still rejecting hardware/QPU execution modes. Provider
   execution artefacts must also carry explicit PennyLane `interface` and
