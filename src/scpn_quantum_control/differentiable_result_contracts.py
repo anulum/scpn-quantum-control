@@ -35,6 +35,13 @@ FINITE_DIFFERENCE_DIAGNOSTIC_CLAIM_BOUNDARY = (
     "finite-difference diagnostic only; not analytic, parameter-shift, native-framework, "
     "whole-program AD, provider, hardware, or production benchmark evidence"
 )
+FINITE_SHOT_SAMPLE_SOURCE_CLASSES = (
+    "caller_supplied",
+    "local_simulator",
+    "provider_replay",
+    "provider_runtime",
+    "synthetic_fixture",
+)
 _PARAMETER_SHIFT_RECORD_TOLERANCE = 1.0e-12
 
 
@@ -71,6 +78,17 @@ def _record_values_close(actual: float, expected: float) -> bool:
             atol=_PARAMETER_SHIFT_RECORD_TOLERANCE,
         )
     )
+
+
+def _normalise_provenance_token(name: str, value: object) -> str:
+    if isinstance(value, bool) or value is None or isinstance(value, float):
+        raise ValueError(f"{name} must be a non-empty string or integer token")
+    if not isinstance(value, str | int):
+        raise ValueError(f"{name} must be a non-empty string or integer token")
+    token = str(value).strip()
+    if not token:
+        raise ValueError(f"{name} must be non-empty")
+    return token
 
 
 def _validate_parameter_shift_record_reconstruction(
@@ -207,6 +225,57 @@ class GradientResult:
 
 
 @dataclass(frozen=True)
+class FiniteShotSampleProvenance:
+    """Source metadata for materialised finite-shot gradient samples.
+
+    Parameters
+    ----------
+    sample_seed:
+        Non-empty string or integer token identifying the stochastic sample,
+        replay, or deterministic fixture seed.
+    shot_batch_id:
+        Non-empty string or integer token identifying the measurement batch
+        that produced the supplied plus/minus sample tensors.
+    source_class:
+        One of ``FINITE_SHOT_SAMPLE_SOURCE_CLASSES``. The value distinguishes
+        caller-supplied arrays, local simulator rows, provider replays,
+        provider runtimes, and synthetic fixtures.
+    """
+
+    sample_seed: str | int
+    shot_batch_id: str | int
+    source_class: str
+
+    def __post_init__(self) -> None:
+        sample_seed = _normalise_provenance_token(
+            "finite-shot sample provenance sample_seed",
+            self.sample_seed,
+        )
+        shot_batch_id = _normalise_provenance_token(
+            "finite-shot sample provenance shot_batch_id",
+            self.shot_batch_id,
+        )
+        source_class = str(self.source_class).strip()
+        if source_class not in FINITE_SHOT_SAMPLE_SOURCE_CLASSES:
+            allowed = ", ".join(FINITE_SHOT_SAMPLE_SOURCE_CLASSES)
+            raise ValueError(
+                f"finite-shot sample provenance source_class must be one of {allowed}"
+            )
+        object.__setattr__(self, "sample_seed", sample_seed)
+        object.__setattr__(self, "shot_batch_id", shot_batch_id)
+        object.__setattr__(self, "source_class", source_class)
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready finite-shot sample provenance."""
+
+        return {
+            "sample_seed": self.sample_seed,
+            "shot_batch_id": self.shot_batch_id,
+            "source_class": self.source_class,
+        }
+
+
+@dataclass(frozen=True)
 class ParameterShiftSampleRecord:
     """One plus/minus shifted sample used in stochastic parameter-shift propagation."""
 
@@ -222,6 +291,9 @@ class ParameterShiftSampleRecord:
     minus_variance: float
     plus_shots: int
     minus_shots: int
+    sample_seed: str | int
+    shot_batch_id: str | int
+    source_class: str
     gradient_contribution: float
     variance_contribution: float
 
@@ -267,6 +339,11 @@ class ParameterShiftSampleRecord:
             or self.minus_shots <= 0
         ):
             raise ValueError("parameter-shift record shots must be positive integers")
+        provenance = FiniteShotSampleProvenance(
+            sample_seed=self.sample_seed,
+            shot_batch_id=self.shot_batch_id,
+            source_class=self.source_class,
+        )
         expected_gradient = coefficient * (plus_value - minus_value)
         expected_variance = coefficient**2 * (
             plus_variance / float(self.plus_shots) + minus_variance / float(self.minus_shots)
@@ -290,6 +367,9 @@ class ParameterShiftSampleRecord:
         object.__setattr__(self, "minus_value", minus_value)
         object.__setattr__(self, "plus_variance", plus_variance)
         object.__setattr__(self, "minus_variance", minus_variance)
+        object.__setattr__(self, "sample_seed", provenance.sample_seed)
+        object.__setattr__(self, "shot_batch_id", provenance.shot_batch_id)
+        object.__setattr__(self, "source_class", provenance.source_class)
         object.__setattr__(self, "gradient_contribution", gradient_contribution)
         object.__setattr__(self, "variance_contribution", variance_contribution)
 
@@ -309,6 +389,9 @@ class ParameterShiftSampleRecord:
             "minus_variance": self.minus_variance,
             "plus_shots": self.plus_shots,
             "minus_shots": self.minus_shots,
+            "sample_seed": self.sample_seed,
+            "shot_batch_id": self.shot_batch_id,
+            "source_class": self.source_class,
             "gradient_contribution": self.gradient_contribution,
             "variance_contribution": self.variance_contribution,
         }
@@ -1981,6 +2064,8 @@ class FixedPointSensitivityResult:
 __all__ = [
     "DIFFERENTIABLE_RESULT_CLAIM_BOUNDARY",
     "FINITE_DIFFERENCE_DIAGNOSTIC_CLAIM_BOUNDARY",
+    "FINITE_SHOT_SAMPLE_SOURCE_CLASSES",
+    "FiniteShotSampleProvenance",
     "GradientResult",
     "ParameterShiftSampleRecord",
     "StochasticGradientResult",

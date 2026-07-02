@@ -31,6 +31,12 @@ from scpn_quantum_control.phase import (
     phase_qnode_quantum_fisher_information,
 )
 
+SAMPLE_PROVENANCE = {
+    "sample_seed": "phase-qnode-rust-parity-test-seed",
+    "shot_batch_id": "phase-qnode-rust-parity-test-batch",
+    "source_class": "caller_supplied",
+}
+
 engine = pytest.importorskip("scpn_quantum_engine")
 
 _EXECUTABLE_SCALAR_PROGRAM_AD_IR = """{
@@ -247,6 +253,7 @@ def test_rust_parameter_shift_gradient_uncertainty_matches_python_surface() -> N
         minus_variances=minus_variances,
         plus_shots=plus_shots,
         minus_shots=minus_shots,
+        sample_provenance=SAMPLE_PROVENANCE,
         parameters=(Parameter("theta"), Parameter("frozen", trainable=False)),
     )
     gradient, standard_error, covariance, confidence_radius = rust_uncertainty(

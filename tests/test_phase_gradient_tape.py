@@ -11,13 +11,21 @@ from __future__ import annotations
 
 import numpy as np
 import pytest
+from numpy.typing import NDArray
 
 from scpn_quantum_control.differentiable import multi_frequency_parameter_shift_rule
 from scpn_quantum_control.phase import QuantumGradientTape, gradient_tape
 
+FloatArray = NDArray[np.float64]
+SAMPLE_PROVENANCE = {
+    "sample_seed": "phase-gradient-tape-test-seed",
+    "shot_batch_id": "phase-gradient-tape-test-batch",
+    "source_class": "caller_supplied",
+}
+
 
 def test_gradient_tape_records_deterministic_parameter_shift() -> None:
-    def objective(params: np.ndarray) -> float:
+    def objective(params: FloatArray) -> float:
         return float(np.cos(params[0]) + 0.25 * np.sin(params[1]))
 
     params = np.array([0.2, -0.4], dtype=float)
@@ -38,7 +46,7 @@ def test_gradient_tape_records_deterministic_parameter_shift() -> None:
 def test_gradient_tape_records_multi_frequency_parameter_shift() -> None:
     rule = multi_frequency_parameter_shift_rule([1.0, 2.0])
 
-    def objective(params: np.ndarray) -> float:
+    def objective(params: FloatArray) -> float:
         return float(np.sin(params[0]) + 0.1 * np.cos(2.0 * params[0]) + 0.25 * np.sin(params[1]))
 
     params = np.array([0.31, -0.17], dtype=float)
@@ -73,6 +81,7 @@ def test_gradient_tape_records_finite_shot_uncertainty() -> None:
             minus_values=np.array([0.8, -0.7], dtype=float),
             plus_variances=np.array([0.04, 0.09], dtype=float),
             minus_variances=np.array([0.04, 0.09], dtype=float),
+            sample_provenance=SAMPLE_PROVENANCE,
             value=0.5,
         )
 
@@ -98,6 +107,7 @@ def test_gradient_tape_records_multi_term_finite_shot_uncertainty() -> None:
             minus_values=minus_values,
             plus_variances=plus_variances,
             minus_variances=minus_variances,
+            sample_provenance=SAMPLE_PROVENANCE,
             rule=rule,
             value=0.5,
         )
@@ -129,6 +139,20 @@ def test_gradient_tape_rejects_flat_multi_term_finite_shot_records() -> None:
             plus_variances=np.array([0.04, 0.04], dtype=float),
             minus_variances=np.array([0.04, 0.04], dtype=float),
             rule=rule,
+        )
+
+
+def test_gradient_tape_rejects_finite_shot_records_without_sample_provenance() -> None:
+    with (
+        gradient_tape(backend="finite_shot_simulator", shots=512) as tape,
+        pytest.raises(ValueError, match="sample provenance"),
+    ):
+        tape.record_finite_shot_parameter_shift(
+            "missing_provenance",
+            plus_values=np.array([1.0], dtype=float),
+            minus_values=np.array([0.5], dtype=float),
+            plus_variances=np.array([0.1], dtype=float),
+            minus_variances=np.array([0.1], dtype=float),
         )
 
 

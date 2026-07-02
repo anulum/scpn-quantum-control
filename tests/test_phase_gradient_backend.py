@@ -20,6 +20,12 @@ from scpn_quantum_control.phase import (
 from scpn_quantum_control.phase.gradient_backend import quantum_gradient_backend_capability
 from scpn_quantum_control.phase.param_shift import parameter_shift_gradient_with_uncertainty
 
+SAMPLE_PROVENANCE = {
+    "sample_seed": "phase-gradient-backend-test-seed",
+    "shot_batch_id": "phase-gradient-backend-test-batch",
+    "source_class": "caller_supplied",
+}
+
 
 def test_statevector_backend_auto_selects_deterministic_parameter_shift() -> None:
     plan = plan_quantum_gradient_backend("statevector", n_params=3)
@@ -93,6 +99,7 @@ def test_parameter_shift_uncertainty_propagates_finite_shot_noise() -> None:
         plus_variances=np.array([0.04, 0.09], dtype=float),
         minus_variances=np.array([0.04, 0.09], dtype=float),
         shots=400,
+        sample_provenance=SAMPLE_PROVENANCE,
         value=0.5,
     )
 
@@ -101,6 +108,9 @@ def test_parameter_shift_uncertainty_propagates_finite_shot_noise() -> None:
     assert result.shots.shape == (2, 2)
     assert np.all(result.standard_error > 0.0)
     assert np.all(result.confidence_radius >= result.standard_error)
+    assert result.records[0].sample_seed == SAMPLE_PROVENANCE["sample_seed"]
+    assert result.records[0].shot_batch_id == SAMPLE_PROVENANCE["shot_batch_id"]
+    assert result.records[0].source_class == SAMPLE_PROVENANCE["source_class"]
 
 
 def test_phase_uncertainty_wrapper_accepts_multi_frequency_records() -> None:
@@ -111,6 +121,7 @@ def test_phase_uncertainty_wrapper_accepts_multi_frequency_records() -> None:
         plus_variances=np.array([[0.04], [0.09]], dtype=float),
         minus_variances=np.array([[0.05], [0.10]], dtype=float),
         shots=np.array([[400], [500]], dtype=float),
+        sample_provenance=SAMPLE_PROVENANCE,
         rule=rule,
         backend="qasm_simulator",
     )

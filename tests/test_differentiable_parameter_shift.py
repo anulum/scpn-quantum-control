@@ -20,6 +20,7 @@ import scpn_quantum_control as scpn
 from scpn_quantum_control import differentiable as differentiable_module
 from scpn_quantum_control import differentiable_parameter_shift as parameter_shift_module
 from scpn_quantum_control.differentiable import (
+    FiniteShotSampleProvenance,
     GradientCheckResult,
     GradientResult,
     Parameter,
@@ -41,6 +42,11 @@ from scpn_quantum_control.differentiable import (
 )
 
 FloatArray = NDArray[np.float64]
+SAMPLE_PROVENANCE = {
+    "sample_seed": "parameter-shift-test-seed",
+    "shot_batch_id": "parameter-shift-test-batch",
+    "source_class": "caller_supplied",
+}
 
 
 def test_facade_and_package_root_reuse_extracted_parameter_shift_helpers() -> None:
@@ -58,6 +64,8 @@ def test_facade_and_package_root_reuse_extracted_parameter_shift_helpers() -> No
         extracted = getattr(parameter_shift_module, helper_name)
         assert getattr(differentiable_module, helper_name) is extracted
         assert getattr(scpn, helper_name) is extracted
+    assert differentiable_module.FiniteShotSampleProvenance is FiniteShotSampleProvenance
+    assert scpn.FiniteShotSampleProvenance is FiniteShotSampleProvenance
 
 
 def _assert_allclose(
@@ -89,6 +97,9 @@ def _single_parameter_shift_record(
         minus_variance=0.2,
         plus_shots=100,
         minus_shots=100,
+        sample_seed=SAMPLE_PROVENANCE["sample_seed"],
+        shot_batch_id=SAMPLE_PROVENANCE["shot_batch_id"],
+        source_class=SAMPLE_PROVENANCE["source_class"],
         gradient_contribution=gradient_contribution,
         variance_contribution=variance_contribution,
     )
@@ -308,6 +319,7 @@ def test_multi_frequency_parameter_shift_propagates_per_term_shot_noise() -> Non
         minus_variance,
         plus_shots,
         minus_shots,
+        sample_provenance=SAMPLE_PROVENANCE,
         parameters=[Parameter("theta"), Parameter("frozen", trainable=False)],
         rule=rule,
     )
@@ -395,6 +407,7 @@ def test_parameter_shift_gradient_with_uncertainty_propagates_shot_noise() -> No
         minus_variances=[0.16, 0.09],
         plus_shots=[900, 400],
         minus_shots=[400, 100],
+        sample_provenance=SAMPLE_PROVENANCE,
         value=0.5,
         parameters=[Parameter("theta"), Parameter("frozen", trainable=False)],
     )
@@ -413,6 +426,9 @@ def test_parameter_shift_gradient_with_uncertainty_propagates_shot_noise() -> No
     assert active_record.coefficient == pytest.approx(0.5)
     assert active_record.plus_shots == 900
     assert active_record.minus_shots == 400
+    assert active_record.sample_seed == SAMPLE_PROVENANCE["sample_seed"]
+    assert active_record.shot_batch_id == SAMPLE_PROVENANCE["shot_batch_id"]
+    assert active_record.source_class == SAMPLE_PROVENANCE["source_class"]
     assert active_record.gradient_contribution == pytest.approx(0.3)
     assert active_record.variance_contribution > 0.0
     assert frozen_record.parameter_name == "frozen"
@@ -431,7 +447,48 @@ def test_parameter_shift_gradient_with_uncertainty_propagates_shot_noise() -> No
         == differentiable_module.STOCHASTIC_PARAMETER_SHIFT_CLAIM_BOUNDARY
     )
     assert evidence["hardware_execution"] is False
-    assert len(cast(list[object], evidence["records"])) == 2
+    evidence_records = cast(list[dict[str, object]], evidence["records"])
+    assert len(evidence_records) == 2
+    assert evidence_records[0]["sample_seed"] == SAMPLE_PROVENANCE["sample_seed"]
+    assert evidence_records[0]["shot_batch_id"] == SAMPLE_PROVENANCE["shot_batch_id"]
+    assert evidence_records[0]["source_class"] == SAMPLE_PROVENANCE["source_class"]
+
+
+def test_parameter_shift_uncertainty_requires_sample_provenance() -> None:
+    """Materialised finite-shot gradients must identify the sample source."""
+
+    with pytest.raises(ValueError, match="sample provenance"):
+        parameter_shift_gradient_with_uncertainty(
+            plus_values=[0.8],
+            minus_values=[0.2],
+            plus_variances=[0.36],
+            minus_variances=[0.16],
+            plus_shots=[900],
+            parameters=[Parameter("theta")],
+        )
+
+
+def test_parameter_shift_uncertainty_accepts_typed_sample_provenance() -> None:
+    """Typed finite-shot provenance should normalise integer seed tokens."""
+
+    result = parameter_shift_gradient_with_uncertainty(
+        plus_values=[0.8],
+        minus_values=[0.2],
+        plus_variances=[0.36],
+        minus_variances=[0.16],
+        plus_shots=[900],
+        sample_provenance=FiniteShotSampleProvenance(
+            sample_seed=17,
+            shot_batch_id="typed-provenance-batch",
+            source_class="caller_supplied",
+        ),
+        parameters=[Parameter("theta")],
+    )
+
+    record = result.records[0]
+    assert record.sample_seed == "17"
+    assert record.shot_batch_id == "typed-provenance-batch"
+    assert record.source_class == "caller_supplied"
 
 
 def test_parameter_shift_sample_record_rejects_inconsistent_shift_math() -> None:
@@ -500,6 +557,7 @@ def test_parameter_shift_uncertainty_reuses_plus_shots_when_minus_shots_omitted(
         plus_variances=[0.36],
         minus_variances=[0.16],
         plus_shots=[900],
+        sample_provenance=SAMPLE_PROVENANCE,
         parameters=[Parameter("theta")],
     )
 
@@ -539,6 +597,28 @@ def test_parameter_shift_gradient_with_uncertainty_rejects_invalid_inputs() -> N
             [0.1],
             [10],
             confidence_z=0.0,
+        )
+    with pytest.raises(ValueError, match="missing shot_batch_id"):
+        parameter_shift_gradient_with_uncertainty(
+            [1.0],
+            [0.0],
+            [0.1],
+            [0.1],
+            [10],
+            sample_provenance={"sample_seed": "seed", "source_class": "caller_supplied"},
+        )
+    with pytest.raises(ValueError, match="source_class"):
+        parameter_shift_gradient_with_uncertainty(
+            [1.0],
+            [0.0],
+            [0.1],
+            [0.1],
+            [10],
+            sample_provenance={
+                "sample_seed": "seed",
+                "shot_batch_id": "batch",
+                "source_class": "unknown",
+            },
         )
     with pytest.raises(ValueError, match="hardware execution"):
         StochasticGradientResult(

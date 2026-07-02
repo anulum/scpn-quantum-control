@@ -259,12 +259,14 @@ from .diff import (
 )
 from .differentiable import (
     DEFAULT_CUSTOM_DERIVATIVE_REGISTRY,
+    FINITE_SHOT_SAMPLE_SOURCE_CLASSES,
     ArmijoLineSearchResult,
     CustomDerivativeCheckResult,
     CustomDerivativeRegistry,
     CustomDerivativeRule,
     DifferentiableOptimizer,
     DualNumber,
+    FiniteShotSampleProvenance,
     FisherConjugateGradientResult,
     FisherVectorProductResult,
     FixedPointSensitivityResult,
@@ -1257,6 +1259,8 @@ __all__ = [
     "StochasticGradientConfidenceInterval",
     "StochasticGradientResult",
     "DualNumber",
+    "FINITE_SHOT_SAMPLE_SOURCE_CLASSES",
+    "FiniteShotSampleProvenance",
     "TraceADArray",
     "VJPResult",
     "WeightedGradientResult",

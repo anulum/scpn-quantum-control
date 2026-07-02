@@ -38,6 +38,12 @@ from scpn_quantum_control.differentiable_stochastic_policy import (
     gradient_confidence_interval as direct_gradient_confidence_interval,
 )
 
+SAMPLE_PROVENANCE = {
+    "sample_seed": "stochastic-policy-test-seed",
+    "shot_batch_id": "stochastic-policy-test-batch",
+    "source_class": "caller_supplied",
+}
+
 
 def test_stochastic_policy_direct_facade_and_root_exports_match() -> None:
     """The extracted policy module should preserve public import identities."""
@@ -66,6 +72,7 @@ def test_parameter_shift_uncertainty_reports_interval_and_passed_policy() -> Non
         minus_variances=[0.16, 0.09],
         plus_shots=[900, 400],
         minus_shots=[400, 100],
+        sample_provenance=SAMPLE_PROVENANCE,
         parameters=[Parameter("theta"), Parameter("frozen", trainable=False)],
         failure_policy=GradientFailurePolicy(
             max_standard_error=0.1,

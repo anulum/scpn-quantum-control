@@ -9,8 +9,8 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable, Sequence
-from typing import Any
+from collections.abc import Callable, Mapping, Sequence
+from typing import Any, cast
 
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
@@ -23,6 +23,7 @@ from .differentiable_parameter_contracts import (
     _as_real_scalar,
 )
 from .differentiable_result_contracts import (
+    FiniteShotSampleProvenance,
     GradientResult,
     ParameterShiftSampleRecord,
     StochasticGradientResult,
@@ -220,6 +221,7 @@ def parameter_shift_gradient_with_uncertainty(
     plus_shots: ArrayLike,
     minus_shots: ArrayLike | None = None,
     *,
+    sample_provenance: Mapping[str, object] | FiniteShotSampleProvenance | None = None,
     value: float = 0.0,
     parameters: Sequence[Parameter] | None = None,
     rule: ParameterShiftRule | None = None,
@@ -238,6 +240,10 @@ def parameter_shift_gradient_with_uncertainty(
     plus_shots, minus_shots:
         Positive integer shot counts. When ``minus_shots`` is omitted the plus
         shot counts are reused.
+    sample_provenance:
+        Source metadata for the materialised plus/minus finite-shot tensors.
+        The mapping or record must include ``sample_seed``, ``shot_batch_id``,
+        and ``source_class``.
     value:
         Objective value associated with the gradient estimate.
     parameters:
@@ -316,6 +322,7 @@ def parameter_shift_gradient_with_uncertainty(
         raise ValueError("confidence_level must be between zero and one")
     if z_value <= 0.0:
         raise ValueError("confidence_z must be finite and positive")
+    provenance = _as_sample_provenance(sample_provenance)
 
     parameter_meta = _normalise_parameters(plus[0], parameters)
     gradient = np.zeros(plus.shape[1], dtype=np.float64)
@@ -347,6 +354,9 @@ def parameter_shift_gradient_with_uncertainty(
                     minus_variance=float(minus_var[term_index, index]),
                     plus_shots=int(plus_count[term_index, index]),
                     minus_shots=int(minus_count[term_index, index]),
+                    sample_seed=provenance.sample_seed,
+                    shot_batch_id=provenance.shot_batch_id,
+                    source_class=provenance.source_class,
                     gradient_contribution=float(
                         gradient_contribution if parameter.trainable else 0.0
                     ),
@@ -392,6 +402,27 @@ def parameter_shift_gradient_with_uncertainty(
         confidence_interval=confidence_interval,
         failure_policy_status=confidence_interval.status,
         failure_reasons=confidence_interval.failure_reasons,
+    )
+
+
+def _as_sample_provenance(
+    sample_provenance: Mapping[str, object] | FiniteShotSampleProvenance | None,
+) -> FiniteShotSampleProvenance:
+    if sample_provenance is None:
+        raise ValueError(
+            "finite-shot sample provenance must include sample_seed, "
+            "shot_batch_id, and source_class"
+        )
+    if isinstance(sample_provenance, FiniteShotSampleProvenance):
+        return sample_provenance
+    missing_keys = {"sample_seed", "shot_batch_id", "source_class"} - set(sample_provenance)
+    if missing_keys:
+        joined_keys = ", ".join(sorted(missing_keys))
+        raise ValueError(f"finite-shot sample provenance missing {joined_keys}")
+    return FiniteShotSampleProvenance(
+        sample_seed=cast(str | int, sample_provenance["sample_seed"]),
+        shot_batch_id=cast(str | int, sample_provenance["shot_batch_id"]),
+        source_class=str(sample_provenance["source_class"]),
     )
 
 

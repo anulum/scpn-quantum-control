@@ -22,6 +22,11 @@ from scpn_quantum_control.phase import (
 )
 
 FloatArray = NDArray[np.float64]
+SAMPLE_PROVENANCE = {
+    "sample_seed": "phase-qnode-tape-test-seed",
+    "shot_batch_id": "phase-qnode-tape-test-batch",
+    "source_class": "caller_supplied",
+}
 
 
 def test_phase_qnode_tape_records_deterministic_parameter_shift() -> None:
@@ -80,6 +85,7 @@ def test_phase_qnode_tape_records_multi_term_finite_shot_replay() -> None:
             minus_values=minus_values,
             plus_variances=plus_variances,
             minus_variances=minus_variances,
+            sample_provenance=SAMPLE_PROVENANCE,
             parameters=[Parameter("theta"), Parameter("frozen", trainable=False)],
             rule=rule,
             value=0.375,
@@ -93,6 +99,9 @@ def test_phase_qnode_tape_records_multi_term_finite_shot_replay() -> None:
     assert record.kind == "finite_shot"
     assert record.supported
     assert record.shot_count == 1024
+    assert record.sample_records[0].sample_seed == SAMPLE_PROVENANCE["sample_seed"]
+    assert record.sample_records[0].shot_batch_id == SAMPLE_PROVENANCE["shot_batch_id"]
+    assert record.sample_records[0].source_class == SAMPLE_PROVENANCE["source_class"]
     assert record.seed == 31
     assert record.parameter_shift_evaluations == 8
     assert record.total_shots == 8192

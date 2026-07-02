@@ -543,6 +543,11 @@ result = parameter_shift_gradient_with_uncertainty(
     plus_variances=np.array([0.04, 0.09]),
     minus_variances=np.array([0.04, 0.09]),
     shots=4096,
+    sample_provenance={
+        "sample_seed": "finite-shot-local-seed",
+        "shot_batch_id": "finite-shot-local-batch",
+        "source_class": "caller_supplied",
+    },
 )
 print(result.gradient, result.standard_error)
 ```
@@ -559,11 +564,15 @@ evidence records.
 The Python `StochasticGradientResult` now keeps those evidence records directly:
 each `ParameterShiftSampleRecord` names the parameter, term index, shift,
 coefficient, plus/minus values, plus/minus variances, plus/minus shot counts,
-trainable mask, gradient contribution, and variance contribution. Frozen
-parameters are recorded with zero contribution so reviewers can reconstruct why
-they did not enter the stochastic gradient. The result also carries the
-`STOCHASTIC_PARAMETER_SHIFT_CLAIM_BOUNDARY` string, `hardware_execution=False`,
-the confidence interval, the failure-policy status, and failure reasons.
+trainable mask, sample seed, shot-batch ID, source class, gradient contribution,
+and variance contribution. Generic finite-shot replay fails closed when
+`sample_provenance` is absent, empty, or outside the accepted source-class
+allowlist, so caller-supplied tensors cannot be promoted without replay
+identity. Frozen parameters are recorded with zero contribution so reviewers can
+reconstruct why they did not enter the stochastic gradient. The result also
+carries the `STOCHASTIC_PARAMETER_SHIFT_CLAIM_BOUNDARY` string,
+`hardware_execution=False`, the confidence interval, the failure-policy status,
+and failure reasons.
 
 ## Provider callback execution
 
@@ -610,13 +619,13 @@ The result records backend plan provenance, every plus/minus shifted parameter
 vector, sample values, sample variances, shot counts, propagated standard
 errors, confidence radii, and a claim boundary. Finite-shot samples must also
 carry `sample_seed`, `shot_batch_id`, and `source_class` metadata; accepted
-source classes are local simulator, provider replay, provider runtime, and
-synthetic fixture. The executor then stamps each plus/minus sample with the
-parameter index, shift index, direction, shift, coefficient, and
-`shifted_parameter_digest`, so callback-supplied sample provenance and
-executor-owned shifted-sample provenance remain distinct. Hardware aliases
-still fail closed unless an explicit hardware policy enables them through the
-backend planner.
+source classes are caller-supplied arrays, local simulator, provider replay,
+provider runtime, and synthetic fixture. The executor then stamps each
+plus/minus sample with the parameter index, shift index, direction, shift,
+coefficient, and `shifted_parameter_digest`, so callback-supplied sample
+provenance and executor-owned shifted-sample provenance remain distinct.
+Hardware aliases still fail closed unless an explicit hardware policy enables
+them through the backend planner.
 
 For hardware preparation, use
 `prepare_provider_hardware_parameter_shift_gradient(...)` instead of the

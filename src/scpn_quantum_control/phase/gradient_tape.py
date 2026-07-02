@@ -9,7 +9,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from types import TracebackType
 from typing import Literal, TypeAlias
@@ -18,6 +18,7 @@ import numpy as np
 from numpy.typing import ArrayLike, NDArray
 
 from ..differentiable import (
+    FiniteShotSampleProvenance,
     GradientResult,
     Parameter,
     ParameterShiftRule,
@@ -254,12 +255,40 @@ class QuantumGradientTape:
         minus_values: ArrayLike,
         plus_variances: ArrayLike,
         minus_variances: ArrayLike,
+        sample_provenance: Mapping[str, object] | FiniteShotSampleProvenance | None = None,
         value: float = 0.0,
         parameters: Sequence[Parameter] | None = None,
         rule: ParameterShiftRule | None = None,
         confidence_z: float = 1.959963984540054,
     ) -> TapeGradientRecord:
-        """Record finite-shot parameter-shift gradient with uncertainty."""
+        """Record finite-shot parameter-shift gradient with uncertainty.
+
+        Parameters
+        ----------
+        name:
+            Non-empty record label.
+        plus_values, minus_values:
+            Materialised plus/minus shifted objective estimates.
+        plus_variances, minus_variances:
+            Per-estimate finite-shot variances matching the shifted values.
+        sample_provenance:
+            Source metadata for the materialised finite-shot tensors. The
+            mapping or record must include ``sample_seed``, ``shot_batch_id``,
+            and ``source_class``.
+        value:
+            Scalar objective value associated with the gradient record.
+        parameters:
+            Optional parameter metadata and trainable mask.
+        rule:
+            Optional parameter-shift rule.
+        confidence_z:
+            Normal-approximation multiplier used for confidence radii.
+
+        Returns
+        -------
+        TapeGradientRecord
+            Tape record containing the stochastic gradient result.
+        """
         self._require_active()
         record_name = self._validate_name(name)
         plus = _as_finite_shot_array("plus_values", plus_values)
@@ -313,6 +342,7 @@ class QuantumGradientTape:
             plus_var,
             minus_var,
             shots=plan.shots,
+            sample_provenance=sample_provenance,
             backend=plan.backend,
             value=value,
             parameters=parameters,

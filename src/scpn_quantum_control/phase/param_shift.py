@@ -9,7 +9,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from typing import TypeAlias
 
@@ -17,6 +17,7 @@ import numpy as np
 from numpy.typing import ArrayLike, NDArray
 
 from ..differentiable import (
+    FiniteShotSampleProvenance,
     GradientResult,
     Parameter,
     ParameterShiftRule,
@@ -863,6 +864,7 @@ def parameter_shift_gradient_with_uncertainty(
     minus_variances: ArrayLike,
     *,
     shots: int | ArrayLike,
+    sample_provenance: Mapping[str, object] | FiniteShotSampleProvenance | None = None,
     backend: str = "finite_shot_simulator",
     value: float = 0.0,
     parameters: Sequence[Parameter] | None = None,
@@ -870,7 +872,41 @@ def parameter_shift_gradient_with_uncertainty(
     confidence_level: float = 0.95,
     confidence_z: float = 1.959963984540054,
 ) -> StochasticGradientResult:
-    """Return finite-shot parameter-shift gradients with propagated uncertainty."""
+    """Return finite-shot parameter-shift gradients with propagated uncertainty.
+
+    Parameters
+    ----------
+    plus_values, minus_values:
+        Materialised plus/minus shifted objective estimates. Multi-frequency
+        rules use shape ``(n_terms, n_parameters)``.
+    plus_variances, minus_variances:
+        Per-estimate finite-shot variances matching the shifted-value shape.
+    shots:
+        Positive shot count or per-term/per-parameter shot tensor.
+    sample_provenance:
+        Source metadata for the materialised finite-shot tensors. The mapping
+        or record must include ``sample_seed``, ``shot_batch_id``, and
+        ``source_class``.
+    backend:
+        Backend family used for fail-closed planning before uncertainty
+        propagation.
+    value:
+        Scalar objective value associated with the finite-shot gradient.
+    parameters:
+        Optional parameter metadata and trainable mask.
+    rule:
+        Optional parameter-shift rule.
+    confidence_level:
+        Confidence mass recorded with the interval.
+    confidence_z:
+        Normal-approximation multiplier used for confidence radii.
+
+    Returns
+    -------
+    StochasticGradientResult
+        Provenance-bearing finite-shot gradient, covariance, confidence
+        interval, and shifted-sample records.
+    """
     resolved_rule = rule or ParameterShiftRule()
     term_count = len(resolved_rule.terms)
     plus = _finite_shift_sample_matrix(
@@ -899,6 +935,7 @@ def parameter_shift_gradient_with_uncertainty(
         plus_variances,
         minus_variances,
         core_shots,
+        sample_provenance=sample_provenance,
         value=value,
         parameters=parameters,
         rule=resolved_rule,

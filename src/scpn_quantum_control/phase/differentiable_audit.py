@@ -1048,6 +1048,11 @@ def run_finite_shot_gradient_uncertainty_audit(
         _stochastic_input(plus_var),
         _stochastic_input(minus_var),
         shots=balanced_shots,
+        sample_provenance={
+            "sample_seed": "finite-shot-audit-deterministic-replay",
+            "shot_batch_id": "finite-shot-audit-balanced-allocation",
+            "source_class": "caller_supplied",
+        },
         rule=shift_rule,
         confidence_level=confidence_level,
         confidence_z=confidence_z,

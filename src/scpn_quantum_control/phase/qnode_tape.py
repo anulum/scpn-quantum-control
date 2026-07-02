@@ -9,7 +9,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from types import TracebackType
 from typing import Literal, TypeAlias, cast
@@ -17,7 +17,7 @@ from typing import Literal, TypeAlias, cast
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
 
-from ..differentiable import Parameter, ParameterShiftRule
+from ..differentiable import FiniteShotSampleProvenance, Parameter, ParameterShiftRule
 from ..differentiable_result_contracts import (
     ParameterShiftSampleRecord,
     StochasticGradientResult,
@@ -331,12 +331,40 @@ class PhaseQNodeTape:
         minus_values: ArrayLike,
         plus_variances: ArrayLike,
         minus_variances: ArrayLike,
+        sample_provenance: Mapping[str, object] | FiniteShotSampleProvenance | None = None,
         value: float = 0.0,
         parameters: Sequence[Parameter] | None = None,
         rule: ParameterShiftRule | None = None,
         confidence_z: float = 1.959963984540054,
     ) -> PhaseQNodeTapeRecord:
-        """Record a finite-shot QNode parameter-shift replay with uncertainty."""
+        """Record a finite-shot QNode parameter-shift replay with uncertainty.
+
+        Parameters
+        ----------
+        objective_name:
+            Non-empty objective label stored in the QNode tape.
+        plus_values, minus_values:
+            Materialised plus/minus shifted objective estimates.
+        plus_variances, minus_variances:
+            Per-estimate finite-shot variances matching the shifted values.
+        sample_provenance:
+            Source metadata for the materialised finite-shot tensors. The
+            mapping or record must include ``sample_seed``, ``shot_batch_id``,
+            and ``source_class``.
+        value:
+            Scalar objective value associated with the gradient record.
+        parameters:
+            Optional parameter metadata and trainable mask.
+        rule:
+            Optional parameter-shift rule.
+        confidence_z:
+            Normal-approximation multiplier used for confidence radii.
+
+        Returns
+        -------
+        PhaseQNodeTapeRecord
+            QNode tape record containing finite-shot uncertainty evidence.
+        """
         self._require_active()
         clean_name = _as_non_empty_string("objective_name", objective_name)
         with gradient_tape(
@@ -352,6 +380,7 @@ class PhaseQNodeTape:
                 minus_values=minus_values,
                 plus_variances=plus_variances,
                 minus_variances=minus_variances,
+                sample_provenance=sample_provenance,
                 value=value,
                 parameters=parameters,
                 rule=rule,
@@ -521,6 +550,11 @@ def run_phase_qnode_tape_readiness_suite() -> PhaseQNodeTapeReadinessSuiteResult
                 minus_values=np.array([0.8, -0.7], dtype=np.float64),
                 plus_variances=np.array([0.04, 0.09], dtype=np.float64),
                 minus_variances=np.array([0.05, 0.07], dtype=np.float64),
+                sample_provenance={
+                    "sample_seed": "phase-qnode-tape-readiness-seed",
+                    "shot_batch_id": "phase-qnode-tape-readiness-batch",
+                    "source_class": "synthetic_fixture",
+                },
                 value=0.375,
             )
         )
