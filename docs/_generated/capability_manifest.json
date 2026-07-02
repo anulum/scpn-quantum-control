@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 777,
     "public_documentation_pages": 254,
-    "python_model_classes": 959,
-    "python_model_source_modules": 537,
+    "python_model_classes": 960,
+    "python_model_source_modules": 538,
     "rust_pyo3_model_wrappers": 171,
     "rust_source_modules": 42,
-    "test_files": 873
+    "test_files": 874
   },
   "documentation": {
     "examples": [

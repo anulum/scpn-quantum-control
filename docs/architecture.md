@@ -91,7 +91,7 @@ preparation and `bridge/` for Hamiltonian access.
 ```mermaid
 graph TD
     bridge["bridge/ (15)\nK_nm → quantum objects"]
-    phase["phase/ (86)\nTime evolution"]
+    phase["phase/ (87)\nTime evolution"]
     analysis["analysis/ (59)\nSync probes"]
     control["control/ (14)\nQuantum control"]
     qsnn["qsnn/ (7)\nQuantum SNN"]
@@ -279,7 +279,7 @@ analysis/                                  ← 58 modules: probes of the sync tr
 ├── vortex_binding.py                          Kosterlitz RG flow
 └── enaqt.py                                   Environment-assisted quantum transport
 
-phase/                                     ← 86 modules: time evolution + variational
+phase/                                     ← 87 modules: time evolution + variational
 ├── xy_kuramoto.py                             Trotterised XY solver
 ├── trotter_upde.py                            Full 16-layer UPDE solver
 ├── trotter_error.py                           Trotter error analysis
