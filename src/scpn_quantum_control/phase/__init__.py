@@ -296,6 +296,7 @@ from .provider_hardware_gradient_audit import (
     run_provider_hardware_gradient_preparation_audit,
 )
 from .provider_hardware_safety_audit import (
+    DifferentiableProviderHardwareEvidenceChain,
     DifferentiableProviderHardwareSafetyAuditResult,
     DifferentiableProviderHardwareSafetySurface,
     run_differentiable_provider_hardware_safety_audit,
@@ -968,6 +969,7 @@ __all__ = [
     "ProviderHardwareGradientPreparationAuditResult",
     "default_provider_hardware_gradient_preparation_scenarios",
     "run_provider_hardware_gradient_preparation_audit",
+    "DifferentiableProviderHardwareEvidenceChain",
     "DifferentiableProviderHardwareSafetyAuditResult",
     "DifferentiableProviderHardwareSafetySurface",
     "run_differentiable_provider_hardware_safety_audit",

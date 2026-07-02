@@ -770,12 +770,37 @@ The aggregate provider/hardware safety gate combines every differentiable
 provider-facing safety surface:
 
 ```python
-from scpn_quantum_control.phase import run_differentiable_provider_hardware_safety_audit
+from scpn_quantum_control.phase import (
+    DifferentiableProviderHardwareEvidenceChain,
+    run_differentiable_provider_hardware_safety_audit,
+)
 
 safety = run_differentiable_provider_hardware_safety_audit()
 assert safety.passed
 assert safety.ready_for_hardware_gradient_promotion is False
 print(safety.promotion_blockers)
+
+chain = DifferentiableProviderHardwareEvidenceChain(
+    live_execution_ticket="LIVE-2026-06-16-001",
+    provider_name="ibm_quantum",
+    backend_id="ibm_kingston",
+    job_id="job-20260616-001",
+    circuit_fingerprint="phase-qnode:ry-rx-pauli-z:v1",
+    provider_allowlist_id="allowlist-heron-r2-20260616",
+    shot_budget_id="shot-budget-4096-20260616",
+    raw_count_replay_artifact_id="raw-counts-001",
+    raw_count_replay_digest="sha256:" + "a" * 64,
+    raw_count_shots=4096,
+    calibration_snapshot_artifact_id="calibration-001",
+    calibration_snapshot_digest="sha256:" + "b" * 64,
+    statevector_comparison_artifact_id="statevector-001",
+    statevector_comparison_digest="sha256:" + "c" * 64,
+    isolated_benchmark_artifact_id="isolated-001",
+    captured_at_utc="2026-06-16T00:00:00Z",
+    valid_until_utc="2026-07-20T00:00:00Z",
+)
+ready = run_differentiable_provider_hardware_safety_audit(evidence_chain=chain)
+assert ready.evidence_chain_ready
 ```
 
 `run_differentiable_provider_hardware_safety_audit()` aggregates provider
@@ -783,9 +808,13 @@ gradient readiness, provider hardware-gradient preparation, provider QNode
 transforms, QNode tape records, and no-submit hardware-gradient campaign
 readiness. The result is the promotion guard for hardware-gradient claims:
 every local safety surface must preserve zero hardware execution and zero
-hardware-gradient production, and promotion remains blocked until a live ticket,
-raw-count replay artefact, calibration snapshot artefact, statevector comparison
-artefact, and `isolated_affinity` benchmark artefact ID are all attached.
+hardware-gradient production. Promotion remains blocked until a single
+freshness-bounded `DifferentiableProviderHardwareEvidenceChain` binds the live
+ticket, provider/backend/job/circuit metadata, provider allowlist, shot budget,
+raw-count replay digest, calibration snapshot digest, statevector comparison
+digest, and `isolated_affinity` benchmark artefact. Detached legacy IDs are
+serialized for compatibility, but they no longer make the audit promotion-ready
+without the validated chain.
 
 For the full differentiable-programming lane, `run_differentiable_readiness_audit()`
 aggregates the gradient support matrix, transform nesting, QNode tape and
