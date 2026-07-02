@@ -207,7 +207,7 @@ def test_program_ad_alias_analysis_validation_paths() -> None:
 
     valid_report = ProgramADStaticAliasLatticeReport(
         components=(component,),
-        mutation_effects=(0,),
+        mutation_effects=(),
         non_executed_phi_nodes=(),
         non_executed_control_alias_edges=(),
         unknown_alias_edge_kinds=(),
@@ -216,6 +216,18 @@ def test_program_ad_alias_analysis_validation_paths() -> None:
         claim_boundary="static_alias_lattice_over_emitted_program_ad_ir",
     )
     assert valid_report.as_dict()["components"]
+    mutation_blocked_report = ProgramADStaticAliasLatticeReport(
+        components=(component,),
+        mutation_effects=(0,),
+        non_executed_phi_nodes=(),
+        non_executed_control_alias_edges=(),
+        unknown_alias_edge_kinds=(),
+        blocker_reasons=("mutation_effects_require_versioned_alias_semantics",),
+        complete=False,
+        claim_boundary="static_alias_lattice_over_emitted_program_ad_ir",
+    )
+    assert mutation_blocked_report.complete is False
+    assert mutation_blocked_report.mutation_effects == (0,)
     with pytest.raises(ValueError, match="components"):
         ProgramADStaticAliasLatticeReport(
             components=cast(tuple[ProgramADStaticAliasLatticeComponent, ...], (object(),)),
@@ -337,6 +349,39 @@ def test_program_ad_alias_analysis_validation_paths() -> None:
             complete=cast(bool, "no"),
             claim_boundary="static_alias_lattice_over_emitted_program_ad_ir",
         )
+    with pytest.raises(ValueError, match="cannot carry mutation_effects"):
+        ProgramADStaticAliasLatticeReport(
+            components=(component,),
+            mutation_effects=(0,),
+            non_executed_phi_nodes=(),
+            non_executed_control_alias_edges=(),
+            unknown_alias_edge_kinds=(),
+            blocker_reasons=(),
+            complete=True,
+            claim_boundary="static_alias_lattice_over_emitted_program_ad_ir",
+        )
+    with pytest.raises(ValueError, match="mutation_effects require a blocker"):
+        ProgramADStaticAliasLatticeReport(
+            components=(component,),
+            mutation_effects=(0,),
+            non_executed_phi_nodes=(),
+            non_executed_control_alias_edges=(),
+            unknown_alias_edge_kinds=(),
+            blocker_reasons=(),
+            complete=False,
+            claim_boundary="static_alias_lattice_over_emitted_program_ad_ir",
+        )
+    with pytest.raises(ValueError, match="mutation blocker requires mutation_effects"):
+        ProgramADStaticAliasLatticeReport(
+            components=(),
+            mutation_effects=(),
+            non_executed_phi_nodes=(),
+            non_executed_control_alias_edges=(),
+            unknown_alias_edge_kinds=(),
+            blocker_reasons=("mutation_effects_require_versioned_alias_semantics",),
+            complete=False,
+            claim_boundary="static_alias_lattice_over_emitted_program_ad_ir",
+        )
     with pytest.raises(ValueError, match="claim_boundary"):
         ProgramADStaticAliasLatticeReport(
             components=(),
@@ -389,9 +434,12 @@ def test_program_ad_static_alias_lattice_tracks_mutation_versions_directly() -> 
     report = program_ad_static_alias_lattice_report(ir)
 
     assert report.mutation_effects == (0,)
+    assert report.complete is False
+    assert "mutation_effects_require_versioned_alias_semantics" in report.blocker_reasons
     assert len(report.components) == 1
     assert report.components[0].mutation_versions == (2,)
     assert report.components[0].edge_kinds == ("mutation_version",)
+    assert report.as_dict()["blocker_reasons"] == list(report.blocker_reasons)
 
 
 def test_program_ad_alias_effect_analysis_summarizes_alias_sets_and_mutations() -> None:

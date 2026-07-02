@@ -2668,6 +2668,22 @@ def _static_alias_lattice_report_case() -> DifferentiableProgrammingBenchmarkRes
     ):
         raise ValueError("static alias lattice benchmark missing expression-rebinding component")
 
+    def mutation_objective(trace_values: Any) -> object:
+        work = trace_values.copy()
+        work[0] = trace_values[1] + trace_values[2]
+        return work[0] + trace_values[3]
+
+    mutation_result = whole_program_value_and_grad(mutation_objective, values)
+    if mutation_result.program_ir is None:
+        raise ValueError("static alias lattice mutation benchmark requires Program AD IR")
+    mutation_report = program_ad_static_alias_lattice_report(mutation_result.program_ir)
+    if mutation_report.complete:
+        raise ValueError("static alias lattice benchmark must not promote mutation effects")
+    if not mutation_report.mutation_effects:
+        raise ValueError("static alias lattice benchmark missing mutation effects")
+    if "mutation_effects_require_versioned_alias_semantics" not in mutation_report.blocker_reasons:
+        raise ValueError("static alias lattice benchmark missing mutation blocker")
+
     def branch_objective(trace_values: Any) -> object:
         scratch = Scratch()
         if trace_values[1] > 0.0:
@@ -2717,7 +2733,7 @@ def _static_alias_lattice_report_case() -> DifferentiableProgrammingBenchmarkRes
             "static alias-lattice readiness over emitted program_ad_effect_ir.v1 "
             "components, including view-alias, bounded local object-attribute, "
             "expression-rebinding classification, explicit non-executed phi, and "
-            "control-path alias blocker reporting; not captured/global "
+            "mutation/control-path alias blocker reporting; not captured/global "
             "object-attribute aliasing, non-executed branch adjoints, Rust/LLVM "
             "executable lowering, hardware, or performance evidence; no wall-clock "
             "performance claim"

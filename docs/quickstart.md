@@ -301,10 +301,10 @@ Alias/effect audits can be inspected with
 `program_ad_static_alias_lattice_report(...)`. The report builds a static
 alias-lattice readiness view over emitted `program_ad_effect_ir.v1` components
 including bounded local object-attribute, expression-rebinding, and
-branch-local control-path alias metadata. The report records non-executed phi
-inputs and control-path aliases as blockers; it is not captured/global
-object-attribute aliasing, non-executed branch adjoints, or executable compiler
-lowering.
+branch-local control-path alias metadata. The report records mutation effects,
+non-executed phi inputs, and control-path aliases as blockers; it is not
+captured/global object-attribute aliasing, mutation adjoints, non-executed
+branch adjoints, or executable compiler lowering.
 
 Supported captured scalar program traces can also be promoted to an executable
 replay kernel with `compile_whole_program_ad_trace_to_executable(...)`. The

@@ -168,7 +168,8 @@ class ProgramADStaticAliasLatticeReport:
 
     The report builds deterministic alias components from the emitted
     ``program_ad_effect_ir.v1`` metadata and records the exact blockers that
-    prevent promotion to full static alias or non-executed branch semantics.
+    prevent promotion to full static alias, mutation, or non-executed branch
+    semantics.
     """
 
     components: tuple[ProgramADStaticAliasLatticeComponent, ...]
@@ -237,6 +238,19 @@ class ProgramADStaticAliasLatticeReport:
         if self.complete and self.blocker_reasons:
             raise ValueError(
                 "complete program AD static alias lattice cannot carry blocker reasons"
+            )
+        mutation_blocker = "mutation_effects_require_versioned_alias_semantics"
+        if self.complete and self.mutation_effects:
+            raise ValueError(
+                "complete program AD static alias lattice cannot carry mutation_effects"
+            )
+        if self.mutation_effects and mutation_blocker not in self.blocker_reasons:
+            raise ValueError(
+                "program AD static alias lattice mutation_effects require a blocker reason"
+            )
+        if not self.mutation_effects and mutation_blocker in self.blocker_reasons:
+            raise ValueError(
+                "program AD static alias lattice mutation blocker requires mutation_effects"
             )
         _normalise_claim_boundary("program AD static alias lattice", self.claim_boundary)
 
@@ -342,9 +356,9 @@ def program_ad_static_alias_lattice_report(
     """Build a static alias-lattice readiness report from emitted Program AD IR.
 
     The report is complete only for the alias metadata actually emitted in
-    ``program_ad_effect_ir.v1``. Unknown alias edge kinds and non-selected phi
-    inputs are recorded as hard blockers instead of being promoted into full
-    non-executed branch semantics.
+    ``program_ad_effect_ir.v1``. Mutation effects, unknown alias edge kinds,
+    and non-selected phi inputs are recorded as hard blockers instead of being
+    promoted into full mutation or non-executed branch semantics.
     """
 
     if not isinstance(program_ir, ProgramADEffectIR):
@@ -441,6 +455,8 @@ def program_ad_static_alias_lattice_report(
     blocker_reasons: set[str] = set()
     if unknown_alias_edge_kinds:
         blocker_reasons.add("unknown_alias_edge_kinds")
+    if mutation_effects:
+        blocker_reasons.add("mutation_effects_require_versioned_alias_semantics")
     if non_executed_phi_nodes:
         blocker_reasons.add("non_executed_phi_inputs_require_branch_semantics")
     if control_alias_edges:
