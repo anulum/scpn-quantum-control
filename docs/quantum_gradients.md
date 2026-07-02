@@ -2009,7 +2009,9 @@ same objects for compatibility with older imports.
 `PennyLaneProviderPluginExecutionArtifact` validates provider-plugin execution
 metadata with non-empty plugin/provider/device/backend identities, positive
 shots when present, SHA-256 result and metadata digests, optional replay
-metadata, explicit PennyLane `interface` and `diff_method` metadata,
+metadata, explicit PennyLane `interface`, `diff_method`, and `shot_policy`
+metadata, `shot_policy="analytic"` with `shots=None` or
+`shot_policy="finite_shot"` with a positive shot count,
 non-hardware execution mode, and `hardware_execution=False`.
 `run_pennylane_plugin_matrix(...)` records local `default.qubit` exact-state,
 shot-policy metadata, generated Phase-QNode export, and supported tape-import
@@ -2025,9 +2027,9 @@ provider-gradient parity, and optional ticketed hardware execution in one
 exclusive attachment. The bundle requires explicit UTC capture/expiry metadata,
 rejects inverted freshness windows, rejects hardware evidence whose provider,
 circuit fingerprint, or shot count no longer matches the provider execution
-chain, rejects provider-gradient parity whose interface or diff method drifts
-from the provider execution chain, and fails closed when the bundle has expired
-at the review cutoff.
+chain, rejects provider-gradient parity whose interface, diff method, or shot
+policy drifts from the provider execution chain, and fails closed when the
+bundle has expired at the review cutoff.
 Passing a validated `PennyLaneHardwarePluginExecutionArtifact` marks only
 `hardware_plugin_execution` as passed; it must carry ticket, allowlist,
 shot-budget, hardware evidence, raw-count, calibration digest,

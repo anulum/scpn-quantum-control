@@ -58,10 +58,10 @@ class PennyLanePluginMatrixRoute:
 class PennyLaneProviderPluginExecutionArtifact:
     """Validated PennyLane provider-plugin execution evidence.
 
-    Provider evidence records the PennyLane interface and differentiation
-    method used for the captured provider route. Those fields are part of the
-    evidence chain, so provider-gradient parity must cite the same values before
-    the route can pass.
+    Provider evidence records the PennyLane interface, differentiation method,
+    and analytic versus finite-shot policy used for the captured provider route.
+    Those fields are part of the evidence chain, so provider-gradient parity
+    must cite the same values before the route can pass.
     """
 
     artifact_id: str
@@ -73,6 +73,7 @@ class PennyLaneProviderPluginExecutionArtifact:
     execution_mode: str
     interface: str
     diff_method: str
+    shot_policy: str
     shots: int | None
     result_digest: str
     metadata_digest: str
@@ -101,6 +102,11 @@ class PennyLaneProviderPluginExecutionArtifact:
             isinstance(self.shots, bool) or not isinstance(self.shots, int) or self.shots <= 0
         ):
             raise ValueError("shots must be positive when provided")
+        object.__setattr__(
+            self,
+            "shot_policy",
+            _normalise_shot_policy(self.shot_policy, self.shots),
+        )
         if self.hardware_execution:
             raise ValueError(
                 "provider-plugin execution artefacts must not claim hardware execution"
@@ -134,6 +140,7 @@ class PennyLaneProviderPluginExecutionArtifact:
             "execution_mode": self.execution_mode,
             "interface": self.interface,
             "diff_method": self.diff_method,
+            "shot_policy": self.shot_policy,
             "shots": self.shots,
             "result_digest": self.result_digest,
             "metadata_digest": self.metadata_digest,
@@ -147,8 +154,9 @@ class PennyLaneProviderGradientParityArtifact:
     """Validated PennyLane provider-plugin gradient parity evidence.
 
     Parity artefacts must match the referenced provider execution artefact on
-    interface, differentiation method, device identity, circuit fingerprint, and
-    shot policy before the provider-gradient route can pass.
+    interface, differentiation method, analytic versus finite-shot policy, device
+    identity, circuit fingerprint, and shots before the provider-gradient route
+    can pass.
     """
 
     artifact_id: str
@@ -160,6 +168,7 @@ class PennyLaneProviderGradientParityArtifact:
     circuit_fingerprint: str
     interface: str
     diff_method: str
+    shot_policy: str
     gradient_digest: str
     reference_gradient_digest: str
     max_abs_error: float
@@ -192,6 +201,11 @@ class PennyLaneProviderGradientParityArtifact:
             isinstance(self.shots, bool) or not isinstance(self.shots, int) or self.shots <= 0
         ):
             raise ValueError("shots must be positive when provided")
+        object.__setattr__(
+            self,
+            "shot_policy",
+            _normalise_shot_policy(self.shot_policy, self.shots),
+        )
         if self.hardware_execution:
             raise ValueError(
                 "provider-gradient parity artefacts must not claim hardware execution"
@@ -223,6 +237,7 @@ class PennyLaneProviderGradientParityArtifact:
             "circuit_fingerprint": self.circuit_fingerprint,
             "interface": self.interface,
             "diff_method": self.diff_method,
+            "shot_policy": self.shot_policy,
             "gradient_digest": self.gradient_digest,
             "reference_gradient_digest": self.reference_gradient_digest,
             "max_abs_error": self.max_abs_error,
@@ -607,6 +622,7 @@ def run_pennylane_plugin_matrix(
                 "device_metadata_artifact",
                 "interface_metadata",
                 "diff_method_metadata",
+                "shot_policy_metadata",
             ),
         ),
         PennyLanePluginMatrixRoute(
@@ -628,6 +644,7 @@ def run_pennylane_plugin_matrix(
                 "same_circuit_provider_artifact",
                 "matching_interface_metadata",
                 "matching_diff_method_metadata",
+                "matching_shot_policy_metadata",
                 "raw_result_replay",
                 "gradient_parity_artifact",
             ),
@@ -669,6 +686,17 @@ def _normalise_sha256_digest(field_name: str, value: object) -> str:
     return f"sha256:{hex_digest.lower()}"
 
 
+def _normalise_shot_policy(shot_policy: object, shots: int | None) -> str:
+    policy = _normalise_metadata_text("shot_policy", shot_policy)
+    if policy not in {"analytic", "finite_shot"}:
+        raise ValueError("shot_policy must be analytic or finite_shot")
+    if policy == "analytic" and shots is not None:
+        raise ValueError("analytic shot_policy requires shots=None")
+    if policy == "finite_shot" and shots is None:
+        raise ValueError("finite_shot shot_policy requires positive shots")
+    return policy
+
+
 def _as_non_negative_finite_metric(name: str, value: float) -> float:
     metric = float(value)
     if metric < 0.0 or not np.isfinite(metric):
@@ -695,6 +723,7 @@ def _validate_provider_gradient_parity_pair(
         "circuit_fingerprint": provider_execution_artifact.circuit_fingerprint,
         "interface": provider_execution_artifact.interface,
         "diff_method": provider_execution_artifact.diff_method,
+        "shot_policy": provider_execution_artifact.shot_policy,
         "shots": provider_execution_artifact.shots,
     }
     for field_name, expected_value in expected.items():

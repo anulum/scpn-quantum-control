@@ -1498,8 +1498,11 @@ metadata and non-coercive shot metadata: `shots=None` is analytic mode and
 finite-shot mode requires an explicit positive integer, not a boolean, float,
 or numeric string. Provider-plugin execution artefacts use the same shot-count
 boundary, must identify provider-plugin execution in `execution_mode`, must
-carry explicit PennyLane `interface` and `diff_method` metadata, and still do
-not promote provider-gradient or hardware execution.
+carry explicit PennyLane `interface`, `diff_method`, and `shot_policy` metadata,
+and must keep `shot_policy="analytic"` paired with `shots=None` or
+`shot_policy="finite_shot"` paired with a positive shot count. Provider
+execution evidence still does not promote provider-gradient or hardware
+execution.
 Provider-plugin gradient parity artefacts are a separate evidence boundary:
 they must match the provider execution artefact identity, backend, circuit
 fingerprint, PennyLane interface, diff method, and shot policy, carry SHA-256

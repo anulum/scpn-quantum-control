@@ -37,6 +37,8 @@ def _provider_plugin_execution_artifact(
     *,
     interface: str = "autograd",
     diff_method: str = "parameter-shift",
+    shot_policy: str = "finite_shot",
+    shots: int | None = 4096,
 ) -> PennyLaneProviderPluginExecutionArtifact:
     return PennyLaneProviderPluginExecutionArtifact(
         artifact_id="pl-provider-sim-20260620",
@@ -48,7 +50,8 @@ def _provider_plugin_execution_artifact(
         execution_mode="provider_simulator",
         interface=interface,
         diff_method=diff_method,
-        shots=4096,
+        shot_policy=shot_policy,
+        shots=shots,
         result_digest="sha256:" + "a" * 64,
         metadata_digest="sha256:" + "b" * 64,
         raw_result_replay_artifact_id="pl-provider-replay-20260620",
@@ -60,8 +63,10 @@ def _provider_gradient_parity_artifact(
     circuit_fingerprint: str = "phase-qnode:ry-rx-pauli-z:v1",
     interface: str = "autograd",
     diff_method: str = "parameter-shift",
+    shot_policy: str = "finite_shot",
     max_abs_error: float = 1e-9,
     tolerance: float = 1e-6,
+    shots: int | None = 4096,
 ) -> PennyLaneProviderGradientParityArtifact:
     return PennyLaneProviderGradientParityArtifact(
         artifact_id="pl-provider-gradient-20260620",
@@ -73,12 +78,13 @@ def _provider_gradient_parity_artifact(
         circuit_fingerprint=circuit_fingerprint,
         interface=interface,
         diff_method=diff_method,
+        shot_policy=shot_policy,
         gradient_digest="sha256:" + "c" * 64,
         reference_gradient_digest="sha256:" + "d" * 64,
         max_abs_error=max_abs_error,
         l2_error=2e-9,
         tolerance=tolerance,
-        shots=4096,
+        shots=shots,
         replay_artifact_id="pl-provider-gradient-replay-20260620",
     )
 
@@ -165,9 +171,38 @@ def test_pennylane_provider_plugin_matrix_accepts_paired_provider_artifacts() ->
     assert provider_payload["hardware_execution"] is False
     assert provider_payload["interface"] == "autograd"
     assert provider_payload["diff_method"] == "parameter-shift"
+    assert provider_payload["shot_policy"] == "finite_shot"
     assert gradient_payload["interface"] == "autograd"
     assert gradient_payload["diff_method"] == "parameter-shift"
+    assert gradient_payload["shot_policy"] == "finite_shot"
     assert gradient_payload["max_abs_error"] == pytest.approx(1e-9)
+
+
+def test_pennylane_provider_plugin_matrix_accepts_analytic_shot_policy() -> None:
+    """Provider and parity artifacts can record analytic execution explicitly."""
+    execution_artifact = _provider_plugin_execution_artifact(
+        shot_policy="analytic",
+        shots=None,
+    )
+    gradient_artifact = _provider_gradient_parity_artifact(
+        shot_policy="analytic",
+        shots=None,
+    )
+
+    result = run_pennylane_plugin_matrix(
+        provider_execution_artifact=execution_artifact,
+        provider_gradient_parity_artifact=gradient_artifact,
+    )
+
+    assert result.provider_plugin_execution_ready
+    assert result.provider_plugin_gradient_parity_ready
+    payload = result.to_dict()
+    provider_payload = cast(dict[str, object], payload["provider_execution_artifact"])
+    gradient_payload = cast(dict[str, object], payload["provider_gradient_parity_artifact"])
+    assert provider_payload["shot_policy"] == "analytic"
+    assert provider_payload["shots"] is None
+    assert gradient_payload["shot_policy"] == "analytic"
+    assert gradient_payload["shots"] is None
 
 
 def test_pennylane_provider_plugin_matrix_accepts_provider_evidence_bundle() -> None:
@@ -293,6 +328,21 @@ def test_pennylane_provider_plugin_matrix_rejects_diff_method_drift() -> None:
         )
 
 
+def test_pennylane_provider_plugin_matrix_rejects_shot_policy_drift() -> None:
+    """Provider-gradient parity must use the same analytic or finite-shot policy."""
+    with pytest.raises(ValueError, match="shot_policy"):
+        run_pennylane_plugin_matrix(
+            provider_execution_artifact=_provider_plugin_execution_artifact(
+                shot_policy="analytic",
+                shots=None,
+            ),
+            provider_gradient_parity_artifact=_provider_gradient_parity_artifact(
+                shot_policy="finite_shot",
+                shots=4096,
+            ),
+        )
+
+
 @pytest.mark.parametrize(
     ("factory", "match"),
     [
@@ -315,6 +365,7 @@ def test_pennylane_provider_plugin_matrix_rejects_diff_method_drift() -> None:
                 execution_mode="provider_simulator",
                 interface="bad\ninterface",
                 diff_method="parameter-shift",
+                shot_policy="finite_shot",
                 shots=4096,
                 result_digest="sha256:" + "a" * 64,
                 metadata_digest="sha256:" + "b" * 64,
@@ -332,11 +383,34 @@ def test_pennylane_provider_plugin_matrix_rejects_diff_method_drift() -> None:
                 execution_mode="provider_simulator",
                 interface="autograd",
                 diff_method=" ",
+                shot_policy="finite_shot",
                 shots=4096,
                 result_digest="sha256:" + "a" * 64,
                 metadata_digest="sha256:" + "b" * 64,
             ),
             "diff_method",
+        ),
+        (
+            lambda: _provider_plugin_execution_artifact(shot_policy=" "),
+            "shot_policy",
+        ),
+        (
+            lambda: _provider_plugin_execution_artifact(shot_policy="sampled"),
+            "shot_policy",
+        ),
+        (
+            lambda: _provider_plugin_execution_artifact(
+                shot_policy="analytic",
+                shots=4096,
+            ),
+            "analytic shot_policy",
+        ),
+        (
+            lambda: _provider_plugin_execution_artifact(
+                shot_policy="finite_shot",
+                shots=None,
+            ),
+            "finite_shot shot_policy",
         ),
         (
             lambda: PennyLaneProviderPluginExecutionArtifact(
@@ -349,6 +423,7 @@ def test_pennylane_provider_plugin_matrix_rejects_diff_method_drift() -> None:
                 execution_mode="provider_simulator",
                 interface="autograd",
                 diff_method="parameter-shift",
+                shot_policy="finite_shot",
                 shots=True,
                 result_digest="sha256:" + "a" * 64,
                 metadata_digest="sha256:" + "b" * 64,
@@ -366,6 +441,7 @@ def test_pennylane_provider_plugin_matrix_rejects_diff_method_drift() -> None:
                 execution_mode="provider_simulator",
                 interface="autograd",
                 diff_method="parameter-shift",
+                shot_policy="finite_shot",
                 shots=4096,
                 result_digest="sha256:" + "a" * 64,
                 metadata_digest="sha256:" + "b" * 64,
@@ -384,6 +460,7 @@ def test_pennylane_provider_plugin_matrix_rejects_diff_method_drift() -> None:
                 execution_mode="simulator",
                 interface="autograd",
                 diff_method="parameter-shift",
+                shot_policy="finite_shot",
                 shots=4096,
                 result_digest="sha256:" + "a" * 64,
                 metadata_digest="sha256:" + "b" * 64,
@@ -401,6 +478,7 @@ def test_pennylane_provider_plugin_matrix_rejects_diff_method_drift() -> None:
                 execution_mode="provider_qpu",
                 interface="autograd",
                 diff_method="parameter-shift",
+                shot_policy="finite_shot",
                 shots=4096,
                 result_digest="sha256:" + "a" * 64,
                 metadata_digest="sha256:" + "b" * 64,
@@ -426,6 +504,7 @@ def test_pennylane_provider_plugin_matrix_rejects_diff_method_drift() -> None:
                 circuit_fingerprint="phase-qnode:ry-rx-pauli-z:v1",
                 interface="bad\x7finterface",
                 diff_method="parameter-shift",
+                shot_policy="finite_shot",
                 gradient_digest="sha256:" + "c" * 64,
                 reference_gradient_digest="sha256:" + "d" * 64,
                 max_abs_error=1e-9,
@@ -447,6 +526,7 @@ def test_pennylane_provider_plugin_matrix_rejects_diff_method_drift() -> None:
                 circuit_fingerprint="phase-qnode:ry-rx-pauli-z:v1",
                 interface="autograd",
                 diff_method="",
+                shot_policy="finite_shot",
                 gradient_digest="sha256:" + "c" * 64,
                 reference_gradient_digest="sha256:" + "d" * 64,
                 max_abs_error=1e-9,
@@ -456,6 +536,28 @@ def test_pennylane_provider_plugin_matrix_rejects_diff_method_drift() -> None:
                 replay_artifact_id="pl-provider-gradient-replay-20260620",
             ),
             "diff_method",
+        ),
+        (
+            lambda: _provider_gradient_parity_artifact(shot_policy=" "),
+            "shot_policy",
+        ),
+        (
+            lambda: _provider_gradient_parity_artifact(shot_policy="sampled"),
+            "shot_policy",
+        ),
+        (
+            lambda: _provider_gradient_parity_artifact(
+                shot_policy="analytic",
+                shots=4096,
+            ),
+            "analytic shot_policy",
+        ),
+        (
+            lambda: _provider_gradient_parity_artifact(
+                shot_policy="finite_shot",
+                shots=None,
+            ),
+            "finite_shot shot_policy",
         ),
         (
             lambda: PennyLaneProviderGradientParityArtifact(
@@ -468,6 +570,7 @@ def test_pennylane_provider_plugin_matrix_rejects_diff_method_drift() -> None:
                 circuit_fingerprint="phase-qnode:ry-rx-pauli-z:v1",
                 interface="autograd",
                 diff_method="parameter-shift",
+                shot_policy="finite_shot",
                 gradient_digest="sha256:" + "c" * 64,
                 reference_gradient_digest="sha256:" + "d" * 64,
                 max_abs_error=1e-9,
@@ -489,6 +592,7 @@ def test_pennylane_provider_plugin_matrix_rejects_diff_method_drift() -> None:
                 circuit_fingerprint="phase-qnode:ry-rx-pauli-z:v1",
                 interface="autograd",
                 diff_method="parameter-shift",
+                shot_policy="finite_shot",
                 gradient_digest="sha256:" + "c" * 64,
                 reference_gradient_digest="sha256:" + "d" * 64,
                 max_abs_error=1e-9,
@@ -511,6 +615,7 @@ def test_pennylane_provider_plugin_matrix_rejects_diff_method_drift() -> None:
                 circuit_fingerprint="phase-qnode:ry-rx-pauli-z:v1",
                 interface="autograd",
                 diff_method="parameter-shift",
+                shot_policy="finite_shot",
                 gradient_digest="not-a-digest",
                 reference_gradient_digest="sha256:" + "d" * 64,
                 max_abs_error=1e-9,
@@ -532,6 +637,7 @@ def test_pennylane_provider_plugin_matrix_rejects_diff_method_drift() -> None:
                 execution_mode="provider_simulator",
                 interface="autograd",
                 diff_method="parameter-shift",
+                shot_policy="finite_shot",
                 shots=4096,
                 result_digest="sha256:" + "a" * 64,
                 metadata_digest="sha256:" + "b" * 64,
@@ -549,6 +655,7 @@ def test_pennylane_provider_plugin_matrix_rejects_diff_method_drift() -> None:
                 execution_mode="provider_simulator",
                 interface="autograd",
                 diff_method="parameter-shift",
+                shot_policy="finite_shot",
                 shots=4096,
                 result_digest="not-a-digest",
                 metadata_digest="sha256:" + "b" * 64,
