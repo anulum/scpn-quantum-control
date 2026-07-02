@@ -61,6 +61,10 @@ from .diff_kuramoto_adaptive import (
     adaptive_state_sensitivity,
     adaptive_terminal_value_and_grad,
 )
+from .diff_kuramoto_delay_sensitivity import (
+    delayed_delay_gradient,
+    delayed_delay_sensitivity,
+)
 from .diff_kuramoto_delayed import (
     DelayedGradients,
     delayed_phase_sensitivity,
@@ -600,6 +604,8 @@ __all__ = [
     "noisy_phase_sensitivity",
     "noisy_terminal_value_and_grad",
     "DelayedGradients",
+    "delayed_delay_gradient",
+    "delayed_delay_sensitivity",
     "delayed_phase_sensitivity",
     "delayed_terminal_value_and_grad",
     "QifMeanFieldGradients",
