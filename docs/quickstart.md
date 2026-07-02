@@ -418,9 +418,14 @@ local CPU-compatible tensors. `run_torch_module_device_state_audit(...)` checks
 CPU `module.to(...)` state replay and attempts CUDA replay only after a real
 CUDA smoke succeeds. `run_torch_module_checkpoint_audit(...)` writes a real
 `torch.save` checkpoint and reloads it on CPU with `weights_only=True` before
-strict module plus Adam optimizer replay. Incompatible CUDA, cross-runtime
-checkpoint portability, provider, hardware, isolated benchmark, and performance
-promotion remain blocked until their own artefacts exist.
+strict module plus Adam optimizer replay. `run_torch_module_export_audit(...)`
+exports the same bounded module through `torch.export.export(...)`, persists it
+with `torch.export.save(...)`, reloads it with `torch.export.load(...)`, and
+replays the local CPU value route through `ExportedProgram.module()`.
+Incompatible CUDA, AOTAutograd gradient-export persistence, dynamic-shape export
+promotion, cross-runtime checkpoint/export portability, provider, hardware,
+isolated benchmark, and performance promotion remain blocked until their own
+artefacts exist.
 
 ## GUESS error mitigation in 5 lines (added April 2026)
 

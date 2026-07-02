@@ -29,6 +29,7 @@ DIFFERENTIABLE_MODULE_PATTERNS = (
     "src/scpn_quantum_control/phase/*maintenance*.py",
     "src/scpn_quantum_control/phase/*state*.py",
     "src/scpn_quantum_control/phase/*checkpoint*.py",
+    "src/scpn_quantum_control/phase/*export*.py",
     "src/scpn_quantum_control/whole_program*.py",
     "src/scpn_quantum_control/benchmarks/differentiable*.py",
 )
@@ -685,6 +686,11 @@ def differentiable_module_hardening_registry() -> tuple[DifferentiableModuleHard
             "src/scpn_quantum_control/phase/torch_checkpoint.py",
             ("tests/test_phase_torch_checkpoint.py",),
             ("weights-only checkpoint replay", "cross-runtime checkpoint blockers"),
+        ),
+        _record(
+            "src/scpn_quantum_control/phase/torch_export.py",
+            ("tests/test_phase_torch_export.py",),
+            ("torch.export value replay", "AOTAutograd and dynamic-shape blockers"),
         ),
         _record(
             "src/scpn_quantum_control/phase/xy_compiler.py",

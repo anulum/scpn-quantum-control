@@ -578,6 +578,12 @@ from .torch_device_state import (
     PhaseTorchDeviceStateRoute,
     run_torch_module_device_state_audit,
 )
+from .torch_export import (
+    TORCH_EXPORT_CLAIM_BOUNDARY,
+    PhaseTorchExportAuditResult,
+    PhaseTorchExportRoute,
+    run_torch_module_export_audit,
+)
 from .torch_module_state import (
     TORCH_MODULE_STATE_CLAIM_BOUNDARY,
     PhaseTorchModuleStateAuditResult,
@@ -1008,6 +1014,8 @@ __all__ = [
     "PhaseTorchDeviceStateRoute",
     "PhaseTorchEcosystemMaturityAuditResult",
     "PhaseTorchEcosystemMaturityRoute",
+    "PhaseTorchExportAuditResult",
+    "PhaseTorchExportRoute",
     "PhaseTorchFuncCompatibilityResult",
     "PhaseTorchLiveOverlayEvidence",
     "PhaseTorchMaturityAuditResult",
@@ -1027,10 +1035,12 @@ __all__ = [
     "TORCH_CHECKPOINT_CLAIM_BOUNDARY",
     "TORCH_CHECKPOINT_SCHEMA",
     "TORCH_DEVICE_STATE_CLAIM_BOUNDARY",
+    "TORCH_EXPORT_CLAIM_BOUNDARY",
     "TORCH_MODULE_STATE_CLAIM_BOUNDARY",
     "run_torch_maturity_audit",
     "run_torch_module_checkpoint_audit",
     "run_torch_module_device_state_audit",
+    "run_torch_module_export_audit",
     "run_torch_module_state_audit",
     "run_torch_phase_qnode_lowering_matrix",
     "run_torch_training_loop_audit",
