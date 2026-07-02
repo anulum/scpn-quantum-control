@@ -306,6 +306,9 @@ local CPU weights-only loads for that checkpoint route,
 `torch.export.export(...)`, persists it with `torch.export.save(...)`, reloads it
 with `torch.export.load(...)`, and replays the local CPU value route through
 `ExportedProgram.module()`,
+`run_torch_export_shape_matrix(...)`, which records separate one- and
+two-parameter static export artifacts while keeping dynamic-shape constraints
+and dynamic-shape replay blocked,
 and
 `tensorflow_bounded_qnn_value_and_grad(...)`, which returns TensorFlow tensors
 from the analytic bounded-model gradient. Each route checks the same
@@ -510,6 +513,8 @@ six supported routes and seven blocked routes.
 Finite-shot uncertainty can be propagated from plus/minus expectation variances:
 
 ```python
+from pathlib import Path
+
 import numpy as np
 
 from scpn_quantum_control.phase import parameter_shift_gradient_with_uncertainty
@@ -2040,6 +2045,7 @@ from scpn_quantum_control.phase import (
     run_torch_ecosystem_maturity_audit,
     run_torch_maturity_audit,
     run_torch_phase_qnode_lowering_matrix,
+    run_torch_export_shape_matrix,
     run_torch_training_loop_audit,
     run_torch_training_loop_matrix,
     tensorflow_bounded_qnn_keras_layer,
@@ -2099,6 +2105,9 @@ torch_training_loop = run_torch_training_loop_audit(
     initial_params=np.array([0.45], dtype=float),
 )
 torch_training_loop_matrix = run_torch_training_loop_matrix()
+torch_export_shape_matrix = run_torch_export_shape_matrix(
+    export_dir=Path("bounded_phase_qnn_export_shapes"),
+)
 torch_ecosystem = run_torch_ecosystem_maturity_audit()
 torch_lowering = run_torch_phase_qnode_lowering_matrix()
 jax_cloud_batch = plan_jax_cloud_validation_batch(runner="jarvislabs")
@@ -2107,6 +2116,7 @@ torch_cloud_batch = plan_torch_cloud_validation_batch(runner="jarvislabs")
 print(torch_result.torch_gradient, torch_result.host_boundary)
 print(torch_training_loop.final_loss, torch_training_loop.passed)
 print(torch_training_loop_matrix.scenario_count, torch_training_loop_matrix.passed)
+print(torch_export_shape_matrix.scenario_count, torch_export_shape_matrix.open_gaps)
 print(torch_maturity.bounded_model_ready, torch_maturity.ready_for_provider_exceedance)
 print(torch_ecosystem.route_status("cuda_accelerator_device"))
 print(torch_lowering.route_status("registered_phase_qnode_statevector_lowering"))
@@ -2171,7 +2181,9 @@ checkpoint-corpus replay.
 the local CPU value route through `ExportedProgram.module()`. Incompatible CUDA,
 AOTAutograd gradient-export persistence, dynamic-shape export promotion, and
 cross-runtime checkpoint/export portability remain blocked until dedicated
-artefacts exist. The
+artefacts exist. `run_torch_export_shape_matrix(...)` records multiple static
+feature shapes as separate export artifacts and keeps constrained dynamic-shape
+replay blocked until a dedicated input-driven export route exists. The
 separate `run_torch_ecosystem_maturity_audit(...)` route records
 installed `nn.Module`/`Parameter`, `torch.func`, `torch.compile`, and CUDA-device
 capability state. A visible CUDA device is still blocked if the installed

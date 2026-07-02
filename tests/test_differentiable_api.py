@@ -698,6 +698,25 @@ def test_differentiable_dashboard_status_is_claim_bounded_for_gui_consumers() ->
         in rows["torch_bounded_qnn_module_export_audit"]["blocked_reasons"]
     )
     assert "torch.export.export" in rows["torch_bounded_qnn_module_export_audit"]["claim_boundary"]
+    assert rows["torch_bounded_qnn_export_shape_matrix"]["state"] == "diagnostic"
+    assert rows["torch_bounded_qnn_export_shape_matrix"]["fail_closed"] is True
+    assert (
+        rows["torch_bounded_qnn_export_shape_matrix"]["backing_api"]
+        == "run_torch_export_shape_matrix"
+    )
+    assert (
+        "PhaseTorchExportShapeMatrixResult"
+        in rows["torch_bounded_qnn_export_shape_matrix"]["evidence"]
+    )
+    assert (
+        "multi-static-shape torch.export replay"
+        in rows["torch_bounded_qnn_export_shape_matrix"]["evidence"]
+    )
+    assert (
+        "dynamic-shape export replay remains blocked"
+        in rows["torch_bounded_qnn_export_shape_matrix"]["blocked_reasons"]
+    )
+    assert "no dynamic-shape" in rows["torch_bounded_qnn_export_shape_matrix"]["claim_boundary"]
     assert rows["provider_and_hardware_gradients"]["state"] == "blocked"
     assert rows["gui_frontend"]["state"] == "planned"
     generated_from = cast(list[str], payload["generated_from"])

@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 777,
     "public_documentation_pages": 254,
-    "python_model_classes": 944,
-    "python_model_source_modules": 532,
+    "python_model_classes": 948,
+    "python_model_source_modules": 533,
     "rust_pyo3_model_wrappers": 171,
     "rust_source_modules": 42,
-    "test_files": 868
+    "test_files": 869
   },
   "documentation": {
     "examples": [
@@ -547,7 +547,7 @@
       {
         "package": "phase",
         "path": "src/scpn_quantum_control/phase",
-        "python_modules": 83
+        "python_modules": 84
       },
       {
         "package": "psi_field",
@@ -3085,6 +3085,22 @@
         "path": "src/scpn_quantum_control/phase/torch_export.py"
       },
       {
+        "name": "PhaseTorchExportShapeMatrixRecord",
+        "path": "src/scpn_quantum_control/phase/torch_export_shape_matrix.py"
+      },
+      {
+        "name": "PhaseTorchExportShapeMatrixResult",
+        "path": "src/scpn_quantum_control/phase/torch_export_shape_matrix.py"
+      },
+      {
+        "name": "PhaseTorchExportShapeMatrixRoute",
+        "path": "src/scpn_quantum_control/phase/torch_export_shape_matrix.py"
+      },
+      {
+        "name": "PhaseTorchExportShapeScenario",
+        "path": "src/scpn_quantum_control/phase/torch_export_shape_matrix.py"
+      },
+      {
         "name": "PhaseTorchFuncCompatibilityResult",
         "path": "src/scpn_quantum_control/phase/torch_bridge.py"
       },
@@ -4826,6 +4842,7 @@
       "src/scpn_quantum_control/phase/torch_checkpoint_matrix.py",
       "src/scpn_quantum_control/phase/torch_device_state.py",
       "src/scpn_quantum_control/phase/torch_export.py",
+      "src/scpn_quantum_control/phase/torch_export_shape_matrix.py",
       "src/scpn_quantum_control/phase/torch_module_state.py",
       "src/scpn_quantum_control/phase/torch_training_loop_matrix.py",
       "src/scpn_quantum_control/phase/transform_nesting.py",
@@ -6556,6 +6573,7 @@
       "tests/test_phase_torch_checkpoint_matrix.py",
       "tests/test_phase_torch_device_state.py",
       "tests/test_phase_torch_export.py",
+      "tests/test_phase_torch_export_shape_matrix.py",
       "tests/test_phase_torch_module_state.py",
       "tests/test_phase_torch_training_loop_matrix.py",
       "tests/test_phase_transform_nesting.py",

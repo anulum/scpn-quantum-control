@@ -702,6 +702,14 @@ def differentiable_module_hardening_registry() -> tuple[DifferentiableModuleHard
             ("torch.export value replay", "AOTAutograd and dynamic-shape blockers"),
         ),
         _record(
+            "src/scpn_quantum_control/phase/torch_export_shape_matrix.py",
+            ("tests/test_phase_torch_export_shape_matrix.py",),
+            (
+                "multi-static-shape torch.export replay",
+                "dynamic-shape export matrix blockers",
+            ),
+        ),
+        _record(
             "src/scpn_quantum_control/phase/torch_training_loop_matrix.py",
             ("tests/test_phase_torch_training_loop_matrix.py",),
             (

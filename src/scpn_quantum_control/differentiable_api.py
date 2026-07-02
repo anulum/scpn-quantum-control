@@ -1126,6 +1126,34 @@ def differentiable_dashboard_status(
             ),
         ),
         DifferentiableDashboardCapabilityRow(
+            surface="torch_bounded_qnn_export_shape_matrix",
+            state="conformance_backed" if conformance_passed else "diagnostic",
+            backing_api="run_torch_export_shape_matrix",
+            evidence=(
+                "PhaseTorchExportShapeMatrixResult",
+                "multi-static-shape torch.export replay",
+                "per-shape ExportedProgram artifact metadata",
+                "dynamic-shape blocker routes",
+            ),
+            blocked_reasons=()
+            if conformance_passed
+            else (
+                "conformance suite not run in this status call",
+                "dynamic-shape export constraints remain blocked",
+                "dynamic-shape export replay remains blocked",
+                "AOTAutograd gradient-export persistence remains blocked",
+                "CUDA, provider, hardware, isolated benchmark, and performance promotion remain blocked",
+            ),
+            claim_boundary=(
+                "bounded PyTorch static-shape export matrix for the phase-QNN "
+                "nn.Module route only; multiple static feature shapes are "
+                "exported, saved, loaded, and replayed on a local CPU value "
+                "route with no dynamic-shape, AOTAutograd gradient-export, "
+                "CUDA, provider, hardware, isolated benchmark, cross-runtime "
+                "deployment, or performance claim"
+            ),
+        ),
+        DifferentiableDashboardCapabilityRow(
             surface="program_ad_python_semantics",
             state="conformance_backed" if conformance_passed else "diagnostic",
             backing_api="whole_program_value_and_grad",

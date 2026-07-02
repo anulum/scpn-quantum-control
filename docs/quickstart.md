@@ -429,6 +429,9 @@ blocked. `run_torch_module_export_audit(...)`
 exports the same bounded module through `torch.export.export(...)`, persists it
 with `torch.export.save(...)`, reloads it with `torch.export.load(...)`, and
 replays the local CPU value route through `ExportedProgram.module()`.
+`run_torch_export_shape_matrix(...)` wraps that route across deterministic
+one- and two-parameter static feature shapes, records per-shape export
+artifacts, and keeps dynamic-shape constraints and dynamic-shape replay blocked.
 Incompatible CUDA, AOTAutograd gradient-export persistence, dynamic-shape export
 promotion, cross-runtime checkpoint/export portability, provider, hardware,
 isolated benchmark, and performance promotion remain blocked until their own

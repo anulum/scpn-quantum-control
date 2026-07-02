@@ -1410,6 +1410,7 @@ run_torch_module_device_state_audit(features, labels, initial_params, target_dev
 run_torch_module_checkpoint_audit(features, labels, initial_params, checkpoint_path=None, learning_rate=0.05, tolerance=1e-6) -> PhaseTorchCheckpointAuditResult
 run_torch_long_lived_checkpoint_matrix(features, labels, initial_params, checkpoint_path=None, replay_count=2, learning_rate=0.05, tolerance=1e-6) -> PhaseTorchCheckpointMatrixResult
 run_torch_module_export_audit(features, labels, initial_params, export_path, tolerance=1e-6) -> PhaseTorchExportAuditResult
+run_torch_export_shape_matrix(export_dir, scenarios=None, tolerance=1e-6) -> PhaseTorchExportShapeMatrixResult
 run_torch_training_loop_audit(features, labels, initial_params, learning_rate=0.1, steps=4, tolerance=1e-6, fullgraph=True, dynamic=False) -> PhaseTorchTrainingLoopAuditResult
 run_torch_training_loop_matrix(scenarios=None, tolerance=1e-6) -> PhaseTorchTrainingLoopMatrixResult
 run_torch_phase_qnode_lowering_matrix() -> PhaseTorchPhaseQNodeLoweringMatrixResult
