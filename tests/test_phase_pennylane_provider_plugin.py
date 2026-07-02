@@ -33,7 +33,11 @@ from scpn_quantum_control.phase.pennylane_provider_plugin import (
 )
 
 
-def _provider_plugin_execution_artifact() -> PennyLaneProviderPluginExecutionArtifact:
+def _provider_plugin_execution_artifact(
+    *,
+    interface: str = "autograd",
+    diff_method: str = "parameter-shift",
+) -> PennyLaneProviderPluginExecutionArtifact:
     return PennyLaneProviderPluginExecutionArtifact(
         artifact_id="pl-provider-sim-20260620",
         plugin_name="pennylane-provider-simulator",
@@ -42,6 +46,8 @@ def _provider_plugin_execution_artifact() -> PennyLaneProviderPluginExecutionArt
         backend_name="example_sim_v1",
         circuit_fingerprint="phase-qnode:ry-rx-pauli-z:v1",
         execution_mode="provider_simulator",
+        interface=interface,
+        diff_method=diff_method,
         shots=4096,
         result_digest="sha256:" + "a" * 64,
         metadata_digest="sha256:" + "b" * 64,
@@ -52,6 +58,8 @@ def _provider_plugin_execution_artifact() -> PennyLaneProviderPluginExecutionArt
 def _provider_gradient_parity_artifact(
     *,
     circuit_fingerprint: str = "phase-qnode:ry-rx-pauli-z:v1",
+    interface: str = "autograd",
+    diff_method: str = "parameter-shift",
     max_abs_error: float = 1e-9,
     tolerance: float = 1e-6,
 ) -> PennyLaneProviderGradientParityArtifact:
@@ -63,6 +71,8 @@ def _provider_gradient_parity_artifact(
         device_name="example.simulator",
         backend_name="example_sim_v1",
         circuit_fingerprint=circuit_fingerprint,
+        interface=interface,
+        diff_method=diff_method,
         gradient_digest="sha256:" + "c" * 64,
         reference_gradient_digest="sha256:" + "d" * 64,
         max_abs_error=max_abs_error,
@@ -153,6 +163,10 @@ def test_pennylane_provider_plugin_matrix_accepts_paired_provider_artifacts() ->
     provider_payload = cast(dict[str, object], payload["provider_execution_artifact"])
     gradient_payload = cast(dict[str, object], payload["provider_gradient_parity_artifact"])
     assert provider_payload["hardware_execution"] is False
+    assert provider_payload["interface"] == "autograd"
+    assert provider_payload["diff_method"] == "parameter-shift"
+    assert gradient_payload["interface"] == "autograd"
+    assert gradient_payload["diff_method"] == "parameter-shift"
     assert gradient_payload["max_abs_error"] == pytest.approx(1e-9)
 
 
@@ -253,6 +267,32 @@ def test_pennylane_provider_plugin_matrix_rejects_unpaired_or_mismatched_parity(
         )
 
 
+def test_pennylane_provider_plugin_matrix_rejects_interface_drift() -> None:
+    """Provider-gradient parity must use the same PennyLane interface."""
+    with pytest.raises(ValueError, match="interface"):
+        run_pennylane_plugin_matrix(
+            provider_execution_artifact=_provider_plugin_execution_artifact(
+                interface="autograd",
+            ),
+            provider_gradient_parity_artifact=_provider_gradient_parity_artifact(
+                interface="jax",
+            ),
+        )
+
+
+def test_pennylane_provider_plugin_matrix_rejects_diff_method_drift() -> None:
+    """Provider-gradient parity must use the same PennyLane differentiation method."""
+    with pytest.raises(ValueError, match="diff_method"):
+        run_pennylane_plugin_matrix(
+            provider_execution_artifact=_provider_plugin_execution_artifact(
+                diff_method="parameter-shift",
+            ),
+            provider_gradient_parity_artifact=_provider_gradient_parity_artifact(
+                diff_method="backprop",
+            ),
+        )
+
+
 @pytest.mark.parametrize(
     ("factory", "match"),
     [
@@ -273,6 +313,42 @@ def test_pennylane_provider_plugin_matrix_rejects_unpaired_or_mismatched_parity(
                 backend_name="example_sim_v1",
                 circuit_fingerprint="phase-qnode:ry-rx-pauli-z:v1",
                 execution_mode="provider_simulator",
+                interface="bad\ninterface",
+                diff_method="parameter-shift",
+                shots=4096,
+                result_digest="sha256:" + "a" * 64,
+                metadata_digest="sha256:" + "b" * 64,
+            ),
+            "interface",
+        ),
+        (
+            lambda: PennyLaneProviderPluginExecutionArtifact(
+                artifact_id="pl-provider-sim-20260620",
+                plugin_name="pennylane-provider-simulator",
+                provider_name="example-provider",
+                device_name="example.simulator",
+                backend_name="example_sim_v1",
+                circuit_fingerprint="phase-qnode:ry-rx-pauli-z:v1",
+                execution_mode="provider_simulator",
+                interface="autograd",
+                diff_method=" ",
+                shots=4096,
+                result_digest="sha256:" + "a" * 64,
+                metadata_digest="sha256:" + "b" * 64,
+            ),
+            "diff_method",
+        ),
+        (
+            lambda: PennyLaneProviderPluginExecutionArtifact(
+                artifact_id="pl-provider-sim-20260620",
+                plugin_name="pennylane-provider-simulator",
+                provider_name="example-provider",
+                device_name="example.simulator",
+                backend_name="example_sim_v1",
+                circuit_fingerprint="phase-qnode:ry-rx-pauli-z:v1",
+                execution_mode="provider_simulator",
+                interface="autograd",
+                diff_method="parameter-shift",
                 shots=True,
                 result_digest="sha256:" + "a" * 64,
                 metadata_digest="sha256:" + "b" * 64,
@@ -288,6 +364,8 @@ def test_pennylane_provider_plugin_matrix_rejects_unpaired_or_mismatched_parity(
                 backend_name="example_sim_v1",
                 circuit_fingerprint="phase-qnode:ry-rx-pauli-z:v1",
                 execution_mode="provider_simulator",
+                interface="autograd",
+                diff_method="parameter-shift",
                 shots=4096,
                 result_digest="sha256:" + "a" * 64,
                 metadata_digest="sha256:" + "b" * 64,
@@ -304,6 +382,8 @@ def test_pennylane_provider_plugin_matrix_rejects_unpaired_or_mismatched_parity(
                 backend_name="example_sim_v1",
                 circuit_fingerprint="phase-qnode:ry-rx-pauli-z:v1",
                 execution_mode="simulator",
+                interface="autograd",
+                diff_method="parameter-shift",
                 shots=4096,
                 result_digest="sha256:" + "a" * 64,
                 metadata_digest="sha256:" + "b" * 64,
@@ -319,6 +399,8 @@ def test_pennylane_provider_plugin_matrix_rejects_unpaired_or_mismatched_parity(
                 backend_name="example_sim_v1",
                 circuit_fingerprint="phase-qnode:ry-rx-pauli-z:v1",
                 execution_mode="provider_qpu",
+                interface="autograd",
+                diff_method="parameter-shift",
                 shots=4096,
                 result_digest="sha256:" + "a" * 64,
                 metadata_digest="sha256:" + "b" * 64,
@@ -342,6 +424,50 @@ def test_pennylane_provider_plugin_matrix_rejects_unpaired_or_mismatched_parity(
                 device_name="example.simulator",
                 backend_name="example_sim_v1",
                 circuit_fingerprint="phase-qnode:ry-rx-pauli-z:v1",
+                interface="bad\x7finterface",
+                diff_method="parameter-shift",
+                gradient_digest="sha256:" + "c" * 64,
+                reference_gradient_digest="sha256:" + "d" * 64,
+                max_abs_error=1e-9,
+                l2_error=2e-9,
+                tolerance=1e-6,
+                shots=4096,
+                replay_artifact_id="pl-provider-gradient-replay-20260620",
+            ),
+            "interface",
+        ),
+        (
+            lambda: PennyLaneProviderGradientParityArtifact(
+                artifact_id="pl-provider-gradient-20260620",
+                provider_execution_artifact_id="pl-provider-sim-20260620",
+                plugin_name="pennylane-provider-simulator",
+                provider_name="example-provider",
+                device_name="example.simulator",
+                backend_name="example_sim_v1",
+                circuit_fingerprint="phase-qnode:ry-rx-pauli-z:v1",
+                interface="autograd",
+                diff_method="",
+                gradient_digest="sha256:" + "c" * 64,
+                reference_gradient_digest="sha256:" + "d" * 64,
+                max_abs_error=1e-9,
+                l2_error=2e-9,
+                tolerance=1e-6,
+                shots=4096,
+                replay_artifact_id="pl-provider-gradient-replay-20260620",
+            ),
+            "diff_method",
+        ),
+        (
+            lambda: PennyLaneProviderGradientParityArtifact(
+                artifact_id="pl-provider-gradient-20260620",
+                provider_execution_artifact_id="pl-provider-sim-20260620",
+                plugin_name="pennylane-provider-simulator",
+                provider_name="example-provider",
+                device_name="example.simulator",
+                backend_name="example_sim_v1",
+                circuit_fingerprint="phase-qnode:ry-rx-pauli-z:v1",
+                interface="autograd",
+                diff_method="parameter-shift",
                 gradient_digest="sha256:" + "c" * 64,
                 reference_gradient_digest="sha256:" + "d" * 64,
                 max_abs_error=1e-9,
@@ -361,6 +487,8 @@ def test_pennylane_provider_plugin_matrix_rejects_unpaired_or_mismatched_parity(
                 device_name="example.simulator",
                 backend_name="example_sim_v1",
                 circuit_fingerprint="phase-qnode:ry-rx-pauli-z:v1",
+                interface="autograd",
+                diff_method="parameter-shift",
                 gradient_digest="sha256:" + "c" * 64,
                 reference_gradient_digest="sha256:" + "d" * 64,
                 max_abs_error=1e-9,
@@ -381,6 +509,8 @@ def test_pennylane_provider_plugin_matrix_rejects_unpaired_or_mismatched_parity(
                 device_name="example.simulator",
                 backend_name="example_sim_v1",
                 circuit_fingerprint="phase-qnode:ry-rx-pauli-z:v1",
+                interface="autograd",
+                diff_method="parameter-shift",
                 gradient_digest="not-a-digest",
                 reference_gradient_digest="sha256:" + "d" * 64,
                 max_abs_error=1e-9,
@@ -400,6 +530,8 @@ def test_pennylane_provider_plugin_matrix_rejects_unpaired_or_mismatched_parity(
                 backend_name="example_sim_v1",
                 circuit_fingerprint="phase-qnode:ry-rx-pauli-z:v1",
                 execution_mode="provider_simulator",
+                interface="autograd",
+                diff_method="parameter-shift",
                 shots=4096,
                 result_digest="sha256:" + "a" * 64,
                 metadata_digest="sha256:" + "b" * 64,
@@ -415,6 +547,8 @@ def test_pennylane_provider_plugin_matrix_rejects_unpaired_or_mismatched_parity(
                 backend_name="example_sim_v1",
                 circuit_fingerprint="phase-qnode:ry-rx-pauli-z:v1",
                 execution_mode="provider_simulator",
+                interface="autograd",
+                diff_method="parameter-shift",
                 shots=4096,
                 result_digest="not-a-digest",
                 metadata_digest="sha256:" + "b" * 64,

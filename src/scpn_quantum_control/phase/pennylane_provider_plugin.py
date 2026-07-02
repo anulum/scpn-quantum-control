@@ -56,7 +56,13 @@ class PennyLanePluginMatrixRoute:
 
 @dataclass(frozen=True)
 class PennyLaneProviderPluginExecutionArtifact:
-    """Validated PennyLane provider-plugin execution evidence."""
+    """Validated PennyLane provider-plugin execution evidence.
+
+    Provider evidence records the PennyLane interface and differentiation
+    method used for the captured provider route. Those fields are part of the
+    evidence chain, so provider-gradient parity must cite the same values before
+    the route can pass.
+    """
 
     artifact_id: str
     plugin_name: str
@@ -65,6 +71,8 @@ class PennyLaneProviderPluginExecutionArtifact:
     backend_name: str
     circuit_fingerprint: str
     execution_mode: str
+    interface: str
+    diff_method: str
     shots: int | None
     result_digest: str
     metadata_digest: str
@@ -81,6 +89,8 @@ class PennyLaneProviderPluginExecutionArtifact:
             "backend_name",
             "circuit_fingerprint",
             "execution_mode",
+            "interface",
+            "diff_method",
         ):
             object.__setattr__(
                 self,
@@ -122,6 +132,8 @@ class PennyLaneProviderPluginExecutionArtifact:
             "backend_name": self.backend_name,
             "circuit_fingerprint": self.circuit_fingerprint,
             "execution_mode": self.execution_mode,
+            "interface": self.interface,
+            "diff_method": self.diff_method,
             "shots": self.shots,
             "result_digest": self.result_digest,
             "metadata_digest": self.metadata_digest,
@@ -132,7 +144,12 @@ class PennyLaneProviderPluginExecutionArtifact:
 
 @dataclass(frozen=True)
 class PennyLaneProviderGradientParityArtifact:
-    """Validated PennyLane provider-plugin gradient parity evidence."""
+    """Validated PennyLane provider-plugin gradient parity evidence.
+
+    Parity artefacts must match the referenced provider execution artefact on
+    interface, differentiation method, device identity, circuit fingerprint, and
+    shot policy before the provider-gradient route can pass.
+    """
 
     artifact_id: str
     provider_execution_artifact_id: str
@@ -141,6 +158,8 @@ class PennyLaneProviderGradientParityArtifact:
     device_name: str
     backend_name: str
     circuit_fingerprint: str
+    interface: str
+    diff_method: str
     gradient_digest: str
     reference_gradient_digest: str
     max_abs_error: float
@@ -160,6 +179,8 @@ class PennyLaneProviderGradientParityArtifact:
             "device_name",
             "backend_name",
             "circuit_fingerprint",
+            "interface",
+            "diff_method",
             "replay_artifact_id",
         ):
             object.__setattr__(
@@ -200,6 +221,8 @@ class PennyLaneProviderGradientParityArtifact:
             "device_name": self.device_name,
             "backend_name": self.backend_name,
             "circuit_fingerprint": self.circuit_fingerprint,
+            "interface": self.interface,
+            "diff_method": self.diff_method,
             "gradient_digest": self.gradient_digest,
             "reference_gradient_digest": self.reference_gradient_digest,
             "max_abs_error": self.max_abs_error,
@@ -582,6 +605,8 @@ def run_pennylane_plugin_matrix(
                 "provider_plugin_adapter",
                 "provider_execution_artifact",
                 "device_metadata_artifact",
+                "interface_metadata",
+                "diff_method_metadata",
             ),
         ),
         PennyLanePluginMatrixRoute(
@@ -601,6 +626,8 @@ def run_pennylane_plugin_matrix(
             reason=provider_gradient_reason,
             requires=(
                 "same_circuit_provider_artifact",
+                "matching_interface_metadata",
+                "matching_diff_method_metadata",
                 "raw_result_replay",
                 "gradient_parity_artifact",
             ),
@@ -666,6 +693,8 @@ def _validate_provider_gradient_parity_pair(
         "device_name": provider_execution_artifact.device_name,
         "backend_name": provider_execution_artifact.backend_name,
         "circuit_fingerprint": provider_execution_artifact.circuit_fingerprint,
+        "interface": provider_execution_artifact.interface,
+        "diff_method": provider_execution_artifact.diff_method,
         "shots": provider_execution_artifact.shots,
     }
     for field_name, expected_value in expected.items():

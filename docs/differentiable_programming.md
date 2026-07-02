@@ -413,12 +413,15 @@ diagnostic.
   `shots=None`, and finite-shot mode requires an explicit positive integer
   before plugin/device dispatch.
 - Require PennyLane provider-plugin artefact `execution_mode` values to be
-  provider-scoped while still rejecting hardware/QPU execution modes.
+  provider-scoped while still rejecting hardware/QPU execution modes. Provider
+  execution artefacts must also carry explicit PennyLane `interface` and
+  `diff_method` metadata before the provider route can pass.
 - Keep PennyLane plugin-matrix route evidence canonical: statuses are
   `passed`, `blocked`, or `failed`, and route metadata is control-clean.
 - Pair PennyLane provider-gradient parity evidence to the same provider
-  execution artefact, circuit fingerprint, backend, and shot policy before
-  marking provider-gradient parity as passed.
+  execution artefact, circuit fingerprint, backend, PennyLane interface,
+  diff method, and shot policy before marking provider-gradient parity as
+  passed.
 - Require ticketed live hardware, allowlist, shot-budget, raw-count,
   calibration digest, calibration capture/expiry timestamps, and metadata
   evidence before PennyLane hardware-plugin execution can pass. Reject stale

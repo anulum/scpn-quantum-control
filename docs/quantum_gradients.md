@@ -2009,21 +2009,25 @@ same objects for compatibility with older imports.
 `PennyLaneProviderPluginExecutionArtifact` validates provider-plugin execution
 metadata with non-empty plugin/provider/device/backend identities, positive
 shots when present, SHA-256 result and metadata digests, optional replay
-metadata, non-hardware execution mode, and `hardware_execution=False`.
+metadata, explicit PennyLane `interface` and `diff_method` metadata,
+non-hardware execution mode, and `hardware_execution=False`.
 `run_pennylane_plugin_matrix(...)` records local `default.qubit` exact-state,
 shot-policy metadata, generated Phase-QNode export, and supported tape-import
 routes as passed. Passing a validated provider execution artefact marks
 `provider_plugin_execution` as passed, and a matching
 `PennyLaneProviderGradientParityArtifact` marks provider-gradient parity as
-passed. Hardware-plugin execution remains blocked until its own ticketed
-artefact is attached, and isolated-benchmark promotion remains blocked with
-required artefacts listed per route.
+passed only when provider identity, circuit fingerprint, PennyLane interface,
+diff method, and shot policy match. Hardware-plugin execution remains blocked
+until its own ticketed artefact is attached, and isolated-benchmark promotion
+remains blocked with required artefacts listed per route.
 Passing a `PennyLaneProviderEvidenceBundle` keeps provider execution,
 provider-gradient parity, and optional ticketed hardware execution in one
 exclusive attachment. The bundle requires explicit UTC capture/expiry metadata,
 rejects inverted freshness windows, rejects hardware evidence whose provider,
 circuit fingerprint, or shot count no longer matches the provider execution
-chain, and fails closed when the bundle has expired at the review cutoff.
+chain, rejects provider-gradient parity whose interface or diff method drifts
+from the provider execution chain, and fails closed when the bundle has expired
+at the review cutoff.
 Passing a validated `PennyLaneHardwarePluginExecutionArtifact` marks only
 `hardware_plugin_execution` as passed; it must carry ticket, allowlist,
 shot-budget, hardware evidence, raw-count, calibration digest,

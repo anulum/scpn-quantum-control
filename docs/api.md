@@ -1497,12 +1497,14 @@ failing closed before `qml.device(...)` for unsafe device/interface/diff
 metadata and non-coercive shot metadata: `shots=None` is analytic mode and
 finite-shot mode requires an explicit positive integer, not a boolean, float,
 or numeric string. Provider-plugin execution artefacts use the same shot-count
-boundary, must identify provider-plugin execution in `execution_mode`, and
-still do not promote provider-gradient or hardware execution.
+boundary, must identify provider-plugin execution in `execution_mode`, must
+carry explicit PennyLane `interface` and `diff_method` metadata, and still do
+not promote provider-gradient or hardware execution.
 Provider-plugin gradient parity artefacts are a separate evidence boundary:
 they must match the provider execution artefact identity, backend, circuit
-fingerprint, and shot policy, carry SHA-256 gradient digests, and prove
-`max_abs_error <= tolerance` before the plugin matrix marks
+fingerprint, PennyLane interface, diff method, and shot policy, carry SHA-256
+gradient digests, and prove `max_abs_error <= tolerance` before the plugin
+matrix marks
 `provider_plugin_gradient_parity` as passed.
 Hardware-plugin execution artefacts are also separate: they require a live
 execution ticket, provider allowlist, shot-budget ID, hardware evidence ID,
