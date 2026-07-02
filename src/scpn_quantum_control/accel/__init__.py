@@ -335,6 +335,12 @@ from .kuramoto_ring_basins import (
     twisted_state_eigenvalues,
     winding_number,
 )
+from .kuramoto_scipy_interop import (
+    KuramotoIvpSolution,
+    kuramoto_ode_jacobian,
+    kuramoto_ode_rhs,
+    solve_kuramoto_ivp,
+)
 from .kuramoto_sdre_control import (
     integrate_sdre_controlled_kuramoto,
     kuramoto_sdre_gain,
@@ -359,7 +365,9 @@ from .kuramoto_system import (
     KuramotoParameters,
     KuramotoSystem,
     mean_field_phase_rule,
+    mean_field_phase_rule_jacobian,
     networked_phase_rule,
+    networked_phase_rule_jacobian,
 )
 from .kuramoto_system_id import (
     SystemIdentificationResult,
@@ -608,8 +616,14 @@ __all__ = [
     "integrate_symplectic_inertial",
     "KuramotoParameters",
     "KuramotoSystem",
+    "KuramotoIvpSolution",
+    "kuramoto_ode_rhs",
+    "kuramoto_ode_jacobian",
+    "solve_kuramoto_ivp",
     "mean_field_phase_rule",
+    "mean_field_phase_rule_jacobian",
     "networked_phase_rule",
+    "networked_phase_rule_jacobian",
     "PseudoArclengthBranch",
     "pseudo_arclength_continuation",
     "CollectiveControlGradients",

@@ -54,10 +54,10 @@ from dataclasses import dataclass
 import numpy as np
 from numpy.typing import NDArray
 
-from .kuramoto_mean_field import mean_field_force
-from .networked_kuramoto import networked_kuramoto_force
-from .sakaguchi_kuramoto import sakaguchi_force
-from .sakaguchi_mean_field import sakaguchi_mean_field_force
+from .kuramoto_mean_field import mean_field_force, mean_field_jacobian
+from .networked_kuramoto import networked_kuramoto_force, networked_kuramoto_jacobian
+from .sakaguchi_kuramoto import sakaguchi_force, sakaguchi_jacobian
+from .sakaguchi_mean_field import sakaguchi_mean_field_force, sakaguchi_mean_field_jacobian
 
 #: The names a :class:`KuramotoParameters` exposes to :meth:`KuramotoSystem.set_parameter`.
 _TUNABLE_PARAMETERS = ("natural_frequencies", "coupling", "frustration")
@@ -232,6 +232,76 @@ def networked_phase_rule(
     return parameters.natural_frequencies + force
 
 
+#: The state Jacobian ``∂f/∂θ`` of a :data:`PhaseRule`, returning an ``(N, N)``
+#: matrix. Because ``f = ω + F(θ)`` and ``ω`` is constant, the rule Jacobian is
+#: the coupling-force Jacobian ``J_F``; it feeds implicit ODE solvers.
+PhaseRuleJacobian = Callable[[NDArray[np.float64], KuramotoParameters, float], NDArray[np.float64]]
+
+
+def mean_field_phase_rule_jacobian(
+    state: NDArray[np.float64], parameters: KuramotoParameters, time: float
+) -> NDArray[np.float64]:
+    r"""The state Jacobian of :func:`mean_field_phase_rule` (an ``(N, N)`` matrix).
+
+    Parameters
+    ----------
+    state : numpy.ndarray
+        The ``(N,)`` phase vector :math:`\theta`.
+    parameters : KuramotoParameters
+        Must carry a scalar coupling (mean-field topology).
+    time : float
+        Ignored — the rule is autonomous; present for the ``f(u, p, t)`` contract.
+
+    Raises
+    ------
+    ValueError
+        If the parameter coupling is a matrix rather than a scalar.
+    """
+
+    del time  # autonomous rule; the parameter completes the f(u, p, t) contract
+    coupling = parameters.coupling
+    if isinstance(coupling, np.ndarray):
+        raise ValueError(
+            "mean_field_phase_rule_jacobian needs a scalar coupling; "
+            "use networked_phase_rule_jacobian for a matrix"
+        )
+    if parameters.frustration == 0.0:
+        return mean_field_jacobian(state, coupling)
+    return sakaguchi_mean_field_jacobian(state, coupling, parameters.frustration)
+
+
+def networked_phase_rule_jacobian(
+    state: NDArray[np.float64], parameters: KuramotoParameters, time: float
+) -> NDArray[np.float64]:
+    r"""The state Jacobian of :func:`networked_phase_rule` (an ``(N, N)`` matrix).
+
+    Parameters
+    ----------
+    state : numpy.ndarray
+        The ``(N,)`` phase vector :math:`\theta`.
+    parameters : KuramotoParameters
+        Must carry an ``(N, N)`` coupling matrix (networked topology).
+    time : float
+        Ignored — the rule is autonomous; present for the ``f(u, p, t)`` contract.
+
+    Raises
+    ------
+    ValueError
+        If the parameter coupling is a scalar rather than a matrix.
+    """
+
+    del time  # autonomous rule; the parameter completes the f(u, p, t) contract
+    coupling = parameters.coupling
+    if not isinstance(coupling, np.ndarray):
+        raise ValueError(
+            "networked_phase_rule_jacobian needs an (N, N) coupling matrix; "
+            "use mean_field_phase_rule_jacobian for a scalar"
+        )
+    if parameters.frustration == 0.0:
+        return networked_kuramoto_jacobian(state, coupling)
+    return sakaguchi_jacobian(state, coupling, parameters.frustration)
+
+
 class KuramotoSystem:
     r"""A first-order Kuramoto system with a uniform state/parameter/step contract.
 
@@ -254,6 +324,10 @@ class KuramotoSystem:
         The default integration step; must be positive.
     scheme : str, optional
         ``"rk4"`` (default, fourth order) or ``"euler"`` (first order).
+    jacobian : PhaseRuleJacobian, optional
+        The analytic state Jacobian ``∂f/∂θ`` of ``rule``. The :meth:`mean_field`
+        and :meth:`networked` factories attach the matching one; pass one here for
+        a custom rule to feed implicit ODE solvers, or leave it ``None``.
 
     Raises
     ------
@@ -270,6 +344,7 @@ class KuramotoSystem:
         *,
         dt: float,
         scheme: str = "rk4",
+        jacobian: PhaseRuleJacobian | None = None,
     ) -> None:
         state = np.asarray(initial_state, dtype=np.float64)
         if state.ndim != 1 or state.size == 0:
@@ -281,6 +356,7 @@ class KuramotoSystem:
         if not dt > 0.0:
             raise ValueError("dt must be positive")
         self._rule = rule
+        self._jacobian = jacobian
         self._parameters = parameters
         self._initial_state = state.copy()
         self._state = state.copy()
@@ -319,7 +395,14 @@ class KuramotoSystem:
         parameters = KuramotoParameters(
             np.asarray(natural_frequencies, dtype=np.float64), float(coupling), frustration
         )
-        return cls(mean_field_phase_rule, initial_phases, parameters, dt=dt, scheme=scheme)
+        return cls(
+            mean_field_phase_rule,
+            initial_phases,
+            parameters,
+            dt=dt,
+            scheme=scheme,
+            jacobian=mean_field_phase_rule_jacobian,
+        )
 
     @classmethod
     def networked(
@@ -353,7 +436,14 @@ class KuramotoSystem:
             np.asarray(coupling, dtype=np.float64),
             frustration,
         )
-        return cls(networked_phase_rule, initial_phases, parameters, dt=dt, scheme=scheme)
+        return cls(
+            networked_phase_rule,
+            initial_phases,
+            parameters,
+            dt=dt,
+            scheme=scheme,
+            jacobian=networked_phase_rule_jacobian,
+        )
 
     @property
     def current_state(self) -> NDArray[np.float64]:
@@ -372,6 +462,22 @@ class KuramotoSystem:
         """The current (immutable) parameter container ``p``."""
 
         return self._parameters
+
+    @property
+    def rule(self) -> PhaseRule:
+        """The dynamic rule ``f(u, p, t)``; callable at an arbitrary state.
+
+        Exposed so external solvers can evaluate the flow at any state rather than
+        only the internal one, e.g. ``system.rule(y, system.current_parameters, t)``.
+        """
+
+        return self._rule
+
+    @property
+    def jacobian(self) -> PhaseRuleJacobian | None:
+        """The analytic state Jacobian ``∂f/∂θ`` if one was supplied, else ``None``."""
+
+        return self._jacobian
 
     @property
     def current_time(self) -> float:
@@ -470,6 +576,27 @@ class KuramotoSystem:
             self._rule(self._state, self._parameters, evaluation_time), dtype=np.float64
         )
 
+    def rule_jacobian(self, *, time: float | None = None) -> NDArray[np.float64]:
+        """Evaluate the analytic state Jacobian ``∂f/∂θ`` at the current state.
+
+        Parameters
+        ----------
+        time : float, optional
+            The time to evaluate at; defaults to the current time.
+
+        Raises
+        ------
+        ValueError
+            If the system was built without an analytic Jacobian.
+        """
+
+        if self._jacobian is None:
+            raise ValueError("this system has no analytic Jacobian; supply one at construction")
+        evaluation_time = self._time if time is None else float(time)
+        return np.asarray(
+            self._jacobian(self._state, self._parameters, evaluation_time), dtype=np.float64
+        )
+
     def _advance(self, state: NDArray[np.float64], time: float, dt: float) -> NDArray[np.float64]:
         """Return the state one fixed step later under the active scheme."""
 
@@ -556,5 +683,7 @@ __all__ = [
     "KuramotoParameters",
     "KuramotoSystem",
     "mean_field_phase_rule",
+    "mean_field_phase_rule_jacobian",
     "networked_phase_rule",
+    "networked_phase_rule_jacobian",
 ]
