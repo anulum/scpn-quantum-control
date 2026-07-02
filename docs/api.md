@@ -1506,9 +1506,11 @@ fingerprint, and shot policy, carry SHA-256 gradient digests, and prove
 `provider_plugin_gradient_parity` as passed.
 Hardware-plugin execution artefacts are also separate: they require a live
 execution ticket, provider allowlist, shot-budget ID, hardware evidence ID,
-raw-count and calibration digests, positive integer shots, and an execution
-mode that identifies live hardware rather than simulator or replay execution
-before `hardware_plugin_execution` can pass.
+raw-count and calibration digests, calibration capture/expiry timestamps,
+positive integer shots, and an execution mode that identifies live hardware
+rather than simulator or replay execution before `hardware_plugin_execution`
+can pass. The plugin matrix rejects stale calibration metadata at the review
+cutoff.
 PennyLane plugin-matrix route records are also fail-closed evidence objects:
 route names, reasons, and requirement labels are control-clean strings, and
 route statuses are limited to `passed`, `blocked`, or `failed`.

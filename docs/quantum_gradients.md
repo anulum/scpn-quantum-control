@@ -2026,8 +2026,10 @@ circuit fingerprint, or shot count no longer matches the provider execution
 chain, and fails closed when the bundle has expired at the review cutoff.
 Passing a validated `PennyLaneHardwarePluginExecutionArtifact` marks only
 `hardware_plugin_execution` as passed; it must carry ticket, allowlist,
-shot-budget, hardware evidence, raw-count, calibration, and metadata
-provenance before the route opens.
+shot-budget, hardware evidence, raw-count, calibration digest,
+calibration capture/expiry timestamps, and metadata provenance before the route
+opens. Stale calibration metadata fails closed at the review cutoff before the
+hardware-plugin route can pass.
 `run_pennylane_maturity_audit(...)` combines caller-supplied gradient agreement,
 caller-supplied QNode round-trip parity, generated Phase-QNode export parity,
 optional PennyLane tape import parity, device metadata, shot policy, diff

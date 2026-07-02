@@ -73,11 +73,16 @@ def _provider_gradient_parity_artifact(
     )
 
 
-def _hardware_plugin_execution_artifact() -> PennyLaneHardwarePluginExecutionArtifact:
+def _hardware_plugin_execution_artifact(
+    *,
+    provider_name: str = "example-provider",
+    calibration_captured_at_utc: str = "2026-06-20T12:05:00Z",
+    calibration_valid_until_utc: str = "2026-07-20T00:00:00Z",
+) -> PennyLaneHardwarePluginExecutionArtifact:
     return PennyLaneHardwarePluginExecutionArtifact(
         artifact_id="pl-hardware-exec-20260620",
         plugin_name="pennylane-provider-hardware",
-        provider_name="example-provider",
+        provider_name=provider_name,
         device_name="example.qpu",
         backend_name="example_qpu_v1",
         circuit_fingerprint="phase-qnode:ry-rx-pauli-z:v1",
@@ -90,6 +95,8 @@ def _hardware_plugin_execution_artifact() -> PennyLaneHardwarePluginExecutionArt
         result_digest="sha256:" + "e" * 64,
         raw_counts_digest="sha256:" + "f" * 64,
         calibration_snapshot_digest="sha256:" + "1" * 64,
+        calibration_captured_at_utc=calibration_captured_at_utc,
+        calibration_valid_until_utc=calibration_valid_until_utc,
         metadata_digest="sha256:" + "2" * 64,
     )
 
@@ -176,27 +183,25 @@ def test_pennylane_provider_plugin_matrix_rejects_stale_provider_evidence_bundle
 
 def test_pennylane_provider_evidence_bundle_rejects_mismatched_hardware_chain() -> None:
     """Bundled hardware evidence must cite the same provider chain and circuit."""
-    hardware_artifact = PennyLaneHardwarePluginExecutionArtifact(
-        artifact_id="pl-hardware-exec-20260620",
-        plugin_name="pennylane-provider-hardware",
-        provider_name="other-provider",
-        device_name="example.qpu",
-        backend_name="example_qpu_v1",
-        circuit_fingerprint="phase-qnode:ry-rx-pauli-z:v1",
-        execution_mode="provider_live_qpu",
-        shots=4096,
-        live_execution_ticket="ticket-pl-hw-20260620",
-        provider_allowlist_id="allowlist-pl-hw-20260620",
-        shot_budget_id="shot-budget-pl-hw-20260620",
-        hardware_evidence_id="hardware-evidence-pl-hw-20260620",
-        result_digest="sha256:" + "e" * 64,
-        raw_counts_digest="sha256:" + "f" * 64,
-        calibration_snapshot_digest="sha256:" + "1" * 64,
-        metadata_digest="sha256:" + "2" * 64,
-    )
+    hardware_artifact = _hardware_plugin_execution_artifact(provider_name="other-provider")
 
     with pytest.raises(ValueError, match="hardware_execution_artifact.provider_name"):
         _provider_evidence_bundle(hardware_execution_artifact=hardware_artifact)
+
+
+def test_pennylane_provider_plugin_matrix_rejects_stale_hardware_calibration() -> None:
+    """Ticketed hardware-plugin evidence must carry fresh calibration metadata."""
+    hardware_artifact = _hardware_plugin_execution_artifact(
+        calibration_valid_until_utc="2026-06-21T00:00:00Z",
+    )
+
+    with pytest.raises(
+        ValueError, match="hardware_execution_artifact.calibration_valid_until_utc"
+    ):
+        run_pennylane_plugin_matrix(
+            hardware_execution_artifact=hardware_artifact,
+            evidence_freshness_as_of_utc="2026-06-27T00:00:00Z",
+        )
 
 
 def test_pennylane_provider_plugin_matrix_rejects_bundle_mixed_with_artifacts() -> None:
@@ -220,7 +225,10 @@ def test_pennylane_provider_plugin_matrix_accepts_ticketed_hardware_artifact() -
     assert not result.ready_for_provider_exceedance
     assert "hardware_plugin_execution" not in result.open_gaps
     assert "isolated_benchmark_artifact" in result.open_gaps
-    assert hardware_artifact.to_dict()["hardware_execution"] is True
+    payload = hardware_artifact.to_dict()
+    assert payload["hardware_execution"] is True
+    assert payload["calibration_captured_at_utc"] == "2026-06-20T12:05:00Z"
+    assert payload["calibration_valid_until_utc"] == "2026-07-20T00:00:00Z"
 
 
 def test_pennylane_provider_plugin_matrix_rejects_unknown_route() -> None:
@@ -430,6 +438,8 @@ def test_pennylane_provider_plugin_matrix_rejects_unpaired_or_mismatched_parity(
                 result_digest="sha256:" + "e" * 64,
                 raw_counts_digest="sha256:" + "f" * 64,
                 calibration_snapshot_digest="sha256:" + "1" * 64,
+                calibration_captured_at_utc="2026-06-20T12:05:00Z",
+                calibration_valid_until_utc="2026-07-20T00:00:00Z",
                 metadata_digest="sha256:" + "2" * 64,
             ),
             "live hardware execution",
@@ -451,6 +461,8 @@ def test_pennylane_provider_plugin_matrix_rejects_unpaired_or_mismatched_parity(
                 result_digest="sha256:" + "e" * 64,
                 raw_counts_digest="sha256:" + "f" * 64,
                 calibration_snapshot_digest="sha256:" + "1" * 64,
+                calibration_captured_at_utc="2026-06-20T12:05:00Z",
+                calibration_valid_until_utc="2026-07-20T00:00:00Z",
                 metadata_digest="sha256:" + "2" * 64,
             ),
             "simulator or replay",
@@ -472,6 +484,8 @@ def test_pennylane_provider_plugin_matrix_rejects_unpaired_or_mismatched_parity(
                 result_digest="sha256:" + "e" * 64,
                 raw_counts_digest="sha256:" + "f" * 64,
                 calibration_snapshot_digest="sha256:" + "1" * 64,
+                calibration_captured_at_utc="2026-06-20T12:05:00Z",
+                calibration_valid_until_utc="2026-07-20T00:00:00Z",
                 metadata_digest="sha256:" + "2" * 64,
             ),
             "shots",
@@ -493,10 +507,24 @@ def test_pennylane_provider_plugin_matrix_rejects_unpaired_or_mismatched_parity(
                 result_digest="sha256:" + "e" * 64,
                 raw_counts_digest="sha256:" + "f" * 64,
                 calibration_snapshot_digest="sha256:" + "1" * 64,
+                calibration_captured_at_utc="2026-06-20T12:05:00Z",
+                calibration_valid_until_utc="2026-07-20T00:00:00Z",
                 metadata_digest="sha256:" + "2" * 64,
                 hardware_execution=False,
             ),
             "must claim hardware execution",
+        ),
+        (
+            lambda: _hardware_plugin_execution_artifact(
+                calibration_valid_until_utc="2026-06-20T12:05:00Z",
+            ),
+            "calibration_valid_until_utc must be after calibration_captured_at_utc",
+        ),
+        (
+            lambda: _hardware_plugin_execution_artifact(
+                calibration_captured_at_utc="2026-06-20T12:05:00",
+            ),
+            "calibration_captured_at_utc must include a UTC offset",
         ),
     ],
 )

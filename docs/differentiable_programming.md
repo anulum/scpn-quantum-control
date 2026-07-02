@@ -420,8 +420,10 @@ diagnostic.
   execution artefact, circuit fingerprint, backend, and shot policy before
   marking provider-gradient parity as passed.
 - Require ticketed live hardware, allowlist, shot-budget, raw-count,
-  calibration, and metadata evidence before PennyLane hardware-plugin execution
-  can pass; keep promotion blocked until isolated benchmark evidence exists.
+  calibration digest, calibration capture/expiry timestamps, and metadata
+  evidence before PennyLane hardware-plugin execution can pass. Reject stale
+  calibration at the review cutoff and keep promotion blocked until isolated
+  benchmark evidence exists.
 - Use `PennyLaneProviderEvidenceBundle` when reviewing PennyLane provider
   execution, provider-gradient parity, and optional hardware evidence as one
   attachment. Bundles must cite UTC capture and expiry timestamps, cannot be

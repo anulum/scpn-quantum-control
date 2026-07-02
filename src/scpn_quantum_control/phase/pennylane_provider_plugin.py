@@ -213,7 +213,14 @@ class PennyLaneProviderGradientParityArtifact:
 
 @dataclass(frozen=True)
 class PennyLaneHardwarePluginExecutionArtifact:
-    """Validated PennyLane hardware-plugin execution evidence."""
+    """Ticketed PennyLane hardware-plugin execution evidence.
+
+    The artefact records a captured live hardware-plugin run without promoting
+    benchmark or provider-exceedance claims. Calibration freshness is expressed
+    by UTC capture and expiry timestamps; construction rejects inverted windows,
+    and ``run_pennylane_plugin_matrix`` rejects stale calibration at the review
+    cutoff before opening the hardware-plugin route.
+    """
 
     artifact_id: str
     plugin_name: str
@@ -230,6 +237,8 @@ class PennyLaneHardwarePluginExecutionArtifact:
     result_digest: str
     raw_counts_digest: str
     calibration_snapshot_digest: str
+    calibration_captured_at_utc: str
+    calibration_valid_until_utc: str
     metadata_digest: str
     hardware_execution: bool = True
 
@@ -269,6 +278,32 @@ class PennyLaneHardwarePluginExecutionArtifact:
                 field_name,
                 _normalise_sha256_digest(field_name, getattr(self, field_name)),
             )
+        object.__setattr__(
+            self,
+            "calibration_captured_at_utc",
+            _normalise_utc_timestamp(
+                "calibration_captured_at_utc",
+                self.calibration_captured_at_utc,
+            ),
+        )
+        object.__setattr__(
+            self,
+            "calibration_valid_until_utc",
+            _normalise_utc_timestamp(
+                "calibration_valid_until_utc",
+                self.calibration_valid_until_utc,
+            ),
+        )
+        if _utc_timestamp(
+            "calibration_valid_until_utc",
+            self.calibration_valid_until_utc,
+        ) <= _utc_timestamp(
+            "calibration_captured_at_utc",
+            self.calibration_captured_at_utc,
+        ):
+            raise ValueError(
+                "calibration_valid_until_utc must be after calibration_captured_at_utc"
+            )
 
     def to_dict(self) -> dict[str, object]:
         """Return JSON-ready hardware-plugin execution metadata."""
@@ -288,6 +323,8 @@ class PennyLaneHardwarePluginExecutionArtifact:
             "result_digest": self.result_digest,
             "raw_counts_digest": self.raw_counts_digest,
             "calibration_snapshot_digest": self.calibration_snapshot_digest,
+            "calibration_captured_at_utc": self.calibration_captured_at_utc,
+            "calibration_valid_until_utc": self.calibration_valid_until_utc,
             "metadata_digest": self.metadata_digest,
             "hardware_execution": self.hardware_execution,
         }
@@ -465,7 +502,8 @@ def run_pennylane_plugin_matrix(
     parity, metadata-preserving shot policy records, and registered
     Phase-QNode export through the local PennyLane route. Provider plugin
     execution, live hardware execution, and promotion evidence remain blocked
-    until concrete artefacts are attached.
+    until concrete artefacts are attached. Ticketed hardware artefacts must
+    carry fresh calibration metadata for the supplied review cutoff.
     """
     if provider_evidence_bundle is not None:
         if (
@@ -489,6 +527,10 @@ def run_pennylane_plugin_matrix(
     _validate_provider_gradient_parity_pair(
         provider_execution_artifact,
         provider_gradient_parity_artifact,
+    )
+    _validate_hardware_calibration_freshness(
+        hardware_execution_artifact,
+        as_of_utc=evidence_freshness_as_of_utc,
     )
     provider_execution_status = "passed" if provider_execution_artifact is not None else "blocked"
     provider_execution_reason = (
@@ -682,6 +724,24 @@ def _validate_provider_evidence_bundle_freshness(
     )
     if valid_until <= _utc_timestamp("evidence_freshness_as_of_utc", as_of_utc):
         raise ValueError("provider_evidence_bundle.valid_until_utc is stale for the review cutoff")
+
+
+def _validate_hardware_calibration_freshness(
+    hardware_execution_artifact: PennyLaneHardwarePluginExecutionArtifact | None,
+    *,
+    as_of_utc: str,
+) -> None:
+    if hardware_execution_artifact is None:
+        return
+    valid_until = _utc_timestamp(
+        "hardware_execution_artifact.calibration_valid_until_utc",
+        hardware_execution_artifact.calibration_valid_until_utc,
+    )
+    if valid_until <= _utc_timestamp("evidence_freshness_as_of_utc", as_of_utc):
+        raise ValueError(
+            "hardware_execution_artifact.calibration_valid_until_utc is stale "
+            "for the review cutoff"
+        )
 
 
 def _validate_provider_plugin_execution_mode(execution_mode: str) -> None:

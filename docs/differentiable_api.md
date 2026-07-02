@@ -1658,8 +1658,10 @@ matches the provider execution chain, and fails closed when the bundle expires
 before the review cutoff.
 Passing a validated `PennyLaneHardwarePluginExecutionArtifact` marks only
 `hardware_plugin_execution` as passed; the artefact must include ticket,
-allowlist, shot-budget, hardware evidence, raw-count, calibration, and metadata
-provenance before the route opens.
+allowlist, shot-budget, hardware evidence, raw-count, calibration digest,
+calibration capture/expiry timestamps, and metadata provenance before the route
+opens. The plugin matrix rejects stale calibration metadata at the review cutoff
+before it can open the hardware-plugin route.
 `run_pennylane_maturity_audit` aggregates caller-supplied gradient agreement,
 caller-supplied QNode value/gradient parity, generated Phase-QNode export
 round-trip parity, optional PennyLane tape import round-trip parity, device
