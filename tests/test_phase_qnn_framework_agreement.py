@@ -9,6 +9,8 @@
 
 from __future__ import annotations
 
+from typing import cast
+
 import numpy as np
 import pytest
 
@@ -21,6 +23,7 @@ from scpn_quantum_control.phase import (
 
 
 def test_qnn_framework_agreement_records_named_adapter_gradients() -> None:
+    """Caller-supplied adapter gradients should remain claim-bound evidence."""
     features = np.array(
         [[0.2, -0.4], [1.1, 0.7], [-0.8, 0.3]],
         dtype=float,
@@ -58,17 +61,20 @@ def test_qnn_framework_agreement_records_named_adapter_gradients() -> None:
         "not native framework autodiff" in agreement.claim_boundary
         for agreement in result.agreements
     )
-    assert result.to_dict()["passed"] is True
-    assert result.to_dict()["agreements"][0]["source_class"] == "caller_supplied_gradient"
+    payload = result.to_dict()
+    agreements = cast(list[dict[str, object]], payload["agreements"])
+    assert payload["passed"] is True
+    assert agreements[0]["source_class"] == "caller_supplied_gradient"
 
 
 def test_qnn_framework_agreement_suite_covers_default_cases() -> None:
+    """The default suite should cover every bounded agreement fixture."""
     suite = run_parameter_shift_qnn_framework_agreement_suite()
 
     assert isinstance(suite, ParameterShiftQNNFrameworkAgreementSuiteResult)
     assert suite.passed
     assert suite.case_count == 2
-    assert suite.framework_count == 4
+    assert suite.framework_count == 10
     assert suite.failed_count == 0
     assert suite.evidence_class == "caller_supplied_qnn_framework_agreement"
     assert not suite.native_framework_autodiff
@@ -83,7 +89,51 @@ def test_qnn_framework_agreement_suite_covers_default_cases() -> None:
     )
 
 
+def test_qnn_framework_agreement_suite_publishes_fail_closed_conformance_table() -> None:
+    """The suite should publish same-circuit conformance rows for every route."""
+    suite = run_parameter_shift_qnn_framework_agreement_suite()
+    rows = suite.conformance_table
+
+    assert len(rows) == 48
+    assert {row["framework"] for row in rows} == {
+        "scpn",
+        "jax",
+        "pytorch",
+        "tensorflow",
+        "pennylane",
+        "qiskit",
+    }
+    assert {row["route"] for row in rows} == {
+        "exact_state",
+        "finite_shot",
+        "provider_plan",
+        "hardware_execution",
+    }
+    assert all(row["same_circuit"] is True for row in rows)
+    assert all(row["same_parameters"] is True for row in rows)
+    assert all(row["same_observable"] is True for row in rows)
+
+    exact_rows = [row for row in rows if row["route"] == "exact_state"]
+    assert len(exact_rows) == 12
+    assert all(row["status"] == "passed" for row in exact_rows)
+    assert all(row["max_abs_error"] == pytest.approx(0.0) for row in exact_rows)
+    assert {row["source_class"] for row in exact_rows if row["framework"] != "scpn"} == {
+        "deterministic_manual_reference"
+    }
+
+    blocked_rows = [row for row in rows if row["route"] != "exact_state"]
+    assert len(blocked_rows) == 36
+    assert all(row["status"] == "blocked" for row in blocked_rows)
+    assert all(isinstance(row["blocked_reason"], str) for row in blocked_rows)
+    assert all("requires" in str(row["blocked_reason"]) for row in blocked_rows)
+
+    payload = suite.to_dict()
+    conformance_table = cast(list[dict[str, object]], payload["conformance_table"])
+    assert conformance_table == list(rows)
+
+
 def test_qnn_framework_agreement_suite_accepts_external_frameworks() -> None:
+    """External framework-gradient maps should override a selected case."""
     features = np.array([[0.0], [np.pi]], dtype=float)
     labels = np.array([0.0, 1.0], dtype=float)
     params = np.array([0.45], dtype=float)
@@ -103,6 +153,7 @@ def test_qnn_framework_agreement_suite_accepts_external_frameworks() -> None:
 
 
 def test_qnn_framework_agreement_fails_closed_on_invalid_gradient() -> None:
+    """Invalid gradients and provenance labels should fail before evidence creation."""
     features = np.array([[0.0], [np.pi]], dtype=float)
     labels = np.array([0.0, 1.0], dtype=float)
     params = np.array([0.45], dtype=float)
@@ -134,5 +185,6 @@ def test_qnn_framework_agreement_fails_closed_on_invalid_gradient() -> None:
 
 
 def test_qnn_framework_agreement_suite_rejects_unknown_case() -> None:
+    """Unknown case names should fail closed instead of creating partial reports."""
     with pytest.raises(ValueError, match="unknown QNN framework agreement case"):
         run_parameter_shift_qnn_framework_agreement_suite(case_names=("missing",))

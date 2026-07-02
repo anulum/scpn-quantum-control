@@ -25,10 +25,31 @@ FloatArray: TypeAlias = NDArray[np.float64]
 GradientCallable: TypeAlias = Callable[[FloatArray], ArrayLike]
 FrameworkGradientMap: TypeAlias = Mapping[str, GradientCallable]
 FrameworkGradientCaseMap: TypeAlias = Mapping[str, FrameworkGradientMap]
+_ConformanceTableRow: TypeAlias = dict[str, object]
 
 EVIDENCE_CLASS = "caller_supplied_qnn_framework_agreement"
 DEFAULT_SOURCE_CLASS = "caller_supplied_gradient"
 MANUAL_REFERENCE_SOURCE_CLASS = "deterministic_manual_reference"
+SCPN_REFERENCE_SOURCE_CLASS = "scpn_parameter_shift_reference"
+EXACT_STATE_ROUTE = "exact_state"
+FINITE_SHOT_ROUTE = "finite_shot"
+PROVIDER_PLAN_ROUTE = "provider_plan"
+HARDWARE_EXECUTION_ROUTE = "hardware_execution"
+DEFAULT_CONFORMANCE_FRAMEWORKS = ("jax", "pytorch", "tensorflow", "pennylane", "qiskit")
+BLOCKED_CONFORMANCE_ROUTES: Mapping[str, str] = {
+    FINITE_SHOT_ROUTE: (
+        "requires shot records, sampled-gradient replay, and uncertainty "
+        "intervals for the same bounded phase-QNN circuit"
+    ),
+    PROVIDER_PLAN_ROUTE: (
+        "requires a no-submit provider plan with backend identifier, shot "
+        "budget, live-ticket metadata, and expiry policy"
+    ),
+    HARDWARE_EXECUTION_ROUTE: (
+        "requires explicit hardware approval, raw-count replay, calibration "
+        "snapshot, and provider job evidence"
+    ),
+}
 CLAIM_BOUNDARY = (
     "compares bounded phase-QNN parameter-shift gradients with caller-supplied "
     "or deterministic reference framework-style gradients; this is not native "
@@ -121,7 +142,39 @@ class ParameterShiftQNNFrameworkAgreementResult:
             "evidence_class": self.evidence_class,
             "claim_boundary": self.claim_boundary,
             "native_framework_autodiff": self.native_framework_autodiff,
+            "conformance_table": list(self.conformance_table),
         }
+
+    @property
+    def conformance_table(self) -> tuple[_ConformanceTableRow, ...]:
+        """Return same-circuit framework conformance rows for this case."""
+        rows: list[_ConformanceTableRow] = [
+            _scpn_exact_state_conformance_row(
+                case_name=self.name,
+                gradient=self.parameter_shift_gradient,
+                claim_boundary=self.claim_boundary,
+            )
+        ]
+        rows.extend(
+            _agreement_exact_state_conformance_row(
+                case_name=self.name,
+                agreement=agreement,
+            )
+            for agreement in self.agreements
+        )
+        frameworks = _conformance_frameworks(self.agreements)
+        for route, blocked_reason in BLOCKED_CONFORMANCE_ROUTES.items():
+            rows.extend(
+                _blocked_conformance_row(
+                    case_name=self.name,
+                    framework=framework,
+                    route=route,
+                    blocked_reason=blocked_reason,
+                    claim_boundary=self.claim_boundary,
+                )
+                for framework in frameworks
+            )
+        return tuple(rows)
 
 
 @dataclass(frozen=True)
@@ -177,7 +230,16 @@ class ParameterShiftQNNFrameworkAgreementSuiteResult:
             "claim_boundary": self.claim_boundary,
             "native_framework_autodiff": self.native_framework_autodiff,
             "cases": [case.to_dict() for case in self.cases],
+            "conformance_table": list(self.conformance_table),
         }
+
+    @property
+    def conformance_table(self) -> tuple[_ConformanceTableRow, ...]:
+        """Return flattened framework conformance rows for every suite case."""
+        rows: list[_ConformanceTableRow] = []
+        for case in self.cases:
+            rows.extend(case.conformance_table)
+        return tuple(rows)
 
 
 def _default_cases() -> tuple[_QNNFrameworkAgreementCase, ...]:
@@ -264,9 +326,95 @@ def _default_framework_gradients(
         gradient: FloatArray = np.array(values, dtype=np.float64, copy=True)
         return gradient
 
+    return {framework: _reference_gradient for framework in DEFAULT_CONFORMANCE_FRAMEWORKS}
+
+
+def _conformance_frameworks(
+    agreements: Sequence[ParameterShiftQNNFrameworkGradientAgreement],
+) -> tuple[str, ...]:
+    frameworks = ["scpn"]
+    for agreement in agreements:
+        if agreement.framework not in frameworks:
+            frameworks.append(agreement.framework)
+    return tuple(frameworks)
+
+
+def _scpn_exact_state_conformance_row(
+    *,
+    case_name: str,
+    gradient: FloatArray,
+    claim_boundary: str,
+) -> _ConformanceTableRow:
     return {
-        "jax_manual_reference": _reference_gradient,
-        "pennylane_manual_reference": _reference_gradient,
+        "case": case_name,
+        "framework": "scpn",
+        "route": EXACT_STATE_ROUTE,
+        "status": "passed",
+        "same_circuit": True,
+        "same_parameters": True,
+        "same_observable": True,
+        "gradient": gradient.tolist(),
+        "max_abs_error": 0.0,
+        "l2_error": 0.0,
+        "source": "parameter_shift_qnn_classifier_gradient",
+        "source_class": SCPN_REFERENCE_SOURCE_CLASS,
+        "native_framework_autodiff": False,
+        "blocked_reason": None,
+        "evidence_class": EVIDENCE_CLASS,
+        "claim_boundary": claim_boundary,
+    }
+
+
+def _agreement_exact_state_conformance_row(
+    *,
+    case_name: str,
+    agreement: ParameterShiftQNNFrameworkGradientAgreement,
+) -> _ConformanceTableRow:
+    return {
+        "case": case_name,
+        "framework": agreement.framework,
+        "route": EXACT_STATE_ROUTE,
+        "status": "passed" if agreement.passed else "failed",
+        "same_circuit": True,
+        "same_parameters": True,
+        "same_observable": True,
+        "gradient": agreement.gradient.tolist(),
+        "max_abs_error": agreement.max_abs_error,
+        "l2_error": agreement.l2_error,
+        "source": agreement.source,
+        "source_class": agreement.source_class,
+        "native_framework_autodiff": agreement.native_framework_autodiff,
+        "blocked_reason": None,
+        "evidence_class": EVIDENCE_CLASS,
+        "claim_boundary": agreement.claim_boundary,
+    }
+
+
+def _blocked_conformance_row(
+    *,
+    case_name: str,
+    framework: str,
+    route: str,
+    blocked_reason: str,
+    claim_boundary: str,
+) -> _ConformanceTableRow:
+    return {
+        "case": case_name,
+        "framework": framework,
+        "route": route,
+        "status": "blocked",
+        "same_circuit": True,
+        "same_parameters": True,
+        "same_observable": True,
+        "gradient": None,
+        "max_abs_error": None,
+        "l2_error": None,
+        "source": "required_evidence_missing",
+        "source_class": "required_evidence_missing",
+        "native_framework_autodiff": False,
+        "blocked_reason": blocked_reason,
+        "evidence_class": EVIDENCE_CLASS,
+        "claim_boundary": claim_boundary,
     }
 
 

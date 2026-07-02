@@ -276,7 +276,16 @@ claim-boundary text as the suite result, so downstream reports can distinguish
 deterministic manual references from native framework autodiff-through-simulator
 evidence. The default suite labels its built-in rows as deterministic manual
 references; caller-provided rows remain caller-supplied evidence unless a
-separate native adapter surface supplies the row. The bounded phase-QNN model
+separate native adapter surface supplies the row. The suite also emits a
+`conformance_table` field for every case. The table records the same circuit,
+parameter vector, and observable across `scpn`, `jax`, `pytorch`, `tensorflow`,
+`pennylane`, and `qiskit` rows, marks exact-state reference agreement as
+`passed`, and marks finite-shot, provider-plan, and hardware-execution rows as
+`blocked` until shot records, no-submit provider plans, live-ticket metadata,
+raw-count replay, calibration snapshots, and hardware approval exist. The table
+is a claim-boundary artefact; it does not promote deterministic manual
+references into native autodiff-through-simulator evidence. The bounded
+phase-QNN model
 also exposes
 `jax_native_qnn_value_and_grad(...)`, which expresses that model directly in JAX
 operations and verifies JAX `value_and_grad` against the SCPN parameter-shift
