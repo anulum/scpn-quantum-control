@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 777,
     "public_documentation_pages": 254,
-    "python_model_classes": 952,
-    "python_model_source_modules": 534,
+    "python_model_classes": 955,
+    "python_model_source_modules": 535,
     "rust_pyo3_model_wrappers": 171,
     "rust_source_modules": 42,
-    "test_files": 870
+    "test_files": 871
   },
   "documentation": {
     "examples": [
@@ -547,7 +547,7 @@
       {
         "package": "phase",
         "path": "src/scpn_quantum_control/phase",
-        "python_modules": 85
+        "python_modules": 86
       },
       {
         "package": "psi_field",
@@ -3017,6 +3017,18 @@
         "path": "src/scpn_quantum_control/phase/tensorflow_bridge.py"
       },
       {
+        "name": "PhaseTorchAOTAutogradExportResult",
+        "path": "src/scpn_quantum_control/phase/torch_aot_autograd_export.py"
+      },
+      {
+        "name": "PhaseTorchAOTAutogradExportRoute",
+        "path": "src/scpn_quantum_control/phase/torch_aot_autograd_export.py"
+      },
+      {
+        "name": "PhaseTorchAOTAutogradGraphRecord",
+        "path": "src/scpn_quantum_control/phase/torch_aot_autograd_export.py"
+      },
+      {
         "name": "PhaseTorchAutogradQNNGradientResult",
         "path": "src/scpn_quantum_control/phase/torch_bridge.py"
       },
@@ -4853,6 +4865,7 @@
       "src/scpn_quantum_control/phase/tensor_jump.py",
       "src/scpn_quantum_control/phase/tensorflow_bridge.py",
       "src/scpn_quantum_control/phase/tensorflow_maintenance.py",
+      "src/scpn_quantum_control/phase/torch_aot_autograd_export.py",
       "src/scpn_quantum_control/phase/torch_bridge.py",
       "src/scpn_quantum_control/phase/torch_checkpoint.py",
       "src/scpn_quantum_control/phase/torch_checkpoint_matrix.py",
@@ -6582,6 +6595,7 @@
       "tests/test_phase_qnode_vector_transforms.py",
       "tests/test_phase_results.py",
       "tests/test_phase_tensorflow_maintenance.py",
+      "tests/test_phase_torch_aot_autograd_export.py",
       "tests/test_phase_torch_bridge_compile_boundaries.py",
       "tests/test_phase_torch_bridge_qnode_edge_routes.py",
       "tests/test_phase_torch_bridge_runtime_boundaries.py",

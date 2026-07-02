@@ -435,7 +435,11 @@ artifacts, and keeps broader dynamic-shape promotion outside the static matrix.
 `run_torch_dynamic_shape_export_audit(...)` exports one input-driven bounded
 phase-QNN module with symbolic batch constraints, saves and reloads the
 `ExportedProgram`, and replays multiple concrete batch sizes locally.
-Incompatible CUDA, AOTAutograd gradient-export persistence, dynamic feature-width
+`run_torch_aot_autograd_export_audit(...)` captures local AOTAutograd
+forward/backward FX graphs for the same bounded loss route, saves and reloads
+the self-produced PyTorch artifacts, and replays the loaded backward graph
+against the SCPN parameter-shift gradient. Incompatible CUDA, cross-runtime
+AOTAutograd execution, dynamic-shape AOTAutograd export, dynamic feature-width
 export, cross-runtime checkpoint/export portability, provider, hardware,
 isolated benchmark, and performance promotion remain blocked until their own
 artefacts exist.

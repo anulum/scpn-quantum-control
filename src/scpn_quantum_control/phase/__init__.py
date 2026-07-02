@@ -526,6 +526,14 @@ from .tensorflow_maintenance import (
     TensorFlowMaintenanceStrategy,
     run_tensorflow_maintenance_decision,
 )
+from .torch_aot_autograd_export import (
+    TORCH_AOT_AUTOGRAD_EXPORT_CLAIM_BOUNDARY,
+    TORCH_AOT_AUTOGRAD_EXPORT_SCHEMA,
+    PhaseTorchAOTAutogradExportResult,
+    PhaseTorchAOTAutogradExportRoute,
+    PhaseTorchAOTAutogradGraphRecord,
+    run_torch_aot_autograd_export_audit,
+)
 from .torch_bridge import (
     PhaseTorchAutogradQNNGradientResult,
     PhaseTorchCloudValidationRunSpec,
@@ -1051,6 +1059,9 @@ __all__ = [
     "PhaseTorchCompileCompatibilityResult",
     "PhaseTorchDeviceStateAuditResult",
     "PhaseTorchDeviceStateRoute",
+    "PhaseTorchAOTAutogradExportResult",
+    "PhaseTorchAOTAutogradExportRoute",
+    "PhaseTorchAOTAutogradGraphRecord",
     "PhaseTorchDynamicShapeExportRecord",
     "PhaseTorchDynamicShapeExportReplayCase",
     "PhaseTorchDynamicShapeExportResult",
@@ -1092,6 +1103,8 @@ __all__ = [
     "TORCH_CHECKPOINT_MATRIX_SCHEMA",
     "TORCH_CHECKPOINT_SCHEMA",
     "TORCH_DEVICE_STATE_CLAIM_BOUNDARY",
+    "TORCH_AOT_AUTOGRAD_EXPORT_CLAIM_BOUNDARY",
+    "TORCH_AOT_AUTOGRAD_EXPORT_SCHEMA",
     "TORCH_DYNAMIC_SHAPE_EXPORT_CLAIM_BOUNDARY",
     "TORCH_DYNAMIC_SHAPE_EXPORT_SCHEMA",
     "TORCH_EXPORT_CLAIM_BOUNDARY",
@@ -1104,6 +1117,7 @@ __all__ = [
     "default_torch_export_shape_scenarios",
     "default_torch_training_loop_scenarios",
     "run_torch_maturity_audit",
+    "run_torch_aot_autograd_export_audit",
     "run_torch_dynamic_shape_export_audit",
     "run_torch_long_lived_checkpoint_matrix",
     "run_torch_module_checkpoint_audit",

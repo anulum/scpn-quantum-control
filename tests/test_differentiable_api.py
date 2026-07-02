@@ -738,6 +738,27 @@ def test_differentiable_dashboard_status_is_claim_bounded_for_gui_consumers() ->
     assert (
         "dynamic batch" in rows["torch_bounded_qnn_dynamic_shape_export_audit"]["claim_boundary"]
     )
+    assert rows["torch_bounded_qnn_aot_autograd_export_audit"]["state"] == "diagnostic"
+    assert rows["torch_bounded_qnn_aot_autograd_export_audit"]["fail_closed"] is True
+    assert (
+        rows["torch_bounded_qnn_aot_autograd_export_audit"]["backing_api"]
+        == "run_torch_aot_autograd_export_audit"
+    )
+    assert (
+        "PhaseTorchAOTAutogradExportResult"
+        in rows["torch_bounded_qnn_aot_autograd_export_audit"]["evidence"]
+    )
+    assert (
+        "persisted AOTAutograd forward/backward FX graphs"
+        in rows["torch_bounded_qnn_aot_autograd_export_audit"]["evidence"]
+    )
+    assert (
+        "cross-runtime AOTAutograd execution remains blocked"
+        in rows["torch_bounded_qnn_aot_autograd_export_audit"]["blocked_reasons"]
+    )
+    assert (
+        "AOTAutograd FX" in rows["torch_bounded_qnn_aot_autograd_export_audit"]["claim_boundary"]
+    )
     assert rows["provider_and_hardware_gradients"]["state"] == "blocked"
     assert rows["gui_frontend"]["state"] == "planned"
     generated_from = cast(list[str], payload["generated_from"])

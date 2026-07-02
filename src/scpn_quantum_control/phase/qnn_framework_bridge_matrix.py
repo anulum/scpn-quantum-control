@@ -190,7 +190,8 @@ def _default_capabilities() -> tuple[BoundedQNNFrameworkBridgeCapability, ...]:
                 "run_torch_module_device_state_audit,run_torch_module_checkpoint_audit,"
                 "run_torch_long_lived_checkpoint_matrix,run_torch_training_loop_matrix,"
                 "run_torch_module_export_audit,run_torch_export_shape_matrix,"
-                "run_torch_dynamic_shape_export_audit"
+                "run_torch_dynamic_shape_export_audit,"
+                "run_torch_aot_autograd_export_audit"
             ),
             gradient_route=(
                 "bounded_phase_qnn_tensor_analytic_gradient,"
@@ -204,7 +205,8 @@ def _default_capabilities() -> tuple[BoundedQNNFrameworkBridgeCapability, ...]:
                 "bounded_torch_training_loop_matrix,"
                 "bounded_torch_module_export_replay,"
                 "bounded_torch_export_shape_matrix,"
-                "bounded_torch_dynamic_shape_export_replay"
+                "bounded_torch_dynamic_shape_export_replay,"
+                "bounded_torch_aot_autograd_fx_gradient_replay"
             ),
             optional_dependency="torch",
             implemented=True,

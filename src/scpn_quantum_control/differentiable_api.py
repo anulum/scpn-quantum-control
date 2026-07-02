@@ -1184,6 +1184,34 @@ def differentiable_dashboard_status(
             ),
         ),
         DifferentiableDashboardCapabilityRow(
+            surface="torch_bounded_qnn_aot_autograd_export_audit",
+            state="conformance_backed" if conformance_passed else "diagnostic",
+            backing_api="run_torch_aot_autograd_export_audit",
+            evidence=(
+                "PhaseTorchAOTAutogradExportResult",
+                "persisted AOTAutograd forward/backward FX graphs",
+                "loaded backward FX graph gradient replay",
+                "SCPN parameter-shift gradient agreement",
+            ),
+            blocked_reasons=()
+            if conformance_passed
+            else (
+                "conformance suite not run in this status call",
+                "cross-runtime AOTAutograd execution remains blocked",
+                "CUDA AOTAutograd execution remains blocked",
+                "dynamic-shape AOTAutograd export remains blocked",
+                "isolated benchmark and performance promotion remain blocked",
+            ),
+            claim_boundary=(
+                "bounded PyTorch AOTAutograd FX graph persistence audit for the "
+                "local phase-QNN loss route only; forward/backward FX "
+                "GraphModules are saved, loaded, and replayed locally against "
+                "SCPN parameter-shift references with no stable cross-runtime "
+                "export, CUDA, provider, hardware, dynamic-shape, isolated "
+                "benchmark, or performance claim"
+            ),
+        ),
+        DifferentiableDashboardCapabilityRow(
             surface="program_ad_python_semantics",
             state="conformance_backed" if conformance_passed else "diagnostic",
             backing_api="whole_program_value_and_grad",

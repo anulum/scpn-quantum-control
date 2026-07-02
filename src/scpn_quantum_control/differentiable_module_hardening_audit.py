@@ -718,6 +718,14 @@ def differentiable_module_hardening_registry() -> tuple[DifferentiableModuleHard
             ),
         ),
         _record(
+            "src/scpn_quantum_control/phase/torch_aot_autograd_export.py",
+            ("tests/test_phase_torch_aot_autograd_export.py",),
+            (
+                "AOTAutograd forward/backward FX graph persistence",
+                "cross-runtime/CUDA/dynamic-shape AOTAutograd blockers",
+            ),
+        ),
+        _record(
             "src/scpn_quantum_control/phase/torch_training_loop_matrix.py",
             ("tests/test_phase_torch_training_loop_matrix.py",),
             (
