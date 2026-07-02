@@ -584,7 +584,16 @@ from scpn_quantum_control.phase import (
 
 def sampler(params: np.ndarray, shots: int | None) -> ProviderExpectationSample:
     value = float(np.cos(params[0]))
-    return ProviderExpectationSample(value=value, variance=0.04, shots=shots)
+    return ProviderExpectationSample(
+        value=value,
+        variance=0.04,
+        shots=shots,
+        metadata={
+            "sample_seed": "finite-shot-example-seed",
+            "shot_batch_id": "finite-shot-example-batch",
+            "source_class": "synthetic_fixture",
+        },
+    )
 
 
 result = execute_provider_parameter_shift_gradient(
@@ -599,9 +608,15 @@ print(result.gradient, result.standard_error, result.total_shots)
 
 The result records backend plan provenance, every plus/minus shifted parameter
 vector, sample values, sample variances, shot counts, propagated standard
-errors, confidence radii, and a claim boundary. Hardware aliases still fail
-closed unless an explicit hardware policy enables them through the backend
-planner.
+errors, confidence radii, and a claim boundary. Finite-shot samples must also
+carry `sample_seed`, `shot_batch_id`, and `source_class` metadata; accepted
+source classes are local simulator, provider replay, provider runtime, and
+synthetic fixture. The executor then stamps each plus/minus sample with the
+parameter index, shift index, direction, shift, coefficient, and
+`shifted_parameter_digest`, so callback-supplied sample provenance and
+executor-owned shifted-sample provenance remain distinct. Hardware aliases
+still fail closed unless an explicit hardware policy enables them through the
+backend planner.
 
 For hardware preparation, use
 `prepare_provider_hardware_parameter_shift_gradient(...)` instead of the
@@ -635,15 +650,17 @@ The built-in audit records:
 | Scenario | Expected outcome |
 |---|---|
 | `statevector_parameter_shift` | Executes deterministic local parameter-shift and matches the analytic gradient. |
-| `finite_shot_parameter_shift` | Executes finite-shot callback gradients with sample variance and confidence radii. |
-| `multi_frequency_finite_shot` | Executes multi-frequency parameter-shift with per-term shot provenance. |
+| `finite_shot_parameter_shift` | Executes finite-shot callback gradients with sample variance, sample provenance, and confidence radii. |
+| `multi_frequency_finite_shot` | Executes multi-frequency parameter-shift with per-term shot and shifted-sample provenance. |
 | `hardware_without_policy` | Fails closed before execution because hardware gradients require an explicit policy gate. |
 | `unknown_backend` | Fails closed and suggests local simulator alternatives. |
 | `finite_shot_missing_variance` | Fails during execution because finite-shot gradients require sample variance. |
 
 This support matrix is intentionally executable rather than a static checklist.
 It lets reviewers distinguish ready callback paths from blocked hardware or
-malformed-sample paths without submitting jobs to a provider.
+malformed-sample paths without submitting jobs to a provider. Finite-shot routes
+also fail closed when sample provenance is absent or uses an unknown source
+class.
 
 ## Hardware-gradient policy readiness
 

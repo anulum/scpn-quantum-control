@@ -917,6 +917,9 @@ def execute_qiskit_finite_shot_parameter_shift(
     def sampler(shifted_values: FloatArray, sample_shots: int | None) -> ProviderExpectationSample:
         bound = _bind_circuit(circuit, parameter_tuple, shifted_values)
         value, variance = _expectation_and_variance(bound, observable)
+        shot_batch_id = "qiskit-statevector-surrogate:" + ",".join(
+            f"{float(entry):.17g}" for entry in shifted_values
+        )
         return ProviderExpectationSample(
             value=value,
             variance=variance,
@@ -924,6 +927,9 @@ def execute_qiskit_finite_shot_parameter_shift(
             metadata={
                 "engine": "qiskit_statevector_finite_shot_surrogate",
                 "observable_type": type(observable).__name__,
+                "sample_seed": "deterministic-statevector-surrogate",
+                "shot_batch_id": shot_batch_id,
+                "source_class": "local_simulator",
             },
         )
 

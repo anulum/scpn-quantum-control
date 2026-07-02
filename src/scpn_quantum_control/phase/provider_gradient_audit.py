@@ -335,7 +335,12 @@ def _single_frequency_sampler(values: FloatArray, shots: int | None) -> Provider
         value=_single_frequency_objective(values),
         variance=variance,
         shots=shots,
-        metadata={"audit_objective": "single_frequency"},
+        metadata={
+            "audit_objective": "single_frequency",
+            "sample_seed": "single-frequency-audit-seed",
+            "shot_batch_id": "single-frequency-audit-batch",
+            "source_class": "synthetic_fixture",
+        },
     )
 
 
@@ -348,7 +353,12 @@ def _multi_frequency_sampler(values: FloatArray, shots: int | None) -> ProviderE
         value=_multi_frequency_objective(values),
         variance=0.05 if shots is not None else None,
         shots=shots,
-        metadata={"audit_objective": "multi_frequency"},
+        metadata={
+            "audit_objective": "multi_frequency",
+            "sample_seed": "multi-frequency-audit-seed",
+            "shot_batch_id": "multi-frequency-audit-batch",
+            "source_class": "synthetic_fixture",
+        },
     )
 
 
@@ -356,7 +366,12 @@ def _missing_variance_sampler(values: FloatArray, shots: int | None) -> Provider
     return ProviderExpectationSample(
         value=_single_frequency_objective(values),
         shots=shots,
-        metadata={"audit_objective": "missing_variance"},
+        metadata={
+            "audit_objective": "missing_variance",
+            "sample_seed": "missing-variance-audit-seed",
+            "shot_batch_id": "missing-variance-audit-batch",
+            "source_class": "synthetic_fixture",
+        },
     )
 
 

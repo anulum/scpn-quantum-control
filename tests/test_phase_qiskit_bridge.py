@@ -118,6 +118,11 @@ def test_execute_qiskit_finite_shot_parameter_shift_reports_uncertainty() -> Non
     np.testing.assert_allclose(result.standard_error, np.array([expected_standard_error]))
     assert result.records[0].plus.shots == shots
     assert result.records[0].minus.shots == shots
+    plus_metadata = result.records[0].plus.metadata
+    assert plus_metadata is not None
+    assert plus_metadata["source_class"] == "local_simulator"
+    assert plus_metadata["sample_seed"] == "deterministic-statevector-surrogate"
+    assert plus_metadata["shift_direction"] == "plus"
 
 
 def test_qiskit_maturity_audit_records_local_evidence_and_provider_gaps() -> None:
@@ -1328,6 +1333,10 @@ def test_qiskit_finite_shot_supports_multi_frequency_parameter_shift() -> None:
     assert result.total_evaluations == 2 * len(rule.terms)
     assert result.total_shots == 2 * len(rule.terms) * shots
     assert [record.shift_index for record in result.records] == [0, 1]
+    minus_metadata = result.records[1].minus.metadata
+    assert minus_metadata is not None
+    assert minus_metadata["shift_index"] == 1
+    assert minus_metadata["shift_direction"] == "minus"
     np.testing.assert_allclose(result.gradient, np.array([expected_gradient]), atol=1e-12)
     assert result.standard_error[0] > 0.0
 

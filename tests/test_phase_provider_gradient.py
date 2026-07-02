@@ -10,9 +10,11 @@
 from __future__ import annotations
 
 import math
+from typing import cast
 
 import numpy as np
 import pytest
+from numpy.typing import NDArray
 
 from scpn_quantum_control.phase import (
     ProviderExpectationSample,
@@ -23,8 +25,10 @@ from scpn_quantum_control.phase import (
     prepare_provider_hardware_parameter_shift_gradient,
 )
 
+FloatArray = NDArray[np.float64]
 
-def _objective(values: np.ndarray) -> float:
+
+def _objective(values: FloatArray) -> float:
     return float(np.cos(values[0]) + 0.25 * np.sin(values[1]))
 
 
@@ -36,10 +40,19 @@ _HARDWARE_EVIDENCE_IDS = {
 }
 
 
+def _finite_shot_sample_metadata(label: str) -> dict[str, object]:
+    return {
+        "source": "finite-shot fixture",
+        "sample_seed": f"{label}-seed",
+        "shot_batch_id": f"{label}-batch",
+        "source_class": "synthetic_fixture",
+    }
+
+
 def test_provider_gradient_executes_statevector_parameter_shift() -> None:
     values = np.array([0.2, -0.4], dtype=float)
 
-    def sampler(params: np.ndarray, shots: int | None) -> ProviderExpectationSample:
+    def sampler(params: FloatArray, shots: int | None) -> ProviderExpectationSample:
         assert shots is None
         return ProviderExpectationSample(value=_objective(params))
 
@@ -65,13 +78,14 @@ def test_provider_gradient_executes_finite_shot_parameter_shift_with_uncertainty
     values = np.array([0.2, -0.4], dtype=float)
     observed_shots: list[int | None] = []
 
-    def sampler(params: np.ndarray, shots: int | None) -> ProviderExpectationSample:
+    def sampler(params: FloatArray, shots: int | None) -> ProviderExpectationSample:
+        sample_index = len(observed_shots)
         observed_shots.append(shots)
         return ProviderExpectationSample(
             value=_objective(params),
             variance=0.04,
             shots=shots,
-            metadata={"source": "finite-shot fixture"},
+            metadata=_finite_shot_sample_metadata(f"single-{sample_index}"),
         )
 
     result = execute_provider_parameter_shift_gradient(
@@ -86,10 +100,38 @@ def test_provider_gradient_executes_finite_shot_parameter_shift_with_uncertainty
     assert result.backend == "finite_shot_simulator"
     assert result.method == "stochastic_parameter_shift"
     assert result.total_shots == 1600
-    assert result.records[0].plus.metadata is not None
-    assert result.records[0].plus.metadata["source"] == "finite-shot fixture"
+    plus_metadata = result.records[0].plus.metadata
+    assert plus_metadata is not None
+    assert plus_metadata["source"] == "finite-shot fixture"
+    assert plus_metadata["sample_provenance_schema"] == "finite_shot_provider_sample_provenance_v1"
+    assert plus_metadata["parameter_index"] == 0
+    assert plus_metadata["shift_index"] == 0
+    assert plus_metadata["shift_direction"] == "plus"
+    shifted_parameter_digest = cast(str, plus_metadata["shifted_parameter_digest"])
+    assert shifted_parameter_digest.startswith("sha256:")
     np.testing.assert_allclose(result.standard_error, np.array([expected_se, expected_se]))
     np.testing.assert_allclose(result.confidence_radius, 1.959963984540054 * result.standard_error)
+
+
+def test_provider_gradient_rejects_finite_shot_without_sample_provenance() -> None:
+    """Finite-shot gradients must not accept opaque sample variance metadata."""
+    values = np.array([0.2, -0.4], dtype=float)
+
+    def sampler(params: FloatArray, shots: int | None) -> ProviderExpectationSample:
+        return ProviderExpectationSample(
+            value=_objective(params),
+            variance=0.04,
+            shots=shots,
+            metadata={"source": "legacy-fixture"},
+        )
+
+    with pytest.raises(ValueError, match="sample provenance"):
+        execute_provider_parameter_shift_gradient(
+            sampler,
+            values,
+            backend="qasm_simulator",
+            shots=400,
+        )
 
 
 def test_provider_gradient_executes_multi_frequency_finite_shot_records() -> None:
@@ -97,16 +139,20 @@ def test_provider_gradient_executes_multi_frequency_finite_shot_records() -> Non
     rule = multi_frequency_parameter_shift_rule([1.0, 2.0])
     observed_shots: list[int | None] = []
 
-    def objective(params: np.ndarray) -> float:
+    def objective(params: FloatArray) -> float:
         return float(np.sin(params[0]) + 0.1 * np.cos(2.0 * params[0]))
 
-    def sampler(params: np.ndarray, shots: int | None) -> ProviderExpectationSample:
+    def sampler(params: FloatArray, shots: int | None) -> ProviderExpectationSample:
+        sample_index = len(observed_shots)
         observed_shots.append(shots)
         return ProviderExpectationSample(
             value=objective(params),
             variance=0.05,
             shots=shots,
-            metadata={"term_safe": True},
+            metadata={
+                **_finite_shot_sample_metadata(f"multi-{sample_index}"),
+                "term_safe": True,
+            },
         )
 
     result = execute_provider_parameter_shift_gradient(
@@ -137,7 +183,7 @@ def test_provider_gradient_executes_multi_frequency_finite_shot_records() -> Non
 
 
 def test_provider_gradient_fails_closed_for_hardware_without_policy() -> None:
-    def sampler(params: np.ndarray, shots: int | None) -> ProviderExpectationSample:
+    def sampler(params: FloatArray, shots: int | None) -> ProviderExpectationSample:
         return ProviderExpectationSample(value=_objective(params), variance=0.04, shots=shots)
 
     with pytest.raises(ValueError, match="hardware gradient execution requires"):
@@ -228,7 +274,7 @@ def test_provider_hardware_preparation_live_mode_requires_ticket() -> None:
 
 
 def test_provider_gradient_rejects_invalid_samples() -> None:
-    def non_finite_sampler(params: np.ndarray, shots: int | None) -> ProviderExpectationSample:
+    def non_finite_sampler(params: FloatArray, shots: int | None) -> ProviderExpectationSample:
         return ProviderExpectationSample(value=float("nan"))
 
     with pytest.raises(ValueError, match="sample value"):
@@ -239,7 +285,7 @@ def test_provider_gradient_rejects_invalid_samples() -> None:
         )
 
     def missing_variance_sampler(
-        params: np.ndarray, shots: int | None
+        params: FloatArray, shots: int | None
     ) -> ProviderExpectationSample:
         return ProviderExpectationSample(value=_objective(params), shots=shots)
 

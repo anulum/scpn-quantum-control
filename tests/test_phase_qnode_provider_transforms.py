@@ -13,6 +13,7 @@ import math
 
 import numpy as np
 import pytest
+from numpy.typing import NDArray
 
 from scpn_quantum_control.phase import (
     ProviderExpectationSample,
@@ -22,21 +23,28 @@ from scpn_quantum_control.phase import (
     run_provider_qnode_transform_readiness_suite,
 )
 
+FloatArray = NDArray[np.float64]
 
-def _objective(values: np.ndarray) -> float:
+
+def _objective(values: FloatArray) -> float:
     return float(np.cos(values[0]) + 0.25 * np.sin(values[1]))
 
 
-def _gradient(values: np.ndarray) -> np.ndarray:
+def _gradient(values: FloatArray) -> FloatArray:
     return np.array([-np.sin(values[0]), 0.25 * np.cos(values[1])], dtype=float)
 
 
-def _sampler(values: np.ndarray, shots: int | None) -> ProviderExpectationSample:
+def _sampler(values: FloatArray, shots: int | None) -> ProviderExpectationSample:
     return ProviderExpectationSample(
         value=_objective(values),
         variance=None if shots is None else 0.04,
         shots=shots,
-        metadata={"route": "provider-qnode-fixture"},
+        metadata={
+            "route": "provider-qnode-fixture",
+            "sample_seed": "provider-qnode-test-seed",
+            "shot_batch_id": "provider-qnode-test-batch",
+            "source_class": "synthetic_fixture",
+        },
     )
 
 
@@ -94,6 +102,11 @@ def test_provider_qnode_transform_executes_finite_shot_with_uncertainty() -> Non
     assert result.total_shots == 2000
     assert result.standard_error is not None
     assert result.confidence_radius is not None
+    assert result.provider_gradient_result is not None
+    plus_metadata = result.provider_gradient_result.records[0].plus.metadata
+    assert plus_metadata is not None
+    assert plus_metadata["source_class"] == "synthetic_fixture"
+    assert plus_metadata["shift_direction"] == "plus"
     np.testing.assert_allclose(result.standard_error, np.array([expected_se, expected_se]))
     np.testing.assert_allclose(result.confidence_radius, 1.959963984540054 * result.standard_error)
 

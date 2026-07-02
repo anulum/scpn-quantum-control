@@ -59,6 +59,10 @@ def test_provider_gradient_readiness_audit_verifies_gradient_references() -> Non
     assert finite_shot.result is not None
     assert finite_shot.result.total_shots == 1600
     assert finite_shot.result.standard_error[0] > 0.0
+    finite_shot_metadata = finite_shot.result.records[0].plus.metadata
+    assert finite_shot_metadata is not None
+    assert finite_shot_metadata["source_class"] == "synthetic_fixture"
+    assert finite_shot_metadata["shift_direction"] == "plus"
 
     multi_frequency = next(
         record
@@ -69,6 +73,9 @@ def test_provider_gradient_readiness_audit_verifies_gradient_references() -> Non
     assert multi_frequency.plan.shift_terms == 2
     assert multi_frequency.result.total_evaluations == 4
     assert multi_frequency.result.total_shots == 1200
+    multi_frequency_metadata = multi_frequency.result.records[1].minus.metadata
+    assert multi_frequency_metadata is not None
+    assert multi_frequency_metadata["shift_index"] == 1
 
 
 def test_provider_gradient_readiness_audit_records_fail_closed_reasons() -> None:

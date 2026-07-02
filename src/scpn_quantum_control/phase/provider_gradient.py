@@ -9,6 +9,7 @@
 
 from __future__ import annotations
 
+import hashlib
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from typing import TypeAlias
@@ -31,6 +32,11 @@ ProviderExpectationSampler: TypeAlias = Callable[
     [FloatArray, int | None],
     "ProviderExpectationSample",
 ]
+_FINITE_SHOT_SAMPLE_PROVENANCE_SCHEMA = "finite_shot_provider_sample_provenance_v1"
+_FINITE_SHOT_SAMPLE_PROVENANCE_KEYS = frozenset({"sample_seed", "shot_batch_id", "source_class"})
+_FINITE_SHOT_SAMPLE_SOURCE_CLASSES = frozenset(
+    {"local_simulator", "provider_replay", "provider_runtime", "synthetic_fixture"}
+)
 
 
 @dataclass(frozen=True)
@@ -63,6 +69,17 @@ class ProviderExpectationSample:
             variance=self.variance,
             shots=shots,
             metadata=self.metadata,
+        )
+
+    def with_metadata(self, metadata: Mapping[str, object]) -> ProviderExpectationSample:
+        """Return a sample with merged JSON-safe metadata."""
+        merged_metadata: dict[str, object] = dict(self.metadata or {})
+        merged_metadata.update(metadata)
+        return ProviderExpectationSample(
+            value=self.value,
+            variance=self.variance,
+            shots=self.shots,
+            metadata=merged_metadata,
         )
 
     def to_dict(self) -> dict[str, object]:
@@ -397,6 +414,29 @@ def execute_provider_parameter_shift_gradient(
             minus = _sample_provider(sampler, minus_parameters, plan.shots)
             if plan.finite_shot and (plus.variance is None or minus.variance is None):
                 raise ValueError("finite-shot provider gradients require sample variance")
+            if plan.finite_shot:
+                _validate_finite_shot_sample_provenance("plus", plus)
+                _validate_finite_shot_sample_provenance("minus", minus)
+            plus = _attach_shift_sample_provenance(
+                plus,
+                parameter_index=index,
+                shift_index=shift_index,
+                direction="plus",
+                shift=shift_value,
+                coefficient=coefficient,
+                shifted_parameters=plus_parameters,
+                finite_shot=plan.finite_shot,
+            )
+            minus = _attach_shift_sample_provenance(
+                minus,
+                parameter_index=index,
+                shift_index=shift_index,
+                direction="minus",
+                shift=shift_value,
+                coefficient=coefficient,
+                shifted_parameters=minus_parameters,
+                finite_shot=plan.finite_shot,
+            )
 
             gradient_value = coefficient * (plus.value - minus.value)
             standard_error_value = _standard_error(
@@ -505,6 +545,79 @@ def _sample_provider(
     if not isinstance(sample, ProviderExpectationSample):
         raise ValueError("provider sampler must return ProviderExpectationSample")
     return sample.with_default_shots(shots)
+
+
+def _validate_finite_shot_sample_provenance(
+    direction: str,
+    sample: ProviderExpectationSample,
+) -> None:
+    """Require sample-level provenance for finite-shot callback records."""
+    metadata = sample.metadata or {}
+    missing_keys = sorted(_FINITE_SHOT_SAMPLE_PROVENANCE_KEYS - metadata.keys())
+    if missing_keys:
+        joined_keys = ", ".join(missing_keys)
+        raise ValueError(
+            f"finite-shot provider sample provenance missing {joined_keys} for {direction} sample"
+        )
+    source_class = metadata["source_class"]
+    if not isinstance(source_class, str) or source_class not in _FINITE_SHOT_SAMPLE_SOURCE_CLASSES:
+        allowed = ", ".join(sorted(_FINITE_SHOT_SAMPLE_SOURCE_CLASSES))
+        raise ValueError(
+            f"finite-shot provider sample provenance source_class must be one of {allowed}"
+        )
+    _normalise_provenance_token(
+        f"finite-shot provider sample provenance {direction}.sample_seed",
+        metadata["sample_seed"],
+    )
+    _normalise_provenance_token(
+        f"finite-shot provider sample provenance {direction}.shot_batch_id",
+        metadata["shot_batch_id"],
+    )
+
+
+def _attach_shift_sample_provenance(
+    sample: ProviderExpectationSample,
+    *,
+    parameter_index: int,
+    shift_index: int,
+    direction: str,
+    shift: float,
+    coefficient: float,
+    shifted_parameters: FloatArray,
+    finite_shot: bool,
+) -> ProviderExpectationSample:
+    """Attach executor-owned shifted-parameter provenance to a sample."""
+    return sample.with_metadata(
+        {
+            "sample_provenance_schema": _FINITE_SHOT_SAMPLE_PROVENANCE_SCHEMA
+            if finite_shot
+            else "provider_shift_sample_provenance_v1",
+            "parameter_index": parameter_index,
+            "shift_index": shift_index,
+            "shift_direction": direction,
+            "shift": shift,
+            "coefficient": coefficient,
+            "shifted_parameter_digest": _parameter_vector_digest(shifted_parameters),
+        }
+    )
+
+
+def _normalise_provenance_token(name: str, value: object) -> str:
+    """Return a non-empty provenance token from a JSON metadata value."""
+    if isinstance(value, bool) or value is None or isinstance(value, float):
+        raise ValueError(f"{name} must be a non-empty string or integer token")
+    if not isinstance(value, str | int):
+        raise ValueError(f"{name} must be a non-empty string or integer token")
+    token = str(value).strip()
+    if not token:
+        raise ValueError(f"{name} must be non-empty")
+    return token
+
+
+def _parameter_vector_digest(values: FloatArray) -> str:
+    """Return a stable digest for a shifted parameter vector."""
+    contiguous = np.ascontiguousarray(values, dtype=np.float64)
+    return f"sha256:{hashlib.sha256(contiguous.tobytes()).hexdigest()}"
 
 
 def _standard_error(

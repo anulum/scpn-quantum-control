@@ -556,7 +556,12 @@ def _readiness_sampler(params: FloatArray, shots: int | None) -> ProviderExpecta
         value=_readiness_objective(params),
         variance=None if shots is None else 0.04,
         shots=shots,
-        metadata={"route": "provider_qnode_readiness"},
+        metadata={
+            "route": "provider_qnode_readiness",
+            "sample_seed": "provider-qnode-readiness-seed",
+            "shot_batch_id": "provider-qnode-readiness-batch",
+            "source_class": "synthetic_fixture",
+        },
     )
 
 
@@ -564,7 +569,12 @@ def _missing_variance_sampler(params: FloatArray, shots: int | None) -> Provider
     return ProviderExpectationSample(
         value=_readiness_objective(params),
         shots=shots,
-        metadata={"route": "provider_qnode_missing_variance"},
+        metadata={
+            "route": "provider_qnode_missing_variance",
+            "sample_seed": "provider-qnode-missing-variance-seed",
+            "shot_batch_id": "provider-qnode-missing-variance-batch",
+            "source_class": "synthetic_fixture",
+        },
     )
 
 
