@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 776,
     "public_documentation_pages": 254,
-    "python_model_classes": 922,
-    "python_model_source_modules": 526,
+    "python_model_classes": 924,
+    "python_model_source_modules": 527,
     "rust_pyo3_model_wrappers": 171,
     "rust_source_modules": 42,
-    "test_files": 860
+    "test_files": 861
   },
   "documentation": {
     "examples": [
@@ -437,7 +437,7 @@
       {
         "package": "accel",
         "path": "src/scpn_quantum_control/accel",
-        "python_modules": 71
+        "python_modules": 72
       },
       {
         "package": "analysis",
@@ -2161,12 +2161,20 @@
         "path": "src/scpn_quantum_control/forecasting/kuramoto_neural_operator.py"
       },
       {
+        "name": "KuramotoParameters",
+        "path": "src/scpn_quantum_control/accel/kuramoto_system.py"
+      },
+      {
         "name": "KuramotoProblem",
         "path": "src/scpn_quantum_control/benchmarks/kuramoto_competitive_benchmark.py"
       },
       {
         "name": "KuramotoProblem",
         "path": "src/scpn_quantum_control/kuramoto_core.py"
+      },
+      {
+        "name": "KuramotoSystem",
+        "path": "src/scpn_quantum_control/accel/kuramoto_system.py"
       },
       {
         "name": "KuramotoVariant",
@@ -4337,6 +4345,7 @@
       "src/scpn_quantum_control/accel/kuramoto_sparse_identification.py",
       "src/scpn_quantum_control/accel/kuramoto_stability_spectrum.py",
       "src/scpn_quantum_control/accel/kuramoto_symplectic_inertial.py",
+      "src/scpn_quantum_control/accel/kuramoto_system.py",
       "src/scpn_quantum_control/accel/kuramoto_system_id.py",
       "src/scpn_quantum_control/accel/kuramoto_watanabe_strogatz.py",
       "src/scpn_quantum_control/accel/local_order.py",
@@ -6298,6 +6307,7 @@
       "tests/test_kuramoto_stability_spectrum.py",
       "tests/test_kuramoto_standalone_package_decision.py",
       "tests/test_kuramoto_symplectic_inertial.py",
+      "tests/test_kuramoto_system.py",
       "tests/test_kuramoto_system_id.py",
       "tests/test_kuramoto_variants.py",
       "tests/test_kuramoto_watanabe_strogatz.py",

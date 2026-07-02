@@ -355,6 +355,12 @@ from .kuramoto_stability_spectrum import (
     synchronisation_rate,
 )
 from .kuramoto_symplectic_inertial import integrate_symplectic_inertial
+from .kuramoto_system import (
+    KuramotoParameters,
+    KuramotoSystem,
+    mean_field_phase_rule,
+    networked_phase_rule,
+)
 from .kuramoto_system_id import (
     SystemIdentificationResult,
     learn_coupling,
@@ -600,6 +606,10 @@ __all__ = [
     "BasinStabilityEstimate",
     "synchronisation_basin_stability",
     "integrate_symplectic_inertial",
+    "KuramotoParameters",
+    "KuramotoSystem",
+    "mean_field_phase_rule",
+    "networked_phase_rule",
     "PseudoArclengthBranch",
     "pseudo_arclength_continuation",
     "CollectiveControlGradients",
