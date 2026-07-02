@@ -253,6 +253,7 @@ from .program_ad_alias_analysis import (
     ProgramADAliasSet,
     ProgramADStaticAliasLatticeComponent,
     ProgramADStaticAliasLatticeReport,
+    ProgramADUnknownAliasEdge,
     analyze_program_ad_alias_effects,
     program_ad_static_alias_lattice_report,
 )
@@ -648,6 +649,7 @@ __all__ = [
     "ProgramADAliasSet",
     "ProgramADStaticAliasLatticeComponent",
     "ProgramADStaticAliasLatticeReport",
+    "ProgramADUnknownAliasEdge",
     "ProgramADControlRegion",
     "ProgramADEffect",
     "ProgramADEffectIR",

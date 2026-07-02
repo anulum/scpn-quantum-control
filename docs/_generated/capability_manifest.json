@@ -7,10 +7,10 @@
     "model_documentation_pages": 0,
     "notebook_files": 100,
     "optional_extras": 43,
-    "public_api_exports": 776,
+    "public_api_exports": 777,
     "public_documentation_pages": 254,
-    "python_model_classes": 924,
-    "python_model_source_modules": 527,
+    "python_model_classes": 923,
+    "python_model_source_modules": 526,
     "rust_pyo3_model_wrappers": 171,
     "rust_source_modules": 42,
     "test_files": 861
@@ -3225,6 +3225,10 @@
         "path": "src/scpn_quantum_control/program_ad_alias_analysis.py"
       },
       {
+        "name": "ProgramADUnknownAliasEdge",
+        "path": "src/scpn_quantum_control/program_ad_alias_analysis.py"
+      },
+      {
         "name": "ProjectedSPSAOptimizer",
         "path": "src/scpn_quantum_control/topology_control/optimizers.py"
       },
@@ -5240,6 +5244,7 @@
     "ProgramADSSAValue",
     "ProgramADStaticAliasLatticeComponent",
     "ProgramADStaticAliasLatticeReport",
+    "ProgramADUnknownAliasEdge",
     "ProviderCapabilityDecision",
     "ProviderCapabilitySnapshot",
     "ProviderMetadataProbe",

@@ -165,6 +165,40 @@ class ProgramADStaticAliasLatticeComponent:
 
 
 @dataclass(frozen=True)
+class ProgramADUnknownAliasEdge:
+    """Unsupported alias edge preserved as fail-closed static-lattice provenance."""
+
+    source: str
+    target: str
+    kind: str
+    version: int
+
+    def __post_init__(self) -> None:
+        """Validate unknown alias-edge provenance at construction time."""
+
+        if not isinstance(self.source, str) or not self.source:
+            raise ValueError("program AD unknown alias edge source must be non-empty")
+        if not isinstance(self.target, str) or not self.target:
+            raise ValueError("program AD unknown alias edge target must be non-empty")
+        if not isinstance(self.kind, str) or not self.kind:
+            raise ValueError("program AD unknown alias edge kind must be non-empty")
+        if self.kind in _PROGRAM_AD_SUPPORTED_ALIAS_EDGE_KINDS:
+            raise ValueError("program AD unknown alias edge kind must be unsupported")
+        if self.version < 0:
+            raise ValueError("program AD unknown alias edge version must be non-negative")
+
+    def as_dict(self) -> dict[str, object]:
+        """Return a JSON-ready unknown alias-edge provenance payload."""
+
+        return {
+            "source": self.source,
+            "target": self.target,
+            "kind": self.kind,
+            "version": self.version,
+        }
+
+
+@dataclass(frozen=True)
 class ProgramADStaticAliasLatticeReport:
     """Static alias-lattice readiness report for emitted Program AD IR.
 
@@ -187,6 +221,7 @@ class ProgramADStaticAliasLatticeReport:
     unsupported_semantic_diagnostics: tuple[WholeProgramUnsupportedSemanticDiagnostic, ...] = ()
     unsupported_object_attribute_roots: tuple[str, ...] = ()
     unsupported_object_attribute_details: tuple[str, ...] = ()
+    unknown_alias_edges: tuple[ProgramADUnknownAliasEdge, ...] = ()
 
     def __post_init__(self) -> None:
         """Validate static alias-lattice report contents at construction time."""
@@ -231,6 +266,29 @@ class ProgramADStaticAliasLatticeReport:
         if tuple(sorted(set(self.unknown_alias_edge_kinds))) != self.unknown_alias_edge_kinds:
             raise ValueError(
                 "program AD static alias lattice unknown_alias_edge_kinds must be sorted unique"
+            )
+        if any(
+            not isinstance(edge, ProgramADUnknownAliasEdge) for edge in self.unknown_alias_edges
+        ):
+            raise ValueError(
+                "program AD static alias lattice unknown_alias_edges must contain "
+                "ProgramADUnknownAliasEdge entries"
+            )
+        unknown_edge_order = tuple(
+            (edge.kind, edge.source, edge.target, edge.version)
+            for edge in self.unknown_alias_edges
+        )
+        if tuple(sorted(set(unknown_edge_order))) != unknown_edge_order:
+            raise ValueError(
+                "program AD static alias lattice unknown_alias_edges must be sorted unique"
+            )
+        expected_unknown_alias_edge_kinds = tuple(
+            sorted({edge.kind for edge in self.unknown_alias_edges})
+        )
+        if self.unknown_alias_edge_kinds != expected_unknown_alias_edge_kinds:
+            raise ValueError(
+                "program AD static alias lattice unknown_alias_edge_kinds must match "
+                "unknown_alias_edges"
             )
         if any(
             not isinstance(semantic, str) or not semantic
@@ -315,10 +373,24 @@ class ProgramADStaticAliasLatticeReport:
                 "complete program AD static alias lattice cannot carry blocker reasons"
             )
         mutation_blocker = "mutation_effects_require_versioned_alias_semantics"
+        unknown_alias_blocker = "unknown_alias_edge_kinds"
         unsupported_semantics_blocker = "unsupported_python_semantics_require_frontend_lowering"
+        if self.complete and self.unknown_alias_edges:
+            raise ValueError(
+                "complete program AD static alias lattice cannot carry unknown_alias_edges"
+            )
         if self.complete and self.mutation_effects:
             raise ValueError(
                 "complete program AD static alias lattice cannot carry mutation_effects"
+            )
+        if self.unknown_alias_edges and unknown_alias_blocker not in self.blocker_reasons:
+            raise ValueError(
+                "program AD static alias lattice unknown_alias_edges require a blocker reason"
+            )
+        if not self.unknown_alias_edges and unknown_alias_blocker in self.blocker_reasons:
+            raise ValueError(
+                "program AD static alias lattice unknown alias blocker requires "
+                "unknown_alias_edges"
             )
         if self.complete and self.unsupported_python_semantics:
             raise ValueError(
@@ -382,6 +454,7 @@ class ProgramADStaticAliasLatticeReport:
             "non_executed_phi_nodes": list(self.non_executed_phi_nodes),
             "non_executed_control_alias_edges": list(self.non_executed_control_alias_edges),
             "unknown_alias_edge_kinds": list(self.unknown_alias_edge_kinds),
+            "unknown_alias_edges": [edge.as_dict() for edge in self.unknown_alias_edges],
             "unsupported_python_semantics": list(self.unsupported_python_semantics),
             "unsupported_semantic_diagnostics": [
                 diagnostic.to_dict() for diagnostic in self.unsupported_semantic_diagnostics
@@ -500,15 +573,8 @@ def program_ad_static_alias_lattice_report(
     versions_by_member: dict[str, set[int]] = {}
     mutation_versions_by_member: dict[str, set[int]] = {}
     edge_kinds_by_member: dict[str, set[str]] = {}
-    unknown_alias_edge_kinds = tuple(
-        sorted(
-            {
-                edge.kind
-                for edge in program_ir.alias_edges
-                if edge.kind not in _PROGRAM_AD_SUPPORTED_ALIAS_EDGE_KINDS
-            }
-        )
-    )
+    unknown_alias_edges = _unknown_alias_edges(program_ir.alias_edges)
+    unknown_alias_edge_kinds = tuple(sorted({edge.kind for edge in unknown_alias_edges}))
     unsupported_diagnostics = tuple(unsupported_semantic_diagnostics)
     if any(
         not isinstance(diagnostic, WholeProgramUnsupportedSemanticDiagnostic)
@@ -633,6 +699,27 @@ def program_ad_static_alias_lattice_report(
         unsupported_semantic_diagnostics=unsupported_diagnostics,
         unsupported_object_attribute_roots=unsupported_object_attribute_roots,
         unsupported_object_attribute_details=unsupported_object_attribute_details,
+        unknown_alias_edges=unknown_alias_edges,
+    )
+
+
+def _unknown_alias_edges(
+    alias_edges: Sequence[ProgramADAliasEdge],
+) -> tuple[ProgramADUnknownAliasEdge, ...]:
+    """Return sorted unsupported alias-edge provenance from emitted IR."""
+
+    edges = {
+        ProgramADUnknownAliasEdge(
+            source=edge.source,
+            target=edge.target,
+            kind=edge.kind,
+            version=edge.version,
+        )
+        for edge in alias_edges
+        if edge.kind not in _PROGRAM_AD_SUPPORTED_ALIAS_EDGE_KINDS
+    }
+    return tuple(
+        sorted(edges, key=lambda edge: (edge.kind, edge.source, edge.target, edge.version))
     )
 
 
@@ -678,6 +765,7 @@ __all__ = [
     "ProgramADAliasSet",
     "ProgramADStaticAliasLatticeComponent",
     "ProgramADStaticAliasLatticeReport",
+    "ProgramADUnknownAliasEdge",
     "analyze_program_ad_alias_effects",
     "program_ad_static_alias_lattice_report",
 ]

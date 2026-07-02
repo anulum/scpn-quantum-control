@@ -85,6 +85,11 @@ when matched by runtime phi provenance. Legacy opcode-free metadata, aliases,
 mutation, array semantics, source-level and non-executed branch semantics,
 general Program AD execution, LLVM/JIT lowering, hardware execution, and
 performance promotion remain fail-closed.
+Program AD static alias-lattice reports preserve unknown alias-edge provenance
+as `ProgramADUnknownAliasEdge` rows and attach the `unknown_alias_edge_kinds`
+blocker before readiness promotion. This is still metadata-only fail-closed
+evidence, not unknown dynamic alias promotion, Rust replay support for unknown
+alias kinds, executable compiler lowering, or a performance claim.
 Python integration is isolated in
 `scpn_quantum_control.program_ad_rust_bridge`, which owns the typed wrapper
 dataclasses, native-extension fail-closed handling, JSON payload validation,

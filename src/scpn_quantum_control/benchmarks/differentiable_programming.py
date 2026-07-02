@@ -24,6 +24,8 @@ from ..compiler.mlir import DifferentiableMLIRCompileConfig, compile_whole_progr
 from ..differentiable import (
     CustomDerivativeRule,
     Parameter,
+    ProgramADAliasEdge,
+    ProgramADEffectIR,
     analyze_program_ad_alias_effects,
     compile_whole_program_frontend,
     custom_jvp,
@@ -2760,6 +2762,43 @@ def _static_alias_lattice_report_case() -> DifferentiableProgrammingBenchmarkRes
     ):
         raise ValueError("static alias lattice benchmark missing object-attribute blocker")
 
+    if not alias_result.program_ir.ssa_values:
+        raise ValueError("static alias lattice benchmark missing SSA values")
+    unknown_alias_target = alias_result.program_ir.ssa_values[0].name
+    unknown_alias_ir = ProgramADEffectIR(
+        ssa_values=alias_result.program_ir.ssa_values,
+        effects=alias_result.program_ir.effects,
+        alias_edges=(
+            *alias_result.program_ir.alias_edges,
+            ProgramADAliasEdge(
+                source="runtime:dynamic_object",
+                target=unknown_alias_target,
+                kind="runtime_unknown_alias",
+                version=0,
+            ),
+        ),
+        control_regions=alias_result.program_ir.control_regions,
+        serialization=alias_result.program_ir.serialization,
+        phi_nodes=alias_result.program_ir.phi_nodes,
+    )
+    unknown_alias_report = program_ad_static_alias_lattice_report(unknown_alias_ir)
+    if unknown_alias_report.complete:
+        raise ValueError("static alias lattice benchmark must not promote unknown alias edges")
+    if unknown_alias_report.unknown_alias_edge_kinds != ("runtime_unknown_alias",):
+        raise ValueError("static alias lattice benchmark lost unknown alias edge kinds")
+    if len(unknown_alias_report.unknown_alias_edges) != 1:
+        raise ValueError("static alias lattice benchmark lost unknown alias edge provenance")
+    unknown_alias_edge = unknown_alias_report.unknown_alias_edges[0]
+    if (
+        unknown_alias_edge.source != "runtime:dynamic_object"
+        or unknown_alias_edge.target != unknown_alias_target
+        or unknown_alias_edge.kind != "runtime_unknown_alias"
+        or unknown_alias_edge.version != 0
+    ):
+        raise ValueError("static alias lattice benchmark corrupted unknown alias edge provenance")
+    if "unknown_alias_edge_kinds" not in unknown_alias_report.blocker_reasons:
+        raise ValueError("static alias lattice benchmark missing unknown-alias blocker")
+
     def mutation_objective(trace_values: Any) -> object:
         work = trace_values.copy()
         work[0] = trace_values[1] + trace_values[2]
@@ -2827,10 +2866,11 @@ def _static_alias_lattice_report_case() -> DifferentiableProgrammingBenchmarkRes
             "expression-rebinding classification, explicit non-executed phi, and "
             "mutation/control-path/unsupported-Python diagnostic blocker reporting, "
             "with captured/global object-attribute diagnostics pinned to static "
-            "object-model blockers; not captured/global object-attribute alias sets, "
-            "arbitrary dynamic Python frontend lowering, non-executed branch adjoints, "
-            "Rust/LLVM executable lowering, hardware, or performance evidence; no "
-            "wall-clock performance claim"
+            "object-model blockers and unknown alias-edge provenance pinned to "
+            "fail-closed blockers; not captured/global object-attribute alias sets, "
+            "unknown dynamic alias promotion, arbitrary dynamic Python frontend "
+            "lowering, non-executed branch adjoints, Rust/LLVM executable lowering, "
+            "hardware, or performance evidence; no wall-clock performance claim"
         ),
     )
 

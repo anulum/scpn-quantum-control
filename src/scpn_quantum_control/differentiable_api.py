@@ -847,12 +847,14 @@ def differentiable_dashboard_status(
                 "ProgramADAliasEffectAnalysis",
                 "ProgramADAliasSet",
                 "ProgramADStaticAliasLatticeReport",
+                "ProgramADUnknownAliasEdge",
                 "bounded local object-attribute alias metadata",
                 "expression-rebinding alias metadata",
                 "mutation-effect blocker metadata",
                 "control-path alias blocker metadata",
                 "unsupported-Python frontend diagnostic metadata",
                 "captured/global object-attribute blocker metadata",
+                "unknown alias-edge provenance blocker metadata",
                 "shape_view_alias_metadata_contracts",
                 "slice_mutation_alias_metadata_contracts",
                 "loop_carried_state_alias_metadata_contracts",
@@ -863,16 +865,19 @@ def differentiable_dashboard_status(
                 "mutation effects require versioned alias semantics",
                 "control-path aliases require non-executed branch semantics",
                 "unsupported Python semantics require executable frontend lowering",
+                "unknown alias edges require static alias-kind support",
                 "non-executed branch semantics remain blocked",
             ),
             claim_boundary=(
                 "static alias-lattice readiness over emitted Program AD IR metadata; "
                 "bounded local object-attribute and expression-rebinding aliases are "
                 "metadata only; mutation effects, control-path aliases, unsupported "
-                "Python semantics with source/region/bytecode diagnostics, and "
-                "captured/global object-attribute diagnostics are explicit blockers, "
+                "Python semantics with source/region/bytecode diagnostics, and captured/global "
+                "object-attribute diagnostics are explicit blockers; unknown alias-edge "
+                "provenance is an explicit blocker, "
                 "not promoted static object-model alias sets, mutation, branch, or "
-                "arbitrary dynamic-Python frontend lowering"
+                "unknown dynamic alias promotion, or arbitrary dynamic-Python frontend "
+                "lowering"
             ),
         ),
         DifferentiableDashboardCapabilityRow(

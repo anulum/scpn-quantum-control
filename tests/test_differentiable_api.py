@@ -326,7 +326,13 @@ def test_differentiable_dashboard_status_is_claim_bounded_for_gui_consumers() ->
         "captured/global object-attribute diagnostics are explicit blockers"
         in rows["program_ad_alias_effects"]["claim_boundary"]
     )
+    assert (
+        "unknown alias-edge provenance is an explicit blocker"
+        in rows["program_ad_alias_effects"]["claim_boundary"]
+    )
+    assert "unknown dynamic alias promotion" in rows["program_ad_alias_effects"]["claim_boundary"]
     assert "ProgramADStaticAliasLatticeReport" in rows["program_ad_alias_effects"]["evidence"]
+    assert "ProgramADUnknownAliasEdge" in rows["program_ad_alias_effects"]["evidence"]
     assert (
         "bounded local object-attribute alias metadata"
         in rows["program_ad_alias_effects"]["evidence"]
@@ -339,6 +345,10 @@ def test_differentiable_dashboard_status_is_claim_bounded_for_gui_consumers() ->
     )
     assert (
         "captured/global object-attribute blocker metadata"
+        in rows["program_ad_alias_effects"]["evidence"]
+    )
+    assert (
+        "unknown alias-edge provenance blocker metadata"
         in rows["program_ad_alias_effects"]["evidence"]
     )
     assert "shape_view_alias_metadata_contracts" in rows["program_ad_alias_effects"]["evidence"]
@@ -362,6 +372,10 @@ def test_differentiable_dashboard_status_is_claim_bounded_for_gui_consumers() ->
     )
     assert (
         "unsupported Python semantics require executable frontend lowering"
+        in (rows["program_ad_alias_effects"]["blocked_reasons"])
+    )
+    assert (
+        "unknown alias edges require static alias-kind support"
         in (rows["program_ad_alias_effects"]["blocked_reasons"])
     )
     assert (

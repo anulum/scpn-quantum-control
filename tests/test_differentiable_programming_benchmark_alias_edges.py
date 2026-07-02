@@ -23,6 +23,41 @@ from _differentiable_programming_benchmark_edge_helpers import (
 from numpy.typing import NDArray
 
 from scpn_quantum_control.benchmarks import differentiable_programming as dp
+from scpn_quantum_control.differentiable import (
+    ProgramADEffect,
+    ProgramADEffectIR,
+    ProgramADSSAValue,
+)
+
+
+def _static_lattice_program_ir() -> ProgramADEffectIR:
+    """Return real minimal Program AD IR for static-lattice benchmark guards."""
+
+    return ProgramADEffectIR(
+        ssa_values=(
+            ProgramADSSAValue(
+                "%0",
+                producer=0,
+                version=0,
+                shape=(),
+                dtype="float64",
+                effect=0,
+            ),
+        ),
+        effects=(
+            ProgramADEffect(
+                index=0,
+                kind="pure",
+                target="%0",
+                inputs=(),
+                version=0,
+                ordering=0,
+            ),
+        ),
+        alias_edges=(),
+        control_regions=(),
+        serialization="program_ad_effect_ir.v1",
+    )
 
 
 def test_alias_metadata_benchmarks_fail_closed(
@@ -45,7 +80,7 @@ def test_alias_metadata_benchmarks_fail_closed(
     monkeypatch.setattr(
         dp,
         "whole_program_value_and_grad",
-        _fake_whole_program(_whole_program_result(program_ir=_program_ir())),
+        _fake_whole_program(_whole_program_result(program_ir=_static_lattice_program_ir())),
     )
     monkeypatch.setattr(
         dp,
@@ -140,7 +175,7 @@ def test_static_alias_lattice_benchmark_fails_closed(
     monkeypatch.setattr(
         dp,
         "whole_program_value_and_grad",
-        _fake_whole_program(_whole_program_result(program_ir=_program_ir())),
+        _fake_whole_program(_whole_program_result(program_ir=_static_lattice_program_ir())),
     )
     monkeypatch.setattr(
         dp,
@@ -213,6 +248,12 @@ def test_static_alias_lattice_benchmark_fails_closed(
         region_ids=("body",),
         bytecode_offsets=(12,),
     )
+    unknown_alias_edge = SimpleNamespace(
+        source="runtime:dynamic_object",
+        target="%0",
+        kind="runtime_unknown_alias",
+        version=0,
+    )
 
     def fake_frontend(objective: Callable[[Any], object]) -> SimpleNamespace:
         if objective.__name__ == "unsupported_object_attribute_boundary":
@@ -255,6 +296,12 @@ def test_static_alias_lattice_benchmark_fails_closed(
             "object_attributes_require_static_object_model",
             "unsupported_python_semantics_require_frontend_lowering",
         ),
+    )
+    unknown_alias_blocked_report = SimpleNamespace(
+        complete=False,
+        unknown_alias_edge_kinds=("runtime_unknown_alias",),
+        unknown_alias_edges=(unknown_alias_edge,),
+        blocker_reasons=("unknown_alias_edge_kinds",),
     )
     for unsupported_report, match in (
         (
@@ -364,6 +411,60 @@ def test_static_alias_lattice_benchmark_fails_closed(
         with pytest.raises(ValueError, match=match):
             dp._static_alias_lattice_report_case()
 
+    for unknown_alias_report, match in (
+        (
+            SimpleNamespace(
+                complete=True,
+                unknown_alias_edge_kinds=("runtime_unknown_alias",),
+                unknown_alias_edges=(unknown_alias_edge,),
+                blocker_reasons=(),
+            ),
+            "must not promote unknown alias edges",
+        ),
+        (
+            SimpleNamespace(
+                complete=False,
+                unknown_alias_edge_kinds=(),
+                unknown_alias_edges=(unknown_alias_edge,),
+                blocker_reasons=("unknown_alias_edge_kinds",),
+            ),
+            "lost unknown alias edge kinds",
+        ),
+        (
+            SimpleNamespace(
+                complete=False,
+                unknown_alias_edge_kinds=("runtime_unknown_alias",),
+                unknown_alias_edges=(),
+                blocker_reasons=("unknown_alias_edge_kinds",),
+            ),
+            "lost unknown alias edge provenance",
+        ),
+        (
+            SimpleNamespace(
+                complete=False,
+                unknown_alias_edge_kinds=("runtime_unknown_alias",),
+                unknown_alias_edges=(unknown_alias_edge,),
+                blocker_reasons=(),
+            ),
+            "unknown-alias blocker",
+        ),
+    ):
+        reports = iter(
+            (
+                complete_report,
+                unsupported_blocked_report,
+                object_attribute_blocked_report,
+                unknown_alias_report,
+            )
+        )
+        monkeypatch.setattr(
+            dp,
+            "program_ad_static_alias_lattice_report",
+            lambda _ir, reports=reports, **_kwargs: next(reports),
+        )
+        with pytest.raises(ValueError, match=match):
+            dp._static_alias_lattice_report_case()
+
     for branch_report, match in (
         (
             SimpleNamespace(
@@ -422,6 +523,7 @@ def test_static_alias_lattice_benchmark_fails_closed(
                 complete_report,
                 unsupported_blocked_report,
                 object_attribute_blocked_report,
+                unknown_alias_blocked_report,
                 mutation_blocked_report,
                 branch_report,
             )
@@ -454,8 +556,8 @@ def test_static_alias_lattice_branch_ir_fails_closed(
     )
     results = iter(
         (
-            _whole_program_result(program_ir=_program_ir()),
-            _whole_program_result(program_ir=_program_ir()),
+            _whole_program_result(program_ir=_static_lattice_program_ir()),
+            _whole_program_result(program_ir=_static_lattice_program_ir()),
             _whole_program_result(program_ir=None),
         ),
     )
@@ -545,6 +647,19 @@ def test_static_alias_lattice_branch_ir_fails_closed(
                     "object_attributes_require_static_object_model",
                     "unsupported_python_semantics_require_frontend_lowering",
                 ),
+            ),
+            SimpleNamespace(
+                complete=False,
+                unknown_alias_edge_kinds=("runtime_unknown_alias",),
+                unknown_alias_edges=(
+                    SimpleNamespace(
+                        source="runtime:dynamic_object",
+                        target="%0",
+                        kind="runtime_unknown_alias",
+                        version=0,
+                    ),
+                ),
+                blocker_reasons=("unknown_alias_edge_kinds",),
             ),
             SimpleNamespace(
                 complete=False,
