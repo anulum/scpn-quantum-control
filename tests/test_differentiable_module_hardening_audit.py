@@ -49,6 +49,7 @@ def test_differentiable_module_hardening_registry_covers_current_scope() -> None
     assert "src/scpn_quantum_control/phase/qnode_circuit.py" in module_paths
     assert "src/scpn_quantum_control/phase/jax_bridge.py" in module_paths
     assert "src/scpn_quantum_control/phase/torch_module_state.py" in module_paths
+    assert "src/scpn_quantum_control/phase/torch_device_state.py" in module_paths
     assert "src/scpn_quantum_control/benchmarks/differentiable_hardening_gate.py" in (module_paths)
     assert all(record.diagnostic_surfaces for record in registry)
 

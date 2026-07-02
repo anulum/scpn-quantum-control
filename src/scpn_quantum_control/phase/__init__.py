@@ -565,6 +565,12 @@ from .torch_bridge import (
     torch_phase_qnode_transform_audit,
     torch_phase_qnode_value_and_grad,
 )
+from .torch_device_state import (
+    TORCH_DEVICE_STATE_CLAIM_BOUNDARY,
+    PhaseTorchDeviceStateAuditResult,
+    PhaseTorchDeviceStateRoute,
+    run_torch_module_device_state_audit,
+)
 from .torch_module_state import (
     TORCH_MODULE_STATE_CLAIM_BOUNDARY,
     PhaseTorchModuleStateAuditResult,
@@ -989,6 +995,8 @@ __all__ = [
     "PhaseTorchCompileBoundaryAuditResult",
     "PhaseTorchCompileBoundaryRoute",
     "PhaseTorchCompileCompatibilityResult",
+    "PhaseTorchDeviceStateAuditResult",
+    "PhaseTorchDeviceStateRoute",
     "PhaseTorchEcosystemMaturityAuditResult",
     "PhaseTorchEcosystemMaturityRoute",
     "PhaseTorchFuncCompatibilityResult",
@@ -1007,8 +1015,10 @@ __all__ = [
     "PhaseTorchPhaseQNodeTransformResult",
     "PhaseTorchQNNGradientResult",
     "PhaseTorchTrainingLoopAuditResult",
+    "TORCH_DEVICE_STATE_CLAIM_BOUNDARY",
     "TORCH_MODULE_STATE_CLAIM_BOUNDARY",
     "run_torch_maturity_audit",
+    "run_torch_module_device_state_audit",
     "run_torch_module_state_audit",
     "run_torch_phase_qnode_lowering_matrix",
     "run_torch_training_loop_audit",

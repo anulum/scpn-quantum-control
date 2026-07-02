@@ -981,15 +981,39 @@ def differentiable_dashboard_status(
             if conformance_passed
             else (
                 "conformance suite not run in this status call",
-                "device state transfer and checkpoint-portability remain blocked",
+                "CUDA device transfer and checkpoint-portability remain blocked",
                 "provider, hardware, CUDA, isolated benchmark, and performance promotion remain blocked",
             ),
             claim_boundary=(
                 "bounded PyTorch module-state audit for the phase-QNN nn.Module "
                 "route only; strict state_dict and Adam optimizer-state replay "
-                "are local CPU-compatible evidence, while device transfer, "
+                "are local CPU-compatible evidence, while CUDA device transfer, "
                 "durable checkpoint-portability, provider, hardware, CUDA, "
                 "isolated benchmark, and performance promotion remain blocked"
+            ),
+        ),
+        DifferentiableDashboardCapabilityRow(
+            surface="torch_bounded_qnn_module_device_state_audit",
+            state="conformance_backed" if conformance_passed else "diagnostic",
+            backing_api="run_torch_module_device_state_audit",
+            evidence=(
+                "PhaseTorchDeviceStateAuditResult",
+                "module.to('cpu') state_dict round-trip",
+                "CUDA smoke-gated module.to('cuda') classification",
+            ),
+            blocked_reasons=()
+            if conformance_passed
+            else (
+                "conformance suite not run in this status call",
+                "CUDA transfer remains blocked when the local PyTorch runtime cannot execute a CUDA smoke",
+                "durable checkpoint-portability, provider, hardware, isolated benchmark, and performance promotion remain blocked",
+            ),
+            claim_boundary=(
+                "bounded PyTorch device-state audit for the phase-QNN nn.Module "
+                "route only; CPU module.to(...) state replay is local functional "
+                "evidence and CUDA replay is smoke-gated device evidence, while "
+                "durable checkpoint-portability, provider, hardware, isolated "
+                "benchmark, and performance promotion remain blocked"
             ),
         ),
         DifferentiableDashboardCapabilityRow(

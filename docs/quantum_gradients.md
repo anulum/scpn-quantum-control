@@ -293,13 +293,16 @@ custom `torch.autograd.Function`,
 wrapper compatibility,
 `run_torch_module_state_audit(...)`, which checks strict bounded-module
 `state_dict` replay and Adam optimizer-state replay for that same wrapper
-surface, and
+surface,
+`run_torch_module_device_state_audit(...)`, which checks CPU module-device
+state replay and classifies CUDA replay only after a real CUDA smoke succeeds,
+and
 `tensorflow_bounded_qnn_value_and_grad(...)`, which returns TensorFlow tensors
 from the analytic bounded-model gradient. Each route checks the same
 parameter-shift reference. These are intentionally narrow bridge promotions:
 arbitrary autodiff-through-simulator kernels, unrestricted QNN architectures,
-device placement guarantees, durable checkpoint portability, and live provider
-gradients remain outside the promoted surface.
+incompatible CUDA/device placement guarantees, durable checkpoint portability,
+and live provider gradients remain outside the promoted surface.
 
 ## Bounded QNN convergence evidence
 
@@ -2134,9 +2137,12 @@ CUDA, provider, finite-shot, hardware, isolated benchmark, or performance
 promotion evidence. `run_torch_module_state_audit(...)` separately validates
 strict module `state_dict` replay and Adam optimizer-state replay on local
 CPU-compatible tensors, while `validate_torch_bounded_qnn_state_dict(...)`
-checks candidate keys, shapes, and dtypes without loading them. Device transfer
-and durable checkpoint portability remain blocked until dedicated artefacts
-exist. The separate `run_torch_ecosystem_maturity_audit(...)` route records
+checks candidate keys, shapes, and dtypes without loading them.
+`run_torch_module_device_state_audit(...)` checks CPU `module.to(...)` state
+replay and attempts CUDA `module.to(...)` state replay only after the installed
+PyTorch runtime passes a real CUDA smoke. Incompatible CUDA and durable
+checkpoint portability remain blocked until dedicated artefacts exist. The
+separate `run_torch_ecosystem_maturity_audit(...)` route records
 installed `nn.Module`/`Parameter`, `torch.func`, `torch.compile`, and CUDA-device
 capability state. A visible CUDA device is still blocked if the installed
 PyTorch wheel cannot execute a tensor smoke on that hardware. Registered

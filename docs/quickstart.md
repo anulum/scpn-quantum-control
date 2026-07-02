@@ -414,7 +414,9 @@ AOTAutograd/export, CUDA, provider, hardware, isolated-benchmark, and
 performance promotion blocked until artefacts exist.
 For bounded PyTorch phase-QNN modules, `run_torch_module_state_audit(...)`
 checks strict module `state_dict` replay and Adam optimizer-state replay on
-local CPU-compatible tensors. Device transfer, durable checkpoint portability,
+local CPU-compatible tensors. `run_torch_module_device_state_audit(...)` checks
+CPU `module.to(...)` state replay and attempts CUDA replay only after a real
+CUDA smoke succeeds. Incompatible CUDA, durable checkpoint portability,
 provider, hardware, isolated benchmark, and performance promotion remain
 blocked until their own artefacts exist.
 

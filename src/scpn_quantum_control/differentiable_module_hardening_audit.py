@@ -676,6 +676,11 @@ def differentiable_module_hardening_registry() -> tuple[DifferentiableModuleHard
             ("strict module state_dict replay", "optimizer state_dict replay blockers"),
         ),
         _record(
+            "src/scpn_quantum_control/phase/torch_device_state.py",
+            ("tests/test_phase_torch_device_state.py",),
+            ("CPU module.to state replay", "CUDA device-state transfer blockers"),
+        ),
+        _record(
             "src/scpn_quantum_control/phase/xy_compiler.py",
             ("tests/test_xy_compiler.py", "tests/test_xy_compiler_contracts.py"),
             ("compiler input validation", "unsupported mapping diagnostics"),
