@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 777,
     "public_documentation_pages": 254,
-    "python_model_classes": 940,
-    "python_model_source_modules": 531,
+    "python_model_classes": 944,
+    "python_model_source_modules": 532,
     "rust_pyo3_model_wrappers": 171,
     "rust_source_modules": 42,
-    "test_files": 867
+    "test_files": 868
   },
   "documentation": {
     "examples": [
@@ -547,7 +547,7 @@
       {
         "package": "phase",
         "path": "src/scpn_quantum_control/phase",
-        "python_modules": 82
+        "python_modules": 83
       },
       {
         "package": "psi_field",
@@ -3149,6 +3149,22 @@
         "path": "src/scpn_quantum_control/phase/torch_bridge.py"
       },
       {
+        "name": "PhaseTorchTrainingLoopMatrixRecord",
+        "path": "src/scpn_quantum_control/phase/torch_training_loop_matrix.py"
+      },
+      {
+        "name": "PhaseTorchTrainingLoopMatrixResult",
+        "path": "src/scpn_quantum_control/phase/torch_training_loop_matrix.py"
+      },
+      {
+        "name": "PhaseTorchTrainingLoopMatrixRoute",
+        "path": "src/scpn_quantum_control/phase/torch_training_loop_matrix.py"
+      },
+      {
+        "name": "PhaseTorchTrainingLoopScenario",
+        "path": "src/scpn_quantum_control/phase/torch_training_loop_matrix.py"
+      },
+      {
         "name": "PhaseVQE",
         "path": "src/scpn_quantum_control/phase/phase_vqe.py"
       },
@@ -4811,6 +4827,7 @@
       "src/scpn_quantum_control/phase/torch_device_state.py",
       "src/scpn_quantum_control/phase/torch_export.py",
       "src/scpn_quantum_control/phase/torch_module_state.py",
+      "src/scpn_quantum_control/phase/torch_training_loop_matrix.py",
       "src/scpn_quantum_control/phase/transform_nesting.py",
       "src/scpn_quantum_control/phase/trotter_error.py",
       "src/scpn_quantum_control/phase/trotter_upde.py",
@@ -6540,6 +6557,7 @@
       "tests/test_phase_torch_device_state.py",
       "tests/test_phase_torch_export.py",
       "tests/test_phase_torch_module_state.py",
+      "tests/test_phase_torch_training_loop_matrix.py",
       "tests/test_phase_transform_nesting.py",
       "tests/test_phase_vqe.py",
       "tests/test_physics_accuracy.py",

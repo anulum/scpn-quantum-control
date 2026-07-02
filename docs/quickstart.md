@@ -421,7 +421,11 @@ CUDA smoke succeeds. `run_torch_module_checkpoint_audit(...)` writes a real
 strict module plus Adam optimizer replay. `run_torch_long_lived_checkpoint_matrix(...)`
 records the checkpoint schema, tensor metadata, runtime fingerprint, and
 repeated local CPU weights-only loads while keeping cross-runtime, CUDA, and
-external checkpoint-corpus promotion blocked. `run_torch_module_export_audit(...)`
+external checkpoint-corpus promotion blocked. `run_torch_training_loop_matrix(...)`
+runs deterministic bounded training-loop scenarios over fullgraph/static and
+non-fullgraph dynamic-request compile rows while keeping CUDA, provider,
+hardware, isolated-benchmark, arbitrary-architecture, and performance routes
+blocked. `run_torch_module_export_audit(...)`
 exports the same bounded module through `torch.export.export(...)`, persists it
 with `torch.export.save(...)`, reloads it with `torch.export.load(...)`, and
 replays the local CPU value route through `ExportedProgram.module()`.

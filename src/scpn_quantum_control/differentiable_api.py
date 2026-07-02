@@ -1071,6 +1071,34 @@ def differentiable_dashboard_status(
             ),
         ),
         DifferentiableDashboardCapabilityRow(
+            surface="torch_bounded_qnn_training_loop_matrix",
+            state="conformance_backed" if conformance_passed else "diagnostic",
+            backing_api="run_torch_training_loop_matrix",
+            evidence=(
+                "PhaseTorchTrainingLoopMatrixResult",
+                "multi-scenario training-loop parity",
+                "loss descent and parameter-update records",
+                "fullgraph/static and non-fullgraph dynamic-request compile rows",
+            ),
+            blocked_reasons=()
+            if conformance_passed
+            else (
+                "conformance suite not run in this status call",
+                "CUDA training-loop execution remains blocked",
+                "provider and hardware training-loop execution remain blocked",
+                "isolated benchmark and performance promotion remain blocked",
+                "arbitrary QNN architecture training loops remain blocked",
+            ),
+            claim_boundary=(
+                "bounded PyTorch training-loop matrix for the phase-QNN nn.Module "
+                "route only; deterministic local CPU scenarios record loss "
+                "descent, parameter updates, compile-mode coverage, and gradient "
+                "parity against SCPN parameter-shift references with no CUDA, "
+                "provider, hardware, arbitrary-architecture, isolated benchmark, "
+                "or performance claim"
+            ),
+        ),
+        DifferentiableDashboardCapabilityRow(
             surface="torch_bounded_qnn_module_export_audit",
             state="conformance_backed" if conformance_passed else "diagnostic",
             backing_api="run_torch_module_export_audit",

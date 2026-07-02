@@ -2041,6 +2041,7 @@ from scpn_quantum_control.phase import (
     run_torch_maturity_audit,
     run_torch_phase_qnode_lowering_matrix,
     run_torch_training_loop_audit,
+    run_torch_training_loop_matrix,
     tensorflow_bounded_qnn_keras_layer,
     tensorflow_parameter_shift_value_and_grad,
     torch_phase_qnode_compile_audit,
@@ -2097,6 +2098,7 @@ torch_training_loop = run_torch_training_loop_audit(
     labels=np.array([0.0, 1.0], dtype=float),
     initial_params=np.array([0.45], dtype=float),
 )
+torch_training_loop_matrix = run_torch_training_loop_matrix()
 torch_ecosystem = run_torch_ecosystem_maturity_audit()
 torch_lowering = run_torch_phase_qnode_lowering_matrix()
 jax_cloud_batch = plan_jax_cloud_validation_batch(runner="jarvislabs")
@@ -2104,6 +2106,7 @@ torch_cloud_batch = plan_torch_cloud_validation_batch(runner="jarvislabs")
 
 print(torch_result.torch_gradient, torch_result.host_boundary)
 print(torch_training_loop.final_loss, torch_training_loop.passed)
+print(torch_training_loop_matrix.scenario_count, torch_training_loop_matrix.passed)
 print(torch_maturity.bounded_model_ready, torch_maturity.ready_for_provider_exceedance)
 print(torch_ecosystem.route_status("cuda_accelerator_device"))
 print(torch_lowering.route_status("registered_phase_qnode_statevector_lowering"))
@@ -2146,7 +2149,11 @@ uses `torch.func.grad` for deterministic gradient-descent updates, records loss
 and gradient histories, and checks every gradient route against SCPN
 parameter-shift references. It is local training-loop correctness evidence, not
 CUDA, provider, finite-shot, hardware, isolated benchmark, or performance
-promotion evidence. `run_torch_module_state_audit(...)` separately validates
+promotion evidence. `run_torch_training_loop_matrix(...)` expands that route
+into deterministic bounded one- and two-parameter scenarios, records loss
+descent, parameter-update norm, compile-mode coverage, and gradient parity, and
+keeps CUDA, provider/hardware, arbitrary-architecture, isolated benchmark, and
+performance routes blocked. `run_torch_module_state_audit(...)` separately validates
 strict module `state_dict` replay and Adam optimizer-state replay on local
 CPU-compatible tensors, while `validate_torch_bounded_qnn_state_dict(...)`
 checks candidate keys, shapes, and dtypes without loading them.

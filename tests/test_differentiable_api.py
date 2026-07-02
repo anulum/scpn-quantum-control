@@ -661,6 +661,25 @@ def test_differentiable_dashboard_status_is_claim_bounded_for_gui_consumers() ->
         "no cross-runtime"
         in rows["torch_bounded_qnn_long_lived_checkpoint_matrix"]["claim_boundary"]
     )
+    assert rows["torch_bounded_qnn_training_loop_matrix"]["state"] == "diagnostic"
+    assert rows["torch_bounded_qnn_training_loop_matrix"]["fail_closed"] is True
+    assert (
+        rows["torch_bounded_qnn_training_loop_matrix"]["backing_api"]
+        == "run_torch_training_loop_matrix"
+    )
+    assert (
+        "PhaseTorchTrainingLoopMatrixResult"
+        in rows["torch_bounded_qnn_training_loop_matrix"]["evidence"]
+    )
+    assert (
+        "multi-scenario training-loop parity"
+        in rows["torch_bounded_qnn_training_loop_matrix"]["evidence"]
+    )
+    assert (
+        "CUDA training-loop execution remains blocked"
+        in rows["torch_bounded_qnn_training_loop_matrix"]["blocked_reasons"]
+    )
+    assert "no CUDA" in rows["torch_bounded_qnn_training_loop_matrix"]["claim_boundary"]
     assert rows["torch_bounded_qnn_module_export_audit"]["state"] == "diagnostic"
     assert rows["torch_bounded_qnn_module_export_audit"]["fail_closed"] is True
     assert (
