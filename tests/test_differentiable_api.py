@@ -317,6 +317,7 @@ def test_differentiable_dashboard_status_is_claim_bounded_for_gui_consumers() ->
     assert "bounded local object-attribute" in rows["program_ad_alias_effects"]["claim_boundary"]
     assert "expression-rebinding aliases" in rows["program_ad_alias_effects"]["claim_boundary"]
     assert "control-path aliases" in rows["program_ad_alias_effects"]["claim_boundary"]
+    assert "unsupported Python semantics" in rows["program_ad_alias_effects"]["claim_boundary"]
     assert (
         "non-executed phi inputs are explicit blockers"
         in rows["program_ad_alias_effects"]["claim_boundary"]
@@ -328,6 +329,10 @@ def test_differentiable_dashboard_status_is_claim_bounded_for_gui_consumers() ->
     )
     assert "expression-rebinding alias metadata" in rows["program_ad_alias_effects"]["evidence"]
     assert "control-path alias blocker metadata" in rows["program_ad_alias_effects"]["evidence"]
+    assert (
+        "unsupported-Python frontend blocker metadata"
+        in rows["program_ad_alias_effects"]["evidence"]
+    )
     assert "shape_view_alias_metadata_contracts" in rows["program_ad_alias_effects"]["evidence"]
     assert (
         "slice_mutation_alias_metadata_contracts" in rows["program_ad_alias_effects"]["evidence"]
@@ -345,6 +350,10 @@ def test_differentiable_dashboard_status_is_claim_bounded_for_gui_consumers() ->
     )
     assert (
         "control-path aliases require non-executed branch semantics"
+        in (rows["program_ad_alias_effects"]["blocked_reasons"])
+    )
+    assert (
+        "unsupported Python semantics require executable frontend lowering"
         in (rows["program_ad_alias_effects"]["blocked_reasons"])
     )
     assert (

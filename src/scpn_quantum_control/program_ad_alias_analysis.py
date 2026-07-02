@@ -9,6 +9,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from dataclasses import dataclass
 
 from .program_ad_effect_ir import ProgramADAliasEdge, ProgramADEffectIR
@@ -180,6 +181,7 @@ class ProgramADStaticAliasLatticeReport:
     blocker_reasons: tuple[str, ...]
     complete: bool
     claim_boundary: str
+    unsupported_python_semantics: tuple[str, ...] = ()
 
     def __post_init__(self) -> None:
         """Validate static alias-lattice report contents at construction time."""
@@ -225,6 +227,22 @@ class ProgramADStaticAliasLatticeReport:
             raise ValueError(
                 "program AD static alias lattice unknown_alias_edge_kinds must be sorted unique"
             )
+        if any(
+            not isinstance(semantic, str) or not semantic
+            for semantic in self.unsupported_python_semantics
+        ):
+            raise ValueError(
+                "program AD static alias lattice unsupported_python_semantics "
+                "must be non-empty strings"
+            )
+        if (
+            tuple(sorted(set(self.unsupported_python_semantics)))
+            != self.unsupported_python_semantics
+        ):
+            raise ValueError(
+                "program AD static alias lattice unsupported_python_semantics "
+                "must be sorted and unique"
+            )
         if any(not isinstance(reason, str) or not reason for reason in self.blocker_reasons):
             raise ValueError(
                 "program AD static alias lattice blocker_reasons must be non-empty strings"
@@ -240,9 +258,15 @@ class ProgramADStaticAliasLatticeReport:
                 "complete program AD static alias lattice cannot carry blocker reasons"
             )
         mutation_blocker = "mutation_effects_require_versioned_alias_semantics"
+        unsupported_semantics_blocker = "unsupported_python_semantics_require_frontend_lowering"
         if self.complete and self.mutation_effects:
             raise ValueError(
                 "complete program AD static alias lattice cannot carry mutation_effects"
+            )
+        if self.complete and self.unsupported_python_semantics:
+            raise ValueError(
+                "complete program AD static alias lattice cannot carry "
+                "unsupported_python_semantics"
             )
         if self.mutation_effects and mutation_blocker not in self.blocker_reasons:
             raise ValueError(
@@ -251,6 +275,22 @@ class ProgramADStaticAliasLatticeReport:
         if not self.mutation_effects and mutation_blocker in self.blocker_reasons:
             raise ValueError(
                 "program AD static alias lattice mutation blocker requires mutation_effects"
+            )
+        if (
+            self.unsupported_python_semantics
+            and unsupported_semantics_blocker not in self.blocker_reasons
+        ):
+            raise ValueError(
+                "program AD static alias lattice unsupported_python_semantics require "
+                "a blocker reason"
+            )
+        if (
+            not self.unsupported_python_semantics
+            and unsupported_semantics_blocker in self.blocker_reasons
+        ):
+            raise ValueError(
+                "program AD static alias lattice unsupported semantics blocker requires "
+                "unsupported_python_semantics"
             )
         _normalise_claim_boundary("program AD static alias lattice", self.claim_boundary)
 
@@ -263,6 +303,7 @@ class ProgramADStaticAliasLatticeReport:
             "non_executed_phi_nodes": list(self.non_executed_phi_nodes),
             "non_executed_control_alias_edges": list(self.non_executed_control_alias_edges),
             "unknown_alias_edge_kinds": list(self.unknown_alias_edge_kinds),
+            "unsupported_python_semantics": list(self.unsupported_python_semantics),
             "blocker_reasons": list(self.blocker_reasons),
             "complete": self.complete,
             "claim_boundary": self.claim_boundary,
@@ -352,13 +393,16 @@ def analyze_program_ad_alias_effects(
 
 def program_ad_static_alias_lattice_report(
     program_ir: ProgramADEffectIR,
+    *,
+    unsupported_python_semantics: Sequence[str] = (),
 ) -> ProgramADStaticAliasLatticeReport:
     """Build a static alias-lattice readiness report from emitted Program AD IR.
 
     The report is complete only for the alias metadata actually emitted in
     ``program_ad_effect_ir.v1``. Mutation effects, unknown alias edge kinds,
-    and non-selected phi inputs are recorded as hard blockers instead of being
-    promoted into full mutation or non-executed branch semantics.
+    non-selected phi inputs, and unsupported whole-program frontend semantics
+    are recorded as hard blockers instead of being promoted into full mutation,
+    non-executed branch, or arbitrary Python compiler semantics.
     """
 
     if not isinstance(program_ir, ProgramADEffectIR):
@@ -377,6 +421,7 @@ def program_ad_static_alias_lattice_report(
             }
         )
     )
+    unsupported_semantics = tuple(sorted(set(unsupported_python_semantics)))
 
     def find(member: str) -> str:
         parent.setdefault(member, member)
@@ -461,6 +506,8 @@ def program_ad_static_alias_lattice_report(
         blocker_reasons.add("non_executed_phi_inputs_require_branch_semantics")
     if control_alias_edges:
         blocker_reasons.add("control_path_aliases_require_branch_semantics")
+    if unsupported_semantics:
+        blocker_reasons.add("unsupported_python_semantics_require_frontend_lowering")
     complete = not blocker_reasons
     return ProgramADStaticAliasLatticeReport(
         components=tuple(components),
@@ -471,6 +518,7 @@ def program_ad_static_alias_lattice_report(
         blocker_reasons=tuple(sorted(blocker_reasons)),
         complete=complete,
         claim_boundary=PROGRAM_AD_STATIC_ALIAS_LATTICE_CLAIM_BOUNDARY,
+        unsupported_python_semantics=unsupported_semantics,
     )
 
 

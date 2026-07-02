@@ -137,8 +137,9 @@ def test_differentiable_programming_benchmark_suite_matches_analytic_references(
     assert "bounded local object-attribute" in alias_lattice_row.claim_boundary
     assert "expression-rebinding classification" in alias_lattice_row.claim_boundary
     assert "explicit non-executed phi" in alias_lattice_row.claim_boundary
-    assert "control-path alias blocker reporting" in alias_lattice_row.claim_boundary
+    assert "unsupported-Python blocker reporting" in alias_lattice_row.claim_boundary
     assert "not captured/global object-attribute aliasing" in alias_lattice_row.claim_boundary
+    assert "arbitrary dynamic Python frontend lowering" in alias_lattice_row.claim_boundary
     assert any("slice-mutation alias/effect metadata" in row.claim_boundary for row in alias_rows)
     assert any("loop-carried state alias metadata" in row.claim_boundary for row in alias_rows)
     python_semantics_row = next(row for row in results if row.category == "python-semantics")

@@ -25,6 +25,7 @@ from ..differentiable import (
     CustomDerivativeRule,
     Parameter,
     analyze_program_ad_alias_effects,
+    compile_whole_program_frontend,
     custom_jvp,
     custom_vjp,
     grad,
@@ -2668,6 +2669,28 @@ def _static_alias_lattice_report_case() -> DifferentiableProgrammingBenchmarkRes
     ):
         raise ValueError("static alias lattice benchmark missing expression-rebinding component")
 
+    def unsupported_dynamic_boundary(trace_values: Any) -> object:
+        selected = [value for value in trace_values if value > 0.0]
+        return selected[0]
+
+    unsupported_frontend = compile_whole_program_frontend(unsupported_dynamic_boundary)
+    unsupported_semantics = unsupported_frontend.semantics_report.unsupported_python_semantics
+    if "filtered_comprehension" not in unsupported_semantics:
+        raise ValueError("static alias lattice benchmark missing unsupported frontend semantics")
+    unsupported_report = program_ad_static_alias_lattice_report(
+        alias_result.program_ir,
+        unsupported_python_semantics=unsupported_semantics,
+    )
+    if unsupported_report.complete:
+        raise ValueError("static alias lattice benchmark must not promote unsupported semantics")
+    if unsupported_report.unsupported_python_semantics != unsupported_semantics:
+        raise ValueError("static alias lattice benchmark lost unsupported frontend semantics")
+    if (
+        "unsupported_python_semantics_require_frontend_lowering"
+        not in unsupported_report.blocker_reasons
+    ):
+        raise ValueError("static alias lattice benchmark missing unsupported-semantics blocker")
+
     def mutation_objective(trace_values: Any) -> object:
         work = trace_values.copy()
         work[0] = trace_values[1] + trace_values[2]
@@ -2733,10 +2756,11 @@ def _static_alias_lattice_report_case() -> DifferentiableProgrammingBenchmarkRes
             "static alias-lattice readiness over emitted program_ad_effect_ir.v1 "
             "components, including view-alias, bounded local object-attribute, "
             "expression-rebinding classification, explicit non-executed phi, and "
-            "mutation/control-path alias blocker reporting; not captured/global "
-            "object-attribute aliasing, non-executed branch adjoints, Rust/LLVM "
-            "executable lowering, hardware, or performance evidence; no wall-clock "
-            "performance claim"
+            "mutation/control-path/unsupported-Python blocker reporting; not "
+            "captured/global object-attribute aliasing, arbitrary dynamic Python "
+            "frontend lowering, non-executed branch adjoints, Rust/LLVM executable "
+            "lowering, hardware, or performance evidence; no wall-clock performance "
+            "claim"
         ),
     )
 

@@ -199,6 +199,65 @@ def test_static_alias_lattice_benchmark_fails_closed(
         edge_kinds=("expression_rebinding_alias",),
         members=("name:combined",),
     )
+    unsupported_semantics = ("filtered_comprehension",)
+    monkeypatch.setattr(
+        dp,
+        "compile_whole_program_frontend",
+        lambda _objective: SimpleNamespace(
+            semantics_report=SimpleNamespace(
+                unsupported_python_semantics=unsupported_semantics,
+            )
+        ),
+    )
+    complete_report = SimpleNamespace(
+        complete=True,
+        components=(view_component, object_component, expression_component),
+    )
+    mutation_blocked_report = SimpleNamespace(
+        complete=False,
+        mutation_effects=(0,),
+        blocker_reasons=("mutation_effects_require_versioned_alias_semantics",),
+    )
+    unsupported_blocked_report = SimpleNamespace(
+        complete=False,
+        unsupported_python_semantics=unsupported_semantics,
+        blocker_reasons=("unsupported_python_semantics_require_frontend_lowering",),
+    )
+    for unsupported_report, match in (
+        (
+            SimpleNamespace(
+                complete=True,
+                unsupported_python_semantics=unsupported_semantics,
+                blocker_reasons=(),
+            ),
+            "must not promote unsupported semantics",
+        ),
+        (
+            SimpleNamespace(
+                complete=False,
+                unsupported_python_semantics=(),
+                blocker_reasons=("unsupported_python_semantics_require_frontend_lowering",),
+            ),
+            "lost unsupported frontend semantics",
+        ),
+        (
+            SimpleNamespace(
+                complete=False,
+                unsupported_python_semantics=unsupported_semantics,
+                blocker_reasons=(),
+            ),
+            "unsupported-semantics blocker",
+        ),
+    ):
+        reports = iter((complete_report, unsupported_report))
+        monkeypatch.setattr(
+            dp,
+            "program_ad_static_alias_lattice_report",
+            lambda _ir, reports=reports, **_kwargs: next(reports),
+        )
+        with pytest.raises(ValueError, match=match):
+            dp._static_alias_lattice_report_case()
+
     for branch_report, match in (
         (
             SimpleNamespace(
@@ -253,18 +312,12 @@ def test_static_alias_lattice_benchmark_fails_closed(
         ),
     ):
         reports = iter(
-            (
-                SimpleNamespace(
-                    complete=True,
-                    components=(view_component, object_component, expression_component),
-                ),
-                branch_report,
-            ),
+            (complete_report, unsupported_blocked_report, mutation_blocked_report, branch_report)
         )
         monkeypatch.setattr(
             dp,
             "program_ad_static_alias_lattice_report",
-            lambda _ir, reports=reports: next(reports),
+            lambda _ir, reports=reports, **_kwargs: next(reports),
         )
         with pytest.raises(ValueError, match=match):
             dp._static_alias_lattice_report_case()
@@ -290,11 +343,13 @@ def test_static_alias_lattice_branch_ir_fails_closed(
     results = iter(
         (
             _whole_program_result(program_ir=_program_ir()),
+            _whole_program_result(program_ir=_program_ir()),
             _whole_program_result(program_ir=None),
         ),
     )
     callback_values = iter(
         (
+            None,
             None,
             np.array([0.0, -1.0, 0.0, 1.0], dtype=np.float64),
         ),
@@ -313,11 +368,35 @@ def test_static_alias_lattice_branch_ir_fails_closed(
     monkeypatch.setattr(dp, "whole_program_value_and_grad", fake_whole_program)
     monkeypatch.setattr(
         dp,
-        "program_ad_static_alias_lattice_report",
-        lambda _ir: SimpleNamespace(
-            complete=True,
-            components=(view_component, object_component, expression_component),
+        "compile_whole_program_frontend",
+        lambda _objective: SimpleNamespace(
+            semantics_report=SimpleNamespace(
+                unsupported_python_semantics=("filtered_comprehension",),
+            )
         ),
+    )
+    reports = iter(
+        (
+            SimpleNamespace(
+                complete=True,
+                components=(view_component, object_component, expression_component),
+            ),
+            SimpleNamespace(
+                complete=False,
+                unsupported_python_semantics=("filtered_comprehension",),
+                blocker_reasons=("unsupported_python_semantics_require_frontend_lowering",),
+            ),
+            SimpleNamespace(
+                complete=False,
+                mutation_effects=(0,),
+                blocker_reasons=("mutation_effects_require_versioned_alias_semantics",),
+            ),
+        )
+    )
+    monkeypatch.setattr(
+        dp,
+        "program_ad_static_alias_lattice_report",
+        lambda _ir, **_kwargs: next(reports),
     )
 
     with pytest.raises(ValueError, match="branch benchmark requires Program AD IR"):

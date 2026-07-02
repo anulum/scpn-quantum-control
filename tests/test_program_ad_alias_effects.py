@@ -29,6 +29,7 @@ from scpn_quantum_control.differentiable import (
     ProgramADStaticAliasLatticeComponent,
     ProgramADStaticAliasLatticeReport,
     analyze_program_ad_alias_effects,
+    compile_whole_program_frontend,
     program_ad_static_alias_lattice_report,
     program_adjoint_gradient,
     whole_program_value_and_grad,
@@ -216,6 +217,7 @@ def test_program_ad_alias_analysis_validation_paths() -> None:
         claim_boundary="static_alias_lattice_over_emitted_program_ad_ir",
     )
     assert valid_report.as_dict()["components"]
+    assert valid_report.as_dict()["unsupported_python_semantics"] == []
     mutation_blocked_report = ProgramADStaticAliasLatticeReport(
         components=(component,),
         mutation_effects=(0,),
@@ -228,6 +230,19 @@ def test_program_ad_alias_analysis_validation_paths() -> None:
     )
     assert mutation_blocked_report.complete is False
     assert mutation_blocked_report.mutation_effects == (0,)
+    unsupported_blocked_report = ProgramADStaticAliasLatticeReport(
+        components=(component,),
+        mutation_effects=(),
+        non_executed_phi_nodes=(),
+        non_executed_control_alias_edges=(),
+        unknown_alias_edge_kinds=(),
+        blocker_reasons=("unsupported_python_semantics_require_frontend_lowering",),
+        complete=False,
+        claim_boundary="static_alias_lattice_over_emitted_program_ad_ir",
+        unsupported_python_semantics=("filtered_comprehension",),
+    )
+    assert unsupported_blocked_report.complete is False
+    assert unsupported_blocked_report.unsupported_python_semantics == ("filtered_comprehension",)
     with pytest.raises(ValueError, match="components"):
         ProgramADStaticAliasLatticeReport(
             components=cast(tuple[ProgramADStaticAliasLatticeComponent, ...], (object(),)),
@@ -338,6 +353,30 @@ def test_program_ad_alias_analysis_validation_paths() -> None:
             complete=False,
             claim_boundary="static_alias_lattice_over_emitted_program_ad_ir",
         )
+    with pytest.raises(ValueError, match="unsupported_python_semantics"):
+        ProgramADStaticAliasLatticeReport(
+            components=(),
+            mutation_effects=(),
+            non_executed_phi_nodes=(),
+            non_executed_control_alias_edges=(),
+            unknown_alias_edge_kinds=(),
+            blocker_reasons=(),
+            complete=False,
+            claim_boundary="static_alias_lattice_over_emitted_program_ad_ir",
+            unsupported_python_semantics=("",),
+        )
+    with pytest.raises(ValueError, match="sorted and unique"):
+        ProgramADStaticAliasLatticeReport(
+            components=(),
+            mutation_effects=(),
+            non_executed_phi_nodes=(),
+            non_executed_control_alias_edges=(),
+            unknown_alias_edge_kinds=(),
+            blocker_reasons=(),
+            complete=False,
+            claim_boundary="static_alias_lattice_over_emitted_program_ad_ir",
+            unsupported_python_semantics=("set_or_dict_comprehension", "filtered_comprehension"),
+        )
     with pytest.raises(ValueError, match="complete must be boolean"):
         ProgramADStaticAliasLatticeReport(
             components=(),
@@ -360,6 +399,18 @@ def test_program_ad_alias_analysis_validation_paths() -> None:
             complete=True,
             claim_boundary="static_alias_lattice_over_emitted_program_ad_ir",
         )
+    with pytest.raises(ValueError, match="cannot carry unsupported_python_semantics"):
+        ProgramADStaticAliasLatticeReport(
+            components=(component,),
+            mutation_effects=(),
+            non_executed_phi_nodes=(),
+            non_executed_control_alias_edges=(),
+            unknown_alias_edge_kinds=(),
+            blocker_reasons=(),
+            complete=True,
+            claim_boundary="static_alias_lattice_over_emitted_program_ad_ir",
+            unsupported_python_semantics=("filtered_comprehension",),
+        )
     with pytest.raises(ValueError, match="mutation_effects require a blocker"):
         ProgramADStaticAliasLatticeReport(
             components=(component,),
@@ -379,6 +430,29 @@ def test_program_ad_alias_analysis_validation_paths() -> None:
             non_executed_control_alias_edges=(),
             unknown_alias_edge_kinds=(),
             blocker_reasons=("mutation_effects_require_versioned_alias_semantics",),
+            complete=False,
+            claim_boundary="static_alias_lattice_over_emitted_program_ad_ir",
+        )
+    with pytest.raises(ValueError, match="unsupported_python_semantics require"):
+        ProgramADStaticAliasLatticeReport(
+            components=(component,),
+            mutation_effects=(),
+            non_executed_phi_nodes=(),
+            non_executed_control_alias_edges=(),
+            unknown_alias_edge_kinds=(),
+            blocker_reasons=(),
+            complete=False,
+            claim_boundary="static_alias_lattice_over_emitted_program_ad_ir",
+            unsupported_python_semantics=("filtered_comprehension",),
+        )
+    with pytest.raises(ValueError, match="unsupported semantics blocker requires"):
+        ProgramADStaticAliasLatticeReport(
+            components=(),
+            mutation_effects=(),
+            non_executed_phi_nodes=(),
+            non_executed_control_alias_edges=(),
+            unknown_alias_edge_kinds=(),
+            blocker_reasons=("unsupported_python_semantics_require_frontend_lowering",),
             complete=False,
             claim_boundary="static_alias_lattice_over_emitted_program_ad_ir",
         )
@@ -440,6 +514,43 @@ def test_program_ad_static_alias_lattice_tracks_mutation_versions_directly() -> 
     assert report.components[0].mutation_versions == (2,)
     assert report.components[0].edge_kinds == ("mutation_version",)
     assert report.as_dict()["blocker_reasons"] == list(report.blocker_reasons)
+
+
+def test_program_ad_static_alias_lattice_blocks_frontend_unsupported_semantics() -> None:
+    """Static alias lattice reports should consume frontend unsupported semantics."""
+
+    def supported_alias_objective(values: Any) -> object:
+        view = values.reshape((2, 2)).T.ravel()
+        return view[0] + 2.0 * view[3]
+
+    def unsupported_dynamic_objective(values: Any) -> object:
+        selected = [value for value in values if value > 0.0]
+        return selected[0]
+
+    result = whole_program_value_and_grad(
+        supported_alias_objective,
+        np.array([0.25, 0.5, 0.75, 1.0], dtype=np.float64),
+        parameters=(Parameter("a"), Parameter("b"), Parameter("c"), Parameter("d")),
+    )
+    frontend_report = compile_whole_program_frontend(unsupported_dynamic_objective)
+    assert result.program_ir is not None
+    assert frontend_report.semantics_report.unsupported_python_semantics == (
+        "filtered_comprehension",
+    )
+    assert frontend_report.unsupported_semantic_diagnostic_count == 1
+
+    report = program_ad_static_alias_lattice_report(
+        result.program_ir,
+        unsupported_python_semantics=(
+            frontend_report.semantics_report.unsupported_python_semantics
+        ),
+    )
+
+    assert report.complete is False
+    assert report.unsupported_python_semantics == ("filtered_comprehension",)
+    assert report.mutation_effects == ()
+    assert "unsupported_python_semantics_require_frontend_lowering" in report.blocker_reasons
+    assert report.as_dict()["unsupported_python_semantics"] == ["filtered_comprehension"]
 
 
 def test_program_ad_alias_effect_analysis_summarizes_alias_sets_and_mutations() -> None:
