@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 777,
     "public_documentation_pages": 254,
-    "python_model_classes": 962,
-    "python_model_source_modules": 539,
+    "python_model_classes": 965,
+    "python_model_source_modules": 540,
     "rust_pyo3_model_wrappers": 171,
     "rust_source_modules": 42,
-    "test_files": 875
+    "test_files": 876
   },
   "documentation": {
     "examples": [
@@ -437,7 +437,7 @@
       {
         "package": "accel",
         "path": "src/scpn_quantum_control/accel",
-        "python_modules": 74
+        "python_modules": 75
       },
       {
         "package": "analysis",
@@ -2169,6 +2169,10 @@
         "path": "src/scpn_quantum_control/forecasting/kuramoto_neural_operator.py"
       },
       {
+        "name": "KuramotoParameterGrid",
+        "path": "src/scpn_quantum_control/accel/kuramoto_parameter_sweep.py"
+      },
+      {
         "name": "KuramotoParameters",
         "path": "src/scpn_quantum_control/accel/kuramoto_system.py"
       },
@@ -2441,6 +2445,10 @@
         "path": "src/scpn_quantum_control/phase/objectives.py"
       },
       {
+        "name": "Observable",
+        "path": "src/scpn_quantum_control/accel/kuramoto_parameter_sweep.py"
+      },
+      {
         "name": "ObservableComparison",
         "path": "src/scpn_quantum_control/benchmark_harness/synchronisation_compare.py"
       },
@@ -2667,6 +2675,10 @@
       {
         "name": "ParameterShiftTrainingStep",
         "path": "src/scpn_quantum_control/phase/gradient_descent.py"
+      },
+      {
+        "name": "ParameterSweepResult",
+        "path": "src/scpn_quantum_control/accel/kuramoto_parameter_sweep.py"
       },
       {
         "name": "PasqalPulserHALAdapter",
@@ -4486,6 +4498,7 @@
       "src/scpn_quantum_control/accel/kuramoto_noisy.py",
       "src/scpn_quantum_control/accel/kuramoto_noisy_mean_field.py",
       "src/scpn_quantum_control/accel/kuramoto_ott_antonsen.py",
+      "src/scpn_quantum_control/accel/kuramoto_parameter_sweep.py",
       "src/scpn_quantum_control/accel/kuramoto_phase_information.py",
       "src/scpn_quantum_control/accel/kuramoto_pinning_control.py",
       "src/scpn_quantum_control/accel/kuramoto_policy_learning.py",
@@ -6460,6 +6473,7 @@
       "tests/test_kuramoto_noisy.py",
       "tests/test_kuramoto_noisy_mean_field.py",
       "tests/test_kuramoto_ott_antonsen.py",
+      "tests/test_kuramoto_parameter_sweep.py",
       "tests/test_kuramoto_phase_information.py",
       "tests/test_kuramoto_pinning_control.py",
       "tests/test_kuramoto_policy_learning.py",

@@ -290,6 +290,16 @@ from .kuramoto_ott_antonsen import (
     ott_antonsen_terminal_order_parameter_value_and_grad,
     ott_antonsen_trajectory,
 )
+from .kuramoto_parameter_sweep import (
+    KuramotoParameterGrid,
+    Observable,
+    ParameterSweepResult,
+    frequency_spread,
+    mean_order_parameter,
+    metastability,
+    sweep_parameter_grid,
+    terminal_order_parameter,
+)
 from .kuramoto_phase_information import (
     mutual_information_matrix,
     normalised_phase_entropy,
@@ -628,6 +638,14 @@ __all__ = [
     "mean_field_phase_rule_jacobian",
     "networked_phase_rule",
     "networked_phase_rule_jacobian",
+    "KuramotoParameterGrid",
+    "Observable",
+    "ParameterSweepResult",
+    "sweep_parameter_grid",
+    "mean_order_parameter",
+    "terminal_order_parameter",
+    "metastability",
+    "frequency_spread",
     "PseudoArclengthBranch",
     "pseudo_arclength_continuation",
     "CollectiveControlGradients",
