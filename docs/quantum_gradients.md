@@ -290,13 +290,16 @@ custom `torch.autograd.Function`,
 `torch.compile` gradient compatibility,
 `torch_bounded_qnn_module(...)` / `torch_bounded_qnn_layer(...)` plus
 `run_torch_module_wrapper_audit(...)`, which check bounded PyTorch module/layer
-wrapper compatibility, and
+wrapper compatibility,
+`run_torch_module_state_audit(...)`, which checks strict bounded-module
+`state_dict` replay and Adam optimizer-state replay for that same wrapper
+surface, and
 `tensorflow_bounded_qnn_value_and_grad(...)`, which returns TensorFlow tensors
 from the analytic bounded-model gradient. Each route checks the same
 parameter-shift reference. These are intentionally narrow bridge promotions:
 arbitrary autodiff-through-simulator kernels, unrestricted QNN architectures,
-device placement guarantees, and live provider gradients remain outside the
-promoted surface.
+device placement guarantees, durable checkpoint portability, and live provider
+gradients remain outside the promoted surface.
 
 ## Bounded QNN convergence evidence
 
@@ -2128,7 +2131,12 @@ uses `torch.func.grad` for deterministic gradient-descent updates, records loss
 and gradient histories, and checks every gradient route against SCPN
 parameter-shift references. It is local training-loop correctness evidence, not
 CUDA, provider, finite-shot, hardware, isolated benchmark, or performance
-promotion evidence. The separate `run_torch_ecosystem_maturity_audit(...)` route records
+promotion evidence. `run_torch_module_state_audit(...)` separately validates
+strict module `state_dict` replay and Adam optimizer-state replay on local
+CPU-compatible tensors, while `validate_torch_bounded_qnn_state_dict(...)`
+checks candidate keys, shapes, and dtypes without loading them. Device transfer
+and durable checkpoint portability remain blocked until dedicated artefacts
+exist. The separate `run_torch_ecosystem_maturity_audit(...)` route records
 installed `nn.Module`/`Parameter`, `torch.func`, `torch.compile`, and CUDA-device
 capability state. A visible CUDA device is still blocked if the installed
 PyTorch wheel cannot execute a tensor smoke on that hardware. Registered

@@ -968,6 +968,31 @@ def differentiable_dashboard_status(
             ),
         ),
         DifferentiableDashboardCapabilityRow(
+            surface="torch_bounded_qnn_module_state_audit",
+            state="conformance_backed" if conformance_passed else "diagnostic",
+            backing_api="run_torch_module_state_audit",
+            evidence=(
+                "PhaseTorchModuleStateAuditResult",
+                "PhaseTorchModuleStateValidationResult",
+                "strict module state_dict round-trip",
+                "Adam optimizer state_dict round-trip",
+            ),
+            blocked_reasons=()
+            if conformance_passed
+            else (
+                "conformance suite not run in this status call",
+                "device state transfer and checkpoint-portability remain blocked",
+                "provider, hardware, CUDA, isolated benchmark, and performance promotion remain blocked",
+            ),
+            claim_boundary=(
+                "bounded PyTorch module-state audit for the phase-QNN nn.Module "
+                "route only; strict state_dict and Adam optimizer-state replay "
+                "are local CPU-compatible evidence, while device transfer, "
+                "durable checkpoint-portability, provider, hardware, CUDA, "
+                "isolated benchmark, and performance promotion remain blocked"
+            ),
+        ),
+        DifferentiableDashboardCapabilityRow(
             surface="program_ad_python_semantics",
             state="conformance_backed" if conformance_passed else "diagnostic",
             backing_api="whole_program_value_and_grad",

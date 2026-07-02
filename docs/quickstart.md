@@ -412,6 +412,11 @@ For PyTorch registered Phase-QNode routes,
 `torch.compile` correctness and keeps dynamic-shape, fullgraph compiled-frame,
 AOTAutograd/export, CUDA, provider, hardware, isolated-benchmark, and
 performance promotion blocked until artefacts exist.
+For bounded PyTorch phase-QNN modules, `run_torch_module_state_audit(...)`
+checks strict module `state_dict` replay and Adam optimizer-state replay on
+local CPU-compatible tensors. Device transfer, durable checkpoint portability,
+provider, hardware, isolated benchmark, and performance promotion remain
+blocked until their own artefacts exist.
 
 ## GUESS error mitigation in 5 lines (added April 2026)
 

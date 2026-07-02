@@ -580,6 +580,25 @@ def test_differentiable_dashboard_status_is_claim_bounded_for_gui_consumers() ->
         "no persistent export"
         in rows["torch_phase_qnode_compile_boundary_diagnostic"]["claim_boundary"]
     )
+    assert rows["torch_bounded_qnn_module_state_audit"]["state"] == "diagnostic"
+    assert rows["torch_bounded_qnn_module_state_audit"]["fail_closed"] is True
+    assert (
+        rows["torch_bounded_qnn_module_state_audit"]["backing_api"]
+        == "run_torch_module_state_audit"
+    )
+    assert (
+        "PhaseTorchModuleStateAuditResult"
+        in rows["torch_bounded_qnn_module_state_audit"]["evidence"]
+    )
+    assert (
+        "strict module state_dict round-trip"
+        in rows["torch_bounded_qnn_module_state_audit"]["evidence"]
+    )
+    assert (
+        "provider, hardware, CUDA, isolated benchmark, and performance promotion remain blocked"
+        in rows["torch_bounded_qnn_module_state_audit"]["blocked_reasons"]
+    )
+    assert "strict state_dict" in rows["torch_bounded_qnn_module_state_audit"]["claim_boundary"]
     assert rows["provider_and_hardware_gradients"]["state"] == "blocked"
     assert rows["gui_frontend"]["state"] == "planned"
     generated_from = cast(list[str], payload["generated_from"])
