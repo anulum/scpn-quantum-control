@@ -250,6 +250,7 @@ def test_program_ad_adjoint_replay_provenance_fails_closed(
         phi_node=None,
         phi_selected=None,
         incoming_cotangent=1.0,
+        non_executed_phi_inputs=(),
     )
     inconsistent_adjoint = SimpleNamespace(
         replay_node_count=99,
