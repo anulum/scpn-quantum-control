@@ -421,6 +421,77 @@ class PhaseJAXPhaseQNodeShardingTransformResult:
 
 
 @dataclass(frozen=True)
+class PhaseJAXPhaseQNodeAOTExportResult:
+    """JAX AOT/export diagnostic for a registered local Phase-QNode value route."""
+
+    value: float
+    compiled_value: float
+    deserialized_value: float
+    parameter_shift_value: float
+    max_abs_value_error: float
+    tolerance: float
+    passed: bool
+    lowered: bool
+    compiled: bool
+    exported: bool
+    serialized: bool
+    deserialized_call: bool
+    host_callback: bool
+    parameter_shape: tuple[int, ...]
+    parameter_dtype: str
+    compiler_ir_dialects: tuple[str, ...]
+    lowered_text_bytes: int
+    mlir_module_bytes: int
+    serialized_bytes: int
+    export_platforms: tuple[str, ...]
+    calling_convention_version: int
+    minimum_supported_calling_convention_version: int
+    maximum_supported_calling_convention_version: int
+    disabled_safety_checks: tuple[str, ...]
+    uses_global_constants: bool
+    persistent_export_claim: bool = False
+    method: str = "jax_registered_phase_qnode_aot_export_audit"
+    claim_boundary: str = "registered_phase_qnode_jax_aot_export_diagnostic"
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready registered Phase-QNode JAX AOT/export evidence."""
+        return {
+            "value": self.value,
+            "compiled_value": self.compiled_value,
+            "deserialized_value": self.deserialized_value,
+            "parameter_shift_value": self.parameter_shift_value,
+            "max_abs_value_error": self.max_abs_value_error,
+            "tolerance": self.tolerance,
+            "passed": self.passed,
+            "lowered": self.lowered,
+            "compiled": self.compiled,
+            "exported": self.exported,
+            "serialized": self.serialized,
+            "deserialized_call": self.deserialized_call,
+            "host_callback": self.host_callback,
+            "parameter_shape": list(self.parameter_shape),
+            "parameter_dtype": self.parameter_dtype,
+            "compiler_ir_dialects": list(self.compiler_ir_dialects),
+            "lowered_text_bytes": self.lowered_text_bytes,
+            "mlir_module_bytes": self.mlir_module_bytes,
+            "serialized_bytes": self.serialized_bytes,
+            "export_platforms": list(self.export_platforms),
+            "calling_convention_version": self.calling_convention_version,
+            "minimum_supported_calling_convention_version": (
+                self.minimum_supported_calling_convention_version
+            ),
+            "maximum_supported_calling_convention_version": (
+                self.maximum_supported_calling_convention_version
+            ),
+            "disabled_safety_checks": list(self.disabled_safety_checks),
+            "uses_global_constants": self.uses_global_constants,
+            "persistent_export_claim": self.persistent_export_claim,
+            "method": self.method,
+            "claim_boundary": self.claim_boundary,
+        }
+
+
+@dataclass(frozen=True)
 class PhaseJAXJITCompatibilityResult:
     """Audited JAX JIT compatibility for bounded phase-QNN gradient routes."""
 
@@ -1004,6 +1075,41 @@ def _require_jax_phase_qnode_transform_support(jax_module: Any) -> None:
             "JAX native transforms are required for registered Phase-QNode lowering: "
             f"{missing_names}"
         )
+
+
+def _require_jax_phase_qnode_aot_export_support(jax_module: Any) -> Any:
+    jit = getattr(jax_module, "jit", None)
+    if not callable(jit):
+        raise RuntimeError("JAX JIT is required for registered Phase-QNode AOT lowering")
+    if not callable(getattr(jax_module, "ShapeDtypeStruct", None)):
+        raise RuntimeError(
+            "JAX ShapeDtypeStruct is required for registered Phase-QNode AOT export"
+        )
+    export_module = getattr(jax_module, "export", None)
+    if export_module is None:
+        raise RuntimeError("JAX export is required for registered Phase-QNode AOT export")
+    for name in ("export", "deserialize"):
+        if not callable(getattr(export_module, name, None)):
+            raise RuntimeError(f"JAX export.{name} is required for Phase-QNode AOT export")
+    for name in (
+        "minimum_supported_calling_convention_version",
+        "maximum_supported_calling_convention_version",
+    ):
+        if getattr(export_module, name, None) is None:
+            raise RuntimeError(f"JAX export.{name} is required for Phase-QNode AOT export")
+    return export_module
+
+
+def _jax_export_version(export_module: Any, name: str) -> int:
+    """Return a JAX export calling-convention version from attr or function APIs."""
+
+    value = getattr(export_module, name)
+    if callable(value):
+        value = value()
+    version = int(value)
+    if version < 0:
+        raise RuntimeError(f"JAX export.{name} must be non-negative")
+    return version
 
 
 def _require_jax_phase_qnode_pytree_transform_support(jax_module: Any) -> None:
@@ -2189,6 +2295,123 @@ def jax_phase_qnode_sharding_transform_audit(
     )
 
 
+def jax_phase_qnode_aot_export_audit(
+    circuit: PhaseQNodeCircuit,
+    params: ArrayLike,
+    *,
+    tolerance: float = 1e-6,
+) -> PhaseJAXPhaseQNodeAOTExportResult:
+    """Audit JAX AOT lowering and export metadata for a registered Phase-QNode.
+
+    The audit stages the deterministic local statevector value route through
+    ``jax.jit(...).lower(...)``, records StableHLO/compiler metadata, exports
+    the same jitted route through ``jax.export.export(...)``, serializes and
+    deserializes it, and compares the compiled/exported values against the
+    canonical SCPN parameter-shift value. The result is diagnostic evidence
+    only: it does not promote persistent cross-platform execution, VJP export,
+    provider callbacks, hardware execution, or performance claims.
+    """
+    jax_module, jnp = _load_jax()
+    _enable_jax_x64(jax_module)
+    export_module = _require_jax_phase_qnode_aot_export_support(jax_module)
+    tolerance_value = _as_non_negative_tolerance(tolerance)
+    parameter_values = _as_parameter_vector("params", params)
+    report = phase_qnode_support_report(circuit, parameter_values)
+    if not report.supported:
+        raise PhaseQNodeSupportError(report)
+    parameter_shift = parameter_shift_phase_qnode_gradient(circuit, parameter_values)
+
+    def value_function(raw_params: object) -> object:
+        value, _state = _jax_phase_qnode_value_and_state(jnp, circuit, raw_params)
+        return value
+
+    parameter_shape = tuple(int(axis) for axis in parameter_values.shape)
+    parameter_dtype = np.dtype(parameter_values.dtype)
+    shape_dtype = jax_module.ShapeDtypeStruct(parameter_shape, parameter_dtype)
+    jitted_value = jax_module.jit(value_function)
+    lower = getattr(jitted_value, "lower", None)
+    if not callable(lower):
+        raise RuntimeError("JAX AOT lowering requires jitted functions with lower(...)")
+    lowered = lower(shape_dtype)
+    as_text = getattr(lowered, "as_text", None)
+    if not callable(as_text):
+        raise RuntimeError("JAX AOT lowering requires lowered.as_text() metadata")
+    lowered_text = str(as_text())
+    compiler_ir = getattr(lowered, "compiler_ir", None)
+    if not callable(compiler_ir):
+        raise RuntimeError("JAX AOT lowering requires lowered.compiler_ir(...) metadata")
+    _stablehlo_ir = str(compiler_ir(dialect="stablehlo"))
+    compile_lowered = getattr(lowered, "compile", None)
+    if not callable(compile_lowered):
+        raise RuntimeError("JAX AOT lowering requires lowered.compile()")
+    compiled_executable = compile_lowered()
+    compiled_value = _as_scalar(
+        "JAX compiled Phase-QNode value",
+        compiled_executable(jnp.asarray(parameter_values)),
+    )
+
+    exported = export_module.export(jax_module.jit(value_function))(shape_dtype)
+    mlir_module = str(exported.mlir_module())
+    serialized_blob = exported.serialize()
+    rehydrated = export_module.deserialize(serialized_blob)
+    deserialized_value = _as_scalar(
+        "JAX exported Phase-QNode value",
+        rehydrated.call(jnp.asarray(parameter_values)),
+    )
+    export_platforms = tuple(str(platform) for platform in getattr(exported, "platforms", ()))
+    if not export_platforms:
+        raise RuntimeError("JAX export did not report lowering platforms")
+    calling_convention_version = int(exported.calling_convention_version)
+    minimum_supported = _jax_export_version(
+        export_module,
+        "minimum_supported_calling_convention_version",
+    )
+    maximum_supported = _jax_export_version(
+        export_module,
+        "maximum_supported_calling_convention_version",
+    )
+    disabled_safety_checks = tuple(
+        str(check) for check in getattr(exported, "disabled_safety_checks", ())
+    )
+    value_errors = (
+        abs(compiled_value - parameter_shift.value),
+        abs(deserialized_value - parameter_shift.value),
+    )
+    max_abs_value_error = max(float(error) for error in value_errors)
+    passed = bool(
+        max_abs_value_error <= tolerance_value
+        and not disabled_safety_checks
+        and minimum_supported <= calling_convention_version <= maximum_supported
+    )
+    return PhaseJAXPhaseQNodeAOTExportResult(
+        value=compiled_value,
+        compiled_value=compiled_value,
+        deserialized_value=deserialized_value,
+        parameter_shift_value=parameter_shift.value,
+        max_abs_value_error=max_abs_value_error,
+        tolerance=tolerance_value,
+        passed=passed,
+        lowered=True,
+        compiled=True,
+        exported=True,
+        serialized=bool(serialized_blob),
+        deserialized_call=True,
+        host_callback=False,
+        parameter_shape=parameter_shape,
+        parameter_dtype=str(parameter_dtype),
+        compiler_ir_dialects=("stablehlo",),
+        lowered_text_bytes=len(lowered_text.encode("utf-8")),
+        mlir_module_bytes=len(mlir_module.encode("utf-8")),
+        serialized_bytes=len(serialized_blob),
+        export_platforms=export_platforms,
+        calling_convention_version=calling_convention_version,
+        minimum_supported_calling_convention_version=minimum_supported,
+        maximum_supported_calling_convention_version=maximum_supported,
+        disabled_safety_checks=disabled_safety_checks,
+        uses_global_constants=bool(getattr(exported, "uses_global_constants", False)),
+    )
+
+
 def _enable_jax_x64(jax_module: Any) -> None:
     config = getattr(jax_module, "config", None)
     update = getattr(config, "update", None)
@@ -3102,6 +3325,16 @@ def run_jax_phase_qnode_lowering_matrix() -> PhaseJAXPhaseQNodeLoweringMatrixRes
             host_callback=False,
         ),
         PhaseJAXPhaseQNodeLoweringRoute(
+            name="registered_phase_qnode_aot_export_lowering",
+            status="passed",
+            reason=(
+                "registered deterministic Phase-QNode statevector value routes can be "
+                "staged through JAX AOT lowering and jax.export serialization diagnostics "
+                "without host callbacks"
+            ),
+            host_callback=False,
+        ),
+        PhaseJAXPhaseQNodeLoweringRoute(
             name="registered_phase_qnode_finite_shot_lowering",
             status="blocked",
             reason="finite-shot JAX lowering needs sampler, seed, and uncertainty provenance",
@@ -3444,6 +3677,7 @@ __all__ = [
     "PhaseJAXParameterShiftResult",
     "PhaseJAXPhaseQNodeLoweringMatrixResult",
     "PhaseJAXPhaseQNodeLoweringRoute",
+    "PhaseJAXPhaseQNodeAOTExportResult",
     "PhaseJAXPhaseQNodeNativeTransformResult",
     "PhaseJAXPhaseQNodePyTreeTransformResult",
     "PhaseJAXPhaseQNodeShardingTransformResult",
@@ -3456,6 +3690,7 @@ __all__ = [
     "jax_custom_vjp_qnn_value_and_grad",
     "jax_native_qnn_value_and_grad",
     "jax_parameter_shift_value_and_grad",
+    "jax_phase_qnode_aot_export_audit",
     "jax_phase_qnode_native_transform_audit",
     "jax_phase_qnode_pytree_transform_audit",
     "jax_phase_qnode_sharding_transform_audit",

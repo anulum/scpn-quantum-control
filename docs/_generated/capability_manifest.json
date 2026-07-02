@@ -9,7 +9,7 @@
     "optional_extras": 43,
     "public_api_exports": 777,
     "public_documentation_pages": 254,
-    "python_model_classes": 923,
+    "python_model_classes": 924,
     "python_model_source_modules": 526,
     "rust_pyo3_model_wrappers": 171,
     "rust_source_modules": 42,
@@ -2806,6 +2806,10 @@
       },
       {
         "name": "PhaseJAXParameterShiftResult",
+        "path": "src/scpn_quantum_control/phase/jax_bridge.py"
+      },
+      {
+        "name": "PhaseJAXPhaseQNodeAOTExportResult",
         "path": "src/scpn_quantum_control/phase/jax_bridge.py"
       },
       {
@@ -6422,6 +6426,7 @@
       "tests/test_phase_hardware_gradient_policy.py",
       "tests/test_phase_hardware_gradient_publication.py",
       "tests/test_phase_jax_bridge.py",
+      "tests/test_phase_jax_bridge_aot_export.py",
       "tests/test_phase_model_training_evidence.py",
       "tests/test_phase_natural_gradient.py",
       "tests/test_phase_objective_audit.py",

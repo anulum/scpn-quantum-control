@@ -452,6 +452,7 @@ def test_quantum_gradient_benchmark_suite_matches_analytic_references() -> None:
         expected_case_ids.append("jax_registered_phase_qnode_native_transform_lowering")
         expected_case_ids.append("jax_registered_phase_qnode_pytree_transform_lowering")
         expected_case_ids.append("jax_registered_phase_qnode_pmap_sharding_lowering")
+        expected_case_ids.append("jax_registered_phase_qnode_aot_export_lowering")
     assert [row.case_id for row in results] == expected_case_ids
     for row in results:
         assert isinstance(row, QuantumGradientBenchmarkResult)
@@ -488,6 +489,16 @@ def test_quantum_gradient_benchmark_suite_matches_analytic_references() -> None:
         assert "no provider, hardware, isolated benchmark, or performance promotion" in (
             jax_row.claim_boundary
         )
+        jax_aot_row = next(
+            row
+            for row in results
+            if row.case_id == "jax_registered_phase_qnode_aot_export_lowering"
+        )
+        assert "jax.export serialization/deserialization diagnostic" in (
+            jax_aot_row.claim_boundary
+        )
+        assert "persistent cross-platform execution" in jax_aot_row.claim_boundary
+        assert "no exported VJP" in jax_aot_row.claim_boundary
 
 
 def test_quantum_gradient_benchmark_result_validation_paths() -> None:

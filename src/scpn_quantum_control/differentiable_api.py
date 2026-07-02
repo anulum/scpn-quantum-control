@@ -895,6 +895,30 @@ def differentiable_dashboard_status(
             claim_boundary=program_ad_registry_dispatch_coverage_report().claim_boundary,
         ),
         DifferentiableDashboardCapabilityRow(
+            surface="jax_phase_qnode_aot_export_lowering",
+            state="conformance_backed" if conformance_passed else "diagnostic",
+            backing_api="jax_phase_qnode_aot_export_audit",
+            evidence=(
+                "PhaseJAXPhaseQNodeAOTExportResult",
+                "registered_phase_qnode_aot_export_lowering",
+                "jax_registered_phase_qnode_aot_export_lowering",
+            ),
+            blocked_reasons=()
+            if conformance_passed
+            else (
+                "conformance suite not run in this status call",
+                "exported VJP and persistent cross-platform execution remain blocked",
+                "provider, hardware, dynamic-circuit, and isolated benchmark promotion remain blocked",
+            ),
+            claim_boundary=(
+                "native JAX AOT lowering and jax.export serialization diagnostics "
+                "for deterministic registered local Phase-QNode value routes only; "
+                "gradient fields remain parameter-shift references, with no exported "
+                "VJP, persistent cross-platform execution, provider, hardware, "
+                "isolated benchmark, or performance promotion"
+            ),
+        ),
+        DifferentiableDashboardCapabilityRow(
             surface="torch_phase_qnode_statevector_lowering",
             state="conformance_backed" if conformance_passed else "diagnostic",
             backing_api="torch_phase_qnode_value_and_grad",

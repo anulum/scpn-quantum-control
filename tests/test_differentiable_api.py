@@ -517,6 +517,29 @@ def test_differentiable_dashboard_status_is_claim_bounded_for_gui_consumers() ->
         "bounded scalar value+gradient Program AD IR replay"
         in rows["polyglot_compiler_chain"]["claim_boundary"]
     )
+    assert rows["jax_phase_qnode_aot_export_lowering"]["state"] == "diagnostic"
+    assert rows["jax_phase_qnode_aot_export_lowering"]["fail_closed"] is True
+    assert (
+        rows["jax_phase_qnode_aot_export_lowering"]["backing_api"]
+        == "jax_phase_qnode_aot_export_audit"
+    )
+    assert (
+        "PhaseJAXPhaseQNodeAOTExportResult"
+        in rows["jax_phase_qnode_aot_export_lowering"]["evidence"]
+    )
+    assert (
+        "jax_registered_phase_qnode_aot_export_lowering"
+        in rows["jax_phase_qnode_aot_export_lowering"]["evidence"]
+    )
+    assert (
+        "exported VJP and persistent cross-platform execution remain blocked"
+        in rows["jax_phase_qnode_aot_export_lowering"]["blocked_reasons"]
+    )
+    assert (
+        "jax.export serialization diagnostics"
+        in (rows["jax_phase_qnode_aot_export_lowering"]["claim_boundary"])
+    )
+    assert "no exported VJP" in rows["jax_phase_qnode_aot_export_lowering"]["claim_boundary"]
     assert rows["torch_phase_qnode_statevector_lowering"]["state"] == "diagnostic"
     assert rows["torch_phase_qnode_statevector_lowering"]["fail_closed"] is True
     assert (

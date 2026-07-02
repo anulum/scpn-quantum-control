@@ -71,7 +71,7 @@ finite differences or pretending that a hardware/provider gradient exists.
 | `scpn_quantum_control.differentiable_architecture_map` | Deterministic architecture and Rustification routing map that connects the Rust/Python inventory to SOTA scorecard categories across public API, QNode bridge, Program AD, compiler/native execution, provider/hardware, and benchmark/claim-governance layers. It validates inventory references, SOTA categories, evidence paths, and blocker state before broad Rust migration without promoting Rust, LLVM/JIT, provider, hardware, GPU, performance, or isolated benchmark claims. |
 | `scpn_quantum_control.differentiable_dependency_environment_map` | Deterministic dependency and environment evidence map over runtime, development, CI Python matrix, CPU framework overlay, and Enzyme runner lock profiles. It reuses the external-validation environment-lock checksums and keeps the Enzyme runner as a hard gap without promoting framework parity, Enzyme parity, provider execution, hardware execution, GPU execution, performance, or isolated benchmark claims. |
 | `scpn_quantum_control.differentiable_external_validation` | Exact external-validation environment lock manifest, reproducible artefact-bundle manifest, checksum validators, and reviewer Markdown renderers for runtime, development, CI, framework-overlay, Enzyme-runner, and committed evidence artefacts. |
-| `scpn_quantum_control.phase.jax_bridge` | Optional JAX host-callback adapter for supported phase parameter-shift value-and-gradient calls plus bounded native/custom-VJP JAX phase-QNN evidence, audited no-host-callback JIT/VMAP/PMAP/PyTree boundaries for that narrow model, registered deterministic local Phase-QNode flat/PyTree native transform lowering evidence, and a JarvisLabs/cloud validation batch plan for locally blocked JAX GPU and multi-device routes. |
+| `scpn_quantum_control.phase.jax_bridge` | Optional JAX host-callback adapter for supported phase parameter-shift value-and-gradient calls plus bounded native/custom-VJP JAX phase-QNN evidence, audited no-host-callback JIT/VMAP/PMAP/PyTree boundaries for that narrow model, registered deterministic local Phase-QNode flat/PyTree native transform lowering evidence, AOT/export serialization diagnostics for registered value routes, and a JarvisLabs/cloud validation batch plan for locally blocked JAX GPU and multi-device routes. |
 | `scpn_quantum_control.phase.pennylane_bridge` | Optional PennyLane gradient-agreement checker for caller-supplied PennyLane/QNode gradient functions. |
 | `scpn_quantum_control.phase.torch_bridge` | Optional PyTorch bridge for supported phase parameter-shift value-and-gradient calls, tensor-ready bounded phase-QNN analytic gradient evidence, bounded custom `torch.autograd.Function`, bounded `torch.func.grad`/`vmap`/`jacrev`, bounded `torch.compile`, bounded `nn.Module`/layer wrapper compatibility, deterministic registered local Phase-QNode statevector lowering through native PyTorch autograd, registered local Phase-QNode `torch.func.grad`/`jacrev`/`vmap` transform evidence, broad PyTorch module/transform/compiler/device maturity routing, live CPU-overlay external-comparison artefact validation, and a fail-closed registered Phase-QNode Torch-lowering matrix checked against parameter-shift references and promotion blockers. |
 | `scpn_quantum_control.phase.tensorflow_bridge` / `scpn_quantum_control.phase.tensorflow_maintenance` | Optional TensorFlow tensor bridge for supported phase parameter-shift value-and-gradient calls plus tensor-ready bounded phase-QNN analytic gradient evidence checked against parameter-shift references. TensorFlow is explicitly maintained as compatibility-only evidence for bounded routes; broad Graph/XLA parity, arbitrary Phase-QNode lowering, provider callbacks, hardware gradients, and performance promotion stay blocked. |
@@ -512,6 +512,7 @@ from scpn_quantum_control.phase import (
     SparsePauliHamiltonian,
     jax_custom_vjp_qnn_value_and_grad,
     jax_native_qnn_value_and_grad,
+    jax_phase_qnode_aot_export_audit,
     jax_phase_qnode_native_transform_audit,
     jax_phase_qnode_pytree_transform_audit,
     jax_phase_qnode_sharding_transform_audit,
@@ -601,6 +602,10 @@ jax_qnode_sharding_transforms = jax_phase_qnode_sharding_transform_audit(
         np.array([[0.17, -0.23]], dtype=float),
         (int(jax.local_device_count()), 1),
     ),
+)
+jax_qnode_aot_export = jax_phase_qnode_aot_export_audit(
+    jax_circuit,
+    np.array([0.17, -0.23], dtype=float),
 )
 jax_cloud_batch = plan_jax_cloud_validation_batch(runner="jarvislabs")
 jax_maturity = run_jax_maturity_audit(
@@ -699,6 +704,9 @@ assert "hessian" in jax_qnode_pytree_transforms.transform_names
 assert jax_qnode_sharding_transforms.passed
 assert not jax_qnode_sharding_transforms.host_callback
 assert jax_qnode_sharding_transforms.pmapped
+assert jax_qnode_aot_export.passed
+assert jax_qnode_aot_export.serialized
+assert not jax_qnode_aot_export.persistent_export_claim
 assert jax_cloud_batch.local_execution_status in {
     "local_accelerator_ready",
     "skipped_incompatible_local_hardware",
@@ -770,6 +778,12 @@ statevector value-and-gradient row per local JAX device through `jax.pmap`,
 checks each row against SCPN parameter-shift references, and reports
 `host_callback=False`. Single-device CPU runs are smoke evidence for the pmap
 route, not multi-device performance evidence.
+`jax_phase_qnode_aot_export_audit` stages the same registered local value route
+through `jax.jit(...).lower(...)`, records StableHLO/compiler metadata, exports
+and serializes it through `jax.export.export(...)`, deserializes the blob, and
+checks replayed values against SCPN parameter-shift references. It is diagnostic
+metadata only: exported VJPs, persistent cross-platform execution, provider,
+hardware, isolated benchmark, and performance promotion remain blocked.
 `plan_jax_cloud_validation_batch` records the local JAX device count and device
 descriptions, classifies local GTX 1060 or single-device routes as
 `skipped_incompatible_local_hardware`, and returns the JarvisLabs/cloud
