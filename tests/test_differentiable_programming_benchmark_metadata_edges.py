@@ -110,8 +110,12 @@ def test_quantum_gradient_validation_rejects_remaining_malformed_fields() -> Non
     ("torch_available", "jax_available", "expected_optional"),
     (
         (False, False, ()),
-        (True, False, ("torch_state", "torch_transform", "torch_compile")),
-        (False, True, ("jax_native", "jax_pytree", "jax_sharding")),
+        (
+            True,
+            False,
+            ("torch_state", "torch_transform", "torch_compile", "torch_compile_boundary"),
+        ),
+        (False, True, ("jax_native", "jax_pytree", "jax_sharding", "jax_aot")),
     ),
 )
 def test_quantum_gradient_suite_optional_backend_gates(
@@ -141,6 +145,11 @@ def test_quantum_gradient_suite_optional_backend_gates(
     )
     monkeypatch.setattr(
         dp,
+        "_torch_registered_phase_qnode_compile_boundary_case",
+        lambda: _quantum_row("torch_compile_boundary"),
+    )
+    monkeypatch.setattr(
+        dp,
         "_jax_registered_phase_qnode_native_transform_case",
         lambda: _quantum_row("jax_native"),
     )
@@ -153,6 +162,11 @@ def test_quantum_gradient_suite_optional_backend_gates(
         dp,
         "_jax_registered_phase_qnode_sharding_transform_case",
         lambda: _quantum_row("jax_sharding"),
+    )
+    monkeypatch.setattr(
+        dp,
+        "_jax_registered_phase_qnode_aot_export_case",
+        lambda: _quantum_row("jax_aot"),
     )
 
     rows = dp.run_quantum_gradient_benchmark_suite()
