@@ -923,7 +923,11 @@ provider-gradient workflow evidence for parameter-shift, finite-difference,
 LCU, SPSA, QGT, and QFI methods. Build those artefacts with
 `build_qiskit_provider_gradient_workflow_artifact(...)`; the maturity audit
 keeps `provider_gradient_workflow_evidence` blocked until all six methods are
-attached and matched to the same Runtime QPU evidence chain.
+attached and matched to the same Runtime QPU evidence chain. Workflow artefacts
+must have unique IDs and must retain the Runtime QPU provider, backend, job,
+circuit, primitive family, observable fingerprint, parameter digest,
+live-ticket, and shot-count chain. Any drift in those fields fails closed
+before the audit can clear the provider-gradient workflow gate.
 
 ## Gradient Tape Boundary
 

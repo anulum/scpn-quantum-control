@@ -1446,6 +1446,9 @@ def _normalise_provider_gradient_workflow_artifacts(
         )
     if len(methods) != len(artifact_tuple):
         raise ValueError("provider gradient workflow methods must not contain duplicates")
+    artifact_ids = frozenset(artifact.artifact_id for artifact in artifact_tuple)
+    if len(artifact_ids) != len(artifact_tuple):
+        raise ValueError("provider gradient workflow artifact_id values must be unique")
     if runtime_qpu_execution_artifact is not None:
         for artifact in artifact_tuple:
             _validate_provider_gradient_workflow_chain(
@@ -1476,9 +1479,24 @@ def _validate_provider_gradient_workflow_chain(
         runtime_qpu_execution_artifact.job_id,
     )
     _require_matching_evidence_field(
+        "provider_gradient_workflow_artifact.primitive_name",
+        artifact.primitive_name,
+        runtime_qpu_execution_artifact.primitive_name,
+    )
+    _require_matching_evidence_field(
         "provider_gradient_workflow_artifact.circuit_fingerprint",
         artifact.circuit_fingerprint,
         runtime_qpu_execution_artifact.circuit_fingerprint,
+    )
+    _require_matching_optional_evidence_field(
+        "provider_gradient_workflow_artifact.observable_fingerprint",
+        artifact.observable_fingerprint,
+        runtime_qpu_execution_artifact.observable_fingerprint,
+    )
+    _require_matching_evidence_field(
+        "provider_gradient_workflow_artifact.parameter_digest",
+        artifact.parameter_digest,
+        runtime_qpu_execution_artifact.parameter_digest,
     )
     _require_matching_evidence_field(
         "provider_gradient_workflow_artifact.live_ticket_id",
@@ -1490,6 +1508,15 @@ def _validate_provider_gradient_workflow_chain(
 
 
 def _require_matching_evidence_field(field_name: str, observed: str, expected: str) -> None:
+    if observed != expected:
+        raise ValueError(f"{field_name} must match Runtime QPU evidence")
+
+
+def _require_matching_optional_evidence_field(
+    field_name: str,
+    observed: str | None,
+    expected: str | None,
+) -> None:
     if observed != expected:
         raise ValueError(f"{field_name} must match Runtime QPU evidence")
 

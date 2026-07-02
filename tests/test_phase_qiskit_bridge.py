@@ -619,12 +619,14 @@ def _qiskit_qpu_provider_evidence_bundle(
 def _qiskit_provider_gradient_workflow_artifact(
     gradient_method: str,
     *,
+    artifact_id: str | None = None,
     primitive_name: str = "EstimatorV2",
     observable_fingerprint: str | None = "SparsePauliOp:Z:v1",
+    parameter_digest: str = "sha256:" + "8" * 64,
     live_ticket_id: str = "live-ticket-20260619",
 ) -> QiskitProviderGradientWorkflowArtifact:
     return build_qiskit_provider_gradient_workflow_artifact(
-        artifact_id=f"qiskit-gradient-workflow-{gradient_method}-20260619",
+        artifact_id=artifact_id or f"qiskit-gradient-workflow-{gradient_method}-20260619",
         provider_name="ibm_quantum",
         backend_name="ibm_brisbane",
         job_id="runtime-qpu-job-20260619",
@@ -632,7 +634,7 @@ def _qiskit_provider_gradient_workflow_artifact(
         gradient_method=gradient_method,
         circuit_fingerprint="qiskit:ry(theta):z:v1",
         observable_fingerprint=observable_fingerprint,
-        parameter_digest="sha256:" + "a" * 64,
+        parameter_digest=parameter_digest,
         gradient_digest="sha256:" + "b" * 64,
         metadata_digest="sha256:" + "c" * 64,
         shots=4096,
@@ -740,6 +742,7 @@ def test_qiskit_gradient_workflow_suite_rejects_missing_method() -> None:
 
 
 def test_qiskit_gradient_workflow_artifact_rejects_mismatched_qpu_chain() -> None:
+    """Provider-gradient evidence must cite the same live-ticket chain."""
     circuit, parameters, observable = _single_rotation_problem()
     bundle = _qiskit_qpu_provider_evidence_bundle()
     gradient_artifacts = (
@@ -754,6 +757,115 @@ def test_qiskit_gradient_workflow_artifact_rejects_mismatched_qpu_chain() -> Non
     )
 
     with pytest.raises(ValueError, match="provider_gradient_workflow_artifact.live_ticket_id"):
+        run_qiskit_maturity_audit(
+            circuit,
+            observable,
+            parameters,
+            np.array([0.4], dtype=float),
+            shots=400,
+            qpu_provider_evidence_bundle=bundle,
+            provider_gradient_workflow_artifacts=gradient_artifacts,
+        )
+
+
+def test_qiskit_gradient_workflow_suite_rejects_duplicate_artifact_ids() -> None:
+    """Provider-gradient methods must not reuse a single evidence artifact ID."""
+    circuit, parameters, observable = _single_rotation_problem()
+    bundle = _qiskit_qpu_provider_evidence_bundle()
+    gradient_artifacts = tuple(
+        _qiskit_provider_gradient_workflow_artifact(
+            method,
+            artifact_id="qiskit-gradient-workflow-duplicate-20260619",
+        )
+        for method in ("parameter_shift", "finite_difference", "lcu", "spsa", "qgt", "qfi")
+    )
+
+    with pytest.raises(ValueError, match="artifact_id"):
+        run_qiskit_maturity_audit(
+            circuit,
+            observable,
+            parameters,
+            np.array([0.4], dtype=float),
+            shots=400,
+            qpu_provider_evidence_bundle=bundle,
+            provider_gradient_workflow_artifacts=gradient_artifacts,
+        )
+
+
+def test_qiskit_gradient_workflow_artifact_rejects_primitive_drift() -> None:
+    """Provider-gradient workflows must keep the Runtime primitive family aligned."""
+    circuit, parameters, observable = _single_rotation_problem()
+    bundle = _qiskit_qpu_provider_evidence_bundle()
+    gradient_artifacts = (
+        _qiskit_provider_gradient_workflow_artifact("parameter_shift"),
+        _qiskit_provider_gradient_workflow_artifact("finite_difference"),
+        _qiskit_provider_gradient_workflow_artifact("lcu"),
+        _qiskit_provider_gradient_workflow_artifact(
+            "spsa",
+            primitive_name="SamplerV2",
+            observable_fingerprint=None,
+        ),
+        _qiskit_provider_gradient_workflow_artifact("qgt"),
+        _qiskit_provider_gradient_workflow_artifact("qfi"),
+    )
+
+    with pytest.raises(ValueError, match="primitive_name"):
+        run_qiskit_maturity_audit(
+            circuit,
+            observable,
+            parameters,
+            np.array([0.4], dtype=float),
+            shots=400,
+            qpu_provider_evidence_bundle=bundle,
+            provider_gradient_workflow_artifacts=gradient_artifacts,
+        )
+
+
+def test_qiskit_gradient_workflow_artifact_rejects_observable_drift() -> None:
+    """Provider-gradient workflows must cite the Runtime QPU observable."""
+    circuit, parameters, observable = _single_rotation_problem()
+    bundle = _qiskit_qpu_provider_evidence_bundle()
+    gradient_artifacts = (
+        _qiskit_provider_gradient_workflow_artifact("parameter_shift"),
+        _qiskit_provider_gradient_workflow_artifact("finite_difference"),
+        _qiskit_provider_gradient_workflow_artifact(
+            "lcu",
+            observable_fingerprint="SparsePauliOp:X:v1",
+        ),
+        _qiskit_provider_gradient_workflow_artifact("spsa"),
+        _qiskit_provider_gradient_workflow_artifact("qgt"),
+        _qiskit_provider_gradient_workflow_artifact("qfi"),
+    )
+
+    with pytest.raises(ValueError, match="observable_fingerprint"):
+        run_qiskit_maturity_audit(
+            circuit,
+            observable,
+            parameters,
+            np.array([0.4], dtype=float),
+            shots=400,
+            qpu_provider_evidence_bundle=bundle,
+            provider_gradient_workflow_artifacts=gradient_artifacts,
+        )
+
+
+def test_qiskit_gradient_workflow_artifact_rejects_parameter_digest_drift() -> None:
+    """Provider-gradient workflows must use the Runtime QPU parameter payload."""
+    circuit, parameters, observable = _single_rotation_problem()
+    bundle = _qiskit_qpu_provider_evidence_bundle()
+    gradient_artifacts = (
+        _qiskit_provider_gradient_workflow_artifact("parameter_shift"),
+        _qiskit_provider_gradient_workflow_artifact("finite_difference"),
+        _qiskit_provider_gradient_workflow_artifact("lcu"),
+        _qiskit_provider_gradient_workflow_artifact("spsa"),
+        _qiskit_provider_gradient_workflow_artifact(
+            "qgt",
+            parameter_digest="sha256:" + "d" * 64,
+        ),
+        _qiskit_provider_gradient_workflow_artifact("qfi"),
+    )
+
+    with pytest.raises(ValueError, match="parameter_digest"):
         run_qiskit_maturity_audit(
             circuit,
             observable,

@@ -148,6 +148,10 @@ Readiness requirement:
 - transpiled depth/two-qubit-gate budget
 - simulator or Aer preflight
 - hardware micro-probe before full campaign
+- captured Runtime provider-gradient workflow artefacts must keep unique
+  artefact IDs and match the same provider, backend, job, circuit, primitive,
+  observable, parameter digest, live-ticket, and shot-count chain before they
+  can clear the Qiskit maturity audit gate
 
 ### Amazon Braket
 
