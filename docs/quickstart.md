@@ -407,6 +407,11 @@ For JAX registered Phase-QNode routes, `jax_phase_qnode_aot_export_audit(...)`
 is a local AOT/export diagnostic that records StableHLO and `jax.export`
 serialization replay; it does not promote exported VJPs, persistent
 cross-platform execution, provider, hardware, or performance claims.
+For PyTorch registered Phase-QNode routes,
+`torch_phase_qnode_compile_boundary_audit(...)` records non-fullgraph
+`torch.compile` correctness and keeps dynamic-shape, fullgraph compiled-frame,
+AOTAutograd/export, CUDA, provider, hardware, isolated-benchmark, and
+performance promotion blocked until artefacts exist.
 
 ## GUESS error mitigation in 5 lines (added April 2026)
 

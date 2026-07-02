@@ -412,6 +412,7 @@ verification pass/fail flag, objective-evaluation count, and a claim boundary.
 | `two_parameter_phase_expectation` | quantum-gradient | Two-parameter phase expectation with analytic mixed sine/cosine reference |
 | `sparse_ising_chain_six_qubit_expectation` | quantum-gradient | Six-parameter nearest-neighbour sparse Ising-chain expectation with analytic field/coupling gradient reference |
 | `jax_registered_phase_qnode_aot_export_lowering` | quantum-gradient | Optional installed-JAX AOT/export value-route diagnostic for deterministic registered local Phase-QNode circuits; gradient fields remain parameter-shift and finite-difference references while exported VJP, persistent cross-platform execution, hardware, and performance promotion remain blocked |
+| `torch_registered_phase_qnode_compile_boundary_diagnostic` | quantum-gradient | Optional installed-PyTorch compile-boundary diagnostic for deterministic registered local Phase-QNode circuits; non-fullgraph correctness is compared with parameter-shift and finite-difference references while dynamic-shape, fullgraph compiled-frame, AOTAutograd/export, CUDA, provider, hardware, isolated-benchmark, and performance promotion remain blocked |
 
 These rows are correctness/conformance benchmarks only. They do not claim
 hardware execution, provider integration, framework-native autodiff, or

@@ -497,12 +497,14 @@ def _default_scorecard_rows(
             "pytorch_autograd_compile",
             "PyTorch eager autograd, nn.Module, torch.func, torch.compile, AOTAutograd, "
             "dynamic shapes, CPU/GPU device maturity, and production training ergonomics.",
-            "Bounded PyTorch nn.Module, torch.func, non-fullgraph torch.compile, and local "
-            "Phase-QNode statevector routes exist with fail-closed fullgraph/CUDA/provider gaps.",
+            "Bounded PyTorch nn.Module, torch.func, non-fullgraph torch.compile, local "
+            "Phase-QNode statevector routes, and compile-boundary diagnostics exist with "
+            "fail-closed fullgraph/dynamic-shape/AOTAutograd/CUDA/provider gaps.",
             ("external_framework_comparison", "phase_qnode_claim_boundary"),
             (
                 "compatible CUDA/device evidence is scheduled for cloud hardware",
-                "fullgraph compile, finite-shot, provider, hardware, and isolated benchmark rows remain blocked",
+                "fullgraph compile, dynamic-shape promotion, AOTAutograd/export persistence, "
+                "finite-shot, provider, hardware, and isolated benchmark rows remain blocked",
             ),
             ("Round 2 framework-native transform parity", "Round 6 benchmark promotion"),
         ),

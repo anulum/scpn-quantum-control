@@ -558,6 +558,28 @@ def test_differentiable_dashboard_status_is_claim_bounded_for_gui_consumers() ->
         "no provider, hardware, isolated benchmark, or performance promotion"
         in rows["torch_phase_qnode_statevector_lowering"]["claim_boundary"]
     )
+    assert rows["torch_phase_qnode_compile_boundary_diagnostic"]["state"] == "diagnostic"
+    assert rows["torch_phase_qnode_compile_boundary_diagnostic"]["fail_closed"] is True
+    assert (
+        rows["torch_phase_qnode_compile_boundary_diagnostic"]["backing_api"]
+        == "torch_phase_qnode_compile_boundary_audit"
+    )
+    assert (
+        "PhaseTorchCompileBoundaryAuditResult"
+        in rows["torch_phase_qnode_compile_boundary_diagnostic"]["evidence"]
+    )
+    assert (
+        "torch_registered_phase_qnode_compile_boundary_diagnostic"
+        in rows["torch_phase_qnode_compile_boundary_diagnostic"]["evidence"]
+    )
+    assert (
+        "fullgraph compile promotion remains blocked"
+        in rows["torch_phase_qnode_compile_boundary_diagnostic"]["blocked_reasons"]
+    )
+    assert (
+        "no persistent export"
+        in rows["torch_phase_qnode_compile_boundary_diagnostic"]["claim_boundary"]
+    )
     assert rows["provider_and_hardware_gradients"]["state"] == "blocked"
     assert rows["gui_frontend"]["state"] == "planned"
     generated_from = cast(list[str], payload["generated_from"])

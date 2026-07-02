@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 777,
     "public_documentation_pages": 254,
-    "python_model_classes": 924,
+    "python_model_classes": 926,
     "python_model_source_modules": 526,
     "rust_pyo3_model_wrappers": 171,
     "rust_source_modules": 42,
-    "test_files": 861
+    "test_files": 862
   },
   "documentation": {
     "examples": [
@@ -3022,6 +3022,14 @@
       },
       {
         "name": "PhaseTorchCloudValidationRunSpec",
+        "path": "src/scpn_quantum_control/phase/torch_bridge.py"
+      },
+      {
+        "name": "PhaseTorchCompileBoundaryAuditResult",
+        "path": "src/scpn_quantum_control/phase/torch_bridge.py"
+      },
+      {
+        "name": "PhaseTorchCompileBoundaryRoute",
         "path": "src/scpn_quantum_control/phase/torch_bridge.py"
       },
       {
@@ -6462,6 +6470,7 @@
       "tests/test_phase_qnode_vector_transforms.py",
       "tests/test_phase_results.py",
       "tests/test_phase_tensorflow_maintenance.py",
+      "tests/test_phase_torch_bridge_compile_boundaries.py",
       "tests/test_phase_torch_bridge_qnode_edge_routes.py",
       "tests/test_phase_torch_bridge_runtime_boundaries.py",
       "tests/test_phase_torch_bridge_validation_edges.py",

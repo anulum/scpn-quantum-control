@@ -537,6 +537,7 @@ from scpn_quantum_control.phase import (
     torch_bounded_qnn_value_and_grad,
     torch_bounded_qnn_layer,
     torch_bounded_qnn_module,
+    torch_phase_qnode_compile_boundary_audit,
     torch_phase_qnode_transform_audit,
     torch_phase_qnode_value_and_grad,
 )
@@ -678,6 +679,10 @@ torch_qnode_transforms = torch_phase_qnode_transform_audit(
     np.array([0.17, -0.23], dtype=float),
     params_batch=np.array([[0.17, -0.23], [0.21, -0.19]], dtype=float),
 )
+torch_qnode_compile_boundary = torch_phase_qnode_compile_boundary_audit(
+    jax_circuit,
+    np.array([0.17, -0.23], dtype=float),
+)
 torch_ecosystem = run_torch_ecosystem_maturity_audit()
 
 assert jax_result.passed
@@ -732,6 +737,10 @@ assert torch_module_audit.module_wrapper_supported
 assert torch_qnode.passed
 assert torch_qnode_transforms.passed
 assert torch_qnode_transforms.func_vmap_supported
+assert torch_qnode_compile_boundary.passed
+assert torch_qnode_compile_boundary.route_status("non_fullgraph_compile") == "passed"
+assert torch_qnode_compile_boundary.route_status("fullgraph_compile") == "blocked"
+assert not torch_qnode_compile_boundary.persistent_export_claim
 assert torch_ecosystem.route_status("torch_compile_callable") in {"passed", "blocked"}
 ```
 
@@ -818,7 +827,12 @@ parameter-shift reference. `torch_phase_qnode_transform_audit` runs the same
 registered local statevector family through `torch.func.grad`,
 `torch.func.jacrev`, and `torch.func.vmap`, checks single-row and batched
 gradients against SCPN parameter-shift references, and keeps `host_boundary`
-false. `run_torch_ecosystem_maturity_audit` records installed PyTorch
+false. `torch_phase_qnode_compile_boundary_audit` executes the registered
+Phase-QNode `torch.compile` route in non-fullgraph, dynamic, and fullgraph
+modes, records non-fullgraph correctness, and keeps dynamic-shape,
+fullgraph compiled-frame, AOTAutograd/export, CUDA, provider, hardware,
+isolated-benchmark, and performance promotion blocked until artefacts exist.
+`run_torch_ecosystem_maturity_audit` records installed PyTorch
 `nn.Module`/`Parameter`, `torch.func`, `torch.compile`, and CUDA-device
 capabilities; visible but incompatible CUDA devices remain blocked until a
 successful device smoke and device-specific Phase-QNode gradient artefact exist.

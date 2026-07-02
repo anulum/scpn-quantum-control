@@ -941,6 +941,33 @@ def differentiable_dashboard_status(
             ),
         ),
         DifferentiableDashboardCapabilityRow(
+            surface="torch_phase_qnode_compile_boundary_diagnostic",
+            state="conformance_backed" if conformance_passed else "diagnostic",
+            backing_api="torch_phase_qnode_compile_boundary_audit",
+            evidence=(
+                "PhaseTorchCompileBoundaryAuditResult",
+                "registered_phase_qnode_torch_compile_boundary_diagnostic",
+                "torch_registered_phase_qnode_compile_boundary_diagnostic",
+            ),
+            blocked_reasons=()
+            if conformance_passed
+            else (
+                "conformance suite not run in this status call",
+                "dynamic-shape compile promotion remains blocked",
+                "fullgraph compile promotion remains blocked",
+                "AOTAutograd/export persistent artifact remains blocked",
+                "provider, hardware, CUDA, isolated benchmark, and performance promotion remain blocked",
+            ),
+            claim_boundary=(
+                "native PyTorch compile-boundary diagnostic for deterministic "
+                "registered local Phase-QNode circuits only; non-fullgraph CPU "
+                "execution is compared with SCPN parameter-shift references, "
+                "while dynamic-shape, fullgraph compiled-frame, AOTAutograd/export, "
+                "provider, hardware, CUDA, isolated benchmark, and performance "
+                "routes remain blocked with no persistent export or performance claim"
+            ),
+        ),
+        DifferentiableDashboardCapabilityRow(
             surface="program_ad_python_semantics",
             state="conformance_backed" if conformance_passed else "diagnostic",
             backing_api="whole_program_value_and_grad",

@@ -506,6 +506,100 @@ class PhaseTorchPhaseQNodeCompileResult:
 
 
 @dataclass(frozen=True)
+class PhaseTorchCompileBoundaryRoute:
+    """One classified PyTorch compiler boundary for registered Phase-QNode routes."""
+
+    name: str
+    status: str
+    reason: str
+    execution_passed: bool
+    fullgraph: bool
+    dynamic: bool
+    requires: tuple[str, ...] = ()
+    value: float | None = None
+    max_abs_reference_error: float | None = None
+    exception_type: str | None = None
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready compiler-boundary route metadata."""
+        return {
+            "name": self.name,
+            "status": self.status,
+            "reason": self.reason,
+            "execution_passed": self.execution_passed,
+            "fullgraph": self.fullgraph,
+            "dynamic": self.dynamic,
+            "requires": list(self.requires),
+            "value": self.value,
+            "max_abs_reference_error": self.max_abs_reference_error,
+            "exception_type": self.exception_type,
+        }
+
+
+@dataclass(frozen=True)
+class PhaseTorchCompileBoundaryAuditResult:
+    """Fail-closed PyTorch compiler-boundary evidence for registered Phase-QNodes."""
+
+    routes: tuple[PhaseTorchCompileBoundaryRoute, ...]
+    non_fullgraph_value: float
+    non_fullgraph_gradient: FloatArray
+    parameter_shift_value: float
+    parameter_shift_gradient: FloatArray
+    max_abs_reference_error: float
+    tolerance: float
+    torch_version: str
+    passed: bool
+    persistent_export_claim: bool
+    provider_claim: bool
+    performance_claim: bool
+    method: str = "torch_registered_phase_qnode_compile_boundary_audit"
+    claim_boundary: str = (
+        "registered Phase-QNode PyTorch compile-boundary diagnostic for local "
+        "CPU non-fullgraph execution only; dynamic-shape, fullgraph compiled-frame, "
+        "AOTAutograd, torch.export persistent export, provider, hardware, CUDA, "
+        "isolated benchmark, and performance promotion remain blocked, with no "
+        "persistent export claim"
+    )
+
+    @property
+    def non_fullgraph_passed(self) -> bool:
+        """Return whether the non-fullgraph execution baseline passed."""
+        return self.route_status("non_fullgraph_compile") == "passed"
+
+    @property
+    def open_gaps(self) -> tuple[str, ...]:
+        """Return compile-boundary routes that remain blocked."""
+        return tuple(route.name for route in self.routes if route.status != "passed")
+
+    def route_status(self, name: str) -> str:
+        """Return the status for a named compile-boundary route."""
+        for route in self.routes:
+            if route.name == name:
+                return route.status
+        raise KeyError(f"unknown PyTorch compile-boundary route: {name}")
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready compile-boundary audit evidence."""
+        return {
+            "routes": {route.name: route.to_dict() for route in self.routes},
+            "open_gaps": list(self.open_gaps),
+            "non_fullgraph_value": self.non_fullgraph_value,
+            "non_fullgraph_gradient": self.non_fullgraph_gradient.tolist(),
+            "parameter_shift_value": self.parameter_shift_value,
+            "parameter_shift_gradient": self.parameter_shift_gradient.tolist(),
+            "max_abs_reference_error": self.max_abs_reference_error,
+            "tolerance": self.tolerance,
+            "torch_version": self.torch_version,
+            "passed": self.passed,
+            "persistent_export_claim": self.persistent_export_claim,
+            "provider_claim": self.provider_claim,
+            "performance_claim": self.performance_claim,
+            "method": self.method,
+            "claim_boundary": self.claim_boundary,
+        }
+
+
+@dataclass(frozen=True)
 class PhaseTorchLiveOverlayEvidence:
     """Validated live CPU-overlay PyTorch external-comparison evidence."""
 
@@ -819,6 +913,15 @@ def run_torch_phase_qnode_lowering_matrix() -> PhaseTorchPhaseQNodeLoweringMatri
             reason=(
                 "registered deterministic Phase-QNode statevector circuits execute through "
                 "non-fullgraph torch.compile value and gradient routes on CPU"
+            ),
+        ),
+        PhaseTorchPhaseQNodeLoweringRoute(
+            name="registered_phase_qnode_torch_compile_boundary_diagnostic",
+            status="passed",
+            reason=(
+                "registered Phase-QNode torch.compile boundary audit classifies "
+                "non-fullgraph, dynamic-shape, fullgraph, and AOTAutograd/export "
+                "routes without promoting blocked compiler artifacts"
             ),
         ),
         PhaseTorchPhaseQNodeLoweringRoute(
@@ -1813,6 +1916,214 @@ def torch_phase_qnode_compile_audit(
         compiled_gradient_supported=True,
         fullgraph=bool(fullgraph),
         dynamic=bool(dynamic),
+    )
+
+
+def _compile_boundary_exception_reason(exc: Exception) -> str:
+    detail = str(exc).splitlines()[0] if str(exc).splitlines() else repr(exc)
+    return f"{type(exc).__name__}: {detail[:240]}"
+
+
+def _torch_compile_boundary_execution_route(
+    *,
+    name: str,
+    circuit: PhaseQNodeCircuit,
+    parameter_values: FloatArray,
+    tolerance: float,
+    fullgraph: bool,
+    dynamic: bool,
+    requires: tuple[str, ...],
+    passed_reason: str,
+    blocked_reason_after_pass: str | None,
+) -> tuple[PhaseTorchCompileBoundaryRoute, PhaseTorchPhaseQNodeCompileResult | None]:
+    try:
+        result = torch_phase_qnode_compile_audit(
+            circuit,
+            parameter_values,
+            tolerance=tolerance,
+            fullgraph=fullgraph,
+            dynamic=dynamic,
+        )
+    except Exception as exc:
+        reason = f"{name} execution is blocked: {_compile_boundary_exception_reason(exc)}"
+        return (
+            PhaseTorchCompileBoundaryRoute(
+                name=name,
+                status="blocked",
+                reason=reason,
+                execution_passed=False,
+                fullgraph=fullgraph,
+                dynamic=dynamic,
+                requires=requires,
+                exception_type=type(exc).__name__,
+            ),
+            None,
+        )
+    status = "passed" if result.passed and blocked_reason_after_pass is None else "blocked"
+    if result.passed and blocked_reason_after_pass is not None:
+        reason = blocked_reason_after_pass
+    elif result.passed:
+        reason = passed_reason
+    else:
+        reason = (
+            f"{name} execution disagrees with the SCPN parameter-shift reference: "
+            f"max_abs_error={result.max_abs_error:g}"
+        )
+    return (
+        PhaseTorchCompileBoundaryRoute(
+            name=name,
+            status=status,
+            reason=reason,
+            execution_passed=result.passed,
+            fullgraph=fullgraph,
+            dynamic=dynamic,
+            requires=requires,
+            value=result.value,
+            max_abs_reference_error=result.max_abs_error,
+        ),
+        result,
+    )
+
+
+def _torch_aot_autograd_boundary_route(
+    torch_module: Any,
+    *,
+    fullgraph_route: PhaseTorchCompileBoundaryRoute,
+) -> PhaseTorchCompileBoundaryRoute:
+    export_module = getattr(torch_module, "export", None)
+    export_fn = getattr(export_module, "export", None)
+    functorch_module = getattr(torch_module, "_functorch", None)
+    aot_autograd = getattr(functorch_module, "aot_autograd", None)
+    reason = (
+        "AOTAutograd/export promotion is blocked until a persistent exported "
+        "program and AOT compile artifact exist; "
+        f"torch.export.export available={callable(export_fn)}, "
+        f"torch._functorch.aot_autograd available={callable(aot_autograd)}, "
+        f"fullgraph route status={fullgraph_route.status}"
+    )
+    return PhaseTorchCompileBoundaryRoute(
+        name="aot_autograd_export_boundary",
+        status="blocked",
+        reason=reason,
+        execution_passed=False,
+        fullgraph=True,
+        dynamic=False,
+        requires=(
+            "torch_export_exported_program_artifact",
+            "aot_autograd_partition_artifact",
+            "aot_compile_artifact",
+            "graph_break_free_fullgraph_artifact",
+        ),
+    )
+
+
+def torch_phase_qnode_compile_boundary_audit(
+    circuit: PhaseQNodeCircuit,
+    params: ArrayLike | object,
+    *,
+    tolerance: float = 1e-6,
+) -> PhaseTorchCompileBoundaryAuditResult:
+    """Classify PyTorch compiler boundaries for registered Phase-QNode lowering.
+
+    The audit executes the deterministic local Phase-QNode ``torch.compile``
+    route in non-fullgraph, dynamic, and fullgraph modes against SCPN
+    parameter-shift references. It deliberately reports dynamic-shape,
+    fullgraph, AOTAutograd/export, provider, hardware, CUDA, isolated benchmark,
+    and performance surfaces as blocked until their promotion artefacts exist.
+    """
+
+    torch_module = _load_torch()
+    tolerance_value = _as_non_negative_tolerance(tolerance)
+    parameter_values = _as_parameter_vector("params", params)
+    report = phase_qnode_support_report(circuit, parameter_values)
+    if not report.supported:
+        raise PhaseQNodeSupportError(report)
+    parameter_shift = parameter_shift_phase_qnode_gradient(circuit, parameter_values)
+    non_fullgraph_route, non_fullgraph_result = _torch_compile_boundary_execution_route(
+        name="non_fullgraph_compile",
+        circuit=circuit,
+        parameter_values=parameter_values,
+        tolerance=tolerance_value,
+        fullgraph=False,
+        dynamic=False,
+        requires=(),
+        passed_reason=(
+            "non-fullgraph torch.compile value and gradient execution matches the "
+            "SCPN parameter-shift reference on the registered CPU statevector route"
+        ),
+        blocked_reason_after_pass=None,
+    )
+    dynamic_route, _dynamic_result = _torch_compile_boundary_execution_route(
+        name="dynamic_non_fullgraph_compile",
+        circuit=circuit,
+        parameter_values=parameter_values,
+        tolerance=tolerance_value,
+        fullgraph=False,
+        dynamic=True,
+        requires=(
+            "variable_shape_compile_artifact",
+            "dynamic_shape_guard_report",
+        ),
+        passed_reason="",
+        blocked_reason_after_pass=(
+            "dynamic=True executes on the fixed-shape audit input, but dynamic-shape "
+            "promotion remains blocked until variable-shape compile artifacts and "
+            "guard reports exist"
+        ),
+    )
+    fullgraph_route, _fullgraph_result = _torch_compile_boundary_execution_route(
+        name="fullgraph_compile",
+        circuit=circuit,
+        parameter_values=parameter_values,
+        tolerance=tolerance_value,
+        fullgraph=True,
+        dynamic=False,
+        requires=(
+            "graph_break_free_fullgraph_artifact",
+            "compiled_frame_evidence",
+            "static_shape_symbolic_integer_guards",
+        ),
+        passed_reason="",
+        blocked_reason_after_pass=(
+            "fullgraph=True returns correct fixed-shape values locally, but promotion "
+            "remains blocked until graph-break-free compiled-frame evidence and "
+            "AOT-compatible artifacts are recorded"
+        ),
+    )
+    aot_route = _torch_aot_autograd_boundary_route(torch_module, fullgraph_route=fullgraph_route)
+    routes = (
+        non_fullgraph_route,
+        dynamic_route,
+        fullgraph_route,
+        aot_route,
+    )
+    if non_fullgraph_result is None:
+        non_fullgraph_value = parameter_shift.value
+        non_fullgraph_gradient = parameter_shift.gradient.copy()
+        max_abs_reference_error = tolerance_value + 1.0
+    else:
+        non_fullgraph_value = non_fullgraph_result.value
+        non_fullgraph_gradient = non_fullgraph_result.gradient.copy()
+        max_abs_reference_error = non_fullgraph_result.max_abs_error
+    passed = bool(
+        non_fullgraph_route.status == "passed"
+        and dynamic_route.status == "blocked"
+        and fullgraph_route.status == "blocked"
+        and aot_route.status == "blocked"
+    )
+    return PhaseTorchCompileBoundaryAuditResult(
+        routes=routes,
+        non_fullgraph_value=non_fullgraph_value,
+        non_fullgraph_gradient=non_fullgraph_gradient,
+        parameter_shift_value=parameter_shift.value,
+        parameter_shift_gradient=parameter_shift.gradient.copy(),
+        max_abs_reference_error=max_abs_reference_error,
+        tolerance=tolerance_value,
+        torch_version=str(getattr(torch_module, "__version__", "unknown")),
+        passed=passed,
+        persistent_export_claim=False,
+        provider_claim=False,
+        performance_claim=False,
     )
 
 
@@ -2847,6 +3158,8 @@ def _json_ready(value: object) -> object:
 __all__ = [
     "PhaseTorchAutogradQNNGradientResult",
     "PhaseTorchCloudValidationRunSpec",
+    "PhaseTorchCompileBoundaryAuditResult",
+    "PhaseTorchCompileBoundaryRoute",
     "PhaseTorchCompileCompatibilityResult",
     "PhaseTorchEcosystemMaturityAuditResult",
     "PhaseTorchEcosystemMaturityRoute",
@@ -2876,6 +3189,7 @@ __all__ = [
     "torch_bounded_qnn_layer",
     "torch_bounded_qnn_module",
     "torch_parameter_shift_value_and_grad",
+    "torch_phase_qnode_compile_boundary_audit",
     "torch_phase_qnode_compile_audit",
     "torch_phase_qnode_transform_audit",
     "torch_phase_qnode_value_and_grad",

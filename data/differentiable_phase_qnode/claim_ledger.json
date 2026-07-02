@@ -95,18 +95,26 @@
       "claim_id": "phase_qnode_claim_boundary",
       "claim_text": "Phase-QNode public wording remains bounded to artefact-backed differentiable execution and does not promote broad framework or hardware claims.",
       "implementation_surface": [
+        "src/scpn_quantum_control/benchmarks/differentiable_programming.py",
+        "src/scpn_quantum_control/differentiable_api.py",
         "src/scpn_quantum_control/phase/qnode_tape.py",
         "src/scpn_quantum_control/phase/qnode_transforms.py",
-        "src/scpn_quantum_control/phase/qnode_vector_transforms.py"
+        "src/scpn_quantum_control/phase/qnode_vector_transforms.py",
+        "src/scpn_quantum_control/phase/torch_bridge.py"
       ],
       "test_surface": [
+        "tests/test_differentiable_api.py",
+        "tests/test_differentiable_programming_benchmarks.py",
         "tests/test_phase_qnode_tape.py",
         "tests/test_phase_qnode_transforms.py",
         "tests/test_phase_qnode_vector_transforms.py",
+        "tests/test_phase_torch_bridge_compile_boundaries.py",
         "tests/test_differentiable_claim_ledger.py"
       ],
       "docs_surface": [
         "README.md",
+        "docs/benchmarks_api.md",
+        "docs/differentiable_api.md",
         "docs/differentiable_programming.md",
         "data/differentiable_phase_qnode/claim_ledger.md"
       ],
@@ -118,10 +126,11 @@
       ],
       "known_gaps": [
         "The lane remains SOTA-candidate until isolated CI benchmark and external comparison artefacts pass.",
-        "Provider and QPU execution remain explicitly outside this claim."
+        "Provider and QPU execution remain explicitly outside this claim.",
+        "PyTorch dynamic-shape compile promotion, fullgraph compiled-frame promotion, and AOTAutograd/export persistence remain blocked until artefacts exist."
       ],
       "promotion_status": "SOTA-candidate",
-      "claim_boundary": "Bounded Phase-QNode differentiable execution only; no broad quantum advantage, provider, QPU, or production performance claim."
+      "claim_boundary": "Bounded Phase-QNode differentiable execution only; PyTorch compile-boundary diagnostics do not promote dynamic-shape, fullgraph, AOTAutograd/export, provider, QPU, or production performance claims."
     },
     {
       "claim_id": "support_surface_alignment",

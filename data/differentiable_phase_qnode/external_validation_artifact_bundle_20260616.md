@@ -16,13 +16,13 @@ SCPN Quantum Control — Differentiable external-validation artefact bundle
 
 | Artefact | Role | SHA-256 | Size bytes |
 |---|---|---|---:|
-| `data/differentiable_phase_qnode/claim_ledger.json` | Claim-ledger source of truth | `d933f927c82be54723f34e5b1db03f70304a01c55044efa77e6db236deae742f` | 24789 |
-| `data/differentiable_phase_qnode/claim_ledger.md` | Reviewer claim-ledger summary | `b0e9ff4d91ef7f581c8adaa12fc8dfbd6139685625d9d123ad716783a474ff4c` | 6631 |
+| `data/differentiable_phase_qnode/claim_ledger.json` | Claim-ledger source of truth | `561fd8727acd78fd8ae203c6b90df9c2855067aa81867cc66052a280c7ca0667` | 25456 |
+| `data/differentiable_phase_qnode/claim_ledger.md` | Reviewer claim-ledger summary | `085862241b5c7e22c5c957d6adcd70fa443b64d62f640af4bd96bc4962e4132a` | 6784 |
 | `data/differentiable_phase_qnode/public_claim_table_20260616.md` | Public-safe claim wording table | `567b45340b14be9cf0cee30e890fa6f15f857d6bb0c7902f1c497f6f347f0728` | 7119 |
-| `data/differentiable_phase_qnode/differentiable_support_surface_alignment_20260627.json` | Differentiable support-surface alignment rerun artefact | `12735a382d95d6e0141f23b4bb93177a94a40471fff4d71ab73363f4adcb639f` | 4338 |
-| `data/differentiable_phase_qnode/differentiable_support_surface_alignment_20260627.md` | Differentiable support-surface alignment reviewer summary | `326491dd5114a39b38fd759f46c4125fb710ba159b6f4f474f9b7f9eaad47a8d` | 4646 |
-| `data/differentiable_phase_qnode/differentiable_sota_scorecard_20260620.json` | Differentiable SOTA category scorecard artefact | `4f0c5846ce9b6bc796cb251ef21e05cd79be42bac8e517066ffd1d07bb548f1b` | 26012 |
-| `data/differentiable_phase_qnode/differentiable_sota_scorecard_20260620.md` | Differentiable SOTA category scorecard reviewer summary | `bdd9cb31dd1e320b80a8205e2e4992d342a08f89e8069c2d85c8a010b0a33f45` | 8131 |
+| `data/differentiable_phase_qnode/differentiable_support_surface_alignment_20260627.json` | Differentiable support-surface alignment rerun artefact | `45fd8d885109e23d8e6fb6bef1dea5a0a51eb71704e2373616d1ddf84b7a6710` | 4623 |
+| `data/differentiable_phase_qnode/differentiable_support_surface_alignment_20260627.md` | Differentiable support-surface alignment reviewer summary | `c57db008d1214cbca1764f34fd4d3d694465dbdf213f1f37413e48ee4ca9411c` | 4925 |
+| `data/differentiable_phase_qnode/differentiable_sota_scorecard_20260620.json` | Differentiable SOTA category scorecard artefact | `2a5eacab111e6743d4ef2290adcc0a88f82915909a13d7aac984b3f69735bb57` | 30196 |
+| `data/differentiable_phase_qnode/differentiable_sota_scorecard_20260620.md` | Differentiable SOTA category scorecard reviewer summary | `de860d9c3b124c76dc1826289e304011642675d0aecb92afb8825e8ae9ff2ef0` | 8243 |
 | `data/differentiable_phase_qnode/differentiable_competitive_baseline_refresh_20260627.json` | Differentiable competitive-baseline freshness artefact | `f9ef1772c91f2897b65ea60528f61158536fdeff45d243f29f0d939f1eb8e507` | 10015 |
 | `data/differentiable_phase_qnode/differentiable_competitive_baseline_refresh_20260627.md` | Differentiable competitive-baseline freshness reviewer summary | `c5f67005401128a20535c32ed3cb193f23f798c7cbee8e6e0812d3af48221be4` | 3009 |
 | `data/differentiable_phase_qnode/differentiable_rust_python_inventory_20260620.json` | Differentiable Rust/Python rustification surface inventory artefact | `7480aef14c1c44767d864abfcb0e7b1dbeb0df91cb79537597995ab95da1a025` | 26560 |

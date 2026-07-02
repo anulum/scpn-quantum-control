@@ -26,15 +26,20 @@
         "docs/differentiable_programming.md",
         "data/differentiable_phase_qnode/claim_ledger.md",
         "README.md",
+        "docs/benchmarks_api.md",
+        "docs/differentiable_api.md",
         "docs/differentiable_api.md",
         "docs/differentiable_programming.md",
         "data/differentiable_phase_qnode/differentiable_sota_scorecard_20260620.md"
       ],
       "implementation_surface": [
         "src/scpn_quantum_control/benchmarks/differentiable_external_comparison.py",
+        "src/scpn_quantum_control/benchmarks/differentiable_programming.py",
+        "src/scpn_quantum_control/differentiable_api.py",
         "src/scpn_quantum_control/phase/qnode_tape.py",
         "src/scpn_quantum_control/phase/qnode_transforms.py",
-        "src/scpn_quantum_control/phase/qnode_vector_transforms.py"
+        "src/scpn_quantum_control/phase/qnode_vector_transforms.py",
+        "src/scpn_quantum_control/phase/torch_bridge.py"
       ],
       "next_hardening_rounds": [
         "Round 2 framework-native transform parity",
@@ -44,9 +49,12 @@
       "status": "behind_baseline",
       "test_surface": [
         "tests/test_differentiable_external_comparisons.py",
+        "tests/test_differentiable_api.py",
+        "tests/test_differentiable_programming_benchmarks.py",
         "tests/test_phase_qnode_tape.py",
         "tests/test_phase_qnode_transforms.py",
         "tests/test_phase_qnode_vector_transforms.py",
+        "tests/test_phase_torch_bridge_compile_boundaries.py",
         "tests/test_differentiable_claim_ledger.py",
         "tests/test_differentiable_sota_scorecard.py"
       ]
@@ -60,7 +68,7 @@
       ],
       "blockers": [
         "compatible CUDA/device evidence is scheduled for cloud hardware",
-        "fullgraph compile, finite-shot, provider, hardware, and isolated benchmark rows remain blocked"
+        "fullgraph compile, dynamic-shape promotion, AOTAutograd/export persistence, finite-shot, provider, hardware, and isolated benchmark rows remain blocked"
       ],
       "category": "pytorch_autograd_compile",
       "claim_boundary": "Differentiable state-of-art scorecard governance only; the lane remains SOTA-candidate until category rows have promoted claim-ledger evidence, isolated benchmark artefacts, and external baseline comparisons.",
@@ -68,20 +76,25 @@
         "external_framework_comparison",
         "phase_qnode_claim_boundary"
       ],
-      "current_evidence": "Bounded PyTorch nn.Module, torch.func, non-fullgraph torch.compile, and local Phase-QNode statevector routes exist with fail-closed fullgraph/CUDA/provider gaps.",
+      "current_evidence": "Bounded PyTorch nn.Module, torch.func, non-fullgraph torch.compile, local Phase-QNode statevector routes, and compile-boundary diagnostics exist with fail-closed fullgraph/dynamic-shape/AOTAutograd/CUDA/provider gaps.",
       "docs_surface": [
         "docs/differentiable_programming.md",
         "data/differentiable_phase_qnode/claim_ledger.md",
         "README.md",
+        "docs/benchmarks_api.md",
+        "docs/differentiable_api.md",
         "docs/differentiable_api.md",
         "docs/differentiable_programming.md",
         "data/differentiable_phase_qnode/differentiable_sota_scorecard_20260620.md"
       ],
       "implementation_surface": [
         "src/scpn_quantum_control/benchmarks/differentiable_external_comparison.py",
+        "src/scpn_quantum_control/benchmarks/differentiable_programming.py",
+        "src/scpn_quantum_control/differentiable_api.py",
         "src/scpn_quantum_control/phase/qnode_tape.py",
         "src/scpn_quantum_control/phase/qnode_transforms.py",
-        "src/scpn_quantum_control/phase/qnode_vector_transforms.py"
+        "src/scpn_quantum_control/phase/qnode_vector_transforms.py",
+        "src/scpn_quantum_control/phase/torch_bridge.py"
       ],
       "next_hardening_rounds": [
         "Round 2 framework-native transform parity",
@@ -91,9 +104,12 @@
       "status": "behind_baseline",
       "test_surface": [
         "tests/test_differentiable_external_comparisons.py",
+        "tests/test_differentiable_api.py",
+        "tests/test_differentiable_programming_benchmarks.py",
         "tests/test_phase_qnode_tape.py",
         "tests/test_phase_qnode_transforms.py",
         "tests/test_phase_qnode_vector_transforms.py",
+        "tests/test_phase_torch_bridge_compile_boundaries.py",
         "tests/test_differentiable_claim_ledger.py",
         "tests/test_differentiable_sota_scorecard.py"
       ]
@@ -120,15 +136,20 @@
         "docs/differentiable_programming.md",
         "data/differentiable_phase_qnode/claim_ledger.md",
         "README.md",
+        "docs/benchmarks_api.md",
+        "docs/differentiable_api.md",
         "docs/differentiable_api.md",
         "docs/differentiable_programming.md",
         "data/differentiable_phase_qnode/differentiable_sota_scorecard_20260620.md"
       ],
       "implementation_surface": [
         "src/scpn_quantum_control/benchmarks/differentiable_external_comparison.py",
+        "src/scpn_quantum_control/benchmarks/differentiable_programming.py",
+        "src/scpn_quantum_control/differentiable_api.py",
         "src/scpn_quantum_control/phase/qnode_tape.py",
         "src/scpn_quantum_control/phase/qnode_transforms.py",
-        "src/scpn_quantum_control/phase/qnode_vector_transforms.py"
+        "src/scpn_quantum_control/phase/qnode_vector_transforms.py",
+        "src/scpn_quantum_control/phase/torch_bridge.py"
       ],
       "next_hardening_rounds": [
         "Round 3 quantum provider/plugin breadth",
@@ -138,9 +159,12 @@
       "status": "behind_baseline",
       "test_surface": [
         "tests/test_differentiable_external_comparisons.py",
+        "tests/test_differentiable_api.py",
+        "tests/test_differentiable_programming_benchmarks.py",
         "tests/test_phase_qnode_tape.py",
         "tests/test_phase_qnode_transforms.py",
         "tests/test_phase_qnode_vector_transforms.py",
+        "tests/test_phase_torch_bridge_compile_boundaries.py",
         "tests/test_differentiable_claim_ledger.py",
         "tests/test_differentiable_sota_scorecard.py"
       ]
@@ -163,6 +187,8 @@
       "current_evidence": "No-submit Runtime/QPU evidence schemas and local Statevector parity exist; live Runtime/QPU execution, raw-count replay attachments, calibration comparison, and isolated evidence remain open.",
       "docs_surface": [
         "README.md",
+        "docs/benchmarks_api.md",
+        "docs/differentiable_api.md",
         "docs/differentiable_programming.md",
         "data/differentiable_phase_qnode/claim_ledger.md",
         "docs/differentiable_api.md",
@@ -170,9 +196,12 @@
         "data/differentiable_phase_qnode/differentiable_sota_scorecard_20260620.md"
       ],
       "implementation_surface": [
+        "src/scpn_quantum_control/benchmarks/differentiable_programming.py",
+        "src/scpn_quantum_control/differentiable_api.py",
         "src/scpn_quantum_control/phase/qnode_tape.py",
         "src/scpn_quantum_control/phase/qnode_transforms.py",
-        "src/scpn_quantum_control/phase/qnode_vector_transforms.py"
+        "src/scpn_quantum_control/phase/qnode_vector_transforms.py",
+        "src/scpn_quantum_control/phase/torch_bridge.py"
       ],
       "next_hardening_rounds": [
         "Round 3 quantum provider/plugin breadth",
@@ -181,9 +210,12 @@
       "ready_for_promotion": false,
       "status": "behind_baseline",
       "test_surface": [
+        "tests/test_differentiable_api.py",
+        "tests/test_differentiable_programming_benchmarks.py",
         "tests/test_phase_qnode_tape.py",
         "tests/test_phase_qnode_transforms.py",
         "tests/test_phase_qnode_vector_transforms.py",
+        "tests/test_phase_torch_bridge_compile_boundaries.py",
         "tests/test_differentiable_claim_ledger.py",
         "tests/test_differentiable_sota_scorecard.py"
       ]
@@ -210,15 +242,20 @@
         "docs/differentiable_programming.md",
         "data/differentiable_phase_qnode/claim_ledger.md",
         "README.md",
+        "docs/benchmarks_api.md",
+        "docs/differentiable_api.md",
         "docs/differentiable_api.md",
         "docs/differentiable_programming.md",
         "data/differentiable_phase_qnode/differentiable_sota_scorecard_20260620.md"
       ],
       "implementation_surface": [
         "src/scpn_quantum_control/benchmarks/differentiable_external_comparison.py",
+        "src/scpn_quantum_control/benchmarks/differentiable_programming.py",
+        "src/scpn_quantum_control/differentiable_api.py",
         "src/scpn_quantum_control/phase/qnode_tape.py",
         "src/scpn_quantum_control/phase/qnode_transforms.py",
-        "src/scpn_quantum_control/phase/qnode_vector_transforms.py"
+        "src/scpn_quantum_control/phase/qnode_vector_transforms.py",
+        "src/scpn_quantum_control/phase/torch_bridge.py"
       ],
       "next_hardening_rounds": [
         "Round 4 compiler AD and Program AD",
@@ -228,9 +265,12 @@
       "status": "behind_baseline",
       "test_surface": [
         "tests/test_differentiable_external_comparisons.py",
+        "tests/test_differentiable_api.py",
+        "tests/test_differentiable_programming_benchmarks.py",
         "tests/test_phase_qnode_tape.py",
         "tests/test_phase_qnode_transforms.py",
         "tests/test_phase_qnode_vector_transforms.py",
+        "tests/test_phase_torch_bridge_compile_boundaries.py",
         "tests/test_differentiable_claim_ledger.py",
         "tests/test_differentiable_sota_scorecard.py"
       ]
@@ -257,15 +297,20 @@
         "docs/differentiable_programming.md",
         "data/differentiable_phase_qnode/claim_ledger.md",
         "README.md",
+        "docs/benchmarks_api.md",
+        "docs/differentiable_api.md",
         "docs/differentiable_api.md",
         "docs/differentiable_programming.md",
         "data/differentiable_phase_qnode/differentiable_sota_scorecard_20260620.md"
       ],
       "implementation_surface": [
         "src/scpn_quantum_control/benchmarks/differentiable_external_comparison.py",
+        "src/scpn_quantum_control/benchmarks/differentiable_programming.py",
+        "src/scpn_quantum_control/differentiable_api.py",
         "src/scpn_quantum_control/phase/qnode_tape.py",
         "src/scpn_quantum_control/phase/qnode_transforms.py",
-        "src/scpn_quantum_control/phase/qnode_vector_transforms.py"
+        "src/scpn_quantum_control/phase/qnode_vector_transforms.py",
+        "src/scpn_quantum_control/phase/torch_bridge.py"
       ],
       "next_hardening_rounds": [
         "Round 4 compiler AD and Program AD",
@@ -275,9 +320,12 @@
       "status": "behind_baseline",
       "test_surface": [
         "tests/test_differentiable_external_comparisons.py",
+        "tests/test_differentiable_api.py",
+        "tests/test_differentiable_programming_benchmarks.py",
         "tests/test_phase_qnode_tape.py",
         "tests/test_phase_qnode_transforms.py",
         "tests/test_phase_qnode_vector_transforms.py",
+        "tests/test_phase_torch_bridge_compile_boundaries.py",
         "tests/test_differentiable_claim_ledger.py",
         "tests/test_differentiable_sota_scorecard.py"
       ]
@@ -300,6 +348,8 @@
       "current_evidence": "Rust Program AD now replays scalar primitives, view-aliasing (reshape, transpose, slice, matmul, matvec) and static linear algebra of arbitrary dimension (trace, determinant, inverse, solve; closed-form 2x2/3x3 and LU/Gauss-Jordan for 4x4 and up) through the unrolled scalar SSA, parity-verified against the Python/NumPy reference and CI-checked via cargo tests (2026-06-22 slices 2b-1..2b-6); a native ndarray adjoint engine, registry metadata mirror and Rust-side LLVM/JIT lowering remain open.",
       "docs_surface": [
         "README.md",
+        "docs/benchmarks_api.md",
+        "docs/differentiable_api.md",
         "docs/differentiable_programming.md",
         "data/differentiable_phase_qnode/claim_ledger.md",
         "docs/differentiable_api.md",
@@ -307,9 +357,12 @@
         "data/differentiable_phase_qnode/differentiable_sota_scorecard_20260620.md"
       ],
       "implementation_surface": [
+        "src/scpn_quantum_control/benchmarks/differentiable_programming.py",
+        "src/scpn_quantum_control/differentiable_api.py",
         "src/scpn_quantum_control/phase/qnode_tape.py",
         "src/scpn_quantum_control/phase/qnode_transforms.py",
-        "src/scpn_quantum_control/phase/qnode_vector_transforms.py"
+        "src/scpn_quantum_control/phase/qnode_vector_transforms.py",
+        "src/scpn_quantum_control/phase/torch_bridge.py"
       ],
       "next_hardening_rounds": [
         "Round 4 compiler AD and Program AD",
@@ -318,9 +371,12 @@
       "ready_for_promotion": false,
       "status": "behind_baseline",
       "test_surface": [
+        "tests/test_differentiable_api.py",
+        "tests/test_differentiable_programming_benchmarks.py",
         "tests/test_phase_qnode_tape.py",
         "tests/test_phase_qnode_transforms.py",
         "tests/test_phase_qnode_vector_transforms.py",
+        "tests/test_phase_torch_bridge_compile_boundaries.py",
         "tests/test_differentiable_claim_ledger.py",
         "tests/test_differentiable_sota_scorecard.py"
       ]
@@ -343,6 +399,8 @@
       "current_evidence": "Provider/hardware preparation policies and no-submit artifacts exist; real hardware-gradient execution remains behind live-ticket and benchmark gates.",
       "docs_surface": [
         "README.md",
+        "docs/benchmarks_api.md",
+        "docs/differentiable_api.md",
         "docs/differentiable_programming.md",
         "data/differentiable_phase_qnode/claim_ledger.md",
         "docs/differentiable_api.md",
@@ -350,9 +408,12 @@
         "data/differentiable_phase_qnode/differentiable_sota_scorecard_20260620.md"
       ],
       "implementation_surface": [
+        "src/scpn_quantum_control/benchmarks/differentiable_programming.py",
+        "src/scpn_quantum_control/differentiable_api.py",
         "src/scpn_quantum_control/phase/qnode_tape.py",
         "src/scpn_quantum_control/phase/qnode_transforms.py",
-        "src/scpn_quantum_control/phase/qnode_vector_transforms.py"
+        "src/scpn_quantum_control/phase/qnode_vector_transforms.py",
+        "src/scpn_quantum_control/phase/torch_bridge.py"
       ],
       "next_hardening_rounds": [
         "Round 3 quantum provider/plugin breadth",
@@ -361,9 +422,12 @@
       "ready_for_promotion": false,
       "status": "behind_baseline",
       "test_surface": [
+        "tests/test_differentiable_api.py",
+        "tests/test_differentiable_programming_benchmarks.py",
         "tests/test_phase_qnode_tape.py",
         "tests/test_phase_qnode_transforms.py",
         "tests/test_phase_qnode_vector_transforms.py",
+        "tests/test_phase_torch_bridge_compile_boundaries.py",
         "tests/test_differentiable_claim_ledger.py",
         "tests/test_differentiable_sota_scorecard.py"
       ]
@@ -441,6 +505,8 @@
         "docs/differentiable_api.md",
         "docs/differentiable_programming.md",
         "data/differentiable_phase_qnode/claim_ledger.md",
+        "data/differentiable_phase_qnode/differentiable_support_surface_alignment_20260627.json",
+        "data/differentiable_phase_qnode/differentiable_support_surface_alignment_20260627.md",
         "README.md",
         "docs/benchmarks_api.md",
         "data/differentiable_phase_qnode/public_claim_table_20260616.md",
@@ -486,18 +552,22 @@
       "current_evidence": "AGPL/commercial route is documented and release gates exist; permissive core split and maintainer onboarding remain product decisions.",
       "docs_surface": [
         "README.md",
+        "docs/benchmarks_api.md",
+        "docs/differentiable_api.md",
         "docs/differentiable_programming.md",
         "data/differentiable_phase_qnode/claim_ledger.md",
-        "docs/differentiable_api.md",
         "data/differentiable_phase_qnode/public_claim_table_20260616.md",
         "docs/differentiable_api.md",
         "docs/differentiable_programming.md",
         "data/differentiable_phase_qnode/differentiable_sota_scorecard_20260620.md"
       ],
       "implementation_surface": [
+        "src/scpn_quantum_control/benchmarks/differentiable_programming.py",
+        "src/scpn_quantum_control/differentiable_api.py",
         "src/scpn_quantum_control/phase/qnode_tape.py",
         "src/scpn_quantum_control/phase/qnode_transforms.py",
         "src/scpn_quantum_control/phase/qnode_vector_transforms.py",
+        "src/scpn_quantum_control/phase/torch_bridge.py",
         "src/scpn_quantum_control/differentiable_claim_ledger.py"
       ],
       "next_hardening_rounds": [
@@ -507,9 +577,12 @@
       "ready_for_promotion": false,
       "status": "behind_baseline",
       "test_surface": [
+        "tests/test_differentiable_api.py",
+        "tests/test_differentiable_programming_benchmarks.py",
         "tests/test_phase_qnode_tape.py",
         "tests/test_phase_qnode_transforms.py",
         "tests/test_phase_qnode_vector_transforms.py",
+        "tests/test_phase_torch_bridge_compile_boundaries.py",
         "tests/test_differentiable_claim_ledger.py",
         "tests/test_differentiable_sota_scorecard.py"
       ]

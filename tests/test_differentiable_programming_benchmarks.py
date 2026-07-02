@@ -448,6 +448,7 @@ def test_quantum_gradient_benchmark_suite_matches_analytic_references() -> None:
         expected_case_ids.append("torch_registered_phase_qnode_statevector_lowering")
         expected_case_ids.append("torch_registered_phase_qnode_func_transform_lowering")
         expected_case_ids.append("torch_registered_phase_qnode_compile_lowering")
+        expected_case_ids.append("torch_registered_phase_qnode_compile_boundary_diagnostic")
     if dp_any.is_phase_jax_available():
         expected_case_ids.append("jax_registered_phase_qnode_native_transform_lowering")
         expected_case_ids.append("jax_registered_phase_qnode_pytree_transform_lowering")
