@@ -350,6 +350,10 @@ from .kuramoto_simplex_mean_field import (
     simplex_mean_field_force,
     simplex_mean_field_jacobian,
 )
+from .kuramoto_sklearn_estimators import (
+    CouplingFunctionEstimator,
+    SparseDynamicsEstimator,
+)
 from .kuramoto_sparse_identification import (
     SparseDynamicsModel,
     discover_phase_dynamics,
@@ -683,6 +687,8 @@ __all__ = [
     "certify_synchronisation",
     "SparseDynamicsModel",
     "discover_phase_dynamics",
+    "SparseDynamicsEstimator",
+    "CouplingFunctionEstimator",
     "StuartLandauTrajectory",
     "stuart_landau_field",
     "stuart_landau_jacobian",

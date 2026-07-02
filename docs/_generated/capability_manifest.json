@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 777,
     "public_documentation_pages": 254,
-    "python_model_classes": 960,
-    "python_model_source_modules": 538,
+    "python_model_classes": 962,
+    "python_model_source_modules": 539,
     "rust_pyo3_model_wrappers": 171,
     "rust_source_modules": 42,
-    "test_files": 874
+    "test_files": 875
   },
   "documentation": {
     "examples": [
@@ -437,7 +437,7 @@
       {
         "package": "accel",
         "path": "src/scpn_quantum_control/accel",
-        "python_modules": 73
+        "python_modules": 74
       },
       {
         "package": "analysis",
@@ -1115,6 +1115,10 @@
       {
         "name": "CouplingFunctionEstimate",
         "path": "src/scpn_quantum_control/accel/kuramoto_coupling_function_inference.py"
+      },
+      {
+        "name": "CouplingFunctionEstimator",
+        "path": "src/scpn_quantum_control/accel/kuramoto_sklearn_estimators.py"
       },
       {
         "name": "CouplingFunctionGradients",
@@ -4001,6 +4005,10 @@
         "path": "src/scpn_quantum_control/crypto/pqc_trigger.py"
       },
       {
+        "name": "SparseDynamicsEstimator",
+        "path": "src/scpn_quantum_control/accel/kuramoto_sklearn_estimators.py"
+      },
+      {
         "name": "SparseDynamicsModel",
         "path": "src/scpn_quantum_control/accel/kuramoto_sparse_identification.py"
       },
@@ -4487,6 +4495,7 @@
       "src/scpn_quantum_control/accel/kuramoto_scipy_interop.py",
       "src/scpn_quantum_control/accel/kuramoto_sdre_control.py",
       "src/scpn_quantum_control/accel/kuramoto_simplex_mean_field.py",
+      "src/scpn_quantum_control/accel/kuramoto_sklearn_estimators.py",
       "src/scpn_quantum_control/accel/kuramoto_sparse_identification.py",
       "src/scpn_quantum_control/accel/kuramoto_stability_spectrum.py",
       "src/scpn_quantum_control/accel/kuramoto_symplectic_inertial.py",
@@ -6460,6 +6469,7 @@
       "tests/test_kuramoto_scipy_interop.py",
       "tests/test_kuramoto_sdre_control.py",
       "tests/test_kuramoto_simplex_mean_field.py",
+      "tests/test_kuramoto_sklearn_estimators.py",
       "tests/test_kuramoto_sparse_identification.py",
       "tests/test_kuramoto_stability_spectrum.py",
       "tests/test_kuramoto_standalone_package_decision.py",

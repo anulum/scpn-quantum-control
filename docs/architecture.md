@@ -105,7 +105,7 @@ graph TD
     benchmarks["benchmarks/ (15)\nPerformance"]
     ssgf["ssgf/ (4)\nGeometry"]
     psi_field["psi_field/ (4)\nU(1) lattice gauge"]
-    accel["accel/ (73)\nRust → Julia → Python dispatcher"]
+    accel["accel/ (74)\nRust → Julia → Python dispatcher"]
     fep["fep/ (2)\nFree Energy Principle"]
     tcbo["tcbo/ (1)\nTCBO observer"]
     pgbo["pgbo/ (1)\nPGBO bridge"]
