@@ -101,6 +101,11 @@ rows with list name, target kind, source, target, and version metadata.
 Malformed `list_alias` markers are reported through
 `malformed_list_alias_edges` and block readiness instead of being promoted from
 raw member strings.
+Parseable branch-local control-path aliases are retained as
+`ProgramADControlPathAliasProvenance` rows with source branch arm, target
+label, source line, and version metadata. Malformed `control_path_alias`
+markers are reported through `malformed_control_path_alias_edges` and block
+readiness alongside the non-executed branch-semantics blocker.
 Registered deterministic Phase-QNode JAX value routes now also expose
 AOT/export diagnostics through `jax_phase_qnode_aot_export_audit(...)`. The
 audit records local `jax.jit(...).lower(...)`, StableHLO/compiler metadata,

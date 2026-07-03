@@ -2992,6 +2992,22 @@ def _static_alias_lattice_report_case() -> DifferentiableProgrammingBenchmarkRes
         raise ValueError("static alias lattice benchmark missing control-path alias blocker")
     if not branch_report.non_executed_control_alias_edges:
         raise ValueError("static alias lattice benchmark missing control-path alias edges")
+    control_path_alias_provenance = getattr(branch_report, "control_path_alias_provenance", ())
+    malformed_control_path_alias_edges = getattr(
+        branch_report, "malformed_control_path_alias_edges", ()
+    )
+    if not control_path_alias_provenance and not malformed_control_path_alias_edges:
+        raise ValueError("static alias lattice benchmark missing control-path alias provenance")
+    if (
+        malformed_control_path_alias_edges
+        and "control_path_alias_provenance_requires_parseable_targets"
+        not in branch_report.blocker_reasons
+    ):
+        raise ValueError("static alias lattice benchmark missing malformed-control blocker")
+    if malformed_control_path_alias_edges:
+        raise ValueError("static alias lattice benchmark found malformed control-path aliases")
+    if not any(row.target_label == "attr:scratch.value" for row in control_path_alias_provenance):
+        raise ValueError("static alias lattice branch benchmark missing attribute-path metadata")
     if not any(
         "object_attribute_alias" in component.edge_kinds
         and "attr:scratch.value" in component.members
@@ -3020,12 +3036,14 @@ def _static_alias_lattice_report_case() -> DifferentiableProgrammingBenchmarkRes
         claim_boundary=(
             "static alias-lattice readiness over emitted program_ad_effect_ir.v1 "
             "components, including view-alias, bounded local object-attribute, "
-            "typed source-to-view provenance, list-alias provenance, "
-            "expression-rebinding classification, explicit non-executed phi, and "
-            "mutation/control-path/unsupported-Python diagnostic blocker reporting, "
+            "typed source-to-view provenance, list-alias provenance, typed "
+            "control-path alias provenance, expression-rebinding classification, "
+            "explicit non-executed phi, and mutation/control-path/unsupported-Python "
+            "diagnostic blocker reporting, "
             "with captured/global object-attribute diagnostics pinned to static "
             "object-model blockers and unknown alias-edge provenance pinned to "
-            "fail-closed blockers; malformed view/list alias markers are blockers; "
+            "fail-closed blockers; malformed view/list/control-path alias markers "
+            "are blockers; "
             "not captured/global object-attribute alias sets, unknown dynamic alias "
             "promotion, arbitrary dynamic Python frontend lowering, non-executed "
             "branch adjoints, Rust/LLVM executable lowering, hardware, or "

@@ -34,6 +34,7 @@ _PROGRAM_AD_SUPPORTED_ALIAS_EDGE_KINDS = frozenset(
     }
 )
 _PROGRAM_AD_LIST_ALIAS_TARGET_KINDS = frozenset({"indexed_mutation_source", "local_name"})
+_PROGRAM_AD_CONTROL_PATH_ALIAS_BRANCH_ARMS = frozenset({"body", "orelse"})
 
 
 @dataclass(frozen=True)
@@ -293,6 +294,69 @@ class ProgramADListAliasProvenance:
 
 
 @dataclass(frozen=True)
+class ProgramADControlPathAliasProvenance:
+    """Parseable branch-local control-path alias edge preserved by the static lattice."""
+
+    source: str
+    target: str
+    branch_line: int
+    branch_arm: str
+    target_label: str
+    version: int
+
+    def __post_init__(self) -> None:
+        """Validate control-path alias provenance at construction time."""
+
+        if not isinstance(self.source, str) or not self.source.startswith("control:if:"):
+            raise ValueError(
+                "program AD control-path alias provenance source must be "
+                "control:if:<line>:<body|orelse>"
+            )
+        if not isinstance(self.target, str) or not self.target.startswith("control:"):
+            raise ValueError("program AD control-path alias provenance target must be control:*")
+        if self.target == "control:":
+            raise ValueError(
+                "program AD control-path alias provenance target must include a label"
+            )
+        if self.branch_line <= 0:
+            raise ValueError(
+                "program AD control-path alias provenance branch_line must be positive"
+            )
+        if self.branch_arm not in _PROGRAM_AD_CONTROL_PATH_ALIAS_BRANCH_ARMS:
+            raise ValueError("program AD control-path alias provenance branch_arm is unsupported")
+        if not isinstance(self.target_label, str) or not self.target_label:
+            raise ValueError(
+                "program AD control-path alias provenance target_label must be non-empty"
+            )
+        expected_source = f"control:if:{self.branch_line}:{self.branch_arm}"
+        if self.source != expected_source:
+            raise ValueError(
+                "program AD control-path alias provenance source must match "
+                "branch_line and branch_arm"
+            )
+        if self.target != f"control:{self.target_label}":
+            raise ValueError(
+                "program AD control-path alias provenance target_label must match target"
+            )
+        if self.version < 0:
+            raise ValueError(
+                "program AD control-path alias provenance version must be non-negative"
+            )
+
+    def as_dict(self) -> dict[str, object]:
+        """Return a JSON-ready control-path alias provenance payload."""
+
+        return {
+            "source": self.source,
+            "target": self.target,
+            "branch_line": self.branch_line,
+            "branch_arm": self.branch_arm,
+            "target_label": self.target_label,
+            "version": self.version,
+        }
+
+
+@dataclass(frozen=True)
 class ProgramADStaticAliasLatticeReport:
     """Static alias-lattice readiness report for emitted Program AD IR.
 
@@ -311,6 +375,8 @@ class ProgramADStaticAliasLatticeReport:
     blocker_reasons: tuple[str, ...]
     complete: bool
     claim_boundary: str
+    control_path_alias_provenance: tuple[ProgramADControlPathAliasProvenance, ...] = ()
+    malformed_control_path_alias_edges: tuple[str, ...] = ()
     unsupported_python_semantics: tuple[str, ...] = ()
     unsupported_semantic_diagnostics: tuple[WholeProgramUnsupportedSemanticDiagnostic, ...] = ()
     unsupported_object_attribute_roots: tuple[str, ...] = ()
@@ -355,6 +421,55 @@ class ProgramADStaticAliasLatticeReport:
         ):
             raise ValueError(
                 "program AD static alias lattice non_executed_control_alias_edges "
+                "must be sorted and unique"
+            )
+        if any(
+            not isinstance(row, ProgramADControlPathAliasProvenance)
+            for row in self.control_path_alias_provenance
+        ):
+            raise ValueError(
+                "program AD static alias lattice control_path_alias_provenance must "
+                "contain ProgramADControlPathAliasProvenance entries"
+            )
+        control_path_alias_order = tuple(
+            (
+                row.branch_line,
+                row.branch_arm,
+                row.target_label,
+                row.source,
+                row.target,
+                row.version,
+            )
+            for row in self.control_path_alias_provenance
+        )
+        if tuple(sorted(set(control_path_alias_order))) != control_path_alias_order:
+            raise ValueError(
+                "program AD static alias lattice control_path_alias_provenance must "
+                "be sorted unique"
+            )
+        control_path_alias_labels = set(self.non_executed_control_alias_edges)
+        if any(
+            f"{row.source}->{row.target}" not in control_path_alias_labels
+            for row in self.control_path_alias_provenance
+        ):
+            raise ValueError(
+                "program AD static alias lattice control_path_alias_provenance must "
+                "match non_executed_control_alias_edges"
+            )
+        if any(
+            not isinstance(edge, str) or not edge
+            for edge in self.malformed_control_path_alias_edges
+        ):
+            raise ValueError(
+                "program AD static alias lattice malformed_control_path_alias_edges "
+                "must contain non-empty strings"
+            )
+        if (
+            tuple(sorted(set(self.malformed_control_path_alias_edges)))
+            != self.malformed_control_path_alias_edges
+        ):
+            raise ValueError(
+                "program AD static alias lattice malformed_control_path_alias_edges "
                 "must be sorted and unique"
             )
         if any(not isinstance(kind, str) or not kind for kind in self.unknown_alias_edge_kinds):
@@ -457,6 +572,23 @@ class ProgramADStaticAliasLatticeReport:
         has_list_alias_component = any(
             "list_alias" in component.edge_kinds for component in self.components
         )
+        has_control_path_alias_component = any(
+            "control_path_alias" in component.edge_kinds for component in self.components
+        )
+        if (
+            has_control_path_alias_component
+            and not self.control_path_alias_provenance
+            and not self.malformed_control_path_alias_edges
+        ):
+            raise ValueError(
+                "program AD static alias lattice control-path alias components require "
+                "control_path_alias_provenance"
+            )
+        if self.control_path_alias_provenance and not has_control_path_alias_component:
+            raise ValueError(
+                "program AD static alias lattice control-path alias provenance requires "
+                "a control_path_alias component"
+            )
         if (
             has_view_alias_component
             and not self.view_alias_provenance
@@ -570,8 +702,21 @@ class ProgramADStaticAliasLatticeReport:
         mutation_blocker = "mutation_effects_require_versioned_alias_semantics"
         unknown_alias_blocker = "unknown_alias_edge_kinds"
         unsupported_semantics_blocker = "unsupported_python_semantics_require_frontend_lowering"
+        control_path_alias_blocker = "control_path_aliases_require_branch_semantics"
+        malformed_control_path_alias_blocker = (
+            "control_path_alias_provenance_requires_parseable_targets"
+        )
         malformed_view_alias_blocker = "view_alias_provenance_requires_parseable_targets"
         malformed_list_alias_blocker = "list_alias_provenance_requires_parseable_targets"
+        if self.complete and self.control_path_alias_provenance:
+            raise ValueError(
+                "complete program AD static alias lattice cannot carry control-path aliases"
+            )
+        if self.complete and self.malformed_control_path_alias_edges:
+            raise ValueError(
+                "complete program AD static alias lattice cannot carry malformed "
+                "control-path alias edges"
+            )
         if self.complete and self.unknown_alias_edges:
             raise ValueError(
                 "complete program AD static alias lattice cannot carry unknown_alias_edges"
@@ -587,6 +732,37 @@ class ProgramADStaticAliasLatticeReport:
         if self.complete and self.mutation_effects:
             raise ValueError(
                 "complete program AD static alias lattice cannot carry mutation_effects"
+            )
+        if (
+            self.non_executed_control_alias_edges
+            and control_path_alias_blocker not in self.blocker_reasons
+        ):
+            raise ValueError(
+                "program AD static alias lattice control-path aliases require a blocker reason"
+            )
+        if (
+            not self.non_executed_control_alias_edges
+            and control_path_alias_blocker in self.blocker_reasons
+        ):
+            raise ValueError(
+                "program AD static alias lattice control-path blocker requires "
+                "non_executed_control_alias_edges"
+            )
+        if (
+            self.malformed_control_path_alias_edges
+            and malformed_control_path_alias_blocker not in self.blocker_reasons
+        ):
+            raise ValueError(
+                "program AD static alias lattice malformed control-path alias edges "
+                "require a blocker reason"
+            )
+        if (
+            not self.malformed_control_path_alias_edges
+            and malformed_control_path_alias_blocker in self.blocker_reasons
+        ):
+            raise ValueError(
+                "program AD static alias lattice malformed control-path alias blocker "
+                "requires malformed_control_path_alias_edges"
             )
         if self.unknown_alias_edges and unknown_alias_blocker not in self.blocker_reasons:
             raise ValueError(
@@ -690,6 +866,10 @@ class ProgramADStaticAliasLatticeReport:
             "mutation_effects": list(self.mutation_effects),
             "non_executed_phi_nodes": list(self.non_executed_phi_nodes),
             "non_executed_control_alias_edges": list(self.non_executed_control_alias_edges),
+            "control_path_alias_provenance": [
+                row.as_dict() for row in self.control_path_alias_provenance
+            ],
+            "malformed_control_path_alias_edges": list(self.malformed_control_path_alias_edges),
             "unknown_alias_edge_kinds": list(self.unknown_alias_edge_kinds),
             "unknown_alias_edges": [edge.as_dict() for edge in self.unknown_alias_edges],
             "view_alias_provenance": [row.as_dict() for row in self.view_alias_provenance],
@@ -816,6 +996,9 @@ def program_ad_static_alias_lattice_report(
     edge_kinds_by_member: dict[str, set[str]] = {}
     unknown_alias_edges = _unknown_alias_edges(program_ir.alias_edges)
     unknown_alias_edge_kinds = tuple(sorted({edge.kind for edge in unknown_alias_edges}))
+    control_path_alias_provenance, malformed_control_path_alias_edges = (
+        _control_path_alias_provenance(program_ir.alias_edges)
+    )
     view_alias_provenance, malformed_view_alias_edges = _view_alias_provenance(
         program_ir.alias_edges
     )
@@ -928,6 +1111,8 @@ def program_ad_static_alias_lattice_report(
         blocker_reasons.add("non_executed_phi_inputs_require_branch_semantics")
     if control_alias_edges:
         blocker_reasons.add("control_path_aliases_require_branch_semantics")
+    if malformed_control_path_alias_edges:
+        blocker_reasons.add("control_path_alias_provenance_requires_parseable_targets")
     if malformed_view_alias_edges:
         blocker_reasons.add("view_alias_provenance_requires_parseable_targets")
     if malformed_list_alias_edges:
@@ -946,6 +1131,8 @@ def program_ad_static_alias_lattice_report(
         blocker_reasons=tuple(sorted(blocker_reasons)),
         complete=complete,
         claim_boundary=PROGRAM_AD_STATIC_ALIAS_LATTICE_CLAIM_BOUNDARY,
+        control_path_alias_provenance=control_path_alias_provenance,
+        malformed_control_path_alias_edges=malformed_control_path_alias_edges,
         unsupported_python_semantics=unsupported_semantics,
         unsupported_semantic_diagnostics=unsupported_diagnostics,
         unsupported_object_attribute_roots=unsupported_object_attribute_roots,
@@ -975,6 +1162,67 @@ def _unknown_alias_edges(
     }
     return tuple(
         sorted(edges, key=lambda edge: (edge.kind, edge.source, edge.target, edge.version))
+    )
+
+
+def _control_path_alias_provenance(
+    alias_edges: Sequence[ProgramADAliasEdge],
+) -> tuple[tuple[ProgramADControlPathAliasProvenance, ...], tuple[str, ...]]:
+    """Return sorted parseable control-path alias provenance and malformed labels."""
+
+    rows: set[ProgramADControlPathAliasProvenance] = set()
+    malformed: set[str] = set()
+    for edge in alias_edges:
+        if edge.kind != "control_path_alias":
+            continue
+        try:
+            rows.add(_parse_control_path_alias_provenance(edge))
+        except ValueError:
+            malformed.add(_alias_edge_label(edge))
+    return (
+        tuple(
+            sorted(
+                rows,
+                key=lambda row: (
+                    row.branch_line,
+                    row.branch_arm,
+                    row.target_label,
+                    row.source,
+                    row.target,
+                    row.version,
+                ),
+            )
+        ),
+        tuple(sorted(malformed)),
+    )
+
+
+def _parse_control_path_alias_provenance(
+    edge: ProgramADAliasEdge,
+) -> ProgramADControlPathAliasProvenance:
+    """Parse one branch-local control-path alias edge into typed provenance."""
+
+    source_parts = edge.source.split(":")
+    if len(source_parts) != 4 or source_parts[0] != "control" or source_parts[1] != "if":
+        raise ValueError("program AD control-path alias source must be control:if:<line>:<arm>")
+    branch_line_raw = source_parts[2]
+    branch_arm = source_parts[3]
+    if not branch_line_raw.isdecimal():
+        raise ValueError("program AD control-path alias branch line must be positive")
+    branch_line = int(branch_line_raw)
+    if branch_line <= 0:
+        raise ValueError("program AD control-path alias branch line must be positive")
+    if branch_arm not in _PROGRAM_AD_CONTROL_PATH_ALIAS_BRANCH_ARMS:
+        raise ValueError("program AD control-path alias branch arm is unsupported")
+    if not edge.target.startswith("control:") or edge.target == "control:":
+        raise ValueError("program AD control-path alias target must be control:<label>")
+    return ProgramADControlPathAliasProvenance(
+        source=edge.source,
+        target=edge.target,
+        branch_line=branch_line,
+        branch_arm=branch_arm,
+        target_label=edge.target.removeprefix("control:"),
+        version=edge.version,
     )
 
 
@@ -1140,6 +1388,7 @@ __all__ = [
     "PROGRAM_AD_STATIC_ALIAS_LATTICE_CLAIM_BOUNDARY",
     "ProgramADAliasEffectAnalysis",
     "ProgramADAliasSet",
+    "ProgramADControlPathAliasProvenance",
     "ProgramADListAliasProvenance",
     "ProgramADStaticAliasLatticeComponent",
     "ProgramADStaticAliasLatticeReport",

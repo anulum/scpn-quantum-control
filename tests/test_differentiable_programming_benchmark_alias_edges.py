@@ -322,6 +322,14 @@ def test_static_alias_lattice_benchmark_fails_closed(
         kind="runtime_unknown_alias",
         version=0,
     )
+    control_provenance = SimpleNamespace(
+        source="control:if:42:body",
+        target="control:attr:scratch.value",
+        branch_line=42,
+        branch_arm="body",
+        target_label="attr:scratch.value",
+        version=0,
+    )
 
     def fake_frontend(objective: Callable[[Any], object]) -> SimpleNamespace:
         if objective.__name__ == "unsupported_object_attribute_boundary":
@@ -591,6 +599,8 @@ def test_static_alias_lattice_benchmark_fails_closed(
                 complete=True,
                 blocker_reasons=(),
                 non_executed_control_alias_edges=(),
+                control_path_alias_provenance=(),
+                malformed_control_path_alias_edges=(),
                 components=(),
             ),
             "must not promote branch phi blockers",
@@ -600,6 +610,8 @@ def test_static_alias_lattice_benchmark_fails_closed(
                 complete=False,
                 blocker_reasons=("control_path_aliases_require_branch_semantics",),
                 non_executed_control_alias_edges=("edge",),
+                control_path_alias_provenance=(control_provenance,),
+                malformed_control_path_alias_edges=(),
                 components=(object_component,),
             ),
             "non-executed phi blocker",
@@ -609,6 +621,8 @@ def test_static_alias_lattice_benchmark_fails_closed(
                 complete=False,
                 blocker_reasons=("non_executed_phi_inputs_require_branch_semantics",),
                 non_executed_control_alias_edges=("edge",),
+                control_path_alias_provenance=(control_provenance,),
+                malformed_control_path_alias_edges=(),
                 components=(object_component,),
             ),
             "control-path alias blocker",
@@ -621,6 +635,8 @@ def test_static_alias_lattice_benchmark_fails_closed(
                     "control_path_aliases_require_branch_semantics",
                 ),
                 non_executed_control_alias_edges=(),
+                control_path_alias_provenance=(control_provenance,),
+                malformed_control_path_alias_edges=(),
                 components=(object_component,),
             ),
             "control-path alias edges",
@@ -633,6 +649,55 @@ def test_static_alias_lattice_benchmark_fails_closed(
                     "control_path_aliases_require_branch_semantics",
                 ),
                 non_executed_control_alias_edges=("edge",),
+                control_path_alias_provenance=(),
+                malformed_control_path_alias_edges=(),
+                components=(object_component,),
+            ),
+            "control-path alias provenance",
+        ),
+        (
+            SimpleNamespace(
+                complete=False,
+                blocker_reasons=(
+                    "non_executed_phi_inputs_require_branch_semantics",
+                    "control_path_aliases_require_branch_semantics",
+                ),
+                non_executed_control_alias_edges=("edge",),
+                control_path_alias_provenance=(),
+                malformed_control_path_alias_edges=(
+                    "control:if:bad:body->control:attr:scratch.value:control_path_alias@0",
+                ),
+                components=(object_component,),
+            ),
+            "malformed-control blocker",
+        ),
+        (
+            SimpleNamespace(
+                complete=False,
+                blocker_reasons=(
+                    "control_path_alias_provenance_requires_parseable_targets",
+                    "non_executed_phi_inputs_require_branch_semantics",
+                    "control_path_aliases_require_branch_semantics",
+                ),
+                non_executed_control_alias_edges=("edge",),
+                control_path_alias_provenance=(control_provenance,),
+                malformed_control_path_alias_edges=(
+                    "control:if:bad:body->control:attr:scratch.value:control_path_alias@0",
+                ),
+                components=(object_component,),
+            ),
+            "malformed control-path aliases",
+        ),
+        (
+            SimpleNamespace(
+                complete=False,
+                blocker_reasons=(
+                    "non_executed_phi_inputs_require_branch_semantics",
+                    "control_path_aliases_require_branch_semantics",
+                ),
+                non_executed_control_alias_edges=("edge",),
+                control_path_alias_provenance=(control_provenance,),
+                malformed_control_path_alias_edges=(),
                 components=(),
             ),
             "attribute-path metadata",

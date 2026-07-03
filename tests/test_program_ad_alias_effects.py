@@ -23,6 +23,7 @@ from scpn_quantum_control.differentiable import (
     ProgramADAliasEdge,
     ProgramADAliasEffectAnalysis,
     ProgramADAliasSet,
+    ProgramADControlPathAliasProvenance,
     ProgramADEffect,
     ProgramADEffectIR,
     ProgramADListAliasProvenance,
@@ -52,6 +53,10 @@ def test_program_ad_alias_analysis_exports_stable_facade_identities() -> None:
     assert ProgramADAliasSet is alias_analysis_module.ProgramADAliasSet
     assert ProgramADAliasEffectAnalysis is alias_analysis_module.ProgramADAliasEffectAnalysis
     assert (
+        ProgramADControlPathAliasProvenance
+        is alias_analysis_module.ProgramADControlPathAliasProvenance
+    )
+    assert (
         ProgramADStaticAliasLatticeComponent
         is alias_analysis_module.ProgramADStaticAliasLatticeComponent
     )
@@ -71,6 +76,7 @@ def test_program_ad_alias_analysis_exports_stable_facade_identities() -> None:
     )
     assert scpn.ProgramADAliasSet is ProgramADAliasSet
     assert scpn.ProgramADAliasEffectAnalysis is ProgramADAliasEffectAnalysis
+    assert scpn.ProgramADControlPathAliasProvenance is ProgramADControlPathAliasProvenance
     assert scpn.ProgramADStaticAliasLatticeComponent is ProgramADStaticAliasLatticeComponent
     assert scpn.ProgramADStaticAliasLatticeReport is ProgramADStaticAliasLatticeReport
     assert scpn.ProgramADListAliasProvenance is ProgramADListAliasProvenance
@@ -129,6 +135,14 @@ def test_program_ad_alias_analysis_validation_paths() -> None:
         target_kind="local_name",
         version=4,
     )
+    control_provenance = ProgramADControlPathAliasProvenance(
+        source="control:if:42:body",
+        target="control:attr:scratch.value",
+        branch_line=42,
+        branch_arm="body",
+        target_label="attr:scratch.value",
+        version=7,
+    )
     assert unknown_edge.as_dict() == {
         "source": "runtime:dynamic_object",
         "target": "%0",
@@ -150,6 +164,106 @@ def test_program_ad_alias_analysis_validation_paths() -> None:
         "target_kind": "local_name",
         "version": 4,
     }
+    assert control_provenance.as_dict() == {
+        "source": "control:if:42:body",
+        "target": "control:attr:scratch.value",
+        "branch_line": 42,
+        "branch_arm": "body",
+        "target_label": "attr:scratch.value",
+        "version": 7,
+    }
+    for control_kwargs, match in (
+        (
+            {
+                "source": "",
+                "target": "control:attr:scratch.value",
+                "branch_line": 42,
+                "branch_arm": "body",
+                "target_label": "attr:scratch.value",
+                "version": 7,
+            },
+            "source",
+        ),
+        (
+            {
+                "source": "control:while:42:body",
+                "target": "control:attr:scratch.value",
+                "branch_line": 42,
+                "branch_arm": "body",
+                "target_label": "attr:scratch.value",
+                "version": 7,
+            },
+            "source",
+        ),
+        (
+            {
+                "source": "control:if:42:body",
+                "target": "attr:scratch.value",
+                "branch_line": 42,
+                "branch_arm": "body",
+                "target_label": "attr:scratch.value",
+                "version": 7,
+            },
+            "target",
+        ),
+        (
+            {
+                "source": "control:if:42:body",
+                "target": "control:attr:scratch.value",
+                "branch_line": -1,
+                "branch_arm": "body",
+                "target_label": "attr:scratch.value",
+                "version": 7,
+            },
+            "branch_line",
+        ),
+        (
+            {
+                "source": "control:if:42:then",
+                "target": "control:attr:scratch.value",
+                "branch_line": 42,
+                "branch_arm": "then",
+                "target_label": "attr:scratch.value",
+                "version": 7,
+            },
+            "branch_arm",
+        ),
+        (
+            {
+                "source": "control:if:42:body",
+                "target": "control:attr:scratch.value",
+                "branch_line": 43,
+                "branch_arm": "body",
+                "target_label": "attr:scratch.value",
+                "version": 7,
+            },
+            "source",
+        ),
+        (
+            {
+                "source": "control:if:42:body",
+                "target": "control:attr:scratch.value",
+                "branch_line": 42,
+                "branch_arm": "body",
+                "target_label": "name:other",
+                "version": 7,
+            },
+            "target_label",
+        ),
+        (
+            {
+                "source": "control:if:42:body",
+                "target": "control:attr:scratch.value",
+                "branch_line": 42,
+                "branch_arm": "body",
+                "target_label": "attr:scratch.value",
+                "version": -1,
+            },
+            "version",
+        ),
+    ):
+        with pytest.raises(ValueError, match=match):
+            ProgramADControlPathAliasProvenance(**cast(Any, control_kwargs))
     for list_kwargs, match in (
         (
             {
@@ -1335,6 +1449,8 @@ def test_program_ad_static_alias_lattice_reports_complete_emitted_ir() -> None:
     assert report.non_executed_phi_nodes == ()
     assert report.unknown_alias_edge_kinds == ()
     assert report.malformed_view_alias_edges == ()
+    assert report.control_path_alias_provenance == ()
+    assert report.malformed_control_path_alias_edges == ()
     assert report.claim_boundary == (
         "static_alias_lattice_over_emitted_program_ad_ir_no_non_executed_branch_semantics"
     )
@@ -1358,6 +1474,8 @@ def test_program_ad_static_alias_lattice_reports_complete_emitted_ir() -> None:
     assert payload["complete"] is True
     assert payload["blocker_reasons"] == []
     assert payload["components"]
+    assert payload["control_path_alias_provenance"] == []
+    assert payload["malformed_control_path_alias_edges"] == []
     view_payload = cast(list[dict[str, object]], payload["view_alias_provenance"])
     assert {
         "source": "%array[0]",
@@ -1446,6 +1564,8 @@ def test_program_ad_static_alias_lattice_records_non_executed_phi_blockers() -> 
     assert report.complete is False
     assert report.non_executed_phi_nodes
     assert report.non_executed_control_alias_edges
+    assert report.control_path_alias_provenance
+    assert report.malformed_control_path_alias_edges == ()
     assert "non_executed_phi_inputs_require_branch_semantics" in report.blocker_reasons
     assert "control_path_aliases_require_branch_semantics" in report.blocker_reasons
     assert report.unknown_alias_edge_kinds == ()
@@ -1453,6 +1573,27 @@ def test_program_ad_static_alias_lattice_records_non_executed_phi_blockers() -> 
     assert report.as_dict()["non_executed_control_alias_edges"] == list(
         report.non_executed_control_alias_edges
     )
+    rows = {(row.branch_arm, row.target_label) for row in report.control_path_alias_provenance}
+    assert ("body", "name:total") in rows
+    assert ("orelse", "name:total") in rows
+    payload = report.as_dict()
+    assert {
+        "source": next(
+            row.source for row in report.control_path_alias_provenance if row.branch_arm == "body"
+        ),
+        "target": "control:name:total",
+        "branch_line": next(
+            row.branch_line
+            for row in report.control_path_alias_provenance
+            if row.branch_arm == "body"
+        ),
+        "branch_arm": "body",
+        "target_label": "name:total",
+        "version": next(
+            row.version for row in report.control_path_alias_provenance if row.branch_arm == "body"
+        ),
+    } in cast(list[dict[str, object]], payload["control_path_alias_provenance"])
+    assert payload["malformed_control_path_alias_edges"] == []
 
 
 def test_program_ad_static_alias_lattice_blocks_non_executed_attribute_paths() -> None:
@@ -1484,8 +1625,13 @@ def test_program_ad_static_alias_lattice_blocks_non_executed_attribute_paths() -
     assert report.complete is False
     assert report.non_executed_phi_nodes
     assert report.non_executed_control_alias_edges
+    assert report.control_path_alias_provenance
+    assert report.malformed_control_path_alias_edges == ()
     assert "non_executed_phi_inputs_require_branch_semantics" in report.blocker_reasons
     assert "control_path_aliases_require_branch_semantics" in report.blocker_reasons
+    assert any(
+        row.target_label == "attr:scratch.value" for row in report.control_path_alias_provenance
+    )
     assert any(
         "object_attribute_alias" in component.edge_kinds
         and "attr:scratch.value" in component.members
@@ -1684,6 +1830,49 @@ def test_program_ad_static_alias_lattice_reports_malformed_list_aliases() -> Non
     payload = report.as_dict()
     assert payload["list_alias_provenance"] == []
     assert payload["malformed_list_alias_edges"] == ["scratch->name:alias:list_alias@0"]
+
+
+def test_program_ad_static_alias_lattice_reports_malformed_control_path_aliases() -> None:
+    """Static alias lattice reports should block malformed control-path aliases."""
+
+    value = ProgramADSSAValue("%0", producer=0, version=0, shape=(), dtype="float64", effect=0)
+    effect = ProgramADEffect(
+        index=0,
+        kind="pure",
+        target="%0",
+        inputs=(),
+        version=0,
+        ordering=0,
+    )
+    ir = ProgramADEffectIR(
+        ssa_values=(value,),
+        effects=(effect,),
+        alias_edges=(
+            ProgramADAliasEdge(
+                source="control:if:bad:body",
+                target="control:name:total",
+                kind="control_path_alias",
+                version=0,
+            ),
+        ),
+        control_regions=(),
+        serialization="program_ad_effect_ir.v1",
+    )
+
+    report = program_ad_static_alias_lattice_report(ir)
+
+    assert report.complete is False
+    assert report.control_path_alias_provenance == ()
+    assert report.malformed_control_path_alias_edges == (
+        "control:if:bad:body->control:name:total:control_path_alias@0",
+    )
+    assert "control_path_aliases_require_branch_semantics" in report.blocker_reasons
+    assert "control_path_alias_provenance_requires_parseable_targets" in report.blocker_reasons
+    payload = report.as_dict()
+    assert payload["control_path_alias_provenance"] == []
+    assert payload["malformed_control_path_alias_edges"] == [
+        "control:if:bad:body->control:name:total:control_path_alias@0"
+    ]
 
 
 def test_program_ad_alias_effect_analysis_tracks_array_view_aliases() -> None:

@@ -848,10 +848,12 @@ def differentiable_dashboard_status(
                 "ProgramADAliasSet",
                 "ProgramADStaticAliasLatticeReport",
                 "ProgramADUnknownAliasEdge",
+                "ProgramADControlPathAliasProvenance",
                 "ProgramADViewAliasProvenance",
                 "ProgramADListAliasProvenance",
                 "typed view-alias provenance metadata",
                 "typed list-alias provenance metadata",
+                "typed control-path alias provenance metadata",
                 "bounded local object-attribute alias metadata",
                 "expression-rebinding alias metadata",
                 "mutation-effect blocker metadata",
@@ -869,6 +871,7 @@ def differentiable_dashboard_status(
                 "mutation effects require versioned alias semantics",
                 "malformed view aliases require parseable source-to-view provenance",
                 "malformed list aliases require parseable local-list provenance",
+                "malformed control-path aliases require parseable branch-local provenance",
                 "control-path aliases require non-executed branch semantics",
                 "unsupported Python semantics require executable frontend lowering",
                 "unknown alias edges require static alias-kind support",
@@ -876,9 +879,9 @@ def differentiable_dashboard_status(
             ),
             claim_boundary=(
                 "static alias-lattice readiness over emitted Program AD IR metadata; "
-                "typed view-alias and list-alias provenance plus bounded local "
-                "object-attribute and expression-rebinding aliases are metadata only; "
-                "mutation effects, malformed view/list aliases, control-path aliases, unsupported "
+                "typed view-alias, list-alias, and control-path provenance plus bounded "
+                "local object-attribute and expression-rebinding aliases are metadata only; "
+                "mutation effects, malformed view/list/control-path aliases, unsupported "
                 "Python semantics with source/region/bytecode diagnostics, and captured/global "
                 "object-attribute diagnostics are explicit blockers; unknown alias-edge "
                 "provenance is an explicit blocker, "
