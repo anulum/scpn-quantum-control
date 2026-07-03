@@ -402,7 +402,7 @@ def _default_inventory_rows(
             "partial",
             "partial",
             (
-                "non-lowered dynamic indexing semantics, variance/std and selector/order-statistic reduction adjoints, and broad linalg array adjoints are missing",
+                "non-lowered dynamic indexing semantics, dynamic axes, ddof/correction metadata, zero-variance std gradients, selector/order-statistic reduction adjoints, and broad linalg array adjoints are missing",
                 "executable registry promotion, LLVM/JIT lowering, provider/hardware evidence, and isolated benchmark evidence are missing",
             ),
         ),

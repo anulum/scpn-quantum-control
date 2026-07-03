@@ -36,14 +36,14 @@
     {
       "path": "data/differentiable_phase_qnode/differentiable_sota_scorecard_20260620.json",
       "role": "Differentiable SOTA category scorecard artefact",
-      "sha256": "269e134e17eca2f49e696fa8ae7fd7f43d5c482b4d9cff3ccef073b91904fb01",
-      "size_bytes": 30751
+      "sha256": "04c2474122acdfb1b2df2b1b67336a2beb7c755921c62047a303a8b802a0bfe3",
+      "size_bytes": 30842
     },
     {
       "path": "data/differentiable_phase_qnode/differentiable_sota_scorecard_20260620.md",
       "role": "Differentiable SOTA category scorecard reviewer summary",
-      "sha256": "c40d45f86a2e2421f0d307ede09a96f039386ae8f0dc08eac21889891f96a984",
-      "size_bytes": 8799
+      "sha256": "556482e6a3ac954f2f4a0ea6ee689fe48d90c22f65dcd1354e345ed7490aaed6",
+      "size_bytes": 8890
     },
     {
       "path": "data/differentiable_phase_qnode/differentiable_competitive_baseline_refresh_20260627.json",
@@ -60,26 +60,26 @@
     {
       "path": "data/differentiable_phase_qnode/differentiable_rust_python_inventory_20260620.json",
       "role": "Differentiable Rust/Python rustification surface inventory artefact",
-      "sha256": "0f89c3bc098b9012d4f27e2c99aecb4a427b86497dc1d7ad930056d317e21ef6",
-      "size_bytes": 29845
+      "sha256": "08642547c9d1b6ec4bc0a653aadd66b683442dbe4af02496c782c74d29f6e449",
+      "size_bytes": 29897
     },
     {
       "path": "data/differentiable_phase_qnode/differentiable_rust_python_inventory_20260620.md",
       "role": "Differentiable Rust/Python rustification surface inventory reviewer summary",
-      "sha256": "ecd037a4427a0007374792dca42b5f971b1583dc8ec6d25af443af4dd92be1ff",
-      "size_bytes": 3427
+      "sha256": "bcdc05562e222968cbcf6828c5f1fa192c9fbe648456c7c11549939ceedb7487",
+      "size_bytes": 3479
     },
     {
       "path": "data/differentiable_phase_qnode/differentiable_architecture_map_20260627.json",
       "role": "Differentiable architecture and Rustification routing map artefact",
-      "sha256": "0f28f4bf224976bf7abce976796f76e73a44fc20dad22185a896a427d3ee7126",
-      "size_bytes": 20414
+      "sha256": "b40c0f7f49f479f5cb7dbc20f4d2420ecb41502056707e684355ef3e9317157a",
+      "size_bytes": 20466
     },
     {
       "path": "data/differentiable_phase_qnode/differentiable_architecture_map_20260627.md",
       "role": "Differentiable architecture and Rustification routing map reviewer summary",
-      "sha256": "373100b72772c2f83ec54b9afda1527b9238699c4bfa497ed1a9353d640eb8d3",
-      "size_bytes": 3865
+      "sha256": "08b7d60b04ef2ae03ab79066bc8034a6c6bf575246f18cd0600e2952c7c4e9de",
+      "size_bytes": 3917
     },
     {
       "path": "data/differentiable_phase_qnode/differentiable_dependency_environment_map_20260627.json",

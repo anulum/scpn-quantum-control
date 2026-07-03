@@ -247,6 +247,62 @@ _PRODUCT_SINGLE_ZERO_PROGRAM_AD_IR = """{
   "bytecode_offsets": [0, 2, 4]
 }"""
 
+_STATIC_VARIANCE_STD_REDUCTION_PROGRAM_AD_IR = """{
+  "format": "program_ad_effect_ir.v1",
+  "ssa_values": [
+    {"name": "%0", "producer": 0, "version": 0, "shape": [2, 3], "dtype": "float64", "effect": 0},
+    {"name": "%1", "producer": 1, "version": 0, "shape": [3], "dtype": "float64", "effect": 1},
+    {"name": "%2", "producer": 2, "version": 0, "shape": [2], "dtype": "float64", "effect": 2},
+    {"name": "%3", "producer": 3, "version": 0, "shape": [], "dtype": "float64", "effect": 3},
+    {"name": "%4", "producer": 4, "version": 0, "shape": [3], "dtype": "float64", "effect": 4},
+    {"name": "%5", "producer": 5, "version": 0, "shape": [2], "dtype": "float64", "effect": 5},
+    {"name": "%6", "producer": 6, "version": 0, "shape": [], "dtype": "float64", "effect": 6},
+    {"name": "%7", "producer": 7, "version": 0, "shape": [3], "dtype": "float64", "effect": 7},
+    {"name": "%8", "producer": 8, "version": 0, "shape": [2], "dtype": "float64", "effect": 8},
+    {"name": "%9", "producer": 9, "version": 0, "shape": [], "dtype": "float64", "effect": 9},
+    {"name": "%10", "producer": 10, "version": 0, "shape": [], "dtype": "float64", "effect": 10},
+    {"name": "%11", "producer": 11, "version": 0, "shape": [], "dtype": "float64", "effect": 11},
+    {"name": "%12", "producer": 12, "version": 0, "shape": [], "dtype": "float64", "effect": 12},
+    {"name": "%13", "producer": 13, "version": 0, "shape": [], "dtype": "float64", "effect": 13}
+  ],
+  "effects": [
+    {"index": 0, "kind": "parameter", "target": "%0", "inputs": ["matrix"], "version": 0, "ordering": 0, "operation": "parameter"},
+    {"index": 1, "kind": "parameter", "target": "%1", "inputs": ["column_weights"], "version": 0, "ordering": 1, "operation": "parameter"},
+    {"index": 2, "kind": "parameter", "target": "%2", "inputs": ["row_weights"], "version": 0, "ordering": 2, "operation": "parameter"},
+    {"index": 3, "kind": "parameter", "target": "%3", "inputs": ["all_weight"], "version": 0, "ordering": 3, "operation": "parameter"},
+    {"index": 4, "kind": "primitive", "target": "%4", "inputs": ["%0"], "version": 0, "ordering": 4, "operation": "var:axis:0"},
+    {"index": 5, "kind": "primitive", "target": "%5", "inputs": ["%0"], "version": 0, "ordering": 5, "operation": "std:axis:-1"},
+    {"index": 6, "kind": "primitive", "target": "%6", "inputs": ["%0"], "version": 0, "ordering": 6, "operation": "var"},
+    {"index": 7, "kind": "pure", "target": "%7", "inputs": ["%4", "%1"], "version": 0, "ordering": 7, "operation": "mul"},
+    {"index": 8, "kind": "pure", "target": "%8", "inputs": ["%5", "%2"], "version": 0, "ordering": 8, "operation": "mul"},
+    {"index": 9, "kind": "pure", "target": "%9", "inputs": ["%6", "%3"], "version": 0, "ordering": 9, "operation": "mul"},
+    {"index": 10, "kind": "primitive", "target": "%10", "inputs": ["%7"], "version": 0, "ordering": 10, "operation": "sum"},
+    {"index": 11, "kind": "primitive", "target": "%11", "inputs": ["%8"], "version": 0, "ordering": 11, "operation": "sum"},
+    {"index": 12, "kind": "pure", "target": "%12", "inputs": ["%10", "%11"], "version": 0, "ordering": 12, "operation": "add"},
+    {"index": 13, "kind": "pure", "target": "%13", "inputs": ["%12", "%9"], "version": 0, "ordering": 13, "operation": "add"}
+  ],
+  "alias_edges": [],
+  "control_regions": [],
+  "phi_nodes": [],
+  "bytecode_offsets": [0, 2, 4]
+}"""
+
+_STD_ZERO_VARIANCE_PROGRAM_AD_IR = """{
+  "format": "program_ad_effect_ir.v1",
+  "ssa_values": [
+    {"name": "%0", "producer": 0, "version": 0, "shape": [3], "dtype": "float64", "effect": 0},
+    {"name": "%1", "producer": 1, "version": 0, "shape": [], "dtype": "float64", "effect": 1}
+  ],
+  "effects": [
+    {"index": 0, "kind": "parameter", "target": "%0", "inputs": ["source"], "version": 0, "ordering": 0, "operation": "parameter"},
+    {"index": 1, "kind": "primitive", "target": "%1", "inputs": ["%0"], "version": 0, "ordering": 1, "operation": "std"}
+  ],
+  "alias_edges": [],
+  "control_regions": [],
+  "phi_nodes": [],
+  "bytecode_offsets": [0, 2, 4]
+}"""
+
 
 def _install_fake_engine(monkeypatch: pytest.MonkeyPatch, engine: ModuleType) -> None:
     monkeypatch.setitem(sys.modules, "scpn_quantum_engine", engine)
@@ -888,6 +944,81 @@ def test_rust_program_ad_value_and_gradient_rejects_multi_zero_product() -> None
     assert rust_result.supported is False
     assert any(
         "prod gradient supports at most one zero input" in reason
+        for reason in rust_result.blocked_reasons
+    )
+
+
+def test_rust_program_ad_value_and_gradient_replays_static_variance_std_reductions() -> None:
+    """Rust Program AD replay should handle population variance/std reductions."""
+
+    engine = pytest.importorskip("scpn_quantum_engine")
+    assert callable(getattr(engine, "program_ad_effect_ir_interpret_value_and_gradient", None))
+    values = np.array(
+        [1.0, 2.0, 4.0, 3.0, 5.0, 7.0, 0.5, -1.25, 2.0, 1.5, -0.75, 0.25],
+        dtype=np.float64,
+    )
+    sqrt_14 = np.sqrt(14.0)
+    sqrt_6 = np.sqrt(6.0)
+    expected_gradient = np.array(
+        [
+            -0.5 - 2.0 / sqrt_14 - 2.0 / 9.0,
+            1.875 - 0.5 / sqrt_14 - 5.0 / 36.0,
+            -3.0 + 2.5 / sqrt_14 + 1.0 / 36.0,
+            0.5 + 0.75 / sqrt_6 - 1.0 / 18.0,
+            -1.875 + 1.0 / 9.0,
+            3.0 - 0.75 / sqrt_6 + 5.0 / 18.0,
+            1.0,
+            2.25,
+            2.25,
+            sqrt_14 / 3.0,
+            2.0 * sqrt_6 / 3.0,
+            35.0 / 9.0,
+        ],
+        dtype=np.float64,
+    )
+
+    rust_result = value_and_grad_program_ad_effect_ir_with_rust(
+        _STATIC_VARIANCE_STD_REDUCTION_PROGRAM_AD_IR,
+        values,
+    )
+
+    assert rust_result.supported is True, rust_result.blocked_reasons
+    assert rust_result.value == pytest.approx(
+        455.0 / 144.0 + 0.5 * (sqrt_14 - sqrt_6),
+        abs=1.0e-12,
+    )
+    np.testing.assert_allclose(rust_result.gradient, expected_gradient, atol=1.0e-12)
+    assert rust_result.parameter_targets == (
+        "%0[0]",
+        "%0[1]",
+        "%0[2]",
+        "%0[3]",
+        "%0[4]",
+        "%0[5]",
+        "%1[0]",
+        "%1[1]",
+        "%1[2]",
+        "%2[0]",
+        "%2[1]",
+        "%3",
+    )
+    assert rust_result.supported_effect_count == 14
+
+
+def test_rust_program_ad_value_and_gradient_rejects_zero_variance_std() -> None:
+    """Rust Program AD std replay should fail closed at zero variance."""
+
+    engine = pytest.importorskip("scpn_quantum_engine")
+    assert callable(getattr(engine, "program_ad_effect_ir_interpret_value_and_gradient", None))
+
+    rust_result = value_and_grad_program_ad_effect_ir_with_rust(
+        _STD_ZERO_VARIANCE_PROGRAM_AD_IR,
+        np.array([2.0, 2.0, 2.0], dtype=np.float64),
+    )
+
+    assert rust_result.supported is False
+    assert any(
+        "std gradient requires positive variance" in reason
         for reason in rust_result.blocked_reasons
     )
 

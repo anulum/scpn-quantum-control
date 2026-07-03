@@ -159,7 +159,7 @@
         "diff-support-surface-alignment-audit-v1"
       ],
       "blockers": [
-        "non-lowered dynamic indexing semantics, variance/std and selector/order-statistic reduction adjoints, and broad linalg array adjoints are missing",
+        "non-lowered dynamic indexing semantics, dynamic axes, ddof/correction metadata, zero-variance std gradients, selector/order-statistic reduction adjoints, and broad linalg array adjoints are missing",
         "executable registry promotion, LLVM/JIT lowering, provider/hardware evidence, and isolated benchmark evidence are missing",
         "static Python source/bytecode metadata has no executable Rust parity requirement",
         "compiler lowering remains blocked until a real Program AD backend exists"

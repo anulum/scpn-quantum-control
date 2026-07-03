@@ -90,7 +90,7 @@
         "diff-module-hardening-audit-v1"
       ],
       "blockers": [
-        "non-lowered dynamic indexing semantics, variance/std and selector/order-statistic reduction adjoints, and broad linalg array adjoints are missing",
+        "non-lowered dynamic indexing semantics, dynamic axes, ddof/correction metadata, zero-variance std gradients, selector/order-statistic reduction adjoints, and broad linalg array adjoints are missing",
         "executable registry promotion, LLVM/JIT lowering, provider/hardware evidence, and isolated benchmark evidence are missing"
       ],
       "claim_boundary": "Differentiable Rust/Python surface inventory for rustification planning; no broad rustification promotion, provider execution, hardware execution, LLVM/JIT execution, GPU execution, or isolated benchmark claim is implied.",
