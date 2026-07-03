@@ -1,0 +1,89 @@
+{
+  "schema": "scpn-quantum-control.kuramoto-jax-delayed-tier.v1",
+  "generated_utc": "2026-07-03T16:45:32.321634+00:00",
+  "n_oscillators": 256,
+  "dt": 0.05,
+  "n_steps": 200,
+  "delay_steps": 5,
+  "delay": 0.25,
+  "reference_tier": "python",
+  "jax_version": "0.6.2",
+  "jax_device": "cuda:0",
+  "jax_gpu": true,
+  "production_claim_allowed": false,
+  "claim_boundary": "The reproducible quantity is the cross-tier parity (parity_max_abs_diff): the JAX delayed tier is faithful to the production NumPy method-of-steps integrator at 64-bit precision. The per-call milliseconds are advisory host/GPU-bound evidence captured under the recorded load, governor and GPU clock, and are excluded from any performance claim (production_claim_allowed is false). The gradient tier matches the hand-derived method-of-steps sensitivity to machine precision (see tests/test_jax_kuramoto_delayed).",
+  "parity_max_abs_diff": 1.1102230246251565e-16,
+  "jax_forward_us": {
+    "p50_us": 24600.581,
+    "p95_us": 30016.419,
+    "p99_us": 30016.419,
+    "mean_us": 25122.9588,
+    "min_us": 21261.57,
+    "max_us": 30292.164,
+    "throughput_ops_s": 39.80422879171382,
+    "samples": 15
+  },
+  "reference_forward_us": {
+    "p50_us": 1531001.52,
+    "p95_us": 1702262.425,
+    "p99_us": 1702262.425,
+    "mean_us": 1454669.1066666667,
+    "min_us": 962234.542,
+    "max_us": 2091527.263,
+    "throughput_ops_s": 0.6874415600201147,
+    "samples": 15
+  },
+  "ensemble_batch": 64,
+  "ensemble_parity_max_abs_diff": 0.0,
+  "ensemble_forward_us": {
+    "p50_us": 1010572.432,
+    "p95_us": 1070081.786,
+    "p99_us": 1070081.786,
+    "mean_us": 1020899.9572666667,
+    "min_us": 968265.975,
+    "max_us": 1126847.469,
+    "throughput_ops_s": 0.9795279085693923,
+    "samples": 15
+  },
+  "sequential_forward_us": {
+    "p50_us": 2035535.642,
+    "p95_us": 2182323.597,
+    "p99_us": 2182323.597,
+    "mean_us": 2047252.6217999998,
+    "min_us": 1739247.334,
+    "max_us": 2330832.706,
+    "throughput_ops_s": 0.4884595038988266,
+    "samples": 5
+  },
+  "provenance": {
+    "cpu_model": "11th Gen Intel(R) Core(TM) i5-11600K @ 3.90GHz",
+    "cpu_count": 12,
+    "python": "3.12.3",
+    "numpy": "2.2.6",
+    "engine": "installed",
+    "juliacall": "0.9.31",
+    "rustc": "rustup 1.29.0 (28d1352db 2026-03-05)",
+    "platform": "Linux-6.17.0-35-generic-x86_64-with-glibc2.39",
+    "machine": "x86_64",
+    "commit": "14638fd46fb522203a5ea0e2500a75e86c2accb5",
+    "cpu_affinity": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11
+    ],
+    "loadavg": [
+      38.97,
+      37.05,
+      35.03
+    ]
+  }
+}

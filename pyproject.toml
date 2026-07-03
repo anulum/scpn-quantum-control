@@ -371,6 +371,7 @@ omit = [
     # The JAX autodiff Kuramoto tier needs jax[cuda]/jax[cpu], absent from the pinned CI lane; its
     # importorskip test runs locally (GPU) or in the differentiable-frameworks overlay lane.
     "*/scpn_quantum_control/accel/jax_kuramoto.py",
+    "*/scpn_quantum_control/accel/jax_kuramoto_delayed.py",
     "*/scpn_quantum_control/mitigation/mitiq_integration.py",
     # Quantum-persistent-homology hardware loops are validated by the
     # topological optimizer and hardware-topology tests. Live QPU branches
@@ -391,6 +392,7 @@ omit = [
     "*/scpn_quantum_control/phase/jax_nqs.py",
     "*/scpn_quantum_control/phase/mps_evolution.py",
     "*/scpn_quantum_control/accel/jax_kuramoto.py",
+    "*/scpn_quantum_control/accel/jax_kuramoto_delayed.py",
     "*/scpn_quantum_control/mitigation/mitiq_integration.py",
     "*/scpn_quantum_control/analysis/quantum_persistent_homology.py",
     "*/scpn_quantum_control/forecasting/kuramoto_neural_operator.py",

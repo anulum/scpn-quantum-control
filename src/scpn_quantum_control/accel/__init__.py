@@ -108,6 +108,12 @@ from .jax_kuramoto import (
     jax_kuramoto_rk4_gradient,
     jax_kuramoto_rk4_trajectory,
 )
+from .jax_kuramoto_delayed import (
+    jax_kuramoto_delayed_ensemble,
+    jax_kuramoto_delayed_ensemble_gradient,
+    jax_kuramoto_delayed_gradient,
+    jax_kuramoto_delayed_trajectory,
+)
 from .kuramoto_adaptive import (
     AdaptivePhaseForce,
     AdaptiveTrajectory,
@@ -554,6 +560,10 @@ __all__ = [
     "daido_order_parameter_gradient",
     "daido_order_parameter_hessian",
     "dispatch",
+    "jax_kuramoto_delayed_ensemble",
+    "jax_kuramoto_delayed_ensemble_gradient",
+    "jax_kuramoto_delayed_gradient",
+    "jax_kuramoto_delayed_trajectory",
     "jax_kuramoto_rk4_ensemble",
     "jax_kuramoto_rk4_ensemble_gradient",
     "jax_kuramoto_rk4_gradient",
