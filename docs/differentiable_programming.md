@@ -101,6 +101,12 @@ rows with list name, target kind, source, target, and version metadata.
 Malformed `list_alias` markers are reported through
 `malformed_list_alias_edges` and block readiness instead of being promoted from
 raw member strings.
+Parseable loop-carried scalar state aliases are retained as
+`ProgramADLoopCarriedStateProvenance` rows with state name, entry label,
+backedge label, source, target, and version metadata. Malformed
+`loop_carried_state` markers are reported through
+`malformed_loop_carried_state_edges` and block readiness instead of being
+promoted from raw member strings or loop phi labels.
 Parseable local-name and expression rebinding aliases are retained as
 `ProgramADRebindingAliasProvenance` rows with binding kind, local source name
 or expression line/label, target name, source, target, and version metadata.

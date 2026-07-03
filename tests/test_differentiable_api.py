@@ -317,6 +317,7 @@ def test_differentiable_dashboard_status_is_claim_bounded_for_gui_consumers() ->
     assert "bounded local object-attribute" in rows["program_ad_alias_effects"]["claim_boundary"]
     assert "expression-rebinding aliases" in rows["program_ad_alias_effects"]["claim_boundary"]
     assert "control-path aliases" in rows["program_ad_alias_effects"]["claim_boundary"]
+    assert "loop-carried state" in rows["program_ad_alias_effects"]["claim_boundary"]
     assert "unsupported Python semantics" in rows["program_ad_alias_effects"]["claim_boundary"]
     assert (
         "source/region/bytecode diagnostics"
@@ -335,8 +336,13 @@ def test_differentiable_dashboard_status_is_claim_bounded_for_gui_consumers() ->
     assert "ProgramADUnknownAliasEdge" in rows["program_ad_alias_effects"]["evidence"]
     assert "ProgramADControlPathAliasProvenance" in rows["program_ad_alias_effects"]["evidence"]
     assert "ProgramADViewAliasProvenance" in rows["program_ad_alias_effects"]["evidence"]
+    assert "ProgramADLoopCarriedStateProvenance" in rows["program_ad_alias_effects"]["evidence"]
     assert "ProgramADRebindingAliasProvenance" in rows["program_ad_alias_effects"]["evidence"]
     assert "typed view-alias provenance metadata" in rows["program_ad_alias_effects"]["evidence"]
+    assert (
+        "typed loop-carried state provenance metadata"
+        in rows["program_ad_alias_effects"]["evidence"]
+    )
     assert (
         "typed rebinding-alias provenance metadata" in rows["program_ad_alias_effects"]["evidence"]
     )
@@ -350,6 +356,10 @@ def test_differentiable_dashboard_status_is_claim_bounded_for_gui_consumers() ->
     )
     assert (
         "malformed control-path aliases require parseable branch-local provenance"
+        in rows["program_ad_alias_effects"]["blocked_reasons"]
+    )
+    assert (
+        "malformed loop-carried state aliases require parseable loop provenance"
         in rows["program_ad_alias_effects"]["blocked_reasons"]
     )
     assert (

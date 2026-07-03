@@ -27,6 +27,7 @@ from scpn_quantum_control.differentiable import (
     ProgramADEffect,
     ProgramADEffectIR,
     ProgramADListAliasProvenance,
+    ProgramADLoopCarriedStateProvenance,
     ProgramADRebindingAliasProvenance,
     ProgramADSSAValue,
     ProgramADStaticAliasLatticeComponent,
@@ -67,6 +68,10 @@ def test_program_ad_alias_analysis_exports_stable_facade_identities() -> None:
     )
     assert ProgramADListAliasProvenance is alias_analysis_module.ProgramADListAliasProvenance
     assert (
+        ProgramADLoopCarriedStateProvenance
+        is alias_analysis_module.ProgramADLoopCarriedStateProvenance
+    )
+    assert (
         ProgramADRebindingAliasProvenance
         is alias_analysis_module.ProgramADRebindingAliasProvenance
     )
@@ -85,6 +90,7 @@ def test_program_ad_alias_analysis_exports_stable_facade_identities() -> None:
     assert scpn.ProgramADStaticAliasLatticeComponent is ProgramADStaticAliasLatticeComponent
     assert scpn.ProgramADStaticAliasLatticeReport is ProgramADStaticAliasLatticeReport
     assert scpn.ProgramADListAliasProvenance is ProgramADListAliasProvenance
+    assert scpn.ProgramADLoopCarriedStateProvenance is ProgramADLoopCarriedStateProvenance
     assert scpn.ProgramADRebindingAliasProvenance is ProgramADRebindingAliasProvenance
     assert scpn.ProgramADUnknownAliasEdge is ProgramADUnknownAliasEdge
     assert scpn.ProgramADViewAliasProvenance is ProgramADViewAliasProvenance
@@ -141,6 +147,14 @@ def test_program_ad_alias_analysis_validation_paths() -> None:
         target_kind="local_name",
         version=4,
     )
+    loop_provenance = ProgramADLoopCarriedStateProvenance(
+        source="loop:carry:entry",
+        target="loop:carry:backedge",
+        state_name="carry",
+        entry_label="entry",
+        backedge_label="backedge",
+        version=6,
+    )
     control_provenance = ProgramADControlPathAliasProvenance(
         source="control:if:42:body",
         target="control:attr:scratch.value",
@@ -179,6 +193,14 @@ def test_program_ad_alias_analysis_validation_paths() -> None:
         "list_name": "scratch",
         "target_kind": "local_name",
         "version": 4,
+    }
+    assert loop_provenance.as_dict() == {
+        "source": "loop:carry:entry",
+        "target": "loop:carry:backedge",
+        "state_name": "carry",
+        "entry_label": "entry",
+        "backedge_label": "backedge",
+        "version": 6,
     }
     assert control_provenance.as_dict() == {
         "source": "control:if:42:body",
@@ -364,6 +386,98 @@ def test_program_ad_alias_analysis_validation_paths() -> None:
     ):
         with pytest.raises(ValueError, match=match):
             ProgramADListAliasProvenance(**cast(Any, list_kwargs))
+    for loop_kwargs, match in (
+        (
+            {
+                "source": "",
+                "target": "loop:carry:backedge",
+                "state_name": "carry",
+                "entry_label": "entry",
+                "backedge_label": "backedge",
+                "version": 6,
+            },
+            "source",
+        ),
+        (
+            {
+                "source": "carry:entry",
+                "target": "loop:carry:backedge",
+                "state_name": "carry",
+                "entry_label": "entry",
+                "backedge_label": "backedge",
+                "version": 6,
+            },
+            "source",
+        ),
+        (
+            {
+                "source": "loop:carry:entry",
+                "target": "carry:backedge",
+                "state_name": "carry",
+                "entry_label": "entry",
+                "backedge_label": "backedge",
+                "version": 6,
+            },
+            "target",
+        ),
+        (
+            {
+                "source": "loop:carry:entry",
+                "target": "loop:carry:backedge",
+                "state_name": "",
+                "entry_label": "entry",
+                "backedge_label": "backedge",
+                "version": 6,
+            },
+            "state_name",
+        ),
+        (
+            {
+                "source": "loop:carry:start",
+                "target": "loop:carry:backedge",
+                "state_name": "carry",
+                "entry_label": "start",
+                "backedge_label": "backedge",
+                "version": 6,
+            },
+            "entry_label",
+        ),
+        (
+            {
+                "source": "loop:carry:entry",
+                "target": "loop:carry:end",
+                "state_name": "carry",
+                "entry_label": "entry",
+                "backedge_label": "end",
+                "version": 6,
+            },
+            "backedge_label",
+        ),
+        (
+            {
+                "source": "loop:carry:entry",
+                "target": "loop:other:backedge",
+                "state_name": "carry",
+                "entry_label": "entry",
+                "backedge_label": "backedge",
+                "version": 6,
+            },
+            "state_name",
+        ),
+        (
+            {
+                "source": "loop:carry:entry",
+                "target": "loop:carry:backedge",
+                "state_name": "carry",
+                "entry_label": "entry",
+                "backedge_label": "backedge",
+                "version": -1,
+            },
+            "version",
+        ),
+    ):
+        with pytest.raises(ValueError, match=match):
+            ProgramADLoopCarriedStateProvenance(**cast(Any, loop_kwargs))
     for view_kwargs, match in (
         (
             {
@@ -682,6 +796,8 @@ def test_program_ad_alias_analysis_validation_paths() -> None:
     assert valid_report.as_dict()["malformed_view_alias_edges"] == []
     assert valid_report.as_dict()["list_alias_provenance"] == []
     assert valid_report.as_dict()["malformed_list_alias_edges"] == []
+    assert valid_report.as_dict()["loop_carried_state_provenance"] == []
+    assert valid_report.as_dict()["malformed_loop_carried_state_edges"] == []
     assert valid_report.as_dict()["unsupported_python_semantics"] == []
     assert valid_report.as_dict()["unsupported_object_attribute_roots"] == []
     assert valid_report.as_dict()["unsupported_object_attribute_details"] == []
@@ -857,6 +973,21 @@ def test_program_ad_alias_analysis_validation_paths() -> None:
             claim_boundary="static_alias_lattice_over_emitted_program_ad_ir",
             list_alias_provenance=cast(tuple[ProgramADListAliasProvenance, ...], (object(),)),
         )
+    with pytest.raises(ValueError, match="loop_carried_state_provenance"):
+        ProgramADStaticAliasLatticeReport(
+            components=(),
+            mutation_effects=(),
+            non_executed_phi_nodes=(),
+            non_executed_control_alias_edges=(),
+            unknown_alias_edge_kinds=(),
+            blocker_reasons=(),
+            complete=False,
+            claim_boundary="static_alias_lattice_over_emitted_program_ad_ir",
+            loop_carried_state_provenance=cast(
+                tuple[ProgramADLoopCarriedStateProvenance, ...],
+                (object(),),
+            ),
+        )
     with pytest.raises(ValueError, match="rebinding_alias_provenance"):
         ProgramADStaticAliasLatticeReport(
             components=(),
@@ -1019,6 +1150,18 @@ def test_program_ad_alias_analysis_validation_paths() -> None:
             claim_boundary="static_alias_lattice_over_emitted_program_ad_ir",
             malformed_list_alias_edges=("",),
         )
+    with pytest.raises(ValueError, match="malformed_loop_carried_state_edges"):
+        ProgramADStaticAliasLatticeReport(
+            components=(),
+            mutation_effects=(),
+            non_executed_phi_nodes=(),
+            non_executed_control_alias_edges=(),
+            unknown_alias_edge_kinds=(),
+            blocker_reasons=(),
+            complete=False,
+            claim_boundary="static_alias_lattice_over_emitted_program_ad_ir",
+            malformed_loop_carried_state_edges=("",),
+        )
     with pytest.raises(ValueError, match="malformed_rebinding_alias_edges"):
         ProgramADStaticAliasLatticeReport(
             components=(),
@@ -1054,6 +1197,18 @@ def test_program_ad_alias_analysis_validation_paths() -> None:
             complete=False,
             claim_boundary="static_alias_lattice_over_emitted_program_ad_ir",
             malformed_list_alias_edges=("bad-edge",),
+        )
+    with pytest.raises(ValueError, match="malformed loop-carried state"):
+        ProgramADStaticAliasLatticeReport(
+            components=(),
+            mutation_effects=(),
+            non_executed_phi_nodes=(),
+            non_executed_control_alias_edges=(),
+            unknown_alias_edge_kinds=(),
+            blocker_reasons=(),
+            complete=False,
+            claim_boundary="static_alias_lattice_over_emitted_program_ad_ir",
+            malformed_loop_carried_state_edges=("bad-edge",),
         )
     with pytest.raises(ValueError, match="malformed rebinding-alias"):
         ProgramADStaticAliasLatticeReport(
@@ -1300,6 +1455,18 @@ def test_program_ad_alias_analysis_validation_paths() -> None:
             complete=True,
             claim_boundary="static_alias_lattice_over_emitted_program_ad_ir",
             malformed_list_alias_edges=("bad-edge",),
+        )
+    with pytest.raises(ValueError, match="cannot carry malformed loop-carried state edges"):
+        ProgramADStaticAliasLatticeReport(
+            components=(),
+            mutation_effects=(),
+            non_executed_phi_nodes=(),
+            non_executed_control_alias_edges=(),
+            unknown_alias_edge_kinds=(),
+            blocker_reasons=(),
+            complete=True,
+            claim_boundary="static_alias_lattice_over_emitted_program_ad_ir",
+            malformed_loop_carried_state_edges=("bad-edge",),
         )
     with pytest.raises(ValueError, match="mutation_effects require a blocker"):
         ProgramADStaticAliasLatticeReport(
@@ -2123,6 +2290,106 @@ def test_program_ad_static_alias_lattice_reports_malformed_list_aliases() -> Non
     payload = report.as_dict()
     assert payload["list_alias_provenance"] == []
     assert payload["malformed_list_alias_edges"] == ["scratch->name:alias:list_alias@0"]
+
+
+def test_program_ad_static_alias_lattice_reports_loop_carried_state_provenance() -> None:
+    """Static alias lattice reports should preserve typed loop-carried state provenance."""
+
+    def objective(values: Any) -> object:
+        carry = values[0]
+        for index in range(1, 4):
+            carry = carry + float(index) * values[index]
+        return carry + values[4]
+
+    result = whole_program_value_and_grad(
+        objective,
+        np.array([0.25, 0.5, 0.75, 1.0, 1.25], dtype=np.float64),
+        parameters=(
+            Parameter("seed"),
+            Parameter("step1"),
+            Parameter("step2"),
+            Parameter("step3"),
+            Parameter("tail"),
+        ),
+    )
+    assert result.program_ir is not None
+
+    report = program_ad_static_alias_lattice_report(result.program_ir)
+
+    assert report.complete is True
+    assert report.malformed_loop_carried_state_edges == ()
+    assert any(
+        "loop_carried_state" in component.edge_kinds
+        and "loop:carry:entry" in component.members
+        and "loop:carry:backedge" in component.members
+        for component in report.components
+    )
+    assert all(
+        isinstance(row, ProgramADLoopCarriedStateProvenance)
+        for row in report.loop_carried_state_provenance
+    )
+    assert len(report.loop_carried_state_provenance) == 1
+    row = report.loop_carried_state_provenance[0]
+    assert row.source == "loop:carry:entry"
+    assert row.target == "loop:carry:backedge"
+    assert row.state_name == "carry"
+    assert row.entry_label == "entry"
+    assert row.backedge_label == "backedge"
+    assert row.version >= 0
+    payload = report.as_dict()
+    assert payload["complete"] is True
+    assert payload["malformed_loop_carried_state_edges"] == []
+    assert {
+        "source": "loop:carry:entry",
+        "target": "loop:carry:backedge",
+        "state_name": "carry",
+        "entry_label": "entry",
+        "backedge_label": "backedge",
+        "version": row.version,
+    } in cast(list[dict[str, object]], payload["loop_carried_state_provenance"])
+    np.testing.assert_allclose(result.gradient, [1.0, 1.0, 2.0, 3.0, 1.0], atol=1.0e-12)
+
+
+def test_program_ad_static_alias_lattice_reports_malformed_loop_carried_state() -> None:
+    """Static alias lattice reports should block malformed loop-carried state markers."""
+
+    value = ProgramADSSAValue("%0", producer=0, version=0, shape=(), dtype="float64", effect=0)
+    effect = ProgramADEffect(
+        index=0,
+        kind="pure",
+        target="%0",
+        inputs=(),
+        version=0,
+        ordering=0,
+    )
+    ir = ProgramADEffectIR(
+        ssa_values=(value,),
+        effects=(effect,),
+        alias_edges=(
+            ProgramADAliasEdge(
+                source="loop:carry:start",
+                target="loop:carry:backedge",
+                kind="loop_carried_state",
+                version=0,
+            ),
+        ),
+        control_regions=(),
+        serialization="program_ad_effect_ir.v1",
+    )
+
+    report = program_ad_static_alias_lattice_report(ir)
+
+    assert report.complete is False
+    assert report.loop_carried_state_provenance == ()
+    assert report.malformed_loop_carried_state_edges == (
+        "loop:carry:start->loop:carry:backedge:loop_carried_state@0",
+    )
+    assert "loop_carried_state_provenance_requires_parseable_targets" in report.blocker_reasons
+    payload = report.as_dict()
+    assert payload["loop_carried_state_provenance"] == []
+    assert payload["malformed_loop_carried_state_edges"] == [
+        "loop:carry:start->loop:carry:backedge:loop_carried_state@0"
+    ]
 
 
 def test_program_ad_static_alias_lattice_reports_malformed_control_path_aliases() -> None:

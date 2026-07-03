@@ -2736,7 +2736,10 @@ def _static_alias_lattice_report_case() -> DifferentiableProgrammingBenchmarkRes
         scratch_list = [view[1], view[2]]
         list_alias = scratch_list
         list_alias[0] = trace_values[0]
-        return direct + scratch_list[0] + list_alias[1]
+        carry = trace_values[0]
+        for index in range(1, 3):
+            carry = carry + 0.0 * float(index) * trace_values[index]
+        return direct + scratch_list[0] + list_alias[1] + 0.0 * carry
 
     alias_result = whole_program_value_and_grad(alias_objective, values)
     if alias_result.program_ir is None:
@@ -2806,6 +2809,24 @@ def _static_alias_lattice_report_case() -> DifferentiableProgrammingBenchmarkRes
         raise ValueError("static alias lattice benchmark missing list-mutation provenance")
     if lattice_report.malformed_list_alias_edges:
         raise ValueError("static alias lattice benchmark found malformed list-alias edges")
+    if not any(
+        "loop_carried_state" in component.edge_kinds
+        and "loop:carry:entry" in component.members
+        and "loop:carry:backedge" in component.members
+        for component in lattice_report.components
+    ):
+        raise ValueError("static alias lattice benchmark missing loop-carried state component")
+    if not any(
+        row.state_name == "carry"
+        and row.entry_label == "entry"
+        and row.backedge_label == "backedge"
+        and row.source == "loop:carry:entry"
+        and row.target == "loop:carry:backedge"
+        for row in lattice_report.loop_carried_state_provenance
+    ):
+        raise ValueError("static alias lattice benchmark missing loop-carried state provenance")
+    if lattice_report.malformed_loop_carried_state_edges:
+        raise ValueError("static alias lattice benchmark found malformed loop-carried state edges")
     rebinding_alias_rows = {
         (row.binding_kind, row.source_name, row.target_name, row.source, row.target)
         for row in lattice_report.rebinding_alias_provenance
@@ -3020,6 +3041,41 @@ def _static_alias_lattice_report_case() -> DifferentiableProgrammingBenchmarkRes
     ):
         raise ValueError("static alias lattice benchmark missing malformed-rebinding blocker")
 
+    malformed_loop_ir = ProgramADEffectIR(
+        ssa_values=alias_result.program_ir.ssa_values,
+        effects=alias_result.program_ir.effects,
+        alias_edges=(
+            *alias_result.program_ir.alias_edges,
+            ProgramADAliasEdge(
+                source="loop:carry:start",
+                target="loop:carry:backedge",
+                kind="loop_carried_state",
+                version=0,
+            ),
+        ),
+        control_regions=alias_result.program_ir.control_regions,
+        serialization=alias_result.program_ir.serialization,
+        phi_nodes=alias_result.program_ir.phi_nodes,
+    )
+    malformed_loop_report = program_ad_static_alias_lattice_report(malformed_loop_ir)
+    if malformed_loop_report.complete:
+        raise ValueError(
+            "static alias lattice benchmark must not promote malformed loop-carried state"
+        )
+    if malformed_loop_report.malformed_loop_carried_state_edges != (
+        "loop:carry:start->loop:carry:backedge:loop_carried_state@0",
+    ):
+        raise ValueError(
+            "static alias lattice benchmark lost malformed loop-carried state provenance"
+        )
+    if (
+        "loop_carried_state_provenance_requires_parseable_targets"
+        not in malformed_loop_report.blocker_reasons
+    ):
+        raise ValueError(
+            "static alias lattice benchmark missing malformed-loop-carried-state blocker"
+        )
+
     def mutation_objective(trace_values: Any) -> object:
         work = trace_values.copy()
         work[0] = trace_values[1] + trace_values[2]
@@ -3101,13 +3157,13 @@ def _static_alias_lattice_report_case() -> DifferentiableProgrammingBenchmarkRes
             "static alias-lattice readiness over emitted program_ad_effect_ir.v1 "
             "components, including view-alias, bounded local object-attribute, "
             "typed source-to-view provenance, list-alias provenance, typed "
-            "control-path alias provenance, typed rebinding-alias provenance, "
-            "local/expression-rebinding classification, "
+            "loop-carried state provenance, control-path alias provenance, "
+            "typed rebinding-alias provenance, local/expression-rebinding classification, "
             "explicit non-executed phi, and mutation/control-path/unsupported-Python "
             "diagnostic blocker reporting, "
             "with captured/global object-attribute diagnostics pinned to static "
             "object-model blockers and unknown alias-edge provenance pinned to "
-            "fail-closed blockers; malformed view/list/rebinding/control-path "
+            "fail-closed blockers; malformed view/list/loop-carried/rebinding/control-path "
             "alias markers are blockers; "
             "not captured/global object-attribute alias sets, unknown dynamic alias "
             "promotion, arbitrary dynamic Python frontend lowering, non-executed "

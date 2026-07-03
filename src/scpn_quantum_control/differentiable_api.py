@@ -851,9 +851,11 @@ def differentiable_dashboard_status(
                 "ProgramADControlPathAliasProvenance",
                 "ProgramADViewAliasProvenance",
                 "ProgramADListAliasProvenance",
+                "ProgramADLoopCarriedStateProvenance",
                 "ProgramADRebindingAliasProvenance",
                 "typed view-alias provenance metadata",
                 "typed list-alias provenance metadata",
+                "typed loop-carried state provenance metadata",
                 "typed control-path alias provenance metadata",
                 "typed rebinding-alias provenance metadata",
                 "bounded local object-attribute alias metadata",
@@ -873,6 +875,7 @@ def differentiable_dashboard_status(
                 "mutation effects require versioned alias semantics",
                 "malformed view aliases require parseable source-to-view provenance",
                 "malformed list aliases require parseable local-list provenance",
+                "malformed loop-carried state aliases require parseable loop provenance",
                 "malformed control-path aliases require parseable branch-local provenance",
                 "control-path aliases require non-executed branch semantics",
                 "unsupported Python semantics require executable frontend lowering",
@@ -881,9 +884,10 @@ def differentiable_dashboard_status(
             ),
             claim_boundary=(
                 "static alias-lattice readiness over emitted Program AD IR metadata; "
-                "typed view-alias, list-alias, and control-path provenance plus bounded "
-                "local object-attribute and expression-rebinding aliases are metadata only; "
-                "mutation effects, malformed view/list/control-path aliases, unsupported "
+                "typed view-alias, list-alias, loop-carried state, and control-path provenance "
+                "plus bounded local object-attribute and expression-rebinding aliases are "
+                "metadata only; mutation effects, malformed view/list/loop/control-path aliases, "
+                "unsupported "
                 "Python semantics with source/region/bytecode diagnostics, and captured/global "
                 "object-attribute diagnostics are explicit blockers; unknown alias-edge "
                 "provenance is an explicit blocker, "

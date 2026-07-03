@@ -284,6 +284,18 @@ def test_static_alias_lattice_benchmark_fails_closed(
         target_kind="indexed_mutation_source",
         version=1,
     )
+    loop_component = SimpleNamespace(
+        edge_kinds=("loop_carried_state",),
+        members=("loop:carry:backedge", "loop:carry:entry"),
+    )
+    loop_provenance = SimpleNamespace(
+        source="loop:carry:entry",
+        target="loop:carry:backedge",
+        state_name="carry",
+        entry_label="entry",
+        backedge_label="backedge",
+        version=0,
+    )
     monkeypatch.setattr(
         dp,
         "program_ad_static_alias_lattice_report",
@@ -323,6 +335,7 @@ def test_static_alias_lattice_benchmark_fails_closed(
                 expression_component,
                 local_rebinding_component,
                 list_component,
+                loop_component,
             ),
             view_alias_provenance=(view_provenance,),
             malformed_view_alias_edges=(),
@@ -330,6 +343,8 @@ def test_static_alias_lattice_benchmark_fails_closed(
             malformed_rebinding_alias_edges=(),
             list_alias_provenance=(list_provenance, list_mutation_provenance),
             malformed_list_alias_edges=(),
+            loop_carried_state_provenance=(loop_provenance,),
+            malformed_loop_carried_state_edges=(),
         ),
     )
     with pytest.raises(ValueError, match="rebinding provenance"):
@@ -378,6 +393,57 @@ def test_static_alias_lattice_benchmark_fails_closed(
         ),
     )
     with pytest.raises(ValueError, match="list-alias provenance"):
+        dp._static_alias_lattice_report_case()
+
+    monkeypatch.setattr(
+        dp,
+        "program_ad_static_alias_lattice_report",
+        lambda _ir: SimpleNamespace(
+            complete=True,
+            components=(
+                view_component,
+                object_component,
+                expression_component,
+                local_rebinding_component,
+                list_component,
+            ),
+            view_alias_provenance=(view_provenance,),
+            malformed_view_alias_edges=(),
+            rebinding_alias_provenance=(rebinding_provenance, local_rebinding_provenance),
+            malformed_rebinding_alias_edges=(),
+            list_alias_provenance=(list_provenance, list_mutation_provenance),
+            malformed_list_alias_edges=(),
+            loop_carried_state_provenance=(),
+            malformed_loop_carried_state_edges=(),
+        ),
+    )
+    with pytest.raises(ValueError, match="loop-carried state component"):
+        dp._static_alias_lattice_report_case()
+
+    monkeypatch.setattr(
+        dp,
+        "program_ad_static_alias_lattice_report",
+        lambda _ir: SimpleNamespace(
+            complete=True,
+            components=(
+                view_component,
+                object_component,
+                expression_component,
+                local_rebinding_component,
+                list_component,
+                loop_component,
+            ),
+            view_alias_provenance=(view_provenance,),
+            malformed_view_alias_edges=(),
+            rebinding_alias_provenance=(rebinding_provenance, local_rebinding_provenance),
+            malformed_rebinding_alias_edges=(),
+            list_alias_provenance=(list_provenance, list_mutation_provenance),
+            malformed_list_alias_edges=(),
+            loop_carried_state_provenance=(),
+            malformed_loop_carried_state_edges=(),
+        ),
+    )
+    with pytest.raises(ValueError, match="loop-carried state provenance"):
         dp._static_alias_lattice_report_case()
 
     unsupported_semantics = ("filtered_comprehension",)
@@ -433,6 +499,7 @@ def test_static_alias_lattice_benchmark_fails_closed(
             expression_component,
             local_rebinding_component,
             list_component,
+            loop_component,
         ),
         view_alias_provenance=(view_provenance,),
         malformed_view_alias_edges=(),
@@ -440,6 +507,8 @@ def test_static_alias_lattice_benchmark_fails_closed(
         malformed_rebinding_alias_edges=(),
         list_alias_provenance=(list_provenance, list_mutation_provenance),
         malformed_list_alias_edges=(),
+        loop_carried_state_provenance=(loop_provenance,),
+        malformed_loop_carried_state_edges=(),
     )
     mutation_blocked_report = SimpleNamespace(
         complete=False,
@@ -478,6 +547,13 @@ def test_static_alias_lattice_benchmark_fails_closed(
         complete=False,
         malformed_rebinding_alias_edges=("combined->name:direct:local_rebinding_alias@0",),
         blocker_reasons=("rebinding_alias_provenance_requires_parseable_targets",),
+    )
+    malformed_loop_blocked_report = SimpleNamespace(
+        complete=False,
+        malformed_loop_carried_state_edges=(
+            "loop:carry:start->loop:carry:backedge:loop_carried_state@0",
+        ),
+        blocker_reasons=("loop_carried_state_provenance_requires_parseable_targets",),
     )
     for unsupported_report, match in (
         (
@@ -846,8 +922,58 @@ def test_static_alias_lattice_benchmark_fails_closed(
                 unknown_alias_blocked_report,
                 malformed_list_blocked_report,
                 malformed_rebinding_blocked_report,
+                malformed_loop_blocked_report,
                 mutation_blocked_report,
                 branch_report,
+            )
+        )
+        monkeypatch.setattr(
+            dp,
+            "program_ad_static_alias_lattice_report",
+            lambda _ir, reports=reports, **_kwargs: next(reports),
+        )
+        with pytest.raises(ValueError, match=match):
+            dp._static_alias_lattice_report_case()
+
+    for malformed_loop_report, match in (
+        (
+            SimpleNamespace(
+                complete=True,
+                malformed_loop_carried_state_edges=(
+                    "loop:carry:start->loop:carry:backedge:loop_carried_state@0",
+                ),
+                blocker_reasons=(),
+            ),
+            "must not promote malformed loop-carried state",
+        ),
+        (
+            SimpleNamespace(
+                complete=False,
+                malformed_loop_carried_state_edges=(),
+                blocker_reasons=("loop_carried_state_provenance_requires_parseable_targets",),
+            ),
+            "lost malformed loop-carried state provenance",
+        ),
+        (
+            SimpleNamespace(
+                complete=False,
+                malformed_loop_carried_state_edges=(
+                    "loop:carry:start->loop:carry:backedge:loop_carried_state@0",
+                ),
+                blocker_reasons=(),
+            ),
+            "malformed-loop-carried-state blocker",
+        ),
+    ):
+        reports = iter(
+            (
+                complete_report,
+                unsupported_blocked_report,
+                object_attribute_blocked_report,
+                unknown_alias_blocked_report,
+                malformed_list_blocked_report,
+                malformed_rebinding_blocked_report,
+                malformed_loop_report,
             )
         )
         monkeypatch.setattr(
@@ -926,6 +1052,18 @@ def test_static_alias_lattice_branch_ir_fails_closed(
         target_kind="indexed_mutation_source",
         version=1,
     )
+    loop_component = SimpleNamespace(
+        edge_kinds=("loop_carried_state",),
+        members=("loop:carry:backedge", "loop:carry:entry"),
+    )
+    loop_provenance = SimpleNamespace(
+        source="loop:carry:entry",
+        target="loop:carry:backedge",
+        state_name="carry",
+        entry_label="entry",
+        backedge_label="backedge",
+        version=0,
+    )
     results = iter(
         (
             _whole_program_result(program_ir=_static_lattice_program_ir()),
@@ -993,6 +1131,7 @@ def test_static_alias_lattice_branch_ir_fails_closed(
                     expression_component,
                     local_rebinding_component,
                     list_component,
+                    loop_component,
                 ),
                 view_alias_provenance=(view_provenance,),
                 malformed_view_alias_edges=(),
@@ -1003,6 +1142,8 @@ def test_static_alias_lattice_branch_ir_fails_closed(
                 malformed_rebinding_alias_edges=(),
                 list_alias_provenance=(list_provenance, list_mutation_provenance),
                 malformed_list_alias_edges=(),
+                loop_carried_state_provenance=(loop_provenance,),
+                malformed_loop_carried_state_edges=(),
             ),
             SimpleNamespace(
                 complete=False,
@@ -1057,6 +1198,13 @@ def test_static_alias_lattice_branch_ir_fails_closed(
                 complete=False,
                 malformed_rebinding_alias_edges=("combined->name:direct:local_rebinding_alias@0",),
                 blocker_reasons=("rebinding_alias_provenance_requires_parseable_targets",),
+            ),
+            SimpleNamespace(
+                complete=False,
+                malformed_loop_carried_state_edges=(
+                    "loop:carry:start->loop:carry:backedge:loop_carried_state@0",
+                ),
+                blocker_reasons=("loop_carried_state_provenance_requires_parseable_targets",),
             ),
             SimpleNamespace(
                 complete=False,

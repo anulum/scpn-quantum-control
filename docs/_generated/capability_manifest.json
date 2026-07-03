@@ -7,9 +7,9 @@
     "model_documentation_pages": 0,
     "notebook_files": 100,
     "optional_extras": 43,
-    "public_api_exports": 783,
+    "public_api_exports": 784,
     "public_documentation_pages": 254,
-    "python_model_classes": 970,
+    "python_model_classes": 971,
     "python_model_source_modules": 540,
     "rust_pyo3_model_wrappers": 171,
     "rust_source_modules": 42,
@@ -3369,6 +3369,10 @@
         "path": "src/scpn_quantum_control/program_ad_alias_analysis.py"
       },
       {
+        "name": "ProgramADLoopCarriedStateProvenance",
+        "path": "src/scpn_quantum_control/program_ad_alias_analysis.py"
+      },
+      {
         "name": "ProgramADPhiNode",
         "path": "src/scpn_quantum_control/program_ad_effect_ir.py"
       },
@@ -5435,6 +5439,7 @@
     "ProgramADEffectIR",
     "ProgramADLinalgConditioningDiagnostic",
     "ProgramADListAliasProvenance",
+    "ProgramADLoopCarriedStateProvenance",
     "ProgramADPhiNode",
     "ProgramADRebindingAliasProvenance",
     "ProgramADRegistryDispatchCoverageReport",

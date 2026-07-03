@@ -297,6 +297,64 @@ class ProgramADListAliasProvenance:
 
 
 @dataclass(frozen=True)
+class ProgramADLoopCarriedStateProvenance:
+    """Parseable loop-carried scalar state edge preserved by the static lattice."""
+
+    source: str
+    target: str
+    state_name: str
+    entry_label: str
+    backedge_label: str
+    version: int
+
+    def __post_init__(self) -> None:
+        """Validate loop-carried state provenance at construction time."""
+
+        if not isinstance(self.source, str) or not self.source.startswith("loop:"):
+            raise ValueError(
+                "program AD loop-carried state provenance source must be loop:<state>:entry"
+            )
+        if not isinstance(self.target, str) or not self.target.startswith("loop:"):
+            raise ValueError(
+                "program AD loop-carried state provenance target must be loop:<state>:backedge"
+            )
+        if not isinstance(self.state_name, str) or not self.state_name:
+            raise ValueError(
+                "program AD loop-carried state provenance state_name must be non-empty"
+            )
+        if self.entry_label != "entry":
+            raise ValueError("program AD loop-carried state provenance entry_label must be entry")
+        if self.backedge_label != "backedge":
+            raise ValueError(
+                "program AD loop-carried state provenance backedge_label must be backedge"
+            )
+        if self.source != f"loop:{self.state_name}:{self.entry_label}":
+            raise ValueError(
+                "program AD loop-carried state provenance source must match state_name"
+            )
+        if self.target != f"loop:{self.state_name}:{self.backedge_label}":
+            raise ValueError(
+                "program AD loop-carried state provenance target must match state_name"
+            )
+        if self.version < 0:
+            raise ValueError(
+                "program AD loop-carried state provenance version must be non-negative"
+            )
+
+    def as_dict(self) -> dict[str, object]:
+        """Return a JSON-ready loop-carried state provenance payload."""
+
+        return {
+            "source": self.source,
+            "target": self.target,
+            "state_name": self.state_name,
+            "entry_label": self.entry_label,
+            "backedge_label": self.backedge_label,
+            "version": self.version,
+        }
+
+
+@dataclass(frozen=True)
 class ProgramADControlPathAliasProvenance:
     """Parseable branch-local control-path alias edge preserved by the static lattice."""
 
@@ -474,6 +532,8 @@ class ProgramADStaticAliasLatticeReport:
     malformed_view_alias_edges: tuple[str, ...] = ()
     list_alias_provenance: tuple[ProgramADListAliasProvenance, ...] = ()
     malformed_list_alias_edges: tuple[str, ...] = ()
+    loop_carried_state_provenance: tuple[ProgramADLoopCarriedStateProvenance, ...] = ()
+    malformed_loop_carried_state_edges: tuple[str, ...] = ()
     rebinding_alias_provenance: tuple[ProgramADRebindingAliasProvenance, ...] = ()
     malformed_rebinding_alias_edges: tuple[str, ...] = ()
 
@@ -657,6 +717,46 @@ class ProgramADStaticAliasLatticeReport:
                 "must be sorted and unique"
             )
         if any(
+            not isinstance(row, ProgramADLoopCarriedStateProvenance)
+            for row in self.loop_carried_state_provenance
+        ):
+            raise ValueError(
+                "program AD static alias lattice loop_carried_state_provenance must "
+                "contain ProgramADLoopCarriedStateProvenance entries"
+            )
+        loop_carried_state_order = tuple(
+            (
+                row.state_name,
+                row.entry_label,
+                row.backedge_label,
+                row.source,
+                row.target,
+                row.version,
+            )
+            for row in self.loop_carried_state_provenance
+        )
+        if tuple(sorted(set(loop_carried_state_order))) != loop_carried_state_order:
+            raise ValueError(
+                "program AD static alias lattice loop_carried_state_provenance "
+                "must be sorted unique"
+            )
+        if any(
+            not isinstance(edge, str) or not edge
+            for edge in self.malformed_loop_carried_state_edges
+        ):
+            raise ValueError(
+                "program AD static alias lattice malformed_loop_carried_state_edges "
+                "must contain non-empty strings"
+            )
+        if (
+            tuple(sorted(set(self.malformed_loop_carried_state_edges)))
+            != self.malformed_loop_carried_state_edges
+        ):
+            raise ValueError(
+                "program AD static alias lattice malformed_loop_carried_state_edges "
+                "must be sorted and unique"
+            )
+        if any(
             not isinstance(row, ProgramADRebindingAliasProvenance)
             for row in self.rebinding_alias_provenance
         ):
@@ -700,6 +800,9 @@ class ProgramADStaticAliasLatticeReport:
         )
         has_list_alias_component = any(
             "list_alias" in component.edge_kinds for component in self.components
+        )
+        has_loop_carried_state_component = any(
+            "loop_carried_state" in component.edge_kinds for component in self.components
         )
         has_rebinding_alias_component = any(
             bool(_PROGRAM_AD_REBINDING_ALIAS_EDGE_KINDS.intersection(component.edge_kinds))
@@ -749,6 +852,20 @@ class ProgramADStaticAliasLatticeReport:
             raise ValueError(
                 "program AD static alias lattice list alias provenance requires "
                 "a list_alias component"
+            )
+        if (
+            has_loop_carried_state_component
+            and not self.loop_carried_state_provenance
+            and not self.malformed_loop_carried_state_edges
+        ):
+            raise ValueError(
+                "program AD static alias lattice loop-carried state components require "
+                "loop_carried_state_provenance"
+            )
+        if self.loop_carried_state_provenance and not has_loop_carried_state_component:
+            raise ValueError(
+                "program AD static alias lattice loop-carried state provenance requires "
+                "a loop_carried_state component"
             )
         if (
             has_rebinding_alias_component
@@ -855,6 +972,9 @@ class ProgramADStaticAliasLatticeReport:
         )
         malformed_view_alias_blocker = "view_alias_provenance_requires_parseable_targets"
         malformed_list_alias_blocker = "list_alias_provenance_requires_parseable_targets"
+        malformed_loop_carried_state_blocker = (
+            "loop_carried_state_provenance_requires_parseable_targets"
+        )
         malformed_rebinding_alias_blocker = "rebinding_alias_provenance_requires_parseable_targets"
         if self.complete and self.control_path_alias_provenance:
             raise ValueError(
@@ -876,6 +996,11 @@ class ProgramADStaticAliasLatticeReport:
         if self.complete and self.malformed_list_alias_edges:
             raise ValueError(
                 "complete program AD static alias lattice cannot carry malformed list-alias edges"
+            )
+        if self.complete and self.malformed_loop_carried_state_edges:
+            raise ValueError(
+                "complete program AD static alias lattice cannot carry malformed "
+                "loop-carried state edges"
             )
         if self.complete and self.malformed_rebinding_alias_edges:
             raise ValueError(
@@ -957,6 +1082,22 @@ class ProgramADStaticAliasLatticeReport:
             raise ValueError(
                 "program AD static alias lattice malformed list-alias blocker requires "
                 "malformed_list_alias_edges"
+            )
+        if (
+            self.malformed_loop_carried_state_edges
+            and malformed_loop_carried_state_blocker not in self.blocker_reasons
+        ):
+            raise ValueError(
+                "program AD static alias lattice malformed loop-carried state edges "
+                "require a blocker reason"
+            )
+        if (
+            not self.malformed_loop_carried_state_edges
+            and malformed_loop_carried_state_blocker in self.blocker_reasons
+        ):
+            raise ValueError(
+                "program AD static alias lattice malformed loop-carried state blocker "
+                "requires malformed_loop_carried_state_edges"
             )
         if (
             self.malformed_rebinding_alias_edges
@@ -1045,6 +1186,10 @@ class ProgramADStaticAliasLatticeReport:
             "malformed_view_alias_edges": list(self.malformed_view_alias_edges),
             "list_alias_provenance": [row.as_dict() for row in self.list_alias_provenance],
             "malformed_list_alias_edges": list(self.malformed_list_alias_edges),
+            "loop_carried_state_provenance": [
+                row.as_dict() for row in self.loop_carried_state_provenance
+            ],
+            "malformed_loop_carried_state_edges": list(self.malformed_loop_carried_state_edges),
             "rebinding_alias_provenance": [
                 row.as_dict() for row in self.rebinding_alias_provenance
             ],
@@ -1178,6 +1323,9 @@ def program_ad_static_alias_lattice_report(
     list_alias_provenance, malformed_list_alias_edges = _list_alias_provenance(
         program_ir.alias_edges
     )
+    loop_carried_state_provenance, malformed_loop_carried_state_edges = (
+        _loop_carried_state_provenance(program_ir.alias_edges)
+    )
     rebinding_alias_provenance, malformed_rebinding_alias_edges = _rebinding_alias_provenance(
         program_ir.alias_edges
     )
@@ -1265,6 +1413,7 @@ def program_ad_static_alias_lattice_report(
             phi_node.index
             for phi_node in program_ir.phi_nodes
             if phi_node.selected is not None
+            and phi_node.selected != "executed_loop_trace"
             and any(incoming != phi_node.selected for incoming in phi_node.incoming)
         )
     )
@@ -1293,6 +1442,8 @@ def program_ad_static_alias_lattice_report(
         blocker_reasons.add("view_alias_provenance_requires_parseable_targets")
     if malformed_list_alias_edges:
         blocker_reasons.add("list_alias_provenance_requires_parseable_targets")
+    if malformed_loop_carried_state_edges:
+        blocker_reasons.add("loop_carried_state_provenance_requires_parseable_targets")
     if malformed_rebinding_alias_edges:
         blocker_reasons.add("rebinding_alias_provenance_requires_parseable_targets")
     if unsupported_semantics:
@@ -1320,6 +1471,8 @@ def program_ad_static_alias_lattice_report(
         malformed_view_alias_edges=malformed_view_alias_edges,
         list_alias_provenance=list_alias_provenance,
         malformed_list_alias_edges=malformed_list_alias_edges,
+        loop_carried_state_provenance=loop_carried_state_provenance,
+        malformed_loop_carried_state_edges=malformed_loop_carried_state_edges,
         rebinding_alias_provenance=rebinding_alias_provenance,
         malformed_rebinding_alias_edges=malformed_rebinding_alias_edges,
     )
@@ -1522,6 +1675,65 @@ def _parse_list_alias_provenance(edge: ProgramADAliasEdge) -> ProgramADListAlias
     )
 
 
+def _loop_carried_state_provenance(
+    alias_edges: Sequence[ProgramADAliasEdge],
+) -> tuple[tuple[ProgramADLoopCarriedStateProvenance, ...], tuple[str, ...]]:
+    """Return sorted parseable loop-carried state provenance and malformed labels."""
+
+    rows: set[ProgramADLoopCarriedStateProvenance] = set()
+    malformed: set[str] = set()
+    for edge in alias_edges:
+        if edge.kind != "loop_carried_state":
+            continue
+        try:
+            rows.add(_parse_loop_carried_state_provenance(edge))
+        except ValueError:
+            malformed.add(_alias_edge_label(edge))
+    return (
+        tuple(
+            sorted(
+                rows,
+                key=lambda row: (
+                    row.state_name,
+                    row.entry_label,
+                    row.backedge_label,
+                    row.source,
+                    row.target,
+                    row.version,
+                ),
+            )
+        ),
+        tuple(sorted(malformed)),
+    )
+
+
+def _parse_loop_carried_state_provenance(
+    edge: ProgramADAliasEdge,
+) -> ProgramADLoopCarriedStateProvenance:
+    """Parse one loop-carried state edge into typed provenance."""
+
+    source_parts = edge.source.split(":")
+    target_parts = edge.target.split(":")
+    if len(source_parts) != 3 or source_parts[0] != "loop":
+        raise ValueError("program AD loop-carried state source must be loop:<state>:entry")
+    if len(target_parts) != 3 or target_parts[0] != "loop":
+        raise ValueError("program AD loop-carried state target must be loop:<state>:backedge")
+    source_state = source_parts[1]
+    target_state = target_parts[1]
+    entry_label = source_parts[2]
+    backedge_label = target_parts[2]
+    if not source_state or source_state != target_state:
+        raise ValueError("program AD loop-carried state markers must share one state name")
+    return ProgramADLoopCarriedStateProvenance(
+        source=edge.source,
+        target=edge.target,
+        state_name=source_state,
+        entry_label=entry_label,
+        backedge_label=backedge_label,
+        version=edge.version,
+    )
+
+
 def _rebinding_alias_provenance(
     alias_edges: Sequence[ProgramADAliasEdge],
 ) -> tuple[tuple[ProgramADRebindingAliasProvenance, ...], tuple[str, ...]]:
@@ -1651,6 +1863,7 @@ __all__ = [
     "ProgramADAliasSet",
     "ProgramADControlPathAliasProvenance",
     "ProgramADListAliasProvenance",
+    "ProgramADLoopCarriedStateProvenance",
     "ProgramADRebindingAliasProvenance",
     "ProgramADStaticAliasLatticeComponent",
     "ProgramADStaticAliasLatticeReport",
