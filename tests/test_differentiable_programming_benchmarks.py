@@ -190,7 +190,10 @@ def test_differentiable_programming_benchmark_suite_matches_analytic_references(
     assert reverse_adjoint_row.adjoint_supported is True
     assert reverse_adjoint_row.max_abs_adjoint_error is not None
     assert reverse_adjoint_row.max_abs_adjoint_error <= 1.0e-12
-    assert "ProgramADAdjointResult and ProgramADAdjointStep generation provenance" in (
+    assert "ProgramADAdjointResult and ProgramADAdjointStep executable replay" in (
+        reverse_adjoint_row.claim_boundary
+    )
+    assert "replayed gradient checked against the attached adjoint gradient" in (
         reverse_adjoint_row.claim_boundary
     )
     assert "finite local pullback scales" in reverse_adjoint_row.claim_boundary

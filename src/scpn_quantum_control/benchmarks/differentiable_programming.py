@@ -42,6 +42,7 @@ from ..differentiable import (
     program_ad_registry_dispatch_coverage_report,
     program_ad_static_alias_lattice_report,
     program_adjoint_gradient,
+    program_adjoint_replay_gradient,
     program_adjoint_result,
     value_and_grad_program_ad_effect_ir_with_rust,
     vjp,
@@ -1230,7 +1231,7 @@ def _program_adjoint_replay_provenance_case() -> DifferentiableProgrammingBenchm
         ],
         dtype=np.float64,
     )
-    adjoint_gradient = program_adjoint_gradient(result)
+    adjoint_gradient = program_adjoint_replay_gradient(result)
     return DifferentiableProgrammingBenchmarkResult(
         case_id="program_adjoint_replay_provenance_contracts",
         category="reverse-adjoint",
@@ -1243,11 +1244,12 @@ def _program_adjoint_replay_provenance_case() -> DifferentiableProgrammingBenchm
         if adjoint.supported
         else None,
         claim_boundary=(
-            "ProgramADAdjointResult and ProgramADAdjointStep generation provenance "
+            "ProgramADAdjointResult and ProgramADAdjointStep executable replay "
             "over supported executed scalar IR nodes, finite local pullback scales, "
             "cotangent-flow rows, reverse effect-order rows, control regions, and "
             "runtime control/phi row bindings in program_ad_effect_ir.v1, with "
-            "non-executed phi inputs recorded as blocked adjoints; local "
+            "non-executed phi inputs recorded as blocked adjoints and the replayed "
+            "gradient checked against the attached adjoint gradient; local "
             "conformance only, not full reverse-mode compiler AD, non-executed "
             "branch adjoints, Rust, LLVM/JIT, hardware, or performance evidence; "
             "no wall-clock performance claim"

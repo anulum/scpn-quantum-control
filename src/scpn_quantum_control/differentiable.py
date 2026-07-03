@@ -232,6 +232,7 @@ from .program_ad_adjoint import (
     ProgramADAdjointStep,
     program_adjoint_grad,
     program_adjoint_gradient,
+    program_adjoint_replay_gradient,
     program_adjoint_result,
     program_adjoint_value_and_grad,
 )
@@ -851,6 +852,7 @@ __all__ = [
     "program_ad_stencil_gradient_derivative_rule",
     "program_adjoint_grad",
     "program_adjoint_gradient",
+    "program_adjoint_replay_gradient",
     "program_adjoint_result",
     "program_adjoint_value_and_grad",
     "registered_custom_jacobian",

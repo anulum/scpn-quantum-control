@@ -9,6 +9,7 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
 from typing import Any, cast
 
 import numpy as np
@@ -51,6 +52,7 @@ from scpn_quantum_control.differentiable import (
     program_ad_static_alias_lattice_report,
     program_adjoint_grad,
     program_adjoint_gradient,
+    program_adjoint_replay_gradient,
     program_adjoint_result,
     program_adjoint_value_and_grad,
     whole_program_grad,
@@ -210,8 +212,12 @@ def test_whole_program_ad_is_exported_from_package_root() -> None:
     assert differentiable.program_adjoint_grad is adjoint_module.program_adjoint_grad
     assert scpn.program_adjoint_grad is adjoint_module.program_adjoint_grad
     assert differentiable.program_adjoint_gradient is adjoint_module.program_adjoint_gradient
+    assert differentiable.program_adjoint_replay_gradient is (
+        adjoint_module.program_adjoint_replay_gradient
+    )
     assert differentiable.program_adjoint_result is adjoint_module.program_adjoint_result
     assert scpn.program_adjoint_gradient is adjoint_module.program_adjoint_gradient
+    assert scpn.program_adjoint_replay_gradient is adjoint_module.program_adjoint_replay_gradient
     assert scpn.program_adjoint_result is adjoint_module.program_adjoint_result
     assert scpn.program_adjoint_value_and_grad is adjoint_module.program_adjoint_value_and_grad
     assert scpn.analyze_program_ad_alias_effects is analyze_program_ad_alias_effects
@@ -351,6 +357,110 @@ def test_program_adjoint_replay_matches_forward_program_ad_for_supported_ir() ->
     assert payload["blocked_non_executed_phi_input_count"] == 1
     _assert_allclose(adjoint.gradient, result.gradient, rtol=1.0e-12, atol=1.0e-12)
     _assert_allclose(program_adjoint_gradient(result), result.gradient, rtol=1.0e-12, atol=1.0e-12)
+    _assert_allclose(
+        program_adjoint_replay_gradient(result),
+        result.gradient,
+        rtol=1.0e-12,
+        atol=1.0e-12,
+    )
+
+
+def test_program_adjoint_executable_replay_recomputes_step_stream_gradient() -> None:
+    """Executable adjoint replay should recompute cotangents from generated steps."""
+
+    def objective(values: Any) -> object:
+        x, y, z = values
+        return ((x * y) + (x + x)) / (z + 4.0)
+
+    values = np.array([2.0, 3.0, 0.5], dtype=np.float64)
+    result = whole_program_value_and_grad(
+        objective,
+        values,
+        parameters=(Parameter("x"), Parameter("y"), Parameter("z")),
+    )
+    adjoint = program_adjoint_result(result)
+    replay_gradient = program_adjoint_replay_gradient(result)
+
+    assert adjoint.supported is True
+    assert adjoint.adjoint_step_count == len(result.ir_nodes)
+    _assert_allclose(replay_gradient, adjoint.gradient, rtol=1.0e-12, atol=1.0e-12)
+    _assert_allclose(replay_gradient, result.gradient, rtol=1.0e-12, atol=1.0e-12)
+
+
+def test_program_adjoint_executable_replay_fails_closed_for_tampered_steps() -> None:
+    """Executable replay should reject step streams that no longer execute."""
+
+    def objective(values: Any) -> object:
+        x, y = values
+        return (x * y) + x
+
+    result = whole_program_value_and_grad(
+        objective,
+        np.array([2.0, 3.0], dtype=np.float64),
+        parameters=(Parameter("x"), Parameter("y")),
+    )
+    adjoint = program_adjoint_result(result)
+    first_step = adjoint.adjoint_steps[0]
+    tampered_first_step = replace(
+        first_step,
+        incoming_cotangent=0.5,
+        contribution_cotangents=tuple(0.5 * scale for scale in first_step.contribution_scales),
+    )
+    tampered_adjoint = replace(
+        adjoint,
+        adjoint_steps=(tampered_first_step, *adjoint.adjoint_steps[1:]),
+    )
+    tampered_result = replace(result, adjoint_result=tampered_adjoint)
+
+    with pytest.raises(ValueError, match="incoming cotangent"):
+        program_adjoint_replay_gradient(tampered_result)
+
+
+def test_program_adjoint_executable_replay_fails_closed_for_gradient_divergence() -> None:
+    """Executable replay should reject stale attached gradients."""
+
+    def objective(values: Any) -> object:
+        x, y = values
+        return x * y
+
+    result = whole_program_value_and_grad(
+        objective,
+        np.array([2.0, 3.0], dtype=np.float64),
+        parameters=(Parameter("x"), Parameter("y")),
+    )
+    adjoint = program_adjoint_result(result)
+    stale_adjoint = replace(
+        adjoint,
+        gradient=adjoint.gradient + np.array([1.0, 0.0], dtype=np.float64),
+    )
+    stale_result = replace(result, adjoint_result=stale_adjoint)
+
+    with pytest.raises(ValueError, match="diverged from attached gradient"):
+        program_adjoint_replay_gradient(stale_result)
+
+
+def test_program_adjoint_executable_replay_fails_closed_without_step_stream() -> None:
+    """Executable replay should require a generated stabilized-IR step stream."""
+
+    unsupported_adjoint = ProgramADAdjointResult(
+        gradient=np.array([0.0], dtype=np.float64),
+        supported=False,
+        unsupported_ops=("unsupported_op",),
+        method="program_adjoint_ir_generation",
+        claim_boundary="unsupported scalar replay",
+    )
+    empty_supported_adjoint = ProgramADAdjointResult(
+        gradient=np.array([1.0], dtype=np.float64),
+        supported=True,
+        unsupported_ops=(),
+        method="program_adjoint_ir_generation",
+        claim_boundary="unsupported scalar replay",
+    )
+
+    with pytest.raises(ValueError, match="unsupported for ops: unsupported_op"):
+        program_adjoint_replay_gradient(_minimal_whole_program_result(unsupported_adjoint))
+    with pytest.raises(ValueError, match="requires generated adjoint steps"):
+        program_adjoint_replay_gradient(_minimal_whole_program_result(empty_supported_adjoint))
 
 
 @pytest.mark.parametrize(

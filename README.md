@@ -105,7 +105,7 @@ has a defined commercial licensing route.
 | Surface | Current inventory |
 |---|---:|
 | Package version | 0.10.0 |
-| Public API exports | 786 |
+| Public API exports | 787 |
 | Python source modules | 540 |
 | Public Python classes | 972 |
 | Domain package families | 32 |
