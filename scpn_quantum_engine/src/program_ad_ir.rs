@@ -11,7 +11,7 @@
 //! This module mirrors the bounded Python Program AD IR schema so Rust-side
 //! tooling can inspect evidence metadata, execute a narrow scalar forward
 //! interpreter, and replay bounded scalar, elementwise-array, static structural,
-//! static source-map indexing, static product, population moment, and
+//! static source-map indexing, static product, corrected moment, and
 //! order-statistic reductions, and static-linalg value+gradient traces when
 //! opcode-bearing rows are present.
 //! It does not promote LLVM lowering, JIT execution, reverse-mode compiler AD,
@@ -37,8 +37,9 @@ use crate::program_ad_static_source_map::{
     apply_static_source_map, scatter_static_source_map_cotangent,
 };
 use crate::program_ad_variance_reduction::{
-    std_all_cotangent, std_all_value, std_axis_cotangent, std_axis_values, variance_all_cotangent,
-    variance_all_value, variance_axis_cotangent, variance_axis_values,
+    parse_moment_reduction_metadata, std_all_cotangent, std_all_value, std_axis_cotangent,
+    std_axis_values, variance_all_cotangent, variance_all_value, variance_axis_cotangent,
+    variance_axis_values,
 };
 
 const PROGRAM_AD_EFFECT_IR_FORMAT: &str = "program_ad_effect_ir.v1";
@@ -1178,18 +1179,35 @@ fn accumulate_variance(
         return Err(format!("effect {} var requires one input", effect.index));
     }
     let input = numeric_operand(&effect.inputs[0], values)?;
+    let metadata = parse_moment_reduction_metadata(operation, "var", input.shape.len())?;
     let contribution_values = if operation == "var" {
         let scalar_cotangent = cotangent.scalar_value()?;
-        variance_all_cotangent(effect.index, &input.values, scalar_cotangent)?
-    } else {
-        let axis = parse_static_axis(operation, "var", input.shape.len())?;
-        variance_axis_cotangent(
+        variance_all_cotangent(
             effect.index,
-            &input.shape,
-            axis,
-            &cotangent.values,
             &input.values,
+            scalar_cotangent,
+            metadata.correction,
         )?
+    } else {
+        match metadata.axis {
+            Some(axis) => variance_axis_cotangent(
+                effect.index,
+                &input.shape,
+                axis,
+                &cotangent.values,
+                &input.values,
+                metadata.correction,
+            )?,
+            None => {
+                let scalar_cotangent = cotangent.scalar_value()?;
+                variance_all_cotangent(
+                    effect.index,
+                    &input.values,
+                    scalar_cotangent,
+                    metadata.correction,
+                )?
+            }
+        }
     };
     let contribution = ProgramADNumericValue::new(input.shape.clone(), contribution_values)?;
     add_numeric_adjoint(&effect.inputs[0], contribution, values, adjoints)
@@ -1206,18 +1224,35 @@ fn accumulate_standard_deviation(
         return Err(format!("effect {} std requires one input", effect.index));
     }
     let input = numeric_operand(&effect.inputs[0], values)?;
+    let metadata = parse_moment_reduction_metadata(operation, "std", input.shape.len())?;
     let contribution_values = if operation == "std" {
         let scalar_cotangent = cotangent.scalar_value()?;
-        std_all_cotangent(effect.index, &input.values, scalar_cotangent)?
-    } else {
-        let axis = parse_static_axis(operation, "std", input.shape.len())?;
-        std_axis_cotangent(
+        std_all_cotangent(
             effect.index,
-            &input.shape,
-            axis,
-            &cotangent.values,
             &input.values,
+            scalar_cotangent,
+            metadata.correction,
         )?
+    } else {
+        match metadata.axis {
+            Some(axis) => std_axis_cotangent(
+                effect.index,
+                &input.shape,
+                axis,
+                &cotangent.values,
+                &input.values,
+                metadata.correction,
+            )?,
+            None => {
+                let scalar_cotangent = cotangent.scalar_value()?;
+                std_all_cotangent(
+                    effect.index,
+                    &input.values,
+                    scalar_cotangent,
+                    metadata.correction,
+                )?
+            }
+        }
     };
     let contribution = ProgramADNumericValue::new(input.shape.clone(), contribution_values)?;
     add_numeric_adjoint(&effect.inputs[0], contribution, values, adjoints)
@@ -1875,21 +1910,33 @@ fn numeric_variance(
     }
     let target = target_shape(effect, shapes_by_target)?;
     let source = numeric_operand(&effect.inputs[0], values)?;
-    if operation == "var" {
-        if !target.is_empty() {
-            return Err(format!(
-                "effect {} var non-scalar target requires static axis metadata var:axis:<int>",
-                effect.index
-            ));
+    let metadata = parse_moment_reduction_metadata(operation, "var", source.shape.len())?;
+    match metadata.axis {
+        Some(axis) => {
+            let output = variance_axis_values(
+                effect.index,
+                &source.shape,
+                axis,
+                &target,
+                &source.values,
+                metadata.correction,
+            )?;
+            ProgramADNumericValue::new(target, output)
         }
-        return Ok(ProgramADNumericValue::scalar(variance_all_value(
-            effect.index,
-            &source.values,
-        )?));
+        None => {
+            if !target.is_empty() {
+                return Err(format!(
+                    "effect {} var non-scalar target requires static axis metadata var:axis:<int>",
+                    effect.index
+                ));
+            }
+            Ok(ProgramADNumericValue::scalar(variance_all_value(
+                effect.index,
+                &source.values,
+                metadata.correction,
+            )?))
+        }
     }
-    let axis = parse_static_axis(operation, "var", source.shape.len())?;
-    let output = variance_axis_values(effect.index, &source.shape, axis, &target, &source.values)?;
-    ProgramADNumericValue::new(target, output)
 }
 
 fn numeric_standard_deviation(
@@ -1903,21 +1950,33 @@ fn numeric_standard_deviation(
     }
     let target = target_shape(effect, shapes_by_target)?;
     let source = numeric_operand(&effect.inputs[0], values)?;
-    if operation == "std" {
-        if !target.is_empty() {
-            return Err(format!(
-                "effect {} std non-scalar target requires static axis metadata std:axis:<int>",
-                effect.index
-            ));
+    let metadata = parse_moment_reduction_metadata(operation, "std", source.shape.len())?;
+    match metadata.axis {
+        Some(axis) => {
+            let output = std_axis_values(
+                effect.index,
+                &source.shape,
+                axis,
+                &target,
+                &source.values,
+                metadata.correction,
+            )?;
+            ProgramADNumericValue::new(target, output)
         }
-        return Ok(ProgramADNumericValue::scalar(std_all_value(
-            effect.index,
-            &source.values,
-        )?));
+        None => {
+            if !target.is_empty() {
+                return Err(format!(
+                    "effect {} std non-scalar target requires static axis metadata std:axis:<int>",
+                    effect.index
+                ));
+            }
+            Ok(ProgramADNumericValue::scalar(std_all_value(
+                effect.index,
+                &source.values,
+                metadata.correction,
+            )?))
+        }
     }
-    let axis = parse_static_axis(operation, "std", source.shape.len())?;
-    let output = std_axis_values(effect.index, &source.shape, axis, &target, &source.values)?;
-    ProgramADNumericValue::new(target, output)
 }
 
 fn numeric_order_statistic(

@@ -95,7 +95,7 @@ broadcast reduction, static `reshape`/`ravel`, `broadcast_to`, reversed-axis
 `index_map:<sN|cVALUE,...>` indexing, and executed runtime branch metadata when
 matched by runtime phi provenance. Legacy opcode-free metadata, aliases,
 mutation, non-lowered dynamic indexing semantics, dynamic axes, dynamic q/method
-metadata, ddof/correction metadata, zero-variance `std` gradients, broad array/linalg adjoints,
+metadata, dynamic ddof/correction metadata, zero-variance `std` gradients, broad array/linalg adjoints,
 source-level and non-executed branch semantics, general Program AD execution,
 LLVM/JIT lowering, hardware execution, provider execution, and performance
 promotion remain fail-closed.

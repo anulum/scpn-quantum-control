@@ -1171,6 +1171,72 @@ fn program_ad_effect_ir_rust_value_and_gradient_replays_static_variance_std_redu
 }
 
 #[test]
+fn program_ad_effect_ir_rust_value_and_gradient_replays_corrected_variance_std_reductions() {
+    let ir = STATIC_VARIANCE_STD_REDUCTION_PROGRAM_AD_IR
+        .replace(
+            "\"operation\": \"var:axis:0\"",
+            "\"operation\": \"var:axis:0:ddof:1\"",
+        )
+        .replace(
+            "\"operation\": \"std:axis:-1\"",
+            "\"operation\": \"std:axis:-1:correction:1\"",
+        )
+        .replace("\"operation\": \"var\"", "\"operation\": \"var:ddof:2\"");
+    let result = interpret_program_ad_effect_ir_value_and_gradient(
+        &ir,
+        &[
+            1.0, 2.0, 4.0, 3.0, 5.0, 7.0, 0.5, -1.0, 2.0, 1.25, -0.75, 0.6,
+        ],
+    )
+    .unwrap();
+
+    let row_std = (7.0_f64 / 3.0).sqrt();
+    let expected_value = 7.5 + 1.25 * row_std;
+    let expected_gradient = [
+        -1.8 - 5.0 / (6.0 * row_std),
+        2.5 - 5.0 / (24.0 * row_std),
+        -5.9 + 25.0 / (24.0 * row_std),
+        1.175,
+        -2.6,
+        6.625,
+        2.0,
+        4.5,
+        4.5,
+        row_std,
+        2.0,
+        35.0 / 6.0,
+    ];
+    assert!(result.supported, "{:?}", result.blocked_reasons);
+    assert!((result.value.unwrap() - expected_value).abs() <= 1.0e-12);
+    assert_eq!(result.gradient.len(), expected_gradient.len());
+    for (actual, expected) in result.gradient.iter().zip(expected_gradient) {
+        assert!((actual - expected).abs() <= 1.0e-12);
+    }
+    assert_eq!(result.supported_effect_count, 14);
+}
+
+#[test]
+fn program_ad_effect_ir_rust_value_and_gradient_rejects_degenerate_moment_correction() {
+    let ir = STATIC_VARIANCE_STD_REDUCTION_PROGRAM_AD_IR.replace(
+        "\"operation\": \"std:axis:-1\"",
+        "\"operation\": \"std:axis:-1:ddof:3\"",
+    );
+    let result = interpret_program_ad_effect_ir_value_and_gradient(
+        &ir,
+        &[
+            1.0, 2.0, 4.0, 3.0, 5.0, 7.0, 0.5, -1.25, 2.0, 1.5, -0.75, 0.25,
+        ],
+    )
+    .unwrap();
+
+    assert!(!result.supported);
+    assert!(result
+        .blocked_reasons
+        .iter()
+        .any(|reason| reason.contains("correction must be less than reduction group size")));
+}
+
+#[test]
 fn program_ad_effect_ir_rust_value_and_gradient_rejects_zero_variance_std() {
     let result = interpret_program_ad_effect_ir_value_and_gradient(
         STD_ZERO_VARIANCE_PROGRAM_AD_IR,

@@ -245,12 +245,13 @@ value+gradient replay is bounded to opcode-bearing scalar, elementwise
 shaped-array, and static structural rows with scalar-to-array broadcasting,
 static `reshape`/`ravel`, `broadcast_to`, reversed-axis `transpose`, static-axis
 `concatenate`/`stack`, static-axis `sum`/`mean`/`prod`/`var`/`std`/`max`/`min`/`median`
-reductions, scalar-`q` `quantile`/`percentile` reductions, and scalar all-axis
+reductions with static `ddof`/`correction` metadata for `var`/`std`,
+scalar-`q` `quantile`/`percentile` reductions, and scalar all-axis
 `sum`/`mean`/`prod`/`var`/`std`/`max`/`min`/`median` plus scalar-`q` `quantile`/`percentile`
 objective closure, plus static source-map `index_map:<sN|cVALUE,...>` indexing,
 including executed runtime branch metadata when matched by runtime phi
 provenance. Legacy opcode-free metadata, aliases, mutation, non-lowered dynamic
-indexing semantics, dynamic axes, dynamic q/method metadata, ddof/correction
+indexing semantics, dynamic axes, dynamic q/method metadata, dynamic ddof/correction
 metadata, zero-variance `std` gradients, broad array/linalg adjoints, source-level and non-executed branch
 semantics, general Program AD execution, LLVM/JIT differentiated execution,
 hardware, provider, and performance routes remain fail-closed.

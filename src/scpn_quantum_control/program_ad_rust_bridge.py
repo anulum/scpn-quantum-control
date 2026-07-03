@@ -253,13 +253,15 @@ def value_and_grad_program_ad_effect_ir_with_rust(
     reversed-axis ``transpose``, ``broadcast_to``, static-axis ``concatenate``/
     ``stack``, static source-map ``index_map`` indexing, static-axis
     ``sum``/``mean``/``prod``/``var``/``std``/``max``/``min``/``median``
-    reductions, scalar-``q`` ``quantile``/``percentile`` reductions, and scalar
+    reductions with static ``ddof``/``correction`` metadata for ``var``/``std``,
+    scalar-``q`` ``quantile``/``percentile`` reductions, and scalar
     all-axis ``sum``/``mean``/``prod``/``var``/``std``/``max``/``min``/
     ``median`` plus scalar-``q`` ``quantile``/``percentile`` objective closure.
     Static linalg
     replay remains scalar-SSA only. Aliases, mutation, non-lowered dynamic
-    indexing semantics, dynamic axes, dynamic q/method metadata, ddof/correction
-    metadata, zero-variance ``std`` gradients, dynamic structural operations,
+    indexing semantics, dynamic axes, dynamic q/method metadata, dynamic
+    ``ddof``/``correction`` metadata, zero-variance ``std`` gradients,
+    dynamic structural operations,
     provider execution, hardware execution, LLVM/JIT execution, and performance
     claims fail closed instead of falling back to Python.
     Executed runtime branch metadata is replayed only as provenance for the

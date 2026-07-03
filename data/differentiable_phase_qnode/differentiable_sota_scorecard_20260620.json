@@ -337,7 +337,7 @@
         "diff-sota-scorecard-20260620"
       ],
       "blockers": [
-        "non-lowered dynamic indexing semantics, dynamic axes, dynamic q/method metadata, ddof/correction metadata, zero-variance std gradients, and broad linalg array adjoints are missing",
+        "non-lowered dynamic indexing semantics, dynamic axes, dynamic q/method metadata, dynamic ddof/correction metadata, zero-variance std gradients, and broad linalg array adjoints are missing",
         "executable registry promotion, Rust-side LLVM/JIT lowering, and isolated benchmark evidence are missing"
       ],
       "category": "rust_native_program_ad",
@@ -345,7 +345,7 @@
       "claim_ids": [
         "phase_qnode_claim_boundary"
       ],
-      "current_evidence": "Rust Program AD now replays scalar primitives, view-aliasing (reshape, transpose, slice, matmul, matvec) and static linear algebra of arbitrary dimension (trace, determinant, inverse, solve; closed-form 2x2/3x3 and LU/Gauss-Jordan for 4x4 and up) through the unrolled scalar SSA, plus bounded elementwise shaped arrays with scalar-to-array broadcasting and static structural array opcodes for reshape, ravel, broadcast_to, reversed-axis transpose, static-axis concatenate/stack assembly, and static source-map indexing plus static-axis and scalar all-axis sum/mean/prod/var/std/max/min/median reductions and static scalar-q quantile/percentile reductions. These paths are parity-verified against the Python/NumPy reference and CI-checked via cargo tests (2026-06-22 slices 2b-1..2b-6; 2026-07-03 elementwise, structural array, structural assembly, static-axis reduction, static source-map indexing, static product reduction, and static variance/std reduction adjoints, and static selector/order-statistic reduction adjoints); a general structural ndarray adjoint engine, executable registry promotion and Rust-side LLVM/JIT lowering remain open.",
+      "current_evidence": "Rust Program AD now replays scalar primitives, view-aliasing (reshape, transpose, slice, matmul, matvec) and static linear algebra of arbitrary dimension (trace, determinant, inverse, solve; closed-form 2x2/3x3 and LU/Gauss-Jordan for 4x4 and up) through the unrolled scalar SSA, plus bounded elementwise shaped arrays with scalar-to-array broadcasting and static structural array opcodes for reshape, ravel, broadcast_to, reversed-axis transpose, static-axis concatenate/stack assembly, and static source-map indexing plus static-axis and scalar all-axis sum/mean/prod/var/std/max/min/median reductions, static ddof/correction metadata for var/std, and static scalar-q quantile/percentile reductions. These paths are parity-verified against the Python/NumPy reference and CI-checked via cargo tests (2026-06-22 slices 2b-1..2b-6; 2026-07-03 elementwise, structural array, structural assembly, static-axis reduction, static source-map indexing, static product reduction, static variance/std reduction adjoints, static ddof/correction metadata, and static selector/order-statistic reduction adjoints); a general structural ndarray adjoint engine, executable registry promotion and Rust-side LLVM/JIT lowering remain open.",
       "docs_surface": [
         "README.md",
         "docs/benchmarks_api.md",

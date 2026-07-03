@@ -6,16 +6,27 @@
 // Contact: www.anulum.li | protoscience@anulum.li
 // scpn-quantum-engine — Program AD variance and standard-deviation replay
 
-//! Population variance and standard-deviation reduction replay for Program AD.
+//! Corrected variance and standard-deviation reduction replay for Program AD.
 //!
-//! The forward pass supports all-axis and static-axis population moments. Reverse
-//! replay uses the exact centered cotangent rules and fails closed for standard
-//! deviation groups with zero variance, where the derivative is singular.
+//! The forward pass supports all-axis and static-axis moments with static
+//! `ddof`/`correction` metadata. Reverse replay uses the exact centered
+//! cotangent rules and fails closed for invalid correction denominators and
+//! standard-deviation groups with zero variance, where the derivative is
+//! singular.
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 enum MomentReduction {
     Variance,
     StandardDeviation,
+}
+
+/// Static metadata attached to a Program AD moment-reduction opcode.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub(crate) struct MomentReductionMetadata {
+    /// Optional static axis for shaped reductions; `None` means all-axis.
+    pub(crate) axis: Option<usize>,
+    /// Static delta-degrees-of-freedom correction in the variance denominator.
+    pub(crate) correction: f64,
 }
 
 impl MomentReduction {
@@ -26,8 +37,14 @@ impl MomentReduction {
         }
     }
 
-    fn group_value(self, effect_index: usize, values: &[f64]) -> Result<f64, String> {
-        let (mean, variance) = population_moments(effect_index, self.label(), values)?;
+    fn group_value(
+        self,
+        effect_index: usize,
+        values: &[f64],
+        correction: f64,
+    ) -> Result<f64, String> {
+        let (mean, variance, _denominator) =
+            corrected_moments(effect_index, self.label(), values, correction)?;
         let value = match self {
             Self::Variance => variance,
             Self::StandardDeviation => variance.sqrt(),
@@ -47,13 +64,14 @@ impl MomentReduction {
         effect_index: usize,
         values: &[f64],
         cotangent: f64,
+        correction: f64,
     ) -> Result<Vec<f64>, String> {
-        let (mean, variance) = population_moments(effect_index, self.label(), values)?;
-        let count = values.len() as f64;
+        let (mean, variance, denominator) =
+            corrected_moments(effect_index, self.label(), values, correction)?;
         let contributions = match self {
             Self::Variance => values
                 .iter()
-                .map(|value| cotangent * 2.0 * (value - mean) / count)
+                .map(|value| cotangent * 2.0 * (value - mean) / denominator)
                 .collect::<Vec<f64>>(),
             Self::StandardDeviation => {
                 if variance <= 0.0 {
@@ -64,7 +82,7 @@ impl MomentReduction {
                 let standard_deviation = variance.sqrt();
                 values
                     .iter()
-                    .map(|value| cotangent * (value - mean) / (count * standard_deviation))
+                    .map(|value| cotangent * (value - mean) / (denominator * standard_deviation))
                     .collect::<Vec<f64>>()
             }
         };
@@ -79,26 +97,101 @@ impl MomentReduction {
     }
 }
 
-/// Evaluate the population variance over every flattened source value.
+/// Parse static axis and correction metadata for `var` or `std` opcodes.
+pub(crate) fn parse_moment_reduction_metadata(
+    operation: &str,
+    prefix: &str,
+    rank: usize,
+) -> Result<MomentReductionMetadata, String> {
+    if operation == prefix {
+        return Ok(MomentReductionMetadata {
+            axis: None,
+            correction: 0.0,
+        });
+    }
+    let expected_prefix = format!("{prefix}:");
+    let Some(raw_metadata) = operation.strip_prefix(&expected_prefix) else {
+        return Err(format!(
+            "{prefix} operation requires static metadata {prefix}[:axis:<int>][:ddof:<nonnegative>] or {prefix}[:axis:<int>][:correction:<nonnegative>]"
+        ));
+    };
+    let fields = raw_metadata.split(':').collect::<Vec<&str>>();
+    let mut axis: Option<usize> = None;
+    let mut correction: Option<f64> = None;
+    let mut index = 0usize;
+    while index < fields.len() {
+        let field = fields[index];
+        let Some(raw_value) = fields.get(index + 1).copied() else {
+            return Err(format!(
+                "{prefix} metadata field {field:?} must include a value"
+            ));
+        };
+        match field {
+            "axis" => {
+                if axis.is_some() {
+                    return Err(format!("{prefix} axis metadata must appear only once"));
+                }
+                let parsed_axis = raw_value
+                    .parse::<isize>()
+                    .map_err(|_| format!("{prefix} axis metadata must be an integer"))?;
+                axis =
+                    Some(normalise_static_axis(parsed_axis, rank).map_err(|reason| {
+                        format!("{prefix} axis metadata is invalid: {reason}")
+                    })?);
+            }
+            "ddof" | "correction" => {
+                if correction.is_some() {
+                    return Err(format!(
+                        "{prefix} correction metadata must appear only once"
+                    ));
+                }
+                let parsed_correction = raw_value.parse::<f64>().map_err(|_| {
+                    format!("{prefix} correction metadata must be a finite non-negative scalar")
+                })?;
+                validate_correction_scalar(prefix, parsed_correction)?;
+                correction = Some(parsed_correction);
+            }
+            "" => return Err(format!("{prefix} metadata field must be non-empty")),
+            _ => {
+                return Err(format!(
+                    "{prefix} metadata field {field:?} is unsupported; expected axis, ddof, or correction"
+                ));
+            }
+        }
+        index += 2;
+    }
+    Ok(MomentReductionMetadata {
+        axis,
+        correction: correction.unwrap_or(0.0),
+    })
+}
+
+/// Evaluate the corrected variance over every flattened source value.
 pub(crate) fn variance_all_value(
     effect_index: usize,
     source_values: &[f64],
+    correction: f64,
 ) -> Result<f64, String> {
-    MomentReduction::Variance.group_value(effect_index, source_values)
+    MomentReduction::Variance.group_value(effect_index, source_values, correction)
 }
 
-/// Evaluate the population standard deviation over every flattened source value.
-pub(crate) fn std_all_value(effect_index: usize, source_values: &[f64]) -> Result<f64, String> {
-    MomentReduction::StandardDeviation.group_value(effect_index, source_values)
+/// Evaluate the corrected standard deviation over every flattened source value.
+pub(crate) fn std_all_value(
+    effect_index: usize,
+    source_values: &[f64],
+    correction: f64,
+) -> Result<f64, String> {
+    MomentReduction::StandardDeviation.group_value(effect_index, source_values, correction)
 }
 
-/// Evaluate a static-axis population variance reduction.
+/// Evaluate a static-axis corrected variance reduction.
 pub(crate) fn variance_axis_values(
     effect_index: usize,
     source_shape: &[usize],
     axis: usize,
     target_shape: &[usize],
     source_values: &[f64],
+    correction: f64,
 ) -> Result<Vec<f64>, String> {
     moment_axis_values(
         effect_index,
@@ -107,16 +200,18 @@ pub(crate) fn variance_axis_values(
         target_shape,
         source_values,
         MomentReduction::Variance,
+        correction,
     )
 }
 
-/// Evaluate a static-axis population standard-deviation reduction.
+/// Evaluate a static-axis corrected standard-deviation reduction.
 pub(crate) fn std_axis_values(
     effect_index: usize,
     source_shape: &[usize],
     axis: usize,
     target_shape: &[usize],
     source_values: &[f64],
+    correction: f64,
 ) -> Result<Vec<f64>, String> {
     moment_axis_values(
         effect_index,
@@ -125,38 +220,48 @@ pub(crate) fn std_axis_values(
         target_shape,
         source_values,
         MomentReduction::StandardDeviation,
+        correction,
     )
 }
 
-/// Build the all-axis population variance adjoint contribution.
+/// Build the all-axis corrected variance adjoint contribution.
 pub(crate) fn variance_all_cotangent(
     effect_index: usize,
     source_values: &[f64],
     scalar_cotangent: f64,
+    correction: f64,
 ) -> Result<Vec<f64>, String> {
-    MomentReduction::Variance.group_cotangent(effect_index, source_values, scalar_cotangent)
+    MomentReduction::Variance.group_cotangent(
+        effect_index,
+        source_values,
+        scalar_cotangent,
+        correction,
+    )
 }
 
-/// Build the all-axis population standard-deviation adjoint contribution.
+/// Build the all-axis corrected standard-deviation adjoint contribution.
 pub(crate) fn std_all_cotangent(
     effect_index: usize,
     source_values: &[f64],
     scalar_cotangent: f64,
+    correction: f64,
 ) -> Result<Vec<f64>, String> {
     MomentReduction::StandardDeviation.group_cotangent(
         effect_index,
         source_values,
         scalar_cotangent,
+        correction,
     )
 }
 
-/// Build the source-shaped adjoint contribution for a static-axis variance.
+/// Build the source-shaped adjoint contribution for a static-axis corrected variance.
 pub(crate) fn variance_axis_cotangent(
     effect_index: usize,
     source_shape: &[usize],
     axis: usize,
     cotangent_values: &[f64],
     source_values: &[f64],
+    correction: f64,
 ) -> Result<Vec<f64>, String> {
     moment_axis_cotangent(
         effect_index,
@@ -165,16 +270,18 @@ pub(crate) fn variance_axis_cotangent(
         cotangent_values,
         source_values,
         MomentReduction::Variance,
+        correction,
     )
 }
 
-/// Build the source-shaped adjoint contribution for a static-axis standard deviation.
+/// Build the source-shaped adjoint contribution for a static-axis corrected standard deviation.
 pub(crate) fn std_axis_cotangent(
     effect_index: usize,
     source_shape: &[usize],
     axis: usize,
     cotangent_values: &[f64],
     source_values: &[f64],
+    correction: f64,
 ) -> Result<Vec<f64>, String> {
     moment_axis_cotangent(
         effect_index,
@@ -183,6 +290,7 @@ pub(crate) fn std_axis_cotangent(
         cotangent_values,
         source_values,
         MomentReduction::StandardDeviation,
+        correction,
     )
 }
 
@@ -193,6 +301,7 @@ fn moment_axis_values(
     target_shape: &[usize],
     source_values: &[f64],
     reduction: MomentReduction,
+    correction: f64,
 ) -> Result<Vec<f64>, String> {
     validate_source_size(reduction, source_shape, source_values)?;
     validate_axis_target_shape(effect_index, reduction, source_shape, axis, target_shape)?;
@@ -205,7 +314,7 @@ fn moment_axis_values(
         source_values,
     )?
     .iter()
-    .map(|group| reduction.group_value(effect_index, group))
+    .map(|group| reduction.group_value(effect_index, group, correction))
     .collect()
 }
 
@@ -216,6 +325,7 @@ fn moment_axis_cotangent(
     cotangent_values: &[f64],
     source_values: &[f64],
     reduction: MomentReduction,
+    correction: f64,
 ) -> Result<Vec<f64>, String> {
     validate_source_size(reduction, source_shape, source_values)?;
     let target_shape = axis_reduction_shape(reduction, source_shape, axis)?;
@@ -237,7 +347,7 @@ fn moment_axis_cotangent(
     for (group, cotangent) in groups.iter().zip(cotangent_values.iter()) {
         let group_values = group.iter().map(|(_, value)| *value).collect::<Vec<f64>>();
         let group_contribution =
-            reduction.group_cotangent(effect_index, &group_values, *cotangent)?;
+            reduction.group_cotangent(effect_index, &group_values, *cotangent, correction)?;
         for ((source_index, _), value) in group.iter().zip(group_contribution.iter()) {
             contribution[*source_index] = *value;
         }
@@ -269,11 +379,12 @@ fn axis_groups(
     Ok(groups)
 }
 
-fn population_moments(
+fn corrected_moments(
     effect_index: usize,
     label: &str,
     values: &[f64],
-) -> Result<(f64, f64), String> {
+    correction: f64,
+) -> Result<(f64, f64, f64), String> {
     if values.is_empty() {
         return Err(format!(
             "effect {effect_index} {label} requires non-empty values"
@@ -284,7 +395,14 @@ fn population_moments(
             "effect {effect_index} {label} source values must be finite"
         ));
     }
+    validate_correction_scalar(label, correction)?;
     let count = values.len() as f64;
+    if correction >= count {
+        return Err(format!(
+            "effect {effect_index} {label} correction must be less than reduction group size {count}, got {correction}"
+        ));
+    }
+    let denominator = count - correction;
     let mean = values.iter().sum::<f64>() / count;
     let variance = values
         .iter()
@@ -293,12 +411,22 @@ fn population_moments(
             delta * delta
         })
         .sum::<f64>()
-        / count;
+        / denominator;
     if variance.is_finite() && variance >= 0.0 {
-        Ok((mean, variance))
+        Ok((mean, variance, denominator))
     } else {
         Err(format!(
-            "effect {effect_index} {label} population variance must be finite and non-negative"
+            "effect {effect_index} {label} corrected variance must be finite and non-negative"
+        ))
+    }
+}
+
+fn validate_correction_scalar(label: &str, correction: f64) -> Result<(), String> {
+    if correction.is_finite() && correction >= 0.0 {
+        Ok(())
+    } else {
+        Err(format!(
+            "{label} correction metadata must be a finite non-negative scalar"
         ))
     }
 }
@@ -366,6 +494,19 @@ fn axis_reduction_shape(
         .enumerate()
         .filter_map(|(index, dimension)| (index != axis).then_some(*dimension))
         .collect())
+}
+
+fn normalise_static_axis(axis: isize, rank: usize) -> Result<usize, String> {
+    if rank == 0 {
+        return Err("rank must be positive".to_owned());
+    }
+    let rank_isize =
+        isize::try_from(rank).map_err(|_| "rank exceeds axis metadata range".to_owned())?;
+    let normalised = if axis < 0 { rank_isize + axis } else { axis };
+    if normalised < 0 || normalised >= rank_isize {
+        return Err(format!("axis {axis} is outside rank {rank}"));
+    }
+    usize::try_from(normalised).map_err(|_| "axis normalisation overflowed".to_owned())
 }
 
 fn shape_size(reduction: MomentReduction, shape: &[usize]) -> Result<usize, String> {

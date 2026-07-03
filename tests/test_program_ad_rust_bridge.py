@@ -1097,6 +1097,78 @@ def test_rust_program_ad_value_and_gradient_replays_static_variance_std_reductio
     assert rust_result.supported_effect_count == 14
 
 
+def test_rust_program_ad_value_and_gradient_replays_corrected_variance_std_reductions() -> None:
+    """Rust Program AD replay should support static ddof/correction metadata."""
+
+    engine = pytest.importorskip("scpn_quantum_engine")
+    assert callable(getattr(engine, "program_ad_effect_ir_interpret_value_and_gradient", None))
+    values = np.array(
+        [1.0, 2.0, 4.0, 3.0, 5.0, 7.0, 0.5, -1.0, 2.0, 1.25, -0.75, 0.6],
+        dtype=np.float64,
+    )
+    row_std = np.sqrt(7.0 / 3.0)
+    corrected_ir = (
+        _STATIC_VARIANCE_STD_REDUCTION_PROGRAM_AD_IR.replace(
+            '"operation": "var:axis:0"',
+            '"operation": "var:axis:0:ddof:1"',
+        )
+        .replace(
+            '"operation": "std:axis:-1"',
+            '"operation": "std:axis:-1:correction:1"',
+        )
+        .replace('"operation": "var"', '"operation": "var:ddof:2"')
+    )
+    expected_gradient = np.array(
+        [
+            -1.8 - 5.0 / (6.0 * row_std),
+            2.5 - 5.0 / (24.0 * row_std),
+            -5.9 + 25.0 / (24.0 * row_std),
+            1.175,
+            -2.6,
+            6.625,
+            2.0,
+            4.5,
+            4.5,
+            row_std,
+            2.0,
+            35.0 / 6.0,
+        ],
+        dtype=np.float64,
+    )
+
+    rust_result = value_and_grad_program_ad_effect_ir_with_rust(corrected_ir, values)
+
+    assert rust_result.supported is True, rust_result.blocked_reasons
+    assert rust_result.value == pytest.approx(7.5 + 1.25 * row_std, abs=1.0e-12)
+    np.testing.assert_allclose(rust_result.gradient, expected_gradient, atol=1.0e-12)
+    assert rust_result.supported_effect_count == 14
+
+
+def test_rust_program_ad_value_and_gradient_rejects_degenerate_moment_correction() -> None:
+    """Rust Program AD replay should reject non-positive variance denominators."""
+
+    engine = pytest.importorskip("scpn_quantum_engine")
+    assert callable(getattr(engine, "program_ad_effect_ir_interpret_value_and_gradient", None))
+    invalid_ir = _STATIC_VARIANCE_STD_REDUCTION_PROGRAM_AD_IR.replace(
+        '"operation": "std:axis:-1"',
+        '"operation": "std:axis:-1:ddof:3"',
+    )
+
+    rust_result = value_and_grad_program_ad_effect_ir_with_rust(
+        invalid_ir,
+        np.array(
+            [1.0, 2.0, 4.0, 3.0, 5.0, 7.0, 0.5, -1.25, 2.0, 1.5, -0.75, 0.25],
+            dtype=np.float64,
+        ),
+    )
+
+    assert rust_result.supported is False
+    assert any(
+        "correction must be less than reduction group size" in reason
+        for reason in rust_result.blocked_reasons
+    )
+
+
 def test_rust_program_ad_value_and_gradient_rejects_zero_variance_std() -> None:
     """Rust Program AD std replay should fail closed at zero variance."""
 
