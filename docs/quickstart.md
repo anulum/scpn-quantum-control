@@ -293,9 +293,12 @@ over the captured scalar IR. Generated `ProgramADAdjointStep` rows bind the
 local pullback inputs, finite pullback coefficients, cotangent-flow rows,
 reverse effect-order metadata, and executed runtime control/phi row bindings
 to `program_ad_effect_ir.v1`, while non-executed phi inputs are recorded as
-blocked adjoints. Unsupported generation operations fail closed. The API does
-not substitute finite differences or claim a general arbitrary-Python
-MLIR/LLVM compiler.
+blocked adjoints. Supported `WholeProgramADResult` construction replays those
+generated steps against the captured IR, the attached adjoint gradient, and the
+forward gradient, so tampered or stale adjoint evidence fails before the result
+is accepted. Unsupported generation operations fail closed. The API does not
+substitute finite differences or claim a general arbitrary-Python MLIR/LLVM
+compiler.
 
 Alias/effect audits can be inspected with
 `program_ad_static_alias_lattice_report(...)`. The report builds a static

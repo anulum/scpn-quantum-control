@@ -410,14 +410,13 @@ def test_program_adjoint_executable_replay_fails_closed_for_tampered_steps() -> 
         adjoint,
         adjoint_steps=(tampered_first_step, *adjoint.adjoint_steps[1:]),
     )
-    tampered_result = replace(result, adjoint_result=tampered_adjoint)
 
     with pytest.raises(ValueError, match="incoming cotangent"):
-        program_adjoint_replay_gradient(tampered_result)
+        replace(result, adjoint_result=tampered_adjoint)
 
 
 def test_program_adjoint_executable_replay_fails_closed_for_gradient_divergence() -> None:
-    """Executable replay should reject stale attached gradients."""
+    """Whole-program result construction should reject stale attached adjoint gradients."""
 
     def objective(values: Any) -> object:
         x, y = values
@@ -433,10 +432,29 @@ def test_program_adjoint_executable_replay_fails_closed_for_gradient_divergence(
         adjoint,
         gradient=adjoint.gradient + np.array([1.0, 0.0], dtype=np.float64),
     )
-    stale_result = replace(result, adjoint_result=stale_adjoint)
 
-    with pytest.raises(ValueError, match="diverged from attached gradient"):
-        program_adjoint_replay_gradient(stale_result)
+    with pytest.raises(ValueError, match="supported adjoint_result executable replay"):
+        replace(result, adjoint_result=stale_adjoint)
+
+
+def test_whole_program_result_contract_rejects_forward_gradient_divergence() -> None:
+    """Whole-program result construction should reject stale forward gradients."""
+
+    def objective(values: Any) -> object:
+        x, y = values
+        return (x * y) + x
+
+    result = whole_program_value_and_grad(
+        objective,
+        np.array([2.0, 3.0], dtype=np.float64),
+        parameters=(Parameter("x"), Parameter("y")),
+    )
+
+    with pytest.raises(ValueError, match="supported adjoint_result executable replay"):
+        replace(
+            result,
+            gradient=result.gradient + np.array([0.0, 1.0], dtype=np.float64),
+        )
 
 
 def test_program_adjoint_executable_replay_fails_closed_without_step_stream() -> None:
@@ -460,7 +478,7 @@ def test_program_adjoint_executable_replay_fails_closed_without_step_stream() ->
     with pytest.raises(ValueError, match="unsupported for ops: unsupported_op"):
         program_adjoint_replay_gradient(_minimal_whole_program_result(unsupported_adjoint))
     with pytest.raises(ValueError, match="requires generated adjoint steps"):
-        program_adjoint_replay_gradient(_minimal_whole_program_result(empty_supported_adjoint))
+        _minimal_whole_program_result(empty_supported_adjoint)
 
 
 @pytest.mark.parametrize(

@@ -1278,6 +1278,7 @@ def differentiable_dashboard_status(
             evidence=(
                 "ProgramADAdjointResult",
                 "ProgramADAdjointStep",
+                "WholeProgramADResult replay contract",
                 "program_adjoint_result",
                 "program_adjoint_gradient",
                 "program_adjoint_replay_provenance_contracts",
@@ -1291,9 +1292,11 @@ def differentiable_dashboard_status(
                 "with generated adjoint steps, finite local pullback scales, "
                 "cotangent-flow rows, reverse effect-order rows, and "
                 "node/effect/runtime control/phi row bindings, with blocked "
-                "non-executed phi inputs; not full reverse-mode compiler AD, "
-                "non-executed branch adjoints, Rust/LLVM executable lowering, "
-                "hardware, or performance promotion"
+                "non-executed phi inputs, validated at WholeProgramADResult "
+                "construction and exposed through caller-visible replay; not "
+                "full reverse-mode compiler AD, non-executed branch adjoints, "
+                "Rust/LLVM executable lowering, hardware, or performance "
+                "promotion"
             ),
         ),
         DifferentiableDashboardCapabilityRow(

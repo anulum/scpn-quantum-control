@@ -75,7 +75,7 @@ class WholeProgramIRNode:
 
 @dataclass(frozen=True)
 class WholeProgramADResult:
-    """Value, gradient, frontend gate, execution trace, and polyglot AD status."""
+    """Value, gradient, frontend gate, adjoint replay contract, and AD status."""
 
     value: float
     gradient: NDArray[np.float64]
@@ -160,6 +160,13 @@ class WholeProgramADResult:
                 self.adjoint_result.gradient,
                 self.trainable,
             )
+            _require_supported_adjoint_replay_matches_result(
+                adjoint_result=self.adjoint_result,
+                ir_nodes=self.ir_nodes,
+                parameter_names=self.parameter_names,
+                trainable=self.trainable,
+                forward_gradient=gradient,
+            )
         if not isinstance(self.control_flow_observed, bool):
             raise ValueError("control_flow_observed must be a boolean")
         if not isinstance(self.numpy_observed, bool):
@@ -202,6 +209,57 @@ def _as_real_scalar(name: str, value: object) -> float:
     if not np.isfinite(scalar):
         raise ValueError(f"{name} must be finite")
     return scalar
+
+
+def _require_supported_adjoint_replay_matches_result(
+    *,
+    adjoint_result: ProgramADAdjointResult,
+    ir_nodes: tuple[WholeProgramIRNode, ...],
+    parameter_names: tuple[str, ...],
+    trainable: tuple[bool, ...],
+    forward_gradient: NDArray[np.float64],
+) -> None:
+    """Validate supported reverse-adjoint replay against the attached result."""
+
+    if not adjoint_result.supported:
+        return
+
+    from .program_ad_adjoint import (
+        _PROGRAM_ADJOINT_REPLAY_ATOL,
+        _program_adjoint_execute_steps,
+    )
+
+    try:
+        replay_gradient = _program_adjoint_execute_steps(
+            adjoint=adjoint_result,
+            ir_nodes=ir_nodes,
+            parameter_names=parameter_names,
+            trainable=trainable,
+        )
+    except ValueError as exc:
+        raise ValueError(
+            f"whole-program AD supported adjoint_result executable replay failed: {exc}"
+        ) from exc
+    if not np.allclose(
+        replay_gradient,
+        adjoint_result.gradient,
+        rtol=0.0,
+        atol=_PROGRAM_ADJOINT_REPLAY_ATOL,
+    ):
+        raise ValueError(
+            "whole-program AD supported adjoint_result executable replay diverged "
+            "from attached gradient"
+        )
+    if not np.allclose(
+        replay_gradient,
+        forward_gradient,
+        rtol=0.0,
+        atol=_PROGRAM_ADJOINT_REPLAY_ATOL,
+    ):
+        raise ValueError(
+            "whole-program AD supported adjoint_result executable replay diverged "
+            "from forward gradient"
+        )
 
 
 __all__ = ["WholeProgramADResult", "WholeProgramIRNode", "WholeProgramTraceEvent"]
