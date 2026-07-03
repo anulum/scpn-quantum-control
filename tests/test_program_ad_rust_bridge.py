@@ -75,6 +75,34 @@ _ARRAY_ELEMENTWISE_VECTOR_OBJECTIVE_PROGRAM_AD_IR = """{
   "bytecode_offsets": [0, 2]
 }"""
 
+_STRUCTURAL_ARRAY_PROGRAM_AD_IR = """{
+  "format": "program_ad_effect_ir.v1",
+  "ssa_values": [
+    {"name": "%0", "producer": 0, "version": 0, "shape": [2], "dtype": "float64", "effect": 0},
+    {"name": "%1", "producer": 1, "version": 0, "shape": [6], "dtype": "float64", "effect": 1},
+    {"name": "%2", "producer": 2, "version": 0, "shape": [2, 1], "dtype": "float64", "effect": 2},
+    {"name": "%3", "producer": 3, "version": 0, "shape": [2, 3], "dtype": "float64", "effect": 3},
+    {"name": "%4", "producer": 4, "version": 0, "shape": [3, 2], "dtype": "float64", "effect": 4},
+    {"name": "%5", "producer": 5, "version": 0, "shape": [6], "dtype": "float64", "effect": 5},
+    {"name": "%6", "producer": 6, "version": 0, "shape": [6], "dtype": "float64", "effect": 6},
+    {"name": "%7", "producer": 7, "version": 0, "shape": [], "dtype": "float64", "effect": 7}
+  ],
+  "effects": [
+    {"index": 0, "kind": "parameter", "target": "%0", "inputs": ["theta"], "version": 0, "ordering": 0, "operation": "parameter"},
+    {"index": 1, "kind": "parameter", "target": "%1", "inputs": ["weights"], "version": 0, "ordering": 1, "operation": "parameter"},
+    {"index": 2, "kind": "pure", "target": "%2", "inputs": ["%0"], "version": 0, "ordering": 2, "operation": "reshape"},
+    {"index": 3, "kind": "pure", "target": "%3", "inputs": ["%2"], "version": 0, "ordering": 3, "operation": "broadcast_to"},
+    {"index": 4, "kind": "pure", "target": "%4", "inputs": ["%3"], "version": 0, "ordering": 4, "operation": "transpose"},
+    {"index": 5, "kind": "pure", "target": "%5", "inputs": ["%4"], "version": 0, "ordering": 5, "operation": "ravel"},
+    {"index": 6, "kind": "pure", "target": "%6", "inputs": ["%5", "%1"], "version": 0, "ordering": 6, "operation": "mul"},
+    {"index": 7, "kind": "primitive", "target": "%7", "inputs": ["%6"], "version": 0, "ordering": 7, "operation": "mean"}
+  ],
+  "alias_edges": [],
+  "control_regions": [],
+  "phi_nodes": [],
+  "bytecode_offsets": [0, 2, 4]
+}"""
+
 
 def _install_fake_engine(monkeypatch: pytest.MonkeyPatch, engine: ModuleType) -> None:
     monkeypatch.setitem(sys.modules, "scpn_quantum_engine", engine)
@@ -99,7 +127,7 @@ def test_value_and_gradient_bridge_is_shared_by_module_and_facade(
                 "effect_count": 4,
                 "supported_effect_count": 4,
                 "blocked_reasons": [],
-                "claim_boundary": "bounded_rust_program_ad_ir_elementwise_array_and_static_linalg_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit",
+                "claim_boundary": "bounded_rust_program_ad_ir_elementwise_structural_array_and_static_linalg_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit",
             }
         )
 
@@ -265,7 +293,7 @@ def test_rust_program_ad_value_and_gradient_replay_matches_python_trace() -> Non
     assert rust_result.supported_effect_count == len(result.program_ir.effects)
     assert (
         rust_result.claim_boundary
-        == "bounded_rust_program_ad_ir_elementwise_array_and_static_linalg_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit"
+        == "bounded_rust_program_ad_ir_elementwise_structural_array_and_static_linalg_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit"
     )
 
 
@@ -326,7 +354,7 @@ def test_rust_program_ad_value_and_gradient_replays_executed_branch_trace() -> N
     assert rust_result.supported_effect_count == len(result.program_ir.effects)
     assert (
         rust_result.claim_boundary
-        == "bounded_rust_program_ad_ir_elementwise_array_and_static_linalg_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit"
+        == "bounded_rust_program_ad_ir_elementwise_structural_array_and_static_linalg_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit"
     )
 
 
@@ -382,7 +410,7 @@ def test_rust_program_ad_value_and_gradient_replays_scalar_primitive_family_trac
     assert rust_result.supported_effect_count == len(result.program_ir.effects)
     assert (
         rust_result.claim_boundary
-        == "bounded_rust_program_ad_ir_elementwise_array_and_static_linalg_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit"
+        == "bounded_rust_program_ad_ir_elementwise_structural_array_and_static_linalg_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit"
     )
 
 
@@ -414,7 +442,52 @@ def test_rust_program_ad_value_and_gradient_replays_array_elementwise_broadcast_
     assert rust_result.supported_effect_count == 6
     assert (
         rust_result.claim_boundary
-        == "bounded_rust_program_ad_ir_elementwise_array_and_static_linalg_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit"
+        == "bounded_rust_program_ad_ir_elementwise_structural_array_and_static_linalg_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit"
+    )
+
+
+def test_rust_program_ad_value_and_gradient_replays_structural_array_ops() -> None:
+    """Rust Program AD replay should handle structural array adjoints."""
+
+    engine = pytest.importorskip("scpn_quantum_engine")
+    assert callable(getattr(engine, "program_ad_effect_ir_interpret_value_and_gradient", None))
+    values = np.array([2.0, 5.0, 10.0, 20.0, 30.0, 40.0, 50.0, 60.0], dtype=np.float64)
+    expected_gradient = np.array(
+        [
+            15.0,
+            20.0,
+            2.0 / 6.0,
+            5.0 / 6.0,
+            2.0 / 6.0,
+            5.0 / 6.0,
+            2.0 / 6.0,
+            5.0 / 6.0,
+        ],
+        dtype=np.float64,
+    )
+
+    rust_result = value_and_grad_program_ad_effect_ir_with_rust(
+        _STRUCTURAL_ARRAY_PROGRAM_AD_IR,
+        values,
+    )
+
+    assert rust_result.supported is True, rust_result.blocked_reasons
+    assert rust_result.value == pytest.approx(130.0, abs=1.0e-12)
+    np.testing.assert_allclose(rust_result.gradient, expected_gradient, atol=1.0e-12)
+    assert rust_result.parameter_targets == (
+        "%0[0]",
+        "%0[1]",
+        "%1[0]",
+        "%1[1]",
+        "%1[2]",
+        "%1[3]",
+        "%1[4]",
+        "%1[5]",
+    )
+    assert rust_result.supported_effect_count == 8
+    assert (
+        rust_result.claim_boundary
+        == "bounded_rust_program_ad_ir_elementwise_structural_array_and_static_linalg_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit"
     )
 
 
@@ -950,7 +1023,7 @@ def test_bridge_replays_linalg_det_2x2_with_real_engine() -> None:
     _, reference = program_adjoint_value_and_grad(_objective_det_2x2, sample)
     np.testing.assert_allclose(np.asarray(rust.gradient), reference, atol=1.0e-12)
     assert rust.claim_boundary.endswith(
-        "elementwise_array_and_static_linalg_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit"
+        "elementwise_structural_array_and_static_linalg_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit"
     )
 
 

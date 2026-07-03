@@ -24,7 +24,7 @@ import numpy as np
 from numpy.typing import NDArray
 
 _FORWARD_CLAIM_BOUNDARY = "bounded_rust_program_ad_ir_scalar_and_static_linalg_primitives_executed_branch_view_alias_only_no_llvm_jit"
-_VALUE_AND_GRAD_CLAIM_BOUNDARY = "bounded_rust_program_ad_ir_elementwise_array_and_static_linalg_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit"
+_VALUE_AND_GRAD_CLAIM_BOUNDARY = "bounded_rust_program_ad_ir_elementwise_structural_array_and_static_linalg_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit"
 _REGISTRY_METADATA_MIRROR_CLAIM_BOUNDARY = (
     "rust_program_ad_registry_metadata_mirror_only_no_execution_promotion"
 )
@@ -247,10 +247,12 @@ def value_and_grad_program_ad_effect_ir_with_rust(
 ) -> RustProgramADValueAndGradientResult:
     """Replay bounded Program AD value and gradient in Rust.
 
-    The replay is intentionally limited to opcode-bearing scalar and shaped
-    elementwise ``program_ad_effect_ir.v1`` rows, including scalar-to-array
-    broadcasting and scalar all-axis ``sum`` objective closure. Static linalg
-    replay remains scalar-SSA only. Aliases, mutation, structural array
+    The replay is intentionally limited to opcode-bearing scalar, shaped
+    elementwise, and static structural ``program_ad_effect_ir.v1`` rows,
+    including scalar-to-array broadcasting, static ``reshape``/``ravel``,
+    reversed-axis ``transpose``, ``broadcast_to``, and scalar all-axis
+    ``sum``/``mean`` objective closure. Static linalg replay remains scalar-SSA
+    only. Aliases, mutation, axis-specific reductions, dynamic structural
     operations, provider execution, hardware execution, LLVM/JIT execution, and
     performance claims fail closed instead of falling back to Python.
     Executed runtime branch metadata is replayed only as provenance for the

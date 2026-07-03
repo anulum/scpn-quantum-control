@@ -572,15 +572,16 @@ def _default_scorecard_rows(
             "slice, matmul, matvec) and static linear algebra of arbitrary dimension (trace, "
             "determinant, inverse, solve; closed-form 2x2/3x3 and LU/Gauss-Jordan for 4x4 and up) "
             "through the unrolled scalar SSA, plus bounded elementwise shaped arrays with "
-            "scalar-to-array broadcasting and scalar all-axis sum closure. These paths are "
+            "scalar-to-array broadcasting and static structural array opcodes for reshape, ravel, "
+            "broadcast_to, reversed-axis transpose, and scalar all-axis sum/mean closure. These paths are "
             "parity-verified against the Python/NumPy reference and CI-checked via cargo tests "
-            "(2026-06-22 slices 2b-1..2b-6; 2026-07-03 elementwise-array adjoints); a general "
-            "structural ndarray adjoint engine, registry metadata mirror and Rust-side LLVM/JIT "
+            "(2026-06-22 slices 2b-1..2b-6; 2026-07-03 elementwise and structural array adjoints); a general "
+            "structural ndarray adjoint engine, executable registry promotion and Rust-side LLVM/JIT "
             "lowering remain open.",
             ("phase_qnode_claim_boundary",),
             (
-                "general structural ndarray adjoints beyond bounded elementwise broadcast/sum are missing",
-                "registry metadata mirror, Rust-side LLVM/JIT lowering, and isolated benchmark evidence are missing",
+                "concatenate/stack/indexing structural adjoints, axis-specific reductions, and broad linalg array adjoints are missing",
+                "executable registry promotion, Rust-side LLVM/JIT lowering, and isolated benchmark evidence are missing",
             ),
             ("Round 4 compiler AD and Program AD", "Round 5 Rustification readiness"),
         ),

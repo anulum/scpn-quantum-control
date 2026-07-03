@@ -9,10 +9,11 @@
 //! Rust metadata parser for Python-emitted `program_ad_effect_ir.v1` payloads.
 //!
 //! This module mirrors the bounded Python Program AD IR schema so Rust-side
-//! tooling can inspect evidence metadata and execute a narrow scalar forward
-//! interpreter when opcode-bearing rows are present. It does not promote LLVM
-//! lowering, JIT execution, reverse-mode compiler AD, hardware execution, or
-//! performance claims.
+//! tooling can inspect evidence metadata, execute a narrow scalar forward
+//! interpreter, and replay bounded scalar, elementwise-array, static structural,
+//! and static-linalg value+gradient traces when opcode-bearing rows are present.
+//! It does not promote LLVM lowering, JIT execution, reverse-mode compiler AD,
+//! hardware execution, or performance claims.
 
 use std::collections::{HashMap, HashSet};
 
@@ -30,7 +31,7 @@ const PROGRAM_AD_IR_CLAIM_BOUNDARY: &str = "metadata_only_no_program_execution";
 const PROGRAM_AD_RUST_INTERPRETER_CLAIM_BOUNDARY: &str =
     "bounded_rust_program_ad_ir_scalar_and_static_linalg_primitives_executed_branch_view_alias_only_no_llvm_jit";
 const PROGRAM_AD_RUST_VALUE_AND_GRADIENT_CLAIM_BOUNDARY: &str =
-    "bounded_rust_program_ad_ir_elementwise_array_and_static_linalg_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit";
+    "bounded_rust_program_ad_ir_elementwise_structural_array_and_static_linalg_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit";
 
 /// One SSA value record from Python-emitted Program AD metadata.
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize)]
@@ -123,7 +124,7 @@ pub struct ProgramADRustInterpreterResult {
     pub claim_boundary: String,
 }
 
-/// JSON-ready result for bounded Rust scalar Program AD value and gradient replay.
+/// JSON-ready result for bounded Rust Program AD value and gradient replay.
 #[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct ProgramADRustValueAndGradientResult {
     pub supported: bool,
@@ -766,6 +767,10 @@ fn accumulate_reverse_effect(
     match operation {
         operation if operation.starts_with("branch:") => Ok(()),
         "sum" => accumulate_sum(effect, values, adjoints, &cotangent),
+        "mean" => accumulate_mean(effect, values, adjoints, &cotangent),
+        "reshape" | "ravel" => accumulate_reshape_like(effect, values, adjoints, &cotangent),
+        "broadcast_to" => accumulate_broadcast_to(effect, values, adjoints, &cotangent),
+        "transpose" => accumulate_transpose(effect, values, adjoints, &cotangent),
         "add" => accumulate_add_sub(effect, values, adjoints, &cotangent, 1.0, 1.0),
         "sub" => accumulate_add_sub(effect, values, adjoints, &cotangent, 1.0, -1.0),
         "mul" => {
@@ -1070,6 +1075,75 @@ fn accumulate_sum(
     )
 }
 
+fn accumulate_mean(
+    effect: &ProgramADEffect,
+    values: &HashMap<String, ProgramADNumericValue>,
+    adjoints: &mut HashMap<String, ProgramADNumericValue>,
+    cotangent: &ProgramADNumericValue,
+) -> Result<(), String> {
+    if effect.inputs.len() != 1 {
+        return Err(format!("effect {} mean requires one input", effect.index));
+    }
+    let scalar_cotangent = cotangent.scalar_value()?;
+    let input = numeric_operand(&effect.inputs[0], values)?;
+    let scale = scalar_cotangent / input.values.len() as f64;
+    add_numeric_adjoint(
+        &effect.inputs[0],
+        ProgramADNumericValue::filled(&input.shape, scale)?,
+        values,
+        adjoints,
+    )
+}
+
+fn accumulate_reshape_like(
+    effect: &ProgramADEffect,
+    values: &HashMap<String, ProgramADNumericValue>,
+    adjoints: &mut HashMap<String, ProgramADNumericValue>,
+    cotangent: &ProgramADNumericValue,
+) -> Result<(), String> {
+    if effect.inputs.len() != 1 {
+        return Err(format!(
+            "effect {} reshape/ravel requires one input",
+            effect.index
+        ));
+    }
+    let input = numeric_operand(&effect.inputs[0], values)?;
+    let reshaped = ProgramADNumericValue::new(input.shape.clone(), cotangent.values.clone())?;
+    add_numeric_adjoint(&effect.inputs[0], reshaped, values, adjoints)
+}
+
+fn accumulate_broadcast_to(
+    effect: &ProgramADEffect,
+    values: &HashMap<String, ProgramADNumericValue>,
+    adjoints: &mut HashMap<String, ProgramADNumericValue>,
+    cotangent: &ProgramADNumericValue,
+) -> Result<(), String> {
+    if effect.inputs.len() != 1 {
+        return Err(format!(
+            "effect {} broadcast_to requires one input",
+            effect.index
+        ));
+    }
+    add_numeric_adjoint(&effect.inputs[0], cotangent.clone(), values, adjoints)
+}
+
+fn accumulate_transpose(
+    effect: &ProgramADEffect,
+    values: &HashMap<String, ProgramADNumericValue>,
+    adjoints: &mut HashMap<String, ProgramADNumericValue>,
+    cotangent: &ProgramADNumericValue,
+) -> Result<(), String> {
+    if effect.inputs.len() != 1 {
+        return Err(format!(
+            "effect {} transpose requires one input",
+            effect.index
+        ));
+    }
+    let input = numeric_operand(&effect.inputs[0], values)?;
+    let contribution = transpose_reversed_axes(cotangent, &input.shape)?;
+    add_numeric_adjoint(&effect.inputs[0], contribution, values, adjoints)
+}
+
 fn accumulate_add_sub(
     effect: &ProgramADEffect,
     values: &HashMap<String, ProgramADNumericValue>,
@@ -1244,6 +1318,11 @@ fn evaluate_numeric_effect(
             let source = numeric_operand(&effect.inputs[0], values)?;
             Ok(ProgramADNumericValue::scalar(source.values.iter().sum()))
         }
+        "mean" => numeric_mean(effect, values, shapes_by_target),
+        "reshape" => numeric_reshape(effect, values, shapes_by_target),
+        "ravel" => numeric_ravel(effect, values, shapes_by_target),
+        "broadcast_to" => numeric_broadcast_to(effect, values, shapes_by_target),
+        "transpose" => numeric_transpose(effect, values, shapes_by_target),
         "add" => numeric_binary(effect, values, |lhs, rhs| Ok(lhs + rhs)),
         "sub" => numeric_binary(effect, values, |lhs, rhs| Ok(lhs - rhs)),
         "mul" => numeric_binary(effect, values, |lhs, rhs| Ok(lhs * rhs)),
@@ -1470,6 +1549,99 @@ fn numeric_unary_domain(
     )
 }
 
+fn numeric_mean(
+    effect: &ProgramADEffect,
+    values: &HashMap<String, ProgramADNumericValue>,
+    shapes_by_target: &HashMap<String, Vec<usize>>,
+) -> Result<ProgramADNumericValue, String> {
+    if effect.inputs.len() != 1 {
+        return Err(format!("effect {} mean requires one input", effect.index));
+    }
+    let target = target_shape(effect, shapes_by_target)?;
+    if !target.is_empty() {
+        return Err(format!(
+            "effect {} mean currently supports scalar all-axis reductions only",
+            effect.index
+        ));
+    }
+    let source = numeric_operand(&effect.inputs[0], values)?;
+    let total: f64 = source.values.iter().sum();
+    Ok(ProgramADNumericValue::scalar(
+        total / source.values.len() as f64,
+    ))
+}
+
+fn numeric_reshape(
+    effect: &ProgramADEffect,
+    values: &HashMap<String, ProgramADNumericValue>,
+    shapes_by_target: &HashMap<String, Vec<usize>>,
+) -> Result<ProgramADNumericValue, String> {
+    let target = target_shape(effect, shapes_by_target)?;
+    numeric_reshape_to_target(effect, values, target)
+}
+
+fn numeric_ravel(
+    effect: &ProgramADEffect,
+    values: &HashMap<String, ProgramADNumericValue>,
+    shapes_by_target: &HashMap<String, Vec<usize>>,
+) -> Result<ProgramADNumericValue, String> {
+    let target = target_shape(effect, shapes_by_target)?;
+    if target.len() != 1 {
+        return Err(format!(
+            "effect {} ravel target must be rank-1",
+            effect.index
+        ));
+    }
+    numeric_reshape_to_target(effect, values, target)
+}
+
+fn numeric_reshape_to_target(
+    effect: &ProgramADEffect,
+    values: &HashMap<String, ProgramADNumericValue>,
+    target_shape: Vec<usize>,
+) -> Result<ProgramADNumericValue, String> {
+    if effect.inputs.len() != 1 {
+        return Err(format!(
+            "effect {} reshape/ravel requires one input",
+            effect.index
+        ));
+    }
+    let input = numeric_operand(&effect.inputs[0], values)?;
+    ProgramADNumericValue::new(target_shape, input.values)
+}
+
+fn numeric_broadcast_to(
+    effect: &ProgramADEffect,
+    values: &HashMap<String, ProgramADNumericValue>,
+    shapes_by_target: &HashMap<String, Vec<usize>>,
+) -> Result<ProgramADNumericValue, String> {
+    if effect.inputs.len() != 1 {
+        return Err(format!(
+            "effect {} broadcast_to requires one input",
+            effect.index
+        ));
+    }
+    let source = numeric_operand(&effect.inputs[0], values)?;
+    let target = target_shape(effect, shapes_by_target)?;
+    broadcast_to(&source, &target)
+}
+
+fn numeric_transpose(
+    effect: &ProgramADEffect,
+    values: &HashMap<String, ProgramADNumericValue>,
+    shapes_by_target: &HashMap<String, Vec<usize>>,
+) -> Result<ProgramADNumericValue, String> {
+    if effect.inputs.len() != 1 {
+        return Err(format!(
+            "effect {} transpose requires one input",
+            effect.index
+        ));
+    }
+    let source = numeric_operand(&effect.inputs[0], values)?;
+    let target = target_shape(effect, shapes_by_target)?;
+    transpose_reversed_axes(&source, &target)
+}
+
 fn numeric_binary(
     effect: &ProgramADEffect,
     values: &HashMap<String, ProgramADNumericValue>,
@@ -1614,6 +1786,26 @@ fn reduce_to_shape(
         reduced[source_index] += item;
     }
     ProgramADNumericValue::new(target_shape.to_vec(), reduced)
+}
+
+fn transpose_reversed_axes(
+    value: &ProgramADNumericValue,
+    target_shape: &[usize],
+) -> Result<ProgramADNumericValue, String> {
+    let expected_shape = value.shape.iter().rev().copied().collect::<Vec<usize>>();
+    if expected_shape != target_shape {
+        return Err(format!(
+            "Program AD transpose from shape {:?} requires target shape {:?}, got {:?}",
+            value.shape, expected_shape, target_shape
+        ));
+    }
+    let mut transposed = Vec::with_capacity(shape_size(target_shape)?);
+    for flat_index in 0..shape_size(target_shape)? {
+        let output_index = unravel_index(flat_index, target_shape);
+        let source_index = output_index.iter().rev().copied().collect::<Vec<usize>>();
+        transposed.push(value.values[ravel_index(&source_index, &value.shape)?]);
+    }
+    ProgramADNumericValue::new(target_shape.to_vec(), transposed)
 }
 
 fn unravel_index(mut flat_index: usize, shape: &[usize]) -> Vec<usize> {
