@@ -87,13 +87,13 @@ value+gradient replay executes opcode-bearing scalar, bounded elementwise
 shaped-array, and bounded static structural `program_ad_effect_ir.v1` rows at
 the explicit operation boundary, including scalar-to-array broadcasting, adjoint
 broadcast reduction, static `reshape`/`ravel`, `broadcast_to`, reversed-axis
-`transpose`, static-axis `concatenate`/`stack`, scalar all-axis `sum`/`mean`
-objective closure, and executed runtime branch metadata when matched by runtime
-phi provenance. Legacy opcode-free metadata, aliases, mutation, axis-specific
-reductions, indexing structural adjoints, broad array/linalg adjoints,
-source-level and non-executed branch semantics, general Program AD execution,
-LLVM/JIT lowering, hardware execution, provider execution, and performance
-promotion remain fail-closed.
+`transpose`, static-axis `concatenate`/`stack`, static-axis `sum`/`mean`
+reductions, scalar all-axis `sum`/`mean` objective closure, and executed runtime
+branch metadata when matched by runtime phi provenance. Legacy opcode-free
+metadata, aliases, mutation, non-sum/mean reduction families, indexing
+structural adjoints, broad array/linalg adjoints, source-level and non-executed
+branch semantics, general Program AD execution, LLVM/JIT lowering, hardware
+execution, provider execution, and performance promotion remain fail-closed.
 Program AD static alias-lattice reports preserve unknown alias-edge provenance
 as `ProgramADUnknownAliasEdge` rows and attach the `unknown_alias_edge_kinds`
 blocker before readiness promotion. This is still metadata-only fail-closed

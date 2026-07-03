@@ -766,8 +766,12 @@ fn accumulate_reverse_effect(
 ) -> Result<(), String> {
     match operation {
         operation if operation.starts_with("branch:") => Ok(()),
-        "sum" => accumulate_sum(effect, values, adjoints, &cotangent),
-        "mean" => accumulate_mean(effect, values, adjoints, &cotangent),
+        name if name == "sum" || name.starts_with("sum:") => {
+            accumulate_sum(effect, name, values, adjoints, &cotangent)
+        }
+        name if name == "mean" || name.starts_with("mean:") => {
+            accumulate_mean(effect, name, values, adjoints, &cotangent)
+        }
         "reshape" | "ravel" => accumulate_reshape_like(effect, values, adjoints, &cotangent),
         "broadcast_to" => accumulate_broadcast_to(effect, values, adjoints, &cotangent),
         "transpose" => accumulate_transpose(effect, values, adjoints, &cotangent),
@@ -1064,6 +1068,7 @@ fn accumulate_reverse_effect(
 
 fn accumulate_sum(
     effect: &ProgramADEffect,
+    operation: &str,
     values: &HashMap<String, ProgramADNumericValue>,
     adjoints: &mut HashMap<String, ProgramADNumericValue>,
     cotangent: &ProgramADNumericValue,
@@ -1071,18 +1076,19 @@ fn accumulate_sum(
     if effect.inputs.len() != 1 {
         return Err(format!("effect {} sum requires one input", effect.index));
     }
-    let scalar_cotangent = cotangent.scalar_value()?;
     let input = numeric_operand(&effect.inputs[0], values)?;
-    add_numeric_adjoint(
-        &effect.inputs[0],
-        ProgramADNumericValue::filled(&input.shape, scalar_cotangent)?,
-        values,
-        adjoints,
-    )
+    let contribution = if operation == "sum" {
+        let scalar_cotangent = cotangent.scalar_value()?;
+        ProgramADNumericValue::filled(&input.shape, scalar_cotangent)?
+    } else {
+        expand_axis_reduction_cotangent(effect.index, operation, "sum", &input, cotangent, 1.0)?
+    };
+    add_numeric_adjoint(&effect.inputs[0], contribution, values, adjoints)
 }
 
 fn accumulate_mean(
     effect: &ProgramADEffect,
+    operation: &str,
     values: &HashMap<String, ProgramADNumericValue>,
     adjoints: &mut HashMap<String, ProgramADNumericValue>,
     cotangent: &ProgramADNumericValue,
@@ -1090,15 +1096,17 @@ fn accumulate_mean(
     if effect.inputs.len() != 1 {
         return Err(format!("effect {} mean requires one input", effect.index));
     }
-    let scalar_cotangent = cotangent.scalar_value()?;
     let input = numeric_operand(&effect.inputs[0], values)?;
-    let scale = scalar_cotangent / input.values.len() as f64;
-    add_numeric_adjoint(
-        &effect.inputs[0],
-        ProgramADNumericValue::filled(&input.shape, scale)?,
-        values,
-        adjoints,
-    )
+    let contribution = if operation == "mean" {
+        let scalar_cotangent = cotangent.scalar_value()?;
+        let scale = scalar_cotangent / input.values.len() as f64;
+        ProgramADNumericValue::filled(&input.shape, scale)?
+    } else {
+        let axis = parse_static_axis(operation, "mean", input.shape.len())?;
+        let scale = 1.0 / input.shape[axis] as f64;
+        expand_axis_reduction_cotangent(effect.index, operation, "mean", &input, cotangent, scale)?
+    };
+    add_numeric_adjoint(&effect.inputs[0], contribution, values, adjoints)
 }
 
 fn accumulate_reshape_like(
@@ -1340,21 +1348,12 @@ fn evaluate_numeric_effect(
         return evaluate_branch_effect(effect, operation).map(ProgramADNumericValue::scalar);
     }
     match operation {
-        "sum" => {
-            if effect.inputs.len() != 1 {
-                return Err(format!("effect {} sum requires one input", effect.index));
-            }
-            let target = target_shape(effect, shapes_by_target)?;
-            if !target.is_empty() {
-                return Err(format!(
-                    "effect {} sum currently supports scalar all-axis reductions only",
-                    effect.index
-                ));
-            }
-            let source = numeric_operand(&effect.inputs[0], values)?;
-            Ok(ProgramADNumericValue::scalar(source.values.iter().sum()))
+        name if name == "sum" || name.starts_with("sum:") => {
+            numeric_sum(effect, name, values, shapes_by_target)
         }
-        "mean" => numeric_mean(effect, values, shapes_by_target),
+        name if name == "mean" || name.starts_with("mean:") => {
+            numeric_mean(effect, name, values, shapes_by_target)
+        }
         "reshape" => numeric_reshape(effect, values, shapes_by_target),
         "ravel" => numeric_ravel(effect, values, shapes_by_target),
         "broadcast_to" => numeric_broadcast_to(effect, values, shapes_by_target),
@@ -1608,8 +1607,32 @@ fn numeric_unary_domain(
     )
 }
 
+fn numeric_sum(
+    effect: &ProgramADEffect,
+    operation: &str,
+    values: &HashMap<String, ProgramADNumericValue>,
+    shapes_by_target: &HashMap<String, Vec<usize>>,
+) -> Result<ProgramADNumericValue, String> {
+    if effect.inputs.len() != 1 {
+        return Err(format!("effect {} sum requires one input", effect.index));
+    }
+    let target = target_shape(effect, shapes_by_target)?;
+    let source = numeric_operand(&effect.inputs[0], values)?;
+    if operation == "sum" {
+        if !target.is_empty() {
+            return Err(format!(
+                "effect {} sum non-scalar target requires static axis metadata sum:axis:<int>",
+                effect.index
+            ));
+        }
+        return Ok(ProgramADNumericValue::scalar(source.values.iter().sum()));
+    }
+    reduce_axis_values(effect.index, operation, "sum", &source, &target, 1.0)
+}
+
 fn numeric_mean(
     effect: &ProgramADEffect,
+    operation: &str,
     values: &HashMap<String, ProgramADNumericValue>,
     shapes_by_target: &HashMap<String, Vec<usize>>,
 ) -> Result<ProgramADNumericValue, String> {
@@ -1617,17 +1640,48 @@ fn numeric_mean(
         return Err(format!("effect {} mean requires one input", effect.index));
     }
     let target = target_shape(effect, shapes_by_target)?;
-    if !target.is_empty() {
-        return Err(format!(
-            "effect {} mean currently supports scalar all-axis reductions only",
-            effect.index
+    let source = numeric_operand(&effect.inputs[0], values)?;
+    if operation == "mean" {
+        if !target.is_empty() {
+            return Err(format!(
+                "effect {} mean non-scalar target requires static axis metadata mean:axis:<int>",
+                effect.index
+            ));
+        }
+        let total: f64 = source.values.iter().sum();
+        return Ok(ProgramADNumericValue::scalar(
+            total / source.values.len() as f64,
         ));
     }
-    let source = numeric_operand(&effect.inputs[0], values)?;
-    let total: f64 = source.values.iter().sum();
-    Ok(ProgramADNumericValue::scalar(
-        total / source.values.len() as f64,
-    ))
+    let axis = parse_static_axis(operation, "mean", source.shape.len())?;
+    let scale = 1.0 / source.shape[axis] as f64;
+    reduce_axis_values(effect.index, operation, "mean", &source, &target, scale)
+}
+
+fn reduce_axis_values(
+    effect_index: usize,
+    operation: &str,
+    prefix: &str,
+    source: &ProgramADNumericValue,
+    target_shape: &[usize],
+    scale: f64,
+) -> Result<ProgramADNumericValue, String> {
+    let axis = parse_static_axis(operation, prefix, source.shape.len())?;
+    let expected_shape = axis_reduction_shape(&source.shape, axis);
+    if expected_shape != target_shape {
+        return Err(format!(
+            "effect {effect_index} {prefix} axis reduction target shape must be {:?}, got {:?}",
+            expected_shape, target_shape
+        ));
+    }
+    let mut output = vec![0.0_f64; shape_size(target_shape)?];
+    for (flat_index, value) in source.values.iter().enumerate() {
+        let source_index = unravel_index(flat_index, &source.shape);
+        let target_index = index_without_axis(&source_index, axis);
+        let target_flat = ravel_index(&target_index, target_shape)?;
+        output[target_flat] += value * scale;
+    }
+    ProgramADNumericValue::new(target_shape.to_vec(), output)
 }
 
 fn numeric_reshape(
@@ -1869,6 +1923,32 @@ fn reduce_to_shape(
     ProgramADNumericValue::new(target_shape.to_vec(), reduced)
 }
 
+fn expand_axis_reduction_cotangent(
+    effect_index: usize,
+    operation: &str,
+    prefix: &str,
+    input: &ProgramADNumericValue,
+    cotangent: &ProgramADNumericValue,
+    scale: f64,
+) -> Result<ProgramADNumericValue, String> {
+    let axis = parse_static_axis(operation, prefix, input.shape.len())?;
+    let expected_shape = axis_reduction_shape(&input.shape, axis);
+    if cotangent.shape != expected_shape {
+        return Err(format!(
+            "effect {effect_index} {prefix} axis reduction cotangent shape must be {:?}, got {:?}",
+            expected_shape, cotangent.shape
+        ));
+    }
+    let mut contribution = Vec::with_capacity(input.values.len());
+    for flat_index in 0..input.values.len() {
+        let input_index = unravel_index(flat_index, &input.shape);
+        let cotangent_index = index_without_axis(&input_index, axis);
+        let cotangent_flat = ravel_index(&cotangent_index, &cotangent.shape)?;
+        contribution.push(cotangent.values[cotangent_flat] * scale);
+    }
+    ProgramADNumericValue::new(input.shape.clone(), contribution)
+}
+
 fn transpose_reversed_axes(
     value: &ProgramADNumericValue,
     target_shape: &[usize],
@@ -2090,6 +2170,10 @@ fn index_without_axis(index: &[usize], axis: usize) -> Vec<usize> {
         .enumerate()
         .filter_map(|(index_axis, value)| (index_axis != axis).then_some(*value))
         .collect()
+}
+
+fn axis_reduction_shape(shape: &[usize], axis: usize) -> Vec<usize> {
+    index_without_axis(shape, axis)
 }
 
 fn parse_static_axis(operation: &str, prefix: &str, rank: usize) -> Result<usize, String> {

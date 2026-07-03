@@ -337,7 +337,7 @@
         "diff-sota-scorecard-20260620"
       ],
       "blockers": [
-        "indexing structural adjoints, axis-specific reductions, and broad linalg array adjoints are missing",
+        "indexing structural adjoints, non-sum/mean reduction families, and broad linalg array adjoints are missing",
         "executable registry promotion, Rust-side LLVM/JIT lowering, and isolated benchmark evidence are missing"
       ],
       "category": "rust_native_program_ad",
@@ -345,7 +345,7 @@
       "claim_ids": [
         "phase_qnode_claim_boundary"
       ],
-      "current_evidence": "Rust Program AD now replays scalar primitives, view-aliasing (reshape, transpose, slice, matmul, matvec) and static linear algebra of arbitrary dimension (trace, determinant, inverse, solve; closed-form 2x2/3x3 and LU/Gauss-Jordan for 4x4 and up) through the unrolled scalar SSA, plus bounded elementwise shaped arrays with scalar-to-array broadcasting and static structural array opcodes for reshape, ravel, broadcast_to, reversed-axis transpose, static-axis concatenate/stack assembly, and scalar all-axis sum/mean closure. These paths are parity-verified against the Python/NumPy reference and CI-checked via cargo tests (2026-06-22 slices 2b-1..2b-6; 2026-07-03 elementwise, structural array, and structural assembly adjoints); a general structural ndarray adjoint engine, executable registry promotion and Rust-side LLVM/JIT lowering remain open.",
+      "current_evidence": "Rust Program AD now replays scalar primitives, view-aliasing (reshape, transpose, slice, matmul, matvec) and static linear algebra of arbitrary dimension (trace, determinant, inverse, solve; closed-form 2x2/3x3 and LU/Gauss-Jordan for 4x4 and up) through the unrolled scalar SSA, plus bounded elementwise shaped arrays with scalar-to-array broadcasting and static structural array opcodes for reshape, ravel, broadcast_to, reversed-axis transpose, static-axis concatenate/stack assembly, and static-axis plus scalar all-axis sum/mean reductions. These paths are parity-verified against the Python/NumPy reference and CI-checked via cargo tests (2026-06-22 slices 2b-1..2b-6; 2026-07-03 elementwise, structural array, structural assembly, and static-axis reduction adjoints); a general structural ndarray adjoint engine, executable registry promotion and Rust-side LLVM/JIT lowering remain open.",
       "docs_surface": [
         "README.md",
         "docs/benchmarks_api.md",

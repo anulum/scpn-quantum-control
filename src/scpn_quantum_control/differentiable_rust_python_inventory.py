@@ -402,7 +402,7 @@ def _default_inventory_rows(
             "partial",
             "partial",
             (
-                "axis-specific reductions, indexing structural adjoints, and broad linalg array adjoints are missing",
+                "non-sum/mean reduction families, indexing structural adjoints, and broad linalg array adjoints are missing",
                 "executable registry promotion, LLVM/JIT lowering, provider/hardware evidence, and isolated benchmark evidence are missing",
             ),
         ),

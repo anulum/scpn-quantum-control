@@ -159,7 +159,7 @@
         "diff-support-surface-alignment-audit-v1"
       ],
       "blockers": [
-        "axis-specific reductions, indexing structural adjoints, and broad linalg array adjoints are missing",
+        "non-sum/mean reduction families, indexing structural adjoints, and broad linalg array adjoints are missing",
         "executable registry promotion, LLVM/JIT lowering, provider/hardware evidence, and isolated benchmark evidence are missing",
         "static Python source/bytecode metadata has no executable Rust parity requirement",
         "compiler lowering remains blocked until a real Program AD backend exists"
