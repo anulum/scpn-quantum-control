@@ -243,13 +243,14 @@ scalar/static-linalg plus elementwise/static-structural replay. Metadata
 summaries remain parser parity for `program_ad_effect_ir.v1`; Rust
 value+gradient replay is bounded to opcode-bearing scalar, elementwise
 shaped-array, and static structural rows with scalar-to-array broadcasting,
-static `reshape`/`ravel`, `broadcast_to`, reversed-axis `transpose`, and scalar
-all-axis `sum`/`mean` objective closure, including executed runtime branch
-metadata when matched by runtime phi provenance. Legacy opcode-free metadata,
-aliases, mutation, axis-specific reductions, concatenate/stack/indexing
-structural adjoints, broad array/linalg adjoints, source-level and non-executed
-branch semantics, general Program AD execution, LLVM/JIT differentiated
-execution, hardware, provider, and performance routes remain fail-closed.
+static `reshape`/`ravel`, `broadcast_to`, reversed-axis `transpose`, static-axis
+`concatenate`/`stack`, and scalar all-axis `sum`/`mean` objective closure,
+including executed runtime branch metadata when matched by runtime phi
+provenance. Legacy opcode-free metadata, aliases, mutation, axis-specific
+reductions, indexing structural adjoints, broad array/linalg adjoints,
+source-level and non-executed branch semantics, general Program AD execution,
+LLVM/JIT differentiated execution, hardware, provider, and performance routes
+remain fail-closed.
 Python callers may use `scpn_quantum_control.program_ad_rust_bridge` directly
 for the typed fail-closed wrappers, while the historical
 `scpn_quantum_control.differentiable` facade re-exports the same result

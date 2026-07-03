@@ -45,6 +45,7 @@
         "Round 2 framework-native transform parity",
         "Round 6 benchmark promotion"
       ],
+      "ready_for_promotion": false,
       "status": "behind_baseline",
       "test_surface": [
         "tests/test_differentiable_external_comparisons.py",
@@ -99,6 +100,7 @@
         "Round 2 framework-native transform parity",
         "Round 6 benchmark promotion"
       ],
+      "ready_for_promotion": false,
       "status": "behind_baseline",
       "test_surface": [
         "tests/test_differentiable_external_comparisons.py",
@@ -153,6 +155,7 @@
         "Round 3 quantum provider/plugin breadth",
         "Round 6 benchmark promotion"
       ],
+      "ready_for_promotion": false,
       "status": "behind_baseline",
       "test_surface": [
         "tests/test_differentiable_external_comparisons.py",
@@ -204,6 +207,7 @@
         "Round 3 quantum provider/plugin breadth",
         "Round 6 benchmark promotion"
       ],
+      "ready_for_promotion": false,
       "status": "behind_baseline",
       "test_surface": [
         "tests/test_differentiable_api.py",
@@ -257,6 +261,7 @@
         "Round 4 compiler AD and Program AD",
         "Round 7 documentation/API readiness"
       ],
+      "ready_for_promotion": false,
       "status": "behind_baseline",
       "test_surface": [
         "tests/test_differentiable_external_comparisons.py",
@@ -311,6 +316,7 @@
         "Round 4 compiler AD and Program AD",
         "Round 6 benchmark promotion"
       ],
+      "ready_for_promotion": false,
       "status": "behind_baseline",
       "test_surface": [
         "tests/test_differentiable_external_comparisons.py",
@@ -331,7 +337,7 @@
         "diff-sota-scorecard-20260620"
       ],
       "blockers": [
-        "concatenate/stack/indexing structural adjoints, axis-specific reductions, and broad linalg array adjoints are missing",
+        "indexing structural adjoints, axis-specific reductions, and broad linalg array adjoints are missing",
         "executable registry promotion, Rust-side LLVM/JIT lowering, and isolated benchmark evidence are missing"
       ],
       "category": "rust_native_program_ad",
@@ -339,7 +345,7 @@
       "claim_ids": [
         "phase_qnode_claim_boundary"
       ],
-      "current_evidence": "Rust Program AD now replays scalar primitives, view-aliasing (reshape, transpose, slice, matmul, matvec) and static linear algebra of arbitrary dimension (trace, determinant, inverse, solve; closed-form 2x2/3x3 and LU/Gauss-Jordan for 4x4 and up) through the unrolled scalar SSA, plus bounded elementwise shaped arrays with scalar-to-array broadcasting and static structural array opcodes for reshape, ravel, broadcast_to, reversed-axis transpose, and scalar all-axis sum/mean closure. These paths are parity-verified against the Python/NumPy reference and CI-checked via cargo tests (2026-06-22 slices 2b-1..2b-6; 2026-07-03 elementwise and structural array adjoints); a general structural ndarray adjoint engine, executable registry promotion and Rust-side LLVM/JIT lowering remain open.",
+      "current_evidence": "Rust Program AD now replays scalar primitives, view-aliasing (reshape, transpose, slice, matmul, matvec) and static linear algebra of arbitrary dimension (trace, determinant, inverse, solve; closed-form 2x2/3x3 and LU/Gauss-Jordan for 4x4 and up) through the unrolled scalar SSA, plus bounded elementwise shaped arrays with scalar-to-array broadcasting and static structural array opcodes for reshape, ravel, broadcast_to, reversed-axis transpose, static-axis concatenate/stack assembly, and scalar all-axis sum/mean closure. These paths are parity-verified against the Python/NumPy reference and CI-checked via cargo tests (2026-06-22 slices 2b-1..2b-6; 2026-07-03 elementwise, structural array, and structural assembly adjoints); a general structural ndarray adjoint engine, executable registry promotion and Rust-side LLVM/JIT lowering remain open.",
       "docs_surface": [
         "README.md",
         "docs/benchmarks_api.md",
@@ -362,6 +368,7 @@
         "Round 4 compiler AD and Program AD",
         "Round 5 Rustification readiness"
       ],
+      "ready_for_promotion": false,
       "status": "behind_baseline",
       "test_surface": [
         "tests/test_differentiable_api.py",
@@ -412,6 +419,7 @@
         "Round 3 quantum provider/plugin breadth",
         "Round 6 benchmark promotion"
       ],
+      "ready_for_promotion": false,
       "status": "behind_baseline",
       "test_surface": [
         "tests/test_differentiable_api.py",
@@ -462,6 +470,7 @@
         "Round 6 benchmark promotion",
         "Round 8 release/promotion gate"
       ],
+      "ready_for_promotion": false,
       "status": "behind_baseline",
       "test_surface": [
         "tests/test_differentiable_benchmark_evidence.py",
@@ -514,6 +523,7 @@
         "Round 0 surface integrity and maintainability",
         "Round 7 documentation/API readiness"
       ],
+      "ready_for_promotion": false,
       "status": "behind_baseline",
       "test_surface": [
         "tests/test_differentiable_claim_ledger.py",
@@ -564,6 +574,7 @@
         "Round 7 documentation/API readiness",
         "Round 8 release/promotion gate"
       ],
+      "ready_for_promotion": false,
       "status": "behind_baseline",
       "test_surface": [
         "tests/test_differentiable_api.py",

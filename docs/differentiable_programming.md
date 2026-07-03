@@ -82,17 +82,18 @@ bounded scalar value+gradient replay exposed as
 `program_ad_registry_metadata_mirror(...)` export validates the Python
 registry-dispatch coverage snapshot and returns deterministic family/facet
 counts plus conservative primitive-name overlap with existing bounded Rust
-scalar/static-linalg plus elementwise/static-structural replay. Rust value+gradient replay executes
-opcode-bearing scalar, bounded elementwise shaped-array, and bounded static
-structural `program_ad_effect_ir.v1` rows emitted by current Python traces,
-including scalar-to-array broadcasting, adjoint broadcast reduction, static
-`reshape`/`ravel`, `broadcast_to`, reversed-axis `transpose`, scalar all-axis
-`sum`/`mean` objective closure, and executed runtime branch metadata when
-matched by runtime phi provenance. Legacy opcode-free metadata, aliases,
-mutation, axis-specific reductions, concatenate/stack/indexing structural
-adjoints, broad array/linalg adjoints, source-level and non-executed branch
-semantics, general Program AD execution, LLVM/JIT lowering, hardware execution,
-provider execution, and performance promotion remain fail-closed.
+scalar/static-linalg plus elementwise/static-structural replay. Rust
+value+gradient replay executes opcode-bearing scalar, bounded elementwise
+shaped-array, and bounded static structural `program_ad_effect_ir.v1` rows at
+the explicit operation boundary, including scalar-to-array broadcasting, adjoint
+broadcast reduction, static `reshape`/`ravel`, `broadcast_to`, reversed-axis
+`transpose`, static-axis `concatenate`/`stack`, scalar all-axis `sum`/`mean`
+objective closure, and executed runtime branch metadata when matched by runtime
+phi provenance. Legacy opcode-free metadata, aliases, mutation, axis-specific
+reductions, indexing structural adjoints, broad array/linalg adjoints,
+source-level and non-executed branch semantics, general Program AD execution,
+LLVM/JIT lowering, hardware execution, provider execution, and performance
+promotion remain fail-closed.
 Program AD static alias-lattice reports preserve unknown alias-edge provenance
 as `ProgramADUnknownAliasEdge` rows and attach the `unknown_alias_edge_kinds`
 blocker before readiness promotion. This is still metadata-only fail-closed

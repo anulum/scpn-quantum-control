@@ -250,11 +250,12 @@ def value_and_grad_program_ad_effect_ir_with_rust(
     The replay is intentionally limited to opcode-bearing scalar, shaped
     elementwise, and static structural ``program_ad_effect_ir.v1`` rows,
     including scalar-to-array broadcasting, static ``reshape``/``ravel``,
-    reversed-axis ``transpose``, ``broadcast_to``, and scalar all-axis
-    ``sum``/``mean`` objective closure. Static linalg replay remains scalar-SSA
-    only. Aliases, mutation, axis-specific reductions, dynamic structural
-    operations, provider execution, hardware execution, LLVM/JIT execution, and
-    performance claims fail closed instead of falling back to Python.
+    reversed-axis ``transpose``, ``broadcast_to``, static-axis ``concatenate``/
+    ``stack``, and scalar all-axis ``sum``/``mean`` objective closure. Static
+    linalg replay remains scalar-SSA only. Aliases, mutation, axis-specific
+    reductions, indexing structural operations, dynamic structural operations,
+    provider execution, hardware execution, LLVM/JIT execution, and performance
+    claims fail closed instead of falling back to Python.
     Executed runtime branch metadata is replayed only as provenance for the
     already-executed path; non-executed branch adjoints and source-level
     control-flow lowering remain fail-closed.

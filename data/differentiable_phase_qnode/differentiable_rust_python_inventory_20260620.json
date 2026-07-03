@@ -67,6 +67,7 @@
       "rust_surface": [
         "scpn_quantum_engine/src/lib.rs"
       ],
+      "rustification_ready": false,
       "surface_id": "unified_differentiable_api",
       "test_surface": [
         "tests/test_differentiable_api.py",
@@ -89,7 +90,7 @@
         "diff-module-hardening-audit-v1"
       ],
       "blockers": [
-        "axis-specific reductions, concatenate/stack/indexing structural adjoints, and broad linalg array adjoints are missing",
+        "axis-specific reductions, indexing structural adjoints, and broad linalg array adjoints are missing",
         "executable registry promotion, LLVM/JIT lowering, provider/hardware evidence, and isolated benchmark evidence are missing"
       ],
       "claim_boundary": "Differentiable Rust/Python surface inventory for rustification planning; no broad rustification promotion, provider execution, hardware execution, LLVM/JIT execution, GPU execution, or isolated benchmark claim is implied.",
@@ -138,6 +139,7 @@
         "scpn_quantum_engine/src/program_ad_ir.rs",
         "scpn_quantum_engine/tests/program_ad_ir.rs"
       ],
+      "rustification_ready": false,
       "surface_id": "rust_program_ad_ir",
       "test_surface": [
         "tests/test_phase_qnode_rust_parity.py",
@@ -152,7 +154,7 @@
         "tests/test_differentiable_claim_ledger.py",
         "tests/test_differentiable_module_hardening_audit.py"
       ],
-      "title": "Rust Program AD IR parser plus bounded scalar, elementwise-array, and structural-array value+gradient replay"
+      "title": "Rust Program AD IR parser plus bounded scalar, elementwise-array, structural-array, and structural-assembly value+gradient replay"
     },
     {
       "benchmark_status": "not_applicable",
@@ -205,6 +207,7 @@
       "rust_surface": [
         "scpn_quantum_engine/src/lib.rs"
       ],
+      "rustification_ready": false,
       "surface_id": "whole_program_frontend",
       "test_surface": [
         "tests/test_whole_program_frontend.py",
@@ -271,6 +274,7 @@
         "scpn_quantum_engine/src/compiler_ad.rs",
         "scpn_quantum_engine/src/lib.rs"
       ],
+      "rustification_ready": false,
       "surface_id": "rust_compiler_ad_primitives",
       "test_surface": [
         "tests/test_phase_qnode_compiler_lowering.py",
@@ -329,6 +333,7 @@
       "rust_surface": [
         "scpn_quantum_engine/src/lib.rs"
       ],
+      "rustification_ready": false,
       "surface_id": "differentiable_sota_scorecard",
       "test_surface": [
         "tests/test_differentiable_sota_scorecard.py"
@@ -391,6 +396,7 @@
       "rust_surface": [
         "scpn_quantum_engine/src/lib.rs"
       ],
+      "rustification_ready": false,
       "surface_id": "pennylane_plugin_matrix",
       "test_surface": [
         "tests/test_phase_pennylane_bridge.py",
@@ -458,6 +464,7 @@
       "rust_surface": [
         "scpn_quantum_engine/src/lib.rs"
       ],
+      "rustification_ready": false,
       "surface_id": "qiskit_runtime_provider_gradients",
       "test_surface": [
         "tests/test_phase_qiskit_bridge.py",
@@ -526,6 +533,7 @@
       "rust_surface": [
         "scpn_quantum_engine/src/lib.rs"
       ],
+      "rustification_ready": false,
       "surface_id": "hardware_gradient_campaigns",
       "test_surface": [
         "tests/test_phase_hardware_gradient_campaign.py",
@@ -586,6 +594,7 @@
       "rust_surface": [
         "scpn_quantum_engine/src/compiler_ad.rs"
       ],
+      "rustification_ready": false,
       "surface_id": "catalyst_compiler_comparison",
       "test_surface": [
         "tests/test_differentiable_external_comparisons.py",
@@ -647,6 +656,7 @@
       "rust_surface": [
         "scpn_quantum_engine/src/compiler_ad.rs"
       ],
+      "rustification_ready": false,
       "surface_id": "enzyme_mlir_compiler_ad",
       "test_surface": [
         "tests/test_phase_qnode_compiler_lowering.py",

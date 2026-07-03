@@ -771,6 +771,12 @@ fn accumulate_reverse_effect(
         "reshape" | "ravel" => accumulate_reshape_like(effect, values, adjoints, &cotangent),
         "broadcast_to" => accumulate_broadcast_to(effect, values, adjoints, &cotangent),
         "transpose" => accumulate_transpose(effect, values, adjoints, &cotangent),
+        name if name == "concatenate" || name.starts_with("concatenate:") => {
+            accumulate_concatenate(effect, name, values, adjoints, &cotangent)
+        }
+        name if name == "stack" || name.starts_with("stack:") => {
+            accumulate_stack(effect, name, values, adjoints, &cotangent)
+        }
         "add" => accumulate_add_sub(effect, values, adjoints, &cotangent, 1.0, 1.0),
         "sub" => accumulate_add_sub(effect, values, adjoints, &cotangent, 1.0, -1.0),
         "mul" => {
@@ -1144,6 +1150,36 @@ fn accumulate_transpose(
     add_numeric_adjoint(&effect.inputs[0], contribution, values, adjoints)
 }
 
+fn accumulate_concatenate(
+    effect: &ProgramADEffect,
+    operation: &str,
+    values: &HashMap<String, ProgramADNumericValue>,
+    adjoints: &mut HashMap<String, ProgramADNumericValue>,
+    cotangent: &ProgramADNumericValue,
+) -> Result<(), String> {
+    let operands = numeric_operands(effect, values)?;
+    let contributions = split_concatenate_cotangent(effect.index, operation, &operands, cotangent)?;
+    for (input, contribution) in effect.inputs.iter().zip(contributions) {
+        add_numeric_adjoint(input, contribution, values, adjoints)?;
+    }
+    Ok(())
+}
+
+fn accumulate_stack(
+    effect: &ProgramADEffect,
+    operation: &str,
+    values: &HashMap<String, ProgramADNumericValue>,
+    adjoints: &mut HashMap<String, ProgramADNumericValue>,
+    cotangent: &ProgramADNumericValue,
+) -> Result<(), String> {
+    let operands = numeric_operands(effect, values)?;
+    let contributions = split_stack_cotangent(effect.index, operation, &operands, cotangent)?;
+    for (input, contribution) in effect.inputs.iter().zip(contributions) {
+        add_numeric_adjoint(input, contribution, values, adjoints)?;
+    }
+    Ok(())
+}
+
 fn accumulate_add_sub(
     effect: &ProgramADEffect,
     values: &HashMap<String, ProgramADNumericValue>,
@@ -1323,6 +1359,12 @@ fn evaluate_numeric_effect(
         "ravel" => numeric_ravel(effect, values, shapes_by_target),
         "broadcast_to" => numeric_broadcast_to(effect, values, shapes_by_target),
         "transpose" => numeric_transpose(effect, values, shapes_by_target),
+        name if name == "concatenate" || name.starts_with("concatenate:") => {
+            numeric_concatenate(effect, name, values, shapes_by_target)
+        }
+        name if name == "stack" || name.starts_with("stack:") => {
+            numeric_stack(effect, name, values, shapes_by_target)
+        }
         "add" => numeric_binary(effect, values, |lhs, rhs| Ok(lhs + rhs)),
         "sub" => numeric_binary(effect, values, |lhs, rhs| Ok(lhs - rhs)),
         "mul" => numeric_binary(effect, values, |lhs, rhs| Ok(lhs * rhs)),
@@ -1406,7 +1448,7 @@ fn evaluate_numeric_effect(
             evaluate_scalar_linalg_effect(effect, operation, values)
         }
         _ => Err(format!(
-            "effect {} operation {operation} is outside bounded Rust elementwise array value+gradient replay",
+            "effect {} operation {operation} is outside bounded Rust elementwise/structural array value+gradient replay",
             effect.index
         )),
     }
@@ -1491,6 +1533,23 @@ fn numeric_operand(
     name.parse::<f64>()
         .map(ProgramADNumericValue::scalar)
         .map_err(|_| format!("operand {name} is neither an SSA value nor a scalar literal"))
+}
+
+fn numeric_operands(
+    effect: &ProgramADEffect,
+    values: &HashMap<String, ProgramADNumericValue>,
+) -> Result<Vec<ProgramADNumericValue>, String> {
+    if effect.inputs.is_empty() {
+        return Err(format!(
+            "effect {} requires at least one input",
+            effect.index
+        ));
+    }
+    effect
+        .inputs
+        .iter()
+        .map(|input| numeric_operand(input, values))
+        .collect()
 }
 
 fn operand_scalar_value(
@@ -1640,6 +1699,28 @@ fn numeric_transpose(
     let source = numeric_operand(&effect.inputs[0], values)?;
     let target = target_shape(effect, shapes_by_target)?;
     transpose_reversed_axes(&source, &target)
+}
+
+fn numeric_concatenate(
+    effect: &ProgramADEffect,
+    operation: &str,
+    values: &HashMap<String, ProgramADNumericValue>,
+    shapes_by_target: &HashMap<String, Vec<usize>>,
+) -> Result<ProgramADNumericValue, String> {
+    let operands = numeric_operands(effect, values)?;
+    let target = target_shape(effect, shapes_by_target)?;
+    concatenate_values(effect.index, operation, &operands, &target)
+}
+
+fn numeric_stack(
+    effect: &ProgramADEffect,
+    operation: &str,
+    values: &HashMap<String, ProgramADNumericValue>,
+    shapes_by_target: &HashMap<String, Vec<usize>>,
+) -> Result<ProgramADNumericValue, String> {
+    let operands = numeric_operands(effect, values)?;
+    let target = target_shape(effect, shapes_by_target)?;
+    stack_values(effect.index, operation, &operands, &target)
 }
 
 fn numeric_binary(
@@ -1806,6 +1887,236 @@ fn transpose_reversed_axes(
         transposed.push(value.values[ravel_index(&source_index, &value.shape)?]);
     }
     ProgramADNumericValue::new(target_shape.to_vec(), transposed)
+}
+
+fn concatenate_values(
+    effect_index: usize,
+    operation: &str,
+    operands: &[ProgramADNumericValue],
+    target_shape: &[usize],
+) -> Result<ProgramADNumericValue, String> {
+    let (axis, expected_shape, offsets) = concatenate_metadata(effect_index, operation, operands)?;
+    if expected_shape != target_shape {
+        return Err(format!(
+            "effect {effect_index} concatenate target shape must be {:?}, got {:?}",
+            expected_shape, target_shape
+        ));
+    }
+    let mut output = Vec::with_capacity(shape_size(target_shape)?);
+    for flat_index in 0..shape_size(target_shape)? {
+        let output_index = unravel_index(flat_index, target_shape);
+        let (operand_index, offset) =
+            concatenate_operand_at_axis(output_index[axis], operands, axis, &offsets)?;
+        let mut source_index = output_index;
+        source_index[axis] -= offset;
+        let source_flat = ravel_index(&source_index, &operands[operand_index].shape)?;
+        output.push(operands[operand_index].values[source_flat]);
+    }
+    ProgramADNumericValue::new(target_shape.to_vec(), output)
+}
+
+fn split_concatenate_cotangent(
+    effect_index: usize,
+    operation: &str,
+    operands: &[ProgramADNumericValue],
+    cotangent: &ProgramADNumericValue,
+) -> Result<Vec<ProgramADNumericValue>, String> {
+    let (axis, expected_shape, offsets) = concatenate_metadata(effect_index, operation, operands)?;
+    if cotangent.shape != expected_shape {
+        return Err(format!(
+            "effect {effect_index} concatenate cotangent shape must be {:?}, got {:?}",
+            expected_shape, cotangent.shape
+        ));
+    }
+    let mut contributions = operands
+        .iter()
+        .map(|operand| vec![0.0_f64; operand.values.len()])
+        .collect::<Vec<Vec<f64>>>();
+    for (flat_index, cotangent_value) in cotangent.values.iter().enumerate() {
+        let output_index = unravel_index(flat_index, &cotangent.shape);
+        let (operand_index, offset) =
+            concatenate_operand_at_axis(output_index[axis], operands, axis, &offsets)?;
+        let mut source_index = output_index;
+        source_index[axis] -= offset;
+        let source_flat = ravel_index(&source_index, &operands[operand_index].shape)?;
+        contributions[operand_index][source_flat] += cotangent_value;
+    }
+    operands
+        .iter()
+        .zip(contributions)
+        .map(|(operand, values)| ProgramADNumericValue::new(operand.shape.clone(), values))
+        .collect()
+}
+
+fn concatenate_metadata(
+    effect_index: usize,
+    operation: &str,
+    operands: &[ProgramADNumericValue],
+) -> Result<(usize, Vec<usize>, Vec<usize>), String> {
+    if operands.is_empty() {
+        return Err(format!("effect {effect_index} concatenate requires inputs"));
+    }
+    let rank = operands[0].shape.len();
+    if rank == 0 {
+        return Err(format!(
+            "effect {effect_index} concatenate requires ranked array operands"
+        ));
+    }
+    let axis = parse_static_axis(operation, "concatenate", rank)?;
+    let mut expected = operands[0].shape.clone();
+    expected[axis] = 0;
+    let mut offsets = Vec::with_capacity(operands.len());
+    let mut axis_total = 0usize;
+    for operand in operands {
+        if operand.shape.len() != rank {
+            return Err(format!(
+                "effect {effect_index} concatenate operands must share rank"
+            ));
+        }
+        for (dimension_index, (actual, expected_dimension)) in
+            operand.shape.iter().zip(expected.iter()).enumerate()
+        {
+            if dimension_index != axis && actual != expected_dimension {
+                return Err(format!(
+                    "effect {effect_index} concatenate non-axis dimensions must match"
+                ));
+            }
+        }
+        offsets.push(axis_total);
+        axis_total = axis_total
+            .checked_add(operand.shape[axis])
+            .ok_or_else(|| "Program AD concatenate axis size overflowed".to_owned())?;
+    }
+    expected[axis] = axis_total;
+    Ok((axis, expected, offsets))
+}
+
+fn concatenate_operand_at_axis(
+    axis_coordinate: usize,
+    operands: &[ProgramADNumericValue],
+    axis: usize,
+    offsets: &[usize],
+) -> Result<(usize, usize), String> {
+    for (operand_index, (operand, offset)) in operands.iter().zip(offsets.iter()).enumerate() {
+        let end = offset + operand.shape[axis];
+        if axis_coordinate >= *offset && axis_coordinate < end {
+            return Ok((operand_index, *offset));
+        }
+    }
+    Err("Program AD concatenate output coordinate is outside operand ranges".to_owned())
+}
+
+fn stack_values(
+    effect_index: usize,
+    operation: &str,
+    operands: &[ProgramADNumericValue],
+    target_shape: &[usize],
+) -> Result<ProgramADNumericValue, String> {
+    let (axis, expected_shape) = stack_metadata(effect_index, operation, operands)?;
+    if expected_shape != target_shape {
+        return Err(format!(
+            "effect {effect_index} stack target shape must be {:?}, got {:?}",
+            expected_shape, target_shape
+        ));
+    }
+    let mut output = Vec::with_capacity(shape_size(target_shape)?);
+    for flat_index in 0..shape_size(target_shape)? {
+        let output_index = unravel_index(flat_index, target_shape);
+        let operand_index = output_index[axis];
+        let source_index = index_without_axis(&output_index, axis);
+        let source_flat = ravel_index(&source_index, &operands[operand_index].shape)?;
+        output.push(operands[operand_index].values[source_flat]);
+    }
+    ProgramADNumericValue::new(target_shape.to_vec(), output)
+}
+
+fn split_stack_cotangent(
+    effect_index: usize,
+    operation: &str,
+    operands: &[ProgramADNumericValue],
+    cotangent: &ProgramADNumericValue,
+) -> Result<Vec<ProgramADNumericValue>, String> {
+    let (axis, expected_shape) = stack_metadata(effect_index, operation, operands)?;
+    if cotangent.shape != expected_shape {
+        return Err(format!(
+            "effect {effect_index} stack cotangent shape must be {:?}, got {:?}",
+            expected_shape, cotangent.shape
+        ));
+    }
+    let mut contributions = operands
+        .iter()
+        .map(|operand| vec![0.0_f64; operand.values.len()])
+        .collect::<Vec<Vec<f64>>>();
+    for (flat_index, cotangent_value) in cotangent.values.iter().enumerate() {
+        let output_index = unravel_index(flat_index, &cotangent.shape);
+        let operand_index = output_index[axis];
+        let source_index = index_without_axis(&output_index, axis);
+        let source_flat = ravel_index(&source_index, &operands[operand_index].shape)?;
+        contributions[operand_index][source_flat] += cotangent_value;
+    }
+    operands
+        .iter()
+        .zip(contributions)
+        .map(|(operand, values)| ProgramADNumericValue::new(operand.shape.clone(), values))
+        .collect()
+}
+
+fn stack_metadata(
+    effect_index: usize,
+    operation: &str,
+    operands: &[ProgramADNumericValue],
+) -> Result<(usize, Vec<usize>), String> {
+    if operands.is_empty() {
+        return Err(format!("effect {effect_index} stack requires inputs"));
+    }
+    let source_shape = operands[0].shape.clone();
+    for operand in operands {
+        if operand.shape != source_shape {
+            return Err(format!(
+                "effect {effect_index} stack operands must have identical shapes"
+            ));
+        }
+    }
+    let output_rank = source_shape.len() + 1;
+    let axis = parse_static_axis(operation, "stack", output_rank)?;
+    let mut expected = source_shape;
+    expected.insert(axis, operands.len());
+    Ok((axis, expected))
+}
+
+fn index_without_axis(index: &[usize], axis: usize) -> Vec<usize> {
+    index
+        .iter()
+        .enumerate()
+        .filter_map(|(index_axis, value)| (index_axis != axis).then_some(*value))
+        .collect()
+}
+
+fn parse_static_axis(operation: &str, prefix: &str, rank: usize) -> Result<usize, String> {
+    let expected_prefix = format!("{prefix}:axis:");
+    let Some(raw_axis) = operation.strip_prefix(&expected_prefix) else {
+        return Err(format!(
+            "{prefix} operation requires static axis metadata {prefix}:axis:<int>"
+        ));
+    };
+    let axis = raw_axis
+        .parse::<isize>()
+        .map_err(|_| format!("{prefix} axis metadata must be an integer"))?;
+    normalise_static_axis(axis, rank)
+        .map_err(|reason| format!("{prefix} axis metadata is invalid: {reason}"))
+}
+
+fn normalise_static_axis(axis: isize, rank: usize) -> Result<usize, String> {
+    if rank == 0 {
+        return Err("rank must be positive".to_owned());
+    }
+    let rank_isize =
+        isize::try_from(rank).map_err(|_| "rank exceeds axis metadata range".to_owned())?;
+    let normalised = if axis < 0 { rank_isize + axis } else { axis };
+    if normalised < 0 || normalised >= rank_isize {
+        return Err(format!("axis {axis} is outside rank {rank}"));
+    }
+    usize::try_from(normalised).map_err(|_| "axis normalisation overflowed".to_owned())
 }
 
 fn unravel_index(mut flat_index: usize, shape: &[usize]) -> Vec<usize> {
