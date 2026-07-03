@@ -139,6 +139,7 @@ nav:
       - Methods Benchmark Dashboard: methods_benchmark_dashboard.md
       - Kuramoto Tier Benchmark: tier_benchmarks.md
       - Kuramoto Competitive Benchmark: kuramoto_competitive_benchmark.md
+      - Kuramoto Neural-Operator Advantage: neural_operator_advantage.md
       - Synchronisation Benchmark Suite: synchronisation_benchmark_suite.md
       - Symmetry-Sector Mitigation Compiler: symmetry_sector_mitigation_compiler.md
       - Symmetry-Sector Mitigation Fixtures: symmetry_sector_mitigation_fixtures.md

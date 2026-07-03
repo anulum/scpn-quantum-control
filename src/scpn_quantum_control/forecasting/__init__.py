@@ -9,7 +9,10 @@
 
 Includes the optional PyTorch DeepONet neural-operator surrogate for Kuramoto dynamics
 (:mod:`.kuramoto_neural_operator`); its dataset builder is pure NumPy, while training and forecasting
-require ``scpn-quantum-control[torch]`` behind a lazy import.
+require ``scpn-quantum-control[torch]`` behind a lazy import. The surrogate's honest advantage over
+direct simulation — held-out fidelity against a persistence baseline plus the host-independent
+operation-count crossover — is quantified by :mod:`.neural_operator_advantage`, whose arithmetic core
+lives in the pure-NumPy :mod:`.neural_operator_cost_model`.
 """
 
 from .kuramoto_neural_operator import (
@@ -18,6 +21,12 @@ from .kuramoto_neural_operator import (
     simulate_operator_dataset,
     train_kuramoto_neural_operator,
 )
+from .neural_operator_advantage import (
+    HeldOutFidelity,
+    NeuralOperatorAdvantage,
+    evaluate_neural_operator_advantage,
+)
+from .neural_operator_cost_model import SurrogateCostModel, build_cost_model
 from .real_data_sync import (
     ForecastModelRun,
     SynchronisationForecastBenchmarkResult,
@@ -30,10 +39,15 @@ from .real_data_sync import (
 
 __all__ = [
     "ForecastModelRun",
+    "HeldOutFidelity",
     "KuramotoOperatorDataset",
+    "NeuralOperatorAdvantage",
+    "SurrogateCostModel",
     "SynchronisationForecastBenchmarkResult",
     "SynchronisationForecastDataset",
     "TrainedKuramotoOperator",
+    "build_cost_model",
+    "evaluate_neural_operator_advantage",
     "load_hardware_kuramoto_4osc_trace",
     "load_ieee5bus_sync_forecast_case",
     "run_real_data_sync_forecast_benchmark",

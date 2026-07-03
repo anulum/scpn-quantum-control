@@ -390,6 +390,11 @@ omit = [
     "*/scpn_quantum_control/mitigation/mitiq_integration.py",
     "*/scpn_quantum_control/analysis/quantum_persistent_homology.py",
     "*/scpn_quantum_control/forecasting/kuramoto_neural_operator.py",
+    # The advantage study orchestrates the torch surrogate end-to-end; its test skips without the
+    # optional [torch] extra, so its lines are excluded from the CPU-only line gate. The
+    # host-independent arithmetic it relies on lives in neural_operator_cost_model.py, which is NOT
+    # omitted and is covered to 100% in the ordinary lane.
+    "*/scpn_quantum_control/forecasting/neural_operator_advantage.py",
 ]
 exclude_lines = [
     "pragma: no cover",

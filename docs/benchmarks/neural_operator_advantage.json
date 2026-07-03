@@ -1,0 +1,310 @@
+{
+  "schema": "scpn-quantum-control.neural-operator-advantage.v1",
+  "generated_utc": "2026-07-03T10:39:56.977056+00:00",
+  "n_oscillators": 32,
+  "dt": 0.05,
+  "n_steps": 20,
+  "horizon": 1.0,
+  "rk4_tier": "rust",
+  "loss_start": 0.6230664253234863,
+  "loss_final": 0.0053011407144367695,
+  "fidelity": {
+    "n_eval": 40,
+    "horizon": 1.0,
+    "surrogate_mean_error": 0.10537451186130345,
+    "persistence_mean_error": 0.22502782186756737,
+    "surrogate_terminal_error": 0.19295260808527062,
+    "persistence_terminal_error": 0.46700400651084817,
+    "beats_persistence": true,
+    "error_vs_horizon": [
+      {
+        "time": 0.0,
+        "surrogate_error": 0.06314388282342617,
+        "persistence_error": 0.0
+      },
+      {
+        "time": 0.05,
+        "surrogate_error": 0.06258482425929998,
+        "persistence_error": 0.02077524773664954
+      },
+      {
+        "time": 0.1,
+        "surrogate_error": 0.06282592414658453,
+        "persistence_error": 0.0418036804420495
+      },
+      {
+        "time": 0.15000000000000002,
+        "surrogate_error": 0.06383588082582742,
+        "persistence_error": 0.06309014983033931
+      },
+      {
+        "time": 0.2,
+        "surrogate_error": 0.06566684665873064,
+        "persistence_error": 0.08464057697383887
+      },
+      {
+        "time": 0.25,
+        "surrogate_error": 0.06826611231954016,
+        "persistence_error": 0.10646235177130299
+      },
+      {
+        "time": 0.30000000000000004,
+        "surrogate_error": 0.0716134232110745,
+        "persistence_error": 0.12857106366630353
+      },
+      {
+        "time": 0.35000000000000003,
+        "surrogate_error": 0.07564551968686978,
+        "persistence_error": 0.15097874483895088
+      },
+      {
+        "time": 0.4,
+        "surrogate_error": 0.08042918315714219,
+        "persistence_error": 0.17368013488236062
+      },
+      {
+        "time": 0.45,
+        "surrogate_error": 0.08592401731313307,
+        "persistence_error": 0.19667810949836603
+      },
+      {
+        "time": 0.5,
+        "surrogate_error": 0.09208984841615214,
+        "persistence_error": 0.21996036344568512
+      },
+      {
+        "time": 0.55,
+        "surrogate_error": 0.09901921206131237,
+        "persistence_error": 0.2435351985364776
+      },
+      {
+        "time": 0.6000000000000001,
+        "surrogate_error": 0.10673094051377721,
+        "persistence_error": 0.2674065793023862
+      },
+      {
+        "time": 0.65,
+        "surrogate_error": 0.11524114768820097,
+        "persistence_error": 0.2915333239877135
+      },
+      {
+        "time": 0.7000000000000001,
+        "surrogate_error": 0.12443698508158199,
+        "persistence_error": 0.31589942636774915
+      },
+      {
+        "time": 0.75,
+        "surrogate_error": 0.13426077147676424,
+        "persistence_error": 0.3405162377932097
+      },
+      {
+        "time": 0.8,
+        "surrogate_error": 0.14472312540259974,
+        "persistence_error": 0.3654008179131466
+      },
+      {
+        "time": 0.8500000000000001,
+        "surrogate_error": 0.15585540847005688,
+        "persistence_error": 0.39049782322224447
+      },
+      {
+        "time": 0.9,
+        "surrogate_error": 0.1676154454112075,
+        "persistence_error": 0.4158299176587181
+      },
+      {
+        "time": 0.9500000000000001,
+        "surrogate_error": 0.1800036420788202,
+        "persistence_error": 0.44132050484057544
+      },
+      {
+        "time": 1.0,
+        "surrogate_error": 0.19295260808527065,
+        "persistence_error": 0.46700400651084817
+      }
+    ]
+  },
+  "cost_model": {
+    "n_oscillators": 32,
+    "n_steps": 20,
+    "latent_dim": 32,
+    "hidden_dim": 96,
+    "n_trajectories": 256,
+    "epochs": 300,
+    "rk4_right_hand_side_evaluations": 80,
+    "direct_flops_per_query": 339200,
+    "surrogate_flops_per_query": 416192,
+    "per_query_flop_ratio": 0.8150084576349377,
+    "training_flops": 2013790208000,
+    "break_even_queries": null
+  },
+  "wall_clock_ms": {
+    "direct_full_trajectory_ms": 1.065162941813469,
+    "surrogate_single_query_ms": 0.27239101473242044
+  },
+  "provenance": {
+    "cpu_model": "11th Gen Intel(R) Core(TM) i5-11600K @ 3.90GHz",
+    "cpu_count": 12,
+    "python": "3.12.3",
+    "numpy": "2.2.6",
+    "engine": "installed",
+    "juliacall": "0.9.31",
+    "rustc": "rustup 1.29.0 (28d1352db 2026-03-05)",
+    "platform": "Linux-6.17.0-35-generic-x86_64-with-glibc2.39",
+    "machine": "x86_64",
+    "commit": "7f021bdfa88d0f20a5400de166e85eeae19fb7c2",
+    "cpu_affinity": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11
+    ],
+    "loadavg": [
+      26.56,
+      22.96,
+      23.07
+    ]
+  },
+  "claim_boundary": "The reproducible quantities are the held-out forecast fidelity and the host-independent operation-count model. The wall-clock milliseconds are advisory host-bounded evidence, captured under the recorded load and governor, and are excluded from any performance claim. A Rust-accelerated fixed-step integrator can outrun a DeepONet forward pass at small N; the surrogate's advantage is the structural random-access and amortisation captured by the operation-count model, not a single-query millisecond margin.",
+  "determinism": "Fidelity is deterministic on a fixed host for fixed dataset, training and evaluation seeds (NumPy default_rng plus a torch manual seed on CPU); reproducibility is asserted on the content (loss curve, forecast, cost model), never on timings. The payload digest covers only the host-independent cost model and configuration, which are bit-exact everywhere.",
+  "production_claim_allowed": false,
+  "payload_sha256": "c8d02b6fcd5f1e71863f74452c3ae8bc5133a6de5e02c18c28f0df18f81b1fdf",
+  "operation_count_scaling": [
+    {
+      "n_oscillators": 16,
+      "n_steps": 20,
+      "direct_flops_per_query": 87680,
+      "surrogate_flops_per_query": 211360,
+      "per_query_flop_ratio": 0.41483724451173354,
+      "rk4_right_hand_side_evaluations": 80
+    },
+    {
+      "n_oscillators": 16,
+      "n_steps": 40,
+      "direct_flops_per_query": 175360,
+      "surrogate_flops_per_query": 211360,
+      "per_query_flop_ratio": 0.8296744890234671,
+      "rk4_right_hand_side_evaluations": 160
+    },
+    {
+      "n_oscillators": 16,
+      "n_steps": 80,
+      "direct_flops_per_query": 350720,
+      "surrogate_flops_per_query": 211360,
+      "per_query_flop_ratio": 1.6593489780469342,
+      "rk4_right_hand_side_evaluations": 320
+    },
+    {
+      "n_oscillators": 16,
+      "n_steps": 160,
+      "direct_flops_per_query": 701440,
+      "surrogate_flops_per_query": 211360,
+      "per_query_flop_ratio": 3.3186979560938683,
+      "rk4_right_hand_side_evaluations": 640
+    },
+    {
+      "n_oscillators": 32,
+      "n_steps": 20,
+      "direct_flops_per_query": 339200,
+      "surrogate_flops_per_query": 416192,
+      "per_query_flop_ratio": 0.8150084576349377,
+      "rk4_right_hand_side_evaluations": 80
+    },
+    {
+      "n_oscillators": 32,
+      "n_steps": 40,
+      "direct_flops_per_query": 678400,
+      "surrogate_flops_per_query": 416192,
+      "per_query_flop_ratio": 1.6300169152698754,
+      "rk4_right_hand_side_evaluations": 160
+    },
+    {
+      "n_oscillators": 32,
+      "n_steps": 80,
+      "direct_flops_per_query": 1356800,
+      "surrogate_flops_per_query": 416192,
+      "per_query_flop_ratio": 3.2600338305397507,
+      "rk4_right_hand_side_evaluations": 320
+    },
+    {
+      "n_oscillators": 32,
+      "n_steps": 160,
+      "direct_flops_per_query": 2713600,
+      "surrogate_flops_per_query": 416192,
+      "per_query_flop_ratio": 6.520067661079501,
+      "rk4_right_hand_side_evaluations": 640
+    },
+    {
+      "n_oscillators": 64,
+      "n_steps": 20,
+      "direct_flops_per_query": 1333760,
+      "surrogate_flops_per_query": 825856,
+      "per_query_flop_ratio": 1.6150030998140112,
+      "rk4_right_hand_side_evaluations": 80
+    },
+    {
+      "n_oscillators": 64,
+      "n_steps": 40,
+      "direct_flops_per_query": 2667520,
+      "surrogate_flops_per_query": 825856,
+      "per_query_flop_ratio": 3.2300061996280225,
+      "rk4_right_hand_side_evaluations": 160
+    },
+    {
+      "n_oscillators": 64,
+      "n_steps": 80,
+      "direct_flops_per_query": 5335040,
+      "surrogate_flops_per_query": 825856,
+      "per_query_flop_ratio": 6.460012399256045,
+      "rk4_right_hand_side_evaluations": 320
+    },
+    {
+      "n_oscillators": 64,
+      "n_steps": 160,
+      "direct_flops_per_query": 10670080,
+      "surrogate_flops_per_query": 825856,
+      "per_query_flop_ratio": 12.92002479851209,
+      "rk4_right_hand_side_evaluations": 640
+    },
+    {
+      "n_oscillators": 128,
+      "n_steps": 20,
+      "direct_flops_per_query": 5288960,
+      "surrogate_flops_per_query": 1645184,
+      "per_query_flop_ratio": 3.2148136621800356,
+      "rk4_right_hand_side_evaluations": 80
+    },
+    {
+      "n_oscillators": 128,
+      "n_steps": 40,
+      "direct_flops_per_query": 10577920,
+      "surrogate_flops_per_query": 1645184,
+      "per_query_flop_ratio": 6.429627324360071,
+      "rk4_right_hand_side_evaluations": 160
+    },
+    {
+      "n_oscillators": 128,
+      "n_steps": 80,
+      "direct_flops_per_query": 21155840,
+      "surrogate_flops_per_query": 1645184,
+      "per_query_flop_ratio": 12.859254648720142,
+      "rk4_right_hand_side_evaluations": 320
+    },
+    {
+      "n_oscillators": 128,
+      "n_steps": 160,
+      "direct_flops_per_query": 42311680,
+      "surrogate_flops_per_query": 1645184,
+      "per_query_flop_ratio": 25.718509297440285,
+      "rk4_right_hand_side_evaluations": 640
+    }
+  ]
+}
