@@ -404,6 +404,62 @@ const STATIC_SOURCE_MAP_INDEXING_PROGRAM_AD_IR: &str = r#"{
   "bytecode_offsets": [0, 2, 4]
 }"#;
 
+const STATIC_PRODUCT_REDUCTION_PROGRAM_AD_IR: &str = r#"{
+  "format": "program_ad_effect_ir.v1",
+  "ssa_values": [
+    {"name": "%0", "producer": 0, "version": 0, "shape": [2, 3], "dtype": "float64", "effect": 0},
+    {"name": "%1", "producer": 1, "version": 0, "shape": [3], "dtype": "float64", "effect": 1},
+    {"name": "%2", "producer": 2, "version": 0, "shape": [2], "dtype": "float64", "effect": 2},
+    {"name": "%3", "producer": 3, "version": 0, "shape": [], "dtype": "float64", "effect": 3},
+    {"name": "%4", "producer": 4, "version": 0, "shape": [3], "dtype": "float64", "effect": 4},
+    {"name": "%5", "producer": 5, "version": 0, "shape": [2], "dtype": "float64", "effect": 5},
+    {"name": "%6", "producer": 6, "version": 0, "shape": [], "dtype": "float64", "effect": 6},
+    {"name": "%7", "producer": 7, "version": 0, "shape": [3], "dtype": "float64", "effect": 7},
+    {"name": "%8", "producer": 8, "version": 0, "shape": [2], "dtype": "float64", "effect": 8},
+    {"name": "%9", "producer": 9, "version": 0, "shape": [], "dtype": "float64", "effect": 9},
+    {"name": "%10", "producer": 10, "version": 0, "shape": [], "dtype": "float64", "effect": 10},
+    {"name": "%11", "producer": 11, "version": 0, "shape": [], "dtype": "float64", "effect": 11},
+    {"name": "%12", "producer": 12, "version": 0, "shape": [], "dtype": "float64", "effect": 12},
+    {"name": "%13", "producer": 13, "version": 0, "shape": [], "dtype": "float64", "effect": 13}
+  ],
+  "effects": [
+    {"index": 0, "kind": "parameter", "target": "%0", "inputs": ["matrix"], "version": 0, "ordering": 0, "operation": "parameter"},
+    {"index": 1, "kind": "parameter", "target": "%1", "inputs": ["column_weights"], "version": 0, "ordering": 1, "operation": "parameter"},
+    {"index": 2, "kind": "parameter", "target": "%2", "inputs": ["row_weights"], "version": 0, "ordering": 2, "operation": "parameter"},
+    {"index": 3, "kind": "parameter", "target": "%3", "inputs": ["all_weight"], "version": 0, "ordering": 3, "operation": "parameter"},
+    {"index": 4, "kind": "primitive", "target": "%4", "inputs": ["%0"], "version": 0, "ordering": 4, "operation": "prod:axis:0"},
+    {"index": 5, "kind": "primitive", "target": "%5", "inputs": ["%0"], "version": 0, "ordering": 5, "operation": "prod:axis:-1"},
+    {"index": 6, "kind": "primitive", "target": "%6", "inputs": ["%0"], "version": 0, "ordering": 6, "operation": "prod"},
+    {"index": 7, "kind": "pure", "target": "%7", "inputs": ["%4", "%1"], "version": 0, "ordering": 7, "operation": "mul"},
+    {"index": 8, "kind": "pure", "target": "%8", "inputs": ["%5", "%2"], "version": 0, "ordering": 8, "operation": "mul"},
+    {"index": 9, "kind": "pure", "target": "%9", "inputs": ["%6", "%3"], "version": 0, "ordering": 9, "operation": "mul"},
+    {"index": 10, "kind": "primitive", "target": "%10", "inputs": ["%7"], "version": 0, "ordering": 10, "operation": "sum"},
+    {"index": 11, "kind": "primitive", "target": "%11", "inputs": ["%8"], "version": 0, "ordering": 11, "operation": "sum"},
+    {"index": 12, "kind": "pure", "target": "%12", "inputs": ["%10", "%11"], "version": 0, "ordering": 12, "operation": "add"},
+    {"index": 13, "kind": "pure", "target": "%13", "inputs": ["%12", "%9"], "version": 0, "ordering": 13, "operation": "add"}
+  ],
+  "alias_edges": [],
+  "control_regions": [],
+  "phi_nodes": [],
+  "bytecode_offsets": [0, 2, 4]
+}"#;
+
+const PRODUCT_SINGLE_ZERO_PROGRAM_AD_IR: &str = r#"{
+  "format": "program_ad_effect_ir.v1",
+  "ssa_values": [
+    {"name": "%0", "producer": 0, "version": 0, "shape": [4], "dtype": "float64", "effect": 0},
+    {"name": "%1", "producer": 1, "version": 0, "shape": [], "dtype": "float64", "effect": 1}
+  ],
+  "effects": [
+    {"index": 0, "kind": "parameter", "target": "%0", "inputs": ["source"], "version": 0, "ordering": 0, "operation": "parameter"},
+    {"index": 1, "kind": "primitive", "target": "%1", "inputs": ["%0"], "version": 0, "ordering": 1, "operation": "prod"}
+  ],
+  "alias_edges": [],
+  "control_regions": [],
+  "phi_nodes": [],
+  "bytecode_offsets": [0, 2, 4]
+}"#;
+
 #[test]
 fn program_ad_effect_ir_parser_round_trips_python_payload_shape() {
     let ir = parse_program_ad_effect_ir(VALID_PROGRAM_AD_IR).unwrap();
@@ -862,6 +918,64 @@ fn program_ad_effect_ir_rust_value_and_gradient_rejects_source_map_without_metad
         .blocked_reasons
         .iter()
         .any(|reason| reason.contains("requires static source-map metadata")));
+}
+
+#[test]
+fn program_ad_effect_ir_rust_value_and_gradient_replays_static_product_reductions() {
+    let result = interpret_program_ad_effect_ir_value_and_gradient(
+        STATIC_PRODUCT_REDUCTION_PROGRAM_AD_IR,
+        &[
+            1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 0.5, -1.0, 2.0, 3.0, -0.25, 0.1,
+        ],
+    )
+    .unwrap();
+
+    let expected_gradient = [
+        92.0, 40.0, 42.0, 11.0, 6.4, 13.0, 4.0, 10.0, 18.0, 6.0, 120.0, 720.0,
+    ];
+    assert!(result.supported, "{:?}", result.blocked_reasons);
+    assert_eq!(result.value, Some(88.0));
+    assert_eq!(
+        result.parameter_targets,
+        vec![
+            "%0[0]", "%0[1]", "%0[2]", "%0[3]", "%0[4]", "%0[5]", "%1[0]", "%1[1]", "%1[2]",
+            "%2[0]", "%2[1]", "%3"
+        ]
+    );
+    assert_eq!(result.gradient.len(), expected_gradient.len());
+    for (actual, expected) in result.gradient.iter().zip(expected_gradient) {
+        assert!((actual - expected).abs() <= 1.0e-12);
+    }
+    assert_eq!(result.effect_count, 14);
+    assert_eq!(result.supported_effect_count, 14);
+}
+
+#[test]
+fn program_ad_effect_ir_rust_value_and_gradient_replays_single_zero_product() {
+    let result = interpret_program_ad_effect_ir_value_and_gradient(
+        PRODUCT_SINGLE_ZERO_PROGRAM_AD_IR,
+        &[0.0, 2.0, 3.0, 4.0],
+    )
+    .unwrap();
+
+    assert!(result.supported, "{:?}", result.blocked_reasons);
+    assert_eq!(result.value, Some(0.0));
+    assert_eq!(result.gradient, vec![24.0, 0.0, 0.0, 0.0]);
+}
+
+#[test]
+fn program_ad_effect_ir_rust_value_and_gradient_rejects_multi_zero_product() {
+    let result = interpret_program_ad_effect_ir_value_and_gradient(
+        PRODUCT_SINGLE_ZERO_PROGRAM_AD_IR,
+        &[0.0, 2.0, 0.0, 4.0],
+    )
+    .unwrap();
+
+    assert!(!result.supported);
+    assert!(result
+        .blocked_reasons
+        .iter()
+        .any(|reason| reason.contains("prod gradient supports at most one zero input")));
 }
 
 #[test]

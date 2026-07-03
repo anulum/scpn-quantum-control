@@ -88,13 +88,14 @@ shaped-array, and bounded static structural `program_ad_effect_ir.v1` rows at
 the explicit operation boundary, including scalar-to-array broadcasting, adjoint
 broadcast reduction, static `reshape`/`ravel`, `broadcast_to`, reversed-axis
 `transpose`, static-axis `concatenate`/`stack`, static-axis `sum`/`mean`
-reductions, scalar all-axis `sum`/`mean` objective closure, static source-map
-`index_map:<sN|cVALUE,...>` indexing, and executed runtime branch metadata when
-matched by runtime phi provenance. Legacy opcode-free metadata, aliases,
-mutation, non-lowered dynamic indexing semantics, non-sum/mean reduction
-families, broad array/linalg adjoints, source-level and non-executed branch
-semantics, general Program AD execution, LLVM/JIT lowering, hardware execution,
-provider execution, and performance promotion remain fail-closed.
+and `prod` reductions, scalar all-axis `sum`/`mean`/`prod` objective closure,
+static source-map `index_map:<sN|cVALUE,...>` indexing, and executed runtime
+branch metadata when matched by runtime phi provenance. Legacy opcode-free
+metadata, aliases, mutation, non-lowered dynamic indexing semantics,
+variance/std and selector/order-statistic reduction families, broad array/linalg
+adjoints, source-level and non-executed branch semantics, general Program AD
+execution, LLVM/JIT lowering, hardware execution, provider execution, and
+performance promotion remain fail-closed.
 Program AD static alias-lattice reports preserve unknown alias-edge provenance
 as `ProgramADUnknownAliasEdge` rows and attach the `unknown_alias_edge_kinds`
 blocker before readiness promotion. This is still metadata-only fail-closed

@@ -574,16 +574,16 @@ def _default_scorecard_rows(
             "through the unrolled scalar SSA, plus bounded elementwise shaped arrays with "
             "scalar-to-array broadcasting and static structural array opcodes for reshape, ravel, "
             "broadcast_to, reversed-axis transpose, static-axis concatenate/stack assembly, and "
-            "static source-map indexing plus static-axis and scalar all-axis sum/mean reductions. "
+            "static source-map indexing plus static-axis and scalar all-axis sum/mean/prod reductions. "
             "These paths are parity-verified against the "
             "Python/NumPy reference and CI-checked via cargo tests (2026-06-22 slices 2b-1..2b-6; "
             "2026-07-03 elementwise, structural array, structural assembly, static-axis reduction, "
-            "and static source-map indexing adjoints); a general "
+            "static source-map indexing, and static product reduction adjoints); a general "
             "structural ndarray adjoint engine, executable registry promotion and Rust-side LLVM/JIT "
             "lowering remain open.",
             ("phase_qnode_claim_boundary",),
             (
-                "non-lowered dynamic indexing semantics, non-sum/mean reduction families, and broad linalg array adjoints are missing",
+                "non-lowered dynamic indexing semantics, variance/std and selector/order-statistic reduction adjoints, and broad linalg array adjoints are missing",
                 "executable registry promotion, Rust-side LLVM/JIT lowering, and isolated benchmark evidence are missing",
             ),
             ("Round 4 compiler AD and Program AD", "Round 5 Rustification readiness"),

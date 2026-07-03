@@ -11,8 +11,8 @@
 //! This module mirrors the bounded Python Program AD IR schema so Rust-side
 //! tooling can inspect evidence metadata, execute a narrow scalar forward
 //! interpreter, and replay bounded scalar, elementwise-array, static structural,
-//! static source-map indexing, and static-linalg value+gradient traces when
-//! opcode-bearing rows are present.
+//! static source-map indexing, static product reductions, and static-linalg
+//! value+gradient traces when opcode-bearing rows are present.
 //! It does not promote LLVM lowering, JIT execution, reverse-mode compiler AD,
 //! hardware execution, or performance claims.
 
@@ -23,6 +23,9 @@ use pyo3::prelude::*;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
+use crate::program_ad_product_reduction::{
+    product_all_cotangent, product_all_value, product_axis_cotangent, product_axis_values,
+};
 pub use crate::program_ad_registry_mirror::{
     mirror_program_ad_registry_metadata, ProgramADRegistryMetadataMirrorSummary,
 };
@@ -776,6 +779,9 @@ fn accumulate_reverse_effect(
         name if name == "mean" || name.starts_with("mean:") => {
             accumulate_mean(effect, name, values, adjoints, &cotangent)
         }
+        name if name == "prod" || name.starts_with("prod:") => {
+            accumulate_prod(effect, name, values, adjoints, &cotangent)
+        }
         "reshape" | "ravel" => accumulate_reshape_like(effect, values, adjoints, &cotangent),
         "broadcast_to" => accumulate_broadcast_to(effect, values, adjoints, &cotangent),
         "transpose" => accumulate_transpose(effect, values, adjoints, &cotangent),
@@ -1116,6 +1122,34 @@ fn accumulate_mean(
     add_numeric_adjoint(&effect.inputs[0], contribution, values, adjoints)
 }
 
+fn accumulate_prod(
+    effect: &ProgramADEffect,
+    operation: &str,
+    values: &HashMap<String, ProgramADNumericValue>,
+    adjoints: &mut HashMap<String, ProgramADNumericValue>,
+    cotangent: &ProgramADNumericValue,
+) -> Result<(), String> {
+    if effect.inputs.len() != 1 {
+        return Err(format!("effect {} prod requires one input", effect.index));
+    }
+    let input = numeric_operand(&effect.inputs[0], values)?;
+    let contribution_values = if operation == "prod" {
+        let scalar_cotangent = cotangent.scalar_value()?;
+        product_all_cotangent(effect.index, &input.values, scalar_cotangent)?
+    } else {
+        let axis = parse_static_axis(operation, "prod", input.shape.len())?;
+        product_axis_cotangent(
+            effect.index,
+            &input.shape,
+            axis,
+            &cotangent.values,
+            &input.values,
+        )?
+    };
+    let contribution = ProgramADNumericValue::new(input.shape.clone(), contribution_values)?;
+    add_numeric_adjoint(&effect.inputs[0], contribution, values, adjoints)
+}
+
 fn accumulate_reshape_like(
     effect: &ProgramADEffect,
     values: &HashMap<String, ProgramADNumericValue>,
@@ -1384,6 +1418,9 @@ fn evaluate_numeric_effect(
         }
         name if name == "mean" || name.starts_with("mean:") => {
             numeric_mean(effect, name, values, shapes_by_target)
+        }
+        name if name == "prod" || name.starts_with("prod:") => {
+            numeric_prod(effect, name, values, shapes_by_target)
         }
         "reshape" => numeric_reshape(effect, values, shapes_by_target),
         "ravel" => numeric_ravel(effect, values, shapes_by_target),
@@ -1690,6 +1727,34 @@ fn numeric_mean(
     let axis = parse_static_axis(operation, "mean", source.shape.len())?;
     let scale = 1.0 / source.shape[axis] as f64;
     reduce_axis_values(effect.index, operation, "mean", &source, &target, scale)
+}
+
+fn numeric_prod(
+    effect: &ProgramADEffect,
+    operation: &str,
+    values: &HashMap<String, ProgramADNumericValue>,
+    shapes_by_target: &HashMap<String, Vec<usize>>,
+) -> Result<ProgramADNumericValue, String> {
+    if effect.inputs.len() != 1 {
+        return Err(format!("effect {} prod requires one input", effect.index));
+    }
+    let target = target_shape(effect, shapes_by_target)?;
+    let source = numeric_operand(&effect.inputs[0], values)?;
+    if operation == "prod" {
+        if !target.is_empty() {
+            return Err(format!(
+                "effect {} prod non-scalar target requires static axis metadata prod:axis:<int>",
+                effect.index
+            ));
+        }
+        return Ok(ProgramADNumericValue::scalar(product_all_value(
+            effect.index,
+            &source.values,
+        )?));
+    }
+    let axis = parse_static_axis(operation, "prod", source.shape.len())?;
+    let output = product_axis_values(effect.index, &source.shape, axis, &target, &source.values)?;
+    ProgramADNumericValue::new(target, output)
 }
 
 fn reduce_axis_values(

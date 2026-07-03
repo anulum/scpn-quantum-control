@@ -59,6 +59,7 @@ pub mod otoc;
 pub mod pauli;
 pub mod pec;
 pub mod program_ad_ir;
+mod program_ad_product_reduction;
 pub mod program_ad_registry_mirror;
 mod program_ad_static_source_map;
 pub mod pulse_shaping;
