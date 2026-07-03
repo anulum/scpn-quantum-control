@@ -226,7 +226,7 @@ for name, w in results.items():
 - [Kuramoto Core Facade](kuramoto_core_facade.md) — stable `K_nm`/`omega` compiler entry point
 - [Stable Facades API](stable_facades_api.md) — mkdocstrings reference for first-path public facades
 - [Physics-First Kuramoto-XY](physics_first_kuramoto_xy.md) — start from arbitrary oscillator networks before SCPN-specific layers
-- [Kuramoto Standalone Package Decision](kuramoto_standalone_package_decision.md) — Phase 5.6 package-split decision boundary
+- [Kuramoto Standalone Package Decision](kuramoto_standalone_package_decision.md) — the `oscillatools` package split, CEO/IP-approved 2026-07-04
 - [Differentiable Tutorials](differentiable_tutorials.md) — unified differentiable API workflow
 - [Differentiable Programming](differentiable_programming.md) — current AD capabilities, boundaries, and user routes
 - [Quantum Gradients](quantum_gradients.md) — parameter-shift gradients, VQE convergence route, and verification evidence

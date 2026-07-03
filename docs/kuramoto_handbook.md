@@ -217,7 +217,7 @@ benchmark tables.
 - Quantum hardware execution, broad quantum-advantage claims, and measured
   physical `K_nm` magnitudes remain governed by the evidence ledgers and
   preregistered campaign gates.
-- The standalone package split remains a CEO/IP decision. This handbook
-  documents the current in-repository facade and does not create a new
-  distribution boundary. See
+- The standalone package split is CEO/IP-approved (2026-07-04) under the name
+  `oscillatools`; extraction is scheduled and this handbook documents the current
+  in-repository facade until the migration lands. See
   [Kuramoto Standalone Package Decision](kuramoto_standalone_package_decision.md).

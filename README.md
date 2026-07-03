@@ -960,7 +960,7 @@ Full docs at **[anulum.github.io/scpn-quantum-control](https://anulum.github.io/
 - [Differentiable Roadmap](docs/differentiable_roadmap.md) — staged gradient, adapter, benchmark, verification, and control roadmap
 - [Tutorials](docs/tutorials.md) — 4-level learning path, 14 tutorials
 - [Stable Facades API](docs/stable_facades_api.md) — first-path public API for notebooks, tutorials, and integrations
-- [Kuramoto Standalone Package Decision](docs/kuramoto_standalone_package_decision.md) — Phase 5.6 package-split decision boundary
+- [Kuramoto Standalone Package Decision](docs/kuramoto_standalone_package_decision.md) — the `oscillatools` package split, CEO/IP-approved 2026-07-04
 - [API Overview](docs/api.md) — stable facade route first, advanced module references second
 - [Research Gems](docs/research_gems.md) — **33 analysis modules with theory and API**
 - [Equations](docs/equations.md) — every equation in the codebase
