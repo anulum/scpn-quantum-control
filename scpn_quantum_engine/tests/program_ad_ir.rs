@@ -8,7 +8,7 @@
 
 use scpn_quantum_engine::program_ad_ir::{
     interpret_program_ad_effect_ir_forward, interpret_program_ad_effect_ir_value_and_gradient,
-    parse_program_ad_effect_ir,
+    mirror_program_ad_registry_metadata, parse_program_ad_effect_ir,
 };
 
 const VALID_PROGRAM_AD_IR: &str = r#"{
@@ -57,6 +57,86 @@ const EXECUTABLE_SCALAR_PROGRAM_AD_IR: &str = r#"{
   "control_regions": [],
   "phi_nodes": [],
   "bytecode_offsets": [0, 2, 4]
+}"#;
+
+const VALID_REGISTRY_COVERAGE_SNAPSHOT: &str = r#"{
+  "supported": true,
+  "covered_primitives": 3,
+  "total_primitives": 3,
+  "blocked_identities": [],
+  "family_counts": {
+    "elementwise": 2,
+    "linalg": 1
+  },
+  "rows": [
+    {
+      "family": "elementwise",
+      "primitive": "sin",
+      "identity": "scpn.program_ad.elementwise:sin@1",
+      "derivative_rule": "program_ad_elementwise_sin_derivative_rule",
+      "has_batching_rule": true,
+      "has_lowering_rule": false,
+      "has_lowering_metadata": true,
+      "has_shape_rule": true,
+      "has_dtype_rule": true,
+      "has_static_argument_rule": true,
+      "nondifferentiable_policy": "program_ad_trace_exact_fail_closed",
+      "effect": "pure",
+      "lowering_metadata_keys": [
+        "mlir_op",
+        "nondifferentiable_boundary",
+        "nondifferentiable_boundary_policy"
+      ],
+      "complete": true,
+      "blocked_reasons": [],
+      "claim_boundary": "registry-dispatched Program AD primitive coverage over declared derivative, batching, lowering metadata, shape, dtype, static-argument, nondifferentiability, and effect contracts only; not executable Rust, LLVM, JIT, provider, hardware, or performance evidence"
+    },
+    {
+      "family": "elementwise",
+      "primitive": "sqrt",
+      "identity": "scpn.program_ad.elementwise:sqrt@1",
+      "derivative_rule": "program_ad_elementwise_sqrt_derivative_rule",
+      "has_batching_rule": true,
+      "has_lowering_rule": false,
+      "has_lowering_metadata": true,
+      "has_shape_rule": true,
+      "has_dtype_rule": true,
+      "has_static_argument_rule": true,
+      "nondifferentiable_policy": "program_ad_trace_exact_fail_closed",
+      "effect": "pure",
+      "lowering_metadata_keys": [
+        "mlir_op",
+        "nondifferentiable_boundary",
+        "nondifferentiable_boundary_policy"
+      ],
+      "complete": true,
+      "blocked_reasons": [],
+      "claim_boundary": "registry-dispatched Program AD primitive coverage over declared derivative, batching, lowering metadata, shape, dtype, static-argument, nondifferentiability, and effect contracts only; not executable Rust, LLVM, JIT, provider, hardware, or performance evidence"
+    },
+    {
+      "family": "linalg",
+      "primitive": "det",
+      "identity": "scpn.program_ad.linalg:det@1",
+      "derivative_rule": "program_ad_linalg_det_derivative_rule",
+      "has_batching_rule": true,
+      "has_lowering_rule": false,
+      "has_lowering_metadata": true,
+      "has_shape_rule": true,
+      "has_dtype_rule": true,
+      "has_static_argument_rule": true,
+      "nondifferentiable_policy": "program_ad_trace_exact_fail_closed",
+      "effect": "pure",
+      "lowering_metadata_keys": [
+        "mlir_op",
+        "nondifferentiable_boundary",
+        "nondifferentiable_boundary_policy"
+      ],
+      "complete": true,
+      "blocked_reasons": [],
+      "claim_boundary": "registry-dispatched Program AD primitive coverage over declared derivative, batching, lowering metadata, shape, dtype, static-argument, nondifferentiability, and effect contracts only; not executable Rust, LLVM, JIT, provider, hardware, or performance evidence"
+    }
+  ],
+  "claim_boundary": "registry-dispatched Program AD primitive coverage over declared derivative, batching, lowering metadata, shape, dtype, static-argument, nondifferentiability, and effect contracts only; not executable Rust, LLVM, JIT, provider, hardware, or performance evidence"
 }"#;
 
 const ABS_CUSP_PROGRAM_AD_IR: &str = r#"{
@@ -231,6 +311,38 @@ fn program_ad_effect_ir_parser_fails_closed_on_malformed_payloads() {
     assert!(parse_program_ad_effect_ir(&bad_source_line)
         .unwrap_err()
         .contains("source_line"));
+}
+
+#[test]
+fn program_ad_registry_metadata_mirror_validates_coverage_snapshot() {
+    let result = mirror_program_ad_registry_metadata(VALID_REGISTRY_COVERAGE_SNAPSHOT).unwrap();
+
+    assert!(result.supported);
+    assert_eq!(result.primitive_count, 3);
+    assert_eq!(result.covered_primitives, 3);
+    assert_eq!(result.family_counts.get("elementwise"), Some(&2));
+    assert_eq!(result.family_counts.get("linalg"), Some(&1));
+    assert_eq!(result.facet_counts.get("derivative_rule"), Some(&3));
+    assert_eq!(result.facet_counts.get("lowering_metadata"), Some(&3));
+    assert_eq!(result.executable_operations, vec!["det", "sin", "sqrt"]);
+    assert_eq!(result.executable_operation_count, 3);
+    assert_eq!(
+        result.claim_boundary,
+        "rust_program_ad_registry_metadata_mirror_only_no_execution_promotion"
+    );
+}
+
+#[test]
+fn program_ad_registry_metadata_mirror_fails_closed_on_snapshot_drift() {
+    let drifted =
+        VALID_REGISTRY_COVERAGE_SNAPSHOT.replace("\"elementwise\": 2", "\"elementwise\": 3");
+
+    assert!(mirror_program_ad_registry_metadata(&drifted)
+        .unwrap_err()
+        .contains("family_counts"));
+    assert!(mirror_program_ad_registry_metadata("")
+        .unwrap_err()
+        .contains("non-empty JSON"));
 }
 
 #[test]
@@ -434,9 +546,11 @@ const MUTATION_ALIAS_PROGRAM_AD_IR: &str = r#"{
 fn program_ad_effect_ir_rust_value_and_gradient_replays_inert_view_alias() {
     // A reshape/transpose/slice view leaves an inert view_alias edge while the op-effects
     // keep referencing canonical scalar SSA, so the bounded Rust replay stays exact.
-    let result =
-        interpret_program_ad_effect_ir_value_and_gradient(INERT_VIEW_ALIAS_PROGRAM_AD_IR, &[3.0, -2.0])
-            .unwrap();
+    let result = interpret_program_ad_effect_ir_value_and_gradient(
+        INERT_VIEW_ALIAS_PROGRAM_AD_IR,
+        &[3.0, -2.0],
+    )
+    .unwrap();
 
     assert!(result.supported);
     assert!(result.blocked_reasons.is_empty());
@@ -454,9 +568,11 @@ fn program_ad_effect_ir_rust_value_and_gradient_replays_inert_view_alias() {
 fn program_ad_effect_ir_rust_value_and_gradient_fails_closed_on_mutation_alias() {
     // Non-view alias kinds (here a mutation_version edge) can change a value's content and
     // stay outside the bounded scalar replay.
-    let result =
-        interpret_program_ad_effect_ir_value_and_gradient(MUTATION_ALIAS_PROGRAM_AD_IR, &[2.0, 3.0])
-            .unwrap();
+    let result = interpret_program_ad_effect_ir_value_and_gradient(
+        MUTATION_ALIAS_PROGRAM_AD_IR,
+        &[2.0, 3.0],
+    )
+    .unwrap();
 
     assert!(!result.supported);
     assert!(result.gradient.is_empty());
@@ -510,9 +626,11 @@ const LINALG_DET_2X2_PROGRAM_AD_IR: &str = r#"{
 #[test]
 fn program_ad_effect_ir_rust_value_and_gradient_replays_linalg_trace() {
     // trace([[a,b],[c,d]]) = a + d; gradient is 1 on the diagonal, 0 off it.
-    let result =
-        interpret_program_ad_effect_ir_value_and_gradient(LINALG_TRACE_2X2_PROGRAM_AD_IR, &[1.0, 2.0, 3.0, 4.0])
-            .unwrap();
+    let result = interpret_program_ad_effect_ir_value_and_gradient(
+        LINALG_TRACE_2X2_PROGRAM_AD_IR,
+        &[1.0, 2.0, 3.0, 4.0],
+    )
+    .unwrap();
 
     assert!(result.supported, "{:?}", result.blocked_reasons);
     assert!((result.value.unwrap() - 5.0_f64).abs() <= 1.0e-12);
@@ -522,9 +640,11 @@ fn program_ad_effect_ir_rust_value_and_gradient_replays_linalg_trace() {
 #[test]
 fn program_ad_effect_ir_rust_value_and_gradient_replays_linalg_det_2x2() {
     // det([[a,b],[c,d]]) = a*d - b*c; cofactor gradient [d, -c, -b, a].
-    let result =
-        interpret_program_ad_effect_ir_value_and_gradient(LINALG_DET_2X2_PROGRAM_AD_IR, &[2.0, 1.0, 1.0, 3.0])
-            .unwrap();
+    let result = interpret_program_ad_effect_ir_value_and_gradient(
+        LINALG_DET_2X2_PROGRAM_AD_IR,
+        &[2.0, 1.0, 1.0, 3.0],
+    )
+    .unwrap();
 
     assert!(result.supported, "{:?}", result.blocked_reasons);
     assert!((result.value.unwrap() - 5.0_f64).abs() <= 1.0e-12);
@@ -589,9 +709,11 @@ const LINALG_SOLVE_2X2_FINAL_PROGRAM_AD_IR: &str = r#"{
 fn program_ad_effect_ir_rust_value_and_gradient_replays_linalg_inverse_element() {
     // inv([[a,b],[c,d]])[0,0] = d/det; reduced by *1.0 so it is the program value.
     // For [2,1,1,3]: det=5, M=[0.6,-0.2,-0.2,0.4]; d(M00)/dA = [-0.36, 0.12, 0.12, -0.04].
-    let result =
-        interpret_program_ad_effect_ir_value_and_gradient(LINALG_INV_2X2_ELEMENT_PROGRAM_AD_IR, &[2.0, 1.0, 1.0, 3.0])
-            .unwrap();
+    let result = interpret_program_ad_effect_ir_value_and_gradient(
+        LINALG_INV_2X2_ELEMENT_PROGRAM_AD_IR,
+        &[2.0, 1.0, 1.0, 3.0],
+    )
+    .unwrap();
 
     assert!(result.supported, "{:?}", result.blocked_reasons);
     assert!((result.value.unwrap() - 0.6_f64).abs() <= 1.0e-12);
@@ -606,9 +728,11 @@ fn program_ad_effect_ir_rust_value_and_gradient_replays_linalg_inverse_element()
 fn program_ad_effect_ir_rust_value_and_gradient_fails_closed_on_indexed_multi_output_linalg() {
     // A bare solve element as the final effect: the IR does not record which component the
     // program returned, so the replay fails closed rather than replaying the wrong element.
-    let result =
-        interpret_program_ad_effect_ir_value_and_gradient(LINALG_SOLVE_2X2_FINAL_PROGRAM_AD_IR, &[3.0, 1.0, 2.0, 4.0, 5.0, 6.0])
-            .unwrap();
+    let result = interpret_program_ad_effect_ir_value_and_gradient(
+        LINALG_SOLVE_2X2_FINAL_PROGRAM_AD_IR,
+        &[3.0, 1.0, 2.0, 4.0, 5.0, 6.0],
+    )
+    .unwrap();
 
     assert!(!result.supported);
     assert!(result.gradient.is_empty());

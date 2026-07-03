@@ -1,0 +1,1225 @@
+{
+  "claim_boundary": "Static Rust FFI inventory only: records PyO3 boundaries, registration drift, extern \"C\" declarations, and literal unsafe tokens. It is not a formal proof, Miri run, sanitizer run, fuzz campaign, or dynamic memory-safety guarantee.",
+  "crate_root": "scpn_quantum_engine",
+  "extern_c_count": 0,
+  "pyfunction_count": 172,
+  "pymodule_count": 1,
+  "pyo3_boundaries": [
+    {
+      "file": "src/analog.rs",
+      "kind": "pyfunction",
+      "line": 28,
+      "registered": true,
+      "symbol": "analog_coupling_terms"
+    },
+    {
+      "file": "src/analog.rs",
+      "kind": "pyfunction",
+      "line": 108,
+      "registered": true,
+      "symbol": "hybrid_coupling_partition"
+    },
+    {
+      "file": "src/biological_qec.rs",
+      "kind": "pyfunction",
+      "line": 231,
+      "registered": true,
+      "symbol": "biological_decode_z_errors"
+    },
+    {
+      "file": "src/community.rs",
+      "kind": "pyfunction",
+      "line": 31,
+      "registered": true,
+      "symbol": "score_regions_batch"
+    },
+    {
+      "file": "src/compiler_ad.rs",
+      "kind": "pyfunction",
+      "line": 1582,
+      "registered": true,
+      "symbol": "matrix_2x2_eigenvalues_value"
+    },
+    {
+      "file": "src/compiler_ad.rs",
+      "kind": "pyfunction",
+      "line": 1594,
+      "registered": true,
+      "symbol": "matrix_2x2_eigenvalues_jvp"
+    },
+    {
+      "file": "src/compiler_ad.rs",
+      "kind": "pyfunction",
+      "line": 1609,
+      "registered": true,
+      "symbol": "matrix_2x2_eigenvalues_vjp"
+    },
+    {
+      "file": "src/compiler_ad.rs",
+      "kind": "pyfunction",
+      "line": 1624,
+      "registered": true,
+      "symbol": "matrix_2x2_eigenvalues_sum_gradient"
+    },
+    {
+      "file": "src/compiler_ad.rs",
+      "kind": "pyfunction",
+      "line": 1636,
+      "registered": true,
+      "symbol": "matrix_2x2_eigensystem_value"
+    },
+    {
+      "file": "src/compiler_ad.rs",
+      "kind": "pyfunction",
+      "line": 1648,
+      "registered": true,
+      "symbol": "matrix_2x2_eigensystem_jvp"
+    },
+    {
+      "file": "src/compiler_ad.rs",
+      "kind": "pyfunction",
+      "line": 1663,
+      "registered": true,
+      "symbol": "matrix_2x2_eigensystem_vjp"
+    },
+    {
+      "file": "src/compiler_ad.rs",
+      "kind": "pyfunction",
+      "line": 1678,
+      "registered": true,
+      "symbol": "matrix_2x2_eigensystem_sum_gradient"
+    },
+    {
+      "file": "src/compiler_ad.rs",
+      "kind": "pyfunction",
+      "line": 1690,
+      "registered": true,
+      "symbol": "matrix_quadratic_form_value"
+    },
+    {
+      "file": "src/compiler_ad.rs",
+      "kind": "pyfunction",
+      "line": 1703,
+      "registered": true,
+      "symbol": "matrix_quadratic_form_jvp"
+    },
+    {
+      "file": "src/compiler_ad.rs",
+      "kind": "pyfunction",
+      "line": 1720,
+      "registered": true,
+      "symbol": "matrix_quadratic_form_vjp"
+    },
+    {
+      "file": "src/compiler_ad.rs",
+      "kind": "pyfunction",
+      "line": 1737,
+      "registered": true,
+      "symbol": "matrix_quadratic_form_gradient"
+    },
+    {
+      "file": "src/compiler_ad.rs",
+      "kind": "pyfunction",
+      "line": 1750,
+      "registered": true,
+      "symbol": "matrix_trace_value"
+    },
+    {
+      "file": "src/compiler_ad.rs",
+      "kind": "pyfunction",
+      "line": 1763,
+      "registered": true,
+      "symbol": "matrix_trace_jvp"
+    },
+    {
+      "file": "src/compiler_ad.rs",
+      "kind": "pyfunction",
+      "line": 1779,
+      "registered": true,
+      "symbol": "matrix_trace_vjp"
+    },
+    {
+      "file": "src/compiler_ad.rs",
+      "kind": "pyfunction",
+      "line": 1795,
+      "registered": true,
+      "symbol": "matrix_trace_gradient"
+    },
+    {
+      "file": "src/compiler_ad.rs",
+      "kind": "pyfunction",
+      "line": 1808,
+      "registered": true,
+      "symbol": "matrix_frobenius_norm_squared_value"
+    },
+    {
+      "file": "src/compiler_ad.rs",
+      "kind": "pyfunction",
+      "line": 1822,
+      "registered": true,
+      "symbol": "matrix_frobenius_norm_squared_jvp"
+    },
+    {
+      "file": "src/compiler_ad.rs",
+      "kind": "pyfunction",
+      "line": 1839,
+      "registered": true,
+      "symbol": "matrix_frobenius_norm_squared_vjp"
+    },
+    {
+      "file": "src/compiler_ad.rs",
+      "kind": "pyfunction",
+      "line": 1856,
+      "registered": true,
+      "symbol": "matrix_frobenius_norm_squared_gradient"
+    },
+    {
+      "file": "src/compiler_ad.rs",
+      "kind": "pyfunction",
+      "line": 1870,
+      "registered": true,
+      "symbol": "matrix_vector_product_value"
+    },
+    {
+      "file": "src/compiler_ad.rs",
+      "kind": "pyfunction",
+      "line": 1883,
+      "registered": true,
+      "symbol": "matrix_vector_product_jvp"
+    },
+    {
+      "file": "src/compiler_ad.rs",
+      "kind": "pyfunction",
+      "line": 1900,
+      "registered": true,
+      "symbol": "matrix_vector_product_vjp"
+    },
+    {
+      "file": "src/compiler_ad.rs",
+      "kind": "pyfunction",
+      "line": 1917,
+      "registered": true,
+      "symbol": "matrix_vector_product_sum_gradient"
+    },
+    {
+      "file": "src/compiler_ad.rs",
+      "kind": "pyfunction",
+      "line": 1931,
+      "registered": true,
+      "symbol": "matrix_matrix_product_value"
+    },
+    {
+      "file": "src/compiler_ad.rs",
+      "kind": "pyfunction",
+      "line": 1944,
+      "registered": true,
+      "symbol": "matrix_matrix_product_jvp"
+    },
+    {
+      "file": "src/compiler_ad.rs",
+      "kind": "pyfunction",
+      "line": 1961,
+      "registered": true,
+      "symbol": "matrix_matrix_product_vjp"
+    },
+    {
+      "file": "src/compiler_ad.rs",
+      "kind": "pyfunction",
+      "line": 1978,
+      "registered": true,
+      "symbol": "matrix_matrix_product_sum_gradient"
+    },
+    {
+      "file": "src/compiler_ad.rs",
+      "kind": "pyfunction",
+      "line": 1992,
+      "registered": true,
+      "symbol": "matrix_2x2_determinant_value"
+    },
+    {
+      "file": "src/compiler_ad.rs",
+      "kind": "pyfunction",
+      "line": 2004,
+      "registered": true,
+      "symbol": "matrix_2x2_determinant_jvp"
+    },
+    {
+      "file": "src/compiler_ad.rs",
+      "kind": "pyfunction",
+      "line": 2019,
+      "registered": true,
+      "symbol": "matrix_2x2_determinant_vjp"
+    },
+    {
+      "file": "src/compiler_ad.rs",
+      "kind": "pyfunction",
+      "line": 2034,
+      "registered": true,
+      "symbol": "matrix_2x2_determinant_gradient"
+    },
+    {
+      "file": "src/compiler_ad.rs",
+      "kind": "pyfunction",
+      "line": 2046,
+      "registered": true,
+      "symbol": "matrix_2x2_inverse_value"
+    },
+    {
+      "file": "src/compiler_ad.rs",
+      "kind": "pyfunction",
+      "line": 2058,
+      "registered": true,
+      "symbol": "matrix_2x2_inverse_jvp"
+    },
+    {
+      "file": "src/compiler_ad.rs",
+      "kind": "pyfunction",
+      "line": 2073,
+      "registered": true,
+      "symbol": "matrix_2x2_inverse_vjp"
+    },
+    {
+      "file": "src/compiler_ad.rs",
+      "kind": "pyfunction",
+      "line": 2088,
+      "registered": true,
+      "symbol": "matrix_2x2_inverse_sum_gradient"
+    },
+    {
+      "file": "src/compiler_ad.rs",
+      "kind": "pyfunction",
+      "line": 2100,
+      "registered": true,
+      "symbol": "matrix_2x2_solve_value"
+    },
+    {
+      "file": "src/compiler_ad.rs",
+      "kind": "pyfunction",
+      "line": 2112,
+      "registered": true,
+      "symbol": "matrix_2x2_solve_jvp"
+    },
+    {
+      "file": "src/compiler_ad.rs",
+      "kind": "pyfunction",
+      "line": 2127,
+      "registered": true,
+      "symbol": "matrix_2x2_solve_vjp"
+    },
+    {
+      "file": "src/compiler_ad.rs",
+      "kind": "pyfunction",
+      "line": 2142,
+      "registered": true,
+      "symbol": "matrix_2x2_solve_sum_gradient"
+    },
+    {
+      "file": "src/compiler_ad.rs",
+      "kind": "pyfunction",
+      "line": 2154,
+      "registered": true,
+      "symbol": "symmetric_2x2_cholesky_value"
+    },
+    {
+      "file": "src/compiler_ad.rs",
+      "kind": "pyfunction",
+      "line": 2166,
+      "registered": true,
+      "symbol": "symmetric_2x2_cholesky_jvp"
+    },
+    {
+      "file": "src/compiler_ad.rs",
+      "kind": "pyfunction",
+      "line": 2181,
+      "registered": true,
+      "symbol": "symmetric_2x2_cholesky_vjp"
+    },
+    {
+      "file": "src/compiler_ad.rs",
+      "kind": "pyfunction",
+      "line": 2196,
+      "registered": true,
+      "symbol": "symmetric_2x2_cholesky_sum_gradient"
+    },
+    {
+      "file": "src/compiler_ad.rs",
+      "kind": "pyfunction",
+      "line": 2208,
+      "registered": true,
+      "symbol": "symmetric_2x2_eigenvalues_value"
+    },
+    {
+      "file": "src/compiler_ad.rs",
+      "kind": "pyfunction",
+      "line": 2220,
+      "registered": true,
+      "symbol": "symmetric_2x2_eigenvalues_jvp"
+    },
+    {
+      "file": "src/compiler_ad.rs",
+      "kind": "pyfunction",
+      "line": 2235,
+      "registered": true,
+      "symbol": "symmetric_2x2_eigenvalues_vjp"
+    },
+    {
+      "file": "src/compiler_ad.rs",
+      "kind": "pyfunction",
+      "line": 2250,
+      "registered": true,
+      "symbol": "symmetric_2x2_eigenvalues_sum_gradient"
+    },
+    {
+      "file": "src/compiler_ad.rs",
+      "kind": "pyfunction",
+      "line": 2262,
+      "registered": true,
+      "symbol": "vector_dot_value"
+    },
+    {
+      "file": "src/compiler_ad.rs",
+      "kind": "pyfunction",
+      "line": 2275,
+      "registered": true,
+      "symbol": "vector_dot_jvp"
+    },
+    {
+      "file": "src/compiler_ad.rs",
+      "kind": "pyfunction",
+      "line": 2291,
+      "registered": true,
+      "symbol": "vector_dot_vjp"
+    },
+    {
+      "file": "src/compiler_ad.rs",
+      "kind": "pyfunction",
+      "line": 2307,
+      "registered": true,
+      "symbol": "vector_dot_gradient"
+    },
+    {
+      "file": "src/compiler_ad.rs",
+      "kind": "pyfunction",
+      "line": 2320,
+      "registered": true,
+      "symbol": "vector_squared_norm_value"
+    },
+    {
+      "file": "src/compiler_ad.rs",
+      "kind": "pyfunction",
+      "line": 2333,
+      "registered": true,
+      "symbol": "vector_squared_norm_jvp"
+    },
+    {
+      "file": "src/compiler_ad.rs",
+      "kind": "pyfunction",
+      "line": 2350,
+      "registered": true,
+      "symbol": "vector_squared_norm_vjp"
+    },
+    {
+      "file": "src/compiler_ad.rs",
+      "kind": "pyfunction",
+      "line": 2367,
+      "registered": true,
+      "symbol": "vector_squared_norm_gradient"
+    },
+    {
+      "file": "src/concat_qec.rs",
+      "kind": "pyfunction",
+      "line": 46,
+      "registered": true,
+      "symbol": "concatenated_logical_rate_rust"
+    },
+    {
+      "file": "src/concat_qec.rs",
+      "kind": "pyfunction",
+      "line": 95,
+      "registered": true,
+      "symbol": "knm_domain_coupling"
+    },
+    {
+      "file": "src/cosimulation.rs",
+      "kind": "pyfunction",
+      "line": 32,
+      "registered": true,
+      "symbol": "cosim_classical_substep"
+    },
+    {
+      "file": "src/dla.rs",
+      "kind": "pyfunction",
+      "line": 36,
+      "registered": true,
+      "symbol": "dla_dimension"
+    },
+    {
+      "file": "src/dla.rs",
+      "kind": "pyfunction",
+      "line": 86,
+      "registered": true,
+      "symbol": "dla_protected_memory_mask"
+    },
+    {
+      "file": "src/dla.rs",
+      "kind": "pyfunction",
+      "line": 105,
+      "registered": true,
+      "symbol": "dla_protected_memory_metrics"
+    },
+    {
+      "file": "src/dla.rs",
+      "kind": "pyfunction",
+      "line": 127,
+      "registered": true,
+      "symbol": "dla_protected_trajectory_metrics"
+    },
+    {
+      "file": "src/entropy.rs",
+      "kind": "pyfunction",
+      "line": 35,
+      "registered": true,
+      "symbol": "nist_berlekamp_massey"
+    },
+    {
+      "file": "src/entropy.rs",
+      "kind": "pyfunction",
+      "line": 73,
+      "registered": true,
+      "symbol": "nist_monobit_sum"
+    },
+    {
+      "file": "src/entropy.rs",
+      "kind": "pyfunction",
+      "line": 86,
+      "registered": true,
+      "symbol": "nist_runs_counts"
+    },
+    {
+      "file": "src/entropy.rs",
+      "kind": "pyfunction",
+      "line": 108,
+      "registered": true,
+      "symbol": "nist_block_longest_runs"
+    },
+    {
+      "file": "src/feedback.rs",
+      "kind": "pyfunction",
+      "line": 24,
+      "registered": true,
+      "symbol": "feedback_policy_batch"
+    },
+    {
+      "file": "src/feedback.rs",
+      "kind": "pyfunction",
+      "line": 77,
+      "registered": true,
+      "symbol": "run_realtime_feedback_loop"
+    },
+    {
+      "file": "src/fep.rs",
+      "kind": "pyfunction",
+      "line": 62,
+      "registered": true,
+      "symbol": "free_energy_gradient_rust"
+    },
+    {
+      "file": "src/fep.rs",
+      "kind": "pyfunction",
+      "line": 105,
+      "registered": true,
+      "symbol": "hierarchical_prediction_error_rust"
+    },
+    {
+      "file": "src/fep.rs",
+      "kind": "pyfunction",
+      "line": 175,
+      "registered": true,
+      "symbol": "variational_free_energy_rust"
+    },
+    {
+      "file": "src/frc.rs",
+      "kind": "pyfunction",
+      "line": 40,
+      "registered": true,
+      "symbol": "frc_mrti_growth"
+    },
+    {
+      "file": "src/gauge_lattice.rs",
+      "kind": "pyfunction",
+      "line": 97,
+      "registered": true,
+      "symbol": "plaquette_action_batch"
+    },
+    {
+      "file": "src/gauge_lattice.rs",
+      "kind": "pyfunction",
+      "line": 135,
+      "registered": true,
+      "symbol": "gauge_force_batch"
+    },
+    {
+      "file": "src/gauge_lattice.rs",
+      "kind": "pyfunction",
+      "line": 182,
+      "registered": true,
+      "symbol": "gauge_covariant_kinetic_rust"
+    },
+    {
+      "file": "src/gauge_lattice.rs",
+      "kind": "pyfunction",
+      "line": 262,
+      "registered": true,
+      "symbol": "topological_charge_rust"
+    },
+    {
+      "file": "src/hamiltonian.rs",
+      "kind": "pyfunction",
+      "line": 38,
+      "registered": true,
+      "symbol": "build_xy_hamiltonian_dense"
+    },
+    {
+      "file": "src/hamiltonian.rs",
+      "kind": "pyfunction",
+      "line": 88,
+      "registered": true,
+      "symbol": "build_sparse_xy_hamiltonian"
+    },
+    {
+      "file": "src/hls_quantise.rs",
+      "kind": "pyfunction",
+      "line": 25,
+      "registered": true,
+      "symbol": "quantise_q_format"
+    },
+    {
+      "file": "src/knm.rs",
+      "kind": "pyfunction",
+      "line": 23,
+      "registered": true,
+      "symbol": "build_knm"
+    },
+    {
+      "file": "src/koopman.rs",
+      "kind": "pyfunction",
+      "line": 34,
+      "registered": true,
+      "symbol": "koopman_generator"
+    },
+    {
+      "file": "src/krylov.rs",
+      "kind": "pyfunction",
+      "line": 44,
+      "registered": true,
+      "symbol": "lanczos_b_coefficients"
+    },
+    {
+      "file": "src/kuramoto.rs",
+      "kind": "pyfunction",
+      "line": 30,
+      "registered": true,
+      "symbol": "kuramoto_euler"
+    },
+    {
+      "file": "src/kuramoto.rs",
+      "kind": "pyfunction",
+      "line": 152,
+      "registered": true,
+      "symbol": "higher_order_kuramoto_trajectory"
+    },
+    {
+      "file": "src/kuramoto.rs",
+      "kind": "pyfunction",
+      "line": 232,
+      "registered": true,
+      "symbol": "monitored_kuramoto_trajectory"
+    },
+    {
+      "file": "src/kuramoto.rs",
+      "kind": "pyfunction",
+      "line": 323,
+      "registered": true,
+      "symbol": "pt_symmetric_kuramoto_trajectory"
+    },
+    {
+      "file": "src/kuramoto.rs",
+      "kind": "pyfunction",
+      "line": 437,
+      "registered": true,
+      "symbol": "kuramoto_witness_candidate_features"
+    },
+    {
+      "file": "src/kuramoto.rs",
+      "kind": "pyfunction",
+      "line": 520,
+      "registered": true,
+      "symbol": "kuramoto_trajectory"
+    },
+    {
+      "file": "src/kuramoto_autodiff.rs",
+      "kind": "pyfunction",
+      "line": 24,
+      "registered": true,
+      "symbol": "kuramoto_euler_trajectory"
+    },
+    {
+      "file": "src/kuramoto_autodiff.rs",
+      "kind": "pyfunction",
+      "line": 101,
+      "registered": true,
+      "symbol": "kuramoto_euler_vjp"
+    },
+    {
+      "file": "src/kuramoto_autodiff.rs",
+      "kind": "pyfunction",
+      "line": 265,
+      "registered": true,
+      "symbol": "kuramoto_rk4_trajectory"
+    },
+    {
+      "file": "src/kuramoto_autodiff.rs",
+      "kind": "pyfunction",
+      "line": 355,
+      "registered": true,
+      "symbol": "kuramoto_rk4_vjp"
+    },
+    {
+      "file": "src/kuramoto_coupling.rs",
+      "kind": "pyfunction",
+      "line": 22,
+      "registered": true,
+      "symbol": "mean_field_force"
+    },
+    {
+      "file": "src/kuramoto_coupling.rs",
+      "kind": "pyfunction",
+      "line": 60,
+      "registered": true,
+      "symbol": "mean_field_jacobian"
+    },
+    {
+      "file": "src/kuramoto_coupling.rs",
+      "kind": "pyfunction",
+      "line": 102,
+      "registered": true,
+      "symbol": "networked_kuramoto_force"
+    },
+    {
+      "file": "src/kuramoto_coupling.rs",
+      "kind": "pyfunction",
+      "line": 145,
+      "registered": true,
+      "symbol": "networked_kuramoto_jacobian"
+    },
+    {
+      "file": "src/kuramoto_coupling.rs",
+      "kind": "pyfunction",
+      "line": 192,
+      "registered": true,
+      "symbol": "kuramoto_interaction_energy"
+    },
+    {
+      "file": "src/kuramoto_coupling.rs",
+      "kind": "pyfunction",
+      "line": 226,
+      "registered": true,
+      "symbol": "kuramoto_interaction_energy_gradient"
+    },
+    {
+      "file": "src/kuramoto_coupling.rs",
+      "kind": "pyfunction",
+      "line": 269,
+      "registered": true,
+      "symbol": "kuramoto_interaction_energy_hessian"
+    },
+    {
+      "file": "src/kuramoto_coupling.rs",
+      "kind": "pyfunction",
+      "line": 316,
+      "registered": true,
+      "symbol": "sakaguchi_force"
+    },
+    {
+      "file": "src/kuramoto_coupling.rs",
+      "kind": "pyfunction",
+      "line": 363,
+      "registered": true,
+      "symbol": "sakaguchi_jacobian"
+    },
+    {
+      "file": "src/kuramoto_coupling.rs",
+      "kind": "pyfunction",
+      "line": 411,
+      "registered": true,
+      "symbol": "local_order_parameter"
+    },
+    {
+      "file": "src/kuramoto_coupling.rs",
+      "kind": "pyfunction",
+      "line": 457,
+      "registered": true,
+      "symbol": "local_order_parameter_jacobian"
+    },
+    {
+      "file": "src/kuramoto_coupling.rs",
+      "kind": "pyfunction",
+      "line": 511,
+      "registered": true,
+      "symbol": "local_mean_phase"
+    },
+    {
+      "file": "src/kuramoto_coupling.rs",
+      "kind": "pyfunction",
+      "line": 555,
+      "registered": true,
+      "symbol": "local_mean_phase_jacobian"
+    },
+    {
+      "file": "src/kuramoto_coupling.rs",
+      "kind": "pyfunction",
+      "line": 607,
+      "registered": true,
+      "symbol": "daido_mean_field_force"
+    },
+    {
+      "file": "src/kuramoto_coupling.rs",
+      "kind": "pyfunction",
+      "line": 651,
+      "registered": true,
+      "symbol": "daido_mean_field_jacobian"
+    },
+    {
+      "file": "src/kuramoto_coupling.rs",
+      "kind": "pyfunction",
+      "line": 700,
+      "registered": true,
+      "symbol": "sakaguchi_mean_field_force"
+    },
+    {
+      "file": "src/kuramoto_coupling.rs",
+      "kind": "pyfunction",
+      "line": 745,
+      "registered": true,
+      "symbol": "sakaguchi_mean_field_jacobian"
+    },
+    {
+      "file": "src/kuramoto_coupling.rs",
+      "kind": "pyfunction",
+      "line": 794,
+      "registered": true,
+      "symbol": "triadic_mean_field_force"
+    },
+    {
+      "file": "src/kuramoto_coupling.rs",
+      "kind": "pyfunction",
+      "line": 835,
+      "registered": true,
+      "symbol": "triadic_mean_field_jacobian"
+    },
+    {
+      "file": "src/kuramoto_observables.rs",
+      "kind": "pyfunction",
+      "line": 20,
+      "registered": true,
+      "symbol": "order_parameter"
+    },
+    {
+      "file": "src/kuramoto_observables.rs",
+      "kind": "pyfunction",
+      "line": 43,
+      "registered": true,
+      "symbol": "order_parameter_gradient"
+    },
+    {
+      "file": "src/kuramoto_observables.rs",
+      "kind": "pyfunction",
+      "line": 85,
+      "registered": true,
+      "symbol": "order_parameter_hessian"
+    },
+    {
+      "file": "src/kuramoto_observables.rs",
+      "kind": "pyfunction",
+      "line": 132,
+      "registered": true,
+      "symbol": "mean_phase"
+    },
+    {
+      "file": "src/kuramoto_observables.rs",
+      "kind": "pyfunction",
+      "line": 157,
+      "registered": true,
+      "symbol": "mean_phase_gradient"
+    },
+    {
+      "file": "src/kuramoto_observables.rs",
+      "kind": "pyfunction",
+      "line": 199,
+      "registered": true,
+      "symbol": "mean_phase_hessian"
+    },
+    {
+      "file": "src/kuramoto_observables.rs",
+      "kind": "pyfunction",
+      "line": 251,
+      "registered": true,
+      "symbol": "daido_order_parameter"
+    },
+    {
+      "file": "src/kuramoto_observables.rs",
+      "kind": "pyfunction",
+      "line": 279,
+      "registered": true,
+      "symbol": "daido_order_parameter_gradient"
+    },
+    {
+      "file": "src/kuramoto_observables.rs",
+      "kind": "pyfunction",
+      "line": 326,
+      "registered": true,
+      "symbol": "daido_order_parameter_hessian"
+    },
+    {
+      "file": "src/kuramoto_observables.rs",
+      "kind": "pyfunction",
+      "line": 380,
+      "registered": true,
+      "symbol": "daido_mode_phase"
+    },
+    {
+      "file": "src/kuramoto_observables.rs",
+      "kind": "pyfunction",
+      "line": 408,
+      "registered": true,
+      "symbol": "daido_mode_phase_gradient"
+    },
+    {
+      "file": "src/kuramoto_observables.rs",
+      "kind": "pyfunction",
+      "line": 454,
+      "registered": true,
+      "symbol": "daido_mode_phase_hessian"
+    },
+    {
+      "file": "src/lib.rs",
+      "kind": "pymodule",
+      "line": 73,
+      "registered": true,
+      "symbol": "scpn_quantum_engine"
+    },
+    {
+      "file": "src/lindblad.rs",
+      "kind": "pyfunction",
+      "line": 48,
+      "registered": true,
+      "symbol": "lindblad_jump_ops_coo"
+    },
+    {
+      "file": "src/lindblad.rs",
+      "kind": "pyfunction",
+      "line": 104,
+      "registered": true,
+      "symbol": "lindblad_anti_hermitian_diag"
+    },
+    {
+      "file": "src/ml_dsa.rs",
+      "kind": "pyfunction",
+      "line": 119,
+      "registered": true,
+      "symbol": "ml_dsa_ntt"
+    },
+    {
+      "file": "src/ml_dsa.rs",
+      "kind": "pyfunction",
+      "line": 127,
+      "registered": true,
+      "symbol": "ml_dsa_intt"
+    },
+    {
+      "file": "src/monte_carlo.rs",
+      "kind": "pyfunction",
+      "line": 26,
+      "registered": true,
+      "symbol": "mc_xy_simulate"
+    },
+    {
+      "file": "src/mpc.rs",
+      "kind": "pyfunction",
+      "line": 28,
+      "registered": true,
+      "symbol": "brute_mpc"
+    },
+    {
+      "file": "src/otoc.rs",
+      "kind": "pyfunction",
+      "line": 72,
+      "registered": true,
+      "symbol": "otoc_from_eigendecomp"
+    },
+    {
+      "file": "src/pauli.rs",
+      "kind": "pyfunction",
+      "line": 68,
+      "registered": true,
+      "symbol": "state_order_param_sparse"
+    },
+    {
+      "file": "src/pauli.rs",
+      "kind": "pyfunction",
+      "line": 118,
+      "registered": true,
+      "symbol": "expectation_pauli_fast"
+    },
+    {
+      "file": "src/pauli.rs",
+      "kind": "pyfunction",
+      "line": 176,
+      "registered": true,
+      "symbol": "all_xy_expectations"
+    },
+    {
+      "file": "src/pec.rs",
+      "kind": "pyfunction",
+      "line": 24,
+      "registered": true,
+      "symbol": "pec_coefficients"
+    },
+    {
+      "file": "src/pec.rs",
+      "kind": "pyfunction",
+      "line": 47,
+      "registered": true,
+      "symbol": "pec_sample_parallel"
+    },
+    {
+      "file": "src/program_ad_ir.rs",
+      "kind": "pyfunction",
+      "line": 1626,
+      "registered": true,
+      "symbol": "program_ad_effect_ir_metadata_summary"
+    },
+    {
+      "file": "src/program_ad_ir.rs",
+      "kind": "pyfunction",
+      "line": 1635,
+      "registered": true,
+      "symbol": "program_ad_effect_ir_interpret_forward"
+    },
+    {
+      "file": "src/program_ad_ir.rs",
+      "kind": "pyfunction",
+      "line": 1650,
+      "registered": true,
+      "symbol": "program_ad_effect_ir_interpret_value_and_gradient"
+    },
+    {
+      "file": "src/program_ad_registry_mirror.rs",
+      "kind": "pyfunction",
+      "line": 406,
+      "registered": true,
+      "symbol": "program_ad_registry_metadata_mirror"
+    },
+    {
+      "file": "src/pulse_shaping.rs",
+      "kind": "pyfunction",
+      "line": 97,
+      "registered": true,
+      "symbol": "hypergeometric_envelope_batch"
+    },
+    {
+      "file": "src/pulse_shaping.rs",
+      "kind": "pyfunction",
+      "line": 135,
+      "registered": true,
+      "symbol": "ici_mixing_angle_batch"
+    },
+    {
+      "file": "src/pulse_shaping.rs",
+      "kind": "pyfunction",
+      "line": 179,
+      "registered": true,
+      "symbol": "ici_three_level_evolution_batch"
+    },
+    {
+      "file": "src/pulse_shaping.rs",
+      "kind": "pyfunction",
+      "line": 355,
+      "registered": true,
+      "symbol": "rabi_pi_amplitude_fit"
+    },
+    {
+      "file": "src/qnode_metrics.rs",
+      "kind": "pyfunction",
+      "line": 425,
+      "registered": true,
+      "symbol": "phase_qnode_fubini_study_metric_rust"
+    },
+    {
+      "file": "src/qnode_metrics.rs",
+      "kind": "pyfunction",
+      "line": 452,
+      "registered": true,
+      "symbol": "phase_qnode_computational_basis_fisher_rust"
+    },
+    {
+      "file": "src/qnode_metrics.rs",
+      "kind": "pyfunction",
+      "line": 488,
+      "registered": true,
+      "symbol": "phase_qnode_vector_jvp_rust"
+    },
+    {
+      "file": "src/qnode_metrics.rs",
+      "kind": "pyfunction",
+      "line": 499,
+      "registered": true,
+      "symbol": "phase_qnode_vector_vjp_rust"
+    },
+    {
+      "file": "src/qnode_metrics.rs",
+      "kind": "pyfunction",
+      "line": 511,
+      "registered": true,
+      "symbol": "phase_qnode_hessian_vector_product_rust"
+    },
+    {
+      "file": "src/qnode_metrics.rs",
+      "kind": "pyfunction",
+      "line": 523,
+      "registered": true,
+      "symbol": "phase_qnode_vector_hessian_tensor_rust"
+    },
+    {
+      "file": "src/qnode_metrics.rs",
+      "kind": "pyfunction",
+      "line": 537,
+      "registered": true,
+      "symbol": "phase_qnode_complex_derivative_contract_rust"
+    },
+    {
+      "file": "src/qpetri.rs",
+      "kind": "pyfunction",
+      "line": 19,
+      "registered": true,
+      "symbol": "qpetri_transition_activity"
+    },
+    {
+      "file": "src/qpetri.rs",
+      "kind": "pyfunction",
+      "line": 94,
+      "registered": true,
+      "symbol": "qpetri_state_metrics"
+    },
+    {
+      "file": "src/qpetri.rs",
+      "kind": "pyfunction",
+      "line": 111,
+      "registered": true,
+      "symbol": "qpetri_sample_marking"
+    },
+    {
+      "file": "src/qpetri.rs",
+      "kind": "pyfunction",
+      "line": 141,
+      "registered": true,
+      "symbol": "qpetri_campaign_aggregate"
+    },
+    {
+      "file": "src/realtime.rs",
+      "kind": "pyfunction",
+      "line": 75,
+      "registered": true,
+      "symbol": "sub_us_jitter_percentiles"
+    },
+    {
+      "file": "src/realtime.rs",
+      "kind": "pyfunction",
+      "line": 93,
+      "registered": true,
+      "symbol": "sub_us_tracker_summary"
+    },
+    {
+      "file": "src/sectors.rs",
+      "kind": "pyfunction",
+      "line": 43,
+      "registered": true,
+      "symbol": "magnetisation_labels"
+    },
+    {
+      "file": "src/sectors.rs",
+      "kind": "pyfunction",
+      "line": 66,
+      "registered": true,
+      "symbol": "order_param_from_statevector"
+    },
+    {
+      "file": "src/sectors.rs",
+      "kind": "pyfunction",
+      "line": 104,
+      "registered": true,
+      "symbol": "correlation_matrix_xy"
+    },
+    {
+      "file": "src/sectors.rs",
+      "kind": "pyfunction",
+      "line": 151,
+      "registered": true,
+      "symbol": "parity_filter_mask"
+    },
+    {
+      "file": "src/sensing.rs",
+      "kind": "pyfunction",
+      "line": 21,
+      "registered": true,
+      "symbol": "nv_odmr_spectrum"
+    },
+    {
+      "file": "src/stochastic_gradient.rs",
+      "kind": "pyfunction",
+      "line": 613,
+      "registered": true,
+      "symbol": "parameter_shift_gradient_uncertainty_rust"
+    },
+    {
+      "file": "src/stochastic_gradient.rs",
+      "kind": "pyfunction",
+      "line": 663,
+      "registered": true,
+      "symbol": "spsa_gradient_rust"
+    },
+    {
+      "file": "src/stochastic_gradient.rs",
+      "kind": "pyfunction",
+      "line": 717,
+      "registered": true,
+      "symbol": "score_function_gradient_rust"
+    },
+    {
+      "file": "src/stochastic_gradient.rs",
+      "kind": "pyfunction",
+      "line": 756,
+      "registered": true,
+      "symbol": "gradient_confidence_interval_rust"
+    },
+    {
+      "file": "src/symmetry_decay.rs",
+      "kind": "pyfunction",
+      "line": 28,
+      "registered": true,
+      "symbol": "guess_extrapolate_batch"
+    },
+    {
+      "file": "src/symmetry_decay.rs",
+      "kind": "pyfunction",
+      "line": 69,
+      "registered": true,
+      "symbol": "fit_symmetry_decay"
+    }
+  ],
+  "schema": "scpn-rust-ffi-safety-audit/v1",
+  "status": "pass",
+  "unregistered_pyfunction_count": 0,
+  "unsafe_occurrence_count": 0,
+  "unsafe_occurrences": []
+}

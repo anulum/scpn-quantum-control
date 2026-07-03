@@ -162,8 +162,8 @@ Each lane: purpose · INPUTS · OUTPUTS · processing model · backends · wirin
 ### 4.5 Acceleration — `accel/`, `scpn_quantum_engine` (Rust) *(volatile lane)*
 - **Dispatch**: measured-fastest-first **Rust → Julia → Python** with a mandatory Python floor
   (Go/Mojo probes return `False` — not wired). See [ADR-0002](ARCHITECTURE_DECISIONS.md).
-- **Rust engine** (`scpn_quantum_engine`, PyO3 0.29, rayon): **171 `#[pyfunction]` kernels**
-  (verified: `#[pyfunction]`, `wrap_pyfunction!`, `add_function`, and the `.pyi` stub all = 171),
+- **Rust engine** (`scpn_quantum_engine`, PyO3 0.29, rayon): **172 `#[pyfunction]` kernels**
+  (verified: `#[pyfunction]`, `wrap_pyfunction!`, `add_function`, and the `.pyi` stub all = 172),
   0 `pyclass`. Real kernels for Kuramoto order parameters/gradients/Hessians, Hamiltonian
   construction, OTOC/Krylov/DLA, mitigation, and compiler-AD. *This count is
   actively growing as the accel lane adds kernels — re-verify.*

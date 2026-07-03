@@ -21,6 +21,10 @@ use pyo3::prelude::*;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
+pub use crate::program_ad_registry_mirror::{
+    mirror_program_ad_registry_metadata, ProgramADRegistryMetadataMirrorSummary,
+};
+
 const PROGRAM_AD_EFFECT_IR_FORMAT: &str = "program_ad_effect_ir.v1";
 const PROGRAM_AD_IR_CLAIM_BOUNDARY: &str = "metadata_only_no_program_execution";
 const PROGRAM_AD_RUST_INTERPRETER_CLAIM_BOUNDARY: &str =
@@ -795,7 +799,10 @@ fn accumulate_reverse_effect(
         "linalg:det:3x3" => {
             // d(det)/dA_{ij} is the (i,j) cofactor of the row-major 3x3 matrix.
             if effect.inputs.len() != 9 {
-                return Err(format!("effect {} linalg:det:3x3 requires nine operands", effect.index));
+                return Err(format!(
+                    "effect {} linalg:det:3x3 requires nine operands",
+                    effect.index
+                ));
             }
             let [a, b, c, d, e, f, g, h, i] = read_3x3(effect, values)?;
             let cofactors = [
@@ -817,7 +824,10 @@ fn accumulate_reverse_effect(
         name if name.starts_with("linalg:det:") => {
             // General determinant (4x4 and up): d(det)/dA_{ij} = det * (A^{-1})_{ji}.
             let n = parse_det_dim(name).ok_or_else(|| {
-                format!("effect {} {name} has no determinant dimension", effect.index)
+                format!(
+                    "effect {} {name} has no determinant dimension",
+                    effect.index
+                )
             })?;
             if effect.inputs.len() != n * n {
                 return Err(format!(
@@ -836,7 +846,12 @@ fn accumulate_reverse_effect(
             for i in 0..n {
                 for j in 0..n {
                     let cofactor = determinant * inverse[j * n + i];
-                    add_adjoint(&effect.inputs[i * n + j], cotangent * cofactor, values, adjoints)?;
+                    add_adjoint(
+                        &effect.inputs[i * n + j],
+                        cotangent * cofactor,
+                        values,
+                        adjoints,
+                    )?;
                 }
             }
             Ok(())
@@ -888,7 +903,12 @@ fn accumulate_reverse_effect(
                 .map(|i| (0..n).map(|j| m[i * n + j] * rhs[j]).sum())
                 .collect();
             for j in 0..n {
-                add_adjoint(&effect.inputs[n * n + j], cotangent * m[row * n + j], values, adjoints)?;
+                add_adjoint(
+                    &effect.inputs[n * n + j],
+                    cotangent * m[row * n + j],
+                    values,
+                    adjoints,
+                )?;
             }
             for k in 0..n {
                 for l in 0..n {
@@ -1105,7 +1125,10 @@ fn evaluate_effect(
         "linalg:det:3x3" => {
             // Row-major operands [a,b,c, d,e,f, g,h,i]; Laplace expansion along the first row.
             if effect.inputs.len() != 9 {
-                return Err(format!("effect {} linalg:det:3x3 requires nine operands", effect.index));
+                return Err(format!(
+                    "effect {} linalg:det:3x3 requires nine operands",
+                    effect.index
+                ));
             }
             let m = read_3x3(effect, values)?;
             let [a, b, c, d, e, f, g, h, i] = m;
@@ -1114,7 +1137,10 @@ fn evaluate_effect(
         name if name.starts_with("linalg:det:") => {
             // General determinant (4x4 and up) via LU factorisation with partial pivoting.
             let n = parse_det_dim(name).ok_or_else(|| {
-                format!("effect {} {name} has no determinant dimension", effect.index)
+                format!(
+                    "effect {} {name} has no determinant dimension",
+                    effect.index
+                )
             })?;
             if effect.inputs.len() != n * n {
                 return Err(format!(

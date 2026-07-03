@@ -59,6 +59,7 @@ pub mod otoc;
 pub mod pauli;
 pub mod pec;
 pub mod program_ad_ir;
+pub mod program_ad_registry_mirror;
 pub mod pulse_shaping;
 pub mod qnode_metrics;
 pub mod qpetri;
@@ -512,6 +513,10 @@ fn scpn_quantum_engine(m: &Bound<'_, PyModule>) -> PyResult<()> {
     )?)?;
     m.add_function(wrap_pyfunction!(
         program_ad_ir::program_ad_effect_ir_interpret_value_and_gradient,
+        m
+    )?)?;
+    m.add_function(wrap_pyfunction!(
+        program_ad_registry_mirror::program_ad_registry_metadata_mirror,
         m
     )?)?;
 

@@ -16,7 +16,7 @@ importing the larger differentiable-programming facade.
 from __future__ import annotations
 
 import json
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from typing import Protocol
 
@@ -25,6 +25,9 @@ from numpy.typing import NDArray
 
 _FORWARD_CLAIM_BOUNDARY = "bounded_rust_program_ad_ir_scalar_and_static_linalg_primitives_executed_branch_view_alias_only_no_llvm_jit"
 _VALUE_AND_GRAD_CLAIM_BOUNDARY = "bounded_rust_program_ad_ir_scalar_and_static_linalg_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit"
+_REGISTRY_METADATA_MIRROR_CLAIM_BOUNDARY = (
+    "rust_program_ad_registry_metadata_mirror_only_no_execution_promotion"
+)
 
 
 class ProgramADEffectIRLike(Protocol):
@@ -104,6 +107,77 @@ class RustProgramADValueAndGradientResult:
             raise ValueError("Rust Program AD value+gradient supported state is inconsistent")
         if not self.claim_boundary:
             raise ValueError("Rust Program AD value+gradient claim boundary must be non-empty")
+
+
+@dataclass(frozen=True)
+class RustProgramADRegistryMetadataMirrorResult:
+    """Result from the Rust Program AD registry metadata mirror."""
+
+    supported: bool
+    primitive_count: int
+    covered_primitives: int
+    family_counts: Mapping[str, int]
+    facet_counts: Mapping[str, int]
+    executable_operation_count: int
+    executable_operations: tuple[str, ...]
+    blocked_reasons: tuple[str, ...]
+    claim_boundary: str
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.supported, bool):
+            raise ValueError("Rust Program AD registry metadata supported flag must be boolean")
+        if self.primitive_count < 0 or self.covered_primitives < 0:
+            raise ValueError("Rust Program AD registry metadata counts must be non-negative")
+        if self.covered_primitives > self.primitive_count:
+            raise ValueError("Rust Program AD registry metadata covered count exceeds total")
+        checked_family_counts = _normalise_program_ad_int_mapping(
+            "Rust Program AD registry metadata mirror family_counts",
+            self.family_counts,
+        )
+        checked_facet_counts = _normalise_program_ad_int_mapping(
+            "Rust Program AD registry metadata mirror facet_counts",
+            self.facet_counts,
+        )
+        if sum(checked_family_counts.values()) != self.primitive_count:
+            raise ValueError("Rust Program AD registry metadata family counts must sum to total")
+        if self.executable_operation_count != len(self.executable_operations):
+            raise ValueError("Rust Program AD registry metadata executable count is inconsistent")
+        if any(
+            not isinstance(operation, str) or not operation
+            for operation in self.executable_operations
+        ):
+            raise ValueError(
+                "Rust Program AD registry metadata executable operations must be non-empty"
+            )
+        if tuple(sorted(set(self.executable_operations))) != self.executable_operations:
+            raise ValueError(
+                "Rust Program AD registry metadata executable operations must be sorted and unique"
+            )
+        if any(not isinstance(reason, str) or not reason for reason in self.blocked_reasons):
+            raise ValueError("Rust Program AD registry metadata blocked reasons must be non-empty")
+        if self.supported != (
+            self.covered_primitives == self.primitive_count and not self.blocked_reasons
+        ):
+            raise ValueError("Rust Program AD registry metadata supported state is inconsistent")
+        if not self.claim_boundary:
+            raise ValueError("Rust Program AD registry metadata claim boundary must be non-empty")
+        object.__setattr__(self, "family_counts", checked_family_counts)
+        object.__setattr__(self, "facet_counts", checked_facet_counts)
+
+    def as_dict(self) -> dict[str, object]:
+        """Return a JSON-ready metadata mirror payload."""
+
+        return {
+            "supported": self.supported,
+            "primitive_count": self.primitive_count,
+            "covered_primitives": self.covered_primitives,
+            "family_counts": dict(self.family_counts),
+            "facet_counts": dict(self.facet_counts),
+            "executable_operation_count": self.executable_operation_count,
+            "executable_operations": list(self.executable_operations),
+            "blocked_reasons": list(self.blocked_reasons),
+            "claim_boundary": self.claim_boundary,
+        }
 
 
 def interpret_program_ad_effect_ir_with_rust(
@@ -257,6 +331,102 @@ def value_and_grad_program_ad_effect_ir_with_rust(
     )
 
 
+def mirror_program_ad_registry_metadata_with_rust() -> RustProgramADRegistryMetadataMirrorResult:
+    """Mirror Python Program AD registry metadata through the optional Rust extension.
+
+    The mirror serializes the canonical Python registry-dispatch coverage
+    report, asks ``scpn_quantum_engine`` to validate and summarize it, and
+    returns a typed fail-closed result. A supported result is metadata evidence
+    only: it records registry shape, required facet counts, and overlap with
+    the currently bounded Rust scalar/static-linalg replay. It does not promote
+    full Program AD execution, array adjoints, LLVM/JIT lowering, provider,
+    hardware, or performance evidence.
+    """
+
+    from .program_ad_registry import program_ad_registry_dispatch_coverage_report
+
+    report = program_ad_registry_dispatch_coverage_report()
+    snapshot = json.dumps(report.to_dict(), sort_keys=True)
+    try:
+        import scpn_quantum_engine as engine
+    except ModuleNotFoundError:
+        return _unsupported_registry_metadata_mirror(
+            report.total_primitives,
+            report.covered_primitives,
+            report.family_counts,
+            "scpn_quantum_engine native extension is not built",
+        )
+    mirror = getattr(engine, "program_ad_registry_metadata_mirror", None)
+    if not callable(mirror):
+        return _unsupported_registry_metadata_mirror(
+            report.total_primitives,
+            report.covered_primitives,
+            report.family_counts,
+            "scpn_quantum_engine native extension lacks Program AD registry metadata mirror",
+        )
+    raw = mirror(snapshot)
+    if not isinstance(raw, str):
+        raise ValueError("Rust Program AD registry metadata mirror must return JSON text")
+    payload = _decode_payload("Rust Program AD registry metadata mirror", raw)
+    return RustProgramADRegistryMetadataMirrorResult(
+        supported=_parse_program_ad_bool(
+            "Rust Program AD registry metadata mirror supported",
+            payload.get("supported"),
+        ),
+        primitive_count=_parse_program_ad_int(
+            "Rust Program AD registry metadata mirror primitive_count",
+            payload.get("primitive_count"),
+        ),
+        covered_primitives=_parse_program_ad_int(
+            "Rust Program AD registry metadata mirror covered_primitives",
+            payload.get("covered_primitives"),
+        ),
+        family_counts=_parse_program_ad_int_mapping(
+            "Rust Program AD registry metadata mirror family_counts",
+            payload.get("family_counts"),
+        ),
+        facet_counts=_parse_program_ad_int_mapping(
+            "Rust Program AD registry metadata mirror facet_counts",
+            payload.get("facet_counts"),
+        ),
+        executable_operation_count=_parse_program_ad_int(
+            "Rust Program AD registry metadata mirror executable_operation_count",
+            payload.get("executable_operation_count"),
+        ),
+        executable_operations=_parse_program_ad_str_tuple(
+            "Rust Program AD registry metadata mirror executable operation",
+            payload.get("executable_operations", []),
+        ),
+        blocked_reasons=_parse_program_ad_str_tuple(
+            "Rust Program AD registry metadata mirror blocked reason",
+            payload.get("blocked_reasons", []),
+        ),
+        claim_boundary=_parse_program_ad_str(
+            "Rust Program AD registry metadata mirror claim_boundary",
+            payload.get("claim_boundary"),
+        ),
+    )
+
+
+def _unsupported_registry_metadata_mirror(
+    primitive_count: int,
+    covered_primitives: int,
+    family_counts: Mapping[str, int],
+    blocked_reason: str,
+) -> RustProgramADRegistryMetadataMirrorResult:
+    return RustProgramADRegistryMetadataMirrorResult(
+        supported=False,
+        primitive_count=primitive_count,
+        covered_primitives=covered_primitives,
+        family_counts=dict(family_counts),
+        facet_counts={},
+        executable_operation_count=0,
+        executable_operations=(),
+        blocked_reasons=(blocked_reason,),
+        claim_boundary=_REGISTRY_METADATA_MIRROR_CLAIM_BOUNDARY,
+    )
+
+
 def _program_ad_serialization(program_ir: ProgramADEffectIRLike | str) -> str:
     serialization = program_ir if isinstance(program_ir, str) else program_ir.serialization
     if not isinstance(serialization, str) or not serialization:
@@ -292,6 +462,12 @@ def _parse_program_ad_int(name: str, value: object) -> int:
     return value
 
 
+def _parse_program_ad_bool(name: str, value: object) -> bool:
+    if not isinstance(value, bool):
+        raise ValueError(f"program AD IR {name} must be a boolean")
+    return value
+
+
 def _parse_program_ad_str(name: str, value: object) -> str:
     if not isinstance(value, str):
         raise ValueError(f"program AD IR {name} must be a string")
@@ -302,6 +478,26 @@ def _parse_program_ad_str_tuple(name: str, value: object) -> tuple[str, ...]:
     if not isinstance(value, list):
         raise ValueError(f"program AD IR {name} must be a list")
     return tuple(_parse_program_ad_str(name, item) for item in value)
+
+
+def _parse_program_ad_int_mapping(name: str, value: object) -> dict[str, int]:
+    if not isinstance(value, Mapping):
+        raise ValueError(f"program AD IR {name} must be a JSON object")
+    checked: dict[str, int] = {}
+    for key, item in value.items():
+        if not isinstance(key, str) or not key:
+            raise ValueError(f"program AD IR {name} keys must be non-empty strings")
+        checked[key] = _parse_program_ad_int(f"{name} {key}", item)
+        if checked[key] < 0:
+            raise ValueError(f"program AD IR {name} values must be non-negative")
+    return checked
+
+
+def _normalise_program_ad_int_mapping(
+    name: str,
+    value: Mapping[str, int],
+) -> dict[str, int]:
+    return _parse_program_ad_int_mapping(name, value)
 
 
 def _as_real_numeric_array(name: str, values: object) -> NDArray[np.float64]:
@@ -338,7 +534,9 @@ def _as_real_scalar(name: str, value: object) -> float:
 __all__ = [
     "ProgramADEffectIRLike",
     "RustProgramADInterpreterResult",
+    "RustProgramADRegistryMetadataMirrorResult",
     "RustProgramADValueAndGradientResult",
     "interpret_program_ad_effect_ir_with_rust",
+    "mirror_program_ad_registry_metadata_with_rust",
     "value_and_grad_program_ad_effect_ir_with_rust",
 ]

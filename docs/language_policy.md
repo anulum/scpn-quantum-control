@@ -51,7 +51,7 @@ src/scpn_quantum_control/accel/
 ```
 
 This repository currently ships only the Rust tier
-(`scpn_quantum_engine`, 171 PyO3 functions). Julia / Go / Mojo tiers
+(`scpn_quantum_engine`, 172 PyO3 functions). Julia / Go / Mojo tiers
 are tracked as future work — see the per-module audit table below
 for which compute functions are candidates.
 
@@ -59,7 +59,7 @@ for which compute functions are candidates.
 
 | Language | When | Examples in this repo |
 |---|---|---|
-| **Rust** | Compute hot paths invoked from Python via PyO3. Default for every new compute function. | `scpn_quantum_engine` — 171 PyO3 functions covering build_knm, order_parameter, commutator_dense, kuramoto_trajectory, Pauli expansion, mitigation, realtime, compiler-AD, and domain kernels. Measured 4.7× – 69× over NumPy on benchmarked hot paths. |
+| **Rust** | Compute hot paths invoked from Python via PyO3. Default for every new compute function. | `scpn_quantum_engine` — 172 PyO3 functions covering build_knm, order_parameter, commutator_dense, kuramoto_trajectory, Pauli expansion, mitigation, realtime, compiler-AD, Program AD metadata mirroring, and domain kernels. Measured 4.7× – 69× over NumPy on benchmarked hot paths. |
 | **C / C++** | Hardware-SDK interop below the Python wrapper, kernel-level SIMD, or when a vendor only ships a C / C++ client. | Not currently used; IBM Runtime exposes a Python client so C interop is not needed at this layer. Candidate for future pulse-level control latency budget. |
 | **Go** | Standalone network services with heavy concurrent I/O, where a sidecar process is a cleaner boundary than in-process asyncio. | Not currently used. Candidate for a future IBM-job-pool daemon that multiplexes across accounts; in-process asyncio (see `hardware/async_runner.py`) covers the single-account case. |
 | **Julia** | Scientific cross-validation as a third independent solver, especially when Yao.jl / QuantumOptics.jl have a published reference for the same problem class. | Not yet wired. Planned as a supplement to the QuTiP + Dynamiqs branches in `tests/test_cross_validation_qutip_dynamiqs.py` — tracked as a follow-up under audit item C7. |

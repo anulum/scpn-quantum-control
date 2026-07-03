@@ -171,19 +171,8 @@ def test_live_rust_crate_records_threading_without_simd_promotion() -> None:
     audit = scan_crate(crate)
 
     assert audit.status == "pass"
-    # 137 original kernels plus the Kuramoto order-parameter gradient and Hessian, the
-    # mean-phase value, gradient and Hessian, the Daido order-parameter value, gradient
-    # and Hessian, the mean-field force and stability Jacobian, the networked-Kuramoto
-    # force and stability Jacobian, the Kuramoto interaction energy, its gradient and
-    # Hessian, the Kuramoto–Sakaguchi frustrated force and stability Jacobian, the
-    # network-local order parameter and its Jacobian, and the Daido m-th Fourier-mode phase,
-    # its gradient and Hessian, the Daido m-th-harmonic mean-field force and stability
-    # Jacobian, the network-local mean phase and its Jacobian, and the Sakaguchi–Kuramoto
-    # mean-field force and stability Jacobian, and the triadic (2-simplex) mean-field force and
-    # stability Jacobian, and the differentiable networked-Kuramoto Euler trajectory and its
-    # reverse-mode adjoint VJP, and the differentiable RK4 trajectory and its adjoint VJP PyO3
-    # exports.
-    assert audit.pyfunction_count == 171
+    # Live crate count includes the Program AD registry metadata mirror PyO3 export.
+    assert audit.pyfunction_count == 172
     assert audit.rayon_threaded_count > 0
     assert audit.explicit_simd_count == 0
     assert audit.performance_claim_eligible_count == 0

@@ -7,12 +7,12 @@
     "model_documentation_pages": 0,
     "notebook_files": 100,
     "optional_extras": 43,
-    "public_api_exports": 784,
+    "public_api_exports": 786,
     "public_documentation_pages": 254,
-    "python_model_classes": 971,
+    "python_model_classes": 972,
     "python_model_source_modules": 540,
-    "rust_pyo3_model_wrappers": 171,
-    "rust_source_modules": 42,
+    "rust_pyo3_model_wrappers": 172,
+    "rust_source_modules": 43,
     "test_files": 876
   },
   "documentation": {
@@ -3933,6 +3933,10 @@
         "path": "src/scpn_quantum_control/program_ad_rust_bridge.py"
       },
       {
+        "name": "RustProgramADRegistryMetadataMirrorResult",
+        "path": "src/scpn_quantum_control/program_ad_rust_bridge.py"
+      },
+      {
         "name": "RustProgramADValueAndGradientResult",
         "path": "src/scpn_quantum_control/program_ad_rust_bridge.py"
       },
@@ -5157,6 +5161,7 @@
       "program_ad_effect_ir_interpret_forward",
       "program_ad_effect_ir_interpret_value_and_gradient",
       "program_ad_effect_ir_metadata_summary",
+      "program_ad_registry_metadata_mirror",
       "pt_symmetric_kuramoto_trajectory",
       "qpetri_campaign_aggregate",
       "qpetri_sample_marking",
@@ -5230,6 +5235,7 @@
       "scpn_quantum_engine/src/pauli.rs",
       "scpn_quantum_engine/src/pec.rs",
       "scpn_quantum_engine/src/program_ad_ir.rs",
+      "scpn_quantum_engine/src/program_ad_registry_mirror.rs",
       "scpn_quantum_engine/src/pulse_shaping.rs",
       "scpn_quantum_engine/src/qnode_metrics.rs",
       "scpn_quantum_engine/src/qpetri.rs",
@@ -5494,6 +5500,7 @@
     "ReverseNode",
     "RigettiQCSHALAdapter",
     "RustProgramADInterpreterResult",
+    "RustProgramADRegistryMetadataMirrorResult",
     "RustProgramADValueAndGradientResult",
     "SNNQuantumBridge",
     "SPSAGradientResult",
@@ -5785,6 +5792,7 @@
     "make_vector_squared_norm_native_llvm_jit_primitive_transform",
     "measure_order_parameter",
     "minimise_real_objective",
+    "mirror_program_ad_registry_metadata_with_rust",
     "mps_tebd_baseline",
     "multi_frequency_parameter_shift_rule",
     "namespace_metadata",

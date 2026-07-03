@@ -197,6 +197,7 @@ def program_ad_effect_ir_interpret_forward(serialization: str, inputs: list[floa
 def program_ad_effect_ir_interpret_value_and_gradient(
     serialization: str, inputs: list[float]
 ) -> str: ...
+def program_ad_registry_metadata_mirror(snapshot: str) -> str: ...
 def parameter_shift_gradient_uncertainty_rust(
     plus_values: _F64Array,
     minus_values: _F64Array,

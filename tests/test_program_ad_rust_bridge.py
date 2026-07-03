@@ -22,8 +22,10 @@ from scpn_quantum_control import differentiable as differentiable_facade
 from scpn_quantum_control.differentiable import Parameter, whole_program_value_and_grad
 from scpn_quantum_control.program_ad_rust_bridge import (
     RustProgramADInterpreterResult,
+    RustProgramADRegistryMetadataMirrorResult,
     RustProgramADValueAndGradientResult,
     interpret_program_ad_effect_ir_with_rust,
+    mirror_program_ad_registry_metadata_with_rust,
     value_and_grad_program_ad_effect_ir_with_rust,
 )
 
@@ -125,6 +127,76 @@ def test_forward_interpreter_bridge_normalises_payload(
     assert "no_llvm_jit" in result.claim_boundary
 
 
+def test_registry_metadata_mirror_is_shared_by_module_and_facade(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Direct and facade imports should share the Rust registry metadata mirror."""
+
+    calls: list[dict[str, object]] = []
+    fake_engine = ModuleType("scpn_quantum_engine")
+
+    def mirror(snapshot: str) -> str:
+        payload = json.loads(snapshot)
+        assert isinstance(payload, dict)
+        assert payload["supported"] is True
+        assert payload["covered_primitives"] == payload["total_primitives"] == 118
+        assert payload["family_counts"] == {
+            "array": 6,
+            "shape": 17,
+            "reduction": 11,
+            "stencil": 1,
+            "interpolation": 1,
+            "assembly": 21,
+            "signal": 2,
+            "elementwise": 24,
+            "selection": 11,
+            "product": 7,
+            "cumulative": 3,
+            "linalg": 14,
+        }
+        assert len(cast(list[object], payload["rows"])) == 118
+        calls.append(payload)
+        return json.dumps(
+            {
+                "supported": True,
+                "primitive_count": 118,
+                "covered_primitives": 118,
+                "family_counts": payload["family_counts"],
+                "facet_counts": {
+                    "derivative_rule": 118,
+                    "batching_rule": 118,
+                    "lowering_metadata": 118,
+                    "shape_rule": 118,
+                    "dtype_rule": 118,
+                    "static_argument_rule": 118,
+                    "nondifferentiable_policy": 118,
+                    "effect": 118,
+                },
+                "executable_operation_count": 4,
+                "executable_operations": ["det", "sin", "sqrt", "tanh"],
+                "blocked_reasons": [],
+                "claim_boundary": "rust_program_ad_registry_metadata_mirror_only_no_execution_promotion",
+            }
+        )
+
+    engine_exports = cast(Any, fake_engine)
+    engine_exports.program_ad_registry_metadata_mirror = mirror
+    _install_fake_engine(monkeypatch, fake_engine)
+
+    direct = mirror_program_ad_registry_metadata_with_rust()
+    facade = differentiable_facade.mirror_program_ad_registry_metadata_with_rust()
+
+    assert isinstance(direct, RustProgramADRegistryMetadataMirrorResult)
+    assert isinstance(facade, RustProgramADRegistryMetadataMirrorResult)
+    assert len(calls) == 2
+    assert direct.supported is True
+    assert direct.primitive_count == 118
+    assert direct.family_counts["elementwise"] == 24
+    assert direct.facet_counts["lowering_metadata"] == 118
+    assert direct.executable_operations == ("det", "sin", "sqrt", "tanh")
+    assert direct.as_dict() == facade.as_dict()
+
+
 def test_rust_program_ad_value_and_gradient_replay_matches_python_trace() -> None:
     """Rust Program AD scalar replay should match the emitted Python trace."""
 
@@ -153,6 +225,29 @@ def test_rust_program_ad_value_and_gradient_replay_matches_python_trace() -> Non
     assert (
         rust_result.claim_boundary
         == "bounded_rust_program_ad_ir_scalar_and_static_linalg_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit"
+    )
+
+
+def test_rust_program_ad_registry_metadata_mirror_validates_python_registry() -> None:
+    """Rust registry metadata mirror should validate Python registry coverage."""
+
+    engine = pytest.importorskip("scpn_quantum_engine")
+    assert callable(getattr(engine, "program_ad_registry_metadata_mirror", None))
+
+    mirror = mirror_program_ad_registry_metadata_with_rust()
+
+    assert mirror.supported is True, mirror.blocked_reasons
+    assert mirror.primitive_count == 118
+    assert mirror.covered_primitives == 118
+    assert mirror.family_counts["elementwise"] == 24
+    assert mirror.family_counts["linalg"] == 14
+    assert mirror.facet_counts["derivative_rule"] == 118
+    assert mirror.facet_counts["lowering_metadata"] == 118
+    assert {"sin", "sqrt", "tanh", "det"} <= set(mirror.executable_operations)
+    assert mirror.executable_operation_count == len(mirror.executable_operations)
+    assert (
+        mirror.claim_boundary
+        == "rust_program_ad_registry_metadata_mirror_only_no_execution_promotion"
     )
 
 
@@ -278,6 +373,22 @@ def test_bridge_fails_closed_when_native_extension_or_export_is_missing(
         "scpn_quantum_engine native extension is not built",
     )
 
+    monkeypatch.setitem(sys.modules, "scpn_quantum_engine", None)
+    missing_mirror_extension = mirror_program_ad_registry_metadata_with_rust()
+    assert missing_mirror_extension.supported is False
+    assert missing_mirror_extension.primitive_count == 118
+    assert missing_mirror_extension.blocked_reasons == (
+        "scpn_quantum_engine native extension is not built",
+    )
+
+    fake_engine = ModuleType("scpn_quantum_engine")
+    _install_fake_engine(monkeypatch, fake_engine)
+    missing_mirror_export = mirror_program_ad_registry_metadata_with_rust()
+    assert missing_mirror_export.supported is False
+    assert missing_mirror_export.blocked_reasons == (
+        "scpn_quantum_engine native extension lacks Program AD registry metadata mirror",
+    )
+
 
 def test_bridge_rejects_malformed_inputs_and_payloads(
     monkeypatch: pytest.MonkeyPatch,
@@ -400,6 +511,25 @@ def test_bridge_rejects_malformed_inputs_and_payloads(
     )
     with pytest.raises(ValueError, match="parameter target must be a list"):
         value_and_grad_program_ad_effect_ir_with_rust("{}", [0.0])
+
+    def malformed_registry_mirror(_snapshot: str) -> str:
+        return json.dumps(
+            {
+                "supported": True,
+                "primitive_count": 118,
+                "covered_primitives": 118,
+                "family_counts": {"elementwise": 24},
+                "facet_counts": [],
+                "executable_operation_count": 1,
+                "executable_operations": ["sin"],
+                "blocked_reasons": [],
+                "claim_boundary": "bounded",
+            }
+        )
+
+    engine_exports.program_ad_registry_metadata_mirror = malformed_registry_mirror
+    with pytest.raises(ValueError, match="facet_counts must be a JSON object"):
+        mirror_program_ad_registry_metadata_with_rust()
 
 
 @pytest.mark.parametrize(

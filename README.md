@@ -105,13 +105,13 @@ has a defined commercial licensing route.
 | Surface | Current inventory |
 |---|---:|
 | Package version | 0.10.0 |
-| Public API exports | 784 |
+| Public API exports | 786 |
 | Python source modules | 540 |
-| Public Python classes | 971 |
+| Public Python classes | 972 |
 | Domain package families | 32 |
 | API documentation pages | 0 |
-| Rust PyO3 function bindings | 171 |
-| Rust source modules | 42 |
+| Rust PyO3 function bindings | 172 |
+| Rust source modules | 43 |
 | Notebook files | 100 |
 | Example files | 33 |
 | Optional extras | 43 |
@@ -347,12 +347,16 @@ Rust polyglot parity includes a claim-bounded Program AD IR metadata parser in
 `program_ad_effect_ir_metadata_summary(...)` and
 `program_ad_effect_ir_interpret_forward(...)` plus
 `program_ad_effect_ir_interpret_value_and_gradient(...)` for PyO3 consumers.
-Metadata summaries validate `program_ad_effect_ir.v1` evidence only; Rust
-replay is bounded to opcode-bearing scalar primitive-family forward and
+`program_ad_registry_metadata_mirror(...)` validates the Python registry
+coverage snapshot, returns deterministic family/facet counts, and records only
+the primitive-name overlap with the already bounded Rust scalar/static-linalg
+replay. Metadata summaries validate `program_ad_effect_ir.v1` evidence only;
+Rust replay is bounded to opcode-bearing scalar primitive-family forward and
 value+gradient rows, including executed runtime branch metadata when matched by
 runtime phi provenance. It still fails closed on legacy opcode-free metadata,
 aliases, mutation, arrays, source-level/non-executed branch semantics, general
-Program AD execution, LLVM/JIT execution, hardware, and performance promotion.
+Program AD execution, array adjoints, LLVM/JIT execution, hardware, provider,
+and performance promotion.
 Python callers can use `scpn_quantum_control.program_ad_rust_bridge` for the
 typed fail-closed wrappers; `scpn_quantum_control.differentiable` re-exports
 the same symbols for backward compatibility.
@@ -543,7 +547,7 @@ information scrambles*, and *whether the system thermalises*.
 
 | Metric | Value |
 |--------|-------|
-| Rust engine bindings | **171** exported `#[pyfunction]` bindings in the tracked Rust crate; low-level helper `fn` definitions are an implementation detail. |
+| Rust engine bindings | **172** exported `#[pyfunction]` bindings in the tracked Rust crate; low-level helper `fn` definitions are an implementation detail. |
 | Source package surface | **526** tracked Python source files under `src/scpn_quantum_control`, excluding package initialisers. |
 | Research module families | Analysis, phase, hardware, bridge, mitigation, QEC, applications, forecasting, and benchmark families; exact current counts are listed in the package map below. |
 | Publication figures | **17** (simulation + hardware, including the Phase 1 DLA parity panels and exact-simulation crossover) |
@@ -895,7 +899,7 @@ scpn_quantum_control/
 ├── tcbo/            1 module  — TCBO quantum observer
 ├── pgbo/            1 module  — PGBO quantum bridge
 ├── l16/             1 module  — Layer 16 quantum director
-└── scpn_quantum_engine/  Rust crate (PyO3 0.29, 171 exported PyO3 bindings)
+└── scpn_quantum_engine/  Rust crate (PyO3 0.29, 172 exported PyO3 bindings)
 ```
 
 ## Dependencies

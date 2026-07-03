@@ -56,12 +56,12 @@ little-endian `studio.xy-compile-recompute.v1` byte payload and writes a
 bit-exact recompute path for compile claims only; it does not execute QPU jobs
 or grade continuous simulator values.
 
-**Static FFI safety audit (2026-06-26):** `tools/audit_rust_ffi_safety.py`
+**Static FFI safety audit (2026-07-03):** `tools/audit_rust_ffi_safety.py`
 inventories the Rust `src/*.rs` boundary before binding expansion. The current
 committed artefact,
-`data/rust_ffi_safety/rust_ffi_safety_audit_2026-06-26.json`, reports:
+`data/rust_ffi_safety/rust_ffi_safety_audit_2026-07-03.json`, reports:
 
-- 171 exported `#[pyfunction]` boundaries.
+- 172 exported `#[pyfunction]` boundaries.
 - 1 `#[pymodule]` initializer.
 - 0 unregistered PyO3 functions.
 - 0 `unsafe` occurrences.
@@ -80,19 +80,19 @@ claim boundary is static source inventory only; it does not replace Miri,
 sanitizer, fuzzing, or formal memory-safety evidence if unsafe Rust is ever
 introduced.
 
-**Static execution-mode audit (2026-06-26):**
+**Static execution-mode audit (2026-07-03):**
 `tools/audit_rust_kernel_execution.py` records whether each Rust PyO3 kernel is
 currently tagged as `scalar_or_unknown`, `ndarray_dot`, `rayon_threaded`, or
 `explicit_simd` before any performance promotion. The current committed
 artefact,
-`data/rust_kernel_execution/rust_kernel_execution_audit_2026-06-26.json`,
+`data/rust_kernel_execution/rust_kernel_execution_audit_2026-07-03.json`,
 reports:
 
-- 171 PyO3 kernel records.
+- 172 PyO3 kernel records.
 - 19 `rayon_threaded` records.
 - 1 `ndarray_dot` record.
 - 0 `explicit_simd` records.
-- 151 `scalar_or_unknown` records.
+- 152 `scalar_or_unknown` records.
 - 0 performance-claim-eligible records.
 
 Run the gate with:
@@ -107,9 +107,9 @@ are historical local regression evidence unless a row is explicitly tied to a
 separate `isolated_affinity` benchmark artefact with CPU affinity, host-load,
 governor/frequency, runner labels, and heavy-job metadata.
 
-## Functions (171)
+## Functions (172)
 
-The Rust crate exports 171 PyO3 bindings across 42 Rust source files. They are organised
+The Rust crate exports 172 PyO3 bindings across 42 Rust source files. They are organised
 below by topic.
 
 ### Classical Kuramoto
@@ -183,6 +183,21 @@ arbitrary Python objectives.
 `phase_qnode_metric_and_transform_kernels` group for these inner kernels. Any
 result captured without the benchmark-isolation metadata required by the
 project benchmark policy is local regression evidence only.
+
+### Program AD Metadata and Replay
+
+| Function | Description | Complexity |
+|----------|-------------|------------|
+| `program_ad_effect_ir_metadata_summary(serialization)` | Validate and summarize Python-emitted `program_ad_effect_ir.v1` metadata | O(n) |
+| `program_ad_effect_ir_interpret_forward(serialization, inputs)` | Execute bounded opcode-bearing scalar/static-linalg Program AD IR forward replay | O(n) |
+| `program_ad_effect_ir_interpret_value_and_gradient(serialization, inputs)` | Execute bounded scalar/static-linalg value and reverse-gradient replay for supported IR rows | O(n) |
+| `program_ad_registry_metadata_mirror(snapshot)` | Validate the Python registry-dispatch coverage snapshot and return family/facet counts plus conservative Rust replay overlap | O(n) |
+
+The registry mirror is metadata-only. It validates the 118-primitive Python
+registry snapshot shape and reports overlap with the already bounded Rust
+scalar/static-linalg replay; it does not promote executable registry coverage,
+array adjoints, LLVM/JIT lowering, provider execution, hardware execution, or
+performance evidence.
 
 ### Stochastic Gradient Kernels
 

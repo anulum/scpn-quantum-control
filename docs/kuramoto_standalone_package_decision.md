@@ -50,7 +50,7 @@ route. Those are CEO/IP decisions, not implementation defaults.
 | Surface | Current state | Split implication |
 |---|---|---|
 | Public API | `scpn_quantum_control.kuramoto` groups the toolkit into documented capabilities. | Candidate import surface exists, but the namespace is not approved. |
-| Engine | Local engine remains the 171-function Rust PyO3 build. | A split package must decide whether it depends on `scpn_quantum_engine` or vendors no Rust code. |
+| Engine | Local engine remains the 172-function Rust PyO3 build. | A split package must decide whether it depends on `scpn_quantum_engine` or vendors no Rust code. |
 | Documentation | Handbook, examples, notebooks, and benchmark pages are wired into this repository. | A split package needs its own docs navigation and release docs. |
 | Benchmarks | CI/local tier benchmark evidence is committed and fail-closed for external claims. | External package comparisons still require a separate harness. |
 | Licensing | Repository remains AGPL with commercial license available. | A split requires explicit licensing and commercial-use terms. |

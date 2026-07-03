@@ -492,8 +492,10 @@ from .program_ad_registry import (
 )
 from .program_ad_rust_bridge import (
     RustProgramADInterpreterResult,
+    RustProgramADRegistryMetadataMirrorResult,
     RustProgramADValueAndGradientResult,
     interpret_program_ad_effect_ir_with_rust,
+    mirror_program_ad_registry_metadata_with_rust,
     value_and_grad_program_ad_effect_ir_with_rust,
 )
 from .program_ad_selection_primitives import (
@@ -672,6 +674,7 @@ __all__ = [
     "ProgramADRegistryDispatchCoverageReport",
     "ProgramADRegistryDispatchCoverageRow",
     "RustProgramADInterpreterResult",
+    "RustProgramADRegistryMetadataMirrorResult",
     "RustProgramADValueAndGradientResult",
     "ProgramADSSAValue",
     "PrimitiveBatchingRule",
@@ -760,6 +763,7 @@ __all__ = [
     "levenberg_marquardt_step",
     "natural_gradient",
     "interpret_program_ad_effect_ir_with_rust",
+    "mirror_program_ad_registry_metadata_with_rust",
     "value_and_grad_program_ad_effect_ir_with_rust",
     "parse_program_ad_effect_ir",
     "primitive_complete_contract_for",
