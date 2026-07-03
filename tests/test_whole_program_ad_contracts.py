@@ -28,6 +28,7 @@ from scpn_quantum_control.differentiable import (
     WholeProgramSemanticsReport,
     WholeProgramSourceIRFeature,
     WholeProgramTraceEvent,
+    compile_whole_program_frontend,
     whole_program_grad,
     whole_program_value_and_grad,
 )
@@ -84,6 +85,55 @@ def test_whole_program_ad_records_ir_and_executed_branch_semantics() -> None:
         rtol=1.0e-12,
         atol=1.0e-12,
     )
+    assert result.frontend_report is not None
+    assert result.frontend_report.frontend_ready is True
+    assert (
+        result.frontend_report.frontend_digest
+        == compile_whole_program_frontend(objective).frontend_digest
+    )
+
+
+def test_whole_program_ad_frontend_gate_rejects_unsupported_semantics_before_execution() -> None:
+    """Unsupported semantics should fail before execution with located frontend evidence."""
+
+    calls = {"count": 0}
+
+    def objective(values: Any) -> object:
+        calls["count"] += 1
+        return sum([item for item in values if item > 0.0])
+
+    with pytest.raises(ValueError) as exc_info:
+        whole_program_value_and_grad(objective, np.array([1.0, -2.0], dtype=np.float64))
+
+    message = str(exc_info.value)
+    assert calls == {"count": 0}
+    assert "whole-program AD frontend execution gate rejected objective" in message
+    assert "unsupported_python_semantics:filtered_comprehension" in message
+    assert "semantic=filtered_comprehension" in message
+    assert "line=" in message
+    assert "absolute_line=" in message
+    assert "regions=" in message
+    assert "bytecode_offsets=" in message
+    assert "frontend_digest=" in message
+
+
+def test_whole_program_ad_frontend_gate_requires_source_coordinates() -> None:
+    """Objectives without source coordinates should not execute under whole-program AD."""
+
+    namespace: dict[str, Any] = {}
+    exec(  # noqa: S102 - deliberate source-unavailable objective for frontend gate coverage.
+        "def dynamic_objective(values):\n"
+        "    dynamic_objective.calls += 1\n"
+        "    return values[0] * values[0]\n",
+        namespace,
+    )
+    dynamic_objective = namespace["dynamic_objective"]
+    dynamic_objective.calls = 0
+
+    with pytest.raises(ValueError, match="source_frontend_missing"):
+        whole_program_value_and_grad(dynamic_objective, np.array([2.0], dtype=np.float64))
+
+    assert dynamic_objective.calls == 0
 
 
 def test_whole_program_grad_respects_trainable_mask_and_rejects_derivative_loss() -> None:
@@ -209,6 +259,7 @@ def test_whole_program_result_validation_fail_closed_paths() -> None:
         ("semantics_report", object(), "semantics_report"),
         ("program_ir", object(), "program_ir"),
         ("adjoint_result", object(), "adjoint_result"),
+        ("frontend_report", object(), "frontend_report"),
         ("control_flow_observed", "yes", "control_flow_observed"),
         ("numpy_observed", "yes", "numpy_observed"),
         ("polyglot_targets", {}, "polyglot_targets"),

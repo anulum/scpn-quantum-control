@@ -20,13 +20,11 @@ from .differentiable_transform_helpers import _normalise_parameters
 from .program_ad_adjoint_generation import _program_adjoint_result_from_nodes
 from .whole_program_ad_result import WholeProgramADResult
 from .whole_program_frontend import (
-    _accepted_python_semantics,
-    _objective_bytecode,
+    WholeProgramCompilerFrontendReport,
+    WholeProgramUnsupportedSemanticDiagnostic,
     _objective_source,
-    _source_ir_features,
-    _source_mentions_numpy,
-    _unsupported_python_semantics,
     _whole_program_semantics_report,
+    compile_whole_program_frontend,
 )
 from .whole_program_trace_runtime import (
     _trace_whole_program_objective,
@@ -64,31 +62,24 @@ def whole_program_value_and_grad(
     -------
     WholeProgramADResult
         Exact executed-program value, gradient, source/bytecode metadata, IR
-        nodes, semantics report, and scalar adjoint replay provenance.
+        nodes, frontend report, semantics report, and scalar adjoint replay
+        provenance.
 
     Raises
     ------
     ValueError
-        If the objective is not callable, uses unsupported Python semantics, or
-        does not return a traceable scalar.
+        If the objective is not callable, fails the source/bytecode frontend
+        execution gate, uses unsupported Python semantics, or does not return a
+        traceable scalar.
     """
 
     if not callable(objective):
         raise ValueError("whole-program objective must be callable")
+    frontend_report = compile_whole_program_frontend(objective)
+    _require_whole_program_frontend_execution_ready(frontend_report)
     parameter_values = _as_parameter_array(values)
     parameter_meta = _normalise_parameters(parameter_values, parameters)
     source = _objective_source(objective)
-    bytecode_instructions = _objective_bytecode(objective)
-    accepted_python_semantics = _accepted_python_semantics(objective, source)
-    unsupported_python_semantics = _unsupported_python_semantics(objective, source)
-    source_ir_features = _source_ir_features(
-        source,
-        accepted_python_semantics=accepted_python_semantics,
-        unsupported_python_semantics=unsupported_python_semantics,
-    )
-    if unsupported_python_semantics:
-        unsupported = ", ".join(unsupported_python_semantics)
-        raise ValueError(f"unsupported whole-program AD Python semantics: {unsupported}")
     context = _WholeProgramTraceContext(
         parameter_values.size,
         scalar_factory=TraceADScalar,
@@ -119,13 +110,15 @@ def whole_program_value_and_grad(
         else ()
     )
     semantics_report = _whole_program_semantics_report(
-        bytecode_instructions=bytecode_instructions,
-        source_ir_features=source_ir_features,
+        bytecode_instructions=frontend_report.bytecode_instructions,
+        source_ir_features=frontend_report.source_ir_features,
         trace_events=trace_events,
         source=source,
-        accepted_python_semantics=accepted_python_semantics,
-        unsupported_python_semantics=unsupported_python_semantics,
-        numpy_observed=_source_mentions_numpy(source)
+        accepted_python_semantics=frontend_report.semantics_report.accepted_python_semantics,
+        unsupported_python_semantics=(
+            frontend_report.semantics_report.unsupported_python_semantics
+        ),
+        numpy_observed=frontend_report.semantics_report.numpy_observed
         or any(node.op in {"sin", "cos", "exp", "log"} for node in context.nodes),
         differentiation_semantics=(
             "operator-intercepted exact forward AD over the executed Python program; "
@@ -136,8 +129,8 @@ def whole_program_value_and_grad(
         ),
     )
     program_ir = context.program_ir(
-        source_ir_features=source_ir_features,
-        bytecode_instructions=bytecode_instructions,
+        source_ir_features=frontend_report.source_ir_features,
+        bytecode_instructions=frontend_report.bytecode_instructions,
     )
     adjoint_result = _program_adjoint_result_from_nodes(
         nodes=tuple(context.nodes),
@@ -173,11 +166,12 @@ def whole_program_value_and_grad(
             "constructs fail closed before execution; no finite-difference fallback and no "
             "executable Rust, LLVM, or JIT AD lowering claim"
         ),
-        bytecode_instructions=bytecode_instructions,
-        source_ir_features=source_ir_features,
+        bytecode_instructions=frontend_report.bytecode_instructions,
+        source_ir_features=frontend_report.source_ir_features,
         semantics_report=semantics_report,
         program_ir=program_ir,
         adjoint_result=adjoint_result,
+        frontend_report=frontend_report,
     )
 
 
@@ -210,6 +204,42 @@ def whole_program_grad(
     return whole_program_value_and_grad(
         objective, values, parameters=parameters, trace=trace
     ).gradient
+
+
+def _require_whole_program_frontend_execution_ready(
+    report: WholeProgramCompilerFrontendReport,
+) -> None:
+    """Reject objective execution unless the source/bytecode frontend is complete."""
+
+    if report.frontend_ready:
+        return
+    hard_gaps = ", ".join(report.hard_gaps) or "frontend_not_ready"
+    details = (
+        "whole-program AD frontend execution gate rejected objective: "
+        f"function={report.function_name}; frontend_digest={report.frontend_digest}; "
+        f"hard_gaps=[{hard_gaps}]"
+    )
+    if report.unsupported_semantic_diagnostics:
+        diagnostics = "; ".join(
+            _format_unsupported_frontend_diagnostic(diagnostic)
+            for diagnostic in report.unsupported_semantic_diagnostics
+        )
+        details = f"{details}; unsupported_diagnostics=[{diagnostics}]"
+    raise ValueError(details)
+
+
+def _format_unsupported_frontend_diagnostic(
+    diagnostic: WholeProgramUnsupportedSemanticDiagnostic,
+) -> str:
+    """Return a deterministic one-line unsupported-semantics diagnostic."""
+
+    regions = ",".join(diagnostic.region_ids) or "<none>"
+    offsets = ",".join(str(offset) for offset in diagnostic.bytecode_offsets) or "<none>"
+    return (
+        f"semantic={diagnostic.semantic} detail={diagnostic.detail} "
+        f"line={diagnostic.line_number} absolute_line={diagnostic.absolute_line_number} "
+        f"regions=[{regions}] bytecode_offsets=[{offsets}]"
+    )
 
 
 __all__ = ["whole_program_grad", "whole_program_value_and_grad"]

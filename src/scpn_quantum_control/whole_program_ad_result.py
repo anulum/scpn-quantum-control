@@ -19,6 +19,7 @@ from .program_ad_adjoint import ProgramADAdjointResult
 from .program_ad_effect_ir import ProgramADEffectIR
 from .whole_program_frontend import (
     WholeProgramBytecodeInstruction,
+    WholeProgramCompilerFrontendReport,
     WholeProgramSemanticsReport,
     WholeProgramSourceIRFeature,
 )
@@ -74,7 +75,7 @@ class WholeProgramIRNode:
 
 @dataclass(frozen=True)
 class WholeProgramADResult:
-    """Value, gradient, execution trace, and polyglot AD lowering status."""
+    """Value, gradient, frontend gate, execution trace, and polyglot AD status."""
 
     value: float
     gradient: NDArray[np.float64]
@@ -95,6 +96,7 @@ class WholeProgramADResult:
     semantics_report: WholeProgramSemanticsReport | None = None
     program_ir: ProgramADEffectIR | None = None
     adjoint_result: ProgramADAdjointResult | None = None
+    frontend_report: WholeProgramCompilerFrontendReport | None = None
 
     def __post_init__(self) -> None:
         """Validate whole-program AD result metadata at construction time."""
@@ -141,6 +143,12 @@ class WholeProgramADResult:
             self.adjoint_result, ProgramADAdjointResult
         ):
             raise ValueError("adjoint_result must be a ProgramADAdjointResult or None")
+        if self.frontend_report is not None and not isinstance(
+            self.frontend_report, WholeProgramCompilerFrontendReport
+        ):
+            raise ValueError(
+                "frontend_report must be a WholeProgramCompilerFrontendReport or None"
+            )
         if (
             self.adjoint_result is not None
             and self.adjoint_result.gradient.shape != gradient.shape
