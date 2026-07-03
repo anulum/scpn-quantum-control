@@ -349,6 +349,12 @@ from .kuramoto_ring_basins import (
     twisted_state_eigenvalues,
     winding_number,
 )
+from .kuramoto_saddle_node import (
+    SaddleNodePoint,
+    fold_defining_jacobian,
+    fold_defining_residual,
+    locate_saddle_node,
+)
 from .kuramoto_scipy_interop import (
     KuramotoIvpSolution,
     kuramoto_ode_jacobian,
@@ -566,6 +572,10 @@ __all__ = [
     "is_synchronisation_stable",
     "stability_spectrum",
     "synchronisation_rate",
+    "SaddleNodePoint",
+    "fold_defining_jacobian",
+    "fold_defining_residual",
+    "locate_saddle_node",
     "critical_coupling",
     "gaussian_critical_coupling",
     "gaussian_density",
