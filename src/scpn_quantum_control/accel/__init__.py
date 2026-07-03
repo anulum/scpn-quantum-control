@@ -102,6 +102,10 @@ from .dispatcher import (
     available_tiers,
     dispatch,
 )
+from .jax_kuramoto import (
+    jax_kuramoto_rk4_gradient,
+    jax_kuramoto_rk4_trajectory,
+)
 from .kuramoto_adaptive import (
     AdaptivePhaseForce,
     AdaptiveTrajectory,
@@ -548,6 +552,8 @@ __all__ = [
     "daido_order_parameter_gradient",
     "daido_order_parameter_hessian",
     "dispatch",
+    "jax_kuramoto_rk4_gradient",
+    "jax_kuramoto_rk4_trajectory",
     "TerminalObjective",
     "coherence_objective",
     "interaction_energy_objective",

@@ -64,7 +64,7 @@ for which compute functions are candidates.
 | **Go** | Standalone network services with heavy concurrent I/O, where a sidecar process is a cleaner boundary than in-process asyncio. | Not currently used. Candidate for a future IBM-job-pool daemon that multiplexes across accounts; in-process asyncio (see `hardware/async_runner.py`) covers the single-account case. |
 | **Julia** | Scientific cross-validation as a third independent solver, especially when Yao.jl / QuantumOptics.jl have a published reference for the same problem class. | Not yet wired. Planned as a supplement to the QuTiP + Dynamiqs branches in `tests/test_cross_validation_qutip_dynamiqs.py` — tracked as a follow-up under audit item C7. |
 | **CUDA / HIP / Metal** | GPU quantum simulators or dense-matrix kernels above 2^14 Hilbert dimension. | `hardware/gpu_accel.py` dispatches to CuPy; `scpn_quantum_engine` exposes Rust-side GPU kernels. |
-| **JAX** | Auto-differentiable physics, XLA JIT compilation, batched parameter sweeps. | `hardware/jax_accel.py`. |
+| **JAX** | Auto-differentiable physics, XLA JIT compilation, batched parameter sweeps. | `hardware/jax_accel.py`; `accel/jax_kuramoto.py` (the Kuramoto RK4 autodiff + GPU tier). |
 | **OpenQASM 3** | Portable circuit serialisation across vendor backends. | Qiskit export pipeline in `hardware/circuit_export.py`. |
 | **TypeScript + WebGPU** | Browser-side visualisation and interactive demos. | Lives in a separate repo (`SCPN-CONTROL-infinity`); not present here. |
 
@@ -116,6 +116,7 @@ applicable for this module.
 | `analysis/dla_truncated_tn.py` | **No** | **Exempt now** | TBD | TBD | — | Fail-fast interface only with validated coupling matrix, bond dimension, DLA cutoff, and observable selection. A real tensor-network implementation will need its own benchmark and language-tier row. |
 | `analysis/rl_pulse_optimizer.py` | **No** | **Exempt now** | — | TBD | TBD | Fail-fast interface only with validated runner, target-sync, and episode configuration. A real optimiser will need objective benchmarks and a training trace before publication use. |
 | `accel/tier_benchmark.py` | **No** | **Exempt** | — | — | — | Benchmark instrumentation: timing loops, percentile reduction, and JSON assembly over the already-compiled tiers it measures. No compute hot loop of its own. |
+| `accel/jax_kuramoto.py` | Yes | — (JAX tier) | — | — | — | Opt-in JAX autodiff + GPU tier for the RK4 integrator (the compiled path here is JAX/XLA, not Rust). Verified bit-faithful (~1e-15) to the Rust default forward and to the hand-derived adjoint. See `docs/kuramoto_jax_tier.md`. |
 
 Every new module added to this repository must appear in this audit
 table as either a compiled-path row or an explicit exempt row.
