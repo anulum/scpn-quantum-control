@@ -2731,11 +2731,12 @@ def _static_alias_lattice_report_case() -> DifferentiableProgrammingBenchmarkRes
         scratch.left = view[0]
         scratch.right = view[3]
         combined = scratch.left + 2.0 * scratch.right
+        direct = combined
         scratch.total = combined
         scratch_list = [view[1], view[2]]
         list_alias = scratch_list
         list_alias[0] = trace_values[0]
-        return scratch.total + scratch_list[0] + list_alias[1]
+        return direct + scratch_list[0] + list_alias[1]
 
     alias_result = whole_program_value_and_grad(alias_objective, values)
     if alias_result.program_ir is None:
@@ -2764,6 +2765,13 @@ def _static_alias_lattice_report_case() -> DifferentiableProgrammingBenchmarkRes
         for component in lattice_report.components
     ):
         raise ValueError("static alias lattice benchmark missing expression-rebinding component")
+    if not any(
+        "local_rebinding_alias" in component.edge_kinds
+        and "name:combined" in component.members
+        and "name:direct" in component.members
+        for component in lattice_report.components
+    ):
+        raise ValueError("static alias lattice benchmark missing local-rebinding component")
     if not any(
         row.operation == "transpose"
         and row.source == "%array[0]"
@@ -2798,6 +2806,29 @@ def _static_alias_lattice_report_case() -> DifferentiableProgrammingBenchmarkRes
         raise ValueError("static alias lattice benchmark missing list-mutation provenance")
     if lattice_report.malformed_list_alias_edges:
         raise ValueError("static alias lattice benchmark found malformed list-alias edges")
+    rebinding_alias_rows = {
+        (row.binding_kind, row.source_name, row.target_name, row.source, row.target)
+        for row in lattice_report.rebinding_alias_provenance
+    }
+    if not any(
+        binding_kind == "expression"
+        and source_name is None
+        and target_name == "combined"
+        and source.startswith("expr:")
+        and target == "name:combined"
+        for binding_kind, source_name, target_name, source, target in rebinding_alias_rows
+    ):
+        raise ValueError("static alias lattice benchmark missing rebinding provenance")
+    if (
+        "local",
+        "combined",
+        "direct",
+        "name:combined",
+        "name:direct",
+    ) not in rebinding_alias_rows:
+        raise ValueError("static alias lattice benchmark missing local rebinding provenance")
+    if lattice_report.malformed_rebinding_alias_edges:
+        raise ValueError("static alias lattice benchmark found malformed rebinding-alias edges")
 
     def unsupported_dynamic_boundary(trace_values: Any) -> object:
         selected = [value for value in trace_values if value > 0.0]
@@ -2956,6 +2987,39 @@ def _static_alias_lattice_report_case() -> DifferentiableProgrammingBenchmarkRes
     ):
         raise ValueError("static alias lattice benchmark missing malformed-list blocker")
 
+    malformed_rebinding_ir = ProgramADEffectIR(
+        ssa_values=alias_result.program_ir.ssa_values,
+        effects=alias_result.program_ir.effects,
+        alias_edges=(
+            *alias_result.program_ir.alias_edges,
+            ProgramADAliasEdge(
+                source="combined",
+                target="name:direct",
+                kind="local_rebinding_alias",
+                version=0,
+            ),
+        ),
+        control_regions=alias_result.program_ir.control_regions,
+        serialization=alias_result.program_ir.serialization,
+        phi_nodes=alias_result.program_ir.phi_nodes,
+    )
+    malformed_rebinding_report = program_ad_static_alias_lattice_report(malformed_rebinding_ir)
+    if malformed_rebinding_report.complete:
+        raise ValueError(
+            "static alias lattice benchmark must not promote malformed rebinding aliases"
+        )
+    if malformed_rebinding_report.malformed_rebinding_alias_edges != (
+        "combined->name:direct:local_rebinding_alias@0",
+    ):
+        raise ValueError(
+            "static alias lattice benchmark lost malformed rebinding-alias provenance"
+        )
+    if (
+        "rebinding_alias_provenance_requires_parseable_targets"
+        not in malformed_rebinding_report.blocker_reasons
+    ):
+        raise ValueError("static alias lattice benchmark missing malformed-rebinding blocker")
+
     def mutation_objective(trace_values: Any) -> object:
         work = trace_values.copy()
         work[0] = trace_values[1] + trace_values[2]
@@ -3037,13 +3101,14 @@ def _static_alias_lattice_report_case() -> DifferentiableProgrammingBenchmarkRes
             "static alias-lattice readiness over emitted program_ad_effect_ir.v1 "
             "components, including view-alias, bounded local object-attribute, "
             "typed source-to-view provenance, list-alias provenance, typed "
-            "control-path alias provenance, expression-rebinding classification, "
+            "control-path alias provenance, typed rebinding-alias provenance, "
+            "local/expression-rebinding classification, "
             "explicit non-executed phi, and mutation/control-path/unsupported-Python "
             "diagnostic blocker reporting, "
             "with captured/global object-attribute diagnostics pinned to static "
             "object-model blockers and unknown alias-edge provenance pinned to "
-            "fail-closed blockers; malformed view/list/control-path alias markers "
-            "are blockers; "
+            "fail-closed blockers; malformed view/list/rebinding/control-path "
+            "alias markers are blockers; "
             "not captured/global object-attribute alias sets, unknown dynamic alias "
             "promotion, arbitrary dynamic Python frontend lowering, non-executed "
             "branch adjoints, Rust/LLVM executable lowering, hardware, or "

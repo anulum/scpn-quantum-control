@@ -242,6 +242,30 @@ def test_static_alias_lattice_benchmark_fails_closed(
         edge_kinds=("expression_rebinding_alias",),
         members=("name:combined",),
     )
+    local_rebinding_component = SimpleNamespace(
+        edge_kinds=("local_rebinding_alias",),
+        members=("name:combined", "name:direct"),
+    )
+    rebinding_provenance = SimpleNamespace(
+        source="expr:42:scratch.left+2.0*scratch.right",
+        target="name:combined",
+        binding_kind="expression",
+        source_name=None,
+        expression_line=42,
+        expression_label="scratch.left+2.0*scratch.right",
+        target_name="combined",
+        version=0,
+    )
+    local_rebinding_provenance = SimpleNamespace(
+        source="name:combined",
+        target="name:direct",
+        binding_kind="local",
+        source_name="combined",
+        expression_line=None,
+        expression_label=None,
+        target_name="direct",
+        version=1,
+    )
     list_component = SimpleNamespace(
         edge_kinds=("list_alias",),
         members=("list:scratch_list", "name:list_alias", "source:list_mutation"),
@@ -266,6 +290,22 @@ def test_static_alias_lattice_benchmark_fails_closed(
         lambda _ir: SimpleNamespace(
             complete=True,
             components=(view_component, object_component, expression_component),
+        ),
+    )
+    with pytest.raises(ValueError, match="local-rebinding component"):
+        dp._static_alias_lattice_report_case()
+
+    monkeypatch.setattr(
+        dp,
+        "program_ad_static_alias_lattice_report",
+        lambda _ir: SimpleNamespace(
+            complete=True,
+            components=(
+                view_component,
+                object_component,
+                expression_component,
+                local_rebinding_component,
+            ),
             view_alias_provenance=(),
         ),
     )
@@ -277,9 +317,39 @@ def test_static_alias_lattice_benchmark_fails_closed(
         "program_ad_static_alias_lattice_report",
         lambda _ir: SimpleNamespace(
             complete=True,
-            components=(view_component, object_component, expression_component),
+            components=(
+                view_component,
+                object_component,
+                expression_component,
+                local_rebinding_component,
+                list_component,
+            ),
             view_alias_provenance=(view_provenance,),
             malformed_view_alias_edges=(),
+            rebinding_alias_provenance=(),
+            malformed_rebinding_alias_edges=(),
+            list_alias_provenance=(list_provenance, list_mutation_provenance),
+            malformed_list_alias_edges=(),
+        ),
+    )
+    with pytest.raises(ValueError, match="rebinding provenance"):
+        dp._static_alias_lattice_report_case()
+
+    monkeypatch.setattr(
+        dp,
+        "program_ad_static_alias_lattice_report",
+        lambda _ir: SimpleNamespace(
+            complete=True,
+            components=(
+                view_component,
+                object_component,
+                expression_component,
+                local_rebinding_component,
+            ),
+            view_alias_provenance=(view_provenance,),
+            malformed_view_alias_edges=(),
+            rebinding_alias_provenance=(rebinding_provenance, local_rebinding_provenance),
+            malformed_rebinding_alias_edges=(),
             list_alias_provenance=(),
             malformed_list_alias_edges=(),
         ),
@@ -292,9 +362,17 @@ def test_static_alias_lattice_benchmark_fails_closed(
         "program_ad_static_alias_lattice_report",
         lambda _ir: SimpleNamespace(
             complete=True,
-            components=(view_component, object_component, expression_component, list_component),
+            components=(
+                view_component,
+                object_component,
+                expression_component,
+                local_rebinding_component,
+                list_component,
+            ),
             view_alias_provenance=(view_provenance,),
             malformed_view_alias_edges=(),
+            rebinding_alias_provenance=(rebinding_provenance, local_rebinding_provenance),
+            malformed_rebinding_alias_edges=(),
             list_alias_provenance=(),
             malformed_list_alias_edges=(),
         ),
@@ -349,9 +427,17 @@ def test_static_alias_lattice_benchmark_fails_closed(
     monkeypatch.setattr(dp, "compile_whole_program_frontend", fake_frontend)
     complete_report = SimpleNamespace(
         complete=True,
-        components=(view_component, object_component, expression_component, list_component),
+        components=(
+            view_component,
+            object_component,
+            expression_component,
+            local_rebinding_component,
+            list_component,
+        ),
         view_alias_provenance=(view_provenance,),
         malformed_view_alias_edges=(),
+        rebinding_alias_provenance=(rebinding_provenance, local_rebinding_provenance),
+        malformed_rebinding_alias_edges=(),
         list_alias_provenance=(list_provenance, list_mutation_provenance),
         malformed_list_alias_edges=(),
     )
@@ -387,6 +473,11 @@ def test_static_alias_lattice_benchmark_fails_closed(
         complete=False,
         malformed_list_alias_edges=("scratch_list->name:list_alias:list_alias@0",),
         blocker_reasons=("list_alias_provenance_requires_parseable_targets",),
+    )
+    malformed_rebinding_blocked_report = SimpleNamespace(
+        complete=False,
+        malformed_rebinding_alias_edges=("combined->name:direct:local_rebinding_alias@0",),
+        blocker_reasons=("rebinding_alias_provenance_requires_parseable_targets",),
     )
     for unsupported_report, match in (
         (
@@ -593,6 +684,50 @@ def test_static_alias_lattice_benchmark_fails_closed(
         with pytest.raises(ValueError, match=match):
             dp._static_alias_lattice_report_case()
 
+    for malformed_rebinding_report, match in (
+        (
+            SimpleNamespace(
+                complete=True,
+                malformed_rebinding_alias_edges=("combined->name:direct:local_rebinding_alias@0",),
+                blocker_reasons=(),
+            ),
+            "must not promote malformed rebinding aliases",
+        ),
+        (
+            SimpleNamespace(
+                complete=False,
+                malformed_rebinding_alias_edges=(),
+                blocker_reasons=("rebinding_alias_provenance_requires_parseable_targets",),
+            ),
+            "lost malformed rebinding-alias provenance",
+        ),
+        (
+            SimpleNamespace(
+                complete=False,
+                malformed_rebinding_alias_edges=("combined->name:direct:local_rebinding_alias@0",),
+                blocker_reasons=(),
+            ),
+            "malformed-rebinding blocker",
+        ),
+    ):
+        reports = iter(
+            (
+                complete_report,
+                unsupported_blocked_report,
+                object_attribute_blocked_report,
+                unknown_alias_blocked_report,
+                malformed_list_blocked_report,
+                malformed_rebinding_report,
+            )
+        )
+        monkeypatch.setattr(
+            dp,
+            "program_ad_static_alias_lattice_report",
+            lambda _ir, reports=reports, **_kwargs: next(reports),
+        )
+        with pytest.raises(ValueError, match=match):
+            dp._static_alias_lattice_report_case()
+
     for branch_report, match in (
         (
             SimpleNamespace(
@@ -710,6 +845,7 @@ def test_static_alias_lattice_benchmark_fails_closed(
                 object_attribute_blocked_report,
                 unknown_alias_blocked_report,
                 malformed_list_blocked_report,
+                malformed_rebinding_blocked_report,
                 mutation_blocked_report,
                 branch_report,
             )
@@ -747,6 +883,30 @@ def test_static_alias_lattice_branch_ir_fails_closed(
     expression_component = SimpleNamespace(
         edge_kinds=("expression_rebinding_alias",),
         members=("name:combined",),
+    )
+    local_rebinding_component = SimpleNamespace(
+        edge_kinds=("local_rebinding_alias",),
+        members=("name:combined", "name:direct"),
+    )
+    rebinding_provenance = SimpleNamespace(
+        source="expr:42:scratch.left+2.0*scratch.right",
+        target="name:combined",
+        binding_kind="expression",
+        source_name=None,
+        expression_line=42,
+        expression_label="scratch.left+2.0*scratch.right",
+        target_name="combined",
+        version=0,
+    )
+    local_rebinding_provenance = SimpleNamespace(
+        source="name:combined",
+        target="name:direct",
+        binding_kind="local",
+        source_name="combined",
+        expression_line=None,
+        expression_label=None,
+        target_name="direct",
+        version=1,
     )
     list_component = SimpleNamespace(
         edge_kinds=("list_alias",),
@@ -831,10 +991,16 @@ def test_static_alias_lattice_branch_ir_fails_closed(
                     view_component,
                     object_component,
                     expression_component,
+                    local_rebinding_component,
                     list_component,
                 ),
                 view_alias_provenance=(view_provenance,),
                 malformed_view_alias_edges=(),
+                rebinding_alias_provenance=(
+                    rebinding_provenance,
+                    local_rebinding_provenance,
+                ),
+                malformed_rebinding_alias_edges=(),
                 list_alias_provenance=(list_provenance, list_mutation_provenance),
                 malformed_list_alias_edges=(),
             ),
@@ -886,6 +1052,11 @@ def test_static_alias_lattice_branch_ir_fails_closed(
                 complete=False,
                 malformed_list_alias_edges=("scratch_list->name:list_alias:list_alias@0",),
                 blocker_reasons=("list_alias_provenance_requires_parseable_targets",),
+            ),
+            SimpleNamespace(
+                complete=False,
+                malformed_rebinding_alias_edges=("combined->name:direct:local_rebinding_alias@0",),
+                blocker_reasons=("rebinding_alias_provenance_requires_parseable_targets",),
             ),
             SimpleNamespace(
                 complete=False,

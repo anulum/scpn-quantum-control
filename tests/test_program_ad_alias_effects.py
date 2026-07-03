@@ -27,6 +27,7 @@ from scpn_quantum_control.differentiable import (
     ProgramADEffect,
     ProgramADEffectIR,
     ProgramADListAliasProvenance,
+    ProgramADRebindingAliasProvenance,
     ProgramADSSAValue,
     ProgramADStaticAliasLatticeComponent,
     ProgramADStaticAliasLatticeReport,
@@ -65,6 +66,10 @@ def test_program_ad_alias_analysis_exports_stable_facade_identities() -> None:
         is alias_analysis_module.ProgramADStaticAliasLatticeReport
     )
     assert ProgramADListAliasProvenance is alias_analysis_module.ProgramADListAliasProvenance
+    assert (
+        ProgramADRebindingAliasProvenance
+        is alias_analysis_module.ProgramADRebindingAliasProvenance
+    )
     assert ProgramADUnknownAliasEdge is alias_analysis_module.ProgramADUnknownAliasEdge
     assert ProgramADViewAliasProvenance is alias_analysis_module.ProgramADViewAliasProvenance
     assert (
@@ -80,6 +85,7 @@ def test_program_ad_alias_analysis_exports_stable_facade_identities() -> None:
     assert scpn.ProgramADStaticAliasLatticeComponent is ProgramADStaticAliasLatticeComponent
     assert scpn.ProgramADStaticAliasLatticeReport is ProgramADStaticAliasLatticeReport
     assert scpn.ProgramADListAliasProvenance is ProgramADListAliasProvenance
+    assert scpn.ProgramADRebindingAliasProvenance is ProgramADRebindingAliasProvenance
     assert scpn.ProgramADUnknownAliasEdge is ProgramADUnknownAliasEdge
     assert scpn.ProgramADViewAliasProvenance is ProgramADViewAliasProvenance
     assert scpn.analyze_program_ad_alias_effects is analyze_program_ad_alias_effects
@@ -143,6 +149,16 @@ def test_program_ad_alias_analysis_validation_paths() -> None:
         target_label="attr:scratch.value",
         version=7,
     )
+    rebinding_provenance = ProgramADRebindingAliasProvenance(
+        source="expr:42:scratch.left+2.0*scratch.right",
+        target="name:combined",
+        binding_kind="expression",
+        source_name=None,
+        expression_line=42,
+        expression_label="scratch.left+2.0*scratch.right",
+        target_name="combined",
+        version=9,
+    )
     assert unknown_edge.as_dict() == {
         "source": "runtime:dynamic_object",
         "target": "%0",
@@ -171,6 +187,16 @@ def test_program_ad_alias_analysis_validation_paths() -> None:
         "branch_arm": "body",
         "target_label": "attr:scratch.value",
         "version": 7,
+    }
+    assert rebinding_provenance.as_dict() == {
+        "source": "expr:42:scratch.left+2.0*scratch.right",
+        "target": "name:combined",
+        "binding_kind": "expression",
+        "source_name": None,
+        "expression_line": 42,
+        "expression_label": "scratch.left+2.0*scratch.right",
+        "target_name": "combined",
+        "version": 9,
     }
     for control_kwargs, match in (
         (
@@ -408,6 +434,88 @@ def test_program_ad_alias_analysis_validation_paths() -> None:
     ):
         with pytest.raises(ValueError, match=match):
             ProgramADViewAliasProvenance(**cast(Any, view_kwargs))
+    for rebinding_kwargs, match in (
+        (
+            {
+                "source": "name:seed",
+                "target": "name:rebound",
+                "binding_kind": "dynamic",
+                "source_name": "seed",
+                "expression_line": None,
+                "expression_label": None,
+                "target_name": "rebound",
+                "version": 0,
+            },
+            "binding_kind",
+        ),
+        (
+            {
+                "source": "seed",
+                "target": "name:rebound",
+                "binding_kind": "local",
+                "source_name": "seed",
+                "expression_line": None,
+                "expression_label": None,
+                "target_name": "rebound",
+                "version": 0,
+            },
+            "source",
+        ),
+        (
+            {
+                "source": "expr:42:seed+values[1]",
+                "target": "name:rebound",
+                "binding_kind": "expression",
+                "source_name": "seed",
+                "expression_line": 42,
+                "expression_label": "seed+values[1]",
+                "target_name": "rebound",
+                "version": 0,
+            },
+            "source_name",
+        ),
+        (
+            {
+                "source": "expr:42:seed+values[1]",
+                "target": "name:rebound",
+                "binding_kind": "expression",
+                "source_name": None,
+                "expression_line": 41,
+                "expression_label": "seed+values[1]",
+                "target_name": "rebound",
+                "version": 0,
+            },
+            "source",
+        ),
+        (
+            {
+                "source": "name:seed",
+                "target": "name:rebound",
+                "binding_kind": "local",
+                "source_name": "seed",
+                "expression_line": None,
+                "expression_label": None,
+                "target_name": "other",
+                "version": 0,
+            },
+            "target_name",
+        ),
+        (
+            {
+                "source": "name:seed",
+                "target": "name:rebound",
+                "binding_kind": "local",
+                "source_name": "seed",
+                "expression_line": None,
+                "expression_label": None,
+                "target_name": "rebound",
+                "version": -1,
+            },
+            "version",
+        ),
+    ):
+        with pytest.raises(ValueError, match=match):
+            ProgramADRebindingAliasProvenance(**cast(Any, rebinding_kwargs))
     with pytest.raises(ValueError, match="source"):
         ProgramADUnknownAliasEdge(
             source="",
@@ -749,6 +857,21 @@ def test_program_ad_alias_analysis_validation_paths() -> None:
             claim_boundary="static_alias_lattice_over_emitted_program_ad_ir",
             list_alias_provenance=cast(tuple[ProgramADListAliasProvenance, ...], (object(),)),
         )
+    with pytest.raises(ValueError, match="rebinding_alias_provenance"):
+        ProgramADStaticAliasLatticeReport(
+            components=(),
+            mutation_effects=(),
+            non_executed_phi_nodes=(),
+            non_executed_control_alias_edges=(),
+            unknown_alias_edge_kinds=(),
+            blocker_reasons=(),
+            complete=False,
+            claim_boundary="static_alias_lattice_over_emitted_program_ad_ir",
+            rebinding_alias_provenance=cast(
+                tuple[ProgramADRebindingAliasProvenance, ...],
+                (object(),),
+            ),
+        )
     with pytest.raises(ValueError, match="sorted unique"):
         ProgramADStaticAliasLatticeReport(
             components=(
@@ -841,6 +964,37 @@ def test_program_ad_alias_analysis_validation_paths() -> None:
             claim_boundary="static_alias_lattice_over_emitted_program_ad_ir",
             list_alias_provenance=(list_provenance,),
         )
+    with pytest.raises(ValueError, match="rebinding alias components require"):
+        ProgramADStaticAliasLatticeReport(
+            components=(
+                ProgramADStaticAliasLatticeComponent(
+                    index=0,
+                    members=("name:rebound", "name:seed"),
+                    edge_kinds=("local_rebinding_alias",),
+                    versions=(4,),
+                    mutation_versions=(),
+                ),
+            ),
+            mutation_effects=(),
+            non_executed_phi_nodes=(),
+            non_executed_control_alias_edges=(),
+            unknown_alias_edge_kinds=(),
+            blocker_reasons=(),
+            complete=True,
+            claim_boundary="static_alias_lattice_over_emitted_program_ad_ir",
+        )
+    with pytest.raises(ValueError, match="rebinding alias provenance requires"):
+        ProgramADStaticAliasLatticeReport(
+            components=(component,),
+            mutation_effects=(),
+            non_executed_phi_nodes=(),
+            non_executed_control_alias_edges=(),
+            unknown_alias_edge_kinds=(),
+            blocker_reasons=(),
+            complete=False,
+            claim_boundary="static_alias_lattice_over_emitted_program_ad_ir",
+            rebinding_alias_provenance=(rebinding_provenance,),
+        )
     with pytest.raises(ValueError, match="malformed_view_alias_edges"):
         ProgramADStaticAliasLatticeReport(
             components=(),
@@ -865,6 +1019,18 @@ def test_program_ad_alias_analysis_validation_paths() -> None:
             claim_boundary="static_alias_lattice_over_emitted_program_ad_ir",
             malformed_list_alias_edges=("",),
         )
+    with pytest.raises(ValueError, match="malformed_rebinding_alias_edges"):
+        ProgramADStaticAliasLatticeReport(
+            components=(),
+            mutation_effects=(),
+            non_executed_phi_nodes=(),
+            non_executed_control_alias_edges=(),
+            unknown_alias_edge_kinds=(),
+            blocker_reasons=(),
+            complete=False,
+            claim_boundary="static_alias_lattice_over_emitted_program_ad_ir",
+            malformed_rebinding_alias_edges=("",),
+        )
     with pytest.raises(ValueError, match="malformed view-alias"):
         ProgramADStaticAliasLatticeReport(
             components=(),
@@ -888,6 +1054,18 @@ def test_program_ad_alias_analysis_validation_paths() -> None:
             complete=False,
             claim_boundary="static_alias_lattice_over_emitted_program_ad_ir",
             malformed_list_alias_edges=("bad-edge",),
+        )
+    with pytest.raises(ValueError, match="malformed rebinding-alias"):
+        ProgramADStaticAliasLatticeReport(
+            components=(),
+            mutation_effects=(),
+            non_executed_phi_nodes=(),
+            non_executed_control_alias_edges=(),
+            unknown_alias_edge_kinds=(),
+            blocker_reasons=(),
+            complete=False,
+            claim_boundary="static_alias_lattice_over_emitted_program_ad_ir",
+            malformed_rebinding_alias_edges=("bad-edge",),
         )
     with pytest.raises(ValueError, match="sorted unique"):
         ProgramADStaticAliasLatticeReport(
@@ -1539,6 +1717,121 @@ def test_program_ad_static_alias_lattice_tracks_local_object_attribute_aliases()
     assert payload["complete"] is True
     np.testing.assert_allclose(result.gradient, [1.0, 2.0, 1.0], atol=1.0e-12)
     np.testing.assert_allclose(program_adjoint_gradient(result), result.gradient, atol=1.0e-12)
+
+
+def test_program_ad_static_alias_lattice_reports_rebinding_provenance() -> None:
+    """Static alias lattice reports should retain parseable rebinding provenance."""
+
+    def objective(values: Any) -> object:
+        seed = values[0]
+        rebound = seed
+        combined = rebound + 2.0 * values[1]
+        return combined + values[2]
+
+    result = whole_program_value_and_grad(
+        objective,
+        np.array([0.25, 0.5, 0.75], dtype=np.float64),
+        parameters=(Parameter("a"), Parameter("b"), Parameter("c")),
+    )
+    assert result.program_ir is not None
+
+    report = program_ad_static_alias_lattice_report(result.program_ir)
+
+    assert report.complete is True
+    assert report.malformed_rebinding_alias_edges == ()
+    assert any(
+        "local_rebinding_alias" in component.edge_kinds
+        and "name:seed" in component.members
+        and "name:rebound" in component.members
+        for component in report.components
+    )
+    assert any(
+        "expression_rebinding_alias" in component.edge_kinds
+        and "name:combined" in component.members
+        for component in report.components
+    )
+    local_rows = {
+        (row.binding_kind, row.source_name, row.target_name, row.source, row.target)
+        for row in report.rebinding_alias_provenance
+        if row.binding_kind == "local"
+    }
+    assert ("local", "seed", "rebound", "name:seed", "name:rebound") in local_rows
+    expression_rows = tuple(
+        row for row in report.rebinding_alias_provenance if row.binding_kind == "expression"
+    )
+    assert any(
+        row.target_name == "combined"
+        and row.target == "name:combined"
+        and row.source.startswith("expr:")
+        and row.expression_line is not None
+        and row.expression_label
+        for row in expression_rows
+    )
+    assert all(
+        isinstance(row, ProgramADRebindingAliasProvenance)
+        for row in report.rebinding_alias_provenance
+    )
+    payload = report.as_dict()
+    assert payload["complete"] is True
+    assert payload["malformed_rebinding_alias_edges"] == []
+    assert {
+        "source": "name:seed",
+        "target": "name:rebound",
+        "binding_kind": "local",
+        "source_name": "seed",
+        "expression_line": None,
+        "expression_label": None,
+        "target_name": "rebound",
+        "version": next(
+            row.version
+            for row in report.rebinding_alias_provenance
+            if row.source == "name:seed" and row.target == "name:rebound"
+        ),
+    } in cast(list[dict[str, object]], payload["rebinding_alias_provenance"])
+    np.testing.assert_allclose(result.gradient, [1.0, 2.0, 1.0], atol=1.0e-12)
+    np.testing.assert_allclose(program_adjoint_gradient(result), result.gradient, atol=1.0e-12)
+
+
+def test_program_ad_static_alias_lattice_reports_malformed_rebinding_aliases() -> None:
+    """Static alias lattice reports should block malformed rebinding aliases."""
+
+    value = ProgramADSSAValue("%0", producer=0, version=0, shape=(), dtype="float64", effect=0)
+    effect = ProgramADEffect(
+        index=0,
+        kind="pure",
+        target="%0",
+        inputs=(),
+        version=0,
+        ordering=0,
+    )
+    ir = ProgramADEffectIR(
+        ssa_values=(value,),
+        effects=(effect,),
+        alias_edges=(
+            ProgramADAliasEdge(
+                source="seed",
+                target="name:rebound",
+                kind="local_rebinding_alias",
+                version=0,
+            ),
+        ),
+        control_regions=(),
+        serialization="program_ad_effect_ir.v1",
+    )
+
+    report = program_ad_static_alias_lattice_report(ir)
+
+    assert report.complete is False
+    assert report.rebinding_alias_provenance == ()
+    assert report.malformed_rebinding_alias_edges == (
+        "seed->name:rebound:local_rebinding_alias@0",
+    )
+    assert "rebinding_alias_provenance_requires_parseable_targets" in report.blocker_reasons
+    payload = report.as_dict()
+    assert payload["rebinding_alias_provenance"] == []
+    assert payload["malformed_rebinding_alias_edges"] == [
+        "seed->name:rebound:local_rebinding_alias@0"
+    ]
 
 
 def test_program_ad_static_alias_lattice_records_non_executed_phi_blockers() -> None:

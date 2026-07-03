@@ -101,6 +101,13 @@ rows with list name, target kind, source, target, and version metadata.
 Malformed `list_alias` markers are reported through
 `malformed_list_alias_edges` and block readiness instead of being promoted from
 raw member strings.
+Parseable local-name and expression rebinding aliases are retained as
+`ProgramADRebindingAliasProvenance` rows with binding kind, local source name
+or expression line/label, target name, source, target, and version metadata.
+Malformed `local_rebinding_alias` and `expression_rebinding_alias` markers are
+reported through `malformed_rebinding_alias_edges` and block readiness instead
+of being inferred from raw member strings or promoted to compiler alias
+semantics.
 Parseable branch-local control-path aliases are retained as
 `ProgramADControlPathAliasProvenance` rows with source branch arm, target
 label, source line, and version metadata. Malformed `control_path_alias`
