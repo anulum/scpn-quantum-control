@@ -516,6 +516,98 @@ const STD_ZERO_VARIANCE_PROGRAM_AD_IR: &str = r#"{
   "bytecode_offsets": [0, 2, 4]
 }"#;
 
+const STATIC_ORDER_STATISTIC_REDUCTION_PROGRAM_AD_IR: &str = r#"{
+  "format": "program_ad_effect_ir.v1",
+  "ssa_values": [
+    {"name": "%0", "producer": 0, "version": 0, "shape": [2, 3], "dtype": "float64", "effect": 0},
+    {"name": "%1", "producer": 1, "version": 0, "shape": [3], "dtype": "float64", "effect": 1},
+    {"name": "%2", "producer": 2, "version": 0, "shape": [2], "dtype": "float64", "effect": 2},
+    {"name": "%3", "producer": 3, "version": 0, "shape": [], "dtype": "float64", "effect": 3},
+    {"name": "%4", "producer": 4, "version": 0, "shape": [], "dtype": "float64", "effect": 4},
+    {"name": "%5", "producer": 5, "version": 0, "shape": [], "dtype": "float64", "effect": 5},
+    {"name": "%6", "producer": 6, "version": 0, "shape": [2], "dtype": "float64", "effect": 6},
+    {"name": "%7", "producer": 7, "version": 0, "shape": [3], "dtype": "float64", "effect": 7},
+    {"name": "%8", "producer": 8, "version": 0, "shape": [3], "dtype": "float64", "effect": 8},
+    {"name": "%9", "producer": 9, "version": 0, "shape": [2], "dtype": "float64", "effect": 9},
+    {"name": "%10", "producer": 10, "version": 0, "shape": [], "dtype": "float64", "effect": 10},
+    {"name": "%11", "producer": 11, "version": 0, "shape": [], "dtype": "float64", "effect": 11},
+    {"name": "%12", "producer": 12, "version": 0, "shape": [], "dtype": "float64", "effect": 12},
+    {"name": "%13", "producer": 13, "version": 0, "shape": [2], "dtype": "float64", "effect": 13},
+    {"name": "%14", "producer": 14, "version": 0, "shape": [3], "dtype": "float64", "effect": 14},
+    {"name": "%15", "producer": 15, "version": 0, "shape": [3], "dtype": "float64", "effect": 15},
+    {"name": "%16", "producer": 16, "version": 0, "shape": [2], "dtype": "float64", "effect": 16},
+    {"name": "%17", "producer": 17, "version": 0, "shape": [], "dtype": "float64", "effect": 17},
+    {"name": "%18", "producer": 18, "version": 0, "shape": [], "dtype": "float64", "effect": 18},
+    {"name": "%19", "producer": 19, "version": 0, "shape": [], "dtype": "float64", "effect": 19},
+    {"name": "%20", "producer": 20, "version": 0, "shape": [2], "dtype": "float64", "effect": 20},
+    {"name": "%21", "producer": 21, "version": 0, "shape": [3], "dtype": "float64", "effect": 21},
+    {"name": "%22", "producer": 22, "version": 0, "shape": [], "dtype": "float64", "effect": 22},
+    {"name": "%23", "producer": 23, "version": 0, "shape": [], "dtype": "float64", "effect": 23},
+    {"name": "%24", "producer": 24, "version": 0, "shape": [], "dtype": "float64", "effect": 24},
+    {"name": "%25", "producer": 25, "version": 0, "shape": [], "dtype": "float64", "effect": 25},
+    {"name": "%26", "producer": 26, "version": 0, "shape": [], "dtype": "float64", "effect": 26},
+    {"name": "%27", "producer": 27, "version": 0, "shape": [], "dtype": "float64", "effect": 27},
+    {"name": "%28", "producer": 28, "version": 0, "shape": [], "dtype": "float64", "effect": 28},
+    {"name": "%29", "producer": 29, "version": 0, "shape": [], "dtype": "float64", "effect": 29},
+    {"name": "%30", "producer": 30, "version": 0, "shape": [], "dtype": "float64", "effect": 30},
+    {"name": "%31", "producer": 31, "version": 0, "shape": [], "dtype": "float64", "effect": 31}
+  ],
+  "effects": [
+    {"index": 0, "kind": "parameter", "target": "%0", "inputs": ["matrix"], "version": 0, "ordering": 0, "operation": "parameter"},
+    {"index": 1, "kind": "parameter", "target": "%1", "inputs": ["max_column_weights"], "version": 0, "ordering": 1, "operation": "parameter"},
+    {"index": 2, "kind": "parameter", "target": "%2", "inputs": ["min_row_weights"], "version": 0, "ordering": 2, "operation": "parameter"},
+    {"index": 3, "kind": "parameter", "target": "%3", "inputs": ["max_all_weight"], "version": 0, "ordering": 3, "operation": "parameter"},
+    {"index": 4, "kind": "parameter", "target": "%4", "inputs": ["min_all_weight"], "version": 0, "ordering": 4, "operation": "parameter"},
+    {"index": 5, "kind": "parameter", "target": "%5", "inputs": ["median_weight"], "version": 0, "ordering": 5, "operation": "parameter"},
+    {"index": 6, "kind": "parameter", "target": "%6", "inputs": ["quantile_row_weights"], "version": 0, "ordering": 6, "operation": "parameter"},
+    {"index": 7, "kind": "parameter", "target": "%7", "inputs": ["percentile_column_weights"], "version": 0, "ordering": 7, "operation": "parameter"},
+    {"index": 8, "kind": "primitive", "target": "%8", "inputs": ["%0"], "version": 0, "ordering": 8, "operation": "max:axis:0"},
+    {"index": 9, "kind": "primitive", "target": "%9", "inputs": ["%0"], "version": 0, "ordering": 9, "operation": "min:axis:-1"},
+    {"index": 10, "kind": "primitive", "target": "%10", "inputs": ["%0"], "version": 0, "ordering": 10, "operation": "max"},
+    {"index": 11, "kind": "primitive", "target": "%11", "inputs": ["%0"], "version": 0, "ordering": 11, "operation": "min"},
+    {"index": 12, "kind": "primitive", "target": "%12", "inputs": ["%0"], "version": 0, "ordering": 12, "operation": "median"},
+    {"index": 13, "kind": "primitive", "target": "%13", "inputs": ["%0"], "version": 0, "ordering": 13, "operation": "quantile:axis:1:q:0.25"},
+    {"index": 14, "kind": "primitive", "target": "%14", "inputs": ["%0"], "version": 0, "ordering": 14, "operation": "percentile:axis:0:q:75.0"},
+    {"index": 15, "kind": "pure", "target": "%15", "inputs": ["%8", "%1"], "version": 0, "ordering": 15, "operation": "mul"},
+    {"index": 16, "kind": "pure", "target": "%16", "inputs": ["%9", "%2"], "version": 0, "ordering": 16, "operation": "mul"},
+    {"index": 17, "kind": "pure", "target": "%17", "inputs": ["%10", "%3"], "version": 0, "ordering": 17, "operation": "mul"},
+    {"index": 18, "kind": "pure", "target": "%18", "inputs": ["%11", "%4"], "version": 0, "ordering": 18, "operation": "mul"},
+    {"index": 19, "kind": "pure", "target": "%19", "inputs": ["%12", "%5"], "version": 0, "ordering": 19, "operation": "mul"},
+    {"index": 20, "kind": "pure", "target": "%20", "inputs": ["%13", "%6"], "version": 0, "ordering": 20, "operation": "mul"},
+    {"index": 21, "kind": "pure", "target": "%21", "inputs": ["%14", "%7"], "version": 0, "ordering": 21, "operation": "mul"},
+    {"index": 22, "kind": "primitive", "target": "%22", "inputs": ["%15"], "version": 0, "ordering": 22, "operation": "sum"},
+    {"index": 23, "kind": "primitive", "target": "%23", "inputs": ["%16"], "version": 0, "ordering": 23, "operation": "sum"},
+    {"index": 24, "kind": "primitive", "target": "%24", "inputs": ["%20"], "version": 0, "ordering": 24, "operation": "sum"},
+    {"index": 25, "kind": "primitive", "target": "%25", "inputs": ["%21"], "version": 0, "ordering": 25, "operation": "sum"},
+    {"index": 26, "kind": "pure", "target": "%26", "inputs": ["%22", "%23"], "version": 0, "ordering": 26, "operation": "add"},
+    {"index": 27, "kind": "pure", "target": "%27", "inputs": ["%26", "%17"], "version": 0, "ordering": 27, "operation": "add"},
+    {"index": 28, "kind": "pure", "target": "%28", "inputs": ["%27", "%18"], "version": 0, "ordering": 28, "operation": "add"},
+    {"index": 29, "kind": "pure", "target": "%29", "inputs": ["%28", "%19"], "version": 0, "ordering": 29, "operation": "add"},
+    {"index": 30, "kind": "pure", "target": "%30", "inputs": ["%29", "%24"], "version": 0, "ordering": 30, "operation": "add"},
+    {"index": 31, "kind": "pure", "target": "%31", "inputs": ["%30", "%25"], "version": 0, "ordering": 31, "operation": "add"}
+  ],
+  "alias_edges": [],
+  "control_regions": [],
+  "phi_nodes": [],
+  "bytecode_offsets": [0, 2, 4]
+}"#;
+
+const ORDER_STATISTIC_TIE_PROGRAM_AD_IR: &str = r#"{
+  "format": "program_ad_effect_ir.v1",
+  "ssa_values": [
+    {"name": "%0", "producer": 0, "version": 0, "shape": [3], "dtype": "float64", "effect": 0},
+    {"name": "%1", "producer": 1, "version": 0, "shape": [], "dtype": "float64", "effect": 1}
+  ],
+  "effects": [
+    {"index": 0, "kind": "parameter", "target": "%0", "inputs": ["source"], "version": 0, "ordering": 0, "operation": "parameter"},
+    {"index": 1, "kind": "primitive", "target": "%1", "inputs": ["%0"], "version": 0, "ordering": 1, "operation": "max"}
+  ],
+  "alias_edges": [],
+  "control_regions": [],
+  "phi_nodes": [],
+  "bytecode_offsets": [0, 2, 4]
+}"#;
+
 #[test]
 fn program_ad_effect_ir_parser_round_trips_python_payload_shape() {
     let ir = parse_program_ad_effect_ir(VALID_PROGRAM_AD_IR).unwrap();
@@ -669,7 +761,7 @@ fn program_ad_effect_ir_rust_value_and_gradient_replays_scalar_reverse_subset() 
     assert_eq!(result.parameter_targets, vec!["%0", "%1"]);
     assert_eq!(
         result.claim_boundary,
-        "bounded_rust_program_ad_ir_elementwise_structural_array_and_static_linalg_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit"
+        "bounded_rust_program_ad_ir_elementwise_structural_array_static_reductions_and_static_linalg_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit"
     );
 }
 
@@ -693,7 +785,7 @@ fn program_ad_effect_ir_rust_value_and_gradient_replays_executed_branch_metadata
     assert_eq!(result.parameter_targets, vec!["%0", "%1"]);
     assert_eq!(
         result.claim_boundary,
-        "bounded_rust_program_ad_ir_elementwise_structural_array_and_static_linalg_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit"
+        "bounded_rust_program_ad_ir_elementwise_structural_array_static_reductions_and_static_linalg_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit"
     );
 }
 
@@ -736,7 +828,7 @@ fn program_ad_effect_ir_rust_value_and_gradient_replays_scalar_primitive_family(
     assert_eq!(result.parameter_targets, vec!["%0", "%1", "%2", "%3"]);
     assert_eq!(
         result.claim_boundary,
-        "bounded_rust_program_ad_ir_elementwise_structural_array_and_static_linalg_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit"
+        "bounded_rust_program_ad_ir_elementwise_structural_array_static_reductions_and_static_linalg_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit"
     );
 }
 
@@ -773,7 +865,7 @@ fn program_ad_effect_ir_rust_value_and_gradient_replays_array_elementwise_broadc
     }
     assert_eq!(
         result.claim_boundary,
-        "bounded_rust_program_ad_ir_elementwise_structural_array_and_static_linalg_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit"
+        "bounded_rust_program_ad_ir_elementwise_structural_array_static_reductions_and_static_linalg_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit"
     );
 }
 
@@ -809,7 +901,7 @@ fn program_ad_effect_ir_rust_value_and_gradient_replays_structural_array_ops() {
     assert_eq!(result.supported_effect_count, 8);
     assert_eq!(
         result.claim_boundary,
-        "bounded_rust_program_ad_ir_elementwise_structural_array_and_static_linalg_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit"
+        "bounded_rust_program_ad_ir_elementwise_structural_array_static_reductions_and_static_linalg_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit"
     );
 }
 
@@ -843,7 +935,7 @@ fn program_ad_effect_ir_rust_value_and_gradient_replays_structural_assembly_ops(
     assert_eq!(result.supported_effect_count, 11);
     assert_eq!(
         result.claim_boundary,
-        "bounded_rust_program_ad_ir_elementwise_structural_array_and_static_linalg_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit"
+        "bounded_rust_program_ad_ir_elementwise_structural_array_static_reductions_and_static_linalg_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit"
     );
 }
 
@@ -906,7 +998,7 @@ fn program_ad_effect_ir_rust_value_and_gradient_replays_static_axis_reductions()
     assert_eq!(result.supported_effect_count, 10);
     assert_eq!(
         result.claim_boundary,
-        "bounded_rust_program_ad_ir_elementwise_structural_array_and_static_linalg_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit"
+        "bounded_rust_program_ad_ir_elementwise_structural_array_static_reductions_and_static_linalg_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit"
     );
 }
 
@@ -953,7 +1045,7 @@ fn program_ad_effect_ir_rust_value_and_gradient_replays_static_source_map_indexi
     assert_eq!(result.supported_effect_count, 5);
     assert_eq!(
         result.claim_boundary,
-        "bounded_rust_program_ad_ir_elementwise_structural_array_and_static_linalg_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit"
+        "bounded_rust_program_ad_ir_elementwise_structural_array_static_reductions_and_static_linalg_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit"
     );
 }
 
@@ -1094,6 +1186,53 @@ fn program_ad_effect_ir_rust_value_and_gradient_rejects_zero_variance_std() {
 }
 
 #[test]
+fn program_ad_effect_ir_rust_value_and_gradient_replays_static_order_statistic_reductions() {
+    let result = interpret_program_ad_effect_ir_value_and_gradient(
+        STATIC_ORDER_STATISTIC_REDUCTION_PROGRAM_AD_IR,
+        &[
+            3.0, -2.0, 0.5, 1.0, -1.5, 2.0, 0.7, -1.3, 0.25, 1.1, -0.4, 0.8, -0.6, 0.9, 1.2, -0.4,
+            0.75, -1.1, 0.5,
+        ],
+    )
+    .unwrap();
+
+    let expected_gradient = [
+        2.0625, 0.825, 1.175, 0.4375, -2.725, 0.625, 3.0, -1.5, 2.0, -2.0, -1.5, 3.0, -2.0, 0.75,
+        -0.75, -0.25, 2.5, -1.625, 1.625,
+    ];
+    assert!(result.supported, "{:?}", result.blocked_reasons);
+    assert!((result.value.unwrap() - 10.9_f64).abs() <= 1.0e-12);
+    assert_eq!(
+        result.parameter_targets,
+        vec![
+            "%0[0]", "%0[1]", "%0[2]", "%0[3]", "%0[4]", "%0[5]", "%1[0]", "%1[1]", "%1[2]",
+            "%2[0]", "%2[1]", "%3", "%4", "%5", "%6[0]", "%6[1]", "%7[0]", "%7[1]", "%7[2]"
+        ]
+    );
+    assert_eq!(result.gradient.len(), expected_gradient.len());
+    for (actual, expected) in result.gradient.iter().zip(expected_gradient) {
+        assert!((actual - expected).abs() <= 1.0e-12);
+    }
+    assert_eq!(result.effect_count, 32);
+    assert_eq!(result.supported_effect_count, 32);
+}
+
+#[test]
+fn program_ad_effect_ir_rust_value_and_gradient_rejects_order_statistic_ties() {
+    let result = interpret_program_ad_effect_ir_value_and_gradient(
+        ORDER_STATISTIC_TIE_PROGRAM_AD_IR,
+        &[2.0, 2.0, 1.0],
+    )
+    .unwrap();
+
+    assert!(!result.supported);
+    assert!(result
+        .blocked_reasons
+        .iter()
+        .any(|reason| reason.contains("strictly ordered values")));
+}
+
+#[test]
 fn program_ad_effect_ir_rust_value_and_gradient_rejects_vector_objective() {
     let result = interpret_program_ad_effect_ir_value_and_gradient(
         ARRAY_ELEMENTWISE_VECTOR_OBJECTIVE_PROGRAM_AD_IR,
@@ -1200,7 +1339,7 @@ fn program_ad_effect_ir_rust_value_and_gradient_replays_inert_view_alias() {
     assert!((result.gradient[1] - (-4.0_f64)).abs() <= 1.0e-12);
     assert_eq!(
         result.claim_boundary,
-        "bounded_rust_program_ad_ir_elementwise_structural_array_and_static_linalg_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit"
+        "bounded_rust_program_ad_ir_elementwise_structural_array_static_reductions_and_static_linalg_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit"
     );
 }
 

@@ -87,14 +87,15 @@ value+gradient replay executes opcode-bearing scalar, bounded elementwise
 shaped-array, and bounded static structural `program_ad_effect_ir.v1` rows at
 the explicit operation boundary, including scalar-to-array broadcasting, adjoint
 broadcast reduction, static `reshape`/`ravel`, `broadcast_to`, reversed-axis
-`transpose`, static-axis `concatenate`/`stack`, static-axis `sum`/`mean`
-and `prod`/`var`/`std` reductions, scalar all-axis
-`sum`/`mean`/`prod`/`var`/`std` objective closure,
-static source-map `index_map:<sN|cVALUE,...>` indexing, and executed runtime
-branch metadata when matched by runtime phi provenance. Legacy opcode-free
-metadata, aliases, mutation, non-lowered dynamic indexing semantics,
-dynamic axes, ddof/correction metadata, zero-variance `std` gradients,
-selector/order-statistic reduction families, broad array/linalg adjoints,
+`transpose`, static-axis `concatenate`/`stack`, static-axis
+`sum`/`mean`/`prod`/`var`/`std`/`max`/`min`/`median` reductions, scalar-`q`
+`quantile`/`percentile` reductions, scalar all-axis
+`sum`/`mean`/`prod`/`var`/`std`/`max`/`min`/`median` plus scalar-`q`
+`quantile`/`percentile` objective closure, static source-map
+`index_map:<sN|cVALUE,...>` indexing, and executed runtime branch metadata when
+matched by runtime phi provenance. Legacy opcode-free metadata, aliases,
+mutation, non-lowered dynamic indexing semantics, dynamic axes, dynamic q/method
+metadata, ddof/correction metadata, zero-variance `std` gradients, broad array/linalg adjoints,
 source-level and non-executed branch semantics, general Program AD execution,
 LLVM/JIT lowering, hardware execution, provider execution, and performance
 promotion remain fail-closed.

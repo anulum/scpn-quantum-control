@@ -244,13 +244,14 @@ summaries remain parser parity for `program_ad_effect_ir.v1`; Rust
 value+gradient replay is bounded to opcode-bearing scalar, elementwise
 shaped-array, and static structural rows with scalar-to-array broadcasting,
 static `reshape`/`ravel`, `broadcast_to`, reversed-axis `transpose`, static-axis
-`concatenate`/`stack`, static-axis `sum`/`mean`/`prod`/`var`/`std` reductions,
-and scalar all-axis `sum`/`mean`/`prod`/`var`/`std` objective closure, plus static source-map
-`index_map:<sN|cVALUE,...>` indexing, including executed runtime branch metadata
-when matched by runtime phi provenance. Legacy opcode-free metadata, aliases,
-mutation, non-lowered dynamic indexing semantics, dynamic axes, ddof/correction
-metadata, zero-variance `std` gradients, selector/order-statistic reduction
-families, broad array/linalg adjoints, source-level and non-executed branch
+`concatenate`/`stack`, static-axis `sum`/`mean`/`prod`/`var`/`std`/`max`/`min`/`median`
+reductions, scalar-`q` `quantile`/`percentile` reductions, and scalar all-axis
+`sum`/`mean`/`prod`/`var`/`std`/`max`/`min`/`median` plus scalar-`q` `quantile`/`percentile`
+objective closure, plus static source-map `index_map:<sN|cVALUE,...>` indexing,
+including executed runtime branch metadata when matched by runtime phi
+provenance. Legacy opcode-free metadata, aliases, mutation, non-lowered dynamic
+indexing semantics, dynamic axes, dynamic q/method metadata, ddof/correction
+metadata, zero-variance `std` gradients, broad array/linalg adjoints, source-level and non-executed branch
 semantics, general Program AD execution, LLVM/JIT differentiated execution,
 hardware, provider, and performance routes remain fail-closed.
 Python callers may use `scpn_quantum_control.program_ad_rust_bridge` directly

@@ -11,8 +11,9 @@
 //! This module mirrors the bounded Python Program AD IR schema so Rust-side
 //! tooling can inspect evidence metadata, execute a narrow scalar forward
 //! interpreter, and replay bounded scalar, elementwise-array, static structural,
-//! static source-map indexing, static product and population moment reductions,
-//! and static-linalg value+gradient traces when opcode-bearing rows are present.
+//! static source-map indexing, static product, population moment, and
+//! order-statistic reductions, and static-linalg value+gradient traces when
+//! opcode-bearing rows are present.
 //! It does not promote LLVM lowering, JIT execution, reverse-mode compiler AD,
 //! hardware execution, or performance claims.
 
@@ -23,6 +24,9 @@ use pyo3::prelude::*;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
+use crate::program_ad_order_statistic_reduction::{
+    is_order_statistic_operation, order_statistic_cotangent, order_statistic_values,
+};
 use crate::program_ad_product_reduction::{
     product_all_cotangent, product_all_value, product_axis_cotangent, product_axis_values,
 };
@@ -42,7 +46,7 @@ const PROGRAM_AD_IR_CLAIM_BOUNDARY: &str = "metadata_only_no_program_execution";
 const PROGRAM_AD_RUST_INTERPRETER_CLAIM_BOUNDARY: &str =
     "bounded_rust_program_ad_ir_scalar_and_static_linalg_primitives_executed_branch_view_alias_only_no_llvm_jit";
 const PROGRAM_AD_RUST_VALUE_AND_GRADIENT_CLAIM_BOUNDARY: &str =
-    "bounded_rust_program_ad_ir_elementwise_structural_array_and_static_linalg_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit";
+    "bounded_rust_program_ad_ir_elementwise_structural_array_static_reductions_and_static_linalg_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit";
 
 /// One SSA value record from Python-emitted Program AD metadata.
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize)]
@@ -792,6 +796,9 @@ fn accumulate_reverse_effect(
         name if name == "std" || name.starts_with("std:") => {
             accumulate_standard_deviation(effect, name, values, adjoints, &cotangent)
         }
+        name if is_order_statistic_operation(name) => {
+            accumulate_order_statistic(effect, name, values, adjoints, &cotangent)
+        }
         "reshape" | "ravel" => accumulate_reshape_like(effect, values, adjoints, &cotangent),
         "broadcast_to" => accumulate_broadcast_to(effect, values, adjoints, &cotangent),
         "transpose" => accumulate_transpose(effect, values, adjoints, &cotangent),
@@ -1216,6 +1223,31 @@ fn accumulate_standard_deviation(
     add_numeric_adjoint(&effect.inputs[0], contribution, values, adjoints)
 }
 
+fn accumulate_order_statistic(
+    effect: &ProgramADEffect,
+    operation: &str,
+    values: &HashMap<String, ProgramADNumericValue>,
+    adjoints: &mut HashMap<String, ProgramADNumericValue>,
+    cotangent: &ProgramADNumericValue,
+) -> Result<(), String> {
+    if effect.inputs.len() != 1 {
+        return Err(format!(
+            "effect {} {operation} requires one input",
+            effect.index
+        ));
+    }
+    let input = numeric_operand(&effect.inputs[0], values)?;
+    let contribution_values = order_statistic_cotangent(
+        effect.index,
+        operation,
+        &input.shape,
+        &cotangent.values,
+        &input.values,
+    )?;
+    let contribution = ProgramADNumericValue::new(input.shape.clone(), contribution_values)?;
+    add_numeric_adjoint(&effect.inputs[0], contribution, values, adjoints)
+}
+
 fn accumulate_reshape_like(
     effect: &ProgramADEffect,
     values: &HashMap<String, ProgramADNumericValue>,
@@ -1493,6 +1525,9 @@ fn evaluate_numeric_effect(
         }
         name if name == "std" || name.starts_with("std:") => {
             numeric_standard_deviation(effect, name, values, shapes_by_target)
+        }
+        name if is_order_statistic_operation(name) => {
+            numeric_order_statistic(effect, name, values, shapes_by_target)
         }
         "reshape" => numeric_reshape(effect, values, shapes_by_target),
         "ravel" => numeric_ravel(effect, values, shapes_by_target),
@@ -1882,6 +1917,30 @@ fn numeric_standard_deviation(
     }
     let axis = parse_static_axis(operation, "std", source.shape.len())?;
     let output = std_axis_values(effect.index, &source.shape, axis, &target, &source.values)?;
+    ProgramADNumericValue::new(target, output)
+}
+
+fn numeric_order_statistic(
+    effect: &ProgramADEffect,
+    operation: &str,
+    values: &HashMap<String, ProgramADNumericValue>,
+    shapes_by_target: &HashMap<String, Vec<usize>>,
+) -> Result<ProgramADNumericValue, String> {
+    if effect.inputs.len() != 1 {
+        return Err(format!(
+            "effect {} {operation} requires one input",
+            effect.index
+        ));
+    }
+    let target = target_shape(effect, shapes_by_target)?;
+    let source = numeric_operand(&effect.inputs[0], values)?;
+    let output = order_statistic_values(
+        effect.index,
+        operation,
+        &source.shape,
+        &target,
+        &source.values,
+    )?;
     ProgramADNumericValue::new(target, output)
 }
 
