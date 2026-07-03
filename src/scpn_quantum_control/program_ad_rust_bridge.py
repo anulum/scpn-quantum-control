@@ -251,12 +251,13 @@ def value_and_grad_program_ad_effect_ir_with_rust(
     elementwise, and static structural ``program_ad_effect_ir.v1`` rows,
     including scalar-to-array broadcasting, static ``reshape``/``ravel``,
     reversed-axis ``transpose``, ``broadcast_to``, static-axis ``concatenate``/
-    ``stack``, static-axis ``sum``/``mean`` reductions, and scalar all-axis
-    ``sum``/``mean`` objective closure. Static linalg replay remains scalar-SSA
-    only. Aliases, mutation, non-sum/mean reduction families, indexing
-    structural operations, dynamic structural operations, provider execution,
-    hardware execution, LLVM/JIT execution, and performance claims fail closed
-    instead of falling back to Python.
+    ``stack``, static source-map ``index_map`` indexing, static-axis
+    ``sum``/``mean`` reductions, and scalar all-axis ``sum``/``mean``
+    objective closure. Static linalg replay remains scalar-SSA only. Aliases,
+    mutation, non-lowered dynamic indexing semantics, non-sum/mean reduction
+    families, dynamic structural operations, provider execution, hardware
+    execution, LLVM/JIT execution, and performance claims fail closed instead
+    of falling back to Python.
     Executed runtime branch metadata is replayed only as provenance for the
     already-executed path; non-executed branch adjoints and source-level
     control-flow lowering remain fail-closed.

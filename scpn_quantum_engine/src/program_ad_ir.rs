@@ -11,7 +11,8 @@
 //! This module mirrors the bounded Python Program AD IR schema so Rust-side
 //! tooling can inspect evidence metadata, execute a narrow scalar forward
 //! interpreter, and replay bounded scalar, elementwise-array, static structural,
-//! and static-linalg value+gradient traces when opcode-bearing rows are present.
+//! static source-map indexing, and static-linalg value+gradient traces when
+//! opcode-bearing rows are present.
 //! It does not promote LLVM lowering, JIT execution, reverse-mode compiler AD,
 //! hardware execution, or performance claims.
 
@@ -24,6 +25,9 @@ use serde_json::Value;
 
 pub use crate::program_ad_registry_mirror::{
     mirror_program_ad_registry_metadata, ProgramADRegistryMetadataMirrorSummary,
+};
+use crate::program_ad_static_source_map::{
+    apply_static_source_map, scatter_static_source_map_cotangent,
 };
 
 const PROGRAM_AD_EFFECT_IR_FORMAT: &str = "program_ad_effect_ir.v1";
@@ -781,6 +785,9 @@ fn accumulate_reverse_effect(
         name if name == "stack" || name.starts_with("stack:") => {
             accumulate_stack(effect, name, values, adjoints, &cotangent)
         }
+        name if name == "index_map" || name.starts_with("index_map:") => {
+            accumulate_index_map(effect, name, values, adjoints, &cotangent)
+        }
         "add" => accumulate_add_sub(effect, values, adjoints, &cotangent, 1.0, 1.0),
         "sub" => accumulate_add_sub(effect, values, adjoints, &cotangent, 1.0, -1.0),
         "mul" => {
@@ -1188,6 +1195,30 @@ fn accumulate_stack(
     Ok(())
 }
 
+fn accumulate_index_map(
+    effect: &ProgramADEffect,
+    operation: &str,
+    values: &HashMap<String, ProgramADNumericValue>,
+    adjoints: &mut HashMap<String, ProgramADNumericValue>,
+    cotangent: &ProgramADNumericValue,
+) -> Result<(), String> {
+    if effect.inputs.len() != 1 {
+        return Err(format!(
+            "effect {} index_map requires one input",
+            effect.index
+        ));
+    }
+    let input = numeric_operand(&effect.inputs[0], values)?;
+    let contribution_values = scatter_static_source_map_cotangent(
+        effect.index,
+        operation,
+        input.values.len(),
+        &cotangent.values,
+    )?;
+    let contribution = ProgramADNumericValue::new(input.shape.clone(), contribution_values)?;
+    add_numeric_adjoint(&effect.inputs[0], contribution, values, adjoints)
+}
+
 fn accumulate_add_sub(
     effect: &ProgramADEffect,
     values: &HashMap<String, ProgramADNumericValue>,
@@ -1363,6 +1394,9 @@ fn evaluate_numeric_effect(
         }
         name if name == "stack" || name.starts_with("stack:") => {
             numeric_stack(effect, name, values, shapes_by_target)
+        }
+        name if name == "index_map" || name.starts_with("index_map:") => {
+            numeric_index_map(effect, name, values, shapes_by_target)
         }
         "add" => numeric_binary(effect, values, |lhs, rhs| Ok(lhs + rhs)),
         "sub" => numeric_binary(effect, values, |lhs, rhs| Ok(lhs - rhs)),
@@ -1775,6 +1809,25 @@ fn numeric_stack(
     let operands = numeric_operands(effect, values)?;
     let target = target_shape(effect, shapes_by_target)?;
     stack_values(effect.index, operation, &operands, &target)
+}
+
+fn numeric_index_map(
+    effect: &ProgramADEffect,
+    operation: &str,
+    values: &HashMap<String, ProgramADNumericValue>,
+    shapes_by_target: &HashMap<String, Vec<usize>>,
+) -> Result<ProgramADNumericValue, String> {
+    if effect.inputs.len() != 1 {
+        return Err(format!(
+            "effect {} index_map requires one input",
+            effect.index
+        ));
+    }
+    let target = target_shape(effect, shapes_by_target)?;
+    let source = numeric_operand(&effect.inputs[0], values)?;
+    let target_size = shape_size(&target)?;
+    let mapped = apply_static_source_map(effect.index, operation, &source.values, target_size)?;
+    ProgramADNumericValue::new(target, mapped)
 }
 
 fn numeric_binary(

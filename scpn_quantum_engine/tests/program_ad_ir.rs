@@ -382,6 +382,28 @@ const STATIC_AXIS_REDUCTION_PROGRAM_AD_IR: &str = r#"{
   "bytecode_offsets": [0, 2, 4]
 }"#;
 
+const STATIC_SOURCE_MAP_INDEXING_PROGRAM_AD_IR: &str = r#"{
+  "format": "program_ad_effect_ir.v1",
+  "ssa_values": [
+    {"name": "%0", "producer": 0, "version": 0, "shape": [4], "dtype": "float64", "effect": 0},
+    {"name": "%1", "producer": 1, "version": 0, "shape": [6], "dtype": "float64", "effect": 1},
+    {"name": "%2", "producer": 2, "version": 0, "shape": [6], "dtype": "float64", "effect": 2},
+    {"name": "%3", "producer": 3, "version": 0, "shape": [6], "dtype": "float64", "effect": 3},
+    {"name": "%4", "producer": 4, "version": 0, "shape": [], "dtype": "float64", "effect": 4}
+  ],
+  "effects": [
+    {"index": 0, "kind": "parameter", "target": "%0", "inputs": ["source"], "version": 0, "ordering": 0, "operation": "parameter"},
+    {"index": 1, "kind": "parameter", "target": "%1", "inputs": ["weights"], "version": 0, "ordering": 1, "operation": "parameter"},
+    {"index": 2, "kind": "pure", "target": "%2", "inputs": ["%0"], "version": 0, "ordering": 2, "operation": "index_map:s2,s0,s2,c-1.5,s3,s1"},
+    {"index": 3, "kind": "pure", "target": "%3", "inputs": ["%2", "%1"], "version": 0, "ordering": 3, "operation": "mul"},
+    {"index": 4, "kind": "primitive", "target": "%4", "inputs": ["%3"], "version": 0, "ordering": 4, "operation": "sum"}
+  ],
+  "alias_edges": [],
+  "control_regions": [],
+  "phi_nodes": [],
+  "bytecode_offsets": [0, 2, 4]
+}"#;
+
 #[test]
 fn program_ad_effect_ir_parser_round_trips_python_payload_shape() {
     let ir = parse_program_ad_effect_ir(VALID_PROGRAM_AD_IR).unwrap();
@@ -791,6 +813,55 @@ fn program_ad_effect_ir_rust_value_and_gradient_rejects_shaped_reduction_without
         .blocked_reasons
         .iter()
         .any(|reason| reason.contains("requires static axis metadata")));
+}
+
+#[test]
+fn program_ad_effect_ir_rust_value_and_gradient_replays_static_source_map_indexing() {
+    let result = interpret_program_ad_effect_ir_value_and_gradient(
+        STATIC_SOURCE_MAP_INDEXING_PROGRAM_AD_IR,
+        &[1.0, 2.0, 3.0, 4.0, 10.0, 20.0, 30.0, 40.0, 50.0, 60.0],
+    )
+    .unwrap();
+
+    let expected_gradient = [20.0, 60.0, 40.0, 50.0, 3.0, 1.0, 3.0, -1.5, 4.0, 2.0];
+    assert!(result.supported, "{:?}", result.blocked_reasons);
+    assert_eq!(result.value, Some(400.0));
+    assert_eq!(
+        result.parameter_targets,
+        vec![
+            "%0[0]", "%0[1]", "%0[2]", "%0[3]", "%1[0]", "%1[1]", "%1[2]", "%1[3]", "%1[4]",
+            "%1[5]"
+        ]
+    );
+    assert_eq!(result.gradient.len(), expected_gradient.len());
+    for (actual, expected) in result.gradient.iter().zip(expected_gradient) {
+        assert!((actual - expected).abs() <= 1.0e-12);
+    }
+    assert_eq!(result.effect_count, 5);
+    assert_eq!(result.supported_effect_count, 5);
+    assert_eq!(
+        result.claim_boundary,
+        "bounded_rust_program_ad_ir_elementwise_structural_array_and_static_linalg_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit"
+    );
+}
+
+#[test]
+fn program_ad_effect_ir_rust_value_and_gradient_rejects_source_map_without_metadata() {
+    let missing_map = STATIC_SOURCE_MAP_INDEXING_PROGRAM_AD_IR.replace(
+        "\"operation\": \"index_map:s2,s0,s2,c-1.5,s3,s1\"",
+        "\"operation\": \"index_map\"",
+    );
+    let result = interpret_program_ad_effect_ir_value_and_gradient(
+        &missing_map,
+        &[1.0, 2.0, 3.0, 4.0, 10.0, 20.0, 30.0, 40.0, 50.0, 60.0],
+    )
+    .unwrap();
+
+    assert!(!result.supported);
+    assert!(result
+        .blocked_reasons
+        .iter()
+        .any(|reason| reason.contains("requires static source-map metadata")));
 }
 
 #[test]
