@@ -242,6 +242,24 @@ def test_static_alias_lattice_benchmark_fails_closed(
         edge_kinds=("expression_rebinding_alias",),
         members=("name:combined",),
     )
+    list_component = SimpleNamespace(
+        edge_kinds=("list_alias",),
+        members=("list:scratch_list", "name:list_alias", "source:list_mutation"),
+    )
+    list_provenance = SimpleNamespace(
+        source="list:scratch_list",
+        target="name:list_alias",
+        list_name="scratch_list",
+        target_kind="local_name",
+        version=0,
+    )
+    list_mutation_provenance = SimpleNamespace(
+        source="list:scratch_list",
+        target="source:list_mutation",
+        list_name="scratch_list",
+        target_kind="indexed_mutation_source",
+        version=1,
+    )
     monkeypatch.setattr(
         dp,
         "program_ad_static_alias_lattice_report",
@@ -252,6 +270,36 @@ def test_static_alias_lattice_benchmark_fails_closed(
         ),
     )
     with pytest.raises(ValueError, match="view-alias provenance"):
+        dp._static_alias_lattice_report_case()
+
+    monkeypatch.setattr(
+        dp,
+        "program_ad_static_alias_lattice_report",
+        lambda _ir: SimpleNamespace(
+            complete=True,
+            components=(view_component, object_component, expression_component),
+            view_alias_provenance=(view_provenance,),
+            malformed_view_alias_edges=(),
+            list_alias_provenance=(),
+            malformed_list_alias_edges=(),
+        ),
+    )
+    with pytest.raises(ValueError, match="list-alias component"):
+        dp._static_alias_lattice_report_case()
+
+    monkeypatch.setattr(
+        dp,
+        "program_ad_static_alias_lattice_report",
+        lambda _ir: SimpleNamespace(
+            complete=True,
+            components=(view_component, object_component, expression_component, list_component),
+            view_alias_provenance=(view_provenance,),
+            malformed_view_alias_edges=(),
+            list_alias_provenance=(),
+            malformed_list_alias_edges=(),
+        ),
+    )
+    with pytest.raises(ValueError, match="list-alias provenance"):
         dp._static_alias_lattice_report_case()
 
     unsupported_semantics = ("filtered_comprehension",)
@@ -293,9 +341,11 @@ def test_static_alias_lattice_benchmark_fails_closed(
     monkeypatch.setattr(dp, "compile_whole_program_frontend", fake_frontend)
     complete_report = SimpleNamespace(
         complete=True,
-        components=(view_component, object_component, expression_component),
+        components=(view_component, object_component, expression_component, list_component),
         view_alias_provenance=(view_provenance,),
         malformed_view_alias_edges=(),
+        list_alias_provenance=(list_provenance, list_mutation_provenance),
+        malformed_list_alias_edges=(),
     )
     mutation_blocked_report = SimpleNamespace(
         complete=False,
@@ -324,6 +374,11 @@ def test_static_alias_lattice_benchmark_fails_closed(
         unknown_alias_edge_kinds=("runtime_unknown_alias",),
         unknown_alias_edges=(unknown_alias_edge,),
         blocker_reasons=("unknown_alias_edge_kinds",),
+    )
+    malformed_list_blocked_report = SimpleNamespace(
+        complete=False,
+        malformed_list_alias_edges=("scratch_list->name:list_alias:list_alias@0",),
+        blocker_reasons=("list_alias_provenance_requires_parseable_targets",),
     )
     for unsupported_report, match in (
         (
@@ -487,6 +542,49 @@ def test_static_alias_lattice_benchmark_fails_closed(
         with pytest.raises(ValueError, match=match):
             dp._static_alias_lattice_report_case()
 
+    for malformed_list_report, match in (
+        (
+            SimpleNamespace(
+                complete=True,
+                malformed_list_alias_edges=("scratch_list->name:list_alias:list_alias@0",),
+                blocker_reasons=(),
+            ),
+            "must not promote malformed list aliases",
+        ),
+        (
+            SimpleNamespace(
+                complete=False,
+                malformed_list_alias_edges=(),
+                blocker_reasons=("list_alias_provenance_requires_parseable_targets",),
+            ),
+            "lost malformed list-alias provenance",
+        ),
+        (
+            SimpleNamespace(
+                complete=False,
+                malformed_list_alias_edges=("scratch_list->name:list_alias:list_alias@0",),
+                blocker_reasons=(),
+            ),
+            "malformed-list blocker",
+        ),
+    ):
+        reports = iter(
+            (
+                complete_report,
+                unsupported_blocked_report,
+                object_attribute_blocked_report,
+                unknown_alias_blocked_report,
+                malformed_list_report,
+            )
+        )
+        monkeypatch.setattr(
+            dp,
+            "program_ad_static_alias_lattice_report",
+            lambda _ir, reports=reports, **_kwargs: next(reports),
+        )
+        with pytest.raises(ValueError, match=match):
+            dp._static_alias_lattice_report_case()
+
     for branch_report, match in (
         (
             SimpleNamespace(
@@ -546,6 +644,7 @@ def test_static_alias_lattice_benchmark_fails_closed(
                 unsupported_blocked_report,
                 object_attribute_blocked_report,
                 unknown_alias_blocked_report,
+                malformed_list_blocked_report,
                 mutation_blocked_report,
                 branch_report,
             )
@@ -583,6 +682,24 @@ def test_static_alias_lattice_branch_ir_fails_closed(
     expression_component = SimpleNamespace(
         edge_kinds=("expression_rebinding_alias",),
         members=("name:combined",),
+    )
+    list_component = SimpleNamespace(
+        edge_kinds=("list_alias",),
+        members=("list:scratch_list", "name:list_alias", "source:list_mutation"),
+    )
+    list_provenance = SimpleNamespace(
+        source="list:scratch_list",
+        target="name:list_alias",
+        list_name="scratch_list",
+        target_kind="local_name",
+        version=0,
+    )
+    list_mutation_provenance = SimpleNamespace(
+        source="list:scratch_list",
+        target="source:list_mutation",
+        list_name="scratch_list",
+        target_kind="indexed_mutation_source",
+        version=1,
     )
     results = iter(
         (
@@ -645,9 +762,16 @@ def test_static_alias_lattice_branch_ir_fails_closed(
         (
             SimpleNamespace(
                 complete=True,
-                components=(view_component, object_component, expression_component),
+                components=(
+                    view_component,
+                    object_component,
+                    expression_component,
+                    list_component,
+                ),
                 view_alias_provenance=(view_provenance,),
                 malformed_view_alias_edges=(),
+                list_alias_provenance=(list_provenance, list_mutation_provenance),
+                malformed_list_alias_edges=(),
             ),
             SimpleNamespace(
                 complete=False,
@@ -692,6 +816,11 @@ def test_static_alias_lattice_branch_ir_fails_closed(
                     ),
                 ),
                 blocker_reasons=("unknown_alias_edge_kinds",),
+            ),
+            SimpleNamespace(
+                complete=False,
+                malformed_list_alias_edges=("scratch_list->name:list_alias:list_alias@0",),
+                blocker_reasons=("list_alias_provenance_requires_parseable_targets",),
             ),
             SimpleNamespace(
                 complete=False,

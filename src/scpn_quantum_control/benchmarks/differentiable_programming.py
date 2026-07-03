@@ -2732,7 +2732,10 @@ def _static_alias_lattice_report_case() -> DifferentiableProgrammingBenchmarkRes
         scratch.right = view[3]
         combined = scratch.left + 2.0 * scratch.right
         scratch.total = combined
-        return scratch.total
+        scratch_list = [view[1], view[2]]
+        list_alias = scratch_list
+        list_alias[0] = trace_values[0]
+        return scratch.total + scratch_list[0] + list_alias[1]
 
     alias_result = whole_program_value_and_grad(alias_objective, values)
     if alias_result.program_ir is None:
@@ -2770,6 +2773,31 @@ def _static_alias_lattice_report_case() -> DifferentiableProgrammingBenchmarkRes
         raise ValueError("static alias lattice benchmark missing view-alias provenance")
     if lattice_report.malformed_view_alias_edges:
         raise ValueError("static alias lattice benchmark found malformed view-alias edges")
+    if not any(
+        "list_alias" in component.edge_kinds
+        and "list:scratch_list" in component.members
+        and "name:list_alias" in component.members
+        and "source:list_mutation" in component.members
+        for component in lattice_report.components
+    ):
+        raise ValueError("static alias lattice benchmark missing list-alias component")
+    list_alias_rows = {
+        (row.list_name, row.target_kind, row.source, row.target)
+        for row in lattice_report.list_alias_provenance
+    }
+    if ("scratch_list", "local_name", "list:scratch_list", "name:list_alias") not in (
+        list_alias_rows
+    ):
+        raise ValueError("static alias lattice benchmark missing list-alias provenance")
+    if (
+        "scratch_list",
+        "indexed_mutation_source",
+        "list:scratch_list",
+        "source:list_mutation",
+    ) not in list_alias_rows:
+        raise ValueError("static alias lattice benchmark missing list-mutation provenance")
+    if lattice_report.malformed_list_alias_edges:
+        raise ValueError("static alias lattice benchmark found malformed list-alias edges")
 
     def unsupported_dynamic_boundary(trace_values: Any) -> object:
         selected = [value for value in trace_values if value > 0.0]
@@ -2899,6 +2927,35 @@ def _static_alias_lattice_report_case() -> DifferentiableProgrammingBenchmarkRes
     if "unknown_alias_edge_kinds" not in unknown_alias_report.blocker_reasons:
         raise ValueError("static alias lattice benchmark missing unknown-alias blocker")
 
+    malformed_list_ir = ProgramADEffectIR(
+        ssa_values=alias_result.program_ir.ssa_values,
+        effects=alias_result.program_ir.effects,
+        alias_edges=(
+            *alias_result.program_ir.alias_edges,
+            ProgramADAliasEdge(
+                source="scratch_list",
+                target="name:list_alias",
+                kind="list_alias",
+                version=0,
+            ),
+        ),
+        control_regions=alias_result.program_ir.control_regions,
+        serialization=alias_result.program_ir.serialization,
+        phi_nodes=alias_result.program_ir.phi_nodes,
+    )
+    malformed_list_report = program_ad_static_alias_lattice_report(malformed_list_ir)
+    if malformed_list_report.complete:
+        raise ValueError("static alias lattice benchmark must not promote malformed list aliases")
+    if malformed_list_report.malformed_list_alias_edges != (
+        "scratch_list->name:list_alias:list_alias@0",
+    ):
+        raise ValueError("static alias lattice benchmark lost malformed list-alias provenance")
+    if (
+        "list_alias_provenance_requires_parseable_targets"
+        not in malformed_list_report.blocker_reasons
+    ):
+        raise ValueError("static alias lattice benchmark missing malformed-list blocker")
+
     def mutation_objective(trace_values: Any) -> object:
         work = trace_values.copy()
         work[0] = trace_values[1] + trace_values[2]
@@ -2942,7 +2999,7 @@ def _static_alias_lattice_report_case() -> DifferentiableProgrammingBenchmarkRes
     ):
         raise ValueError("static alias lattice branch benchmark missing attribute-path metadata")
 
-    analytic = np.array([1.0, 0.0, 0.0, 2.0], dtype=np.float64)
+    analytic = np.array([2.0, 1.0, 0.0, 2.0], dtype=np.float64)
     adjoint_supported = (
         alias_result.adjoint_result is not None and alias_result.adjoint_result.supported
     )
@@ -2963,15 +3020,16 @@ def _static_alias_lattice_report_case() -> DifferentiableProgrammingBenchmarkRes
         claim_boundary=(
             "static alias-lattice readiness over emitted program_ad_effect_ir.v1 "
             "components, including view-alias, bounded local object-attribute, "
-            "typed source-to-view provenance, expression-rebinding classification, "
-            "explicit non-executed phi, and "
+            "typed source-to-view provenance, list-alias provenance, "
+            "expression-rebinding classification, explicit non-executed phi, and "
             "mutation/control-path/unsupported-Python diagnostic blocker reporting, "
             "with captured/global object-attribute diagnostics pinned to static "
             "object-model blockers and unknown alias-edge provenance pinned to "
-            "fail-closed blockers; not captured/global object-attribute alias sets, "
-            "unknown dynamic alias promotion, arbitrary dynamic Python frontend "
-            "lowering, non-executed branch adjoints, Rust/LLVM executable lowering, "
-            "hardware, or performance evidence; no wall-clock performance claim"
+            "fail-closed blockers; malformed view/list alias markers are blockers; "
+            "not captured/global object-attribute alias sets, unknown dynamic alias "
+            "promotion, arbitrary dynamic Python frontend lowering, non-executed "
+            "branch adjoints, Rust/LLVM executable lowering, hardware, or "
+            "performance evidence; no wall-clock performance claim"
         ),
     )
 

@@ -95,6 +95,12 @@ Static alias-lattice reports also expose parseable source-to-view aliases as
 source, target, and version metadata. Malformed `view_alias` markers are
 reported through `malformed_view_alias_edges` and block readiness instead of
 being inferred from raw member strings or promoted to compiler alias semantics.
+Parseable local list construction, local-name rebinding, and indexed
+list-mutation source aliases are retained as `ProgramADListAliasProvenance`
+rows with list name, target kind, source, target, and version metadata.
+Malformed `list_alias` markers are reported through
+`malformed_list_alias_edges` and block readiness instead of being promoted from
+raw member strings.
 Registered deterministic Phase-QNode JAX value routes now also expose
 AOT/export diagnostics through `jax_phase_qnode_aot_export_audit(...)`. The
 audit records local `jax.jit(...).lower(...)`, StableHLO/compiler metadata,

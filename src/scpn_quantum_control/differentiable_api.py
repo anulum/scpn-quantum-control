@@ -849,7 +849,9 @@ def differentiable_dashboard_status(
                 "ProgramADStaticAliasLatticeReport",
                 "ProgramADUnknownAliasEdge",
                 "ProgramADViewAliasProvenance",
+                "ProgramADListAliasProvenance",
                 "typed view-alias provenance metadata",
+                "typed list-alias provenance metadata",
                 "bounded local object-attribute alias metadata",
                 "expression-rebinding alias metadata",
                 "mutation-effect blocker metadata",
@@ -866,6 +868,7 @@ def differentiable_dashboard_status(
                 "captured/global object attributes require static object-model alias sets",
                 "mutation effects require versioned alias semantics",
                 "malformed view aliases require parseable source-to-view provenance",
+                "malformed list aliases require parseable local-list provenance",
                 "control-path aliases require non-executed branch semantics",
                 "unsupported Python semantics require executable frontend lowering",
                 "unknown alias edges require static alias-kind support",
@@ -873,9 +876,9 @@ def differentiable_dashboard_status(
             ),
             claim_boundary=(
                 "static alias-lattice readiness over emitted Program AD IR metadata; "
-                "typed view-alias provenance plus bounded local object-attribute and "
-                "expression-rebinding aliases are metadata only; mutation effects, "
-                "malformed view aliases, control-path aliases, unsupported "
+                "typed view-alias and list-alias provenance plus bounded local "
+                "object-attribute and expression-rebinding aliases are metadata only; "
+                "mutation effects, malformed view/list aliases, control-path aliases, unsupported "
                 "Python semantics with source/region/bytecode diagnostics, and captured/global "
                 "object-attribute diagnostics are explicit blockers; unknown alias-edge "
                 "provenance is an explicit blocker, "

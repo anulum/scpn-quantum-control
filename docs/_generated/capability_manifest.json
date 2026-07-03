@@ -7,9 +7,9 @@
     "model_documentation_pages": 0,
     "notebook_files": 100,
     "optional_extras": 43,
-    "public_api_exports": 780,
+    "public_api_exports": 781,
     "public_documentation_pages": 254,
-    "python_model_classes": 967,
+    "python_model_classes": 968,
     "python_model_source_modules": 540,
     "rust_pyo3_model_wrappers": 171,
     "rust_source_modules": 42,
@@ -3361,6 +3361,10 @@
         "path": "src/scpn_quantum_control/program_ad_linalg_primitives.py"
       },
       {
+        "name": "ProgramADListAliasProvenance",
+        "path": "src/scpn_quantum_control/program_ad_alias_analysis.py"
+      },
+      {
         "name": "ProgramADPhiNode",
         "path": "src/scpn_quantum_control/program_ad_effect_ir.py"
       },
@@ -5421,6 +5425,7 @@
     "ProgramADEffect",
     "ProgramADEffectIR",
     "ProgramADLinalgConditioningDiagnostic",
+    "ProgramADListAliasProvenance",
     "ProgramADPhiNode",
     "ProgramADRegistryDispatchCoverageReport",
     "ProgramADRegistryDispatchCoverageRow",

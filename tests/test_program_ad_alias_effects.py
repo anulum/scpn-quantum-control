@@ -25,6 +25,7 @@ from scpn_quantum_control.differentiable import (
     ProgramADAliasSet,
     ProgramADEffect,
     ProgramADEffectIR,
+    ProgramADListAliasProvenance,
     ProgramADSSAValue,
     ProgramADStaticAliasLatticeComponent,
     ProgramADStaticAliasLatticeReport,
@@ -58,6 +59,7 @@ def test_program_ad_alias_analysis_exports_stable_facade_identities() -> None:
         ProgramADStaticAliasLatticeReport
         is alias_analysis_module.ProgramADStaticAliasLatticeReport
     )
+    assert ProgramADListAliasProvenance is alias_analysis_module.ProgramADListAliasProvenance
     assert ProgramADUnknownAliasEdge is alias_analysis_module.ProgramADUnknownAliasEdge
     assert ProgramADViewAliasProvenance is alias_analysis_module.ProgramADViewAliasProvenance
     assert (
@@ -71,6 +73,7 @@ def test_program_ad_alias_analysis_exports_stable_facade_identities() -> None:
     assert scpn.ProgramADAliasEffectAnalysis is ProgramADAliasEffectAnalysis
     assert scpn.ProgramADStaticAliasLatticeComponent is ProgramADStaticAliasLatticeComponent
     assert scpn.ProgramADStaticAliasLatticeReport is ProgramADStaticAliasLatticeReport
+    assert scpn.ProgramADListAliasProvenance is ProgramADListAliasProvenance
     assert scpn.ProgramADUnknownAliasEdge is ProgramADUnknownAliasEdge
     assert scpn.ProgramADViewAliasProvenance is ProgramADViewAliasProvenance
     assert scpn.analyze_program_ad_alias_effects is analyze_program_ad_alias_effects
@@ -119,6 +122,13 @@ def test_program_ad_alias_analysis_validation_paths() -> None:
         output_index=0,
         version=12,
     )
+    list_provenance = ProgramADListAliasProvenance(
+        source="list:scratch",
+        target="name:alias",
+        list_name="scratch",
+        target_kind="local_name",
+        version=4,
+    )
     assert unknown_edge.as_dict() == {
         "source": "runtime:dynamic_object",
         "target": "%0",
@@ -133,6 +143,87 @@ def test_program_ad_alias_analysis_validation_paths() -> None:
         "output_index": 0,
         "version": 12,
     }
+    assert list_provenance.as_dict() == {
+        "source": "list:scratch",
+        "target": "name:alias",
+        "list_name": "scratch",
+        "target_kind": "local_name",
+        "version": 4,
+    }
+    for list_kwargs, match in (
+        (
+            {
+                "source": "",
+                "target": "name:alias",
+                "list_name": "scratch",
+                "target_kind": "local_name",
+                "version": 4,
+            },
+            "source",
+        ),
+        (
+            {
+                "source": "scratch",
+                "target": "name:alias",
+                "list_name": "scratch",
+                "target_kind": "local_name",
+                "version": 4,
+            },
+            "source",
+        ),
+        (
+            {
+                "source": "list:scratch",
+                "target": "alias",
+                "list_name": "scratch",
+                "target_kind": "local_name",
+                "version": 4,
+            },
+            "target",
+        ),
+        (
+            {
+                "source": "list:scratch",
+                "target": "name:alias",
+                "list_name": "",
+                "target_kind": "local_name",
+                "version": 4,
+            },
+            "list_name",
+        ),
+        (
+            {
+                "source": "list:scratch",
+                "target": "name:alias",
+                "list_name": "other",
+                "target_kind": "local_name",
+                "version": 4,
+            },
+            "list_name",
+        ),
+        (
+            {
+                "source": "list:scratch",
+                "target": "name:alias",
+                "list_name": "scratch",
+                "target_kind": "dynamic",
+                "version": 4,
+            },
+            "target_kind",
+        ),
+        (
+            {
+                "source": "list:scratch",
+                "target": "name:alias",
+                "list_name": "scratch",
+                "target_kind": "local_name",
+                "version": -1,
+            },
+            "version",
+        ),
+    ):
+        with pytest.raises(ValueError, match=match):
+            ProgramADListAliasProvenance(**cast(Any, list_kwargs))
     for view_kwargs, match in (
         (
             {
@@ -367,6 +458,8 @@ def test_program_ad_alias_analysis_validation_paths() -> None:
     assert valid_report.as_dict()["components"]
     assert valid_report.as_dict()["view_alias_provenance"] == []
     assert valid_report.as_dict()["malformed_view_alias_edges"] == []
+    assert valid_report.as_dict()["list_alias_provenance"] == []
+    assert valid_report.as_dict()["malformed_list_alias_edges"] == []
     assert valid_report.as_dict()["unsupported_python_semantics"] == []
     assert valid_report.as_dict()["unsupported_object_attribute_roots"] == []
     assert valid_report.as_dict()["unsupported_object_attribute_details"] == []
@@ -530,6 +623,18 @@ def test_program_ad_alias_analysis_validation_paths() -> None:
             claim_boundary="static_alias_lattice_over_emitted_program_ad_ir",
             view_alias_provenance=cast(tuple[ProgramADViewAliasProvenance, ...], (object(),)),
         )
+    with pytest.raises(ValueError, match="list_alias_provenance"):
+        ProgramADStaticAliasLatticeReport(
+            components=(),
+            mutation_effects=(),
+            non_executed_phi_nodes=(),
+            non_executed_control_alias_edges=(),
+            unknown_alias_edge_kinds=(),
+            blocker_reasons=(),
+            complete=False,
+            claim_boundary="static_alias_lattice_over_emitted_program_ad_ir",
+            list_alias_provenance=cast(tuple[ProgramADListAliasProvenance, ...], (object(),)),
+        )
     with pytest.raises(ValueError, match="sorted unique"):
         ProgramADStaticAliasLatticeReport(
             components=(
@@ -591,6 +696,37 @@ def test_program_ad_alias_analysis_validation_paths() -> None:
             claim_boundary="static_alias_lattice_over_emitted_program_ad_ir",
             view_alias_provenance=(view_provenance,),
         )
+    with pytest.raises(ValueError, match="list alias components require"):
+        ProgramADStaticAliasLatticeReport(
+            components=(
+                ProgramADStaticAliasLatticeComponent(
+                    index=0,
+                    members=("list:scratch", "name:alias"),
+                    edge_kinds=("list_alias",),
+                    versions=(4,),
+                    mutation_versions=(),
+                ),
+            ),
+            mutation_effects=(),
+            non_executed_phi_nodes=(),
+            non_executed_control_alias_edges=(),
+            unknown_alias_edge_kinds=(),
+            blocker_reasons=(),
+            complete=True,
+            claim_boundary="static_alias_lattice_over_emitted_program_ad_ir",
+        )
+    with pytest.raises(ValueError, match="list alias provenance requires"):
+        ProgramADStaticAliasLatticeReport(
+            components=(component,),
+            mutation_effects=(),
+            non_executed_phi_nodes=(),
+            non_executed_control_alias_edges=(),
+            unknown_alias_edge_kinds=(),
+            blocker_reasons=(),
+            complete=False,
+            claim_boundary="static_alias_lattice_over_emitted_program_ad_ir",
+            list_alias_provenance=(list_provenance,),
+        )
     with pytest.raises(ValueError, match="malformed_view_alias_edges"):
         ProgramADStaticAliasLatticeReport(
             components=(),
@@ -603,6 +739,18 @@ def test_program_ad_alias_analysis_validation_paths() -> None:
             claim_boundary="static_alias_lattice_over_emitted_program_ad_ir",
             malformed_view_alias_edges=("",),
         )
+    with pytest.raises(ValueError, match="malformed_list_alias_edges"):
+        ProgramADStaticAliasLatticeReport(
+            components=(),
+            mutation_effects=(),
+            non_executed_phi_nodes=(),
+            non_executed_control_alias_edges=(),
+            unknown_alias_edge_kinds=(),
+            blocker_reasons=(),
+            complete=False,
+            claim_boundary="static_alias_lattice_over_emitted_program_ad_ir",
+            malformed_list_alias_edges=("",),
+        )
     with pytest.raises(ValueError, match="malformed view-alias"):
         ProgramADStaticAliasLatticeReport(
             components=(),
@@ -614,6 +762,18 @@ def test_program_ad_alias_analysis_validation_paths() -> None:
             complete=False,
             claim_boundary="static_alias_lattice_over_emitted_program_ad_ir",
             malformed_view_alias_edges=("bad-edge",),
+        )
+    with pytest.raises(ValueError, match="malformed list-alias"):
+        ProgramADStaticAliasLatticeReport(
+            components=(),
+            mutation_effects=(),
+            non_executed_phi_nodes=(),
+            non_executed_control_alias_edges=(),
+            unknown_alias_edge_kinds=(),
+            blocker_reasons=(),
+            complete=False,
+            claim_boundary="static_alias_lattice_over_emitted_program_ad_ir",
+            malformed_list_alias_edges=("bad-edge",),
         )
     with pytest.raises(ValueError, match="sorted unique"):
         ProgramADStaticAliasLatticeReport(
@@ -836,6 +996,18 @@ def test_program_ad_alias_analysis_validation_paths() -> None:
             complete=True,
             claim_boundary="static_alias_lattice_over_emitted_program_ad_ir",
             unsupported_python_semantics=("filtered_comprehension",),
+        )
+    with pytest.raises(ValueError, match="cannot carry malformed list-alias edges"):
+        ProgramADStaticAliasLatticeReport(
+            components=(),
+            mutation_effects=(),
+            non_executed_phi_nodes=(),
+            non_executed_control_alias_edges=(),
+            unknown_alias_edge_kinds=(),
+            blocker_reasons=(),
+            complete=True,
+            claim_boundary="static_alias_lattice_over_emitted_program_ad_ir",
+            malformed_list_alias_edges=("bad-edge",),
         )
     with pytest.raises(ValueError, match="mutation_effects require a blocker"):
         ProgramADStaticAliasLatticeReport(
@@ -1418,6 +1590,100 @@ def test_program_ad_static_alias_lattice_reports_malformed_view_aliases() -> Non
     payload = report.as_dict()
     assert payload["view_alias_provenance"] == []
     assert payload["malformed_view_alias_edges"] == ["%0->view:reshape:missing_index:view_alias@0"]
+
+
+def test_program_ad_static_alias_lattice_reports_list_alias_provenance() -> None:
+    """Static alias lattice reports should preserve local list-alias provenance."""
+
+    def objective(values: Any) -> object:
+        scratch = [values[0], values[1]]
+        alias = scratch
+        alias[0] = values[2]
+        return scratch[0] + 2.0 * alias[1]
+
+    result = whole_program_value_and_grad(
+        objective,
+        np.array([0.25, 0.5, 0.75], dtype=np.float64),
+        parameters=(Parameter("a"), Parameter("b"), Parameter("c")),
+    )
+    assert result.program_ir is not None
+
+    report = program_ad_static_alias_lattice_report(result.program_ir)
+
+    assert report.complete is True
+    assert report.malformed_list_alias_edges == ()
+    assert any(
+        "list_alias" in component.edge_kinds
+        and "list:scratch" in component.members
+        and "name:alias" in component.members
+        and "source:list_mutation" in component.members
+        for component in report.components
+    )
+    list_rows = {
+        (row.list_name, row.target_kind, row.source, row.target, row.version)
+        for row in report.list_alias_provenance
+    }
+    assert ("scratch", "local_name", "list:scratch", "name:scratch", 2) in list_rows
+    assert ("scratch", "local_name", "list:scratch", "name:alias", 3) in list_rows
+    assert (
+        "scratch",
+        "indexed_mutation_source",
+        "list:scratch",
+        "source:list_mutation",
+        4,
+    ) in list_rows
+    assert all(
+        isinstance(row, ProgramADListAliasProvenance) for row in report.list_alias_provenance
+    )
+    payload = report.as_dict()
+    assert payload["complete"] is True
+    assert payload["malformed_list_alias_edges"] == []
+    assert {
+        "source": "list:scratch",
+        "target": "name:alias",
+        "list_name": "scratch",
+        "target_kind": "local_name",
+        "version": 3,
+    } in cast(list[dict[str, object]], payload["list_alias_provenance"])
+    np.testing.assert_allclose(result.gradient, [0.0, 2.0, 1.0], atol=1.0e-12)
+
+
+def test_program_ad_static_alias_lattice_reports_malformed_list_aliases() -> None:
+    """Static alias lattice reports should block malformed list-alias markers."""
+
+    value = ProgramADSSAValue("%0", producer=0, version=0, shape=(), dtype="float64", effect=0)
+    effect = ProgramADEffect(
+        index=0,
+        kind="pure",
+        target="%0",
+        inputs=(),
+        version=0,
+        ordering=0,
+    )
+    ir = ProgramADEffectIR(
+        ssa_values=(value,),
+        effects=(effect,),
+        alias_edges=(
+            ProgramADAliasEdge(
+                source="scratch",
+                target="name:alias",
+                kind="list_alias",
+                version=0,
+            ),
+        ),
+        control_regions=(),
+        serialization="program_ad_effect_ir.v1",
+    )
+
+    report = program_ad_static_alias_lattice_report(ir)
+
+    assert report.complete is False
+    assert report.list_alias_provenance == ()
+    assert report.malformed_list_alias_edges == ("scratch->name:alias:list_alias@0",)
+    assert "list_alias_provenance_requires_parseable_targets" in report.blocker_reasons
+    payload = report.as_dict()
+    assert payload["list_alias_provenance"] == []
+    assert payload["malformed_list_alias_edges"] == ["scratch->name:alias:list_alias@0"]
 
 
 def test_program_ad_alias_effect_analysis_tracks_array_view_aliases() -> None:
