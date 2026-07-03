@@ -333,6 +333,12 @@ def test_differentiable_dashboard_status_is_claim_bounded_for_gui_consumers() ->
     assert "unknown dynamic alias promotion" in rows["program_ad_alias_effects"]["claim_boundary"]
     assert "ProgramADStaticAliasLatticeReport" in rows["program_ad_alias_effects"]["evidence"]
     assert "ProgramADUnknownAliasEdge" in rows["program_ad_alias_effects"]["evidence"]
+    assert "ProgramADViewAliasProvenance" in rows["program_ad_alias_effects"]["evidence"]
+    assert "typed view-alias provenance metadata" in rows["program_ad_alias_effects"]["evidence"]
+    assert (
+        "malformed view aliases require parseable source-to-view provenance"
+        in rows["program_ad_alias_effects"]["blocked_reasons"]
+    )
     assert (
         "bounded local object-attribute alias metadata"
         in rows["program_ad_alias_effects"]["evidence"]

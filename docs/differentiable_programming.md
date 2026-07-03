@@ -90,6 +90,11 @@ as `ProgramADUnknownAliasEdge` rows and attach the `unknown_alias_edge_kinds`
 blocker before readiness promotion. This is still metadata-only fail-closed
 evidence, not unknown dynamic alias promotion, Rust replay support for unknown
 alias kinds, executable compiler lowering, or a performance claim.
+Static alias-lattice reports also expose parseable source-to-view aliases as
+`ProgramADViewAliasProvenance` rows with operation, view id, output index,
+source, target, and version metadata. Malformed `view_alias` markers are
+reported through `malformed_view_alias_edges` and block readiness instead of
+being inferred from raw member strings or promoted to compiler alias semantics.
 Registered deterministic Phase-QNode JAX value routes now also expose
 AOT/export diagnostics through `jax_phase_qnode_aot_export_audit(...)`. The
 audit records local `jax.jit(...).lower(...)`, StableHLO/compiler metadata,

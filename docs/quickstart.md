@@ -301,14 +301,17 @@ Alias/effect audits can be inspected with
 `program_ad_static_alias_lattice_report(...)`. The report builds a static
 alias-lattice readiness view over emitted `program_ad_effect_ir.v1` components
 including bounded local object-attribute, expression-rebinding, and
-branch-local control-path alias metadata. The report records mutation effects,
-non-executed phi inputs, control-path aliases, unknown alias-edge provenance,
-and frontend unsupported Python semantics with source-region and bytecode-offset
-diagnostics as blockers. Captured/global object-attribute diagnostics are
-retained as roots/details with the static object-model blocker; this is not
-promoted captured/global object-attribute alias sets, mutation adjoints,
-unknown dynamic alias promotion, arbitrary dynamic-Python frontend lowering,
-non-executed branch adjoints, or executable compiler lowering.
+branch-local control-path alias metadata. The report records typed
+`ProgramADViewAliasProvenance` rows for parseable source-to-view aliases, plus
+mutation effects, non-executed phi inputs, control-path aliases, unknown
+alias-edge provenance, malformed view-alias edges, and frontend unsupported
+Python semantics with source-region and bytecode-offset diagnostics as
+blockers. Captured/global object-attribute diagnostics are retained as
+roots/details with the static object-model blocker; this is not promoted
+captured/global object-attribute alias sets, mutation adjoints, malformed
+view-alias promotion, unknown dynamic alias promotion, arbitrary dynamic-Python
+frontend lowering, non-executed branch adjoints, or executable compiler
+lowering.
 
 Supported captured scalar program traces can also be promoted to an executable
 replay kernel with `compile_whole_program_ad_trace_to_executable(...)`. The

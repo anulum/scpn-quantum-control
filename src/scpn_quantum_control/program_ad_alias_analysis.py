@@ -199,6 +199,51 @@ class ProgramADUnknownAliasEdge:
 
 
 @dataclass(frozen=True)
+class ProgramADViewAliasProvenance:
+    """Parseable source-to-view alias edge preserved by the static lattice."""
+
+    source: str
+    target: str
+    operation: str
+    view_id: int
+    output_index: int
+    version: int
+
+    def __post_init__(self) -> None:
+        """Validate view-alias provenance at construction time."""
+
+        if not isinstance(self.source, str) or not self.source:
+            raise ValueError("program AD view alias provenance source must be non-empty")
+        if not isinstance(self.target, str) or not self.target.startswith("view:"):
+            raise ValueError("program AD view alias provenance target must be a view marker")
+        if not isinstance(self.operation, str) or not self.operation:
+            raise ValueError("program AD view alias provenance operation must be non-empty")
+        if self.view_id < 0:
+            raise ValueError("program AD view alias provenance view_id must be non-negative")
+        if self.output_index < 0:
+            raise ValueError("program AD view alias provenance output_index must be non-negative")
+        if self.version < 0:
+            raise ValueError("program AD view alias provenance version must be non-negative")
+        expected_target = f"view:{self.operation}:{self.view_id}[{self.output_index}]"
+        if self.target != expected_target:
+            raise ValueError(
+                "program AD view alias provenance target must match operation/view_id/output_index"
+            )
+
+    def as_dict(self) -> dict[str, object]:
+        """Return a JSON-ready view-alias provenance payload."""
+
+        return {
+            "source": self.source,
+            "target": self.target,
+            "operation": self.operation,
+            "view_id": self.view_id,
+            "output_index": self.output_index,
+            "version": self.version,
+        }
+
+
+@dataclass(frozen=True)
 class ProgramADStaticAliasLatticeReport:
     """Static alias-lattice readiness report for emitted Program AD IR.
 
@@ -222,6 +267,8 @@ class ProgramADStaticAliasLatticeReport:
     unsupported_object_attribute_roots: tuple[str, ...] = ()
     unsupported_object_attribute_details: tuple[str, ...] = ()
     unknown_alias_edges: tuple[ProgramADUnknownAliasEdge, ...] = ()
+    view_alias_provenance: tuple[ProgramADViewAliasProvenance, ...] = ()
+    malformed_view_alias_edges: tuple[str, ...] = ()
 
     def __post_init__(self) -> None:
         """Validate static alias-lattice report contents at construction time."""
@@ -289,6 +336,55 @@ class ProgramADStaticAliasLatticeReport:
             raise ValueError(
                 "program AD static alias lattice unknown_alias_edge_kinds must match "
                 "unknown_alias_edges"
+            )
+        if any(
+            not isinstance(row, ProgramADViewAliasProvenance) for row in self.view_alias_provenance
+        ):
+            raise ValueError(
+                "program AD static alias lattice view_alias_provenance must contain "
+                "ProgramADViewAliasProvenance entries"
+            )
+        view_alias_order = tuple(
+            (
+                row.operation,
+                row.view_id,
+                row.output_index,
+                row.source,
+                row.target,
+                row.version,
+            )
+            for row in self.view_alias_provenance
+        )
+        if tuple(sorted(set(view_alias_order))) != view_alias_order:
+            raise ValueError(
+                "program AD static alias lattice view_alias_provenance must be sorted unique"
+            )
+        if any(not isinstance(edge, str) or not edge for edge in self.malformed_view_alias_edges):
+            raise ValueError(
+                "program AD static alias lattice malformed_view_alias_edges "
+                "must contain non-empty strings"
+            )
+        if tuple(sorted(set(self.malformed_view_alias_edges))) != self.malformed_view_alias_edges:
+            raise ValueError(
+                "program AD static alias lattice malformed_view_alias_edges "
+                "must be sorted and unique"
+            )
+        has_view_alias_component = any(
+            "view_alias" in component.edge_kinds for component in self.components
+        )
+        if (
+            has_view_alias_component
+            and not self.view_alias_provenance
+            and not self.malformed_view_alias_edges
+        ):
+            raise ValueError(
+                "program AD static alias lattice view alias components require "
+                "view_alias_provenance"
+            )
+        if self.view_alias_provenance and not has_view_alias_component:
+            raise ValueError(
+                "program AD static alias lattice view alias provenance requires "
+                "a view_alias component"
             )
         if any(
             not isinstance(semantic, str) or not semantic
@@ -375,9 +471,14 @@ class ProgramADStaticAliasLatticeReport:
         mutation_blocker = "mutation_effects_require_versioned_alias_semantics"
         unknown_alias_blocker = "unknown_alias_edge_kinds"
         unsupported_semantics_blocker = "unsupported_python_semantics_require_frontend_lowering"
+        malformed_view_alias_blocker = "view_alias_provenance_requires_parseable_targets"
         if self.complete and self.unknown_alias_edges:
             raise ValueError(
                 "complete program AD static alias lattice cannot carry unknown_alias_edges"
+            )
+        if self.complete and self.malformed_view_alias_edges:
+            raise ValueError(
+                "complete program AD static alias lattice cannot carry malformed view-alias edges"
             )
         if self.complete and self.mutation_effects:
             raise ValueError(
@@ -391,6 +492,22 @@ class ProgramADStaticAliasLatticeReport:
             raise ValueError(
                 "program AD static alias lattice unknown alias blocker requires "
                 "unknown_alias_edges"
+            )
+        if (
+            self.malformed_view_alias_edges
+            and malformed_view_alias_blocker not in self.blocker_reasons
+        ):
+            raise ValueError(
+                "program AD static alias lattice malformed view-alias edges require "
+                "a blocker reason"
+            )
+        if (
+            not self.malformed_view_alias_edges
+            and malformed_view_alias_blocker in self.blocker_reasons
+        ):
+            raise ValueError(
+                "program AD static alias lattice malformed view-alias blocker requires "
+                "malformed_view_alias_edges"
             )
         if self.complete and self.unsupported_python_semantics:
             raise ValueError(
@@ -455,6 +572,8 @@ class ProgramADStaticAliasLatticeReport:
             "non_executed_control_alias_edges": list(self.non_executed_control_alias_edges),
             "unknown_alias_edge_kinds": list(self.unknown_alias_edge_kinds),
             "unknown_alias_edges": [edge.as_dict() for edge in self.unknown_alias_edges],
+            "view_alias_provenance": [row.as_dict() for row in self.view_alias_provenance],
+            "malformed_view_alias_edges": list(self.malformed_view_alias_edges),
             "unsupported_python_semantics": list(self.unsupported_python_semantics),
             "unsupported_semantic_diagnostics": [
                 diagnostic.to_dict() for diagnostic in self.unsupported_semantic_diagnostics
@@ -575,6 +694,9 @@ def program_ad_static_alias_lattice_report(
     edge_kinds_by_member: dict[str, set[str]] = {}
     unknown_alias_edges = _unknown_alias_edges(program_ir.alias_edges)
     unknown_alias_edge_kinds = tuple(sorted({edge.kind for edge in unknown_alias_edges}))
+    view_alias_provenance, malformed_view_alias_edges = _view_alias_provenance(
+        program_ir.alias_edges
+    )
     unsupported_diagnostics = tuple(unsupported_semantic_diagnostics)
     if any(
         not isinstance(diagnostic, WholeProgramUnsupportedSemanticDiagnostic)
@@ -681,6 +803,8 @@ def program_ad_static_alias_lattice_report(
         blocker_reasons.add("non_executed_phi_inputs_require_branch_semantics")
     if control_alias_edges:
         blocker_reasons.add("control_path_aliases_require_branch_semantics")
+    if malformed_view_alias_edges:
+        blocker_reasons.add("view_alias_provenance_requires_parseable_targets")
     if unsupported_semantics:
         blocker_reasons.add("unsupported_python_semantics_require_frontend_lowering")
     if unsupported_object_attribute_roots:
@@ -700,6 +824,8 @@ def program_ad_static_alias_lattice_report(
         unsupported_object_attribute_roots=unsupported_object_attribute_roots,
         unsupported_object_attribute_details=unsupported_object_attribute_details,
         unknown_alias_edges=unknown_alias_edges,
+        view_alias_provenance=view_alias_provenance,
+        malformed_view_alias_edges=malformed_view_alias_edges,
     )
 
 
@@ -721,6 +847,77 @@ def _unknown_alias_edges(
     return tuple(
         sorted(edges, key=lambda edge: (edge.kind, edge.source, edge.target, edge.version))
     )
+
+
+def _view_alias_provenance(
+    alias_edges: Sequence[ProgramADAliasEdge],
+) -> tuple[tuple[ProgramADViewAliasProvenance, ...], tuple[str, ...]]:
+    """Return sorted parseable view-alias provenance and malformed edge labels."""
+
+    rows: set[ProgramADViewAliasProvenance] = set()
+    malformed: set[str] = set()
+    for edge in alias_edges:
+        if edge.kind != "view_alias":
+            continue
+        if edge.target.startswith("view:"):
+            try:
+                rows.add(_parse_view_alias_provenance(edge))
+            except ValueError:
+                malformed.add(_alias_edge_label(edge))
+            continue
+        if not edge.source.startswith("view:"):
+            malformed.add(_alias_edge_label(edge))
+    return (
+        tuple(
+            sorted(
+                rows,
+                key=lambda row: (
+                    row.operation,
+                    row.view_id,
+                    row.output_index,
+                    row.source,
+                    row.target,
+                    row.version,
+                ),
+            )
+        ),
+        tuple(sorted(malformed)),
+    )
+
+
+def _parse_view_alias_provenance(edge: ProgramADAliasEdge) -> ProgramADViewAliasProvenance:
+    """Parse one source-to-view marker alias edge into typed provenance."""
+
+    marker = edge.target.removeprefix("view:")
+    try:
+        operation, identifier = marker.split(":", maxsplit=1)
+        view_id_raw, output_index_raw = identifier.removesuffix("]").split("[", maxsplit=1)
+    except ValueError as exc:
+        raise ValueError("program AD view alias target must be view:<op>:<id>[<index>]") from exc
+    if not edge.target.endswith("]"):
+        raise ValueError("program AD view alias target must end with an output index")
+    return ProgramADViewAliasProvenance(
+        source=edge.source,
+        target=edge.target,
+        operation=operation,
+        view_id=_parse_view_alias_int("view_id", view_id_raw),
+        output_index=_parse_view_alias_int("output_index", output_index_raw),
+        version=edge.version,
+    )
+
+
+def _parse_view_alias_int(name: str, value: str) -> int:
+    """Parse a non-negative integer token from a view-alias marker."""
+
+    if not value.isdecimal():
+        raise ValueError(f"program AD view alias {name} must be a non-negative integer")
+    return int(value)
+
+
+def _alias_edge_label(edge: ProgramADAliasEdge) -> str:
+    """Return a deterministic label for malformed alias-edge provenance."""
+
+    return f"{edge.source}->{edge.target}:{edge.kind}@{edge.version}"
 
 
 def _unsupported_object_attribute_details(
@@ -766,6 +963,7 @@ __all__ = [
     "ProgramADStaticAliasLatticeComponent",
     "ProgramADStaticAliasLatticeReport",
     "ProgramADUnknownAliasEdge",
+    "ProgramADViewAliasProvenance",
     "analyze_program_ad_alias_effects",
     "program_ad_static_alias_lattice_report",
 ]

@@ -207,6 +207,14 @@ def test_static_alias_lattice_benchmark_fails_closed(
         edge_kinds=("view_alias",),
         members=("%array[0]", "view:transpose:0"),
     )
+    view_provenance = SimpleNamespace(
+        source="%array[0]",
+        target="view:transpose:0[0]",
+        operation="transpose",
+        view_id=0,
+        output_index=0,
+        version=0,
+    )
     monkeypatch.setattr(
         dp,
         "program_ad_static_alias_lattice_report",
@@ -234,6 +242,18 @@ def test_static_alias_lattice_benchmark_fails_closed(
         edge_kinds=("expression_rebinding_alias",),
         members=("name:combined",),
     )
+    monkeypatch.setattr(
+        dp,
+        "program_ad_static_alias_lattice_report",
+        lambda _ir: SimpleNamespace(
+            complete=True,
+            components=(view_component, object_component, expression_component),
+            view_alias_provenance=(),
+        ),
+    )
+    with pytest.raises(ValueError, match="view-alias provenance"):
+        dp._static_alias_lattice_report_case()
+
     unsupported_semantics = ("filtered_comprehension",)
     unsupported_diagnostic = SimpleNamespace(
         semantic="filtered_comprehension",
@@ -274,6 +294,8 @@ def test_static_alias_lattice_benchmark_fails_closed(
     complete_report = SimpleNamespace(
         complete=True,
         components=(view_component, object_component, expression_component),
+        view_alias_provenance=(view_provenance,),
+        malformed_view_alias_edges=(),
     )
     mutation_blocked_report = SimpleNamespace(
         complete=False,
@@ -546,6 +568,14 @@ def test_static_alias_lattice_branch_ir_fails_closed(
         edge_kinds=("view_alias",),
         members=("%array[0]", "view:transpose:0"),
     )
+    view_provenance = SimpleNamespace(
+        source="%array[0]",
+        target="view:transpose:0[0]",
+        operation="transpose",
+        view_id=0,
+        output_index=0,
+        version=0,
+    )
     object_component = SimpleNamespace(
         edge_kinds=("object_attribute_alias",),
         members=("attr:scratch.left", "attr:scratch.total", "object:scratch"),
@@ -616,6 +646,8 @@ def test_static_alias_lattice_branch_ir_fails_closed(
             SimpleNamespace(
                 complete=True,
                 components=(view_component, object_component, expression_component),
+                view_alias_provenance=(view_provenance,),
+                malformed_view_alias_edges=(),
             ),
             SimpleNamespace(
                 complete=False,

@@ -2761,6 +2761,15 @@ def _static_alias_lattice_report_case() -> DifferentiableProgrammingBenchmarkRes
         for component in lattice_report.components
     ):
         raise ValueError("static alias lattice benchmark missing expression-rebinding component")
+    if not any(
+        row.operation == "transpose"
+        and row.source == "%array[0]"
+        and row.target.startswith("view:transpose")
+        for row in lattice_report.view_alias_provenance
+    ):
+        raise ValueError("static alias lattice benchmark missing view-alias provenance")
+    if lattice_report.malformed_view_alias_edges:
+        raise ValueError("static alias lattice benchmark found malformed view-alias edges")
 
     def unsupported_dynamic_boundary(trace_values: Any) -> object:
         selected = [value for value in trace_values if value > 0.0]
@@ -2954,7 +2963,8 @@ def _static_alias_lattice_report_case() -> DifferentiableProgrammingBenchmarkRes
         claim_boundary=(
             "static alias-lattice readiness over emitted program_ad_effect_ir.v1 "
             "components, including view-alias, bounded local object-attribute, "
-            "expression-rebinding classification, explicit non-executed phi, and "
+            "typed source-to-view provenance, expression-rebinding classification, "
+            "explicit non-executed phi, and "
             "mutation/control-path/unsupported-Python diagnostic blocker reporting, "
             "with captured/global object-attribute diagnostics pinned to static "
             "object-model blockers and unknown alias-edge provenance pinned to "
