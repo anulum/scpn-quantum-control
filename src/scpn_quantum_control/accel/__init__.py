@@ -114,6 +114,13 @@ from .jax_kuramoto_delayed import (
     jax_kuramoto_delayed_gradient,
     jax_kuramoto_delayed_trajectory,
 )
+from .jax_kuramoto_mpc import (
+    MpcControlGradients,
+    RecedingHorizonResult,
+    jax_mpc_control_value_and_grad,
+    jax_mpc_horizon_control,
+    receding_horizon_control,
+)
 from .kuramoto_adaptive import (
     AdaptivePhaseForce,
     AdaptiveTrajectory,
@@ -568,6 +575,11 @@ __all__ = [
     "jax_kuramoto_rk4_ensemble_gradient",
     "jax_kuramoto_rk4_gradient",
     "jax_kuramoto_rk4_trajectory",
+    "MpcControlGradients",
+    "RecedingHorizonResult",
+    "jax_mpc_control_value_and_grad",
+    "jax_mpc_horizon_control",
+    "receding_horizon_control",
     "TerminalObjective",
     "coherence_objective",
     "interaction_energy_objective",

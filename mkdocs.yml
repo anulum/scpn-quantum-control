@@ -140,6 +140,7 @@ nav:
       - Kuramoto Tier Benchmark: tier_benchmarks.md
       - Kuramoto JAX Tier: kuramoto_jax_tier.md
       - Kuramoto JAX Delayed Tier: kuramoto_jax_delayed_tier.md
+      - Kuramoto MPC Tier: kuramoto_mpc_tier.md
       - Kuramoto Competitive Benchmark: kuramoto_competitive_benchmark.md
       - Kuramoto Neural-Operator Advantage: neural_operator_advantage.md
       - Synchronisation Benchmark Suite: synchronisation_benchmark_suite.md
