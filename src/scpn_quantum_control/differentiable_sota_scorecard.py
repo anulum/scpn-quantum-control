@@ -571,12 +571,15 @@ def _default_scorecard_rows(
             "Rust Program AD now replays scalar primitives, view-aliasing (reshape, transpose, "
             "slice, matmul, matvec) and static linear algebra of arbitrary dimension (trace, "
             "determinant, inverse, solve; closed-form 2x2/3x3 and LU/Gauss-Jordan for 4x4 and up) "
-            "through the unrolled scalar SSA, parity-verified against the Python/NumPy reference "
-            "and CI-checked via cargo tests (2026-06-22 slices 2b-1..2b-6); a native ndarray "
-            "adjoint engine, registry metadata mirror and Rust-side LLVM/JIT lowering remain open.",
+            "through the unrolled scalar SSA, plus bounded elementwise shaped arrays with "
+            "scalar-to-array broadcasting and scalar all-axis sum closure. These paths are "
+            "parity-verified against the Python/NumPy reference and CI-checked via cargo tests "
+            "(2026-06-22 slices 2b-1..2b-6; 2026-07-03 elementwise-array adjoints); a general "
+            "structural ndarray adjoint engine, registry metadata mirror and Rust-side LLVM/JIT "
+            "lowering remain open.",
             ("phase_qnode_claim_boundary",),
             (
-                "a native ndarray broadcast-adjoint engine beyond the unrolled scalar SSA is missing",
+                "general structural ndarray adjoints beyond bounded elementwise broadcast/sum are missing",
                 "registry metadata mirror, Rust-side LLVM/JIT lowering, and isolated benchmark evidence are missing",
             ),
             ("Round 4 compiler AD and Program AD", "Round 5 Rustification readiness"),

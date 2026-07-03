@@ -33,7 +33,10 @@
         "docs/differentiable_api.md",
         "docs/differentiable_programming.md",
         "data/differentiable_phase_qnode/claim_ledger.md",
+        "data/differentiable_phase_qnode/differentiable_support_surface_alignment_20260627.json",
+        "data/differentiable_phase_qnode/differentiable_support_surface_alignment_20260627.md",
         "README.md",
+        "docs/benchmarks_api.md",
         "data/differentiable_phase_qnode/differentiable_rust_python_inventory_20260620.md"
       ],
       "docstring_status": "complete_for_inventory_surface",
@@ -54,9 +57,11 @@
       "python_surface": [
         "src/scpn_quantum_control/differentiable_api.py",
         "src/scpn_quantum_control/differentiable_claim_ledger.py",
+        "src/scpn_quantum_control/benchmarks/differentiable_programming.py",
         "src/scpn_quantum_control/phase/qnode_tape.py",
         "src/scpn_quantum_control/phase/qnode_transforms.py",
-        "src/scpn_quantum_control/phase/qnode_vector_transforms.py"
+        "src/scpn_quantum_control/phase/qnode_vector_transforms.py",
+        "src/scpn_quantum_control/phase/torch_bridge.py"
       ],
       "rust_parity_status": "partial",
       "rust_surface": [
@@ -67,9 +72,11 @@
       "test_surface": [
         "tests/test_differentiable_api.py",
         "tests/test_differentiable_claim_ledger.py",
+        "tests/test_differentiable_programming_benchmarks.py",
         "tests/test_phase_qnode_tape.py",
         "tests/test_phase_qnode_transforms.py",
-        "tests/test_phase_qnode_vector_transforms.py"
+        "tests/test_phase_qnode_vector_transforms.py",
+        "tests/test_phase_torch_bridge_compile_boundaries.py"
       ],
       "title": "Unified differentiable API and dashboard facade"
     },
@@ -83,8 +90,8 @@
         "diff-module-hardening-audit-v1"
       ],
       "blockers": [
-        "array adjoints are missing",
-        "registry metadata mirror, LLVM/JIT lowering, and isolated benchmark evidence are missing"
+        "general structural array adjoints beyond bounded elementwise broadcast and all-axis sum are missing",
+        "registry metadata mirror, LLVM/JIT lowering, broad linalg array adjoints, and isolated benchmark evidence are missing"
       ],
       "claim_boundary": "Differentiable Rust/Python surface inventory for rustification planning; no broad rustification promotion, provider execution, hardware execution, LLVM/JIT execution, GPU execution, or isolated benchmark claim is implied.",
       "claim_ids": [
@@ -96,6 +103,7 @@
         "docs/differentiable_api.md",
         "docs/differentiable_programming.md",
         "README.md",
+        "docs/benchmarks_api.md",
         "data/differentiable_phase_qnode/claim_ledger.md",
         "data/differentiable_phase_qnode/differentiable_rust_python_inventory_20260620.md"
       ],
@@ -118,9 +126,12 @@
       "python_surface": [
         "src/scpn_quantum_control/differentiable.py",
         "src/scpn_quantum_engine.pyi",
+        "src/scpn_quantum_control/benchmarks/differentiable_programming.py",
+        "src/scpn_quantum_control/differentiable_api.py",
         "src/scpn_quantum_control/phase/qnode_tape.py",
         "src/scpn_quantum_control/phase/qnode_transforms.py",
         "src/scpn_quantum_control/phase/qnode_vector_transforms.py",
+        "src/scpn_quantum_control/phase/torch_bridge.py",
         "src/scpn_quantum_control/differentiable_module_hardening_audit.py"
       ],
       "rust_parity_status": "partial",
@@ -134,13 +145,16 @@
         "tests/test_phase_qnode_rust_parity.py",
         "tests/test_program_ad_effect_ir.py",
         "tests/test_program_ad_rust_bridge.py",
+        "tests/test_differentiable_api.py",
+        "tests/test_differentiable_programming_benchmarks.py",
         "tests/test_phase_qnode_tape.py",
         "tests/test_phase_qnode_transforms.py",
         "tests/test_phase_qnode_vector_transforms.py",
+        "tests/test_phase_torch_bridge_compile_boundaries.py",
         "tests/test_differentiable_claim_ledger.py",
         "tests/test_differentiable_module_hardening_audit.py"
       ],
-      "title": "Rust Program AD IR parser plus bounded scalar primitive, value+gradient, and executed branch replay"
+      "title": "Rust Program AD IR parser plus bounded scalar and elementwise-array value+gradient replay"
     },
     {
       "benchmark_status": "not_applicable",
@@ -164,6 +178,8 @@
         "docs/differentiable_programming.md",
         "README.md",
         "data/differentiable_phase_qnode/claim_ledger.md",
+        "data/differentiable_phase_qnode/differentiable_support_surface_alignment_20260627.json",
+        "data/differentiable_phase_qnode/differentiable_support_surface_alignment_20260627.md",
         "data/differentiable_phase_qnode/differentiable_rust_python_inventory_20260620.md"
       ],
       "docstring_status": "complete_for_inventory_surface",
@@ -224,6 +240,7 @@
         "docs/differentiable_programming.md",
         "data/differentiable_phase_qnode/claim_ledger.md",
         "README.md",
+        "docs/benchmarks_api.md",
         "data/differentiable_phase_qnode/differentiable_rust_python_inventory_20260620.md"
       ],
       "docstring_status": "complete_for_inventory_surface",
@@ -245,9 +262,12 @@
         "src/scpn_quantum_control/compiler/mlir.py",
         "src/scpn_quantum_engine.pyi",
         "src/scpn_quantum_control/benchmarks/differentiable_external_comparison.py",
+        "src/scpn_quantum_control/benchmarks/differentiable_programming.py",
+        "src/scpn_quantum_control/differentiable_api.py",
         "src/scpn_quantum_control/phase/qnode_tape.py",
         "src/scpn_quantum_control/phase/qnode_transforms.py",
-        "src/scpn_quantum_control/phase/qnode_vector_transforms.py"
+        "src/scpn_quantum_control/phase/qnode_vector_transforms.py",
+        "src/scpn_quantum_control/phase/torch_bridge.py"
       ],
       "rust_parity_status": "partial",
       "rust_surface": [
@@ -260,9 +280,12 @@
         "tests/test_phase_qnode_compiler_lowering.py",
         "tests/test_rust_new_functions.py",
         "tests/test_differentiable_external_comparisons.py",
+        "tests/test_differentiable_api.py",
+        "tests/test_differentiable_programming_benchmarks.py",
         "tests/test_phase_qnode_tape.py",
         "tests/test_phase_qnode_transforms.py",
         "tests/test_phase_qnode_vector_transforms.py",
+        "tests/test_phase_torch_bridge_compile_boundaries.py",
         "tests/test_differentiable_claim_ledger.py"
       ],
       "title": "Rust compiler-AD primitive kernels exposed through PyO3"
@@ -340,6 +363,7 @@
         "docs/differentiable_programming.md",
         "data/differentiable_phase_qnode/claim_ledger.md",
         "README.md",
+        "docs/benchmarks_api.md",
         "data/differentiable_phase_qnode/differentiable_rust_python_inventory_20260620.md"
       ],
       "docstring_status": "complete_for_inventory_surface",
@@ -361,9 +385,12 @@
         "src/scpn_quantum_control/phase/pennylane_bridge.py",
         "src/scpn_quantum_control/phase/pennylane_import.py",
         "src/scpn_quantum_control/benchmarks/differentiable_external_comparison.py",
+        "src/scpn_quantum_control/benchmarks/differentiable_programming.py",
+        "src/scpn_quantum_control/differentiable_api.py",
         "src/scpn_quantum_control/phase/qnode_tape.py",
         "src/scpn_quantum_control/phase/qnode_transforms.py",
-        "src/scpn_quantum_control/phase/qnode_vector_transforms.py"
+        "src/scpn_quantum_control/phase/qnode_vector_transforms.py",
+        "src/scpn_quantum_control/phase/torch_bridge.py"
       ],
       "rust_parity_status": "not_applicable",
       "rust_surface": [
@@ -375,9 +402,12 @@
         "tests/test_phase_pennylane_bridge.py",
         "tests/test_phase_pennylane_import.py",
         "tests/test_differentiable_external_comparisons.py",
+        "tests/test_differentiable_api.py",
+        "tests/test_differentiable_programming_benchmarks.py",
         "tests/test_phase_qnode_tape.py",
         "tests/test_phase_qnode_transforms.py",
         "tests/test_phase_qnode_vector_transforms.py",
+        "tests/test_phase_torch_bridge_compile_boundaries.py",
         "tests/test_differentiable_claim_ledger.py"
       ],
       "title": "PennyLane QNode export/import and plugin/provider matrix"
@@ -401,6 +431,7 @@
         "docs/differentiable_api.md",
         "docs/quantum_gradients.md",
         "README.md",
+        "docs/benchmarks_api.md",
         "docs/differentiable_programming.md",
         "data/differentiable_phase_qnode/claim_ledger.md",
         "data/differentiable_phase_qnode/differentiable_rust_python_inventory_20260620.md"
@@ -422,9 +453,12 @@
       "python_surface": [
         "src/scpn_quantum_control/phase/qiskit_bridge.py",
         "src/scpn_quantum_control/phase/provider_hardware_gradient_audit.py",
+        "src/scpn_quantum_control/benchmarks/differentiable_programming.py",
+        "src/scpn_quantum_control/differentiable_api.py",
         "src/scpn_quantum_control/phase/qnode_tape.py",
         "src/scpn_quantum_control/phase/qnode_transforms.py",
-        "src/scpn_quantum_control/phase/qnode_vector_transforms.py"
+        "src/scpn_quantum_control/phase/qnode_vector_transforms.py",
+        "src/scpn_quantum_control/phase/torch_bridge.py"
       ],
       "rust_parity_status": "not_applicable",
       "rust_surface": [
@@ -435,9 +469,12 @@
       "test_surface": [
         "tests/test_phase_qiskit_bridge.py",
         "tests/test_phase_provider_hardware_gradient_audit.py",
+        "tests/test_differentiable_api.py",
+        "tests/test_differentiable_programming_benchmarks.py",
         "tests/test_phase_qnode_tape.py",
         "tests/test_phase_qnode_transforms.py",
         "tests/test_phase_qnode_vector_transforms.py",
+        "tests/test_phase_torch_bridge_compile_boundaries.py",
         "tests/test_differentiable_claim_ledger.py"
       ],
       "title": "Qiskit Runtime/provider-gradient workflow evidence chain"
@@ -461,6 +498,8 @@
         "docs/quantum_gradients.md",
         "docs/qpu_system_capability_dossier.md",
         "README.md",
+        "docs/benchmarks_api.md",
+        "docs/differentiable_api.md",
         "docs/differentiable_programming.md",
         "data/differentiable_phase_qnode/claim_ledger.md",
         "data/differentiable_phase_qnode/differentiable_rust_python_inventory_20260620.md"
@@ -483,9 +522,12 @@
       "python_surface": [
         "src/scpn_quantum_control/phase/hardware_gradient_campaign.py",
         "src/scpn_quantum_control/phase/hardware_gradient_policy.py",
+        "src/scpn_quantum_control/benchmarks/differentiable_programming.py",
+        "src/scpn_quantum_control/differentiable_api.py",
         "src/scpn_quantum_control/phase/qnode_tape.py",
         "src/scpn_quantum_control/phase/qnode_transforms.py",
-        "src/scpn_quantum_control/phase/qnode_vector_transforms.py"
+        "src/scpn_quantum_control/phase/qnode_vector_transforms.py",
+        "src/scpn_quantum_control/phase/torch_bridge.py"
       ],
       "rust_parity_status": "not_applicable",
       "rust_surface": [
@@ -496,9 +538,12 @@
       "test_surface": [
         "tests/test_phase_hardware_gradient_campaign.py",
         "tests/test_phase_hardware_gradient_policy.py",
+        "tests/test_differentiable_api.py",
+        "tests/test_differentiable_programming_benchmarks.py",
         "tests/test_phase_qnode_tape.py",
         "tests/test_phase_qnode_transforms.py",
         "tests/test_phase_qnode_vector_transforms.py",
+        "tests/test_phase_torch_bridge_compile_boundaries.py",
         "tests/test_differentiable_claim_ledger.py"
       ],
       "title": "Ticketed provider and QPU hardware-gradient campaigns"
@@ -579,6 +624,7 @@
         "docs/differentiable_api.md",
         "data/differentiable_phase_qnode/claim_ledger.md",
         "README.md",
+        "docs/benchmarks_api.md",
         "data/differentiable_phase_qnode/differentiable_rust_python_inventory_20260620.md"
       ],
       "docstring_status": "complete_for_inventory_surface",
@@ -599,9 +645,12 @@
       "python_surface": [
         "src/scpn_quantum_control/compiler/mlir.py",
         "src/scpn_quantum_control/benchmarks/differentiable_external_comparison.py",
+        "src/scpn_quantum_control/benchmarks/differentiable_programming.py",
+        "src/scpn_quantum_control/differentiable_api.py",
         "src/scpn_quantum_control/phase/qnode_tape.py",
         "src/scpn_quantum_control/phase/qnode_transforms.py",
-        "src/scpn_quantum_control/phase/qnode_vector_transforms.py"
+        "src/scpn_quantum_control/phase/qnode_vector_transforms.py",
+        "src/scpn_quantum_control/phase/torch_bridge.py"
       ],
       "rust_parity_status": "partial",
       "rust_surface": [
@@ -612,9 +661,12 @@
       "test_surface": [
         "tests/test_phase_qnode_compiler_lowering.py",
         "tests/test_differentiable_external_comparisons.py",
+        "tests/test_differentiable_api.py",
+        "tests/test_differentiable_programming_benchmarks.py",
         "tests/test_phase_qnode_tape.py",
         "tests/test_phase_qnode_transforms.py",
         "tests/test_phase_qnode_vector_transforms.py",
+        "tests/test_phase_torch_bridge_compile_boundaries.py",
         "tests/test_differentiable_claim_ledger.py"
       ],
       "title": "Enzyme/MLIR compiler-AD maturity and breadth evidence"

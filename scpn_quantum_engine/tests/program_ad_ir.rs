@@ -248,6 +248,46 @@ const SCALAR_PRIMITIVE_FAMILY_PROGRAM_AD_IR: &str = r#"{
   "bytecode_offsets": [0, 2, 4]
 }"#;
 
+const ARRAY_ELEMENTWISE_BROADCAST_SUM_PROGRAM_AD_IR: &str = r#"{
+  "format": "program_ad_effect_ir.v1",
+  "ssa_values": [
+    {"name": "%0", "producer": 0, "version": 0, "shape": [3], "dtype": "float64", "effect": 0},
+    {"name": "%1", "producer": 1, "version": 0, "shape": [], "dtype": "float64", "effect": 1},
+    {"name": "%2", "producer": 2, "version": 0, "shape": [3], "dtype": "float64", "effect": 2},
+    {"name": "%3", "producer": 3, "version": 0, "shape": [3], "dtype": "float64", "effect": 3},
+    {"name": "%4", "producer": 4, "version": 0, "shape": [3], "dtype": "float64", "effect": 4},
+    {"name": "%5", "producer": 5, "version": 0, "shape": [], "dtype": "float64", "effect": 5}
+  ],
+  "effects": [
+    {"index": 0, "kind": "parameter", "target": "%0", "inputs": ["x"], "version": 0, "ordering": 0, "operation": "parameter"},
+    {"index": 1, "kind": "parameter", "target": "%1", "inputs": ["bias"], "version": 0, "ordering": 1, "operation": "parameter"},
+    {"index": 2, "kind": "primitive", "target": "%2", "inputs": ["%0"], "version": 0, "ordering": 2, "operation": "sin"},
+    {"index": 3, "kind": "pure", "target": "%3", "inputs": ["%0", "%1"], "version": 0, "ordering": 3, "operation": "add"},
+    {"index": 4, "kind": "pure", "target": "%4", "inputs": ["%2", "%3"], "version": 0, "ordering": 4, "operation": "mul"},
+    {"index": 5, "kind": "primitive", "target": "%5", "inputs": ["%4"], "version": 0, "ordering": 5, "operation": "sum"}
+  ],
+  "alias_edges": [],
+  "control_regions": [],
+  "phi_nodes": [],
+  "bytecode_offsets": [0, 2, 4]
+}"#;
+
+const ARRAY_ELEMENTWISE_VECTOR_OBJECTIVE_PROGRAM_AD_IR: &str = r#"{
+  "format": "program_ad_effect_ir.v1",
+  "ssa_values": [
+    {"name": "%0", "producer": 0, "version": 0, "shape": [2], "dtype": "float64", "effect": 0},
+    {"name": "%1", "producer": 1, "version": 0, "shape": [2], "dtype": "float64", "effect": 1}
+  ],
+  "effects": [
+    {"index": 0, "kind": "parameter", "target": "%0", "inputs": ["x"], "version": 0, "ordering": 0, "operation": "parameter"},
+    {"index": 1, "kind": "primitive", "target": "%1", "inputs": ["%0"], "version": 0, "ordering": 1, "operation": "sin"}
+  ],
+  "alias_edges": [],
+  "control_regions": [],
+  "phi_nodes": [],
+  "bytecode_offsets": [0, 2]
+}"#;
+
 #[test]
 fn program_ad_effect_ir_parser_round_trips_python_payload_shape() {
     let ir = parse_program_ad_effect_ir(VALID_PROGRAM_AD_IR).unwrap();
@@ -401,7 +441,7 @@ fn program_ad_effect_ir_rust_value_and_gradient_replays_scalar_reverse_subset() 
     assert_eq!(result.parameter_targets, vec!["%0", "%1"]);
     assert_eq!(
         result.claim_boundary,
-        "bounded_rust_program_ad_ir_scalar_and_static_linalg_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit"
+        "bounded_rust_program_ad_ir_elementwise_array_and_static_linalg_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit"
     );
 }
 
@@ -425,7 +465,7 @@ fn program_ad_effect_ir_rust_value_and_gradient_replays_executed_branch_metadata
     assert_eq!(result.parameter_targets, vec!["%0", "%1"]);
     assert_eq!(
         result.claim_boundary,
-        "bounded_rust_program_ad_ir_scalar_and_static_linalg_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit"
+        "bounded_rust_program_ad_ir_elementwise_array_and_static_linalg_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit"
     );
 }
 
@@ -468,8 +508,64 @@ fn program_ad_effect_ir_rust_value_and_gradient_replays_scalar_primitive_family(
     assert_eq!(result.parameter_targets, vec!["%0", "%1", "%2", "%3"]);
     assert_eq!(
         result.claim_boundary,
-        "bounded_rust_program_ad_ir_scalar_and_static_linalg_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit"
+        "bounded_rust_program_ad_ir_elementwise_array_and_static_linalg_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit"
     );
+}
+
+#[test]
+fn program_ad_effect_ir_rust_value_and_gradient_replays_array_elementwise_broadcast_sum() {
+    let inputs = [0.2_f64, -0.3, 0.5, 1.25];
+    let result = interpret_program_ad_effect_ir_value_and_gradient(
+        ARRAY_ELEMENTWISE_BROADCAST_SUM_PROGRAM_AD_IR,
+        &inputs,
+    )
+    .unwrap();
+    let x = [inputs[0], inputs[1], inputs[2]];
+    let bias = inputs[3];
+    let expected_value: f64 = x.iter().map(|value| value.sin() * (value + bias)).sum();
+    let expected_gradient = [
+        x[0].cos() * (x[0] + bias) + x[0].sin(),
+        x[1].cos() * (x[1] + bias) + x[1].sin(),
+        x[2].cos() * (x[2] + bias) + x[2].sin(),
+        x.iter().map(|value| value.sin()).sum(),
+    ];
+
+    assert!(result.supported, "{:?}", result.blocked_reasons);
+    assert_eq!(result.effect_count, 6);
+    assert_eq!(result.supported_effect_count, 6);
+    assert!(result.blocked_reasons.is_empty());
+    assert!((result.value.unwrap() - expected_value).abs() <= 1.0e-12);
+    assert_eq!(
+        result.parameter_targets,
+        vec!["%0[0]", "%0[1]", "%0[2]", "%1"]
+    );
+    assert_eq!(result.gradient.len(), expected_gradient.len());
+    for (actual, expected) in result.gradient.iter().zip(expected_gradient) {
+        assert!((actual - expected).abs() <= 1.0e-12);
+    }
+    assert_eq!(
+        result.claim_boundary,
+        "bounded_rust_program_ad_ir_elementwise_array_and_static_linalg_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit"
+    );
+}
+
+#[test]
+fn program_ad_effect_ir_rust_value_and_gradient_rejects_vector_objective() {
+    let result = interpret_program_ad_effect_ir_value_and_gradient(
+        ARRAY_ELEMENTWISE_VECTOR_OBJECTIVE_PROGRAM_AD_IR,
+        &[0.2_f64, -0.3],
+    )
+    .unwrap();
+
+    assert!(!result.supported);
+    assert!(result.value.is_none());
+    assert!(result.gradient.is_empty());
+    assert_eq!(result.effect_count, 2);
+    assert_eq!(result.supported_effect_count, 2);
+    assert!(result
+        .blocked_reasons
+        .iter()
+        .any(|reason| reason.contains("requires a scalar objective")));
 }
 
 #[test]
@@ -560,7 +656,7 @@ fn program_ad_effect_ir_rust_value_and_gradient_replays_inert_view_alias() {
     assert!((result.gradient[1] - (-4.0_f64)).abs() <= 1.0e-12);
     assert_eq!(
         result.claim_boundary,
-        "bounded_rust_program_ad_ir_scalar_and_static_linalg_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit"
+        "bounded_rust_program_ad_ir_elementwise_array_and_static_linalg_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit"
     );
 }
 

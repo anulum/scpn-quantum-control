@@ -24,7 +24,7 @@ import numpy as np
 from numpy.typing import NDArray
 
 _FORWARD_CLAIM_BOUNDARY = "bounded_rust_program_ad_ir_scalar_and_static_linalg_primitives_executed_branch_view_alias_only_no_llvm_jit"
-_VALUE_AND_GRAD_CLAIM_BOUNDARY = "bounded_rust_program_ad_ir_scalar_and_static_linalg_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit"
+_VALUE_AND_GRAD_CLAIM_BOUNDARY = "bounded_rust_program_ad_ir_elementwise_array_and_static_linalg_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit"
 _REGISTRY_METADATA_MIRROR_CLAIM_BOUNDARY = (
     "rust_program_ad_registry_metadata_mirror_only_no_execution_promotion"
 )
@@ -69,7 +69,7 @@ class RustProgramADInterpreterResult:
 
 @dataclass(frozen=True)
 class RustProgramADValueAndGradientResult:
-    """Result from bounded Rust Program AD scalar value+gradient replay."""
+    """Result from bounded Rust Program AD scalar and elementwise-array replay."""
 
     supported: bool
     value: float | None
@@ -245,15 +245,17 @@ def value_and_grad_program_ad_effect_ir_with_rust(
     program_ir: ProgramADEffectIRLike | str,
     inputs: Sequence[float] | NDArray[np.float64],
 ) -> RustProgramADValueAndGradientResult:
-    """Replay bounded scalar Program AD value and gradient in Rust.
+    """Replay bounded Program AD value and gradient in Rust.
 
-    The replay is intentionally limited to opcode-bearing scalar
-    ``program_ad_effect_ir.v1`` rows with no aliases, mutation, arrays,
-    provider execution, hardware execution, LLVM/JIT execution, or performance
-    claim. Executed runtime branch metadata is replayed only as provenance for
-    the already-executed scalar path; non-executed branch adjoints and
-    source-level control-flow lowering remain fail-closed. Unsupported routes
-    return a fail-closed result instead of falling back to Python.
+    The replay is intentionally limited to opcode-bearing scalar and shaped
+    elementwise ``program_ad_effect_ir.v1`` rows, including scalar-to-array
+    broadcasting and scalar all-axis ``sum`` objective closure. Static linalg
+    replay remains scalar-SSA only. Aliases, mutation, structural array
+    operations, provider execution, hardware execution, LLVM/JIT execution, and
+    performance claims fail closed instead of falling back to Python.
+    Executed runtime branch metadata is replayed only as provenance for the
+    already-executed path; non-executed branch adjoints and source-level
+    control-flow lowering remain fail-closed.
     """
 
     serialization = _program_ad_serialization(program_ir)

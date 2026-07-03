@@ -30,7 +30,7 @@ const PROGRAM_AD_IR_CLAIM_BOUNDARY: &str = "metadata_only_no_program_execution";
 const PROGRAM_AD_RUST_INTERPRETER_CLAIM_BOUNDARY: &str =
     "bounded_rust_program_ad_ir_scalar_and_static_linalg_primitives_executed_branch_view_alias_only_no_llvm_jit";
 const PROGRAM_AD_RUST_VALUE_AND_GRADIENT_CLAIM_BOUNDARY: &str =
-    "bounded_rust_program_ad_ir_scalar_and_static_linalg_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit";
+    "bounded_rust_program_ad_ir_elementwise_array_and_static_linalg_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit";
 
 /// One SSA value record from Python-emitted Program AD metadata.
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize)]
@@ -457,7 +457,7 @@ pub fn interpret_program_ad_effect_ir_value_and_gradient(
 ) -> Result<ProgramADRustValueAndGradientResult, String> {
     let ir = parse_program_ad_effect_ir(serialization)?;
     let (ordered_effects, parameter_targets, values, supported_effect_count) =
-        match evaluate_scalar_program_ad_ir(&ir, inputs) {
+        match evaluate_program_ad_ir(&ir, inputs) {
             Ok(result) => result,
             Err(result) => return Ok(*result),
         };
@@ -485,7 +485,19 @@ pub fn interpret_program_ad_effect_ir_value_and_gradient(
             vec!["final Program AD IR target was not evaluated".to_owned()],
         ));
     };
-    if !final_value.is_finite() {
+    let final_scalar = match final_value.scalar_value() {
+        Ok(value) => value,
+        Err(reason) => {
+            return Ok(ProgramADRustValueAndGradientResult::unsupported(
+                ir.effects.len(),
+                supported_effect_count,
+                vec![format!(
+                    "{reason}; Rust Program AD value+gradient requires a scalar objective"
+                )],
+            ));
+        }
+    };
+    if !final_scalar.is_finite() {
         return Ok(ProgramADRustValueAndGradientResult::unsupported(
             ir.effects.len(),
             supported_effect_count,
@@ -493,11 +505,17 @@ pub fn interpret_program_ad_effect_ir_value_and_gradient(
         ));
     }
 
-    let mut adjoints: HashMap<String, f64> = HashMap::new();
-    adjoints.insert(final_effect.target.clone(), 1.0);
+    let mut adjoints: HashMap<String, ProgramADNumericValue> = HashMap::new();
+    adjoints.insert(
+        final_effect.target.clone(),
+        ProgramADNumericValue::scalar(1.0),
+    );
     for effect in ordered_effects.iter().rev() {
-        let cotangent = *adjoints.get(&effect.target).unwrap_or(&0.0);
-        if cotangent == 0.0 {
+        let cotangent = adjoints
+            .get(&effect.target)
+            .cloned()
+            .unwrap_or_else(|| ProgramADNumericValue::scalar(0.0));
+        if cotangent.is_all_zero() {
             continue;
         }
         let Some(operation) = effect.operation.as_deref() else {
@@ -526,8 +544,18 @@ pub fn interpret_program_ad_effect_ir_value_and_gradient(
 
     let gradient = parameter_targets
         .iter()
-        .map(|target| *adjoints.get(target).unwrap_or(&0.0))
+        .map(|target| {
+            adjoints
+                .get(&target.source)
+                .and_then(|value| value.values.get(target.flat_index))
+                .copied()
+                .unwrap_or(0.0)
+        })
         .collect::<Vec<f64>>();
+    let parameter_target_labels = parameter_targets
+        .iter()
+        .map(|target| target.label.clone())
+        .collect::<Vec<String>>();
     if gradient.iter().any(|value| !value.is_finite()) {
         return Ok(ProgramADRustValueAndGradientResult::unsupported(
             ir.effects.len(),
@@ -536,24 +564,86 @@ pub fn interpret_program_ad_effect_ir_value_and_gradient(
         ));
     }
     Ok(ProgramADRustValueAndGradientResult::supported(
-        *final_value,
+        final_scalar,
         gradient,
-        parameter_targets,
+        parameter_target_labels,
         ir.effects.len(),
     ))
 }
 
-type ScalarEvaluation<'a> = (
+type ProgramADEvaluation<'a> = (
     Vec<&'a ProgramADEffect>,
-    Vec<String>,
-    HashMap<String, f64>,
+    Vec<ScalarParameterTarget>,
+    HashMap<String, ProgramADNumericValue>,
     usize,
 );
 
-fn evaluate_scalar_program_ad_ir<'a>(
+#[derive(Debug, Clone, PartialEq)]
+struct ProgramADNumericValue {
+    shape: Vec<usize>,
+    values: Vec<f64>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct ScalarParameterTarget {
+    label: String,
+    source: String,
+    flat_index: usize,
+}
+
+impl ProgramADNumericValue {
+    fn scalar(value: f64) -> Self {
+        Self {
+            shape: Vec::new(),
+            values: vec![value],
+        }
+    }
+
+    fn new(shape: Vec<usize>, values: Vec<f64>) -> Result<Self, String> {
+        let expected = shape_size(&shape)?;
+        if values.len() != expected {
+            return Err(format!(
+                "Program AD shaped value {:?} requires {expected} values, got {}",
+                shape,
+                values.len()
+            ));
+        }
+        if values.iter().any(|value| !value.is_finite()) {
+            return Err("Program AD shaped value entries must be finite".to_owned());
+        }
+        Ok(Self { shape, values })
+    }
+
+    fn filled(shape: &[usize], value: f64) -> Result<Self, String> {
+        if !value.is_finite() {
+            return Err("Program AD filled value must be finite".to_owned());
+        }
+        Ok(Self {
+            shape: shape.to_vec(),
+            values: vec![value; shape_size(shape)?],
+        })
+    }
+
+    fn scalar_value(&self) -> Result<f64, String> {
+        if self.shape.is_empty() && self.values.len() == 1 {
+            Ok(self.values[0])
+        } else {
+            Err(format!(
+                "Program AD value with shape {:?} is not scalar",
+                self.shape
+            ))
+        }
+    }
+
+    fn is_all_zero(&self) -> bool {
+        self.values.iter().all(|value| *value == 0.0)
+    }
+}
+
+fn evaluate_program_ad_ir<'a>(
     ir: &'a ProgramADEffectIR,
     inputs: &[f64],
-) -> Result<ScalarEvaluation<'a>, Box<ProgramADRustValueAndGradientResult>> {
+) -> Result<ProgramADEvaluation<'a>, Box<ProgramADRustValueAndGradientResult>> {
     if ir.effects.is_empty() {
         return Err(Box::new(ProgramADRustValueAndGradientResult::unsupported(
             0,
@@ -588,22 +678,37 @@ fn evaluate_scalar_program_ad_ir<'a>(
 
     let mut ordered_effects: Vec<&ProgramADEffect> = ir.effects.iter().collect();
     ordered_effects.sort_by_key(|effect| effect.ordering);
+    let shapes_by_target = ssa_shapes_by_target(ir);
     let expected_parameters = ordered_effects
         .iter()
         .filter(|effect| effect.kind == "parameter")
-        .count();
+        .map(|effect| {
+            target_shape(effect, &shapes_by_target).and_then(|shape| shape_size(shape.as_slice()))
+        })
+        .collect::<Result<Vec<usize>, String>>()
+        .map(|counts| counts.into_iter().sum::<usize>());
+    let expected_parameters = match expected_parameters {
+        Ok(count) => count,
+        Err(reason) => {
+            return Err(Box::new(ProgramADRustValueAndGradientResult::unsupported(
+                ir.effects.len(),
+                0,
+                vec![reason],
+            )));
+        }
+    };
     if expected_parameters != inputs.len() {
         return Err(Box::new(ProgramADRustValueAndGradientResult::unsupported(
             ir.effects.len(),
             0,
             vec![format!(
-                "Program AD IR parameter count {expected_parameters} does not match input count {}",
+                "Program AD IR flattened parameter count {expected_parameters} does not match input count {}",
                 inputs.len()
             )],
         )));
     }
 
-    let mut values: HashMap<String, f64> = HashMap::new();
+    let mut values: HashMap<String, ProgramADNumericValue> = HashMap::new();
     let mut input_index = 0usize;
     let mut supported_effect_count = 0usize;
     let mut parameter_targets = Vec::new();
@@ -618,11 +723,18 @@ fn evaluate_scalar_program_ad_ir<'a>(
                 )],
             )));
         };
-        let evaluated = evaluate_effect(effect, operation, inputs, &mut input_index, &values);
+        let evaluated = evaluate_numeric_effect(
+            effect,
+            operation,
+            inputs,
+            &mut input_index,
+            &values,
+            &shapes_by_target,
+        );
         match evaluated {
             Ok(value) => {
                 if operation == "parameter" {
-                    parameter_targets.push(effect.target.clone());
+                    parameter_targets.extend(parameter_targets_for_effect(effect, &value));
                 }
                 values.insert(effect.target.clone(), value);
                 supported_effect_count += 1;
@@ -647,59 +759,67 @@ fn evaluate_scalar_program_ad_ir<'a>(
 fn accumulate_reverse_effect(
     effect: &ProgramADEffect,
     operation: &str,
-    cotangent: f64,
-    values: &HashMap<String, f64>,
-    adjoints: &mut HashMap<String, f64>,
+    cotangent: ProgramADNumericValue,
+    values: &HashMap<String, ProgramADNumericValue>,
+    adjoints: &mut HashMap<String, ProgramADNumericValue>,
 ) -> Result<(), String> {
     match operation {
         operation if operation.starts_with("branch:") => Ok(()),
-        "add" => accumulate_binary(effect, values, adjoints, cotangent, 1.0, 1.0),
-        "sub" => accumulate_binary(effect, values, adjoints, cotangent, 1.0, -1.0),
+        "sum" => accumulate_sum(effect, values, adjoints, &cotangent),
+        "add" => accumulate_add_sub(effect, values, adjoints, &cotangent, 1.0, 1.0),
+        "sub" => accumulate_add_sub(effect, values, adjoints, &cotangent, 1.0, -1.0),
         "mul" => {
-            let lhs = operand_value(&effect.inputs[0], values)?;
-            let rhs = operand_value(&effect.inputs[1], values)?;
-            accumulate_binary(effect, values, adjoints, cotangent, rhs, lhs)
+            let (lhs, rhs, _shape) = binary_operands(effect, values)?;
+            let lhs_contribution =
+                elementwise_mul(&cotangent, &broadcast_to(&rhs, &cotangent.shape)?)?;
+            let rhs_contribution =
+                elementwise_mul(&cotangent, &broadcast_to(&lhs, &cotangent.shape)?)?;
+            add_numeric_adjoint(&effect.inputs[0], lhs_contribution, values, adjoints)?;
+            add_numeric_adjoint(&effect.inputs[1], rhs_contribution, values, adjoints)
         }
         "div" => {
-            let lhs = operand_value(&effect.inputs[0], values)?;
-            let rhs = operand_value(&effect.inputs[1], values)?;
-            if rhs == 0.0 {
+            let (lhs, rhs, _shape) = binary_operands(effect, values)?;
+            if rhs.values.contains(&0.0) {
                 return Err("division denominator must be non-zero".to_owned());
             }
-            accumulate_binary(
-                effect,
-                values,
-                adjoints,
-                cotangent,
-                1.0 / rhs,
-                -lhs / (rhs * rhs),
-            )
+            let rhs_broadcast = broadcast_to(&rhs, &cotangent.shape)?;
+            let lhs_broadcast = broadcast_to(&lhs, &cotangent.shape)?;
+            let lhs_contribution =
+                elementwise_binary(&cotangent, &rhs_broadcast, |cot, r| Ok(cot / r))?;
+            let rhs_contribution =
+                elementwise_binary3(&cotangent, &lhs_broadcast, &rhs_broadcast, |cot, l, r| {
+                    Ok(cot * (-l / (r * r)))
+                })?;
+            add_numeric_adjoint(&effect.inputs[0], lhs_contribution, values, adjoints)?;
+            add_numeric_adjoint(&effect.inputs[1], rhs_contribution, values, adjoints)
         }
         "pow" => {
-            let lhs = operand_value(&effect.inputs[0], values)?;
-            let rhs = operand_value(&effect.inputs[1], values)?;
-            if lhs <= 0.0 {
+            let (lhs, rhs, _shape) = binary_operands(effect, values)?;
+            if lhs.values.iter().any(|value| *value <= 0.0) {
                 return Err("pow gradient requires a positive base".to_owned());
             }
-            let value = lhs.powf(rhs);
-            accumulate_binary(
-                effect,
-                values,
-                adjoints,
-                cotangent,
-                rhs * lhs.powf(rhs - 1.0),
-                value * lhs.ln(),
-            )
+            let lhs_broadcast = broadcast_to(&lhs, &cotangent.shape)?;
+            let rhs_broadcast = broadcast_to(&rhs, &cotangent.shape)?;
+            let lhs_contribution =
+                elementwise_binary3(&cotangent, &lhs_broadcast, &rhs_broadcast, |cot, l, r| {
+                    Ok(cot * r * l.powf(r - 1.0))
+                })?;
+            let rhs_contribution =
+                elementwise_binary3(&cotangent, &lhs_broadcast, &rhs_broadcast, |cot, l, r| {
+                    Ok(cot * l.powf(r) * l.ln())
+                })?;
+            add_numeric_adjoint(&effect.inputs[0], lhs_contribution, values, adjoints)?;
+            add_numeric_adjoint(&effect.inputs[1], rhs_contribution, values, adjoints)
         }
-        "sin" => accumulate_unary(effect, values, adjoints, cotangent, f64::cos),
-        "cos" => accumulate_unary(effect, values, adjoints, cotangent, |value| -value.sin()),
-        "exp" => accumulate_unary(effect, values, adjoints, cotangent, f64::exp),
-        "expm1" => accumulate_unary(effect, values, adjoints, cotangent, f64::exp),
+        "sin" => accumulate_unary(effect, values, adjoints, &cotangent, f64::cos),
+        "cos" => accumulate_unary(effect, values, adjoints, &cotangent, |value| -value.sin()),
+        "exp" => accumulate_unary(effect, values, adjoints, &cotangent, f64::exp),
+        "expm1" => accumulate_unary(effect, values, adjoints, &cotangent, f64::exp),
         "log" => accumulate_unary_domain(
             effect,
             values,
             adjoints,
-            cotangent,
+            &cotangent,
             |value| value > 0.0,
             |value| 1.0 / value,
             "log input must be positive",
@@ -708,7 +828,7 @@ fn accumulate_reverse_effect(
             effect,
             values,
             adjoints,
-            cotangent,
+            &cotangent,
             |value| value > -1.0,
             |value| 1.0 / (1.0 + value),
             "log1p input must be greater than -1",
@@ -717,7 +837,7 @@ fn accumulate_reverse_effect(
             effect,
             values,
             adjoints,
-            cotangent,
+            &cotangent,
             |value| value > 0.0,
             |value| 0.5 / value.sqrt(),
             "sqrt input must be positive",
@@ -726,12 +846,12 @@ fn accumulate_reverse_effect(
             effect,
             values,
             adjoints,
-            cotangent,
+            &cotangent,
             |value| value.cos().abs() > 1.0e-15,
             |value| 1.0 / (value.cos() * value.cos()),
             "tan input must have non-zero cosine",
         ),
-        "tanh" => accumulate_unary(effect, values, adjoints, cotangent, |value| {
+        "tanh" => accumulate_unary(effect, values, adjoints, &cotangent, |value| {
             let tanh = value.tanh();
             1.0 - tanh * tanh
         }),
@@ -739,7 +859,7 @@ fn accumulate_reverse_effect(
             effect,
             values,
             adjoints,
-            cotangent,
+            &cotangent,
             |value| value.abs() < 1.0,
             |value| 1.0 / (1.0 - value * value).sqrt(),
             "arcsin input must be strictly inside (-1, 1)",
@@ -748,7 +868,7 @@ fn accumulate_reverse_effect(
             effect,
             values,
             adjoints,
-            cotangent,
+            &cotangent,
             |value| value.abs() < 1.0,
             |value| -1.0 / (1.0 - value * value).sqrt(),
             "arccos input must be strictly inside (-1, 1)",
@@ -757,7 +877,7 @@ fn accumulate_reverse_effect(
             effect,
             values,
             adjoints,
-            cotangent,
+            &cotangent,
             |value| value != 0.0,
             |value| -1.0 / (value * value),
             "reciprocal input must be non-zero",
@@ -766,19 +886,21 @@ fn accumulate_reverse_effect(
             effect,
             values,
             adjoints,
-            cotangent,
+            &cotangent,
             |value| value != 0.0,
             |value| value.signum(),
             "abs gradient is undefined at zero",
         ),
         name if name.starts_with("linalg:trace:") => {
+            let cotangent_scalar = cotangent.scalar_value()?;
             // d(trace)/d(diagonal element) = 1 for each on-diagonal operand.
             for input in &effect.inputs {
-                add_adjoint(input, cotangent, values, adjoints)?;
+                add_scalar_adjoint(input, cotangent_scalar, values, adjoints)?;
             }
             Ok(())
         }
         "linalg:det:2x2" => {
+            let cotangent_scalar = cotangent.scalar_value()?;
             // Cofactor adjoints for det = a*d - b*c: d/da = d, d/db = -c, d/dc = -b, d/dd = a.
             if effect.inputs.len() != 4 {
                 return Err(format!(
@@ -786,17 +908,18 @@ fn accumulate_reverse_effect(
                     effect.index
                 ));
             }
-            let a = operand_value(&effect.inputs[0], values)?;
-            let b = operand_value(&effect.inputs[1], values)?;
-            let c = operand_value(&effect.inputs[2], values)?;
-            let d = operand_value(&effect.inputs[3], values)?;
-            add_adjoint(&effect.inputs[0], cotangent * d, values, adjoints)?;
-            add_adjoint(&effect.inputs[1], cotangent * (-c), values, adjoints)?;
-            add_adjoint(&effect.inputs[2], cotangent * (-b), values, adjoints)?;
-            add_adjoint(&effect.inputs[3], cotangent * a, values, adjoints)?;
+            let a = operand_scalar_value(&effect.inputs[0], values)?;
+            let b = operand_scalar_value(&effect.inputs[1], values)?;
+            let c = operand_scalar_value(&effect.inputs[2], values)?;
+            let d = operand_scalar_value(&effect.inputs[3], values)?;
+            add_scalar_adjoint(&effect.inputs[0], cotangent_scalar * d, values, adjoints)?;
+            add_scalar_adjoint(&effect.inputs[1], cotangent_scalar * (-c), values, adjoints)?;
+            add_scalar_adjoint(&effect.inputs[2], cotangent_scalar * (-b), values, adjoints)?;
+            add_scalar_adjoint(&effect.inputs[3], cotangent_scalar * a, values, adjoints)?;
             Ok(())
         }
         "linalg:det:3x3" => {
+            let cotangent_scalar = cotangent.scalar_value()?;
             // d(det)/dA_{ij} is the (i,j) cofactor of the row-major 3x3 matrix.
             if effect.inputs.len() != 9 {
                 return Err(format!(
@@ -804,7 +927,7 @@ fn accumulate_reverse_effect(
                     effect.index
                 ));
             }
-            let [a, b, c, d, e, f, g, h, i] = read_3x3(effect, values)?;
+            let [a, b, c, d, e, f, g, h, i] = read_3x3_numeric(effect, values)?;
             let cofactors = [
                 e * i - f * h,
                 f * g - d * i,
@@ -817,11 +940,12 @@ fn accumulate_reverse_effect(
                 a * e - b * d,
             ];
             for (input, cofactor) in effect.inputs.iter().zip(cofactors.iter()) {
-                add_adjoint(input, cotangent * cofactor, values, adjoints)?;
+                add_scalar_adjoint(input, cotangent_scalar * cofactor, values, adjoints)?;
             }
             Ok(())
         }
         name if name.starts_with("linalg:det:") => {
+            let cotangent_scalar = cotangent.scalar_value()?;
             // General determinant (4x4 and up): d(det)/dA_{ij} = det * (A^{-1})_{ji}.
             let n = parse_det_dim(name).ok_or_else(|| {
                 format!(
@@ -839,16 +963,16 @@ fn accumulate_reverse_effect(
             let matrix = effect
                 .inputs
                 .iter()
-                .map(|input| operand_value(input, values))
+                .map(|input| operand_scalar_value(input, values))
                 .collect::<Result<Vec<f64>, String>>()?;
             let determinant = determinant_general(&matrix, n)?;
             let inverse = invert_square(&matrix, n)?;
             for i in 0..n {
                 for j in 0..n {
                     let cofactor = determinant * inverse[j * n + i];
-                    add_adjoint(
+                    add_scalar_adjoint(
                         &effect.inputs[i * n + j],
-                        cotangent * cofactor,
+                        cotangent_scalar * cofactor,
                         values,
                         adjoints,
                     )?;
@@ -857,6 +981,7 @@ fn accumulate_reverse_effect(
             Ok(())
         }
         name if name.starts_with("linalg:inv:") => {
+            let cotangent_scalar = cotangent.scalar_value()?;
             // d(A^{-1})_{ij}/dA_{kl} = -(A^{-1})_{ik} (A^{-1})_{lj}.
             let (n, row, column) = parse_inv_index(name)
                 .ok_or_else(|| format!("effect {} {name} has no inverse index", effect.index))?;
@@ -870,18 +995,19 @@ fn accumulate_reverse_effect(
             let matrix = effect
                 .inputs
                 .iter()
-                .map(|input| operand_value(input, values))
+                .map(|input| operand_scalar_value(input, values))
                 .collect::<Result<Vec<f64>, String>>()?;
             let m = invert_square(&matrix, n)?;
             for k in 0..n {
                 for l in 0..n {
-                    let contribution = cotangent * (-m[row * n + k] * m[l * n + column]);
-                    add_adjoint(&effect.inputs[k * n + l], contribution, values, adjoints)?;
+                    let contribution = cotangent_scalar * (-m[row * n + k] * m[l * n + column]);
+                    add_scalar_adjoint(&effect.inputs[k * n + l], contribution, values, adjoints)?;
                 }
             }
             Ok(())
         }
         name if name.starts_with("linalg:solve:") => {
+            let cotangent_scalar = cotangent.scalar_value()?;
             // x = A^{-1} b: dx_i/db_j = (A^{-1})_{ij}; dx_i/dA_{kl} = -(A^{-1})_{ik} x_l.
             let (n, row) = parse_solve_index(name)
                 .ok_or_else(|| format!("effect {} {name} has no solution index", effect.index))?;
@@ -895,7 +1021,7 @@ fn accumulate_reverse_effect(
             let operands = effect
                 .inputs
                 .iter()
-                .map(|input| operand_value(input, values))
+                .map(|input| operand_scalar_value(input, values))
                 .collect::<Result<Vec<f64>, String>>()?;
             let m = invert_square(&operands[..n * n], n)?;
             let rhs = &operands[n * n..];
@@ -903,17 +1029,17 @@ fn accumulate_reverse_effect(
                 .map(|i| (0..n).map(|j| m[i * n + j] * rhs[j]).sum())
                 .collect();
             for j in 0..n {
-                add_adjoint(
+                add_scalar_adjoint(
                     &effect.inputs[n * n + j],
-                    cotangent * m[row * n + j],
+                    cotangent_scalar * m[row * n + j],
                     values,
                     adjoints,
                 )?;
             }
             for k in 0..n {
-                for l in 0..n {
-                    let contribution = cotangent * (-m[row * n + k] * x[l]);
-                    add_adjoint(&effect.inputs[k * n + l], contribution, values, adjoints)?;
+                for (l, x_l) in x.iter().enumerate().take(n) {
+                    let contribution = cotangent_scalar * (-m[row * n + k] * *x_l);
+                    add_scalar_adjoint(&effect.inputs[k * n + l], contribution, values, adjoints)?;
                 }
             }
             Ok(())
@@ -925,26 +1051,82 @@ fn accumulate_reverse_effect(
     }
 }
 
+fn accumulate_sum(
+    effect: &ProgramADEffect,
+    values: &HashMap<String, ProgramADNumericValue>,
+    adjoints: &mut HashMap<String, ProgramADNumericValue>,
+    cotangent: &ProgramADNumericValue,
+) -> Result<(), String> {
+    if effect.inputs.len() != 1 {
+        return Err(format!("effect {} sum requires one input", effect.index));
+    }
+    let scalar_cotangent = cotangent.scalar_value()?;
+    let input = numeric_operand(&effect.inputs[0], values)?;
+    add_numeric_adjoint(
+        &effect.inputs[0],
+        ProgramADNumericValue::filled(&input.shape, scalar_cotangent)?,
+        values,
+        adjoints,
+    )
+}
+
+fn accumulate_add_sub(
+    effect: &ProgramADEffect,
+    values: &HashMap<String, ProgramADNumericValue>,
+    adjoints: &mut HashMap<String, ProgramADNumericValue>,
+    cotangent: &ProgramADNumericValue,
+    lhs_sign: f64,
+    rhs_sign: f64,
+) -> Result<(), String> {
+    if effect.inputs.len() != 2 {
+        return Err(format!("effect {} requires two inputs", effect.index));
+    }
+    add_numeric_adjoint(
+        &effect.inputs[0],
+        scale_value(cotangent, lhs_sign)?,
+        values,
+        adjoints,
+    )?;
+    add_numeric_adjoint(
+        &effect.inputs[1],
+        scale_value(cotangent, rhs_sign)?,
+        values,
+        adjoints,
+    )
+}
+
 fn accumulate_unary(
     effect: &ProgramADEffect,
-    values: &HashMap<String, f64>,
-    adjoints: &mut HashMap<String, f64>,
-    cotangent: f64,
+    values: &HashMap<String, ProgramADNumericValue>,
+    adjoints: &mut HashMap<String, ProgramADNumericValue>,
+    cotangent: &ProgramADNumericValue,
     derivative: impl Fn(f64) -> f64,
 ) -> Result<(), String> {
     if effect.inputs.len() != 1 {
         return Err(format!("effect {} requires one input", effect.index));
     }
-    let input = &effect.inputs[0];
-    let value = operand_value(input, values)?;
-    add_adjoint(input, cotangent * derivative(value), values, adjoints)
+    let input = numeric_operand(&effect.inputs[0], values)?;
+    let derivative_values = ProgramADNumericValue::new(
+        input.shape.clone(),
+        input
+            .values
+            .iter()
+            .map(|value| derivative(*value))
+            .collect(),
+    )?;
+    add_numeric_adjoint(
+        &effect.inputs[0],
+        elementwise_mul(cotangent, &derivative_values)?,
+        values,
+        adjoints,
+    )
 }
 
 fn accumulate_unary_domain(
     effect: &ProgramADEffect,
-    values: &HashMap<String, f64>,
-    adjoints: &mut HashMap<String, f64>,
-    cotangent: f64,
+    values: &HashMap<String, ProgramADNumericValue>,
+    adjoints: &mut HashMap<String, ProgramADNumericValue>,
+    cotangent: &ProgramADNumericValue,
     predicate: impl Fn(f64) -> bool,
     derivative: impl Fn(f64) -> f64,
     domain_error: &str,
@@ -952,52 +1134,549 @@ fn accumulate_unary_domain(
     if effect.inputs.len() != 1 {
         return Err(format!("effect {} requires one input", effect.index));
     }
-    let input = &effect.inputs[0];
-    let value = operand_value(input, values)?;
-    if !predicate(value) {
+    let input = numeric_operand(&effect.inputs[0], values)?;
+    if input.values.iter().any(|value| !predicate(*value)) {
         return Err(domain_error.to_owned());
     }
-    add_adjoint(input, cotangent * derivative(value), values, adjoints)
-}
-
-fn accumulate_binary(
-    effect: &ProgramADEffect,
-    values: &HashMap<String, f64>,
-    adjoints: &mut HashMap<String, f64>,
-    cotangent: f64,
-    lhs_derivative: f64,
-    rhs_derivative: f64,
-) -> Result<(), String> {
-    if effect.inputs.len() != 2 {
-        return Err(format!("effect {} requires two inputs", effect.index));
-    }
-    add_adjoint(
-        &effect.inputs[0],
-        cotangent * lhs_derivative,
-        values,
-        adjoints,
+    let derivative_values = ProgramADNumericValue::new(
+        input.shape.clone(),
+        input
+            .values
+            .iter()
+            .map(|value| derivative(*value))
+            .collect(),
     )?;
-    add_adjoint(
-        &effect.inputs[1],
-        cotangent * rhs_derivative,
+    add_numeric_adjoint(
+        &effect.inputs[0],
+        elementwise_mul(cotangent, &derivative_values)?,
         values,
         adjoints,
     )
 }
 
-fn add_adjoint(
+fn add_scalar_adjoint(
     input: &str,
     contribution: f64,
-    values: &HashMap<String, f64>,
-    adjoints: &mut HashMap<String, f64>,
+    values: &HashMap<String, ProgramADNumericValue>,
+    adjoints: &mut HashMap<String, ProgramADNumericValue>,
 ) -> Result<(), String> {
-    if !contribution.is_finite() {
+    add_numeric_adjoint(
+        input,
+        ProgramADNumericValue::scalar(contribution),
+        values,
+        adjoints,
+    )
+}
+
+fn add_numeric_adjoint(
+    input: &str,
+    contribution: ProgramADNumericValue,
+    values: &HashMap<String, ProgramADNumericValue>,
+    adjoints: &mut HashMap<String, ProgramADNumericValue>,
+) -> Result<(), String> {
+    if contribution.values.iter().any(|value| !value.is_finite()) {
         return Err(format!("adjoint contribution for {input} must be finite"));
     }
-    if values.contains_key(input) {
-        *adjoints.entry(input.to_owned()).or_insert(0.0) += contribution;
+    let Some(target) = values.get(input) else {
+        return Ok(());
+    };
+    let reduced = reduce_to_shape(&contribution, &target.shape)?;
+    let entry = adjoints.entry(input.to_owned()).or_insert_with(|| {
+        ProgramADNumericValue::filled(&target.shape, 0.0)
+            .expect("zero adjoint shape is already validated")
+    });
+    if entry.shape != reduced.shape {
+        return Err(format!(
+            "adjoint shape {:?} does not match contribution shape {:?}",
+            entry.shape, reduced.shape
+        ));
+    }
+    for (slot, value) in entry.values.iter_mut().zip(reduced.values.iter()) {
+        *slot += value;
     }
     Ok(())
+}
+
+fn evaluate_numeric_effect(
+    effect: &ProgramADEffect,
+    operation: &str,
+    inputs: &[f64],
+    input_index: &mut usize,
+    values: &HashMap<String, ProgramADNumericValue>,
+    shapes_by_target: &HashMap<String, Vec<usize>>,
+) -> Result<ProgramADNumericValue, String> {
+    if operation == "parameter" {
+        if effect.kind != "parameter" {
+            return Err(format!(
+                "effect {} operation parameter must have kind parameter",
+                effect.index
+            ));
+        }
+        let shape = target_shape(effect, shapes_by_target)?;
+        let size = shape_size(&shape)?;
+        let end = input_index
+            .checked_add(size)
+            .ok_or_else(|| "Program AD parameter input index overflowed".to_owned())?;
+        let Some(slice) = inputs.get(*input_index..end) else {
+            return Err(format!(
+                "effect {} parameter input is missing flattened values",
+                effect.index
+            ));
+        };
+        *input_index = end;
+        return ProgramADNumericValue::new(shape, slice.to_vec());
+    }
+    if operation.starts_with("branch:") {
+        return evaluate_branch_effect(effect, operation).map(ProgramADNumericValue::scalar);
+    }
+    match operation {
+        "sum" => {
+            if effect.inputs.len() != 1 {
+                return Err(format!("effect {} sum requires one input", effect.index));
+            }
+            let target = target_shape(effect, shapes_by_target)?;
+            if !target.is_empty() {
+                return Err(format!(
+                    "effect {} sum currently supports scalar all-axis reductions only",
+                    effect.index
+                ));
+            }
+            let source = numeric_operand(&effect.inputs[0], values)?;
+            Ok(ProgramADNumericValue::scalar(source.values.iter().sum()))
+        }
+        "add" => numeric_binary(effect, values, |lhs, rhs| Ok(lhs + rhs)),
+        "sub" => numeric_binary(effect, values, |lhs, rhs| Ok(lhs - rhs)),
+        "mul" => numeric_binary(effect, values, |lhs, rhs| Ok(lhs * rhs)),
+        "div" => numeric_binary(effect, values, |lhs, rhs| {
+            if rhs == 0.0 {
+                Err("division denominator must be non-zero".to_owned())
+            } else {
+                Ok(lhs / rhs)
+            }
+        }),
+        "pow" => numeric_binary(effect, values, |lhs, rhs| {
+            let value = lhs.powf(rhs);
+            if value.is_finite() {
+                Ok(value)
+            } else {
+                Err("power result must be finite".to_owned())
+            }
+        }),
+        "sin" => numeric_unary(effect, values, f64::sin),
+        "cos" => numeric_unary(effect, values, f64::cos),
+        "exp" => numeric_unary_checked(effect, values, f64::exp, "exp result must be finite"),
+        "expm1" => {
+            numeric_unary_checked(effect, values, f64::exp_m1, "expm1 result must be finite")
+        }
+        "log" => numeric_unary_domain(
+            effect,
+            values,
+            |value| value > 0.0,
+            f64::ln,
+            "log input must be positive",
+        ),
+        "log1p" => numeric_unary_domain(
+            effect,
+            values,
+            |value| value > -1.0,
+            f64::ln_1p,
+            "log1p input must be greater than -1",
+        ),
+        "sqrt" => numeric_unary_domain(
+            effect,
+            values,
+            |value| value > 0.0,
+            f64::sqrt,
+            "sqrt input must be positive",
+        ),
+        "tan" => numeric_unary_domain(
+            effect,
+            values,
+            |value| value.cos().abs() > 1.0e-15,
+            f64::tan,
+            "tan input must have non-zero cosine",
+        ),
+        "tanh" => numeric_unary(effect, values, f64::tanh),
+        "arcsin" => numeric_unary_domain(
+            effect,
+            values,
+            |value| value.abs() < 1.0,
+            f64::asin,
+            "arcsin input must be strictly inside (-1, 1)",
+        ),
+        "arccos" => numeric_unary_domain(
+            effect,
+            values,
+            |value| value.abs() < 1.0,
+            f64::acos,
+            "arccos input must be strictly inside (-1, 1)",
+        ),
+        "reciprocal" => numeric_unary_domain(
+            effect,
+            values,
+            |value| value != 0.0,
+            |value| 1.0 / value,
+            "reciprocal input must be non-zero",
+        ),
+        "abs" => numeric_unary(effect, values, f64::abs),
+        name if name.starts_with("linalg:trace:")
+            || name.starts_with("linalg:det:")
+            || name.starts_with("linalg:inv:")
+            || name.starts_with("linalg:solve:") =>
+        {
+            evaluate_scalar_linalg_effect(effect, operation, values)
+        }
+        _ => Err(format!(
+            "effect {} operation {operation} is outside bounded Rust elementwise array value+gradient replay",
+            effect.index
+        )),
+    }
+}
+
+fn evaluate_scalar_linalg_effect(
+    effect: &ProgramADEffect,
+    operation: &str,
+    values: &HashMap<String, ProgramADNumericValue>,
+) -> Result<ProgramADNumericValue, String> {
+    let scalar_values = values
+        .iter()
+        .map(|(key, value)| value.scalar_value().map(|scalar| (key.clone(), scalar)))
+        .collect::<Result<HashMap<String, f64>, String>>()?;
+    let mut input_index = 0usize;
+    evaluate_effect(effect, operation, &[], &mut input_index, &scalar_values)
+        .map(ProgramADNumericValue::scalar)
+}
+
+fn ssa_shapes_by_target(ir: &ProgramADEffectIR) -> HashMap<String, Vec<usize>> {
+    ir.ssa_values
+        .iter()
+        .map(|value| (value.name.clone(), value.shape.clone()))
+        .collect()
+}
+
+fn target_shape(
+    effect: &ProgramADEffect,
+    shapes_by_target: &HashMap<String, Vec<usize>>,
+) -> Result<Vec<usize>, String> {
+    shapes_by_target
+        .get(&effect.target)
+        .cloned()
+        .ok_or_else(|| {
+            format!(
+                "effect {} target {} is missing SSA shape metadata",
+                effect.index, effect.target
+            )
+        })
+}
+
+fn parameter_targets_for_effect(
+    effect: &ProgramADEffect,
+    value: &ProgramADNumericValue,
+) -> Vec<ScalarParameterTarget> {
+    if value.shape.is_empty() {
+        return vec![ScalarParameterTarget {
+            label: effect.target.clone(),
+            source: effect.target.clone(),
+            flat_index: 0,
+        }];
+    }
+    (0..value.values.len())
+        .map(|flat_index| ScalarParameterTarget {
+            label: format!("{}[{flat_index}]", effect.target),
+            source: effect.target.clone(),
+            flat_index,
+        })
+        .collect()
+}
+
+fn shape_size(shape: &[usize]) -> Result<usize, String> {
+    let mut size = 1usize;
+    for dimension in shape {
+        if *dimension == 0 {
+            return Err("Program AD shaped values must have non-zero dimensions".to_owned());
+        }
+        size = size
+            .checked_mul(*dimension)
+            .ok_or_else(|| "Program AD shaped value size overflowed".to_owned())?;
+    }
+    Ok(size)
+}
+
+fn numeric_operand(
+    name: &str,
+    values: &HashMap<String, ProgramADNumericValue>,
+) -> Result<ProgramADNumericValue, String> {
+    if let Some(value) = values.get(name) {
+        return Ok(value.clone());
+    }
+    name.parse::<f64>()
+        .map(ProgramADNumericValue::scalar)
+        .map_err(|_| format!("operand {name} is neither an SSA value nor a scalar literal"))
+}
+
+fn operand_scalar_value(
+    name: &str,
+    values: &HashMap<String, ProgramADNumericValue>,
+) -> Result<f64, String> {
+    numeric_operand(name, values)?.scalar_value()
+}
+
+fn numeric_unary(
+    effect: &ProgramADEffect,
+    values: &HashMap<String, ProgramADNumericValue>,
+    function: fn(f64) -> f64,
+) -> Result<ProgramADNumericValue, String> {
+    if effect.inputs.len() != 1 {
+        return Err(format!("effect {} requires one input", effect.index));
+    }
+    let input = numeric_operand(&effect.inputs[0], values)?;
+    ProgramADNumericValue::new(
+        input.shape,
+        input.values.into_iter().map(function).collect::<Vec<f64>>(),
+    )
+}
+
+fn numeric_unary_checked(
+    effect: &ProgramADEffect,
+    values: &HashMap<String, ProgramADNumericValue>,
+    function: fn(f64) -> f64,
+    finite_error: &str,
+) -> Result<ProgramADNumericValue, String> {
+    let value = numeric_unary(effect, values, function)?;
+    if value.values.iter().all(|item| item.is_finite()) {
+        Ok(value)
+    } else {
+        Err(finite_error.to_owned())
+    }
+}
+
+fn numeric_unary_domain(
+    effect: &ProgramADEffect,
+    values: &HashMap<String, ProgramADNumericValue>,
+    predicate: fn(f64) -> bool,
+    function: fn(f64) -> f64,
+    domain_error: &str,
+) -> Result<ProgramADNumericValue, String> {
+    if effect.inputs.len() != 1 {
+        return Err(format!("effect {} requires one input", effect.index));
+    }
+    let input = numeric_operand(&effect.inputs[0], values)?;
+    if input.values.iter().any(|value| !predicate(*value)) {
+        return Err(domain_error.to_owned());
+    }
+    ProgramADNumericValue::new(
+        input.shape,
+        input.values.into_iter().map(function).collect::<Vec<f64>>(),
+    )
+}
+
+fn numeric_binary(
+    effect: &ProgramADEffect,
+    values: &HashMap<String, ProgramADNumericValue>,
+    function: impl Fn(f64, f64) -> Result<f64, String>,
+) -> Result<ProgramADNumericValue, String> {
+    let (lhs, rhs, shape) = binary_operands(effect, values)?;
+    let lhs = broadcast_to(&lhs, &shape)?;
+    let rhs = broadcast_to(&rhs, &shape)?;
+    elementwise_binary(&lhs, &rhs, function)
+}
+
+fn binary_operands(
+    effect: &ProgramADEffect,
+    values: &HashMap<String, ProgramADNumericValue>,
+) -> Result<(ProgramADNumericValue, ProgramADNumericValue, Vec<usize>), String> {
+    if effect.inputs.len() != 2 {
+        return Err(format!("effect {} requires two inputs", effect.index));
+    }
+    let lhs = numeric_operand(&effect.inputs[0], values)?;
+    let rhs = numeric_operand(&effect.inputs[1], values)?;
+    let shape = broadcast_shape(&lhs.shape, &rhs.shape)?;
+    Ok((lhs, rhs, shape))
+}
+
+fn scale_value(value: &ProgramADNumericValue, scale: f64) -> Result<ProgramADNumericValue, String> {
+    ProgramADNumericValue::new(
+        value.shape.clone(),
+        value.values.iter().map(|item| item * scale).collect(),
+    )
+}
+
+fn elementwise_mul(
+    left: &ProgramADNumericValue,
+    right: &ProgramADNumericValue,
+) -> Result<ProgramADNumericValue, String> {
+    elementwise_binary(left, right, |lhs, rhs| Ok(lhs * rhs))
+}
+
+fn elementwise_binary(
+    left: &ProgramADNumericValue,
+    right: &ProgramADNumericValue,
+    function: impl Fn(f64, f64) -> Result<f64, String>,
+) -> Result<ProgramADNumericValue, String> {
+    if left.shape != right.shape {
+        return Err(format!(
+            "Program AD elementwise operands must share shape, got {:?} and {:?}",
+            left.shape, right.shape
+        ));
+    }
+    ProgramADNumericValue::new(
+        left.shape.clone(),
+        left.values
+            .iter()
+            .zip(right.values.iter())
+            .map(|(lhs, rhs)| function(*lhs, *rhs))
+            .collect::<Result<Vec<f64>, String>>()?,
+    )
+}
+
+fn elementwise_binary3(
+    first: &ProgramADNumericValue,
+    second: &ProgramADNumericValue,
+    third: &ProgramADNumericValue,
+    function: impl Fn(f64, f64, f64) -> Result<f64, String>,
+) -> Result<ProgramADNumericValue, String> {
+    if first.shape != second.shape || second.shape != third.shape {
+        return Err("Program AD ternary elementwise operands must share shape".to_owned());
+    }
+    ProgramADNumericValue::new(
+        first.shape.clone(),
+        first
+            .values
+            .iter()
+            .zip(second.values.iter())
+            .zip(third.values.iter())
+            .map(|((a, b), c)| function(*a, *b, *c))
+            .collect::<Result<Vec<f64>, String>>()?,
+    )
+}
+
+fn broadcast_shape(left: &[usize], right: &[usize]) -> Result<Vec<usize>, String> {
+    let rank = left.len().max(right.len());
+    let mut shape = Vec::with_capacity(rank);
+    for axis in 0..rank {
+        let left_dim = broadcast_dim(left, rank, axis);
+        let right_dim = broadcast_dim(right, rank, axis);
+        if left_dim == right_dim || left_dim == 1 || right_dim == 1 {
+            shape.push(left_dim.max(right_dim));
+        } else {
+            return Err(format!(
+                "Program AD operands with shapes {left:?} and {right:?} cannot broadcast"
+            ));
+        }
+    }
+    Ok(shape)
+}
+
+fn broadcast_dim(shape: &[usize], rank: usize, axis: usize) -> usize {
+    let offset = rank - shape.len();
+    if axis < offset {
+        1
+    } else {
+        shape[axis - offset]
+    }
+}
+
+fn broadcast_to(
+    value: &ProgramADNumericValue,
+    shape: &[usize],
+) -> Result<ProgramADNumericValue, String> {
+    let expected = broadcast_shape(&value.shape, shape)?;
+    if expected != shape {
+        return Err(format!(
+            "Program AD value with shape {:?} cannot broadcast to {:?}",
+            value.shape, shape
+        ));
+    }
+    let size = shape_size(shape)?;
+    let mut values = Vec::with_capacity(size);
+    for flat_index in 0..size {
+        let index = unravel_index(flat_index, shape);
+        values.push(value.values[broadcast_source_flat_index(&value.shape, &index)?]);
+    }
+    ProgramADNumericValue::new(shape.to_vec(), values)
+}
+
+fn reduce_to_shape(
+    value: &ProgramADNumericValue,
+    target_shape: &[usize],
+) -> Result<ProgramADNumericValue, String> {
+    let expected = broadcast_shape(target_shape, &value.shape)?;
+    if expected != value.shape {
+        return Err(format!(
+            "Program AD contribution shape {:?} cannot reduce to {:?}",
+            value.shape, target_shape
+        ));
+    }
+    let mut reduced = vec![0.0_f64; shape_size(target_shape)?];
+    for (flat_index, item) in value.values.iter().enumerate() {
+        let index = unravel_index(flat_index, &value.shape);
+        let source_index = broadcast_source_flat_index(target_shape, &index)?;
+        reduced[source_index] += item;
+    }
+    ProgramADNumericValue::new(target_shape.to_vec(), reduced)
+}
+
+fn unravel_index(mut flat_index: usize, shape: &[usize]) -> Vec<usize> {
+    if shape.is_empty() {
+        return Vec::new();
+    }
+    let mut index = vec![0usize; shape.len()];
+    for axis in (0..shape.len()).rev() {
+        let dimension = shape[axis];
+        index[axis] = flat_index % dimension;
+        flat_index /= dimension;
+    }
+    index
+}
+
+fn ravel_index(index: &[usize], shape: &[usize]) -> Result<usize, String> {
+    if index.len() != shape.len() {
+        return Err("Program AD index rank does not match shape rank".to_owned());
+    }
+    let mut flat = 0usize;
+    for (axis_index, dimension) in index.iter().zip(shape.iter()) {
+        if axis_index >= dimension {
+            return Err("Program AD index is outside shape bounds".to_owned());
+        }
+        flat = flat
+            .checked_mul(*dimension)
+            .and_then(|value| value.checked_add(*axis_index))
+            .ok_or_else(|| "Program AD flat index overflowed".to_owned())?;
+    }
+    Ok(flat)
+}
+
+fn broadcast_source_flat_index(
+    source_shape: &[usize],
+    output_index: &[usize],
+) -> Result<usize, String> {
+    if source_shape.is_empty() {
+        return Ok(0);
+    }
+    if source_shape.len() > output_index.len() {
+        return Err("Program AD source rank exceeds output rank".to_owned());
+    }
+    let offset = output_index.len() - source_shape.len();
+    let mut source_index = Vec::with_capacity(source_shape.len());
+    for (axis, dimension) in source_shape.iter().enumerate() {
+        source_index.push(if *dimension == 1 {
+            0
+        } else {
+            output_index[offset + axis]
+        });
+    }
+    ravel_index(&source_index, source_shape)
+}
+
+fn read_3x3_numeric(
+    effect: &ProgramADEffect,
+    values: &HashMap<String, ProgramADNumericValue>,
+) -> Result<[f64; 9], String> {
+    let mut matrix = [0.0_f64; 9];
+    for (slot, input) in matrix.iter_mut().zip(effect.inputs.iter()) {
+        *slot = operand_scalar_value(input, values)?;
+    }
+    Ok(matrix)
 }
 
 fn evaluate_effect(

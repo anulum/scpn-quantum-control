@@ -240,13 +240,14 @@ The Rust engine mirrors the bounded Program AD IR metadata schema through
 registry-dispatch coverage snapshot and returns deterministic family/facet
 counts plus conservative primitive-name overlap with existing bounded Rust
 scalar/static-linalg replay. Metadata summaries remain parser parity for
-`program_ad_effect_ir.v1`; Rust replay is bounded to opcode-bearing scalar
-primitive-family forward and value+gradient rows, including executed runtime
-branch metadata when matched by runtime phi provenance. Legacy opcode-free
-metadata, aliases, mutation, array semantics, array adjoints, source-level and
-non-executed branch semantics, general Program AD execution, LLVM/JIT
-differentiated execution, hardware, provider, and performance routes remain
-fail-closed.
+`program_ad_effect_ir.v1`; Rust value+gradient replay is bounded to
+opcode-bearing scalar and elementwise shaped-array rows with scalar-to-array
+broadcasting and scalar all-axis `sum` objective closure, including executed
+runtime branch metadata when matched by runtime phi provenance. Legacy
+opcode-free metadata, aliases, mutation, structural array operations, broad
+array adjoints, source-level and non-executed branch semantics, general Program
+AD execution, LLVM/JIT differentiated execution, hardware, provider, and
+performance routes remain fail-closed.
 Python callers may use `scpn_quantum_control.program_ad_rust_bridge` directly
 for the typed fail-closed wrappers, while the historical
 `scpn_quantum_control.differentiable` facade re-exports the same result

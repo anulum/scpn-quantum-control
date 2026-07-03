@@ -82,13 +82,16 @@ bounded scalar value+gradient replay exposed as
 `program_ad_registry_metadata_mirror(...)` export validates the Python
 registry-dispatch coverage snapshot and returns deterministic family/facet
 counts plus conservative primitive-name overlap with existing bounded Rust
-scalar/static-linalg replay. Rust replay only executes opcode-bearing scalar
-primitive-family `program_ad_effect_ir.v1` rows emitted by current Python
-traces, including executed runtime branch metadata when matched by runtime phi
-provenance. Legacy opcode-free metadata, aliases, mutation, array semantics,
-array adjoints, source-level and non-executed branch semantics, general
-Program AD execution, LLVM/JIT lowering, hardware execution, provider
-execution, and performance promotion remain fail-closed.
+scalar/static-linalg replay. Rust value+gradient replay executes
+opcode-bearing scalar and bounded elementwise shaped-array
+`program_ad_effect_ir.v1` rows emitted by current Python traces, including
+scalar-to-array broadcasting, adjoint broadcast reduction, scalar all-axis
+`sum` objective closure, and executed runtime branch metadata when matched by
+runtime phi provenance. Legacy opcode-free metadata, aliases, mutation,
+structural array operations, broad array adjoints, source-level and
+non-executed branch semantics, general Program AD execution, LLVM/JIT
+lowering, hardware execution, provider execution, and performance promotion
+remain fail-closed.
 Program AD static alias-lattice reports preserve unknown alias-edge provenance
 as `ProgramADUnknownAliasEdge` rows and attach the `unknown_alias_edge_kinds`
 blocker before readiness promotion. This is still metadata-only fail-closed

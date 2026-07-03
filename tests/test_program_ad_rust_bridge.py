@@ -35,6 +35,47 @@ class _IR:
     serialization: str
 
 
+_ARRAY_ELEMENTWISE_BROADCAST_SUM_PROGRAM_AD_IR = """{
+  "format": "program_ad_effect_ir.v1",
+  "ssa_values": [
+    {"name": "%0", "producer": 0, "version": 0, "shape": [3], "dtype": "float64", "effect": 0},
+    {"name": "%1", "producer": 1, "version": 0, "shape": [], "dtype": "float64", "effect": 1},
+    {"name": "%2", "producer": 2, "version": 0, "shape": [3], "dtype": "float64", "effect": 2},
+    {"name": "%3", "producer": 3, "version": 0, "shape": [3], "dtype": "float64", "effect": 3},
+    {"name": "%4", "producer": 4, "version": 0, "shape": [3], "dtype": "float64", "effect": 4},
+    {"name": "%5", "producer": 5, "version": 0, "shape": [], "dtype": "float64", "effect": 5}
+  ],
+  "effects": [
+    {"index": 0, "kind": "parameter", "target": "%0", "inputs": ["x"], "version": 0, "ordering": 0, "operation": "parameter"},
+    {"index": 1, "kind": "parameter", "target": "%1", "inputs": ["bias"], "version": 0, "ordering": 1, "operation": "parameter"},
+    {"index": 2, "kind": "primitive", "target": "%2", "inputs": ["%0"], "version": 0, "ordering": 2, "operation": "sin"},
+    {"index": 3, "kind": "pure", "target": "%3", "inputs": ["%0", "%1"], "version": 0, "ordering": 3, "operation": "add"},
+    {"index": 4, "kind": "pure", "target": "%4", "inputs": ["%2", "%3"], "version": 0, "ordering": 4, "operation": "mul"},
+    {"index": 5, "kind": "primitive", "target": "%5", "inputs": ["%4"], "version": 0, "ordering": 5, "operation": "sum"}
+  ],
+  "alias_edges": [],
+  "control_regions": [],
+  "phi_nodes": [],
+  "bytecode_offsets": [0, 2, 4]
+}"""
+
+_ARRAY_ELEMENTWISE_VECTOR_OBJECTIVE_PROGRAM_AD_IR = """{
+  "format": "program_ad_effect_ir.v1",
+  "ssa_values": [
+    {"name": "%0", "producer": 0, "version": 0, "shape": [2], "dtype": "float64", "effect": 0},
+    {"name": "%1", "producer": 1, "version": 0, "shape": [2], "dtype": "float64", "effect": 1}
+  ],
+  "effects": [
+    {"index": 0, "kind": "parameter", "target": "%0", "inputs": ["x"], "version": 0, "ordering": 0, "operation": "parameter"},
+    {"index": 1, "kind": "primitive", "target": "%1", "inputs": ["%0"], "version": 0, "ordering": 1, "operation": "sin"}
+  ],
+  "alias_edges": [],
+  "control_regions": [],
+  "phi_nodes": [],
+  "bytecode_offsets": [0, 2]
+}"""
+
+
 def _install_fake_engine(monkeypatch: pytest.MonkeyPatch, engine: ModuleType) -> None:
     monkeypatch.setitem(sys.modules, "scpn_quantum_engine", engine)
 
@@ -58,7 +99,7 @@ def test_value_and_gradient_bridge_is_shared_by_module_and_facade(
                 "effect_count": 4,
                 "supported_effect_count": 4,
                 "blocked_reasons": [],
-                "claim_boundary": "bounded_rust_program_ad_ir_scalar_and_static_linalg_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit",
+                "claim_boundary": "bounded_rust_program_ad_ir_elementwise_array_and_static_linalg_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit",
             }
         )
 
@@ -224,7 +265,7 @@ def test_rust_program_ad_value_and_gradient_replay_matches_python_trace() -> Non
     assert rust_result.supported_effect_count == len(result.program_ir.effects)
     assert (
         rust_result.claim_boundary
-        == "bounded_rust_program_ad_ir_scalar_and_static_linalg_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit"
+        == "bounded_rust_program_ad_ir_elementwise_array_and_static_linalg_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit"
     )
 
 
@@ -285,7 +326,7 @@ def test_rust_program_ad_value_and_gradient_replays_executed_branch_trace() -> N
     assert rust_result.supported_effect_count == len(result.program_ir.effects)
     assert (
         rust_result.claim_boundary
-        == "bounded_rust_program_ad_ir_scalar_and_static_linalg_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit"
+        == "bounded_rust_program_ad_ir_elementwise_array_and_static_linalg_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit"
     )
 
 
@@ -341,8 +382,56 @@ def test_rust_program_ad_value_and_gradient_replays_scalar_primitive_family_trac
     assert rust_result.supported_effect_count == len(result.program_ir.effects)
     assert (
         rust_result.claim_boundary
-        == "bounded_rust_program_ad_ir_scalar_and_static_linalg_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit"
+        == "bounded_rust_program_ad_ir_elementwise_array_and_static_linalg_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit"
     )
+
+
+def test_rust_program_ad_value_and_gradient_replays_array_elementwise_broadcast_sum() -> None:
+    """Rust Program AD replay should handle shaped elementwise array adjoints."""
+
+    engine = pytest.importorskip("scpn_quantum_engine")
+    assert callable(getattr(engine, "program_ad_effect_ir_interpret_value_and_gradient", None))
+    values = np.array([0.2, -0.3, 0.5, 1.25], dtype=np.float64)
+    x = values[:3]
+    bias = float(values[3])
+    expected_value = float(np.sum(np.sin(x) * (x + bias)))
+    expected_gradient = np.concatenate(
+        (
+            np.cos(x) * (x + bias) + np.sin(x),
+            np.array([np.sum(np.sin(x))], dtype=np.float64),
+        )
+    )
+
+    rust_result = value_and_grad_program_ad_effect_ir_with_rust(
+        _ARRAY_ELEMENTWISE_BROADCAST_SUM_PROGRAM_AD_IR,
+        values,
+    )
+
+    assert rust_result.supported is True, rust_result.blocked_reasons
+    assert rust_result.value == pytest.approx(expected_value, abs=1.0e-12)
+    np.testing.assert_allclose(rust_result.gradient, expected_gradient, atol=1.0e-12)
+    assert rust_result.parameter_targets == ("%0[0]", "%0[1]", "%0[2]", "%1")
+    assert rust_result.supported_effect_count == 6
+    assert (
+        rust_result.claim_boundary
+        == "bounded_rust_program_ad_ir_elementwise_array_and_static_linalg_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit"
+    )
+
+
+def test_rust_program_ad_value_and_gradient_rejects_vector_objective() -> None:
+    """Rust Program AD replay should fail closed on non-scalar objectives."""
+
+    engine = pytest.importorskip("scpn_quantum_engine")
+    assert callable(getattr(engine, "program_ad_effect_ir_interpret_value_and_gradient", None))
+    rust_result = value_and_grad_program_ad_effect_ir_with_rust(
+        _ARRAY_ELEMENTWISE_VECTOR_OBJECTIVE_PROGRAM_AD_IR,
+        np.array([0.2, -0.3], dtype=np.float64),
+    )
+
+    assert rust_result.supported is False
+    assert rust_result.value is None
+    assert rust_result.gradient.size == 0
+    assert any("requires a scalar objective" in reason for reason in rust_result.blocked_reasons)
 
 
 def test_bridge_fails_closed_when_native_extension_or_export_is_missing(
@@ -861,7 +950,7 @@ def test_bridge_replays_linalg_det_2x2_with_real_engine() -> None:
     _, reference = program_adjoint_value_and_grad(_objective_det_2x2, sample)
     np.testing.assert_allclose(np.asarray(rust.gradient), reference, atol=1.0e-12)
     assert rust.claim_boundary.endswith(
-        "scalar_and_static_linalg_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit"
+        "elementwise_array_and_static_linalg_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit"
     )
 
 

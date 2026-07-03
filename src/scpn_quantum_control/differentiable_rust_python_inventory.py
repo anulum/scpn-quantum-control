@@ -372,7 +372,7 @@ def _default_inventory_rows(
         ),
         _inventory_row(
             "rust_program_ad_ir",
-            "Rust Program AD IR parser plus bounded scalar primitive, value+gradient, and executed branch replay",
+            "Rust Program AD IR parser plus bounded scalar and elementwise-array value+gradient replay",
             "rust_backed",
             "src/scpn_quantum_control/differentiable.py",
             (
@@ -402,8 +402,8 @@ def _default_inventory_rows(
             "partial",
             "partial",
             (
-                "array adjoints are missing",
-                "registry metadata mirror, LLVM/JIT lowering, and isolated benchmark evidence are missing",
+                "general structural array adjoints beyond bounded elementwise broadcast and all-axis sum are missing",
+                "registry metadata mirror, LLVM/JIT lowering, broad linalg array adjoints, and isolated benchmark evidence are missing",
             ),
         ),
         _inventory_row(
