@@ -78,6 +78,7 @@ def test_expected_groups_are_present() -> None:
         "diagnostics",
         "analysis",
         "control_and_design",
+        "visualisation",
         "types",
         "dispatch",
         "tier_introspection",

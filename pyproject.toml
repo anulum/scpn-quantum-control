@@ -187,6 +187,7 @@ ignore = [
 "tests/test_diff_kuramoto_autodiff_witness.py" = ["E402", "I001"]  # importorskip(jax) before local import
 "tests/kuramoto_delay_sensitivity_witness.py" = ["E402", "I001"]  # importorskip(jax) before local import
 "tests/test_diff_kuramoto_delay_sensitivity_witness.py" = ["E402", "I001"]  # importorskip(jax) before local import
+"tests/test_kuramoto_visualisation.py" = ["E402", "I001"]  # importorskip(matplotlib) before local import
 
 [tool.ruff.lint.isort]
 known-first-party = ["scpn_quantum_control"]

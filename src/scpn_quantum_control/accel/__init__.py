@@ -418,6 +418,12 @@ from .kuramoto_system_id import (
     trajectory_match_value,
     trajectory_match_value_and_grad,
 )
+from .kuramoto_visualisation import (
+    chimera_snapshot,
+    network_phase_embedding,
+    order_parameter_timeseries,
+    phase_raster,
+)
 from .kuramoto_watanabe_strogatz import (
     WatanabeStrogatzTrajectory,
     integrate_watanabe_strogatz,
@@ -600,6 +606,10 @@ __all__ = [
     "learn_coupling",
     "trajectory_match_value",
     "trajectory_match_value_and_grad",
+    "phase_raster",
+    "order_parameter_timeseries",
+    "chimera_snapshot",
+    "network_phase_embedding",
     "StabilitySpectrum",
     "is_synchronisation_stable",
     "stability_spectrum",

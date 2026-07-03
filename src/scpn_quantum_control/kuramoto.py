@@ -37,6 +37,9 @@ The groups are:
 ``control_and_design``
     Terminal control objectives and their gradients, optimal-coupling and pinning design, and
     coupling system identification.
+``visualisation``
+    Matplotlib renderers for oscillator and network dynamics — the phase raster, the order-parameter
+    time series, the per-community chimera snapshot and the coupling-network phase embedding.
 ``types``
     The callable type aliases shared across the toolkit (forces, Jacobians, plasticity rules, …).
 ``dispatch``
@@ -139,6 +142,7 @@ from .accel import (
     chimera_diagnostics,
     chimera_index,
     chimera_index_gradient,
+    chimera_snapshot,
     cluster_count,
     cluster_partition,
     coherence_matrix,
@@ -324,6 +328,7 @@ from .accel import (
     multiplex_synchronisation_stability,
     mutual_information_matrix,
     network_control_value_and_grad,
+    network_phase_embedding,
     networked_kuramoto_force,
     networked_kuramoto_jacobian,
     networked_phase_rule,
@@ -340,6 +345,7 @@ from .accel import (
     order_parameter,
     order_parameter_gradient,
     order_parameter_hessian,
+    order_parameter_timeseries,
     oscillator_ising_energy,
     oscillator_ising_field,
     ott_antonsen_field,
@@ -355,6 +361,7 @@ from .accel import (
     phase_entropy,
     phase_entropy_series,
     phase_locking_matrix,
+    phase_raster,
     phase_synchronisation,
     phase_target_objective,
     pinning_coherence_value,
@@ -751,6 +758,12 @@ _CAPABILITIES: dict[str, tuple[str, ...]] = {
         "coordinated_reset_terminal_value_and_grad",
         "CoordinatedResetGradients",
     ),
+    "visualisation": (
+        "phase_raster",
+        "order_parameter_timeseries",
+        "chimera_snapshot",
+        "network_phase_embedding",
+    ),
     "types": (
         "PhaseForce",
         "PhaseJacobian",
@@ -857,6 +870,7 @@ __all__ = [
     "NetworkControlGradients",
     "integrate_controlled_network",
     "network_control_value_and_grad",
+    "network_phase_embedding",
     "optimise_network_control",
     "kuramoto_sdre_gain",
     "sdre_control_input",
@@ -1017,6 +1031,7 @@ __all__ = [
     "chimera_diagnostics",
     "chimera_index",
     "chimera_index_gradient",
+    "chimera_snapshot",
     "cluster_count",
     "cluster_partition",
     "coherence_matrix",
@@ -1169,6 +1184,7 @@ __all__ = [
     "order_parameter",
     "order_parameter_gradient",
     "order_parameter_hessian",
+    "order_parameter_timeseries",
     "ott_antonsen_field",
     "ott_antonsen_order_parameter",
     "ott_antonsen_steady_state",
@@ -1180,6 +1196,7 @@ __all__ = [
     "phase_entropy",
     "phase_entropy_series",
     "phase_locking_matrix",
+    "phase_raster",
     "phase_target_objective",
     "pinning_coherence_value",
     "pinning_coherence_value_and_grad",

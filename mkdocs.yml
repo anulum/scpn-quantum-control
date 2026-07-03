@@ -111,6 +111,7 @@ nav:
           - DLA-Protected Logical Synchronisation: dla_protected_subspace.md
           - DLA-Protected Scar Memory: dla_protected_scar_memory.md
           - Kuramoto Variants: kuramoto_variants.md
+          - Kuramoto Visualisation: kuramoto_visualisation.md
           - Witness Discovery: witness_discovery.md
           - Application Benchmark Plugins: application_benchmarks.md
           - Real-Data Synchronisation Forecasting: real_data_sync_forecasting.md
