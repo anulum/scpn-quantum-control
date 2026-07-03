@@ -69,8 +69,9 @@ def test_trajectory_runs_on_the_jax_default_device() -> None:
     import jax
 
     theta0, omega, coupling = _network(16, seed=7)
-    _, jnp, trajectory = jk._load_backend()
-    result = trajectory(
+    backend = jk._load_backend()
+    jnp = backend.jnp
+    result = backend.trajectory(
         jnp.asarray(theta0), jnp.asarray(omega), jnp.asarray(coupling), _DT, _STEPS
     )
     # the jitted solve lands on the accelerator JAX selected (a CUDA GPU when one is present)
@@ -125,3 +126,73 @@ def test_forward_and_gradient_are_deterministic() -> None:
     grad_b = jk.jax_kuramoto_rk4_gradient(theta0, omega, coupling, _DT, _STEPS, cotangent)
     for first_grad, second_grad in zip(grad_a, grad_b, strict=True):
         assert np.array_equal(first_grad, second_grad)
+
+
+def _ensemble(
+    n: int, batch: int, seed: int
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    rng = np.random.default_rng(seed)
+    omega = rng.normal(0.0, 0.7, size=n)
+    coupling = np.full((n, n), 1.8 / n, dtype=np.float64)
+    np.fill_diagonal(coupling, 0.0)
+    theta0_batch = rng.uniform(0.0, 2.0 * np.pi, size=(batch, n))
+    cotangent_batch = rng.normal(0.0, 1.0, size=(batch, n))
+    return theta0_batch, omega, coupling, cotangent_batch
+
+
+def test_ensemble_forward_matches_each_single_member() -> None:
+    batch, n = 6, 32
+    theta0_batch, omega, coupling, _ = _ensemble(n, batch, seed=21)
+    ensemble = jk.jax_kuramoto_rk4_ensemble(theta0_batch, omega, coupling, _DT, _STEPS)
+    assert ensemble.shape == (batch, _STEPS + 1, n)
+    for member in range(batch):
+        single = jk.jax_kuramoto_rk4_trajectory(theta0_batch[member], omega, coupling, _DT, _STEPS)
+        # the vmap batches the identical solve, so each member is bit-for-bit the single call
+        assert np.array_equal(ensemble[member], single)
+
+
+def test_ensemble_gradient_matches_each_single_member() -> None:
+    batch, n = 6, 32
+    theta0_batch, omega, coupling, cotangent_batch = _ensemble(n, batch, seed=22)
+    grad_theta0, grad_omega, grad_coupling = jk.jax_kuramoto_rk4_ensemble_gradient(
+        theta0_batch, omega, coupling, _DT, _STEPS, cotangent_batch
+    )
+    assert grad_theta0.shape == (batch, n)
+    assert grad_omega.shape == (batch, n)
+    assert grad_coupling.shape == (batch, n, n)
+    for member in range(batch):
+        single = jk.jax_kuramoto_rk4_gradient(
+            theta0_batch[member], omega, coupling, _DT, _STEPS, cotangent_batch[member]
+        )
+        assert np.max(np.abs(grad_theta0[member] - single[0])) < 1e-9
+        assert np.max(np.abs(grad_omega[member] - single[1])) < 1e-9
+        assert np.max(np.abs(grad_coupling[member] - single[2])) < 1e-9
+
+
+def test_ensemble_runs_on_the_jax_default_device() -> None:
+    import jax
+
+    theta0_batch, omega, coupling, _ = _ensemble(16, 4, seed=23)
+    backend = jk._load_backend()
+    jnp = backend.jnp
+    result = backend.ensemble_trajectory(
+        jnp.asarray(theta0_batch), jnp.asarray(omega), jnp.asarray(coupling), _DT, _STEPS
+    )
+    # the batched solve lands on the accelerator JAX selected (a CUDA GPU when one is present)
+    assert result.device == jax.devices()[0]
+
+
+def test_ensemble_rejects_bad_shapes() -> None:
+    theta0_batch, omega, coupling, cotangent_batch = _ensemble(6, 4, seed=24)
+    with pytest.raises(ValueError, match="two-dimensional"):
+        jk.jax_kuramoto_rk4_ensemble(theta0_batch[0], omega, coupling, _DT, _STEPS)
+    with pytest.raises(ValueError, match="B >= 1"):
+        jk.jax_kuramoto_rk4_ensemble(theta0_batch[:0], omega, coupling, _DT, _STEPS)
+    with pytest.raises(ValueError, match="n_steps must be positive"):
+        jk.jax_kuramoto_rk4_ensemble_gradient(
+            theta0_batch, omega, coupling, _DT, 0, cotangent_batch
+        )
+    with pytest.raises(ValueError, match="cotangent_batch"):
+        jk.jax_kuramoto_rk4_ensemble_gradient(
+            theta0_batch, omega, coupling, _DT, _STEPS, cotangent_batch[:, :-1]
+        )

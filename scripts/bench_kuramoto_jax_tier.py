@@ -29,7 +29,10 @@ from pathlib import Path
 import numpy as np
 
 from scpn_quantum_control import kuramoto
-from scpn_quantum_control.accel.jax_kuramoto import jax_kuramoto_rk4_trajectory
+from scpn_quantum_control.accel.jax_kuramoto import (
+    jax_kuramoto_rk4_ensemble,
+    jax_kuramoto_rk4_trajectory,
+)
 from scpn_quantum_control.accel.tier_benchmark import capture_provenance, measure
 from scpn_quantum_control.hardware.jax_accel import is_jax_gpu_available, jax_device_name
 
@@ -65,6 +68,12 @@ def _parse_args(argv: list[str]) -> argparse.Namespace:
     )
     parser.add_argument("--repeats", type=int, default=15, help="timed calls (default 15)")
     parser.add_argument(
+        "--batch",
+        type=int,
+        default=64,
+        help="ensemble batch size for the vmap comparison (default 64)",
+    )
+    parser.add_argument(
         "--output",
         type=Path,
         default=_DEFAULT_OUTPUT,
@@ -94,6 +103,37 @@ def main(argv: list[str] | None = None) -> int:
         repeats=args.repeats,
     )
 
+    # vmap ensemble: solve args.batch initial conditions in one accelerator call vs the same count
+    # solved one at a time. The batching factor is advisory; the reproducible quantity is that each
+    # batched member equals its single-call solve.
+    rng = np.random.default_rng(args.seed + 1)
+    theta0_batch = rng.uniform(0.0, 2.0 * np.pi, size=(args.batch, args.n))
+    ensemble = jax_kuramoto_rk4_ensemble(theta0_batch, omega, coupling, args.dt, args.n_steps)
+    ensemble_parity = max(
+        float(
+            np.max(
+                np.abs(
+                    ensemble[i]
+                    - jax_kuramoto_rk4_trajectory(
+                        theta0_batch[i], omega, coupling, args.dt, args.n_steps
+                    )
+                )
+            )
+        )
+        for i in range(args.batch)
+    )
+    ensemble_stats = measure(
+        lambda: jax_kuramoto_rk4_ensemble(theta0_batch, omega, coupling, args.dt, args.n_steps),
+        warmup=args.warmup,
+        repeats=args.repeats,
+    )
+
+    def _sequential() -> None:
+        for row in theta0_batch:
+            jax_kuramoto_rk4_trajectory(row, omega, coupling, args.dt, args.n_steps)
+
+    sequential_stats = measure(_sequential, warmup=1, repeats=max(3, args.repeats // 3))
+
     import jax
 
     record: dict[str, object] = {
@@ -111,6 +151,10 @@ def main(argv: list[str] | None = None) -> int:
         "parity_max_abs_diff": parity_max_abs_diff,
         "jax_forward_us": jax_stats.to_dict(),
         "reference_forward_us": rust_stats.to_dict(),
+        "ensemble_batch": args.batch,
+        "ensemble_parity_max_abs_diff": ensemble_parity,
+        "ensemble_forward_us": ensemble_stats.to_dict(),
+        "sequential_forward_us": sequential_stats.to_dict(),
         "provenance": capture_provenance().to_dict(),
     }
 
@@ -124,6 +168,10 @@ def main(argv: list[str] | None = None) -> int:
     print(f"parity_max_abs_diff={parity_max_abs_diff:.2e}")
     print(
         f"jax p50 {jax_stats.p50_us:.1f} us  reference p50 {rust_stats.p50_us:.1f} us (advisory)"
+    )
+    print(
+        f"ensemble B={args.batch} parity={ensemble_parity:.2e}  batched p50 {ensemble_stats.p50_us:.1f} us"
+        f"  sequential p50 {sequential_stats.p50_us:.1f} us (advisory)"
     )
     print(f"\nwrote {output}")
     return 0

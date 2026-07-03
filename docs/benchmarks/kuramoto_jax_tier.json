@@ -1,6 +1,6 @@
 {
   "schema": "scpn-quantum-control.kuramoto-jax-tier.v1",
-  "generated_utc": "2026-07-03T15:07:00.205392+00:00",
+  "generated_utc": "2026-07-03T15:51:12.111823+00:00",
   "n_oscillators": 256,
   "dt": 0.05,
   "n_steps": 200,
@@ -12,24 +12,46 @@
   "claim_boundary": "The reproducible quantity is the cross-tier parity (parity_max_abs_diff): the JAX tier is faithful to the production Rust integrator at 64-bit precision. The per-call milliseconds are advisory host/GPU-bound evidence captured under the recorded load, governor and GPU clock, and are excluded from any performance claim (production_claim_allowed is false). The gradient tier matches the hand-derived reverse-mode adjoint to machine precision (see tests/test_jax_kuramoto).",
   "parity_max_abs_diff": 8.659739592076221e-15,
   "jax_forward_us": {
-    "p50_us": 29076.919,
-    "p95_us": 33138.426,
-    "p99_us": 33138.426,
-    "mean_us": 29499.22333333333,
-    "min_us": 24036.023,
-    "max_us": 37586.487,
-    "throughput_ops_s": 33.89919757209427,
+    "p50_us": 34475.936,
+    "p95_us": 46296.987,
+    "p99_us": 46296.987,
+    "mean_us": 36898.871,
+    "min_us": 27893.656,
+    "max_us": 62859.646,
+    "throughput_ops_s": 27.101100193553346,
     "samples": 15
   },
   "reference_forward_us": {
-    "p50_us": 1081755.071,
-    "p95_us": 1152844.114,
-    "p99_us": 1152844.114,
-    "mean_us": 1083566.5676,
-    "min_us": 972492.083,
-    "max_us": 1340697.848,
-    "throughput_ops_s": 0.9228782336971764,
+    "p50_us": 1029214.631,
+    "p95_us": 1281088.619,
+    "p99_us": 1281088.619,
+    "mean_us": 1044743.0916666667,
+    "min_us": 851244.575,
+    "max_us": 1299009.939,
+    "throughput_ops_s": 0.9571731155500741,
     "samples": 15
+  },
+  "ensemble_batch": 64,
+  "ensemble_parity_max_abs_diff": 0.0,
+  "ensemble_forward_us": {
+    "p50_us": 971465.619,
+    "p95_us": 1002406.433,
+    "p99_us": 1002406.433,
+    "mean_us": 974926.771,
+    "min_us": 952048.378,
+    "max_us": 1022385.505,
+    "throughput_ops_s": 1.0257180639057455,
+    "samples": 15
+  },
+  "sequential_forward_us": {
+    "p50_us": 1925741.151,
+    "p95_us": 1958604.285,
+    "p99_us": 1958604.285,
+    "mean_us": 1933424.6044,
+    "min_us": 1808446.674,
+    "max_us": 2123875.349,
+    "throughput_ops_s": 0.517216961925614,
+    "samples": 5
   },
   "provenance": {
     "cpu_model": "11th Gen Intel(R) Core(TM) i5-11600K @ 3.90GHz",
@@ -41,7 +63,7 @@
     "rustc": "rustup 1.29.0 (28d1352db 2026-03-05)",
     "platform": "Linux-6.17.0-35-generic-x86_64-with-glibc2.39",
     "machine": "x86_64",
-    "commit": "7f021bdfa88d0f20a5400de166e85eeae19fb7c2",
+    "commit": "c4841a75165287b2ffe38690e6c6249c3a898e7e",
     "cpu_affinity": [
       0,
       1,
@@ -57,9 +79,9 @@
       11
     ],
     "loadavg": [
-      30.26,
-      34.7,
-      29.17
+      28.48,
+      22.78,
+      24.47
     ]
   }
 }

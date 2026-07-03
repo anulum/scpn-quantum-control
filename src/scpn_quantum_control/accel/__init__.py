@@ -103,6 +103,8 @@ from .dispatcher import (
     dispatch,
 )
 from .jax_kuramoto import (
+    jax_kuramoto_rk4_ensemble,
+    jax_kuramoto_rk4_ensemble_gradient,
     jax_kuramoto_rk4_gradient,
     jax_kuramoto_rk4_trajectory,
 )
@@ -552,6 +554,8 @@ __all__ = [
     "daido_order_parameter_gradient",
     "daido_order_parameter_hessian",
     "dispatch",
+    "jax_kuramoto_rk4_ensemble",
+    "jax_kuramoto_rk4_ensemble_gradient",
     "jax_kuramoto_rk4_gradient",
     "jax_kuramoto_rk4_trajectory",
     "TerminalObjective",

@@ -12,7 +12,7 @@ reverse-mode adjoint. This module adds a fourth kind of tier: the same RK4 solve
 where the gradient is obtained by **automatic differentiation** rather than by a hand-derived scheme,
 and the whole solve runs on whatever accelerator JAX has selected (a CUDA GPU when one is present).
 
-Two capabilities are exposed:
+The tier exposes both single-solve and batched-ensemble capabilities:
 
 * :func:`jax_kuramoto_rk4_trajectory` — the forward RK4 trajectory, bit-for-bit faithful to the
   production integrator (with ``jax_enable_x64``, the GPU result matches the Rust tier to machine
@@ -24,6 +24,10 @@ Two capabilities are exposed:
   of the forward solve. It matches the hand-derived :func:`~scpn_quantum_control.accel.diff_kuramoto_rk4.kuramoto_rk4_vjp`
   to machine precision — the autodiff tier both *verifies* the hand-written adjoint and supplies the
   same gradient for objectives where a hand derivation would be laborious.
+* :func:`jax_kuramoto_rk4_ensemble` / :func:`jax_kuramoto_rk4_ensemble_gradient` — the ``vmap`` batched
+  counterparts that forward-solve and differentiate a whole batch of initial conditions in a single
+  accelerator call, a vectorisation of the entire solve the NumPy and Rust tiers cannot express (they
+  would loop over the ensemble). Each member is identical to its single-initial-condition counterpart.
 
 This tier is **opt-in**: it is a directly callable accelerated path, not a member of the default
 dispatch chain, so the default :func:`~scpn_quantum_control.accel.diff_kuramoto_rk4.kuramoto_rk4_trajectory`
@@ -35,7 +39,7 @@ place this tier in a size-aware accelerated chain without special-casing.
 
 from __future__ import annotations
 
-from functools import partial
+from dataclasses import dataclass
 from typing import Any
 
 import numpy as np
@@ -45,17 +49,35 @@ from .diff_kuramoto_rk4 import _validate_forward
 
 _VjpResult = tuple[NDArray[np.float64], NDArray[np.float64], NDArray[np.float64]]
 
-#: Lazily built ``(jax, jnp, jitted_trajectory)`` triple, cached after the first successful load so the
-#: JIT-compiled trajectory is reused across calls.
-_BACKEND: tuple[Any, Any, Any] | None = None
+
+@dataclass(frozen=True)
+class _Backend:
+    """The cached JAX backend: the imported modules plus the JIT-compiled single and ensemble solves.
+
+    ``trajectory`` / ``gradient`` are the single-initial-condition forward solve and its reverse-mode
+    gradient; ``ensemble_trajectory`` / ``ensemble_gradient`` are their ``vmap`` counterparts that map
+    over a batch of initial conditions in a single accelerator call.
+    """
+
+    jax: Any
+    jnp: Any
+    trajectory: Any
+    gradient: Any
+    ensemble_trajectory: Any
+    ensemble_gradient: Any
 
 
-def _load_backend() -> tuple[Any, Any, Any]:
-    """Return the cached ``(jax, jnp, trajectory)`` backend, building it on first use.
+#: Lazily built backend, cached after the first successful load so the JIT-compiled kernels are reused.
+_BACKEND: _Backend | None = None
+
+
+def _load_backend() -> _Backend:
+    """Return the cached JAX backend, building it on first use.
 
     Enables 64-bit precision (a global JAX configuration flag, hence set lazily rather than at import)
-    and JIT-compiles the RK4 trajectory with the step count as a static argument so JAX caches one
-    compiled kernel per step budget and array shape.
+    and JIT-compiles the single-trajectory solve, its reverse-mode gradient, and their ``vmap`` ensemble
+    counterparts, each with the step count as a static argument so JAX caches one compiled kernel per
+    step budget and array shape.
 
     Raises
     ------
@@ -85,8 +107,7 @@ def _load_backend() -> tuple[Any, Any, Any]:
         k4 = omega + force(theta + dt * k3, coupling)
         return theta + (dt / 6.0) * (k1 + 2.0 * k2 + 2.0 * k3 + k4)
 
-    @partial(jax.jit, static_argnums=(4,))
-    def trajectory(theta0: Any, omega: Any, coupling: Any, dt: float, n_steps: int) -> Any:
+    def solve(theta0: Any, omega: Any, coupling: Any, dt: float, n_steps: int) -> Any:
         def body(carry: Any, _: Any) -> tuple[Any, Any]:
             advanced = rk4_step(carry, omega, coupling, dt)
             return advanced, advanced
@@ -96,7 +117,27 @@ def _load_backend() -> tuple[Any, Any, Any]:
         _, stepped = jax.lax.scan(body, theta0, None, length=n_steps)
         return jnp.concatenate([theta0[None, :], stepped], axis=0)
 
-    _BACKEND = (jax, jnp, trajectory)
+    def gradient(
+        theta0: Any, omega: Any, coupling: Any, dt: float, n_steps: int, cotangent: Any
+    ) -> Any:
+        def final_state(initial: Any, frequency: Any, matrix: Any) -> Any:
+            return solve(initial, frequency, matrix, dt, n_steps)[-1]
+
+        _, pullback = jax.vjp(final_state, theta0, omega, coupling)
+        return pullback(cotangent)
+
+    _BACKEND = _Backend(
+        jax=jax,
+        jnp=jnp,
+        trajectory=jax.jit(solve, static_argnums=(4,)),
+        gradient=jax.jit(gradient, static_argnums=(4,)),
+        ensemble_trajectory=jax.jit(
+            jax.vmap(solve, in_axes=(0, None, None, None, None)), static_argnums=(4,)
+        ),
+        ensemble_gradient=jax.jit(
+            jax.vmap(gradient, in_axes=(0, None, None, None, None, 0)), static_argnums=(4,)
+        ),
+    )
     return _BACKEND
 
 
@@ -141,8 +182,9 @@ def jax_kuramoto_rk4_trajectory(
         If JAX is not installed.
     """
     phases, frequencies, matrix = _validate_forward(theta0, omega, coupling, n_steps)
-    _, jnp, trajectory = _load_backend()
-    result = trajectory(
+    backend = _load_backend()
+    jnp = backend.jnp
+    result = backend.trajectory(
         jnp.asarray(phases), jnp.asarray(frequencies), jnp.asarray(matrix), float(dt), int(n_steps)
     )
     return np.asarray(result, dtype=np.float64)
@@ -199,15 +241,149 @@ def jax_kuramoto_rk4_gradient(
     seed = np.ascontiguousarray(cotangent, dtype=np.float64)
     if seed.shape != (phases.size,):
         raise ValueError(f"cotangent must have shape ({phases.size},), got {seed.shape}")
-    jax, jnp, trajectory = _load_backend()
-
-    def final_state(initial: Any, frequency: Any, matrix_argument: Any) -> Any:
-        return trajectory(initial, frequency, matrix_argument, float(dt), int(n_steps))[-1]
-
-    _, pullback = jax.vjp(
-        final_state, jnp.asarray(phases), jnp.asarray(frequencies), jnp.asarray(matrix)
+    backend = _load_backend()
+    jnp = backend.jnp
+    grad_theta0, grad_omega, grad_coupling = backend.gradient(
+        jnp.asarray(phases),
+        jnp.asarray(frequencies),
+        jnp.asarray(matrix),
+        float(dt),
+        int(n_steps),
+        jnp.asarray(seed),
     )
-    grad_theta0, grad_omega, grad_coupling = pullback(jnp.asarray(seed))
+    return (
+        np.asarray(grad_theta0, dtype=np.float64),
+        np.asarray(grad_omega, dtype=np.float64),
+        np.asarray(grad_coupling, dtype=np.float64),
+    )
+
+
+def _validate_ensemble(
+    theta0_batch: NDArray[np.float64],
+    omega: NDArray[np.float64],
+    coupling: NDArray[np.float64],
+    n_steps: int,
+) -> tuple[NDArray[np.float64], NDArray[np.float64], NDArray[np.float64]]:
+    """Return contiguous ``(theta0_batch, omega, coupling)`` after batch-shape validation."""
+    batch = np.ascontiguousarray(theta0_batch, dtype=np.float64)
+    if batch.ndim != 2 or batch.shape[0] < 1:
+        raise ValueError(
+            f"theta0_batch must be a two-dimensional (B, N) array with B >= 1, got shape {batch.shape}"
+        )
+    _, frequencies, matrix = _validate_forward(batch[0], omega, coupling, n_steps)
+    return batch, frequencies, matrix
+
+
+def jax_kuramoto_rk4_ensemble(
+    theta0_batch: NDArray[np.float64],
+    omega: NDArray[np.float64],
+    coupling: NDArray[np.float64],
+    dt: float,
+    n_steps: int,
+) -> NDArray[np.float64]:
+    r"""Batched forward RK4 trajectories for a whole ensemble of initial conditions.
+
+    Solves ``B`` initial conditions that share the same frequencies and coupling in a single
+    accelerator call by :func:`jax.vmap` over the batch axis — a vectorisation of the *entire* solve
+    the NumPy and Rust tiers cannot express (they would loop over the ensemble). Each member is
+    identical to the single-initial-condition :func:`jax_kuramoto_rk4_trajectory`.
+
+    Parameters
+    ----------
+    theta0_batch : numpy.ndarray
+        The ``(B, N)`` batch of initial phases.
+    omega : numpy.ndarray
+        The natural frequencies ``ω`` (length ``N``), shared across the batch.
+    coupling : numpy.ndarray
+        The ``(N, N)`` coupling matrix ``K``, shared across the batch.
+    dt : float
+        The RK4 step size.
+    n_steps : int
+        The number of RK4 steps (``≥ 0``).
+
+    Returns
+    -------
+    numpy.ndarray
+        The ``(B, n_steps + 1, N)`` batch of phase trajectories.
+
+    Raises
+    ------
+    ValueError
+        If ``theta0_batch`` is not ``(B, N)`` with ``B ≥ 1``, the frequencies or coupling are
+        inconsistent, or ``n_steps`` is negative.
+    ImportError
+        If JAX is not installed.
+    """
+    batch, frequencies, matrix = _validate_ensemble(theta0_batch, omega, coupling, n_steps)
+    backend = _load_backend()
+    jnp = backend.jnp
+    result = backend.ensemble_trajectory(
+        jnp.asarray(batch), jnp.asarray(frequencies), jnp.asarray(matrix), float(dt), int(n_steps)
+    )
+    return np.asarray(result, dtype=np.float64)
+
+
+def jax_kuramoto_rk4_ensemble_gradient(
+    theta0_batch: NDArray[np.float64],
+    omega: NDArray[np.float64],
+    coupling: NDArray[np.float64],
+    dt: float,
+    n_steps: int,
+    cotangent_batch: NDArray[np.float64],
+) -> _VjpResult:
+    r"""Batched reverse-mode gradients for a whole ensemble of initial conditions.
+
+    For each ensemble member ``i`` with its own cotangent ``∂L_i/∂θ_N``, returns the per-member
+    gradients with respect to the initial phases, the frequencies and the coupling, computed in a
+    single accelerator call by :func:`jax.vmap` over the batch. Each member is identical to the
+    single-initial-condition :func:`jax_kuramoto_rk4_gradient`.
+
+    Parameters
+    ----------
+    theta0_batch : numpy.ndarray
+        The ``(B, N)`` batch of initial phases.
+    omega : numpy.ndarray
+        The natural frequencies ``ω`` (length ``N``), shared across the batch.
+    coupling : numpy.ndarray
+        The ``(N, N)`` coupling matrix ``K``, shared across the batch.
+    dt : float
+        The RK4 step size.
+    n_steps : int
+        The number of RK4 steps (``≥ 1``).
+    cotangent_batch : numpy.ndarray
+        The ``(B, N)`` batch of cotangents on the final phase.
+
+    Returns
+    -------
+    tuple of numpy.ndarray
+        ``(grad_theta0, grad_omega, grad_coupling)`` with shapes ``(B, N)``, ``(B, N)`` and
+        ``(B, N, N)`` — one gradient per ensemble member.
+
+    Raises
+    ------
+    ValueError
+        If a shape is inconsistent, or ``n_steps`` is not positive.
+    ImportError
+        If JAX is not installed.
+    """
+    if n_steps < 1:
+        raise ValueError(f"n_steps must be positive for a gradient, got {n_steps}")
+    batch, frequencies, matrix = _validate_ensemble(theta0_batch, omega, coupling, n_steps)
+    seeds = np.ascontiguousarray(cotangent_batch, dtype=np.float64)
+    if seeds.shape != batch.shape:
+        raise ValueError(
+            f"cotangent_batch must match theta0_batch shape {batch.shape}, got {seeds.shape}"
+        )
+    backend = _load_backend()
+    jnp = backend.jnp
+    grad_theta0, grad_omega, grad_coupling = backend.ensemble_gradient(
+        jnp.asarray(batch),
+        jnp.asarray(frequencies),
+        jnp.asarray(matrix),
+        float(dt),
+        int(n_steps),
+        jnp.asarray(seeds),
+    )
     return (
         np.asarray(grad_theta0, dtype=np.float64),
         np.asarray(grad_omega, dtype=np.float64),
@@ -216,6 +392,8 @@ def jax_kuramoto_rk4_gradient(
 
 
 __all__ = [
+    "jax_kuramoto_rk4_ensemble",
+    "jax_kuramoto_rk4_ensemble_gradient",
     "jax_kuramoto_rk4_gradient",
     "jax_kuramoto_rk4_trajectory",
 ]

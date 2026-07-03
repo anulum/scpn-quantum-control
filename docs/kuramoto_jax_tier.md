@@ -26,6 +26,22 @@ The tier is **opt-in**: `accel.jax_kuramoto.jax_kuramoto_rk4_trajectory` and
   therefore both **verifies** the hand-written adjoint and supplies the same gradient for objectives
   whose adjoint would be laborious to derive by hand.
 
+## Batched ensembles (vmap)
+
+`jax_kuramoto_rk4_ensemble` and `jax_kuramoto_rk4_ensemble_gradient` solve — and differentiate — a
+whole batch of `B` initial conditions in a **single** accelerator call, by `jax.vmap` over the batch
+axis. This is a vectorisation of the *entire* solve, not just the inner force evaluation, and the
+NumPy and Rust tiers cannot express it: they would loop over the ensemble one member at a time.
+
+The reproducible guarantee is that batching changes nothing but the layout — each batched member is
+**bit-for-bit identical** to its single-initial-condition `jax_kuramoto_rk4_trajectory` /
+`jax_kuramoto_rk4_gradient`, and the batched gradient matches the per-member single gradient to
+machine precision (`tests/test_jax_kuramoto.py`). The committed artefact records the ensemble parity
+alongside advisory batched-versus-sequential timings (`ensemble_forward_us` versus
+`sequential_forward_us`); the throughput factor is advisory and host/GPU-bound, the parity is the
+reproducible quantity. This is the capability that makes the tier useful for Monte-Carlo basin studies
+and machine-learning pipelines that evaluate many initial conditions or parameters at once.
+
 ## Wall clock (host- and GPU-dependent, boundary-guarded — not a claim)
 
 The benchmark also records advisory per-call timings. On the recorded host (an 11th Gen Intel Core
