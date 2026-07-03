@@ -159,7 +159,7 @@
         "diff-support-surface-alignment-audit-v1"
       ],
       "blockers": [
-        "non-lowered dynamic indexing semantics, dynamic axes, dynamic q/method metadata, dynamic ddof/correction metadata, zero-variance std gradients, and broad linalg array adjoints are missing",
+        "non-lowered dynamic indexing semantics, dynamic axes, dynamic trapezoid-grid metadata, dynamic q/method metadata, dynamic ddof/correction metadata, zero-variance std gradients, and broad linalg array adjoints are missing",
         "executable registry promotion, LLVM/JIT lowering, provider/hardware evidence, and isolated benchmark evidence are missing",
         "static Python source/bytecode metadata has no executable Rust parity requirement",
         "compiler lowering remains blocked until a real Program AD backend exists"
@@ -208,6 +208,7 @@
       "role": "Owns whole-program frontend evidence and bounded Rust Program AD replay.",
       "rust_surfaces": [
         "scpn_quantum_engine/src/program_ad_ir.rs",
+        "scpn_quantum_engine/src/program_ad_trapezoid_reduction.rs",
         "scpn_quantum_engine/tests/program_ad_ir.rs",
         "scpn_quantum_engine/src/lib.rs"
       ],

@@ -111,7 +111,7 @@ has a defined commercial licensing route.
 | Domain package families | 32 |
 | API documentation pages | 0 |
 | Rust PyO3 function bindings | 172 |
-| Rust source modules | 47 |
+| Rust source modules | 48 |
 | Notebook files | 100 |
 | Example files | 33 |
 | Optional extras | 43 |
@@ -350,13 +350,19 @@ Rust polyglot parity includes a claim-bounded Program AD IR metadata parser in
 `program_ad_registry_metadata_mirror(...)` validates the Python registry
 coverage snapshot, returns deterministic family/facet counts, and records only
 the primitive-name overlap with the already bounded Rust scalar/static-linalg
-replay. Metadata summaries validate `program_ad_effect_ir.v1` evidence only;
-Rust replay is bounded to opcode-bearing scalar primitive-family forward and
-value+gradient rows, including executed runtime branch metadata when matched by
-runtime phi provenance. It still fails closed on legacy opcode-free metadata,
-aliases, mutation, arrays, source-level/non-executed branch semantics, general
-Program AD execution, array adjoints, LLVM/JIT execution, hardware, provider,
-and performance promotion.
+plus elementwise/static-structural replay. Metadata summaries validate
+`program_ad_effect_ir.v1` evidence only; Rust value+gradient replay is bounded
+to opcode-bearing scalar, elementwise-array, static structural-array,
+static structural-assembly, static source-map indexing, static product,
+corrected moment, strict order-statistic, and compact static-grid trapezoid
+reductions with `dx`/`x`/`xfull` metadata, including executed runtime branch
+metadata when matched by runtime phi provenance. It still fails closed on
+legacy opcode-free metadata, aliases, mutation, non-lowered dynamic indexing
+semantics, dynamic axes, dynamic trapezoid-grid metadata, dynamic q/method
+metadata, dynamic ddof/correction metadata, zero-variance `std` gradients,
+broad linalg array adjoints, source-level/non-executed branch semantics,
+general Program AD execution, LLVM/JIT execution, hardware, provider, and
+performance promotion.
 Python callers can use `scpn_quantum_control.program_ad_rust_bridge` for the
 typed fail-closed wrappers; `scpn_quantum_control.differentiable` re-exports
 the same symbols for backward compatibility.

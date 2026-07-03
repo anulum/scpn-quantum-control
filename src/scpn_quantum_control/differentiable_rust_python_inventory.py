@@ -372,7 +372,7 @@ def _default_inventory_rows(
         ),
         _inventory_row(
             "rust_program_ad_ir",
-            "Rust Program AD IR parser plus bounded scalar, elementwise-array, structural-array, and structural-assembly value+gradient replay",
+            "Rust Program AD IR parser plus bounded scalar, elementwise-array, structural-array, structural-assembly, and static-grid trapezoid value+gradient replay",
             "rust_backed",
             "src/scpn_quantum_control/differentiable.py",
             (
@@ -383,6 +383,7 @@ def _default_inventory_rows(
             ("src/scpn_quantum_control/differentiable.py", "src/scpn_quantum_engine.pyi"),
             (
                 "scpn_quantum_engine/src/program_ad_ir.rs",
+                "scpn_quantum_engine/src/program_ad_trapezoid_reduction.rs",
                 "scpn_quantum_engine/tests/program_ad_ir.rs",
             ),
             ("docs/differentiable_api.md",),
@@ -402,7 +403,7 @@ def _default_inventory_rows(
             "partial",
             "partial",
             (
-                "non-lowered dynamic indexing semantics, dynamic axes, dynamic q/method metadata, dynamic ddof/correction metadata, zero-variance std gradients, and broad linalg array adjoints are missing",
+                "non-lowered dynamic indexing semantics, dynamic axes, dynamic trapezoid-grid metadata, dynamic q/method metadata, dynamic ddof/correction metadata, zero-variance std gradients, and broad linalg array adjoints are missing",
                 "executable registry promotion, LLVM/JIT lowering, provider/hardware evidence, and isolated benchmark evidence are missing",
             ),
         ),

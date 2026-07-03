@@ -63,6 +63,7 @@ mod program_ad_order_statistic_reduction;
 mod program_ad_product_reduction;
 pub mod program_ad_registry_mirror;
 mod program_ad_static_source_map;
+mod program_ad_trapezoid_reduction;
 mod program_ad_variance_reduction;
 pub mod pulse_shaping;
 pub mod qnode_metrics;

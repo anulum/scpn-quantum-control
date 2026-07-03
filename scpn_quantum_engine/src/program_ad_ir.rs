@@ -11,9 +11,9 @@
 //! This module mirrors the bounded Python Program AD IR schema so Rust-side
 //! tooling can inspect evidence metadata, execute a narrow scalar forward
 //! interpreter, and replay bounded scalar, elementwise-array, static structural,
-//! static source-map indexing, static product, corrected moment, and
-//! order-statistic reductions, and static-linalg value+gradient traces when
-//! opcode-bearing rows are present.
+//! static source-map indexing, static product, corrected moment,
+//! order-statistic, and static-grid trapezoid reductions, and static-linalg
+//! value+gradient traces when opcode-bearing rows are present.
 //! It does not promote LLVM lowering, JIT execution, reverse-mode compiler AD,
 //! hardware execution, or performance claims.
 
@@ -35,6 +35,9 @@ pub use crate::program_ad_registry_mirror::{
 };
 use crate::program_ad_static_source_map::{
     apply_static_source_map, scatter_static_source_map_cotangent,
+};
+use crate::program_ad_trapezoid_reduction::{
+    is_trapezoid_operation, trapezoid_cotangent, trapezoid_values,
 };
 use crate::program_ad_variance_reduction::{
     parse_moment_reduction_metadata, std_all_cotangent, std_all_value, std_axis_cotangent,
@@ -800,6 +803,9 @@ fn accumulate_reverse_effect(
         name if is_order_statistic_operation(name) => {
             accumulate_order_statistic(effect, name, values, adjoints, &cotangent)
         }
+        name if is_trapezoid_operation(name) => {
+            accumulate_trapezoid(effect, name, values, adjoints, &cotangent)
+        }
         "reshape" | "ravel" => accumulate_reshape_like(effect, values, adjoints, &cotangent),
         "broadcast_to" => accumulate_broadcast_to(effect, values, adjoints, &cotangent),
         "transpose" => accumulate_transpose(effect, values, adjoints, &cotangent),
@@ -1283,6 +1289,31 @@ fn accumulate_order_statistic(
     add_numeric_adjoint(&effect.inputs[0], contribution, values, adjoints)
 }
 
+fn accumulate_trapezoid(
+    effect: &ProgramADEffect,
+    operation: &str,
+    values: &HashMap<String, ProgramADNumericValue>,
+    adjoints: &mut HashMap<String, ProgramADNumericValue>,
+    cotangent: &ProgramADNumericValue,
+) -> Result<(), String> {
+    if effect.inputs.len() != 1 {
+        return Err(format!(
+            "effect {} trapezoid requires one input",
+            effect.index
+        ));
+    }
+    let input = numeric_operand(&effect.inputs[0], values)?;
+    let contribution_values = trapezoid_cotangent(
+        effect.index,
+        operation,
+        &input.shape,
+        &cotangent.values,
+        &input.values,
+    )?;
+    let contribution = ProgramADNumericValue::new(input.shape.clone(), contribution_values)?;
+    add_numeric_adjoint(&effect.inputs[0], contribution, values, adjoints)
+}
+
 fn accumulate_reshape_like(
     effect: &ProgramADEffect,
     values: &HashMap<String, ProgramADNumericValue>,
@@ -1563,6 +1594,9 @@ fn evaluate_numeric_effect(
         }
         name if is_order_statistic_operation(name) => {
             numeric_order_statistic(effect, name, values, shapes_by_target)
+        }
+        name if is_trapezoid_operation(name) => {
+            numeric_trapezoid(effect, name, values, shapes_by_target)
         }
         "reshape" => numeric_reshape(effect, values, shapes_by_target),
         "ravel" => numeric_ravel(effect, values, shapes_by_target),
@@ -1994,6 +2028,30 @@ fn numeric_order_statistic(
     let target = target_shape(effect, shapes_by_target)?;
     let source = numeric_operand(&effect.inputs[0], values)?;
     let output = order_statistic_values(
+        effect.index,
+        operation,
+        &source.shape,
+        &target,
+        &source.values,
+    )?;
+    ProgramADNumericValue::new(target, output)
+}
+
+fn numeric_trapezoid(
+    effect: &ProgramADEffect,
+    operation: &str,
+    values: &HashMap<String, ProgramADNumericValue>,
+    shapes_by_target: &HashMap<String, Vec<usize>>,
+) -> Result<ProgramADNumericValue, String> {
+    if effect.inputs.len() != 1 {
+        return Err(format!(
+            "effect {} trapezoid requires one input",
+            effect.index
+        ));
+    }
+    let target = target_shape(effect, shapes_by_target)?;
+    let source = numeric_operand(&effect.inputs[0], values)?;
+    let output = trapezoid_values(
         effect.index,
         operation,
         &source.shape,

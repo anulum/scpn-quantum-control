@@ -90,7 +90,7 @@
         "diff-module-hardening-audit-v1"
       ],
       "blockers": [
-        "non-lowered dynamic indexing semantics, dynamic axes, dynamic q/method metadata, dynamic ddof/correction metadata, zero-variance std gradients, and broad linalg array adjoints are missing",
+        "non-lowered dynamic indexing semantics, dynamic axes, dynamic trapezoid-grid metadata, dynamic q/method metadata, dynamic ddof/correction metadata, zero-variance std gradients, and broad linalg array adjoints are missing",
         "executable registry promotion, LLVM/JIT lowering, provider/hardware evidence, and isolated benchmark evidence are missing"
       ],
       "claim_boundary": "Differentiable Rust/Python surface inventory for rustification planning; no broad rustification promotion, provider execution, hardware execution, LLVM/JIT execution, GPU execution, or isolated benchmark claim is implied.",
@@ -137,6 +137,7 @@
       "rust_parity_status": "partial",
       "rust_surface": [
         "scpn_quantum_engine/src/program_ad_ir.rs",
+        "scpn_quantum_engine/src/program_ad_trapezoid_reduction.rs",
         "scpn_quantum_engine/tests/program_ad_ir.rs"
       ],
       "rustification_ready": false,
@@ -154,7 +155,7 @@
         "tests/test_differentiable_claim_ledger.py",
         "tests/test_differentiable_module_hardening_audit.py"
       ],
-      "title": "Rust Program AD IR parser plus bounded scalar, elementwise-array, structural-array, and structural-assembly value+gradient replay"
+      "title": "Rust Program AD IR parser plus bounded scalar, elementwise-array, structural-array, structural-assembly, and static-grid trapezoid value+gradient replay"
     },
     {
       "benchmark_status": "not_applicable",

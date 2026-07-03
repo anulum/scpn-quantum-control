@@ -246,12 +246,13 @@ shaped-array, and static structural rows with scalar-to-array broadcasting,
 static `reshape`/`ravel`, `broadcast_to`, reversed-axis `transpose`, static-axis
 `concatenate`/`stack`, static-axis `sum`/`mean`/`prod`/`var`/`std`/`max`/`min`/`median`
 reductions with static `ddof`/`correction` metadata for `var`/`std`,
+compact static-grid `trapezoid` reductions with `dx`/`x`/`xfull` metadata,
 scalar-`q` `quantile`/`percentile` reductions, and scalar all-axis
-`sum`/`mean`/`prod`/`var`/`std`/`max`/`min`/`median` plus scalar-`q` `quantile`/`percentile`
-objective closure, plus static source-map `index_map:<sN|cVALUE,...>` indexing,
+`sum`/`mean`/`prod`/`var`/`std`/`max`/`min`/`median` plus compact static-grid
+`trapezoid` and scalar-`q` `quantile`/`percentile` objective closure, plus static source-map `index_map:<sN|cVALUE,...>` indexing,
 including executed runtime branch metadata when matched by runtime phi
 provenance. Legacy opcode-free metadata, aliases, mutation, non-lowered dynamic
-indexing semantics, dynamic axes, dynamic q/method metadata, dynamic ddof/correction
+indexing semantics, dynamic axes, dynamic trapezoid-grid metadata, dynamic q/method metadata, dynamic ddof/correction
 metadata, zero-variance `std` gradients, broad array/linalg adjoints, source-level and non-executed branch
 semantics, general Program AD execution, LLVM/JIT differentiated execution,
 hardware, provider, and performance routes remain fail-closed.

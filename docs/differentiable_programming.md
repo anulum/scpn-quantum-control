@@ -89,12 +89,13 @@ the explicit operation boundary, including scalar-to-array broadcasting, adjoint
 broadcast reduction, static `reshape`/`ravel`, `broadcast_to`, reversed-axis
 `transpose`, static-axis `concatenate`/`stack`, static-axis
 `sum`/`mean`/`prod`/`var`/`std`/`max`/`min`/`median` reductions, scalar-`q`
-`quantile`/`percentile` reductions, scalar all-axis
+`quantile`/`percentile` reductions, compact static-grid `trapezoid`
+reductions with `dx`/`x`/`xfull` metadata, scalar all-axis
 `sum`/`mean`/`prod`/`var`/`std`/`max`/`min`/`median` plus scalar-`q`
-`quantile`/`percentile` objective closure, static source-map
+`quantile`/`percentile` and compact static-grid `trapezoid` objective closure, static source-map
 `index_map:<sN|cVALUE,...>` indexing, and executed runtime branch metadata when
 matched by runtime phi provenance. Legacy opcode-free metadata, aliases,
-mutation, non-lowered dynamic indexing semantics, dynamic axes, dynamic q/method
+mutation, non-lowered dynamic indexing semantics, dynamic axes, dynamic trapezoid-grid metadata, dynamic q/method
 metadata, dynamic ddof/correction metadata, zero-variance `std` gradients, broad array/linalg adjoints,
 source-level and non-executed branch semantics, general Program AD execution,
 LLVM/JIT lowering, hardware execution, provider execution, and performance
