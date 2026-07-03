@@ -4,7 +4,7 @@
   "dt": 0.01,
   "seed": 20260628,
   "reference_method": "scipy_solve_ivp",
-  "generated_utc": "2026-07-02T23:45:31Z",
+  "generated_utc": "2026-07-03T08:38:00Z",
   "rows": [
     {
       "method": "ours_rk4_rust",
@@ -15,7 +15,7 @@
       "version": "0.2.0",
       "r_final": 0.7756241917136463,
       "r_error_vs_reference": 2.955113931335518e-11,
-      "elapsed_ms": 7.7083699999999995,
+      "elapsed_ms": 2.798243,
       "install_command": null,
       "unavailable_reason": null
     },
@@ -28,7 +28,7 @@
       "version": "0.9.6",
       "r_final": 0.7756241917136463,
       "r_error_vs_reference": 2.955113931335518e-11,
-      "elapsed_ms": 70.428614,
+      "elapsed_ms": 29.446396,
       "install_command": null,
       "unavailable_reason": null
     },
@@ -41,7 +41,7 @@
       "version": "0.9.6",
       "r_final": 0.7756255831224587,
       "r_error_vs_reference": 1.3914383635293959e-06,
-      "elapsed_ms": 5.473658,
+      "elapsed_ms": 2.934603,
       "install_command": null,
       "unavailable_reason": null
     },
@@ -54,7 +54,7 @@
       "version": "1.15.3",
       "r_final": 0.7756241916840951,
       "r_error_vs_reference": null,
-      "elapsed_ms": 35.61784699559212,
+      "elapsed_ms": 14.664798974990845,
       "install_command": null,
       "unavailable_reason": null
     },
@@ -67,61 +67,61 @@
       "version": "7.17.0",
       "r_final": 0.7756241934479086,
       "r_error_vs_reference": 1.763813428645733e-09,
-      "elapsed_ms": 26.35812759399414,
+      "elapsed_ms": 7.772922515869141,
+      "install_command": null,
+      "unavailable_reason": null
+    },
+    {
+      "method": "dynamicalsystems_jl",
+      "backend": "DynamicalSystems.jl(CoupledODEs)",
+      "family": "external",
+      "language": "julia",
+      "available": true,
+      "version": "3.6.8",
+      "r_final": 0.7756241934479086,
+      "r_error_vs_reference": 1.763813428645733e-09,
+      "elapsed_ms": 1.8258094787597656,
       "install_command": null,
       "unavailable_reason": null
     },
     {
       "method": "networkdynamics_jl",
-      "backend": "NetworkDynamics.jl",
+      "backend": "NetworkDynamics.jl(complete graph)",
       "family": "external",
       "language": "julia",
-      "available": false,
-      "version": null,
-      "r_final": null,
-      "r_error_vs_reference": null,
-      "elapsed_ms": null,
-      "install_command": "julia -e 'using Pkg; Pkg.add(\"NetworkDynamics\")'",
-      "unavailable_reason": "NetworkDynamics not installed; install with: julia -e 'using Pkg; Pkg.add(\"NetworkDynamics\")'"
-    },
-    {
-      "method": "dynamicalsystems_jl",
-      "backend": "DynamicalSystems.jl",
-      "family": "external",
-      "language": "julia",
-      "available": false,
-      "version": null,
-      "r_final": null,
-      "r_error_vs_reference": null,
-      "elapsed_ms": null,
-      "install_command": "julia -e 'using Pkg; Pkg.add(\"DynamicalSystems\")'",
-      "unavailable_reason": "DynamicalSystems not installed; install with: julia -e 'using Pkg; Pkg.add(\"DynamicalSystems\")'"
+      "available": true,
+      "version": "0.10.17",
+      "r_final": 0.7756241934479086,
+      "r_error_vs_reference": 1.763813428645733e-09,
+      "elapsed_ms": 1.8198490142822266,
+      "install_command": null,
+      "unavailable_reason": null
     },
     {
       "method": "scimlsensitivity_jl",
-      "backend": "SciMLSensitivity.jl",
+      "backend": "SciMLSensitivity.jl(Tsit5 forward)",
       "family": "external",
       "language": "julia",
-      "available": false,
-      "version": null,
-      "r_final": null,
-      "r_error_vs_reference": null,
-      "elapsed_ms": null,
-      "install_command": "julia -e 'using Pkg; Pkg.add(\"SciMLSensitivity\")'",
-      "unavailable_reason": "SciMLSensitivity not installed; install with: julia -e 'using Pkg; Pkg.add(\"SciMLSensitivity\")'"
+      "available": true,
+      "version": "7.106.0",
+      "r_final": 0.7756241934479086,
+      "r_error_vs_reference": 1.763813428645733e-09,
+      "elapsed_ms": 9.764909744262695,
+      "install_command": null,
+      "unavailable_reason": null
     },
     {
       "method": "jitcdde",
-      "backend": "jitcdde (just-in-time C)",
+      "backend": "jitcdde(just-in-time C)",
       "family": "external",
       "language": "python",
-      "available": false,
-      "version": null,
-      "r_final": null,
-      "r_error_vs_reference": null,
-      "elapsed_ms": null,
-      "install_command": "pip install jitcdde",
-      "unavailable_reason": "jitcdde not installed; install with: pip install jitcdde"
+      "available": true,
+      "version": "1.8.3",
+      "r_final": 0.7756241969216741,
+      "r_error_vs_reference": 5.237578926120534e-09,
+      "elapsed_ms": 55.13137893285602,
+      "install_command": null,
+      "unavailable_reason": null
     }
   ],
   "host_readiness": {
@@ -131,19 +131,19 @@
     "governor_is_stable": false,
     "frequency_mhz": 3800.0,
     "load_average": [
-      36.3125,
-      34.6826171875,
-      36.3193359375
+      29.3076171875,
+      23.41650390625,
+      25.71923828125
     ],
     "load_is_low": false,
     "blockers": [
       "cpu0 governor is 'powersave'; set it to 'performance' for stable benchmark timing",
-      "host load 36.32 exceeds the isolated threshold 1.00; quiesce concurrent jobs"
+      "host load 29.31 exceeds the isolated threshold 1.00; quiesce concurrent jobs"
     ]
   },
   "failure_modes": [
     "external_unavailable: a competitor that is not installed yields an available=False row with its install command, not a number; absent rows do not contribute to the verdict.",
-    "julia_cold_start: the first DifferentialEquations.jl call pays package precompilation, so its timing is discarded unless a warm run is requested.",
+    "julia_cold_start: the first call into a Julia package pays package precompilation, so its timing is discarded (a warm second solve is timed).",
     "reference_accuracy: the accuracy error is measured against the reference solver only; if the reference itself is biased the error column is relative, not absolute ground truth.",
     "fixed_vs_adaptive: fixed-step rows (our RK4) and adaptive rows (SciPy RK45, our DOPRI5) trade accuracy for time differently, so a faster row is not automatically better without reading its error column."
   ],
@@ -151,19 +151,19 @@
   "determinism": "The Kuramoto problem is built deterministically from the recorded seed, so the order-parameter values are reproducible across runs and machines. Wall-clock timing is host-dependent and excluded from the reproducible set.",
   "metadata": {
     "n_steps": 600,
-    "available_count": 5,
+    "available_count": 9,
     "competitor_count": 9,
     "dispatched_rk4_tier": "rust",
     "rk4_rust_python_parity_max_abs_diff": 8.881784197001252e-16,
-    "rk4_rust_speedup_vs_python_floor": 9.136641598677802,
-    "timing_method": "Our in-process integrator rows report the median (P50) per-call wall time over 15 timed repeats after 3 discarded warm-ups; the SciPy row reports its single high-precision solve; the Julia row reports its second (warm) in-Julia solve. Absolute times are inflated under host load, so the reproducible timing quantity is the within-toolkit Rust-over-Python-floor ratio, not the absolute milliseconds.",
+    "rk4_rust_speedup_vs_python_floor": 10.523173291240253,
+    "timing_method": "Our in-process integrator rows report the median (P50) per-call wall time over 15 timed repeats after 3 discarded warm-ups; the SciPy row reports its single high-precision solve; each Julia and the jitcdde row reports its second (warm) in-solver solve. Absolute times are inflated under host load, so the reproducible timing quantity is the within-toolkit Rust-over-Python-floor ratio, not the absolute milliseconds.",
     "timing_warmup": 3,
     "timing_repeats": 15,
     "build_provenance": {
       "rust_engine": "0.2.0",
       "rustc": "rustup 1.29.0 (28d1352db 2026-03-05)",
       "juliacall": "0.9.31",
-      "commit": "7f021bdfa88d0f20a5400de166e85eeae19fb7c2"
+      "commit": "fe7ad1a7b3394632058b407d6b75f556d5a54015"
     }
   }
 }

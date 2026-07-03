@@ -46,10 +46,10 @@ def _parse_args(argv: list[str]) -> argparse.Namespace:
     parser.add_argument("--dt", type=float, default=0.01, help="fixed-grid step (default 0.01)")
     parser.add_argument("--seed", type=int, default=20260628, help="problem seed")
     parser.add_argument(
-        "--julia-timeout",
+        "--timeout",
         type=float,
         default=600.0,
-        help="hard wall-clock limit per Julia subprocess (default 600s for cold start)",
+        help="hard wall-clock limit per external subprocess (default 600s for cold start)",
     )
     parser.add_argument(
         "--output",
@@ -92,7 +92,7 @@ def main(argv: list[str] | None = None) -> int:
     problem = build_default_problem(
         n_oscillators=args.n, seed=args.seed, t_max=args.t_max, dt=args.dt
     )
-    comparison = run_kuramoto_competitive_comparison(problem, julia_timeout=args.julia_timeout)
+    comparison = run_kuramoto_competitive_comparison(problem, timeout=args.timeout)
     record = comparison.to_dict()
 
     output: Path = args.output

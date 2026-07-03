@@ -22,11 +22,11 @@ import json
 import sys
 from pathlib import Path
 from types import ModuleType
-from typing import Any
 
 import pytest
 
 from scpn_quantum_control.benchmarks import kuramoto_competitive_benchmark as kcb
+from scpn_quantum_control.benchmarks.isolated_host_readiness import HostReadiness
 
 _REPO_ROOT = Path(__file__).resolve().parents[1]
 
@@ -44,20 +44,59 @@ def _load(name: str, relative: str) -> ModuleType:
 runner = _load("bench_kuramoto_competitive", "scripts/bench_kuramoto_competitive.py")
 
 
-def _fake_runner_ok(problem: kcb.KuramotoProblem, timeout: float) -> dict[str, Any]:
-    """Injected Julia runner returning a fixed valid result."""
-    return {"r_final": 0.5, "elapsed_ms": 2.5, "version": "7.17.0"}
+def _canned_row(method: str, language: str) -> kcb.CompetitorRow:
+    return kcb.CompetitorRow(
+        method=method,
+        backend=f"{method} backend",
+        family="ours" if method.startswith("ours") else "external",
+        language=language,
+        available=True,
+        version="v",
+        r_final=0.5,
+        r_error_vs_reference=None,
+        elapsed_ms=1.0,
+    )
 
 
 def _fast_comparison(
-    problem: kcb.KuramotoProblem, *, julia_timeout: float
+    problem: kcb.KuramotoProblem, *, timeout: float
 ) -> kcb.KuramotoCompetitiveComparison:
-    """Run the real comparison with the Julia subprocess replaced by a stub."""
-    return kcb.run_kuramoto_competitive_comparison(
-        problem,
-        julia_runner=_fake_runner_ok,
-        julia_present=lambda _pkg: False,
-        clock=lambda: "2026-07-03T00:00:00Z",
+    """Build a canned comparison directly, bypassing every real solver subprocess."""
+    readiness = HostReadiness(
+        ready=False,
+        reserved_core=0,
+        governor="performance",
+        governor_is_stable=True,
+        frequency_mhz=3900.0,
+        load_average=(0.1, 0.2, 0.3),
+        load_is_low=True,
+        blockers=(),
+    )
+    rows = tuple(
+        _canned_row(method, language)
+        for method, language in (
+            ("ours_rk4_rust", "rust"),
+            ("ours_rk4_python", "python"),
+            ("ours_dopri", "python"),
+            ("scipy_solve_ivp", "python"),
+            ("jitcdde", "python"),
+        )
+    )
+    return kcb.KuramotoCompetitiveComparison(
+        n_oscillators=problem.n_oscillators,
+        t_max=problem.t_max,
+        dt=problem.dt,
+        seed=problem.seed,
+        reference_method="scipy_solve_ivp",
+        generated_utc="2026-07-03T00:00:00Z",
+        rows=rows,
+        host_readiness=readiness,
+        metadata={
+            "dispatched_rk4_tier": "rust",
+            "competitor_count": len(rows),
+            "rk4_rust_speedup_vs_python_floor": 9.1,
+            "rk4_rust_python_parity_max_abs_diff": 8.9e-16,
+        },
     )
 
 

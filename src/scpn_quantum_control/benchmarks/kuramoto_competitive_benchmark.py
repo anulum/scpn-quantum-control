@@ -7,32 +7,29 @@
 # SCPN Quantum Control — Kuramoto external competitive benchmark harness
 """Measured head-to-head comparison of our Kuramoto toolkit against external solvers.
 
-This is the external competitive harness deferred by the Kuramoto Phase-5
-benchmark closeout: it runs the *same* deterministic Kuramoto forward problem
-through our integrators and through real third-party solvers, records each
-solver's final order parameter, its accuracy error against a high-precision
-reference, and its wall-clock time, and serialises the whole comparison with the
-provenance a credible cross-package claim requires (package versions, numerical
-tolerances, host-load context, and an explicit claim boundary).
+This is the external competitive harness: it runs the *same* deterministic
+Kuramoto forward problem through our integrators and through real third-party
+solvers, records each solver's final order parameter, its accuracy error against
+a high-precision reference, and its wall-clock time, and serialises the whole
+comparison with the provenance a credible cross-package claim requires (package
+versions, numerical tolerances, host-load context, and an explicit claim
+boundary).
 
-It does not reimplement any solver. Our fixed-step rows run the production RK4
-integrator on each installed tier explicitly — the accelerated Rust
-``scpn_quantum_engine`` kernel and the NumPy Python floor — so the head-to-head
-reflects the accelerated kernel and records the true executing language rather
-than the dispatcher's default choice; the Rust row fails closed to a build
-command when the engine tier is not built, exactly as the external competitors
-do. Our adaptive row runs the pure-Python DOPRI5 orchestration (which has no
-accelerated tier). The SciPy row reuses :func:`scipy_ode_baseline`; the Julia
-row shells out to ``DifferentialEquations.jl``.
+The comparison is split across three modules so no single file carries both the
+orchestration and every external integration: :mod:`kuramoto_competitive_types`
+holds the shared :class:`KuramotoProblem`/:class:`CompetitorRow` value types,
+:mod:`kuramoto_external_competitors` holds the external-solver adapters (SciPy,
+Julia ``DifferentialEquations``/``DynamicalSystems``/``NetworkDynamics``/
+``SciMLSensitivity``, and JIT-compiled-C ``jitcdde``), and this module runs our
+own integrator tiers and assembles the record.
 
-Fail-closed contract
---------------------
-Every external competitor is probed for availability before it is run. A solver
-that is not installed (or whose subprocess errors or times out) produces an
-``available=False`` row carrying the documented install command and the reason,
-never a fabricated number. The harness is therefore complete and reproducible on
-any host: installed competitors yield real rows, absent ones yield honest
-unavailable rows that flip to live once the package is added.
+Our fixed-step rows run the production RK4 integrator on each installed tier
+explicitly — the accelerated Rust ``scpn_quantum_engine`` kernel and the NumPy
+Python floor — so the head-to-head reflects the accelerated kernel and records
+the true executing language rather than the dispatcher's default choice; the Rust
+row fails closed to a build command when the engine tier is not built, exactly as
+the external competitors do. Our adaptive row runs the pure-Python DOPRI5
+orchestration (which has no accelerated tier).
 
 Claim boundary
 --------------
@@ -44,10 +41,7 @@ verdict reports honestly where a competitor is faster than our toolkit.
 
 from __future__ import annotations
 
-import json
-import shutil
-import subprocess
-from collections.abc import Callable, Mapping
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from importlib.metadata import PackageNotFoundError
@@ -62,26 +56,22 @@ from scpn_quantum_control.accel import diff_kuramoto_rk4 as _rk4
 from scpn_quantum_control.accel import dispatcher as _dispatcher
 from scpn_quantum_control.accel import tier_benchmark as _tier
 
-from .classical_baselines import scipy_ode_baseline
+from . import kuramoto_external_competitors as _external
 from .isolated_host_readiness import HostReadiness, capture_host_readiness
-
-#: Install command per external competitor, surfaced on every unavailable row.
-INSTALL_COMMANDS: Mapping[str, str] = {
-    "scipy_solve_ivp": "pip install scipy",
-    "julia_diffeq": "julia -e 'using Pkg; Pkg.add(\"DifferentialEquations\")'",
-    "networkdynamics_jl": "julia -e 'using Pkg; Pkg.add(\"NetworkDynamics\")'",
-    "dynamicalsystems_jl": "julia -e 'using Pkg; Pkg.add(\"DynamicalSystems\")'",
-    "scimlsensitivity_jl": "julia -e 'using Pkg; Pkg.add(\"SciMLSensitivity\")'",
-    "jitcdde": "pip install jitcdde",
-}
+from .kuramoto_competitive_types import (
+    CompetitorRow,
+    KuramotoProblem,
+    build_default_problem,
+)
+from .kuramoto_external_competitors import default_julia_runner
 
 #: Documented failure modes shared by every competitive-comparison artefact.
 FAILURE_MODES: tuple[str, ...] = (
     "external_unavailable: a competitor that is not installed yields an "
     "available=False row with its install command, not a number; absent rows "
     "do not contribute to the verdict.",
-    "julia_cold_start: the first DifferentialEquations.jl call pays package "
-    "precompilation, so its timing is discarded unless a warm run is requested.",
+    "julia_cold_start: the first call into a Julia package pays package "
+    "precompilation, so its timing is discarded (a warm second solve is timed).",
     "reference_accuracy: the accuracy error is measured against the reference "
     "solver only; if the reference itself is biased the error column is "
     "relative, not absolute ground truth.",
@@ -117,173 +107,12 @@ _TIMING_REPEATS = 15
 TIMING_METHOD = (
     "Our in-process integrator rows report the median (P50) per-call wall time "
     f"over {_TIMING_REPEATS} timed repeats after {_TIMING_WARMUP} discarded "
-    "warm-ups; the SciPy row reports its single high-precision solve; the Julia "
-    "row reports its second (warm) in-Julia solve. Absolute times are inflated "
-    "under host load, so the reproducible timing quantity is the within-toolkit "
-    "Rust-over-Python-floor ratio, not the absolute milliseconds."
+    "warm-ups; the SciPy row reports its single high-precision solve; each Julia "
+    "and the jitcdde row reports its second (warm) in-solver solve. Absolute "
+    "times are inflated under host load, so the reproducible timing quantity is "
+    "the within-toolkit Rust-over-Python-floor ratio, not the absolute "
+    "milliseconds."
 )
-
-
-@dataclass(frozen=True)
-class KuramotoProblem:
-    """A deterministic Kuramoto forward problem shared by every competitor.
-
-    Parameters
-    ----------
-    coupling:
-        Symmetric ``(n, n)`` coupling matrix ``K_ij``.
-    omega:
-        Natural-frequency vector of length ``n``.
-    theta0:
-        Initial phase vector of length ``n``.
-    t_max:
-        Total integration time; positive.
-    dt:
-        Fixed-grid step for the fixed-step methods and the SciPy evaluation
-        grid; positive and not exceeding ``t_max``.
-    seed:
-        Seed the problem was generated from, recorded for provenance.
-    """
-
-    coupling: NDArray[np.float64]
-    omega: NDArray[np.float64]
-    theta0: NDArray[np.float64]
-    t_max: float
-    dt: float
-    seed: int
-
-    @property
-    def n_oscillators(self) -> int:
-        """Number of oscillators in the problem."""
-        return int(self.omega.shape[0])
-
-    @property
-    def n_steps(self) -> int:
-        """Number of fixed-grid steps, ``round(t_max / dt)``."""
-        return int(round(self.t_max / self.dt))
-
-
-def build_default_problem(
-    n_oscillators: int = 12,
-    *,
-    seed: int = 20260628,
-    t_max: float = 6.0,
-    dt: float = 0.01,
-) -> KuramotoProblem:
-    """Build the canonical deterministic Kuramoto benchmark problem.
-
-    The coupling is a seeded symmetric non-negative matrix scaled above the
-    synchronisation threshold so the dynamics are non-trivial, the frequencies
-    are seeded standard-normal, and the initial phases are seeded uniform on
-    ``[0, 2*pi)``. The construction is domain-agnostic and depends only on the
-    seed, so the comparison is reproducible without any project constant.
-
-    Parameters
-    ----------
-    n_oscillators:
-        Number of oscillators, ``n >= 2``.
-    seed:
-        Seed for the coupling, frequencies, and initial phases.
-    t_max:
-        Total integration time; positive.
-    dt:
-        Fixed-grid step; positive and not exceeding ``t_max``.
-
-    Returns
-    -------
-    KuramotoProblem
-        The deterministic problem.
-
-    Raises
-    ------
-    ValueError
-        If any argument falls outside its documented bound.
-    """
-    if n_oscillators < 2:
-        raise ValueError(f"n_oscillators must be >= 2, got {n_oscillators}")
-    if t_max <= 0.0:
-        raise ValueError(f"t_max must be positive, got {t_max}")
-    if dt <= 0.0:
-        raise ValueError(f"dt must be positive, got {dt}")
-    if dt > t_max:
-        raise ValueError(f"dt ({dt}) must not exceed t_max ({t_max})")
-
-    rng = np.random.default_rng(seed)
-    raw = rng.uniform(0.0, 1.0, size=(n_oscillators, n_oscillators))
-    symmetric = 0.5 * (raw + raw.T)
-    np.fill_diagonal(symmetric, 0.0)
-    coupling = np.asarray(2.0 * symmetric / n_oscillators, dtype=np.float64)
-    omega = np.asarray(rng.standard_normal(n_oscillators), dtype=np.float64)
-    theta0 = np.asarray(rng.uniform(0.0, 2.0 * np.pi, size=n_oscillators), dtype=np.float64)
-    return KuramotoProblem(
-        coupling=coupling,
-        omega=omega,
-        theta0=theta0,
-        t_max=float(t_max),
-        dt=float(dt),
-        seed=int(seed),
-    )
-
-
-@dataclass(frozen=True)
-class CompetitorRow:
-    """One solver's contribution to the competitive comparison.
-
-    Parameters
-    ----------
-    method:
-        Stable identifier (e.g. ``ours_rk4``, ``scipy_solve_ivp``).
-    backend:
-        Human-readable backend description.
-    family:
-        ``ours`` for our toolkit, ``external`` for a third-party competitor.
-    language:
-        Implementation language of the backend (``python`` or ``julia``).
-    available:
-        Whether the solver produced a result.
-    version:
-        Recorded package version, or ``None`` when unavailable/not captured.
-    r_final:
-        Final Kuramoto order parameter, or ``None`` when unavailable.
-    r_error_vs_reference:
-        Absolute final-order-parameter error against the reference method, or
-        ``None`` for the reference row itself or an unavailable row.
-    elapsed_ms:
-        Advisory wall-clock time in milliseconds, or ``None`` when unavailable.
-    install_command:
-        Command to install an absent external competitor, or ``None`` for our
-        rows.
-    unavailable_reason:
-        Populated only when ``available`` is ``False``.
-    """
-
-    method: str
-    backend: str
-    family: str
-    language: str
-    available: bool
-    version: str | None
-    r_final: float | None
-    r_error_vs_reference: float | None
-    elapsed_ms: float | None
-    install_command: str | None = None
-    unavailable_reason: str | None = None
-
-    def to_dict(self) -> dict[str, Any]:
-        """Return a JSON-serialisable mapping for the row."""
-        return {
-            "method": self.method,
-            "backend": self.backend,
-            "family": self.family,
-            "language": self.language,
-            "available": self.available,
-            "version": self.version,
-            "r_final": self.r_final,
-            "r_error_vs_reference": self.r_error_vs_reference,
-            "elapsed_ms": self.elapsed_ms,
-            "install_command": self.install_command,
-            "unavailable_reason": self.unavailable_reason,
-        }
 
 
 @dataclass(frozen=True)
@@ -353,10 +182,6 @@ class KuramotoCompetitiveComparison:
         }
 
 
-#: Result of a successful external-solver subprocess run.
-JuliaRunner = Callable[[KuramotoProblem, float], "dict[str, Any]"]
-#: Probe returning whether a named package is importable/installed.
-PresenceProbe = Callable[[str], bool]
 #: Clock returning the current UTC timestamp string.
 Clock = Callable[[], str]
 
@@ -548,249 +373,23 @@ def _ours_dopri_row(problem: KuramotoProblem) -> CompetitorRow:
     )
 
 
-def default_julia_runner(problem: KuramotoProblem, timeout: float) -> dict[str, Any]:
-    """Run the Kuramoto problem through Julia ``DifferentialEquations.jl``.
-
-    Shells out to a Julia process that integrates the identical networked
-    Kuramoto field with ``Tsit5`` and reports the final order parameter, the
-    in-Julia solve time, and the package version as JSON on stdout.
-
-    Parameters
-    ----------
-    problem:
-        The shared Kuramoto problem.
-    timeout:
-        Hard wall-clock limit in seconds for the subprocess.
-
-    Returns
-    -------
-    dict
-        ``{"r_final": float, "elapsed_ms": float, "version": str}``.
-
-    Raises
-    ------
-    FileNotFoundError
-        If no ``julia`` executable is on ``PATH``.
-    RuntimeError
-        If the subprocess fails, times out, or emits unparsable output (for
-        example because ``DifferentialEquations`` is not installed).
-    """
-    julia = shutil.which("julia")
-    if julia is None:
-        raise FileNotFoundError("julia executable not found on PATH")
-
-    payload = json.dumps(
-        {
-            "K": problem.coupling.tolist(),
-            "omega": problem.omega.tolist(),
-            "theta0": problem.theta0.tolist(),
-            "t_max": problem.t_max,
-        }
-    )
-    script = _JULIA_DIFFEQ_SCRIPT
-    try:
-        completed = subprocess.run(
-            [julia, "--startup-file=no", "-e", script],
-            input=payload,
-            capture_output=True,
-            text=True,
-            timeout=timeout,
-            check=False,
-        )
-    except subprocess.TimeoutExpired as exc:
-        raise RuntimeError(f"julia subprocess timed out after {timeout}s") from exc
-    if completed.returncode != 0:
-        raise RuntimeError(
-            f"julia subprocess failed (code {completed.returncode}): "
-            f"{completed.stderr.strip()[:400]}"
-        )
-    try:
-        parsed = json.loads(completed.stdout.strip().splitlines()[-1])
-    except (json.JSONDecodeError, IndexError) as exc:
-        raise RuntimeError(f"could not parse julia output: {completed.stdout[:200]!r}") from exc
-    return {
-        "r_final": float(parsed["r_final"]),
-        "elapsed_ms": float(parsed["elapsed_ms"]),
-        "version": str(parsed["version"]),
-    }
-
-
-#: Julia program reading the problem as JSON on stdin and emitting a JSON result.
-_JULIA_DIFFEQ_SCRIPT = r"""
-import Pkg
-using DifferentialEquations
-using JSON
-data = JSON.parse(read(stdin, String))
-K = reduce(vcat, [reshape(Float64.(r), 1, :) for r in data["K"]])
-omega = Float64.(data["omega"])
-theta0 = Float64.(data["theta0"])
-tmax = Float64(data["t_max"])
-function kuramoto!(du, u, p, t)
-    @inbounds for i in eachindex(u)
-        acc = omega[i]
-        for j in eachindex(u)
-            acc += K[i, j] * sin(u[j] - u[i])
-        end
-        du[i] = acc
-    end
-end
-prob = ODEProblem(kuramoto!, theta0, (0.0, tmax))
-sol = solve(prob, Tsit5(); reltol=1e-8, abstol=1e-10, save_everystep=false)
-t0 = time()
-sol = solve(prob, Tsit5(); reltol=1e-8, abstol=1e-10, save_everystep=false)
-elapsed_ms = (time() - t0) * 1000.0
-final = sol.u[end]
-z = sum(exp.(im .* final)) / length(final)
-ver = string(Pkg.installed()["DifferentialEquations"])
-println(JSON.json(Dict("r_final" => abs(z), "elapsed_ms" => elapsed_ms, "version" => ver)))
-"""
-
-
-def _python_module_present(module: str) -> bool:
-    """Return whether ``module`` can be imported in the current interpreter."""
-    import importlib.util
-
-    return importlib.util.find_spec(module) is not None
-
-
-def _unavailable_row(method: str, backend: str, language: str, reason: str) -> CompetitorRow:
-    """Build a fail-closed row for an absent or failed external competitor."""
-    return CompetitorRow(
-        method=method,
-        backend=backend,
-        family="external",
-        language=language,
-        available=False,
-        version=None,
-        r_final=None,
-        r_error_vs_reference=None,
-        elapsed_ms=None,
-        install_command=INSTALL_COMMANDS.get(method),
-        unavailable_reason=reason,
-    )
-
-
-def _scipy_row(problem: KuramotoProblem) -> CompetitorRow:
-    """Run the SciPy ``solve_ivp`` competitor, failing closed if absent."""
-    if not _python_module_present("scipy"):
-        return _unavailable_row(
-            "scipy_solve_ivp", "scipy.solve_ivp(RK45)", "python", "scipy not installed"
-        )
-    import scipy
-
-    run = scipy_ode_baseline(
-        problem.coupling,
-        problem.omega,
-        t_max=problem.t_max,
-        dt=problem.dt,
-        theta0=problem.theta0,
-        rtol=1e-10,
-        atol=1e-12,
-    )
-    return CompetitorRow(
-        method="scipy_solve_ivp",
-        backend=run.backend,
-        family="external",
-        language="python",
-        available=True,
-        version=str(scipy.__version__),
-        r_final=run.r_final,
-        r_error_vs_reference=None,
-        elapsed_ms=run.elapsed_ms,
-    )
-
-
-def _julia_diffeq_row(
-    problem: KuramotoProblem, *, timeout: float, runner: JuliaRunner
+def _with_error(
+    row: CompetitorRow, reference_method: str, reference_r: float | None
 ) -> CompetitorRow:
-    """Run the Julia ``DifferentialEquations.jl`` competitor, failing closed."""
-    try:
-        result = runner(problem, timeout)
-    except FileNotFoundError:
-        return _unavailable_row(
-            "julia_diffeq",
-            "DifferentialEquations.jl(Tsit5)",
-            "julia",
-            "julia executable not found on PATH",
-        )
-    except RuntimeError as exc:
-        return _unavailable_row(
-            "julia_diffeq", "DifferentialEquations.jl(Tsit5)", "julia", str(exc)
-        )
-    return CompetitorRow(
-        method="julia_diffeq",
-        backend="DifferentialEquations.jl(Tsit5)",
-        family="external",
-        language="julia",
-        available=True,
-        version=result["version"],
-        r_final=result["r_final"],
-        r_error_vs_reference=None,
-        elapsed_ms=result["elapsed_ms"],
-    )
+    """Return ``row`` with its accuracy error against the reference filled in."""
+    if not row.available or row.method == reference_method or row.r_final is None:
+        return row
+    if reference_r is None:
+        return row
+    from dataclasses import replace
 
-
-#: External competitors that are declared targets but not yet wired to a live run.
-_DECLARED_TARGETS: tuple[tuple[str, str, str, str], ...] = (
-    ("networkdynamics_jl", "NetworkDynamics.jl", "julia", "NetworkDynamics"),
-    ("dynamicalsystems_jl", "DynamicalSystems.jl", "julia", "DynamicalSystems"),
-    ("scimlsensitivity_jl", "SciMLSensitivity.jl", "julia", "SciMLSensitivity"),
-    ("jitcdde", "jitcdde (just-in-time C)", "python", "jitcdde"),
-)
-
-
-def _declared_target_rows(julia_present: PresenceProbe) -> tuple[CompetitorRow, ...]:
-    """Build fail-closed rows for the declared-but-unwired competitor targets.
-
-    A target whose package is installed reports that its live adapter is a
-    logged Phase-6.1 follow-up (honest WIP); an absent target reports its
-    install command. Neither fabricates a result.
-    """
-    rows: list[CompetitorRow] = []
-    for method, backend, language, package in _DECLARED_TARGETS:
-        if language == "python":
-            present = _python_module_present(package)
-        else:
-            present = julia_present(package)
-        reason = (
-            f"{package} is installed but its live adapter is a logged Phase-6.1 "
-            "follow-up, not yet wired"
-            if present
-            else f"{package} not installed; install with: {INSTALL_COMMANDS[method]}"
-        )
-        rows.append(_unavailable_row(method, backend, language, reason))
-    return tuple(rows)
-
-
-def _julia_package_present(package: str) -> bool:
-    """Return whether a Julia ``package`` is in the active project's manifest."""
-    julia = shutil.which("julia")
-    if julia is None:
-        return False
-    try:
-        completed = subprocess.run(
-            [
-                julia,
-                "--startup-file=no",
-                "-e",
-                f'using Pkg; print(haskey(Pkg.project().dependencies, "{package}"))',
-            ],
-            capture_output=True,
-            text=True,
-            timeout=60.0,
-            check=False,
-        )
-    except subprocess.TimeoutExpired:
-        return False
-    return completed.returncode == 0 and completed.stdout.strip() == "true"
+    return replace(row, r_error_vs_reference=abs(row.r_final - reference_r))
 
 
 def run_kuramoto_competitive_comparison(
     problem: KuramotoProblem | None = None,
     *,
-    julia_timeout: float = 180.0,
-    julia_runner: JuliaRunner = default_julia_runner,
-    julia_present: PresenceProbe = _julia_package_present,
+    timeout: float = 180.0,
     clock: Clock = _utc_now,
 ) -> KuramotoCompetitiveComparison:
     """Run the Kuramoto external competitive comparison.
@@ -798,24 +397,20 @@ def run_kuramoto_competitive_comparison(
     Integrates the shared problem with our RK4 fixed-step integrator on each
     installed tier explicitly (``ours_rk4_rust`` forcing the Rust kernel,
     ``ours_rk4_python`` forcing the NumPy floor), with our adaptive DOPRI5, and
-    with every available external competitor; records which tier the RK4 facade
-    serves by default and the Rust-over-Python-floor speedup and cross-tier
-    parity; designates the SciPy high-precision run as the accuracy reference
-    when present (otherwise our DOPRI5), fills each available row's error against
-    that reference, and records the full build and host provenance.
+    with every external competitor (SciPy, and the Julia ``DifferentialEquations``,
+    ``DynamicalSystems``, ``NetworkDynamics`` and ``SciMLSensitivity`` packages,
+    and JIT-compiled-C ``jitcdde``); records which tier the RK4 facade serves by
+    default and the Rust-over-Python-floor speedup and cross-tier parity;
+    designates the SciPy high-precision run as the accuracy reference when present
+    (otherwise our DOPRI5), fills each available row's error against that
+    reference, and records the full build and host provenance.
 
     Parameters
     ----------
     problem:
         The shared Kuramoto problem; defaults to :func:`build_default_problem`.
-    julia_timeout:
-        Hard wall-clock limit in seconds for each Julia subprocess.
-    julia_runner:
-        Injectable runner for the ``DifferentialEquations.jl`` row (defaults to
-        the real subprocess runner; overridden in tests).
-    julia_present:
-        Injectable probe for Julia package presence (defaults to the real
-        ``Pkg`` query; overridden in tests).
+    timeout:
+        Hard wall-clock limit in seconds for each external subprocess.
     clock:
         Injectable UTC-timestamp source (defaults to the real wall clock).
 
@@ -833,10 +428,13 @@ def run_kuramoto_competitive_comparison(
         rust_rk4,
         python_rk4,
         _ours_dopri_row(resolved),
-        _scipy_row(resolved),
-        _julia_diffeq_row(resolved, timeout=julia_timeout, runner=julia_runner),
+        _external.scipy_row(resolved),
+        _external.julia_diffeq_row(resolved, timeout=timeout),
+        _external.dynamicalsystems_row(resolved, timeout=timeout),
+        _external.networkdynamics_row(resolved, timeout=timeout),
+        _external.scimlsensitivity_row(resolved, timeout=timeout),
+        _external.jitcdde_row(resolved, timeout=timeout),
     ]
-    rows.extend(_declared_target_rows(julia_present))
 
     scipy_available = next(r for r in rows if r.method == "scipy_solve_ivp").available
     reference_method = "scipy_solve_ivp" if scipy_available else "ours_dopri"
@@ -875,14 +473,16 @@ def run_kuramoto_competitive_comparison(
     )
 
 
-def _with_error(
-    row: CompetitorRow, reference_method: str, reference_r: float | None
-) -> CompetitorRow:
-    """Return ``row`` with its accuracy error against the reference filled in."""
-    if not row.available or row.method == reference_method or row.r_final is None:
-        return row
-    if reference_r is None:
-        return row
-    from dataclasses import replace
-
-    return replace(row, r_error_vs_reference=abs(row.r_final - reference_r))
+__all__ = [
+    "CLAIM_BOUNDARY",
+    "CompetitorRow",
+    "DETERMINISM",
+    "FAILURE_MODES",
+    "KuramotoCompetitiveComparison",
+    "KuramotoProblem",
+    "RUST_ENGINE_BUILD_COMMAND",
+    "TIMING_METHOD",
+    "build_default_problem",
+    "default_julia_runner",
+    "run_kuramoto_competitive_comparison",
+]
