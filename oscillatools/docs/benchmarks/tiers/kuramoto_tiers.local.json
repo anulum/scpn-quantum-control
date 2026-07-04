@@ -1,0 +1,6779 @@
+{
+  "environment": "local",
+  "generated_utc": "2026-06-24T23:56:12Z",
+  "parameters": {
+    "daido_mode": 2,
+    "repeats": 5,
+    "sakaguchi_frustration": 0.3,
+    "seed": 20260625,
+    "sizes": [
+      8,
+      32,
+      128,
+      512
+    ],
+    "tiers": [
+      "python",
+      "rust"
+    ],
+    "trajectory_dt": 0.01,
+    "trajectory_steps": 64,
+    "warmup": 2
+  },
+  "payload_sha256": "cf4c980a9c7287c78d44363549c815bf7548a519c4e9328ec29b5c0837738488",
+  "production_claim_allowed": false,
+  "provenance": {
+    "commit": "352547b92161c3c28d4d6116b5ed3ecaea786a9d",
+    "cpu_affinity": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11
+    ],
+    "cpu_count": 12,
+    "cpu_model": "11th Gen Intel(R) Core(TM) i5-11600K @ 3.90GHz",
+    "engine": "installed",
+    "juliacall": "0.9.31",
+    "loadavg": [
+      3.83,
+      5.05,
+      7.78
+    ],
+    "machine": "x86_64",
+    "numpy": "2.2.6",
+    "platform": "Linux-6.17.0-35-generic-x86_64-with-glibc2.39",
+    "python": "3.12.3",
+    "rustc": "rustc 1.96.0 (ac68faa20 2026-05-25)"
+  },
+  "results": [
+    {
+      "extra": {
+        "cost_class": "scalar",
+        "inner": 50
+      },
+      "fastest_backend": "rust",
+      "operation": "order_parameter",
+      "parity_max_abs_diff": 5.551115123125783e-17,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 0.67842,
+            "mean_us": 0.5825359999999999,
+            "min_us": 0.55294,
+            "p50_us": 0.5614,
+            "p95_us": 0.56418,
+            "p99_us": 0.56418,
+            "samples": 5,
+            "throughput_ops_s": 1716632.1051402832
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 5.85308,
+            "mean_us": 5.467884,
+            "min_us": 5.1852800000000006,
+            "p50_us": 5.5131,
+            "p95_us": 5.55898,
+            "p99_us": 5.55898,
+            "samples": 5,
+            "throughput_ops_s": 182886.1036554543
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 8
+    },
+    {
+      "extra": {
+        "cost_class": "scalar",
+        "inner": 50
+      },
+      "fastest_backend": "rust",
+      "operation": "order_parameter",
+      "parity_max_abs_diff": 2.7755575615628914e-17,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 0.7514400000000001,
+            "mean_us": 0.745344,
+            "min_us": 0.73738,
+            "p50_us": 0.74774,
+            "p95_us": 0.75054,
+            "p99_us": 0.75054,
+            "samples": 5,
+            "throughput_ops_s": 1341662.373347072
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 8.829460000000001,
+            "mean_us": 7.203776,
+            "min_us": 6.02828,
+            "p50_us": 6.8159600000000005,
+            "p95_us": 8.22316,
+            "p99_us": 8.22316,
+            "samples": 5,
+            "throughput_ops_s": 138816.08756296698
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 32
+    },
+    {
+      "extra": {
+        "cost_class": "scalar",
+        "inner": 50
+      },
+      "fastest_backend": "rust",
+      "operation": "order_parameter",
+      "parity_max_abs_diff": 2.0816681711721685e-17,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 1.7084800000000002,
+            "mean_us": 1.54732,
+            "min_us": 1.4859200000000001,
+            "p50_us": 1.51604,
+            "p95_us": 1.53846,
+            "p99_us": 1.53846,
+            "samples": 5,
+            "throughput_ops_s": 646278.7270894191
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 8.2577,
+            "mean_us": 7.389620000000001,
+            "min_us": 6.77118,
+            "p50_us": 7.4034,
+            "p95_us": 7.515420000000001,
+            "p99_us": 7.515420000000001,
+            "samples": 5,
+            "throughput_ops_s": 135324.95581640193
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 128
+    },
+    {
+      "extra": {
+        "cost_class": "scalar",
+        "inner": 50
+      },
+      "fastest_backend": "rust",
+      "operation": "order_parameter",
+      "parity_max_abs_diff": 2.0816681711721685e-17,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 7.50852,
+            "mean_us": 5.673008,
+            "min_us": 4.8109,
+            "p50_us": 5.53744,
+            "p95_us": 5.69668,
+            "p99_us": 5.69668,
+            "samples": 5,
+            "throughput_ops_s": 176273.32801222912
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 21.180459999999997,
+            "mean_us": 14.830243999999999,
+            "min_us": 12.437460000000002,
+            "p50_us": 13.614559999999999,
+            "p95_us": 14.26082,
+            "p99_us": 14.26082,
+            "samples": 5,
+            "throughput_ops_s": 67429.77391336246
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 512
+    },
+    {
+      "extra": {
+        "cost_class": "scalar",
+        "inner": 50
+      },
+      "fastest_backend": "rust",
+      "operation": "order_parameter_gradient",
+      "parity_max_abs_diff": 1.3877787807814457e-17,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 1.0115399999999999,
+            "mean_us": 0.92958,
+            "min_us": 0.90464,
+            "p50_us": 0.9091400000000001,
+            "p95_us": 0.91362,
+            "p99_us": 0.91362,
+            "samples": 5,
+            "throughput_ops_s": 1075754.6418812796
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 11.591800000000001,
+            "mean_us": 10.942904,
+            "min_us": 10.677739999999998,
+            "p50_us": 10.76292,
+            "p95_us": 10.97954,
+            "p99_us": 10.97954,
+            "samples": 5,
+            "throughput_ops_s": 91383.42070806798
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 8
+    },
+    {
+      "extra": {
+        "cost_class": "scalar",
+        "inner": 50
+      },
+      "fastest_backend": "rust",
+      "operation": "order_parameter_gradient",
+      "parity_max_abs_diff": 3.469446951953614e-18,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 1.42468,
+            "mean_us": 1.3404880000000001,
+            "min_us": 1.3041399999999999,
+            "p50_us": 1.3281800000000001,
+            "p95_us": 1.33924,
+            "p99_us": 1.33924,
+            "samples": 5,
+            "throughput_ops_s": 745996.9802042241
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 12.20632,
+            "mean_us": 11.579728,
+            "min_us": 11.213379999999999,
+            "p50_us": 11.4711,
+            "p95_us": 11.578140000000001,
+            "p99_us": 11.578140000000001,
+            "samples": 5,
+            "throughput_ops_s": 86357.81427681203
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 32
+    },
+    {
+      "extra": {
+        "cost_class": "scalar",
+        "inner": 50
+      },
+      "fastest_backend": "rust",
+      "operation": "order_parameter_gradient",
+      "parity_max_abs_diff": 2.6020852139652106e-18,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 3.74988,
+            "mean_us": 3.2081760000000004,
+            "min_us": 2.9018599999999997,
+            "p50_us": 3.08892,
+            "p95_us": 3.38214,
+            "p99_us": 3.38214,
+            "samples": 5,
+            "throughput_ops_s": 311703.59730887576
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 19.94072,
+            "mean_us": 15.745887999999999,
+            "min_us": 13.90974,
+            "p50_us": 15.02236,
+            "p95_us": 15.40626,
+            "p99_us": 15.40626,
+            "samples": 5,
+            "throughput_ops_s": 63508.644288591415
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 128
+    },
+    {
+      "extra": {
+        "cost_class": "scalar",
+        "inner": 50
+      },
+      "fastest_backend": "rust",
+      "operation": "order_parameter_gradient",
+      "parity_max_abs_diff": 8.673617379884035e-19,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 17.2126,
+            "mean_us": 12.700644,
+            "min_us": 9.89068,
+            "p50_us": 12.786,
+            "p95_us": 13.05414,
+            "p99_us": 13.05414,
+            "samples": 5,
+            "throughput_ops_s": 78736.16487478903
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 26.677880000000002,
+            "mean_us": 24.66236,
+            "min_us": 22.9329,
+            "p50_us": 24.47096,
+            "p95_us": 24.989720000000002,
+            "p99_us": 24.989720000000002,
+            "samples": 5,
+            "throughput_ops_s": 40547.61993580501
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 512
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "rust",
+      "operation": "order_parameter_hessian",
+      "parity_max_abs_diff": 2.7755575615628914e-17,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 1.1301,
+            "mean_us": 1.01908,
+            "min_us": 0.9795999999999999,
+            "p50_us": 0.9961,
+            "p95_us": 1.0068,
+            "p99_us": 1.0068,
+            "samples": 5,
+            "throughput_ops_s": 981277.2304431448
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 25.8444,
+            "mean_us": 18.90096,
+            "min_us": 16.3324,
+            "p50_us": 16.730600000000003,
+            "p95_us": 19.1916,
+            "p99_us": 19.1916,
+            "samples": 5,
+            "throughput_ops_s": 52907.36555180266
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 8
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "rust",
+      "operation": "order_parameter_hessian",
+      "parity_max_abs_diff": 3.469446951953614e-18,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 1.6675,
+            "mean_us": 1.6259599999999998,
+            "min_us": 1.61,
+            "p50_us": 1.6131,
+            "p95_us": 1.6279,
+            "p99_us": 1.6279,
+            "samples": 5,
+            "throughput_ops_s": 615021.2797362789
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 24.8215,
+            "mean_us": 20.93028,
+            "min_us": 19.311600000000002,
+            "p50_us": 19.8614,
+            "p95_us": 21.1535,
+            "p99_us": 21.1535,
+            "samples": 5,
+            "throughput_ops_s": 47777.66948172695
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 32
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "rust",
+      "operation": "order_parameter_hessian",
+      "parity_max_abs_diff": 3.469446951953614e-18,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 7.1728,
+            "mean_us": 6.81162,
+            "min_us": 6.6956999999999995,
+            "p50_us": 6.732899999999999,
+            "p95_us": 6.7417,
+            "p99_us": 6.7417,
+            "samples": 5,
+            "throughput_ops_s": 146807.95464221435
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 55.672799999999995,
+            "mean_us": 51.51888,
+            "min_us": 47.8902,
+            "p50_us": 50.0509,
+            "p95_us": 55.6034,
+            "p99_us": 55.6034,
+            "samples": 5,
+            "throughput_ops_s": 19410.359852543377
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 128
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "rust",
+      "operation": "order_parameter_hessian",
+      "parity_max_abs_diff": 8.673617379884035e-19,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 142.5876,
+            "mean_us": 119.22193999999999,
+            "min_us": 96.1689,
+            "p50_us": 124.2144,
+            "p95_us": 134.6281,
+            "p99_us": 134.6281,
+            "samples": 5,
+            "throughput_ops_s": 8387.717898232491
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 653.3368,
+            "mean_us": 617.63644,
+            "min_us": 571.938,
+            "p50_us": 629.7727,
+            "p95_us": 644.2403,
+            "p99_us": 644.2403,
+            "samples": 5,
+            "throughput_ops_s": 1619.0754548096288
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 512
+    },
+    {
+      "extra": {
+        "cost_class": "scalar",
+        "inner": 50
+      },
+      "fastest_backend": "rust",
+      "operation": "mean_phase",
+      "parity_max_abs_diff": 6.938893903907228e-18,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 0.61546,
+            "mean_us": 0.60136,
+            "min_us": 0.58896,
+            "p50_us": 0.60036,
+            "p95_us": 0.60422,
+            "p99_us": 0.60422,
+            "samples": 5,
+            "throughput_ops_s": 1662897.4324863642
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 9.4154,
+            "mean_us": 8.85814,
+            "min_us": 8.317720000000001,
+            "p50_us": 8.90032,
+            "p95_us": 9.17706,
+            "p99_us": 9.17706,
+            "samples": 5,
+            "throughput_ops_s": 112890.51651926928
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 8
+    },
+    {
+      "extra": {
+        "cost_class": "scalar",
+        "inner": 50
+      },
+      "fastest_backend": "rust",
+      "operation": "mean_phase",
+      "parity_max_abs_diff": 2.220446049250313e-16,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 1.0165600000000001,
+            "mean_us": 0.8539960000000001,
+            "min_us": 0.77788,
+            "p50_us": 0.82706,
+            "p95_us": 0.8626999999999999,
+            "p99_us": 0.8626999999999999,
+            "samples": 5,
+            "throughput_ops_s": 1170965.6719703604
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 10.29954,
+            "mean_us": 9.198984,
+            "min_us": 8.247580000000001,
+            "p50_us": 9.14226,
+            "p95_us": 9.93542,
+            "p99_us": 9.93542,
+            "samples": 5,
+            "throughput_ops_s": 108707.65728041272
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 32
+    },
+    {
+      "extra": {
+        "cost_class": "scalar",
+        "inner": 50
+      },
+      "fastest_backend": "rust",
+      "operation": "mean_phase",
+      "parity_max_abs_diff": 8.326672684688674e-17,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 2.05952,
+            "mean_us": 1.770852,
+            "min_us": 1.6208600000000002,
+            "p50_us": 1.6230000000000002,
+            "p95_us": 1.9291,
+            "p99_us": 1.9291,
+            "samples": 5,
+            "throughput_ops_s": 564699.9297513287
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 10.279380000000002,
+            "mean_us": 10.085148,
+            "min_us": 9.705639999999999,
+            "p50_us": 10.13112,
+            "p95_us": 10.2016,
+            "p99_us": 10.2016,
+            "samples": 5,
+            "throughput_ops_s": 99155.70896926847
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 128
+    },
+    {
+      "extra": {
+        "cost_class": "scalar",
+        "inner": 50
+      },
+      "fastest_backend": "rust",
+      "operation": "mean_phase",
+      "parity_max_abs_diff": 4.440892098500626e-16,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 4.88762,
+            "mean_us": 4.768836,
+            "min_us": 4.71872,
+            "p50_us": 4.7481599999999995,
+            "p95_us": 4.75422,
+            "p99_us": 4.75422,
+            "samples": 5,
+            "throughput_ops_s": 209694.77667086895
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 17.04186,
+            "mean_us": 16.045848,
+            "min_us": 14.415999999999999,
+            "p50_us": 16.35286,
+            "p95_us": 16.85558,
+            "p99_us": 16.85558,
+            "samples": 5,
+            "throughput_ops_s": 62321.41797678752
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 512
+    },
+    {
+      "extra": {
+        "cost_class": "scalar",
+        "inner": 50
+      },
+      "fastest_backend": "rust",
+      "operation": "mean_phase_gradient",
+      "parity_max_abs_diff": 1.1102230246251565e-16,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 0.91542,
+            "mean_us": 0.903192,
+            "min_us": 0.89688,
+            "p50_us": 0.90044,
+            "p95_us": 0.90468,
+            "p99_us": 0.90468,
+            "samples": 5,
+            "throughput_ops_s": 1107184.2974694197
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 12.4125,
+            "mean_us": 11.779944,
+            "min_us": 11.15022,
+            "p50_us": 11.579500000000001,
+            "p95_us": 12.263959999999999,
+            "p99_us": 12.263959999999999,
+            "samples": 5,
+            "throughput_ops_s": 84890.04701550363
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 8
+    },
+    {
+      "extra": {
+        "cost_class": "scalar",
+        "inner": 50
+      },
+      "fastest_backend": "rust",
+      "operation": "mean_phase_gradient",
+      "parity_max_abs_diff": 2.7755575615628914e-17,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 1.45522,
+            "mean_us": 1.378504,
+            "min_us": 1.3475,
+            "p50_us": 1.35876,
+            "p95_us": 1.38324,
+            "p99_us": 1.38324,
+            "samples": 5,
+            "throughput_ops_s": 725424.0829188745
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 12.68886,
+            "mean_us": 12.006356,
+            "min_us": 11.51944,
+            "p50_us": 11.94852,
+            "p95_us": 12.21106,
+            "p99_us": 12.21106,
+            "samples": 5,
+            "throughput_ops_s": 83289.21781096612
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 32
+    },
+    {
+      "extra": {
+        "cost_class": "scalar",
+        "inner": 50
+      },
+      "fastest_backend": "rust",
+      "operation": "mean_phase_gradient",
+      "parity_max_abs_diff": 9.71445146547012e-17,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 3.8561,
+            "mean_us": 3.348404,
+            "min_us": 2.81356,
+            "p50_us": 3.1994,
+            "p95_us": 3.74744,
+            "p99_us": 3.74744,
+            "samples": 5,
+            "throughput_ops_s": 298649.74477392813
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 13.81836,
+            "mean_us": 13.631672,
+            "min_us": 13.49798,
+            "p50_us": 13.60328,
+            "p95_us": 13.637,
+            "p99_us": 13.637,
+            "samples": 5,
+            "throughput_ops_s": 73358.57259476314
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 128
+    },
+    {
+      "extra": {
+        "cost_class": "scalar",
+        "inner": 50
+      },
+      "fastest_backend": "rust",
+      "operation": "mean_phase_gradient",
+      "parity_max_abs_diff": 1.3877787807814457e-17,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 9.47298,
+            "mean_us": 9.2257,
+            "min_us": 9.03232,
+            "p50_us": 9.1648,
+            "p95_us": 9.38872,
+            "p99_us": 9.38872,
+            "samples": 5,
+            "throughput_ops_s": 108392.85907844391
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 23.731759999999998,
+            "mean_us": 23.184232,
+            "min_us": 22.757460000000002,
+            "p50_us": 23.04466,
+            "p95_us": 23.35324,
+            "p99_us": 23.35324,
+            "samples": 5,
+            "throughput_ops_s": 43132.763681798904
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 512
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "rust",
+      "operation": "mean_phase_hessian",
+      "parity_max_abs_diff": 1.1102230246251565e-16,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 1.2316,
+            "mean_us": 1.1642199999999998,
+            "min_us": 1.1199,
+            "p50_us": 1.1378,
+            "p95_us": 1.2006000000000001,
+            "p99_us": 1.2006000000000001,
+            "samples": 5,
+            "throughput_ops_s": 858944.1858068064
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 22.566300000000002,
+            "mean_us": 21.65062,
+            "min_us": 20.7832,
+            "p50_us": 21.409100000000002,
+            "p95_us": 22.54,
+            "p99_us": 22.54,
+            "samples": 5,
+            "throughput_ops_s": 46188.05373702924
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 8
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "rust",
+      "operation": "mean_phase_hessian",
+      "parity_max_abs_diff": 6.938893903907228e-18,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 2.0591,
+            "mean_us": 2.05004,
+            "min_us": 2.0393,
+            "p50_us": 2.0506,
+            "p95_us": 2.0512,
+            "p99_us": 2.0512,
+            "samples": 5,
+            "throughput_ops_s": 487795.3600905348
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 27.5435,
+            "mean_us": 25.937959999999997,
+            "min_us": 25.1001,
+            "p50_us": 25.2613,
+            "p95_us": 26.547800000000002,
+            "p99_us": 26.547800000000002,
+            "samples": 5,
+            "throughput_ops_s": 38553.53312288245
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 32
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "rust",
+      "operation": "mean_phase_hessian",
+      "parity_max_abs_diff": 1.249000902703301e-16,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 10.324,
+            "mean_us": 9.969579999999999,
+            "min_us": 9.8569,
+            "p50_us": 9.896899999999999,
+            "p95_us": 9.9006,
+            "p99_us": 9.9006,
+            "samples": 5,
+            "throughput_ops_s": 100305.12819998436
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 78.479,
+            "mean_us": 77.06258,
+            "min_us": 75.941,
+            "p50_us": 77.0381,
+            "p95_us": 77.49080000000001,
+            "p99_us": 77.49080000000001,
+            "samples": 5,
+            "throughput_ops_s": 12976.466658655861
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 128
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "rust",
+      "operation": "mean_phase_hessian",
+      "parity_max_abs_diff": 2.0816681711721685e-17,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 135.5405,
+            "mean_us": 128.13358,
+            "min_us": 122.8623,
+            "p50_us": 125.7411,
+            "p95_us": 133.4273,
+            "p99_us": 133.4273,
+            "samples": 5,
+            "throughput_ops_s": 7804.355423457302
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 784.6551000000001,
+            "mean_us": 718.4148200000001,
+            "min_us": 674.0363,
+            "p50_us": 702.5252,
+            "p95_us": 755.5654000000001,
+            "p99_us": 755.5654000000001,
+            "samples": 5,
+            "throughput_ops_s": 1391.953467775066
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 512
+    },
+    {
+      "extra": {
+        "cost_class": "scalar",
+        "inner": 50
+      },
+      "fastest_backend": "rust",
+      "operation": "daido_order_parameter",
+      "parity_max_abs_diff": 0.0,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 1.0480200000000002,
+            "mean_us": 0.9706400000000001,
+            "min_us": 0.93146,
+            "p50_us": 0.94208,
+            "p95_us": 0.99044,
+            "p99_us": 0.99044,
+            "samples": 5,
+            "throughput_ops_s": 1030248.0837385642
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 5.8396799999999995,
+            "mean_us": 5.394128,
+            "min_us": 5.12628,
+            "p50_us": 5.31372,
+            "p95_us": 5.43122,
+            "p99_us": 5.43122,
+            "samples": 5,
+            "throughput_ops_s": 185386.77613879388
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 8
+    },
+    {
+      "extra": {
+        "cost_class": "scalar",
+        "inner": 50
+      },
+      "fastest_backend": "rust",
+      "operation": "daido_order_parameter",
+      "parity_max_abs_diff": 1.3877787807814457e-17,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 0.93568,
+            "mean_us": 0.91458,
+            "min_us": 0.8713599999999999,
+            "p50_us": 0.92904,
+            "p95_us": 0.92938,
+            "p99_us": 0.92938,
+            "samples": 5,
+            "throughput_ops_s": 1093398.0624986333
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 5.85008,
+            "mean_us": 5.640040000000001,
+            "min_us": 5.53168,
+            "p50_us": 5.6386400000000005,
+            "p95_us": 5.64308,
+            "p99_us": 5.64308,
+            "samples": 5,
+            "throughput_ops_s": 177303.7070659073
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 32
+    },
+    {
+      "extra": {
+        "cost_class": "scalar",
+        "inner": 50
+      },
+      "fastest_backend": "rust",
+      "operation": "daido_order_parameter",
+      "parity_max_abs_diff": 0.0,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 1.8840999999999999,
+            "mean_us": 1.809656,
+            "min_us": 1.77962,
+            "p50_us": 1.7918399999999999,
+            "p95_us": 1.8025200000000001,
+            "p99_us": 1.8025200000000001,
+            "samples": 5,
+            "throughput_ops_s": 552591.210705239
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 8.75438,
+            "mean_us": 7.673855999999999,
+            "min_us": 7.11872,
+            "p50_us": 7.3944399999999995,
+            "p95_us": 7.93006,
+            "p99_us": 7.93006,
+            "samples": 5,
+            "throughput_ops_s": 130312.5834000534
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 128
+    },
+    {
+      "extra": {
+        "cost_class": "scalar",
+        "inner": 50
+      },
+      "fastest_backend": "rust",
+      "operation": "daido_order_parameter",
+      "parity_max_abs_diff": 1.3877787807814457e-17,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 7.08712,
+            "mean_us": 6.080299999999999,
+            "min_us": 5.48736,
+            "p50_us": 5.69904,
+            "p95_us": 6.55346,
+            "p99_us": 6.55346,
+            "samples": 5,
+            "throughput_ops_s": 164465.569133102
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 14.92192,
+            "mean_us": 14.110568,
+            "min_us": 13.62618,
+            "p50_us": 14.11046,
+            "p95_us": 14.249960000000002,
+            "p99_us": 14.249960000000002,
+            "samples": 5,
+            "throughput_ops_s": 70868.86934671942
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 512
+    },
+    {
+      "extra": {
+        "cost_class": "scalar",
+        "inner": 50
+      },
+      "fastest_backend": "rust",
+      "operation": "daido_order_parameter_gradient",
+      "parity_max_abs_diff": 2.7755575615628914e-17,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 1.13778,
+            "mean_us": 0.9656520000000001,
+            "min_us": 0.9079200000000001,
+            "p50_us": 0.9140600000000001,
+            "p95_us": 0.9545399999999999,
+            "p99_us": 0.9545399999999999,
+            "samples": 5,
+            "throughput_ops_s": 1035569.7497649256
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 13.082619999999999,
+            "mean_us": 12.053652,
+            "min_us": 11.68118,
+            "p50_us": 11.812080000000002,
+            "p95_us": 11.97048,
+            "p99_us": 11.97048,
+            "samples": 5,
+            "throughput_ops_s": 82962.40840535301
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 8
+    },
+    {
+      "extra": {
+        "cost_class": "scalar",
+        "inner": 50
+      },
+      "fastest_backend": "rust",
+      "operation": "daido_order_parameter_gradient",
+      "parity_max_abs_diff": 1.3877787807814457e-17,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 1.41328,
+            "mean_us": 1.41024,
+            "min_us": 1.40808,
+            "p50_us": 1.4096799999999998,
+            "p95_us": 1.4106,
+            "p99_us": 1.4106,
+            "samples": 5,
+            "throughput_ops_s": 709099.1604265941
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 12.646099999999999,
+            "mean_us": 12.269368,
+            "min_us": 12.105039999999999,
+            "p50_us": 12.21258,
+            "p95_us": 12.244439999999999,
+            "p99_us": 12.244439999999999,
+            "samples": 5,
+            "throughput_ops_s": 81503.79057829222
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 32
+    },
+    {
+      "extra": {
+        "cost_class": "scalar",
+        "inner": 50
+      },
+      "fastest_backend": "rust",
+      "operation": "daido_order_parameter_gradient",
+      "parity_max_abs_diff": 1.496198998029996e-17,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 3.31688,
+            "mean_us": 3.23602,
+            "min_us": 3.2088799999999997,
+            "p50_us": 3.21754,
+            "p95_us": 3.22714,
+            "p99_us": 3.22714,
+            "samples": 5,
+            "throughput_ops_s": 309021.5758864284
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 16.0454,
+            "mean_us": 15.026116000000002,
+            "min_us": 14.62114,
+            "p50_us": 14.68906,
+            "p95_us": 15.12038,
+            "p99_us": 15.12038,
+            "samples": 5,
+            "throughput_ops_s": 66550.7972918617
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 128
+    },
+    {
+      "extra": {
+        "cost_class": "scalar",
+        "inner": 50
+      },
+      "fastest_backend": "rust",
+      "operation": "daido_order_parameter_gradient",
+      "parity_max_abs_diff": 2.6020852139652106e-18,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 10.984480000000001,
+            "mean_us": 10.674479999999999,
+            "min_us": 10.55482,
+            "p50_us": 10.59466,
+            "p95_us": 10.655560000000001,
+            "p99_us": 10.655560000000001,
+            "samples": 5,
+            "throughput_ops_s": 93681.37839032909
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 44.6295,
+            "mean_us": 37.550432,
+            "min_us": 29.355520000000002,
+            "p50_us": 35.87332,
+            "p95_us": 44.14156,
+            "p99_us": 44.14156,
+            "samples": 5,
+            "throughput_ops_s": 26630.8520764821
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 512
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "rust",
+      "operation": "daido_order_parameter_hessian",
+      "parity_max_abs_diff": 5.551115123125783e-17,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 1.597,
+            "mean_us": 1.53694,
+            "min_us": 1.5070000000000001,
+            "p50_us": 1.5316,
+            "p95_us": 1.5332000000000001,
+            "p99_us": 1.5332000000000001,
+            "samples": 5,
+            "throughput_ops_s": 650643.4864080576
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 26.320100000000004,
+            "mean_us": 19.688740000000003,
+            "min_us": 17.5793,
+            "p50_us": 17.6268,
+            "p95_us": 19.331,
+            "p99_us": 19.331,
+            "samples": 5,
+            "throughput_ops_s": 50790.451801384945
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 8
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "rust",
+      "operation": "daido_order_parameter_hessian",
+      "parity_max_abs_diff": 4.163336342344337e-17,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 1.7587,
+            "mean_us": 1.73464,
+            "min_us": 1.723,
+            "p50_us": 1.7312999999999998,
+            "p95_us": 1.7318000000000002,
+            "p99_us": 1.7318000000000002,
+            "samples": 5,
+            "throughput_ops_s": 576488.4932896739
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 22.5252,
+            "mean_us": 21.20364,
+            "min_us": 20.4672,
+            "p50_us": 21.0214,
+            "p95_us": 21.3874,
+            "p99_us": 21.3874,
+            "samples": 5,
+            "throughput_ops_s": 47161.71374348932
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 32
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "rust",
+      "operation": "daido_order_parameter_hessian",
+      "parity_max_abs_diff": 4.85722573273506e-17,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 7.566800000000001,
+            "mean_us": 7.3645,
+            "min_us": 7.1285,
+            "p50_us": 7.3635,
+            "p95_us": 7.5428,
+            "p99_us": 7.5428,
+            "samples": 5,
+            "throughput_ops_s": 135786.54355353385
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 55.90560000000001,
+            "mean_us": 53.532740000000004,
+            "min_us": 52.523,
+            "p50_us": 53.2014,
+            "p95_us": 53.212300000000006,
+            "p99_us": 53.212300000000006,
+            "samples": 5,
+            "throughput_ops_s": 18680.15722714735
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 128
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "rust",
+      "operation": "daido_order_parameter_hessian",
+      "parity_max_abs_diff": 5.204170427930421e-18,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 208.51149999999998,
+            "mean_us": 161.86265999999998,
+            "min_us": 120.30429999999998,
+            "p50_us": 170.5934,
+            "p95_us": 171.42239999999998,
+            "p99_us": 171.42239999999998,
+            "samples": 5,
+            "throughput_ops_s": 6178.077142683805
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 763.0774,
+            "mean_us": 626.19186,
+            "min_us": 500.5161,
+            "p50_us": 635.9331,
+            "p95_us": 652.9218,
+            "p99_us": 652.9218,
+            "samples": 5,
+            "throughput_ops_s": 1596.9546458173377
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 512
+    },
+    {
+      "extra": {
+        "cost_class": "scalar",
+        "inner": 50
+      },
+      "fastest_backend": "rust",
+      "operation": "daido_mode_phase",
+      "parity_max_abs_diff": 1.1102230246251565e-16,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 0.9259000000000001,
+            "mean_us": 0.6867080000000001,
+            "min_us": 0.6177600000000001,
+            "p50_us": 0.6249600000000001,
+            "p95_us": 0.6466,
+            "p99_us": 0.6466,
+            "samples": 5,
+            "throughput_ops_s": 1456223.02346849
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 6.79362,
+            "mean_us": 6.630472,
+            "min_us": 6.474640000000001,
+            "p50_us": 6.6699,
+            "p95_us": 6.73884,
+            "p99_us": 6.73884,
+            "samples": 5,
+            "throughput_ops_s": 150818.82556777255
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 8
+    },
+    {
+      "extra": {
+        "cost_class": "scalar",
+        "inner": 50
+      },
+      "fastest_backend": "rust",
+      "operation": "daido_mode_phase",
+      "parity_max_abs_diff": 0.0,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 1.1495199999999999,
+            "mean_us": 0.898,
+            "min_us": 0.8140999999999999,
+            "p50_us": 0.83598,
+            "p95_us": 0.87,
+            "p99_us": 0.87,
+            "samples": 5,
+            "throughput_ops_s": 1113585.74610245
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 7.244940000000001,
+            "mean_us": 6.991608000000001,
+            "min_us": 6.7701,
+            "p50_us": 7.04312,
+            "p95_us": 7.043920000000001,
+            "p99_us": 7.043920000000001,
+            "samples": 5,
+            "throughput_ops_s": 143028.6137323488
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 32
+    },
+    {
+      "extra": {
+        "cost_class": "scalar",
+        "inner": 50
+      },
+      "fastest_backend": "rust",
+      "operation": "daido_mode_phase",
+      "parity_max_abs_diff": 1.1102230246251565e-15,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 1.8205600000000002,
+            "mean_us": 1.810624,
+            "min_us": 1.7914599999999998,
+            "p50_us": 1.8119,
+            "p95_us": 1.8193799999999998,
+            "p99_us": 1.8193799999999998,
+            "samples": 5,
+            "throughput_ops_s": 552295.7831112368
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 10.01478,
+            "mean_us": 9.371248,
+            "min_us": 8.57626,
+            "p50_us": 9.363579999999999,
+            "p95_us": 9.9587,
+            "p99_us": 9.9587,
+            "samples": 5,
+            "throughput_ops_s": 106709.3731806052
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 128
+    },
+    {
+      "extra": {
+        "cost_class": "scalar",
+        "inner": 50
+      },
+      "fastest_backend": "rust",
+      "operation": "daido_mode_phase",
+      "parity_max_abs_diff": 4.440892098500626e-16,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 5.806760000000001,
+            "mean_us": 5.655032,
+            "min_us": 5.48858,
+            "p50_us": 5.69942,
+            "p95_us": 5.702039999999999,
+            "p99_us": 5.702039999999999,
+            "samples": 5,
+            "throughput_ops_s": 176833.658943044
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 18.986800000000002,
+            "mean_us": 14.884827999999999,
+            "min_us": 13.59844,
+            "p50_us": 14.019459999999999,
+            "p95_us": 14.05176,
+            "p99_us": 14.05176,
+            "samples": 5,
+            "throughput_ops_s": 67182.50288145755
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 512
+    },
+    {
+      "extra": {
+        "cost_class": "scalar",
+        "inner": 50
+      },
+      "fastest_backend": "rust",
+      "operation": "daido_mode_phase_gradient",
+      "parity_max_abs_diff": 2.220446049250313e-16,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 0.87588,
+            "mean_us": 0.864456,
+            "min_us": 0.8540399999999999,
+            "p50_us": 0.86346,
+            "p95_us": 0.8702200000000001,
+            "p99_us": 0.8702200000000001,
+            "samples": 5,
+            "throughput_ops_s": 1156796.875722998
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 11.16642,
+            "mean_us": 10.91326,
+            "min_us": 10.776679999999999,
+            "p50_us": 10.90354,
+            "p95_us": 10.91884,
+            "p99_us": 10.91884,
+            "samples": 5,
+            "throughput_ops_s": 91631.64810514916
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 8
+    },
+    {
+      "extra": {
+        "cost_class": "scalar",
+        "inner": 50
+      },
+      "fastest_backend": "rust",
+      "operation": "daido_mode_phase_gradient",
+      "parity_max_abs_diff": 2.220446049250313e-16,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 1.42692,
+            "mean_us": 1.420904,
+            "min_us": 1.4160599999999999,
+            "p50_us": 1.42036,
+            "p95_us": 1.4237799999999998,
+            "p99_us": 1.4237799999999998,
+            "samples": 5,
+            "throughput_ops_s": 703777.3135975407
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 13.0798,
+            "mean_us": 11.970592,
+            "min_us": 11.59172,
+            "p50_us": 11.674000000000001,
+            "p95_us": 11.857819999999998,
+            "p99_us": 11.857819999999998,
+            "samples": 5,
+            "throughput_ops_s": 83538.05726567241
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 32
+    },
+    {
+      "extra": {
+        "cost_class": "scalar",
+        "inner": 50
+      },
+      "fastest_backend": "rust",
+      "operation": "daido_mode_phase_gradient",
+      "parity_max_abs_diff": 9.992007221626409e-16,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 3.4441,
+            "mean_us": 3.294664,
+            "min_us": 3.25122,
+            "p50_us": 3.2598599999999998,
+            "p95_us": 3.2642599999999997,
+            "p99_us": 3.2642599999999997,
+            "samples": 5,
+            "throughput_ops_s": 303521.08743107034
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 16.79496,
+            "mean_us": 15.372527999999999,
+            "min_us": 14.002419999999999,
+            "p50_us": 15.7151,
+            "p95_us": 16.15162,
+            "p99_us": 16.15162,
+            "samples": 5,
+            "throughput_ops_s": 65051.10935559851
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 128
+    },
+    {
+      "extra": {
+        "cost_class": "scalar",
+        "inner": 50
+      },
+      "fastest_backend": "rust",
+      "operation": "daido_mode_phase_gradient",
+      "parity_max_abs_diff": 4.85722573273506e-17,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 18.07446,
+            "mean_us": 13.017107999999999,
+            "min_us": 10.758379999999999,
+            "p50_us": 11.560039999999999,
+            "p95_us": 13.851759999999999,
+            "p99_us": 13.851759999999999,
+            "samples": 5,
+            "throughput_ops_s": 76821.97919845177
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 28.17306,
+            "mean_us": 27.085648,
+            "min_us": 25.92464,
+            "p50_us": 27.36802,
+            "p95_us": 27.75996,
+            "p99_us": 27.75996,
+            "samples": 5,
+            "throughput_ops_s": 36919.92157617939
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 512
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "rust",
+      "operation": "daido_mode_phase_hessian",
+      "parity_max_abs_diff": 3.3306690738754696e-16,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 1.198,
+            "mean_us": 1.1753,
+            "min_us": 1.1625999999999999,
+            "p50_us": 1.174,
+            "p95_us": 1.1788,
+            "p99_us": 1.1788,
+            "samples": 5,
+            "throughput_ops_s": 850846.5923593976
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 22.8832,
+            "mean_us": 21.13878,
+            "min_us": 20.0676,
+            "p50_us": 21.1221,
+            "p95_us": 21.2853,
+            "p99_us": 21.2853,
+            "samples": 5,
+            "throughput_ops_s": 47306.419765000624
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 8
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "rust",
+      "operation": "daido_mode_phase_hessian",
+      "parity_max_abs_diff": 6.661338147750939e-16,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 2.3893999999999997,
+            "mean_us": 2.2707,
+            "min_us": 2.2018999999999997,
+            "p50_us": 2.2685,
+            "p95_us": 2.2832,
+            "p99_us": 2.2832,
+            "samples": 5,
+            "throughput_ops_s": 440392.83040472097
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 35.193599999999996,
+            "mean_us": 27.55138,
+            "min_us": 25.2518,
+            "p50_us": 25.9169,
+            "p95_us": 26.135,
+            "p99_us": 26.135,
+            "samples": 5,
+            "throughput_ops_s": 36295.82256859729
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 32
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "rust",
+      "operation": "daido_mode_phase_hessian",
+      "parity_max_abs_diff": 3.9968028886505635e-15,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 13.440700000000001,
+            "mean_us": 11.1355,
+            "min_us": 10.4511,
+            "p50_us": 10.5706,
+            "p95_us": 10.6722,
+            "p99_us": 10.6722,
+            "samples": 5,
+            "throughput_ops_s": 89802.88267253379
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 85.2415,
+            "mean_us": 78.22478,
+            "min_us": 73.5445,
+            "p50_us": 76.1205,
+            "p95_us": 82.03450000000001,
+            "p99_us": 82.03450000000001,
+            "samples": 5,
+            "throughput_ops_s": 12783.672897514061
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 128
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "rust",
+      "operation": "daido_mode_phase_hessian",
+      "parity_max_abs_diff": 9.71445146547012e-17,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 209.2487,
+            "mean_us": 168.9817,
+            "min_us": 136.85989999999998,
+            "p50_us": 157.0049,
+            "p95_us": 187.96959999999999,
+            "p99_us": 187.96959999999999,
+            "samples": 5,
+            "throughput_ops_s": 5917.800566570227
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 1467.1259,
+            "mean_us": 1120.00234,
+            "min_us": 968.9566000000001,
+            "p50_us": 1072.3357,
+            "p95_us": 1073.2712999999999,
+            "p99_us": 1073.2712999999999,
+            "samples": 5,
+            "throughput_ops_s": 892.8552774273668
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 512
+    },
+    {
+      "extra": {
+        "cost_class": "scalar",
+        "inner": 50
+      },
+      "fastest_backend": "rust",
+      "operation": "mean_field_force",
+      "parity_max_abs_diff": 1.1102230246251565e-16,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 0.9780200000000001,
+            "mean_us": 0.904228,
+            "min_us": 0.8709399999999999,
+            "p50_us": 0.89066,
+            "p95_us": 0.9027,
+            "p99_us": 0.9027,
+            "samples": 5,
+            "throughput_ops_s": 1105915.7646080414
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 10.141399999999999,
+            "mean_us": 10.110347999999998,
+            "min_us": 10.04254,
+            "p50_us": 10.11948,
+            "p95_us": 10.13956,
+            "p99_us": 10.13956,
+            "samples": 5,
+            "throughput_ops_s": 98908.5637803961
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 8
+    },
+    {
+      "extra": {
+        "cost_class": "scalar",
+        "inner": 50
+      },
+      "fastest_backend": "rust",
+      "operation": "mean_field_force",
+      "parity_max_abs_diff": 0.0,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 2.20642,
+            "mean_us": 1.5484360000000001,
+            "min_us": 1.25614,
+            "p50_us": 1.30942,
+            "p95_us": 1.68808,
+            "p99_us": 1.68808,
+            "samples": 5,
+            "throughput_ops_s": 645812.9364080917
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 11.786800000000001,
+            "mean_us": 10.927896,
+            "min_us": 10.6608,
+            "p50_us": 10.67816,
+            "p95_us": 10.83724,
+            "p99_us": 10.83724,
+            "samples": 5,
+            "throughput_ops_s": 91508.92358419223
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 32
+    },
+    {
+      "extra": {
+        "cost_class": "scalar",
+        "inner": 50
+      },
+      "fastest_backend": "rust",
+      "operation": "mean_field_force",
+      "parity_max_abs_diff": 2.7755575615628914e-17,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 2.78648,
+            "mean_us": 2.711636,
+            "min_us": 2.6852,
+            "p50_us": 2.6989,
+            "p95_us": 2.6997199999999997,
+            "p99_us": 2.6997199999999997,
+            "samples": 5,
+            "throughput_ops_s": 368781.0605848278
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 16.20502,
+            "mean_us": 15.159056000000001,
+            "min_us": 13.8825,
+            "p50_us": 15.281199999999998,
+            "p95_us": 15.9543,
+            "p99_us": 15.9543,
+            "samples": 5,
+            "throughput_ops_s": 65967.16840415393
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 128
+    },
+    {
+      "extra": {
+        "cost_class": "scalar",
+        "inner": 50
+      },
+      "fastest_backend": "rust",
+      "operation": "mean_field_force",
+      "parity_max_abs_diff": 5.551115123125783e-17,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 9.43566,
+            "mean_us": 9.254212,
+            "min_us": 9.17094,
+            "p50_us": 9.22202,
+            "p95_us": 9.23948,
+            "p99_us": 9.23948,
+            "samples": 5,
+            "throughput_ops_s": 108058.90334044649
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 23.691260000000003,
+            "mean_us": 22.50584,
+            "min_us": 21.975540000000002,
+            "p50_us": 22.2913,
+            "p95_us": 22.48228,
+            "p99_us": 22.48228,
+            "samples": 5,
+            "throughput_ops_s": 44432.911635379976
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 512
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "rust",
+      "operation": "mean_field_jacobian",
+      "parity_max_abs_diff": 1.1102230246251565e-16,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 1.4792,
+            "mean_us": 1.44662,
+            "min_us": 1.3832,
+            "p50_us": 1.4504,
+            "p95_us": 1.4789999999999999,
+            "p99_us": 1.4789999999999999,
+            "samples": 5,
+            "throughput_ops_s": 691266.5385519349
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 16.6122,
+            "mean_us": 15.872139999999998,
+            "min_us": 14.6073,
+            "p50_us": 16.2565,
+            "p95_us": 16.2806,
+            "p99_us": 16.2806,
+            "samples": 5,
+            "throughput_ops_s": 63003.47653183503
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 8
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "rust",
+      "operation": "mean_field_jacobian",
+      "parity_max_abs_diff": 0.0,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 7.3066,
+            "mean_us": 7.231540000000001,
+            "min_us": 7.167700000000001,
+            "p50_us": 7.223000000000001,
+            "p95_us": 7.2471000000000005,
+            "p99_us": 7.2471000000000005,
+            "samples": 5,
+            "throughput_ops_s": 138283.13194699882
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 24.6939,
+            "mean_us": 23.2441,
+            "min_us": 22.0504,
+            "p50_us": 22.5376,
+            "p95_us": 24.4125,
+            "p99_us": 24.4125,
+            "samples": 5,
+            "throughput_ops_s": 43021.67001518665
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 32
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "rust",
+      "operation": "mean_field_jacobian",
+      "parity_max_abs_diff": 2.7755575615628914e-17,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 137.8964,
+            "mean_us": 131.35036,
+            "min_us": 128.2022,
+            "p50_us": 130.6928,
+            "p95_us": 130.7244,
+            "p99_us": 130.7244,
+            "samples": 5,
+            "throughput_ops_s": 7613.226183772927
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 184.5076,
+            "mean_us": 171.40810000000002,
+            "min_us": 166.79760000000002,
+            "p50_us": 168.0443,
+            "p95_us": 170.863,
+            "p99_us": 170.863,
+            "samples": 5,
+            "throughput_ops_s": 5834.030013750808
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 128
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "rust",
+      "operation": "mean_field_jacobian",
+      "parity_max_abs_diff": 5.551115123125783e-17,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 3199.0931,
+            "mean_us": 3109.87716,
+            "min_us": 2944.1055,
+            "p50_us": 3140.9612,
+            "p95_us": 3176.1516,
+            "p99_us": 3176.1516,
+            "samples": 5,
+            "throughput_ops_s": 321.5561093094751
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 3995.4205,
+            "mean_us": 3783.64324,
+            "min_us": 3578.4698,
+            "p50_us": 3783.7192000000005,
+            "p95_us": 3927.017,
+            "p99_us": 3927.017,
+            "samples": 5,
+            "throughput_ops_s": 264.2955312034123
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 512
+    },
+    {
+      "extra": {
+        "cost_class": "scalar",
+        "inner": 50
+      },
+      "fastest_backend": "rust",
+      "operation": "triadic_mean_field_force",
+      "parity_max_abs_diff": 8.326672684688674e-17,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 0.91854,
+            "mean_us": 0.905036,
+            "min_us": 0.89888,
+            "p50_us": 0.90306,
+            "p95_us": 0.9034,
+            "p99_us": 0.9034,
+            "samples": 5,
+            "throughput_ops_s": 1104928.4227367751
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 11.458,
+            "mean_us": 11.060136,
+            "min_us": 10.77402,
+            "p50_us": 11.085799999999999,
+            "p95_us": 11.17742,
+            "p99_us": 11.17742,
+            "samples": 5,
+            "throughput_ops_s": 90414.80140931359
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 8
+    },
+    {
+      "extra": {
+        "cost_class": "scalar",
+        "inner": 50
+      },
+      "fastest_backend": "rust",
+      "operation": "triadic_mean_field_force",
+      "parity_max_abs_diff": 0.0,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 1.3865399999999999,
+            "mean_us": 1.3196080000000001,
+            "min_us": 1.2998599999999998,
+            "p50_us": 1.30292,
+            "p95_us": 1.3078200000000002,
+            "p99_us": 1.3078200000000002,
+            "samples": 5,
+            "throughput_ops_s": 757800.8014501275
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 17.548019999999998,
+            "mean_us": 13.485772,
+            "min_us": 11.4099,
+            "p50_us": 11.665,
+            "p95_us": 15.38858,
+            "p99_us": 15.38858,
+            "samples": 5,
+            "throughput_ops_s": 74152.22502649459
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 32
+    },
+    {
+      "extra": {
+        "cost_class": "scalar",
+        "inner": 50
+      },
+      "fastest_backend": "rust",
+      "operation": "triadic_mean_field_force",
+      "parity_max_abs_diff": 2.168404344971009e-18,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 3.73894,
+            "mean_us": 3.2224960000000005,
+            "min_us": 3.0179,
+            "p50_us": 3.11416,
+            "p95_us": 3.13714,
+            "p99_us": 3.13714,
+            "samples": 5,
+            "throughput_ops_s": 310318.46121763997
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 14.9989,
+            "mean_us": 14.418880000000001,
+            "min_us": 14.15374,
+            "p50_us": 14.22844,
+            "p95_us": 14.51124,
+            "p99_us": 14.51124,
+            "samples": 5,
+            "throughput_ops_s": 69353.51428127565
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 128
+    },
+    {
+      "extra": {
+        "cost_class": "scalar",
+        "inner": 50
+      },
+      "fastest_backend": "rust",
+      "operation": "triadic_mean_field_force",
+      "parity_max_abs_diff": 3.903127820947816e-18,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 15.6028,
+            "mean_us": 11.34976,
+            "min_us": 10.01976,
+            "p50_us": 10.29018,
+            "p95_us": 10.68412,
+            "p99_us": 10.68412,
+            "samples": 5,
+            "throughput_ops_s": 88107.58994022782
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 31.0021,
+            "mean_us": 28.600736,
+            "min_us": 25.906660000000002,
+            "p50_us": 28.797420000000002,
+            "p95_us": 29.804920000000003,
+            "p99_us": 29.804920000000003,
+            "samples": 5,
+            "throughput_ops_s": 34964.13518868885
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 512
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "rust",
+      "operation": "triadic_mean_field_jacobian",
+      "parity_max_abs_diff": 2.220446049250313e-16,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 2.8438,
+            "mean_us": 2.70338,
+            "min_us": 2.5797,
+            "p50_us": 2.7053000000000003,
+            "p95_us": 2.7438,
+            "p99_us": 2.7438,
+            "samples": 5,
+            "throughput_ops_s": 369907.3012303117
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 33.1139,
+            "mean_us": 32.88878,
+            "min_us": 32.4967,
+            "p50_us": 32.9383,
+            "p95_us": 33.0256,
+            "p99_us": 33.0256,
+            "samples": 5,
+            "throughput_ops_s": 30405.50607228362
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 8
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "rust",
+      "operation": "triadic_mean_field_jacobian",
+      "parity_max_abs_diff": 0.0,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 19.087899999999998,
+            "mean_us": 18.33278,
+            "min_us": 17.732599999999998,
+            "p50_us": 18.336199999999998,
+            "p95_us": 18.3476,
+            "p99_us": 18.3476,
+            "samples": 5,
+            "throughput_ops_s": 54547.10087613553
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 39.6385,
+            "mean_us": 37.56326,
+            "min_us": 36.2145,
+            "p50_us": 37.4918,
+            "p95_us": 37.652,
+            "p99_us": 37.652,
+            "samples": 5,
+            "throughput_ops_s": 26621.75753648645
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 32
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "rust",
+      "operation": "triadic_mean_field_jacobian",
+      "parity_max_abs_diff": 4.336808689942018e-18,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 288.4759,
+            "mean_us": 259.84446,
+            "min_us": 234.02220000000003,
+            "p50_us": 258.2396,
+            "p95_us": 267.4286,
+            "p99_us": 267.4286,
+            "samples": 5,
+            "throughput_ops_s": 3848.456111013488
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 503.4344,
+            "mean_us": 462.4290199999999,
+            "min_us": 433.35299999999995,
+            "p50_us": 442.1417,
+            "p95_us": 495.5893,
+            "p99_us": 495.5893,
+            "samples": 5,
+            "throughput_ops_s": 2162.4940407070476
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 128
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "rust",
+      "operation": "triadic_mean_field_jacobian",
+      "parity_max_abs_diff": 7.806255641895632e-18,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 4842.4761,
+            "mean_us": 4565.60766,
+            "min_us": 4379.3973,
+            "p50_us": 4600.139,
+            "p95_us": 4618.1571,
+            "p99_us": 4618.1571,
+            "samples": 5,
+            "throughput_ops_s": 219.02889483061716
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 8491.1455,
+            "mean_us": 7919.792100000001,
+            "min_us": 7148.763000000001,
+            "p50_us": 8020.404700000001,
+            "p95_us": 8162.3284,
+            "p99_us": 8162.3284,
+            "samples": 5,
+            "throughput_ops_s": 126.26594074357077
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 512
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "rust",
+      "operation": "networked_kuramoto_force",
+      "parity_max_abs_diff": 1.1102230246251565e-16,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 2.8249,
+            "mean_us": 2.306,
+            "min_us": 2.0406,
+            "p50_us": 2.277,
+            "p95_us": 2.3241,
+            "p99_us": 2.3241,
+            "samples": 5,
+            "throughput_ops_s": 433651.3443191674
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 7.7613,
+            "mean_us": 5.41592,
+            "min_us": 4.728,
+            "p50_us": 4.7468,
+            "p95_us": 5.1067,
+            "p99_us": 5.1067,
+            "samples": 5,
+            "throughput_ops_s": 184640.83664455902
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 8
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "rust",
+      "operation": "networked_kuramoto_force",
+      "parity_max_abs_diff": 8.881784197001252e-16,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 7.2938,
+            "mean_us": 7.16128,
+            "min_us": 7.0498,
+            "p50_us": 7.134099999999999,
+            "p95_us": 7.228,
+            "p99_us": 7.228,
+            "samples": 5,
+            "throughput_ops_s": 139639.84092229322
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 11.6265,
+            "mean_us": 11.127419999999999,
+            "min_us": 10.6869,
+            "p50_us": 11.1159,
+            "p95_us": 11.1314,
+            "p99_us": 11.1314,
+            "samples": 5,
+            "throughput_ops_s": 89868.09161512733
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 32
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "rust",
+      "operation": "networked_kuramoto_force",
+      "parity_max_abs_diff": 5.329070518200751e-15,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 113.3546,
+            "mean_us": 110.22346,
+            "min_us": 106.05760000000001,
+            "p50_us": 111.5251,
+            "p95_us": 112.5961,
+            "p99_us": 112.5961,
+            "samples": 5,
+            "throughput_ops_s": 9072.478762688088
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 143.49960000000002,
+            "mean_us": 140.66854,
+            "min_us": 138.8312,
+            "p50_us": 138.9549,
+            "p95_us": 143.1211,
+            "p99_us": 143.1211,
+            "samples": 5,
+            "throughput_ops_s": 7108.910066173999
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 128
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "rust",
+      "operation": "networked_kuramoto_force",
+      "parity_max_abs_diff": 2.4868995751603507e-14,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 3143.175,
+            "mean_us": 3093.25324,
+            "min_us": 3058.6032,
+            "p50_us": 3090.9033,
+            "p95_us": 3098.9294999999997,
+            "p99_us": 3098.9294999999997,
+            "samples": 5,
+            "throughput_ops_s": 323.2842326223507
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 3484.6913,
+            "mean_us": 3394.14686,
+            "min_us": 3206.8381,
+            "p50_us": 3421.9089,
+            "p95_us": 3438.1238,
+            "p99_us": 3438.1238,
+            "samples": 5,
+            "throughput_ops_s": 294.62484719945206
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 512
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "rust",
+      "operation": "networked_kuramoto_jacobian",
+      "parity_max_abs_diff": 2.220446049250313e-16,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 1.7848,
+            "mean_us": 1.74116,
+            "min_us": 1.7073,
+            "p50_us": 1.7402000000000002,
+            "p95_us": 1.7403,
+            "p99_us": 1.7403,
+            "samples": 5,
+            "throughput_ops_s": 574329.7571733786
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 7.809399999999999,
+            "mean_us": 7.23972,
+            "min_us": 6.9399,
+            "p50_us": 7.184699999999999,
+            "p95_us": 7.236199999999999,
+            "p99_us": 7.236199999999999,
+            "samples": 5,
+            "throughput_ops_s": 138126.8888852055
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 8
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "rust",
+      "operation": "networked_kuramoto_jacobian",
+      "parity_max_abs_diff": 8.881784197001252e-16,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 9.484300000000001,
+            "mean_us": 9.375800000000002,
+            "min_us": 9.281699999999999,
+            "p50_us": 9.3622,
+            "p95_us": 9.4349,
+            "p99_us": 9.4349,
+            "samples": 5,
+            "throughput_ops_s": 106657.56522110112
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 15.7116,
+            "mean_us": 14.58956,
+            "min_us": 14.085400000000002,
+            "p50_us": 14.404499999999999,
+            "p95_us": 14.483099999999999,
+            "p99_us": 14.483099999999999,
+            "samples": 5,
+            "throughput_ops_s": 68542.16302616391
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 32
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "python",
+      "operation": "networked_kuramoto_jacobian",
+      "parity_max_abs_diff": 5.329070518200751e-15,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 190.4237,
+            "mean_us": 173.04972,
+            "min_us": 165.8458,
+            "p50_us": 166.7279,
+            "p95_us": 175.697,
+            "p99_us": 175.697,
+            "samples": 5,
+            "throughput_ops_s": 5778.68603312389
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 177.4305,
+            "mean_us": 167.88424,
+            "min_us": 160.9329,
+            "p50_us": 165.6448,
+            "p95_us": 170.7623,
+            "p99_us": 170.7623,
+            "samples": 5,
+            "throughput_ops_s": 5956.485254363363
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 128
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "rust",
+      "operation": "networked_kuramoto_jacobian",
+      "parity_max_abs_diff": 2.1316282072803006e-14,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 3859.7773,
+            "mean_us": 3769.9607000000005,
+            "min_us": 3693.983,
+            "p50_us": 3744.6132,
+            "p95_us": 3847.4881,
+            "p99_us": 3847.4881,
+            "samples": 5,
+            "throughput_ops_s": 265.2547545124276
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 4006.6899,
+            "mean_us": 3756.55732,
+            "min_us": 3345.3589999999995,
+            "p50_us": 3832.4773999999998,
+            "p95_us": 3956.4152999999997,
+            "p99_us": 3956.4152999999997,
+            "samples": 5,
+            "throughput_ops_s": 266.20118231019035
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 512
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "rust",
+      "operation": "kuramoto_interaction_energy",
+      "parity_max_abs_diff": 4.440892098500626e-16,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 1.3866,
+            "mean_us": 1.3260200000000002,
+            "min_us": 1.2823,
+            "p50_us": 1.3147,
+            "p95_us": 1.3343,
+            "p99_us": 1.3343,
+            "samples": 5,
+            "throughput_ops_s": 754136.4383644288
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 7.9271,
+            "mean_us": 6.7316400000000005,
+            "min_us": 5.1613,
+            "p50_us": 6.9358,
+            "p95_us": 7.6431,
+            "p99_us": 7.6431,
+            "samples": 5,
+            "throughput_ops_s": 148552.21015978276
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 8
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "rust",
+      "operation": "kuramoto_interaction_energy",
+      "parity_max_abs_diff": 3.4416913763379853e-15,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 7.0708,
+            "mean_us": 7.03554,
+            "min_us": 7.018800000000001,
+            "p50_us": 7.0283,
+            "p95_us": 7.032299999999999,
+            "p99_us": 7.032299999999999,
+            "samples": 5,
+            "throughput_ops_s": 142135.5006154467
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 13.014,
+            "mean_us": 12.25662,
+            "min_us": 11.898399999999999,
+            "p50_us": 12.0824,
+            "p95_us": 12.345,
+            "p99_us": 12.345,
+            "samples": 5,
+            "throughput_ops_s": 81588.56193632503
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 32
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "rust",
+      "operation": "kuramoto_interaction_energy",
+      "parity_max_abs_diff": 3.552713678800501e-15,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 201.1236,
+            "mean_us": 166.05566,
+            "min_us": 136.8097,
+            "p50_us": 158.5915,
+            "p95_us": 189.3511,
+            "p99_us": 189.3511,
+            "samples": 5,
+            "throughput_ops_s": 6022.077175809605
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 209.3873,
+            "mean_us": 172.95684,
+            "min_us": 157.7747,
+            "p50_us": 164.07,
+            "p95_us": 171.48610000000002,
+            "p99_us": 171.48610000000002,
+            "samples": 5,
+            "throughput_ops_s": 5781.789260257067
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 128
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "rust",
+      "operation": "kuramoto_interaction_energy",
+      "parity_max_abs_diff": 6.338041202980094e-12,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 3213.9244,
+            "mean_us": 3131.2484799999997,
+            "min_us": 3084.6699,
+            "p50_us": 3114.6907,
+            "p95_us": 3144.4753,
+            "p99_us": 3144.4753,
+            "samples": 5,
+            "throughput_ops_s": 319.3614324724559
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 3859.3226000000004,
+            "mean_us": 3629.04504,
+            "min_us": 3460.7508000000003,
+            "p50_us": 3521.7586,
+            "p95_us": 3788.1542,
+            "p99_us": 3788.1542,
+            "samples": 5,
+            "throughput_ops_s": 275.55458501556654
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 512
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "rust",
+      "operation": "kuramoto_interaction_energy_gradient",
+      "parity_max_abs_diff": 5.551115123125783e-17,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 2.7527999999999997,
+            "mean_us": 2.08242,
+            "min_us": 1.5148,
+            "p50_us": 2.0172999999999996,
+            "p95_us": 2.6123000000000003,
+            "p99_us": 2.6123000000000003,
+            "samples": 5,
+            "throughput_ops_s": 480210.52429385047
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 9.635299999999999,
+            "mean_us": 7.95132,
+            "min_us": 7.2221,
+            "p50_us": 7.427899999999999,
+            "p95_us": 8.186,
+            "p99_us": 8.186,
+            "samples": 5,
+            "throughput_ops_s": 125765.28173938415
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 8
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "rust",
+      "operation": "kuramoto_interaction_energy_gradient",
+      "parity_max_abs_diff": 8.881784197001252e-16,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 10.4867,
+            "mean_us": 9.02512,
+            "min_us": 7.6551,
+            "p50_us": 9.263200000000001,
+            "p95_us": 9.9389,
+            "p99_us": 9.9389,
+            "samples": 5,
+            "throughput_ops_s": 110801.85083411634
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 18.799100000000003,
+            "mean_us": 16.83092,
+            "min_us": 15.424199999999999,
+            "p50_us": 16.7145,
+            "p95_us": 17.3313,
+            "p99_us": 17.3313,
+            "samples": 5,
+            "throughput_ops_s": 59414.45862733588
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 32
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "rust",
+      "operation": "kuramoto_interaction_energy_gradient",
+      "parity_max_abs_diff": 7.105427357601002e-15,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 124.17360000000001,
+            "mean_us": 116.47726,
+            "min_us": 112.6817,
+            "p50_us": 115.1828,
+            "p95_us": 117.38489999999999,
+            "p99_us": 117.38489999999999,
+            "samples": 5,
+            "throughput_ops_s": 8585.366791766908
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 243.9698,
+            "mean_us": 190.22814,
+            "min_us": 160.5096,
+            "p50_us": 171.8201,
+            "p95_us": 205.37130000000002,
+            "p99_us": 205.37130000000002,
+            "samples": 5,
+            "throughput_ops_s": 5256.845806303946
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 128
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "rust",
+      "operation": "kuramoto_interaction_energy_gradient",
+      "parity_max_abs_diff": 3.019806626980426e-14,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 4414.8334,
+            "mean_us": 3582.95398,
+            "min_us": 3193.4824,
+            "p50_us": 3504.4442000000004,
+            "p95_us": 3582.5495,
+            "p99_us": 3582.5495,
+            "samples": 5,
+            "throughput_ops_s": 279.09931458287946
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 4585.4092,
+            "mean_us": 4172.2242400000005,
+            "min_us": 3881.1896,
+            "p50_us": 4133.7454,
+            "p95_us": 4245.2737,
+            "p99_us": 4245.2737,
+            "samples": 5,
+            "throughput_ops_s": 239.68031018390323
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 512
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "rust",
+      "operation": "kuramoto_interaction_energy_hessian",
+      "parity_max_abs_diff": 2.220446049250313e-16,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 1.6968,
+            "mean_us": 1.6438400000000002,
+            "min_us": 1.629,
+            "p50_us": 1.6309,
+            "p95_us": 1.6323,
+            "p99_us": 1.6323,
+            "samples": 5,
+            "throughput_ops_s": 608331.711115437
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 9.1807,
+            "mean_us": 8.44736,
+            "min_us": 8.1616,
+            "p50_us": 8.2979,
+            "p95_us": 8.3831,
+            "p99_us": 8.3831,
+            "samples": 5,
+            "throughput_ops_s": 118380.18031669066
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 8
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "rust",
+      "operation": "kuramoto_interaction_energy_hessian",
+      "parity_max_abs_diff": 8.881784197001252e-16,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 10.6635,
+            "mean_us": 9.099639999999999,
+            "min_us": 8.6618,
+            "p50_us": 8.7205,
+            "p95_us": 8.7902,
+            "p99_us": 8.7902,
+            "samples": 5,
+            "throughput_ops_s": 109894.45736314844
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 20.7026,
+            "mean_us": 18.24284,
+            "min_us": 16.6466,
+            "p50_us": 16.7479,
+            "p95_us": 20.4451,
+            "p99_us": 20.4451,
+            "samples": 5,
+            "throughput_ops_s": 54816.026452021724
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 32
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "rust",
+      "operation": "kuramoto_interaction_energy_hessian",
+      "parity_max_abs_diff": 5.329070518200751e-15,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 179.0039,
+            "mean_us": 173.25114000000002,
+            "min_us": 168.2071,
+            "p50_us": 172.77280000000002,
+            "p95_us": 175.4028,
+            "p99_us": 175.4028,
+            "samples": 5,
+            "throughput_ops_s": 5771.967791957963
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 255.5967,
+            "mean_us": 216.91997999999998,
+            "min_us": 182.6843,
+            "p50_us": 221.27159999999998,
+            "p95_us": 223.91379999999998,
+            "p99_us": 223.91379999999998,
+            "samples": 5,
+            "throughput_ops_s": 4609.994893047658
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 128
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "rust",
+      "operation": "kuramoto_interaction_energy_hessian",
+      "parity_max_abs_diff": 2.1316282072803006e-14,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 5157.6732,
+            "mean_us": 4319.3543,
+            "min_us": 3872.3974000000003,
+            "p50_us": 4182.4778,
+            "p95_us": 4394.8763,
+            "p99_us": 4394.8763,
+            "samples": 5,
+            "throughput_ops_s": 231.51608563344757
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 5756.322,
+            "mean_us": 5037.24802,
+            "min_us": 4437.2526,
+            "p50_us": 5058.3328,
+            "p95_us": 5268.3263,
+            "p99_us": 5268.3263,
+            "samples": 5,
+            "throughput_ops_s": 198.52109644583274
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 512
+    },
+    {
+      "extra": {
+        "cost_class": "scalar",
+        "inner": 50
+      },
+      "fastest_backend": "rust",
+      "operation": "daido_mean_field_force",
+      "parity_max_abs_diff": 1.1102230246251565e-16,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 1.01756,
+            "mean_us": 0.9829319999999999,
+            "min_us": 0.95782,
+            "p50_us": 0.9810800000000001,
+            "p95_us": 0.9836199999999999,
+            "p99_us": 0.9836199999999999,
+            "samples": 5,
+            "throughput_ops_s": 1017364.3751551481
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 11.04654,
+            "mean_us": 10.882200000000001,
+            "min_us": 10.743720000000001,
+            "p50_us": 10.85128,
+            "p95_us": 10.99576,
+            "p99_us": 10.99576,
+            "samples": 5,
+            "throughput_ops_s": 91893.18336365807
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 8
+    },
+    {
+      "extra": {
+        "cost_class": "scalar",
+        "inner": 50
+      },
+      "fastest_backend": "rust",
+      "operation": "daido_mean_field_force",
+      "parity_max_abs_diff": 5.551115123125783e-17,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 1.4494399999999998,
+            "mean_us": 1.4175559999999998,
+            "min_us": 1.3958199999999998,
+            "p50_us": 1.4134,
+            "p95_us": 1.42844,
+            "p99_us": 1.42844,
+            "samples": 5,
+            "throughput_ops_s": 705439.5029191087
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 11.80312,
+            "mean_us": 11.556872,
+            "min_us": 11.42174,
+            "p50_us": 11.452300000000001,
+            "p95_us": 11.66662,
+            "p99_us": 11.66662,
+            "samples": 5,
+            "throughput_ops_s": 86528.60393365956
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 32
+    },
+    {
+      "extra": {
+        "cost_class": "scalar",
+        "inner": 50
+      },
+      "fastest_backend": "rust",
+      "operation": "daido_mean_field_force",
+      "parity_max_abs_diff": 4.163336342344337e-17,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 3.4004399999999997,
+            "mean_us": 3.319424,
+            "min_us": 3.19832,
+            "p50_us": 3.3422199999999997,
+            "p95_us": 3.3701,
+            "p99_us": 3.3701,
+            "samples": 5,
+            "throughput_ops_s": 301257.08556665253
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 17.25862,
+            "mean_us": 16.511868,
+            "min_us": 15.614980000000001,
+            "p50_us": 16.33088,
+            "p95_us": 17.12388,
+            "p99_us": 17.12388,
+            "samples": 5,
+            "throughput_ops_s": 60562.499651765625
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 128
+    },
+    {
+      "extra": {
+        "cost_class": "scalar",
+        "inner": 50
+      },
+      "fastest_backend": "rust",
+      "operation": "daido_mean_field_force",
+      "parity_max_abs_diff": 5.551115123125783e-17,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 10.88378,
+            "mean_us": 10.595948,
+            "min_us": 10.426179999999999,
+            "p50_us": 10.514100000000001,
+            "p95_us": 10.64744,
+            "p99_us": 10.64744,
+            "samples": 5,
+            "throughput_ops_s": 94375.699087991
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 25.1389,
+            "mean_us": 24.858892,
+            "min_us": 24.53688,
+            "p50_us": 24.99708,
+            "p95_us": 25.01498,
+            "p99_us": 25.01498,
+            "samples": 5,
+            "throughput_ops_s": 40227.05436750761
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 512
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "rust",
+      "operation": "daido_mean_field_jacobian",
+      "parity_max_abs_diff": 2.220446049250313e-16,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 1.5553000000000001,
+            "mean_us": 1.51348,
+            "min_us": 1.4951,
+            "p50_us": 1.5051999999999999,
+            "p95_us": 1.5115,
+            "p99_us": 1.5115,
+            "samples": 5,
+            "throughput_ops_s": 660728.916140286
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 16.351300000000002,
+            "mean_us": 15.712520000000001,
+            "min_us": 15.4095,
+            "p50_us": 15.578999999999999,
+            "p95_us": 15.785499999999999,
+            "p99_us": 15.785499999999999,
+            "samples": 5,
+            "throughput_ops_s": 63643.51485312349
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 8
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "rust",
+      "operation": "daido_mean_field_jacobian",
+      "parity_max_abs_diff": 1.6653345369377348e-16,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 8.2493,
+            "mean_us": 8.19804,
+            "min_us": 8.176300000000001,
+            "p50_us": 8.1858,
+            "p95_us": 8.1937,
+            "p99_us": 8.1937,
+            "samples": 5,
+            "throughput_ops_s": 121980.37579714175
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 25.553800000000003,
+            "mean_us": 24.94196,
+            "min_us": 24.125700000000002,
+            "p50_us": 25.1237,
+            "p95_us": 25.2882,
+            "p99_us": 25.2882,
+            "samples": 5,
+            "throughput_ops_s": 40093.080094747966
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 32
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "rust",
+      "operation": "daido_mean_field_jacobian",
+      "parity_max_abs_diff": 8.326672684688674e-17,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 185.2378,
+            "mean_us": 180.32819999999998,
+            "min_us": 176.6283,
+            "p50_us": 178.6215,
+            "p95_us": 183.7458,
+            "p99_us": 183.7458,
+            "samples": 5,
+            "throughput_ops_s": 5545.444362002172
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 263.9199,
+            "mean_us": 234.71464,
+            "min_us": 215.0002,
+            "p50_us": 224.7648,
+            "p95_us": 247.3728,
+            "p99_us": 247.3728,
+            "samples": 5,
+            "throughput_ops_s": 4260.492656103599
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 128
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "rust",
+      "operation": "daido_mean_field_jacobian",
+      "parity_max_abs_diff": 9.71445146547012e-17,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 4024.5972,
+            "mean_us": 3883.9567799999995,
+            "min_us": 3669.0330999999996,
+            "p50_us": 3970.4648,
+            "p95_us": 4006.2046,
+            "p99_us": 4006.2046,
+            "samples": 5,
+            "throughput_ops_s": 257.46939439423943
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 4147.1871,
+            "mean_us": 4053.3067199999996,
+            "min_us": 3911.2451,
+            "p50_us": 4079.8303,
+            "p95_us": 4125.6565,
+            "p99_us": 4125.6565,
+            "samples": 5,
+            "throughput_ops_s": 246.71214617580188
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 512
+    },
+    {
+      "extra": {
+        "cost_class": "scalar",
+        "inner": 50
+      },
+      "fastest_backend": "rust",
+      "operation": "sakaguchi_mean_field_force",
+      "parity_max_abs_diff": 1.1102230246251565e-16,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 1.2589,
+            "mean_us": 0.978256,
+            "min_us": 0.8928,
+            "p50_us": 0.9181199999999999,
+            "p95_us": 0.9195399999999999,
+            "p99_us": 0.9195399999999999,
+            "samples": 5,
+            "throughput_ops_s": 1022227.310642613
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 20.3888,
+            "mean_us": 16.7654,
+            "min_us": 14.24672,
+            "p50_us": 15.898,
+            "p95_us": 18.33026,
+            "p99_us": 18.33026,
+            "samples": 5,
+            "throughput_ops_s": 59646.653226287475
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 8
+    },
+    {
+      "extra": {
+        "cost_class": "scalar",
+        "inner": 50
+      },
+      "fastest_backend": "rust",
+      "operation": "sakaguchi_mean_field_force",
+      "parity_max_abs_diff": 0.0,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 2.30394,
+            "mean_us": 2.097988,
+            "min_us": 1.95928,
+            "p50_us": 2.07984,
+            "p95_us": 2.10576,
+            "p99_us": 2.10576,
+            "samples": 5,
+            "throughput_ops_s": 476647.14955471625
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 21.78264,
+            "mean_us": 16.930948,
+            "min_us": 14.84852,
+            "p50_us": 15.39208,
+            "p95_us": 17.56456,
+            "p99_us": 17.56456,
+            "samples": 5,
+            "throughput_ops_s": 59063.438148885696
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 32
+    },
+    {
+      "extra": {
+        "cost_class": "scalar",
+        "inner": 50
+      },
+      "fastest_backend": "rust",
+      "operation": "sakaguchi_mean_field_force",
+      "parity_max_abs_diff": 2.7755575615628914e-17,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 3.1144600000000002,
+            "mean_us": 3.015744,
+            "min_us": 2.9560199999999996,
+            "p50_us": 2.9986200000000003,
+            "p95_us": 3.0134600000000002,
+            "p99_us": 3.0134600000000002,
+            "samples": 5,
+            "throughput_ops_s": 331593.1325735871
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 16.58768,
+            "mean_us": 16.540716,
+            "min_us": 16.49712,
+            "p50_us": 16.53366,
+            "p95_us": 16.55858,
+            "p99_us": 16.55858,
+            "samples": 5,
+            "throughput_ops_s": 60456.875022822474
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 128
+    },
+    {
+      "extra": {
+        "cost_class": "scalar",
+        "inner": 50
+      },
+      "fastest_backend": "rust",
+      "operation": "sakaguchi_mean_field_force",
+      "parity_max_abs_diff": 4.163336342344337e-17,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 9.69556,
+            "mean_us": 9.481772000000001,
+            "min_us": 9.36214,
+            "p50_us": 9.419400000000001,
+            "p95_us": 9.53494,
+            "p99_us": 9.53494,
+            "samples": 5,
+            "throughput_ops_s": 105465.5184705981
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 31.60504,
+            "mean_us": 29.872120000000002,
+            "min_us": 27.750680000000003,
+            "p50_us": 30.452199999999998,
+            "p95_us": 30.621,
+            "p99_us": 30.621,
+            "samples": 5,
+            "throughput_ops_s": 33476.03049264665
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 512
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "rust",
+      "operation": "sakaguchi_mean_field_jacobian",
+      "parity_max_abs_diff": 1.1102230246251565e-16,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 1.5159,
+            "mean_us": 1.5,
+            "min_us": 1.4895,
+            "p50_us": 1.4914999999999998,
+            "p95_us": 1.512,
+            "p99_us": 1.512,
+            "samples": 5,
+            "throughput_ops_s": 666666.6666666666
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 20.1822,
+            "mean_us": 18.36088,
+            "min_us": 16.899700000000003,
+            "p50_us": 18.3784,
+            "p95_us": 19.0137,
+            "p99_us": 19.0137,
+            "samples": 5,
+            "throughput_ops_s": 54463.62048006413
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 8
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "rust",
+      "operation": "sakaguchi_mean_field_jacobian",
+      "parity_max_abs_diff": 0.0,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 7.7221,
+            "mean_us": 7.493860000000001,
+            "min_us": 7.4346000000000005,
+            "p50_us": 7.4367,
+            "p95_us": 7.440600000000001,
+            "p99_us": 7.440600000000001,
+            "samples": 5,
+            "throughput_ops_s": 133442.57832412134
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 25.1087,
+            "mean_us": 24.67662,
+            "min_us": 24.3697,
+            "p50_us": 24.5006,
+            "p95_us": 25.002299999999998,
+            "p99_us": 25.002299999999998,
+            "samples": 5,
+            "throughput_ops_s": 40524.18848286354
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 32
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "rust",
+      "operation": "sakaguchi_mean_field_jacobian",
+      "parity_max_abs_diff": 2.7755575615628914e-17,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 171.6459,
+            "mean_us": 140.9879,
+            "min_us": 129.9906,
+            "p50_us": 135.6148,
+            "p95_us": 136.8903,
+            "p99_us": 136.8903,
+            "samples": 5,
+            "throughput_ops_s": 7092.807255090685
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 177.029,
+            "mean_us": 174.29126000000002,
+            "min_us": 170.5576,
+            "p50_us": 174.1313,
+            "p95_us": 175.6175,
+            "p99_us": 175.6175,
+            "samples": 5,
+            "throughput_ops_s": 5737.522351952702
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 128
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "rust",
+      "operation": "sakaguchi_mean_field_jacobian",
+      "parity_max_abs_diff": 5.551115123125783e-17,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 3343.9891000000002,
+            "mean_us": 3181.87456,
+            "min_us": 3010.9933,
+            "p50_us": 3136.3671999999997,
+            "p95_us": 3322.0708,
+            "p99_us": 3322.0708,
+            "samples": 5,
+            "throughput_ops_s": 314.28014560071153
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 5377.5113,
+            "mean_us": 4265.7950599999995,
+            "min_us": 3437.6455,
+            "p50_us": 4158.521699999999,
+            "p95_us": 4492.1596,
+            "p99_us": 4492.1596,
+            "samples": 5,
+            "throughput_ops_s": 234.42288856699088
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 512
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "rust",
+      "operation": "sakaguchi_force",
+      "parity_max_abs_diff": 2.220446049250313e-16,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 1.6067,
+            "mean_us": 1.57902,
+            "min_us": 1.5393000000000001,
+            "p50_us": 1.5812,
+            "p95_us": 1.5974,
+            "p99_us": 1.5974,
+            "samples": 5,
+            "throughput_ops_s": 633304.2013400716
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 6.828100000000001,
+            "mean_us": 6.1025599999999995,
+            "min_us": 5.6548,
+            "p50_us": 5.9809,
+            "p95_us": 6.1258,
+            "p99_us": 6.1258,
+            "samples": 5,
+            "throughput_ops_s": 163865.6563802732
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 8
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "rust",
+      "operation": "sakaguchi_force",
+      "parity_max_abs_diff": 8.881784197001252e-16,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 7.963299999999999,
+            "mean_us": 7.7827,
+            "min_us": 7.7229,
+            "p50_us": 7.7401,
+            "p95_us": 7.7521,
+            "p99_us": 7.7521,
+            "samples": 5,
+            "throughput_ops_s": 128490.11268582882
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 13.687700000000001,
+            "mean_us": 13.27904,
+            "min_us": 12.9639,
+            "p50_us": 13.1387,
+            "p95_us": 13.6256,
+            "p99_us": 13.6256,
+            "samples": 5,
+            "throughput_ops_s": 75306.64867339807
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 32
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "rust",
+      "operation": "sakaguchi_force",
+      "parity_max_abs_diff": 5.773159728050814e-15,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 135.51749999999998,
+            "mean_us": 130.64342,
+            "min_us": 126.68030000000002,
+            "p50_us": 129.7662,
+            "p95_us": 133.7597,
+            "p99_us": 133.7597,
+            "samples": 5,
+            "throughput_ops_s": 7654.423008828153
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 172.5045,
+            "mean_us": 145.82301999999999,
+            "min_us": 137.3569,
+            "p50_us": 139.1212,
+            "p95_us": 141.57729999999998,
+            "p99_us": 141.57729999999998,
+            "samples": 5,
+            "throughput_ops_s": 6857.627828582895
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 128
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "rust",
+      "operation": "sakaguchi_force",
+      "parity_max_abs_diff": 2.842170943040401e-14,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 3692.5173000000004,
+            "mean_us": 3536.02972,
+            "min_us": 3410.8934,
+            "p50_us": 3492.3608999999997,
+            "p95_us": 3614.7963000000004,
+            "p99_us": 3614.7963000000004,
+            "samples": 5,
+            "throughput_ops_s": 282.80305291099194
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 3975.611,
+            "mean_us": 3619.7002999999995,
+            "min_us": 3426.7625999999996,
+            "p50_us": 3534.2418,
+            "p95_us": 3676.0690000000004,
+            "p99_us": 3676.0690000000004,
+            "samples": 5,
+            "throughput_ops_s": 276.2659659972402
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 512
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "rust",
+      "operation": "sakaguchi_jacobian",
+      "parity_max_abs_diff": 2.220446049250313e-16,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 2.6547,
+            "mean_us": 2.4593200000000004,
+            "min_us": 1.8359,
+            "p50_us": 2.6067,
+            "p95_us": 2.6199000000000003,
+            "p99_us": 2.6199000000000003,
+            "samples": 5,
+            "throughput_ops_s": 406616.4630873574
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 12.642900000000001,
+            "mean_us": 9.66708,
+            "min_us": 8.1357,
+            "p50_us": 8.620000000000001,
+            "p95_us": 10.409699999999999,
+            "p99_us": 10.409699999999999,
+            "samples": 5,
+            "throughput_ops_s": 103443.85274560674
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 8
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "rust",
+      "operation": "sakaguchi_jacobian",
+      "parity_max_abs_diff": 8.881784197001252e-16,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 9.5979,
+            "mean_us": 9.42334,
+            "min_us": 9.2624,
+            "p50_us": 9.4157,
+            "p95_us": 9.5676,
+            "p99_us": 9.5676,
+            "samples": 5,
+            "throughput_ops_s": 106119.48629679074
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 18.1738,
+            "mean_us": 16.65502,
+            "min_us": 15.6189,
+            "p50_us": 16.7774,
+            "p95_us": 17.0696,
+            "p99_us": 17.0696,
+            "samples": 5,
+            "throughput_ops_s": 60041.95731977506
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 32
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "python",
+      "operation": "sakaguchi_jacobian",
+      "parity_max_abs_diff": 3.9968028886505635e-15,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 192.7437,
+            "mean_us": 178.89724,
+            "min_us": 172.1832,
+            "p50_us": 176.519,
+            "p95_us": 179.9586,
+            "p99_us": 179.9586,
+            "samples": 5,
+            "throughput_ops_s": 5589.801161828991
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 173.8408,
+            "mean_us": 170.83916,
+            "min_us": 169.2827,
+            "p50_us": 170.6574,
+            "p95_us": 170.7631,
+            "p99_us": 170.7631,
+            "samples": 5,
+            "throughput_ops_s": 5853.458890807003
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 128
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "python",
+      "operation": "sakaguchi_jacobian",
+      "parity_max_abs_diff": 2.5757174171303632e-14,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 4148.7447,
+            "mean_us": 3895.64704,
+            "min_us": 3763.291,
+            "p50_us": 3813.868,
+            "p95_us": 3968.4733,
+            "p99_us": 3968.4733,
+            "samples": 5,
+            "throughput_ops_s": 256.69676686109636
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 3911.6822999999995,
+            "mean_us": 3817.928,
+            "min_us": 3746.637,
+            "p50_us": 3802.9339,
+            "p95_us": 3834.0966,
+            "p99_us": 3834.0966,
+            "samples": 5,
+            "throughput_ops_s": 261.92217349305696
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 512
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "rust",
+      "operation": "local_order_parameter",
+      "parity_max_abs_diff": 0.0,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 1.361,
+            "mean_us": 1.26632,
+            "min_us": 1.2227999999999999,
+            "p50_us": 1.2516,
+            "p95_us": 1.2643,
+            "p99_us": 1.2643,
+            "samples": 5,
+            "throughput_ops_s": 789689.8098426939
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 8.2074,
+            "mean_us": 7.353579999999999,
+            "min_us": 7.0611999999999995,
+            "p50_us": 7.1181,
+            "p95_us": 7.3126999999999995,
+            "p99_us": 7.3126999999999995,
+            "samples": 5,
+            "throughput_ops_s": 135988.18534645712
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 8
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "rust",
+      "operation": "local_order_parameter",
+      "parity_max_abs_diff": 5.551115123125783e-17,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 2.4143,
+            "mean_us": 2.32886,
+            "min_us": 2.2952000000000004,
+            "p50_us": 2.314,
+            "p95_us": 2.3189,
+            "p99_us": 2.3189,
+            "samples": 5,
+            "throughput_ops_s": 429394.6394373212
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 9.1936,
+            "mean_us": 8.58436,
+            "min_us": 8.4047,
+            "p50_us": 8.456199999999999,
+            "p95_us": 8.4621,
+            "p99_us": 8.4621,
+            "samples": 5,
+            "throughput_ops_s": 116490.92069764082
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 32
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "rust",
+      "operation": "local_order_parameter",
+      "parity_max_abs_diff": 8.326672684688674e-17,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 16.596,
+            "mean_us": 16.05726,
+            "min_us": 15.8858,
+            "p50_us": 15.931899999999999,
+            "p95_us": 15.9526,
+            "p99_us": 15.9526,
+            "samples": 5,
+            "throughput_ops_s": 62277.12573627132
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 17.6389,
+            "mean_us": 17.145400000000002,
+            "min_us": 16.915100000000002,
+            "p50_us": 17.0083,
+            "p95_us": 17.2304,
+            "p99_us": 17.2304,
+            "samples": 5,
+            "throughput_ops_s": 58324.68183886056
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 128
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "python",
+      "operation": "local_order_parameter",
+      "parity_max_abs_diff": 8.326672684688674e-17,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 314.7537,
+            "mean_us": 259.29560000000004,
+            "min_us": 235.4735,
+            "p50_us": 242.9605,
+            "p95_us": 262.35450000000003,
+            "p99_us": 262.35450000000003,
+            "samples": 5,
+            "throughput_ops_s": 3856.6022716930015
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 145.4519,
+            "mean_us": 140.0095,
+            "min_us": 135.45170000000002,
+            "p50_us": 139.4505,
+            "p95_us": 142.7454,
+            "p99_us": 142.7454,
+            "samples": 5,
+            "throughput_ops_s": 7142.372481867302
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 512
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "rust",
+      "operation": "local_order_parameter_jacobian",
+      "parity_max_abs_diff": 1.1102230246251565e-16,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 2.8486000000000002,
+            "mean_us": 2.42986,
+            "min_us": 1.5286,
+            "p50_us": 2.6954000000000002,
+            "p95_us": 2.7009,
+            "p99_us": 2.7009,
+            "samples": 5,
+            "throughput_ops_s": 411546.3442338242
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 13.9572,
+            "mean_us": 13.233859999999998,
+            "min_us": 12.4631,
+            "p50_us": 13.266499999999999,
+            "p95_us": 13.4214,
+            "p99_us": 13.4214,
+            "samples": 5,
+            "throughput_ops_s": 75563.74330694144
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 8
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "rust",
+      "operation": "local_order_parameter_jacobian",
+      "parity_max_abs_diff": 4.163336342344337e-17,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 3.077,
+            "mean_us": 3.04866,
+            "min_us": 3.037,
+            "p50_us": 3.0435,
+            "p95_us": 3.0466,
+            "p99_us": 3.0466,
+            "samples": 5,
+            "throughput_ops_s": 328012.9630723006
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 18.1578,
+            "mean_us": 17.42626,
+            "min_us": 16.849899999999998,
+            "p50_us": 17.244,
+            "p95_us": 17.702099999999998,
+            "p99_us": 17.702099999999998,
+            "samples": 5,
+            "throughput_ops_s": 57384.659703229496
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 32
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "rust",
+      "operation": "local_order_parameter_jacobian",
+      "parity_max_abs_diff": 9.226560487851643e-17,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 25.0767,
+            "mean_us": 24.81746,
+            "min_us": 24.624000000000002,
+            "p50_us": 24.6647,
+            "p95_us": 25.0728,
+            "p99_us": 25.0728,
+            "samples": 5,
+            "throughput_ops_s": 40294.21221994515
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 78.164,
+            "mean_us": 75.96860000000001,
+            "min_us": 74.1688,
+            "p50_us": 75.3138,
+            "p95_us": 77.3494,
+            "p99_us": 77.3494,
+            "samples": 5,
+            "throughput_ops_s": 13163.333271904443
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 128
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "rust",
+      "operation": "local_order_parameter_jacobian",
+      "parity_max_abs_diff": 2.1799239930536674e-17,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 437.90590000000003,
+            "mean_us": 411.3418,
+            "min_us": 381.8381,
+            "p50_us": 408.8336,
+            "p95_us": 426.2042,
+            "p99_us": 426.2042,
+            "samples": 5,
+            "throughput_ops_s": 2431.0682746076377
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 1971.2614,
+            "mean_us": 1130.77026,
+            "min_us": 857.2259,
+            "p50_us": 958.8290000000001,
+            "p95_us": 1002.0008,
+            "p99_us": 1002.0008,
+            "samples": 5,
+            "throughput_ops_s": 884.3529365549462
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 512
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "rust",
+      "operation": "local_mean_phase",
+      "parity_max_abs_diff": 4.440892098500626e-16,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 2.2152000000000003,
+            "mean_us": 1.57814,
+            "min_us": 1.3755000000000002,
+            "p50_us": 1.4273,
+            "p95_us": 1.4889,
+            "p99_us": 1.4889,
+            "samples": 5,
+            "throughput_ops_s": 633657.3434549533
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 5.758,
+            "mean_us": 5.5689,
+            "min_us": 5.4728,
+            "p50_us": 5.5384,
+            "p95_us": 5.5576,
+            "p99_us": 5.5576,
+            "samples": 5,
+            "throughput_ops_s": 179568.67604015156
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 8
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "rust",
+      "operation": "local_mean_phase",
+      "parity_max_abs_diff": 4.440892098500626e-16,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 2.629,
+            "mean_us": 2.59856,
+            "min_us": 2.5857,
+            "p50_us": 2.5937,
+            "p95_us": 2.5944,
+            "p99_us": 2.5944,
+            "samples": 5,
+            "throughput_ops_s": 384828.5204113047
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 6.1742,
+            "mean_us": 6.12606,
+            "min_us": 6.098599999999999,
+            "p50_us": 6.1185,
+            "p95_us": 6.1379,
+            "p99_us": 6.1379,
+            "samples": 5,
+            "throughput_ops_s": 163237.05611763516
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 32
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "python",
+      "operation": "local_mean_phase",
+      "parity_max_abs_diff": 5.329070518200751e-15,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 20.6256,
+            "mean_us": 19.19446,
+            "min_us": 18.3821,
+            "p50_us": 18.6518,
+            "p95_us": 19.7621,
+            "p99_us": 19.7621,
+            "samples": 5,
+            "throughput_ops_s": 52098.36588265573
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 19.1333,
+            "mean_us": 14.96508,
+            "min_us": 12.6676,
+            "p50_us": 13.8887,
+            "p95_us": 15.4416,
+            "p99_us": 15.4416,
+            "samples": 5,
+            "throughput_ops_s": 66822.22881534879
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 128
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "python",
+      "operation": "local_mean_phase",
+      "parity_max_abs_diff": 4.440892098500626e-15,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 272.9111,
+            "mean_us": 261.05093999999997,
+            "min_us": 247.9399,
+            "p50_us": 264.7878,
+            "p95_us": 269.4981,
+            "p99_us": 269.4981,
+            "samples": 5,
+            "throughput_ops_s": 3830.6699834139654
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 107.1673,
+            "mean_us": 89.1446,
+            "min_us": 75.1566,
+            "p50_us": 79.7372,
+            "p95_us": 106.6709,
+            "p99_us": 106.6709,
+            "samples": 5,
+            "throughput_ops_s": 11217.729396957304
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 512
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "rust",
+      "operation": "local_mean_phase_jacobian",
+      "parity_max_abs_diff": 2.220446049250313e-16,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 2.8317,
+            "mean_us": 2.78744,
+            "min_us": 2.7312000000000003,
+            "p50_us": 2.8077,
+            "p95_us": 2.8164000000000002,
+            "p99_us": 2.8164000000000002,
+            "samples": 5,
+            "throughput_ops_s": 358752.1166374881
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 24.1672,
+            "mean_us": 22.879,
+            "min_us": 22.204,
+            "p50_us": 22.424,
+            "p95_us": 23.192500000000003,
+            "p99_us": 23.192500000000003,
+            "samples": 5,
+            "throughput_ops_s": 43708.204029896406
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 8
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "rust",
+      "operation": "local_mean_phase_jacobian",
+      "parity_max_abs_diff": 2.1094237467877974e-15,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 5.2903,
+            "mean_us": 5.27026,
+            "min_us": 5.2519,
+            "p50_us": 5.2725,
+            "p95_us": 5.2802999999999995,
+            "p99_us": 5.2802999999999995,
+            "samples": 5,
+            "throughput_ops_s": 189743.95950104928
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 30.8096,
+            "mean_us": 29.88716,
+            "min_us": 29.1781,
+            "p50_us": 30.010700000000003,
+            "p95_us": 30.0637,
+            "p99_us": 30.0637,
+            "samples": 5,
+            "throughput_ops_s": 33459.18447922118
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 32
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "rust",
+      "operation": "local_mean_phase_jacobian",
+      "parity_max_abs_diff": 1.1879386363489175e-14,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 33.531,
+            "mean_us": 30.38384,
+            "min_us": 26.412799999999997,
+            "p50_us": 32.179199999999994,
+            "p95_us": 33.0486,
+            "p99_us": 33.0486,
+            "samples": 5,
+            "throughput_ops_s": 32912.23229190254
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 71.48769999999999,
+            "mean_us": 67.59783999999999,
+            "min_us": 62.5213,
+            "p50_us": 67.5548,
+            "p95_us": 71.1574,
+            "p99_us": 71.1574,
+            "samples": 5,
+            "throughput_ops_s": 14793.372095913126
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 128
+    },
+    {
+      "extra": {
+        "cost_class": "matrix",
+        "inner": 10
+      },
+      "fastest_backend": "rust",
+      "operation": "local_mean_phase_jacobian",
+      "parity_max_abs_diff": 3.774758283725532e-15,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 407.53000000000003,
+            "mean_us": 386.04544,
+            "min_us": 371.659,
+            "p50_us": 380.4714,
+            "p95_us": 396.7163,
+            "p99_us": 396.7163,
+            "samples": 5,
+            "throughput_ops_s": 2590.368636396793
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 1525.7579,
+            "mean_us": 1096.5140800000001,
+            "min_us": 808.4283,
+            "p50_us": 1032.1077,
+            "p95_us": 1243.6145000000001,
+            "p99_us": 1243.6145000000001,
+            "samples": 5,
+            "throughput_ops_s": 911.9809934405948
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 512
+    },
+    {
+      "extra": {
+        "cost_class": "trajectory",
+        "inner": 1
+      },
+      "fastest_backend": "rust",
+      "operation": "kuramoto_euler_trajectory",
+      "parity_max_abs_diff": 4.440892098500626e-16,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 30.924,
+            "mean_us": 27.5722,
+            "min_us": 26.285,
+            "p50_us": 26.781,
+            "p95_us": 27.368,
+            "p99_us": 27.368,
+            "samples": 5,
+            "throughput_ops_s": 36268.415287862415
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 342.035,
+            "mean_us": 330.4996,
+            "min_us": 322.457,
+            "p50_us": 329.749,
+            "p95_us": 334.634,
+            "p99_us": 334.634,
+            "samples": 5,
+            "throughput_ops_s": 3025.722270163111
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 8
+    },
+    {
+      "extra": {
+        "cost_class": "trajectory",
+        "inner": 1
+      },
+      "fastest_backend": "rust",
+      "operation": "kuramoto_euler_trajectory",
+      "parity_max_abs_diff": 4.440892098500626e-16,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 513.233,
+            "mean_us": 452.08500000000004,
+            "min_us": 432.973,
+            "p50_us": 437.308,
+            "p95_us": 441.762,
+            "p99_us": 441.762,
+            "samples": 5,
+            "throughput_ops_s": 2211.9734120795865
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 902.904,
+            "mean_us": 865.4032,
+            "min_us": 830.968,
+            "p50_us": 864.166,
+            "p95_us": 890.622,
+            "p99_us": 890.622,
+            "samples": 5,
+            "throughput_ops_s": 1155.530739890955
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 32
+    },
+    {
+      "extra": {
+        "cost_class": "trajectory",
+        "inner": 1
+      },
+      "fastest_backend": "rust",
+      "operation": "kuramoto_euler_trajectory",
+      "parity_max_abs_diff": 1.3322676295501878e-15,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 9725.998,
+            "mean_us": 9149.671400000001,
+            "min_us": 8696.595,
+            "p50_us": 9203.602,
+            "p95_us": 9301.26,
+            "p99_us": 9301.26,
+            "samples": 5,
+            "throughput_ops_s": 109.29354249814915
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 11301.579,
+            "mean_us": 10866.0468,
+            "min_us": 10374.696,
+            "p50_us": 10976.205,
+            "p95_us": 11033.684,
+            "p99_us": 11033.684,
+            "samples": 5,
+            "throughput_ops_s": 92.02978952750323
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 128
+    },
+    {
+      "extra": {
+        "cost_class": "trajectory",
+        "inner": 1
+      },
+      "fastest_backend": "rust",
+      "operation": "kuramoto_euler_trajectory",
+      "parity_max_abs_diff": 1.3766765505351941e-14,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 208239.099,
+            "mean_us": 204985.03100000002,
+            "min_us": 202842.213,
+            "p50_us": 204884.303,
+            "p95_us": 205950.846,
+            "p99_us": 205950.846,
+            "samples": 5,
+            "throughput_ops_s": 4.878404999241139
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 267762.148,
+            "mean_us": 248573.3852,
+            "min_us": 241827.257,
+            "p50_us": 242535.154,
+            "p95_us": 248613.396,
+            "p99_us": 248613.396,
+            "samples": 5,
+            "throughput_ops_s": 4.022956839065488
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 512
+    },
+    {
+      "extra": {
+        "cost_class": "trajectory",
+        "inner": 1
+      },
+      "fastest_backend": "rust",
+      "operation": "kuramoto_rk4_trajectory",
+      "parity_max_abs_diff": 1.3877787807814457e-17,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 101.753,
+            "mean_us": 97.3848,
+            "min_us": 95.408,
+            "p50_us": 96.755,
+            "p95_us": 96.881,
+            "p99_us": 96.881,
+            "samples": 5,
+            "throughput_ops_s": 10268.54293483172
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 2834.424,
+            "mean_us": 1971.1299999999999,
+            "min_us": 1396.427,
+            "p50_us": 1852.538,
+            "p95_us": 2216.033,
+            "p99_us": 2216.033,
+            "samples": 5,
+            "throughput_ops_s": 507.32321054420566
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 8
+    },
+    {
+      "extra": {
+        "cost_class": "trajectory",
+        "inner": 1
+      },
+      "fastest_backend": "rust",
+      "operation": "kuramoto_rk4_trajectory",
+      "parity_max_abs_diff": 5.551115123125783e-16,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 1673.69,
+            "mean_us": 1627.7264,
+            "min_us": 1580.605,
+            "p50_us": 1621.924,
+            "p95_us": 1664.147,
+            "p99_us": 1664.147,
+            "samples": 5,
+            "throughput_ops_s": 614.3538619266727
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 4617.094,
+            "mean_us": 3601.6196000000004,
+            "min_us": 3250.766,
+            "p50_us": 3292.183,
+            "p95_us": 3564.824,
+            "p99_us": 3564.824,
+            "samples": 5,
+            "throughput_ops_s": 277.65286483891856
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 32
+    },
+    {
+      "extra": {
+        "cost_class": "trajectory",
+        "inner": 1
+      },
+      "fastest_backend": "rust",
+      "operation": "kuramoto_rk4_trajectory",
+      "parity_max_abs_diff": 1.5543122344752192e-15,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 36413.373,
+            "mean_us": 34938.8946,
+            "min_us": 33543.568,
+            "p50_us": 35132.24,
+            "p95_us": 35150.549,
+            "p99_us": 35150.549,
+            "samples": 5,
+            "throughput_ops_s": 28.621397770266036
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 47285.348,
+            "mean_us": 45470.275799999996,
+            "min_us": 44150.34,
+            "p50_us": 45412.649,
+            "p95_us": 45934.425,
+            "p99_us": 45934.425,
+            "samples": 5,
+            "throughput_ops_s": 21.992389146669748
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 128
+    },
+    {
+      "extra": {
+        "cost_class": "trajectory",
+        "inner": 1
+      },
+      "fastest_backend": "rust",
+      "operation": "kuramoto_rk4_trajectory",
+      "parity_max_abs_diff": 4.3076653355456074e-14,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 849334.5,
+            "mean_us": 842005.0961999999,
+            "min_us": 833342.387,
+            "p50_us": 841726.505,
+            "p95_us": 848779.983,
+            "p99_us": 848779.983,
+            "samples": 5,
+            "throughput_ops_s": 1.187641267865286
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 1196553.271,
+            "mean_us": 1099366.8098,
+            "min_us": 1051533.927,
+            "p50_us": 1072889.518,
+            "p95_us": 1121626.74,
+            "p99_us": 1121626.74,
+            "samples": 5,
+            "throughput_ops_s": 0.9096145081748674
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 512
+    },
+    {
+      "extra": {
+        "cost_class": "trajectory",
+        "inner": 1
+      },
+      "fastest_backend": "rust",
+      "operation": "kuramoto_euler_vjp",
+      "parity_max_abs_diff": 4.440892098500626e-15,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 104.22,
+            "mean_us": 92.7548,
+            "min_us": 87.933,
+            "p50_us": 89.415,
+            "p95_us": 93.714,
+            "p99_us": 93.714,
+            "samples": 5,
+            "throughput_ops_s": 10781.11321462609
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 1367.476,
+            "mean_us": 1112.9982,
+            "min_us": 1022.254,
+            "p50_us": 1068.443,
+            "p95_us": 1083.685,
+            "p99_us": 1083.685,
+            "samples": 5,
+            "throughput_ops_s": 898.4740496435663
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 8
+    },
+    {
+      "extra": {
+        "cost_class": "trajectory",
+        "inner": 1
+      },
+      "fastest_backend": "rust",
+      "operation": "kuramoto_euler_vjp",
+      "parity_max_abs_diff": 5.684341886080802e-14,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 1698.287,
+            "mean_us": 1236.297,
+            "min_us": 1087.32,
+            "p50_us": 1119.381,
+            "p95_us": 1179.218,
+            "p99_us": 1179.218,
+            "samples": 5,
+            "throughput_ops_s": 808.8671249707796
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 3067.728,
+            "mean_us": 2432.1632,
+            "min_us": 2072.027,
+            "p50_us": 2261.333,
+            "p95_us": 2568.538,
+            "p99_us": 2568.538,
+            "samples": 5,
+            "throughput_ops_s": 411.15661975314816
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 32
+    },
+    {
+      "extra": {
+        "cost_class": "trajectory",
+        "inner": 1
+      },
+      "fastest_backend": "rust",
+      "operation": "kuramoto_euler_vjp",
+      "parity_max_abs_diff": 1.1652900866465643e-12,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 23320.987,
+            "mean_us": 22976.5196,
+            "min_us": 22482.632,
+            "p50_us": 23078.208,
+            "p95_us": 23102.044,
+            "p99_us": 23102.044,
+            "samples": 5,
+            "throughput_ops_s": 43.522692618772425
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 28860.388,
+            "mean_us": 28184.4904,
+            "min_us": 27587.493,
+            "p50_us": 28149.56,
+            "p95_us": 28525.55,
+            "p99_us": 28525.55,
+            "samples": 5,
+            "throughput_ops_s": 35.48050668320759
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 128
+    },
+    {
+      "extra": {
+        "cost_class": "trajectory",
+        "inner": 1
+      },
+      "fastest_backend": "rust",
+      "operation": "kuramoto_euler_vjp",
+      "parity_max_abs_diff": 4.511093720793724e-10,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 564705.176,
+            "mean_us": 500472.2024,
+            "min_us": 470868.416,
+            "p50_us": 489273.842,
+            "p95_us": 500134.54,
+            "p99_us": 500134.54,
+            "samples": 5,
+            "throughput_ops_s": 1.998112972517812
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 584900.579,
+            "mean_us": 569450.974,
+            "min_us": 551367.591,
+            "p50_us": 569460.991,
+            "p95_us": 580780.561,
+            "p99_us": 580780.561,
+            "samples": 5,
+            "throughput_ops_s": 1.7560774248495707
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 512
+    },
+    {
+      "extra": {
+        "cost_class": "trajectory",
+        "inner": 1
+      },
+      "fastest_backend": "rust",
+      "operation": "kuramoto_rk4_vjp",
+      "parity_max_abs_diff": 4.440892098500626e-16,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 298.514,
+            "mean_us": 284.2762,
+            "min_us": 279.033,
+            "p50_us": 279.688,
+            "p95_us": 284.646,
+            "p99_us": 284.646,
+            "samples": 5,
+            "throughput_ops_s": 3517.705667938434
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 5209.722,
+            "mean_us": 4792.137,
+            "min_us": 4496.387,
+            "p50_us": 4760.977,
+            "p95_us": 4991.622,
+            "p99_us": 4991.622,
+            "samples": 5,
+            "throughput_ops_s": 208.6751693451168
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 8
+    },
+    {
+      "extra": {
+        "cost_class": "trajectory",
+        "inner": 1
+      },
+      "fastest_backend": "rust",
+      "operation": "kuramoto_rk4_vjp",
+      "parity_max_abs_diff": 5.551115123125783e-16,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 6058.043,
+            "mean_us": 5594.44,
+            "min_us": 5151.225,
+            "p50_us": 5590.547,
+            "p95_us": 5941.851,
+            "p99_us": 5941.851,
+            "samples": 5,
+            "throughput_ops_s": 178.74890069426075
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 11291.317,
+            "mean_us": 11045.7814,
+            "min_us": 10651.21,
+            "p50_us": 11174.701,
+            "p95_us": 11199.003,
+            "p99_us": 11199.003,
+            "samples": 5,
+            "throughput_ops_s": 90.53230041289791
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 32
+    },
+    {
+      "extra": {
+        "cost_class": "trajectory",
+        "inner": 1
+      },
+      "fastest_backend": "rust",
+      "operation": "kuramoto_rk4_vjp",
+      "parity_max_abs_diff": 4.707345624410664e-14,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 123476.657,
+            "mean_us": 117452.5814,
+            "min_us": 113094.675,
+            "p50_us": 116512.887,
+            "p95_us": 117955.022,
+            "p99_us": 117955.022,
+            "samples": 5,
+            "throughput_ops_s": 8.514074259418534
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 152816.222,
+            "mean_us": 143994.6966,
+            "min_us": 133681.229,
+            "p50_us": 143605.952,
+            "p95_us": 147470.512,
+            "p99_us": 147470.512,
+            "samples": 5,
+            "throughput_ops_s": 6.944700211966001
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 128
+    },
+    {
+      "extra": {
+        "cost_class": "trajectory",
+        "inner": 1
+      },
+      "fastest_backend": "rust",
+      "operation": "kuramoto_rk4_vjp",
+      "parity_max_abs_diff": 4.6566128730773926e-09,
+      "rows": [
+        {
+          "backend": "rust",
+          "reason": null,
+          "stats": {
+            "max_us": 2602763.463,
+            "mean_us": 2520375.5176,
+            "min_us": 2410324.099,
+            "p50_us": 2544101.383,
+            "p95_us": 2589073.788,
+            "p99_us": 2589073.788,
+            "samples": 5,
+            "throughput_ops_s": 0.39676627273075527
+          },
+          "status": "measured"
+        },
+        {
+          "backend": "julia",
+          "reason": "tier excluded by --tiers",
+          "stats": null,
+          "status": "unavailable"
+        },
+        {
+          "backend": "python",
+          "reason": null,
+          "stats": {
+            "max_us": 3079670.458,
+            "mean_us": 2980373.1734,
+            "min_us": 2924793.031,
+            "p50_us": 2957652.493,
+            "p95_us": 3010957.748,
+            "p99_us": 3010957.748,
+            "samples": 5,
+            "throughput_ops_s": 0.3355284529216196
+          },
+          "status": "measured"
+        }
+      ],
+      "size": 512
+    }
+  ],
+  "schema_version": "scpn-quantum-control.tier-benchmark.v1"
+}

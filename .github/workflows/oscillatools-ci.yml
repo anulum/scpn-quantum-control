@@ -45,8 +45,8 @@ jobs:
           python-version: "3.12"
           cache: 'pip'
       - run: python -m pip install -e ".[dev]"
-      - run: ruff check src tests
-      - run: ruff format --check src tests
+      - run: ruff check src tests tools examples
+      - run: ruff format --check src tests tools examples
 
   type-check:
     needs: lint
@@ -60,8 +60,10 @@ jobs:
       - run: python -m pip install -e ".[dev]"
       # The Rust engine, JAX, Torch, Julia, and matplotlib tiers are optional
       # extras guarded at call sites; the mypy overrides in pyproject treat them
-      # as untyped, so the numpy+scipy floor type-checks the whole surface.
-      - run: mypy --strict src/oscillatools/
+      # as untyped, so the numpy+scipy floor type-checks the whole surface. The
+      # docs renderers (tools/) and the worked example are shipped code, so they
+      # type-check under the same strict gate.
+      - run: mypy --strict src/oscillatools/ tools examples
 
   test:
     needs: lint
@@ -88,8 +90,23 @@ jobs:
         if: matrix.python-version == '3.12'
         run: pytest tests --cov=oscillatools --cov-report=term-missing --cov-fail-under=100
 
+  docs-build:
+    needs: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1  # v6
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      # The site uses only the search plugin (no mkdocstrings autodoc directives),
+      # so the strict build validates the handbook, capability, tier, and
+      # competitive pages and their cross-links without importing the package.
+      - run: python -m pip install -e ".[docs]"
+      - run: mkdocs build --strict
+
   oscillatools-ci-gate:
-    needs: [lint, type-check, test]
+    needs: [lint, type-check, test, docs-build]
     runs-on: ubuntu-latest
     if: always()
     steps:
@@ -97,7 +114,8 @@ jobs:
         run: |
           if [[ "${{ needs.lint.result }}" != "success" ]] || \
              [[ "${{ needs.type-check.result }}" != "success" ]] || \
-             [[ "${{ needs.test.result }}" != "success" ]]; then
+             [[ "${{ needs.test.result }}" != "success" ]] || \
+             [[ "${{ needs.docs-build.result }}" != "success" ]]; then
             echo "oscillatools CI gate failed"
             exit 1
           fi
