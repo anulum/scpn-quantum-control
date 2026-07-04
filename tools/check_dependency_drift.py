@@ -16,6 +16,12 @@ from pathlib import Path
 
 from packaging.requirements import Requirement
 
+# Install-free sibling distributions live in this monorepo and are supplied to the
+# runtime via an editable install / PYTHONPATH, not pinned in the PyPI-facing
+# requirements mirror: they are not published to PyPI, so a pin there cannot be
+# resolved or audited. Exclude them from the pyproject↔requirements mirror check.
+_INSTALL_FREE_SIBLINGS: frozenset[str] = frozenset({"oscillatools"})
+
 
 @dataclass(frozen=True)
 class DependencyDriftReport:
@@ -130,9 +136,19 @@ def runtime_requirements(requirements_path: Path) -> tuple[str, ...]:
 
 
 def dependency_drift_report(root: Path) -> DependencyDriftReport:
-    """Build a drift report for a repository root."""
+    """Build a drift report for a repository root.
+
+    Install-free sibling distributions are dropped from the canonical dependency
+    set before comparison: they are declared in ``pyproject.toml`` but cannot be
+    pinned in the PyPI-facing requirements mirror.
+    """
+    project = tuple(
+        dependency
+        for dependency in project_dependencies(root / "pyproject.toml")
+        if _requirement_name(dependency) not in _INSTALL_FREE_SIBLINGS
+    )
     return DependencyDriftReport(
-        project_dependencies=project_dependencies(root / "pyproject.toml"),
+        project_dependencies=project,
         runtime_requirements=runtime_requirements(root / "requirements.txt"),
     )
 

@@ -209,11 +209,11 @@ exclude_lines = [
     "if __name__",
     "raise NotImplementedError",
     "^\\s*\\.\\.\\.\\s*$",
-    # Optional accelerator-tier dispatch: the `_rust_*` helpers only invoke the
-    # Rust engine when the [rust] extra is installed, and the Julia probe only
-    # returns True when juliacall is present; both tiers are exercised via their
-    # extras locally, not on the pinned numpy+scipy CI floor.
+    # Optional accelerator-tier dispatch: the `_rust_*` and `_julia_*` helpers
+    # only invoke the Rust engine / Julia runtime when the [rust] / [julia] extra
+    # is installed; both tiers are exercised via their extras locally, not on the
+    # pinned numpy+scipy CI floor.
     "def _rust_",
-    "def _julia_available",
+    "def _julia_",
 ]
 exclude_also = ["if TYPE_CHECKING:"]
