@@ -19,6 +19,7 @@ coverage/
 .venv/
 .venv-iqm/
 .venv-linux/
+.venv-metriq/
 .venv-rocm/
 .venv-cuda/
 venv/
@@ -117,3 +118,4 @@ paper/**/paper*_extraction_*.md
 paper/**/paper*_assessment.md
 paper/**/_v1_archive/
 paper/**/paper*_assessment_*.md
+node_modules/
