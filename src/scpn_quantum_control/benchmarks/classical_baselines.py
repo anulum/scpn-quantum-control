@@ -164,7 +164,9 @@ def qutip_lindblad_baseline(
             np.sqrt(gamma) * _qutip_single(qutip, K_arr.shape[0], site, qutip.sigmam())
             for site in range(K_arr.shape[0])
         ]
-    result = qutip.mesolve(hamiltonian, psi0, times, collapse_ops, [])
+    # QuTiP 5.3 makes ``e_ops`` keyword-only (mesolve takes <=4 positional args);
+    # pass it by name so the call resolves on both 5.2 and 5.3.
+    result = qutip.mesolve(hamiltonian, psi0, times, collapse_ops, e_ops=[])
     order_parameter = np.array(
         [_qutip_order_parameter(qutip, state, K_arr.shape[0]) for state in result.states]
     )

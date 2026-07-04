@@ -20,10 +20,10 @@ SCPN Quantum Control — Differentiable external-validation environment lock
 |---|---|---|---|
 | `pyproject.toml` | Package metadata and bounded dependency ranges | `f29141ead7e6df9e0c08731b3c0f72c0060a8d1be6238cf7c206377fc7359bda` | 0 |
 | `requirements.txt` | Runtime dependency lock input | `9a3ec3b57c0d1c0bd8647e82dea8ddcf54b94f02be3992a94bff39edb3a78e12` | 11 |
-| `requirements-dev.txt` | Developer verification dependency lock input | `a616e5830a65f09edb56c9ab6272b30c4892eb56c45709c3bad6ed774cbc5038` | 27 |
+| `requirements-dev.txt` | Developer verification dependency lock input | `fac6b5c68ad210d635ab1f759a2af603d60c2a14a3c7e246eb4ee7cb93d6b870` | 27 |
 | `requirements-ci-cross-platform-smoke.txt` | Cross-platform smoke CI lockfile | `13a2b72471e6bf1cdc41d1c9807f5ad6a3cca71523f03c711c7d372d0507c110` | 17 |
-| `requirements-ci-py311-linux.txt` | Python 3.11 Linux CI lockfile | `4ed2fcf388b6e65e694adb68de6a7585aa9c8af947e18df6492dce5610136d81` | 156 |
-| `requirements-ci-py312-linux.txt` | Python 3.12 Linux CI lockfile | `6edccd08bfe1f8dcf8c0a8ad34183ecc7c4047ab4487b5213a88b60b81e48087` | 156 |
-| `requirements-ci-py313-linux.txt` | Python 3.13 Linux CI lockfile | `acdf851e04a72aab42b27d7bf815b0fd1afa2d046c16bde2a5db511e734c77e1` | 156 |
+| `requirements-ci-py311-linux.txt` | Python 3.11 Linux CI lockfile | `55fbb7601d57220ff0e2a4f3a797ee346d54ce2e5adb59bf91f594e181ee332b` | 156 |
+| `requirements-ci-py312-linux.txt` | Python 3.12 Linux CI lockfile | `81dd53e2718ba1b8740ab7cdfcf7cc53d699b19e43670bef2bbc69c9214724f3` | 156 |
+| `requirements-ci-py313-linux.txt` | Python 3.13 Linux CI lockfile | `1e6a1b7bb0cbff3af9cb34f605eff1fc90065a05e718cfa549fe10065d955377` | 156 |
 | `data/differentiable_phase_qnode/local_benchmark_20260616T0955Z/framework_overlay_freeze.txt` | CPU framework overlay freeze used for JAX, PyTorch, TensorFlow, and PennyLane rows | `11a15a483d2f8f602b8d052dc1cf0824d37a86a47853a66b1cda1ed93caa56c6` | 54 |
 | `data/differentiable_phase_qnode/local_benchmark_20260616T0955Z/enzyme_py39_freeze.txt` | Python 3.9 Enzyme/JAX runner freeze used for installed-toolchain hard-gap evidence | `2770738675e8ac3fbf3edd5f8b004a3c0d2621fd3324b77aa3a238437b947d32` | 10 |
