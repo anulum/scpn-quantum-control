@@ -1373,6 +1373,28 @@ def test_result_output_not_in_ir_fails_closed() -> None:
     np.testing.assert_allclose(result.gradient, [0.0])
 
 
+def test_result_nonterminal_output_fails_closed() -> None:
+    """Result nonterminal output fails closed before executable replay."""
+    param = _parameter_node(0, "x", 3.0)
+    selected = WholeProgramIRNode(
+        index=1, op="square", inputs=("%0",), value=9.0, tangent=np.zeros(1)
+    )
+    later_dead_value = WholeProgramIRNode(
+        index=2, op="add", inputs=("%1", "1.0"), value=10.0, tangent=np.zeros(1)
+    )
+
+    result = _program_adjoint_result_from_nodes(
+        nodes=(param, selected, later_dead_value),
+        output_name="%1",
+        parameter_names=("x",),
+        trainable=(True,),
+    )
+
+    assert result.supported is False
+    assert "output:not_terminal_ir_node" in result.unsupported_ops
+    np.testing.assert_allclose(result.gradient, [0.0])
+
+
 def test_result_unsupported_output_op_fails_closed() -> None:
     """Result unsupported output op fails closed."""
     node = WholeProgramIRNode(

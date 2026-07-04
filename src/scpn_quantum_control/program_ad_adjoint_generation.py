@@ -1054,6 +1054,9 @@ def _program_adjoint_result_from_nodes(
         unsupported_ops.add("output:not_in_ir")
     else:
         adjoints[output_name] = 1.0
+        terminal_output_name = f"%{nodes[-1].index}" if nodes else ""
+        if output_name != terminal_output_name:
+            unsupported_ops.add("output:not_terminal_ir_node")
     for node in reversed(nodes):
         name = f"%{node.index}"
         cotangent = adjoints.get(name, 0.0)

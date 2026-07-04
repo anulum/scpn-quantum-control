@@ -12,7 +12,7 @@
     "python_model_classes": 911,
     "python_model_source_modules": 471,
     "rust_pyo3_model_wrappers": 172,
-    "rust_source_modules": 51,
+    "rust_source_modules": 52,
     "test_files": 813
   },
   "documentation": {
@@ -4923,6 +4923,7 @@
       "scpn_quantum_engine/src/pec.rs",
       "scpn_quantum_engine/src/program_ad_ir.rs",
       "scpn_quantum_engine/src/program_ad_linalg_array.rs",
+      "scpn_quantum_engine/src/program_ad_linalg_pinv.rs",
       "scpn_quantum_engine/src/program_ad_linalg_spectral.rs",
       "scpn_quantum_engine/src/program_ad_linalg_svd.rs",
       "scpn_quantum_engine/src/program_ad_order_statistic_reduction.rs",
