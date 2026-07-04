@@ -8,7 +8,7 @@
       "path": "pyproject.toml",
       "pinned_package_count": 0,
       "role": "Package metadata and bounded dependency ranges",
-      "sha256": "3911809e9e251468da8dca8cf45075f778c80c0dbf9a23ee9efc1573b6317dce",
+      "sha256": "f29141ead7e6df9e0c08731b3c0f72c0060a8d1be6238cf7c206377fc7359bda",
       "size_bytes": 16735
     },
     {
@@ -24,8 +24,8 @@
       "path": "requirements-dev.txt",
       "pinned_package_count": 27,
       "role": "Developer verification dependency lock input",
-      "sha256": "936e59ecfd4e6f2a3cbf8220d6bc8626d6ce82917b2f0201a6d282d1e863f57b",
-      "size_bytes": 966
+      "sha256": "a616e5830a65f09edb56c9ab6272b30c4892eb56c45709c3bad6ed774cbc5038",
+      "size_bytes": 965
     },
     {
       "line_count": 295,
