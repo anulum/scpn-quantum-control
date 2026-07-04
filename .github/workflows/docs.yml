@@ -27,6 +27,7 @@ jobs:
           python-version: "3.12"
           cache: 'pip'
       - run: python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+      - run: python -m pip install --no-deps -e oscillatools/
       - run: python -m pip install --no-deps -e .
       - run: mkdocs build --site-dir _site
       - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9  # v5

@@ -1,0 +1,104 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
+# © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
+# © Code 2020–2026 Miroslav Šotek. All rights reserved.
+# ORCID: 0009-0009-3560-0851
+# Contact: www.anulum.li | protoscience@anulum.li
+# oscillatools — CI (standalone Kuramoto toolkit distribution)
+name: oscillatools CI
+
+# The standalone `oscillatools/` distribution carries its own lint, type, and
+# test gate, separate from the parent scpn-quantum-control suite. It runs only
+# when the distribution (or this workflow) changes so unrelated parent commits
+# do not pay for it.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "oscillatools/**"
+      - ".github/workflows/oscillatools-ci.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "oscillatools/**"
+      - ".github/workflows/oscillatools-ci.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: oscillatools-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    working-directory: oscillatools
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1  # v6
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - run: python -m pip install -e ".[dev]"
+      - run: ruff check src tests
+      - run: ruff format --check src tests
+
+  type-check:
+    needs: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1  # v6
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - run: python -m pip install -e ".[dev]"
+      # The Rust engine, JAX, Torch, Julia, and matplotlib tiers are optional
+      # extras guarded at call sites; the mypy overrides in pyproject treat them
+      # as untyped, so the numpy+scipy floor type-checks the whole surface.
+      - run: mypy --strict src/oscillatools/
+
+  test:
+    needs: lint
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1  # v6
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+      # [sklearn] and [viz] light up the scikit-learn estimator and matplotlib
+      # renderer modules so they are exercised on the pinned numpy+scipy floor;
+      # the [jax]/[torch]/[julia] tiers stay optional and their modules are
+      # omitted from coverage (see [tool.coverage] in pyproject).
+      - run: python -m pip install -e ".[dev,sklearn,viz]"
+      - name: Run tests
+        if: matrix.python-version != '3.12'
+        run: pytest tests -q
+      - name: Run tests with coverage (3.12)
+        if: matrix.python-version == '3.12'
+        run: pytest tests --cov=oscillatools --cov-report=term-missing --cov-fail-under=100
+
+  oscillatools-ci-gate:
+    needs: [lint, type-check, test]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Check all jobs passed
+        run: |
+          if [[ "${{ needs.lint.result }}" != "success" ]] || \
+             [[ "${{ needs.type-check.result }}" != "success" ]] || \
+             [[ "${{ needs.test.result }}" != "success" ]]; then
+            echo "oscillatools CI gate failed"
+            exit 1
+          fi
+          echo "oscillatools CI gate passed"

@@ -203,6 +203,12 @@ warn_unused_configs = true
 warn_unreachable = true
 check_untyped_defs = true
 ignore_missing_imports = false
+# The standalone `oscillatools` distribution is a runtime dependency imported by
+# the accel/kuramoto consumer modules; it is not installed during the type-check
+# job (the pinned CI surface is hash-locked), so expose its source tree here for
+# import resolution. Its own strict gate owns its internals (see the override
+# below), and it is never added to `files`, so mypy resolves but does not re-check it.
+mypy_path = ["src", "oscillatools/src"]
 files = [
     "src/scpn_quantum_control/",
 ]
@@ -322,11 +328,6 @@ follow_imports = "skip"
 [[tool.mypy.overrides]]
 module = "structlog.*"
 ignore_missing_imports = true
-
-[[tool.mypy.overrides]]
-module = "juliacall"
-ignore_missing_imports = true
-follow_imports = "skip"
 
 # The Kuramoto toolkit now lives in the standalone `oscillatools` distribution
 # (a dependency), which carries its own strict mypy gate; use its types here

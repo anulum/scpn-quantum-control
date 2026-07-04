@@ -41,6 +41,7 @@ jobs:
         with:
           python-version: "3.12"
           cache: 'pip'
+      - run: pip install --no-deps -e oscillatools/
       - run: pip install -e ".[dev]"
       - run: pip install cyclonedx-bom
       - name: Generate Python CycloneDX SBOM

@@ -63,6 +63,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --require-hashes -r "${{ matrix.requirements-file }}"
+          python -m pip install --no-deps -e oscillatools/
           python -m pip install --no-deps -e .
           if [ "${{ matrix.profile }}" = "full" ]; then
             # CPU wheels: jax[cpu], tensorflow-cpu, pennylane, torch.
@@ -100,6 +101,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+          python -m pip install --no-deps -e oscillatools/
           python -m pip install --no-deps -e .
 
       - name: Run optional GPU contract tests
@@ -157,6 +159,7 @@ jobs:
       - name: Install benchmark dependencies
         run: |
           python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+          python -m pip install --no-deps -e oscillatools/
           python -m pip install --no-deps -e .
 
       - name: Run affinity benchmark metadata harness

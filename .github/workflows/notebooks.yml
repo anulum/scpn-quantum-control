@@ -53,6 +53,7 @@ jobs:
           cache: 'pip'
       - name: Install project + notebook dependencies
         run: |
+          pip install --no-deps -e oscillatools/
           pip install -e ".[dev,viz,ibm,tensor,mitigation,opensys,pennylane]"
           pip install nbmake
       - name: Execute core tutorial notebooks (01..13)

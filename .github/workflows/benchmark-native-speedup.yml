@@ -50,6 +50,7 @@ jobs:
       - name: Install package and dependencies
         run: |
           python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
+          python -m pip install --no-deps -e oscillatools/
           python -m pip install --no-deps -e .
 
       - name: Build and install the Rust engine

@@ -21,8 +21,9 @@ RUN apt-get update \
 COPY .pre-commit-config.yaml pyproject.toml mkdocs.yml requirements.txt requirements-dev.txt README.md LICENSE ./
 COPY requirements-ci-cross-platform-smoke.txt requirements-ci-py311-linux.txt requirements-ci-py312-linux.txt requirements-ci-py313-linux.txt requirements-ci-studio-platform.txt ./
 COPY src/ src/
+COPY oscillatools/src/ oscillatools/src/
 
-ENV PYTHONPATH=/app/src:/app
+ENV PYTHONPATH=/app/src:/app/oscillatools/src:/app
 ENV XDG_CACHE_HOME=/home/sqc/.cache
 ENV XDG_CONFIG_HOME=/home/sqc/.config
 ENV MPLCONFIGDIR=/home/sqc/.config/matplotlib

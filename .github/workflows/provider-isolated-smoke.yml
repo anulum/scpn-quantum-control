@@ -51,6 +51,7 @@ jobs:
       - name: Install isolated provider extra
         run: |
           "${{ matrix.venv_path }}/bin/python" -m pip install -U pip
+          "${{ matrix.venv_path }}/bin/python" -m pip install --no-deps -e oscillatools/
           "${{ matrix.venv_path }}/bin/python" -m pip install -e ".[${{ matrix.extra }}]"
       - name: Run offline provider smoke gate
         run: >-

@@ -34,6 +34,7 @@ jobs:
           cache: 'pip'
       - name: Install project + mutmut
         run: |
+          pip install --no-deps -e oscillatools/
           pip install -e ".[dev]"
           pip install 'mutmut<3'
       - name: Point the runner script at the CI python
