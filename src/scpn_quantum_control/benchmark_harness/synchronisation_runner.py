@@ -90,7 +90,7 @@ def decaying_chain_coupling_matrix(
     distance = np.abs(indices[:, None] - indices[None, :])
     matrix = coupling * np.exp(-decay * distance)
     np.fill_diagonal(matrix, 0.0)
-    return cast("NDArray[np.float64]", matrix)
+    return matrix
 
 
 def natural_frequencies(n_oscillators: int = 4) -> NDArray[np.float64]:
