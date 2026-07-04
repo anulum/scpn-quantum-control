@@ -97,7 +97,7 @@ reductions with `dx`/`x`/`xfull` metadata, scalar all-axis
 and `expression_rebinding_alias` metadata attached by local static-gather temporaries, and executed runtime branch metadata when
 matched by runtime phi provenance. Legacy opcode-free metadata, unsafe aliases,
 mutation, non-lowered dynamic indexing semantics, dynamic axes, dynamic trapezoid-grid metadata, dynamic q/method
-metadata, dynamic ddof/correction metadata, zero-variance `std` gradients, broad array/linalg adjoints,
+metadata, dynamic ddof/correction metadata, zero-variance `std` gradients, remaining broad linalg/spectral adjoints,
 unsafe source-level aliases and non-executed branch semantics, general Program AD execution,
 LLVM/JIT lowering, hardware execution, provider execution, and performance
 promotion remain fail-closed.
@@ -148,7 +148,8 @@ hardware, isolated benchmark, or performance promotion evidence.
 Python integration is isolated in
 `scpn_quantum_control.program_ad_rust_bridge`, which owns the typed wrapper
 dataclasses, native-extension fail-closed handling, JSON payload validation,
-registry metadata mirror result, and NumPy input normalisation. The legacy
+registry metadata mirror result, NumPy input normalisation, and bounded
+fixed-signature `np.linalg.multi_dot` linalg-array output replay. The legacy
 differentiable-programming facade continues to re-export those bridge symbols.
 Python compiler interchange lowers captured `program_ad_effect_ir.v1` records
 into deterministic `scpn_diff.program_ad_ssa`,
