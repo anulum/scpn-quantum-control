@@ -111,6 +111,10 @@ jobs:
     if: always()
     steps:
       - name: Check all jobs passed
+        # This job runs no checkout, so override the workflow-level
+        # `oscillatools` working directory (which would not exist here) with the
+        # always-present workspace root.
+        working-directory: ${{ github.workspace }}
         run: |
           if [[ "${{ needs.lint.result }}" != "success" ]] || \
              [[ "${{ needs.type-check.result }}" != "success" ]] || \

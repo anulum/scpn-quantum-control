@@ -10,6 +10,8 @@
 from __future__ import annotations
 
 import dis
+from types import SimpleNamespace
+from typing import cast
 
 import numpy as np
 import pytest
@@ -202,40 +204,32 @@ def test_whole_program_frontend_reports_located_unsupported_semantics() -> None:
     )
 
 
+def _line_marker_instruction(starts_line: bool | int, positions: dis.Positions) -> dis.Instruction:
+    """Return a ``dis.Instruction`` stand-in carrying only the line-marker fields.
+
+    ``dis.Instruction``'s concrete field set changed across CPython releases —
+    ``is_jump_target`` was dropped in 3.13 — so constructing it with fixed keyword
+    arguments is not portable. ``_instruction_line_number`` reads only
+    ``starts_line`` and ``positions``, so a stand-in carrying those two attributes
+    exercises the same code on every supported interpreter.
+    """
+
+    return cast(dis.Instruction, SimpleNamespace(starts_line=starts_line, positions=positions))
+
+
 def test_whole_program_frontend_normalises_python313_boolean_line_markers() -> None:
     """Bytecode line capture should survive CPython 3.13 boolean line markers."""
 
-    python313_instruction = dis.Instruction(
-        opname="LOAD_FAST",
-        opcode=124,
-        arg=0,
-        argval="values",
-        argrepr="values",
-        offset=2,
+    python313_instruction = _line_marker_instruction(
         starts_line=True,
-        is_jump_target=False,
         positions=dis.Positions(lineno=123, end_lineno=123, col_offset=4, end_col_offset=10),
     )
-    legacy_instruction = dis.Instruction(
-        opname="LOAD_FAST",
-        opcode=124,
-        arg=0,
-        argval="values",
-        argrepr="values",
-        offset=2,
+    legacy_instruction = _line_marker_instruction(
         starts_line=77,
-        is_jump_target=False,
         positions=dis.Positions(lineno=123, end_lineno=123, col_offset=4, end_col_offset=10),
     )
-    missing_instruction = dis.Instruction(
-        opname="NOP",
-        opcode=9,
-        arg=None,
-        argval=None,
-        argrepr="",
-        offset=4,
+    missing_instruction = _line_marker_instruction(
         starts_line=False,
-        is_jump_target=False,
         positions=dis.Positions(
             lineno=None, end_lineno=None, col_offset=None, end_col_offset=None
         ),

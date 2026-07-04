@@ -15,6 +15,14 @@ on:
 permissions:
   contents: read
 
+# Serialise Pages deployments so rapid successive pushes do not race on the
+# single active GitHub Pages deployment; a losing race surfaces as the
+# deploy-pages "Deployment failed, try again later." error. In-progress
+# deployments are allowed to finish rather than being cancelled.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
 jobs:
   build:
     runs-on: ubuntu-latest
