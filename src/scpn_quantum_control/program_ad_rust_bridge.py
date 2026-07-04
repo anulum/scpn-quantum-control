@@ -11,8 +11,9 @@ The functions in this module are the Python-facing boundary around optional
 PyO3 exports from ``scpn_quantum_engine``. They validate JSON payloads,
 normalise NumPy inputs, and preserve explicit claim boundaries for scalar,
 elementwise-array, structural-array, static-reduction, fixed ``multi_dot``
-linalg-array, and 2x2 distinct symmetric ``eigvalsh`` replay without importing
-the larger differentiable-programming facade.
+linalg-array, 2x2 distinct symmetric ``eigvalsh``, and 2x2 real-distinct
+``eigvals`` replay without importing the larger differentiable-programming
+facade.
 """
 
 from __future__ import annotations
@@ -356,9 +357,10 @@ def mirror_program_ad_registry_metadata_with_rust() -> RustProgramADRegistryMeta
     returns a typed fail-closed result. A supported result is metadata evidence
     only: it records registry shape, required facet counts, and overlap with
     the currently bounded Rust scalar/static-linalg, array, static
-    ``multi_dot``, and 2x2 distinct symmetric ``eigvalsh`` replay. It does not
-    promote registry-dispatched execution, broad linalg/spectral adjoints,
-    LLVM/JIT lowering, provider, hardware, or performance evidence.
+    ``multi_dot``, 2x2 distinct symmetric ``eigvalsh``, and 2x2 real-distinct
+    ``eigvals`` replay. It does not promote registry-dispatched execution,
+    broad linalg/spectral adjoints, LLVM/JIT lowering, provider, hardware, or
+    performance evidence.
     """
 
     from .program_ad_registry import program_ad_registry_dispatch_coverage_report
