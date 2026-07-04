@@ -8,7 +8,7 @@
     "processor": "x86_64",
     "python": "3.12.3"
   },
-  "generated_at_unix": 1781601250,
+  "generated_at_unix": 1783124420,
   "production_eligible": false,
   "promotion_ready": false,
   "row_schema": {
@@ -20,6 +20,7 @@
       "backend",
       "batching_support",
       "case_id",
+      "catalyst_comparison",
       "claim_boundary",
       "dependency_versions",
       "device",
@@ -47,6 +48,7 @@
       "backend": "jax",
       "batching_support": "vmap",
       "case_id": "bounded_phase_objective",
+      "catalyst_comparison": null,
       "claim_boundary": "Bounded CPU external comparison against the SCPN reference; no provider, QPU, GPU, or production performance claim.",
       "dependency_versions": {
         "jax": "0.6.2",
@@ -56,8 +58,8 @@
       "dtype": "float64",
       "failure_class": null,
       "gradient_error": 0.0,
-      "memory_peak_bytes": 1918948,
-      "runtime_seconds": 0.5162902970041614,
+      "memory_peak_bytes": 2499413,
+      "runtime_seconds": 3.019936125027016,
       "setup_instructions": null,
       "source_of_truth": "scpn_reference",
       "status": "success",
@@ -69,16 +71,17 @@
       "backend": "pytorch",
       "batching_support": "torch.func.vmap",
       "case_id": "bounded_phase_objective",
+      "catalyst_comparison": null,
       "claim_boundary": "Bounded CPU external comparison against the SCPN reference; no provider, QPU, GPU, or production performance claim.",
       "dependency_versions": {
-        "torch": "2.11.0+cpu"
+        "torch": "2.11.0"
       },
       "device": "cpu",
       "dtype": "float64",
       "failure_class": null,
       "gradient_error": 0.0,
-      "memory_peak_bytes": 33256387,
-      "runtime_seconds": 3.4701909339928534,
+      "memory_peak_bytes": 37027020,
+      "runtime_seconds": 6.453689298010431,
       "setup_instructions": null,
       "source_of_truth": "scpn_reference",
       "status": "success",
@@ -90,28 +93,30 @@
       "backend": "tensorflow",
       "batching_support": "vectorized_map",
       "case_id": "bounded_phase_objective",
-      "claim_boundary": "Bounded CPU external comparison against the SCPN reference; no provider, QPU, GPU, or production performance claim.",
+      "catalyst_comparison": null,
+      "claim_boundary": "Dependency hard gap only; no hidden success or promoted claim.",
       "dependency_versions": {
-        "tensorflow": "2.21.0",
-        "tensorflow-cpu": "2.21.0"
+        "tensorflow": "not_installed",
+        "tensorflow-cpu": "not_installed"
       },
       "device": "cpu",
       "dtype": "float64",
-      "failure_class": null,
-      "gradient_error": 0.0,
-      "memory_peak_bytes": 452789,
-      "runtime_seconds": 0.07043693598825485,
-      "setup_instructions": null,
+      "failure_class": "dependency_missing",
+      "gradient_error": null,
+      "memory_peak_bytes": null,
+      "runtime_seconds": null,
+      "setup_instructions": "Install the CPU overlay wheel tensorflow-cpu.",
       "source_of_truth": "scpn_reference",
-      "status": "success",
+      "status": "hard_gap",
       "toolchain": null,
       "transform_support": "GradientTape",
-      "value_error": 0.0
+      "value_error": null
     },
     {
       "backend": "pennylane",
       "batching_support": "not_native",
       "case_id": "bounded_phase_objective",
+      "catalyst_comparison": null,
       "claim_boundary": "Bounded CPU external comparison against the SCPN reference; no provider, QPU, GPU, or production performance claim.",
       "dependency_versions": {
         "pennylane": "0.44.1"
@@ -120,8 +125,8 @@
       "dtype": "float64",
       "failure_class": null,
       "gradient_error": 5.551115123125783e-17,
-      "memory_peak_bytes": 256912,
-      "runtime_seconds": 0.019934126001317054,
+      "memory_peak_bytes": 335603,
+      "runtime_seconds": 0.03666981705464423,
       "setup_instructions": null,
       "source_of_truth": "scpn_reference",
       "status": "success",
@@ -131,33 +136,72 @@
     },
     {
       "backend": "enzyme",
-      "batching_support": "not_supported",
+      "batching_support": "not_evaluated",
       "case_id": "bounded_phase_objective",
-      "claim_boundary": "Runtime comparison gap only; no hidden success or promoted claim.",
+      "catalyst_comparison": null,
+      "claim_boundary": "Dependency hard gap only; no hidden success or promoted claim.",
       "dependency_versions": {
-        "enzyme": "not_installed",
+        "enzyme": "executable:/home/anulum/.local/bin/enzyme",
         "enzyme_ad": "not_installed",
-        "enzyme_llvm_plugin": "file:/home/anulum/.cache/scpn-qc-enzyme-py39/lib/python3.9/site-packages/enzyme_ad/jax/enzyme_call.so",
-        "enzyme_runner": "executable:data/differentiable_phase_qnode/local_benchmark_20260616T0955Z/enzyme_jax_runner.py",
-        "llvm": "not_installed"
+        "llvm": "importable_unknown_version"
       },
       "device": "cpu",
       "dtype": "float64",
-      "failure_class": "runtime_error",
+      "failure_class": "dependency_missing",
       "gradient_error": null,
       "memory_peak_bytes": null,
       "runtime_seconds": null,
-      "setup_instructions": "Configured Enzyme runner failed: Enzyme-JAX execution failed: loc(\"-\":3:10): error: invalid properties {limit_indices = dense<1> : tensor<1xi64>, start_indices = dense<0> : tensor<1xi64>, strides = dense<1> : tensor<1xi64>} for op mhlo.slice: this operation does not support properties",
+      "setup_instructions": "Install LLVM/Enzyme tooling and configure the Enzyme runner.",
       "source_of_truth": "scpn_reference",
       "status": "hard_gap",
       "toolchain": null,
-      "transform_support": "LLVM Enzyme runner",
+      "transform_support": "LLVM Enzyme",
+      "value_error": null
+    },
+    {
+      "backend": "catalyst",
+      "batching_support": "not_evaluated",
+      "case_id": "bounded_phase_objective",
+      "catalyst_comparison": {
+        "claim_boundary": "Dedicated Catalyst compiler-workflow comparison only; not production, provider, finite-shot, arbitrary-workflow, higher-order-AD, or performance promotion evidence.",
+        "compiled_differentiation": "compiled differentiation is bounded to first-order value/gradient agreement for one CPU float64 phase objective; higher-order and arbitrary-program differentiation are not evaluated.",
+        "compiled_quantum_classical_workflows": "not_evaluated: PennyLane Catalyst qjit/MLIR/QIR runner is absent, so compiled quantum-classical workflow parity is not established.",
+        "control_flow": "control flow is not evaluated; loops, conditionals, dynamic circuits, and hybrid quantum-classical branching require separate Catalyst artefacts.",
+        "finite_shot_limitations": "finite-shot limitations: no shot-noise gradients, sampler jobs, finite-shot provider executions, or statistical confidence intervals are evaluated.",
+        "promotion_ready": false,
+        "provider_route_support": "provider route support is unsupported; no cloud provider, QPU, hardware, or remote job submission occurs in this comparison row.",
+        "runner_status": "dependency_gap",
+        "unsupported_provider_routes": [
+          "finite_shot_provider_jobs",
+          "hardware_qpu_execution",
+          "cloud_provider_submission"
+        ]
+      },
+      "claim_boundary": "Dependency hard gap only; no hidden success or promoted claim.",
+      "dependency_versions": {
+        "catalyst": "not_installed",
+        "llvm": "importable_unknown_version",
+        "mlir": "not_installed",
+        "pennylane-catalyst": "not_installed"
+      },
+      "device": "cpu",
+      "dtype": "float64",
+      "failure_class": "dependency_missing",
+      "gradient_error": null,
+      "memory_peak_bytes": null,
+      "runtime_seconds": null,
+      "setup_instructions": "Configure SCPN_CATALYST_RUNNER to an executable Catalyst comparison runner.",
+      "source_of_truth": "scpn_reference",
+      "status": "hard_gap",
+      "toolchain": null,
+      "transform_support": "Catalyst qjit/MLIR/QIR runner",
       "value_error": null
     },
     {
       "backend": "jax",
       "batching_support": "single-host vmap only; multi-host pmap is not promotion evidence",
       "case_id": "bounded_phase_objective_unsupported_batching",
+      "catalyst_comparison": null,
       "claim_boundary": "Unsupported-route hard gap only; no hidden success or promoted claim.",
       "dependency_versions": {
         "jax": "0.6.2",
@@ -180,9 +224,10 @@
       "backend": "pytorch",
       "batching_support": "torch.func.vmap",
       "case_id": "bounded_phase_objective_unsupported_transform",
+      "catalyst_comparison": null,
       "claim_boundary": "Unsupported-route hard gap only; no hidden success or promoted claim.",
       "dependency_versions": {
-        "torch": "2.11.0+cpu"
+        "torch": "2.11.0"
       },
       "device": "cpu",
       "dtype": "float64",
@@ -201,10 +246,11 @@
       "backend": "tensorflow",
       "batching_support": "vectorized_map",
       "case_id": "bounded_phase_objective_unsupported_dtype",
+      "catalyst_comparison": null,
       "claim_boundary": "Unsupported-route hard gap only; no hidden success or promoted claim.",
       "dependency_versions": {
-        "tensorflow": "2.21.0",
-        "tensorflow-cpu": "2.21.0"
+        "tensorflow": "not_installed",
+        "tensorflow-cpu": "not_installed"
       },
       "device": "cpu",
       "dtype": "complex128",
@@ -223,6 +269,7 @@
       "backend": "pennylane",
       "batching_support": "not_native",
       "case_id": "bounded_phase_objective_unsupported_device",
+      "catalyst_comparison": null,
       "claim_boundary": "Unsupported-route hard gap only; no hidden success or promoted claim.",
       "dependency_versions": {
         "pennylane": "0.44.1"
@@ -245,14 +292,14 @@
   "source_of_truth": "scpn_reference",
   "summary": {
     "failure_classes": [
-      "runtime_error",
+      "dependency_missing",
       "unsupported_batching",
       "unsupported_device",
       "unsupported_dtype",
       "unsupported_transform"
     ],
-    "hard_gap_count": 5,
-    "row_count": 9,
-    "success_count": 4
+    "hard_gap_count": 7,
+    "row_count": 10,
+    "success_count": 3
   }
 }

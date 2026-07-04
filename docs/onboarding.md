@@ -156,8 +156,10 @@ dynamics matter and where uncontrolled evidence would be expensive:
   overlay profile, external comparison rows for JAX, PyTorch, TensorFlow,
   PennyLane, optional Enzyme/compiler AD runner evidence, and optional Catalyst
   qjit/MLIR/QIR runner evidence with strict JSON, timeout, toolchain, and
-  correctness gates, plus a claim ledger that requires artefact IDs before
-  promotion.
+  correctness gates. Catalyst rows also carry a dedicated compiler-workflow
+  profile for compiled differentiation, control flow, finite-shot limits, and
+  unsupported provider routes, plus a claim ledger that requires artefact IDs
+  before promotion.
 
 ## What Remains Bounded
 

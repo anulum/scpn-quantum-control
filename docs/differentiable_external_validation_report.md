@@ -30,7 +30,7 @@ ledger is `data/differentiable_phase_qnode/claim_ledger.md`.
 |---|---|---|
 | `data/differentiable_phase_qnode/external_validation_artifact_bundle_20260616.json` | SHA-256 manifest over committed differentiable evidence files. | Checksum provenance only. |
 | `data/differentiable_phase_qnode/external_validation_environment_lock_20260616.json` | Exact runtime, developer, CI, framework-overlay, and Enzyme-runner lockfile manifest. | Reviewer reproduction only. |
-| `data/differentiable_phase_qnode/local_benchmark_20260616T0955Z/diff-qnode-external-comparison.json` | Bounded JAX, PyTorch, TensorFlow, PennyLane, and Enzyme comparison rows. | Functional non-isolated comparison evidence. |
+| `data/differentiable_phase_qnode/local_benchmark_20260616T0955Z/diff-qnode-external-comparison.json` | Bounded JAX, PyTorch, PennyLane, Enzyme, TensorFlow, and Catalyst comparison rows, including the dedicated Catalyst compiler-workflow profile added during the 2026-07-04 schema refresh. | Functional non-isolated comparison evidence. |
 | `data/differentiable_phase_qnode/identical_circuit_gradient_comparison_20260616.json` | Same-circuit gradient comparison artefact for Qiskit and PennyLane routes. | Correctness comparison, not hardware execution. |
 | `data/differentiable_phase_qnode/domain_benchmark_dataset_closure_20260616.json` | Exact-answer domain dataset closure artefact. | Dataset validation, not production benchmark promotion. |
 | `data/differentiable_phase_qnode/differentiable_architecture_map_20260627.json` | Architecture and Rustification routing map over inventory rows and scorecard categories. | Routing evidence only, not Rust or performance promotion. |
@@ -48,6 +48,7 @@ ledger is `data/differentiable_phase_qnode/claim_ledger.md`.
 | PennyLane | Export/import and identical-circuit comparison evidence exists for bounded local circuits. | Plugin/provider hardware routes and promotion-grade isolated benchmark evidence. |
 | Qiskit | Shifted-circuit generation, local Statevector, finite-shot surrogate, and no-submit preparation evidence exist. | Live execution, raw-count replay, calibration/statevector comparison, and hardware-gradient artefacts. |
 | Enzyme/LLVM/MLIR | MLIR-runtime correctness evidence is attached; the local `enzyme`, `opt`, `mlir-opt`, and `clang` command/version snapshot is recorded; a bounded native LLVM Enzyme scalar derivative probe passes. | Raw Enzyme/MLIR compiler-AD breadth artifacts, derived arbitrary Enzyme/program AD breadth evidence, the Enzyme-JAX external-comparison runtime gap, and isolated benchmark IDs. |
+| Catalyst | The external-comparison artefact now emits a Catalyst hard-gap row with qjit/MLIR/QIR workflow scope, compiled differentiation scope, control-flow gaps, finite-shot limitations, and unsupported provider routes. | Configured Catalyst runner success, arbitrary compiled quantum-classical workflow parity, finite-shot jobs, provider submission, hardware execution, and isolated benchmark IDs. |
 
 ## Reviewer Procedure
 

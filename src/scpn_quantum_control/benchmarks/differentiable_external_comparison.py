@@ -37,6 +37,11 @@ from ..phase.qnode_circuit import (
 )
 from ..phase.tensorflow_bridge import is_phase_tensorflow_available
 from ..phase.torch_bridge import is_phase_torch_available
+from .differentiable_catalyst_comparison import (
+    CATALYST_UNSUPPORTED_PROVIDER_ROUTES,
+    CatalystCompilerWorkflowComparison,
+    catalyst_compiler_workflow_comparison,
+)
 
 ComparisonStatus = Literal["success", "hard_gap"]
 
@@ -59,6 +64,7 @@ REQUIRED_EXTERNAL_COMPARISON_ROW_FIELDS = frozenset(
         "claim_boundary",
         "dependency_versions",
         "toolchain",
+        "catalyst_comparison",
     }
 )
 
@@ -84,6 +90,7 @@ class ExternalComparisonRow:
     claim_boundary: str
     dependency_versions: dict[str, str] | None = None
     toolchain: dict[str, str] | None = None
+    catalyst_comparison: CatalystCompilerWorkflowComparison | None = None
 
     def __post_init__(self) -> None:
         """Validate external comparison row evidence invariants."""
@@ -97,6 +104,10 @@ class ExternalComparisonRow:
             raise ValueError("source_of_truth must be scpn_reference")
         if not self.claim_boundary:
             raise ValueError("claim_boundary must be non-empty")
+        if self.backend == "catalyst" and self.catalyst_comparison is None:
+            raise ValueError("catalyst_comparison is required for Catalyst rows")
+        if self.backend != "catalyst" and self.catalyst_comparison is not None:
+            raise ValueError("catalyst_comparison is only valid for Catalyst rows")
         if self.status == "success":
             if (
                 self.failure_class is not None
@@ -160,6 +171,11 @@ class ExternalComparisonRow:
                 dict(self.dependency_versions) if self.dependency_versions is not None else None
             ),
             "toolchain": dict(self.toolchain) if self.toolchain is not None else None,
+            "catalyst_comparison": (
+                self.catalyst_comparison.to_dict()
+                if self.catalyst_comparison is not None
+                else None
+            ),
         }
 
 
@@ -381,16 +397,7 @@ def run_differentiable_external_comparison_suite() -> tuple[ExternalComparisonRo
             "Install LLVM/Enzyme tooling and configure the Enzyme runner.",
         )
     )
-    rows.append(
-        _catalyst_row()
-        if _catalyst_runner_configured()
-        else _dependency_gap_row(
-            "catalyst",
-            "not_evaluated",
-            "Catalyst qjit/MLIR/QIR",
-            "Install PennyLane Catalyst and configure SCPN_CATALYST_RUNNER.",
-        )
-    )
+    rows.append(_catalyst_row())
     rows.extend(external_comparison_failure_mode_rows())
     return tuple(rows)
 
@@ -772,6 +779,9 @@ def _catalyst_row() -> ExternalComparisonRow:
             "not_evaluated",
             "Catalyst qjit/MLIR/QIR runner",
             "Configure SCPN_CATALYST_RUNNER to an executable Catalyst comparison runner.",
+            catalyst_comparison=catalyst_compiler_workflow_comparison(
+                runner_status="dependency_gap"
+            ),
         )
     values = np.array([0.2, -0.4], dtype=np.float64)
     reference_value = _bounded_phase_objective(values)
@@ -787,6 +797,7 @@ def _catalyst_row() -> ExternalComparisonRow:
             "not_supported",
             "Catalyst qjit/MLIR/QIR runner",
             str(exc),
+            catalyst_comparison=catalyst_compiler_workflow_comparison(runner_status="runtime_gap"),
         )
     except (RuntimeError, ValueError) as exc:
         tracemalloc.stop()
@@ -795,6 +806,7 @@ def _catalyst_row() -> ExternalComparisonRow:
             "not_supported",
             "Catalyst qjit/MLIR/QIR runner",
             str(exc),
+            catalyst_comparison=catalyst_compiler_workflow_comparison(runner_status="runtime_gap"),
         )
     runtime = time.perf_counter() - start
     _, peak = tracemalloc.get_traced_memory()
@@ -823,6 +835,9 @@ def _catalyst_row() -> ExternalComparisonRow:
             claim_boundary="Correctness hard gap only; no hidden success or promoted claim.",
             dependency_versions=_backend_dependency_versions("catalyst"),
             toolchain=toolchain,
+            catalyst_comparison=catalyst_compiler_workflow_comparison(
+                runner_status="correctness_gap"
+            ),
         )
     return ExternalComparisonRow(
         case_id="bounded_phase_objective",
@@ -845,6 +860,7 @@ def _catalyst_row() -> ExternalComparisonRow:
         ),
         dependency_versions=_backend_dependency_versions("catalyst"),
         toolchain=toolchain,
+        catalyst_comparison=catalyst_compiler_workflow_comparison(runner_status="success"),
     )
 
 
@@ -853,6 +869,8 @@ def _dependency_gap_row(
     batching_support: str,
     transform_support: str,
     setup: str,
+    *,
+    catalyst_comparison: CatalystCompilerWorkflowComparison | None = None,
 ) -> ExternalComparisonRow:
     return ExternalComparisonRow(
         case_id="bounded_phase_objective",
@@ -871,6 +889,7 @@ def _dependency_gap_row(
         setup_instructions=setup,
         claim_boundary="Dependency hard gap only; no hidden success or promoted claim.",
         dependency_versions=_backend_dependency_versions(backend),
+        catalyst_comparison=catalyst_comparison,
     )
 
 
@@ -879,6 +898,8 @@ def _runtime_gap_row(
     batching_support: str,
     transform_support: str,
     reason: str,
+    *,
+    catalyst_comparison: CatalystCompilerWorkflowComparison | None = None,
 ) -> ExternalComparisonRow:
     return ExternalComparisonRow(
         case_id="bounded_phase_objective",
@@ -897,6 +918,7 @@ def _runtime_gap_row(
         setup_instructions=reason,
         claim_boundary="Runtime comparison gap only; no hidden success or promoted claim.",
         dependency_versions=_backend_dependency_versions(backend),
+        catalyst_comparison=catalyst_comparison,
     )
 
 
@@ -1495,11 +1517,14 @@ def _catalyst_runner_configured() -> bool:
 
 
 __all__ = [
+    "CATALYST_UNSUPPORTED_PROVIDER_ROUTES",
+    "CatalystCompilerWorkflowComparison",
     "ExternalComparisonArtifact",
     "ExternalComparisonRow",
     "IdenticalCircuitGradientComparisonArtifact",
     "IdenticalCircuitGradientComparisonRow",
     "REQUIRED_EXTERNAL_COMPARISON_ROW_FIELDS",
+    "catalyst_compiler_workflow_comparison",
     "external_comparison_failure_mode_rows",
     "run_differentiable_external_comparison_suite",
     "run_identical_circuit_gradient_comparison_suite",

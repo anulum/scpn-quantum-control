@@ -144,20 +144,20 @@
     {
       "path": "data/differentiable_phase_qnode/local_benchmark_20260616T0955Z/README.md",
       "role": "Local benchmark evidence README and hardware boundary",
-      "sha256": "3374d98e2a3eecb88b534f382d9e83e9c4df2b9164c404b03291ae6b0b4d2eea",
-      "size_bytes": 5530
+      "sha256": "0c4a49a6d525f7aed8c808d44e6a47003202e641c8d57c7947da4420c9bfde97",
+      "size_bytes": 6072
     },
     {
       "path": "data/differentiable_phase_qnode/local_benchmark_20260616T0955Z/diff-qnode-ci-evidence-schema-v1.json",
       "role": "Functional non-isolated CI evidence bundle",
-      "sha256": "d59ce1d72a12f8abee6fef738210c08ee322fc455f3f78c2578ac861f88357f2",
-      "size_bytes": 9834
+      "sha256": "cc33ef5ce749782c33f24746a35eb611b289caa0ef7bbf1d833da18b643d7561",
+      "size_bytes": 12006
     },
     {
       "path": "data/differentiable_phase_qnode/local_benchmark_20260616T0955Z/diff-qnode-external-comparison.json",
       "role": "Functional non-isolated external comparison rows",
-      "sha256": "af737b139bedb3370600dc1052260584007a959c757e23e07f3156ee406cc2b6",
-      "size_bytes": 9599
+      "sha256": "9b0ba07249cc9fd7315c185b424ed1377aeb1f68b006b73e158ffefe23e46ea8",
+      "size_bytes": 11812
     },
     {
       "path": "data/differentiable_phase_qnode/local_benchmark_20260616T0955Z/phase_qnode_affinity.json",

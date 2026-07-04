@@ -33,6 +33,19 @@ latency, energy, market-facing, or promotion claims.
 The isolated benchmark gate remains closed because CPU 2 used the `powersave`
 governor and host load exceeded the isolated threshold.
 
+## 2026-07-04 Catalyst Row Schema Refresh
+
+The `diff-qnode-external-comparison.json` and
+`diff-qnode-ci-evidence-schema-v1.{json,csv,md}` artefacts were refreshed on
+2026-07-04 to add the dedicated Catalyst compiler-workflow comparison row and
+the required `catalyst_comparison` row-schema field. The refresh is still
+`functional_non_isolated`: no CPU affinity or isolation method was requested,
+the governor was `powersave`, host load was
+`[23.6416015625, 20.76220703125, 15.38671875]` before the run and
+`[22.671875, 20.640625, 15.404296875]` after the run, and
+`heavy_jobs_running=true`. No provider, QPU, GPU, CUDA, or ROCm execution is
+claimed.
+
 ## Commands
 
 Framework overlay installation:
@@ -82,36 +95,32 @@ env OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 \
   --output /tmp/scpn_qc_bench_20260616/phase_qnode_affinity_overlay.json
 ```
 
-## Dependency Results
+## Current External-Comparison Rows
 
-The framework rows succeeded against the bounded SCPN reference:
+The 2026-07-04 schema-refresh rows record:
 
-- JAX `0.10.1` / `jaxlib 0.10.1`: value error `0.0`, gradient error `0.0`.
-- PyTorch `2.12.0+cpu`: value error `0.0`, gradient error `0.0`.
-- TensorFlow CPU `2.21.0`: value error `0.0`, gradient error `0.0`.
-- PennyLane `0.45.0`: value error `1.1102230246251565e-16`,
+- JAX `0.6.2` / `jaxlib 0.6.2`: value error `0.0`, gradient error `0.0`.
+- PyTorch `2.11.0`: value error `0.0`, gradient error `0.0`.
+- TensorFlow / TensorFlow CPU: `dependency_missing`; install
+  `tensorflow-cpu` to rerun this row.
+- PennyLane `0.44.1`: value error `1.1102230246251565e-16`,
   gradient error `5.551115123125783e-17`.
-
-The Enzyme dependency is no longer missing: `enzyme-ad==0.0.6` is installed in
-the Python 3.9 Enzyme environment, and the native Enzyme-JAX extension is
-available at
-`/home/anulum/.cache/scpn-qc-enzyme-py39/lib/python3.9/site-packages/enzyme_ad/jax/enzyme_call.so`.
-The Enzyme row remains a hard gap with `failure_class=runtime_error` because
-Enzyme-JAX fails during MHLO lowering:
-
-```text
-invalid properties {limit_indices = dense<1> : tensor<1xi64>, start_indices = dense<0> : tensor<1xi64>, strides = dense<1> : tensor<1xi64>} for op mhlo.slice
-```
-
-This is an installed-toolchain runtime gap, not a dependency-missing gap.
+- Enzyme: `dependency_missing`; the local `enzyme` executable was visible, but
+  `enzyme_ad` was not installed and `SCPN_ENZYME_RUNNER` was not configured.
+- Catalyst: `dependency_missing`; the dedicated `catalyst_comparison` payload
+  records unestablished qjit/MLIR/QIR workflow parity, first-order compiled
+  differentiation scope, control-flow gaps, finite-shot limitations, and
+  unsupported provider routes
+  (`finite_shot_provider_jobs`, `hardware_qpu_execution`,
+  `cloud_provider_submission`).
 
 ## SHA-256
 
 ```text
-34323060bd2d94329bae1e164ca9c8ea31a5f88d5b27dca6b03dfb74101fc1ec  diff-qnode-ci-evidence-schema-v1.csv
-15ed583b9f55b3cf0a5e3a023ea99af477d76cd1312ed745a23a52f8cad4be1a  diff-qnode-ci-evidence-schema-v1.json
+ca6c0fd44d9fb5e73f1894c3e2dc3633d791cb2459e0f0129b5ff84cb4a9b165  diff-qnode-ci-evidence-schema-v1.csv
+cc33ef5ce749782c33f24746a35eb611b289caa0ef7bbf1d833da18b643d7561  diff-qnode-ci-evidence-schema-v1.json
 4e14853a0abd142d304eda1c54479fc3a75ff7f20c9e157681003b9ce051d379  diff-qnode-ci-evidence-schema-v1.md
-c45c7a03353dd52a5a8a539de95d71094f4fa3750ea170251038c05a3232123b  diff-qnode-external-comparison.json
+9b0ba07249cc9fd7315c185b424ed1377aeb1f68b006b73e158ffefe23e46ea8  diff-qnode-external-comparison.json
 93202eb606f2712e6a55d597d2c8f1890b802d86cdf216cb5c24281572123d00  enzyme_jax_runner.py
 2770738675e8ac3fbf3edd5f8b004a3c0d2621fd3324b77aa3a238437b947d32  enzyme_py39_freeze.txt
 11a15a483d2f8f602b8d052dc1cf0824d37a86a47853a66b1cda1ed93caa56c6  framework_overlay_freeze.txt

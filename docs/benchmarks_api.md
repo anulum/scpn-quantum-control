@@ -430,6 +430,12 @@ The suite also emits explicit unsupported-route rows for promotion-blocking
 cases: unsupported batching, unsupported nested transforms, unsupported complex
 dtype routes, and unsupported hardware-device routes. Those rows are hard gaps,
 not skipped tests or degraded successes.
+Catalyst rows additionally carry a dedicated `catalyst_comparison` payload that
+names qjit/MLIR/QIR compiled-workflow scope, compiled-differentiation scope,
+control-flow gaps, finite-shot limitations, unsupported provider routes, and a
+claim boundary. A configured runner success is still bounded CPU correctness
+evidence only; it does not promote arbitrary Catalyst workflows, finite-shot
+jobs, provider submission, or performance claims.
 
 #### `write_differentiable_external_comparison()`
 
@@ -443,7 +449,8 @@ benchmark gate supplies artefact IDs and the claim ledger is updated.
 The writer publishes a `row_schema.required_fields` list and rejects rows that
 do not carry value error, gradient error, runtime, memory, batching support,
 transform support, failure class, dependency versions, toolchain slot, and
-claim-boundary fields.
+claim-boundary fields. The schema also includes the `catalyst_comparison` slot;
+it is `null` for non-Catalyst rows and required for every Catalyst row.
 `scripts/run_differentiable_benchmark_evidence.py` writes this companion JSON
 file as `diff-qnode-external-comparison.json` and inserts the real
 external-comparison artefact ID into the benchmark evidence bundle's

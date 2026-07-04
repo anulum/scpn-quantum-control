@@ -15,6 +15,11 @@ from .classical_baselines import (
     run_documented_classical_baselines,
     scipy_ode_baseline,
 )
+from .differentiable_catalyst_comparison import (
+    CATALYST_UNSUPPORTED_PROVIDER_ROUTES,
+    CatalystCompilerWorkflowComparison,
+    catalyst_compiler_workflow_comparison,
+)
 from .differentiable_external_comparison import (
     REQUIRED_EXTERNAL_COMPARISON_ROW_FIELDS,
     ExternalComparisonArtifact,
@@ -87,6 +92,9 @@ __all__ = [
     "DifferentiableProgrammingBenchmarkResult",
     "DifferentiableProgrammingExternalReferenceResult",
     "QuantumGradientBenchmarkResult",
+    "CATALYST_UNSUPPORTED_PROVIDER_ROUTES",
+    "CatalystCompilerWorkflowComparison",
+    "catalyst_compiler_workflow_comparison",
     "ExternalComparisonArtifact",
     "ExternalComparisonRow",
     "IdenticalCircuitGradientComparisonArtifact",

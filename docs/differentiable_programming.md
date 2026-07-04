@@ -176,6 +176,11 @@ Program AD, provider/hardware gradients, benchmark promotion, docs/API
 maintainability, and adoption/licensing. The committed artefacts live at
 `data/differentiable_phase_qnode/differentiable_sota_scorecard_20260620.json`
 and `data/differentiable_phase_qnode/differentiable_sota_scorecard_20260620.md`.
+The external-comparison evidence now attaches a dedicated Catalyst
+compiler-workflow profile to Catalyst rows so qjit/MLIR/QIR workflow scope,
+compiled differentiation, control-flow coverage, finite-shot limits, and
+unsupported provider routes are recorded before any Catalyst parity wording is
+considered.
 Every current category remains `behind_baseline`; the scorecard is governance
 evidence only and does not promote performance, provider, QPU, GPU, hardware,
 or `isolated_affinity` claims.
