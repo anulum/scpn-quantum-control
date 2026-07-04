@@ -9,6 +9,8 @@
 
 from __future__ import annotations
 
+import dis
+
 import numpy as np
 import pytest
 from numpy.typing import NDArray
@@ -25,6 +27,7 @@ from scpn_quantum_control.whole_program_frontend import (
     WholeProgramSourceRegion,
     WholeProgramSymbolScopeEntry,
     WholeProgramUnsupportedSemanticDiagnostic,
+    _instruction_line_number,
     compile_whole_program_frontend,
 )
 
@@ -178,6 +181,7 @@ def test_whole_program_frontend_reports_located_unsupported_semantics() -> None:
     assert diagnostic.absolute_line_number is not None
     assert diagnostic.region_ids
     assert isinstance(diagnostic.bytecode_offsets, tuple)
+    assert diagnostic.bytecode_offsets
     assert report.frontend_digest
     hard_gaps = payload["hard_gaps"]
     assert isinstance(hard_gaps, list)
@@ -196,6 +200,50 @@ def test_whole_program_frontend_reports_located_unsupported_semantics() -> None:
         and feature.line_number == diagnostic.line_number
         for feature in report.source_ir_features
     )
+
+
+def test_whole_program_frontend_normalises_python313_boolean_line_markers() -> None:
+    """Bytecode line capture should survive CPython 3.13 boolean line markers."""
+
+    python313_instruction = dis.Instruction(
+        opname="LOAD_FAST",
+        opcode=124,
+        arg=0,
+        argval="values",
+        argrepr="values",
+        offset=2,
+        starts_line=True,
+        is_jump_target=False,
+        positions=dis.Positions(lineno=123, end_lineno=123, col_offset=4, end_col_offset=10),
+    )
+    legacy_instruction = dis.Instruction(
+        opname="LOAD_FAST",
+        opcode=124,
+        arg=0,
+        argval="values",
+        argrepr="values",
+        offset=2,
+        starts_line=77,
+        is_jump_target=False,
+        positions=dis.Positions(lineno=123, end_lineno=123, col_offset=4, end_col_offset=10),
+    )
+    missing_instruction = dis.Instruction(
+        opname="NOP",
+        opcode=9,
+        arg=None,
+        argval=None,
+        argrepr="",
+        offset=4,
+        starts_line=False,
+        is_jump_target=False,
+        positions=dis.Positions(
+            lineno=None, end_lineno=None, col_offset=None, end_col_offset=None
+        ),
+    )
+
+    assert _instruction_line_number(python313_instruction) == 123
+    assert _instruction_line_number(legacy_instruction) == 77
+    assert _instruction_line_number(missing_instruction) is None
 
 
 def test_whole_program_frontend_dataclasses_fail_closed() -> None:

@@ -767,18 +767,12 @@ def _objective_bytecode(
     except TypeError:
         return ()
 
-    def normalise_line_number(value: int | None) -> int | None:
-        if value is None:
-            return None
-        line_number = int(value)
-        return line_number if line_number > 0 else None
-
     return tuple(
         WholeProgramBytecodeInstruction(
             offset=int(instruction.offset),
             opname=instruction.opname,
             argrepr=instruction.argrepr,
-            line_number=normalise_line_number(instruction.starts_line),
+            line_number=_instruction_line_number(instruction),
             jump_target_offset=(
                 int(instruction.argval)
                 if isinstance(instruction.argval, int)
@@ -788,6 +782,25 @@ def _objective_bytecode(
         )
         for instruction in instructions
     )
+
+
+def _normalise_positive_line_number(value: int | None) -> int | None:
+    """Return a positive source line number or ``None`` for missing metadata."""
+
+    if value is None:
+        return None
+    line_number = int(value)
+    return line_number if line_number > 0 else None
+
+
+def _instruction_line_number(instruction: dis.Instruction) -> int | None:
+    """Return the CPython-version-stable source line for a bytecode instruction."""
+
+    starts_line = instruction.starts_line
+    if isinstance(starts_line, bool):
+        positions = instruction.positions
+        return None if positions is None else _normalise_positive_line_number(positions.lineno)
+    return _normalise_positive_line_number(starts_line)
 
 
 def _source_ir_features(
