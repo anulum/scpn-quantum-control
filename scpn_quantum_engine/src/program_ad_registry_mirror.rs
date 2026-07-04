@@ -356,6 +356,7 @@ fn rust_supported_registry_primitives() -> HashSet<&'static str> {
         "divide",
         "exp",
         "expm1",
+        "eigvalsh",
         "log",
         "log1p",
         "multi_dot",

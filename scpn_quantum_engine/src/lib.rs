@@ -60,6 +60,7 @@ pub mod pauli;
 pub mod pec;
 pub mod program_ad_ir;
 mod program_ad_linalg_array;
+mod program_ad_linalg_spectral;
 mod program_ad_order_statistic_reduction;
 mod program_ad_product_reduction;
 pub mod program_ad_registry_mirror;

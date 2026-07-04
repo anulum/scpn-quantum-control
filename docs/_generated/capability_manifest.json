@@ -12,8 +12,8 @@
     "python_model_classes": 980,
     "python_model_source_modules": 552,
     "rust_pyo3_model_wrappers": 172,
-    "rust_source_modules": 48,
-    "test_files": 898
+    "rust_source_modules": 50,
+    "test_files": 900
   },
   "documentation": {
     "examples": [
@@ -5284,6 +5284,8 @@
       "scpn_quantum_engine/src/pauli.rs",
       "scpn_quantum_engine/src/pec.rs",
       "scpn_quantum_engine/src/program_ad_ir.rs",
+      "scpn_quantum_engine/src/program_ad_linalg_array.rs",
+      "scpn_quantum_engine/src/program_ad_linalg_spectral.rs",
       "scpn_quantum_engine/src/program_ad_order_statistic_reduction.rs",
       "scpn_quantum_engine/src/program_ad_product_reduction.rs",
       "scpn_quantum_engine/src/program_ad_registry_mirror.rs",
@@ -6805,6 +6807,8 @@
       "tests/test_program_ad_registry.py",
       "tests/test_program_ad_runtime_registry_dispatch.py",
       "tests/test_program_ad_rust_bridge.py",
+      "tests/test_program_ad_rust_linalg_array_bridge.py",
+      "tests/test_program_ad_rust_linalg_spectral_bridge.py",
       "tests/test_program_ad_selection_direct_rules.py",
       "tests/test_program_ad_selection_folds.py",
       "tests/test_program_ad_selection_order_statistics.py",
