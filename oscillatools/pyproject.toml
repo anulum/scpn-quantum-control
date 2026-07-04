@@ -123,7 +123,10 @@ known-first-party = ["oscillatools"]
 convention = "numpy"
 
 [tool.mypy]
-python_version = "3.11"
+# The distribution supports 3.11+ at runtime (validated by the 3.11 test leg);
+# mypy targets 3.12 because the installed NumPy stubs use PEP 695 `type` aliases,
+# which mypy rejects when checking against an older target.
+python_version = "3.12"
 warn_return_any = true
 warn_unused_configs = true
 warn_unreachable = true
@@ -186,6 +189,10 @@ omit = [
     # The neural-operator dataset/surrogate surface needs the [torch] extra;
     # the host-independent cost model stays covered on the floor.
     "*/oscillatools/neural_operator.py",
+    # The optional Rust engine ([rust] extra, not on the numpy+scipy CI floor)
+    # is imported through this shim; the absent-engine fallthrough is covered by
+    # the dispatcher probe, the engine-present path via the [rust] extra locally.
+    "*/oscillatools/accel/rust_import.py",
 ]
 
 [tool.coverage.report]
@@ -195,11 +202,18 @@ omit = [
     "*/oscillatools/accel/jax_kuramoto_delayed.py",
     "*/oscillatools/accel/jax_kuramoto_mpc.py",
     "*/oscillatools/neural_operator.py",
+    "*/oscillatools/accel/rust_import.py",
 ]
 exclude_lines = [
     "pragma: no cover",
     "if __name__",
     "raise NotImplementedError",
     "^\\s*\\.\\.\\.\\s*$",
+    # Optional accelerator-tier dispatch: the `_rust_*` helpers only invoke the
+    # Rust engine when the [rust] extra is installed, and the Julia probe only
+    # returns True when juliacall is present; both tiers are exercised via their
+    # extras locally, not on the pinned numpy+scipy CI floor.
+    "def _rust_",
+    "def _julia_available",
 ]
 exclude_also = ["if TYPE_CHECKING:"]
