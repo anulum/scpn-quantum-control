@@ -13,6 +13,7 @@ from typing import Any
 
 import numpy as np
 import pytest
+from numpy.typing import NDArray
 
 from scpn_quantum_control.differentiable import Parameter, whole_program_value_and_grad
 from scpn_quantum_control.program_ad_rust_bridge import (
@@ -20,6 +21,7 @@ from scpn_quantum_control.program_ad_rust_bridge import (
 )
 
 _EIGVALSH_WEIGHTS = np.array([0.75, -1.25], dtype=np.float64)
+_EIGVALS_WEIGHTS = np.array([0.75, -1.25], dtype=np.float64)
 
 
 def _weighted_eigvalsh_objective(values: Any) -> Any:
@@ -27,6 +29,13 @@ def _weighted_eigvalsh_objective(values: Any) -> Any:
 
     matrix = np.reshape(values, (2, 2))
     return np.sum(np.linalg.eigvalsh(matrix) * _EIGVALSH_WEIGHTS)
+
+
+def _weighted_eigvals_objective(values: Any) -> Any:
+    """Return a scalar weighted spectrum for a real-simple 2x2 matrix."""
+
+    matrix = np.reshape(values, (2, 2))
+    return np.sum(np.linalg.eigvals(matrix) * _EIGVALS_WEIGHTS)
 
 
 def test_rust_bridge_replays_program_ad_2x2_eigvalsh_value_and_gradient() -> None:
@@ -44,6 +53,40 @@ def test_rust_bridge_replays_program_ad_2x2_eigvalsh_value_and_gradient() -> Non
 
     assert result.program_ir is not None
     assert {"linalg:eigvalsh:0", "linalg:eigvalsh:1"} <= {
+        effect.operation for effect in result.program_ir.effects
+    }
+
+    rust_result = value_and_grad_program_ad_effect_ir_with_rust(result.program_ir, values)
+
+    assert rust_result.supported is True, rust_result.blocked_reasons
+    assert rust_result.value == pytest.approx(result.value, abs=1.0e-12)
+    np.testing.assert_allclose(rust_result.gradient, result.gradient, atol=1.0e-12)
+
+
+@pytest.mark.parametrize(
+    "values",
+    (
+        np.array([2.0, 0.4, 0.15, 3.0], dtype=np.float64),
+        np.array([3.0, 0.4, 0.15, 2.0], dtype=np.float64),
+        np.array([2.0, 0.0, 1.0, 3.0], dtype=np.float64),
+    ),
+)
+def test_rust_bridge_replays_program_ad_2x2_eigvals_value_and_gradient(
+    values: NDArray[np.float64],
+) -> None:
+    """Rust Program AD replay should match Python spectral adjoints for eigvals."""
+
+    engine = pytest.importorskip("scpn_quantum_engine")
+    assert callable(getattr(engine, "program_ad_effect_ir_interpret_value_and_gradient", None))
+
+    result = whole_program_value_and_grad(
+        _weighted_eigvals_objective,
+        values,
+        parameters=tuple(Parameter(f"x{index}") for index in range(values.size)),
+    )
+
+    assert result.program_ir is not None
+    assert {"linalg:eigvals:2x2:0", "linalg:eigvals:2x2:1"} <= {
         effect.operation for effect in result.program_ir.effects
     }
 
