@@ -17,6 +17,11 @@ updates:
     schedule:
       interval: weekly
       day: monday
+  - package-ecosystem: pip
+    directory: "/oscillatools"
+    schedule:
+      interval: weekly
+      day: monday
   - package-ecosystem: cargo
     directory: "/scpn_quantum_engine"
     schedule:

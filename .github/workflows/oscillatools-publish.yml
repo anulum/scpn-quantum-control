@@ -1,0 +1,49 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
+# © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
+# © Code 2020–2026 Miroslav Šotek. All rights reserved.
+# ORCID: 0009-0009-3560-0851
+# Contact: www.anulum.li | protoscience@anulum.li
+# oscillatools — Publish
+name: Publish oscillatools to PyPI
+
+# The standalone oscillatools distribution publishes on its own dual tag
+# (`oscillatools-v*`), mirroring the parent's `publish.yml` (`v*`) and the Rust
+# engine's `engine-v*`, so the three distributions in this repository release
+# independently. Trusted publishing (PyPI OIDC) plus Sigstore attestations are
+# identical to the parent; PyPI must carry a trusted-publisher entry for the
+# `oscillatools` project pointing at this workflow. The action pins mirror the
+# already-verified pins in `publish.yml`.
+on:
+  push:
+    tags: ["oscillatools-v*"]
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1  # v6
+        with:
+          python-version: "3.12"
+      - run: python -m pip install --require-hashes -r requirements-publish.txt
+      - run: python -m build oscillatools/
+      - uses: pypa/gh-action-pypi-publish@cef221092ed1bacb1cc03d23a2d87d1d172e277b  # release/v1
+        with:
+          attestations: true
+          packages-dir: oscillatools/dist
+      # Sign the sdist + wheels with Sigstore (Fulcio + Rekor, OIDC keyless).
+      # `.sigstore` bundles land next to each artefact in `oscillatools/dist/`.
+      - uses: sigstore/gh-action-sigstore-python@f514d46b907ebcd5bedc05145c03b69c1edd8b46  # v3.0.1
+        with:
+          inputs: >-
+            ./oscillatools/dist/*.tar.gz
+            ./oscillatools/dist/*.whl

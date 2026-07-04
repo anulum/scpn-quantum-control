@@ -47,4 +47,5 @@ is assigned for any issue that results in a published advisory.
 
 - Qiskit releases are pinned to `>=1.0.0` (stable API). We track Qiskit security advisories.
 - `qiskit-ibm-runtime` uses IBM's OAuth2 token flow; tokens are scoped per instance.
-- Dependabot monitors GitHub Actions dependencies weekly.
+- Dependabot monitors GitHub Actions, Python (pip), and Rust (cargo) dependencies weekly, covering the root distribution, the `oscillatools/` distribution, and the `scpn_quantum_engine/` crate.
+- The standalone `oscillatools` distribution (in `oscillatools/`) is covered by this same policy and reporting channels; it ships on a NumPy + SciPy floor with every heavier tier as an optional extra, keeping its default dependency surface small.
