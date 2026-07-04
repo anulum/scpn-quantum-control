@@ -25,7 +25,7 @@ import networkx as nx
 import numpy as np
 from numpy.typing import NDArray
 
-from scpn_quantum_control.accel.rust_import import optional_rust_engine
+from oscillatools.accel.rust_import import optional_rust_engine
 
 
 class BiologicalSurfaceCode:

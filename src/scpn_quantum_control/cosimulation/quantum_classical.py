@@ -37,7 +37,8 @@ from typing import Any
 import numpy as np
 from numpy.typing import NDArray
 
-from ..accel.rust_import import optional_rust_engine
+from oscillatools.accel.rust_import import optional_rust_engine
+
 from ..dense_budget import require_dense_allocation
 from .knm_partition import KnmPartition, partition_knm
 

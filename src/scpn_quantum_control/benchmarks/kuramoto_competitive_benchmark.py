@@ -51,10 +51,10 @@ from typing import Any
 import numpy as np
 from numpy.typing import NDArray
 
-from scpn_quantum_control import kuramoto
-from scpn_quantum_control.accel import diff_kuramoto_rk4 as _rk4
-from scpn_quantum_control.accel import dispatcher as _dispatcher
-from scpn_quantum_control.accel import tier_benchmark as _tier
+import oscillatools as kuramoto
+from oscillatools.accel import diff_kuramoto_rk4 as _rk4
+from oscillatools.accel import dispatcher as _dispatcher
+from oscillatools.accel import tier_benchmark as _tier
 
 from . import kuramoto_external_competitors as _external
 from .isolated_host_readiness import HostReadiness, capture_host_readiness

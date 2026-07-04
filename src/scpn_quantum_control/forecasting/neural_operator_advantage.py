@@ -50,13 +50,13 @@ from typing import Any
 import numpy as np
 from numpy.typing import NDArray
 
-from scpn_quantum_control.accel.diff_kuramoto_rk4 import (
+from oscillatools.accel.diff_kuramoto_rk4 import (
     kuramoto_rk4_trajectory,
     last_kuramoto_rk4_trajectory_tier_used,
 )
-from scpn_quantum_control.accel.tier_benchmark import capture_provenance
+from oscillatools.accel.tier_benchmark import capture_provenance
+from oscillatools.neural_operator import simulate_operator_dataset, train_kuramoto_neural_operator
 
-from .kuramoto_neural_operator import simulate_operator_dataset, train_kuramoto_neural_operator
 from .neural_operator_cost_model import SurrogateCostModel, build_cost_model
 
 #: The artefact schema tag (bump on any breaking field change).

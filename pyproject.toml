@@ -190,7 +190,7 @@ ignore = [
 "tests/test_kuramoto_visualisation.py" = ["E402", "I001"]  # importorskip(matplotlib) before local import
 
 [tool.ruff.lint.isort]
-known-first-party = ["scpn_quantum_control"]
+known-first-party = ["oscillatools", "scpn_quantum_control"]
 
 [tool.ruff.lint.pydocstyle]
 convention = "numpy"
@@ -326,6 +326,13 @@ ignore_missing_imports = true
 module = "juliacall"
 ignore_missing_imports = true
 follow_imports = "skip"
+
+# The Kuramoto toolkit now lives in the standalone `oscillatools` distribution
+# (a dependency), which carries its own strict mypy gate; use its types here
+# without re-reporting its internals during this project's run.
+[[tool.mypy.overrides]]
+module = "oscillatools.*"
+follow_imports = "silent"
 
 [tool.mutmut]
 # Mutmut 2.x config. Baseline target: `analysis/koopman.py` — small

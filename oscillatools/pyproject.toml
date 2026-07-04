@@ -165,10 +165,11 @@ module = "juliacall"
 ignore_missing_imports = true
 follow_imports = "skip"
 
+# The Rust engine is an optional compiled PyO3 extension ([rust] extra) that ships
+# no py.typed marker; treat it as an untyped optional dependency.
 [[tool.mypy.overrides]]
 module = "scpn_quantum_engine.*"
 ignore_missing_imports = true
-follow_imports = "skip"
 
 [tool.coverage.run]
 source = ["oscillatools"]

@@ -21,7 +21,8 @@ from scipy.linalg import expm
 from scipy.sparse import csc_matrix
 from scipy.sparse.linalg import eigsh, expm_multiply
 
-from ..accel.rust_import import optional_rust_engine
+from oscillatools.accel.rust_import import optional_rust_engine
+
 from ..bridge.knm_hamiltonian import (
     OMEGA_N_16,
     build_knm_paper27,
@@ -111,7 +112,7 @@ def _order_param(theta: NDArray[np.float64]) -> float:
     package itself fails to import — keeps minimal installs working.
     """
     try:
-        from ..accel import order_parameter as _op
+        from oscillatools.accel import order_parameter as _op
     except Exception:
         z = np.mean(np.exp(1j * theta))
         return float(abs(z))

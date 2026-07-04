@@ -8,19 +8,21 @@
 """Forecasting benchmarks for observed synchronisation traces.
 
 Includes the optional PyTorch DeepONet neural-operator surrogate for Kuramoto dynamics
-(:mod:`.kuramoto_neural_operator`); its dataset builder is pure NumPy, while training and forecasting
-require ``scpn-quantum-control[torch]`` behind a lazy import. The surrogate's honest advantage over
-direct simulation — held-out fidelity against a persistence baseline plus the host-independent
-operation-count crossover — is quantified by :mod:`.neural_operator_advantage`, whose arithmetic core
-lives in the pure-NumPy :mod:`.neural_operator_cost_model`.
+(:mod:`oscillatools.neural_operator`, re-exported here for backward compatibility); its dataset
+builder is pure NumPy, while training and forecasting require ``oscillatools[torch]`` behind a lazy
+import. The surrogate's honest advantage over direct simulation — held-out fidelity against a
+persistence baseline plus the host-independent operation-count crossover — is quantified by
+:mod:`.neural_operator_advantage`, whose arithmetic core lives in the pure-NumPy
+:mod:`.neural_operator_cost_model`.
 """
 
-from .kuramoto_neural_operator import (
+from oscillatools.neural_operator import (
     KuramotoOperatorDataset,
     TrainedKuramotoOperator,
     simulate_operator_dataset,
     train_kuramoto_neural_operator,
 )
+
 from .neural_operator_advantage import (
     HeldOutFidelity,
     NeuralOperatorAdvantage,
