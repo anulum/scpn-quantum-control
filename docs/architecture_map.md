@@ -177,7 +177,10 @@ Each lane: purpose · INPUTS · OUTPUTS · processing model · backends · wirin
    interception, SSA/effect IR, adjoint generation, fwd/rev/JVP/VJP/Hessian/Fisher, and
    **real LLVM/JIT (llvmlite) + Enzyme native-execution paths** — but **bounded** to scalar and
    static dense-linalg operand families (det/inv/solve/trace) and **fail-closed** when the
-   toolchain is absent. This is the surface the external review compared to Catalyst/Enzyme.
+   toolchain is absent. The `LLVMJITClaimGate` evidence record keeps native-JIT promotion blocked
+   until executable lowering, correctness tests, crash-safety tests, isolated benchmark artifact
+   IDs, rollback policy, and fallback policy are all attached. This is the surface the external
+   review compared to Catalyst/Enzyme.
 
 ### 4.7 Domain applications — `applications/`
 - **Honest grade (review-confirmed)**: most domain "applications" (FMO, power-grid, ITER, EEG,

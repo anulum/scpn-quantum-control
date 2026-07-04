@@ -100,6 +100,10 @@ metadata, dynamic ddof/correction metadata, zero-variance `std` gradients, broad
 source-level and non-executed branch semantics, general Program AD execution,
 LLVM/JIT lowering, hardware execution, provider execution, and performance
 promotion remain fail-closed.
+Native LLVM/JIT promotion is also guarded by `LLVMJITClaimGate`: the committed
+`llvm-jit-claim-gate-20260704` artifact attaches bounded executable lowering
+and correctness evidence but remains blocked until crash-safety tests, isolated
+benchmark artifact IDs, rollback policy, and fallback policy are attached.
 Program AD static alias-lattice reports preserve unknown alias-edge provenance
 as `ProgramADUnknownAliasEdge` rows and attach the `unknown_alias_edge_kinds`
 blocker before readiness promotion. This is still metadata-only fail-closed

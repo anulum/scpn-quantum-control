@@ -142,6 +142,30 @@
       "size_bytes": 4379
     },
     {
+      "path": "data/differentiable_phase_qnode/native_whole_program_ad_execution_evidence_20260622.json",
+      "role": "Native LLVM/JIT whole-program AD execution evidence",
+      "sha256": "c73447bb64f21e7412eb479ee67a773fd1687ebce5357dc7a07c6f9256faf6b0",
+      "size_bytes": 10313
+    },
+    {
+      "path": "data/differentiable_phase_qnode/native_whole_program_ad_execution_evidence_20260622.md",
+      "role": "Native LLVM/JIT whole-program AD execution reviewer summary",
+      "sha256": "6e6d58e4e99595c271164fe0ace562e2e1a9fc3c099a34bdb8b312b7010c93c0",
+      "size_bytes": 1642
+    },
+    {
+      "path": "data/differentiable_phase_qnode/llvm_jit_claim_gate_20260704.json",
+      "role": "Native LLVM/JIT promotion claim gate artefact",
+      "sha256": "5c268644f25157d59cc13f8e026eb68abd86bf14cd89c6540d2bc4d50cc565ac",
+      "size_bytes": 1158
+    },
+    {
+      "path": "data/differentiable_phase_qnode/llvm_jit_claim_gate_20260704.md",
+      "role": "Native LLVM/JIT promotion claim gate reviewer summary",
+      "sha256": "b72d320682a374aa9d578e9a59521965ffb0e1b99b390bca516a8c48b1bef0f6",
+      "size_bytes": 1253
+    },
+    {
       "path": "data/differentiable_phase_qnode/local_benchmark_20260616T0955Z/README.md",
       "role": "Local benchmark evidence README and hardware boundary",
       "sha256": "0c4a49a6d525f7aed8c808d44e6a47003202e641c8d57c7947da4420c9bfde97",

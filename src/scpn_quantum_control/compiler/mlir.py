@@ -101,6 +101,21 @@ from .mlir_executable_kernel import (
 from .mlir_executable_kernel import (
     make_executable_ad_kernel_batching_rule as make_executable_ad_kernel_batching_rule,
 )
+from .mlir_llvm_jit_claim_gate import (
+    LLVM_JIT_CLAIM_GATE_BOUNDARY as LLVM_JIT_CLAIM_GATE_BOUNDARY,
+)
+from .mlir_llvm_jit_claim_gate import (
+    LLVMJITClaimGate as LLVMJITClaimGate,
+)
+from .mlir_llvm_jit_claim_gate import (
+    build_llvm_jit_claim_gate as build_llvm_jit_claim_gate,
+)
+from .mlir_llvm_jit_claim_gate import (
+    llvm_jit_claim_gate_from_dict as llvm_jit_claim_gate_from_dict,
+)
+from .mlir_llvm_jit_claim_gate import (
+    render_llvm_jit_claim_gate_markdown as render_llvm_jit_claim_gate_markdown,
+)
 from .mlir_matrix_2x2_native_compilation import (
     compile_matrix_2x2_determinant_ad_to_native_llvm_jit as compile_matrix_2x2_determinant_ad_to_native_llvm_jit,
 )
@@ -1702,6 +1717,8 @@ __all__ = [
     "ExecutableCompilerADKernel",
     "ExecutableWholeProgramADBatchResult",
     "ExecutableWholeProgramADKernel",
+    "LLVM_JIT_CLAIM_GATE_BOUNDARY",
+    "LLVMJITClaimGate",
     "EnzymeMLIRBenchmarkAttachment",
     "EnzymeMLIRCompilerADBreadthArtifact",
     "EnzymeMLIRCompilerADBreadthCaseEvidence",
@@ -1721,6 +1738,7 @@ __all__ = [
     "WholeProgramADNativeLoweringReport",
     "MLIRModule",
     "analyse_whole_program_ad_native_lowering",
+    "build_llvm_jit_claim_gate",
     "build_native_whole_program_ad_execution_evidence",
     "run_native_whole_program_ad_execution_evidence",
     "build_enzyme_mlir_benchmark_attachment",
@@ -1757,6 +1775,7 @@ __all__ = [
     "lower_phase_qnode_circuit_to_mlir",
     "run_enzyme_mlir_maturity_audit",
     "run_enzyme_toolchain_execution_evidence",
+    "llvm_jit_claim_gate_from_dict",
     "make_executable_ad_kernel_batching_rule",
     "make_matrix_2x2_determinant_native_llvm_jit_lowering_rule",
     "make_matrix_2x2_determinant_native_llvm_jit_primitive_transform",
@@ -1790,4 +1809,5 @@ __all__ = [
     "make_vector_squared_norm_native_llvm_jit_lowering_rule",
     "make_vector_squared_norm_native_llvm_jit_primitive_transform",
     "native_whole_program_ad_linalg_support",
+    "render_llvm_jit_claim_gate_markdown",
 ]

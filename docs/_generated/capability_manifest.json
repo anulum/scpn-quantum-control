@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 787,
     "public_documentation_pages": 254,
-    "python_model_classes": 973,
-    "python_model_source_modules": 541,
+    "python_model_classes": 974,
+    "python_model_source_modules": 542,
     "rust_pyo3_model_wrappers": 172,
     "rust_source_modules": 48,
-    "test_files": 877
+    "test_files": 878
   },
   "documentation": {
     "examples": [
@@ -472,7 +472,7 @@
       {
         "package": "compiler",
         "path": "src/scpn_quantum_control/compiler",
-        "python_modules": 14
+        "python_modules": 15
       },
       {
         "package": "control",
@@ -2207,6 +2207,10 @@
       {
         "name": "L16Result",
         "path": "src/scpn_quantum_control/l16/quantum_director.py"
+      },
+      {
+        "name": "LLVMJITClaimGate",
+        "path": "src/scpn_quantum_control/compiler/mlir_llvm_jit_claim_gate.py"
       },
       {
         "name": "LayerStateArtifact",
@@ -4682,6 +4686,7 @@
       "src/scpn_quantum_control/compiler/mlir_enzyme_evidence.py",
       "src/scpn_quantum_control/compiler/mlir_enzyme_execution_runner.py",
       "src/scpn_quantum_control/compiler/mlir_executable_kernel.py",
+      "src/scpn_quantum_control/compiler/mlir_llvm_jit_claim_gate.py",
       "src/scpn_quantum_control/compiler/mlir_matrix_2x2_native_compilation.py",
       "src/scpn_quantum_control/compiler/mlir_matrix_native_compilation.py",
       "src/scpn_quantum_control/compiler/mlir_native_execution_evidence.py",
@@ -6555,6 +6560,7 @@
       "tests/test_lindblad_ness.py",
       "tests/test_lindblad_trajectory.py",
       "tests/test_link_check_history_audit.py",
+      "tests/test_llvm_jit_claim_gate.py",
       "tests/test_local_mean_phase.py",
       "tests/test_local_order.py",
       "tests/test_logging_setup.py",

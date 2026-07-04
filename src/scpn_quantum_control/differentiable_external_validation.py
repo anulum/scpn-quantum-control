@@ -140,6 +140,22 @@ DEFAULT_ARTIFACT_BUNDLE_INPUTS: tuple[tuple[str, str], ...] = (
         "Enzyme/MLIR maturity audit artefact with runtime-gap and correctness evidence",
     ),
     (
+        "data/differentiable_phase_qnode/native_whole_program_ad_execution_evidence_20260622.json",
+        "Native LLVM/JIT whole-program AD execution evidence",
+    ),
+    (
+        "data/differentiable_phase_qnode/native_whole_program_ad_execution_evidence_20260622.md",
+        "Native LLVM/JIT whole-program AD execution reviewer summary",
+    ),
+    (
+        "data/differentiable_phase_qnode/llvm_jit_claim_gate_20260704.json",
+        "Native LLVM/JIT promotion claim gate artefact",
+    ),
+    (
+        "data/differentiable_phase_qnode/llvm_jit_claim_gate_20260704.md",
+        "Native LLVM/JIT promotion claim gate reviewer summary",
+    ),
+    (
         "data/differentiable_phase_qnode/local_benchmark_20260616T0955Z/README.md",
         "Local benchmark evidence README and hardware boundary",
     ),
