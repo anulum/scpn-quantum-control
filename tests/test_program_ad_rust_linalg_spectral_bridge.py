@@ -22,6 +22,8 @@ from scpn_quantum_control.program_ad_rust_bridge import (
 
 _EIGVALSH_WEIGHTS = np.array([0.75, -1.25], dtype=np.float64)
 _EIGVALS_WEIGHTS = np.array([0.75, -1.25], dtype=np.float64)
+_EIGH_EIGENVALUE_WEIGHTS = np.array([0.75, -1.25], dtype=np.float64)
+_EIGH_EIGENVECTOR_WEIGHTS = np.array([[0.2, -0.4], [0.6, 0.1]], dtype=np.float64)
 
 
 def _weighted_eigvalsh_objective(values: Any) -> Any:
@@ -36,6 +38,17 @@ def _weighted_eigvals_objective(values: Any) -> Any:
 
     matrix = np.reshape(values, (2, 2))
     return np.sum(np.linalg.eigvals(matrix) * _EIGVALS_WEIGHTS)
+
+
+def _weighted_eigh_objective(values: Any) -> Any:
+    """Return a scalar weighted eigensystem for a 2x2 symmetric matrix."""
+
+    raw = np.reshape(values, (2, 2))
+    matrix = 0.5 * (raw + raw.T)
+    eigenvalues, eigenvectors = np.linalg.eigh(matrix)
+    return np.sum(eigenvalues * _EIGH_EIGENVALUE_WEIGHTS) + np.sum(
+        eigenvectors * _EIGH_EIGENVECTOR_WEIGHTS
+    )
 
 
 def test_rust_bridge_replays_program_ad_2x2_eigvalsh_value_and_gradient() -> None:
@@ -55,6 +68,36 @@ def test_rust_bridge_replays_program_ad_2x2_eigvalsh_value_and_gradient() -> Non
     assert {"linalg:eigvalsh:0", "linalg:eigvalsh:1"} <= {
         effect.operation for effect in result.program_ir.effects
     }
+
+    rust_result = value_and_grad_program_ad_effect_ir_with_rust(result.program_ir, values)
+
+    assert rust_result.supported is True, rust_result.blocked_reasons
+    assert rust_result.value == pytest.approx(result.value, abs=1.0e-12)
+    np.testing.assert_allclose(rust_result.gradient, result.gradient, atol=1.0e-12)
+
+
+def test_rust_bridge_replays_program_ad_2x2_eigh_value_and_gradient() -> None:
+    """Rust Program AD replay should match Python eigensystem adjoints for eigh."""
+
+    engine = pytest.importorskip("scpn_quantum_engine")
+    assert callable(getattr(engine, "program_ad_effect_ir_interpret_value_and_gradient", None))
+    values = np.array([2.0, 0.35, -0.2, 3.0], dtype=np.float64)
+
+    result = whole_program_value_and_grad(
+        _weighted_eigh_objective,
+        values,
+        parameters=tuple(Parameter(f"x{index}") for index in range(values.size)),
+    )
+
+    assert result.program_ir is not None
+    assert {
+        "linalg:eigh:eigenvalue:2x2:L:0",
+        "linalg:eigh:eigenvalue:2x2:L:1",
+        "linalg:eigh:eigenvector:2x2:L:0:0",
+        "linalg:eigh:eigenvector:2x2:L:1:0",
+        "linalg:eigh:eigenvector:2x2:L:0:1",
+        "linalg:eigh:eigenvector:2x2:L:1:1",
+    } <= {effect.operation for effect in result.program_ir.effects}
 
     rust_result = value_and_grad_program_ad_effect_ir_with_rust(result.program_ir, values)
 
