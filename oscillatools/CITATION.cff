@@ -1,0 +1,34 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later | Commercial license available
+# © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
+# © Code 2020–2026 Miroslav Šotek. All rights reserved.
+# ORCID: 0009-0009-3560-0851
+# Contact: www.anulum.li | protoscience@anulum.li
+# oscillatools — Citation Metadata
+cff-version: 1.2.0
+title: "oscillatools: A differentiable, control-oriented toolkit for coupled-phase-oscillator (Kuramoto) dynamics"
+message: "If you use this software, please cite it using the metadata below."
+type: software
+authors:
+  - family-names: "Sotek"
+    given-names: "Miroslav"
+    orcid: "https://orcid.org/0009-0009-3560-0851"
+    affiliation: "ANULUM CH & LI"
+version: "0.1.0"
+license: "AGPL-3.0-or-later"
+repository-code: "https://github.com/anulum/scpn-quantum-control"
+url: "https://www.anulum.li"
+abstract: >-
+  A light, standalone toolkit for coupled-phase-oscillator (Kuramoto) dynamics: the
+  model family, integrators, exact mean-field reductions, stability and continuation
+  analysis, reverse-mode and forward differentiation, and control primitives, with a
+  NumPy+SciPy floor and optional Rust, Julia, JAX, PyTorch, scikit-learn, and
+  matplotlib tiers. Extracted from scpn-quantum-control.
+keywords:
+  - Kuramoto model
+  - coupled oscillators
+  - synchronisation
+  - phase dynamics
+  - dynamical systems
+  - differentiable simulation
+  - mean-field reduction
+  - control

@@ -1,0 +1,43 @@
+{
+  "title": "oscillatools: A differentiable, control-oriented toolkit for coupled-phase-oscillator (Kuramoto) dynamics",
+  "description": "A light, standalone toolkit for coupled-phase-oscillator (Kuramoto) dynamics: the model family, integrators, exact mean-field reductions, stability and continuation analysis, reverse-mode and forward differentiation, and control primitives, with a NumPy+SciPy floor and optional Rust, Julia, JAX, PyTorch, scikit-learn, and matplotlib tiers. Extracted from scpn-quantum-control.",
+  "creators": [
+    {
+      "name": "Sotek, Miroslav",
+      "affiliation": "ANULUM CH & LI",
+      "orcid": "0009-0009-3560-0851"
+    }
+  ],
+  "upload_type": "software",
+  "version": "0.1.0",
+  "access_right": "open",
+  "license": "AGPL-3.0-or-later",
+  "language": "eng",
+  "keywords": [
+    "Kuramoto model",
+    "coupled oscillators",
+    "synchronisation",
+    "phase dynamics",
+    "dynamical systems",
+    "differentiable simulation",
+    "mean-field reduction",
+    "control"
+  ],
+  "related_identifiers": [
+    {
+      "identifier": "https://github.com/anulum/scpn-quantum-control",
+      "relation": "isSupplementTo",
+      "scheme": "url"
+    },
+    {
+      "identifier": "https://pypi.org/project/oscillatools/",
+      "relation": "isAlternateIdentifier",
+      "scheme": "url"
+    }
+  ],
+  "communities": [
+    {
+      "identifier": "zenodo"
+    }
+  ]
+}
