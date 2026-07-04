@@ -323,7 +323,7 @@ def _validate_trajectory(
         raise ValueError(f"coupling must have shape ({count}, {count}), got {coupling.shape}")
     if dt <= 0.0:
         raise ValueError(f"dt must be positive, got {dt}")
-    return count
+    return int(count)
 
 
 def coupling_function_trajectory_value_and_grad(

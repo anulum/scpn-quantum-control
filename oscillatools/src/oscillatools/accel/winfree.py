@@ -81,7 +81,7 @@ def _validate(
         raise ValueError(f"coupling must be finite, got {coupling}")
     if not 0.0 <= interpolation <= 1.0:
         raise ValueError(f"interpolation must be in [0, 1], got {interpolation}")
-    return count
+    return int(count)
 
 
 def _field(

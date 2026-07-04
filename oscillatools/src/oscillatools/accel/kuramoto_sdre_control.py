@@ -88,7 +88,7 @@ def _validate(
         raise ValueError(f"state_cost must be positive, got {state_cost}")
     if control_cost <= 0.0:
         raise ValueError(f"control_cost must be positive, got {control_cost}")
-    return count
+    return int(count)
 
 
 def kuramoto_sdre_gain(

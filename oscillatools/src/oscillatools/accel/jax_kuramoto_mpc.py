@@ -245,7 +245,7 @@ def _validate_problem(
         raise ValueError(f"coupling must have shape ({count}, {count}), got {coupling.shape}")
     if dt <= 0.0:
         raise ValueError(f"dt must be positive, got {dt}")
-    return count
+    return int(count)
 
 
 def _validate_objective(target_coherence: float, control_weight: float) -> None:

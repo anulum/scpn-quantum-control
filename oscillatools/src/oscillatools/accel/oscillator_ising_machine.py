@@ -177,7 +177,7 @@ def _validate_state(
         raise ValueError("phases and coupling must be finite")
     if shil_strength < 0.0:
         raise ValueError(f"shil_strength must be non-negative, got {shil_strength}")
-    return count
+    return int(count)
 
 
 def integrate_oscillator_ising_machine(

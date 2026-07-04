@@ -48,6 +48,7 @@ from __future__ import annotations
 from collections.abc import Callable, Iterator, Mapping, Sequence
 from dataclasses import dataclass
 from itertools import product
+from typing import TypeAlias
 
 import numpy as np
 from numpy.typing import NDArray
@@ -62,7 +63,7 @@ from .order_parameter_observables import order_parameter
 #: matrix). It is whatever
 #: :meth:`~oscillatools.accel.kuramoto_system.KuramotoParameters.with_parameter`
 #: accepts for the corresponding name.
-SweptValue = float | NDArray[np.float64]
+SweptValue: TypeAlias = float | NDArray[np.float64]
 
 #: A scalar reduction of a ``(T, N)`` phase trajectory and its sampling step ``dt``.
 #: Every observable shares this signature so that measurements needing the step
