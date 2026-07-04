@@ -22,9 +22,8 @@ workstation, with Julia and CI columns rendered when their artefacts exist.
 
 !!! info "This toolkit now ships as the standalone `oscillatools` distribution"
     The coupled-phase-oscillator (Kuramoto) toolkit documented here has been
-    extracted into the standalone
-    [`oscillatools`](https://anulum.github.io/oscillatools) distribution on a
-    NumPy + SciPy floor. Inside `scpn-quantum-control` the
+    extracted into the standalone `oscillatools` distribution on a NumPy +
+    SciPy floor. Inside `scpn-quantum-control` the
     `scpn_quantum_control.kuramoto` facade is now a re-export shim over
     `oscillatools`, so this page mirrors the standalone API. New work should
     depend on `oscillatools` directly; the canonical handbook ships with that

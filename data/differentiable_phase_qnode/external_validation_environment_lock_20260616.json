@@ -4,20 +4,20 @@
   "classification": "functional_non_isolated",
   "lockfiles": [
     {
-      "line_count": 415,
+      "line_count": 424,
       "path": "pyproject.toml",
       "pinned_package_count": 0,
       "role": "Package metadata and bounded dependency ranges",
-      "sha256": "2b9c34c32bd159925b3727f640a5ecda507cf87a9874a78a6ce9f4a069da353b",
-      "size_bytes": 16047
+      "sha256": "3911809e9e251468da8dca8cf45075f778c80c0dbf9a23ee9efc1573b6317dce",
+      "size_bytes": 16735
     },
     {
-      "line_count": 21,
+      "line_count": 22,
       "path": "requirements.txt",
-      "pinned_package_count": 11,
+      "pinned_package_count": 12,
       "role": "Runtime dependency lock input",
-      "sha256": "9a3ec3b57c0d1c0bd8647e82dea8ddcf54b94f02be3992a94bff39edb3a78e12",
-      "size_bytes": 750
+      "sha256": "88741ca654e07f318b1b268771336d0e7164375d193897674d5d72ffd0033330",
+      "size_bytes": 770
     },
     {
       "line_count": 39,
