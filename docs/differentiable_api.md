@@ -244,7 +244,8 @@ counts plus conservative primitive-name overlap with existing bounded Rust
 scalar/static-linalg plus elementwise/static-structural, fixed `multi_dot`,
 2x2 distinct symmetric `eigvalsh`, 2x2 distinct symmetric `eigh`
 eigenvalues/nonzero-offdiagonal eigenvectors, 2x2 real-distinct `eigvals`,
-and 2x2 distinct-positive `svd(..., compute_uv=False)` singular-value replay.
+2x2 distinct-positive `svd(..., compute_uv=False)` singular-value replay, and
+constant-full-rank rank-2 `pinv` replay for 2x2/3x2/2x3 matrices.
 Metadata
 summaries remain parser parity for `program_ad_effect_ir.v1`; Rust
 value+gradient replay is bounded to opcode-bearing scalar, elementwise
@@ -261,7 +262,8 @@ symmetric `np.linalg.eigvalsh` output replay, bounded 2x2 distinct symmetric
 `np.linalg.eigh` eigenvalue and nonzero-offdiagonal eigenvector replay,
 bounded 2x2 real-distinct `np.linalg.eigvals` output replay, bounded 2x2
 distinct-positive `np.linalg.svd(..., compute_uv=False)` singular-value output
-replay, static source-map
+replay, constant-full-rank rank-2 `np.linalg.pinv` output replay for
+2x2/3x2/2x3 matrices, static source-map
 `index_map:<sN|cVALUE,...>` indexing, and inert source
 `alias_analysis:assignment_binding` plus `expression_rebinding_alias` metadata,
 including executed runtime branch metadata when matched by runtime phi
@@ -269,7 +271,7 @@ provenance. Legacy opcode-free metadata, unsafe aliases, mutation, non-lowered d
 indexing semantics, dynamic axes, dynamic trapezoid-grid metadata, dynamic q/method metadata, dynamic ddof/correction
 metadata, zero-variance `std` gradients, remaining broad linalg/spectral
 adjoints beyond the bounded 2x2 `eigvalsh`, `eigh`, `eigvals`, and SVD
-singular-value boundaries, unsafe source-level aliases and non-executed branch
+singular-value boundaries plus the rank-2 `pinv` boundary, unsafe source-level aliases and non-executed branch
 semantics, general Program AD execution, LLVM/JIT differentiated execution,
 hardware, provider, and performance routes remain fail-closed.
 Python callers may use `scpn_quantum_control.program_ad_rust_bridge` directly
@@ -279,7 +281,8 @@ symmetric `np.linalg.eigvalsh` spectral replay, bounded 2x2 distinct
 symmetric `np.linalg.eigh` eigenvalue and nonzero-offdiagonal eigenvector
 replay, bounded 2x2 real-distinct `np.linalg.eigvals` spectral replay, and
 bounded 2x2 distinct-positive `np.linalg.svd(..., compute_uv=False)`
-singular-value replay,
+singular-value replay plus constant-full-rank rank-2 `np.linalg.pinv` output
+replay for 2x2/3x2/2x3 matrices,
 while the historical
 `scpn_quantum_control.differentiable` facade re-exports the same result
 dataclasses, registry metadata mirror result, and helper functions for
