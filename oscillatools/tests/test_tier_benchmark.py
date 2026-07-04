@@ -344,3 +344,50 @@ def test_build_manifest_indexes_primitives() -> None:
     assert manifest["primitives"][0]["backends"] == ["rust", "python", "julia"]
     assert manifest["tier_availability"]["julia"].startswith("unavailable")
     assert manifest["payload_sha256"] == tb.payload_digest(manifest)
+
+
+def test_resolve_executable_resolution_raises(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    """A ``which`` hit whose path resolution raises ``OSError`` resolves to ``None``."""
+    monkeypatch.setattr(tb.shutil, "which", lambda _command: str(tmp_path / "ghost"))
+
+    class _ResolveRaises:
+        def __init__(self, *_args: object) -> None:
+            pass
+
+        def resolve(self, strict: bool = False) -> Path:
+            raise OSError("resolution failed")
+
+    monkeypatch.setattr(tb, "Path", _ResolveRaises)
+    assert tb._resolve_executable("ghost") is None
+
+
+def test_resolve_executable_non_executable_file(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    """A ``which`` hit that is a plain, non-executable file resolves to ``None``."""
+    plain = tmp_path / "note.txt"
+    plain.write_text("not executable", encoding="utf-8")
+    plain.chmod(0o644)
+    monkeypatch.setattr(tb.shutil, "which", lambda _command: str(plain))
+    assert tb._resolve_executable("note") is None
+
+
+def test_run_admitted_command_unresolvable_and_subprocess_oserror(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """An empty command is rejected; unresolvable and subprocess ``OSError`` yield ``None``."""
+    with pytest.raises(ValueError, match="command must contain an executable"):
+        tb._run_admitted_command(())
+
+    monkeypatch.setattr(tb, "_resolve_executable", lambda _command: None)
+    assert tb._run_admitted_command(("ghost-command",)) is None
+
+    monkeypatch.setattr(tb, "_resolve_executable", lambda _command: "/usr/bin/true")
+
+    def _raise(*_args: object, **_kwargs: object) -> object:
+        raise OSError("exec failed")
+
+    monkeypatch.setattr(tb.subprocess, "run", _raise)
+    assert tb._run_admitted_command(("true",)) is None
