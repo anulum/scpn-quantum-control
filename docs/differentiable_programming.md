@@ -84,8 +84,9 @@ registry-dispatch coverage snapshot and returns deterministic family/facet
 counts plus conservative primitive-name overlap with existing bounded Rust
 scalar/static-linalg plus elementwise/static-structural, fixed `multi_dot`,
 2x2 distinct symmetric `eigvalsh`, 2x2 distinct symmetric `eigh`
-eigenvalues/nonzero-offdiagonal eigenvectors, and 2x2 real-distinct `eigvals`
-replay. Rust
+eigenvalues/nonzero-offdiagonal eigenvectors, 2x2 real-distinct `eigvals`,
+and 2x2 distinct-positive `svd(..., compute_uv=False)` singular-value replay.
+Rust
 value+gradient replay executes opcode-bearing scalar, bounded elementwise
 shaped-array, and bounded static structural `program_ad_effect_ir.v1` rows at
 the explicit operation boundary, including scalar-to-array broadcasting, adjoint
@@ -99,14 +100,16 @@ reductions with `dx`/`x`/`xfull` metadata, scalar all-axis
 fixed-signature `np.linalg.multi_dot` output replay, bounded 2x2 distinct
 symmetric `np.linalg.eigvalsh` output replay, bounded 2x2 distinct symmetric
 `np.linalg.eigh` eigenvalue and nonzero-offdiagonal eigenvector replay,
-bounded 2x2 real-distinct `np.linalg.eigvals` output replay, static source-map
+bounded 2x2 real-distinct `np.linalg.eigvals` output replay, bounded 2x2
+distinct-positive `np.linalg.svd(..., compute_uv=False)` singular-value
+output replay, static source-map
 `index_map:<sN|cVALUE,...>` indexing, inert source `alias_analysis:assignment_binding`
 and `expression_rebinding_alias` metadata attached by local static-gather temporaries, and executed runtime branch metadata when
 matched by runtime phi provenance. Legacy opcode-free metadata, unsafe aliases,
 mutation, non-lowered dynamic indexing semantics, dynamic axes, dynamic trapezoid-grid metadata, dynamic q/method
 metadata, dynamic ddof/correction metadata, zero-variance `std` gradients,
 remaining broad linalg/spectral adjoints beyond the bounded 2x2 `eigvalsh`,
-`eigh`, and `eigvals` boundaries,
+`eigh`, `eigvals`, and SVD singular-value boundaries,
 unsafe source-level aliases and non-executed branch semantics, general Program AD execution,
 LLVM/JIT lowering, hardware execution, provider execution, and performance
 promotion remain fail-closed.
@@ -162,7 +165,8 @@ fixed-signature `np.linalg.multi_dot` linalg-array output replay, bounded
 2x2 distinct symmetric `np.linalg.eigvalsh` spectral replay, bounded 2x2
 distinct symmetric `np.linalg.eigh` eigenvalue and nonzero-offdiagonal
 eigenvector replay, and bounded 2x2 real-distinct `np.linalg.eigvals`
-spectral replay. The legacy
+spectral replay, plus bounded 2x2 distinct-positive
+`np.linalg.svd(..., compute_uv=False)` singular-value replay. The legacy
 differentiable-programming facade continues to re-export those bridge symbols.
 Python compiler interchange lowers captured `program_ad_effect_ir.v1` records
 into deterministic `scpn_diff.program_ad_ssa`,

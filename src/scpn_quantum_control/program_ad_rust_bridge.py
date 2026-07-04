@@ -13,7 +13,8 @@ normalise NumPy inputs, and preserve explicit claim boundaries for scalar,
 elementwise-array, structural-array, static-reduction, fixed ``multi_dot``
 linalg-array, 2x2 distinct symmetric ``eigvalsh``, 2x2 distinct symmetric
 ``eigh`` eigenvalues/nonzero-offdiagonal eigenvectors, and 2x2 real-distinct
-``eigvals`` replay without importing the larger differentiable-programming
+``eigvals`` replay, plus 2x2 distinct-positive ``svd(..., compute_uv=False)``
+singular-value replay without importing the larger differentiable-programming
 facade.
 """
 
@@ -360,9 +361,10 @@ def mirror_program_ad_registry_metadata_with_rust() -> RustProgramADRegistryMeta
     the currently bounded Rust scalar/static-linalg, array, static
     ``multi_dot``, 2x2 distinct symmetric ``eigvalsh``, 2x2 distinct symmetric
     ``eigh`` eigenvalues/nonzero-offdiagonal eigenvectors, and 2x2
-    real-distinct ``eigvals`` replay. It does not promote registry-dispatched
-    execution, broad linalg/spectral adjoints, LLVM/JIT lowering, provider,
-    hardware, or performance evidence.
+    real-distinct ``eigvals`` replay, plus 2x2 distinct-positive
+    ``svd(..., compute_uv=False)`` singular-value replay. It does not promote
+    registry-dispatched execution, broad linalg/spectral adjoints, LLVM/JIT
+    lowering, provider, hardware, or performance evidence.
     """
 
     from .program_ad_registry import program_ad_registry_dispatch_coverage_report
