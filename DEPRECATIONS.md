@@ -111,7 +111,19 @@ Two narrow exceptions that bypass the staging sequence:
 
 ## Current deprecations
 
-None as of v0.9.6.
+- **The Kuramoto toolkit moved to the standalone `oscillatools` distribution.**
+  - *Announced:* the release that adds the `oscillatools` dependency.
+  - *Old paths (still working, deprecated):* `scpn_quantum_control.kuramoto`,
+    `scpn_quantum_control.accel` (including its submodules), and
+    `scpn_quantum_control.forecasting.kuramoto_neural_operator`.
+  - *New paths:* `oscillatools`, `oscillatools.accel`, and
+    `oscillatools.neural_operator`.
+  - *Behaviour:* each old path is a re-export shim that forwards to the new home and
+    emits a single `DeprecationWarning` naming the new import path; object identity is
+    preserved, so `is` comparisons across the two paths continue to hold.
+  - *Removal target:* no earlier than the next major release (`v1.0.0`); until then both
+    paths work. Migration is a mechanical import rewrite (`scpn_quantum_control.accel`
+    → `oscillatools.accel`, `scpn_quantum_control.kuramoto` → `oscillatools`).
 
 Once v1.0.0 ships this section becomes the authoritative ledger of
 outstanding deprecations, their announcing release, their removal
