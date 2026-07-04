@@ -23,3 +23,7 @@ All notable changes to `oscillatools` are documented here. The format follows
   reverse-mode and forward differentiation, and control primitives.
 - Optional acceleration and interoperability extras: `[rust]`, `[julia]`, `[jax]`,
   `[torch]`, `[sklearn]`, `[viz]`.
+- A documentation site (mkdocs-material): a generated handbook, a capability
+  snapshot, tier and competitive benchmark pages, and an example gallery, with the
+  renderers under `tools/` and a deterministic worked-workflow example under
+  `examples/`. The `[docs]` extra and a `mkdocs build --strict` CI job build it.

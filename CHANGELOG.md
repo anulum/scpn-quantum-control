@@ -4,6 +4,24 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+### Added
+- 2026-07-04 — Extracted the coupled-phase-oscillator (Kuramoto) toolkit into a
+  standalone [`oscillatools`](oscillatools/) distribution (a NumPy + SciPy floor
+  with optional `rust`/`julia`/`jax`/`torch`/`sklearn`/`viz` tiers) so it can be
+  installed without the quantum-provider dependency stack. The distribution
+  carries its own mkdocs documentation site, CI, publish workflow, SBOM, and
+  dependabot coverage. `scpn-quantum-control` now depends on `oscillatools>=0.1.0`.
+- 2026-07-04 — Added Rust replay implementations for the program_ad
+  linear-algebra operations in the `scpn-quantum-engine` crate — `multi_dot`,
+  `eigvals`, `eigvalsh`, `eigh`, and `svd` — routed through the program_ad Rust
+  bridge with parity tests against the reference path.
+
+### Deprecated
+- 2026-07-04 — `scpn_quantum_control.kuramoto` and `scpn_quantum_control.accel`
+  are now thin re-export shims over `oscillatools`; importing them emits a
+  `DeprecationWarning` and forwards every symbol, so existing code keeps working
+  until the shims are removed no earlier than the next major release.
+
 ## [0.10.0] - 2026-06-26
 
 ### Added
