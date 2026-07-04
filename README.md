@@ -111,7 +111,7 @@ has a defined commercial licensing route.
 | Domain package families | 32 |
 | API documentation pages | 0 |
 | Rust PyO3 function bindings | 172 |
-| Rust source modules | 50 |
+| Rust source modules | 51 |
 | Notebook files | 100 |
 | Example files | 33 |
 | Optional extras | 43 |
@@ -352,7 +352,8 @@ coverage snapshot, returns deterministic family/facet counts, and records only
 the primitive-name overlap with the already bounded Rust scalar/static-linalg
 plus elementwise/static-structural, fixed `multi_dot`, 2x2 distinct symmetric
 `eigvalsh`, 2x2 distinct symmetric `eigh` eigenvalues/nonzero-offdiagonal
-eigenvectors, and 2x2 real-distinct `eigvals` replay. Metadata summaries validate
+eigenvectors, 2x2 real-distinct `eigvals`, and 2x2 distinct-positive
+`svd(..., compute_uv=False)` singular-value replay. Metadata summaries validate
 `program_ad_effect_ir.v1` evidence only; Rust value+gradient replay is bounded
 to opcode-bearing scalar, elementwise-array, static structural-array,
 static structural-assembly, static source-map indexing, static product,
@@ -361,13 +362,15 @@ reductions with `dx`/`x`/`xfull` metadata, plus fixed-signature
 `np.linalg.multi_dot` matrix-chain output nodes, 2x2 distinct symmetric
 `np.linalg.eigvalsh` spectral output nodes, 2x2 distinct symmetric
 `np.linalg.eigh` eigenvalue and nonzero-offdiagonal eigenvector output nodes,
-and 2x2 real-distinct `np.linalg.eigvals` spectral output nodes, including executed runtime branch
+2x2 real-distinct `np.linalg.eigvals` spectral output nodes, and 2x2
+distinct-positive `np.linalg.svd(..., compute_uv=False)` singular-value output
+nodes, including executed runtime branch
 metadata when matched by runtime phi provenance. It still fails closed on
 legacy opcode-free metadata, aliases, mutation, non-lowered dynamic indexing
 semantics, dynamic axes, dynamic trapezoid-grid metadata, dynamic q/method
 metadata, dynamic ddof/correction metadata, zero-variance `std` gradients,
 broad linalg/spectral array adjoints beyond the bounded 2x2 `eigvalsh`,
-`eigh`, and `eigvals` boundaries,
+`eigh`, `eigvals`, and SVD singular-value boundaries,
 source-level/non-executed branch
 semantics, general Program AD execution, LLVM/JIT execution, hardware,
 provider, and performance promotion.

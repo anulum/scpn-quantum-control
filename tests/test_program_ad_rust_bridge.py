@@ -668,9 +668,17 @@ def test_rust_program_ad_registry_metadata_mirror_validates_python_registry() ->
     assert mirror.family_counts["linalg"] == 14
     assert mirror.facet_counts["derivative_rule"] == 118
     assert mirror.facet_counts["lowering_metadata"] == 118
-    assert {"sin", "sqrt", "tanh", "det", "multi_dot", "eigh", "eigvals", "eigvalsh"} <= set(
-        mirror.executable_operations
-    )
+    assert {
+        "sin",
+        "sqrt",
+        "tanh",
+        "det",
+        "multi_dot",
+        "eigh",
+        "eigvals",
+        "eigvalsh",
+        "svd",
+    } <= set(mirror.executable_operations)
     assert mirror.executable_operation_count == len(mirror.executable_operations)
     assert (
         mirror.claim_boundary

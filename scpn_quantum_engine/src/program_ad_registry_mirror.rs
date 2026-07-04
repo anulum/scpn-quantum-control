@@ -368,6 +368,7 @@ fn rust_supported_registry_primitives() -> HashSet<&'static str> {
         "sin",
         "sqrt",
         "subtract",
+        "svd",
         "tan",
         "tanh",
         "trace",

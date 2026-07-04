@@ -32,6 +32,9 @@ use crate::program_ad_linalg_spectral::{
     eigvalsh_output_cotangent, eigvalsh_output_value, is_eigh_operation, is_eigvals_operation,
     is_eigvalsh_operation,
 };
+use crate::program_ad_linalg_svd::{
+    is_svdvals_operation, svdvals_output_cotangent, svdvals_output_value,
+};
 use crate::program_ad_order_statistic_reduction::{
     is_order_statistic_operation, order_statistic_cotangent, order_statistic_values,
 };
@@ -977,6 +980,9 @@ fn accumulate_reverse_effect(
         name if is_eigh_operation(name) => {
             accumulate_eigh(effect, name, values, adjoints, &cotangent)
         }
+        name if is_svdvals_operation(name) => {
+            accumulate_svdvals(effect, name, values, adjoints, &cotangent)
+        }
         name if name.starts_with("linalg:trace:") => {
             let cotangent_scalar = cotangent.scalar_value()?;
             // d(trace)/d(diagonal element) = 1 for each on-diagonal operand.
@@ -1215,6 +1221,27 @@ fn accumulate_eigh(
         .collect::<Result<Vec<f64>, String>>()?;
     let contributions =
         eigh_output_cotangent(effect.index, operation, &input_values, cotangent_scalar)?;
+    for (input, contribution) in effect.inputs.iter().zip(contributions.iter()) {
+        add_scalar_adjoint(input, *contribution, values, adjoints)?;
+    }
+    Ok(())
+}
+
+fn accumulate_svdvals(
+    effect: &ProgramADEffect,
+    operation: &str,
+    values: &HashMap<String, ProgramADNumericValue>,
+    adjoints: &mut HashMap<String, ProgramADNumericValue>,
+    cotangent: &ProgramADNumericValue,
+) -> Result<(), String> {
+    let cotangent_scalar = cotangent.scalar_value()?;
+    let input_values = effect
+        .inputs
+        .iter()
+        .map(|input| operand_scalar_value(input, values))
+        .collect::<Result<Vec<f64>, String>>()?;
+    let contributions =
+        svdvals_output_cotangent(effect.index, operation, &input_values, cotangent_scalar)?;
     for (input, contribution) in effect.inputs.iter().zip(contributions.iter()) {
         add_scalar_adjoint(input, *contribution, values, adjoints)?;
     }
@@ -1808,6 +1835,7 @@ fn evaluate_numeric_effect(
         name if is_eigvalsh_operation(name) => numeric_eigvalsh(effect, name, values),
         name if is_eigvals_operation(name) => numeric_eigvals(effect, name, values),
         name if is_eigh_operation(name) => numeric_eigh(effect, name, values),
+        name if is_svdvals_operation(name) => numeric_svdvals(effect, name, values),
         name if name.starts_with("linalg:trace:")
             || name.starts_with("linalg:det:")
             || name.starts_with("linalg:inv:")
@@ -1978,6 +2006,19 @@ fn numeric_eigh(
         .map(|input| operand_scalar_value(input, values))
         .collect::<Result<Vec<f64>, String>>()?;
     eigh_output_value(effect.index, operation, &input_values).map(ProgramADNumericValue::scalar)
+}
+
+fn numeric_svdvals(
+    effect: &ProgramADEffect,
+    operation: &str,
+    values: &HashMap<String, ProgramADNumericValue>,
+) -> Result<ProgramADNumericValue, String> {
+    let input_values = effect
+        .inputs
+        .iter()
+        .map(|input| operand_scalar_value(input, values))
+        .collect::<Result<Vec<f64>, String>>()?;
+    svdvals_output_value(effect.index, operation, &input_values).map(ProgramADNumericValue::scalar)
 }
 
 fn numeric_unary(
@@ -2994,6 +3035,14 @@ fn evaluate_effect(
                 .map(|input| operand_value(input, values))
                 .collect::<Result<Vec<f64>, String>>()?;
             eigh_output_value(effect.index, name, &input_values)
+        }
+        name if is_svdvals_operation(name) => {
+            let input_values = effect
+                .inputs
+                .iter()
+                .map(|input| operand_value(input, values))
+                .collect::<Result<Vec<f64>, String>>()?;
+            svdvals_output_value(effect.index, name, &input_values)
         }
         name if name.starts_with("linalg:trace:") => {
             // The trace opcode carries the on-diagonal element operands; its value is their sum.
