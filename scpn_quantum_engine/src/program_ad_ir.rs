@@ -48,9 +48,9 @@ use crate::program_ad_variance_reduction::{
 const PROGRAM_AD_EFFECT_IR_FORMAT: &str = "program_ad_effect_ir.v1";
 const PROGRAM_AD_IR_CLAIM_BOUNDARY: &str = "metadata_only_no_program_execution";
 const PROGRAM_AD_RUST_INTERPRETER_CLAIM_BOUNDARY: &str =
-    "bounded_rust_program_ad_ir_scalar_and_static_linalg_primitives_executed_branch_view_alias_only_no_llvm_jit";
+    "bounded_rust_program_ad_ir_scalar_and_static_linalg_primitives_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit";
 const PROGRAM_AD_RUST_VALUE_AND_GRADIENT_CLAIM_BOUNDARY: &str =
-    "bounded_rust_program_ad_ir_elementwise_structural_array_static_reductions_and_static_linalg_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit";
+    "bounded_rust_program_ad_ir_elementwise_structural_array_static_source_map_static_reductions_and_static_linalg_primitives_value_and_gradient_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit";
 
 /// One SSA value record from Python-emitted Program AD metadata.
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize)]
@@ -321,16 +321,30 @@ fn validate_program_ad_effect_ir(ir: &ProgramADEffectIR) -> Result<(), String> {
     Ok(())
 }
 
-/// Return true if the IR carries an alias edge that is not an inert read-only view.
+/// Return true if the IR carries alias metadata that can change replay semantics.
 ///
 /// `view_alias` edges record reshape, transpose and slice views. The forward-AD trace has
 /// already resolved those views into canonical scalar SSA targets, so the scalar replay is
 /// unaffected: an op-effect that still referenced a view name would fail closed in
-/// [`operand_value`] rather than read a wrong value. Every other alias kind (mutation,
-/// control-path, rebinding, list) can change a value's content and stays outside the bounded
-/// scalar replay.
-fn has_non_view_alias(ir: &ProgramADEffectIR) -> bool {
-    ir.alias_edges.iter().any(|edge| edge.kind != "view_alias")
+/// [`operand_value`] rather than read a wrong value. Source-level
+/// `alias_analysis:assignment_binding` and `expression_rebinding_alias` rows are deterministic
+/// frontend evidence for ordinary local expression assignments and do not introduce replay
+/// aliases. Mutation, control-path, local-name rebinding, list, and object aliases can change
+/// value identity or content and stay outside the bounded replay.
+fn has_replay_unsafe_alias(ir: &ProgramADEffectIR) -> bool {
+    ir.alias_edges
+        .iter()
+        .any(|edge| !is_replay_inert_alias(edge))
+}
+
+fn is_replay_inert_alias(edge: &ProgramADAliasEdge) -> bool {
+    edge.kind == "view_alias"
+        || (edge.kind == "alias_analysis"
+            && edge.source == "assignment_binding"
+            && edge.target.starts_with("source:"))
+        || (edge.kind == "expression_rebinding_alias"
+            && edge.source.starts_with("expr:")
+            && edge.target.starts_with("name:"))
 }
 
 /// Return true when the final effect is a raw element of a multi-output linalg op.
@@ -367,7 +381,7 @@ pub fn interpret_program_ad_effect_ir_forward(
             vec!["Rust Program AD interpreter inputs must be finite".to_owned()],
         ));
     }
-    if has_non_view_alias(&ir) {
+    if has_replay_unsafe_alias(&ir) {
         return Ok(ProgramADRustInterpreterResult::unsupported(
             ir.effects.len(),
             0,
@@ -678,7 +692,7 @@ fn evaluate_program_ad_ir<'a>(
             vec!["Rust Program AD value+gradient inputs must be finite".to_owned()],
         )));
     }
-    if has_non_view_alias(ir) {
+    if has_replay_unsafe_alias(ir) {
         return Err(Box::new(ProgramADRustValueAndGradientResult::unsupported(
             ir.effects.len(),
             0,

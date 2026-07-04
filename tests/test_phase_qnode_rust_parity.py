@@ -141,8 +141,11 @@ def test_rust_program_ad_value_and_gradient_replay_matches_scalar_reference() ->
     assert payload["parameter_targets"] == ["%0", "%1"]
     assert payload["value"] == pytest.approx(0.4**2 + 2.0 * -0.2 + np.sin(0.4))
     assert payload["gradient"] == pytest.approx([2.0 * 0.4 + np.cos(0.4), 2.0])
-    assert "scalar_and_static_linalg_primitives" in payload["claim_boundary"]
-    assert "executed_branch_view_alias_only" in payload["claim_boundary"]
+    assert "static_linalg_primitives" in payload["claim_boundary"]
+    assert (
+        "executed_branch_view_assignment_and_expression_alias_metadata_only"
+        in payload["claim_boundary"]
+    )
 
 
 def test_rust_phase_qnode_computational_basis_fisher_matches_python_surface() -> None:

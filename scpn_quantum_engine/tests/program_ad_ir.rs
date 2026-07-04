@@ -783,7 +783,7 @@ fn program_ad_effect_ir_rust_interpreter_executes_opcode_bearing_scalar_subset()
     assert!((result.value.unwrap() - expected).abs() <= 1.0e-12);
     assert_eq!(
         result.claim_boundary,
-        "bounded_rust_program_ad_ir_scalar_and_static_linalg_primitives_executed_branch_view_alias_only_no_llvm_jit"
+        "bounded_rust_program_ad_ir_scalar_and_static_linalg_primitives_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit"
     );
 }
 
@@ -801,7 +801,7 @@ fn program_ad_effect_ir_rust_interpreter_replays_executed_branch_metadata() {
     assert!((result.value.unwrap() - expected).abs() <= 1.0e-12);
     assert_eq!(
         result.claim_boundary,
-        "bounded_rust_program_ad_ir_scalar_and_static_linalg_primitives_executed_branch_view_alias_only_no_llvm_jit"
+        "bounded_rust_program_ad_ir_scalar_and_static_linalg_primitives_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit"
     );
 }
 
@@ -825,7 +825,7 @@ fn program_ad_effect_ir_rust_value_and_gradient_replays_scalar_reverse_subset() 
     assert_eq!(result.parameter_targets, vec!["%0", "%1"]);
     assert_eq!(
         result.claim_boundary,
-        "bounded_rust_program_ad_ir_elementwise_structural_array_static_reductions_and_static_linalg_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit"
+        "bounded_rust_program_ad_ir_elementwise_structural_array_static_source_map_static_reductions_and_static_linalg_primitives_value_and_gradient_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit"
     );
 }
 
@@ -849,7 +849,7 @@ fn program_ad_effect_ir_rust_value_and_gradient_replays_executed_branch_metadata
     assert_eq!(result.parameter_targets, vec!["%0", "%1"]);
     assert_eq!(
         result.claim_boundary,
-        "bounded_rust_program_ad_ir_elementwise_structural_array_static_reductions_and_static_linalg_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit"
+        "bounded_rust_program_ad_ir_elementwise_structural_array_static_source_map_static_reductions_and_static_linalg_primitives_value_and_gradient_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit"
     );
 }
 
@@ -892,7 +892,7 @@ fn program_ad_effect_ir_rust_value_and_gradient_replays_scalar_primitive_family(
     assert_eq!(result.parameter_targets, vec!["%0", "%1", "%2", "%3"]);
     assert_eq!(
         result.claim_boundary,
-        "bounded_rust_program_ad_ir_elementwise_structural_array_static_reductions_and_static_linalg_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit"
+        "bounded_rust_program_ad_ir_elementwise_structural_array_static_source_map_static_reductions_and_static_linalg_primitives_value_and_gradient_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit"
     );
 }
 
@@ -929,7 +929,7 @@ fn program_ad_effect_ir_rust_value_and_gradient_replays_array_elementwise_broadc
     }
     assert_eq!(
         result.claim_boundary,
-        "bounded_rust_program_ad_ir_elementwise_structural_array_static_reductions_and_static_linalg_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit"
+        "bounded_rust_program_ad_ir_elementwise_structural_array_static_source_map_static_reductions_and_static_linalg_primitives_value_and_gradient_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit"
     );
 }
 
@@ -965,7 +965,7 @@ fn program_ad_effect_ir_rust_value_and_gradient_replays_structural_array_ops() {
     assert_eq!(result.supported_effect_count, 8);
     assert_eq!(
         result.claim_boundary,
-        "bounded_rust_program_ad_ir_elementwise_structural_array_static_reductions_and_static_linalg_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit"
+        "bounded_rust_program_ad_ir_elementwise_structural_array_static_source_map_static_reductions_and_static_linalg_primitives_value_and_gradient_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit"
     );
 }
 
@@ -999,7 +999,7 @@ fn program_ad_effect_ir_rust_value_and_gradient_replays_structural_assembly_ops(
     assert_eq!(result.supported_effect_count, 11);
     assert_eq!(
         result.claim_boundary,
-        "bounded_rust_program_ad_ir_elementwise_structural_array_static_reductions_and_static_linalg_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit"
+        "bounded_rust_program_ad_ir_elementwise_structural_array_static_source_map_static_reductions_and_static_linalg_primitives_value_and_gradient_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit"
     );
 }
 
@@ -1062,7 +1062,7 @@ fn program_ad_effect_ir_rust_value_and_gradient_replays_static_axis_reductions()
     assert_eq!(result.supported_effect_count, 10);
     assert_eq!(
         result.claim_boundary,
-        "bounded_rust_program_ad_ir_elementwise_structural_array_static_reductions_and_static_linalg_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit"
+        "bounded_rust_program_ad_ir_elementwise_structural_array_static_source_map_static_reductions_and_static_linalg_primitives_value_and_gradient_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit"
     );
 }
 
@@ -1109,8 +1109,68 @@ fn program_ad_effect_ir_rust_value_and_gradient_replays_static_source_map_indexi
     assert_eq!(result.supported_effect_count, 5);
     assert_eq!(
         result.claim_boundary,
-        "bounded_rust_program_ad_ir_elementwise_structural_array_static_reductions_and_static_linalg_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit"
+        "bounded_rust_program_ad_ir_elementwise_structural_array_static_source_map_static_reductions_and_static_linalg_primitives_value_and_gradient_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit"
     );
+}
+
+#[test]
+fn program_ad_effect_ir_rust_value_and_gradient_replays_source_map_inert_source_alias_metadata() {
+    let alias_ir = STATIC_SOURCE_MAP_INDEXING_PROGRAM_AD_IR.replace(
+        "\"alias_edges\": []",
+        "\"alias_edges\": [{\"source\": \"assignment_binding\", \"target\": \"source:2\", \"kind\": \"alias_analysis\", \"version\": 0}, {\"source\": \"expr:2:np.take(source,_[2,_0,_2])\", \"target\": \"name:gathered\", \"kind\": \"expression_rebinding_alias\", \"version\": 1}]",
+    );
+    let result = interpret_program_ad_effect_ir_value_and_gradient(
+        &alias_ir,
+        &[1.0, 2.0, 3.0, 4.0, 10.0, 20.0, 30.0, 40.0, 50.0, 60.0],
+    )
+    .unwrap();
+
+    assert!(result.supported, "{:?}", result.blocked_reasons);
+    assert_eq!(result.value, Some(400.0));
+    assert_eq!(result.effect_count, 5);
+    assert_eq!(result.supported_effect_count, 5);
+    assert_eq!(
+        result.gradient,
+        vec![20.0, 60.0, 40.0, 50.0, 3.0, 1.0, 3.0, -1.5, 4.0, 2.0]
+    );
+    assert_eq!(
+        result.claim_boundary,
+        "bounded_rust_program_ad_ir_elementwise_structural_array_static_source_map_static_reductions_and_static_linalg_primitives_value_and_gradient_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit"
+    );
+}
+
+#[test]
+fn program_ad_effect_ir_rust_value_and_gradient_rejects_malformed_alias_analysis_metadata() {
+    let alias_ir = STATIC_SOURCE_MAP_INDEXING_PROGRAM_AD_IR.replace(
+        "\"alias_edges\": []",
+        "\"alias_edges\": [{\"source\": \"dynamic_binding\", \"target\": \"source:2\", \"kind\": \"alias_analysis\", \"version\": 0}]",
+    );
+    let result = interpret_program_ad_effect_ir_value_and_gradient(
+        &alias_ir,
+        &[1.0, 2.0, 3.0, 4.0, 10.0, 20.0, 30.0, 40.0, 50.0, 60.0],
+    )
+    .unwrap();
+
+    assert!(!result.supported);
+    assert!(result.gradient.is_empty());
+    assert!(result.blocked_reasons[0].contains("non-view alias-bearing"));
+}
+
+#[test]
+fn program_ad_effect_ir_rust_value_and_gradient_rejects_malformed_expression_alias_metadata() {
+    let alias_ir = STATIC_SOURCE_MAP_INDEXING_PROGRAM_AD_IR.replace(
+        "\"alias_edges\": []",
+        "\"alias_edges\": [{\"source\": \"expr:2:np.take(source,_[2,_0,_2])\", \"target\": \"slot:gathered\", \"kind\": \"expression_rebinding_alias\", \"version\": 0}]",
+    );
+    let result = interpret_program_ad_effect_ir_value_and_gradient(
+        &alias_ir,
+        &[1.0, 2.0, 3.0, 4.0, 10.0, 20.0, 30.0, 40.0, 50.0, 60.0],
+    )
+    .unwrap();
+
+    assert!(!result.supported);
+    assert!(result.gradient.is_empty());
+    assert!(result.blocked_reasons[0].contains("non-view alias-bearing"));
 }
 
 #[test]
@@ -1528,7 +1588,7 @@ fn program_ad_effect_ir_rust_value_and_gradient_replays_inert_view_alias() {
     assert!((result.gradient[1] - (-4.0_f64)).abs() <= 1.0e-12);
     assert_eq!(
         result.claim_boundary,
-        "bounded_rust_program_ad_ir_elementwise_structural_array_static_reductions_and_static_linalg_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit"
+        "bounded_rust_program_ad_ir_elementwise_structural_array_static_source_map_static_reductions_and_static_linalg_primitives_value_and_gradient_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit"
     );
 }
 

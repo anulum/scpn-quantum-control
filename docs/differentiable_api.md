@@ -251,11 +251,11 @@ reductions with static `ddof`/`correction` metadata for `var`/`std`,
 compact static-grid `trapezoid` reductions with `dx`/`x`/`xfull` metadata,
 scalar-`q` `quantile`/`percentile` reductions, and scalar all-axis
 `sum`/`mean`/`prod`/`var`/`std`/`max`/`min`/`median` plus compact static-grid
-`trapezoid` and scalar-`q` `quantile`/`percentile` objective closure, plus static source-map `index_map:<sN|cVALUE,...>` indexing,
+`trapezoid` and scalar-`q` `quantile`/`percentile` objective closure, plus static source-map `index_map:<sN|cVALUE,...>` indexing and inert source `alias_analysis:assignment_binding` plus `expression_rebinding_alias` metadata,
 including executed runtime branch metadata when matched by runtime phi
-provenance. Legacy opcode-free metadata, aliases, mutation, non-lowered dynamic
+provenance. Legacy opcode-free metadata, unsafe aliases, mutation, non-lowered dynamic
 indexing semantics, dynamic axes, dynamic trapezoid-grid metadata, dynamic q/method metadata, dynamic ddof/correction
-metadata, zero-variance `std` gradients, broad array/linalg adjoints, source-level and non-executed branch
+metadata, zero-variance `std` gradients, broad array/linalg adjoints, unsafe source-level aliases and non-executed branch
 semantics, general Program AD execution, LLVM/JIT differentiated execution,
 hardware, provider, and performance routes remain fail-closed.
 Python callers may use `scpn_quantum_control.program_ad_rust_bridge` directly

@@ -574,7 +574,8 @@ def _default_scorecard_rows(
             "through the unrolled scalar SSA, plus bounded elementwise shaped arrays with "
             "scalar-to-array broadcasting and static structural array opcodes for reshape, ravel, "
             "broadcast_to, reversed-axis transpose, static-axis concatenate/stack assembly, and "
-            "static source-map indexing plus static-axis and scalar all-axis "
+            "static source-map indexing with inert assignment/expression alias metadata plus "
+            "static-axis and scalar all-axis "
             "sum/mean/prod/var/std/max/min/median reductions, static ddof/correction metadata "
             "for var/std, compact static-grid trapezoid reductions with dx/x/xfull metadata, "
             "and static scalar-q quantile/percentile reductions. "
@@ -583,7 +584,8 @@ def _default_scorecard_rows(
             "2026-07-03 elementwise, structural array, structural assembly, static-axis reduction, "
             "static source-map indexing, static product reduction, static variance/std "
             "reduction adjoints, static ddof/correction metadata, and static selector/order-statistic "
-            "reduction adjoints, and compact static-grid trapezoid reduction adjoints); a general "
+            "reduction adjoints, and compact static-grid trapezoid reduction adjoints; 2026-07-04 "
+            "static source-map assignment/expression alias metadata replay); a general "
             "structural ndarray adjoint engine, executable registry promotion and Rust-side LLVM/JIT "
             "lowering remain open.",
             ("phase_qnode_claim_boundary",),

@@ -483,7 +483,7 @@ def test_value_and_gradient_bridge_is_shared_by_module_and_facade(
                 "effect_count": 4,
                 "supported_effect_count": 4,
                 "blocked_reasons": [],
-                "claim_boundary": "bounded_rust_program_ad_ir_elementwise_structural_array_static_reductions_and_static_linalg_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit",
+                "claim_boundary": "bounded_rust_program_ad_ir_elementwise_structural_array_static_source_map_static_reductions_and_static_linalg_primitives_value_and_gradient_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit",
             }
         )
 
@@ -535,7 +535,7 @@ def test_forward_interpreter_bridge_normalises_payload(
                 "effect_count": 3,
                 "supported_effect_count": 3,
                 "blocked_reasons": [],
-                "claim_boundary": "bounded_rust_program_ad_ir_scalar_and_static_linalg_primitives_executed_branch_view_alias_only_no_llvm_jit",
+                "claim_boundary": "bounded_rust_program_ad_ir_scalar_and_static_linalg_primitives_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit",
             }
         )
 
@@ -649,7 +649,7 @@ def test_rust_program_ad_value_and_gradient_replay_matches_python_trace() -> Non
     assert rust_result.supported_effect_count == len(result.program_ir.effects)
     assert (
         rust_result.claim_boundary
-        == "bounded_rust_program_ad_ir_elementwise_structural_array_static_reductions_and_static_linalg_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit"
+        == "bounded_rust_program_ad_ir_elementwise_structural_array_static_source_map_static_reductions_and_static_linalg_primitives_value_and_gradient_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit"
     )
 
 
@@ -710,7 +710,7 @@ def test_rust_program_ad_value_and_gradient_replays_executed_branch_trace() -> N
     assert rust_result.supported_effect_count == len(result.program_ir.effects)
     assert (
         rust_result.claim_boundary
-        == "bounded_rust_program_ad_ir_elementwise_structural_array_static_reductions_and_static_linalg_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit"
+        == "bounded_rust_program_ad_ir_elementwise_structural_array_static_source_map_static_reductions_and_static_linalg_primitives_value_and_gradient_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit"
     )
 
 
@@ -766,7 +766,55 @@ def test_rust_program_ad_value_and_gradient_replays_scalar_primitive_family_trac
     assert rust_result.supported_effect_count == len(result.program_ir.effects)
     assert (
         rust_result.claim_boundary
-        == "bounded_rust_program_ad_ir_elementwise_structural_array_static_reductions_and_static_linalg_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit"
+        == "bounded_rust_program_ad_ir_elementwise_structural_array_static_source_map_static_reductions_and_static_linalg_primitives_value_and_gradient_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit"
+    )
+
+
+def test_rust_program_ad_value_and_gradient_replays_static_take_trace() -> None:
+    """Rust Program AD replay should preserve Python-emitted static gather adjoints."""
+
+    pytest.importorskip("scpn_quantum_engine")
+    values = np.array([1.0, 2.0, 3.0, 4.0], dtype=np.float64)
+    weights = np.array([1.5, -2.0, 0.25], dtype=np.float64)
+
+    def objective(trace_values: Any) -> object:
+        gathered = np.take(trace_values, [2, 0, 2])
+        return np.sum(gathered * weights)
+
+    result = whole_program_value_and_grad(
+        objective,
+        values,
+        parameters=tuple(Parameter(f"x{index}") for index in range(values.size)),
+    )
+    assert result.program_ir is not None
+    assert any(
+        edge.kind == "alias_analysis"
+        and edge.source == "assignment_binding"
+        and edge.target.startswith("source:")
+        for edge in result.program_ir.alias_edges
+    )
+    assert any(
+        edge.kind == "expression_rebinding_alias"
+        and edge.source.startswith("expr:")
+        and "np.take" in edge.source
+        and edge.target.startswith("name:")
+        for edge in result.program_ir.alias_edges
+    )
+    assert any(
+        edge.kind == "view_alias" and edge.target.startswith("view:take:")
+        for edge in result.program_ir.alias_edges
+    )
+
+    rust_result = value_and_grad_program_ad_effect_ir_with_rust(result.program_ir, values)
+
+    assert rust_result.supported is True, rust_result.blocked_reasons
+    assert rust_result.value == pytest.approx(result.value, abs=1.0e-12)
+    np.testing.assert_allclose(rust_result.gradient, result.gradient, atol=1.0e-12)
+    np.testing.assert_allclose(rust_result.gradient, [-2.0, 0.0, 1.75, 0.0], atol=1.0e-12)
+    assert rust_result.supported_effect_count == len(result.program_ir.effects)
+    assert (
+        rust_result.claim_boundary
+        == "bounded_rust_program_ad_ir_elementwise_structural_array_static_source_map_static_reductions_and_static_linalg_primitives_value_and_gradient_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit"
     )
 
 
@@ -798,7 +846,7 @@ def test_rust_program_ad_value_and_gradient_replays_array_elementwise_broadcast_
     assert rust_result.supported_effect_count == 6
     assert (
         rust_result.claim_boundary
-        == "bounded_rust_program_ad_ir_elementwise_structural_array_static_reductions_and_static_linalg_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit"
+        == "bounded_rust_program_ad_ir_elementwise_structural_array_static_source_map_static_reductions_and_static_linalg_primitives_value_and_gradient_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit"
     )
 
 
@@ -843,7 +891,7 @@ def test_rust_program_ad_value_and_gradient_replays_structural_array_ops() -> No
     assert rust_result.supported_effect_count == 8
     assert (
         rust_result.claim_boundary
-        == "bounded_rust_program_ad_ir_elementwise_structural_array_static_reductions_and_static_linalg_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit"
+        == "bounded_rust_program_ad_ir_elementwise_structural_array_static_source_map_static_reductions_and_static_linalg_primitives_value_and_gradient_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit"
     )
 
 
@@ -886,7 +934,7 @@ def test_rust_program_ad_value_and_gradient_replays_structural_assembly_ops() ->
     assert rust_result.supported_effect_count == 11
     assert (
         rust_result.claim_boundary
-        == "bounded_rust_program_ad_ir_elementwise_structural_array_static_reductions_and_static_linalg_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit"
+        == "bounded_rust_program_ad_ir_elementwise_structural_array_static_source_map_static_reductions_and_static_linalg_primitives_value_and_gradient_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit"
     )
 
 
@@ -940,7 +988,7 @@ def test_rust_program_ad_value_and_gradient_replays_static_axis_reductions() -> 
     assert rust_result.supported_effect_count == 10
     assert (
         rust_result.claim_boundary
-        == "bounded_rust_program_ad_ir_elementwise_structural_array_static_reductions_and_static_linalg_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit"
+        == "bounded_rust_program_ad_ir_elementwise_structural_array_static_source_map_static_reductions_and_static_linalg_primitives_value_and_gradient_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit"
     )
 
 
@@ -1003,7 +1051,7 @@ def test_rust_program_ad_value_and_gradient_replays_static_source_map_indexing()
     assert rust_result.supported_effect_count == 5
     assert (
         rust_result.claim_boundary
-        == "bounded_rust_program_ad_ir_elementwise_structural_array_static_reductions_and_static_linalg_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit"
+        == "bounded_rust_program_ad_ir_elementwise_structural_array_static_source_map_static_reductions_and_static_linalg_primitives_value_and_gradient_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit"
     )
 
 
@@ -1912,7 +1960,9 @@ def test_bridge_replays_inert_view_alias_program_with_real_engine() -> None:
         pytest.skip(f"installed engine does not yet replay view aliases: {rust.blocked_reasons}")
     _, reference = program_adjoint_value_and_grad(_objective_reshape_sumsq, sample)
     np.testing.assert_array_equal(np.asarray(rust.gradient), reference)
-    assert rust.claim_boundary.endswith("view_alias_only_no_llvm_jit")
+    assert rust.claim_boundary.endswith(
+        "view_assignment_and_expression_alias_metadata_only_no_llvm_jit"
+    )
 
 
 def test_bridge_fails_closed_on_mutation_alias_with_real_engine() -> None:
@@ -1967,7 +2017,7 @@ def test_bridge_replays_linalg_det_2x2_with_real_engine() -> None:
     _, reference = program_adjoint_value_and_grad(_objective_det_2x2, sample)
     np.testing.assert_allclose(np.asarray(rust.gradient), reference, atol=1.0e-12)
     assert rust.claim_boundary.endswith(
-        "elementwise_structural_array_static_reductions_and_static_linalg_primitives_value_and_gradient_executed_branch_view_alias_only_no_llvm_jit"
+        "elementwise_structural_array_static_source_map_static_reductions_and_static_linalg_primitives_value_and_gradient_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit"
     )
 
 

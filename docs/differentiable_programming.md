@@ -93,11 +93,12 @@ broadcast reduction, static `reshape`/`ravel`, `broadcast_to`, reversed-axis
 reductions with `dx`/`x`/`xfull` metadata, scalar all-axis
 `sum`/`mean`/`prod`/`var`/`std`/`max`/`min`/`median` plus scalar-`q`
 `quantile`/`percentile` and compact static-grid `trapezoid` objective closure, static source-map
-`index_map:<sN|cVALUE,...>` indexing, and executed runtime branch metadata when
-matched by runtime phi provenance. Legacy opcode-free metadata, aliases,
+`index_map:<sN|cVALUE,...>` indexing, inert source `alias_analysis:assignment_binding`
+and `expression_rebinding_alias` metadata attached by local static-gather temporaries, and executed runtime branch metadata when
+matched by runtime phi provenance. Legacy opcode-free metadata, unsafe aliases,
 mutation, non-lowered dynamic indexing semantics, dynamic axes, dynamic trapezoid-grid metadata, dynamic q/method
 metadata, dynamic ddof/correction metadata, zero-variance `std` gradients, broad array/linalg adjoints,
-source-level and non-executed branch semantics, general Program AD execution,
+unsafe source-level aliases and non-executed branch semantics, general Program AD execution,
 LLVM/JIT lowering, hardware execution, provider execution, and performance
 promotion remain fail-closed.
 Native LLVM/JIT promotion is also guarded by `LLVMJITClaimGate`: the committed
