@@ -115,7 +115,6 @@ def test_initial_phases_seed_is_accepted() -> None:
 
 def _solution_vector(omega: np.ndarray, structure: np.ndarray, k0: float) -> np.ndarray:
     fold = sn.locate_saddle_node(omega, structure, initial_coupling=k0)
-    n = omega.shape[0]
     return np.concatenate(
         [fold.phases[1:], [fold.collective_frequency], fold.null_vector, [fold.critical_coupling]]
     ), fold.null_vector / np.linalg.norm(fold.null_vector)

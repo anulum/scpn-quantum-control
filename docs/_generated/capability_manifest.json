@@ -8,12 +8,12 @@
     "notebook_files": 100,
     "optional_extras": 43,
     "public_api_exports": 787,
-    "public_documentation_pages": 254,
-    "python_model_classes": 974,
-    "python_model_source_modules": 542,
+    "public_documentation_pages": 259,
+    "python_model_classes": 980,
+    "python_model_source_modules": 552,
     "rust_pyo3_model_wrappers": 172,
     "rust_source_modules": 48,
-    "test_files": 878
+    "test_files": 898
   },
   "documentation": {
     "examples": [
@@ -314,8 +314,12 @@
       "docs/kuramoto_competitive_benchmark.md",
       "docs/kuramoto_core_facade.md",
       "docs/kuramoto_handbook.md",
+      "docs/kuramoto_jax_delayed_tier.md",
+      "docs/kuramoto_jax_tier.md",
+      "docs/kuramoto_mpc_tier.md",
       "docs/kuramoto_standalone_package_decision.md",
       "docs/kuramoto_variants.md",
+      "docs/kuramoto_visualisation.md",
       "docs/language_policy.md",
       "docs/licensing_faq.md",
       "docs/lindblad.md",
@@ -330,6 +334,7 @@
       "docs/multiscale_qec.md",
       "docs/mutation_testing.md",
       "docs/native_speedup_benchmark.md",
+      "docs/neural_operator_advantage.md",
       "docs/neural_quantum_states.md",
       "docs/new_modules.md",
       "docs/notebooks.md",
@@ -437,7 +442,7 @@
       {
         "package": "accel",
         "path": "src/scpn_quantum_control/accel",
-        "python_modules": 75
+        "python_modules": 81
       },
       {
         "package": "analysis",
@@ -457,7 +462,7 @@
       {
         "package": "benchmarks",
         "path": "src/scpn_quantum_control/benchmarks",
-        "python_modules": 16
+        "python_modules": 18
       },
       {
         "package": "bridge",
@@ -512,7 +517,7 @@
       {
         "package": "forecasting",
         "path": "src/scpn_quantum_control/forecasting",
-        "python_modules": 2
+        "python_modules": 4
       },
       {
         "package": "gauge",
@@ -1010,7 +1015,7 @@
       },
       {
         "name": "CompetitorRow",
-        "path": "src/scpn_quantum_control/benchmarks/kuramoto_competitive_benchmark.py"
+        "path": "src/scpn_quantum_control/benchmarks/kuramoto_competitive_types.py"
       },
       {
         "name": "CompilerADExecutableConfig",
@@ -1989,6 +1994,10 @@
         "path": "src/scpn_quantum_control/thermodynamics/readiness.py"
       },
       {
+        "name": "HeldOutFidelity",
+        "path": "src/scpn_quantum_control/forecasting/neural_operator_advantage.py"
+      },
+      {
         "name": "HessianResult",
         "path": "src/scpn_quantum_control/differentiable_result_contracts.py"
       },
@@ -2186,7 +2195,7 @@
       },
       {
         "name": "KuramotoProblem",
-        "path": "src/scpn_quantum_control/benchmarks/kuramoto_competitive_benchmark.py"
+        "path": "src/scpn_quantum_control/benchmarks/kuramoto_competitive_types.py"
       },
       {
         "name": "KuramotoProblem",
@@ -2333,6 +2342,10 @@
         "path": "src/scpn_quantum_control/control/realtime_runtime.py"
       },
       {
+        "name": "MpcControlGradients",
+        "path": "src/scpn_quantum_control/accel/jax_kuramoto_mpc.py"
+      },
+      {
         "name": "MpembaResult",
         "path": "src/scpn_quantum_control/analysis/quantum_mpemba.py"
       },
@@ -2407,6 +2420,10 @@
       {
         "name": "NetworkCycleBackend",
         "path": "src/scpn_quantum_control/topology_control/complexes.py"
+      },
+      {
+        "name": "NeuralOperatorAdvantage",
+        "path": "src/scpn_quantum_control/forecasting/neural_operator_advantage.py"
       },
       {
         "name": "NeuromorphicStepResult",
@@ -3869,6 +3886,10 @@
         "path": "src/scpn_quantum_control/control/realtime_runtime.py"
       },
       {
+        "name": "RecedingHorizonResult",
+        "path": "src/scpn_quantum_control/accel/jax_kuramoto_mpc.py"
+      },
+      {
         "name": "ReferenceValidationCertification",
         "path": "src/scpn_quantum_control/studio/reference_validation.py"
       },
@@ -4005,6 +4026,10 @@
         "path": "src/scpn_quantum_control/bridge/ssgf_adapter.py"
       },
       {
+        "name": "SaddleNodePoint",
+        "path": "src/scpn_quantum_control/accel/kuramoto_saddle_node.py"
+      },
+      {
         "name": "ScalingBaseline",
         "path": "src/scpn_quantum_control/benchmarks/advantage_protocol.py"
       },
@@ -4131,6 +4156,10 @@
       {
         "name": "SurfaceCodeUPDE",
         "path": "src/scpn_quantum_control/qec/surface_code_upde.py"
+      },
+      {
+        "name": "SurrogateCostModel",
+        "path": "src/scpn_quantum_control/forecasting/neural_operator_cost_model.py"
       },
       {
         "name": "SwarmalatorOrderParameters",
@@ -4500,6 +4529,7 @@
       "src/scpn_quantum_control/accel/daido_observables.py",
       "src/scpn_quantum_control/accel/daido_phase.py",
       "src/scpn_quantum_control/accel/diff_kuramoto_adaptive.py",
+      "src/scpn_quantum_control/accel/diff_kuramoto_delay_sensitivity.py",
       "src/scpn_quantum_control/accel/diff_kuramoto_delayed.py",
       "src/scpn_quantum_control/accel/diff_kuramoto_dopri.py",
       "src/scpn_quantum_control/accel/diff_kuramoto_euler.py",
@@ -4507,6 +4537,9 @@
       "src/scpn_quantum_control/accel/diff_kuramoto_noisy.py",
       "src/scpn_quantum_control/accel/diff_kuramoto_rk4.py",
       "src/scpn_quantum_control/accel/dispatcher.py",
+      "src/scpn_quantum_control/accel/jax_kuramoto.py",
+      "src/scpn_quantum_control/accel/jax_kuramoto_delayed.py",
+      "src/scpn_quantum_control/accel/jax_kuramoto_mpc.py",
       "src/scpn_quantum_control/accel/kuramoto_adaptive.py",
       "src/scpn_quantum_control/accel/kuramoto_basin_stability.py",
       "src/scpn_quantum_control/accel/kuramoto_bayesian_inference.py",
@@ -4541,6 +4574,7 @@
       "src/scpn_quantum_control/accel/kuramoto_pseudo_arclength.py",
       "src/scpn_quantum_control/accel/kuramoto_qif_mean_field.py",
       "src/scpn_quantum_control/accel/kuramoto_ring_basins.py",
+      "src/scpn_quantum_control/accel/kuramoto_saddle_node.py",
       "src/scpn_quantum_control/accel/kuramoto_scipy_interop.py",
       "src/scpn_quantum_control/accel/kuramoto_sdre_control.py",
       "src/scpn_quantum_control/accel/kuramoto_simplex_mean_field.py",
@@ -4550,6 +4584,7 @@
       "src/scpn_quantum_control/accel/kuramoto_symplectic_inertial.py",
       "src/scpn_quantum_control/accel/kuramoto_system.py",
       "src/scpn_quantum_control/accel/kuramoto_system_id.py",
+      "src/scpn_quantum_control/accel/kuramoto_visualisation.py",
       "src/scpn_quantum_control/accel/kuramoto_watanabe_strogatz.py",
       "src/scpn_quantum_control/accel/local_order.py",
       "src/scpn_quantum_control/accel/local_phase.py",
@@ -4661,6 +4696,8 @@
       "src/scpn_quantum_control/benchmarks/gpu_baseline.py",
       "src/scpn_quantum_control/benchmarks/isolated_host_readiness.py",
       "src/scpn_quantum_control/benchmarks/kuramoto_competitive_benchmark.py",
+      "src/scpn_quantum_control/benchmarks/kuramoto_competitive_types.py",
+      "src/scpn_quantum_control/benchmarks/kuramoto_external_competitors.py",
       "src/scpn_quantum_control/benchmarks/mps_baseline.py",
       "src/scpn_quantum_control/benchmarks/quantum_advantage.py",
       "src/scpn_quantum_control/benchmarks/reproducible_comparison.py",
@@ -4774,6 +4811,8 @@
       "src/scpn_quantum_control/fep/predictive_coding.py",
       "src/scpn_quantum_control/fep/variational_free_energy.py",
       "src/scpn_quantum_control/forecasting/kuramoto_neural_operator.py",
+      "src/scpn_quantum_control/forecasting/neural_operator_advantage.py",
+      "src/scpn_quantum_control/forecasting/neural_operator_cost_model.py",
       "src/scpn_quantum_control/forecasting/real_data_sync.py",
       "src/scpn_quantum_control/gauge/cft_analysis.py",
       "src/scpn_quantum_control/gauge/confinement.py",
@@ -6136,6 +6175,8 @@
       "tests/_differentiable_programming_benchmark_edge_helpers.py",
       "tests/_internal_corpus_markers.py",
       "tests/conftest.py",
+      "tests/kuramoto_autodiff_witness.py",
+      "tests/kuramoto_delay_sensitivity_witness.py",
       "tests/test_accel_dispatch.py",
       "tests/test_accelerator_detection_boundaries.py",
       "tests/test_adapt_vqe.py",
@@ -6186,6 +6227,7 @@
       "tests/test_behavioural_test_audit.py",
       "tests/test_bench_cli.py",
       "tests/test_bench_cli_branches.py",
+      "tests/test_bench_kuramoto_competitive.py",
       "tests/test_bench_kuramoto_tiers.py",
       "tests/test_bench_s2_scaling_lite.py",
       "tests/test_benchmark_harness_public.py",
@@ -6278,6 +6320,9 @@
       "tests/test_dependency_security_closure.py",
       "tests/test_determinism.py",
       "tests/test_diff_kuramoto_adaptive.py",
+      "tests/test_diff_kuramoto_autodiff_witness.py",
+      "tests/test_diff_kuramoto_delay_sensitivity.py",
+      "tests/test_diff_kuramoto_delay_sensitivity_witness.py",
       "tests/test_diff_kuramoto_delayed.py",
       "tests/test_diff_kuramoto_dopri.py",
       "tests/test_diff_kuramoto_euler.py",
@@ -6480,6 +6525,9 @@
       "tests/test_iter_benchmark_branches.py",
       "tests/test_jax_accel_branch.py",
       "tests/test_jax_accel_contracts.py",
+      "tests/test_jax_kuramoto.py",
+      "tests/test_jax_kuramoto_delayed.py",
+      "tests/test_jax_kuramoto_mpc.py",
       "tests/test_jax_nqs.py",
       "tests/test_job_dossier.py",
       "tests/test_job_dossier_branches.py",
@@ -6499,10 +6547,12 @@
       "tests/test_kuramoto_basin_stability.py",
       "tests/test_kuramoto_bayesian_inference.py",
       "tests/test_kuramoto_chimera.py",
+      "tests/test_kuramoto_chimera_reproduction.py",
       "tests/test_kuramoto_clusters.py",
       "tests/test_kuramoto_coherence_matrix.py",
       "tests/test_kuramoto_collective_control.py",
       "tests/test_kuramoto_competitive_benchmark.py",
+      "tests/test_kuramoto_competitive_types.py",
       "tests/test_kuramoto_control.py",
       "tests/test_kuramoto_coordinated_reset.py",
       "tests/test_kuramoto_core.py",
@@ -6510,10 +6560,12 @@
       "tests/test_kuramoto_coupling_design.py",
       "tests/test_kuramoto_coupling_function_inference.py",
       "tests/test_kuramoto_critical_coupling.py",
+      "tests/test_kuramoto_critical_coupling_microscopic.py",
       "tests/test_kuramoto_delayed.py",
       "tests/test_kuramoto_delayed_mean_field.py",
       "tests/test_kuramoto_energy.py",
       "tests/test_kuramoto_explosive_continuation.py",
+      "tests/test_kuramoto_external_competitors.py",
       "tests/test_kuramoto_facade.py",
       "tests/test_kuramoto_frequency_order.py",
       "tests/test_kuramoto_handbook_workflow_example.py",
@@ -6521,6 +6573,7 @@
       "tests/test_kuramoto_higher_order_watanabe_strogatz.py",
       "tests/test_kuramoto_hyperedge.py",
       "tests/test_kuramoto_inertial.py",
+      "tests/test_kuramoto_inertial_hysteresis_reproduction.py",
       "tests/test_kuramoto_input_hardening.py",
       "tests/test_kuramoto_lyapunov.py",
       "tests/test_kuramoto_mean_field.py",
@@ -6528,14 +6581,17 @@
       "tests/test_kuramoto_neural_operator.py",
       "tests/test_kuramoto_noisy.py",
       "tests/test_kuramoto_noisy_mean_field.py",
+      "tests/test_kuramoto_noisy_mean_field_reproduction.py",
       "tests/test_kuramoto_ott_antonsen.py",
       "tests/test_kuramoto_parameter_sweep.py",
       "tests/test_kuramoto_phase_information.py",
       "tests/test_kuramoto_pinning_control.py",
       "tests/test_kuramoto_policy_learning.py",
       "tests/test_kuramoto_pseudo_arclength.py",
+      "tests/test_kuramoto_public_face_hygiene.py",
       "tests/test_kuramoto_qif_mean_field.py",
       "tests/test_kuramoto_ring_basins.py",
+      "tests/test_kuramoto_saddle_node.py",
       "tests/test_kuramoto_scipy_interop.py",
       "tests/test_kuramoto_sdre_control.py",
       "tests/test_kuramoto_simplex_mean_field.py",
@@ -6547,6 +6603,7 @@
       "tests/test_kuramoto_system.py",
       "tests/test_kuramoto_system_id.py",
       "tests/test_kuramoto_variants.py",
+      "tests/test_kuramoto_visualisation.py",
       "tests/test_kuramoto_watanabe_strogatz.py",
       "tests/test_l16_director.py",
       "tests/test_lattice_branches.py",
@@ -6589,6 +6646,8 @@
       "tests/test_native_whole_program_ad_execution_evidence.py",
       "tests/test_negative_inputs.py",
       "tests/test_networked_kuramoto.py",
+      "tests/test_neural_operator_advantage.py",
+      "tests/test_neural_operator_cost_model.py",
       "tests/test_new_module_properties.py",
       "tests/test_nist_sp800_22_guards.py",
       "tests/test_noise_model.py",

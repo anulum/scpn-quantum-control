@@ -46,7 +46,7 @@ def _check_exports(submod: str) -> int:
     for name in mod.__all__:
         obj = getattr(mod, name)
         assert callable(obj) or isinstance(
-            obj, (type, np.ndarray, dict, frozenset, list, str, int, float)
+            obj, (type, np.ndarray, dict, frozenset, list, tuple, str, int, float)
         ), f"{submod}.{name} has unexpected type {type(obj)}"
     return len(mod.__all__)
 
