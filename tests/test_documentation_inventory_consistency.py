@@ -129,7 +129,8 @@ def test_architecture_crypto_tree_lists_only_existing_modules() -> None:
     assert not missing, f"architecture map references non-existent crypto modules: {missing}"
 
 
-@pytest.mark.parametrize("package", ["accel", "phase", "crypto", "benchmarks"])
+@pytest.mark.parametrize("package", ["phase", "crypto", "benchmarks", "hardware"])
 def test_actual_module_count_is_positive(package: str) -> None:
-    # guards the helper itself across the packages whose counts drifted most
+    # guards the helper itself across representative substantive packages (accel is
+    # now a deprecation shim re-exporting oscillatools, so it holds zero source modules)
     assert _actual_module_count(package) > 0

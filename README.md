@@ -106,16 +106,16 @@ has a defined commercial licensing route.
 |---|---:|
 | Package version | 0.10.0 |
 | Public API exports | 787 |
-| Python source modules | 552 |
-| Public Python classes | 980 |
-| Domain package families | 32 |
+| Python source modules | 471 |
+| Public Python classes | 911 |
+| Domain package families | 31 |
 | API documentation pages | 0 |
 | Rust PyO3 function bindings | 172 |
 | Rust source modules | 51 |
 | Notebook files | 100 |
 | Example files | 33 |
 | Optional extras | 43 |
-| Python test files | 900 |
+| Python test files | 813 |
 | Public documentation pages | 259 |
 | GitHub Actions workflows | 21 |
 

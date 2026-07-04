@@ -18,8 +18,13 @@ with clear contracts.
 The architecture intentionally separates:
 
 - **core transforms** (`bridge`, `phase`, `analysis`) from
-- **execution substrates** (`hardware`, `benchmarks`, `accel`) and
+- **execution substrates** (`hardware`, `benchmarks`) and
 - **evidence/control surfaces** (`release`, `hardware status`, campaign artefacts).
+
+The coupled-phase-oscillator (Kuramoto) acceleration substrate that formerly lived
+under `accel/` now ships as the standalone `oscillatools` distribution;
+`scpn_quantum_control.accel` remains a deprecation shim that re-exports it (see
+`DEPRECATIONS.md`).
 
 This split is why the same repository can support both reproducible research
 workflows and integration-oriented development.
@@ -71,9 +76,9 @@ auto-generated block is the source of truth if the two ever drift.
 
 | Metric | Count |
 |--------|-------|
-| Python modules | 526 (excluding package initialisers) |
-| Rust crate | 1 (PyO3 0.29, **172 bindings**, 48 Rust source files including `validation.rs`, `symmetry_decay.rs`, `community.rs`, `pulse_shaping.rs`) |
-| Julia tier | 1 (`accel/julia/order_parameter.jl`; juliacall-bridged, opt-in via `[julia]` extra) |
+| Python modules | 471 (excluding package initialisers) |
+| Rust crate | 1 (PyO3 0.29, **172 bindings**, 51 Rust source files including `validation.rs`, `symmetry_decay.rs`, `community.rs`, `pulse_shaping.rs`) |
+| Julia tier | 1 (now in the `oscillatools` distribution: `oscillatools/accel/julia/order_parameter.jl`; juliacall-bridged, opt-in via `oscillatools[julia]`) |
 | Tests | CI-gated suite (90% aggregate coverage gate; non-refactor tree at 100%) |
 | Subpackages | domain package families (see the package map below) |
 | Research gems | See generated capability inventory and module-level docs |
@@ -105,7 +110,7 @@ graph TD
     benchmarks["benchmarks/ (18)\nPerformance"]
     ssgf["ssgf/ (4)\nGeometry"]
     psi_field["psi_field/ (4)\nU(1) lattice gauge"]
-    accel["accel/ (81)\nRust → Julia → Python dispatcher"]
+    oscillatools["oscillatools (external)\nKuramoto substrate: Rust → Julia → Python dispatch"]
     fep["fep/ (2)\nFree Energy Principle"]
     tcbo["tcbo/ (1)\nTCBO observer"]
     pgbo["pgbo/ (1)\nPGBO bridge"]
@@ -126,7 +131,7 @@ graph TD
     analysis --> gauge
     hardware --> phase
     hardware --> apps
-    accel --> hardware
+    oscillatools -.-> hardware
     mitigation --> hardware
     qec --> hardware
     benchmarks --> phase
@@ -141,7 +146,7 @@ graph TD
     style analysis fill:#d4a017,color:#000
     style phase fill:#6929C4,color:#fff
     style hardware fill:#2ecc71,color:#000
-    style accel fill:#e67e22,color:#000
+    style oscillatools fill:#e67e22,color:#000
 ```
 
 ## Hardware Execution Pipeline
@@ -393,7 +398,7 @@ l16/                                       ← Layer 16 quantum director
 └── quantum_director.py                        Loschmidt echo, stability score
 
 scpn_quantum_engine/                       ← Rust crate (PyO3 0.29, rayon parallel)
-└── src/lib.rs                                 172 PyO3 bindings across 48 source files, including: kuramoto_euler, kuramoto_trajectory,
+└── src/lib.rs                                 172 PyO3 bindings across 51 source files, including: kuramoto_euler, kuramoto_trajectory,
                                                order_parameter, build_knm, pec_coefficients,
                                                pec_sample_parallel, dla_dimension, mc_xy_simulate,
                                                state_order_param_sparse, expectation_pauli_fast,

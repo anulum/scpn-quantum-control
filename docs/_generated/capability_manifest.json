@@ -1,7 +1,7 @@
 {
   "SPDX-License-Identifier": "AGPL-3.0-or-later",
   "counts": {
-    "domain_package_families": 32,
+    "domain_package_families": 31,
     "example_files": 33,
     "github_workflows": 21,
     "model_documentation_pages": 0,
@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 787,
     "public_documentation_pages": 259,
-    "python_model_classes": 980,
-    "python_model_source_modules": 552,
+    "python_model_classes": 911,
+    "python_model_source_modules": 471,
     "rust_pyo3_model_wrappers": 172,
     "rust_source_modules": 51,
-    "test_files": 900
+    "test_files": 813
   },
   "documentation": {
     "examples": [
@@ -440,11 +440,6 @@
     "documentation_pages": [],
     "domain_package_counts": [
       {
-        "package": "accel",
-        "path": "src/scpn_quantum_control/accel",
-        "python_modules": 81
-      },
-      {
         "package": "analysis",
         "path": "src/scpn_quantum_control/analysis",
         "python_modules": 59
@@ -638,14 +633,6 @@
         "path": "src/scpn_quantum_control/analysis/adaptive_fim_feedback.py"
       },
       {
-        "name": "AdaptiveGradients",
-        "path": "src/scpn_quantum_control/accel/diff_kuramoto_adaptive.py"
-      },
-      {
-        "name": "AdaptiveTrajectory",
-        "path": "src/scpn_quantum_control/accel/kuramoto_adaptive.py"
-      },
-      {
         "name": "AdiabaticResult",
         "path": "src/scpn_quantum_control/phase/adiabatic_preparation.py"
       },
@@ -822,20 +809,8 @@
         "path": "src/scpn_quantum_control/hardware/backends.py"
       },
       {
-        "name": "BackendRow",
-        "path": "src/scpn_quantum_control/accel/tier_benchmark.py"
-      },
-      {
         "name": "BackwardResult",
         "path": "src/scpn_quantum_control/bridge/snn_backward.py"
-      },
-      {
-        "name": "BasinEstimate",
-        "path": "src/scpn_quantum_control/accel/kuramoto_ring_basins.py"
-      },
-      {
-        "name": "BasinStabilityEstimate",
-        "path": "src/scpn_quantum_control/accel/kuramoto_basin_stability.py"
       },
       {
         "name": "BenchmarkFamily",
@@ -904,10 +879,6 @@
       {
         "name": "CatalystCompilerWorkflowComparison",
         "path": "src/scpn_quantum_control/benchmarks/differentiable_catalyst_comparison.py"
-      },
-      {
-        "name": "ChimeraDiagnostics",
-        "path": "src/scpn_quantum_control/accel/kuramoto_chimera.py"
       },
       {
         "name": "CircuitCuttingPlan",
@@ -982,16 +953,8 @@
         "path": "src/scpn_quantum_control/deployment/cloud_native.py"
       },
       {
-        "name": "ClusterPartition",
-        "path": "src/scpn_quantum_control/accel/kuramoto_clusters.py"
-      },
-      {
         "name": "CoSimulationResult",
         "path": "src/scpn_quantum_control/cosimulation/quantum_classical.py"
-      },
-      {
-        "name": "CollectiveControlGradients",
-        "path": "src/scpn_quantum_control/accel/kuramoto_collective_control.py"
       },
       {
         "name": "ComparisonMethodRow",
@@ -1086,10 +1049,6 @@
         "path": "src/scpn_quantum_control/deployment/cloud_native.py"
       },
       {
-        "name": "ContinuationBranch",
-        "path": "src/scpn_quantum_control/accel/kuramoto_explosive_continuation.py"
-      },
-      {
         "name": "ContractionBenchmarkResult",
         "path": "src/scpn_quantum_control/phase/contraction_optimiser.py"
       },
@@ -1106,34 +1065,6 @@
         "path": "src/scpn_quantum_control/qec/control_qec.py"
       },
       {
-        "name": "ControlledNetworkTrajectory",
-        "path": "src/scpn_quantum_control/accel/kuramoto_network_control.py"
-      },
-      {
-        "name": "CoordinatedResetGradients",
-        "path": "src/scpn_quantum_control/accel/kuramoto_coordinated_reset.py"
-      },
-      {
-        "name": "CoordinatedResetTrajectory",
-        "path": "src/scpn_quantum_control/accel/kuramoto_coordinated_reset.py"
-      },
-      {
-        "name": "CouplingDesignResult",
-        "path": "src/scpn_quantum_control/accel/kuramoto_coupling_design.py"
-      },
-      {
-        "name": "CouplingFunctionEstimate",
-        "path": "src/scpn_quantum_control/accel/kuramoto_coupling_function_inference.py"
-      },
-      {
-        "name": "CouplingFunctionEstimator",
-        "path": "src/scpn_quantum_control/accel/kuramoto_sklearn_estimators.py"
-      },
-      {
-        "name": "CouplingFunctionGradients",
-        "path": "src/scpn_quantum_control/accel/kuramoto_coupling_function_inference.py"
-      },
-      {
         "name": "CouplingGradientVerificationResult",
         "path": "src/scpn_quantum_control/phase/coupling_learning.py"
       },
@@ -1144,10 +1075,6 @@
       {
         "name": "CouplingLearningResult",
         "path": "src/scpn_quantum_control/phase/coupling_learning.py"
-      },
-      {
-        "name": "CouplingTerm",
-        "path": "src/scpn_quantum_control/accel/kuramoto_heterogeneous.py"
       },
       {
         "name": "CouplingTopologyObjective",
@@ -1242,14 +1169,6 @@
         "path": "src/scpn_quantum_control/topology_control/objectives.py"
       },
       {
-        "name": "DelayedGradients",
-        "path": "src/scpn_quantum_control/accel/diff_kuramoto_delayed.py"
-      },
-      {
-        "name": "DelayedTrajectory",
-        "path": "src/scpn_quantum_control/accel/kuramoto_delayed.py"
-      },
-      {
         "name": "DenseAllocationError",
         "path": "src/scpn_quantum_control/dense_budget.py"
       },
@@ -1260,10 +1179,6 @@
       {
         "name": "DenseHermitianObservable",
         "path": "src/scpn_quantum_control/phase/qnode_circuit.py"
-      },
-      {
-        "name": "DesynchronisingPolicy",
-        "path": "src/scpn_quantum_control/accel/kuramoto_policy_learning.py"
       },
       {
         "name": "DifferentiabilityDiagnosticReport",
@@ -1494,10 +1409,6 @@
         "path": "src/scpn_quantum_control/dla_parity/schema.py"
       },
       {
-        "name": "DopriTrajectory",
-        "path": "src/scpn_quantum_control/accel/diff_kuramoto_dopri.py"
-      },
-      {
         "name": "DualNumber",
         "path": "src/scpn_quantum_control/differentiable_scalar_kernels.py"
       },
@@ -1508,10 +1419,6 @@
       {
         "name": "DynamicCouplingEngine",
         "path": "src/scpn_quantum_control/qsnn/dynamic_coupling.py"
-      },
-      {
-        "name": "DynamicalBayesianPosterior",
-        "path": "src/scpn_quantum_control/accel/kuramoto_bayesian_inference.py"
       },
       {
         "name": "EEGApplicationPlugin",
@@ -1802,10 +1709,6 @@
         "path": "src/scpn_quantum_control/phase/floquet_kuramoto.py"
       },
       {
-        "name": "ForcedCollectiveTrajectory",
-        "path": "src/scpn_quantum_control/accel/kuramoto_collective_control.py"
-      },
-      {
         "name": "ForecastModelRun",
         "path": "src/scpn_quantum_control/forecasting/real_data_sync.py"
       },
@@ -1820,10 +1723,6 @@
       {
         "name": "FreeEnergyResult",
         "path": "src/scpn_quantum_control/fep/variational_free_energy.py"
-      },
-      {
-        "name": "FrequencyOrder",
-        "path": "src/scpn_quantum_control/accel/kuramoto_frequency_order.py"
       },
       {
         "name": "FusionCoreFRCCalibration",
@@ -2010,18 +1909,6 @@
         "path": "src/scpn_quantum_control/phase/kuramoto_variants.py"
       },
       {
-        "name": "HigherOrderWatanabeStrogatzTrajectory",
-        "path": "src/scpn_quantum_control/accel/kuramoto_higher_order_watanabe_strogatz.py"
-      },
-      {
-        "name": "HodgeComponents",
-        "path": "src/scpn_quantum_control/accel/topological_synchronisation.py"
-      },
-      {
-        "name": "HodgeStructure",
-        "path": "src/scpn_quantum_control/accel/topological_synchronisation.py"
-      },
-      {
         "name": "HostReadiness",
         "path": "src/scpn_quantum_control/benchmarks/isolated_host_readiness.py"
       },
@@ -2052,10 +1939,6 @@
       {
         "name": "HypergeometricPulse",
         "path": "src/scpn_quantum_control/phase/pulse_shaping.py"
-      },
-      {
-        "name": "HysteresisLoop",
-        "path": "src/scpn_quantum_control/accel/kuramoto_explosive_continuation.py"
       },
       {
         "name": "ICIPulse",
@@ -2100,14 +1983,6 @@
       {
         "name": "ImplicitSensitivityResult",
         "path": "src/scpn_quantum_control/differentiable_result_contracts.py"
-      },
-      {
-        "name": "InertialGradients",
-        "path": "src/scpn_quantum_control/accel/diff_kuramoto_inertial.py"
-      },
-      {
-        "name": "InertialTrajectory",
-        "path": "src/scpn_quantum_control/accel/kuramoto_inertial.py"
       },
       {
         "name": "InfitonField",
@@ -2178,32 +2053,12 @@
         "path": "src/scpn_quantum_control/benchmarks/kuramoto_competitive_benchmark.py"
       },
       {
-        "name": "KuramotoIvpSolution",
-        "path": "src/scpn_quantum_control/accel/kuramoto_scipy_interop.py"
-      },
-      {
-        "name": "KuramotoOperatorDataset",
-        "path": "src/scpn_quantum_control/forecasting/kuramoto_neural_operator.py"
-      },
-      {
-        "name": "KuramotoParameterGrid",
-        "path": "src/scpn_quantum_control/accel/kuramoto_parameter_sweep.py"
-      },
-      {
-        "name": "KuramotoParameters",
-        "path": "src/scpn_quantum_control/accel/kuramoto_system.py"
-      },
-      {
         "name": "KuramotoProblem",
         "path": "src/scpn_quantum_control/benchmarks/kuramoto_competitive_types.py"
       },
       {
         "name": "KuramotoProblem",
         "path": "src/scpn_quantum_control/kuramoto_core.py"
-      },
-      {
-        "name": "KuramotoSystem",
-        "path": "src/scpn_quantum_control/accel/kuramoto_system.py"
       },
       {
         "name": "KuramotoVariant",
@@ -2342,24 +2197,8 @@
         "path": "src/scpn_quantum_control/control/realtime_runtime.py"
       },
       {
-        "name": "MpcControlGradients",
-        "path": "src/scpn_quantum_control/accel/jax_kuramoto_mpc.py"
-      },
-      {
         "name": "MpembaResult",
         "path": "src/scpn_quantum_control/analysis/quantum_mpemba.py"
-      },
-      {
-        "name": "MultiLangDispatcher",
-        "path": "src/scpn_quantum_control/accel/dispatcher.py"
-      },
-      {
-        "name": "MultiplexSynchronisationStability",
-        "path": "src/scpn_quantum_control/accel/multiplex_master_stability.py"
-      },
-      {
-        "name": "MultiplexTrajectory",
-        "path": "src/scpn_quantum_control/accel/multiplex_kuramoto.py"
       },
       {
         "name": "MultiscaleComparison",
@@ -2414,10 +2253,6 @@
         "path": "src/scpn_quantum_control/differentiable_result_contracts.py"
       },
       {
-        "name": "NetworkControlGradients",
-        "path": "src/scpn_quantum_control/accel/kuramoto_network_control.py"
-      },
-      {
         "name": "NetworkCycleBackend",
         "path": "src/scpn_quantum_control/topology_control/complexes.py"
       },
@@ -2432,14 +2267,6 @@
       {
         "name": "NistTestResult",
         "path": "src/scpn_quantum_control/entropy/nist_sp800_22.py"
-      },
-      {
-        "name": "NoisyGradients",
-        "path": "src/scpn_quantum_control/accel/diff_kuramoto_noisy.py"
-      },
-      {
-        "name": "NoisyKuramotoRun",
-        "path": "src/scpn_quantum_control/accel/kuramoto_noisy.py"
       },
       {
         "name": "OQCHALAdapter",
@@ -2472,10 +2299,6 @@
       {
         "name": "ObjectiveTermValue",
         "path": "src/scpn_quantum_control/phase/objectives.py"
-      },
-      {
-        "name": "Observable",
-        "path": "src/scpn_quantum_control/accel/kuramoto_parameter_sweep.py"
       },
       {
         "name": "ObservableComparison",
@@ -2520,10 +2343,6 @@
       {
         "name": "OrchestratorFeedback",
         "path": "src/scpn_quantum_control/bridge/orchestrator_feedback.py"
-      },
-      {
-        "name": "OscillatorIsingTrajectory",
-        "path": "src/scpn_quantum_control/accel/oscillator_ising_machine.py"
       },
       {
         "name": "OuterCycleResult",
@@ -2704,10 +2523,6 @@
       {
         "name": "ParameterShiftTrainingStep",
         "path": "src/scpn_quantum_control/phase/gradient_descent.py"
-      },
-      {
-        "name": "ParameterSweepResult",
-        "path": "src/scpn_quantum_control/accel/kuramoto_parameter_sweep.py"
       },
       {
         "name": "PasqalPulserHALAdapter",
@@ -3278,10 +3093,6 @@
         "path": "src/scpn_quantum_control/phase/cross_domain_transfer.py"
       },
       {
-        "name": "PinningDesignResult",
-        "path": "src/scpn_quantum_control/accel/kuramoto_pinning_control.py"
-      },
-      {
         "name": "PlaquetteResult",
         "path": "src/scpn_quantum_control/psi_field/lattice.py"
       },
@@ -3296,10 +3107,6 @@
       {
         "name": "PluginRegistry",
         "path": "src/scpn_quantum_control/hardware/plugin_registry.py"
-      },
-      {
-        "name": "PolicyRolloutGradients",
-        "path": "src/scpn_quantum_control/accel/kuramoto_policy_learning.py"
       },
       {
         "name": "PowerGridApplicationPlugin",
@@ -3328,10 +3135,6 @@
       {
         "name": "PrimitiveLoweringStatus",
         "path": "src/scpn_quantum_control/compiler/mlir_records.py"
-      },
-      {
-        "name": "PrimitiveResult",
-        "path": "src/scpn_quantum_control/accel/tier_benchmark.py"
       },
       {
         "name": "PrimitiveTransformRule",
@@ -3446,10 +3249,6 @@
         "path": "src/scpn_quantum_control/hardware/feedback_loop.py"
       },
       {
-        "name": "Provenance",
-        "path": "src/scpn_quantum_control/accel/tier_benchmark.py"
-      },
-      {
         "name": "ProviderAnalogExecutionPlan",
         "path": "src/scpn_quantum_control/hardware/analog_kuramoto.py"
       },
@@ -3516,10 +3315,6 @@
       {
         "name": "ProviderQNodeTransformResult",
         "path": "src/scpn_quantum_control/phase/qnode_provider_transforms.py"
-      },
-      {
-        "name": "PseudoArclengthBranch",
-        "path": "src/scpn_quantum_control/accel/kuramoto_pseudo_arclength.py"
       },
       {
         "name": "PublicKey",
@@ -3636,14 +3431,6 @@
       {
         "name": "QbraidRuntimeHALAdapter",
         "path": "src/scpn_quantum_control/hardware/hal_qbraid.py"
-      },
-      {
-        "name": "QifMeanFieldGradients",
-        "path": "src/scpn_quantum_control/accel/kuramoto_qif_mean_field.py"
-      },
-      {
-        "name": "QifMeanFieldTrajectory",
-        "path": "src/scpn_quantum_control/accel/kuramoto_qif_mean_field.py"
       },
       {
         "name": "QiskitAerHALAdapter",
@@ -3810,10 +3597,6 @@
         "path": "src/scpn_quantum_control/phase/trotter_upde.py"
       },
       {
-        "name": "QuantumVanDerPolTrajectory",
-        "path": "src/scpn_quantum_control/accel/quantum_synchronisation.py"
-      },
-      {
         "name": "QuantumWorkload",
         "path": "src/scpn_quantum_control/hardware/hal.py"
       },
@@ -3884,10 +3667,6 @@
       {
         "name": "RealtimeTickRecord",
         "path": "src/scpn_quantum_control/control/realtime_runtime.py"
-      },
-      {
-        "name": "RecedingHorizonResult",
-        "path": "src/scpn_quantum_control/accel/jax_kuramoto_mpc.py"
       },
       {
         "name": "ReferenceValidationCertification",
@@ -4026,10 +3805,6 @@
         "path": "src/scpn_quantum_control/bridge/ssgf_adapter.py"
       },
       {
-        "name": "SaddleNodePoint",
-        "path": "src/scpn_quantum_control/accel/kuramoto_saddle_node.py"
-      },
-      {
         "name": "ScalingBaseline",
         "path": "src/scpn_quantum_control/benchmarks/advantage_protocol.py"
       },
@@ -4078,14 +3853,6 @@
         "path": "src/scpn_quantum_control/crypto/pqc_trigger.py"
       },
       {
-        "name": "SparseDynamicsEstimator",
-        "path": "src/scpn_quantum_control/accel/kuramoto_sklearn_estimators.py"
-      },
-      {
-        "name": "SparseDynamicsModel",
-        "path": "src/scpn_quantum_control/accel/kuramoto_sparse_identification.py"
-      },
-      {
         "name": "SparseMatrixResult",
         "path": "src/scpn_quantum_control/differentiable_result_contracts.py"
       },
@@ -4100,10 +3867,6 @@
       {
         "name": "SpectrumSummary",
         "path": "src/scpn_quantum_control/analysis/fim_hamiltonian.py"
-      },
-      {
-        "name": "StabilitySpectrum",
-        "path": "src/scpn_quantum_control/accel/kuramoto_stability_spectrum.py"
       },
       {
         "name": "StableCorePreflightResult",
@@ -4128,10 +3891,6 @@
       {
         "name": "StructuredAnsatz",
         "path": "src/scpn_quantum_control/control/structured_ansatz.py"
-      },
-      {
-        "name": "StuartLandauTrajectory",
-        "path": "src/scpn_quantum_control/accel/stuart_landau.py"
       },
       {
         "name": "StudioBundleValidation",
@@ -4160,14 +3919,6 @@
       {
         "name": "SurrogateCostModel",
         "path": "src/scpn_quantum_control/forecasting/neural_operator_cost_model.py"
-      },
-      {
-        "name": "SwarmalatorOrderParameters",
-        "path": "src/scpn_quantum_control/accel/swarmalators.py"
-      },
-      {
-        "name": "SwarmalatorTrajectory",
-        "path": "src/scpn_quantum_control/accel/swarmalators.py"
       },
       {
         "name": "SymmetryDecayModel",
@@ -4202,10 +3953,6 @@
         "path": "src/scpn_quantum_control/benchmark_harness/synchronisation.py"
       },
       {
-        "name": "SynchronisationCertificate",
-        "path": "src/scpn_quantum_control/accel/synchronisation_certificate.py"
-      },
-      {
         "name": "SynchronisationForecastBenchmarkResult",
         "path": "src/scpn_quantum_control/forecasting/real_data_sync.py"
       },
@@ -4216,10 +3963,6 @@
       {
         "name": "SyndromeFlow",
         "path": "src/scpn_quantum_control/qec/syndrome_flow.py"
-      },
-      {
-        "name": "SystemIdentificationResult",
-        "path": "src/scpn_quantum_control/accel/kuramoto_system_id.py"
       },
       {
         "name": "TCBOResult",
@@ -4258,24 +4001,12 @@
         "path": "src/scpn_quantum_control/analysis/thermodynamic_witness.py"
       },
       {
-        "name": "TierStats",
-        "path": "src/scpn_quantum_control/accel/tier_benchmark.py"
-      },
-      {
-        "name": "TimeVaryingCouplingHistory",
-        "path": "src/scpn_quantum_control/accel/kuramoto_bayesian_inference.py"
-      },
-      {
         "name": "TopologicalCouplingOptimizer",
         "path": "src/scpn_quantum_control/control/topological_optimizer.py"
       },
       {
         "name": "TopologicalDynamicCouplingPolicy",
         "path": "src/scpn_quantum_control/topology_control/qsnn_integration.py"
-      },
-      {
-        "name": "TopologicalKuramotoTrajectory",
-        "path": "src/scpn_quantum_control/accel/topological_synchronisation.py"
       },
       {
         "name": "TopologyConstraintLedger",
@@ -4316,10 +4047,6 @@
       {
         "name": "TraceSTDPState",
         "path": "src/scpn_quantum_control/qsnn/quantum_neuromorphic_bridge.py"
-      },
-      {
-        "name": "TrainedKuramotoOperator",
-        "path": "src/scpn_quantum_control/forecasting/kuramoto_neural_operator.py"
       },
       {
         "name": "TrajectoryResult",
@@ -4410,10 +4137,6 @@
         "path": "src/scpn_quantum_control/bridge/ssgf_w_adapter.py"
       },
       {
-        "name": "WatanabeStrogatzTrajectory",
-        "path": "src/scpn_quantum_control/accel/kuramoto_watanabe_strogatz.py"
-      },
-      {
         "name": "WeightedGradientResult",
         "path": "src/scpn_quantum_control/differentiable_result_contracts.py"
       },
@@ -4474,10 +4197,6 @@
         "path": "src/scpn_quantum_control/gauge/wilson_loop.py"
       },
       {
-        "name": "WinfreeTrajectory",
-        "path": "src/scpn_quantum_control/accel/winfree.py"
-      },
-      {
         "name": "WirtingerDerivative",
         "path": "src/scpn_quantum_control/wirtinger_calculus.py"
       },
@@ -4525,87 +4244,6 @@
     "python_source_modules": [
       "src/scpn_quantum_control/_constants.py",
       "src/scpn_quantum_control/_paths.py",
-      "src/scpn_quantum_control/accel/daido_mean_field.py",
-      "src/scpn_quantum_control/accel/daido_observables.py",
-      "src/scpn_quantum_control/accel/daido_phase.py",
-      "src/scpn_quantum_control/accel/diff_kuramoto_adaptive.py",
-      "src/scpn_quantum_control/accel/diff_kuramoto_delay_sensitivity.py",
-      "src/scpn_quantum_control/accel/diff_kuramoto_delayed.py",
-      "src/scpn_quantum_control/accel/diff_kuramoto_dopri.py",
-      "src/scpn_quantum_control/accel/diff_kuramoto_euler.py",
-      "src/scpn_quantum_control/accel/diff_kuramoto_inertial.py",
-      "src/scpn_quantum_control/accel/diff_kuramoto_noisy.py",
-      "src/scpn_quantum_control/accel/diff_kuramoto_rk4.py",
-      "src/scpn_quantum_control/accel/dispatcher.py",
-      "src/scpn_quantum_control/accel/jax_kuramoto.py",
-      "src/scpn_quantum_control/accel/jax_kuramoto_delayed.py",
-      "src/scpn_quantum_control/accel/jax_kuramoto_mpc.py",
-      "src/scpn_quantum_control/accel/kuramoto_adaptive.py",
-      "src/scpn_quantum_control/accel/kuramoto_basin_stability.py",
-      "src/scpn_quantum_control/accel/kuramoto_bayesian_inference.py",
-      "src/scpn_quantum_control/accel/kuramoto_chimera.py",
-      "src/scpn_quantum_control/accel/kuramoto_clusters.py",
-      "src/scpn_quantum_control/accel/kuramoto_coherence_matrix.py",
-      "src/scpn_quantum_control/accel/kuramoto_collective_control.py",
-      "src/scpn_quantum_control/accel/kuramoto_control.py",
-      "src/scpn_quantum_control/accel/kuramoto_coordinated_reset.py",
-      "src/scpn_quantum_control/accel/kuramoto_coupling_design.py",
-      "src/scpn_quantum_control/accel/kuramoto_coupling_function_inference.py",
-      "src/scpn_quantum_control/accel/kuramoto_critical_coupling.py",
-      "src/scpn_quantum_control/accel/kuramoto_delayed.py",
-      "src/scpn_quantum_control/accel/kuramoto_delayed_mean_field.py",
-      "src/scpn_quantum_control/accel/kuramoto_energy.py",
-      "src/scpn_quantum_control/accel/kuramoto_explosive_continuation.py",
-      "src/scpn_quantum_control/accel/kuramoto_frequency_order.py",
-      "src/scpn_quantum_control/accel/kuramoto_heterogeneous.py",
-      "src/scpn_quantum_control/accel/kuramoto_higher_order_watanabe_strogatz.py",
-      "src/scpn_quantum_control/accel/kuramoto_hyperedge.py",
-      "src/scpn_quantum_control/accel/kuramoto_inertial.py",
-      "src/scpn_quantum_control/accel/kuramoto_lyapunov.py",
-      "src/scpn_quantum_control/accel/kuramoto_mean_field.py",
-      "src/scpn_quantum_control/accel/kuramoto_network_control.py",
-      "src/scpn_quantum_control/accel/kuramoto_noisy.py",
-      "src/scpn_quantum_control/accel/kuramoto_noisy_mean_field.py",
-      "src/scpn_quantum_control/accel/kuramoto_ott_antonsen.py",
-      "src/scpn_quantum_control/accel/kuramoto_parameter_sweep.py",
-      "src/scpn_quantum_control/accel/kuramoto_phase_information.py",
-      "src/scpn_quantum_control/accel/kuramoto_pinning_control.py",
-      "src/scpn_quantum_control/accel/kuramoto_policy_learning.py",
-      "src/scpn_quantum_control/accel/kuramoto_pseudo_arclength.py",
-      "src/scpn_quantum_control/accel/kuramoto_qif_mean_field.py",
-      "src/scpn_quantum_control/accel/kuramoto_ring_basins.py",
-      "src/scpn_quantum_control/accel/kuramoto_saddle_node.py",
-      "src/scpn_quantum_control/accel/kuramoto_scipy_interop.py",
-      "src/scpn_quantum_control/accel/kuramoto_sdre_control.py",
-      "src/scpn_quantum_control/accel/kuramoto_simplex_mean_field.py",
-      "src/scpn_quantum_control/accel/kuramoto_sklearn_estimators.py",
-      "src/scpn_quantum_control/accel/kuramoto_sparse_identification.py",
-      "src/scpn_quantum_control/accel/kuramoto_stability_spectrum.py",
-      "src/scpn_quantum_control/accel/kuramoto_symplectic_inertial.py",
-      "src/scpn_quantum_control/accel/kuramoto_system.py",
-      "src/scpn_quantum_control/accel/kuramoto_system_id.py",
-      "src/scpn_quantum_control/accel/kuramoto_visualisation.py",
-      "src/scpn_quantum_control/accel/kuramoto_watanabe_strogatz.py",
-      "src/scpn_quantum_control/accel/local_order.py",
-      "src/scpn_quantum_control/accel/local_phase.py",
-      "src/scpn_quantum_control/accel/mean_phase_observables.py",
-      "src/scpn_quantum_control/accel/multiplex_kuramoto.py",
-      "src/scpn_quantum_control/accel/multiplex_master_stability.py",
-      "src/scpn_quantum_control/accel/networked_kuramoto.py",
-      "src/scpn_quantum_control/accel/order_parameter_observables.py",
-      "src/scpn_quantum_control/accel/oscillator_ising_machine.py",
-      "src/scpn_quantum_control/accel/quantum_synchronisation.py",
-      "src/scpn_quantum_control/accel/rust_import.py",
-      "src/scpn_quantum_control/accel/rust_kuramoto_classical.py",
-      "src/scpn_quantum_control/accel/sakaguchi_kuramoto.py",
-      "src/scpn_quantum_control/accel/sakaguchi_mean_field.py",
-      "src/scpn_quantum_control/accel/stuart_landau.py",
-      "src/scpn_quantum_control/accel/swarmalators.py",
-      "src/scpn_quantum_control/accel/synchronisation_certificate.py",
-      "src/scpn_quantum_control/accel/tier_benchmark.py",
-      "src/scpn_quantum_control/accel/topological_synchronisation.py",
-      "src/scpn_quantum_control/accel/triadic_mean_field.py",
-      "src/scpn_quantum_control/accel/winfree.py",
       "src/scpn_quantum_control/analysis/adaptive_fim_feedback.py",
       "src/scpn_quantum_control/analysis/berry_phase.py",
       "src/scpn_quantum_control/analysis/bkt_analysis.py",
@@ -6178,9 +5816,6 @@
       "tests/_differentiable_programming_benchmark_edge_helpers.py",
       "tests/_internal_corpus_markers.py",
       "tests/conftest.py",
-      "tests/kuramoto_autodiff_witness.py",
-      "tests/kuramoto_delay_sensitivity_witness.py",
-      "tests/test_accel_dispatch.py",
       "tests/test_accelerator_detection_boundaries.py",
       "tests/test_adapt_vqe.py",
       "tests/test_adaptive_branching.py",
@@ -6313,25 +5948,12 @@
       "tests/test_crypto_properties.py",
       "tests/test_crypto_topology_auth.py",
       "tests/test_cutting_runner.py",
-      "tests/test_daido_mean_field.py",
-      "tests/test_daido_observables.py",
-      "tests/test_daido_phase.py",
       "tests/test_dataset_catalog.py",
       "tests/test_dd.py",
       "tests/test_dense_budget.py",
       "tests/test_dependency_hygiene.py",
       "tests/test_dependency_security_closure.py",
       "tests/test_determinism.py",
-      "tests/test_diff_kuramoto_adaptive.py",
-      "tests/test_diff_kuramoto_autodiff_witness.py",
-      "tests/test_diff_kuramoto_delay_sensitivity.py",
-      "tests/test_diff_kuramoto_delay_sensitivity_witness.py",
-      "tests/test_diff_kuramoto_delayed.py",
-      "tests/test_diff_kuramoto_dopri.py",
-      "tests/test_diff_kuramoto_euler.py",
-      "tests/test_diff_kuramoto_inertial.py",
-      "tests/test_diff_kuramoto_noisy.py",
-      "tests/test_diff_kuramoto_rk4.py",
       "tests/test_diff_namespace.py",
       "tests/test_differentiable_api.py",
       "tests/test_differentiable_architecture_map.py",
@@ -6528,9 +6150,6 @@
       "tests/test_iter_benchmark_branches.py",
       "tests/test_jax_accel_branch.py",
       "tests/test_jax_accel_contracts.py",
-      "tests/test_jax_kuramoto.py",
-      "tests/test_jax_kuramoto_delayed.py",
-      "tests/test_jax_kuramoto_mpc.py",
       "tests/test_jax_nqs.py",
       "tests/test_job_dossier.py",
       "tests/test_job_dossier_branches.py",
@@ -6546,68 +6165,17 @@
       "tests/test_koopman.py",
       "tests/test_koopman_rust_generator_branches.py",
       "tests/test_krylov_complexity.py",
-      "tests/test_kuramoto_adaptive.py",
-      "tests/test_kuramoto_basin_stability.py",
-      "tests/test_kuramoto_bayesian_inference.py",
-      "tests/test_kuramoto_chimera.py",
-      "tests/test_kuramoto_chimera_reproduction.py",
-      "tests/test_kuramoto_clusters.py",
-      "tests/test_kuramoto_coherence_matrix.py",
-      "tests/test_kuramoto_collective_control.py",
       "tests/test_kuramoto_competitive_benchmark.py",
       "tests/test_kuramoto_competitive_types.py",
-      "tests/test_kuramoto_control.py",
-      "tests/test_kuramoto_coordinated_reset.py",
       "tests/test_kuramoto_core.py",
       "tests/test_kuramoto_core_branches.py",
-      "tests/test_kuramoto_coupling_design.py",
-      "tests/test_kuramoto_coupling_function_inference.py",
-      "tests/test_kuramoto_critical_coupling.py",
-      "tests/test_kuramoto_critical_coupling_microscopic.py",
-      "tests/test_kuramoto_delayed.py",
-      "tests/test_kuramoto_delayed_mean_field.py",
-      "tests/test_kuramoto_energy.py",
-      "tests/test_kuramoto_explosive_continuation.py",
       "tests/test_kuramoto_external_competitors.py",
-      "tests/test_kuramoto_facade.py",
-      "tests/test_kuramoto_frequency_order.py",
       "tests/test_kuramoto_handbook_workflow_example.py",
-      "tests/test_kuramoto_heterogeneous.py",
-      "tests/test_kuramoto_higher_order_watanabe_strogatz.py",
-      "tests/test_kuramoto_hyperedge.py",
-      "tests/test_kuramoto_inertial.py",
-      "tests/test_kuramoto_inertial_hysteresis_reproduction.py",
       "tests/test_kuramoto_input_hardening.py",
-      "tests/test_kuramoto_lyapunov.py",
-      "tests/test_kuramoto_mean_field.py",
-      "tests/test_kuramoto_network_control.py",
-      "tests/test_kuramoto_neural_operator.py",
-      "tests/test_kuramoto_noisy.py",
-      "tests/test_kuramoto_noisy_mean_field.py",
-      "tests/test_kuramoto_noisy_mean_field_reproduction.py",
-      "tests/test_kuramoto_ott_antonsen.py",
-      "tests/test_kuramoto_parameter_sweep.py",
-      "tests/test_kuramoto_phase_information.py",
-      "tests/test_kuramoto_pinning_control.py",
-      "tests/test_kuramoto_policy_learning.py",
-      "tests/test_kuramoto_pseudo_arclength.py",
       "tests/test_kuramoto_public_face_hygiene.py",
-      "tests/test_kuramoto_qif_mean_field.py",
-      "tests/test_kuramoto_ring_basins.py",
-      "tests/test_kuramoto_saddle_node.py",
-      "tests/test_kuramoto_scipy_interop.py",
-      "tests/test_kuramoto_sdre_control.py",
-      "tests/test_kuramoto_simplex_mean_field.py",
-      "tests/test_kuramoto_sklearn_estimators.py",
-      "tests/test_kuramoto_sparse_identification.py",
-      "tests/test_kuramoto_stability_spectrum.py",
+      "tests/test_kuramoto_relocation_shims.py",
       "tests/test_kuramoto_standalone_package_decision.py",
-      "tests/test_kuramoto_symplectic_inertial.py",
-      "tests/test_kuramoto_system.py",
-      "tests/test_kuramoto_system_id.py",
       "tests/test_kuramoto_variants.py",
-      "tests/test_kuramoto_visualisation.py",
-      "tests/test_kuramoto_watanabe_strogatz.py",
       "tests/test_l16_director.py",
       "tests/test_lattice_branches.py",
       "tests/test_layer_selective_comparator_matrix.py",
@@ -6621,8 +6189,6 @@
       "tests/test_lindblad_trajectory.py",
       "tests/test_link_check_history_audit.py",
       "tests/test_llvm_jit_claim_gate.py",
-      "tests/test_local_mean_phase.py",
-      "tests/test_local_order.py",
       "tests/test_logging_setup.py",
       "tests/test_logical_dla_parity.py",
       "tests/test_logical_dla_parity_branches.py",
@@ -6630,7 +6196,6 @@
       "tests/test_magic_nonstabilizerness.py",
       "tests/test_magnetisation_sectors.py",
       "tests/test_magnetisation_sectors_empty_guard.py",
-      "tests/test_mean_phase_observables.py",
       "tests/test_mitiq_integration.py",
       "tests/test_ml_dsa_branches.py",
       "tests/test_ml_dsa_pqc.py",
@@ -6642,13 +6207,10 @@
       "tests/test_mps_evolution.py",
       "tests/test_multicircuit_qec_readiness.py",
       "tests/test_multiplatform_export_workflow.py",
-      "tests/test_multiplex_kuramoto.py",
-      "tests/test_multiplex_master_stability.py",
       "tests/test_multiscale_qec.py",
       "tests/test_native_decomposition_readiness.py",
       "tests/test_native_whole_program_ad_execution_evidence.py",
       "tests/test_negative_inputs.py",
-      "tests/test_networked_kuramoto.py",
       "tests/test_neural_operator_advantage.py",
       "tests/test_neural_operator_cost_model.py",
       "tests/test_new_module_properties.py",
@@ -6665,7 +6227,6 @@
       "tests/test_orchestrator_adapter_errors.py",
       "tests/test_orchestrator_adapter_helpers.py",
       "tests/test_orchestrator_feedback.py",
-      "tests/test_oscillator_ising_machine.py",
       "tests/test_otoc.py",
       "tests/test_otoc_mutation_kills.py",
       "tests/test_otoc_sync_probe.py",
@@ -6896,7 +6457,6 @@
       "tests/test_quantum_sensing_readiness.py",
       "tests/test_quantum_speed_limit.py",
       "tests/test_quantum_speed_limit_validation.py",
-      "tests/test_quantum_synchronisation.py",
       "tests/test_quantum_thermo_readiness.py",
       "tests/test_quantum_thermo_readiness_branches.py",
       "tests/test_qubit_mapper.py",
@@ -6941,8 +6501,6 @@
       "tests/test_s4_multi_hardware_readiness.py",
       "tests/test_s4_neutral_atom_preregistration.py",
       "tests/test_s4_provider_preregistration.py",
-      "tests/test_sakaguchi_kuramoto.py",
-      "tests/test_sakaguchi_mean_field.py",
       "tests/test_sc_to_quantum.py",
       "tests/test_scpn_upde_edge.py",
       "tests/test_sensing_branches.py",
@@ -6978,7 +6536,6 @@
       "tests/test_stress_scale.py",
       "tests/test_structured_ansatz.py",
       "tests/test_structured_ansatz_branches.py",
-      "tests/test_stuart_landau.py",
       "tests/test_studio_evidence_bundle.py",
       "tests/test_studio_manifest.py",
       "tests/test_studio_recompute_kernel.py",
@@ -6990,7 +6547,6 @@
       "tests/test_submit_s1_readout_zne_ibm.py",
       "tests/test_submit_s1b_xy_observable_pair.py",
       "tests/test_surface_code_upde.py",
-      "tests/test_swarmalators.py",
       "tests/test_symmetry_decay.py",
       "tests/test_symmetry_sector_compiler.py",
       "tests/test_symmetry_sector_compiler_branches.py",
@@ -7009,7 +6565,6 @@
       "tests/test_sync_witness.py",
       "tests/test_synchronisation_benchmark_compare.py",
       "tests/test_synchronisation_benchmark_registry.py",
-      "tests/test_synchronisation_certificate.py",
       "tests/test_synchronisation_compare_branches.py",
       "tests/test_synchronisation_runner_branches.py",
       "tests/test_tcbo_observer.py",
@@ -7020,10 +6575,8 @@
       "tests/test_tensor_jump.py",
       "tests/test_tensor_jump_contracts.py",
       "tests/test_thermodynamic_witness.py",
-      "tests/test_tier_benchmark.py",
       "tests/test_topological_coupling_guard.py",
       "tests/test_topological_optimizer.py",
-      "tests/test_topological_synchronisation.py",
       "tests/test_topology_auth_edge.py",
       "tests/test_topology_complexes.py",
       "tests/test_topology_constraints_guards.py",
@@ -7036,7 +6589,6 @@
       "tests/test_translation_symmetry_branches.py",
       "tests/test_translation_symmetry_contracts.py",
       "tests/test_trapped_ion.py",
-      "tests/test_triadic_mean_field.py",
       "tests/test_trotter_error.py",
       "tests/test_trotter_upde.py",
       "tests/test_ultrascale_hls.py",
@@ -7062,7 +6614,6 @@
       "tests/test_whole_program_trace_predicates.py",
       "tests/test_whole_program_trace_runtime.py",
       "tests/test_wilson_loop.py",
-      "tests/test_winfree.py",
       "tests/test_wirtinger_calculus.py",
       "tests/test_witness_discovery.py",
       "tests/test_witness_discovery_engine_fallback.py",
