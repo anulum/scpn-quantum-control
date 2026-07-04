@@ -20,7 +20,7 @@ SCPN Quantum Control — Differentiable external-validation environment lock
 |---|---|---|---|
 | `pyproject.toml` | Package metadata and bounded dependency ranges | `3911809e9e251468da8dca8cf45075f778c80c0dbf9a23ee9efc1573b6317dce` | 0 |
 | `requirements.txt` | Runtime dependency lock input | `9a3ec3b57c0d1c0bd8647e82dea8ddcf54b94f02be3992a94bff39edb3a78e12` | 11 |
-| `requirements-dev.txt` | Developer verification dependency lock input | `0c9e3e9bcc484c94d7776d50554aa65f81f744f1f646c8958cbf8fb7bd460b7e` | 27 |
+| `requirements-dev.txt` | Developer verification dependency lock input | `936e59ecfd4e6f2a3cbf8220d6bc8626d6ce82917b2f0201a6d282d1e863f57b` | 27 |
 | `requirements-ci-cross-platform-smoke.txt` | Cross-platform smoke CI lockfile | `13a2b72471e6bf1cdc41d1c9807f5ad6a3cca71523f03c711c7d372d0507c110` | 17 |
 | `requirements-ci-py311-linux.txt` | Python 3.11 Linux CI lockfile | `4ed2fcf388b6e65e694adb68de6a7585aa9c8af947e18df6492dce5610136d81` | 156 |
 | `requirements-ci-py312-linux.txt` | Python 3.12 Linux CI lockfile | `6edccd08bfe1f8dcf8c0a8ad34183ecc7c4047ab4487b5213a88b60b81e48087` | 156 |
