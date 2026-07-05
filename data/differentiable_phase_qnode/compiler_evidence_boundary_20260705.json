@@ -65,6 +65,14 @@
   },
   "native_llvm_jit": {
     "claim_gate_artifact_id": "llvm-jit-claim-gate-20260704",
+    "crash_safety_test_command": "PYTHONPATH=src:oscillatools/src python3 -m pytest tests/test_llvm_jit_crash_safety.py -q",
+    "crash_safety_test_exit_code": 0,
+    "crash_safety_test_ids": [
+      "tests/test_llvm_jit_crash_safety.py::test_native_llvm_jit_reports_unsupported_wide_determinant_before_compile",
+      "tests/test_llvm_jit_crash_safety.py::test_native_llvm_jit_rejects_nondifferentiable_selection_boundary",
+      "tests/test_llvm_jit_crash_safety.py::test_native_llvm_jit_support_metadata_declares_fail_closed_boundaries"
+    ],
+    "crash_safety_test_passed_count": 3,
     "executable_lowering_evidence_id": "native-whole-program-ad-execution-20260622",
     "executable_lowering_verified": true,
     "focused_test_command": "PYTHONPATH=src:oscillatools/src .venv/bin/python -m pytest tests/test_mlir_realtime_cloud.py -q -k \"native_llvm_jit\"",
@@ -73,7 +81,6 @@
     "focused_test_exit_code": 0,
     "focused_test_passed_count": 37,
     "missing_requirements": [
-      "crash_safety_tests",
       "benchmark_artifact_ids"
     ],
     "prescribed_selector_command": "PYTHONPATH=src:oscillatools/src .venv/bin/python -m pytest tests/test_mlir_realtime_cloud.py -q -k \"native_llvm_jit and not realtime\"",
@@ -84,7 +91,6 @@
   "promotion_blockers": [
     "prescribed native_llvm_jit selector selected zero tests",
     "isolated compiler benchmark artifact IDs missing",
-    "native LLVM/JIT crash-safety tests missing",
     "alias-activity compiler evidence missing",
     "compiler promotion batch not assembled"
   ],
@@ -183,5 +189,5 @@
     }
   ],
   "schema": "scpn_qc_differentiable_compiler_evidence_boundary_v1",
-  "source_commit": "b75113fb"
+  "source_commit": "11cce543"
 }

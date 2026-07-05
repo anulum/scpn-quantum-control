@@ -1,10 +1,11 @@
 # Compiler Evidence Boundary
 
 - artifact_id: `compiler-evidence-boundary-20260705`
-- source_commit: `b75113fb`
+- source_commit: `11cce543`
 - classification: `functional_non_isolated`
 - promotion_ready: `False`
 - native LLVM/JIT focused selector: `37 passed, 39 deselected`
+- native LLVM/JIT crash-safety selector: `3 passed`
 - Enzyme/LLVM execution: scalar, vector, and matrix cases executed with max gradient error `0.0`
 
 | Requirement | Status | Evidence |
@@ -25,8 +26,9 @@ Promotion blockers:
 
 - prescribed native_llvm_jit selector selected zero tests
 - isolated compiler benchmark artifact IDs missing
-- native LLVM/JIT crash-safety tests missing
 - alias-activity compiler evidence missing
 - compiler promotion batch not assembled
 
-Claim boundary: Compiler evidence boundary only. Bounded native LLVM/JIT tests and current Enzyme/LLVM execution evidence are attached for reviewer triage. This artifact does not promote general compiler AD, isolated benchmarks, provider, hardware, GPU, or performance claim.
+Crash-safety evidence: `tests/test_llvm_jit_crash_safety.py::test_native_llvm_jit_reports_unsupported_wide_determinant_before_compile`, `tests/test_llvm_jit_crash_safety.py::test_native_llvm_jit_rejects_nondifferentiable_selection_boundary`, and `tests/test_llvm_jit_crash_safety.py::test_native_llvm_jit_support_metadata_declares_fail_closed_boundaries`.
+
+Claim boundary: Compiler evidence boundary only. Bounded native LLVM/JIT tests, crash-safety tests, and current Enzyme/LLVM execution evidence are attached for reviewer triage. This artifact does not promote general compiler AD, isolated benchmarks, provider, hardware, GPU, or performance claim.

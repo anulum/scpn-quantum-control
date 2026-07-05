@@ -13,7 +13,7 @@
     "python_model_source_modules": 471,
     "rust_pyo3_model_wrappers": 172,
     "rust_source_modules": 52,
-    "test_files": 813
+    "test_files": 814
   },
   "documentation": {
     "examples": [
@@ -6192,6 +6192,7 @@
       "tests/test_lindblad_trajectory.py",
       "tests/test_link_check_history_audit.py",
       "tests/test_llvm_jit_claim_gate.py",
+      "tests/test_llvm_jit_crash_safety.py",
       "tests/test_logging_setup.py",
       "tests/test_logical_dla_parity.py",
       "tests/test_logical_dla_parity_branches.py",

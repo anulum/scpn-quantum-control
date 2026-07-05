@@ -163,10 +163,15 @@ def test_committed_llvm_jit_claim_gate_artifact_is_blocked_and_consistent() -> N
 
     assert gate.artifact_id == "llvm-jit-claim-gate-20260704"
     assert gate.promotion_ready is False
-    assert gate.missing_requirements == (
-        "crash_safety_tests",
-        "benchmark_artifact_ids",
+    assert gate.crash_safety_test_ids == (
+        "tests/test_llvm_jit_crash_safety.py::"
+        "test_native_llvm_jit_reports_unsupported_wide_determinant_before_compile",
+        "tests/test_llvm_jit_crash_safety.py::"
+        "test_native_llvm_jit_rejects_nondifferentiable_selection_boundary",
+        "tests/test_llvm_jit_crash_safety.py::"
+        "test_native_llvm_jit_support_metadata_declares_fail_closed_boundaries",
     )
+    assert gate.missing_requirements == ("benchmark_artifact_ids",)
     assert gate.rollback_policy is not None
     assert gate.fallback_policy is not None
     assert payload["missing_requirements"] == list(gate.missing_requirements)

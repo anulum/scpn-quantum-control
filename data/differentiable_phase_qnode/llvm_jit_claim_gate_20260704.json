@@ -6,12 +6,15 @@
     "tests/test_native_whole_program_ad_execution_evidence.py::test_runner_executes_beyond_scalar_with_reference_parity",
     "tests/test_native_whole_program_ad_execution_evidence.py::test_committed_evidence_artifact_is_valid"
   ],
-  "crash_safety_test_ids": [],
+  "crash_safety_test_ids": [
+    "tests/test_llvm_jit_crash_safety.py::test_native_llvm_jit_reports_unsupported_wide_determinant_before_compile",
+    "tests/test_llvm_jit_crash_safety.py::test_native_llvm_jit_rejects_nondifferentiable_selection_boundary",
+    "tests/test_llvm_jit_crash_safety.py::test_native_llvm_jit_support_metadata_declares_fail_closed_boundaries"
+  ],
   "executable_lowering_evidence_id": "native-whole-program-ad-execution-20260622",
   "executable_lowering_verified": true,
   "fallback_policy": "Use interpreted Program AD or the existing Python/Rust replay path for value-and-gradient execution whenever the native LLVM/JIT gate is not promotion-ready.",
   "missing_requirements": [
-    "crash_safety_tests",
     "benchmark_artifact_ids"
   ],
   "promotion_ready": false,

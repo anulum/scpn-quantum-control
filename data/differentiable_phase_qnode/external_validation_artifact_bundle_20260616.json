@@ -120,14 +120,14 @@
     {
       "path": "data/differentiable_phase_qnode/compiler_evidence_boundary_20260705.json",
       "role": "LLVM/JIT and Enzyme/MLIR compiler evidence boundary artefact",
-      "sha256": "6684f4dd82cb36d888907a582d2d8c5ecca1bb0d579de8cd4d57b8fb62504748",
-      "size_bytes": 7089
+      "sha256": "9cd4201966fbf269b44a0d8d3b70533bc709f2885f2af696c248260e4c4ba50b",
+      "size_bytes": 7599
     },
     {
       "path": "data/differentiable_phase_qnode/compiler_evidence_boundary_20260705.md",
       "role": "LLVM/JIT and Enzyme/MLIR compiler evidence boundary reviewer summary",
-      "sha256": "64292cbb7b9a47a50d9311441cfe41e26943af709352f8a6b3e765a2510bfd59",
-      "size_bytes": 2079
+      "sha256": "7432c611483c3ef2594ff41b226c51c98310188b349a5b11541d0df558aef862",
+      "size_bytes": 2464
     },
     {
       "path": "data/differentiable_phase_qnode/external_validation_environment_lock_20260616.json",
@@ -180,14 +180,14 @@
     {
       "path": "data/differentiable_phase_qnode/llvm_jit_claim_gate_20260704.json",
       "role": "Native LLVM/JIT promotion claim gate artefact",
-      "sha256": "47299cf1ae43d2bed5889fa2c5b22ae152a430e0f3e007b8d02189bc760ecf99",
-      "size_bytes": 1472
+      "sha256": "e040b1d07b0e5c8195edfe18702f428510e2b05292ab934d9926b54ad7e73a26",
+      "size_bytes": 1789
     },
     {
       "path": "data/differentiable_phase_qnode/llvm_jit_claim_gate_20260704.md",
       "role": "Native LLVM/JIT promotion claim gate reviewer summary",
-      "sha256": "5fba94c62adcf0decf2e07b99e877bfc467536714a1786fc7763c987b6f243fe",
-      "size_bytes": 1599
+      "sha256": "05b1fa03eb5dde4796e0dba999cf8e03fae3bffae028c3a0ef7122f9419febdd",
+      "size_bytes": 1917
     },
     {
       "path": "data/differentiable_phase_qnode/local_benchmark_20260616T0955Z/README.md",
