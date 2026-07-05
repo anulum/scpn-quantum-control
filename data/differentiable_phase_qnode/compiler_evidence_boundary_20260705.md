@@ -25,8 +25,7 @@ Promotion blockers:
 
 - prescribed native_llvm_jit selector selected zero tests
 - isolated compiler benchmark artifact IDs missing
-- rollback policy missing
-- fallback policy missing
+- native LLVM/JIT crash-safety tests missing
 - alias-activity compiler evidence missing
 - compiler promotion batch not assembled
 

@@ -166,8 +166,8 @@ def test_committed_llvm_jit_claim_gate_artifact_is_blocked_and_consistent() -> N
     assert gate.missing_requirements == (
         "crash_safety_tests",
         "benchmark_artifact_ids",
-        "rollback_policy",
-        "fallback_policy",
     )
+    assert gate.rollback_policy is not None
+    assert gate.fallback_policy is not None
     assert payload["missing_requirements"] == list(gate.missing_requirements)
     assert payload["promotion_ready"] is gate.promotion_ready

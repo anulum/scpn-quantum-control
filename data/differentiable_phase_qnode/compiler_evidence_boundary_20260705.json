@@ -74,9 +74,7 @@
     "focused_test_passed_count": 37,
     "missing_requirements": [
       "crash_safety_tests",
-      "benchmark_artifact_ids",
-      "rollback_policy",
-      "fallback_policy"
+      "benchmark_artifact_ids"
     ],
     "prescribed_selector_command": "PYTHONPATH=src:oscillatools/src .venv/bin/python -m pytest tests/test_mlir_realtime_cloud.py -q -k \"native_llvm_jit and not realtime\"",
     "prescribed_selector_exit_code": 5,
@@ -86,8 +84,7 @@
   "promotion_blockers": [
     "prescribed native_llvm_jit selector selected zero tests",
     "isolated compiler benchmark artifact IDs missing",
-    "rollback policy missing",
-    "fallback policy missing",
+    "native LLVM/JIT crash-safety tests missing",
     "alias-activity compiler evidence missing",
     "compiler promotion batch not assembled"
   ],

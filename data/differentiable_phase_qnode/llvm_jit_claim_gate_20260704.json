@@ -9,13 +9,11 @@
   "crash_safety_test_ids": [],
   "executable_lowering_evidence_id": "native-whole-program-ad-execution-20260622",
   "executable_lowering_verified": true,
-  "fallback_policy": null,
+  "fallback_policy": "Use interpreted Program AD or the existing Python/Rust replay path for value-and-gradient execution whenever the native LLVM/JIT gate is not promotion-ready.",
   "missing_requirements": [
     "crash_safety_tests",
-    "benchmark_artifact_ids",
-    "rollback_policy",
-    "fallback_policy"
+    "benchmark_artifact_ids"
   ],
   "promotion_ready": false,
-  "rollback_policy": null
+  "rollback_policy": "Disable native LLVM/JIT promotion, withdraw any generated public claim row, and route release notes through the claim ledger if crash-safety tests, isolated benchmark artifacts, or dependency checks regress."
 }
