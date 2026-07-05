@@ -1,5 +1,5 @@
 ---
-title: 'scpn-quantum-control: a differentiable, control-oriented toolkit for coupled-phase-oscillator (Kuramoto) dynamics'
+title: 'oscillatools: a differentiable, control-oriented toolkit for coupled-phase-oscillator (Kuramoto) dynamics'
 tags:
   - Python
   - Rust
@@ -16,32 +16,34 @@ authors:
 affiliations:
   - name: ANULUM, Marbach SG, Switzerland
     index: 1
-date: 2 July 2026
+date: 5 July 2026
 bibliography: paper.bib
 ---
 
 <!--
-DRAFT — not yet submitted to JOSS. The accompanying Zenodo archive DOI is
-reserved and minted at finalisation; the `doi:` front-matter field is
-intentionally omitted until then. Numerical inventory figures below are the
-static file-system counts reported by the repository capability manifest and are
-regenerated, not hand-entered.
+DRAFT — not yet submitted to JOSS. `oscillatools` is the standalone,
+numpy+scipy-floor distribution of the coupled-phase-oscillator toolkit, extracted
+from the `scpn-quantum-control` repository (which carries its own software note,
+submission 001). The accompanying Zenodo archive DOI is reserved and minted at
+finalisation; the `doi:` front-matter field is intentionally omitted until then.
+Numerical inventory figures below are the static file-system counts reported by
+the repository capability manifest and are regenerated, not hand-entered.
 -->
 
 # Summary
 
 The Kuramoto model of coupled phase oscillators is a standard paradigm for
 studying synchronisation across physics, neuroscience, and engineering
-[@Kuramoto1984; @Strogatz2000; @Acebron2005; @Rodrigues2016]. The `accel`
-subsystem of `scpn-quantum-control` provides a coupled-phase-oscillator toolkit
-built around three properties that are usually assembled by hand for each study:
-end-to-end **differentiability** of the simulated dynamics, first-class
-**control and inference** routines, and a uniform **model and observable API**
-across a broad family of oscillator variants. The subsystem exposes 347 public
-symbols across 75 single-responsibility modules, with performance-sensitive
-kernels dispatched through a Rust → Julia → Python fallback chain so that a pure
-Python floor is always available and a faster measured backend is used when
-present.
+[@Kuramoto1984; @Strogatz2000; @Acebron2005; @Rodrigues2016]. `oscillatools` is a
+coupled-phase-oscillator toolkit built around three properties that are usually
+assembled by hand for each study: end-to-end **differentiability** of the
+simulated dynamics, first-class **control and inference** routines, and a uniform
+**model and observable API** across a broad family of oscillator variants. It
+installs on a numpy + scipy floor with optional extras for accelerated, JAX, and
+plotting tiers, and exposes 392 public symbols across 85 single-responsibility
+modules, with performance-sensitive kernels dispatched through a
+Rust → Julia → Python fallback chain so that a pure Python floor is always
+available and a faster measured backend is used when present.
 
 The model family spans the classical mean-field and networked/graph couplings,
 the Sakaguchi phase-frustrated variants, higher-order (triadic, simplicial, and
@@ -73,15 +75,16 @@ to reproduce and to verify:
    measurement, an integrator, or a sweep written for one model applies to the
    others without rewriting.
 
-`scpn-quantum-control` addresses these needs directly. The core integrators ship
-with matching reverse-mode adjoint and forward-sensitivity paths, so
-trajectory-level objectives are differentiable without finite differences. The
-control and inference layer includes optimal and pinning coupling design,
-coordinated-reset and state-dependent Riccati feedback, coupling-function
-inference, sparse identification of the governing phase dynamics in the SINDy
-sense [@Brunton2016], and dynamical Bayesian coupling inference. The intended
-users are researchers in nonlinear dynamics, computational neuroscience, and
-network control who need an auditable path from an oscillator model to a
+`oscillatools` addresses these needs directly. The core integrators ship with
+matching reverse-mode adjoint and forward-sensitivity paths, so trajectory-level
+objectives are differentiable without finite differences. The control and
+inference layer includes optimal and pinning coupling design, coordinated-reset
+and state-dependent Riccati feedback, differentiable model-predictive control,
+learned and interval-bound-verified Lyapunov stability certificates,
+coupling-function inference, sparse identification of the governing phase dynamics
+in the SINDy sense [@Brunton2016], and dynamical Bayesian coupling inference. The
+intended users are researchers in nonlinear dynamics, computational neuroscience,
+and network control who need an auditable path from an oscillator model to a
 gradient, a controller, or an inferred coupling.
 
 # State of the field
@@ -98,7 +101,7 @@ package implements [@Pikovsky2001; @Acebron2005].
 The contribution here is a Python package that specialises this general
 machinery for coupled-phase-oscillator research and couples it to a
 differentiable substrate. Rather than treating the simulator and the
-control/inference tooling as separate concerns, the package makes the forward
+control/inference tooling as separate concerns, `oscillatools` makes the forward
 model, its gradient, and the control and inference operations share one model
 representation and one observable interface. To keep the package usable inside
 existing scientific pipelines, the system object integrates with
@@ -115,8 +118,8 @@ observable across the grid:
 
 ```python
 import numpy as np
-from scpn_quantum_control.accel.kuramoto_system import KuramotoSystem
-from scpn_quantum_control.accel.kuramoto_parameter_sweep import (
+from oscillatools import (
+    KuramotoSystem,
     KuramotoParameterGrid,
     mean_order_parameter,
     sweep_parameter_grid,
@@ -136,11 +139,13 @@ result = sweep_parameter_grid(
 coherence = result.grid_values("mean_order_parameter")  # the synchronisation curve
 ```
 
-The same model can be integrated through `solve_ivp`, differentiated with the
-toolkit's adjoint integrators, analysed for linear stability and Lyapunov
-exponents, continued along a coupling branch to trace a hysteresis loop, or
-handed to the control and inference routines. Numerical inventory figures quoted above are the
-static file-system counts produced by the repository capability manifest and are
+The synchronisation curve rises from an incoherent floor to near-complete
+coherence as the coupling crosses the critical value. The same model can be
+integrated through `solve_ivp`, differentiated with the toolkit's adjoint
+integrators, analysed for linear stability and Lyapunov exponents, continued along
+a coupling branch to trace a hysteresis loop, or handed to the control and
+inference routines. Numerical inventory figures quoted above are the static
+file-system counts produced by the repository capability manifest and are
 regenerated rather than transcribed; benchmark, coverage, and scientific-fidelity
 claims are governed by their own dedicated evidence artefacts in the repository
 and are not asserted here.
