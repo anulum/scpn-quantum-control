@@ -187,6 +187,7 @@ omit = [
     "*/oscillatools/accel/jax_kuramoto_delayed.py",
     "*/oscillatools/accel/jax_kuramoto_mpc.py",
     "*/oscillatools/accel/diff_kuramoto_mpc_kkt.py",
+    "*/oscillatools/accel/neural_lyapunov_certificate.py",
     # The neural-operator dataset/surrogate surface needs the [torch] extra;
     # the host-independent cost model stays covered on the floor.
     "*/oscillatools/neural_operator.py",
@@ -203,6 +204,7 @@ omit = [
     "*/oscillatools/accel/jax_kuramoto_delayed.py",
     "*/oscillatools/accel/jax_kuramoto_mpc.py",
     "*/oscillatools/accel/diff_kuramoto_mpc_kkt.py",
+    "*/oscillatools/accel/neural_lyapunov_certificate.py",
     "*/oscillatools/neural_operator.py",
     "*/oscillatools/accel/rust_import.py",
 ]

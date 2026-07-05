@@ -477,6 +477,16 @@ from .networked_kuramoto import (
     networked_kuramoto_force,
     networked_kuramoto_jacobian,
 )
+from .neural_lyapunov_certificate import (
+    LyapunovCertificateReport,
+    LyapunovCounterexample,
+    NeuralLyapunovCertificate,
+    certify_neural_lyapunov,
+    falsify_neural_lyapunov,
+    fit_neural_lyapunov_certificate,
+    neural_lyapunov_decrease,
+    neural_lyapunov_value,
+)
 from .order_parameter_observables import (
     last_gradient_tier_used,
     last_hessian_tier_used,
@@ -771,6 +781,14 @@ __all__ = [
     "synchronisation_potential",
     "potential_decrease_rate",
     "certify_synchronisation",
+    "NeuralLyapunovCertificate",
+    "LyapunovCertificateReport",
+    "LyapunovCounterexample",
+    "fit_neural_lyapunov_certificate",
+    "certify_neural_lyapunov",
+    "falsify_neural_lyapunov",
+    "neural_lyapunov_value",
+    "neural_lyapunov_decrease",
     "SparseDynamicsModel",
     "discover_phase_dynamics",
     "SparseDynamicsEstimator",
