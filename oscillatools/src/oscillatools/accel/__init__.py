@@ -108,6 +108,12 @@ from .dispatcher import (
     available_tiers,
     dispatch,
 )
+from .formal_neural_lyapunov import (
+    FormalLyapunovCertificate,
+    LyapunovLipschitzBounds,
+    formally_certify_neural_lyapunov,
+    neural_lyapunov_lipschitz_bounds,
+)
 from .jax_kuramoto import (
     jax_kuramoto_rk4_ensemble,
     jax_kuramoto_rk4_ensemble_gradient,
@@ -803,6 +809,10 @@ __all__ = [
     "falsify_neural_lyapunov",
     "neural_lyapunov_value",
     "neural_lyapunov_decrease",
+    "FormalLyapunovCertificate",
+    "LyapunovLipschitzBounds",
+    "neural_lyapunov_lipschitz_bounds",
+    "formally_certify_neural_lyapunov",
     "SparseDynamicsModel",
     "discover_phase_dynamics",
     "SparseDynamicsEstimator",
