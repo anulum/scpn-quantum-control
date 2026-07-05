@@ -318,6 +318,29 @@ def test_compiler_evidence_boundary_artifact_preserves_promotion_gate() -> None:
     assert "provider, hardware, GPU, or performance claim" in payload["claim_boundary"]
 
 
+def test_compiler_evidence_boundary_artifact_records_working_native_selector() -> None:
+    """Compiler boundary evidence must not prescribe zero-selected selectors."""
+    payload = json.loads(
+        Path("data/differentiable_phase_qnode/compiler_evidence_boundary_20260705.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    native = payload["native_llvm_jit"]
+
+    assert native["prescribed_selector_policy"] == "path_targeted_positive_selector"
+    assert native["prescribed_selector_exit_code"] == 0
+    assert native["prescribed_selector_passed_count"] == native["focused_test_passed_count"]
+    assert (
+        native["prescribed_selector_deselected_count"] == native["focused_test_deselected_count"]
+    )
+    assert "not realtime" not in native["prescribed_selector_command"]
+    assert "zero tests" not in str(native["prescribed_selector_observation"])
+    assert (
+        "prescribed native_llvm_jit selector selected zero tests"
+        not in payload["promotion_blockers"]
+    )
+
+
 def test_artifact_bundle_validation_rejects_hash_drift() -> None:
     """Artefact bundle validation must reject checksum drift."""
     bundle = build_external_validation_artifact_bundle()

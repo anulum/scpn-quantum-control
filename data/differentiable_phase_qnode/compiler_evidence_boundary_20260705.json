@@ -75,21 +75,24 @@
     "crash_safety_test_passed_count": 3,
     "executable_lowering_evidence_id": "native-whole-program-ad-execution-20260622",
     "executable_lowering_verified": true,
-    "focused_test_command": "PYTHONPATH=src:oscillatools/src .venv/bin/python -m pytest tests/test_mlir_realtime_cloud.py -q -k \"native_llvm_jit\"",
+    "focused_test_command": "PYTHONPATH=src:oscillatools/src python3 -m pytest tests/test_mlir_realtime_cloud.py -q -k \"native_llvm_jit\"",
     "focused_test_deselected_count": 39,
-    "focused_test_duration_seconds": 205.46,
+    "focused_test_duration_seconds": 117.8,
     "focused_test_exit_code": 0,
     "focused_test_passed_count": 37,
     "missing_requirements": [
       "benchmark_artifact_ids"
     ],
-    "prescribed_selector_command": "PYTHONPATH=src:oscillatools/src .venv/bin/python -m pytest tests/test_mlir_realtime_cloud.py -q -k \"native_llvm_jit and not realtime\"",
-    "prescribed_selector_exit_code": 5,
-    "prescribed_selector_observation": "zero tests selected because pytest -k matches the file path, so not realtime excludes tests/test_mlir_realtime_cloud.py",
+    "prescribed_selector_command": "PYTHONPATH=src:oscillatools/src python3 -m pytest tests/test_mlir_realtime_cloud.py -q -k \"native_llvm_jit\"",
+    "prescribed_selector_deselected_count": 39,
+    "prescribed_selector_duration_seconds": 117.8,
+    "prescribed_selector_exit_code": 0,
+    "prescribed_selector_observation": "path-targeted positive pytest selector avoids path-name negation and selects the native LLVM/JIT evidence tests",
+    "prescribed_selector_passed_count": 37,
+    "prescribed_selector_policy": "path_targeted_positive_selector",
     "promotion_ready": false
   },
   "promotion_blockers": [
-    "prescribed native_llvm_jit selector selected zero tests",
     "isolated compiler benchmark artifact IDs missing",
     "alias-activity compiler evidence missing",
     "compiler promotion batch not assembled"
@@ -189,5 +192,5 @@
     }
   ],
   "schema": "scpn_qc_differentiable_compiler_evidence_boundary_v1",
-  "source_commit": "11cce543"
+  "source_commit": "3da9a055"
 }

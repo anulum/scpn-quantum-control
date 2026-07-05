@@ -1,10 +1,11 @@
 # Compiler Evidence Boundary
 
 - artifact_id: `compiler-evidence-boundary-20260705`
-- source_commit: `11cce543`
+- source_commit: `3da9a055`
 - classification: `functional_non_isolated`
 - promotion_ready: `False`
 - native LLVM/JIT focused selector: `37 passed, 39 deselected`
+- native LLVM/JIT prescribed selector: `37 passed, 39 deselected`
 - native LLVM/JIT crash-safety selector: `3 passed`
 - Enzyme/LLVM execution: scalar, vector, and matrix cases executed with max gradient error `0.0`
 
@@ -24,10 +25,11 @@
 
 Promotion blockers:
 
-- prescribed native_llvm_jit selector selected zero tests
 - isolated compiler benchmark artifact IDs missing
 - alias-activity compiler evidence missing
 - compiler promotion batch not assembled
+
+Selector policy: the prescribed native LLVM/JIT selector is the path-targeted positive pytest selector `PYTHONPATH=src:oscillatools/src python3 -m pytest tests/test_mlir_realtime_cloud.py -q -k "native_llvm_jit"`. It avoids path-name negation and selected `37` tests with `39` deselected in the 2026-07-06 local evidence run.
 
 Crash-safety evidence: `tests/test_llvm_jit_crash_safety.py::test_native_llvm_jit_reports_unsupported_wide_determinant_before_compile`, `tests/test_llvm_jit_crash_safety.py::test_native_llvm_jit_rejects_nondifferentiable_selection_boundary`, and `tests/test_llvm_jit_crash_safety.py::test_native_llvm_jit_support_metadata_declares_fail_closed_boundaries`.
 
