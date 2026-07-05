@@ -124,6 +124,14 @@ DEFAULT_ARTIFACT_BUNDLE_INPUTS: tuple[tuple[str, str], ...] = (
         "No-submit provider-gradient boundary reviewer summary",
     ),
     (
+        "data/differentiable_phase_qnode/compiler_evidence_boundary_20260705.json",
+        "LLVM/JIT and Enzyme/MLIR compiler evidence boundary artefact",
+    ),
+    (
+        "data/differentiable_phase_qnode/compiler_evidence_boundary_20260705.md",
+        "LLVM/JIT and Enzyme/MLIR compiler evidence boundary reviewer summary",
+    ),
+    (
         "data/differentiable_phase_qnode/external_validation_environment_lock_20260616.json",
         "Exact environment-lock manifest",
     ),

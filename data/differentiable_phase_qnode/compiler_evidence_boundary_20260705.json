@@ -1,0 +1,190 @@
+{
+  "artifact_id": "compiler-evidence-boundary-20260705",
+  "claim_boundary": "Compiler evidence boundary only: bounded native LLVM/JIT tests and current Enzyme/LLVM execution evidence are attached for reviewer triage; this artifact does not promote general compiler AD, isolated benchmarks, provider, hardware, GPU, or performance claim.",
+  "classification": "functional_non_isolated",
+  "enzyme_mlir": {
+    "artifact_id": "enzyme-toolchain-ad-execution-20260705",
+    "beyond_scalar_executed": true,
+    "cases": [
+      {
+        "case_id": "scalar_square",
+        "gradient_error": 0.0,
+        "operand_dimension": 1,
+        "operation_family": "scalar",
+        "runtime_seconds": 0.8088767729932442,
+        "status": "executed"
+      },
+      {
+        "case_id": "vector_sum_squares_4",
+        "gradient_error": 0.0,
+        "operand_dimension": 4,
+        "operation_family": "vector",
+        "runtime_seconds": 0.32072707905899733,
+        "status": "executed"
+      },
+      {
+        "case_id": "vector_weighted_sum_4",
+        "gradient_error": 0.0,
+        "operand_dimension": 4,
+        "operation_family": "vector",
+        "runtime_seconds": 0.38900291605386883,
+        "status": "executed"
+      },
+      {
+        "case_id": "matrix_trace_2x2",
+        "gradient_error": 0.0,
+        "operand_dimension": 4,
+        "operation_family": "matrix",
+        "runtime_seconds": 0.3626167660113424,
+        "status": "executed"
+      },
+      {
+        "case_id": "matrix_frobenius_3x3",
+        "gradient_error": 0.0,
+        "operand_dimension": 9,
+        "operation_family": "matrix",
+        "runtime_seconds": 0.4524094050284475,
+        "status": "executed"
+      }
+    ],
+    "claim_boundary": "Bounded real Enzyme/LLVM reverse-mode AD execution: scalar, vector and 2x2/3x3 matrix C kernels differentiated by the installed Enzyme pass and run natively, with the toolchain gradient checked against the analytic reference within float64 tolerance; no Enzyme-JAX, arbitrary-program, provider, hardware or performance claim.",
+    "executed_operation_families": [
+      "scalar",
+      "vector",
+      "matrix"
+    ],
+    "gradient_parity_tolerance": 1e-09,
+    "max_gradient_error": 0.0,
+    "promotion_ready": false,
+    "toolchain": {
+      "clang": "Ubuntu clang version 18.1.3 (1ubuntu1)",
+      "enzyme_plugin": "LLVMEnzyme-18.so",
+      "opt": "Ubuntu LLVM version 18.1.3"
+    },
+    "toolchain_available": true
+  },
+  "native_llvm_jit": {
+    "claim_gate_artifact_id": "llvm-jit-claim-gate-20260704",
+    "executable_lowering_evidence_id": "native-whole-program-ad-execution-20260622",
+    "executable_lowering_verified": true,
+    "focused_test_command": "PYTHONPATH=src:oscillatools/src .venv/bin/python -m pytest tests/test_mlir_realtime_cloud.py -q -k \"native_llvm_jit\"",
+    "focused_test_deselected_count": 39,
+    "focused_test_duration_seconds": 205.46,
+    "focused_test_exit_code": 0,
+    "focused_test_passed_count": 37,
+    "missing_requirements": [
+      "crash_safety_tests",
+      "benchmark_artifact_ids",
+      "rollback_policy",
+      "fallback_policy"
+    ],
+    "prescribed_selector_command": "PYTHONPATH=src:oscillatools/src .venv/bin/python -m pytest tests/test_mlir_realtime_cloud.py -q -k \"native_llvm_jit and not realtime\"",
+    "prescribed_selector_exit_code": 5,
+    "prescribed_selector_observation": "zero tests selected because pytest -k matches the file path, so not realtime excludes tests/test_mlir_realtime_cloud.py",
+    "promotion_ready": false
+  },
+  "promotion_blockers": [
+    "prescribed native_llvm_jit selector selected zero tests",
+    "isolated compiler benchmark artifact IDs missing",
+    "rollback policy missing",
+    "fallback policy missing",
+    "alias-activity compiler evidence missing",
+    "compiler promotion batch not assembled"
+  ],
+  "promotion_ready": false,
+  "required_evidence": [
+    {
+      "artifact_ids": [
+        "llvm-jit-claim-gate-20260704"
+      ],
+      "name": "scalar_forward_mode",
+      "notes": "bounded native LLVM/JIT scalar kernels expose and test JVP lowering in the corrected focused selector",
+      "status": "bounded_evidence_attached"
+    },
+    {
+      "artifact_ids": [
+        "enzyme-toolchain-ad-execution-20260705",
+        "llvm-jit-claim-gate-20260704"
+      ],
+      "name": "scalar_reverse_mode",
+      "notes": "scalar Enzyme reverse-mode execution and native LLVM/JIT VJP lowering are attached",
+      "status": "evidence_attached"
+    },
+    {
+      "artifact_ids": [
+        "llvm-jit-claim-gate-20260704"
+      ],
+      "name": "vector_jvp",
+      "notes": "bounded native LLVM/JIT vector kernels expose and test JVP lowering in the corrected focused selector",
+      "status": "bounded_evidence_attached"
+    },
+    {
+      "artifact_ids": [
+        "enzyme-toolchain-ad-execution-20260705",
+        "llvm-jit-claim-gate-20260704"
+      ],
+      "name": "vector_vjp",
+      "notes": "vector Enzyme reverse-mode execution and native LLVM/JIT VJP lowering are attached",
+      "status": "evidence_attached"
+    },
+    {
+      "artifact_ids": [
+        "llvm-jit-claim-gate-20260704"
+      ],
+      "name": "matrix_jvp",
+      "notes": "bounded native LLVM/JIT matrix kernels expose and test JVP lowering in the corrected focused selector",
+      "status": "bounded_evidence_attached"
+    },
+    {
+      "artifact_ids": [
+        "enzyme-toolchain-ad-execution-20260705",
+        "llvm-jit-claim-gate-20260704"
+      ],
+      "name": "matrix_vjp",
+      "notes": "matrix Enzyme reverse-mode execution and native LLVM/JIT VJP lowering are attached",
+      "status": "evidence_attached"
+    },
+    {
+      "artifact_ids": [
+        "enzyme-toolchain-ad-execution-20260705"
+      ],
+      "name": "loop_activity",
+      "notes": "loop bodies execute in vector and matrix Enzyme kernels; this is not isolated benchmark evidence",
+      "status": "bounded_evidence_attached"
+    },
+    {
+      "artifact_ids": [],
+      "name": "alias_activity",
+      "notes": "no dedicated alias-activity compiler evidence artifact is attached",
+      "status": "blocked"
+    },
+    {
+      "artifact_ids": [
+        "enzyme_mlir_maturity_audit_20260616",
+        "llvm-jit-claim-gate-20260704"
+      ],
+      "name": "mlir_lowering",
+      "notes": "MLIR maturity and native LLVM/JIT claim-gate artifacts are attached as bounded compiler lowering evidence",
+      "status": "bounded_evidence_attached"
+    },
+    {
+      "artifact_ids": [
+        "native-whole-program-ad-execution-20260622",
+        "enzyme-toolchain-ad-execution-20260705"
+      ],
+      "name": "llvm_ir_generation",
+      "notes": "native LLVM/JIT and Enzyme execution paths generated and executed LLVM-backed kernels",
+      "status": "evidence_attached"
+    },
+    {
+      "artifact_ids": [
+        "enzyme-toolchain-ad-execution-20260705"
+      ],
+      "name": "native_enzyme_execution",
+      "notes": "current run executed scalar, vector, and matrix kernels through LLVMEnzyme with max gradient error 0.0",
+      "status": "evidence_attached"
+    }
+  ],
+  "schema": "scpn_qc_differentiable_compiler_evidence_boundary_v1",
+  "source_commit": "b75113fb"
+}

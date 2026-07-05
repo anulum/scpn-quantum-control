@@ -35,6 +35,8 @@ SCPN Quantum Control — Differentiable external-validation artefact bundle
 | `data/differentiable_phase_qnode/differentiable_isolated_benchmark_plan_20260627.md` | Reserved-host isolated benchmark batch plan reviewer summary | `3dc4b65fc8fa3e4b850a92be81fb632e807d9362887e64dba41e2826b731a98c` | 5043 |
 | `data/differentiable_phase_qnode/provider_gradient_boundary_20260705.json` | No-submit provider-gradient boundary evidence artefact | `d4e5329d5226f5d175f0b523988df1f968884ec183bb0e87f7aef63d74d66cbc` | 228726 |
 | `data/differentiable_phase_qnode/provider_gradient_boundary_20260705.md` | No-submit provider-gradient boundary reviewer summary | `a50c3dec0d98c178b880e65fbb39962c4f6e5c557fc1375d1053aeb75b2cc0c6` | 1224 |
+| `data/differentiable_phase_qnode/compiler_evidence_boundary_20260705.json` | LLVM/JIT and Enzyme/MLIR compiler evidence boundary artefact | `0c2a5fa1bc3bc2dd44d3503aebfa7724633f9f4132e0373793c9cc5b0e81e194` | 7151 |
+| `data/differentiable_phase_qnode/compiler_evidence_boundary_20260705.md` | LLVM/JIT and Enzyme/MLIR compiler evidence boundary reviewer summary | `72c55092d5af592513f67947d881feedd51e8859f76697a04a80b2c1a64da270` | 2086 |
 | `data/differentiable_phase_qnode/external_validation_environment_lock_20260616.json` | Exact environment-lock manifest | `2436bc950db17b40e8da0cb6edce5013a01078edc467c99adf603a8c862c66fe` | 3225 |
 | `data/differentiable_phase_qnode/external_validation_environment_lock_20260616.md` | Environment-lock reviewer summary | `ba350d8d4e4551be80b0d6d5a7316a0b7e23c635813cb12b7a456e98fa5c0149` | 2374 |
 | `data/differentiable_phase_qnode/domain_benchmark_dataset_closure_20260616.json` | Exact-answer domain dataset closure artefact | `f776e02d745652e122bfb41e30088a6515a53821f02cce30a5fcc35b7f52a5b3` | 13589 |

@@ -118,6 +118,18 @@
       "size_bytes": 1224
     },
     {
+      "path": "data/differentiable_phase_qnode/compiler_evidence_boundary_20260705.json",
+      "role": "LLVM/JIT and Enzyme/MLIR compiler evidence boundary artefact",
+      "sha256": "0c2a5fa1bc3bc2dd44d3503aebfa7724633f9f4132e0373793c9cc5b0e81e194",
+      "size_bytes": 7151
+    },
+    {
+      "path": "data/differentiable_phase_qnode/compiler_evidence_boundary_20260705.md",
+      "role": "LLVM/JIT and Enzyme/MLIR compiler evidence boundary reviewer summary",
+      "sha256": "72c55092d5af592513f67947d881feedd51e8859f76697a04a80b2c1a64da270",
+      "size_bytes": 2086
+    },
+    {
       "path": "data/differentiable_phase_qnode/external_validation_environment_lock_20260616.json",
       "role": "Exact environment-lock manifest",
       "sha256": "2436bc950db17b40e8da0cb6edce5013a01078edc467c99adf603a8c862c66fe",

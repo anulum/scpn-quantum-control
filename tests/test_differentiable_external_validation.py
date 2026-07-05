@@ -218,6 +218,7 @@ def test_build_external_validation_artifact_bundle_records_committed_evidence() 
         in paths
     )
     assert "data/differentiable_phase_qnode/provider_gradient_boundary_20260705.json" in paths
+    assert "data/differentiable_phase_qnode/compiler_evidence_boundary_20260705.json" in paths
     assert (
         "data/differentiable_phase_qnode/native_whole_program_ad_execution_evidence_20260622.json"
         in paths
@@ -254,6 +255,9 @@ def test_committed_external_validation_artifact_bundle_matches_files() -> None:
     assert "data/differentiable_phase_qnode/provider_gradient_boundary_20260705.md" in (
         validation.checked_paths
     )
+    assert "data/differentiable_phase_qnode/compiler_evidence_boundary_20260705.md" in (
+        validation.checked_paths
+    )
     assert "data/differentiable_phase_qnode/llvm_jit_claim_gate_20260704.md" in (
         validation.checked_paths
     )
@@ -286,6 +290,32 @@ def test_provider_gradient_boundary_artifact_preserves_no_submit_boundary() -> N
     assert surfaces["hardware_gradient_policy_readiness"]["blocked_count"] == 5
     assert surfaces["provider_hardware_gradient_preparation"]["supported_count"] == 2
     assert surfaces["provider_hardware_gradient_preparation"]["blocked_count"] == 4
+
+
+def test_compiler_evidence_boundary_artifact_preserves_promotion_gate() -> None:
+    """Compiler boundary evidence must stay non-promotional until every gate passes."""
+    payload = json.loads(
+        Path("data/differentiable_phase_qnode/compiler_evidence_boundary_20260705.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    required = {str(row["name"]): row for row in payload["required_evidence"]}
+
+    assert payload["schema"] == "scpn_qc_differentiable_compiler_evidence_boundary_v1"
+    assert payload["classification"] == "functional_non_isolated"
+    assert payload["promotion_ready"] is False
+    assert payload["native_llvm_jit"]["focused_test_exit_code"] == 0
+    assert payload["native_llvm_jit"]["promotion_ready"] is False
+    assert payload["native_llvm_jit"]["executable_lowering_verified"] is True
+    assert "benchmark_artifact_ids" in payload["native_llvm_jit"]["missing_requirements"]
+    assert payload["enzyme_mlir"]["artifact_id"] == "enzyme-toolchain-ad-execution-20260705"
+    assert payload["enzyme_mlir"]["promotion_ready"] is False
+    assert "scalar_forward_mode" in required
+    assert "native_enzyme_execution" in required
+    assert required["native_enzyme_execution"]["status"] in {"evidence_attached", "hard_gap"}
+    assert required["alias_activity"]["status"] == "blocked"
+    assert "isolated compiler benchmark artifact IDs missing" in payload["promotion_blockers"]
+    assert "provider, hardware, GPU, or performance claim" in payload["claim_boundary"]
 
 
 def test_artifact_bundle_validation_rejects_hash_drift() -> None:
