@@ -12,7 +12,9 @@ use numpy::{PyArray1, PyReadonlyArray1};
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 use rand::rngs::StdRng;
-use rand::{Rng, SeedableRng};
+// rand 0.10 renamed the extension trait providing `.random()` from `Rng` to
+// `RngExt` (upstream `rand_core` took the `Rng` name for the former `RngCore`).
+use rand::{RngExt, SeedableRng};
 
 use crate::validation::{validate_contiguous_slice, validate_finite, validate_range};
 

@@ -43,7 +43,7 @@ use scpn_quantum_engine::compiler_ad::{
 };
 use scpn_quantum_engine::dla::{commutator_dense, is_independent_fast};
 use scpn_quantum_engine::knm::build_knm_inner;
-use scpn_quantum_engine::kuramoto::order_parameter_inner;
+use scpn_quantum_engine::kuramoto_observables::order_parameter_inner;
 use scpn_quantum_engine::qnode_metrics::{
     computational_basis_fisher_inner, fubini_study_metric_inner, hessian_vector_product_inner,
     vector_hessian_tensor_inner, vector_jvp_inner, vector_vjp_inner,
