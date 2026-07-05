@@ -86,6 +86,12 @@ from .diff_kuramoto_inertial import (
     inertial_state_sensitivity,
     inertial_terminal_value_and_grad,
 )
+from .diff_kuramoto_mpc_kkt import (
+    MpcOptimumSensitivity,
+    jax_mpc_optimum,
+    mpc_optimum_parameter_sensitivity,
+    mpc_plan_energy_gradient,
+)
 from .diff_kuramoto_noisy import (
     NoisyGradients,
     noisy_phase_sensitivity,
@@ -582,9 +588,13 @@ __all__ = [
     "jax_kuramoto_rk4_gradient",
     "jax_kuramoto_rk4_trajectory",
     "MpcControlGradients",
+    "MpcOptimumSensitivity",
     "RecedingHorizonResult",
     "jax_mpc_control_value_and_grad",
     "jax_mpc_horizon_control",
+    "jax_mpc_optimum",
+    "mpc_optimum_parameter_sensitivity",
+    "mpc_plan_energy_gradient",
     "receding_horizon_control",
     "TerminalObjective",
     "coherence_objective",
