@@ -510,6 +510,10 @@ from .oscillator_ising_machine import (
     oscillator_ising_energy,
     oscillator_ising_field,
 )
+from .permutation_significance import (
+    PermutationSignificanceResult,
+    permutation_significance_test,
+)
 from .quantum_synchronisation import (
     QuantumVanDerPolTrajectory,
     coherent_amplitude,
@@ -813,6 +817,8 @@ __all__ = [
     "LyapunovLipschitzBounds",
     "neural_lyapunov_lipschitz_bounds",
     "formally_certify_neural_lyapunov",
+    "PermutationSignificanceResult",
+    "permutation_significance_test",
     "SparseDynamicsModel",
     "discover_phase_dynamics",
     "SparseDynamicsEstimator",
