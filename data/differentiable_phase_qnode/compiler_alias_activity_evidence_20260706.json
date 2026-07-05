@@ -1,0 +1,246 @@
+{
+  "alias_activity_verified": true,
+  "artifact_id": "compiler-alias-activity-evidence-20260706",
+  "blocked_lattice_case_count": 3,
+  "cases": [
+    {
+      "alias_edge_kinds": [
+        "alias_analysis",
+        "control_path_alias",
+        "expression_rebinding_alias",
+        "object_attribute_alias"
+      ],
+      "blocker_reasons": [
+        "control_path_aliases_require_branch_semantics",
+        "non_executed_phi_inputs_require_branch_semantics"
+      ],
+      "case_id": "blocked_branch_attribute_alias",
+      "complete": false,
+      "component_count": 9,
+      "provenance_counts": {
+        "control_path_alias": 2,
+        "list_alias": 0,
+        "loop_carried_state": 0,
+        "malformed_control_path_alias": 0,
+        "malformed_list_alias": 0,
+        "malformed_loop_carried_state": 0,
+        "malformed_rebinding_alias": 0,
+        "malformed_view_alias": 0,
+        "rebinding_alias": 2,
+        "unknown_alias_edge": 0,
+        "view_alias": 0
+      },
+      "status": "blocked_lattice"
+    },
+    {
+      "alias_edge_kinds": [
+        "alias_analysis",
+        "control_path_alias",
+        "expression_rebinding_alias"
+      ],
+      "blocker_reasons": [
+        "control_path_aliases_require_branch_semantics",
+        "non_executed_phi_inputs_require_branch_semantics"
+      ],
+      "case_id": "blocked_non_executed_branch_alias",
+      "complete": false,
+      "component_count": 9,
+      "provenance_counts": {
+        "control_path_alias": 2,
+        "list_alias": 0,
+        "loop_carried_state": 0,
+        "malformed_control_path_alias": 0,
+        "malformed_list_alias": 0,
+        "malformed_loop_carried_state": 0,
+        "malformed_rebinding_alias": 0,
+        "malformed_view_alias": 0,
+        "rebinding_alias": 3,
+        "unknown_alias_edge": 0,
+        "view_alias": 0
+      },
+      "status": "blocked_lattice"
+    },
+    {
+      "alias_edge_kinds": [
+        "alias_analysis",
+        "expression_rebinding_alias",
+        "mutation_version",
+        "view_alias"
+      ],
+      "blocker_reasons": [
+        "mutation_effects_require_versioned_alias_semantics"
+      ],
+      "case_id": "blocked_static_slice_mutation_alias",
+      "complete": false,
+      "component_count": 13,
+      "provenance_counts": {
+        "control_path_alias": 0,
+        "list_alias": 0,
+        "loop_carried_state": 0,
+        "malformed_control_path_alias": 0,
+        "malformed_list_alias": 0,
+        "malformed_loop_carried_state": 0,
+        "malformed_rebinding_alias": 0,
+        "malformed_view_alias": 0,
+        "rebinding_alias": 1,
+        "unknown_alias_edge": 0,
+        "view_alias": 10
+      },
+      "status": "blocked_lattice"
+    },
+    {
+      "alias_edge_kinds": [
+        "alias_analysis",
+        "expression_rebinding_alias",
+        "list_alias",
+        "local_rebinding_alias"
+      ],
+      "blocker_reasons": [],
+      "case_id": "complete_list_alias",
+      "complete": true,
+      "component_count": 7,
+      "provenance_counts": {
+        "control_path_alias": 0,
+        "list_alias": 3,
+        "loop_carried_state": 0,
+        "malformed_control_path_alias": 0,
+        "malformed_list_alias": 0,
+        "malformed_loop_carried_state": 0,
+        "malformed_rebinding_alias": 0,
+        "malformed_view_alias": 0,
+        "rebinding_alias": 2,
+        "unknown_alias_edge": 0,
+        "view_alias": 0
+      },
+      "status": "complete_lattice"
+    },
+    {
+      "alias_edge_kinds": [
+        "alias_analysis",
+        "expression_rebinding_alias",
+        "loop_carried_state"
+      ],
+      "blocker_reasons": [],
+      "case_id": "complete_loop_carried_state_alias",
+      "complete": true,
+      "component_count": 15,
+      "provenance_counts": {
+        "control_path_alias": 0,
+        "list_alias": 0,
+        "loop_carried_state": 1,
+        "malformed_control_path_alias": 0,
+        "malformed_list_alias": 0,
+        "malformed_loop_carried_state": 0,
+        "malformed_rebinding_alias": 0,
+        "malformed_view_alias": 0,
+        "rebinding_alias": 2,
+        "unknown_alias_edge": 0,
+        "view_alias": 0
+      },
+      "status": "complete_lattice"
+    },
+    {
+      "alias_edge_kinds": [
+        "alias_analysis",
+        "expression_rebinding_alias",
+        "object_attribute_alias"
+      ],
+      "blocker_reasons": [],
+      "case_id": "complete_object_attribute_alias",
+      "complete": true,
+      "component_count": 9,
+      "provenance_counts": {
+        "control_path_alias": 0,
+        "list_alias": 0,
+        "loop_carried_state": 0,
+        "malformed_control_path_alias": 0,
+        "malformed_list_alias": 0,
+        "malformed_loop_carried_state": 0,
+        "malformed_rebinding_alias": 0,
+        "malformed_view_alias": 0,
+        "rebinding_alias": 3,
+        "unknown_alias_edge": 0,
+        "view_alias": 0
+      },
+      "status": "complete_lattice"
+    },
+    {
+      "alias_edge_kinds": [
+        "alias_analysis",
+        "expression_rebinding_alias",
+        "local_rebinding_alias"
+      ],
+      "blocker_reasons": [],
+      "case_id": "complete_scalar_rebinding_alias",
+      "complete": true,
+      "component_count": 9,
+      "provenance_counts": {
+        "control_path_alias": 0,
+        "list_alias": 0,
+        "loop_carried_state": 0,
+        "malformed_control_path_alias": 0,
+        "malformed_list_alias": 0,
+        "malformed_loop_carried_state": 0,
+        "malformed_rebinding_alias": 0,
+        "malformed_view_alias": 0,
+        "rebinding_alias": 3,
+        "unknown_alias_edge": 0,
+        "view_alias": 0
+      },
+      "status": "complete_lattice"
+    },
+    {
+      "alias_edge_kinds": [
+        "alias_analysis",
+        "expression_rebinding_alias",
+        "object_attribute_alias",
+        "view_alias"
+      ],
+      "blocker_reasons": [],
+      "case_id": "complete_view_alias",
+      "complete": true,
+      "component_count": 8,
+      "provenance_counts": {
+        "control_path_alias": 0,
+        "list_alias": 0,
+        "loop_carried_state": 0,
+        "malformed_control_path_alias": 0,
+        "malformed_list_alias": 0,
+        "malformed_loop_carried_state": 0,
+        "malformed_rebinding_alias": 0,
+        "malformed_view_alias": 0,
+        "rebinding_alias": 1,
+        "unknown_alias_edge": 0,
+        "view_alias": 12
+      },
+      "status": "complete_lattice"
+    }
+  ],
+  "claim_boundary": "Compiler alias-activity evidence only: Program AD static alias-lattice reports are executed locally for bounded view, list, scalar-rebinding, object-attribute, loop-carried, branch-control, and mutation-version cases; this does not promote general compiler AD, isolated benchmark, provider, hardware, GPU, or performance claim.",
+  "classification": "functional_non_isolated",
+  "complete_lattice_case_count": 5,
+  "observed_alias_edge_kinds": [
+    "alias_analysis",
+    "control_path_alias",
+    "expression_rebinding_alias",
+    "list_alias",
+    "local_rebinding_alias",
+    "loop_carried_state",
+    "mutation_version",
+    "object_attribute_alias",
+    "view_alias"
+  ],
+  "promotion_ready": false,
+  "schema": "scpn_qc_compiler_alias_activity_evidence_v1",
+  "source_commit": "534010da",
+  "test_ids": [
+    "tests/test_program_ad_alias_effects.py::test_program_ad_alias_effect_analysis_tracks_static_slice_mutation",
+    "tests/test_program_ad_alias_effects.py::test_program_ad_static_alias_lattice_blocks_non_executed_attribute_paths",
+    "tests/test_program_ad_alias_effects.py::test_program_ad_static_alias_lattice_records_non_executed_phi_blockers",
+    "tests/test_program_ad_alias_effects.py::test_program_ad_static_alias_lattice_reports_complete_emitted_ir",
+    "tests/test_program_ad_alias_effects.py::test_program_ad_static_alias_lattice_reports_list_alias_provenance",
+    "tests/test_program_ad_alias_effects.py::test_program_ad_static_alias_lattice_reports_loop_carried_state_provenance",
+    "tests/test_program_ad_alias_effects.py::test_program_ad_static_alias_lattice_reports_rebinding_provenance",
+    "tests/test_program_ad_alias_effects.py::test_program_ad_static_alias_lattice_tracks_local_object_attribute_aliases"
+  ]
+}

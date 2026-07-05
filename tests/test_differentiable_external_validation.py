@@ -220,6 +220,9 @@ def test_build_external_validation_artifact_bundle_records_committed_evidence() 
     assert "data/differentiable_phase_qnode/provider_gradient_boundary_20260705.json" in paths
     assert "data/differentiable_phase_qnode/compiler_evidence_boundary_20260705.json" in paths
     assert (
+        "data/differentiable_phase_qnode/compiler_alias_activity_evidence_20260706.json" in paths
+    )
+    assert (
         "data/differentiable_phase_qnode/native_whole_program_ad_execution_evidence_20260622.json"
         in paths
     )
@@ -256,6 +259,9 @@ def test_committed_external_validation_artifact_bundle_matches_files() -> None:
         validation.checked_paths
     )
     assert "data/differentiable_phase_qnode/compiler_evidence_boundary_20260705.md" in (
+        validation.checked_paths
+    )
+    assert "data/differentiable_phase_qnode/compiler_alias_activity_evidence_20260706.md" in (
         validation.checked_paths
     )
     assert "data/differentiable_phase_qnode/llvm_jit_claim_gate_20260704.md" in (
@@ -299,6 +305,11 @@ def test_compiler_evidence_boundary_artifact_preserves_promotion_gate() -> None:
             encoding="utf-8"
         )
     )
+    alias_payload = json.loads(
+        Path(
+            "data/differentiable_phase_qnode/compiler_alias_activity_evidence_20260706.json"
+        ).read_text(encoding="utf-8")
+    )
     required = {str(row["name"]): row for row in payload["required_evidence"]}
 
     assert payload["schema"] == "scpn_qc_differentiable_compiler_evidence_boundary_v1"
@@ -313,8 +324,28 @@ def test_compiler_evidence_boundary_artifact_preserves_promotion_gate() -> None:
     assert "scalar_forward_mode" in required
     assert "native_enzyme_execution" in required
     assert required["native_enzyme_execution"]["status"] in {"evidence_attached", "hard_gap"}
-    assert required["alias_activity"]["status"] == "blocked"
+    assert alias_payload["schema"] == "scpn_qc_compiler_alias_activity_evidence_v1"
+    assert alias_payload["artifact_id"] == "compiler-alias-activity-evidence-20260706"
+    assert alias_payload["classification"] == "functional_non_isolated"
+    assert alias_payload["promotion_ready"] is False
+    assert alias_payload["alias_activity_verified"] is True
+    assert set(alias_payload["observed_alias_edge_kinds"]) >= {
+        "control_path_alias",
+        "expression_rebinding_alias",
+        "list_alias",
+        "local_rebinding_alias",
+        "loop_carried_state",
+        "object_attribute_alias",
+        "view_alias",
+    }
+    assert alias_payload["complete_lattice_case_count"] >= 3
+    assert alias_payload["blocked_lattice_case_count"] >= 3
+    assert required["alias_activity"]["status"] == "bounded_evidence_attached"
+    assert required["alias_activity"]["artifact_ids"] == [
+        "compiler-alias-activity-evidence-20260706"
+    ]
     assert "isolated compiler benchmark artifact IDs missing" in payload["promotion_blockers"]
+    assert "alias-activity compiler evidence missing" not in payload["promotion_blockers"]
     assert "provider, hardware, GPU, or performance claim" in payload["claim_boundary"]
 
 

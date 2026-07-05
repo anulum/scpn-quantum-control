@@ -132,6 +132,14 @@ DEFAULT_ARTIFACT_BUNDLE_INPUTS: tuple[tuple[str, str], ...] = (
         "LLVM/JIT and Enzyme/MLIR compiler evidence boundary reviewer summary",
     ),
     (
+        "data/differentiable_phase_qnode/compiler_alias_activity_evidence_20260706.json",
+        "Program AD compiler alias-activity evidence artefact",
+    ),
+    (
+        "data/differentiable_phase_qnode/compiler_alias_activity_evidence_20260706.md",
+        "Program AD compiler alias-activity evidence reviewer summary",
+    ),
+    (
         "data/differentiable_phase_qnode/external_validation_environment_lock_20260616.json",
         "Exact environment-lock manifest",
     ),

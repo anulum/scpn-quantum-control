@@ -7,6 +7,14 @@
 # scpn-quantum-control -- compiler exports
 """Compiler frontends and interchange formats."""
 
+from .alias_activity_evidence import (
+    COMPILER_ALIAS_ACTIVITY_EVIDENCE_ID,
+    COMPILER_ALIAS_ACTIVITY_EVIDENCE_SCHEMA,
+    CompilerAliasActivityCase,
+    CompilerAliasActivityEvidence,
+    build_compiler_alias_activity_evidence,
+    render_compiler_alias_activity_evidence_markdown,
+)
 from .mlir import (
     LLVM_JIT_CLAIM_GATE_BOUNDARY,
     CompilerADExecutableConfig,
@@ -102,6 +110,10 @@ __all__ = [
     "CompilerADExecutableConfig",
     "CompilerADKernelVerification",
     "CompilerADTransformPlan",
+    "COMPILER_ALIAS_ACTIVITY_EVIDENCE_ID",
+    "COMPILER_ALIAS_ACTIVITY_EVIDENCE_SCHEMA",
+    "CompilerAliasActivityCase",
+    "CompilerAliasActivityEvidence",
     "DifferentiableMLIRCompileConfig",
     "EnzymeMLIRBenchmarkAttachment",
     "EnzymeMLIRCompilerADBreadthArtifact",
@@ -127,6 +139,7 @@ __all__ = [
     "WholeProgramADNativeLoweringReport",
     "MLIRModule",
     "analyse_whole_program_ad_native_lowering",
+    "build_compiler_alias_activity_evidence",
     "build_llvm_jit_claim_gate",
     "build_enzyme_mlir_benchmark_attachment",
     "build_enzyme_mlir_compiler_ad_breadth_artifact",
@@ -183,6 +196,7 @@ __all__ = [
     "make_vector_squared_norm_native_llvm_jit_lowering_rule",
     "native_whole_program_ad_compile_cache_stats",
     "native_whole_program_ad_linalg_support",
+    "render_compiler_alias_activity_evidence_markdown",
     "render_llvm_jit_claim_gate_markdown",
     "run_enzyme_mlir_maturity_audit",
     "run_enzyme_toolchain_execution_evidence",

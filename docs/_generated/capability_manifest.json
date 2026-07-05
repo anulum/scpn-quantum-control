@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 787,
     "public_documentation_pages": 259,
-    "python_model_classes": 911,
-    "python_model_source_modules": 471,
+    "python_model_classes": 913,
+    "python_model_source_modules": 472,
     "rust_pyo3_model_wrappers": 172,
     "rust_source_modules": 52,
-    "test_files": 814
+    "test_files": 815
   },
   "documentation": {
     "examples": [
@@ -472,7 +472,7 @@
       {
         "package": "compiler",
         "path": "src/scpn_quantum_control/compiler",
-        "python_modules": 15
+        "python_modules": 16
       },
       {
         "package": "control",
@@ -991,6 +991,14 @@
       {
         "name": "CompilerADTransformPlan",
         "path": "src/scpn_quantum_control/compiler/mlir_records.py"
+      },
+      {
+        "name": "CompilerAliasActivityCase",
+        "path": "src/scpn_quantum_control/compiler/alias_activity_evidence.py"
+      },
+      {
+        "name": "CompilerAliasActivityEvidence",
+        "path": "src/scpn_quantum_control/compiler/alias_activity_evidence.py"
       },
       {
         "name": "ComposedObjectiveAuditSuiteResult",
@@ -4357,6 +4365,7 @@
       "src/scpn_quantum_control/bridge/ssgf_w_adapter.py",
       "src/scpn_quantum_control/codegen/ultrascale_hls.py",
       "src/scpn_quantum_control/compile_budget.py",
+      "src/scpn_quantum_control/compiler/alias_activity_evidence.py",
       "src/scpn_quantum_control/compiler/mlir.py",
       "src/scpn_quantum_control/compiler/mlir_enzyme_evidence.py",
       "src/scpn_quantum_control/compiler/mlir_enzyme_execution_runner.py",
@@ -5917,6 +5926,7 @@
       "tests/test_commutator_bounds.py",
       "tests/test_compare_eeg_plv_cohorts.py",
       "tests/test_compile_budget.py",
+      "tests/test_compiler_alias_activity_evidence.py",
       "tests/test_compound_mitigation.py",
       "tests/test_config.py",
       "tests/test_confinement.py",
