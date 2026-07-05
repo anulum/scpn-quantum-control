@@ -534,6 +534,14 @@ from .stuart_landau import (
     stuart_landau_jacobian,
     stuart_landau_order_parameter,
 )
+from .surrogate_kuramoto_mpc import (
+    SurrogateControlComparison,
+    SurrogateStepModel,
+    compare_surrogate_control,
+    fit_surrogate_step_model,
+    surrogate_receding_horizon_control,
+    surrogate_step,
+)
 from .swarmalators import (
     SwarmalatorOrderParameters,
     SwarmalatorTrajectory,
@@ -606,6 +614,12 @@ __all__ = [
     "mpc_optimum_parameter_sensitivity",
     "mpc_plan_energy_gradient",
     "receding_horizon_control",
+    "SurrogateStepModel",
+    "SurrogateControlComparison",
+    "fit_surrogate_step_model",
+    "surrogate_step",
+    "surrogate_receding_horizon_control",
+    "compare_surrogate_control",
     "TerminalObjective",
     "coherence_objective",
     "interaction_energy_objective",
