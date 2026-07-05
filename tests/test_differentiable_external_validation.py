@@ -9,6 +9,7 @@
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import pytest
@@ -216,6 +217,7 @@ def test_build_external_validation_artifact_bundle_records_committed_evidence() 
         "data/differentiable_phase_qnode/differentiable_isolated_benchmark_plan_20260627.json"
         in paths
     )
+    assert "data/differentiable_phase_qnode/provider_gradient_boundary_20260705.json" in paths
     assert (
         "data/differentiable_phase_qnode/native_whole_program_ad_execution_evidence_20260622.json"
         in paths
@@ -249,9 +251,41 @@ def test_committed_external_validation_artifact_bundle_matches_files() -> None:
         "data/differentiable_phase_qnode/differentiable_isolated_benchmark_plan_20260627.md"
         in validation.checked_paths
     )
+    assert "data/differentiable_phase_qnode/provider_gradient_boundary_20260705.md" in (
+        validation.checked_paths
+    )
     assert "data/differentiable_phase_qnode/llvm_jit_claim_gate_20260704.md" in (
         validation.checked_paths
     )
+
+
+def test_provider_gradient_boundary_artifact_preserves_no_submit_boundary() -> None:
+    """Provider boundary evidence must stay no-submit and non-promotional."""
+    payload = json.loads(
+        Path("data/differentiable_phase_qnode/provider_gradient_boundary_20260705.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    surfaces = {
+        str(surface["name"]): surface
+        for surface in payload["surfaces"]
+        if isinstance(surface, dict)
+    }
+
+    assert payload["schema"] == "scpn_qc_differentiable_provider_gradient_boundary_v1"
+    assert payload["classification"] == "functional_no_submit"
+    assert payload["no_submit"] is True
+    assert payload["promotion_ready"] is False
+    assert payload["hardware_execution_count"] == 0
+    assert payload["gradient_available_count"] == 0
+    assert payload["ready_for_hardware_gradient_promotion"] is False
+    assert "live execution ticket missing" in payload["promotion_blockers"]
+    assert surfaces["provider_gradient_readiness"]["supported_count"] == 3
+    assert surfaces["provider_gradient_readiness"]["blocked_count"] == 3
+    assert surfaces["hardware_gradient_policy_readiness"]["supported_count"] == 1
+    assert surfaces["hardware_gradient_policy_readiness"]["blocked_count"] == 5
+    assert surfaces["provider_hardware_gradient_preparation"]["supported_count"] == 2
+    assert surfaces["provider_hardware_gradient_preparation"]["blocked_count"] == 4
 
 
 def test_artifact_bundle_validation_rejects_hash_drift() -> None:

@@ -106,6 +106,18 @@
       "size_bytes": 5043
     },
     {
+      "path": "data/differentiable_phase_qnode/provider_gradient_boundary_20260705.json",
+      "role": "No-submit provider-gradient boundary evidence artefact",
+      "sha256": "d4e5329d5226f5d175f0b523988df1f968884ec183bb0e87f7aef63d74d66cbc",
+      "size_bytes": 228726
+    },
+    {
+      "path": "data/differentiable_phase_qnode/provider_gradient_boundary_20260705.md",
+      "role": "No-submit provider-gradient boundary reviewer summary",
+      "sha256": "a50c3dec0d98c178b880e65fbb39962c4f6e5c557fc1375d1053aeb75b2cc0c6",
+      "size_bytes": 1224
+    },
+    {
       "path": "data/differentiable_phase_qnode/external_validation_environment_lock_20260616.json",
       "role": "Exact environment-lock manifest",
       "sha256": "2436bc950db17b40e8da0cb6edce5013a01078edc467c99adf603a8c862c66fe",

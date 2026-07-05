@@ -116,6 +116,14 @@ DEFAULT_ARTIFACT_BUNDLE_INPUTS: tuple[tuple[str, str], ...] = (
         "Reserved-host isolated benchmark batch plan reviewer summary",
     ),
     (
+        "data/differentiable_phase_qnode/provider_gradient_boundary_20260705.json",
+        "No-submit provider-gradient boundary evidence artefact",
+    ),
+    (
+        "data/differentiable_phase_qnode/provider_gradient_boundary_20260705.md",
+        "No-submit provider-gradient boundary reviewer summary",
+    ),
+    (
         "data/differentiable_phase_qnode/external_validation_environment_lock_20260616.json",
         "Exact environment-lock manifest",
     ),
