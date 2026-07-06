@@ -5,7 +5,7 @@
 # Contact: www.anulum.li | protoscience@anulum.li
 # scpn-quantum-control -- Cross-platform CI smoke dependency input
 numpy==2.4.6
-networkx==3.4.2
+networkx==3.6.1
 jinja2==3.1.6
 qiskit==2.5.0
 pytest==9.1.1
