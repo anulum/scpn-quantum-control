@@ -53,6 +53,7 @@ pub mod kuramoto_coupling;
 pub mod kuramoto_delayed;
 pub mod kuramoto_dopri;
 pub mod kuramoto_inertial;
+pub mod kuramoto_noisy;
 pub mod kuramoto_observables;
 pub mod kuramoto_symplectic_inertial;
 pub mod lindblad;
@@ -224,6 +225,10 @@ fn scpn_quantum_engine(m: &Bound<'_, PyModule>) -> PyResult<()> {
     )?)?;
     m.add_function(wrap_pyfunction!(
         kuramoto_delayed::kuramoto_delayed_trajectory,
+        m
+    )?)?;
+    m.add_function(wrap_pyfunction!(
+        kuramoto_noisy::kuramoto_noisy_trajectory,
         m
     )?)?;
     m.add_function(wrap_pyfunction!(
