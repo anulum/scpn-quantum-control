@@ -200,7 +200,8 @@ def test_ours_python_and_dopri_rows_agree_on_order_parameter() -> None:
     dopri_row = m._ours_dopri_row(problem)
     assert python_row.available and dopri_row.available
     assert python_row.method == "ours_rk4_python" and dopri_row.method == "ours_dopri"
-    assert python_row.language == "python" and dopri_row.language == "python"
+    assert python_row.language == "python"
+    assert dopri_row.language in {"rust", "julia", "python"}  # the served adaptive-DOPRI tier
     assert python_row.version == m._package_version()
     assert python_row.elapsed_ms is not None and python_row.elapsed_ms >= 0.0
     assert dopri_row.elapsed_ms is not None and dopri_row.elapsed_ms >= 0.0

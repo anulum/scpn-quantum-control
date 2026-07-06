@@ -348,7 +348,7 @@ def _ours_rk4_python_row(problem: KuramotoProblem) -> CompetitorRow:
 
 
 def _ours_dopri_row(problem: KuramotoProblem) -> CompetitorRow:
-    """Time our adaptive DOPRI5 — a pure-Python orchestration with no accelerated tier."""
+    """Time our adaptive DOPRI5, dispatched across its Rust -> Julia -> Python floor tier chain."""
 
     def _call() -> object:
         return kuramoto.kuramoto_dopri_trajectory(
@@ -359,12 +359,13 @@ def _ours_dopri_row(problem: KuramotoProblem) -> CompetitorRow:
     result = kuramoto.kuramoto_dopri_trajectory(
         problem.theta0, problem.omega, problem.coupling, t_end=problem.t_max
     )
+    tier = kuramoto.last_kuramoto_dopri_trajectory_tier_used() or "python"
     phases = np.asarray(result.phases, dtype=np.float64)
     return CompetitorRow(
         method="ours_dopri",
-        backend="scpn kuramoto_dopri_trajectory [Python, adaptive — no accelerated tier]",
+        backend=f"scpn kuramoto_dopri_trajectory [adaptive; Rust -> Julia -> Python tier chain, served: {tier}]",
         family="ours",
-        language="python",
+        language=tier,
         available=True,
         version=_package_version(),
         r_final=float(kuramoto.order_parameter(phases[-1])),

@@ -35,7 +35,7 @@ Wall-clock milliseconds per solve, and the final-`r` error against the SciPy ref
 | `DynamicalSystems.jl` (CoupledODEs, Tsit5) | julia | 1.0 ms / 2e-9 | 2.1 / 8e-10 | 6.0 / 8e-11 | 20.1 / 3e-11 | 115.8 / 4e-12 |
 | `NetworkDynamics.jl` (Tsit5) | julia | 1.4 / 2e-9 | 1.9 / 8e-10 | 4.2 / 8e-11 | 16.1 / 3e-11 | 115.4 / 4e-12 |
 | oscillatools RK4 (Rust, fixed dt=0.01) | rust | 2.9 / 3e-11 | 7.9 / 3e-11 | 22.7 / 6e-13 | 112.6 / 2e-12 | 686.8 / 8e-13 |
-| oscillatools DOPRI (adaptive) | python | 2.7 / 1e-6 | 5.4 / 5e-7 | 3.6 / 3e-7 | 13.6 / 1e-7 | 47.4 / 5e-7 |
+| oscillatools DOPRI (adaptive, **Rust tier**) | rust | 0.2 / 1e-6 | 0.5 / 5e-7 | 1.6 / 3e-7 | 7.6 / 1e-7 | 26.0 / 5e-7 |
 | oscillatools RK4 (pure-Python floor) | python | 31.8 / 3e-11 | 38.1 / 3e-11 | 52.4 / 6e-13 | 176.1 / 2e-12 | 770.3 / 8e-13 |
 | `DifferentialEquations.jl` (Tsit5) | julia | 7.2 / 2e-9 | 16.6 / 8e-10 | 1081.6 / 8e-11 | 374.1 / 3e-11 | 977.6 / 4e-12 |
 | `SciMLSensitivity.jl` (Tsit5 solve) | julia | 7.5 / 2e-9 | 17.6 / 8e-10 | 171.9 / 8e-11 | 420.5 / 3e-11 | 1053.5 / 4e-12 |
@@ -49,13 +49,17 @@ Rust RK4 is **2.8× (N=12), 4.1× (16), 5.4× (32), 7.0× (64), 6.0× (128)** sl
 step. The Rust RK4 is per-step fast (11× over the toolkit's own pure-Python floor, bit-faithful to it at
 `8.9e-16`) and in fact *more* accurate at this grid (`~1e-11`…`1e-13`), but doing more steps costs time.
 
-**The adaptive caveat.** oscillatools' own adaptive DOPRI is faster than the Julia solvers at `N ≥ 32`
-(e.g. 47 ms vs 115 ms at N=128) — but at `~1e-6` accuracy, three-to-five orders coarser than the Julia
-runs. That is a speed/accuracy trade, not a like-for-like win; it is a genuine advantage only where `~1e-6`
-suffices. Tightening its tolerance to match would remove the gap. (The `DifferentialEquations.jl` /
-`SciMLSensitivity.jl` rows carry subprocess re-JIT noise — e.g. the 1081 ms N=32 spike — and are not clean
-measurements; the `DynamicalSystems.jl` / `NetworkDynamics.jl` and oscillatools rows are monotone and are
-the trustworthy ones.)
+**The adaptive caveat.** oscillatools' adaptive DOPRI now dispatches to its Rust tier (this row was
+re-measured after that tier landed; the other rows predate it, on the same machine), and it is the fastest
+method at *every* `N` — 0.2 ms (N=12) to 26 ms (N=128), ahead of `DynamicalSystems.jl` /
+`NetworkDynamics.jl`. But it runs at `~1e-6` accuracy, three-to-five orders coarser than the Julia runs
+(which hold `1e-9`…`4e-12`). That is a speed/accuracy trade, not a like-for-like win; it is a genuine
+advantage only where `~1e-6` suffices, and tightening its tolerance to match would take more steps and
+narrow the gap. So the honest reading is unchanged: at *matched* accuracy the Julia adaptive solvers still
+lead (the fixed-grid Rust RK4 row above), while at coarse accuracy the Rust DOPRI is the fastest option.
+(The `DifferentialEquations.jl` / `SciMLSensitivity.jl` rows carry subprocess re-JIT noise — e.g. the
+1081 ms N=32 spike — and are not clean measurements; the `DynamicalSystems.jl` / `NetworkDynamics.jl`, RK4
+and DOPRI rows are the trustworthy ones.)
 
 ## Axis 2 — differentiability
 
