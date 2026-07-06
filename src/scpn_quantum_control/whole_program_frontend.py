@@ -845,6 +845,8 @@ def _source_ir_features(
             add(node, "control_flow", "if_expression")
         elif isinstance(node, ast.For):
             add(node, "loop", "for")
+        elif isinstance(node, ast.AsyncFor):
+            add(node, "loop", "async_for")
         elif isinstance(node, ast.While):
             add(node, "loop", "while")
         elif isinstance(node, ast.Break):
@@ -878,6 +880,8 @@ def _source_ir_features(
                 "add",
             }:
                 add(node, "mutation", name)
+        elif isinstance(node, ast.Await):
+            add(node, "async", "await")
     features.extend(_source_list_alias_features(tree))
     features.extend(_source_local_rebinding_alias_features(tree))
     features.extend(_source_expression_rebinding_alias_features(tree))
@@ -1150,10 +1154,10 @@ def _source_loop_carried_state_features(
             return assigned_names_in_target(statement.target)
         if isinstance(statement, ast.AugAssign):
             return assigned_names_in_target(statement.target)
-        if isinstance(statement, (ast.For, ast.While, ast.If)):
+        if isinstance(statement, (ast.For, ast.AsyncFor, ast.While, ast.If)):
             names = (
                 assigned_names_in_target(statement.target)
-                if isinstance(statement, ast.For)
+                if isinstance(statement, ast.For | ast.AsyncFor)
                 else set()
             )
             for child in (*statement.body, *statement.orelse):
@@ -1164,7 +1168,7 @@ def _source_loop_carried_state_features(
     def scan_statement_block(statements: Sequence[ast.stmt]) -> set[str]:
         assigned_before: set[str] = set()
         for statement in statements:
-            if isinstance(statement, (ast.For, ast.While)):
+            if isinstance(statement, (ast.For, ast.AsyncFor, ast.While)):
                 loop_assigned: set[str] = set()
                 for child in statement.body:
                     loop_assigned.update(assigned_names_in_statement(child))
@@ -1284,7 +1288,15 @@ def _unsupported_python_semantic_diagnostics(
         diagnostics[(semantic, line_number, diagnostic.detail)] = diagnostic
 
     for node in ast.walk(tree):
-        if isinstance(node, ast.ListComp):
+        if isinstance(node, ast.AsyncFunctionDef):
+            add(node, "async_function")
+            if node.decorator_list:
+                add(node, "decorator")
+        elif isinstance(node, ast.Await):
+            add(node, "await_expression")
+        elif isinstance(node, ast.AsyncFor):
+            add(node, "async_for")
+        elif isinstance(node, ast.ListComp):
             if any(generator.ifs for generator in node.generators):
                 add(node, "filtered_comprehension")
         elif isinstance(node, ast.SetComp | ast.DictComp):
@@ -1295,7 +1307,7 @@ def _unsupported_python_semantic_diagnostics(
             add(node, "context_manager")
         elif isinstance(node, ast.Try | ast.Raise | ast.Assert):
             add(node, "exception_control_flow")
-        elif isinstance(node, ast.FunctionDef | ast.AsyncFunctionDef):
+        elif isinstance(node, ast.FunctionDef):
             if node.decorator_list:
                 add(node, "decorator")
         elif isinstance(node, ast.Call) and objective_name:
@@ -1690,6 +1702,8 @@ def _source_regions(
             return ("control_flow", "if_expression")
         if isinstance(node, ast.For):
             return ("loop", "for")
+        if isinstance(node, ast.AsyncFor):
+            return ("loop", "async_for")
         if isinstance(node, ast.While):
             return ("loop", "while")
         if isinstance(node, ast.Assign):
@@ -2074,7 +2088,7 @@ def _source_parse_failed(source: str | None) -> bool:
 def _source_has_control_flow(source: str | None) -> bool:
     """Return whether source contains explicit Python control-flow nodes."""
 
-    return _source_has_node(source, ast.If, ast.For, ast.While, ast.IfExp)
+    return _source_has_node(source, ast.If, ast.For, ast.AsyncFor, ast.While, ast.IfExp)
 
 
 def _source_has_node(source: str | None, *node_types: type[ast.AST]) -> bool:
@@ -2088,8 +2102,11 @@ def _source_has_node(source: str | None, *node_types: type[ast.AST]) -> bool:
         tokens = {
             ast.If: "if ",
             ast.For: "for ",
+            ast.AsyncFor: "async for ",
             ast.While: "while ",
             ast.IfExp: " if ",
+            ast.AsyncFunctionDef: "async def ",
+            ast.Await: "await ",
             ast.GeneratorExp: " for ",
         }
         return any(

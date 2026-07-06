@@ -10,6 +10,7 @@
 from __future__ import annotations
 
 import dis
+from collections.abc import AsyncIterator, Callable
 from types import SimpleNamespace
 from typing import cast
 
@@ -20,6 +21,9 @@ from numpy.typing import NDArray
 import scpn_quantum_control as scpn
 from scpn_quantum_control.differentiable import (
     compile_whole_program_frontend as facade_compile_whole_program_frontend,
+)
+from scpn_quantum_control.differentiable import (
+    whole_program_value_and_grad,
 )
 from scpn_quantum_control.whole_program_frontend import (
     WholeProgramBytecodeBasicBlock,
@@ -200,6 +204,93 @@ def test_whole_program_frontend_reports_located_unsupported_semantics() -> None:
         feature.kind == "unsupported_python_semantics"
         and feature.detail == "filtered_comprehension"
         and feature.line_number == diagnostic.line_number
+        for feature in report.source_ir_features
+    )
+
+
+def test_whole_program_frontend_rejects_async_objective_before_execution() -> None:
+    """Async whole-program objectives should fail the frontend gate."""
+
+    async def helper(value: object) -> object:
+        return value
+
+    async def objective(values: NDArray[np.float64]) -> object:
+        return await helper(values[0])
+
+    objective_callable = cast(Callable[..., object], objective)
+    report = compile_whole_program_frontend(objective_callable)
+
+    assert report.frontend_ready is False
+    assert report.semantics_report.unsupported_python_semantics == (
+        "async_function",
+        "await_expression",
+    )
+    assert report.hard_gaps == (
+        "unsupported_python_semantics:async_function",
+        "unsupported_python_semantics:await_expression",
+    )
+    diagnostics = {
+        diagnostic.semantic: diagnostic for diagnostic in report.unsupported_semantic_diagnostics
+    }
+    assert set(diagnostics) == {"async_function", "await_expression"}
+    for diagnostic in diagnostics.values():
+        assert diagnostic.line_number > 0
+        assert diagnostic.absolute_line_number is not None
+        assert diagnostic.region_ids
+    assert any(diagnostic.bytecode_offsets for diagnostic in diagnostics.values())
+    assert any(
+        feature.kind == "unsupported_python_semantics" and feature.detail == "async_function"
+        for feature in report.source_ir_features
+    )
+    assert any(
+        feature.kind == "unsupported_python_semantics" and feature.detail == "await_expression"
+        for feature in report.source_ir_features
+    )
+
+    with pytest.raises(ValueError) as exc_info:
+        whole_program_value_and_grad(objective_callable, np.array([1.0], dtype=np.float64))
+
+    message = str(exc_info.value)
+    assert "whole-program AD frontend execution gate rejected objective" in message
+    assert "unsupported_python_semantics:async_function" in message
+    assert "unsupported_python_semantics:await_expression" in message
+    assert "semantic=async_function" in message
+    assert "semantic=await_expression" in message
+
+
+def test_whole_program_frontend_reports_async_iteration_as_unsupported() -> None:
+    """Async iteration should be located as an unsupported frontend construct."""
+
+    class AsyncItems:
+        def __aiter__(self) -> AsyncIterator[object]:
+            return self
+
+        async def __anext__(self) -> object:
+            raise StopAsyncIteration
+
+    async def objective(values: AsyncItems) -> object:
+        total: object = None
+        async for item in values:
+            total = item
+        return total
+
+    report = compile_whole_program_frontend(cast(Callable[..., object], objective))
+
+    assert report.frontend_ready is False
+    assert report.semantics_report.unsupported_python_semantics == (
+        "async_for",
+        "async_function",
+    )
+    diagnostics = {
+        diagnostic.semantic: diagnostic for diagnostic in report.unsupported_semantic_diagnostics
+    }
+    assert set(diagnostics) == {"async_for", "async_function"}
+    async_for_diagnostic = diagnostics["async_for"]
+    assert async_for_diagnostic.line_number > 0
+    assert async_for_diagnostic.absolute_line_number is not None
+    assert async_for_diagnostic.region_ids
+    assert any(
+        feature.kind == "loop" and feature.detail == "async_for"
         for feature in report.source_ir_features
     )
 

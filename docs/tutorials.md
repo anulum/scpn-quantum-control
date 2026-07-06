@@ -175,9 +175,10 @@ verified static dense determinant lowering through `19x19`, static inverse and
 solve routes through `6x6`, and fail-closed reports for wider unsupported linalg.
 Its Python frontend now records accepted closure, default-argument, keyword-only,
 `*args`, `**kwargs`, and generator-expression semantics, while materialized
-comprehensions, captured object/dataclass attributes, recursion, generator
-functions, context managers, exception control flow, and decorators fail closed
-before objective execution.
+comprehensions, captured object/dataclass attributes, recursion, async
+functions, await expressions, async iteration, generator functions, context
+managers, exception control flow, and decorators fail closed before objective
+execution.
 Treat the `20x20+` determinant boundary as useful engineering evidence: it
 identifies where the present loop-helper formulation needs a stronger numerical
 factorisation before promotion.
