@@ -11,8 +11,8 @@
     "public_documentation_pages": 260,
     "python_model_classes": 911,
     "python_model_source_modules": 471,
-    "rust_pyo3_model_wrappers": 176,
-    "rust_source_modules": 55,
+    "rust_pyo3_model_wrappers": 177,
+    "rust_source_modules": 56,
     "test_files": 813
   },
   "documentation": {
@@ -4764,6 +4764,7 @@
       "kuramoto_interaction_energy",
       "kuramoto_interaction_energy_gradient",
       "kuramoto_interaction_energy_hessian",
+      "kuramoto_noisy_trajectory",
       "kuramoto_rk4_trajectory",
       "kuramoto_rk4_vjp",
       "kuramoto_symplectic_inertial_trajectory",
@@ -4920,6 +4921,7 @@
       "scpn_quantum_engine/src/kuramoto_delayed.rs",
       "scpn_quantum_engine/src/kuramoto_dopri.rs",
       "scpn_quantum_engine/src/kuramoto_inertial.rs",
+      "scpn_quantum_engine/src/kuramoto_noisy.rs",
       "scpn_quantum_engine/src/kuramoto_observables.rs",
       "scpn_quantum_engine/src/kuramoto_symplectic_inertial.rs",
       "scpn_quantum_engine/src/lib.rs",

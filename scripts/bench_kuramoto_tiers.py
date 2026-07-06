@@ -234,6 +234,17 @@ def _build_delayed_trajectory_args(n: int, rng: np.random.Generator) -> tuple[An
     )
 
 
+def _build_noisy_trajectory_args(n: int, rng: np.random.Generator) -> tuple[Any, ...]:
+    return (
+        _phases(n, rng),
+        rng.uniform(-0.5, 0.5, size=n),
+        _symmetric_coupling(n, rng),
+        0.5,
+        _TRAJECTORY_DT,
+        rng.standard_normal(size=(_TRAJECTORY_STEPS, n)),
+    )
+
+
 @dataclass(frozen=True)
 class PrimitiveSpec:
     """How to generate inputs and classify the cost of one compute primitive."""
@@ -299,6 +310,7 @@ _SPECS: tuple[PrimitiveSpec, ...] = (
         "trajectory",
     ),
     PrimitiveSpec("networked_delayed_trajectory", _build_delayed_trajectory_args, "trajectory"),
+    PrimitiveSpec("networked_noisy_trajectory", _build_noisy_trajectory_args, "trajectory"),
 )
 
 

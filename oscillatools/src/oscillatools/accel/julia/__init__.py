@@ -1073,6 +1073,56 @@ def kuramoto_delayed_trajectory(
     return sample_times, phases
 
 
+def kuramoto_noisy_trajectory(
+    theta0: NDArray[np.float64],
+    omega: NDArray[np.float64],
+    coupling: NDArray[np.float64],
+    diffusion: float,
+    dt: float,
+    noise: NDArray[np.float64],
+) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
+    """Julia-tier stochastic (Euler–Maruyama) networked-Kuramoto forward trajectory.
+
+    Advances ``dθ = (ω + F(θ)) dt + √(2D) dW`` with the supplied standard-normal increments,
+    mirroring the Python floor and Rust tier (tolerance-parity). The reproducible noise is drawn
+    once by the caller and passed in, so every tier consumes the same increments.
+
+    Parameters
+    ----------
+    theta0 : numpy.ndarray
+        One-dimensional array of ``N`` initial phases in radians.
+    omega : numpy.ndarray
+        One-dimensional array of ``N`` natural frequencies.
+    coupling : numpy.ndarray
+        Two-dimensional ``(N, N)`` coupling matrix ``K``.
+    diffusion : float
+        The diffusion / noise intensity ``D`` (``≥ 0``).
+    dt : float
+        The Euler–Maruyama time step (``> 0``).
+    noise : numpy.ndarray
+        Two-dimensional ``(n_steps, N)`` standard-normal Wiener increments.
+
+    Returns
+    -------
+    tuple of numpy.ndarray
+        ``(order_parameter_series, terminal_phases)`` — the ``(n_steps,)`` order-parameter series
+        and the ``(N,)`` terminal phases.
+    """
+    jl = _load()
+    series, terminal = jl.kuramoto_noisy_trajectory(
+        np.ascontiguousarray(theta0, dtype=np.float64),
+        np.ascontiguousarray(omega, dtype=np.float64),
+        np.ascontiguousarray(coupling, dtype=np.float64),
+        float(diffusion),
+        float(dt),
+        np.ascontiguousarray(noise, dtype=np.float64),
+    )
+    return (
+        np.ascontiguousarray(series, dtype=np.float64),
+        np.ascontiguousarray(terminal, dtype=np.float64),
+    )
+
+
 def kuramoto_rk4_vjp(
     trajectory: NDArray[np.float64],
     omega: NDArray[np.float64],
@@ -1155,6 +1205,7 @@ __all__ = [
     "kuramoto_inertial_trajectory",
     "kuramoto_symplectic_inertial_trajectory",
     "kuramoto_delayed_trajectory",
+    "kuramoto_noisy_trajectory",
     "kuramoto_rk4_trajectory",
     "kuramoto_rk4_vjp",
 ]
