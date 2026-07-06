@@ -207,7 +207,7 @@ pub fn kuramoto_euler_vjp_inner(
 }
 
 /// Write the networked force F_j = Σ_k K_jk sin(θ_k − θ_j) into ``out`` (flat coupling).
-fn networked_force_into(theta: &[f64], coupling_flat: &[f64], n: usize, out: &mut [f64]) {
+pub(crate) fn networked_force_into(theta: &[f64], coupling_flat: &[f64], n: usize, out: &mut [f64]) {
     for j in 0..n {
         let theta_j = theta[j];
         let row = &coupling_flat[j * n..j * n + n];
