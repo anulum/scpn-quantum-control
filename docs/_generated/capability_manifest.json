@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 787,
     "public_documentation_pages": 259,
-    "python_model_classes": 913,
-    "python_model_source_modules": 472,
+    "python_model_classes": 915,
+    "python_model_source_modules": 473,
     "rust_pyo3_model_wrappers": 172,
     "rust_source_modules": 52,
-    "test_files": 815
+    "test_files": 816
   },
   "documentation": {
     "examples": [
@@ -472,7 +472,7 @@
       {
         "package": "compiler",
         "path": "src/scpn_quantum_control/compiler",
-        "python_modules": 16
+        "python_modules": 17
       },
       {
         "package": "control",
@@ -999,6 +999,14 @@
       {
         "name": "CompilerAliasActivityEvidence",
         "path": "src/scpn_quantum_control/compiler/alias_activity_evidence.py"
+      },
+      {
+        "name": "CompilerPromotionBatch",
+        "path": "src/scpn_quantum_control/compiler/promotion_batch.py"
+      },
+      {
+        "name": "CompilerPromotionBatchEvidenceFile",
+        "path": "src/scpn_quantum_control/compiler/promotion_batch.py"
       },
       {
         "name": "ComposedObjectiveAuditSuiteResult",
@@ -4381,6 +4389,7 @@
       "src/scpn_quantum_control/compiler/mlir_vector_native_compilation.py",
       "src/scpn_quantum_control/compiler/mlir_whole_program_emitter.py",
       "src/scpn_quantum_control/compiler/mlir_whole_program_native.py",
+      "src/scpn_quantum_control/compiler/promotion_batch.py",
       "src/scpn_quantum_control/config.py",
       "src/scpn_quantum_control/control/adaptive_branching.py",
       "src/scpn_quantum_control/control/closed_loop_analysis.py",
@@ -5927,6 +5936,7 @@
       "tests/test_compare_eeg_plv_cohorts.py",
       "tests/test_compile_budget.py",
       "tests/test_compiler_alias_activity_evidence.py",
+      "tests/test_compiler_promotion_batch.py",
       "tests/test_compound_mitigation.py",
       "tests/test_config.py",
       "tests/test_confinement.py",

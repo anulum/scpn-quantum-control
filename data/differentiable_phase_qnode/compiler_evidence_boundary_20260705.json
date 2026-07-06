@@ -19,7 +19,7 @@
     "promotion_ready": false
   },
   "artifact_id": "compiler-evidence-boundary-20260705",
-  "claim_boundary": "Compiler evidence boundary only: bounded native LLVM/JIT tests, current Enzyme/LLVM execution evidence, and Program AD alias-activity lattice evidence are attached for reviewer triage; this artifact does not promote general compiler AD, isolated benchmarks, provider, hardware, GPU, or performance claim.",
+  "claim_boundary": "Compiler evidence boundary only: bounded native LLVM/JIT tests, current Enzyme/LLVM execution evidence, Program AD alias-activity lattice evidence, and the non-promotional compiler promotion batch are attached for reviewer triage; this artifact does not promote general compiler AD, isolated benchmarks, provider, hardware, GPU, or performance claim.",
   "classification": "functional_non_isolated",
   "enzyme_mlir": {
     "artifact_id": "enzyme-toolchain-ad-execution-20260705",
@@ -112,9 +112,17 @@
     "promotion_ready": false
   },
   "promotion_blockers": [
-    "isolated compiler benchmark artifact IDs missing",
-    "compiler promotion batch not assembled"
+    "isolated compiler benchmark artifact IDs missing"
   ],
+  "promotion_batch": {
+    "artifact_id": "compiler-promotion-batch-20260706",
+    "classification": "functional_non_isolated",
+    "missing_requirements": [
+      "isolated compiler benchmark artifact IDs"
+    ],
+    "promotion_ready": false,
+    "status": "blocked_missing_isolated_compiler_benchmark_ids"
+  },
   "promotion_ready": false,
   "required_evidence": [
     {
@@ -212,5 +220,5 @@
     }
   ],
   "schema": "scpn_qc_differentiable_compiler_evidence_boundary_v1",
-  "source_commit": "534010da"
+  "source_commit": "8df68be7"
 }

@@ -140,6 +140,14 @@ DEFAULT_ARTIFACT_BUNDLE_INPUTS: tuple[tuple[str, str], ...] = (
         "Program AD compiler alias-activity evidence reviewer summary",
     ),
     (
+        "data/differentiable_phase_qnode/compiler_promotion_batch_20260706.json",
+        "Non-promotional compiler evidence promotion-batch artefact",
+    ),
+    (
+        "data/differentiable_phase_qnode/compiler_promotion_batch_20260706.md",
+        "Non-promotional compiler evidence promotion-batch reviewer summary",
+    ),
+    (
         "data/differentiable_phase_qnode/external_validation_environment_lock_20260616.json",
         "Exact environment-lock manifest",
     ),

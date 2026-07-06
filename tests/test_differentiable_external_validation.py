@@ -222,6 +222,8 @@ def test_build_external_validation_artifact_bundle_records_committed_evidence() 
     assert (
         "data/differentiable_phase_qnode/compiler_alias_activity_evidence_20260706.json" in paths
     )
+    assert "data/differentiable_phase_qnode/compiler_promotion_batch_20260706.json" in paths
+    assert "data/differentiable_phase_qnode/compiler_promotion_batch_20260706.md" in paths
     assert (
         "data/differentiable_phase_qnode/native_whole_program_ad_execution_evidence_20260622.json"
         in paths
@@ -262,6 +264,12 @@ def test_committed_external_validation_artifact_bundle_matches_files() -> None:
         validation.checked_paths
     )
     assert "data/differentiable_phase_qnode/compiler_alias_activity_evidence_20260706.md" in (
+        validation.checked_paths
+    )
+    assert "data/differentiable_phase_qnode/compiler_promotion_batch_20260706.json" in (
+        validation.checked_paths
+    )
+    assert "data/differentiable_phase_qnode/compiler_promotion_batch_20260706.md" in (
         validation.checked_paths
     )
     assert "data/differentiable_phase_qnode/llvm_jit_claim_gate_20260704.md" in (
@@ -310,6 +318,11 @@ def test_compiler_evidence_boundary_artifact_preserves_promotion_gate() -> None:
             "data/differentiable_phase_qnode/compiler_alias_activity_evidence_20260706.json"
         ).read_text(encoding="utf-8")
     )
+    batch_payload = json.loads(
+        Path("data/differentiable_phase_qnode/compiler_promotion_batch_20260706.json").read_text(
+            encoding="utf-8"
+        )
+    )
     required = {str(row["name"]): row for row in payload["required_evidence"]}
 
     assert payload["schema"] == "scpn_qc_differentiable_compiler_evidence_boundary_v1"
@@ -340,11 +353,24 @@ def test_compiler_evidence_boundary_artifact_preserves_promotion_gate() -> None:
     }
     assert alias_payload["complete_lattice_case_count"] >= 3
     assert alias_payload["blocked_lattice_case_count"] >= 3
+    assert batch_payload["schema"] == "scpn_qc_compiler_promotion_batch_v1"
+    assert batch_payload["artifact_id"] == "compiler-promotion-batch-20260706"
+    assert batch_payload["status"] == "blocked_missing_isolated_compiler_benchmark_ids"
+    assert batch_payload["promotion_ready"] is False
+    assert batch_payload["promotion_blockers"] == [
+        "isolated compiler benchmark artifact IDs missing"
+    ]
     assert required["alias_activity"]["status"] == "bounded_evidence_attached"
     assert required["alias_activity"]["artifact_ids"] == [
         "compiler-alias-activity-evidence-20260706"
     ]
+    assert payload["promotion_batch"]["artifact_id"] == "compiler-promotion-batch-20260706"
+    assert payload["promotion_batch"]["promotion_ready"] is False
+    assert (
+        payload["promotion_batch"]["status"] == "blocked_missing_isolated_compiler_benchmark_ids"
+    )
     assert "isolated compiler benchmark artifact IDs missing" in payload["promotion_blockers"]
+    assert "compiler promotion batch not assembled" not in payload["promotion_blockers"]
     assert "alias-activity compiler evidence missing" not in payload["promotion_blockers"]
     assert "provider, hardware, GPU, or performance claim" in payload["claim_boundary"]
 

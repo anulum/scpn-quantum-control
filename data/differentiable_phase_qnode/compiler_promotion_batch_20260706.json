@@ -1,0 +1,103 @@
+{
+  "alias_activity_artifact_id": "compiler-alias-activity-evidence-20260706",
+  "artifact_id": "compiler-promotion-batch-20260706",
+  "assembled_evidence_count": 10,
+  "boundary_artifact_id": "compiler-evidence-boundary-20260705",
+  "claim_boundary": "Compiler promotion batch assembly only: committed compiler-boundary, alias-activity, native LLVM/JIT, native whole-program AD, and Enzyme/MLIR maturity evidence are checksummed for reviewer triage; this does not promote general compiler AD, isolated benchmarks, provider, hardware, GPU, or performance claim.",
+  "classification": "functional_non_isolated",
+  "enzyme_mlir_maturity_artifact_id": "enzyme-mlir-maturity-audit-20260616",
+  "evidence_files": [
+    {
+      "artifact_id": "compiler-alias-activity-evidence-20260706",
+      "path": "data/differentiable_phase_qnode/compiler_alias_activity_evidence_20260706.json",
+      "promotion_ready": false,
+      "role": "Program AD compiler alias-activity evidence",
+      "sha256": "87f194287513dc254e07195858fe13a9b479c00d4cc73aba2653baaba5c4bc35",
+      "size_bytes": 8120
+    },
+    {
+      "artifact_id": "compiler-alias-activity-evidence-20260706",
+      "path": "data/differentiable_phase_qnode/compiler_alias_activity_evidence_20260706.md",
+      "promotion_ready": false,
+      "role": "Program AD compiler alias-activity reviewer summary",
+      "sha256": "93e71c273495508e86ca1ed0a116c243f58c2ccdf3ed81e18287bf8d89fd67ce",
+      "size_bytes": 3253
+    },
+    {
+      "artifact_id": "compiler-evidence-boundary-20260705",
+      "path": "data/differentiable_phase_qnode/compiler_evidence_boundary_20260705.json",
+      "promotion_ready": false,
+      "role": "Compiler evidence boundary and remaining promotion gates",
+      "sha256": "4b818e07e1de839ffd185cf0694c67a36de9a4532ecaf85626cb005a40ac823b",
+      "size_bytes": 9091
+    },
+    {
+      "artifact_id": "compiler-evidence-boundary-20260705",
+      "path": "data/differentiable_phase_qnode/compiler_evidence_boundary_20260705.md",
+      "promotion_ready": false,
+      "role": "Compiler evidence boundary reviewer summary",
+      "sha256": "d89870f45d1ff2faa6a72cf007e72d897c302869b32a6385179d49efa7ff50be",
+      "size_bytes": 3688
+    },
+    {
+      "artifact_id": "enzyme-mlir-maturity-audit-20260616",
+      "path": "data/differentiable_phase_qnode/enzyme_mlir_maturity_audit_20260616.json",
+      "promotion_ready": false,
+      "role": "Enzyme/MLIR maturity and hard-gap evidence",
+      "sha256": "4c22d858a28b1ff94b06b4a135039eccc49890607c584a38b413e0ead46fb707",
+      "size_bytes": 4379
+    },
+    {
+      "artifact_id": "enzyme-mlir-maturity-audit-20260616",
+      "path": "data/differentiable_phase_qnode/enzyme_mlir_maturity_audit_20260616.md",
+      "promotion_ready": false,
+      "role": "Enzyme/MLIR maturity reviewer summary",
+      "sha256": "ec3b9caedfc2b20863b37309027a8cc49162de6400e0959a93cb75af4ca24656",
+      "size_bytes": 2143
+    },
+    {
+      "artifact_id": "llvm-jit-claim-gate-20260704",
+      "path": "data/differentiable_phase_qnode/llvm_jit_claim_gate_20260704.json",
+      "promotion_ready": false,
+      "role": "Native LLVM/JIT promotion claim gate",
+      "sha256": "e040b1d07b0e5c8195edfe18702f428510e2b05292ab934d9926b54ad7e73a26",
+      "size_bytes": 1789
+    },
+    {
+      "artifact_id": "llvm-jit-claim-gate-20260704",
+      "path": "data/differentiable_phase_qnode/llvm_jit_claim_gate_20260704.md",
+      "promotion_ready": false,
+      "role": "Native LLVM/JIT promotion claim-gate reviewer summary",
+      "sha256": "05b1fa03eb5dde4796e0dba999cf8e03fae3bffae028c3a0ef7122f9419febdd",
+      "size_bytes": 1917
+    },
+    {
+      "artifact_id": "native-whole-program-ad-execution-20260622",
+      "path": "data/differentiable_phase_qnode/native_whole_program_ad_execution_evidence_20260622.json",
+      "promotion_ready": false,
+      "role": "Native LLVM/JIT whole-program AD execution evidence",
+      "sha256": "c73447bb64f21e7412eb479ee67a773fd1687ebce5357dc7a07c6f9256faf6b0",
+      "size_bytes": 10313
+    },
+    {
+      "artifact_id": "native-whole-program-ad-execution-20260622",
+      "path": "data/differentiable_phase_qnode/native_whole_program_ad_execution_evidence_20260622.md",
+      "promotion_ready": false,
+      "role": "Native LLVM/JIT whole-program AD execution reviewer summary",
+      "sha256": "6e6d58e4e99595c271164fe0ace562e2e1a9fc3c099a34bdb8b312b7010c93c0",
+      "size_bytes": 1642
+    }
+  ],
+  "llvm_jit_claim_gate_artifact_id": "llvm-jit-claim-gate-20260704",
+  "missing_requirements": [
+    "isolated compiler benchmark artifact IDs"
+  ],
+  "native_whole_program_artifact_id": "native-whole-program-ad-execution-20260622",
+  "promotion_blockers": [
+    "isolated compiler benchmark artifact IDs missing"
+  ],
+  "promotion_ready": false,
+  "schema": "scpn_qc_compiler_promotion_batch_v1",
+  "source_commit": "8df68be7",
+  "status": "blocked_missing_isolated_compiler_benchmark_ids"
+}

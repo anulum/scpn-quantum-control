@@ -105,6 +105,14 @@ from .mlir import (
     run_enzyme_toolchain_execution_evidence,
     run_native_whole_program_ad_execution_evidence,
 )
+from .promotion_batch import (
+    COMPILER_PROMOTION_BATCH_ID,
+    COMPILER_PROMOTION_BATCH_SCHEMA,
+    CompilerPromotionBatch,
+    CompilerPromotionBatchEvidenceFile,
+    build_compiler_promotion_batch,
+    render_compiler_promotion_batch_markdown,
+)
 
 __all__ = [
     "CompilerADExecutableConfig",
@@ -112,8 +120,12 @@ __all__ = [
     "CompilerADTransformPlan",
     "COMPILER_ALIAS_ACTIVITY_EVIDENCE_ID",
     "COMPILER_ALIAS_ACTIVITY_EVIDENCE_SCHEMA",
+    "COMPILER_PROMOTION_BATCH_ID",
+    "COMPILER_PROMOTION_BATCH_SCHEMA",
     "CompilerAliasActivityCase",
     "CompilerAliasActivityEvidence",
+    "CompilerPromotionBatch",
+    "CompilerPromotionBatchEvidenceFile",
     "DifferentiableMLIRCompileConfig",
     "EnzymeMLIRBenchmarkAttachment",
     "EnzymeMLIRCompilerADBreadthArtifact",
@@ -140,6 +152,7 @@ __all__ = [
     "MLIRModule",
     "analyse_whole_program_ad_native_lowering",
     "build_compiler_alias_activity_evidence",
+    "build_compiler_promotion_batch",
     "build_llvm_jit_claim_gate",
     "build_enzyme_mlir_benchmark_attachment",
     "build_enzyme_mlir_compiler_ad_breadth_artifact",
@@ -197,6 +210,7 @@ __all__ = [
     "native_whole_program_ad_compile_cache_stats",
     "native_whole_program_ad_linalg_support",
     "render_compiler_alias_activity_evidence_markdown",
+    "render_compiler_promotion_batch_markdown",
     "render_llvm_jit_claim_gate_markdown",
     "run_enzyme_mlir_maturity_audit",
     "run_enzyme_toolchain_execution_evidence",
