@@ -11,8 +11,8 @@
     "public_documentation_pages": 260,
     "python_model_classes": 911,
     "python_model_source_modules": 471,
-    "rust_pyo3_model_wrappers": 174,
-    "rust_source_modules": 53,
+    "rust_pyo3_model_wrappers": 175,
+    "rust_source_modules": 54,
     "test_files": 813
   },
   "documentation": {
@@ -4765,6 +4765,7 @@
       "kuramoto_interaction_energy_hessian",
       "kuramoto_rk4_trajectory",
       "kuramoto_rk4_vjp",
+      "kuramoto_symplectic_inertial_trajectory",
       "kuramoto_trajectory",
       "kuramoto_witness_candidate_features",
       "lanczos_b_coefficients",
@@ -4918,6 +4919,7 @@
       "scpn_quantum_engine/src/kuramoto_dopri.rs",
       "scpn_quantum_engine/src/kuramoto_inertial.rs",
       "scpn_quantum_engine/src/kuramoto_observables.rs",
+      "scpn_quantum_engine/src/kuramoto_symplectic_inertial.rs",
       "scpn_quantum_engine/src/lib.rs",
       "scpn_quantum_engine/src/lindblad.rs",
       "scpn_quantum_engine/src/ml_dsa.rs",

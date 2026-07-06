@@ -488,6 +488,10 @@ from .networked_kuramoto import (
     networked_kuramoto_force,
     networked_kuramoto_jacobian,
 )
+from .networked_symplectic_inertial import (
+    last_networked_symplectic_inertial_trajectory_tier_used,
+    networked_symplectic_inertial_trajectory,
+)
 from .neural_lyapunov_certificate import (
     LyapunovCertificateReport,
     LyapunovCounterexample,
@@ -975,6 +979,8 @@ __all__ = [
     "last_networked_kuramoto_jacobian_tier_used",
     "networked_inertial_trajectory",
     "last_networked_inertial_trajectory_tier_used",
+    "networked_symplectic_inertial_trajectory",
+    "last_networked_symplectic_inertial_trajectory_tier_used",
     "order_parameter",
     "order_parameter_gradient",
     "order_parameter_hessian",

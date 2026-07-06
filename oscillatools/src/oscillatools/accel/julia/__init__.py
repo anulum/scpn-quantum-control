@@ -966,6 +966,66 @@ def kuramoto_inertial_trajectory(
     return sample_times, phases, velocity_history
 
 
+def kuramoto_symplectic_inertial_trajectory(
+    theta0: NDArray[np.float64],
+    velocities: NDArray[np.float64],
+    omega: NDArray[np.float64],
+    coupling: NDArray[np.float64],
+    mass: float,
+    damping: float,
+    dt: float,
+    n_steps: int,
+) -> tuple[NDArray[np.float64], NDArray[np.float64], NDArray[np.float64]]:
+    """Julia-tier symplectic (velocity-Verlet) inertial networked-Kuramoto forward trajectory.
+
+    Integrates the swing equation ``m θ̈ + γ θ̇ = ω + F(θ)`` by a damped velocity-Verlet splitting,
+    mirroring the Python floor and Rust tier (tolerance-parity, ~1e-11).
+
+    Parameters
+    ----------
+    theta0 : numpy.ndarray
+        One-dimensional array of ``N`` initial phases in radians.
+    velocities : numpy.ndarray
+        One-dimensional array of ``N`` initial velocities ``v = θ̇``.
+    omega : numpy.ndarray
+        One-dimensional array of ``N`` natural frequencies / power injections.
+    coupling : numpy.ndarray
+        Two-dimensional ``(N, N)`` coupling matrix ``K``.
+    mass : float
+        The inertia ``m`` (``> 0``).
+    damping : float
+        The damping ``γ`` (``≥ 0``); ``0`` is the exactly symplectic Hamiltonian limit.
+    dt : float
+        The fixed Verlet time step (``> 0``).
+    n_steps : int
+        The number of steps (``≥ 1``); the trajectory has ``n_steps + 1`` samples.
+
+    Returns
+    -------
+    tuple of numpy.ndarray
+        ``(times, phases, velocities)`` — the ``(M + 1,)`` sample times, the ``(M + 1, N)`` phases
+        and the ``(M + 1, N)`` velocities, with ``M = n_steps``.
+    """
+    jl = _load()
+    count = int(np.asarray(theta0).size)
+    times, phases_flat, velocities_flat = jl.kuramoto_symplectic_inertial_trajectory(
+        np.ascontiguousarray(theta0, dtype=np.float64),
+        np.ascontiguousarray(velocities, dtype=np.float64),
+        np.ascontiguousarray(omega, dtype=np.float64),
+        np.ascontiguousarray(coupling, dtype=np.float64),
+        float(mass),
+        float(damping),
+        float(dt),
+        int(n_steps),
+    )
+    sample_times = np.ascontiguousarray(times, dtype=np.float64)
+    phases = np.ascontiguousarray(phases_flat, dtype=np.float64).reshape(sample_times.size, count)
+    velocity_history = np.ascontiguousarray(velocities_flat, dtype=np.float64).reshape(
+        sample_times.size, count
+    )
+    return sample_times, phases, velocity_history
+
+
 def kuramoto_rk4_vjp(
     trajectory: NDArray[np.float64],
     omega: NDArray[np.float64],
@@ -1046,6 +1106,7 @@ __all__ = [
     "kuramoto_euler_vjp",
     "kuramoto_dopri_trajectory",
     "kuramoto_inertial_trajectory",
+    "kuramoto_symplectic_inertial_trajectory",
     "kuramoto_rk4_trajectory",
     "kuramoto_rk4_vjp",
 ]

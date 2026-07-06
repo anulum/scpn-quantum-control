@@ -277,6 +277,11 @@ _SPECS: tuple[PrimitiveSpec, ...] = (
     # Adaptive Dormand–Prince and inertial (second-order) forward trajectories.
     PrimitiveSpec("kuramoto_dopri_trajectory", _build_dopri_trajectory_args, "trajectory"),
     PrimitiveSpec("networked_inertial_trajectory", _build_inertial_trajectory_args, "trajectory"),
+    PrimitiveSpec(
+        "networked_symplectic_inertial_trajectory",
+        _build_inertial_trajectory_args,
+        "trajectory",
+    ),
 )
 
 

@@ -110,8 +110,8 @@ has a defined commercial licensing route.
 | Public Python classes | 911 |
 | Domain package families | 31 |
 | API documentation pages | 0 |
-| Rust PyO3 function bindings | 174 |
-| Rust source modules | 53 |
+| Rust PyO3 function bindings | 175 |
+| Rust source modules | 54 |
 | Notebook files | 100 |
 | Example files | 33 |
 | Optional extras | 43 |
