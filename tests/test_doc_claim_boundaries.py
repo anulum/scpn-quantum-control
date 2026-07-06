@@ -104,3 +104,103 @@ def test_public_claim_inventory_is_marked_as_legacy_triage() -> None:
     assert "proves readout is clean" not in collapsed
     assert "The extremes follow coupling" not in collapsed
     assert "more robust to decoherence" not in collapsed
+
+
+# --------------------------------------------------------------------------------------------------
+# BP3 — Phase-7 vendor self-benchmark ratio provenance guard.
+#
+# The Phase-7 backend roadmap collects competitor GPU/backend performance ratios that originate as
+# *vendor self-benchmarks* (documented conflict of interest + version staleness): the Julia
+# GPU-kernel large-N throughput figure and the DiffMPC time-parallel-PCG-kernel-over-trajax figure.
+# The roadmap keeps them strictly as "re-measure before quoting" planning inputs — we have not
+# reproduced them (the accelerated GPU tier is owner-gated cloud work). This guard enforces that
+# discipline on every public / citable surface: an unreproduced vendor ratio may never reach the
+# README, the docs site or the JOSS paper presented as our own result. A qualified mention (carrying a
+# vendor-reported caveat in the same document) is allowed; an unqualified one fails the gate.
+
+#: Distinctive competitor tool names and ratio strings whose only source is an unreproduced vendor
+#: self-benchmark. Named products (DiffEqGPU, DiffMPC, trajax, torchdiffeq) are unambiguous
+#: competitor references; the two ratio strings are the exact figures quoted in the roadmap.
+_UNREPRODUCED_VENDOR_CLAIM_TOKENS = (
+    "diffeqgpu",  # Utkarsh et al., CMAME 419 (2024) — Julia GPU-kernel large-N throughput
+    "diffmpc",  # Toyota (2025) — time-parallel PCG GPU kernel over the trajax baseline
+    "trajax",  # JAX trajectory-optimisation baseline used in the vendor GPU comparison
+    "torchdiffeq",  # PyTorch ODE baseline used in vendor differentiable-solver comparisons
+    "20–100×",  # vendor large-N GPU throughput ratio (en-dash / multiplication sign)
+    "20-100x",  # ascii variant of the same ratio
+    "4–7×",  # DiffMPC PCG-kernel-over-trajax ratio
+    "4-7x",  # ascii variant of the same ratio
+)
+
+#: Any one of these, present in the same document, marks a vendor figure as vendor-reported rather
+#: than our own measurement, which satisfies the "re-measure before quoting" discipline.
+_VENDOR_REPORTED_QUALIFIERS = (
+    "vendor self-benchmark",
+    "vendor-reported",
+    "not our measurement",
+    "under favourable conditions",
+    "conflict of interest",
+)
+
+
+def _tracked_public_docs() -> list[Path]:
+    """Return the public / citable Markdown surfaces (README, docs site, paper).
+
+    Internal planning docs under ``docs/internal`` are gitignored and never shipped, so they are
+    excluded — the roadmap is where these vendor figures legitimately live as planning inputs.
+    """
+    docs: list[Path] = [REPO_ROOT / "README.md"]
+    for directory in (
+        REPO_ROOT / "docs",
+        REPO_ROOT / "oscillatools" / "docs",
+        REPO_ROOT / "paper",
+    ):
+        docs.extend(sorted(directory.rglob("*.md")))
+    return [
+        path
+        for path in docs
+        if path.exists() and "internal" not in path.relative_to(REPO_ROOT).parts
+    ]
+
+
+def test_phase7_vendor_self_benchmark_ratios_not_quoted_unqualified_in_public_docs() -> None:
+    """No unreproduced competitor GPU/backend vendor ratio may appear unqualified in a public doc.
+
+    Phase-7 backend performance ratios are vendor self-benchmarks (documented conflict of interest +
+    version staleness); the roadmap records them only as "re-measure before quoting" planning inputs.
+    Until the owner-gated GPU tier reproduces them they must not leak into any public / citable surface
+    as if they were our measurement. A qualified mention (with a vendor-reported caveat in the same
+    document) is allowed; an unqualified one is not — this is the enforcement of BP3.
+    """
+    offenders: list[str] = []
+    for doc in _tracked_public_docs():
+        lowered = doc.read_text(encoding="utf-8").lower()
+        if any(qualifier in lowered for qualifier in _VENDOR_REPORTED_QUALIFIERS):
+            continue
+        relative = doc.relative_to(REPO_ROOT)
+        offenders.extend(
+            f"{relative} quotes '{token}' with no vendor-reported qualifier"
+            for token in _UNREPRODUCED_VENDOR_CLAIM_TOKENS
+            if token in lowered
+        )
+    assert not offenders, (
+        "Unqualified Phase-7 vendor self-benchmark ratios found in public docs "
+        "(re-measure or add a vendor-reported caveat):\n" + "\n".join(offenders)
+    )
+
+
+def test_competitive_benchmark_reports_our_own_measurement_not_vendor_ratios() -> None:
+    """The public competitive evidence must be our own honest measurement, not vendor self-benchmarks.
+
+    The correct alternative to quoting a vendor ratio is to measure it ourselves: the competitive
+    benchmark doc reports live rows for present competitors and honest ``unavailable`` rows for absent
+    ones, and reports honestly where a competitor is faster — the discipline BP3 protects.
+    """
+    text = _read("docs/kuramoto_competitive_benchmark.md")
+    lowered = text.lower()
+    assert "unavailable" in lowered
+    assert "honest" in lowered
+    for token in _UNREPRODUCED_VENDOR_CLAIM_TOKENS:
+        assert token not in lowered, (
+            f"competitive evidence must not carry the unreproduced vendor token '{token}'"
+        )
