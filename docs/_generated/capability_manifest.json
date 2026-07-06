@@ -7,13 +7,13 @@
     "model_documentation_pages": 0,
     "notebook_files": 100,
     "optional_extras": 43,
-    "public_api_exports": 787,
+    "public_api_exports": 795,
     "public_documentation_pages": 260,
-    "python_model_classes": 911,
-    "python_model_source_modules": 471,
+    "python_model_classes": 918,
+    "python_model_source_modules": 474,
     "rust_pyo3_model_wrappers": 177,
-    "rust_source_modules": 56,
-    "test_files": 813
+    "rust_source_modules": 57,
+    "test_files": 817
   },
   "documentation": {
     "examples": [
@@ -458,7 +458,7 @@
       {
         "package": "benchmarks",
         "path": "src/scpn_quantum_control/benchmarks",
-        "python_modules": 18
+        "python_modules": 19
       },
       {
         "package": "bridge",
@@ -473,7 +473,7 @@
       {
         "package": "compiler",
         "path": "src/scpn_quantum_control/compiler",
-        "python_modules": 15
+        "python_modules": 17
       },
       {
         "package": "control",
@@ -994,6 +994,30 @@
         "path": "src/scpn_quantum_control/compiler/mlir_records.py"
       },
       {
+        "name": "CompilerAliasActivityCase",
+        "path": "src/scpn_quantum_control/compiler/alias_activity_evidence.py"
+      },
+      {
+        "name": "CompilerAliasActivityEvidence",
+        "path": "src/scpn_quantum_control/compiler/alias_activity_evidence.py"
+      },
+      {
+        "name": "CompilerIsolatedBenchmarkEvidence",
+        "path": "src/scpn_quantum_control/benchmarks/compiler_isolated_benchmark_evidence.py"
+      },
+      {
+        "name": "CompilerIsolatedBenchmarkEvidenceFiles",
+        "path": "src/scpn_quantum_control/benchmarks/compiler_isolated_benchmark_evidence.py"
+      },
+      {
+        "name": "CompilerPromotionBatch",
+        "path": "src/scpn_quantum_control/compiler/promotion_batch.py"
+      },
+      {
+        "name": "CompilerPromotionBatchEvidenceFile",
+        "path": "src/scpn_quantum_control/compiler/promotion_batch.py"
+      },
+      {
         "name": "ComposedObjectiveAuditSuiteResult",
         "path": "src/scpn_quantum_control/phase/objective_audit.py"
       },
@@ -1475,6 +1499,10 @@
       },
       {
         "name": "EnzymeMLIRCompilerADBreadthArtifact",
+        "path": "src/scpn_quantum_control/compiler/mlir_enzyme_evidence.py"
+      },
+      {
+        "name": "EnzymeMLIRCompilerADBreadthArtifactFiles",
         "path": "src/scpn_quantum_control/compiler/mlir_enzyme_evidence.py"
       },
       {
@@ -4326,6 +4354,7 @@
       "src/scpn_quantum_control/benchmarks/advantage_protocol.py",
       "src/scpn_quantum_control/benchmarks/appqsim_protocol.py",
       "src/scpn_quantum_control/benchmarks/classical_baselines.py",
+      "src/scpn_quantum_control/benchmarks/compiler_isolated_benchmark_evidence.py",
       "src/scpn_quantum_control/benchmarks/differentiable_catalyst_comparison.py",
       "src/scpn_quantum_control/benchmarks/differentiable_evidence.py",
       "src/scpn_quantum_control/benchmarks/differentiable_external_comparison.py",
@@ -4358,6 +4387,7 @@
       "src/scpn_quantum_control/bridge/ssgf_w_adapter.py",
       "src/scpn_quantum_control/codegen/ultrascale_hls.py",
       "src/scpn_quantum_control/compile_budget.py",
+      "src/scpn_quantum_control/compiler/alias_activity_evidence.py",
       "src/scpn_quantum_control/compiler/mlir.py",
       "src/scpn_quantum_control/compiler/mlir_enzyme_evidence.py",
       "src/scpn_quantum_control/compiler/mlir_enzyme_execution_runner.py",
@@ -4373,6 +4403,7 @@
       "src/scpn_quantum_control/compiler/mlir_vector_native_compilation.py",
       "src/scpn_quantum_control/compiler/mlir_whole_program_emitter.py",
       "src/scpn_quantum_control/compiler/mlir_whole_program_native.py",
+      "src/scpn_quantum_control/compiler/promotion_batch.py",
       "src/scpn_quantum_control/config.py",
       "src/scpn_quantum_control/control/adaptive_branching.py",
       "src/scpn_quantum_control/control/closed_loop_analysis.py",
@@ -4934,6 +4965,7 @@
       "scpn_quantum_engine/src/pec.rs",
       "scpn_quantum_engine/src/program_ad_ir.rs",
       "scpn_quantum_engine/src/program_ad_linalg_array.rs",
+      "scpn_quantum_engine/src/program_ad_linalg_pinv.rs",
       "scpn_quantum_engine/src/program_ad_linalg_spectral.rs",
       "scpn_quantum_engine/src/program_ad_linalg_svd.rs",
       "scpn_quantum_engine/src/program_ad_order_statistic_reduction.rs",
@@ -4990,6 +5022,8 @@
     "CompilerADExecutableConfig",
     "CompilerADKernelVerification",
     "CompilerADTransformPlan",
+    "CompilerIsolatedBenchmarkEvidence",
+    "CompilerIsolatedBenchmarkEvidenceFiles",
     "ContainerResources",
     "ControlQEC",
     "CustomDerivativeCheckResult",
@@ -5046,6 +5080,7 @@
     "EntropyHealthReport",
     "EnzymeMLIRBenchmarkAttachment",
     "EnzymeMLIRCompilerADBreadthArtifact",
+    "EnzymeMLIRCompilerADBreadthArtifactFiles",
     "EnzymeMLIRCompilerADBreadthCaseEvidence",
     "EnzymeMLIRCompilerADBreadthEvidence",
     "EnzymeMLIRMaturityAuditResult",
@@ -5300,6 +5335,7 @@
     "braket_circuit_to_workload",
     "build_backend",
     "build_compiler_ad_transform_plan",
+    "build_compiler_isolated_benchmark_evidence",
     "build_differentiable_benchmark_report",
     "build_enzyme_mlir_benchmark_attachment",
     "build_enzyme_mlir_compiler_ad_breadth_artifact",
@@ -5620,11 +5656,13 @@
     "registered_custom_jvp",
     "registered_custom_vjp",
     "render_competitive_baseline_refresh_markdown",
+    "render_compiler_isolated_benchmark_evidence_markdown",
     "render_differentiable_architecture_map_markdown",
     "render_differentiable_dependency_environment_map_markdown",
     "render_differentiable_isolated_benchmark_plan_markdown",
     "render_differentiable_rust_python_inventory_markdown",
     "render_differentiable_sota_scorecard_markdown",
+    "render_enzyme_mlir_compiler_ad_breadth_artifact_markdown",
     "resolve_aggregator_provider_route",
     "reverse_cos",
     "reverse_exp",
@@ -5739,6 +5777,8 @@
     "whole_program_value_and_grad",
     "wirtinger_partials",
     "write_bundle",
+    "write_compiler_isolated_benchmark_evidence",
+    "write_enzyme_mlir_compiler_ad_breadth_artifact",
     "write_stable_core_capability_artifacts",
     "zne_extrapolate"
   ],
@@ -5927,6 +5967,9 @@
       "tests/test_commutator_bounds.py",
       "tests/test_compare_eeg_plv_cohorts.py",
       "tests/test_compile_budget.py",
+      "tests/test_compiler_alias_activity_evidence.py",
+      "tests/test_compiler_isolated_benchmark_evidence.py",
+      "tests/test_compiler_promotion_batch.py",
       "tests/test_compound_mitigation.py",
       "tests/test_config.py",
       "tests/test_confinement.py",
@@ -6202,6 +6245,7 @@
       "tests/test_lindblad_trajectory.py",
       "tests/test_link_check_history_audit.py",
       "tests/test_llvm_jit_claim_gate.py",
+      "tests/test_llvm_jit_crash_safety.py",
       "tests/test_logging_setup.py",
       "tests/test_logical_dla_parity.py",
       "tests/test_logical_dla_parity_branches.py",
