@@ -12,7 +12,7 @@
 //! SSA node per scalar pseudoinverse output. This module owns the Rust-side
 //! constant-rank replay contract for small matrices so the main Program AD
 //! evaluator remains a dispatcher. It deliberately fails closed for matrices
-//! outside the rank-1/2x2/3x2/2x3 boundary, rank-threshold crossings, malformed
+//! outside the rank-1/`N x 2`/`2 x N` boundary, rank-threshold crossings, malformed
 //! metadata, non-finite inputs, and Hermitian or dynamic cutoff policies because
 //! those need a broader linalg policy before promotion.
 
@@ -80,7 +80,7 @@ fn parse_pinv(
     let (rows, cols, rcond, output_row, output_col) = parse_pinv_metadata(effect_index, operation)?;
     if !is_bounded_pinv_shape(rows, cols) {
         return Err(format!(
-            "effect {effect_index} pinv Rust replay supports only rank-1, 2x2, 3x2, and 2x3 matrices"
+            "effect {effect_index} pinv Rust replay supports only rank-1, Nx2, and 2xN matrices"
         ));
     }
     if input_values.len() != rows * cols {
@@ -154,7 +154,7 @@ fn parse_pinv_metadata(
 }
 
 fn is_bounded_pinv_shape(rows: usize, cols: usize) -> bool {
-    rows == 1 || cols == 1 || ((rows == 2 && (cols == 2 || cols == 3)) || (rows == 3 && cols == 2))
+    rows == 1 || cols == 1 || rows == 2 || cols == 2
 }
 
 fn pinv_bounded(

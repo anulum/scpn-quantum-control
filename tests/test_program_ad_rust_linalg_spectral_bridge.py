@@ -30,6 +30,14 @@ _PINV_WEIGHTS = np.array(
     [[0.4, -0.2, 0.3], [0.1, -0.5, 0.25]],
     dtype=np.float64,
 )
+_PINV_TALL_WEIGHTS = np.array(
+    [[0.4, -0.2, 0.3, 0.15], [0.1, -0.5, 0.25, -0.35]],
+    dtype=np.float64,
+)
+_PINV_WIDE_WEIGHTS = np.array(
+    [[0.25, -0.5], [0.75, 0.1], [-0.2, 0.4], [0.3, -0.15]],
+    dtype=np.float64,
+)
 _PINV_COLUMN_WEIGHTS = np.array([[0.3, -0.7, 0.2]], dtype=np.float64)
 _PINV_ROW_WEIGHTS = np.array([[0.4], [-0.6], [0.15]], dtype=np.float64)
 
@@ -71,6 +79,20 @@ def _weighted_pinv_objective(values: Any) -> Any:
 
     matrix = np.reshape(values, (3, 2))
     return np.sum(np.linalg.pinv(matrix, rcond=0.0) * _PINV_WEIGHTS)
+
+
+def _weighted_tall_pinv_objective(values: Any) -> Any:
+    """Return a scalar weighted pseudoinverse for a full-rank 4x2 matrix."""
+
+    matrix = np.reshape(values, (4, 2))
+    return np.sum(np.linalg.pinv(matrix, rcond=0.0) * _PINV_TALL_WEIGHTS)
+
+
+def _weighted_wide_pinv_objective(values: Any) -> Any:
+    """Return a scalar weighted pseudoinverse for a full-rank 2x4 matrix."""
+
+    matrix = np.reshape(values, (2, 4))
+    return np.sum(np.linalg.pinv(matrix, rcond=0.0) * _PINV_WIDE_WEIGHTS)
 
 
 def _weighted_column_pinv_objective(values: Any) -> Any:
@@ -190,6 +212,66 @@ def test_rust_bridge_replays_program_ad_3x2_pinv_value_and_gradient() -> None:
         "linalg:pinv:3x2:0:1:1",
         "linalg:pinv:3x2:0:1:2",
     } <= pinv_operations
+
+    rust_result = value_and_grad_program_ad_effect_ir_with_rust(result.program_ir, values)
+
+    assert rust_result.supported is True, rust_result.blocked_reasons
+    assert rust_result.value == pytest.approx(result.value, abs=1.0e-12)
+    np.testing.assert_allclose(rust_result.gradient, result.gradient, atol=1.0e-12)
+
+
+@pytest.mark.parametrize(
+    ("objective", "values", "expected_operations"),
+    (
+        (
+            _weighted_tall_pinv_objective,
+            np.array([2.0, 0.2, 0.3, 1.4, 0.5, -0.7, 1.1, 0.4], dtype=np.float64),
+            {
+                "linalg:pinv:4x2:0:0:0",
+                "linalg:pinv:4x2:0:0:1",
+                "linalg:pinv:4x2:0:0:2",
+                "linalg:pinv:4x2:0:0:3",
+                "linalg:pinv:4x2:0:1:0",
+                "linalg:pinv:4x2:0:1:1",
+                "linalg:pinv:4x2:0:1:2",
+                "linalg:pinv:4x2:0:1:3",
+            },
+        ),
+        (
+            _weighted_wide_pinv_objective,
+            np.array([2.0, 0.3, -0.2, 1.1, 0.4, 1.5, 0.7, -0.6], dtype=np.float64),
+            {
+                "linalg:pinv:2x4:0:0:0",
+                "linalg:pinv:2x4:0:0:1",
+                "linalg:pinv:2x4:0:1:0",
+                "linalg:pinv:2x4:0:1:1",
+                "linalg:pinv:2x4:0:2:0",
+                "linalg:pinv:2x4:0:2:1",
+                "linalg:pinv:2x4:0:3:0",
+                "linalg:pinv:2x4:0:3:1",
+            },
+        ),
+    ),
+)
+def test_rust_bridge_replays_program_ad_rank2_pinv_breadth_value_and_gradient(
+    objective: Callable[[Any], Any],
+    values: NDArray[np.float64],
+    expected_operations: set[str],
+) -> None:
+    """Rust Program AD replay should match Python rank-2 pinv adjoints."""
+
+    engine = pytest.importorskip("scpn_quantum_engine")
+    assert callable(getattr(engine, "program_ad_effect_ir_interpret_value_and_gradient", None))
+
+    result = whole_program_value_and_grad(
+        objective,
+        values,
+        parameters=tuple(Parameter(f"x{index}") for index in range(values.size)),
+    )
+
+    assert result.program_ir is not None
+    pinv_operations = {effect.operation for effect in result.program_ir.effects}
+    assert expected_operations <= pinv_operations
 
     rust_result = value_and_grad_program_ad_effect_ir_with_rust(result.program_ir, values)
 

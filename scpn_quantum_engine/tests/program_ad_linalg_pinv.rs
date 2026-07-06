@@ -127,6 +127,78 @@ fn rust_program_ad_replays_full_rank_3x2_pinv_value_and_gradient() {
 }
 
 #[test]
+fn rust_program_ad_replays_full_rank_4x2_pinv_value_and_gradient() {
+    let matrix = vec![2.0, 0.2, 0.3, 1.4, 0.5, -0.7, 1.1, 0.4];
+    let weights = vec![0.4, -0.2, 0.3, 0.15, 0.1, -0.5, 0.25, -0.35];
+    let result = interpret_program_ad_effect_ir_value_and_gradient(
+        &weighted_pinv_ir(4, 2, "0.0", &weights),
+        &matrix,
+    )
+    .expect("full-rank 4x2 pinv replay should be supported");
+
+    let expected_value = -0.159_725_924_751_790_43_f64;
+    let expected_gradient = [
+        -0.091_073_492_675_524_31_f64,
+        0.108_519_762_154_881_11_f64,
+        -0.002_955_274_429_169_524_5_f64,
+        0.210_666_924_775_447_4_f64,
+        -0.013_886_441_148_318_659_f64,
+        -0.105_834_620_145_362_18_f64,
+        -0.031_275_006_982_748_9_f64,
+        -0.016_541_651_328_957_675_f64,
+    ];
+
+    assert!(result.supported, "{:?}", result.blocked_reasons);
+    assert_close(
+        result
+            .value
+            .expect("supported replay should return a value"),
+        expected_value,
+        1.0e-12,
+    );
+    assert_eq!(result.gradient.len(), expected_gradient.len());
+    for (actual, expected) in result.gradient.iter().zip(expected_gradient.iter()) {
+        assert_close(*actual, *expected, 1.0e-12);
+    }
+}
+
+#[test]
+fn rust_program_ad_replays_full_rank_2x4_pinv_value_and_gradient() {
+    let matrix = vec![2.0, 0.3, -0.2, 1.1, 0.4, 1.5, 0.7, -0.6];
+    let weights = vec![0.25, -0.5, 0.75, 0.1, -0.2, 0.4, 0.3, -0.15];
+    let result = interpret_program_ad_effect_ir_value_and_gradient(
+        &weighted_pinv_ir(2, 4, "0.0", &weights),
+        &matrix,
+    )
+    .expect("full-rank 2x4 pinv replay should be supported");
+
+    let expected_value = 0.314_891_984_726_169_4_f64;
+    let expected_gradient = [
+        -0.090_017_399_050_780_77_f64,
+        0.166_580_966_834_396_38_f64,
+        -0.007_787_962_358_236_88_f64,
+        -0.050_270_371_570_694_88_f64,
+        -0.120_011_913_718_148_43_f64,
+        -0.080_498_477_815_003_38_f64,
+        0.074_752_670_010_661_77_f64,
+        0.024_443_412_027_513_784_f64,
+    ];
+
+    assert!(result.supported, "{:?}", result.blocked_reasons);
+    assert_close(
+        result
+            .value
+            .expect("supported replay should return a value"),
+        expected_value,
+        1.0e-12,
+    );
+    assert_eq!(result.gradient.len(), expected_gradient.len());
+    for (actual, expected) in result.gradient.iter().zip(expected_gradient.iter()) {
+        assert_close(*actual, *expected, 1.0e-12);
+    }
+}
+
+#[test]
 fn rust_program_ad_replays_full_rank_3x1_pinv_value_and_gradient() {
     let matrix = vec![2.0, -0.5, 1.25];
     let weights = vec![0.3, -0.7, 0.2];
@@ -224,10 +296,10 @@ fn rust_program_ad_rejects_rank_deficient_rank1_pinv_gradient() {
 
 #[test]
 fn rust_program_ad_rejects_unsupported_pinv_shape() {
-    let matrix = vec![1.0, 0.0, 0.0, 1.0, 0.25, -0.5, 0.75, 0.5];
-    let weights = vec![1.0, -0.5, 0.25, 0.75, -0.25, 0.5, -0.1, 0.3];
+    let matrix = vec![1.0, 0.0, 0.0, 0.25, 1.0, -0.5, 0.75, 0.5, 2.0];
+    let weights = vec![1.0, -0.5, 0.25, 0.75, -0.25, 0.5, -0.1, 0.3, 0.2];
     let result = interpret_program_ad_effect_ir_value_and_gradient(
-        &weighted_pinv_ir(4, 2, "0.0", &weights),
+        &weighted_pinv_ir(3, 3, "0.0", &weights),
         &matrix,
     )
     .expect("unsupported broad pinv replay should return a structured result");

@@ -86,7 +86,7 @@ scalar/static-linalg plus elementwise/static-structural, fixed `multi_dot`,
 2x2 distinct symmetric `eigvalsh`, 2x2 distinct symmetric `eigh`
 eigenvalues/nonzero-offdiagonal eigenvectors, 2x2 real-distinct `eigvals`,
 2x2 distinct-positive `svd(..., compute_uv=False)` singular-value replay, and
-constant-full-rank rank-1/2x2/3x2/2x3 `pinv` replay.
+constant-full-rank rank-1/Nx2/2xN `pinv` replay.
 Rust
 value+gradient replay executes opcode-bearing scalar, bounded elementwise
 shaped-array, and bounded static structural `program_ad_effect_ir.v1` rows at
@@ -103,7 +103,7 @@ symmetric `np.linalg.eigvalsh` output replay, bounded 2x2 distinct symmetric
 `np.linalg.eigh` eigenvalue and nonzero-offdiagonal eigenvector replay,
 bounded 2x2 real-distinct `np.linalg.eigvals` output replay, bounded 2x2
 distinct-positive `np.linalg.svd(..., compute_uv=False)` singular-value
-output replay, constant-full-rank rank-1/2x2/3x2/2x3 `np.linalg.pinv` output
+output replay, constant-full-rank rank-1/Nx2/2xN `np.linalg.pinv` output
 replay, static source-map
 `index_map:<sN|cVALUE,...>` indexing, inert source `alias_analysis:assignment_binding`
 and `expression_rebinding_alias` metadata attached by local static-gather temporaries, and executed runtime branch metadata when
@@ -111,7 +111,7 @@ matched by runtime phi provenance. Legacy opcode-free metadata, unsafe aliases,
 mutation, non-lowered dynamic indexing semantics, dynamic axes, dynamic trapezoid-grid metadata, dynamic q/method
 metadata, dynamic ddof/correction metadata, zero-variance `std` gradients,
 remaining broad linalg/spectral adjoints beyond the bounded 2x2 `eigvalsh`,
-`eigh`, `eigvals`, SVD singular-value, and rank-1/2x2/3x2/2x3 `pinv`
+`eigh`, `eigvals`, SVD singular-value, and rank-1/Nx2/2xN `pinv`
 boundaries,
 unsafe source-level aliases and non-executed branch semantics, general Program AD execution,
 LLVM/JIT lowering, hardware execution, provider execution, and performance
@@ -170,7 +170,7 @@ distinct symmetric `np.linalg.eigh` eigenvalue and nonzero-offdiagonal
 eigenvector replay, and bounded 2x2 real-distinct `np.linalg.eigvals`
 spectral replay, plus bounded 2x2 distinct-positive
 `np.linalg.svd(..., compute_uv=False)` singular-value replay and
-constant-full-rank rank-1/2x2/3x2/2x3 `np.linalg.pinv` output replay. The legacy
+constant-full-rank rank-1/Nx2/2xN `np.linalg.pinv` output replay. The legacy
 differentiable-programming facade continues to re-export those bridge symbols.
 Python compiler interchange lowers captured `program_ad_effect_ir.v1` records
 into deterministic `scpn_diff.program_ad_ssa`,
