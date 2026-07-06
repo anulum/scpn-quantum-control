@@ -9,12 +9,14 @@
 
 from __future__ import annotations
 
+import inspect
 import math
 from typing import Any, cast
 
 import pytest
 
 import scpn_quantum_control as scpn
+import scpn_quantum_control.differentiable_scalar_kernels as scalar_kernel_module
 from scpn_quantum_control import differentiable
 from scpn_quantum_control.differentiable_scalar_kernels import (
     DualNumber,
@@ -29,10 +31,24 @@ from scpn_quantum_control.differentiable_scalar_kernels import (
     reverse_sin,
 )
 
+DOCSTRING_SECTION_TARGETS: tuple[tuple[str, object, tuple[str, ...]], ...] = (
+    ("DualNumber", scalar_kernel_module.DualNumber, ("Parameters", "Attributes")),
+    ("DualNumber.coerce", scalar_kernel_module.DualNumber.coerce, ("Parameters", "Returns")),
+    ("ReverseNode", scalar_kernel_module.ReverseNode, ("Parameters", "Attributes")),
+    ("ReverseNode.coerce", scalar_kernel_module.ReverseNode.coerce, ("Parameters", "Returns")),
+    ("dual_sin", scalar_kernel_module.dual_sin, ("Parameters", "Returns")),
+    ("dual_cos", scalar_kernel_module.dual_cos, ("Parameters", "Returns")),
+    ("dual_exp", scalar_kernel_module.dual_exp, ("Parameters", "Returns")),
+    ("dual_log", scalar_kernel_module.dual_log, ("Parameters", "Returns", "Raises")),
+    ("reverse_sin", scalar_kernel_module.reverse_sin, ("Parameters", "Returns")),
+    ("reverse_cos", scalar_kernel_module.reverse_cos, ("Parameters", "Returns")),
+    ("reverse_exp", scalar_kernel_module.reverse_exp, ("Parameters", "Returns")),
+    ("reverse_log", scalar_kernel_module.reverse_log, ("Parameters", "Returns", "Raises")),
+)
+
 
 def _assert_dual(actual: DualNumber, expected_primal: float, expected_tangent: float) -> None:
     """Assert a forward-mode scalar value and tangent."""
-
     assert actual.primal == pytest.approx(expected_primal)
     assert actual.tangent == pytest.approx(expected_tangent)
 
@@ -44,15 +60,22 @@ def _assert_parent(
     coefficient: float,
 ) -> None:
     """Assert one reverse-mode parent edge."""
-
     actual_parent, actual_coefficient = node.parents[index]
     assert actual_parent is parent
     assert actual_coefficient == pytest.approx(coefficient)
 
 
+def test_public_scalar_kernel_docstrings_define_contract_sections() -> None:
+    """Public scalar-kernel docs should expose stable contract sections."""
+    for qualified_name, target, required_sections in DOCSTRING_SECTION_TARGETS:
+        docstring = inspect.getdoc(target)
+        assert docstring is not None, qualified_name
+        for section in required_sections:
+            assert f"{section}\n" in docstring, qualified_name
+
+
 def test_scalar_kernels_keep_facade_and_package_root_identities() -> None:
     """Direct, facade, and package-root imports should resolve to one object."""
-
     assert differentiable.DualNumber is DualNumber
     assert differentiable.ReverseNode is ReverseNode
     assert differentiable.dual_sin is dual_sin
@@ -73,7 +96,6 @@ def test_scalar_kernels_keep_facade_and_package_root_identities() -> None:
 
 def test_dual_number_arithmetic_and_elementary_primitives() -> None:
     """Forward-mode kernels should propagate scalar tangent rules exactly."""
-
     x = DualNumber(2.0, 3.0)
     y = DualNumber(4.0, -1.0)
 
@@ -103,7 +125,6 @@ def test_dual_number_arithmetic_and_elementary_primitives() -> None:
 
 def test_dual_number_fail_closed_boundaries() -> None:
     """Forward-mode kernels should reject non-real and singular inputs."""
-
     with pytest.raises(ValueError, match="dual primal"):
         DualNumber(True)
     with pytest.raises(ValueError, match="dual tangent"):
@@ -120,7 +141,6 @@ def test_dual_number_fail_closed_boundaries() -> None:
 
 def test_reverse_node_arithmetic_and_elementary_pullbacks() -> None:
     """Reverse-mode kernels should expose local pullback coefficients."""
-
     x = ReverseNode(2.0)
     y = ReverseNode(4.0)
 
@@ -196,7 +216,6 @@ def test_reverse_node_arithmetic_and_elementary_pullbacks() -> None:
 
 def test_reverse_node_fail_closed_boundaries() -> None:
     """Reverse-mode kernels should reject non-real and singular inputs."""
-
     with pytest.raises(ValueError, match="reverse primal"):
         ReverseNode(True)
     with pytest.raises(ValueError, match="reverse operand"):
