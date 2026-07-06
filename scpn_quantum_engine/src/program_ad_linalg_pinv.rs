@@ -10,11 +10,11 @@
 //!
 //! Python Program AD emits one `linalg:pinv:<rows>x<cols>:<rcond>:<row>:<col>`
 //! SSA node per scalar pseudoinverse output. This module owns the Rust-side
-//! constant-rank replay contract for small rank-2 matrices so the main Program
-//! AD evaluator remains a dispatcher. It deliberately fails closed for rank-1
-//! shapes, matrices outside the 2x2/3x2/2x3 boundary, rank-threshold crossings,
-//! malformed metadata, non-finite inputs, and Hermitian or dynamic cutoff
-//! policies because those need a broader linalg policy before promotion.
+//! constant-rank replay contract for small matrices so the main Program AD
+//! evaluator remains a dispatcher. It deliberately fails closed for matrices
+//! outside the rank-1/2x2/3x2/2x3 boundary, rank-threshold crossings, malformed
+//! metadata, non-finite inputs, and Hermitian or dynamic cutoff policies because
+//! those need a broader linalg policy before promotion.
 
 #[derive(Debug, Clone, PartialEq)]
 struct PinvMetadata {
@@ -31,7 +31,7 @@ pub(crate) fn is_pinv_operation(operation: &str) -> bool {
     operation.starts_with("linalg:pinv:")
 }
 
-/// Evaluate one scalar pseudoinverse output from a bounded rank-2 Program AD node.
+/// Evaluate one scalar pseudoinverse output from a bounded Program AD node.
 pub(crate) fn pinv_output_value(
     effect_index: usize,
     operation: &str,
@@ -78,9 +78,9 @@ fn parse_pinv(
     input_values: &[f64],
 ) -> Result<PinvMetadata, String> {
     let (rows, cols, rcond, output_row, output_col) = parse_pinv_metadata(effect_index, operation)?;
-    if !((rows == 2 && (cols == 2 || cols == 3)) || (rows == 3 && cols == 2)) {
+    if !is_bounded_pinv_shape(rows, cols) {
         return Err(format!(
-            "effect {effect_index} pinv Rust replay supports only 2x2, 3x2, and 2x3 matrices"
+            "effect {effect_index} pinv Rust replay supports only rank-1, 2x2, 3x2, and 2x3 matrices"
         ));
     }
     if input_values.len() != rows * cols {
@@ -98,7 +98,7 @@ fn parse_pinv(
         ));
     }
     let values = input_values.to_vec();
-    let pinv = pinv_rank2(effect_index, rows, cols, &values, rcond)?;
+    let pinv = pinv_bounded(effect_index, rows, cols, &values, rcond)?;
     Ok(PinvMetadata {
         rows,
         cols,
@@ -151,6 +151,50 @@ fn parse_pinv_metadata(
         .parse::<usize>()
         .map_err(|_| format!("effect {effect_index} pinv output-column metadata is malformed"))?;
     Ok((rows, cols, rcond, output_row, output_col))
+}
+
+fn is_bounded_pinv_shape(rows: usize, cols: usize) -> bool {
+    rows == 1 || cols == 1 || ((rows == 2 && (cols == 2 || cols == 3)) || (rows == 3 && cols == 2))
+}
+
+fn pinv_bounded(
+    effect_index: usize,
+    rows: usize,
+    cols: usize,
+    matrix: &[f64],
+    rcond: f64,
+) -> Result<Vec<f64>, String> {
+    if rows == 1 || cols == 1 {
+        return pinv_rank1(effect_index, matrix, rcond);
+    }
+    pinv_rank2(effect_index, rows, cols, matrix, rcond)
+}
+
+fn pinv_rank1(effect_index: usize, matrix: &[f64], rcond: f64) -> Result<Vec<f64>, String> {
+    let norm_squared = matrix.iter().map(|value| value * value).sum::<f64>();
+    ensure_constant_rank1(effect_index, norm_squared, rcond)?;
+    Ok(matrix.iter().map(|value| value / norm_squared).collect())
+}
+
+fn ensure_constant_rank1(effect_index: usize, norm_squared: f64, rcond: f64) -> Result<(), String> {
+    if !norm_squared.is_finite() {
+        return Err(format!(
+            "effect {effect_index} pinv singular value must be finite"
+        ));
+    }
+    if norm_squared <= 0.0 {
+        return Err(format!(
+            "effect {effect_index} pinv requires a constant full-rank matrix above cutoff"
+        ));
+    }
+    let singular_value = norm_squared.sqrt();
+    let scale = 1.0_f64.max(singular_value);
+    if singular_value <= rcond * scale {
+        return Err(format!(
+            "effect {effect_index} pinv requires a constant full-rank matrix above cutoff"
+        ));
+    }
+    Ok(())
 }
 
 fn pinv_rank2(
