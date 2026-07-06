@@ -96,14 +96,14 @@
     {
       "path": "data/differentiable_phase_qnode/differentiable_isolated_benchmark_plan_20260627.json",
       "role": "Reserved-host isolated benchmark batch plan artefact",
-      "sha256": "19c1b362f83351ad554e1229557eb931a9f8dc3177e088d9cf488db59a7461a0",
-      "size_bytes": 15927
+      "sha256": "70ba4edc586e8c882614ab120e1abad6d6f2128ed26bdcd02243eaa4f1293266",
+      "size_bytes": 16002
     },
     {
       "path": "data/differentiable_phase_qnode/differentiable_isolated_benchmark_plan_20260627.md",
       "role": "Reserved-host isolated benchmark batch plan reviewer summary",
-      "sha256": "e37a1afdbade75c05edd95e61fc5ec8cd3adcd02cbc8a4c4065bd649032ac4ab",
-      "size_bytes": 5935
+      "sha256": "f37d16a7a8a3b0b474f43a326e7cbb9a3ebc5b21bdbc8f96b6579a325e076526",
+      "size_bytes": 5978
     },
     {
       "path": "data/differentiable_phase_qnode/provider_gradient_boundary_20260705.json",

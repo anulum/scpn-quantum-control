@@ -77,9 +77,17 @@ def test_isolated_benchmark_plan_rows_are_artifact_and_command_backed() -> None:
         "functional_non_isolated",
     )
     compiler_command = " ".join(compiler_row.rerun_command)
-    assert "scripts/run_native_whole_program_ad_execution_evidence.py" in compiler_command
+    assert "scripts/run_compiler_isolated_benchmark_evidence.py" in compiler_command
+    assert "--cpu-affinity 2" in compiler_command
+    assert "--isolation-method taskset+chrt" in compiler_command
     assert "taskset" in compiler_row.rerun_command
     assert "chrt" in compiler_row.rerun_command
+    assert compiler_row.expected_output_paths == (
+        "data/differentiable_phase_qnode/isolated_benchmark_batch_20260627/"
+        "compiler_isolated_benchmark_evidence_isolated_compiler_20260706.json",
+        "data/differentiable_phase_qnode/isolated_benchmark_batch_20260627/"
+        "compiler_isolated_benchmark_evidence_isolated_compiler_20260706.md",
+    )
     assert any(
         "isolated compiler benchmark artifact IDs" in blocker for blocker in compiler_row.blockers
     )

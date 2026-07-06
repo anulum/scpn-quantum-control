@@ -367,12 +367,17 @@ identical-circuit comparison, domain dataset closure, PyTorch maturity audit,
 Enzyme/MLIR maturity audit, and the compiler-promotion batch gate. Each row
 records the required `self-hosted`, `linux`, and `isolated-benchmark` runner
 labels, a `taskset` plus `chrt` rerun command, expected output paths, source
-classifications, and host blockers. The compiler row remains blocked until
-reserved-host isolated compiler benchmark artefact IDs are attached. The current
-workstation is not promoted by this plan: high observed
-load and non-reserved affinity keep `promotion_ready=False`, and the committed
-source artefacts remain `functional_non_isolated` or `hard_gap` until a
-validated isolated runner emits `isolated_affinity` outputs.
+classifications, and host blockers. The compiler row now calls
+`scripts/run_compiler_isolated_benchmark_evidence.py`, which wraps native
+whole-program AD execution evidence with `BenchmarkIsolationMetadata` and writes
+`compiler_isolated_benchmark_evidence_*.json/.md`. Those files become
+attachable only when the reserved host reports `isolated_affinity` metadata and
+the embedded native compiler evidence executes beyond scalar replay within its
+gradient tolerance. The compiler row remains blocked until those reserved-host
+artifact IDs are attached. The current workstation is not promoted by this plan:
+high observed load and non-reserved affinity keep `promotion_ready=False`, and
+the committed source artefacts remain `functional_non_isolated` or `hard_gap`
+until a validated isolated runner emits `isolated_affinity` outputs.
 
 CI, local preflight, and the pre-push hook now include the external-validation
 module and its module-specific tests in the scoped NumPy-style Ruff docstring

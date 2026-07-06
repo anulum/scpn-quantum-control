@@ -492,17 +492,21 @@ def _default_plan_rows(
                 "-f",
                 "1",
                 ".venv/bin/python",
-                "scripts/run_native_whole_program_ad_execution_evidence.py",
+                "scripts/run_compiler_isolated_benchmark_evidence.py",
                 "--output-dir",
                 "data/differentiable_phase_qnode/isolated_benchmark_batch_20260627",
                 "--stamp",
                 "isolated_compiler_20260706",
+                "--cpu-affinity",
+                "2",
+                "--isolation-method",
+                "taskset+chrt",
             ),
             expected_outputs=(
                 "data/differentiable_phase_qnode/isolated_benchmark_batch_20260627/"
-                "native_whole_program_ad_execution_evidence_isolated_compiler_20260706.json",
+                "compiler_isolated_benchmark_evidence_isolated_compiler_20260706.json",
                 "data/differentiable_phase_qnode/isolated_benchmark_batch_20260627/"
-                "native_whole_program_ad_execution_evidence_isolated_compiler_20260706.md",
+                "compiler_isolated_benchmark_evidence_isolated_compiler_20260706.md",
             ),
             repo_root=repo_root,
             blockers=(

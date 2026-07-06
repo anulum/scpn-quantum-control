@@ -7,13 +7,13 @@
     "model_documentation_pages": 0,
     "notebook_files": 100,
     "optional_extras": 43,
-    "public_api_exports": 787,
+    "public_api_exports": 792,
     "public_documentation_pages": 259,
-    "python_model_classes": 915,
-    "python_model_source_modules": 473,
+    "python_model_classes": 917,
+    "python_model_source_modules": 474,
     "rust_pyo3_model_wrappers": 172,
     "rust_source_modules": 52,
-    "test_files": 816
+    "test_files": 817
   },
   "documentation": {
     "examples": [
@@ -457,7 +457,7 @@
       {
         "package": "benchmarks",
         "path": "src/scpn_quantum_control/benchmarks",
-        "python_modules": 18
+        "python_modules": 19
       },
       {
         "package": "bridge",
@@ -999,6 +999,14 @@
       {
         "name": "CompilerAliasActivityEvidence",
         "path": "src/scpn_quantum_control/compiler/alias_activity_evidence.py"
+      },
+      {
+        "name": "CompilerIsolatedBenchmarkEvidence",
+        "path": "src/scpn_quantum_control/benchmarks/compiler_isolated_benchmark_evidence.py"
+      },
+      {
+        "name": "CompilerIsolatedBenchmarkEvidenceFiles",
+        "path": "src/scpn_quantum_control/benchmarks/compiler_isolated_benchmark_evidence.py"
       },
       {
         "name": "CompilerPromotionBatch",
@@ -4341,6 +4349,7 @@
       "src/scpn_quantum_control/benchmarks/advantage_protocol.py",
       "src/scpn_quantum_control/benchmarks/appqsim_protocol.py",
       "src/scpn_quantum_control/benchmarks/classical_baselines.py",
+      "src/scpn_quantum_control/benchmarks/compiler_isolated_benchmark_evidence.py",
       "src/scpn_quantum_control/benchmarks/differentiable_catalyst_comparison.py",
       "src/scpn_quantum_control/benchmarks/differentiable_evidence.py",
       "src/scpn_quantum_control/benchmarks/differentiable_external_comparison.py",
@@ -4998,6 +5007,8 @@
     "CompilerADExecutableConfig",
     "CompilerADKernelVerification",
     "CompilerADTransformPlan",
+    "CompilerIsolatedBenchmarkEvidence",
+    "CompilerIsolatedBenchmarkEvidenceFiles",
     "ContainerResources",
     "ControlQEC",
     "CustomDerivativeCheckResult",
@@ -5308,6 +5319,7 @@
     "braket_circuit_to_workload",
     "build_backend",
     "build_compiler_ad_transform_plan",
+    "build_compiler_isolated_benchmark_evidence",
     "build_differentiable_benchmark_report",
     "build_enzyme_mlir_benchmark_attachment",
     "build_enzyme_mlir_compiler_ad_breadth_artifact",
@@ -5628,6 +5640,7 @@
     "registered_custom_jvp",
     "registered_custom_vjp",
     "render_competitive_baseline_refresh_markdown",
+    "render_compiler_isolated_benchmark_evidence_markdown",
     "render_differentiable_architecture_map_markdown",
     "render_differentiable_dependency_environment_map_markdown",
     "render_differentiable_isolated_benchmark_plan_markdown",
@@ -5747,6 +5760,7 @@
     "whole_program_value_and_grad",
     "wirtinger_partials",
     "write_bundle",
+    "write_compiler_isolated_benchmark_evidence",
     "write_stable_core_capability_artifacts",
     "zne_extrapolate"
   ],
@@ -5936,6 +5950,7 @@
       "tests/test_compare_eeg_plv_cohorts.py",
       "tests/test_compile_budget.py",
       "tests/test_compiler_alias_activity_evidence.py",
+      "tests/test_compiler_isolated_benchmark_evidence.py",
       "tests/test_compiler_promotion_batch.py",
       "tests/test_compound_mitigation.py",
       "tests/test_config.py",

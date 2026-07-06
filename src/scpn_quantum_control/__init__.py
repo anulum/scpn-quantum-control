@@ -34,6 +34,13 @@ from .benchmarks.classical_baselines import (
     run_documented_classical_baselines,
     scipy_ode_baseline,
 )
+from .benchmarks.compiler_isolated_benchmark_evidence import (
+    CompilerIsolatedBenchmarkEvidence,
+    CompilerIsolatedBenchmarkEvidenceFiles,
+    build_compiler_isolated_benchmark_evidence,
+    render_compiler_isolated_benchmark_evidence_markdown,
+    write_compiler_isolated_benchmark_evidence,
+)
 from .benchmarks.differentiable_hardening_gate import (
     DifferentiableBenchmarkClassificationCase,
     DifferentiableHardeningGateCheck,
@@ -1528,6 +1535,11 @@ __all__ = [
     "DifferentiableIsolatedBenchmarkPlan",
     "DifferentiableIsolatedBenchmarkPlanRow",
     "DifferentiableIsolatedBenchmarkPlanValidation",
+    "CompilerIsolatedBenchmarkEvidence",
+    "CompilerIsolatedBenchmarkEvidenceFiles",
+    "build_compiler_isolated_benchmark_evidence",
+    "render_compiler_isolated_benchmark_evidence_markdown",
+    "write_compiler_isolated_benchmark_evidence",
     "render_differentiable_isolated_benchmark_plan_markdown",
     "run_differentiable_isolated_benchmark_plan",
     "validate_differentiable_isolated_benchmark_plan",

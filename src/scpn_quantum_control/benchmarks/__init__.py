@@ -15,10 +15,27 @@ from .classical_baselines import (
     run_documented_classical_baselines,
     scipy_ode_baseline,
 )
+from .compiler_isolated_benchmark_evidence import (
+    COMPILER_ISOLATED_BENCHMARK_CLAIM_BOUNDARY,
+    COMPILER_ISOLATED_BENCHMARK_EVIDENCE_PREFIX,
+    COMPILER_ISOLATED_BENCHMARK_EVIDENCE_SCHEMA,
+    COMPILER_ISOLATED_BENCHMARK_SOURCE_IDS,
+    COMPILER_ISOLATED_BENCHMARK_SOURCE_PATHS,
+    CompilerBenchmarkClassification,
+    CompilerIsolatedBenchmarkEvidence,
+    CompilerIsolatedBenchmarkEvidenceFiles,
+    build_compiler_isolated_benchmark_evidence,
+    render_compiler_isolated_benchmark_evidence_markdown,
+    write_compiler_isolated_benchmark_evidence,
+)
 from .differentiable_catalyst_comparison import (
     CATALYST_UNSUPPORTED_PROVIDER_ROUTES,
     CatalystCompilerWorkflowComparison,
     catalyst_compiler_workflow_comparison,
+)
+from .differentiable_evidence import (
+    AcceleratorEvidenceMetadata,
+    BenchmarkIsolationMetadata,
 )
 from .differentiable_external_comparison import (
     REQUIRED_EXTERNAL_COMPARISON_ROW_FIELDS,
@@ -95,6 +112,19 @@ __all__ = [
     "CATALYST_UNSUPPORTED_PROVIDER_ROUTES",
     "CatalystCompilerWorkflowComparison",
     "catalyst_compiler_workflow_comparison",
+    "COMPILER_ISOLATED_BENCHMARK_CLAIM_BOUNDARY",
+    "COMPILER_ISOLATED_BENCHMARK_EVIDENCE_PREFIX",
+    "COMPILER_ISOLATED_BENCHMARK_EVIDENCE_SCHEMA",
+    "COMPILER_ISOLATED_BENCHMARK_SOURCE_IDS",
+    "COMPILER_ISOLATED_BENCHMARK_SOURCE_PATHS",
+    "CompilerBenchmarkClassification",
+    "CompilerIsolatedBenchmarkEvidence",
+    "CompilerIsolatedBenchmarkEvidenceFiles",
+    "build_compiler_isolated_benchmark_evidence",
+    "render_compiler_isolated_benchmark_evidence_markdown",
+    "write_compiler_isolated_benchmark_evidence",
+    "AcceleratorEvidenceMetadata",
+    "BenchmarkIsolationMetadata",
     "ExternalComparisonArtifact",
     "ExternalComparisonRow",
     "IdenticalCircuitGradientComparisonArtifact",
