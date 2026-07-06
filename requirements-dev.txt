@@ -33,7 +33,7 @@ pydantic-settings==2.14.2
 structlog==26.1.0
 qutip==5.3.0
 pip-audit==2.10.1
-mcp==1.28.0
+mcp==1.28.1
 jsonschema==4.26.0
 tomli==2.4.1
 wrapt==2.2.2
