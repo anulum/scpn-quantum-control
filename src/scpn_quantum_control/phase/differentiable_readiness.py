@@ -35,6 +35,7 @@ class DifferentiableReadinessSurface:
     description: str
 
     def __post_init__(self) -> None:
+        """Validate readiness surface metadata after construction."""
         if not self.surface.strip():
             raise ValueError("surface must be non-empty")
         if not self.description.strip():
@@ -44,7 +45,6 @@ class DifferentiableReadinessSurface:
 
     def to_dict(self) -> dict[str, str]:
         """Return JSON-ready surface metadata."""
-
         return {
             "surface": self.surface,
             "runner": getattr(self.runner, "__name__", type(self.runner).__name__),
@@ -70,12 +70,10 @@ class DifferentiableReadinessAuditRecord:
     @property
     def failed(self) -> bool:
         """Whether the surface failed its readiness audit."""
-
         return not self.passed
 
     def to_dict(self) -> dict[str, Any]:
         """Return JSON-ready aggregated record metadata."""
-
         return {
             "surface": self.surface,
             "description": self.description,
@@ -101,49 +99,41 @@ class DifferentiableReadinessAuditResult:
     @property
     def record_count(self) -> int:
         """Number of readiness records."""
-
         return len(self.records)
 
     @property
     def passed_count(self) -> int:
         """Number of readiness records whose own audit passed."""
-
         return sum(record.passed for record in self.records)
 
     @property
     def failed_count(self) -> int:
         """Number of readiness records whose own audit failed."""
-
         return sum(record.failed for record in self.records)
 
     @property
     def supported_count(self) -> int:
         """Total supported subroutes reported by focused readiness surfaces."""
-
         return sum(record.supported_count for record in self.records)
 
     @property
     def blocked_count(self) -> int:
         """Total blocked subroutes reported by focused readiness surfaces."""
-
         return sum(record.blocked_count for record in self.records)
 
     @property
     def hardware_execution_count(self) -> int:
         """Total hardware executions reported by readiness surfaces."""
-
         return sum(record.hardware_execution_count for record in self.records)
 
     @property
     def hardware_gradient_available_count(self) -> int:
         """Total hardware-gradient results reported by readiness surfaces."""
-
         return sum(record.hardware_gradient_available_count for record in self.records)
 
     @property
     def blocked_boundaries(self) -> tuple[str, ...]:
         """Unique fail-closed boundary reasons surfaced by focused audits."""
-
         seen: set[str] = set()
         boundaries: list[str] = []
         for record in self.records:
@@ -156,7 +146,6 @@ class DifferentiableReadinessAuditResult:
     @property
     def passed(self) -> bool:
         """Whether every focused surface passed without live hardware gradients."""
-
         return (
             self.record_count == len(default_differentiable_readiness_surfaces())
             and self.failed_count == 0
@@ -166,7 +155,6 @@ class DifferentiableReadinessAuditResult:
 
     def to_dict(self) -> dict[str, Any]:
         """Return JSON-ready unified readiness metadata."""
-
         return {
             "passed": self.passed,
             "record_count": self.record_count,
@@ -184,7 +172,6 @@ class DifferentiableReadinessAuditResult:
 
 def default_differentiable_readiness_surfaces() -> tuple[DifferentiableReadinessSurface, ...]:
     """Return the default focused readiness surfaces for differentiable programming."""
-
     return (
         DifferentiableReadinessSurface(
             surface="gradient_support_matrix",
@@ -238,7 +225,6 @@ def run_differentiable_readiness_audit(
     surfaces: Sequence[DifferentiableReadinessSurface] | None = None,
 ) -> DifferentiableReadinessAuditResult:
     """Run the unified differentiable-programming readiness ledger."""
-
     active_surfaces = (
         tuple(surfaces) if surfaces is not None else default_differentiable_readiness_surfaces()
     )

@@ -19,6 +19,7 @@ from scpn_quantum_control.phase import (
 
 
 def test_differentiable_readiness_audit_aggregates_supported_and_blocked_surfaces() -> None:
+    """The readiness audit should aggregate all focused differentiable surfaces."""
     audit = run_differentiable_readiness_audit()
     payload = audit.to_dict()
 
@@ -36,6 +37,7 @@ def test_differentiable_readiness_audit_aggregates_supported_and_blocked_surface
 
 
 def test_differentiable_readiness_audit_lists_expected_surfaces() -> None:
+    """The readiness ledger should list every expected focused audit surface."""
     audit = run_differentiable_readiness_audit()
 
     assert {record.surface for record in audit.records} == {
@@ -53,6 +55,7 @@ def test_differentiable_readiness_audit_lists_expected_surfaces() -> None:
 
 
 def test_differentiable_readiness_audit_preserves_hardware_claim_boundary() -> None:
+    """Hardware readiness rows should stay blocked without live gradient promotion."""
     audit = run_differentiable_readiness_audit()
     provider_hardware = next(
         record
@@ -71,6 +74,7 @@ def test_differentiable_readiness_audit_preserves_hardware_claim_boundary() -> N
 
 
 def test_default_differentiable_readiness_surfaces_are_named_callables() -> None:
+    """Default readiness surfaces should be stable named callable records."""
     surfaces = default_differentiable_readiness_surfaces()
 
     assert len(surfaces) == 9
