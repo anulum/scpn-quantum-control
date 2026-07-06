@@ -35,11 +35,13 @@ PEP-639-deprecated ``License ::`` classifier under modern setuptools.
 from __future__ import annotations
 
 import json
+import os
 import shutil
-import subprocess
+import subprocess  # nosec B404
 import sys
 import tempfile
 from collections.abc import Callable, Mapping
+from pathlib import Path
 from typing import Any
 
 from .classical_baselines import scipy_ode_baseline
@@ -108,6 +110,52 @@ def _parse_subprocess_result(stdout: str) -> dict[str, Any]:
     }
 
 
+def _resolve_julia_executable() -> str:
+    """Return the admitted absolute Julia executable path from ``PATH``."""
+    located = shutil.which("julia")
+    if located is None:
+        raise FileNotFoundError("julia executable not found on PATH")
+    try:
+        executable_path = Path(located)
+    except (OSError, ValueError) as exc:
+        raise FileNotFoundError(
+            f"julia executable must resolve to an absolute executable path: {located!r}"
+        ) from exc
+    if not executable_path.is_absolute():
+        raise FileNotFoundError(
+            f"julia executable must resolve to an absolute executable path: {located!r}"
+        )
+    try:
+        resolved = executable_path.resolve(strict=True)
+    except (OSError, ValueError) as exc:
+        raise FileNotFoundError(
+            f"julia executable must point to an executable file: {located!r}"
+        ) from exc
+    if not resolved.is_file() or not os.access(resolved, os.X_OK):
+        raise FileNotFoundError(f"julia executable must point to an executable file: {resolved}")
+    return str(resolved)
+
+
+def _validated_python_interpreter() -> str:
+    """Return the current interpreter path after executable admission."""
+    raw = sys.executable
+    if not raw:
+        raise RuntimeError("python interpreter path is not configured")
+    try:
+        executable_path = Path(raw)
+    except (OSError, ValueError) as exc:
+        raise RuntimeError(f"python interpreter path is not executable: {raw!r}") from exc
+    if not executable_path.is_absolute():
+        raise RuntimeError(f"python interpreter path must be absolute: {raw!r}")
+    try:
+        resolved = executable_path.resolve(strict=True)
+    except (OSError, ValueError) as exc:
+        raise RuntimeError(f"python interpreter path is not executable: {raw!r}") from exc
+    if not resolved.is_file() or not os.access(resolved, os.X_OK):
+        raise RuntimeError(f"python interpreter path is not executable: {resolved}")
+    return str(resolved)
+
+
 def _run_julia_script(script: str, problem: KuramotoProblem, timeout: float) -> dict[str, Any]:
     """Run one Julia competitor ``script`` on the shared problem, failing closed.
 
@@ -119,17 +167,16 @@ def _run_julia_script(script: str, problem: KuramotoProblem, timeout: float) -> 
         If the subprocess fails, times out, or emits unparsable output (for
         example because the competitor package is not installed).
     """
-    julia = shutil.which("julia")
-    if julia is None:
-        raise FileNotFoundError("julia executable not found on PATH")
+    julia = _resolve_julia_executable()
     try:
-        completed = subprocess.run(
+        completed = subprocess.run(  # nosec B603
             [julia, "--startup-file=no", "-e", script],
             input=_problem_payload(problem),
             capture_output=True,
             text=True,
             timeout=timeout,
             check=False,
+            shell=False,
         )
     except subprocess.TimeoutExpired as exc:
         raise RuntimeError(f"julia subprocess timed out after {timeout}s") from exc
@@ -159,16 +206,18 @@ def _run_jitcdde(problem: KuramotoProblem, timeout: float) -> dict[str, Any]:
     """
     if not _python_module_present("jitcdde"):
         raise FileNotFoundError("jitcdde is not installed")
+    python = _validated_python_interpreter()
     try:
         with tempfile.TemporaryDirectory() as neutral_cwd:
-            completed = subprocess.run(
-                [sys.executable, "-c", _JITCDDE_SCRIPT],
+            completed = subprocess.run(  # nosec B603
+                [python, "-c", _JITCDDE_SCRIPT],
                 input=_problem_payload(problem),
                 capture_output=True,
                 text=True,
                 timeout=timeout,
                 cwd=neutral_cwd,
                 check=False,
+                shell=False,
             )
     except subprocess.TimeoutExpired as exc:
         raise RuntimeError(f"jitcdde subprocess timed out after {timeout}s") from exc

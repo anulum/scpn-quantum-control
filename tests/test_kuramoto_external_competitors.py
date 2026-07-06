@@ -19,6 +19,8 @@ from __future__ import annotations
 import json
 import shutil
 import subprocess
+import sys
+from pathlib import Path
 from typing import Any
 
 import pytest
@@ -38,6 +40,14 @@ def _small_problem() -> KuramotoProblem:
 def _ok_runner(problem: KuramotoProblem, timeout: float) -> dict[str, Any]:
     """Injected subprocess runner returning a fixed valid result."""
     return {"r_final": 0.5, "elapsed_ms": 2.5, "version": "1.2.3"}
+
+
+def _fake_executable(tmp_path: Path, name: str) -> str:
+    """Create an executable test binary path for subprocess admission tests."""
+    executable = tmp_path / name
+    executable.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
+    executable.chmod(0o755)
+    return str(executable)
 
 
 class _Completed:
@@ -86,16 +96,56 @@ def test_run_julia_script_missing_executable(monkeypatch: pytest.MonkeyPatch) ->
         ext._run_julia_script("script", _small_problem(), 5.0)
 
 
-def test_run_julia_script_success(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_run_julia_script_rejects_relative_executable(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """The Julia runner must reject unresolved relative executable paths."""
+    called = False
+
+    def _unexpected_run(*_args: Any, **_kwargs: Any) -> _Completed:
+        nonlocal called
+        called = True
+        return _Completed(0)
+
+    monkeypatch.setattr(shutil, "which", lambda _name: "julia")
+    monkeypatch.setattr(subprocess, "run", _unexpected_run)
+
+    with pytest.raises(FileNotFoundError, match="absolute executable"):
+        ext._run_julia_script("script", _small_problem(), 5.0)
+    assert called is False
+
+
+def test_run_julia_script_rejects_non_executable_path(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    """The Julia runner must fail closed before launching non-executable files."""
+    blocked = tmp_path / "julia"
+    blocked.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
+    called = False
+
+    def _unexpected_run(*_args: Any, **_kwargs: Any) -> _Completed:
+        nonlocal called
+        called = True
+        return _Completed(0)
+
+    monkeypatch.setattr(shutil, "which", lambda _name: str(blocked))
+    monkeypatch.setattr(subprocess, "run", _unexpected_run)
+
+    with pytest.raises(FileNotFoundError, match="executable file"):
+        ext._run_julia_script("script", _small_problem(), 5.0)
+    assert called is False
+
+
+def test_run_julia_script_success(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     payload = json.dumps({"r_final": 0.42, "elapsed_ms": 3.1, "version": "7.17.0"})
-    monkeypatch.setattr(shutil, "which", lambda _name: "/usr/bin/julia")
+    monkeypatch.setattr(shutil, "which", lambda _name: _fake_executable(tmp_path, "julia"))
     monkeypatch.setattr(subprocess, "run", lambda *a, **k: _Completed(0, stdout=f"x\n{payload}\n"))
     result = ext._run_julia_script("script", _small_problem(), 5.0)
     assert result == {"r_final": 0.42, "elapsed_ms": 3.1, "version": "7.17.0"}
 
 
-def test_run_julia_script_nonzero_exit(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(shutil, "which", lambda _name: "/usr/bin/julia")
+def test_run_julia_script_nonzero_exit(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    monkeypatch.setattr(shutil, "which", lambda _name: _fake_executable(tmp_path, "julia"))
     monkeypatch.setattr(
         subprocess, "run", lambda *a, **k: _Completed(1, stderr="Package X not found")
     )
@@ -103,18 +153,18 @@ def test_run_julia_script_nonzero_exit(monkeypatch: pytest.MonkeyPatch) -> None:
         ext._run_julia_script("script", _small_problem(), 5.0)
 
 
-def test_run_julia_script_timeout(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_run_julia_script_timeout(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     def _raise(*_a: Any, **_k: Any) -> None:
         raise subprocess.TimeoutExpired(cmd="julia", timeout=5.0)
 
-    monkeypatch.setattr(shutil, "which", lambda _name: "/usr/bin/julia")
+    monkeypatch.setattr(shutil, "which", lambda _name: _fake_executable(tmp_path, "julia"))
     monkeypatch.setattr(subprocess, "run", _raise)
     with pytest.raises(RuntimeError, match="timed out"):
         ext._run_julia_script("script", _small_problem(), 5.0)
 
 
-def test_run_julia_script_unparsable(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(shutil, "which", lambda _name: "/usr/bin/julia")
+def test_run_julia_script_unparsable(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    monkeypatch.setattr(shutil, "which", lambda _name: _fake_executable(tmp_path, "julia"))
     monkeypatch.setattr(subprocess, "run", lambda *a, **k: _Completed(0, stdout="not json"))
     with pytest.raises(RuntimeError, match="could not parse"):
         ext._run_julia_script("script", _small_problem(), 5.0)
@@ -131,26 +181,51 @@ def test_run_jitcdde_absent(monkeypatch: pytest.MonkeyPatch) -> None:
         ext._run_jitcdde(_small_problem(), 5.0)
 
 
-def test_run_jitcdde_success(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_run_jitcdde_rejects_non_executable_interpreter(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    """The jitcdde runner must validate the current Python executable path."""
+    blocked = tmp_path / "python"
+    blocked.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
+    called = False
+
+    def _unexpected_run(*_args: Any, **_kwargs: Any) -> _Completed:
+        nonlocal called
+        called = True
+        return _Completed(0)
+
+    monkeypatch.setattr(ext, "_python_module_present", lambda _m: True)
+    monkeypatch.setattr(sys, "executable", str(blocked))
+    monkeypatch.setattr(subprocess, "run", _unexpected_run)
+
+    with pytest.raises(RuntimeError, match="python interpreter path is not executable"):
+        ext._run_jitcdde(_small_problem(), 5.0)
+    assert called is False
+
+
+def test_run_jitcdde_success(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     payload = json.dumps({"r_final": 0.77, "elapsed_ms": 18.0, "version": "1.8.3"})
     monkeypatch.setattr(ext, "_python_module_present", lambda _m: True)
+    monkeypatch.setattr(sys, "executable", _fake_executable(tmp_path, "python"))
     monkeypatch.setattr(subprocess, "run", lambda *a, **k: _Completed(0, stdout=payload))
     result = ext._run_jitcdde(_small_problem(), 5.0)
     assert result == {"r_final": 0.77, "elapsed_ms": 18.0, "version": "1.8.3"}
 
 
-def test_run_jitcdde_nonzero(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_run_jitcdde_nonzero(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     monkeypatch.setattr(ext, "_python_module_present", lambda _m: True)
+    monkeypatch.setattr(sys, "executable", _fake_executable(tmp_path, "python"))
     monkeypatch.setattr(subprocess, "run", lambda *a, **k: _Completed(1, stderr="compile error"))
     with pytest.raises(RuntimeError, match="jitcdde subprocess failed"):
         ext._run_jitcdde(_small_problem(), 5.0)
 
 
-def test_run_jitcdde_timeout(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_run_jitcdde_timeout(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     def _raise(*_a: Any, **_k: Any) -> None:
         raise subprocess.TimeoutExpired(cmd="python", timeout=5.0)
 
     monkeypatch.setattr(ext, "_python_module_present", lambda _m: True)
+    monkeypatch.setattr(sys, "executable", _fake_executable(tmp_path, "python"))
     monkeypatch.setattr(subprocess, "run", _raise)
     with pytest.raises(RuntimeError, match="timed out"):
         ext._run_jitcdde(_small_problem(), 5.0)

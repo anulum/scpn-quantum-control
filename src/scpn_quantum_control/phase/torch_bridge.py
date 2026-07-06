@@ -2039,6 +2039,16 @@ def torch_phase_qnode_compile_boundary_audit(
     if not report.supported:
         raise PhaseQNodeSupportError(report)
     parameter_shift = parameter_shift_phase_qnode_gradient(circuit, parameter_values)
+    dynamic_compile_blocker = (
+        "dynamic compile execution succeeds on the fixed-shape audit input, but "
+        "dynamic-shape promotion remains blocked until variable-shape compile artifacts "
+        "and guard reports exist"
+    )
+    fullgraph_compile_blocker = (
+        "fullgraph compile returns correct fixed-shape values locally, but promotion "
+        "remains blocked until graph-break-free compiled-frame evidence and "
+        "AOT-compatible artifacts are recorded"
+    )
     non_fullgraph_route, non_fullgraph_result = _torch_compile_boundary_execution_route(
         name="non_fullgraph_compile",
         circuit=circuit,
@@ -2065,11 +2075,7 @@ def torch_phase_qnode_compile_boundary_audit(
             "dynamic_shape_guard_report",
         ),
         passed_reason="",
-        blocked_reason_after_pass=(
-            "dynamic=True executes on the fixed-shape audit input, but dynamic-shape "
-            "promotion remains blocked until variable-shape compile artifacts and "
-            "guard reports exist"
-        ),
+        blocked_reason_after_pass=dynamic_compile_blocker,
     )
     fullgraph_route, _fullgraph_result = _torch_compile_boundary_execution_route(
         name="fullgraph_compile",
@@ -2084,11 +2090,7 @@ def torch_phase_qnode_compile_boundary_audit(
             "static_shape_symbolic_integer_guards",
         ),
         passed_reason="",
-        blocked_reason_after_pass=(
-            "fullgraph=True returns correct fixed-shape values locally, but promotion "
-            "remains blocked until graph-break-free compiled-frame evidence and "
-            "AOT-compatible artifacts are recorded"
-        ),
+        blocked_reason_after_pass=fullgraph_compile_blocker,
     )
     aot_route = _torch_aot_autograd_boundary_route(torch_module, fullgraph_route=fullgraph_route)
     routes = (
