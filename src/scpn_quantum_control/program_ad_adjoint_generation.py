@@ -76,7 +76,6 @@ def _program_adjoint_det_contributions(
     node_by_name: Mapping[str, WholeProgramIRNode],
 ) -> tuple[tuple[str, float], ...]:
     """Return local reverse contributions for a determinant primitive node."""
-
     parts = node.op.split(":")
     if len(parts) != 3:
         raise ValueError("det adjoint requires shape-qualified determinant metadata")
@@ -108,7 +107,6 @@ def _program_adjoint_inv_contributions(
     node_by_name: Mapping[str, WholeProgramIRNode],
 ) -> tuple[tuple[str, float], ...]:
     """Return local reverse contributions for one inverse-output primitive node."""
-
     parts = node.op.split(":")
     if len(parts) != 5:
         raise ValueError("inverse adjoint requires shape and output-index metadata")
@@ -148,7 +146,6 @@ def _program_adjoint_solve_contributions(
     node_by_name: Mapping[str, WholeProgramIRNode],
 ) -> tuple[tuple[str, float], ...]:
     """Return local reverse contributions for one linear-solve output node."""
-
     parts = node.op.split(":")
     if len(parts) not in {6, 7} or parts[3] != "rhs":
         raise ValueError("solve adjoint requires shape, rhs, and output-index metadata")
@@ -221,7 +218,6 @@ def _program_adjoint_trace_contributions(
     node: WholeProgramIRNode,
 ) -> tuple[tuple[str, float], ...]:
     """Return local reverse contributions for a trace primitive node."""
-
     parts = node.op.split(":")
     if len(parts) != 5 or parts[3] != "offset":
         raise ValueError("trace adjoint requires shape and offset metadata")
@@ -243,7 +239,6 @@ def _program_adjoint_diag_contributions(
     node: WholeProgramIRNode,
 ) -> tuple[tuple[str, float], ...]:
     """Return local reverse contributions for one diag primitive output node."""
-
     parts = node.op.split(":")
     if len(parts) != 7 or parts[3] != "offset" or parts[5] not in {"construct", "extract"}:
         raise ValueError("diag adjoint requires shape, offset, mode, and index metadata")
@@ -273,7 +268,6 @@ def _program_adjoint_diagflat_contributions(
     node: WholeProgramIRNode,
 ) -> tuple[tuple[str, float], ...]:
     """Return local reverse contributions for one diagflat primitive output node."""
-
     parts = node.op.split(":")
     if len(parts) != 7 or parts[3] != "offset" or parts[5] != "construct":
         raise ValueError("diagflat adjoint requires shape, offset, construct, and index metadata")
@@ -293,7 +287,6 @@ def _program_adjoint_diagflat_contributions(
 
 def _program_adjoint_parse_shape_label(label: str) -> tuple[int, ...]:
     """Parse static primitive shape metadata from compact IR labels."""
-
     if not label:
         raise ValueError("shape label must not be empty")
     shape = tuple(int(part) for part in label.split("x"))
@@ -307,7 +300,6 @@ def _program_adjoint_matrix_power_contributions(
     node_by_name: Mapping[str, WholeProgramIRNode],
 ) -> tuple[tuple[str, float], ...]:
     """Return local reverse contributions for one matrix-power output node."""
-
     parts = node.op.split(":")
     if len(parts) != 7 or parts[3] != "power":
         raise ValueError("matrix_power adjoint requires shape, power, and output-index metadata")
@@ -350,7 +342,6 @@ def _program_adjoint_multi_dot_contributions(
     node_by_name: Mapping[str, WholeProgramIRNode],
 ) -> tuple[tuple[str, float], ...]:
     """Return local reverse contributions for one multi-dot output node."""
-
     parts = node.op.split(":")
     if len(parts) not in {5, 6} or parts[3] != "out":
         raise ValueError("multi_dot adjoint requires operand-shape and output metadata")
@@ -384,7 +375,6 @@ def _program_adjoint_multi_dot_contributions(
 
 def _program_adjoint_multi_dot_output_metadata(parts: list[str]) -> tuple[tuple[int, ...], int]:
     """Parse multi-dot output shape and flat index metadata."""
-
     if len(parts) == 1 and parts[0] == "scalar":
         return (), 0
     if len(parts) != 2:
@@ -400,7 +390,6 @@ def _program_adjoint_eigvalsh_contributions(
     node_by_name: Mapping[str, WholeProgramIRNode],
 ) -> tuple[tuple[str, float], ...]:
     """Return local reverse contributions for a distinct symmetric eigvalsh node."""
-
     try:
         eigenvalue_index = int(node.op.rsplit(":", 1)[1])
     except ValueError as exc:
@@ -433,7 +422,6 @@ def _program_adjoint_eigvals_contributions(
     node_by_name: Mapping[str, WholeProgramIRNode],
 ) -> tuple[tuple[str, float], ...]:
     """Return local reverse contributions for one real-simple eigenvalue."""
-
     parts = node.op.split(":")
     if len(parts) != 4:
         raise ValueError("eigvals adjoint requires shape-qualified spectral metadata")
@@ -473,7 +461,6 @@ def _program_adjoint_eig_eigenvalue_contributions(
     node_by_name: Mapping[str, WholeProgramIRNode],
 ) -> tuple[tuple[str, float], ...]:
     """Return local reverse contributions for one real-simple eig eigenvalue."""
-
     matrix, _eigenvalues, right_eigenvectors, left_eigenvector_rows, eigenvalue_index = cast(
         tuple[
             NDArray[np.float64],
@@ -504,7 +491,6 @@ def _program_adjoint_eig_eigenvector_contributions(
     node_by_name: Mapping[str, WholeProgramIRNode],
 ) -> tuple[tuple[str, float], ...]:
     """Return local reverse contributions for one real-simple eig eigenvector element."""
-
     matrix, eigenvalues, right_eigenvectors, left_eigenvector_rows, eigenvalue_index, row_index = (
         cast(
             tuple[
@@ -592,7 +578,6 @@ def _program_adjoint_eig_metadata(
         If the metadata is malformed or any index falls outside the spectrum or
         matrix.
     """
-
     parts = node.op.split(":")
     expected_length = 6 if expect_eigenvector else 5
     if len(parts) != expected_length:
@@ -633,7 +618,6 @@ def _program_adjoint_eigh_eigenvalue_contributions(
     node_by_name: Mapping[str, WholeProgramIRNode],
 ) -> tuple[tuple[str, float], ...]:
     """Return local reverse contributions for one symmetric eigh eigenvalue."""
-
     matrix, eigenvalues, eigenvectors, eigenvalue_index = cast(
         tuple[NDArray[np.float64], NDArray[np.float64], NDArray[np.float64], int],
         _program_adjoint_eigh_metadata(node, node_by_name, expect_eigenvector=False),
@@ -656,7 +640,6 @@ def _program_adjoint_eigh_eigenvector_contributions(
     node_by_name: Mapping[str, WholeProgramIRNode],
 ) -> tuple[tuple[str, float], ...]:
     """Return local reverse contributions for one symmetric eigh eigenvector element."""
-
     matrix, eigenvalues, eigenvectors, eigenvalue_index, row_index = cast(
         tuple[NDArray[np.float64], NDArray[np.float64], NDArray[np.float64], int, int],
         _program_adjoint_eigh_metadata(node, node_by_name, expect_eigenvector=True),
@@ -716,7 +699,6 @@ def _program_adjoint_eigh_metadata(
         If the metadata is malformed, the matrix is not symmetric, the spectrum
         is degenerate, or any index is out of range.
     """
-
     parts = node.op.split(":")
     expected_length = 7 if expect_eigenvector else 6
     if len(parts) != expected_length:
@@ -751,7 +733,6 @@ def _program_adjoint_svdvals_contributions(
     node_by_name: Mapping[str, WholeProgramIRNode],
 ) -> tuple[tuple[str, float], ...]:
     """Return local reverse contributions for a distinct positive SVD singular value."""
-
     parts = node.op.split(":")
     if len(parts) != 4:
         raise ValueError("svd adjoint requires shape-qualified singular-value metadata")
@@ -787,7 +768,6 @@ def _program_adjoint_pinv_contributions(
     node_by_name: Mapping[str, WholeProgramIRNode],
 ) -> tuple[tuple[str, float], ...]:
     """Return local reverse contributions for a constant-full-rank pinv element."""
-
     parts = node.op.split(":")
     if len(parts) != 6:
         raise ValueError("pinv adjoint requires shape, cutoff, and output-index metadata")
@@ -825,7 +805,6 @@ def _program_adjoint_node_contributions(
     node_by_name: Mapping[str, WholeProgramIRNode],
 ) -> tuple[tuple[str, float], ...]:
     """Return local reverse-mode contributions for one captured IR node."""
-
     if node.op == "parameter":
         return ()
     if node.op.startswith("branch:"):
@@ -955,7 +934,6 @@ def _program_adjoint_binary_or_selection_contributions(
     partial derivatives. Ties, clipping boundaries, and non-positive ``pow``
     bases with a variable exponent fail closed with a ``ValueError``.
     """
-
     if node.op == "where":
         if len(node.inputs) != 3:
             raise ValueError("where adjoint requires predicate, true value, and false value")
@@ -1020,7 +998,6 @@ def _program_adjoint_where_predicate_truth(predicate_name: str) -> bool:
     suffix or a ``constant:True`` / ``constant:False`` token. An unrecorded
     predicate fails closed with a ``ValueError``.
     """
-
     if predicate_name.endswith(":truth:1"):
         return True
     if predicate_name.endswith(":truth:0"):
@@ -1041,7 +1018,6 @@ def _program_adjoint_result_from_nodes(
     program_ir: ProgramADEffectIR | None = None,
 ) -> ProgramADAdjointResult:
     """Generate reverse-mode adjoints over supported scalar Program AD IR nodes."""
-
     parameter_count = len(parameter_names)
     unsupported_ops: set[str] = {
         node.op
@@ -1133,7 +1109,6 @@ def _program_adjoint_steps_from_ir(
     cotangents: Mapping[str, float],
 ) -> tuple[ProgramADAdjointStep, ...]:
     """Generate reverse-adjoint steps from stabilized Program AD IR metadata."""
-
     ssa_by_name = {value.name: value for value in program_ir.ssa_values}
     effect_by_index = {effect.index: effect for effect in program_ir.effects}
     runtime_regions_by_predicate: dict[str, list[ProgramADControlRegion]] = {}
