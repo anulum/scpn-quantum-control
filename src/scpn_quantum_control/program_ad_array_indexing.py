@@ -63,6 +63,20 @@ def _program_ad_array_direct_jvp(
 
 
 def _program_ad_array_derivative_rule(name: str) -> CustomDerivativeRule:
+    """Build a fail-closed trace-dispatch contract for an array primitive.
+
+    Parameters
+    ----------
+    name:
+        Registry primitive name used to identify the intercepted Program AD
+        array operation.
+
+    Returns
+    -------
+    CustomDerivativeRule
+        Placeholder value and JVP callbacks that reject direct execution until
+        trace dispatch supplies the primitive operands.
+    """
     return CustomDerivativeRule(
         name=f"program_ad_array_{name}_trace_contract",
         value_fn=_program_ad_array_direct_value,
@@ -73,6 +87,26 @@ def _program_ad_array_derivative_rule(name: str) -> CustomDerivativeRule:
 def _program_ad_array_normalise_static_shape(
     primitive_name: str, source_shape: Sequence[int]
 ) -> tuple[int, ...]:
+    """Return a validated immutable source shape for a static array rule.
+
+    Parameters
+    ----------
+    primitive_name:
+        Array primitive name included in validation diagnostics.
+    source_shape:
+        Static source-array dimensions supplied by the registry or direct-rule
+        factory.
+
+    Returns
+    -------
+    tuple[int, ...]
+        Canonical non-negative integer dimensions.
+
+    Raises
+    ------
+    ValueError
+        Raised when any static dimension is negative.
+    """
     shape = tuple(int(dimension) for dimension in source_shape)
     if any(dimension < 0 for dimension in shape):
         raise ValueError(
@@ -82,6 +116,18 @@ def _program_ad_array_normalise_static_shape(
 
 
 def _program_ad_array_static_size(source_shape: tuple[int, ...]) -> int:
+    """Return the scalar storage size for a static array shape.
+
+    Parameters
+    ----------
+    source_shape:
+        Canonical source-array dimensions.
+
+    Returns
+    -------
+    int
+        Product of the static dimensions, with scalars represented as size one.
+    """
     size = 1
     for dimension in source_shape:
         size *= dimension
@@ -89,6 +135,19 @@ def _program_ad_array_static_size(source_shape: tuple[int, ...]) -> int:
 
 
 def _program_ad_array_signature(source_shape: tuple[int, ...]) -> str:
+    """Return a deterministic shape fragment for derivative-rule names.
+
+    Parameters
+    ----------
+    source_shape:
+        Canonical source-array dimensions.
+
+    Returns
+    -------
+    str
+        ``"scalar"`` for rank-zero inputs, otherwise dimensions joined by
+        ``"x"``.
+    """
     return "scalar" if not source_shape else "x".join(str(dimension) for dimension in source_shape)
 
 
@@ -581,8 +640,13 @@ def program_ad_array_getitem_derivative_rule(
     -------
     CustomDerivativeRule
         Direct value, JVP, and VJP rule over the flattened source vector.
-    """
 
+    Raises
+    ------
+    ValueError
+        Raised when the source shape is negative, the index is not a supported
+        static selector, or the selected coordinates are out of bounds.
+    """
     source = _program_ad_array_normalise_static_shape("getitem", source_shape)
     flat_indices = _program_ad_array_getitem_flat_indices(source, index)
 
@@ -643,8 +707,13 @@ def program_ad_array_take_derivative_rule(
     -------
     CustomDerivativeRule
         Direct value, JVP, and scatter-add VJP rule over the flattened source.
-    """
 
+    Raises
+    ------
+    ValueError
+        Raised when the source shape, indices, axis, or mode cannot define a
+        static in-bounds ``np.take`` gather.
+    """
     mode_name = _program_ad_array_take_mode(mode, context="direct rule")
     source = _program_ad_array_normalise_static_shape("take", source_shape)
     flat_indices = _program_ad_array_take_flat_indices(source, indices, axis, mode_name)
@@ -711,8 +780,13 @@ def program_ad_array_take_along_axis_derivative_rule(
     -------
     CustomDerivativeRule
         Direct value, JVP, and scatter-add VJP rule over the flattened source.
-    """
 
+    Raises
+    ------
+    ValueError
+        Raised when the source shape, indices, or axis cannot define a static
+        shape-compatible ``np.take_along_axis`` gather.
+    """
     source = _program_ad_array_normalise_static_shape("take_along_axis", source_shape)
     if isinstance(axis, bool) or not isinstance(axis, (int, np.integer)):
         raise ValueError(
@@ -779,8 +853,13 @@ def program_ad_array_delete_derivative_rule(
     -------
     CustomDerivativeRule
         Direct value, JVP, and scatter-add VJP rule over the flattened source.
-    """
 
+    Raises
+    ------
+    ValueError
+        Raised when the source shape, deletion selector, or axis cannot define
+        a static in-bounds ``np.delete`` gather.
+    """
     source = _program_ad_array_normalise_static_shape("delete", source_shape)
     flat_indices = _program_ad_array_delete_flat_indices(source, obj, axis)
     normalised_axis = None if axis is None else _normalise_axis("axis", axis, len(source))
@@ -843,8 +922,13 @@ def program_ad_array_pad_derivative_rule(
     -------
     CustomDerivativeRule
         Direct value, JVP, and source-scatter VJP rule over the flattened source.
-    """
 
+    Raises
+    ------
+    ValueError
+        Raised when the source shape, pad width, or constant values cannot
+        define a finite static constant-padding layout.
+    """
     source = _program_ad_array_normalise_static_shape("pad", source_shape)
     flat_indices, flat_constants, _ = _program_ad_array_pad_layout(
         source,
@@ -917,8 +1001,13 @@ def program_ad_array_insert_derivative_rule(
     -------
     CustomDerivativeRule
         Direct value, JVP, and source-scatter VJP rule over the flattened source.
-    """
 
+    Raises
+    ------
+    ValueError
+        Raised when the source shape, insertion selector, insertion constants,
+        or axis cannot define a finite static insertion layout.
+    """
     source = _program_ad_array_normalise_static_shape("insert", source_shape)
     flat_indices, flat_constants, _ = _program_ad_array_insert_layout(
         source,
@@ -1026,13 +1115,11 @@ def _program_ad_float64_vector_result(values: object) -> NDArray[np.float64]:
 
 def _is_program_ad_trace_array(value: object) -> bool:
     """Return whether ``value`` behaves like a whole-program trace array."""
-
     return type(value).__name__ == "TraceADArray"
 
 
 def _program_ad_trace_array_shape(value: object) -> tuple[int, ...]:
     """Return a static shape from a structural trace-array value."""
-
     shape = getattr(value, "shape", None)
     if not isinstance(shape, tuple):
         raise ValueError("program AD array trace shape must be static")
@@ -1040,8 +1127,25 @@ def _program_ad_trace_array_shape(value: object) -> tuple[int, ...]:
 
 
 def _program_ad_array_shape_of(value: object) -> tuple[int, ...]:
-    """Return the static shape for a trace array or concrete array-like value."""
+    """Return the static shape for a trace array or concrete array-like value.
 
+    Parameters
+    ----------
+    value:
+        Whole-program trace array or concrete array-like operand.
+
+    Returns
+    -------
+    tuple[int, ...]
+        Static dimensions used by Program AD shape, dtype, and static-argument
+        rules.
+
+    Raises
+    ------
+    ValueError
+        Raised when a structural trace array does not expose a static tuple
+        shape.
+    """
     if _is_program_ad_trace_array(value):
         return _program_ad_trace_array_shape(value)
     return tuple(int(dimension) for dimension in np.asarray(value).shape)
@@ -1049,7 +1153,6 @@ def _program_ad_array_shape_of(value: object) -> tuple[int, ...]:
 
 def _program_ad_array_dtype_of(value: object) -> str:
     """Return the dtype name for a trace array or concrete array-like value."""
-
     if _is_program_ad_trace_array(value):
         return "float64"
     array = np.asarray(value)
@@ -1060,7 +1163,6 @@ def _program_ad_array_dtype_of(value: object) -> str:
 
 def _program_ad_array_getitem_shape(args: tuple[object, ...]) -> tuple[int, ...]:
     """Return the static output shape for a Program AD getitem primitive."""
-
     if len(args) != 2:
         raise ValueError("program AD array getitem shape rule requires array and index")
     _validate_static_basic_index(args[1])
@@ -1075,7 +1177,6 @@ def _program_ad_array_getitem_shape(args: tuple[object, ...]) -> tuple[int, ...]
 
 def _program_ad_array_take_shape(args: tuple[object, ...]) -> tuple[int, ...]:
     """Return the static output shape for a Program AD take primitive."""
-
     if len(args) not in {2, 3, 4}:
         raise ValueError(
             "program AD array take shape rule requires array, indices, axis, and mode"
@@ -1102,7 +1203,6 @@ def _program_ad_array_take_shape(args: tuple[object, ...]) -> tuple[int, ...]:
 
 def _program_ad_array_take_along_axis_shape(args: tuple[object, ...]) -> tuple[int, ...]:
     """Return the static output shape for a Program AD take-along-axis primitive."""
-
     if len(args) != 3:
         raise ValueError(
             "program AD array take_along_axis shape rule requires array, indices, and axis"
@@ -1131,7 +1231,6 @@ def _program_ad_array_take_along_axis_shape(args: tuple[object, ...]) -> tuple[i
 
 def _program_ad_array_delete_shape(args: tuple[object, ...]) -> tuple[int, ...]:
     """Return the static output shape for a Program AD delete primitive."""
-
     if len(args) not in {2, 3}:
         raise ValueError("program AD array delete shape rule requires array, object, and axis")
     source_shape = _program_ad_array_shape_of(args[0])
@@ -1157,7 +1256,6 @@ def _program_ad_array_delete_shape(args: tuple[object, ...]) -> tuple[int, ...]:
 
 def _program_ad_array_pad_shape(args: tuple[object, ...]) -> tuple[int, ...]:
     """Return the static output shape for a Program AD pad primitive."""
-
     if len(args) not in {2, 3, 4}:
         raise ValueError(
             "program AD array pad shape rule requires array, pad_width, mode, and constants"
@@ -1175,7 +1273,6 @@ def _program_ad_array_pad_shape(args: tuple[object, ...]) -> tuple[int, ...]:
 
 def _program_ad_array_insert_shape(args: tuple[object, ...]) -> tuple[int, ...]:
     """Return the static output shape for a Program AD insert primitive."""
-
     if len(args) not in {3, 4}:
         raise ValueError(
             "program AD array insert shape rule requires array, object, values, and axis"
@@ -1192,7 +1289,6 @@ def _program_ad_array_insert_shape(args: tuple[object, ...]) -> tuple[int, ...]:
 
 def _program_ad_array_dtype_rule(args: tuple[object, ...]) -> str:
     """Return the dtype emitted by a Program AD array primitive."""
-
     if not args:
         raise ValueError("program AD array dtype rule requires an array operand")
     return _program_ad_array_dtype_of(args[0])
@@ -1200,7 +1296,6 @@ def _program_ad_array_dtype_rule(args: tuple[object, ...]) -> str:
 
 def _program_ad_array_getitem_static_arguments(args: tuple[object, ...]) -> tuple[object, ...]:
     """Return canonical static arguments for a Program AD getitem primitive."""
-
     if len(args) != 2:
         raise ValueError("program AD array getitem static rule requires array and index")
     _validate_static_basic_index(args[1])
@@ -1212,7 +1307,6 @@ def _program_ad_array_getitem_static_arguments(args: tuple[object, ...]) -> tupl
 
 def _program_ad_array_static_index_component(selector: object) -> object:
     """Return a canonical immutable representation of a static index selector."""
-
     if selector is Ellipsis or selector is None:
         return selector
     if isinstance(selector, (int, np.integer)) and not isinstance(selector, (bool, np.bool_)):
@@ -1240,7 +1334,6 @@ def _program_ad_array_static_index_component(selector: object) -> object:
 
 def _program_ad_array_take_static_arguments(args: tuple[object, ...]) -> tuple[object, ...]:
     """Return canonical static arguments for a Program AD take primitive."""
-
     if len(args) not in {2, 3, 4}:
         raise ValueError(
             "program AD array take static rule requires array, indices, axis, and mode"
@@ -1264,7 +1357,6 @@ def _program_ad_array_take_along_axis_static_arguments(
     args: tuple[object, ...],
 ) -> tuple[object, ...]:
     """Return canonical static arguments for a Program AD take-along-axis primitive."""
-
     if len(args) != 3:
         raise ValueError(
             "program AD array take_along_axis static rule requires array, indices, and axis"
@@ -1289,7 +1381,6 @@ def _program_ad_array_take_along_axis_static_arguments(
 
 def _program_ad_array_delete_static_object(obj: object) -> object:
     """Return a canonical immutable representation of a delete selector."""
-
     delete_obj = _program_ad_array_delete_object(obj, context="static rule")
     if isinstance(delete_obj, int):
         return delete_obj
@@ -1307,7 +1398,6 @@ def _program_ad_array_delete_static_object(obj: object) -> object:
 
 def _program_ad_array_delete_static_arguments(args: tuple[object, ...]) -> tuple[object, ...]:
     """Return canonical static arguments for a Program AD delete primitive."""
-
     if len(args) not in {2, 3}:
         raise ValueError("program AD array delete static rule requires array, object, and axis")
     axis = args[2] if len(args) == 3 else None
@@ -1324,7 +1414,6 @@ def _program_ad_array_delete_static_arguments(args: tuple[object, ...]) -> tuple
 
 def _program_ad_array_pad_static_constants(value: object) -> object:
     """Return canonical static pad constants."""
-
     constants = _program_ad_array_pad_constant_values(value, context="static rule")
     constant_array = np.asarray(constants, dtype=np.float64)
     if constant_array.shape == ():
@@ -1338,7 +1427,6 @@ def _program_ad_array_pad_static_constants(value: object) -> object:
 
 def _program_ad_array_pad_static_arguments(args: tuple[object, ...]) -> tuple[object, ...]:
     """Return canonical static arguments for a Program AD pad primitive."""
-
     if len(args) not in {2, 3, 4}:
         raise ValueError(
             "program AD array pad static rule requires array, pad_width, mode, and constants"
@@ -1359,7 +1447,6 @@ def _program_ad_array_pad_static_arguments(args: tuple[object, ...]) -> tuple[ob
 
 def _program_ad_array_insert_static_object(obj: object) -> object:
     """Return a canonical immutable representation of an insert selector."""
-
     insert_obj = _program_ad_array_insert_object(obj, context="static rule")
     if isinstance(insert_obj, int):
         return insert_obj
@@ -1370,7 +1457,6 @@ def _program_ad_array_insert_static_object(obj: object) -> object:
 
 def _program_ad_array_insert_static_values(values: object) -> object:
     """Return canonical static insert values."""
-
     insert_values = _program_ad_array_insert_values(values, context="static rule")
     if insert_values.shape == ():
         return float(insert_values)
@@ -1383,7 +1469,6 @@ def _program_ad_array_insert_static_values(values: object) -> object:
 
 def _program_ad_array_insert_static_arguments(args: tuple[object, ...]) -> tuple[object, ...]:
     """Return canonical static arguments for a Program AD insert primitive."""
-
     if len(args) not in {3, 4}:
         raise ValueError(
             "program AD array insert static rule requires array, object, values, and axis"
@@ -1426,7 +1511,6 @@ def _program_ad_array_batching_rule(
     out_axes: int,
 ) -> object:
     """Map an array-indexing primitive over a batch axis."""
-
     if len(args) != len(axes):
         raise ValueError("program AD array batching axes must match argument count")
     if not args:
@@ -1452,7 +1536,6 @@ def _program_ad_array_batching_rule(
 
 def _program_ad_array_lowering_metadata(name: str) -> Mapping[str, str]:
     """Return lowering metadata for a Program AD array primitive."""
-
     static_signature = {
         "getitem": "source_shape:ranked_tensor_shape;index:static_gather_index",
         "take": "source_shape:ranked_tensor_shape;indices_axis_mode",
@@ -1492,8 +1575,14 @@ def _program_ad_array_lowering_metadata(name: str) -> Mapping[str, str]:
 
 
 def _register_program_ad_array_primitive_contracts() -> None:
-    """Register fail-closed Program AD array primitive contracts."""
+    """Register fail-closed Program AD array primitive contracts.
 
+    Returns
+    -------
+    None
+        Registration mutates the default custom-derivative registry in place
+        and leaves existing contracts untouched.
+    """
     for name, identity in _PROGRAM_AD_ARRAY_IDENTITIES.items():
         if DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.contract_for(identity) is not None:
             continue
@@ -1517,7 +1606,6 @@ def _validate_program_ad_array_contract_dispatch(
     args: tuple[object, ...],
 ) -> None:
     """Validate array primitive dispatch helpers against concrete arguments."""
-
     if contract.static_argument_rule is None:
         raise ValueError(
             f"program AD primitive {contract.identity.key} missing static argument rule"
@@ -1550,8 +1638,29 @@ def _require_program_ad_array_contract(
     name: str,
     args: tuple[object, ...] | None = None,
 ) -> PrimitiveContract:
-    """Return and validate a registered array primitive runtime contract."""
+    """Return and validate a registered array primitive runtime contract.
 
+    Parameters
+    ----------
+    name:
+        Program AD array primitive name, such as ``"getitem"`` or ``"pad"``.
+    args:
+        Optional concrete or trace operands used to validate static-argument,
+        shape, and dtype dispatch helpers.
+
+    Returns
+    -------
+    PrimitiveContract
+        Complete registry contract for the requested fail-closed array
+        primitive.
+
+    Raises
+    ------
+    ValueError
+        Raised when the primitive name is unknown, the registry contract is
+        incomplete, the metadata policy is not fail-closed, or supplied
+        arguments violate the contract dispatch helpers.
+    """
     identity: PrimitiveIdentity | None = _PROGRAM_AD_ARRAY_IDENTITIES.get(name)
     if identity is None:
         raise ValueError(f"no program AD array primitive identity registered for {name}")

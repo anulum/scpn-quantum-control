@@ -9,6 +9,7 @@
 
 from __future__ import annotations
 
+import inspect
 from typing import Any, cast
 
 import numpy as np
@@ -46,18 +47,93 @@ from scpn_quantum_control.program_ad_array_indexing import (
     program_ad_array_take_derivative_rule as direct_take_derivative_rule,
 )
 
+DOCSTRING_SECTION_TARGETS: tuple[tuple[str, object, tuple[str, ...]], ...] = (
+    (
+        "program_ad_array_getitem_derivative_rule",
+        array_indexing.program_ad_array_getitem_derivative_rule,
+        ("Parameters", "Returns", "Raises"),
+    ),
+    (
+        "program_ad_array_take_derivative_rule",
+        array_indexing.program_ad_array_take_derivative_rule,
+        ("Parameters", "Returns", "Raises"),
+    ),
+    (
+        "program_ad_array_take_along_axis_derivative_rule",
+        array_indexing.program_ad_array_take_along_axis_derivative_rule,
+        ("Parameters", "Returns", "Raises"),
+    ),
+    (
+        "program_ad_array_delete_derivative_rule",
+        array_indexing.program_ad_array_delete_derivative_rule,
+        ("Parameters", "Returns", "Raises"),
+    ),
+    (
+        "program_ad_array_pad_derivative_rule",
+        array_indexing.program_ad_array_pad_derivative_rule,
+        ("Parameters", "Returns", "Raises"),
+    ),
+    (
+        "program_ad_array_insert_derivative_rule",
+        array_indexing.program_ad_array_insert_derivative_rule,
+        ("Parameters", "Returns", "Raises"),
+    ),
+    (
+        "_program_ad_array_derivative_rule",
+        array_indexing._program_ad_array_derivative_rule,
+        ("Parameters", "Returns"),
+    ),
+    (
+        "_program_ad_array_normalise_static_shape",
+        array_indexing._program_ad_array_normalise_static_shape,
+        ("Parameters", "Returns", "Raises"),
+    ),
+    (
+        "_program_ad_array_shape_of",
+        array_indexing._program_ad_array_shape_of,
+        ("Parameters", "Returns", "Raises"),
+    ),
+    (
+        "_program_ad_array_signature",
+        array_indexing._program_ad_array_signature,
+        ("Parameters", "Returns"),
+    ),
+    (
+        "_program_ad_array_static_size",
+        array_indexing._program_ad_array_static_size,
+        ("Parameters", "Returns"),
+    ),
+    (
+        "_register_program_ad_array_primitive_contracts",
+        array_indexing._register_program_ad_array_primitive_contracts,
+        ("Returns",),
+    ),
+    (
+        "_require_program_ad_array_contract",
+        array_indexing._require_program_ad_array_contract,
+        ("Parameters", "Returns", "Raises"),
+    ),
+)
+
 
 def _assert_allclose(
     actual: object, expected: object, *, rtol: float = 1.0e-7, atol: float = 0.0
 ) -> None:
     """Assert NumPy closeness across dynamically typed Program AD result payloads."""
-
     cast(Any, np.testing.assert_allclose)(actual, expected, rtol=rtol, atol=atol)
+
+
+def test_program_ad_array_indexing_exported_docstrings_define_contract_sections() -> None:
+    """Exported array-indexing helpers should document their public contracts."""
+    for qualified_name, target, required_sections in DOCSTRING_SECTION_TARGETS:
+        docstring = inspect.getdoc(target)
+        assert docstring is not None, qualified_name
+        for section in required_sections:
+            assert f"{section}\n" in docstring, qualified_name
 
 
 def test_program_ad_array_indexing_direct_module_exports_match_facade() -> None:
     """Static array-indexing factories should remain stable through the facade."""
-
     facade_exports = vars(differentiable_module)
     assert (
         facade_exports["_register_program_ad_array_primitive_contracts"]
@@ -88,7 +164,6 @@ def test_program_ad_array_indexing_direct_module_exports_match_facade() -> None:
 
 def test_program_ad_array_indexing_direct_module_fail_closed_boundaries() -> None:
     """Static direct-rule helpers should reject malformed array-indexing contracts."""
-
     contract_rule = array_indexing._program_ad_array_derivative_rule("getitem")
     with pytest.raises(ValueError, match="operator-intercepted trace dispatch"):
         contract_rule.value_fn(np.array([1.0], dtype=np.float64))
@@ -245,7 +320,6 @@ def test_program_ad_basic_slicing_preserves_static_adjoint_paths() -> None:
 
 def test_program_ad_array_indexing_primitives_are_registry_policy_gated() -> None:
     """Static indexing and take should expose primitive registry contracts."""
-
     matrix = np.arange(6.0, dtype=np.float64).reshape(2, 3)
     contract = primitive_contract_for("scpn.program_ad.array:getitem")
     shape_rule = cast(Any, contract.shape_rule)
@@ -434,7 +508,6 @@ def test_program_ad_array_indexing_primitives_are_registry_policy_gated() -> Non
 
 def test_program_ad_array_static_derivative_factories_are_direct_kernels() -> None:
     """Static array-indexing factories should expose exact gather/scatter adjoints."""
-
     matrix = np.arange(6.0, dtype=np.float64).reshape(2, 3)
     values = matrix.reshape(-1)
     tangent = np.array([0.5, -1.0, 0.25, 2.0, -0.75, 1.25], dtype=np.float64)
@@ -660,7 +733,6 @@ def test_program_ad_array_static_derivative_factories_are_direct_kernels() -> No
 
 def test_program_ad_array_boundary_metadata_is_explicit() -> None:
     """Array-indexing contracts should expose fail-closed static gather boundaries."""
-
     expected_factories = {
         "getitem": "program_ad_array_getitem_derivative_rule",
         "take": "program_ad_array_take_derivative_rule",
