@@ -8,7 +8,7 @@
       "path": "pyproject.toml",
       "pinned_package_count": 0,
       "role": "Package metadata and bounded dependency ranges",
-      "sha256": "f29141ead7e6df9e0c08731b3c0f72c0060a8d1be6238cf7c206377fc7359bda",
+      "sha256": "07e324090428c835603a042cc80893edb4fc8c16013475f4cf737f30229e8d43",
       "size_bytes": 16735
     },
     {
@@ -16,7 +16,7 @@
       "path": "requirements.txt",
       "pinned_package_count": 11,
       "role": "Runtime dependency lock input",
-      "sha256": "31ef4f50c62078f89052d4e6dc8081f70cdff6715231a3f1f8e4b6be508dc886",
+      "sha256": "739228b5225dd2e52ac26aa66ae2d03783b3de0794460b059d8b825717d85f8c",
       "size_bytes": 750
     },
     {
@@ -24,7 +24,7 @@
       "path": "requirements-dev.txt",
       "pinned_package_count": 27,
       "role": "Developer verification dependency lock input",
-      "sha256": "fac6b5c68ad210d635ab1f759a2af603d60c2a14a3c7e246eb4ee7cb93d6b870",
+      "sha256": "afeb77a50d0dbd2d800034d702cb3ff69c137f0106a62d670daeb85f07e12ade",
       "size_bytes": 965
     },
     {
@@ -32,7 +32,7 @@
       "path": "requirements-ci-cross-platform-smoke.txt",
       "pinned_package_count": 17,
       "role": "Cross-platform smoke CI lockfile",
-      "sha256": "114d6ad85f736daefd3307bad5ab77483d404031331232b7c5db111d2a82caa5",
+      "sha256": "fbeeb0088998de7067f9ba57f8e3df4ad68aee84ae79dcf916ef4448331a6ca9",
       "size_bytes": 22423
     },
     {
@@ -77,6 +77,6 @@
     }
   ],
   "platform": "Linux-6.17.0-35-generic-x86_64-with-glibc2.39",
-  "python_version": "3.12.3",
+  "python_version": "3.12.13",
   "schema": "scpn_qc_differentiable_external_validation_environment_lock_v1"
 }

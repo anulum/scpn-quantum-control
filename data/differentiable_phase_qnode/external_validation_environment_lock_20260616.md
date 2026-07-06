@@ -12,16 +12,16 @@ SCPN Quantum Control — Differentiable external-validation environment lock
 
 - Artefact ID: `diff-external-validation-environment-lock-20260616`
 - Classification: `functional_non_isolated`
-- Python: `3.12.3`
+- Python: `3.12.13`
 - Platform: `Linux-6.17.0-35-generic-x86_64-with-glibc2.39`
 - Claim boundary: Exact environment lockfile manifest for reviewer reproduction only; it does not promote performance, provider, QPU, GPU, hardware, or isolated_affinity benchmark claims.
 
 | Lockfile | Role | SHA-256 | Pinned packages |
 |---|---|---|---|
-| `pyproject.toml` | Package metadata and bounded dependency ranges | `f29141ead7e6df9e0c08731b3c0f72c0060a8d1be6238cf7c206377fc7359bda` | 0 |
-| `requirements.txt` | Runtime dependency lock input | `31ef4f50c62078f89052d4e6dc8081f70cdff6715231a3f1f8e4b6be508dc886` | 11 |
-| `requirements-dev.txt` | Developer verification dependency lock input | `fac6b5c68ad210d635ab1f759a2af603d60c2a14a3c7e246eb4ee7cb93d6b870` | 27 |
-| `requirements-ci-cross-platform-smoke.txt` | Cross-platform smoke CI lockfile | `114d6ad85f736daefd3307bad5ab77483d404031331232b7c5db111d2a82caa5` | 17 |
+| `pyproject.toml` | Package metadata and bounded dependency ranges | `07e324090428c835603a042cc80893edb4fc8c16013475f4cf737f30229e8d43` | 0 |
+| `requirements.txt` | Runtime dependency lock input | `739228b5225dd2e52ac26aa66ae2d03783b3de0794460b059d8b825717d85f8c` | 11 |
+| `requirements-dev.txt` | Developer verification dependency lock input | `afeb77a50d0dbd2d800034d702cb3ff69c137f0106a62d670daeb85f07e12ade` | 27 |
+| `requirements-ci-cross-platform-smoke.txt` | Cross-platform smoke CI lockfile | `fbeeb0088998de7067f9ba57f8e3df4ad68aee84ae79dcf916ef4448331a6ca9` | 17 |
 | `requirements-ci-py311-linux.txt` | Python 3.11 Linux CI lockfile | `52d27854428cb771fe3dd7f4ac4821a3e8c13ef6b19288287d329d07c3e96616` | 156 |
 | `requirements-ci-py312-linux.txt` | Python 3.12 Linux CI lockfile | `d37732fc987171990d9c6a3bf279e15b91d0e09063f9039cfaacbbec3ea3e126` | 156 |
 | `requirements-ci-py313-linux.txt` | Python 3.13 Linux CI lockfile | `c716d3c5325c8f14891dc7a8cd4f297054c0332176c68b4d2a30c0e5f8d02c5f` | 156 |
