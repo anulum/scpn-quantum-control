@@ -21,10 +21,13 @@ import numpy as np
 import pytest
 from scipy.integrate import solve_ivp
 
+import oscillatools.accel.diff_kuramoto_dopri as dopri_module
+import oscillatools.accel.dispatcher as dispatcher_module
 from oscillatools.accel.diff_kuramoto_dopri import (
     DopriTrajectory,
     kuramoto_dopri_trajectory,
     kuramoto_dopri_vjp,
+    last_kuramoto_dopri_trajectory_tier_used,
 )
 
 
@@ -243,3 +246,88 @@ def test_vjp_rejects_non_square_coupling() -> None:
         kuramoto_dopri_vjp(
             np.zeros((3, 3)), np.zeros(2), np.zeros(3), np.zeros((3, 4)), np.zeros(3)
         )
+
+
+# ----------------------------------------------------- multi-language forward tier dispatch
+
+
+def _wrapped_terminal_gap(left: np.ndarray, right: np.ndarray) -> float:
+    """Largest wrapped phase gap between two terminal states."""
+    return float(np.max(np.abs(np.angle(np.exp(1j * (left[-1] - right[-1]))))))
+
+
+class TestDopriForwardTierDispatch:
+    """The Rust → Julia → Python floor tier chain for the adaptive DOPRI forward trajectory."""
+
+    def test_public_call_reaches_t_end_and_records_a_tier(self) -> None:
+        theta0, omega, coupling = _problem(24, 3)
+        trajectory = kuramoto_dopri_trajectory(theta0, omega, coupling, t_end=6.0)
+        assert float(trajectory.times[-1]) == pytest.approx(6.0)
+        assert last_kuramoto_dopri_trajectory_tier_used() in {"rust", "julia", "python"}
+
+    def test_python_floor_tier_reaches_t_end(self) -> None:
+        theta0, omega, coupling = _problem(16, 1)
+        times, phases, steps = dopri_module._python_kuramoto_dopri_trajectory(
+            theta0, omega, coupling, 6.0, 1e-6, 1e-9, 100_000, 0.9, 0.2, 5.0
+        )
+        assert float(times[-1]) == pytest.approx(6.0)
+        assert phases.shape == (times.size, 16)
+        assert steps.size == times.size - 1
+
+    def test_positive_first_step_uses_the_floor_and_reaches_t_end(self) -> None:
+        theta0, omega, coupling = _problem(12, 2)
+        trajectory = kuramoto_dopri_trajectory(theta0, omega, coupling, t_end=6.0, first_step=0.05)
+        assert float(trajectory.times[-1]) == pytest.approx(6.0)
+
+    def test_dispatched_call_exceeding_max_steps_raises(self) -> None:
+        theta0, omega, coupling = _problem(16, 4)
+        with pytest.raises(ValueError, match="max_steps"):
+            kuramoto_dopri_trajectory(theta0, omega, coupling, t_end=6.0, max_steps=3)
+
+    def test_floor_path_exceeding_max_steps_raises(self) -> None:
+        theta0, omega, coupling = _problem(16, 5)
+        with pytest.raises(ValueError, match="max_steps"):
+            kuramoto_dopri_trajectory(
+                theta0, omega, coupling, t_end=6.0, first_step=0.05, max_steps=1
+            )
+
+    def test_rust_tier_matches_python_floor_grid_and_terminal(self) -> None:
+        engine = pytest.importorskip("scpn_quantum_engine")
+        assert hasattr(engine, "kuramoto_dopri_trajectory")
+        theta0, omega, coupling = _problem(32, 6)
+        rust = dopri_module._rust_kuramoto_dopri_trajectory(
+            theta0, omega, coupling, 6.0, 1e-6, 1e-9, 100_000, 0.9, 0.2, 5.0
+        )
+        floor = dopri_module._python_kuramoto_dopri_trajectory(
+            theta0, omega, coupling, 6.0, 1e-6, 1e-9, 100_000, 0.9, 0.2, 5.0
+        )
+        assert rust[2].size == floor[2].size
+        assert _wrapped_terminal_gap(rust[1], floor[1]) < 1e-6
+
+    def test_julia_tier_matches_python_floor_grid_and_terminal(self) -> None:
+        pytest.importorskip("juliacall")
+        theta0, omega, coupling = _problem(24, 7)
+        julia = dopri_module._julia_kuramoto_dopri_trajectory(
+            theta0, omega, coupling, 6.0, 1e-6, 1e-9, 100_000, 0.9, 0.2, 5.0
+        )
+        floor = dopri_module._python_kuramoto_dopri_trajectory(
+            theta0, omega, coupling, 6.0, 1e-6, 1e-9, 100_000, 0.9, 0.2, 5.0
+        )
+        assert julia[2].size == floor[2].size
+        assert _wrapped_terminal_gap(julia[1], floor[1]) < 1e-6
+
+    def test_rust_tier_raises_when_engine_absent(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.setattr(dispatcher_module, "optional_rust_engine", lambda: None)
+        theta0, omega, coupling = _problem(8, 8)
+        with pytest.raises(ModuleNotFoundError):
+            dopri_module._rust_kuramoto_dopri_trajectory(
+                theta0, omega, coupling, 6.0, 1e-6, 1e-9, 100_000, 0.9, 0.2, 5.0
+            )
+
+    def test_rust_tier_raises_when_symbol_missing(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.setattr(dispatcher_module, "optional_rust_engine", lambda: object())
+        theta0, omega, coupling = _problem(8, 9)
+        with pytest.raises(ImportError):
+            dopri_module._rust_kuramoto_dopri_trajectory(
+                theta0, omega, coupling, 6.0, 1e-6, 1e-9, 100_000, 0.9, 0.2, 5.0
+            )

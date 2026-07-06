@@ -847,6 +847,65 @@ def kuramoto_rk4_trajectory(
     )
 
 
+def kuramoto_dopri_trajectory(
+    theta0: NDArray[np.float64],
+    omega: NDArray[np.float64],
+    coupling: NDArray[np.float64],
+    t_end: float,
+    rtol: float,
+    atol: float,
+    safety: float,
+    min_factor: float,
+    max_factor: float,
+    max_steps: int,
+) -> tuple[NDArray[np.float64], NDArray[np.float64], NDArray[np.float64]]:
+    """Julia-tier adaptive Dormand–Prince networked-Kuramoto forward trajectory.
+
+    Parameters
+    ----------
+    theta0 : numpy.ndarray
+        One-dimensional array of ``N`` initial phases in radians.
+    omega : numpy.ndarray
+        One-dimensional array of ``N`` natural frequencies.
+    coupling : numpy.ndarray
+        Two-dimensional ``(N, N)`` coupling matrix.
+    t_end : float
+        The integration horizon; integration runs from ``0`` to ``t_end``.
+    rtol, atol : float
+        The relative and absolute error tolerances of the embedded-error step controller.
+    safety, min_factor, max_factor : float
+        The step-size controller's safety factor and clamp on the per-step growth factor.
+    max_steps : int
+        The maximum number of accepted steps before integration stops.
+
+    Returns
+    -------
+    tuple of numpy.ndarray
+        ``(times, phases, steps)`` — the accepted times ``(M + 1,)``, the phases at those times
+        ``(M + 1, N)`` and the realised step sizes ``(M,)``.
+    """
+    jl = _load()
+    count = int(np.asarray(theta0).size)
+    times, phases_flat, steps = jl.kuramoto_dopri_trajectory(
+        np.ascontiguousarray(theta0, dtype=np.float64),
+        np.ascontiguousarray(omega, dtype=np.float64),
+        np.ascontiguousarray(coupling, dtype=np.float64),
+        float(t_end),
+        float(rtol),
+        float(atol),
+        float(safety),
+        float(min_factor),
+        float(max_factor),
+        int(max_steps),
+    )
+    accepted_times = np.ascontiguousarray(times, dtype=np.float64)
+    realised_steps = np.ascontiguousarray(steps, dtype=np.float64)
+    phases = np.ascontiguousarray(phases_flat, dtype=np.float64).reshape(
+        accepted_times.size, count
+    )
+    return accepted_times, phases, realised_steps
+
+
 def kuramoto_rk4_vjp(
     trajectory: NDArray[np.float64],
     omega: NDArray[np.float64],

@@ -91,9 +91,13 @@ backend) is a documented follow-up.
 - The toolkit's distinguishing value is not throughput but (a) **built-in exact differentiability** of the
   forward model — native here, an assembled stack there — and (b) the integrated control and inference
   layer that shares the same model and gradient.
-- The concrete throughput improvement is an **adaptive (and/or GPU) accelerated tier**: the fixed-grid Rust
-  RK4 is per-step fast but takes too many steps, which is exactly the gap the mature adaptive solvers
-  exploit at large `N`.
+- The concrete throughput improvement named here — an **adaptive accelerated tier** — is now built: the
+  adaptive Dormand–Prince forward (`kuramoto_dopri_trajectory`) dispatches across a Rust → Julia → Python
+  floor tier chain, the tiers tolerance-parity (same realised grid on well-conditioned problems). The Rust
+  tier runs **2.4× (N=128) to 19× (N=8) over the pure-Python floor** and ahead of the Julia tier, so it is
+  the served tier; measured in `docs/benchmarks/diff_kuramoto_dopri_tiers.json`. This combines adaptive
+  stepping (fewer steps than the fixed grid) with Rust per-step speed — the two levers the fixed-grid RK4
+  lacked. A GPU tier remains the next lever at very large `N`.
 
 ## Boundaries
 

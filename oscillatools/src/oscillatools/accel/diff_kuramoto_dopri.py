@@ -23,21 +23,29 @@ realised forward map (gradient parity with a finite difference). It returns the 
 terminal cotangent with respect to the initial phases, the natural frequencies and the coupling
 matrix.
 
-Unlike the fixed-step :mod:`~oscillatools.accel.diff_kuramoto_rk4`, the adaptive control
-and the realised-grid adjoint are inherently sequential, so this is a pure-Python orchestration
-layer — it adds no compute kernel (the engine stays at its current PyO3 surface). For a
-Rust-accelerated fixed-step trajectory use
-:func:`~oscillatools.accel.diff_kuramoto_rk4.kuramoto_rk4_trajectory`.
+The adaptive *forward* trajectory dispatches across a Rust → Julia → Python floor tier chain
+(measured fastest first), each an independent error-controlled Dormand–Prince integrator sharing
+the ``t_end / 100`` initial-step guess and the same controller. Because an adaptive scheme's
+realised grid depends on last-ULP float ordering at marginal accept/reject decisions, the tiers
+are *tolerance-parity*: they agree on the terminal state to within the requested tolerance and
+walk the same realised grid on well-conditioned problems, rather than bit-identical. The
+reverse-mode adjoint stays a pure-Python sequential pass — it backpropagates through exactly the
+realised step sequence handed to it, so it is correct for whichever tier served the forward.
 """
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
 
 import numpy as np
 from numpy.typing import NDArray
 
+from . import dispatcher
+from .dispatcher import MultiLangDispatcher, register_dispatcher
+
 _VjpResult = tuple[NDArray[np.float64], NDArray[np.float64], NDArray[np.float64]]
+_ForwardTiers = tuple[NDArray[np.float64], NDArray[np.float64], NDArray[np.float64]]
 
 # Dormand–Prince (DOPRI5) Butcher tableau. ``_A`` is lower-triangular row by row; ``_B5`` is the
 # propagated fifth-order weight row and ``_ERROR`` the fifth-minus-fourth-order error weights.
@@ -138,6 +146,164 @@ class DopriTrajectory:
         return np.ascontiguousarray(self.phases[-1], dtype=np.float64)
 
 
+def _dopri_core(
+    phases: NDArray[np.float64],
+    frequencies: NDArray[np.float64],
+    matrix: NDArray[np.float64],
+    t_end: float,
+    rtol: float,
+    atol: float,
+    first_step: float,
+    max_steps: int,
+    safety: float,
+    min_factor: float,
+    max_factor: float,
+) -> _ForwardTiers:
+    """Pure-Python error-controlled Dormand–Prince integration — the correctness floor.
+
+    Returns the accepted ``(times, phases, steps)`` arrays. Honours ``first_step`` when positive
+    (otherwise the ``t_end / 100`` guess) and stops after ``max_steps`` accepted steps — the caller
+    checks that the final time reached ``t_end`` (the same contract the accelerated tiers meet).
+    """
+    step = first_step if first_step > 0.0 else t_end / 100.0
+    time = 0.0
+    current = phases
+    times = [0.0]
+    path = [current.copy()]
+    realised: list[float] = []
+
+    while time < t_end - 1e-14 and len(realised) < max_steps:
+        if time + step > t_end:
+            step = t_end - time
+        derivatives = _stage_derivatives(current, frequencies, matrix, step)
+        proposal = current + step * (_B5 @ derivatives)
+        error_vector = step * (_ERROR @ derivatives)
+        scale = atol + rtol * np.maximum(np.abs(current), np.abs(proposal))
+        error = float(np.sqrt(np.mean((error_vector / scale) ** 2)))
+        if error <= 1.0:
+            time += step
+            current = proposal
+            times.append(time)
+            path.append(current.copy())
+            realised.append(step)
+        factor = safety * (error + 1e-300) ** (-_ERROR_EXPONENT)
+        step = step * min(max_factor, max(min_factor, factor))
+
+    return (
+        np.ascontiguousarray(times, dtype=np.float64),
+        np.ascontiguousarray(path, dtype=np.float64),
+        np.ascontiguousarray(realised, dtype=np.float64),
+    )
+
+
+def _rust_kuramoto_dopri_trajectory(
+    theta0: NDArray[np.float64],
+    omega: NDArray[np.float64],
+    coupling: NDArray[np.float64],
+    t_end: float,
+    rtol: float,
+    atol: float,
+    max_steps: int,
+    safety: float,
+    min_factor: float,
+    max_factor: float,
+) -> _ForwardTiers:
+    phases, frequencies, matrix = _validate_state(theta0, omega, coupling)
+    engine = dispatcher.optional_rust_engine()
+    if engine is None:
+        raise ModuleNotFoundError("scpn_quantum_engine")
+    rust_forward = getattr(engine, "kuramoto_dopri_trajectory", None)
+    if not callable(rust_forward):
+        raise ImportError("scpn_quantum_engine.kuramoto_dopri_trajectory is unavailable")
+    times, path, steps = rust_forward(
+        phases,
+        frequencies,
+        matrix,
+        float(t_end),
+        float(rtol),
+        float(atol),
+        float(safety),
+        float(min_factor),
+        float(max_factor),
+        int(max_steps),
+    )
+    return (
+        np.ascontiguousarray(times, dtype=np.float64),
+        np.ascontiguousarray(path, dtype=np.float64),
+        np.ascontiguousarray(steps, dtype=np.float64),
+    )
+
+
+def _julia_kuramoto_dopri_trajectory(
+    theta0: NDArray[np.float64],
+    omega: NDArray[np.float64],
+    coupling: NDArray[np.float64],
+    t_end: float,
+    rtol: float,
+    atol: float,
+    max_steps: int,
+    safety: float,
+    min_factor: float,
+    max_factor: float,
+) -> _ForwardTiers:
+    phases, frequencies, matrix = _validate_state(theta0, omega, coupling)
+    from .julia import kuramoto_dopri_trajectory as julia_forward
+
+    times, path, steps = julia_forward(
+        phases,
+        frequencies,
+        matrix,
+        float(t_end),
+        float(rtol),
+        float(atol),
+        float(safety),
+        float(min_factor),
+        float(max_factor),
+        int(max_steps),
+    )
+    return (
+        np.ascontiguousarray(times, dtype=np.float64),
+        np.ascontiguousarray(path, dtype=np.float64),
+        np.ascontiguousarray(steps, dtype=np.float64),
+    )
+
+
+def _python_kuramoto_dopri_trajectory(
+    theta0: NDArray[np.float64],
+    omega: NDArray[np.float64],
+    coupling: NDArray[np.float64],
+    t_end: float,
+    rtol: float,
+    atol: float,
+    max_steps: int,
+    safety: float,
+    min_factor: float,
+    max_factor: float,
+) -> _ForwardTiers:
+    phases, frequencies, matrix = _validate_state(theta0, omega, coupling)
+    return _dopri_core(
+        phases,
+        frequencies,
+        matrix,
+        t_end,
+        rtol,
+        atol,
+        0.0,
+        max_steps,
+        safety,
+        min_factor,
+        max_factor,
+    )
+
+
+_KURAMOTO_DOPRI_TRAJECTORY_CHAIN: list[tuple[str, Callable[..., _ForwardTiers]]] = [
+    ("rust", _rust_kuramoto_dopri_trajectory),
+    ("julia", _julia_kuramoto_dopri_trajectory),
+    ("python", _python_kuramoto_dopri_trajectory),
+]
+_kuramoto_dopri_trajectory_dispatcher = MultiLangDispatcher(_KURAMOTO_DOPRI_TRAJECTORY_CHAIN)
+
+
 def kuramoto_dopri_trajectory(
     theta0: NDArray[np.float64],
     omega: NDArray[np.float64],
@@ -158,6 +324,12 @@ def kuramoto_dopri_trajectory(
     sizes, accepting a step only when the scaled embedded-error estimate is at most one, so the
     requested tolerance is honoured on every accepted step.
 
+    The forward integration dispatches across a Rust → Julia → Python floor tier chain (measured
+    fastest first, recorded on :func:`last_kuramoto_dopri_trajectory_tier_used`); the tiers are
+    tolerance-parity — they agree on the terminal state to within the requested tolerance and walk
+    the same realised grid on well-conditioned problems. A positive ``first_step`` requests exact
+    control of the initial step and is served by the Python floor only.
+
     Parameters
     ----------
     theta0 : numpy.ndarray
@@ -173,9 +345,11 @@ def kuramoto_dopri_trajectory(
         and ``1e-9``.
     first_step : float, optional
         The initial step size. If not positive, a conservative ``t_end / 100`` guess is used and
-        the controller adapts from there. Defaults to ``0.0`` (auto).
+        the controller adapts from there. Defaults to ``0.0`` (auto). A positive value forces the
+        Python floor (the accelerated tiers use the automatic guess).
     max_steps : int, optional
-        The maximum number of attempted steps before raising. Defaults to ``100000``.
+        The maximum number of accepted steps; if the integration does not reach ``t_end`` within
+        this budget a ``ValueError`` is raised. Defaults to ``100000``.
     safety, min_factor, max_factor : float, optional
         The elementary step-controller safety factor and its growth/shrink clamps. Defaults
         ``0.9``, ``0.2`` and ``5.0``.
@@ -197,39 +371,40 @@ def kuramoto_dopri_trajectory(
     if rtol <= 0.0 or atol <= 0.0:
         raise ValueError(f"rtol and atol must be strictly positive, got {rtol} and {atol}")
 
-    step = first_step if first_step > 0.0 else t_end / 100.0
-    time = 0.0
-    current = phases
-    times = [0.0]
-    path = [current.copy()]
-    realised: list[float] = []
+    if first_step > 0.0:
+        times, path, steps = _dopri_core(
+            phases,
+            frequencies,
+            matrix,
+            t_end,
+            rtol,
+            atol,
+            first_step,
+            max_steps,
+            safety,
+            min_factor,
+            max_factor,
+        )
+    else:
+        times, path, steps = _kuramoto_dopri_trajectory_dispatcher(
+            theta0, omega, coupling, t_end, rtol, atol, max_steps, safety, min_factor, max_factor
+        )
 
-    attempts = 0
-    while time < t_end - 1e-14:
-        if attempts >= max_steps:
-            raise ValueError(f"integration exceeded max_steps={max_steps} before reaching t_end")
-        attempts += 1
-        if time + step > t_end:
-            step = t_end - time
-        derivatives = _stage_derivatives(current, frequencies, matrix, step)
-        proposal = current + step * (_B5 @ derivatives)
-        error_vector = step * (_ERROR @ derivatives)
-        scale = atol + rtol * np.maximum(np.abs(current), np.abs(proposal))
-        error = float(np.sqrt(np.mean((error_vector / scale) ** 2)))
-        if error <= 1.0:
-            time += step
-            current = proposal
-            times.append(time)
-            path.append(current.copy())
-            realised.append(step)
-        factor = safety * (error + 1e-300) ** (-_ERROR_EXPONENT)
-        step = step * min(max_factor, max(min_factor, factor))
+    if float(times[-1]) < t_end - 1e-9:
+        raise ValueError(f"integration exceeded max_steps={max_steps} before reaching t_end")
 
-    return DopriTrajectory(
-        times=np.ascontiguousarray(times, dtype=np.float64),
-        phases=np.ascontiguousarray(path, dtype=np.float64),
-        steps=np.ascontiguousarray(realised, dtype=np.float64),
-    )
+    return DopriTrajectory(times=times, phases=path, steps=steps)
+
+
+def last_kuramoto_dopri_trajectory_tier_used() -> str | None:
+    """The tier (``'rust'``/``'julia'``/``'python'``) that served the last dispatched forward.
+
+    ``None`` before the first dispatched call (a positive ``first_step`` bypasses the dispatcher).
+    """
+    return _kuramoto_dopri_trajectory_dispatcher.last_tier
+
+
+register_dispatcher("kuramoto_dopri_trajectory", _kuramoto_dopri_trajectory_dispatcher)
 
 
 def _validate_vjp(

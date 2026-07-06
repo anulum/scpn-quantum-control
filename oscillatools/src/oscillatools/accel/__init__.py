@@ -74,6 +74,7 @@ from .diff_kuramoto_dopri import (
     DopriTrajectory,
     kuramoto_dopri_trajectory,
     kuramoto_dopri_vjp,
+    last_kuramoto_dopri_trajectory_tier_used,
 )
 from .diff_kuramoto_euler import (
     kuramoto_euler_trajectory,
@@ -860,6 +861,7 @@ __all__ = [
     "DopriTrajectory",
     "kuramoto_dopri_trajectory",
     "kuramoto_dopri_vjp",
+    "last_kuramoto_dopri_trajectory_tier_used",
     "kuramoto_euler_trajectory",
     "kuramoto_euler_vjp",
     "kuramoto_rk4_trajectory",
