@@ -372,7 +372,7 @@ def _default_inventory_rows(
         ),
         _inventory_row(
             "rust_program_ad_ir",
-            "Rust Program AD IR parser plus bounded scalar, elementwise-array, structural-array, structural-assembly, compact interpolation, compact signal, compact cumulative, static reductions, and static-grid trapezoid value+gradient replay",
+            "Rust Program AD IR parser plus bounded scalar, elementwise-array, structural-array, structural-assembly, compact interpolation, compact signal, compact stencil, compact cumulative, static reductions, and static-grid trapezoid value+gradient replay",
             "rust_backed",
             "src/scpn_quantum_control/differentiable.py",
             (

@@ -579,6 +579,7 @@ def _default_scorecard_rows(
             "sum/mean/prod/var/std/max/min/median reductions, static ddof/correction metadata "
             "for var/std, compact static-grid interp replay with default/static boundary "
             "metadata, compact rank-1 signal convolve/correlate replay with static mode "
+            "metadata, compact static stencil-gradient replay with scalar/coordinate spacing "
             "metadata, compact static-grid trapezoid reductions with dx/x/xfull metadata, "
             "and static scalar-q quantile/percentile reductions. "
             "These paths are parity-verified against the "
@@ -587,7 +588,8 @@ def _default_scorecard_rows(
             "static source-map indexing, static product reduction, static variance/std "
             "reduction adjoints, static ddof/correction metadata, static selector/order-statistic "
             "reduction adjoints, compact static-grid trapezoid reduction adjoints, compact "
-            "signal convolve/correlate replay, and compact static-grid interp replay; 2026-07-04 "
+            "signal convolve/correlate replay, compact static-grid interp replay, and "
+            "compact static stencil-gradient replay; 2026-07-04 "
             "static source-map assignment/expression alias metadata replay); a general "
             "structural ndarray adjoint engine, executable registry promotion and Rust-side LLVM/JIT "
             "lowering remain open.",

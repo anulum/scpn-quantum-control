@@ -11,7 +11,7 @@ The functions in this module are the Python-facing boundary around optional
 PyO3 exports from ``scpn_quantum_engine``. They validate JSON payloads,
 normalise NumPy inputs, and preserve explicit claim boundaries for scalar,
 elementwise-array, structural-array, static-reduction, compact signal,
-compact interpolation, compact cumulative, fixed ``multi_dot`` linalg-array,
+compact interpolation, compact stencil, compact cumulative, fixed ``multi_dot`` linalg-array,
 2x2 distinct symmetric ``eigvalsh``, 2x2 distinct symmetric ``eigh``
 eigenvalues/nonzero-offdiagonal eigenvectors, and 2x2 real-distinct
 ``eigvals`` replay, plus 2x2 distinct-positive ``svd(..., compute_uv=False)``
@@ -29,8 +29,8 @@ from typing import Protocol
 import numpy as np
 from numpy.typing import NDArray
 
-_FORWARD_CLAIM_BOUNDARY = "bounded_rust_program_ad_ir_scalar_static_signal_static_interpolation_static_cumulative_and_static_linalg_primitives_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit"
-_VALUE_AND_GRAD_CLAIM_BOUNDARY = "bounded_rust_program_ad_ir_elementwise_structural_array_static_source_map_static_reductions_static_signal_primitives_static_interpolation_primitives_static_cumulative_primitives_value_and_gradient_static_linalg_primitives_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit"
+_FORWARD_CLAIM_BOUNDARY = "bounded_rust_program_ad_ir_scalar_static_signal_static_interpolation_static_stencil_static_cumulative_and_static_linalg_primitives_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit"
+_VALUE_AND_GRAD_CLAIM_BOUNDARY = "bounded_rust_program_ad_ir_elementwise_structural_array_static_source_map_static_reductions_static_signal_primitives_static_interpolation_primitives_static_stencil_primitives_static_cumulative_primitives_value_and_gradient_static_linalg_primitives_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit"
 _REGISTRY_METADATA_MIRROR_CLAIM_BOUNDARY = (
     "rust_program_ad_registry_metadata_mirror_only_no_execution_promotion"
 )
@@ -254,11 +254,12 @@ def value_and_grad_program_ad_effect_ir_with_rust(
     """Replay bounded Program AD value and gradient in Rust.
 
     The replay is intentionally limited to opcode-bearing scalar, shaped
-    elementwise, compact signal, compact cumulative, and static structural
+    elementwise, compact signal, compact stencil, compact cumulative, and static structural
     ``program_ad_effect_ir.v1`` rows, including scalar-to-array broadcasting,
     static ``reshape``/``ravel``, reversed-axis ``transpose``,
     ``broadcast_to``, static-axis ``concatenate``/``stack``, static source-map
     ``index_map`` indexing, compact signal ``convolve``/``correlate`` rows,
+    compact static ``np.gradient`` stencil rows,
     compact cumulative ``cumsum``/``cumprod``/``diff`` rows, static-axis
     ``sum``/``mean``/``prod``/``var``/``std``/``max``/``min``/``median``
     reductions with static ``ddof``/``correction`` metadata for ``var``/``std``,
@@ -362,7 +363,7 @@ def mirror_program_ad_registry_metadata_with_rust() -> RustProgramADRegistryMeta
     returns a typed fail-closed result. A supported result is metadata evidence
     only: it records registry shape, required facet counts, and overlap with
     the currently bounded Rust scalar/static-linalg, array, compact signal,
-    compact cumulative, static
+    compact stencil, compact cumulative, static
     ``multi_dot``, 2x2 distinct symmetric ``eigvalsh``, 2x2 distinct symmetric
     ``eigh`` eigenvalues/nonzero-offdiagonal eigenvectors, and 2x2
     real-distinct ``eigvals`` replay, plus 2x2 distinct-positive

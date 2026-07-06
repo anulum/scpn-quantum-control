@@ -609,7 +609,14 @@ def _program_ad_stencil_lowering_metadata(name: str) -> Mapping[str, str]:
         "mlir": "available: scpn_diff stencil dialect interchange; executable lowering blocked",
         "mlir_op": "scpn_diff.stencil.gradient",
         "llvm": "blocked_until_executable_stencil_lowering",
-        "rust": "blocked_until_polyglot_stencil_ad",
+        "rust": "available: bounded compact Program AD Rust value+gradient replay",
+        "rust_backend": "rust_pyo3",
+        "rust_backend_verification": (
+            "verified: scpn_quantum_engine compact stencil Program AD IR "
+            "value+gradient replay parity"
+        ),
+        "rust_backend_signature": "source_shape:ranked_tensor_shape;spacing_axis_edge_order",
+        "rust_backend_functions": "program_ad_effect_ir_interpret_value_and_gradient",
         "nondifferentiable_boundary": "static_spacing_axis_edge_order",
         "nondifferentiable_boundary_policy": "fail_closed",
         "static_argument_rule": "required",

@@ -121,6 +121,7 @@ from .program_ad_stencil_primitives import (
     _normalise_gradient_edge_order,
     _normalise_gradient_spacings,
     _require_program_ad_stencil_contract,
+    program_ad_stencil_gradient_derivative_rule,
 )
 from .whole_program_trace_metadata import (
     _broadcast_shape,
@@ -2356,6 +2357,79 @@ def _trace_gradient_axis(
     return TraceADArray(tuple(items), array.shape, array.context)
 
 
+def _format_static_gradient_spacing(spacing: _GradientSpacing) -> str:
+    """Format one static ``np.gradient`` spacing descriptor for compact opcodes."""
+
+    if spacing[0] == "scalar":
+        return f"scalar={_format_static_interp_float(float(spacing[1]))}"
+    coordinates = np.asarray(spacing[1], dtype=np.float64)
+    return "coordinates=" + ",".join(
+        _format_static_interp_float(float(value)) for value in coordinates.reshape(-1)
+    )
+
+
+def _trace_gradient_compact_array(
+    array: TraceADArray,
+    *,
+    axis: int,
+    spacing: _GradientSpacing,
+    edge_order: int,
+) -> TraceADArray:
+    """Emit compact static ``np.gradient`` Program AD nodes for one axis."""
+
+    rule_spacing: object = float(spacing[1]) if spacing[0] == "scalar" else spacing[1]
+    rule = program_ad_stencil_gradient_derivative_rule(
+        array.shape,
+        (rule_spacing,),
+        axis=axis,
+        edge_order=edge_order,
+    )
+    if rule.jvp_rule is None:
+        raise ValueError("program AD stencil gradient compact rule requires a JVP rule")
+    flat_values = np.array([item.primal for item in array._items], dtype=np.float64)
+    output_flat = _as_real_numeric_array(
+        "program AD stencil gradient compact values", rule.value_fn(flat_values)
+    ).reshape(-1)
+    if output_flat.size != array.size:
+        raise ValueError("program AD stencil gradient compact value shape mismatch")
+    flat_tangent = np.stack([item.tangent for item in array._items], axis=0)
+    if array.context.parameter_count:
+        tangent_outputs = np.array(
+            [
+                _as_real_numeric_array(
+                    "program AD stencil gradient compact tangent",
+                    rule.jvp_rule(flat_values, flat_tangent[:, parameter_index]),
+                ).reshape(-1)
+                for parameter_index in range(array.context.parameter_count)
+            ],
+            dtype=np.float64,
+        ).T
+    else:
+        tangent_outputs = np.zeros((array.size, 0), dtype=np.float64)
+    if tangent_outputs.shape != (array.size, array.context.parameter_count):
+        raise ValueError("program AD stencil gradient compact tangent shape mismatch")
+    if not bool(np.all(np.isfinite(output_flat))) or not bool(
+        np.all(np.isfinite(tangent_outputs))
+    ):
+        raise ValueError("program AD stencil gradient compact outputs must be finite")
+
+    input_names = tuple(item.name for item in array._items)
+    operation_prefix = (
+        f"stencil:gradient:shape:{_trace_shape_label(array.shape)}:"
+        f"axis:{axis}:edge:{edge_order}:spacing:{_format_static_gradient_spacing(spacing)}"
+    )
+    items = tuple(
+        array.context.make(
+            f"{operation_prefix}:out:{flat_index}",
+            input_names,
+            float(output_flat[flat_index]),
+            tangent_outputs[flat_index, :],
+        )
+        for flat_index in range(array.size)
+    )
+    return TraceADArray(items, array.shape, array.context)
+
+
 def _trace_gradient(
     array: TraceADArray,
     *,
@@ -2368,7 +2442,12 @@ def _trace_gradient(
     spacing_specs = _normalise_gradient_spacings(spacings, axes, array.shape)
     _require_program_ad_stencil_contract("gradient", (array, spacings, axis, edge))
     gradients = [
-        _trace_gradient_axis(array, axis=axis_index, spacing=spacing, edge_order=edge)
+        _trace_gradient_compact_array(
+            array,
+            axis=axis_index,
+            spacing=spacing,
+            edge_order=edge,
+        )
         for axis_index, spacing in zip(axes, spacing_specs, strict=True)
     ]
     return gradients[0] if len(gradients) == 1 else gradients

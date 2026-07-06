@@ -13,8 +13,8 @@
 //! interpreter, and replay bounded scalar, elementwise-array, static structural,
 //! static source-map indexing, static product, corrected moment,
 //! order-statistic, static-grid trapezoid reductions, compact interpolation,
-//! signal and cumulative primitives, and static-linalg value+gradient traces when
-//! opcode-bearing rows are present.
+//! signal, stencil, and cumulative primitives, and static-linalg value+gradient
+//! traces when opcode-bearing rows are present.
 //! It does not promote LLVM lowering, JIT execution, reverse-mode compiler AD,
 //! hardware execution, or performance claims.
 
@@ -58,6 +58,9 @@ use crate::program_ad_signal_reduction::{
 use crate::program_ad_static_source_map::{
     apply_static_source_map, scatter_static_source_map_cotangent,
 };
+use crate::program_ad_stencil_reduction::{
+    is_stencil_operation, stencil_output_cotangent, stencil_output_value,
+};
 use crate::program_ad_trapezoid_reduction::{
     is_trapezoid_operation, trapezoid_cotangent, trapezoid_values,
 };
@@ -70,9 +73,9 @@ use crate::program_ad_variance_reduction::{
 const PROGRAM_AD_EFFECT_IR_FORMAT: &str = "program_ad_effect_ir.v1";
 const PROGRAM_AD_IR_CLAIM_BOUNDARY: &str = "metadata_only_no_program_execution";
 const PROGRAM_AD_RUST_INTERPRETER_CLAIM_BOUNDARY: &str =
-    "bounded_rust_program_ad_ir_scalar_static_signal_static_interpolation_static_cumulative_and_static_linalg_primitives_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit";
+    "bounded_rust_program_ad_ir_scalar_static_signal_static_interpolation_static_stencil_static_cumulative_and_static_linalg_primitives_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit";
 const PROGRAM_AD_RUST_VALUE_AND_GRADIENT_CLAIM_BOUNDARY: &str =
-    "bounded_rust_program_ad_ir_elementwise_structural_array_static_source_map_static_reductions_static_signal_primitives_static_interpolation_primitives_static_cumulative_primitives_value_and_gradient_static_linalg_primitives_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit";
+    "bounded_rust_program_ad_ir_elementwise_structural_array_static_source_map_static_reductions_static_signal_primitives_static_interpolation_primitives_static_stencil_primitives_static_cumulative_primitives_value_and_gradient_static_linalg_primitives_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit";
 
 /// One SSA value record from Python-emitted Program AD metadata.
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize)]
@@ -853,6 +856,9 @@ fn accumulate_reverse_effect(
         name if is_signal_operation(name) => {
             accumulate_signal(effect, name, values, adjoints, &cotangent)
         }
+        name if is_stencil_operation(name) => {
+            accumulate_stencil(effect, name, values, adjoints, &cotangent)
+        }
         "reshape" | "ravel" => accumulate_reshape_like(effect, values, adjoints, &cotangent),
         "broadcast_to" => accumulate_broadcast_to(effect, values, adjoints, &cotangent),
         "transpose" => accumulate_transpose(effect, values, adjoints, &cotangent),
@@ -1183,6 +1189,27 @@ fn accumulate_multi_dot(
         .collect::<Result<Vec<f64>, String>>()?;
     let contributions =
         multi_dot_output_cotangent(effect.index, operation, &input_values, cotangent_scalar)?;
+    for (input, contribution) in effect.inputs.iter().zip(contributions.iter()) {
+        add_scalar_adjoint(input, *contribution, values, adjoints)?;
+    }
+    Ok(())
+}
+
+fn accumulate_stencil(
+    effect: &ProgramADEffect,
+    operation: &str,
+    values: &HashMap<String, ProgramADNumericValue>,
+    adjoints: &mut HashMap<String, ProgramADNumericValue>,
+    cotangent: &ProgramADNumericValue,
+) -> Result<(), String> {
+    let cotangent_scalar = cotangent.scalar_value()?;
+    let input_values = effect
+        .inputs
+        .iter()
+        .map(|input| operand_scalar_value(input, values))
+        .collect::<Result<Vec<f64>, String>>()?;
+    let contributions =
+        stencil_output_cotangent(effect.index, operation, &input_values, cotangent_scalar)?;
     for (input, contribution) in effect.inputs.iter().zip(contributions.iter()) {
         add_scalar_adjoint(input, *contribution, values, adjoints)?;
     }
@@ -1854,6 +1881,7 @@ fn evaluate_numeric_effect(
         }
         name if is_cumulative_operation(name) => numeric_cumulative(effect, name, values),
         name if is_signal_operation(name) => numeric_signal(effect, name, values),
+        name if is_stencil_operation(name) => numeric_stencil(effect, name, values),
         "reshape" => numeric_reshape(effect, values, shapes_by_target),
         "ravel" => numeric_ravel(effect, values, shapes_by_target),
         "broadcast_to" => numeric_broadcast_to(effect, values, shapes_by_target),
@@ -2145,6 +2173,19 @@ fn numeric_pinv(
         .map(|input| operand_scalar_value(input, values))
         .collect::<Result<Vec<f64>, String>>()?;
     pinv_output_value(effect.index, operation, &input_values).map(ProgramADNumericValue::scalar)
+}
+
+fn numeric_stencil(
+    effect: &ProgramADEffect,
+    operation: &str,
+    values: &HashMap<String, ProgramADNumericValue>,
+) -> Result<ProgramADNumericValue, String> {
+    let input_values = effect
+        .inputs
+        .iter()
+        .map(|input| operand_scalar_value(input, values))
+        .collect::<Result<Vec<f64>, String>>()?;
+    stencil_output_value(effect.index, operation, &input_values).map(ProgramADNumericValue::scalar)
 }
 
 fn numeric_unary(
@@ -3204,6 +3245,14 @@ fn evaluate_effect(
                 .map(|input| operand_value(input, values))
                 .collect::<Result<Vec<f64>, String>>()?;
             signal_output_value(effect.index, name, &input_values)
+        }
+        name if is_stencil_operation(name) => {
+            let input_values = effect
+                .inputs
+                .iter()
+                .map(|input| operand_value(input, values))
+                .collect::<Result<Vec<f64>, String>>()?;
+            stencil_output_value(effect.index, name, &input_values)
         }
         name if is_multi_dot_operation(name) => {
             let input_values = effect

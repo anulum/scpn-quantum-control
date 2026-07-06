@@ -80,6 +80,9 @@ from .program_ad_signal_primitives import (
     program_ad_signal_convolve_derivative_rule,
     program_ad_signal_correlate_derivative_rule,
 )
+from .program_ad_stencil_primitives import (
+    program_ad_stencil_gradient_derivative_rule,
+)
 from .whole_program_ad_result import WholeProgramIRNode
 
 
@@ -425,6 +428,82 @@ def _program_adjoint_signal_contributions(
     if output_index < 0 or output_index >= output_values.size:
         raise ValueError("signal adjoint output index is outside output shape")
     cotangent = np.zeros(output_values.size, dtype=np.float64)
+    cotangent[output_index] = 1.0
+    local_adjoint = np.asarray(rule.vjp_rule(flat_values, cotangent), dtype=np.float64).reshape(-1)
+    return tuple(
+        (name, float(value)) for name, value in zip(node.inputs, local_adjoint, strict=True)
+    )
+
+
+def _program_adjoint_stencil_spacing_label(label: str) -> object:
+    """Parse compact static ``np.gradient`` spacing metadata."""
+
+    if label.startswith("scalar="):
+        value = float(label.removeprefix("scalar="))
+        if not math.isfinite(value) or value == 0.0:
+            raise ValueError("stencil adjoint scalar spacing must be finite and non-zero")
+        return value
+    if not label.startswith("coordinates="):
+        raise ValueError("stencil adjoint spacing metadata is malformed")
+    raw_values = label.removeprefix("coordinates=")
+    if not raw_values:
+        raise ValueError("stencil adjoint coordinate spacing must not be empty")
+    coordinates = np.array([float(part) for part in raw_values.split(",")], dtype=np.float64)
+    if coordinates.ndim != 1 or coordinates.size < 2:
+        raise ValueError("stencil adjoint coordinates require at least two samples")
+    deltas = np.diff(coordinates)
+    if not bool(np.all(np.isfinite(coordinates))) or not (
+        bool(np.all(deltas > 0.0)) or bool(np.all(deltas < 0.0))
+    ):
+        raise ValueError("stencil adjoint coordinates must be finite and strictly monotonic")
+    return coordinates
+
+
+def _program_adjoint_stencil_contributions(
+    node: WholeProgramIRNode,
+    node_by_name: Mapping[str, WholeProgramIRNode],
+) -> tuple[tuple[str, float], ...]:
+    """Return local reverse contributions for one compact stencil output."""
+
+    parts = node.op.split(":")
+    try:
+        if (
+            len(parts) != 12
+            or parts[0] != "stencil"
+            or parts[1] != "gradient"
+            or parts[2] != "shape"
+            or parts[4] != "axis"
+            or parts[6] != "edge"
+            or parts[8] != "spacing"
+            or parts[10] != "out"
+        ):
+            raise ValueError
+        source_shape = _program_adjoint_parse_shape_label(parts[3])
+        axis = int(parts[5])
+        edge_order = int(parts[7])
+        spacing = _program_adjoint_stencil_spacing_label(parts[9])
+        output_index = int(parts[11])
+        rule = program_ad_stencil_gradient_derivative_rule(
+            source_shape,
+            (spacing,),
+            axis=axis,
+            edge_order=edge_order,
+        )
+    except ValueError as exc:
+        raise ValueError("stencil adjoint metadata is malformed") from exc
+
+    expected_inputs = int(np.prod(source_shape, dtype=np.int64))
+    if expected_inputs <= 0 or len(node.inputs) != expected_inputs:
+        raise ValueError("stencil adjoint inputs must match flattened source shape")
+    if output_index < 0 or output_index >= expected_inputs:
+        raise ValueError("stencil adjoint output index is outside source shape")
+    if rule.vjp_rule is None:
+        raise ValueError("stencil adjoint requires a VJP rule")
+    flat_values = np.array(
+        [_program_adjoint_input_value(name, node_by_name) for name in node.inputs],
+        dtype=np.float64,
+    )
+    cotangent = np.zeros(expected_inputs, dtype=np.float64)
     cotangent[output_index] = 1.0
     local_adjoint = np.asarray(rule.vjp_rule(flat_values, cotangent), dtype=np.float64).reshape(-1)
     return tuple(
@@ -1110,6 +1189,8 @@ def _program_adjoint_node_contributions(
         return _program_adjoint_interpolation_contributions(node, node_by_name)
     if node.op.startswith("signal:"):
         return _program_adjoint_signal_contributions(node, node_by_name)
+    if node.op.startswith("stencil:gradient:"):
+        return _program_adjoint_stencil_contributions(node, node_by_name)
     if node.op.startswith("linalg:det:"):
         return _program_adjoint_det_contributions(node, node_by_name)
     if node.op.startswith("linalg:inv:"):
