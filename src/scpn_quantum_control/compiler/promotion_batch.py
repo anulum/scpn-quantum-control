@@ -26,7 +26,7 @@ COMPILER_PROMOTION_BATCH_BLOCKERS = ("isolated compiler benchmark artifact IDs m
 COMPILER_PROMOTION_BATCH_CLAIM_BOUNDARY = (
     "Compiler promotion batch assembly only: committed compiler-boundary, "
     "alias-activity, native LLVM/JIT, native whole-program AD, and Enzyme/MLIR "
-    "maturity evidence are checksummed for reviewer triage; this does not "
+    "maturity plus raw breadth evidence are checksummed for reviewer triage; this does not "
     "promote general compiler AD, isolated benchmarks, provider, hardware, GPU, "
     "or performance claim."
 )
@@ -70,6 +70,14 @@ _DEFAULT_EVIDENCE_INPUTS: tuple[tuple[str, str], ...] = (
     (
         "data/differentiable_phase_qnode/enzyme_mlir_maturity_audit_20260616.md",
         "Enzyme/MLIR maturity reviewer summary",
+    ),
+    (
+        "data/differentiable_phase_qnode/enzyme_mlir_compiler_ad_breadth_artifact_20260706.json",
+        "Enzyme/MLIR raw 11-case compiler-AD breadth artifact",
+    ),
+    (
+        "data/differentiable_phase_qnode/enzyme_mlir_compiler_ad_breadth_artifact_20260706.md",
+        "Enzyme/MLIR raw 11-case compiler-AD breadth reviewer summary",
     ),
 )
 
@@ -156,6 +164,7 @@ class CompilerPromotionBatch:
     llvm_jit_claim_gate_artifact_id: str
     native_whole_program_artifact_id: str
     enzyme_mlir_maturity_artifact_id: str
+    enzyme_mlir_breadth_artifact_id: str
     artifact_id: str = COMPILER_PROMOTION_BATCH_ID
     schema: str = COMPILER_PROMOTION_BATCH_SCHEMA
     classification: str = COMPILER_PROMOTION_BATCH_CLASSIFICATION
@@ -200,6 +209,7 @@ class CompilerPromotionBatch:
             self.llvm_jit_claim_gate_artifact_id,
             self.native_whole_program_artifact_id,
             self.enzyme_mlir_maturity_artifact_id,
+            self.enzyme_mlir_breadth_artifact_id,
         }
         observed_ids = {entry.artifact_id for entry in self.evidence_files}
         missing_ids = expected_ids.difference(observed_ids)
@@ -238,6 +248,7 @@ class CompilerPromotionBatch:
             "llvm_jit_claim_gate_artifact_id": self.llvm_jit_claim_gate_artifact_id,
             "native_whole_program_artifact_id": self.native_whole_program_artifact_id,
             "enzyme_mlir_maturity_artifact_id": self.enzyme_mlir_maturity_artifact_id,
+            "enzyme_mlir_breadth_artifact_id": self.enzyme_mlir_breadth_artifact_id,
             "evidence_files": [entry.as_dict() for entry in self.evidence_files],
             "claim_boundary": self.claim_boundary,
         }
@@ -267,11 +278,19 @@ def build_compiler_promotion_batch(
     enzyme_payload = _load_json_mapping(
         repo_root / "data/differentiable_phase_qnode/enzyme_mlir_maturity_audit_20260616.json"
     )
+    enzyme_breadth_payload = _load_json_mapping(
+        repo_root / "data/differentiable_phase_qnode/"
+        "enzyme_mlir_compiler_ad_breadth_artifact_20260706.json"
+    )
     boundary_id = _required_artifact_id(boundary_payload, "compiler evidence boundary")
     alias_id = _required_artifact_id(alias_payload, "compiler alias-activity evidence")
     llvm_id = _required_artifact_id(llvm_payload, "LLVM/JIT claim gate")
     native_id = _required_artifact_id(native_payload, "native whole-program AD evidence")
     enzyme_id = _required_artifact_id(enzyme_payload, "Enzyme/MLIR maturity evidence")
+    enzyme_breadth_id = _required_artifact_id(
+        enzyme_breadth_payload,
+        "Enzyme/MLIR raw breadth artifact",
+    )
     _assert_not_promotion_ready(boundary_payload, "compiler evidence boundary")
     _assert_not_promotion_ready(alias_payload, "compiler alias-activity evidence")
     _assert_not_promotion_ready(llvm_payload, "LLVM/JIT claim gate")
@@ -294,6 +313,13 @@ def build_compiler_promotion_batch(
         ): native_id,
         "data/differentiable_phase_qnode/enzyme_mlir_maturity_audit_20260616.json": enzyme_id,
         "data/differentiable_phase_qnode/enzyme_mlir_maturity_audit_20260616.md": enzyme_id,
+        (
+            "data/differentiable_phase_qnode/"
+            "enzyme_mlir_compiler_ad_breadth_artifact_20260706.json"
+        ): enzyme_breadth_id,
+        (
+            "data/differentiable_phase_qnode/enzyme_mlir_compiler_ad_breadth_artifact_20260706.md"
+        ): enzyme_breadth_id,
     }
     evidence_files = tuple(
         sorted(
@@ -318,6 +344,7 @@ def build_compiler_promotion_batch(
         llvm_jit_claim_gate_artifact_id=llvm_id,
         native_whole_program_artifact_id=native_id,
         enzyme_mlir_maturity_artifact_id=enzyme_id,
+        enzyme_mlir_breadth_artifact_id=enzyme_breadth_id,
     )
 
 

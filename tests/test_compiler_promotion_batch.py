@@ -48,10 +48,17 @@ def test_compiler_promotion_batch_assembles_existing_evidence_files() -> None:
         in paths
     )
     assert "data/differentiable_phase_qnode/enzyme_mlir_maturity_audit_20260616.json" in paths
+    assert (
+        "data/differentiable_phase_qnode/enzyme_mlir_compiler_ad_breadth_artifact_20260706.json"
+    ) in paths
     assert all(len(entry.sha256) == 64 for entry in batch.evidence_files)
     assert all(entry.size_bytes > 0 for entry in batch.evidence_files)
     assert batch.boundary_artifact_id == "compiler-evidence-boundary-20260705"
     assert batch.alias_activity_artifact_id == "compiler-alias-activity-evidence-20260706"
+    assert (
+        batch.enzyme_mlir_breadth_artifact_id
+        == "enzyme-mlir-compiler-ad-breadth-artifact-20260706"
+    )
     assert "isolated benchmarks" in batch.claim_boundary
     assert "provider, hardware, GPU, or performance claim" in batch.claim_boundary
 
@@ -71,7 +78,7 @@ def test_compiler_promotion_batch_markdown_preserves_blocked_status() -> None:
 
 def test_committed_compiler_promotion_batch_matches_builder() -> None:
     """Committed compiler promotion-batch JSON must match current evidence files."""
-    batch = build_compiler_promotion_batch(source_commit="8df68be7")
+    batch = build_compiler_promotion_batch(source_commit="37a9318c")
     committed = json.loads(
         Path("data/differentiable_phase_qnode/compiler_promotion_batch_20260706.json").read_text(
             encoding="utf-8"
@@ -108,5 +115,6 @@ def test_compiler_promotion_batch_rejects_promotion_ready_payload() -> None:
             llvm_jit_claim_gate_artifact_id=batch.llvm_jit_claim_gate_artifact_id,
             native_whole_program_artifact_id=batch.native_whole_program_artifact_id,
             enzyme_mlir_maturity_artifact_id=batch.enzyme_mlir_maturity_artifact_id,
+            enzyme_mlir_breadth_artifact_id=batch.enzyme_mlir_breadth_artifact_id,
             promotion_ready=True,
         )

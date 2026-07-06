@@ -273,9 +273,10 @@ routes as explicit case hard gaps. The current committed
 SCPN MLIR-runtime correctness checks pass and local
 `enzyme`/`opt`/`mlir-opt`/`clang` version metadata is recorded. The bounded
 native LLVM Enzyme scalar probe passes, while the separate Enzyme-JAX external
-comparison still fails during runtime lowering and promotion remains blocked
-until validated isolated benchmark evidence, raw compiler-AD breadth artifacts,
-and derived compiler-AD breadth evidence exist.
+comparison still fails during runtime lowering. The raw 11-case
+`enzyme_mlir_compiler_ad_breadth_artifact_20260706.json` is attached with
+explicit hard-gap rows, and promotion remains blocked until validated isolated
+benchmark evidence plus derived compiler-AD breadth evidence exist.
 
 Program AD execution is registry-gated. Supported traced NumPy primitives must
 resolve through a primitive identity with derivative, batching, shape, dtype,

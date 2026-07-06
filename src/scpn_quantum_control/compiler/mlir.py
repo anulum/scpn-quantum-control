@@ -48,6 +48,9 @@ from .mlir_enzyme_evidence import (
     EnzymeMLIRCompilerADBreadthArtifact as EnzymeMLIRCompilerADBreadthArtifact,
 )
 from .mlir_enzyme_evidence import (
+    EnzymeMLIRCompilerADBreadthArtifactFiles as EnzymeMLIRCompilerADBreadthArtifactFiles,
+)
+from .mlir_enzyme_evidence import (
     EnzymeMLIRCompilerADBreadthCaseEvidence as EnzymeMLIRCompilerADBreadthCaseEvidence,
 )
 from .mlir_enzyme_evidence import (
@@ -76,6 +79,12 @@ from .mlir_enzyme_evidence import (
 )
 from .mlir_enzyme_evidence import (
     build_enzyme_mlir_compiler_ad_breadth_gap_artifact as build_enzyme_mlir_compiler_ad_breadth_gap_artifact,
+)
+from .mlir_enzyme_evidence import (
+    render_enzyme_mlir_compiler_ad_breadth_artifact_markdown as render_enzyme_mlir_compiler_ad_breadth_artifact_markdown,
+)
+from .mlir_enzyme_evidence import (
+    write_enzyme_mlir_compiler_ad_breadth_artifact as write_enzyme_mlir_compiler_ad_breadth_artifact,
 )
 from .mlir_enzyme_execution_runner import (
     EnzymeToolchainADCase as EnzymeToolchainADCase,
@@ -1721,6 +1730,7 @@ __all__ = [
     "LLVMJITClaimGate",
     "EnzymeMLIRBenchmarkAttachment",
     "EnzymeMLIRCompilerADBreadthArtifact",
+    "EnzymeMLIRCompilerADBreadthArtifactFiles",
     "EnzymeMLIRCompilerADBreadthCaseEvidence",
     "EnzymeMLIRCompilerADBreadthEvidence",
     "EnzymeMLIRMaturityAuditResult",
@@ -1745,6 +1755,8 @@ __all__ = [
     "build_enzyme_mlir_compiler_ad_breadth_artifact",
     "build_enzyme_mlir_compiler_ad_breadth_evidence",
     "build_enzyme_mlir_compiler_ad_breadth_gap_artifact",
+    "render_enzyme_mlir_compiler_ad_breadth_artifact_markdown",
+    "write_enzyme_mlir_compiler_ad_breadth_artifact",
     "build_compiler_ad_transform_plan",
     "compile_compiler_ad_transform_plan_to_mlir",
     "compile_phase_qnode_circuit_to_mlir_runtime",

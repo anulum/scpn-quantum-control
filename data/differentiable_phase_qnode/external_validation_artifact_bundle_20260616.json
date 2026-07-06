@@ -120,14 +120,14 @@
     {
       "path": "data/differentiable_phase_qnode/compiler_evidence_boundary_20260705.json",
       "role": "LLVM/JIT and Enzyme/MLIR compiler evidence boundary artefact",
-      "sha256": "4b818e07e1de839ffd185cf0694c67a36de9a4532ecaf85626cb005a40ac823b",
-      "size_bytes": 9091
+      "sha256": "e9060e150ff6a4099df9cdb238dfe604f500e4e61b62a85f902cc3d435fe2b66",
+      "size_bytes": 9171
     },
     {
       "path": "data/differentiable_phase_qnode/compiler_evidence_boundary_20260705.md",
       "role": "LLVM/JIT and Enzyme/MLIR compiler evidence boundary reviewer summary",
-      "sha256": "d89870f45d1ff2faa6a72cf007e72d897c302869b32a6385179d49efa7ff50be",
-      "size_bytes": 3688
+      "sha256": "d1373541eabf49767028fd4e487ad1d290c273e2ccffa159752bf2a1277a7d98",
+      "size_bytes": 3835
     },
     {
       "path": "data/differentiable_phase_qnode/compiler_alias_activity_evidence_20260706.json",
@@ -144,14 +144,14 @@
     {
       "path": "data/differentiable_phase_qnode/compiler_promotion_batch_20260706.json",
       "role": "Non-promotional compiler evidence promotion-batch artefact",
-      "sha256": "b6e2dafab5a3eb52ad62de6f0378670b0d379bd7248de4c549a82511ff37c8f4",
-      "size_bytes": 4931
+      "sha256": "0a05287c32e27198ecfc52e0477f054ea88e9586d775290eddf9509611b10b56",
+      "size_bytes": 5850
     },
     {
       "path": "data/differentiable_phase_qnode/compiler_promotion_batch_20260706.md",
       "role": "Non-promotional compiler evidence promotion-batch reviewer summary",
-      "sha256": "c86bf446cddc8fb6cf8c3dc49b87a5db9c0f365689d2f12dfea2b32f70933f3b",
-      "size_bytes": 3220
+      "sha256": "7a7658b7f2bda7bd6d7f6438038a614f37b6564842b6e0c066ff258c7ae4edcc",
+      "size_bytes": 3785
     },
     {
       "path": "data/differentiable_phase_qnode/external_validation_environment_lock_20260616.json",
@@ -186,8 +186,20 @@
     {
       "path": "data/differentiable_phase_qnode/enzyme_mlir_maturity_audit_20260616.json",
       "role": "Enzyme/MLIR maturity audit artefact with runtime-gap and correctness evidence",
-      "sha256": "4c22d858a28b1ff94b06b4a135039eccc49890607c584a38b413e0ead46fb707",
-      "size_bytes": 4379
+      "sha256": "785ca4d59f6a26ddbfb6e11039d19a8dd8f9560dcfb8251664e3ca78ca39c985",
+      "size_bytes": 19059
+    },
+    {
+      "path": "data/differentiable_phase_qnode/enzyme_mlir_compiler_ad_breadth_artifact_20260706.json",
+      "role": "Enzyme/MLIR raw 11-case compiler-AD breadth artefact",
+      "sha256": "f167f58b1f6e5387cdde9c998ed1823bd72d48954d3653b1a1be14bfb8e628b8",
+      "size_bytes": 12473
+    },
+    {
+      "path": "data/differentiable_phase_qnode/enzyme_mlir_compiler_ad_breadth_artifact_20260706.md",
+      "role": "Enzyme/MLIR raw 11-case compiler-AD breadth reviewer summary",
+      "sha256": "b3f714f6f663f1558095acffe31d579eee0c81ac0af77615f997acd8647363fb",
+      "size_bytes": 1956
     },
     {
       "path": "data/differentiable_phase_qnode/native_whole_program_ad_execution_evidence_20260622.json",

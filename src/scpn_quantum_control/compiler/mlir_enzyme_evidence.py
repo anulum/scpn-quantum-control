@@ -19,8 +19,10 @@ toolchain detection and maturity-audit orchestration live in
 
 from __future__ import annotations
 
+import json
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
+from pathlib import Path
 from types import MappingProxyType
 
 import numpy as np
@@ -45,6 +47,15 @@ ENZYME_MLIR_COMPILER_AD_BREADTH_CASES = frozenset(
 
 
 ENZYME_MLIR_COMPILER_AD_TRANSFORM_MODES = frozenset({"forward", "reverse", "jvp", "vjp"})
+
+
+@dataclass(frozen=True)
+class EnzymeMLIRCompilerADBreadthArtifactFiles:
+    """File paths written for one Enzyme/MLIR compiler-AD breadth artifact."""
+
+    artifact_id: str
+    json_path: Path
+    markdown_path: Path
 
 
 @dataclass(frozen=True)
@@ -1061,3 +1072,118 @@ def build_enzyme_mlir_compiler_ad_breadth_evidence(
         runtime_seconds=runtime_seconds,
         claim_boundary=claim_boundary,
     )
+
+
+def render_enzyme_mlir_compiler_ad_breadth_artifact_markdown(
+    artifact: EnzymeMLIRCompilerADBreadthArtifact,
+) -> str:
+    """Render reviewer-facing Markdown for a raw compiler-AD breadth artifact.
+
+    Parameters
+    ----------
+    artifact:
+        Validated Enzyme/MLIR compiler-AD breadth artifact. The renderer reports
+        both passing raw rows and explicit hard-gap rows without changing the
+        artifact's promotion status.
+
+    Returns
+    -------
+    str
+        Markdown summary suitable for committed evidence bundles.
+    """
+
+    failed = artifact.failed_case_ids or ("none",)
+    passed = artifact.passed_case_ids or ("none",)
+    lines = [
+        "# Enzyme/MLIR Compiler-AD Breadth Artifact",
+        "",
+        f"- artifact_id: `{artifact.artifact_id}`",
+        f"- promotion_ready: `{artifact.promotion_ready}`",
+        f"- case_count: `{len(artifact.cases)}`",
+        f"- max_abs_error: `{artifact.max_abs_error:.3e}`",
+        f"- runtime_seconds: `{artifact.runtime_seconds:.6f}`",
+        (
+            "- isolated_benchmark_artifact_id: "
+            f"`{artifact.isolated_benchmark_evidence.benchmark_artifact_id}`"
+        ),
+        (
+            "- isolated_benchmark_promotion_ready: "
+            f"`{artifact.isolated_benchmark_evidence.promotion_ready}`"
+        ),
+        "",
+        "Passed cases:",
+        "",
+        *[f"- `{case_id}`" for case_id in passed],
+        "",
+        "Failed cases:",
+        "",
+        *[f"- `{case_id}`" for case_id in failed],
+        "",
+        "| Case | Status | Transform modes | Frontend | Failure class |",
+        "|---|---|---|---|---|",
+    ]
+    for case in artifact.cases:
+        modes = ", ".join(case.transform_modes)
+        failure = case.failure_class or "none"
+        lines.append(
+            f"| `{case.case_id}` | `{case.status}` | `{modes}` | "
+            f"`{case.frontend_language}` | {failure} |"
+        )
+    lines.extend(
+        [
+            "",
+            f"Claim boundary: {artifact.claim_boundary}",
+            "",
+        ]
+    )
+    return "\n".join(lines)
+
+
+def write_enzyme_mlir_compiler_ad_breadth_artifact(
+    output_dir: Path,
+    artifact: EnzymeMLIRCompilerADBreadthArtifact,
+) -> EnzymeMLIRCompilerADBreadthArtifactFiles:
+    """Write raw compiler-AD breadth artifact JSON and Markdown files.
+
+    Parameters
+    ----------
+    output_dir:
+        Directory where the evidence files should be created.
+    artifact:
+        Validated complete 11-case artifact to serialize.
+
+    Returns
+    -------
+    EnzymeMLIRCompilerADBreadthArtifactFiles
+        Paths to the JSON and Markdown evidence files.
+    """
+
+    output_dir.mkdir(parents=True, exist_ok=True)
+    stem = _enzyme_mlir_breadth_artifact_stem(artifact.artifact_id)
+    json_path = output_dir / f"{stem}.json"
+    markdown_path = output_dir / f"{stem}.md"
+    json_path.write_text(
+        json.dumps(artifact.to_dict(), indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    markdown_path.write_text(
+        render_enzyme_mlir_compiler_ad_breadth_artifact_markdown(artifact),
+        encoding="utf-8",
+    )
+    return EnzymeMLIRCompilerADBreadthArtifactFiles(
+        artifact_id=artifact.artifact_id,
+        json_path=json_path,
+        markdown_path=markdown_path,
+    )
+
+
+def _enzyme_mlir_breadth_artifact_stem(artifact_id: str) -> str:
+    prefixes = (
+        "enzyme-mlir-compiler-ad-breadth-artifact-",
+        "enzyme-mlir-breadth-artifact-",
+    )
+    for prefix in prefixes:
+        if artifact_id.startswith(prefix):
+            suffix = artifact_id.removeprefix(prefix)
+            return f"enzyme_mlir_compiler_ad_breadth_artifact_{suffix.replace('-', '_')}"
+    return artifact_id.replace("-", "_")

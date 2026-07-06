@@ -1,13 +1,14 @@
 # Compiler Evidence Boundary
 
 - artifact_id: `compiler-evidence-boundary-20260705`
-- source_commit: `8df68be7`
+- source_commit: `37a9318c`
 - classification: `functional_non_isolated`
 - promotion_ready: `False`
 - native LLVM/JIT focused selector: `37 passed, 39 deselected`
 - native LLVM/JIT prescribed selector: `37 passed, 39 deselected`
 - native LLVM/JIT crash-safety selector: `3 passed`
 - Enzyme/LLVM execution: scalar, vector, and matrix cases executed with max gradient error `0.0`
+- Enzyme/MLIR raw breadth artifact: `enzyme-mlir-compiler-ad-breadth-artifact-20260706`
 - alias activity: `5 complete lattice cases, 3 fail-closed lattice cases`
 - compiler promotion batch: `compiler-promotion-batch-20260706` (`blocked_missing_isolated_compiler_benchmark_ids`)
 
@@ -35,6 +36,6 @@ Crash-safety evidence: `tests/test_llvm_jit_crash_safety.py::test_native_llvm_ji
 
 Alias-activity evidence: `compiler-alias-activity-evidence-20260706` records bounded Program AD static alias-lattice activity for `5` complete cases and `3` fail-closed cases. Observed alias kinds: `alias_analysis`, `control_path_alias`, `expression_rebinding_alias`, `list_alias`, `local_rebinding_alias`, `loop_carried_state`, `mutation_version`, `object_attribute_alias`, `view_alias`.
 
-Promotion-batch evidence: `compiler-promotion-batch-20260706` assembles the committed compiler-boundary, alias-activity, native LLVM/JIT, native whole-program AD, and Enzyme/MLIR maturity evidence for reviewer triage. It is still non-promotional because isolated compiler benchmark artifact IDs are missing.
+Promotion-batch evidence: `compiler-promotion-batch-20260706` assembles the committed compiler-boundary, alias-activity, native LLVM/JIT, native whole-program AD, Enzyme/MLIR maturity, and raw Enzyme/MLIR breadth evidence for reviewer triage. It is still non-promotional because isolated compiler benchmark artifact IDs are missing.
 
-Claim boundary: Compiler evidence boundary only. Bounded native LLVM/JIT tests, crash-safety tests, current Enzyme/LLVM execution evidence, Program AD alias-activity lattice evidence, and the non-promotional compiler promotion batch are attached for reviewer triage. This artifact does not promote general compiler AD, isolated benchmarks, provider, hardware, GPU, or performance claim.
+Claim boundary: Compiler evidence boundary only. Bounded native LLVM/JIT tests, crash-safety tests, current Enzyme/LLVM execution evidence, Program AD alias-activity lattice evidence, raw Enzyme/MLIR breadth evidence, and the non-promotional compiler promotion batch are attached for reviewer triage. This artifact does not promote general compiler AD, isolated benchmarks, provider, hardware, GPU, or performance claim.

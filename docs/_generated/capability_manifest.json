@@ -7,9 +7,9 @@
     "model_documentation_pages": 0,
     "notebook_files": 100,
     "optional_extras": 43,
-    "public_api_exports": 792,
+    "public_api_exports": 795,
     "public_documentation_pages": 259,
-    "python_model_classes": 917,
+    "python_model_classes": 918,
     "python_model_source_modules": 474,
     "rust_pyo3_model_wrappers": 172,
     "rust_source_modules": 52,
@@ -1498,6 +1498,10 @@
       },
       {
         "name": "EnzymeMLIRCompilerADBreadthArtifact",
+        "path": "src/scpn_quantum_control/compiler/mlir_enzyme_evidence.py"
+      },
+      {
+        "name": "EnzymeMLIRCompilerADBreadthArtifactFiles",
         "path": "src/scpn_quantum_control/compiler/mlir_enzyme_evidence.py"
       },
       {
@@ -5065,6 +5069,7 @@
     "EntropyHealthReport",
     "EnzymeMLIRBenchmarkAttachment",
     "EnzymeMLIRCompilerADBreadthArtifact",
+    "EnzymeMLIRCompilerADBreadthArtifactFiles",
     "EnzymeMLIRCompilerADBreadthCaseEvidence",
     "EnzymeMLIRCompilerADBreadthEvidence",
     "EnzymeMLIRMaturityAuditResult",
@@ -5646,6 +5651,7 @@
     "render_differentiable_isolated_benchmark_plan_markdown",
     "render_differentiable_rust_python_inventory_markdown",
     "render_differentiable_sota_scorecard_markdown",
+    "render_enzyme_mlir_compiler_ad_breadth_artifact_markdown",
     "resolve_aggregator_provider_route",
     "reverse_cos",
     "reverse_exp",
@@ -5761,6 +5767,7 @@
     "wirtinger_partials",
     "write_bundle",
     "write_compiler_isolated_benchmark_evidence",
+    "write_enzyme_mlir_compiler_ad_breadth_artifact",
     "write_stable_core_capability_artifacts",
     "zne_extrapolate"
   ],

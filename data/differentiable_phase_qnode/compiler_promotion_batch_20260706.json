@@ -1,10 +1,11 @@
 {
   "alias_activity_artifact_id": "compiler-alias-activity-evidence-20260706",
   "artifact_id": "compiler-promotion-batch-20260706",
-  "assembled_evidence_count": 10,
+  "assembled_evidence_count": 12,
   "boundary_artifact_id": "compiler-evidence-boundary-20260705",
-  "claim_boundary": "Compiler promotion batch assembly only: committed compiler-boundary, alias-activity, native LLVM/JIT, native whole-program AD, and Enzyme/MLIR maturity evidence are checksummed for reviewer triage; this does not promote general compiler AD, isolated benchmarks, provider, hardware, GPU, or performance claim.",
+  "claim_boundary": "Compiler promotion batch assembly only: committed compiler-boundary, alias-activity, native LLVM/JIT, native whole-program AD, and Enzyme/MLIR maturity plus raw breadth evidence are checksummed for reviewer triage; this does not promote general compiler AD, isolated benchmarks, provider, hardware, GPU, or performance claim.",
   "classification": "functional_non_isolated",
+  "enzyme_mlir_breadth_artifact_id": "enzyme-mlir-compiler-ad-breadth-artifact-20260706",
   "enzyme_mlir_maturity_artifact_id": "enzyme-mlir-maturity-audit-20260616",
   "evidence_files": [
     {
@@ -28,32 +29,48 @@
       "path": "data/differentiable_phase_qnode/compiler_evidence_boundary_20260705.json",
       "promotion_ready": false,
       "role": "Compiler evidence boundary and remaining promotion gates",
-      "sha256": "4b818e07e1de839ffd185cf0694c67a36de9a4532ecaf85626cb005a40ac823b",
-      "size_bytes": 9091
+      "sha256": "e9060e150ff6a4099df9cdb238dfe604f500e4e61b62a85f902cc3d435fe2b66",
+      "size_bytes": 9171
     },
     {
       "artifact_id": "compiler-evidence-boundary-20260705",
       "path": "data/differentiable_phase_qnode/compiler_evidence_boundary_20260705.md",
       "promotion_ready": false,
       "role": "Compiler evidence boundary reviewer summary",
-      "sha256": "d89870f45d1ff2faa6a72cf007e72d897c302869b32a6385179d49efa7ff50be",
-      "size_bytes": 3688
+      "sha256": "d1373541eabf49767028fd4e487ad1d290c273e2ccffa159752bf2a1277a7d98",
+      "size_bytes": 3835
+    },
+    {
+      "artifact_id": "enzyme-mlir-compiler-ad-breadth-artifact-20260706",
+      "path": "data/differentiable_phase_qnode/enzyme_mlir_compiler_ad_breadth_artifact_20260706.json",
+      "promotion_ready": false,
+      "role": "Enzyme/MLIR raw 11-case compiler-AD breadth artifact",
+      "sha256": "f167f58b1f6e5387cdde9c998ed1823bd72d48954d3653b1a1be14bfb8e628b8",
+      "size_bytes": 12473
+    },
+    {
+      "artifact_id": "enzyme-mlir-compiler-ad-breadth-artifact-20260706",
+      "path": "data/differentiable_phase_qnode/enzyme_mlir_compiler_ad_breadth_artifact_20260706.md",
+      "promotion_ready": false,
+      "role": "Enzyme/MLIR raw 11-case compiler-AD breadth reviewer summary",
+      "sha256": "b3f714f6f663f1558095acffe31d579eee0c81ac0af77615f997acd8647363fb",
+      "size_bytes": 1956
     },
     {
       "artifact_id": "enzyme-mlir-maturity-audit-20260616",
       "path": "data/differentiable_phase_qnode/enzyme_mlir_maturity_audit_20260616.json",
       "promotion_ready": false,
       "role": "Enzyme/MLIR maturity and hard-gap evidence",
-      "sha256": "4c22d858a28b1ff94b06b4a135039eccc49890607c584a38b413e0ead46fb707",
-      "size_bytes": 4379
+      "sha256": "785ca4d59f6a26ddbfb6e11039d19a8dd8f9560dcfb8251664e3ca78ca39c985",
+      "size_bytes": 19059
     },
     {
       "artifact_id": "enzyme-mlir-maturity-audit-20260616",
       "path": "data/differentiable_phase_qnode/enzyme_mlir_maturity_audit_20260616.md",
       "promotion_ready": false,
       "role": "Enzyme/MLIR maturity reviewer summary",
-      "sha256": "ec3b9caedfc2b20863b37309027a8cc49162de6400e0959a93cb75af4ca24656",
-      "size_bytes": 2143
+      "sha256": "bbd152ec35f525fcb05673c335cecaad0a5130333f564b7a6badc5e9eb0ce4a2",
+      "size_bytes": 2259
     },
     {
       "artifact_id": "llvm-jit-claim-gate-20260704",
@@ -98,6 +115,6 @@
   ],
   "promotion_ready": false,
   "schema": "scpn_qc_compiler_promotion_batch_v1",
-  "source_commit": "8df68be7",
+  "source_commit": "37a9318c",
   "status": "blocked_missing_isolated_compiler_benchmark_ids"
 }

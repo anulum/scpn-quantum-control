@@ -21,29 +21,30 @@ SCPN Quantum Control — Enzyme/MLIR maturity audit artefact
 | Native Enzyme value error | `0.0` |
 | Native Enzyme gradient error | `0.0` |
 | MLIR/LLVM correctness evidence | `mlir-llvm-correctness-20260616-installed-stack` |
-| Compiler AD breadth artifact | `missing` |
+| Compiler AD breadth artifact | `enzyme-mlir-compiler-ad-breadth-artifact-20260706` |
 | Compiler AD breadth evidence | `missing` |
 | Ready for provider exceedance | `False` |
 
 ## Toolchain Snapshot
 
 - `enzyme`: `Enzyme LLVM plugin 0.0.79 (source tag v0.0.267), LLVM 18, plugin=/home/anulum/.local/opt/enzyme-v0.0.267/lib/LLVMEnzyme-18.so` at `/home/anulum/.local/bin/enzyme`
-- `opt`: `Ubuntu LLVM version 18.1.3` at `/usr/bin/opt`
-- `mlir-opt`: `Ubuntu LLVM version 18.1.3` at `/usr/bin/mlir-opt`
-- `clang`: `Ubuntu clang version 18.1.3 (1ubuntu1)` at `/usr/bin/clang`
+- `opt`: `Ubuntu LLVM version 18.1.3` at `/usr/lib/llvm-18/bin/opt`
+- `mlir-opt`: `Ubuntu LLVM version 18.1.3` at `/usr/lib/llvm-18/bin/mlir-opt`
+- `clang`: `Ubuntu clang version 18.1.3 (1ubuntu1)` at `/usr/lib/llvm-18/bin/clang`
 
-## Native Probe
+## Breadth Artifact
 
-The native Enzyme probe transforms LLVM IR for `square(x)=x*x`, compiles the transformed IR with `clang`, and executes a `main()` that checks `square(3)=9` and `d square / dx at 3 = 6`.
+`enzyme-mlir-compiler-ad-breadth-artifact-20260706` records 11 Enzyme/MLIR compiler-AD breadth rows with explicit hard gaps for missing raw cases.
 
 ## Hard Gaps
 
-- `isolated benchmark artefact missing`
-- `compiler AD breadth artifact missing`
+- `validated isolated benchmark evidence missing`
+- `compiler AD breadth artifact not promotion-ready`
+- `compiler AD breadth case hard gaps: alias_activity, matrix_jvp, mlir_lowering, scalar_forward_mode, vector_jvp`
 - `compiler AD breadth evidence missing`
 
 ## Boundary
 
 bounded_enzyme_mlir_compiler_maturity_audit
 
-The direct LLVM Enzyme probe is successful bounded compiler-AD evidence. The separate Enzyme-JAX external-comparison row remains a runtime gap, and this artefact still does not promote Enzyme/MLIR parity, provider execution, hardware execution, arbitrary compiler-AD breadth, or performance claims without isolated benchmark, raw breadth-artifact, and derived breadth evidence.
+The direct LLVM Enzyme probe and raw breadth artifact remain bounded compiler-AD evidence. This artefact still does not promote Enzyme/MLIR parity, provider execution, hardware execution, arbitrary compiler-AD breadth, or performance claims without promotion-ready isolated benchmark and derived breadth evidence.

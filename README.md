@@ -105,9 +105,9 @@ has a defined commercial licensing route.
 | Surface | Current inventory |
 |---|---:|
 | Package version | 0.10.0 |
-| Public API exports | 792 |
+| Public API exports | 795 |
 | Python source modules | 474 |
-| Public Python classes | 917 |
+| Public Python classes | 918 |
 | Domain package families | 31 |
 | API documentation pages | 0 |
 | Rust PyO3 function bindings | 172 |

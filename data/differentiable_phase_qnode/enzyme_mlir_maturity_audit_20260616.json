@@ -3,6 +3,286 @@
   "claim_boundary": "bounded_enzyme_mlir_compiler_maturity_audit",
   "classification": "hard_gap",
   "commercial_license": "available",
+  "compiler_ad_breadth_artifact": {
+    "artifact_id": "enzyme-mlir-compiler-ad-breadth-artifact-20260706",
+    "case_count": 11,
+    "cases": [
+      {
+        "artifact_refs": {
+          "program_ad_alias_activity": "data/differentiable_phase_qnode/compiler_alias_activity_evidence_20260706.json"
+        },
+        "case_id": "alias_activity",
+        "claim_boundary": "Raw Enzyme/MLIR compiler-AD breadth artifact assembled from committed bounded execution evidence. Passing rows carry derivative-correctness evidence only; hard-gap rows remain explicit. This artifact does not promote provider, hardware, GPU, QPU, isolated benchmark, arbitrary compiler-AD, or performance claims.",
+        "failure_class": "program_ad_alias_not_enzyme_mlir_raw_case",
+        "frontend_language": "program_ad_alias",
+        "gradient_error": null,
+        "passed": false,
+        "runtime_seconds": null,
+        "setup_instructions": "Capture Enzyme/MLIR alias-activity raw case evidence before promotion.",
+        "status": "hard_gap",
+        "transform_modes": [
+          "forward",
+          "jvp",
+          "reverse",
+          "vjp"
+        ],
+        "value_error": null
+      },
+      {
+        "artifact_refs": {
+          "llvm_ir_generation": "data/differentiable_phase_qnode/enzyme_toolchain_ad_execution_evidence_20260622.json"
+        },
+        "case_id": "llvm_ir_generation",
+        "claim_boundary": "Raw Enzyme/MLIR compiler-AD breadth artifact assembled from committed bounded execution evidence. Passing rows carry derivative-correctness evidence only; hard-gap rows remain explicit. This artifact does not promote provider, hardware, GPU, QPU, isolated benchmark, arbitrary compiler-AD, or performance claims.",
+        "failure_class": null,
+        "frontend_language": "llvm_ir",
+        "gradient_error": 0.0,
+        "passed": true,
+        "runtime_seconds": 0.5057852609315887,
+        "setup_instructions": null,
+        "status": "success",
+        "transform_modes": [
+          "reverse",
+          "vjp"
+        ],
+        "value_error": 0.0
+      },
+      {
+        "artifact_refs": {
+          "raw_case": "data/differentiable_phase_qnode/enzyme_toolchain_ad_execution_evidence_20260622.json#case_id=vector_weighted_sum_4"
+        },
+        "case_id": "loop_activity",
+        "claim_boundary": "Raw Enzyme/MLIR compiler-AD breadth artifact assembled from committed bounded execution evidence. Passing rows carry derivative-correctness evidence only; hard-gap rows remain explicit. This artifact does not promote provider, hardware, GPU, QPU, isolated benchmark, arbitrary compiler-AD, or performance claims.",
+        "failure_class": null,
+        "frontend_language": "llvm_ir_c_loop",
+        "gradient_error": 0.0,
+        "passed": true,
+        "runtime_seconds": 0.12141182599589229,
+        "setup_instructions": null,
+        "status": "success",
+        "transform_modes": [
+          "reverse",
+          "vjp"
+        ],
+        "value_error": 0.0
+      },
+      {
+        "artifact_refs": {
+          "native_llvm_jit_gate": "data/differentiable_phase_qnode/llvm_jit_claim_gate_20260704.json"
+        },
+        "case_id": "matrix_jvp",
+        "claim_boundary": "Raw Enzyme/MLIR compiler-AD breadth artifact assembled from committed bounded execution evidence. Passing rows carry derivative-correctness evidence only; hard-gap rows remain explicit. This artifact does not promote provider, hardware, GPU, QPU, isolated benchmark, arbitrary compiler-AD, or performance claims.",
+        "failure_class": "matrix_jvp_raw_enzyme_case_missing",
+        "frontend_language": "llvm_ir",
+        "gradient_error": null,
+        "passed": false,
+        "runtime_seconds": null,
+        "setup_instructions": "Attach raw matrix JVP Enzyme/MLIR case evidence.",
+        "status": "hard_gap",
+        "transform_modes": [
+          "jvp"
+        ],
+        "value_error": null
+      },
+      {
+        "artifact_refs": {
+          "raw_case": "data/differentiable_phase_qnode/enzyme_toolchain_ad_execution_evidence_20260622.json#case_id=matrix_trace_2x2"
+        },
+        "case_id": "matrix_vjp",
+        "claim_boundary": "Raw Enzyme/MLIR compiler-AD breadth artifact assembled from committed bounded execution evidence. Passing rows carry derivative-correctness evidence only; hard-gap rows remain explicit. This artifact does not promote provider, hardware, GPU, QPU, isolated benchmark, arbitrary compiler-AD, or performance claims.",
+        "failure_class": null,
+        "frontend_language": "llvm_ir",
+        "gradient_error": 0.0,
+        "passed": true,
+        "runtime_seconds": 0.09373972401954234,
+        "setup_instructions": null,
+        "status": "success",
+        "transform_modes": [
+          "reverse",
+          "vjp"
+        ],
+        "value_error": 0.0
+      },
+      {
+        "artifact_refs": {
+          "maturity_audit": "data/differentiable_phase_qnode/enzyme_mlir_maturity_audit_20260616.json"
+        },
+        "case_id": "mlir_lowering",
+        "claim_boundary": "Raw Enzyme/MLIR compiler-AD breadth artifact assembled from committed bounded execution evidence. Passing rows carry derivative-correctness evidence only; hard-gap rows remain explicit. This artifact does not promote provider, hardware, GPU, QPU, isolated benchmark, arbitrary compiler-AD, or performance claims.",
+        "failure_class": "mlir_lowering_runtime_row_missing",
+        "frontend_language": "mlir",
+        "gradient_error": null,
+        "passed": false,
+        "runtime_seconds": null,
+        "setup_instructions": "Attach raw MLIR lowering case evidence with runtime metadata.",
+        "status": "hard_gap",
+        "transform_modes": [
+          "forward",
+          "jvp",
+          "reverse",
+          "vjp"
+        ],
+        "value_error": null
+      },
+      {
+        "artifact_refs": {
+          "native_enzyme_execution": "data/differentiable_phase_qnode/enzyme_toolchain_ad_execution_evidence_20260622.json"
+        },
+        "case_id": "native_enzyme_execution",
+        "claim_boundary": "Raw Enzyme/MLIR compiler-AD breadth artifact assembled from committed bounded execution evidence. Passing rows carry derivative-correctness evidence only; hard-gap rows remain explicit. This artifact does not promote provider, hardware, GPU, QPU, isolated benchmark, arbitrary compiler-AD, or performance claims.",
+        "failure_class": null,
+        "frontend_language": "native_llvm_enzyme",
+        "gradient_error": 0.0,
+        "passed": true,
+        "runtime_seconds": 0.5057852609315887,
+        "setup_instructions": null,
+        "status": "success",
+        "transform_modes": [
+          "reverse",
+          "vjp"
+        ],
+        "value_error": 0.0
+      },
+      {
+        "artifact_refs": {
+          "native_llvm_jit_gate": "data/differentiable_phase_qnode/llvm_jit_claim_gate_20260704.json"
+        },
+        "case_id": "scalar_forward_mode",
+        "claim_boundary": "Raw Enzyme/MLIR compiler-AD breadth artifact assembled from committed bounded execution evidence. Passing rows carry derivative-correctness evidence only; hard-gap rows remain explicit. This artifact does not promote provider, hardware, GPU, QPU, isolated benchmark, arbitrary compiler-AD, or performance claims.",
+        "failure_class": "scalar_forward_raw_enzyme_case_missing",
+        "frontend_language": "llvm_ir",
+        "gradient_error": null,
+        "passed": false,
+        "runtime_seconds": null,
+        "setup_instructions": "Attach raw scalar forward-mode Enzyme/MLIR case evidence.",
+        "status": "hard_gap",
+        "transform_modes": [
+          "forward"
+        ],
+        "value_error": null
+      },
+      {
+        "artifact_refs": {
+          "raw_case": "data/differentiable_phase_qnode/enzyme_toolchain_ad_execution_evidence_20260622.json#case_id=scalar_square"
+        },
+        "case_id": "scalar_reverse_mode",
+        "claim_boundary": "Raw Enzyme/MLIR compiler-AD breadth artifact assembled from committed bounded execution evidence. Passing rows carry derivative-correctness evidence only; hard-gap rows remain explicit. This artifact does not promote provider, hardware, GPU, QPU, isolated benchmark, arbitrary compiler-AD, or performance claims.",
+        "failure_class": null,
+        "frontend_language": "llvm_ir",
+        "gradient_error": 0.0,
+        "passed": true,
+        "runtime_seconds": 0.08819729299284518,
+        "setup_instructions": null,
+        "status": "success",
+        "transform_modes": [
+          "reverse",
+          "vjp"
+        ],
+        "value_error": 0.0
+      },
+      {
+        "artifact_refs": {
+          "native_llvm_jit_gate": "data/differentiable_phase_qnode/llvm_jit_claim_gate_20260704.json"
+        },
+        "case_id": "vector_jvp",
+        "claim_boundary": "Raw Enzyme/MLIR compiler-AD breadth artifact assembled from committed bounded execution evidence. Passing rows carry derivative-correctness evidence only; hard-gap rows remain explicit. This artifact does not promote provider, hardware, GPU, QPU, isolated benchmark, arbitrary compiler-AD, or performance claims.",
+        "failure_class": "vector_jvp_raw_enzyme_case_missing",
+        "frontend_language": "llvm_ir",
+        "gradient_error": null,
+        "passed": false,
+        "runtime_seconds": null,
+        "setup_instructions": "Attach raw vector JVP Enzyme/MLIR case evidence.",
+        "status": "hard_gap",
+        "transform_modes": [
+          "jvp"
+        ],
+        "value_error": null
+      },
+      {
+        "artifact_refs": {
+          "raw_case": "data/differentiable_phase_qnode/enzyme_toolchain_ad_execution_evidence_20260622.json#case_id=vector_sum_squares_4"
+        },
+        "case_id": "vector_vjp",
+        "claim_boundary": "Raw Enzyme/MLIR compiler-AD breadth artifact assembled from committed bounded execution evidence. Passing rows carry derivative-correctness evidence only; hard-gap rows remain explicit. This artifact does not promote provider, hardware, GPU, QPU, isolated benchmark, arbitrary compiler-AD, or performance claims.",
+        "failure_class": null,
+        "frontend_language": "llvm_ir",
+        "gradient_error": 0.0,
+        "passed": true,
+        "runtime_seconds": 0.10922785697039217,
+        "setup_instructions": null,
+        "status": "success",
+        "transform_modes": [
+          "reverse",
+          "vjp"
+        ],
+        "value_error": 0.0
+      }
+    ],
+    "claim_boundary": "Raw Enzyme/MLIR compiler-AD breadth artifact assembled from committed bounded execution evidence. Passing rows carry derivative-correctness evidence only; hard-gap rows remain explicit. This artifact does not promote provider, hardware, GPU, QPU, isolated benchmark, arbitrary compiler-AD, or performance claims.",
+    "failed_case_ids": [
+      "alias_activity",
+      "matrix_jvp",
+      "mlir_lowering",
+      "scalar_forward_mode",
+      "vector_jvp"
+    ],
+    "frontend_languages": [
+      "llvm_ir",
+      "llvm_ir_c_loop",
+      "mlir",
+      "native_llvm_enzyme",
+      "program_ad_alias"
+    ],
+    "isolated_benchmark_evidence": {
+      "artifact_path": "/media/anulum/GOTM/aaa_God_of_the_Math_Collection/03_CODE/SCPN-QUANTUM-CONTROL-pinv-reconcile/data/differentiable_phase_qnode/local_benchmark_20260616T0955Z/phase_qnode_affinity.json",
+      "artifact_sha256": "e5e0a86508e365e8d6a88e16ad171abc2cf481782c2a94249e5ad8d66ab1bdf1",
+      "benchmark_artifact_id": "phase-qnode-affinity:e5e0a86508e365e8",
+      "claim_boundary": "Enzyme/MLIR compiler-AD breadth benchmark attachment. The current committed benchmark is functional_non_isolated and therefore blocks provider-exceedance and performance promotion.",
+      "evidence_label": "functional_non_isolated",
+      "missing_requirements": [
+        "isolated_affinity evidence label",
+        "production benchmark flag",
+        "empty isolation failures"
+      ],
+      "production_benchmark": false,
+      "promotion_ready": false,
+      "raw_timing_row_count": 50,
+      "required_breadth_case_count": 11,
+      "required_breadth_cases": [
+        "alias_activity",
+        "llvm_ir_generation",
+        "loop_activity",
+        "matrix_jvp",
+        "matrix_vjp",
+        "mlir_lowering",
+        "native_enzyme_execution",
+        "scalar_forward_mode",
+        "scalar_reverse_mode",
+        "vector_jvp",
+        "vector_vjp"
+      ],
+      "validation_claim_boundary": "isolated_affinity only when reserved CPU affinity, low host load, observed process affinity match, governor or frequency context, fixed command metadata, and no heavy concurrent jobs are recorded"
+    },
+    "max_abs_error": 0.0,
+    "passed_case_ids": [
+      "llvm_ir_generation",
+      "loop_activity",
+      "matrix_vjp",
+      "native_enzyme_execution",
+      "scalar_reverse_mode",
+      "vector_vjp"
+    ],
+    "promotion_ready": false,
+    "runtime_seconds": 1.4241472218418494,
+    "schema": "scpn_qc_enzyme_mlir_compiler_ad_breadth_artifact_v1",
+    "transform_modes": [
+      "forward",
+      "jvp",
+      "reverse",
+      "vjp"
+    ]
+  },
+  "compiler_ad_breadth_evidence": null,
   "contact": "www.anulum.li | protoscience@anulum.li",
   "copyright": "\u00a9 Concepts 1996\u20132026 Miroslav \u0160otek. \u00a9 Code 2020\u20132026 Miroslav \u0160otek.",
   "correctness_checks": {
@@ -11,15 +291,43 @@
     "phase_qnode_gradient_close": true,
     "phase_qnode_value_close": true
   },
-  "compiler_ad_breadth_evidence": null,
-  "compiler_ad_breadth_artifact": null,
   "hard_gaps": [
-    "isolated benchmark artefact missing",
-    "compiler AD breadth artifact missing",
+    "validated isolated benchmark evidence missing",
+    "compiler AD breadth artifact not promotion-ready",
+    "compiler AD breadth case hard gaps: alias_activity, matrix_jvp, mlir_lowering, scalar_forward_mode, vector_jvp",
     "compiler AD breadth evidence missing"
   ],
-  "isolated_benchmark_artifact_id": null,
-  "isolated_benchmark_evidence": null,
+  "isolated_benchmark_artifact_id": "phase-qnode-affinity:e5e0a86508e365e8",
+  "isolated_benchmark_evidence": {
+    "artifact_path": "/media/anulum/GOTM/aaa_God_of_the_Math_Collection/03_CODE/SCPN-QUANTUM-CONTROL-pinv-reconcile/data/differentiable_phase_qnode/local_benchmark_20260616T0955Z/phase_qnode_affinity.json",
+    "artifact_sha256": "e5e0a86508e365e8d6a88e16ad171abc2cf481782c2a94249e5ad8d66ab1bdf1",
+    "benchmark_artifact_id": "phase-qnode-affinity:e5e0a86508e365e8",
+    "claim_boundary": "Enzyme/MLIR compiler-AD breadth benchmark attachment. The current committed benchmark is functional_non_isolated and therefore blocks provider-exceedance and performance promotion.",
+    "evidence_label": "functional_non_isolated",
+    "missing_requirements": [
+      "isolated_affinity evidence label",
+      "production benchmark flag",
+      "empty isolation failures"
+    ],
+    "production_benchmark": false,
+    "promotion_ready": false,
+    "raw_timing_row_count": 50,
+    "required_breadth_case_count": 11,
+    "required_breadth_cases": [
+      "alias_activity",
+      "llvm_ir_generation",
+      "loop_activity",
+      "matrix_jvp",
+      "matrix_vjp",
+      "mlir_lowering",
+      "native_enzyme_execution",
+      "scalar_forward_mode",
+      "scalar_reverse_mode",
+      "vector_jvp",
+      "vector_vjp"
+    ],
+    "validation_claim_boundary": "isolated_affinity only when reserved CPU affinity, low host load, observed process affinity match, governor or frequency context, fixed command metadata, and no heavy concurrent jobs are recorded"
+  },
   "mlir_llvm_correctness_evidence": {
     "artifact_id": "mlir-llvm-correctness-20260616-installed-stack",
     "checks": {
@@ -70,7 +378,7 @@
     "clang": {
       "available": true,
       "command": "clang",
-      "executable": "/usr/bin/clang",
+      "executable": "/usr/lib/llvm-18/bin/clang",
       "failure_class": null,
       "setup_instructions": null,
       "version": "Ubuntu clang version 18.1.3 (1ubuntu1)"
@@ -86,7 +394,7 @@
     "mlir-opt": {
       "available": true,
       "command": "mlir-opt",
-      "executable": "/usr/bin/mlir-opt",
+      "executable": "/usr/lib/llvm-18/bin/mlir-opt",
       "failure_class": null,
       "setup_instructions": null,
       "version": "Ubuntu LLVM version 18.1.3"
@@ -94,7 +402,7 @@
     "opt": {
       "available": true,
       "command": "opt",
-      "executable": "/usr/bin/opt",
+      "executable": "/usr/lib/llvm-18/bin/opt",
       "failure_class": null,
       "setup_instructions": null,
       "version": "Ubuntu LLVM version 18.1.3"

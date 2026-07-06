@@ -33,7 +33,9 @@ from scpn_quantum_control.compiler.mlir import (
     build_enzyme_mlir_compiler_ad_breadth_gap_artifact,
     compile_phase_qnode_circuit_to_mlir_runtime,
     lower_phase_qnode_circuit_to_mlir,
+    render_enzyme_mlir_compiler_ad_breadth_artifact_markdown,
     run_enzyme_mlir_maturity_audit,
+    write_enzyme_mlir_compiler_ad_breadth_artifact,
 )
 from scpn_quantum_control.phase.qnode_affinity_benchmark import (
     PhaseQNodeAffinityArtifactValidation,
@@ -43,6 +45,10 @@ from scpn_quantum_control.phase.qnode_circuit import PauliTerm, PhaseQNodeCircui
 REPO_ROOT = Path(__file__).resolve().parents[1]
 ENZYME_MLIR_AUDIT_PATH = (
     REPO_ROOT / "data/differentiable_phase_qnode/enzyme_mlir_maturity_audit_20260616.json"
+)
+ENZYME_MLIR_BREADTH_ARTIFACT_PATH = (
+    REPO_ROOT
+    / "data/differentiable_phase_qnode/enzyme_mlir_compiler_ad_breadth_artifact_20260706.json"
 )
 
 
@@ -560,6 +566,40 @@ def test_enzyme_mlir_breadth_gap_artifact_rejects_duplicate_observations() -> No
         )
 
 
+def test_enzyme_mlir_breadth_artifact_writer_preserves_gap_boundary(tmp_path: Path) -> None:
+    """The raw breadth writer must persist complete case-level hard-gap evidence."""
+    observed_case = EnzymeMLIRCompilerADBreadthCaseEvidence(
+        case_id="scalar_reverse_mode",
+        status="success",
+        transform_modes=("reverse",),
+        frontend_language="llvm_ir",
+        value_error=0.0,
+        gradient_error=0.0,
+        runtime_seconds=0.01,
+        artifact_refs={
+            "raw_case": "data/differentiable_phase_qnode/enzyme_toolchain_ad_execution_evidence_20260622.json"
+        },
+        failure_class=None,
+        setup_instructions=None,
+        claim_boundary="bounded observed scalar reverse-mode evidence.",
+    )
+    artifact = build_enzyme_mlir_compiler_ad_breadth_gap_artifact(
+        artifact_id="enzyme-mlir-breadth-artifact-writer",
+        observed_cases=(observed_case,),
+        isolated_benchmark_evidence=_benchmark_attachment(promotion_ready=False),
+    )
+
+    markdown = render_enzyme_mlir_compiler_ad_breadth_artifact_markdown(artifact)
+    files = write_enzyme_mlir_compiler_ad_breadth_artifact(tmp_path, artifact)
+
+    assert files.artifact_id == artifact.artifact_id
+    assert files.json_path.name == "enzyme_mlir_compiler_ad_breadth_artifact_writer.json"
+    assert files.markdown_path.name == "enzyme_mlir_compiler_ad_breadth_artifact_writer.md"
+    assert json.loads(files.json_path.read_text(encoding="utf-8")) == artifact.to_dict()
+    assert "promotion_ready: `False`" in markdown
+    assert "Failed cases" in files.markdown_path.read_text(encoding="utf-8")
+
+
 def test_enzyme_mlir_maturity_audit_derives_breadth_from_artifact() -> None:
     evidence = EnzymeNativeExecutionEvidence(
         artifact_id="enzyme-success-001",
@@ -731,17 +771,60 @@ def test_committed_enzyme_mlir_audit_records_installed_native_probe() -> None:
     assert payload["classification"] == "hard_gap"
     assert payload["ready_for_provider_exceedance"] is False
     assert payload["hard_gaps"] == [
-        "isolated benchmark artefact missing",
-        "compiler AD breadth artifact missing",
+        "validated isolated benchmark evidence missing",
+        ("compiler AD breadth artifact not promotion-ready"),
+        (
+            "compiler AD breadth case hard gaps: alias_activity, matrix_jvp, "
+            "mlir_lowering, scalar_forward_mode, vector_jvp"
+        ),
         "compiler AD breadth evidence missing",
     ]
-    assert payload["compiler_ad_breadth_artifact"] is None
+    assert payload["compiler_ad_breadth_artifact"]["artifact_id"] == (
+        "enzyme-mlir-compiler-ad-breadth-artifact-20260706"
+    )
+    assert payload["compiler_ad_breadth_artifact"]["case_count"] == 11
+    assert payload["compiler_ad_breadth_artifact"]["promotion_ready"] is False
     assert payload["compiler_ad_breadth_evidence"] is None
+    assert payload["isolated_benchmark_evidence"]["promotion_ready"] is False
     assert all(status["available"] for status in payload["toolchain"].values())
     assert payload["native_enzyme_execution_evidence"]["status"] == "success"
     assert payload["native_enzyme_execution_evidence"]["value_error"] == 0.0
     assert payload["native_enzyme_execution_evidence"]["gradient_error"] == 0.0
     assert "arbitrary-program AD" in payload["native_enzyme_execution_evidence"]["claim_boundary"]
+
+
+def test_committed_enzyme_mlir_breadth_artifact_records_case_level_gaps() -> None:
+    """Committed raw breadth artifact must expose every Enzyme/MLIR case outcome."""
+    payload = json.loads(ENZYME_MLIR_BREADTH_ARTIFACT_PATH.read_text(encoding="utf-8"))
+    cases = {row["case_id"]: row for row in payload["cases"]}
+
+    assert payload["schema"] == "scpn_qc_enzyme_mlir_compiler_ad_breadth_artifact_v1"
+    assert payload["artifact_id"] == "enzyme-mlir-compiler-ad-breadth-artifact-20260706"
+    assert payload["case_count"] == 11
+    assert payload["promotion_ready"] is False
+    assert payload["passed_case_ids"] == [
+        "llvm_ir_generation",
+        "loop_activity",
+        "matrix_vjp",
+        "native_enzyme_execution",
+        "scalar_reverse_mode",
+        "vector_vjp",
+    ]
+    assert payload["failed_case_ids"] == [
+        "alias_activity",
+        "matrix_jvp",
+        "mlir_lowering",
+        "scalar_forward_mode",
+        "vector_jvp",
+    ]
+    assert cases["scalar_reverse_mode"]["gradient_error"] == 0.0
+    assert cases["native_enzyme_execution"]["artifact_refs"] == {
+        "native_enzyme_execution": (
+            "data/differentiable_phase_qnode/enzyme_toolchain_ad_execution_evidence_20260622.json"
+        )
+    }
+    assert cases["alias_activity"]["failure_class"] == "program_ad_alias_not_enzyme_mlir_raw_case"
+    assert payload["isolated_benchmark_evidence"]["evidence_label"] == "functional_non_isolated"
 
 
 def test_enzyme_mlir_evidence_validation_paths() -> None:

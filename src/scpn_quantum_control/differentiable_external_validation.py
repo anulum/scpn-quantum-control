@@ -172,6 +172,14 @@ DEFAULT_ARTIFACT_BUNDLE_INPUTS: tuple[tuple[str, str], ...] = (
         "Enzyme/MLIR maturity audit artefact with runtime-gap and correctness evidence",
     ),
     (
+        "data/differentiable_phase_qnode/enzyme_mlir_compiler_ad_breadth_artifact_20260706.json",
+        "Enzyme/MLIR raw 11-case compiler-AD breadth artefact",
+    ),
+    (
+        "data/differentiable_phase_qnode/enzyme_mlir_compiler_ad_breadth_artifact_20260706.md",
+        "Enzyme/MLIR raw 11-case compiler-AD breadth reviewer summary",
+    ),
+    (
         "data/differentiable_phase_qnode/native_whole_program_ad_execution_evidence_20260622.json",
         "Native LLVM/JIT whole-program AD execution evidence",
     ),

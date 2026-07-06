@@ -230,6 +230,12 @@ def test_build_external_validation_artifact_bundle_records_committed_evidence() 
     )
     assert "data/differentiable_phase_qnode/llvm_jit_claim_gate_20260704.json" in paths
     assert (
+        "data/differentiable_phase_qnode/enzyme_mlir_compiler_ad_breadth_artifact_20260706.json"
+    ) in paths
+    assert (
+        "data/differentiable_phase_qnode/enzyme_mlir_compiler_ad_breadth_artifact_20260706.md"
+    ) in paths
+    assert (
         "data/differentiable_phase_qnode/local_benchmark_20260616T0955Z/"
         "diff-qnode-external-comparison.json"
     ) in paths
@@ -275,6 +281,9 @@ def test_committed_external_validation_artifact_bundle_matches_files() -> None:
     assert "data/differentiable_phase_qnode/llvm_jit_claim_gate_20260704.md" in (
         validation.checked_paths
     )
+    assert (
+        "data/differentiable_phase_qnode/enzyme_mlir_compiler_ad_breadth_artifact_20260706.md"
+    ) in validation.checked_paths
 
 
 def test_provider_gradient_boundary_artifact_preserves_no_submit_boundary() -> None:
@@ -334,6 +343,9 @@ def test_compiler_evidence_boundary_artifact_preserves_promotion_gate() -> None:
     assert "benchmark_artifact_ids" in payload["native_llvm_jit"]["missing_requirements"]
     assert payload["enzyme_mlir"]["artifact_id"] == "enzyme-toolchain-ad-execution-20260705"
     assert payload["enzyme_mlir"]["promotion_ready"] is False
+    assert payload["enzyme_mlir"]["breadth_artifact_id"] == (
+        "enzyme-mlir-compiler-ad-breadth-artifact-20260706"
+    )
     assert "scalar_forward_mode" in required
     assert "native_enzyme_execution" in required
     assert required["native_enzyme_execution"]["status"] in {"evidence_attached", "hard_gap"}
