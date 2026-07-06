@@ -313,7 +313,6 @@ def program_ad_stencil_gradient_derivative_rule(
     edge_order: object = 1,
 ) -> CustomDerivativeRule:
     """Build an exact direct derivative rule for a fixed ``np.gradient`` signature."""
-
     source = tuple(int(dimension) for dimension in source_shape)
     if any(dimension <= 0 for dimension in source):
         raise ValueError(
@@ -371,7 +370,6 @@ def _validate_program_ad_stencil_contract_dispatch(
     args: tuple[object, ...],
 ) -> None:
     """Validate dispatch-time stencil static, shape, and dtype contract hooks."""
-
     if contract.static_argument_rule is None:
         raise ValueError(
             f"program AD stencil primitive {contract.identity.key} missing static argument rule"
@@ -412,7 +410,6 @@ def _require_program_ad_stencil_runtime_contract(
     args: tuple[object, ...] | None = None,
 ) -> PrimitiveContract:
     """Return a fully dispatchable stencil primitive contract or fail closed."""
-
     identity = identities.get(name)
     if identity is None:
         raise ValueError(f"no program AD stencil primitive identity registered for {name}")
@@ -452,7 +449,6 @@ def _require_program_ad_stencil_runtime_contract(
 
 def _program_ad_stencil_direct_value(_values: NDArray[np.float64]) -> NDArray[np.float64]:
     """Reject direct execution for trace-only stencil primitive contracts."""
-
     raise ValueError(
         "program AD stencil primitive contracts are executable only through "
         "operator-intercepted trace dispatch or fixed-shape derivative factories"
@@ -464,7 +460,6 @@ def _program_ad_stencil_direct_jvp(
     _tangent: NDArray[np.float64],
 ) -> NDArray[np.float64]:
     """Reject direct JVP execution for trace-only stencil primitive contracts."""
-
     raise ValueError(
         "program AD stencil primitive contracts are executable only through "
         "operator-intercepted trace dispatch or fixed-shape derivative factories"
@@ -473,7 +468,6 @@ def _program_ad_stencil_direct_jvp(
 
 def _program_ad_stencil_derivative_rule(name: str) -> CustomDerivativeRule:
     """Return the trace-only derivative contract for a stencil primitive."""
-
     if name == "gradient":
         return CustomDerivativeRule(
             name="program_ad_stencil_gradient_trace_contract",
@@ -485,7 +479,6 @@ def _program_ad_stencil_derivative_rule(name: str) -> CustomDerivativeRule:
 
 def _program_ad_stencil_shape_of(arg: object) -> tuple[int, ...]:
     """Return a positive static shape for a concrete or trace stencil source."""
-
     shape = _program_ad_array_shape_of(arg)
     if any(dimension <= 0 for dimension in shape):
         raise ValueError("program AD stencil gradient requires positive source dimensions")
@@ -494,7 +487,6 @@ def _program_ad_stencil_shape_of(arg: object) -> tuple[int, ...]:
 
 def _program_ad_stencil_spacings_arg(arg: object) -> tuple[object, ...]:
     """Normalise a static stencil spacing bundle."""
-
     if isinstance(arg, tuple):
         return arg
     if isinstance(arg, list):
@@ -506,7 +498,6 @@ def _program_ad_stencil_gradient_static_parts(
     args: tuple[object, ...],
 ) -> tuple[tuple[int, ...], tuple[_GradientSpacing, ...], tuple[int, ...], int]:
     """Return the fully validated static signature for ``np.gradient``."""
-
     if len(args) != 4:
         raise ValueError(
             "program AD stencil gradient static rule requires source, spacings, axis, and edge_order"
@@ -524,7 +515,6 @@ def _program_ad_stencil_gradient_static_parts(
 
 def _program_ad_stencil_gradient_shape(args: tuple[object, ...]) -> tuple[int, ...]:
     """Return the static output shape for a stencil gradient contract."""
-
     source_shape, _spacing_specs, axes, _edge = _program_ad_stencil_gradient_static_parts(args)
     if len(axes) == 1:
         return source_shape
@@ -533,7 +523,6 @@ def _program_ad_stencil_gradient_shape(args: tuple[object, ...]) -> tuple[int, .
 
 def _program_ad_stencil_dtype_rule(_args: tuple[object, ...]) -> str:
     """Return the dtype emitted by Program AD stencil gradient traces."""
-
     return "float64"
 
 
@@ -541,7 +530,6 @@ def _program_ad_stencil_gradient_static_arguments(
     args: tuple[object, ...],
 ) -> tuple[object, ...]:
     """Return the hashable static signature for a stencil gradient contract."""
-
     source_shape, spacing_specs, axes, edge = _program_ad_stencil_gradient_static_parts(args)
     return (
         source_shape,
@@ -553,7 +541,6 @@ def _program_ad_stencil_gradient_static_arguments(
 
 def _program_ad_stencil_array_output(value: object) -> NDArray[np.float64]:
     """Convert a concrete stencil output or multi-axis output bundle to an array."""
-
     if isinstance(value, (list, tuple)):
         if not value:
             raise ValueError("program AD stencil batched output must not be empty")
@@ -574,7 +561,6 @@ def _program_ad_stencil_batching_rule(
     out_axes: int,
 ) -> object:
     """Map a stencil gradient over one non-differentiated source axis."""
-
     if len(args) != 4 or len(axes) != 4:
         raise ValueError(
             "program AD stencil gradient batching requires source, spacings, axis, and edge_order"
@@ -616,7 +602,6 @@ def _program_ad_stencil_batching_rule(
 
 def _program_ad_stencil_lowering_metadata(name: str) -> Mapping[str, str]:
     """Return lowering metadata for the stencil primitive contract."""
-
     if name != "gradient":
         raise ValueError(f"unsupported program AD stencil primitive {name}")
     return {
@@ -635,7 +620,6 @@ def _program_ad_stencil_lowering_metadata(name: str) -> Mapping[str, str]:
 
 def _register_program_ad_stencil_primitive_contracts() -> None:
     """Register Program AD stencil primitive contracts in the shared registry."""
-
     for name, identity in _PROGRAM_AD_STENCIL_IDENTITIES.items():
         if DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.contract_for(identity) is not None:
             continue
@@ -659,7 +643,6 @@ def _require_program_ad_stencil_contract(
     args: tuple[object, ...] | None = None,
 ) -> PrimitiveContract:
     """Return a dispatch-ready Program AD stencil primitive contract."""
-
     return _require_program_ad_stencil_runtime_contract(
         name,
         identities=_PROGRAM_AD_STENCIL_IDENTITIES,
