@@ -199,6 +199,12 @@ scalar/static-linalg plus compact interpolation, compact signal, compact stencil
 elementwise/static-structural replay; it does not
 promote executable registry coverage, dynamic array semantics, LLVM/JIT
 lowering, provider execution, hardware execution, or performance evidence.
+`scpn_quantum_engine/tests/program_ad_panic_boundary.rs` adds a deterministic
+panic-boundary corpus for malformed JSON, missing schema fields, unsafe alias
+metadata, unsupported opcodes, non-finite inputs, and malformed compact signal
+and cumulative metadata. The corpus checks the public Rust forward and
+value+gradient APIs fail closed without promoting coverage-guided fuzzing,
+Miri, sanitizer, registry, LLVM/JIT, provider, hardware, or performance claims.
 
 ### Stochastic Gradient Kernels
 

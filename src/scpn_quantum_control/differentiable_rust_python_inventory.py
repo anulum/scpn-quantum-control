@@ -372,7 +372,7 @@ def _default_inventory_rows(
         ),
         _inventory_row(
             "rust_program_ad_ir",
-            "Rust Program AD IR parser plus bounded scalar, elementwise-array, structural-array, structural-assembly, compact interpolation, compact signal, compact stencil, compact cumulative, static reductions, and static-grid trapezoid value+gradient replay",
+            "Rust Program AD IR parser plus bounded scalar, elementwise-array, structural-array, structural-assembly, compact interpolation, compact signal, compact stencil, compact cumulative, static reductions, static-grid trapezoid value+gradient replay, and deterministic panic-boundary fail-closed corpus",
             "rust_backed",
             "src/scpn_quantum_control/differentiable.py",
             (
@@ -393,6 +393,7 @@ def _default_inventory_rows(
                 "scpn_quantum_engine/tests/program_ad_signal.rs",
                 "scpn_quantum_engine/tests/program_ad_stencil.rs",
                 "scpn_quantum_engine/tests/program_ad_cumulative.rs",
+                "scpn_quantum_engine/tests/program_ad_panic_boundary.rs",
             ),
             ("docs/differentiable_api.md",),
             (
@@ -406,6 +407,7 @@ def _default_inventory_rows(
                 "scpn_quantum_engine/tests/program_ad_signal.rs",
                 "scpn_quantum_engine/tests/program_ad_stencil.rs",
                 "scpn_quantum_engine/tests/program_ad_cumulative.rs",
+                "scpn_quantum_engine/tests/program_ad_panic_boundary.rs",
             ),
             ("docs/differentiable_api.md", "docs/differentiable_programming.md"),
             (
@@ -419,7 +421,7 @@ def _default_inventory_rows(
             "partial",
             (
                 "non-lowered dynamic indexing semantics, dynamic axes, dynamic trapezoid-grid metadata, dynamic q/method metadata, dynamic ddof/correction metadata, zero-variance std gradients, and broad linalg array adjoints are missing",
-                "executable registry promotion, LLVM/JIT lowering, provider/hardware evidence, and isolated benchmark evidence are missing",
+                "coverage-guided fuzzing, Miri, sanitizer, executable registry promotion, LLVM/JIT lowering, provider/hardware evidence, and isolated benchmark evidence are missing",
             ),
         ),
         _inventory_row(

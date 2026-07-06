@@ -239,6 +239,12 @@ provider/hardware evidence exists. The committed artefacts live at
 `data/differentiable_phase_qnode/differentiable_rust_python_inventory_20260620.json`
 and
 `data/differentiable_phase_qnode/differentiable_rust_python_inventory_20260620.md`.
+The Rust Program AD inventory row includes a dedicated deterministic
+panic-boundary corpus that exercises malformed or unsupported IR through the
+public Rust forward and value+gradient replay APIs. That corpus is fail-closed
+reliability evidence only; coverage-guided fuzzing, Miri, sanitizer,
+executable registry, LLVM/JIT, provider, hardware, and performance promotion
+remain blocked until separate artifacts exist.
 `run_differentiable_architecture_map()` connects that inventory to the
 scorecard as six Rustification routing layers: public API facade, QNode
 framework bridges, Program AD core, compiler/native execution, provider and

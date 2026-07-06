@@ -65,6 +65,7 @@ def test_inventory_rows_are_claim_bounded_and_path_backed() -> None:
     assert "scpn_quantum_engine/tests/program_ad_signal.rs" in rust_ir.test_surface
     assert "scpn_quantum_engine/tests/program_ad_cumulative.rs" in rust_ir.test_surface
     assert "scpn_quantum_engine/tests/program_ad_stencil.rs" in rust_ir.test_surface
+    assert "scpn_quantum_engine/tests/program_ad_panic_boundary.rs" in rust_ir.test_surface
     assert any("array adjoints" in blocker for blocker in rust_ir.blockers)
 
     qiskit = rows["qiskit_runtime_provider_gradients"]

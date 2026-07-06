@@ -276,6 +276,12 @@ singular-value boundaries plus the rank-1/2x2/3x2/2x3 `pinv` boundary,
 unsafe source-level aliases and non-executed branch
 semantics, general Program AD execution, LLVM/JIT differentiated execution,
 hardware, provider, and performance routes remain fail-closed.
+The Rust panic-boundary corpus exercises malformed JSON, missing schema fields,
+unsafe alias metadata, unsupported opcodes, non-finite inputs, and malformed
+compact signal/cumulative metadata through the public forward and value+gradient
+exports. It is reliability evidence only and does not replace coverage-guided
+fuzzing, Miri, sanitizer, executable registry, LLVM/JIT, provider, hardware, or
+performance promotion artifacts.
 Python callers may use `scpn_quantum_control.program_ad_rust_bridge` directly
 for the typed fail-closed wrappers, including bounded fixed-signature
 `np.linalg.multi_dot` linalg-array output replay, bounded 2x2 distinct
