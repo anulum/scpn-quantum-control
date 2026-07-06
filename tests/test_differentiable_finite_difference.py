@@ -9,6 +9,7 @@
 
 from __future__ import annotations
 
+import inspect
 from typing import Any, cast
 
 import numpy as np
@@ -16,6 +17,7 @@ import pytest
 from numpy.typing import NDArray
 
 import scpn_quantum_control as scpn
+import scpn_quantum_control.differentiable_finite_difference as finite_difference_module
 from scpn_quantum_control import differentiable as differentiable_module
 from scpn_quantum_control.differentiable import (
     GradientResult,
@@ -173,18 +175,66 @@ from scpn_quantum_control.differentiable_finite_difference import vjp as extract
 
 FloatArray = NDArray[np.float64]
 
+PUBLIC_FINITE_DIFFERENCE_TRANSFORMS = (
+    "finite_difference_gradient",
+    "complex_step_gradient",
+    "batch_complex_step_gradient",
+    "batch_value_and_complex_step_grad",
+    "value_and_jacobian",
+    "jacobian",
+    "value_and_jacfwd",
+    "jacfwd",
+    "value_and_jacrev",
+    "jacrev",
+    "value_and_hessian",
+    "hessian",
+    "batch_value_and_finite_difference_grad",
+    "value_and_complex_step_grad",
+    "value_and_finite_difference_grad",
+    "finite_difference_jacobian",
+    "value_and_finite_difference_jacobian",
+    "finite_difference_jvp",
+    "value_and_jvp",
+    "jvp",
+    "value_and_finite_difference_jvp",
+    "batch_finite_difference_jvp",
+    "batch_value_and_finite_difference_jvp",
+    "vector_jacobian_product",
+    "finite_difference_vjp",
+    "value_and_finite_difference_vjp",
+    "value_and_vjp",
+    "vjp",
+    "batch_vector_jacobian_product",
+    "batch_finite_difference_vjp",
+    "batch_value_and_finite_difference_vjp",
+    "finite_difference_hessian",
+    "value_and_finite_difference_hessian",
+    "finite_difference_hvp",
+    "value_and_finite_difference_hvp",
+    "batch_finite_difference_hvp",
+    "batch_value_and_finite_difference_hvp",
+)
+
 
 def _assert_allclose(
     actual: object, expected: object, *, rtol: float = 1.0e-7, atol: float = 0.0
 ) -> None:
     """Assert NumPy closeness across differentiable diagnostic payloads."""
-
     cast(Any, np.testing.assert_allclose)(actual, expected, rtol=rtol, atol=atol)
+
+
+def test_public_finite_difference_transforms_document_contracts() -> None:
+    """Public finite-difference transforms must expose NumPy API contracts."""
+    for name in PUBLIC_FINITE_DIFFERENCE_TRANSFORMS:
+        transform = getattr(finite_difference_module, name)
+        doc = inspect.getdoc(transform)
+        assert doc is not None
+        assert "Parameters" in doc, name
+        assert "Returns" in doc, name
 
 
 def test_facade_and_package_root_reuse_extracted_diagnostic_helpers() -> None:
     """Facade and package-root exports should point at extracted diagnostics."""
-
     expected = {
         "batch_complex_step_gradient": extracted_batch_complex_step_gradient,
         "batch_finite_difference_hvp": extracted_batch_finite_difference_hvp,
@@ -231,7 +281,6 @@ def test_facade_and_package_root_reuse_extracted_diagnostic_helpers() -> None:
 
 def test_finite_difference_gradient_matches_quadratic_derivative() -> None:
     """Finite-difference backend should support non-parameter-shift diagnostics."""
-
     result = value_and_finite_difference_grad(
         lambda values: values[0] ** 2 + 3.0 * values[1],
         [2.0, -1.0],
@@ -259,7 +308,6 @@ def test_finite_difference_gradient_matches_quadratic_derivative() -> None:
 
 def test_finite_difference_gradient_rejects_invalid_step() -> None:
     """Finite-difference step size must be explicit finite positive real data."""
-
     invalid_step = cast(Any, "1e-6")
     with pytest.raises(ValueError, match="finite difference step must be a real numeric scalar"):
         finite_difference_gradient(lambda values: values[0] ** 2, [1.0], step=invalid_step)
@@ -269,7 +317,6 @@ def test_finite_difference_gradient_rejects_invalid_step() -> None:
 
 def test_batch_finite_difference_gradient_helpers_cover_values_and_empty_inputs() -> None:
     """Batched finite-difference gradient helpers should return one result per objective."""
-
     objectives = [
         lambda values: float(values[0] ** 2),
         lambda values: float(3.0 * values[0]),
@@ -286,7 +333,6 @@ def test_batch_finite_difference_gradient_helpers_cover_values_and_empty_inputs(
 
 def test_derivative_result_claim_boundary_must_be_explicit() -> None:
     """Derivative result artefacts should reject blank claim boundaries."""
-
     with pytest.raises(ValueError, match="claim_boundary must be non-empty"):
         GradientResult(
             value=1.0,
@@ -303,7 +349,6 @@ def test_derivative_result_claim_boundary_must_be_explicit() -> None:
 
 def test_complex_step_gradient_matches_analytic_derivative() -> None:
     """Complex-step gradients should avoid finite-difference cancellation."""
-
     result = value_and_complex_step_grad(
         lambda values: np.sin(values[0]) + values[1] ** 3,
         [0.4, -0.2],
@@ -330,7 +375,6 @@ def test_complex_step_gradient_matches_analytic_derivative() -> None:
 
 def test_complex_step_gradient_respects_frozen_parameters() -> None:
     """Complex-step gradients must preserve trainable masks exactly."""
-
     result = value_and_complex_step_grad(
         lambda values: values[0] ** 2 + np.exp(values[1]),
         [2.0, 0.5],
@@ -344,7 +388,6 @@ def test_complex_step_gradient_respects_frozen_parameters() -> None:
 
 def test_batch_complex_step_helpers_cover_values_and_empty_inputs() -> None:
     """Batched complex-step helpers should stack gradients and full results."""
-
     objectives = [
         lambda values: values[0] ** 2,
         lambda values: np.exp(values[0]),
@@ -364,7 +407,6 @@ def test_batch_complex_step_helpers_cover_values_and_empty_inputs() -> None:
 
 def test_complex_step_gradient_rejects_invalid_inputs() -> None:
     """Complex-step gradients should fail closed on invalid scalar contracts."""
-
     invalid_step = cast(Any, "1e-30")
     with pytest.raises(ValueError, match="complex-step step must be a real numeric scalar"):
         complex_step_gradient(lambda values: values[0] ** 2, [1.0], step=invalid_step)
@@ -382,7 +424,6 @@ def test_complex_step_gradient_rejects_invalid_inputs() -> None:
 
 def test_finite_difference_jacobian_matches_vector_objective() -> None:
     """Vector-valued differentiable diagnostics should expose Jacobians."""
-
     result = value_and_finite_difference_jacobian(
         lambda values: np.array([values[0] ** 2, values[0] + 2.0 * values[1]]),
         [3.0, -1.0],
@@ -419,7 +460,6 @@ def test_finite_difference_jacobian_rejects_unstable_vector_shape() -> None:
 
 def test_finite_difference_jacobian_rejects_non_vector_output() -> None:
     """Jacobian objectives must return explicit finite one-dimensional arrays."""
-
     with pytest.raises(ValueError, match="one-dimensional"):
         value_and_finite_difference_jacobian(lambda _values: np.array([[1.0]]), [0.0])
     with pytest.raises(ValueError, match="real numeric"):
@@ -488,7 +528,6 @@ def test_finite_difference_jvp_matches_jacobian_directional_product() -> None:
 
 def test_finite_difference_jvp_respects_frozen_parameters() -> None:
     """Frozen parameters must be removed from directional tangents."""
-
     result = value_and_finite_difference_jvp(
         lambda values: np.array([values[0] + 10.0 * values[1]]),
         [1.0, 2.0],
@@ -503,7 +542,6 @@ def test_finite_difference_jvp_respects_frozen_parameters() -> None:
 
 def test_finite_difference_jvp_rejects_invalid_inputs() -> None:
     """JVP tangents and vector outputs must be finite and shape-stable."""
-
     invalid_tangent = cast(Any, ["1.0"])
     with pytest.raises(ValueError, match="JVP tangent length"):
         value_and_finite_difference_jvp(lambda values: np.array([values[0]]), [1.0], [1.0, 2.0])
@@ -540,7 +578,6 @@ def test_canonical_jvp_wrappers_and_zero_direction_branch() -> None:
 
 def test_vector_jacobian_product_contracts_cotangent() -> None:
     """Reverse-mode VJP should contract cotangents against validated Jacobians."""
-
     jacobian_result = value_and_finite_difference_jacobian(
         lambda values: np.array([values[0] ** 2, values[0] + 2.0 * values[1]]),
         [3.0, -1.0],
@@ -584,7 +621,6 @@ def test_value_and_canonical_vjp_wrappers_dispatch_and_reject_methods() -> None:
 
 def test_vector_jacobian_product_respects_frozen_parameters_and_validation() -> None:
     """VJP products should zero frozen columns and reject malformed cotangents."""
-
     jacobian_result = value_and_finite_difference_jacobian(
         lambda values: np.array([values[0] + values[1], values[1] ** 2]),
         [1.0, 2.0],
@@ -634,7 +670,6 @@ def test_batch_finite_difference_vjp_reuses_single_jacobian() -> None:
 
 def test_batch_vector_jacobian_product_contracts_existing_jacobian() -> None:
     """Batched VJP contraction should work from an existing validated Jacobian."""
-
     jacobian_result = value_and_finite_difference_jacobian(
         lambda values: np.array([values[0] ** 2, values[0] + 2.0 * values[1]]),
         [3.0, -1.0],
@@ -665,7 +700,6 @@ def test_batch_finite_difference_hvp_returns_stacked_products_and_results() -> N
 
 def test_batch_transform_helpers_reject_malformed_batches() -> None:
     """Batched transform helpers should require explicit two-dimensional batches."""
-
     with pytest.raises(ValueError, match="two-dimensional batch"):
         batch_finite_difference_jvp(lambda values: np.array([values[0]]), [1.0], [1.0])
     with pytest.raises(ValueError, match="row length"):
@@ -684,7 +718,6 @@ def test_batch_transform_helpers_reject_malformed_batches() -> None:
 
 def test_finite_difference_hessian_matches_quadratic_curvature() -> None:
     """Scalar differentiable diagnostics should expose second-order curvature."""
-
     result = value_and_finite_difference_hessian(
         lambda values: values[0] ** 2 + 3.0 * values[0] * values[1] + 2.0 * values[1] ** 2,
         [1.0, -1.0],
@@ -706,7 +739,6 @@ def test_finite_difference_hessian_matches_quadratic_curvature() -> None:
 
 def test_finite_difference_hessian_respects_frozen_parameters() -> None:
     """Frozen parameters should have zero Hessian rows and columns."""
-
     result = value_and_finite_difference_hessian(
         lambda values: values[0] ** 2 + values[1] ** 2,
         [1.0, 2.0],
@@ -719,7 +751,6 @@ def test_finite_difference_hessian_respects_frozen_parameters() -> None:
 
 def test_finite_difference_hessian_rejects_invalid_step() -> None:
     """Hessian step size must be explicit finite positive real data."""
-
     invalid_step = cast(Any, "1e-4")
     with pytest.raises(ValueError, match="finite difference step must be a real numeric scalar"):
         finite_difference_hessian(lambda values: values[0] ** 2, [1.0], step=invalid_step)
@@ -752,7 +783,6 @@ def test_finite_difference_hvp_matches_quadratic_curvature_product() -> None:
 
 def test_finite_difference_hvp_respects_frozen_parameters() -> None:
     """Frozen parameters should not contribute to HVP tangents or products."""
-
     result = value_and_finite_difference_hvp(
         lambda values: float(values[0] ** 2 + 100.0 * values[1] ** 2),
         [1.0, 2.0],
@@ -766,7 +796,6 @@ def test_finite_difference_hvp_respects_frozen_parameters() -> None:
 
 def test_finite_difference_hvp_zero_direction_branch() -> None:
     """HVP wrappers should avoid gradient probes for zero trainable tangents."""
-
     result = value_and_finite_difference_hvp(
         lambda values: float(values[0] ** 2),
         [2.0],
@@ -779,7 +808,6 @@ def test_finite_difference_hvp_zero_direction_branch() -> None:
 
 def test_finite_difference_hvp_rejects_invalid_inputs() -> None:
     """HVP tangents and controls must be finite, real, and shape-consistent."""
-
     invalid_tangent = cast(Any, ["1.0"])
     with pytest.raises(ValueError, match="HVP tangent length"):
         value_and_finite_difference_hvp(lambda values: float(values[0] ** 2), [1.0], [1.0, 2.0])

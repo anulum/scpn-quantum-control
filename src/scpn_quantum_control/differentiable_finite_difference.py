@@ -45,8 +45,31 @@ def finite_difference_gradient(
     parameters: Sequence[Parameter] | None = None,
     step: float = 1.0e-6,
 ) -> NDArray[np.float64]:
-    """Return a central finite-difference gradient for scalar diagnostics."""
+    """Return a central finite-difference gradient for scalar diagnostics.
 
+    Parameters
+    ----------
+    objective
+        Scalar objective evaluated on a real parameter vector.
+    values
+        Real parameter vector for the diagnostic probe.
+    parameters
+        Optional parameter metadata. Non-trainable entries receive zero
+        gradient components and are not perturbed.
+    step
+        Positive central-difference displacement.
+
+    Returns
+    -------
+    numpy.ndarray
+        Gradient vector with the same length as ``values``.
+
+    Raises
+    ------
+    ValueError
+        If parameters, objective values, or the finite-difference step violate
+        the diagnostic contract.
+    """
     result = value_and_finite_difference_grad(
         objective,
         values,
@@ -63,8 +86,32 @@ def complex_step_gradient(
     parameters: Sequence[Parameter] | None = None,
     step: float = 1.0e-30,
 ) -> NDArray[np.float64]:
-    """Return a complex-step gradient for real-analytic scalar objectives."""
+    """Return a complex-step gradient for real-analytic scalar objectives.
 
+    Parameters
+    ----------
+    objective
+        Scalar objective that accepts complex-valued perturbations and returns a
+        real base value.
+    values
+        Real parameter vector that seeds the complex-step probes.
+    parameters
+        Optional parameter metadata. Non-trainable entries receive zero
+        gradient components and are not perturbed.
+    step
+        Positive imaginary displacement for each trainable component.
+
+    Returns
+    -------
+    numpy.ndarray
+        Complex-step gradient vector with the same length as ``values``.
+
+    Raises
+    ------
+    ValueError
+        If the step is invalid, the objective is not scalar, or the base value
+        has a non-zero imaginary component.
+    """
     result = value_and_complex_step_grad(
         objective,
         values,
@@ -81,8 +128,31 @@ def batch_complex_step_gradient(
     parameters: Sequence[Parameter] | None = None,
     step: float = 1.0e-30,
 ) -> NDArray[np.float64]:
-    """Return stacked complex-step gradients for real-analytic objectives."""
+    """Return stacked complex-step gradients for real-analytic objectives.
 
+    Parameters
+    ----------
+    objectives
+        Non-empty sequence of scalar objectives that support complex-step
+        perturbations.
+    values
+        Real parameter vector shared by every objective.
+    parameters
+        Optional parameter metadata applied to each objective.
+    step
+        Positive imaginary displacement for trainable components.
+
+    Returns
+    -------
+    numpy.ndarray
+        Matrix whose rows are objective gradients.
+
+    Raises
+    ------
+    ValueError
+        If no objectives are provided or a delegated complex-step evaluation
+        fails validation.
+    """
     if not objectives:
         raise ValueError("objectives must contain at least one scalar objective")
     rows = [
@@ -104,8 +174,31 @@ def batch_value_and_complex_step_grad(
     parameters: Sequence[Parameter] | None = None,
     step: float = 1.0e-30,
 ) -> tuple[GradientResult, ...]:
-    """Return full complex-step results for multiple scalar objectives."""
+    """Return full complex-step results for multiple scalar objectives.
 
+    Parameters
+    ----------
+    objectives
+        Non-empty sequence of scalar objectives that support complex-step
+        perturbations.
+    values
+        Real parameter vector shared by every objective.
+    parameters
+        Optional parameter metadata applied to each objective.
+    step
+        Positive imaginary displacement for trainable components.
+
+    Returns
+    -------
+    tuple[GradientResult, ...]
+        One value-and-gradient result per objective.
+
+    Raises
+    ------
+    ValueError
+        If no objectives are provided or a delegated complex-step evaluation
+        fails validation.
+    """
     if not objectives:
         raise ValueError("objectives must contain at least one scalar objective")
     return tuple(
@@ -127,8 +220,33 @@ def value_and_jacobian(
     method: str = "finite_difference",
     step: float = 1.0e-6,
 ) -> JacobianResult:
-    """Evaluate a vector objective and Jacobian through the canonical transform API."""
+    """Evaluate a vector objective and Jacobian through the canonical transform API.
 
+    Parameters
+    ----------
+    objective
+        Vector-valued objective evaluated on a real parameter vector.
+    values
+        Real parameter vector for the diagnostic probes.
+    parameters
+        Optional parameter metadata. Non-trainable columns are zeroed.
+    method
+        Jacobian backend selector. Only ``"finite_difference"`` is currently
+        accepted.
+    step
+        Positive central-difference displacement.
+
+    Returns
+    -------
+    JacobianResult
+        Objective value, Jacobian matrix, metadata, and claim boundary.
+
+    Raises
+    ------
+    ValueError
+        If ``method`` is unsupported or the vector objective violates the
+        finite-difference contract.
+    """
     if method != "finite_difference":
         raise ValueError("Jacobian method must be finite_difference")
     return value_and_finite_difference_jacobian(
@@ -147,8 +265,33 @@ def jacobian(
     method: str = "finite_difference",
     step: float = 1.0e-6,
 ) -> NDArray[np.float64]:
-    """Return a vector-objective Jacobian through the canonical transform API."""
+    """Return a vector-objective Jacobian through the canonical transform API.
 
+    Parameters
+    ----------
+    objective
+        Vector-valued objective evaluated on a real parameter vector.
+    values
+        Real parameter vector for the diagnostic probes.
+    parameters
+        Optional parameter metadata. Non-trainable columns are zeroed.
+    method
+        Jacobian backend selector. Only ``"finite_difference"`` is currently
+        accepted.
+    step
+        Positive central-difference displacement.
+
+    Returns
+    -------
+    numpy.ndarray
+        Dense Jacobian with shape ``(output_size, parameter_count)``.
+
+    Raises
+    ------
+    ValueError
+        If ``method`` is unsupported or the delegated Jacobian evaluation fails
+        validation.
+    """
     return value_and_jacobian(
         objective,
         values,
@@ -168,12 +311,38 @@ def value_and_jacfwd(
 ) -> JacobianResult:
     """Evaluate a vector objective and Jacobian through forward-Jacobian semantics.
 
+    Parameters
+    ----------
+    objective
+        Vector-valued objective evaluated on a real parameter vector.
+    values
+        Real parameter vector for the diagnostic probes.
+    parameters
+        Optional parameter metadata. Non-trainable columns are zeroed.
+    method
+        Jacobian backend selector. Only ``"finite_difference"`` is currently
+        accepted.
+    step
+        Positive central-difference displacement.
+
+    Returns
+    -------
+    JacobianResult
+        Objective value, Jacobian matrix, metadata, and claim boundary.
+
+    Raises
+    ------
+    ValueError
+        If ``method`` is unsupported or the delegated Jacobian evaluation fails
+        validation.
+
+    Notes
+    -----
     The current backend is the same central finite-difference Jacobian used by
     ``jacobian``. The separate name establishes transform algebra semantics for
     callers and tests while leaving room for a future true forward-mode Jacobian
     implementation behind the same contract.
     """
-
     return value_and_jacobian(
         objective,
         values,
@@ -191,8 +360,33 @@ def jacfwd(
     method: str = "finite_difference",
     step: float = 1.0e-6,
 ) -> NDArray[np.float64]:
-    """Return a vector-objective Jacobian using forward-Jacobian semantics."""
+    """Return a vector-objective Jacobian using forward-Jacobian semantics.
 
+    Parameters
+    ----------
+    objective
+        Vector-valued objective evaluated on a real parameter vector.
+    values
+        Real parameter vector for the diagnostic probes.
+    parameters
+        Optional parameter metadata. Non-trainable columns are zeroed.
+    method
+        Jacobian backend selector. Only ``"finite_difference"`` is currently
+        accepted.
+    step
+        Positive central-difference displacement.
+
+    Returns
+    -------
+    numpy.ndarray
+        Dense Jacobian with shape ``(output_size, parameter_count)``.
+
+    Raises
+    ------
+    ValueError
+        If ``method`` is unsupported or the delegated Jacobian evaluation fails
+        validation.
+    """
     return value_and_jacfwd(
         objective,
         values,
@@ -212,11 +406,37 @@ def value_and_jacrev(
 ) -> JacobianResult:
     """Evaluate a vector objective and Jacobian through reverse-Jacobian semantics.
 
+    Parameters
+    ----------
+    objective
+        Vector-valued objective evaluated on a real parameter vector.
+    values
+        Real parameter vector for the diagnostic probes.
+    parameters
+        Optional parameter metadata. Non-trainable columns are zeroed.
+    method
+        Jacobian backend selector. Only ``"finite_difference"`` is currently
+        accepted.
+    step
+        Positive central-difference displacement.
+
+    Returns
+    -------
+    JacobianResult
+        Objective value, Jacobian matrix, metadata, and claim boundary.
+
+    Raises
+    ------
+    ValueError
+        If ``method`` is unsupported or the delegated Jacobian evaluation fails
+        validation.
+
+    Notes
+    -----
     Until a true reverse-over-vector backend exists, this is an explicit alias to
     the finite-difference Jacobian contract. It preserves API and composition
     semantics without overclaiming reverse compiler AD.
     """
-
     return value_and_jacobian(
         objective,
         values,
@@ -234,8 +454,33 @@ def jacrev(
     method: str = "finite_difference",
     step: float = 1.0e-6,
 ) -> NDArray[np.float64]:
-    """Return a vector-objective Jacobian using reverse-Jacobian semantics."""
+    """Return a vector-objective Jacobian using reverse-Jacobian semantics.
 
+    Parameters
+    ----------
+    objective
+        Vector-valued objective evaluated on a real parameter vector.
+    values
+        Real parameter vector for the diagnostic probes.
+    parameters
+        Optional parameter metadata. Non-trainable columns are zeroed.
+    method
+        Jacobian backend selector. Only ``"finite_difference"`` is currently
+        accepted.
+    step
+        Positive central-difference displacement.
+
+    Returns
+    -------
+    numpy.ndarray
+        Dense Jacobian with shape ``(output_size, parameter_count)``.
+
+    Raises
+    ------
+    ValueError
+        If ``method`` is unsupported or the delegated Jacobian evaluation fails
+        validation.
+    """
     return value_and_jacrev(
         objective,
         values,
@@ -253,8 +498,33 @@ def value_and_hessian(
     method: str = "finite_difference",
     step: float = 1.0e-4,
 ) -> HessianResult:
-    """Evaluate a scalar objective and Hessian through the canonical transform API."""
+    """Evaluate a scalar objective and Hessian through the canonical transform API.
 
+    Parameters
+    ----------
+    objective
+        Scalar objective evaluated on a real parameter vector.
+    values
+        Real parameter vector for the diagnostic probes.
+    parameters
+        Optional parameter metadata. Non-trainable rows and columns are zeroed.
+    method
+        Hessian backend selector. Only ``"finite_difference"`` is currently
+        accepted.
+    step
+        Positive central-difference displacement.
+
+    Returns
+    -------
+    HessianResult
+        Objective value, Hessian matrix, metadata, and claim boundary.
+
+    Raises
+    ------
+    ValueError
+        If ``method`` is unsupported or the delegated Hessian evaluation fails
+        validation.
+    """
     if method != "finite_difference":
         raise ValueError("Hessian method must be finite_difference")
     return value_and_finite_difference_hessian(
@@ -273,8 +543,33 @@ def hessian(
     method: str = "finite_difference",
     step: float = 1.0e-4,
 ) -> NDArray[np.float64]:
-    """Return a scalar-objective Hessian through the canonical transform API."""
+    """Return a scalar-objective Hessian through the canonical transform API.
 
+    Parameters
+    ----------
+    objective
+        Scalar objective evaluated on a real parameter vector.
+    values
+        Real parameter vector for the diagnostic probes.
+    parameters
+        Optional parameter metadata. Non-trainable rows and columns are zeroed.
+    method
+        Hessian backend selector. Only ``"finite_difference"`` is currently
+        accepted.
+    step
+        Positive central-difference displacement.
+
+    Returns
+    -------
+    numpy.ndarray
+        Dense Hessian with shape ``(parameter_count, parameter_count)``.
+
+    Raises
+    ------
+    ValueError
+        If ``method`` is unsupported or the delegated Hessian evaluation fails
+        validation.
+    """
     return value_and_hessian(
         objective,
         values,
@@ -291,8 +586,31 @@ def batch_value_and_finite_difference_grad(
     parameters: Sequence[Parameter] | None = None,
     step: float = 1.0e-6,
 ) -> tuple[GradientResult, ...]:
-    """Return full finite-difference results for multiple scalar objectives."""
+    """Return full finite-difference results for multiple scalar objectives.
 
+    Parameters
+    ----------
+    objectives
+        Non-empty sequence of scalar objectives evaluated against the same
+        parameter vector.
+    values
+        Real parameter vector for every objective.
+    parameters
+        Optional parameter metadata applied to each objective.
+    step
+        Positive central-difference displacement.
+
+    Returns
+    -------
+    tuple[GradientResult, ...]
+        One value-and-gradient result per objective.
+
+    Raises
+    ------
+    ValueError
+        If no objectives are provided or a delegated gradient evaluation fails
+        validation.
+    """
     if not objectives:
         raise ValueError("objectives must contain at least one scalar objective")
     return tuple(
@@ -313,8 +631,32 @@ def value_and_complex_step_grad(
     parameters: Sequence[Parameter] | None = None,
     step: float = 1.0e-30,
 ) -> GradientResult:
-    """Evaluate a real-analytic scalar objective and complex-step gradient."""
+    """Evaluate a real-analytic scalar objective and complex-step gradient.
 
+    Parameters
+    ----------
+    objective
+        Scalar objective that accepts complex-valued perturbations and returns a
+        real base value.
+    values
+        Real parameter vector that seeds the complex-step probes.
+    parameters
+        Optional parameter metadata. Non-trainable entries receive zero
+        gradient components and are not perturbed.
+    step
+        Positive imaginary displacement for trainable components.
+
+    Returns
+    -------
+    GradientResult
+        Objective value, complex-step gradient, metadata, and claim boundary.
+
+    Raises
+    ------
+    ValueError
+        If the step is invalid, parameters are malformed, the objective is not
+        scalar, or the base value has a non-zero imaginary component.
+    """
     step_value = _as_real_scalar("complex-step step", step)
     if step_value <= 0.0:
         raise ValueError("complex-step step must be finite and positive")
@@ -356,8 +698,31 @@ def value_and_finite_difference_grad(
     parameters: Sequence[Parameter] | None = None,
     step: float = 1.0e-6,
 ) -> GradientResult:
-    """Evaluate a scalar objective and central finite-difference gradient."""
+    """Evaluate a scalar objective and central finite-difference gradient.
 
+    Parameters
+    ----------
+    objective
+        Scalar objective evaluated on a real parameter vector.
+    values
+        Real parameter vector for the central-difference probes.
+    parameters
+        Optional parameter metadata. Non-trainable entries receive zero
+        gradient components and are not perturbed.
+    step
+        Positive central-difference displacement.
+
+    Returns
+    -------
+    GradientResult
+        Objective value, gradient, metadata, and diagnostic claim boundary.
+
+    Raises
+    ------
+    ValueError
+        If the step, parameters, or objective result violate the scalar
+        diagnostic contract.
+    """
     step_value = _as_real_scalar("finite difference step", step)
     if step_value <= 0.0:
         raise ValueError("finite difference step must be finite and positive")
@@ -399,8 +764,30 @@ def finite_difference_jacobian(
     parameters: Sequence[Parameter] | None = None,
     step: float = 1.0e-6,
 ) -> NDArray[np.float64]:
-    """Return a central finite-difference Jacobian for vector objectives."""
+    """Return a central finite-difference Jacobian for vector objectives.
 
+    Parameters
+    ----------
+    objective
+        Vector-valued objective evaluated on a real parameter vector.
+    values
+        Real parameter vector for the central-difference probes.
+    parameters
+        Optional parameter metadata. Non-trainable columns are zeroed.
+    step
+        Positive central-difference displacement.
+
+    Returns
+    -------
+    numpy.ndarray
+        Dense Jacobian with shape ``(output_size, parameter_count)``.
+
+    Raises
+    ------
+    ValueError
+        If parameters, objective values, output shape, or the step violate the
+        vector diagnostic contract.
+    """
     return value_and_finite_difference_jacobian(
         objective,
         values,
@@ -416,8 +803,31 @@ def value_and_finite_difference_jacobian(
     parameters: Sequence[Parameter] | None = None,
     step: float = 1.0e-6,
 ) -> JacobianResult:
-    """Evaluate a vector objective and its central finite-difference Jacobian."""
+    """Evaluate a vector objective and its central finite-difference Jacobian.
 
+    Parameters
+    ----------
+    objective
+        Vector-valued objective evaluated on a real parameter vector.
+    values
+        Real parameter vector for the central-difference probes.
+    parameters
+        Optional parameter metadata. Non-trainable columns are zeroed.
+    step
+        Positive central-difference displacement.
+
+    Returns
+    -------
+    JacobianResult
+        Objective value, Jacobian matrix, metadata, and diagnostic claim
+        boundary.
+
+    Raises
+    ------
+    ValueError
+        If the objective output is non-vector, non-finite, or shape-unstable, or
+        if parameter and step validation fails.
+    """
     step_value = _as_real_scalar("finite difference step", step)
     if step_value <= 0.0:
         raise ValueError("finite difference step must be finite and positive")
@@ -461,8 +871,33 @@ def finite_difference_jvp(
     parameters: Sequence[Parameter] | None = None,
     step: float = 1.0e-6,
 ) -> NDArray[np.float64]:
-    """Return a central finite-difference Jacobian-vector product."""
+    """Return a central finite-difference Jacobian-vector product.
 
+    Parameters
+    ----------
+    objective
+        Vector-valued objective evaluated on a real parameter vector.
+    values
+        Real parameter vector for the directional probes.
+    tangent
+        Direction vector. Non-trainable entries are masked to zero.
+    parameters
+        Optional parameter metadata applied to the direction mask.
+    step
+        Positive directional finite-difference displacement.
+
+    Returns
+    -------
+    numpy.ndarray
+        Directional output derivative with the same shape as the vector
+        objective value.
+
+    Raises
+    ------
+    ValueError
+        If the tangent, objective output, parameters, or step violate the JVP
+        contract.
+    """
     return value_and_finite_difference_jvp(
         objective,
         values,
@@ -481,8 +916,36 @@ def value_and_jvp(
     method: str = "finite_difference",
     step: float = 1.0e-6,
 ) -> JVPResult:
-    """Evaluate a vector objective and canonical Jacobian-vector product transform."""
+    """Evaluate a vector objective and canonical Jacobian-vector product transform.
 
+    Parameters
+    ----------
+    objective
+        Vector-valued objective evaluated on a real parameter vector.
+    values
+        Real parameter vector for the directional probes.
+    tangent
+        Direction vector. Non-trainable entries are masked to zero.
+    parameters
+        Optional parameter metadata applied to the direction mask.
+    method
+        JVP backend selector. Only ``"finite_difference"`` is currently
+        accepted.
+    step
+        Positive directional finite-difference displacement.
+
+    Returns
+    -------
+    JVPResult
+        Objective value, directional derivative, masked tangent, metadata, and
+        claim boundary.
+
+    Raises
+    ------
+    ValueError
+        If ``method`` is unsupported or the delegated JVP evaluation fails
+        validation.
+    """
     if method != "finite_difference":
         raise ValueError("JVP method must be finite_difference")
     return value_and_finite_difference_jvp(
@@ -503,8 +966,36 @@ def jvp(
     method: str = "finite_difference",
     step: float = 1.0e-6,
 ) -> NDArray[np.float64]:
-    """Return a canonical Jacobian-vector product transform."""
+    """Return a canonical Jacobian-vector product transform.
 
+    Parameters
+    ----------
+    objective
+        Vector-valued objective evaluated on a real parameter vector.
+    values
+        Real parameter vector for the directional probes.
+    tangent
+        Direction vector. Non-trainable entries are masked to zero.
+    parameters
+        Optional parameter metadata applied to the direction mask.
+    method
+        JVP backend selector. Only ``"finite_difference"`` is currently
+        accepted.
+    step
+        Positive directional finite-difference displacement.
+
+    Returns
+    -------
+    numpy.ndarray
+        Directional output derivative with the same shape as the vector
+        objective value.
+
+    Raises
+    ------
+    ValueError
+        If ``method`` is unsupported or the delegated JVP evaluation fails
+        validation.
+    """
     return value_and_jvp(
         objective,
         values,
@@ -523,8 +1014,33 @@ def value_and_finite_difference_jvp(
     parameters: Sequence[Parameter] | None = None,
     step: float = 1.0e-6,
 ) -> JVPResult:
-    """Evaluate a vector objective and a directional finite-difference JVP."""
+    """Evaluate a vector objective and a directional finite-difference JVP.
 
+    Parameters
+    ----------
+    objective
+        Vector-valued objective evaluated on a real parameter vector.
+    values
+        Real parameter vector for the directional probes.
+    tangent
+        Direction vector. Non-trainable entries are masked to zero.
+    parameters
+        Optional parameter metadata applied to the direction mask.
+    step
+        Positive directional finite-difference displacement.
+
+    Returns
+    -------
+    JVPResult
+        Objective value, directional derivative, masked tangent, metadata, and
+        diagnostic claim boundary.
+
+    Raises
+    ------
+    ValueError
+        If tangent length, objective shape stability, parameter validation, or
+        step validation fails.
+    """
     step_value = _as_real_scalar("finite difference step", step)
     if step_value <= 0.0:
         raise ValueError("finite difference step must be finite and positive")
@@ -570,8 +1086,31 @@ def batch_finite_difference_jvp(
     parameters: Sequence[Parameter] | None = None,
     step: float = 1.0e-6,
 ) -> NDArray[np.float64]:
-    """Return stacked finite-difference JVPs for a batch of tangents."""
+    """Return stacked finite-difference JVPs for a batch of tangents.
 
+    Parameters
+    ----------
+    objective
+        Vector-valued objective evaluated on a real parameter vector.
+    values
+        Real parameter vector for every directional probe.
+    tangents
+        Two-dimensional tangent matrix. Each row defines one direction.
+    parameters
+        Optional parameter metadata applied to each direction mask.
+    step
+        Positive directional finite-difference displacement.
+
+    Returns
+    -------
+    numpy.ndarray
+        Matrix whose rows are directional output derivatives.
+
+    Raises
+    ------
+    ValueError
+        If the tangent batch is malformed or a delegated JVP evaluation fails.
+    """
     results = batch_value_and_finite_difference_jvp(
         objective,
         values,
@@ -590,8 +1129,31 @@ def batch_value_and_finite_difference_jvp(
     parameters: Sequence[Parameter] | None = None,
     step: float = 1.0e-6,
 ) -> tuple[JVPResult, ...]:
-    """Return one finite-difference JVP result per tangent row."""
+    """Return one finite-difference JVP result per tangent row.
 
+    Parameters
+    ----------
+    objective
+        Vector-valued objective evaluated on a real parameter vector.
+    values
+        Real parameter vector for every directional probe.
+    tangents
+        Two-dimensional tangent matrix. Each row defines one direction.
+    parameters
+        Optional parameter metadata applied to each direction mask.
+    step
+        Positive directional finite-difference displacement.
+
+    Returns
+    -------
+    tuple[JVPResult, ...]
+        One value-and-JVP result per tangent row.
+
+    Raises
+    ------
+    ValueError
+        If the tangent batch is malformed or a delegated JVP evaluation fails.
+    """
     parameter_values = _as_parameter_array(values)
     tangent_batch = _as_batch_parameter_array("JVP tangents", tangents, parameter_values.size)
     return tuple(
@@ -610,8 +1172,26 @@ def vector_jacobian_product(
     jacobian: JacobianResult,
     cotangent: ArrayLike,
 ) -> VJPResult:
-    """Contract a validated cotangent with a vector-objective Jacobian."""
+    """Contract a validated cotangent with a vector-objective Jacobian.
 
+    Parameters
+    ----------
+    jacobian
+        Previously validated value-and-Jacobian result.
+    cotangent
+        Vector cotangent whose length must match the objective output.
+
+    Returns
+    -------
+    VJPResult
+        Contracted vector-Jacobian product with inherited Jacobian metadata.
+
+    Raises
+    ------
+    ValueError
+        If ``jacobian`` is not a ``JacobianResult`` or the cotangent shape does
+        not match the Jacobian value.
+    """
     if not isinstance(jacobian, JacobianResult):
         raise ValueError("vector_jacobian_product requires a JacobianResult")
     cotangent_values = _as_vector_output(cotangent)
@@ -641,8 +1221,33 @@ def finite_difference_vjp(
     parameters: Sequence[Parameter] | None = None,
     step: float = 1.0e-6,
 ) -> VJPResult:
-    """Return a finite-difference vector-Jacobian product for a vector objective."""
+    """Return a finite-difference vector-Jacobian product for a vector objective.
 
+    Parameters
+    ----------
+    objective
+        Vector-valued objective evaluated on a real parameter vector.
+    values
+        Real parameter vector for the central-difference Jacobian probes.
+    cotangent
+        Vector cotangent contracted with the Jacobian.
+    parameters
+        Optional parameter metadata. Non-trainable columns are zeroed.
+    step
+        Positive central-difference displacement.
+
+    Returns
+    -------
+    VJPResult
+        Objective value, cotangent, contracted VJP, metadata, and claim
+        boundary.
+
+    Raises
+    ------
+    ValueError
+        If Jacobian construction fails validation or the cotangent shape is
+        incompatible.
+    """
     jacobian = value_and_finite_difference_jacobian(
         objective,
         values,
@@ -660,8 +1265,33 @@ def value_and_finite_difference_vjp(
     parameters: Sequence[Parameter] | None = None,
     step: float = 1.0e-6,
 ) -> VJPResult:
-    """Evaluate a vector objective and one finite-difference VJP result."""
+    """Evaluate a vector objective and one finite-difference VJP result.
 
+    Parameters
+    ----------
+    objective
+        Vector-valued objective evaluated on a real parameter vector.
+    values
+        Real parameter vector for the central-difference Jacobian probes.
+    cotangent
+        Vector cotangent contracted with the Jacobian.
+    parameters
+        Optional parameter metadata. Non-trainable columns are zeroed.
+    step
+        Positive central-difference displacement.
+
+    Returns
+    -------
+    VJPResult
+        Objective value, cotangent, contracted VJP, metadata, and claim
+        boundary.
+
+    Raises
+    ------
+    ValueError
+        If Jacobian construction fails validation or the cotangent shape is
+        incompatible.
+    """
     jacobian = value_and_finite_difference_jacobian(
         objective,
         values,
@@ -680,8 +1310,36 @@ def value_and_vjp(
     method: str = "finite_difference",
     step: float = 1.0e-6,
 ) -> VJPResult:
-    """Evaluate a vector objective and canonical vector-Jacobian product transform."""
+    """Evaluate a vector objective and canonical vector-Jacobian product transform.
 
+    Parameters
+    ----------
+    objective
+        Vector-valued objective evaluated on a real parameter vector.
+    values
+        Real parameter vector for the central-difference Jacobian probes.
+    cotangent
+        Vector cotangent contracted with the Jacobian.
+    parameters
+        Optional parameter metadata. Non-trainable columns are zeroed.
+    method
+        VJP backend selector. Only ``"finite_difference"`` is currently
+        accepted.
+    step
+        Positive central-difference displacement.
+
+    Returns
+    -------
+    VJPResult
+        Objective value, cotangent, contracted VJP, metadata, and claim
+        boundary.
+
+    Raises
+    ------
+    ValueError
+        If ``method`` is unsupported or the delegated VJP evaluation fails
+        validation.
+    """
     if method != "finite_difference":
         raise ValueError("VJP method must be finite_difference")
     return value_and_finite_difference_vjp(
@@ -702,8 +1360,35 @@ def vjp(
     method: str = "finite_difference",
     step: float = 1.0e-6,
 ) -> NDArray[np.float64]:
-    """Return a canonical vector-Jacobian product transform."""
+    """Return a canonical vector-Jacobian product transform.
 
+    Parameters
+    ----------
+    objective
+        Vector-valued objective evaluated on a real parameter vector.
+    values
+        Real parameter vector for the central-difference Jacobian probes.
+    cotangent
+        Vector cotangent contracted with the Jacobian.
+    parameters
+        Optional parameter metadata. Non-trainable columns are zeroed.
+    method
+        VJP backend selector. Only ``"finite_difference"`` is currently
+        accepted.
+    step
+        Positive central-difference displacement.
+
+    Returns
+    -------
+    numpy.ndarray
+        Contracted parameter-space VJP vector.
+
+    Raises
+    ------
+    ValueError
+        If ``method`` is unsupported or the delegated VJP evaluation fails
+        validation.
+    """
     return value_and_vjp(
         objective,
         values,
@@ -718,8 +1403,27 @@ def batch_vector_jacobian_product(
     jacobian: JacobianResult,
     cotangents: ArrayLike,
 ) -> tuple[VJPResult, ...]:
-    """Return one vector-Jacobian product per cotangent row."""
+    """Return one vector-Jacobian product per cotangent row.
 
+    Parameters
+    ----------
+    jacobian
+        Previously validated value-and-Jacobian result.
+    cotangents
+        Two-dimensional cotangent matrix. Each row must match the objective
+        output length.
+
+    Returns
+    -------
+    tuple[VJPResult, ...]
+        One contracted VJP result per cotangent row.
+
+    Raises
+    ------
+    ValueError
+        If ``jacobian`` is not a ``JacobianResult`` or the cotangent batch is
+        malformed.
+    """
     if not isinstance(jacobian, JacobianResult):
         raise ValueError("batch_vector_jacobian_product requires a JacobianResult")
     cotangent_batch = _as_batch_vector_array("VJP cotangents", cotangents, jacobian.value.size)
@@ -734,8 +1438,32 @@ def batch_finite_difference_vjp(
     parameters: Sequence[Parameter] | None = None,
     step: float = 1.0e-6,
 ) -> NDArray[np.float64]:
-    """Return stacked finite-difference VJPs for a batch of cotangents."""
+    """Return stacked finite-difference VJPs for a batch of cotangents.
 
+    Parameters
+    ----------
+    objective
+        Vector-valued objective evaluated on a real parameter vector.
+    values
+        Real parameter vector for the shared Jacobian probes.
+    cotangents
+        Two-dimensional cotangent matrix. Each row defines one VJP.
+    parameters
+        Optional parameter metadata. Non-trainable columns are zeroed.
+    step
+        Positive central-difference displacement.
+
+    Returns
+    -------
+    numpy.ndarray
+        Matrix whose rows are contracted parameter-space VJP vectors.
+
+    Raises
+    ------
+    ValueError
+        If Jacobian construction fails validation or the cotangent batch is
+        malformed.
+    """
     results = batch_value_and_finite_difference_vjp(
         objective,
         values,
@@ -754,8 +1482,32 @@ def batch_value_and_finite_difference_vjp(
     parameters: Sequence[Parameter] | None = None,
     step: float = 1.0e-6,
 ) -> tuple[VJPResult, ...]:
-    """Return one finite-difference VJP result per cotangent row."""
+    """Return one finite-difference VJP result per cotangent row.
 
+    Parameters
+    ----------
+    objective
+        Vector-valued objective evaluated on a real parameter vector.
+    values
+        Real parameter vector for the shared Jacobian probes.
+    cotangents
+        Two-dimensional cotangent matrix. Each row defines one VJP.
+    parameters
+        Optional parameter metadata. Non-trainable columns are zeroed.
+    step
+        Positive central-difference displacement.
+
+    Returns
+    -------
+    tuple[VJPResult, ...]
+        One contracted VJP result per cotangent row.
+
+    Raises
+    ------
+    ValueError
+        If Jacobian construction fails validation or the cotangent batch is
+        malformed.
+    """
     jacobian = value_and_finite_difference_jacobian(
         objective,
         values,
@@ -772,8 +1524,30 @@ def finite_difference_hessian(
     parameters: Sequence[Parameter] | None = None,
     step: float = 1.0e-4,
 ) -> NDArray[np.float64]:
-    """Return a central finite-difference Hessian for scalar objectives."""
+    """Return a central finite-difference Hessian for scalar objectives.
 
+    Parameters
+    ----------
+    objective
+        Scalar objective evaluated on a real parameter vector.
+    values
+        Real parameter vector for the second-order probes.
+    parameters
+        Optional parameter metadata. Non-trainable rows and columns are zeroed.
+    step
+        Positive central-difference displacement for curvature probes.
+
+    Returns
+    -------
+    numpy.ndarray
+        Dense Hessian with shape ``(parameter_count, parameter_count)``.
+
+    Raises
+    ------
+    ValueError
+        If parameter validation, scalar objective validation, or step validation
+        fails.
+    """
     return value_and_finite_difference_hessian(
         objective,
         values,
@@ -789,8 +1563,31 @@ def value_and_finite_difference_hessian(
     parameters: Sequence[Parameter] | None = None,
     step: float = 1.0e-4,
 ) -> HessianResult:
-    """Evaluate a scalar objective and central finite-difference Hessian."""
+    """Evaluate a scalar objective and central finite-difference Hessian.
 
+    Parameters
+    ----------
+    objective
+        Scalar objective evaluated on a real parameter vector.
+    values
+        Real parameter vector for the second-order probes.
+    parameters
+        Optional parameter metadata. Non-trainable rows and columns are zeroed.
+    step
+        Positive central-difference displacement for curvature probes.
+
+    Returns
+    -------
+    HessianResult
+        Objective value, Hessian matrix, metadata, and diagnostic claim
+        boundary.
+
+    Raises
+    ------
+    ValueError
+        If parameter validation, scalar objective validation, or step validation
+        fails.
+    """
     step_value = _as_real_scalar("finite difference step", step)
     if step_value <= 0.0:
         raise ValueError("finite difference step must be finite and positive")
@@ -858,8 +1655,32 @@ def finite_difference_hvp(
     parameters: Sequence[Parameter] | None = None,
     step: float = 1.0e-5,
 ) -> NDArray[np.float64]:
-    """Return a central finite-difference Hessian-vector product."""
+    """Return a central finite-difference Hessian-vector product.
 
+    Parameters
+    ----------
+    objective
+        Scalar objective evaluated on a real parameter vector.
+    values
+        Real parameter vector for the directional curvature probes.
+    tangent
+        Direction vector. Non-trainable entries are masked to zero.
+    parameters
+        Optional parameter metadata applied to the direction mask.
+    step
+        Positive displacement for the nested finite-difference probes.
+
+    Returns
+    -------
+    numpy.ndarray
+        Parameter-space Hessian-vector product.
+
+    Raises
+    ------
+    ValueError
+        If the tangent, parameters, scalar objective result, or step violate the
+        HVP contract.
+    """
     return value_and_finite_difference_hvp(
         objective,
         values,
@@ -877,8 +1698,33 @@ def value_and_finite_difference_hvp(
     parameters: Sequence[Parameter] | None = None,
     step: float = 1.0e-5,
 ) -> HVPResult:
-    """Evaluate a scalar objective and a directional Hessian-vector product."""
+    """Evaluate a scalar objective and a directional Hessian-vector product.
 
+    Parameters
+    ----------
+    objective
+        Scalar objective evaluated on a real parameter vector.
+    values
+        Real parameter vector for the directional curvature probes.
+    tangent
+        Direction vector. Non-trainable entries are masked to zero.
+    parameters
+        Optional parameter metadata applied to the direction mask.
+    step
+        Positive displacement for the nested finite-difference probes.
+
+    Returns
+    -------
+    HVPResult
+        Objective value, Hessian-vector product, masked tangent, metadata, and
+        diagnostic claim boundary.
+
+    Raises
+    ------
+    ValueError
+        If tangent length, parameter validation, scalar objective validation, or
+        step validation fails.
+    """
     step_value = _as_real_scalar("finite difference step", step)
     if step_value <= 0.0:
         raise ValueError("finite difference step must be finite and positive")
@@ -933,8 +1779,31 @@ def batch_finite_difference_hvp(
     parameters: Sequence[Parameter] | None = None,
     step: float = 1.0e-5,
 ) -> NDArray[np.float64]:
-    """Return stacked finite-difference HVPs for a batch of tangents."""
+    """Return stacked finite-difference HVPs for a batch of tangents.
 
+    Parameters
+    ----------
+    objective
+        Scalar objective evaluated on a real parameter vector.
+    values
+        Real parameter vector for every directional curvature probe.
+    tangents
+        Two-dimensional tangent matrix. Each row defines one HVP direction.
+    parameters
+        Optional parameter metadata applied to each direction mask.
+    step
+        Positive displacement for nested finite-difference probes.
+
+    Returns
+    -------
+    numpy.ndarray
+        Matrix whose rows are parameter-space Hessian-vector products.
+
+    Raises
+    ------
+    ValueError
+        If the tangent batch is malformed or a delegated HVP evaluation fails.
+    """
     results = batch_value_and_finite_difference_hvp(
         objective,
         values,
@@ -953,8 +1822,31 @@ def batch_value_and_finite_difference_hvp(
     parameters: Sequence[Parameter] | None = None,
     step: float = 1.0e-5,
 ) -> tuple[HVPResult, ...]:
-    """Return one finite-difference HVP result per tangent row."""
+    """Return one finite-difference HVP result per tangent row.
 
+    Parameters
+    ----------
+    objective
+        Scalar objective evaluated on a real parameter vector.
+    values
+        Real parameter vector for every directional curvature probe.
+    tangents
+        Two-dimensional tangent matrix. Each row defines one HVP direction.
+    parameters
+        Optional parameter metadata applied to each direction mask.
+    step
+        Positive displacement for nested finite-difference probes.
+
+    Returns
+    -------
+    tuple[HVPResult, ...]
+        One value-and-HVP result per tangent row.
+
+    Raises
+    ------
+    ValueError
+        If the tangent batch is malformed or a delegated HVP evaluation fails.
+    """
     parameter_values = _as_parameter_array(values)
     tangent_batch = _as_batch_parameter_array("HVP tangents", tangents, parameter_values.size)
     return tuple(
