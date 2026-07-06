@@ -58,6 +58,7 @@ pub mod mpc;
 pub mod otoc;
 pub mod pauli;
 pub mod pec;
+mod program_ad_cumulative_reduction;
 pub mod program_ad_ir;
 mod program_ad_linalg_array;
 mod program_ad_linalg_pinv;

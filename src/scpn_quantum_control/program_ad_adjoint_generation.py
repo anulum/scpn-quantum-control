@@ -49,6 +49,11 @@ from .program_ad_adjoint import (
     _program_adjoint_input_value,
     _program_adjoint_is_ir_value,
 )
+from .program_ad_cumulative_primitives import (
+    program_ad_cumulative_cumprod_derivative_rule,
+    program_ad_cumulative_cumsum_derivative_rule,
+    program_ad_cumulative_diff_derivative_rule,
+)
 from .program_ad_effect_ir import (
     ProgramADControlRegion,
     ProgramADEffectIR,
@@ -293,6 +298,74 @@ def _program_adjoint_parse_shape_label(label: str) -> tuple[int, ...]:
     if any(dimension < 0 for dimension in shape):
         raise ValueError("shape dimensions must be non-negative")
     return shape
+
+
+def _program_adjoint_cumulative_contributions(
+    node: WholeProgramIRNode,
+    node_by_name: Mapping[str, WholeProgramIRNode],
+) -> tuple[tuple[str, float], ...]:
+    """Return local reverse contributions for one compact cumulative output."""
+
+    parts = node.op.split(":")
+    try:
+        if parts[0] in {"cumsum", "cumprod"}:
+            if len(parts) != 7 or parts[1] != "shape" or parts[3] != "axis" or parts[5] != "out":
+                raise ValueError
+            source_shape = _program_adjoint_parse_shape_label(parts[2])
+            axis = None if parts[4] == "flat" else int(parts[4])
+            output_index = int(parts[6])
+            output_shape = (
+                (int(np.prod(source_shape, dtype=np.int64)),) if axis is None else source_shape
+            )
+            rule = (
+                program_ad_cumulative_cumsum_derivative_rule(source_shape, axis=axis)
+                if parts[0] == "cumsum"
+                else program_ad_cumulative_cumprod_derivative_rule(source_shape, axis=axis)
+            )
+        elif parts[0] == "diff":
+            if (
+                len(parts) != 9
+                or parts[1] != "shape"
+                or parts[3] != "n"
+                or parts[5] != "axis"
+                or parts[7] != "out"
+            ):
+                raise ValueError
+            source_shape = _program_adjoint_parse_shape_label(parts[2])
+            order = int(parts[4])
+            axis = int(parts[6])
+            output_index = int(parts[8])
+            if axis < 0 or axis >= len(source_shape):
+                raise ValueError
+            if order < 0 or order > source_shape[axis]:
+                raise ValueError
+            output_shape = (
+                source_shape[:axis] + (source_shape[axis] - order,) + source_shape[axis + 1 :]
+            )
+            rule = program_ad_cumulative_diff_derivative_rule(source_shape, order=order, axis=axis)
+        else:
+            raise ValueError
+    except ValueError as exc:
+        raise ValueError("cumulative adjoint metadata is malformed") from exc
+
+    expected_inputs = int(np.prod(source_shape, dtype=np.int64))
+    if expected_inputs <= 0 or len(node.inputs) != expected_inputs:
+        raise ValueError("cumulative adjoint inputs must match flattened source shape")
+    output_size = int(np.prod(output_shape, dtype=np.int64))
+    if output_size <= 0 or output_index < 0 or output_index >= output_size:
+        raise ValueError("cumulative adjoint output index is outside output shape")
+    if rule.vjp_rule is None:
+        raise ValueError("cumulative adjoint requires a VJP rule")
+    flat_values = np.array(
+        [_program_adjoint_input_value(name, node_by_name) for name in node.inputs],
+        dtype=np.float64,
+    )
+    cotangent = np.zeros(output_size, dtype=np.float64)
+    cotangent[output_index] = 1.0
+    local_adjoint = np.asarray(rule.vjp_rule(flat_values, cotangent), dtype=np.float64).reshape(-1)
+    return tuple(
+        (name, float(value)) for name, value in zip(node.inputs, local_adjoint, strict=True)
+    )
 
 
 def _program_adjoint_matrix_power_contributions(
@@ -887,6 +960,8 @@ def _program_adjoint_node_contributions(
         "choose",
     }:
         return _program_adjoint_binary_or_selection_contributions(node, node_by_name)
+    if node.op.startswith(("cumsum:", "cumprod:", "diff:")):
+        return _program_adjoint_cumulative_contributions(node, node_by_name)
     if node.op.startswith("linalg:det:"):
         return _program_adjoint_det_contributions(node, node_by_name)
     if node.op.startswith("linalg:inv:"):

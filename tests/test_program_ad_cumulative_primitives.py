@@ -92,6 +92,9 @@ def test_program_ad_cumulative_primitives_are_registry_policy_gated() -> None:
     assert cumsum_contract.nondifferentiable_policy == "program_ad_trace_exact_fail_closed"
     assert cumsum_contract.effect == "pure"
     assert cumsum_contract.lowering_metadata["mlir_op"] == "scpn_diff.cumulative.cumsum"
+    assert cumsum_contract.lowering_metadata["rust"] == (
+        "available: bounded compact Program AD Rust value+gradient replay"
+    )
     assert (
         cumsum_contract.lowering_metadata["static_derivative_factory"]
         == "program_ad_cumulative_cumsum_derivative_rule"
@@ -116,6 +119,9 @@ def test_program_ad_cumulative_primitives_are_registry_policy_gated() -> None:
     assert cumprod_contract.nondifferentiable_policy == "program_ad_trace_exact_fail_closed"
     assert cumprod_contract.effect == "pure"
     assert cumprod_contract.lowering_metadata["mlir_op"] == "scpn_diff.cumulative.cumprod"
+    assert cumprod_contract.lowering_metadata["rust"] == (
+        "available: bounded compact Program AD Rust value+gradient replay"
+    )
     assert (
         cumprod_contract.lowering_metadata["static_derivative_factory"]
         == "program_ad_cumulative_cumprod_derivative_rule"
@@ -138,6 +144,9 @@ def test_program_ad_cumulative_primitives_are_registry_policy_gated() -> None:
     assert diff_contract.nondifferentiable_policy == "program_ad_trace_exact_fail_closed"
     assert diff_contract.effect == "pure"
     assert diff_contract.lowering_metadata["mlir_op"] == "scpn_diff.cumulative.diff"
+    assert diff_contract.lowering_metadata["rust"] == (
+        "available: bounded compact Program AD Rust value+gradient replay"
+    )
     assert (
         diff_contract.lowering_metadata["static_derivative_factory"]
         == "program_ad_cumulative_diff_derivative_rule"

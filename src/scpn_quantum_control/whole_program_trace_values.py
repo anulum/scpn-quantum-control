@@ -54,6 +54,9 @@ from .program_ad_assembly_primitives import (
 )
 from .program_ad_cumulative_primitives import (
     _require_program_ad_cumulative_contract,
+    program_ad_cumulative_cumprod_derivative_rule,
+    program_ad_cumulative_cumsum_derivative_rule,
+    program_ad_cumulative_diff_derivative_rule,
 )
 from .program_ad_elementwise_primitives import (
     _program_ad_elementwise_name,
@@ -2557,29 +2560,80 @@ def _trace_correlate(
     return TraceADArray(tuple(full_items[start:stop]), (stop - start,), context)
 
 
+def _trace_cumulative_compact_array(
+    array: TraceADArray,
+    *,
+    operation_name: str,
+    output_shape: tuple[int, ...],
+    output_operations: tuple[str, ...],
+    value_fn: Callable[[NDArray[np.float64]], object],
+    jvp_rule: Callable[[NDArray[np.float64], NDArray[np.float64]], object],
+) -> TraceADArray:
+    """Emit compact cumulative Program AD nodes from an exact direct rule."""
+
+    expected_size = int(np.prod(output_shape))
+    if len(output_operations) != expected_size:
+        raise ValueError(f"program AD {operation_name} output operation count mismatch")
+    flat_values = np.array([item.primal for item in array._items], dtype=np.float64)
+    output_flat = _as_real_numeric_array(
+        f"program AD {operation_name} compact values", value_fn(flat_values)
+    ).reshape(-1)
+    if output_flat.size != expected_size:
+        raise ValueError(f"program AD {operation_name} compact value shape mismatch")
+    flat_tangent = np.stack([item.tangent for item in array._items], axis=0)
+    if array.context.parameter_count:
+        tangent_outputs = np.array(
+            [
+                _as_real_numeric_array(
+                    f"program AD {operation_name} compact tangent",
+                    jvp_rule(flat_values, flat_tangent[:, parameter_index]),
+                ).reshape(-1)
+                for parameter_index in range(array.context.parameter_count)
+            ],
+            dtype=np.float64,
+        ).T
+    else:
+        tangent_outputs = np.zeros((expected_size, 0), dtype=np.float64)
+    if tangent_outputs.shape != (expected_size, array.context.parameter_count):
+        raise ValueError(f"program AD {operation_name} compact tangent shape mismatch")
+    if not bool(np.all(np.isfinite(output_flat))) or not bool(
+        np.all(np.isfinite(tangent_outputs))
+    ):
+        raise ValueError(f"program AD {operation_name} compact outputs must be finite")
+    input_names = tuple(item.name for item in array._items)
+    items = tuple(
+        array.context.make(
+            output_operations[flat_index],
+            input_names,
+            float(output_flat[flat_index]),
+            tangent_outputs[flat_index, :],
+        )
+        for flat_index in range(expected_size)
+    )
+    return TraceADArray(items, output_shape, array.context)
+
+
 def _trace_cumsum(array: TraceADArray, axis: int | None = None) -> TraceADArray:
     _require_program_ad_cumulative_contract("cumsum", (array, axis))
     if not array._items:
         raise ValueError("program AD cumulative sum requires at least one element")
-    if axis is None:
-        items: list[TraceADScalar] = []
-        total = array._items[0]
-        items.append(total)
-        for item in array._items[1:]:
-            total = total + item
-            items.append(total)
-        return TraceADArray(tuple(items), (array.size,), array.context)
-    axis = _normalise_axis("axis", axis, array.ndim)
-    axis_items: list[TraceADScalar] = []
-    for flat_index in range(array.size):
-        target_index = np.unravel_index(flat_index, array.shape)
-        source_index = target_index[:axis] + (0,) + target_index[axis + 1 :]
-        total = array._items[int(np.ravel_multi_index(source_index, array.shape))]
-        for axis_index in range(1, target_index[axis] + 1):
-            source_index = target_index[:axis] + (axis_index,) + target_index[axis + 1 :]
-            total = total + array._items[int(np.ravel_multi_index(source_index, array.shape))]
-        axis_items.append(total)
-    return TraceADArray(tuple(axis_items), array.shape, array.context)
+    axis_index = None if axis is None else _normalise_axis("axis", axis, array.ndim)
+    rule = program_ad_cumulative_cumsum_derivative_rule(array.shape, axis=axis_index)
+    if rule.jvp_rule is None:
+        raise ValueError("program AD cumulative cumsum compact rule requires a JVP rule")
+    output_shape = (array.size,) if axis_index is None else array.shape
+    axis_label = "flat" if axis_index is None else str(axis_index)
+    operation_prefix = f"cumsum:shape:{_trace_shape_label(array.shape)}:axis:{axis_label}:out"
+    return _trace_cumulative_compact_array(
+        array,
+        operation_name="cumsum",
+        output_shape=output_shape,
+        output_operations=tuple(
+            f"{operation_prefix}:{flat_index}" for flat_index in range(int(np.prod(output_shape)))
+        ),
+        value_fn=rule.value_fn,
+        jvp_rule=rule.jvp_rule,
+    )
 
 
 def _trace_array_prod(
@@ -2616,25 +2670,23 @@ def _trace_cumprod(array: TraceADArray, axis: int | None = None) -> TraceADArray
     _require_program_ad_cumulative_contract("cumprod", (array, axis))
     if not array._items:
         raise ValueError("program AD cumulative product requires at least one element")
-    if axis is None:
-        prod_items: list[TraceADScalar] = []
-        total = array._items[0]
-        prod_items.append(total)
-        for item in array._items[1:]:
-            total = total * item
-            prod_items.append(total)
-        return TraceADArray(tuple(prod_items), (array.size,), array.context)
-    axis = _normalise_axis("axis", axis, array.ndim)
-    axis_prod_items: list[TraceADScalar] = []
-    for flat_index in range(array.size):
-        target_index = np.unravel_index(flat_index, array.shape)
-        source_index = target_index[:axis] + (0,) + target_index[axis + 1 :]
-        total = array._items[int(np.ravel_multi_index(source_index, array.shape))]
-        for axis_index in range(1, target_index[axis] + 1):
-            source_index = target_index[:axis] + (axis_index,) + target_index[axis + 1 :]
-            total = total * array._items[int(np.ravel_multi_index(source_index, array.shape))]
-        axis_prod_items.append(total)
-    return TraceADArray(tuple(axis_prod_items), array.shape, array.context)
+    axis_index = None if axis is None else _normalise_axis("axis", axis, array.ndim)
+    rule = program_ad_cumulative_cumprod_derivative_rule(array.shape, axis=axis_index)
+    if rule.jvp_rule is None:
+        raise ValueError("program AD cumulative cumprod compact rule requires a JVP rule")
+    output_shape = (array.size,) if axis_index is None else array.shape
+    axis_label = "flat" if axis_index is None else str(axis_index)
+    operation_prefix = f"cumprod:shape:{_trace_shape_label(array.shape)}:axis:{axis_label}:out"
+    return _trace_cumulative_compact_array(
+        array,
+        operation_name="cumprod",
+        output_shape=output_shape,
+        output_operations=tuple(
+            f"{operation_prefix}:{flat_index}" for flat_index in range(int(np.prod(output_shape)))
+        ),
+        value_fn=rule.value_fn,
+        jvp_rule=rule.jvp_rule,
+    )
 
 
 def _trace_diff(array: TraceADArray, *, n: object, axis: int) -> TraceADArray:
@@ -2644,10 +2696,32 @@ def _trace_diff(array: TraceADArray, *, n: object, axis: int) -> TraceADArray:
     order = int(n)
     if order < 0:
         raise ValueError("program AD np.diff requires non-negative integer n")
-    result = array.copy()
-    for _ in range(order):
-        result = _trace_first_diff(result, axis=axis)
-    return result
+    axis_index = _normalise_axis("axis", axis, array.ndim)
+    if order == 0:
+        return array.copy()
+    output_shape = (
+        array.shape[:axis_index]
+        + (max(array.shape[axis_index] - order, 0),)
+        + array.shape[axis_index + 1 :]
+    )
+    if int(np.prod(output_shape)) == 0:
+        return TraceADArray((), output_shape, array.context)
+    rule = program_ad_cumulative_diff_derivative_rule(array.shape, order=order, axis=axis_index)
+    if rule.jvp_rule is None:
+        raise ValueError("program AD cumulative diff compact rule requires a JVP rule")
+    operation_prefix = (
+        f"diff:shape:{_trace_shape_label(array.shape)}:n:{order}:axis:{axis_index}:out"
+    )
+    return _trace_cumulative_compact_array(
+        array,
+        operation_name="diff",
+        output_shape=output_shape,
+        output_operations=tuple(
+            f"{operation_prefix}:{flat_index}" for flat_index in range(int(np.prod(output_shape)))
+        ),
+        value_fn=rule.value_fn,
+        jvp_rule=rule.jvp_rule,
+    )
 
 
 def _trace_first_diff(array: TraceADArray, *, axis: int) -> TraceADArray:

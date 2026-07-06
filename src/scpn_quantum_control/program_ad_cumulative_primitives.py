@@ -643,7 +643,7 @@ def _program_ad_cumulative_lowering_metadata(name: str) -> Mapping[str, str]:
         "mlir": "available: scpn_diff cumulative dialect interchange; executable lowering blocked",
         "mlir_op": f"scpn_diff.cumulative.{name}",
         "llvm": "blocked_until_executable_cumulative_lowering",
-        "rust": "blocked_until_polyglot_cumulative_ad",
+        "rust": "available: bounded compact Program AD Rust value+gradient replay",
         "static_argument_rule": "required",
         "static_derivative_factory": static_factory,
         "static_signature": static_signature,
