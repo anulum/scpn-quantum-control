@@ -32,8 +32,8 @@ fn log_det_spd_with_ridge(
     for i in 0..n {
         for j in 0..=i {
             let mut sum = matrix[[i, j]] + if i == j { ridge } else { 0.0 };
-            for k in 0..j {
-                sum -= chol[i][k] * chol[j][k];
+            for (left, right) in chol[i].iter().zip(chol[j].iter()).take(j) {
+                sum -= left * right;
             }
             if i == j {
                 if !sum.is_finite() || sum <= 0.0 {

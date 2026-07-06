@@ -20,6 +20,12 @@ use rayon::prelude::*;
 
 use crate::validation::{validate_contiguous_slice, validate_finite, validate_n};
 
+type ScoreRegionsBatchResult<'py> = PyResult<(
+    Bound<'py, PyArray1<f64>>,
+    Bound<'py, PyArray1<f64>>,
+    Bound<'py, PyArray1<f64>>,
+)>;
+
 /// Compute quality scores for multiple regions in parallel.
 ///
 /// Each region is a slice of qubit indices. Returns (connectivity, fidelity, composite)
@@ -35,11 +41,7 @@ pub fn score_regions_batch<'py>(
     n_qubits: usize,
     region_offsets: PyReadonlyArray1<'_, i64>,
     region_qubits: PyReadonlyArray1<'_, i64>,
-) -> PyResult<(
-    Bound<'py, PyArray1<f64>>,
-    Bound<'py, PyArray1<f64>>,
-    Bound<'py, PyArray1<f64>>,
-)> {
+) -> ScoreRegionsBatchResult<'py> {
     validate_n(n_qubits, "n_qubits")?;
     let errors = validate_contiguous_slice(&gate_errors_flat, "gate_errors_flat")?;
     let offsets = validate_contiguous_slice(&region_offsets, "region_offsets")?;
@@ -133,7 +135,7 @@ fn validate_gate_errors(errors: &[f64], n_qubits: usize) -> PyResult<()> {
 }
 
 fn validate_region_encoding(offsets: &[i64], qubits: &[i64], n_qubits: usize) -> PyResult<()> {
-    if offsets.len() % 2 != 0 {
+    if !offsets.len().is_multiple_of(2) {
         return Err(PyValueError::new_err(format!(
             "region_offsets length {} must be even",
             offsets.len()

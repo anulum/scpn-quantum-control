@@ -24,6 +24,22 @@ use crate::validation::validate_positive;
 use crate::kuramoto_common::{validate_finite_slice, validate_phase_vector};
 use crate::kuramoto_observables::order_parameter_inner;
 
+type KuramotoTrajectoryResult<'py> =
+    PyResult<(Bound<'py, PyArray1<f64>>, Bound<'py, PyArray1<f64>>)>;
+
+type MonitoredKuramotoTrajectoryResult<'py> = PyResult<(
+    Bound<'py, PyArray1<f64>>,
+    Bound<'py, PyArray1<f64>>,
+    Bound<'py, PyArray1<f64>>,
+    Bound<'py, PyArray1<f64>>,
+)>;
+
+type KuramotoWitnessCandidateFeaturesResult<'py> = PyResult<(
+    Bound<'py, PyArray1<f64>>,
+    Bound<'py, PyArray1<f64>>,
+    Bound<'py, PyArray2<f64>>,
+)>;
+
 /// Classical Kuramoto ODE step (vectorised, no Python overhead).
 /// θ' = ω + K @ sin(��_outer − θ_inner)
 /// Returns new θ after n_steps of Euler integration.
@@ -150,6 +166,10 @@ fn fill_time_and_r(
 /// Anchored triadic term: B_a sin(theta_j + theta_k - 2 theta_i) for each
 /// hyperedge row (i, j, k).
 #[pyfunction]
+#[expect(
+    clippy::too_many_arguments,
+    reason = "public PyO3 ABI mirrors the Python higher-order Kuramoto wrapper"
+)]
 pub fn higher_order_kuramoto_trajectory<'py>(
     py: Python<'py>,
     theta0: PyReadonlyArray1<'_, f64>,
@@ -159,7 +179,7 @@ pub fn higher_order_kuramoto_trajectory<'py>(
     hyper_weights: PyReadonlyArray1<'_, f64>,
     dt: f64,
     n_steps: usize,
-) -> PyResult<(Bound<'py, PyArray1<f64>>, Bound<'py, PyArray1<f64>>)> {
+) -> KuramotoTrajectoryResult<'py> {
     validate_positive(dt, "dt")?;
     let theta0_slice = validate_phase_vector(&theta0, "theta0")?;
     let omega_slice = validate_phase_vector(&omega, "omega")?;
@@ -230,6 +250,10 @@ pub fn higher_order_kuramoto_trajectory<'py>(
 /// feedback term g(target_R - R_m) sin(psi - theta_i) pulls phases toward the
 /// measured mean phase without changing the pairwise Kuramoto law.
 #[pyfunction]
+#[expect(
+    clippy::too_many_arguments,
+    reason = "public PyO3 ABI mirrors the Python monitored Kuramoto wrapper"
+)]
 pub fn monitored_kuramoto_trajectory<'py>(
     py: Python<'py>,
     theta0: PyReadonlyArray1<'_, f64>,
@@ -240,12 +264,7 @@ pub fn monitored_kuramoto_trajectory<'py>(
     measurement_strength: f64,
     dt: f64,
     n_steps: usize,
-) -> PyResult<(
-    Bound<'py, PyArray1<f64>>,
-    Bound<'py, PyArray1<f64>>,
-    Bound<'py, PyArray1<f64>>,
-    Bound<'py, PyArray1<f64>>,
-)> {
+) -> MonitoredKuramotoTrajectoryResult<'py> {
     validate_positive(dt, "dt")?;
     if !target_r.is_finite() || !(0.0..=1.0).contains(&target_r) {
         return Err(pyo3::exceptions::PyValueError::new_err(
@@ -329,12 +348,7 @@ pub fn pt_symmetric_kuramoto_trajectory<'py>(
     gain_loss: PyReadonlyArray1<'_, f64>,
     dt: f64,
     n_steps: usize,
-) -> PyResult<(
-    Bound<'py, PyArray1<f64>>,
-    Bound<'py, PyArray1<f64>>,
-    Bound<'py, PyArray1<f64>>,
-    Bound<'py, PyArray1<f64>>,
-)> {
+) -> MonitoredKuramotoTrajectoryResult<'py> {
     validate_positive(dt, "dt")?;
     let theta_slice = validate_phase_vector(&theta0, "theta0")?;
     let omega_slice = validate_phase_vector(&omega, "omega")?;
@@ -443,11 +457,7 @@ pub fn kuramoto_witness_candidate_features<'py>(
     candidates: PyReadonlyArray2<'_, f64>,
     dt: f64,
     n_steps: usize,
-) -> PyResult<(
-    Bound<'py, PyArray1<f64>>,
-    Bound<'py, PyArray1<f64>>,
-    Bound<'py, PyArray2<f64>>,
-)> {
+) -> KuramotoWitnessCandidateFeaturesResult<'py> {
     validate_positive(dt, "dt")?;
     let theta0_slice = validate_phase_vector(&theta0, "theta0")?;
     let omega_slice = validate_phase_vector(&omega, "omega")?;
@@ -525,7 +535,7 @@ pub fn kuramoto_trajectory<'py>(
     k: PyReadonlyArray2<'_, f64>,
     dt: f64,
     n_steps: usize,
-) -> PyResult<(Bound<'py, PyArray1<f64>>, Bound<'py, PyArray1<f64>>)> {
+) -> KuramotoTrajectoryResult<'py> {
     validate_positive(dt, "dt")?;
     let theta0_slice = validate_phase_vector(&theta0, "theta0")?;
     let omega_slice = validate_phase_vector(&omega, "omega")?;

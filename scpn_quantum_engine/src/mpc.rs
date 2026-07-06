@@ -21,6 +21,13 @@ use crate::validation::{
     validate_contiguous_slice, validate_finite, validate_flat_square, validate_n,
 };
 
+type BruteMpcResult<'py> = PyResult<(
+    Bound<'py, PyArray1<i64>>,
+    f64,
+    Bound<'py, PyArray1<f64>>,
+    usize,
+)>;
+
 /// Brute-force optimal binary MPC: enumerate all 2^horizon action sequences.
 /// Parallelised with rayon for horizon > 10.
 ///
@@ -32,12 +39,7 @@ pub fn brute_mpc<'py>(
     target: PyReadonlyArray1<'_, f64>,
     dim: usize,
     horizon: usize,
-) -> PyResult<(
-    Bound<'py, PyArray1<i64>>,
-    f64,
-    Bound<'py, PyArray1<f64>>,
-    usize,
-)> {
+) -> BruteMpcResult<'py> {
     validate_n(dim, "dim")?;
     validate_n(horizon, "horizon")?;
     if horizon > 25 {

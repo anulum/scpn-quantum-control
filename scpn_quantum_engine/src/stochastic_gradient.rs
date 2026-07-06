@@ -43,6 +43,20 @@ pub struct GradientConfidenceIntervalKernelResult {
     pub failure_reasons: Vec<String>,
 }
 
+type StochasticGradientPyResult<'py> = PyResult<(
+    Bound<'py, PyArray1<f64>>,
+    Bound<'py, PyArray1<f64>>,
+    Bound<'py, PyArray2<f64>>,
+    Bound<'py, PyArray1<f64>>,
+)>;
+
+type GradientConfidenceIntervalPyResult<'py> = PyResult<(
+    Bound<'py, PyArray1<f64>>,
+    Bound<'py, PyArray1<f64>>,
+    String,
+    Vec<String>,
+)>;
+
 fn ensure_finite_vector(name: &str, values: &[f64]) -> Result<(), String> {
     if values.is_empty() {
         return Err(format!("{name} must be non-empty"));
@@ -122,6 +136,10 @@ fn validate_shots(name: &str, values: &[Vec<f64>]) -> Result<(), String> {
     Ok(())
 }
 
+#[expect(
+    clippy::too_many_arguments,
+    reason = "kernel inputs mirror the finite-shot parameter-shift evidence schema"
+)]
 pub fn stochastic_parameter_shift_uncertainty_inner(
     plus_values: &[Vec<f64>],
     minus_values: &[Vec<f64>],
@@ -211,6 +229,10 @@ pub fn stochastic_parameter_shift_uncertainty_inner(
     })
 }
 
+#[expect(
+    clippy::too_many_arguments,
+    reason = "kernel inputs mirror the SPSA evidence schema"
+)]
 pub fn spsa_gradient_inner(
     plus_values: &[f64],
     minus_values: &[f64],
@@ -622,6 +644,10 @@ fn nested_to_array2(values: Vec<Vec<f64>>) -> Result<Array2<f64>, String> {
     trainable,
     confidence_z=1.959963984540054
 ))]
+#[expect(
+    clippy::too_many_arguments,
+    reason = "public PyO3 ABI mirrors the finite-shot parameter-shift evidence schema"
+)]
 pub fn parameter_shift_gradient_uncertainty_rust<'py>(
     py: Python<'py>,
     plus_values: PyReadonlyArray2<'_, f64>,
@@ -633,12 +659,7 @@ pub fn parameter_shift_gradient_uncertainty_rust<'py>(
     coefficients: PyReadonlyArray1<'_, f64>,
     trainable: PyReadonlyArray1<'_, bool>,
     confidence_z: f64,
-) -> PyResult<(
-    Bound<'py, PyArray1<f64>>,
-    Bound<'py, PyArray1<f64>>,
-    Bound<'py, PyArray2<f64>>,
-    Bound<'py, PyArray1<f64>>,
-)> {
+) -> StochasticGradientPyResult<'py> {
     let result = stochastic_parameter_shift_uncertainty_inner(
         &read_array2_rows(plus_values),
         &read_array2_rows(minus_values),
@@ -673,6 +694,10 @@ pub fn parameter_shift_gradient_uncertainty_rust<'py>(
     perturbation_radius,
     confidence_z=1.959963984540054
 ))]
+#[expect(
+    clippy::too_many_arguments,
+    reason = "public PyO3 ABI mirrors the SPSA evidence schema"
+)]
 pub fn spsa_gradient_rust<'py>(
     py: Python<'py>,
     plus_values: PyReadonlyArray1<'_, f64>,
@@ -685,12 +710,7 @@ pub fn spsa_gradient_rust<'py>(
     trainable: PyReadonlyArray1<'_, bool>,
     perturbation_radius: f64,
     confidence_z: f64,
-) -> PyResult<(
-    Bound<'py, PyArray1<f64>>,
-    Bound<'py, PyArray1<f64>>,
-    Bound<'py, PyArray2<f64>>,
-    Bound<'py, PyArray1<f64>>,
-)> {
+) -> StochasticGradientPyResult<'py> {
     let perturbations = read_array2_rows(perturbations);
     let result = spsa_gradient_inner(
         plus_values.as_slice()?,
@@ -729,12 +749,7 @@ pub fn score_function_gradient_rust<'py>(
     trainable: PyReadonlyArray1<'_, bool>,
     baseline: f64,
     confidence_z: f64,
-) -> PyResult<(
-    Bound<'py, PyArray1<f64>>,
-    Bound<'py, PyArray1<f64>>,
-    Bound<'py, PyArray2<f64>>,
-    Bound<'py, PyArray1<f64>>,
-)> {
+) -> StochasticGradientPyResult<'py> {
     let score_vectors = read_array2_rows(score_vectors);
     let result = score_function_gradient_inner(
         rewards.as_slice()?,
@@ -770,12 +785,7 @@ pub fn gradient_confidence_interval_rust<'py>(
     confidence_z: f64,
     max_standard_error: Option<f64>,
     max_confidence_radius: Option<f64>,
-) -> PyResult<(
-    Bound<'py, PyArray1<f64>>,
-    Bound<'py, PyArray1<f64>>,
-    String,
-    Vec<String>,
-)> {
+) -> GradientConfidenceIntervalPyResult<'py> {
     let result = gradient_confidence_interval_inner(
         gradient.as_slice()?,
         standard_error.as_slice()?,

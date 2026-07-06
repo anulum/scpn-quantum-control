@@ -26,6 +26,18 @@ pub struct ComputationalBasisFisherResult {
     pub probability_derivatives: Vec<Vec<f64>>,
 }
 
+type FubiniStudyMetricPyResult<'py> = PyResult<(
+    Bound<'py, PyArray2<f64>>,
+    Bound<'py, PyArray2<f64>>,
+    Bound<'py, PyArray1<f64>>,
+)>;
+
+type ComputationalBasisFisherPyResult<'py> = PyResult<(
+    Bound<'py, PyArray2<f64>>,
+    Bound<'py, PyArray1<f64>>,
+    Bound<'py, PyArray2<f64>>,
+)>;
+
 fn ensure_finite_slice(name: &str, values: &[f64]) -> Result<(), String> {
     if let Some((index, value)) = values
         .iter()
@@ -429,11 +441,7 @@ pub fn phase_qnode_fubini_study_metric_rust<'py>(
     state_im: PyReadonlyArray1<'_, f64>,
     derivatives_re: PyReadonlyArray2<'_, f64>,
     derivatives_im: PyReadonlyArray2<'_, f64>,
-) -> PyResult<(
-    Bound<'py, PyArray2<f64>>,
-    Bound<'py, PyArray2<f64>>,
-    Bound<'py, PyArray1<f64>>,
-)> {
+) -> FubiniStudyMetricPyResult<'py> {
     let state_re = state_re.as_slice()?;
     let state_im = state_im.as_slice()?;
     let derivatives_re = read_array2_rows(derivatives_re);
@@ -457,11 +465,7 @@ pub fn phase_qnode_computational_basis_fisher_rust<'py>(
     derivatives_re: PyReadonlyArray2<'_, f64>,
     derivatives_im: PyReadonlyArray2<'_, f64>,
     min_probability: f64,
-) -> PyResult<(
-    Bound<'py, PyArray2<f64>>,
-    Bound<'py, PyArray1<f64>>,
-    Bound<'py, PyArray2<f64>>,
-)> {
+) -> ComputationalBasisFisherPyResult<'py> {
     let state_re = state_re.as_slice()?;
     let state_im = state_im.as_slice()?;
     let derivatives_re = read_array2_rows(derivatives_re);

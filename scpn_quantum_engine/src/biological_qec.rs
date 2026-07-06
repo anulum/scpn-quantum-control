@@ -160,7 +160,7 @@ fn defect_components_have_even_parity(defects: &[usize], adj: &[Vec<(usize, usiz
 
 fn mwpm_exact(dist_mat: &[Vec<f64>]) -> Option<Vec<(usize, usize)>> {
     let n = dist_mat.len();
-    if n % 2 != 0 {
+    if !n.is_multiple_of(2) {
         return None;
     }
     if n == 0 {
@@ -285,7 +285,7 @@ pub fn biological_decode_inner(
     if defects.is_empty() {
         return Ok(correction);
     }
-    if defects.len() % 2 != 0 {
+    if !defects.len().is_multiple_of(2) {
         return Err("syndrome_x contains odd number of defects.".to_owned());
     }
     if !defect_components_have_even_parity(&defects, &adj) {

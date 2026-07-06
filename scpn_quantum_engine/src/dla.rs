@@ -26,6 +26,14 @@ use crate::validation::{
     validate_contiguous_slice, validate_finite, validate_n, validate_positive,
 };
 
+type DlaTrajectoryMetricsResult<'py> = PyResult<(
+    Bound<'py, PyArray1<f64>>,
+    Bound<'py, PyArray1<f64>>,
+    Bound<'py, PyArray1<f64>>,
+    Bound<'py, PyArray1<f64>>,
+    Bound<'py, PyArray1<f64>>,
+)>;
+
 /// DLA: compute dynamical Lie algebra dimension via commutator closure.
 ///
 /// Takes a flat array of generator matrices (each dim×dim, row-major)
@@ -131,13 +139,7 @@ pub fn dla_protected_trajectory_metrics<'py>(
     n_logical: usize,
     code_distance: usize,
     target_parity: usize,
-) -> PyResult<(
-    Bound<'py, PyArray1<f64>>,
-    Bound<'py, PyArray1<f64>>,
-    Bound<'py, PyArray1<f64>>,
-    Bound<'py, PyArray1<f64>>,
-    Bound<'py, PyArray1<f64>>,
-)> {
+) -> DlaTrajectoryMetricsResult<'py> {
     let total_qubits = validate_memory_shape(n_logical, code_distance, target_parity)?;
     let dim = 1usize << total_qubits;
     let probs = probabilities.as_array();
@@ -335,7 +337,7 @@ fn validate_memory_shape(
 ) -> PyResult<usize> {
     validate_n(n_logical, "n_logical")?;
     validate_n(code_distance, "code_distance")?;
-    if code_distance % 2 == 0 {
+    if code_distance.is_multiple_of(2) {
         return Err(PyValueError::new_err(format!(
             "code_distance must be odd, got {code_distance}"
         )));

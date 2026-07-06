@@ -22,7 +22,7 @@ use pyo3::PyResult;
 /// Convert a validation result to PyResult.
 #[inline]
 pub fn to_pyresult(r: Result<(), String>) -> PyResult<()> {
-    r.map_err(|e| PyValueError::new_err(e))
+    r.map_err(PyValueError::new_err)
 }
 
 /// Validate that a float slice contains no NaN or Inf values.

@@ -18,6 +18,22 @@ use crate::validation::{
     validate_contiguous_slice, validate_finite, validate_flat_square, validate_n,
 };
 
+type AnalogCouplingTermsResult<'py> = PyResult<(
+    Bound<'py, PyArray1<i64>>,
+    Bound<'py, PyArray1<i64>>,
+    Bound<'py, PyArray1<f64>>,
+    Bound<'py, PyArray1<f64>>,
+    Bound<'py, PyArray1<f64>>,
+)>;
+
+type HybridCouplingPartitionResult<'py> = PyResult<(
+    Bound<'py, PyArray1<f64>>,
+    Bound<'py, PyArray1<f64>>,
+    Bound<'py, PyArray1<i64>>,
+    Bound<'py, PyArray1<i64>>,
+    Bound<'py, PyArray1<i64>>,
+)>;
+
 /// Compile upper-triangular coupling terms for analog Kuramoto backends.
 ///
 /// Platform codes:
@@ -34,13 +50,7 @@ pub fn analog_coupling_terms<'py>(
     coupling_scale: f64,
     c6_coefficient: f64,
     zero_threshold: f64,
-) -> PyResult<(
-    Bound<'py, PyArray1<i64>>,
-    Bound<'py, PyArray1<i64>>,
-    Bound<'py, PyArray1<f64>>,
-    Bound<'py, PyArray1<f64>>,
-    Bound<'py, PyArray1<f64>>,
-)> {
+) -> AnalogCouplingTermsResult<'py> {
     validate_n(n, "n")?;
     let k = validate_contiguous_slice(&k_flat, "k_flat")?;
     validate_flat_square(k, n, "k_flat")?;
@@ -113,13 +123,7 @@ pub fn hybrid_coupling_partition<'py>(
     analog_budget: usize,
     analog_threshold: f64,
     zero_threshold: f64,
-) -> PyResult<(
-    Bound<'py, PyArray1<f64>>,
-    Bound<'py, PyArray1<f64>>,
-    Bound<'py, PyArray1<i64>>,
-    Bound<'py, PyArray1<i64>>,
-    Bound<'py, PyArray1<i64>>,
-)> {
+) -> HybridCouplingPartitionResult<'py> {
     validate_n(n, "n")?;
     let k = validate_contiguous_slice(&k_flat, "k_flat")?;
     validate_flat_square(k, n, "k_flat")?;

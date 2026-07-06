@@ -717,7 +717,7 @@ pub fn matrix_vector_product_jvp_inner(
         "native matrix-vector product Rust JVP kernel",
     )?;
     let mut output = vec![0.0; dimension];
-    for row in 0..dimension {
+    for (row, output_row) in output.iter_mut().enumerate().take(dimension) {
         let mut total = 0.0;
         for column in 0..dimension {
             let matrix_index = matrix_square_index(dimension, row, column);
@@ -725,7 +725,7 @@ pub fn matrix_vector_product_jvp_inner(
             total += tangent[matrix_index] * values[vector_index];
             total += values[matrix_index] * tangent[vector_index];
         }
-        output[row] = total;
+        *output_row = total;
     }
     Ok(output)
 }
@@ -1474,10 +1474,8 @@ pub fn vector_dot_gradient_inner(dimension: usize, values: &[f64]) -> Result<Vec
         "native vector dot Rust gradient kernel",
     )?;
     let mut gradient = vec![0.0; 2 * dimension];
-    for index in 0..dimension {
-        gradient[index] = values[dimension + index];
-        gradient[dimension + index] = values[index];
-    }
+    gradient[..dimension].copy_from_slice(&values[dimension..(dimension + dimension)]);
+    gradient[dimension..(dimension + dimension)].copy_from_slice(&values[..dimension]);
     Ok(gradient)
 }
 

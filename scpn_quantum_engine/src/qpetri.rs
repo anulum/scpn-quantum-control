@@ -18,6 +18,13 @@ use rand::{RngExt, SeedableRng};
 
 use crate::validation::{validate_contiguous_slice, validate_finite, validate_range};
 
+type QpetriCampaignAggregateResult<'py> = PyResult<(
+    Bound<'py, PyArray1<f64>>,
+    Bound<'py, PyArray1<f64>>,
+    f64,
+    f64,
+)>;
+
 #[pyfunction]
 pub fn qpetri_transition_activity<'py>(
     py: Python<'py>,
@@ -141,6 +148,10 @@ pub fn qpetri_sample_marking<'py>(
 }
 
 #[pyfunction]
+#[expect(
+    clippy::too_many_arguments,
+    reason = "public PyO3 ABI mirrors the Python Quantum Petri campaign wrapper"
+)]
 pub fn qpetri_campaign_aggregate<'py>(
     py: Python<'py>,
     output_markings_flat: PyReadonlyArray1<'_, f64>,
@@ -150,12 +161,7 @@ pub fn qpetri_campaign_aggregate<'py>(
     n_steps: usize,
     n_places: usize,
     n_transitions: usize,
-) -> PyResult<(
-    Bound<'py, PyArray1<f64>>,
-    Bound<'py, PyArray1<f64>>,
-    f64,
-    f64,
-)> {
+) -> QpetriCampaignAggregateResult<'py> {
     if n_steps == 0 {
         return Err(PyValueError::new_err("n_steps must be positive"));
     }

@@ -18,6 +18,9 @@ use pyo3::prelude::*;
 
 use crate::validation::{validate_contiguous_slice, validate_finite, validate_n};
 
+type PauliExpectationPairResult<'py> =
+    PyResult<(Bound<'py, PyArray1<f64>>, Bound<'py, PyArray1<f64>>)>;
+
 fn expected_statevector_len(n: usize) -> PyResult<usize> {
     1usize.checked_shl(n as u32).ok_or_else(|| {
         PyValueError::new_err(format!(
@@ -179,7 +182,7 @@ pub fn all_xy_expectations<'py>(
     psi_re: PyReadonlyArray1<'_, f64>,
     psi_im: PyReadonlyArray1<'_, f64>,
     n_osc: usize,
-) -> PyResult<(Bound<'py, PyArray1<f64>>, Bound<'py, PyArray1<f64>>)> {
+) -> PauliExpectationPairResult<'py> {
     validate_n(n_osc, "n_osc")?;
     let re = validate_contiguous_slice(&psi_re, "psi_re")?;
     let im = validate_contiguous_slice(&psi_im, "psi_im")?;

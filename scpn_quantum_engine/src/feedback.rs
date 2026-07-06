@@ -15,6 +15,22 @@ use std::time::Instant;
 
 use crate::validation::{validate_contiguous_slice, validate_finite, validate_range};
 
+type FeedbackPolicyBatchResult<'py> = PyResult<(
+    Bound<'py, PyArray1<i32>>,
+    Bound<'py, PyArray1<f64>>,
+    Bound<'py, PyArray1<f64>>,
+)>;
+
+type RealtimeFeedbackLoopResult<'py> = PyResult<(
+    Bound<'py, PyArray1<f64>>,
+    Bound<'py, PyArray1<f64>>,
+    Bound<'py, PyArray1<f64>>,
+    Bound<'py, PyArray1<f64>>,
+    Bound<'py, PyArray1<i32>>,
+    Bound<'py, PyArray1<f64>>,
+    Bound<'py, PyArray1<f64>>,
+)>;
+
 /// Convert measured order parameters into action codes, gains, and errors.
 ///
 /// Action codes:
@@ -29,11 +45,7 @@ pub fn feedback_policy_batch<'py>(
     deadband: f64,
     base_gain: f64,
     max_gain: f64,
-) -> PyResult<(
-    Bound<'py, PyArray1<i32>>,
-    Bound<'py, PyArray1<f64>>,
-    Bound<'py, PyArray1<f64>>,
-)> {
+) -> FeedbackPolicyBatchResult<'py> {
     validate_range(target_r, 0.0, 1.0, "target_r")?;
     validate_range(deadband, 0.0, 1.0, "deadband")?;
     if !base_gain.is_finite() || base_gain < 0.0 {
@@ -75,6 +87,10 @@ pub fn feedback_policy_batch<'py>(
 /// feedback policy + coupling-scale update) on the Rust side so Python does not
 /// participate in per-step scheduling.
 #[pyfunction]
+#[expect(
+    clippy::too_many_arguments,
+    reason = "public PyO3 ABI mirrors the Python realtime feedback wrapper"
+)]
 pub fn run_realtime_feedback_loop<'py>(
     py: Python<'py>,
     theta0: PyReadonlyArray1<'_, f64>,
@@ -86,15 +102,7 @@ pub fn run_realtime_feedback_loop<'py>(
     max_gain: f64,
     dt: f64,
     n_steps: usize,
-) -> PyResult<(
-    Bound<'py, PyArray1<f64>>,
-    Bound<'py, PyArray1<f64>>,
-    Bound<'py, PyArray1<f64>>,
-    Bound<'py, PyArray1<f64>>,
-    Bound<'py, PyArray1<i32>>,
-    Bound<'py, PyArray1<f64>>,
-    Bound<'py, PyArray1<f64>>,
-)> {
+) -> RealtimeFeedbackLoopResult<'py> {
     validate_range(target_r, 0.0, 1.0, "target_r")?;
     validate_range(deadband, 0.0, 1.0, "deadband")?;
     if !base_gain.is_finite() || base_gain < 0.0 {

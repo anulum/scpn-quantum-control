@@ -17,6 +17,12 @@ use pyo3::prelude::*;
 
 use crate::kuramoto_common::validate_phase_vector;
 
+type KuramotoGradientResult<'py> = PyResult<(
+    Bound<'py, PyArray1<f64>>,
+    Bound<'py, PyArray1<f64>>,
+    Bound<'py, PyArray2<f64>>,
+)>;
+
 /// Compute the forward networked-Kuramoto Euler trajectory θ_{n+1} = θ_n + dt (ω + F(θ_n)).
 ///
 /// F_j(θ) = Σ_k K_jk sin(θ_k − θ_j). Returns the (n_steps + 1, N) phase trajectory, row 0 being
@@ -105,11 +111,7 @@ pub fn kuramoto_euler_vjp<'py>(
     coupling: PyReadonlyArray2<'_, f64>,
     dt: f64,
     cotangent: PyReadonlyArray1<'_, f64>,
-) -> PyResult<(
-    Bound<'py, PyArray1<f64>>,
-    Bound<'py, PyArray1<f64>>,
-    Bound<'py, PyArray2<f64>>,
-)> {
+) -> KuramotoGradientResult<'py> {
     let path = trajectory.as_array();
     if path.ndim() != 2 {
         return Err(PyValueError::new_err(format!(
@@ -341,8 +343,8 @@ pub fn kuramoto_rk4_trajectory_inner(
         for j in 0..n {
             k4[j] += omega[j];
             current[j] += (dt / 6.0) * (k1[j] + 2.0 * k2[j] + 2.0 * k3[j] + k4[j]);
-            flat[base + j] = current[j];
         }
+        flat[base..(n + base)].copy_from_slice(&current[..n]);
     }
     Array2::from_shape_vec((n_steps + 1, n), flat)
         .expect("trajectory buffer matches (n_steps+1, n)")
@@ -360,11 +362,7 @@ pub fn kuramoto_rk4_vjp<'py>(
     coupling: PyReadonlyArray2<'_, f64>,
     dt: f64,
     cotangent: PyReadonlyArray1<'_, f64>,
-) -> PyResult<(
-    Bound<'py, PyArray1<f64>>,
-    Bound<'py, PyArray1<f64>>,
-    Bound<'py, PyArray2<f64>>,
-)> {
+) -> KuramotoGradientResult<'py> {
     let path = trajectory.as_array();
     if path.ndim() != 2 {
         return Err(PyValueError::new_err(format!(
