@@ -478,6 +478,10 @@ from .multiplex_master_stability import (
     master_stability_function,
     multiplex_synchronisation_stability,
 )
+from .networked_inertial import (
+    last_networked_inertial_trajectory_tier_used,
+    networked_inertial_trajectory,
+)
 from .networked_kuramoto import (
     last_networked_kuramoto_force_tier_used,
     last_networked_kuramoto_jacobian_tier_used,
@@ -969,6 +973,8 @@ __all__ = [
     "networked_kuramoto_jacobian",
     "last_networked_kuramoto_force_tier_used",
     "last_networked_kuramoto_jacobian_tier_used",
+    "networked_inertial_trajectory",
+    "last_networked_inertial_trajectory_tier_used",
     "order_parameter",
     "order_parameter_gradient",
     "order_parameter_hessian",

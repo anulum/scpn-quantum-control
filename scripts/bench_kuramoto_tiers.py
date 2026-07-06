@@ -190,6 +190,34 @@ def _build_rk4_vjp_args(n: int, rng: np.random.Generator) -> tuple[Any, ...]:
     return (trajectory, omega, coupling, _TRAJECTORY_DT, cotangent)
 
 
+def _build_dopri_trajectory_args(n: int, rng: np.random.Generator) -> tuple[Any, ...]:
+    return (
+        _phases(n, rng),
+        rng.uniform(-0.5, 0.5, size=n),
+        _symmetric_coupling(n, rng),
+        _TRAJECTORY_DT * _TRAJECTORY_STEPS,
+        1e-6,
+        1e-9,
+        100_000,
+        0.9,
+        0.2,
+        5.0,
+    )
+
+
+def _build_inertial_trajectory_args(n: int, rng: np.random.Generator) -> tuple[Any, ...]:
+    return (
+        _phases(n, rng),
+        rng.uniform(-0.5, 0.5, size=n),
+        rng.uniform(-0.5, 0.5, size=n),
+        _symmetric_coupling(n, rng),
+        1.0,
+        0.5,
+        _TRAJECTORY_DT,
+        _TRAJECTORY_STEPS,
+    )
+
+
 @dataclass(frozen=True)
 class PrimitiveSpec:
     """How to generate inputs and classify the cost of one compute primitive."""
@@ -246,6 +274,9 @@ _SPECS: tuple[PrimitiveSpec, ...] = (
     PrimitiveSpec("kuramoto_rk4_trajectory", _build_trajectory_args, "trajectory"),
     PrimitiveSpec("kuramoto_euler_vjp", _build_euler_vjp_args, "trajectory"),
     PrimitiveSpec("kuramoto_rk4_vjp", _build_rk4_vjp_args, "trajectory"),
+    # Adaptive Dormand–Prince and inertial (second-order) forward trajectories.
+    PrimitiveSpec("kuramoto_dopri_trajectory", _build_dopri_trajectory_args, "trajectory"),
+    PrimitiveSpec("networked_inertial_trajectory", _build_inertial_trajectory_args, "trajectory"),
 )
 
 

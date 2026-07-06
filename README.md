@@ -105,18 +105,18 @@ has a defined commercial licensing route.
 | Surface | Current inventory |
 |---|---:|
 | Package version | 0.10.0 |
-| Public API exports | 795 |
-| Python source modules | 474 |
-| Public Python classes | 918 |
+| Public API exports | 787 |
+| Python source modules | 471 |
+| Public Python classes | 911 |
 | Domain package families | 31 |
 | API documentation pages | 0 |
-| Rust PyO3 function bindings | 172 |
-| Rust source modules | 57 |
+| Rust PyO3 function bindings | 174 |
+| Rust source modules | 53 |
 | Notebook files | 100 |
 | Example files | 33 |
 | Optional extras | 43 |
-| Python test files | 833 |
-| Public documentation pages | 259 |
+| Python test files | 813 |
+| Public documentation pages | 260 |
 | GitHub Actions workflows | 23 |
 
 Evidence boundary: this snapshot is a static inventory. Performance, coverage, hardware, and scientific-fidelity claims require their own committed evidence artefacts.
@@ -328,7 +328,7 @@ CI benchmark artefacts all pass:
 | Differentiable external-validation lock | The external-validation package records exact SHA-256 digests for runtime, development, Python 3.11-3.13 CI, CPU framework-overlay, and Enzyme-runner lockfiles. The artefact is reviewer reproduction evidence only and remains `functional_non_isolated`. | [Differentiable Programming](docs/differentiable_programming.md), [Environment Lock](data/differentiable_phase_qnode/external_validation_environment_lock_20260616.md) |
 | Differentiable CI reproducibility | The differentiable framework workflow runs sparse and full CPU profiles across Python 3.11-3.13, enforces the module-specific test audit, uploads scheduled benchmark metadata, and exposes a manual optional GPU contract lane that remains `functional_non_isolated`. | [Differentiable Programming](docs/differentiable_programming.md), [Workflow](.github/workflows/differentiable-frameworks.yml) |
 | Differentiable artefact bundle | The external-validation package records a reproducible manifest over the committed claim ledger, public claim table, environment lock, domain dataset closure, gradient comparison, maturity audit, and local benchmark evidence. The bundle is checksum provenance only and remains `functional_non_isolated`. | [Artefact Bundle](data/differentiable_phase_qnode/external_validation_artifact_bundle_20260616.md) |
-| Differentiable isolated benchmark plan | `run_differentiable_isolated_benchmark_plan()` maps every current non-isolated differentiable benchmark/evidence artefact, including the compiler-promotion batch gate, to a reserved-host rerun command, required runner labels, expected output paths, and explicit blockers. It is planning evidence only and returns `promotion_ready=False` until validated `isolated_affinity` artefacts exist. | [Batch Plan](data/differentiable_phase_qnode/differentiable_isolated_benchmark_plan_20260627.md), [Benchmark API](docs/benchmarks_api.md) |
+| Differentiable isolated benchmark plan | `run_differentiable_isolated_benchmark_plan()` maps every current non-isolated differentiable benchmark/evidence artefact to a reserved-host rerun command, required runner labels, expected output paths, and explicit blockers. It is planning evidence only and returns `promotion_ready=False` until validated `isolated_affinity` artefacts exist. | [Batch Plan](data/differentiable_phase_qnode/differentiable_isolated_benchmark_plan_20260627.md), [Benchmark API](docs/benchmarks_api.md) |
 | Differentiable external-validation report | The technical report summarizes the comparison package, provider-family status, reproducibility artefacts, and remaining promotion blockers without upgrading any row beyond bounded-candidate evidence. | [External Validation Report](docs/differentiable_external_validation_report.md) |
 | Hardening-slice gate | `run_differentiable_hardening_slice_gate(...)` records the required Ruff, mypy, module-specific pytest, test-quality audit, claim-ledger validation, and benchmark-classification checks for each differentiable hardening slice. CI, local preflight, and the pre-push hook additionally enforce a module-specific strict-mypy ratchet across the closed differentiable API, claim-ledger, benchmark-evidence, QNN/QGNN/QSNN training and evidence satellites, objective/domain evidence, optimizer-baseline, backend selection, parameter-shift/VQE foundations, structured-ansatz/methodology/benchmark/Kuramoto/UPDE solver foundations, typed trajectory-result containers, layered ADAPT-VQE, Trotter-error bounds, framework-overlay, provider/hardware-gradient safety, Phase-QNode, framework-bridge, transform-nesting, external-comparison, XY compiler, and PennyLane import modules while repository-wide strict mode remains open debt. The same gates now enforce a scoped NumPy-style Ruff docstring ratchet for the differentiable external-validation, module-hardening audit, and hardening-slice gate surfaces while repository-wide docstring enforcement remains open debt. It is checklist/classification evidence only, not benchmark execution. | [Differentiable Programming](docs/differentiable_programming.md), [Differentiable API](docs/differentiable_api.md) |
 | Module-hardening audit | `run_differentiable_module_hardening_audit()` discovers every differentiable/gradient/QNode/bridge/compiler module in the promotion scope and verifies a module-specific test plus declared fail-closed diagnostics for each. | [Differentiable Programming](docs/differentiable_programming.md), [Differentiable API](docs/differentiable_api.md) |
@@ -350,32 +350,27 @@ Rust polyglot parity includes a claim-bounded Program AD IR metadata parser in
 `program_ad_registry_metadata_mirror(...)` validates the Python registry
 coverage snapshot, returns deterministic family/facet counts, and records only
 the primitive-name overlap with the already bounded Rust scalar/static-linalg
-plus compact interpolation, compact signal, compact stencil, compact cumulative, elementwise/static-structural, fixed
-`multi_dot`, 2x2 distinct symmetric
+plus elementwise/static-structural, fixed `multi_dot`, 2x2 distinct symmetric
 `eigvalsh`, 2x2 distinct symmetric `eigh` eigenvalues/nonzero-offdiagonal
 eigenvectors, 2x2 real-distinct `eigvals`, and 2x2 distinct-positive
-`svd(..., compute_uv=False)` singular-value replay plus constant-full-rank
-rank-1/Nx2/2xN `pinv` replay. Metadata summaries validate
+`svd(..., compute_uv=False)` singular-value replay. Metadata summaries validate
 `program_ad_effect_ir.v1` evidence only; Rust value+gradient replay is bounded
 to opcode-bearing scalar, elementwise-array, static structural-array,
-static structural-assembly, static source-map indexing, compact interpolation,
-compact signal, compact stencil, compact cumulative, static product, corrected moment, strict order-statistic,
-and compact static-grid trapezoid
+static structural-assembly, static source-map indexing, static product,
+corrected moment, strict order-statistic, and compact static-grid trapezoid
 reductions with `dx`/`x`/`xfull` metadata, plus fixed-signature
 `np.linalg.multi_dot` matrix-chain output nodes, 2x2 distinct symmetric
 `np.linalg.eigvalsh` spectral output nodes, 2x2 distinct symmetric
 `np.linalg.eigh` eigenvalue and nonzero-offdiagonal eigenvector output nodes,
 2x2 real-distinct `np.linalg.eigvals` spectral output nodes, and 2x2
 distinct-positive `np.linalg.svd(..., compute_uv=False)` singular-value output
-nodes plus constant-full-rank rank-1/Nx2/2xN `np.linalg.pinv` output
 nodes, including executed runtime branch
 metadata when matched by runtime phi provenance. It still fails closed on
 legacy opcode-free metadata, aliases, mutation, non-lowered dynamic indexing
 semantics, dynamic axes, dynamic trapezoid-grid metadata, dynamic q/method
 metadata, dynamic ddof/correction metadata, zero-variance `std` gradients,
 broad linalg/spectral array adjoints beyond the bounded 2x2 `eigvalsh`,
-`eigh`, `eigvals`, SVD singular-value, and rank-1/Nx2/2xN `pinv`
-boundaries,
+`eigh`, `eigvals`, and SVD singular-value boundaries,
 source-level/non-executed branch
 semantics, general Program AD execution, LLVM/JIT execution, hardware,
 provider, and performance promotion.
@@ -461,9 +456,8 @@ Direct entry points:
   — $\mathfrak{su}(2^{n-1}) \oplus \mathfrak{su}(2^{n-1})$
   decomposition and hardware reproduction path
 - [Method: Pulse Shaping](https://anulum.li/scpn-quantum-control/method-pulse-shaping.html)
-  — ICI three-level and (α, β)-hypergeometric Rust fast paths (the 1,665× and
-  44× figures on the linked page are v0.9.5-era workstation measurements, not
-  reproduced by a committed benchmark artefact)
+  — ICI three-level (1,665× Rust) and (α, β)-hypergeometric
+  (44× Rust)
 - [The Science](https://anulum.li/scpn-quantum-control/science.html)
   — plain-language primer on SCPN, Kuramoto-XY, and why the DLA
   parity result matters
