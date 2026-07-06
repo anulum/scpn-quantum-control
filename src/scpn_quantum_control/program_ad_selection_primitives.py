@@ -38,31 +38,26 @@ from .program_ad_shape_transforms import (
 
 def _is_trace_predicate(value: object) -> bool:
     """Return whether ``value`` behaves like a whole-program scalar predicate."""
-
     return type(value).__name__ == "_TracePredicate" and hasattr(value, "context")
 
 
 def _is_trace_predicate_array(value: object) -> bool:
     """Return whether ``value`` behaves like a whole-program predicate array."""
-
     return type(value).__name__ == "TraceADPredicateArray" and hasattr(value, "predicates")
 
 
 def _is_trace_array(value: object) -> bool:
     """Return whether ``value`` behaves like a whole-program trace array."""
-
     return type(value).__name__ == "TraceADArray" and hasattr(value, "context")
 
 
 def _is_trace_scalar(value: object) -> bool:
     """Return whether ``value`` behaves like a whole-program trace scalar."""
-
     return type(value).__name__ == "TraceADScalar" and hasattr(value, "context")
 
 
 def _is_runtime_trace_payload(value: object) -> bool:
     """Return whether ``value`` is a runtime trace payload rather than static data."""
-
     return (
         _is_trace_scalar(value)
         or _is_trace_array(value)
@@ -73,7 +68,6 @@ def _is_runtime_trace_payload(value: object) -> bool:
 
 def _trace_predicate_array_shape(value: object) -> tuple[int, ...]:
     """Return a predicate-array shape through the protocol boundary."""
-
     shape = getattr(value, "shape", None)
     if not isinstance(shape, tuple):
         raise ValueError("program AD selection predicate array shape must be static")
@@ -82,7 +76,6 @@ def _trace_predicate_array_shape(value: object) -> tuple[int, ...]:
 
 def _program_ad_array_static_size(source_shape: Sequence[int]) -> int:
     """Return the element count for a static tensor shape."""
-
     size = 1
     for dimension in source_shape:
         size *= int(dimension)
@@ -91,7 +84,6 @@ def _program_ad_array_static_size(source_shape: Sequence[int]) -> int:
 
 def _program_ad_array_shape_of(value: object) -> tuple[int, ...]:
     """Return the static array shape recorded by a trace value or array-like input."""
-
     if _is_trace_array(value):
         return _trace_predicate_array_shape(value)
     return tuple(int(dim) for dim in np.asarray(value).shape)
@@ -99,7 +91,6 @@ def _program_ad_array_shape_of(value: object) -> tuple[int, ...]:
 
 def _program_ad_array_dtype_of(value: object) -> str:
     """Return the dtype name recorded by a trace value or array-like input."""
-
     if _is_trace_array(value):
         return "float64"
     array = np.asarray(value)
@@ -110,7 +101,6 @@ def _program_ad_array_dtype_of(value: object) -> str:
 
 def _broadcast_shape(*shapes: tuple[int, ...]) -> tuple[int, ...]:
     """Return a NumPy-compatible broadcast shape or fail closed."""
-
     try:
         shape: tuple[int, ...] = np.broadcast_shapes(*shapes)
         return shape
@@ -122,7 +112,6 @@ def _broadcast_shape(*shapes: tuple[int, ...]) -> tuple[int, ...]:
 
 def _normalise_sort_axis(axis: object, rank: int) -> int:
     """Return the normalised static axis for selection ordering primitives."""
-
     if isinstance(axis, (bool, np.bool_)) or not isinstance(axis, (int, np.integer)):
         raise ValueError("program AD np.sort axis must be a static integer or None")
     axis_index = int(axis)
@@ -139,7 +128,6 @@ def _program_ad_elementwise_unbroadcast(
     target_shape: tuple[int, ...],
 ) -> NDArray[np.float64]:
     """Reduce a broadcasted adjoint back to ``target_shape``."""
-
     result = np.asarray(values, dtype=np.float64)
     if target_shape == ():
         return np.array([float(np.sum(result))], dtype=np.float64)
@@ -158,7 +146,6 @@ def _trace_choose_selector_indices(
     mode: str,
 ) -> NDArray[np.int64]:
     """Return static choose selector indices or reject runtime trace payloads."""
-
     if _is_runtime_trace_payload(selector):
         raise ValueError("program AD np.choose requires a static integer selector")
     raw = np.asarray(selector)
@@ -180,7 +167,6 @@ def _trace_choose_selector_indices(
 
 def _trace_compress_condition_indices(condition: object) -> NDArray[np.int64]:
     """Return static compress condition indices or reject runtime trace payloads."""
-
     if _is_runtime_trace_payload(condition):
         raise ValueError("program AD np.compress requires a static boolean condition")
     raw = np.asarray(condition)
@@ -195,7 +181,6 @@ def _trace_compress_condition_indices(condition: object) -> NDArray[np.int64]:
 
 def _trace_extract_condition_indices(condition: object, array_size: int) -> NDArray[np.int64]:
     """Return static extract condition indices or reject runtime trace payloads."""
-
     if _is_runtime_trace_payload(condition):
         raise ValueError("program AD np.extract requires a static boolean condition")
     raw = np.asarray(condition)
@@ -213,7 +198,6 @@ def _validate_program_ad_selection_contract_dispatch(
     args: tuple[object, ...],
 ) -> None:
     """Validate selection primitive dispatch helpers against concrete arguments."""
-
     if contract.static_argument_rule is None:
         raise ValueError(
             f"program AD primitive {contract.identity.key} missing static argument rule"
@@ -332,7 +316,6 @@ def program_ad_selection_where_derivative_rule(
     false_shape: Sequence[int],
 ) -> CustomDerivativeRule:
     """Build an exact direct derivative rule for a fixed NumPy where signature."""
-
     true_static_shape, false_static_shape, output_shape = _program_ad_selection_normalise_shapes(
         "where", true_shape, false_shape
     )
@@ -489,7 +472,6 @@ def program_ad_selection_clip_derivative_rule(
     upper_shape: Sequence[int] = (),
 ) -> CustomDerivativeRule:
     """Build an exact direct derivative rule for a fixed NumPy clip signature."""
-
     source_static_shape, lower_static_shape, upper_static_shape = (
         _program_ad_selection_normalise_clip_shapes(source_shape, lower_shape, upper_shape)
     )
@@ -1241,7 +1223,6 @@ def _require_program_ad_selection_contract(
     args: tuple[object, ...] | None = None,
 ) -> PrimitiveContract:
     """Return and validate a registered Program AD selection primitive contract."""
-
     identity = _PROGRAM_AD_SELECTION_IDENTITIES.get(name)
     if identity is None:
         raise ValueError(f"no program AD selection primitive identity registered for {name}")
