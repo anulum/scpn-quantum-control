@@ -189,13 +189,14 @@ project benchmark policy is local regression evidence only.
 | Function | Description | Complexity |
 |----------|-------------|------------|
 | `program_ad_effect_ir_metadata_summary(serialization)` | Validate and summarize Python-emitted `program_ad_effect_ir.v1` metadata | O(n) |
-| `program_ad_effect_ir_interpret_forward(serialization, inputs)` | Execute bounded opcode-bearing scalar/static-linalg Program AD IR forward replay | O(n) |
-| `program_ad_effect_ir_interpret_value_and_gradient(serialization, inputs)` | Execute bounded scalar/static-linalg, elementwise-array, static-structural, static source-map, static-reduction, and inert assignment/expression alias metadata value plus reverse-gradient replay for supported IR rows | O(n) |
+| `program_ad_effect_ir_interpret_forward(serialization, inputs)` | Execute bounded opcode-bearing scalar/static-signal/static-cumulative/static-linalg Program AD IR forward replay | O(n) |
+| `program_ad_effect_ir_interpret_value_and_gradient(serialization, inputs)` | Execute bounded scalar/static-linalg, elementwise-array, static-structural, static source-map, static-reduction, compact signal, compact cumulative, and inert assignment/expression alias metadata value plus reverse-gradient replay for supported IR rows | O(n) |
 | `program_ad_registry_metadata_mirror(snapshot)` | Validate the Python registry-dispatch coverage snapshot and return family/facet counts plus conservative Rust replay overlap | O(n) |
 
 The registry mirror is metadata-only. It validates the 118-primitive Python
 registry snapshot shape and reports overlap with the already bounded Rust
-scalar/static-linalg plus elementwise/static-structural replay; it does not
+scalar/static-linalg plus compact signal, compact cumulative, and
+elementwise/static-structural replay; it does not
 promote executable registry coverage, dynamic array semantics, LLVM/JIT
 lowering, provider execution, hardware execution, or performance evidence.
 

@@ -512,7 +512,7 @@ def _program_ad_signal_lowering_metadata(name: str) -> Mapping[str, str]:
         "mlir": "available: scpn_diff signal dialect interchange; executable lowering blocked",
         "mlir_op": f"scpn_diff.signal.{name}",
         "llvm": "blocked_until_executable_signal_lowering",
-        "rust": "blocked_until_polyglot_signal_ad",
+        "rust": "available: bounded compact Program AD Rust value+gradient replay",
         "static_argument_rule": "required",
         "static_derivative_factory": factory_names[name],
         "static_signature": "left_shape:rank1;right_shape:rank1;mode",

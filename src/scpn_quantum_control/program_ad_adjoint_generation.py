@@ -73,6 +73,10 @@ from .program_ad_linalg_primitives import (
     program_ad_linalg_matrix_power_derivative_rule,
     program_ad_linalg_multi_dot_derivative_rule,
 )
+from .program_ad_signal_primitives import (
+    program_ad_signal_convolve_derivative_rule,
+    program_ad_signal_correlate_derivative_rule,
+)
 from .whole_program_ad_result import WholeProgramIRNode
 
 
@@ -361,6 +365,63 @@ def _program_adjoint_cumulative_contributions(
         dtype=np.float64,
     )
     cotangent = np.zeros(output_size, dtype=np.float64)
+    cotangent[output_index] = 1.0
+    local_adjoint = np.asarray(rule.vjp_rule(flat_values, cotangent), dtype=np.float64).reshape(-1)
+    return tuple(
+        (name, float(value)) for name, value in zip(node.inputs, local_adjoint, strict=True)
+    )
+
+
+def _program_adjoint_signal_contributions(
+    node: WholeProgramIRNode,
+    node_by_name: Mapping[str, WholeProgramIRNode],
+) -> tuple[tuple[str, float], ...]:
+    """Return local reverse contributions for one compact signal output."""
+
+    parts = node.op.split(":")
+    try:
+        if (
+            len(parts) != 10
+            or parts[0] != "signal"
+            or parts[2] != "left"
+            or parts[4] != "right"
+            or parts[6] != "mode"
+            or parts[8] != "out"
+        ):
+            raise ValueError
+        operation = parts[1]
+        left_size = int(parts[3])
+        right_size = int(parts[5])
+        mode = parts[7]
+        output_index = int(parts[9])
+        if left_size <= 0 or right_size <= 0:
+            raise ValueError
+        if operation == "convolve":
+            rule = program_ad_signal_convolve_derivative_rule(
+                (left_size,), (right_size,), mode=mode
+            )
+        elif operation == "correlate":
+            rule = program_ad_signal_correlate_derivative_rule(
+                (left_size,), (right_size,), mode=mode
+            )
+        else:
+            raise ValueError
+    except ValueError as exc:
+        raise ValueError("signal adjoint metadata is malformed") from exc
+
+    expected_inputs = left_size + right_size
+    if len(node.inputs) != expected_inputs:
+        raise ValueError("signal adjoint inputs must match flattened operands")
+    if rule.vjp_rule is None:
+        raise ValueError("signal adjoint requires a VJP rule")
+    flat_values = np.array(
+        [_program_adjoint_input_value(name, node_by_name) for name in node.inputs],
+        dtype=np.float64,
+    )
+    output_values = np.asarray(rule.value_fn(flat_values), dtype=np.float64).reshape(-1)
+    if output_index < 0 or output_index >= output_values.size:
+        raise ValueError("signal adjoint output index is outside output shape")
+    cotangent = np.zeros(output_values.size, dtype=np.float64)
     cotangent[output_index] = 1.0
     local_adjoint = np.asarray(rule.vjp_rule(flat_values, cotangent), dtype=np.float64).reshape(-1)
     return tuple(
@@ -962,6 +1023,8 @@ def _program_adjoint_node_contributions(
         return _program_adjoint_binary_or_selection_contributions(node, node_by_name)
     if node.op.startswith(("cumsum:", "cumprod:", "diff:")):
         return _program_adjoint_cumulative_contributions(node, node_by_name)
+    if node.op.startswith("signal:"):
+        return _program_adjoint_signal_contributions(node, node_by_name)
     if node.op.startswith("linalg:det:"):
         return _program_adjoint_det_contributions(node, node_by_name)
     if node.op.startswith("linalg:inv:"):

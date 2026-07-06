@@ -110,6 +110,8 @@ from .program_ad_signal_primitives import (
     _normalise_convolve_mode,
     _normalise_correlate_mode,
     _require_program_ad_signal_contract,
+    program_ad_signal_convolve_derivative_rule,
+    program_ad_signal_correlate_derivative_rule,
 )
 from .program_ad_stencil_primitives import (
     _gradient_axis_coefficients,
@@ -2491,6 +2493,63 @@ def _normalise_convolve_operand(
     return tuple(_coerce_trace_scalar(float(value), context) for value in values)
 
 
+def _trace_signal_compact_array(
+    left_values: tuple[TraceADScalar, ...],
+    right_values: tuple[TraceADScalar, ...],
+    *,
+    operation_name: str,
+    mode: Literal["full", "same", "valid"],
+    value_fn: Callable[[NDArray[np.float64]], object],
+    jvp_rule: Callable[[NDArray[np.float64], NDArray[np.float64]], object],
+    context: _WholeProgramTraceContext,
+) -> TraceADArray:
+    """Emit compact signal Program AD nodes from an exact direct rule."""
+
+    start, stop = _convolve_output_window(len(left_values), len(right_values), mode)
+    output_size = stop - start
+    input_items = left_values + right_values
+    flat_values = np.array([item.primal for item in input_items], dtype=np.float64)
+    output_flat = _as_real_numeric_array(
+        f"program AD signal {operation_name} compact values", value_fn(flat_values)
+    ).reshape(-1)
+    if output_flat.size != output_size:
+        raise ValueError(f"program AD signal {operation_name} compact value shape mismatch")
+    flat_tangent = np.stack([item.tangent for item in input_items], axis=0)
+    if context.parameter_count:
+        tangent_outputs = np.array(
+            [
+                _as_real_numeric_array(
+                    f"program AD signal {operation_name} compact tangent",
+                    jvp_rule(flat_values, flat_tangent[:, parameter_index]),
+                ).reshape(-1)
+                for parameter_index in range(context.parameter_count)
+            ],
+            dtype=np.float64,
+        ).T
+    else:
+        tangent_outputs = np.zeros((output_size, 0), dtype=np.float64)
+    if tangent_outputs.shape != (output_size, context.parameter_count):
+        raise ValueError(f"program AD signal {operation_name} compact tangent shape mismatch")
+    if not bool(np.all(np.isfinite(output_flat))) or not bool(
+        np.all(np.isfinite(tangent_outputs))
+    ):
+        raise ValueError(f"program AD signal {operation_name} compact outputs must be finite")
+    input_names = tuple(item.name for item in input_items)
+    operation_prefix = (
+        f"signal:{operation_name}:left:{len(left_values)}:right:{len(right_values)}:mode:{mode}"
+    )
+    items = tuple(
+        context.make(
+            f"{operation_prefix}:out:{flat_index}",
+            input_names,
+            float(output_flat[flat_index]),
+            tangent_outputs[flat_index, :],
+        )
+        for flat_index in range(output_size)
+    )
+    return TraceADArray(items, (output_size,), context)
+
+
 def _trace_convolve(
     left: object,
     right: object,
@@ -2502,17 +2561,20 @@ def _trace_convolve(
     _require_program_ad_signal_contract("convolve", (left, right, mode_value))
     left_values = _normalise_convolve_operand("left", left, context)
     right_values = _normalise_convolve_operand("right", right, context)
-    full_items: list[TraceADScalar] = []
-    for output_index in range(len(left_values) + len(right_values) - 1):
-        total = _coerce_trace_scalar(0.0, context)
-        left_start = max(0, output_index - len(right_values) + 1)
-        left_stop = min(len(left_values), output_index + 1)
-        for left_index in range(left_start, left_stop):
-            right_index = output_index - left_index
-            total = total + left_values[left_index] * right_values[right_index]
-        full_items.append(total)
-    start, stop = _convolve_output_window(len(left_values), len(right_values), mode_value)
-    return TraceADArray(tuple(full_items[start:stop]), (stop - start,), context)
+    rule = program_ad_signal_convolve_derivative_rule(
+        (len(left_values),), (len(right_values),), mode=mode_value
+    )
+    if rule.jvp_rule is None:
+        raise ValueError("program AD signal convolve compact rule requires a JVP rule")
+    return _trace_signal_compact_array(
+        left_values,
+        right_values,
+        operation_name="convolve",
+        mode=mode_value,
+        value_fn=rule.value_fn,
+        jvp_rule=rule.jvp_rule,
+        context=context,
+    )
 
 
 def _normalise_correlate_operand(
@@ -2546,18 +2608,21 @@ def _trace_correlate(
     mode_value = _normalise_correlate_mode(mode)
     _require_program_ad_signal_contract("correlate", (left, right, mode_value))
     left_values = _normalise_correlate_operand("left", left, context)
-    right_values = tuple(reversed(_normalise_correlate_operand("right", right, context)))
-    full_items: list[TraceADScalar] = []
-    for output_index in range(len(left_values) + len(right_values) - 1):
-        total = _coerce_trace_scalar(0.0, context)
-        left_start = max(0, output_index - len(right_values) + 1)
-        left_stop = min(len(left_values), output_index + 1)
-        for left_index in range(left_start, left_stop):
-            right_index = output_index - left_index
-            total = total + left_values[left_index] * right_values[right_index]
-        full_items.append(total)
-    start, stop = _convolve_output_window(len(left_values), len(right_values), mode_value)
-    return TraceADArray(tuple(full_items[start:stop]), (stop - start,), context)
+    right_values = _normalise_correlate_operand("right", right, context)
+    rule = program_ad_signal_correlate_derivative_rule(
+        (len(left_values),), (len(right_values),), mode=mode_value
+    )
+    if rule.jvp_rule is None:
+        raise ValueError("program AD signal correlate compact rule requires a JVP rule")
+    return _trace_signal_compact_array(
+        left_values,
+        right_values,
+        operation_name="correlate",
+        mode=mode_value,
+        value_fn=rule.value_fn,
+        jvp_rule=rule.jvp_rule,
+        context=context,
+    )
 
 
 def _trace_cumulative_compact_array(

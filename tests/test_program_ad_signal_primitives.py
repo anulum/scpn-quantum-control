@@ -133,6 +133,9 @@ def test_program_ad_signal_convolve_contract_and_direct_rule() -> None:
     assert contract.nondifferentiable_policy == "program_ad_trace_exact_fail_closed"
     assert contract.effect == "pure"
     assert contract.lowering_metadata["mlir_op"] == "scpn_diff.signal.convolve"
+    assert contract.lowering_metadata["rust"] == (
+        "available: bounded compact Program AD Rust value+gradient replay"
+    )
     assert (
         contract.lowering_metadata["static_derivative_factory"]
         == "program_ad_signal_convolve_derivative_rule"
@@ -340,6 +343,9 @@ def test_program_ad_signal_correlate_contract_and_direct_rule() -> None:
     assert contract.nondifferentiable_policy == "program_ad_trace_exact_fail_closed"
     assert contract.effect == "pure"
     assert contract.lowering_metadata["mlir_op"] == "scpn_diff.signal.correlate"
+    assert contract.lowering_metadata["rust"] == (
+        "available: bounded compact Program AD Rust value+gradient replay"
+    )
     assert (
         contract.lowering_metadata["static_derivative_factory"]
         == "program_ad_signal_correlate_derivative_rule"

@@ -111,11 +111,11 @@ has a defined commercial licensing route.
 | Domain package families | 31 |
 | API documentation pages | 0 |
 | Rust PyO3 function bindings | 172 |
-| Rust source modules | 52 |
+| Rust source modules | 54 |
 | Notebook files | 100 |
 | Example files | 33 |
 | Optional extras | 43 |
-| Python test files | 817 |
+| Python test files | 827 |
 | Public documentation pages | 259 |
 | GitHub Actions workflows | 23 |
 
@@ -350,15 +350,17 @@ Rust polyglot parity includes a claim-bounded Program AD IR metadata parser in
 `program_ad_registry_metadata_mirror(...)` validates the Python registry
 coverage snapshot, returns deterministic family/facet counts, and records only
 the primitive-name overlap with the already bounded Rust scalar/static-linalg
-plus elementwise/static-structural, fixed `multi_dot`, 2x2 distinct symmetric
+plus compact signal, compact cumulative, elementwise/static-structural, fixed
+`multi_dot`, 2x2 distinct symmetric
 `eigvalsh`, 2x2 distinct symmetric `eigh` eigenvalues/nonzero-offdiagonal
 eigenvectors, 2x2 real-distinct `eigvals`, and 2x2 distinct-positive
 `svd(..., compute_uv=False)` singular-value replay plus constant-full-rank
 rank-1/Nx2/2xN `pinv` replay. Metadata summaries validate
 `program_ad_effect_ir.v1` evidence only; Rust value+gradient replay is bounded
 to opcode-bearing scalar, elementwise-array, static structural-array,
-static structural-assembly, static source-map indexing, static product,
-corrected moment, strict order-statistic, and compact static-grid trapezoid
+static structural-assembly, static source-map indexing, compact signal,
+compact cumulative, static product, corrected moment, strict order-statistic,
+and compact static-grid trapezoid
 reductions with `dx`/`x`/`xfull` metadata, plus fixed-signature
 `np.linalg.multi_dot` matrix-chain output nodes, 2x2 distinct symmetric
 `np.linalg.eigvalsh` spectral output nodes, 2x2 distinct symmetric
