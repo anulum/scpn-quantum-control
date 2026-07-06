@@ -9,6 +9,7 @@
 
 from __future__ import annotations
 
+import inspect
 from typing import Any, cast
 
 import numpy as np
@@ -42,10 +43,103 @@ from scpn_quantum_control.differentiable import (
     whole_program_value_and_grad,
 )
 
+DOCSTRING_SECTION_TARGETS: tuple[tuple[str, object, tuple[str, ...]], ...] = (
+    ("ProgramADAliasSet", ProgramADAliasSet, ("Parameters", "Raises")),
+    ("ProgramADAliasSet.as_dict", ProgramADAliasSet.as_dict, ("Returns",)),
+    ("ProgramADAliasEffectAnalysis", ProgramADAliasEffectAnalysis, ("Parameters", "Raises")),
+    (
+        "ProgramADAliasEffectAnalysis.as_dict",
+        ProgramADAliasEffectAnalysis.as_dict,
+        ("Returns",),
+    ),
+    (
+        "ProgramADStaticAliasLatticeComponent",
+        ProgramADStaticAliasLatticeComponent,
+        ("Parameters", "Raises"),
+    ),
+    (
+        "ProgramADStaticAliasLatticeComponent.as_dict",
+        ProgramADStaticAliasLatticeComponent.as_dict,
+        ("Returns",),
+    ),
+    ("ProgramADUnknownAliasEdge", ProgramADUnknownAliasEdge, ("Parameters", "Raises")),
+    ("ProgramADUnknownAliasEdge.as_dict", ProgramADUnknownAliasEdge.as_dict, ("Returns",)),
+    ("ProgramADViewAliasProvenance", ProgramADViewAliasProvenance, ("Parameters", "Raises")),
+    (
+        "ProgramADViewAliasProvenance.as_dict",
+        ProgramADViewAliasProvenance.as_dict,
+        ("Returns",),
+    ),
+    ("ProgramADListAliasProvenance", ProgramADListAliasProvenance, ("Parameters", "Raises")),
+    (
+        "ProgramADListAliasProvenance.as_dict",
+        ProgramADListAliasProvenance.as_dict,
+        ("Returns",),
+    ),
+    (
+        "ProgramADLoopCarriedStateProvenance",
+        ProgramADLoopCarriedStateProvenance,
+        ("Parameters", "Raises"),
+    ),
+    (
+        "ProgramADLoopCarriedStateProvenance.as_dict",
+        ProgramADLoopCarriedStateProvenance.as_dict,
+        ("Returns",),
+    ),
+    (
+        "ProgramADControlPathAliasProvenance",
+        ProgramADControlPathAliasProvenance,
+        ("Parameters", "Raises"),
+    ),
+    (
+        "ProgramADControlPathAliasProvenance.as_dict",
+        ProgramADControlPathAliasProvenance.as_dict,
+        ("Returns",),
+    ),
+    (
+        "ProgramADRebindingAliasProvenance",
+        ProgramADRebindingAliasProvenance,
+        ("Parameters", "Raises"),
+    ),
+    (
+        "ProgramADRebindingAliasProvenance.as_dict",
+        ProgramADRebindingAliasProvenance.as_dict,
+        ("Returns",),
+    ),
+    (
+        "ProgramADStaticAliasLatticeReport",
+        ProgramADStaticAliasLatticeReport,
+        ("Parameters", "Raises"),
+    ),
+    (
+        "ProgramADStaticAliasLatticeReport.as_dict",
+        ProgramADStaticAliasLatticeReport.as_dict,
+        ("Returns",),
+    ),
+    (
+        "analyze_program_ad_alias_effects",
+        analyze_program_ad_alias_effects,
+        ("Parameters", "Returns", "Raises"),
+    ),
+    (
+        "program_ad_static_alias_lattice_report",
+        program_ad_static_alias_lattice_report,
+        ("Parameters", "Returns", "Raises"),
+    ),
+)
+
+
+def test_program_ad_alias_public_docstrings_define_contract_sections() -> None:
+    """Alias-analysis public exports should document construction and failure contracts."""
+    for qualified_name, target, required_sections in DOCSTRING_SECTION_TARGETS:
+        docstring = inspect.getdoc(target)
+        assert docstring is not None, qualified_name
+        for section in required_sections:
+            assert f"{section}\n" in docstring, qualified_name
+
 
 def test_program_ad_alias_analysis_exports_stable_facade_identities() -> None:
     """Program AD alias-analysis exports should stay stable across public surfaces."""
-
     assert PROGRAM_AD_ALIAS_EFFECT_CLAIM_BOUNDARY == (
         alias_analysis_module.PROGRAM_AD_ALIAS_EFFECT_CLAIM_BOUNDARY
     )
@@ -100,7 +194,6 @@ def test_program_ad_alias_analysis_exports_stable_facade_identities() -> None:
 
 def test_program_ad_alias_analysis_validation_paths() -> None:
     """Program AD alias-analysis records should reject malformed metadata."""
-
     alias_set = ProgramADAliasSet(
         index=0,
         members=("a", "b"),
@@ -1554,7 +1647,6 @@ def test_program_ad_alias_analysis_validation_paths() -> None:
 
 def test_program_ad_alias_analysis_fail_closed_entry_points() -> None:
     """Alias-analysis entry points should reject non-effect-IR inputs."""
-
     with pytest.raises(ValueError, match="alias analysis requires"):
         analyze_program_ad_alias_effects(cast(ProgramADEffectIR, object()))
     with pytest.raises(ValueError, match="static alias lattice requires"):
@@ -1587,7 +1679,6 @@ def test_program_ad_alias_analysis_fail_closed_entry_points() -> None:
 
 def test_program_ad_static_alias_lattice_tracks_mutation_versions_directly() -> None:
     """Static alias lattice reports should retain mutation-version component metadata."""
-
     value = ProgramADSSAValue("%0", producer=0, version=0, shape=(), dtype="float64", effect=0)
     effect = ProgramADEffect(
         index=0,
@@ -1961,7 +2052,6 @@ def test_program_ad_static_alias_lattice_reports_rebinding_provenance() -> None:
 
 def test_program_ad_static_alias_lattice_reports_malformed_rebinding_aliases() -> None:
     """Static alias lattice reports should block malformed rebinding aliases."""
-
     value = ProgramADSSAValue("%0", producer=0, version=0, shape=(), dtype="float64", effect=0)
     effect = ProgramADEffect(
         index=0,
@@ -2102,7 +2192,6 @@ def test_program_ad_static_alias_lattice_blocks_non_executed_attribute_paths() -
 
 def test_program_ad_static_alias_lattice_reports_unknown_alias_edges() -> None:
     """Static alias lattice reports should expose unknown edge kinds without promoting them."""
-
     value = ProgramADSSAValue("%0", producer=0, version=0, shape=(), dtype="float64", effect=0)
     effect = ProgramADEffect(
         index=0,
@@ -2162,7 +2251,6 @@ def test_program_ad_static_alias_lattice_reports_unknown_alias_edges() -> None:
 
 def test_program_ad_static_alias_lattice_reports_malformed_view_aliases() -> None:
     """Static alias lattice reports should block malformed view-alias markers."""
-
     value = ProgramADSSAValue("%0", producer=0, version=0, shape=(), dtype="float64", effect=0)
     effect = ProgramADEffect(
         index=0,
@@ -2256,7 +2344,6 @@ def test_program_ad_static_alias_lattice_reports_list_alias_provenance() -> None
 
 def test_program_ad_static_alias_lattice_reports_malformed_list_aliases() -> None:
     """Static alias lattice reports should block malformed list-alias markers."""
-
     value = ProgramADSSAValue("%0", producer=0, version=0, shape=(), dtype="float64", effect=0)
     effect = ProgramADEffect(
         index=0,
@@ -2352,7 +2439,6 @@ def test_program_ad_static_alias_lattice_reports_loop_carried_state_provenance()
 
 def test_program_ad_static_alias_lattice_reports_malformed_loop_carried_state() -> None:
     """Static alias lattice reports should block malformed loop-carried state markers."""
-
     value = ProgramADSSAValue("%0", producer=0, version=0, shape=(), dtype="float64", effect=0)
     effect = ProgramADEffect(
         index=0,
@@ -2394,7 +2480,6 @@ def test_program_ad_static_alias_lattice_reports_malformed_loop_carried_state() 
 
 def test_program_ad_static_alias_lattice_reports_malformed_control_path_aliases() -> None:
     """Static alias lattice reports should block malformed control-path aliases."""
-
     value = ProgramADSSAValue("%0", producer=0, version=0, shape=(), dtype="float64", effect=0)
     effect = ProgramADEffect(
         index=0,
@@ -2549,7 +2634,6 @@ def test_program_ad_alias_effect_analysis_tracks_static_slice_mutation() -> None
 
 def test_program_ad_static_slice_mutation_fails_closed_for_unsupported_shapes() -> None:
     """Program AD slice mutation should reject non-rank-1 and length-mismatched writes."""
-
     with pytest.raises(ValueError, match="rank-1"):
         whole_program_value_and_grad(
             lambda values: _program_ad_rank_two_slice_write(values),
