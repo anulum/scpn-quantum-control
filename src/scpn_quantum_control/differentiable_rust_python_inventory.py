@@ -384,13 +384,16 @@ def _default_inventory_rows(
             (
                 "scpn_quantum_engine/src/program_ad_ir.rs",
                 "scpn_quantum_engine/src/program_ad_trapezoid_reduction.rs",
+                "scpn_quantum_engine/src/program_ad_stencil_reduction.rs",
                 "scpn_quantum_engine/tests/program_ad_ir.rs",
+                "scpn_quantum_engine/tests/program_ad_stencil.rs",
             ),
             ("docs/differentiable_api.md",),
             (
                 "tests/test_phase_qnode_rust_parity.py",
                 "tests/test_program_ad_effect_ir.py",
                 "tests/test_program_ad_rust_bridge.py",
+                "scpn_quantum_engine/tests/program_ad_stencil.rs",
             ),
             ("docs/differentiable_api.md", "docs/differentiable_programming.md"),
             (

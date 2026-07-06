@@ -14,6 +14,8 @@ import sys
 from pathlib import Path
 from types import ModuleType
 
+import pytest
+
 
 def _load_tool_module(module_name: str, filename: str) -> ModuleType:
     module_path = Path(__file__).resolve().parents[1] / "tools" / filename
@@ -40,7 +42,10 @@ def _write_contracts(tmp_path: Path, *, rust_text: str, pyi_text: str) -> tuple[
     return rust_path, pyi_path
 
 
-def test_rust_and_pyi_exports_ignore_namespaces_and_private_helpers(tmp_path: Path, monkeypatch):
+def test_rust_and_pyi_exports_ignore_namespaces_and_private_helpers(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     rust_path, pyi_path = _write_contracts(
         tmp_path,
         rust_text="\n".join(
@@ -64,7 +69,11 @@ def test_rust_and_pyi_exports_ignore_namespaces_and_private_helpers(tmp_path: Pa
     assert _check_rust_pyi_exports.pyi_exports() == {"build_knm", "score_layout"}
 
 
-def test_rust_pyi_checker_returns_zero_when_contracts_match(tmp_path: Path, monkeypatch, capsys):
+def test_rust_pyi_checker_returns_zero_when_contracts_match(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
     rust_path, pyi_path = _write_contracts(
         tmp_path,
         rust_text="m.add_function(wrap_pyfunction!(build_knm, m)?)?;",
@@ -77,7 +86,11 @@ def test_rust_pyi_checker_returns_zero_when_contracts_match(tmp_path: Path, monk
     assert "Rust extension typing contract OK (1 exports)" in capsys.readouterr().out
 
 
-def test_rust_pyi_checker_reports_missing_and_stale_exports(tmp_path: Path, monkeypatch, capsys):
+def test_rust_pyi_checker_reports_missing_and_stale_exports(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
     rust_path, pyi_path = _write_contracts(
         tmp_path,
         rust_text="\n".join(
