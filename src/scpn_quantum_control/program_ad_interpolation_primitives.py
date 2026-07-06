@@ -38,25 +38,21 @@ from .program_ad_registry import (
 
 def _is_program_ad_trace_value(value: object) -> bool:
     """Return whether ``value`` behaves like a whole-program trace value."""
-
     return type(value).__name__ in {"TraceADArray", "TraceADScalar"}
 
 
 def _is_program_ad_trace_array(value: object) -> bool:
     """Return whether ``value`` behaves like a whole-program trace array."""
-
     return type(value).__name__ == "TraceADArray"
 
 
 def _is_program_ad_trace_scalar(value: object) -> bool:
     """Return whether ``value`` behaves like a whole-program trace scalar."""
-
     return type(value).__name__ == "TraceADScalar"
 
 
 def _program_ad_trace_shape(value: object) -> tuple[int, ...]:
     """Return a static shape from a structural trace-array value."""
-
     shape = getattr(value, "shape", None)
     if not isinstance(shape, tuple):
         raise ValueError("program AD interpolation trace array shape must be static")
@@ -231,7 +227,6 @@ def program_ad_interpolation_interp_derivative_rule(
     period: object = None,
 ) -> CustomDerivativeRule:
     """Build an exact direct derivative rule for fixed static ``np.interp`` grids."""
-
     if period is not None:
         raise ValueError("program AD interpolation interp direct rule does not support period")
     samples = _program_ad_array_normalise_static_shape("interp", sample_shape)
@@ -288,7 +283,6 @@ def program_ad_interpolation_interp_derivative_rule(
 
 def _program_ad_interpolation_sample_shape(value: object) -> tuple[int, ...]:
     """Return the static sample shape for a trace or concrete interpolation input."""
-
     if _is_program_ad_trace_array(value):
         return _program_ad_trace_shape(value)
     if _is_program_ad_trace_scalar(value):
@@ -298,7 +292,6 @@ def _program_ad_interpolation_sample_shape(value: object) -> tuple[int, ...]:
 
 def _program_ad_interpolation_fp_shape(value: object) -> tuple[int, ...]:
     """Return the static interpolation value-grid shape."""
-
     if _is_program_ad_trace_array(value):
         return _program_ad_trace_shape(value)
     if _is_program_ad_trace_scalar(value):
@@ -310,7 +303,6 @@ def _program_ad_interpolation_static_parts(
     args: tuple[object, ...],
 ) -> tuple[tuple[int, ...], NDArray[np.float64], tuple[int, ...], float | None, float | None]:
     """Validate and normalise static ``np.interp`` dispatch arguments."""
-
     if len(args) != 6:
         raise ValueError(
             "program AD interpolation interp rule requires x, xp, fp, left, right, and period"
@@ -329,14 +321,12 @@ def _program_ad_interpolation_static_parts(
 
 def _program_ad_interpolation_interp_shape(args: tuple[object, ...]) -> tuple[int, ...]:
     """Return the output shape for an intercepted ``np.interp`` primitive."""
-
     sample_shape, _grid, _fp_shape, _left, _right = _program_ad_interpolation_static_parts(args)
     return sample_shape
 
 
 def _program_ad_interpolation_interp_dtype_rule(_args: tuple[object, ...]) -> str:
     """Return the dtype emitted by Program AD interpolation primitives."""
-
     return "float64"
 
 
@@ -344,7 +334,6 @@ def _program_ad_interpolation_interp_static_arguments(
     args: tuple[object, ...],
 ) -> tuple[object, ...]:
     """Return canonical static arguments for an intercepted ``np.interp`` primitive."""
-
     sample_shape, grid, fp_shape, left, right = _program_ad_interpolation_static_parts(args)
     return (
         sample_shape,
@@ -358,7 +347,6 @@ def _program_ad_interpolation_interp_static_arguments(
 
 def _program_ad_interpolation_derivative_rule(name: str) -> CustomDerivativeRule:
     """Return the trace-dispatched derivative contract for an interpolation primitive."""
-
     if name == "interp":
         return CustomDerivativeRule(
             name="program_ad_interpolation_interp_trace_contract",
@@ -375,7 +363,6 @@ def _program_ad_interpolation_batching_rule(
     out_axes: int,
 ) -> object:
     """Map interpolation samples over a batch axis while static data is shared."""
-
     if len(args) != 6 or len(axes) != 6:
         raise ValueError(
             "program AD interpolation interp batching requires x, xp, fp, left, right, and period"
@@ -403,7 +390,6 @@ def _program_ad_interpolation_batching_rule(
 
 def _program_ad_interpolation_lowering_metadata(name: str) -> Mapping[str, str]:
     """Return lowering metadata for a Program AD interpolation primitive."""
-
     if name != "interp":
         raise ValueError(f"unsupported program AD interpolation primitive {name}")
     return {
@@ -422,7 +408,6 @@ def _program_ad_interpolation_lowering_metadata(name: str) -> Mapping[str, str]:
 
 def _register_program_ad_interpolation_primitive_contracts() -> None:
     """Register fail-closed Program AD interpolation primitive contracts."""
-
     for name, identity in _PROGRAM_AD_INTERPOLATION_IDENTITIES.items():
         if DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.contract_for(identity) is not None:
             continue
@@ -446,7 +431,6 @@ def _validate_program_ad_interpolation_contract_dispatch(
     args: tuple[object, ...],
 ) -> None:
     """Validate interpolation primitive dispatch helpers against concrete arguments."""
-
     if contract.static_argument_rule is None:
         raise ValueError(
             f"program AD primitive {contract.identity.key} missing static argument rule"
@@ -480,7 +464,6 @@ def _require_program_ad_interpolation_contract(
     args: tuple[object, ...] | None = None,
 ) -> PrimitiveContract:
     """Return and validate a registered interpolation primitive runtime contract."""
-
     identity: PrimitiveIdentity | None = _PROGRAM_AD_INTERPOLATION_IDENTITIES.get(name)
     if identity is None:
         raise ValueError(f"no program AD interpolation primitive identity registered for {name}")
