@@ -51,6 +51,7 @@ pub mod kuramoto_autodiff;
 pub mod kuramoto_common;
 pub mod kuramoto_coupling;
 pub mod kuramoto_dopri;
+pub mod kuramoto_inertial;
 pub mod kuramoto_observables;
 pub mod lindblad;
 pub mod ml_dsa;
@@ -209,6 +210,10 @@ fn scpn_quantum_engine(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(kuramoto_autodiff::kuramoto_rk4_vjp, m)?)?;
     m.add_function(wrap_pyfunction!(
         kuramoto_dopri::kuramoto_dopri_trajectory,
+        m
+    )?)?;
+    m.add_function(wrap_pyfunction!(
+        kuramoto_inertial::kuramoto_inertial_trajectory,
         m
     )?)?;
     m.add_function(wrap_pyfunction!(
