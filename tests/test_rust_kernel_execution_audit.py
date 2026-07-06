@@ -171,8 +171,9 @@ def test_live_rust_crate_records_threading_without_simd_promotion() -> None:
     audit = scan_crate(crate)
 
     assert audit.status == "pass"
-    # Live crate count includes the Program AD registry metadata mirror PyO3 export.
-    assert audit.pyfunction_count == 172
+    # Live crate count includes the Program AD registry metadata mirror PyO3 export and the polyglot
+    # forward-integrator kernels (adaptive DOPRI, inertial, symplectic-inertial, time-delayed).
+    assert audit.pyfunction_count == 176
     assert audit.rayon_threaded_count > 0
     assert audit.explicit_simd_count == 0
     assert audit.performance_claim_eligible_count == 0

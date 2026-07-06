@@ -218,6 +218,22 @@ def _build_inertial_trajectory_args(n: int, rng: np.random.Generator) -> tuple[A
     )
 
 
+_DELAY_STEPS = 5
+
+
+def _build_delayed_trajectory_args(n: int, rng: np.random.Generator) -> tuple[Any, ...]:
+    base = _phases(n, rng)
+    history = base[np.newaxis, :] + rng.normal(0.0, 0.1, size=(_DELAY_STEPS + 1, n))
+    return (
+        np.ascontiguousarray(history, dtype=np.float64),
+        rng.uniform(-0.5, 0.5, size=n),
+        _symmetric_coupling(n, rng),
+        _DELAY_STEPS * _TRAJECTORY_DT,
+        _TRAJECTORY_DT,
+        _TRAJECTORY_STEPS,
+    )
+
+
 @dataclass(frozen=True)
 class PrimitiveSpec:
     """How to generate inputs and classify the cost of one compute primitive."""
@@ -282,6 +298,7 @@ _SPECS: tuple[PrimitiveSpec, ...] = (
         _build_inertial_trajectory_args,
         "trajectory",
     ),
+    PrimitiveSpec("networked_delayed_trajectory", _build_delayed_trajectory_args, "trajectory"),
 )
 
 

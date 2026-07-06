@@ -1026,6 +1026,53 @@ def kuramoto_symplectic_inertial_trajectory(
     return sample_times, phases, velocity_history
 
 
+def kuramoto_delayed_trajectory(
+    initial_history: NDArray[np.float64],
+    omega: NDArray[np.float64],
+    coupling: NDArray[np.float64],
+    dt: float,
+    n_steps: int,
+) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
+    """Julia-tier time-delayed (method-of-steps) networked-Kuramoto forward trajectory.
+
+    Integrates the delay-differential equation ``θ̇(t) = ω + F(θ(t), θ(t-τ))`` with the networked
+    delayed coupling force by a delay-aware fixed-step RK4, mirroring the Python floor and Rust tier
+    (tolerance-parity, ~1e-11). The delay ``τ = delay_steps·dt`` is inferred from the history block.
+
+    Parameters
+    ----------
+    initial_history : numpy.ndarray
+        Two-dimensional ``(delay_steps + 1, N)`` phase history on ``[-τ, 0]``; the last row is
+        ``θ(0)``.
+    omega : numpy.ndarray
+        One-dimensional array of ``N`` natural frequencies.
+    coupling : numpy.ndarray
+        Two-dimensional ``(N, N)`` coupling matrix ``K``.
+    dt : float
+        The fixed RK4 time step (``> 0``).
+    n_steps : int
+        The number of RK4 steps (``≥ 1``); the trajectory has ``n_steps + 1`` samples.
+
+    Returns
+    -------
+    tuple of numpy.ndarray
+        ``(times, phases)`` — the ``(M + 1,)`` sample times and the ``(M + 1, N)`` phases, with
+        ``M = n_steps``.
+    """
+    jl = _load()
+    count = int(np.asarray(omega).size)
+    times, phases_flat = jl.kuramoto_delayed_trajectory(
+        np.ascontiguousarray(initial_history, dtype=np.float64),
+        np.ascontiguousarray(omega, dtype=np.float64),
+        np.ascontiguousarray(coupling, dtype=np.float64),
+        float(dt),
+        int(n_steps),
+    )
+    sample_times = np.ascontiguousarray(times, dtype=np.float64)
+    phases = np.ascontiguousarray(phases_flat, dtype=np.float64).reshape(sample_times.size, count)
+    return sample_times, phases
+
+
 def kuramoto_rk4_vjp(
     trajectory: NDArray[np.float64],
     omega: NDArray[np.float64],
@@ -1107,6 +1154,7 @@ __all__ = [
     "kuramoto_dopri_trajectory",
     "kuramoto_inertial_trajectory",
     "kuramoto_symplectic_inertial_trajectory",
+    "kuramoto_delayed_trajectory",
     "kuramoto_rk4_trajectory",
     "kuramoto_rk4_vjp",
 ]

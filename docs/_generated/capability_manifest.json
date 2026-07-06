@@ -11,8 +11,8 @@
     "public_documentation_pages": 260,
     "python_model_classes": 911,
     "python_model_source_modules": 471,
-    "rust_pyo3_model_wrappers": 175,
-    "rust_source_modules": 54,
+    "rust_pyo3_model_wrappers": 176,
+    "rust_source_modules": 55,
     "test_files": 813
   },
   "documentation": {
@@ -4755,6 +4755,7 @@
       "ici_three_level_evolution_batch",
       "knm_domain_coupling",
       "koopman_generator",
+      "kuramoto_delayed_trajectory",
       "kuramoto_dopri_trajectory",
       "kuramoto_euler",
       "kuramoto_euler_trajectory",
@@ -4916,6 +4917,7 @@
       "scpn_quantum_engine/src/kuramoto_autodiff.rs",
       "scpn_quantum_engine/src/kuramoto_common.rs",
       "scpn_quantum_engine/src/kuramoto_coupling.rs",
+      "scpn_quantum_engine/src/kuramoto_delayed.rs",
       "scpn_quantum_engine/src/kuramoto_dopri.rs",
       "scpn_quantum_engine/src/kuramoto_inertial.rs",
       "scpn_quantum_engine/src/kuramoto_observables.rs",
