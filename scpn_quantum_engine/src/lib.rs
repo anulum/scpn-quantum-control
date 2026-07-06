@@ -53,6 +53,7 @@ pub mod kuramoto_coupling;
 pub mod kuramoto_dopri;
 pub mod kuramoto_inertial;
 pub mod kuramoto_observables;
+pub mod kuramoto_symplectic_inertial;
 pub mod lindblad;
 pub mod ml_dsa;
 pub mod monte_carlo;
@@ -214,6 +215,10 @@ fn scpn_quantum_engine(m: &Bound<'_, PyModule>) -> PyResult<()> {
     )?)?;
     m.add_function(wrap_pyfunction!(
         kuramoto_inertial::kuramoto_inertial_trajectory,
+        m
+    )?)?;
+    m.add_function(wrap_pyfunction!(
+        kuramoto_symplectic_inertial::kuramoto_symplectic_inertial_trajectory,
         m
     )?)?;
     m.add_function(wrap_pyfunction!(
