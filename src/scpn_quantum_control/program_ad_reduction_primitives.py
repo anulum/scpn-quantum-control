@@ -36,7 +36,6 @@ from .program_ad_trapezoid_primitives import (
 
 def _as_real_numeric_array(name: str, value: object) -> NDArray[np.float64]:
     """Return ``value`` as a real-valued float64 array."""
-
     array = np.asarray(value)
     if array.dtype.kind not in {"b", "i", "u", "f"}:
         raise ValueError(f"{name} must be a real numeric array")
@@ -45,7 +44,6 @@ def _as_real_numeric_array(name: str, value: object) -> NDArray[np.float64]:
 
 def _as_real_scalar(name: str, value: object) -> float:
     """Return ``value`` as a real scalar."""
-
     array = np.asarray(value)
     if array.shape != ():
         raise ValueError(f"{name} must be scalar")
@@ -56,7 +54,6 @@ def _as_real_scalar(name: str, value: object) -> float:
 
 def _normalise_axis(name: str, axis: int, rank: int) -> int:
     """Normalise a possibly negative axis against a tensor rank."""
-
     axis_int = int(axis)
     if axis_int < -rank or axis_int >= rank:
         raise ValueError(f"{name} out of bounds for rank {rank}")
@@ -65,13 +62,11 @@ def _normalise_axis(name: str, axis: int, rank: int) -> int:
 
 def _program_ad_float64_vector_result(value: object) -> NDArray[np.float64]:
     """Flatten a direct-rule result into the canonical float64 vector form."""
-
     return np.asarray(value, dtype=np.float64).reshape(-1)
 
 
 def _program_ad_shape_static_size(source_shape: Sequence[int]) -> int:
     """Return the element count for a static tensor shape."""
-
     size = 1
     for dimension in source_shape:
         size *= int(dimension)
@@ -80,7 +75,6 @@ def _program_ad_shape_static_size(source_shape: Sequence[int]) -> int:
 
 def _program_ad_shape_signature(source_shape: Sequence[int]) -> str:
     """Return a stable shape token for direct derivative rule names."""
-
     if not source_shape:
         return "scalar"
     return "x".join(str(int(dimension)) for dimension in source_shape)
@@ -94,7 +88,6 @@ def _program_ad_shape_vector(
     expected_size: int,
 ) -> NDArray[np.float64]:
     """Validate a flattened static-shape operand for direct derivative rules."""
-
     vector = _as_real_numeric_array(f"program AD {name} {role}", values).reshape(-1)
     if vector.size != expected_size:
         raise ValueError(
@@ -105,7 +98,6 @@ def _program_ad_shape_vector(
 
 def _program_ad_array_shape_of(value: object) -> tuple[int, ...]:
     """Return the static array shape recorded by a trace value or array-like input."""
-
     shape = getattr(value, "shape", None)
     if isinstance(shape, tuple):
         return tuple(int(dimension) for dimension in shape)
@@ -116,7 +108,6 @@ def _program_ad_array_shape_of(value: object) -> tuple[int, ...]:
 
 def _program_ad_array_dtype_of(value: object) -> str:
     """Return the dtype name recorded by a trace value or array-like input."""
-
     dtype = getattr(value, "dtype", None)
     if dtype is not None:
         return str(np.dtype(dtype))
@@ -130,7 +121,6 @@ def _program_ad_array_dtype_of(value: object) -> str:
 
 def _is_program_ad_trace_value(value: object) -> bool:
     """Return whether ``value`` follows the lightweight trace-value protocol."""
-
     return hasattr(value, "value") and hasattr(value, "node")
 
 
@@ -139,7 +129,6 @@ def _validate_program_ad_reduction_contract_dispatch(
     args: tuple[object, ...],
 ) -> None:
     """Validate reduction primitive dispatch helpers against concrete arguments."""
-
     if contract.static_argument_rule is None:
         raise ValueError(
             f"program AD primitive {contract.identity.key} missing static argument rule"
@@ -174,7 +163,6 @@ def _require_program_ad_reduction_runtime_contract(
     args: tuple[object, ...] | None = None,
 ) -> PrimitiveContract:
     """Return a validated reduction primitive runtime contract."""
-
     identity = _PROGRAM_AD_REDUCTION_IDENTITIES.get(name)
     if identity is None:
         raise ValueError(f"no program AD reduction primitive identity registered for {name}")
@@ -1199,7 +1187,6 @@ def program_ad_reduction_sum_derivative_rule(
     axis: int | None = None,
 ) -> CustomDerivativeRule:
     """Build an exact direct derivative rule for a fixed sum reduction signature."""
-
     return _program_ad_reduction_static_rule("sum", source_shape, axis)
 
 
@@ -1208,7 +1195,6 @@ def program_ad_reduction_mean_derivative_rule(
     axis: int | None = None,
 ) -> CustomDerivativeRule:
     """Build an exact direct derivative rule for a fixed mean reduction signature."""
-
     return _program_ad_reduction_static_rule("mean", source_shape, axis)
 
 
@@ -1276,7 +1262,6 @@ def program_ad_reduction_var_derivative_rule(
     ddof: int = 0,
 ) -> CustomDerivativeRule:
     """Build an exact direct derivative rule for a fixed variance signature."""
-
     return _program_ad_reduction_var_std_static_rule("var", source_shape, axis=axis, ddof=ddof)
 
 
@@ -1287,7 +1272,6 @@ def program_ad_reduction_std_derivative_rule(
     ddof: int = 0,
 ) -> CustomDerivativeRule:
     """Build an exact direct derivative rule for a fixed standard-deviation signature."""
-
     return _program_ad_reduction_var_std_static_rule("std", source_shape, axis=axis, ddof=ddof)
 
 
@@ -1296,7 +1280,6 @@ def program_ad_reduction_max_derivative_rule(
     axis: int | None = None,
 ) -> CustomDerivativeRule:
     """Build an exact direct derivative rule for a fixed maximum reduction signature."""
-
     return _program_ad_reduction_order_statistic_rule(
         "max", q=1.0, source_shape=source_shape, axis=axis
     )
@@ -1307,7 +1290,6 @@ def program_ad_reduction_min_derivative_rule(
     axis: int | None = None,
 ) -> CustomDerivativeRule:
     """Build an exact direct derivative rule for a fixed minimum reduction signature."""
-
     return _program_ad_reduction_order_statistic_rule(
         "min", q=0.0, source_shape=source_shape, axis=axis
     )
@@ -1318,7 +1300,6 @@ def program_ad_reduction_median_derivative_rule(
     axis: int | None = None,
 ) -> CustomDerivativeRule:
     """Build an exact direct derivative rule for a fixed median reduction signature."""
-
     return _program_ad_reduction_order_statistic_rule(
         "median", q=0.5, source_shape=source_shape, axis=axis
     )
@@ -1331,7 +1312,6 @@ def program_ad_reduction_quantile_derivative_rule(
     axis: int | None = None,
 ) -> CustomDerivativeRule:
     """Build an exact direct derivative rule for a fixed scalar-quantile signature."""
-
     return _program_ad_reduction_order_statistic_rule(
         "quantile",
         q=_normalise_order_statistic_q(q, percentile=False),
@@ -1347,7 +1327,6 @@ def program_ad_reduction_percentile_derivative_rule(
     axis: int | None = None,
 ) -> CustomDerivativeRule:
     """Build an exact direct derivative rule for a fixed scalar-percentile signature."""
-
     return _program_ad_reduction_order_statistic_rule(
         "percentile",
         q=_normalise_order_statistic_q(q, percentile=True),
@@ -1361,7 +1340,6 @@ def program_ad_reduction_prod_derivative_rule(
     axis: int | None = None,
 ) -> CustomDerivativeRule:
     """Build an exact direct derivative rule for a fixed product reduction signature."""
-
     return _program_ad_reduction_static_rule("prod", source_shape, axis)
 
 
