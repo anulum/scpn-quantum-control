@@ -644,6 +644,13 @@ def _program_ad_cumulative_lowering_metadata(name: str) -> Mapping[str, str]:
         "mlir_op": f"scpn_diff.cumulative.{name}",
         "llvm": "blocked_until_executable_cumulative_lowering",
         "rust": "available: bounded compact Program AD Rust value+gradient replay",
+        "rust_backend": "rust_pyo3",
+        "rust_backend_verification": (
+            "verified: scpn_quantum_engine compact cumulative Program AD IR "
+            "value+gradient replay parity"
+        ),
+        "rust_backend_signature": static_signature,
+        "rust_backend_functions": "program_ad_effect_ir_interpret_value_and_gradient",
         "static_argument_rule": "required",
         "static_derivative_factory": static_factory,
         "static_signature": static_signature,

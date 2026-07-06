@@ -397,7 +397,16 @@ def _program_ad_interpolation_lowering_metadata(name: str) -> Mapping[str, str]:
         "mlir": "available: scpn_diff interpolation dialect interchange; executable lowering blocked",
         "mlir_op": "scpn_diff.interpolation.interp",
         "llvm": "blocked_until_executable_interpolation_lowering",
-        "rust": "blocked_until_polyglot_interpolation_ad",
+        "rust": "available: bounded compact Program AD Rust value+gradient replay",
+        "rust_backend": "rust_pyo3",
+        "rust_backend_verification": (
+            "verified: scpn_quantum_engine compact interpolation Program AD IR "
+            "value+gradient replay parity"
+        ),
+        "rust_backend_signature": (
+            "sample_shape:ranked_tensor_shape;xp_grid;fp_shape;left_right_period"
+        ),
+        "rust_backend_functions": "program_ad_effect_ir_interpret_value_and_gradient",
         "static_argument_rule": "required",
         "static_derivative_factory": "program_ad_interpolation_interp_derivative_rule",
         "static_signature": "sample_shape:ranked_tensor_shape;xp_grid;fp_shape;left_right_period",

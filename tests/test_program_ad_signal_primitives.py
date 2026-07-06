@@ -136,6 +136,14 @@ def test_program_ad_signal_convolve_contract_and_direct_rule() -> None:
     assert contract.lowering_metadata["rust"] == (
         "available: bounded compact Program AD Rust value+gradient replay"
     )
+    assert contract.lowering_metadata["rust_backend"] == "rust_pyo3"
+    assert contract.lowering_metadata["rust_backend_signature"] == (
+        "left_shape:rank1;right_shape:rank1;mode"
+    )
+    assert (
+        contract.lowering_metadata["rust_backend_functions"]
+        == "program_ad_effect_ir_interpret_value_and_gradient"
+    )
     assert (
         contract.lowering_metadata["static_derivative_factory"]
         == "program_ad_signal_convolve_derivative_rule"

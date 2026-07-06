@@ -1370,8 +1370,10 @@ def differentiable_dashboard_status(
             else ("conformance suite not run in this status call",),
             claim_boundary=(
                 "structured numeric Program AD primitive conformance only; "
-                "dynamic interpolation grids, singular stencil spacing, Rust/LLVM "
-                "executable lowering, hardware, and performance promotion remain blocked"
+                "bounded static-grid interp and static rank-1 signal Program AD Rust "
+                "replay are covered; dynamic interpolation grids, dynamic signal metadata, "
+                "singular stencil spacing, broad Rust/LLVM executable lowering, JIT, "
+                "hardware, and performance promotion remain blocked"
             ),
         ),
         DifferentiableDashboardCapabilityRow(

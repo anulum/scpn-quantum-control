@@ -513,6 +513,13 @@ def _program_ad_signal_lowering_metadata(name: str) -> Mapping[str, str]:
         "mlir_op": f"scpn_diff.signal.{name}",
         "llvm": "blocked_until_executable_signal_lowering",
         "rust": "available: bounded compact Program AD Rust value+gradient replay",
+        "rust_backend": "rust_pyo3",
+        "rust_backend_verification": (
+            "verified: scpn_quantum_engine compact signal Program AD IR "
+            "value+gradient replay parity"
+        ),
+        "rust_backend_signature": "left_shape:rank1;right_shape:rank1;mode",
+        "rust_backend_functions": "program_ad_effect_ir_interpret_value_and_gradient",
         "static_argument_rule": "required",
         "static_derivative_factory": factory_names[name],
         "static_signature": "left_shape:rank1;right_shape:rank1;mode",

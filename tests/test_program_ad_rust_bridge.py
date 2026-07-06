@@ -483,7 +483,7 @@ def test_value_and_gradient_bridge_is_shared_by_module_and_facade(
                 "effect_count": 4,
                 "supported_effect_count": 4,
                 "blocked_reasons": [],
-                "claim_boundary": "bounded_rust_program_ad_ir_elementwise_structural_array_static_source_map_static_reductions_static_signal_primitives_static_cumulative_primitives_value_and_gradient_static_linalg_primitives_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit",
+                "claim_boundary": "bounded_rust_program_ad_ir_elementwise_structural_array_static_source_map_static_reductions_static_signal_primitives_static_interpolation_primitives_static_cumulative_primitives_value_and_gradient_static_linalg_primitives_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit",
             }
         )
 
@@ -535,7 +535,7 @@ def test_forward_interpreter_bridge_normalises_payload(
                 "effect_count": 3,
                 "supported_effect_count": 3,
                 "blocked_reasons": [],
-                "claim_boundary": "bounded_rust_program_ad_ir_scalar_static_signal_static_cumulative_and_static_linalg_primitives_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit",
+                "claim_boundary": "bounded_rust_program_ad_ir_scalar_static_signal_static_interpolation_static_cumulative_and_static_linalg_primitives_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit",
             }
         )
 
@@ -649,7 +649,7 @@ def test_rust_program_ad_value_and_gradient_replay_matches_python_trace() -> Non
     assert rust_result.supported_effect_count == len(result.program_ir.effects)
     assert (
         rust_result.claim_boundary
-        == "bounded_rust_program_ad_ir_elementwise_structural_array_static_source_map_static_reductions_static_signal_primitives_static_cumulative_primitives_value_and_gradient_static_linalg_primitives_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit"
+        == "bounded_rust_program_ad_ir_elementwise_structural_array_static_source_map_static_reductions_static_signal_primitives_static_interpolation_primitives_static_cumulative_primitives_value_and_gradient_static_linalg_primitives_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit"
     )
 
 
@@ -721,7 +721,7 @@ def test_rust_program_ad_value_and_gradient_replays_executed_branch_trace() -> N
     assert rust_result.supported_effect_count == len(result.program_ir.effects)
     assert (
         rust_result.claim_boundary
-        == "bounded_rust_program_ad_ir_elementwise_structural_array_static_source_map_static_reductions_static_signal_primitives_static_cumulative_primitives_value_and_gradient_static_linalg_primitives_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit"
+        == "bounded_rust_program_ad_ir_elementwise_structural_array_static_source_map_static_reductions_static_signal_primitives_static_interpolation_primitives_static_cumulative_primitives_value_and_gradient_static_linalg_primitives_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit"
     )
 
 
@@ -777,7 +777,7 @@ def test_rust_program_ad_value_and_gradient_replays_scalar_primitive_family_trac
     assert rust_result.supported_effect_count == len(result.program_ir.effects)
     assert (
         rust_result.claim_boundary
-        == "bounded_rust_program_ad_ir_elementwise_structural_array_static_source_map_static_reductions_static_signal_primitives_static_cumulative_primitives_value_and_gradient_static_linalg_primitives_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit"
+        == "bounded_rust_program_ad_ir_elementwise_structural_array_static_source_map_static_reductions_static_signal_primitives_static_interpolation_primitives_static_cumulative_primitives_value_and_gradient_static_linalg_primitives_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit"
     )
 
 
@@ -825,7 +825,7 @@ def test_rust_program_ad_value_and_gradient_replays_static_take_trace() -> None:
     assert rust_result.supported_effect_count == len(result.program_ir.effects)
     assert (
         rust_result.claim_boundary
-        == "bounded_rust_program_ad_ir_elementwise_structural_array_static_source_map_static_reductions_static_signal_primitives_static_cumulative_primitives_value_and_gradient_static_linalg_primitives_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit"
+        == "bounded_rust_program_ad_ir_elementwise_structural_array_static_source_map_static_reductions_static_signal_primitives_static_interpolation_primitives_static_cumulative_primitives_value_and_gradient_static_linalg_primitives_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit"
     )
 
 
@@ -857,7 +857,7 @@ def test_rust_program_ad_value_and_gradient_replays_array_elementwise_broadcast_
     assert rust_result.supported_effect_count == 6
     assert (
         rust_result.claim_boundary
-        == "bounded_rust_program_ad_ir_elementwise_structural_array_static_source_map_static_reductions_static_signal_primitives_static_cumulative_primitives_value_and_gradient_static_linalg_primitives_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit"
+        == "bounded_rust_program_ad_ir_elementwise_structural_array_static_source_map_static_reductions_static_signal_primitives_static_interpolation_primitives_static_cumulative_primitives_value_and_gradient_static_linalg_primitives_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit"
     )
 
 
@@ -902,7 +902,7 @@ def test_rust_program_ad_value_and_gradient_replays_structural_array_ops() -> No
     assert rust_result.supported_effect_count == 8
     assert (
         rust_result.claim_boundary
-        == "bounded_rust_program_ad_ir_elementwise_structural_array_static_source_map_static_reductions_static_signal_primitives_static_cumulative_primitives_value_and_gradient_static_linalg_primitives_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit"
+        == "bounded_rust_program_ad_ir_elementwise_structural_array_static_source_map_static_reductions_static_signal_primitives_static_interpolation_primitives_static_cumulative_primitives_value_and_gradient_static_linalg_primitives_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit"
     )
 
 
@@ -945,7 +945,7 @@ def test_rust_program_ad_value_and_gradient_replays_structural_assembly_ops() ->
     assert rust_result.supported_effect_count == 11
     assert (
         rust_result.claim_boundary
-        == "bounded_rust_program_ad_ir_elementwise_structural_array_static_source_map_static_reductions_static_signal_primitives_static_cumulative_primitives_value_and_gradient_static_linalg_primitives_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit"
+        == "bounded_rust_program_ad_ir_elementwise_structural_array_static_source_map_static_reductions_static_signal_primitives_static_interpolation_primitives_static_cumulative_primitives_value_and_gradient_static_linalg_primitives_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit"
     )
 
 
@@ -999,7 +999,7 @@ def test_rust_program_ad_value_and_gradient_replays_static_axis_reductions() -> 
     assert rust_result.supported_effect_count == 10
     assert (
         rust_result.claim_boundary
-        == "bounded_rust_program_ad_ir_elementwise_structural_array_static_source_map_static_reductions_static_signal_primitives_static_cumulative_primitives_value_and_gradient_static_linalg_primitives_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit"
+        == "bounded_rust_program_ad_ir_elementwise_structural_array_static_source_map_static_reductions_static_signal_primitives_static_interpolation_primitives_static_cumulative_primitives_value_and_gradient_static_linalg_primitives_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit"
     )
 
 
@@ -1062,7 +1062,7 @@ def test_rust_program_ad_value_and_gradient_replays_static_source_map_indexing()
     assert rust_result.supported_effect_count == 5
     assert (
         rust_result.claim_boundary
-        == "bounded_rust_program_ad_ir_elementwise_structural_array_static_source_map_static_reductions_static_signal_primitives_static_cumulative_primitives_value_and_gradient_static_linalg_primitives_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit"
+        == "bounded_rust_program_ad_ir_elementwise_structural_array_static_source_map_static_reductions_static_signal_primitives_static_interpolation_primitives_static_cumulative_primitives_value_and_gradient_static_linalg_primitives_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit"
     )
 
 
@@ -2028,7 +2028,7 @@ def test_bridge_replays_linalg_det_2x2_with_real_engine() -> None:
     _, reference = program_adjoint_value_and_grad(_objective_det_2x2, sample)
     np.testing.assert_allclose(np.asarray(rust.gradient), reference, atol=1.0e-12)
     assert rust.claim_boundary.endswith(
-        "elementwise_structural_array_static_source_map_static_reductions_static_signal_primitives_static_cumulative_primitives_value_and_gradient_static_linalg_primitives_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit"
+        "elementwise_structural_array_static_source_map_static_reductions_static_signal_primitives_static_interpolation_primitives_static_cumulative_primitives_value_and_gradient_static_linalg_primitives_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit"
     )
 
 

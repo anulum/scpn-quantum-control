@@ -12,8 +12,8 @@
 //! tooling can inspect evidence metadata, execute a narrow scalar forward
 //! interpreter, and replay bounded scalar, elementwise-array, static structural,
 //! static source-map indexing, static product, corrected moment,
-//! order-statistic, static-grid trapezoid reductions, compact signal and
-//! cumulative primitives, and static-linalg value+gradient traces when
+//! order-statistic, static-grid trapezoid reductions, compact interpolation,
+//! signal and cumulative primitives, and static-linalg value+gradient traces when
 //! opcode-bearing rows are present.
 //! It does not promote LLVM lowering, JIT execution, reverse-mode compiler AD,
 //! hardware execution, or performance claims.
@@ -27,6 +27,9 @@ use serde_json::Value;
 
 use crate::program_ad_cumulative_reduction::{
     cumulative_output_cotangent, cumulative_output_value, is_cumulative_operation,
+};
+use crate::program_ad_interpolation_reduction::{
+    interpolation_output_cotangent, interpolation_output_value, is_interpolation_operation,
 };
 use crate::program_ad_linalg_array::{
     is_multi_dot_operation, multi_dot_output_cotangent, multi_dot_output_value,
@@ -67,9 +70,9 @@ use crate::program_ad_variance_reduction::{
 const PROGRAM_AD_EFFECT_IR_FORMAT: &str = "program_ad_effect_ir.v1";
 const PROGRAM_AD_IR_CLAIM_BOUNDARY: &str = "metadata_only_no_program_execution";
 const PROGRAM_AD_RUST_INTERPRETER_CLAIM_BOUNDARY: &str =
-    "bounded_rust_program_ad_ir_scalar_static_signal_static_cumulative_and_static_linalg_primitives_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit";
+    "bounded_rust_program_ad_ir_scalar_static_signal_static_interpolation_static_cumulative_and_static_linalg_primitives_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit";
 const PROGRAM_AD_RUST_VALUE_AND_GRADIENT_CLAIM_BOUNDARY: &str =
-    "bounded_rust_program_ad_ir_elementwise_structural_array_static_source_map_static_reductions_static_signal_primitives_static_cumulative_primitives_value_and_gradient_static_linalg_primitives_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit";
+    "bounded_rust_program_ad_ir_elementwise_structural_array_static_source_map_static_reductions_static_signal_primitives_static_interpolation_primitives_static_cumulative_primitives_value_and_gradient_static_linalg_primitives_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit";
 
 /// One SSA value record from Python-emitted Program AD metadata.
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize)]
@@ -844,6 +847,9 @@ fn accumulate_reverse_effect(
         name if is_cumulative_operation(name) => {
             accumulate_cumulative(effect, name, values, adjoints, &cotangent)
         }
+        name if is_interpolation_operation(name) => {
+            accumulate_interpolation(effect, name, values, adjoints, &cotangent)
+        }
         name if is_signal_operation(name) => {
             accumulate_signal(effect, name, values, adjoints, &cotangent)
         }
@@ -1520,6 +1526,27 @@ fn accumulate_cumulative(
     Ok(())
 }
 
+fn accumulate_interpolation(
+    effect: &ProgramADEffect,
+    operation: &str,
+    values: &HashMap<String, ProgramADNumericValue>,
+    adjoints: &mut HashMap<String, ProgramADNumericValue>,
+    cotangent: &ProgramADNumericValue,
+) -> Result<(), String> {
+    let cotangent_scalar = cotangent.scalar_value()?;
+    let input_values = effect
+        .inputs
+        .iter()
+        .map(|input| operand_scalar_value(input, values))
+        .collect::<Result<Vec<f64>, String>>()?;
+    let contributions =
+        interpolation_output_cotangent(effect.index, operation, &input_values, cotangent_scalar)?;
+    for (input, contribution) in effect.inputs.iter().zip(contributions.iter()) {
+        add_scalar_adjoint(input, *contribution, values, adjoints)?;
+    }
+    Ok(())
+}
+
 fn accumulate_signal(
     effect: &ProgramADEffect,
     operation: &str,
@@ -1921,6 +1948,7 @@ fn evaluate_numeric_effect(
         name if is_eigh_operation(name) => numeric_eigh(effect, name, values),
         name if is_svdvals_operation(name) => numeric_svdvals(effect, name, values),
         name if is_pinv_operation(name) => numeric_pinv(effect, name, values),
+        name if is_interpolation_operation(name) => numeric_interpolation(effect, name, values),
         name if name.starts_with("linalg:trace:")
             || name.starts_with("linalg:det:")
             || name.starts_with("linalg:inv:")
@@ -2386,6 +2414,23 @@ fn numeric_cumulative(
         .map(|input| operand_scalar_value(input, values))
         .collect::<Result<Vec<f64>, String>>()?;
     Ok(ProgramADNumericValue::scalar(cumulative_output_value(
+        effect.index,
+        operation,
+        &input_values,
+    )?))
+}
+
+fn numeric_interpolation(
+    effect: &ProgramADEffect,
+    operation: &str,
+    values: &HashMap<String, ProgramADNumericValue>,
+) -> Result<ProgramADNumericValue, String> {
+    let input_values = effect
+        .inputs
+        .iter()
+        .map(|input| operand_scalar_value(input, values))
+        .collect::<Result<Vec<f64>, String>>()?;
+    Ok(ProgramADNumericValue::scalar(interpolation_output_value(
         effect.index,
         operation,
         &input_values,
@@ -3143,6 +3188,14 @@ fn evaluate_effect(
                 .map(|input| operand_value(input, values))
                 .collect::<Result<Vec<f64>, String>>()?;
             cumulative_output_value(effect.index, name, &input_values)
+        }
+        name if is_interpolation_operation(name) => {
+            let input_values = effect
+                .inputs
+                .iter()
+                .map(|input| operand_value(input, values))
+                .collect::<Result<Vec<f64>, String>>()?;
+            interpolation_output_value(effect.index, name, &input_values)
         }
         name if is_signal_operation(name) => {
             let input_values = effect

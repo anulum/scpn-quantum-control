@@ -95,6 +95,14 @@ def test_program_ad_cumulative_primitives_are_registry_policy_gated() -> None:
     assert cumsum_contract.lowering_metadata["rust"] == (
         "available: bounded compact Program AD Rust value+gradient replay"
     )
+    assert cumsum_contract.lowering_metadata["rust_backend"] == "rust_pyo3"
+    assert cumsum_contract.lowering_metadata["rust_backend_signature"] == (
+        "source_shape:ranked_tensor_shape;axis"
+    )
+    assert (
+        cumsum_contract.lowering_metadata["rust_backend_functions"]
+        == "program_ad_effect_ir_interpret_value_and_gradient"
+    )
     assert (
         cumsum_contract.lowering_metadata["static_derivative_factory"]
         == "program_ad_cumulative_cumsum_derivative_rule"
@@ -122,6 +130,14 @@ def test_program_ad_cumulative_primitives_are_registry_policy_gated() -> None:
     assert cumprod_contract.lowering_metadata["rust"] == (
         "available: bounded compact Program AD Rust value+gradient replay"
     )
+    assert cumprod_contract.lowering_metadata["rust_backend"] == "rust_pyo3"
+    assert cumprod_contract.lowering_metadata["rust_backend_signature"] == (
+        "source_shape:ranked_tensor_shape;axis"
+    )
+    assert (
+        cumprod_contract.lowering_metadata["rust_backend_functions"]
+        == "program_ad_effect_ir_interpret_value_and_gradient"
+    )
     assert (
         cumprod_contract.lowering_metadata["static_derivative_factory"]
         == "program_ad_cumulative_cumprod_derivative_rule"
@@ -146,6 +162,14 @@ def test_program_ad_cumulative_primitives_are_registry_policy_gated() -> None:
     assert diff_contract.lowering_metadata["mlir_op"] == "scpn_diff.cumulative.diff"
     assert diff_contract.lowering_metadata["rust"] == (
         "available: bounded compact Program AD Rust value+gradient replay"
+    )
+    assert diff_contract.lowering_metadata["rust_backend"] == "rust_pyo3"
+    assert diff_contract.lowering_metadata["rust_backend_signature"] == (
+        "source_shape:ranked_tensor_shape;order_axis"
+    )
+    assert (
+        diff_contract.lowering_metadata["rust_backend_functions"]
+        == "program_ad_effect_ir_interpret_value_and_gradient"
     )
     assert (
         diff_contract.lowering_metadata["static_derivative_factory"]

@@ -66,6 +66,7 @@ from .program_ad_elementwise_primitives import (
 from .program_ad_interpolation_primitives import (
     _normalise_interp_grid,
     _require_program_ad_interpolation_contract,
+    program_ad_interpolation_interp_derivative_rule,
 )
 from .program_ad_linalg_primitives import (
     _program_ad_linalg_det_cofactor_matrix,
@@ -2439,6 +2440,85 @@ def _trace_interp_scalar(
     return values[segment] + (values[segment + 1] - values[segment]) * weight
 
 
+def _format_static_interp_float(value: float | None) -> str:
+    """Format static interpolation metadata for compact Program AD opcodes."""
+
+    if value is None:
+        return "none"
+    if not math.isfinite(value):
+        raise ValueError("program AD np.interp compact metadata must be finite")
+    return f"{value:.17g}"
+
+
+def _format_static_interp_grid(grid: NDArray[np.float64]) -> str:
+    """Format a strictly increasing interpolation grid for compact opcodes."""
+
+    return ",".join(_format_static_interp_float(float(value)) for value in grid)
+
+
+def _trace_interp_compact_array(
+    samples: tuple[TraceADScalar, ...],
+    values: tuple[TraceADScalar, ...],
+    *,
+    sample_shape: tuple[int, ...],
+    grid: NDArray[np.float64],
+    left: float | None,
+    right: float | None,
+    value_fn: Callable[[NDArray[np.float64]], object],
+    jvp_rule: Callable[[NDArray[np.float64], NDArray[np.float64]], object],
+    context: _WholeProgramTraceContext,
+) -> TraceADScalar | TraceADArray:
+    """Emit compact interpolation Program AD nodes from an exact direct rule."""
+
+    input_items = samples + values
+    flat_values = np.array([item.primal for item in input_items], dtype=np.float64)
+    output_flat = _as_real_numeric_array(
+        "program AD interpolation compact values", value_fn(flat_values)
+    ).reshape(-1)
+    if output_flat.size != len(samples):
+        raise ValueError("program AD interpolation compact value shape mismatch")
+    flat_tangent = np.stack([item.tangent for item in input_items], axis=0)
+    if context.parameter_count:
+        tangent_outputs = np.array(
+            [
+                _as_real_numeric_array(
+                    "program AD interpolation compact tangent",
+                    jvp_rule(flat_values, flat_tangent[:, parameter_index]),
+                ).reshape(-1)
+                for parameter_index in range(context.parameter_count)
+            ],
+            dtype=np.float64,
+        ).T
+    else:
+        tangent_outputs = np.zeros((len(samples), 0), dtype=np.float64)
+    if tangent_outputs.shape != (len(samples), context.parameter_count):
+        raise ValueError("program AD interpolation compact tangent shape mismatch")
+    if not bool(np.all(np.isfinite(output_flat))) or not bool(
+        np.all(np.isfinite(tangent_outputs))
+    ):
+        raise ValueError("program AD interpolation compact outputs must be finite")
+    input_names = tuple(item.name for item in input_items)
+    operation_prefix = (
+        "interpolation:interp:"
+        f"samples:{len(samples)}:"
+        f"grid:{_format_static_interp_grid(grid)}:"
+        f"left:{_format_static_interp_float(left)}:"
+        f"right:{_format_static_interp_float(right)}"
+    )
+    items = tuple(
+        context.make(
+            f"{operation_prefix}:out:{flat_index}",
+            input_names,
+            float(output_flat[flat_index]),
+            tangent_outputs[flat_index, :],
+        )
+        for flat_index in range(len(samples))
+    )
+    if sample_shape == ():
+        return items[0]
+    return TraceADArray(items, sample_shape, context)
+
+
 def _trace_interp(
     x: object,
     xp: object,
@@ -2457,19 +2537,29 @@ def _trace_interp(
     left_value = _normalise_interp_boundary("left", left, context)
     right_value = _normalise_interp_boundary("right", right, context)
     samples, shape = _normalise_interp_samples(x, context=context)
-    outputs = tuple(
-        _trace_interp_scalar(
-            sample,
-            grid=grid,
-            values=values,
-            left=left_value,
-            right=right_value,
-        )
-        for sample in samples
+    left_static = None if left_value is None else float(left_value.primal)
+    right_static = None if right_value is None else float(right_value.primal)
+    rule = program_ad_interpolation_interp_derivative_rule(
+        shape,
+        grid,
+        (grid.size,),
+        left=left_static,
+        right=right_static,
+        period=None,
     )
-    if shape == ():
-        return outputs[0]
-    return TraceADArray(outputs, shape, context)
+    if rule.jvp_rule is None:
+        raise ValueError("program AD interpolation compact rule requires a JVP rule")
+    return _trace_interp_compact_array(
+        samples,
+        values,
+        sample_shape=shape,
+        grid=grid,
+        left=left_static,
+        right=right_static,
+        value_fn=rule.value_fn,
+        jvp_rule=rule.jvp_rule,
+        context=context,
+    )
 
 
 def _normalise_convolve_operand(

@@ -59,6 +59,9 @@ from .program_ad_effect_ir import (
     ProgramADEffectIR,
     ProgramADPhiNode,
 )
+from .program_ad_interpolation_primitives import (
+    program_ad_interpolation_interp_derivative_rule,
+)
 from .program_ad_linalg_primitives import (
     _program_ad_linalg_det_cofactor_matrix,
     _program_ad_linalg_eig_eigenvector_jvp_matrix,
@@ -422,6 +425,86 @@ def _program_adjoint_signal_contributions(
     if output_index < 0 or output_index >= output_values.size:
         raise ValueError("signal adjoint output index is outside output shape")
     cotangent = np.zeros(output_values.size, dtype=np.float64)
+    cotangent[output_index] = 1.0
+    local_adjoint = np.asarray(rule.vjp_rule(flat_values, cotangent), dtype=np.float64).reshape(-1)
+    return tuple(
+        (name, float(value)) for name, value in zip(node.inputs, local_adjoint, strict=True)
+    )
+
+
+def _program_adjoint_optional_float_label(label: str) -> float | None:
+    """Parse a compact interpolation optional-float metadata field."""
+
+    if label == "none":
+        return None
+    value = float(label)
+    if not math.isfinite(value):
+        raise ValueError("interpolation adjoint float metadata must be finite")
+    return value
+
+
+def _program_adjoint_grid_label(label: str) -> NDArray[np.float64]:
+    """Parse a compact interpolation grid metadata field."""
+
+    if not label:
+        raise ValueError("interpolation adjoint grid metadata must not be empty")
+    grid = np.array([float(part) for part in label.split(",")], dtype=np.float64)
+    if grid.ndim != 1 or grid.size < 2:
+        raise ValueError("interpolation adjoint grid metadata must have at least two points")
+    if not bool(np.all(np.isfinite(grid))) or not bool(np.all(np.diff(grid) > 0.0)):
+        raise ValueError("interpolation adjoint grid metadata must be finite and increasing")
+    return grid
+
+
+def _program_adjoint_interpolation_contributions(
+    node: WholeProgramIRNode,
+    node_by_name: Mapping[str, WholeProgramIRNode],
+) -> tuple[tuple[str, float], ...]:
+    """Return local reverse contributions for one compact interpolation output."""
+
+    parts = node.op.split(":")
+    try:
+        if (
+            len(parts) != 12
+            or parts[0] != "interpolation"
+            or parts[1] != "interp"
+            or parts[2] != "samples"
+            or parts[4] != "grid"
+            or parts[6] != "left"
+            or parts[8] != "right"
+            or parts[10] != "out"
+        ):
+            raise ValueError
+        sample_count = int(parts[3])
+        grid = _program_adjoint_grid_label(parts[5])
+        left = _program_adjoint_optional_float_label(parts[7])
+        right = _program_adjoint_optional_float_label(parts[9])
+        output_index = int(parts[11])
+        if sample_count <= 0:
+            raise ValueError
+        rule = program_ad_interpolation_interp_derivative_rule(
+            (sample_count,),
+            grid,
+            (grid.size,),
+            left=left,
+            right=right,
+            period=None,
+        )
+    except ValueError as exc:
+        raise ValueError("interpolation adjoint metadata is malformed") from exc
+
+    expected_inputs = sample_count + grid.size
+    if len(node.inputs) != expected_inputs:
+        raise ValueError("interpolation adjoint inputs must match samples plus fp values")
+    if output_index < 0 or output_index >= sample_count:
+        raise ValueError("interpolation adjoint output index is outside output shape")
+    if rule.vjp_rule is None:
+        raise ValueError("interpolation adjoint requires a VJP rule")
+    flat_values = np.array(
+        [_program_adjoint_input_value(name, node_by_name) for name in node.inputs],
+        dtype=np.float64,
+    )
+    cotangent = np.zeros(sample_count, dtype=np.float64)
     cotangent[output_index] = 1.0
     local_adjoint = np.asarray(rule.vjp_rule(flat_values, cotangent), dtype=np.float64).reshape(-1)
     return tuple(
@@ -1023,6 +1106,8 @@ def _program_adjoint_node_contributions(
         return _program_adjoint_binary_or_selection_contributions(node, node_by_name)
     if node.op.startswith(("cumsum:", "cumprod:", "diff:")):
         return _program_adjoint_cumulative_contributions(node, node_by_name)
+    if node.op.startswith("interpolation:interp:"):
+        return _program_adjoint_interpolation_contributions(node, node_by_name)
     if node.op.startswith("signal:"):
         return _program_adjoint_signal_contributions(node, node_by_name)
     if node.op.startswith("linalg:det:"):

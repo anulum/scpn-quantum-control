@@ -175,6 +175,17 @@ def test_program_ad_interp_primitive_contract_and_direct_rule() -> None:
         contract.lowering_metadata["static_derivative_factory"]
         == "program_ad_interpolation_interp_derivative_rule"
     )
+    assert contract.lowering_metadata["rust"] == (
+        "available: bounded compact Program AD Rust value+gradient replay"
+    )
+    assert contract.lowering_metadata["rust_backend"] == "rust_pyo3"
+    assert contract.lowering_metadata["rust_backend_signature"] == (
+        "sample_shape:ranked_tensor_shape;xp_grid;fp_shape;left_right_period"
+    )
+    assert (
+        contract.lowering_metadata["rust_backend_functions"]
+        == "program_ad_effect_ir_interpret_value_and_gradient"
+    )
     assert contract.lowering_metadata["static_signature"] == (
         "sample_shape:ranked_tensor_shape;xp_grid;fp_shape;left_right_period"
     )
