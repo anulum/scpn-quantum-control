@@ -67,6 +67,19 @@ def _program_ad_shape_direct_jvp(
 
 
 def _program_ad_shape_derivative_rule(name: str) -> CustomDerivativeRule:
+    """Build the trace-dispatch placeholder rule for a shape primitive.
+
+    Parameters
+    ----------
+    name:
+        Primitive name from the Program AD shape registry.
+
+    Returns
+    -------
+    CustomDerivativeRule
+        Rule whose direct value/JVP callables fail closed because runtime
+        execution must pass through operator-intercepted Program AD traces.
+    """
     return CustomDerivativeRule(
         name=f"program_ad_shape_{name}_trace_contract",
         value_fn=_program_ad_shape_direct_value,
@@ -118,8 +131,28 @@ def program_ad_shape_reshape_derivative_rule(
     source_shape: Sequence[int],
     target_shape: Sequence[int],
 ) -> CustomDerivativeRule:
-    """Build an exact direct derivative rule for a fixed reshape signature."""
+    """Build a direct derivative rule for a fixed reshape signature.
 
+    Parameters
+    ----------
+    source_shape:
+        Static input tensor shape before reshape.
+    target_shape:
+        Static output tensor shape after reshape.
+
+    Returns
+    -------
+    CustomDerivativeRule
+        Value, JVP, and VJP rule that preserve element order while changing
+        only the static layout.
+
+    Raises
+    ------
+    ValueError
+        If either shape has a negative dimension, if the element counts differ,
+        or if the returned callables receive values, tangents, or cotangents
+        with the wrong flattened length.
+    """
     source = _program_ad_shape_normalise_static_shape("reshape", source_shape)
     target = _program_ad_shape_normalise_static_shape("reshape", target_shape)
     source_size = _program_ad_shape_static_size(source)
@@ -163,8 +196,26 @@ def program_ad_shape_reshape_derivative_rule(
 
 
 def program_ad_shape_ravel_derivative_rule(source_shape: Sequence[int]) -> CustomDerivativeRule:
-    """Build an exact direct derivative rule for a fixed ravel signature."""
+    """Build a direct derivative rule for a fixed ravel signature.
 
+    Parameters
+    ----------
+    source_shape:
+        Static tensor shape to flatten.
+
+    Returns
+    -------
+    CustomDerivativeRule
+        Value, JVP, and VJP rule that expose the source tensor as a flat
+        float64 vector without reordering entries.
+
+    Raises
+    ------
+    ValueError
+        If the source shape has a negative dimension or if the returned
+        callables receive values, tangents, or cotangents with the wrong
+        flattened length.
+    """
     source = _program_ad_shape_normalise_static_shape("ravel", source_shape)
     source_size = _program_ad_shape_static_size(source)
 
@@ -205,8 +256,27 @@ def program_ad_shape_transpose_derivative_rule(
     source_shape: Sequence[int],
     axes: Sequence[int] | None = None,
 ) -> CustomDerivativeRule:
-    """Build an exact direct derivative rule for a fixed transpose signature."""
+    """Build a direct derivative rule for a fixed transpose signature.
 
+    Parameters
+    ----------
+    source_shape:
+        Static tensor shape before axis permutation.
+    axes:
+        Optional permutation of all source axes; ``None`` reverses the axes.
+
+    Returns
+    -------
+    CustomDerivativeRule
+        Value, JVP, and VJP rule using the transpose axes and their inverse.
+
+    Raises
+    ------
+    ValueError
+        If the source shape has a negative dimension, if ``axes`` is not a
+        complete permutation, or if the returned callables receive vectors with
+        incompatible flattened length.
+    """
     source = _program_ad_shape_normalise_static_shape("transpose", source_shape)
     normalised_axes = _program_ad_shape_normalise_static_axes(source, axes)
     inverse_axes = tuple(int(axis) for axis in np.argsort(normalised_axes))
@@ -272,8 +342,28 @@ def program_ad_shape_expand_dims_derivative_rule(
     source_shape: Sequence[int],
     axis: int | Sequence[int],
 ) -> CustomDerivativeRule:
-    """Build an exact direct derivative rule for fixed singleton-axis insertion."""
+    """Build a direct derivative rule for fixed singleton-axis insertion.
 
+    Parameters
+    ----------
+    source_shape:
+        Static tensor shape before singleton axes are inserted.
+    axis:
+        Static axis or axes where singleton dimensions are inserted.
+
+    Returns
+    -------
+    CustomDerivativeRule
+        Value, JVP, and VJP rule that inserts singleton dimensions while
+        preserving the flattened element order.
+
+    Raises
+    ------
+    ValueError
+        If the source shape has a negative dimension, if any axis is invalid,
+        or if the returned callables receive vectors with incompatible
+        flattened length.
+    """
     source = _program_ad_shape_normalise_static_shape("expand_dims", source_shape)
     axes = _program_ad_shape_normalise_expand_dims_axes(source, axis)
     target = _program_ad_shape_insert_singleton_axes(source, axes)
@@ -341,8 +431,29 @@ def program_ad_shape_squeeze_derivative_rule(
     source_shape: Sequence[int],
     axis: int | Sequence[int] | None = None,
 ) -> CustomDerivativeRule:
-    """Build an exact direct derivative rule for fixed singleton-axis removal."""
+    """Build a direct derivative rule for fixed singleton-axis removal.
 
+    Parameters
+    ----------
+    source_shape:
+        Static tensor shape before singleton axes are removed.
+    axis:
+        Optional static axis or axes to squeeze; ``None`` removes all singleton
+        axes.
+
+    Returns
+    -------
+    CustomDerivativeRule
+        Value, JVP, and VJP rule that removes only statically singleton axes and
+        reshapes the cotangent back to the source layout.
+
+    Raises
+    ------
+    ValueError
+        If the source shape has a negative dimension, if a selected axis is not
+        length one, or if the returned callables receive vectors with
+        incompatible flattened length.
+    """
     source = _program_ad_shape_normalise_static_shape("squeeze", source_shape)
     axes = _program_ad_shape_normalise_squeeze_axes(source, axis)
     target = _program_ad_shape_remove_axes(source, axes)
@@ -396,8 +507,30 @@ def program_ad_shape_swapaxes_derivative_rule(
     axis1: int,
     axis2: int,
 ) -> CustomDerivativeRule:
-    """Build an exact direct derivative rule for fixed two-axis exchange."""
+    """Build a direct derivative rule for fixed two-axis exchange.
 
+    Parameters
+    ----------
+    source_shape:
+        Static tensor shape before the swap.
+    axis1:
+        First static axis to exchange.
+    axis2:
+        Second static axis to exchange.
+
+    Returns
+    -------
+    CustomDerivativeRule
+        Value, JVP, and VJP rule that applies the same two-axis swap to primal,
+        tangent, and cotangent layouts.
+
+    Raises
+    ------
+    ValueError
+        If the source shape has a negative dimension, if either axis is outside
+        the source rank, or if the returned callables receive vectors with
+        incompatible flattened length.
+    """
     source = _program_ad_shape_normalise_static_shape("swapaxes", source_shape)
     first = _normalise_axis_permutation_axis("swapaxes", axis1, rank=len(source))
     second = _normalise_axis_permutation_axis("swapaxes", axis2, rank=len(source))
@@ -476,8 +609,30 @@ def program_ad_shape_moveaxis_derivative_rule(
     source: int | Sequence[int],
     destination: int | Sequence[int],
 ) -> CustomDerivativeRule:
-    """Build an exact direct derivative rule for fixed axis relocation."""
+    """Build a direct derivative rule for fixed axis relocation.
 
+    Parameters
+    ----------
+    source_shape:
+        Static tensor shape before axis relocation.
+    source:
+        Static source axis or axes moved from the input layout.
+    destination:
+        Static destination axis or axes in the output layout.
+
+    Returns
+    -------
+    CustomDerivativeRule
+        Value, JVP, and VJP rule that applies ``moveaxis`` forward and the
+        inverse relocation to cotangents.
+
+    Raises
+    ------
+    ValueError
+        If the source shape has a negative dimension, if source and destination
+        axis counts differ, if an axis is invalid, or if the returned callables
+        receive vectors with incompatible flattened length.
+    """
     source_shape_tuple = _program_ad_shape_normalise_static_shape("moveaxis", source_shape)
     source_axes, destination_axes, order = _program_ad_shape_normalise_moveaxis_axes(
         source_shape_tuple, source, destination
@@ -549,8 +704,30 @@ def program_ad_shape_roll_derivative_rule(
     shift: object,
     axis: object = None,
 ) -> CustomDerivativeRule:
-    """Build an exact direct derivative rule for fixed integer roll permutations."""
+    """Build a direct derivative rule for fixed integer roll permutations.
 
+    Parameters
+    ----------
+    source_shape:
+        Static tensor shape before the roll.
+    shift:
+        Static integer shift or shift tuple accepted by ``numpy.roll``.
+    axis:
+        Optional static axis or axis tuple; ``None`` rolls the flattened array.
+
+    Returns
+    -------
+    CustomDerivativeRule
+        Value, JVP, and VJP rule that rolls primal/tangent values forward and
+        rolls cotangents by the inverse shift.
+
+    Raises
+    ------
+    ValueError
+        If the source shape has a negative dimension, if shift/axis metadata is
+        not static and compatible, or if the returned callables receive vectors
+        with incompatible flattened length.
+    """
     source = _program_ad_shape_normalise_static_shape("roll", source_shape)
     normalised_shift, normalised_axis = _program_ad_shape_normalise_roll_signature(
         source, shift, axis
@@ -621,8 +798,28 @@ def program_ad_shape_flip_derivative_rule(
     source_shape: Sequence[int],
     axis: object = None,
 ) -> CustomDerivativeRule:
-    """Build an exact direct derivative rule for fixed axis-flip permutations."""
+    """Build a direct derivative rule for fixed axis-flip permutations.
 
+    Parameters
+    ----------
+    source_shape:
+        Static tensor shape before the flip.
+    axis:
+        Optional static axis or axis tuple; ``None`` flips every axis.
+
+    Returns
+    -------
+    CustomDerivativeRule
+        Value, JVP, and VJP rule that applies the same axis reversal to primal,
+        tangent, and cotangent values.
+
+    Raises
+    ------
+    ValueError
+        If the source shape has a negative dimension, if an axis is outside the
+        source rank, or if the returned callables receive vectors with
+        incompatible flattened length.
+    """
     source = _program_ad_shape_normalise_static_shape("flip", source_shape)
     normalised_axis = _program_ad_shape_normalise_flip_axis(source, axis)
     source_size = _program_ad_shape_static_size(source)
@@ -672,8 +869,25 @@ def program_ad_shape_flip_derivative_rule(
 
 
 def program_ad_shape_flipud_derivative_rule(source_shape: Sequence[int]) -> CustomDerivativeRule:
-    """Build an exact direct derivative rule for fixed first-axis flips."""
+    """Build a direct derivative rule for fixed first-axis flips.
 
+    Parameters
+    ----------
+    source_shape:
+        Static tensor shape before ``flipud`` is applied.
+
+    Returns
+    -------
+    CustomDerivativeRule
+        Value, JVP, and VJP rule for the first-axis reversal.
+
+    Raises
+    ------
+    ValueError
+        If the source shape has a negative dimension, if the rank is zero, or
+        if the returned callables receive vectors with incompatible flattened
+        length.
+    """
     source = _program_ad_shape_normalise_static_shape("flipud", source_shape)
     if len(source) < 1:
         raise ValueError("program AD flipud direct rule requires at least rank-1 arrays")
@@ -687,8 +901,25 @@ def program_ad_shape_flipud_derivative_rule(source_shape: Sequence[int]) -> Cust
 
 
 def program_ad_shape_fliplr_derivative_rule(source_shape: Sequence[int]) -> CustomDerivativeRule:
-    """Build an exact direct derivative rule for fixed second-axis flips."""
+    """Build a direct derivative rule for fixed second-axis flips.
 
+    Parameters
+    ----------
+    source_shape:
+        Static tensor shape before ``fliplr`` is applied.
+
+    Returns
+    -------
+    CustomDerivativeRule
+        Value, JVP, and VJP rule for the second-axis reversal.
+
+    Raises
+    ------
+    ValueError
+        If the source shape has a negative dimension, if the rank is below two,
+        or if the returned callables receive vectors with incompatible
+        flattened length.
+    """
     source = _program_ad_shape_normalise_static_shape("fliplr", source_shape)
     if len(source) < 2:
         raise ValueError("program AD fliplr direct rule requires at least rank-2 arrays")
@@ -718,8 +949,30 @@ def program_ad_shape_rot90_derivative_rule(
     k: object = 1,
     axes: object = (0, 1),
 ) -> CustomDerivativeRule:
-    """Build an exact direct derivative rule for fixed static quarter-turns."""
+    """Build a direct derivative rule for fixed static quarter-turns.
 
+    Parameters
+    ----------
+    source_shape:
+        Static tensor shape before rotation.
+    k:
+        Static number of quarter-turns.
+    axes:
+        Static pair of axes defining the rotation plane.
+
+    Returns
+    -------
+    CustomDerivativeRule
+        Value, JVP, and VJP rule that applies ``rot90`` forward and the inverse
+        quarter-turn to cotangents.
+
+    Raises
+    ------
+    ValueError
+        If the source shape has a negative dimension, if ``k`` or ``axes`` is
+        not static and valid, or if the returned callables receive vectors with
+        incompatible flattened length.
+    """
     source = _program_ad_shape_normalise_static_shape("rot90", source_shape)
     k_value = _normalise_rot90_k(k)
     axes_value = _normalise_rot90_axes(axes, rank=len(source))
@@ -797,8 +1050,30 @@ def program_ad_shape_repeat_derivative_rule(
     repeats: object,
     axis: object = None,
 ) -> CustomDerivativeRule:
-    """Build an exact direct derivative rule for fixed static repeat signatures."""
+    """Build a direct derivative rule for fixed static repeat signatures.
 
+    Parameters
+    ----------
+    source_shape:
+        Static tensor shape before repeating entries.
+    repeats:
+        Static repeat count or repeat-count sequence.
+    axis:
+        Optional static axis; ``None`` repeats the flattened input.
+
+    Returns
+    -------
+    CustomDerivativeRule
+        Value and JVP rules that repeat entries plus a VJP rule that scatter-adds
+        repeated cotangents back to source positions.
+
+    Raises
+    ------
+    ValueError
+        If the source shape has a negative dimension, if repeat metadata is
+        invalid for the selected axis, or if the returned callables receive
+        vectors with incompatible flattened length.
+    """
     source = _program_ad_shape_normalise_static_shape("repeat", source_shape)
     repeat_counts, axis_index, target = _program_ad_shape_normalise_repeat_signature(
         source, repeats, axis
@@ -874,8 +1149,28 @@ def program_ad_shape_tile_derivative_rule(
     source_shape: Sequence[int],
     reps: object,
 ) -> CustomDerivativeRule:
-    """Build an exact direct derivative rule for fixed static tile signatures."""
+    """Build a direct derivative rule for fixed static tile signatures.
 
+    Parameters
+    ----------
+    source_shape:
+        Static tensor shape before tiling.
+    reps:
+        Static tile repetition signature.
+
+    Returns
+    -------
+    CustomDerivativeRule
+        Value and JVP rules that tile the input plus a VJP rule that scatter-adds
+        tiled cotangents back to source positions.
+
+    Raises
+    ------
+    ValueError
+        If the source shape has a negative dimension, if tile metadata is
+        invalid, or if the returned callables receive vectors with incompatible
+        flattened length.
+    """
     source = _program_ad_shape_normalise_static_shape("tile", source_shape)
     reps_tuple, _, target = _program_ad_shape_normalise_tile_signature(source, reps)
     source_size = _program_ad_shape_static_size(source)
@@ -988,30 +1283,80 @@ def _program_ad_shape_atleast_derivative_rule(
 def program_ad_shape_atleast_1d_derivative_rule(
     source_shape: Sequence[int],
 ) -> CustomDerivativeRule:
-    """Build an exact direct derivative rule for fixed static atleast-1D promotion."""
+    """Build a direct derivative rule for fixed static atleast-1D promotion.
 
+    Parameters
+    ----------
+    source_shape:
+        Static tensor shape before rank promotion.
+
+    Returns
+    -------
+    CustomDerivativeRule
+        Value, JVP, and VJP rule for ``numpy.atleast_1d`` shape promotion.
+
+    Raises
+    ------
+    ValueError
+        If the source shape has a negative dimension or if the returned
+        callables receive values, tangents, or cotangents with the wrong
+        flattened length.
+    """
     return _program_ad_shape_atleast_derivative_rule(source_shape, 1)
 
 
 def program_ad_shape_atleast_2d_derivative_rule(
     source_shape: Sequence[int],
 ) -> CustomDerivativeRule:
-    """Build an exact direct derivative rule for fixed static atleast-2D promotion."""
+    """Build a direct derivative rule for fixed static atleast-2D promotion.
 
+    Parameters
+    ----------
+    source_shape:
+        Static tensor shape before rank promotion.
+
+    Returns
+    -------
+    CustomDerivativeRule
+        Value, JVP, and VJP rule for ``numpy.atleast_2d`` shape promotion.
+
+    Raises
+    ------
+    ValueError
+        If the source shape has a negative dimension or if the returned
+        callables receive values, tangents, or cotangents with the wrong
+        flattened length.
+    """
     return _program_ad_shape_atleast_derivative_rule(source_shape, 2)
 
 
 def program_ad_shape_atleast_3d_derivative_rule(
     source_shape: Sequence[int],
 ) -> CustomDerivativeRule:
-    """Build an exact direct derivative rule for fixed static atleast-3D promotion."""
+    """Build a direct derivative rule for fixed static atleast-3D promotion.
 
+    Parameters
+    ----------
+    source_shape:
+        Static tensor shape before rank promotion.
+
+    Returns
+    -------
+    CustomDerivativeRule
+        Value, JVP, and VJP rule for ``numpy.atleast_3d`` shape promotion.
+
+    Raises
+    ------
+    ValueError
+        If the source shape has a negative dimension or if the returned
+        callables receive values, tangents, or cotangents with the wrong
+        flattened length.
+    """
     return _program_ad_shape_atleast_derivative_rule(source_shape, 3)
 
 
 def _normalise_trace_reshape_shape(shape: object, size: int) -> tuple[int, ...]:
     """Return a concrete reshape target that preserves ``size``."""
-
     dimensions: tuple[int, ...]
     if isinstance(shape, (int, np.integer)) and not isinstance(shape, bool):
         dimensions = (int(shape),)
@@ -1045,7 +1390,6 @@ def _normalise_trace_reshape_shape(shape: object, size: int) -> tuple[int, ...]:
 
 def _program_ad_shape_reshape_shape(args: tuple[object, ...]) -> tuple[int, ...]:
     """Return the static output shape for a Program AD reshape primitive."""
-
     if len(args) != 2:
         raise ValueError("program AD shape reshape rule requires array and target shape")
     source_shape = _program_ad_array_shape_of(args[0])
@@ -1054,7 +1398,6 @@ def _program_ad_shape_reshape_shape(args: tuple[object, ...]) -> tuple[int, ...]
 
 def _program_ad_shape_expand_dims_shape(args: tuple[object, ...]) -> tuple[int, ...]:
     """Return the static output shape for a Program AD expand-dims primitive."""
-
     if len(args) != 2:
         raise ValueError("program AD shape expand_dims rule requires array and axis")
     source_shape = _program_ad_array_shape_of(args[0])
@@ -1064,7 +1407,6 @@ def _program_ad_shape_expand_dims_shape(args: tuple[object, ...]) -> tuple[int, 
 
 def _program_ad_shape_ravel_shape(args: tuple[object, ...]) -> tuple[int, ...]:
     """Return the static output shape for a Program AD ravel primitive."""
-
     if len(args) != 1:
         raise ValueError("program AD shape ravel rule requires one array")
     return (int(np.prod(_program_ad_array_shape_of(args[0]))),)
@@ -1075,7 +1417,6 @@ def _program_ad_shape_normalised_transpose_axes(
     axes: object,
 ) -> tuple[int, ...]:
     """Return normalised transpose axes for a static shape contract."""
-
     if len(array_shape) < 2:
         return ()
     if axes is None:
@@ -1095,7 +1436,6 @@ def _program_ad_shape_normalised_transpose_axes(
 
 def _program_ad_shape_transpose_shape(args: tuple[object, ...]) -> tuple[int, ...]:
     """Return the static output shape for a Program AD transpose primitive."""
-
     if len(args) not in {1, 2}:
         raise ValueError("program AD shape transpose rule requires array and optional axes")
     source_shape = _program_ad_array_shape_of(args[0])
@@ -1111,7 +1451,6 @@ def _program_ad_shape_atleast_rank_shape(
     args: tuple[object, ...], *, rank: Literal[1, 2, 3]
 ) -> tuple[int, ...]:
     """Return the static output shape for an atleast-rank primitive."""
-
     if len(args) != 1:
         raise ValueError(f"program AD shape atleast_{rank}d rule requires one array")
     return _program_ad_shape_atleast_target_shape(_program_ad_array_shape_of(args[0]), rank)
@@ -1119,25 +1458,21 @@ def _program_ad_shape_atleast_rank_shape(
 
 def _program_ad_shape_atleast_1d_shape(args: tuple[object, ...]) -> tuple[int, ...]:
     """Return the static output shape for a Program AD atleast-1D primitive."""
-
     return _program_ad_shape_atleast_rank_shape(args, rank=1)
 
 
 def _program_ad_shape_atleast_2d_shape(args: tuple[object, ...]) -> tuple[int, ...]:
     """Return the static output shape for a Program AD atleast-2D primitive."""
-
     return _program_ad_shape_atleast_rank_shape(args, rank=2)
 
 
 def _program_ad_shape_atleast_3d_shape(args: tuple[object, ...]) -> tuple[int, ...]:
     """Return the static output shape for a Program AD atleast-3D primitive."""
-
     return _program_ad_shape_atleast_rank_shape(args, rank=3)
 
 
 def _program_ad_shape_swapaxes_shape(args: tuple[object, ...]) -> tuple[int, ...]:
     """Return the static output shape for a Program AD swapaxes primitive."""
-
     if len(args) != 3:
         raise ValueError("program AD shape swapaxes rule requires array, axis1, and axis2")
     source_shape = _program_ad_array_shape_of(args[0])
@@ -1154,7 +1489,6 @@ def _program_ad_shape_swapaxes_shape(args: tuple[object, ...]) -> tuple[int, ...
 
 def _program_ad_shape_moveaxis_shape(args: tuple[object, ...]) -> tuple[int, ...]:
     """Return the static output shape for a Program AD moveaxis primitive."""
-
     if len(args) != 3:
         raise ValueError("program AD shape moveaxis rule requires array, source, and destination")
     source_shape = _program_ad_array_shape_of(args[0])
@@ -1166,7 +1500,6 @@ def _program_ad_shape_moveaxis_shape(args: tuple[object, ...]) -> tuple[int, ...
 
 def _program_ad_shape_roll_shape(args: tuple[object, ...]) -> tuple[int, ...]:
     """Return the static output shape for a Program AD roll primitive."""
-
     if len(args) not in {2, 3}:
         raise ValueError("program AD shape roll rule requires array, shift, and optional axis")
     source_shape = _program_ad_array_shape_of(args[0])
@@ -1178,7 +1511,6 @@ def _program_ad_shape_roll_shape(args: tuple[object, ...]) -> tuple[int, ...]:
 
 def _program_ad_shape_flip_shape(args: tuple[object, ...]) -> tuple[int, ...]:
     """Return the static output shape for a Program AD flip primitive."""
-
     if len(args) not in {1, 2}:
         raise ValueError("program AD shape flip rule requires array and optional axis")
     source_shape = _program_ad_array_shape_of(args[0])
@@ -1188,7 +1520,6 @@ def _program_ad_shape_flip_shape(args: tuple[object, ...]) -> tuple[int, ...]:
 
 def _program_ad_shape_flipud_shape(args: tuple[object, ...]) -> tuple[int, ...]:
     """Return the static output shape for a Program AD flipud primitive."""
-
     if len(args) != 1:
         raise ValueError("program AD shape flipud rule requires one array")
     source_shape = _program_ad_array_shape_of(args[0])
@@ -1199,7 +1530,6 @@ def _program_ad_shape_flipud_shape(args: tuple[object, ...]) -> tuple[int, ...]:
 
 def _program_ad_shape_fliplr_shape(args: tuple[object, ...]) -> tuple[int, ...]:
     """Return the static output shape for a Program AD fliplr primitive."""
-
     if len(args) != 1:
         raise ValueError("program AD shape fliplr rule requires one array")
     source_shape = _program_ad_array_shape_of(args[0])
@@ -1210,7 +1540,6 @@ def _program_ad_shape_fliplr_shape(args: tuple[object, ...]) -> tuple[int, ...]:
 
 def _program_ad_shape_rot90_shape(args: tuple[object, ...]) -> tuple[int, ...]:
     """Return the static output shape for a Program AD rot90 primitive."""
-
     if len(args) not in {1, 2, 3}:
         raise ValueError("program AD shape rot90 rule requires array, k, and axes")
     source_shape = _program_ad_array_shape_of(args[0])
@@ -1223,7 +1552,6 @@ def _program_ad_shape_rot90_shape(args: tuple[object, ...]) -> tuple[int, ...]:
 
 def _program_ad_shape_repeat_shape(args: tuple[object, ...]) -> tuple[int, ...]:
     """Return the static output shape for a Program AD repeat primitive."""
-
     if len(args) not in {2, 3}:
         raise ValueError("program AD shape repeat rule requires array, repeats, and optional axis")
     source_shape = _program_ad_array_shape_of(args[0])
@@ -1235,7 +1563,6 @@ def _program_ad_shape_repeat_shape(args: tuple[object, ...]) -> tuple[int, ...]:
 
 def _program_ad_shape_tile_shape(args: tuple[object, ...]) -> tuple[int, ...]:
     """Return the static output shape for a Program AD tile primitive."""
-
     if len(args) != 2:
         raise ValueError("program AD shape tile rule requires array and reps")
     source_shape = _program_ad_array_shape_of(args[0])
@@ -1245,7 +1572,6 @@ def _program_ad_shape_tile_shape(args: tuple[object, ...]) -> tuple[int, ...]:
 
 def _program_ad_shape_squeeze_shape(args: tuple[object, ...]) -> tuple[int, ...]:
     """Return the static output shape for a Program AD squeeze primitive."""
-
     if len(args) not in {1, 2}:
         raise ValueError("program AD shape squeeze rule requires array and optional axis")
     source_shape = _program_ad_array_shape_of(args[0])
@@ -1257,7 +1583,6 @@ def _program_ad_shape_squeeze_shape(args: tuple[object, ...]) -> tuple[int, ...]
 
 def _program_ad_shape_dtype_rule(args: tuple[object, ...]) -> str:
     """Return the dtype emitted by a Program AD shape primitive."""
-
     if not args:
         raise ValueError("program AD shape dtype rule requires an array operand")
     return _program_ad_array_dtype_of(args[0])
@@ -1265,7 +1590,6 @@ def _program_ad_shape_dtype_rule(args: tuple[object, ...]) -> str:
 
 def _program_ad_shape_reshape_static_arguments(args: tuple[object, ...]) -> tuple[object, ...]:
     """Return canonical static arguments for a Program AD reshape primitive."""
-
     if len(args) != 2:
         raise ValueError("program AD shape reshape static rule requires array and target shape")
     source_shape = _program_ad_array_shape_of(args[0])
@@ -1276,7 +1600,6 @@ def _program_ad_shape_expand_dims_static_arguments(
     args: tuple[object, ...],
 ) -> tuple[object, ...]:
     """Return canonical static arguments for a Program AD expand-dims primitive."""
-
     if len(args) != 2:
         raise ValueError("program AD shape expand_dims static rule requires array and axis")
     source_shape = _program_ad_array_shape_of(args[0])
@@ -1285,7 +1608,6 @@ def _program_ad_shape_expand_dims_static_arguments(
 
 def _program_ad_shape_no_static_arguments(args: tuple[object, ...]) -> tuple[object, ...]:
     """Return an empty static signature for a unary Program AD shape primitive."""
-
     if len(args) != 1:
         raise ValueError("program AD shape static rule requires one array")
     return ()
@@ -1293,7 +1615,6 @@ def _program_ad_shape_no_static_arguments(args: tuple[object, ...]) -> tuple[obj
 
 def _program_ad_shape_atleast_static_arguments(args: tuple[object, ...]) -> tuple[object, ...]:
     """Return canonical static arguments for an atleast-rank shape primitive."""
-
     if len(args) != 1:
         raise ValueError("program AD shape atleast static rule requires one array")
     return ()
@@ -1301,7 +1622,6 @@ def _program_ad_shape_atleast_static_arguments(args: tuple[object, ...]) -> tupl
 
 def _program_ad_shape_transpose_static_arguments(args: tuple[object, ...]) -> tuple[object, ...]:
     """Return canonical static arguments for a Program AD transpose primitive."""
-
     if len(args) not in {1, 2}:
         raise ValueError("program AD shape transpose static rule requires array and optional axes")
     source_shape = _program_ad_array_shape_of(args[0])
@@ -1313,7 +1633,6 @@ def _program_ad_shape_transpose_static_arguments(args: tuple[object, ...]) -> tu
 
 def _program_ad_shape_swapaxes_static_arguments(args: tuple[object, ...]) -> tuple[object, ...]:
     """Return canonical static arguments for a Program AD swapaxes primitive."""
-
     if len(args) != 3:
         raise ValueError("program AD shape swapaxes static rule requires array, axis1, and axis2")
     source_shape = _program_ad_array_shape_of(args[0])
@@ -1325,7 +1644,6 @@ def _program_ad_shape_swapaxes_static_arguments(args: tuple[object, ...]) -> tup
 
 def _program_ad_shape_moveaxis_static_arguments(args: tuple[object, ...]) -> tuple[object, ...]:
     """Return canonical static arguments for a Program AD moveaxis primitive."""
-
     if len(args) != 3:
         raise ValueError(
             "program AD shape moveaxis static rule requires array, source, and destination"
@@ -1339,7 +1657,6 @@ def _program_ad_shape_moveaxis_static_arguments(args: tuple[object, ...]) -> tup
 
 def _program_ad_shape_roll_static_arguments(args: tuple[object, ...]) -> tuple[object, ...]:
     """Return canonical static arguments for a Program AD roll primitive."""
-
     if len(args) not in {2, 3}:
         raise ValueError(
             "program AD shape roll static rule requires array, shift, and optional axis"
@@ -1352,7 +1669,6 @@ def _program_ad_shape_roll_static_arguments(args: tuple[object, ...]) -> tuple[o
 
 def _program_ad_shape_flip_static_arguments(args: tuple[object, ...]) -> tuple[object, ...]:
     """Return canonical static arguments for a Program AD flip primitive."""
-
     if len(args) not in {1, 2}:
         raise ValueError("program AD shape flip static rule requires array and optional axis")
     source_shape = _program_ad_array_shape_of(args[0])
@@ -1363,7 +1679,6 @@ def _program_ad_shape_flip_static_arguments(args: tuple[object, ...]) -> tuple[o
 
 def _program_ad_shape_rot90_static_arguments(args: tuple[object, ...]) -> tuple[object, ...]:
     """Return canonical static arguments for a Program AD rot90 primitive."""
-
     if len(args) not in {1, 2, 3}:
         raise ValueError("program AD shape rot90 static rule requires array, k, and axes")
     source_shape = _program_ad_array_shape_of(args[0])
@@ -1375,7 +1690,6 @@ def _program_ad_shape_rot90_static_arguments(args: tuple[object, ...]) -> tuple[
 
 def _program_ad_shape_repeat_static_arguments(args: tuple[object, ...]) -> tuple[object, ...]:
     """Return canonical static arguments for a Program AD repeat primitive."""
-
     if len(args) not in {2, 3}:
         raise ValueError(
             "program AD shape repeat static rule requires array, repeats, and optional axis"
@@ -1389,7 +1703,6 @@ def _program_ad_shape_repeat_static_arguments(args: tuple[object, ...]) -> tuple
 
 def _program_ad_shape_tile_static_arguments(args: tuple[object, ...]) -> tuple[object, ...]:
     """Return canonical static arguments for a Program AD tile primitive."""
-
     if len(args) != 2:
         raise ValueError("program AD shape tile static rule requires array and reps")
     source_shape = _program_ad_array_shape_of(args[0])
@@ -1399,7 +1712,6 @@ def _program_ad_shape_tile_static_arguments(args: tuple[object, ...]) -> tuple[o
 
 def _program_ad_shape_squeeze_static_arguments(args: tuple[object, ...]) -> tuple[object, ...]:
     """Return canonical static arguments for a Program AD squeeze primitive."""
-
     if len(args) not in {1, 2}:
         raise ValueError("program AD shape squeeze static rule requires array and optional axis")
     source_shape = _program_ad_array_shape_of(args[0])
@@ -1458,7 +1770,6 @@ def _program_ad_shape_batching_rule(
     out_axes: int,
 ) -> object:
     """Map a shape-transform primitive over a batch axis."""
-
     if len(args) != len(axes):
         raise ValueError("program AD shape batching axes must match argument count")
     if not args:
@@ -1483,7 +1794,6 @@ def _program_ad_shape_batching_rule(
 
 def _program_ad_shape_lowering_metadata(name: str) -> Mapping[str, str]:
     """Return lowering metadata for a Program AD shape primitive."""
-
     static_factory = {
         "atleast_1d": "program_ad_shape_atleast_1d_derivative_rule",
         "atleast_2d": "program_ad_shape_atleast_2d_derivative_rule",
@@ -1556,8 +1866,14 @@ def _program_ad_shape_lowering_metadata(name: str) -> Mapping[str, str]:
 
 
 def _register_program_ad_shape_primitive_contracts() -> None:
-    """Register fail-closed Program AD shape primitive contracts."""
+    """Register fail-closed Program AD shape primitive contracts.
 
+    Returns
+    -------
+    None
+        Registration is applied to the default custom derivative registry. An
+        already registered shape primitive is left unchanged.
+    """
     for name, identity in _PROGRAM_AD_SHAPE_IDENTITIES.items():
         if DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.contract_for(identity) is not None:
             continue
@@ -1581,7 +1897,6 @@ def _validate_program_ad_shape_contract_dispatch(
     args: tuple[object, ...],
 ) -> None:
     """Validate shape primitive dispatch helpers against concrete arguments."""
-
     if contract.static_argument_rule is None:
         raise ValueError(
             f"program AD primitive {contract.identity.key} missing static argument rule"
@@ -1614,8 +1929,30 @@ def _require_program_ad_shape_contract(
     name: str,
     args: tuple[object, ...] | None = None,
 ) -> PrimitiveContract:
-    """Return and validate a registered shape primitive runtime contract."""
+    """Return and validate a registered shape primitive runtime contract.
 
+    Parameters
+    ----------
+    name:
+        Shape primitive name in the Program AD registry.
+    args:
+        Optional concrete runtime arguments used to validate static argument,
+        shape, and dtype rules for dispatch.
+
+    Returns
+    -------
+    PrimitiveContract
+        Registered contract with derivative, batching, lowering metadata,
+        shape, dtype, static-argument, purity, and fail-closed policy fields
+        verified.
+
+    Raises
+    ------
+    ValueError
+        If ``name`` is unknown, if the registered contract is incomplete or has
+        the wrong policy/effect metadata, or if concrete ``args`` fail dispatch
+        validation.
+    """
     identity: PrimitiveIdentity | None = _PROGRAM_AD_SHAPE_IDENTITIES.get(name)
     if identity is None:
         raise ValueError(f"no program AD shape primitive identity registered for {name}")

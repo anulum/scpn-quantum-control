@@ -9,6 +9,7 @@
 
 from __future__ import annotations
 
+import inspect
 from collections.abc import Callable
 from typing import Any, cast
 
@@ -28,6 +29,8 @@ from scpn_quantum_control.differentiable import (
 )
 from scpn_quantum_control.program_ad_shape_transforms import (
     _program_ad_shape_derivative_rule,
+    _register_program_ad_shape_primitive_contracts,
+    _require_program_ad_shape_contract,
     program_ad_shape_atleast_1d_derivative_rule,
     program_ad_shape_atleast_2d_derivative_rule,
     program_ad_shape_atleast_3d_derivative_rule,
@@ -47,6 +50,32 @@ from scpn_quantum_control.program_ad_shape_transforms import (
     program_ad_shape_transpose_derivative_rule,
 )
 
+_DOCSTRING_SECTION_TARGETS: tuple[
+    tuple[Callable[..., object], tuple[str, ...]],
+    ...,
+] = (
+    (_program_ad_shape_derivative_rule, ("Parameters", "Returns")),
+    (_register_program_ad_shape_primitive_contracts, ("Returns",)),
+    (_require_program_ad_shape_contract, ("Parameters", "Returns", "Raises")),
+    (program_ad_shape_atleast_1d_derivative_rule, ("Parameters", "Returns", "Raises")),
+    (program_ad_shape_atleast_2d_derivative_rule, ("Parameters", "Returns", "Raises")),
+    (program_ad_shape_atleast_3d_derivative_rule, ("Parameters", "Returns", "Raises")),
+    (program_ad_shape_expand_dims_derivative_rule, ("Parameters", "Returns", "Raises")),
+    (program_ad_shape_flip_derivative_rule, ("Parameters", "Returns", "Raises")),
+    (program_ad_shape_fliplr_derivative_rule, ("Parameters", "Returns", "Raises")),
+    (program_ad_shape_flipud_derivative_rule, ("Parameters", "Returns", "Raises")),
+    (program_ad_shape_moveaxis_derivative_rule, ("Parameters", "Returns", "Raises")),
+    (program_ad_shape_ravel_derivative_rule, ("Parameters", "Returns", "Raises")),
+    (program_ad_shape_repeat_derivative_rule, ("Parameters", "Returns", "Raises")),
+    (program_ad_shape_reshape_derivative_rule, ("Parameters", "Returns", "Raises")),
+    (program_ad_shape_roll_derivative_rule, ("Parameters", "Returns", "Raises")),
+    (program_ad_shape_rot90_derivative_rule, ("Parameters", "Returns", "Raises")),
+    (program_ad_shape_squeeze_derivative_rule, ("Parameters", "Returns", "Raises")),
+    (program_ad_shape_swapaxes_derivative_rule, ("Parameters", "Returns", "Raises")),
+    (program_ad_shape_tile_derivative_rule, ("Parameters", "Returns", "Raises")),
+    (program_ad_shape_transpose_derivative_rule, ("Parameters", "Returns", "Raises")),
+)
+
 
 def _assert_allclose(
     actual: object, expected: object, *, rtol: float = 1.0e-7, atol: float = 0.0
@@ -57,7 +86,6 @@ def _assert_allclose(
 
 def _contract_rules(contract: Any) -> tuple[Any, Any, Any]:
     """Return asserted registry validation callables for dynamic contracts."""
-
     assert contract.shape_rule is not None
     assert contract.dtype_rule is not None
     assert contract.static_argument_rule is not None
@@ -66,7 +94,6 @@ def _contract_rules(contract: Any) -> tuple[Any, Any, Any]:
 
 def _transform_rule_from_contract(contract: PrimitiveContract) -> PrimitiveTransformRule:
     """Return a mutable registry transform that exactly mirrors a contract."""
-
     return PrimitiveTransformRule(
         identity=contract.identity,
         derivative_rule=contract.derivative_rule,
@@ -81,9 +108,17 @@ def _transform_rule_from_contract(contract: PrimitiveContract) -> PrimitiveTrans
     )
 
 
+def test_program_ad_shape_public_docstrings_define_contract_sections() -> None:
+    """Exported shape-transform helpers should document their runtime contracts."""
+    for function, section_names in _DOCSTRING_SECTION_TARGETS:
+        docstring = inspect.getdoc(function)
+        assert docstring is not None, function.__name__
+        for section_name in section_names:
+            assert section_name in docstring, function.__name__
+
+
 def test_program_ad_shape_direct_factories_have_dedicated_module_path() -> None:
     """Shape direct-rule factories should be available outside the facade."""
-
     from scpn_quantum_control import differentiable as differentiable_facade
     from scpn_quantum_control import program_ad_shape_transforms
 
@@ -124,7 +159,6 @@ def test_program_ad_shape_direct_factories_have_dedicated_module_path() -> None:
 
 def test_program_ad_shape_primitives_are_registry_policy_gated() -> None:
     """Shape transforms should expose primitive registry contracts."""
-
     import scpn_quantum_control as scpn
 
     assert (
@@ -350,7 +384,6 @@ def test_program_ad_shape_primitives_are_registry_policy_gated() -> None:
 
 def test_program_ad_shape_boundary_metadata_is_explicit() -> None:
     """Shape contracts should expose fail-closed static-layout boundaries."""
-
     expected_factories = {
         "atleast_1d": "program_ad_shape_atleast_1d_derivative_rule",
         "atleast_2d": "program_ad_shape_atleast_2d_derivative_rule",
@@ -420,7 +453,6 @@ def test_program_ad_shape_boundary_metadata_is_explicit() -> None:
 
 def test_program_ad_shape_primitives_validate_registry_rules_at_dispatch() -> None:
     """Supported shape primitives must execute through registry validation rules."""
-
     originals = {
         name: primitive_contract_for(f"scpn.program_ad.shape:{name}")
         for name in (
@@ -548,7 +580,6 @@ def test_program_ad_shape_primitives_validate_registry_rules_at_dispatch() -> No
 
 def test_program_ad_shape_static_derivative_factories_are_direct_kernels() -> None:
     """Static shape-transform factories should expose exact value, JVP, and VJP rules."""
-
     matrix = np.arange(6.0, dtype=np.float64).reshape(2, 3)
     values = matrix.reshape(-1)
     tangent = np.array([0.5, -1.0, 0.25, 2.0, -0.75, 1.25], dtype=np.float64)
@@ -961,7 +992,6 @@ def test_program_ad_shape_static_derivative_factories_are_direct_kernels() -> No
 
 def test_program_ad_shape_direct_factories_fail_closed_on_static_boundary_edges() -> None:
     """Shape direct-rule factories should reject invalid static transform contracts."""
-
     trace_contract = _program_ad_shape_derivative_rule("reshape")
     with pytest.raises(ValueError, match="operator-intercepted trace dispatch"):
         trace_contract.value_fn(np.array([1.0], dtype=np.float64))
@@ -1099,7 +1129,6 @@ def test_program_ad_squeeze_expand_dims_preserve_exact_adjoint() -> None:
 
 def test_program_ad_squeeze_expand_dims_fail_closed_axes() -> None:
     """Program AD shape-only transforms should reject invalid axis semantics."""
-
     with pytest.raises(ValueError, match="squeeze axis must have length one"):
         whole_program_value_and_grad(
             lambda values: np.sum(np.squeeze(np.reshape(values, (2, 1)), axis=0)),
@@ -1119,7 +1148,6 @@ def test_program_ad_squeeze_expand_dims_fail_closed_axes() -> None:
 
 def test_program_ad_axis_permutations_preserve_exact_adjoint() -> None:
     """Program AD rank-N axis permutations should preserve exact element adjoints."""
-
     weights_swap = np.arange(24.0, dtype=np.float64).reshape(4, 3, 2) / 7.0
     weights_method = np.linspace(-1.5, 2.0, 24, dtype=np.float64).reshape(2, 4, 3)
     weights_move = np.linspace(0.25, 3.25, 24, dtype=np.float64).reshape(4, 3, 2)
@@ -1153,7 +1181,6 @@ def test_program_ad_axis_permutations_preserve_exact_adjoint() -> None:
 
 def test_program_ad_roll_preserves_exact_adjoint() -> None:
     """Program AD static roll permutations should preserve exact element adjoints."""
-
     weights_flat = np.linspace(-2.0, 1.0, 24, dtype=np.float64).reshape(2, 3, 4)
     weights_axes = np.linspace(0.25, 3.25, 24, dtype=np.float64).reshape(2, 3, 4)
 
@@ -1180,7 +1207,6 @@ def test_program_ad_roll_preserves_exact_adjoint() -> None:
 
 def test_program_ad_repeat_accumulates_exact_adjoint() -> None:
     """Program AD repeat should accumulate adjoints from repeated source elements."""
-
     flat_repeats = (1, 2, 0, 3, 1, 2)
     weights_flat = np.linspace(-2.0, 2.0, sum(flat_repeats), dtype=np.float64)
     axis_repeats = (2, 1, 3)
@@ -1219,7 +1245,6 @@ def test_program_ad_repeat_accumulates_exact_adjoint() -> None:
 
 def test_program_ad_repeat_fails_closed_invalid_static_contracts() -> None:
     """Program AD repeat should reject invalid static repeat contracts."""
-
     with pytest.raises(ValueError, match="repeat counts must be static non-negative integers"):
         whole_program_value_and_grad(
             lambda values: np.sum(np.repeat(values, True)),
@@ -1239,7 +1264,6 @@ def test_program_ad_repeat_fails_closed_invalid_static_contracts() -> None:
 
 def test_program_ad_tile_accumulates_exact_adjoint() -> None:
     """Program AD tile should accumulate adjoints from every tiled source use."""
-
     weights_matrix = np.linspace(-2.5, 3.5, 24, dtype=np.float64).reshape(4, 6)
     weights_promoted = np.linspace(0.25, 2.25, 36, dtype=np.float64).reshape(3, 2, 6)
 
@@ -1271,7 +1295,6 @@ def test_program_ad_tile_accumulates_exact_adjoint() -> None:
 
 def test_program_ad_tile_fails_closed_invalid_static_contracts() -> None:
     """Program AD tile should reject dynamic or invalid repetition contracts."""
-
     with pytest.raises(ValueError, match="tile reps must be static non-negative integers"):
         whole_program_value_and_grad(
             lambda values: np.sum(np.tile(values, True)),
@@ -1291,7 +1314,6 @@ def test_program_ad_tile_fails_closed_invalid_static_contracts() -> None:
 
 def test_program_ad_atleast_rank_transforms_preserve_exact_adjoint() -> None:
     """Program AD atleast transforms should preserve derivatives through rank lifts."""
-
     vector_weights_2d = np.linspace(-1.5, 2.5, 6, dtype=np.float64).reshape(1, 6)
     vector_weights_3d = np.linspace(0.25, 2.75, 6, dtype=np.float64).reshape(1, 6, 1)
     matrix_weights = np.linspace(-2.0, 2.0, 6, dtype=np.float64).reshape(2, 3, 1)
@@ -1330,7 +1352,6 @@ def test_program_ad_atleast_rank_transforms_preserve_exact_adjoint() -> None:
 
 def test_program_ad_atleast_rank_transforms_fail_closed_invalid_contracts() -> None:
     """Program AD atleast transforms should reject non-NumPy keyword contracts."""
-
     with pytest.raises(TypeError, match="unexpected keyword argument"):
         whole_program_value_and_grad(
             lambda values: np.sum(cast(Any, np.atleast_2d)(values, dtype=float)),
@@ -1340,7 +1361,6 @@ def test_program_ad_atleast_rank_transforms_fail_closed_invalid_contracts() -> N
 
 def test_program_ad_reshape_inferred_dimension_preserves_exact_adjoint() -> None:
     """Program AD reshape should support one inferred dimension exactly."""
-
     matrix_weights = np.linspace(-2.0, 2.0, 6, dtype=np.float64).reshape(2, 3)
     method_weights = np.linspace(0.5, 3.5, 6, dtype=np.float64).reshape(2, 3)
     promoted_weights = np.linspace(-1.25, 1.75, 6, dtype=np.float64).reshape(3, 2)
@@ -1371,7 +1391,6 @@ def test_program_ad_reshape_inferred_dimension_preserves_exact_adjoint() -> None
 
 def test_program_ad_reshape_inferred_dimension_fails_closed_invalid_contracts() -> None:
     """Program AD reshape should reject ambiguous or size-losing inferred shapes."""
-
     with pytest.raises(ValueError, match="at most one inferred dimension"):
         whole_program_value_and_grad(
             lambda values: np.sum(np.reshape(values, (-1, -1))),
@@ -1391,7 +1410,6 @@ def test_program_ad_reshape_inferred_dimension_fails_closed_invalid_contracts() 
 
 def test_program_ad_rot90_preserves_exact_adjoint() -> None:
     """Program AD rot90 permutations should preserve exact element adjoints."""
-
     weights_default = np.linspace(-2.0, 1.0, 12, dtype=np.float64).reshape(4, 3)
     weights_axes = np.linspace(0.5, 3.5, 24, dtype=np.float64).reshape(2, 3, 4)
     weights_negative = np.linspace(-1.5, 2.5, 24, dtype=np.float64).reshape(2, 4, 3)
@@ -1424,7 +1442,6 @@ def test_program_ad_rot90_preserves_exact_adjoint() -> None:
 
 def test_program_ad_rot90_fails_closed_invalid_static_contracts() -> None:
     """Program AD rot90 should reject invalid rotation contracts."""
-
     rot90 = cast(Any, np.rot90)
     with pytest.raises(ValueError, match="rot90 k must be a static integer"):
         whole_program_value_and_grad(
@@ -1445,7 +1462,6 @@ def test_program_ad_rot90_fails_closed_invalid_static_contracts() -> None:
 
 def test_program_ad_flip_family_preserves_exact_adjoint() -> None:
     """Program AD flip-family permutations should preserve exact element adjoints."""
-
     weights_all = np.linspace(-1.0, 2.0, 24, dtype=np.float64).reshape(2, 3, 4)
     weights_axis = np.linspace(0.25, 3.25, 24, dtype=np.float64).reshape(2, 3, 4)
     weights_tuple = np.linspace(-2.5, 1.5, 24, dtype=np.float64).reshape(2, 3, 4)
@@ -1482,7 +1498,6 @@ def test_program_ad_flip_family_preserves_exact_adjoint() -> None:
 
 def test_program_ad_flip_family_fails_closed_invalid_axes() -> None:
     """Program AD flip-family permutations should reject invalid axes."""
-
     flip = cast(Any, np.flip)
     with pytest.raises(ValueError, match="flip axes must be static integers"):
         whole_program_value_and_grad(
@@ -1503,7 +1518,6 @@ def test_program_ad_flip_family_fails_closed_invalid_axes() -> None:
 
 def test_program_ad_roll_fails_closed_invalid_static_contracts() -> None:
     """Program AD roll should reject dynamic or inconsistent permutation contracts."""
-
     roll = cast(Any, np.roll)
     with pytest.raises(ValueError, match="roll shift must be static integers"):
         whole_program_value_and_grad(
@@ -1524,7 +1538,6 @@ def test_program_ad_roll_fails_closed_invalid_static_contracts() -> None:
 
 def test_program_ad_axis_permutations_fail_closed_invalid_axes() -> None:
     """Program AD axis permutations should reject invalid static axis contracts."""
-
     with pytest.raises(ValueError, match="swapaxes axes must be static integers"):
         whole_program_value_and_grad(
             lambda values: np.sum(cast(Any, np.reshape(values, (2, 2))).swapaxes(True, 1)),
