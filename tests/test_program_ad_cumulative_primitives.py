@@ -35,13 +35,11 @@ def _assert_allclose(
     actual: object, expected: object, *, rtol: float = 1.0e-7, atol: float = 0.0
 ) -> None:
     """Assert NumPy closeness across dynamically typed Program AD payloads."""
-
     cast(Any, np.testing.assert_allclose)(actual, expected, rtol=rtol, atol=atol)
 
 
 def _transform_rule_from_contract(contract: PrimitiveContract) -> PrimitiveTransformRule:
     """Return a mutable registry transform that exactly mirrors a contract."""
-
     return PrimitiveTransformRule(
         identity=contract.identity,
         derivative_rule=contract.derivative_rule,
@@ -58,7 +56,6 @@ def _transform_rule_from_contract(contract: PrimitiveContract) -> PrimitiveTrans
 
 def test_program_ad_cumulative_direct_rules_are_exposed_from_extracted_module() -> None:
     """The facade and extracted cumulative module should expose identical factories."""
-
     from scpn_quantum_control import differentiable as differentiable_facade
     from scpn_quantum_control import program_ad_cumulative_primitives
     from scpn_quantum_control.program_ad_cumulative_primitives import (
@@ -87,7 +84,6 @@ def test_program_ad_cumulative_direct_rules_are_exposed_from_extracted_module() 
 
 def test_program_ad_cumulative_primitives_are_registry_policy_gated() -> None:
     """Cumsum, cumprod, and diff should expose primitive registry contracts."""
-
     matrix = np.arange(6.0, dtype=np.float64).reshape(2, 3)
     cumsum_contract = primitive_contract_for("scpn.program_ad.cumulative:cumsum")
     assert cumsum_contract.identity == PrimitiveIdentity(
@@ -161,7 +157,6 @@ def test_program_ad_cumulative_primitives_are_registry_policy_gated() -> None:
 
 def test_program_ad_cumulative_boundary_metadata_is_explicit() -> None:
     """Cumulative contracts should expose fail-closed sequence boundaries."""
-
     expected_boundaries = {
         "cumsum": "ordered_axis_sequence",
         "cumprod": "ordered_axis_zero_factor_sensitive",
@@ -177,7 +172,6 @@ def test_program_ad_cumulative_boundary_metadata_is_explicit() -> None:
 
 def test_program_ad_cumulative_primitives_validate_registry_rules_at_dispatch() -> None:
     """Supported cumulative primitives must execute through registry validation rules."""
-
     originals = {
         name: primitive_contract_for(f"scpn.program_ad.cumulative:{name}")
         for name in ("cumsum", "cumprod", "diff")
@@ -267,7 +261,6 @@ def test_program_ad_cumulative_primitives_validate_registry_rules_at_dispatch() 
 
 def test_program_ad_cumulative_primitives_expose_direct_value_jvp_kernels() -> None:
     """Flat cumulative primitive contracts should expose exact direct value/JVP rules."""
-
     values = np.array([2.0, 0.0, -3.0, 4.0], dtype=np.float64)
     tangent = np.array([0.5, -1.0, 0.25, 2.0], dtype=np.float64)
 
@@ -354,7 +347,6 @@ def test_program_ad_cumulative_primitives_expose_direct_value_jvp_kernels() -> N
 
 def test_program_ad_cumulative_static_derivative_factories_are_axis_aware() -> None:
     """Static cumulative factories should expose exact axis-aware JVP and VJP rules."""
-
     matrix = np.array([[1.0, 2.0, 0.5], [3.0, -1.0, 4.0]], dtype=np.float64)
     tangent = np.array([[0.25, -0.5, 1.0], [1.5, -0.75, 0.5]], dtype=np.float64)
     values = matrix.reshape(-1)
@@ -435,7 +427,6 @@ def test_program_ad_cumulative_static_derivative_factories_are_axis_aware() -> N
 
 def test_program_ad_cumulative_direct_rules_fail_closed_on_bad_shapes() -> None:
     """Direct cumulative rules should reject malformed tangent and cotangent vectors."""
-
     values = np.array([1.0, 2.0, 3.0], dtype=np.float64)
     short = np.array([1.0, 2.0], dtype=np.float64)
     empty = np.array([], dtype=np.float64)
@@ -481,7 +472,6 @@ def test_program_ad_cumulative_direct_rules_fail_closed_on_bad_shapes() -> None:
 
 def test_program_ad_cumulative_static_factories_cover_flat_and_failure_boundaries() -> None:
     """Static cumulative factories should cover flat signatures and reject invalid shapes."""
-
     from scpn_quantum_control.program_ad_cumulative_primitives import (
         _program_ad_cumulative_derivative_rule,
     )
@@ -541,7 +531,6 @@ def test_program_ad_cumulative_diff_static_vjp_detects_internal_shape_mismatch(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Static diff VJP should fail closed if an internal adjoint shape changes."""
-
     from scpn_quantum_control import program_ad_cumulative_primitives as cumulative
 
     def wrong_shape_once(

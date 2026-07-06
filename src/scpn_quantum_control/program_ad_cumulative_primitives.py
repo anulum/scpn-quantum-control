@@ -40,7 +40,6 @@ from .program_ad_shape_transforms import (
 
 def _normalise_cumulative_axis(name: str, axis: int, ndim: int) -> int:
     """Return a non-negative cumulative axis for a ranked static source shape."""
-
     if ndim == 0:
         raise ValueError(f"{name} cannot map over a scalar")
     value = axis + ndim if axis < 0 else axis
@@ -176,7 +175,6 @@ def _program_ad_cumulative_diff_vjp(
 
 def _program_ad_cumulative_derivative_rule(name: str) -> CustomDerivativeRule:
     """Return the registry direct rule for a flat cumulative primitive."""
-
     if name == "cumsum":
         return CustomDerivativeRule(
             name="program_ad_cumulative_cumsum_direct_rule",
@@ -350,7 +348,6 @@ def program_ad_cumulative_cumsum_derivative_rule(
     axis: int | None = None,
 ) -> CustomDerivativeRule:
     """Build an exact direct derivative rule for a fixed cumsum signature."""
-
     source = _program_ad_cumulative_normalise_static_shape("cumsum", source_shape)
     normalised_axis = _program_ad_cumulative_static_axis(source, axis)
 
@@ -392,7 +389,6 @@ def program_ad_cumulative_cumprod_derivative_rule(
     axis: int | None = None,
 ) -> CustomDerivativeRule:
     """Build an exact direct derivative rule for a fixed cumprod signature."""
-
     source = _program_ad_cumulative_normalise_static_shape("cumprod", source_shape)
     normalised_axis = _program_ad_cumulative_static_axis(source, axis)
 
@@ -448,7 +444,6 @@ def program_ad_cumulative_diff_derivative_rule(
     axis: int = -1,
 ) -> CustomDerivativeRule:
     """Build an exact direct derivative rule for a fixed diff signature."""
-
     if isinstance(order, bool) or not isinstance(order, (int, np.integer)) or int(order) < 0:
         raise ValueError(
             "program AD cumulative diff direct rule requires non-negative integer order"
@@ -510,7 +505,6 @@ def program_ad_cumulative_diff_derivative_rule(
 
 def _program_ad_cumulative_axis(args: tuple[object, ...]) -> int | None:
     """Return the optional static axis argument for a cumulative primitive."""
-
     if len(args) not in {1, 2, 3}:
         raise ValueError("program AD cumulative rule requires array and static parameters")
     if len(args) == 1 or args[1] is None:
@@ -523,7 +517,6 @@ def _program_ad_cumulative_axis(args: tuple[object, ...]) -> int | None:
 
 def _program_ad_cumulative_diff_order(args: tuple[object, ...]) -> int:
     """Return the static finite-difference order for a cumulative diff primitive."""
-
     if len(args) < 2:
         return 1
     order = args[1]
@@ -537,7 +530,6 @@ def _program_ad_cumulative_diff_order(args: tuple[object, ...]) -> int:
 
 def _program_ad_cumulative_scan_shape(args: tuple[object, ...]) -> tuple[int, ...]:
     """Return the static output shape for cumsum and cumprod primitives."""
-
     if len(args) not in {1, 2}:
         raise ValueError("program AD cumulative scan shape rule requires array and axis")
     source_shape = _program_ad_array_shape_of(args[0])
@@ -549,7 +541,6 @@ def _program_ad_cumulative_scan_shape(args: tuple[object, ...]) -> tuple[int, ..
 
 def _program_ad_cumulative_diff_shape(args: tuple[object, ...]) -> tuple[int, ...]:
     """Return the static output shape for a cumulative diff primitive."""
-
     if len(args) not in {1, 2, 3}:
         raise ValueError("program AD diff shape rule requires array, order, and axis")
     source_shape = _program_ad_array_shape_of(args[0])
@@ -564,7 +555,6 @@ def _program_ad_cumulative_diff_shape(args: tuple[object, ...]) -> tuple[int, ..
 
 def _program_ad_cumulative_dtype_rule(args: tuple[object, ...]) -> str:
     """Return the dtype emitted by a cumulative primitive."""
-
     if not args:
         raise ValueError("program AD cumulative dtype rule requires an array operand")
     return _program_ad_array_dtype_of(args[0])
@@ -574,7 +564,6 @@ def _program_ad_cumulative_scan_static_arguments(
     args: tuple[object, ...],
 ) -> tuple[object, ...]:
     """Return canonical static arguments for cumsum and cumprod primitives."""
-
     return (_program_ad_cumulative_axis(args),)
 
 
@@ -582,7 +571,6 @@ def _program_ad_cumulative_diff_static_arguments(
     args: tuple[object, ...],
 ) -> tuple[object, ...]:
     """Return canonical static arguments for a cumulative diff primitive."""
-
     order = _program_ad_cumulative_diff_order(args)
     axis = args[2] if len(args) == 3 else -1
     if isinstance(axis, bool) or not isinstance(axis, (int, np.integer)):
@@ -611,7 +599,6 @@ def _program_ad_cumulative_batching_rule(
     out_axes: int,
 ) -> object:
     """Map a cumulative primitive over a batch axis."""
-
     if len(args) != len(axes):
         raise ValueError("program AD cumulative batching axes must match argument count")
     if not args:
@@ -636,7 +623,6 @@ def _program_ad_cumulative_batching_rule(
 
 def _program_ad_cumulative_lowering_metadata(name: str) -> Mapping[str, str]:
     """Return lowering metadata for a Program AD cumulative primitive."""
-
     static_factory = {
         "cumsum": "program_ad_cumulative_cumsum_derivative_rule",
         "cumprod": "program_ad_cumulative_cumprod_derivative_rule",
@@ -668,7 +654,6 @@ def _program_ad_cumulative_lowering_metadata(name: str) -> Mapping[str, str]:
 
 def _register_program_ad_cumulative_primitive_contracts() -> None:
     """Register fail-closed Program AD cumulative primitive contracts."""
-
     for name, identity in _PROGRAM_AD_CUMULATIVE_IDENTITIES.items():
         if DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.contract_for(identity) is not None:
             continue
@@ -692,7 +677,6 @@ def _validate_program_ad_cumulative_contract_dispatch(
     args: tuple[object, ...],
 ) -> None:
     """Validate cumulative primitive dispatch helpers against concrete arguments."""
-
     if contract.static_argument_rule is None:
         raise ValueError(
             f"program AD primitive {contract.identity.key} missing static argument rule"
@@ -726,7 +710,6 @@ def _require_program_ad_cumulative_contract(
     args: tuple[object, ...] | None = None,
 ) -> PrimitiveContract:
     """Return and validate a registered cumulative primitive runtime contract."""
-
     identity: PrimitiveIdentity | None = _PROGRAM_AD_CUMULATIVE_IDENTITIES.get(name)
     if identity is None:
         raise ValueError(f"no program AD cumulative primitive identity registered for {name}")
