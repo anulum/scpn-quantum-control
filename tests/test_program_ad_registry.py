@@ -9,6 +9,7 @@
 
 from __future__ import annotations
 
+import inspect
 import math
 from collections.abc import Callable
 from typing import cast
@@ -48,10 +49,56 @@ from scpn_quantum_control.program_ad_registry import (
     register_primitive_transform_rule,
 )
 
+_DOCSTRING_SECTION_TARGETS: tuple[tuple[object, tuple[str, ...]], ...] = (
+    (CustomDerivativeRule, ("Parameters", "Raises")),
+    (PrimitiveIdentity, ("Parameters", "Raises")),
+    (inspect.getattr_static(PrimitiveIdentity, "key"), ("Returns",)),
+    (PrimitiveIdentity.parse, ("Parameters", "Returns", "Raises")),
+    (PrimitiveTransformRule, ("Parameters", "Raises")),
+    (PrimitiveContract, ("Parameters", "Raises")),
+    (PrimitiveContract.from_transform, ("Parameters", "Returns")),
+    (ProgramADRegistryDispatchCoverageRow, ("Parameters", "Raises")),
+    (ProgramADRegistryDispatchCoverageRow.to_dict, ("Returns",)),
+    (ProgramADRegistryDispatchCoverageReport, ("Parameters", "Raises")),
+    (inspect.getattr_static(ProgramADRegistryDispatchCoverageReport, "supported"), ("Returns",)),
+    (
+        inspect.getattr_static(ProgramADRegistryDispatchCoverageReport, "blocked_identities"),
+        ("Returns",),
+    ),
+    (ProgramADRegistryDispatchCoverageReport.to_dict, ("Returns",)),
+    (CustomDerivativeRegistry, ("Parameters", "Raises")),
+    (CustomDerivativeRegistry.register, ("Parameters", "Returns", "Raises")),
+    (CustomDerivativeRegistry.decorator, ("Parameters", "Returns")),
+    (CustomDerivativeRegistry.register_transform, ("Parameters", "Returns", "Raises")),
+    (CustomDerivativeRegistry.register_batching_rule, ("Parameters", "Returns", "Raises")),
+    (CustomDerivativeRegistry.register_lowering_rule, ("Parameters", "Returns", "Raises")),
+    (CustomDerivativeRegistry.require_complete_contract, ("Parameters", "Returns", "Raises")),
+    (CustomDerivativeRegistry.require, ("Parameters", "Returns", "Raises")),
+    (CustomDerivativeRegistry.unregister, ("Parameters", "Returns", "Raises")),
+    (register_custom_derivative_rule, ("Parameters", "Returns", "Raises")),
+    (register_primitive_transform_rule, ("Parameters", "Returns", "Raises")),
+    (register_primitive_batching_rule, ("Parameters", "Returns", "Raises")),
+    (register_primitive_lowering_rule, ("Parameters", "Returns", "Raises")),
+    (primitive_shape_rule_for, ("Parameters", "Returns", "Raises")),
+    (primitive_dtype_rule_for, ("Parameters", "Returns", "Raises")),
+    (primitive_static_argument_rule_for, ("Parameters", "Returns", "Raises")),
+    (primitive_nondifferentiable_policy_for, ("Parameters", "Returns", "Raises")),
+    (primitive_effect_for, ("Parameters", "Returns", "Raises")),
+    (primitive_contract_for, ("Parameters", "Returns", "Raises")),
+    (primitive_complete_contract_for, ("Parameters", "Returns", "Raises")),
+    (program_ad_registry_dispatch_coverage_report, ("Parameters", "Returns")),
+    (custom_derivative_rule_for, ("Parameters", "Returns", "Raises")),
+)
+
+
+def _symbol_name(symbol: object) -> str:
+    """Return a readable name for docstring-contract diagnostics."""
+    name = getattr(symbol, "__name__", None)
+    return name if isinstance(name, str) else type(symbol).__name__
+
 
 def _rule(name: str = "registry_rule") -> CustomDerivativeRule:
     """Return a small exact derivative rule for registry tests."""
-
     return CustomDerivativeRule(
         name=name,
         value_fn=lambda values: np.array([values[0]], dtype=np.float64),
@@ -66,41 +113,44 @@ def _batching_rule(
     out_axes: int,
 ) -> object:
     """Return a deterministic batching result for registry tests."""
-
     del function, axes
     return np.moveaxis(np.asarray(args[0], dtype=np.float64), 0, out_axes)
 
 
 def _lowering_rule(rule: CustomDerivativeRule) -> object:
     """Return deterministic lowering metadata for registry tests."""
-
     return rule.name
 
 
 def _shape_rule(args: tuple[object, ...]) -> tuple[int, ...]:
     """Return the fixed scalar-vector output shape for registry tests."""
-
     del args
     return (1,)
 
 
 def _dtype_rule(args: tuple[object, ...]) -> str:
     """Return the fixed dtype for registry tests."""
-
     del args
     return "float64"
 
 
 def _static_argument_rule(args: tuple[object, ...]) -> tuple[object, ...]:
     """Return no static arguments for registry tests."""
-
     del args
     return ()
 
 
+def test_program_ad_registry_public_docstrings_define_contract_sections() -> None:
+    """Exported registry surfaces should document their runtime contracts."""
+    for symbol, section_names in _DOCSTRING_SECTION_TARGETS:
+        docstring = inspect.getdoc(symbol)
+        assert docstring is not None, _symbol_name(symbol)
+        for section_name in section_names:
+            assert section_name in docstring, _symbol_name(symbol)
+
+
 def test_program_ad_registry_module_and_facade_share_public_objects() -> None:
     """The extracted module and differentiable facade should expose identical objects."""
-
     import scpn_quantum_control as scpn
 
     assert differentiable_facade.CustomDerivativeRule is CustomDerivativeRule
@@ -123,7 +173,6 @@ def test_program_ad_registry_module_and_facade_share_public_objects() -> None:
 
 def test_custom_derivative_registry_binds_rule_by_primitive_identity() -> None:
     """Registered primitive identities should resolve exact custom rules automatically."""
-
     identity = PrimitiveIdentity("scpn.quantum", "rx_expectation", "1")
     rule = CustomDerivativeRule(
         name="rx_expectation_rule",
@@ -175,7 +224,6 @@ def test_custom_derivative_registry_binds_rule_by_primitive_identity() -> None:
 
 def test_custom_derivative_registry_rejects_ambiguous_identity_and_conflicts() -> None:
     """Registry bindings should fail closed on malformed keys and rule conflicts."""
-
     rule = CustomDerivativeRule(
         name="linear_rule",
         value_fn=lambda values: np.array([values[0]], dtype=np.float64),
@@ -202,8 +250,7 @@ def test_custom_derivative_registry_rejects_ambiguous_identity_and_conflicts() -
 
 
 def test_vmap_uses_registered_primitive_batching_rule() -> None:
-    """vmap should dispatch to primitive-specific batching rules when requested."""
-
+    """Vmap should dispatch to primitive-specific batching rules when requested."""
     identity = PrimitiveIdentity("scpn.quantum", "batched_affine", "1")
     rule = CustomDerivativeRule(
         name="batched_affine_rule",
@@ -251,7 +298,6 @@ def test_vmap_uses_registered_primitive_batching_rule() -> None:
 
 def test_primitive_contract_round_trip_from_extracted_registry() -> None:
     """A complete transform should round-trip through contract helpers."""
-
     identity = PrimitiveIdentity("scpn.test", "contract", "1")
     rule = _rule()
     registry = CustomDerivativeRegistry()
@@ -289,7 +335,6 @@ def test_primitive_contract_round_trip_from_extracted_registry() -> None:
 
 def test_primitive_transform_registry_holds_complete_metadata() -> None:
     """Registry transform bindings should keep derivative and compiler facets together."""
-
     identity = PrimitiveIdentity("scpn.quantum", "lowered_batch", "1")
     rule = _rule("lowered_batch_rule")
 
@@ -350,7 +395,6 @@ def test_primitive_transform_registry_holds_complete_metadata() -> None:
 
 def test_program_ad_registry_dispatch_report_uses_extracted_default_registry() -> None:
     """Registry-dispatch coverage should resolve all default Program AD contracts."""
-
     report = program_ad_registry_dispatch_coverage_report()
     facade_report = differentiable_facade.program_ad_registry_dispatch_coverage_report()
 
@@ -368,7 +412,6 @@ def test_program_ad_registry_dispatch_report_uses_extracted_default_registry() -
 
 def test_program_ad_registry_dispatch_report_is_complete() -> None:
     """Program AD primitive coverage should resolve through complete registry contracts."""
-
     report = program_ad_registry_dispatch_coverage_report()
 
     assert isinstance(report, ProgramADRegistryDispatchCoverageReport)
@@ -413,7 +456,6 @@ def test_program_ad_registry_dispatch_report_is_complete() -> None:
 
 def test_program_ad_registry_dispatch_report_fails_closed_for_missing_contracts() -> None:
     """Registry-dispatch coverage should report missing registry contracts as blockers."""
-
     report = program_ad_registry_dispatch_coverage_report(registry=CustomDerivativeRegistry())
 
     assert report.supported is False
@@ -427,7 +469,6 @@ def test_program_ad_registry_dispatch_report_fails_closed_for_missing_contracts(
 
 def test_program_ad_registry_dispatch_report_detects_incomplete_boundary_metadata() -> None:
     """Boundary metadata drift should remain visible in registry-dispatch coverage."""
-
     registry = CustomDerivativeRegistry()
     for transform in DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.transform_snapshot().values():
         registry.register_transform(transform)
@@ -470,7 +511,6 @@ def test_program_ad_registry_dispatch_report_detects_incomplete_boundary_metadat
 
 def test_default_registry_helper_paths_register_and_unregister() -> None:
     """Default helper functions should still mutate the shared default registry."""
-
     identity = PrimitiveIdentity("scpn.test", "default_helper", "1")
     rule = _rule("default_helper_rule")
 
@@ -496,7 +536,6 @@ def test_default_registry_helper_paths_register_and_unregister() -> None:
 
 def test_default_registry_helper_unregister_paths_and_missing_vmap_batching() -> None:
     """Default helper bindings should unregister cleanly and vmap should fail closed."""
-
     batch_identity = PrimitiveIdentity("scpn.quantum", "default_helper_batch", "1")
     batch_rule = CustomDerivativeRule(
         name="default_helper_rule",
@@ -562,7 +601,6 @@ def test_default_registry_helper_unregister_paths_and_missing_vmap_batching() ->
 
 def test_primitive_registry_root_exports_match_facade() -> None:
     """Primitive registry and Program AD derivative exports should be stable root APIs."""
-
     import scpn_quantum_control as scpn
 
     names = (
@@ -678,7 +716,6 @@ def test_custom_derivative_rule_validation(
     match: str,
 ) -> None:
     """Custom derivative rules should reject malformed contracts."""
-
     with pytest.raises(ValueError, match=match):
         CustomDerivativeRule(**kwargs)  # type: ignore[arg-type]
 
@@ -698,7 +735,6 @@ def test_primitive_identity_validation(
     match: str,
 ) -> None:
     """Primitive identities should reject ambiguous registry keys."""
-
     with pytest.raises(ValueError, match=match):
         factory()
 
@@ -790,14 +826,12 @@ def test_primitive_transform_validation(
     match: str,
 ) -> None:
     """Primitive transform bindings should reject incomplete callable metadata."""
-
     with pytest.raises(ValueError, match=match):
         PrimitiveTransformRule(**kwargs)  # type: ignore[arg-type]
 
 
 def test_registry_conflict_and_decorator_paths() -> None:
     """Registry registration should require explicit overwrite for conflicts."""
-
     identity = PrimitiveIdentity("scpn.test", "conflict", "1")
     first = _rule("first")
     second = _rule("second")
@@ -825,7 +859,6 @@ def test_registry_conflict_and_decorator_paths() -> None:
 
 def test_registry_dispatch_row_and_report_validation() -> None:
     """Registry-dispatch coverage containers should reject inconsistent rows."""
-
     valid_row = ProgramADRegistryDispatchCoverageRow(
         family="family",
         primitive="primitive",
@@ -902,7 +935,6 @@ def test_registry_dispatch_row_and_report_validation() -> None:
 )
 def test_primitive_contract_validation_paths(kwargs: dict[str, object], match: str) -> None:
     """Primitive contract views should reject malformed callable and metadata facets."""
-
     identity = PrimitiveIdentity("scpn.test", "contract_validation", "1")
     valid: dict[str, object] = {
         "identity": identity,
@@ -924,7 +956,6 @@ def test_primitive_contract_validation_paths(kwargs: dict[str, object], match: s
 
 def test_registry_registration_updates_preserve_existing_transform_metadata() -> None:
     """Rule replacement should preserve transform facets when overwrite is explicit."""
-
     identity = PrimitiveIdentity("scpn.test", "replace_preserves_metadata", "1")
     first_rule = _rule("replace_first")
     second_rule = _rule("replace_second")
@@ -965,7 +996,6 @@ def test_registry_registration_updates_preserve_existing_transform_metadata() ->
 
 def test_registry_rejects_invalid_rule_and_reports_bare_contract_gaps() -> None:
     """Bare derivative registrations should expose every missing transform facet."""
-
     identity = PrimitiveIdentity("scpn.program_ad.elementwise", "sin", "1")
     registry = CustomDerivativeRegistry()
 
@@ -1006,7 +1036,6 @@ def test_registry_rejects_invalid_rule_and_reports_bare_contract_gaps() -> None:
 
 def test_transform_and_helper_registration_fail_closed_and_overwrite_paths() -> None:
     """Transform, batching, and lowering helpers should reject invalid or duplicate bindings."""
-
     identity = PrimitiveIdentity("scpn.test", "helper_overwrite", "1")
     first_rule = _rule("helper_first")
     second_rule = _rule("helper_second")
@@ -1044,7 +1073,6 @@ def test_transform_and_helper_registration_fail_closed_and_overwrite_paths() -> 
 
 def test_primitive_contract_accessor_wrappers_and_missing_paths() -> None:
     """Top-level primitive accessors should route through the selected registry."""
-
     identity = PrimitiveIdentity("scpn.test", "accessor_wrappers", "1")
     registry = CustomDerivativeRegistry()
     registry.register_transform(
@@ -1105,7 +1133,6 @@ def test_registry_dispatch_row_additional_validation_paths(
     kwargs: dict[str, object], match: str
 ) -> None:
     """Registry-dispatch rows should reject every malformed field independently."""
-
     valid: dict[str, object] = {
         "family": "family",
         "primitive": "primitive",
@@ -1149,7 +1176,6 @@ def test_registry_dispatch_report_additional_validation_paths(
     match: str,
 ) -> None:
     """Registry-dispatch reports should reject inconsistent aggregate metadata."""
-
     valid_row = ProgramADRegistryDispatchCoverageRow(
         family="family",
         primitive="primitive",
@@ -1181,7 +1207,6 @@ def test_registry_dispatch_report_additional_validation_paths(
 
 def test_registry_dispatch_report_rejects_non_row_entries() -> None:
     """Registry-dispatch reports should reject non-row payload entries."""
-
     with pytest.raises(ValueError, match="coverage row"):
         ProgramADRegistryDispatchCoverageReport(
             rows=(object(),),  # type: ignore[arg-type]
@@ -1194,7 +1219,6 @@ def test_registry_dispatch_report_rejects_non_row_entries() -> None:
 
 def test_registry_dispatch_report_exposes_blocked_payload() -> None:
     """Registry-dispatch reports should expose blocked rows in JSON payloads."""
-
     blocked = ProgramADRegistryDispatchCoverageRow(
         family="family",
         primitive="primitive",
@@ -1228,7 +1252,6 @@ def test_registry_dispatch_report_exposes_blocked_payload() -> None:
 
 def test_program_ad_primitive_metadata_advertises_static_derivative_factories() -> None:
     """Primitive metadata should expose factory names required by lowering planners."""
-
     expected_factories = {
         "scpn.program_ad.array:getitem": (
             "program_ad_array_getitem_derivative_rule",
