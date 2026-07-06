@@ -50,6 +50,7 @@ pub mod kuramoto;
 pub mod kuramoto_autodiff;
 pub mod kuramoto_common;
 pub mod kuramoto_coupling;
+pub mod kuramoto_delayed;
 pub mod kuramoto_dopri;
 pub mod kuramoto_inertial;
 pub mod kuramoto_observables;
@@ -219,6 +220,10 @@ fn scpn_quantum_engine(m: &Bound<'_, PyModule>) -> PyResult<()> {
     )?)?;
     m.add_function(wrap_pyfunction!(
         kuramoto_symplectic_inertial::kuramoto_symplectic_inertial_trajectory,
+        m
+    )?)?;
+    m.add_function(wrap_pyfunction!(
+        kuramoto_delayed::kuramoto_delayed_trajectory,
         m
     )?)?;
     m.add_function(wrap_pyfunction!(
