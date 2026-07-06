@@ -9,6 +9,7 @@
 
 from __future__ import annotations
 
+import inspect
 import math
 import re
 from collections.abc import Callable
@@ -55,6 +56,22 @@ _PARAMETER_SHIFT_PROVENANCE = {
     "shot_batch_id": "result-contract-test-batch",
     "source_class": "caller_supplied",
 }
+
+
+def test_public_result_contract_validators_have_docstrings() -> None:
+    """Public result-record validators should document their invariants."""
+    missing: list[str] = []
+    for name in result_contracts.__all__:
+        exported = getattr(result_contracts, name)
+        validator = getattr(exported, "__post_init__", None)
+        if (
+            inspect.isclass(exported)
+            and validator is not None
+            and inspect.getdoc(validator) is None
+        ):
+            missing.append(f"{name}.__post_init__")
+
+    assert missing == []
 
 
 def _base_gradient() -> GradientResult:
@@ -142,7 +159,6 @@ def _parameter_shift_record(
     coefficient: float = 0.5,
 ) -> result_contracts.ParameterShiftSampleRecord:
     """Build a self-consistent finite-shot parameter-shift evidence record."""
-
     gradient_contribution = coefficient * (plus_value - minus_value)
     variance_contribution = coefficient**2 * (
         plus_variance / float(plus_shots) + minus_variance / float(minus_shots)
@@ -199,7 +215,6 @@ def _centered_confidence_interval(
     reasons: tuple[str, ...] = ("too_wide",),
 ) -> StochasticGradientConfidenceInterval:
     """Build a confidence interval whose bounds are centered on a gradient."""
-
     return StochasticGradientConfidenceInterval(
         lower=center - radius,
         upper=center + radius,
@@ -265,7 +280,6 @@ def _vjp() -> VJPResult:
 
 def test_result_contract_exports_remain_facade_compatible() -> None:
     """Extracted result contracts should keep stable facade identities."""
-
     assert (
         differentiable_facade.DIFFERENTIABLE_RESULT_CLAIM_BOUNDARY
         == result_contracts.DIFFERENTIABLE_RESULT_CLAIM_BOUNDARY
@@ -348,7 +362,6 @@ def test_result_contract_exports_remain_facade_compatible() -> None:
 
 def test_levenberg_marquardt_result_contracts_normalise_extracted_records() -> None:
     """Extracted LM records should preserve numeric normalization and provenance fields."""
-
     step = _levenberg_marquardt_step()
     trial = _levenberg_marquardt_trial()
     update = result_contracts.LevenbergMarquardtDampingUpdate(
@@ -372,7 +385,6 @@ def test_levenberg_marquardt_result_contracts_normalise_extracted_records() -> N
 
 def test_levenberg_marquardt_step_contract_rejects_malformed_inputs() -> None:
     """LM step records should fail closed on malformed candidate data."""
-
     gauss_newton = _natural_gradient()
     with pytest.raises(ValueError, match="one-dimensional"):
         result_contracts.LevenbergMarquardtStep(
@@ -418,7 +430,6 @@ def test_levenberg_marquardt_step_contract_rejects_malformed_inputs() -> None:
 
 def test_levenberg_marquardt_trial_and_update_contracts_reject_malformed_inputs() -> None:
     """LM trial and damping records should validate record types and scalar controls."""
-
     step = _levenberg_marquardt_step()
     invalid_step = cast(result_contracts.LevenbergMarquardtStep, object())
     with pytest.raises(ValueError, match="LevenbergMarquardtStep"):
@@ -473,7 +484,6 @@ def test_levenberg_marquardt_trial_and_update_contracts_reject_malformed_inputs(
 
 def test_levenberg_marquardt_result_contract_rejects_malformed_inputs() -> None:
     """LM result records should validate convergence traces and best-state metadata."""
-
     with pytest.raises(ValueError, match="best values"):
         _levenberg_marquardt_result(best_values=np.array([0.75]))
     with pytest.raises(ValueError, match="value history"):
@@ -498,7 +508,6 @@ def test_levenberg_marquardt_result_contract_rejects_malformed_inputs() -> None:
 
 def test_differentiable_result_contracts_cover_fail_closed_metadata_boundaries() -> None:
     """Derivative result containers should reject malformed numerical metadata."""
-
     gradient = GradientResult(
         value=1.0,
         gradient=np.array([1.0, -2.0]),
@@ -1018,7 +1027,6 @@ def test_differentiable_result_contracts_cover_fail_closed_metadata_boundaries()
 
 def test_shift_spsa_and_score_function_records_cover_evidence_serialisation() -> None:
     """Stochastic evidence records should validate and serialise bounded metadata."""
-
     shift_record = _parameter_shift_record()
     spsa_probe = _spsa_probe()
     score_records = (_score_sample(0), _score_sample(1))
@@ -1114,7 +1122,6 @@ def test_shift_spsa_and_score_function_records_cover_evidence_serialisation() ->
 
 def test_stochastic_gradient_rejects_moment_and_interval_inconsistency() -> None:
     """Parameter-shift stochastic evidence must bind moments to intervals."""
-
     gradient = np.array([0.5], dtype=np.float64)
     standard_error = np.array([0.1], dtype=np.float64)
     confidence_radius = np.array([0.2], dtype=np.float64)
@@ -1172,7 +1179,6 @@ def test_stochastic_gradient_rejects_moment_and_interval_inconsistency() -> None
 
 def test_spsa_and_score_results_reject_moment_inconsistency() -> None:
     """Stochastic estimator results must expose self-consistent uncertainty."""
-
     gradient = np.array([0.5, -0.25], dtype=np.float64)
     standard_error = np.array([0.1, 0.1], dtype=np.float64)
     confidence_radius = np.array([0.2, 0.2], dtype=np.float64)
@@ -1233,7 +1239,6 @@ def test_spsa_and_score_results_reject_moment_inconsistency() -> None:
 
 def test_result_contracts_reject_stochastic_record_and_interval_mismatches() -> None:
     """Stochastic result records should fail closed on malformed provenance links."""
-
     interval = _confidence_interval()
     invalid_factories: tuple[tuple[Callable[[], object], str], ...] = (
         (
@@ -1547,7 +1552,6 @@ def test_result_contracts_reject_stochastic_record_and_interval_mismatches() -> 
 
 def test_result_contracts_reject_spsa_and_score_function_metadata_mismatches() -> None:
     """SPSA and score-function records should reject malformed uncertainty metadata."""
-
     interval = _confidence_interval()
     invalid_factories: tuple[tuple[Callable[[], object], str], ...] = (
         (lambda: result_contracts.SPSAObjectiveSample(value=1.0, variance=-0.1), "variance"),
@@ -1842,7 +1846,6 @@ def test_result_contracts_reject_spsa_and_score_function_metadata_mismatches() -
 
 def test_result_contracts_reject_remaining_stochastic_and_metadata_guards() -> None:
     """Result contracts should cover remaining stochastic and metadata guards."""
-
     interval = _confidence_interval()
     invalid_factories: tuple[tuple[Callable[[], object], str], ...] = (
         (
@@ -2286,7 +2289,6 @@ def test_result_contracts_reject_remaining_stochastic_and_metadata_guards() -> N
 
 def test_deterministic_result_contracts_reject_replacement_mismatches() -> None:
     """Deterministic result records should reject malformed replacement fields."""
-
     gradient = _base_gradient()
     other_gradient = replace(gradient, value=1.1)
     jvp = _jvp()
@@ -2565,7 +2567,6 @@ def test_deterministic_result_contracts_reject_replacement_mismatches() -> None:
 
 def test_result_contracts_reject_name_mask_and_interval_status_edges() -> None:
     """Extracted result contracts should reject name, mask, and interval edge cases."""
-
     interval = _confidence_interval()
     bad_shape_interval = _confidence_interval(shape=(1,))
     gradient = _base_gradient()
@@ -3057,7 +3058,6 @@ def test_result_contracts_reject_name_mask_and_interval_status_edges() -> None:
 
 def test_fisher_and_weighted_result_contracts_validate_extracted_records() -> None:
     """Extracted Fisher and weighted-gradient records should validate metadata."""
-
     gradient = _base_gradient()
     covariance = result_contracts.LeastSquaresCovarianceResult(
         covariance=np.eye(2),
@@ -3108,7 +3108,6 @@ def test_fisher_and_weighted_result_contracts_validate_extracted_records() -> No
 
 def test_fisher_and_weighted_result_contracts_fail_closed_after_extraction() -> None:
     """Extracted Fisher and weighted records should reject malformed metadata."""
-
     gradient = _base_gradient()
     invalid_factories: tuple[tuple[Callable[[], object], str], ...] = (
         (

@@ -60,7 +60,6 @@ def _require_zero_frozen_entries(
     axis: int = -1,
 ) -> None:
     """Reject derivative content assigned to non-trainable parameters."""
-
     frozen = np.logical_not(np.asarray(trainable, dtype=bool))
     if not np.any(frozen):
         return
@@ -189,6 +188,7 @@ class GradientResult:
     claim_boundary: str = DIFFERENTIABLE_RESULT_CLAIM_BOUNDARY
 
     def __post_init__(self) -> None:
+        """Validate scalar value, gradient shape, trainability, and provenance."""
         value = _as_real_scalar("gradient result value", self.value)
         gradient = _as_real_numeric_array("gradient", self.gradient)
         claim_boundary = _normalise_claim_boundary("gradient result", self.claim_boundary)
@@ -247,6 +247,7 @@ class FiniteShotSampleProvenance:
     source_class: str
 
     def __post_init__(self) -> None:
+        """Validate finite-shot provenance tokens and source classification."""
         sample_seed = _normalise_provenance_token(
             "finite-shot sample provenance sample_seed",
             self.sample_seed,
@@ -267,7 +268,6 @@ class FiniteShotSampleProvenance:
 
     def to_dict(self) -> dict[str, object]:
         """Return JSON-ready finite-shot sample provenance."""
-
         return {
             "sample_seed": self.sample_seed,
             "shot_batch_id": self.shot_batch_id,
@@ -298,6 +298,7 @@ class ParameterShiftSampleRecord:
     variance_contribution: float
 
     def __post_init__(self) -> None:
+        """Validate one finite-shot parameter-shift contribution record."""
         if isinstance(self.term_index, bool) or not isinstance(self.term_index, int):
             raise ValueError("parameter-shift record term_index must be an integer")
         if self.term_index < 0:
@@ -375,7 +376,6 @@ class ParameterShiftSampleRecord:
 
     def to_dict(self) -> dict[str, object]:
         """Return JSON-ready shifted-sample provenance."""
-
         return {
             "term_index": self.term_index,
             "parameter_index": self.parameter_index,
@@ -422,6 +422,7 @@ class StochasticGradientResult:
     failure_reasons: tuple[str, ...] = ()
 
     def __post_init__(self) -> None:
+        """Validate stochastic parameter-shift moments and provenance records."""
         value = _as_real_scalar("stochastic gradient value", self.value)
         gradient = _as_parameter_array(self.gradient)
         standard_error = _as_parameter_array(self.standard_error)
@@ -530,7 +531,6 @@ class StochasticGradientResult:
 
     def to_dict(self) -> dict[str, object]:
         """Return JSON-ready stochastic parameter-shift evidence."""
-
         return {
             "value": self.value,
             "gradient": self.gradient.tolist(),
@@ -566,6 +566,7 @@ class SPSAObjectiveSample:
     metadata: Mapping[str, object] | None = None
 
     def __post_init__(self) -> None:
+        """Validate one scalar SPSA objective sample."""
         value = _as_real_scalar("SPSA sample value", self.value)
         variance = (
             None
@@ -606,6 +607,7 @@ class SPSAProbeRecord:
     gradient_estimate: NDArray[np.float64]
 
     def __post_init__(self) -> None:
+        """Validate a simultaneous-perturbation probe pair."""
         if isinstance(self.repetition, bool) or self.repetition < 0:
             raise ValueError("SPSA repetition must be a non-negative integer")
         perturbation = _as_parameter_array(self.perturbation)
@@ -659,6 +661,7 @@ class SPSAGradientResult:
     failure_reasons: tuple[str, ...] = ()
 
     def __post_init__(self) -> None:
+        """Validate SPSA gradient moments, records, and failure-policy metadata."""
         gradient = _as_parameter_array(self.gradient)
         standard_error = _as_parameter_array(self.standard_error)
         covariance = _as_real_numeric_array("SPSA covariance", self.covariance)
@@ -747,6 +750,7 @@ class ScoreFunctionSampleRecord:
     weighted_score: NDArray[np.float64]
 
     def __post_init__(self) -> None:
+        """Validate one likelihood-ratio sample contribution."""
         if isinstance(self.index, bool) or not isinstance(self.index, int) or self.index < 0:
             raise ValueError("score-function sample index must be a non-negative integer")
         reward = _as_real_scalar("score-function sample reward", self.reward)
@@ -796,6 +800,7 @@ class ScoreFunctionGradientResult:
     failure_reasons: tuple[str, ...] = ()
 
     def __post_init__(self) -> None:
+        """Validate score-function gradient moments and sample provenance."""
         gradient = _as_parameter_array(self.gradient)
         standard_error = _as_parameter_array(self.standard_error)
         covariance = _as_real_numeric_array("score-function covariance", self.covariance)
@@ -888,6 +893,7 @@ class ShotAllocationResult:
     trainable: tuple[bool, ...]
 
     def __post_init__(self) -> None:
+        """Validate shot-allocation shapes, totals, and parameter metadata."""
         shots = _as_real_numeric_array("shot allocation shots", self.shots)
         standard_error = _as_parameter_array(self.predicted_standard_error)
         covariance = _as_real_numeric_array("shot allocation covariance", self.covariance)
@@ -950,6 +956,7 @@ class OptimizationResult:
     best_value: float | None = None
 
     def __post_init__(self) -> None:
+        """Validate deterministic optimisation traces and best-state metadata."""
         values = _as_parameter_array(self.values)
         if values.size != self.final_gradient.gradient.size:
             raise ValueError("optimized values length must match gradient length")
@@ -995,6 +1002,7 @@ class ArmijoLineSearchResult:
     trainable: tuple[bool, ...]
 
     def __post_init__(self) -> None:
+        """Validate Armijo line-search state and sufficient-decrease metadata."""
         values = _as_parameter_array(self.values)
         direction = _as_parameter_array(self.direction)
         if direction.shape != values.shape:
@@ -1047,6 +1055,7 @@ class GradientCheckResult:
     passed: bool
 
     def __post_init__(self) -> None:
+        """Validate gradient-check operand shapes and error metrics."""
         if self.reference.gradient.shape != self.candidate.gradient.shape:
             raise ValueError("gradient check operands must have matching shapes")
         max_abs_error = _as_real_scalar("max_abs_error", self.max_abs_error)
@@ -1084,6 +1093,7 @@ class CustomDerivativeCheckResult:
     passed: bool
 
     def __post_init__(self) -> None:
+        """Validate custom JVP/VJP comparisons against reference products."""
         if not isinstance(self.custom_jvp, JVPResult):
             raise ValueError("custom_jvp must be a JVPResult")
         if not isinstance(self.custom_vjp, VJPResult):
@@ -1133,6 +1143,7 @@ class JacobianResult:
     claim_boundary: str = DIFFERENTIABLE_RESULT_CLAIM_BOUNDARY
 
     def __post_init__(self) -> None:
+        """Validate vector value, Jacobian shape, and parameter provenance."""
         value = _as_real_numeric_array("jacobian value", self.value)
         jacobian = _as_real_numeric_array("jacobian", self.jacobian)
         claim_boundary = _normalise_claim_boundary("jacobian result", self.claim_boundary)
@@ -1183,6 +1194,7 @@ class JVPResult:
     claim_boundary: str = DIFFERENTIABLE_RESULT_CLAIM_BOUNDARY
 
     def __post_init__(self) -> None:
+        """Validate JVP value, tangent, product, and claim boundary."""
         value = _as_real_numeric_array("JVP value", self.value)
         jvp = _as_real_numeric_array("JVP", self.jvp)
         tangent = _as_real_numeric_array("JVP tangent", self.tangent)
@@ -1235,6 +1247,7 @@ class VJPResult:
     claim_boundary: str = DIFFERENTIABLE_RESULT_CLAIM_BOUNDARY
 
     def __post_init__(self) -> None:
+        """Validate VJP value, cotangent, product, and claim boundary."""
         value = _as_real_numeric_array("VJP value", self.value)
         cotangent = _as_real_numeric_array("VJP cotangent", self.cotangent)
         vjp = _as_real_numeric_array("VJP", self.vjp)
@@ -1286,6 +1299,7 @@ class HessianResult:
     claim_boundary: str = DIFFERENTIABLE_RESULT_CLAIM_BOUNDARY
 
     def __post_init__(self) -> None:
+        """Validate scalar Hessian shape, symmetry, and trainable mask."""
         value = _as_real_scalar("hessian value", self.value)
         hessian = _as_real_numeric_array("hessian", self.hessian)
         claim_boundary = _normalise_claim_boundary("hessian result", self.claim_boundary)
@@ -1331,6 +1345,7 @@ class SparseMatrixResult:
     trainable: tuple[bool, ...]
 
     def __post_init__(self) -> None:
+        """Validate coordinate sparse derivative matrix metadata."""
         rows = _as_index_vector("sparse row_indices", self.row_indices)
         columns = _as_index_vector("sparse column_indices", self.column_indices)
         values = _as_real_numeric_array("sparse values", self.values)
@@ -1378,12 +1393,10 @@ class SparseMatrixResult:
     @property
     def nnz(self) -> int:
         """Number of explicitly stored non-zero entries."""
-
         return int(self.values.size)
 
     def to_dense(self) -> NDArray[np.float64]:
         """Materialise the sparse coordinate matrix as a dense array."""
-
         dense = np.zeros(self.shape, dtype=np.float64)
         dense[self.row_indices, self.column_indices] = self.values
         return cast(NDArray[np.float64], dense)
@@ -1404,6 +1417,7 @@ class HVPResult:
     claim_boundary: str = DIFFERENTIABLE_RESULT_CLAIM_BOUNDARY
 
     def __post_init__(self) -> None:
+        """Validate Hessian-vector product, tangent, and parameter metadata."""
         value = _as_real_scalar("HVP value", self.value)
         hvp = _as_real_numeric_array("HVP", self.hvp)
         tangent = _as_real_numeric_array("HVP tangent", self.tangent)
@@ -1449,6 +1463,7 @@ class NaturalGradientResult:
     condition_number: float
 
     def __post_init__(self) -> None:
+        """Validate metric-preconditioned gradient solve metadata."""
         metric = _as_real_numeric_array("natural-gradient metric", self.metric)
         natural_gradient = _as_real_numeric_array("natural_gradient", self.natural_gradient)
         if metric.ndim != 2 or metric.shape[0] != metric.shape[1]:
@@ -1494,6 +1509,7 @@ class NaturalGradientOptimizationResult:
     best_value: float
 
     def __post_init__(self) -> None:
+        """Validate natural-gradient optimisation history and best state."""
         values = _as_parameter_array(self.values)
         best_values = _as_parameter_array(self.best_values)
         if best_values.shape != values.shape:
@@ -1560,6 +1576,7 @@ class LevenbergMarquardtStep:
     predicted_reduction: float
 
     def __post_init__(self) -> None:
+        """Validate one Levenberg-Marquardt step proposal."""
         step = _as_real_numeric_array("Levenberg-Marquardt step", self.step)
         candidate_values = _as_real_numeric_array(
             "Levenberg-Marquardt candidate_values",
@@ -1602,6 +1619,7 @@ class LevenbergMarquardtTrial:
     accepted: bool
 
     def __post_init__(self) -> None:
+        """Validate one Levenberg-Marquardt trial outcome."""
         if not isinstance(self.step_result, LevenbergMarquardtStep):
             raise ValueError("step_result must be a LevenbergMarquardtStep")
         candidate_residual = _as_real_numeric_array(
@@ -1641,6 +1659,7 @@ class LevenbergMarquardtDampingUpdate:
     action: str
 
     def __post_init__(self) -> None:
+        """Validate damping update action after an LM trial."""
         if not isinstance(self.trial, LevenbergMarquardtTrial):
             raise ValueError("trial must be a LevenbergMarquardtTrial")
         next_damping = _as_real_scalar(
@@ -1670,6 +1689,7 @@ class LevenbergMarquardtResult:
     best_value: float
 
     def __post_init__(self) -> None:
+        """Validate the full Levenberg-Marquardt result trace."""
         values = _as_parameter_array(self.values)
         residual = _as_vector_output(self.residual)
         best_values = _as_parameter_array(self.best_values)
@@ -1731,6 +1751,7 @@ class LeastSquaresCovarianceResult:
     trainable: tuple[bool, ...]
 
     def __post_init__(self) -> None:
+        """Validate least-squares covariance and parameter uncertainties."""
         covariance = _as_real_numeric_array("least-squares covariance", self.covariance)
         standard_errors = _as_real_numeric_array(
             "least-squares standard errors",
@@ -1787,6 +1808,7 @@ class FisherVectorProductResult:
     trainable: tuple[bool, ...]
 
     def __post_init__(self) -> None:
+        """Validate empirical-Fisher vector-product operands."""
         value = _as_real_numeric_array("Fisher-vector value", self.value)
         tangent = _as_real_numeric_array("Fisher-vector tangent", self.tangent)
         product = _as_real_numeric_array("Fisher-vector product", self.product)
@@ -1840,6 +1862,7 @@ class FisherConjugateGradientResult:
     trainable: tuple[bool, ...]
 
     def __post_init__(self) -> None:
+        """Validate empirical-Fisher conjugate-gradient solve history."""
         solution = _as_real_numeric_array("Fisher-CG solution", self.solution)
         if solution.ndim != 1:
             raise ValueError("Fisher-CG solution must be one-dimensional")
@@ -1894,6 +1917,7 @@ class WeightedGradientResult:
     trainable: tuple[bool, ...]
 
     def __post_init__(self) -> None:
+        """Validate a weighted scalarisation of gradient components."""
         if not self.components:
             raise ValueError("weighted gradient components must be non-empty")
         value = _as_real_scalar("weighted gradient value", self.value)
@@ -1935,6 +1959,7 @@ class ImplicitSensitivityResult:
     hyperparameter_names: tuple[str, ...]
 
     def __post_init__(self) -> None:
+        """Validate implicit-function sensitivity operands and metadata."""
         sensitivity = _as_real_numeric_array("implicit sensitivity", self.sensitivity)
         hessian = _as_real_numeric_array("implicit hessian", self.hessian)
         cross = _as_real_numeric_array("implicit cross_derivative", self.cross_derivative)
@@ -1998,6 +2023,7 @@ class FixedPointSensitivityResult:
     hyperparameter_names: tuple[str, ...]
 
     def __post_init__(self) -> None:
+        """Validate fixed-point sensitivity operands and metadata."""
         sensitivity = _as_real_numeric_array("fixed-point sensitivity", self.sensitivity)
         state_jacobian = _as_real_numeric_array("fixed-point state_jacobian", self.state_jacobian)
         parameter_jacobian = _as_real_numeric_array(
