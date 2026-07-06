@@ -364,10 +364,12 @@ with a reviewer summary at
 `data/differentiable_phase_qnode/differentiable_isolated_benchmark_plan_20260627.md`.
 The plan covers the current local benchmark bundle, Phase-QNode affinity row,
 identical-circuit comparison, domain dataset closure, PyTorch maturity audit,
-and Enzyme/MLIR maturity audit. Each row records the required
-`self-hosted`, `linux`, and `isolated-benchmark` runner labels, a `taskset` plus
-`chrt` rerun command, expected output paths, source classifications, and host
-blockers. The current workstation is not promoted by this plan: high observed
+Enzyme/MLIR maturity audit, and the compiler-promotion batch gate. Each row
+records the required `self-hosted`, `linux`, and `isolated-benchmark` runner
+labels, a `taskset` plus `chrt` rerun command, expected output paths, source
+classifications, and host blockers. The compiler row remains blocked until
+reserved-host isolated compiler benchmark artefact IDs are attached. The current
+workstation is not promoted by this plan: high observed
 load and non-reserved affinity keep `promotion_ready=False`, and the committed
 source artefacts remain `functional_non_isolated` or `hard_gap` until a
 validated isolated runner emits `isolated_affinity` outputs.

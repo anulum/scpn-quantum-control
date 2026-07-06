@@ -37,6 +37,7 @@ def test_isolated_benchmark_plan_covers_current_non_isolated_artifacts() -> None
         "domain_benchmark_dataset_closure",
         "torch_maturity_audit",
         "enzyme_mlir_maturity_audit",
+        "compiler_promotion_batch",
     }
     assert "no isolated_affinity benchmark evidence" in plan.claim_boundary
 
@@ -62,11 +63,35 @@ def test_isolated_benchmark_plan_rows_are_artifact_and_command_backed() -> None:
     assert enzyme_row.source_classifications == ("hard_gap",)
     assert any("Enzyme/MLIR" in blocker for blocker in enzyme_row.blockers)
 
+    compiler_row = rows["compiler_promotion_batch"]
+    assert compiler_row.source_artifact_paths == (
+        "data/differentiable_phase_qnode/compiler_promotion_batch_20260706.json",
+        "data/differentiable_phase_qnode/compiler_evidence_boundary_20260705.json",
+    )
+    assert compiler_row.source_artifact_ids == (
+        "compiler-promotion-batch-20260706",
+        "compiler-evidence-boundary-20260705",
+    )
+    assert compiler_row.source_classifications == (
+        "functional_non_isolated",
+        "functional_non_isolated",
+    )
+    compiler_command = " ".join(compiler_row.rerun_command)
+    assert "scripts/run_native_whole_program_ad_execution_evidence.py" in compiler_command
+    assert "taskset" in compiler_row.rerun_command
+    assert "chrt" in compiler_row.rerun_command
+    assert any(
+        "isolated compiler benchmark artifact IDs" in blocker for blocker in compiler_row.blockers
+    )
+
     validation = validate_differentiable_isolated_benchmark_plan(plan)
     assert validation.passed, validation.errors
     assert (
         "data/differentiable_phase_qnode/differentiable_isolated_benchmark_plan_20260627.md"
         in (validation.checked_paths)
+    )
+    assert "data/differentiable_phase_qnode/compiler_promotion_batch_20260706.json" in (
+        validation.checked_paths
     )
 
 

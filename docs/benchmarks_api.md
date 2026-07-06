@@ -531,10 +531,12 @@ Returns a JSON-ready `DifferentiableIsolatedBenchmarkPlan` for the current
 differentiable benchmark and evidence artefacts that are not yet
 promotion-grade. The plan covers the committed local benchmark bundle,
 Phase-QNode affinity row, identical-circuit gradient comparison, domain dataset
-closure, PyTorch maturity audit, and Enzyme/MLIR maturity audit. Each row
-records source artefact paths, source classifications, the required
-`self-hosted`, `linux`, and `isolated-benchmark` runner labels, a `taskset` plus
-`chrt` rerun command, required host context, expected output paths, and blockers.
+closure, PyTorch maturity audit, Enzyme/MLIR maturity audit, and the
+compiler-promotion batch gate that remains blocked on isolated compiler
+benchmark artefact IDs. Each row records source artefact paths, source
+classifications, the required `self-hosted`, `linux`, and `isolated-benchmark`
+runner labels, a `taskset` plus `chrt` rerun command, required host context,
+expected output paths, and blockers.
 
 The committed artefact
 `data/differentiable_phase_qnode/differentiable_isolated_benchmark_plan_20260627.json`

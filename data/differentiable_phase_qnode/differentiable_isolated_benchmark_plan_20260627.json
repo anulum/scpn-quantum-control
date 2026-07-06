@@ -8,7 +8,7 @@
       "benchmark_family": "external_comparison",
       "blockers": [
         "reserved host readiness blocker: cpu0 governor is 'powersave'; set it to 'performance' for stable benchmark timing",
-        "reserved host readiness blocker: host load 11.15 exceeds the isolated threshold 1.00; quiesce concurrent jobs",
+        "reserved host readiness blocker: host load 47.28 exceeds the isolated threshold 1.00; quiesce concurrent jobs",
         "data/differentiable_phase_qnode/local_benchmark_20260616T0955Z/diff-qnode-ci-evidence-schema-v1.json is functional_non_isolated, not isolated_affinity",
         "data/differentiable_phase_qnode/local_benchmark_20260616T0955Z/diff-qnode-external-comparison.json is functional_non_isolated, not isolated_affinity"
       ],
@@ -67,7 +67,7 @@
       "benchmark_family": "phase_qnode_affinity",
       "blockers": [
         "reserved host readiness blocker: cpu0 governor is 'powersave'; set it to 'performance' for stable benchmark timing",
-        "reserved host readiness blocker: host load 11.15 exceeds the isolated threshold 1.00; quiesce concurrent jobs",
+        "reserved host readiness blocker: host load 47.28 exceeds the isolated threshold 1.00; quiesce concurrent jobs",
         "data/differentiable_phase_qnode/local_benchmark_20260616T0955Z/phase_qnode_affinity.json is functional_non_isolated, not isolated_affinity"
       ],
       "claim_boundary": "Differentiable isolated benchmark batch plan only; no isolated_affinity benchmark evidence, production-performance claim, provider execution, QPU execution, GPU execution, Enzyme promotion, or claim-ledger promotion is implied.",
@@ -118,7 +118,7 @@
       "benchmark_family": "gradient_comparison",
       "blockers": [
         "reserved host readiness blocker: cpu0 governor is 'powersave'; set it to 'performance' for stable benchmark timing",
-        "reserved host readiness blocker: host load 11.15 exceeds the isolated threshold 1.00; quiesce concurrent jobs",
+        "reserved host readiness blocker: host load 47.28 exceeds the isolated threshold 1.00; quiesce concurrent jobs",
         "data/differentiable_phase_qnode/identical_circuit_gradient_comparison_20260616.json is functional_non_isolated, not isolated_affinity"
       ],
       "claim_boundary": "Differentiable isolated benchmark batch plan only; no isolated_affinity benchmark evidence, production-performance claim, provider execution, QPU execution, GPU execution, Enzyme promotion, or claim-ledger promotion is implied.",
@@ -167,7 +167,7 @@
       "benchmark_family": "domain_dataset",
       "blockers": [
         "reserved host readiness blocker: cpu0 governor is 'powersave'; set it to 'performance' for stable benchmark timing",
-        "reserved host readiness blocker: host load 11.15 exceeds the isolated threshold 1.00; quiesce concurrent jobs",
+        "reserved host readiness blocker: host load 47.28 exceeds the isolated threshold 1.00; quiesce concurrent jobs",
         "data/differentiable_phase_qnode/domain_benchmark_dataset_closure_20260616.json is functional_non_isolated, not isolated_affinity"
       ],
       "claim_boundary": "Differentiable isolated benchmark batch plan only; no isolated_affinity benchmark evidence, production-performance claim, provider execution, QPU execution, GPU execution, Enzyme promotion, or claim-ledger promotion is implied.",
@@ -216,7 +216,7 @@
       "benchmark_family": "torch_maturity",
       "blockers": [
         "reserved host readiness blocker: cpu0 governor is 'powersave'; set it to 'performance' for stable benchmark timing",
-        "reserved host readiness blocker: host load 11.15 exceeds the isolated threshold 1.00; quiesce concurrent jobs",
+        "reserved host readiness blocker: host load 47.28 exceeds the isolated threshold 1.00; quiesce concurrent jobs",
         "data/differentiable_phase_qnode/torch_maturity_audit_20260616.json is functional_non_isolated, not isolated_affinity"
       ],
       "claim_boundary": "Differentiable isolated benchmark batch plan only; no isolated_affinity benchmark evidence, production-performance claim, provider execution, QPU execution, GPU execution, Enzyme promotion, or claim-ledger promotion is implied.",
@@ -265,7 +265,7 @@
       "benchmark_family": "enzyme_mlir",
       "blockers": [
         "reserved host readiness blocker: cpu0 governor is 'powersave'; set it to 'performance' for stable benchmark timing",
-        "reserved host readiness blocker: host load 11.15 exceeds the isolated threshold 1.00; quiesce concurrent jobs",
+        "reserved host readiness blocker: host load 47.28 exceeds the isolated threshold 1.00; quiesce concurrent jobs",
         "Enzyme/MLIR compiler-native breadth remains hard_gap until raw 11-case breadth, native execution, and isolated benchmark attachments pass.",
         "data/differentiable_phase_qnode/enzyme_mlir_maturity_audit_20260616.json is hard_gap, not isolated_affinity"
       ],
@@ -310,8 +310,65 @@
         "hard_gap"
       ],
       "title": "Enzyme/MLIR maturity audit"
+    },
+    {
+      "benchmark_family": "compiler_promotion",
+      "blockers": [
+        "reserved host readiness blocker: cpu0 governor is 'powersave'; set it to 'performance' for stable benchmark timing",
+        "reserved host readiness blocker: host load 47.28 exceeds the isolated threshold 1.00; quiesce concurrent jobs",
+        "compiler promotion remains blocked until reserved-host isolated compiler benchmark artifact IDs are attached",
+        "data/differentiable_phase_qnode/compiler_promotion_batch_20260706.json is functional_non_isolated, not isolated_affinity",
+        "data/differentiable_phase_qnode/compiler_evidence_boundary_20260705.json is functional_non_isolated, not isolated_affinity"
+      ],
+      "claim_boundary": "Differentiable isolated benchmark batch plan only; no isolated_affinity benchmark evidence, production-performance claim, provider execution, QPU execution, GPU execution, Enzyme promotion, or claim-ledger promotion is implied.",
+      "expected_output_paths": [
+        "data/differentiable_phase_qnode/isolated_benchmark_batch_20260627/native_whole_program_ad_execution_evidence_isolated_compiler_20260706.json",
+        "data/differentiable_phase_qnode/isolated_benchmark_batch_20260627/native_whole_program_ad_execution_evidence_isolated_compiler_20260706.md"
+      ],
+      "promotion_ready": false,
+      "required_host_context": [
+        "reserved_cpu_affinity",
+        "observed_process_affinity",
+        "host_load_before_after",
+        "performance_governor_or_frequency",
+        "no_heavy_concurrent_jobs",
+        "raw_timing_rows"
+      ],
+      "required_runner_labels": [
+        "self-hosted",
+        "linux",
+        "isolated-benchmark"
+      ],
+      "rerun_command": [
+        "taskset",
+        "-c",
+        "2",
+        "chrt",
+        "-f",
+        "1",
+        ".venv/bin/python",
+        "scripts/run_native_whole_program_ad_execution_evidence.py",
+        "--output-dir",
+        "data/differentiable_phase_qnode/isolated_benchmark_batch_20260627",
+        "--stamp",
+        "isolated_compiler_20260706"
+      ],
+      "row_id": "compiler_promotion_batch",
+      "source_artifact_ids": [
+        "compiler-promotion-batch-20260706",
+        "compiler-evidence-boundary-20260705"
+      ],
+      "source_artifact_paths": [
+        "data/differentiable_phase_qnode/compiler_promotion_batch_20260706.json",
+        "data/differentiable_phase_qnode/compiler_evidence_boundary_20260705.json"
+      ],
+      "source_classifications": [
+        "functional_non_isolated",
+        "functional_non_isolated"
+      ],
+      "title": "Compiler promotion-batch isolated benchmark gate"
     }
   ],
   "schema": "scpn_qc_differentiable_isolated_benchmark_plan_v1",
-  "total_row_count": 6
+  "total_row_count": 7
 }

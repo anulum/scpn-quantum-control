@@ -472,6 +472,45 @@ def _default_plan_rows(
                 "breadth, native execution, and isolated benchmark attachments pass.",
             ),
         ),
+        _row(
+            row_id="compiler_promotion_batch",
+            title="Compiler promotion-batch isolated benchmark gate",
+            benchmark_family="compiler_promotion",
+            source_paths=(
+                "data/differentiable_phase_qnode/compiler_promotion_batch_20260706.json",
+                "data/differentiable_phase_qnode/compiler_evidence_boundary_20260705.json",
+            ),
+            source_artifact_ids=(
+                "compiler-promotion-batch-20260706",
+                "compiler-evidence-boundary-20260705",
+            ),
+            rerun_command=(
+                "taskset",
+                "-c",
+                "2",
+                "chrt",
+                "-f",
+                "1",
+                ".venv/bin/python",
+                "scripts/run_native_whole_program_ad_execution_evidence.py",
+                "--output-dir",
+                "data/differentiable_phase_qnode/isolated_benchmark_batch_20260627",
+                "--stamp",
+                "isolated_compiler_20260706",
+            ),
+            expected_outputs=(
+                "data/differentiable_phase_qnode/isolated_benchmark_batch_20260627/"
+                "native_whole_program_ad_execution_evidence_isolated_compiler_20260706.json",
+                "data/differentiable_phase_qnode/isolated_benchmark_batch_20260627/"
+                "native_whole_program_ad_execution_evidence_isolated_compiler_20260706.md",
+            ),
+            repo_root=repo_root,
+            blockers=(
+                *host_blockers,
+                "compiler promotion remains blocked until reserved-host isolated compiler "
+                "benchmark artifact IDs are attached",
+            ),
+        ),
     )
 
 
