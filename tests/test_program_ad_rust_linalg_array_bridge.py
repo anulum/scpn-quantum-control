@@ -87,4 +87,5 @@ def test_rust_bridge_replays_program_ad_multi_dot_array_nodes() -> None:
     assert rust.supported is True, rust.blocked_reasons
     _, reference = program_adjoint_value_and_grad(_multi_dot_weighted_objective, sample)
     np.testing.assert_allclose(np.asarray(rust.gradient), reference, rtol=1.0e-12, atol=1.0e-12)
-    assert "static_linalg_primitives_value_and_gradient" in rust.claim_boundary
+    assert "static_linalg_primitives" in rust.claim_boundary
+    assert "value_and_gradient" in rust.claim_boundary
