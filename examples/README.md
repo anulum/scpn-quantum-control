@@ -385,3 +385,15 @@ Simulator demonstration only; no hardware or biological claims.
 ```bash
 python examples/32_topology_controlled_qsnn.py
 ```
+
+## 33_qgt_qfi_crosscheck.py — QGT/QFI Cross-Check
+
+Computes the coupling-parameter QFI of a small XY ring by two independent
+routes — the exact spectral sum rule and four times the Fubini–Study metric
+from the quantum geometric tensor — and reports their agreement plus the
+(vanishing) Berry curvature. Exact-diagonalisation cross-check only; no
+hardware, scaling, or metrological-advantage claim.
+
+```bash
+python examples/33_qgt_qfi_crosscheck.py
+```

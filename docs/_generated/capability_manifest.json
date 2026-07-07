@@ -2,18 +2,18 @@
   "SPDX-License-Identifier": "AGPL-3.0-or-later",
   "counts": {
     "domain_package_families": 31,
-    "example_files": 34,
+    "example_files": 35,
     "github_workflows": 23,
     "model_documentation_pages": null,
     "notebook_files": 100,
     "optional_extras": 43,
     "public_api_exports": 820,
     "public_documentation_pages": 260,
-    "python_model_classes": 921,
-    "python_model_source_modules": 476,
+    "python_model_classes": 922,
+    "python_model_source_modules": 477,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 64,
-    "test_files": 843
+    "test_files": 844
   },
   "documentation": {
     "examples": [
@@ -50,6 +50,7 @@
       "examples/30_diff_first_path.py",
       "examples/31_qfi_fss_differentiable_report.py",
       "examples/32_topology_controlled_qsnn.py",
+      "examples/33_qgt_qfi_crosscheck.py",
       "examples/README.md"
     ],
     "notebooks": [
@@ -444,7 +445,7 @@
       {
         "package": "analysis",
         "path": "src/scpn_quantum_control/analysis",
-        "python_modules": 59
+        "python_modules": 60
       },
       {
         "package": "applications",
@@ -3387,6 +3388,10 @@
         "path": "src/scpn_quantum_control/analysis/qfi_criticality.py"
       },
       {
+        "name": "QFIGeometricCrosscheck",
+        "path": "src/scpn_quantum_control/analysis/qfi_geometric_crosscheck.py"
+      },
+      {
         "name": "QFIResult",
         "path": "src/scpn_quantum_control/analysis/qfi.py"
       },
@@ -4323,6 +4328,7 @@
       "src/scpn_quantum_control/analysis/phase_diagram.py",
       "src/scpn_quantum_control/analysis/qfi.py",
       "src/scpn_quantum_control/analysis/qfi_criticality.py",
+      "src/scpn_quantum_control/analysis/qfi_geometric_crosscheck.py",
       "src/scpn_quantum_control/analysis/qrc_phase_detector.py",
       "src/scpn_quantum_control/analysis/quantum_fisher_information.py",
       "src/scpn_quantum_control/analysis/quantum_mpemba.py",
@@ -6537,6 +6543,7 @@
       "tests/test_qfi.py",
       "tests/test_qfi_criticality.py",
       "tests/test_qfi_fss_differentiable_example.py",
+      "tests/test_qfi_geometric_crosscheck.py",
       "tests/test_qiskit_compat.py",
       "tests/test_qlayer.py",
       "tests/test_qlif.py",

@@ -84,6 +84,7 @@ from .phase_diagram import (
 )
 from .qfi import QFIResult, compute_qfi, qfi_gap_tradeoff
 from .qfi_criticality import QFICriticalityResult, qfi_vs_coupling
+from .qfi_geometric_crosscheck import QFIGeometricCrosscheck, crosscheck_qfi_geometric
 from .qrc_phase_detector import QRCPhaseResult, qrc_phase_detection
 from .quantum_fisher_information import QuantumFisherInformation
 from .quantum_mpemba import MpembaResult, mpemba_experiment
@@ -188,7 +189,9 @@ __all__ = [
     "effective_temperature",
     "order_parameter_steady_state",
     "QFIResult",
+    "QFIGeometricCrosscheck",
     "compute_qfi",
+    "crosscheck_qfi_geometric",
     "qfi_gap_tradeoff",
     "PhiResult",
     "compute_quantum_phi",
