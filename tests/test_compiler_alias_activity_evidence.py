@@ -9,6 +9,10 @@
 
 from __future__ import annotations
 
+import json
+from pathlib import Path
+from typing import cast
+
 import pytest
 
 from scpn_quantum_control.compiler import (
@@ -91,6 +95,31 @@ def test_compiler_alias_activity_case_rejects_inconsistent_status() -> None:
         )
 
 
+def test_compiler_alias_activity_case_rejects_runtime_type_drift() -> None:
+    """Case validation must fail closed on dynamic evidence type drift."""
+    valid_fields: dict[str, object] = {
+        "case_id": "complete_view_alias",
+        "status": "complete_lattice",
+        "complete": True,
+        "alias_edge_kinds": ("view_alias",),
+        "blocker_reasons": (),
+        "component_count": 1,
+        "provenance_counts": {"view_alias": 1},
+    }
+    invalid_cases: tuple[tuple[dict[str, object], str], ...] = (
+        ({"case_id": "   "}, "case_id"),
+        ({"component_count": cast(int, True)}, "component_count"),
+        ({"provenance_counts": cast(dict[str, int], [("view_alias", 1)])}, "provenance_counts"),
+        ({"provenance_counts": {"view_alias": cast(int, True)}}, "provenance_counts"),
+    )
+
+    for overrides, match in invalid_cases:
+        fields = dict(valid_fields)
+        fields.update(overrides)
+        with pytest.raises(ValueError, match=match):
+            CompilerAliasActivityCase(**fields)  # type: ignore[arg-type]  # runtime drift
+
+
 def test_compiler_alias_activity_evidence_rejects_missing_case_families() -> None:
     """Evidence validation must require complete and blocked lattice cases."""
     case = CompilerAliasActivityCase(
@@ -109,3 +138,35 @@ def test_compiler_alias_activity_evidence_rejects_missing_case_families() -> Non
             cases=(case,),
             test_ids=("tests/test_program_ad_alias_effects.py::case",),
         )
+
+
+def test_compiler_alias_activity_evidence_rejects_public_container_drift() -> None:
+    """Evidence validation must require immutable cases and focused test nodes."""
+    evidence = build_compiler_alias_activity_evidence(source_commit="test-commit")
+
+    invalid_cases: tuple[tuple[dict[str, object], str], ...] = (
+        ({"source_commit": "   "}, "source_commit"),
+        ({"cases": cast(tuple[CompilerAliasActivityCase, ...], list(evidence.cases))}, "cases"),
+        ({"test_ids": ()}, "test_ids"),
+    )
+
+    for overrides, match in invalid_cases:
+        fields: dict[str, object] = {
+            "source_commit": "test-commit",
+            "cases": evidence.cases,
+            "test_ids": evidence.test_ids,
+        }
+        fields.update(overrides)
+        with pytest.raises(ValueError, match=match):
+            CompilerAliasActivityEvidence(**fields)  # type: ignore[arg-type]  # runtime drift
+
+
+def test_committed_compiler_alias_activity_evidence_matches_builder() -> None:
+    """Committed alias-activity JSON must match the current public builder."""
+    committed = json.loads(
+        Path(
+            "data/differentiable_phase_qnode/compiler_alias_activity_evidence_20260706.json"
+        ).read_text(encoding="utf-8")
+    )
+
+    assert committed == build_compiler_alias_activity_evidence(source_commit="534010da").as_dict()

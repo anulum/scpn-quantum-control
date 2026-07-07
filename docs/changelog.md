@@ -34,6 +34,9 @@ Full detailed changelog: [CHANGELOG.md](https://github.com/anulum/scpn-quantum-c
 - Hardened MLIR compiler record validation so malformed transform-plan rows and
   non-integer kernel-verification sample counts fail closed with typed
   `ValueError` diagnostics.
+- Hardened compiler alias-activity evidence records so dynamic public inputs
+  with whitespace identifiers, mutable case containers, boolean count drift, or
+  empty focused-test evidence fail closed before promotion-batch assembly.
 - Kept hardware, RNG, cryptographic, HLS, realtime, and benchmark wording bound
   to existing evidence classes rather than promoting new hardware or production
   cryptographic claims.

@@ -62,7 +62,7 @@ class CompilerAliasActivityCase:
 
     def __post_init__(self) -> None:
         """Validate alias-activity case metadata."""
-        if not isinstance(self.case_id, str) or not self.case_id:
+        if not isinstance(self.case_id, str) or not self.case_id.strip():
             raise ValueError("compiler alias-activity case_id must be non-empty")
         if self.status not in _SUPPORTED_CASE_STATUSES:
             raise ValueError("compiler alias-activity case status is unsupported")
@@ -70,12 +70,16 @@ class CompilerAliasActivityCase:
             raise ValueError("compiler alias-activity case complete must be boolean")
         if (self.status == "complete_lattice") != self.complete:
             raise ValueError("compiler alias-activity case status must match completeness")
+        if not isinstance(self.alias_edge_kinds, tuple):
+            raise ValueError("compiler alias-activity case alias_edge_kinds must be a tuple")
         if any(not isinstance(kind, str) or not kind for kind in self.alias_edge_kinds):
             raise ValueError("compiler alias-activity case alias_edge_kinds must be non-empty")
         if not self.alias_edge_kinds:
             raise ValueError("compiler alias-activity case alias_edge_kinds must be non-empty")
         if tuple(sorted(set(self.alias_edge_kinds))) != self.alias_edge_kinds:
             raise ValueError("compiler alias-activity case alias_edge_kinds must be sorted unique")
+        if not isinstance(self.blocker_reasons, tuple):
+            raise ValueError("compiler alias-activity case blocker_reasons must be a tuple")
         if any(not isinstance(reason, str) or not reason for reason in self.blocker_reasons):
             raise ValueError("compiler alias-activity case blocker_reasons must be non-empty")
         if tuple(sorted(set(self.blocker_reasons))) != self.blocker_reasons:
@@ -84,12 +88,24 @@ class CompilerAliasActivityCase:
             raise ValueError("complete compiler alias-activity cases cannot carry blockers")
         if not self.complete and not self.blocker_reasons:
             raise ValueError("blocked compiler alias-activity cases must carry blockers")
-        if self.component_count <= 0:
-            raise ValueError("compiler alias-activity case component_count must be positive")
+        if (
+            not isinstance(self.component_count, int)
+            or isinstance(self.component_count, bool)
+            or self.component_count <= 0
+        ):
+            raise ValueError(
+                "compiler alias-activity case component_count must be a positive integer"
+            )
+        if not isinstance(self.provenance_counts, Mapping):
+            raise ValueError("compiler alias-activity case provenance_counts must be a mapping")
         if not self.provenance_counts:
             raise ValueError("compiler alias-activity case provenance_counts must be non-empty")
         if any(
-            not isinstance(name, str) or not name or not isinstance(count, int) or count < 0
+            not isinstance(name, str)
+            or not name
+            or not isinstance(count, int)
+            or isinstance(count, bool)
+            or count < 0
             for name, count in self.provenance_counts.items()
         ):
             raise ValueError(
@@ -132,8 +148,10 @@ class CompilerAliasActivityEvidence:
             raise ValueError("compiler alias-activity evidence classification drifted")
         if self.promotion_ready:
             raise ValueError("compiler alias-activity evidence cannot be promotion-ready")
-        if not isinstance(self.source_commit, str) or not self.source_commit:
+        if not isinstance(self.source_commit, str) or not self.source_commit.strip():
             raise ValueError("compiler alias-activity evidence source_commit must be non-empty")
+        if not isinstance(self.cases, tuple) or not self.cases:
+            raise ValueError("compiler alias-activity evidence cases must be a non-empty tuple")
         if any(not isinstance(case, CompilerAliasActivityCase) for case in self.cases):
             raise ValueError(
                 "compiler alias-activity evidence cases must contain CompilerAliasActivityCase"
@@ -151,6 +169,8 @@ class CompilerAliasActivityEvidence:
         if missing_alias_kinds:
             missing = ", ".join(sorted(missing_alias_kinds))
             raise ValueError(f"compiler alias-activity evidence missing alias kinds: {missing}")
+        if not isinstance(self.test_ids, tuple) or not self.test_ids:
+            raise ValueError("compiler alias-activity evidence test_ids must be a non-empty tuple")
         if any(not isinstance(test_id, str) or "::" not in test_id for test_id in self.test_ids):
             raise ValueError("compiler alias-activity evidence test_ids must name pytest nodes")
         if tuple(sorted(set(self.test_ids))) != self.test_ids:
