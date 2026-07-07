@@ -820,6 +820,8 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ## [0.9.10] - 2026-06-04
 
+*(untagged release; release commit `c19d4d0e` — retro-tagging is owner-gated)*
+
 ### Added
 - 2026-06-04 — Polished the public differentiable-programming documentation and
   release metadata surface for the current implementation state, including
@@ -1148,6 +1150,8 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ## [0.9.2] - 2026-03-26
 
+*(untagged; predates the 2026-05-12 repository history reconstruction)*
+
 ### Added
 - 38 runner coverage tests (simulator-path methods).
 - 22 experiment coverage tests (all 20 experiment functions).
@@ -1162,6 +1166,8 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 - Rust engine `build_knm` parity test (wheel rebuilt).
 
 ## [0.9.1] - 2026-03-25
+
+*(untagged; predates the 2026-05-12 repository history reconstruction)*
 
 ### Added
 - `analysis/sync_witness.py` — correlation, Fiedler, topological witnesses.
