@@ -1055,19 +1055,6 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 - `<private-local-record>`.
 - `.gitignore` patterns for `.venv-linux/`, `.venv-rocm/`, `.venv-cuda/`, `results/`, `<private-local-record>`, `<private-local-record>`.
 
-### Changed
-- Tests collected: 2 813 → 4 828 (97 %+ coverage).
-- Python modules: 165 → 201; subpackages 17 → 19.
-- Rust functions exported: 22 → 36 across 20 source files.
-- Hardware reference: `ibm_fez` → `ibm_fez + ibm_kingston` (Feb + Apr 2026).
-- `runner.py`: counts extraction now tries `meas`, `c`, `cr`, `c0` then introspects `DataBin`.
-
-### Fixed
-- 2026-04-10: SamplerV2 result parsing no longer hard-codes the classical-register name as `meas`.
-
-## [0.9.5] - 2026-03-29 / 2026-04-07
-
-### Added
 - 2026-04-06 / -07: `qec/multiscale_qec.py`, `qec/syndrome_flow.py` — concatenated surface codes across 5 SCPN domains. 23 tests.
 - `fep/variational_free_energy.py`, `fep/predictive_coding.py` — Friston 2010 variational F. 16 tests.
 - `psi_field/lattice.py`, `psi_field/infoton.py`, `psi_field/scpn_mapping.py`, `psi_field/observables.py` — U(1) compact gauge theory with HMC. 22 tests.
@@ -1087,6 +1074,11 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 - Rust: `correlation_matrix_xy`, `lindblad_jump_ops_coo`, `lindblad_anti_hermitian_diag`, `parity_filter_mask` (18 → 22 total).
 
 ### Changed
+- Tests collected: 2 813 → 4 828 (97 %+ coverage).
+- Python modules: 165 → 201; subpackages 17 → 19.
+- Rust functions exported: 22 → 36 across 20 source files.
+- Hardware reference: `ibm_fez` → `ibm_fez + ibm_kingston` (Feb + Apr 2026).
+- `runner.py`: counts extraction now tries `meas`, `c`, `cr`, `c0` then introspects `DataBin`.
 - `lib.rs` god file (1 436 lines) split into 16 focused modules + 3 new Rust paths (`concat_qec.rs`, `fep.rs`, `gauge_lattice.rs`). 22 → 25 exported functions.
 - OTOC: 4.4× faster (n = 4, 50 time points) via O(d) phase rotation.
 - Pauli expectations: 2–10× faster via half-loop over paired states.
@@ -1097,6 +1089,7 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 - Tests: 2 715 → 4 445+; Rust tests: 47 → 65.
 
 ### Fixed
+- 2026-04-10: SamplerV2 result parsing no longer hard-codes the classical-register name as `meas`.
 - `knm_hamiltonian.py` K-symmetry enforced for Hermiticity.
 - All example scripts wrapped in `if __name__ == "__main__":`.
 - `delta` parameter propagation in `pairing_correlator.py`, `xxz_phase_diagram.py`.

@@ -101,6 +101,23 @@ Full detailed changelog: [CHANGELOG.md](https://github.com/anulum/scpn-quantum-c
   tutorials, notebook guide, API overview, examples guide, installation guide,
   MkDocs navigation, and release-readiness page.
 
+## [0.9.7] - 2026-05-19
+
+**Paper 0 preregistered replay + capability-manifest system.**
+
+- GOTM-SCPN Paper 0 K_nm preregistered replay artefact set: deterministic
+  JSON/Markdown outputs, comparator gate, release-safe `scpn-bench` wiring,
+  null-model diagnostics, input digest manifests, and an explicit
+  do-not-promote hardware boundary
+- Paper 0 methodology-paper outline, first downstream preregistered experiment
+  design, replay contract, and measured-coupling evidence checklist
+- Repository capability-manifest system (generated JSON/Markdown inventory +
+  README snapshot) with `scpn-bench capability-manifest-check`, so public
+  capability counts are generated from one source of truth
+- Release-readiness audit helper and public gate document composing version
+  consistency, coverage-gap readiness, behavioural-test density, and required
+  claim-boundary artefacts into one deterministic tag blocker
+
 ## [0.9.6] - 2026-04-17
 
 ### Changed (2026-04-29)
@@ -258,7 +275,7 @@ five strategic tweaks (GUESS, DynQ, ICI, hypergeometric, FFI hardening)
 - 14 analysis modules, 9 phase modules, 6 hardware/bridge modules
 - IBM hardware campaign: 9 jobs on ibm_fez
 
-## [0.9.0] - 2026-03-22
+## [0.9.0] - 2026-03-02
 
 **SCPN-native quantum control.**
 
@@ -268,13 +285,25 @@ five strategic tweaks (GUESS, DynQ, ICI, hypergeometric, FFI hardening)
 - Gauge: U(1) Wilson loops, vortex detection, CFT, universality
 - 1789 tests, 100% coverage
 
-## [0.8.0] - 2026-03-15
+## [0.8.0] - 2026-03-02
 
 **Cross-repo bridges, crypto, QEC expansion.**
 
 - Bridge: SSGF, SPN-to-circuit, SNN adapter, orchestrator
 - Crypto: BB84, Bell tests, topology QKD
 - QEC: fault-tolerant UPDE, surface code, error budget
+
+## [0.7.1] - 2026-03-02
+
+**Test/typing hygiene + packaging guards.**
+
+- Meaningful assertions replace trivial `assert True`; 3 duplicate tests
+  removed; 10 error-path tests added
+- mypy `warn_unreachable` + `check_untyped_defs`; per-module
+  `ignore_missing_imports`; `__all__` gaps closed (`knm_to_ansatz`,
+  `classical_exact_evolution`, `JobResult`, `SurfaceCode`, `MWPMDecoder`)
+- `wheel-check` CI job; sdist excludes; `build` in dev extras; matplotlib
+  capped `<4.0`
 
 ## [0.7.0] - 2026-03-02
 
