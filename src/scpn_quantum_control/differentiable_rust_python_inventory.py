@@ -372,7 +372,7 @@ def _default_inventory_rows(
         ),
         _inventory_row(
             "rust_program_ad_ir",
-            "Rust Program AD IR parser plus bounded scalar, elementwise-array, structural-array, structural-assembly, compact interpolation, compact signal, compact stencil, compact cumulative, static reductions, static-grid trapezoid value+gradient replay, and deterministic panic-boundary fail-closed corpus",
+            "Rust Program AD IR parser plus bounded scalar, elementwise-array, structural-array, structural-assembly, compact interpolation, compact signal, compact stencil, compact cumulative, static reductions, static-grid trapezoid value+gradient replay, deterministic panic-boundary fail-closed corpus, and cargo-fuzz public API harness",
             "rust_backed",
             "src/scpn_quantum_control/differentiable.py",
             (
@@ -388,6 +388,7 @@ def _default_inventory_rows(
                 "scpn_quantum_engine/src/program_ad_signal_reduction.rs",
                 "scpn_quantum_engine/src/program_ad_stencil_reduction.rs",
                 "scpn_quantum_engine/src/program_ad_cumulative_reduction.rs",
+                "scpn_quantum_engine/fuzz/fuzz_targets/program_ad_ir.rs",
                 "scpn_quantum_engine/tests/program_ad_ir.rs",
                 "scpn_quantum_engine/tests/program_ad_interpolation.rs",
                 "scpn_quantum_engine/tests/program_ad_signal.rs",
@@ -408,6 +409,7 @@ def _default_inventory_rows(
                 "scpn_quantum_engine/tests/program_ad_stencil.rs",
                 "scpn_quantum_engine/tests/program_ad_cumulative.rs",
                 "scpn_quantum_engine/tests/program_ad_panic_boundary.rs",
+                "scpn_quantum_engine/fuzz/fuzz_targets/program_ad_ir.rs",
             ),
             ("docs/differentiable_api.md", "docs/differentiable_programming.md"),
             (
@@ -421,7 +423,7 @@ def _default_inventory_rows(
             "partial",
             (
                 "non-lowered dynamic indexing semantics, dynamic axes, dynamic trapezoid-grid metadata, dynamic q/method metadata, dynamic ddof/correction metadata, zero-variance std gradients, and broad linalg array adjoints are missing",
-                "coverage-guided fuzzing, Miri, sanitizer, executable registry promotion, LLVM/JIT lowering, provider/hardware evidence, and isolated benchmark evidence are missing",
+                "sustained coverage-guided fuzz campaign evidence, Miri, sanitizer, executable registry promotion, LLVM/JIT lowering, provider/hardware evidence, and isolated benchmark evidence are missing",
             ),
         ),
         _inventory_row(

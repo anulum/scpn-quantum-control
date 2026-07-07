@@ -203,8 +203,20 @@ lowering, provider execution, hardware execution, or performance evidence.
 panic-boundary corpus for malformed JSON, missing schema fields, unsafe alias
 metadata, unsupported opcodes, non-finite inputs, and malformed compact signal
 and cumulative metadata. The corpus checks the public Rust forward and
-value+gradient APIs fail closed without promoting coverage-guided fuzzing,
-Miri, sanitizer, registry, LLVM/JIT, provider, hardware, or performance claims.
+value+gradient APIs fail closed. `scpn_quantum_engine/fuzz/fuzz_targets/program_ad_ir.rs`
+adds a `cargo-fuzz` target over the same public parser, forward replay, and
+value+gradient replay APIs, with seed corpus entries under
+`scpn_quantum_engine/fuzz/corpus/program_ad_ir/`.
+
+Focused fuzz-harness build checks are run from the Rust crate directory:
+
+```bash
+cargo +nightly fuzz check program_ad_ir
+```
+
+That check is build reliability evidence only. Sustained coverage-guided fuzz
+campaign artifacts, Miri, sanitizer, registry, LLVM/JIT, provider, hardware,
+and performance promotion claims remain blocked.
 
 ### Stochastic Gradient Kernels
 

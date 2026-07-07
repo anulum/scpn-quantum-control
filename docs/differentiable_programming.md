@@ -242,9 +242,12 @@ and
 The Rust Program AD inventory row includes a dedicated deterministic
 panic-boundary corpus that exercises malformed or unsupported IR through the
 public Rust forward and value+gradient replay APIs. That corpus is fail-closed
-reliability evidence only; coverage-guided fuzzing, Miri, sanitizer,
-executable registry, LLVM/JIT, provider, hardware, and performance promotion
-remain blocked until separate artifacts exist.
+reliability evidence only. The companion `program_ad_ir` `cargo-fuzz` target
+build-checks the same public parser, forward replay, and value+gradient replay
+boundary with seed inputs under
+`scpn_quantum_engine/fuzz/corpus/program_ad_ir/`; sustained fuzz campaign
+artifacts, Miri, sanitizer, executable registry, LLVM/JIT, provider, hardware,
+and performance promotion remain blocked until separate artifacts exist.
 `run_differentiable_architecture_map()` connects that inventory to the
 scorecard as six Rustification routing layers: public API facade, QNode
 framework bridges, Program AD core, compiler/native execution, provider and

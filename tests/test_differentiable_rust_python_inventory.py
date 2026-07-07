@@ -59,6 +59,7 @@ def test_inventory_rows_are_claim_bounded_and_path_backed() -> None:
     assert "scpn_quantum_engine/src/program_ad_signal_reduction.rs" in rust_ir.rust_surface
     assert "scpn_quantum_engine/src/program_ad_cumulative_reduction.rs" in rust_ir.rust_surface
     assert "scpn_quantum_engine/src/program_ad_stencil_reduction.rs" in rust_ir.rust_surface
+    assert "scpn_quantum_engine/fuzz/fuzz_targets/program_ad_ir.rs" in rust_ir.rust_surface
     assert "tests/test_phase_qnode_rust_parity.py" in rust_ir.test_surface
     assert "tests/test_program_ad_rust_signal_bridge.py" in rust_ir.test_surface
     assert "tests/test_program_ad_rust_cumulative_bridge.py" in rust_ir.test_surface
@@ -66,6 +67,7 @@ def test_inventory_rows_are_claim_bounded_and_path_backed() -> None:
     assert "scpn_quantum_engine/tests/program_ad_cumulative.rs" in rust_ir.test_surface
     assert "scpn_quantum_engine/tests/program_ad_stencil.rs" in rust_ir.test_surface
     assert "scpn_quantum_engine/tests/program_ad_panic_boundary.rs" in rust_ir.test_surface
+    assert "scpn_quantum_engine/fuzz/fuzz_targets/program_ad_ir.rs" in rust_ir.test_surface
     assert any("array adjoints" in blocker for blocker in rust_ir.blockers)
 
     qiskit = rows["qiskit_runtime_provider_gradients"]

@@ -279,9 +279,12 @@ hardware, provider, and performance routes remain fail-closed.
 The Rust panic-boundary corpus exercises malformed JSON, missing schema fields,
 unsafe alias metadata, unsupported opcodes, non-finite inputs, and malformed
 compact signal/cumulative metadata through the public forward and value+gradient
-exports. It is reliability evidence only and does not replace coverage-guided
-fuzzing, Miri, sanitizer, executable registry, LLVM/JIT, provider, hardware, or
-performance promotion artifacts.
+exports. The companion `program_ad_ir` `cargo-fuzz` harness build-checks the
+same public parser, forward replay, and value+gradient replay APIs from bounded
+UTF-8 payloads and a committed seed corpus. It is reliability evidence only
+and does not replace sustained coverage-guided fuzz artifacts, Miri, sanitizer,
+executable registry, LLVM/JIT, provider, hardware, or performance promotion
+artifacts.
 Python callers may use `scpn_quantum_control.program_ad_rust_bridge` directly
 for the typed fail-closed wrappers, including bounded fixed-signature
 `np.linalg.multi_dot` linalg-array output replay, bounded 2x2 distinct
