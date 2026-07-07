@@ -35,7 +35,7 @@ _cp: Any | None = None
 def _detect_cupy_accelerator() -> tuple[bool, Any | None]:
     """Detect CuPy without hiding present-but-broken CUDA runtimes."""
     try:
-        import cupy as _cp_module  # type: ignore[import-not-found]
+        import cupy as _cp_module
     except ImportError:
         return False, None
 

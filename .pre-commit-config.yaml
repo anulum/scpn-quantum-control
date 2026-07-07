@@ -26,7 +26,11 @@ repos:
         # numpy/scipy are pinned to the project lock so the hook's stubs match
         # CI: unpinned, pre-commit installs the latest numpy whose stub uses PEP
         # 695 ``type`` syntax, which mypy rejects under python_version 3.10.
-        additional_dependencies: [numpy==2.4.6, scipy==1.17.1, networkx, qiskit]
+        # pydantic/pydantic-settings ship first-party types; without them the
+        # hook env resolves BaseSettings to Any and strict mode rejects the
+        # config module (disallow_subclassing_any / untyped validators).
+        additional_dependencies:
+          [numpy==2.4.6, scipy==1.17.1, networkx, qiskit, pydantic, pydantic-settings]
         pass_filenames: false
 
   - repo: local

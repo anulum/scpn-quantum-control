@@ -197,6 +197,9 @@ known-first-party = ["oscillatools", "scpn_quantum_control"]
 convention = "numpy"
 
 [tool.mypy]
+# Declared baseline per the 2026-06-17 strict-typing broadcast; CI's explicit
+# `mypy --strict src/` remains as belt-and-braces enforcement of the same set.
+strict = true
 python_version = "3.11"
 warn_return_any = true
 warn_unused_configs = true
@@ -264,6 +267,22 @@ ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
 module = "matplotlib.*"
+ignore_missing_imports = true
+
+# Optional runtime dependencies imported lazily inside function bodies; absent
+# in the pre-commit hook env and in CI's type-check env. A scoped override
+# behaves identically whether the package is missing or installed-untyped,
+# unlike inline ignores whose error codes differ between those two states.
+[[tool.mypy.overrides]]
+module = "cupy.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "qutip.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "community.*"
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]

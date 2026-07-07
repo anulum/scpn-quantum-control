@@ -49,7 +49,7 @@ class BiologicalSurfaceDiagnostics:
 def _compute_modularity_partition(graph: nx.Graph) -> tuple[list[set[int]], float]:
     """Return community partition and modularity using available implementation."""
     try:
-        from community import community_louvain  # type: ignore[import-not-found]
+        from community import community_louvain
 
         assignment = community_louvain.best_partition(graph, weight="weight")
         groups: dict[int, set[int]] = {}
