@@ -206,9 +206,10 @@ def _as_executable_kernel_batch_array(name: str, value: object) -> FloatArray:
     raw = np.asarray(value)
     if raw.dtype.kind in {"b", "O", "S", "U"}:
         raise ValueError(f"executable AD kernel batching {name} must be numeric")
-    array = np.ascontiguousarray(raw, dtype=np.float64)
-    if array.ndim == 0:
+    # Checked before ascontiguousarray, which silently promotes 0-d input to 1-d.
+    if raw.ndim == 0:
         raise ValueError(f"executable AD kernel batching {name} cannot map over a scalar")
+    array = np.ascontiguousarray(raw, dtype=np.float64)
     if not np.all(np.isfinite(array)):
         raise ValueError(f"executable AD kernel batching {name} must contain only finite values")
     return array
