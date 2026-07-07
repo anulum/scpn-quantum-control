@@ -1,11 +1,3 @@
-# SPDX-License-Identifier: AGPL-3.0-or-later
-# Commercial license available
-# © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
-# © Code 2020–2026 Miroslav Šotek. All rights reserved.
-# ORCID: 0009-0009-3560-0851
-# Contact: www.anulum.li | protoscience@anulum.li
-# scpn-quantum-control — Physics-First Kuramoto-XY Tutorial
-
 # Physics-First Kuramoto-XY Tutorial
 
 This tutorial starts from the physics object: a network of coupled oscillators.
