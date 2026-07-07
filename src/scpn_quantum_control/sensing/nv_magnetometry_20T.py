@@ -15,8 +15,8 @@ and into the high-field regime where the electron Zeeman term dominates the
 zero-field splitting. Hardware calibration against a NIST-traceable reference is
 a separate, hardware-gated workstream.
 
-References:
-
+References
+----------
 - M. W. Doherty et al., *The nitrogen-vacancy colour centre in diamond*, Physics
   Reports 528, 1 (2013) — ground-state spin Hamiltonian.
 - J. F. Barry et al., *Sensitivity optimization for NV-diamond magnetometry*,

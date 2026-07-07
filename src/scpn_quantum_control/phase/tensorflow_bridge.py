@@ -383,7 +383,6 @@ def run_tensorflow_phase_qnode_lowering_matrix() -> PhaseTensorFlowPhaseQNodeLow
     rules, graph autodiff parity artefacts, provider safety evidence, hardware
     evidence, and isolated benchmark artefacts exist.
     """
-
     routes = (
         PhaseTensorFlowPhaseQNodeLoweringRoute(
             name="bounded_qnn_analytic_tensor",
@@ -1151,7 +1150,6 @@ def run_tensorflow_maturity_audit(
     tolerance: float = 1e-6,
 ) -> PhaseTensorFlowMaturityAuditResult:
     """Aggregate bounded TensorFlow evidence and provider-level blockers."""
-
     tolerance_value = _as_non_negative_tolerance(tolerance)
     feature_matrix = _as_feature_matrix(features)
     label_vector = _as_label_vector(labels, n_samples=feature_matrix.shape[0])

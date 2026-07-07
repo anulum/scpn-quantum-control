@@ -82,7 +82,6 @@ def armijo_backtracking_line_search(
     ArmijoLineSearchResult
         Accepted candidate or fail-closed rejection metadata.
     """
-
     if not isinstance(gradient_result, GradientResult):
         raise ValueError("line search requires a GradientResult")
     parameter_values = _as_parameter_array(values)
@@ -187,7 +186,6 @@ def weighted_gradient_sum(
     WeightedGradientResult
         Weighted scalar value, gradient, component provenance, and metadata.
     """
-
     component_tuple = tuple(components)
     if not component_tuple:
         raise ValueError("components must contain at least one GradientResult")
@@ -254,7 +252,6 @@ def natural_gradient(
     NaturalGradientResult
         Preconditioned gradient with frozen parameter entries zeroed.
     """
-
     metric_arr = _as_real_numeric_array("natural-gradient metric", metric)
     if metric_arr.ndim != 2 or metric_arr.shape != (
         gradient_result.gradient.size,
@@ -329,7 +326,6 @@ class NaturalGradientOptimizer:
 
     def __post_init__(self) -> None:
         """Validate and canonicalize natural-gradient optimizer controls."""
-
         learning_rate = _as_real_scalar("natural-gradient learning_rate", self.learning_rate)
         damping = _as_real_scalar("natural-gradient damping", self.damping)
         rcond = _as_real_scalar("natural-gradient rcond", self.rcond)
@@ -403,7 +399,6 @@ class NaturalGradientOptimizer:
             Final values, gradient and natural-gradient records, histories,
             convergence state, and best-observed iterate.
         """
-
         if gradient_method not in {"parameter_shift", "finite_difference"}:
             raise ValueError("gradient_method must be 'parameter_shift' or 'finite_difference'")
         finite_difference_step_value = _as_real_scalar(
@@ -532,7 +527,6 @@ class NaturalGradientOptimizer:
         trainable: NDArray[np.bool_],
     ) -> NDArray[np.float64]:
         """Return one trainable-mask-aware bounded natural-gradient step."""
-
         step_vector = self.learning_rate * natural_gradient_value.copy()
         if self.max_step_norm is not None and np.any(trainable):
             norm = float(np.linalg.norm(step_vector[trainable], ord=2))
@@ -553,7 +547,6 @@ class NaturalGradientOptimizer:
         finite_difference_step: float,
     ) -> GradientResult:
         """Return a gradient record from the requested scalar-gradient backend."""
-
         if gradient_method == "finite_difference":
             return value_and_finite_difference_grad(
                 objective,

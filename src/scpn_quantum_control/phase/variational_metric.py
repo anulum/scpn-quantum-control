@@ -64,7 +64,8 @@ def assert_single_parameter_rotations(ansatz: QuantumCircuit) -> None:
     the exact derivative. Non-:class:`~qiskit.QuantumCircuit` inputs (test doubles)
     are skipped — the contract applies to real circuits only.
 
-    Raises:
+    Raises
+    ------
         ValueError: if a parameter drives a non-Pauli-rotation gate, a gate carries
             more than one free parameter, or a parameter appears in more than one
             gate.
@@ -107,7 +108,8 @@ def analytic_state_derivatives(state_of: StateEvaluator, params: FloatArray) -> 
         state_of: returns the statevector ``|ψ(p)>`` for parameter vector ``p``.
         params: current parameter vector θ.
 
-    Returns:
+    Returns
+    -------
         Array of shape ``(len(params), dim)`` whose row ``k`` is ``∂_k|ψ(θ)>``.
     """
     theta = np.asarray(params, dtype=np.float64)
@@ -127,7 +129,8 @@ def mclachlan_metric(state_derivatives: ComplexArray) -> FloatArray:
         state_derivatives: rows ``∂_k|ψ>``, as returned by
             :func:`analytic_state_derivatives`.
 
-    Returns:
+    Returns
+    -------
         Symmetric ``(n_params, n_params)`` real metric.
     """
     return np.real(state_derivatives.conj() @ state_derivatives.T).astype(np.float64)
@@ -140,7 +143,8 @@ def real_time_force(state_derivatives: ComplexArray, h_psi: ComplexArray) -> Flo
         state_derivatives: rows ``∂_k|ψ>``.
         h_psi: the vector ``H|ψ>``.
 
-    Returns:
+    Returns
+    -------
         Length ``n_params`` force vector.
     """
     return (-np.imag(state_derivatives.conj() @ np.asarray(h_psi, dtype=np.complex128))).astype(
@@ -157,7 +161,8 @@ def imaginary_time_force(
         state_derivatives: rows ``∂_k|ψ>``.
         h_shifted_psi: the vector ``(H - <H>)|ψ>``.
 
-    Returns:
+    Returns
+    -------
         Length ``n_params`` force vector.
     """
     return (

@@ -478,7 +478,6 @@ def compile_scalar_quadratic_ad_to_native_llvm_jit(
     sample_cotangent: Sequence[float] | FloatArray | None = None,
 ) -> ExecutableCompilerADKernel:
     """Compile scalar quadratic value/JVP/VJP/gradient kernels to LLVM MCJIT."""
-
     if not isinstance(rule, CustomDerivativeRule):
         raise ValueError("rule must be a CustomDerivativeRule")
     compile_config = (
@@ -568,7 +567,6 @@ def make_scalar_quadratic_native_llvm_jit_lowering_rule(
     sample_cotangent: Sequence[float] | FloatArray | None = None,
 ) -> Callable[..., ExecutableCompilerADKernel]:
     """Create a lowering rule for scalar quadratic native LLVM/JIT AD kernels."""
-
     coefficients = np.asarray([quadratic, linear, constant], dtype=np.float64)
     if not np.all(np.isfinite(coefficients)):
         raise ValueError("quadratic, linear, and constant coefficients must be finite")
@@ -626,7 +624,6 @@ def compile_scalar_unary_elementwise_ad_to_native_llvm_jit(
     sample_cotangent: Sequence[float] | FloatArray | None = None,
 ) -> ExecutableCompilerADKernel:
     """Compile scalar unary elementwise value/JVP/VJP/gradient kernels to LLVM MCJIT."""
-
     if not isinstance(rule, CustomDerivativeRule):
         raise ValueError("rule must be a CustomDerivativeRule")
     checked_primitive = primitive.strip().lower()
@@ -711,7 +708,6 @@ def make_scalar_unary_elementwise_native_llvm_jit_lowering_rule(
     sample_cotangent: Sequence[float] | FloatArray | None = None,
 ) -> Callable[..., ExecutableCompilerADKernel]:
     """Create a lowering rule for scalar unary elementwise native LLVM/JIT kernels."""
-
     checked_primitive = primitive.strip().lower()
     _scalar_unary_native_intrinsics(checked_primitive)
     captured_values = (
@@ -766,7 +762,6 @@ def compile_scalar_binary_elementwise_ad_to_native_llvm_jit(
     sample_cotangent: Sequence[float] | FloatArray | None = None,
 ) -> ExecutableCompilerADKernel:
     """Compile scalar binary elementwise value/JVP/VJP/gradient kernels to LLVM MCJIT."""
-
     if not isinstance(rule, CustomDerivativeRule):
         raise ValueError("rule must be a CustomDerivativeRule")
     checked_primitive = primitive.strip().lower()
@@ -851,7 +846,6 @@ def make_scalar_binary_elementwise_native_llvm_jit_lowering_rule(
     sample_cotangent: Sequence[float] | FloatArray | None = None,
 ) -> Callable[..., ExecutableCompilerADKernel]:
     """Create a lowering rule for scalar binary elementwise native LLVM/JIT kernels."""
-
     checked_primitive = primitive.strip().lower()
     _scalar_binary_native_value_line(checked_primitive)
     captured_values = (

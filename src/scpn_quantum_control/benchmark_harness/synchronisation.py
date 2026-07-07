@@ -46,7 +46,6 @@ class SynchronisationBenchmarkInstance:
 
     def to_dict(self) -> dict[str, object]:
         """Return a JSON-serialisable benchmark instance row."""
-
         return asdict(self)
 
 
@@ -173,7 +172,6 @@ def list_synchronisation_benchmarks(
     include_planned: bool = True,
 ) -> tuple[SynchronisationBenchmarkInstance, ...]:
     """Return canonical synchronisation benchmark instances."""
-
     if include_planned:
         return SYNCHRONISATION_BENCHMARKS
     return tuple(row for row in SYNCHRONISATION_BENCHMARKS if row.evidence_class != "planned")
@@ -184,7 +182,6 @@ def synchronisation_benchmark_registry_payload(
     include_planned: bool = True,
 ) -> dict[str, object]:
     """Return the synchronisation benchmark registry payload."""
-
     rows = list_synchronisation_benchmarks(include_planned=include_planned)
     return {
         "schema": "synchronisation_benchmark_registry_v1",

@@ -1055,7 +1055,6 @@ def _emit_whole_program_native_det3(
     inputs: Sequence[str],
 ) -> None:
     """Emit native 3x3 determinant value and exact cofactor adjoint code."""
-
     parameter_count = int(result.gradient.size)
     a_value, b_value, c_value, d_value, e_value, f_value, g_value, h_value, i_value = (
         _whole_program_native_operand(token) for token in inputs
@@ -1131,7 +1130,6 @@ def _emit_whole_program_native_sum(
     prefix: str,
 ) -> None:
     """Emit native value and derivative code for a fixed input sum."""
-
     if not inputs:
         raise ValueError(f"native {prefix} sum requires at least one input")
     parameter_count = int(result.gradient.size)
@@ -1189,7 +1187,6 @@ def _emit_whole_program_native_det4(
     inputs: Sequence[str],
 ) -> None:
     """Emit native 4x4 determinant value and exact cofactor adjoint code."""
-
     _emit_whole_program_native_det_fixed(
         lines,
         result,
@@ -1209,7 +1206,6 @@ def _emit_whole_program_native_det5(
     inputs: Sequence[str],
 ) -> None:
     """Emit native 5x5 determinant value and exact cofactor adjoint code."""
-
     _emit_whole_program_native_det_fixed(
         lines,
         result,
@@ -1232,7 +1228,6 @@ def _emit_whole_program_native_det_loop_helper_call(
     prefix: str,
 ) -> None:
     """Emit a compact native helper call plus exact chain-rule derivative code."""
-
     if size not in _WHOLE_PROGRAM_NATIVE_LOOP_HELPER_DET_SIZES:
         raise ValueError("native determinant helper call requested for unsupported size")
     parameter_count = int(result.gradient.size)
@@ -1308,7 +1303,6 @@ def _emit_whole_program_native_inverse_helper(
     emission_state: _WholeProgramNativeEmissionState,
 ) -> _WholeProgramNativeInverseHelper:
     """Emit or reuse one shared adjugate inverse helper for a static matrix."""
-
     if size not in _WHOLE_PROGRAM_NATIVE_DET_DERIVATIVE_HELPER_SIZES:
         raise ValueError("native shared inverse helper requested for unsupported size")
     matrix_key = (size, tuple(matrix_tokens))
@@ -1399,7 +1393,6 @@ def _emit_whole_program_native_solve_helper(
     emission_state: _WholeProgramNativeEmissionState,
 ) -> _WholeProgramNativeSolveHelper:
     """Emit or reuse one shared solve helper for a static matrix/RHS column."""
-
     if len(rhs_tokens) != size:
         raise ValueError("native shared solve helper requires one RHS column")
     solve_key = (size, tuple(matrix_tokens), tuple(rhs_tokens))
@@ -1450,7 +1443,6 @@ def _emit_whole_program_native_inverse_fixed(
     emission_state: _WholeProgramNativeEmissionState,
 ) -> None:
     """Emit native fixed-size inverse entry value and exact derivative code."""
-
     if size not in _WHOLE_PROGRAM_NATIVE_INVERSE_SIZES:
         raise ValueError("native fixed inverse requested for unsupported size")
     if output_row < 0 or output_row >= size or output_col < 0 or output_col >= size:
@@ -1586,7 +1578,6 @@ def _emit_whole_program_native_solve_fixed(
     emission_state: _WholeProgramNativeEmissionState,
 ) -> None:
     """Emit native fixed-size solve-column value and exact derivative code."""
-
     if size not in (
         _WHOLE_PROGRAM_NATIVE_SOLVE_VECTOR_SIZES | _WHOLE_PROGRAM_NATIVE_SOLVE_MATRIX_SIZES
     ):
@@ -1739,7 +1730,6 @@ def _emit_whole_program_native_det_with_derivatives(
     prefix: str,
 ) -> tuple[str, tuple[str, ...]]:
     """Emit a fixed determinant plus exact first derivatives for each matrix tangent."""
-
     size = len(matrix)
     if size < 1 or any(len(row) != size for row in matrix):
         raise ValueError("native determinant derivative helper requires a square matrix")
@@ -1789,7 +1779,6 @@ def _emit_whole_program_native_det_helper_with_derivatives(
     prefix: str,
 ) -> tuple[str, tuple[str, ...]]:
     """Emit compact determinant helper call plus exact first derivatives."""
-
     size = len(matrix)
     if size not in _WHOLE_PROGRAM_NATIVE_DET_DERIVATIVE_HELPER_SIZES:
         raise ValueError("native determinant derivative helper requested for unsupported size")
@@ -1877,7 +1866,6 @@ def _emit_whole_program_native_det_faddeev_leverrier(
     prefix: str,
 ) -> None:
     """Emit native determinant and exact derivative code using Faddeev-LeVerrier."""
-
     parameter_count = int(result.gradient.size)
     matrix = tuple(
         tuple(_whole_program_native_operand(inputs[row * size + col]) for col in range(size))
@@ -2062,7 +2050,6 @@ def _emit_whole_program_native_det_fixed(
     prefix: str,
 ) -> None:
     """Emit native fixed-size determinant value and exact cofactor adjoint code."""
-
     parameter_count = int(result.gradient.size)
     entries = tuple(_whole_program_native_operand(token) for token in inputs)
     matrix = tuple(tuple(entries[row * size + col] for col in range(size)) for row in range(size))
@@ -2120,7 +2107,6 @@ def _emit_whole_program_native_det_expression(
     prefix: str,
 ) -> str:
     """Emit a small fixed determinant expression and return the final LLVM operand."""
-
     size = len(matrix)
     if size == 1:
         return matrix[0][0]
@@ -2163,7 +2149,6 @@ def _emit_whole_program_native_sum_operands(
     result_name: str,
 ) -> None:
     """Emit a deterministic native sum into an existing LLVM result name."""
-
     if not operands:
         lines.append(
             f"  {result_name} = fadd double {_fmt_llvm_float(0.0)}, {_fmt_llvm_float(0.0)}"
@@ -2185,7 +2170,6 @@ def _whole_program_native_det_minor(
     col_index: int,
 ) -> tuple[tuple[str, ...], ...]:
     """Return the fixed determinant minor matrix for native code generation."""
-
     return tuple(
         tuple(value for col, value in enumerate(row_values) if col != col_index)
         for current_row_index, row_values in enumerate(matrix)
@@ -2195,7 +2179,6 @@ def _whole_program_native_det_minor(
 
 def _whole_program_native_wide_det_size(op: str) -> int | None:
     """Return supported helper-backed determinant sizes for compact det ops."""
-
     prefix = "linalg:det:"
     if not op.startswith(prefix):
         return None
@@ -2213,7 +2196,6 @@ def _whole_program_native_wide_det_size(op: str) -> int | None:
 
 def _whole_program_native_inverse_spec(op: str) -> tuple[int, int, int] | None:
     """Return supported static inverse shape and output coordinates."""
-
     parts = op.split(":")
     if len(parts) != 5 or parts[0] != "linalg" or parts[1] != "inv":
         return None
@@ -2239,7 +2221,6 @@ def _whole_program_native_inverse_spec(op: str) -> tuple[int, int, int] | None:
 
 def _whole_program_native_solve_vector_spec(op: str) -> tuple[int, int] | None:
     """Return supported static vector solve shape and output row."""
-
     parts = op.split(":")
     if len(parts) != 6 or parts[0] != "linalg" or parts[1] != "solve" or parts[3] != "rhs":
         return None
@@ -2264,7 +2245,6 @@ def _whole_program_native_solve_vector_spec(op: str) -> tuple[int, int] | None:
 
 def _whole_program_native_solve_matrix_spec(op: str) -> tuple[int, int, int, int] | None:
     """Return supported static matrix-RHS solve shape and output coordinates."""
-
     parts = op.split(":")
     if len(parts) != 7 or parts[0] != "linalg" or parts[1] != "solve" or parts[3] != "rhs":
         return None
@@ -2296,7 +2276,6 @@ def _whole_program_native_solve_matrix_spec(op: str) -> tuple[int, int, int, int
 
 def _whole_program_native_det_derivative_helper_size(op: str) -> int | None:
     """Return determinant-partial helper size required by supported quotient linalg ops."""
-
     inverse_spec = _whole_program_native_inverse_spec(op)
     if (
         inverse_spec is not None
@@ -2320,7 +2299,6 @@ def _whole_program_native_det_derivative_helper_size(op: str) -> int | None:
 
 def _whole_program_native_trace_input_count(op: str) -> int | None:
     """Return the number of statically captured diagonal inputs for a trace op."""
-
     prefix = "linalg:trace:"
     if not op.startswith(prefix):
         return None
@@ -2344,7 +2322,6 @@ def _whole_program_native_trace_input_count(op: str) -> int | None:
 
 def _whole_program_native_diag_input_count(op: str) -> int | None:
     """Return the scalar input count for compact diag/diagflat passthrough nodes."""
-
     parts = op.split(":")
     if len(parts) != 7 or parts[0] != "linalg":
         return None
@@ -2380,7 +2357,6 @@ def _emit_whole_program_native_product_sum2(
     prefix: str,
 ) -> None:
     """Emit native value and derivative code for x*y + z*w."""
-
     parameter_count = int(result.gradient.size)
     first_left_token, first_right_token, second_left_token, second_right_token = inputs
     first_left = _whole_program_native_operand(first_left_token)

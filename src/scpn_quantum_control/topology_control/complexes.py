@@ -37,7 +37,6 @@ class PersistenceDiagram:
     @property
     def lifetimes(self) -> tuple[float, ...]:
         """Finite death-birth lifetimes."""
-
         return tuple(float(death - birth) for birth, death in zip(self.births, self.deaths))
 
 
@@ -83,7 +82,6 @@ def _as_square_symmetric_matrix(name: str, matrix: NDArray[np.float64]) -> Float
 
 def max_h1_for_vertices(n_vertices: int) -> int:
     """Maximum independent one-cycles in a complete graph skeleton."""
-
     if n_vertices < 3:
         return 1
     return max((n_vertices - 1) * (n_vertices - 2) // 2, 1)
@@ -95,7 +93,6 @@ def build_coupling_distance_matrix(coupling: NDArray[np.float64]) -> FloatArray:
     Stronger absolute couplings become shorter distances. A zero-coupling graph
     maps to unit off-diagonal distances so PH consumers can still classify it.
     """
-
     K = _as_square_symmetric_matrix("coupling", coupling)
     weights = np.abs(K)
     np.fill_diagonal(weights, 0.0)
@@ -110,7 +107,6 @@ def build_coupling_distance_matrix(coupling: NDArray[np.float64]) -> FloatArray:
 
 def build_correlation_distance_matrix(correlation: NDArray[np.float64]) -> FloatArray:
     """Convert a correlation matrix into a distance matrix."""
-
     corr = _as_square_symmetric_matrix("correlation", np.abs(correlation))
     max_corr = float(np.max(corr))
     if max_corr <= 1e-15:
@@ -127,7 +123,6 @@ def spike_trace_correlation_distance(spike_traces: NDArray[np.float64]) -> Float
     Input shape is ``(steps, nodes)``. Constant columns are treated as zero
     correlation to avoid NaNs.
     """
-
     traces = np.asarray(spike_traces, dtype=np.float64)
     if traces.ndim != 2:
         raise ValueError("spike_traces must have shape (steps, nodes)")

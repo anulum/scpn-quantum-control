@@ -55,7 +55,6 @@ def dense_to_sparse_matrix(
     SparseMatrixResult
         Validated coordinate sparse derivative matrix with metadata preserved.
     """
-
     matrix_arr = _as_real_numeric_array("sparse source matrix", matrix)
     if matrix_arr.ndim != 2:
         raise ValueError("sparse source matrix must be two-dimensional")
@@ -105,7 +104,6 @@ def sparse_jacobian(
         Sparse Jacobian preserving parameter names, trainable mask, and method
         provenance.
     """
-
     if not isinstance(jacobian_result, JacobianResult):
         raise ValueError("sparse_jacobian requires a JacobianResult")
     return dense_to_sparse_matrix(
@@ -137,7 +135,6 @@ def sparse_hessian(
         Sparse Hessian preserving parameter names, trainable mask, and method
         provenance.
     """
-
     if not isinstance(hessian_result, HessianResult):
         raise ValueError("sparse_hessian requires a HessianResult")
     return dense_to_sparse_matrix(
@@ -171,7 +168,6 @@ def empirical_fisher_metric(
     numpy.ndarray
         Dense ``J.T @ W @ J + damping * I`` metric.
     """
-
     jacobian_arr = (
         jacobian.jacobian
         if isinstance(jacobian, JacobianResult)
@@ -226,7 +222,6 @@ def sparse_empirical_fisher_metric(
         Sparse empirical Fisher metric with parameter metadata preserved when a
         ``JacobianResult`` is supplied.
     """
-
     metric = empirical_fisher_metric(jacobian, weights=weights, damping=damping)
     if isinstance(jacobian, JacobianResult):
         parameter_names = jacobian.parameter_names

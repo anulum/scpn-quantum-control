@@ -95,7 +95,6 @@ class CompilerPromotionBatchEvidenceFile:
 
     def __post_init__(self) -> None:
         """Validate evidence-file metadata."""
-
         if not self.path:
             raise ValueError("compiler promotion evidence path must be non-empty")
         if not self.role:
@@ -126,7 +125,6 @@ class CompilerPromotionBatchEvidenceFile:
         promotion_ready: bool,
     ) -> CompilerPromotionBatchEvidenceFile:
         """Build an evidence-file checksum summary from a repository path."""
-
         resolved = path if path.is_absolute() else repo_root / path
         if not resolved.exists():
             raise FileNotFoundError(f"compiler promotion evidence file is missing: {path}")
@@ -142,7 +140,6 @@ class CompilerPromotionBatchEvidenceFile:
 
     def as_dict(self) -> dict[str, object]:
         """Return a stable JSON-ready evidence-file summary."""
-
         return {
             "path": self.path,
             "role": self.role,
@@ -176,7 +173,6 @@ class CompilerPromotionBatch:
 
     def __post_init__(self) -> None:
         """Validate compiler promotion-batch metadata."""
-
         if self.artifact_id != COMPILER_PROMOTION_BATCH_ID:
             raise ValueError("compiler promotion batch artifact_id drifted")
         if self.schema != COMPILER_PROMOTION_BATCH_SCHEMA:
@@ -227,12 +223,10 @@ class CompilerPromotionBatch:
     @property
     def assembled_evidence_count(self) -> int:
         """Return the number of evidence files assembled into the batch."""
-
         return len(self.evidence_files)
 
     def as_dict(self) -> dict[str, object]:
         """Return a stable JSON-ready compiler promotion-batch payload."""
-
         return {
             "artifact_id": self.artifact_id,
             "schema": self.schema,
@@ -260,7 +254,6 @@ def build_compiler_promotion_batch(
     source_commit: str,
 ) -> CompilerPromotionBatch:
     """Assemble the current non-promotional compiler evidence batch."""
-
     boundary_payload = _load_json_mapping(
         repo_root / "data/differentiable_phase_qnode/compiler_evidence_boundary_20260705.json"
     )
@@ -350,7 +343,6 @@ def build_compiler_promotion_batch(
 
 def render_compiler_promotion_batch_markdown(batch: CompilerPromotionBatch) -> str:
     """Render a reviewer-facing Markdown summary of the compiler batch."""
-
     lines = [
         "# Compiler Promotion Batch",
         "",

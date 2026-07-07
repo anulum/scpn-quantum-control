@@ -390,7 +390,6 @@ def compile_vector_dot_ad_to_native_llvm_jit(
     sample_cotangent: Sequence[float] | FloatArray | None = None,
 ) -> ExecutableCompilerADKernel:
     """Compile vector dot-product value/JVP/VJP/gradient kernels to LLVM MCJIT."""
-
     if not isinstance(rule, CustomDerivativeRule):
         raise ValueError("rule must be a CustomDerivativeRule")
     checked_dimension = _validate_vector_dot_dimension(dimension)
@@ -485,7 +484,6 @@ def make_vector_dot_native_llvm_jit_lowering_rule(
     sample_cotangent: Sequence[float] | FloatArray | None = None,
 ) -> Callable[..., ExecutableCompilerADKernel]:
     """Create a lowering rule for vector dot-product native LLVM/JIT kernels."""
-
     checked_dimension = _validate_vector_dot_dimension(dimension)
     captured_values = (
         None if sample_values is None else _as_finite_vector("sample_values", sample_values)
@@ -540,7 +538,6 @@ def make_vector_dot_native_llvm_jit_primitive_transform(
     sample_cotangent: Sequence[float] | FloatArray | None = None,
 ) -> PrimitiveTransformRule:
     """Create a complete Rust/PyO3 + native LLVM/JIT vector dot contract."""
-
     primitive_identity = PrimitiveIdentity.parse(identity)
     if not isinstance(rule, CustomDerivativeRule):
         raise ValueError("rule must be a CustomDerivativeRule")
@@ -627,7 +624,6 @@ def compile_vector_squared_norm_ad_to_native_llvm_jit(
     sample_cotangent: Sequence[float] | FloatArray | None = None,
 ) -> ExecutableCompilerADKernel:
     """Compile vector squared-norm value/JVP/VJP/gradient kernels to LLVM MCJIT."""
-
     if not isinstance(rule, CustomDerivativeRule):
         raise ValueError("rule must be a CustomDerivativeRule")
     checked_dimension = _validate_vector_dot_dimension(dimension)
@@ -722,7 +718,6 @@ def make_vector_squared_norm_native_llvm_jit_lowering_rule(
     sample_cotangent: Sequence[float] | FloatArray | None = None,
 ) -> Callable[..., ExecutableCompilerADKernel]:
     """Create a lowering rule for vector squared-norm native LLVM/JIT kernels."""
-
     checked_dimension = _validate_vector_dot_dimension(dimension)
     captured_values = (
         None if sample_values is None else _as_finite_vector("sample_values", sample_values)
@@ -777,7 +772,6 @@ def make_vector_squared_norm_native_llvm_jit_primitive_transform(
     sample_cotangent: Sequence[float] | FloatArray | None = None,
 ) -> PrimitiveTransformRule:
     """Create a complete Rust/PyO3 + native LLVM/JIT squared-norm contract."""
-
     primitive_identity = PrimitiveIdentity.parse(identity)
     if not isinstance(rule, CustomDerivativeRule):
         raise ValueError("rule must be a CustomDerivativeRule")

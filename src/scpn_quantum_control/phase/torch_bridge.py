@@ -864,7 +864,6 @@ def run_torch_phase_qnode_lowering_matrix() -> PhaseTorchPhaseQNodeLoweringMatri
     execution. Finite-shot, provider, hardware, dynamic-circuit, and isolated
     benchmark promotion routes stay blocked until their artefacts exist.
     """
-
     routes = (
         PhaseTorchPhaseQNodeLoweringRoute(
             name="bounded_qnn_analytic_tensor",
@@ -1689,7 +1688,6 @@ def torch_phase_qnode_value_and_grad(
     hardware execution, density/noise channels, dynamic circuits, and
     promotion-grade performance evidence.
     """
-
     torch_module = _load_torch()
     tolerance_value = _as_non_negative_tolerance(tolerance)
     parameter_values = _as_parameter_vector("params", params)
@@ -1748,7 +1746,6 @@ def torch_phase_qnode_transform_audit(
     against SCPN parameter-shift references. It does not promote finite-shot,
     provider, hardware, CUDA, ``torch.compile``, or performance claims.
     """
-
     torch_module = _load_torch()
     torch_func_grad, torch_func_vmap, torch_func_jacrev = _torch_func_transforms(torch_module)
     tolerance_value = _as_non_negative_tolerance(tolerance)
@@ -1853,7 +1850,6 @@ def torch_phase_qnode_compile_audit(
     ``PhaseQNodeCircuit`` gate and observable family. It excludes finite-shot,
     provider, hardware, CUDA promotion, and performance claims.
     """
-
     torch_module = _load_torch()
     compile_fn = _torch_compile(torch_module)
     torch_func_grad, _torch_func_vmap, _torch_func_jacrev = _torch_func_transforms(torch_module)
@@ -2031,7 +2027,6 @@ def torch_phase_qnode_compile_boundary_audit(
     fullgraph, AOTAutograd/export, provider, hardware, CUDA, isolated benchmark,
     and performance surfaces as blocked until their promotion artefacts exist.
     """
-
     torch_module = _load_torch()
     tolerance_value = _as_non_negative_tolerance(tolerance)
     parameter_values = _as_parameter_vector("params", params)
@@ -2570,7 +2565,6 @@ def run_torch_training_loop_audit(
     correctness evidence only; CUDA, provider, finite-shot, hardware, isolated
     benchmark, and performance promotion claims remain outside this route.
     """
-
     torch_module = _load_torch()
     compile_fn = _torch_compile(torch_module)
     torch_func_grad, _torch_func_vmap, _torch_func_jacrev = _torch_func_transforms(torch_module)
@@ -2694,7 +2688,6 @@ def run_torch_ecosystem_maturity_audit() -> PhaseTorchEcosystemMaturityAuditResu
     local CUDA smoke execution succeeds and the broader transform/compiler
     routes are available.
     """
-
     torch_module = _load_torch()
     torch_version = str(getattr(torch_module, "__version__", "unknown"))
     routes: list[PhaseTorchEcosystemMaturityRoute] = []
@@ -2843,7 +2836,6 @@ def plan_torch_cloud_validation_batch(
         JSON-ready scheduling metadata with local skip status, required cloud
         artefacts, environment constraints, and reproduction commands.
     """
-
     clean_runner = runner.strip()
     if not clean_runner:
         raise ValueError("runner must be a non-empty string")
@@ -2945,7 +2937,6 @@ def run_torch_maturity_audit(
     Phase-QNode lowering, full compiler/autograd integration, live overlay
     evidence, and isolated benchmark artefacts are present.
     """
-
     tolerance_value = _as_non_negative_tolerance(tolerance)
     feature_matrix = _as_feature_matrix(features)
     label_vector = _as_label_vector(labels, n_samples=feature_matrix.shape[0])

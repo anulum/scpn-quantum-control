@@ -170,10 +170,11 @@ target-version = "py39"
 line-length = 99
 
 [tool.ruff.lint]
-select = ["E", "F", "W", "I", "UP", "B", "SIM"]
+select = ["E", "F", "W", "I", "UP", "B", "SIM", "D"]
 ignore = [
     "E501",   # line length handled by formatter
     "SIM108", # ternary can reduce readability for physics code
+    "D105",   # numpy convention: magic-method contracts are language-defined
 ]
 
 [tool.ruff.lint.per-file-ignores]
@@ -189,6 +190,52 @@ ignore = [
 "tests/kuramoto_delay_sensitivity_witness.py" = ["E402", "I001"]  # importorskip(jax) before local import
 "tests/test_diff_kuramoto_delay_sensitivity_witness.py" = ["E402", "I001"]  # importorskip(jax) before local import
 "tests/test_kuramoto_visualisation.py" = ["E402", "I001"]  # importorskip(matplotlib) before local import
+# Docstring (D) scope: the 2026-06-17 broadcast mandates NumPy docstrings on the
+# PUBLIC API. tests/ are not public API (design exemption); scripts/ and
+# examples/ adopt in a staged follow-up. The per-file entries below are the
+# shrink-list ratchet: each docstring-prose closeout deletes its line.
+"tests/**" = ["D"]
+"scripts/**" = ["D"]
+"examples/**" = ["D"]
+"notebooks/**" = ["D"]
+"figures/**" = ["D"]
+"data/**" = ["D"]
+"*.py" = ["D"]
+"src/scpn_quantum_control/analysis/dla_parity_witness.py" = ["D205", "D400"]
+"src/scpn_quantum_control/analysis/entanglement_enhanced_sync.py" = ["D205", "D400"]
+"src/scpn_quantum_control/analysis/h1_persistence.py" = ["D400"]
+"src/scpn_quantum_control/analysis/phase_diagram.py" = ["D401"]
+"src/scpn_quantum_control/analysis/sync_witness.py" = ["D401"]
+"src/scpn_quantum_control/analysis/vortex_binding.py" = ["D401"]
+"src/scpn_quantum_control/applications/josephson_array.py" = ["D401"]
+"src/scpn_quantum_control/bridge/qpu_data_artifact.py" = ["D401"]
+"src/scpn_quantum_control/control/__init__.py" = ["D205"]
+"src/scpn_quantum_control/control/qaoa_pulsed_cost.py" = ["D401"]
+"src/scpn_quantum_control/control/structured_ansatz.py" = ["D205", "D401"]
+"src/scpn_quantum_control/crypto/topology_auth.py" = ["D401"]
+"src/scpn_quantum_control/forecasting/neural_operator_advantage.py" = ["D400"]
+"src/scpn_quantum_control/hardware/__init__.py" = ["D205"]
+"src/scpn_quantum_control/hardware/analog_kuramoto.py" = ["D401"]
+"src/scpn_quantum_control/hardware/backends.py" = ["D401"]
+"src/scpn_quantum_control/hardware/hybrid_digital_analog.py" = ["D401"]
+"src/scpn_quantum_control/hardware/iqm_backend.py" = ["D401"]
+"src/scpn_quantum_control/hardware/plugin_registry.py" = ["D401"]
+"src/scpn_quantum_control/hardware/runner.py" = ["D205"]
+"src/scpn_quantum_control/identity/entanglement_witness.py" = ["D401"]
+"src/scpn_quantum_control/mitigation/__init__.py" = ["D205"]
+"src/scpn_quantum_control/phase/adapt_vqe.py" = ["D401"]
+"src/scpn_quantum_control/phase/ancilla_lindblad.py" = ["D205"]
+"src/scpn_quantum_control/phase/ansatz_methodology.py" = ["D401"]
+"src/scpn_quantum_control/phase/cross_domain_transfer.py" = ["D400"]
+"src/scpn_quantum_control/phase/lindblad.py" = ["D401"]
+"src/scpn_quantum_control/phase/qgnn.py" = ["D401"]
+"src/scpn_quantum_control/phase/qsvt_evolution.py" = ["D401"]
+"src/scpn_quantum_control/qec/__init__.py" = ["D205"]
+"src/scpn_quantum_control/qec/control_qec.py" = ["D401"]
+"src/scpn_quantum_control/qec/surface_code_upde.py" = ["D401"]
+"src/scpn_quantum_control/qsnn/__init__.py" = ["D205"]
+"src/scpn_quantum_control/sensing/nv_magnetometry_20T.py" = ["D401"]
+"src/scpn_quantum_control/tcbo/quantum_observer.py" = ["D401"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["oscillatools", "scpn_quantum_control"]

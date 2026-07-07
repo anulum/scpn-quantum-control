@@ -456,7 +456,6 @@ def compile_symmetric_2x2_cholesky_ad_to_native_llvm_jit(
     sample_cotangent: Sequence[float] | FloatArray | None = None,
 ) -> ExecutableCompilerADKernel:
     """Compile SPD symmetric 2x2 Cholesky value/JVP/VJP kernels to LLVM MCJIT."""
-
     if not isinstance(rule, CustomDerivativeRule):
         raise ValueError("rule must be a CustomDerivativeRule")
     compile_config = (
@@ -552,7 +551,6 @@ def make_symmetric_2x2_cholesky_native_llvm_jit_lowering_rule(
     sample_cotangent: Sequence[float] | FloatArray | None = None,
 ) -> Callable[..., ExecutableCompilerADKernel]:
     """Create a lowering rule for SPD symmetric 2x2 Cholesky native LLVM/JIT kernels."""
-
     captured_values = (
         None
         if sample_values is None
@@ -606,7 +604,6 @@ def make_symmetric_2x2_cholesky_native_llvm_jit_primitive_transform(
     sample_cotangent: Sequence[float] | FloatArray | None = None,
 ) -> PrimitiveTransformRule:
     """Create a complete Rust/PyO3 + native LLVM/JIT SPD 2x2 Cholesky contract."""
-
     primitive_identity = PrimitiveIdentity.parse(identity)
     if not isinstance(rule, CustomDerivativeRule):
         raise ValueError("rule must be a CustomDerivativeRule")
@@ -691,7 +688,6 @@ def compile_symmetric_2x2_eigenvalues_ad_to_native_llvm_jit(
     sample_cotangent: Sequence[float] | FloatArray | None = None,
 ) -> ExecutableCompilerADKernel:
     """Compile distinct symmetric 2x2 eigenvalue value/JVP/VJP kernels to LLVM MCJIT."""
-
     if not isinstance(rule, CustomDerivativeRule):
         raise ValueError("rule must be a CustomDerivativeRule")
     compile_config = (
@@ -787,7 +783,6 @@ def make_symmetric_2x2_eigenvalues_native_llvm_jit_lowering_rule(
     sample_cotangent: Sequence[float] | FloatArray | None = None,
 ) -> Callable[..., ExecutableCompilerADKernel]:
     """Create a lowering rule for distinct symmetric 2x2 eigenvalue native LLVM/JIT kernels."""
-
     captured_values = (
         None
         if sample_values is None
@@ -841,7 +836,6 @@ def make_symmetric_2x2_eigenvalues_native_llvm_jit_primitive_transform(
     sample_cotangent: Sequence[float] | FloatArray | None = None,
 ) -> PrimitiveTransformRule:
     """Create a complete Rust/PyO3 + native LLVM/JIT distinct symmetric eigvalsh contract."""
-
     primitive_identity = PrimitiveIdentity.parse(identity)
     if not isinstance(rule, CustomDerivativeRule):
         raise ValueError("rule must be a CustomDerivativeRule")

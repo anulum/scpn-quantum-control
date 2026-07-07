@@ -93,7 +93,6 @@ def compile_whole_program_ad_trace_to_mlir(
     and polyglot compiler planning. It deliberately records Rust and LLVM/JIT
     executable differentiation as blocked unless a real backend is provided.
     """
-
     if not isinstance(result, WholeProgramADResult):
         raise ValueError("whole-program MLIR lowering requires a WholeProgramADResult")
     compile_config = DifferentiableMLIRCompileConfig() if config is None else config
@@ -388,7 +387,6 @@ class WholeProgramADNativeLoweringReport:
 
     def as_metadata(self) -> Mapping[str, object]:
         """Return deterministic MLIR-serialisable native lowering metadata."""
-
         return MappingProxyType(
             {
                 "supported": self.supported,
@@ -583,7 +581,6 @@ class NativeWholeProgramADKernel:
 
     def value(self, values: Sequence[float] | FloatArray) -> float:
         """Execute the native scalar value kernel."""
-
         checked = self._checked_values(values)
         self._validate_trace_signature(checked)
         output = _call_native_whole_program_unary(
@@ -595,7 +592,6 @@ class NativeWholeProgramADKernel:
 
     def gradient(self, values: Sequence[float] | FloatArray) -> NDArray[np.float64]:
         """Execute the native scalar-output gradient kernel."""
-
         checked = self._checked_values(values)
         self._validate_trace_signature(checked)
         return _call_native_whole_program_unary(
@@ -609,7 +605,6 @@ class NativeWholeProgramADKernel:
         values: Sequence[float] | FloatArray,
     ) -> tuple[float, NDArray[np.float64]]:
         """Execute native value and gradient kernels."""
-
         checked = self._checked_values(values)
         self._validate_trace_signature(checked)
         value = _call_native_whole_program_unary(
@@ -630,7 +625,6 @@ class NativeWholeProgramADKernel:
         tangent: Sequence[float] | FloatArray,
     ) -> float:
         """Execute the native scalar JVP kernel."""
-
         checked_values = self._checked_values(values)
         checked_tangent = _as_finite_vector("tangent", tangent)
         if checked_tangent.shape != self.parameter_shape:
@@ -650,7 +644,6 @@ class NativeWholeProgramADKernel:
         cotangent: Sequence[float] | FloatArray,
     ) -> NDArray[np.float64]:
         """Execute the native scalar VJP kernel."""
-
         checked_cotangent = _as_finite_vector("cotangent", cotangent)
         if checked_cotangent.shape != (1,):
             raise ValueError("cotangent must contain exactly one scalar")
@@ -668,7 +661,6 @@ class NativeWholeProgramADKernel:
         values: Sequence[Sequence[float]] | FloatArray,
     ) -> ExecutableWholeProgramADBatchResult:
         """Execute native value and gradient kernels over a two-dimensional batch."""
-
         batch = self._checked_batch_values(values)
         for row in batch:
             self._validate_trace_signature(row)
@@ -693,7 +685,6 @@ class NativeWholeProgramADKernel:
 
     def batch_value(self, values: Sequence[Sequence[float]] | FloatArray) -> NDArray[np.float64]:
         """Execute native value kernels over a two-dimensional batch."""
-
         return self.batch_value_and_grad(values).values
 
     def batch_gradient(
@@ -701,7 +692,6 @@ class NativeWholeProgramADKernel:
         values: Sequence[Sequence[float]] | FloatArray,
     ) -> NDArray[np.float64]:
         """Execute native gradient kernels over a two-dimensional batch."""
-
         return self.batch_value_and_grad(values).gradients
 
     def batch_jvp(
@@ -710,7 +700,6 @@ class NativeWholeProgramADKernel:
         tangents: Sequence[Sequence[float]] | FloatArray,
     ) -> NDArray[np.float64]:
         """Execute the compiled native JVP kernel over a two-dimensional batch."""
-
         batch = self._checked_batch_values(values)
         checked_tangents = self._checked_batch_tangents(tangents, batch.shape[0])
         for row in batch:
@@ -728,7 +717,6 @@ class NativeWholeProgramADKernel:
         cotangents: Sequence[float] | Sequence[Sequence[float]] | FloatArray,
     ) -> NDArray[np.float64]:
         """Execute the compiled native VJP kernel over a two-dimensional batch."""
-
         batch = self._checked_batch_values(values)
         checked_cotangents = self._checked_batch_cotangents(cotangents, batch.shape[0])
         for row in batch:
@@ -844,18 +832,15 @@ class ExecutableWholeProgramADKernel:
         values: Sequence[float] | FloatArray,
     ) -> tuple[float, NDArray[np.float64]]:
         """Execute value replay and reverse-mode adjoint gradient replay."""
-
         result = self._recapture(values)
         return result.value, program_adjoint_gradient(result)
 
     def value(self, values: Sequence[float] | FloatArray) -> float:
         """Execute value replay for the captured program AD trace."""
-
         return self.value_and_grad(values)[0]
 
     def gradient(self, values: Sequence[float] | FloatArray) -> NDArray[np.float64]:
         """Execute reverse-mode adjoint replay for the captured program AD trace."""
-
         return self.value_and_grad(values)[1]
 
     def batch_value_and_grad(
@@ -863,7 +848,6 @@ class ExecutableWholeProgramADKernel:
         values: Sequence[Sequence[float]] | FloatArray,
     ) -> ExecutableWholeProgramADBatchResult:
         """Execute same-branch batched value and reverse-adjoint gradient replay."""
-
         batch = self._checked_batch_values(values)
         row_values: list[float] = []
         row_gradients: list[NDArray[np.float64]] = []
@@ -888,7 +872,6 @@ class ExecutableWholeProgramADKernel:
 
     def batch_value(self, values: Sequence[Sequence[float]] | FloatArray) -> NDArray[np.float64]:
         """Execute batched value replay for rows preserving the compiled branch path."""
-
         return self.batch_value_and_grad(values).values
 
     def batch_gradient(
@@ -896,7 +879,6 @@ class ExecutableWholeProgramADKernel:
         values: Sequence[Sequence[float]] | FloatArray,
     ) -> NDArray[np.float64]:
         """Execute batched reverse-adjoint replay for rows preserving the branch path."""
-
         return self.batch_value_and_grad(values).gradients
 
 
@@ -916,7 +898,6 @@ def compile_whole_program_ad_trace_to_executable(
     replay kernel. Shape drift, non-finite inputs, and branch/signature drift
     raise errors instead of silently changing the differentiated program.
     """
-
     if not callable(objective):
         raise ValueError("whole-program executable AD objective must be callable")
     checked_sample = _as_finite_vector("sample_values", sample_values)
@@ -957,7 +938,6 @@ def compile_whole_program_ad_trace_to_native_llvm_jit(
     trace: bool = True,
 ) -> NativeWholeProgramADKernel:
     """Compile a supported scalar program AD trace to native LLVM/JIT kernels."""
-
     if not callable(objective):
         raise ValueError("whole-program native AD objective must be callable")
     checked_sample = _as_finite_vector("sample_values", sample_values)
@@ -1112,7 +1092,6 @@ _WHOLE_PROGRAM_NATIVE_LINALG_OPS = frozenset(
 
 def native_whole_program_ad_linalg_support() -> Mapping[str, object]:
     """Return the native whole-program AD linalg support contract."""
-
     expression_determinant_sizes = tuple(range(2, 6))
     helper_determinant_sizes = tuple(sorted(_WHOLE_PROGRAM_NATIVE_LOOP_HELPER_DET_SIZES))
     determinant_sizes = expression_determinant_sizes + helper_determinant_sizes
@@ -1154,7 +1133,6 @@ def analyse_whole_program_ad_native_lowering(
     result: WholeProgramADResult,
 ) -> WholeProgramADNativeLoweringReport:
     """Return the fail-closed native LLVM/JIT lowering audit for a program AD trace."""
-
     if not isinstance(result, WholeProgramADResult):
         raise ValueError("native lowering analysis requires a WholeProgramADResult")
     if not result.ir_nodes:
@@ -1333,7 +1311,6 @@ def _store_native_whole_program_ad_cache_entry(
 
 def native_whole_program_ad_compile_cache_stats() -> Mapping[str, object]:
     """Return bounded process-local native whole-program AD compile-cache metadata."""
-
     with _NATIVE_WHOLE_PROGRAM_AD_CACHE_LOCK:
         return MappingProxyType(
             {
@@ -1346,7 +1323,6 @@ def native_whole_program_ad_compile_cache_stats() -> Mapping[str, object]:
 
 def clear_native_whole_program_ad_compile_cache() -> int:
     """Clear verified native whole-program AD compile-cache entries and return count."""
-
     with _NATIVE_WHOLE_PROGRAM_AD_CACHE_LOCK:
         removed = len(_NATIVE_WHOLE_PROGRAM_AD_CACHE)
         _NATIVE_WHOLE_PROGRAM_AD_CACHE.clear()
@@ -1357,7 +1333,6 @@ def _compile_whole_program_native_helper_definitions(
     result: WholeProgramADResult,
 ) -> list[str]:
     """Emit compact native helper functions required by the captured trace."""
-
     helper_sizes: set[int] = set()
     for node in result.ir_nodes:
         wide_det_size = _whole_program_native_wide_det_size(node.op)
@@ -1376,7 +1351,6 @@ def _compile_whole_program_native_helper_definitions(
 
 def _compile_whole_program_native_det_loop_helper_llvm_ir(size: int) -> list[str]:
     """Emit a loop-based Faddeev-LeVerrier determinant/partial helper."""
-
     if size not in (
         _WHOLE_PROGRAM_NATIVE_LOOP_HELPER_DET_SIZES
         | _WHOLE_PROGRAM_NATIVE_DET_DERIVATIVE_HELPER_SIZES
@@ -2064,7 +2038,6 @@ def _annotate_whole_program_native_mlir(
 
 def _whole_program_replay_signature(result: WholeProgramADResult) -> tuple[str, ...]:
     """Return a stable non-numeric signature for supported program AD replay."""
-
     control_signature = tuple(
         f"{node.index}:{node.op}:{','.join(node.inputs)}"
         for node in result.ir_nodes

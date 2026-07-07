@@ -97,7 +97,6 @@ def propose_next_lambda(
     rewarded when leakage grows. ``retention_recovery`` reduces lambda when
     exact-state retention falls below the target.
     """
-
     cfg = config or AdaptiveFIMConfig()
     _require_finite(current_lambda, "current_lambda")
     if current_lambda < 0.0:
@@ -132,7 +131,6 @@ def adaptive_lambda_schedule(
     config: AdaptiveFIMConfig | None = None,
 ) -> list[AdaptiveFIMStep]:
     """Generate a deterministic batch-level adaptive lambda schedule."""
-
     cfg = config or AdaptiveFIMConfig()
     current = float(initial_lambda)
     steps: list[AdaptiveFIMStep] = []

@@ -31,7 +31,6 @@ class TopologicalDynamicCouplingPolicy:
 
     def apply(self, recurrent_weights: NDArray[np.float64]) -> FloatArray:
         """Return projected/optimised recurrent weights without external dependencies."""
-
         trace = self.optimizer.optimise(recurrent_weights, self.objective)
         self.last_trace = trace
         result: FloatArray = trace.final_matrix.copy()

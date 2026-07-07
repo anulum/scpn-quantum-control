@@ -1211,7 +1211,6 @@ def compile_matrix_vector_product_ad_to_native_llvm_jit(
     sample_cotangent: Sequence[float] | FloatArray | None = None,
 ) -> ExecutableCompilerADKernel:
     """Compile matrix-vector value/JVP/VJP kernels to LLVM MCJIT."""
-
     if not isinstance(rule, CustomDerivativeRule):
         raise ValueError("rule must be a CustomDerivativeRule")
     checked_dimension = _validate_matrix_quadratic_form_dimension(dimension)
@@ -1310,7 +1309,6 @@ def make_matrix_vector_product_native_llvm_jit_lowering_rule(
     sample_cotangent: Sequence[float] | FloatArray | None = None,
 ) -> Callable[..., ExecutableCompilerADKernel]:
     """Create a lowering rule for matrix-vector native LLVM/JIT kernels."""
-
     checked_dimension = _validate_matrix_quadratic_form_dimension(dimension)
     captured_values = (
         None if sample_values is None else _as_finite_vector("sample_values", sample_values)
@@ -1365,7 +1363,6 @@ def make_matrix_vector_product_native_llvm_jit_primitive_transform(
     sample_cotangent: Sequence[float] | FloatArray | None = None,
 ) -> PrimitiveTransformRule:
     """Create a complete Rust/PyO3 + native LLVM/JIT matrix-vector contract."""
-
     primitive_identity = PrimitiveIdentity.parse(identity)
     if not isinstance(rule, CustomDerivativeRule):
         raise ValueError("rule must be a CustomDerivativeRule")
@@ -1458,7 +1455,6 @@ def compile_matrix_matrix_product_ad_to_native_llvm_jit(
     sample_cotangent: Sequence[float] | FloatArray | None = None,
 ) -> ExecutableCompilerADKernel:
     """Compile matrix-matrix value/JVP/VJP kernels to LLVM MCJIT."""
-
     if not isinstance(rule, CustomDerivativeRule):
         raise ValueError("rule must be a CustomDerivativeRule")
     checked_dimension = _validate_matrix_quadratic_form_dimension(dimension)
@@ -1557,7 +1553,6 @@ def make_matrix_matrix_product_native_llvm_jit_lowering_rule(
     sample_cotangent: Sequence[float] | FloatArray | None = None,
 ) -> Callable[..., ExecutableCompilerADKernel]:
     """Create a lowering rule for matrix-matrix native LLVM/JIT kernels."""
-
     checked_dimension = _validate_matrix_quadratic_form_dimension(dimension)
     captured_values = (
         None if sample_values is None else _as_finite_vector("sample_values", sample_values)
@@ -1612,7 +1607,6 @@ def make_matrix_matrix_product_native_llvm_jit_primitive_transform(
     sample_cotangent: Sequence[float] | FloatArray | None = None,
 ) -> PrimitiveTransformRule:
     """Create a complete Rust/PyO3 + native LLVM/JIT matrix-matrix contract."""
-
     primitive_identity = PrimitiveIdentity.parse(identity)
     if not isinstance(rule, CustomDerivativeRule):
         raise ValueError("rule must be a CustomDerivativeRule")
@@ -1706,7 +1700,6 @@ def compile_matrix_trace_ad_to_native_llvm_jit(
     sample_cotangent: Sequence[float] | FloatArray | None = None,
 ) -> ExecutableCompilerADKernel:
     """Compile matrix trace value/JVP/VJP/gradient kernels to LLVM MCJIT."""
-
     if not isinstance(rule, CustomDerivativeRule):
         raise ValueError("rule must be a CustomDerivativeRule")
     checked_dimension = _validate_matrix_quadratic_form_dimension(dimension)
@@ -1802,7 +1795,6 @@ def make_matrix_trace_native_llvm_jit_lowering_rule(
     sample_cotangent: Sequence[float] | FloatArray | None = None,
 ) -> Callable[..., ExecutableCompilerADKernel]:
     """Create a lowering rule for matrix trace native LLVM/JIT kernels."""
-
     checked_dimension = _validate_matrix_quadratic_form_dimension(dimension)
     captured_values = (
         None if sample_values is None else _as_finite_vector("sample_values", sample_values)
@@ -1857,7 +1849,6 @@ def make_matrix_trace_native_llvm_jit_primitive_transform(
     sample_cotangent: Sequence[float] | FloatArray | None = None,
 ) -> PrimitiveTransformRule:
     """Create a complete Rust/PyO3 + native LLVM/JIT matrix-trace contract."""
-
     primitive_identity = PrimitiveIdentity.parse(identity)
     if not isinstance(rule, CustomDerivativeRule):
         raise ValueError("rule must be a CustomDerivativeRule")
@@ -1945,7 +1936,6 @@ def compile_matrix_frobenius_norm_squared_ad_to_native_llvm_jit(
     sample_cotangent: Sequence[float] | FloatArray | None = None,
 ) -> ExecutableCompilerADKernel:
     """Compile matrix Frobenius-squared value/JVP/VJP/gradient kernels to LLVM MCJIT."""
-
     if not isinstance(rule, CustomDerivativeRule):
         raise ValueError("rule must be a CustomDerivativeRule")
     checked_dimension = _validate_matrix_quadratic_form_dimension(dimension)
@@ -2054,7 +2044,6 @@ def make_matrix_frobenius_norm_squared_native_llvm_jit_lowering_rule(
     sample_cotangent: Sequence[float] | FloatArray | None = None,
 ) -> Callable[..., ExecutableCompilerADKernel]:
     """Create a lowering rule for matrix Frobenius-squared native LLVM/JIT kernels."""
-
     checked_dimension = _validate_matrix_quadratic_form_dimension(dimension)
     captured_values = (
         None if sample_values is None else _as_finite_vector("sample_values", sample_values)
@@ -2109,7 +2098,6 @@ def make_matrix_frobenius_norm_squared_native_llvm_jit_primitive_transform(
     sample_cotangent: Sequence[float] | FloatArray | None = None,
 ) -> PrimitiveTransformRule:
     """Create a complete Rust/PyO3 + native LLVM/JIT Frobenius-squared contract."""
-
     primitive_identity = PrimitiveIdentity.parse(identity)
     if not isinstance(rule, CustomDerivativeRule):
         raise ValueError("rule must be a CustomDerivativeRule")
@@ -2207,7 +2195,6 @@ def compile_matrix_quadratic_form_ad_to_native_llvm_jit(
     sample_cotangent: Sequence[float] | FloatArray | None = None,
 ) -> ExecutableCompilerADKernel:
     """Compile matrix quadratic-form value/JVP/VJP/gradient kernels to LLVM MCJIT."""
-
     if not isinstance(rule, CustomDerivativeRule):
         raise ValueError("rule must be a CustomDerivativeRule")
     checked_dimension = _validate_matrix_quadratic_form_dimension(dimension)
@@ -2306,7 +2293,6 @@ def make_matrix_quadratic_form_native_llvm_jit_lowering_rule(
     sample_cotangent: Sequence[float] | FloatArray | None = None,
 ) -> Callable[..., ExecutableCompilerADKernel]:
     """Create a lowering rule for matrix quadratic-form native LLVM/JIT kernels."""
-
     checked_dimension = _validate_matrix_quadratic_form_dimension(dimension)
     captured_values = (
         None if sample_values is None else _as_finite_vector("sample_values", sample_values)
@@ -2361,7 +2347,6 @@ def make_matrix_quadratic_form_native_llvm_jit_primitive_transform(
     sample_cotangent: Sequence[float] | FloatArray | None = None,
 ) -> PrimitiveTransformRule:
     """Create a complete Rust/PyO3 + native LLVM/JIT quadratic-form contract."""
-
     primitive_identity = PrimitiveIdentity.parse(identity)
     if not isinstance(rule, CustomDerivativeRule):
         raise ValueError("rule must be a CustomDerivativeRule")

@@ -44,7 +44,8 @@ def qaoa_mpc_4_experiment(runner: HardwareRunner, shots: int = 10000) -> dict[st
     Cost Hamiltonian is diagonal in Z, so Z-basis measurement is exact.
     Compares QAOA solution quality vs brute-force optimal.
 
-    Returns:
+    Returns
+    -------
         dict with keys:
             experiment (str): Experiment name identifier.
             horizon (int): MPC planning horizon.
@@ -53,7 +54,6 @@ def qaoa_mpc_4_experiment(runner: HardwareRunner, shots: int = 10000) -> dict[st
             qaoa_p1 (dict): p=1 results (qaoa_cost, qaoa_actions, n_iterations).
             qaoa_p2 (dict): p=2 results (qaoa_cost, qaoa_actions, n_iterations).
     """
-
     B = np.eye(2)
     target = np.array([0.8, 0.6])
     horizon = 4
@@ -119,7 +119,8 @@ def upde_16_snapshot_experiment(
     Measures in X, Y, Z bases. Compares R against exact evolution.
     ~240 ECR gates. On real hardware, needs error mitigation.
 
-    Returns:
+    Returns
+    -------
         dict with keys:
             experiment (str): Experiment name identifier.
             n_layers (int): Number of UPDE layers (16).
@@ -180,7 +181,8 @@ def bell_test_4q_experiment(
     violation. S > 2 proves non-classical correlations on hardware.
     ~20s QPU budget (4 circuits x ~5s each).
 
-    Returns:
+    Returns
+    -------
         dict with keys:
             experiment (str): Experiment name identifier.
             S_hw (float): CHSH S value from hardware.
@@ -251,7 +253,8 @@ def correlator_4q_experiment(
     correlations. Connected correlation C[i,j] = <Z_i Z_j> - <Z_i><Z_j>.
     ~25s QPU budget (1 circuit).
 
-    Returns:
+    Returns
+    -------
         dict with keys:
             experiment (str): Experiment name identifier.
             corr_hw (list[list[float]]): 4x4 connected correlation matrix (hw).
@@ -316,7 +319,8 @@ def qkd_qber_4q_experiment(
     raw keys, computes QBER. Secure if QBER < 0.11 (BB84 threshold).
     ~15s QPU budget (2 circuits).
 
-    Returns:
+    Returns
+    -------
         dict with keys:
             experiment (str): Experiment name identifier.
             qber_z_hw (float): Z-basis QBER from hardware.

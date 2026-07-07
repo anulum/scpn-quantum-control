@@ -57,7 +57,6 @@ class ResolvedAggregatorProviderRoute:
 
 def built_in_aggregator_provider_routes() -> tuple[AggregatorProviderRoute, ...]:
     """Return the metadata-only aggregator/provider coverage matrix."""
-
     profiles = {profile.backend_id: profile for profile in built_in_backend_profiles()}
     routes = (
         _route("aws_braket/aqt", "aws_braket", "aqt", "aws_braket_aqt", ("openqasm3",)),
@@ -396,7 +395,6 @@ def aggregator_provider_routes_for(
     *, aggregator: str | None = None, provider: str | None = None
 ) -> tuple[AggregatorProviderRoute, ...]:
     """Return declared routes filtered by aggregator and/or provider."""
-
     routes = built_in_aggregator_provider_routes()
     if aggregator is not None:
         _validate_token(aggregator, "aggregator")
@@ -415,7 +413,6 @@ def resolve_aggregator_provider_route(
     route_id: str | None = None,
 ) -> ResolvedAggregatorProviderRoute:
     """Resolve a broker/provider request to one executable HAL profile."""
-
     routes = aggregator_provider_routes_for(aggregator=aggregator, provider=provider)
     if route_id is not None:
         _validate_token(route_id, "route_id")

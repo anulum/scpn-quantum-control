@@ -56,7 +56,6 @@ class SymmetrySectorPlan:
 
     def to_dict(self) -> dict[str, object]:
         """Return a JSON-serialisable plan."""
-
         return asdict(self)
 
 
@@ -64,7 +63,6 @@ def _validate_problem(
     problem: SymmetrySectorProblem,
 ) -> tuple[NDArray[np.float64], NDArray[np.float64], list[str]]:
     """Validate a problem descriptor and return arrays plus blockers."""
-
     blockers: list[str] = []
     if problem.n_qubits <= 0:
         blockers.append("n_qubits must be positive")
@@ -91,7 +89,6 @@ def _validate_problem(
 
 def _initial_parity(initial_state: str) -> int:
     """Return computational-basis parity for a validated initial state."""
-
     return initial_state.count("1") % 2
 
 
@@ -103,7 +100,6 @@ def plan_symmetry_sector_mitigation(problem: SymmetrySectorProblem) -> SymmetryS
     only enables GUESS when noise-scaled symmetry observables are explicitly
     present.
     """
-
     _coupling, _omega, blockers = _validate_problem(problem)
     primitives: list[MitigationPrimitive] = []
     expected_parity: int | None = None

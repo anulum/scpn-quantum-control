@@ -36,7 +36,6 @@ def quandela_perceval_workload(
     metadata: Mapping[str, object] | None = None,
 ) -> QuantumWorkload:
     """Encode a Perceval photonic plan as a Quandela HAL workload."""
-
     decoded = (
         _json_mapping(payload, field_name="Quandela payload")
         if isinstance(payload, str)

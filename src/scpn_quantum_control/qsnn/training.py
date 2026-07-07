@@ -225,7 +225,6 @@ class QSNNTrainer:
     @staticmethod
     def _set_synapse_theta(synapse: QuantumSynapse, theta: float) -> None:
         """Set a synapse through its weight API from a target CRy angle."""
-
         w_min = float(synapse.w_min)
         w_max = float(synapse.w_max)
         weight = theta / np.pi * (w_max - w_min) + w_min

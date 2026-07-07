@@ -203,7 +203,6 @@ def _normalise_sort_axis(axis: object, rank: int) -> int:
 
 def _broadcast_shape(*shapes: tuple[int, ...]) -> tuple[int, ...]:
     """Return a NumPy-compatible broadcast shape or fail closed."""
-
     try:
         shape: tuple[int, ...] = np.broadcast_shapes(*shapes)
         return shape
@@ -226,7 +225,6 @@ def _normalise_trapezoid_axis(axis: object, ndim: int) -> int:
 
 def _normalise_axis(name: str, axis: int, ndim: int) -> int:
     """Return a non-negative axis for an array with ``ndim`` dimensions."""
-
     if ndim == 0:
         raise ValueError(f"{name} cannot map over a scalar")
     if axis < 0:

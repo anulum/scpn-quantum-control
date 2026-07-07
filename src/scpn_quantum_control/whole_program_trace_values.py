@@ -351,13 +351,11 @@ class TraceADArray:
     @property
     def ndim(self) -> int:
         """Return the rank of the derivative-carrying array."""
-
         return len(self.shape)
 
     @property
     def size(self) -> int:
         """Return the total number of derivative-carrying elements."""
-
         return len(self._items)
 
     def __len__(self) -> int:
@@ -391,19 +389,16 @@ class TraceADArray:
 
     def item(self) -> TraceADScalar:
         """Return the only scalar element, failing closed for non-scalar arrays."""
-
         if self.size != 1:
             raise ValueError("TraceADArray.item requires exactly one element")
         return self._items[0]
 
     def copy(self) -> TraceADArray:
         """Return a derivative-preserving shallow array copy."""
-
         return TraceADArray(tuple(self._items), self.shape, self.context, self._source_indices)
 
     def reshape(self, *shape: int | tuple[int, ...]) -> TraceADArray:
         """Return a derivative-preserving reshaped array view."""
-
         if len(shape) == 1 and isinstance(shape[0], tuple):
             raw_target: object = shape[0]
         else:
@@ -417,7 +412,6 @@ class TraceADArray:
 
     def ravel(self) -> TraceADArray:
         """Return a flat view-preserving program AD array."""
-
         _require_program_ad_shape_contract("ravel", (self,))
         items = tuple(self._items)
         source_indices = _trace_array_source_indices(self)
@@ -426,60 +420,49 @@ class TraceADArray:
 
     def flatten(self) -> TraceADArray:
         """Return a flat copy-equivalent program AD array."""
-
         return self.ravel()
 
     def repeat(self, repeats: object, axis: int | None = None) -> TraceADArray:
         """Return a derivative-preserving array with repeated elements."""
-
         return _trace_repeat(self, repeats=repeats, axis=axis)
 
     def squeeze(self, axis: int | tuple[int, ...] | None = None) -> TraceADArray:
         """Return a derivative-preserving array with singleton axes removed."""
-
         return _trace_squeeze(self, axis=axis)
 
     def expand_dims(self, axis: int | tuple[int, ...]) -> TraceADArray:
         """Return a derivative-preserving array with singleton axes inserted."""
-
         return _trace_expand_dims(self, axis=axis)
 
     def swapaxes(self, axis1: int, axis2: int) -> TraceADArray:
         """Return a derivative-preserving array with two axes exchanged."""
-
         return _trace_swapaxes(self, axis1=axis1, axis2=axis2)
 
     @property
     def T(self) -> TraceADArray:
         """Return the NumPy-compatible reversed-axis transpose."""
-
         if self.ndim < 2:
             return self.copy()
         return _trace_transpose(self, self.context)
 
     def sum(self, axis: int | None = None) -> TraceADScalar | TraceADArray:
         """Return a derivative-preserving sum over all elements or one axis."""
-
         return _trace_array_sum(self, axis=axis)
 
     def cumsum(self, axis: int | None = None) -> TraceADArray:
         """Return a derivative-preserving cumulative sum."""
-
         return _trace_cumsum(self, axis=axis)
 
     def prod(self, axis: int | None = None) -> TraceADScalar | TraceADArray:
         """Return a derivative-preserving product over all elements or one axis."""
-
         return _trace_array_prod(self, axis=axis)
 
     def cumprod(self, axis: int | None = None) -> TraceADArray:
         """Return a derivative-preserving cumulative product."""
-
         return _trace_cumprod(self, axis=axis)
 
     def mean(self, axis: int | None = None) -> TraceADScalar | TraceADArray:
         """Return a derivative-preserving arithmetic mean."""
-
         _require_program_ad_reduction_contract("mean", (self, axis))
         result = _trace_array_sum(self, axis=axis)
         divisor = (
@@ -493,25 +476,21 @@ class TraceADArray:
 
     def var(self, axis: int | None = None, ddof: int = 0) -> TraceADScalar | TraceADArray:
         """Return a derivative-preserving variance with NumPy-compatible ddof."""
-
         _require_program_ad_reduction_contract("var", (self, axis, ddof))
         return _trace_variance(self, axis=axis, ddof=ddof)
 
     def std(self, axis: int | None = None, ddof: int = 0) -> TraceADScalar | TraceADArray:
         """Return a derivative-preserving standard deviation."""
-
         _require_program_ad_reduction_contract("std", (self, axis, ddof))
         return _trace_std(self, axis=axis, ddof=ddof)
 
     def max(self, axis: int | None = None) -> TraceADScalar | TraceADArray:
         """Return a derivative-preserving maximum with tie-safe semantics."""
-
         _require_program_ad_reduction_contract("max", (self, axis))
         return _trace_extreme(self, axis=axis, choose_max=True)
 
     def min(self, axis: int | None = None) -> TraceADScalar | TraceADArray:
         """Return a derivative-preserving minimum with tie-safe semantics."""
-
         _require_program_ad_reduction_contract("min", (self, axis))
         return _trace_extreme(self, axis=axis, choose_max=False)
 
@@ -522,17 +501,14 @@ class TraceADArray:
         mode: str = "raise",
     ) -> TraceADScalar | TraceADArray:
         """Return derivative-preserving positional elements with fail-closed modes."""
-
         return _trace_take(self, indices, axis=axis, mode=mode)
 
     def argmax(self, axis: int | None = None) -> NoReturn:
         """Reject nondifferentiable maximum-index selection."""
-
         _raise_index_selection_boundary("argmax", (self, axis))
 
     def argmin(self, axis: int | None = None) -> NoReturn:
         """Reject nondifferentiable minimum-index selection."""
-
         _raise_index_selection_boundary("argmin", (self, axis))
 
     def __getitem__(self, index: object) -> TraceADScalar | TraceADArray:
@@ -605,7 +581,6 @@ class TraceADArray:
 
     def _set_flat_item(self, flat_index: int, scalar: TraceADScalar) -> None:
         """Assign one flattened element and emit deterministic mutation metadata."""
-
         if flat_index < 0:
             flat_index += self.size
         if flat_index < 0 or flat_index >= self.size:
@@ -1584,7 +1559,6 @@ def _trace_like_constant(
 
 def _trace_array_source_indices(array: TraceADArray) -> tuple[int | None, ...]:
     """Return original parameter-array slots carried by a trace array, if known."""
-
     if array._source_indices is None:
         return tuple(None for _ in range(array.size))
     return array._source_indices
@@ -1597,7 +1571,6 @@ def _trace_array_view_from_local_indices(
     shape: tuple[int, ...],
 ) -> TraceADArray:
     """Return a derivative-preserving view and record source-index alias metadata."""
-
     source_indices = tuple(
         _trace_array_source_indices(array)[int(local_index)] for local_index in local_indices
     )
@@ -2359,7 +2332,6 @@ def _trace_gradient_axis(
 
 def _format_static_gradient_spacing(spacing: _GradientSpacing) -> str:
     """Format one static ``np.gradient`` spacing descriptor for compact opcodes."""
-
     if spacing[0] == "scalar":
         return f"scalar={_format_static_interp_float(float(spacing[1]))}"
     coordinates = np.asarray(spacing[1], dtype=np.float64)
@@ -2376,7 +2348,6 @@ def _trace_gradient_compact_array(
     edge_order: int,
 ) -> TraceADArray:
     """Emit compact static ``np.gradient`` Program AD nodes for one axis."""
-
     rule_spacing: object = float(spacing[1]) if spacing[0] == "scalar" else spacing[1]
     rule = program_ad_stencil_gradient_derivative_rule(
         array.shape,
@@ -2521,7 +2492,6 @@ def _trace_interp_scalar(
 
 def _format_static_interp_float(value: float | None) -> str:
     """Format static interpolation metadata for compact Program AD opcodes."""
-
     if value is None:
         return "none"
     if not math.isfinite(value):
@@ -2531,7 +2501,6 @@ def _format_static_interp_float(value: float | None) -> str:
 
 def _format_static_interp_grid(grid: NDArray[np.float64]) -> str:
     """Format a strictly increasing interpolation grid for compact opcodes."""
-
     return ",".join(_format_static_interp_float(float(value)) for value in grid)
 
 
@@ -2548,7 +2517,6 @@ def _trace_interp_compact_array(
     context: _WholeProgramTraceContext,
 ) -> TraceADScalar | TraceADArray:
     """Emit compact interpolation Program AD nodes from an exact direct rule."""
-
     input_items = samples + values
     flat_values = np.array([item.primal for item in input_items], dtype=np.float64)
     output_flat = _as_real_numeric_array(
@@ -2673,7 +2641,6 @@ def _trace_signal_compact_array(
     context: _WholeProgramTraceContext,
 ) -> TraceADArray:
     """Emit compact signal Program AD nodes from an exact direct rule."""
-
     start, stop = _convolve_output_window(len(left_values), len(right_values), mode)
     output_size = stop - start
     input_items = left_values + right_values
@@ -2804,7 +2771,6 @@ def _trace_cumulative_compact_array(
     jvp_rule: Callable[[NDArray[np.float64], NDArray[np.float64]], object],
 ) -> TraceADArray:
     """Emit compact cumulative Program AD nodes from an exact direct rule."""
-
     expected_size = int(np.prod(output_shape))
     if len(output_operations) != expected_size:
         raise ValueError(f"program AD {operation_name} output operation count mismatch")
@@ -4273,7 +4239,6 @@ def _trace_diagflat(
 
 def _trace_shape_label(shape: tuple[int, ...]) -> str:
     """Return a compact static shape label for primitive IR metadata."""
-
     return "x".join(str(int(dimension)) for dimension in shape)
 
 

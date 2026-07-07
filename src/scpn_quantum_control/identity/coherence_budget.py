@@ -49,7 +49,8 @@ def fidelity_at_depth(
         n_qubits: Number of qubits in the circuit.
         two_qubit_fraction: Fraction of layers that are two-qubit gates.
 
-    Returns:
+    Returns
+    -------
         Estimated fidelity in [0, 1].
     """
     if depth < 0:

@@ -32,7 +32,6 @@ def registered_custom_jvp(
     registry: CustomDerivativeRegistry | None = None,
 ) -> NDArray[Any]:
     """Return a JVP by resolving the primitive's registered custom rule."""
-
     from . import differentiable as differentiable_facade
 
     return differentiable_facade.custom_jvp(
@@ -52,7 +51,6 @@ def registered_custom_vjp(
     registry: CustomDerivativeRegistry | None = None,
 ) -> VJPResult:
     """Return a VJP by resolving the primitive's registered custom rule."""
-
     from . import differentiable as differentiable_facade
 
     return differentiable_facade.custom_vjp(
@@ -71,7 +69,6 @@ def registered_custom_jacobian(
     registry: CustomDerivativeRegistry | None = None,
 ) -> JacobianResult:
     """Return a dense Jacobian by resolving the primitive's registered custom rule."""
-
     from . import differentiable as differentiable_facade
 
     return differentiable_facade.value_and_custom_jacobian(

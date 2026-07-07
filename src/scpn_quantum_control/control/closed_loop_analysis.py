@@ -138,12 +138,10 @@ class ClosedLoopLatencyReport:
     @property
     def samples(self) -> int:
         """Number of measured feedback rounds."""
-
         return len(self.round_latencies_s)
 
     def to_dict(self) -> dict[str, Any]:
         """Return a JSON-ready latency report."""
-
         return {
             "classification": self.classification,
             "passes": self.passes,
@@ -194,7 +192,6 @@ class ClosedLoopPublicationPackage:
 
     def to_dict(self) -> dict[str, Any]:
         """Return a JSON-ready publication package scaffold."""
-
         return {
             "title": self.title,
             "evidence_classes": {
@@ -210,7 +207,6 @@ class ClosedLoopPublicationPackage:
 
     def to_markdown(self) -> str:
         """Return a compact Markdown scaffold for campaign notes."""
-
         lines = [
             f"# {self.title}",
             "",
@@ -310,7 +306,8 @@ def analyse_closed_loop_response(
         limit_cycle_sign_changes: trailing error sign changes that mark a
             sustained oscillation rather than convergence.
 
-    Returns:
+    Returns
+    -------
         The :class:`ResponseClass` verdict and the :class:`ControlPerformance`.
     """
     response = np.asarray(response, dtype=np.float64)
@@ -445,7 +442,6 @@ def measure_closed_loop_latency_budget(
     samples is intended for deterministic replay and CI fixtures; it still runs
     the controller to produce the same response evidence and policy decision.
     """
-
     if n_rounds < 2:
         raise ValueError("n_rounds must be at least two for a latency verdict")
     budget = budget or ClosedLoopLatencyBudget()
@@ -517,7 +513,6 @@ def build_closed_loop_publication_package(
     latency_report: ClosedLoopLatencyReport,
 ) -> ClosedLoopPublicationPackage:
     """Build a no-submit publication scaffold for closed-loop feedback evidence."""
-
     benchmark_row = {
         "id": "closed_loop_software_latency",
         "classification": latency_report.classification,

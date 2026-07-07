@@ -63,7 +63,6 @@ def parameter_shift_gradient(
     numpy.ndarray
         Real gradient vector with frozen parameters set to zero.
     """
-
     result = value_and_parameter_shift_grad(
         objective,
         values,
@@ -98,7 +97,6 @@ def batch_parameter_shift_gradient(
     numpy.ndarray
         Matrix whose rows are objective gradients.
     """
-
     if not objectives:
         raise ValueError("objectives must contain at least one scalar objective")
     rows = [
@@ -138,7 +136,6 @@ def batch_value_and_parameter_shift_grad(
     tuple[GradientResult, ...]
         Per-objective value, gradient, and provenance records.
     """
-
     if not objectives:
         raise ValueError("objectives must contain at least one scalar objective")
     return tuple(
@@ -177,7 +174,6 @@ def value_and_parameter_shift_grad(
     GradientResult
         Objective value, gradient, evaluation count, and parameter metadata.
     """
-
     parameter_values = _as_parameter_array(values)
     parameter_meta = _normalise_parameters(parameter_values, parameters)
     shift_rule = rule or ParameterShiftRule()
@@ -263,7 +259,6 @@ def parameter_shift_gradient_with_uncertainty(
         Gradient, covariance, shot provenance, confidence interval, and
         diagnostic-only claim boundary metadata.
     """
-
     shift_rule = rule or ParameterShiftRule()
     terms = shift_rule.terms
     term_count = len(terms)

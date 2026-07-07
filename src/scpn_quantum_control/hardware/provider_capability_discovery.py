@@ -87,7 +87,6 @@ class ProviderCapabilityDecision:
 
     def to_dict(self) -> dict[str, Any]:
         """Serialise the provider capability decision."""
-
         return {
             "status": self.status,
             "blockers": list(self.blockers),
@@ -162,7 +161,6 @@ def build_openpulse_control_readiness(
     shots: int = 4096,
 ) -> OpenPulseControlReadiness:
     """Build no-submit readiness for OpenPulse control and calibration workflows."""
-
     blockers: list[str] = []
     warnings: list[str] = []
     required_ir_formats = ("openpulse", "qiskit_qpy", "qiskit")
@@ -224,7 +222,6 @@ def probe_aggregator_provider_capability(
     min_qubits: int | None = None,
 ) -> ProviderCapabilityDecision:
     """Resolve a route, collect provider metadata, and assess it without submission."""
-
     resolved = resolve_aggregator_provider_route(
         aggregator=aggregator,
         provider=provider,
@@ -248,7 +245,6 @@ def snapshot_from_azure_target(
     target: Any,
 ) -> ProviderCapabilitySnapshot:
     """Build a no-submit capability snapshot from Azure Quantum target metadata."""
-
     capability = _first_available_attr(
         target,
         names=("capability", "capabilities", "target_capability", "target_capabilities"),
@@ -327,7 +323,6 @@ def snapshot_from_ionq_backend(
     backend: Any,
 ) -> ProviderCapabilitySnapshot:
     """Build a no-submit capability snapshot from direct IonQ backend metadata."""
-
     return ProviderCapabilitySnapshot(
         route_id=resolved.route.route_id,
         aggregator=resolved.route.aggregator,
@@ -386,7 +381,6 @@ def snapshot_from_dwave_solver(
     solver: Any,
 ) -> ProviderCapabilitySnapshot:
     """Build a no-submit capability snapshot from direct D-Wave solver metadata."""
-
     properties = _first_available_attr(
         solver,
         names=("properties", "solver_properties", "metadata"),
@@ -446,7 +440,6 @@ def snapshot_from_iqm_backend(
     backend: Any,
 ) -> ProviderCapabilitySnapshot:
     """Build a no-submit capability snapshot from direct IQM backend metadata."""
-
     architecture = _first_available_attr(
         backend,
         names=("architecture", "quantum_architecture", "metadata"),
@@ -530,7 +523,6 @@ def snapshot_from_quera_bloqade(
     target: Any,
 ) -> ProviderCapabilitySnapshot:
     """Build a no-submit capability snapshot from direct QuEra/Bloqade metadata."""
-
     lattice = _first_available_attr(
         target,
         names=("lattice", "atom_lattice", "register", "geometry", "metadata"),
@@ -609,7 +601,6 @@ def snapshot_from_oqc_target(
     target: Any,
 ) -> ProviderCapabilitySnapshot:
     """Build a no-submit capability snapshot from direct OQC target metadata."""
-
     return ProviderCapabilitySnapshot(
         route_id=resolved.route.route_id,
         aggregator=resolved.route.aggregator,
@@ -671,7 +662,6 @@ def snapshot_from_pasqal_target(
     target: Any,
 ) -> ProviderCapabilitySnapshot:
     """Build a no-submit capability snapshot from direct Pasqal target metadata."""
-
     device_specs = _first_available_attr(
         target,
         names=("device_specs", "device", "device_capabilities", "capabilities", "metadata"),
@@ -766,7 +756,6 @@ def snapshot_from_quandela_processor(
     processor: Any,
 ) -> ProviderCapabilitySnapshot:
     """Build a no-submit capability snapshot from direct Quandela processor metadata."""
-
     specs = _first_available_attr(
         processor,
         names=("specs", "specification", "capabilities", "metadata"),
@@ -840,7 +829,6 @@ def snapshot_from_quantinuum_backend(
     backend: Any,
 ) -> ProviderCapabilitySnapshot:
     """Build a no-submit capability snapshot from direct Quantinuum metadata."""
-
     backend_info = _first_available_attr(
         backend,
         names=("backend_info", "_backend_info", "info", "metadata"),
@@ -919,7 +907,6 @@ def snapshot_from_rigetti_qcs(
     quantum_computer: Any,
 ) -> ProviderCapabilitySnapshot:
     """Build a no-submit capability snapshot from direct Rigetti QCS metadata."""
-
     compiler = _first_available_attr(
         quantum_computer,
         names=("compiler", "quantum_processor_compiler", "qpu_compiler"),
@@ -993,7 +980,6 @@ def snapshot_from_braket_device(
     device: Any,
 ) -> ProviderCapabilitySnapshot:
     """Build a no-submit capability snapshot from AWS Braket device metadata."""
-
     properties = _optional_attr(device, "properties")
     service = _optional_attr(properties, "service")
     paradigm = _optional_attr(properties, "paradigm")
@@ -1055,7 +1041,6 @@ def snapshot_from_qiskit_runtime_backend(
     backend: Any,
 ) -> ProviderCapabilitySnapshot:
     """Build a no-submit capability snapshot from IBM/Qiskit backend metadata."""
-
     configuration = _optional_noarg_call(backend, "configuration")
     status = _optional_noarg_call(backend, "status")
     properties = _optional_noarg_call(backend, "properties")
@@ -1133,7 +1118,6 @@ def snapshot_from_qbraid_device(
     device: Any,
 ) -> ProviderCapabilitySnapshot:
     """Build a no-submit capability snapshot from qBraid device metadata."""
-
     profile = _optional_attr(device, "profile")
     target_name = _first_text_attr(
         profile,
@@ -1201,7 +1185,6 @@ def snapshot_from_strangeworks_backend(
     backend: Any,
 ) -> ProviderCapabilitySnapshot:
     """Build a no-submit capability snapshot from Strangeworks backend metadata."""
-
     target_name = _first_text_attr(
         backend,
         names=("id", "backend_id", "device_id", "resource_id", "target_id", "name"),
@@ -1266,7 +1249,6 @@ def assess_provider_capability_snapshot(
     min_qubits: int | None = None,
 ) -> ProviderCapabilityDecision:
     """Assess route-level provider metadata without submitting work."""
-
     blockers: list[str] = []
     warnings: list[str] = []
     if snapshot.no_submit is not True:

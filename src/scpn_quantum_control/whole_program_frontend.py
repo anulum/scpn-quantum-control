@@ -126,7 +126,6 @@ class WholeProgramBytecodeBasicBlock:
 
     def to_dict(self) -> dict[str, object]:
         """Return a JSON-ready bytecode block."""
-
         return {
             "label": self.label,
             "start_offset": self.start_offset,
@@ -175,7 +174,6 @@ class WholeProgramSourceRegion:
 
     def to_dict(self) -> dict[str, object]:
         """Return a JSON-ready source region."""
-
         return {
             "region_id": self.region_id,
             "kind": self.kind,
@@ -226,7 +224,6 @@ class WholeProgramSourceBytecodeLineMap:
 
     def to_dict(self) -> dict[str, object]:
         """Return a JSON-ready source-bytecode crosswalk row."""
-
         return {
             "line_number": self.line_number,
             "absolute_line_number": self.absolute_line_number,
@@ -276,7 +273,6 @@ class WholeProgramSymbolScopeEntry:
 
     def to_dict(self) -> dict[str, object]:
         """Return a JSON-ready symbol-scope entry."""
-
         return {
             "symbol": self.symbol,
             "roles": list(self.roles),
@@ -333,7 +329,6 @@ class WholeProgramUnsupportedSemanticDiagnostic:
 
     def to_dict(self) -> dict[str, object]:
         """Return a JSON-ready unsupported-semantics diagnostic."""
-
         return {
             "semantic": self.semantic,
             "detail": self.detail,
@@ -608,19 +603,16 @@ class WholeProgramCompilerFrontendReport:
     @property
     def bytecode_instruction_count(self) -> int:
         """Return the number of bytecode instructions in the frontend report."""
-
         return len(self.bytecode_instructions)
 
     @property
     def source_feature_count(self) -> int:
         """Return the number of source IR feature rows in the frontend report."""
-
         return len(self.source_ir_features)
 
     @property
     def frontend_ready(self) -> bool:
         """Return whether bytecode and source frontend metadata passed preflight."""
-
         return (
             self.source_available
             and self.bytecode_instruction_count > 0
@@ -636,36 +628,30 @@ class WholeProgramCompilerFrontendReport:
     @property
     def bytecode_basic_block_count(self) -> int:
         """Return the number of bytecode basic blocks in the frontend report."""
-
         return len(self.bytecode_basic_blocks)
 
     @property
     def source_region_count(self) -> int:
         """Return the number of source regions in the frontend report."""
-
         return len(self.source_regions)
 
     @property
     def source_bytecode_line_map_count(self) -> int:
         """Return the number of source-bytecode crosswalk rows in the report."""
-
         return len(self.source_bytecode_line_map)
 
     @property
     def symbol_scope_entry_count(self) -> int:
         """Return the number of static symbol-scope entries in the report."""
-
         return len(self.symbol_scope_entries)
 
     @property
     def unsupported_semantic_diagnostic_count(self) -> int:
         """Return the number of unsupported-semantics diagnostics in the report."""
-
         return len(self.unsupported_semantic_diagnostics)
 
     def to_dict(self) -> dict[str, object]:
         """Return a JSON-ready compiler frontend report."""
-
         return {
             "function_name": self.function_name,
             "frontend_ready": self.frontend_ready,
@@ -734,7 +720,6 @@ def _objective_source_metadata(
     objective: Callable[..., object],
 ) -> _ObjectiveSourceMetadata | None:
     """Return dedented source and file-line bounds when introspection permits."""
-
     try:
         source_lines, start_line = inspect.getsourcelines(objective)
     except (OSError, TypeError):
@@ -752,7 +737,6 @@ def _objective_source_metadata(
 
 def _objective_source(objective: Callable[..., object]) -> str | None:
     """Return dedented source for a Python callable when introspection permits."""
-
     metadata = _objective_source_metadata(objective)
     return None if metadata is None else metadata.source
 
@@ -761,7 +745,6 @@ def _objective_bytecode(
     objective: Callable[..., object],
 ) -> tuple[WholeProgramBytecodeInstruction, ...]:
     """Return bytecode frontend IR for a Python objective when available."""
-
     try:
         instructions = dis.get_instructions(objective)
     except TypeError:
@@ -786,7 +769,6 @@ def _objective_bytecode(
 
 def _normalise_positive_line_number(value: int | None) -> int | None:
     """Return a positive source line number or ``None`` for missing metadata."""
-
     if value is None:
         return None
     line_number = int(value)
@@ -795,7 +777,6 @@ def _normalise_positive_line_number(value: int | None) -> int | None:
 
 def _instruction_line_number(instruction: dis.Instruction) -> int | None:
     """Return the CPython-version-stable source line for a bytecode instruction."""
-
     starts_line = instruction.starts_line
     if isinstance(starts_line, bool):
         positions = instruction.positions
@@ -811,7 +792,6 @@ def _source_ir_features(
     unsupported_semantic_diagnostics: Sequence[WholeProgramUnsupportedSemanticDiagnostic] = (),
 ) -> tuple[WholeProgramSourceIRFeature, ...]:
     """Return source-level control, alias, mutation, and loop features."""
-
     features: list[WholeProgramSourceIRFeature] = []
     for detail in accepted_python_semantics:
         features.append(WholeProgramSourceIRFeature("python_semantics", detail, 1))
@@ -893,7 +873,6 @@ def _source_ir_features(
 
 def _source_list_alias_features(tree: ast.AST) -> tuple[WholeProgramSourceIRFeature, ...]:
     """Return bounded source-level list alias metadata for local bindings."""
-
     features: list[WholeProgramSourceIRFeature] = []
     list_roots: set[str] = set()
     aliases: dict[str, str] = {}
@@ -947,7 +926,6 @@ def _source_local_rebinding_alias_features(
     tree: ast.AST,
 ) -> tuple[WholeProgramSourceIRFeature, ...]:
     """Return bounded source-level metadata for local name rebinding."""
-
     features: list[WholeProgramSourceIRFeature] = []
     assignments = sorted(
         (node for node in ast.walk(tree) if isinstance(node, ast.Assign)),
@@ -973,7 +951,6 @@ def _source_expression_rebinding_alias_features(
     tree: ast.AST,
 ) -> tuple[WholeProgramSourceIRFeature, ...]:
     """Return bounded source-level metadata for local expression rebinding."""
-
     features: list[WholeProgramSourceIRFeature] = []
     assignments = sorted(
         (node for node in ast.walk(tree) if isinstance(node, ast.Assign)),
@@ -1002,7 +979,6 @@ def _source_object_attribute_alias_features(
     tree: ast.AST,
 ) -> tuple[WholeProgramSourceIRFeature, ...]:
     """Return bounded source-level metadata for local object attribute aliases."""
-
     features: list[WholeProgramSourceIRFeature] = []
     local_objects: set[str] = set()
     assignments = sorted(
@@ -1048,7 +1024,6 @@ def _source_control_path_alias_features(
     tree: ast.AST,
 ) -> tuple[WholeProgramSourceIRFeature, ...]:
     """Return branch-local alias metadata that needs non-executed semantics."""
-
     features: list[WholeProgramSourceIRFeature] = []
 
     def target_label(target: ast.AST) -> str | None:
@@ -1096,7 +1071,6 @@ def _source_control_path_alias_features(
 
 def _expression_may_rebind_trace_value(node: ast.AST) -> bool:
     """Return whether an expression can carry a trace value into a local binding."""
-
     return any(
         isinstance(child, ast.Name | ast.Attribute | ast.Subscript) for child in ast.walk(node)
     )
@@ -1104,7 +1078,6 @@ def _expression_may_rebind_trace_value(node: ast.AST) -> bool:
 
 def _stable_ast_expression_label(node: ast.AST, line_number: int) -> str:
     """Return a deterministic short label for a source expression alias."""
-
     try:
         expression = ast.unparse(node)
     except Exception:  # pragma: no cover - ast.unparse is available on supported Python.
@@ -1117,7 +1090,6 @@ def _stable_ast_expression_label(node: ast.AST, line_number: int) -> str:
 
 def _is_local_object_constructor_call(node: ast.AST) -> bool:
     """Return whether an assignment value looks like a local object constructor."""
-
     if not isinstance(node, ast.Call):
         return False
     name = _ast_call_name(node.func)
@@ -1131,7 +1103,6 @@ def _source_loop_carried_state_features(
     tree: ast.AST,
 ) -> tuple[WholeProgramSourceIRFeature, ...]:
     """Return bounded source metadata for local loop-carried scalar state."""
-
     features: list[WholeProgramSourceIRFeature] = []
 
     def assigned_names_in_target(target: ast.AST) -> set[str]:
@@ -1200,7 +1171,6 @@ def _accepted_python_semantics(
     source: str | None,
 ) -> tuple[str, ...]:
     """Return Python calling semantics supported by whole-program AD preflight."""
-
     accepted: set[str] = set()
     code = getattr(objective, "__code__", None)
     if code is not None and code.co_freevars:
@@ -1231,7 +1201,6 @@ def _unsupported_python_semantics(
     source: str | None,
 ) -> tuple[str, ...]:
     """Return unsupported Python semantics detected before objective execution."""
-
     return tuple(
         sorted(
             {
@@ -1257,7 +1226,6 @@ def _unsupported_python_semantic_diagnostics(
     source_regions: Sequence[WholeProgramSourceRegion],
 ) -> tuple[WholeProgramUnsupportedSemanticDiagnostic, ...]:
     """Return located unsupported Python-semantics diagnostics."""
-
     if source is None:
         return ()
     try:
@@ -1326,7 +1294,6 @@ def _unsupported_python_semantic_diagnostics(
 
 def _captured_or_global_names(objective: Callable[..., object]) -> set[str]:
     """Return names whose attributes would resolve through closure/global objects."""
-
     code = getattr(objective, "__code__", None)
     if code is None:
         return set()
@@ -1427,7 +1394,6 @@ def compile_whole_program_frontend(
     ValueError
         If ``objective`` is not callable.
     """
-
     if not callable(objective):
         raise ValueError("whole-program compiler frontend objective must be callable")
     source_metadata = _objective_source_metadata(objective)
@@ -1556,7 +1522,6 @@ def _bytecode_basic_blocks(
     instructions: Sequence[WholeProgramBytecodeInstruction],
 ) -> tuple[WholeProgramBytecodeBasicBlock, ...]:
     """Return a deterministic static basic-block skeleton for bytecode."""
-
     if not instructions:
         return ()
     offsets = [instruction.offset for instruction in instructions]
@@ -1620,13 +1585,11 @@ def _bytecode_basic_blocks(
 
 def _bytecode_is_unconditional_jump(opname: str) -> bool:
     """Return true when a bytecode operation jumps without a fallthrough path."""
-
     return opname.startswith("JUMP") and "IF" not in opname and opname != "JUMP_IF_NOT_EXC_MATCH"
 
 
 def _bytecode_jump_target(instruction: WholeProgramBytecodeInstruction) -> int | None:
     """Return a jump target offset encoded by CPython's ``dis`` argrepr."""
-
     if "JUMP" not in instruction.opname and instruction.opname != "FOR_ITER":
         return None
     if instruction.jump_target_offset is not None:
@@ -1664,7 +1627,6 @@ def _source_regions(
     source_ir_features: Sequence[WholeProgramSourceIRFeature],
 ) -> tuple[WholeProgramSourceRegion, ...]:
     """Return deterministic bounded source-region metadata for frontend planning."""
-
     if source is None:
         return ()
     try:
@@ -1778,7 +1740,6 @@ def _source_bytecode_line_map(
     source_start_line: int | None,
 ) -> tuple[WholeProgramSourceBytecodeLineMap, ...]:
     """Return deterministic source-line to bytecode crosswalk metadata."""
-
     offsets_by_line: dict[int, set[int]] = {}
     absolute_by_line: dict[int, set[int]] = {}
     for instruction in bytecode_instructions:
@@ -1824,7 +1785,6 @@ def _symbol_scope_entries(
     source_start_line: int | None,
 ) -> tuple[WholeProgramSymbolScopeEntry, ...]:
     """Return deterministic static symbol-scope metadata for a callable."""
-
     symbol_roles: dict[str, set[str]] = {}
     symbol_lines: dict[str, set[int]] = {}
     symbol_offsets: dict[str, set[int]] = {}
@@ -1935,7 +1895,6 @@ def _source_region_ids_for_line(
     line_number: int,
 ) -> tuple[str, ...]:
     """Return source-region identifiers covering a source line."""
-
     return tuple(
         sorted(
             region.region_id
@@ -1947,7 +1906,6 @@ def _source_region_ids_for_line(
 
 def _source_relative_line(line_number: int, source_start_line: int | None) -> int:
     """Return a source-relative line for a CPython absolute line number."""
-
     if source_start_line is None:
         return line_number
     relative_line = line_number - source_start_line + 1
@@ -1956,7 +1914,6 @@ def _source_relative_line(line_number: int, source_start_line: int | None) -> in
 
 def _single_absolute_line(line_numbers: set[int]) -> int | None:
     """Return one absolute line when all bytecode offsets share it."""
-
     sorted_lines = sorted(line_numbers)
     if len(sorted_lines) != 1:
         return None
@@ -1965,7 +1922,6 @@ def _single_absolute_line(line_numbers: set[int]) -> int | None:
 
 def _bytecode_symbol_name(instruction: WholeProgramBytecodeInstruction) -> str | None:
     """Return the static symbol operand for a bytecode instruction."""
-
     if not (
         instruction.opname.endswith("_FAST")
         or instruction.opname.endswith("_DEREF")
@@ -1985,7 +1941,6 @@ def _bytecode_symbol_name(instruction: WholeProgramBytecodeInstruction) -> str |
 
 def _bytecode_symbol_role(opname: str) -> str:
     """Return a source-like symbol role for a bytecode operation name."""
-
     if opname.startswith("LOAD"):
         return "bytecode_load"
     if opname.startswith("STORE"):
@@ -1997,7 +1952,6 @@ def _bytecode_symbol_role(opname: str) -> str:
 
 def _ast_name_role(context: ast.expr_context) -> str:
     """Return a symbol role for an AST name context."""
-
     if isinstance(context, ast.Load):
         return "source_load"
     if isinstance(context, ast.Store):
@@ -2023,7 +1977,6 @@ def _frontend_digest(
     hard_gaps: tuple[str, ...],
 ) -> str:
     """Return a stable digest for the complete static frontend payload."""
-
     payload = {
         "source_sha256": None
         if source is None
@@ -2087,13 +2040,11 @@ def _source_parse_failed(source: str | None) -> bool:
 
 def _source_has_control_flow(source: str | None) -> bool:
     """Return whether source contains explicit Python control-flow nodes."""
-
     return _source_has_node(source, ast.If, ast.For, ast.AsyncFor, ast.While, ast.IfExp)
 
 
 def _source_has_node(source: str | None, *node_types: type[ast.AST]) -> bool:
     """Return whether source contains any AST node of the requested types."""
-
     if source is None:
         return False
     try:
@@ -2120,7 +2071,6 @@ def _source_has_node(source: str | None, *node_types: type[ast.AST]) -> bool:
 
 def _source_mentions_numpy(source: str | None) -> bool:
     """Return whether a source fragment visibly references NumPy."""
-
     if source is None:
         return False
     return "np." in source or "numpy." in source

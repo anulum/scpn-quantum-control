@@ -61,7 +61,6 @@ class HardwareGradientPreregistration:
 
     def to_dict(self) -> dict[str, object]:
         """Return JSON-ready preregistration metadata."""
-
         return {
             "title": self.title,
             "research_question": self.research_question,
@@ -93,7 +92,6 @@ class HardwareGradientMethodSection:
 
     def to_dict(self) -> dict[str, object]:
         """Return JSON-ready methods-section metadata."""
-
         return {
             "campaign_name": self.campaign_name,
             "method": self.method,
@@ -129,7 +127,6 @@ class HardwareGradientArtifactMapEntry:
 
     def to_dict(self) -> dict[str, object]:
         """Return JSON-ready artefact-map metadata."""
-
         return {
             "campaign_name": self.campaign_name,
             "method": self.method,
@@ -160,7 +157,6 @@ class HardwareGradientClaimLedgerRow:
 
     def to_dict(self) -> dict[str, object]:
         """Return JSON-ready claim-ledger metadata."""
-
         return {
             "claim_id": self.claim_id,
             "campaign_name": self.campaign_name,
@@ -187,7 +183,6 @@ class HardwareGradientBenchmarkPlaceholder:
 
     def to_dict(self) -> dict[str, object]:
         """Return JSON-ready benchmark-placeholder metadata."""
-
         return {
             "route": self.route,
             "status": self.status,
@@ -217,7 +212,6 @@ class HardwareGradientPublicationPackage:
     @property
     def submission_ready(self) -> bool:
         """Return whether the package contains enough evidence for submission."""
-
         return (
             self.hardware_execution_count > 0
             and self.gradient_available_count > 0
@@ -228,7 +222,6 @@ class HardwareGradientPublicationPackage:
 
     def to_dict(self) -> dict[str, object]:
         """Return JSON-ready publication package metadata."""
-
         return {
             "schema_version": HARDWARE_GRADIENT_PUBLICATION_SCHEMA_VERSION,
             "campaign_schema_version": CAMPAIGN_SCHEMA_VERSION,
@@ -249,7 +242,6 @@ class HardwareGradientPublicationPackage:
 
     def to_markdown(self) -> str:
         """Return a compact Markdown scaffold for reviewer handoff."""
-
         method_lines = [
             (
                 f"- `{section.campaign_name}`: `{section.method}` on "
@@ -296,7 +288,6 @@ def build_hardware_gradient_publication_package(
     plans: Sequence[HardwareGradientCampaignPlan] | None = None,
 ) -> HardwareGradientPublicationPackage:
     """Build the no-submit publication package for XY hardware gradients."""
-
     campaign_plans = (
         tuple(plans)
         if plans is not None

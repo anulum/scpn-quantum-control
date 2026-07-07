@@ -285,7 +285,6 @@ class PennyLaneRunner:
         ansatz_depth: int = 2,
     ) -> GradientResult:
         """Return VQE energy and PennyLane autodiff gradient for ansatz parameters."""
-
         n_params = self.n * ansatz_depth * 3
         raw_params = _as_finite_vector("params", params, width=n_params)
 

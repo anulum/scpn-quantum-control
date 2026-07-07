@@ -109,7 +109,6 @@ def spsa_gradient_estimate(
         Seeded SPSA gradient estimate with probe records and uncertainty
         metadata.
     """
-
     parameter_values = _as_parameter_array(values)
     radius = _as_real_scalar("SPSA perturbation_radius", perturbation_radius)
     if radius <= 0.0:
@@ -249,7 +248,6 @@ def score_function_gradient_estimate(
         Likelihood-ratio gradient estimate with per-sample records and
         covariance metadata.
     """
-
     reward_array = _as_parameter_array(rewards)
     scores = _as_real_numeric_array("score_vectors", score_vectors)
     if scores.ndim != 2:
@@ -359,7 +357,6 @@ def allocate_parameter_shift_shots(
     ShotAllocationResult
         Shot plan and predicted covariance for the requested target.
     """
-
     shift_rule = rule or ParameterShiftRule()
     terms = shift_rule.terms
     term_count = len(terms)

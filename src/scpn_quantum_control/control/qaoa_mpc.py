@@ -105,7 +105,8 @@ class QAOA_MPC:
     def optimize(self, seed: int | None = None) -> NDArray[np.int64]:
         """Run QAOA optimization, return binary action sequence.
 
-        Returns:
+        Returns
+        -------
             shape (horizon,) array of 0/1 actions.
         """
         if self._cost_ham is None:

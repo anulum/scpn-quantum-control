@@ -36,13 +36,11 @@ from .program_ad_shape_transforms import (
 
 def _is_trace_array(value: object) -> bool:
     """Return whether ``value`` behaves like a whole-program trace array."""
-
     return type(value).__name__ == "TraceADArray" and hasattr(value, "context")
 
 
 def _program_ad_array_shape_of(value: object) -> tuple[int, ...]:
     """Return the static array shape recorded by a trace value or array-like input."""
-
     if _is_trace_array(value):
         shape = getattr(value, "shape", None)
         if not isinstance(shape, tuple):
@@ -53,7 +51,6 @@ def _program_ad_array_shape_of(value: object) -> tuple[int, ...]:
 
 def _program_ad_array_dtype_of(value: object) -> str:
     """Return the dtype name recorded by a trace value or array-like input."""
-
     if _is_trace_array(value):
         return "float64"
     array = np.asarray(value)
@@ -67,7 +64,6 @@ def _validate_program_ad_product_contract_dispatch(
     args: tuple[object, ...],
 ) -> None:
     """Validate product primitive dispatch helpers against concrete arguments."""
-
     if contract.static_argument_rule is None:
         raise ValueError(
             f"program AD primitive {contract.identity.key} missing static argument rule"
@@ -398,7 +394,6 @@ def program_ad_product_matmul_derivative_rule(
     right_shape: Sequence[int],
 ) -> CustomDerivativeRule:
     """Build a direct value/JVP/VJP rule for a fixed matmul primitive signature."""
-
     left_static_shape, right_static_shape, output_shape = (
         _program_ad_product_normalise_matmul_shapes(left_shape, right_shape)
     )
@@ -606,7 +601,6 @@ def program_ad_product_tensordot_derivative_rule(
     axes: object = 2,
 ) -> CustomDerivativeRule:
     """Build a direct value/JVP/VJP rule for a fixed ``np.tensordot`` signature."""
-
     left_static_shape, right_static_shape, left_axes, right_axes, output_shape = (
         _normalise_program_ad_product_tensordot_signature(left_shape, right_shape, axes)
     )
@@ -694,7 +688,6 @@ def program_ad_product_inner_derivative_rule(
     right_shape: Sequence[int],
 ) -> CustomDerivativeRule:
     """Build a direct value/JVP/VJP rule for a fixed inner-product signature."""
-
     left_static_shape, right_static_shape, output_shape = (
         _program_ad_product_normalise_inner_shapes(left_shape, right_shape)
     )
@@ -787,7 +780,6 @@ def program_ad_product_outer_derivative_rule(
     right_shape: Sequence[int],
 ) -> CustomDerivativeRule:
     """Build a direct value/JVP/VJP rule for a fixed outer-product signature."""
-
     left_static_shape, right_static_shape = _program_ad_product_normalise_outer_shapes(
         left_shape, right_shape
     )
@@ -881,7 +873,6 @@ def program_ad_product_einsum_derivative_rule(
     operand_shapes: Sequence[Sequence[int]],
 ) -> CustomDerivativeRule:
     """Build a direct value/JVP/VJP rule for fixed explicit ``np.einsum`` signatures."""
-
     shapes = _normalise_program_ad_product_einsum_shapes(operand_shapes)
     normalised = subscripts.replace(" ", "")
     output_labels, input_labels, dimensions = _parse_static_einsum_subscripts(
@@ -1389,7 +1380,6 @@ def _require_program_ad_product_contract(
     args: tuple[object, ...] | None = None,
 ) -> PrimitiveContract:
     """Return and validate a registered Program AD product primitive contract."""
-
     identity = _PROGRAM_AD_PRODUCT_IDENTITIES.get(name)
     if identity is None:
         raise ValueError(f"no program AD product primitive identity registered for {name}")

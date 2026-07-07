@@ -49,7 +49,6 @@ class LogicalDLAParityRow:
 
     def to_dict(self) -> dict[str, Any]:
         """Return JSON-compatible row data."""
-
         return asdict(self)
 
 
@@ -70,7 +69,6 @@ class MultiscaleComparison:
 
     def to_dict(self) -> dict[str, Any]:
         """Return JSON-compatible comparison data."""
-
         payload = asdict(self)
         payload["multiscale_distances"] = list(self.multiscale_distances)
         return payload
@@ -78,7 +76,6 @@ class MultiscaleComparison:
 
 def surface_code_physical_qubits(n_oscillators: int, code_distance: int) -> int:
     """Return flat rotated-surface-code physical qubits for logical oscillators."""
-
     _validate_odd_distance(code_distance)
     _validate_n_oscillators(n_oscillators)
     return n_oscillators * (2 * code_distance * code_distance - 1)
@@ -86,7 +83,6 @@ def surface_code_physical_qubits(n_oscillators: int, code_distance: int) -> int:
 
 def repetition_scaffold_physical_qubits(n_oscillators: int, code_distance: int) -> int:
     """Return existing repetition-code scaffold qubits for comparison only."""
-
     _validate_odd_distance(code_distance)
     _validate_n_oscillators(n_oscillators)
     return n_oscillators * (2 * code_distance - 1)
@@ -105,7 +101,6 @@ def estimate_logical_dla_parity_row(
     logical-error opportunity per QEC round in the step. It is intentionally
     conservative and does not promote DLA-parity survival.
     """
-
     _validate_probability(p_physical, "p_physical")
     if syndrome_round_us <= 0.0 or not np.isfinite(syndrome_round_us):
         raise ValueError("syndrome_round_us must be finite and positive")
@@ -138,7 +133,6 @@ def estimate_s7_resource_table(
     syndrome_round_us: float = 1.0,
 ) -> tuple[LogicalDLAParityRow, ...]:
     """Return the default S7 logical-DLA resource table."""
-
     if not code_distances:
         raise ValueError("code_distances must not be empty")
     return tuple(
@@ -160,7 +154,6 @@ def compare_flat_surface_code_to_multiscale(
     multiscale_distances: tuple[int, ...] = (3, 3, 3, 3, 3),
 ) -> MultiscaleComparison:
     """Compare flat surface-code resources with the existing MS-QEC hierarchy."""
-
     _validate_n_oscillators(n_oscillators)
     _validate_odd_distance(flat_distance)
     for distance in multiscale_distances:
@@ -202,7 +195,6 @@ def compare_flat_surface_code_to_multiscale(
 
 def logical_dla_parity_payload() -> dict[str, Any]:
     """Return the S7 logical-DLA parity roadmap payload."""
-
     rows = estimate_s7_resource_table()
     comparison = compare_flat_surface_code_to_multiscale()
     prerequisites = [
@@ -227,7 +219,6 @@ def logical_dla_parity_payload() -> dict[str, Any]:
 
 def logical_dla_parity_markdown(payload: dict[str, Any] | None = None) -> str:
     """Render the S7 logical-DLA parity roadmap as Markdown."""
-
     data = logical_dla_parity_payload() if payload is None else payload
     lines = [
         "# Logical DLA Parity Roadmap",

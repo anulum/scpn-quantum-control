@@ -104,7 +104,6 @@ def provider_optional_dependency_matrix() -> tuple[ProviderOptionalDependencyRow
     The probe uses ``importlib.util.find_spec`` only. It does not import provider
     SDKs, read credentials, create clients, authenticate, or touch the network.
     """
-
     rows: list[ProviderOptionalDependencyRow] = []
     for descriptor in list_hal_backend_descriptors():
         import_names = _SDK_IMPORTS.get(descriptor.sdk_package, (descriptor.sdk_package,))
@@ -136,7 +135,6 @@ def aggregator_provider_optional_dependency_matrix(
     optional-dependency probe. It remains no-network and no-authentication:
     import availability is measured through ``find_spec`` only.
     """
-
     dependency_by_backend = {row.backend_id: row for row in provider_optional_dependency_matrix()}
     routes = built_in_aggregator_provider_routes()
     if aggregator is not None and provider is not None:
@@ -173,7 +171,6 @@ def isolated_provider_smoke_lanes() -> tuple[IsolatedProviderSmokeLane, ...]:
     with shared development and application extras. These lanes are offline:
     they only install one provider extra and run the metadata import probe.
     """
-
     rows_by_backend = {row.backend_id: row for row in provider_optional_dependency_matrix()}
     lanes: list[IsolatedProviderSmokeLane] = []
     for extra, backend_ids in _ISOLATED_PROVIDER_EXTRAS.items():
@@ -251,7 +248,6 @@ def main(argv: Sequence[str] | None = None) -> int:
     touches no network endpoint. Use ``--require-all`` in provider-pack CI lanes
     after installing ``scpn-quantum-control[providers]``.
     """
-
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--format",

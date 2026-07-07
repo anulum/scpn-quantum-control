@@ -21,7 +21,6 @@ def strict_non_negative_count(value: object, *, field_name: str = "count") -> in
     This is intentionally strict: non-integral numerics (e.g. ``1.5``) and opaque
     numeric strings (e.g. ``"1.5"``) are rejected instead of silently truncated.
     """
-
     integer = _strict_int(value, field_name=field_name)
     if integer < 0:
         raise ValueError(f"{field_name} must be non-negative")
@@ -30,7 +29,6 @@ def strict_non_negative_count(value: object, *, field_name: str = "count") -> in
 
 def strict_integer_value(value: object, *, field_name: str = "value") -> int:
     """Return a strictly validated integer value."""
-
     return _strict_int(value, field_name=field_name)
 
 
@@ -55,7 +53,6 @@ def _strict_int(value: object, *, field_name: str) -> int:
 
 def strict_binary_bitstring_key(value: object, *, field_name: str = "count key") -> str:
     """Normalise a count key to a strict binary bitstring."""
-
     if isinstance(value, str):
         text = value.strip()
         if not text:
@@ -82,7 +79,6 @@ def strict_fixed_width_bitstring_key(
     field_name: str = "count key",
 ) -> str:
     """Normalise and validate a binary bitstring key with exact width."""
-
     if width <= 0:
         raise ValueError("bitstring width must be positive")
     key = strict_binary_bitstring_key(value, field_name=field_name)
@@ -93,7 +89,6 @@ def strict_fixed_width_bitstring_key(
 
 def strict_provider_job_id(value: object, *, field_name: str = "provider job id") -> str:
     """Validate and canonicalise provider job identifiers."""
-
     text = str(value).strip()
     if not text:
         raise ValueError(f"{field_name} must be non-empty")
@@ -111,7 +106,6 @@ def strict_shot_conservation(
     counts: dict[str, int], *, expected_shots: int, field_name: str = "shot count"
 ) -> int:
     """Validate that decoded counts exactly match expected provider shots."""
-
     if expected_shots <= 0:
         raise ValueError(f"{field_name} expectation must be positive")
     observed = sum(counts.values())

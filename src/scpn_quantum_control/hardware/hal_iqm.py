@@ -38,7 +38,6 @@ def iqm_qiskit_workload(
     metadata: dict[str, object] | None = None,
 ) -> QuantumWorkload:
     """Encode a Qiskit circuit as a HAL workload for IQM execution."""
-
     return qiskit_circuit_to_workload(
         circuit,
         workload_id=workload_id,

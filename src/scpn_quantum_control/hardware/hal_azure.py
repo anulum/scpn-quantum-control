@@ -35,7 +35,6 @@ def azure_openqasm3_to_workload(
     metadata: Mapping[str, object] | None = None,
 ) -> QuantumWorkload:
     """Build an Azure Quantum OpenQASM 3 HAL workload."""
-
     return QuantumWorkload(
         workload_id=workload_id,
         ir_format="openqasm3",

@@ -28,14 +28,12 @@ DEFAULT_DOC_PATH = Path("docs") / "symmetry_sector_mitigation_fixtures.md"
 
 def _json_ready(data: dict[str, Any]) -> dict[str, Any]:
     """Return a JSON round-tripped object with lists instead of tuples."""
-
     payload: dict[str, Any] = json.loads(json.dumps(data, sort_keys=True))
     return payload
 
 
 def fixture_problems() -> dict[str, SymmetrySectorProblem]:
     """Return canonical planner fixture inputs."""
-
     valid = SymmetrySectorProblem(
         n_qubits=4,
         coupling_matrix=(
@@ -75,7 +73,6 @@ def fixture_problems() -> dict[str, SymmetrySectorProblem]:
 
 def fixture_payload() -> dict[str, Any]:
     """Build the deterministic fixture payload."""
-
     fixtures = []
     for fixture_id, problem in fixture_problems().items():
         plan = plan_symmetry_sector_mitigation(problem)
@@ -103,7 +100,6 @@ def fixture_payload() -> dict[str, Any]:
 
 def replay_fixture_rows() -> list[dict[str, Any]]:
     """Return deterministic raw-count replay fixture rows."""
-
     problems = fixture_problems()
     rows: list[dict[str, Any]] = []
     applied = replay_symmetry_sector_counts(
@@ -134,13 +130,11 @@ def replay_fixture_rows() -> list[dict[str, Any]]:
 
 def normalised_json(data: dict[str, Any]) -> str:
     """Return deterministic JSON text for fixture comparison and writing."""
-
     return json.dumps(data, indent=2, sort_keys=True) + "\n"
 
 
 def write_json(path: Path, data: dict[str, Any]) -> str:
     """Write deterministic JSON and return its SHA-256 digest."""
-
     path.parent.mkdir(parents=True, exist_ok=True)
     encoded = normalised_json(data)
     path.write_text(encoded, encoding="utf-8")
@@ -149,7 +143,6 @@ def write_json(path: Path, data: dict[str, Any]) -> str:
 
 def fixture_markdown(data: dict[str, Any]) -> str:
     """Render a public fixture summary."""
-
     lines = [
         "<!-- SPDX-License-Identifier: AGPL-3.0-or-later -->",
         "<!-- Commercial license available -->",
@@ -225,7 +218,6 @@ def fixture_markdown(data: dict[str, Any]) -> str:
 
 def write_text(path: Path, text: str) -> str:
     """Write text and return its SHA-256 digest."""
-
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(text, encoding="utf-8")
     return hashlib.sha256(text.encode("utf-8")).hexdigest()

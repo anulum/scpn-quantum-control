@@ -69,7 +69,6 @@ def gauss_newton_gradient(
         Natural-gradient result whose vector is the trainable Gauss-Newton
         update direction before the descent sign is applied.
     """
-
     if not isinstance(jacobian, JacobianResult):
         raise ValueError("gauss-newton gradient requires a JacobianResult")
     jacobian_arr = jacobian.jacobian
@@ -132,7 +131,6 @@ def custom_gauss_newton_gradient(
     NaturalGradientResult
         Trainable Gauss-Newton update direction with exact-Jacobian provenance.
     """
-
     jacobian_result = value_and_custom_jacobian(rule, values, parameters=parameters)
     return gauss_newton_gradient(
         jacobian_result,
@@ -192,7 +190,6 @@ class LevenbergMarquardtOptimizer:
 
     def __post_init__(self) -> None:
         """Validate and canonicalize optimizer controls."""
-
         damping = _as_real_scalar("Levenberg-Marquardt damping", self.damping)
         if damping < 0.0:
             raise ValueError("Levenberg-Marquardt damping must be finite and non-negative")
@@ -304,7 +301,6 @@ class LevenbergMarquardtOptimizer:
             Final and best iterates, residual history, damping history, and
             convergence reason.
         """
-
         values = _as_parameter_array(initial_values)
         bounds_meta = _normalise_bounds(values, bounds)
         values = _project_bounds(values, bounds_meta)
@@ -419,7 +415,6 @@ class LevenbergMarquardtOptimizer:
         weights: NDArray[np.float64] | None,
     ) -> float:
         """Return the weighted least-squares objective value."""
-
         if weights is None:
             return 0.5 * float(residual @ residual)
         return 0.5 * float(residual @ (residual * weights))
@@ -430,7 +425,6 @@ class LevenbergMarquardtOptimizer:
         weight_fn: Callable[[NDArray[np.float64]], ArrayLike] | None,
     ) -> NDArray[np.float64] | None:
         """Return validated robust residual weights for one residual vector."""
-
         if weight_fn is None:
             return None
         weights = _as_real_numeric_array("LM weights", weight_fn(residual.copy()))
@@ -476,7 +470,6 @@ def levenberg_marquardt_step(
         Candidate step, projected candidate values, predicted reduction, and
         Gauss-Newton provenance.
     """
-
     current_values = _as_parameter_array(values)
     if current_values.size != jacobian.jacobian.shape[1]:
         raise ValueError("values length must match Jacobian parameter dimension")
@@ -559,7 +552,6 @@ def custom_levenberg_marquardt_step(
     LevenbergMarquardtStep
         Bounded LM candidate with exact-Jacobian provenance.
     """
-
     jacobian_result = value_and_custom_jacobian(rule, values, parameters=parameters)
     return levenberg_marquardt_step(
         jacobian_result,
@@ -598,7 +590,6 @@ def evaluate_levenberg_marquardt_step(
         Candidate residual, actual reduction, reduction ratio, and acceptance
         decision.
     """
-
     threshold = _as_real_scalar("Levenberg-Marquardt acceptance_threshold", acceptance_threshold)
     if threshold < 0.0:
         raise ValueError("Levenberg-Marquardt acceptance_threshold must be non-negative")
@@ -658,7 +649,6 @@ def update_levenberg_marquardt_damping(
     LevenbergMarquardtDampingUpdate
         Bounded next damping value and policy action.
     """
-
     if not isinstance(trial, LevenbergMarquardtTrial):
         raise ValueError("damping update requires a LevenbergMarquardtTrial")
     decrease = _as_real_scalar("Levenberg-Marquardt decrease_factor", decrease_factor)

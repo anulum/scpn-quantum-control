@@ -90,7 +90,8 @@ def wirtinger_partials(
         z: the evaluation point (length-``n`` complex vector).
         step: the central-difference step in the real and imaginary directions.
 
-    Returns:
+    Returns
+    -------
         A :class:`WirtingerDerivative` with both partial-derivative vectors and
         the holomorphicity residual ``max|df/dconj_z|``.
     """

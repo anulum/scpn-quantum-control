@@ -45,7 +45,6 @@ class TopologyOptimisationTrace:
     @property
     def final_objective(self) -> ObjectiveBreakdown:
         """Objective breakdown at the final matrix."""
-
         if not self.steps:
             raise ValueError("optimisation trace has no steps")
         return self.steps[-1].objective
@@ -79,7 +78,6 @@ class ProjectedSPSAOptimizer:
         objective: CouplingTopologyObjective,
     ) -> TopologyOptimisationTrace:
         """Run projected SPSA and return an auditable trace."""
-
         rng = np.random.default_rng(self.seed)
         K = objective.ledger.project(initial_matrix)
         steps: list[TopologyOptimisationStep] = []
@@ -147,7 +145,6 @@ class ProjectedScipyOptimizer:
         objective: CouplingTopologyObjective,
     ) -> TopologyOptimisationTrace:
         """Optimise using scipy when available."""
-
         from scipy.optimize import minimize
 
         initial = objective.ledger.project(initial_matrix)

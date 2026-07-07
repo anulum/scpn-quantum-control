@@ -151,7 +151,8 @@ def import_phase_qnode_from_pennylane(tape: Any) -> PennyLaneImportResult:
         tape: a ``pennylane.tape.QuantumScript`` with registered-supported gates
             and a single Pauli-word expectation measurement.
 
-    Returns:
+    Returns
+    -------
         A :class:`PennyLaneImportResult` with the circuit, the tape-order
         parameter vector, the qubit count, and a provenance record.
     """

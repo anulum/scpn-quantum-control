@@ -98,7 +98,6 @@ class CloudManifestBundle:
 
 def generate_cloud_manifests(spec: CloudDeploymentSpec) -> CloudManifestBundle:
     """Generate Kubernetes and Docker Compose manifests for ``spec``."""
-
     files = {
         "deployment.yaml": _deployment_yaml(spec),
         "service.yaml": _service_yaml(spec),

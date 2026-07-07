@@ -55,7 +55,6 @@ class AnalogNativeReadinessConfig:
 
     def to_dict(self) -> dict[str, Any]:
         """Return JSON-compatible config data."""
-
         return asdict(self)
 
 
@@ -77,7 +76,6 @@ class AnalogNativePrimitiveComparison:
 
     def to_dict(self) -> dict[str, Any]:
         """Return JSON-compatible comparison data."""
-
         return asdict(self)
 
 
@@ -96,7 +94,6 @@ class AnalogProviderReadinessRow:
 
     def to_dict(self) -> dict[str, Any]:
         """Return JSON-compatible provider row data."""
-
         payload = asdict(self)
         payload["provider"] = self.provider.value
         payload["limitations"] = list(self.limitations)
@@ -110,7 +107,6 @@ def compare_native_to_digital_primitives(
     config: AnalogNativeReadinessConfig | None = None,
 ) -> AnalogNativePrimitiveComparison:
     """Compare analog-native primitive count to a digital Trotter baseline."""
-
     K, frequencies = _validate_problem_arrays(K_nm, omega)
     cfg = config or AnalogNativeReadinessConfig()
     program = compile_analog_kuramoto(
@@ -148,7 +144,6 @@ def provider_readiness_rows(
     config: AnalogNativeReadinessConfig | None = None,
 ) -> tuple[AnalogProviderReadinessRow, ...]:
     """Return no-submit provider-readiness rows for the S10 analog targets."""
-
     K, frequencies = _validate_problem_arrays(K_nm, omega)
     cfg = config or AnalogNativeReadinessConfig()
     calibration = {
@@ -190,7 +185,6 @@ def provider_readiness_rows(
 
 def analog_native_payload() -> dict[str, Any]:
     """Return the S10 analog-native readiness payload."""
-
     K_nm, omega = _default_problem()
     config = AnalogNativeReadinessConfig()
     comparison = compare_native_to_digital_primitives(K_nm, omega, config=config)
@@ -216,7 +210,6 @@ def analog_native_payload() -> dict[str, Any]:
 
 def analog_native_markdown(payload: dict[str, Any] | None = None) -> str:
     """Render the S10 analog-native readiness note."""
-
     data = analog_native_payload() if payload is None else payload
     comparison = data["primitive_comparison"]
     lines = [

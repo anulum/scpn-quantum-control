@@ -32,7 +32,6 @@ class SpectrumSummary:
 
 def computational_magnetisations(n_qubits: int) -> NDArray[np.int64]:
     """Return total Z magnetisation for every computational basis state."""
-
     if n_qubits < 1:
         raise ValueError("n_qubits must be positive")
     dimension = 2**n_qubits
@@ -45,7 +44,6 @@ def computational_magnetisations(n_qubits: int) -> NDArray[np.int64]:
 
 def fim_diagonal(n_qubits: int, lambda_fim: float) -> NDArray[np.float64]:
     """Return the diagonal entries of H_FIM = -lambda * M^2 / n."""
-
     magnetisations = computational_magnetisations(n_qubits).astype(np.float64)
     return -float(lambda_fim) * magnetisations**2 / float(n_qubits)
 
@@ -54,7 +52,6 @@ def add_fim_feedback(
     hamiltonian: NDArray[np.complex128], lambda_fim: float
 ) -> NDArray[np.complex128]:
     """Add the collective FIM-inspired feedback term to a dense Hamiltonian."""
-
     if hamiltonian.ndim != 2 or hamiltonian.shape[0] != hamiltonian.shape[1]:
         raise ValueError("hamiltonian must be a square matrix")
     dimension = hamiltonian.shape[0]
@@ -70,7 +67,6 @@ def add_fim_feedback(
 
 def magnetisation_sector_indices(n_qubits: int) -> dict[int, NDArray[np.int64]]:
     """Group computational basis indices by total magnetisation."""
-
     magnetisations = computational_magnetisations(n_qubits)
     sectors: dict[int, list[int]] = {}
     for basis_index, magnetisation in enumerate(magnetisations):
@@ -85,7 +81,6 @@ def summarise_spectrum(
     eigenvalues: NDArray[np.float64], n_qubits: int, lambda_fim: float
 ) -> SpectrumSummary:
     """Summarise sorted real eigenvalues for one Hamiltonian instance."""
-
     values = np.sort(np.asarray(eigenvalues, dtype=np.float64))
     gap = float(values[1] - values[0]) if values.size > 1 else None
     return SpectrumSummary(
@@ -105,7 +100,6 @@ def sector_spectrum_rows(
     hamiltonian: NDArray[np.float64], lambda_fim: float
 ) -> list[dict[str, object]]:
     """Compute exact spectrum summaries inside each magnetisation sector."""
-
     dimension = hamiltonian.shape[0]
     n_qubits = int(round(np.log2(dimension)))
     rows: list[dict[str, object]] = []
@@ -135,7 +129,6 @@ def adjacent_gap_ratio(
     eigenvalues: NDArray[np.float64], tolerance: float = 1e-10
 ) -> dict[str, object]:
     """Compute adjacent-gap ratio statistics after removing tiny spacings."""
-
     values = np.sort(np.asarray(eigenvalues, dtype=np.float64))
     spacings = np.diff(values)
     spacings = spacings[spacings > tolerance]
@@ -166,7 +159,6 @@ def bipartite_entropy_from_statevector(
     tolerance: float = 1e-15,
 ) -> float:
     """Return pure-state bipartite entropy S(keep) in bits."""
-
     state = np.asarray(statevector, dtype=np.complex128)
     if state.size != 2**n_qubits:
         raise ValueError("statevector length does not match n_qubits")
@@ -189,7 +181,6 @@ def bipartite_entropy_from_statevector(
 
 def magnetisation_operator_diagonal(n_qubits: int) -> NDArray[np.float64]:
     """Return diagonal entries of the total magnetisation operator M."""
-
     return computational_magnetisations(n_qubits).astype(np.float64)
 
 
@@ -198,7 +189,6 @@ def commutator_frobenius_norm_with_diagonal(
     diagonal_operator: NDArray[np.float64],
 ) -> float:
     """Return ||[H, D]||_F for a diagonal operator D."""
-
     if hamiltonian.shape[0] != diagonal_operator.size:
         raise ValueError("operator dimension mismatch")
     commutator = (
@@ -211,7 +201,6 @@ def sector_coupling_rows(
     hamiltonian: NDArray[np.float64], lambda_fim: float
 ) -> list[dict[str, object]]:
     """Measure off-sector Hamiltonian coupling for each magnetisation sector."""
-
     dimension = hamiltonian.shape[0]
     n_qubits = int(round(np.log2(dimension)))
     sectors = magnetisation_sector_indices(n_qubits)

@@ -40,7 +40,6 @@ def dwave_bqm_workload(
     schema: str = DWAVE_BQM_SCHEMA,
 ) -> QuantumWorkload:
     """Encode an Ising/QUBO binary quadratic model as a D-Wave HAL workload."""
-
     variables = sorted(str(variable) for variable in linear)
     payload: dict[str, object] = {
         "schema": schema,

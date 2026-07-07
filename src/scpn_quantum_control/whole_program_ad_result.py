@@ -36,7 +36,6 @@ class WholeProgramTraceEvent:
 
     def __post_init__(self) -> None:
         """Validate trace-event source metadata at construction time."""
-
         if not self.filename:
             raise ValueError("trace event filename must be non-empty")
         if not self.function_name:
@@ -58,7 +57,6 @@ class WholeProgramIRNode:
 
     def __post_init__(self) -> None:
         """Validate operator-intercepted node metadata at construction time."""
-
         if self.index < 0:
             raise ValueError("IR node index must be non-negative")
         if not self.op:
@@ -100,7 +98,6 @@ class WholeProgramADResult:
 
     def __post_init__(self) -> None:
         """Validate whole-program AD result metadata at construction time."""
-
         value = _as_real_scalar("whole-program AD value", self.value)
         gradient = _as_real_numeric_array("whole-program AD gradient", self.gradient)
         if gradient.ndim != 1:
@@ -220,7 +217,6 @@ def _require_supported_adjoint_replay_matches_result(
     forward_gradient: NDArray[np.float64],
 ) -> None:
     """Validate supported reverse-adjoint replay against the attached result."""
-
     if not adjoint_result.supported:
         return
 

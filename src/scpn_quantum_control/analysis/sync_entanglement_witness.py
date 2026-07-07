@@ -41,7 +41,8 @@ at a given energy E is lower. The energy constraint reduces R_sep_max(E).
 
 The key bound: R_sep_max(E) < R_entangled(E) at the same energy.
 
-References:
+References
+----------
     Kuramoto (1975): original order parameter definition.
     Galve et al., Sci. Rep. 3 (2013): synchronization → entanglement.
     Nature Comms 2025 (transmon): synchronised qubits are entangled.

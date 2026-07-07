@@ -22,7 +22,6 @@ def _as_parameter_shift_sample_tensor(
     term_count: int,
 ) -> NDArray[np.float64]:
     """Return a finite parameter-shift sample tensor with term metadata."""
-
     array = _as_real_numeric_array(name, values)
     if term_count == 1 and array.ndim == 1:
         array = array.reshape(1, array.size)
@@ -43,7 +42,6 @@ def _as_batch_parameter_array(
     parameter_count: int,
 ) -> NDArray[np.float64]:
     """Return a finite two-dimensional batch of parameter-space vectors."""
-
     array = _as_real_numeric_array(name, values)
     if array.ndim != 2:
         raise ValueError(f"{name} must be a two-dimensional batch")
@@ -62,7 +60,6 @@ def _as_batch_vector_array(
     vector_count: int,
 ) -> NDArray[np.float64]:
     """Return a finite two-dimensional batch of vector-space cotangents."""
-
     array = _as_real_numeric_array(name, values)
     if array.ndim != 2:
         raise ValueError(f"{name} must be a two-dimensional batch")

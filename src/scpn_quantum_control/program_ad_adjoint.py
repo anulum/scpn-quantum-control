@@ -62,7 +62,6 @@ class ProgramADAdjointStep:
 
     def __post_init__(self) -> None:
         """Validate reverse-adjoint step metadata at construction time."""
-
         if self.index < 0:
             raise ValueError("program AD adjoint step index must be non-negative")
         if not self.primal_value:
@@ -236,7 +235,6 @@ class ProgramADAdjointStep:
 
     def to_dict(self) -> dict[str, object]:
         """Return a JSON-ready reverse-adjoint generation step."""
-
         return {
             "index": self.index,
             "primal_value": self.primal_value,
@@ -281,7 +279,6 @@ class ProgramADAdjointResult:
 
     def __post_init__(self) -> None:
         """Validate reverse-adjoint result metadata at construction time."""
-
         gradient = _as_real_numeric_array("program AD adjoint gradient", self.gradient)
         if gradient.ndim != 1:
             raise ValueError("program AD adjoint gradient must be one-dimensional")
@@ -350,12 +347,10 @@ class ProgramADAdjointResult:
     @property
     def adjoint_step_count(self) -> int:
         """Return the number of generated reverse-adjoint steps."""
-
         return len(self.adjoint_steps)
 
     def to_dict(self) -> dict[str, object]:
         """Return a JSON-ready reverse-adjoint result."""
-
         return {
             "gradient": self.gradient.tolist(),
             "supported": self.supported,
@@ -401,7 +396,6 @@ def program_adjoint_result(result: object) -> ProgramADAdjointResult:
         If ``result`` is not a whole-program AD result or has no attached
         adjoint metadata.
     """
-
     from .whole_program_ad_result import WholeProgramADResult
 
     if not isinstance(result, WholeProgramADResult):
@@ -431,7 +425,6 @@ def program_adjoint_gradient(result: object) -> NDArray[np.float64]:
         If no adjoint metadata is attached or the captured IR has unsupported
         operations.
     """
-
     adjoint = program_adjoint_result(result)
     if not adjoint.supported:
         unsupported = ", ".join(adjoint.unsupported_ops)
@@ -464,7 +457,6 @@ def program_adjoint_replay_gradient(result: object) -> NDArray[np.float64]:
         captured stabilized IR, or executable replay diverges from the attached
         adjoint gradient.
     """
-
     from .whole_program_ad_result import WholeProgramADResult
 
     if not isinstance(result, WholeProgramADResult):
@@ -523,7 +515,6 @@ def program_adjoint_grad(
         If the objective does not produce a scalar Program AD result or if the
         captured IR contains unsupported adjoint-generation operations.
     """
-
     from .differentiable import whole_program_value_and_grad
 
     result = whole_program_value_and_grad(
@@ -568,7 +559,6 @@ def program_adjoint_value_and_grad(
         If the objective does not produce a scalar Program AD result or if the
         captured IR contains unsupported adjoint-generation operations.
     """
-
     from .differentiable import whole_program_value_and_grad
 
     result = whole_program_value_and_grad(
@@ -585,7 +575,6 @@ def _program_adjoint_input_value(
     node_by_name: Mapping[str, WholeProgramIRNode],
 ) -> float:
     """Resolve a Program AD adjoint input token to a primal scalar."""
-
     if _program_adjoint_is_ir_value(name):
         if name not in node_by_name:
             raise ValueError(f"program AD adjoint input {name} is missing from IR")
@@ -600,7 +589,6 @@ def _program_adjoint_input_value(
 
 def _program_adjoint_is_ir_value(name: str) -> bool:
     """Return whether ``name`` is a Program AD SSA value token."""
-
     return isinstance(name, str) and name.startswith("%") and name[1:].isdigit()
 
 
@@ -612,7 +600,6 @@ def _program_adjoint_execute_steps(
     trainable: tuple[bool, ...],
 ) -> NDArray[np.float64]:
     """Execute a generated reverse-adjoint step stream over captured IR metadata."""
-
     if adjoint.replay_ir_format != "program_ad_effect_ir.v1":
         raise ValueError("program AD executable adjoint replay requires program_ad_effect_ir.v1")
     if not adjoint.adjoint_steps:
@@ -698,7 +685,6 @@ def _program_adjoint_replay_require_close(
     expected: float,
 ) -> None:
     """Fail closed when replayed scalar cotangent flow diverges from step metadata."""
-
     if not np.isclose(actual, expected, rtol=0.0, atol=_PROGRAM_ADJOINT_REPLAY_ATOL):
         raise ValueError(
             "program AD executable adjoint replay "

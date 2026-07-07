@@ -111,13 +111,11 @@ class HardwareGradientPolicy:
     @property
     def normalised_allowed_providers(self) -> tuple[str, ...]:
         """Return provider identifiers in planner-normalised form."""
-
         return _normalise_tuple(self.allowed_providers)
 
     @property
     def normalised_hardware_backend_aliases(self) -> tuple[str, ...]:
         """Return hardware backend aliases in planner-normalised form."""
-
         return _normalise_tuple(self.hardware_backend_aliases)
 
 
@@ -148,18 +146,15 @@ class HardwareGradientPolicyDecision:
     @property
     def fail_closed(self) -> bool:
         """Whether the request is blocked by policy."""
-
         return not self.approved
 
     @property
     def failure_reason(self) -> str:
         """Human-readable blocked reason string."""
-
         return "; ".join(self.reasons)
 
     def to_dict(self) -> dict[str, Any]:
         """Return a JSON-ready decision payload."""
-
         return {
             "scenario": self.scenario,
             "provider": self.provider,
@@ -194,31 +189,26 @@ class HardwareGradientReadinessSuiteResult:
     @property
     def record_count(self) -> int:
         """Number of readiness records in the suite."""
-
         return len(self.records)
 
     @property
     def approved_count(self) -> int:
         """Number of policy decisions approved by the suite."""
-
         return sum(record.approved for record in self.records)
 
     @property
     def blocked_count(self) -> int:
         """Number of policy decisions blocked fail-closed by the suite."""
-
         return sum(record.fail_closed for record in self.records)
 
     @property
     def live_execution_approved_count(self) -> int:
         """Number of approved records that require a live-execution ticket."""
-
         return sum(record.approved and record.mode == "live_ticketed" for record in self.records)
 
     @property
     def passed(self) -> bool:
         """Whether the built-in suite preserved every expected boundary."""
-
         return (
             self.record_count == 6
             and self.approved_count == 1
@@ -228,7 +218,6 @@ class HardwareGradientReadinessSuiteResult:
 
     def to_dict(self) -> dict[str, Any]:
         """Return a JSON-ready readiness payload."""
-
         return {
             "passed": self.passed,
             "record_count": self.record_count,
@@ -246,7 +235,6 @@ def evaluate_hardware_gradient_policy(
     scenario: str = "custom",
 ) -> HardwareGradientPolicyDecision:
     """Evaluate a hardware-gradient request without submitting any QPU job."""
-
     active_policy = policy or HardwareGradientPolicy()
     provider = _normalise_identifier(request.provider)
     backend = _normalise_identifier(request.backend)
@@ -350,14 +338,12 @@ def evaluate_hardware_gradient_policy(
 
 def assert_hardware_gradient_policy_approved(decision: HardwareGradientPolicyDecision) -> None:
     """Raise when a hardware-gradient policy decision is blocked."""
-
     if decision.fail_closed:
         raise ValueError("hardware gradient policy blocked: " + decision.failure_reason)
 
 
 def run_hardware_gradient_policy_readiness_suite() -> HardwareGradientReadinessSuiteResult:
     """Run built-in hardware-gradient policy scenarios."""
-
     evidence_ids = {
         "backend_calibration_id": "cal-readiness-ibm-quantum",
         "no_qpu_gate_id": "no-qpu-readiness-gate",

@@ -77,7 +77,8 @@ def qpe_resource_estimate(
         K: coupling matrix
         epsilon: target precision for λ_2
 
-    Returns:
+    Returns
+    -------
         (n_bits, circuit_depth) where n_bits = ceil(log2(1/ε))
         and depth = O(2^n_bits × n²) for Hamiltonian simulation queries.
     """

@@ -271,7 +271,8 @@ def cosimulate(
             ``|+>^{⊗N_quantum}`` when omitted.
         seed: RNG seed for the default classical phases.
 
-    Returns:
+    Returns
+    -------
         A :class:`CoSimulationResult` with the classical-phase and quantum-moment
         trajectories, the quantum/classical/global order parameters, the
         all-classical baseline, and the partition record.

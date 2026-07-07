@@ -44,7 +44,6 @@ class HardwareGradientReplaySchema:
 
     def to_dict(self) -> dict[str, object]:
         """Return JSON-ready replay schema metadata."""
-
         return {
             "required_fields": list(self.required_fields),
             "raw_count_fields": list(self.raw_count_fields),
@@ -130,7 +129,6 @@ class HardwareGradientCampaignSpec:
     @property
     def evaluations(self) -> int:
         """Return shifted hardware evaluations required by the method."""
-
         if self.method == "spsa":
             return 2 * self.spsa_repetitions
         return 2 * self.n_params * self.shift_terms
@@ -138,12 +136,10 @@ class HardwareGradientCampaignSpec:
     @property
     def estimated_total_shots(self) -> int:
         """Return total shots implied by the no-submit campaign budget."""
-
         return self.evaluations * self.shots_per_evaluation
 
     def replay_schema(self) -> HardwareGradientReplaySchema:
         """Return the required replay artefact schema for this campaign."""
-
         common = (
             "schema_version",
             "campaign_name",
@@ -185,7 +181,6 @@ class HardwareGradientCampaignSpec:
 
     def policy_request(self) -> HardwareGradientRequest:
         """Return the hardware-gradient policy request for this campaign."""
-
         return HardwareGradientRequest(
             provider=self.provider,
             backend=self.backend,
@@ -207,7 +202,6 @@ class HardwareGradientCampaignSpec:
 
     def to_dict(self) -> dict[str, object]:
         """Return JSON-ready no-submit campaign metadata."""
-
         return {
             "schema_version": CAMPAIGN_SCHEMA_VERSION,
             "name": self.name,
@@ -247,18 +241,15 @@ class HardwareGradientCampaignPlan:
     @property
     def approved_for_preparation(self) -> bool:
         """Return whether policy approves preparation metadata."""
-
         return self.policy_decision.approved
 
     @property
     def fail_closed(self) -> bool:
         """Return whether the policy blocks this campaign."""
-
         return self.policy_decision.fail_closed
 
     def to_dict(self) -> dict[str, object]:
         """Return JSON-ready plan metadata."""
-
         return {
             "spec": self.spec.to_dict(),
             "policy_decision": self.policy_decision.to_dict(),
@@ -280,37 +271,31 @@ class HardwareGradientCampaignSuite:
     @property
     def plan_count(self) -> int:
         """Return total campaign plans."""
-
         return len(self.plans)
 
     @property
     def approved_count(self) -> int:
         """Return policy-approved preparation plans."""
-
         return sum(plan.approved_for_preparation for plan in self.plans)
 
     @property
     def blocked_count(self) -> int:
         """Return blocked plans."""
-
         return sum(plan.fail_closed for plan in self.plans)
 
     @property
     def hardware_execution_count(self) -> int:
         """Return plans that performed live hardware execution."""
-
         return sum(plan.hardware_execution for plan in self.plans)
 
     @property
     def gradient_available_count(self) -> int:
         """Return plans that contain hardware-gradient values."""
-
         return sum(plan.gradient_available for plan in self.plans)
 
     @property
     def passed(self) -> bool:
         """Return whether the suite preserves no-submit boundaries."""
-
         return (
             self.plan_count >= 2
             and self.approved_count >= 2
@@ -320,7 +305,6 @@ class HardwareGradientCampaignSuite:
 
     def to_dict(self) -> dict[str, object]:
         """Return JSON-ready suite metadata."""
-
         return {
             "passed": self.passed,
             "plan_count": self.plan_count,
@@ -335,7 +319,6 @@ class HardwareGradientCampaignSuite:
 
 def default_hardware_gradient_campaign_specs() -> tuple[HardwareGradientCampaignSpec, ...]:
     """Return default no-submit campaign specs for XY hardware-gradient validation."""
-
     evidence_ids = dict(DEFAULT_CAMPAIGN_EVIDENCE_IDS)
     allowlist = DEFAULT_HERON_R2_BACKENDS
     return (
@@ -376,7 +359,6 @@ def plan_hardware_gradient_campaign(
     policy: HardwareGradientPolicy | None = None,
 ) -> HardwareGradientCampaignPlan:
     """Evaluate one no-submit hardware-gradient campaign spec."""
-
     decision = evaluate_hardware_gradient_policy(
         spec.policy_request(),
         policy=policy or HardwareGradientPolicy(),
@@ -400,7 +382,6 @@ def run_hardware_gradient_campaign_readiness_suite(
     policy: HardwareGradientPolicy | None = None,
 ) -> HardwareGradientCampaignSuite:
     """Run no-submit readiness planning for hardware-gradient campaigns."""
-
     campaign_specs = (
         tuple(specs) if specs is not None else default_hardware_gradient_campaign_specs()
     )

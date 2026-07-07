@@ -109,7 +109,8 @@ class QuantumDenseLayer:
         Args:
             input_values: shape (n_inputs,) with values in [0, 1]
 
-        Returns:
+        Returns
+        -------
             shape (n_neurons,) int array of 0/1 spikes
         """
         state = np.zeros(1 << self.n_qubits, dtype=np.complex128)

@@ -64,7 +64,6 @@ class _WholeProgramTraceContext:
 
     def bind_scalar_factory(self, scalar_factory: _TraceScalarFactory) -> None:
         """Bind the trace scalar constructor used by facade-owned scalar wrappers."""
-
         self._scalar_factory = scalar_factory
 
     def make(
@@ -75,7 +74,6 @@ class _WholeProgramTraceContext:
         tangent: NDArray[np.float64],
     ) -> TraceADScalar:
         """Create a trace scalar and append its IR node to this AD context."""
-
         if self._scalar_factory is None:
             raise RuntimeError("whole-program trace context has no scalar factory bound")
         node = WholeProgramIRNode(
@@ -150,7 +148,6 @@ class _WholeProgramTraceContext:
         items: Sequence[TraceADScalar],
     ) -> None:
         """Record deterministic metadata for derivative-preserving array views."""
-
         if len(source_indices) != len(items):
             raise ValueError("program AD view alias source and item counts must match")
         base = f"view:{op}:{len(self.alias_edges)}"
@@ -188,7 +185,6 @@ class _WholeProgramTraceContext:
         bytecode_instructions: tuple[WholeProgramBytecodeInstruction, ...],
     ) -> ProgramADEffectIR:
         """Build deterministic SSA/effect IR metadata from captured trace evidence."""
-
         alias_edges = list(self.alias_edges)
         control_regions = list(self.control_regions)
         phi_nodes = list(self.phi_nodes)
@@ -355,7 +351,6 @@ def _trace_whole_program_objective(
     objective: _ScalarObjective, values: NDArray[np.float64]
 ) -> tuple[WholeProgramTraceEvent, ...]:
     """Execute ``objective`` once and capture source-line trace events."""
-
     code = getattr(objective, "__code__", None)
     if code is None:
         return ()
@@ -391,7 +386,6 @@ def _trace_whole_program_objective(
 
 def _as_trace_real_scalar(name: str, value: object) -> float:
     """Return an explicit finite real scalar for traced objective validation."""
-
     if isinstance(value, bool):
         raise ValueError(f"{name} must be a real numeric scalar")
     raw = np.asarray(value)

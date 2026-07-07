@@ -61,7 +61,8 @@ def extract_raw_key(
         basis: "Z" or "X" — measurement basis used.
         keep_qubits: Qubit indices to extract (None = all).
 
-    Returns:
+    Returns
+    -------
         1D array of {0, 1} bits, majority-vote per qubit.
     """
     n_qubits = len(next(iter(counts)))

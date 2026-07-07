@@ -147,7 +147,8 @@ def project_to_parity_sector(
         parity: 0 (even) or 1 (odd).
         n_qubits: Number of qubits.
 
-    Returns:
+    Returns
+    -------
         Projected (unnormalized) state vector.
     """
     d = 2**n_qubits

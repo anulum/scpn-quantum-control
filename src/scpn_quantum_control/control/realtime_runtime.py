@@ -170,7 +170,6 @@ def run_realtime_control_loop(
     clock: RealtimeClock | None = None,
 ) -> RealtimeRunResult:
     """Run ``step`` on a fixed-period realtime schedule with deadline accounting."""
-
     if not isinstance(n_ticks, int) or n_ticks < 1:
         raise ValueError("n_ticks must be a positive integer")
     runtime_clock = clock or MonotonicRealtimeClock()
@@ -227,7 +226,6 @@ def evaluate_realtime_sla(
     sla: RealtimeSLAConfig,
 ) -> RealtimeSLAReport:
     """Evaluate a realtime run against a strict SLA contract."""
-
     if not result.records:
         raise ValueError("realtime result must contain at least one tick record")
     latencies = np.asarray([record.latency_s for record in result.records], dtype=np.float64)
@@ -269,7 +267,6 @@ def enforce_realtime_sla(
     sla: RealtimeSLAConfig,
 ) -> RealtimeSLAReport:
     """Fail closed when a realtime run violates the configured SLA."""
-
     report = evaluate_realtime_sla(result, sla=sla)
     if not report.compliant:
         raise RuntimeError("; ".join(report.breach_reasons))
@@ -426,7 +423,6 @@ def summarise_cycle_samples(
     same jitter percentiles and deadline-miss count as
     :class:`SubMicrosecondTracker` over the full input.
     """
-
     if not isinstance(target_rate_hz, int) or isinstance(target_rate_hz, bool):
         raise TypeError("target_rate_hz must be an int")
     if target_rate_hz < 1:

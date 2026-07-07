@@ -22,7 +22,9 @@ class DLAParityWitness:
         """
         Args:
             counts: Qiskit measurement counts (bitstrings -> shots)
-        Returns:
+
+        Returns
+        -------
             Dictionary with dla_asymmetry and supporting metrics
         """
         if counts is None or len(counts) == 0:

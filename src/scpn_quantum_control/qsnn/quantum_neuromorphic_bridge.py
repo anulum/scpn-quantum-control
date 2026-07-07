@@ -155,7 +155,6 @@ class TraceSTDPState:
 
     def decay(self, dt: float, tau_pre: float, tau_post: float) -> None:
         """Apply exponential trace decay in-place."""
-
         if dt <= 0.0:
             raise ValueError("dt must be positive")
         if tau_pre <= 0.0 or tau_post <= 0.0:
@@ -166,7 +165,6 @@ class TraceSTDPState:
 
     def update(self, pre_spikes: NDArray[np.float64], post_spikes: NDArray[np.float64]) -> None:
         """Accumulate binary spike events into traces."""
-
         pre = _as_finite_vector("pre_spikes", pre_spikes, (self.n_pre,))
         post = _as_finite_vector("post_spikes", post_spikes, (self.n_post,))
         if np.any((pre < 0.0) | (pre > 1.0)) or np.any((post < 0.0) | (post > 1.0)):
@@ -348,7 +346,6 @@ class QuantumNeuromorphicBridge:
         self, pre_spikes: NDArray[np.float64], post_spikes: NDArray[np.float64]
     ) -> None:
         """Apply input-synapse trace STDP without running a LIF step."""
-
         pre = _as_finite_vector("pre_spikes", pre_spikes, (self.n_inputs,))
         post = _as_finite_vector("post_spikes", post_spikes, (self.n_neurons,))
         if not self.stdp.enabled:
@@ -382,7 +379,6 @@ class QuantumNeuromorphicBridge:
 
     def step(self, external_current: NDArray[np.float64]) -> NeuromorphicStepResult:
         """Advance the bridge by one time step."""
-
         external = _as_finite_vector("external_current", external_current, (self.n_inputs,))
         synaptic_current = (
             self.input_weights @ external + self.recurrent_weights @ self.last_spikes
@@ -413,7 +409,6 @@ class QuantumNeuromorphicBridge:
 
     def run(self, external_currents: NDArray[np.float64]) -> list[NeuromorphicStepResult]:
         """Run a sequence of external currents with shape ``(steps, n_inputs)``."""
-
         currents = np.asarray(external_currents, dtype=np.float64)
         if currents.ndim != 2 or currents.shape[1] != self.n_inputs:
             raise ValueError(
@@ -425,12 +420,10 @@ class QuantumNeuromorphicBridge:
 
     def get_circuit(self) -> QuantumCircuit:
         """Return the latest quantum LIF/coupling circuit."""
-
         return self._last_circuit.copy()
 
     def reset(self) -> None:
         """Reset dynamic membrane, spike, refractory, and trace state."""
-
         self.membrane.fill(self.lif.v_rest)
         self.last_spikes.fill(0.0)
         self.refractory_count.fill(0)

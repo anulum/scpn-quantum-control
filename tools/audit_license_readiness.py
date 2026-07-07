@@ -84,7 +84,6 @@ class LicenseReadinessCheck:
 
     def to_dict(self) -> dict[str, Any]:
         """Return JSON-ready check metadata."""
-
         return {
             "name": self.name,
             "valid": self.valid,
@@ -95,7 +94,6 @@ class LicenseReadinessCheck:
 
 def check_project_metadata(project_root: Path) -> LicenseReadinessCheck:
     """Check pyproject licence metadata and classifiers."""
-
     pyproject_path = project_root / "pyproject.toml"
     if not pyproject_path.exists():
         return LicenseReadinessCheck(
@@ -149,7 +147,6 @@ def check_project_metadata(project_root: Path) -> LicenseReadinessCheck:
 
 def check_required_text(project_root: Path) -> LicenseReadinessCheck:
     """Check public licence and boundary documents for required statements."""
-
     blockers: list[str] = []
     details: dict[str, Any] = {}
     for rel_path, required_markers in REQUIRED_TEXT_FILES.items():
@@ -177,7 +174,6 @@ def check_required_text(project_root: Path) -> LicenseReadinessCheck:
 
 def check_spdx_headers(project_root: Path) -> LicenseReadinessCheck:
     """Check source/tool Python files for the AGPL/commercial header."""
-
     blockers: list[str] = []
     scanned: list[str] = []
     for path in _iter_header_scan_files(project_root):
@@ -198,7 +194,6 @@ def check_spdx_headers(project_root: Path) -> LicenseReadinessCheck:
 
 def audit_license_readiness(project_root: Path) -> dict[str, Any]:
     """Run the licence and commercial-readiness gate."""
-
     root = project_root.resolve()
     checks = (
         check_project_metadata(root),
@@ -216,7 +211,6 @@ def audit_license_readiness(project_root: Path) -> dict[str, Any]:
 
 def format_license_readiness(payload: dict[str, Any]) -> str:
     """Return a deterministic text summary for CLI output."""
-
     lines = [
         "License readiness audit:",
         f"ready: {payload['ready']}",
@@ -249,7 +243,6 @@ def _normalise_text(value: str) -> str:
 
 def main(argv: list[str] | None = None) -> int:
     """Run the licence-readiness audit CLI."""
-
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, default=Path.cwd(), help="Repository root")
     parser.add_argument("--json", action="store_true", help="Emit JSON instead of text")

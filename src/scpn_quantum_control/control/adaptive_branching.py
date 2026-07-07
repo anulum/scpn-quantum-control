@@ -55,7 +55,6 @@ class AdaptiveBranchingConfig:
 
     def to_dict(self) -> dict[str, Any]:
         """Return JSON-compatible config data."""
-
         return asdict(self)
 
 
@@ -74,7 +73,6 @@ class AdaptiveBranchDecision:
 
     def to_dict(self) -> dict[str, Any]:
         """Return JSON-compatible decision data."""
-
         return {
             "schema": BRANCH_ROW_SCHEMA,
             **asdict(self),
@@ -95,7 +93,6 @@ class AdaptiveBranchingReadiness:
 
     def to_dict(self) -> dict[str, Any]:
         """Return JSON-compatible readiness data."""
-
         payload = asdict(self)
         payload["required_features"] = list(self.required_features)
         payload["missing_features"] = list(self.missing_features)
@@ -110,7 +107,6 @@ def classify_branch_state(
     config: AdaptiveBranchingConfig | None = None,
 ) -> AdaptiveBranchDecision:
     """Classify one mid-circuit observation into an adaptive branch action."""
-
     cfg = config or AdaptiveBranchingConfig()
     _require_range(local_r, 0.0, 1.0, "local_r")
     _require_range(parity_leakage, 0.0, 1.0, "parity_leakage")
@@ -166,7 +162,6 @@ def build_adaptive_branch_table(
     cluster_imbalance_grid: tuple[float, ...] = (0.0, 0.35),
 ) -> tuple[AdaptiveBranchDecision, ...]:
     """Build a deterministic branch table for S8 readiness review."""
-
     cfg = config or AdaptiveBranchingConfig()
     if not local_r_grid or not parity_leakage_grid or not cluster_imbalance_grid:
         raise ValueError("branch-table grids must not be empty")
@@ -185,7 +180,6 @@ def build_adaptive_branch_table(
 
 def required_s8_dynamic_features() -> tuple[str, ...]:
     """Return backend features required before S8 live execution."""
-
     return (
         "mid_circuit_measurement",
         "conditional_control",
@@ -200,7 +194,6 @@ def estimate_branching_readiness(
     backend_features: tuple[str, ...] = (),
 ) -> AdaptiveBranchingReadiness:
     """Estimate S8 execution readiness from declared backend features."""
-
     cfg = config or AdaptiveBranchingConfig()
     required = required_s8_dynamic_features()
     supported = set(backend_features)
@@ -216,7 +209,6 @@ def estimate_branching_readiness(
 
 def s8_adaptive_branching_payload() -> dict[str, Any]:
     """Return the S8 adaptive-branching readiness payload."""
-
     config = AdaptiveBranchingConfig()
     branch_table = build_adaptive_branch_table(config)
     readiness = estimate_branching_readiness(
@@ -266,7 +258,6 @@ def s8_adaptive_branching_payload() -> dict[str, Any]:
 
 def s8_adaptive_branching_markdown(payload: dict[str, Any] | None = None) -> str:
     """Render the S8 adaptive-branching readiness note."""
-
     data = s8_adaptive_branching_payload() if payload is None else payload
     lines = [
         "# Adaptive Branching Readiness",

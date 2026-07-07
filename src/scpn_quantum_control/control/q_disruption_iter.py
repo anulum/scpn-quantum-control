@@ -133,7 +133,6 @@ def scpn_control_bridge_dependency_contract() -> dict[str, Any]:
     The contract is intentionally mirrored locally instead of importing
     SCPN-CONTROL, so this backend can be validated before CONTROL is installed.
     """
-
     spec = ITERFeatureSpec()
     payload: dict[str, Any] = {
         "schema_version": SCPN_CONTROL_BRIDGE_CONTRACT_SCHEMA_VERSION,
@@ -184,7 +183,6 @@ def scpn_control_bridge_dependency_contract() -> dict[str, Any]:
 
 def validate_scpn_control_bridge_dependency_contract(payload: dict[str, Any]) -> dict[str, Any]:
     """Validate the SCPN-CONTROL disruption bridge dependency contract."""
-
     if not isinstance(payload, dict):
         raise ValueError("SCPN-CONTROL bridge dependency contract must be an object")
     if payload.get("schema_version") != SCPN_CONTROL_BRIDGE_CONTRACT_SCHEMA_VERSION:

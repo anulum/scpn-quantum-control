@@ -44,7 +44,8 @@ def build_structured_ansatz(
         entanglement_gate: The two-qubit gate to use ("cz" or "cx").
         threshold: Minimum absolute coupling strength to warrant an entangling gate.
 
-    Returns:
+    Returns
+    -------
         QuantumCircuit: The parameterized ansatz circuit.
     """
     n = coupling_matrix.shape[0]

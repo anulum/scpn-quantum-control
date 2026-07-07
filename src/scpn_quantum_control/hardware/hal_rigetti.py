@@ -30,7 +30,6 @@ def rigetti_quil_workload(
     metadata: Mapping[str, object] | None = None,
 ) -> QuantumWorkload:
     """Encode a Quil program as a HAL workload for direct pyQuil execution."""
-
     return QuantumWorkload(
         workload_id=workload_id,
         ir_format="quil",

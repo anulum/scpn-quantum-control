@@ -37,7 +37,6 @@ def bloqade_ahs_workload(
     metadata: Mapping[str, object] | None = None,
 ) -> QuantumWorkload:
     """Encode a Bloqade analogue Hamiltonian plan as a HAL workload."""
-
     if isinstance(payload, str):
         decoded = _json_mapping(payload, field_name="Bloqade payload")
     else:

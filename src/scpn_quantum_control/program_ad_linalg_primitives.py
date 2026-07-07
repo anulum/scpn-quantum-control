@@ -154,7 +154,6 @@ class ProgramADLinalgConditioningDiagnostic:
 
     def as_dict(self) -> dict[str, object]:
         """Return a deterministic JSON-ready representation."""
-
         return {
             "primitive": self.primitive,
             "shape": list(self.shape),
@@ -279,7 +278,6 @@ def diagnose_program_ad_linalg_conditioning(
     rank_tolerance: float = 1.0e-12,
 ) -> ProgramADLinalgConditioningDiagnostic:
     """Diagnose conditioning for supported norm and program-AD linalg primitives."""
-
     name = str(primitive).strip().lower()
     if name not in _PROGRAM_AD_LINALG_CONDITIONING_BOUNDARIES:
         raise ValueError(f"unsupported program AD linalg conditioning primitive {primitive!r}")
@@ -578,7 +576,6 @@ def program_ad_linalg_solve_derivative_rule(
     rhs_shape: Sequence[int],
 ) -> CustomDerivativeRule:
     """Build a direct value/JVP/VJP rule for a fixed solve primitive signature."""
-
     matrix_static_shape, rhs_static_shape = _program_ad_linalg_normalise_solve_shapes(
         matrix_shape, rhs_shape
     )
@@ -642,7 +639,6 @@ def program_ad_linalg_matrix_power_derivative_rule(
     power: int | np.integer,
 ) -> CustomDerivativeRule:
     """Build a direct value/JVP rule for a fixed matrix-power primitive."""
-
     if isinstance(power, bool) or not isinstance(power, (int, np.integer)):
         raise ValueError("program AD linalg matrix_power derivative rule requires integer power")
     exponent = int(power)
@@ -764,7 +760,6 @@ def program_ad_linalg_multi_dot_derivative_rule(
     operand_shapes: Sequence[Sequence[int]],
 ) -> CustomDerivativeRule:
     """Build a direct value/JVP rule for a fixed multi-dot operand signature."""
-
     shapes = _normalise_program_ad_linalg_multi_dot_shapes(operand_shapes)
 
     def value_fn(values: NDArray[np.float64]) -> NDArray[np.float64]:
@@ -886,7 +881,6 @@ def program_ad_linalg_trace_derivative_rule(
     axis2: int | np.integer = 1,
 ) -> CustomDerivativeRule:
     """Build a direct value/JVP/VJP rule for a fixed trace primitive signature."""
-
     trace_axis1 = _program_ad_linalg_offset("trace", axis1)
     trace_axis2 = _program_ad_linalg_offset("trace", axis2)
     if (trace_axis1, trace_axis2) != (0, 1):
@@ -979,7 +973,6 @@ def program_ad_linalg_diag_derivative_rule(
     k: int | np.integer = 0,
 ) -> CustomDerivativeRule:
     """Build a direct value/JVP/VJP rule for a fixed diagonal primitive signature."""
-
     static_shape = tuple(int(dimension) for dimension in source_shape)
     if len(static_shape) not in {1, 2}:
         raise ValueError("program AD linalg diag derivative rule requires rank-1 or rank-2 input")
@@ -1042,7 +1035,6 @@ def program_ad_linalg_diagflat_derivative_rule(
     k: int | np.integer = 0,
 ) -> CustomDerivativeRule:
     """Build a direct value/JVP/VJP rule for a fixed diagflat primitive signature."""
-
     static_shape = tuple(int(dimension) for dimension in source_shape)
     if any(dimension <= 0 for dimension in static_shape):
         raise ValueError("program AD linalg diagflat derivative rule dimensions must be positive")
@@ -1168,7 +1160,6 @@ def _program_ad_linalg_eig_eigenvector_jvp_matrix(
     tangent_matrix: NDArray[np.float64],
 ) -> NDArray[np.float64]:
     """Return the real-simple eigenvector JVP matrix for one tangent direction."""
-
     size = eigenvalues.size
     tangent = np.zeros_like(right_eigenvectors, dtype=np.float64)
     for column in range(size):
@@ -1459,7 +1450,6 @@ def program_ad_linalg_eig_derivative_rule(
     matrix_shape: Sequence[int],
 ) -> CustomDerivativeRule:
     """Build a direct value/JVP/VJP rule for a fixed real-simple eig primitive."""
-
     static_shape = _program_ad_linalg_rank2_shape("eig", matrix_shape)
     if static_shape[0] != static_shape[1]:
         raise ValueError("program AD linalg eig derivative rule requires a square matrix")
@@ -1532,7 +1522,6 @@ def program_ad_linalg_eigvals_derivative_rule(
     matrix_shape: Sequence[int],
 ) -> CustomDerivativeRule:
     """Build a direct value/JVP/VJP rule for a fixed real-simple eigvals primitive."""
-
     static_shape = _program_ad_linalg_rank2_shape("eigvals", matrix_shape)
     if static_shape[0] != static_shape[1]:
         raise ValueError("program AD linalg eigvals derivative rule requires a square matrix")
@@ -1724,7 +1713,6 @@ def program_ad_linalg_eigh_derivative_rule(
     uplo: str = "L",
 ) -> CustomDerivativeRule:
     """Build a direct value/JVP/VJP rule for a fixed symmetric eigh primitive."""
-
     static_shape = _program_ad_linalg_rank2_shape("eigh", matrix_shape)
     if static_shape[0] != static_shape[1]:
         raise ValueError("program AD linalg eigh derivative rule requires a square matrix")
@@ -1802,7 +1790,6 @@ def program_ad_linalg_eigvalsh_derivative_rule(
     uplo: str = "L",
 ) -> CustomDerivativeRule:
     """Build a direct value/JVP/VJP rule for a fixed symmetric eigvalsh primitive."""
-
     static_shape = _program_ad_linalg_rank2_shape("eigvalsh", matrix_shape)
     if static_shape[0] != static_shape[1]:
         raise ValueError("program AD linalg eigvalsh derivative rule requires a square matrix")
@@ -1871,7 +1858,6 @@ def program_ad_linalg_svdvals_derivative_rule(
     matrix_shape: Sequence[int],
 ) -> CustomDerivativeRule:
     """Build a direct value/JVP/VJP rule for fixed-shape SVD singular values."""
-
     static_shape = _program_ad_linalg_rank2_shape("svd", matrix_shape)
     if any(dimension <= 0 for dimension in static_shape):
         raise ValueError("program AD linalg svd derivative rule requires positive dimensions")
@@ -1937,7 +1923,6 @@ def program_ad_linalg_pinv_derivative_rule(
     rcond: float | None = None,
 ) -> CustomDerivativeRule:
     """Build a direct value/JVP/VJP rule for fixed-shape full-rank pseudoinverse."""
-
     static_shape = _program_ad_linalg_rank2_shape("pinv", matrix_shape)
     if any(dimension <= 0 for dimension in static_shape):
         raise ValueError("program AD linalg pinv derivative rule requires positive dimensions")

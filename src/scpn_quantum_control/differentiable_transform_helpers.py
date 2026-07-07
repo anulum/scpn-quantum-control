@@ -26,7 +26,6 @@ from .differentiable_scalar_kernels import DualNumber, ReverseNode
 
 def _as_scalar(value: float | int | np.floating[Any] | NDArray[np.float64]) -> float:
     """Return a finite scalar objective value for native scalar transforms."""
-
     try:
         scalar = _as_real_scalar("differentiable objective", value)
     except ValueError as exc:
@@ -40,7 +39,6 @@ def _as_scalar(value: float | int | np.floating[Any] | NDArray[np.float64]) -> f
 
 def _as_forward_mode_scalar(value: object) -> DualNumber:
     """Return a scalar dual objective value."""
-
     if isinstance(value, DualNumber):
         return value
     try:
@@ -53,7 +51,6 @@ def _as_forward_mode_scalar(value: object) -> DualNumber:
 
 def _as_reverse_mode_scalar(value: object) -> ReverseNode:
     """Return a scalar reverse-mode objective value."""
-
     if isinstance(value, ReverseNode):
         return value
     try:
@@ -66,7 +63,6 @@ def _as_reverse_mode_scalar(value: object) -> ReverseNode:
 
 def _reverse_topological_order(root: ReverseNode) -> tuple[ReverseNode, ...]:
     """Return reverse-mode tape nodes in parent-before-child order."""
-
     ordered: list[ReverseNode] = []
     seen: set[int] = set()
 
@@ -85,7 +81,6 @@ def _reverse_topological_order(root: ReverseNode) -> tuple[ReverseNode, ...]:
 
 def _as_complex_step_scalar(value: object) -> complex:
     """Return a scalar objective value that may carry a complex-step signal."""
-
     raw = np.asarray(value)
     if raw.shape != () or raw.dtype.kind in {"b", "O", "S", "U"}:
         raise ValueError("complex-step objective must return a scalar")
@@ -100,7 +95,6 @@ def _as_complex_step_scalar(value: object) -> complex:
 
 def _as_vector_output(value: ArrayLike) -> NDArray[np.float64]:
     """Return a finite one-dimensional vector objective value."""
-
     vector = _as_real_numeric_array("differentiable vector objective", value)
     if vector.ndim != 1:
         raise ValueError("differentiable vector objective must return a one-dimensional array")
@@ -114,7 +108,6 @@ def _normalise_parameters(
     parameters: Sequence[Parameter] | None,
 ) -> tuple[Parameter, ...]:
     """Return parameter metadata aligned to a numeric parameter vector."""
-
     if parameters is None:
         return tuple(Parameter(f"theta_{index}") for index in range(values.size))
     normalised = tuple(parameters)
@@ -130,7 +123,6 @@ def _normalise_bounds(
     bounds: Sequence[ParameterBounds] | None,
 ) -> tuple[ParameterBounds, ...]:
     """Return bounds metadata aligned to a numeric parameter vector."""
-
     if bounds is None:
         return tuple(ParameterBounds() for _ in range(values.size))
     normalised = tuple(bounds)
@@ -146,7 +138,6 @@ def _project_bounds(
     bounds: Sequence[ParameterBounds],
 ) -> NDArray[np.float64]:
     """Project parameter values through box or periodic bounds."""
-
     projected = values.copy()
     for index, bound in enumerate(bounds):
         if bound.periodic:
@@ -165,7 +156,6 @@ def _project_bounds(
 
 def _validate_max_gradient_norm(max_gradient_norm: float | None) -> float | None:
     """Return a positive finite gradient-norm cap or ``None``."""
-
     if max_gradient_norm is None:
         return None
     max_norm = _as_real_scalar("max_gradient_norm", max_gradient_norm)
@@ -181,7 +171,6 @@ def _clip_gradient(
     max_gradient_norm: float | None,
 ) -> NDArray[np.float64]:
     """Clip trainable gradient entries to an optional Euclidean norm cap."""
-
     max_norm = _validate_max_gradient_norm(max_gradient_norm)
     clipped = gradient.copy()
     if max_norm is None or not np.any(trainable):

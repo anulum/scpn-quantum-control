@@ -79,7 +79,8 @@ def vqe_4q_experiment(
 ) -> dict[str, Any]:
     """VQE ground state of 4-oscillator XY Hamiltonian.
 
-    Returns:
+    Returns
+    -------
         dict with keys:
             experiment (str): Experiment name identifier.
             n_qubits (int): Number of qubits.
@@ -98,7 +99,8 @@ def vqe_8q_experiment(
 ) -> dict[str, Any]:
     """VQE ground state of 8-oscillator XY Hamiltonian.
 
-    Returns:
+    Returns
+    -------
         dict with keys:
             experiment (str): Experiment name identifier.
             n_qubits (int): Number of qubits.
@@ -122,7 +124,8 @@ def vqe_8q_hardware_experiment(
     3. Send bound circuit to hardware via run_estimator with H observable
     4. Return sim energy, hw energy, exact ground energy
 
-    Returns:
+    Returns
+    -------
         dict with keys:
             experiment (str): Experiment name identifier.
             n_qubits (int): Number of qubits.
@@ -186,7 +189,8 @@ def ansatz_comparison_hw_experiment(
     Science: proves physics-informed (Knm) ansatz advantage is real
     on noisy hardware, not just an artifact of noiseless simulation.
 
-    Returns:
+    Returns
+    -------
         dict with keys:
             experiment (str): Experiment name identifier.
             n_qubits (int): Number of qubits.
@@ -267,7 +271,8 @@ def vqe_landscape_experiment(
     Reference: McClean et al., "Barren plateaus in quantum neural network
     training landscapes", Nature Comm. 9, 4812 (2018).
 
-    Returns:
+    Returns
+    -------
         dict with keys:
             experiment (str): Experiment name identifier.
             n_qubits (int): Number of qubits.

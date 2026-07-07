@@ -34,7 +34,6 @@ def cirq_circuit_workload(
     metadata: Mapping[str, object] | None = None,
 ) -> QuantumWorkload:
     """Encode a Cirq circuit handle or serialised circuit as a HAL workload."""
-
     if isinstance(circuit, str):
         program = circuit
     else:

@@ -195,7 +195,8 @@ def reservoir_feature_matrix(
         t: reservoir evolution time
         max_weight: Pauli weight limit
 
-    Returns:
+    Returns
+    -------
         (n_samples, n_reservoir_features) feature matrix
     """
     X = _validated_feature_matrix(X)

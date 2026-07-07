@@ -62,7 +62,6 @@ class CompilerAliasActivityCase:
 
     def __post_init__(self) -> None:
         """Validate alias-activity case metadata."""
-
         if not isinstance(self.case_id, str) or not self.case_id:
             raise ValueError("compiler alias-activity case_id must be non-empty")
         if self.status not in _SUPPORTED_CASE_STATUSES:
@@ -99,7 +98,6 @@ class CompilerAliasActivityCase:
 
     def as_dict(self) -> dict[str, object]:
         """Return a stable JSON-ready alias-activity case."""
-
         return {
             "case_id": self.case_id,
             "status": self.status,
@@ -126,7 +124,6 @@ class CompilerAliasActivityEvidence:
 
     def __post_init__(self) -> None:
         """Validate alias-activity evidence metadata."""
-
         if self.artifact_id != COMPILER_ALIAS_ACTIVITY_EVIDENCE_ID:
             raise ValueError("compiler alias-activity evidence artifact_id drifted")
         if self.schema != COMPILER_ALIAS_ACTIVITY_EVIDENCE_SCHEMA:
@@ -169,25 +166,21 @@ class CompilerAliasActivityEvidence:
     @property
     def complete_lattice_case_count(self) -> int:
         """Return the number of complete lattice cases."""
-
         return sum(1 for case in self.cases if case.status == "complete_lattice")
 
     @property
     def blocked_lattice_case_count(self) -> int:
         """Return the number of fail-closed lattice cases."""
-
         return sum(1 for case in self.cases if case.status == "blocked_lattice")
 
     @property
     def observed_alias_edge_kinds(self) -> tuple[str, ...]:
         """Return the sorted alias-edge kinds observed across all cases."""
-
         return tuple(sorted({kind for case in self.cases for kind in case.alias_edge_kinds}))
 
     @property
     def alias_activity_verified(self) -> bool:
         """Return whether the bounded alias-activity requirement has evidence."""
-
         return (
             self.complete_lattice_case_count > 0
             and self.blocked_lattice_case_count > 0
@@ -196,7 +189,6 @@ class CompilerAliasActivityEvidence:
 
     def as_dict(self) -> dict[str, object]:
         """Return a JSON-ready alias-activity evidence payload."""
-
         return {
             "artifact_id": self.artifact_id,
             "schema": self.schema,
@@ -218,7 +210,6 @@ def build_compiler_alias_activity_evidence(
     source_commit: str,
 ) -> CompilerAliasActivityEvidence:
     """Build alias-activity evidence from real Program AD lattice reports."""
-
     cases = tuple(
         sorted(
             (
@@ -245,7 +236,6 @@ def render_compiler_alias_activity_evidence_markdown(
     evidence: CompilerAliasActivityEvidence,
 ) -> str:
     """Render alias-activity evidence as reviewer-facing Markdown."""
-
     lines = [
         "# Compiler Alias-Activity Evidence",
         "",

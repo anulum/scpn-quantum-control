@@ -71,7 +71,6 @@ class CouplingTopologyObjective:
 
     def evaluate(self, matrix: NDArray[np.float64]) -> ObjectiveBreakdown:
         """Evaluate projected coupling matrix and return decomposed score."""
-
         if (
             bool(getattr(self.ph_backend, "approximate", False))
             and not self.allow_approximate_ph_backend
@@ -120,7 +119,6 @@ class CouplingTopologyObjective:
 
 def classify_degeneracy(matrix: NDArray[np.float64]) -> DegeneracyMode:
     """Classify trivial coupling graphs that can fake a low-H1 score."""
-
     K = np.asarray(matrix, dtype=np.float64)
     off_diag = K[~np.eye(K.shape[0], dtype=bool)]
     if np.all(np.abs(off_diag) <= 1e-12):
@@ -135,7 +133,6 @@ def classify_degeneracy(matrix: NDArray[np.float64]) -> DegeneracyMode:
 
 def objective_sha256_payload(objective: CouplingTopologyObjective) -> dict[str, object]:
     """Stable serialisable subset used for objective digests."""
-
     source_shape: tuple[int, ...] | None = None
     if objective.source_matrix is not None:
         source_shape = tuple(int(x) for x in np.asarray(objective.source_matrix).shape)

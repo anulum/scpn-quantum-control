@@ -37,7 +37,6 @@ def qiskit_circuit_to_workload(
     metadata: dict[str, object] | None = None,
 ) -> QuantumWorkload:
     """Encode a Qiskit circuit as a QPY-backed HAL workload."""
-
     if not isinstance(circuit, QuantumCircuit):
         raise TypeError("circuit must be a qiskit.QuantumCircuit")
     return QuantumWorkload(
@@ -58,7 +57,6 @@ def qiskit_circuit_to_qasm3_workload(
     metadata: dict[str, object] | None = None,
 ) -> QuantumWorkload:
     """Encode a Qiskit circuit as an OpenQASM 3 HAL workload."""
-
     if not isinstance(circuit, QuantumCircuit):
         raise TypeError("circuit must be a qiskit.QuantumCircuit")
     return QuantumWorkload(
@@ -291,7 +289,6 @@ def _qpy_b64_to_circuit(payload: str) -> QuantumCircuit:
 
 def _reviewed_qpy_load_circuits(data: bytes) -> list[QuantumCircuit]:
     """Decode trusted in-process QPY bytes behind the reviewed HAL wrapper."""
-
     return cast(list[QuantumCircuit], qpy.load(io.BytesIO(data)))
 
 

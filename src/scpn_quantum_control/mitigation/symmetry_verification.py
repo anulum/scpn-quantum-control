@@ -113,7 +113,8 @@ def parity_postselect(
         counts: Raw measurement counts {bitstring: count}.
         expected_parity: 0 (even) or 1 (odd).
 
-    Returns:
+    Returns
+    -------
         SymmetryVerificationResult with verified and rejected counts.
     """
     _validate_expected_parity(expected_parity)
@@ -197,7 +198,8 @@ def parity_verified_expectation(
 ) -> tuple[NDArray[np.float64], NDArray[np.float64], float]:
     """Compute per-qubit ⟨Z⟩ from parity-verified counts only.
 
-    Returns:
+    Returns
+    -------
         (exp_vals, std_vals, rejection_rate)
     """
     result = parity_postselect(counts, expected_parity)

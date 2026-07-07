@@ -26,7 +26,6 @@ class TopologyOptimisationArtifact:
 
     def to_json(self) -> str:
         """Return canonical JSON including the digest field."""
-
         data = dict(self.payload)
         data["sha256"] = self.sha256
         return json.dumps(data, sort_keys=True, separators=(",", ":"))
@@ -63,7 +62,6 @@ def export_topology_optimisation_artifact(
     claim_boundary: str,
 ) -> TopologyOptimisationArtifact:
     """Export a deterministic digest-bearing artefact."""
-
     payload = _trace_payload(trace, claim_boundary)
     canonical = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode()
     digest = hashlib.sha256(canonical).hexdigest()

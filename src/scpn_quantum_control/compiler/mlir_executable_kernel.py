@@ -94,26 +94,22 @@ class ExecutableCompilerADKernel:
 
     def value(self, values: FloatArray) -> FloatArray:
         """Execute the compiled value kernel."""
-
         return self.value_kernel(values)
 
     def jvp(self, values: FloatArray, tangent: FloatArray) -> FloatArray:
         """Execute the compiled JVP kernel."""
-
         if self.jvp_kernel is None:
             raise ValueError(f"kernel {self.rule_name} has no JVP rule")
         return self.jvp_kernel(values, tangent)
 
     def vjp(self, values: FloatArray, cotangent: FloatArray) -> FloatArray:
         """Execute the compiled VJP kernel."""
-
         if self.vjp_kernel is None:
             raise ValueError(f"kernel {self.rule_name} has no VJP rule")
         return self.vjp_kernel(values, cotangent)
 
     def gradient(self, values: FloatArray) -> FloatArray:
         """Execute the compiled scalar-output gradient kernel."""
-
         if self.vjp_kernel is None:
             raise ValueError(f"kernel {self.rule_name} has no VJP rule")
         checked_values = _as_finite_vector("values", values)
@@ -136,7 +132,6 @@ def make_executable_ad_kernel_batching_rule(
     ``method="jvp"`` or ``method="vjp"`` explicitly so transform nesting remains
     fail-closed rather than guessing.
     """
-
     if not isinstance(kernel, ExecutableCompilerADKernel):
         raise ValueError("kernel must be an ExecutableCompilerADKernel")
     if method not in {"auto", "value", "jvp", "vjp", "gradient"}:
@@ -308,7 +303,6 @@ def compile_custom_derivative_rule_to_mlir(
     attributes. The function deliberately does not claim executable LLVM or JIT
     code generation.
     """
-
     if not isinstance(rule, CustomDerivativeRule):
         raise ValueError("differentiable MLIR lowering requires a CustomDerivativeRule")
     compile_config = DifferentiableMLIRCompileConfig() if config is None else config

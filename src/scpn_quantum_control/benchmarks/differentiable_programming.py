@@ -117,7 +117,6 @@ class DifferentiableProgrammingBenchmarkResult:
     @property
     def passed(self) -> bool:
         """Return whether implemented gradients match the analytic reference."""
-
         return (
             not self.blocked_reasons
             and self.max_abs_gradient_error <= 1.0e-12
@@ -162,7 +161,6 @@ class DifferentiableProgrammingExternalReferenceResult:
     @property
     def passed(self) -> bool:
         """Return whether program AD matches the external reference backend."""
-
         return self.max_abs_value_error <= 1.0e-10 and self.max_abs_gradient_error <= 1.0e-10
 
 
@@ -232,7 +230,6 @@ class QuantumGradientBenchmarkResult:
     @property
     def passed(self) -> bool:
         """Return whether parameter-shift gradients passed all reference checks."""
-
         return (
             self.verification_passed
             and self.max_abs_reference_error <= 1.0e-12
@@ -244,7 +241,6 @@ def run_differentiable_programming_benchmark_suite() -> tuple[
     DifferentiableProgrammingBenchmarkResult, ...
 ]:
     """Run deterministic program-AD conformance benchmarks against analytic references."""
-
     return (
         _loop_heavy_case(),
         _python_semantics_list_comprehension_case(),
@@ -287,7 +283,6 @@ def run_quantum_gradient_benchmark_suite() -> tuple[QuantumGradientBenchmarkResu
     are correctness benchmarks only, not hardware, provider, or performance
     claims.
     """
-
     rows: tuple[QuantumGradientBenchmarkResult, ...] = (
         _single_rotation_quantum_gradient_case(),
         _two_parameter_quantum_gradient_case(),
@@ -314,7 +309,6 @@ def run_differentiable_programming_external_reference_suite() -> tuple[
     DifferentiableProgrammingExternalReferenceResult, ...
 ]:
     """Run optional external-backend conformance comparisons when dependencies exist."""
-
     if not is_jax_autodiff_available():
         return ()
     return (

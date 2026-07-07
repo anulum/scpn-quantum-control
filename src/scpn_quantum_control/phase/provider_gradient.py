@@ -256,36 +256,30 @@ class ProviderHardwareGradientPreparationResult:
     @property
     def approved(self) -> bool:
         """Whether provider hardware-gradient preparation passed policy checks."""
-
         return self.decision.approved
 
     @property
     def fail_closed(self) -> bool:
         """Whether provider hardware-gradient preparation is blocked."""
-
         return self.decision.fail_closed
 
     @property
     def gradient_available(self) -> bool:
         """Whether a gradient vector was produced by hardware execution."""
-
         return False
 
     @property
     def hardware_execution(self) -> bool:
         """Whether this record submitted or executed a hardware job."""
-
         return False
 
     @property
     def failure_reason(self) -> str:
         """Human-readable fail-closed reason from the policy decision."""
-
         return self.decision.failure_reason
 
     def to_dict(self) -> dict[str, object]:
         """Return JSON-compatible hardware-preparation metadata."""
-
         return {
             "provider": self.provider,
             "backend": self.backend,
@@ -321,7 +315,6 @@ def prepare_provider_hardware_parameter_shift_gradient(
     allow_hardware: bool = True,
 ) -> ProviderHardwareGradientPreparationResult:
     """Prepare a policy-bound provider hardware-gradient request without QPU execution."""
-
     values_vector = _as_finite_vector("values", values)
     terms = _parameter_shift_terms(rule, shift)
     active_policy = policy or HardwareGradientPolicy()

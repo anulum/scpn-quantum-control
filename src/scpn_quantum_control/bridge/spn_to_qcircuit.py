@@ -38,7 +38,8 @@ def spn_to_circuit(
     transition to fire.  Implemented as anti-controlled rotation on output
     places: X on inhibitor place, CRy on output, X restore.
 
-    Returns:
+    Returns
+    -------
         QuantumCircuit with n_places qubits.
     """
     n_t, n_p = W_in.shape

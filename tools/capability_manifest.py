@@ -50,7 +50,6 @@ DEFAULT_NAV_OMISSION_PREFIX_ALLOWLIST = (
 
 def _default_labels() -> dict[str, str]:
     """Return stable public labels for README and docs snapshots."""
-
     return {
         "version": "Package version",
         "public_api_exports": "Public API exports",
@@ -117,7 +116,6 @@ class CapabilityPaths:
 
 def load_config(repo: Path, config_path: Path | None = None) -> CapabilityManifestConfig:
     """Load portable manifest config with SC-NeuroCore-compatible defaults."""
-
     repo = repo.resolve()
     raw: dict[str, Any] = {}
     path = repo / (config_path or DEFAULT_CONFIG)
@@ -214,7 +212,6 @@ def _relative_config_path(path: Path, repo: Path) -> Path:
 
 def capability_paths(repo: Path, config: CapabilityManifestConfig) -> CapabilityPaths:
     """Return canonical manifest scan roots."""
-
     return CapabilityPaths(
         repo=repo,
         pyproject=repo / "pyproject.toml",
@@ -235,7 +232,6 @@ def build_capability_manifest(
     repo: Path, config: CapabilityManifestConfig | None = None
 ) -> dict[str, Any]:
     """Build a deterministic capability manifest for public surfaces."""
-
     repo = repo.resolve()
     config = config or load_config(repo)
     paths = capability_paths(repo, config)
@@ -335,7 +331,6 @@ def build_capability_manifest(
 
 def render_markdown_snapshot(manifest: dict[str, Any]) -> str:
     """Render a compact public snapshot for README and PyPI reuse."""
-
     counts = manifest["counts"]
     project = manifest["project"]
     labels = manifest.get("labels", _default_labels())
@@ -389,7 +384,6 @@ def refresh_readme_block(
     config: CapabilityManifestConfig,
 ) -> Path:
     """Refresh the README block bounded by configured markers."""
-
     readme_path = repo / config.readme_path
     text = readme_path.read_text(encoding="utf-8")
     start = config.readme_marker_start
@@ -410,7 +404,6 @@ def write_outputs(
     markdown_output: Path,
 ) -> tuple[Path, Path]:
     """Write deterministic JSON and Markdown outputs."""
-
     json_output.parent.mkdir(parents=True, exist_ok=True)
     markdown_output.parent.mkdir(parents=True, exist_ok=True)
     json_output.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
@@ -427,7 +420,6 @@ def refresh_outputs(
     update_readme: bool = True,
 ) -> tuple[Path, Path, Path | None]:
     """Regenerate JSON, Markdown, and optionally the README snapshot."""
-
     manifest = build_capability_manifest(repo, config)
     json_path, markdown_path = write_outputs(
         manifest,
@@ -446,7 +438,6 @@ def refresh_outputs(
 
 def validate_manifest(payload: dict[str, Any]) -> dict[str, Any]:
     """Validate a capability manifest payload."""
-
     errors: list[str] = []
     if payload.get("schema_version") != CAPABILITY_MANIFEST_SCHEMA_VERSION:
         errors.append("schema_version mismatch")
@@ -492,7 +483,6 @@ def assert_outputs_current(
     check_readme: bool = True,
 ) -> None:
     """Raise if tracked generated outputs drift from current sources."""
-
     config = config or load_config(repo)
     manifest = build_capability_manifest(repo, config)
     expected_json = json.dumps(manifest, indent=2, sort_keys=True) + "\n"
@@ -522,7 +512,6 @@ def public_inventory_claim_findings(
     repo: Path, *, config: CapabilityManifestConfig | None = None
 ) -> list[str]:
     """Return public documentation inventory claims known to be stale."""
-
     config = config or load_config(repo)
     findings: list[str] = []
     for relative_path in config.guard_paths:
@@ -544,7 +533,6 @@ def mkdocs_nav_omission_report(
     ignored_prefixes: tuple[str, ...] = DEFAULT_NAV_OMISSION_PREFIX_ALLOWLIST,
 ) -> dict[str, Any]:
     """Return public documentation pages missing from MkDocs navigation."""
-
     repo = repo.resolve()
     config = config or load_config(repo)
     paths = capability_paths(repo, config)
@@ -583,7 +571,6 @@ def mkdocs_nav_markdown_pages(
     repo: Path, *, mkdocs_path: Path = DEFAULT_MKDOCS_CONFIG
 ) -> list[str]:
     """Return Markdown pages referenced from the configured MkDocs nav block."""
-
     path = repo / mkdocs_path
     if not path.exists():
         return []

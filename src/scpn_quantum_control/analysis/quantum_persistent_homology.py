@@ -136,7 +136,8 @@ def quantum_persistent_homology(
         n_qubits: Number of qubits.
         persistence_threshold: Minimum H1 lifetime to count as persistent.
 
-    Returns:
+    Returns
+    -------
         QuantumPHResult with p_h1 and full persistence data.
     """
     if not _RIPSER_AVAILABLE:

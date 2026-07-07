@@ -170,7 +170,8 @@ def pulse_to_vivado_hls(
         fixed_point_width: total signed word width in bits (2..=63).
         fixed_point_frac_bits: fractional bits, strictly below the width.
 
-    Returns:
+    Returns
+    -------
         A frozen :class:`HLSBundle` with the HLS header, testbench, and XDC.
     """
     waveform = np.asarray(pulse_waveform, dtype=np.float64)

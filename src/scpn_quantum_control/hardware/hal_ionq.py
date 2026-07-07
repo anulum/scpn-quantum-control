@@ -33,7 +33,6 @@ def ionq_qis_workload(
     metadata: Mapping[str, object] | None = None,
 ) -> QuantumWorkload:
     """Encode IonQ's language-neutral QIS circuit JSON as a HAL workload."""
-
     payload = {
         "schema": IONQ_CIRCUIT_SCHEMA,
         "input": {

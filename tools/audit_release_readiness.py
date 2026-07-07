@@ -128,7 +128,6 @@ def check_required_artifacts(project_root: Path) -> ReleaseCheck:
 
 def _sha256(path: Path) -> str:
     """Return the SHA-256 hex digest for a file."""
-
     import hashlib
 
     digest = hashlib.sha256()
@@ -142,7 +141,6 @@ def check_hardware_result_pack_evidence(
     project_root: Path, evidence_path: Path | None
 ) -> ReleaseCheck:
     """Check optional hardware result-pack evidence packet for release claims."""
-
     if evidence_path is None:
         return ReleaseCheck(
             name="hardware_result_pack_evidence",
@@ -351,7 +349,6 @@ def check_behaviour_gate(
 
 def check_license_readiness(project_root: Path) -> ReleaseCheck:
     """Check licence metadata, public boundary docs, and SPDX headers."""
-
     payload = audit_license_readiness(project_root)
     return ReleaseCheck(
         name="license_readiness_gate",

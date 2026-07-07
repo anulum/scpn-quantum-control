@@ -62,7 +62,6 @@ ResultStatus = Literal["succeeded", "blocked", "failed"]
 
 def _metadata_copy(metadata: Mapping[str, Any] | None) -> Mapping[str, Any]:
     """Return immutable metadata with string keys."""
-
     if metadata is None:
         return MappingProxyType({})
     copied: dict[str, Any] = {}
@@ -75,13 +74,11 @@ def _metadata_copy(metadata: Mapping[str, Any] | None) -> Mapping[str, Any]:
 
 def _empty_metadata() -> Mapping[str, Any]:
     """Return a fresh immutable empty metadata mapping for dataclass defaults."""
-
     return MappingProxyType({})
 
 
 def _normalise_matrix(matrix: tuple[tuple[float, ...], ...]) -> tuple[tuple[float, ...], ...]:
     """Return a finite square coupling matrix."""
-
     if not matrix:
         raise ValueError("coupling_matrix must not be empty")
     width = len(matrix)
@@ -107,7 +104,6 @@ class Problem:
 
     def __post_init__(self) -> None:
         """Validate stable problem invariants."""
-
         if not self.problem_id:
             raise ValueError("problem_id must not be empty")
         if self.kind != "kuramoto_xy":
@@ -131,7 +127,6 @@ class Problem:
 
     def to_dict(self) -> dict[str, Any]:
         """Return a JSON-compatible problem payload."""
-
         return {
             "problem_id": self.problem_id,
             "kind": self.kind,
@@ -155,7 +150,6 @@ class Backend:
 
     def __post_init__(self) -> None:
         """Validate stable backend invariants."""
-
         if not self.backend_id:
             raise ValueError("backend_id must not be empty")
         if not self.capabilities:
@@ -167,12 +161,10 @@ class Backend:
 
     def supports(self, capability: str) -> bool:
         """Return whether the backend declares one capability."""
-
         return capability in self.capabilities
 
     def to_dict(self) -> dict[str, Any]:
         """Return a JSON-compatible backend payload."""
-
         return {
             "backend_id": self.backend_id,
             "kind": self.kind,
@@ -196,7 +188,6 @@ class Experiment:
 
     def __post_init__(self) -> None:
         """Validate stable experiment invariants."""
-
         if not self.experiment_id:
             raise ValueError("experiment_id must not be empty")
         if self.seed < 0:
@@ -221,7 +212,6 @@ class Experiment:
 
     def to_dict(self) -> dict[str, Any]:
         """Return a JSON-compatible experiment payload."""
-
         return {
             "experiment_id": self.experiment_id,
             "problem": self.problem.to_dict(),
@@ -247,7 +237,6 @@ class Result:
 
     def __post_init__(self) -> None:
         """Validate stable result invariants."""
-
         if not self.experiment_id:
             raise ValueError("experiment_id must not be empty")
         if not self.backend_id:
@@ -266,7 +255,6 @@ class Result:
 
     def to_dict(self) -> dict[str, Any]:
         """Return a JSON-compatible result payload."""
-
         return {
             "experiment_id": self.experiment_id,
             "backend_id": self.backend_id,
@@ -287,7 +275,6 @@ def build_problem(
     metadata: Mapping[str, Any] | None = None,
 ) -> Problem:
     """Build a stable Kuramoto/XY problem contract."""
-
     return Problem(
         problem_id=problem_id,
         kind="kuramoto_xy",
@@ -308,7 +295,6 @@ def build_backend(
     metadata: Mapping[str, Any] | None = None,
 ) -> Backend:
     """Build a stable backend capability contract."""
-
     return Backend(
         backend_id=backend_id,
         kind=kind,
@@ -324,7 +310,6 @@ def classical_reference_backend(
     metadata: Mapping[str, Any] | None = None,
 ) -> Backend:
     """Build the stable no-QPU classical-reference backend profile."""
-
     return build_backend(
         backend_id=backend_id,
         kind="classical_reference",
@@ -339,7 +324,6 @@ def hardware_replay_backend(
     metadata: Mapping[str, Any] | None = None,
 ) -> Backend:
     """Build the stable no-submit hardware-result replay backend profile."""
-
     return build_backend(
         backend_id=backend_id,
         kind="hardware_replay",
@@ -360,7 +344,6 @@ def qiskit_backend(
     still provide experiment preregistration metadata before a hardware-enabled
     experiment can be built.
     """
-
     return build_backend(
         backend_id=backend_id,
         kind="qiskit",
@@ -376,7 +359,6 @@ def qutip_backend(
     metadata: Mapping[str, Any] | None = None,
 ) -> Backend:
     """Build the stable QuTiP/open-system dynamics backend profile."""
-
     return build_backend(
         backend_id=backend_id,
         kind="qutip",
@@ -391,7 +373,6 @@ def pennylane_backend(
     metadata: Mapping[str, Any] | None = None,
 ) -> Backend:
     """Build the stable PennyLane/autodiff backend profile."""
-
     return build_backend(
         backend_id=backend_id,
         kind="pennylane",
@@ -406,7 +387,6 @@ def pulser_surrogate_backend(
     metadata: Mapping[str, Any] | None = None,
 ) -> Backend:
     """Build the stable Pulser-surrogate analog backend profile."""
-
     return build_backend(
         backend_id=backend_id,
         kind="pulser_surrogate",
@@ -422,7 +402,6 @@ def backend_capability_matrix() -> tuple[dict[str, Any], ...]:
     profiles and hardware-submission boundaries; it does not imply that every
     adapter implementation is complete.
     """
-
     rows: list[dict[str, Any]] = []
     for backend in (
         classical_reference_backend(),
@@ -449,7 +428,6 @@ def backend_capability_matrix() -> tuple[dict[str, Any], ...]:
 
 def stable_core_capability_payload() -> dict[str, Any]:
     """Return a JSON-compatible stable core capability payload."""
-
     payload = {
         "schema": STABLE_CORE_CAPABILITY_SCHEMA,
         "hardware_submission": False,
@@ -466,13 +444,11 @@ def stable_core_capability_payload() -> dict[str, Any]:
 
 def normalised_stable_core_json(data: dict[str, Any]) -> str:
     """Return deterministic JSON text for stable core capability artifacts."""
-
     return json.dumps(data, indent=2, sort_keys=True) + "\n"
 
 
 def stable_core_capability_markdown(data: dict[str, Any]) -> str:
     """Render a public backend capability matrix summary."""
-
     lines = [
         "<!-- SPDX-License-Identifier: AGPL-3.0-or-later -->",
         "<!-- Commercial license available -->",
@@ -516,7 +492,6 @@ def write_stable_core_capability_artifacts(
     doc_path: Path,
 ) -> dict[str, str]:
     """Write deterministic stable core capability artifacts and return digests."""
-
     payload = stable_core_capability_payload()
     json_text = normalised_stable_core_json(payload)
     doc_text = stable_core_capability_markdown(payload)
@@ -541,7 +516,6 @@ def build_experiment(
     metadata: Mapping[str, Any] | None = None,
 ) -> Experiment:
     """Build a stable experiment contract."""
-
     return Experiment(
         experiment_id=experiment_id,
         problem=problem,
@@ -564,7 +538,6 @@ def build_result(
     metadata: Mapping[str, Any] | None = None,
 ) -> Result:
     """Build a stable result contract."""
-
     return Result(
         experiment_id=experiment_id,
         backend_id=backend_id,
@@ -584,7 +557,6 @@ def problem_from_kuramoto(
     metadata: Mapping[str, Any] | None = None,
 ) -> Problem:
     """Convert a Kuramoto facade problem into the stable problem contract."""
-
     merged_metadata = dict(kuramoto_problem.metadata)
     if metadata:
         merged_metadata.update(metadata)
@@ -601,7 +573,6 @@ def problem_from_kuramoto(
 
 def problem_to_kuramoto(problem: Problem) -> KuramotoProblem:
     """Convert a stable problem contract into the Kuramoto facade problem."""
-
     from .kuramoto_core import build_kuramoto_problem
 
     return build_kuramoto_problem(

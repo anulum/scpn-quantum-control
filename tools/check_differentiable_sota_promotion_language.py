@@ -22,7 +22,6 @@ from scpn_quantum_control.differentiable_sota_scorecard import (  # noqa: E402
 
 def main() -> int:
     """Run the public differentiable SOTA promotion-language audit."""
-
     audit = audit_differentiable_sota_promotion_language(repo_root=ROOT)
     if audit.passed:
         print(

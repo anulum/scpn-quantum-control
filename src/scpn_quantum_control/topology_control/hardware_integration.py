@@ -36,7 +36,6 @@ def validate_topology_hardware_manifest(
     backend_descriptor: Any | None = None,
 ) -> TopologyHardwareManifest:
     """Validate a topology-control hardware manifest without submitting jobs."""
-
     errors: list[str] = []
     if not manifest.backend_name:
         errors.append("backend_name is required")

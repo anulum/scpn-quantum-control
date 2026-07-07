@@ -33,7 +33,6 @@ def qbraid_program_to_workload(
     metadata: Mapping[str, object] | None = None,
 ) -> QuantumWorkload:
     """Encode a qBraid-supported program string as a HAL workload."""
-
     return QuantumWorkload(
         workload_id=workload_id,
         ir_format=ir_format,

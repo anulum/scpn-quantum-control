@@ -36,13 +36,11 @@ from .program_ad_registry import (
 
 def _is_trace_array(value: object) -> bool:
     """Return whether ``value`` behaves like a whole-program trace array."""
-
     return type(value).__name__ == "TraceADArray" and hasattr(value, "context")
 
 
 def _program_ad_array_shape_of(value: object) -> tuple[int, ...]:
     """Return the static shape recorded by a trace value or array-like input."""
-
     if _is_trace_array(value):
         shape = getattr(value, "shape", None)
         if not isinstance(shape, tuple):
@@ -53,7 +51,6 @@ def _program_ad_array_shape_of(value: object) -> tuple[int, ...]:
 
 def _program_ad_array_dtype_of(value: object) -> str:
     """Return the dtype name recorded by a trace value or array-like input."""
-
     if _is_trace_array(value):
         return "float64"
     array = np.asarray(value)
@@ -205,7 +202,6 @@ def program_ad_signal_convolve_derivative_rule(
     mode: object = "full",
 ) -> CustomDerivativeRule:
     """Build an exact direct derivative rule for fixed static ``np.convolve`` operands."""
-
     left = _program_ad_signal_convolve_static_shape("left", left_shape)
     right = _program_ad_signal_convolve_static_shape("right", right_shape)
     mode_value = _normalise_convolve_mode(mode)
@@ -348,7 +344,6 @@ def program_ad_signal_correlate_derivative_rule(
     mode: object = "valid",
 ) -> CustomDerivativeRule:
     """Build an exact direct derivative rule for fixed static ``np.correlate`` operands."""
-
     left = _program_ad_signal_correlate_static_shape("left", left_shape)
     right = _program_ad_signal_correlate_static_shape("right", right_shape)
     mode_value = _normalise_correlate_mode(mode)
@@ -541,7 +536,6 @@ _PROGRAM_AD_SIGNAL_STATIC_ARGUMENT_RULES: Mapping[str, PrimitiveStaticArgumentRu
 
 def _register_program_ad_signal_primitive_contracts() -> None:
     """Register fail-closed Program AD signal primitive contracts."""
-
     for name, identity in _PROGRAM_AD_SIGNAL_IDENTITIES.items():
         if DEFAULT_CUSTOM_DERIVATIVE_REGISTRY.contract_for(identity) is not None:
             continue
@@ -565,7 +559,6 @@ def _validate_program_ad_signal_contract_dispatch(
     args: tuple[object, ...],
 ) -> None:
     """Validate signal primitive dispatch helpers against concrete arguments."""
-
     if contract.static_argument_rule is None:
         raise ValueError(
             f"program AD primitive {contract.identity.key} missing static argument rule"
@@ -599,7 +592,6 @@ def _require_program_ad_signal_contract(
     args: tuple[object, ...] | None = None,
 ) -> PrimitiveContract:
     """Return and validate a registered signal primitive runtime contract."""
-
     identity: PrimitiveIdentity | None = _PROGRAM_AD_SIGNAL_IDENTITIES.get(name)
     if identity is None:
         raise ValueError(f"no program AD signal primitive identity registered for {name}")

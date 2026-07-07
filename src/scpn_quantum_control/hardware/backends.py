@@ -337,7 +337,6 @@ def describe_hal_backend_profile(backend_id: str) -> QuantumBackendDescriptor:
     executable adapter. Runtime availability remains the responsibility of the
     injected adapter route.
     """
-
     from .hal import built_in_backend_profiles
 
     for profile in built_in_backend_profiles():
@@ -348,7 +347,6 @@ def describe_hal_backend_profile(backend_id: str) -> QuantumBackendDescriptor:
 
 def list_hal_backend_descriptors() -> list[QuantumBackendDescriptor]:
     """Return selector metadata for all built-in HAL profiles."""
-
     from .hal import built_in_backend_profiles
 
     return sorted(

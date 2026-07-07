@@ -12,7 +12,8 @@ primitive transforms for the closed-form 2x2 determinant, inverse, linear solve,
 eigenvalues and eigensystem primitives together with their forward and reverse
 derivatives. It depends only on the shared executable-kernel core, the native
 lowering primitives, the MLIR record types and the differentiable contracts, so it
-stays a leaf of the compiler package."""
+stays a leaf of the compiler package.
+"""
 
 from __future__ import annotations
 
@@ -1252,7 +1253,6 @@ def compile_matrix_2x2_determinant_ad_to_native_llvm_jit(
     sample_cotangent: Sequence[float] | FloatArray | None = None,
 ) -> ExecutableCompilerADKernel:
     """Compile exact 2x2 determinant value/JVP/VJP/gradient kernels to LLVM MCJIT."""
-
     if not isinstance(rule, CustomDerivativeRule):
         raise ValueError("rule must be a CustomDerivativeRule")
     compile_config = (
@@ -1347,7 +1347,6 @@ def make_matrix_2x2_determinant_native_llvm_jit_lowering_rule(
     sample_cotangent: Sequence[float] | FloatArray | None = None,
 ) -> Callable[..., ExecutableCompilerADKernel]:
     """Create a lowering rule for exact 2x2 determinant native LLVM/JIT kernels."""
-
     captured_values = (
         None if sample_values is None else _as_finite_vector("sample_values", sample_values)
     )
@@ -1399,7 +1398,6 @@ def make_matrix_2x2_determinant_native_llvm_jit_primitive_transform(
     sample_cotangent: Sequence[float] | FloatArray | None = None,
 ) -> PrimitiveTransformRule:
     """Create a complete Rust/PyO3 + native LLVM/JIT 2x2 determinant contract."""
-
     primitive_identity = PrimitiveIdentity.parse(identity)
     if not isinstance(rule, CustomDerivativeRule):
         raise ValueError("rule must be a CustomDerivativeRule")
@@ -1482,7 +1480,6 @@ def compile_matrix_2x2_inverse_ad_to_native_llvm_jit(
     sample_cotangent: Sequence[float] | FloatArray | None = None,
 ) -> ExecutableCompilerADKernel:
     """Compile exact nonsingular 2x2 inverse value/JVP/VJP kernels to LLVM MCJIT."""
-
     if not isinstance(rule, CustomDerivativeRule):
         raise ValueError("rule must be a CustomDerivativeRule")
     compile_config = (
@@ -1576,7 +1573,6 @@ def make_matrix_2x2_inverse_native_llvm_jit_lowering_rule(
     sample_cotangent: Sequence[float] | FloatArray | None = None,
 ) -> Callable[..., ExecutableCompilerADKernel]:
     """Create a lowering rule for exact nonsingular 2x2 inverse native LLVM/JIT kernels."""
-
     captured_values = (
         None
         if sample_values is None
@@ -1630,7 +1626,6 @@ def make_matrix_2x2_inverse_native_llvm_jit_primitive_transform(
     sample_cotangent: Sequence[float] | FloatArray | None = None,
 ) -> PrimitiveTransformRule:
     """Create a complete Rust/PyO3 + native LLVM/JIT nonsingular 2x2 inverse contract."""
-
     primitive_identity = PrimitiveIdentity.parse(identity)
     if not isinstance(rule, CustomDerivativeRule):
         raise ValueError("rule must be a CustomDerivativeRule")
@@ -1713,7 +1708,6 @@ def compile_matrix_2x2_solve_ad_to_native_llvm_jit(
     sample_cotangent: Sequence[float] | FloatArray | None = None,
 ) -> ExecutableCompilerADKernel:
     """Compile exact nonsingular 2x2 linear-solve value/JVP/VJP kernels to LLVM MCJIT."""
-
     if not isinstance(rule, CustomDerivativeRule):
         raise ValueError("rule must be a CustomDerivativeRule")
     compile_config = (
@@ -1809,7 +1803,6 @@ def make_matrix_2x2_solve_native_llvm_jit_lowering_rule(
     sample_cotangent: Sequence[float] | FloatArray | None = None,
 ) -> Callable[..., ExecutableCompilerADKernel]:
     """Create a lowering rule for exact nonsingular 2x2 solve native LLVM/JIT kernels."""
-
     captured_values = (
         None
         if sample_values is None
@@ -1863,7 +1856,6 @@ def make_matrix_2x2_solve_native_llvm_jit_primitive_transform(
     sample_cotangent: Sequence[float] | FloatArray | None = None,
 ) -> PrimitiveTransformRule:
     """Create a complete Rust/PyO3 + native LLVM/JIT nonsingular 2x2 solve contract."""
-
     primitive_identity = PrimitiveIdentity.parse(identity)
     if not isinstance(rule, CustomDerivativeRule):
         raise ValueError("rule must be a CustomDerivativeRule")
@@ -1941,7 +1933,6 @@ def compile_matrix_2x2_eigenvalues_ad_to_native_llvm_jit(
     sample_cotangent: Sequence[float] | FloatArray | None = None,
 ) -> ExecutableCompilerADKernel:
     """Compile real-simple nonsymmetric 2x2 eigenvalue value/JVP/VJP kernels."""
-
     if not isinstance(rule, CustomDerivativeRule):
         raise ValueError("rule must be a CustomDerivativeRule")
     compile_config = (
@@ -2038,7 +2029,6 @@ def make_matrix_2x2_eigenvalues_native_llvm_jit_lowering_rule(
     sample_cotangent: Sequence[float] | FloatArray | None = None,
 ) -> Callable[..., ExecutableCompilerADKernel]:
     """Create a lowering rule for real-simple nonsymmetric 2x2 eigenvalue kernels."""
-
     captured_values = (
         None
         if sample_values is None
@@ -2097,7 +2087,6 @@ def make_matrix_2x2_eigenvalues_native_llvm_jit_primitive_transform(
     matrices whose spectra are real and distinct. Complex spectra and repeated
     eigenvalues remain fail-closed.
     """
-
     primitive_identity = PrimitiveIdentity.parse(identity)
     if not isinstance(rule, CustomDerivativeRule):
         raise ValueError("rule must be a CustomDerivativeRule")
@@ -2190,7 +2179,6 @@ def compile_matrix_2x2_eigensystem_ad_to_native_llvm_jit(
     sample_cotangent: Sequence[float] | FloatArray | None = None,
 ) -> ExecutableCompilerADKernel:
     """Compile real-simple nonsymmetric 2x2 eigensystem value/JVP/VJP kernels."""
-
     if not isinstance(rule, CustomDerivativeRule):
         raise ValueError("rule must be a CustomDerivativeRule")
     compile_config = (
@@ -2287,7 +2275,6 @@ def make_matrix_2x2_eigensystem_native_llvm_jit_lowering_rule(
     sample_cotangent: Sequence[float] | FloatArray | None = None,
 ) -> Callable[..., ExecutableCompilerADKernel]:
     """Create a lowering rule for real-simple nonsymmetric 2x2 eigensystem kernels."""
-
     captured_values = (
         None
         if sample_values is None
@@ -2347,7 +2334,6 @@ def make_matrix_2x2_eigensystem_native_llvm_jit_primitive_transform(
     uses a non-zero upper off-diagonal entry. All other eigensystem domains
     remain fail-closed.
     """
-
     primitive_identity = PrimitiveIdentity.parse(identity)
     if not isinstance(rule, CustomDerivativeRule):
         raise ValueError("rule must be a CustomDerivativeRule")

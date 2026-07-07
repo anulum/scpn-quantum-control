@@ -37,7 +37,6 @@ def quantinuum_tket_workload(
     metadata: Mapping[str, object] | None = None,
 ) -> QuantumWorkload:
     """Encode a pytket circuit dictionary as a HAL workload for Quantinuum."""
-
     if isinstance(circuit, str):
         circuit_payload = json.loads(circuit)
     elif hasattr(circuit, "to_dict"):

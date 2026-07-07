@@ -34,7 +34,6 @@ from .program_ad_registry import (
 
 def _as_real_numeric_array(name: str, value: object) -> NDArray[np.float64]:
     """Return ``value`` as a real-valued float64 array."""
-
     array = np.asarray(value)
     if array.dtype.kind not in {"b", "i", "u", "f"}:
         raise ValueError(f"{name} must be a real numeric array")
@@ -43,7 +42,6 @@ def _as_real_numeric_array(name: str, value: object) -> NDArray[np.float64]:
 
 def _normalise_axis(name: str, axis: int, ndim: int) -> int:
     """Return a non-negative axis for an array with ``ndim`` dimensions."""
-
     if ndim == 0:
         raise ValueError(f"{name} cannot map over a scalar")
     if axis < 0:
@@ -55,13 +53,11 @@ def _normalise_axis(name: str, axis: int, ndim: int) -> int:
 
 def _program_ad_float64_vector_result(values: object) -> NDArray[np.float64]:
     """Flatten a direct-rule result into the canonical float64 vector form."""
-
     return np.asarray(values, dtype=np.float64).reshape(-1)
 
 
 def _program_ad_shape_static_size(source_shape: Sequence[int]) -> int:
     """Return the element count for a static tensor shape."""
-
     size = 1
     for dimension in source_shape:
         size *= int(dimension)
@@ -70,7 +66,6 @@ def _program_ad_shape_static_size(source_shape: Sequence[int]) -> int:
 
 def _program_ad_shape_signature(source_shape: Sequence[int]) -> str:
     """Return a stable shape token for direct derivative rule names."""
-
     if not source_shape:
         return "scalar"
     return "x".join(str(int(dimension)) for dimension in source_shape)
@@ -78,7 +73,6 @@ def _program_ad_shape_signature(source_shape: Sequence[int]) -> str:
 
 def _program_ad_array_shape_of(value: object) -> tuple[int, ...]:
     """Return the static array shape recorded by a trace value or array-like input."""
-
     shape = getattr(value, "shape", None)
     if isinstance(shape, tuple):
         return tuple(int(dimension) for dimension in shape)
@@ -89,7 +83,6 @@ def _program_ad_array_shape_of(value: object) -> tuple[int, ...]:
 
 def _program_ad_array_dtype_of(value: object) -> str:
     """Return the dtype name recorded by a trace value or array-like input."""
-
     dtype = getattr(value, "dtype", None)
     if dtype is not None:
         return str(np.dtype(dtype))
@@ -103,7 +96,6 @@ def _program_ad_array_dtype_of(value: object) -> str:
 
 def _broadcast_shape(*shapes: tuple[int, ...]) -> tuple[int, ...]:
     """Return a NumPy-compatible broadcast shape or fail closed."""
-
     try:
         shape: tuple[int, ...] = np.broadcast_shapes(*shapes)
         return shape
@@ -119,7 +111,6 @@ def _program_ad_elementwise_unbroadcast(
     target_shape: tuple[int, ...],
 ) -> NDArray[np.float64]:
     """Reduce a broadcasted adjoint back to ``target_shape``."""
-
     result = np.asarray(values, dtype=np.float64)
     if target_shape == ():
         return np.array([float(np.sum(result))], dtype=np.float64)
@@ -136,7 +127,6 @@ def _validate_program_ad_elementwise_contract_dispatch(
     args: tuple[object, ...],
 ) -> None:
     """Validate elementwise primitive dispatch helpers against concrete arguments."""
-
     if contract.static_argument_rule is None:
         raise ValueError(
             f"program AD primitive {contract.identity.key} missing static argument rule"
@@ -656,7 +646,6 @@ def program_ad_elementwise_binary_derivative_rule(
     right_shape: Sequence[int],
 ) -> CustomDerivativeRule:
     """Build a direct value/JVP/VJP rule for a fixed broadcasted binary primitive."""
-
     left_static_shape, right_static_shape, output_shape = (
         _program_ad_elementwise_normalise_binary_static_shapes(name, left_shape, right_shape)
     )
@@ -903,7 +892,6 @@ def _require_program_ad_elementwise_contract(
     args: tuple[object, ...] | None = None,
 ) -> PrimitiveContract:
     """Return a validated elementwise primitive runtime contract."""
-
     identity = _PROGRAM_AD_ELEMENTWISE_IDENTITIES.get(name)
     if identity is None:
         raise ValueError(f"no program AD elementwise primitive identity registered for {name}")

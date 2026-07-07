@@ -26,7 +26,6 @@ from .program_ad_registry import CustomDerivativeRule
 
 def _normalise_program_ad_broadcast_shape(shape: object) -> tuple[int, ...]:
     """Normalise a static broadcast target shape for Program AD assembly."""
-
     if isinstance(shape, (int, np.integer)) and not isinstance(shape, bool):
         dimensions: tuple[int, ...] = (int(shape),)
     elif isinstance(shape, Sequence) and not isinstance(shape, (str, bytes)):
@@ -43,7 +42,6 @@ def _program_ad_assembly_broadcast_to_shapes(
     output_shape: object,
 ) -> tuple[tuple[int, ...], tuple[int, ...]]:
     """Validate static ``broadcast_to`` source and target shapes."""
-
     source = _program_ad_array_normalise_static_shape("assembly broadcast_to source", source_shape)
     output = _normalise_program_ad_broadcast_shape(output_shape)
     try:
@@ -62,7 +60,6 @@ def _program_ad_assembly_broadcast_adjoint(
     source_shape: tuple[int, ...],
 ) -> NDArray[np.float64]:
     """Reduce a broadcast cotangent back to the original source shape."""
-
     adjoint = np.asarray(cotangent, dtype=np.float64)
     if not source_shape:
         return np.asarray(float(np.sum(adjoint)), dtype=np.float64).reshape(())
@@ -84,7 +81,6 @@ def program_ad_assembly_broadcast_to_derivative_rule(
     output_shape: object,
 ) -> CustomDerivativeRule:
     """Build an exact direct derivative rule for fixed static ``np.broadcast_to``."""
-
     source_static_shape, output_static_shape = _program_ad_assembly_broadcast_to_shapes(
         source_shape, output_shape
     )
@@ -136,7 +132,6 @@ def _program_ad_assembly_broadcast_arrays_shapes(
     operand_shapes: Sequence[Sequence[int]],
 ) -> tuple[tuple[tuple[int, ...], ...], tuple[int, ...]]:
     """Validate static ``broadcast_arrays`` operand shapes and output shape."""
-
     shapes = tuple(
         _program_ad_array_normalise_static_shape("assembly broadcast_arrays operand", shape)
         for shape in operand_shapes
@@ -156,7 +151,6 @@ def program_ad_assembly_broadcast_arrays_derivative_rule(
     operand_shapes: Sequence[Sequence[int]],
 ) -> CustomDerivativeRule:
     """Build an exact direct derivative rule for fixed static ``np.broadcast_arrays``."""
-
     shapes, output_shape = _program_ad_assembly_broadcast_arrays_shapes(operand_shapes)
     source_sizes = tuple(_program_ad_array_static_size(shape) for shape in shapes)
     source_size = sum(source_sizes)

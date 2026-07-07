@@ -50,7 +50,6 @@ class _DifferentiableProviderHardwareEvidenceChain:
 
     def __post_init__(self) -> None:
         """Validate artifact identity, raw-count, digest, and freshness metadata."""
-
         for field_name in (
             "live_execution_ticket",
             "provider_name",
@@ -104,7 +103,6 @@ class _DifferentiableProviderHardwareEvidenceChain:
 
     def to_dict(self) -> dict[str, object]:
         """Return JSON-ready provider/hardware evidence-chain metadata."""
-
         return {
             "live_execution_ticket": self.live_execution_ticket,
             "provider_name": self.provider_name,
@@ -164,7 +162,6 @@ class DifferentiableProviderHardwareSafetySurface:
 
     def to_dict(self) -> dict[str, object]:
         """Return JSON-ready surface metadata."""
-
         return {
             "name": self.name,
             "passed": self.passed,
@@ -232,13 +229,11 @@ class DifferentiableProviderHardwareSafetyAuditResult:
     @property
     def surface_count(self) -> int:
         """Return audited surface count."""
-
         return len(self.surfaces)
 
     @property
     def passed(self) -> bool:
         """Return whether every audited safety surface preserves its boundary."""
-
         return (
             all(surface.passed for surface in self.surfaces)
             and self.hardware_execution_count == 0
@@ -248,25 +243,21 @@ class DifferentiableProviderHardwareSafetyAuditResult:
     @property
     def hardware_execution_count(self) -> int:
         """Return total hardware executions observed by safety surfaces."""
-
         return sum(surface.hardware_execution_count for surface in self.surfaces)
 
     @property
     def gradient_available_count(self) -> int:
         """Return hardware-gradient results produced by safety surfaces."""
-
         return sum(surface.gradient_available_count for surface in self.surfaces)
 
     @property
     def requires_live_ticket(self) -> bool:
         """Return whether promotion still needs live-ticket governance."""
-
         return self.live_execution_ticket is None
 
     @property
     def promotion_blockers(self) -> tuple[str, ...]:
         """Return artefacts required before hardware-gradient promotion."""
-
         blockers: list[str] = []
         if self.live_execution_ticket is None:
             blockers.append("live execution ticket missing")
@@ -285,18 +276,15 @@ class DifferentiableProviderHardwareSafetyAuditResult:
     @property
     def ready_for_hardware_gradient_promotion(self) -> bool:
         """Return whether live hardware-gradient promotion evidence is complete."""
-
         return self.passed and not self.promotion_blockers
 
     @property
     def evidence_chain_ready(self) -> bool:
         """Return whether a validated promotion evidence chain is attached."""
-
         return self.evidence_chain is not None
 
     def to_dict(self) -> dict[str, object]:
         """Return JSON-ready aggregate safety evidence."""
-
         return {
             "passed": self.passed,
             "surface_count": self.surface_count,
@@ -331,7 +319,6 @@ def run_differentiable_provider_hardware_safety_audit(
     isolated_benchmark_artifact_id: str | None = None,
 ) -> DifferentiableProviderHardwareSafetyAuditResult:
     """Run the aggregate dry-run and policy-gated provider/hardware safety audit."""
-
     if evidence_chain is not None:
         if any(
             value is not None

@@ -31,7 +31,8 @@ Nobody has computed QSL at a BKT transition. The prediction:
 not as a power law. This is a qualitative signature of BKT physics
 in the quantum speed limit.
 
-References:
+References
+----------
     Mandelstam & Tamm (1945): original QSL.
     Mukherjee et al., PRA 110 (2024): QSL as QPT probe.
     Impens & Guery-Odelin, arXiv:2210.05848: shortcut to synchronization.

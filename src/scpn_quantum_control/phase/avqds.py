@@ -84,7 +84,8 @@ class _SparseMatrixLike(Protocol):
 class AVQDSResult:
     """Result of a fixed-ansatz McLachlan variational real-time simulation.
 
-    Attributes:
+    Attributes
+    ----------
         times: sample times of the trajectory, shape ``(n_steps + 1,)``.
         energies: ``<ψ(t)|H|ψ(t)>`` at each sample time.
         fidelities: squared overlap ``|<ψ_exact(t)|ψ(t)>|²`` against the
@@ -205,7 +206,8 @@ def avqds_simulate(
         max_dense_gib: dense exact-simulation budget for Hamiltonian,
             statevector, and propagator allocations.
 
-    Returns:
+    Returns
+    -------
         AVQDSResult with the time grid, energies, fidelities against the exact
         reference, the parameter history, and the final-step summaries.
     """

@@ -78,12 +78,10 @@ class KuramotoProblem:
     @property
     def K(self) -> NDArray[np.float64]:
         """Alias for the validated coupling matrix."""
-
         return self.K_nm
 
     def validate(self) -> None:
         """Re-run the public validation contract for this problem."""
-
         validate_kuramoto_inputs(self.K_nm, self.omega)
 
     def to_metadata(self) -> dict[str, Any]:

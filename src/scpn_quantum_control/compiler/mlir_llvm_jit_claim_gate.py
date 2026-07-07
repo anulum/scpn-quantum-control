@@ -42,7 +42,6 @@ _REQUIREMENT_ORDER = (
 
 def _clean_optional_text(value: str | None, field_name: str) -> str | None:
     """Return stripped optional text, rejecting blank policy bodies."""
-
     if value is None:
         return None
     cleaned = value.strip()
@@ -53,7 +52,6 @@ def _clean_optional_text(value: str | None, field_name: str) -> str | None:
 
 def _clean_text_tuple(values: Sequence[str], field_name: str) -> tuple[str, ...]:
     """Return a tuple of stripped non-empty strings from a public evidence list."""
-
     cleaned = tuple(value.strip() for value in values)
     if any(not value for value in cleaned):
         raise ValueError(f"{field_name} must contain non-empty identifiers")
@@ -62,7 +60,6 @@ def _clean_text_tuple(values: Sequence[str], field_name: str) -> tuple[str, ...]
 
 def _payload_text_tuple(value: object, field_name: str) -> tuple[str, ...]:
     """Decode a JSON payload field into a string tuple."""
-
     if not isinstance(value, (list, tuple)):
         raise ValueError(f"{field_name} must be a list of strings")
     rows: list[str] = []
@@ -75,7 +72,6 @@ def _payload_text_tuple(value: object, field_name: str) -> tuple[str, ...]:
 
 def _payload_str(value: object, field_name: str) -> str:
     """Decode a required JSON string field."""
-
     if not isinstance(value, str) or not value.strip():
         raise ValueError(f"{field_name} must be a non-empty string")
     return value.strip()
@@ -83,7 +79,6 @@ def _payload_str(value: object, field_name: str) -> str:
 
 def _payload_optional_str(value: object, field_name: str) -> str | None:
     """Decode an optional JSON string field."""
-
     if value is None:
         return None
     if not isinstance(value, str):
@@ -93,7 +88,6 @@ def _payload_optional_str(value: object, field_name: str) -> str | None:
 
 def _payload_bool(value: object, field_name: str) -> bool:
     """Decode a required JSON boolean field."""
-
     if not isinstance(value, bool):
         raise ValueError(f"{field_name} must be a bool")
     return value
@@ -186,7 +180,6 @@ class LLVMJITClaimGate:
     @property
     def missing_requirements(self) -> tuple[str, ...]:
         """Return the ordered requirement keys blocking LLVM/JIT promotion."""
-
         missing: list[str] = []
         if not self.executable_lowering_verified or self.executable_lowering_evidence_id is None:
             missing.append("executable_lowering")
@@ -205,12 +198,10 @@ class LLVMJITClaimGate:
     @property
     def promotion_ready(self) -> bool:
         """Return whether every LLVM/JIT promotion requirement is attached."""
-
         return not self.missing_requirements
 
     def to_dict(self) -> dict[str, object]:
         """Return a JSON-ready claim gate record with derived readiness fields."""
-
         return {
             "artifact_id": self.artifact_id,
             "executable_lowering_evidence_id": self.executable_lowering_evidence_id,
@@ -230,7 +221,6 @@ def _native_evidence_verifies_executable_lowering(
     evidence: NativeWholeProgramADExecutionEvidence,
 ) -> bool:
     """Return whether native execution evidence satisfies the lowering gate."""
-
     return (
         evidence.beyond_scalar_executed
         and bool(evidence.executed_operation_families)
@@ -256,7 +246,6 @@ def build_llvm_jit_claim_gate(
     so docs and claim ledgers cannot accidentally promote LLVM/JIT support from
     a single successful native execution record.
     """
-
     executable_lowering_evidence_id: str | None = None
     executable_lowering_verified = False
     if native_execution_evidence is not None:
@@ -283,7 +272,6 @@ def build_llvm_jit_claim_gate(
 
 def llvm_jit_claim_gate_from_dict(payload: Mapping[str, object]) -> LLVMJITClaimGate:
     """Rebuild and validate a serialized LLVM/JIT claim gate."""
-
     gate = LLVMJITClaimGate(
         artifact_id=_payload_str(payload.get("artifact_id"), "artifact_id"),
         executable_lowering_evidence_id=_payload_optional_str(
@@ -323,7 +311,6 @@ def llvm_jit_claim_gate_from_dict(payload: Mapping[str, object]) -> LLVMJITClaim
 
 def render_llvm_jit_claim_gate_markdown(gate: LLVMJITClaimGate) -> str:
     """Render a concise reviewer-facing Markdown summary for the claim gate."""
-
     if not isinstance(gate, LLVMJITClaimGate):
         raise ValueError("gate must be LLVMJITClaimGate")
     rows = [

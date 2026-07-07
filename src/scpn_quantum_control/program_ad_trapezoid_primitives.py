@@ -223,7 +223,6 @@ def program_ad_reduction_trapezoid_derivative_rule(
     axis: int = -1,
 ) -> CustomDerivativeRule:
     """Build an exact direct derivative rule for a fixed trapezoid integration signature."""
-
     source = _program_ad_trapezoid_normalise_static_shape(source_shape)
     normalised_axis = _normalise_trapezoid_axis(axis, len(source))
     weights = _program_ad_reduction_trapezoid_static_weights(

@@ -49,7 +49,6 @@ class QuantumSensingReadinessConfig:
 
     def to_dict(self) -> dict[str, Any]:
         """Return JSON-compatible config data."""
-
         return asdict(self)
 
 
@@ -69,7 +68,6 @@ class SensingGainRow:
 
     def to_dict(self) -> dict[str, Any]:
         """Return JSON-compatible row data."""
-
         return asdict(self)
 
 
@@ -90,7 +88,6 @@ class SensingGainScan:
 
     def to_dict(self) -> dict[str, Any]:
         """Return JSON-compatible scan data."""
-
         return {
             "schema": self.schema,
             "k_values": list(self.k_values),
@@ -113,7 +110,6 @@ def metrological_gain_vs_k(
     config: QuantumSensingReadinessConfig | None = None,
 ) -> SensingGainScan:
     """Scan QFI-based sensing gain against a classical sync-order proxy."""
-
     frequencies, graph, grid = _validate_inputs(omega, topology, k_grid)
     cfg = config or QuantumSensingReadinessConfig()
     qfi_result = qfi_vs_coupling(
@@ -168,13 +164,11 @@ def optimal_sensing_k(
     config: QuantumSensingReadinessConfig | None = None,
 ) -> SensingGainRow:
     """Return the readiness row with the largest QFI/classical-Fisher ratio."""
-
     return metrological_gain_vs_k(omega, topology, k_grid, config=config).optimal_row
 
 
 def quantum_sensing_payload() -> dict[str, Any]:
     """Return the S11 quantum-sensing readiness payload."""
-
     omega, topology, k_grid = _default_problem()
     config = QuantumSensingReadinessConfig()
     gain_scan = metrological_gain_vs_k(omega, topology, k_grid, config=config)
@@ -198,7 +192,6 @@ def quantum_sensing_payload() -> dict[str, Any]:
 
 def quantum_sensing_markdown(payload: dict[str, Any] | None = None) -> str:
     """Render the S11 quantum-sensing readiness note."""
-
     data = quantum_sensing_payload() if payload is None else payload
     scan = data["gain_scan"]
     lines = [

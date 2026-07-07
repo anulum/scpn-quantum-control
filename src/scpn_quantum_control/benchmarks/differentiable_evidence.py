@@ -36,7 +36,6 @@ class AcceleratorEvidenceMetadata:
     @classmethod
     def cpu_only(cls) -> AcceleratorEvidenceMetadata:
         """Return explicit CPU-only accelerator metadata."""
-
         return cls(
             requested_backend="cpu",
             detected_backend="cpu",
@@ -52,7 +51,6 @@ class AcceleratorEvidenceMetadata:
 
     def to_dict(self) -> dict[str, Any]:
         """Return JSON-ready accelerator metadata."""
-
         return {
             "requested_backend": self.requested_backend,
             "detected_backend": self.detected_backend,
@@ -107,7 +105,6 @@ class BenchmarkIsolationMetadata:
         accelerator_metadata: AcceleratorEvidenceMetadata | None = None,
     ) -> BenchmarkIsolationMetadata:
         """Classify a CI benchmark run from runner metadata."""
-
         accelerator = accelerator_metadata or capture_accelerator_metadata(env)
         labels = tuple(
             label.strip() for label in env.get("RUNNER_LABELS", "").split(",") if label.strip()
@@ -201,7 +198,6 @@ class BenchmarkIsolationMetadata:
 
     def to_dict(self) -> dict[str, Any]:
         """Return JSON-ready metadata."""
-
         return {
             "command": list(self.command),
             "runner_type": self.runner_type,
@@ -249,7 +245,6 @@ def write_differentiable_benchmark_evidence_bundle(
     external_artifact_ids: Sequence[str] | None = None,
 ) -> DifferentiableBenchmarkEvidenceBundle:
     """Write raw JSON, CSV timing rows, and Markdown summary for benchmark evidence."""
-
     output_dir.mkdir(parents=True, exist_ok=True)
     generated_at = time.time()
     resolved_artifact_id = artifact_id or (
@@ -312,7 +307,6 @@ def write_differentiable_benchmark_evidence_bundle(
 
 def capture_host_load() -> tuple[float, float, float] | None:
     """Return host load averages when the platform exposes them."""
-
     try:
         one, five, fifteen = os.getloadavg()
         return (float(one), float(five), float(fifteen))
@@ -322,7 +316,6 @@ def capture_host_load() -> tuple[float, float, float] | None:
 
 def read_cpu_governor(cpu_index: int = 0) -> str | None:
     """Read Linux CPU frequency governor metadata when available."""
-
     path = Path(f"/sys/devices/system/cpu/cpu{cpu_index}/cpufreq/scaling_governor")
     if not path.exists():
         return None
@@ -332,7 +325,6 @@ def read_cpu_governor(cpu_index: int = 0) -> str | None:
 
 def read_cpu_frequency_mhz(cpu_index: int = 0) -> float | None:
     """Read Linux CPU frequency metadata in MHz when available."""
-
     sysfs_path = Path(f"/sys/devices/system/cpu/cpu{cpu_index}/cpufreq/scaling_cur_freq")
     if sysfs_path.exists():
         value = sysfs_path.read_text(encoding="utf-8", errors="replace").strip()
@@ -348,7 +340,6 @@ def read_cpu_frequency_mhz(cpu_index: int = 0) -> float | None:
 
 def capture_accelerator_metadata(env: Mapping[str, str]) -> AcceleratorEvidenceMetadata:
     """Capture explicit accelerator metadata from deterministic benchmark environment."""
-
     requested_backend = _normalise_accelerator_backend(
         env.get("SCPN_BENCH_ACCELERATOR_BACKEND") or env.get("SCPN_ACCELERATOR_BACKEND") or "cpu"
     )
@@ -390,7 +381,6 @@ def capture_accelerator_metadata(env: Mapping[str, str]) -> AcceleratorEvidenceM
 
 def infer_heavy_jobs_running(load: tuple[float, float, float] | None) -> bool:
     """Infer whether current host load is too high for production promotion."""
-
     cpu_count = os.cpu_count() or 1
     return bool(load and load[0] > max(1.0, cpu_count * 0.75))
 

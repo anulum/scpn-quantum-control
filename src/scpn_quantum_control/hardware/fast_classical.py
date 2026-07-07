@@ -49,7 +49,8 @@ def fast_sparse_evolution(
         initial_state: Initial statevector (default: |0...0>).
         delta: XXZ anisotropy parameter (default: 0.0 = XY model).
 
-    Returns:
+    Returns
+    -------
         dict: Containing 'times' and 'states' (statevector at each step).
     """
     n = len(omega)

@@ -83,7 +83,6 @@ class DifferentiableOptimizer:
             Updated real parameter vector after trainable-mask filtering and
             optional bound projection.
         """
-
         parameter_values = _as_parameter_array(values)
         bounds_meta = _normalise_bounds(parameter_values, bounds)
         if parameter_values.size != gradient_result.gradient.size:
@@ -149,7 +148,6 @@ class DifferentiableOptimizer:
             Final values, gradient record, value history, convergence status,
             and best-observed iterate.
         """
-
         if gradient_method not in {"parameter_shift", "finite_difference"}:
             raise ValueError("gradient_method must be 'parameter_shift' or 'finite_difference'")
         finite_difference_step_value = _as_real_scalar(

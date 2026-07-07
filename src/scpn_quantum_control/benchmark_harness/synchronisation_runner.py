@@ -40,7 +40,6 @@ class ObservableRow:
 
     def to_dict(self) -> dict[str, object]:
         """Return a JSON-serialisable observable row."""
-
         return asdict(self)
 
 
@@ -61,7 +60,6 @@ class BenchmarkResultRow:
 
     def to_dict(self) -> dict[str, object]:
         """Return a JSON-serialisable result row."""
-
         payload = asdict(self)
         payload["observables"] = [row.to_dict() for row in self.observables]
         return payload
@@ -69,7 +67,6 @@ class BenchmarkResultRow:
 
 def ring_coupling_matrix(n_oscillators: int = 4, coupling: float = 0.45) -> NDArray[np.float64]:
     """Return a nearest-neighbour ring coupling matrix."""
-
     if n_oscillators < 3:
         raise ValueError("ring benchmark requires at least three oscillators")
     matrix = np.zeros((n_oscillators, n_oscillators), dtype=np.float64)
@@ -83,7 +80,6 @@ def decaying_chain_coupling_matrix(
     n_oscillators: int = 8, coupling: float = 0.45, decay: float = 0.3
 ) -> NDArray[np.float64]:
     """Return an exponential-distance decaying chain coupling matrix."""
-
     if n_oscillators < 2:
         raise ValueError("chain benchmark requires at least two oscillators")
     indices = np.arange(n_oscillators, dtype=float)
@@ -95,13 +91,11 @@ def decaying_chain_coupling_matrix(
 
 def natural_frequencies(n_oscillators: int = 4) -> NDArray[np.float64]:
     """Return the canonical linear frequency grid."""
-
     return np.linspace(0.8, 1.2, n_oscillators, dtype=np.float64)
 
 
 def kuramoto_order_parameter(phases: NDArray[np.float64]) -> float:
     """Return the Kuramoto order parameter magnitude."""
-
     return float(abs(np.mean(np.exp(1j * phases))))
 
 
@@ -109,7 +103,6 @@ def run_classical_reference(
     *, coupling: NDArray[np.float64] | None = None, t_final: float = 1.0
 ) -> ObservableRow:
     """Run the classical Kuramoto ODE reference for the n=4 ring."""
-
     coupling = ring_coupling_matrix() if coupling is None else coupling
     omega = natural_frequencies(coupling.shape[0])
     initial = np.linspace(0.0, 1.5 * math.pi, coupling.shape[0], dtype=float)
@@ -180,7 +173,6 @@ def xy_hamiltonian(
     coupling: NDArray[np.float64], omega: NDArray[np.float64]
 ) -> NDArray[np.complex128]:
     """Build the dense XY Hamiltonian for the canonical benchmark."""
-
     n_qubits = int(coupling.shape[0])
     if coupling.shape != (n_qubits, n_qubits):
         raise ValueError("coupling must be square")
@@ -209,7 +201,6 @@ def run_exact_reference(
     *, coupling: NDArray[np.float64] | None = None, t_final: float = 1.0
 ) -> tuple[ObservableRow, ObservableRow]:
     """Run dense exact XY evolution for the n=4 ring benchmark."""
-
     coupling = ring_coupling_matrix() if coupling is None else coupling
     omega = natural_frequencies(coupling.shape[0])
     hamiltonian = xy_hamiltonian(coupling, omega)
@@ -243,13 +234,11 @@ def run_exact_reference(
 
 def dependency_lock() -> str:
     """Return lightweight dependency provenance for the no-QPU runner."""
-
     return f"python={platform.python_version()}; numpy={np.__version__}; scipy=installed"
 
 
 def run_kuramoto_ring_n4_linear_omega(*, command: str, commit: str) -> dict[str, Any]:
     """Run the first schema-compatible synchronisation benchmark."""
-
     classical = BenchmarkResultRow(
         benchmark_id=RING_N4_BENCHMARK_ID,
         backend="classical_ode_scipy_dop853",
@@ -291,7 +280,6 @@ def run_kuramoto_ring_n4_linear_omega(*, command: str, commit: str) -> dict[str,
 
 def run_kuramoto_chain_n8_decay_omega(*, command: str, commit: str) -> dict[str, Any]:
     """Run the n=8 decaying-chain synchronisation benchmark."""
-
     coupling = decaying_chain_coupling_matrix()
     classical = BenchmarkResultRow(
         benchmark_id=CHAIN_N8_BENCHMARK_ID,

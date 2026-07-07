@@ -51,7 +51,6 @@ MODULE_SPECIFIC_EXCEPTIONS: frozenset[str] = frozenset(
 
 def _module_stems() -> frozenset[str]:
     """Return known production/tool/script module stems once per audit run."""
-
     stems: set[str] = set()
     for module_root in MODULE_ROOTS:
         base = ROOT / module_root
@@ -62,7 +61,6 @@ def _module_stems() -> frozenset[str]:
 
 def _module_backed(path: Path, module_stems: frozenset[str]) -> bool:
     """Return whether a test module maps to a real module/tool/script stem."""
-
     stem = path.stem.removeprefix("test_")
     return stem in module_stems
 
@@ -77,7 +75,6 @@ class TestQualityFinding:
 
 def audit_test_paths(paths: Iterable[Path]) -> list[TestQualityFinding]:
     """Return forbidden non-specific pytest module names."""
-
     findings: list[TestQualityFinding] = []
     module_stems = _module_stems()
     for path in sorted(paths, key=lambda item: item.as_posix()):
@@ -101,7 +98,6 @@ def audit_test_paths(paths: Iterable[Path]) -> list[TestQualityFinding]:
 
 def repository_test_paths(root: Path) -> list[Path]:
     """Return tracked and worktree pytest modules below ``tests``."""
-
     git_executable = _resolve_git_executable()
     tracked: set[Path] = set()
     try:
@@ -116,7 +112,6 @@ def repository_test_paths(root: Path) -> list[Path]:
 
 def format_findings(findings: Iterable[TestQualityFinding]) -> str:
     """Render findings for commit hooks and CI logs."""
-
     rows = [f"{finding.path.as_posix()}: {finding.reason}" for finding in findings]
     if not rows:
         return "test-quality audit passed: no forbidden non-specific test modules"
@@ -125,7 +120,6 @@ def format_findings(findings: Iterable[TestQualityFinding]) -> str:
 
 def _resolve_git_executable() -> str | None:
     """Return an absolute executable path for git when available."""
-
     located = shutil.which("git")
     if located is None:
         return None
@@ -140,7 +134,6 @@ def _resolve_git_executable() -> str | None:
 
 def _run_git(root: Path, git_executable: str, *args: str) -> subprocess.CompletedProcess[str]:
     """Run an admitted git command for ``root`` without shell expansion."""
-
     return subprocess.run(  # nosec B603
         [git_executable, *args],
         check=True,
@@ -153,7 +146,6 @@ def _run_git(root: Path, git_executable: str, *args: str) -> subprocess.Complete
 
 def main(argv: list[str] | None = None) -> int:
     """CLI entry point."""
-
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--root",

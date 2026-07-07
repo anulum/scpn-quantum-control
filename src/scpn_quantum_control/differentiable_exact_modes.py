@@ -50,7 +50,6 @@ def value_and_forward_mode_grad(
         Objective value, exact forward-mode gradient, parameter metadata, and
         evaluation count.
     """
-
     parameter_values = _as_parameter_array(values)
     parameter_meta = _normalise_parameters(parameter_values, parameters)
     base_duals = tuple(DualNumber(float(value), 0.0) for value in parameter_values)
@@ -102,7 +101,6 @@ def forward_mode_gradient(
     numpy.ndarray
         One exact gradient entry per input parameter.
     """
-
     return value_and_forward_mode_grad(
         objective,
         values,
@@ -134,7 +132,6 @@ def value_and_reverse_mode_grad(
         Objective value, exact reverse-mode gradient, parameter metadata, and
         evaluation count.
     """
-
     parameter_values = _as_parameter_array(values)
     parameter_meta = _normalise_parameters(parameter_values, parameters)
     reverse_values = tuple(ReverseNode(float(value)) for value in parameter_values)
@@ -187,7 +184,6 @@ def reverse_mode_gradient(
     numpy.ndarray
         One exact gradient entry per input parameter.
     """
-
     return value_and_reverse_mode_grad(
         objective,
         values,

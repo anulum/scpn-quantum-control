@@ -28,7 +28,6 @@ class ProgramADSSAValue:
 
     def __post_init__(self) -> None:
         """Validate SSA metadata at construction time."""
-
         if not isinstance(self.name, str) or not self.name:
             raise ValueError("program AD SSA value name must be a non-empty string")
         if self.producer is not None and self.producer < 0:
@@ -57,7 +56,6 @@ class ProgramADEffect:
 
     def __post_init__(self) -> None:
         """Validate effect metadata at construction time."""
-
         if self.index < 0:
             raise ValueError("program AD effect index must be non-negative")
         if not isinstance(self.kind, str) or not self.kind:
@@ -87,7 +85,6 @@ class ProgramADAliasEdge:
 
     def __post_init__(self) -> None:
         """Validate alias-edge metadata at construction time."""
-
         if not isinstance(self.source, str) or not self.source:
             raise ValueError("program AD alias source must be a non-empty string")
         if not isinstance(self.target, str) or not self.target:
@@ -111,7 +108,6 @@ class ProgramADPhiNode:
 
     def __post_init__(self) -> None:
         """Validate phi-node metadata at construction time."""
-
         if self.index < 0:
             raise ValueError("program AD phi node index must be non-negative")
         if not isinstance(self.target, str) or not self.target:
@@ -142,7 +138,6 @@ class ProgramADControlRegion:
 
     def __post_init__(self) -> None:
         """Validate control-region metadata at construction time."""
-
         if self.index < 0:
             raise ValueError("program AD control region index must be non-negative")
         if not isinstance(self.kind, str) or not self.kind:
@@ -170,7 +165,6 @@ class ProgramADEffectIR:
 
     def __post_init__(self) -> None:
         """Validate effect-IR record contents at construction time."""
-
         if any(not isinstance(value, ProgramADSSAValue) for value in self.ssa_values):
             raise ValueError("program AD IR ssa_values must contain ProgramADSSAValue entries")
         if any(not isinstance(effect, ProgramADEffect) for effect in self.effects):
@@ -194,7 +188,6 @@ def parse_program_ad_effect_ir(serialization: str) -> ProgramADEffectIR:
     intentionally narrow: unknown formats, malformed rows, and unsupported JSON
     shapes fail closed instead of being treated as compiler frontend input.
     """
-
     if not isinstance(serialization, str) or not serialization:
         raise ValueError("program AD IR serialization must be a non-empty string")
     try:

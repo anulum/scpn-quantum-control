@@ -349,6 +349,5 @@ class CompilerADKernelVerification:
     @property
     def passed(self) -> bool:
         """Return whether all executed verification checks passed."""
-
         checks = (self.value_close, self.jvp_close, self.vjp_close, self.gradient_close)
         return all(check is not False for check in checks)

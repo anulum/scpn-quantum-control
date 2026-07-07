@@ -71,7 +71,6 @@ def pennylane_gate_workload(
     metadata: Mapping[str, object] | None = None,
 ) -> QuantumWorkload:
     """Encode a strict PennyLane native-gate instruction payload as HAL work."""
-
     payload = {
         "schema": "scpn.pennylane.native_gates.v1",
         "instructions": [

@@ -63,19 +63,16 @@ class BenchmarkArtifact(TypedDict):
 
 def load_benchmark_artifact(path: Path) -> BenchmarkArtifact:
     """Load the committed tier-benchmark artefact."""
-
     return cast(BenchmarkArtifact, json.loads(path.read_text(encoding="utf-8")))
 
 
 def _symbol_list(symbols: Sequence[str]) -> str:
     """Format a stable comma-separated list of public symbols."""
-
     return ", ".join(f"`{symbol}`" for symbol in symbols)
 
 
 def _rows_for_operation(results: Sequence[BenchmarkResult]) -> dict[str, list[BenchmarkResult]]:
     """Group benchmark rows by operation name."""
-
     grouped: dict[str, list[BenchmarkResult]] = {}
     for result in results:
         grouped.setdefault(result["operation"], []).append(result)
@@ -84,7 +81,6 @@ def _rows_for_operation(results: Sequence[BenchmarkResult]) -> dict[str, list[Be
 
 def _p50(row: BackendRow | None) -> str:
     """Format a backend P50 value for the handbook table."""
-
     if row is None or row["stats"] is None:
         return "—"
     return f"{row['stats']['p50_us']:.3f}"
@@ -92,13 +88,11 @@ def _p50(row: BackendRow | None) -> str:
 
 def _backend_rows(result: BenchmarkResult) -> dict[str, BackendRow]:
     """Index one result by backend name."""
-
     return {row["backend"]: row for row in result["rows"]}
 
 
 def _string_sequence(value: object) -> Sequence[object]:
     """Return a JSON sequence value without treating strings as sequences."""
-
     if isinstance(value, Sequence) and not isinstance(value, str | bytes):
         return value
     return ()
@@ -106,7 +100,6 @@ def _string_sequence(value: object) -> Sequence[object]:
 
 def _representative_result(rows: Sequence[BenchmarkResult]) -> BenchmarkResult:
     """Choose a stable representative row for the operation summary table."""
-
     for target_size in (128, 32, 8):
         for row in rows:
             if row["size"] == target_size:
@@ -116,7 +109,6 @@ def _representative_result(rows: Sequence[BenchmarkResult]) -> BenchmarkResult:
 
 def _benchmark_table(artifact: BenchmarkArtifact) -> list[str]:
     """Render one row per benchmarked operation using a representative size."""
-
     grouped = _rows_for_operation(artifact["results"])
     lines = [
         "| Operation | Representative N | Rust p50 (µs) | Python p50 (µs) | Fastest backend | Parity max abs diff |",
@@ -140,7 +132,6 @@ def _benchmark_table(artifact: BenchmarkArtifact) -> list[str]:
 
 def _capability_table(capabilities: Mapping[str, Sequence[str]]) -> list[str]:
     """Render the live Kuramoto facade capability groups."""
-
     lines = ["| Group | Count | Public symbols |", "|---|--:|---|"]
     for group, symbols in capabilities.items():
         lines.append(f"| `{group}` | {len(symbols)} | {_symbol_list(symbols)} |")
@@ -149,7 +140,6 @@ def _capability_table(capabilities: Mapping[str, Sequence[str]]) -> list[str]:
 
 def _benchmark_summary(artifact: BenchmarkArtifact) -> list[str]:
     """Render benchmark provenance and claim-boundary facts."""
-
     parameters = artifact["parameters"]
     provenance = artifact["provenance"]
     sizes = ", ".join(str(size) for size in _string_sequence(parameters.get("sizes", ())))
@@ -172,7 +162,6 @@ def _benchmark_summary(artifact: BenchmarkArtifact) -> list[str]:
 
 def render_handbook(artifact: BenchmarkArtifact) -> str:
     """Render the complete Kuramoto handbook Markdown document."""
-
     capabilities = kuramoto.capabilities()
     capability_count = sum(len(symbols) for symbols in capabilities.values())
     benchmark_operations = len(_rows_for_operation(artifact["results"]))
@@ -357,7 +346,6 @@ def render_handbook(artifact: BenchmarkArtifact) -> str:
 
 def main(argv: Sequence[str] | None = None) -> int:
     """Render the handbook and write it to disk."""
-
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--benchmark",

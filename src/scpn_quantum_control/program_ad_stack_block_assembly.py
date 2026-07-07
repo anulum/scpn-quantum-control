@@ -151,7 +151,6 @@ def program_ad_assembly_concatenate_derivative_rule(
     axis: object = 0,
 ) -> CustomDerivativeRule:
     """Build an exact direct derivative rule for fixed static ``np.concatenate`` operands."""
-
     shapes = _program_ad_assembly_concatenate_shapes(operand_shapes)
     axis_index = (
         None if axis is None else _program_ad_assembly_concatenate_axis(axis, rank=len(shapes[0]))
@@ -277,7 +276,6 @@ def program_ad_assembly_stack_derivative_rule(
     axis: object = 0,
 ) -> CustomDerivativeRule:
     """Build an exact direct derivative rule for fixed static ``np.stack`` operands."""
-
     shapes = _program_ad_assembly_stack_shapes(operand_shapes)
     axis_index = _program_ad_assembly_stack_axis(axis, rank=len(shapes[0]))
     output_shape = _program_ad_assembly_stack_output_shape(shapes, axis_index)
@@ -399,7 +397,6 @@ def program_ad_assembly_hstack_derivative_rule(
     operand_shapes: Sequence[Sequence[int]],
 ) -> CustomDerivativeRule:
     """Build an exact direct derivative rule for fixed static ``np.hstack`` operands."""
-
     return _program_ad_assembly_stack_convenience_derivative_rule("hstack", operand_shapes)
 
 
@@ -407,7 +404,6 @@ def program_ad_assembly_vstack_derivative_rule(
     operand_shapes: Sequence[Sequence[int]],
 ) -> CustomDerivativeRule:
     """Build an exact direct derivative rule for fixed static ``np.vstack`` operands."""
-
     return _program_ad_assembly_stack_convenience_derivative_rule("vstack", operand_shapes)
 
 
@@ -415,7 +411,6 @@ def program_ad_assembly_column_stack_derivative_rule(
     operand_shapes: Sequence[Sequence[int]],
 ) -> CustomDerivativeRule:
     """Build an exact direct derivative rule for fixed static ``np.column_stack`` operands."""
-
     return _program_ad_assembly_stack_convenience_derivative_rule("column_stack", operand_shapes)
 
 
@@ -423,7 +418,6 @@ def program_ad_assembly_dstack_derivative_rule(
     operand_shapes: Sequence[Sequence[int]],
 ) -> CustomDerivativeRule:
     """Build an exact direct derivative rule for fixed static ``np.dstack`` operands."""
-
     return _program_ad_assembly_stack_convenience_derivative_rule("dstack", operand_shapes)
 
 
@@ -485,7 +479,6 @@ def program_ad_assembly_append_derivative_rule(
     axis: object = None,
 ) -> CustomDerivativeRule:
     """Build an exact direct derivative rule for fixed static ``np.append`` operands."""
-
     source_static, values_static = _program_ad_assembly_append_shapes(source_shape, values_shape)
     axis_index = (
         None
@@ -652,7 +645,6 @@ def _program_ad_assembly_block_index_layout(layout_shapes: tuple[object, ...]) -
 
 def program_ad_assembly_block_derivative_rule(layout_shapes: object) -> CustomDerivativeRule:
     """Build an exact direct derivative rule for fixed static ``np.block`` layouts."""
-
     shapes = _program_ad_assembly_block_shapes(layout_shapes)
     output_shape = _program_ad_assembly_block_output_shape(shapes)
     output_size = _program_ad_array_static_size(output_shape)

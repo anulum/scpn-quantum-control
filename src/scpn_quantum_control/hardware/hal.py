@@ -293,17 +293,14 @@ class HardwareAbstractionLayer:
     @classmethod
     def with_builtin_profiles(cls) -> HardwareAbstractionLayer:
         """Construct a HAL with all built-in provider route profiles."""
-
         return cls(built_in_backend_profiles())
 
     def list_profiles(self) -> tuple[BackendProfile, ...]:
         """Return profiles in deterministic backend-id order."""
-
         return tuple(self._profiles[key] for key in sorted(self._profiles))
 
     def profile(self, backend_id: str) -> BackendProfile:
         """Return one backend profile by id."""
-
         try:
             return self._profiles[backend_id]
         except KeyError as exc:
@@ -311,7 +308,6 @@ class HardwareAbstractionLayer:
 
     def register_backend(self, backend: QuantumBackend) -> None:
         """Inject an executable adapter for one known profile."""
-
         if not isinstance(backend, QuantumBackend):
             raise TypeError("backend must satisfy QuantumBackend")
         if backend.backend_id not in self._profiles:
@@ -328,7 +324,6 @@ class HardwareAbstractionLayer:
         approval_id: str | None = None,
     ) -> QuantumJobRef:
         """Validate and submit a workload through an injected adapter."""
-
         profile = self.profile(backend_id)
         _validate_workload_for_profile(profile, workload)
         backend = self._backends.get(backend_id)
@@ -340,17 +335,14 @@ class HardwareAbstractionLayer:
 
     def status(self, job: QuantumJobRef) -> str:
         """Return current status by delegating to the owning adapter."""
-
         return self._backend_for_job(job).status(job)
 
     def result(self, job: QuantumJobRef) -> QuantumJobResult:
         """Return a result by delegating to the owning adapter."""
-
         return self._backend_for_job(job).result(job)
 
     def cancel(self, job: QuantumJobRef) -> QuantumJobRef:
         """Cancel a job by delegating to the owning adapter."""
-
         profile = self.profile(job.backend_id)
         if not profile.capabilities.supports_cancellation:
             raise ValueError(f"backend does not support cancellation: {job.backend_id}")
@@ -426,7 +418,6 @@ def built_in_backend_profiles() -> tuple[BackendProfile, ...]:
     Provider-specific credentials, queues, regions, and pricing are left to
     injected adapters so offline tooling remains deterministic and auditable.
     """
-
     profiles = (
         _profile(
             "aws_braket_aqt",

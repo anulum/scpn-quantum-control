@@ -24,7 +24,6 @@ SignPolicy = Literal["nonnegative", "signed", "fixed_sign"]
 
 def canonical_edge(i: int, j: int) -> Edge:
     """Return an undirected edge key."""
-
     if i == j:
         raise ValueError("self edges are not valid coupling edges")
     return (i, j) if i < j else (j, i)
@@ -57,7 +56,6 @@ class HardwareEmbeddingConstraint:
 
     def mask(self, n_nodes: int) -> FloatArray:
         """Return a symmetric binary mask for allowed hardware edges."""
-
         mask = np.zeros((n_nodes, n_nodes), dtype=np.float64)
         for i, j in self.edges:
             if i >= n_nodes or j >= n_nodes:
@@ -80,7 +78,6 @@ class ConstraintViolation:
     @property
     def total(self) -> float:
         """Total scalar violation."""
-
         return float(
             self.total_weight
             + self.connectivity
@@ -123,7 +120,6 @@ class TopologyConstraintLedger:
 
     def project(self, matrix: NDArray[np.float64]) -> FloatArray:
         """Project a candidate matrix onto hard shape, sign, edge, and budget constraints."""
-
         projected = self._as_matrix(matrix)
         projected = (projected + projected.T) / 2.0
         np.fill_diagonal(projected, 0.0)
@@ -190,7 +186,6 @@ class TopologyConstraintLedger:
 
     def violations(self, matrix: NDArray[np.float64]) -> ConstraintViolation:
         """Return violation magnitudes without mutating the candidate matrix."""
-
         K = self._as_matrix(matrix)
         bounds_low = np.maximum(self.bounds.lower - K, 0.0)
         bounds_high = np.maximum(K - self.bounds.upper, 0.0)
@@ -231,7 +226,6 @@ class TopologyConstraintLedger:
 
 def algebraic_connectivity(matrix: NDArray[np.float64]) -> float:
     """Weighted graph algebraic connectivity using absolute edge weights."""
-
     K = np.asarray(matrix, dtype=np.float64)
     graph = nx.Graph()
     n = K.shape[0]

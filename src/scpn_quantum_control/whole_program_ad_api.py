@@ -72,7 +72,6 @@ def whole_program_value_and_grad(
         execution gate, uses unsupported Python semantics, or does not return a
         traceable scalar.
     """
-
     if not callable(objective):
         raise ValueError("whole-program objective must be callable")
     frontend_report = compile_whole_program_frontend(objective)
@@ -200,7 +199,6 @@ def whole_program_grad(
     numpy.ndarray
         Exact whole-program AD gradient as ``float64`` values.
     """
-
     return whole_program_value_and_grad(
         objective, values, parameters=parameters, trace=trace
     ).gradient
@@ -210,7 +208,6 @@ def _require_whole_program_frontend_execution_ready(
     report: WholeProgramCompilerFrontendReport,
 ) -> None:
     """Reject objective execution unless the source/bytecode frontend is complete."""
-
     if report.frontend_ready:
         return
     hard_gaps = ", ".join(report.hard_gaps) or "frontend_not_ready"
@@ -232,7 +229,6 @@ def _format_unsupported_frontend_diagnostic(
     diagnostic: WholeProgramUnsupportedSemanticDiagnostic,
 ) -> str:
     """Return a deterministic one-line unsupported-semantics diagnostic."""
-
     regions = ",".join(diagnostic.region_ids) or "<none>"
     offsets = ",".join(str(offset) for offset in diagnostic.bytecode_offsets) or "<none>"
     return (

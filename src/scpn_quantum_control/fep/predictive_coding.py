@@ -81,7 +81,8 @@ def hierarchical_prediction_error(
         beliefs: current beliefs μ_i, shape (n,)
         K: coupling matrix, shape (n, n)
 
-    Returns:
+    Returns
+    -------
         Precision-weighted prediction errors ε_i, shape (n,)
     """
     if _HAS_RUST:
@@ -125,7 +126,8 @@ def predictive_coding_step(
         learning_rate: gradient step size
         sigma: belief covariance (default: 0.1 × I)
 
-    Returns:
+    Returns
+    -------
         PredictiveCodingResult with updated beliefs and errors.
     """
     n = len(observations)

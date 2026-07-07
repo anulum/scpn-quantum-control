@@ -33,7 +33,6 @@ class ReadoutConfusionMatrix:
 
 def computational_basis_labels(n_qubits: int) -> tuple[str, ...]:
     """Return big-endian computational basis labels for ``n_qubits``."""
-
     if n_qubits <= 0:
         raise ValueError("n_qubits must be positive")
     return tuple(format(index, f"0{n_qubits}b") for index in range(2**n_qubits))
@@ -41,7 +40,6 @@ def computational_basis_labels(n_qubits: int) -> tuple[str, ...]:
 
 def bitstring_index(bitstring: str, labels: Sequence[str] | None = None) -> int:
     """Return the computational-basis index for ``bitstring``."""
-
     clean = bitstring.replace(" ", "")
     if labels is not None and clean not in labels:
         raise ValueError(f"unknown bitstring label: {bitstring!r}")
@@ -53,7 +51,6 @@ def counts_to_probabilities(
     labels: Sequence[str],
 ) -> NDArray[np.float64]:
     """Convert a count dictionary into a probability vector over ``labels``."""
-
     total_count = 0
     for value in counts.values():
         count = int(value)
@@ -83,7 +80,6 @@ def build_readout_confusion_matrix(
     observed count dictionaries. Missing prepared states are rejected; this keeps
     the mitigation claim distinct from partial exact-state corrections.
     """
-
     labels = computational_basis_labels(n_qubits)
     missing = [label for label in labels if label not in calibration_counts]
     if missing:
@@ -113,7 +109,6 @@ def mitigate_probabilities(
     rcond: float = 1e-10,
 ) -> NDArray[np.float64]:
     """Invert a readout matrix with clipping and renormalisation."""
-
     if observed_probabilities.shape != (len(confusion_matrix.labels),):
         raise ValueError("observed probability vector has incompatible shape")
     observed_total = float(np.sum(observed_probabilities))
@@ -139,7 +134,6 @@ def mitigate_counts(
     rcond: float = 1e-10,
 ) -> NDArray[np.float64]:
     """Apply full-basis readout mitigation to a count dictionary."""
-
     observed = counts_to_probabilities(counts, confusion_matrix.labels)
     return mitigate_probabilities(observed, confusion_matrix, rcond=rcond)
 
@@ -150,7 +144,6 @@ def probability_state_retention(
     target_bitstring: str,
 ) -> float:
     """Return probability mass on ``target_bitstring``."""
-
     return float(probabilities[bitstring_index(target_bitstring, labels)])
 
 
@@ -160,7 +153,6 @@ def probability_parity_leakage(
     target_bitstring: str,
 ) -> float:
     """Return probability mass outside the target parity sector."""
-
     target = target_bitstring.count("1") % 2
     return float(
         sum(
@@ -177,7 +169,6 @@ def probability_magnetisation_leakage(
     target_bitstring: str,
 ) -> float:
     """Return probability mass outside the target magnetisation sector."""
-
     target = _magnetisation(target_bitstring)
     return float(
         sum(
@@ -193,7 +184,6 @@ def probability_mean_magnetisation(
     labels: Sequence[str],
 ) -> float:
     """Return the probability-weighted computational-basis magnetisation."""
-
     return float(
         sum(
             _magnetisation(label) * probability

@@ -115,7 +115,8 @@ def eeg_plv_to_vqe(
         reps: Depth of the structured ansatz.
         threshold: Minimum PLV required to insert an entangling gate.
 
-    Returns:
+    Returns
+    -------
         EEGVQEResult containing the optimized energy and statevector.
     """
     plv_matrix = _validated_plv_matrix(plv_matrix)

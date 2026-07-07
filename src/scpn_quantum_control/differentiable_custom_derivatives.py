@@ -32,7 +32,6 @@ def _normalise_custom_derivative_parameters(
     parameters: Sequence[Parameter] | None,
 ) -> tuple[Parameter, ...]:
     """Return explicit parameter metadata for a custom derivative primitive."""
-
     if parameters is not None:
         return _normalise_parameters(values, parameters)
     if rule.parameter_names:
@@ -62,7 +61,6 @@ def custom_jvp(
     parameters: Sequence[Parameter] | None = None,
 ) -> NDArray[np.float64]:
     """Return an exact custom Jacobian-vector product for a registered primitive."""
-
     return value_and_custom_jvp(rule, values, tangent, parameters=parameters).jvp
 
 
@@ -74,7 +72,6 @@ def batch_custom_jvp(
     parameters: Sequence[Parameter] | None = None,
 ) -> NDArray[np.float64]:
     """Return stacked exact custom JVPs for a batch of tangent vectors."""
-
     return cast(
         NDArray[np.float64],
         np.vstack(
@@ -99,7 +96,6 @@ def batch_value_and_custom_jvp(
     parameters: Sequence[Parameter] | None = None,
 ) -> tuple[JVPResult, ...]:
     """Return one exact custom JVP result per tangent row."""
-
     parameter_values = _as_parameter_array(values)
     tangent_batch = _as_batch_parameter_array(
         "custom JVP tangents", tangents, parameter_values.size
@@ -123,7 +119,6 @@ def value_and_custom_jvp(
     parameters: Sequence[Parameter] | None = None,
 ) -> JVPResult:
     """Evaluate a custom primitive and its exact JVP rule."""
-
     if not isinstance(rule, CustomDerivativeRule):
         raise ValueError("custom JVP requires a CustomDerivativeRule")
     if rule.jvp_rule is None:
@@ -160,7 +155,6 @@ def custom_vjp(
     parameters: Sequence[Parameter] | None = None,
 ) -> VJPResult:
     """Return an exact custom vector-Jacobian product for a registered primitive."""
-
     return value_and_custom_vjp(rule, values, cotangent, parameters=parameters)
 
 
@@ -172,7 +166,6 @@ def batch_custom_vjp(
     parameters: Sequence[Parameter] | None = None,
 ) -> NDArray[np.float64]:
     """Return stacked exact custom VJPs for a batch of cotangent vectors."""
-
     return cast(
         NDArray[np.float64],
         np.vstack(
@@ -197,7 +190,6 @@ def batch_value_and_custom_vjp(
     parameters: Sequence[Parameter] | None = None,
 ) -> tuple[VJPResult, ...]:
     """Return one exact custom VJP result per cotangent row."""
-
     parameter_values = _as_parameter_array(values)
     value = _as_vector_output(rule.value_fn(parameter_values.copy()))
     cotangent_batch = _as_batch_vector_array("custom VJP cotangents", cotangents, value.size)
@@ -220,7 +212,6 @@ def value_and_custom_vjp(
     parameters: Sequence[Parameter] | None = None,
 ) -> VJPResult:
     """Evaluate a custom primitive and its exact VJP rule."""
-
     if not isinstance(rule, CustomDerivativeRule):
         raise ValueError("custom VJP requires a CustomDerivativeRule")
     if rule.vjp_rule is None:
@@ -256,7 +247,6 @@ def custom_jacobian(
     parameters: Sequence[Parameter] | None = None,
 ) -> NDArray[np.float64]:
     """Return the exact dense Jacobian implied by a custom derivative rule."""
-
     return value_and_custom_jacobian(rule, values, parameters=parameters).jacobian
 
 
@@ -267,7 +257,6 @@ def batch_custom_jacobian(
     parameters: Sequence[Parameter] | None = None,
 ) -> NDArray[np.float64]:
     """Return stacked exact custom Jacobians for a batch of parameter rows."""
-
     return cast(
         NDArray[np.float64],
         np.stack(
@@ -291,7 +280,6 @@ def batch_value_and_custom_jacobian(
     parameters: Sequence[Parameter] | None = None,
 ) -> tuple[JacobianResult, ...]:
     """Return one exact custom Jacobian result per parameter row."""
-
     batch = _as_real_numeric_array("custom Jacobian values", values)
     if batch.ndim != 2:
         raise ValueError("custom Jacobian values must be a two-dimensional batch")
@@ -314,7 +302,6 @@ def value_and_custom_jacobian(
     parameters: Sequence[Parameter] | None = None,
 ) -> JacobianResult:
     """Evaluate a custom primitive and materialise its exact dense Jacobian."""
-
     if not isinstance(rule, CustomDerivativeRule):
         raise ValueError("custom Jacobian requires a CustomDerivativeRule")
     if rule.jvp_rule is None and rule.vjp_rule is None:

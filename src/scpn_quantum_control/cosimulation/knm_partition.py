@@ -176,7 +176,8 @@ def partition_knm(
         coupling_threshold: stop growing the core once the best coupling into it
             falls below this magnitude.
 
-    Returns:
+    Returns
+    -------
         A :class:`KnmPartition` with the index sets, the three coupling blocks,
         the split frequency vectors, an edge-exact :class:`ConservationReport`,
         and a provenance record.

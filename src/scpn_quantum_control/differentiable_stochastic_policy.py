@@ -127,7 +127,6 @@ def gradient_confidence_interval(
     failure_policy: GradientFailurePolicy | None = None,
 ) -> StochasticGradientConfidenceInterval:
     """Build confidence bounds and fail-closed status for stochastic gradients."""
-
     gradient_array = _as_parameter_array(gradient)
     standard_error_array = _as_parameter_array(standard_error)
     if standard_error_array.shape != gradient_array.shape:

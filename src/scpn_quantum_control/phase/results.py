@@ -65,5 +65,4 @@ class TrajectoryResult(Mapping[str, NDArray[np.float64]]):
 
     def to_dict(self) -> dict[str, NDArray[np.float64]]:
         """Return the legacy dictionary representation."""
-
         return {"times": self.times, "R": self.R}

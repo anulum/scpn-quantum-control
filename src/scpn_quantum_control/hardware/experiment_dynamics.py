@@ -34,7 +34,8 @@ def kuramoto_4osc_experiment(
     Measures order parameter R(t) via X, Y, Z basis shots at each time step.
     Compares against exact matrix-exponential evolution.
 
-    Returns:
+    Returns
+    -------
         dict with keys:
             experiment (str): Experiment name identifier.
             n_oscillators (int): Number of oscillators.
@@ -103,7 +104,8 @@ def kuramoto_8osc_experiment(
 ) -> dict[str, Any]:
     """8-oscillator Kuramoto XY dynamics.
 
-    Returns:
+    Returns
+    -------
         dict with keys:
             experiment (str): Experiment name identifier.
             n_oscillators (int): Number of oscillators.
@@ -171,7 +173,8 @@ def kuramoto_4osc_trotter2_experiment(
     Same structure as kuramoto_4osc_experiment but uses SuzukiTrotter(order=2).
     Produces order-1 vs order-2 comparison data.
 
-    Returns:
+    Returns
+    -------
         dict with keys:
             experiment (str): Experiment name identifier.
             n_oscillators (int): Number of oscillators.
@@ -250,7 +253,8 @@ def sync_threshold_experiment(
     superconducting qubits. Validates quantum XY <-> classical Kuramoto
     correspondence at the critical point.
 
-    Returns:
+    Returns
+    -------
         dict with keys:
             experiment (str): Experiment name identifier.
             n_oscillators (int): Number of oscillators.

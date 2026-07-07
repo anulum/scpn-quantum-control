@@ -46,7 +46,6 @@ TIER_ORDER = ("rust", "julia", "python")
 
 def _load(path: Path | None) -> dict[str, Any] | None:
     """Load a tier-benchmark artefact, or return ``None`` when absent."""
-
     if path is None or not path.exists():
         return None
     return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
@@ -54,7 +53,6 @@ def _load(path: Path | None) -> dict[str, Any] | None:
 
 def _index(artifact: dict[str, Any] | None) -> dict[tuple[str, int], dict[str, Any]]:
     """Index an artefact's results by ``(operation, size)`` → backend → row."""
-
     index: dict[tuple[str, int], dict[str, Any]] = {}
     if artifact is None:
         return index
@@ -66,7 +64,6 @@ def _index(artifact: dict[str, Any] | None) -> dict[tuple[str, int], dict[str, A
 
 def _p50(backends: Mapping[str, Any] | None, tier: str) -> str:
     """Format the ``P50`` microseconds of one backend, or a placeholder."""
-
     if backends is None:
         return "—"
     row = backends.get(tier)
@@ -77,7 +74,6 @@ def _p50(backends: Mapping[str, Any] | None, tier: str) -> str:
 
 def _provenance_rows(ci: dict[str, Any] | None, local: dict[str, Any] | None) -> list[str]:
     """Build the provenance comparison table lines."""
-
     fields = (
         ("CPU model", "cpu_model"),
         ("Platform", "platform"),
@@ -121,7 +117,6 @@ def _availability_rows(ci: dict[str, Any] | None, local: dict[str, Any] | None) 
 
 def _competitive_framing(ci: dict[str, Any] | None) -> list[str]:
     """Render the fail-closed competitive-baseline interpretation block."""
-
     if ci is None:
         row_count = 0
         fastest_counts = "—"
@@ -178,7 +173,6 @@ def _competitive_framing(ci: dict[str, Any] | None) -> list[str]:
 
 def _median(values: Sequence[float]) -> float:
     """Return the median of a non-empty float sequence."""
-
     ordered = sorted(values)
     midpoint = len(ordered) // 2
     if len(ordered) % 2 == 1:
@@ -188,7 +182,6 @@ def _median(values: Sequence[float]) -> float:
 
 def render(ci: dict[str, Any] | None, local: dict[str, Any] | None) -> str:
     """Render the full side-by-side Markdown document."""
-
     ci_index = _index(ci)
     local_index = _index(local)
     keys = sorted(set(ci_index) | set(local_index), key=lambda key: (key[0], key[1]))
@@ -242,7 +235,6 @@ def _result_for(
     artifact: dict[str, Any] | None, operation: str, size: int
 ) -> dict[str, Any] | None:
     """Return the raw result entry for one (operation, size), or ``None``."""
-
     if artifact is None:
         return None
     for result in artifact.get("results", []):
@@ -253,7 +245,6 @@ def _result_for(
 
 def _fastest(artifact: dict[str, Any] | None, operation: str, size: int) -> str:
     """Return the fastest-backend label recorded by the CI artefact."""
-
     result = _result_for(artifact, operation, size)
     if result is None or result.get("fastest_backend") is None:
         return "—"
@@ -262,7 +253,6 @@ def _fastest(artifact: dict[str, Any] | None, operation: str, size: int) -> str:
 
 def _parity(artifact: dict[str, Any] | None, operation: str, size: int) -> str:
     """Format the worst cross-tier parity deviation recorded by the CI artefact."""
-
     result = _result_for(artifact, operation, size)
     if result is None or result.get("parity_max_abs_diff") is None:
         return "—"
@@ -271,7 +261,6 @@ def _parity(artifact: dict[str, Any] | None, operation: str, size: int) -> str:
 
 def main(argv: Sequence[str] | None = None) -> int:
     """Render the side-by-side comparison document and write it to ``--output``."""
-
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--ci", type=Path, default=None, help="CI artefact JSON")
     parser.add_argument("--local", type=Path, default=None, help="local artefact JSON")

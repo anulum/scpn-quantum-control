@@ -29,19 +29,16 @@ VMapInAxes = int | None | Sequence[int | None]
 
 def _is_trace_array(value: object) -> bool:
     """Return whether ``value`` is a facade-owned whole-program trace array."""
-
     return type(value).__name__ == "TraceADArray" and hasattr(value, "context")
 
 
 def _is_trace_value(value: object) -> bool:
     """Return whether ``value`` is a facade-owned whole-program trace value."""
-
     return type(value).__name__ in {"TraceADScalar", "TraceADArray"} and hasattr(value, "context")
 
 
 def _trace_array_shape(value: object) -> tuple[int, ...]:
     """Return a structural shape for a facade-owned trace array."""
-
     shape = getattr(value, "shape", None)
     if not isinstance(shape, tuple):
         raise ValueError("vmap trace array leaves must expose a static shape")
@@ -50,7 +47,6 @@ def _trace_array_shape(value: object) -> tuple[int, ...]:
 
 def _trace_array_ndim(value: object) -> int:
     """Return a structural rank for a facade-owned trace array."""
-
     ndim = getattr(value, "ndim", None)
     if not isinstance(ndim, int):
         return len(_trace_array_shape(value))
@@ -59,7 +55,6 @@ def _trace_array_ndim(value: object) -> int:
 
 def _trace_value_context(value: object) -> object:
     """Return the trace context carried by a facade-owned trace value."""
-
     if not _is_trace_value(value):
         raise ValueError("vmap trace output leaves must carry a trace context")
     return cast(Any, value).context
@@ -67,7 +62,6 @@ def _trace_value_context(value: object) -> object:
 
 def _trace_take_value(array: object, item: int, *, axis: int) -> object:
     """Slice a trace array via the trace runtime without a module-load import cycle."""
-
     from .whole_program_trace_values import _trace_take
 
     return _trace_take(cast(Any, array), item, axis=axis, mode="raise")
@@ -75,7 +69,6 @@ def _trace_take_value(array: object, item: int, *, axis: int) -> object:
 
 def _coerce_trace_array_value(value: object, context: object) -> object:
     """Coerce a trace scalar/array output into a trace array via the trace runtime."""
-
     from .whole_program_trace_values import _coerce_trace_array
 
     return _coerce_trace_array(cast(Any, value), cast(Any, context))
@@ -83,7 +76,6 @@ def _coerce_trace_array_value(value: object, context: object) -> object:
 
 def _trace_stack_values(values: Sequence[object], context: object, *, axis: int) -> object:
     """Stack trace arrays via the trace runtime without creating an import cycle."""
-
     from .whole_program_trace_values import _trace_stack
 
     return _trace_stack(tuple(cast(Any, value) for value in values), cast(Any, context), axis=axis)
@@ -105,7 +97,6 @@ def vmap(
     array, tuple, list, or dict outputs are reassembled with the mapped axis at
     ``out_axes``. It is an eager deterministic transform, not a JIT compiler.
     """
-
     if not callable(function):
         raise ValueError("vmap function must be callable")
     if not isinstance(out_axes, int):
@@ -170,7 +161,6 @@ def vmap(
 
 def _normalise_vmap_in_axes(in_axes: VMapInAxes, arity: int) -> tuple[int | None, ...]:
     """Return one input-axis declaration per positional argument."""
-
     if isinstance(in_axes, int) or in_axes is None:
         return tuple(in_axes for _ in range(arity))
     axes = tuple(in_axes)
@@ -183,7 +173,6 @@ def _normalise_vmap_in_axes(in_axes: VMapInAxes, arity: int) -> tuple[int | None
 
 def _stack_vmap_outputs(outputs: Sequence[object], out_axes: int) -> object:
     """Stack per-example outputs while preserving simple pytree structure."""
-
     if not outputs:
         raise ValueError("vmap outputs must be non-empty")
     first = outputs[0]

@@ -38,7 +38,6 @@ def pulser_sequence_workload(
     metadata: Mapping[str, object] | None = None,
 ) -> QuantumWorkload:
     """Encode a Pulser sequence plan as a HAL workload for Pasqal."""
-
     decoded = (
         _json_mapping(payload, field_name="Pulser payload")
         if isinstance(payload, str)

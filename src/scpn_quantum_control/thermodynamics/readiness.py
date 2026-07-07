@@ -36,7 +36,6 @@ class EntropyProductionRate:
 
     def to_dict(self) -> dict[str, Any]:
         """Return JSON-compatible row data."""
-
         return asdict(self)
 
 
@@ -53,7 +52,6 @@ class CalibratedWorkIdentity:
 
     def to_dict(self) -> dict[str, Any]:
         """Return JSON-compatible work identity data."""
-
         return asdict(self)
 
 
@@ -68,7 +66,6 @@ class IrreversibilityResidual:
 
     def to_dict(self) -> dict[str, Any]:
         """Return JSON-compatible irreversibility data."""
-
         return asdict(self)
 
 
@@ -84,7 +81,6 @@ class HeatDissipationRate:
 
     def to_dict(self) -> dict[str, Any]:
         """Return JSON-compatible heat data."""
-
         return asdict(self)
 
 
@@ -121,7 +117,6 @@ class ThermodynamicSweepConfig:
 
     def to_dict(self) -> dict[str, Any]:
         """Return JSON-compatible config data."""
-
         payload = asdict(self)
         payload["k_values"] = list(self.k_values)
         return payload
@@ -142,7 +137,6 @@ class ThermodynamicSweepRow:
 
     def to_dict(self) -> dict[str, Any]:
         """Return JSON-compatible sweep row data."""
-
         return asdict(self)
 
 
@@ -160,7 +154,6 @@ class ThermodynamicSweepResult:
 
     def to_dict(self) -> dict[str, Any]:
         """Return JSON-compatible sweep result."""
-
         return {
             "schema": self.schema,
             "k_values": list(self.k_values),
@@ -180,7 +173,6 @@ def entropy_production_rate(
     information_entropy_rate_nat_per_s: float,
 ) -> EntropyProductionRate:
     """Compute finite-rate entropy production for a calibrated point."""
-
     _require_finite(heat_current_joule_per_s, "heat_current_joule_per_s")
     _require_positive(bath_beta_per_joule, "bath_beta_per_joule")
     _require_finite(system_entropy_rate_nat_per_s, "system_entropy_rate_nat_per_s")
@@ -209,7 +201,6 @@ def calibrated_work_identity(
     delta_free_energy_joule: float,
 ) -> CalibratedWorkIdentity:
     """Estimate Jarzynski free energy from calibrated work samples."""
-
     samples = np.asarray(work_samples_joule, dtype=np.float64)
     if samples.size == 0:
         raise ValueError("work_samples_joule must not be empty")
@@ -230,7 +221,6 @@ def calibrated_work_identity(
 
 def irreversibility_residual(identity: CalibratedWorkIdentity) -> IrreversibilityResidual:
     """Return dissipated-work and Jarzynski residual diagnostics."""
-
     dissipated = identity.mean_work_joule - identity.delta_free_energy_joule
     residual = identity.jarzynski_delta_free_energy_joule - identity.delta_free_energy_joule
     return IrreversibilityResidual(
@@ -247,7 +237,6 @@ def heat_dissipation_rate(
     duration_s: float,
 ) -> HeatDissipationRate:
     """Estimate heat current from Lindblad jump statistics."""
-
     if not jump_counts:
         raise ValueError("jump_counts must not be empty")
     counts = np.asarray(jump_counts, dtype=np.float64)
@@ -269,7 +258,6 @@ def run_k_sweep_protocol(
     config: ThermodynamicSweepConfig | None = None,
 ) -> ThermodynamicSweepResult:
     """Run the deterministic S9 no-submit K-sweep readiness protocol."""
-
     cfg = config or ThermodynamicSweepConfig()
     rows: list[ThermodynamicSweepRow] = []
     for k_value in cfg.k_values:
@@ -321,7 +309,6 @@ def run_k_sweep_protocol(
 
 def quantum_thermo_payload() -> dict[str, Any]:
     """Return the S9 quantum-thermodynamics readiness payload."""
-
     config = ThermodynamicSweepConfig()
     sweep = run_k_sweep_protocol(config)
     return {
@@ -344,7 +331,6 @@ def quantum_thermo_payload() -> dict[str, Any]:
 
 def quantum_thermo_markdown(payload: dict[str, Any] | None = None) -> str:
     """Render the S9 readiness note."""
-
     data = quantum_thermo_payload() if payload is None else payload
     sweep = data["k_sweep"]
     lines = [

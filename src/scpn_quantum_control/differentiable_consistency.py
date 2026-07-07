@@ -65,7 +65,6 @@ def check_parameter_shift_consistency(
         Candidate parameter-shift gradient, finite-difference reference, error
         metrics, tolerance, and pass/fail status.
     """
-
     from . import differentiable as differentiable_facade
 
     tolerance_value = _as_real_scalar("gradient check tolerance", tolerance)
@@ -133,7 +132,6 @@ def check_custom_derivative_consistency(
         Exact-rule outputs, finite-difference references, error metrics, and
         pass/fail status for the custom derivative rule.
     """
-
     from . import differentiable as differentiable_facade
 
     tolerance_value = _as_real_scalar("custom derivative tolerance", tolerance)

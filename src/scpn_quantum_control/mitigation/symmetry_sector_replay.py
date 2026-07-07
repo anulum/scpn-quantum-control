@@ -52,13 +52,11 @@ class SymmetrySectorReplayResult:
 
     def to_dict(self) -> dict[str, object]:
         """Return a JSON-serialisable replay result."""
-
         return asdict(self)
 
 
 def _normalise_counts(counts: dict[str, int], *, n_qubits: int) -> dict[str, int]:
     """Validate and normalise computational-basis counts."""
-
     if not counts:
         raise ValueError("raw counts must not be empty")
     normalised: dict[str, int] = {}
@@ -86,7 +84,6 @@ def replay_symmetry_sector_counts(
     and invalid counts never reach mitigation primitives. The returned result
     reports GUESS as deferred rather than silently approximating it from counts.
     """
-
     plan = plan_symmetry_sector_mitigation(problem)
     if plan.status != "eligible" or plan.expected_parity is None:
         raise ValueError(f"symmetry-sector plan is blocked: {plan.blockers}")

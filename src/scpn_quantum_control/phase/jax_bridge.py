@@ -1102,7 +1102,6 @@ def _require_jax_phase_qnode_aot_export_support(jax_module: Any) -> Any:
 
 def _jax_export_version(export_module: Any, name: str) -> int:
     """Return a JAX export calling-convention version from attr or function APIs."""
-
     value = getattr(export_module, name)
     if callable(value):
         value = value()

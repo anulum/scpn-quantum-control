@@ -38,7 +38,6 @@ _BACKEND_DEPENDENCIES: dict[str, tuple[str, ...]] = {
 
 def _backend_matrix_row(backend_id: str) -> Mapping[str, Any] | None:
     """Return the stable matrix row for ``backend_id`` when present."""
-
     for row in backend_capability_matrix():
         if row["backend_id"] == backend_id:
             return row
@@ -47,7 +46,6 @@ def _backend_matrix_row(backend_id: str) -> Mapping[str, Any] | None:
 
 def _dependency_available(name: str) -> bool:
     """Return ``True`` iff ``name`` can be imported."""
-
     try:
         importlib.import_module(name)
     except Exception:
@@ -66,7 +64,6 @@ class StableCorePreflightResult:
 
     def to_dict(self) -> dict[str, Any]:
         """Return a JSON-compatible preflight payload."""
-
         return {
             "status": self.status,
             "blockers": self.blockers,
@@ -81,7 +78,6 @@ def run_stable_core_preflight(
     dependency_availability: Mapping[str, bool] | None = None,
 ) -> StableCorePreflightResult:
     """Validate a stable-core experiment against declared readiness constraints."""
-
     required_capability = _OBJECTIVE_REQUIRED_CAPABILITIES[experiment.objective]
     blockers: list[str] = []
 
@@ -130,13 +126,11 @@ def run_stable_core_preflight(
 
 def stable_core_backend_dependencies(backend_id: str) -> tuple[str, ...]:
     """Return optional dependency requirements for a stable-core backend id."""
-
     return _BACKEND_DEPENDENCIES.get(backend_id, ())
 
 
 def stable_core_preflight_fixtures_payload() -> dict[str, Any]:
     """Return deterministic fixture rows for offline stable-core preflight gates."""
-
     return _normalised_payload(
         {
             "schema": "stable_core_preflight_fixtures_v1",
@@ -228,13 +222,11 @@ def stable_core_preflight_fixtures_payload() -> dict[str, Any]:
 
 def stable_core_preflight_fixtures_json(payload: Mapping[str, Any]) -> str:
     """Return canonical JSON text for stable-core preflight fixtures."""
-
     return json.dumps(_normalised_payload(payload), indent=2, sort_keys=True) + "\n"
 
 
 def stable_core_preflight_fixtures_markdown(payload: Mapping[str, Any]) -> str:
     """Return canonical Markdown text for stable-core preflight fixtures."""
-
     rows = _normalised_payload(payload)
     lines = [
         "<!-- SPDX-License-Identifier: AGPL-3.0-or-later -->",
@@ -293,5 +285,4 @@ def stable_core_preflight_fixtures_markdown(payload: Mapping[str, Any]) -> str:
 
 def _normalised_payload(payload: Mapping[str, Any]) -> dict[str, Any]:
     """Return a JSON-native deterministic representation of ``payload``."""
-
     return cast(dict[str, Any], json.loads(json.dumps(payload, sort_keys=True)))

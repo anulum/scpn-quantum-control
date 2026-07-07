@@ -36,7 +36,6 @@ def oqc_openqasm3_workload(
     metadata: Mapping[str, object] | None = None,
 ) -> QuantumWorkload:
     """Encode an OpenQASM 3 program as an OQC HAL workload."""
-
     _validate_openqasm3(program)
     return QuantumWorkload(
         workload_id=workload_id,

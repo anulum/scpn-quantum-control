@@ -64,7 +64,6 @@ def implicit_stationary_sensitivity(
     ImplicitSensitivityResult
         Validated ``dx*/dalpha = -H^-1 B`` sensitivity metadata.
     """
-
     hessian_arr = _as_real_numeric_array("implicit hessian", hessian)
     cross = _as_real_numeric_array("implicit cross_derivative", cross_derivative)
     if hessian_arr.ndim != 2 or hessian_arr.shape[0] != hessian_arr.shape[1]:
@@ -157,7 +156,6 @@ def implicit_fixed_point_sensitivity(
     FixedPointSensitivityResult
         Validated ``(I - dT/dx)^-1 dT/dalpha`` sensitivity metadata.
     """
-
     state = _as_real_numeric_array("fixed-point state_jacobian", state_jacobian)
     parameter = _as_real_numeric_array("fixed-point parameter_jacobian", parameter_jacobian)
     if state.ndim != 2 or state.shape[0] != state.shape[1]:

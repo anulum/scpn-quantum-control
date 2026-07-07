@@ -31,7 +31,6 @@ def braket_circuit_to_workload(
     metadata: Mapping[str, object] | None = None,
 ) -> QuantumWorkload:
     """Encode a Braket circuit as an OpenQASM 3 HAL workload."""
-
     from braket.circuits import Circuit
 
     if not isinstance(circuit, Circuit):

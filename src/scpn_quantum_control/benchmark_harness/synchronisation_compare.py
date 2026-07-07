@@ -31,7 +31,6 @@ class ObservableComparison:
 
     def to_dict(self) -> dict[str, object]:
         """Return a JSON-serialisable comparison row."""
-
         return asdict(self)
 
 
@@ -46,14 +45,12 @@ DEFAULT_BENCHMARK_ARTIFACTS: tuple[str, ...] = (
 
 def load_payload(path: Path) -> dict[str, Any]:
     """Load a synchronisation benchmark result payload."""
-
     payload: dict[str, Any] = json.loads(path.read_text(encoding="utf-8"))
     return payload
 
 
 def validate_payload_shape(payload: dict[str, Any]) -> None:
     """Validate the synchronisation benchmark result schema shape."""
-
     if payload.get("schema") != "synchronisation_benchmark_run_v1":
         raise ValueError("unexpected synchronisation benchmark run schema")
     if payload.get("result_schema") != RESULT_SCHEMA:
@@ -80,7 +77,6 @@ def validate_payload_shape(payload: dict[str, Any]) -> None:
 
 def observable_index(payload: dict[str, Any]) -> dict[tuple[str, str], dict[str, Any]]:
     """Index payload observables by backend and name."""
-
     out: dict[tuple[str, str], dict[str, Any]] = {}
     for row in payload["rows"]:
         backend = str(row["backend"])
@@ -94,7 +90,6 @@ def observable_index(payload: dict[str, Any]) -> dict[tuple[str, str], dict[str,
 
 def compare_payloads(expected: dict[str, Any], actual: dict[str, Any]) -> dict[str, Any]:
     """Compare actual synchronisation rows against expected committed rows."""
-
     validate_payload_shape(expected)
     validate_payload_shape(actual)
     if actual.get("benchmark_id") != expected.get("benchmark_id"):
@@ -143,7 +138,6 @@ def compare_payloads(expected: dict[str, Any], actual: dict[str, Any]) -> dict[s
 
 def compare_files(expected_path: Path, actual_path: Path) -> dict[str, Any]:
     """Compare two synchronisation benchmark JSON artefacts."""
-
     return compare_payloads(load_payload(expected_path), load_payload(actual_path))
 
 
@@ -153,7 +147,6 @@ def compare_default_artifacts(repo_root: Path) -> dict[str, Any]:
     This is a release gate for schema and tolerance stability. Regeneration
     commands should run before this comparator when checking drift.
     """
-
     results: list[dict[str, Any]] = []
     blockers: list[str] = []
     for rel_path in DEFAULT_BENCHMARK_ARTIFACTS:

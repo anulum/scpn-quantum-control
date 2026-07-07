@@ -31,7 +31,6 @@ def default_repo_root() -> Path:
     a checkout, prefer the current working directory when it contains the
     result-pack manifest; otherwise fall back to the source-tree parent layout.
     """
-
     cwd = Path.cwd()
     if (cwd / MANIFEST_RELATIVE_PATH).exists():
         return cwd
@@ -40,7 +39,6 @@ def default_repo_root() -> Path:
 
 def sha256(path: Path) -> str:
     """Return the SHA-256 hex digest for a filesystem path."""
-
     digest = hashlib.sha256()
     with path.open("rb") as handle:
         for block in iter(lambda: handle.read(1024 * 1024), b""):
@@ -50,13 +48,11 @@ def sha256(path: Path) -> str:
 
 def digest_bytes(payload: bytes) -> str:
     """Return the SHA-256 hex digest for in-memory bytes."""
-
     return hashlib.sha256(payload).hexdigest()
 
 
 def walk_values(value: Any) -> Iterable[Any]:
     """Yield every nested value in a JSON-like object."""
-
     if isinstance(value, dict):
         for key, item in value.items():
             yield key
@@ -70,13 +66,11 @@ def walk_values(value: Any) -> Iterable[Any]:
 
 def contains_text(value: Any, needle: str) -> bool:
     """Return True when a nested JSON-like object contains a string value."""
-
     return any(item == needle for item in walk_values(value) if isinstance(item, str))
 
 
 def load_manifest(manifest_path: Path) -> dict[str, Any]:
     """Load and validate the top-level hardware result-pack manifest shape."""
-
     manifest: dict[str, Any] = json.loads(manifest_path.read_text(encoding="utf-8"))
     if manifest.get("schema_version") != 1:
         raise ValueError("unsupported hardware result-pack schema_version")
@@ -88,7 +82,6 @@ def load_manifest(manifest_path: Path) -> dict[str, Any]:
 
 def select_packs(manifest: dict[str, Any], pack_ids: set[str] | None) -> list[dict[str, Any]]:
     """Return selected packs, failing closed on unknown identifiers."""
-
     packs = manifest["packs"]
     if pack_ids is None:
         return list(packs)
@@ -101,7 +94,6 @@ def select_packs(manifest: dict[str, Any], pack_ids: set[str] | None) -> list[di
 
 def artifact_path(repo_root: Path, pack_id: str, artifact_item: dict[str, Any]) -> Path:
     """Resolve and validate a manifest artefact path."""
-
     rel = artifact_item.get("path")
     if not isinstance(rel, str) or rel.startswith("/") or ".." in Path(rel).parts:
         raise ValueError(f"pack {pack_id} has unsafe artifact path: {rel!r}")
@@ -115,7 +107,6 @@ def verify_manifest(
     pack_ids: set[str] | None = None,
 ) -> dict[str, Any]:
     """Verify a hardware result-pack manifest and return a summary."""
-
     repo_root = repo_root.resolve()
     manifest_path = manifest_path.resolve()
     manifest = load_manifest(manifest_path)
@@ -183,7 +174,6 @@ def verify_manifest(
 
 def tarinfo_for_bytes(name: str, payload: bytes) -> tarfile.TarInfo:
     """Build deterministic tar metadata for an in-memory payload."""
-
     info = tarfile.TarInfo(name=name)
     info.size = len(payload)
     info.mtime = 0
@@ -197,7 +187,6 @@ def tarinfo_for_bytes(name: str, payload: bytes) -> tarfile.TarInfo:
 
 def write_deterministic_tar_gz(path: Path, entries: list[tuple[str, bytes]]) -> None:
     """Write a deterministic gzip-compressed tar archive."""
-
     with (
         path.open("wb") as raw_handle,
         gzip.GzipFile(filename="", mode="wb", fileobj=raw_handle, mtime=0) as gz_handle,
@@ -215,7 +204,6 @@ def export_result_packs(
     pack_ids: set[str] | None = None,
 ) -> list[dict[str, Any]]:
     """Verify and export deterministic per-pack archives."""
-
     repo_root = repo_root.resolve()
     manifest_path = manifest_path.resolve()
     export_dir.mkdir(parents=True, exist_ok=True)
@@ -259,7 +247,6 @@ def export_result_packs(
 
 def parse_pack_ids(values: list[str]) -> set[str] | None:
     """Parse repeated comma-separated pack filters."""
-
     if not values:
         return None
     pack_ids: set[str] = set()
@@ -270,7 +257,6 @@ def parse_pack_ids(values: list[str]) -> set[str] | None:
 
 def main() -> int:
     """Run the result-pack verification and export CLI."""
-
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--repo-root",

@@ -33,7 +33,8 @@ def kuramoto_4osc_zne_experiment(
     Runs the evolution at multiple noise scales via unitary folding,
     then extrapolates to zero noise.
 
-    Returns:
+    Returns
+    -------
         dict with keys:
             experiment (str): Experiment name identifier.
             scales (list[int]): Noise scale factors used.
@@ -90,7 +91,8 @@ def noise_baseline_experiment(runner: HardwareRunner, shots: int = 10000) -> dic
     Single Trotter step at dt=0.01 (near-identity). Measures R + per-qubit
     expectations. Compare Feb->Mar to detect backend drift.
 
-    Returns:
+    Returns
+    -------
         dict with keys:
             experiment (str): Experiment name identifier.
             n_qubits (int): Number of qubits.
@@ -144,7 +146,8 @@ def kuramoto_8osc_zne_experiment(
     Gate-fold at each noise scale, Richardson extrapolation to zero noise.
     Extends the 4-osc ZNE result to depth-233 territory.
 
-    Returns:
+    Returns
+    -------
         dict with keys:
             experiment (str): Experiment name identifier.
             n_oscillators (int): Number of oscillators.
@@ -205,7 +208,8 @@ def upde_16_dd_experiment(
     Same structure as upde_16_snapshot but applies DD (XY4) to each
     basis circuit before submission. Compares R(DD) vs R(no-DD) vs classical.
 
-    Returns:
+    Returns
+    -------
         dict with keys:
             experiment (str): Experiment name identifier.
             n_layers (int): Number of UPDE layers (16).
@@ -280,7 +284,8 @@ def zne_higher_order_experiment(
     same data. Determines optimal extrapolation order for XY evolution on
     Heron r2.
 
-    Returns:
+    Returns
+    -------
         dict with keys:
             experiment (str): Experiment name identifier.
             scales (list[int]): Noise scale factors used.
@@ -350,7 +355,8 @@ def decoherence_scaling_experiment(
     Science: extracts per-gate depolarization rate gamma from a single
     calibration run. Enables predictive modelling of experiment fidelity.
 
-    Returns:
+    Returns
+    -------
         dict with keys:
             experiment (str): Experiment name identifier.
             dt (float): Time step size.

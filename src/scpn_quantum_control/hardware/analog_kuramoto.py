@@ -360,7 +360,6 @@ def export_provider_payload(
     module needed for a later executable adapter and whether that module is
     importable in the current environment.
     """
-
     target = _coerce_provider(provider)
     if target == AnalogProviderTarget.PULSER:
         _require_platform(program, AnalogKuramotoPlatform.NEUTRAL_ATOMS, target)
@@ -420,7 +419,6 @@ def prepare_provider_execution_plan(
     must supply calibration metadata and an explicit approval flag before the
     returned plan can be treated as constructible or executable.
     """
-
     if allow_cloud_submission:
         raise ValueError(
             "cloud submission is outside prepare_provider_execution_plan; "

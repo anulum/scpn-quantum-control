@@ -68,19 +68,16 @@ from .program_ad_stack_block_assembly import (
 
 def _is_trace_array(value: object) -> bool:
     """Return whether ``value`` behaves like a whole-program trace array."""
-
     return type(value).__name__ == "TraceADArray" and hasattr(value, "context")
 
 
 def _is_trace_scalar(value: object) -> bool:
     """Return whether ``value`` behaves like a whole-program trace scalar."""
-
     return type(value).__name__ == "TraceADScalar" and hasattr(value, "context")
 
 
 def _program_ad_array_shape_of(value: object) -> tuple[int, ...]:
     """Return the static shape for a trace value or array-like input."""
-
     if _is_trace_array(value):
         shape = getattr(value, "shape", None)
         if not isinstance(shape, tuple):
@@ -91,7 +88,6 @@ def _program_ad_array_shape_of(value: object) -> tuple[int, ...]:
 
 def _program_ad_array_dtype_of(value: object) -> str:
     """Return the dtype name for a trace value or array-like input."""
-
     if _is_trace_array(value):
         return "float64"
     array = np.asarray(value)
@@ -105,7 +101,6 @@ def _validate_program_ad_assembly_contract_dispatch(
     args: tuple[object, ...],
 ) -> None:
     """Validate assembly primitive dispatch helpers against concrete arguments."""
-
     if contract.static_argument_rule is None:
         raise ValueError(
             f"program AD primitive {contract.identity.key} missing static argument rule"
@@ -166,7 +161,6 @@ def program_ad_assembly_split_derivative_rule(
     split_name: str = "split",
 ) -> CustomDerivativeRule:
     """Build an exact direct derivative rule for fixed static split-family layouts."""
-
     if split_name not in _PROGRAM_AD_ASSEMBLY_SPLIT_NAMES:
         raise ValueError(f"unsupported program AD assembly split primitive {split_name}")
     shape = _program_ad_assembly_split_source_shape(source_shape)
@@ -291,7 +285,6 @@ def program_ad_assembly_tril_derivative_rule(
     k: object = 0,
 ) -> CustomDerivativeRule:
     """Build an exact direct derivative rule for fixed static ``np.tril`` masks."""
-
     return _program_ad_assembly_triangular_derivative_rule("tril", source_shape, k=k)
 
 
@@ -301,7 +294,6 @@ def program_ad_assembly_triu_derivative_rule(
     k: object = 0,
 ) -> CustomDerivativeRule:
     """Build an exact direct derivative rule for fixed static ``np.triu`` masks."""
-
     return _program_ad_assembly_triangular_derivative_rule("triu", source_shape, k=k)
 
 
@@ -313,7 +305,6 @@ def program_ad_assembly_diagonal_derivative_rule(
     axis2: object = 1,
 ) -> CustomDerivativeRule:
     """Build an exact direct derivative rule for fixed static ``np.diagonal`` gathers."""
-
     source = np.empty(
         _program_ad_array_normalise_static_shape("assembly diagonal source", source_shape),
         dtype=np.float64,
@@ -1734,7 +1725,6 @@ def _program_ad_assembly_lowering_metadata(name: str) -> Mapping[str, str]:
 
 def _register_program_ad_assembly_primitive_contracts() -> None:
     """Register fail-closed Program AD assembly primitive contracts."""
-
     batching_rules: Mapping[str, PrimitiveBatchingRule] = {
         "append": _program_ad_assembly_append_batching_rule,
         "block": _program_ad_assembly_block_batching_rule,
@@ -1852,7 +1842,6 @@ def _require_program_ad_assembly_contract(
     args: tuple[object, ...] | None = None,
 ) -> PrimitiveContract:
     """Return and validate a registered assembly primitive runtime contract."""
-
     identity = _PROGRAM_AD_ASSEMBLY_IDENTITIES.get(name)
     if identity is None:
         raise ValueError(f"no program AD assembly primitive identity registered for {name}")

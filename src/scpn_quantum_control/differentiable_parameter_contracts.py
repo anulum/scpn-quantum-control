@@ -19,7 +19,6 @@ from numpy.typing import ArrayLike, NDArray
 
 def _as_real_numeric_array(name: str, values: object) -> NDArray[np.float64]:
     """Return a real numeric array without implicit string/bool/object coercion."""
-
     try:
         raw = np.asarray(values)
     except ValueError as exc:
@@ -33,7 +32,6 @@ def _as_real_numeric_array(name: str, values: object) -> NDArray[np.float64]:
 
 def _as_real_scalar(name: str, value: object) -> float:
     """Return an explicit finite real numeric scalar without implicit coercion."""
-
     if isinstance(value, bool):
         raise ValueError(f"{name} must be a real numeric scalar")
     raw = np.asarray(value)
@@ -47,7 +45,6 @@ def _as_real_scalar(name: str, value: object) -> float:
 
 def _as_index_vector(name: str, values: object) -> NDArray[np.int64]:
     """Return a one-dimensional non-negative integer index vector."""
-
     raw = np.asarray(values)
     if raw.dtype.kind not in {"i", "u"}:
         raise ValueError(f"{name} must contain integer indices")
@@ -61,7 +58,6 @@ def _as_index_vector(name: str, values: object) -> NDArray[np.int64]:
 
 def _as_parameter_array(values: ArrayLike) -> NDArray[np.float64]:
     """Return a one-dimensional finite differentiable parameter vector."""
-
     array = _as_real_numeric_array("parameters", values)
     if array.ndim != 1:
         raise ValueError("parameters must be a one-dimensional sequence")
@@ -79,7 +75,6 @@ class Parameter:
 
     def __post_init__(self) -> None:
         """Validate parameter identity and trainability metadata."""
-
         if not isinstance(self.name, str) or not self.name:
             raise ValueError("parameter name must be non-empty")
         if not isinstance(self.trainable, bool):
@@ -96,7 +91,6 @@ class ParameterBounds:
 
     def __post_init__(self) -> None:
         """Validate finite interval and periodic-bound metadata."""
-
         if not isinstance(self.periodic, bool):
             raise ValueError("periodic flag must be a boolean")
         lower = None if self.lower is None else _as_real_scalar("lower bound", self.lower)
@@ -124,7 +118,6 @@ class ParameterShiftRule:
 
     def __post_init__(self) -> None:
         """Validate and freeze explicit parameter-shift terms."""
-
         shifts: tuple[float, ...]
         coefficients: tuple[float, ...]
         if (self.shifts is None) != (self.coefficients is None):
@@ -168,7 +161,6 @@ class ParameterShiftRule:
     @property
     def terms(self) -> tuple[tuple[float, float], ...]:
         """Return ``(shift, coefficient)`` terms for symmetric plus/minus probes."""
-
         shifts = cast(tuple[float, ...], self.shifts)
         coefficients = cast(tuple[float, ...], self.coefficients)
         return tuple(zip(shifts, coefficients, strict=True))
@@ -176,7 +168,6 @@ class ParameterShiftRule:
     @property
     def is_single_term(self) -> bool:
         """Return whether this rule is the legacy two-evaluation rule."""
-
         return len(self.terms) == 1
 
 
@@ -194,7 +185,6 @@ def multi_frequency_parameter_shift_rule(
     The resulting rule can exactly differentiate any supported linear
     combination of sine/cosine components at those frequencies.
     """
-
     frequency_values = _as_parameter_array(frequencies)
     if frequency_values.size == 0:
         raise ValueError("frequencies must contain at least one value")
@@ -246,7 +236,6 @@ def _default_multi_frequency_shifts(
     max_condition: float,
 ) -> NDArray[np.float64]:
     """Return a deterministic well-conditioned shift grid for generator frequencies."""
-
     count = int(frequencies.size)
     max_frequency = float(np.max(frequencies))
     start = 2 * count + 1

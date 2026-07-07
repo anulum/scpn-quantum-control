@@ -133,7 +133,6 @@ class NativeWholeProgramADExecutionCase:
 
     def to_dict(self) -> dict[str, object]:
         """Return JSON-ready execution-case metadata."""
-
         return {
             "case_id": self.case_id,
             "operation_family": self.operation_family,
@@ -204,7 +203,6 @@ class NativeWholeProgramADExecutionEvidence:
 
     def to_dict(self) -> dict[str, object]:
         """Return JSON-ready aggregate native-execution evidence."""
-
         return {
             "artifact_id": self.artifact_id,
             "cases": [case.to_dict() for case in self.cases],
@@ -233,7 +231,6 @@ def build_native_whole_program_ad_execution_evidence(
     beyond-scalar flag are derived from the captured ``cases`` so the record
     cannot disagree with its rows.
     """
-
     ordered = tuple(cases)
     executed = tuple(case for case in ordered if case.status == "executed")
     if not executed:
@@ -259,7 +256,6 @@ def build_native_whole_program_ad_execution_evidence(
 
 def _well_conditioned_matrix_inputs(dimension: int) -> NDArray[np.float64]:
     """Return a flattened diagonally dominant ``dimension`` square matrix."""
-
     base = np.arange(1.0, dimension * dimension + 1.0, dtype=np.float64)
     matrix = base.reshape(dimension, dimension) % 3.0
     matrix = matrix + (dimension + 2.0) * np.eye(dimension, dtype=np.float64)
@@ -311,7 +307,6 @@ def _capture_execution_case(
     values: NDArray[np.float64],
 ) -> NativeWholeProgramADExecutionCase:
     """Compile, execute and check one whole-program AD trace; return its row."""
-
     start = time.perf_counter()
     kernel = compile_whole_program_ad_trace_to_native_llvm_jit(objective, values, None)
     native_value, native_gradient = kernel.value_and_grad(values)
@@ -346,7 +341,6 @@ def _capture_fail_closed_case(
     values: NDArray[np.float64],
 ) -> NativeWholeProgramADExecutionCase:
     """Attempt to compile past a declared size boundary; expect a fail-closed reason."""
-
     try:
         compile_whole_program_ad_trace_to_native_llvm_jit(objective, values, None)
     except ValueError as error:
@@ -380,7 +374,6 @@ def run_native_whole_program_ad_execution_evidence(
     against the interpreted Program AD reference, and records the declared
     fail-closed size boundaries for the determinant and inverse families.
     """
-
     executed: list[NativeWholeProgramADExecutionCase] = [
         _capture_execution_case(
             case_id="scalar_poly_3",

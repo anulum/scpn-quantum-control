@@ -68,7 +68,6 @@ class ProviderHardwareGradientPreparationScenario:
 
     def to_dict(self) -> dict[str, Any]:
         """Return JSON-ready scenario metadata."""
-
         return {
             "name": self.name,
             "provider": self.provider,
@@ -95,24 +94,20 @@ class ProviderHardwareGradientPreparationRecord:
     @property
     def approved(self) -> bool:
         """Whether the scenario result passed policy approval."""
-
         return self.result.approved
 
     @property
     def blocked(self) -> bool:
         """Whether the scenario result failed closed."""
-
         return self.result.fail_closed
 
     @property
     def failure_reason(self) -> str:
         """Human-readable fail-closed reason for blocked scenarios."""
-
         return self.result.failure_reason
 
     def to_dict(self) -> dict[str, Any]:
         """Return JSON-ready record metadata."""
-
         return {
             "scenario": self.scenario.to_dict(),
             "result": self.result.to_dict(),
@@ -133,49 +128,41 @@ class ProviderHardwareGradientPreparationAuditResult:
     @property
     def record_count(self) -> int:
         """Number of preparation audit records."""
-
         return len(self.records)
 
     @property
     def approved_count(self) -> int:
         """Number of approved preparation records."""
-
         return sum(record.approved for record in self.records)
 
     @property
     def blocked_count(self) -> int:
         """Number of blocked preparation records."""
-
         return sum(record.blocked for record in self.records)
 
     @property
     def hardware_execution_count(self) -> int:
         """Number of records that submitted or executed a hardware job."""
-
         return sum(record.result.hardware_execution for record in self.records)
 
     @property
     def gradient_available_count(self) -> int:
         """Number of records that produced hardware gradients."""
-
         return sum(record.result.gradient_available for record in self.records)
 
     @property
     def blocked_records(self) -> tuple[ProviderHardwareGradientPreparationRecord, ...]:
         """Return records that failed closed."""
-
         return tuple(record for record in self.records if record.blocked)
 
     @property
     def failing_records(self) -> tuple[ProviderHardwareGradientPreparationRecord, ...]:
         """Return records whose observed state missed the expected boundary."""
-
         return tuple(record for record in self.records if not record.passed)
 
     @property
     def passed(self) -> bool:
         """Whether every built-in preparation scenario preserved its boundary."""
-
         return (
             self.record_count == 6
             and self.approved_count == 2
@@ -187,7 +174,6 @@ class ProviderHardwareGradientPreparationAuditResult:
 
     def to_dict(self) -> dict[str, Any]:
         """Return JSON-ready provider hardware-preparation audit metadata."""
-
         return {
             "passed": self.passed,
             "record_count": self.record_count,
@@ -204,7 +190,6 @@ def default_provider_hardware_gradient_preparation_scenarios() -> tuple[
     ProviderHardwareGradientPreparationScenario, ...
 ]:
     """Return built-in provider hardware-gradient preparation scenarios."""
-
     values = np.array([0.2, -0.4], dtype=np.float64)
     single_value = np.array([0.2], dtype=np.float64)
     evidence_ids = dict(DEFAULT_PROVIDER_HARDWARE_EVIDENCE_IDS)
@@ -280,7 +265,6 @@ def run_provider_hardware_gradient_preparation_audit(
     scenarios: tuple[ProviderHardwareGradientPreparationScenario, ...] | None = None,
 ) -> ProviderHardwareGradientPreparationAuditResult:
     """Run provider hardware-gradient preparation readiness checks."""
-
     active_scenarios = scenarios or default_provider_hardware_gradient_preparation_scenarios()
     records = tuple(_run_scenario(scenario) for scenario in active_scenarios)
     return ProviderHardwareGradientPreparationAuditResult(

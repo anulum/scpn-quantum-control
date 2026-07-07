@@ -39,7 +39,8 @@ def su2_zyz_angles(unitary: ComplexArray) -> tuple[float, float, float]:
     Args:
         unitary: a ``(2, 2)`` complex unitary matrix.
 
-    Returns:
+    Returns
+    -------
         The ZYZ Euler angles ``(phi, theta, lam)``.
     """
     matrix = np.asarray(unitary, dtype=np.complex128)
@@ -85,7 +86,8 @@ def build_u3_operations(
         parameter_indices: ``(theta_index, phi_index, lam_index)``, distinct and
             non-negative.
 
-    Returns:
+    Returns
+    -------
         The three registered operations in circuit order ``(RZ(lam), RY(theta),
         RZ(phi))``.
     """
