@@ -99,10 +99,11 @@ are historical local regression evidence unless a row is explicitly tied to a
 separate `isolated_affinity` benchmark artefact with CPU affinity, host-load,
 governor/frequency, runner labels, and heavy-job metadata.
 
-## Functions (172)
+## Functions
 
-The Rust crate exports 177 PyO3 bindings across 64 Rust source files. They are organised
-below by topic.
+The Rust crate exports 177 PyO3 bindings across 64 Rust source files (the
+execution-mode audit above tracks 172 of them as compute-kernel records; the
+remainder are metadata/validation surfaces). They are organised below by topic.
 
 ### Classical Kuramoto
 

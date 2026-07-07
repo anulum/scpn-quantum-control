@@ -89,12 +89,27 @@ This package is designed for organisations that want to:
 - move between R&D notebooks and integration-friendly stable facades without
   collapsing into undocumented internal APIs.
 
-Application lanes include synchronisation diagnostics, control prototyping,
-quantum-algorithm research, hardware campaign governance, gradient-informed
-optimisation, and evidence packages for due diligence. Commercial value comes
-from reducing unclear research risk: every promoted result must have a named
-artefact, every unsupported route fails closed, and closed-source or SaaS use
-has a defined commercial licensing route.
+Application lanes:
+
+- **Synchronisation diagnostics** — explore where oscillator networks lock,
+  decohere, or separate into sectors.
+- **Control prototyping** — map power-grid, plasma, EEG/MEG, Josephson-array,
+  and other coupled-system candidates into common `K_nm`/`omega` workflows.
+- **Hardware evidence management** — keep raw-count evidence, simulator output,
+  and open claims separated before public release or paper citation.
+- **Differentiable computation and gradient-informed optimisation** — supported
+  compiler-AD primitives and parameter-shift building blocks with fail-closed
+  unsupported paths (full surface: the Differentiable Programming Route below).
+- **Product route** — AGPL for open research; proprietary deployment uses the
+  commercial licence route described below.
+
+Commercial value comes from reducing unclear research risk: every promoted
+result must have a named artefact, every unsupported route fails closed, and
+closed-source or SaaS use has a defined commercial licensing route. Open
+boundaries remain explicit: the package does not claim broad quantum advantage,
+clinical validation, or externally validated SCPN biology — it provides a
+reproducible computational workbench and the governance required to promote
+claims only when the evidence exists.
 
 <!-- capability-snapshot:start -->
 <!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
@@ -109,7 +124,6 @@ has a defined commercial licensing route.
 | Python source modules | 475 |
 | Public Python classes | 920 |
 | Domain package families | 31 |
-| API documentation pages | 0 |
 | Rust PyO3 function bindings | 177 |
 | Rust source modules | 64 |
 | Notebook files | 100 |
@@ -171,121 +185,6 @@ surfaces needed to use the software responsibly:
 | Hardware experiment operator | Run or replay provider-backed campaigns only when the evidence ledger, raw counts, and release gates permit the claim. | [Hardware Guide](docs/hardware_guide.md), [Hardware Result Packs](docs/hardware_result_packs.md) |
 | Software integrator | Use stable facade APIs instead of binding to internal package layout. | [Stable Facades API](docs/stable_facades_api.md), [API Overview](docs/api.md) |
 | Commercial evaluator | Assess the route from research prototype to product lane: reproducible simulations, hardware-result governance, Rust kernels, and dual licensing. | [Onboarding](docs/onboarding.md), [Release Readiness Gate](docs/release_readiness.md) |
-
-## Application and Commercial Value
-
-The practical value is a disciplined bridge between coupled-system physics,
-quantum hardware experimentation, and control-facing software:
-
-- **Synchronisation diagnostics:** explore where oscillator networks lock,
-  decohere, or separate into sectors.
-- **Control prototyping:** map power-grid, plasma, EEG/MEG, Josephson-array,
-  and other coupled-system candidates into common `K_nm`/`omega` workflows.
-- **Hardware evidence management:** keep raw-count evidence, simulator output,
-  and open claims separated before public release or paper citation.
-- **Differentiable computation:** use supported compiler-AD primitives for
-  gradient-bearing scalar, vector, and matrix kernels while unsupported paths
-  fail closed.
-- **Gradient-informed quantum optimisation:** use the current
-  parameter-shift VQE building blocks and compiler/program-AD kernels as the
-  base for gradient-trained Kuramoto-XY objectives, bounded phase-QNN
-  classifiers, quantum spiking neural networks, and future framework adapters.
-- Bounded phase-QNN and QSNN training now expose structured convergence
-  diagnostics and parameter-shift evaluation accounting through
-  `train_parameter_shift_qnn_classifier(...)` and
-  `QSNNTrainer.train_with_diagnostics(...)`.
-- The bounded phase-QNN route also exposes its MSE loss, multi-frequency
-  parameter-shift gradient, finite-difference verification, and named
-  external-gradient agreement records through
-  `verify_parameter_shift_qnn_classifier_gradient(...)`.
-- `run_parameter_shift_qnn_conformance_suite(...)` bundles QNN training,
-  gradient replay, external-gradient agreement hooks, and explicit unsuitable
-  scenario records for reviewer-facing evidence packs.
-- `run_parameter_shift_qnn_optimizer_benchmark_suite(...)` compares the bounded
-  QNN parameter-shift trainer against finite-difference, SGD, Adam, L-BFGS-B,
-  diagonal-Fisher natural-gradient, seeded SPSA, and deterministic
-  derivative-free baselines as non-isolated functional evidence only.
-- `run_parameter_shift_qnn_convergence_suite(...)` records deterministic
-  bounded-QNN convergence cases with loss-drop thresholds, accuracy thresholds,
-  parameter-shift evaluation accounting, and unsuitable-scenario records.
-- `estimate_parameter_shift_qnn_finite_shot_gradient(...)` and
-  `run_parameter_shift_qnn_finite_shot_convergence_suite(...)` add seeded
-  finite-shot simulator evidence for bounded-QNN gradients and noisy-gradient
-  convergence with shot counts, confidence radii, replay seeds, and explicit
-  non-hardware claim boundaries.
-- `verify_parameter_shift_qnn_framework_agreement(...)` and
-  `run_parameter_shift_qnn_framework_agreement_suite(...)` compare bounded
-  QNN parameter-shift gradients with caller-supplied or deterministic
-  framework-style references while explicitly recording that this is not
-  native framework autodiff through simulator kernels.
-- `phase_qnode_tape(...)` and `run_phase_qnode_tape_readiness_suite()` add
-  QNode-style differentiable execution records for supported phase objectives,
-  seeded finite-shot replay, and provider-boundary routes that fail closed
-  before hardware submission.
-- `PhaseQNodeCircuit`, `execute_phase_qnode_circuit(...)`, and
-  `parameter_shift_phase_qnode_gradient(...)` execute the registered local
-  statevector subset (`rx/ry/rz/phase`, Pauli Clifford gates, controlled
-  rotations, controlled-H/S/T, Toffoli/CCZ/Fredkin, `swap`, `rxx/ryy/rzz`)
-  against Pauli products and sparse weighted Pauli Hamiltonians with exact
-  operation-list decompositions for registered Toffoli/Fredkin gates, a
-  validated sparse Ising-chain Hamiltonian builder, and strict route support
-  reports for blocked value, gradient, metric, and Fisher paths.
-- `PhaseQNodeDensityCircuit`, `PhaseQNodeNoiseChannel`, and
-  `execute_phase_qnode_density_matrix(...)` execute the same registered local
-  unitary family through density matrices plus bounded single-qubit Kraus
-  channels (`bit_flip`, `phase_flip`, `depolarizing`,
-  `amplitude_damping`), returning trace, purity, density entries, support
-  reports, and explicit non-gradient/non-metric/non-hardware claim boundaries.
-- `run_phase_qnode_framework_parity_suite()` runs bounded local statevector
-  parity scenarios through SCPN plus installed JAX, PyTorch, TensorFlow, and
-  PennyLane backends. The default single-qubit row is joined by
-  `scenario="registered_two_qubit_entangling_statevector"`, which exercises a
-  registered two-qubit entangling Phase-QNode tensor path and records value,
-  gradient, dtype/device metadata, and dependency-sparse classifications without
-  provider execution, finite-shot sampling, hardware gradients, or unrestricted
-  simulator-autodiff claims.
-- `build_pennylane_qnode_from_phase_qnode(...)` and
-  `check_pennylane_phase_qnode_round_trip(...)` generate bounded PennyLane
-  QNodes from registered local `PhaseQNodeCircuit` declarations and verify
-  value/gradient parity with explicit device, shot, and diff-method metadata.
-- `run_phase_qnode_affinity_benchmark(...)` records command, affinity, host
-  load, CPU/runtime/dependency metadata, warmups, repetitions, and raw timing
-  rows; evidence is labelled `isolated_affinity` only when the isolation policy
-  passes, otherwise `functional_non_isolated`.
-- `run_differentiable_model_training_evidence_suite()` packages seeded
-  registered QNN, QGNN, QSNN, Kuramoto-XY, open-system-control, and
-  inverse-coupling-recovery local training cases with loss reduction and
-  finite-difference gradient-agreement evidence.
-- `run_registered_differentiable_training_suite_audit()` records which
-  requested differentiable training-suite lanes are actually evidenced:
-  registered local QNN/QGNN/QSNN/Kuramoto-XY/open-system-control/
-  inverse-coupling-recovery pass without promoting arbitrary architectures,
-  provider hardware, or benchmark-performance claims.
-- `execute_phase_qnode_transform(...)` and
-  `run_phase_qnode_transform_readiness_suite()` execute supported scalar local
-  QNode transforms for `grad`, `value_and_grad`, `hessian`, `jvp`, `vjp`,
-  `jacfwd`, and `jacrev`, while preserving fail-closed vectorized, hardware,
-  and arbitrary-framework boundaries.
-- `execute_phase_qnode_vector_jacobian(...)`,
-  `execute_phase_qnode_vmap_grad(...)`, and
-  `run_phase_qnode_vector_transform_readiness_suite()` add deterministic native
-  vector-output QNode Jacobians and host-side manual `vmap(grad)` over scalar
-  parameter-shift objectives. Provider vectorization, framework-native `vmap`,
-  finite-shot batched gradients, and hardware execution remain fail-closed.
-- `execute_provider_qnode_transform(...)`,
-  `execute_provider_qnode_vmap_grad(...)`, and
-  `run_provider_qnode_transform_readiness_suite()` connect provider callback
-  expectation samples to QNode transform evidence for `grad`, `value_and_grad`,
-  `jvp`, `vjp`, scalar `jacfwd`/`jacrev`, and manual `vmap(grad)`. Finite-shot
-  provider routes propagate variance and shot metadata; live hardware submission
-  remains policy-gated and fail-closed by default.
-- **Product route:** AGPL use is available for open research; proprietary
-  deployment uses the commercial licence route described below.
-
-Open boundaries remain explicit: the package does not claim broad quantum
-advantage, clinical validation, or externally validated SCPN biology. It
-provides a reproducible computational workbench and the governance required to
-promote claims only when the evidence exists.
 
 ## Why Teams Would Adopt It
 
@@ -507,6 +406,53 @@ print(f"Final R = {result['R'][-1]:.3f}")
 No IBM credentials needed — runs on local statevector simulator.
 Pass any coupling matrix; the built-in SCPN benchmark is just one example.
 
+**Any coupling network** — bring your own K and omega:
+
+```python
+from scpn_quantum_control import QuantumKuramotoSolver, build_kuramoto_ring
+
+K, omega = build_kuramoto_ring(6, coupling=0.5, rng_seed=42)
+solver = QuantumKuramotoSolver(6, K, omega)
+result = solver.run(t_max=1.0, dt=0.1, trotter_per_step=2)
+print(f"R(t): {result['R']}")
+```
+
+**Built-in SCPN network** (16 oscillators from Paper 27):
+
+```python
+from scpn_quantum_control import QuantumKuramotoSolver, build_knm_paper27, OMEGA_N_16
+
+K = build_knm_paper27(L=4)
+solver = QuantumKuramotoSolver(4, K, OMEGA_N_16[:4])
+result = solver.run(t_max=0.5, dt=0.1, trotter_per_step=2)
+```
+
+**Detect synchronisation** with witness operators:
+
+```python
+from scpn_quantum_control.analysis.sync_witness import evaluate_all_witnesses
+
+# After running X-basis and Y-basis circuits on IBM hardware:
+results = evaluate_all_witnesses(x_counts, y_counts, n_qubits=4)
+for name, w in results.items():
+    print(f"{name}: {'SYNCHRONIZED' if w.is_synchronized else 'incoherent'}")
+```
+
+For development (editable install with test/lint tooling):
+
+```bash
+pip install -e ".[dev]"
+pre-commit install
+pytest tests/ -v
+```
+
+### Hardware execution (requires IBM Quantum credentials)
+
+```bash
+pip install -e ".[ibm]"
+python run_hardware.py --experiment kuramoto --qubits 4 --shots 10000
+```
+
 ---
 
 ## What This Package Does
@@ -581,7 +527,7 @@ information scrambles*, and *whether the system thermalises*.
 | Metric | Value |
 |--------|-------|
 | Rust engine bindings | **177** exported `#[pyfunction]` bindings in the tracked Rust crate; low-level helper `fn` definitions are an implementation detail. |
-| Source package surface | **526** tracked Python source files under `src/scpn_quantum_control`, excluding package initialisers. |
+| Source package surface | Tracked Python source files under `src/scpn_quantum_control` (excluding package initialisers) — the current count lives in the generated capability inventory above. |
 | Research module families | Analysis, phase, hardware, bridge, mitigation, QEC, applications, forecasting, and benchmark families; exact current counts are listed in the package map below. |
 | Publication figures | **17** (simulation + hardware, including the Phase 1 DLA parity panels and exact-simulation crossover) |
 | Test suite | CI-gated suite at a **90%** aggregate coverage gate (`--cov-fail-under=90`); the non-refactor source tree is at 100% line coverage. See the generated capability inventory above for the current tracked test-file count. |
@@ -776,59 +722,6 @@ graph TD
 | `tcbo` | 1 | TCBO quantum observer |
 | `pgbo` | 1 | PGBO quantum bridge |
 | `l16` | 1 | Layer 16 quantum director |
-
-## Quick Start
-
-```bash
-pip install scpn-quantum-control
-```
-
-**Any coupling network** — bring your own K and omega:
-
-```python
-from scpn_quantum_control import QuantumKuramotoSolver, build_kuramoto_ring
-
-K, omega = build_kuramoto_ring(6, coupling=0.5, rng_seed=42)
-solver = QuantumKuramotoSolver(6, K, omega)
-result = solver.run(t_max=1.0, dt=0.1, trotter_per_step=2)
-print(f"R(t): {result['R']}")
-```
-
-**Built-in SCPN network** (16 oscillators from Paper 27):
-
-```python
-from scpn_quantum_control import QuantumKuramotoSolver, build_knm_paper27, OMEGA_N_16
-
-K = build_knm_paper27(L=4)
-solver = QuantumKuramotoSolver(4, K, OMEGA_N_16[:4])
-result = solver.run(t_max=0.5, dt=0.1, trotter_per_step=2)
-```
-
-**Detect synchronization** with witness operators:
-
-```python
-from scpn_quantum_control.analysis.sync_witness import evaluate_all_witnesses
-
-# After running X-basis and Y-basis circuits on IBM hardware:
-results = evaluate_all_witnesses(x_counts, y_counts, n_qubits=4)
-for name, w in results.items():
-    print(f"{name}: {'SYNCHRONIZED' if w.is_synchronized else 'incoherent'}")
-```
-
-For development (editable install with test/lint tooling):
-
-```bash
-pip install -e ".[dev]"
-pre-commit install
-pytest tests/ -v
-```
-
-### Hardware execution (requires IBM Quantum credentials)
-
-```bash
-pip install -e ".[ibm]"
-python run_hardware.py --experiment kuramoto --qubits 4 --shots 10000
-```
 
 ## Data Flow
 

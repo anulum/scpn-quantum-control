@@ -10,7 +10,6 @@
 | Python source modules | 475 |
 | Public Python classes | 920 |
 | Domain package families | 31 |
-| API documentation pages | 0 |
 | Rust PyO3 function bindings | 177 |
 | Rust source modules | 64 |
 | Notebook files | 100 |

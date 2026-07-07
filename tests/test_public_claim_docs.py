@@ -125,6 +125,31 @@ def test_validation_embeds_no_volatile_test_file_count() -> None:
     assert _snapshot_reports_test_files(), "the generated snapshot lost its Python-test-files row"
 
 
+def test_readme_defers_source_file_count_to_generated_inventory() -> None:
+    """The README never hardcodes the tracked source-file count.
+
+    The hand-written 526 drifted 52 files behind the generated inventory before
+    it was caught; the count lives only in the generated capability snapshot.
+    """
+    readme = (_REPO_ROOT / "README.md").read_text(encoding="utf-8")
+    assert re.search(r"\*\*\d+\*\* tracked Python source files", readme) is None, (
+        "README.md hardcodes the source-file count; defer to the capability snapshot"
+    )
+
+
+def test_readme_has_single_quickstart_and_value_sections() -> None:
+    """The deduplicated landing sections do not regrow their duplicates."""
+    readme = (_REPO_ROOT / "README.md").read_text(encoding="utf-8")
+    quickstarts = re.findall(r"^## Quick Start\s*$", readme, flags=re.MULTILINE)
+    value_sections = re.findall(
+        r"^## Application and [Cc]ommercial [Vv]alue\s*$", readme, flags=re.MULTILINE
+    )
+    assert len(quickstarts) == 1, f"README has {len(quickstarts)} Quick Start sections"
+    assert len(value_sections) == 1, (
+        f"README has {len(value_sections)} application/commercial-value sections"
+    )
+
+
 def test_readme_external_speedups_carry_provenance_qualifier() -> None:
     """README external speedup ratios stay bound to their provenance caveat.
 
