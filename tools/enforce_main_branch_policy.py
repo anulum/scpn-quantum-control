@@ -266,7 +266,11 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     subparsers = parser.add_subparsers(dest="command", required=True)
     reference_parser = subparsers.add_parser("reference-transaction")
-    reference_parser.add_argument("state", choices=("prepared", "committed", "aborted"))
+    # Git emits hook states beyond the documented prepared/committed/aborted
+    # triple (newer versions add e.g. "preparing"); only "prepared" carries a
+    # policy decision, so unknown states must pass through instead of aborting
+    # every reference update with an argparse error.
+    reference_parser.add_argument("state")
     subparsers.add_parser("pre-push")
     subparsers.add_parser("install")
     args = parser.parse_args(argv)

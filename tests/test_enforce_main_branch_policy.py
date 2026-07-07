@@ -12,6 +12,7 @@ from __future__ import annotations
 import os
 import stat
 import subprocess
+import sys
 from pathlib import Path
 
 from tools.enforce_main_branch_policy import (
@@ -140,6 +141,31 @@ def _run_git(*arguments: str, cwd: Path) -> subprocess.CompletedProcess[str]:
             "GIT_COMMITTER_EMAIL": "policy-test@example.invalid",
         },
     )
+
+
+def test_cli_passes_through_undocumented_reference_transaction_states(tmp_path: Path) -> None:
+    """Unknown git hook phases (e.g. ``preparing``) must not abort ref updates."""
+    script = Path(__file__).resolve().parents[1] / "tools" / "enforce_main_branch_policy.py"
+    forbidden_line = f"{ZERO_OID} {'1' * 40} refs/heads/forbidden-branch\n"
+    passthrough = subprocess.run(
+        (sys.executable, str(script), "reference-transaction", "preparing"),
+        input=forbidden_line,
+        capture_output=True,
+        text=True,
+        check=False,
+        cwd=tmp_path,
+    )
+    assert passthrough.returncode == 0, passthrough.stderr
+    prepared = subprocess.run(
+        (sys.executable, str(script), "reference-transaction", "prepared"),
+        input=forbidden_line,
+        capture_output=True,
+        text=True,
+        check=False,
+        cwd=tmp_path,
+    )
+    assert prepared.returncode == 1
+    assert "branch policy violation" in prepared.stderr
 
 
 def test_hook_falls_back_to_primary_checkout_for_treeless_worktrees(tmp_path: Path) -> None:
