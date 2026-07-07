@@ -13,7 +13,7 @@
     "python_model_source_modules": 476,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 64,
-    "test_files": 841
+    "test_files": 842
   },
   "documentation": {
     "examples": [
