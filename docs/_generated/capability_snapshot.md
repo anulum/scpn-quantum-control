@@ -12,11 +12,11 @@
 | Domain package families | 31 |
 | API documentation pages | 0 |
 | Rust PyO3 function bindings | 177 |
-| Rust source modules | 63 |
+| Rust source modules | 64 |
 | Notebook files | 100 |
 | Example files | 33 |
 | Optional extras | 43 |
-| Python test files | 834 |
+| Python test files | 835 |
 | Public documentation pages | 260 |
 | GitHub Actions workflows | 23 |
 

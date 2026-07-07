@@ -34,6 +34,7 @@ use crate::program_ad_interpolation_reduction::{
 use crate::program_ad_linalg_array::{
     is_multi_dot_operation, multi_dot_output_cotangent, multi_dot_output_value,
 };
+use crate::program_ad_linalg_diag::{diag_output_cotangent, diag_output_value, is_diag_operation};
 use crate::program_ad_linalg_diagflat::{
     diagflat_output_cotangent, diagflat_output_value, is_diagflat_operation,
 };
@@ -1008,6 +1009,9 @@ fn accumulate_reverse_effect(
         name if is_matrix_power_operation(name) => {
             accumulate_matrix_power(effect, name, values, adjoints, &cotangent)
         }
+        name if is_diag_operation(name) => {
+            accumulate_diag(effect, name, values, adjoints, &cotangent)
+        }
         name if is_eigvalsh_operation(name) => {
             accumulate_eigvalsh(effect, name, values, adjoints, &cotangent)
         }
@@ -1348,6 +1352,27 @@ fn accumulate_diagflat(
         .collect::<Result<Vec<f64>, String>>()?;
     let contributions =
         diagflat_output_cotangent(effect.index, operation, &input_values, cotangent_scalar)?;
+    for (input, contribution) in effect.inputs.iter().zip(contributions.iter()) {
+        add_scalar_adjoint(input, *contribution, values, adjoints)?;
+    }
+    Ok(())
+}
+
+fn accumulate_diag(
+    effect: &ProgramADEffect,
+    operation: &str,
+    values: &HashMap<String, ProgramADNumericValue>,
+    adjoints: &mut HashMap<String, ProgramADNumericValue>,
+    cotangent: &ProgramADNumericValue,
+) -> Result<(), String> {
+    let cotangent_scalar = cotangent.scalar_value()?;
+    let input_values = effect
+        .inputs
+        .iter()
+        .map(|input| operand_scalar_value(input, values))
+        .collect::<Result<Vec<f64>, String>>()?;
+    let contributions =
+        diag_output_cotangent(effect.index, operation, &input_values, cotangent_scalar)?;
     for (input, contribution) in effect.inputs.iter().zip(contributions.iter()) {
         add_scalar_adjoint(input, *contribution, values, adjoints)?;
     }
@@ -2032,6 +2057,7 @@ fn evaluate_numeric_effect(
         name if is_svdvals_operation(name) => numeric_svdvals(effect, name, values),
         name if is_pinv_operation(name) => numeric_pinv(effect, name, values),
         name if is_interpolation_operation(name) => numeric_interpolation(effect, name, values),
+        name if is_diag_operation(name) => numeric_diag(effect, name, values),
         name if is_diagflat_operation(name) => numeric_diagflat(effect, name, values),
         name if name.starts_with("linalg:trace:")
             || name.starts_with("linalg:det:")
@@ -2243,6 +2269,19 @@ fn numeric_diagflat(
         .map(|input| operand_scalar_value(input, values))
         .collect::<Result<Vec<f64>, String>>()?;
     diagflat_output_value(effect.index, operation, &input_values).map(ProgramADNumericValue::scalar)
+}
+
+fn numeric_diag(
+    effect: &ProgramADEffect,
+    operation: &str,
+    values: &HashMap<String, ProgramADNumericValue>,
+) -> Result<ProgramADNumericValue, String> {
+    let input_values = effect
+        .inputs
+        .iter()
+        .map(|input| operand_scalar_value(input, values))
+        .collect::<Result<Vec<f64>, String>>()?;
+    diag_output_value(effect.index, operation, &input_values).map(ProgramADNumericValue::scalar)
 }
 
 fn numeric_pinv(
@@ -3400,6 +3439,14 @@ fn evaluate_effect(
                 .map(|input| operand_value(input, values))
                 .collect::<Result<Vec<f64>, String>>()?;
             diagflat_output_value(effect.index, name, &input_values)
+        }
+        name if is_diag_operation(name) => {
+            let input_values = effect
+                .inputs
+                .iter()
+                .map(|input| operand_value(input, values))
+                .collect::<Result<Vec<f64>, String>>()?;
+            diag_output_value(effect.index, name, &input_values)
         }
         name if name.starts_with("linalg:trace:") => {
             // The trace opcode carries the on-diagonal element operands; its value is their sum.
