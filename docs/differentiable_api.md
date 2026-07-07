@@ -245,8 +245,9 @@ counts plus conservative primitive-name overlap with existing bounded Rust
 scalar/static-linalg plus compact interpolation, compact signal, compact stencil, compact cumulative, elementwise/static-structural, fixed `multi_dot`,
 2x2 distinct symmetric `eigvalsh`, 2x2 distinct symmetric `eigh`
 eigenvalues/nonzero-offdiagonal eigenvectors, 2x2 real-distinct `eigvals`,
-2x2 distinct-positive `svd(..., compute_uv=False)` singular-value replay, and
-constant-full-rank rank-1/2x2/3x2/2x3 `pinv` replay.
+2x2 distinct-positive `svd(..., compute_uv=False)` singular-value replay,
+constant-full-rank rank-1/2x2/3x2/2x3 `pinv` replay, and static on-diagonal
+`diagflat` construction replay.
 Metadata
 summaries remain parser parity for `program_ad_effect_ir.v1`; Rust
 value+gradient replay is bounded to opcode-bearing scalar, elementwise
@@ -264,6 +265,7 @@ symmetric `np.linalg.eigvalsh` output replay, bounded 2x2 distinct symmetric
 bounded 2x2 real-distinct `np.linalg.eigvals` output replay, bounded 2x2
 distinct-positive `np.linalg.svd(..., compute_uv=False)` singular-value output
 replay, constant-full-rank rank-1/2x2/3x2/2x3 `np.linalg.pinv` output replay,
+static on-diagonal `np.diagflat` construction replay,
 static source-map
 `index_map:<sN|cVALUE,...>` indexing, and inert source
 `alias_analysis:assignment_binding` plus `expression_rebinding_alias` metadata,
@@ -272,7 +274,8 @@ provenance. Legacy opcode-free metadata, unsafe aliases, mutation, non-lowered d
 indexing semantics, dynamic axes, dynamic trapezoid-grid metadata, dynamic q/method metadata, dynamic ddof/correction
 metadata, zero-variance `std` gradients, remaining broad linalg/spectral
 adjoints beyond the bounded 2x2 `eigvalsh`, `eigh`, `eigvals`, and SVD
-singular-value boundaries plus the rank-1/2x2/3x2/2x3 `pinv` boundary,
+singular-value boundaries plus the rank-1/2x2/3x2/2x3 `pinv` and on-diagonal
+`diagflat` boundaries,
 unsafe source-level aliases and non-executed branch
 semantics, general Program AD execution, LLVM/JIT differentiated execution,
 hardware, provider, and performance routes remain fail-closed.
@@ -293,7 +296,8 @@ symmetric `np.linalg.eigh` eigenvalue and nonzero-offdiagonal eigenvector
 replay, bounded 2x2 real-distinct `np.linalg.eigvals` spectral replay, and
 bounded 2x2 distinct-positive `np.linalg.svd(..., compute_uv=False)`
 singular-value replay plus constant-full-rank rank-1/2x2/3x2/2x3
-`np.linalg.pinv` output replay,
+`np.linalg.pinv` output replay and static on-diagonal `np.diagflat`
+construction replay,
 while the historical
 `scpn_quantum_control.differentiable` facade re-exports the same result
 dataclasses, registry metadata mirror result, and helper functions for

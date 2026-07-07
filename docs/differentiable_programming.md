@@ -85,8 +85,9 @@ counts plus conservative primitive-name overlap with existing bounded Rust
 scalar/static-linalg plus compact interpolation, compact signal, compact stencil, compact cumulative, elementwise/static-structural, fixed `multi_dot`,
 2x2 distinct symmetric `eigvalsh`, 2x2 distinct symmetric `eigh`
 eigenvalues/nonzero-offdiagonal eigenvectors, 2x2 real-distinct `eigvals`,
-2x2 distinct-positive `svd(..., compute_uv=False)` singular-value replay, and
-constant-full-rank rank-1/Nx2/2xN `pinv` replay.
+2x2 distinct-positive `svd(..., compute_uv=False)` singular-value replay,
+constant-full-rank rank-1/Nx2/2xN `pinv` replay, and static on-diagonal
+`diagflat` construction replay.
 Rust
 value+gradient replay executes opcode-bearing scalar, bounded elementwise
 shaped-array, compact interpolation, compact signal, compact stencil, compact cumulative, and bounded static structural
@@ -105,15 +106,15 @@ symmetric `np.linalg.eigvalsh` output replay, bounded 2x2 distinct symmetric
 bounded 2x2 real-distinct `np.linalg.eigvals` output replay, bounded 2x2
 distinct-positive `np.linalg.svd(..., compute_uv=False)` singular-value
 output replay, constant-full-rank rank-1/Nx2/2xN `np.linalg.pinv` output
-replay, static source-map
+replay, static on-diagonal `np.diagflat` construction replay, static source-map
 `index_map:<sN|cVALUE,...>` indexing, inert source `alias_analysis:assignment_binding`
 and `expression_rebinding_alias` metadata attached by local static-gather temporaries, and executed runtime branch metadata when
 matched by runtime phi provenance. Legacy opcode-free metadata, unsafe aliases,
 mutation, non-lowered dynamic indexing semantics, dynamic axes, dynamic trapezoid-grid metadata, dynamic q/method
 metadata, dynamic ddof/correction metadata, zero-variance `std` gradients,
 remaining broad linalg/spectral adjoints beyond the bounded 2x2 `eigvalsh`,
-`eigh`, `eigvals`, SVD singular-value, and rank-1/Nx2/2xN `pinv`
-boundaries,
+`eigh`, `eigvals`, SVD singular-value, rank-1/Nx2/2xN `pinv`, and on-diagonal
+`diagflat` boundaries,
 unsafe source-level aliases and non-executed branch semantics, general Program AD execution,
 LLVM/JIT lowering, hardware execution, provider execution, and performance
 promotion remain fail-closed.

@@ -12,8 +12,8 @@
     "python_model_classes": 918,
     "python_model_source_modules": 474,
     "rust_pyo3_model_wrappers": 172,
-    "rust_source_modules": 56,
-    "test_files": 831
+    "rust_source_modules": 57,
+    "test_files": 832
   },
   "documentation": {
     "examples": [
@@ -4956,6 +4956,7 @@
       "scpn_quantum_engine/src/program_ad_interpolation_reduction.rs",
       "scpn_quantum_engine/src/program_ad_ir.rs",
       "scpn_quantum_engine/src/program_ad_linalg_array.rs",
+      "scpn_quantum_engine/src/program_ad_linalg_diagflat.rs",
       "scpn_quantum_engine/src/program_ad_linalg_pinv.rs",
       "scpn_quantum_engine/src/program_ad_linalg_spectral.rs",
       "scpn_quantum_engine/src/program_ad_linalg_svd.rs",
@@ -6430,6 +6431,7 @@
       "tests/test_program_ad_rust_cumulative_bridge.py",
       "tests/test_program_ad_rust_interpolation_bridge.py",
       "tests/test_program_ad_rust_linalg_array_bridge.py",
+      "tests/test_program_ad_rust_linalg_diagflat_bridge.py",
       "tests/test_program_ad_rust_linalg_spectral_bridge.py",
       "tests/test_program_ad_rust_signal_bridge.py",
       "tests/test_program_ad_selection_direct_rules.py",

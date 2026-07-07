@@ -111,11 +111,11 @@ has a defined commercial licensing route.
 | Domain package families | 31 |
 | API documentation pages | 0 |
 | Rust PyO3 function bindings | 172 |
-| Rust source modules | 56 |
+| Rust source modules | 57 |
 | Notebook files | 100 |
 | Example files | 33 |
 | Optional extras | 43 |
-| Python test files | 831 |
+| Python test files | 832 |
 | Public documentation pages | 259 |
 | GitHub Actions workflows | 23 |
 

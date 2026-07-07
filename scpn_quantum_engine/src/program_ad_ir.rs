@@ -34,6 +34,9 @@ use crate::program_ad_interpolation_reduction::{
 use crate::program_ad_linalg_array::{
     is_multi_dot_operation, multi_dot_output_cotangent, multi_dot_output_value,
 };
+use crate::program_ad_linalg_diagflat::{
+    diagflat_output_cotangent, diagflat_output_value, is_diagflat_operation,
+};
 use crate::program_ad_linalg_pinv::{is_pinv_operation, pinv_output_cotangent, pinv_output_value};
 use crate::program_ad_linalg_spectral::{
     eigh_output_cotangent, eigh_output_value, eigvals_output_cotangent, eigvals_output_value,
@@ -1014,6 +1017,9 @@ fn accumulate_reverse_effect(
         name if is_pinv_operation(name) => {
             accumulate_pinv(effect, name, values, adjoints, &cotangent)
         }
+        name if is_diagflat_operation(name) => {
+            accumulate_diagflat(effect, name, values, adjoints, &cotangent)
+        }
         name if name.starts_with("linalg:trace:") => {
             let cotangent_scalar = cotangent.scalar_value()?;
             // d(trace)/d(diagonal element) = 1 for each on-diagonal operand.
@@ -1294,6 +1300,27 @@ fn accumulate_svdvals(
         .collect::<Result<Vec<f64>, String>>()?;
     let contributions =
         svdvals_output_cotangent(effect.index, operation, &input_values, cotangent_scalar)?;
+    for (input, contribution) in effect.inputs.iter().zip(contributions.iter()) {
+        add_scalar_adjoint(input, *contribution, values, adjoints)?;
+    }
+    Ok(())
+}
+
+fn accumulate_diagflat(
+    effect: &ProgramADEffect,
+    operation: &str,
+    values: &HashMap<String, ProgramADNumericValue>,
+    adjoints: &mut HashMap<String, ProgramADNumericValue>,
+    cotangent: &ProgramADNumericValue,
+) -> Result<(), String> {
+    let cotangent_scalar = cotangent.scalar_value()?;
+    let input_values = effect
+        .inputs
+        .iter()
+        .map(|input| operand_scalar_value(input, values))
+        .collect::<Result<Vec<f64>, String>>()?;
+    let contributions =
+        diagflat_output_cotangent(effect.index, operation, &input_values, cotangent_scalar)?;
     for (input, contribution) in effect.inputs.iter().zip(contributions.iter()) {
         add_scalar_adjoint(input, *contribution, values, adjoints)?;
     }
@@ -1977,6 +2004,7 @@ fn evaluate_numeric_effect(
         name if is_svdvals_operation(name) => numeric_svdvals(effect, name, values),
         name if is_pinv_operation(name) => numeric_pinv(effect, name, values),
         name if is_interpolation_operation(name) => numeric_interpolation(effect, name, values),
+        name if is_diagflat_operation(name) => numeric_diagflat(effect, name, values),
         name if name.starts_with("linalg:trace:")
             || name.starts_with("linalg:det:")
             || name.starts_with("linalg:inv:")
@@ -2160,6 +2188,19 @@ fn numeric_svdvals(
         .map(|input| operand_scalar_value(input, values))
         .collect::<Result<Vec<f64>, String>>()?;
     svdvals_output_value(effect.index, operation, &input_values).map(ProgramADNumericValue::scalar)
+}
+
+fn numeric_diagflat(
+    effect: &ProgramADEffect,
+    operation: &str,
+    values: &HashMap<String, ProgramADNumericValue>,
+) -> Result<ProgramADNumericValue, String> {
+    let input_values = effect
+        .inputs
+        .iter()
+        .map(|input| operand_scalar_value(input, values))
+        .collect::<Result<Vec<f64>, String>>()?;
+    diagflat_output_value(effect.index, operation, &input_values).map(ProgramADNumericValue::scalar)
 }
 
 fn numeric_pinv(
@@ -3301,6 +3342,14 @@ fn evaluate_effect(
                 .map(|input| operand_value(input, values))
                 .collect::<Result<Vec<f64>, String>>()?;
             pinv_output_value(effect.index, name, &input_values)
+        }
+        name if is_diagflat_operation(name) => {
+            let input_values = effect
+                .inputs
+                .iter()
+                .map(|input| operand_value(input, values))
+                .collect::<Result<Vec<f64>, String>>()?;
+            diagflat_output_value(effect.index, name, &input_values)
         }
         name if name.starts_with("linalg:trace:") => {
             // The trace opcode carries the on-diagonal element operands; its value is their sum.
