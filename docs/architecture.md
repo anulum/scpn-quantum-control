@@ -96,7 +96,7 @@ graph TD
     hardware["hardware/ (63)\nBackends + registry + async + provenance"]
     mitigation["mitigation/ (13)\nError mitigation"]
     qec["qec/ (13)\nError correction"]
-    gauge["gauge/ (5)\nGauge theory"]
+    gauge["gauge/ (6)\nGauge theory"]
     apps["applications/ (13)\nBenchmarks"]
     crypto["crypto/ (9)\nQKD + PQC"]
     benchmarks["benchmarks/ (19)\nPerformance"]

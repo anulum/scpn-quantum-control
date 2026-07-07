@@ -397,3 +397,15 @@ hardware, scaling, or metrological-advantage claim.
 ```bash
 python examples/33_qgt_qfi_crosscheck.py
 ```
+
+## 34_gauge_lattice_crosscheck.py — Gauge/Lattice Confinement Cross-Check
+
+Runs both confinement probes on one small SCPN coupling topology — the
+quantum ground-state Wilson-loop analysis and a Hybrid-Monte-Carlo-sampled
+compact U(1) lattice ensemble on the identical graph — and prints the two
+string tensions and lattice observables side by side. The routes probe
+different regimes; this is a joint report, not an equality assertion.
+
+```bash
+python examples/34_gauge_lattice_crosscheck.py
+```

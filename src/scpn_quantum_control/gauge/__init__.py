@@ -9,6 +9,7 @@
 
 from .cft_analysis import CFTResult, cft_analysis, extract_central_charge, find_critical_coupling
 from .confinement import ConfinementResult, confinement_analysis, confinement_vs_coupling
+from .lattice_crosscheck import GaugeLatticeCrosscheck, crosscheck_confinement_on_lattice
 from .universality import UniversalityResult, universality_analysis
 from .vortex_detector import VortexResult, measure_vortex_density, vortex_density_vs_coupling
 from .wilson_loop import WilsonLoopResult, compute_wilson_loops, wilson_loop_expectation
@@ -21,6 +22,8 @@ __all__ = [
     "ConfinementResult",
     "confinement_analysis",
     "confinement_vs_coupling",
+    "GaugeLatticeCrosscheck",
+    "crosscheck_confinement_on_lattice",
     "UniversalityResult",
     "universality_analysis",
     "VortexResult",
