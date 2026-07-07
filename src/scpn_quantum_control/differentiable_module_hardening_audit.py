@@ -403,6 +403,14 @@ def differentiable_module_hardening_registry() -> tuple[DifferentiableModuleHard
             ),
         ),
         _record(
+            "src/scpn_quantum_control/differentiable_transform_support_matrix_artifact.py",
+            ("tests/test_differentiable_transform_support_matrix_artifact.py",),
+            (
+                "fail-closed unserialised failed-audit emission",
+                "committed-artefact regeneration drift validation",
+            ),
+        ),
+        _record(
             "src/scpn_quantum_control/differentiable_natural_gradient.py",
             (
                 "tests/test_differentiable_natural_gradient.py",
