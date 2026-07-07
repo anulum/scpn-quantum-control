@@ -421,8 +421,12 @@ jobs:
       - run: pip install --require-hashes -r requirements-ci-py312-linux.txt
       - run: python tools/audit_serialization_surface.py
       - run: bandit -r src/ scripts/ -ll -q
-      # CVE-2026-4539: pygments ≤2.19.2 ReDoS in AdlLexer (local-only, no fix available)
-      - run: pip-audit -r requirements-dev.txt --desc on --ignore-vuln CVE-2026-4539
+      # Audit the full hash-pinned CI lock — every transitive pin the CI jobs
+      # actually install — rather than the top-level dev inputs. `--no-deps`
+      # because the lock is already a complete closure. The former
+      # CVE-2026-4539 (pygments ≤2.19.2) exception is obsolete: the lock pins
+      # pygments 2.20.0.
+      - run: pip-audit -r requirements-ci-py312-linux.txt --no-deps --desc on
 
   rust-audit:
     needs: lint

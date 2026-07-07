@@ -18,6 +18,17 @@
 #
 # SBOM format: CycloneDX 1.5 JSON. Consumers use `grype`, `osv-scanner`,
 # or any CycloneDX-compliant scanner.
+#
+# Consumption posture (adjudicated 2026-07-07, QWC-2.8): this workflow is
+# generation + validation only, BY DESIGN. Vulnerability consumption of the
+# same dependency surface already runs blocking on every push/PR in ci.yml:
+# `pip-audit` over the full hash-pinned CI lock (Python) and `cargo audit
+# --deny warnings` (Rust). Re-scanning the SBOM here with grype/osv-scanner
+# would duplicate that alerting against overlapping advisory databases with
+# no clear ownership of the second channel. The SBOM artefact itself is the
+# supply-chain transparency product for DOWNSTREAM consumers; each generated
+# file is structurally validated below so a malformed BOM cannot upload
+# silently.
 name: SBOM
 
 on:
@@ -50,6 +61,20 @@ jobs:
             --of JSON \
             --sv 1.5 \
             -o sbom-python.cdx.json
+      - name: Validate the generated SBOM
+        run: |
+          python - <<'EOF'
+          import json
+          bom = json.load(open("sbom-python.cdx.json", encoding="utf-8"))
+          assert bom["bomFormat"] == "CycloneDX", bom.get("bomFormat")
+          assert bom["specVersion"] == "1.5", bom.get("specVersion")
+          components = bom.get("components", [])
+          assert len(components) > 50, f"implausibly small BOM: {len(components)} components"
+          named = [c for c in components if c.get("name") == "scpn-quantum-control"]
+          root = bom.get("metadata", {}).get("component", {})
+          assert named or root.get("name") == "scpn-quantum-control", "package missing from BOM"
+          print(f"SBOM valid: {len(components)} components")
+          EOF
       - name: Upload Python SBOM artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
         with:
@@ -77,6 +102,20 @@ jobs:
           test -s scpn-quantum-engine.cdx.json
           mv scpn-quantum-engine.cdx.json ../sbom-rust.cdx.json
           test -s ../sbom-rust.cdx.json
+      - name: Validate the generated SBOM
+        working-directory: .
+        run: |
+          python3 - <<'EOF'
+          import json
+          bom = json.load(open("sbom-rust.cdx.json", encoding="utf-8"))
+          assert bom["bomFormat"] == "CycloneDX", bom.get("bomFormat")
+          assert bom["specVersion"] == "1.5", bom.get("specVersion")
+          components = bom.get("components", [])
+          assert len(components) > 10, f"implausibly small BOM: {len(components)} components"
+          root = bom.get("metadata", {}).get("component", {})
+          assert root.get("name") == "scpn-quantum-engine", "crate missing from BOM metadata"
+          print(f"SBOM valid: {len(components)} components")
+          EOF
       - name: Upload Rust SBOM artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
         with:
