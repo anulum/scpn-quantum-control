@@ -24,7 +24,6 @@ in the emitter. A scorecard that fails its own validation is refused outright.
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
 import sys
 from collections.abc import Sequence
@@ -36,7 +35,6 @@ from scpn_studio_platform.evidence import (
     ClaimBoundary,
     ClaimStatus,
     DerivedEdge,
-    DerivedKind,
     EvidenceBundle,
     EvidenceKind,
     EvidenceLevel,
@@ -55,6 +53,7 @@ from ..differentiable_baseline_scorecard import (
 from ..differentiable_claim_ledger import REPO_ROOT
 from .evidence_bundle import (
     DEFAULT_ACTIVITY_TIMESTAMP,
+    _committed_artifact_edge,
     _digest_payload,
     _studio_activity,
     _studio_agent,
@@ -89,14 +88,7 @@ def _artifact_edge(artifact_path: Path) -> DerivedEdge:
         If the artefact path does not exist — a requested derivation edge that
         cannot be content-addressed fails closed instead of being dropped.
     """
-    if not artifact_path.exists():
-        raise ValueError(f"scorecard artefact does not exist: {artifact_path.as_posix()}")
-    digest = hashlib.sha256(artifact_path.read_bytes()).hexdigest()
-    return DerivedEdge(
-        kind=DerivedKind.EVIDENCE,
-        studio=STUDIO_ID,
-        entity_digest=f"sha256:{digest}",
-    )
+    return _committed_artifact_edge(artifact_path, label="scorecard artefact")
 
 
 def build_scorecard_bundle(

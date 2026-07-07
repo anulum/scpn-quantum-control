@@ -17,6 +17,8 @@ import pytest
 
 pytest.importorskip("scpn_studio_platform", reason="studio extra not installed")
 
+from scpn_studio_platform.evidence import EvidenceBundle  # noqa: E402
+
 from scpn_quantum_control.differentiable_baseline_scorecard import (  # noqa: E402
     REQUIRED_BASELINE_CATEGORIES,
 )
@@ -24,7 +26,10 @@ from scpn_quantum_control.differentiable_baseline_scorecard import (  # noqa: E4
     run_differentiable_baseline_scorecard as run_baseline_scorecard,
 )
 from scpn_quantum_control.studio import scorecard_bundle  # noqa: E402
-from scpn_quantum_control.studio.evidence_bundle import validate_bundle  # noqa: E402
+from scpn_quantum_control.studio.evidence_bundle import (  # noqa: E402
+    StudioBundleValidation,
+    validate_bundle,
+)
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
@@ -113,3 +118,26 @@ def test_main_fails_closed_on_missing_artifact(tmp_path: Path) -> None:
     """The CLI propagates the fail-closed artefact error."""
     with pytest.raises(ValueError, match="scorecard artefact does not exist"):
         scorecard_bundle.main(["--artifact-path", str(tmp_path / "missing.json")])
+
+
+def test_main_reports_a_rejected_bundle(
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """A federation-gate rejection exits 1 and names the rejections."""
+
+    def rejecting_validate(bundle: EvidenceBundle) -> StudioBundleValidation:
+        validated = validate_bundle(bundle)
+        verdict = dataclasses.replace(
+            validated.verdict,
+            admitted=False,
+            rejections=("forced rejection for the CLI branch",),
+        )
+        return dataclasses.replace(validated, verdict=verdict)
+
+    monkeypatch.setattr(scorecard_bundle, "validate_bundle", rejecting_validate)
+    artifact = REPO_ROOT / scorecard_bundle.DEFAULT_SCORECARD_ARTIFACT_PATH
+    exit_code = scorecard_bundle.main(["--artifact-path", str(artifact)])
+    captured = capsys.readouterr()
+    assert exit_code == 1
+    assert "forced rejection for the CLI branch" in captured.err

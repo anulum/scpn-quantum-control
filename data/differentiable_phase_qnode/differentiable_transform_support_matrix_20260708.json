@@ -1,0 +1,365 @@
+{
+  "artifact_id": "diff-transform-support-matrix-20260708",
+  "audit_blocked_count": 4,
+  "audit_case_count": 24,
+  "audit_passed_count": 20,
+  "blocked_row_count": 4,
+  "claim_boundary": "generated from bounded local transform-algebra audit rows; supported rows are local conformance evidence only, and blocked rows are not promoted to analytic, framework-native, compiler, provider, hardware, or performance claims",
+  "generated_by": "python -m scpn_quantum_control.differentiable_transform_support_matrix_artifact --write",
+  "required_rows": [
+    "native_grad_vmap",
+    "native_vmap_grad",
+    "native_jacfwd_jacrev",
+    "native_hessian",
+    "native_jvp_vjp",
+    "registered_custom_rules",
+    "program_ad_jvp_vjp",
+    "program_ad_hessian",
+    "quantum_gradient_native_nesting",
+    "unsupported_custom_rule_registration",
+    "unsupported_complex_valued_objective",
+    "unsupported_structured_container",
+    "unsupported_nondifferentiable_boundary"
+  ],
+  "row_count": 13,
+  "schema": "scpn_qc_differentiable_transform_support_matrix_v1",
+  "support_matrix": [
+    {
+      "blocked_reasons": [],
+      "case_ids": [
+        "grad_of_reduced_vmap_matches_row_gradients"
+      ],
+      "claim_boundary": "generated from bounded local transform-algebra audit rows; supported rows are local conformance evidence only, and blocked rows are not promoted to analytic, framework-native, compiler, provider, hardware, or performance claims",
+      "evidence": [
+        "grad",
+        "vmap",
+        "finite_difference_diagnostic"
+      ],
+      "lane": "native",
+      "notes": [
+        "native local finite-difference diagnostic transform composition"
+      ],
+      "residual": 1.3877787807814457e-11,
+      "row_id": "native_grad_vmap",
+      "status": "passed",
+      "supported": true,
+      "tolerance": 5e-05,
+      "transform_stack": [
+        "grad",
+        "vmap"
+      ]
+    },
+    {
+      "blocked_reasons": [],
+      "case_ids": [
+        "vmap_of_grad_matches_analytic_rows"
+      ],
+      "claim_boundary": "generated from bounded local transform-algebra audit rows; supported rows are local conformance evidence only, and blocked rows are not promoted to analytic, framework-native, compiler, provider, hardware, or performance claims",
+      "evidence": [
+        "vmap",
+        "grad",
+        "analytic_reference"
+      ],
+      "lane": "native",
+      "notes": [
+        "native local row-wise gradient vectorisation"
+      ],
+      "residual": 8.91584306383919e-11,
+      "row_id": "native_vmap_grad",
+      "status": "passed",
+      "supported": true,
+      "tolerance": 5e-05,
+      "transform_stack": [
+        "vmap",
+        "grad"
+      ]
+    },
+    {
+      "blocked_reasons": [],
+      "case_ids": [
+        "jacfwd_matches_jacrev_for_local_vector_objective"
+      ],
+      "claim_boundary": "generated from bounded local transform-algebra audit rows; supported rows are local conformance evidence only, and blocked rows are not promoted to analytic, framework-native, compiler, provider, hardware, or performance claims",
+      "evidence": [
+        "jacfwd",
+        "jacrev",
+        "finite_difference_diagnostic"
+      ],
+      "lane": "native",
+      "notes": [
+        "forward and reverse finite-difference Jacobian routes agree"
+      ],
+      "residual": 0.0,
+      "row_id": "native_jacfwd_jacrev",
+      "status": "passed",
+      "supported": true,
+      "tolerance": 5e-05,
+      "transform_stack": [
+        "jacfwd",
+        "jacrev"
+      ]
+    },
+    {
+      "blocked_reasons": [],
+      "case_ids": [
+        "hessian_is_symmetric_for_smooth_scalar_objective"
+      ],
+      "claim_boundary": "generated from bounded local transform-algebra audit rows; supported rows are local conformance evidence only, and blocked rows are not promoted to analytic, framework-native, compiler, provider, hardware, or performance claims",
+      "evidence": [
+        "hessian",
+        "finite_difference_diagnostic"
+      ],
+      "lane": "native",
+      "notes": [
+        "smooth scalar-objective Hessian symmetry"
+      ],
+      "residual": 0.0,
+      "row_id": "native_hessian",
+      "status": "passed",
+      "supported": true,
+      "tolerance": 5e-05,
+      "transform_stack": [
+        "hessian"
+      ]
+    },
+    {
+      "blocked_reasons": [],
+      "case_ids": [
+        "jvp_vjp_adjoint_inner_product_identity"
+      ],
+      "claim_boundary": "generated from bounded local transform-algebra audit rows; supported rows are local conformance evidence only, and blocked rows are not promoted to analytic, framework-native, compiler, provider, hardware, or performance claims",
+      "evidence": [
+        "jvp",
+        "vjp",
+        "adjoint_identity"
+      ],
+      "lane": "native",
+      "notes": [
+        "directional transform adjoint identity"
+      ],
+      "residual": 4.884981308350689e-11,
+      "row_id": "native_jvp_vjp",
+      "status": "passed",
+      "supported": true,
+      "tolerance": 5e-05,
+      "transform_stack": [
+        "jvp",
+        "vjp"
+      ]
+    },
+    {
+      "blocked_reasons": [],
+      "case_ids": [
+        "registered_custom_rule_vmap_jvp_vjp_matches_reference"
+      ],
+      "claim_boundary": "generated from bounded local transform-algebra audit rows; supported rows are local conformance evidence only, and blocked rows are not promoted to analytic, framework-native, compiler, provider, hardware, or performance claims",
+      "evidence": [
+        "vmap",
+        "custom_jvp",
+        "custom_vjp",
+        "CustomDerivativeRule",
+        "analytic_reference"
+      ],
+      "lane": "custom_rules",
+      "notes": [
+        "registered exact custom JVP/VJP rules under native vmap"
+      ],
+      "residual": 0.0,
+      "row_id": "registered_custom_rules",
+      "status": "passed",
+      "supported": true,
+      "tolerance": 5e-05,
+      "transform_stack": [
+        "vmap",
+        "custom_jvp",
+        "custom_vjp"
+      ]
+    },
+    {
+      "blocked_reasons": [],
+      "case_ids": [
+        "program_ad_vmap_gradient_jvp_vjp_matches_block_hessian"
+      ],
+      "claim_boundary": "generated from bounded local transform-algebra audit rows; supported rows are local conformance evidence only, and blocked rows are not promoted to analytic, framework-native, compiler, provider, hardware, or performance claims",
+      "evidence": [
+        "whole_program_value_and_grad",
+        "vmap",
+        "jvp",
+        "vjp",
+        "analytic_reference"
+      ],
+      "lane": "program_ad",
+      "notes": [
+        "directional transforms over vmap of whole-program AD gradients"
+      ],
+      "residual": 5.412337245047638e-15,
+      "row_id": "program_ad_jvp_vjp",
+      "status": "passed",
+      "supported": true,
+      "tolerance": 5e-05,
+      "transform_stack": [
+        "jvp",
+        "vjp",
+        "vmap",
+        "whole_program_grad"
+      ]
+    },
+    {
+      "blocked_reasons": [],
+      "case_ids": [
+        "program_ad_hessian_matches_quadratic_curvature"
+      ],
+      "claim_boundary": "generated from bounded local transform-algebra audit rows; supported rows are local conformance evidence only, and blocked rows are not promoted to analytic, framework-native, compiler, provider, hardware, or performance claims",
+      "evidence": [
+        "whole_program_value_and_grad",
+        "hessian",
+        "analytic_reference"
+      ],
+      "lane": "program_ad",
+      "notes": [
+        "Hessian over a whole-program AD scalar objective"
+      ],
+      "residual": 7.66053886991358e-15,
+      "row_id": "program_ad_hessian",
+      "status": "passed",
+      "supported": true,
+      "tolerance": 5e-05,
+      "transform_stack": [
+        "hessian",
+        "whole_program_value_and_grad"
+      ]
+    },
+    {
+      "blocked_reasons": [],
+      "case_ids": [
+        "phase_qnode_native_vmap_grad_matches_parameter_shift_reference"
+      ],
+      "claim_boundary": "generated from bounded local transform-algebra audit rows; supported rows are local conformance evidence only, and blocked rows are not promoted to analytic, framework-native, compiler, provider, hardware, or performance claims",
+      "evidence": [
+        "execute_phase_qnode_vmap_grad",
+        "parameter_shift",
+        "phase_qnode",
+        "vmap.grad"
+      ],
+      "lane": "quantum_gradients",
+      "notes": [
+        "deterministic native local phase-QNode manual vmap(grad)"
+      ],
+      "residual": 5.551115123125783e-17,
+      "row_id": "quantum_gradient_native_nesting",
+      "status": "passed",
+      "supported": true,
+      "tolerance": 5e-05,
+      "transform_stack": [
+        "vmap",
+        "grad",
+        "parameter_shift"
+      ]
+    },
+    {
+      "blocked_reasons": [
+        "custom JVP/VJP composition requires registered exact rules and adjoint identity evidence before promotion"
+      ],
+      "case_ids": [
+        "custom_jvp_vjp_unregistered_boundary"
+      ],
+      "claim_boundary": "generated from bounded local transform-algebra audit rows; supported rows are local conformance evidence only, and blocked rows are not promoted to analytic, framework-native, compiler, provider, hardware, or performance claims",
+      "evidence": [
+        "custom_rule_registry_required",
+        "finite_difference_not_promotion_evidence"
+      ],
+      "lane": "unsupported_boundary",
+      "notes": [
+        "unregistered custom rules remain fail-closed"
+      ],
+      "residual": null,
+      "row_id": "unsupported_custom_rule_registration",
+      "status": "blocked",
+      "supported": false,
+      "tolerance": 5e-05,
+      "transform_stack": [
+        "custom_jvp",
+        "custom_vjp"
+      ]
+    },
+    {
+      "blocked_reasons": [
+        "complex-step support is limited to real-valued analytic objectives; complex-valued objectives need Wirtinger-specific contracts"
+      ],
+      "case_ids": [
+        "complex_valued_objective_boundary"
+      ],
+      "claim_boundary": "generated from bounded local transform-algebra audit rows; supported rows are local conformance evidence only, and blocked rows are not promoted to analytic, framework-native, compiler, provider, hardware, or performance claims",
+      "evidence": [
+        "complex_step_real_analytic_route",
+        "wirtinger_boundary"
+      ],
+      "lane": "unsupported_boundary",
+      "notes": [
+        "complex-valued objectives need Wirtinger-specific contracts"
+      ],
+      "residual": null,
+      "row_id": "unsupported_complex_valued_objective",
+      "status": "blocked",
+      "supported": false,
+      "tolerance": 5e-05,
+      "transform_stack": [
+        "complex_step",
+        "wirtinger"
+      ]
+    },
+    {
+      "blocked_reasons": [
+        "structured parameter containers need explicit PyTree/container metadata before transform composition can be promoted"
+      ],
+      "case_ids": [
+        "structured_parameter_container_boundary"
+      ],
+      "claim_boundary": "generated from bounded local transform-algebra audit rows; supported rows are local conformance evidence only, and blocked rows are not promoted to analytic, framework-native, compiler, provider, hardware, or performance claims",
+      "evidence": [
+        "first_path_flat_parameter_vector",
+        "framework_parity_lane_required"
+      ],
+      "lane": "unsupported_boundary",
+      "notes": [
+        "structured containers need explicit metadata before promotion"
+      ],
+      "residual": null,
+      "row_id": "unsupported_structured_container",
+      "status": "blocked",
+      "supported": false,
+      "tolerance": 5e-05,
+      "transform_stack": [
+        "pytree",
+        "structured_container"
+      ]
+    },
+    {
+      "blocked_reasons": [
+        "abs at zero has a cusp; central finite difference may produce a number but cannot promote differentiability"
+      ],
+      "case_ids": [
+        "nondifferentiable_abs_zero_boundary"
+      ],
+      "claim_boundary": "generated from bounded local transform-algebra audit rows; supported rows are local conformance evidence only, and blocked rows are not promoted to analytic, framework-native, compiler, provider, hardware, or performance claims",
+      "evidence": [
+        "finite_difference_diagnostic_only",
+        "fail_closed_boundary_row"
+      ],
+      "lane": "unsupported_boundary",
+      "notes": [
+        "nondifferentiable cusps are diagnostic-only boundaries"
+      ],
+      "residual": null,
+      "row_id": "unsupported_nondifferentiable_boundary",
+      "status": "blocked",
+      "supported": false,
+      "tolerance": 5e-05,
+      "transform_stack": [
+        "grad",
+        "nondifferentiable"
+      ]
+    }
+  ],
+  "supported_row_count": 9
+}

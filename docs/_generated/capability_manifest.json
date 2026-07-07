@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 820,
     "public_documentation_pages": 260,
-    "python_model_classes": 923,
-    "python_model_source_modules": 478,
+    "python_model_classes": 924,
+    "python_model_source_modules": 480,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 64,
-    "test_files": 846
+    "test_files": 848
   },
   "documentation": {
     "examples": [
@@ -582,7 +582,7 @@
       {
         "package": "studio",
         "path": "src/scpn_quantum_control/studio",
-        "python_modules": 9
+        "python_modules": 10
       },
       {
         "package": "tcbo",
@@ -4122,6 +4122,10 @@
         "path": "src/scpn_quantum_control/differentiable_transform_support_matrix.py"
       },
       {
+        "name": "TransformSupportMatrixArtifactValidation",
+        "path": "src/scpn_quantum_control/differentiable_transform_support_matrix_artifact.py"
+      },
+      {
         "name": "TrotterEvolutionConfig",
         "path": "src/scpn_quantum_control/phase/xy_kuramoto.py"
       },
@@ -4494,6 +4498,7 @@
       "src/scpn_quantum_control/differentiable_transform_algebra.py",
       "src/scpn_quantum_control/differentiable_transform_helpers.py",
       "src/scpn_quantum_control/differentiable_transform_support_matrix.py",
+      "src/scpn_quantum_control/differentiable_transform_support_matrix_artifact.py",
       "src/scpn_quantum_control/differentiable_vmap.py",
       "src/scpn_quantum_control/dla_parity/baselines.py",
       "src/scpn_quantum_control/dla_parity/dataset.py",
@@ -4755,6 +4760,7 @@
       "src/scpn_quantum_control/studio/reference_validation.py",
       "src/scpn_quantum_control/studio/result_pack_seal.py",
       "src/scpn_quantum_control/studio/scorecard_bundle.py",
+      "src/scpn_quantum_control/studio/support_matrix_bundle.py",
       "src/scpn_quantum_control/studio/verbs.py",
       "src/scpn_quantum_control/tcbo/quantum_observer.py",
       "src/scpn_quantum_control/thermodynamics/readiness.py",
@@ -6127,6 +6133,7 @@
       "tests/test_differentiable_stochastic_estimators.py",
       "tests/test_differentiable_transform_algebra.py",
       "tests/test_differentiable_transform_helpers.py",
+      "tests/test_differentiable_transform_support_matrix_artifact.py",
       "tests/test_differentiable_vmap.py",
       "tests/test_disruption_classifier.py",
       "tests/test_dla_parity_baselines.py",
@@ -6685,6 +6692,7 @@
       "tests/test_studio_recompute_kernel.py",
       "tests/test_studio_reference_validation.py",
       "tests/test_studio_scorecard_bundle.py",
+      "tests/test_studio_support_matrix_bundle.py",
       "tests/test_sub_us_tracker.py",
       "tests/test_submit_fim_replication_zne_ibm.py",
       "tests/test_submit_phase3_large_system_ibm.py",

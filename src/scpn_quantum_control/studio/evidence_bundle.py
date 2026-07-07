@@ -134,6 +134,37 @@ def _studio_agent(*, operator: str = "scpn-quantum-control/studio-emitter") -> P
     return ProvAgent(studio_version=STUDIO_VERSION, operator=operator)
 
 
+def _committed_artifact_edge(artifact_path: Path, *, label: str) -> DerivedEdge:
+    """Return the content-addressed derivation edge for a committed artefact.
+
+    Parameters
+    ----------
+    artifact_path
+        Path of the committed artefact file to content-address.
+    label
+        Human-readable artefact label used in the fail-closed error message.
+
+    Returns
+    -------
+    DerivedEdge
+        Evidence edge carrying the SHA-256 of the artefact bytes.
+
+    Raises
+    ------
+    ValueError
+        If the artefact path does not exist — a requested derivation edge that
+        cannot be content-addressed fails closed instead of being dropped.
+    """
+    if not artifact_path.exists():
+        raise ValueError(f"{label} does not exist: {artifact_path.as_posix()}")
+    digest = hashlib.sha256(artifact_path.read_bytes()).hexdigest()
+    return DerivedEdge(
+        kind=DerivedKind.EVIDENCE,
+        studio=STUDIO_ID,
+        entity_digest=f"sha256:{digest}",
+    )
+
+
 def evidence_axes(source: EvidenceSource) -> tuple[EvidenceKind, Substrate]:
     """Map QUANTUM evidence-source classes onto STUDIO kind and substrate axes.
 

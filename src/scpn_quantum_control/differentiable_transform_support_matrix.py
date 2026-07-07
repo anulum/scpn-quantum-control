@@ -183,7 +183,7 @@ _SUPPORT_MATRIX_ROW_SPECS: Final[tuple[_SupportMatrixRowSpec, ...]] = (
         "native",
         ("vmap", "grad"),
         ("vmap_of_grad_matches_analytic_rows",),
-        ("native local row-wise gradient vectorization",),
+        ("native local row-wise gradient vectorisation",),
     ),
     _SupportMatrixRowSpec(
         "native_jacfwd_jacrev",
