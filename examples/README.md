@@ -373,3 +373,15 @@ or thermodynamic-limit evidence.
 ```bash
 python examples/31_qfi_fss_differentiable_report.py
 ```
+
+## 32_topology_controlled_qsnn.py — Topology-Controlled QSNN Coupling
+
+Runs the quantum neuromorphic bridge twice on the same deterministic spike
+train — free-running versus with a persistent-H1
+``TopologicalDynamicCouplingPolicy`` projecting the recurrent weights every
+few steps — and reports the H1 cycle count of both final coupling graphs.
+Simulator demonstration only; no hardware or biological claims.
+
+```bash
+python examples/32_topology_controlled_qsnn.py
+```

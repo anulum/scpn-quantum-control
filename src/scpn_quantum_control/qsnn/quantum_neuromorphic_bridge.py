@@ -22,7 +22,7 @@ claims.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TypeAlias, cast
+from typing import Protocol, TypeAlias, cast, runtime_checkable
 
 import numpy as np
 from numpy.typing import NDArray
@@ -35,6 +35,19 @@ CLAIM_BOUNDARY = (
 
 FloatArray: TypeAlias = NDArray[np.float64]
 IntArray: TypeAlias = NDArray[np.int64]
+
+
+@runtime_checkable
+class RecurrentCouplingPolicy(Protocol):
+    """Structural contract for recurrent-weight projection policies.
+
+    Deliberately duck-typed so the bridge stays decoupled from the policy
+    implementation; ``topology_control.TopologicalDynamicCouplingPolicy``
+    (constrained persistent-H1 optimisation) satisfies it.
+    """
+
+    def apply(self, recurrent_weights: NDArray[np.float64]) -> NDArray[np.float64]:
+        """Return replacement recurrent weights for the given matrix."""
 
 
 def _as_finite_vector(
@@ -210,11 +223,18 @@ class QuantumNeuromorphicBridge:
         recurrent_weights: NDArray[np.float64] | None = None,
         seed: int | None = None,
         deterministic: bool = True,
+        topology_policy: RecurrentCouplingPolicy | None = None,
+        topology_policy_interval: int = 1,
     ) -> None:
         if n_inputs <= 0:
             raise ValueError("n_inputs must be positive")
         if n_neurons <= 0:
             raise ValueError("n_neurons must be positive")
+        if topology_policy_interval < 1:
+            raise ValueError("topology_policy_interval must be >= 1")
+        self.topology_policy = topology_policy
+        self.topology_policy_interval = int(topology_policy_interval)
+        self._steps_since_topology_projection = 0
         self.n_inputs = int(n_inputs)
         self.n_neurons = int(n_neurons)
         self.lif = lif or QuantumLIFConfig()
@@ -377,6 +397,23 @@ class QuantumNeuromorphicBridge:
         self.recurrent_weights = updated
         return delta
 
+    def _apply_topology_policy(self, policy: RecurrentCouplingPolicy) -> None:
+        """Project recurrent weights through the given topology policy.
+
+        Fail-closed: a policy returning the wrong shape or non-finite values
+        raises instead of silently corrupting the coupling matrix. The result
+        is clipped to the coupling bounds and self-loops stay removed, so the
+        bridge invariants hold regardless of the policy implementation.
+        """
+        projected = _as_finite_matrix(
+            "topology_policy output",
+            np.asarray(policy.apply(self.recurrent_weights), dtype=np.float64),
+            (self.n_neurons, self.n_neurons),
+        )
+        projected = self._clip_weights(projected)
+        np.fill_diagonal(projected, 0.0)
+        self.recurrent_weights = projected
+
     def step(self, external_current: NDArray[np.float64]) -> NeuromorphicStepResult:
         """Advance the bridge by one time step."""
         external = _as_finite_vector("external_current", external_current, (self.n_inputs,))
@@ -393,6 +430,11 @@ class QuantumNeuromorphicBridge:
             np.fill_diagonal(self.recurrent_weights, 0.0)
 
         coupling_delta = self._update_recurrent_coupling(spikes, probabilities)
+        if self.topology_policy is not None:
+            self._steps_since_topology_projection += 1
+            if self._steps_since_topology_projection >= self.topology_policy_interval:
+                self._apply_topology_policy(self.topology_policy)
+                self._steps_since_topology_projection = 0
         self.last_spikes = spikes.copy()
 
         return NeuromorphicStepResult(
@@ -438,6 +480,7 @@ __all__ = [
     "NeuromorphicStepResult",
     "QuantumLIFConfig",
     "QuantumNeuromorphicBridge",
+    "RecurrentCouplingPolicy",
     "TraceSTDPConfig",
     "TraceSTDPState",
 ]
