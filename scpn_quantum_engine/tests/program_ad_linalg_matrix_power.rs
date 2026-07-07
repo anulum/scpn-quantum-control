@@ -21,7 +21,10 @@ fn value_and_gradient_replays_static_matrix_power_positive_nodes() {
     assert!(result.supported, "{result:?}");
     assert!(result
         .claim_boundary
-        .contains("value_and_gradient_static_linalg_primitives_executed_branch_view_assignment"));
+        .contains("value_and_gradient_static_linalg_primitives"));
+    assert!(result
+        .claim_boundary
+        .contains("executed_branch_view_assignment"));
     assert_close(
         result
             .value

@@ -395,6 +395,14 @@ def differentiable_module_hardening_registry() -> tuple[DifferentiableModuleHard
             ),
         ),
         _record(
+            "src/scpn_quantum_control/differentiable_transform_support_matrix.py",
+            ("tests/test_differentiable_transform_algebra.py",),
+            (
+                "transform-algebra support-matrix generation",
+                "fail-closed support-row boundary classification",
+            ),
+        ),
+        _record(
             "src/scpn_quantum_control/differentiable_natural_gradient.py",
             (
                 "tests/test_differentiable_natural_gradient.py",
