@@ -13,7 +13,7 @@
     "python_model_source_modules": 474,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 64,
-    "test_files": 835
+    "test_files": 836
   },
   "documentation": {
     "examples": [
@@ -6556,6 +6556,7 @@
       "tests/test_regression_baselines.py",
       "tests/test_render_kuramoto_handbook.py",
       "tests/test_render_tier_benchmarks.py",
+      "tests/test_rendered_docs_headers.py",
       "tests/test_report_s2_scaling_claim_boundary.py",
       "tests/test_reproducible_comparison.py",
       "tests/test_result_pack_seal.py",

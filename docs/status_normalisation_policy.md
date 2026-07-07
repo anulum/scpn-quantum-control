@@ -1,4 +1,4 @@
-## HAL Status Normalisation Policy
+# HAL Status Normalisation Policy
 
 This document defines the frozen canonical status contract for hardware HAL
 adapters. Any alias change is a contract change and must follow the evidence
