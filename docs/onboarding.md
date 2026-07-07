@@ -138,8 +138,8 @@ dynamics matter and where uncontrolled evidence would be expensive:
   2x2/3x3/4x4/5x5 expression determinant native lowering, helper-backed
   6x6 through 19x19 determinant native lowering, static square/rectangular trace
   native lowering, static diagonal gather/scatter native lowering, static dense
-  inverse native lowering through 6x6, static vector and matrix-RHS solve
-  native lowering through 6x6, 2x2 product native lowering, and an
+  inverse native lowering through 7x7, static vector and matrix-RHS solve
+  native lowering through 7x7, 2x2 product native lowering, and an
   introspectable native linalg support contract for service gating.
 - Parameter-shift gradient helpers for callable expectation objectives,
   gradient-descent VQE examples, provider-gradient readiness ledgers, and a
@@ -170,13 +170,13 @@ dynamics matter and where uncontrolled evidence would be expensive:
 - Native determinant traces at `20x20` and wider are intentionally
   fail-closed after a strict native verification failure at the current helper
   formulation.
-- Native quotient-linalg full-output inverse and matrix-RHS solve traces at
-  `7x7` and wider are intentionally unsuitable for the current native path.
-  `5x5` through `6x6` reuse one determinant/adjugate helper per static matrix;
-  the `7x7` full-output promotion attempt exceeded the focused native gate, so
-  wider traces fail closed until a native factorisation helper replaces
-  adjugate replay. This limitation is useful research evidence, not a silent
-  runtime fallback.
+- Native quotient-linalg full-output inverse, vector-solve, and matrix-RHS solve
+  traces are supported through `7x7` for static matrices and at most four RHS
+  columns. `5x5` through `7x7` reuse one partial-pivot factorisation helper per
+  static matrix; `8x8` and wider full-output traces still fail closed until a
+  larger verified factorisation helper passes the native correctness gate. This
+  remaining limitation is useful research evidence, not a silent runtime
+  fallback.
 - Full gradient tape semantics, public JAX/PyTorch/TensorFlow adapters,
   PennyLane/Qiskit migration bridges, backend-aware hardware gradient
   planning, QNN/QGNN/QSNN production examples, and analog oscillator mapping

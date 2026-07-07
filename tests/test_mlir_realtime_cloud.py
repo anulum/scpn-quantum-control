@@ -72,7 +72,7 @@ from scpn_quantum_control.differentiable import (
     vmap,
     whole_program_value_and_grad,
 )
-from scpn_quantum_control.kuramoto_core import build_kuramoto_problem
+from scpn_quantum_control.kuramoto_core import KuramotoProblem, build_kuramoto_problem
 
 FloatArray = NDArray[np.float64]
 
@@ -84,7 +84,7 @@ def _dense_determinant_offsets(size: int) -> FloatArray:
     cols = np.arange(size, dtype=np.float64).reshape(1, size) + 1.0
     offsets = 0.011 * np.sin(rows * (cols + 0.5)) + 0.007 * np.cos(rows + 2.0 * cols)
     np.fill_diagonal(offsets, 0.0)
-    return cast(FloatArray, offsets)
+    return offsets
 
 
 def _dense_solve_values(size: int, *, shift: float) -> FloatArray:
@@ -125,7 +125,7 @@ def _eager_batching_rule(
     return np.asarray([function(item) for item in batch], dtype=np.float64)
 
 
-def _problem():
+def _problem() -> KuramotoProblem:
     return build_kuramoto_problem(
         np.array(
             [
@@ -2273,16 +2273,16 @@ def test_native_llvm_jit_matrix_quadratic_form_kernel_executes_and_marks_plan_na
 
     identity = PrimitiveIdentity("scpn.compiler_ad.native", "matrix_quadratic_form", "1")
 
-    def unpack(values: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    def unpack(values: FloatArray) -> tuple[FloatArray, FloatArray]:
         matrix = values[:4].reshape(2, 2)
         vector = values[4:]
         return matrix, vector
 
-    def value_fn(values: np.ndarray) -> np.ndarray:
+    def value_fn(values: FloatArray) -> FloatArray:
         matrix, vector = unpack(values)
         return np.array([vector @ matrix @ vector], dtype=np.float64)
 
-    def jvp_rule(values: np.ndarray, tangent: np.ndarray) -> np.ndarray:
+    def jvp_rule(values: FloatArray, tangent: FloatArray) -> FloatArray:
         matrix, vector = unpack(values)
         matrix_tangent, vector_tangent = unpack(tangent)
         return np.array(
@@ -2294,7 +2294,7 @@ def test_native_llvm_jit_matrix_quadratic_form_kernel_executes_and_marks_plan_na
             dtype=np.float64,
         )
 
-    def vjp_rule(values: np.ndarray, cotangent: np.ndarray) -> np.ndarray:
+    def vjp_rule(values: FloatArray, cotangent: FloatArray) -> FloatArray:
         matrix, vector = unpack(values)
         cotangent_value = cotangent[0]
         matrix_gradient = np.outer(vector, vector).reshape(-1)
@@ -2620,21 +2620,21 @@ def test_native_llvm_jit_matrix_vector_kernel_executes_and_marks_plan_native() -
 
     identity = PrimitiveIdentity("scpn.compiler_ad.native", "matrix_vector_product", "1")
 
-    def unpack(values: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    def unpack(values: FloatArray) -> tuple[FloatArray, FloatArray]:
         matrix = values[:4].reshape(2, 2)
         vector = values[4:]
         return matrix, vector
 
-    def value_fn(values: np.ndarray) -> np.ndarray:
+    def value_fn(values: FloatArray) -> FloatArray:
         matrix, vector = unpack(values)
-        return cast(FloatArray, matrix @ vector)
+        return matrix @ vector
 
-    def jvp_rule(values: np.ndarray, tangent: np.ndarray) -> np.ndarray:
+    def jvp_rule(values: FloatArray, tangent: FloatArray) -> FloatArray:
         matrix, vector = unpack(values)
         matrix_tangent, vector_tangent = unpack(tangent)
-        return cast(FloatArray, matrix_tangent @ vector + matrix @ vector_tangent)
+        return matrix_tangent @ vector + matrix @ vector_tangent
 
-    def vjp_rule(values: np.ndarray, cotangent: np.ndarray) -> np.ndarray:
+    def vjp_rule(values: FloatArray, cotangent: FloatArray) -> FloatArray:
         matrix, vector = unpack(values)
         matrix_gradient = np.outer(cotangent, vector).reshape(-1)
         vector_gradient = matrix.T @ cotangent
@@ -2819,21 +2819,21 @@ def test_native_llvm_jit_matrix_matrix_kernel_executes_and_marks_plan_native() -
 
     identity = PrimitiveIdentity("scpn.compiler_ad.native", "matrix_matrix_product", "1")
 
-    def unpack(values: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    def unpack(values: FloatArray) -> tuple[FloatArray, FloatArray]:
         left = values[:4].reshape(2, 2)
         right = values[4:].reshape(2, 2)
         return left, right
 
-    def value_fn(values: np.ndarray) -> np.ndarray:
+    def value_fn(values: FloatArray) -> FloatArray:
         left, right = unpack(values)
         return cast(FloatArray, (left @ right).reshape(-1))
 
-    def jvp_rule(values: np.ndarray, tangent: np.ndarray) -> np.ndarray:
+    def jvp_rule(values: FloatArray, tangent: FloatArray) -> FloatArray:
         left, right = unpack(values)
         left_tangent, right_tangent = unpack(tangent)
         return cast(FloatArray, (left_tangent @ right + left @ right_tangent).reshape(-1))
 
-    def vjp_rule(values: np.ndarray, cotangent: np.ndarray) -> np.ndarray:
+    def vjp_rule(values: FloatArray, cotangent: FloatArray) -> FloatArray:
         left, right = unpack(values)
         cotangent_matrix = cotangent.reshape(2, 2)
         left_gradient = cotangent_matrix @ right.T
@@ -3598,7 +3598,7 @@ def test_executable_ad_kernel_batching_rule_dispatches_native_value_jvp_and_vjp(
     )
     cotangents = np.array([[1.25], [-0.5]], dtype=np.float64)
 
-    def unreachable(*_args: object) -> np.ndarray:
+    def unreachable(*_args: object) -> FloatArray:
         raise AssertionError("primitive-specific executable batching rule was not used")
 
     batched_value = vmap(unreachable, primitive_identity=identity, registry=registry)(values)
@@ -3661,15 +3661,15 @@ def test_executable_ad_kernel_batching_rule_dispatches_native_value_jvp_and_vjp(
 def test_native_llvm_jit_matrix_2x2_inverse_kernel_executes_and_marks_plan_native() -> None:
     """Native LLVM/JIT inverse AD kernels should execute exact nonsingular matrix AD."""
 
-    def inverse(values: np.ndarray) -> np.ndarray:
-        return np.linalg.inv(values.reshape(2, 2)).reshape(4)
+    def inverse(values: FloatArray) -> FloatArray:
+        return np.asarray(np.linalg.inv(values.reshape(2, 2)).reshape(4), dtype=np.float64)
 
-    def inverse_jvp(values: np.ndarray, tangent: np.ndarray) -> np.ndarray:
+    def inverse_jvp(values: FloatArray, tangent: FloatArray) -> FloatArray:
         inverse_matrix = np.linalg.inv(values.reshape(2, 2))
         tangent_matrix = tangent.reshape(2, 2)
         return cast(FloatArray, (-inverse_matrix @ tangent_matrix @ inverse_matrix).reshape(4))
 
-    def inverse_vjp(values: np.ndarray, cotangent: np.ndarray) -> np.ndarray:
+    def inverse_vjp(values: FloatArray, cotangent: FloatArray) -> FloatArray:
         inverse_matrix = np.linalg.inv(values.reshape(2, 2))
         cotangent_matrix = cotangent.reshape(2, 2)
         return cast(
@@ -3823,19 +3823,22 @@ def test_native_llvm_jit_matrix_2x2_inverse_kernel_executes_and_marks_plan_nativ
 def test_native_llvm_jit_matrix_2x2_solve_kernel_executes_and_marks_plan_native() -> None:
     """Native LLVM/JIT solve AD kernels should execute exact nonsingular linear solves."""
 
-    def solve(values: np.ndarray) -> np.ndarray:
+    def solve(values: FloatArray) -> FloatArray:
         matrix = values[:4].reshape(2, 2)
         vector = values[4:]
-        return np.linalg.solve(matrix, vector)
+        return np.asarray(np.linalg.solve(matrix, vector), dtype=np.float64)
 
-    def solve_jvp(values: np.ndarray, tangent: np.ndarray) -> np.ndarray:
+    def solve_jvp(values: FloatArray, tangent: FloatArray) -> FloatArray:
         matrix = values[:4].reshape(2, 2)
         primal_solution = np.linalg.solve(matrix, values[4:])
         tangent_matrix = tangent[:4].reshape(2, 2)
         tangent_vector = tangent[4:]
-        return np.linalg.solve(matrix, tangent_vector - tangent_matrix @ primal_solution)
+        return np.asarray(
+            np.linalg.solve(matrix, tangent_vector - tangent_matrix @ primal_solution),
+            dtype=np.float64,
+        )
 
-    def solve_vjp(values: np.ndarray, cotangent: np.ndarray) -> np.ndarray:
+    def solve_vjp(values: FloatArray, cotangent: FloatArray) -> FloatArray:
         matrix = values[:4].reshape(2, 2)
         primal_solution = np.linalg.solve(matrix, values[4:])
         adjoint_vector = np.linalg.solve(matrix.T, cotangent)
@@ -3998,14 +4001,14 @@ def test_native_llvm_jit_matrix_2x2_solve_kernel_executes_and_marks_plan_native(
 def test_native_llvm_jit_symmetric_2x2_cholesky_kernel_executes_and_marks_plan_native() -> None:
     """Native LLVM/JIT Cholesky AD kernels should execute exact SPD factorisation AD."""
 
-    def cholesky(values: np.ndarray) -> np.ndarray:
+    def cholesky(values: FloatArray) -> FloatArray:
         a00, a01, a11 = values
         l00 = np.sqrt(a00)
         l10 = a01 / l00
         l11 = np.sqrt(a11 - l10 * l10)
         return np.array([l00, l10, l11], dtype=np.float64)
 
-    def cholesky_jvp(values: np.ndarray, tangent: np.ndarray) -> np.ndarray:
+    def cholesky_jvp(values: FloatArray, tangent: FloatArray) -> FloatArray:
         a00, a01, a11 = values
         t00, t01, t11 = tangent
         l00 = np.sqrt(a00)
@@ -4016,7 +4019,7 @@ def test_native_llvm_jit_symmetric_2x2_cholesky_kernel_executes_and_marks_plan_n
         tangent_l11 = (t11 - 2.0 * l10 * tangent_l10) / (2.0 * l11)
         return np.array([tangent_l00, tangent_l10, tangent_l11], dtype=np.float64)
 
-    def cholesky_vjp(values: np.ndarray, cotangent: np.ndarray) -> np.ndarray:
+    def cholesky_vjp(values: FloatArray, cotangent: FloatArray) -> FloatArray:
         a00, a01, a11 = values
         cotangent_l00, cotangent_l10, cotangent_l11 = cotangent
         l00 = np.sqrt(a00)
@@ -4194,14 +4197,14 @@ def test_native_llvm_jit_symmetric_2x2_cholesky_kernel_executes_and_marks_plan_n
 def test_native_llvm_jit_symmetric_2x2_eigenvalues_kernel_executes_and_marks_plan_native() -> None:
     """Native LLVM/JIT eigenspectrum AD kernels should execute distinct symmetric 2x2 AD."""
 
-    def eigenvalues(values: np.ndarray) -> np.ndarray:
+    def eigenvalues(values: FloatArray) -> FloatArray:
         a00, a01, a11 = values
         centre = 0.5 * (a00 + a11)
         half_delta = 0.5 * (a00 - a11)
         radius = np.sqrt(half_delta * half_delta + a01 * a01)
         return np.array([centre - radius, centre + radius], dtype=np.float64)
 
-    def eigenvalues_jvp(values: np.ndarray, tangent: np.ndarray) -> np.ndarray:
+    def eigenvalues_jvp(values: FloatArray, tangent: FloatArray) -> FloatArray:
         a00, a01, a11 = values
         t00, t01, t11 = tangent
         half_delta = 0.5 * (a00 - a11)
@@ -4214,7 +4217,7 @@ def test_native_llvm_jit_symmetric_2x2_eigenvalues_kernel_executes_and_marks_pla
             dtype=np.float64,
         )
 
-    def eigenvalues_vjp(values: np.ndarray, cotangent: np.ndarray) -> np.ndarray:
+    def eigenvalues_vjp(values: FloatArray, cotangent: FloatArray) -> FloatArray:
         a00, a01, a11 = values
         lower_cotangent, upper_cotangent = cotangent
         half_delta = 0.5 * (a00 - a11)
@@ -4388,14 +4391,14 @@ def test_native_llvm_jit_symmetric_2x2_eigenvalues_kernel_executes_and_marks_pla
 def test_native_llvm_jit_matrix_2x2_eigenvalues_kernel_executes_and_marks_plan_native() -> None:
     """Native LLVM/JIT eigenspectrum AD should cover real-simple nonsymmetric 2x2 matrices."""
 
-    def eigenvalues(values: np.ndarray) -> np.ndarray:
+    def eigenvalues(values: FloatArray) -> FloatArray:
         a00, a01, a10, a11 = values
         trace = a00 + a11
         discriminant = (a00 - a11) * (a00 - a11) + 4.0 * a01 * a10
         root = np.sqrt(discriminant)
         return np.array([0.5 * (trace - root), 0.5 * (trace + root)], dtype=np.float64)
 
-    def eigenvalues_jvp(values: np.ndarray, tangent: np.ndarray) -> np.ndarray:
+    def eigenvalues_jvp(values: FloatArray, tangent: FloatArray) -> FloatArray:
         a00, a01, a10, a11 = values
         t00, t01, t10, t11 = tangent
         delta = a00 - a11
@@ -4409,7 +4412,7 @@ def test_native_llvm_jit_matrix_2x2_eigenvalues_kernel_executes_and_marks_plan_n
             dtype=np.float64,
         )
 
-    def eigenvalues_vjp(values: np.ndarray, cotangent: np.ndarray) -> np.ndarray:
+    def eigenvalues_vjp(values: FloatArray, cotangent: FloatArray) -> FloatArray:
         a00, a01, a10, a11 = values
         lower_cotangent, upper_cotangent = cotangent
         delta = a00 - a11
@@ -4631,7 +4634,7 @@ def test_native_llvm_jit_matrix_2x2_eigenvalues_kernel_executes_and_marks_plan_n
 def test_native_llvm_jit_matrix_2x2_eigensystem_kernel_executes_and_marks_plan_native() -> None:
     """Bounded 2x2 nonsymmetric eigensystem AD must execute as native LLVM/JIT."""
 
-    def eigensystem(values: np.ndarray) -> np.ndarray:
+    def eigensystem(values: FloatArray) -> FloatArray:
         a00, a01, a10, a11 = values
         trace = a00 + a11
         delta = a00 - a11
@@ -4650,7 +4653,7 @@ def test_native_llvm_jit_matrix_2x2_eigensystem_kernel_executes_and_marks_plan_n
             dtype=np.float64,
         )
 
-    def eigensystem_jvp(values: np.ndarray, tangent: np.ndarray) -> np.ndarray:
+    def eigensystem_jvp(values: FloatArray, tangent: FloatArray) -> FloatArray:
         a00, a01, a10, a11 = values
         t00, t01, t10, t11 = tangent
         trace_t = t00 + t11
@@ -4667,7 +4670,7 @@ def test_native_llvm_jit_matrix_2x2_eigensystem_kernel_executes_and_marks_plan_n
         q_lower_t = lower_t - t00
         q_upper_t = upper_t - t00
 
-        def vector_tangent(q_value: float, q_tangent: float) -> np.ndarray:
+        def vector_tangent(q_value: float, q_tangent: float) -> FloatArray:
             raw = np.array([a01, q_value], dtype=np.float64)
             raw_tangent = np.array([t01, q_tangent], dtype=np.float64)
             norm = np.linalg.norm(raw)
@@ -4688,7 +4691,7 @@ def test_native_llvm_jit_matrix_2x2_eigensystem_kernel_executes_and_marks_plan_n
             dtype=np.float64,
         )
 
-    def eigensystem_vjp(values: np.ndarray, cotangent: np.ndarray) -> np.ndarray:
+    def eigensystem_vjp(values: FloatArray, cotangent: FloatArray) -> FloatArray:
         adjoint = np.zeros(4, dtype=np.float64)
         for index in range(4):
             basis = np.zeros(4, dtype=np.float64)
@@ -4909,7 +4912,7 @@ def test_differentiable_mlir_rejects_executable_target_claims() -> None:
 def test_whole_program_ad_mlir_exports_trace_and_polyglot_status() -> None:
     """Whole-program AD trace lowering should be deterministic and honest."""
 
-    def objective(values: np.ndarray) -> object:
+    def objective(values: FloatArray) -> object:
         if values[0] > 0.0:
             return np.sin(values[0]) + values[1] ** 2
         return values[1]
@@ -4935,7 +4938,7 @@ def test_whole_program_ad_mlir_exports_trace_and_polyglot_status() -> None:
 def test_whole_program_ad_mlir_lowers_program_ad_effect_ir_metadata() -> None:
     """Whole-program AD MLIR lowering should expose captured Program AD IR records."""
 
-    def objective(values: np.ndarray) -> object:
+    def objective(values: FloatArray) -> object:
         total = values[0]
         if values[1] > 0.0:
             total = total + np.sin(values[1])
@@ -4971,7 +4974,7 @@ def test_whole_program_ad_mlir_lowers_program_ad_effect_ir_metadata() -> None:
 def test_whole_program_ad_trace_executable_replays_supported_scalar_ir() -> None:
     """Executable program AD trace kernels should replay gradients fail-closed."""
 
-    def objective(values: np.ndarray) -> object:
+    def objective(values: FloatArray) -> object:
         branch = values[0] if values[0] > values[1] else values[1]
         return np.sin(values[0] * values[1]) + np.log(values[2] + 4.0) + branch * values[2]
 
@@ -5015,7 +5018,7 @@ def test_whole_program_ad_trace_executable_replays_supported_scalar_ir() -> None
 def test_whole_program_ad_trace_executable_batches_same_branch_rows() -> None:
     """Executable program AD trace kernels should batch same-signature rows."""
 
-    def objective(values: np.ndarray) -> object:
+    def objective(values: FloatArray) -> object:
         branch = values[0] if values[0] > values[1] else values[1]
         return np.sin(values[0] * values[1]) + np.log(values[2] + 4.0) + branch * values[2]
 
@@ -5073,7 +5076,7 @@ def test_whole_program_ad_trace_executable_batches_same_branch_rows() -> None:
 def test_whole_program_ad_trace_native_llvm_jit_executes_branchless_scalar_ir() -> None:
     """Native whole-program AD lowering should execute supported branchless traces."""
 
-    def objective(values: np.ndarray) -> object:
+    def objective(values: FloatArray) -> object:
         return (
             np.sin(values[0] * values[1])
             + np.log(values[2] + 4.0)
@@ -5205,7 +5208,7 @@ def test_whole_program_ad_trace_native_llvm_jit_reuses_verified_cache() -> None:
     clear_native_whole_program_ad_compile_cache()
     assert native_whole_program_ad_compile_cache_stats()["entries"] == 0
 
-    def objective(values: np.ndarray) -> object:
+    def objective(values: FloatArray) -> object:
         return np.log1p(values[0] * values[0]) + np.tanh(values[1]) + values[2] ** 3
 
     sample = np.array([0.125, -0.375, 0.75], dtype=np.float64)
@@ -5256,7 +5259,7 @@ def test_whole_program_ad_trace_native_llvm_jit_reuses_verified_cache() -> None:
 def test_whole_program_ad_native_lowering_report_blocks_unsupported_ops() -> None:
     """Native program AD lowering should report replay-supported ops that lack LLVM lowering."""
 
-    def objective(values: np.ndarray) -> object:
+    def objective(values: FloatArray) -> object:
         matrix = np.diag(values[:20])
         return np.linalg.det(matrix) + np.sin(values[20])
 
@@ -5284,7 +5287,7 @@ def test_whole_program_ad_trace_native_llvm_jit_lowers_wide_determinants() -> No
     for size in range(6, 20):
 
         def objective(
-            values: np.ndarray,
+            values: FloatArray,
             *,
             matrix_size: int = size,
         ) -> object:
@@ -5393,10 +5396,10 @@ def test_whole_program_ad_trace_native_llvm_jit_lowers_dense_wide_determinants()
         offsets = _dense_determinant_offsets(size)
 
         def objective(
-            values: np.ndarray,
+            values: FloatArray,
             *,
             matrix_size: int = size,
-            dense_offsets: np.ndarray = offsets,
+            dense_offsets: FloatArray = offsets,
         ) -> object:
             matrix = np.diag(values[:matrix_size]) + dense_offsets
             return np.linalg.det(matrix) + 0.005 * values[0] * values[matrix_size - 1]
@@ -5435,7 +5438,7 @@ def test_whole_program_ad_trace_native_llvm_jit_lowers_dense_wide_determinants()
 def test_whole_program_ad_trace_native_llvm_jit_lowers_5x5_determinant() -> None:
     """Native program AD should lower scalar 5x5 determinant nodes."""
 
-    def objective(values: np.ndarray) -> object:
+    def objective(values: FloatArray) -> object:
         matrix = values[0:25].reshape((5, 5))
         return np.linalg.det(matrix) + 0.0625 * values[25] * values[0] - np.cos(values[24])
 
@@ -5581,7 +5584,7 @@ def test_whole_program_ad_trace_native_llvm_jit_lowers_5x5_determinant() -> None
 def test_whole_program_ad_trace_native_llvm_jit_lowers_4x4_determinant() -> None:
     """Native program AD should lower scalar 4x4 determinant nodes."""
 
-    def objective(values: np.ndarray) -> object:
+    def objective(values: FloatArray) -> object:
         matrix = values[0:16].reshape((4, 4))
         return np.linalg.det(matrix) + 0.125 * values[16] * values[0] - np.sin(values[15])
 
@@ -5700,7 +5703,7 @@ def test_whole_program_ad_trace_native_llvm_jit_lowers_4x4_determinant() -> None
 def test_whole_program_ad_trace_native_llvm_jit_lowers_3x3_determinant() -> None:
     """Native program AD should lower scalar 3x3 determinant nodes."""
 
-    def objective(values: np.ndarray) -> object:
+    def objective(values: FloatArray) -> object:
         matrix = values[0:9].reshape((3, 3))
         return np.linalg.det(matrix) + 0.25 * values[9] * values[0] - np.cos(values[8])
 
@@ -5776,7 +5779,7 @@ def test_whole_program_ad_trace_native_llvm_jit_lowers_3x3_determinant() -> None
 def test_whole_program_ad_trace_native_llvm_jit_lowers_2x2_inverse_and_solve() -> None:
     """Native program AD should lower scalar 2x2 inverse and solve nodes."""
 
-    def objective(values: np.ndarray) -> object:
+    def objective(values: FloatArray) -> object:
         matrix = values[0:4].reshape((2, 2))
         rhs = values[4:6]
         return (
@@ -5858,7 +5861,7 @@ def test_whole_program_ad_trace_native_llvm_jit_lowers_2x2_inverse_and_solve() -
 def test_whole_program_ad_trace_native_llvm_jit_lowers_2x2_product_linalg_ops() -> None:
     """Native program AD should lower scalar 2x2 matrix_power and multi_dot nodes."""
 
-    def objective(values: np.ndarray) -> object:
+    def objective(values: FloatArray) -> object:
         left = values[0:4].reshape((2, 2))
         right = values[4:8].reshape((2, 2))
         return (
@@ -5941,7 +5944,7 @@ def test_whole_program_ad_trace_native_llvm_jit_lowers_2x2_product_linalg_ops() 
 def test_whole_program_ad_native_lowering_blocks_unverified_static_linalg_backends() -> None:
     """Wider static linalg kernels must not promote to native or Rust by metadata alone."""
 
-    def objective(values: np.ndarray) -> object:
+    def objective(values: FloatArray) -> object:
         matrix = values[0:9].reshape((3, 3))
         left = values[9:15].reshape((2, 3))
         middle = values[15:27].reshape((3, 4))
@@ -6010,7 +6013,7 @@ def test_whole_program_ad_native_lowering_blocks_unverified_static_linalg_backen
 def test_whole_program_ad_trace_native_llvm_jit_lowers_2x2_linalg_scalar_ops() -> None:
     """Native program AD should lower scalar 2x2 det and trace linalg nodes."""
 
-    def objective(values: np.ndarray) -> object:
+    def objective(values: FloatArray) -> object:
         matrix = values[0:4].reshape((2, 2))
         return (
             np.linalg.det(matrix)
@@ -6086,10 +6089,10 @@ def test_whole_program_ad_trace_native_llvm_jit_lowers_static_inverse_ops() -> N
         weights = np.linspace(0.15, 0.85, size * size, dtype=np.float64).reshape(size, size)
 
         def objective(
-            values: np.ndarray,
+            values: FloatArray,
             *,
             matrix_size: int = size,
-            inverse_weights: np.ndarray = weights,
+            inverse_weights: FloatArray = weights,
         ) -> object:
             matrix = values[: matrix_size * matrix_size].reshape((matrix_size, matrix_size))
             inverse = np.linalg.inv(matrix)
@@ -6162,20 +6165,20 @@ def test_whole_program_ad_trace_native_llvm_jit_lowers_static_inverse_ops() -> N
 def test_whole_program_ad_native_lowering_report_blocks_wider_inverse_ops() -> None:
     """Native program AD inverse support should fail closed beyond the bounded helper range."""
 
-    def objective(values: np.ndarray) -> object:
-        matrix = values[:49].reshape((7, 7))
+    def objective(values: FloatArray) -> object:
+        matrix = values[:64].reshape((8, 8))
         return np.linalg.inv(matrix).sum()
 
-    sample = _dense_solve_values(7, shift=0.0)[:49]
-    parameters = tuple(Parameter(f"inv7_x{index}") for index in range(sample.size))
+    sample = _dense_solve_values(8, shift=0.0)[:64]
+    parameters = tuple(Parameter(f"inv8_x{index}") for index in range(sample.size))
 
     result = whole_program_value_and_grad(objective, sample, parameters)
     report = analyse_whole_program_ad_native_lowering(result)
 
     assert report.supported is False
-    assert "linalg:inv:7x7:0:0" in report.unsupported_ops
-    assert "unsupported native ops: linalg:inv:7x7:0:0" in report.fail_closed_reason
-    with pytest.raises(ValueError, match="unsupported native ops: linalg:inv:7x7:0:0"):
+    assert "linalg:inv:8x8:0:0" in report.unsupported_ops
+    assert "unsupported native ops: linalg:inv:8x8:0:0" in report.fail_closed_reason
+    with pytest.raises(ValueError, match="unsupported native ops: linalg:inv:8x8:0:0"):
         compile_whole_program_ad_trace_to_native_llvm_jit(objective, sample, parameters)
 
 
@@ -6186,10 +6189,10 @@ def test_whole_program_ad_trace_native_llvm_jit_lowers_static_solve_vector_ops()
         weights = np.linspace(0.2, 0.8, size, dtype=np.float64)
 
         def objective(
-            values: np.ndarray,
+            values: FloatArray,
             *,
             matrix_size: int = size,
-            solution_weights: np.ndarray = weights,
+            solution_weights: FloatArray = weights,
         ) -> object:
             matrix = values[: matrix_size * matrix_size].reshape((matrix_size, matrix_size))
             rhs = values[matrix_size * matrix_size : matrix_size * matrix_size + matrix_size]
@@ -6266,11 +6269,11 @@ def test_whole_program_ad_trace_native_llvm_jit_lowers_static_solve_matrix_ops()
         )
 
         def objective(
-            values: np.ndarray,
+            values: FloatArray,
             *,
             matrix_size: int = size,
             column_count: int = rhs_cols,
-            solution_weights: np.ndarray = weights,
+            solution_weights: FloatArray = weights,
         ) -> object:
             matrix_end = matrix_size * matrix_size
             matrix = values[:matrix_end].reshape((matrix_size, matrix_size))
@@ -6351,49 +6354,49 @@ def test_whole_program_ad_trace_native_llvm_jit_lowers_static_solve_matrix_ops()
 def test_whole_program_ad_native_lowering_report_blocks_wider_solve_matrix_ops() -> None:
     """Native program AD matrix-RHS solve should fail closed beyond the bounded range."""
 
-    def objective(values: np.ndarray) -> object:
-        matrix = values[:49].reshape((7, 7))
-        rhs = values[49:63].reshape((7, 2))
+    def objective(values: FloatArray) -> object:
+        matrix = values[:64].reshape((8, 8))
+        rhs = values[64:80].reshape((8, 2))
         return np.linalg.solve(matrix, rhs).sum()
 
-    sample = _dense_solve_matrix_values(7, 2, shift=0.0)
-    parameters = tuple(Parameter(f"solve7m2_x{index}") for index in range(sample.size))
+    sample = _dense_solve_matrix_values(8, 2, shift=0.0)
+    parameters = tuple(Parameter(f"solve8m2_x{index}") for index in range(sample.size))
 
     result = whole_program_value_and_grad(objective, sample, parameters)
     report = analyse_whole_program_ad_native_lowering(result)
 
     assert report.supported is False
-    assert "linalg:solve:7x7:rhs:7x2:0:0" in report.unsupported_ops
-    assert "unsupported native ops: linalg:solve:7x7:rhs:7x2:0:0" in report.fail_closed_reason
-    with pytest.raises(ValueError, match="unsupported native ops: linalg:solve:7x7:rhs:7x2:0:0"):
+    assert "linalg:solve:8x8:rhs:8x2:0:0" in report.unsupported_ops
+    assert "unsupported native ops: linalg:solve:8x8:rhs:8x2:0:0" in report.fail_closed_reason
+    with pytest.raises(ValueError, match="unsupported native ops: linalg:solve:8x8:rhs:8x2:0:0"):
         compile_whole_program_ad_trace_to_native_llvm_jit(objective, sample, parameters)
 
 
 def test_whole_program_ad_native_lowering_report_blocks_wider_solve_ops() -> None:
     """Native program AD solve support should fail closed beyond the bounded helper range."""
 
-    def objective(values: np.ndarray) -> object:
-        matrix = values[:49].reshape((7, 7))
-        rhs = values[49:56]
+    def objective(values: FloatArray) -> object:
+        matrix = values[:64].reshape((8, 8))
+        rhs = values[64:72]
         return np.linalg.solve(matrix, rhs).sum()
 
-    sample = _dense_solve_values(7, shift=0.0)
-    parameters = tuple(Parameter(f"solve7_x{index}") for index in range(sample.size))
+    sample = _dense_solve_values(8, shift=0.0)
+    parameters = tuple(Parameter(f"solve8_x{index}") for index in range(sample.size))
 
     result = whole_program_value_and_grad(objective, sample, parameters)
     report = analyse_whole_program_ad_native_lowering(result)
 
     assert report.supported is False
-    assert "linalg:solve:7x7:rhs:7:0" in report.unsupported_ops
-    assert "unsupported native ops: linalg:solve:7x7:rhs:7:0" in report.fail_closed_reason
-    with pytest.raises(ValueError, match="unsupported native ops: linalg:solve:7x7:rhs:7:0"):
+    assert "linalg:solve:8x8:rhs:8:0" in report.unsupported_ops
+    assert "unsupported native ops: linalg:solve:8x8:rhs:8:0" in report.fail_closed_reason
+    with pytest.raises(ValueError, match="unsupported native ops: linalg:solve:8x8:rhs:8:0"):
         compile_whole_program_ad_trace_to_native_llvm_jit(objective, sample, parameters)
 
 
 def test_whole_program_ad_trace_native_llvm_jit_lowers_static_trace_ops() -> None:
     """Native program AD should lower static square and rectangular trace nodes."""
 
-    def objective(values: np.ndarray) -> object:
+    def objective(values: FloatArray) -> object:
         rectangle = values[0:20].reshape((4, 5))
         square = values[20:45].reshape((5, 5))
         return (
@@ -6465,7 +6468,7 @@ def test_whole_program_ad_trace_native_llvm_jit_lowers_static_trace_ops() -> Non
 def test_whole_program_ad_trace_native_llvm_jit_lowers_static_diagonal_ops() -> None:
     """Native program AD should lower static diagonal gather/scatter nodes."""
 
-    def objective(values: np.ndarray) -> object:
+    def objective(values: FloatArray) -> object:
         rectangle = values[0:12].reshape((3, 4))
         diagonal = values[12:16]
         flattened = values[16:20]
@@ -6543,7 +6546,7 @@ def test_whole_program_ad_trace_native_llvm_jit_lowers_static_diagonal_ops() -> 
 def test_whole_program_ad_trace_native_llvm_jit_lowers_scalar_where() -> None:
     """Native program AD should lower scalar np.where selection traces."""
 
-    def objective(values: np.ndarray) -> object:
+    def objective(values: FloatArray) -> object:
         selected = np.where(values[0] > values[1], values[0:1] ** 2, values[1:2] ** 2)
         return selected.sum() + values[2] * values[0]
 
@@ -6603,7 +6606,7 @@ def test_whole_program_ad_trace_native_llvm_jit_lowers_scalar_where() -> None:
 def test_whole_program_ad_trace_native_llvm_jit_lowers_scalar_clip() -> None:
     """Native program AD should lower strict scalar np.clip selection traces."""
 
-    def objective(values: np.ndarray) -> object:
+    def objective(values: FloatArray) -> object:
         clipped = np.clip(values[0:1], values[1:2], values[2:3])
         return clipped.sum() + values[3] * values[0]
 
@@ -6678,7 +6681,7 @@ def test_whole_program_ad_trace_native_llvm_jit_lowers_scalar_clip() -> None:
 def test_whole_program_ad_trace_native_llvm_jit_lowers_strict_selection_ops() -> None:
     """Native program AD should lower strict no-tie maximum/minimum selection ops."""
 
-    def objective(values: np.ndarray) -> object:
+    def objective(values: FloatArray) -> object:
         return (
             np.maximum(values[0], values[1])
             + np.minimum(values[2], values[3])
@@ -6739,7 +6742,7 @@ def test_whole_program_ad_trace_native_llvm_jit_lowers_strict_selection_ops() ->
 def test_whole_program_ad_trace_native_llvm_jit_executes_stable_branch_path() -> None:
     """Native LLVM/JIT program AD should execute stable branch traces and reject drift."""
 
-    def objective(values: np.ndarray) -> object:
+    def objective(values: FloatArray) -> object:
         if values[0] > values[1]:
             return np.sin(values[0] * values[1]) + values[2]
         return np.cos(values[0] - values[1]) - values[2]
@@ -6824,7 +6827,7 @@ def test_whole_program_ad_trace_native_llvm_jit_executes_stable_branch_path() ->
 def test_whole_program_ad_trace_native_llvm_jit_lowers_elementary_ops() -> None:
     """Native LLVM/JIT program AD should lower adjoint-supported scalar primitives."""
 
-    def objective(values: np.ndarray) -> object:
+    def objective(values: FloatArray) -> object:
         return (
             np.tan(values[0])
             + np.tanh(values[1])
@@ -6902,7 +6905,7 @@ def test_realtime_control_loop_records_deadline_jitter_and_misses() -> None:
 
     durations = [0.001, 0.006, 0.004]
 
-    def step(index: int):
+    def step(index: int) -> Mapping[str, float]:
         clock.advance(durations[index])
         return {"index": float(index)}
 
@@ -6925,7 +6928,7 @@ def test_realtime_control_loop_fails_when_deadline_budget_is_exceeded() -> None:
         max_missed_deadlines=0,
     )
 
-    def step(_index: int):
+    def step(_index: int) -> Mapping[str, float]:
         clock.advance(0.003)
         return {}
 
@@ -6945,7 +6948,7 @@ def test_realtime_sla_accepts_sub_millisecond_loop() -> None:
     )
     durations = [0.00052, 0.00061, 0.00074, 0.00068, 0.00057]
 
-    def step(index: int):
+    def step(index: int) -> Mapping[str, float]:
         clock.advance(durations[index])
         return {"index": float(index)}
 
@@ -6977,7 +6980,7 @@ def test_realtime_sla_rejects_latency_breach() -> None:
     )
     durations = [0.00055, 0.00145, 0.00066]
 
-    def step(index: int):
+    def step(index: int) -> Mapping[str, float]:
         clock.advance(durations[index])
         return {"index": float(index)}
 

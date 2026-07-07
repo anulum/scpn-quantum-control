@@ -18,6 +18,10 @@ Full detailed changelog: [CHANGELOG.md](https://github.com/anulum/scpn-quantum-c
   generation, NV-centre 20 T magnetometry simulation, FRC pulsed-shot QAOA
   scheduling, realtime loop telemetry, Studio federation manifests, and
   Kuramoto variant/acceleration routes.
+- Added bounded native whole-program AD factorisation support for full-output
+  static inverse, vector-solve, and matrix-RHS solve traces through `7x7`,
+  while keeping `8x8+`, more than four RHS columns, and shape-changing linalg
+  fail-closed.
 - Refreshed the API selector, tutorial routes, example gallery, new-module
   index, README, site home, reproducibility metadata, citation metadata,
   release-readiness scope, and generated capability manifests for the 0.10.0

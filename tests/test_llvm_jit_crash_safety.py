@@ -84,6 +84,6 @@ def test_native_llvm_jit_support_metadata_declares_fail_closed_boundaries() -> N
 
     assert support["determinant_fail_closed_from"] == 20
     assert support["determinant_policy"] == "static_dense_native_or_fail_closed"
-    assert support["inverse_fail_closed_from"] == 7
-    assert support["solve_fail_closed_from"] == 7
+    assert support["inverse_fail_closed_from"] == 8
+    assert support["solve_fail_closed_from"] == 8
     assert support["unsupported_policy"] == "fail_closed_report_before_compile"

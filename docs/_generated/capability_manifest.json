@@ -13,7 +13,7 @@
     "python_model_source_modules": 475,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 64,
-    "test_files": 838
+    "test_files": 839
   },
   "documentation": {
     "examples": [
@@ -6287,6 +6287,7 @@
       "tests/test_multiscale_qec.py",
       "tests/test_native_decomposition_readiness.py",
       "tests/test_native_whole_program_ad_execution_evidence.py",
+      "tests/test_native_whole_program_linalg_factorisation.py",
       "tests/test_negative_inputs.py",
       "tests/test_neural_operator_advantage.py",
       "tests/test_neural_operator_cost_model.py",

@@ -434,17 +434,17 @@ def run_native_whole_program_ad_execution_evidence(
             values=_well_conditioned_matrix_inputs(20),
         ),
         _capture_fail_closed_case(
-            case_id="inverse_7x7_fail_closed",
+            case_id="inverse_8x8_fail_closed",
             operation_family="inverse",
-            operand_dimension=7,
-            objective=_inverse_program(7),
-            values=_well_conditioned_matrix_inputs(7),
+            operand_dimension=8,
+            objective=_inverse_program(8),
+            values=_well_conditioned_matrix_inputs(8),
         ),
     ]
     return build_native_whole_program_ad_execution_evidence(
         artifact_id=artifact_id,
         cases=tuple(executed) + tuple(fail_closed),
         gradient_parity_tolerance=gradient_parity_tolerance,
-        fail_closed_boundaries={"determinant": 20, "inverse": 7, "solve": 7},
+        fail_closed_boundaries={"determinant": 20, "inverse": 8, "solve": 8},
         claim_boundary=_NATIVE_EXECUTION_CLAIM_BOUNDARY,
     )

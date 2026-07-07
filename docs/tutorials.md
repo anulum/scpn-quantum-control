@@ -164,7 +164,7 @@ claim, and requested CUDA/ROCm runs without visible-device metadata become
 
 For compiler-backed AD users, the current native whole-program path supports
 verified static dense determinant lowering through `19x19`, static inverse and
-solve routes through `6x6`, and fail-closed reports for wider unsupported linalg.
+solve routes through `7x7`, and fail-closed reports for wider unsupported linalg.
 Its Python frontend now records accepted closure, default-argument, keyword-only,
 `*args`, `**kwargs`, and generator-expression semantics, while materialized
 comprehensions, captured object/dataclass attributes, recursion, async

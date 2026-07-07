@@ -359,10 +359,10 @@ arithmetic expressions; static dense 6x6 through 19x19 determinants lower
 through compact loop-helper native LLVM/JIT value-and-partials kernels and are
 regression-tested on non-diagonal dense matrices. Static
 square/rectangular trace nodes with fixed offsets, static diagonal
-gather/scatter nodes, static dense inverse through 6x6, static vector and
-matrix-RHS linear solves through 6x6, 2x2 square via `matrix_power(..., 2)`,
+gather/scatter nodes, static dense inverse through 7x7, static vector and
+matrix-RHS linear solves through 7x7, 2x2 square via `matrix_power(..., 2)`,
 and 2x2-by-2x2 `multi_dot` program-AD nodes also lower to native LLVM/JIT
-arithmetic kernels; 20x20 and wider determinant traces, 7x7 and wider
+arithmetic kernels; 20x20 and wider determinant traces, 8x8 and wider
 inverse/solve traces, matrix-RHS traces with more than four RHS columns,
 other wider linalg,
 and shape-changing linalg traces still report unsupported native ops before
@@ -377,13 +377,13 @@ because they carry research and engineering value:
   formulation, so those wider determinants remain unsuitable until a scaled
   factorisation or stronger numerically stable determinant-partial helper
   replaces the current route.
-- Full-output inverse and matrix-RHS solve traces at `7x7` and wider are not
-  lowered by the native quotient-linalg path. The `5x5` through `6x6` path
-  shares one determinant/adjugate helper per static matrix and reuses it across
-  inverse, vector-solve, and bounded matrix-RHS solve entries. A `7x7`
-  full-output promotion attempt still exceeded the focused native gate, so the
-  wider path remains unsuitable until a native factorisation helper replaces
-  adjugate replay with a better shared factorisation and derivative kernel.
+- Full-output inverse, vector-solve, and matrix-RHS solve traces are lowered
+  through `7x7` when the matrix shape is static and the RHS has at most four
+  columns. The `5x5` through `7x7` quotient-linalg path shares one
+  partial-pivot factorisation helper per static matrix and reuses it across
+  inverse, vector-solve, and bounded matrix-RHS solve entries. `8x8` and wider
+  full-output traces still fail closed until a larger verified factorisation
+  helper passes the same native value/JVP/VJP/gradient gates.
 - Matrix-RHS solve traces with more than four RHS columns fail closed. They need
   a batched/shared solve helper rather than repeated column-wise quotient
   lowering.

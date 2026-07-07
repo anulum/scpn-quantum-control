@@ -58,6 +58,7 @@ from .mlir_records import (
 )
 from .mlir_whole_program_emitter import (
     _WHOLE_PROGRAM_NATIVE_DET_DERIVATIVE_HELPER_SIZES,
+    _WHOLE_PROGRAM_NATIVE_FACTORISATION_HELPER_SIZES,
     _WHOLE_PROGRAM_NATIVE_INVERSE_SIZES,
     _WHOLE_PROGRAM_NATIVE_LOOP_HELPER_DET_SIZES,
     _WHOLE_PROGRAM_NATIVE_SOLVE_MATRIX_MAX_RHS_COLS,
@@ -1113,15 +1114,18 @@ def native_whole_program_ad_linalg_support() -> Mapping[str, object]:
             "solve_rhs_policy": "static_vector_or_matrix_rhs",
             "solve_fail_closed_from": max(_WHOLE_PROGRAM_NATIVE_SOLVE_VECTOR_SIZES) + 1,
             "quotient_linalg_helper_sizes": tuple(
-                sorted(_WHOLE_PROGRAM_NATIVE_DET_DERIVATIVE_HELPER_SIZES)
+                sorted(_WHOLE_PROGRAM_NATIVE_FACTORISATION_HELPER_SIZES)
             ),
-            "quotient_linalg_reuse_policy": "shared_determinant_adjugate_per_static_matrix",
+            "quotient_linalg_factorisation_sizes": tuple(
+                sorted(_WHOLE_PROGRAM_NATIVE_FACTORISATION_HELPER_SIZES)
+            ),
+            "quotient_linalg_reuse_policy": "shared_factorisation_per_static_matrix",
             "quotient_linalg_unsuitable_from": max(
-                _WHOLE_PROGRAM_NATIVE_DET_DERIVATIVE_HELPER_SIZES
+                _WHOLE_PROGRAM_NATIVE_FACTORISATION_HELPER_SIZES
             )
             + 1,
             "quotient_linalg_unsuitable_reason": (
-                "full_output_inverse_and_matrix_rhs_solve_require_native_factorisation_helper"
+                "full_output_inverse_and_matrix_rhs_solve_require_larger_factorisation_helper"
             ),
             "trace_policy": "static_square_or_rectangular_fixed_offset",
             "unsupported_policy": "fail_closed_report_before_compile",
@@ -1609,6 +1613,7 @@ def _compile_whole_program_ad_native_llvm_ir(
         "declare double @llvm.pow.f64(double, double)",
         "declare double @llvm.asin.f64(double)",
         "declare double @llvm.acos.f64(double)",
+        "declare double @llvm.fabs.f64(double)",
         "",
         *helper_lines,
         "",

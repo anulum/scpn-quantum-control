@@ -42,13 +42,16 @@ _WHOLE_PROGRAM_NATIVE_LOOP_HELPER_DET_SIZES = frozenset(range(6, 20))
 _WHOLE_PROGRAM_NATIVE_DET_DERIVATIVE_HELPER_SIZES = frozenset(range(5, 7))
 
 
-_WHOLE_PROGRAM_NATIVE_INVERSE_SIZES = frozenset(range(3, 7))
+_WHOLE_PROGRAM_NATIVE_FACTORISATION_HELPER_SIZES = frozenset(range(5, 8))
 
 
-_WHOLE_PROGRAM_NATIVE_SOLVE_VECTOR_SIZES = frozenset(range(3, 7))
+_WHOLE_PROGRAM_NATIVE_INVERSE_SIZES = frozenset(range(3, 8))
 
 
-_WHOLE_PROGRAM_NATIVE_SOLVE_MATRIX_SIZES = frozenset(range(2, 7))
+_WHOLE_PROGRAM_NATIVE_SOLVE_VECTOR_SIZES = frozenset(range(3, 8))
+
+
+_WHOLE_PROGRAM_NATIVE_SOLVE_MATRIX_SIZES = frozenset(range(2, 8))
 
 
 _WHOLE_PROGRAM_NATIVE_SOLVE_MATRIX_MAX_RHS_COLS = 4
@@ -56,7 +59,7 @@ _WHOLE_PROGRAM_NATIVE_SOLVE_MATRIX_MAX_RHS_COLS = 4
 
 @dataclass
 class _WholeProgramNativeInverseHelper:
-    """Shared determinant/adjugate values for one static matrix in a native kernel."""
+    """Shared inverse values for one static matrix in a native kernel."""
 
     determinant: str
     inverse_entries: tuple[tuple[str, ...], ...]
@@ -1302,7 +1305,17 @@ def _emit_whole_program_native_inverse_helper(
     prefix: str,
     emission_state: _WholeProgramNativeEmissionState,
 ) -> _WholeProgramNativeInverseHelper:
-    """Emit or reuse one shared adjugate inverse helper for a static matrix."""
+    """Emit or reuse one shared inverse helper for a static matrix."""
+
+    if size in _WHOLE_PROGRAM_NATIVE_FACTORISATION_HELPER_SIZES:
+        return _emit_whole_program_native_inverse_factorisation_helper(
+            lines,
+            matrix_tokens,
+            size=size,
+            prefix=prefix,
+            emission_state=emission_state,
+        )
+
     if size not in _WHOLE_PROGRAM_NATIVE_DET_DERIVATIVE_HELPER_SIZES:
         raise ValueError("native shared inverse helper requested for unsupported size")
     matrix_key = (size, tuple(matrix_tokens))
@@ -1383,6 +1396,198 @@ def _emit_whole_program_native_inverse_helper(
     return helper
 
 
+def _emit_whole_program_native_inverse_factorisation_helper(
+    lines: list[str],
+    matrix_tokens: Sequence[str],
+    *,
+    size: int,
+    prefix: str,
+    emission_state: _WholeProgramNativeEmissionState,
+) -> _WholeProgramNativeInverseHelper:
+    """Emit or reuse one shared partial-pivot factorisation inverse helper."""
+
+    if size not in _WHOLE_PROGRAM_NATIVE_FACTORISATION_HELPER_SIZES:
+        raise ValueError("native factorisation helper requested for unsupported size")
+    if len(matrix_tokens) != size * size:
+        raise ValueError("native factorisation helper requires a full square matrix")
+    matrix_key = (size, tuple(matrix_tokens))
+    cached = emission_state.inverse_helpers.get(matrix_key)
+    if cached is not None:
+        return cached
+
+    helper_index = len(emission_state.inverse_helpers)
+    helper_prefix = f"{prefix}_shared_{helper_index}"
+    augmented_columns = size * 2
+    augmented_total = size * augmented_columns
+    augmented_alloca = f"%{helper_prefix}_augmented"
+    lines.append(f"  {augmented_alloca} = alloca [{augmented_total} x double]")
+
+    for row in range(size):
+        for col in range(augmented_columns):
+            entry_index = row * augmented_columns + col
+            entry_ptr = f"%{helper_prefix}_init_ptr_{row}_{col}"
+            if col < size:
+                entry_value = _whole_program_native_operand(matrix_tokens[row * size + col])
+            else:
+                entry_value = _fmt_llvm_float(1.0 if row == col - size else 0.0)
+            lines.extend(
+                [
+                    f"  {entry_ptr} = getelementptr [{augmented_total} x double], "
+                    f"[{augmented_total} x double]* {augmented_alloca}, i64 0, i64 {entry_index}",
+                    f"  store double {entry_value}, double* {entry_ptr}",
+                ]
+            )
+
+    for pivot in range(size):
+        pivot_prefix = f"{helper_prefix}_p{pivot}"
+        diagonal_index = pivot * augmented_columns + pivot
+        best_row = str(pivot)
+        diagonal_ptr = f"%{pivot_prefix}_diag_ptr"
+        diagonal_value = f"%{pivot_prefix}_diag_value"
+        best_abs = f"%{pivot_prefix}_best_abs_initial"
+        lines.extend(
+            [
+                f"  {diagonal_ptr} = getelementptr [{augmented_total} x double], "
+                f"[{augmented_total} x double]* {augmented_alloca}, i64 0, i64 {diagonal_index}",
+                f"  {diagonal_value} = load double, double* {diagonal_ptr}",
+                f"  {best_abs} = call double @llvm.fabs.f64(double {diagonal_value})",
+            ]
+        )
+        for candidate in range(pivot + 1, size):
+            candidate_index = candidate * augmented_columns + pivot
+            candidate_ptr = f"%{pivot_prefix}_candidate_ptr_{candidate}"
+            candidate_value = f"%{pivot_prefix}_candidate_value_{candidate}"
+            candidate_abs = f"%{pivot_prefix}_candidate_abs_{candidate}"
+            candidate_is_better = f"%{pivot_prefix}_candidate_is_better_{candidate}"
+            next_best_abs = f"%{pivot_prefix}_best_abs_{candidate}"
+            next_best_row = f"%{pivot_prefix}_best_row_{candidate}"
+            lines.extend(
+                [
+                    f"  {candidate_ptr} = getelementptr [{augmented_total} x double], "
+                    f"[{augmented_total} x double]* {augmented_alloca}, i64 0, "
+                    f"i64 {candidate_index}",
+                    f"  {candidate_value} = load double, double* {candidate_ptr}",
+                    f"  {candidate_abs} = call double @llvm.fabs.f64(double {candidate_value})",
+                    f"  {candidate_is_better} = fcmp ogt double {candidate_abs}, {best_abs}",
+                    f"  {next_best_abs} = select i1 {candidate_is_better}, "
+                    f"double {candidate_abs}, double {best_abs}",
+                    f"  {next_best_row} = select i1 {candidate_is_better}, "
+                    f"i64 {candidate}, i64 {best_row}",
+                ]
+            )
+            best_abs = next_best_abs
+            best_row = next_best_row
+
+        pivot_row_offset = f"%{pivot_prefix}_pivot_row_offset"
+        lines.append(f"  {pivot_row_offset} = mul i64 {best_row}, {augmented_columns}")
+        for col in range(augmented_columns):
+            fixed_index = pivot * augmented_columns + col
+            pivot_index = f"%{pivot_prefix}_swap_index_{col}"
+            fixed_ptr = f"%{pivot_prefix}_swap_fixed_ptr_{col}"
+            pivot_ptr = f"%{pivot_prefix}_swap_pivot_ptr_{col}"
+            fixed_value = f"%{pivot_prefix}_swap_fixed_value_{col}"
+            pivot_value = f"%{pivot_prefix}_swap_pivot_value_{col}"
+            lines.extend(
+                [
+                    f"  {pivot_index} = add i64 {pivot_row_offset}, {col}",
+                    f"  {fixed_ptr} = getelementptr [{augmented_total} x double], "
+                    f"[{augmented_total} x double]* {augmented_alloca}, i64 0, i64 {fixed_index}",
+                    f"  {pivot_ptr} = getelementptr [{augmented_total} x double], "
+                    f"[{augmented_total} x double]* {augmented_alloca}, i64 0, i64 {pivot_index}",
+                    f"  {fixed_value} = load double, double* {fixed_ptr}",
+                    f"  {pivot_value} = load double, double* {pivot_ptr}",
+                    f"  store double {pivot_value}, double* {fixed_ptr}",
+                    f"  store double {fixed_value}, double* {pivot_ptr}",
+                ]
+            )
+
+        pivot_value = f"%{pivot_prefix}_value"
+        pivot_value_ptr = f"%{pivot_prefix}_value_ptr"
+        lines.extend(
+            [
+                f"  {pivot_value_ptr} = getelementptr [{augmented_total} x double], "
+                f"[{augmented_total} x double]* {augmented_alloca}, i64 0, i64 {diagonal_index}",
+                f"  {pivot_value} = load double, double* {pivot_value_ptr}",
+            ]
+        )
+        for col in range(augmented_columns):
+            entry_index = pivot * augmented_columns + col
+            entry_ptr = f"%{pivot_prefix}_normalize_ptr_{col}"
+            entry_value = f"%{pivot_prefix}_normalize_value_{col}"
+            normalized_value = f"%{pivot_prefix}_normalized_{col}"
+            lines.extend(
+                [
+                    f"  {entry_ptr} = getelementptr [{augmented_total} x double], "
+                    f"[{augmented_total} x double]* {augmented_alloca}, i64 0, i64 {entry_index}",
+                    f"  {entry_value} = load double, double* {entry_ptr}",
+                    f"  {normalized_value} = fdiv double {entry_value}, {pivot_value}",
+                    f"  store double {normalized_value}, double* {entry_ptr}",
+                ]
+            )
+
+        for row in range(size):
+            if row == pivot:
+                continue
+            factor_index = row * augmented_columns + pivot
+            factor_ptr = f"%{pivot_prefix}_eliminate_factor_ptr_{row}"
+            factor_value = f"%{pivot_prefix}_eliminate_factor_{row}"
+            lines.extend(
+                [
+                    f"  {factor_ptr} = getelementptr [{augmented_total} x double], "
+                    f"[{augmented_total} x double]* {augmented_alloca}, i64 0, i64 {factor_index}",
+                    f"  {factor_value} = load double, double* {factor_ptr}",
+                ]
+            )
+            for col in range(augmented_columns):
+                target_index = row * augmented_columns + col
+                pivot_entry_index = pivot * augmented_columns + col
+                target_ptr = f"%{pivot_prefix}_eliminate_target_ptr_{row}_{col}"
+                pivot_ptr = f"%{pivot_prefix}_eliminate_pivot_ptr_{row}_{col}"
+                target_value = f"%{pivot_prefix}_eliminate_target_{row}_{col}"
+                pivot_entry = f"%{pivot_prefix}_eliminate_pivot_{row}_{col}"
+                product = f"%{pivot_prefix}_eliminate_product_{row}_{col}"
+                updated = f"%{pivot_prefix}_eliminate_updated_{row}_{col}"
+                lines.extend(
+                    [
+                        f"  {target_ptr} = getelementptr [{augmented_total} x double], "
+                        f"[{augmented_total} x double]* {augmented_alloca}, i64 0, "
+                        f"i64 {target_index}",
+                        f"  {pivot_ptr} = getelementptr [{augmented_total} x double], "
+                        f"[{augmented_total} x double]* {augmented_alloca}, i64 0, "
+                        f"i64 {pivot_entry_index}",
+                        f"  {target_value} = load double, double* {target_ptr}",
+                        f"  {pivot_entry} = load double, double* {pivot_ptr}",
+                        f"  {product} = fmul double {factor_value}, {pivot_entry}",
+                        f"  {updated} = fsub double {target_value}, {product}",
+                        f"  store double {updated}, double* {target_ptr}",
+                    ]
+                )
+
+    inverse_entries: list[list[str]] = []
+    for row in range(size):
+        inverse_row: list[str] = []
+        for col in range(size):
+            entry_index = row * augmented_columns + size + col
+            inverse_ptr = f"%{helper_prefix}_inverse_ptr_{row}_{col}"
+            inverse_entry = f"%{helper_prefix}_inverse_{row}_{col}"
+            lines.extend(
+                [
+                    f"  {inverse_ptr} = getelementptr [{augmented_total} x double], "
+                    f"[{augmented_total} x double]* {augmented_alloca}, i64 0, i64 {entry_index}",
+                    f"  {inverse_entry} = load double, double* {inverse_ptr}",
+                ]
+            )
+            inverse_row.append(inverse_entry)
+        inverse_entries.append(inverse_row)
+
+    helper = _WholeProgramNativeInverseHelper(
+        determinant=_fmt_llvm_float(0.0),
+        inverse_entries=tuple(tuple(row) for row in inverse_entries),
+    )
+    emission_state.inverse_helpers[matrix_key] = helper
+    return helper
+
+
 def _emit_whole_program_native_solve_helper(
     lines: list[str],
     matrix_tokens: Sequence[str],
@@ -1449,7 +1654,7 @@ def _emit_whole_program_native_inverse_fixed(
         raise ValueError("native fixed inverse output index is outside the matrix")
     parameter_count = int(result.gradient.size)
     matrix_tokens = tuple(inputs[: size * size])
-    if size in _WHOLE_PROGRAM_NATIVE_DET_DERIVATIVE_HELPER_SIZES:
+    if size in _WHOLE_PROGRAM_NATIVE_FACTORISATION_HELPER_SIZES:
         helper = _emit_whole_program_native_inverse_helper(
             lines,
             matrix_tokens,
@@ -1466,7 +1671,8 @@ def _emit_whole_program_native_inverse_fixed(
             derivative_terms: list[str] = []
             for row in range(size):
                 for col in range(size):
-                    entry_derivative = _whole_program_native_derivative_operand(
+                    entry_derivative = _whole_program_native_structural_derivative_operand(
+                        result,
                         matrix_tokens[row * size + col],
                         derivative_index,
                     )
@@ -1485,6 +1691,50 @@ def _emit_whole_program_native_inverse_fixed(
                     derivative_terms.append(product_term)
             derivative_sum = f"%d{node.index}_{derivative_index}_{prefix}_sum"
             _emit_whole_program_native_sum_operands(lines, derivative_terms, derivative_sum)
+            derivative_name = _whole_program_native_derivative_name(node.index, derivative_index)
+            lines.append(f"  {derivative_name} = fsub double {zero}, {derivative_sum}")
+        return
+
+    if size in _WHOLE_PROGRAM_NATIVE_DET_DERIVATIVE_HELPER_SIZES:
+        helper = _emit_whole_program_native_inverse_helper(
+            lines,
+            matrix_tokens,
+            size=size,
+            prefix=prefix,
+            emission_state=emission_state,
+        )
+        lines.append(
+            f"  {value_name} = fadd double "
+            f"{helper.inverse_entries[output_row][output_col]}, {_fmt_llvm_float(0.0)}"
+        )
+        zero = _fmt_llvm_float(0.0)
+        for derivative_index in range(parameter_count):
+            determinant_derivative_terms: list[str] = []
+            for row in range(size):
+                for col in range(size):
+                    entry_derivative = _whole_program_native_derivative_operand(
+                        matrix_tokens[row * size + col],
+                        derivative_index,
+                    )
+                    if entry_derivative == zero:
+                        continue
+                    left_term = f"%d{node.index}_{derivative_index}_{prefix}_left_{row}_{col}"
+                    product_term = f"%d{node.index}_{derivative_index}_{prefix}_prod_{row}_{col}"
+                    lines.extend(
+                        [
+                            f"  {left_term} = fmul double "
+                            f"{helper.inverse_entries[output_row][row]}, {entry_derivative}",
+                            f"  {product_term} = fmul double {left_term}, "
+                            f"{helper.inverse_entries[col][output_col]}",
+                        ]
+                    )
+                    determinant_derivative_terms.append(product_term)
+            derivative_sum = f"%d{node.index}_{derivative_index}_{prefix}_sum"
+            _emit_whole_program_native_sum_operands(
+                lines,
+                determinant_derivative_terms,
+                derivative_sum,
+            )
             derivative_name = _whole_program_native_derivative_name(node.index, derivative_index)
             lines.append(f"  {derivative_name} = fsub double {zero}, {derivative_sum}")
         return
@@ -1587,7 +1837,7 @@ def _emit_whole_program_native_solve_fixed(
     parameter_count = int(result.gradient.size)
     matrix_tokens = tuple(inputs[: size * size])
     rhs_tokens = tuple(inputs[size * size :])
-    if size in _WHOLE_PROGRAM_NATIVE_DET_DERIVATIVE_HELPER_SIZES:
+    if size in _WHOLE_PROGRAM_NATIVE_FACTORISATION_HELPER_SIZES:
         inverse_helper = _emit_whole_program_native_inverse_helper(
             lines,
             matrix_tokens,
@@ -1613,7 +1863,8 @@ def _emit_whole_program_native_solve_fixed(
             for row in range(size):
                 residual_terms: list[str] = []
                 for col in range(size):
-                    matrix_derivative = _whole_program_native_derivative_operand(
+                    matrix_derivative = _whole_program_native_structural_derivative_operand(
+                        result,
                         matrix_tokens[row * size + col],
                         derivative_index,
                     )
@@ -1631,7 +1882,8 @@ def _emit_whole_program_native_solve_fixed(
                     residual_terms,
                     residual_matrix_sum,
                 )
-                rhs_derivative = _whole_program_native_derivative_operand(
+                rhs_derivative = _whole_program_native_structural_derivative_operand(
+                    result,
                     rhs_tokens[row],
                     derivative_index,
                 )
@@ -1646,6 +1898,69 @@ def _emit_whole_program_native_solve_fixed(
             _emit_whole_program_native_sum_operands(
                 lines,
                 derivative_terms,
+                _whole_program_native_derivative_name(node.index, derivative_index),
+            )
+        return
+
+    if size in _WHOLE_PROGRAM_NATIVE_DET_DERIVATIVE_HELPER_SIZES:
+        inverse_helper = _emit_whole_program_native_inverse_helper(
+            lines,
+            matrix_tokens,
+            size=size,
+            prefix=f"{prefix}_inverse",
+            emission_state=emission_state,
+        )
+        solve_helper = _emit_whole_program_native_solve_helper(
+            lines,
+            matrix_tokens,
+            rhs_tokens,
+            size=size,
+            prefix=prefix,
+            emission_state=emission_state,
+        )
+        lines.append(
+            f"  {value_name} = fadd double "
+            f"{solve_helper.solution_entries[output_row]}, {_fmt_llvm_float(0.0)}"
+        )
+        zero = _fmt_llvm_float(0.0)
+        for derivative_index in range(parameter_count):
+            determinant_solve_derivative_terms: list[str] = []
+            for row in range(size):
+                determinant_solve_residual_terms: list[str] = []
+                for col in range(size):
+                    matrix_derivative = _whole_program_native_derivative_operand(
+                        matrix_tokens[row * size + col],
+                        derivative_index,
+                    )
+                    if matrix_derivative == zero:
+                        continue
+                    residual_term = f"%d{node.index}_{derivative_index}_{prefix}_res_{row}_{col}"
+                    lines.append(
+                        f"  {residual_term} = fmul double {matrix_derivative}, "
+                        f"{solve_helper.solution_entries[col]}"
+                    )
+                    determinant_solve_residual_terms.append(residual_term)
+                residual_matrix_sum = f"%d{node.index}_{derivative_index}_{prefix}_res_sum_{row}"
+                _emit_whole_program_native_sum_operands(
+                    lines,
+                    determinant_solve_residual_terms,
+                    residual_matrix_sum,
+                )
+                rhs_derivative = _whole_program_native_derivative_operand(
+                    rhs_tokens[row],
+                    derivative_index,
+                )
+                residual = f"%d{node.index}_{derivative_index}_{prefix}_rhs_minus_ax_{row}"
+                lines.append(f"  {residual} = fsub double {rhs_derivative}, {residual_matrix_sum}")
+                derivative_term = f"%d{node.index}_{derivative_index}_{prefix}_term_{row}"
+                lines.append(
+                    f"  {derivative_term} = fmul double "
+                    f"{inverse_helper.inverse_entries[output_row][row]}, {residual}"
+                )
+                determinant_solve_derivative_terms.append(derivative_term)
+            _emit_whole_program_native_sum_operands(
+                lines,
+                determinant_solve_derivative_terms,
                 _whole_program_native_derivative_name(node.index, derivative_index),
             )
         return
@@ -2280,18 +2595,21 @@ def _whole_program_native_det_derivative_helper_size(op: str) -> int | None:
     if (
         inverse_spec is not None
         and inverse_spec[0] in _WHOLE_PROGRAM_NATIVE_DET_DERIVATIVE_HELPER_SIZES
+        and inverse_spec[0] not in _WHOLE_PROGRAM_NATIVE_FACTORISATION_HELPER_SIZES
     ):
         return inverse_spec[0]
     solve_vector_spec = _whole_program_native_solve_vector_spec(op)
     if (
         solve_vector_spec is not None
         and solve_vector_spec[0] in _WHOLE_PROGRAM_NATIVE_DET_DERIVATIVE_HELPER_SIZES
+        and solve_vector_spec[0] not in _WHOLE_PROGRAM_NATIVE_FACTORISATION_HELPER_SIZES
     ):
         return solve_vector_spec[0]
     solve_matrix_spec = _whole_program_native_solve_matrix_spec(op)
     if (
         solve_matrix_spec is not None
         and solve_matrix_spec[0] in _WHOLE_PROGRAM_NATIVE_DET_DERIVATIVE_HELPER_SIZES
+        and solve_matrix_spec[0] not in _WHOLE_PROGRAM_NATIVE_FACTORISATION_HELPER_SIZES
     ):
         return solve_matrix_spec[0]
     return None
@@ -2457,6 +2775,35 @@ def _whole_program_native_derivative_operand(token: str, derivative_index: int) 
     if constant is None:
         raise ValueError(f"native whole-program AD cannot lower derivative operand {token}")
     return _fmt_llvm_float(0.0)
+
+
+def _whole_program_native_structural_derivative_operand(
+    result: WholeProgramADResult,
+    token: str,
+    derivative_index: int,
+) -> str:
+    """Return a derivative operand with direct-parameter zero seeds folded."""
+
+    if not _whole_program_native_is_ir_value(token):
+        return _whole_program_native_derivative_operand(token, derivative_index)
+    node_index = int(token[1:])
+    node: Any | None = None
+    if 0 <= node_index < len(result.ir_nodes) and result.ir_nodes[node_index].index == node_index:
+        node = result.ir_nodes[node_index]
+    else:
+        for candidate in result.ir_nodes:
+            if candidate.index == node_index:
+                node = candidate
+                break
+    if node is None or node.op != "parameter" or len(node.inputs) != 1:
+        return _whole_program_native_derivative_operand(token, derivative_index)
+    try:
+        parameter_index = result.parameter_names.index(node.inputs[0])
+    except ValueError:
+        return _whole_program_native_derivative_operand(token, derivative_index)
+    if not result.trainable[parameter_index] or parameter_index != derivative_index:
+        return _fmt_llvm_float(0.0)
+    return _fmt_llvm_float(1.0)
 
 
 def _whole_program_native_constant(token: str) -> float | None:
