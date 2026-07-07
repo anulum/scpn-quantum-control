@@ -170,7 +170,7 @@ target-version = "py39"
 line-length = 99
 
 [tool.ruff.lint]
-select = ["E", "F", "W", "I", "UP", "B", "SIM", "D"]
+select = ["E", "F", "W", "I", "UP", "B", "SIM", "D", "PGH"]
 ignore = [
     "E501",   # line length handled by formatter
     "SIM108", # ternary can reduce readability for physics code
@@ -253,12 +253,26 @@ warn_unused_configs = true
 warn_unreachable = true
 check_untyped_defs = true
 ignore_missing_imports = false
+# Every suppression must name its error code: a bare `# type: ignore` hides
+# unrelated future errors on the same line. Ruff's PGH003/PGH004 enforce the
+# same invariant (including in tests/, which mypy does not check — see below).
+enable_error_code = ["ignore-without-code"]
 # The standalone `oscillatools` distribution is a runtime dependency imported by
 # the accel/kuramoto consumer modules; it is not installed during the type-check
 # job (the pinned CI surface is hash-locked), so expose its source tree here for
 # import resolution. Its own strict gate owns its internals (see the override
 # below), and it is never added to `files`, so mypy resolves but does not re-check it.
 mypy_path = ["src", "oscillatools/src"]
+# Test-typing policy (adjudicated 2026-07-07, QWC-2.7): tests/ stays OUTSIDE
+# the strict gate as a documented exemption, not silent drift. Measured basis:
+# `mypy --strict tests/` = 6,618 errors in 403 of 840 files, ~80% mechanical
+# `no-untyped-def` annotations with no defect-finding power for pytest suites;
+# the residual 753 include the intentional-invalid-input technique that
+# fail-closed tests require (each needing a per-line `ignore[arg-type]`).
+# Rails that hold instead: all test suppressions are code-specific (ruff
+# PGH003/PGH004 in the lint gate), and dead ignores were removed at
+# adjudication time. Upgrade path if ever wanted: cohort-strict via a
+# `tests.*` override lane — a delegatable closeout, not a config flip.
 files = [
     "src/scpn_quantum_control/",
 ]

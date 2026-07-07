@@ -115,7 +115,7 @@ class TestErrorHandling:
             with pytest.raises(ImportError, match="networkx required"):
                 reloaded.build_calibration_graph({(0, 1): 0.01})
             with pytest.raises(ImportError, match="networkx required"):
-                reloaded.detect_execution_regions(None)  # type: ignore[arg-type]
+                reloaded.detect_execution_regions(None)
         finally:
             sys.meta_path.remove(blocker)
             sys.modules.update(saved_modules)

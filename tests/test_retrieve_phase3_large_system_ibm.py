@@ -91,7 +91,7 @@ def _synthetic_submission() -> dict[str, object]:
 def _synthetic_result_rows(submission: dict[str, object]) -> list[dict[str, object]]:
     expectations = {1: 0.8, 3: 0.6, 5: 0.4}
     rows = []
-    for meta in submission["metadata_rows"]:  # type: ignore[index]
+    for meta in submission["metadata_rows"]:
         metadata = dict(meta)
         if metadata["block"] == "main":
             counts = _counts_for_expectation(expectations[int(metadata["zne_noise_scale"])])
@@ -205,7 +205,7 @@ def test_large_system_reducer_falls_back_to_pseudoinverse_for_singular_readout()
     submission = _synthetic_submission()
     rows = _synthetic_result_rows(submission)
     for row in rows:
-        metadata = row["metadata"]  # type: ignore[index]
+        metadata = row["metadata"]
         if metadata["block"] == "readout_calibration":  # type: ignore[index]
             row["counts"] = {"00": 100}
     raw_payload = module.raw_payload_from_rows(

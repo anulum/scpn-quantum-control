@@ -157,7 +157,7 @@ class TestConstruction:
         a = ar.AsyncHardwareRunner(runner_set)  # type: ignore[arg-type]
 
         assert a.n_runners == 1
-        assert a._runners[0] is runner_set  # type: ignore[attr-defined]
+        assert a._runners[0] is runner_set
 
     def test_next_runner_advances_round_robin_index(self) -> None:
         r1, r2 = _StubRunner("ibm_a"), _StubRunner("ibm_b")
@@ -166,7 +166,7 @@ class TestConstruction:
         assert a._next_runner() is r1
         assert a._next_runner() is r2
         assert a._next_runner() is r1
-        assert a._rr_index == 3  # type: ignore[attr-defined]
+        assert a._rr_index == 3
 
 
 # ---------------------------------------------------------------------------
@@ -246,7 +246,7 @@ class TestSubmitBatch:
 
         submit_times: list[float] = []
 
-        real_submit = a._submit_blocking  # type: ignore[attr-defined]
+        real_submit = a._submit_blocking
 
         def _slow_submit(*args: Any, **kwargs: Any) -> ar.AsyncJobHandle:
             submit_times.append(time.time())
@@ -269,7 +269,7 @@ class TestSubmitBatch:
         r = _StubRunner()
         a = ar.AsyncHardwareRunner(r, max_concurrent=3)  # type: ignore[arg-type]
 
-        real_submit = a._submit_blocking  # type: ignore[attr-defined]
+        real_submit = a._submit_blocking
         lock = threading.Lock()
         active = 0
         max_active = 0

@@ -70,7 +70,7 @@ def _H_ours(K: np.ndarray, omega: np.ndarray) -> np.ndarray:
     # `.to_matrix()` returns the correct 2^N × 2^N array for that layout.
     H = sum(g.to_matrix() for g in gens)
     assert isinstance(H, np.ndarray), "Sum of matrices should be ndarray"
-    return H  # type: ignore[return-value]
+    return H
 
 
 def _H_qutip(K: np.ndarray, omega: np.ndarray) -> np.ndarray:
