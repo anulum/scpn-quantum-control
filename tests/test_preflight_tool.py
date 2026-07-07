@@ -10,6 +10,7 @@
 from __future__ import annotations
 
 import importlib.util
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -166,6 +167,22 @@ def test_preflight_coverage_gate_matches_temporary_ci_threshold() -> None:
     assert "--cov-fail-under=70" in _preflight._PYTEST_COV
 
 
+def test_gate_environment_prepends_local_source_roots(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Gate subprocesses must resolve local package source trees."""
+    monkeypatch.setenv("PYTHONPATH", f"/external{os.pathsep}/external")
+
+    env = _preflight._gate_environment()
+
+    entries = env["PYTHONPATH"].split(os.pathsep)
+    assert entries[:2] == [
+        str(_preflight.ROOT / "src"),
+        str(_preflight.ROOT / "oscillatools" / "src"),
+    ]
+    assert entries.count("/external") == 1
+
+
 def test_run_gate_reports_pass(
     monkeypatch: pytest.MonkeyPatch,
     capsys: pytest.CaptureFixture[str],
@@ -175,6 +192,7 @@ def test_run_gate_reports_pass(
 
     def fake_run(cmd: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
         observed["cmd"] = cmd
+        observed["env"] = kwargs.get("env")
         observed["shell"] = kwargs.get("shell")
         return subprocess.CompletedProcess(cmd, 0, stdout="", stderr="")
 
@@ -183,6 +201,7 @@ def test_run_gate_reports_pass(
     assert _preflight.run_gate("unit", [sys.executable, "-c", "pass"]) is True
     assert "PASS  unit" in capsys.readouterr().out
     assert observed["cmd"] == [sys.executable, "-c", "pass"]
+    assert isinstance(observed["env"], dict)
     assert observed["shell"] is False
 
 

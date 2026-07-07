@@ -34,11 +34,13 @@ from __future__ import annotations
 import subprocess  # nosec B404
 import sys
 import time
-from os import X_OK, access
+from collections.abc import Iterable
+from os import X_OK, access, environ, pathsep
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 _PY = sys.executable
+_RUNTIME_SOURCE_ROOTS = (ROOT / "src", ROOT / "oscillatools" / "src")
 
 DIFFERENTIABLE_DOCSTRING_RATCHET = [
     "src/scpn_quantum_control/differentiable_architecture_map.py",
@@ -241,6 +243,35 @@ def _admit_gate_command(cmd: list[str]) -> list[str]:
     return [str(executable), *cmd[1:]]
 
 
+def _deduplicated_path_entries(entries: Iterable[str]) -> list[str]:
+    """Return path entries in first-seen order without empty duplicates."""
+    seen: set[str] = set()
+    deduplicated: list[str] = []
+    for entry in entries:
+        if not entry or entry in seen:
+            continue
+        seen.add(entry)
+        deduplicated.append(entry)
+    return deduplicated
+
+
+def _gate_environment() -> dict[str, str]:
+    """Return the subprocess environment for preflight gates.
+
+    Tool scripts execute from ``tools/`` but import the repository packages.
+    Prepending the source roots keeps local runtime checks aligned with the
+    package layout and the explicit mypy path used for the install-free
+    ``oscillatools`` sibling source tree.
+    """
+    env = dict(environ)
+    source_roots = [str(path) for path in _RUNTIME_SOURCE_ROOTS if path.is_dir()]
+    existing_pythonpath = env.get("PYTHONPATH", "")
+    entries = _deduplicated_path_entries([*source_roots, *existing_pythonpath.split(pathsep)])
+    if entries:
+        env["PYTHONPATH"] = pathsep.join(entries)
+    return env
+
+
 def run_gate(name: str, cmd: list[str]) -> bool:
     """Run a named preflight command and print a compact result summary."""
     t0 = time.monotonic()
@@ -255,6 +286,7 @@ def run_gate(name: str, cmd: list[str]) -> bool:
         admitted_cmd,
         cwd=ROOT,
         capture_output=True,
+        env=_gate_environment(),
         text=True,
         shell=False,
     )
