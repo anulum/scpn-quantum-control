@@ -121,7 +121,7 @@ claims only when the evidence exists.
 |---|---:|
 | Package version | 0.10.0 |
 | Public API exports | 795 |
-| Python source modules | 475 |
+| Python source modules | 476 |
 | Public Python classes | 920 |
 | Domain package families | 31 |
 | Rust PyO3 function bindings | 177 |
@@ -208,7 +208,7 @@ research, and reproducible benchmark publication.
 The differentiable-programming lane is now documented as a first-path product
 surface because gradient evidence is central to quantum optimisation, machine
 learning integration, and control. The bounded Phase-QNode promotion state is
-SOTA-candidate until the claim ledger, external comparison rows, and isolated
+a promotion candidate until the claim ledger, external comparison rows, and isolated
 CI benchmark artefacts all pass:
 
 | Layer | Current status | Where to start |
@@ -222,7 +222,7 @@ CI benchmark artefacts all pass:
 | Hardware-gradient policy readiness | Executable dry-run policy decisions now gate hardware-gradient preparation by provider/backend allowlist, shot budget, required evidence IDs, and live-execution ticket status. `prepare_provider_hardware_parameter_shift_gradient(...)` packages that approval into provider-preparation evidence, and `run_provider_hardware_gradient_preparation_audit()` verifies supported and blocked preparation routes without submitting QPU jobs. | [Quantum Gradients](docs/quantum_gradients.md), [Differentiable API](docs/differentiable_api.md) |
 | Differentiable claim ledger | The Phase-QNode evidence ledger maps implementation, tests, artefact IDs, documentation, known gaps, and promotion status; no promoted claim is accepted without an artefact ID, and support-surface alignment checks keep ledger paths consistent with the generated capability manifest. | [Differentiable Programming](docs/differentiable_programming.md), [Claim Ledger](data/differentiable_phase_qnode/claim_ledger.md) |
 | Differentiable public claim table | Public-facing differentiable wording is generated from the committed ledger. Every current row is bounded-candidate only, and the table blocks hardware, provider, QPU, GPU, production-performance, and `isolated_affinity` claims until promotion evidence exists. | [Public Claim Table](data/differentiable_phase_qnode/public_claim_table_20260616.md) |
-| Differentiable SOTA scorecard | `run_differentiable_sota_scorecard()` scores the lane against named JAX, PyTorch, PennyLane, Qiskit Runtime, Catalyst, Enzyme, Rust Program AD, provider/hardware, benchmark, docs/API, and adoption baselines. Every current category remains behind-baseline governance evidence until promoted ledger rows and isolated benchmark artefacts exist. | [Differentiable Programming](docs/differentiable_programming.md), [SOTA Scorecard](data/differentiable_phase_qnode/differentiable_sota_scorecard_20260620.md) |
+| Differentiable baseline scorecard | `run_differentiable_baseline_scorecard()` scores the lane against named JAX, PyTorch, PennyLane, Qiskit Runtime, Catalyst, Enzyme, Rust Program AD, provider/hardware, benchmark, docs/API, and adoption baselines. Every current category remains behind-baseline governance evidence until promoted ledger rows and isolated benchmark artefacts exist. | [Differentiable Programming](docs/differentiable_programming.md), [Baseline Scorecard](data/differentiable_phase_qnode/differentiable_baseline_scorecard_20260620.md) |
 | Differentiable Rust/Python inventory | `run_differentiable_rust_python_inventory()` classifies differentiable Python, Rust, compiler, provider, hardware, metadata, and deprecation surfaces before broad rustification. Rows record owner modules, tests, docs, benchmark status, mypy targets, docstring status, Rust parity, polyglot status, and blockers without promoting Rust, LLVM/JIT, provider, hardware, GPU, or isolated benchmark claims. | [Differentiable Programming](docs/differentiable_programming.md), [Rust/Python Inventory](data/differentiable_phase_qnode/differentiable_rust_python_inventory_20260620.md) |
 | Differentiable external-validation lock | The external-validation package records exact SHA-256 digests for runtime, development, Python 3.11-3.13 CI, CPU framework-overlay, and Enzyme-runner lockfiles. The artefact is reviewer reproduction evidence only and remains `functional_non_isolated`. | [Differentiable Programming](docs/differentiable_programming.md), [Environment Lock](data/differentiable_phase_qnode/external_validation_environment_lock_20260616.md) |
 | Differentiable CI reproducibility | The differentiable framework workflow runs sparse and full CPU profiles across Python 3.11-3.13, enforces the module-specific test audit, uploads scheduled benchmark metadata, and exposes a manual optional GPU contract lane that remains `functional_non_isolated`. | [Differentiable Programming](docs/differentiable_programming.md), [Workflow](.github/workflows/differentiable-frameworks.yml) |

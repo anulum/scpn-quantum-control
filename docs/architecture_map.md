@@ -80,7 +80,7 @@ Two contract layers exist; **prefer the small stable one**:
 
 ## 4. Capability lanes
 
-Each lane: purpose · INPUTS · OUTPUTS · processing model · backends · wiring · SOTA grade.
+Each lane: purpose · INPUTS · OUTPUTS · processing model · backends · wiring · maturity grade.
 
 ### 4.1 Core compile + IO contracts — `kuramoto_core`, `bridge/`, `*_budget`
 - **INPUTS** `K_nm`,`omega`,metadata (or `QPUDataArtifact`). **OUTPUTS** `SparsePauliOp` / dense /
@@ -91,7 +91,7 @@ Each lane: purpose · INPUTS · OUTPUTS · processing model · backends · wirin
   fire before dense Hilbert allocations, Pauli-operator expansion, and the Python sparse fallback's
   full-basis COO loops — fail-closed, RAM-aware, env-overridable.
 - **Provenance** `QPUDataArtifact` (hash-locked arrays, synthetic-vs-real + publication-safety gates).
-- **SOTA** *mature* (strict validation, budgeted, Rust-accelerated; textbook-correct mapping).
+- **Mature** (strict validation, budgeted, Rust-accelerated; textbook-correct mapping).
 
 ### 4.2 Phase / evolution — `phase/` *(volatile lane)*
 - **Time evolution** (*mature*): Qiskit Lie/Suzuki Trotter + native XX+YY compiler; Rust
@@ -249,5 +249,5 @@ for an eventual multi-provider broker but is **not yet wired** to a producer/con
 - **Domain applications**: mostly topology-similarity proxies, not model reproductions — do not
   cite as solved physics.
 
-For the **per-component SOTA audit, the verified over-claims/gaps, and the systematic per-lane
+For the **per-component maturity audit, the verified over-claims/gaps, and the systematic per-lane
 plan**, see the internal audit record (kept private under `docs/internal/`).

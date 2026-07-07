@@ -24,7 +24,7 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     env:
-      # The differentiable SOTA-language audit imports scpn_quantum_control, which
+      # The differentiable promotion-language audit imports scpn_quantum_control, which
       # now imports the standalone oscillatools distribution; expose its source tree.
       PYTHONPATH: ${{ github.workspace }}/src:${{ github.workspace }}/oscillatools/src
     steps:
@@ -41,14 +41,14 @@ jobs:
           python tools/audit_documentation_surface.py
           --allowlist tools/documentation_surface_allowlist.json
           --fail-on-findings
-      - name: Audit differentiable SOTA promotion language
-        run: python tools/check_differentiable_sota_promotion_language.py
+      - name: Audit differentiable promotion language
+        run: python tools/check_differentiable_promotion_language.py
       - name: Ruff docstring ratchet for differentiable module hardening
         run: >-
           ruff check --select D
           src/scpn_quantum_control/differentiable_architecture_map.py
           src/scpn_quantum_control/differentiable_dependency_environment_map.py
-          src/scpn_quantum_control/differentiable_sota_scorecard.py
+          src/scpn_quantum_control/differentiable_baseline_scorecard.py
           src/scpn_quantum_control/differentiable_external_validation.py
           src/scpn_quantum_control/differentiable_module_hardening_audit.py
           src/scpn_quantum_control/phase/tensorflow_maintenance.py
@@ -182,7 +182,7 @@ jobs:
           src/scpn_quantum_control/differentiable_claim_ledger.py
           src/scpn_quantum_control/differentiable_architecture_map.py
           src/scpn_quantum_control/differentiable_dependency_environment_map.py
-          src/scpn_quantum_control/differentiable_sota_scorecard.py
+          src/scpn_quantum_control/differentiable_baseline_scorecard.py
           src/scpn_quantum_control/differentiable_api.py
           src/scpn_quantum_control/benchmarks/differentiable_programming.py
           src/scpn_quantum_control/differentiable_external_validation.py

@@ -239,7 +239,7 @@ def test_real_committed_ledger_is_sixteen_candidates_at_zero() -> None:
         "differentiable_dependency_environment_map",
         "differentiable_isolated_benchmark_plan",
         "differentiable_rust_python_inventory",
-        "differentiable_sota_scorecard",
+        "differentiable_baseline_scorecard",
         "external_framework_comparison",
         "external_validation_artifact_bundle",
         "external_validation_environment_lock",

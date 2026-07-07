@@ -23,7 +23,7 @@ from scpn_quantum_control import (
 
 
 def test_architecture_map_records_required_layers_and_boundaries() -> None:
-    """The map must connect architecture layers to inventory and SOTA evidence."""
+    """The map must connect architecture layers to inventory and baseline evidence."""
     architecture_map = run_differentiable_architecture_map()
 
     assert architecture_map.schema == "scpn_qc_differentiable_architecture_map_v1"
@@ -51,20 +51,20 @@ def test_architecture_map_layers_are_path_backed_and_claim_bounded() -> None:
         "rust_program_ad_ir",
         "whole_program_frontend",
     )
-    assert program_ad.sota_categories == ("rust_native_program_ad",)
+    assert program_ad.baseline_categories == ("rust_native_program_ad",)
     assert "src/scpn_quantum_control/differentiable.py" in program_ad.python_surfaces
     assert "scpn_quantum_engine/src/program_ad_ir.rs" in program_ad.rust_surfaces
     assert "tests/test_program_ad_rust_bridge.py" in program_ad.test_surfaces
     assert any("array adjoints" in blocker for blocker in program_ad.blockers)
 
     governance = layers["benchmark_and_claim_governance"]
-    assert governance.inventory_surface_ids == ("differentiable_sota_scorecard",)
-    assert governance.sota_categories == (
+    assert governance.inventory_surface_ids == ("differentiable_baseline_scorecard",)
+    assert governance.baseline_categories == (
         "benchmark_promotion",
         "docs_api_maintainability",
         "adoption_licensing",
     )
-    assert "data/differentiable_phase_qnode/differentiable_sota_scorecard_20260620.md" in (
+    assert "data/differentiable_phase_qnode/differentiable_baseline_scorecard_20260620.md" in (
         governance.docs_surfaces
     )
 
@@ -85,7 +85,7 @@ def test_architecture_map_validation_rejects_unknown_references_and_paths(
         role="Invalid routing evidence.",
         owner_modules=("src/scpn_quantum_control/missing.py",),
         inventory_surface_ids=("missing_surface",),
-        sota_categories=("rust_native_program_ad",),
+        baseline_categories=("rust_native_program_ad",),
         python_surfaces=("src/scpn_quantum_control/missing.py",),
         rust_surfaces=("scpn_quantum_engine/src/missing.rs",),
         polyglot_surfaces=("docs/missing.md",),

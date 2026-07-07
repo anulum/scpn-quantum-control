@@ -3,6 +3,10 @@
   "claim_boundary": "Differentiable architecture and Rustification routing map only; no broad Rustification promotion, provider execution, hardware execution, GPU execution, LLVM/JIT execution, or isolated benchmark claim is implied.",
   "layers": [
     {
+      "baseline_categories": [
+        "docs_api_maintainability",
+        "adoption_licensing"
+      ],
       "benchmark_surfaces": [
         "benchmark_report",
         "diff-support-surface-alignment-audit-v1",
@@ -52,10 +56,6 @@
         "scpn_quantum_engine/src/lib.rs"
       ],
       "rustification_ready": false,
-      "sota_categories": [
-        "docs_api_maintainability",
-        "adoption_licensing"
-      ],
       "test_surfaces": [
         "tests/test_differentiable_api.py",
         "tests/test_differentiable_claim_ledger.py",
@@ -68,6 +68,12 @@
       "title": "Public API facade and dashboard evidence"
     },
     {
+      "baseline_categories": [
+        "jax_native_transforms",
+        "pytorch_autograd_compile",
+        "pennylane_qnode_device_plugin",
+        "qiskit_runtime_provider_gradients"
+      ],
       "benchmark_surfaces": [
         "pennylane_plugin_matrix",
         "diff-qnode-external-comparison-schema-v1",
@@ -126,12 +132,6 @@
         "scpn_quantum_engine/src/lib.rs"
       ],
       "rustification_ready": false,
-      "sota_categories": [
-        "jax_native_transforms",
-        "pytorch_autograd_compile",
-        "pennylane_qnode_device_plugin",
-        "qiskit_runtime_provider_gradients"
-      ],
       "test_surfaces": [
         "tests/test_phase_pennylane_bridge.py",
         "tests/test_phase_pennylane_import.py",
@@ -149,6 +149,9 @@
       "title": "QNode framework bridge layer"
     },
     {
+      "baseline_categories": [
+        "rust_native_program_ad"
+      ],
       "benchmark_surfaces": [
         "program_ad_rust_value_gradient_replay",
         "program_ad_rust_executed_branch_replay",
@@ -160,7 +163,7 @@
       ],
       "blockers": [
         "non-lowered dynamic indexing semantics, dynamic axes, dynamic trapezoid-grid metadata, dynamic q/method metadata, dynamic ddof/correction metadata, zero-variance std gradients, and broad linalg array adjoints are missing",
-        "executable registry promotion, LLVM/JIT lowering, provider/hardware evidence, and isolated benchmark evidence are missing",
+        "sustained coverage-guided fuzz campaign evidence, Miri, sanitizer, executable registry promotion, LLVM/JIT lowering, provider/hardware evidence, and isolated benchmark evidence are missing",
         "static Python source/bytecode metadata has no executable Rust parity requirement",
         "compiler lowering remains blocked until a real Program AD backend exists"
       ],
@@ -209,17 +212,33 @@
       "rust_surfaces": [
         "scpn_quantum_engine/src/program_ad_ir.rs",
         "scpn_quantum_engine/src/program_ad_trapezoid_reduction.rs",
+        "scpn_quantum_engine/src/program_ad_interpolation_reduction.rs",
+        "scpn_quantum_engine/src/program_ad_signal_reduction.rs",
+        "scpn_quantum_engine/src/program_ad_stencil_reduction.rs",
+        "scpn_quantum_engine/src/program_ad_cumulative_reduction.rs",
+        "scpn_quantum_engine/fuzz/fuzz_targets/program_ad_ir.rs",
         "scpn_quantum_engine/tests/program_ad_ir.rs",
+        "scpn_quantum_engine/tests/program_ad_interpolation.rs",
+        "scpn_quantum_engine/tests/program_ad_signal.rs",
+        "scpn_quantum_engine/tests/program_ad_stencil.rs",
+        "scpn_quantum_engine/tests/program_ad_cumulative.rs",
+        "scpn_quantum_engine/tests/program_ad_panic_boundary.rs",
         "scpn_quantum_engine/src/lib.rs"
       ],
       "rustification_ready": false,
-      "sota_categories": [
-        "rust_native_program_ad"
-      ],
       "test_surfaces": [
         "tests/test_phase_qnode_rust_parity.py",
         "tests/test_program_ad_effect_ir.py",
         "tests/test_program_ad_rust_bridge.py",
+        "tests/test_program_ad_rust_interpolation_bridge.py",
+        "tests/test_program_ad_rust_signal_bridge.py",
+        "tests/test_program_ad_rust_cumulative_bridge.py",
+        "scpn_quantum_engine/tests/program_ad_interpolation.rs",
+        "scpn_quantum_engine/tests/program_ad_signal.rs",
+        "scpn_quantum_engine/tests/program_ad_stencil.rs",
+        "scpn_quantum_engine/tests/program_ad_cumulative.rs",
+        "scpn_quantum_engine/tests/program_ad_panic_boundary.rs",
+        "scpn_quantum_engine/fuzz/fuzz_targets/program_ad_ir.rs",
         "tests/test_differentiable_api.py",
         "tests/test_differentiable_programming_benchmarks.py",
         "tests/test_phase_qnode_tape.py",
@@ -234,13 +253,17 @@
       "title": "Program AD core"
     },
     {
+      "baseline_categories": [
+        "catalyst_compiler_workflows",
+        "enzyme_compiler_ad"
+      ],
       "benchmark_surfaces": [
         "enzyme-native-square-gradient-20260616",
         "diff-qnode-external-comparison-schema-v1",
         "diff-qnode-claim-ledger-v1",
         "enzyme_mlir_maturity_audit_20260616",
         "catalyst_runner_missing",
-        "diff-sota-scorecard-20260620"
+        "diff-baseline-scorecard-20260620"
       ],
       "blockers": [
         "isolated compiler-AD benchmark ID is missing",
@@ -259,7 +282,7 @@
         "README.md",
         "docs/benchmarks_api.md",
         "data/differentiable_phase_qnode/differentiable_rust_python_inventory_20260620.md",
-        "data/differentiable_phase_qnode/differentiable_sota_scorecard_20260620.md",
+        "data/differentiable_phase_qnode/differentiable_baseline_scorecard_20260620.md",
         "data/differentiable_phase_qnode/differentiable_architecture_map_20260627.md"
       ],
       "inventory_surface_ids": [
@@ -291,7 +314,7 @@
         "src/scpn_quantum_control/phase/qnode_transforms.py",
         "src/scpn_quantum_control/phase/qnode_vector_transforms.py",
         "src/scpn_quantum_control/phase/torch_bridge.py",
-        "src/scpn_quantum_control/differentiable_sota_scorecard.py"
+        "src/scpn_quantum_control/differentiable_baseline_scorecard.py"
       ],
       "role": "Owns compiler-native MLIR, LLVM, Enzyme, and Rust kernel evidence boundaries.",
       "rust_surfaces": [
@@ -299,10 +322,6 @@
         "scpn_quantum_engine/src/lib.rs"
       ],
       "rustification_ready": false,
-      "sota_categories": [
-        "catalyst_compiler_workflows",
-        "enzyme_compiler_ad"
-      ],
       "test_surfaces": [
         "tests/test_phase_qnode_compiler_lowering.py",
         "tests/test_rust_new_functions.py",
@@ -314,11 +333,15 @@
         "tests/test_phase_qnode_vector_transforms.py",
         "tests/test_phase_torch_bridge_compile_boundaries.py",
         "tests/test_differentiable_claim_ledger.py",
-        "tests/test_differentiable_sota_scorecard.py"
+        "tests/test_differentiable_baseline_scorecard.py"
       ],
       "title": "Compiler AD native execution"
     },
     {
+      "baseline_categories": [
+        "provider_hardware_gradients",
+        "qiskit_runtime_provider_gradients"
+      ],
       "benchmark_surfaces": [
         "qiskit_runtime_qpu_provider_evidence_bundle",
         "diff-qnode-claim-ledger-v1",
@@ -375,10 +398,6 @@
         "scpn_quantum_engine/src/lib.rs"
       ],
       "rustification_ready": false,
-      "sota_categories": [
-        "provider_hardware_gradients",
-        "qiskit_runtime_provider_gradients"
-      ],
       "test_surfaces": [
         "tests/test_phase_qiskit_bridge.py",
         "tests/test_phase_provider_hardware_gradient_audit.py",
@@ -395,8 +414,13 @@
       "title": "Provider and hardware boundary"
     },
     {
+      "baseline_categories": [
+        "benchmark_promotion",
+        "docs_api_maintainability",
+        "adoption_licensing"
+      ],
       "benchmark_surfaces": [
-        "diff-sota-scorecard-20260620"
+        "diff-baseline-scorecard-20260620"
       ],
       "blockers": [
         "governance evidence only; no executable Rust surface is required"
@@ -406,13 +430,13 @@
         "docs/differentiable_api.md",
         "docs/differentiable_programming.md",
         "README.md",
-        "data/differentiable_phase_qnode/differentiable_sota_scorecard_20260620.md",
+        "data/differentiable_phase_qnode/differentiable_baseline_scorecard_20260620.md",
         "data/differentiable_phase_qnode/claim_ledger.md",
         "data/differentiable_phase_qnode/differentiable_rust_python_inventory_20260620.md",
         "data/differentiable_phase_qnode/differentiable_architecture_map_20260627.md"
       ],
       "inventory_surface_ids": [
-        "differentiable_sota_scorecard"
+        "differentiable_baseline_scorecard"
       ],
       "layer_id": "benchmark_and_claim_governance",
       "next_hardening_rounds": [
@@ -420,13 +444,13 @@
         "Round 5 Rustification readiness"
       ],
       "owner_modules": [
-        "src/scpn_quantum_control/differentiable_sota_scorecard.py"
+        "src/scpn_quantum_control/differentiable_baseline_scorecard.py"
       ],
       "polyglot_surfaces": [
-        "data/differentiable_phase_qnode/differentiable_sota_scorecard_20260620.md"
+        "data/differentiable_phase_qnode/differentiable_baseline_scorecard_20260620.md"
       ],
       "python_surfaces": [
-        "src/scpn_quantum_control/differentiable_sota_scorecard.py",
+        "src/scpn_quantum_control/differentiable_baseline_scorecard.py",
         "src/scpn_quantum_control/differentiable_api.py"
       ],
       "role": "Owns scorecard, claim wording, benchmark promotion, docs, and licensing gates.",
@@ -434,13 +458,8 @@
         "scpn_quantum_engine/src/lib.rs"
       ],
       "rustification_ready": false,
-      "sota_categories": [
-        "benchmark_promotion",
-        "docs_api_maintainability",
-        "adoption_licensing"
-      ],
       "test_surfaces": [
-        "tests/test_differentiable_sota_scorecard.py"
+        "tests/test_differentiable_baseline_scorecard.py"
       ],
       "title": "Benchmark and claim governance"
     }

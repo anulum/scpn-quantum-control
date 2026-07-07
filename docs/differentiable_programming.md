@@ -183,7 +183,7 @@ performance promotion remain blocked.
 
 ## Evidence Promotion Lane
 
-The differentiable Phase-QNode lane is SOTA-candidate until the committed claim
+The differentiable Phase-QNode lane is a promotion candidate until the committed claim
 ledger, isolated CI benchmark artefact, and external comparison rows all pass.
 The ledger is committed at
 `data/differentiable_phase_qnode/claim_ledger.json` with a reviewer summary in
@@ -195,14 +195,14 @@ release note, README, package description, or reviewer response needs
 claim-boundary language. Every current row is a bounded candidate, so the table
 blocks hardware, provider, QPU, GPU, production-performance, and
 `isolated_affinity` claims until promoted evidence exists.
-`run_differentiable_sota_scorecard()` adds the category scorecard that keeps
+`run_differentiable_baseline_scorecard()` adds the category scorecard that keeps
 the promotion discussion tied to named external baselines: JAX transforms,
 PyTorch autograd/compile, PennyLane QNode/device/plugin breadth, Qiskit Runtime
 provider gradients, Catalyst compiler workflows, Enzyme compiler AD, Rust
 Program AD, provider/hardware gradients, benchmark promotion, docs/API
 maintainability, and adoption/licensing. The committed artefacts live at
-`data/differentiable_phase_qnode/differentiable_sota_scorecard_20260620.json`
-and `data/differentiable_phase_qnode/differentiable_sota_scorecard_20260620.md`.
+`data/differentiable_phase_qnode/differentiable_baseline_scorecard_20260620.json`
+and `data/differentiable_phase_qnode/differentiable_baseline_scorecard_20260620.md`.
 The external-comparison evidence now attaches a dedicated Catalyst
 compiler-workflow profile to Catalyst rows so qjit/MLIR/QIR workflow scope,
 compiled differentiation, control-flow coverage, finite-shot limits, and
@@ -211,11 +211,11 @@ considered.
 Every current category remains `behind_baseline`; the scorecard is governance
 evidence only and does not promote performance, provider, QPU, GPU, hardware,
 or `isolated_affinity` claims.
-`audit_differentiable_sota_promotion_language()` is the release-blocking
+`audit_differentiable_promotion_language()` is the release-blocking
 public-language gate for that scorecard. It scans the public differentiable
 surfaces used by CI and fails when unbounded `state-of-the-art`, exceedance,
 production-performance, or promotion-ready wording appears without a matching
-ready scorecard row and promoted claim-ledger rows. Bounded `SOTA-candidate`
+ready scorecard row and promoted claim-ledger rows. Bounded candidate-status
 wording remains allowed so roadmap and reviewer documentation can describe
 the governance lane without upgrading claims.
 `run_competitive_baseline_refresh()` records the official upstream source
@@ -253,7 +253,7 @@ framework bridges, Program AD core, compiler/native execution, provider and
 hardware boundary, and benchmark/claim governance. The committed artefacts live
 at `data/differentiable_phase_qnode/differentiable_architecture_map_20260627.json`
 and `data/differentiable_phase_qnode/differentiable_architecture_map_20260627.md`.
-The map validates layer IDs, inventory surface references, SOTA categories,
+The map validates layer IDs, inventory surface references, baseline categories,
 source/test/docs paths, and blocker state before broad Rust migration starts.
 It is routing evidence only and does not promote Rust, LLVM/JIT, provider,
 hardware, GPU, performance, or `isolated_affinity` claims.

@@ -6,7 +6,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — differentiable competitive baseline gate.
-"""Fail CI when competitive SOTA baselines go stale or claims outrun evidence."""
+"""Fail CI when competitive external baselines go stale or claims outrun evidence."""
 
 from __future__ import annotations
 

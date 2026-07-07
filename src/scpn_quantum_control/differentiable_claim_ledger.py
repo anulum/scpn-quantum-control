@@ -223,7 +223,7 @@ def validate_public_language_against_ledger(
     rows_or_ledger: ClaimLedger | Sequence[ClaimLedgerRow],
     public_texts: Iterable[str],
 ) -> ClaimLedgerValidation:
-    """Reject public SOTA wording when the ledger has no promoted claim."""
+    """Reject public promotional wording when the ledger has no promoted claim."""
     rows = (
         rows_or_ledger.rows if isinstance(rows_or_ledger, ClaimLedger) else tuple(rows_or_ledger)
     )
@@ -353,7 +353,7 @@ def render_claim_ledger_markdown(rows_or_ledger: ClaimLedger | Iterable[ClaimLed
         )
     lines.append("")
     lines.append(
-        "Bounded language: the differentiable lane is SOTA-candidate unless isolated "
+        "Bounded language: the differentiable lane remains a promotion candidate unless isolated "
         "CI benchmark evidence and external comparison artefacts pass."
     )
     return "\n".join(lines)

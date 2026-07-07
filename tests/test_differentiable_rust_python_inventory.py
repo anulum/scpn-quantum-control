@@ -42,7 +42,7 @@ def test_inventory_records_required_rustification_classifications() -> None:
         "rust_compiler_ad_primitives",
         "pennylane_plugin_matrix",
         "qiskit_runtime_provider_gradients",
-        "differentiable_sota_scorecard",
+        "differentiable_baseline_scorecard",
     }
     assert "no broad rustification promotion" in inventory.claim_boundary
 

@@ -4,8 +4,8 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — differentiable SOTA scorecard.
-"""State-of-art scorecard governance for differentiable computing claims."""
+# SCPN Quantum Control — differentiable baseline scorecard.
+"""Baseline scorecard governance for differentiable computing claims."""
 
 from __future__ import annotations
 
@@ -22,7 +22,7 @@ from .differentiable_claim_ledger import (
     load_differentiable_claim_ledger,
 )
 
-DifferentiableSOTACategory = Literal[
+DifferentiableBaselineCategory = Literal[
     "jax_native_transforms",
     "pytorch_autograd_compile",
     "pennylane_qnode_device_plugin",
@@ -35,21 +35,21 @@ DifferentiableSOTACategory = Literal[
     "docs_api_maintainability",
     "adoption_licensing",
 ]
-DifferentiableSOTAStatus = Literal[
+DifferentiableBaselineStatus = Literal[
     "behind_baseline",
     "at_baseline",
     "exceeds_baseline",
     "not_comparable",
 ]
 
-DIFFERENTIABLE_SOTA_SCORECARD_SCHEMA = "scpn_qc_differentiable_sota_scorecard_v1"
-DIFFERENTIABLE_SOTA_SCORECARD_ARTIFACT_ID = "diff-sota-scorecard-20260620"
-DIFFERENTIABLE_SOTA_SCORECARD_CLAIM_BOUNDARY = (
-    "Differentiable state-of-art scorecard governance only; the lane remains "
-    "SOTA-candidate until category rows have promoted claim-ledger evidence, "
+DIFFERENTIABLE_BASELINE_SCORECARD_SCHEMA = "scpn_qc_differentiable_baseline_scorecard_v1"
+DIFFERENTIABLE_BASELINE_SCORECARD_ARTIFACT_ID = "diff-baseline-scorecard-20260620"
+DIFFERENTIABLE_BASELINE_SCORECARD_CLAIM_BOUNDARY = (
+    "Differentiable baseline scorecard governance only; the lane remains "
+    "a promotion candidate until category rows have promoted claim-ledger evidence, "
     "isolated benchmark artefacts, and external baseline comparisons."
 )
-REQUIRED_SOTA_CATEGORIES: tuple[DifferentiableSOTACategory, ...] = (
+REQUIRED_BASELINE_CATEGORIES: tuple[DifferentiableBaselineCategory, ...] = (
     "jax_native_transforms",
     "pytorch_autograd_compile",
     "pennylane_qnode_device_plugin",
@@ -62,10 +62,10 @@ REQUIRED_SOTA_CATEGORIES: tuple[DifferentiableSOTACategory, ...] = (
     "docs_api_maintainability",
     "adoption_licensing",
 )
-READY_STATUSES: frozenset[DifferentiableSOTAStatus] = frozenset(
+READY_STATUSES: frozenset[DifferentiableBaselineStatus] = frozenset(
     {"at_baseline", "exceeds_baseline"}
 )
-DEFAULT_PUBLIC_SOTA_LANGUAGE_PATHS: tuple[str, ...] = (
+DEFAULT_PUBLIC_PROMOTION_LANGUAGE_PATHS: tuple[str, ...] = (
     "README.md",
     "docs/differentiable_api.md",
     "docs/differentiable_programming.md",
@@ -106,7 +106,7 @@ BOUNDED_PROMOTION_LANGUAGE_MARKERS: tuple[str, ...] = (
     "blocked until",
     "fail-closed",
 )
-_CATEGORY_LANGUAGE_MARKERS: Mapping[DifferentiableSOTACategory, tuple[str, ...]] = {
+_CATEGORY_LANGUAGE_MARKERS: Mapping[DifferentiableBaselineCategory, tuple[str, ...]] = {
     "jax_native_transforms": ("jax", "native transforms", "pytree", "openxla"),
     "pytorch_autograd_compile": ("pytorch", "torch", "autograd", "torch.compile"),
     "pennylane_qnode_device_plugin": ("pennylane", "qnode", "device plugin"),
@@ -122,13 +122,13 @@ _CATEGORY_LANGUAGE_MARKERS: Mapping[DifferentiableSOTACategory, tuple[str, ...]]
 
 
 @dataclass(frozen=True)
-class DifferentiableSOTAScorecardRow:
-    """One external-baseline category in the differentiable SOTA scorecard."""
+class DifferentiableBaselineScorecardRow:
+    """One external-baseline category in the differentiable baseline scorecard."""
 
-    category: DifferentiableSOTACategory
+    category: DifferentiableBaselineCategory
     baseline: str
     current_evidence: str
-    status: DifferentiableSOTAStatus
+    status: DifferentiableBaselineStatus
     claim_ids: tuple[str, ...]
     implementation_surface: tuple[str, ...]
     test_surface: tuple[str, ...]
@@ -140,15 +140,15 @@ class DifferentiableSOTAScorecardRow:
 
     def __post_init__(self) -> None:
         """Validate category, status, and evidence invariants."""
-        if self.category not in REQUIRED_SOTA_CATEGORIES:
-            raise ValueError(f"unknown SOTA category: {self.category}")
+        if self.category not in REQUIRED_BASELINE_CATEGORIES:
+            raise ValueError(f"unknown baseline category: {self.category}")
         if self.status not in {
             "behind_baseline",
             "at_baseline",
             "exceeds_baseline",
             "not_comparable",
         }:
-            raise ValueError(f"unknown SOTA status: {self.status}")
+            raise ValueError(f"unknown baseline status: {self.status}")
         for field_name in (
             "baseline",
             "current_evidence",
@@ -168,9 +168,9 @@ class DifferentiableSOTAScorecardRow:
             if not value or any(not str(item).strip() for item in value):
                 raise ValueError(f"{field_name} must contain non-empty entries")
         if self.status in READY_STATUSES and self.blockers:
-            raise ValueError("ready SOTA rows must not carry blockers")
+            raise ValueError("ready scorecard rows must not carry blockers")
         if self.status == "behind_baseline" and not self.blockers:
-            raise ValueError("behind-baseline SOTA rows must list blockers")
+            raise ValueError("behind-baseline scorecard rows must list blockers")
 
     @property
     def ready_for_promotion(self) -> bool:
@@ -197,12 +197,12 @@ class DifferentiableSOTAScorecardRow:
 
 
 @dataclass(frozen=True)
-class DifferentiableSOTAScorecard:
+class DifferentiableBaselineScorecard:
     """Deterministic scorecard over differentiable external-baseline categories."""
 
     schema: str
     artifact_id: str
-    rows: tuple[DifferentiableSOTAScorecardRow, ...]
+    rows: tuple[DifferentiableBaselineScorecardRow, ...]
     promotion_ready: bool
     ready_category_count: int
     total_category_count: int
@@ -222,12 +222,12 @@ class DifferentiableSOTAScorecard:
 
 
 @dataclass(frozen=True)
-class DifferentiableSOTAScorecardValidation:
-    """Validation result for a differentiable SOTA scorecard."""
+class DifferentiableBaselineScorecardValidation:
+    """Validation result for a differentiable baseline scorecard."""
 
     passed: bool
     errors: tuple[str, ...]
-    checked_categories: tuple[DifferentiableSOTACategory, ...]
+    checked_categories: tuple[DifferentiableBaselineCategory, ...]
     checked_claim_ids: tuple[str, ...]
     checked_paths: tuple[str, ...]
     claim_boundary: str
@@ -245,13 +245,13 @@ class DifferentiableSOTAScorecardValidation:
 
 
 @dataclass(frozen=True)
-class DifferentiableSOTAPromotionLanguageAudit:
-    """Audit result for public differentiable SOTA promotion wording."""
+class DifferentiablePromotionLanguageAudit:
+    """Audit result for public differentiable promotion wording."""
 
     passed: bool
     errors: tuple[str, ...]
     checked_paths: tuple[str, ...]
-    checked_promotional_categories: tuple[DifferentiableSOTACategory, ...]
+    checked_promotional_categories: tuple[DifferentiableBaselineCategory, ...]
     checked_claim_ids: tuple[str, ...]
     claim_boundary: str
 
@@ -269,7 +269,7 @@ class DifferentiableSOTAPromotionLanguageAudit:
 
 @dataclass(frozen=True)
 class _ScorecardRowSpec:
-    category: DifferentiableSOTACategory
+    category: DifferentiableBaselineCategory
     baseline: str
     current_evidence: str
     claim_ids: tuple[str, ...]
@@ -277,34 +277,34 @@ class _ScorecardRowSpec:
     next_hardening_rounds: tuple[str, ...]
 
 
-def run_differentiable_sota_scorecard(
+def run_differentiable_baseline_scorecard(
     *,
     ledger: ClaimLedger | None = None,
     ledger_path: Path = DEFAULT_LEDGER_PATH,
-) -> DifferentiableSOTAScorecard:
-    """Build the deterministic SOTA-category scorecard from committed evidence."""
+) -> DifferentiableBaselineScorecard:
+    """Build the deterministic baseline-category scorecard from committed evidence."""
     loaded_ledger = load_differentiable_claim_ledger(ledger_path) if ledger is None else ledger
     claim_rows = {row.claim_id: row for row in loaded_ledger.rows}
     rows = _default_scorecard_rows(claim_rows)
     ready_count = sum(1 for row in rows if row.ready_for_promotion)
-    return DifferentiableSOTAScorecard(
-        schema=DIFFERENTIABLE_SOTA_SCORECARD_SCHEMA,
-        artifact_id=DIFFERENTIABLE_SOTA_SCORECARD_ARTIFACT_ID,
+    return DifferentiableBaselineScorecard(
+        schema=DIFFERENTIABLE_BASELINE_SCORECARD_SCHEMA,
+        artifact_id=DIFFERENTIABLE_BASELINE_SCORECARD_ARTIFACT_ID,
         rows=rows,
         promotion_ready=ready_count == len(rows),
         ready_category_count=ready_count,
         total_category_count=len(rows),
-        claim_boundary=DIFFERENTIABLE_SOTA_SCORECARD_CLAIM_BOUNDARY,
+        claim_boundary=DIFFERENTIABLE_BASELINE_SCORECARD_CLAIM_BOUNDARY,
     )
 
 
-def validate_differentiable_sota_scorecard(
-    scorecard: DifferentiableSOTAScorecard,
+def validate_differentiable_baseline_scorecard(
+    scorecard: DifferentiableBaselineScorecard,
     *,
     ledger: ClaimLedger | None = None,
     ledger_path: Path = DEFAULT_LEDGER_PATH,
     repo_root: Path = REPO_ROOT,
-) -> DifferentiableSOTAScorecardValidation:
+) -> DifferentiableBaselineScorecardValidation:
     """Validate category coverage, path evidence, and promotion invariants."""
     loaded_ledger = load_differentiable_claim_ledger(ledger_path) if ledger is None else ledger
     claim_rows = {row.claim_id: row for row in loaded_ledger.rows}
@@ -312,13 +312,13 @@ def validate_differentiable_sota_scorecard(
     checked_paths: set[str] = set()
     checked_claim_ids: set[str] = set()
 
-    if scorecard.schema != DIFFERENTIABLE_SOTA_SCORECARD_SCHEMA:
+    if scorecard.schema != DIFFERENTIABLE_BASELINE_SCORECARD_SCHEMA:
         errors.append(f"unexpected scorecard schema: {scorecard.schema}")
-    if scorecard.artifact_id != DIFFERENTIABLE_SOTA_SCORECARD_ARTIFACT_ID:
+    if scorecard.artifact_id != DIFFERENTIABLE_BASELINE_SCORECARD_ARTIFACT_ID:
         errors.append(f"unexpected scorecard artifact_id: {scorecard.artifact_id}")
     categories = tuple(row.category for row in scorecard.rows)
-    if categories != REQUIRED_SOTA_CATEGORIES:
-        errors.append("scorecard categories must match REQUIRED_SOTA_CATEGORIES exactly")
+    if categories != REQUIRED_BASELINE_CATEGORIES:
+        errors.append("scorecard categories must match REQUIRED_BASELINE_CATEGORIES exactly")
     if scorecard.total_category_count != len(scorecard.rows):
         errors.append("total_category_count does not match row count")
     ready_count = sum(1 for row in scorecard.rows if row.ready_for_promotion)
@@ -335,46 +335,48 @@ def validate_differentiable_sota_scorecard(
             if not (repo_root / path).exists():
                 errors.append(f"{row.category}: evidence path does not exist: {path}")
 
-    return DifferentiableSOTAScorecardValidation(
+    return DifferentiableBaselineScorecardValidation(
         passed=not errors,
         errors=tuple(errors),
         checked_categories=categories,
         checked_claim_ids=tuple(sorted(checked_claim_ids)),
         checked_paths=tuple(sorted(checked_paths)),
         claim_boundary=(
-            "SOTA scorecard validation only; validates category coverage and "
+            "Baseline scorecard validation only; validates category coverage and "
             "claim-ledger consistency without promoting performance, provider, "
             "hardware, QPU, GPU, or isolated_affinity claims"
         ),
     )
 
 
-def audit_differentiable_sota_promotion_language(
+def audit_differentiable_promotion_language(
     *,
     public_texts: Mapping[str, str] | None = None,
-    public_paths: Iterable[str] = DEFAULT_PUBLIC_SOTA_LANGUAGE_PATHS,
-    scorecard: DifferentiableSOTAScorecard | None = None,
+    public_paths: Iterable[str] = DEFAULT_PUBLIC_PROMOTION_LANGUAGE_PATHS,
+    scorecard: DifferentiableBaselineScorecard | None = None,
     ledger: ClaimLedger | None = None,
     ledger_path: Path = DEFAULT_LEDGER_PATH,
     repo_root: Path = REPO_ROOT,
-) -> DifferentiableSOTAPromotionLanguageAudit:
-    """Reject public SOTA wording that lacks promoted scorecard evidence.
+) -> DifferentiablePromotionLanguageAudit:
+    """Reject public promotional wording that lacks promoted scorecard evidence.
 
-    Bounded governance language such as ``SOTA-candidate`` remains allowed. Any
-    unbounded public wording that claims state-of-art, exceedance, or promotion
+    Bounded governance language (explicit candidate and behind-baseline markers) remains allowed. Any
+    unbounded public wording that claims category leadership, exceedance, or promotion
     readiness must reference categories whose scorecard rows are ready and whose
     claim-ledger rows are all promoted.
     """
     loaded_ledger = load_differentiable_claim_ledger(ledger_path) if ledger is None else ledger
     loaded_scorecard = (
-        run_differentiable_sota_scorecard(ledger=loaded_ledger) if scorecard is None else scorecard
+        run_differentiable_baseline_scorecard(ledger=loaded_ledger)
+        if scorecard is None
+        else scorecard
     )
     texts = (
-        _load_public_sota_texts(public_paths=public_paths, repo_root=repo_root)
+        _load_public_promotion_texts(public_paths=public_paths, repo_root=repo_root)
         if public_texts is None
         else dict(public_texts)
     )
-    scorecard_validation = validate_differentiable_sota_scorecard(
+    scorecard_validation = validate_differentiable_baseline_scorecard(
         loaded_scorecard,
         ledger=loaded_ledger,
         repo_root=repo_root,
@@ -386,7 +388,7 @@ def audit_differentiable_sota_promotion_language(
         row.claim_id for row in loaded_ledger.rows if row.promotion_status == "promoted"
     }
     rows_by_category = {row.category: row for row in loaded_scorecard.rows}
-    checked_categories: set[DifferentiableSOTACategory] = set()
+    checked_categories: set[DifferentiableBaselineCategory] = set()
     checked_claim_ids: set[str] = set()
 
     for path, text in texts.items():
@@ -394,7 +396,7 @@ def audit_differentiable_sota_promotion_language(
             phrases = _promotional_phrases(line)
             if not phrases or _is_bounded_promotion_language(line):
                 continue
-            categories = _referenced_sota_categories(line)
+            categories = _referenced_baseline_categories(line)
             if not categories:
                 categories = tuple(row.category for row in loaded_scorecard.rows)
             for category in categories:
@@ -407,29 +409,29 @@ def audit_differentiable_sota_promotion_language(
                 if row.ready_for_promotion and not missing_promoted_claims:
                     continue
                 errors.append(
-                    f"{path}:{line_number}: public SOTA wording for {category} "
+                    f"{path}:{line_number}: public promotional wording for {category} "
                     f"({', '.join(phrases)}) requires a ready scorecard row and "
                     f"promoted claim-ledger rows; status={row.status}, "
                     f"unpromoted_claim_ids={', '.join(missing_promoted_claims) or 'none'}"
                 )
 
-    return DifferentiableSOTAPromotionLanguageAudit(
+    return DifferentiablePromotionLanguageAudit(
         passed=not errors,
         errors=tuple(errors),
         checked_paths=tuple(sorted(texts)),
         checked_promotional_categories=tuple(sorted(checked_categories)),
         checked_claim_ids=tuple(sorted(checked_claim_ids)),
         claim_boundary=(
-            "public SOTA promotion-language audit only; rejects unbounded "
-            "state-of-art, exceedance, production-performance, or promotion-ready "
+            "public promotion-language audit only; rejects unbounded "
+            "category-leadership, exceedance, production-performance, or promotion-ready "
             "wording unless the referenced scorecard rows and claim-ledger rows "
             "are promoted"
         ),
     )
 
 
-def render_differentiable_sota_scorecard_markdown(
-    scorecard: DifferentiableSOTAScorecard,
+def render_differentiable_baseline_scorecard_markdown(
+    scorecard: DifferentiableBaselineScorecard,
 ) -> str:
     """Render a reviewer-facing Markdown summary of the scorecard."""
     lines = [
@@ -440,10 +442,10 @@ def render_differentiable_sota_scorecard_markdown(
         "© Code 2020–2026 Miroslav Šotek. All rights reserved.",
         "ORCID: 0009-0009-3560-0851",
         "Contact: www.anulum.li | protoscience@anulum.li",
-        "SCPN Quantum Control — Differentiable SOTA Scorecard",
+        "SCPN Quantum Control — Differentiable Baseline Scorecard",
         "-->",
         "",
-        "# Differentiable SOTA Scorecard",
+        "# Differentiable Baseline Scorecard",
         "",
         f"- Schema: `{scorecard.schema}`",
         f"- Artifact ID: `{scorecard.artifact_id}`",
@@ -477,7 +479,7 @@ def render_differentiable_sota_scorecard_markdown(
 
 def _default_scorecard_rows(
     claim_rows: Mapping[str, ClaimLedgerRow],
-) -> tuple[DifferentiableSOTAScorecardRow, ...]:
+) -> tuple[DifferentiableBaselineScorecardRow, ...]:
     row_specs = (
         _row(
             "jax_native_transforms",
@@ -631,7 +633,7 @@ def _default_scorecard_rows(
             "Users need stable APIs, strict typing, full public docstrings, docs, generated manifests, "
             "module-specific tests, claim-ledger alignment, and public-language guards.",
             "Claim ledger, module-hardening audit, hardening-slice gate, generated manifest, and docs exist; "
-            "the new scorecard keeps SOTA wording bounded until rows are promoted.",
+            "the new scorecard keeps promotional wording bounded until rows are promoted.",
             (
                 "support_surface_alignment",
                 "hardening_slice_gate",
@@ -665,7 +667,7 @@ def _default_scorecard_rows(
 
 
 def _row(
-    category: DifferentiableSOTACategory,
+    category: DifferentiableBaselineCategory,
     baseline: str,
     current_evidence: str,
     claim_ids: tuple[str, ...],
@@ -685,12 +687,12 @@ def _row(
 def _attach_surfaces(
     spec: _ScorecardRowSpec,
     claim_rows: Mapping[str, ClaimLedgerRow],
-) -> DifferentiableSOTAScorecardRow:
+) -> DifferentiableBaselineScorecardRow:
     claim_ids = spec.claim_ids
     referenced_rows = tuple(
         claim_rows[claim_id] for claim_id in claim_ids if claim_id in claim_rows
     )
-    return DifferentiableSOTAScorecardRow(
+    return DifferentiableBaselineScorecardRow(
         category=spec.category,
         baseline=spec.baseline,
         current_evidence=spec.current_evidence,
@@ -700,25 +702,25 @@ def _attach_surfaces(
             path for row in referenced_rows for path in row.implementation_surface
         ),
         test_surface=_unique_paths(path for row in referenced_rows for path in row.test_surface)
-        + ("tests/test_differentiable_sota_scorecard.py",),
+        + ("tests/test_differentiable_baseline_scorecard.py",),
         docs_surface=_unique_paths(path for row in referenced_rows for path in row.docs_surface)
         + (
             "docs/differentiable_api.md",
             "docs/differentiable_programming.md",
-            "data/differentiable_phase_qnode/differentiable_sota_scorecard_20260620.md",
+            "data/differentiable_phase_qnode/differentiable_baseline_scorecard_20260620.md",
         ),
         benchmark_artifact_ids=_unique_paths(
             artifact for row in referenced_rows for artifact in row.benchmark_artifact_ids
         )
-        + (DIFFERENTIABLE_SOTA_SCORECARD_ARTIFACT_ID,),
+        + (DIFFERENTIABLE_BASELINE_SCORECARD_ARTIFACT_ID,),
         blockers=spec.blockers,
         next_hardening_rounds=spec.next_hardening_rounds,
-        claim_boundary=DIFFERENTIABLE_SOTA_SCORECARD_CLAIM_BOUNDARY,
+        claim_boundary=DIFFERENTIABLE_BASELINE_SCORECARD_CLAIM_BOUNDARY,
     )
 
 
 def _validate_scorecard_row(
-    row: DifferentiableSOTAScorecardRow,
+    row: DifferentiableBaselineScorecardRow,
     *,
     claim_rows: Mapping[str, ClaimLedgerRow],
     errors: list[str],
@@ -738,7 +740,7 @@ def _validate_scorecard_row(
         errors.append(f"{row.category}: behind-baseline row cannot be promotion-ready")
 
 
-def _row_paths(row: DifferentiableSOTAScorecardRow) -> Iterable[str]:
+def _row_paths(row: DifferentiableBaselineScorecardRow) -> Iterable[str]:
     yield from row.implementation_surface
     yield from row.test_surface
     yield from row.docs_surface
@@ -752,7 +754,7 @@ def _markdown_cell(value: str) -> str:
     return value.replace("\n", " ").replace("|", "\\|")
 
 
-def _load_public_sota_texts(
+def _load_public_promotion_texts(
     *,
     public_paths: Iterable[str],
     repo_root: Path,
@@ -775,9 +777,9 @@ def _is_bounded_promotion_language(line: str) -> bool:
     return any(marker in lowered for marker in BOUNDED_PROMOTION_LANGUAGE_MARKERS)
 
 
-def _referenced_sota_categories(line: str) -> tuple[DifferentiableSOTACategory, ...]:
+def _referenced_baseline_categories(line: str) -> tuple[DifferentiableBaselineCategory, ...]:
     lowered = line.casefold()
-    categories: list[DifferentiableSOTACategory] = []
+    categories: list[DifferentiableBaselineCategory] = []
     for category, markers in _CATEGORY_LANGUAGE_MARKERS.items():
         category_marker = category.replace("_", " ")
         if category in lowered or category_marker in lowered:
@@ -790,21 +792,21 @@ def _referenced_sota_categories(line: str) -> tuple[DifferentiableSOTACategory, 
 
 __all__ = [
     "BOUNDED_PROMOTION_LANGUAGE_MARKERS",
-    "DEFAULT_PUBLIC_SOTA_LANGUAGE_PATHS",
-    "DIFFERENTIABLE_SOTA_SCORECARD_ARTIFACT_ID",
-    "DIFFERENTIABLE_SOTA_SCORECARD_CLAIM_BOUNDARY",
-    "DIFFERENTIABLE_SOTA_SCORECARD_SCHEMA",
+    "DEFAULT_PUBLIC_PROMOTION_LANGUAGE_PATHS",
+    "DIFFERENTIABLE_BASELINE_SCORECARD_ARTIFACT_ID",
+    "DIFFERENTIABLE_BASELINE_SCORECARD_CLAIM_BOUNDARY",
+    "DIFFERENTIABLE_BASELINE_SCORECARD_SCHEMA",
     "PROMOTIONAL_LANGUAGE_PHRASES",
     "READY_STATUSES",
-    "REQUIRED_SOTA_CATEGORIES",
-    "DifferentiableSOTACategory",
-    "DifferentiableSOTAPromotionLanguageAudit",
-    "DifferentiableSOTAScorecard",
-    "DifferentiableSOTAScorecardRow",
-    "DifferentiableSOTAScorecardValidation",
-    "DifferentiableSOTAStatus",
-    "audit_differentiable_sota_promotion_language",
-    "render_differentiable_sota_scorecard_markdown",
-    "run_differentiable_sota_scorecard",
-    "validate_differentiable_sota_scorecard",
+    "REQUIRED_BASELINE_CATEGORIES",
+    "DifferentiableBaselineCategory",
+    "DifferentiablePromotionLanguageAudit",
+    "DifferentiableBaselineScorecard",
+    "DifferentiableBaselineScorecardRow",
+    "DifferentiableBaselineScorecardValidation",
+    "DifferentiableBaselineStatus",
+    "audit_differentiable_promotion_language",
+    "render_differentiable_baseline_scorecard_markdown",
+    "run_differentiable_baseline_scorecard",
+    "validate_differentiable_baseline_scorecard",
 ]

@@ -10,7 +10,7 @@
     "public_api_exports": 795,
     "public_documentation_pages": 260,
     "python_model_classes": 920,
-    "python_model_source_modules": 475,
+    "python_model_source_modules": 476,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 64,
     "test_files": 841
@@ -578,7 +578,7 @@
       {
         "package": "studio",
         "path": "src/scpn_quantum_control/studio",
-        "python_modules": 8
+        "python_modules": 9
       },
       {
         "package": "tcbo",
@@ -1222,6 +1222,18 @@
         "path": "src/scpn_quantum_control/differentiable_architecture_map.py"
       },
       {
+        "name": "DifferentiableBaselineScorecard",
+        "path": "src/scpn_quantum_control/differentiable_baseline_scorecard.py"
+      },
+      {
+        "name": "DifferentiableBaselineScorecardRow",
+        "path": "src/scpn_quantum_control/differentiable_baseline_scorecard.py"
+      },
+      {
+        "name": "DifferentiableBaselineScorecardValidation",
+        "path": "src/scpn_quantum_control/differentiable_baseline_scorecard.py"
+      },
+      {
         "name": "DifferentiableBenchmarkClassificationCase",
         "path": "src/scpn_quantum_control/benchmarks/differentiable_hardening_gate.py"
       },
@@ -1330,6 +1342,10 @@
         "path": "src/scpn_quantum_control/benchmarks/differentiable_programming.py"
       },
       {
+        "name": "DifferentiablePromotionLanguageAudit",
+        "path": "src/scpn_quantum_control/differentiable_baseline_scorecard.py"
+      },
+      {
         "name": "DifferentiableProviderHardwareSafetyAuditResult",
         "path": "src/scpn_quantum_control/phase/provider_hardware_safety_audit.py"
       },
@@ -1384,22 +1400,6 @@
       {
         "name": "DifferentiableRustPythonInventoryValidation",
         "path": "src/scpn_quantum_control/differentiable_rust_python_inventory.py"
-      },
-      {
-        "name": "DifferentiableSOTAPromotionLanguageAudit",
-        "path": "src/scpn_quantum_control/differentiable_sota_scorecard.py"
-      },
-      {
-        "name": "DifferentiableSOTAScorecard",
-        "path": "src/scpn_quantum_control/differentiable_sota_scorecard.py"
-      },
-      {
-        "name": "DifferentiableSOTAScorecardRow",
-        "path": "src/scpn_quantum_control/differentiable_sota_scorecard.py"
-      },
-      {
-        "name": "DifferentiableSOTAScorecardValidation",
-        "path": "src/scpn_quantum_control/differentiable_sota_scorecard.py"
       },
       {
         "name": "DifferentiableSupportSurfaceAlignment",
@@ -4444,6 +4444,7 @@
       "src/scpn_quantum_control/differentiable.py",
       "src/scpn_quantum_control/differentiable_api.py",
       "src/scpn_quantum_control/differentiable_architecture_map.py",
+      "src/scpn_quantum_control/differentiable_baseline_scorecard.py",
       "src/scpn_quantum_control/differentiable_batch_helpers.py",
       "src/scpn_quantum_control/differentiable_benchmark_report.py",
       "src/scpn_quantum_control/differentiable_canonical_api.py",
@@ -4470,7 +4471,6 @@
       "src/scpn_quantum_control/differentiable_result_contracts.py",
       "src/scpn_quantum_control/differentiable_rust_python_inventory.py",
       "src/scpn_quantum_control/differentiable_scalar_kernels.py",
-      "src/scpn_quantum_control/differentiable_sota_scorecard.py",
       "src/scpn_quantum_control/differentiable_sparse_derivatives.py",
       "src/scpn_quantum_control/differentiable_stochastic_estimators.py",
       "src/scpn_quantum_control/differentiable_stochastic_policy.py",
@@ -4736,6 +4736,7 @@
       "src/scpn_quantum_control/studio/recompute_kernel.py",
       "src/scpn_quantum_control/studio/reference_validation.py",
       "src/scpn_quantum_control/studio/result_pack_seal.py",
+      "src/scpn_quantum_control/studio/scorecard_bundle.py",
       "src/scpn_quantum_control/studio/verbs.py",
       "src/scpn_quantum_control/tcbo/quantum_observer.py",
       "src/scpn_quantum_control/thermodynamics/readiness.py",
@@ -5053,6 +5054,11 @@
     "DifferentiableArchitectureMap",
     "DifferentiableArchitectureMapLayer",
     "DifferentiableArchitectureMapValidation",
+    "DifferentiableBaselineCategory",
+    "DifferentiableBaselineScorecard",
+    "DifferentiableBaselineScorecardRow",
+    "DifferentiableBaselineScorecardValidation",
+    "DifferentiableBaselineStatus",
     "DifferentiableBenchmarkClassificationCase",
     "DifferentiableBenchmarkReport",
     "DifferentiableCircuit",
@@ -5076,6 +5082,7 @@
     "DifferentiableOptimizer",
     "DifferentiableProgrammingBenchmarkResult",
     "DifferentiableProgrammingExternalReferenceResult",
+    "DifferentiablePromotionLanguageAudit",
     "DifferentiableRustPythonInventory",
     "DifferentiableRustPythonInventoryBenchmarkStatus",
     "DifferentiableRustPythonInventoryClassification",
@@ -5083,12 +5090,6 @@
     "DifferentiableRustPythonInventoryRow",
     "DifferentiableRustPythonInventoryRustParityStatus",
     "DifferentiableRustPythonInventoryValidation",
-    "DifferentiableSOTACategory",
-    "DifferentiableSOTAPromotionLanguageAudit",
-    "DifferentiableSOTAScorecard",
-    "DifferentiableSOTAScorecardRow",
-    "DifferentiableSOTAScorecardValidation",
-    "DifferentiableSOTAStatus",
     "DisruptionBenchmark",
     "DualNumber",
     "DynamicCouplingConfig",
@@ -5325,7 +5326,7 @@
     "assert_transform_algebra_audit_passes",
     "assess_provider_capability_snapshot",
     "audit_competitive_baseline_promotion_gate",
-    "audit_differentiable_sota_promotion_language",
+    "audit_differentiable_promotion_language",
     "available_baselines",
     "azure_openqasm3_to_workload",
     "backend_capability_matrix",
@@ -5430,6 +5431,7 @@
     "diff",
     "differentiable_api",
     "differentiable_architecture_map_report",
+    "differentiable_baseline_scorecard_report",
     "differentiable_benchmark_report",
     "differentiable_circuit",
     "differentiable_competitive_baseline_refresh_report",
@@ -5444,7 +5446,6 @@
     "differentiable_module_hardening_registry",
     "differentiable_qfi_fss_report",
     "differentiable_rust_python_inventory_report",
-    "differentiable_sota_scorecard_report",
     "differentiable_support_report",
     "differentiable_transform_algebra_report",
     "differentiable_value",
@@ -5674,10 +5675,10 @@
     "render_competitive_baseline_refresh_markdown",
     "render_compiler_isolated_benchmark_evidence_markdown",
     "render_differentiable_architecture_map_markdown",
+    "render_differentiable_baseline_scorecard_markdown",
     "render_differentiable_dependency_environment_map_markdown",
     "render_differentiable_isolated_benchmark_plan_markdown",
     "render_differentiable_rust_python_inventory_markdown",
-    "render_differentiable_sota_scorecard_markdown",
     "render_enzyme_mlir_compiler_ad_breadth_artifact_markdown",
     "resolve_aggregator_provider_route",
     "reverse_cos",
@@ -5690,6 +5691,7 @@
     "run_biological_qec_execution",
     "run_competitive_baseline_refresh",
     "run_differentiable_architecture_map",
+    "run_differentiable_baseline_scorecard",
     "run_differentiable_dependency_environment_map",
     "run_differentiable_hardening_slice_gate",
     "run_differentiable_isolated_benchmark_plan",
@@ -5697,7 +5699,6 @@
     "run_differentiable_programming_benchmark_suite",
     "run_differentiable_programming_external_reference_suite",
     "run_differentiable_rust_python_inventory",
-    "run_differentiable_sota_scorecard",
     "run_documented_classical_baselines",
     "run_enzyme_mlir_maturity_audit",
     "run_quantum_gradient_benchmark_suite",
@@ -5757,10 +5758,10 @@
     "update_levenberg_marquardt_damping",
     "validate_competitive_baseline_refresh",
     "validate_differentiable_architecture_map",
+    "validate_differentiable_baseline_scorecard",
     "validate_differentiable_dependency_environment_map",
     "validate_differentiable_isolated_benchmark_plan",
     "validate_differentiable_rust_python_inventory",
-    "validate_differentiable_sota_scorecard",
     "validate_kuramoto_inputs",
     "validate_scpn_control_bridge_dependency_contract",
     "value_and_complex_step_grad",
@@ -6030,6 +6031,7 @@
       "tests/test_diff_namespace.py",
       "tests/test_differentiable_api.py",
       "tests/test_differentiable_architecture_map.py",
+      "tests/test_differentiable_baseline_scorecard.py",
       "tests/test_differentiable_batch_helpers.py",
       "tests/test_differentiable_benchmark_evidence.py",
       "tests/test_differentiable_benchmark_report.py",
@@ -6077,7 +6079,6 @@
       "tests/test_differentiable_rust_python_inventory.py",
       "tests/test_differentiable_scalar_kernels.py",
       "tests/test_differentiable_score_function.py",
-      "tests/test_differentiable_sota_scorecard.py",
       "tests/test_differentiable_sparse_derivatives.py",
       "tests/test_differentiable_spsa.py",
       "tests/test_differentiable_stochastic_estimators.py",
@@ -6636,6 +6637,7 @@
       "tests/test_studio_manifest.py",
       "tests/test_studio_recompute_kernel.py",
       "tests/test_studio_reference_validation.py",
+      "tests/test_studio_scorecard_bundle.py",
       "tests/test_sub_us_tracker.py",
       "tests/test_submit_fim_replication_zne_ibm.py",
       "tests/test_submit_phase3_large_system_ibm.py",

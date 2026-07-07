@@ -68,12 +68,12 @@ DEFAULT_ARTIFACT_BUNDLE_INPUTS: tuple[tuple[str, str], ...] = (
         "Differentiable support-surface alignment reviewer summary",
     ),
     (
-        "data/differentiable_phase_qnode/differentiable_sota_scorecard_20260620.json",
-        "Differentiable SOTA category scorecard artefact",
+        "data/differentiable_phase_qnode/differentiable_baseline_scorecard_20260620.json",
+        "Differentiable baseline category scorecard artefact",
     ),
     (
-        "data/differentiable_phase_qnode/differentiable_sota_scorecard_20260620.md",
-        "Differentiable SOTA category scorecard reviewer summary",
+        "data/differentiable_phase_qnode/differentiable_baseline_scorecard_20260620.md",
+        "Differentiable baseline category scorecard reviewer summary",
     ),
     (
         "data/differentiable_phase_qnode/differentiable_competitive_baseline_refresh_20260627.json",

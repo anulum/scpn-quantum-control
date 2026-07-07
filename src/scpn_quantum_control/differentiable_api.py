@@ -37,13 +37,13 @@ from .differentiable import (
     value_and_jacobian,
 )
 from .differentiable_architecture_map import run_differentiable_architecture_map
+from .differentiable_baseline_scorecard import run_differentiable_baseline_scorecard
 from .differentiable_benchmark_report import build_differentiable_benchmark_report
 from .differentiable_competitive_baselines import run_competitive_baseline_refresh
 from .differentiable_dependency_environment_map import (
     run_differentiable_dependency_environment_map,
 )
 from .differentiable_rust_python_inventory import run_differentiable_rust_python_inventory
-from .differentiable_sota_scorecard import run_differentiable_sota_scorecard
 from .differentiable_transform_algebra import run_transform_algebra_audit
 from .phase.gradient_backend import (
     plan_quantum_gradient_backend,
@@ -64,7 +64,7 @@ UnifiedDifferentiableOperation = Literal[
     "frontend_report",
     "benchmark_report",
     "dashboard_status",
-    "sota_scorecard",
+    "baseline_scorecard",
     "competitive_baseline_refresh",
     "rust_python_inventory",
     "architecture_rustification_map",
@@ -504,13 +504,13 @@ def differentiable_benchmark_report() -> UnifiedDifferentiableAPIResult:
     )
 
 
-def differentiable_sota_scorecard_report() -> UnifiedDifferentiableAPIResult:
-    """Return claim-bounded SOTA/category scorecard evidence."""
-    scorecard = run_differentiable_sota_scorecard()
+def differentiable_baseline_scorecard_report() -> UnifiedDifferentiableAPIResult:
+    """Return claim-bounded baseline-category scorecard evidence."""
+    scorecard = run_differentiable_baseline_scorecard()
     return UnifiedDifferentiableAPIResult(
-        operation="sota_scorecard",
+        operation="baseline_scorecard",
         supported=scorecard.promotion_ready,
-        method="differentiable_sota_scorecard",
+        method="differentiable_baseline_scorecard",
         value=None,
         gradient=None,
         jacobian=None,
@@ -1694,8 +1694,8 @@ def differentiable_api(
         )
     if operation == "benchmark_report":
         return differentiable_benchmark_report()
-    if operation == "sota_scorecard":
-        return differentiable_sota_scorecard_report()
+    if operation == "baseline_scorecard":
+        return differentiable_baseline_scorecard_report()
     if operation == "competitive_baseline_refresh":
         return differentiable_competitive_baseline_refresh_report()
     if operation == "rust_python_inventory":
@@ -1858,7 +1858,7 @@ __all__ = [
     "differentiable_jacobian",
     "differentiable_qfi_fss_report",
     "differentiable_rust_python_inventory_report",
-    "differentiable_sota_scorecard_report",
+    "differentiable_baseline_scorecard_report",
     "differentiable_support_report",
     "differentiable_transform_algebra_report",
     "differentiable_value",

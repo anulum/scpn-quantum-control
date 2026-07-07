@@ -11,7 +11,7 @@ Gates (in order):
   1. ruff check      — lint errors
   2. ruff format     — formatting drift
   3. docs surface    — public docs/docstring surface regression gate
-  4. diff-sota-lang  — differentiable SOTA promotion-language evidence gate
+  4. diff-promo-lang  — differentiable promotion-language evidence gate
   5. diff-baselines  — differentiable competitive-baseline freshness gate
   6. diff-transform  — differentiable transform-algebra metamorphic gate
   7. ruff D ratchet  — NumPy-style docstring ratchet for differentiable hardening
@@ -46,7 +46,7 @@ DIFFERENTIABLE_DOCSTRING_RATCHET = [
     "src/scpn_quantum_control/differentiable_architecture_map.py",
     "src/scpn_quantum_control/differentiable_competitive_baselines.py",
     "src/scpn_quantum_control/differentiable_dependency_environment_map.py",
-    "src/scpn_quantum_control/differentiable_sota_scorecard.py",
+    "src/scpn_quantum_control/differentiable_baseline_scorecard.py",
     "src/scpn_quantum_control/differentiable_external_validation.py",
     "src/scpn_quantum_control/differentiable_module_hardening_audit.py",
     "src/scpn_quantum_control/differentiable_transform_algebra.py",
@@ -92,8 +92,8 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
         ],
     ),
     (
-        "differentiable-sota-promotion-language",
-        [_PY, "tools/check_differentiable_sota_promotion_language.py"],
+        "differentiable-promotion-language",
+        [_PY, "tools/check_differentiable_promotion_language.py"],
     ),
     (
         "differentiable-competitive-baselines",
@@ -134,7 +134,7 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
             "src/scpn/diff.py",
             "src/scpn/__init__.py",
             "src/scpn_quantum_control/differentiable_dependency_environment_map.py",
-            "src/scpn_quantum_control/differentiable_sota_scorecard.py",
+            "src/scpn_quantum_control/differentiable_baseline_scorecard.py",
             "src/scpn_quantum_control/differentiable_api.py",
             "src/scpn_quantum_control/benchmarks/differentiable_programming.py",
             "src/scpn_quantum_control/differentiable_external_validation.py",

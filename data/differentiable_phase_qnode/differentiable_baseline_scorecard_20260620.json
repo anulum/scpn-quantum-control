@@ -1,6 +1,6 @@
 {
-  "artifact_id": "diff-sota-scorecard-20260620",
-  "claim_boundary": "Differentiable state-of-art scorecard governance only; the lane remains SOTA-candidate until category rows have promoted claim-ledger evidence, isolated benchmark artefacts, and external baseline comparisons.",
+  "artifact_id": "diff-baseline-scorecard-20260620",
+  "claim_boundary": "Differentiable baseline scorecard governance only; the lane remains a promotion candidate until category rows have promoted claim-ledger evidence, isolated benchmark artefacts, and external baseline comparisons.",
   "promotion_ready": false,
   "ready_category_count": 0,
   "rows": [
@@ -9,14 +9,14 @@
       "benchmark_artifact_ids": [
         "diff-qnode-external-comparison-schema-v1",
         "diff-qnode-claim-ledger-v1",
-        "diff-sota-scorecard-20260620"
+        "diff-baseline-scorecard-20260620"
       ],
       "blockers": [
         "provider/native arbitrary simulator lowering remains open",
         "finite-shot, dynamic-circuit, provider, hardware, and isolated benchmark rows remain blocked"
       ],
       "category": "jax_native_transforms",
-      "claim_boundary": "Differentiable state-of-art scorecard governance only; the lane remains SOTA-candidate until category rows have promoted claim-ledger evidence, isolated benchmark artefacts, and external baseline comparisons.",
+      "claim_boundary": "Differentiable baseline scorecard governance only; the lane remains a promotion candidate until category rows have promoted claim-ledger evidence, isolated benchmark artefacts, and external baseline comparisons.",
       "claim_ids": [
         "external_framework_comparison",
         "phase_qnode_claim_boundary"
@@ -30,7 +30,7 @@
         "docs/differentiable_api.md",
         "docs/differentiable_api.md",
         "docs/differentiable_programming.md",
-        "data/differentiable_phase_qnode/differentiable_sota_scorecard_20260620.md"
+        "data/differentiable_phase_qnode/differentiable_baseline_scorecard_20260620.md"
       ],
       "implementation_surface": [
         "src/scpn_quantum_control/benchmarks/differentiable_external_comparison.py",
@@ -56,7 +56,7 @@
         "tests/test_phase_qnode_vector_transforms.py",
         "tests/test_phase_torch_bridge_compile_boundaries.py",
         "tests/test_differentiable_claim_ledger.py",
-        "tests/test_differentiable_sota_scorecard.py"
+        "tests/test_differentiable_baseline_scorecard.py"
       ]
     },
     {
@@ -64,14 +64,14 @@
       "benchmark_artifact_ids": [
         "diff-qnode-external-comparison-schema-v1",
         "diff-qnode-claim-ledger-v1",
-        "diff-sota-scorecard-20260620"
+        "diff-baseline-scorecard-20260620"
       ],
       "blockers": [
         "compatible CUDA/device evidence is scheduled for cloud hardware",
         "fullgraph compile, dynamic-shape promotion, AOTAutograd/export persistence, finite-shot, provider, hardware, and isolated benchmark rows remain blocked"
       ],
       "category": "pytorch_autograd_compile",
-      "claim_boundary": "Differentiable state-of-art scorecard governance only; the lane remains SOTA-candidate until category rows have promoted claim-ledger evidence, isolated benchmark artefacts, and external baseline comparisons.",
+      "claim_boundary": "Differentiable baseline scorecard governance only; the lane remains a promotion candidate until category rows have promoted claim-ledger evidence, isolated benchmark artefacts, and external baseline comparisons.",
       "claim_ids": [
         "external_framework_comparison",
         "phase_qnode_claim_boundary"
@@ -85,7 +85,7 @@
         "docs/differentiable_api.md",
         "docs/differentiable_api.md",
         "docs/differentiable_programming.md",
-        "data/differentiable_phase_qnode/differentiable_sota_scorecard_20260620.md"
+        "data/differentiable_phase_qnode/differentiable_baseline_scorecard_20260620.md"
       ],
       "implementation_surface": [
         "src/scpn_quantum_control/benchmarks/differentiable_external_comparison.py",
@@ -111,7 +111,7 @@
         "tests/test_phase_qnode_vector_transforms.py",
         "tests/test_phase_torch_bridge_compile_boundaries.py",
         "tests/test_differentiable_claim_ledger.py",
-        "tests/test_differentiable_sota_scorecard.py"
+        "tests/test_differentiable_baseline_scorecard.py"
       ]
     },
     {
@@ -119,14 +119,14 @@
       "benchmark_artifact_ids": [
         "diff-qnode-external-comparison-schema-v1",
         "diff-qnode-claim-ledger-v1",
-        "diff-sota-scorecard-20260620"
+        "diff-baseline-scorecard-20260620"
       ],
       "blockers": [
         "real provider-plugin execution artefacts are missing",
         "hardware-plugin and provider-gradient parity artefacts are missing"
       ],
       "category": "pennylane_qnode_device_plugin",
-      "claim_boundary": "Differentiable state-of-art scorecard governance only; the lane remains SOTA-candidate until category rows have promoted claim-ledger evidence, isolated benchmark artefacts, and external baseline comparisons.",
+      "claim_boundary": "Differentiable baseline scorecard governance only; the lane remains a promotion candidate until category rows have promoted claim-ledger evidence, isolated benchmark artefacts, and external baseline comparisons.",
       "claim_ids": [
         "external_framework_comparison",
         "phase_qnode_claim_boundary"
@@ -140,7 +140,7 @@
         "docs/differentiable_api.md",
         "docs/differentiable_api.md",
         "docs/differentiable_programming.md",
-        "data/differentiable_phase_qnode/differentiable_sota_scorecard_20260620.md"
+        "data/differentiable_phase_qnode/differentiable_baseline_scorecard_20260620.md"
       ],
       "implementation_surface": [
         "src/scpn_quantum_control/benchmarks/differentiable_external_comparison.py",
@@ -166,21 +166,21 @@
         "tests/test_phase_qnode_vector_transforms.py",
         "tests/test_phase_torch_bridge_compile_boundaries.py",
         "tests/test_differentiable_claim_ledger.py",
-        "tests/test_differentiable_sota_scorecard.py"
+        "tests/test_differentiable_baseline_scorecard.py"
       ]
     },
     {
       "baseline": "Qiskit Estimator/Sampler primitives, IBM Runtime sessions, backend/transpilation metadata, raw counts, calibration snapshots, and gradient workflows.",
       "benchmark_artifact_ids": [
         "diff-qnode-claim-ledger-v1",
-        "diff-sota-scorecard-20260620"
+        "diff-baseline-scorecard-20260620"
       ],
       "blockers": [
         "live-ticket-approved Runtime Estimator/Sampler execution is missing",
         "provider-gradient workflow evidence is not attached to live QPU runs"
       ],
       "category": "qiskit_runtime_provider_gradients",
-      "claim_boundary": "Differentiable state-of-art scorecard governance only; the lane remains SOTA-candidate until category rows have promoted claim-ledger evidence, isolated benchmark artefacts, and external baseline comparisons.",
+      "claim_boundary": "Differentiable baseline scorecard governance only; the lane remains a promotion candidate until category rows have promoted claim-ledger evidence, isolated benchmark artefacts, and external baseline comparisons.",
       "claim_ids": [
         "phase_qnode_claim_boundary"
       ],
@@ -193,7 +193,7 @@
         "data/differentiable_phase_qnode/claim_ledger.md",
         "docs/differentiable_api.md",
         "docs/differentiable_programming.md",
-        "data/differentiable_phase_qnode/differentiable_sota_scorecard_20260620.md"
+        "data/differentiable_phase_qnode/differentiable_baseline_scorecard_20260620.md"
       ],
       "implementation_surface": [
         "src/scpn_quantum_control/benchmarks/differentiable_programming.py",
@@ -217,7 +217,7 @@
         "tests/test_phase_qnode_vector_transforms.py",
         "tests/test_phase_torch_bridge_compile_boundaries.py",
         "tests/test_differentiable_claim_ledger.py",
-        "tests/test_differentiable_sota_scorecard.py"
+        "tests/test_differentiable_baseline_scorecard.py"
       ]
     },
     {
@@ -225,14 +225,14 @@
       "benchmark_artifact_ids": [
         "diff-qnode-external-comparison-schema-v1",
         "diff-qnode-claim-ledger-v1",
-        "diff-sota-scorecard-20260620"
+        "diff-baseline-scorecard-20260620"
       ],
       "blockers": [
         "Catalyst comparison runner evidence is missing",
         "compiled workflow, finite-shot, and device-support parity are unscored"
       ],
       "category": "catalyst_compiler_workflows",
-      "claim_boundary": "Differentiable state-of-art scorecard governance only; the lane remains SOTA-candidate until category rows have promoted claim-ledger evidence, isolated benchmark artefacts, and external baseline comparisons.",
+      "claim_boundary": "Differentiable baseline scorecard governance only; the lane remains a promotion candidate until category rows have promoted claim-ledger evidence, isolated benchmark artefacts, and external baseline comparisons.",
       "claim_ids": [
         "external_framework_comparison",
         "phase_qnode_claim_boundary"
@@ -246,7 +246,7 @@
         "docs/differentiable_api.md",
         "docs/differentiable_api.md",
         "docs/differentiable_programming.md",
-        "data/differentiable_phase_qnode/differentiable_sota_scorecard_20260620.md"
+        "data/differentiable_phase_qnode/differentiable_baseline_scorecard_20260620.md"
       ],
       "implementation_surface": [
         "src/scpn_quantum_control/benchmarks/differentiable_external_comparison.py",
@@ -272,7 +272,7 @@
         "tests/test_phase_qnode_vector_transforms.py",
         "tests/test_phase_torch_bridge_compile_boundaries.py",
         "tests/test_differentiable_claim_ledger.py",
-        "tests/test_differentiable_sota_scorecard.py"
+        "tests/test_differentiable_baseline_scorecard.py"
       ]
     },
     {
@@ -280,14 +280,14 @@
       "benchmark_artifact_ids": [
         "diff-qnode-external-comparison-schema-v1",
         "diff-qnode-claim-ledger-v1",
-        "diff-sota-scorecard-20260620"
+        "diff-baseline-scorecard-20260620"
       ],
       "blockers": [
         "compiler-AD breadth beyond scalar/vector/matrix kernels is incomplete",
         "isolated Enzyme/MLIR benchmark attachment is missing"
       ],
       "category": "enzyme_compiler_ad",
-      "claim_boundary": "Differentiable state-of-art scorecard governance only; the lane remains SOTA-candidate until category rows have promoted claim-ledger evidence, isolated benchmark artefacts, and external baseline comparisons.",
+      "claim_boundary": "Differentiable baseline scorecard governance only; the lane remains a promotion candidate until category rows have promoted claim-ledger evidence, isolated benchmark artefacts, and external baseline comparisons.",
       "claim_ids": [
         "external_framework_comparison",
         "phase_qnode_claim_boundary"
@@ -301,7 +301,7 @@
         "docs/differentiable_api.md",
         "docs/differentiable_api.md",
         "docs/differentiable_programming.md",
-        "data/differentiable_phase_qnode/differentiable_sota_scorecard_20260620.md"
+        "data/differentiable_phase_qnode/differentiable_baseline_scorecard_20260620.md"
       ],
       "implementation_surface": [
         "src/scpn_quantum_control/benchmarks/differentiable_external_comparison.py",
@@ -327,25 +327,25 @@
         "tests/test_phase_qnode_vector_transforms.py",
         "tests/test_phase_torch_bridge_compile_boundaries.py",
         "tests/test_differentiable_claim_ledger.py",
-        "tests/test_differentiable_sota_scorecard.py"
+        "tests/test_differentiable_baseline_scorecard.py"
       ]
     },
     {
       "baseline": "Rust-native Program AD value and gradient replay, executed control-flow replay, array adjoints, registry metadata mirror, and safe PyO3 bindings.",
       "benchmark_artifact_ids": [
         "diff-qnode-claim-ledger-v1",
-        "diff-sota-scorecard-20260620"
+        "diff-baseline-scorecard-20260620"
       ],
       "blockers": [
         "non-lowered dynamic indexing semantics, dynamic axes, dynamic trapezoid-grid metadata, dynamic q/method metadata, dynamic ddof/correction metadata, zero-variance std gradients, and broad linalg array adjoints are missing",
         "executable registry promotion, Rust-side LLVM/JIT lowering, and isolated benchmark evidence are missing"
       ],
       "category": "rust_native_program_ad",
-      "claim_boundary": "Differentiable state-of-art scorecard governance only; the lane remains SOTA-candidate until category rows have promoted claim-ledger evidence, isolated benchmark artefacts, and external baseline comparisons.",
+      "claim_boundary": "Differentiable baseline scorecard governance only; the lane remains a promotion candidate until category rows have promoted claim-ledger evidence, isolated benchmark artefacts, and external baseline comparisons.",
       "claim_ids": [
         "phase_qnode_claim_boundary"
       ],
-      "current_evidence": "Rust Program AD now replays scalar primitives, view-aliasing (reshape, transpose, slice, matmul, matvec) and static linear algebra of arbitrary dimension (trace, determinant, inverse, solve; closed-form 2x2/3x3 and LU/Gauss-Jordan for 4x4 and up) through the unrolled scalar SSA, plus bounded elementwise shaped arrays with scalar-to-array broadcasting and static structural array opcodes for reshape, ravel, broadcast_to, reversed-axis transpose, static-axis concatenate/stack assembly, and static source-map indexing plus static-axis and scalar all-axis sum/mean/prod/var/std/max/min/median reductions, static ddof/correction metadata for var/std, compact static-grid trapezoid reductions with dx/x/xfull metadata, and static scalar-q quantile/percentile reductions. These paths are parity-verified against the Python/NumPy reference and CI-checked via cargo tests (2026-06-22 slices 2b-1..2b-6; 2026-07-03 elementwise, structural array, structural assembly, static-axis reduction, static source-map indexing, static product reduction, static variance/std reduction adjoints, static ddof/correction metadata, and static selector/order-statistic reduction adjoints, and compact static-grid trapezoid reduction adjoints); a general structural ndarray adjoint engine, executable registry promotion and Rust-side LLVM/JIT lowering remain open.",
+      "current_evidence": "Rust Program AD now replays scalar primitives, view-aliasing (reshape, transpose, slice, matmul, matvec) and static linear algebra of arbitrary dimension (trace, determinant, inverse, solve; closed-form 2x2/3x3 and LU/Gauss-Jordan for 4x4 and up) through the unrolled scalar SSA, plus bounded elementwise shaped arrays with scalar-to-array broadcasting and static structural array opcodes for reshape, ravel, broadcast_to, reversed-axis transpose, static-axis concatenate/stack assembly, and static source-map indexing with inert assignment/expression alias metadata plus static-axis and scalar all-axis sum/mean/prod/var/std/max/min/median reductions, static ddof/correction metadata for var/std, compact static-grid interp replay with default/static boundary metadata, compact rank-1 signal convolve/correlate replay with static mode metadata, compact static stencil-gradient replay with scalar/coordinate spacing metadata, compact static-grid trapezoid reductions with dx/x/xfull metadata, and static scalar-q quantile/percentile reductions. These paths are parity-verified against the Python/NumPy reference and CI-checked via cargo tests (2026-06-22 slices 2b-1..2b-6; 2026-07-03 elementwise, structural array, structural assembly, static-axis reduction, static source-map indexing, static product reduction, static variance/std reduction adjoints, static ddof/correction metadata, static selector/order-statistic reduction adjoints, compact static-grid trapezoid reduction adjoints, compact signal convolve/correlate replay, compact static-grid interp replay, and compact static stencil-gradient replay; 2026-07-04 static source-map assignment/expression alias metadata replay); a general structural ndarray adjoint engine, executable registry promotion and Rust-side LLVM/JIT lowering remain open.",
       "docs_surface": [
         "README.md",
         "docs/benchmarks_api.md",
@@ -354,7 +354,7 @@
         "data/differentiable_phase_qnode/claim_ledger.md",
         "docs/differentiable_api.md",
         "docs/differentiable_programming.md",
-        "data/differentiable_phase_qnode/differentiable_sota_scorecard_20260620.md"
+        "data/differentiable_phase_qnode/differentiable_baseline_scorecard_20260620.md"
       ],
       "implementation_surface": [
         "src/scpn_quantum_control/benchmarks/differentiable_programming.py",
@@ -378,21 +378,21 @@
         "tests/test_phase_qnode_vector_transforms.py",
         "tests/test_phase_torch_bridge_compile_boundaries.py",
         "tests/test_differentiable_claim_ledger.py",
-        "tests/test_differentiable_sota_scorecard.py"
+        "tests/test_differentiable_baseline_scorecard.py"
       ]
     },
     {
       "baseline": "Ticketed provider/QPU gradients with backend allowlists, shot budgets, raw counts, calibration snapshots, reference simulators, and replayable hardware evidence.",
       "benchmark_artifact_ids": [
         "diff-qnode-claim-ledger-v1",
-        "diff-sota-scorecard-20260620"
+        "diff-baseline-scorecard-20260620"
       ],
       "blockers": [
         "live-ticket hardware-gradient evidence is missing",
         "raw-count, calibration, reference-simulator, and isolated benchmark attachments are missing"
       ],
       "category": "provider_hardware_gradients",
-      "claim_boundary": "Differentiable state-of-art scorecard governance only; the lane remains SOTA-candidate until category rows have promoted claim-ledger evidence, isolated benchmark artefacts, and external baseline comparisons.",
+      "claim_boundary": "Differentiable baseline scorecard governance only; the lane remains a promotion candidate until category rows have promoted claim-ledger evidence, isolated benchmark artefacts, and external baseline comparisons.",
       "claim_ids": [
         "phase_qnode_claim_boundary"
       ],
@@ -405,7 +405,7 @@
         "data/differentiable_phase_qnode/claim_ledger.md",
         "docs/differentiable_api.md",
         "docs/differentiable_programming.md",
-        "data/differentiable_phase_qnode/differentiable_sota_scorecard_20260620.md"
+        "data/differentiable_phase_qnode/differentiable_baseline_scorecard_20260620.md"
       ],
       "implementation_surface": [
         "src/scpn_quantum_control/benchmarks/differentiable_programming.py",
@@ -429,7 +429,7 @@
         "tests/test_phase_qnode_vector_transforms.py",
         "tests/test_phase_torch_bridge_compile_boundaries.py",
         "tests/test_differentiable_claim_ledger.py",
-        "tests/test_differentiable_sota_scorecard.py"
+        "tests/test_differentiable_baseline_scorecard.py"
       ]
     },
     {
@@ -437,14 +437,14 @@
       "benchmark_artifact_ids": [
         "diff-qnode-ci-evidence-schema-v1",
         "diff-external-validation-artifact-bundle-20260616",
-        "diff-sota-scorecard-20260620"
+        "diff-baseline-scorecard-20260620"
       ],
       "blockers": [
         "isolated benchmark raw artifacts are missing",
         "claim-ledger rows do not carry promoted isolated benchmark IDs"
       ],
       "category": "benchmark_promotion",
-      "claim_boundary": "Differentiable state-of-art scorecard governance only; the lane remains SOTA-candidate until category rows have promoted claim-ledger evidence, isolated benchmark artefacts, and external baseline comparisons.",
+      "claim_boundary": "Differentiable baseline scorecard governance only; the lane remains a promotion candidate until category rows have promoted claim-ledger evidence, isolated benchmark artefacts, and external baseline comparisons.",
       "claim_ids": [
         "ci_benchmark_evidence",
         "external_validation_artifact_bundle"
@@ -458,7 +458,7 @@
         "data/differentiable_phase_qnode/external_validation_artifact_bundle_20260616.md",
         "docs/differentiable_api.md",
         "docs/differentiable_programming.md",
-        "data/differentiable_phase_qnode/differentiable_sota_scorecard_20260620.md"
+        "data/differentiable_phase_qnode/differentiable_baseline_scorecard_20260620.md"
       ],
       "implementation_surface": [
         "src/scpn_quantum_control/benchmarks/differentiable_evidence.py",
@@ -476,7 +476,7 @@
         "tests/test_differentiable_benchmark_evidence.py",
         "tests/test_differentiable_benchmark_workflow.py",
         "tests/test_differentiable_external_validation.py",
-        "tests/test_differentiable_sota_scorecard.py"
+        "tests/test_differentiable_baseline_scorecard.py"
       ]
     },
     {
@@ -486,21 +486,21 @@
         "diff-hardening-slice-gate-v1",
         "diff-module-hardening-audit-v1",
         "diff-public-claim-table-20260616",
-        "diff-sota-scorecard-20260620"
+        "diff-baseline-scorecard-20260620"
       ],
       "blockers": [
         "repository-wide strict mypy/docstring debt remains outside this slice",
         "external reviewer reproduction remains a release gate"
       ],
       "category": "docs_api_maintainability",
-      "claim_boundary": "Differentiable state-of-art scorecard governance only; the lane remains SOTA-candidate until category rows have promoted claim-ledger evidence, isolated benchmark artefacts, and external baseline comparisons.",
+      "claim_boundary": "Differentiable baseline scorecard governance only; the lane remains a promotion candidate until category rows have promoted claim-ledger evidence, isolated benchmark artefacts, and external baseline comparisons.",
       "claim_ids": [
         "support_surface_alignment",
         "hardening_slice_gate",
         "module_hardening_audit",
         "public_claim_table"
       ],
-      "current_evidence": "Claim ledger, module-hardening audit, hardening-slice gate, generated manifest, and docs exist; the new scorecard keeps SOTA wording bounded until rows are promoted.",
+      "current_evidence": "Claim ledger, module-hardening audit, hardening-slice gate, generated manifest, and docs exist; the new scorecard keeps promotional wording bounded until rows are promoted.",
       "docs_surface": [
         "docs/differentiable_api.md",
         "docs/differentiable_programming.md",
@@ -512,7 +512,7 @@
         "data/differentiable_phase_qnode/public_claim_table_20260616.md",
         "docs/differentiable_api.md",
         "docs/differentiable_programming.md",
-        "data/differentiable_phase_qnode/differentiable_sota_scorecard_20260620.md"
+        "data/differentiable_phase_qnode/differentiable_baseline_scorecard_20260620.md"
       ],
       "implementation_surface": [
         "src/scpn_quantum_control/differentiable_claim_ledger.py",
@@ -529,7 +529,7 @@
         "tests/test_differentiable_claim_ledger.py",
         "tests/test_differentiable_hardening_gate.py",
         "tests/test_differentiable_module_hardening_audit.py",
-        "tests/test_differentiable_sota_scorecard.py"
+        "tests/test_differentiable_baseline_scorecard.py"
       ]
     },
     {
@@ -537,14 +537,14 @@
       "benchmark_artifact_ids": [
         "diff-qnode-claim-ledger-v1",
         "diff-public-claim-table-20260616",
-        "diff-sota-scorecard-20260620"
+        "diff-baseline-scorecard-20260620"
       ],
       "blockers": [
         "permissive scpn-quantum-core split is undecided",
         "maintainer onboarding issues should wait until route classification stabilizes"
       ],
       "category": "adoption_licensing",
-      "claim_boundary": "Differentiable state-of-art scorecard governance only; the lane remains SOTA-candidate until category rows have promoted claim-ledger evidence, isolated benchmark artefacts, and external baseline comparisons.",
+      "claim_boundary": "Differentiable baseline scorecard governance only; the lane remains a promotion candidate until category rows have promoted claim-ledger evidence, isolated benchmark artefacts, and external baseline comparisons.",
       "claim_ids": [
         "phase_qnode_claim_boundary",
         "public_claim_table"
@@ -559,7 +559,7 @@
         "data/differentiable_phase_qnode/public_claim_table_20260616.md",
         "docs/differentiable_api.md",
         "docs/differentiable_programming.md",
-        "data/differentiable_phase_qnode/differentiable_sota_scorecard_20260620.md"
+        "data/differentiable_phase_qnode/differentiable_baseline_scorecard_20260620.md"
       ],
       "implementation_surface": [
         "src/scpn_quantum_control/benchmarks/differentiable_programming.py",
@@ -584,10 +584,10 @@
         "tests/test_phase_qnode_vector_transforms.py",
         "tests/test_phase_torch_bridge_compile_boundaries.py",
         "tests/test_differentiable_claim_ledger.py",
-        "tests/test_differentiable_sota_scorecard.py"
+        "tests/test_differentiable_baseline_scorecard.py"
       ]
     }
   ],
-  "schema": "scpn_qc_differentiable_sota_scorecard_v1",
+  "schema": "scpn_qc_differentiable_baseline_scorecard_v1",
   "total_category_count": 11
 }

@@ -8,7 +8,7 @@
 """Regression guard against self-promotional framing on the Kuramoto-moat surfaces.
 
 The quantum/differentiable lane already governs its own public wording through
-``audit_differentiable_sota_promotion_language`` and the claim-boundary tests in
+``audit_differentiable_promotion_language`` and the claim-boundary tests in
 ``test_doc_claim_boundaries``. The Kuramoto toolkit's own public surfaces — the
 ``docs/kuramoto_*.md`` pages (including the generated handbook) and the toolkit's
 JOSS paper — had no equivalent guard, so nothing prevented a future edit (a paper

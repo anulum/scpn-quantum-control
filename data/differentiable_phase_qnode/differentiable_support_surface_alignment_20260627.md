@@ -30,7 +30,7 @@ SCPN Quantum Control — Differentiable support-surface alignment
 | `public_claim_table` |
 | `external_validation_artifact_bundle` |
 | `external_validation_technical_report` |
-| `differentiable_sota_scorecard` |
+| `differentiable_baseline_scorecard` |
 | `differentiable_rust_python_inventory` |
 | `differentiable_architecture_rustification_map` |
 | `differentiable_dependency_environment_map` |
@@ -44,10 +44,10 @@ SCPN Quantum Control — Differentiable support-surface alignment
 | `README.md` |
 | `data/differentiable_phase_qnode/claim_ledger.md` |
 | `data/differentiable_phase_qnode/differentiable_architecture_map_20260627.md` |
+| `data/differentiable_phase_qnode/differentiable_baseline_scorecard_20260620.md` |
 | `data/differentiable_phase_qnode/differentiable_dependency_environment_map_20260627.md` |
 | `data/differentiable_phase_qnode/differentiable_isolated_benchmark_plan_20260627.md` |
 | `data/differentiable_phase_qnode/differentiable_rust_python_inventory_20260620.md` |
-| `data/differentiable_phase_qnode/differentiable_sota_scorecard_20260620.md` |
 | `data/differentiable_phase_qnode/differentiable_support_surface_alignment_20260627.json` |
 | `data/differentiable_phase_qnode/differentiable_support_surface_alignment_20260627.md` |
 | `data/differentiable_phase_qnode/external_validation_artifact_bundle_20260616.md` |
@@ -66,13 +66,13 @@ SCPN Quantum Control — Differentiable support-surface alignment
 | `src/scpn_quantum_control/benchmarks/differentiable_programming.py` |
 | `src/scpn_quantum_control/differentiable_api.py` |
 | `src/scpn_quantum_control/differentiable_architecture_map.py` |
+| `src/scpn_quantum_control/differentiable_baseline_scorecard.py` |
 | `src/scpn_quantum_control/differentiable_claim_ledger.py` |
 | `src/scpn_quantum_control/differentiable_dependency_environment_map.py` |
 | `src/scpn_quantum_control/differentiable_external_validation.py` |
 | `src/scpn_quantum_control/differentiable_framework_overlay.py` |
 | `src/scpn_quantum_control/differentiable_module_hardening_audit.py` |
 | `src/scpn_quantum_control/differentiable_rust_python_inventory.py` |
-| `src/scpn_quantum_control/differentiable_sota_scorecard.py` |
 | `src/scpn_quantum_control/phase/qnode_affinity_benchmark.py` |
 | `src/scpn_quantum_control/phase/qnode_tape.py` |
 | `src/scpn_quantum_control/phase/qnode_transforms.py` |
@@ -80,6 +80,7 @@ SCPN Quantum Control — Differentiable support-surface alignment
 | `src/scpn_quantum_control/phase/torch_bridge.py` |
 | `tests/test_differentiable_api.py` |
 | `tests/test_differentiable_architecture_map.py` |
+| `tests/test_differentiable_baseline_scorecard.py` |
 | `tests/test_differentiable_benchmark_evidence.py` |
 | `tests/test_differentiable_benchmark_workflow.py` |
 | `tests/test_differentiable_claim_ledger.py` |
@@ -92,7 +93,6 @@ SCPN Quantum Control — Differentiable support-surface alignment
 | `tests/test_differentiable_module_hardening_audit.py` |
 | `tests/test_differentiable_programming_benchmarks.py` |
 | `tests/test_differentiable_rust_python_inventory.py` |
-| `tests/test_differentiable_sota_scorecard.py` |
 | `tests/test_phase_qnode_affinity_benchmark.py` |
 | `tests/test_phase_qnode_tape.py` |
 | `tests/test_phase_qnode_transforms.py` |

@@ -483,8 +483,8 @@ def differentiable_module_hardening_registry() -> tuple[DifferentiableModuleHard
             ("dependency profile rows", "environment readiness guards"),
         ),
         _record(
-            "src/scpn_quantum_control/differentiable_sota_scorecard.py",
-            ("tests/test_differentiable_sota_scorecard.py",),
+            "src/scpn_quantum_control/differentiable_baseline_scorecard.py",
+            ("tests/test_differentiable_baseline_scorecard.py",),
             ("category promotion blockers", "claim-ledger promotion guards"),
         ),
         _record(

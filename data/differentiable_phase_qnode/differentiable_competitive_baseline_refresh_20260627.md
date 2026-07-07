@@ -14,7 +14,7 @@ SCPN Quantum Control — Differentiable competitive baseline refresh
 - Artifact ID: `diff-competitive-baseline-refresh-20260627`
 - Generated on: `2026-06-27`
 - Max age: `45` days
-- Claim boundary: Competitive baseline freshness evidence only; it does not promote state-of-art, world-class, provider, hardware, GPU, QPU, production-performance, or isolated_affinity claims.
+- Claim boundary: Competitive baseline freshness evidence only; it does not promote category-leadership, provider, hardware, GPU, QPU, production-performance, or isolated_affinity claims.
 
 | Baseline | Version/source stream | Checked | Refresh due | Categories | Source |
 |---|---|---|---|---|---|

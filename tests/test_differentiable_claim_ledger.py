@@ -190,7 +190,7 @@ def test_committed_support_surface_alignment_artifact_matches_rerun() -> None:
     assert DEFAULT_SUPPORT_SURFACE_ALIGNMENT_PATH.exists()
     assert committed == rerun
     assert committed.passed
-    assert "differentiable_sota_scorecard" in committed.checked_claim_ids
+    assert "differentiable_baseline_scorecard" in committed.checked_claim_ids
     assert "differentiable_rust_python_inventory" in committed.checked_claim_ids
     assert "data/differentiable_phase_qnode/claim_ledger.md" in committed.checked_paths
 

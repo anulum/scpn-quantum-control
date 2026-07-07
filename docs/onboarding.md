@@ -159,7 +159,7 @@ dynamics matter and where uncontrolled evidence would be expensive:
 - Clinical, biological, or consciousness claims are not externally validated.
 - Hardware evidence must name committed raw-count artefacts and pass the
   relevant ledger gates before promotion.
-- Phase-QNode performance remains SOTA-candidate until a self-hosted
+- Phase-QNode performance remains a promotion candidate until a self-hosted
   `isolated-benchmark` CI runner uploads an `isolated_affinity` artefact; local
   and GitHub-hosted rows are diagnostic only, and CUDA/ROCm claims require
   explicit visible-device metadata rather than CPU fallback.

@@ -62,12 +62,17 @@ from .result_pack_seal import (
     build_result_pack_unit,
     seal_result_pack,
 )
+from .scorecard_bundle import (
+    DEFAULT_SCORECARD_ARTIFACT_PATH,
+    build_scorecard_bundle,
+)
 from .verbs import QUANTUM_VERBS, STUDIO_ID, evidence_schemas, verb_substrates
 
 __all__ = [
     "ANSWERED_STATUSES",
     "CoverageFrontierReport",
     "DEFAULT_REFERENCE_VALIDATION_PATH",
+    "DEFAULT_SCORECARD_ARTIFACT_PATH",
     "QUANTUM_VERBS",
     "REFERENCE_VALIDATION_SCHEMA",
     "ReferenceValidationCertification",
@@ -89,6 +94,7 @@ __all__ = [
     "build_manifest",
     "build_provider_attestation",
     "build_result_pack_unit",
+    "build_scorecard_bundle",
     "build_xy_compile_recompute_unit",
     "canonical_xy_compile_input_bytes",
     "declared_surface",

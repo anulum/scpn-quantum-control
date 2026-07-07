@@ -38,7 +38,7 @@ COMPILER_ISOLATED_BENCHMARK_CLAIM_BOUNDARY = (
     "Compiler isolated benchmark attachment evidence only: native whole-program "
     "AD value/gradient correctness and host isolation metadata may produce an "
     "attachable compiler benchmark artifact ID, but this record does not promote "
-    "the compiler batch, SOTA scorecard, provider execution, hardware execution, "
+    "the compiler batch, baseline scorecard, provider execution, hardware execution, "
     "QPU execution, GPU execution, or production-performance claims. It carries "
     "no provider, hardware, QPU, GPU, Enzyme, or public promotion claim."
 )

@@ -90,6 +90,7 @@ wire dictionaries to a Hub.
 |---|---|---|---|
 | Differentiable claim ledger | `build_claim_ledger_bundles()` | `studio.evidence-replay.v1` | Current committed rows are curated `bounded-model` numerical-model evidence. `reference-validated` is only emitted when an external certificate marks a promoted row as validated. |
 | Hardware result packs | `build_hardware_result_pack_bundles(...)` | `studio.hardware-result-pack.v1` | Packs are measured `bounded-support` hardware-unmitigated evidence with SHA-256 derivation edges for each committed artefact. |
+| Differentiable baseline scorecard | `build_scorecard_bundle()` | `studio.differentiation-evidence.v1` | Eleven external-baseline category rows ride in `cases[]` with verbatim statuses; the bundle is curated `bounded-model` and the emitter can never upgrade a category. A scorecard that fails its own validation is refused. |
 
 The ledger builder loads:
 
@@ -127,7 +128,7 @@ report = measure_coverage_frontier_from_certifications(registry=registry)
 
 The committed registry is currently empty. That is intentional: no per-claim
 WS-3 certifications are committed yet, so the real differentiable claim ledger
-still reports `0.0` answer rate across its 16 `SOTA-candidate` rows (emitted as
+still reports `0.0` answer rate across its 16 candidate rows (emitted as
 curated `bounded-model` bundles). A future
 certification row must name a known ledger claim whose `promotion_status` is
 already `promoted`; candidate, unknown, or duplicate certification rows fail

@@ -4,7 +4,7 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — differentiable SOTA scorecard tests
+# SCPN Quantum Control — differentiable baseline scorecard tests
 """Tests for differentiable state-of-art scorecard governance."""
 
 from __future__ import annotations
@@ -12,36 +12,36 @@ from __future__ import annotations
 from typing import get_args
 
 from scpn_quantum_control import (
-    DifferentiableSOTACategory,
-    DifferentiableSOTAScorecardRow,
-    audit_differentiable_sota_promotion_language,
+    DifferentiableBaselineCategory,
+    DifferentiableBaselineScorecardRow,
+    audit_differentiable_promotion_language,
     differentiable_api,
-    render_differentiable_sota_scorecard_markdown,
-    run_differentiable_sota_scorecard,
+    render_differentiable_baseline_scorecard_markdown,
+    run_differentiable_baseline_scorecard,
 )
-from scpn_quantum_control.differentiable_sota_scorecard import (
-    REQUIRED_SOTA_CATEGORIES,
-    validate_differentiable_sota_scorecard,
+from scpn_quantum_control.differentiable_baseline_scorecard import (
+    REQUIRED_BASELINE_CATEGORIES,
+    validate_differentiable_baseline_scorecard,
 )
 
 
-def test_differentiable_sota_scorecard_records_all_required_categories() -> None:
+def test_differentiable_baseline_scorecard_records_all_required_categories() -> None:
     """The committed scorecard must cover every category from the TODO lane."""
-    scorecard = run_differentiable_sota_scorecard()
+    scorecard = run_differentiable_baseline_scorecard()
 
-    assert scorecard.schema == "scpn_qc_differentiable_sota_scorecard_v1"
+    assert scorecard.schema == "scpn_qc_differentiable_baseline_scorecard_v1"
     assert scorecard.promotion_ready is False
     assert scorecard.ready_category_count == 0
-    assert scorecard.total_category_count == len(REQUIRED_SOTA_CATEGORIES)
-    assert {row.category for row in scorecard.rows} == set(REQUIRED_SOTA_CATEGORIES)
+    assert scorecard.total_category_count == len(REQUIRED_BASELINE_CATEGORIES)
+    assert {row.category for row in scorecard.rows} == set(REQUIRED_BASELINE_CATEGORIES)
     assert any(row.category == "catalyst_compiler_workflows" for row in scorecard.rows)
     assert any(row.category == "rust_native_program_ad" for row in scorecard.rows)
-    assert "SOTA-candidate" in scorecard.claim_boundary
+    assert "promotion candidate" in scorecard.claim_boundary
 
 
-def test_differentiable_sota_scorecard_rows_are_claim_bounded() -> None:
+def test_differentiable_baseline_scorecard_rows_are_claim_bounded() -> None:
     """Rows must explain why category promotion is blocked."""
-    scorecard = run_differentiable_sota_scorecard()
+    scorecard = run_differentiable_baseline_scorecard()
     rows = {row.category: row for row in scorecard.rows}
 
     assert rows["jax_native_transforms"].status == "behind_baseline"
@@ -55,11 +55,11 @@ def test_differentiable_sota_scorecard_rows_are_claim_bounded() -> None:
     assert rows["rust_native_program_ad"].status == "behind_baseline"
 
 
-def test_differentiable_sota_scorecard_validation_rejects_unpromoted_ready_rows() -> None:
+def test_differentiable_baseline_scorecard_validation_rejects_unpromoted_ready_rows() -> None:
     """At-baseline or exceedance rows require promoted ledger evidence."""
-    scorecard = run_differentiable_sota_scorecard()
+    scorecard = run_differentiable_baseline_scorecard()
     first = scorecard.rows[0]
-    invalid_row = DifferentiableSOTAScorecardRow(
+    invalid_row = DifferentiableBaselineScorecardRow(
         category=first.category,
         baseline=first.baseline,
         current_evidence=first.current_evidence,
@@ -83,15 +83,15 @@ def test_differentiable_sota_scorecard_validation_rejects_unpromoted_ready_rows(
         claim_boundary=scorecard.claim_boundary,
     )
 
-    validation = validate_differentiable_sota_scorecard(invalid_scorecard)
+    validation = validate_differentiable_baseline_scorecard(invalid_scorecard)
 
     assert not validation.passed
     assert any("requires promoted ledger rows" in error for error in validation.errors)
 
 
-def test_differentiable_sota_promotion_language_rejects_unbacked_public_claims() -> None:
-    """Public SOTA wording must fail until scorecard and ledger rows are promoted."""
-    audit = audit_differentiable_sota_promotion_language(
+def test_differentiable_promotion_language_rejects_unbacked_public_claims() -> None:
+    """Public promotional wording must fail until scorecard and ledger rows are promoted."""
+    audit = audit_differentiable_promotion_language(
         public_texts={
             "README.md": (
                 "The differentiable stack is state-of-the-art for JAX native transforms."
@@ -105,12 +105,12 @@ def test_differentiable_sota_promotion_language_rejects_unbacked_public_claims()
     assert any("jax_native_transforms" in error for error in audit.errors)
 
 
-def test_differentiable_sota_promotion_language_allows_bounded_candidate_wording() -> None:
-    """Bounded candidate language may mention SOTA governance without promotion."""
-    audit = audit_differentiable_sota_promotion_language(
+def test_differentiable_promotion_language_allows_bounded_candidate_wording() -> None:
+    """Bounded candidate language may describe the governance lane without promotion."""
+    audit = audit_differentiable_promotion_language(
         public_texts={
             "docs/differentiable_programming.md": (
-                "The differentiable Phase-QNode lane remains SOTA-candidate "
+                "The differentiable Phase-QNode lane remains behind_baseline "
                 "until isolated benchmark evidence and promoted ledger rows exist."
             )
         }
@@ -121,26 +121,26 @@ def test_differentiable_sota_promotion_language_allows_bounded_candidate_wording
     assert audit.checked_promotional_categories == ()
 
 
-def test_differentiable_sota_scorecard_markdown_and_facade_dispatch() -> None:
+def test_differentiable_baseline_scorecard_markdown_and_facade_dispatch() -> None:
     """The scorecard must render and dispatch through the unified API."""
-    scorecard = run_differentiable_sota_scorecard()
-    markdown = render_differentiable_sota_scorecard_markdown(scorecard)
-    result = differentiable_api("sota_scorecard")
+    scorecard = run_differentiable_baseline_scorecard()
+    markdown = render_differentiable_baseline_scorecard_markdown(scorecard)
+    result = differentiable_api("baseline_scorecard")
 
-    assert "# Differentiable SOTA Scorecard" in markdown
+    assert "# Differentiable Baseline Scorecard" in markdown
     assert "catalyst_compiler_workflows" in markdown
-    assert "SOTA-candidate" in markdown
-    assert result.operation == "sota_scorecard"
+    assert "promotion candidate" in markdown
+    assert result.operation == "baseline_scorecard"
     assert result.supported is False
     assert result.payload["promotion_ready"] is False
-    assert result.payload["total_category_count"] == len(REQUIRED_SOTA_CATEGORIES)
-    assert "SOTA-candidate" in result.claim_boundary
+    assert result.payload["total_category_count"] == len(REQUIRED_BASELINE_CATEGORIES)
+    assert "promotion candidate" in result.claim_boundary
 
 
-def test_differentiable_sota_scorecard_exports_are_public() -> None:
+def test_differentiable_baseline_scorecard_exports_are_public() -> None:
     """Top-level package exports must expose the scorecard types and runner."""
-    scorecard = run_differentiable_sota_scorecard()
+    scorecard = run_differentiable_baseline_scorecard()
 
     assert isinstance(scorecard.rows[0].category, str)
-    assert isinstance(scorecard.rows[0], DifferentiableSOTAScorecardRow)
-    assert "jax_native_transforms" in get_args(DifferentiableSOTACategory)
+    assert isinstance(scorecard.rows[0], DifferentiableBaselineScorecardRow)
+    assert "jax_native_transforms" in get_args(DifferentiableBaselineCategory)

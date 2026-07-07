@@ -14,18 +14,18 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Literal
 
+from .differentiable_baseline_scorecard import (
+    DifferentiableBaselineCategory,
+    DifferentiableBaselineScorecard,
+    run_differentiable_baseline_scorecard,
+    validate_differentiable_baseline_scorecard,
+)
 from .differentiable_claim_ledger import REPO_ROOT
 from .differentiable_rust_python_inventory import (
     DifferentiableRustPythonInventory,
     DifferentiableRustPythonInventoryRow,
     run_differentiable_rust_python_inventory,
     validate_differentiable_rust_python_inventory,
-)
-from .differentiable_sota_scorecard import (
-    DifferentiableSOTACategory,
-    DifferentiableSOTAScorecard,
-    run_differentiable_sota_scorecard,
-    validate_differentiable_sota_scorecard,
 )
 
 DifferentiableArchitectureLayerId = Literal[
@@ -63,7 +63,7 @@ class DifferentiableArchitectureMapLayer:
     role: str
     owner_modules: tuple[str, ...]
     inventory_surface_ids: tuple[str, ...]
-    sota_categories: tuple[DifferentiableSOTACategory, ...]
+    baseline_categories: tuple[DifferentiableBaselineCategory, ...]
     python_surfaces: tuple[str, ...]
     rust_surfaces: tuple[str, ...]
     polyglot_surfaces: tuple[str, ...]
@@ -87,7 +87,7 @@ class DifferentiableArchitectureMapLayer:
         for field_name in (
             "owner_modules",
             "inventory_surface_ids",
-            "sota_categories",
+            "baseline_categories",
             "python_surfaces",
             "rust_surfaces",
             "polyglot_surfaces",
@@ -113,7 +113,7 @@ class DifferentiableArchitectureMapLayer:
             "role": self.role,
             "owner_modules": list(self.owner_modules),
             "inventory_surface_ids": list(self.inventory_surface_ids),
-            "sota_categories": list(self.sota_categories),
+            "baseline_categories": list(self.baseline_categories),
             "python_surfaces": list(self.python_surfaces),
             "rust_surfaces": list(self.rust_surfaces),
             "polyglot_surfaces": list(self.polyglot_surfaces),
@@ -160,7 +160,7 @@ class DifferentiableArchitectureMapValidation:
     errors: tuple[str, ...]
     checked_layer_ids: tuple[str, ...]
     checked_inventory_surface_ids: tuple[str, ...]
-    checked_sota_categories: tuple[DifferentiableSOTACategory, ...]
+    checked_baseline_categories: tuple[DifferentiableBaselineCategory, ...]
     checked_paths: tuple[str, ...]
     claim_boundary: str
 
@@ -171,7 +171,7 @@ class DifferentiableArchitectureMapValidation:
             "errors": list(self.errors),
             "checked_layer_ids": list(self.checked_layer_ids),
             "checked_inventory_surface_ids": list(self.checked_inventory_surface_ids),
-            "checked_sota_categories": list(self.checked_sota_categories),
+            "checked_baseline_categories": list(self.checked_baseline_categories),
             "checked_paths": list(self.checked_paths),
             "claim_boundary": self.claim_boundary,
         }
@@ -180,13 +180,13 @@ class DifferentiableArchitectureMapValidation:
 def run_differentiable_architecture_map(
     *,
     inventory: DifferentiableRustPythonInventory | None = None,
-    scorecard: DifferentiableSOTAScorecard | None = None,
+    scorecard: DifferentiableBaselineScorecard | None = None,
 ) -> DifferentiableArchitectureMap:
     """Build the architecture and Rustification map from committed evidence."""
     loaded_inventory = (
         run_differentiable_rust_python_inventory() if inventory is None else inventory
     )
-    loaded_scorecard = run_differentiable_sota_scorecard() if scorecard is None else scorecard
+    loaded_scorecard = run_differentiable_baseline_scorecard() if scorecard is None else scorecard
     inventory_rows = {row.surface_id: row for row in loaded_inventory.rows}
     layers = _default_architecture_layers(inventory_rows)
     ready_count = sum(1 for layer in layers if layer.rustification_ready)
@@ -209,19 +209,19 @@ def validate_differentiable_architecture_map(
     architecture_map: DifferentiableArchitectureMap,
     *,
     inventory: DifferentiableRustPythonInventory | None = None,
-    scorecard: DifferentiableSOTAScorecard | None = None,
+    scorecard: DifferentiableBaselineScorecard | None = None,
     repo_root: Path = REPO_ROOT,
 ) -> DifferentiableArchitectureMapValidation:
     """Validate architecture layers, references, paths, and readiness invariants."""
     loaded_inventory = (
         run_differentiable_rust_python_inventory() if inventory is None else inventory
     )
-    loaded_scorecard = run_differentiable_sota_scorecard() if scorecard is None else scorecard
+    loaded_scorecard = run_differentiable_baseline_scorecard() if scorecard is None else scorecard
     inventory_validation = validate_differentiable_rust_python_inventory(
         loaded_inventory,
         repo_root=repo_root,
     )
-    scorecard_validation = validate_differentiable_sota_scorecard(
+    scorecard_validation = validate_differentiable_baseline_scorecard(
         loaded_scorecard,
         repo_root=repo_root,
     )
@@ -230,10 +230,10 @@ def validate_differentiable_architecture_map(
     ]
     errors.extend(f"scorecard validation failed: {error}" for error in scorecard_validation.errors)
     inventory_surface_ids = {row.surface_id for row in loaded_inventory.rows}
-    sota_categories = {row.category for row in loaded_scorecard.rows}
+    baseline_categories = {row.category for row in loaded_scorecard.rows}
     checked_paths: set[str] = set()
     checked_inventory_ids: set[str] = set()
-    checked_sota_categories: set[DifferentiableSOTACategory] = set()
+    checked_baseline_categories: set[DifferentiableBaselineCategory] = set()
     layer_ids = tuple(str(layer.layer_id) for layer in architecture_map.layers)
 
     if architecture_map.schema != DIFFERENTIABLE_ARCHITECTURE_MAP_SCHEMA:
@@ -260,10 +260,10 @@ def validate_differentiable_architecture_map(
             checked_inventory_ids.add(surface_id)
             if surface_id not in inventory_surface_ids:
                 errors.append(f"{layer.layer_id}: unknown inventory surface: {surface_id}")
-        for category in layer.sota_categories:
-            checked_sota_categories.add(category)
-            if category not in sota_categories:
-                errors.append(f"{layer.layer_id}: unknown SOTA category: {category}")
+        for category in layer.baseline_categories:
+            checked_baseline_categories.add(category)
+            if category not in baseline_categories:
+                errors.append(f"{layer.layer_id}: unknown baseline category: {category}")
         if architecture_map.rustification_ready and layer.blockers:
             errors.append(f"{layer.layer_id}: ready architecture layers must not carry blockers")
         for path in _layer_paths(layer):
@@ -276,7 +276,7 @@ def validate_differentiable_architecture_map(
         errors=tuple(errors),
         checked_layer_ids=layer_ids,
         checked_inventory_surface_ids=tuple(sorted(checked_inventory_ids)),
-        checked_sota_categories=tuple(sorted(checked_sota_categories)),
+        checked_baseline_categories=tuple(sorted(checked_baseline_categories)),
         checked_paths=tuple(sorted(checked_paths)),
         claim_boundary=(
             "Architecture-map validation only; validates layer routing, existing "
@@ -310,7 +310,7 @@ def render_differentiable_architecture_map_markdown(
         f"- Ready layers: `{architecture_map.ready_layer_count}/{architecture_map.total_layer_count}`",
         f"- Claim boundary: {architecture_map.claim_boundary}",
         "",
-        "| Layer | Inventory rows | SOTA categories | Blockers | Next rounds |",
+        "| Layer | Inventory rows | Baseline categories | Blockers | Next rounds |",
         "|---|---|---|---|---|",
     ]
     for layer in architecture_map.layers:
@@ -318,7 +318,7 @@ def render_differentiable_architecture_map_markdown(
             "| `{layer}` | {inventory} | {categories} | {blockers} | {rounds} |".format(
                 layer=layer.layer_id,
                 inventory=_markdown_cell("<br>".join(layer.inventory_surface_ids)),
-                categories=_markdown_cell("<br>".join(layer.sota_categories)),
+                categories=_markdown_cell("<br>".join(layer.baseline_categories)),
                 blockers=_markdown_cell("<br>".join(layer.blockers) or "none"),
                 rounds=_markdown_cell("<br>".join(layer.next_hardening_rounds)),
             )
@@ -389,7 +389,7 @@ def _default_architecture_layers(
             "benchmark_and_claim_governance",
             "Benchmark and claim governance",
             "Owns scorecard, claim wording, benchmark promotion, docs, and licensing gates.",
-            ("differentiable_sota_scorecard",),
+            ("differentiable_baseline_scorecard",),
             ("benchmark_promotion", "docs_api_maintainability", "adoption_licensing"),
             inventory_rows,
         ),
@@ -401,7 +401,7 @@ def _layer(
     title: str,
     role: str,
     surface_ids: tuple[str, ...],
-    categories: tuple[DifferentiableSOTACategory, ...],
+    categories: tuple[DifferentiableBaselineCategory, ...],
     inventory_rows: Mapping[str, DifferentiableRustPythonInventoryRow],
 ) -> DifferentiableArchitectureMapLayer:
     rows = tuple(inventory_rows[surface_id] for surface_id in surface_ids)
@@ -411,7 +411,7 @@ def _layer(
         role=role,
         owner_modules=_unique_paths(row.owner_module for row in rows),
         inventory_surface_ids=surface_ids,
-        sota_categories=categories,
+        baseline_categories=categories,
         python_surfaces=_unique_paths(path for row in rows for path in row.python_surface),
         rust_surfaces=_unique_paths(path for row in rows for path in row.rust_surface),
         polyglot_surfaces=_unique_paths(path for row in rows for path in row.polyglot_surface),

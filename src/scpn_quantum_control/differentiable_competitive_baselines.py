@@ -16,14 +16,14 @@ from datetime import date, timedelta
 from pathlib import Path
 from typing import Literal, cast
 
-from .differentiable_claim_ledger import DEFAULT_LEDGER_PATH, REPO_ROOT, ClaimLedger
-from .differentiable_sota_scorecard import (
-    DEFAULT_PUBLIC_SOTA_LANGUAGE_PATHS,
-    REQUIRED_SOTA_CATEGORIES,
-    DifferentiableSOTACategory,
-    DifferentiableSOTAPromotionLanguageAudit,
-    audit_differentiable_sota_promotion_language,
+from .differentiable_baseline_scorecard import (
+    DEFAULT_PUBLIC_PROMOTION_LANGUAGE_PATHS,
+    REQUIRED_BASELINE_CATEGORIES,
+    DifferentiableBaselineCategory,
+    DifferentiablePromotionLanguageAudit,
+    audit_differentiable_promotion_language,
 )
+from .differentiable_claim_ledger import DEFAULT_LEDGER_PATH, REPO_ROOT, ClaimLedger
 
 CompetitiveBaselineId = Literal[
     "jax",
@@ -81,7 +81,7 @@ class CompetitiveBaselineRow:
     checked_on: date
     refresh_due_on: date
     max_age_days: int
-    scorecard_categories: tuple[DifferentiableSOTACategory, ...]
+    scorecard_categories: tuple[DifferentiableBaselineCategory, ...]
     required_capabilities: tuple[str, ...]
     hardening_implications: tuple[str, ...]
     claim_boundary: str
@@ -117,11 +117,11 @@ class CompetitiveBaselineRow:
         unknown_categories = tuple(
             category
             for category in self.scorecard_categories
-            if category not in REQUIRED_SOTA_CATEGORIES
+            if category not in REQUIRED_BASELINE_CATEGORIES
         )
         if unknown_categories:
             raise ValueError(
-                "competitive baseline row references unknown SOTA categories: "
+                "competitive baseline row references unknown baseline categories: "
                 + ", ".join(unknown_categories)
             )
 
@@ -188,7 +188,7 @@ class CompetitiveBaselineValidation:
     passed: bool
     errors: tuple[str, ...]
     checked_baselines: tuple[CompetitiveBaselineId, ...]
-    checked_categories: tuple[DifferentiableSOTACategory, ...]
+    checked_categories: tuple[DifferentiableBaselineCategory, ...]
     checked_urls: tuple[str, ...]
     as_of: date
     claim_boundary: str
@@ -213,9 +213,9 @@ class CompetitiveBaselinePromotionGate:
     passed: bool
     errors: tuple[str, ...]
     baseline_validation: CompetitiveBaselineValidation
-    language_audit: DifferentiableSOTAPromotionLanguageAudit
+    language_audit: DifferentiablePromotionLanguageAudit
     checked_paths: tuple[str, ...]
-    checked_categories: tuple[DifferentiableSOTACategory, ...]
+    checked_categories: tuple[DifferentiableBaselineCategory, ...]
     claim_boundary: str
 
     def to_dict(self) -> dict[str, object]:
@@ -245,7 +245,7 @@ def run_competitive_baseline_refresh(
         rows=rows,
         claim_boundary=(
             "Competitive baseline freshness evidence only; it does not promote "
-            "state-of-art, world-class, provider, hardware, GPU, QPU, "
+            "category-leadership, provider, hardware, GPU, QPU, "
             "production-performance, or isolated_affinity claims."
         ),
     )
@@ -303,10 +303,10 @@ def validate_competitive_baseline_refresh(
         if duplicate:
             errors.append("duplicate competitive baseline rows: " + ", ".join(duplicate))
     missing_categories = tuple(
-        category for category in REQUIRED_SOTA_CATEGORIES if category not in categories
+        category for category in REQUIRED_BASELINE_CATEGORIES if category not in categories
     )
     if missing_categories:
-        errors.append("missing SOTA category baseline coverage: " + ", ".join(missing_categories))
+        errors.append("missing baseline category coverage: " + ", ".join(missing_categories))
     if "does not promote" not in candidate.claim_boundary:
         errors.append("competitive baseline claim boundary must remain non-promotional")
 
@@ -338,7 +338,7 @@ def validate_competitive_baseline_refresh(
         as_of=check_date,
         claim_boundary=(
             "Competitive baseline validation only; freshness and official-source "
-            "coverage do not promote SOTA, provider, hardware, GPU, QPU, "
+            "coverage do not promote category-leadership, provider, hardware, GPU, QPU, "
             "performance, or isolated_affinity claims."
         ),
     )
@@ -350,7 +350,7 @@ def audit_competitive_baseline_promotion_gate(
     refresh_path: Path = DEFAULT_COMPETITIVE_BASELINE_REFRESH_PATH,
     as_of: date | None = None,
     public_texts: Mapping[str, str] | None = None,
-    public_paths: Iterable[str] = DEFAULT_PUBLIC_SOTA_LANGUAGE_PATHS,
+    public_paths: Iterable[str] = DEFAULT_PUBLIC_PROMOTION_LANGUAGE_PATHS,
     ledger: ClaimLedger | None = None,
     ledger_path: Path = DEFAULT_LEDGER_PATH,
     repo_root: Path = REPO_ROOT,
@@ -358,7 +358,7 @@ def audit_competitive_baseline_promotion_gate(
     """Validate freshness and public-language promotion evidence together."""
     candidate = load_competitive_baseline_refresh(refresh_path) if refresh is None else refresh
     baseline_validation = validate_competitive_baseline_refresh(candidate, as_of=as_of)
-    language_audit = audit_differentiable_sota_promotion_language(
+    language_audit = audit_differentiable_promotion_language(
         public_texts=public_texts,
         public_paths=public_paths,
         ledger=ledger,
@@ -375,7 +375,8 @@ def audit_competitive_baseline_promotion_gate(
         f"competitive baseline validation failed: {error}" for error in baseline_validation.errors
     ]
     errors.extend(
-        f"differentiable SOTA language audit failed: {error}" for error in language_audit.errors
+        f"differentiable promotion-language audit failed: {error}"
+        for error in language_audit.errors
     )
     for category in language_audit.checked_promotional_categories:
         if category not in categories_with_fresh_baselines:
@@ -395,7 +396,7 @@ def audit_competitive_baseline_promotion_gate(
         checked_categories=checked_categories,
         claim_boundary=(
             "Combined competitive-baseline and public-language gate only; it "
-            "keeps SOTA/world-class wording blocked unless fresh baseline, "
+            "keeps promotional wording blocked unless fresh baseline, "
             "ready scorecard, and promoted claim-ledger evidence all agree."
         ),
     )
@@ -671,7 +672,8 @@ def _row_from_mapping(payload: Mapping[str, object]) -> CompetitiveBaselineRow:
     baseline_id = _literal_baseline_id(_string(payload, "baseline_id"))
     source_kind = _literal_source_kind(_string(payload, "source_kind"))
     categories = tuple(
-        _literal_sota_category(category) for category in _strings(payload, "scorecard_categories")
+        _literal_baseline_category(category)
+        for category in _strings(payload, "scorecard_categories")
     )
     return CompetitiveBaselineRow(
         baseline_id=baseline_id,
@@ -701,9 +703,9 @@ def _literal_source_kind(value: str) -> CompetitiveBaselineSourceKind:
     return value
 
 
-def _literal_sota_category(value: str) -> DifferentiableSOTACategory:
-    if value not in REQUIRED_SOTA_CATEGORIES:
-        raise ValueError(f"unknown SOTA category in baseline refresh: {value}")
+def _literal_baseline_category(value: str) -> DifferentiableBaselineCategory:
+    if value not in REQUIRED_BASELINE_CATEGORIES:
+        raise ValueError(f"unknown baseline category in baseline refresh: {value}")
     return value
 
 

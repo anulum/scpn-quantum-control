@@ -22,13 +22,13 @@ from scpn_quantum_control import (
     render_competitive_baseline_refresh_markdown,
     run_competitive_baseline_refresh,
 )
+from scpn_quantum_control.differentiable_baseline_scorecard import REQUIRED_BASELINE_CATEGORIES
 from scpn_quantum_control.differentiable_competitive_baselines import (
     MAX_BASELINE_AGE_DAYS,
     REQUIRED_BASELINE_IDS,
     CompetitiveBaselineRefresh,
     validate_competitive_baseline_refresh,
 )
-from scpn_quantum_control.differentiable_sota_scorecard import REQUIRED_SOTA_CATEGORIES
 
 ROOT = Path(__file__).resolve().parent.parent
 
@@ -42,7 +42,7 @@ def test_competitive_baseline_refresh_records_required_sources() -> None:
     assert refresh.artifact_id == "diff-competitive-baseline-refresh-20260627"
     assert refresh.max_age_days == MAX_BASELINE_AGE_DAYS
     assert {row.baseline_id for row in refresh.rows} == set(REQUIRED_BASELINE_IDS)
-    assert set(validation.checked_categories) == set(REQUIRED_SOTA_CATEGORIES)
+    assert set(validation.checked_categories) == set(REQUIRED_BASELINE_CATEGORIES)
     assert validation.passed
     assert validation.errors == ()
     assert all(row.source_url.startswith("https://") for row in refresh.rows)
@@ -121,7 +121,7 @@ def test_competitive_baseline_row_rejects_invalid_source() -> None:
 
 
 def test_competitive_baseline_promotion_gate_combines_language_and_freshness() -> None:
-    """The combined gate must reject unbacked SOTA wording and require freshness."""
+    """The combined gate must reject unbacked promotional wording and require freshness."""
     audit = audit_competitive_baseline_promotion_gate(
         refresh=run_competitive_baseline_refresh(),
         as_of=date(2026, 6, 27),

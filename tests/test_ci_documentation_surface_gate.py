@@ -20,8 +20,8 @@ def test_ci_lint_job_gates_documentation_surface() -> None:
     assert "python tools/audit_documentation_surface.py" in workflow
     assert "--allowlist tools/documentation_surface_allowlist.json" in workflow
     assert "--fail-on-findings" in workflow
-    assert "Audit differentiable SOTA promotion language" in workflow
-    assert "python tools/check_differentiable_sota_promotion_language.py" in workflow
+    assert "Audit differentiable promotion language" in workflow
+    assert "python tools/check_differentiable_promotion_language.py" in workflow
 
 
 def test_ci_gates_differentiable_strict_mypy_ratchet() -> None:
@@ -33,7 +33,7 @@ def test_ci_gates_differentiable_strict_mypy_ratchet() -> None:
     assert "src/scpn_quantum_control/differentiable_claim_ledger.py" in workflow
     assert "src/scpn_quantum_control/differentiable_architecture_map.py" in workflow
     assert "src/scpn_quantum_control/differentiable_dependency_environment_map.py" in workflow
-    assert "src/scpn_quantum_control/differentiable_sota_scorecard.py" in workflow
+    assert "src/scpn_quantum_control/differentiable_baseline_scorecard.py" in workflow
     assert "src/scpn_quantum_control/differentiable_api.py" in workflow
     assert "src/scpn_quantum_control/benchmarks/differentiable_programming.py" in workflow
     assert "src/scpn_quantum_control/differentiable_external_validation.py" in workflow

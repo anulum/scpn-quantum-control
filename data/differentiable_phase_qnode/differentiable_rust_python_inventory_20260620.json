@@ -313,40 +313,40 @@
     {
       "benchmark_status": "not_applicable",
       "benchmark_surface": [
-        "diff-sota-scorecard-20260620"
+        "diff-baseline-scorecard-20260620"
       ],
       "blockers": [
         "governance evidence only; no executable Rust surface is required"
       ],
       "claim_boundary": "Differentiable Rust/Python surface inventory for rustification planning; no broad rustification promotion, provider execution, hardware execution, LLVM/JIT execution, GPU execution, or isolated benchmark claim is implied.",
       "claim_ids": [
-        "differentiable_sota_scorecard"
+        "differentiable_baseline_scorecard"
       ],
       "classification": "metadata_only",
       "docs_surface": [
         "docs/differentiable_api.md",
         "docs/differentiable_programming.md",
         "README.md",
-        "data/differentiable_phase_qnode/differentiable_sota_scorecard_20260620.md",
+        "data/differentiable_phase_qnode/differentiable_baseline_scorecard_20260620.md",
         "data/differentiable_phase_qnode/claim_ledger.md",
         "data/differentiable_phase_qnode/differentiable_rust_python_inventory_20260620.md"
       ],
       "docstring_status": "complete_for_inventory_surface",
-      "mypy_target": "src/scpn_quantum_control/differentiable_sota_scorecard.py",
+      "mypy_target": "src/scpn_quantum_control/differentiable_baseline_scorecard.py",
       "next_hardening_rounds": [
         "Round 0 surface integrity and maintainability",
         "Round 5 Rustification readiness"
       ],
-      "owner_module": "src/scpn_quantum_control/differentiable_sota_scorecard.py",
+      "owner_module": "src/scpn_quantum_control/differentiable_baseline_scorecard.py",
       "polyglot_status": "not_applicable",
       "polyglot_surface": [
-        "data/differentiable_phase_qnode/differentiable_sota_scorecard_20260620.md"
+        "data/differentiable_phase_qnode/differentiable_baseline_scorecard_20260620.md"
       ],
       "public_api": [
-        "run_differentiable_sota_scorecard"
+        "run_differentiable_baseline_scorecard"
       ],
       "python_surface": [
-        "src/scpn_quantum_control/differentiable_sota_scorecard.py",
+        "src/scpn_quantum_control/differentiable_baseline_scorecard.py",
         "src/scpn_quantum_control/differentiable_api.py"
       ],
       "rust_parity_status": "not_applicable",
@@ -354,9 +354,9 @@
         "scpn_quantum_engine/src/lib.rs"
       ],
       "rustification_ready": false,
-      "surface_id": "differentiable_sota_scorecard",
+      "surface_id": "differentiable_baseline_scorecard",
       "test_surface": [
-        "tests/test_differentiable_sota_scorecard.py"
+        "tests/test_differentiable_baseline_scorecard.py"
       ],
       "title": "Differentiable state-of-art category scorecard"
     },
@@ -572,7 +572,7 @@
       "benchmark_status": "blocked",
       "benchmark_surface": [
         "catalyst_runner_missing",
-        "diff-sota-scorecard-20260620"
+        "diff-baseline-scorecard-20260620"
       ],
       "blockers": [
         "configured Catalyst qjit/MLIR/QIR runner evidence is missing",
@@ -580,14 +580,14 @@
       ],
       "claim_boundary": "Differentiable Rust/Python surface inventory for rustification planning; no broad rustification promotion, provider execution, hardware execution, LLVM/JIT execution, GPU execution, or isolated benchmark claim is implied.",
       "claim_ids": [
-        "differentiable_sota_scorecard"
+        "differentiable_baseline_scorecard"
       ],
       "classification": "deprecate_before_promotion",
       "docs_surface": [
         "docs/differentiable_programming.md",
         "docs/differentiable_api.md",
         "README.md",
-        "data/differentiable_phase_qnode/differentiable_sota_scorecard_20260620.md",
+        "data/differentiable_phase_qnode/differentiable_baseline_scorecard_20260620.md",
         "data/differentiable_phase_qnode/claim_ledger.md",
         "data/differentiable_phase_qnode/differentiable_rust_python_inventory_20260620.md"
       ],
@@ -607,7 +607,7 @@
       ],
       "python_surface": [
         "src/scpn_quantum_control/benchmarks/differentiable_external_comparison.py",
-        "src/scpn_quantum_control/differentiable_sota_scorecard.py",
+        "src/scpn_quantum_control/differentiable_baseline_scorecard.py",
         "src/scpn_quantum_control/differentiable_api.py"
       ],
       "rust_parity_status": "partial",
@@ -618,7 +618,7 @@
       "surface_id": "catalyst_compiler_comparison",
       "test_surface": [
         "tests/test_differentiable_external_comparisons.py",
-        "tests/test_differentiable_sota_scorecard.py"
+        "tests/test_differentiable_baseline_scorecard.py"
       ],
       "title": "Catalyst-style compiler workflow comparison row"
     },
