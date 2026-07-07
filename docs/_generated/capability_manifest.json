@@ -2,7 +2,7 @@
   "SPDX-License-Identifier": "AGPL-3.0-or-later",
   "counts": {
     "domain_package_families": 31,
-    "example_files": 36,
+    "example_files": 37,
     "github_workflows": 23,
     "model_documentation_pages": null,
     "notebook_files": 100,
@@ -13,7 +13,7 @@
     "python_model_source_modules": 478,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 64,
-    "test_files": 845
+    "test_files": 846
   },
   "documentation": {
     "examples": [
@@ -52,6 +52,7 @@
       "examples/32_topology_controlled_qsnn.py",
       "examples/33_qgt_qfi_crosscheck.py",
       "examples/34_gauge_lattice_crosscheck.py",
+      "examples/35_quantum_ssgf_descent.py",
       "examples/README.md"
     ],
     "notebooks": [
@@ -6623,6 +6624,7 @@
       "tests/test_rl_discovery_agent_branches.py",
       "tests/test_robustness_certificate.py",
       "tests/test_run_dla_parity_suite_cli.py",
+      "tests/test_run_quantum_ssgf_descent.py",
       "tests/test_runner_guards.py",
       "tests/test_rust_ffi_safety_audit.py",
       "tests/test_rust_ffi_validation.py",

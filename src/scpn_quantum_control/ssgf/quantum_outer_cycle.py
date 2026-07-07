@@ -80,6 +80,7 @@ def classical_cost(W: NDArray[np.float64], *, allow_surrogate: bool = False) -> 
 def quantum_outer_cycle(
     n_osc: int,
     z_init: NDArray[np.float64] | None = None,
+    theta_init: NDArray[np.float64] | None = None,
     alpha: float = 0.5,
     classical_cost_fn: Callable[[NDArray[np.float64]], float] | None = None,
     allow_classical_surrogate: bool = False,
@@ -94,7 +95,11 @@ def quantum_outer_cycle(
 
     Args:
         n_osc: number of oscillators
-        z_init: initial latent vector (default: zeros)
+        z_init: initial latent vector (default: seeded random)
+        theta_init: initial oscillator phases (default: seeded random uniform).
+            The evenly spaced splay state has R_global = 0 identically and a
+            vanishing quantum gradient, so a splay start reports instant
+            convergence with zero descent progress — pass it only on purpose.
         alpha: quantum cost weight (0 = pure classical, 1 = pure quantum)
         classical_cost_fn: production classical SSGF cost function for alpha < 1
         allow_classical_surrogate: opt into the legacy coupling-balance surrogate
@@ -114,9 +119,17 @@ def quantum_outer_cycle(
         )
 
     n_upper = n_osc * (n_osc - 1) // 2
+    rng = np.random.default_rng(seed)
     if z_init is None:
-        rng = np.random.default_rng(seed)
         z_init = rng.normal(0, 0.5, size=n_upper)
+    if theta_init is None:
+        theta_init = rng.uniform(0.0, 2.0 * np.pi, size=n_osc)
+    else:
+        theta_init = np.asarray(theta_init, dtype=np.float64)
+        if theta_init.shape != (n_osc,):
+            raise ValueError(f"theta_init shape must be ({n_osc},), got {theta_init.shape}")
+        if not np.all(np.isfinite(theta_init)):
+            raise ValueError("theta_init must contain only finite values")
 
     z = z_init.copy()
     cost_history: list[float] = []
@@ -128,6 +141,7 @@ def quantum_outer_cycle(
         qg = compute_quantum_gradient(
             z,
             n_osc,
+            theta_init=theta_init,
             dt=dt,
             trotter_reps=trotter_reps,
         )

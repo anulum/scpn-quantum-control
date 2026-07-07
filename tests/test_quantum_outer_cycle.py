@@ -10,6 +10,7 @@
 from __future__ import annotations
 
 import numpy as np
+import pytest
 
 from scpn_quantum_control.ssgf.quantum_outer_cycle import (
     OuterCycleResult,
@@ -106,3 +107,33 @@ class TestQuantumOuterCycle:
             assert "classical_cost_fn" in str(exc)
         else:
             raise AssertionError("mixed outer cycle must not use a hidden surrogate cost")
+
+
+class TestThetaInitThreading:
+    """The descent start state is threaded and non-degenerate by default."""
+
+    def test_default_start_has_nonzero_order_parameter(self):
+        result = quantum_outer_cycle(n_osc=3, alpha=1.0, max_iterations=2, seed=42)
+        assert result.r_global_history[0] > 0.0
+
+    def test_explicit_splay_start_documents_the_degenerate_fixed_point(self):
+        splay = np.linspace(0, 2 * np.pi * (1 - 1 / 3), 3)
+        result = quantum_outer_cycle(
+            n_osc=3, theta_init=splay, alpha=1.0, max_iterations=3, seed=42
+        )
+        for r in result.r_global_history:
+            assert r < 1e-3
+
+    def test_theta_init_is_reproducible_with_seed(self):
+        first = quantum_outer_cycle(n_osc=3, alpha=1.0, max_iterations=2, seed=7)
+        second = quantum_outer_cycle(n_osc=3, alpha=1.0, max_iterations=2, seed=7)
+        assert first.r_global_history == second.r_global_history
+
+    def test_theta_init_wrong_shape_fails_closed(self):
+        with pytest.raises(ValueError, match="theta_init shape"):
+            quantum_outer_cycle(n_osc=3, theta_init=np.zeros(2), alpha=1.0, max_iterations=1)
+
+    def test_theta_init_non_finite_fails_closed(self):
+        theta = np.array([0.0, np.nan, 1.0])
+        with pytest.raises(ValueError, match="finite"):
+            quantum_outer_cycle(n_osc=3, theta_init=theta, alpha=1.0, max_iterations=1)

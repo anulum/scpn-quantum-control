@@ -127,9 +127,9 @@ claims only when the evidence exists.
 | Rust PyO3 function bindings | 177 |
 | Rust source modules | 64 |
 | Notebook files | 100 |
-| Example files | 36 |
+| Example files | 37 |
 | Optional extras | 43 |
-| Python test files | 845 |
+| Python test files | 846 |
 | Public documentation pages | 260 |
 | GitHub Actions workflows | 23 |
 

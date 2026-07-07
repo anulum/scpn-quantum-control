@@ -22,7 +22,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 EXAMPLES = ROOT / "examples"
 README = EXAMPLES / "README.md"
-EXPECTED_EXAMPLE_SCRIPT_COUNT = 35
+EXPECTED_EXAMPLE_SCRIPT_COUNT = 36
 
 
 def _example_scripts() -> tuple[Path, ...]:

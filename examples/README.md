@@ -409,3 +409,15 @@ different regimes; this is a joint report, not an equality assertion.
 ```bash
 python examples/34_gauge_lattice_crosscheck.py
 ```
+
+## 35_quantum_ssgf_descent.py — Quantum SSGF Geometry Descent
+
+Optimises a latent vector parameterising the coupling geometry ``W(z)``
+against the quantum synchronisation cost ``1 − R_global`` (statevector
+Trotter evolution) and prints the synchronisation gain. Small-system
+simulator demonstration; the production runner with a JSON artefact is
+``scripts/run_quantum_ssgf_descent.py``.
+
+```bash
+python examples/35_quantum_ssgf_descent.py
+```
