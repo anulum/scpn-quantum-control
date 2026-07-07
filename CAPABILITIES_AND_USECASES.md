@@ -4,7 +4,7 @@
 `scpn-quantum-control` bridges the gap between classical phase dynamics and Noisy Intermediate-Scale Quantum (NISQ) hardware. While the orchestrator solves equations classically, this repository acts as the **quantum compiler**. It mathematically maps the topological distance matrices ($K_{nm}$) of the SCPN framework into physical qubits, entangling gates, and Quantum Error Correction (QEC) syndromes.
 
 ### Technical Specifications & Software Quality:
-*   **Engineering:** The repository maintains **98% test coverage** (2,813 tests across 155 modules), passing Mypy and Ruff linters.
+*   **Engineering:** CI-gated quality floor: aggregate coverage gate at 90%, strict mypy across all of `src/`, Ruff lint + format, Bandit, CodeQL, SBOM, and OpenSSF Scorecard on every push. Current module/test counts are generated into the README capability snapshot and `docs/_generated/capability_snapshot.md`.
 *   **Trotterized Hamiltonian Evolution:** It natively converts the continuous Kuramoto UPDE into an XY Spin Hamiltonian ($H_{XY} = \sum J_{ij} (\sigma_x^i \sigma_x^j + \sigma_y^i \sigma_y^j)$). It employs Trotter-Suzuki decomposition to simulate time-evolution on discrete quantum gates.
 *   **Hardware Proven:** The framework is deeply integrated with Qiskit and has been executed on physical IBM Quantum Processors. During the February 2026 campaign on `ibm_fez` (Heron r2, 156 qubits), the framework achieved a **0.05% error rate** on a 4-qubit Variational Quantum Eigensolver (VQE) ground state.
 

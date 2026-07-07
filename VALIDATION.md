@@ -2,13 +2,22 @@
 
 ## Test Suite
 
-679 unit, integration, property-based, and regression tests across ~80 test files. All pass on Python 3.9–3.12 with Qiskit 1.0+. 100% line coverage.
+Unit, integration, property-based, regression, claim-guard, and workflow-contract
+tests across 829 test files. CI runs the suite on Python 3.11–3.13 with
+Qiskit 2.2+ on every push; current file/module counts are generated into
+`docs/_generated/capability_snapshot.md` and the README capability snapshot.
 
 ```bash
 pytest tests/ -v
 ```
 
 ## Test Categories
+
+> The category map below documents the founding core-physics test surface
+> (recorded 2026-03, ≤ v1.0-module epoch) and is retained as orientation for
+> the physics gates that still anchor the suite. The suite has since grown by
+> roughly an order of magnitude; the generated capability inventory is the
+> source of truth for current counts.
 
 ### Unit Tests (~540 tests, ~70 files)
 
@@ -116,7 +125,11 @@ All 20 experiment circuits validated on AerSimulator (no IBM credentials needed)
 
 ## Coverage
 
-100% line coverage locally. CI enforces `--cov-fail-under=95` (excludes hardware runner/experiments which require IBM credentials).
+CI enforces `--cov-fail-under=90` on the aggregate suite (the `slow`,
+`hardware`, `internal_corpus`, and `performance` markers are deselected in the
+coverage lane; hardware runner/experiment paths require IBM credentials). New
+modules ship with 100% focused coverage; the remaining below-100 files are
+tracked on the internal execution queue.
 
 ```bash
 pytest tests/ --cov=scpn_quantum_control --cov-report=term-missing
