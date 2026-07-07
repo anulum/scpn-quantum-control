@@ -20,7 +20,8 @@ def main() -> int:
     audit = assert_transform_algebra_audit_passes()
     print(
         "differentiable transform-algebra gate: PASS "
-        f"({len(audit.passed_cases)} passed, {len(audit.blocked_cases)} blocked)"
+        f"({len(audit.passed_cases)} passed, {len(audit.blocked_cases)} blocked, "
+        f"{len(audit.support_matrix)} support rows)"
     )
     return 0
 

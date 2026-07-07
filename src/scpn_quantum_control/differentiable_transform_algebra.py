@@ -17,6 +17,7 @@ import numpy as np
 from numpy.typing import ArrayLike, NDArray
 
 from .differentiable_canonical_api import grad, value_and_grad
+from .differentiable_custom_derivatives import custom_jvp, custom_vjp
 from .differentiable_finite_difference import (
     hessian,
     jacfwd,
@@ -29,7 +30,16 @@ from .differentiable_finite_difference import (
 from .differentiable_parameter_contracts import Parameter
 from .differentiable_result_contracts import FINITE_DIFFERENCE_DIAGNOSTIC_CLAIM_BOUNDARY
 from .differentiable_sparse_derivatives import sparse_jacobian
+from .differentiable_transform_support_matrix import (
+    REQUIRED_TRANSFORM_ALGEBRA_SUPPORT_ROWS,
+    TransformAlgebraLane,
+    TransformAlgebraSupportMatrixRow,
+    build_transform_algebra_support_matrix,
+)
 from .differentiable_vmap import vmap
+from .phase.qnode_vector_transforms import execute_phase_qnode_vmap_grad
+from .program_ad_registry import CustomDerivativeRule
+from .whole_program_ad_api import whole_program_value_and_grad
 
 FloatArray: TypeAlias = NDArray[np.float64]
 VectorObjective: TypeAlias = Callable[[FloatArray], ArrayLike]
@@ -62,6 +72,10 @@ REQUIRED_TRANSFORM_ALGEBRA_CATEGORIES: Final[tuple[str, ...]] = (
     "custom_jvp_vjp_boundary",
     "structured_container_boundary",
     "batched_observables",
+    "registered_custom_rule_composition",
+    "program_ad_jvp_vjp_composition",
+    "program_ad_hessian_composition",
+    "quantum_gradient_nesting",
 )
 
 
@@ -171,9 +185,32 @@ class TransformAlgebraAudit:
         return tuple(case for case in self.cases if case.status == "blocked")
 
     @property
+    def support_matrix(self) -> tuple[TransformAlgebraSupportMatrixRow, ...]:
+        """Return support rows generated from executable and blocked cases."""
+        return build_transform_algebra_support_matrix(self.cases)
+
+    @property
+    def missing_support_rows(self) -> tuple[str, ...]:
+        """Return required support-matrix rows missing from the generated matrix."""
+        present = {row.row_id for row in self.support_matrix}
+        return tuple(
+            row_id for row_id in REQUIRED_TRANSFORM_ALGEBRA_SUPPORT_ROWS if row_id not in present
+        )
+
+    @property
+    def failed_support_rows(self) -> tuple[TransformAlgebraSupportMatrixRow, ...]:
+        """Return generated support rows whose source cases failed."""
+        return tuple(row for row in self.support_matrix if row.status == "failed")
+
+    @property
     def passed(self) -> bool:
         """Return whether all executed checks passed and every category is covered."""
-        return not self.failed_cases and not self.missing_categories
+        return (
+            not self.failed_cases
+            and not self.missing_categories
+            and not self.missing_support_rows
+            and not self.failed_support_rows
+        )
 
     def to_dict(self) -> dict[str, object]:
         """Return JSON-ready audit metadata."""
@@ -185,6 +222,8 @@ class TransformAlgebraAudit:
             "failed_count": len(self.failed_cases),
             "categories": list(self.categories),
             "missing_categories": list(self.missing_categories),
+            "support_matrix": [row.to_dict() for row in self.support_matrix],
+            "missing_support_rows": list(self.missing_support_rows),
             "cases": [case.to_dict() for case in self.cases],
             "claim_boundary": self.claim_boundary,
         }
@@ -203,6 +242,10 @@ def run_transform_algebra_audit(
         _jacrev_jacfwd_case(tolerance),
         _hessian_symmetry_case(tolerance),
         _jvp_vjp_duality_case(tolerance),
+        _registered_custom_rule_case(tolerance),
+        _program_ad_jvp_vjp_case(tolerance),
+        _program_ad_hessian_case(tolerance),
+        _quantum_gradient_native_vmap_case(tolerance),
         _linearity_case(tolerance),
         _chain_rule_case(tolerance),
         _periodicity_case(tolerance),
@@ -374,6 +417,156 @@ def _jvp_vjp_duality_case(tolerance: float) -> TransformAlgebraCase:
         rhs,
         tolerance,
         ("jvp", "vjp", "adjoint_identity"),
+    )
+
+
+def _registered_custom_rule_case(tolerance: float) -> TransformAlgebraCase:
+    values = np.array([[0.25, -0.4], [0.6, 0.2], [-0.1, 0.5]], dtype=np.float64)
+    tangents = np.array([[0.3, -0.2], [-0.5, 0.4], [0.7, 0.1]], dtype=np.float64)
+    cotangents = np.array([[1.0, -0.25], [0.5, 0.75], [-0.4, 1.2]], dtype=np.float64)
+
+    def value_fn(row: FloatArray) -> FloatArray:
+        return np.array([row[0] ** 2 + np.sin(row[1]), row[0] * row[1]], dtype=np.float64)
+
+    def jvp_rule(row: FloatArray, tangent: FloatArray) -> FloatArray:
+        return np.array(
+            [
+                2.0 * row[0] * tangent[0] + np.cos(row[1]) * tangent[1],
+                tangent[0] * row[1] + row[0] * tangent[1],
+            ],
+            dtype=np.float64,
+        )
+
+    def vjp_rule(row: FloatArray, cotangent: FloatArray) -> FloatArray:
+        return np.array(
+            [
+                2.0 * row[0] * cotangent[0] + row[1] * cotangent[1],
+                np.cos(row[1]) * cotangent[0] + row[0] * cotangent[1],
+            ],
+            dtype=np.float64,
+        )
+
+    rule = CustomDerivativeRule(
+        name="transform_algebra_registered_custom_rule",
+        value_fn=value_fn,
+        jvp_rule=jvp_rule,
+        vjp_rule=vjp_rule,
+        parameter_names=("x0", "x1"),
+    )
+    mapped_jvp = cast(
+        FloatArray,
+        vmap(lambda row, tangent: custom_jvp(rule, row, tangent))(values, tangents),
+    )
+    mapped_vjp = cast(
+        FloatArray,
+        vmap(lambda row, cotangent: custom_vjp(rule, row, cotangent).vjp)(
+            values,
+            cotangents,
+        ),
+    )
+    expected_jvp = np.asarray(
+        [jvp_rule(row, tangent) for row, tangent in zip(values, tangents, strict=True)],
+        dtype=np.float64,
+    )
+    expected_vjp = np.asarray(
+        [vjp_rule(row, cotangent) for row, cotangent in zip(values, cotangents, strict=True)],
+        dtype=np.float64,
+    )
+    lhs = np.concatenate([mapped_jvp.reshape(-1), mapped_vjp.reshape(-1)])
+    rhs = np.concatenate([expected_jvp.reshape(-1), expected_vjp.reshape(-1)])
+    return _executed_case(
+        "registered_custom_rule_vmap_jvp_vjp_matches_reference",
+        "registered_custom_rule_composition",
+        lhs,
+        rhs,
+        tolerance,
+        ("vmap", "custom_jvp", "custom_vjp", "CustomDerivativeRule", "analytic_reference"),
+    )
+
+
+def _program_ad_jvp_vjp_case(tolerance: float) -> TransformAlgebraCase:
+    rows = np.array([[0.45, 0.2], [-0.35, 0.55]], dtype=np.float64)
+    values = rows.reshape(-1)
+    tangent = np.array([0.25, -0.1, 0.35, 0.2], dtype=np.float64)
+    cotangent = np.array([0.9, -0.25, 0.4, 0.75], dtype=np.float64)
+    row_hessian = np.array([[2.0, 1.0], [1.0, 1.0]], dtype=np.float64)
+    block_hessian = np.zeros((values.size, values.size), dtype=np.float64)
+    block_hessian[0:2, 0:2] = row_hessian
+    block_hessian[2:4, 2:4] = row_hessian
+
+    def row_loss(row: Any) -> object:
+        return row[0] * row[0] + row[0] * row[1] + 0.5 * row[1] * row[1]
+
+    def mapped_program_gradient(candidate: FloatArray) -> FloatArray:
+        matrix = candidate.reshape(rows.shape)
+        mapped = vmap(
+            lambda row: whole_program_value_and_grad(row_loss, row, trace=False).gradient
+        )(matrix)
+        return np.asarray(mapped, dtype=np.float64).reshape(-1)
+
+    lhs = np.concatenate(
+        [
+            jvp(mapped_program_gradient, values, tangent, step=1.0e-2),
+            vjp(mapped_program_gradient, values, cotangent, step=1.0e-2),
+        ]
+    )
+    rhs = np.concatenate([block_hessian @ tangent, block_hessian.T @ cotangent])
+    return _executed_case(
+        "program_ad_vmap_gradient_jvp_vjp_matches_block_hessian",
+        "program_ad_jvp_vjp_composition",
+        lhs,
+        rhs,
+        tolerance,
+        ("whole_program_value_and_grad", "vmap", "jvp", "vjp", "analytic_reference"),
+    )
+
+
+def _program_ad_hessian_case(tolerance: float) -> TransformAlgebraCase:
+    values = np.array([0.4, -0.65], dtype=np.float64)
+    expected = np.array([[2.0, 1.0], [1.0, 1.0]], dtype=np.float64)
+
+    def row_loss(row: Any) -> object:
+        return row[0] * row[0] + row[0] * row[1] + 0.5 * row[1] * row[1]
+
+    def program_value(candidate: FloatArray) -> float:
+        return float(whole_program_value_and_grad(row_loss, candidate, trace=False).value)
+
+    lhs = hessian(program_value, values, step=1.0e-1)
+    return _executed_case(
+        "program_ad_hessian_matches_quadratic_curvature",
+        "program_ad_hessian_composition",
+        lhs,
+        expected,
+        tolerance,
+        ("whole_program_value_and_grad", "hessian", "analytic_reference"),
+    )
+
+
+def _quantum_gradient_native_vmap_case(tolerance: float) -> TransformAlgebraCase:
+    values = np.array([[0.2, -0.4], [0.7, 0.1], [-0.3, 0.6]], dtype=np.float64)
+
+    def objective(params: FloatArray) -> float:
+        return float(np.cos(params[0]) + 0.25 * np.sin(params[1]))
+
+    result = execute_phase_qnode_vmap_grad(objective, values)
+    if not result.supported or result.batched_gradients is None:
+        return _blocked_case(
+            "phase_qnode_native_vmap_grad_is_fail_closed",
+            "quantum_gradient_nesting",
+            result.plan.blocked_reasons or (result.failure_reason,),
+            ("execute_phase_qnode_vmap_grad", "phase_qnode_parameter_shift"),
+        )
+
+    expected = np.column_stack((-np.sin(values[:, 0]), 0.25 * np.cos(values[:, 1]))).astype(
+        np.float64
+    )
+    return _executed_case(
+        "phase_qnode_native_vmap_grad_matches_parameter_shift_reference",
+        "quantum_gradient_nesting",
+        result.batched_gradients,
+        expected,
+        tolerance,
+        ("execute_phase_qnode_vmap_grad", "parameter_shift", "phase_qnode", result.transform),
     )
 
 
@@ -661,10 +854,13 @@ def _max_abs(lhs: FloatArray, rhs: FloatArray) -> float:
 
 __all__ = [
     "REQUIRED_TRANSFORM_ALGEBRA_CATEGORIES",
+    "REQUIRED_TRANSFORM_ALGEBRA_SUPPORT_ROWS",
     "TRANSFORM_ALGEBRA_CLAIM_BOUNDARY",
     "TRANSFORM_ALGEBRA_TOLERANCE",
     "TransformAlgebraAudit",
     "TransformAlgebraCase",
+    "TransformAlgebraLane",
+    "TransformAlgebraSupportMatrixRow",
     "TransformAlgebraStatus",
     "assert_transform_algebra_audit_passes",
     "run_transform_algebra_audit",

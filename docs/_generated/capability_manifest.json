@@ -9,8 +9,8 @@
     "optional_extras": 43,
     "public_api_exports": 795,
     "public_documentation_pages": 260,
-    "python_model_classes": 918,
-    "python_model_source_modules": 474,
+    "python_model_classes": 920,
+    "python_model_source_modules": 475,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 64,
     "test_files": 838
@@ -4098,6 +4098,14 @@
         "path": "src/scpn_quantum_control/differentiable_transform_algebra.py"
       },
       {
+        "name": "TransformAlgebraCaseLike",
+        "path": "src/scpn_quantum_control/differentiable_transform_support_matrix.py"
+      },
+      {
+        "name": "TransformAlgebraSupportMatrixRow",
+        "path": "src/scpn_quantum_control/differentiable_transform_support_matrix.py"
+      },
+      {
         "name": "TrotterEvolutionConfig",
         "path": "src/scpn_quantum_control/phase/xy_kuramoto.py"
       },
@@ -4468,6 +4476,7 @@
       "src/scpn_quantum_control/differentiable_stochastic_policy.py",
       "src/scpn_quantum_control/differentiable_transform_algebra.py",
       "src/scpn_quantum_control/differentiable_transform_helpers.py",
+      "src/scpn_quantum_control/differentiable_transform_support_matrix.py",
       "src/scpn_quantum_control/differentiable_vmap.py",
       "src/scpn_quantum_control/dla_parity/baselines.py",
       "src/scpn_quantum_control/dla_parity/dataset.py",

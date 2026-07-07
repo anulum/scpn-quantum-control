@@ -177,7 +177,14 @@ def test_unified_differentiable_transform_algebra_report_is_bounded() -> None:
     assert report.payload["missing_categories"] == []
     categories = cast(list[str], report.payload["categories"])
     blocked_count = cast(int, report.payload["blocked_count"])
+    support_rows = cast(list[dict[str, object]], report.payload["support_matrix"])
+    support_row_ids = {str(row["row_id"]) for row in support_rows}
     assert set(categories) == set(REQUIRED_TRANSFORM_ALGEBRA_CATEGORIES)
+    assert "native_grad_vmap" in support_row_ids
+    assert "registered_custom_rules" in support_row_ids
+    assert "program_ad_jvp_vjp" in support_row_ids
+    assert "quantum_gradient_native_nesting" in support_row_ids
+    assert "unsupported_structured_container" in support_row_ids
     assert blocked_count >= 4
     assert "finite differences remain diagnostic" in report.claim_boundary
     assert dispatched.to_dict() == report.to_dict()

@@ -106,8 +106,8 @@ has a defined commercial licensing route.
 |---|---:|
 | Package version | 0.10.0 |
 | Public API exports | 795 |
-| Python source modules | 474 |
-| Public Python classes | 918 |
+| Python source modules | 475 |
+| Public Python classes | 920 |
 | Domain package families | 31 |
 | API documentation pages | 0 |
 | Rust PyO3 function bindings | 177 |

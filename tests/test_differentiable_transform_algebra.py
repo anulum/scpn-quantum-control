@@ -17,8 +17,10 @@ import pytest
 
 from scpn_quantum_control.differentiable_transform_algebra import (
     REQUIRED_TRANSFORM_ALGEBRA_CATEGORIES,
+    REQUIRED_TRANSFORM_ALGEBRA_SUPPORT_ROWS,
     TransformAlgebraAudit,
     TransformAlgebraCase,
+    TransformAlgebraSupportMatrixRow,
     assert_transform_algebra_audit_passes,
     run_transform_algebra_audit,
 )
@@ -36,6 +38,58 @@ def test_transform_algebra_audit_covers_required_categories() -> None:
     assert len(audit.blocked_cases) >= 4
     assert audit.failed_cases == ()
     assert assert_transform_algebra_audit_passes(audit) is audit
+
+
+def test_transform_algebra_support_matrix_is_generated_from_cases() -> None:
+    """The reviewer-facing matrix is derived from executed or blocked audit rows."""
+    audit = run_transform_algebra_audit()
+    matrix = audit.support_matrix
+    rows = {row.row_id: row for row in matrix}
+    case_ids = {case.case_id for case in audit.cases}
+
+    assert set(rows) == set(REQUIRED_TRANSFORM_ALGEBRA_SUPPORT_ROWS)
+    assert all(isinstance(row, TransformAlgebraSupportMatrixRow) for row in matrix)
+    assert all(set(row.case_ids).issubset(case_ids) for row in matrix)
+    assert all(row.supported for row in matrix if row.status == "passed")
+    assert all(not row.supported for row in matrix if row.status == "blocked")
+    assert rows["native_grad_vmap"].transform_stack == ("grad", "vmap")
+    assert rows["native_vmap_grad"].transform_stack == ("vmap", "grad")
+    assert rows["native_jacfwd_jacrev"].transform_stack == ("jacfwd", "jacrev")
+    assert rows["native_hessian"].transform_stack == ("hessian",)
+    assert rows["native_jvp_vjp"].transform_stack == ("jvp", "vjp")
+    assert rows["registered_custom_rules"].lane == "custom_rules"
+    assert rows["program_ad_jvp_vjp"].lane == "program_ad"
+    assert rows["quantum_gradient_native_nesting"].lane == "quantum_gradients"
+    assert rows["unsupported_structured_container"].status == "blocked"
+    assert (
+        "structured parameter containers"
+        in rows["unsupported_structured_container"].blocked_reasons[0]
+    )
+
+
+def test_transform_algebra_support_matrix_payload_is_stable() -> None:
+    """The matrix serializes deterministically for docs and CI guards."""
+    first = run_transform_algebra_audit().to_dict()
+    second = run_transform_algebra_audit().to_dict()
+
+    assert first["support_matrix"] == second["support_matrix"]
+    matrix = cast(list[dict[str, object]], first["support_matrix"])
+    assert len(matrix) == len(REQUIRED_TRANSFORM_ALGEBRA_SUPPORT_ROWS)
+    assert matrix[0]["row_id"] == REQUIRED_TRANSFORM_ALGEBRA_SUPPORT_ROWS[0]
+    assert sorted(matrix[0]) == [
+        "blocked_reasons",
+        "case_ids",
+        "claim_boundary",
+        "evidence",
+        "lane",
+        "notes",
+        "residual",
+        "row_id",
+        "status",
+        "supported",
+        "tolerance",
+        "transform_stack",
+    ]
 
 
 def test_transform_algebra_cases_preserve_diagnostic_boundaries() -> None:
@@ -73,6 +127,7 @@ def test_transform_algebra_payload_is_stable_and_json_ready() -> None:
     assert first == second
     assert first["passed"] is True
     assert first["case_count"] == len(REQUIRED_TRANSFORM_ALGEBRA_CATEGORIES) + 1
+    assert "support_matrix" in first
     assert "hardware" in cast(str, first["claim_boundary"])
     case_payload = cast(list[dict[str, object]], first["cases"])[0]
     assert sorted(case_payload) == [
