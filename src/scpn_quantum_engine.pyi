@@ -490,6 +490,53 @@ def kuramoto_rk4_vjp(
     dt: float,
     cotangent: _F64Array,
 ) -> tuple[_F64Array, _F64Array, _F64Array]: ...
+def kuramoto_inertial_trajectory(
+    theta0: _F64Array,
+    velocities: _F64Array,
+    omega: _F64Array,
+    coupling: _F64Array,
+    mass: float,
+    damping: float,
+    dt: float,
+    n_steps: int,
+) -> tuple[_F64Array, _F64Array, _F64Array]: ...
+def kuramoto_symplectic_inertial_trajectory(
+    theta0: _F64Array,
+    velocities: _F64Array,
+    omega: _F64Array,
+    coupling: _F64Array,
+    mass: float,
+    damping: float,
+    dt: float,
+    n_steps: int,
+) -> tuple[_F64Array, _F64Array, _F64Array]: ...
+def kuramoto_delayed_trajectory(
+    initial_history: _F64Array,
+    omega: _F64Array,
+    coupling: _F64Array,
+    dt: float,
+    n_steps: int,
+) -> tuple[_F64Array, _F64Array]: ...
+def kuramoto_noisy_trajectory(
+    theta0: _F64Array,
+    omega: _F64Array,
+    coupling: _F64Array,
+    diffusion: float,
+    dt: float,
+    noise: _F64Array,
+) -> tuple[_F64Array, _F64Array]: ...
+def kuramoto_dopri_trajectory(
+    theta0: _F64Array,
+    omega: _F64Array,
+    coupling: _F64Array,
+    t_end: float,
+    rtol: float,
+    atol: float,
+    safety: float,
+    min_factor: float,
+    max_factor: float,
+    max_steps: int,
+) -> tuple[_F64Array, _F64Array, _F64Array]: ...
 def local_order_parameter(theta: _F64Array, adjacency: _F64Array) -> _F64Array: ...
 def local_order_parameter_jacobian(theta: _F64Array, adjacency: _F64Array) -> _F64Array: ...
 def local_mean_phase(theta: _F64Array, adjacency: _F64Array) -> _F64Array: ...
