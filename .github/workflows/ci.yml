@@ -511,11 +511,49 @@ jobs:
           python -m pip install --require-hashes -r requirements-ci-py312-linux.txt
           python -m pip install --no-deps -e .
           python -m pip install --no-deps --require-hashes -r requirements-ci-studio-platform.txt
-      - name: Gate the studio federation manifest against schema-A conformance
-        run: python -m pytest tests/test_studio_manifest.py -q
+      - name: Gate the studio federation surface against the platform contract
+        run: >
+          python -m pytest
+          tests/test_studio_manifest.py
+          tests/test_studio_evidence_bundle.py
+          tests/test_studio_scorecard_bundle.py
+          tests/test_studio_support_matrix_bundle.py
+          tests/test_studio_recompute_kernel.py
+          tests/test_studio_reference_validation.py
+          tests/test_coverage_frontier.py
+          tests/test_result_pack_seal.py
+          tests/test_ml_dsa_seal.py
+          tests/test_differentiable_transform_support_matrix_artifact.py
+          -q
+
+  studio-web:
+    needs: lint
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: studio-web
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e  # v6.4.0
+        with:
+          node-version: "22"
+      - name: Install pinned pnpm
+        run: npm install -g pnpm@11.9.0
+      - name: Install locked dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Typecheck (TS strict)
+        run: pnpm typecheck
+      - name: Test with enforced coverage thresholds
+        run: pnpm test:coverage
+      - name: Build the portal and the federation remote
+        run: pnpm build
+      - name: Assert the ESM remote entry carries the locked federation name
+        run: |
+          test -f dist/remoteEntry.js
+          grep -q "scpn_quantum_control" dist/remoteEntry.js
 
   ci-gate:
-    needs: [lint, test, test-extra-platforms, type-check, wheel-check, install-smoke, differentiable-parity, security, rust-audit, studio-conformance]
+    needs: [lint, test, test-extra-platforms, type-check, wheel-check, install-smoke, differentiable-parity, security, rust-audit, studio-conformance, studio-web]
     runs-on: ubuntu-latest
     if: always()
     steps:
@@ -530,7 +568,8 @@ jobs:
              [[ "${{ needs['differentiable-parity'].result }}" != "success" ]] || \
              [[ "${{ needs.security.result }}" != "success" ]] || \
              [[ "${{ needs.rust-audit.result }}" != "success" ]] || \
-             [[ "${{ needs['studio-conformance'].result }}" != "success" ]]; then
+             [[ "${{ needs['studio-conformance'].result }}" != "success" ]] || \
+             [[ "${{ needs['studio-web'].result }}" != "success" ]]; then
             echo "CI gate failed"
             exit 1
           fi
