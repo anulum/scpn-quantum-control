@@ -1,0 +1,24 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
+# © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
+# © Code 2020–2026 Miroslav Šotek. All rights reserved.
+# ORCID: 0009-0009-3560-0851
+# Contact: www.anulum.li | protoscience@anulum.li
+# SCPN Quantum Control — Tier benchmark regression thresholds
+#
+# Per-backend P50 latency ratio limits for tools/tier_benchmark_regression_gate.py:
+# a cell alarms when current_p50 / baseline_p50 exceeds its limit. Section names
+# are operation names from the tier artefact; [default] covers every operation
+# without an override.
+#
+# The limits are deliberately generous for the warn-first stage: hosted-runner
+# P50 at repeats=5 scatters well under 1.5x on the same CPU model, so 2.5x
+# (3.0x for the JIT-warmed Julia tier) only fires on a sustained regression,
+# not scheduler noise. Tighten from verdict-artefact data collected during the
+# warn-first window before promoting the step to blocking — the promotion plan
+# lives in .github/workflows/benchmark-kuramoto-tiers.yml.
+
+[default]
+rust = 2.5
+julia = 3.0
+python = 2.5

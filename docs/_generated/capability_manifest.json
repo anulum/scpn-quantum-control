@@ -13,7 +13,7 @@
     "python_model_source_modules": 475,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 64,
-    "test_files": 840
+    "test_files": 841
   },
   "documentation": {
     "examples": [
@@ -6671,6 +6671,7 @@
       "tests/test_tensor_jump.py",
       "tests/test_tensor_jump_contracts.py",
       "tests/test_thermodynamic_witness.py",
+      "tests/test_tier_benchmark_regression_gate.py",
       "tests/test_topological_coupling_guard.py",
       "tests/test_topological_optimizer.py",
       "tests/test_topology_auth_edge.py",

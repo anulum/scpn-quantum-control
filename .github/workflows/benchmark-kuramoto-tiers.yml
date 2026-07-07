@@ -18,6 +18,15 @@
 # canonical number presented side by side with the committed *.local sibling by
 # tools/render_tier_benchmarks.py — it is not a published latency claim and does
 # not gate the build. workflow_dispatch regenerates it on demand.
+#
+# Regression alarm (warn-first): every run is compared against the committed
+# docs/benchmarks/tiers/kuramoto_tiers.ci.json by
+# tools/tier_benchmark_regression_gate.py under
+# benchmarks/tier_regression_thresholds.toml. The step runs --evidence-only
+# (annotations + verdict artefact, never failing) while threshold data
+# accumulates. Staged promotion to blocking: after one release cycle of runs
+# with zero false alarms, drop --evidence-only and re-baseline the committed
+# ci.json at the promotion commit — the same pattern as rust-benches.yml.
 
 name: Kuramoto Tier Benchmark
 
@@ -36,6 +45,9 @@ on:
       - "src/scpn_quantum_control/accel/tier_benchmark.py"
       - "src/scpn_quantum_control/accel/dispatcher.py"
       - "tools/render_tier_benchmarks.py"
+      - "tools/tier_benchmark_regression_gate.py"
+      - "benchmarks/tier_regression_thresholds.toml"
+      - "docs/benchmarks/tiers/kuramoto_tiers.ci.json"
       - ".github/workflows/benchmark-kuramoto-tiers.yml"
 
 permissions: {}
@@ -108,6 +120,16 @@ jobs:
             --ci artifacts/benchmarks/tiers/kuramoto_tiers.ci.json \
             --local docs/benchmarks/tiers/kuramoto_tiers.local.json \
             --output artifacts/benchmarks/tiers/tier_benchmarks_ci_preview.md
+
+      - name: Tier regression alarm (warn-first, evidence-only)
+        run: |
+          python tools/tier_benchmark_regression_gate.py \
+            --report artifacts/benchmarks/tiers/kuramoto_tiers.ci.json \
+            --baseline docs/benchmarks/tiers/kuramoto_tiers.ci.json \
+            --thresholds benchmarks/tier_regression_thresholds.toml \
+            --json-out artifacts/benchmarks/tiers/tier_regression_verdict.json \
+            --generated-utc "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            --evidence-only
 
       - name: Upload benchmark evidence
         if: always()
