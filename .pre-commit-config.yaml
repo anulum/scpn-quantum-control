@@ -52,6 +52,14 @@ repos:
         always_run: true
         pass_filenames: false
 
+      - id: main-branch-policy
+        name: main-branch-only Git policy
+        entry: python tools/enforce_main_branch_policy.py pre-push
+        language: python
+        always_run: true
+        pass_filenames: false
+        stages: [pre-push]
+
       - id: commit-trailers
         name: authorship line + anti-slop commit-message check
         entry: python tools/check_commit_trailers.py
