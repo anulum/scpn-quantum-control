@@ -60,14 +60,14 @@
     {
       "path": "data/differentiable_phase_qnode/differentiable_rust_python_inventory_20260620.json",
       "role": "Differentiable Rust/Python rustification surface inventory artefact",
-      "sha256": "adf6db1727c0a78065ff5c81e83c989b8e7eeec04ac7927bf1b13c11b11dae25",
-      "size_bytes": 30012
+      "sha256": "ee7c6935b990274ccf908288f9f04b1bddd9ab66eadb6bb264d3730dc4ad5b06",
+      "size_bytes": 31458
     },
     {
       "path": "data/differentiable_phase_qnode/differentiable_rust_python_inventory_20260620.md",
       "role": "Differentiable Rust/Python rustification surface inventory reviewer summary",
-      "sha256": "5c415d912ce80f2783fcf8969d140d039cc26fd6488a2cacdbf1213cf86ad522",
-      "size_bytes": 3502
+      "sha256": "b8a39f72630f00bc0d46a43ed16bacdda95b8a03e97993094bfec3ffaee1ee44",
+      "size_bytes": 3569
     },
     {
       "path": "data/differentiable_phase_qnode/differentiable_architecture_map_20260627.json",
