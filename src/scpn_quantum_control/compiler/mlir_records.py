@@ -39,6 +39,7 @@ class MLIRCompileConfig:
     include_metadata: bool = True
 
     def __post_init__(self) -> None:
+        """Validate public MLIR compile configuration fields."""
         if not np.isfinite(self.time) or self.time <= 0.0:
             raise ValueError("time must be finite and positive")
         if not isinstance(self.trotter_steps, int) or self.trotter_steps < 1:
@@ -47,6 +48,8 @@ class MLIRCompileConfig:
             raise ValueError("trotter_order must be 1 or 2")
         if not self.dialect or not self.dialect.replace("_", "").isalnum():
             raise ValueError("dialect must be a non-empty MLIR-safe identifier")
+        if not isinstance(self.include_metadata, bool):
+            raise ValueError("include_metadata must be a boolean")
 
 
 @dataclass(frozen=True)
@@ -60,13 +63,31 @@ class MLIRModule:
     metadata: Mapping[str, Any] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
+        """Validate module text provenance and freeze mapping fields."""
         if not self.text.strip():
             raise ValueError("text must be non-empty")
         expected = hashlib.sha256(self.text.encode("utf-8")).hexdigest()
         if self.sha256 != expected:
             raise ValueError("sha256 must match text")
-        object.__setattr__(self, "resource_counts", MappingProxyType(dict(self.resource_counts)))
-        object.__setattr__(self, "metadata", MappingProxyType(dict(self.metadata)))
+        if not self.dialect or not self.dialect.replace("_", "").isalnum():
+            raise ValueError("dialect must be a non-empty MLIR-safe identifier")
+        if not isinstance(self.resource_counts, Mapping):
+            raise ValueError("resource_counts must be a mapping")
+        resource_counts = dict(self.resource_counts)
+        if any(not isinstance(key, str) or not key for key in resource_counts):
+            raise ValueError("resource_counts keys must be non-empty strings")
+        if any(
+            not isinstance(value, int) or isinstance(value, bool) or value < 0
+            for value in resource_counts.values()
+        ):
+            raise ValueError("resource_counts values must be non-negative integers")
+        if not isinstance(self.metadata, Mapping):
+            raise ValueError("metadata must be a mapping")
+        metadata = dict(self.metadata)
+        if any(not isinstance(key, str) or not key for key in metadata):
+            raise ValueError("metadata keys must be non-empty strings")
+        object.__setattr__(self, "resource_counts", MappingProxyType(resource_counts))
+        object.__setattr__(self, "metadata", MappingProxyType(metadata))
 
 
 @dataclass(frozen=True)
@@ -97,6 +118,7 @@ class PrimitiveLoweringStatus:
     jit_lowering: str = "blocked: no JIT differentiable primitive backend"
 
     def __post_init__(self) -> None:
+        """Validate primitive lowering status and backend claim provenance."""
         if not isinstance(self.identity, PrimitiveIdentity):
             raise ValueError("identity must be a PrimitiveIdentity")
         if not self.rule_name:
@@ -259,8 +281,11 @@ class CompilerADTransformPlan:
     )
 
     def __post_init__(self) -> None:
+        """Validate transform-plan rows and claim-boundary metadata."""
         if not self.statuses:
             raise ValueError("compiler AD transform plan requires at least one primitive")
+        if any(not isinstance(status, PrimitiveLoweringStatus) for status in self.statuses):
+            raise ValueError("statuses must contain PrimitiveLoweringStatus rows")
         if not self.dialect or not self.dialect.replace("_", "").isalnum():
             raise ValueError("dialect must be a non-empty MLIR-safe identifier")
         if self.transform not in {"jvp", "vjp", "adjoint", "jvp_vjp_adjoint"}:
@@ -284,6 +309,7 @@ class DifferentiableMLIRCompileConfig:
     include_metadata: bool = True
 
     def __post_init__(self) -> None:
+        """Validate differentiable MLIR compile configuration fields."""
         if not self.dialect or not self.dialect.replace("_", "").isalnum():
             raise ValueError("dialect must be a non-empty MLIR-safe identifier")
         if self.target not in {"mlir"}:
@@ -309,6 +335,7 @@ class CompilerADExecutableConfig:
     )
 
     def __post_init__(self) -> None:
+        """Validate executable compiler-AD kernel configuration fields."""
         if self.backend not in {"mlir_runtime", "native_llvm_jit"}:
             raise ValueError("backend must be 'mlir_runtime' or 'native_llvm_jit'")
         if not np.isfinite(self.atol) or self.atol < 0.0:
@@ -333,6 +360,7 @@ class CompilerADKernelVerification:
     gradient_close: bool | None = None
 
     def __post_init__(self) -> None:
+        """Validate executable kernel verification evidence fields."""
         if not isinstance(self.value_close, bool):
             raise ValueError("value_close must be a boolean")
         if self.jvp_close is not None and not isinstance(self.jvp_close, bool):
@@ -343,8 +371,8 @@ class CompilerADKernelVerification:
             raise ValueError("gradient_close must be a boolean or None")
         if not np.isfinite(self.max_abs_error) or self.max_abs_error < 0.0:
             raise ValueError("max_abs_error must be finite and non-negative")
-        if self.samples < 1:
-            raise ValueError("samples must be positive")
+        if not isinstance(self.samples, int) or self.samples < 1:
+            raise ValueError("samples must be a positive integer")
 
     @property
     def passed(self) -> bool:

@@ -31,6 +31,9 @@ Full detailed changelog: [CHANGELOG.md](https://github.com/anulum/scpn-quantum-c
 - Removed obsolete Paper 0 artifact requirements from the package release
   readiness gate after Paper 0 was intentionally extracted from this repository
   into the GOTM root register.
+- Hardened MLIR compiler record validation so malformed transform-plan rows and
+  non-integer kernel-verification sample counts fail closed with typed
+  `ValueError` diagnostics.
 - Kept hardware, RNG, cryptographic, HLS, realtime, and benchmark wording bound
   to existing evidence classes rather than promoting new hardware or production
   cryptographic claims.
