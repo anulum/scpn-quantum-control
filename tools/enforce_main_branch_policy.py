@@ -216,7 +216,14 @@ def _current_ref_oid(ref: str) -> str | None:
 
 
 def install_reference_transaction_hook(repo_root: Path) -> Path:
-    """Install the local reference-transaction hook for ``repo_root``."""
+    """Install the local reference-transaction hook for ``repo_root``.
+
+    The shim resolves the policy script from the current worktree first and
+    falls back to the primary checkout (the parent of the common git
+    directory), because linked worktrees checked out at commits that predate
+    this script would otherwise fail every reference update with a missing
+    file instead of a policy verdict.
+    """
     hook_path = _git_path(repo_root, "hooks/reference-transaction")
     hook_path.parent.mkdir(parents=True, exist_ok=True)
     hook_path.write_text(
@@ -224,10 +231,19 @@ def install_reference_transaction_hook(repo_root: Path) -> Path:
             (
                 "#!/usr/bin/env sh",
                 "# Installed by tools/enforce_main_branch_policy.py",
-                'repo_root="$(git rev-parse --show-toplevel)" || exit 1',
                 'python_bin="${SCPN_QC_PYTHON:-python3}"',
-                'exec "$python_bin" "$repo_root/tools/enforce_main_branch_policy.py" '
-                'reference-transaction "$@"',
+                'repo_root="$(git rev-parse --show-toplevel)" || exit 1',
+                'script="$repo_root/tools/enforce_main_branch_policy.py"',
+                'if [ ! -f "$script" ]; then',
+                '    common_dir="$(git rev-parse --path-format=absolute --git-common-dir)" '
+                "|| exit 1",
+                '    script="$(dirname "$common_dir")/tools/enforce_main_branch_policy.py"',
+                "fi",
+                'if [ ! -f "$script" ]; then',
+                '    echo "enforce_main_branch_policy.py not found; skipping branch policy" >&2',
+                "    exit 0",
+                "fi",
+                'exec "$python_bin" "$script" reference-transaction "$@"',
                 "",
             )
         ),

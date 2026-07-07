@@ -9,6 +9,7 @@
 
 from __future__ import annotations
 
+import os
 import stat
 import subprocess
 from pathlib import Path
@@ -116,5 +117,63 @@ def test_install_writes_executable_reference_transaction_hook(tmp_path: Path) ->
     hook_path = install_reference_transaction_hook(tmp_path)
 
     assert hook_path == hooks_dir / "reference-transaction"
-    assert hook_path.read_text(encoding="utf-8").startswith("#!/usr/bin/env sh")
+    hook_text = hook_path.read_text(encoding="utf-8")
+    assert hook_text.startswith("#!/usr/bin/env sh")
+    assert "--git-common-dir" in hook_text
+    assert "skipping branch policy" in hook_text
     assert hook_path.stat().st_mode & stat.S_IXUSR
+
+
+def _run_git(*arguments: str, cwd: Path) -> subprocess.CompletedProcess[str]:
+    """Run one git command for the worktree-fallback hook tests."""
+    return subprocess.run(
+        ("git", *arguments),
+        cwd=cwd,
+        check=False,
+        capture_output=True,
+        text=True,
+        env={
+            **os.environ,
+            "GIT_AUTHOR_NAME": "policy-test",
+            "GIT_AUTHOR_EMAIL": "policy-test@example.invalid",
+            "GIT_COMMITTER_NAME": "policy-test",
+            "GIT_COMMITTER_EMAIL": "policy-test@example.invalid",
+        },
+    )
+
+
+def test_hook_falls_back_to_primary_checkout_for_treeless_worktrees(tmp_path: Path) -> None:
+    """Worktrees at commits without the script must still get a policy verdict."""
+    primary = tmp_path / "primary"
+    primary.mkdir()
+    assert _run_git("init", "--initial-branch=main", str(primary), cwd=tmp_path).returncode == 0
+
+    (primary / "seed.txt").write_text("seed\n", encoding="utf-8")
+    assert _run_git("add", "seed.txt", cwd=primary).returncode == 0
+    assert _run_git("commit", "-m", "seed without policy script", cwd=primary).returncode == 0
+
+    tools_dir = primary / "tools"
+    tools_dir.mkdir()
+    script_source = Path(__file__).resolve().parents[1] / "tools" / "enforce_main_branch_policy.py"
+    (tools_dir / "enforce_main_branch_policy.py").write_text(
+        script_source.read_text(encoding="utf-8"),
+        encoding="utf-8",
+    )
+    assert _run_git("add", "tools/enforce_main_branch_policy.py", cwd=primary).returncode == 0
+    assert _run_git("commit", "-m", "add policy script", cwd=primary).returncode == 0
+    install_reference_transaction_hook(primary)
+
+    seed_commit = _run_git("rev-parse", "HEAD~1", cwd=primary).stdout.strip()
+    worktree = tmp_path / "treeless-worktree"
+    added = _run_git("worktree", "add", "--detach", str(worktree), seed_commit, cwd=primary)
+    assert added.returncode == 0, added.stderr
+    assert not (worktree / "tools" / "enforce_main_branch_policy.py").exists()
+
+    (worktree / "change.txt").write_text("change\n", encoding="utf-8")
+    assert _run_git("add", "change.txt", cwd=worktree).returncode == 0
+    detached_commit = _run_git("commit", "-m", "detached commit under policy", cwd=worktree)
+    assert detached_commit.returncode == 0, detached_commit.stderr
+
+    branch_update = _run_git("branch", "forbidden-branch", cwd=worktree)
+    assert branch_update.returncode != 0
+    assert "branch policy violation" in (branch_update.stderr + branch_update.stdout)
