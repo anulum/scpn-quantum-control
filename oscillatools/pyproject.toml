@@ -58,6 +58,10 @@ dev = [
     "hypothesis>=6.155.2,<7.0",
     "mypy>=1.0,<3.0",
     "build>=1.0,<2.0",
+    # Test-only: exercises the networkx ground-truth + export paths of the
+    # coupling-matrix interop; the runtime ingestion stays duck-typed with no
+    # networkx dependency.
+    "networkx>=3.0,<4.0",
 ]
 docs = [
     "mkdocs>=1.6,<2.0",
@@ -142,6 +146,12 @@ ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
 module = "scipy.*"
+ignore_missing_imports = true
+
+# networkx ships no type stubs; the export path imports it lazily and the
+# ingestion never imports it at all (duck-typed soft dependency).
+[[tool.mypy.overrides]]
+module = "networkx.*"
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]

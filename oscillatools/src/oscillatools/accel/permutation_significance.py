@@ -81,7 +81,7 @@ class PermutationSignificanceResult:
 def _circular_shift(phases: NDArray[np.float64], rng: np.random.Generator) -> NDArray[np.float64]:
     """Roll each oscillator's phase series by an independent random lag (marginals + autocorr kept)."""
     length, count = phases.shape
-    lags = rng.integers(0, length, size=count)
+    lags = np.asarray(rng.integers(0, length, size=count), dtype=np.int64)
     columns = [np.roll(phases[:, index], int(lags[index])) for index in range(count)]
     return np.stack(columns, axis=1)
 
