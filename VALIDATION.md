@@ -3,9 +3,10 @@
 ## Test Suite
 
 Unit, integration, property-based, regression, claim-guard, and workflow-contract
-tests across 829 test files. CI runs the suite on Python 3.11–3.13 with
-Qiskit 2.2+ on every push; current file/module counts are generated into
-`docs/_generated/capability_snapshot.md` and the README capability snapshot.
+tests run as one CI-gated suite on Python 3.11–3.13 with Qiskit 2.2+ on every
+push. Current file/module counts are volatile and live only in the generated
+inventory: `docs/_generated/capability_snapshot.md` and the README capability
+snapshot.
 
 ```bash
 pytest tests/ -v

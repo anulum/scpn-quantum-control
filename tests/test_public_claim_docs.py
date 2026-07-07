@@ -67,20 +67,19 @@ def _python_floor() -> str:
     return match.group(1)
 
 
-def _snapshot_test_file_count() -> int:
-    """Return the test-file count from the generated capability snapshot.
+def _snapshot_reports_test_files() -> bool:
+    """Return whether the generated capability snapshot lists test files.
 
     Returns
     -------
-    int
-        The ``Python test files`` row value in
+    bool
+        ``True`` when the ``Python test files`` row exists in
         ``docs/_generated/capability_snapshot.md``.
     """
-    match = re.search(
-        r"\|\s*Python test files\s*\|\s*(\d+)\s*\|", _SNAPSHOT.read_text(encoding="utf-8")
+    return (
+        re.search(r"\|\s*Python test files\s*\|\s*\d+\s*\|", _SNAPSHOT.read_text(encoding="utf-8"))
+        is not None
     )
-    assert match is not None, "capability snapshot no longer reports Python test files"
-    return int(match.group(1))
 
 
 def test_claim_docs_carry_no_stale_quality_tokens() -> None:
@@ -109,12 +108,21 @@ def test_validation_quotes_the_declared_python_floor() -> None:
     )
 
 
-def test_validation_test_file_count_matches_generated_snapshot() -> None:
-    """VALIDATION.md's test-file count equals the generated inventory row."""
-    expected = _snapshot_test_file_count()
-    assert f"{expected} test files" in _VALIDATION.read_text(encoding="utf-8"), (
-        f"VALIDATION.md test-file count drifted from the generated snapshot ({expected})"
+def test_validation_embeds_no_volatile_test_file_count() -> None:
+    """VALIDATION.md defers volatile counts to the generated inventory.
+
+    Hand-written counts rot within hours here (829 drifted to 831 while this
+    guard was being written), so the volatile number may live only in the
+    generated snapshot, which VALIDATION.md must reference instead.
+    """
+    text = _VALIDATION.read_text(encoding="utf-8")
+    assert re.search(r"\d+ test files", text) is None, (
+        "VALIDATION.md hardcodes a test-file count; defer to the generated snapshot"
     )
+    assert "docs/_generated/capability_snapshot.md" in text, (
+        "VALIDATION.md must reference the generated capability snapshot"
+    )
+    assert _snapshot_reports_test_files(), "the generated snapshot lost its Python-test-files row"
 
 
 def test_results_summary_is_marked_as_historical_record() -> None:
