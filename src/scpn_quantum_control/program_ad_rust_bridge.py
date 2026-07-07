@@ -11,7 +11,8 @@ The functions in this module are the Python-facing boundary around optional
 PyO3 exports from ``scpn_quantum_engine``. They validate JSON payloads,
 normalise NumPy inputs, and preserve explicit claim boundaries for scalar,
 elementwise-array, structural-array, static-reduction, compact signal,
-compact interpolation, compact stencil, compact cumulative, fixed ``multi_dot`` linalg-array,
+compact interpolation, compact stencil, compact cumulative, static
+``matrix_power``, fixed ``multi_dot`` linalg-array,
 2x2 distinct symmetric ``eigvalsh``, 2x2 distinct symmetric ``eigh``
 eigenvalues/nonzero-offdiagonal eigenvectors, and 2x2 real-distinct
 ``eigvals`` replay, plus 2x2 distinct-positive ``svd(..., compute_uv=False)``
@@ -269,8 +270,8 @@ def value_and_grad_program_ad_effect_ir_with_rust(
     all-axis ``sum``/``mean``/``prod``/``var``/``std``/``max``/``min``/
     ``median`` plus compact static-grid ``trapezoid`` and scalar-``q``
     ``quantile``/``percentile`` objective closure.
-    Static linalg
-    replay remains scalar-SSA only. Aliases, mutation, non-lowered dynamic
+    Static linalg replay remains scalar-SSA only, including fixed integer
+    ``matrix_power`` output nodes. Aliases, mutation, non-lowered dynamic
     indexing semantics, dynamic axes, dynamic trapezoid-grid metadata, dynamic
     q/method metadata, dynamic ``ddof``/``correction`` metadata, zero-variance ``std`` gradients,
     dynamic structural operations,
@@ -364,7 +365,7 @@ def mirror_program_ad_registry_metadata_with_rust() -> RustProgramADRegistryMeta
     returns a typed fail-closed result. A supported result is metadata evidence
     only: it records registry shape, required facet counts, and overlap with
     the currently bounded Rust scalar/static-linalg, array, compact signal,
-    compact stencil, compact cumulative, static
+    compact stencil, compact cumulative, static ``matrix_power``, static
     ``multi_dot``, 2x2 distinct symmetric ``eigvalsh``, 2x2 distinct symmetric
     ``eigh`` eigenvalues/nonzero-offdiagonal eigenvectors, and 2x2
     real-distinct ``eigvals`` replay, plus 2x2 distinct-positive

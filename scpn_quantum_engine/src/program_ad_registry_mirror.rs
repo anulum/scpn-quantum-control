@@ -362,6 +362,7 @@ fn rust_supported_registry_primitives() -> HashSet<&'static str> {
         "gradient",
         "log",
         "log1p",
+        "matrix_power",
         "multi_dot",
         "multiply",
         "pinv",

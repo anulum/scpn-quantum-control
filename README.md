@@ -111,11 +111,11 @@ has a defined commercial licensing route.
 | Domain package families | 31 |
 | API documentation pages | 0 |
 | Rust PyO3 function bindings | 177 |
-| Rust source modules | 62 |
+| Rust source modules | 63 |
 | Notebook files | 100 |
 | Example files | 33 |
 | Optional extras | 43 |
-| Python test files | 833 |
+| Python test files | 834 |
 | Public documentation pages | 260 |
 | GitHub Actions workflows | 23 |
 
@@ -350,8 +350,8 @@ Rust polyglot parity includes a claim-bounded Program AD IR metadata parser in
 `program_ad_registry_metadata_mirror(...)` validates the Python registry
 coverage snapshot, returns deterministic family/facet counts, and records only
 the primitive-name overlap with the already bounded Rust scalar/static-linalg
-plus compact interpolation, compact signal, compact stencil, compact cumulative, elementwise/static-structural, fixed
-`multi_dot`, 2x2 distinct symmetric
+plus compact interpolation, compact signal, compact stencil, compact cumulative,
+elementwise/static-structural, static `matrix_power`, fixed `multi_dot`, 2x2 distinct symmetric
 `eigvalsh`, 2x2 distinct symmetric `eigh` eigenvalues/nonzero-offdiagonal
 eigenvectors, 2x2 real-distinct `eigvals`, and 2x2 distinct-positive
 `svd(..., compute_uv=False)` singular-value replay plus constant-full-rank
@@ -361,14 +361,15 @@ to opcode-bearing scalar, elementwise-array, static structural-array,
 static structural-assembly, static source-map indexing, compact interpolation,
 compact signal, compact stencil, compact cumulative, static product, corrected moment, strict order-statistic,
 and compact static-grid trapezoid
-reductions with `dx`/`x`/`xfull` metadata, plus fixed-signature
+reductions with `dx`/`x`/`xfull` metadata, plus static integer
+`np.linalg.matrix_power` output nodes, fixed-signature
 `np.linalg.multi_dot` matrix-chain output nodes, 2x2 distinct symmetric
 `np.linalg.eigvalsh` spectral output nodes, 2x2 distinct symmetric
 `np.linalg.eigh` eigenvalue and nonzero-offdiagonal eigenvector output nodes,
 2x2 real-distinct `np.linalg.eigvals` spectral output nodes, and 2x2
 distinct-positive `np.linalg.svd(..., compute_uv=False)` singular-value output
 nodes plus constant-full-rank rank-1/Nx2/2xN `np.linalg.pinv` output
-nodes, including executed runtime branch
+nodes and static on-diagonal `np.diagflat` construction nodes, including executed runtime branch
 metadata when matched by runtime phi provenance. It still fails closed on
 legacy opcode-free metadata, aliases, mutation, non-lowered dynamic indexing
 semantics, dynamic axes, dynamic trapezoid-grid metadata, dynamic q/method
