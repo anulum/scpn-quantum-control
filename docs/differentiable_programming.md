@@ -77,7 +77,7 @@ counts plus conservative primitive-name overlap with existing bounded Rust
 scalar/static-linalg plus compact interpolation, compact signal, compact stencil, compact cumulative, elementwise/static-structural, static `diag`/`diagflat`, static vector- and matrix-RHS `solve`, static `matrix_power`, fixed `multi_dot`,
 2x2 distinct symmetric `eigvalsh`, 2x2 distinct symmetric `eigh`
 eigenvalues/nonzero-offdiagonal eigenvectors, 2x2 real-distinct `eigvals`,
-2x2 distinct-positive `svd(..., compute_uv=False)` singular-value replay,
+static rank-2 distinct-positive `svd(..., compute_uv=False)` singular-value replay,
 constant-full-rank rank-1/Nx2/2xN `pinv` replay.
 Rust
 value+gradient replay executes opcode-bearing scalar, bounded elementwise
@@ -96,7 +96,7 @@ construction replay, static vector- and matrix-RHS `np.linalg.solve` output repl
 fixed-signature `np.linalg.multi_dot` output replay, bounded 2x2 distinct
 symmetric `np.linalg.eigvalsh` output replay, bounded 2x2 distinct symmetric
 `np.linalg.eigh` eigenvalue and nonzero-offdiagonal eigenvector replay,
-bounded 2x2 real-distinct `np.linalg.eigvals` output replay, bounded 2x2
+bounded 2x2 real-distinct `np.linalg.eigvals` output replay, bounded static rank-2
 distinct-positive `np.linalg.svd(..., compute_uv=False)` singular-value
 output replay, constant-full-rank rank-1/Nx2/2xN `np.linalg.pinv` output
 replay, static source-map
@@ -106,7 +106,7 @@ matched by runtime phi provenance. Legacy opcode-free metadata, unsafe aliases,
 mutation, non-lowered dynamic indexing semantics, dynamic axes, dynamic trapezoid-grid metadata, dynamic q/method
 metadata, dynamic ddof/correction metadata, zero-variance `std` gradients,
 remaining broad linalg/spectral adjoints beyond the bounded 2x2 `eigvalsh`,
-`eigh`, `eigvals`, static vector- and matrix-RHS `solve`, static integer `matrix_power`, SVD singular-value,
+`eigh`, `eigvals`, static vector- and matrix-RHS `solve`, static integer `matrix_power`, static rank-2 SVD singular-value,
 rank-1/Nx2/2xN `pinv`, `diag`, and on-diagonal `diagflat` boundaries,
 unsafe source-level aliases and non-executed branch semantics, general Program AD execution,
 LLVM/JIT lowering, hardware execution, provider execution, and performance

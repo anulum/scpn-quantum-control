@@ -115,7 +115,7 @@ has a defined commercial licensing route.
 | Notebook files | 100 |
 | Example files | 33 |
 | Optional extras | 43 |
-| Python test files | 836 |
+| Python test files | 837 |
 | Public documentation pages | 260 |
 | GitHub Actions workflows | 23 |
 
@@ -377,7 +377,7 @@ legacy opcode-free metadata, aliases, mutation, non-lowered dynamic indexing
 semantics, dynamic axes, dynamic trapezoid-grid metadata, dynamic q/method
 metadata, dynamic ddof/correction metadata, zero-variance `std` gradients,
 broad linalg/spectral array adjoints beyond the bounded 2x2 `eigvalsh`,
-`eigh`, `eigvals`, SVD singular-value, and rank-1/Nx2/2xN `pinv`
+`eigh`, and `eigvals`, static rank-2 SVD singular-value, and rank-1/Nx2/2xN `pinv`
 boundaries,
 source-level/non-executed branch
 semantics, general Program AD execution, LLVM/JIT execution, hardware,

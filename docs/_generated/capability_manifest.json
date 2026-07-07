@@ -13,7 +13,7 @@
     "python_model_source_modules": 474,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 64,
-    "test_files": 836
+    "test_files": 837
   },
   "documentation": {
     "examples": [
@@ -6449,6 +6449,7 @@
       "tests/test_program_ad_rust_linalg_diagflat_bridge.py",
       "tests/test_program_ad_rust_linalg_matrix_power_bridge.py",
       "tests/test_program_ad_rust_linalg_spectral_bridge.py",
+      "tests/test_program_ad_rust_linalg_svd_bridge.py",
       "tests/test_program_ad_rust_signal_bridge.py",
       "tests/test_program_ad_selection_direct_rules.py",
       "tests/test_program_ad_selection_folds.py",

@@ -406,8 +406,8 @@ fn rust_program_ad_rejects_repeated_2x2_svdvals_gradient() {
 }
 
 #[test]
-fn rust_program_ad_rejects_non_2x2_svdvals_metadata() {
-    let ir = single_eigenvalue_ir("linalg:svdvals:3x3:0");
+fn rust_program_ad_rejects_malformed_svdvals_metadata() {
+    let ir = single_eigenvalue_ir("linalg:svdvals:3x3");
     let result = interpret_program_ad_effect_ir_value_and_gradient(&ir, &[2.0, 0.3, -0.2, 1.1])
         .expect("valid IR shape should parse");
 
