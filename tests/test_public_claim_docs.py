@@ -125,6 +125,23 @@ def test_validation_embeds_no_volatile_test_file_count() -> None:
     assert _snapshot_reports_test_files(), "the generated snapshot lost its Python-test-files row"
 
 
+def test_readme_external_speedups_carry_provenance_qualifier() -> None:
+    """README external speedup ratios stay bound to their provenance caveat.
+
+    The 1,665x / 44x pulse-shaping figures are v0.9.5-era workstation
+    measurements documented on an external page; they may appear only inside
+    a sentence that says so, until a committed benchmark artefact reproduces
+    them.
+    """
+    readme = (_REPO_ROOT / "README.md").read_text(encoding="utf-8")
+    for ratio in ("1,665×", "44×"):
+        for match in re.finditer(re.escape(ratio), readme):
+            window = readme[max(0, match.start() - 300) : match.end() + 300]
+            assert "v0.9.5-era workstation measurements" in window, (
+                f"README quotes {ratio} without its provenance qualifier"
+            )
+
+
 def test_results_summary_is_marked_as_historical_record() -> None:
     """RESULTS_SUMMARY.md frames its campaign-era numbers as historical."""
     text = _RESULTS.read_text(encoding="utf-8")

@@ -461,8 +461,9 @@ Direct entry points:
   — $\mathfrak{su}(2^{n-1}) \oplus \mathfrak{su}(2^{n-1})$
   decomposition and hardware reproduction path
 - [Method: Pulse Shaping](https://anulum.li/scpn-quantum-control/method-pulse-shaping.html)
-  — ICI three-level (1,665× Rust) and (α, β)-hypergeometric
-  (44× Rust)
+  — ICI three-level and (α, β)-hypergeometric Rust fast paths (the 1,665× and
+  44× figures on the linked page are v0.9.5-era workstation measurements, not
+  reproduced by a committed benchmark artefact)
 - [The Science](https://anulum.li/scpn-quantum-control/science.html)
   — plain-language primer on SCPN, Kuramoto-XY, and why the DLA
   parity result matters
