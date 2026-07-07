@@ -62,6 +62,10 @@ COPY results/ results/
 COPY data/ data/
 COPY figures/ figures/
 COPY scripts/ scripts/
+# `benchmarks/` holds the committed regression baselines + threshold policies
+# that the tier-benchmark and native-speedup gate guards read live-tree
+# (tests/test_tier_benchmark_regression_gate.py fails closed without them).
+COPY benchmarks/ benchmarks/
 
 RUN mkdir -p /home/sqc/.cache/pytest /home/sqc/.config/matplotlib \
     && chown -R sqc:sqc /home/sqc/.cache /home/sqc/.config

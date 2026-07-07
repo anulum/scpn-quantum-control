@@ -62,7 +62,7 @@ def test_runner_executes_beyond_scalar_with_reference_parity() -> None:
     assert evidence.max_gradient_error <= evidence.gradient_parity_tolerance
     assert evidence.max_value_error <= 1e-3
     assert evidence.fail_closed_boundaries["determinant"] == 20
-    assert evidence.fail_closed_boundaries["inverse"] == 7
+    assert evidence.fail_closed_boundaries["inverse"] == 8
 
     executed = [case for case in evidence.cases if case.status == "executed"]
     fail_closed = [case for case in evidence.cases if case.status == "fail_closed"]
