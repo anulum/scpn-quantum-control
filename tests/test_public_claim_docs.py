@@ -176,3 +176,46 @@ def test_results_summary_is_marked_as_historical_record() -> None:
     assert re.search(r"^\*\*Version:\*\* \d", text, flags=re.MULTILINE) is None, (
         "RESULTS_SUMMARY.md reintroduced a bare current-version header"
     )
+
+
+# CEO directive 2026-07-07 (BROADCAST_2026-07-07_no_superlatives_outward): outward
+# surfaces carry no self-applied superlatives — they are internal quality targets.
+# Tokens here are the unambiguous marketing tier; factual baseline comparisons
+# ("not yet state-of-the-art", scorecards) do not use these words.
+_BOAST_TOKENS = (
+    "world-class",
+    "world class",
+    "best-in-class",
+    "best in class",
+    "category of one",
+    "cutting-edge",
+    "cutting edge",
+    "unrivalled",
+    "unrivaled",
+    "revolutionary",
+    "groundbreaking",
+)
+
+
+def _public_markdown_surfaces() -> list[Path]:
+    """Every hand-written or generated public Markdown page.
+
+    Root-level ``*.md`` plus ``docs/**/*.md`` outside ``docs/internal`` — the
+    same outward boundary the rendered-docs header guard uses.
+    """
+    docs = [path for path in (_REPO_ROOT / "docs").rglob("*.md") if "internal" not in path.parts]
+    return sorted(docs) + sorted(_REPO_ROOT.glob("*.md"))
+
+
+def test_public_markdown_carries_no_self_applied_superlatives() -> None:
+    """No outward Markdown page uses marketing superlatives about this project."""
+    offenders: list[str] = []
+    for path in _public_markdown_surfaces():
+        text = path.read_text(encoding="utf-8").lower()
+        for token in _BOAST_TOKENS:
+            if token in text:
+                offenders.append(f"{path.relative_to(_REPO_ROOT)}: {token!r}")
+    assert not offenders, (
+        "self-applied superlatives are internal quality targets, not public "
+        f"claims (BROADCAST_2026-07-07): {offenders}"
+    )
