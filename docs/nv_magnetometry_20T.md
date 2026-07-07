@@ -12,6 +12,11 @@ regime where the electron Zeeman term dominates the zero-field splitting.
 Hardware calibration against a NIST-traceable reference is a separate,
 hardware-gated workstream (`MIF_NV_HARDWARE_CI=1`).
 
+Scope: this is the package's **single implemented sensing modality**. The
+complementary QFI-criticality readiness surface (`docs/quantum_sensing.md`)
+estimates coupling-parameter sensitivity of the synchronisation ground state;
+no further sensing modalities are implemented or claimed.
+
 ## Spin Hamiltonian
 
 `H = D (Sz² - 2/3) + E (Sx² - Sy²) + gamma_e B·S`, with `D = 2.870 GHz`,
