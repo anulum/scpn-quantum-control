@@ -19,8 +19,10 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 COPY .pre-commit-config.yaml pyproject.toml mkdocs.yml requirements.txt requirements-dev.txt README.md LICENSE ./
-# The changelog and public-claim consistency guards read these root documents.
-COPY CHANGELOG.md VALIDATION.md RESULTS_SUMMARY.md CAPABILITIES_AND_USECASES.md ./
+# The changelog, public-claim, and rendered-docs-header guards read these
+# root documents.
+COPY CHANGELOG.md VALIDATION.md RESULTS_SUMMARY.md CAPABILITIES_AND_USECASES.md REUSE.toml ./
+COPY ARCHITECTURE.md DEPRECATIONS.md CONTRIBUTORS.md GOVERNANCE.md NOTICE.md SUPPORT.md ./
 COPY requirements-ci-cross-platform-smoke.txt requirements-ci-py311-linux.txt requirements-ci-py312-linux.txt requirements-ci-py313-linux.txt requirements-ci-studio-platform.txt ./
 COPY src/ src/
 COPY oscillatools/src/ oscillatools/src/
