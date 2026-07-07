@@ -63,6 +63,69 @@ def _multi_dot_sample() -> NDArray[np.float64]:
     )
 
 
+def _solve_matrix_rhs_sample() -> NDArray[np.float64]:
+    """Return a nonsingular matrix-RHS solve sample for Rust replay tests."""
+
+    return np.array(
+        [
+            4.0,
+            0.5,
+            -0.25,
+            0.2,
+            3.5,
+            0.75,
+            -0.1,
+            0.4,
+            2.8,
+            1.0,
+            -0.5,
+            0.25,
+            2.0,
+            -1.0,
+            0.3,
+            1.5,
+            -0.75,
+            0.5,
+            2.25,
+            -1.2,
+            0.4,
+            1.75,
+            -0.6,
+            0.8,
+        ],
+        dtype=np.float64,
+    )
+
+
+def _solve_matrix_rhs_weights() -> NDArray[np.float64]:
+    """Return deterministic cotangent weights for a 3x5 solve output."""
+
+    return np.array(
+        [
+            [0.2, -0.7, 1.1, 0.4, -0.3],
+            [0.5, 0.9, -0.2, 1.3, -0.8],
+            [-1.0, 0.6, 0.75, -0.45, 0.95],
+        ],
+        dtype=np.float64,
+    )
+
+
+def _solve_matrix_rhs_weighted_objective(values: Any) -> Any:
+    """Return a scalar objective over a static matrix-RHS linear solve."""
+
+    matrix = np.reshape(values[:9], (3, 3))
+    rhs = np.reshape(values[9:], (3, 5))
+    return np.sum(np.linalg.solve(matrix, rhs) * _solve_matrix_rhs_weights())
+
+
+def _solve_matrix_rhs_indexed_objective(values: Any) -> Any:
+    """Return one raw matrix-RHS solve element to exercise fail-closed replay."""
+
+    matrix = np.reshape(values[:9], (3, 3))
+    rhs = np.reshape(values[9:], (3, 5))
+    return np.linalg.solve(matrix, rhs)[0, 4]
+
+
 def test_rust_bridge_replays_program_ad_multi_dot_array_nodes() -> None:
     """The PyO3 bridge should replay compact multi_dot array nodes end to end."""
 
@@ -89,3 +152,46 @@ def test_rust_bridge_replays_program_ad_multi_dot_array_nodes() -> None:
     np.testing.assert_allclose(np.asarray(rust.gradient), reference, rtol=1.0e-12, atol=1.0e-12)
     assert "static_linalg_primitives" in rust.claim_boundary
     assert "value_and_gradient" in rust.claim_boundary
+
+
+def test_rust_bridge_replays_program_ad_solve_matrix_rhs_nodes() -> None:
+    """The PyO3 bridge should replay compact matrix-RHS solve nodes end to end."""
+
+    pytest.importorskip("scpn_quantum_engine")
+
+    sample = _solve_matrix_rhs_sample()
+    result = whole_program_value_and_grad(
+        _solve_matrix_rhs_weighted_objective,
+        sample,
+        parameters=tuple(Parameter(f"s{index}") for index in range(sample.size)),
+    )
+    assert result.program_ir is not None
+    solve_nodes = [node.op for node in result.ir_nodes if node.op.startswith("linalg:solve:")]
+    assert len(solve_nodes) == 15
+    assert solve_nodes[0] == "linalg:solve:3x3:rhs:3x5:0:0"
+    assert solve_nodes[-1] == "linalg:solve:3x3:rhs:3x5:2:4"
+
+    rust = value_and_grad_program_ad_effect_ir_with_rust(result.program_ir, sample)
+    assert rust.supported is True, rust.blocked_reasons
+    _, reference = program_adjoint_value_and_grad(_solve_matrix_rhs_weighted_objective, sample)
+    np.testing.assert_allclose(np.asarray(rust.gradient), reference, rtol=1.0e-12, atol=1.0e-12)
+    assert "static_linalg_primitives" in rust.claim_boundary
+    assert "value_and_gradient" in rust.claim_boundary
+
+
+def test_rust_bridge_fails_closed_on_indexed_solve_matrix_rhs_node() -> None:
+    """The bridge should reject bare indexed matrix-RHS solve elements."""
+
+    pytest.importorskip("scpn_quantum_engine")
+
+    sample = _solve_matrix_rhs_sample()
+    result = whole_program_value_and_grad(
+        _solve_matrix_rhs_indexed_objective,
+        sample,
+        parameters=tuple(Parameter(f"s{index}") for index in range(sample.size)),
+    )
+    assert result.program_ir is not None
+
+    rust = value_and_grad_program_ad_effect_ir_with_rust(result.program_ir, sample)
+    assert rust.supported is False
+    assert any("indexed multi-output linalg" in reason for reason in rust.blocked_reasons)

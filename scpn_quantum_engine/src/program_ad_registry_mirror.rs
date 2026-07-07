@@ -371,6 +371,7 @@ fn rust_supported_registry_primitives() -> HashSet<&'static str> {
         "power",
         "reciprocal",
         "sin",
+        "solve",
         "sqrt",
         "subtract",
         "svd",

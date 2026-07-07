@@ -13,7 +13,7 @@ normalise NumPy inputs, and preserve explicit claim boundaries for scalar,
 elementwise-array, structural-array, static-reduction, compact signal,
 compact interpolation, compact stencil, compact cumulative, static
 ``diag`` gather/scatter, static ``diagflat`` construction, static
-``matrix_power``, fixed ``multi_dot`` linalg-array,
+vector- and matrix-RHS ``solve``, ``matrix_power``, fixed ``multi_dot`` linalg-array,
 2x2 distinct symmetric ``eigvalsh``, 2x2 distinct symmetric ``eigh``
 eigenvalues/nonzero-offdiagonal eigenvectors, and 2x2 real-distinct
 ``eigvals`` replay, plus 2x2 distinct-positive ``svd(..., compute_uv=False)``

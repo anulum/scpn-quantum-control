@@ -659,6 +659,20 @@ struct ScalarParameterTarget {
     flat_index: usize,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+struct SolveOutput {
+    n: usize,
+    rhs_columns: usize,
+    row: usize,
+    column: usize,
+}
+
+impl SolveOutput {
+    fn rhs_size(self) -> usize {
+        self.n * self.rhs_columns
+    }
+}
+
 impl ProgramADNumericValue {
     fn scalar(value: f64) -> Self {
         Self {
@@ -1147,14 +1161,14 @@ fn accumulate_reverse_effect(
         }
         name if name.starts_with("linalg:solve:") => {
             let cotangent_scalar = cotangent.scalar_value()?;
-            // x = A^{-1} b: dx_i/db_j = (A^{-1})_{ij}; dx_i/dA_{kl} = -(A^{-1})_{ik} x_l.
-            let (n, row) = parse_solve_index(name)
+            // X = A^{-1} B: dB = A^{-T}G and dA = -(A^{-T}G)X^T.
+            let output = parse_solve_output(name)
                 .ok_or_else(|| format!("effect {} {name} has no solution index", effect.index))?;
-            if effect.inputs.len() != n * n + n {
+            let expected_inputs = output.n * output.n + output.rhs_size();
+            if effect.inputs.len() != expected_inputs {
                 return Err(format!(
                     "effect {} {name} requires {} operands",
-                    effect.index,
-                    n * n + n
+                    effect.index, expected_inputs
                 ));
             }
             let operands = effect
@@ -1162,23 +1176,39 @@ fn accumulate_reverse_effect(
                 .iter()
                 .map(|input| operand_scalar_value(input, values))
                 .collect::<Result<Vec<f64>, String>>()?;
-            let m = invert_square(&operands[..n * n], n)?;
-            let rhs = &operands[n * n..];
-            let x: Vec<f64> = (0..n)
-                .map(|i| (0..n).map(|j| m[i * n + j] * rhs[j]).sum())
-                .collect();
-            for j in 0..n {
+            let inverse = invert_square(&operands[..output.n * output.n], output.n)?;
+            let rhs = &operands[output.n * output.n..];
+            let mut solution = vec![0.0; output.rhs_size()];
+            for solution_row in 0..output.n {
+                for solution_column in 0..output.rhs_columns {
+                    solution[solution_row * output.rhs_columns + solution_column] = (0..output.n)
+                        .map(|j| {
+                            inverse[solution_row * output.n + j]
+                                * rhs[j * output.rhs_columns + solution_column]
+                        })
+                        .sum();
+                }
+            }
+            for j in 0..output.n {
+                let rhs_input = output.n * output.n + j * output.rhs_columns + output.column;
                 add_scalar_adjoint(
-                    &effect.inputs[n * n + j],
-                    cotangent_scalar * m[row * n + j],
+                    &effect.inputs[rhs_input],
+                    cotangent_scalar * inverse[output.row * output.n + j],
                     values,
                     adjoints,
                 )?;
             }
-            for k in 0..n {
-                for (l, x_l) in x.iter().enumerate().take(n) {
-                    let contribution = cotangent_scalar * (-m[row * n + k] * *x_l);
-                    add_scalar_adjoint(&effect.inputs[k * n + l], contribution, values, adjoints)?;
+            for k in 0..output.n {
+                for l in 0..output.n {
+                    let contribution = cotangent_scalar
+                        * (-inverse[output.row * output.n + k]
+                            * solution[l * output.rhs_columns + output.column]);
+                    add_scalar_adjoint(
+                        &effect.inputs[k * output.n + l],
+                        contribution,
+                        values,
+                        adjoints,
+                    )?;
                 }
             }
             Ok(())
@@ -3523,14 +3553,14 @@ fn evaluate_effect(
             Ok(invert_square(&matrix, n)?[row * n + column])
         }
         name if name.starts_with("linalg:solve:") => {
-            // Each opcode emits one component i of x = A^{-1} b.
-            let (n, row) = parse_solve_index(name)
+            // Each opcode emits one component of X = A^{-1} B.
+            let output = parse_solve_output(name)
                 .ok_or_else(|| format!("effect {} {name} has no solution index", effect.index))?;
-            if effect.inputs.len() != n * n + n {
+            let expected_inputs = output.n * output.n + output.rhs_size();
+            if effect.inputs.len() != expected_inputs {
                 return Err(format!(
                     "effect {} {name} requires {} operands",
-                    effect.index,
-                    n * n + n
+                    effect.index, expected_inputs
                 ));
             }
             let operands = effect
@@ -3538,9 +3568,13 @@ fn evaluate_effect(
                 .iter()
                 .map(|input| operand_value(input, values))
                 .collect::<Result<Vec<f64>, String>>()?;
-            let inverse = invert_square(&operands[..n * n], n)?;
-            let rhs = &operands[n * n..];
-            Ok((0..n).map(|j| inverse[row * n + j] * rhs[j]).sum())
+            let inverse = invert_square(&operands[..output.n * output.n], output.n)?;
+            let rhs = &operands[output.n * output.n..];
+            Ok((0..output.n)
+                .map(|j| {
+                    inverse[output.row * output.n + j] * rhs[j * output.rhs_columns + output.column]
+                })
+                .sum())
         }
         _ => Err(format!(
             "effect {} operation {operation} is outside the bounded Rust scalar interpreter",
@@ -3943,15 +3977,39 @@ fn parse_inv_index(operation: &str) -> Option<(usize, usize, usize)> {
     (row < n && column < n).then_some((n, row, column))
 }
 
-/// Parse `(n, component)` from a `linalg:solve:NxN:rhs:<m>:I` opcode.
-fn parse_solve_index(operation: &str) -> Option<(usize, usize)> {
+/// Parse selected output metadata from a `linalg:solve:NxN:rhs:<shape>:...` opcode.
+fn parse_solve_output(operation: &str) -> Option<SolveOutput> {
     let parts: Vec<&str> = operation.split(':').collect();
-    if parts.len() != 6 {
+    if parts.len() != 6 && parts.len() != 7 {
+        return None;
+    }
+    if parts[0] != "linalg" || parts[1] != "solve" || parts[3] != "rhs" {
         return None;
     }
     let n = parse_square_dim(parts[2])?;
-    let component: usize = parts[5].parse().ok()?;
-    (component < n).then_some((n, component))
+    let row: usize = parts[5].parse().ok()?;
+    if row >= n {
+        return None;
+    }
+    if parts.len() == 6 {
+        let rhs_rows: usize = parts[4].parse().ok()?;
+        return (rhs_rows == n).then_some(SolveOutput {
+            n,
+            rhs_columns: 1,
+            row,
+            column: 0,
+        });
+    }
+    let (rhs_rows, rhs_columns) = parts[4].split_once('x')?;
+    let rhs_rows: usize = rhs_rows.parse().ok()?;
+    let rhs_columns: usize = rhs_columns.parse().ok()?;
+    let column: usize = parts[6].parse().ok()?;
+    (rhs_rows == n && rhs_columns > 0 && column < rhs_columns).then_some(SolveOutput {
+        n,
+        rhs_columns,
+        row,
+        column,
+    })
 }
 
 fn require_non_empty(value: &str, name: &str) -> Result<(), String> {
