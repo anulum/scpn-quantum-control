@@ -307,6 +307,11 @@ from .kuramoto_network_control import (
     network_control_value_and_grad,
     optimise_network_control,
 )
+from .kuramoto_networkx_interop import (
+    GraphLike,
+    coupling_from_networkx,
+    graph_from_networked_coupling,
+)
 from .kuramoto_noisy import (
     NoisyKuramotoRun,
     StochasticForce,
@@ -985,6 +990,9 @@ __all__ = [
     "networked_kuramoto_jacobian",
     "last_networked_kuramoto_force_tier_used",
     "last_networked_kuramoto_jacobian_tier_used",
+    "GraphLike",
+    "coupling_from_networkx",
+    "graph_from_networked_coupling",
     "networked_delayed_trajectory",
     "last_networked_delayed_trajectory_tier_used",
     "networked_inertial_trajectory",
