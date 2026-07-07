@@ -683,6 +683,7 @@ def test_rust_program_ad_registry_metadata_mirror_validates_python_registry() ->
         "multi_dot",
         "pinv",
         "solve",
+        "eig",
         "eigh",
         "eigvals",
         "eigvalsh",

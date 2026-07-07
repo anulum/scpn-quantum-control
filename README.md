@@ -115,7 +115,7 @@ has a defined commercial licensing route.
 | Notebook files | 100 |
 | Example files | 33 |
 | Optional extras | 43 |
-| Python test files | 837 |
+| Python test files | 838 |
 | Public documentation pages | 260 |
 | GitHub Actions workflows | 23 |
 
@@ -354,7 +354,8 @@ plus compact interpolation, compact signal, compact stencil, compact cumulative,
 elementwise/static-structural, static `diag`/`diagflat`, static `matrix_power`,
 fixed `multi_dot`, 2x2 distinct symmetric
 `eigvalsh`, 2x2 distinct symmetric `eigh` eigenvalues/nonzero-offdiagonal
-eigenvectors, 2x2 real-distinct `eigvals`, and 2x2 distinct-positive
+eigenvectors, 2x2 real-distinct `eigvals`, 2x2 real-simple `eig`
+eigenvalue/eigenvector replay, and 2x2 distinct-positive
 `svd(..., compute_uv=False)` singular-value replay plus constant-full-rank
 rank-1/Nx2/2xN `pinv` replay. Metadata summaries validate
 `program_ad_effect_ir.v1` evidence only; Rust value+gradient replay is bounded
@@ -368,7 +369,8 @@ nodes, static integer `np.linalg.matrix_power` output nodes, fixed-signature
 `np.linalg.multi_dot` matrix-chain output nodes, 2x2 distinct symmetric
 `np.linalg.eigvalsh` spectral output nodes, 2x2 distinct symmetric
 `np.linalg.eigh` eigenvalue and nonzero-offdiagonal eigenvector output nodes,
-2x2 real-distinct `np.linalg.eigvals` spectral output nodes, and 2x2
+2x2 real-distinct `np.linalg.eigvals` spectral output nodes, 2x2 real-simple
+`np.linalg.eig` eigenvalue/eigenvector output nodes, and 2x2
 distinct-positive `np.linalg.svd(..., compute_uv=False)` singular-value output
 nodes plus constant-full-rank rank-1/Nx2/2xN `np.linalg.pinv` output
 nodes, including executed runtime branch
@@ -377,7 +379,7 @@ legacy opcode-free metadata, aliases, mutation, non-lowered dynamic indexing
 semantics, dynamic axes, dynamic trapezoid-grid metadata, dynamic q/method
 metadata, dynamic ddof/correction metadata, zero-variance `std` gradients,
 broad linalg/spectral array adjoints beyond the bounded 2x2 `eigvalsh`,
-`eigh`, and `eigvals`, static rank-2 SVD singular-value, and rank-1/Nx2/2xN `pinv`
+`eigh`, `eigvals`, and real-simple `eig`, static rank-2 SVD singular-value, and rank-1/Nx2/2xN `pinv`
 boundaries,
 source-level/non-executed branch
 semantics, general Program AD execution, LLVM/JIT execution, hardware,

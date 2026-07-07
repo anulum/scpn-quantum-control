@@ -43,8 +43,9 @@ use crate::program_ad_linalg_matrix_power::{
 };
 use crate::program_ad_linalg_pinv::{is_pinv_operation, pinv_output_cotangent, pinv_output_value};
 use crate::program_ad_linalg_spectral::{
-    eigh_output_cotangent, eigh_output_value, eigvals_output_cotangent, eigvals_output_value,
-    eigvalsh_output_cotangent, eigvalsh_output_value, is_eigh_operation, is_eigvals_operation,
+    eig_output_cotangent, eig_output_value, eigh_output_cotangent, eigh_output_value,
+    eigvals_output_cotangent, eigvals_output_value, eigvalsh_output_cotangent,
+    eigvalsh_output_value, is_eig_operation, is_eigh_operation, is_eigvals_operation,
     is_eigvalsh_operation,
 };
 use crate::program_ad_linalg_svd::{
@@ -1032,6 +1033,9 @@ fn accumulate_reverse_effect(
         name if is_eigvals_operation(name) => {
             accumulate_eigvals(effect, name, values, adjoints, &cotangent)
         }
+        name if is_eig_operation(name) => {
+            accumulate_eig(effect, name, values, adjoints, &cotangent)
+        }
         name if is_eigh_operation(name) => {
             accumulate_eigh(effect, name, values, adjoints, &cotangent)
         }
@@ -1319,6 +1323,27 @@ fn accumulate_eigvals(
         .collect::<Result<Vec<f64>, String>>()?;
     let contributions =
         eigvals_output_cotangent(effect.index, operation, &input_values, cotangent_scalar)?;
+    for (input, contribution) in effect.inputs.iter().zip(contributions.iter()) {
+        add_scalar_adjoint(input, *contribution, values, adjoints)?;
+    }
+    Ok(())
+}
+
+fn accumulate_eig(
+    effect: &ProgramADEffect,
+    operation: &str,
+    values: &HashMap<String, ProgramADNumericValue>,
+    adjoints: &mut HashMap<String, ProgramADNumericValue>,
+    cotangent: &ProgramADNumericValue,
+) -> Result<(), String> {
+    let cotangent_scalar = cotangent.scalar_value()?;
+    let input_values = effect
+        .inputs
+        .iter()
+        .map(|input| operand_scalar_value(input, values))
+        .collect::<Result<Vec<f64>, String>>()?;
+    let contributions =
+        eig_output_cotangent(effect.index, operation, &input_values, cotangent_scalar)?;
     for (input, contribution) in effect.inputs.iter().zip(contributions.iter()) {
         add_scalar_adjoint(input, *contribution, values, adjoints)?;
     }
@@ -2083,6 +2108,7 @@ fn evaluate_numeric_effect(
         name if is_matrix_power_operation(name) => numeric_matrix_power(effect, name, values),
         name if is_eigvalsh_operation(name) => numeric_eigvalsh(effect, name, values),
         name if is_eigvals_operation(name) => numeric_eigvals(effect, name, values),
+        name if is_eig_operation(name) => numeric_eig(effect, name, values),
         name if is_eigh_operation(name) => numeric_eigh(effect, name, values),
         name if is_svdvals_operation(name) => numeric_svdvals(effect, name, values),
         name if is_pinv_operation(name) => numeric_pinv(effect, name, values),
@@ -2260,6 +2286,19 @@ fn numeric_eigvals(
         .map(|input| operand_scalar_value(input, values))
         .collect::<Result<Vec<f64>, String>>()?;
     eigvals_output_value(effect.index, operation, &input_values).map(ProgramADNumericValue::scalar)
+}
+
+fn numeric_eig(
+    effect: &ProgramADEffect,
+    operation: &str,
+    values: &HashMap<String, ProgramADNumericValue>,
+) -> Result<ProgramADNumericValue, String> {
+    let input_values = effect
+        .inputs
+        .iter()
+        .map(|input| operand_scalar_value(input, values))
+        .collect::<Result<Vec<f64>, String>>()?;
+    eig_output_value(effect.index, operation, &input_values).map(ProgramADNumericValue::scalar)
 }
 
 fn numeric_eigh(
@@ -3437,6 +3476,14 @@ fn evaluate_effect(
                 .map(|input| operand_value(input, values))
                 .collect::<Result<Vec<f64>, String>>()?;
             eigvals_output_value(effect.index, name, &input_values)
+        }
+        name if is_eig_operation(name) => {
+            let input_values = effect
+                .inputs
+                .iter()
+                .map(|input| operand_value(input, values))
+                .collect::<Result<Vec<f64>, String>>()?;
+            eig_output_value(effect.index, name, &input_values)
         }
         name if is_eigh_operation(name) => {
             let input_values = effect

@@ -74,6 +74,63 @@ fn eigvals_spectral_ir() -> String {
     .to_owned()
 }
 
+fn eig_spectral_ir() -> String {
+    r#"{
+        "format": "program_ad_effect_ir.v1",
+        "ssa_values": [
+            {"name": "%0", "producer": 0, "version": 0, "shape": [], "dtype": "float64", "effect": 0},
+            {"name": "%1", "producer": 1, "version": 0, "shape": [], "dtype": "float64", "effect": 1},
+            {"name": "%2", "producer": 2, "version": 0, "shape": [], "dtype": "float64", "effect": 2},
+            {"name": "%3", "producer": 3, "version": 0, "shape": [], "dtype": "float64", "effect": 3},
+            {"name": "%4", "producer": 4, "version": 0, "shape": [], "dtype": "float64", "effect": 4},
+            {"name": "%5", "producer": 5, "version": 0, "shape": [], "dtype": "float64", "effect": 5},
+            {"name": "%6", "producer": 6, "version": 0, "shape": [], "dtype": "float64", "effect": 6},
+            {"name": "%7", "producer": 7, "version": 0, "shape": [], "dtype": "float64", "effect": 7},
+            {"name": "%8", "producer": 8, "version": 0, "shape": [], "dtype": "float64", "effect": 8},
+            {"name": "%9", "producer": 9, "version": 0, "shape": [], "dtype": "float64", "effect": 9},
+            {"name": "%10", "producer": 10, "version": 0, "shape": [], "dtype": "float64", "effect": 10},
+            {"name": "%11", "producer": 11, "version": 0, "shape": [], "dtype": "float64", "effect": 11},
+            {"name": "%12", "producer": 12, "version": 0, "shape": [], "dtype": "float64", "effect": 12},
+            {"name": "%13", "producer": 13, "version": 0, "shape": [], "dtype": "float64", "effect": 13},
+            {"name": "%14", "producer": 14, "version": 0, "shape": [], "dtype": "float64", "effect": 14},
+            {"name": "%15", "producer": 15, "version": 0, "shape": [], "dtype": "float64", "effect": 15},
+            {"name": "%16", "producer": 16, "version": 0, "shape": [], "dtype": "float64", "effect": 16},
+            {"name": "%17", "producer": 17, "version": 0, "shape": [], "dtype": "float64", "effect": 17},
+            {"name": "%18", "producer": 18, "version": 0, "shape": [], "dtype": "float64", "effect": 18},
+            {"name": "%19", "producer": 19, "version": 0, "shape": [], "dtype": "float64", "effect": 19},
+            {"name": "%20", "producer": 20, "version": 0, "shape": [], "dtype": "float64", "effect": 20}
+        ],
+        "effects": [
+            {"index": 0, "kind": "parameter", "target": "%0", "inputs": [], "version": 0, "ordering": 0, "operation": "parameter"},
+            {"index": 1, "kind": "parameter", "target": "%1", "inputs": [], "version": 0, "ordering": 1, "operation": "parameter"},
+            {"index": 2, "kind": "parameter", "target": "%2", "inputs": [], "version": 0, "ordering": 2, "operation": "parameter"},
+            {"index": 3, "kind": "parameter", "target": "%3", "inputs": [], "version": 0, "ordering": 3, "operation": "parameter"},
+            {"index": 4, "kind": "op", "target": "%4", "inputs": ["%0", "%1", "%2", "%3"], "version": 0, "ordering": 4, "operation": "linalg:eig:eigenvalue:2x2:0"},
+            {"index": 5, "kind": "op", "target": "%5", "inputs": ["%0", "%1", "%2", "%3"], "version": 0, "ordering": 5, "operation": "linalg:eig:eigenvalue:2x2:1"},
+            {"index": 6, "kind": "op", "target": "%6", "inputs": ["%0", "%1", "%2", "%3"], "version": 0, "ordering": 6, "operation": "linalg:eig:eigenvector:2x2:0:0"},
+            {"index": 7, "kind": "op", "target": "%7", "inputs": ["%0", "%1", "%2", "%3"], "version": 0, "ordering": 7, "operation": "linalg:eig:eigenvector:2x2:1:0"},
+            {"index": 8, "kind": "op", "target": "%8", "inputs": ["%0", "%1", "%2", "%3"], "version": 0, "ordering": 8, "operation": "linalg:eig:eigenvector:2x2:0:1"},
+            {"index": 9, "kind": "op", "target": "%9", "inputs": ["%0", "%1", "%2", "%3"], "version": 0, "ordering": 9, "operation": "linalg:eig:eigenvector:2x2:1:1"},
+            {"index": 10, "kind": "op", "target": "%10", "inputs": ["%4", "0.75"], "version": 0, "ordering": 10, "operation": "mul"},
+            {"index": 11, "kind": "op", "target": "%11", "inputs": ["%5", "-1.25"], "version": 0, "ordering": 11, "operation": "mul"},
+            {"index": 12, "kind": "op", "target": "%12", "inputs": ["%6", "0.2"], "version": 0, "ordering": 12, "operation": "mul"},
+            {"index": 13, "kind": "op", "target": "%13", "inputs": ["%7", "-0.4"], "version": 0, "ordering": 13, "operation": "mul"},
+            {"index": 14, "kind": "op", "target": "%14", "inputs": ["%8", "0.6"], "version": 0, "ordering": 14, "operation": "mul"},
+            {"index": 15, "kind": "op", "target": "%15", "inputs": ["%9", "0.1"], "version": 0, "ordering": 15, "operation": "mul"},
+            {"index": 16, "kind": "op", "target": "%16", "inputs": ["%10", "%11"], "version": 0, "ordering": 16, "operation": "add"},
+            {"index": 17, "kind": "op", "target": "%17", "inputs": ["%16", "%12"], "version": 0, "ordering": 17, "operation": "add"},
+            {"index": 18, "kind": "op", "target": "%18", "inputs": ["%17", "%13"], "version": 0, "ordering": 18, "operation": "add"},
+            {"index": 19, "kind": "op", "target": "%19", "inputs": ["%18", "%14"], "version": 0, "ordering": 19, "operation": "add"},
+            {"index": 20, "kind": "op", "target": "%20", "inputs": ["%19", "%15"], "version": 0, "ordering": 20, "operation": "add"}
+        ],
+        "alias_edges": [],
+        "control_regions": [],
+        "phi_nodes": [],
+        "bytecode_offsets": []
+    }"#
+    .to_owned()
+}
+
 fn eigh_spectral_ir() -> String {
     r#"{
         "format": "program_ad_effect_ir.v1",
@@ -555,6 +612,30 @@ fn rust_program_ad_replays_real_distinct_2x2_eigvals_value_and_gradient() {
 }
 
 #[test]
+fn rust_program_ad_replays_real_simple_2x2_eig_value_and_gradient() {
+    let inputs = [2.0, 0.3, 0.1, 3.0];
+    let result = interpret_program_ad_effect_ir_value_and_gradient(&eig_spectral_ir(), &inputs)
+        .expect("valid eig spectral IR should parse");
+
+    assert!(result.supported, "{:?}", result.blocked_reasons);
+    assert_eq!(result.supported_effect_count, 21);
+    assert_eq!(result.parameter_targets, ["%0", "%1", "%2", "%3"]);
+    assert!(
+        (result.value.expect("supported result must have value") - (-2.433398060344066)).abs()
+            < 1.0e-12
+    );
+    let expected_gradient = [
+        0.8555839644766254,
+        0.16438465241380695,
+        -0.02031955673352878,
+        -1.3555839644766254,
+    ];
+    for (observed, expected) in result.gradient.iter().zip(expected_gradient.iter()) {
+        assert!((observed - expected).abs() < 1.0e-12);
+    }
+}
+
+#[test]
 fn rust_program_ad_rejects_degenerate_2x2_eigvalsh_gradient() {
     let result = interpret_program_ad_effect_ir_value_and_gradient(
         &single_eigenvalue_ir("linalg:eigvalsh:0"),
@@ -597,6 +678,36 @@ fn rust_program_ad_rejects_complex_2x2_eigvals_spectrum() {
         .blocked_reasons
         .iter()
         .any(|reason| reason.contains("real distinct eigenvalues")));
+}
+
+#[test]
+fn rust_program_ad_rejects_complex_2x2_eig_spectrum() {
+    let result = interpret_program_ad_effect_ir_value_and_gradient(
+        &single_eigenvalue_ir("linalg:eig:eigenvalue:2x2:0"),
+        &[0.0, -1.0, 1.0, 0.0],
+    )
+    .expect("valid eig spectral IR should parse");
+
+    assert!(!result.supported);
+    assert!(result
+        .blocked_reasons
+        .iter()
+        .any(|reason| reason.contains("eig requires real eigenvalues")));
+}
+
+#[test]
+fn rust_program_ad_rejects_degenerate_2x2_eig_gradient() {
+    let result = interpret_program_ad_effect_ir_value_and_gradient(
+        &single_eigenvalue_ir("linalg:eig:eigenvalue:2x2:0"),
+        &[1.0, 0.0, 0.0, 1.0],
+    )
+    .expect("valid eig spectral IR should parse");
+
+    assert!(!result.supported);
+    assert!(result
+        .blocked_reasons
+        .iter()
+        .any(|reason| reason.contains("eig requires distinct eigenvalues")));
 }
 
 #[test]
