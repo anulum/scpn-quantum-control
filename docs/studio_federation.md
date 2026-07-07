@@ -233,11 +233,66 @@ scpn_quantum_engine/studio_wasm_kernel
 
 That Rust crate is dependency-light and builds to `wasm32-unknown-unknown`. Its
 exported `scpn_xy_compile_digest` function recomputes the SHA-256 digest over
-the structural XY compile terms from the canonical little-endian byte payload.
-The Python wrapper mirrors the same byte encoding for local tests and signed
-unit construction; browser verification uses the Rust/WASM kernel. This covers
-the bit-exact compile decision path only. Continuous simulator values and QPU
-counts remain separate tolerance or attestation evidence.
+the structural XY compile terms from the canonical little-endian byte payload,
+and the `scpn_alloc`/`scpn_free` exports let a host hand the payload into guest
+memory. The Python wrapper mirrors the same byte encoding for local tests and
+signed unit construction; browser verification uses the Rust/WASM kernel. This
+covers the bit-exact compile decision path only. Continuous simulator values
+and QPU counts remain separate tolerance or attestation evidence.
+
+### Committed browser-verifiable unit (WS-1)
+
+One committed unit lets the studio panel replay the compile digest in the
+visitor's browser:
+
+```text
+data/studio/xy_compile_recompute_unit_20260708.json
+```
+
+It is emitted from the provisional Paper-27 coupling matrix by
+`scpn_quantum_control.studio.xy_compile_recompute_artifact` (writer/check CLI,
+fail-closed: a unit that fails its own reference verification is never
+serialised). The studio-web recompute card loads the CI-built WASM kernel,
+recomputes the digest, and compares it to the signed claim. Every tamper is
+loud and fail-closed: a forged digest renders `mismatch`, and a stripped
+grade, wrong schema, malformed input, or a kernel-level rejection render
+`unverifiable`. A tampered unit can never render `match`. The unit's claim
+boundary is the bit-exact compile decision path only — never a physical
+`K_nm` claim, QPU execution, or actuation authority.
+
+## WS-1 attestation-verifiable QPU results
+
+WS-1 grants two verification modes, and every evidence unit declares which one
+it stands on. Compile-path claims are **recompute**-verifiable (above). A QPU
+result cannot be replayed — the shot statistics are irreproducible — so it is
+**attestation**-verifiable: the trust rests on a hardware provider's own signed
+record. The `execute` verb therefore produces a second claim family,
+`studio.qpu-result-pack.v1`, alongside `studio.hardware-result-pack.v1`:
+
+```python
+from scpn_quantum_control.studio import (
+    build_qpu_result_pack_unit,
+    present_qpu_result_pack,
+)
+
+unit = build_qpu_result_pack_unit(
+    pack,
+    raw_results_digest="sha256:...",
+    circuit_digest="sha256:...",        # bit-exact link to a recompute-verifiable compile
+    calibration_ref="calibration/...",  # device calibration snapshot
+    attestation=None,                    # a live provider attestation, when one exists
+)
+present_qpu_result_pack(unit).status     # "unverifiable" without a provider attestation
+```
+
+Every unit carries `verifiability_mode = attestation`. The absent-signal is
+loud: with no provider attestation `present_qpu_result_pack` renders
+`unverifiable` and `seal_qpu_result_pack` refuses to seal — a QPU unit is never
+emitted as `verified` on the studio signature alone. The committed hardware
+packs carry no live provider attestation yet (BL-29 territory), so their units
+are honestly `unverifiable` today; the shape and the fail-closed boundary are
+what ships. A supplied attestation must sign the exact `raw_results_digest`, or
+it is rejected.
 
 ## Substrate axes
 

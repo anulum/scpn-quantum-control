@@ -15,14 +15,19 @@ vi.mock("./panel/data", () => ({
   scorecard: { ok: false, reason: "forced scorecard guard failure" },
 }));
 
+vi.mock("./panel/recompute", () => ({
+  recomputeUnit: { ok: false, reason: "forced recompute guard failure" },
+}));
+
 import QuantumStudioPanel from "./QuantumStudioPanel";
 
 describe("QuantumStudioPanel with failing guards", () => {
   it("renders one loud unverifiable block per failed surface", () => {
     render(<QuantumStudioPanel />);
     const alerts = screen.getAllByRole("alert");
-    expect(alerts).toHaveLength(3);
+    expect(alerts).toHaveLength(4);
     expect(screen.getByText(/forced manifest guard failure/)).toBeTruthy();
+    expect(screen.getByText(/forced recompute guard failure/)).toBeTruthy();
     expect(screen.getByText(/forced matrix guard failure/)).toBeTruthy();
     expect(screen.getByText(/forced scorecard guard failure/)).toBeTruthy();
   });

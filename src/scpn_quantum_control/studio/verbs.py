@@ -52,6 +52,7 @@ NATIVE_SPEEDUP_SCHEMA = "studio.native-speedup.v1"
 EVIDENCE_REPLAY_SCHEMA = "studio.evidence-replay.v1"
 MITIGATION_SCHEMA = "studio.mitigation.v1"
 HARDWARE_RESULT_PACK_SCHEMA = "studio.hardware-result-pack.v1"
+QPU_RESULT_PACK_SCHEMA = "studio.qpu-result-pack.v1"
 XY_COMPILE_RECOMPUTE_SCHEMA = "studio.xy-compile-recompute.v1"
 DIFFERENTIATION_EVIDENCE_SCHEMA = "studio.differentiation-evidence.v1"
 
@@ -162,10 +163,16 @@ EXECUTE = Verb(
     side_effect=SideEffect.LIVE_HARDWARE,
     timing=Timing(TimingClass.BATCH),
     fidelity=Fidelity.FIRST_PRINCIPLES,
-    produces=(HARDWARE_RESULT_PACK_SCHEMA,),
+    produces=(HARDWARE_RESULT_PACK_SCHEMA, QPU_RESULT_PACK_SCHEMA),
     backends=("qiskit-runtime", "provider-hal"),
 )
-"""Run on a QPU through the approval-gated provider HAL; emits raw counts + provenance."""
+"""Run on a QPU through the approval-gated provider HAL; emits raw counts + provenance.
+
+Emits two claim families: ``studio.hardware-result-pack.v1`` (the committed
+raw-count pack) and ``studio.qpu-result-pack.v1`` (the WS-1 attestation-verifiable
+unit that binds the raw-results digest, calibration snapshot, and the bit-exact
+circuit digest to a provider attestation). Both are ``verifiability_mode =
+attestation``: a QPU result cannot be recomputed in a verifier's browser."""
 
 
 QUANTUM_VERBS: tuple[Verb, ...] = (
@@ -203,6 +210,7 @@ def evidence_schemas() -> tuple[str, ...]:
         EVIDENCE_REPLAY_SCHEMA,
         MITIGATION_SCHEMA,
         HARDWARE_RESULT_PACK_SCHEMA,
+        QPU_RESULT_PACK_SCHEMA,
         XY_COMPILE_RECOMPUTE_SCHEMA,
         DIFFERENTIATION_EVIDENCE_SCHEMA,
     )

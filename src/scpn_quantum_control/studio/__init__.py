@@ -38,6 +38,13 @@ from .federation import (
     write_federation_document,
 )
 from .manifest import build_manifest, declared_surface
+from .qpu_result_pack import (
+    QPU_VERIFIABILITY_MODE,
+    QpuResultPackPresentation,
+    build_qpu_result_pack_unit,
+    present_qpu_result_pack,
+    seal_qpu_result_pack,
+)
 from .recompute_kernel import (
     XY_COMPILE_INPUT_VERSION,
     XY_COMPILE_RECOMPUTE_SCHEMA,
@@ -78,7 +85,9 @@ __all__ = [
     "DEFAULT_REFERENCE_VALIDATION_PATH",
     "DEFAULT_SCORECARD_ARTIFACT_PATH",
     "DEFAULT_SUPPORT_MATRIX_ARTIFACT_PATH",
+    "QPU_VERIFIABILITY_MODE",
     "QUANTUM_VERBS",
+    "QpuResultPackPresentation",
     "REFERENCE_VALIDATION_SCHEMA",
     "ReferenceValidationCertification",
     "ReferenceValidationRegistry",
@@ -98,6 +107,7 @@ __all__ = [
     "build_hardware_result_pack_bundles",
     "build_manifest",
     "build_provider_attestation",
+    "build_qpu_result_pack_unit",
     "build_result_pack_unit",
     "build_scorecard_bundle",
     "build_support_matrix_bundle",
@@ -109,7 +119,9 @@ __all__ = [
     "map_claim_status",
     "measure_coverage_frontier",
     "measure_coverage_frontier_from_certifications",
+    "present_qpu_result_pack",
     "render_coverage_frontier_markdown",
+    "seal_qpu_result_pack",
     "seal_result_pack",
     "load_reference_validation_registry",
     "validate_bundle",

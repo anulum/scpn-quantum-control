@@ -311,7 +311,7 @@
     ]
   },
   "schema_a": {
-    "content_digest": "sha256:764b13f3139b5244459b0eb5d3c173fbd04ae5e5ae3fe1a7b294f49076170540",
+    "content_digest": "sha256:b0932b55d0318d63aeecb72456ed3751ffc84019343b56f8e34aa08ade203f97",
     "contract_era": "v1",
     "enumeration": "language-agnostic",
     "evidence_types": [
@@ -324,6 +324,7 @@
       "studio.evidence-replay.v1",
       "studio.mitigation.v1",
       "studio.hardware-result-pack.v1",
+      "studio.qpu-result-pack.v1",
       "studio.xy-compile-recompute.v1",
       "studio.differentiation-evidence.v1"
     ],
@@ -469,7 +470,8 @@
         ],
         "fidelity": "first-principles",
         "produces": [
-          "studio.hardware-result-pack.v1"
+          "studio.hardware-result-pack.v1",
+          "studio.qpu-result-pack.v1"
         ],
         "safety_tier": "certified",
         "side_effect": "live-hardware",

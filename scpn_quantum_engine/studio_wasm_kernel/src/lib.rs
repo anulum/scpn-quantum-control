@@ -200,6 +200,41 @@ pub fn xy_compile_digest(input: &CompileInput) -> Result<[u8; DIGEST_LEN], Kerne
     Ok(hasher.finalize().into())
 }
 
+/// Allocate `len` bytes inside the module's linear memory for host input.
+///
+/// Returns a null pointer for zero-length or failed allocations; the host
+/// must treat null as fail-closed and must release every successful
+/// allocation with [`scpn_free`] using the same length.
+#[no_mangle]
+pub extern "C" fn scpn_alloc(len: usize) -> *mut u8 {
+    let Ok(layout) = core::alloc::Layout::array::<u8>(len) else {
+        return core::ptr::null_mut();
+    };
+    if layout.size() == 0 {
+        return core::ptr::null_mut();
+    }
+    // SAFETY: the layout is non-zero-sized and well-formed.
+    unsafe { std::alloc::alloc(layout) }
+}
+
+/// Release a buffer previously returned by [`scpn_alloc`].
+///
+/// # Safety
+///
+/// `ptr` must come from `scpn_alloc(len)` with the identical `len` and must
+/// not be used afterwards. Null pointers and zero lengths are ignored.
+#[no_mangle]
+pub unsafe extern "C" fn scpn_free(ptr: *mut u8, len: usize) {
+    if ptr.is_null() || len == 0 {
+        return;
+    }
+    let Ok(layout) = core::alloc::Layout::array::<u8>(len) else {
+        return;
+    };
+    // SAFETY: caller contract guarantees ptr/layout came from scpn_alloc.
+    unsafe { std::alloc::dealloc(ptr, layout) };
+}
+
 /// Compute the XY compile digest for a canonical byte payload.
 ///
 /// # Safety
@@ -271,6 +306,32 @@ mod tests {
             parse_compile_input(&left).expect_err("bad length"),
             KernelStatus::InvalidLength
         );
+    }
+
+    #[test]
+    fn alloc_round_trip_carries_host_bytes() {
+        let payload = sample_payload();
+        let ptr = scpn_alloc(payload.len());
+        assert!(!ptr.is_null());
+        let mut digest = [0_u8; DIGEST_LEN];
+        unsafe {
+            core::ptr::copy_nonoverlapping(payload.as_ptr(), ptr, payload.len());
+            let status = scpn_xy_compile_digest(ptr, payload.len(), digest.as_mut_ptr());
+            assert_eq!(status, i32::from(KernelStatus::Ok));
+            scpn_free(ptr, payload.len());
+        }
+        let parsed = parse_compile_input(&payload).expect("valid input");
+        let expected = xy_compile_digest(&parsed).expect("digest");
+        assert_eq!(digest, expected);
+    }
+
+    #[test]
+    fn alloc_fails_closed_on_zero_and_free_ignores_null() {
+        assert!(scpn_alloc(0).is_null());
+        unsafe {
+            scpn_free(core::ptr::null_mut(), 8);
+            scpn_free(scpn_alloc(8), 0);
+        }
     }
 
     #[test]

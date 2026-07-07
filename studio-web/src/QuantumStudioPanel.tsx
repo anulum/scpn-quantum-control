@@ -9,10 +9,12 @@
 import "./tokens.css";
 
 import { ManifestCapabilities } from "./panel/ManifestCapabilities";
+import { RecomputeCard } from "./panel/RecomputeCard";
 import { ScorecardTable } from "./panel/ScorecardTable";
 import { SupportMatrixGrid } from "./panel/SupportMatrixGrid";
 import { Unverifiable } from "./panel/Unverifiable";
 import { scorecard, studioManifest, supportMatrix } from "./panel/data";
+import { recomputeUnit } from "./panel/recompute";
 
 /**
  * The QUANTUM studio panel the Hub mounts through Module Federation.
@@ -37,6 +39,14 @@ export function QuantumStudioPanel() {
         <ManifestCapabilities manifest={studioManifest.value} />
       ) : (
         <Unverifiable surface="studio_manifest.json" reason={studioManifest.reason} />
+      )}
+      {recomputeUnit.ok ? (
+        <RecomputeCard unit={recomputeUnit.value} />
+      ) : (
+        <Unverifiable
+          surface="xy_compile_recompute_unit_20260708.json"
+          reason={recomputeUnit.reason}
+        />
       )}
       {supportMatrix.ok ? (
         <SupportMatrixGrid matrix={supportMatrix.value} />

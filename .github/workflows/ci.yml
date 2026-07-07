@@ -524,6 +524,8 @@ jobs:
           tests/test_result_pack_seal.py
           tests/test_ml_dsa_seal.py
           tests/test_differentiable_transform_support_matrix_artifact.py
+          tests/test_studio_xy_compile_recompute_artifact.py
+          tests/test_studio_qpu_result_pack.py
           -q
 
   studio-web:
@@ -543,6 +545,11 @@ jobs:
         run: pnpm install --frozen-lockfile
       - name: Typecheck (TS strict)
         run: pnpm typecheck
+      - name: Add the WASM build target
+        run: rustup target add wasm32-unknown-unknown
+      - name: Build the WASM kernel (browser recompute path needs it at test time)
+        working-directory: scpn_quantum_engine/studio_wasm_kernel
+        run: cargo build --release --locked --target wasm32-unknown-unknown
       - name: Test with enforced coverage thresholds
         run: pnpm test:coverage
       - name: Build the portal and the federation remote
@@ -551,6 +558,24 @@ jobs:
         run: |
           test -f dist/remoteEntry.js
           grep -q "scpn_quantum_control" dist/remoteEntry.js
+      - name: Ship the WASM kernel into the bundle + write the deploy manifest
+        working-directory: .
+        run: python3 tools/build_studio_wasm_bundle.py
+      - name: Assert the deploy manifest content-addresses the shipped bundle
+        working-directory: .
+        run: |
+          test -f studio-web/dist/deploy-manifest.json
+          test -f studio-web/dist/wasm/scpn_quantum_studio_wasm_kernel.wasm
+          python3 - <<'EOF'
+          import hashlib, json
+          from pathlib import Path
+          manifest = json.loads(Path("studio-web/dist/deploy-manifest.json").read_text())
+          for row in manifest["artifacts"]:
+              path = Path("studio-web/dist") / row["path"]
+              digest = "sha256:" + hashlib.sha256(path.read_bytes()).hexdigest()
+              assert digest == row["sha256"], f"digest drift: {row['path']}"
+          print(f"deploy manifest verified: {len(manifest['artifacts'])} artefacts")
+          EOF
 
   ci-gate:
     needs: [lint, test, test-extra-platforms, type-check, wheel-check, install-smoke, differentiable-parity, security, rust-audit, studio-conformance, studio-web]
