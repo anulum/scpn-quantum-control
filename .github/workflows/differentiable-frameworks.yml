@@ -16,8 +16,8 @@ on:
       - "src/scpn_quantum_control/accel/kuramoto_ott_antonsen.py"
       - "tests/test_phase_qnode_*.py"
       - "tests/test_phase_model_training_evidence.py"
-      - "tests/test_diff_kuramoto_autodiff_witness.py"
-      - "tests/kuramoto_autodiff_witness.py"
+      - "oscillatools/tests/test_diff_kuramoto_autodiff_witness.py"
+      - "oscillatools/tests/kuramoto_autodiff_witness.py"
       - ".github/workflows/differentiable-frameworks.yml"
   workflow_dispatch:
   schedule:
@@ -80,6 +80,15 @@ jobs:
             tests/test_phase_qnode_framework_parity.py \
             tests/test_phase_model_training_evidence.py \
             tests/test_phase_qnode_compiler_lowering.py \
+            -m "not hardware and not performance" \
+            -q
+
+      # The witness module moved to the oscillatools distribution (DA1) and
+      # imports its sibling via the oscillatools test rootdir.
+      - name: Run oscillatools autodiff witness parity
+        working-directory: oscillatools
+        run: |
+          pytest \
             tests/test_diff_kuramoto_autodiff_witness.py \
             -m "not hardware and not performance" \
             -q
