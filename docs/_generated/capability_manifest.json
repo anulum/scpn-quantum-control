@@ -13,7 +13,7 @@
     "python_model_source_modules": 474,
     "rust_pyo3_model_wrappers": 172,
     "rust_source_modules": 56,
-    "test_files": 829
+    "test_files": 831
   },
   "documentation": {
     "examples": [
@@ -5937,6 +5937,7 @@
       "tests/test_campaign_parameter_generators.py",
       "tests/test_capability_manifest.py",
       "tests/test_cft_analysis.py",
+      "tests/test_changelog_consistency.py",
       "tests/test_check_commit_trailers.py",
       "tests/test_check_internal_todo_policy.py",
       "tests/test_check_rust_pyi_exports.py",
@@ -6454,6 +6455,7 @@
       "tests/test_provider_isolated_smoke_workflow.py",
       "tests/test_psi_field.py",
       "tests/test_public_api.py",
+      "tests/test_public_claim_docs.py",
       "tests/test_pulse_feasibility.py",
       "tests/test_pulse_feasibility_branches.py",
       "tests/test_pulse_shaping.py",

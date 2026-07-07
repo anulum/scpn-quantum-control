@@ -115,7 +115,7 @@ has a defined commercial licensing route.
 | Notebook files | 100 |
 | Example files | 33 |
 | Optional extras | 43 |
-| Python test files | 829 |
+| Python test files | 831 |
 | Public documentation pages | 259 |
 | GitHub Actions workflows | 23 |
 
