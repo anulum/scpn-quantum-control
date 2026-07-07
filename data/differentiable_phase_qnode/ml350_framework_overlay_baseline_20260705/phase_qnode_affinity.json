@@ -1,0 +1,252 @@
+{
+  "claim_boundary": "isolated_affinity only when reserved CPU affinity, low host load, observed process affinity match, governor or frequency context, fixed command metadata, and no heavy concurrent jobs are recorded",
+  "evidence_label": "functional_non_isolated",
+  "isolation_failures": [
+    "host load must remain low before and after benchmark"
+  ],
+  "metadata": {
+    "affinity_cpus": [
+      2
+    ],
+    "command": "taskset -c 2 python tools/run_phase_qnode_affinity_benchmark.py",
+    "cpu_model": "Intel(R) Xeon(R) CPU E5-2640 0 @ 2.50GHz",
+    "dependency_versions": {
+      "jax": "0.10.2",
+      "numpy": "2.5.1",
+      "pennylane": "0.45.1",
+      "python": "3.12.3",
+      "tensorflow": "not_installed",
+      "torch": "2.12.1+cpu"
+    },
+    "frequency_mhz": [
+      3000.0,
+      2493.743,
+      2493.762,
+      2493.754,
+      2493.714,
+      2493.86,
+      1200.0,
+      1200.0,
+      1196.994,
+      1200.0,
+      1200.0,
+      1200.0,
+      1200.0,
+      1200.0,
+      1200.0,
+      1200.0,
+      1200.0,
+      1200.0,
+      3000.0,
+      1200.0,
+      1200.0,
+      1200.0,
+      1200.0,
+      1200.0
+    ],
+    "governor": "performance",
+    "heavy_concurrent_jobs": false,
+    "host_load_after": [
+      1.3193359375,
+      1.00830078125,
+      0.7177734375
+    ],
+    "host_load_before": [
+      1.3193359375,
+      1.00830078125,
+      0.7177734375
+    ],
+    "isolation_method": "taskset",
+    "observed_affinity_cpus": [
+      2
+    ],
+    "python_version": "3.12.3",
+    "repetitions": 30,
+    "runner_environment": "",
+    "runner_labels": [],
+    "warmups": 5
+  },
+  "production_benchmark": false,
+  "raw_timing_rows": [
+    {
+      "gradient_norm": 1.1102230246251565e-16,
+      "iteration": 0.0,
+      "seconds": 0.0029073940095258877,
+      "value": 1.0
+    },
+    {
+      "gradient_norm": 1.1102230246251565e-16,
+      "iteration": 1.0,
+      "seconds": 0.00285182599327527,
+      "value": 1.0
+    },
+    {
+      "gradient_norm": 1.1102230246251565e-16,
+      "iteration": 2.0,
+      "seconds": 0.002805719996104017,
+      "value": 1.0
+    },
+    {
+      "gradient_norm": 1.1102230246251565e-16,
+      "iteration": 3.0,
+      "seconds": 0.0027935969992540777,
+      "value": 1.0
+    },
+    {
+      "gradient_norm": 1.1102230246251565e-16,
+      "iteration": 4.0,
+      "seconds": 0.002825001996825449,
+      "value": 1.0
+    },
+    {
+      "gradient_norm": 1.1102230246251565e-16,
+      "iteration": 5.0,
+      "seconds": 0.0028085189987905324,
+      "value": 1.0
+    },
+    {
+      "gradient_norm": 1.1102230246251565e-16,
+      "iteration": 6.0,
+      "seconds": 0.0028330049972282723,
+      "value": 1.0
+    },
+    {
+      "gradient_norm": 1.1102230246251565e-16,
+      "iteration": 7.0,
+      "seconds": 0.0028222789987921715,
+      "value": 1.0
+    },
+    {
+      "gradient_norm": 1.1102230246251565e-16,
+      "iteration": 8.0,
+      "seconds": 0.0028087979881092906,
+      "value": 1.0
+    },
+    {
+      "gradient_norm": 1.1102230246251565e-16,
+      "iteration": 9.0,
+      "seconds": 0.0027768220024881884,
+      "value": 1.0
+    },
+    {
+      "gradient_norm": 1.1102230246251565e-16,
+      "iteration": 10.0,
+      "seconds": 0.0027979720034636557,
+      "value": 1.0
+    },
+    {
+      "gradient_norm": 1.1102230246251565e-16,
+      "iteration": 11.0,
+      "seconds": 0.002798792003886774,
+      "value": 1.0
+    },
+    {
+      "gradient_norm": 1.1102230246251565e-16,
+      "iteration": 12.0,
+      "seconds": 0.0028056209994247183,
+      "value": 1.0
+    },
+    {
+      "gradient_norm": 1.1102230246251565e-16,
+      "iteration": 13.0,
+      "seconds": 0.0028122439980506897,
+      "value": 1.0
+    },
+    {
+      "gradient_norm": 1.1102230246251565e-16,
+      "iteration": 14.0,
+      "seconds": 0.0027845899894600734,
+      "value": 1.0
+    },
+    {
+      "gradient_norm": 1.1102230246251565e-16,
+      "iteration": 15.0,
+      "seconds": 0.0028123980009695515,
+      "value": 1.0
+    },
+    {
+      "gradient_norm": 1.1102230246251565e-16,
+      "iteration": 16.0,
+      "seconds": 0.0027851439954247326,
+      "value": 1.0
+    },
+    {
+      "gradient_norm": 1.1102230246251565e-16,
+      "iteration": 17.0,
+      "seconds": 0.0028252509946469218,
+      "value": 1.0
+    },
+    {
+      "gradient_norm": 1.1102230246251565e-16,
+      "iteration": 18.0,
+      "seconds": 0.003099116001976654,
+      "value": 1.0
+    },
+    {
+      "gradient_norm": 1.1102230246251565e-16,
+      "iteration": 19.0,
+      "seconds": 0.0028075790032744408,
+      "value": 1.0
+    },
+    {
+      "gradient_norm": 1.1102230246251565e-16,
+      "iteration": 20.0,
+      "seconds": 0.0027930210053455085,
+      "value": 1.0
+    },
+    {
+      "gradient_norm": 1.1102230246251565e-16,
+      "iteration": 21.0,
+      "seconds": 0.0028070029948139563,
+      "value": 1.0
+    },
+    {
+      "gradient_norm": 1.1102230246251565e-16,
+      "iteration": 22.0,
+      "seconds": 0.002814555002260022,
+      "value": 1.0
+    },
+    {
+      "gradient_norm": 1.1102230246251565e-16,
+      "iteration": 23.0,
+      "seconds": 0.002805200987495482,
+      "value": 1.0
+    },
+    {
+      "gradient_norm": 1.1102230246251565e-16,
+      "iteration": 24.0,
+      "seconds": 0.0028002930048387498,
+      "value": 1.0
+    },
+    {
+      "gradient_norm": 1.1102230246251565e-16,
+      "iteration": 25.0,
+      "seconds": 0.002800635003950447,
+      "value": 1.0
+    },
+    {
+      "gradient_norm": 1.1102230246251565e-16,
+      "iteration": 26.0,
+      "seconds": 0.0027902879955945536,
+      "value": 1.0
+    },
+    {
+      "gradient_norm": 1.1102230246251565e-16,
+      "iteration": 27.0,
+      "seconds": 0.0028205029957462102,
+      "value": 1.0
+    },
+    {
+      "gradient_norm": 1.1102230246251565e-16,
+      "iteration": 28.0,
+      "seconds": 0.0028185440023662522,
+      "value": 1.0
+    },
+    {
+      "gradient_norm": 1.1102230246251565e-16,
+      "iteration": 29.0,
+      "seconds": 0.0028079829935450107,
+      "value": 1.0
+    }
+  ]
+}

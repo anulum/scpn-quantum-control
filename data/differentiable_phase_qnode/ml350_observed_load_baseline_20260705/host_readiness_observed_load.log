@@ -1,0 +1,21 @@
+host=god-of-the-math
+head=dc57c4ba
+timestamp_utc=2026-07-05T08:54:32Z
+ 08:54:32 up 22:03,  7 users,  load average: 0.37, 0.53, 1.04
+cpu2_governor=performance
+{
+  "ready": false,
+  "reserved_core": 2,
+  "governor": "performance",
+  "governor_is_stable": true,
+  "frequency_mhz": 3000.0,
+  "load_average": [
+    0.36962890625,
+    0.52978515625,
+    1.0390625
+  ],
+  "load_is_low": false,
+  "blockers": [
+    "host load 1.04 exceeds the isolated threshold 1.00; quiesce concurrent jobs"
+  ]
+}

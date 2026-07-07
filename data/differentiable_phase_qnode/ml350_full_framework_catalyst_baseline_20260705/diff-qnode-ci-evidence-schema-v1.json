@@ -1,0 +1,303 @@
+{
+  "artifact_id": "diff-qnode-ci-evidence-schema-v1",
+  "claim_boundary": "CI benchmark evidence only. functional_non_isolated rows are parity/local regression artefacts and cannot support production performance claims.",
+  "evidence_artifact_ids": [
+    "diff-qnode-ci-evidence-schema-v1",
+    "diff-qnode-external-comparison-local"
+  ],
+  "generated_at_epoch": 1783245109.9579623,
+  "metadata": {
+    "accelerator": {
+      "claim_boundary": "CPU-only differentiable benchmark evidence. This row carries no CUDA, ROCm, GPU, provider, or QPU performance claim.",
+      "cpu_fallback_detected": false,
+      "detected_backend": "cpu",
+      "device_ids": [],
+      "device_names": [],
+      "requested_backend": "cpu",
+      "runtime_versions": {}
+    },
+    "classification": "functional_non_isolated",
+    "command": [
+      "python",
+      "scripts/run_differentiable_benchmark_evidence.py"
+    ],
+    "commit_sha": null,
+    "cpu_affinity": "2",
+    "cpu_count": 24,
+    "failure_class": "non_isolated_runner",
+    "frequency_mhz": 3000.0,
+    "gap_reason": "Production benchmark promotion requires a self-hosted isolated benchmark runner, CPU affinity, isolation method, host load, governor/frequency context, and no concurrent heavy jobs.",
+    "github_run_id": null,
+    "governor": "performance",
+    "heavy_jobs_running": false,
+    "isolation_method": "taskset+chrt",
+    "load_after": [
+      1.5234375,
+      1.197265625,
+      0.9150390625
+    ],
+    "load_before": [
+      1.3896484375,
+      1.14453125,
+      0.88916015625
+    ],
+    "platform": "Linux-6.8.0-134-generic-x86_64-with-glibc2.39",
+    "production_eligible": false,
+    "python_version": "3.12.3",
+    "runner_labels": [],
+    "runner_name": "",
+    "runner_os": "Linux",
+    "runner_type": "github-hosted"
+  },
+  "schema": "scpn_qc_differentiable_benchmark_evidence_v1",
+  "timing_rows": [
+    {
+      "backend": "jax",
+      "batching_support": "vmap",
+      "case_id": "bounded_phase_objective",
+      "catalyst_comparison": null,
+      "claim_boundary": "Bounded CPU external comparison against the SCPN reference; no provider, QPU, GPU, or production performance claim.",
+      "dependency_versions": {
+        "jax": "0.10.2",
+        "jaxlib": "0.10.2"
+      },
+      "device": "cpu",
+      "dtype": "float64",
+      "failure_class": null,
+      "gradient_error": 0.0,
+      "memory_peak_bytes": 1891810,
+      "runtime_seconds": 0.6017204359959578,
+      "setup_instructions": null,
+      "source_of_truth": "scpn_reference",
+      "status": "success",
+      "toolchain": null,
+      "transform_support": "value_and_grad",
+      "value_error": 0.0
+    },
+    {
+      "backend": "pytorch",
+      "batching_support": "torch.func.vmap",
+      "case_id": "bounded_phase_objective",
+      "catalyst_comparison": null,
+      "claim_boundary": "Bounded CPU external comparison against the SCPN reference; no provider, QPU, GPU, or production performance claim.",
+      "dependency_versions": {
+        "torch": "2.12.1+cpu"
+      },
+      "device": "cpu",
+      "dtype": "float64",
+      "failure_class": null,
+      "gradient_error": 0.0,
+      "memory_peak_bytes": 67852574,
+      "runtime_seconds": 11.817028884994215,
+      "setup_instructions": null,
+      "source_of_truth": "scpn_reference",
+      "status": "success",
+      "toolchain": null,
+      "transform_support": "torch.func.grad/jacrev",
+      "value_error": 0.0
+    },
+    {
+      "backend": "tensorflow",
+      "batching_support": "vectorized_map",
+      "case_id": "bounded_phase_objective",
+      "catalyst_comparison": null,
+      "claim_boundary": "Bounded CPU external comparison against the SCPN reference; no provider, QPU, GPU, or production performance claim.",
+      "dependency_versions": {
+        "tensorflow": "2.21.0",
+        "tensorflow-cpu": "2.21.0"
+      },
+      "device": "cpu",
+      "dtype": "float64",
+      "failure_class": null,
+      "gradient_error": 0.0,
+      "memory_peak_bytes": 424377,
+      "runtime_seconds": 0.0711921180045465,
+      "setup_instructions": null,
+      "source_of_truth": "scpn_reference",
+      "status": "success",
+      "toolchain": null,
+      "transform_support": "GradientTape",
+      "value_error": 0.0
+    },
+    {
+      "backend": "pennylane",
+      "batching_support": "not_native",
+      "case_id": "bounded_phase_objective",
+      "catalyst_comparison": null,
+      "claim_boundary": "Bounded CPU external comparison against the SCPN reference; no provider, QPU, GPU, or production performance claim.",
+      "dependency_versions": {
+        "pennylane": "0.45.1"
+      },
+      "device": "cpu",
+      "dtype": "float64",
+      "failure_class": null,
+      "gradient_error": 5.551115123125783e-17,
+      "memory_peak_bytes": 256208,
+      "runtime_seconds": 0.04323916300199926,
+      "setup_instructions": null,
+      "source_of_truth": "scpn_reference",
+      "status": "success",
+      "toolchain": null,
+      "transform_support": "QNode",
+      "value_error": 1.1102230246251565e-16
+    },
+    {
+      "backend": "enzyme",
+      "batching_support": "not_evaluated",
+      "case_id": "bounded_phase_objective",
+      "catalyst_comparison": null,
+      "claim_boundary": "Dependency hard gap only; no hidden success or promoted claim.",
+      "dependency_versions": {
+        "enzyme": "0.5.2",
+        "enzyme_ad": "0.0.6",
+        "llvm": "not_installed"
+      },
+      "device": "cpu",
+      "dtype": "float64",
+      "failure_class": "dependency_missing",
+      "gradient_error": null,
+      "memory_peak_bytes": null,
+      "runtime_seconds": null,
+      "setup_instructions": "Install LLVM/Enzyme tooling and configure the Enzyme runner.",
+      "source_of_truth": "scpn_reference",
+      "status": "hard_gap",
+      "toolchain": null,
+      "transform_support": "LLVM Enzyme",
+      "value_error": null
+    },
+    {
+      "backend": "catalyst",
+      "batching_support": "not_supported",
+      "case_id": "bounded_phase_objective",
+      "catalyst_comparison": {
+        "claim_boundary": "Dedicated Catalyst compiler-workflow comparison only; not production, provider, finite-shot, arbitrary-workflow, higher-order-AD, or performance promotion evidence.",
+        "compiled_differentiation": "compiled differentiation is bounded to first-order value/gradient agreement for one CPU float64 phase objective; higher-order and arbitrary-program differentiation are not evaluated.",
+        "compiled_quantum_classical_workflows": "bounded: a configured Catalyst qjit/MLIR/QIR runner matched one CPU float64 phase objective value and gradient; this is not arbitrary workflow evidence.",
+        "control_flow": "control flow is not evaluated; loops, conditionals, dynamic circuits, and hybrid quantum-classical branching require separate Catalyst artefacts.",
+        "finite_shot_limitations": "finite-shot limitations: no shot-noise gradients, sampler jobs, finite-shot provider executions, or statistical confidence intervals are evaluated.",
+        "promotion_ready": false,
+        "provider_route_support": "provider route support is unsupported; no cloud provider, QPU, hardware, or remote job submission occurs in this comparison row.",
+        "runner_status": "success",
+        "unsupported_provider_routes": [
+          "finite_shot_provider_jobs",
+          "hardware_qpu_execution",
+          "cloud_provider_submission"
+        ]
+      },
+      "claim_boundary": "Bounded CPU Catalyst qjit/MLIR/QIR comparison against the SCPN reference; no provider, QPU, GPU, arbitrary-program AD, or production performance claim.",
+      "dependency_versions": {
+        "catalyst": "0.15.0",
+        "catalyst_runner": "executable:/mnt/data_sas/aaa_God_of_the_Math_Collection/03_CODE/SCPN-QUANTUM-CONTROL-ml350-baseline/data/differentiable_phase_qnode/ml350_full_framework_catalyst_baseline_20260705/runners/catalyst_qjit_runner.py",
+        "llvm": "not_installed",
+        "mlir": "not_installed",
+        "pennylane-catalyst": "0.15.0"
+      },
+      "device": "cpu",
+      "dtype": "float64",
+      "failure_class": null,
+      "gradient_error": 0.0,
+      "memory_peak_bytes": 67569,
+      "runtime_seconds": 4.659479039997677,
+      "setup_instructions": null,
+      "source_of_truth": "scpn_reference",
+      "status": "success",
+      "toolchain": {
+        "catalyst": "pennylane-catalyst==0.15.0",
+        "mlir": "Catalyst bundled CLI, mlir-opt-18 installed on host",
+        "workflow": "qjit + catalyst.grad CPU float64"
+      },
+      "transform_support": "Catalyst qjit/MLIR/QIR runner",
+      "value_error": 0.0
+    },
+    {
+      "backend": "jax",
+      "batching_support": "single-host vmap only; multi-host pmap is not promotion evidence",
+      "case_id": "bounded_phase_objective_unsupported_batching",
+      "catalyst_comparison": null,
+      "claim_boundary": "Unsupported-route hard gap only; no hidden success or promoted claim.",
+      "dependency_versions": {
+        "jax": "0.10.2",
+        "jaxlib": "0.10.2"
+      },
+      "device": "cpu",
+      "dtype": "float64",
+      "failure_class": "unsupported_batching",
+      "gradient_error": null,
+      "memory_peak_bytes": null,
+      "runtime_seconds": null,
+      "setup_instructions": "Bounded JAX external comparison evidence covers CPU value_and_grad/vmap only; multi-host pmap or sharded hardware batches require a separate isolated artefact.",
+      "source_of_truth": "scpn_reference",
+      "status": "hard_gap",
+      "toolchain": null,
+      "transform_support": "value_and_grad",
+      "value_error": null
+    },
+    {
+      "backend": "pytorch",
+      "batching_support": "torch.func.vmap",
+      "case_id": "bounded_phase_objective_unsupported_transform",
+      "catalyst_comparison": null,
+      "claim_boundary": "Unsupported-route hard gap only; no hidden success or promoted claim.",
+      "dependency_versions": {
+        "torch": "2.12.1+cpu"
+      },
+      "device": "cpu",
+      "dtype": "float64",
+      "failure_class": "unsupported_transform",
+      "gradient_error": null,
+      "memory_peak_bytes": null,
+      "runtime_seconds": null,
+      "setup_instructions": "Bounded PyTorch external comparison evidence covers torch.func.grad, vmap, jacrev, compile, and module wrappers separately; nested compile grad-of-grad promotion requires a dedicated correctness and isolation artefact.",
+      "source_of_truth": "scpn_reference",
+      "status": "hard_gap",
+      "toolchain": null,
+      "transform_support": "nested torch.compile grad-of-grad not evaluated",
+      "value_error": null
+    },
+    {
+      "backend": "tensorflow",
+      "batching_support": "vectorized_map",
+      "case_id": "bounded_phase_objective_unsupported_dtype",
+      "catalyst_comparison": null,
+      "claim_boundary": "Unsupported-route hard gap only; no hidden success or promoted claim.",
+      "dependency_versions": {
+        "tensorflow": "2.21.0",
+        "tensorflow-cpu": "2.21.0"
+      },
+      "device": "cpu",
+      "dtype": "complex128",
+      "failure_class": "unsupported_dtype",
+      "gradient_error": null,
+      "memory_peak_bytes": null,
+      "runtime_seconds": null,
+      "setup_instructions": "External comparison promotion is real-valued float64 only. Complex or Wirtinger TensorFlow routes must use the explicit real/imaginary contract.",
+      "source_of_truth": "scpn_reference",
+      "status": "hard_gap",
+      "toolchain": null,
+      "transform_support": "GradientTape",
+      "value_error": null
+    },
+    {
+      "backend": "pennylane",
+      "batching_support": "not_native",
+      "case_id": "bounded_phase_objective_unsupported_device",
+      "catalyst_comparison": null,
+      "claim_boundary": "Unsupported-route hard gap only; no hidden success or promoted claim.",
+      "dependency_versions": {
+        "pennylane": "0.45.1"
+      },
+      "device": "hardware_qpu",
+      "dtype": "float64",
+      "failure_class": "unsupported_device",
+      "gradient_error": null,
+      "memory_peak_bytes": null,
+      "runtime_seconds": null,
+      "setup_instructions": "External comparison rows do not submit live provider or QPU jobs. Hardware PennyLane evidence requires a provider policy ticket, artefact ID, shot budget, and isolated benchmark classification.",
+      "source_of_truth": "scpn_reference",
+      "status": "hard_gap",
+      "toolchain": null,
+      "transform_support": "QNode",
+      "value_error": null
+    }
+  ]
+}

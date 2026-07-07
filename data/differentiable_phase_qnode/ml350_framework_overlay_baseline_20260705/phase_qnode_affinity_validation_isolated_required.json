@@ -1,0 +1,15 @@
+{
+  "artifact_path": "data/differentiable_phase_qnode/ml350_framework_overlay_baseline_20260705/phase_qnode_affinity.json",
+  "artifact_sha256": "f74fe42c371d26dfa8b9257edaddc460573c72389be3cafee0b9075d866acd01",
+  "benchmark_artifact_id": "phase-qnode-affinity:f74fe42c371d26df",
+  "claim_boundary": "isolated_affinity only when reserved CPU affinity, low host load, observed process affinity match, governor or frequency context, fixed command metadata, and no heavy concurrent jobs are recorded",
+  "evidence_label": "functional_non_isolated",
+  "missing_requirements": [
+    "isolated_affinity evidence label",
+    "production benchmark flag",
+    "empty isolation failures"
+  ],
+  "production_benchmark": false,
+  "promotion_ready": false,
+  "raw_timing_row_count": 30
+}

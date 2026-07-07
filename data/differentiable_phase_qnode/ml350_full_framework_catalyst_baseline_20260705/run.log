@@ -1,0 +1,7 @@
+data/differentiable_phase_qnode/ml350_full_framework_catalyst_baseline_20260705/diff-qnode-external-comparison.json
+data/differentiable_phase_qnode/ml350_full_framework_catalyst_baseline_20260705/diff-qnode-ci-evidence-schema-v1.json
+data/differentiable_phase_qnode/ml350_full_framework_catalyst_baseline_20260705/diff-qnode-ci-evidence-schema-v1.csv
+data/differentiable_phase_qnode/ml350_full_framework_catalyst_baseline_20260705/diff-qnode-ci-evidence-schema-v1.md
+classification=functional_non_isolated
+external_comparison_classification=functional_non_isolated
+No provider or QPU execution

@@ -1,0 +1,4 @@
+jax 0.10.2
+torch 2.12.1+cpu
+tensorflow 2.21.0
+pennylane 0.45.1
