@@ -43,6 +43,13 @@ It contains the platform capability manifest plus the additive
 integrators. The schema-A digest covers verbs, evidence schemas, and the
 substrate-axis declarations below.
 
+The manifest advertises six core-spine verbs (`compile`, `simulate`,
+`analyse`, `validate`, `benchmark`, `replay`) and three domain-distinctive
+verbs (`differentiate`, `mitigate`, `execute`). `differentiate` is the
+contract-reserved QUANTUM verb: gradient evaluation over compiled phase
+programmes, fail-closed outside the declared support matrix, producing
+`studio.differentiation-evidence.v1` claims.
+
 ## Schema-B bundle API
 
 Use the library API when the Hub or a local audit needs concrete evidence
@@ -120,7 +127,8 @@ report = measure_coverage_frontier_from_certifications(registry=registry)
 
 The committed registry is currently empty. That is intentional: no per-claim
 WS-3 certifications are committed yet, so the real differentiable claim ledger
-still reports `0.0` answer rate and 13 `bounded-model` rows. A future
+still reports `0.0` answer rate across its 16 `SOTA-candidate` rows (emitted as
+curated `bounded-model` bundles). A future
 certification row must name a known ledger claim whose `promotion_status` is
 already `promoted`; candidate, unknown, or duplicate certification rows fail
 closed before they can reach the WS-6 measurement.

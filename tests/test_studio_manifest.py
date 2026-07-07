@@ -23,7 +23,7 @@ def test_manifest_builds_with_studio_identity() -> None:
     """The schema-A manifest carries the studio identity and all verbs."""
     data = manifest.build_manifest().to_dict()
     assert data["studio"] == "scpn-quantum-control"
-    assert len(data["verbs"]) == len(verbs.QUANTUM_VERBS) == 8
+    assert len(data["verbs"]) == len(verbs.QUANTUM_VERBS) == 9
     assert data["content_digest"].startswith("sha256:")
 
 
@@ -58,6 +58,30 @@ def test_verb_vocabulary_uses_locked_enums() -> None:
     assert by_name["compile"]["side_effect"] == "read-only"
     assert by_name["compile"]["fidelity"] == "first-principles"
     assert by_name["simulate"]["side_effect"] == "simulated"
+
+
+def test_differentiate_is_declared_as_the_contract_reserved_verb() -> None:
+    """`differentiate` — QUANTUM's v1 §2.2 domain verb — is federated read-only.
+
+    Regression guard for the 2026-07-07 gap G1: the manifest federated the
+    workbench without its category-defining verb. The verb must stay
+    research-tier, read-only, and produce the differentiation-evidence schema.
+    """
+    data = manifest.build_manifest().to_dict()
+    by_name = {v["verb"]: v for v in data["verbs"]}
+    differentiate = by_name["differentiate"]
+    assert differentiate["side_effect"] == "read-only"
+    assert differentiate["safety_tier"] == "research"
+    assert differentiate["produces"] == ["studio.differentiation-evidence.v1"]
+    assert "studio.differentiation-evidence.v1" in data["evidence_types"]
+    assert set(differentiate["backends"]) == {"python", "rust"}
+
+
+def test_domain_distinctive_verbs_are_exactly_the_declared_three() -> None:
+    """Domain verbs beyond the core spine are differentiate, mitigate, execute."""
+    core = {"compile", "simulate", "analyse", "validate", "benchmark", "replay"}
+    declared = {verb.name for verb in verbs.QUANTUM_VERBS}
+    assert declared - core == {"differentiate", "mitigate", "execute"}
 
 
 def test_execute_is_the_only_live_hardware_verb() -> None:

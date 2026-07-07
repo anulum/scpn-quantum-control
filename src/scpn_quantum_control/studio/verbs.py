@@ -9,10 +9,16 @@
 
 QUANTUM is the quantum-native phase-dynamics laboratory of the SCPN ecosystem, so
 its verbs compile coupled-oscillator networks to quantum objects, evolve and probe
-them, mitigate hardware noise, and run approval-gated hardware. Six verbs are drawn
-from the shared :data:`scpn_studio_platform.verbs.CORE_VERBS` spine (``compile``,
-``simulate``, ``analyse``, ``validate``, ``benchmark``, ``replay``); two are
-domain-distinctive to a quantum studio (``mitigate``, ``execute``).
+them, differentiate through those programmes, mitigate hardware noise, and run
+approval-gated hardware. Six verbs are drawn from the shared
+:data:`scpn_studio_platform.verbs.CORE_VERBS` spine (``compile``, ``simulate``,
+``analyse``, ``validate``, ``benchmark``, ``replay``); three are
+domain-distinctive to a quantum studio (``differentiate``, ``mitigate``,
+``execute``). ``differentiate`` is the verb the locked v1 federation contract
+(§2.2) reserves as QUANTUM's distinctive capability: gradient evaluation over
+compiled phase programmes (value-and-grad, jvp/vjp, whole-program adjoint) with
+exact, parameter-shift, and finite-difference modes behind fail-closed support
+boundaries.
 
 Each is a :class:`scpn_studio_platform.verbs.Verb` carrying the attribute contract
 the Hub federates and gates against. ``execute`` is the studio's only
@@ -47,6 +53,7 @@ EVIDENCE_REPLAY_SCHEMA = "studio.evidence-replay.v1"
 MITIGATION_SCHEMA = "studio.mitigation.v1"
 HARDWARE_RESULT_PACK_SCHEMA = "studio.hardware-result-pack.v1"
 XY_COMPILE_RECOMPUTE_SCHEMA = "studio.xy-compile-recompute.v1"
+DIFFERENTIATION_EVIDENCE_SCHEMA = "studio.differentiation-evidence.v1"
 
 VERB_SUBSTRATES: dict[str, tuple[str, ...]] = {
     "analyse": ("classical-reference", "numerical-model", "simulator"),
@@ -124,6 +131,20 @@ REPLAY = Verb(
 
 
 # ── domain-distinctive verbs ───────────────────────────────────────────
+DIFFERENTIATE = Verb(
+    name="differentiate",
+    safety_tier=SafetyTier.RESEARCH,
+    side_effect=SideEffect.READ_ONLY,
+    timing=Timing(TimingClass.BATCH),
+    fidelity=Fidelity.ANALYTIC,
+    produces=(DIFFERENTIATION_EVIDENCE_SCHEMA,),
+    backends=("python", "rust"),
+)
+"""Evaluate gradients over compiled phase programmes (value-and-grad, jvp/vjp,
+whole-program adjoint) in exact, parameter-shift, or finite-difference mode,
+fail-closed outside the declared support matrix. The contract-reserved QUANTUM
+verb (v1 §2.2)."""
+
 MITIGATE = Verb(
     name="mitigate",
     safety_tier=SafetyTier.RESEARCH,
@@ -154,6 +175,7 @@ QUANTUM_VERBS: tuple[Verb, ...] = (
     VALIDATE,
     BENCHMARK,
     REPLAY,
+    DIFFERENTIATE,
     MITIGATE,
     EXECUTE,
 )
@@ -182,6 +204,7 @@ def evidence_schemas() -> tuple[str, ...]:
         MITIGATION_SCHEMA,
         HARDWARE_RESULT_PACK_SCHEMA,
         XY_COMPILE_RECOMPUTE_SCHEMA,
+        DIFFERENTIATION_EVIDENCE_SCHEMA,
     )
 
 
