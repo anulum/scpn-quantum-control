@@ -89,7 +89,7 @@ preparation and `bridge/` for Hamiltonian access.
 graph TD
     bridge["bridge/ (15)\nK_nm → quantum objects"]
     phase["phase/ (87)\nTime evolution"]
-    analysis["analysis/ (59)\nSync probes"]
+    analysis["analysis/ (60)\nSync probes"]
     control["control/ (14)\nQuantum control"]
     qsnn["qsnn/ (7)\nQuantum SNN"]
     identity["identity/ (6)\nIdentity analysis"]
@@ -232,7 +232,7 @@ bridge/                                    ← Foundation: K_nm → quantum obje
 ├── sc_to_quantum.py                         Angle/probability conversion
 └── spn_to_qcircuit.py                       SPN token → circuit amplitude
 
-analysis/                                  ← 58 modules: probes of the sync transition
+analysis/                                  ← 60 modules: probes of the sync transition
 ├── sync_witness.py                          ★ Synchronization witnesses (Gem 1)
 ├── sync_entanglement_witness.py             ★ R as entanglement witness (Gem 12)
 ├── quantum_persistent_homology.py           ★ Full PH pipeline from counts (Gem 5)
