@@ -112,6 +112,29 @@ content-addresses the committed artefact for its derivation edge:
 data/differentiable_phase_qnode/differentiable_transform_support_matrix_20260708.json
 ```
 
+## Studio web remote (Phase 0)
+
+The `studio-web/` workspace builds the QUANTUM studio's federated UI from one
+Vite app: a static portal (`dist/index.html`) and a Module Federation remote
+(`dist/remoteEntry.js`, ESM). The federation contract is locked in
+`studio-web/module-federation.config.ts` and guarded by tests: federation name
+`scpn_quantum_control`, one exposed module `./QuantumStudioPanel`, and
+react/react-dom shared as version-pinned singletons.
+
+```bash
+cd studio-web
+pnpm install
+pnpm test:coverage
+pnpm build
+```
+
+The Phase-0 panel renders the committed evidence surfaces verbatim — the
+schema-A capability manifest, the transform-algebra support matrix, and the
+baseline scorecard — each at its own claim boundary. Statuses are never
+recomputed or upgraded in the UI; a surface that fails its fail-closed guard
+renders as a loud `unverifiable` block. The manifest `ui_module` field stays
+`null` until the remote is deployed and its URL is real.
+
 ## WS-3 reference-validation feed
 
 WS-6 coverage must advance from attached reference-validation evidence, not from

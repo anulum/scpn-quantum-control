@@ -1,0 +1,149 @@
+/*
+SPDX-License-Identifier: AGPL-3.0-or-later
+Commercial license available
+© Concepts 1996–2026 Miroslav Šotek. All rights reserved.
+© Code 2020–2026 Miroslav Šotek. All rights reserved.
+ORCID: 0009-0009-3560-0851
+Contact: www.anulum.li | protoscience@anulum.li
+scpn-quantum-control — vendored floor design tokens (until keeper K2)
+*/
+
+:root {
+  --qsp-bg: #ffffff;
+  --qsp-fg: #1a1d21;
+  --qsp-muted: #5b6470;
+  --qsp-line: #d4d9df;
+  --qsp-surface: #f5f7f9;
+  --qsp-boundary: #8a5a00;
+  --qsp-boundary-bg: #fff5e0;
+  --qsp-fail-closed: #1f4e79;
+  --qsp-fail-closed-bg: #e8f0f8;
+  --qsp-unverifiable: #9b1c1c;
+  --qsp-unverifiable-bg: #fdecec;
+  --qsp-font:
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    sans-serif;
+  --qsp-mono: ui-monospace, "JetBrains Mono", monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --qsp-bg: #16181c;
+    --qsp-fg: #e6e9ec;
+    --qsp-muted: #9aa4af;
+    --qsp-line: #333a42;
+    --qsp-surface: #1e2126;
+    --qsp-boundary: #e8b45a;
+    --qsp-boundary-bg: #33280f;
+    --qsp-fail-closed: #8fb8dd;
+    --qsp-fail-closed-bg: #16242f;
+    --qsp-unverifiable: #f08d8d;
+    --qsp-unverifiable-bg: #331414;
+  }
+}
+
+.qsp-panel {
+  background: var(--qsp-bg);
+  color: var(--qsp-fg);
+  font-family: var(--qsp-font);
+  line-height: 1.45;
+  padding: 1rem;
+  max-width: 72rem;
+}
+
+.qsp-panel h2,
+.qsp-panel h3 {
+  margin: 0 0 0.5rem;
+}
+
+.qsp-panel section {
+  margin-top: 1.5rem;
+}
+
+.qsp-banner,
+.qsp-boundary {
+  border-left: 3px solid var(--qsp-boundary);
+  background: var(--qsp-boundary-bg);
+  color: var(--qsp-fg);
+  padding: 0.5rem 0.75rem;
+  margin: 0.5rem 0;
+}
+
+.qsp-meta {
+  color: var(--qsp-muted);
+  margin: 0.25rem 0 0.75rem;
+}
+
+.qsp-panel table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.qsp-panel th,
+.qsp-panel td {
+  border: 1px solid var(--qsp-line);
+  padding: 0.4rem 0.6rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+.qsp-panel thead th {
+  background: var(--qsp-surface);
+}
+
+.qsp-panel code {
+  font-family: var(--qsp-mono);
+  font-size: 0.9em;
+}
+
+.qsp-schema {
+  display: block;
+}
+
+.qsp-badge {
+  display: inline-block;
+  border-radius: 0.25rem;
+  padding: 0.1rem 0.4rem;
+  font-size: 0.85em;
+  white-space: nowrap;
+}
+
+.qsp-badge-boundary {
+  color: var(--qsp-boundary);
+  background: var(--qsp-boundary-bg);
+}
+
+.qsp-badge-fail-closed {
+  color: var(--qsp-fail-closed);
+  background: var(--qsp-fail-closed-bg);
+}
+
+.qsp-badge-unverifiable {
+  color: var(--qsp-unverifiable);
+  background: var(--qsp-unverifiable-bg);
+}
+
+.qsp-unverifiable {
+  border: 2px solid var(--qsp-unverifiable);
+  background: var(--qsp-unverifiable-bg);
+  color: var(--qsp-fg);
+  padding: 0.75rem 1rem;
+}
+
+.qsp-unverifiable h3 {
+  color: var(--qsp-unverifiable);
+  text-transform: uppercase;
+}
+
+.qsp-lane-filter {
+  display: inline-block;
+  margin-bottom: 0.5rem;
+  color: var(--qsp-muted);
+}
+
+.qsp-digest {
+  color: var(--qsp-muted);
+  overflow-wrap: anywhere;
+}
