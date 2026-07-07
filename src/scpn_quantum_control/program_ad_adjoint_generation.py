@@ -315,7 +315,6 @@ def _program_adjoint_cumulative_contributions(
     node_by_name: Mapping[str, WholeProgramIRNode],
 ) -> tuple[tuple[str, float], ...]:
     """Return local reverse contributions for one compact cumulative output."""
-
     parts = node.op.split(":")
     try:
         if parts[0] in {"cumsum", "cumprod"}:
@@ -383,7 +382,6 @@ def _program_adjoint_signal_contributions(
     node_by_name: Mapping[str, WholeProgramIRNode],
 ) -> tuple[tuple[str, float], ...]:
     """Return local reverse contributions for one compact signal output."""
-
     parts = node.op.split(":")
     try:
         if (
@@ -437,7 +435,6 @@ def _program_adjoint_signal_contributions(
 
 def _program_adjoint_stencil_spacing_label(label: str) -> object:
     """Parse compact static ``np.gradient`` spacing metadata."""
-
     if label.startswith("scalar="):
         value = float(label.removeprefix("scalar="))
         if not math.isfinite(value) or value == 0.0:
@@ -464,7 +461,6 @@ def _program_adjoint_stencil_contributions(
     node_by_name: Mapping[str, WholeProgramIRNode],
 ) -> tuple[tuple[str, float], ...]:
     """Return local reverse contributions for one compact stencil output."""
-
     parts = node.op.split(":")
     try:
         if (
@@ -513,7 +509,6 @@ def _program_adjoint_stencil_contributions(
 
 def _program_adjoint_optional_float_label(label: str) -> float | None:
     """Parse a compact interpolation optional-float metadata field."""
-
     if label == "none":
         return None
     value = float(label)
@@ -524,7 +519,6 @@ def _program_adjoint_optional_float_label(label: str) -> float | None:
 
 def _program_adjoint_grid_label(label: str) -> NDArray[np.float64]:
     """Parse a compact interpolation grid metadata field."""
-
     if not label:
         raise ValueError("interpolation adjoint grid metadata must not be empty")
     grid = np.array([float(part) for part in label.split(",")], dtype=np.float64)
@@ -540,7 +534,6 @@ def _program_adjoint_interpolation_contributions(
     node_by_name: Mapping[str, WholeProgramIRNode],
 ) -> tuple[tuple[str, float], ...]:
     """Return local reverse contributions for one compact interpolation output."""
-
     parts = node.op.split(":")
     try:
         if (

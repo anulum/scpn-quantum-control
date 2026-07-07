@@ -1372,8 +1372,8 @@ def differentiable_dashboard_status(
                 "structured numeric Program AD primitive conformance only; "
                 "bounded static-grid interp, static rank-1 signal, and static stencil "
                 "gradient Program AD Rust replay are covered; dynamic interpolation grids, "
-                "dynamic signal metadata, singular stencil spacing, broad LLVM/JIT lowering, "
-                "hardware, and performance promotion remain blocked"
+                "dynamic signal metadata, singular stencil spacing, broad Rust/LLVM/JIT "
+                "lowering, hardware, and performance promotion remain blocked"
             ),
         ),
         DifferentiableDashboardCapabilityRow(
