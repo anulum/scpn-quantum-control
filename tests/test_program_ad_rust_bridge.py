@@ -472,7 +472,6 @@ def test_value_and_gradient_bridge_is_shared_by_module_and_facade(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Direct and facade imports should call the same extracted Rust bridge."""
-
     calls: list[tuple[str, list[float]]] = []
     fake_engine = ModuleType("scpn_quantum_engine")
 
@@ -487,7 +486,7 @@ def test_value_and_gradient_bridge_is_shared_by_module_and_facade(
                 "effect_count": 4,
                 "supported_effect_count": 4,
                 "blocked_reasons": [],
-                "claim_boundary": "bounded_rust_program_ad_ir_elementwise_structural_array_static_source_map_static_reductions_static_signal_primitives_static_interpolation_primitives_static_stencil_primitives_static_cumulative_primitives_value_and_gradient_static_linalg_primitives_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit",
+                "claim_boundary": "bounded_rust_program_ad_ir_elementwise_structural_array_static_source_map_static_reductions_static_signal_primitives_static_interpolation_primitives_static_stencil_primitives_static_cumulative_primitives_value_and_gradient_static_linalg_primitives_dynamic_boundary_fail_closed_audit_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit",
             }
         )
 
@@ -526,7 +525,6 @@ def test_forward_interpreter_bridge_normalises_payload(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Forward interpreter wrapper should parse Rust JSON into a typed result."""
-
     fake_engine = ModuleType("scpn_quantum_engine")
 
     def replay(serialization: str, inputs: list[float]) -> str:
@@ -539,7 +537,7 @@ def test_forward_interpreter_bridge_normalises_payload(
                 "effect_count": 3,
                 "supported_effect_count": 3,
                 "blocked_reasons": [],
-                "claim_boundary": "bounded_rust_program_ad_ir_scalar_static_signal_static_interpolation_static_stencil_static_cumulative_and_static_linalg_primitives_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit",
+                "claim_boundary": "bounded_rust_program_ad_ir_scalar_static_signal_static_interpolation_static_stencil_static_cumulative_and_static_linalg_primitives_dynamic_boundary_fail_closed_audit_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit",
             }
         )
 
@@ -560,7 +558,6 @@ def test_registry_metadata_mirror_is_shared_by_module_and_facade(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Direct and facade imports should share the Rust registry metadata mirror."""
-
     calls: list[dict[str, object]] = []
     fake_engine = ModuleType("scpn_quantum_engine")
 
@@ -628,7 +625,6 @@ def test_registry_metadata_mirror_is_shared_by_module_and_facade(
 
 def test_rust_program_ad_value_and_gradient_replay_matches_python_trace() -> None:
     """Rust Program AD scalar replay should match the emitted Python trace."""
-
     pytest.importorskip("scpn_quantum_engine")
     values = np.array([0.4, -0.2], dtype=np.float64)
 
@@ -653,13 +649,12 @@ def test_rust_program_ad_value_and_gradient_replay_matches_python_trace() -> Non
     assert rust_result.supported_effect_count == len(result.program_ir.effects)
     assert (
         rust_result.claim_boundary
-        == "bounded_rust_program_ad_ir_elementwise_structural_array_static_source_map_static_reductions_static_signal_primitives_static_interpolation_primitives_static_stencil_primitives_static_cumulative_primitives_value_and_gradient_static_linalg_primitives_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit"
+        == "bounded_rust_program_ad_ir_elementwise_structural_array_static_source_map_static_reductions_static_signal_primitives_static_interpolation_primitives_static_stencil_primitives_static_cumulative_primitives_value_and_gradient_static_linalg_primitives_dynamic_boundary_fail_closed_audit_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit"
     )
 
 
 def test_rust_program_ad_registry_metadata_mirror_validates_python_registry() -> None:
     """Rust registry metadata mirror should validate Python registry coverage."""
-
     engine = pytest.importorskip("scpn_quantum_engine")
     assert callable(getattr(engine, "program_ad_registry_metadata_mirror", None))
 
@@ -699,7 +694,6 @@ def test_rust_program_ad_registry_metadata_mirror_validates_python_registry() ->
 
 def test_rust_program_ad_value_and_gradient_replays_executed_branch_trace() -> None:
     """Rust Program AD replay should preserve executed scalar branch semantics."""
-
     engine = pytest.importorskip("scpn_quantum_engine")
     assert callable(getattr(engine, "program_ad_effect_ir_interpret_value_and_gradient", None))
     values = np.array([0.4, -0.2], dtype=np.float64)
@@ -731,13 +725,12 @@ def test_rust_program_ad_value_and_gradient_replays_executed_branch_trace() -> N
     assert rust_result.supported_effect_count == len(result.program_ir.effects)
     assert (
         rust_result.claim_boundary
-        == "bounded_rust_program_ad_ir_elementwise_structural_array_static_source_map_static_reductions_static_signal_primitives_static_interpolation_primitives_static_stencil_primitives_static_cumulative_primitives_value_and_gradient_static_linalg_primitives_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit"
+        == "bounded_rust_program_ad_ir_elementwise_structural_array_static_source_map_static_reductions_static_signal_primitives_static_interpolation_primitives_static_stencil_primitives_static_cumulative_primitives_value_and_gradient_static_linalg_primitives_dynamic_boundary_fail_closed_audit_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit"
     )
 
 
 def test_rust_program_ad_value_and_gradient_replays_scalar_primitive_family_trace() -> None:
     """Rust Program AD replay should preserve emitted scalar primitive-family traces."""
-
     pytest.importorskip("scpn_quantum_engine")
     values = np.array([0.4, -0.2, 0.25, 0.1], dtype=np.float64)
 
@@ -787,13 +780,12 @@ def test_rust_program_ad_value_and_gradient_replays_scalar_primitive_family_trac
     assert rust_result.supported_effect_count == len(result.program_ir.effects)
     assert (
         rust_result.claim_boundary
-        == "bounded_rust_program_ad_ir_elementwise_structural_array_static_source_map_static_reductions_static_signal_primitives_static_interpolation_primitives_static_stencil_primitives_static_cumulative_primitives_value_and_gradient_static_linalg_primitives_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit"
+        == "bounded_rust_program_ad_ir_elementwise_structural_array_static_source_map_static_reductions_static_signal_primitives_static_interpolation_primitives_static_stencil_primitives_static_cumulative_primitives_value_and_gradient_static_linalg_primitives_dynamic_boundary_fail_closed_audit_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit"
     )
 
 
 def test_rust_program_ad_value_and_gradient_replays_static_stencil_trace() -> None:
     """Rust Program AD replay should preserve compact static ``np.gradient`` adjoints."""
-
     pytest.importorskip("scpn_quantum_engine")
     values = np.array([1.0, -2.0, 0.5, 3.0, -1.5], dtype=np.float64)
     weights = np.array([0.5, -1.0, 0.25, 2.0, -0.75], dtype=np.float64)
@@ -832,7 +824,6 @@ def test_rust_program_ad_value_and_gradient_replays_static_stencil_trace() -> No
 
 def test_rust_program_ad_value_and_gradient_replays_static_take_trace() -> None:
     """Rust Program AD replay should preserve Python-emitted static gather adjoints."""
-
     pytest.importorskip("scpn_quantum_engine")
     values = np.array([1.0, 2.0, 3.0, 4.0], dtype=np.float64)
     weights = np.array([1.5, -2.0, 0.25], dtype=np.float64)
@@ -874,13 +865,12 @@ def test_rust_program_ad_value_and_gradient_replays_static_take_trace() -> None:
     assert rust_result.supported_effect_count == len(result.program_ir.effects)
     assert (
         rust_result.claim_boundary
-        == "bounded_rust_program_ad_ir_elementwise_structural_array_static_source_map_static_reductions_static_signal_primitives_static_interpolation_primitives_static_stencil_primitives_static_cumulative_primitives_value_and_gradient_static_linalg_primitives_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit"
+        == "bounded_rust_program_ad_ir_elementwise_structural_array_static_source_map_static_reductions_static_signal_primitives_static_interpolation_primitives_static_stencil_primitives_static_cumulative_primitives_value_and_gradient_static_linalg_primitives_dynamic_boundary_fail_closed_audit_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit"
     )
 
 
 def test_rust_program_ad_value_and_gradient_replays_array_elementwise_broadcast_sum() -> None:
     """Rust Program AD replay should handle shaped elementwise array adjoints."""
-
     engine = pytest.importorskip("scpn_quantum_engine")
     assert callable(getattr(engine, "program_ad_effect_ir_interpret_value_and_gradient", None))
     values = np.array([0.2, -0.3, 0.5, 1.25], dtype=np.float64)
@@ -906,13 +896,12 @@ def test_rust_program_ad_value_and_gradient_replays_array_elementwise_broadcast_
     assert rust_result.supported_effect_count == 6
     assert (
         rust_result.claim_boundary
-        == "bounded_rust_program_ad_ir_elementwise_structural_array_static_source_map_static_reductions_static_signal_primitives_static_interpolation_primitives_static_stencil_primitives_static_cumulative_primitives_value_and_gradient_static_linalg_primitives_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit"
+        == "bounded_rust_program_ad_ir_elementwise_structural_array_static_source_map_static_reductions_static_signal_primitives_static_interpolation_primitives_static_stencil_primitives_static_cumulative_primitives_value_and_gradient_static_linalg_primitives_dynamic_boundary_fail_closed_audit_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit"
     )
 
 
 def test_rust_program_ad_value_and_gradient_replays_structural_array_ops() -> None:
     """Rust Program AD replay should handle structural array adjoints."""
-
     engine = pytest.importorskip("scpn_quantum_engine")
     assert callable(getattr(engine, "program_ad_effect_ir_interpret_value_and_gradient", None))
     values = np.array([2.0, 5.0, 10.0, 20.0, 30.0, 40.0, 50.0, 60.0], dtype=np.float64)
@@ -951,13 +940,12 @@ def test_rust_program_ad_value_and_gradient_replays_structural_array_ops() -> No
     assert rust_result.supported_effect_count == 8
     assert (
         rust_result.claim_boundary
-        == "bounded_rust_program_ad_ir_elementwise_structural_array_static_source_map_static_reductions_static_signal_primitives_static_interpolation_primitives_static_stencil_primitives_static_cumulative_primitives_value_and_gradient_static_linalg_primitives_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit"
+        == "bounded_rust_program_ad_ir_elementwise_structural_array_static_source_map_static_reductions_static_signal_primitives_static_interpolation_primitives_static_stencil_primitives_static_cumulative_primitives_value_and_gradient_static_linalg_primitives_dynamic_boundary_fail_closed_audit_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit"
     )
 
 
 def test_rust_program_ad_value_and_gradient_replays_structural_assembly_ops() -> None:
     """Rust Program AD replay should handle static concatenate/stack adjoints."""
-
     engine = pytest.importorskip("scpn_quantum_engine")
     assert callable(getattr(engine, "program_ad_effect_ir_interpret_value_and_gradient", None))
     values = np.array(
@@ -994,13 +982,12 @@ def test_rust_program_ad_value_and_gradient_replays_structural_assembly_ops() ->
     assert rust_result.supported_effect_count == 11
     assert (
         rust_result.claim_boundary
-        == "bounded_rust_program_ad_ir_elementwise_structural_array_static_source_map_static_reductions_static_signal_primitives_static_interpolation_primitives_static_stencil_primitives_static_cumulative_primitives_value_and_gradient_static_linalg_primitives_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit"
+        == "bounded_rust_program_ad_ir_elementwise_structural_array_static_source_map_static_reductions_static_signal_primitives_static_interpolation_primitives_static_stencil_primitives_static_cumulative_primitives_value_and_gradient_static_linalg_primitives_dynamic_boundary_fail_closed_audit_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit"
     )
 
 
 def test_rust_program_ad_value_and_gradient_replays_static_axis_reductions() -> None:
     """Rust Program AD replay should handle static-axis sum/mean adjoints."""
-
     engine = pytest.importorskip("scpn_quantum_engine")
     assert callable(getattr(engine, "program_ad_effect_ir_interpret_value_and_gradient", None))
     values = np.array(
@@ -1048,13 +1035,12 @@ def test_rust_program_ad_value_and_gradient_replays_static_axis_reductions() -> 
     assert rust_result.supported_effect_count == 10
     assert (
         rust_result.claim_boundary
-        == "bounded_rust_program_ad_ir_elementwise_structural_array_static_source_map_static_reductions_static_signal_primitives_static_interpolation_primitives_static_stencil_primitives_static_cumulative_primitives_value_and_gradient_static_linalg_primitives_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit"
+        == "bounded_rust_program_ad_ir_elementwise_structural_array_static_source_map_static_reductions_static_signal_primitives_static_interpolation_primitives_static_stencil_primitives_static_cumulative_primitives_value_and_gradient_static_linalg_primitives_dynamic_boundary_fail_closed_audit_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit"
     )
 
 
 def test_rust_program_ad_value_and_gradient_rejects_reduction_without_axis_metadata() -> None:
     """Shaped reduction replay should require static-axis metadata."""
-
     engine = pytest.importorskip("scpn_quantum_engine")
     assert callable(getattr(engine, "program_ad_effect_ir_interpret_value_and_gradient", None))
     missing_axis = _STATIC_AXIS_REDUCTION_PROGRAM_AD_IR.replace(
@@ -1076,7 +1062,6 @@ def test_rust_program_ad_value_and_gradient_rejects_reduction_without_axis_metad
 
 def test_rust_program_ad_value_and_gradient_replays_static_source_map_indexing() -> None:
     """Rust Program AD replay should scatter static source-map adjoints."""
-
     engine = pytest.importorskip("scpn_quantum_engine")
     assert callable(getattr(engine, "program_ad_effect_ir_interpret_value_and_gradient", None))
     values = np.array(
@@ -1111,13 +1096,12 @@ def test_rust_program_ad_value_and_gradient_replays_static_source_map_indexing()
     assert rust_result.supported_effect_count == 5
     assert (
         rust_result.claim_boundary
-        == "bounded_rust_program_ad_ir_elementwise_structural_array_static_source_map_static_reductions_static_signal_primitives_static_interpolation_primitives_static_stencil_primitives_static_cumulative_primitives_value_and_gradient_static_linalg_primitives_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit"
+        == "bounded_rust_program_ad_ir_elementwise_structural_array_static_source_map_static_reductions_static_signal_primitives_static_interpolation_primitives_static_stencil_primitives_static_cumulative_primitives_value_and_gradient_static_linalg_primitives_dynamic_boundary_fail_closed_audit_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit"
     )
 
 
 def test_rust_program_ad_value_and_gradient_rejects_source_map_without_metadata() -> None:
     """Static source-map replay should require explicit map metadata."""
-
     engine = pytest.importorskip("scpn_quantum_engine")
     assert callable(getattr(engine, "program_ad_effect_ir_interpret_value_and_gradient", None))
     missing_map = _STATIC_SOURCE_MAP_INDEXING_PROGRAM_AD_IR.replace(
@@ -1141,7 +1125,6 @@ def test_rust_program_ad_value_and_gradient_rejects_source_map_without_metadata(
 
 def test_rust_program_ad_value_and_gradient_replays_static_product_reductions() -> None:
     """Rust Program AD replay should handle static product reductions."""
-
     engine = pytest.importorskip("scpn_quantum_engine")
     assert callable(getattr(engine, "program_ad_effect_ir_interpret_value_and_gradient", None))
     values = np.array(
@@ -1180,7 +1163,6 @@ def test_rust_program_ad_value_and_gradient_replays_static_product_reductions() 
 
 def test_rust_program_ad_value_and_gradient_replays_single_zero_product() -> None:
     """Rust Program AD product replay should differentiate one zero input."""
-
     engine = pytest.importorskip("scpn_quantum_engine")
     assert callable(getattr(engine, "program_ad_effect_ir_interpret_value_and_gradient", None))
 
@@ -1196,7 +1178,6 @@ def test_rust_program_ad_value_and_gradient_replays_single_zero_product() -> Non
 
 def test_rust_program_ad_value_and_gradient_rejects_multi_zero_product() -> None:
     """Rust Program AD product replay should fail closed on multi-zero products."""
-
     engine = pytest.importorskip("scpn_quantum_engine")
     assert callable(getattr(engine, "program_ad_effect_ir_interpret_value_and_gradient", None))
 
@@ -1214,7 +1195,6 @@ def test_rust_program_ad_value_and_gradient_rejects_multi_zero_product() -> None
 
 def test_rust_program_ad_value_and_gradient_replays_static_variance_std_reductions() -> None:
     """Rust Program AD replay should handle population variance/std reductions."""
-
     engine = pytest.importorskip("scpn_quantum_engine")
     assert callable(getattr(engine, "program_ad_effect_ir_interpret_value_and_gradient", None))
     values = np.array(
@@ -1271,7 +1251,6 @@ def test_rust_program_ad_value_and_gradient_replays_static_variance_std_reductio
 
 def test_rust_program_ad_value_and_gradient_replays_corrected_variance_std_reductions() -> None:
     """Rust Program AD replay should support static ddof/correction metadata."""
-
     engine = pytest.importorskip("scpn_quantum_engine")
     assert callable(getattr(engine, "program_ad_effect_ir_interpret_value_and_gradient", None))
     values = np.array(
@@ -1318,7 +1297,6 @@ def test_rust_program_ad_value_and_gradient_replays_corrected_variance_std_reduc
 
 def test_rust_program_ad_value_and_gradient_rejects_degenerate_moment_correction() -> None:
     """Rust Program AD replay should reject non-positive variance denominators."""
-
     engine = pytest.importorskip("scpn_quantum_engine")
     assert callable(getattr(engine, "program_ad_effect_ir_interpret_value_and_gradient", None))
     invalid_ir = _STATIC_VARIANCE_STD_REDUCTION_PROGRAM_AD_IR.replace(
@@ -1343,7 +1321,6 @@ def test_rust_program_ad_value_and_gradient_rejects_degenerate_moment_correction
 
 def test_rust_program_ad_value_and_gradient_rejects_zero_variance_std() -> None:
     """Rust Program AD std replay should fail closed at zero variance."""
-
     engine = pytest.importorskip("scpn_quantum_engine")
     assert callable(getattr(engine, "program_ad_effect_ir_interpret_value_and_gradient", None))
 
@@ -1361,7 +1338,6 @@ def test_rust_program_ad_value_and_gradient_rejects_zero_variance_std() -> None:
 
 def test_rust_program_ad_value_and_gradient_replays_order_statistic_reductions() -> None:
     """Rust Program AD replay should route strict order-statistic adjoints."""
-
     engine = pytest.importorskip("scpn_quantum_engine")
     assert callable(getattr(engine, "program_ad_effect_ir_interpret_value_and_gradient", None))
     values = np.array(
@@ -1447,7 +1423,6 @@ def test_rust_program_ad_value_and_gradient_replays_order_statistic_reductions()
 
 def test_rust_program_ad_value_and_gradient_rejects_order_statistic_ties() -> None:
     """Rust Program AD order-statistic replay should fail closed on ties."""
-
     engine = pytest.importorskip("scpn_quantum_engine")
     assert callable(getattr(engine, "program_ad_effect_ir_interpret_value_and_gradient", None))
 
@@ -1462,7 +1437,6 @@ def test_rust_program_ad_value_and_gradient_rejects_order_statistic_ties() -> No
 
 def test_rust_program_ad_value_and_gradient_replays_static_trapezoid_reductions() -> None:
     """Rust Program AD replay should route static-grid trapezoid adjoints."""
-
     engine = pytest.importorskip("scpn_quantum_engine")
     assert callable(getattr(engine, "program_ad_effect_ir_interpret_value_and_gradient", None))
     values = np.array(
@@ -1498,7 +1472,6 @@ def test_rust_program_ad_value_and_gradient_replays_static_trapezoid_reductions(
 
 def test_rust_program_ad_value_and_gradient_replays_full_grid_trapezoid_reductions() -> None:
     """Rust Program AD replay should support full-shape static trapezoid grids."""
-
     engine = pytest.importorskip("scpn_quantum_engine")
     assert callable(getattr(engine, "program_ad_effect_ir_interpret_value_and_gradient", None))
     values = np.array(
@@ -1523,7 +1496,6 @@ def test_rust_program_ad_value_and_gradient_replays_full_grid_trapezoid_reductio
 
 def test_rust_program_ad_value_and_gradient_rejects_invalid_trapezoid_metadata() -> None:
     """Rust Program AD trapezoid replay should validate static grid metadata."""
-
     engine = pytest.importorskip("scpn_quantum_engine")
     assert callable(getattr(engine, "program_ad_effect_ir_interpret_value_and_gradient", None))
     invalid_ir = _STATIC_TRAPEZOID_REDUCTION_PROGRAM_AD_IR.replace(
@@ -1545,7 +1517,6 @@ def test_rust_program_ad_value_and_gradient_rejects_invalid_trapezoid_metadata()
 
 def test_rust_program_ad_value_and_gradient_rejects_vector_objective() -> None:
     """Rust Program AD replay should fail closed on non-scalar objectives."""
-
     engine = pytest.importorskip("scpn_quantum_engine")
     assert callable(getattr(engine, "program_ad_effect_ir_interpret_value_and_gradient", None))
     rust_result = value_and_grad_program_ad_effect_ir_with_rust(
@@ -1563,7 +1534,6 @@ def test_bridge_fails_closed_when_native_extension_or_export_is_missing(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Optional native extension failures should stay structured and fail-closed."""
-
     monkeypatch.setitem(sys.modules, "scpn_quantum_engine", None)
     missing_extension = value_and_grad_program_ad_effect_ir_with_rust("{}", [0.0])
     assert missing_extension.supported is False
@@ -1608,7 +1578,6 @@ def test_bridge_rejects_malformed_inputs_and_payloads(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Bridge validation should reject unsafe coercions and malformed Rust payloads."""
-
     with pytest.raises(ValueError, match="must contain real numeric scalars"):
         value_and_grad_program_ad_effect_ir_with_rust("{}", [True])
     with pytest.raises(ValueError, match="must be a non-empty string"):
@@ -1833,7 +1802,6 @@ def test_interpreter_result_rejects_invalid_states(
     match: str,
 ) -> None:
     """Interpreter result container should reject inconsistent states."""
-
     with pytest.raises(ValueError, match=match):
         RustProgramADInterpreterResult(**kwargs)  # type: ignore[arg-type]
 
@@ -1991,7 +1959,6 @@ def test_value_and_gradient_result_rejects_invalid_states(
     match: str,
 ) -> None:
     """Value+gradient result container should reject inconsistent states."""
-
     with pytest.raises(ValueError, match=match):
         RustProgramADValueAndGradientResult(**kwargs)  # type: ignore[arg-type]
 
@@ -2008,7 +1975,6 @@ def _objective_mutation(values: Any) -> Any:
 
 def test_bridge_replays_inert_view_alias_program_with_real_engine() -> None:
     """With the real engine, a reshape view-alias program replays bit-exact."""
-
     pytest.importorskip("scpn_quantum_engine")
     from scpn_quantum_control import program_adjoint_value_and_grad
 
@@ -2027,7 +1993,6 @@ def test_bridge_replays_inert_view_alias_program_with_real_engine() -> None:
 
 def test_bridge_fails_closed_on_mutation_alias_with_real_engine() -> None:
     """A mutation-aliasing program stays outside the bounded Rust replay."""
-
     pytest.importorskip("scpn_quantum_engine")
 
     sample = np.array([2.0, 3.0], dtype=np.float64)
@@ -2048,7 +2013,6 @@ def _objective_det_2x2(values: Any) -> Any:
 
 def test_bridge_replays_linalg_trace_with_real_engine() -> None:
     """With the real engine, a 2x2 trace program replays bit-exact."""
-
     pytest.importorskip("scpn_quantum_engine")
     from scpn_quantum_control import program_adjoint_value_and_grad
 
@@ -2064,7 +2028,6 @@ def test_bridge_replays_linalg_trace_with_real_engine() -> None:
 
 def test_bridge_replays_linalg_det_2x2_with_real_engine() -> None:
     """With the real engine, a 2x2 determinant program replays within float64 tolerance."""
-
     pytest.importorskip("scpn_quantum_engine")
     from scpn_quantum_control import program_adjoint_value_and_grad
 
@@ -2076,8 +2039,9 @@ def test_bridge_replays_linalg_det_2x2_with_real_engine() -> None:
         pytest.skip(f"installed engine lacks linalg:det replay: {rust.blocked_reasons}")
     _, reference = program_adjoint_value_and_grad(_objective_det_2x2, sample)
     np.testing.assert_allclose(np.asarray(rust.gradient), reference, atol=1.0e-12)
+    assert "dynamic_boundary_fail_closed_audit" in rust.claim_boundary
     assert rust.claim_boundary.endswith(
-        "elementwise_structural_array_static_source_map_static_reductions_static_signal_primitives_static_interpolation_primitives_static_stencil_primitives_static_cumulative_primitives_value_and_gradient_static_linalg_primitives_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit"
+        "executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit"
     )
 
 
@@ -2095,7 +2059,6 @@ def _objective_solve_2x2_indexed(values: Any) -> Any:
 
 def test_bridge_replays_linalg_inverse_with_real_engine() -> None:
     """With the real engine, a reduced 2x2 inverse program replays within tolerance."""
-
     pytest.importorskip("scpn_quantum_engine")
     from scpn_quantum_control import program_adjoint_value_and_grad
 
@@ -2111,7 +2074,6 @@ def test_bridge_replays_linalg_inverse_with_real_engine() -> None:
 
 def test_bridge_replays_linalg_solve_with_real_engine() -> None:
     """With the real engine, a reduced 2x2 linear solve replays within tolerance."""
-
     pytest.importorskip("scpn_quantum_engine")
     from scpn_quantum_control import program_adjoint_value_and_grad
 
@@ -2127,7 +2089,6 @@ def test_bridge_replays_linalg_solve_with_real_engine() -> None:
 
 def test_bridge_fails_closed_on_indexed_multi_output_linalg_with_real_engine() -> None:
     """A bare indexed solve component stays outside the bounded Rust replay."""
-
     pytest.importorskip("scpn_quantum_engine")
 
     sample = np.array([3.0, 1.0, 2.0, 4.0, 5.0, 6.0], dtype=np.float64)
@@ -2144,7 +2105,6 @@ def _objective_det_3x3(values: Any) -> Any:
 
 def test_bridge_replays_linalg_det_3x3_with_real_engine() -> None:
     """With the real engine, a 3x3 determinant program replays within float64 tolerance."""
-
     pytest.importorskip("scpn_quantum_engine")
     from scpn_quantum_control import program_adjoint_value_and_grad
 
@@ -2168,7 +2128,6 @@ def _objective_solve_3x3_sum(values: Any) -> Any:
 
 def test_bridge_replays_linalg_inverse_3x3_with_real_engine() -> None:
     """With the real engine, a reduced 3x3 inverse program replays bit-exact."""
-
     pytest.importorskip("scpn_quantum_engine")
     from scpn_quantum_control import program_adjoint_value_and_grad
 
@@ -2184,7 +2143,6 @@ def test_bridge_replays_linalg_inverse_3x3_with_real_engine() -> None:
 
 def test_bridge_replays_linalg_solve_3x3_with_real_engine() -> None:
     """With the real engine, a reduced 3x3 linear solve replays within tolerance."""
-
     pytest.importorskip("scpn_quantum_engine")
     from scpn_quantum_control import program_adjoint_value_and_grad
 
@@ -2217,7 +2175,6 @@ def _objective_inv_nxn_sum(values: Any) -> Any:
 
 def test_bridge_replays_general_linalg_det_4x4_with_real_engine() -> None:
     """With the real engine, a 4x4 determinant replays via the general LU path."""
-
     pytest.importorskip("scpn_quantum_engine")
     from scpn_quantum_control import program_adjoint_value_and_grad
 
@@ -2233,7 +2190,6 @@ def test_bridge_replays_general_linalg_det_4x4_with_real_engine() -> None:
 
 def test_bridge_replays_general_linalg_inverse_5x5_with_real_engine() -> None:
     """With the real engine, a reduced 5x5 inverse replays via the general LU path."""
-
     pytest.importorskip("scpn_quantum_engine")
     from scpn_quantum_control import program_adjoint_value_and_grad
 

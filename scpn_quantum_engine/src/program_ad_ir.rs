@@ -15,6 +15,9 @@
 //! order-statistic, static-grid trapezoid reductions, compact interpolation,
 //! signal, stencil, and cumulative primitives, and static-linalg value+gradient
 //! traces when opcode-bearing rows are present.
+//! Dynamic indexing, dynamic axis, dynamic q/method, dynamic moment-correction,
+//! dynamic trapezoid-grid, and zero-variance `std` boundaries are audited as
+//! explicit fail-closed outcomes.
 //! It does not promote LLVM lowering, JIT execution, reverse-mode compiler AD,
 //! hardware execution, or performance claims.
 
@@ -81,9 +84,9 @@ use crate::program_ad_variance_reduction::{
 const PROGRAM_AD_EFFECT_IR_FORMAT: &str = "program_ad_effect_ir.v1";
 const PROGRAM_AD_IR_CLAIM_BOUNDARY: &str = "metadata_only_no_program_execution";
 const PROGRAM_AD_RUST_INTERPRETER_CLAIM_BOUNDARY: &str =
-    "bounded_rust_program_ad_ir_scalar_static_signal_static_interpolation_static_stencil_static_cumulative_and_static_linalg_primitives_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit";
+    "bounded_rust_program_ad_ir_scalar_static_signal_static_interpolation_static_stencil_static_cumulative_and_static_linalg_primitives_dynamic_boundary_fail_closed_audit_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit";
 const PROGRAM_AD_RUST_VALUE_AND_GRADIENT_CLAIM_BOUNDARY: &str =
-    "bounded_rust_program_ad_ir_elementwise_structural_array_static_source_map_static_reductions_static_signal_primitives_static_interpolation_primitives_static_stencil_primitives_static_cumulative_primitives_value_and_gradient_static_linalg_primitives_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit";
+    "bounded_rust_program_ad_ir_elementwise_structural_array_static_source_map_static_reductions_static_signal_primitives_static_interpolation_primitives_static_stencil_primitives_static_cumulative_primitives_value_and_gradient_static_linalg_primitives_dynamic_boundary_fail_closed_audit_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit";
 
 /// One SSA value record from Python-emitted Program AD metadata.
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize)]

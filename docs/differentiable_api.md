@@ -273,6 +273,11 @@ rank-1/2x2/3x2/2x3 `pinv`, `diag`, and on-diagonal `diagflat` boundaries,
 unsafe source-level aliases and non-executed branch
 semantics, general Program AD execution, LLVM/JIT differentiated execution,
 hardware, provider, and performance routes remain fail-closed.
+The Rust BL-02 dynamic-boundary battery exercises those blocked indexing,
+axis, q/method, moment-correction, trapezoid-grid, and zero-variance `std`
+routes through the public value+gradient export and the returned claim boundary
+now carries `dynamic_boundary_fail_closed_audit` to make that evidence visible
+to Python consumers.
 The Rust panic-boundary corpus exercises malformed JSON, missing schema fields,
 unsafe alias metadata, unsupported opcodes, non-finite inputs, and malformed
 compact signal/cumulative metadata through the public forward and value+gradient

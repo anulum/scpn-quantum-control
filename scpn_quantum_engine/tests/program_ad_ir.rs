@@ -783,7 +783,7 @@ fn program_ad_effect_ir_rust_interpreter_executes_opcode_bearing_scalar_subset()
     assert!((result.value.unwrap() - expected).abs() <= 1.0e-12);
     assert_eq!(
         result.claim_boundary,
-        "bounded_rust_program_ad_ir_scalar_static_signal_static_interpolation_static_stencil_static_cumulative_and_static_linalg_primitives_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit"
+        "bounded_rust_program_ad_ir_scalar_static_signal_static_interpolation_static_stencil_static_cumulative_and_static_linalg_primitives_dynamic_boundary_fail_closed_audit_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit"
     );
 }
 
@@ -801,7 +801,7 @@ fn program_ad_effect_ir_rust_interpreter_replays_executed_branch_metadata() {
     assert!((result.value.unwrap() - expected).abs() <= 1.0e-12);
     assert_eq!(
         result.claim_boundary,
-        "bounded_rust_program_ad_ir_scalar_static_signal_static_interpolation_static_stencil_static_cumulative_and_static_linalg_primitives_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit"
+        "bounded_rust_program_ad_ir_scalar_static_signal_static_interpolation_static_stencil_static_cumulative_and_static_linalg_primitives_dynamic_boundary_fail_closed_audit_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit"
     );
 }
 
@@ -825,7 +825,7 @@ fn program_ad_effect_ir_rust_value_and_gradient_replays_scalar_reverse_subset() 
     assert_eq!(result.parameter_targets, vec!["%0", "%1"]);
     assert_eq!(
         result.claim_boundary,
-        "bounded_rust_program_ad_ir_elementwise_structural_array_static_source_map_static_reductions_static_signal_primitives_static_interpolation_primitives_static_stencil_primitives_static_cumulative_primitives_value_and_gradient_static_linalg_primitives_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit"
+        "bounded_rust_program_ad_ir_elementwise_structural_array_static_source_map_static_reductions_static_signal_primitives_static_interpolation_primitives_static_stencil_primitives_static_cumulative_primitives_value_and_gradient_static_linalg_primitives_dynamic_boundary_fail_closed_audit_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit"
     );
 }
 
@@ -849,7 +849,7 @@ fn program_ad_effect_ir_rust_value_and_gradient_replays_executed_branch_metadata
     assert_eq!(result.parameter_targets, vec!["%0", "%1"]);
     assert_eq!(
         result.claim_boundary,
-        "bounded_rust_program_ad_ir_elementwise_structural_array_static_source_map_static_reductions_static_signal_primitives_static_interpolation_primitives_static_stencil_primitives_static_cumulative_primitives_value_and_gradient_static_linalg_primitives_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit"
+        "bounded_rust_program_ad_ir_elementwise_structural_array_static_source_map_static_reductions_static_signal_primitives_static_interpolation_primitives_static_stencil_primitives_static_cumulative_primitives_value_and_gradient_static_linalg_primitives_dynamic_boundary_fail_closed_audit_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit"
     );
 }
 
@@ -892,7 +892,7 @@ fn program_ad_effect_ir_rust_value_and_gradient_replays_scalar_primitive_family(
     assert_eq!(result.parameter_targets, vec!["%0", "%1", "%2", "%3"]);
     assert_eq!(
         result.claim_boundary,
-        "bounded_rust_program_ad_ir_elementwise_structural_array_static_source_map_static_reductions_static_signal_primitives_static_interpolation_primitives_static_stencil_primitives_static_cumulative_primitives_value_and_gradient_static_linalg_primitives_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit"
+        "bounded_rust_program_ad_ir_elementwise_structural_array_static_source_map_static_reductions_static_signal_primitives_static_interpolation_primitives_static_stencil_primitives_static_cumulative_primitives_value_and_gradient_static_linalg_primitives_dynamic_boundary_fail_closed_audit_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit"
     );
 }
 
@@ -929,7 +929,7 @@ fn program_ad_effect_ir_rust_value_and_gradient_replays_array_elementwise_broadc
     }
     assert_eq!(
         result.claim_boundary,
-        "bounded_rust_program_ad_ir_elementwise_structural_array_static_source_map_static_reductions_static_signal_primitives_static_interpolation_primitives_static_stencil_primitives_static_cumulative_primitives_value_and_gradient_static_linalg_primitives_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit"
+        "bounded_rust_program_ad_ir_elementwise_structural_array_static_source_map_static_reductions_static_signal_primitives_static_interpolation_primitives_static_stencil_primitives_static_cumulative_primitives_value_and_gradient_static_linalg_primitives_dynamic_boundary_fail_closed_audit_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit"
     );
 }
 
@@ -965,7 +965,7 @@ fn program_ad_effect_ir_rust_value_and_gradient_replays_structural_array_ops() {
     assert_eq!(result.supported_effect_count, 8);
     assert_eq!(
         result.claim_boundary,
-        "bounded_rust_program_ad_ir_elementwise_structural_array_static_source_map_static_reductions_static_signal_primitives_static_interpolation_primitives_static_stencil_primitives_static_cumulative_primitives_value_and_gradient_static_linalg_primitives_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit"
+        "bounded_rust_program_ad_ir_elementwise_structural_array_static_source_map_static_reductions_static_signal_primitives_static_interpolation_primitives_static_stencil_primitives_static_cumulative_primitives_value_and_gradient_static_linalg_primitives_dynamic_boundary_fail_closed_audit_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit"
     );
 }
 
@@ -999,7 +999,7 @@ fn program_ad_effect_ir_rust_value_and_gradient_replays_structural_assembly_ops(
     assert_eq!(result.supported_effect_count, 11);
     assert_eq!(
         result.claim_boundary,
-        "bounded_rust_program_ad_ir_elementwise_structural_array_static_source_map_static_reductions_static_signal_primitives_static_interpolation_primitives_static_stencil_primitives_static_cumulative_primitives_value_and_gradient_static_linalg_primitives_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit"
+        "bounded_rust_program_ad_ir_elementwise_structural_array_static_source_map_static_reductions_static_signal_primitives_static_interpolation_primitives_static_stencil_primitives_static_cumulative_primitives_value_and_gradient_static_linalg_primitives_dynamic_boundary_fail_closed_audit_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit"
     );
 }
 
@@ -1062,7 +1062,7 @@ fn program_ad_effect_ir_rust_value_and_gradient_replays_static_axis_reductions()
     assert_eq!(result.supported_effect_count, 10);
     assert_eq!(
         result.claim_boundary,
-        "bounded_rust_program_ad_ir_elementwise_structural_array_static_source_map_static_reductions_static_signal_primitives_static_interpolation_primitives_static_stencil_primitives_static_cumulative_primitives_value_and_gradient_static_linalg_primitives_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit"
+        "bounded_rust_program_ad_ir_elementwise_structural_array_static_source_map_static_reductions_static_signal_primitives_static_interpolation_primitives_static_stencil_primitives_static_cumulative_primitives_value_and_gradient_static_linalg_primitives_dynamic_boundary_fail_closed_audit_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit"
     );
 }
 
@@ -1109,7 +1109,7 @@ fn program_ad_effect_ir_rust_value_and_gradient_replays_static_source_map_indexi
     assert_eq!(result.supported_effect_count, 5);
     assert_eq!(
         result.claim_boundary,
-        "bounded_rust_program_ad_ir_elementwise_structural_array_static_source_map_static_reductions_static_signal_primitives_static_interpolation_primitives_static_stencil_primitives_static_cumulative_primitives_value_and_gradient_static_linalg_primitives_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit"
+        "bounded_rust_program_ad_ir_elementwise_structural_array_static_source_map_static_reductions_static_signal_primitives_static_interpolation_primitives_static_stencil_primitives_static_cumulative_primitives_value_and_gradient_static_linalg_primitives_dynamic_boundary_fail_closed_audit_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit"
     );
 }
 
@@ -1135,7 +1135,7 @@ fn program_ad_effect_ir_rust_value_and_gradient_replays_source_map_inert_source_
     );
     assert_eq!(
         result.claim_boundary,
-        "bounded_rust_program_ad_ir_elementwise_structural_array_static_source_map_static_reductions_static_signal_primitives_static_interpolation_primitives_static_stencil_primitives_static_cumulative_primitives_value_and_gradient_static_linalg_primitives_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit"
+        "bounded_rust_program_ad_ir_elementwise_structural_array_static_source_map_static_reductions_static_signal_primitives_static_interpolation_primitives_static_stencil_primitives_static_cumulative_primitives_value_and_gradient_static_linalg_primitives_dynamic_boundary_fail_closed_audit_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit"
     );
 }
 
@@ -1588,7 +1588,7 @@ fn program_ad_effect_ir_rust_value_and_gradient_replays_inert_view_alias() {
     assert!((result.gradient[1] - (-4.0_f64)).abs() <= 1.0e-12);
     assert_eq!(
         result.claim_boundary,
-        "bounded_rust_program_ad_ir_elementwise_structural_array_static_source_map_static_reductions_static_signal_primitives_static_interpolation_primitives_static_stencil_primitives_static_cumulative_primitives_value_and_gradient_static_linalg_primitives_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit"
+        "bounded_rust_program_ad_ir_elementwise_structural_array_static_source_map_static_reductions_static_signal_primitives_static_interpolation_primitives_static_stencil_primitives_static_cumulative_primitives_value_and_gradient_static_linalg_primitives_dynamic_boundary_fail_closed_audit_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit"
     );
 }
 

@@ -383,7 +383,9 @@ broad linalg/spectral array adjoints beyond the bounded 2x2 `eigvalsh`,
 boundaries,
 source-level/non-executed branch
 semantics, general Program AD execution, LLVM/JIT execution, hardware,
-provider, and performance promotion.
+provider, and performance promotion. The Rust claim boundary now reports the
+BL-02 `dynamic_boundary_fail_closed_audit` for the audited dynamic-boundary
+fail-closed corpus.
 Python callers can use `scpn_quantum_control.program_ad_rust_bridge` for the
 typed fail-closed wrappers; `scpn_quantum_control.differentiable` re-exports
 the same symbols for backward compatibility.

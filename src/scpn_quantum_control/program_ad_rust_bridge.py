@@ -20,6 +20,9 @@ eigenvalues/nonzero-offdiagonal eigenvectors, and 2x2 real-distinct
 plus static rank-2 distinct-positive
 ``svd(..., compute_uv=False)`` singular-value replay, and
 constant-full-rank rank-1/Nx2/2xN ``pinv`` replay
+with audited fail-closed dynamic boundaries for indexing, axes, moment
+corrections, q/method metadata, trapezoid grids, and zero-variance ``std``
+gradients
 without importing the larger differentiable-programming facade.
 """
 
@@ -33,8 +36,8 @@ from typing import Protocol
 import numpy as np
 from numpy.typing import NDArray
 
-_FORWARD_CLAIM_BOUNDARY = "bounded_rust_program_ad_ir_scalar_static_signal_static_interpolation_static_stencil_static_cumulative_and_static_linalg_primitives_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit"
-_VALUE_AND_GRAD_CLAIM_BOUNDARY = "bounded_rust_program_ad_ir_elementwise_structural_array_static_source_map_static_reductions_static_signal_primitives_static_interpolation_primitives_static_stencil_primitives_static_cumulative_primitives_value_and_gradient_static_linalg_primitives_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit"
+_FORWARD_CLAIM_BOUNDARY = "bounded_rust_program_ad_ir_scalar_static_signal_static_interpolation_static_stencil_static_cumulative_and_static_linalg_primitives_dynamic_boundary_fail_closed_audit_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit"
+_VALUE_AND_GRAD_CLAIM_BOUNDARY = "bounded_rust_program_ad_ir_elementwise_structural_array_static_source_map_static_reductions_static_signal_primitives_static_interpolation_primitives_static_stencil_primitives_static_cumulative_primitives_value_and_gradient_static_linalg_primitives_dynamic_boundary_fail_closed_audit_executed_branch_view_assignment_and_expression_alias_metadata_only_no_llvm_jit"
 _REGISTRY_METADATA_MIRROR_CLAIM_BOUNDARY = (
     "rust_program_ad_registry_metadata_mirror_only_no_execution_promotion"
 )
@@ -61,6 +64,7 @@ class RustProgramADInterpreterResult:
     claim_boundary: str
 
     def __post_init__(self) -> None:
+        """Validate interpreter replay result invariants."""
         if not isinstance(self.supported, bool):
             raise ValueError("Rust Program AD interpreter supported flag must be boolean")
         if self.value is not None:
@@ -91,6 +95,7 @@ class RustProgramADValueAndGradientResult:
     claim_boundary: str
 
     def __post_init__(self) -> None:
+        """Validate value-and-gradient replay result invariants."""
         if not isinstance(self.supported, bool):
             raise ValueError("Rust Program AD value+gradient supported flag must be boolean")
         if self.value is not None:
@@ -134,6 +139,7 @@ class RustProgramADRegistryMetadataMirrorResult:
     claim_boundary: str
 
     def __post_init__(self) -> None:
+        """Validate registry-mirror result invariants."""
         if not isinstance(self.supported, bool):
             raise ValueError("Rust Program AD registry metadata supported flag must be boolean")
         if self.primitive_count < 0 or self.covered_primitives < 0:
@@ -176,7 +182,6 @@ class RustProgramADRegistryMetadataMirrorResult:
 
     def as_dict(self) -> dict[str, object]:
         """Return a JSON-ready metadata mirror payload."""
-
         return {
             "supported": self.supported,
             "primitive_count": self.primitive_count,
@@ -205,7 +210,6 @@ def interpret_program_ad_effect_ir_with_rust(
     execution. This is not LLVM, JIT, reverse-mode compiler AD, provider,
     hardware, or performance evidence.
     """
-
     serialization = _program_ad_serialization(program_ir)
     checked_inputs = _validate_inputs("Rust Program AD interpreter inputs", inputs)
     try:
@@ -276,15 +280,14 @@ def value_and_grad_program_ad_effect_ir_with_rust(
     scatter nodes, ``diagflat`` construction nodes, and fixed integer
     ``matrix_power`` output nodes. Aliases, mutation, non-lowered dynamic
     indexing semantics, dynamic axes, dynamic trapezoid-grid metadata, dynamic
-    q/method metadata, dynamic ``ddof``/``correction`` metadata, zero-variance ``std`` gradients,
-    dynamic structural operations,
+    q/method metadata, dynamic ``ddof``/``correction`` metadata,
+    zero-variance ``std`` gradients, dynamic structural operations,
     provider execution, hardware execution, LLVM/JIT execution, and performance
     claims fail closed instead of falling back to Python.
     Executed runtime branch metadata is replayed only as provenance for the
     already-executed path; non-executed branch adjoints and source-level
     control-flow lowering remain fail-closed.
     """
-
     serialization = _program_ad_serialization(program_ir)
     checked_inputs = _validate_inputs("Rust Program AD value+gradient inputs", inputs)
     try:
@@ -378,7 +381,6 @@ def mirror_program_ad_registry_metadata_with_rust() -> RustProgramADRegistryMeta
     registry-dispatched execution, broad linalg/spectral adjoints, LLVM/JIT
     lowering, provider, hardware, or performance evidence.
     """
-
     from .program_ad_registry import program_ad_registry_dispatch_coverage_report
 
     report = program_ad_registry_dispatch_coverage_report()
@@ -538,7 +540,6 @@ def _normalise_program_ad_int_mapping(
 
 def _as_real_numeric_array(name: str, values: object) -> NDArray[np.float64]:
     """Return a real numeric array without implicit string/bool/object coercion."""
-
     try:
         raw = np.asarray(values)
     except ValueError as exc:
@@ -555,7 +556,6 @@ def _as_real_numeric_array(name: str, values: object) -> NDArray[np.float64]:
 
 def _as_real_scalar(name: str, value: object) -> float:
     """Return an explicit real numeric scalar without implicit coercion."""
-
     if isinstance(value, bool):
         raise ValueError(f"{name} must be a real numeric scalar")
     raw = np.asarray(value)
