@@ -137,10 +137,55 @@ scpn-quantum-control — vendored floor design tokens (until keeper K2)
   text-transform: uppercase;
 }
 
-.qsp-lane-filter {
-  display: inline-block;
-  margin-bottom: 0.5rem;
+.qsp-support-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  gap: 0.4rem;
+  margin: 0.75rem 0;
+}
+
+.qsp-support-summary span {
+  border: 1px solid var(--qsp-line);
+  background: var(--qsp-surface);
+  padding: 0.35rem 0.5rem;
+}
+
+.qsp-filter-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  gap: 0.6rem;
+  margin: 0.75rem 0;
+}
+
+.qsp-filter-grid label {
   color: var(--qsp-muted);
+  display: grid;
+  gap: 0.25rem;
+}
+
+.qsp-filter-grid input,
+.qsp-filter-grid select {
+  border: 1px solid var(--qsp-line);
+  background: var(--qsp-bg);
+  color: var(--qsp-fg);
+  min-height: 2rem;
+  padding: 0.25rem 0.4rem;
+  width: 100%;
+}
+
+.qsp-table-scroll {
+  overflow-x: auto;
+}
+
+.qsp-table-scroll table {
+  min-width: 58rem;
+}
+
+.qsp-row-detail {
+  color: var(--qsp-muted);
+  display: block;
+  margin-top: 0.2rem;
+  overflow-wrap: anywhere;
 }
 
 .qsp-digest {

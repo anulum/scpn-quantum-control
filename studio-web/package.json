@@ -15,8 +15,7 @@
   },
   "dependencies": {
     "react": "19.2.7",
-    "react-dom": "19.2.7",
-    "zustand": "5.0.14"
+    "react-dom": "19.2.7"
   },
   "devDependencies": {
     "@module-federation/vite": "1.16.13",

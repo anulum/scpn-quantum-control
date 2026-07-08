@@ -41,6 +41,8 @@ describe("committed surfaces", () => {
       expect(blocked).toHaveLength(4);
       expect(blocked.every((row) => row.residual === null)).toBe(true);
       expect(blocked.every((row) => row.blockedReasons.length > 0)).toBe(true);
+      expect(supportMatrix.value.rows.every((row) => row.caseIds.length > 0)).toBe(true);
+      expect(supportMatrix.value.rows.every((row) => row.evidence.length > 0)).toBe(true);
     }
   });
 
@@ -123,10 +125,33 @@ describe("fail-closed guards", () => {
         {
           row_id: "r",
           lane: "native",
+          case_ids: ["case"],
+          evidence: ["finite_difference_diagnostic"],
           transform_stack: ["grad"],
           status: "passed",
           supported: true,
           residual: "tiny",
+          tolerance: 0.1,
+          blocked_reasons: [],
+          notes: ["n"],
+        },
+      ],
+    });
+    expect(result.ok).toBe(false);
+  });
+
+  it("rejects support-matrix rows without explorer axis evidence", () => {
+    const result = parseSupportMatrix({
+      artifact_id: "x",
+      claim_boundary: "y",
+      support_matrix: [
+        {
+          row_id: "r",
+          lane: "native",
+          transform_stack: ["grad"],
+          status: "passed",
+          supported: true,
+          residual: 0.0,
           tolerance: 0.1,
           blocked_reasons: [],
           notes: ["n"],

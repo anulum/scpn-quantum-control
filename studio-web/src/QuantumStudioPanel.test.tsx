@@ -7,14 +7,9 @@
 // scpn-quantum-control — QuantumStudioPanel render tests
 
 import { fireEvent, render, screen, within } from "@testing-library/react";
-import { beforeEach, describe, expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import QuantumStudioPanel from "./QuantumStudioPanel";
-import { ALL_LANES, usePanelStore } from "./panel/store";
-
-beforeEach(() => {
-  usePanelStore.setState({ laneFilter: ALL_LANES });
-});
 
 describe("QuantumStudioPanel", () => {
   it("renders the boundary banner before any evidence", () => {
@@ -39,18 +34,47 @@ describe("QuantumStudioPanel", () => {
   it("renders all 13 support rows with fail-closed boundaries first-class", () => {
     render(<QuantumStudioPanel />);
     expect(screen.getByText(/13 rows · 9 supported · 4 fail-closed boundaries/)).toBeTruthy();
+    expect(screen.getByText("frameworks 5")).toBeTruthy();
+    expect(screen.getByText("exactness levels 3")).toBeTruthy();
     expect(screen.getByText("native_grad_vmap")).toBeTruthy();
     expect(screen.getByText("unsupported_nondifferentiable_boundary")).toBeTruthy();
-    expect(screen.getAllByText(/blocked · fail-closed boundary/)).toHaveLength(4);
+    expect(screen.getAllByText(/blocked · fail-closed · fail-closed boundary/)).toHaveLength(4);
   });
 
-  it("narrows the grid by lane without hiding the boundary counts", () => {
+  it("narrows the cockpit by framework without hiding the boundary counts", () => {
     render(<QuantumStudioPanel />);
-    fireEvent.change(screen.getByLabelText(/Lane/), {
-      target: { value: "unsupported_boundary" },
+    fireEvent.change(screen.getByLabelText("Framework"), {
+      target: { value: "unsupported-boundary" },
     });
     expect(screen.queryByText("native_grad_vmap")).toBeNull();
     expect(screen.getByText("unsupported_complex_valued_objective")).toBeTruthy();
+    expect(screen.getByText(/13 rows · 9 supported · 4 fail-closed boundaries/)).toBeTruthy();
+  });
+
+  it("narrows the cockpit by backend, exactness, claim status, and operation search", () => {
+    render(<QuantumStudioPanel />);
+    fireEvent.change(screen.getByLabelText("Backend"), {
+      target: { value: "parameter-shift-reference" },
+    });
+    fireEvent.change(screen.getByLabelText("Exactness"), {
+      target: { value: "reference-checked" },
+    });
+    fireEvent.change(screen.getByLabelText("Claim status"), {
+      target: { value: "bounded-model" },
+    });
+    fireEvent.change(screen.getByLabelText("Operation"), {
+      target: { value: "phase_qnode_native_vmap_grad_matches_parameter_shift_reference" },
+    });
+    expect(screen.getByText("quantum_gradient_native_nesting")).toBeTruthy();
+    expect(screen.queryByText("native_grad_vmap")).toBeNull();
+  });
+
+  it("renders an explicit empty state when filters match no committed row", () => {
+    render(<QuantumStudioPanel />);
+    fireEvent.change(screen.getByLabelText("Operation"), {
+      target: { value: "not-a-committed-support-row" },
+    });
+    expect(screen.getByText("No committed support row matches these filters.")).toBeTruthy();
     expect(screen.getByText(/13 rows · 9 supported · 4 fail-closed boundaries/)).toBeTruthy();
   });
 

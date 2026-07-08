@@ -39,6 +39,8 @@ export interface StudioManifestView {
 export interface SupportMatrixRowView {
   readonly rowId: string;
   readonly lane: string;
+  readonly caseIds: readonly string[];
+  readonly evidence: readonly string[];
   readonly transformStack: readonly string[];
   readonly status: string;
   readonly supported: boolean;
@@ -157,6 +159,8 @@ function loadSupportMatrix(raw: unknown): Loaded<SupportMatrixView> {
       return { ok: false, reason: "support-matrix artefact carries a malformed row" };
     }
     const transformStack = stringList(entry["transform_stack"]);
+    const caseIds = stringList(entry["case_ids"]);
+    const evidence = stringList(entry["evidence"]);
     const blockedReasons = stringList(entry["blocked_reasons"]);
     const notes = stringList(entry["notes"]);
     const residual = entry["residual"];
@@ -167,6 +171,8 @@ function loadSupportMatrix(raw: unknown): Loaded<SupportMatrixView> {
       typeof entry["supported"] !== "boolean" ||
       typeof entry["tolerance"] !== "number" ||
       (residual !== null && typeof residual !== "number") ||
+      caseIds === null ||
+      evidence === null ||
       transformStack === null ||
       blockedReasons === null ||
       notes === null
@@ -176,6 +182,8 @@ function loadSupportMatrix(raw: unknown): Loaded<SupportMatrixView> {
     rows.push({
       rowId: entry["row_id"],
       lane: entry["lane"],
+      caseIds,
+      evidence,
       transformStack,
       status: entry["status"],
       supported: entry["supported"],
