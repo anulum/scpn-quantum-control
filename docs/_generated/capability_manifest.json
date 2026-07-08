@@ -10,10 +10,10 @@
     "public_api_exports": 820,
     "public_documentation_pages": 260,
     "python_model_classes": 927,
-    "python_model_source_modules": 485,
+    "python_model_source_modules": 486,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 46,
-    "test_files": 854
+    "test_files": 855
   },
   "documentation": {
     "examples": [
@@ -582,7 +582,7 @@
       {
         "package": "studio",
         "path": "src/scpn_quantum_control/studio",
-        "python_modules": 15
+        "python_modules": 16
       },
       {
         "package": "tcbo",
@@ -4764,6 +4764,7 @@
       "src/scpn_quantum_control/ssgf/quantum_spectral.py",
       "src/scpn_quantum_control/stable_core.py",
       "src/scpn_quantum_control/stable_core_preflight.py",
+      "src/scpn_quantum_control/studio/benchmark_databank_bundle.py",
       "src/scpn_quantum_control/studio/coverage_frontier.py",
       "src/scpn_quantum_control/studio/evidence_bundle.py",
       "src/scpn_quantum_control/studio/federation.py",
@@ -6687,6 +6688,7 @@
       "tests/test_stress_scale.py",
       "tests/test_structured_ansatz.py",
       "tests/test_structured_ansatz_branches.py",
+      "tests/test_studio_benchmark_databank_bundle.py",
       "tests/test_studio_evidence_bundle.py",
       "tests/test_studio_kuramoto_reference.py",
       "tests/test_studio_kuramoto_scenario_artifact.py",

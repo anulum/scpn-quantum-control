@@ -311,7 +311,7 @@
     ]
   },
   "schema_a": {
-    "content_digest": "sha256:b0932b55d0318d63aeecb72456ed3751ffc84019343b56f8e34aa08ade203f97",
+    "content_digest": "sha256:5964e72068ab431e956cae5ed87e5a923268ec25219be534084ddaa7d2f7dc08",
     "contract_era": "v1",
     "enumeration": "language-agnostic",
     "evidence_types": [
@@ -321,6 +321,7 @@
       "studio.dla-parity.v1",
       "studio.physics-validation.v1",
       "studio.native-speedup.v1",
+      "studio.benchmark-databank.v1",
       "studio.evidence-replay.v1",
       "studio.mitigation.v1",
       "studio.hardware-result-pack.v1",
@@ -408,7 +409,8 @@
         ],
         "fidelity": "analytic",
         "produces": [
-          "studio.native-speedup.v1"
+          "studio.native-speedup.v1",
+          "studio.benchmark-databank.v1"
         ],
         "safety_tier": "research",
         "side_effect": "simulated",

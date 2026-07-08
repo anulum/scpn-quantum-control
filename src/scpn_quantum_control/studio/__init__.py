@@ -14,6 +14,10 @@ and :mod:`scpn_quantum_control.studio.verbs`.
 
 from __future__ import annotations
 
+from .benchmark_databank_bundle import (
+    DEFAULT_BENCHMARK_DATABANK_ARTIFACT_PATH,
+    build_benchmark_databank_bundle,
+)
 from .coverage_frontier import (
     ANSWERED_STATUSES,
     CoverageFrontierReport,
@@ -84,6 +88,7 @@ from .verbs import QUANTUM_VERBS, STUDIO_ID, evidence_schemas, verb_substrates
 __all__ = [
     "ANSWERED_STATUSES",
     "CoverageFrontierReport",
+    "DEFAULT_BENCHMARK_DATABANK_ARTIFACT_PATH",
     "DEFAULT_REFERENCE_VALIDATION_PATH",
     "DEFAULT_SCORECARD_ARTIFACT_PATH",
     "DEFAULT_SUPPORT_MATRIX_ARTIFACT_PATH",
@@ -103,6 +108,7 @@ __all__ = [
     "DecodedXYCompileInput",
     "XYCompileRecomputeUnit",
     "build_architecture_map_extension",
+    "build_benchmark_databank_bundle",
     "build_claim_ledger_bundle",
     "build_claim_ledger_bundles",
     "build_federation_document",

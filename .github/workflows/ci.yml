@@ -529,6 +529,7 @@ jobs:
           tests/test_studio_kuramoto_reference.py
           tests/test_studio_kuramoto_scenario_artifact.py
           tests/test_studio_program_ad_replay_artifact.py
+          tests/test_studio_benchmark_databank_bundle.py
           -q
 
   studio-web:

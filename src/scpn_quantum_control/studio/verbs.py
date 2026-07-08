@@ -49,6 +49,7 @@ SYNC_ANALYSIS_SCHEMA = "studio.sync-analysis.v1"
 DLA_PARITY_SCHEMA = "studio.dla-parity.v1"
 PHYSICS_VALIDATION_SCHEMA = "studio.physics-validation.v1"
 NATIVE_SPEEDUP_SCHEMA = "studio.native-speedup.v1"
+BENCHMARK_DATABANK_SCHEMA = "studio.benchmark-databank.v1"
 EVIDENCE_REPLAY_SCHEMA = "studio.evidence-replay.v1"
 MITIGATION_SCHEMA = "studio.mitigation.v1"
 HARDWARE_RESULT_PACK_SCHEMA = "studio.hardware-result-pack.v1"
@@ -114,10 +115,14 @@ BENCHMARK = Verb(
     side_effect=SideEffect.SIMULATED,
     timing=Timing(TimingClass.BATCH),
     fidelity=Fidelity.ANALYTIC,
-    produces=(NATIVE_SPEEDUP_SCHEMA,),
+    produces=(NATIVE_SPEEDUP_SCHEMA, BENCHMARK_DATABANK_SCHEMA),
     backends=("rust", "python"),
 )
-"""Measure the native (Rust) construction speedup as a reproducible regression guard."""
+"""Measure the native (Rust) construction speedup as a reproducible regression guard.
+
+Emits two families: ``studio.native-speedup.v1`` (the regression-gate speedup)
+and ``studio.benchmark-databank.v1`` (the committed tier-benchmark databank whose
+rows federate each measured row verbatim with its non-isolated timing caveat)."""
 
 REPLAY = Verb(
     name="replay",
@@ -207,6 +212,7 @@ def evidence_schemas() -> tuple[str, ...]:
         DLA_PARITY_SCHEMA,
         PHYSICS_VALIDATION_SCHEMA,
         NATIVE_SPEEDUP_SCHEMA,
+        BENCHMARK_DATABANK_SCHEMA,
         EVIDENCE_REPLAY_SCHEMA,
         MITIGATION_SCHEMA,
         HARDWARE_RESULT_PACK_SCHEMA,
