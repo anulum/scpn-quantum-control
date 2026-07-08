@@ -15,7 +15,9 @@ import numpy as np
 import pytest
 from numpy.typing import NDArray
 
-from scpn_quantum_control.studio.kuramoto_reference import (
+pytest.importorskip("scpn_studio_platform", reason="studio extra not installed")
+
+from scpn_quantum_control.studio.kuramoto_reference import (  # noqa: E402
     MAX_OSCILLATORS,
     MAX_STEPS,
     decode_output,

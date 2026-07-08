@@ -15,7 +15,9 @@ from pathlib import Path
 
 import pytest
 
-from scpn_quantum_control.studio import kuramoto_scenario_artifact as artifact
+pytest.importorskip("scpn_studio_platform", reason="studio extra not installed")
+
+from scpn_quantum_control.studio import kuramoto_scenario_artifact as artifact  # noqa: E402
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 COMMITTED_JSON = REPO_ROOT / artifact.DEFAULT_KURAMOTO_SCENARIO_JSON_PATH

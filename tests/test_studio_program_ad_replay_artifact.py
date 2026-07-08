@@ -16,6 +16,7 @@ from pathlib import Path
 import pytest
 
 pytest.importorskip("scpn_quantum_engine", reason="Rust engine (pyo3) not installed")
+pytest.importorskip("scpn_studio_platform", reason="studio extra not installed")
 
 from scpn_quantum_control.studio import (  # noqa: E402
     program_ad_replay_artifact as artifact,
