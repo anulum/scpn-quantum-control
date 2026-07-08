@@ -31,6 +31,7 @@ def _fake_bundle(tmp_path: Path) -> Path:
     (dist / "index.html").write_text("<!doctype html>", encoding="utf-8")
     (dist / "remoteEntry.js").write_text("export{};", encoding="utf-8")
     (dist / "wasm" / bundle_tool.KERNEL_WASM_NAME).write_bytes(b"\0asm-fake")
+    (dist / "wasm" / bundle_tool.PROGRAM_AD_WASM_NAME).write_bytes(b"\0asm-program-ad")
     return dist
 
 
@@ -133,6 +134,7 @@ def test_deploy_manifest_digests_every_tracked_artefact(tmp_path: Path) -> None:
         "index.html",
         "remoteEntry.js",
         f"wasm/{bundle_tool.KERNEL_WASM_NAME}",
+        f"wasm/{bundle_tool.PROGRAM_AD_WASM_NAME}",
     ]
     for row in artefacts:
         assert str(row["sha256"]).startswith("sha256:")
@@ -176,11 +178,21 @@ def test_main_builds_ships_and_manifests(
     tmp_path: Path,
     capsys: pytest.CaptureFixture[str],
 ) -> None:
-    """The CLI wires build, ship, and manifest together."""
+    """The CLI wires build, ship, and manifest together for both kernels."""
     dist = _fake_bundle(tmp_path)
-    built = tmp_path / "built.wasm"
-    built.write_bytes(b"\0asm-cli")
-    monkeypatch.setattr(bundle_tool, "build_wasm_kernel", lambda: built)
+
+    build_dir = tmp_path / "built"
+    build_dir.mkdir()
+
+    def fake_build(
+        crate_dir: Path = bundle_tool.KERNEL_CRATE_DIR,
+        wasm_name: str = bundle_tool.KERNEL_WASM_NAME,
+    ) -> Path:
+        source = build_dir / wasm_name
+        source.write_bytes(b"\0asm-" + wasm_name.encode())
+        return source
+
+    monkeypatch.setattr(bundle_tool, "build_wasm_kernel", fake_build)
     monkeypatch.setattr(bundle_tool, "rustc_version", lambda: "rustc 1.96.0")
     monkeypatch.setattr(bundle_tool, "kernel_crate_version", lambda: "0.1.0")
     exit_code = bundle_tool.main(["--dist-dir", str(dist)])
@@ -188,9 +200,12 @@ def test_main_builds_ships_and_manifests(
     assert exit_code == 0
     assert "deploy-manifest.json" in captured.out
     manifest = json.loads((dist / bundle_tool.DEPLOY_MANIFEST_NAME).read_text(encoding="utf-8"))
-    wasm_row = manifest["artifacts"][2]
-    expected = "sha256:" + hashlib.sha256(b"\0asm-cli").hexdigest()
-    assert wasm_row["sha256"] == expected
+    rows = {row["path"]: row["sha256"] for row in manifest["artifacts"]}
+    for name in (bundle_tool.KERNEL_WASM_NAME, bundle_tool.PROGRAM_AD_WASM_NAME):
+        assert (
+            rows[f"wasm/{name}"]
+            == "sha256:" + hashlib.sha256(b"\0asm-" + name.encode()).hexdigest()
+        )
 
 
 def test_real_kernel_builds_when_the_wasm_target_is_installed() -> None:

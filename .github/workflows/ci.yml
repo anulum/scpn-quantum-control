@@ -528,6 +528,7 @@ jobs:
           tests/test_studio_qpu_result_pack.py
           tests/test_studio_kuramoto_reference.py
           tests/test_studio_kuramoto_scenario_artifact.py
+          tests/test_studio_program_ad_replay_artifact.py
           -q
 
   studio-web:
@@ -577,6 +578,7 @@ jobs:
         run: |
           test -f studio-web/dist/deploy-manifest.json
           test -f studio-web/dist/wasm/scpn_quantum_studio_wasm_kernel.wasm
+          test -f studio-web/dist/wasm/scpn_quantum_studio_program_ad_wasm.wasm
           python3 - <<'EOF'
           import hashlib, json
           from pathlib import Path

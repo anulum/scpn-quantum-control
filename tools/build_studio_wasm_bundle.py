@@ -37,6 +37,11 @@ import tomllib
 REPO_ROOT: Final[Path] = Path(__file__).resolve().parents[1]
 KERNEL_CRATE_DIR: Final[Path] = REPO_ROOT / "scpn_quantum_engine" / "studio_wasm_kernel"
 KERNEL_WASM_NAME: Final[str] = "scpn_quantum_studio_wasm_kernel.wasm"
+# The program-AD replay kernel is a separate wasm (it pulls serde_json + nalgebra)
+# so the lightweight compile/simulate path never loads it; the panel fetches it
+# only when the gradient card runs.
+PROGRAM_AD_CRATE_DIR: Final[Path] = REPO_ROOT / "scpn_quantum_engine" / "studio_program_ad_wasm"
+PROGRAM_AD_WASM_NAME: Final[str] = "scpn_quantum_studio_program_ad_wasm.wasm"
 WASM_TARGET: Final[str] = "wasm32-unknown-unknown"
 DEFAULT_DIST_DIR: Final[Path] = REPO_ROOT / "studio-web" / "dist"
 DEPLOY_MANIFEST_NAME: Final[str] = "deploy-manifest.json"
@@ -85,13 +90,17 @@ def kernel_crate_version(crate_dir: Path = KERNEL_CRATE_DIR) -> str:
     return version
 
 
-def build_wasm_kernel(crate_dir: Path = KERNEL_CRATE_DIR) -> Path:
-    """Build the kernel crate for the WASM target and return the artefact path.
+def build_wasm_kernel(
+    crate_dir: Path = KERNEL_CRATE_DIR, wasm_name: str = KERNEL_WASM_NAME
+) -> Path:
+    """Build a kernel crate for the WASM target and return the artefact path.
 
     Parameters
     ----------
     crate_dir
         The kernel crate directory.
+    wasm_name
+        The expected ``.wasm`` artefact filename produced by the crate.
 
     Returns
     -------
@@ -108,7 +117,7 @@ def build_wasm_kernel(crate_dir: Path = KERNEL_CRATE_DIR) -> Path:
         cwd=crate_dir,
         check=True,
     )
-    artefact = crate_dir / "target" / WASM_TARGET / "release" / KERNEL_WASM_NAME
+    artefact = crate_dir / "target" / WASM_TARGET / "release" / wasm_name
     if not artefact.exists():
         raise ValueError(f"wasm build produced no artefact at {artefact.as_posix()}")
     return artefact
@@ -150,7 +159,7 @@ def ship_wasm_into_bundle(artefact: Path, dist_dir: Path) -> Path:
         raise ValueError(f"portal bundle does not exist: {dist_dir.as_posix()} (run vite build)")
     wasm_dir = dist_dir / "wasm"
     wasm_dir.mkdir(exist_ok=True)
-    shipped = wasm_dir / KERNEL_WASM_NAME
+    shipped = wasm_dir / artefact.name
     shutil.copyfile(artefact, shipped)
     return shipped
 
@@ -184,7 +193,11 @@ def build_deploy_manifest(
         manifest-signed.
     """
     artefacts: list[dict[str, object]] = []
-    tracked = [*_TRACKED_BUNDLE_FILES, f"wasm/{KERNEL_WASM_NAME}"]
+    tracked = [
+        *_TRACKED_BUNDLE_FILES,
+        f"wasm/{KERNEL_WASM_NAME}",
+        f"wasm/{PROGRAM_AD_WASM_NAME}",
+    ]
     for relative in tracked:
         path = dist_dir / relative
         if not path.is_file():
@@ -235,8 +248,10 @@ def main(argv: list[str] | None = None) -> int:
         help="built portal bundle directory (vite build output)",
     )
     args = parser.parse_args(argv)
-    artefact = build_wasm_kernel()
-    shipped = ship_wasm_into_bundle(artefact, args.dist_dir)
+    kernel_artefact = build_wasm_kernel()
+    shipped = ship_wasm_into_bundle(kernel_artefact, args.dist_dir)
+    program_ad_artefact = build_wasm_kernel(PROGRAM_AD_CRATE_DIR, PROGRAM_AD_WASM_NAME)
+    program_ad_shipped = ship_wasm_into_bundle(program_ad_artefact, args.dist_dir)
     manifest = build_deploy_manifest(
         args.dist_dir,
         toolchain=rustc_version(),
@@ -244,6 +259,7 @@ def main(argv: list[str] | None = None) -> int:
     )
     manifest_path = write_deploy_manifest(manifest, args.dist_dir)
     print(f"shipped {shipped}")
+    print(f"shipped {program_ad_shipped}")
     print(f"wrote {manifest_path}")
     return 0
 

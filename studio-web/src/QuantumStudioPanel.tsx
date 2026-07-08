@@ -10,12 +10,14 @@ import "./tokens.css";
 
 import { KuramotoPlayPanel } from "./panel/KuramotoPlayPanel";
 import { ManifestCapabilities } from "./panel/ManifestCapabilities";
+import { ProgramADReplayCard } from "./panel/ProgramADReplayCard";
 import { RecomputeCard } from "./panel/RecomputeCard";
 import { ScorecardTable } from "./panel/ScorecardTable";
 import { SupportMatrixGrid } from "./panel/SupportMatrixGrid";
 import { Unverifiable } from "./panel/Unverifiable";
 import { scorecard, studioManifest, supportMatrix } from "./panel/data";
 import { committedScenario } from "./panel/kuramoto";
+import { programAdUnit } from "./panel/programAd";
 import { recomputeUnit } from "./panel/recompute";
 
 /**
@@ -56,6 +58,14 @@ export function QuantumStudioPanel() {
         <Unverifiable
           surface="kuramoto_scenario_meanfield_20260708.json"
           reason={committedScenario.reason}
+        />
+      )}
+      {programAdUnit.ok ? (
+        <ProgramADReplayCard unit={programAdUnit.value} />
+      ) : (
+        <Unverifiable
+          surface="program_ad_replay_rational_20260708.json"
+          reason={programAdUnit.reason}
         />
       )}
       {supportMatrix.ok ? (

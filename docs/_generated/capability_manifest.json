@@ -10,10 +10,10 @@
     "public_api_exports": 820,
     "public_documentation_pages": 260,
     "python_model_classes": 927,
-    "python_model_source_modules": 484,
+    "python_model_source_modules": 485,
     "rust_pyo3_model_wrappers": 177,
-    "rust_source_modules": 64,
-    "test_files": 853
+    "rust_source_modules": 46,
+    "test_files": 854
   },
   "documentation": {
     "examples": [
@@ -582,7 +582,7 @@
       {
         "package": "studio",
         "path": "src/scpn_quantum_control/studio",
-        "python_modules": 14
+        "python_modules": 15
       },
       {
         "package": "tcbo",
@@ -4770,6 +4770,7 @@
       "src/scpn_quantum_control/studio/kuramoto_reference.py",
       "src/scpn_quantum_control/studio/kuramoto_scenario_artifact.py",
       "src/scpn_quantum_control/studio/manifest.py",
+      "src/scpn_quantum_control/studio/program_ad_replay_artifact.py",
       "src/scpn_quantum_control/studio/qpu_result_pack.py",
       "src/scpn_quantum_control/studio/recompute_kernel.py",
       "src/scpn_quantum_control/studio/reference_validation.py",
@@ -5013,24 +5014,6 @@
       "scpn_quantum_engine/src/otoc.rs",
       "scpn_quantum_engine/src/pauli.rs",
       "scpn_quantum_engine/src/pec.rs",
-      "scpn_quantum_engine/src/program_ad_cumulative_reduction.rs",
-      "scpn_quantum_engine/src/program_ad_interpolation_reduction.rs",
-      "scpn_quantum_engine/src/program_ad_ir.rs",
-      "scpn_quantum_engine/src/program_ad_linalg_array.rs",
-      "scpn_quantum_engine/src/program_ad_linalg_diag.rs",
-      "scpn_quantum_engine/src/program_ad_linalg_diagflat.rs",
-      "scpn_quantum_engine/src/program_ad_linalg_matrix_power.rs",
-      "scpn_quantum_engine/src/program_ad_linalg_pinv.rs",
-      "scpn_quantum_engine/src/program_ad_linalg_spectral.rs",
-      "scpn_quantum_engine/src/program_ad_linalg_svd.rs",
-      "scpn_quantum_engine/src/program_ad_order_statistic_reduction.rs",
-      "scpn_quantum_engine/src/program_ad_product_reduction.rs",
-      "scpn_quantum_engine/src/program_ad_registry_mirror.rs",
-      "scpn_quantum_engine/src/program_ad_signal_reduction.rs",
-      "scpn_quantum_engine/src/program_ad_static_source_map.rs",
-      "scpn_quantum_engine/src/program_ad_stencil_reduction.rs",
-      "scpn_quantum_engine/src/program_ad_trapezoid_reduction.rs",
-      "scpn_quantum_engine/src/program_ad_variance_reduction.rs",
       "scpn_quantum_engine/src/pulse_shaping.rs",
       "scpn_quantum_engine/src/qnode_metrics.rs",
       "scpn_quantum_engine/src/qpetri.rs",
@@ -6708,6 +6691,7 @@
       "tests/test_studio_kuramoto_reference.py",
       "tests/test_studio_kuramoto_scenario_artifact.py",
       "tests/test_studio_manifest.py",
+      "tests/test_studio_program_ad_replay_artifact.py",
       "tests/test_studio_qpu_result_pack.py",
       "tests/test_studio_recompute_kernel.py",
       "tests/test_studio_reference_validation.py",
