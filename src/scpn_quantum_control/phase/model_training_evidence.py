@@ -116,7 +116,7 @@ class RegisteredDifferentiableTrainingSuiteRecord:
 
 @dataclass(frozen=True)
 class RegisteredDifferentiableTrainingSuiteAuditResult:
-    """Aggregated readiness audit for the TODO training-suite promotion lane."""
+    """Aggregated readiness audit for the tracked training-suite promotion lane."""
 
     records: tuple[RegisteredDifferentiableTrainingSuiteRecord, ...]
     evidence_suite: DifferentiableModelTrainingEvidenceSuite
@@ -267,7 +267,7 @@ def _qgnn_registered_case(tolerance: float) -> DifferentiableModelTrainingRecord
     )
     labels = np.array([0.15, 0.35, -0.2, 0.45], dtype=np.float64)
     params = np.array([0.3, -0.2, 0.15], dtype=np.float64)
-    degree = adjacency.sum(axis=1, keepdims=True)
+    degree = np.asarray([float(sum(row)) for row in adjacency], dtype=np.float64)[:, None]
     aggregated = (adjacency @ node_features) / degree
     design = np.column_stack(
         (node_features[:, 0], node_features[:, 1], aggregated[:, 0] - aggregated[:, 1])
@@ -418,7 +418,9 @@ def _inverse_coupling_recovery_case(tolerance: float) -> DifferentiableModelTrai
         ],
         dtype=np.float64,
     )
-    if np.linalg.matrix_rank(observation_design) != 3:
+    singular_values = np.linalg.svd(observation_design, compute_uv=False)
+    design_rank = sum(1 for value in singular_values if value > 1.0e-12)
+    if design_rank != 3:
         raise RuntimeError("inverse-coupling recovery design must be full rank")
     target_couplings = np.array([0.42, 0.28, 0.36], dtype=np.float64)
     target_observations = np.sin(observation_design @ target_couplings)

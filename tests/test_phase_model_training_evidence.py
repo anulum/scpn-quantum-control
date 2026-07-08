@@ -9,6 +9,10 @@
 
 from __future__ import annotations
 
+import numpy as np
+import pytest
+from numpy.typing import NDArray
+
 from scpn_quantum_control.phase.model_training_evidence import (
     run_differentiable_model_training_evidence_suite,
     run_registered_differentiable_training_suite_audit,
@@ -101,3 +105,22 @@ def test_registered_training_suite_audit_closes_only_evidenced_lanes() -> None:
         "inverse_coupling_recovery",
     ]
     assert payload["blocked_model_families"] == []
+
+
+def test_model_training_evidence_rejects_invalid_tolerance() -> None:
+    """The registered suite refuses non-positive gradient tolerances."""
+    with pytest.raises(ValueError, match="gradient_tolerance"):
+        run_differentiable_model_training_evidence_suite(gradient_tolerance=0.0)
+
+
+def test_inverse_coupling_recovery_rejects_rank_deficient_design(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """The inverse-coupling evidence gate fails closed on a rank-deficient design."""
+
+    def fake_svd(_matrix: object, *, compute_uv: bool = True) -> NDArray[np.float64]:
+        return np.array([1.0, 0.5, 0.0], dtype=np.float64)
+
+    monkeypatch.setattr(np.linalg, "svd", fake_svd)
+    with pytest.raises(RuntimeError, match="full rank"):
+        run_differentiable_model_training_evidence_suite()
