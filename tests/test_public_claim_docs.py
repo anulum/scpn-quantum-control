@@ -17,6 +17,7 @@ snapshot — so the docs fail closed instead of rotting silently.
 
 from __future__ import annotations
 
+import json
 import re
 from pathlib import Path
 
@@ -28,6 +29,8 @@ _CI_WORKFLOW = _REPO_ROOT / ".github" / "workflows" / "ci.yml"
 _PYPROJECT = _REPO_ROOT / "pyproject.toml"
 _SNAPSHOT = _REPO_ROOT / "docs" / "_generated" / "capability_snapshot.md"
 _CONTROL_SCOPE = _REPO_ROOT / "docs" / "control_scope.md"
+_ROADMAP = _REPO_ROOT / "ROADMAP.md"
+_DOCUMENTATION_ALLOWLIST = _REPO_ROOT / "tools" / "documentation_surface_allowlist.json"
 _CONTROL_BOUNDARY_LINK_SURFACES = (
     _REPO_ROOT / "docs" / "api.md",
     _REPO_ROOT / "docs" / "architecture_map.md",
@@ -68,6 +71,15 @@ _CONTROL_OVERCLAIM_TOKENS = (
     "provider-native pulse calibration engine",
     "controls arbitrary lab instruments",
     "executes closed-loop hardware pulse control",
+)
+_REMOVED_PAPER0_PATH_TOKENS = (
+    "scripts/run_paper0",
+    "scripts/compare_paper0",
+    "scripts/export_paper0",
+    "docs/paper0/",
+    "data/paper0_",
+    "tests/test_paper0",
+    "paper0-knm-preregistered-replay-gate",
 )
 
 
@@ -251,6 +263,29 @@ def test_public_markdown_carries_no_self_applied_superlatives() -> None:
         "self-applied superlatives are internal quality targets, not public "
         f"claims (BROADCAST_2026-07-07): {offenders}"
     )
+
+
+def test_roadmap_does_not_link_removed_paper0_artifacts() -> None:
+    """The current roadmap should not point at removed Paper 0 package paths."""
+    roadmap = _ROADMAP.read_text(encoding="utf-8")
+    offenders = [token for token in _REMOVED_PAPER0_PATH_TOKENS if token in roadmap]
+    assert offenders == [], (
+        "ROADMAP.md still names removed Paper 0 package artefacts as current "
+        f"surfaces: {offenders}"
+    )
+
+
+def test_documentation_allowlist_has_no_removed_paper0_patterns() -> None:
+    """Documentation-audit waivers must not reference removed Paper 0 generators."""
+    payload = json.loads(_DOCUMENTATION_ALLOWLIST.read_text(encoding="utf-8"))
+    entries = payload.get("entries", [])
+    offenders = [
+        entry
+        for entry in entries
+        if "paper0" in str(entry.get("path_pattern", "")).lower()
+        or "paper 0" in str(entry.get("reason", "")).lower()
+    ]
+    assert offenders == [], f"removed Paper 0 allow-list entries remain: {offenders}"
 
 
 def test_control_scope_boundary_is_public_and_linked() -> None:

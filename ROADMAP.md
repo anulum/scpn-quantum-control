@@ -315,17 +315,17 @@ is copied here.
 - [x] **Scientific gap queue.** Implemented 2026-05-18:
   release safety is closed by hard claim-boundary gates rather than by
   pretending the open science is solved. K_nm measured-system promotion,
-  TCBO `p_h1` promotion, S2/S5 broad-advantage readiness, and Paper 0
-  downstream claims remain blocked unless their executable gates pass.
-  Open science continues under the Paper 0 downstream programme without
-  blocking a package tag.
+  TCBO `p_h1` promotion, and S2/S5 broad-advantage readiness remain blocked
+  unless their executable gates pass. The former Paper 0 downstream register was
+  intentionally extracted from this repository in `97f9e910`, so it is no
+  longer a package release blocker.
 - [x] **Documentation-surface release gate.** Implemented 2026-05-20:
   `tools/audit_documentation_surface.py --allowlist
   tools/documentation_surface_allowlist.json --fail-on-findings` now runs
   in the primary CI lint job after the repository-wide documentation
   surface was burned down to zero active findings. The allow-list remains
-  tracked and reasoned so generated Paper 0 CLI boilerplate is explicit
-  debt rather than hidden audit drift.
+  tracked and reasoned; after the Paper 0 extraction it carries no current
+  repository-specific waivers.
 - [x] **Documentation-surface local preflight mirror.** Implemented
   2026-05-20: `tools/preflight.py` and the repository pre-push hook now run
   the same allow-listed documentation-surface gate as CI. Focused static
@@ -380,8 +380,8 @@ is copied here.
   PLV, IEEE 5-bus, and IEEE 14-bus K_nm comparison artefacts. The gate
   fails if any candidate is promoted, changes edge count, drops the
   strict unit-class decision, or records physical validation as closed.
-  The gate is now part of `scpn-bench paper0-knm-preregistered-replay-gate`,
-  so replay drift and measured-candidate promotion drift are checked together.
+  The gate remains the current in-repository measured-candidate promotion
+  boundary after the Paper 0 replay package was extracted from this repository.
 - [x] **QSVT resource-estimator input hardening.** Implemented
   2026-05-12: the QSVT resource estimator and query-count helpers now
   reject non-square, dimension-mismatched, asymmetric, or non-finite
@@ -1956,30 +1956,14 @@ engine). Each applied vertical is an activation target for one or
 more physics tracks listed above.
 
 
-### GOTM-SCPN Paper 0 first downstream replay gate
+### Paper 0 downstream replay extraction
 
-- Status: implemented as a deterministic no-QPU replay gate.
-- Artefacts: `scripts/run_paper0_knm_preregistered_replay.py`,
-  `scripts/compare_paper0_knm_preregistered_replay.py`,
-  `scripts/run_paper0_knm_preregistered_replay_gate.py`,
-  `data/paper0_knm_preregistered_replay.json`,
-  `docs/paper0/paper0_knm_preregistered_replay.md`, and
-  `tests/test_paper0_knm_preregistered_replay.py`.
-- Contract artefacts: `scripts/export_paper0_knm_replay_contract.py`,
-  `docs/paper0/paper0_knm_preregistered_replay_contract.md`, and
-  `docs/paper0/paper0_knm_measured_coupling_evidence_checklist.md`.
-- Contract check: `scripts/export_paper0_knm_replay_contract.py --check-replay
-  data/paper0_knm_preregistered_replay.json` validates the semantic fail-closed
-  replay boundary in addition to the comparator's artefact drift check.
-- Command: `scpn-bench paper0-knm-preregistered-replay-gate`.
-- Claim boundary: non-closing; measured-system K_nm validation remains blocked
-  until calibrated coupling magnitudes with per-edge uncertainty are available.
-- Diagnostics: deterministic permutation-null battery now accompanies primary
-  EEG and IEEE 5-bus negative-control matrix alignment.
-- Reproducibility: replay JSON records input SHA-256 digests and fixed local
-  randomness policy for audit replay.
-- Promotion safety: replay JSON emits an explicit do-not-promote decision,
-  blocking gates, required evidence, falsifiers, and `hardware_submission_authorised: false`.
-- Next promotion review: constrained by the measured-coupling evidence
-  checklist; digest stability, null diagnostics, and byte-aligned replay output
-  are reproducibility evidence only.
+- Status: intentionally extracted from this repository in `97f9e910`.
+- Scope boundary: the former Paper 0 source-accounting register, generated
+  replay scripts, replay data, documentation pages, and package release blockers
+  moved out of the public package surface.
+- Current in-repository boundary: measured-system K_nm validation remains blocked
+  until calibrated coupling magnitudes with per-edge uncertainty are available,
+  and the active package gate is the K_nm measured-candidate release gate.
+  Historical changelog entries for the removed replay package remain historical
+  records only.

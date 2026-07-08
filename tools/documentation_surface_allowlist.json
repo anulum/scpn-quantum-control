@@ -6,18 +6,5 @@
   "orcid": "0009-0009-3560-0851",
   "contact": "www.anulum.li | protoscience@anulum.li",
   "description": "scpn-quantum-control documentation-surface audit allow-list",
-  "entries": [
-    {
-      "path_pattern": "scripts/build_paper0_*_specs.py",
-      "kind": "function",
-      "symbol": "main",
-      "reason": "Generated Paper 0 spec builders share generator-level CLI documentation and are tracked as source-accounting artefact writers."
-    },
-    {
-      "path_pattern": "scripts/run_paper0_*",
-      "kind": "function",
-      "symbol": "main",
-      "reason": "Generated Paper 0 runners share generator-level CLI documentation and are tracked as source-accounting artefact executors."
-    }
-  ]
+  "entries": []
 }
