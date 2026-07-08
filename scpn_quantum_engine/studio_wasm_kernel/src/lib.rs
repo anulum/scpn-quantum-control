@@ -15,6 +15,8 @@
 
 use sha2::{Digest, Sha256};
 
+pub mod kuramoto;
+
 const SCHEMA_TAG: &[u8] = b"scpn.quantum.xy_compile.v1\0";
 const INPUT_VERSION: u32 = 1;
 const HEADER_LEN: usize = 24;
@@ -262,6 +264,62 @@ pub unsafe extern "C" fn scpn_xy_compile_digest(
     }
 }
 
+/// Report the fail-closed oscillator-count boundary for the Play panel.
+///
+/// The panel reads this to display the declared `N` limit and refuse larger
+/// requests before they reach the kernel.
+#[no_mangle]
+pub extern "C" fn scpn_kuramoto_max_oscillators() -> u32 {
+    kuramoto::MAX_OSCILLATORS as u32
+}
+
+/// Report the fail-closed step-count boundary for the Play panel.
+#[no_mangle]
+pub extern "C" fn scpn_kuramoto_max_steps() -> u32 {
+    kuramoto::MAX_STEPS as u32
+}
+
+/// Integrate a Kuramoto request and write the `R(t)` trajectory + final phases.
+///
+/// The output is `(steps + 1 + n)` little-endian `f64` values: `steps + 1`
+/// order-parameter samples followed by the `n` final phases. `output_len` is
+/// the byte length the host allocated and must equal that element count times
+/// eight, else the call fails closed.
+///
+/// # Safety
+///
+/// `input_ptr` must point to `input_len` readable bytes and `output_ptr` to
+/// `output_len` writable bytes. Null pointers and any malformed payload return
+/// a negative status code without writing output.
+#[no_mangle]
+pub unsafe extern "C" fn scpn_kuramoto_simulate(
+    input_ptr: *const u8,
+    input_len: usize,
+    output_ptr: *mut u8,
+    output_len: usize,
+) -> i32 {
+    if input_ptr.is_null() || output_ptr.is_null() {
+        return kuramoto::KuramotoStatus::NullPointer.into();
+    }
+    let input_bytes = unsafe { core::slice::from_raw_parts(input_ptr, input_len) };
+    let parsed = match kuramoto::parse_kuramoto_input(input_bytes) {
+        Ok(parsed) => parsed,
+        Err(status) => return status.into(),
+    };
+    let Some(needed_bytes) = kuramoto::output_len(&parsed).checked_mul(8) else {
+        return kuramoto::KuramotoStatus::InvalidLength.into();
+    };
+    if output_len != needed_bytes {
+        return kuramoto::KuramotoStatus::OutputMismatch.into();
+    }
+    let series = kuramoto::simulate(&parsed);
+    let output = unsafe { core::slice::from_raw_parts_mut(output_ptr, output_len) };
+    for (index, value) in series.iter().enumerate() {
+        output[index * 8..index * 8 + 8].copy_from_slice(&value.to_le_bytes());
+    }
+    kuramoto::KuramotoStatus::Ok.into()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -349,5 +407,85 @@ mod tests {
             parse_compile_input(&bad_float).expect_err("bad float"),
             KernelStatus::InvalidFloat
         );
+    }
+
+    fn kuramoto_mean_field_payload() -> Vec<u8> {
+        let n = 5_usize;
+        let steps = 120_u32;
+        let mut bytes = Vec::new();
+        bytes.extend(kuramoto::KURAMOTO_INPUT_VERSION.to_le_bytes());
+        bytes.extend(0_u32.to_le_bytes()); // mean-field
+        bytes.extend((n as u32).to_le_bytes());
+        bytes.extend(steps.to_le_bytes());
+        bytes.extend(0.01_f64.to_le_bytes()); // dt
+        bytes.extend(1.6_f64.to_le_bytes()); // coupling
+        for i in 0..n {
+            bytes.extend((0.1 * i as f64).to_le_bytes()); // omega
+        }
+        for i in 0..n {
+            bytes.extend((0.25 * i as f64).to_le_bytes()); // theta0
+        }
+        bytes
+    }
+
+    #[test]
+    fn kuramoto_boundaries_are_exposed() {
+        assert_eq!(
+            scpn_kuramoto_max_oscillators(),
+            kuramoto::MAX_OSCILLATORS as u32
+        );
+        assert_eq!(scpn_kuramoto_max_steps(), kuramoto::MAX_STEPS as u32);
+    }
+
+    #[test]
+    fn kuramoto_ffi_round_trip_matches_the_reference() {
+        let payload = kuramoto_mean_field_payload();
+        let parsed = kuramoto::parse_kuramoto_input(&payload).expect("valid payload");
+        let expected = kuramoto::simulate(&parsed);
+        let output_bytes = expected.len() * 8;
+
+        let input_ptr = scpn_alloc(payload.len());
+        let output_ptr = scpn_alloc(output_bytes);
+        assert!(!input_ptr.is_null() && !output_ptr.is_null());
+        let mut produced = vec![0.0_f64; expected.len()];
+        unsafe {
+            core::ptr::copy_nonoverlapping(payload.as_ptr(), input_ptr, payload.len());
+            let status = scpn_kuramoto_simulate(input_ptr, payload.len(), output_ptr, output_bytes);
+            assert_eq!(status, i32::from(kuramoto::KuramotoStatus::Ok));
+            let raw = core::slice::from_raw_parts(output_ptr, output_bytes);
+            for (slot, chunk) in produced.iter_mut().zip(raw.chunks_exact(8)) {
+                let mut buf = [0_u8; 8];
+                buf.copy_from_slice(chunk);
+                *slot = f64::from_le_bytes(buf);
+            }
+            scpn_free(input_ptr, payload.len());
+            scpn_free(output_ptr, output_bytes);
+        }
+        assert_eq!(produced, expected);
+    }
+
+    #[test]
+    fn kuramoto_ffi_fails_closed() {
+        let payload = kuramoto_mean_field_payload();
+        let mut sink = [0_u8; 8];
+        unsafe {
+            // null pointers
+            assert_eq!(
+                scpn_kuramoto_simulate(core::ptr::null(), 0, sink.as_mut_ptr(), sink.len()),
+                i32::from(kuramoto::KuramotoStatus::NullPointer)
+            );
+            // wrong output length
+            assert_eq!(
+                scpn_kuramoto_simulate(payload.as_ptr(), payload.len(), sink.as_mut_ptr(), 8),
+                i32::from(kuramoto::KuramotoStatus::OutputMismatch)
+            );
+            // malformed input propagates the parser status
+            let mut bad = payload.clone();
+            bad[0..4].copy_from_slice(&99_u32.to_le_bytes());
+            assert_eq!(
+                scpn_kuramoto_simulate(bad.as_ptr(), bad.len(), sink.as_mut_ptr(), sink.len()),
+                i32::from(kuramoto::KuramotoStatus::InvalidVersion)
+            );
+        }
     }
 }
