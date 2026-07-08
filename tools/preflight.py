@@ -41,6 +41,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 _PY = sys.executable
 _RUNTIME_SOURCE_ROOTS = (ROOT / "src", ROOT / "oscillatools" / "src")
+_HELP_FLAGS = frozenset({"-h", "--help"})
 
 DIFFERENTIABLE_DOCSTRING_RATCHET = [
     "src/scpn_quantum_control/differentiable_architecture_map.py",
@@ -304,10 +305,20 @@ def run_gate(name: str, cmd: list[str]) -> bool:
     return False
 
 
+def _wants_help(args: Iterable[str]) -> bool:
+    """Return whether the supplied CLI arguments request usage text."""
+    return any(arg in _HELP_FLAGS for arg in args)
+
+
 def main() -> int:
     """Run the configured preflight gate suite."""
-    skip_tests = "--no-tests" in sys.argv
-    no_coverage = "--no-coverage" in sys.argv
+    args = sys.argv[1:]
+    if _wants_help(args):
+        print((__doc__ or "").strip())
+        return 0
+
+    skip_tests = "--no-tests" in args
+    no_coverage = "--no-coverage" in args
 
     gates: list[tuple[str, list[str]]] = list(STATIC_GATES)
 

@@ -183,6 +183,19 @@ def test_gate_environment_prepends_local_source_roots(
     assert entries.count("/external") == 1
 
 
+def test_gate_environment_leaves_pythonpath_absent_without_entries(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    """Gate environments should not invent an empty PYTHONPATH entry."""
+    monkeypatch.delenv("PYTHONPATH", raising=False)
+    monkeypatch.setattr(_preflight, "_RUNTIME_SOURCE_ROOTS", (tmp_path / "missing",))
+
+    env = _preflight._gate_environment()
+
+    assert "PYTHONPATH" not in env
+
+
 def test_run_gate_reports_pass(
     monkeypatch: pytest.MonkeyPatch,
     capsys: pytest.CaptureFixture[str],
@@ -343,6 +356,29 @@ def test_main_skips_tests_with_no_tests_flag(
     assert _preflight.main() == 0
     assert calls == ["lint", "bandit"]
     assert "ALL CLEAR" in capsys.readouterr().out
+
+
+@pytest.mark.parametrize("flag", ["--help", "-h"])
+def test_main_prints_help_without_running_gates(
+    flag: str,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """Help requests should return immediately without executing gates."""
+    calls: list[str] = []
+    monkeypatch.setattr(sys, "argv", ["preflight.py", flag])
+
+    def fake_run_gate(name: str, cmd: list[str]) -> bool:
+        calls.append(name)
+        return False
+
+    monkeypatch.setattr(_preflight, "run_gate", fake_run_gate)
+
+    assert _preflight.main() == 0
+    output = capsys.readouterr().out
+    assert "Usage:" in output
+    assert "python tools/preflight.py --no-tests" in output
+    assert calls == []
 
 
 def test_main_uses_plain_pytest_when_coverage_is_disabled(
