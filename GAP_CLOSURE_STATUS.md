@@ -88,7 +88,7 @@ Two separate readings of "beyond classical" are now distinguished
 
 **What would close it:** Scale to N where classical simulation fails (estimated N~30-40 for MPS, N~50+ for exact diagonalisation). Circuit cutting enables this path.
 
-## Gap 3: Derive p_h1 = 0.72 from First Principles
+## Gap 3: Keep p_h1 = 0.72 Open Until Reproduced
 
 **Status: OPEN QUESTION — Monte Carlo falsified the square-lattice coincidence;
 public code and preprint framing now label it as an empirical/theoretical
@@ -96,7 +96,8 @@ parameter rather than a derivation.**
 
 The initial finding A_HP(square) × sqrt(2/π) = 0.717 ≈ 0.72 was a coincidence.
 
-Monte Carlo verification on the actual K_nm graph (2026-03-23):
+Monte Carlo verification on the actual K_nm graph keeps the threshold open
+(2026-03-23):
 
     A_HP (square lattice) = 0.8983 → p_h1 = 0.717 (0.5% from 0.72)
     A_HP (K_nm graph, n=16) = 1.214  → p_h1 = 0.969 (35% from 0.72)
@@ -118,8 +119,8 @@ universal constant.
 XY model physics works. But A_HP is graph-dependent.
 
 **What is NOT proven:** p_h1 = 0.72 from first principles. It remains
-an empirical threshold. The Monte Carlo shows it is NOT a simple
-function of BKT universal constants on the K_nm graph.
+an open empirical/theoretical parameter. The Monte Carlo shows it is NOT a
+simple function of BKT universal constants on the K_nm graph.
 
 **What remains open:** Why 0.72? Possible avenues:
 1. Finite-size scaling: A_HP(n) → A_HP(∞) may converge differently

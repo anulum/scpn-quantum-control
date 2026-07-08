@@ -71,6 +71,15 @@ from .monte_carlo_xy import MCResult, mc_simulate
 from .otoc import OTOC, OTOCResult, compute_otoc
 from .otoc_sync_probe import OTOCSyncScanResult, otoc_sync_scan
 from .p_h1_derivation import P_H1_Derivation, derive_p_h1
+from .p_h1_open_guard import (
+    P_H1_OPEN_CLAIM_BOUNDARY,
+    P_H1_OPEN_GUARD_SCHEMA,
+    P_H1OpenGuardReport,
+    P_H1OpenGuardViolation,
+    public_markdown_paths,
+    run_p_h1_open_guard,
+    validate_p_h1_open_claim_text,
+)
 from .pairing_correlator import PairingResult, pairing_vs_anisotropy
 from .phase_diagram import (
     PhaseBoundary,
@@ -183,6 +192,13 @@ __all__ = [
     "compute_otoc",
     "P_H1_Derivation",
     "derive_p_h1",
+    "P_H1_OPEN_CLAIM_BOUNDARY",
+    "P_H1_OPEN_GUARD_SCHEMA",
+    "P_H1OpenGuardReport",
+    "P_H1OpenGuardViolation",
+    "public_markdown_paths",
+    "run_p_h1_open_guard",
+    "validate_p_h1_open_claim_text",
     "PhaseBoundary",
     "PhaseDiagramResult",
     "compute_phase_diagram",

@@ -122,16 +122,16 @@ claims only when the evidence exists.
 |---|---:|
 | Package version | 0.10.0 |
 | Public API exports | 828 |
-| Python source modules | 489 |
-| Public Python classes | 939 |
+| Python source modules | 490 |
+| Public Python classes | 941 |
 | Domain package families | 31 |
 | Rust PyO3 function bindings | 177 |
 | Rust source modules | 46 |
 | Notebook files | 100 |
 | Example files | 37 |
 | Optional extras | 43 |
-| Python test files | 861 |
-| Public documentation pages | 265 |
+| Python test files | 862 |
+| Public documentation pages | 266 |
 | GitHub Actions workflows | 23 |
 
 Evidence boundary: this snapshot is a static inventory. Performance, coverage, hardware, and scientific-fidelity claims require their own committed evidence artefacts.
@@ -662,7 +662,7 @@ graph TD
 
     subgraph "Core Physics"
         phase["phase/ (29)\nTrotter, VQE, ADAPT-VQE\nVarQITE, Floquet DTC"]
-        analysis["analysis/ (58)\nWitnesses, QFI, PH\nOTOC, Krylov, magic"]
+        analysis["analysis/ (61)\nWitnesses, QFI, PH\nOTOC, Krylov, magic"]
     end
 
     subgraph "Applications"
@@ -700,7 +700,7 @@ graph TD
 
 | Subpackage | Modules | Purpose |
 |------------|:-------:|---------|
-| `analysis` | 58 | Synchronisation probes: witnesses, QFI, PH, OTOC, Krylov, magic, BKT, DLA |
+| `analysis` | 61 | Synchronisation probes: witnesses, QFI, PH, OTOC, Krylov, magic, BKT, DLA |
 | `hardware` | 63 | IBM Quantum runner, plugin backends registry, AsyncHardwareRunner, trapped-ion backend, GPU offload, circuit cutting, fast sparse, qubit mapper (DynQ), provenance |
 | `phase` | 29 | Time evolution: Trotter, VQE, ADAPT-VQE, VarQITE, AVQDS, QSVT, Floquet DTC, Lindblad |
 | `applications` | 15 | FMO photosynthesis, power grid, Josephson array, EEG, ITER, quantum EVS, QRC+ESN baseline |
@@ -889,6 +889,7 @@ Full docs at **[anulum.github.io/scpn-quantum-control](https://anulum.github.io/
 - [Classical Baselines](docs/classical_baselines.md) — SciPy ODE, QuTiP Lindblad, and MPS TEBD provenance surfaces
 - [TN/MPS Baseline Design](docs/tn_mps_baseline_design.md) — CPU-first N=30-40 tensor-network baseline plan
 - [Josephson K_nm Magnitude Study](docs/josephson_knm_magnitude_study.md) — N=14 rho=0.990 topology candidate plus N=20/30/40 measured-magnitude gates
+- [p_h1 Open-Claim Guard](docs/p_h1_open_guard.md) — public wording guard that keeps the 0.72 threshold open until reproduced
 - [Hardware Guide](docs/hardware_guide.md) — IBM Quantum setup
 - [Notebooks](docs/notebooks.md) — 99 tracked notebooks
 - [Bridges](docs/bridges_api.md) — cross-repo integrations

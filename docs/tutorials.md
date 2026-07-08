@@ -551,9 +551,11 @@ with no topological holes ($H_1 = 0$). In the incoherent phase, partial correlat
 create persistent 1-cycles — loops in the correlation landscape that signal
 fragmentation.
 
-The SCPN framework predicts $p_{H_1} \approx 0.72$ at the quasicritical operating
-point. The derivation $A_{HP} \times \sqrt{2/\pi} = 0.717$ closes this prediction
-to 0.5% accuracy.
+The $p_{H_1} \approx 0.72$ threshold remains an open empirical/theoretical
+parameter at the quasicritical operating point. The square-lattice expression
+$A_{HP} \times \sqrt{2/\pi} = 0.717$ is a negative control: it is numerically
+close, but the K_nm graph Monte Carlo audit falsifies it as a graph-specific
+derivation.
 
 ---
 

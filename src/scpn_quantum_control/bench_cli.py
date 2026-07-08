@@ -52,6 +52,7 @@ OFFLINE_HARNESS_POLICY = ExecutionSurfacePolicy(
         "data/s10_analog_native",
         "data/s11_quantum_sensing",
         "data/knm_physical_validation",
+        "data/p_h1_open_guard",
         "data/stable_core",
         "data/synchronisation_benchmarks",
         "data/symmetry_sector_mitigation",
@@ -237,6 +238,11 @@ HARNESS_REGISTRY: tuple[Harness, ...] = (
         "knm-josephson-magnitude-study",
         "scripts/export_josephson_knm_magnitude_study.py",
         frozenset({"knm-josephson-study"}),
+    ),
+    Harness(
+        "p-h1-open-guard",
+        "scripts/check_p_h1_open_claim_guard.py",
+        frozenset({"p-h1-open-guard"}),
     ),
     Harness(
         "sync-benchmark-registry",
@@ -530,6 +536,12 @@ def _parse_args(argv: Sequence[str]) -> argparse.Namespace:
         help="Regenerate the QWC-5.2 Josephson K_nm magnitude-study artifacts.",
     )
     _add_run_options(josephson_knm, default_group="knm-josephson-study")
+
+    p_h1_open_guard = subparsers.add_parser(
+        "p-h1-open-guard",
+        help="Regenerate the QWC-5.3 p_h1 open-claim guard report.",
+    )
+    _add_run_options(p_h1_open_guard, default_group="p-h1-open-guard")
 
     sync_registry = subparsers.add_parser(
         "sync-benchmark-registry",

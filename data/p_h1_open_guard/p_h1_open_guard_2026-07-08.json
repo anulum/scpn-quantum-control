@@ -1,0 +1,36 @@
+{
+  "checked_paths": [
+    "DLA_SCALING_RESULTS.md",
+    "GAP_CLOSURE_STATUS.md",
+    "README.md",
+    "ROADMAP.md",
+    "docs/analysis_api.md",
+    "docs/equations.md",
+    "docs/falsification.md",
+    "docs/hardware_status_ledger.md",
+    "docs/p_h1_open_guard.md",
+    "docs/pipeline_performance.md",
+    "docs/research_gems.md",
+    "docs/theory.md",
+    "docs/tutorials.md"
+  ],
+  "claim_boundary": "p_h1 = 0.72 remains an open empirical/theoretical parameter; public surfaces must not present it as a closed derivation or measured reproduction.",
+  "marker_hits": [
+    "DLA_SCALING_RESULTS.md",
+    "GAP_CLOSURE_STATUS.md",
+    "README.md",
+    "ROADMAP.md",
+    "docs/analysis_api.md",
+    "docs/equations.md",
+    "docs/falsification.md",
+    "docs/hardware_status_ledger.md",
+    "docs/p_h1_open_guard.md",
+    "docs/pipeline_performance.md",
+    "docs/research_gems.md",
+    "docs/theory.md",
+    "docs/tutorials.md"
+  ],
+  "passed": true,
+  "schema": "scpn_qc_p_h1_open_guard_v1",
+  "violations": []
+}

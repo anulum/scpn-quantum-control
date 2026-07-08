@@ -8,12 +8,12 @@
     "notebook_files": 100,
     "optional_extras": 43,
     "public_api_exports": 828,
-    "public_documentation_pages": 265,
-    "python_model_classes": 939,
-    "python_model_source_modules": 489,
+    "public_documentation_pages": 266,
+    "python_model_classes": 941,
+    "python_model_source_modules": 490,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 46,
-    "test_files": 861
+    "test_files": 862
   },
   "documentation": {
     "examples": [
@@ -349,6 +349,7 @@
       "docs/onboarding.md",
       "docs/open_system_hardware.md",
       "docs/orchestrator_integration.md",
+      "docs/p_h1_open_guard.md",
       "docs/paper_dla_parity.md",
       "docs/paper_sync_witnesses.md",
       "docs/phase_api.md",
@@ -452,7 +453,7 @@
       {
         "package": "analysis",
         "path": "src/scpn_quantum_control/analysis",
-        "python_modules": 60
+        "python_modules": 61
       },
       {
         "package": "applications",
@@ -2443,6 +2444,14 @@
         "path": "src/scpn_quantum_control/phase/kuramoto_variants.py"
       },
       {
+        "name": "P_H1OpenGuardReport",
+        "path": "src/scpn_quantum_control/analysis/p_h1_open_guard.py"
+      },
+      {
+        "name": "P_H1OpenGuardViolation",
+        "path": "src/scpn_quantum_control/analysis/p_h1_open_guard.py"
+      },
+      {
         "name": "P_H1_Derivation",
         "path": "src/scpn_quantum_control/analysis/p_h1_derivation.py"
       },
@@ -4398,6 +4407,7 @@
       "src/scpn_quantum_control/analysis/otoc.py",
       "src/scpn_quantum_control/analysis/otoc_sync_probe.py",
       "src/scpn_quantum_control/analysis/p_h1_derivation.py",
+      "src/scpn_quantum_control/analysis/p_h1_open_guard.py",
       "src/scpn_quantum_control/analysis/pairing_correlator.py",
       "src/scpn_quantum_control/analysis/persistent_homology.py",
       "src/scpn_quantum_control/analysis/phase_diagram.py",
@@ -6429,6 +6439,7 @@
       "tests/test_otoc_mutation_kills.py",
       "tests/test_otoc_sync_probe.py",
       "tests/test_p_h1_derivation.py",
+      "tests/test_p_h1_open_guard.py",
       "tests/test_p_h1_open_question_audit.py",
       "tests/test_pairing_correlator.py",
       "tests/test_param_shift.py",
@@ -6724,7 +6735,7 @@
       "tests/test_sc_to_quantum.py",
       "tests/test_scpn_upde_edge.py",
       "tests/test_sensing_branches.py",
-      "tests/test_sensing_coverage.py",
+      "tests/test_sensing_readiness_contracts.py",
       "tests/test_serialization_surface_audit.py",
       "tests/test_setup_isolated_benchmark_runner.py",
       "tests/test_shadow_tomography.py",

@@ -87,6 +87,7 @@ N=6 dim=64, max DLA = 4095. At the scaling rate, computation would take
 A_HP(K_nm) = 1.21 +/- 0.01 is STABLE across all system sizes N=4 to N=32.
 No convergence toward the square-lattice value A_HP = 0.8983.
 
-Gap 3 conclusion: p_h1 = 0.72 CANNOT be derived from BKT universals
+Gap 3 conclusion: p_h1 = 0.72 cannot be derived from BKT universals
 on the K_nm graph. The MC gives p_h1 ~ 0.97 consistently. The value 0.72
-remains empirical with no known first-principles derivation.
+remains an open empirical/theoretical parameter with no known
+first-principles derivation.

@@ -585,14 +585,14 @@ graph LR
 | $M_2$ (magic) | Low | **Peak** (maximally non-classical) | Decreases | Peak |
 | $C_K$ (Krylov) | Low | **Peak** (maximum operator spreading) | Decreases | Peak |
 | $\chi_F$ (fidelity susc.) | Low | **Peak** (gauge-invariant) | Decreases | Peak |
-| $p_{H_1}$ (persistent homology) | High (many holes) | $\approx 0.72$ | $\to 0$ (no holes) | Monotonic decay |
+| $p_{H_1}$ (persistent homology) | High (many holes) | $\approx 0.72$ target, still open | $\to 0$ (no holes) | Monotonic decay |
 | $\bar{r}$ (level spacing) | $0.386$ (Poisson) | Crossover | $0.536$ (GOE) | Step-like |
 
 Every probe — order parameter, Fisher information, spectral gap, Fiedler connectivity,
 magic, Krylov complexity, fidelity susceptibility, persistent homology — independently
-identifies the same critical coupling $K_c$. This convergence is strong evidence that
-the synchronization transition is a genuine quantum phase transition of the BKT type,
-not an artifact of any single observable.
+identifies the same critical coupling $K_c$. The $p_{H_1}=0.72$ value remains an
+open empirical/theoretical parameter: the square-lattice BKT expression is a
+negative control, not a K_nm graph derivation.
 
 **Module:** `analysis/critical_concordance.py`
 

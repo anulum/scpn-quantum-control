@@ -109,6 +109,18 @@ rho=0.989947 Josephson topology candidate and N=20/30/40 extension targets. It
 is preregistration and claim-boundary evidence only; it does not execute a
 calibrated magnitude comparison or promote a physical K_nm coupling claim.
 
+The QWC-5.3 p_h1 open-claim guard is regenerated with:
+
+```bash
+scpn-bench p-h1-open-guard
+```
+
+It writes `data/p_h1_open_guard/p_h1_open_guard_2026-07-08.json` and scans
+outward-facing Markdown for wording that would promote `p_h1 = 0.72` from an
+open empirical/theoretical parameter into a closed derivation, universal
+constant, or measured TCBO reproduction. The guard is documentation-governance
+evidence only; it does not derive or measure the threshold.
+
 ## S3 Pulse / Ansatz Design Readiness
 
 The S3 ML-augmented pulse / ansatz track starts from a deterministic no-QPU

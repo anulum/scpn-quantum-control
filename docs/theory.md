@@ -158,14 +158,16 @@ DLA dimension (Rust-accelerated measurement):
 
 ## Topological Invariant $p_{h_1}$
 
-The persistent homology $p_{h_1} = 0.72$ (measured on the TCBO's coupling-weighted
-simplicial complex) quantifies how much of the SCPN's layer-coupling topology
-creates persistent 1-cycles — information loops that sustain coherent circuits
-through the hierarchical structure.
+The persistent homology threshold $p_{h_1} = 0.72$ remains an open
+empirical/theoretical parameter. Current code can measure persistent 1-cycles
+on phase configurations and coupling-weighted filtrations, but the committed
+Monte Carlo audit falsifies the square-lattice BKT coincidence as a K_nm graph
+derivation.
 
-This is computed on the coupling-weighted filtration (not Vietoris–Rips on phase
-configurations), where the SCPN's specific sparse hierarchical structure creates
-topological features that dense random graphs cannot.
+The intended TCBO route is a coupling-weighted filtration, not Vietoris-Rips on
+phase configurations. Promotion requires a reproduced TCBO construction or an
+independent derivation/measurement with uncertainty that reaches the 0.72
+threshold.
 
 ---
 

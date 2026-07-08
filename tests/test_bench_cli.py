@@ -135,6 +135,18 @@ def test_knm_josephson_magnitude_study_selection_is_design_harness() -> None:
     ]
 
 
+def test_p_h1_open_guard_selection_is_claim_guard_harness() -> None:
+    harnesses = bench_cli._selected_harnesses("p-h1-open-guard", include_gpu=False)
+
+    assert harnesses == [
+        bench_cli.Harness(
+            "p-h1-open-guard",
+            "scripts/check_p_h1_open_claim_guard.py",
+            frozenset({"p-h1-open-guard"}),
+        )
+    ]
+
+
 def test_s3_design_ready_selection_is_readiness_harness() -> None:
     harnesses = bench_cli._selected_harnesses("s3", include_gpu=False)
 

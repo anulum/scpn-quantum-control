@@ -643,13 +643,23 @@ from scpn_quantum_control.analysis.bkt_analysis import (
 )
 ```
 
-### `bkt_universals` — 10 Candidate Expressions for $p_{H_1} = 0.72$
+### `bkt_universals` — Candidate Expressions for the Open $p_{H_1}$ Threshold
 
-Systematic search for the analytical formula behind the universal $p_{H_1}$ value.
+Systematic negative-control search over candidate expressions for the open
+empirical/theoretical $p_{H_1}=0.72$ threshold. The square-lattice expression
+is the closest numerical fit, but the K_nm graph check keeps the threshold open.
 
-### `p_h1_derivation` — $A_{HP} \times \sqrt{2/\pi} = 0.717$
+### `p_h1_derivation` — $A_{HP} \times \sqrt{2/\pi}$ Negative Control
 
-The derivation closing the $p_{H_1}$ gap to 0.5% accuracy.
+Audits the square-lattice coincidence and records why it does not derive the
+K_nm graph threshold. The current status remains open rather than promoted.
+
+### `p_h1_open_guard` — Public Open-Claim Guard
+
+Scans outward-facing Markdown for wording that would turn the open
+empirical/theoretical $p_{H_1}=0.72$ parameter into a closed derivation,
+universal constant, or measured TCBO reproduction. The guard is runnable through
+`scripts/check_p_h1_open_claim_guard.py`.
 
 ### `phase_diagram` — $K_c$ vs $T_{\mathrm{eff}}$ Boundary
 

@@ -89,7 +89,7 @@ preparation and `bridge/` for Hamiltonian access.
 graph TD
     bridge["bridge/ (15)\nK_nm → quantum objects"]
     phase["phase/ (87)\nTime evolution"]
-    analysis["analysis/ (60)\nSync probes"]
+    analysis["analysis/ (61)\nSync probes"]
     control["control/ (14)\nQuantum control"]
     qsnn["qsnn/ (7)\nQuantum SNN"]
     identity["identity/ (6)\nIdentity analysis"]
