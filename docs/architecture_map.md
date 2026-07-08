@@ -149,7 +149,7 @@ Each lane: purpose · INPUTS · OUTPUTS · processing model · backends · wirin
   DD, readout-matrix, Z₂ symmetry post-selection, CPDR, GUESS, mitiq bridge.
 - **CLOSED claims**: pulse-level control and analog Kuramoto are **no-submit / design-only**
   (payload + calibration-dossier construction, never executed); **no lab-control hardware** (NV
-  magnetometry is simulation-only; HLS codegen emits source files only).
+  magnetometry is simulation-only; HLS codegen emits manifest-bound source artifacts only).
 
 ### 4.5 Acceleration — `accel/`, `scpn_quantum_engine` (Rust) *(volatile lane)*
 - **Dispatch**: measured-fastest-first **Rust → Julia → Python** with a mandatory Python floor

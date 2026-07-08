@@ -13,6 +13,7 @@ co-simulation (via the non-synthesis shim in ``tests/hls_shim``). Vivado
 synthesis is gated behind ``MIF_FPGA_VIVADO_CI`` for the self-hosted runner.
 """
 
+import json
 import os
 import re
 import shutil
@@ -27,9 +28,14 @@ from hypothesis import strategies as st
 
 from scpn_quantum_control.codegen import ultrascale_hls as hls
 from scpn_quantum_control.codegen.ultrascale_hls import (
+    HLS_ARTIFACT_CLAIM_BOUNDARY,
+    HLS_ARTIFACT_SCHEMA_VERSION,
+    HLS_CONSUMER_CONTRACT_VERSION,
     HLSBundle,
+    emit_versioned_hls_artifact,
     pulse_to_vivado_hls,
     quantise_q_format,
+    verify_hls_artifact_manifest,
     write_bundle,
 )
 from scpn_quantum_control.phase.pulse_shaping import build_hypergeometric_pulse
@@ -182,9 +188,154 @@ def test_xdc_caps_clock_at_fabric_floor():
 def test_write_bundle(tmp_path):
     bundle = pulse_to_vivado_hls(_demo_waveform(16), 100e6, "zu3eg")
     write_bundle(bundle, tmp_path)
-    assert (tmp_path / "pulse_axi_stream.hpp").read_text() == bundle.cpp_source
-    assert (tmp_path / "pulse_axi_stream_tb.cpp").read_text() == bundle.cpp_testbench
-    assert (tmp_path / "pulse_constraints.xdc").read_text() == bundle.constraints_xdc
+    assert (tmp_path / "pulse_axi_stream.hpp").read_text(encoding="utf-8") == bundle.cpp_source
+    assert (tmp_path / "pulse_axi_stream_tb.cpp").read_text(
+        encoding="utf-8"
+    ) == bundle.cpp_testbench
+    assert (tmp_path / "pulse_constraints.xdc").read_text(
+        encoding="utf-8"
+    ) == bundle.constraints_xdc
+
+
+# --------------------------------------------------------------------------- #
+# Versioned artifact manifest
+# --------------------------------------------------------------------------- #
+def test_emit_versioned_hls_artifact_manifest(tmp_path):
+    wave = _demo_waveform(24)
+    manifest = emit_versioned_hls_artifact(
+        wave,
+        tmp_path,
+        artifact_id="demo-hls-v1",
+        sample_rate_hz=80e6,
+        target_sku="zu9eg",
+        fifo_depth=128,
+        fixed_point_width=14,
+        fixed_point_frac_bits=5,
+    )
+    payload = manifest.to_dict()
+    artifact_dir = tmp_path / "demo-hls-v1"
+    assert payload["schema_version"] == HLS_ARTIFACT_SCHEMA_VERSION
+    assert payload["consumer_contract_version"] == HLS_CONSUMER_CONTRACT_VERSION
+    assert payload["claim_boundary"] == HLS_ARTIFACT_CLAIM_BOUNDARY
+    assert payload["target"] == {"sku": "zu9eg", "part": "xczu9eg-ffvb1156-2-e"}
+    assert payload["pulse"]["sample_count"] == 24
+    assert payload["fixed_point"] == {"width": 14, "frac_bits": 5, "int_bits": 8}
+    assert payload["interfaces"]["top_function"] == "pulse_stream"
+    assert {record["role"] for record in payload["files"]} == {
+        "cpp_source",
+        "cpp_testbench",
+        "constraints_xdc",
+    }
+    assert (artifact_dir / "manifest.json").is_file()
+    assert verify_hls_artifact_manifest(artifact_dir / "manifest.json").valid
+
+
+def test_verify_hls_artifact_manifest_detects_tamper(tmp_path):
+    emit_versioned_hls_artifact(
+        _demo_waveform(16),
+        tmp_path,
+        artifact_id="tamper-hls-v1",
+        sample_rate_hz=100e6,
+    )
+    artifact_dir = tmp_path / "tamper-hls-v1"
+    source_path = artifact_dir / "pulse_axi_stream.hpp"
+    source_path.write_text(source_path.read_text(encoding="utf-8") + "\n// tampered\n")
+    result = verify_hls_artifact_manifest(artifact_dir / "manifest.json")
+    assert not result.valid
+    assert "sha256 mismatch for pulse_axi_stream.hpp" in result.errors
+    assert "byte_size mismatch for pulse_axi_stream.hpp" in result.errors
+
+
+def test_verify_hls_artifact_manifest_rejects_unreadable_payload(tmp_path):
+    missing = verify_hls_artifact_manifest(tmp_path / "missing.json")
+    assert not missing.valid
+    assert missing.errors[0].startswith("cannot read manifest:")
+
+    invalid_json = tmp_path / "invalid.json"
+    invalid_json.write_text("{", encoding="utf-8")
+    decoded = verify_hls_artifact_manifest(invalid_json)
+    assert not decoded.valid
+    assert decoded.errors[0].startswith("cannot read manifest:")
+
+    non_object = tmp_path / "non-object.json"
+    non_object.write_text("[]", encoding="utf-8")
+    structured = verify_hls_artifact_manifest(non_object)
+    assert not structured.valid
+    assert structured.errors == ("manifest must be a JSON object",)
+
+
+def test_verify_hls_artifact_manifest_rejects_bad_files_shape(tmp_path):
+    manifest_path = tmp_path / "manifest.json"
+    manifest_path.write_text(
+        json.dumps(
+            {
+                "schema_version": HLS_ARTIFACT_SCHEMA_VERSION,
+                "consumer_contract_version": HLS_CONSUMER_CONTRACT_VERSION,
+                "files": "not-a-list",
+            }
+        ),
+        encoding="utf-8",
+    )
+    result = verify_hls_artifact_manifest(manifest_path)
+    assert not result.valid
+    assert result.errors == ("files must be a list",)
+
+
+def test_verify_hls_artifact_manifest_reports_malformed_file_records(tmp_path):
+    manifest_path = tmp_path / "manifest.json"
+    manifest_path.write_text(
+        json.dumps(
+            {
+                "schema_version": "bad-schema",
+                "consumer_contract_version": "bad-consumer",
+                "files": [
+                    "not-object",
+                    {"role": "bad", "path": "x", "sha256": "x", "byte_size": 0},
+                    {
+                        "role": "cpp_source",
+                        "path": 123,
+                        "sha256": "x",
+                        "byte_size": 0,
+                    },
+                    {
+                        "role": "cpp_source",
+                        "path": "../escape.hpp",
+                        "sha256": "x",
+                        "byte_size": 0,
+                    },
+                    {
+                        "role": "cpp_testbench",
+                        "path": "missing.cpp",
+                        "sha256": "x",
+                        "byte_size": 0,
+                    },
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    result = verify_hls_artifact_manifest(manifest_path)
+    assert not result.valid
+    assert "schema_version mismatch" in result.errors
+    assert "consumer_contract_version mismatch" in result.errors
+    assert "files[0] must be an object" in result.errors
+    assert "files[1].role invalid" in result.errors
+    assert "files[2].path invalid" in result.errors
+    assert "duplicate file role: cpp_source" in result.errors
+    assert "files[3].path must be a safe relative path" in result.errors
+    assert any(error.startswith("cannot read missing.cpp:") for error in result.errors)
+    assert "missing file roles: constraints_xdc" in result.errors
+
+
+@pytest.mark.parametrize("artifact_id", ["", "../escape", "nested/path", "."])
+def test_emit_versioned_hls_artifact_rejects_unsafe_artifact_id(tmp_path, artifact_id):
+    with pytest.raises(ValueError, match="artifact_id"):
+        emit_versioned_hls_artifact(
+            _demo_waveform(8),
+            tmp_path,
+            artifact_id=artifact_id,
+            sample_rate_hz=100e6,
+        )
 
 
 # --------------------------------------------------------------------------- #

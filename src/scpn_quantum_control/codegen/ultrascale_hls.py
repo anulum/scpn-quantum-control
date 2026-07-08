@@ -15,22 +15,34 @@ into a ROM, and replayed one sample per cycle with ``TLAST`` on the final
 sample. The Q-format quantisation dispatches to a bit-true Rust kernel and falls
 back to the pure-Python reference below.
 
-The bundle is consumed by SCPN-MIF-CORE for FPGA-side pulse deployment; this
-module emits the source and does not invoke Vivado.
+The versioned artifact directory is consumed by SC-NEUROCORE through a
+manifest-bound file-system contract; this module emits the source and does not
+invoke Vivado.
 """
 
 from __future__ import annotations
 
+import hashlib
+import json
 import math
 from dataclasses import dataclass
-from pathlib import Path
-from typing import Literal, get_args
+from pathlib import Path, PurePosixPath
+from typing import Any, Literal, cast, get_args
 
 import numpy as np
 from jinja2 import Environment, FileSystemLoader, StrictUndefined
 from numpy.typing import NDArray
 
 TargetSku = Literal["zu3eg", "zu9eg"]
+HLSArtifactRole = Literal["cpp_source", "cpp_testbench", "constraints_xdc"]
+
+HLS_ARTIFACT_SCHEMA_VERSION = "scpn-quantum-control.ultrascale-hls-artifact.v1"
+HLS_CONSUMER_CONTRACT_VERSION = "sc-neurocore.hdl_gen.hls_ingest.v1"
+HLS_ARTIFACT_CLAIM_BOUNDARY = (
+    "Manifest-bound Vivado/Vitis HLS source bundle for downstream review and ingest only; "
+    "this does not run synthesis, prove timing closure, define board pin placement, or "
+    "execute FPGA hardware."
+)
 
 # AMD Xilinx Zynq UltraScale+ parts, verified against SC-NEUROCORE NEU-C.1
 # (hdl/targets/ultrascale_plus/{zu3eg,zu9eg}.xdc and tools/gen_vivado_project.py).
@@ -58,6 +70,87 @@ class HLSBundle:
     target_sku: TargetSku
     sample_rate_hz: float
     fifo_depth: int
+
+
+@dataclass(frozen=True)
+class HLSArtifactFile:
+    """Manifest record for one file in a versioned HLS artifact."""
+
+    role: HLSArtifactRole
+    path: str
+    sha256: str
+    byte_size: int
+
+    def to_dict(self) -> dict[str, str | int]:
+        """Return a deterministic JSON-ready file record."""
+        return {
+            "role": self.role,
+            "path": self.path,
+            "sha256": self.sha256,
+            "byte_size": self.byte_size,
+        }
+
+
+@dataclass(frozen=True)
+class HLSArtifactManifest:
+    """Versioned manifest for the SC-NEUROCORE HLS ingest boundary."""
+
+    schema_version: str
+    artifact_id: str
+    contract_version: str
+    consumer_contract_version: str
+    target_sku: TargetSku
+    target_part: str
+    sample_rate_hz: float
+    sample_count: int
+    waveform_sha256: str
+    fixed_point_width: int
+    fixed_point_frac_bits: int
+    fixed_point_int_bits: int
+    fifo_depth: int
+    files: tuple[HLSArtifactFile, ...]
+    claim_boundary: str
+
+    def to_dict(self) -> dict[str, Any]:
+        """Return the canonical JSON payload for this manifest."""
+        return {
+            "schema_version": self.schema_version,
+            "artifact_id": self.artifact_id,
+            "contract_version": self.contract_version,
+            "consumer_contract_version": self.consumer_contract_version,
+            "target": {
+                "sku": self.target_sku,
+                "part": self.target_part,
+            },
+            "pulse": {
+                "sample_rate_hz": self.sample_rate_hz,
+                "sample_count": self.sample_count,
+                "waveform_sha256": self.waveform_sha256,
+            },
+            "fixed_point": {
+                "width": self.fixed_point_width,
+                "frac_bits": self.fixed_point_frac_bits,
+                "int_bits": self.fixed_point_int_bits,
+            },
+            "interfaces": {
+                "top_function": "pulse_stream",
+                "output": "AXI4-Stream master",
+                "fifo_depth": self.fifo_depth,
+                "sample_cadence": "one sample per ap_clk cycle",
+            },
+            "files": [file.to_dict() for file in self.files],
+            "claim_boundary": self.claim_boundary,
+            "generator": "scpn_quantum_control.codegen.ultrascale_hls",
+        }
+
+
+@dataclass(frozen=True)
+class HLSArtifactVerification:
+    """Verification result for a versioned HLS artifact manifest."""
+
+    manifest_path: Path
+    valid: bool
+    errors: tuple[str, ...]
 
 
 def _python_quantise(values: list[float], frac_bits: int, total_bits: int) -> list[int]:
@@ -103,6 +196,30 @@ def _format_rom(codes: list[int]) -> str:
         chunk = codes[start : start + _ROM_PER_LINE]
         lines.append("    " + ", ".join(str(c) for c in chunk) + ",")
     return "\n".join(lines)
+
+
+def _waveform_sha256(waveform: NDArray[np.float64]) -> str:
+    contiguous = np.ascontiguousarray(waveform.astype("<f8", copy=False))
+    return hashlib.sha256(contiguous.tobytes()).hexdigest()
+
+
+def _file_record(artifact_dir: Path, role: HLSArtifactRole, relative_path: str) -> HLSArtifactFile:
+    file_path = artifact_dir / relative_path
+    data = file_path.read_bytes()
+    return HLSArtifactFile(
+        role=role,
+        path=relative_path,
+        sha256=hashlib.sha256(data).hexdigest(),
+        byte_size=len(data),
+    )
+
+
+def _validate_artifact_id(artifact_id: str) -> None:
+    if not artifact_id:
+        raise ValueError("artifact_id must be non-empty")
+    path = PurePosixPath(artifact_id)
+    if path.is_absolute() or len(path.parts) != 1 or path.name in {".", ".."}:
+        raise ValueError("artifact_id must be a single relative path segment")
 
 
 def _environment() -> Environment:
@@ -220,6 +337,169 @@ def pulse_to_vivado_hls(
     )
 
 
+def emit_versioned_hls_artifact(
+    pulse_waveform: NDArray[np.float64],
+    output_dir: str | Path,
+    *,
+    artifact_id: str = "ultrascale-hls-pulse-axi-v1",
+    sample_rate_hz: float,
+    target_sku: TargetSku = "zu3eg",
+    fifo_depth: int = 1024,
+    fixed_point_width: int = 16,
+    fixed_point_frac_bits: int = 8,
+) -> HLSArtifactManifest:
+    """Emit a manifest-bound HLS artifact directory for downstream ingest.
+
+    Parameters
+    ----------
+    pulse_waveform:
+        One-dimensional finite control envelope to replay.
+    output_dir:
+        Parent directory for the versioned artifact directory.
+    artifact_id:
+        Single path segment naming the artifact directory.
+    sample_rate_hz:
+        Positive replay sample rate for the generated HLS bundle.
+    target_sku:
+        UltraScale+ target, either ``"zu3eg"`` or ``"zu9eg"``.
+    fifo_depth:
+        AXI4-Stream FIFO depth pragma.
+    fixed_point_width:
+        Signed Q-format word width in bits.
+    fixed_point_frac_bits:
+        Signed Q-format fractional bit count.
+
+    Returns
+    -------
+    HLSArtifactManifest
+        The manifest written to ``manifest.json`` inside the artifact directory.
+
+    Raises
+    ------
+    ValueError
+        If the waveform, sample rate, target, fixed-point format, or artifact
+        identifier is invalid.
+    """
+    _validate_artifact_id(artifact_id)
+    waveform = np.asarray(pulse_waveform, dtype=np.float64)
+    bundle = pulse_to_vivado_hls(
+        waveform,
+        sample_rate_hz,
+        target_sku,
+        fifo_depth=fifo_depth,
+        fixed_point_width=fixed_point_width,
+        fixed_point_frac_bits=fixed_point_frac_bits,
+    )
+
+    artifact_dir = Path(output_dir) / artifact_id
+    write_bundle(bundle, artifact_dir)
+    files = (
+        _file_record(artifact_dir, "cpp_source", "pulse_axi_stream.hpp"),
+        _file_record(artifact_dir, "cpp_testbench", "pulse_axi_stream_tb.cpp"),
+        _file_record(artifact_dir, "constraints_xdc", "pulse_constraints.xdc"),
+    )
+    manifest = HLSArtifactManifest(
+        schema_version=HLS_ARTIFACT_SCHEMA_VERSION,
+        artifact_id=artifact_id,
+        contract_version="pulse-axi-stream.hls-bundle.v1",
+        consumer_contract_version=HLS_CONSUMER_CONTRACT_VERSION,
+        target_sku=target_sku,
+        target_part=_PARTS[target_sku],
+        sample_rate_hz=float(sample_rate_hz),
+        sample_count=int(waveform.size),
+        waveform_sha256=_waveform_sha256(waveform),
+        fixed_point_width=fixed_point_width,
+        fixed_point_frac_bits=fixed_point_frac_bits,
+        fixed_point_int_bits=fixed_point_width - fixed_point_frac_bits - 1,
+        fifo_depth=fifo_depth,
+        files=files,
+        claim_boundary=HLS_ARTIFACT_CLAIM_BOUNDARY,
+    )
+    (artifact_dir / "manifest.json").write_text(
+        json.dumps(manifest.to_dict(), indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    return manifest
+
+
+def verify_hls_artifact_manifest(manifest_path: str | Path) -> HLSArtifactVerification:
+    """Verify schema identity and file hashes for an emitted HLS artifact.
+
+    Parameters
+    ----------
+    manifest_path:
+        Path to ``manifest.json`` produced by :func:`emit_versioned_hls_artifact`.
+
+    Returns
+    -------
+    HLSArtifactVerification
+        A structured pass/fail result with all detected errors.
+    """
+    path = Path(manifest_path)
+    errors: list[str] = []
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        return HLSArtifactVerification(path, False, (f"cannot read manifest: {exc}",))
+    if not isinstance(payload, dict):
+        return HLSArtifactVerification(path, False, ("manifest must be a JSON object",))
+
+    if payload.get("schema_version") != HLS_ARTIFACT_SCHEMA_VERSION:
+        errors.append("schema_version mismatch")
+    if payload.get("consumer_contract_version") != HLS_CONSUMER_CONTRACT_VERSION:
+        errors.append("consumer_contract_version mismatch")
+
+    files_raw = payload.get("files")
+    if not isinstance(files_raw, list):
+        errors.append("files must be a list")
+        return HLSArtifactVerification(path, False, tuple(errors))
+
+    expected_roles = set(get_args(HLSArtifactRole))
+    seen_roles: set[str] = set()
+    artifact_dir = path.parent
+    for index, entry_raw in enumerate(files_raw):
+        if not isinstance(entry_raw, dict):
+            errors.append(f"files[{index}] must be an object")
+            continue
+        entry = cast(dict[str, object], entry_raw)
+        role = entry.get("role")
+        relative_path = entry.get("path")
+        sha256 = entry.get("sha256")
+        byte_size = entry.get("byte_size")
+        if not isinstance(role, str) or role not in expected_roles:
+            errors.append(f"files[{index}].role invalid")
+            continue
+        if role in seen_roles:
+            errors.append(f"duplicate file role: {role}")
+        seen_roles.add(role)
+        if not isinstance(relative_path, str):
+            errors.append(f"files[{index}].path invalid")
+            continue
+        pure_path = PurePosixPath(relative_path)
+        if (
+            pure_path.is_absolute()
+            or not pure_path.parts
+            or any(part in {"", ".", ".."} for part in pure_path.parts)
+        ):
+            errors.append(f"files[{index}].path must be a safe relative path")
+            continue
+        file_path = artifact_dir / relative_path
+        try:
+            data = file_path.read_bytes()
+        except OSError as exc:
+            errors.append(f"cannot read {relative_path}: {exc}")
+            continue
+        if not isinstance(sha256, str) or hashlib.sha256(data).hexdigest() != sha256:
+            errors.append(f"sha256 mismatch for {relative_path}")
+        if not isinstance(byte_size, int) or len(data) != byte_size:
+            errors.append(f"byte_size mismatch for {relative_path}")
+
+    missing_roles = expected_roles - seen_roles
+    if missing_roles:
+        errors.append(f"missing file roles: {', '.join(sorted(missing_roles))}")
+    return HLSArtifactVerification(path, not errors, tuple(errors))
+
+
 def write_bundle(bundle: HLSBundle, out_dir: str | Path) -> None:
     """Write the three bundle artefacts into ``out_dir`` (created if absent).
 
@@ -228,6 +508,6 @@ def write_bundle(bundle: HLSBundle, out_dir: str | Path) -> None:
     """
     out = Path(out_dir)
     out.mkdir(parents=True, exist_ok=True)
-    (out / "pulse_axi_stream.hpp").write_text(bundle.cpp_source)
-    (out / "pulse_axi_stream_tb.cpp").write_text(bundle.cpp_testbench)
-    (out / "pulse_constraints.xdc").write_text(bundle.constraints_xdc)
+    (out / "pulse_axi_stream.hpp").write_text(bundle.cpp_source, encoding="utf-8")
+    (out / "pulse_axi_stream_tb.cpp").write_text(bundle.cpp_testbench, encoding="utf-8")
+    (out / "pulse_constraints.xdc").write_text(bundle.constraints_xdc, encoding="utf-8")

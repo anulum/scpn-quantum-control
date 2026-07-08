@@ -3,18 +3,51 @@
 SPDX-License-Identifier: AGPL-3.0-or-later
 
 `scpn_quantum_control.codegen.ultrascale_hls` converts a quantum control pulse
-waveform — the output of `phase/pulse_shaping.py` — into a Vivado/Vitis HLS
-source bundle for AMD Xilinx Zynq UltraScale+ devices. The bundle is consumed by
-SCPN-MIF-CORE for FPGA-side pulse deployment; this module emits source and does
-**not** invoke Vivado.
+waveform — the output of `phase/pulse_shaping.py` — into a manifest-bound
+Vivado/Vitis HLS source artifact for AMD Xilinx Zynq UltraScale+ devices. The
+artifact is a decoupled handoff for SC-NEUROCORE `hdl_gen.hls_ingest`; this
+module emits source plus `manifest.json` and does **not** invoke Vivado, prove
+timing closure, define board pin placement, or execute FPGA hardware.
 
 The target devices are shared with SC-NEUROCORE NEU-C.1: `zu3eg`
 (`xczu3eg-sbva484-1-e`) and `zu9eg` (`xczu9eg-ffvb1156-2-e`).
 
 ## What is generated
 
-`pulse_to_vivado_hls` quantises the envelope to a signed Q-format ROM and renders
-three artefacts into an `HLSBundle`:
+`emit_versioned_hls_artifact` validates the pulse, writes a versioned artifact
+directory, and records file hashes in `manifest.json`. The default runner writes
+under ignored `results/ultrascale_hls_artifacts/`; pass an explicit output
+directory when publishing a handoff artifact.
+
+```bash
+python scripts/export_ultrascale_hls_artifact.py \
+    --output-dir results/ultrascale_hls_artifacts \
+    --artifact-id ultrascale-hls-pulse-axi-v1 \
+    --target-sku zu3eg \
+    --sample-rate-hz 125000000 \
+    --n-samples 256
+```
+
+The manifest schema is
+`scpn-quantum-control.ultrascale-hls-artifact.v1`, and the consumer contract is
+`sc-neurocore.hdl_gen.hls_ingest.v1`. The payload records:
+
+- `target`: UltraScale+ SKU and part number.
+- `pulse`: sample rate, sample count, and waveform SHA-256 over little-endian
+  float64 bytes.
+- `fixed_point`: word width, fractional bits, and integer bits.
+- `interfaces`: `pulse_stream`, AXI4-Stream master output, FIFO depth, and
+  one-sample-per-`ap_clk` cadence.
+- `files`: relative paths plus SHA-256 and byte counts for the header,
+  testbench, and XDC.
+- `claim_boundary`: the explicit no-synthesis/no-timing/no-hardware boundary.
+
+`verify_hls_artifact_manifest` validates schema identity and file integrity for
+that artifact directory.
+
+`pulse_to_vivado_hls` remains the lower-level generator: it quantises the
+envelope to a signed Q-format ROM and renders three artefacts into an
+`HLSBundle`:
 
 | Artefact | File (via `write_bundle`) | Role |
 |---|---|---|
@@ -23,13 +56,20 @@ three artefacts into an `HLSBundle`:
 | Constraints | `pulse_constraints.xdc` | clock-only timing baseline (no fabricated pin LOCs) |
 
 ```python
-from scpn_quantum_control.codegen import pulse_to_vivado_hls, write_bundle
+from scpn_quantum_control.codegen import emit_versioned_hls_artifact
 from scpn_quantum_control.phase.pulse_shaping import build_hypergeometric_pulse
 
 pulse = build_hypergeometric_pulse(t_total=1.0, omega_0=1.0, alpha=1.0, beta=1.0, n_points=256)
-bundle = pulse_to_vivado_hls(pulse.envelope, sample_rate_hz=125e6, target_sku="zu3eg",
-                             fixed_point_width=16, fixed_point_frac_bits=8)
-write_bundle(bundle, "build/pulse_player")
+manifest = emit_versioned_hls_artifact(
+    pulse.envelope,
+    "results/ultrascale_hls_artifacts",
+    artifact_id="ultrascale-hls-pulse-axi-v1",
+    sample_rate_hz=125e6,
+    target_sku="zu3eg",
+    fixed_point_width=16,
+    fixed_point_frac_bits=8,
+)
+print(manifest.consumer_contract_version)
 ```
 
 ## Fixed-point quantisation
@@ -83,5 +123,6 @@ target.
 
 ## Consumers
 
-SCPN-MIF-CORE imports `pulse_to_vivado_hls` to deploy control pulses onto the
-UltraScale+ fabric.
+SC-NEUROCORE consumes the emitted directory through
+`sc-neurocore.hdl_gen.hls_ingest.v1`. The handoff is file-system and manifest
+based; it does not require SC-NEUROCORE to import this Python package.

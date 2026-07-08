@@ -7,13 +7,13 @@
     "model_documentation_pages": null,
     "notebook_files": 100,
     "optional_extras": 43,
-    "public_api_exports": 820,
+    "public_api_exports": 828,
     "public_documentation_pages": 260,
-    "python_model_classes": 927,
+    "python_model_classes": 930,
     "python_model_source_modules": 486,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 46,
-    "test_files": 855
+    "test_files": 856
   },
   "documentation": {
     "examples": [
@@ -1828,6 +1828,18 @@
       {
         "name": "H1Summary",
         "path": "src/scpn_quantum_control/topology_control/complexes.py"
+      },
+      {
+        "name": "HLSArtifactFile",
+        "path": "src/scpn_quantum_control/codegen/ultrascale_hls.py"
+      },
+      {
+        "name": "HLSArtifactManifest",
+        "path": "src/scpn_quantum_control/codegen/ultrascale_hls.py"
+      },
+      {
+        "name": "HLSArtifactVerification",
+        "path": "src/scpn_quantum_control/codegen/ultrascale_hls.py"
       },
       {
         "name": "HLSBundle",
@@ -5151,7 +5163,13 @@
     "GradientFailurePolicy",
     "GradientResult",
     "H1Summary",
+    "HLSArtifactFile",
+    "HLSArtifactManifest",
+    "HLSArtifactVerification",
     "HLSBundle",
+    "HLS_ARTIFACT_CLAIM_BOUNDARY",
+    "HLS_ARTIFACT_SCHEMA_VERSION",
+    "HLS_CONSUMER_CONTRACT_VERSION",
     "HVPResult",
     "HardwareAbstractionLayer",
     "HardwareEmbeddingConstraint",
@@ -5504,6 +5522,7 @@
     "dynq_initial_layout",
     "eeg_plv_to_vqe",
     "eeg_quantum_kernel",
+    "emit_versioned_hls_artifact",
     "empirical_fisher_conjugate_gradient",
     "empirical_fisher_metric",
     "empirical_fisher_vector_product",
@@ -5835,6 +5854,7 @@
     "value_and_reverse_mode_grad",
     "value_and_vjp",
     "vector_jacobian_product",
+    "verify_hls_artifact_manifest",
     "verify_identity",
     "vjp",
     "vmap",
@@ -6183,6 +6203,7 @@
       "tests/test_export_s7_logical_dla_roadmap.py",
       "tests/test_export_s8_adaptive_branching_readiness.py",
       "tests/test_export_s9_quantum_thermo_readiness.py",
+      "tests/test_export_ultrascale_hls_artifact.py",
       "tests/test_fast_classical.py",
       "tests/test_fault_tolerant.py",
       "tests/test_feedback_capability_probe.py",

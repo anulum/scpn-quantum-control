@@ -8,15 +8,31 @@
 """Code generation for FPGA pulse deployment (QUA-C.4)."""
 
 from .ultrascale_hls import (
+    HLS_ARTIFACT_CLAIM_BOUNDARY,
+    HLS_ARTIFACT_SCHEMA_VERSION,
+    HLS_CONSUMER_CONTRACT_VERSION,
+    HLSArtifactFile,
+    HLSArtifactManifest,
+    HLSArtifactVerification,
     HLSBundle,
+    emit_versioned_hls_artifact,
     pulse_to_vivado_hls,
     quantise_q_format,
+    verify_hls_artifact_manifest,
     write_bundle,
 )
 
 __all__ = [
+    "HLS_ARTIFACT_CLAIM_BOUNDARY",
+    "HLS_ARTIFACT_SCHEMA_VERSION",
+    "HLS_CONSUMER_CONTRACT_VERSION",
+    "HLSArtifactFile",
+    "HLSArtifactManifest",
+    "HLSArtifactVerification",
     "HLSBundle",
+    "emit_versioned_hls_artifact",
     "pulse_to_vivado_hls",
     "quantise_q_format",
+    "verify_hls_artifact_manifest",
     "write_bundle",
 ]

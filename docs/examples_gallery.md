@@ -356,8 +356,8 @@ See [Post-Quantum Trigger Signer](ml_dsa_pqc.md).
 
 ## 30. Pulse to UltraScale+ HLS
 
-**What:** convert a pulse envelope into Vivado/Vitis HLS source and host
-co-simulation files.
+**What:** convert a pulse envelope into a manifest-bound Vivado/Vitis HLS source
+artifact with host co-simulation files.
 **When:** you need FPGA source generation without invoking Vivado.
 
 ```bash

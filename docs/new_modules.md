@@ -11,7 +11,7 @@ reading the older module-by-module notes.
 |---|---|---|---|
 | QRNG streaming and health reports | `scpn_quantum_control.entropy.QRNGStream` | [Quantum Random-Number Generation](entropy_qrng.md) | Aer simulator entropy with FIPS/NIST health checks, not hardware RNG promotion. |
 | ML-DSA-65 trigger authorisation | `scpn_quantum_control.crypto.ml_dsa`, `PqcTriggerSigner` | [Post-Quantum Trigger Signer](ml_dsa_pqc.md) | FIPS 204 vector-conformant, not FIPS-140 validated. |
-| UltraScale+ HLS pulse emission | `scpn_quantum_control.codegen.ultrascale_hls` | [Pulse -> UltraScale+ HLS Codegen](ultrascale_hls.md) | Emits source and co-simulation bundle; synthesis is self-hosted-runner gated. |
+| UltraScale+ HLS pulse artifact emission | `scpn_quantum_control.codegen.ultrascale_hls` and `scripts/export_ultrascale_hls_artifact.py` | [Pulse -> UltraScale+ HLS Codegen](ultrascale_hls.md) | Emits manifest-bound source artifacts for SC-NEUROCORE ingest; synthesis, timing closure, pinout, and hardware execution are outside this claim. |
 | NV-centre ODMR magnetometry | `scpn_quantum_control.sensing.nv_magnetometry_20T` | [NV-Centre 20 T Magnetometry](nv_magnetometry_20T.md) | Simulation and calibration contract; hardware calibration needs evidence. |
 | FRC pulsed-shot scheduling | `scpn_quantum_control.phase.frc_pulsed_qaoa` | [FRC Pulsed-Shot QAOA](frc_pulsed_qaoa.md) | Control-grade surrogate unless physics-derived provenance is attached. |
 | Realtime loop telemetry | `scpn_quantum_control.realtime` | [Realtime Runtime](realtime_runtime.md) | Software-loop timing, not intra-shot QPU latency. |
