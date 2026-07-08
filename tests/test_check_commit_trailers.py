@@ -36,6 +36,7 @@ _check_commit_trailers = _load_tool_module(
 
 REQUIRED_AUTHORSHIP_LINE = "Authored by Anulum Fortis & Arcane Sapience (protoscience@anulum.li)"
 LEGACY_COAUTHOR_TRAILER = "Co-Authored-By: " + "Arcane Sapience <protoscience@anulum.li>"
+VALID_SEAT_TRAILER = "Seat: 14753"
 
 
 def _message_file(tmp_path: Path, text: str) -> Path:
@@ -50,6 +51,8 @@ def test_commit_message_hook_accepts_required_authorship_line(tmp_path: Path) ->
         "\n".join(
             [
                 "Add release audit coverage",
+                "",
+                VALID_SEAT_TRAILER,
                 "",
                 REQUIRED_AUTHORSHIP_LINE,
             ]
@@ -77,6 +80,8 @@ def test_commit_message_hook_rejects_banned_subject_word(
             [
                 "Add comprehensive release audit",
                 "",
+                VALID_SEAT_TRAILER,
+                "",
                 REQUIRED_AUTHORSHIP_LINE,
             ]
         ),
@@ -101,6 +106,111 @@ def test_message_violations_allow_banned_words_in_body_by_default() -> None:
     assert _check_commit_trailers._message_violations(message, check_body_banned=True) == [
         "banned word(s) in message: comprehensive"
     ]
+
+
+def test_commit_message_hook_rejects_missing_seat_trailer(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """The commit-msg hook requires a forward-only seat trailer."""
+    path = _message_file(
+        tmp_path,
+        "\n".join(
+            [
+                "Add release audit coverage",
+                "",
+                REQUIRED_AUTHORSHIP_LINE,
+            ]
+        ),
+    )
+
+    assert _check_commit_trailers.main(["check_commit_trailers.py", str(path)]) == 1
+    assert "missing `Seat: <seat-id>` trailer" in capsys.readouterr().err
+
+
+def test_message_violations_do_not_require_seat_by_default() -> None:
+    """Historical CI audit mode does not apply the forward-only seat policy."""
+    message = "\n".join(
+        [
+            "Add release audit coverage",
+            "",
+            REQUIRED_AUTHORSHIP_LINE,
+        ]
+    )
+
+    assert _check_commit_trailers._message_violations(message) == []
+
+
+def test_commit_message_hook_rejects_duplicate_seat_trailers(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """Exactly one seat trailer is accepted."""
+    path = _message_file(
+        tmp_path,
+        "\n".join(
+            [
+                "Add release audit coverage",
+                "",
+                "Seat: 14753",
+                "Seat: rf01",
+                "",
+                REQUIRED_AUTHORSHIP_LINE,
+            ]
+        ),
+    )
+
+    assert _check_commit_trailers.main(["check_commit_trailers.py", str(path)]) == 1
+    assert "expected exactly one `Seat: <seat-id>` trailer" in capsys.readouterr().err
+
+
+@pytest.mark.parametrize("seat", ["Seat:", "Seat: codex-14753", "Seat: claude-rf01"])
+def test_commit_message_hook_rejects_malformed_or_vendor_prefixed_seat(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str], seat: str
+) -> None:
+    """Seat IDs must be syntactically valid and vendor-neutral."""
+    path = _message_file(
+        tmp_path,
+        "\n".join(
+            [
+                "Add release audit coverage",
+                "",
+                seat,
+                "",
+                REQUIRED_AUTHORSHIP_LINE,
+            ]
+        ),
+    )
+
+    assert _check_commit_trailers.main(["check_commit_trailers.py", str(path)]) == 1
+    err = capsys.readouterr().err
+    assert (
+        "invalid `Seat: <seat-id>` trailer" in err
+        or "vendor-prefixed `Seat:` trailer is forbidden" in err
+    )
+
+
+def test_commit_message_hook_rejects_non_adjacent_seat_trailer(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """The seat trailer belongs in the trailer block with the authorship line."""
+    path = _message_file(
+        tmp_path,
+        "\n".join(
+            [
+                "Add release audit coverage",
+                "",
+                VALID_SEAT_TRAILER,
+                "",
+                "Body text splits the trailer block.",
+                "",
+                REQUIRED_AUTHORSHIP_LINE,
+            ]
+        ),
+    )
+
+    assert _check_commit_trailers.main(["check_commit_trailers.py", str(path)]) == 1
+    assert (
+        "`Seat:` trailer must immediately precede the authorship line" in capsys.readouterr().err
+    )
 
 
 def test_message_violations_deduplicates_repeated_banned_words() -> None:

@@ -12,8 +12,8 @@ Two roles:
 
 1. **commit-msg hook** — invoked with a single path argument (the file
    holding the pending commit message). Used by pre-commit to block
-   local commits that omit `Authored by` or that include any of
-   the banned quality / slop words in the commit subject or body.
+   local commits that omit `Seat` / `Authored by` trailers or that
+   include any of the banned quality / slop words in the commit subject.
 
 2. **CI auditor** — invoked without arguments. Walks every commit
    from `v0.9.6..HEAD` (the first public tag whose post-rule history is
@@ -54,6 +54,9 @@ LEGACY_COAUTHOR_TRAILER_RE = re.compile(
     r"^Co-Authored-By:\s+Arcane Sapience\s+<protoscience@anulum\.li>\s*$",
     re.MULTILINE,
 )
+SEAT_TRAILER_RE = re.compile(r"^Seat:\s+([A-Za-z0-9][A-Za-z0-9_-]{0,63})\s*$")
+SEAT_TRAILER_PREFIX_RE = re.compile(r"^\s*Seat:")
+FORBIDDEN_SEAT_PREFIXES = ("claude-", "codex-")
 
 # Banned tokens per `feedback_no_internal_quality_labels` and
 # `feedback_anti_slop_policy`. Case-insensitive whole-word match.
@@ -136,10 +139,46 @@ def _has_required_authorship_line(msg: str) -> bool:
     return any(line.strip() == REQUIRED_AUTHORSHIP_LINE for line in msg.splitlines())
 
 
+def _seat_trailer_violations(msg: str) -> list[str]:
+    """Return violations for the forward-only agent seat trailer."""
+    lines = msg.splitlines()
+    seat_indices = [
+        index for index, line in enumerate(lines) if SEAT_TRAILER_PREFIX_RE.match(line)
+    ]
+    if not seat_indices:
+        return ["missing `Seat: <seat-id>` trailer"]
+    violations: list[str] = []
+    if len(seat_indices) != 1:
+        violations.append("expected exactly one `Seat: <seat-id>` trailer")
+        return violations
+
+    seat_index = seat_indices[0]
+    seat_line = lines[seat_index].strip()
+    match = SEAT_TRAILER_RE.match(seat_line)
+    if match is None:
+        violations.append("invalid `Seat: <seat-id>` trailer")
+        return violations
+
+    seat_id = match.group(1).lower()
+    if any(seat_id.startswith(prefix) for prefix in FORBIDDEN_SEAT_PREFIXES):
+        violations.append("vendor-prefixed `Seat:` trailer is forbidden")
+
+    authorship_indices = [
+        index for index, line in enumerate(lines) if line.strip() == REQUIRED_AUTHORSHIP_LINE
+    ]
+    if len(authorship_indices) == 1:
+        authorship_index = authorship_indices[0]
+        between = lines[seat_index + 1 : authorship_index]
+        if seat_index >= authorship_index or any(line.strip() for line in between):
+            violations.append("`Seat:` trailer must immediately precede the authorship line")
+    return violations
+
+
 def _message_violations(
     msg: str,
     check_body_banned: bool = False,
     allow_legacy_trailer: bool = False,
+    require_seat_trailer: bool = False,
 ) -> list[str]:
     """Return a list of violations for this commit message.
 
@@ -154,6 +193,8 @@ def _message_violations(
     has_legacy_line = bool(LEGACY_COAUTHOR_TRAILER_RE.search(msg))
     if not has_current_line and not (allow_legacy_trailer and has_legacy_line):
         violations.append(f"missing `{REQUIRED_AUTHORSHIP_LINE}` authorship line")
+    if require_seat_trailer:
+        violations.extend(_seat_trailer_violations(msg))
     # Extract subject line (Keep a Changelog / Conventional Commits)
     subject = next((line for line in msg.splitlines() if line.strip()), "")
     scope = msg if check_body_banned else subject
@@ -172,8 +213,9 @@ def _message_violations(
 
 
 def _commit_msg_hook(path: Path) -> int:
+    """Run the forward-only commit-message hook against one message file."""
     msg = path.read_text(encoding="utf-8")
-    violations = _message_violations(msg)
+    violations = _message_violations(msg, require_seat_trailer=True)
     if violations:
         print("Commit message rejected:", file=sys.stderr)
         for v in violations:
@@ -186,7 +228,8 @@ def _commit_msg_hook(path: Path) -> int:
         print(
             (
                 '  gh pr merge <N> --squash --body "$(gh pr view <N> '
-                f'--json body -q .body)\\n\\n{REQUIRED_AUTHORSHIP_LINE}"'
+                "--json body -q .body)\\n\\nSeat: <seat-id>\\n\\n"
+                f'{REQUIRED_AUTHORSHIP_LINE}"'
             ),
             file=sys.stderr,
         )
