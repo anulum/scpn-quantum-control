@@ -130,11 +130,15 @@ pnpm build
 ```
 
 The Phase-0 panel renders the committed evidence surfaces verbatim — the
-schema-A capability manifest, the transform-algebra support matrix, and the
-baseline scorecard — each at its own claim boundary. Statuses are never
-recomputed or upgraded in the UI; a surface that fails its fail-closed guard
-renders as a loud `unverifiable` block. The manifest `ui_module` field stays
-`null` until the remote is deployed and its URL is real.
+schema-A capability manifest, the transform-algebra support matrix and explorer,
+the gradient-plan explanation artefact, and the baseline scorecard — each at its
+own claim boundary. Statuses are never recomputed or upgraded in the UI; a
+surface that fails its fail-closed guard renders as a loud `unverifiable` block.
+The gradient-plan view is sourced from
+`data/differentiable_phase_qnode/gradient_plan_explanations_20260709.json`; it
+explains the planner-selected method and fail-closed boundaries, but it does not
+execute a browser differentiate run. The manifest `ui_module` field stays `null`
+until the remote is deployed and its URL is real.
 
 ## WS-3 reference-validation feed
 

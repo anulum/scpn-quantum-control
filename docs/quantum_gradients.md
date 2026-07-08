@@ -492,6 +492,21 @@ matrix. It checks four supported combinations and five blocked combinations,
 then returns JSON-ready plans with blocked reasons, warnings, alternatives, and
 claim boundaries.
 
+The Studio planner view is generated from the same audit through:
+
+```bash
+python -m scpn_quantum_control.gradient_plan_explanation_artifact --check
+```
+
+The committed artefacts are
+`data/differentiable_phase_qnode/gradient_plan_explanations_20260709.json`
+and
+`data/differentiable_phase_qnode/gradient_plan_explanations_20260709.md`.
+They explain each gate/observable/backend/transform/adapter cell, the selected
+method family, the backend evaluation mode, and the fail-closed boundaries. The
+artefact is planner evidence only; it does not run browser differentiation or
+promote live hardware-gradient support.
+
 ## Transform nesting governance
 
 `plan_gradient_transform_nesting(...)` adds a second planning layer for nested

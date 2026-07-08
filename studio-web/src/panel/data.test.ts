@@ -9,7 +9,9 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  gradientPlanExplanations,
   parseManifest,
+  parseGradientPlanExplanations,
   parseScorecard,
   parseSupportMatrix,
   scorecard,
@@ -51,6 +53,23 @@ describe("committed surfaces", () => {
     if (scorecard.ok) {
       expect(scorecard.value.rows).toHaveLength(11);
       expect(scorecard.value.rows.every((row) => row.status === "behind_baseline")).toBe(true);
+    }
+  });
+
+  it("admits the committed gradient-plan explanations with supported and blocked cells", () => {
+    expect(gradientPlanExplanations.ok).toBe(true);
+    if (gradientPlanExplanations.ok) {
+      expect(gradientPlanExplanations.value.rows).toHaveLength(10);
+      expect(gradientPlanExplanations.value.methodFamilies).toEqual([
+        "parameter-shift",
+        "unsupported",
+      ]);
+      const supported = gradientPlanExplanations.value.rows.filter((row) => row.supported);
+      const blocked = gradientPlanExplanations.value.rows.filter((row) => !row.supported);
+      expect(supported).toHaveLength(5);
+      expect(blocked).toHaveLength(5);
+      expect(blocked.every((row) => row.failClosedBoundaries.length > 0)).toBe(true);
+      expect(supported.every((row) => row.why.length > 0)).toBe(true);
     }
   });
 });
@@ -174,5 +193,56 @@ describe("fail-closed guards", () => {
         rows: [{ category: "c", status: "behind_baseline", blockers: [1] }],
       }).ok,
     ).toBe(false);
+  });
+
+  it("rejects malformed gradient-plan artefacts", () => {
+    expect(parseGradientPlanExplanations(null).ok).toBe(false);
+    expect(
+      parseGradientPlanExplanations({
+        artifact_id: "x",
+        claim_boundary: "y",
+        method_families: ["parameter-shift"],
+      }).ok,
+    ).toBe(false);
+    expect(
+      parseGradientPlanExplanations({
+        artifact_id: "x",
+        claim_boundary: "y",
+        method_families: ["parameter-shift"],
+        explanations: [null],
+      }).ok,
+    ).toBe(false);
+  });
+
+  it("rejects gradient-plan rows without decision reasons", () => {
+    const result = parseGradientPlanExplanations({
+      artifact_id: "x",
+      claim_boundary: "y",
+      method_families: ["parameter-shift"],
+      explanations: [
+        {
+          cell_id: "cell",
+          operation: "ry.pauli_expectation.grad",
+          framework: "native",
+          backend: "statevector",
+          transform: "grad",
+          supported: true,
+          status: "supported",
+          selected_method: "parameter_shift",
+          method_family: "parameter-shift",
+          evaluation_mode: "deterministic_local",
+          backend_family: "statevector",
+          backend_evaluations: 4,
+          shots: null,
+          requires_finite_shot_variance: false,
+          requires_hardware_policy: false,
+          fail_closed_boundaries: [],
+          warnings: [],
+          alternatives: [],
+          claim_boundary: "bounded",
+        },
+      ],
+    });
+    expect(result.ok).toBe(false);
   });
 });

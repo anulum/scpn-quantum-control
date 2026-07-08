@@ -1086,6 +1086,20 @@ plans include unregistered gates, unregistered observables, hardware without
 policy approval, unsupported transform algebra, and finite-shot Hessian
 requests.
 
+For the Studio planner explanation surface, regenerate or validate the committed
+planner artefacts with:
+
+```bash
+python -m scpn_quantum_control.gradient_plan_explanation_artifact --check
+```
+
+The JSON and markdown artefacts live at
+`data/differentiable_phase_qnode/gradient_plan_explanations_20260709.json` and
+`data/differentiable_phase_qnode/gradient_plan_explanations_20260709.md`. They
+mirror `run_gradient_support_matrix_audit()` and explain the selected method,
+evaluation mode, warnings, alternatives, and fail-closed boundaries for each
+representative planner cell.
+
 ## Minimal transform-algebra support matrix
 
 ```python

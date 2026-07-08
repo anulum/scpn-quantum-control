@@ -15,6 +15,7 @@
 
 import studioManifestJson from "../../../docs/_generated/studio_manifest.json";
 import scorecardJson from "../../../data/differentiable_phase_qnode/differentiable_baseline_scorecard_20260620.json";
+import gradientPlansJson from "../../../data/differentiable_phase_qnode/gradient_plan_explanations_20260709.json";
 import supportMatrixJson from "../../../data/differentiable_phase_qnode/differentiable_transform_support_matrix_20260708.json";
 
 export interface StudioVerb {
@@ -66,6 +67,36 @@ export interface ScorecardView {
   readonly artifactId: string;
   readonly claimBoundary: string;
   readonly rows: readonly ScorecardRowView[];
+}
+
+export interface GradientPlanExplanationRowView {
+  readonly cellId: string;
+  readonly operation: string;
+  readonly framework: string;
+  readonly backend: string;
+  readonly transform: string;
+  readonly supported: boolean;
+  readonly status: string;
+  readonly selectedMethod: string;
+  readonly methodFamily: string;
+  readonly evaluationMode: string;
+  readonly backendFamily: string;
+  readonly backendEvaluations: number;
+  readonly shots: number | null;
+  readonly requiresFiniteShotVariance: boolean;
+  readonly requiresHardwarePolicy: boolean;
+  readonly why: readonly string[];
+  readonly failClosedBoundaries: readonly string[];
+  readonly warnings: readonly string[];
+  readonly alternatives: readonly string[];
+  readonly claimBoundary: string;
+}
+
+export interface GradientPlanExplanationView {
+  readonly artifactId: string;
+  readonly claimBoundary: string;
+  readonly methodFamilies: readonly string[];
+  readonly rows: readonly GradientPlanExplanationRowView[];
 }
 
 export type Loaded<T> =
@@ -244,16 +275,103 @@ function loadScorecard(raw: unknown): Loaded<ScorecardView> {
   };
 }
 
+function loadGradientPlanExplanations(raw: unknown): Loaded<GradientPlanExplanationView> {
+  if (!isRecord(raw)) {
+    return { ok: false, reason: "gradient-plan artefact is not an object" };
+  }
+  const rowsRaw = raw["explanations"];
+  const methodFamilies = stringList(raw["method_families"]);
+  if (
+    typeof raw["artifact_id"] !== "string" ||
+    typeof raw["claim_boundary"] !== "string" ||
+    methodFamilies === null ||
+    !Array.isArray(rowsRaw)
+  ) {
+    return { ok: false, reason: "gradient-plan artefact fields are malformed" };
+  }
+  const rows: GradientPlanExplanationRowView[] = [];
+  for (const entry of rowsRaw) {
+    if (!isRecord(entry)) {
+      return { ok: false, reason: "gradient-plan artefact carries a malformed row" };
+    }
+    const why = stringList(entry["why"]);
+    const failClosedBoundaries = stringList(entry["fail_closed_boundaries"]);
+    const warnings = stringList(entry["warnings"]);
+    const alternatives = stringList(entry["alternatives"]);
+    const shots = entry["shots"];
+    if (
+      typeof entry["cell_id"] !== "string" ||
+      typeof entry["operation"] !== "string" ||
+      typeof entry["framework"] !== "string" ||
+      typeof entry["backend"] !== "string" ||
+      typeof entry["transform"] !== "string" ||
+      typeof entry["supported"] !== "boolean" ||
+      typeof entry["status"] !== "string" ||
+      typeof entry["selected_method"] !== "string" ||
+      typeof entry["method_family"] !== "string" ||
+      typeof entry["evaluation_mode"] !== "string" ||
+      typeof entry["backend_family"] !== "string" ||
+      typeof entry["backend_evaluations"] !== "number" ||
+      (shots !== null && typeof shots !== "number") ||
+      typeof entry["requires_finite_shot_variance"] !== "boolean" ||
+      typeof entry["requires_hardware_policy"] !== "boolean" ||
+      why === null ||
+      failClosedBoundaries === null ||
+      warnings === null ||
+      alternatives === null ||
+      typeof entry["claim_boundary"] !== "string"
+    ) {
+      return { ok: false, reason: "gradient-plan artefact carries a malformed row" };
+    }
+    rows.push({
+      cellId: entry["cell_id"],
+      operation: entry["operation"],
+      framework: entry["framework"],
+      backend: entry["backend"],
+      transform: entry["transform"],
+      supported: entry["supported"],
+      status: entry["status"],
+      selectedMethod: entry["selected_method"],
+      methodFamily: entry["method_family"],
+      evaluationMode: entry["evaluation_mode"],
+      backendFamily: entry["backend_family"],
+      backendEvaluations: entry["backend_evaluations"],
+      shots,
+      requiresFiniteShotVariance: entry["requires_finite_shot_variance"],
+      requiresHardwarePolicy: entry["requires_hardware_policy"],
+      why,
+      failClosedBoundaries,
+      warnings,
+      alternatives,
+      claimBoundary: entry["claim_boundary"],
+    });
+  }
+  return {
+    ok: true,
+    value: {
+      artifactId: raw["artifact_id"],
+      claimBoundary: raw["claim_boundary"],
+      methodFamilies,
+      rows,
+    },
+  };
+}
+
 /** Parse an arbitrary manifest payload (exported for fail-closed tests). */
 export const parseManifest = loadManifest;
 /** Parse an arbitrary support-matrix payload (exported for fail-closed tests). */
 export const parseSupportMatrix = loadSupportMatrix;
 /** Parse an arbitrary scorecard payload (exported for fail-closed tests). */
 export const parseScorecard = loadScorecard;
+/** Parse arbitrary gradient-plan explanations (exported for fail-closed tests). */
+export const parseGradientPlanExplanations = loadGradientPlanExplanations;
 
 /** The committed schema-A manifest, guarded. */
 export const studioManifest: Loaded<StudioManifestView> = loadManifest(studioManifestJson);
 /** The committed transform-algebra support matrix, guarded. */
 export const supportMatrix: Loaded<SupportMatrixView> = loadSupportMatrix(supportMatrixJson);
+/** The committed gradient-plan explanation artefact, guarded. */
+export const gradientPlanExplanations: Loaded<GradientPlanExplanationView> =
+  loadGradientPlanExplanations(gradientPlansJson);
 /** The committed differentiable baseline scorecard, guarded. */
 export const scorecard: Loaded<ScorecardView> = loadScorecard(scorecardJson);

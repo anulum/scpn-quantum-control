@@ -8,6 +8,7 @@
 
 import "./tokens.css";
 
+import { GradientPlanExplanation } from "./panel/GradientPlanExplanation";
 import { KuramotoPlayPanel } from "./panel/KuramotoPlayPanel";
 import { ManifestCapabilities } from "./panel/ManifestCapabilities";
 import { ProgramADReplayCard } from "./panel/ProgramADReplayCard";
@@ -15,7 +16,12 @@ import { RecomputeCard } from "./panel/RecomputeCard";
 import { ScorecardTable } from "./panel/ScorecardTable";
 import { SupportMatrixGrid } from "./panel/SupportMatrixGrid";
 import { Unverifiable } from "./panel/Unverifiable";
-import { scorecard, studioManifest, supportMatrix } from "./panel/data";
+import {
+  gradientPlanExplanations,
+  scorecard,
+  studioManifest,
+  supportMatrix,
+} from "./panel/data";
 import { committedScenario } from "./panel/kuramoto";
 import { programAdUnit } from "./panel/programAd";
 import { recomputeUnit } from "./panel/recompute";
@@ -74,6 +80,14 @@ export function QuantumStudioPanel() {
         <Unverifiable
           surface="differentiable_transform_support_matrix_20260708.json"
           reason={supportMatrix.reason}
+        />
+      )}
+      {gradientPlanExplanations.ok ? (
+        <GradientPlanExplanation plans={gradientPlanExplanations.value} />
+      ) : (
+        <Unverifiable
+          surface="gradient_plan_explanations_20260709.json"
+          reason={gradientPlanExplanations.reason}
         />
       )}
       {scorecard.ok ? (

@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 829,
     "public_documentation_pages": 267,
-    "python_model_classes": 947,
-    "python_model_source_modules": 492,
+    "python_model_classes": 948,
+    "python_model_source_modules": 493,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 46,
-    "test_files": 865
+    "test_files": 866
   },
   "documentation": {
     "examples": [
@@ -1811,6 +1811,10 @@
       {
         "name": "GradientFailurePolicy",
         "path": "src/scpn_quantum_control/differentiable_stochastic_policy.py"
+      },
+      {
+        "name": "GradientPlanExplanationArtifactValidation",
+        "path": "src/scpn_quantum_control/gradient_plan_explanation_artifact.py"
       },
       {
         "name": "GradientResult",
@@ -4625,6 +4629,7 @@
       "src/scpn_quantum_control/gauge/universality.py",
       "src/scpn_quantum_control/gauge/vortex_detector.py",
       "src/scpn_quantum_control/gauge/wilson_loop.py",
+      "src/scpn_quantum_control/gradient_plan_explanation_artifact.py",
       "src/scpn_quantum_control/hardware/_count_integrity.py",
       "src/scpn_quantum_control/hardware/_experiment_helpers.py",
       "src/scpn_quantum_control/hardware/aggregators.py",
@@ -6321,6 +6326,7 @@
       "tests/test_gpu_baseline.py",
       "tests/test_gpu_batch_vqe.py",
       "tests/test_gpu_batch_vqe_contracts.py",
+      "tests/test_gradient_plan_explanation_artifact.py",
       "tests/test_graph_topology_scan.py",
       "tests/test_h1_persistence.py",
       "tests/test_hamiltonian_learning.py",

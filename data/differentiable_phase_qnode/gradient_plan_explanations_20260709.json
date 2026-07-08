@@ -1,0 +1,354 @@
+{
+  "artifact_id": "gradient-plan-explanations-20260709",
+  "blocked_plan_count": 5,
+  "claim_boundary": "gradient support matrix audit only; supported entries identify bounded local or host-bridge gradient surfaces, blocked entries are fail-closed planning evidence, and no live hardware-gradient or universal transform claim is implied",
+  "explanations": [
+    {
+      "alternatives": [],
+      "backend": "statevector",
+      "backend_evaluations": 4,
+      "backend_family": "statevector",
+      "cell_id": "ry::pauli_expectation::statevector::grad::native",
+      "claim_boundary": "deterministic local quantum-gradient support for registered gates and observables",
+      "evaluation_mode": "deterministic_local",
+      "fail_closed_boundaries": [],
+      "framework": "native",
+      "index": 1,
+      "method_family": "parameter-shift",
+      "operation": "ry.pauli_expectation.grad",
+      "requires_finite_shot_variance": false,
+      "requires_hardware_policy": false,
+      "selected_method": "parameter_shift",
+      "shots": null,
+      "status": "supported",
+      "supported": true,
+      "transform": "grad",
+      "warnings": [],
+      "why": [
+        "gate:ry supports parameter_shift, multi_frequency_parameter_shift",
+        "observable:pauli_expectation supports parameter_shift, stochastic_parameter_shift",
+        "backend:statevector_simulator supports parameter_shift",
+        "transform:grad supports parameter_shift, stochastic_parameter_shift",
+        "adapter:native supports parameter_shift, stochastic_parameter_shift, parameter_shift_hessian, parameter_shift_directional_derivative, parameter_shift_pullback, parameter_shift_scalar_jacobian, manual_vmap_parameter_shift_grad",
+        "backend planner selected parameter_shift with 4 evaluations"
+      ]
+    },
+    {
+      "alternatives": [
+        "sparse_pauli_sum",
+        "pauli_expectation"
+      ],
+      "backend": "qasm_simulator",
+      "backend_evaluations": 4,
+      "backend_family": "finite_shot_simulator",
+      "cell_id": "rz::kuramoto_xy_energy::qasm_simulator::grad::native",
+      "claim_boundary": "finite-shot gradient support with explicit variance metadata; no hardware claim is implied",
+      "evaluation_mode": "finite_shot_callback",
+      "fail_closed_boundaries": [],
+      "framework": "native",
+      "index": 2,
+      "method_family": "parameter-shift",
+      "operation": "rz.kuramoto_xy_energy.grad",
+      "requires_finite_shot_variance": true,
+      "requires_hardware_policy": false,
+      "selected_method": "stochastic_parameter_shift",
+      "shots": 400,
+      "status": "supported",
+      "supported": true,
+      "transform": "grad",
+      "warnings": [
+        "finite-shot gradients require variance propagation and confidence metadata"
+      ],
+      "why": [
+        "gate:rz supports parameter_shift, multi_frequency_parameter_shift",
+        "observable:kuramoto_xy_energy supports parameter_shift, term_gradient",
+        "backend:finite_shot_simulator supports stochastic_parameter_shift",
+        "transform:grad supports parameter_shift, stochastic_parameter_shift",
+        "adapter:native supports parameter_shift, stochastic_parameter_shift, parameter_shift_hessian, parameter_shift_directional_derivative, parameter_shift_pullback, parameter_shift_scalar_jacobian, manual_vmap_parameter_shift_grad",
+        "backend planner selected stochastic_parameter_shift with 4 evaluations"
+      ]
+    },
+    {
+      "alternatives": [
+        "grad",
+        "native"
+      ],
+      "backend": "statevector",
+      "backend_evaluations": 4,
+      "backend_family": "statevector",
+      "cell_id": "ry::pauli_expectation::statevector::value_and_grad::jax",
+      "claim_boundary": "jax bounded bridge support; native framework autodiff through arbitrary providers is not claimed",
+      "evaluation_mode": "host_bridge",
+      "fail_closed_boundaries": [],
+      "framework": "jax",
+      "index": 3,
+      "method_family": "parameter-shift",
+      "operation": "ry.pauli_expectation.value_and_grad",
+      "requires_finite_shot_variance": false,
+      "requires_hardware_policy": false,
+      "selected_method": "jax_host_callback_parameter_shift",
+      "shots": null,
+      "status": "supported",
+      "supported": true,
+      "transform": "value_and_grad",
+      "warnings": [
+        "jax route crosses an explicit host callback or tensor bridge boundary"
+      ],
+      "why": [
+        "gate:ry supports parameter_shift, multi_frequency_parameter_shift",
+        "observable:pauli_expectation supports parameter_shift, stochastic_parameter_shift",
+        "backend:statevector_simulator supports parameter_shift",
+        "transform:value_and_grad supports parameter_shift, stochastic_parameter_shift",
+        "adapter:jax supports host_callback_parameter_shift",
+        "backend planner selected parameter_shift with 4 evaluations"
+      ]
+    },
+    {
+      "alternatives": [
+        "pauli_expectation",
+        "native"
+      ],
+      "backend": "statevector",
+      "backend_evaluations": 2,
+      "backend_family": "statevector",
+      "cell_id": "rx::sparse_pauli_sum::statevector::grad::qiskit",
+      "claim_boundary": "qiskit bounded bridge support; native framework autodiff through arbitrary providers is not claimed",
+      "evaluation_mode": "host_bridge",
+      "fail_closed_boundaries": [],
+      "framework": "qiskit",
+      "index": 4,
+      "method_family": "parameter-shift",
+      "operation": "rx.sparse_pauli_sum.grad",
+      "requires_finite_shot_variance": false,
+      "requires_hardware_policy": false,
+      "selected_method": "qiskit_shifted_circuit_parameter_shift",
+      "shots": null,
+      "status": "supported",
+      "supported": true,
+      "transform": "grad",
+      "warnings": [
+        "qiskit route is shifted-circuit/local execution unless provider policy is supplied"
+      ],
+      "why": [
+        "gate:rx supports parameter_shift, multi_frequency_parameter_shift",
+        "observable:sparse_pauli_sum supports parameter_shift, stochastic_parameter_shift",
+        "backend:statevector_simulator supports parameter_shift",
+        "transform:grad supports parameter_shift, stochastic_parameter_shift",
+        "adapter:qiskit supports shifted_circuit_generation, statevector_parameter_shift",
+        "backend planner selected parameter_shift with 2 evaluations"
+      ]
+    },
+    {
+      "alternatives": [
+        "grad",
+        "native",
+        "qiskit"
+      ],
+      "backend": "qasm_simulator",
+      "backend_evaluations": 4,
+      "backend_family": "finite_shot_simulator",
+      "cell_id": "ry::pauli_expectation::qasm_simulator::value_and_grad::provider_callback",
+      "claim_boundary": "provider callback gradient support with explicit sample records; no live hardware claim is implied",
+      "evaluation_mode": "finite_shot_provider_callback",
+      "fail_closed_boundaries": [],
+      "framework": "provider_callback",
+      "index": 5,
+      "method_family": "parameter-shift",
+      "operation": "ry.pauli_expectation.value_and_grad",
+      "requires_finite_shot_variance": true,
+      "requires_hardware_policy": false,
+      "selected_method": "provider_callback_stochastic_parameter_shift",
+      "shots": 400,
+      "status": "supported",
+      "supported": true,
+      "transform": "value_and_grad",
+      "warnings": [
+        "finite-shot gradients require variance propagation and confidence metadata",
+        "provider callback route requires caller-supplied expectation samples and variance metadata for finite-shot execution"
+      ],
+      "why": [
+        "gate:ry supports parameter_shift, multi_frequency_parameter_shift",
+        "observable:pauli_expectation supports parameter_shift, stochastic_parameter_shift",
+        "backend:finite_shot_simulator supports stochastic_parameter_shift",
+        "transform:value_and_grad supports parameter_shift, stochastic_parameter_shift",
+        "adapter:provider_callback supports provider_callback_parameter_shift, provider_callback_stochastic_parameter_shift",
+        "backend planner selected stochastic_parameter_shift with 4 evaluations"
+      ]
+    },
+    {
+      "alternatives": [
+        "rx",
+        "ry",
+        "rz",
+        "phase_rotation",
+        "controlled_phase"
+      ],
+      "backend": "statevector",
+      "backend_evaluations": 4,
+      "backend_family": "statevector",
+      "cell_id": "arbitrary_unitary::pauli_expectation::statevector::grad::native",
+      "claim_boundary": "unsupported combination; no derivative execution or production claim is permitted",
+      "evaluation_mode": "fail_closed",
+      "fail_closed_boundaries": [
+        "gate has no registered parameter-shift generator spectrum"
+      ],
+      "framework": "native",
+      "index": 6,
+      "method_family": "unsupported",
+      "operation": "arbitrary_unitary.pauli_expectation.grad",
+      "requires_finite_shot_variance": false,
+      "requires_hardware_policy": false,
+      "selected_method": "unsupported",
+      "shots": null,
+      "status": "fail_closed",
+      "supported": false,
+      "transform": "grad",
+      "warnings": [],
+      "why": [
+        "gate has no registered parameter-shift generator spectrum"
+      ]
+    },
+    {
+      "alternatives": [
+        "pauli_expectation",
+        "sparse_pauli_sum",
+        "kuramoto_xy_energy"
+      ],
+      "backend": "statevector",
+      "backend_evaluations": 4,
+      "backend_family": "statevector",
+      "cell_id": "ry::arbitrary_povm::statevector::grad::native",
+      "claim_boundary": "unsupported combination; no derivative execution or production claim is permitted",
+      "evaluation_mode": "fail_closed",
+      "fail_closed_boundaries": [
+        "observable has no registered expectation-gradient contract"
+      ],
+      "framework": "native",
+      "index": 7,
+      "method_family": "unsupported",
+      "operation": "ry.arbitrary_povm.grad",
+      "requires_finite_shot_variance": false,
+      "requires_hardware_policy": false,
+      "selected_method": "unsupported",
+      "shots": null,
+      "status": "fail_closed",
+      "supported": false,
+      "transform": "grad",
+      "warnings": [],
+      "why": [
+        "observable has no registered expectation-gradient contract"
+      ]
+    },
+    {
+      "alternatives": [
+        "statevector_simulator",
+        "finite_shot_simulator"
+      ],
+      "backend": "hardware",
+      "backend_evaluations": 0,
+      "backend_family": "hardware",
+      "cell_id": "ry::pauli_expectation::hardware::grad::native",
+      "claim_boundary": "unsupported combination; no derivative execution or production claim is permitted",
+      "evaluation_mode": "fail_closed",
+      "fail_closed_boundaries": [
+        "hardware gradient execution requires explicit hardware policy approval"
+      ],
+      "framework": "native",
+      "index": 8,
+      "method_family": "unsupported",
+      "operation": "ry.pauli_expectation.grad",
+      "requires_finite_shot_variance": false,
+      "requires_hardware_policy": true,
+      "selected_method": "unsupported",
+      "shots": 1024,
+      "status": "fail_closed",
+      "supported": false,
+      "transform": "grad",
+      "warnings": [
+        "finite-shot gradients require variance propagation and confidence metadata"
+      ],
+      "why": [
+        "hardware gradient execution requires explicit hardware policy approval"
+      ]
+    },
+    {
+      "alternatives": [
+        "grad",
+        "value_and_grad",
+        "hessian",
+        "gradient_tape",
+        "native"
+      ],
+      "backend": "statevector",
+      "backend_evaluations": 4,
+      "backend_family": "statevector",
+      "cell_id": "ry::pauli_expectation::statevector::vmap::jax",
+      "claim_boundary": "unsupported combination; no derivative execution or production claim is permitted",
+      "evaluation_mode": "fail_closed",
+      "fail_closed_boundaries": [
+        "transform is outside the bounded quantum-gradient algebra",
+        "jax bridge supports first-order value/gradient calls only"
+      ],
+      "framework": "jax",
+      "index": 9,
+      "method_family": "unsupported",
+      "operation": "ry.pauli_expectation.vmap",
+      "requires_finite_shot_variance": false,
+      "requires_hardware_policy": false,
+      "selected_method": "unsupported",
+      "shots": null,
+      "status": "fail_closed",
+      "supported": false,
+      "transform": "vmap",
+      "warnings": [
+        "jax route crosses an explicit host callback or tensor bridge boundary"
+      ],
+      "why": [
+        "transform is outside the bounded quantum-gradient algebra",
+        "jax bridge supports first-order value/gradient calls only"
+      ]
+    },
+    {
+      "alternatives": [
+        "grad",
+        "finite_difference_diagnostic",
+        "statevector"
+      ],
+      "backend": "qasm_simulator",
+      "backend_evaluations": 4,
+      "backend_family": "finite_shot_simulator",
+      "cell_id": "ry::pauli_expectation::qasm_simulator::hessian::native",
+      "claim_boundary": "unsupported combination; no derivative execution or production claim is permitted",
+      "evaluation_mode": "fail_closed",
+      "fail_closed_boundaries": [
+        "hessian support is limited to deterministic local backends"
+      ],
+      "framework": "native",
+      "index": 10,
+      "method_family": "unsupported",
+      "operation": "ry.pauli_expectation.hessian",
+      "requires_finite_shot_variance": false,
+      "requires_hardware_policy": false,
+      "selected_method": "unsupported",
+      "shots": 400,
+      "status": "fail_closed",
+      "supported": false,
+      "transform": "hessian",
+      "warnings": [
+        "finite-shot gradients require variance propagation and confidence metadata",
+        "hessian route is a local curvature diagnostic"
+      ],
+      "why": [
+        "hessian support is limited to deterministic local backends"
+      ]
+    }
+  ],
+  "generated_by": "python -m scpn_quantum_control.gradient_plan_explanation_artifact --write",
+  "method_families": [
+    "parameter-shift",
+    "unsupported"
+  ],
+  "plan_count": 10,
+  "schema": "scpn_qc_gradient_plan_explanations_v1",
+  "supported_plan_count": 5
+}

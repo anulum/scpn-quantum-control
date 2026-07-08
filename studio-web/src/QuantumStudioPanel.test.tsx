@@ -85,6 +85,16 @@ describe("QuantumStudioPanel", () => {
     expect(screen.getByText("jax_native_transforms")).toBeTruthy();
   });
 
+  it("renders the gradient-plan explanation surface from the committed artefact", () => {
+    render(<QuantumStudioPanel />);
+    expect(screen.getByText("Gradient-plan explanation")).toBeTruthy();
+    expect(screen.getByText(/gradient-plan-explanations-20260709/)).toBeTruthy();
+    fireEvent.change(screen.getByLabelText("Planner framework"), {
+      target: { value: "jax" },
+    });
+    expect(screen.getByText("jax_host_callback_parameter_shift")).toBeTruthy();
+  });
+
   it("never renders a validated or green grade anywhere", () => {
     const { container } = render(<QuantumStudioPanel />);
     expect(container.textContent).not.toContain("reference-validated");
