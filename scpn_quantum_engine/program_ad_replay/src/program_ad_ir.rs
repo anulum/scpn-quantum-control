@@ -23,7 +23,9 @@
 
 use std::collections::{HashMap, HashSet};
 
+#[cfg(feature = "pyo3")]
 use pyo3::exceptions::PyValueError;
+#[cfg(feature = "pyo3")]
 use pyo3::prelude::*;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -4079,6 +4081,7 @@ fn require_positive_optional(value: Option<usize>, name: &str) -> Result<(), Str
 }
 
 /// PyO3 wrapper returning a JSON metadata summary for a Program AD IR payload.
+#[cfg(feature = "pyo3")]
 #[pyfunction]
 pub fn program_ad_effect_ir_metadata_summary(serialization: &str) -> PyResult<String> {
     let ir = parse_program_ad_effect_ir(serialization).map_err(PyValueError::new_err)?;
@@ -4088,6 +4091,7 @@ pub fn program_ad_effect_ir_metadata_summary(serialization: &str) -> PyResult<St
 }
 
 /// PyO3 wrapper returning JSON for bounded Rust scalar Program AD interpretation.
+#[cfg(feature = "pyo3")]
 #[pyfunction]
 pub fn program_ad_effect_ir_interpret_forward(
     serialization: &str,
@@ -4103,6 +4107,7 @@ pub fn program_ad_effect_ir_interpret_forward(
 }
 
 /// PyO3 wrapper returning JSON for bounded Rust scalar Program AD value+gradient replay.
+#[cfg(feature = "pyo3")]
 #[pyfunction]
 pub fn program_ad_effect_ir_interpret_value_and_gradient(
     serialization: &str,

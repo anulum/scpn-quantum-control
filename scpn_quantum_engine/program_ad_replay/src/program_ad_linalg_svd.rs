@@ -103,12 +103,7 @@ fn parse_svdvals(
 
     let matrix = DMatrix::from_row_slice(rows, cols, input_values);
     let decomposition = matrix.svd(true, true);
-    let singular_values = decomposition
-        .singular_values
-        .as_slice()
-        .iter()
-        .copied()
-        .collect::<Vec<f64>>();
+    let singular_values = decomposition.singular_values.as_slice().to_vec();
     if singular_values.len() != output_size {
         return Err(format!(
             "effect {effect_index} svdvals decomposition returned an unexpected spectrum size"

@@ -63,24 +63,13 @@ pub mod mpc;
 pub mod otoc;
 pub mod pauli;
 pub mod pec;
-mod program_ad_cumulative_reduction;
-mod program_ad_interpolation_reduction;
-pub mod program_ad_ir;
-mod program_ad_linalg_array;
-mod program_ad_linalg_diag;
-mod program_ad_linalg_diagflat;
-mod program_ad_linalg_matrix_power;
-mod program_ad_linalg_pinv;
-mod program_ad_linalg_spectral;
-mod program_ad_linalg_svd;
-mod program_ad_order_statistic_reduction;
-mod program_ad_product_reduction;
-pub mod program_ad_registry_mirror;
-mod program_ad_signal_reduction;
-mod program_ad_static_source_map;
-mod program_ad_stencil_reduction;
-mod program_ad_trapezoid_reduction;
-mod program_ad_variance_reduction;
+// The bounded program-AD effect-IR replay now lives in the wasm-safe
+// `scpn-quantum-program-ad-replay` crate (Python bindings behind its `pyo3`
+// feature, enabled here). Re-exported so the crate's public paths
+// (`scpn_quantum_engine::program_ad_ir::…`) and the pymodule registration below
+// keep working unchanged; the reduction/linalg family modules are internal to
+// the replay crate and are not re-exported.
+pub use scpn_quantum_program_ad_replay::{program_ad_ir, program_ad_registry_mirror};
 pub mod pulse_shaping;
 pub mod qnode_metrics;
 pub mod qpetri;

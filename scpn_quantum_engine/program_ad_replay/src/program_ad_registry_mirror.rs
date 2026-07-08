@@ -16,7 +16,9 @@
 
 use std::collections::{BTreeMap, HashSet};
 
+#[cfg(feature = "pyo3")]
 use pyo3::exceptions::PyValueError;
+#[cfg(feature = "pyo3")]
 use pyo3::prelude::*;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -415,6 +417,7 @@ fn require_non_empty(value: &str, name: &str, errors: &mut Vec<String>) {
 }
 
 /// PyO3 wrapper returning JSON for a metadata-only Program AD registry mirror.
+#[cfg(feature = "pyo3")]
 #[pyfunction]
 pub fn program_ad_registry_metadata_mirror(snapshot: &str) -> PyResult<String> {
     let result = mirror_program_ad_registry_metadata(snapshot).map_err(PyValueError::new_err)?;

@@ -1374,6 +1374,17 @@ dependencies = [
  "rand",
  "rayon",
  "reqwest",
+ "scpn-quantum-program-ad-replay",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
+name = "scpn-quantum-program-ad-replay"
+version = "0.1.0"
+dependencies = [
+ "nalgebra",
+ "pyo3",
  "serde",
  "serde_json",
 ]
