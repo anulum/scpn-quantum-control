@@ -62,7 +62,7 @@ and examples.
 
 ### 1b. `tn_mps_baseline_design` — N=30-40 TN/MPS Baseline Plan
 
-Builds the QWC-4.2 no-claim design artifact for the S2 tensor-network baseline
+Builds the no-claim design artifact for the S2 tensor-network baseline
 follow-up:
 
 - `build_tn_mps_baseline_design` — deterministic CPU-first N=30-40 design manifest.
@@ -76,7 +76,25 @@ until measured rows exist.
 See [TN/MPS Baseline Design](tn_mps_baseline_design.md) for the generated
 artifact and regeneration command.
 
-### 1c. `josephson_magnitude_study` — Josephson K_nm Magnitude Study
+### 1c. `tn_mps_crossover_stage1` — QWC-5.1 Crossover Gate
+
+Builds the QWC-5.1 stage-1 gate for larger-than-16-node N=30-40
+tensor-network crossover rows:
+
+- `build_tn_mps_crossover_stage1` — deterministic row-schema and admission
+  report.
+- `validate_tn_mps_crossover_rows` — future measured or skipped row validator.
+- `render_tn_mps_crossover_stage1_markdown` — human-reviewable report.
+
+The gate pins required fields for wall time, memory, max bond, discarded
+weight, entropy proxy, truncation policy, omitted coupling mass, command,
+machine, dependency, commit, host-load, claim-boundary, and notes. It keeps
+stage-2 N=30-40 compute owner-gated and leaves `advantage_claim_allowed=false`.
+
+See [TN/MPS Crossover Stage-1 Gate](tn_mps_crossover_stage1.md) for the
+generated artifact and regeneration command.
+
+### 1d. `josephson_magnitude_study` — Josephson K_nm Magnitude Study
 
 Builds the QWC-5.2 no-claim preregistration artifact for the Josephson
 K_nm measured-magnitude follow-up:

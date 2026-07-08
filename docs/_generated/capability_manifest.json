@@ -8,12 +8,12 @@
     "notebook_files": 100,
     "optional_extras": 43,
     "public_api_exports": 828,
-    "public_documentation_pages": 266,
-    "python_model_classes": 941,
-    "python_model_source_modules": 490,
+    "public_documentation_pages": 267,
+    "python_model_classes": 945,
+    "python_model_source_modules": 491,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 46,
-    "test_files": 862
+    "test_files": 863
   },
   "documentation": {
     "examples": [
@@ -417,6 +417,7 @@
       "docs/theory.md",
       "docs/tier_benchmarks.md",
       "docs/tn_mps_baseline_design.md",
+      "docs/tn_mps_crossover_stage1.md",
       "docs/triage.md",
       "docs/tutorials.md",
       "docs/ultrascale_hls.md",
@@ -468,7 +469,7 @@
       {
         "package": "benchmarks",
         "path": "src/scpn_quantum_control/benchmarks",
-        "python_modules": 20
+        "python_modules": 21
       },
       {
         "package": "bridge",
@@ -4100,6 +4101,22 @@
         "path": "src/scpn_quantum_control/benchmarks/tn_mps_baseline_design.py"
       },
       {
+        "name": "TNMPSCrossoverGate",
+        "path": "src/scpn_quantum_control/benchmarks/tn_mps_crossover_stage1.py"
+      },
+      {
+        "name": "TNMPSCrossoverRowSchema",
+        "path": "src/scpn_quantum_control/benchmarks/tn_mps_crossover_stage1.py"
+      },
+      {
+        "name": "TNMPSCrossoverRowValidation",
+        "path": "src/scpn_quantum_control/benchmarks/tn_mps_crossover_stage1.py"
+      },
+      {
+        "name": "TNMPSCrossoverStage1Report",
+        "path": "src/scpn_quantum_control/benchmarks/tn_mps_crossover_stage1.py"
+      },
+      {
         "name": "TapeGradientRecord",
         "path": "src/scpn_quantum_control/phase/gradient_tape.py"
       },
@@ -4477,6 +4494,7 @@
       "src/scpn_quantum_control/benchmarks/reproducible_comparison.py",
       "src/scpn_quantum_control/benchmarks/s3_design_protocol.py",
       "src/scpn_quantum_control/benchmarks/tn_mps_baseline_design.py",
+      "src/scpn_quantum_control/benchmarks/tn_mps_crossover_stage1.py",
       "src/scpn_quantum_control/bridge/control_plasma_knm.py",
       "src/scpn_quantum_control/bridge/fusion_core_frc.py",
       "src/scpn_quantum_control/bridge/knm_hamiltonian.py",
@@ -6817,6 +6835,7 @@
       "tests/test_thermodynamic_witness.py",
       "tests/test_tier_benchmark_regression_gate.py",
       "tests/test_tn_mps_baseline_design.py",
+      "tests/test_tn_mps_crossover_stage1.py",
       "tests/test_topological_coupling_guard.py",
       "tests/test_topological_optimizer.py",
       "tests/test_topology_auth_edge.py",

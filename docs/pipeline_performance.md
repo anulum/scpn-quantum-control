@@ -96,6 +96,21 @@ ITensor/Julia plus GPU TN paths blocked until separately owner-gated. It is
 design and preregistration evidence only; it does not execute N=30-40 TN rows or
 support tensor-network-hardness or quantum-advantage claims.
 
+The QWC-5.1 TN/MPS crossover stage-1 gate is regenerated with:
+
+```bash
+scpn-bench s2-tn-crossover-stage1
+```
+
+It writes
+`data/s2_advantage_scaling/tn_mps_crossover_stage1_2026-07-08.json` and
+`docs/tn_mps_crossover_stage1.md`. This artifact admits the N=30-40 row schema
+for wall time, memory, max bond, discarded weight, entropy proxy, truncation,
+omitted coupling mass, command, machine, dependency, commit, host-load,
+claim-boundary, and notes. Stage-2 N=30-40 compute remains owner-gated, and the
+artifact does not support tensor-network-hardness or broad quantum-advantage
+claims.
+
 The QWC-5.2 Josephson K_nm magnitude-study design is regenerated with:
 
 ```bash

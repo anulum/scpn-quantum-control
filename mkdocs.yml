@@ -127,6 +127,7 @@ nav:
           - Classical Baselines: classical_baselines.md
           - Benchmarks API: benchmarks_api.md
           - TN/MPS Baseline Design: tn_mps_baseline_design.md
+          - TN/MPS Crossover Stage-1 Gate: tn_mps_crossover_stage1.md
           - Josephson K_nm Magnitude Study: josephson_knm_magnitude_study.md
           - p_h1 Open-Claim Guard: p_h1_open_guard.md
           - Isolated Benchmark Runner: isolated_benchmark_runner.md

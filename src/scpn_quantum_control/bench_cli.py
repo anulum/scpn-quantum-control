@@ -1,10 +1,10 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # Commercial license available
-# (c) Concepts 1996-2026 Miroslav Sotek. All rights reserved.
-# (c) Code 2020-2026 Miroslav Sotek. All rights reserved.
+# © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
+# © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# scpn-quantum-control -- benchmark reproducibility command line interface
+# SCPN Quantum Control — Benchmark reproducibility command line interface
 """One-command benchmark artefact regeneration for the methods papers."""
 
 from __future__ import annotations
@@ -143,6 +143,11 @@ HARNESS_REGISTRY: tuple[Harness, ...] = (
         "s2-tn-mps-baseline-design",
         "scripts/export_tn_mps_baseline_design.py",
         frozenset({"s2-tn-design"}),
+    ),
+    Harness(
+        "s2-tn-crossover-stage1",
+        "scripts/export_tn_mps_crossover_stage1.py",
+        frozenset({"s2-tn-stage1"}),
     ),
     Harness(
         "s3-design-readiness",
@@ -419,9 +424,15 @@ def _parse_args(argv: Sequence[str]) -> argparse.Namespace:
 
     s2_tn_design = subparsers.add_parser(
         "s2-tn-mps-baseline-design",
-        help="Regenerate the no-claim QWC-4.2 TN/MPS baseline design artifacts.",
+        help="Regenerate the no-claim TN/MPS baseline design artifacts.",
     )
     _add_run_options(s2_tn_design, default_group="s2-tn-design")
+
+    s2_tn_stage1 = subparsers.add_parser(
+        "s2-tn-crossover-stage1",
+        help="Regenerate the no-claim QWC-5.1 TN/MPS crossover stage-1 artifacts.",
+    )
+    _add_run_options(s2_tn_stage1, default_group="s2-tn-stage1")
 
     s3 = subparsers.add_parser(
         "s3-design-ready",

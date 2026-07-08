@@ -1,10 +1,10 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # Commercial license available
-# (c) Concepts 1996-2026 Miroslav Sotek. All rights reserved.
-# (c) Code 2020-2026 Miroslav Sotek. All rights reserved.
+# © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
+# © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# scpn-quantum-control -- scpn-bench CLI tests
+# SCPN Quantum Control — scpn-bench CLI tests
 """Tests for the benchmark reproducibility command line interface."""
 
 from __future__ import annotations
@@ -119,6 +119,18 @@ def test_s2_tn_mps_design_selection_is_design_harness() -> None:
             "s2-tn-mps-baseline-design",
             "scripts/export_tn_mps_baseline_design.py",
             frozenset({"s2-tn-design"}),
+        )
+    ]
+
+
+def test_s2_tn_crossover_stage1_selection_is_design_harness() -> None:
+    harnesses = bench_cli._selected_harnesses("s2-tn-stage1", include_gpu=False)
+
+    assert harnesses == [
+        bench_cli.Harness(
+            "s2-tn-crossover-stage1",
+            "scripts/export_tn_mps_crossover_stage1.py",
+            frozenset({"s2-tn-stage1"}),
         )
     ]
 
@@ -405,6 +417,17 @@ def test_s2_tn_mps_design_dry_run_selects_design_harness(
     assert rc == 0
     assert "s2-tn-mps-baseline-design" in captured.out
     assert "scripts/export_tn_mps_baseline_design.py" in captured.out
+
+
+def test_s2_tn_crossover_stage1_dry_run_selects_stage1_harness(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    rc = bench_cli.run(["s2-tn-crossover-stage1", "--dry-run"])
+
+    captured = capsys.readouterr()
+    assert rc == 0
+    assert "s2-tn-crossover-stage1" in captured.out
+    assert "scripts/export_tn_mps_crossover_stage1.py" in captured.out
 
 
 def test_realtime_control_e2e_dry_run_selects_e2e_harness(

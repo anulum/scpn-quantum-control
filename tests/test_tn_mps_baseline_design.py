@@ -1,17 +1,21 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # Commercial license available
-# (c) Concepts 1996-2026 Miroslav Sotek. All rights reserved.
-# (c) Code 2020-2026 Miroslav Sotek. All rights reserved.
+# © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
+# © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# scpn-quantum-control -- TN/MPS baseline design tests
+# SCPN Quantum Control — TN/MPS baseline design tests
 """Tests for the QWC-4.2 TN/MPS baseline design manifest."""
 
 from __future__ import annotations
 
 import json
+import sys
 from argparse import Namespace
+from importlib import util
+from importlib.machinery import ModuleSpec
 from pathlib import Path
+from types import ModuleType
 
 import pytest
 
@@ -26,7 +30,19 @@ from scpn_quantum_control.benchmarks.tn_mps_baseline_design import (
     build_tn_mps_baseline_design,
     render_tn_mps_baseline_design_markdown,
 )
-from scripts import export_tn_mps_baseline_design as export_script
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
+SCRIPT_PATH = REPO_ROOT / "scripts" / "export_tn_mps_baseline_design.py"
+
+
+def _load_export_script() -> ModuleType:
+    spec = util.spec_from_file_location("export_tn_mps_baseline_design", SCRIPT_PATH)
+    if not isinstance(spec, ModuleSpec) or spec.loader is None:
+        raise RuntimeError(f"cannot load {SCRIPT_PATH}")
+    module = util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module
 
 
 def test_design_manifest_records_cpu_first_path_and_blocked_claims() -> None:
@@ -160,6 +176,7 @@ def test_export_script_writes_json_and_markdown(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     """The design artifacts regenerate through the export script."""
+    export_script = _load_export_script()
     out_dir = tmp_path / "data"
     doc_path = tmp_path / "tn_mps_baseline_design.md"
     monkeypatch.setattr(

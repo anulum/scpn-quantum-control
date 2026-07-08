@@ -122,16 +122,16 @@ claims only when the evidence exists.
 |---|---:|
 | Package version | 0.10.0 |
 | Public API exports | 828 |
-| Python source modules | 490 |
-| Public Python classes | 941 |
+| Python source modules | 491 |
+| Public Python classes | 945 |
 | Domain package families | 31 |
 | Rust PyO3 function bindings | 177 |
 | Rust source modules | 46 |
 | Notebook files | 100 |
 | Example files | 37 |
 | Optional extras | 43 |
-| Python test files | 862 |
-| Public documentation pages | 266 |
+| Python test files | 863 |
+| Public documentation pages | 267 |
 | GitHub Actions workflows | 23 |
 
 Evidence boundary: this snapshot is a static inventory. Performance, coverage, hardware, and scientific-fidelity claims require their own committed evidence artefacts.
@@ -817,7 +817,7 @@ scpn_quantum_control/
 ├── control/        14 modules — QAOA-MPC, residual VQLS-GS proxy, Petri, ITER, topological
 ├── mitigation/     12 modules — ZNE, PEC, DD, Z2, CPDR, symmetry
 ├── qec/            13 modules — error correction + biological surface code
-├── benchmarks/     20 modules — performance baselines
+├── benchmarks/     21 modules — performance baselines
 ├── identity/        6 modules — identity continuity analysis
 ├── qsnn/            7 modules — quantum spiking neural networks + neuromorphic bridge
 ├── crypto/          8 modules — QKD, Bell tests, key hierarchy
@@ -888,6 +888,7 @@ Full docs at **[anulum.github.io/scpn-quantum-control](https://anulum.github.io/
 - [Application Benchmark Plugins](docs/application_benchmarks.md) — EEG, plasma, power-grid, and FEP datasets through QPU artefacts
 - [Classical Baselines](docs/classical_baselines.md) — SciPy ODE, QuTiP Lindblad, and MPS TEBD provenance surfaces
 - [TN/MPS Baseline Design](docs/tn_mps_baseline_design.md) — CPU-first N=30-40 tensor-network baseline plan
+- [TN/MPS Crossover Stage-1 Gate](docs/tn_mps_crossover_stage1.md) — QWC-5.1 N=30-40 row schema and claim boundary
 - [Josephson K_nm Magnitude Study](docs/josephson_knm_magnitude_study.md) — N=14 rho=0.990 topology candidate plus N=20/30/40 measured-magnitude gates
 - [p_h1 Open-Claim Guard](docs/p_h1_open_guard.md) — public wording guard that keeps the 0.72 threshold open until reproduced
 - [Hardware Guide](docs/hardware_guide.md) — IBM Quantum setup

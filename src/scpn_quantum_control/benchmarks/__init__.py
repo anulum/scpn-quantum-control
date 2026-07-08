@@ -107,6 +107,19 @@ from .tn_mps_baseline_design import (
     build_tn_mps_baseline_design,
     render_tn_mps_baseline_design_markdown,
 )
+from .tn_mps_crossover_stage1 import (
+    TN_MPS_CROSSOVER_CLAIM_BOUNDARY,
+    TN_MPS_CROSSOVER_PROTOCOL_ID,
+    TN_MPS_CROSSOVER_REQUIRED_FIELDS,
+    TN_MPS_CROSSOVER_STAGE1_SCHEMA,
+    TNMPSCrossoverGate,
+    TNMPSCrossoverRowSchema,
+    TNMPSCrossoverRowValidation,
+    TNMPSCrossoverStage1Report,
+    build_tn_mps_crossover_stage1,
+    render_tn_mps_crossover_stage1_markdown,
+    validate_tn_mps_crossover_rows,
+)
 
 __all__ = [
     "ClassicalBaselineRun",
@@ -171,6 +184,17 @@ __all__ = [
     "TNBaselineSizePlan",
     "build_tn_mps_baseline_design",
     "render_tn_mps_baseline_design_markdown",
+    "TN_MPS_CROSSOVER_CLAIM_BOUNDARY",
+    "TN_MPS_CROSSOVER_PROTOCOL_ID",
+    "TN_MPS_CROSSOVER_REQUIRED_FIELDS",
+    "TN_MPS_CROSSOVER_STAGE1_SCHEMA",
+    "TNMPSCrossoverGate",
+    "TNMPSCrossoverRowSchema",
+    "TNMPSCrossoverRowValidation",
+    "TNMPSCrossoverStage1Report",
+    "build_tn_mps_crossover_stage1",
+    "render_tn_mps_crossover_stage1_markdown",
+    "validate_tn_mps_crossover_rows",
     "AdvantageResult",
     "classical_benchmark",
     "estimate_crossover",
