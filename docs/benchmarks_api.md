@@ -76,6 +76,23 @@ until measured rows exist.
 See [TN/MPS Baseline Design](tn_mps_baseline_design.md) for the generated
 artifact and regeneration command.
 
+### 1c. `josephson_magnitude_study` — Josephson K_nm Magnitude Study
+
+Builds the QWC-5.2 no-claim preregistration artifact for the Josephson
+K_nm measured-magnitude follow-up:
+
+- `build_josephson_knm_magnitude_study_design` — deterministic design manifest
+  for the N=14 rho=0.989947 topology candidate and larger N=20/30/40 targets.
+- `render_josephson_knm_magnitude_study_markdown` — human-reviewable report.
+
+The design intentionally separates topology correlation from physical coupling
+magnitude validation. It blocks promotion until calibrated Josephson/transmon
+coupling units, locked normalisation, uncertainty, direct magnitude, spectral
+response, and null-model gates pass.
+
+See [Josephson K_nm Magnitude Study](josephson_knm_magnitude_study.md) for the
+generated artifact and regeneration command.
+
 ### 2. `quantum_advantage` — Classical vs Quantum Scaling
 
 Measures wall-clock time for exact classical simulation (exact

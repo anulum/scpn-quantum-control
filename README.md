@@ -94,7 +94,8 @@ Application lanes:
 - **Synchronisation diagnostics** — explore where oscillator networks lock,
   decohere, or separate into sectors.
 - **Control prototyping** — map power-grid, plasma, EEG/MEG, Josephson-array,
-  and other coupled-system candidates into common `K_nm`/`omega` workflows.
+  and other coupled-system candidates into common `K_nm`/`omega` workflows,
+  with topology-only candidates separated from measured-magnitude claims.
 - **Hardware evidence management** — keep raw-count evidence, simulator output,
   and open claims separated before public release or paper citation.
 - **Differentiable computation and gradient-informed optimisation** — supported
@@ -121,16 +122,16 @@ claims only when the evidence exists.
 |---|---:|
 | Package version | 0.10.0 |
 | Public API exports | 828 |
-| Python source modules | 488 |
-| Public Python classes | 936 |
+| Python source modules | 489 |
+| Public Python classes | 939 |
 | Domain package families | 31 |
 | Rust PyO3 function bindings | 177 |
 | Rust source modules | 46 |
 | Notebook files | 100 |
 | Example files | 37 |
 | Optional extras | 43 |
-| Python test files | 860 |
-| Public documentation pages | 264 |
+| Python test files | 861 |
+| Public documentation pages | 265 |
 | GitHub Actions workflows | 23 |
 
 Evidence boundary: this snapshot is a static inventory. Performance, coverage, hardware, and scientific-fidelity claims require their own committed evidence artefacts.
@@ -667,7 +668,7 @@ graph TD
     subgraph "Applications"
         control["control/ (11)\nQAOA-MPC, residual VQLS-GS proxy\nPetri nets, ITER"]
         qsnn["qsnn/ (7)\nQuantum spiking\nneural networks"]
-        apps["applications/ (14)\nFMO, power grid\nJosephson, EEG, ITER"]
+        apps["applications/ (15)\nFMO, power grid\nJosephson, EEG, ITER"]
     end
 
     subgraph "Hardware & QEC"
@@ -702,7 +703,7 @@ graph TD
 | `analysis` | 58 | Synchronisation probes: witnesses, QFI, PH, OTOC, Krylov, magic, BKT, DLA |
 | `hardware` | 63 | IBM Quantum runner, plugin backends registry, AsyncHardwareRunner, trapped-ion backend, GPU offload, circuit cutting, fast sparse, qubit mapper (DynQ), provenance |
 | `phase` | 29 | Time evolution: Trotter, VQE, ADAPT-VQE, VarQITE, AVQDS, QSVT, Floquet DTC, Lindblad |
-| `applications` | 14 | FMO photosynthesis, power grid, Josephson array, EEG, ITER, quantum EVS, QRC+ESN baseline |
+| `applications` | 15 | FMO photosynthesis, power grid, Josephson array, EEG, ITER, quantum EVS, QRC+ESN baseline |
 | `bridge` | 13 | K_nm → Hamiltonian, cross-repo adapters (sc-neurocore, SSGF, orchestrator) |
 | `control` | 11 | QAOA-MPC, residual-certified VQLS Grad-Shafranov proxy, Petri nets, ITER disruption, topological optimiser |
 | `mitigation` | 12 | ZNE, PEC, dynamical decoupling, Z2 parity, CPDR, symmetry verification, GUESS, compound |
@@ -887,6 +888,7 @@ Full docs at **[anulum.github.io/scpn-quantum-control](https://anulum.github.io/
 - [Application Benchmark Plugins](docs/application_benchmarks.md) — EEG, plasma, power-grid, and FEP datasets through QPU artefacts
 - [Classical Baselines](docs/classical_baselines.md) — SciPy ODE, QuTiP Lindblad, and MPS TEBD provenance surfaces
 - [TN/MPS Baseline Design](docs/tn_mps_baseline_design.md) — CPU-first N=30-40 tensor-network baseline plan
+- [Josephson K_nm Magnitude Study](docs/josephson_knm_magnitude_study.md) — N=14 rho=0.990 topology candidate plus N=20/30/40 measured-magnitude gates
 - [Hardware Guide](docs/hardware_guide.md) — IBM Quantum setup
 - [Notebooks](docs/notebooks.md) — 99 tracked notebooks
 - [Bridges](docs/bridges_api.md) — cross-repo integrations

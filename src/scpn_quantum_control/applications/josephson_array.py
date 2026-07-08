@@ -37,12 +37,39 @@ from dataclasses import dataclass
 
 import numpy as np
 from numpy.typing import NDArray
-from scipy.stats import spearmanr
 
 
 def _has_variation(values: NDArray[np.float64]) -> bool:
     """True when correlation is statistically defined for a vector."""
     return values.size >= 2 and float(np.ptp(values)) > 0.0
+
+
+def _average_ranks(values: NDArray[np.float64]) -> NDArray[np.float64]:
+    """Return one-based average ranks, including tied values."""
+    order = np.argsort(values, kind="mergesort")
+    sorted_values = values[order]
+    ranks = np.empty(values.shape[0], dtype=np.float64)
+    start = 0
+    while start < sorted_values.shape[0]:
+        stop = start + 1
+        while stop < sorted_values.shape[0] and sorted_values[stop] == sorted_values[start]:
+            stop += 1
+        average_rank = (start + 1 + stop) / 2.0
+        ranks[order[start:stop]] = average_rank
+        start = stop
+    return ranks
+
+
+def _spearman_correlation(
+    left: NDArray[np.float64],
+    right: NDArray[np.float64],
+) -> float:
+    """Return Spearman rank correlation for two finite vectors."""
+    if left.shape != right.shape or left.size < 2:
+        raise ValueError("Spearman inputs must have the same shape and at least two values.")
+    left_ranks = _average_ranks(left)
+    right_ranks = _average_ranks(right)
+    return float(np.corrcoef(left_ranks, right_ranks)[0, 1])
 
 
 @dataclass(frozen=True)
@@ -182,7 +209,7 @@ def josephson_benchmark(
     # Filter to non-zero pairs for correlation
     mask = (jja_flat > 0) | (scpn_flat > 0)
     if np.sum(mask) >= 3 and _has_variation(jja_flat[mask]) and _has_variation(scpn_flat[mask]):
-        topo_corr = float(spearmanr(jja_flat[mask], scpn_flat[mask]).statistic)
+        topo_corr = _spearman_correlation(jja_flat[mask], scpn_flat[mask])
     else:
         topo_corr = 0.0
 

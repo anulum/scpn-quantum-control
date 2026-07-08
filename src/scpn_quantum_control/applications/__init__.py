@@ -29,6 +29,15 @@ from .eeg_benchmark import EEGBenchmarkResult, eeg_benchmark
 from .fmo_benchmark import FMOBenchmarkResult, fmo_benchmark, fmo_coupling_matrix
 from .iter_benchmark import ITERBenchmarkResult, iter_benchmark
 from .josephson_array import JosephsonBenchmarkResult, josephson_benchmark
+from .josephson_magnitude_study import (
+    JOSEPHSON_KNM_MAGNITUDE_STUDY_BOUNDARY,
+    JOSEPHSON_KNM_MAGNITUDE_STUDY_SCHEMA,
+    JosephsonKnmCandidate,
+    JosephsonMagnitudeGate,
+    JosephsonMagnitudeStudyDesign,
+    build_josephson_knm_magnitude_study_design,
+    render_josephson_knm_magnitude_study_markdown,
+)
 from .power_grid import PowerGridBenchmarkResult, power_grid_benchmark
 from .qrc_baseline import (
     ClassicalESNReadoutResult,
@@ -61,6 +70,12 @@ __all__ = [
     "ITERBenchmarkResult",
     "iter_benchmark",
     "JosephsonBenchmarkResult",
+    "JOSEPHSON_KNM_MAGNITUDE_STUDY_BOUNDARY",
+    "JOSEPHSON_KNM_MAGNITUDE_STUDY_SCHEMA",
+    "JosephsonKnmCandidate",
+    "JosephsonMagnitudeGate",
+    "JosephsonMagnitudeStudyDesign",
+    "build_josephson_knm_magnitude_study_design",
     "josephson_benchmark",
     "PowerGridBenchmarkResult",
     "power_grid_benchmark",
@@ -75,6 +90,7 @@ __all__ = [
     "QuantumKernelResult",
     "compute_kernel_matrix",
     "QRCBaselineComparison",
+    "render_josephson_knm_magnitude_study_markdown",
     "ReservoirResult",
     "reservoir_features",
     "run_application_benchmark_suite",

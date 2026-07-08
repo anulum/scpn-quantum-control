@@ -19,6 +19,7 @@ import pytest
 
 from scpn_quantum_control.applications.josephson_array import (
     JosephsonArrayParameters,
+    _spearman_correlation,
     jja_coupling_matrix,
     josephson_benchmark,
 )
@@ -98,3 +99,13 @@ def test_benchmark_reports_zero_correlation_for_too_few_pairs() -> None:
     assert result.topology_correlation == 0.0
     assert result.frequency_correlation == 0.0
     assert result.n_junctions == 2
+    assert result.topology_similarity_proxy == 0.0
+
+
+def test_spearman_guard_rejects_mismatched_vectors() -> None:
+    """The local rank-correlation helper fails closed on malformed inputs."""
+    left = np.array([1.0, 2.0], dtype=np.float64)
+    right = np.array([1.0], dtype=np.float64)
+
+    with pytest.raises(ValueError, match="same shape"):
+        _spearman_correlation(left, right)

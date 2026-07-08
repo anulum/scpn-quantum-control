@@ -1,0 +1,96 @@
+{
+  "blocked_claims": [
+    "No K_nm measured-magnitude validation from topology correlation alone.",
+    "No physical-unit Josephson coupling claim from nominal literature parameters.",
+    "No hardware-device coupling-map claim without backend calibration provenance.",
+    "No promotion over EEG or power-grid controls until the same gates pass."
+  ],
+  "calibration_artifact_schema": "scpn_qc_josephson_calibrated_couplings_v1",
+  "candidate": {
+    "claim_status": "topology_candidate_magnitude_blocked",
+    "coupling_ratio": 0.034447914224222435,
+    "ej_ec_ratio": 60.0,
+    "frequency_source": "canonical_OMEGA_N_16_prefix",
+    "is_transmon_regime": true,
+    "n_junctions": 14,
+    "parameter_source": "nominal_transmon_literature",
+    "rounded_topology_correlation": 0.99,
+    "topology": "all_to_all",
+    "topology_correlation": 0.989947153717553,
+    "topology_source": "illustrative_all_to_all"
+  },
+  "claim_boundary": "Topology-correlation candidate and magnitude-study preregistration only; this artifact does not validate K_nm physical coupling magnitudes.",
+  "extension_targets": [
+    20,
+    30,
+    40
+  ],
+  "gates": [
+    {
+      "current_status": "blocked_nominal_parameters_only",
+      "evidence_required": [
+        "coupling_unit must denote calibrated Hz, rad/s, GHz, or derived Josephson energy",
+        "every coupling edge must carry source metadata"
+      ],
+      "name": "calibrated_coupling_units",
+      "required": true
+    },
+    {
+      "current_status": "blocked_no_measured_uncertainty",
+      "evidence_required": [
+        "normalisation_locked=true",
+        "per-edge uncertainty is finite and non-negative"
+      ],
+      "name": "locked_normalisation_and_uncertainty",
+      "required": true
+    },
+    {
+      "current_status": "blocked_no_calibrated_artifact",
+      "evidence_required": [
+        "relative RMSE <= 0.05",
+        "all reported edges participate in the fit"
+      ],
+      "name": "direct_magnitude_fit",
+      "required": true
+    },
+    {
+      "current_status": "blocked_no_calibrated_artifact",
+      "evidence_required": [
+        "critical-coupling proxy relative difference <= 0.05",
+        "weighted adjacency and Laplacian spectra are recorded"
+      ],
+      "name": "spectral_response",
+      "required": true
+    },
+    {
+      "current_status": "blocked_no_calibrated_artifact",
+      "evidence_required": [
+        "node-label null model gate passes",
+        "edge-value null model gate passes"
+      ],
+      "name": "null_models",
+      "required": true
+    }
+  ],
+  "hardware_submission_required": false,
+  "magnitude_claim_allowed": false,
+  "measured_calibration_available": false,
+  "next_actions": [
+    "Collect or derive a calibrated Josephson/transmon coupling artifact in the declared schema.",
+    "Run the existing K_nm physical-validation audit on the calibrated artifact at the candidate and extension sizes.",
+    "Require direct magnitude, spectral response, uncertainty, and null-model gates before promotion."
+  ],
+  "required_calibration_fields": [
+    "system_id",
+    "device_or_array_source",
+    "coupling_edges_0_indexed",
+    "coupling_unit",
+    "normalisation",
+    "normalisation_locked",
+    "value",
+    "uncertainty",
+    "calibration_timestamp",
+    "source_reference"
+  ],
+  "schema": "scpn_qc_josephson_knm_magnitude_study_v1"
+}

@@ -97,7 +97,7 @@ graph TD
     mitigation["mitigation/ (13)\nError mitigation"]
     qec["qec/ (13)\nError correction"]
     gauge["gauge/ (6)\nGauge theory"]
-    apps["applications/ (14)\nBenchmarks"]
+    apps["applications/ (15)\nBenchmarks"]
     crypto["crypto/ (9)\nQKD + PQC"]
     benchmarks["benchmarks/ (20)\nPerformance"]
     ssgf["ssgf/ (4)\nGeometry"]

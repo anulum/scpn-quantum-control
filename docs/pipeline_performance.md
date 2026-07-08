@@ -96,6 +96,19 @@ ITensor/Julia plus GPU TN paths blocked until separately owner-gated. It is
 design and preregistration evidence only; it does not execute N=30-40 TN rows or
 support tensor-network-hardness or quantum-advantage claims.
 
+The QWC-5.2 Josephson K_nm magnitude-study design is regenerated with:
+
+```bash
+scpn-bench knm-josephson-magnitude-study
+```
+
+It writes
+`data/knm_physical_validation/josephson_knm_magnitude_study_2026-07-08.json`
+and `docs/josephson_knm_magnitude_study.md`. This artifact records the N=14
+rho=0.989947 Josephson topology candidate and N=20/30/40 extension targets. It
+is preregistration and claim-boundary evidence only; it does not execute a
+calibrated magnitude comparison or promote a physical K_nm coupling claim.
+
 ## S3 Pulse / Ansatz Design Readiness
 
 The S3 ML-augmented pulse / ansatz track starts from a deterministic no-QPU

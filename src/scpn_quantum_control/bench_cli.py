@@ -51,6 +51,7 @@ OFFLINE_HARNESS_POLICY = ExecutionSurfacePolicy(
         "data/s9_quantum_thermo",
         "data/s10_analog_native",
         "data/s11_quantum_sensing",
+        "data/knm_physical_validation",
         "data/stable_core",
         "data/synchronisation_benchmarks",
         "data/symmetry_sector_mitigation",
@@ -231,6 +232,11 @@ HARNESS_REGISTRY: tuple[Harness, ...] = (
         "s11-quantum-sensing-readiness",
         "scripts/export_s11_quantum_sensing_readiness.py",
         frozenset({"s11-readiness"}),
+    ),
+    Harness(
+        "knm-josephson-magnitude-study",
+        "scripts/export_josephson_knm_magnitude_study.py",
+        frozenset({"knm-josephson-study"}),
     ),
     Harness(
         "sync-benchmark-registry",
@@ -518,6 +524,12 @@ def _parse_args(argv: Sequence[str]) -> argparse.Namespace:
         help="Regenerate the S11 sync-order quantum-sensing readiness artefacts.",
     )
     _add_run_options(s11_readiness, default_group="s11-readiness")
+
+    josephson_knm = subparsers.add_parser(
+        "knm-josephson-magnitude-study",
+        help="Regenerate the QWC-5.2 Josephson K_nm magnitude-study artifacts.",
+    )
+    _add_run_options(josephson_knm, default_group="knm-josephson-study")
 
     sync_registry = subparsers.add_parser(
         "sync-benchmark-registry",

@@ -8,12 +8,12 @@
     "notebook_files": 100,
     "optional_extras": 43,
     "public_api_exports": 828,
-    "public_documentation_pages": 264,
-    "python_model_classes": 936,
-    "python_model_source_modules": 488,
+    "public_documentation_pages": 265,
+    "python_model_classes": 939,
+    "python_model_source_modules": 489,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 46,
-    "test_files": 860
+    "test_files": 861
   },
   "documentation": {
     "examples": [
@@ -316,6 +316,7 @@
       "docs/index.md",
       "docs/installation.md",
       "docs/isolated_benchmark_runner.md",
+      "docs/josephson_knm_magnitude_study.md",
       "docs/kuramoto_competitive_benchmark.md",
       "docs/kuramoto_competitive_evidence.md",
       "docs/kuramoto_core_facade.md",
@@ -456,7 +457,7 @@
       {
         "package": "applications",
         "path": "src/scpn_quantum_control/applications",
-        "python_modules": 14
+        "python_modules": 15
       },
       {
         "package": "benchmark_harness",
@@ -2096,6 +2097,18 @@
       {
         "name": "JosephsonBenchmarkResult",
         "path": "src/scpn_quantum_control/applications/josephson_array.py"
+      },
+      {
+        "name": "JosephsonKnmCandidate",
+        "path": "src/scpn_quantum_control/applications/josephson_magnitude_study.py"
+      },
+      {
+        "name": "JosephsonMagnitudeGate",
+        "path": "src/scpn_quantum_control/applications/josephson_magnitude_study.py"
+      },
+      {
+        "name": "JosephsonMagnitudeStudyDesign",
+        "path": "src/scpn_quantum_control/applications/josephson_magnitude_study.py"
       },
       {
         "name": "KnmGraph",
@@ -4422,6 +4435,7 @@
       "src/scpn_quantum_control/applications/fmo_benchmark.py",
       "src/scpn_quantum_control/applications/iter_benchmark.py",
       "src/scpn_quantum_control/applications/josephson_array.py",
+      "src/scpn_quantum_control/applications/josephson_magnitude_study.py",
       "src/scpn_quantum_control/applications/power_grid.py",
       "src/scpn_quantum_control/applications/qrc_baseline.py",
       "src/scpn_quantum_control/applications/quantum_evs.py",
@@ -6333,6 +6347,7 @@
       "tests/test_job_dossier_branches.py",
       "tests/test_josephson_array.py",
       "tests/test_josephson_array_contracts.py",
+      "tests/test_josephson_magnitude_study.py",
       "tests/test_knm_hamiltonian.py",
       "tests/test_knm_hamiltonian_branches.py",
       "tests/test_knm_hamiltonian_mutation_kills.py",

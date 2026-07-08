@@ -123,6 +123,18 @@ def test_s2_tn_mps_design_selection_is_design_harness() -> None:
     ]
 
 
+def test_knm_josephson_magnitude_study_selection_is_design_harness() -> None:
+    harnesses = bench_cli._selected_harnesses("knm-josephson-study", include_gpu=False)
+
+    assert harnesses == [
+        bench_cli.Harness(
+            "knm-josephson-magnitude-study",
+            "scripts/export_josephson_knm_magnitude_study.py",
+            frozenset({"knm-josephson-study"}),
+        )
+    ]
+
+
 def test_s3_design_ready_selection_is_readiness_harness() -> None:
     harnesses = bench_cli._selected_harnesses("s3", include_gpu=False)
 

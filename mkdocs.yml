@@ -127,6 +127,7 @@ nav:
           - Classical Baselines: classical_baselines.md
           - Benchmarks API: benchmarks_api.md
           - TN/MPS Baseline Design: tn_mps_baseline_design.md
+          - Josephson K_nm Magnitude Study: josephson_knm_magnitude_study.md
           - Isolated Benchmark Runner: isolated_benchmark_runner.md
           - Rust Engine: rust_engine.md
           - Native Speedup Benchmark: native_speedup_benchmark.md
