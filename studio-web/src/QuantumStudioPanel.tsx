@@ -8,12 +8,14 @@
 
 import "./tokens.css";
 
+import { KuramotoPlayPanel } from "./panel/KuramotoPlayPanel";
 import { ManifestCapabilities } from "./panel/ManifestCapabilities";
 import { RecomputeCard } from "./panel/RecomputeCard";
 import { ScorecardTable } from "./panel/ScorecardTable";
 import { SupportMatrixGrid } from "./panel/SupportMatrixGrid";
 import { Unverifiable } from "./panel/Unverifiable";
 import { scorecard, studioManifest, supportMatrix } from "./panel/data";
+import { committedScenario } from "./panel/kuramoto";
 import { recomputeUnit } from "./panel/recompute";
 
 /**
@@ -46,6 +48,14 @@ export function QuantumStudioPanel() {
         <Unverifiable
           surface="xy_compile_recompute_unit_20260708.json"
           reason={recomputeUnit.reason}
+        />
+      )}
+      {committedScenario.ok ? (
+        <KuramotoPlayPanel scenario={committedScenario.value} />
+      ) : (
+        <Unverifiable
+          surface="kuramoto_scenario_meanfield_20260708.json"
+          reason={committedScenario.reason}
         />
       )}
       {supportMatrix.ok ? (
