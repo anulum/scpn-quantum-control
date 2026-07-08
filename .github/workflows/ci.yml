@@ -555,6 +555,12 @@ jobs:
       - name: Assert the program-AD replay crate stays WASM-portable (ST-12)
         working-directory: scpn_quantum_engine/program_ad_replay
         run: cargo build --release --locked --target wasm32-unknown-unknown
+      - name: Build the program-AD WASM kernel (ST-12)
+        working-directory: scpn_quantum_engine/studio_program_ad_wasm
+        run: cargo build --release --locked --target wasm32-unknown-unknown
+      - name: Test the program-AD WASM kernel (ST-12)
+        working-directory: scpn_quantum_engine/studio_program_ad_wasm
+        run: cargo test --locked
       - name: Test with enforced coverage thresholds
         run: pnpm test:coverage
       - name: Build the portal and the federation remote
