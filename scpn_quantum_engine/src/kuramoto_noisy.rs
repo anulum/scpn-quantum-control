@@ -15,7 +15,7 @@
 //! same Wiener increments and only the coupling-force summation order differs. Reuses the
 //! instantaneous networked force of the autodiff module — the drift is the ordinary Kuramoto force.
 
-use ndarray::{Array1, Array2};
+use ndarray::Array1;
 use numpy::{PyArray1, PyReadonlyArray1, PyReadonlyArray2};
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
@@ -104,7 +104,9 @@ pub fn kuramoto_noisy_trajectory<'py>(
         )));
     }
     if dt <= 0.0 {
-        return Err(PyValueError::new_err(format!("dt must be positive, got {dt}")));
+        return Err(PyValueError::new_err(format!(
+            "dt must be positive, got {dt}"
+        )));
     }
     let noise_view = noise.as_array();
     if noise_view.ncols() != n {
