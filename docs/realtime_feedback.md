@@ -10,6 +10,9 @@ Python execution is suitable for simulation, batch orchestration, and
 across-shot policy updates. Sub-microsecond or within-coherence-window feedback
 must be implemented with provider-native dynamic circuits, OpenQASM 3 control
 flow, pulse-level control, FPGA logic, or an equivalent hardware controller.
+The package-level [Control Scope Boundary](control_scope.md) keeps this module
+to synchronisation-control simulation and circuit-template export; it is not a
+generic pulse-shape optimisation or hardware drift-compensation surface.
 
 ## Control Surface
 

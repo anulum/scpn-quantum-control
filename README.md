@@ -130,7 +130,7 @@ claims only when the evidence exists.
 | Example files | 37 |
 | Optional extras | 43 |
 | Python test files | 856 |
-| Public documentation pages | 260 |
+| Public documentation pages | 261 |
 | GitHub Actions workflows | 23 |
 
 Evidence boundary: this snapshot is a static inventory. Performance, coverage, hardware, and scientific-fidelity claims require their own committed evidence artefacts.
@@ -143,7 +143,7 @@ Evidence boundary: this snapshot is a static inventory. Performance, coverage, h
 | Area | Public status |
 |---|---|
 | Generic compiler surface | `scpn_quantum_control.kuramoto_core` validates arbitrary `K_nm`/`omega` inputs and compiles Hamiltonians, dense matrices, Trotter circuits, and order-parameter measurements. |
-| v0.10 public surfaces | QRNG streaming and health reports, ML-DSA-65 trigger signing, UltraScale+ HLS pulse emission, realtime loop telemetry, NV magnetometry simulation, FRC pulsed-shot QAOA scheduling, and Studio federation manifests plus evidence bundles. |
+| v0.10 public surfaces | QRNG streaming and health reports, ML-DSA-65 trigger signing, UltraScale+ HLS pulse emission, realtime loop telemetry, NV magnetometry simulation, FRC pulsed-shot QAOA scheduling, control-scope boundary docs, and Studio federation manifests plus evidence bundles. |
 | Release and reproducibility scope | Stable core contracts and backend capability artefacts for Kuramoto-XY synchronisation are included in release/readiness checks and promoted only with deterministic evidence manifests. |
 | Hardware evidence | `ibm_fez` baseline rows are legacy artefact-backed observations; `ibm_kingston` Phase 1, Phase 2 A+G, Phase 2 B-C, and popcount DLA datasets are promoted with raw-count artefacts. The SCPN/FIM `ibm_kingston` result is promoted as a negative/falsification result for the tested digital circuit family. |
 | Simulator and methods evidence | BKT, OTOC, Floquet, MBL, FIM, VQE, GPU, tensor-network, and classical comparison claims stay marked as simulator/classical/methods unless a hardware artefact is named. Generated benchmark artefacts are indexed from the benchmark dashboard and reproducibility CLI. |

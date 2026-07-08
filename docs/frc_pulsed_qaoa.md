@@ -12,6 +12,11 @@ physics is owned by SCPN-FUSION-CORE. The cost function evaluates the published
 closed forms of the quantities the scheduler trades off, and the
 `FRCPlasmaSurrogate` parameters can be matched to a FUSION run.
 
+The package-level [Control Scope Boundary](control_scope.md) applies here:
+FRC pulsed-shot QAOA is schedule-selection support for a surrogate objective,
+not generic pulse-shape optimisation, provider-native pulse calibration,
+hardware drift compensation, or lab-instrument control.
+
 ## Cost function
 
 `frc_pulsed_shot_cost(schedule, target_b_profile, available_capacitor_energy_J,

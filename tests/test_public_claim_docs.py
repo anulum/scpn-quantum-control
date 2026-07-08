@@ -27,6 +27,20 @@ _RESULTS = _REPO_ROOT / "RESULTS_SUMMARY.md"
 _CI_WORKFLOW = _REPO_ROOT / ".github" / "workflows" / "ci.yml"
 _PYPROJECT = _REPO_ROOT / "pyproject.toml"
 _SNAPSHOT = _REPO_ROOT / "docs" / "_generated" / "capability_snapshot.md"
+_CONTROL_SCOPE = _REPO_ROOT / "docs" / "control_scope.md"
+_CONTROL_BOUNDARY_LINK_SURFACES = (
+    _REPO_ROOT / "docs" / "api.md",
+    _REPO_ROOT / "docs" / "architecture_map.md",
+    _REPO_ROOT / "docs" / "closed_loop_control.md",
+    _REPO_ROOT / "docs" / "frc_pulsed_qaoa.md",
+    _REPO_ROOT / "docs" / "realtime_feedback.md",
+    _REPO_ROOT / "docs" / "tutorials.md",
+)
+_CONTROL_PUBLIC_SURFACES = (
+    _CONTROL_SCOPE,
+    *_CONTROL_BOUNDARY_LINK_SURFACES,
+    _REPO_ROOT / "src" / "scpn_quantum_control" / "control" / "__init__.py",
+)
 
 # Claim tokens that may only reappear if the enforced gates regress with them.
 _FORBIDDEN_STALE_TOKENS = (
@@ -36,6 +50,24 @@ _FORBIDDEN_STALE_TOKENS = (
     "cov-fail-under=95",
     "98% test coverage",
     "2,813 tests across 155 modules",
+)
+_CONTROL_SCOPE_REQUIRED_PHRASES = (
+    "Kuramoto-XY feedback and set-point tracking",
+    "FRC pulsed-shot schedule scoring and QAOA sampling",
+    "Software-in-the-loop closed-loop response analysis",
+    "does not provide generic pulse-shape optimisation",
+    "provider-native pulse calibration",
+    "hardware drift compensation",
+    "lab-instrument control",
+)
+_CONTROL_OVERCLAIM_TOKENS = (
+    "provides generic pulse-control",
+    "ships generic pulse-control",
+    "automates pulse drift compensation",
+    "compensates hardware drift",
+    "provider-native pulse calibration engine",
+    "controls arbitrary lab instruments",
+    "executes closed-loop hardware pulse control",
 )
 
 
@@ -219,3 +251,33 @@ def test_public_markdown_carries_no_self_applied_superlatives() -> None:
         "self-applied superlatives are internal quality targets, not public "
         f"claims (BROADCAST_2026-07-07): {offenders}"
     )
+
+
+def test_control_scope_boundary_is_public_and_linked() -> None:
+    """The control scope boundary stays explicit on public control surfaces."""
+    scope_text = _CONTROL_SCOPE.read_text(encoding="utf-8")
+    collapsed_scope = re.sub(r"\s+", " ", scope_text)
+    missing = [
+        phrase for phrase in _CONTROL_SCOPE_REQUIRED_PHRASES if phrase not in collapsed_scope
+    ]
+    assert not missing, f"control scope boundary lost required phrases: {missing}"
+    link_missing = [
+        str(path.relative_to(_REPO_ROOT))
+        for path in _CONTROL_BOUNDARY_LINK_SURFACES
+        if "control_scope.md" not in path.read_text(encoding="utf-8")
+        and "Control Scope Boundary" not in path.read_text(encoding="utf-8")
+    ]
+    assert not link_missing, f"control scope boundary is not linked from: {link_missing}"
+
+
+def test_control_public_surfaces_do_not_promote_generic_pulse_control() -> None:
+    """Public control surfaces cannot drift into generic pulse-control claims."""
+    offenders: list[str] = []
+    for path in _CONTROL_PUBLIC_SURFACES:
+        text = path.read_text(encoding="utf-8").lower()
+        offenders.extend(
+            f"{path.relative_to(_REPO_ROOT)}: {token!r}"
+            for token in _CONTROL_OVERCLAIM_TOKENS
+            if token in text
+        )
+    assert not offenders, f"generic pulse-control overclaims resurfaced: {offenders}"

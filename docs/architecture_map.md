@@ -188,6 +188,10 @@ Each lane: purpose · INPUTS · OUTPUTS · processing model · backends · wirin
 
 ### 4.8 Control — `control/`
 - QAOA-MPC, residual VQLS-GS proxy, Petri-net supervisor, ITER disruption, realtime/closed-loop.
+- Scope boundary: [Control Scope Boundary](control_scope.md) pins `control/` to
+  synchronisation-control and campaign-governance workflows. Generic pulse-shape
+  optimisation, provider-native pulse calibration, hardware drift compensation,
+  and lab-instrument control are outside this package.
 - **Honest caveats**: `vqls_gs` keeps the historical "Grad-Shafranov" API name but emits
   `model_boundary="1d_poisson_laplacian_proxy"` and
   `is_full_grad_shafranov_equilibrium=False`; the default path falls back to a classical

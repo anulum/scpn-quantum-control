@@ -110,7 +110,7 @@ graph TD
 | API integrator | Stable Facades API -> API Overview -> Kuramoto Core Facade |
 | Optimisation or AD user | Differentiable Programming -> Quantum Gradients -> Differentiable API -> CPU framework overlay -> external comparison rows -> claim ledger -> release gates before public claims |
 | Entropy and security user | Quantum RNG -> Post-Quantum Trigger Signer -> Example Gallery entries 11 and 12 -> Release Readiness Gate |
-| Control-hardware integrator | Pulse -> UltraScale+ HLS Codegen -> Realtime Runtime -> Architecture Map -> Example Gallery entries 13 and 14 |
+| Control-hardware integrator | Control Scope Boundary -> Pulse -> UltraScale+ HLS Codegen -> Realtime Runtime -> Architecture Map -> Example Gallery entries 13 and 14 |
 | Studio or hub integrator | Studio Federation -> Architecture Map -> API Overview -> `scpn-emit-studio-manifest` -> generated Studio manifest -> schema-B bundle validation |
 
 Every route keeps the same rule: simulator output, hardware evidence, and open

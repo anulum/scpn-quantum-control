@@ -17,6 +17,9 @@ the set-point.
 It is a local **software-in-the-loop** assessment: not provider-prepared
 dynamic-circuit evidence and not live closed-loop QPU evidence. Hardware
 execution is refused fail-closed without an explicit live ticket.
+The package-level [Control Scope Boundary](control_scope.md) also excludes
+generic pulse-shape optimisation, provider-native pulse calibration, hardware
+drift compensation, and lab-instrument control from this module.
 
 ## Response classification
 
