@@ -87,6 +87,7 @@ from .bridge.knm_hamiltonian import (
     build_kuramoto_ring,
     knm_to_ansatz,
     knm_to_hamiltonian,
+    omega_for_oscillators,
 )
 from .bridge.orchestrator_adapter import PhaseOrchestratorAdapter
 from .bridge.phase_artifact import LayerStateArtifact, LockSignatureArtifact, UPDEPhaseArtifact
@@ -989,6 +990,7 @@ __all__ = [
     "run_biological_qec_batch_execution",
     "DynamicCouplingEngine",
     "OMEGA_N_16",
+    "omega_for_oscillators",
     "build_knm_paper27",
     "build_kuramoto_ring",
     "build_knm_plasma",

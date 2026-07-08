@@ -28,6 +28,66 @@ from scpn_quantum_control.benchmarks.reproducible_comparison import (
 )
 
 
+class _FakeQuantumKuramotoSolver:
+    """Small deterministic stand-in for the statevector solver."""
+
+    def __init__(
+        self,
+        n_oscillators: int,
+        K: NDArray[np.float64],
+        omega: NDArray[np.float64],
+    ) -> None:
+        self.n_oscillators = n_oscillators
+        self.K = K
+        self.omega = omega
+
+    def run(
+        self, *, t_max: float, dt: float, trotter_per_step: int
+    ) -> dict[str, NDArray[np.float64]]:
+        """Return a deterministic order-parameter trajectory."""
+        del t_max, dt, trotter_per_step
+        return {"R": np.array([0.41, 0.52], dtype=np.float64)}
+
+
+@pytest.fixture(autouse=True)
+def _deterministic_backends(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Keep these artifact tests independent of Qiskit/NumPy coverage hooks."""
+
+    def _fake_exact(
+        n_osc: int,
+        t_max: float,
+        dt: float,
+        K: NDArray[np.float64] | None = None,
+        omega: NDArray[np.float64] | None = None,
+    ) -> dict[str, NDArray[np.float64]]:
+        del n_osc, t_max, dt, K, omega
+        return {"R": np.array([0.39, 0.5], dtype=np.float64)}
+
+    def _fake_ode(
+        K: NDArray[np.float64],
+        omega: NDArray[np.float64],
+        *,
+        t_max: float,
+        dt: float,
+        theta0: NDArray[np.float64] | None = None,
+    ) -> ClassicalBaselineRun:
+        del t_max, dt, theta0
+        return ClassicalBaselineRun(
+            name="scipy_ode",
+            backend="scipy.solve_ivp(RK45)",
+            n_oscillators=K.shape[0],
+            available=True,
+            elapsed_ms=1.25,
+            times=np.array([0.0, 1.0], dtype=np.float64),
+            order_parameter=np.array([0.37, 0.48], dtype=np.float64),
+            metadata={"omega_len": omega.shape[0]},
+        )
+
+    monkeypatch.setattr(rc, "classical_exact_evolution", _fake_exact)
+    monkeypatch.setattr(rc, "QuantumKuramotoSolver", _FakeQuantumKuramotoSolver)
+    monkeypatch.setattr(rc, "scipy_ode_baseline", _fake_ode)
+
+
 def _run(
     n_oscillators: int,
     *,
@@ -68,7 +128,11 @@ def test_default_run_has_three_methods_and_exact_reference() -> None:
     assert methods == {"classical_exact", "classical_ode", "quantum_trotter"}
     assert comparison.n_oscillators == 4
     assert comparison.initial_condition == "omega_phase"
-    assert comparison.metadata == {"coupling_source": "paper27", "omega_source": "omega_n_16"}
+    assert comparison.metadata == {
+        "coupling_source": "paper27",
+        "omega_source": "omega_n_16",
+        "statevector_boundary": 16,
+    }
 
 
 def test_reference_row_carries_no_self_error() -> None:
@@ -125,7 +189,11 @@ def test_caller_supplied_coupling_and_omega_are_recorded() -> None:
 
     comparison = _run(3, K=K, omega=omega)
 
-    assert comparison.metadata == {"coupling_source": "caller", "omega_source": "caller"}
+    assert comparison.metadata == {
+        "coupling_source": "caller",
+        "omega_source": "caller",
+        "statevector_boundary": 16,
+    }
 
 
 def test_to_dict_is_json_serialisable_and_complete() -> None:
@@ -205,8 +273,7 @@ def test_unavailable_ode_propagates_none_error_and_reason(monkeypatch: pytest.Mo
 @pytest.mark.parametrize(
     ("call", "match"),
     [
-        (lambda: _run(1), "2 <= n <= 16"),
-        (lambda: _run(17), "2 <= n <= 16"),
+        (lambda: _run(1), "n_oscillators must be >= 2"),
         (lambda: _run(4, t_max=0.0), "t_max must be positive"),
         (lambda: _run(4, dt=0.0), "dt must be positive"),
         (lambda: _run(4, t_max=0.2, dt=0.5), "must not exceed t_max"),
@@ -220,6 +287,32 @@ def test_invalid_arguments_are_rejected(
     """Every documented bound rejects out-of-range input."""
     with pytest.raises(ValueError, match=match):
         call()
+
+
+def test_larger_than_16_comparison_is_classical_only() -> None:
+    """N > 16 returns a scalable baseline and refuses statevector rows."""
+    comparison = _run(20, t_max=0.2, dt=0.1)
+
+    assert comparison.reference_method == "classical_ode"
+    assert comparison.metadata == {
+        "coupling_source": "paper27",
+        "omega_source": "omega_n_16_periodic_extension",
+        "statevector_boundary": 16,
+    }
+    ode = comparison.row("classical_ode")
+    exact = comparison.row("classical_exact")
+    quantum = comparison.row("quantum_trotter")
+    assert ode.available is True
+    assert ode.r_final is not None
+    assert ode.r_error_vs_exact is None
+    assert exact.available is False
+    assert exact.r_final is None
+    assert exact.unavailable_reason is not None
+    assert "n_oscillators>16" in exact.unavailable_reason
+    assert quantum.available is False
+    assert quantum.r_final is None
+    assert quantum.unavailable_reason is not None
+    assert "n_oscillators>16" in quantum.unavailable_reason
 
 
 def test_wrong_coupling_shape_is_rejected() -> None:

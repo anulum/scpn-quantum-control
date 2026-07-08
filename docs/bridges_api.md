@@ -70,13 +70,21 @@ omega_i                           ↔  -omega_i * Z_i
 #### `OMEGA_N_16`
 
 Canonical natural frequencies from Paper 27, Table 1. 16 values in rad/s,
-experimentally calibrated. Used as the default frequency vector throughout
-the entire package.
+experimentally calibrated. These are the measured Paper 27 values; scalable
+defaults use `omega_for_oscillators` so larger synthetic networks receive a
+full-length frequency vector without implying new measured Paper 27 data.
 
 ```python
 OMEGA_N_16 = np.array([1.329, 2.610, 0.844, 1.520, 0.710, 3.780, 1.055, 0.625,
                         2.210, 1.740, 0.480, 3.210, 0.915, 1.410, 2.830, 0.991])
 ```
+
+#### `omega_for_oscillators(n_oscillators)`
+
+Returns a fresh `float64` vector of length `n_oscillators`. For `n <= 16`, this
+is the canonical `OMEGA_N_16` prefix. For larger synthetic networks, it uses a
+periodic extension of the 16 measured values and records that distinction in
+callers that emit provenance.
 
 #### `build_knm_paper27(L=16, K_base=0.45, K_alpha=0.3)`
 

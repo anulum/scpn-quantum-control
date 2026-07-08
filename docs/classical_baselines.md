@@ -86,25 +86,35 @@ the SciPy ODE baseline, and the statevector Trotter route into a single
 serialisable record so an example can emit a reproducible artifact instead of
 printing transient numbers. It does not reimplement any solver.
 
-The exact route is the reference; the ODE and quantum rows carry their final
-order-parameter error against it. The order-parameter values and their errors
-are RNG-free and repeat byte-for-byte across runs and machines for identical
-inputs. The recorded `seed` governs only the optional seeded random-phase mode;
-the default initial condition is derived deterministically from `omega`.
+For `n <= 16`, the exact route is the reference; the ODE and quantum rows carry
+their final order-parameter error against it. For `n > 16`, the artifact becomes
+a scalable classical baseline: the SciPy ODE row is the reference, while the
+exact and statevector Trotter rows are marked `available=False` with an
+unavailable reason. The order-parameter values and their errors are RNG-free
+and repeat byte-for-byte across runs and machines for identical inputs. The
+recorded `seed` governs only the optional seeded random-phase mode; the default
+initial condition is derived deterministically from `omega`.
 
 Wall-clock `elapsed_ms` is recorded for context but is advisory and
 machine-dependent, so it is excluded from the reproducible-quantity set. Each
 artifact also embeds the documented `failure_modes` and a `claim_boundary`
-statement: for the sizes this comparison can run (`n <= 16`) the classical exact
-route is faster and exact, so the record states **no quantum advantage** and the
-quantum row documents agreement and Trotter discretisation error rather than a
-speed-up.
+statement: for statevector-scale sizes (`n <= 16`) the classical exact route is
+faster and exact, so the record states **no quantum advantage**; above that
+boundary, unavailable statevector rows prevent an implicit speed-up claim.
 
 ```python
 from scpn_quantum_control import run_reproducible_kuramoto_comparison
 
 comparison = run_reproducible_kuramoto_comparison(8, t_max=1.0, dt=0.1, seed=42)
 artifact = comparison.to_dict()
+```
+
+For larger classical baselines:
+
+```python
+comparison = run_reproducible_kuramoto_comparison(20, t_max=0.2, dt=0.1, seed=42)
+assert comparison.reference_method == "classical_ode"
+assert comparison.row("quantum_trotter").available is False
 ```
 
 Example 09 emits this artifact on demand:

@@ -37,7 +37,7 @@ from qiskit.circuit.library import PauliEvolutionGate
 from qiskit.quantum_info import Statevector
 from qiskit.synthesis import LieTrotter
 
-from ..bridge.knm_hamiltonian import build_knm_paper27, knm_to_hamiltonian
+from ..bridge.knm_hamiltonian import build_knm_paper27, knm_to_hamiltonian, omega_for_oscillators
 from .circuit_cutting import optimal_partition
 
 
@@ -101,9 +101,7 @@ def run_cutting_simulation(
     opt into that explicitly with ``allow_partition_energy_estimate=True``.
     """
     K_full = build_knm_paper27(L=n_oscillators, K_base=k_base)
-    from ..bridge.knm_hamiltonian import OMEGA_N_16
-
-    omega_full = np.tile(OMEGA_N_16, (n_oscillators // 16) + 1)[:n_oscillators]
+    omega_full = omega_for_oscillators(n_oscillators)
 
     partition = optimal_partition(K_full, max_partition_size)
     partition_labels = np.full(n_oscillators, -1, dtype=int)

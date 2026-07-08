@@ -55,6 +55,41 @@ OMEGA_N_16 = np.array(
 )
 
 
+def omega_for_oscillators(n_oscillators: int) -> NDArray[np.float64]:
+    """Return deterministic natural frequencies for ``n_oscillators``.
+
+    The first 16 entries are the canonical Paper 27 values in
+    :data:`OMEGA_N_16`. Larger synthetic networks use a periodic extension of
+    that measured table so scalable classical, co-simulation, and partitioned
+    examples receive a full-length vector without fabricating new Paper 27 data.
+
+    Parameters
+    ----------
+    n_oscillators:
+        Number of oscillator frequencies to return; must be at least one.
+
+    Returns
+    -------
+    numpy.ndarray
+        A fresh ``float64`` vector of length ``n_oscillators``.
+
+    Raises
+    ------
+    TypeError
+        If ``n_oscillators`` is not an integer.
+    ValueError
+        If ``n_oscillators`` is below one.
+    """
+    if not isinstance(n_oscillators, int):
+        raise TypeError("n_oscillators must be an integer")
+    if n_oscillators < 1:
+        raise ValueError("n_oscillators must be >= 1")
+    if n_oscillators <= OMEGA_N_16.size:
+        return OMEGA_N_16[:n_oscillators].copy()
+    repeats = (n_oscillators + OMEGA_N_16.size - 1) // OMEGA_N_16.size
+    return np.tile(OMEGA_N_16, repeats)[:n_oscillators].astype(np.float64, copy=True)
+
+
 def build_knm_paper27(
     L: int = 16,
     K_base: float = 0.45,  # Paper 27, Eq. 3

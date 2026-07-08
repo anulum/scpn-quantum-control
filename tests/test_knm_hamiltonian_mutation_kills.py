@@ -60,6 +60,7 @@ from scpn_quantum_control.bridge.knm_hamiltonian import (
     build_kuramoto_ring,
     knm_to_hamiltonian,
     knm_to_xxz_hamiltonian,
+    omega_for_oscillators,
 )
 
 
@@ -246,3 +247,31 @@ class TestOmega16ExactPaperValues:
 
     def test_dtype_is_float64(self) -> None:
         assert OMEGA_N_16.dtype == np.float64
+
+
+class TestOmegaForOscillators:
+    """Regression tests for scalable default-frequency construction."""
+
+    def test_prefix_returns_canonical_values_as_fresh_array(self) -> None:
+        frequencies = omega_for_oscillators(4)
+
+        np.testing.assert_array_equal(frequencies, OMEGA_N_16[:4])
+        frequencies[0] = -999.0
+        assert OMEGA_N_16[0] == pytest.approx(1.329)
+
+    def test_larger_than_16_uses_periodic_extension(self) -> None:
+        frequencies = omega_for_oscillators(20)
+
+        assert frequencies.shape == (20,)
+        assert frequencies.dtype == np.float64
+        np.testing.assert_array_equal(frequencies[:16], OMEGA_N_16)
+        np.testing.assert_array_equal(frequencies[16:], OMEGA_N_16[:4])
+
+    @pytest.mark.parametrize("bad_count", [0, -1])
+    def test_rejects_non_positive_counts(self, bad_count: int) -> None:
+        with pytest.raises(ValueError, match="n_oscillators must be >= 1"):
+            omega_for_oscillators(bad_count)
+
+    def test_rejects_non_integer_count(self) -> None:
+        with pytest.raises(TypeError, match="n_oscillators must be an integer"):
+            omega_for_oscillators(3.5)  # type: ignore[arg-type]

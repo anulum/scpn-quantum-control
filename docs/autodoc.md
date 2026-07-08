@@ -23,7 +23,7 @@ or debugging a subsystem, not as the default path for tutorial code.
 
 ::: scpn_quantum_control.bridge.knm_hamiltonian
     options:
-      members: [OMEGA_N_16, build_knm_paper27, build_kuramoto_ring, knm_to_hamiltonian, knm_to_ansatz]
+      members: [OMEGA_N_16, omega_for_oscillators, build_knm_paper27, build_kuramoto_ring, knm_to_hamiltonian, knm_to_ansatz]
 
 ::: scpn_quantum_control.bridge.qpu_data_artifact
     options:

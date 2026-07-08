@@ -121,7 +121,7 @@ claims only when the evidence exists.
 | Surface | Current inventory |
 |---|---:|
 | Package version | 0.10.0 |
-| Public API exports | 828 |
+| Public API exports | 829 |
 | Python source modules | 491 |
 | Public Python classes | 945 |
 | Domain package families | 31 |
@@ -130,7 +130,7 @@ claims only when the evidence exists.
 | Notebook files | 100 |
 | Example files | 37 |
 | Optional extras | 43 |
-| Python test files | 863 |
+| Python test files | 864 |
 | Public documentation pages | 267 |
 | GitHub Actions workflows | 23 |
 

@@ -26,10 +26,10 @@ excluded from the reproducible-quantity set.
 
 Claim boundary
 --------------
-For the system sizes this comparison can run (``n <= 16``) the classical exact
-route is both faster and exact, so the artifact records *no quantum advantage*.
-The quantum row exists to document agreement and Trotter discretisation error,
-not to claim speed-up.
+For statevector-scale system sizes (``n <= 16``) the classical exact route is
+both faster and exact, so the artifact records *no quantum advantage*. Larger
+systems remain useful as scalable classical Kuramoto baselines: exact and
+statevector-quantum rows are reported as unavailable instead of being faked.
 """
 
 from __future__ import annotations
@@ -41,14 +41,14 @@ from typing import Any
 import numpy as np
 from numpy.typing import NDArray
 
-from scpn_quantum_control.bridge import OMEGA_N_16, build_knm_paper27
+from scpn_quantum_control.bridge import build_knm_paper27, omega_for_oscillators
 from scpn_quantum_control.hardware.classical import classical_exact_evolution
 from scpn_quantum_control.phase import QuantumKuramotoSolver
 
 from .classical_baselines import scipy_ode_baseline
 
-#: Maximum oscillator count for which the bundled ``OMEGA_N_16`` table applies.
-MAX_TABLE_OSCILLATORS = 16
+#: Maximum oscillator count for direct exact/statevector quantum comparison.
+MAX_STATEVECTOR_OSCILLATORS = 16
 
 #: Documented failure modes shared by every comparison artifact.
 FAILURE_MODES: tuple[str, ...] = (
@@ -60,16 +60,18 @@ FAILURE_MODES: tuple[str, ...] = (
     "classical_ode: the SciPy route integrates the classical phase model, "
     "not the quantum XY Hamiltonian, so order-parameter agreement is an "
     "approximate cross-check rather than a derivation.",
-    "scope: at n<=16 there is no quantum advantage on this path; the classical "
-    "exact route is faster and exact, so timing must not be read as a speed-up "
-    "claim.",
+    "scope: at n<=16 there is no quantum advantage on this path; above that "
+    "boundary the exact and statevector Trotter rows are marked unavailable and "
+    "the artifact is a scalable classical baseline only.",
 )
 
 #: Bounded-claim statement embedded in every artifact.
 CLAIM_BOUNDARY = (
     "Reproducible quantities are the order-parameter values and their error "
-    "against the exact reference; timing is advisory. The comparison documents "
-    "agreement and discretisation error, not quantum speed-up."
+    "against the active reference when one exists; timing is advisory. The "
+    "comparison documents agreement and discretisation error at n<=16, and "
+    "classical scalable baseline behaviour above that boundary, not quantum "
+    "speed-up."
 )
 
 #: Determinism statement embedded in every artifact.
@@ -188,7 +190,7 @@ def _resolve_problem(
                 f"K must have shape {(n_oscillators, n_oscillators)}, got {coupling.shape}"
             )
     if omega is None:
-        frequencies = OMEGA_N_16[:n_oscillators].copy()
+        frequencies = omega_for_oscillators(n_oscillators)
     else:
         frequencies = np.asarray(omega, dtype=np.float64)
         if frequencies.shape != (n_oscillators,):
@@ -225,7 +227,10 @@ def run_reproducible_kuramoto_comparison(
     Parameters
     ----------
     n_oscillators:
-        Number of oscillators / qubits, ``2 <= n <= 16``.
+        Number of oscillators / qubits; must be at least two. For ``n <= 16``
+        the artifact includes exact/statevector rows. For larger networks it
+        emits a classical scalable baseline and marks statevector-bound rows
+        unavailable.
     t_max:
         Total evolution time; must be positive.
     dt:
@@ -242,23 +247,22 @@ def run_reproducible_kuramoto_comparison(
     K:
         Optional coupling matrix; defaults to the Paper 27 ``K_nm`` matrix.
     omega:
-        Optional frequency vector; defaults to the bundled ``OMEGA_N_16`` slice.
+        Optional frequency vector; defaults to :func:`omega_for_oscillators`.
 
     Returns
     -------
     ReproducibleKuramotoComparison
-        The exact route is the reference; the classical ODE and quantum Trotter
-        rows carry their error against it.
+        For ``n <= 16`` the exact route is the reference. For larger networks
+        the SciPy ODE row is the reference and exact/statevector rows are
+        unavailable.
 
     Raises
     ------
     ValueError
         If any argument falls outside its documented bound.
     """
-    if not 2 <= n_oscillators <= MAX_TABLE_OSCILLATORS:
-        raise ValueError(
-            f"n_oscillators must satisfy 2 <= n <= {MAX_TABLE_OSCILLATORS}, got {n_oscillators}"
-        )
+    if n_oscillators < 2:
+        raise ValueError(f"n_oscillators must be >= 2, got {n_oscillators}")
     if t_max <= 0.0:
         raise ValueError(f"t_max must be positive, got {t_max}")
     if dt <= 0.0:
@@ -273,13 +277,65 @@ def run_reproducible_kuramoto_comparison(
     coupling, frequencies = _resolve_problem(n_oscillators, K, omega)
     theta0, initial_condition = _initial_phases(frequencies, seed, randomise_initial_phases)
 
+    ode = scipy_ode_baseline(coupling, frequencies, t_max=t_max, dt=dt, theta0=theta0)
+    r_ode = ode.r_final
+
+    if n_oscillators > MAX_STATEVECTOR_OSCILLATORS:
+        rows = (
+            ComparisonMethodRow(
+                method="classical_exact",
+                backend="scipy matrix exponential / sparse Krylov",
+                available=False,
+                r_final=None,
+                r_error_vs_exact=None,
+                elapsed_ms=0.0,
+                unavailable_reason=(
+                    f"n_oscillators>{MAX_STATEVECTOR_OSCILLATORS}: exact statevector "
+                    "reference is intentionally not run"
+                ),
+            ),
+            ComparisonMethodRow(
+                method="classical_ode",
+                backend=ode.backend,
+                available=ode.available,
+                r_final=r_ode,
+                r_error_vs_exact=None,
+                elapsed_ms=ode.elapsed_ms,
+                unavailable_reason=ode.unavailable_reason,
+            ),
+            ComparisonMethodRow(
+                method="quantum_trotter",
+                backend="statevector Trotter (QuantumKuramotoSolver)",
+                available=False,
+                r_final=None,
+                r_error_vs_exact=None,
+                elapsed_ms=0.0,
+                unavailable_reason=(
+                    f"n_oscillators>{MAX_STATEVECTOR_OSCILLATORS}: explicit "
+                    "statevector Trotter path is intentionally not run"
+                ),
+            ),
+        )
+        return ReproducibleKuramotoComparison(
+            n_oscillators=n_oscillators,
+            t_max=t_max,
+            dt=dt,
+            trotter_per_step=trotter_per_step,
+            seed=seed,
+            initial_condition=initial_condition,
+            reference_method="classical_ode",
+            rows=rows,
+            metadata={
+                "coupling_source": "paper27" if K is None else "caller",
+                "omega_source": "omega_n_16_periodic_extension" if omega is None else "caller",
+                "statevector_boundary": MAX_STATEVECTOR_OSCILLATORS,
+            },
+        )
+
     start = time.perf_counter()
     exact = classical_exact_evolution(n_oscillators, t_max, dt, coupling, frequencies)
     exact_ms = (time.perf_counter() - start) * 1000.0
     r_exact = float(exact["R"][-1])
-
-    ode = scipy_ode_baseline(coupling, frequencies, t_max=t_max, dt=dt, theta0=theta0)
-    r_ode = ode.r_final
 
     solver = QuantumKuramotoSolver(n_oscillators, coupling, frequencies)
     start = time.perf_counter()
@@ -327,5 +383,6 @@ def run_reproducible_kuramoto_comparison(
         metadata={
             "coupling_source": "paper27" if K is None else "caller",
             "omega_source": "omega_n_16" if omega is None else "caller",
+            "statevector_boundary": MAX_STATEVECTOR_OSCILLATORS,
         },
     )

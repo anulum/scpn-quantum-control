@@ -7,13 +7,13 @@
     "model_documentation_pages": null,
     "notebook_files": 100,
     "optional_extras": 43,
-    "public_api_exports": 828,
+    "public_api_exports": 829,
     "public_documentation_pages": 267,
     "python_model_classes": 945,
     "python_model_source_modules": 491,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 46,
-    "test_files": 863
+    "test_files": 864
   },
   "documentation": {
     "examples": [
@@ -5698,6 +5698,7 @@
     "natural_gradient",
     "normalize_iter_features",
     "odmr_resonances_hz",
+    "omega_for_oscillators",
     "optimal_schedule",
     "oqc_openqasm3_workload",
     "orchestrator_to_quantum_phases",
@@ -6398,6 +6399,7 @@
       "tests/test_kuramoto_standalone_package_decision.py",
       "tests/test_kuramoto_variants.py",
       "tests/test_l16_director.py",
+      "tests/test_larger_than_16_defaults.py",
       "tests/test_lattice_branches.py",
       "tests/test_layer_selective_comparator_matrix.py",
       "tests/test_layer_selective_readiness.py",

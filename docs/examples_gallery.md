@@ -128,9 +128,10 @@ python examples/09_classical_vs_quantum_benchmark.py \
     --artifact data/classical_quantum_comparison/reproducible_comparison_n8.json
 ```
 
-For the system sizes this comparison can run (`n <= 16`) the classical exact
-route is faster and exact; the quantum route is an evidence and falsification
-surface, not a generic speed-up. See [Classical Baselines](classical_baselines.md).
+For `n <= 16`, the classical exact route is faster and exact; the quantum route
+is an evidence and falsification surface, not a generic speed-up. For `n > 16`,
+the same artifact format becomes a scalable classical baseline and marks exact
+statevector rows unavailable. See [Classical Baselines](classical_baselines.md).
 
 ## 9. Differentiable parameter-shift
 

@@ -33,6 +33,7 @@ from .knm_hamiltonian import (
     knm_to_hamiltonian,
     knm_to_sparse_matrix,
     knm_to_xxz_hamiltonian,
+    omega_for_oscillators,
 )
 from .orchestrator_adapter import PhaseOrchestratorAdapter
 from .phase_artifact import LayerStateArtifact, LockSignatureArtifact, UPDEPhaseArtifact
@@ -68,6 +69,7 @@ __all__ = [
     "knm_to_hamiltonian",
     "knm_to_ansatz",
     "OMEGA_N_16",
+    "omega_for_oscillators",
     "build_knm_paper27",
     "build_kuramoto_ring",
     "knm_to_dense_matrix",

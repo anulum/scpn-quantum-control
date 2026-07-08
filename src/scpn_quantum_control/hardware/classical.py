@@ -24,10 +24,10 @@ from scipy.sparse.linalg import eigsh, expm_multiply
 from oscillatools.accel.rust_import import optional_rust_engine
 
 from ..bridge.knm_hamiltonian import (
-    OMEGA_N_16,
     build_knm_paper27,
     knm_to_dense_matrix,
     knm_to_hamiltonian,
+    omega_for_oscillators,
 )
 
 
@@ -50,7 +50,7 @@ def classical_kuramoto_reference(
     if K is None:
         K = build_knm_paper27(L=n_osc)
     if omega is None:
-        omega = OMEGA_N_16[:n_osc].copy()
+        omega = omega_for_oscillators(n_osc)
     if theta0 is None:
         theta0 = np.array([om % (2 * np.pi) for om in omega])
 
@@ -136,7 +136,7 @@ def classical_exact_diag(
     if K is None:
         K = build_knm_paper27(L=n_osc)
     if omega is None:
-        omega = OMEGA_N_16[:n_osc].copy()
+        omega = omega_for_oscillators(n_osc)
 
     H_op = knm_to_hamiltonian(K, omega)
 
@@ -189,7 +189,7 @@ def classical_exact_evolution(
     if K is None:
         K = build_knm_paper27(L=n_osc)
     if omega is None:
-        omega = OMEGA_N_16[:n_osc].copy()
+        omega = omega_for_oscillators(n_osc)
 
     H_op = knm_to_hamiltonian(K, omega)
     psi = _build_initial_state(n_osc, omega)
