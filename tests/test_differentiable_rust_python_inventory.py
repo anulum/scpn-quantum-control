@@ -55,10 +55,19 @@ def test_inventory_rows_are_claim_bounded_and_path_backed() -> None:
     rust_ir = rows["rust_program_ad_ir"]
     assert rust_ir.classification == "rust_backed"
     assert rust_ir.rust_parity_status == "partial"
-    assert "scpn_quantum_engine/src/program_ad_ir.rs" in rust_ir.rust_surface
-    assert "scpn_quantum_engine/src/program_ad_signal_reduction.rs" in rust_ir.rust_surface
-    assert "scpn_quantum_engine/src/program_ad_cumulative_reduction.rs" in rust_ir.rust_surface
-    assert "scpn_quantum_engine/src/program_ad_stencil_reduction.rs" in rust_ir.rust_surface
+    assert "scpn_quantum_engine/program_ad_replay/src/program_ad_ir.rs" in rust_ir.rust_surface
+    assert (
+        "scpn_quantum_engine/program_ad_replay/src/program_ad_signal_reduction.rs"
+        in rust_ir.rust_surface
+    )
+    assert (
+        "scpn_quantum_engine/program_ad_replay/src/program_ad_cumulative_reduction.rs"
+        in rust_ir.rust_surface
+    )
+    assert (
+        "scpn_quantum_engine/program_ad_replay/src/program_ad_stencil_reduction.rs"
+        in rust_ir.rust_surface
+    )
     assert "scpn_quantum_engine/fuzz/fuzz_targets/program_ad_ir.rs" in rust_ir.rust_surface
     assert "tests/test_phase_qnode_rust_parity.py" in rust_ir.test_surface
     assert "tests/test_program_ad_rust_signal_bridge.py" in rust_ir.test_surface
@@ -79,7 +88,7 @@ def test_inventory_rows_are_claim_bounded_and_path_backed() -> None:
     validation = validate_differentiable_rust_python_inventory(inventory)
     assert validation.passed, validation.errors
     assert "src/scpn_quantum_control/differentiable_api.py" in validation.checked_paths
-    assert "scpn_quantum_engine/src/program_ad_ir.rs" in validation.checked_paths
+    assert "scpn_quantum_engine/program_ad_replay/src/program_ad_ir.rs" in validation.checked_paths
 
 
 def test_inventory_validation_rejects_missing_paths_and_ready_blockers(

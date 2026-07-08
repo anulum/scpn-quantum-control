@@ -53,7 +53,7 @@ def test_architecture_map_layers_are_path_backed_and_claim_bounded() -> None:
     )
     assert program_ad.baseline_categories == ("rust_native_program_ad",)
     assert "src/scpn_quantum_control/differentiable.py" in program_ad.python_surfaces
-    assert "scpn_quantum_engine/src/program_ad_ir.rs" in program_ad.rust_surfaces
+    assert "scpn_quantum_engine/program_ad_replay/src/program_ad_ir.rs" in program_ad.rust_surfaces
     assert "tests/test_program_ad_rust_bridge.py" in program_ad.test_surfaces
     assert any("array adjoints" in blocker for blocker in program_ad.blockers)
 
