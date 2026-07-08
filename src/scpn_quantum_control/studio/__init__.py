@@ -18,6 +18,15 @@ from .benchmark_databank_bundle import (
     DEFAULT_BENCHMARK_DATABANK_ARTIFACT_PATH,
     build_benchmark_databank_bundle,
 )
+from .coupling_invariant import (
+    COUPLING_INVARIANT_ARTIFACT_ID,
+    COUPLING_INVARIANT_ID,
+    CouplingInvariantPayload,
+    CouplingInvariantSource,
+    build_coupling_invariant_bundle,
+    build_coupling_invariant_payload,
+    validate_coupling_invariant_payload,
+)
 from .coverage_frontier import (
     ANSWERED_STATUSES,
     CoverageFrontierReport,
@@ -88,6 +97,10 @@ from .verbs import QUANTUM_VERBS, STUDIO_ID, evidence_schemas, verb_substrates
 __all__ = [
     "ANSWERED_STATUSES",
     "CoverageFrontierReport",
+    "COUPLING_INVARIANT_ARTIFACT_ID",
+    "COUPLING_INVARIANT_ID",
+    "CouplingInvariantPayload",
+    "CouplingInvariantSource",
     "DEFAULT_BENCHMARK_DATABANK_ARTIFACT_PATH",
     "DEFAULT_REFERENCE_VALIDATION_PATH",
     "DEFAULT_SCORECARD_ARTIFACT_PATH",
@@ -111,6 +124,8 @@ __all__ = [
     "build_benchmark_databank_bundle",
     "build_claim_ledger_bundle",
     "build_claim_ledger_bundles",
+    "build_coupling_invariant_bundle",
+    "build_coupling_invariant_payload",
     "build_federation_document",
     "build_hardware_result_pack_bundle",
     "build_hardware_result_pack_bundles",
@@ -136,6 +151,7 @@ __all__ = [
     "load_reference_validation_registry",
     "validate_bundle",
     "validate_bundles",
+    "validate_coupling_invariant_payload",
     "verify_xy_compile_recompute_unit",
     "verb_substrates",
     "write_federation_document",

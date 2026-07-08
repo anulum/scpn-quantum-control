@@ -47,6 +47,7 @@ KURAMOTO_COMPILATION_SCHEMA = "studio.kuramoto-compilation.v1"
 QUANTUM_EVOLUTION_SCHEMA = "studio.quantum-evolution.v1"
 SYNC_ANALYSIS_SCHEMA = "studio.sync-analysis.v1"
 DLA_PARITY_SCHEMA = "studio.dla-parity.v1"
+COUPLING_INVARIANT_SCHEMA = "studio.coupling-invariant.v1"
 PHYSICS_VALIDATION_SCHEMA = "studio.physics-validation.v1"
 NATIVE_SPEEDUP_SCHEMA = "studio.native-speedup.v1"
 BENCHMARK_DATABANK_SCHEMA = "studio.benchmark-databank.v1"
@@ -93,10 +94,10 @@ ANALYSE = Verb(
     side_effect=SideEffect.READ_ONLY,
     timing=Timing(TimingClass.BATCH),
     fidelity=Fidelity.ANALYTIC,
-    produces=(SYNC_ANALYSIS_SCHEMA, DLA_PARITY_SCHEMA),
+    produces=(SYNC_ANALYSIS_SCHEMA, DLA_PARITY_SCHEMA, COUPLING_INVARIANT_SCHEMA),
     backends=("numpy", "rust"),
 )
-"""Extract synchronisation, witness, OTOC, DLA-parity and related probes."""
+"""Extract synchronisation, witness, OTOC, DLA-parity, and effective-coupling probes."""
 
 VALIDATE = Verb(
     name="validate",
@@ -210,6 +211,7 @@ def evidence_schemas() -> tuple[str, ...]:
         QUANTUM_EVOLUTION_SCHEMA,
         SYNC_ANALYSIS_SCHEMA,
         DLA_PARITY_SCHEMA,
+        COUPLING_INVARIANT_SCHEMA,
         PHYSICS_VALIDATION_SCHEMA,
         NATIVE_SPEEDUP_SCHEMA,
         BENCHMARK_DATABANK_SCHEMA,

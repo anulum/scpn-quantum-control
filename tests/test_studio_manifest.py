@@ -39,6 +39,7 @@ def test_evidence_schemas_match_verb_outputs() -> None:
     declared = set(verbs.evidence_schemas())
     produced = {schema for verb in verbs.QUANTUM_VERBS for schema in verb.produces}
     assert produced == declared
+    assert "studio.coupling-invariant.v1" in declared
 
 
 def test_declared_surface_includes_substrate_axes() -> None:
@@ -91,6 +92,14 @@ def test_execute_is_the_only_live_hardware_verb() -> None:
     assert live == ["execute"]
     execute = next(v for v in data["verbs"] if v["verb"] == "execute")
     assert execute["safety_tier"] == "certified"
+
+
+def test_analyse_declares_coupling_invariant_separately_from_dla() -> None:
+    """The effective-coupling invariant is an analyse output, separate from DLA parity."""
+    data = manifest.build_manifest().to_dict()
+    analyse = next(v for v in data["verbs"] if v["verb"] == "analyse")
+    assert "studio.coupling-invariant.v1" in analyse["produces"]
+    assert "studio.dla-parity.v1" in analyse["produces"]
 
 
 def test_federation_document_has_both_blocks() -> None:

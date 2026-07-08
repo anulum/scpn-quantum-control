@@ -109,6 +109,12 @@ def _capabilities() -> list[dict[str, str]]:
             "tier": "core",
             "status": "wired",
         },
+        {
+            "name": "effective-coupling-invariant",
+            "domain": "Analysis",
+            "tier": "core",
+            "status": "wired",
+        },
         {"name": "error-mitigation", "domain": "Mitigation", "tier": "core", "status": "wired"},
         {"name": "hardware-execution", "domain": "Hardware", "tier": "core", "status": "wired"},
         {"name": "evidence-ledger", "domain": "Provenance", "tier": "core", "status": "wired"},
@@ -219,6 +225,10 @@ def _wire_formats() -> list[dict[str, str]]:
         {
             "name": "studio-evidence",
             "schema_ref": "scpn_quantum_control.studio.evidence_bundle (schema-B EvidenceBundle emitter for ledger + hardware packs)",
+        },
+        {
+            "name": "studio.coupling-invariant.v1",
+            "schema_ref": "scpn_quantum_control.studio.coupling_invariant (effective K_nm coupling invariant source inventory with mandatory UQ)",
         },
         {
             "name": "UPDEPhaseArtifact",

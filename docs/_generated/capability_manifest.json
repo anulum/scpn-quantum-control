@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 829,
     "public_documentation_pages": 267,
-    "python_model_classes": 945,
-    "python_model_source_modules": 491,
+    "python_model_classes": 947,
+    "python_model_source_modules": 492,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 46,
-    "test_files": 864
+    "test_files": 865
   },
   "documentation": {
     "examples": [
@@ -589,7 +589,7 @@
       {
         "package": "studio",
         "path": "src/scpn_quantum_control/studio",
-        "python_modules": 16
+        "python_modules": 17
       },
       {
         "package": "tcbo",
@@ -1111,6 +1111,14 @@
       {
         "name": "CouplingGraphBounds",
         "path": "src/scpn_quantum_control/topology_control/constraints.py"
+      },
+      {
+        "name": "CouplingInvariantPayload",
+        "path": "src/scpn_quantum_control/studio/coupling_invariant.py"
+      },
+      {
+        "name": "CouplingInvariantSource",
+        "path": "src/scpn_quantum_control/studio/coupling_invariant.py"
       },
       {
         "name": "CouplingLearningResult",
@@ -4849,6 +4857,7 @@
       "src/scpn_quantum_control/stable_core.py",
       "src/scpn_quantum_control/stable_core_preflight.py",
       "src/scpn_quantum_control/studio/benchmark_databank_bundle.py",
+      "src/scpn_quantum_control/studio/coupling_invariant.py",
       "src/scpn_quantum_control/studio/coverage_frontier.py",
       "src/scpn_quantum_control/studio/evidence_bundle.py",
       "src/scpn_quantum_control/studio/federation.py",
@@ -6789,6 +6798,7 @@
       "tests/test_structured_ansatz.py",
       "tests/test_structured_ansatz_branches.py",
       "tests/test_studio_benchmark_databank_bundle.py",
+      "tests/test_studio_coupling_invariant.py",
       "tests/test_studio_evidence_bundle.py",
       "tests/test_studio_kuramoto_reference.py",
       "tests/test_studio_kuramoto_scenario_artifact.py",

@@ -92,6 +92,7 @@ wire dictionaries to a Hub.
 | Hardware result packs | `build_hardware_result_pack_bundles(...)` | `studio.hardware-result-pack.v1` | Packs are measured `bounded-support` hardware-unmitigated evidence with SHA-256 derivation edges for each committed artefact. |
 | Differentiable baseline scorecard | `build_scorecard_bundle()` | `studio.differentiation-evidence.v1` | Eleven external-baseline category rows ride in `cases[]` with verbatim statuses; the bundle is curated `bounded-model` and the emitter can never upgrade a category. A scorecard that fails its own validation is refused. |
 | Transform-algebra support matrix | `build_support_matrix_bundle()` | `studio.differentiation-evidence.v1` | Thirteen generated support rows ride in `cases[]` with verbatim statuses and measured residuals as case errors; blocked rows stay explicit fail-closed boundaries. The bundle is measured `bounded-model` numerical-model evidence, and an audit that did not pass is never federated. |
+| Effective-coupling invariant | `build_coupling_invariant_bundle()` | `studio.coupling-invariant.v1` | `knm.kuramoto.effective-coupling` source inventory from Hamiltonian learning and differentiable coupling learning with parameter-shift verification. `sync_uncertainty` and `zne_uncertainty` are mandatory UQ sources; the bundle is not a DLA parity claim. |
 
 The ledger builder loads:
 
