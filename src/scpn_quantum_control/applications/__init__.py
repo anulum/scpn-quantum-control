@@ -30,6 +30,13 @@ from .fmo_benchmark import FMOBenchmarkResult, fmo_benchmark, fmo_coupling_matri
 from .iter_benchmark import ITERBenchmarkResult, iter_benchmark
 from .josephson_array import JosephsonBenchmarkResult, josephson_benchmark
 from .power_grid import PowerGridBenchmarkResult, power_grid_benchmark
+from .qrc_baseline import (
+    ClassicalESNReadoutResult,
+    QRCBaselineComparison,
+    classical_esn_feature_matrix,
+    classical_esn_ridge_regression,
+    compare_quantum_reservoir_to_esn,
+)
 from .quantum_evs import QuantumEVSResult, quantum_evs_enhance
 from .quantum_kernel import QuantumKernelResult, compute_kernel_matrix
 from .quantum_reservoir import ReservoirResult, reservoir_features
@@ -39,8 +46,12 @@ __all__ = [
     "ApplicationPluginBenchmark",
     "ApplicationPluginRegistry",
     "artifact_to_kuramoto_problem",
+    "ClassicalESNReadoutResult",
+    "classical_esn_feature_matrix",
+    "classical_esn_ridge_regression",
     "compile_application_problem",
     "CrossDomainResult",
+    "compare_quantum_reservoir_to_esn",
     "discover_application_plugins",
     "EEGBenchmarkResult",
     "eeg_benchmark",
@@ -63,6 +74,7 @@ __all__ = [
     "quantum_evs_enhance",
     "QuantumKernelResult",
     "compute_kernel_matrix",
+    "QRCBaselineComparison",
     "ReservoirResult",
     "reservoir_features",
     "run_application_benchmark_suite",

@@ -121,16 +121,16 @@ claims only when the evidence exists.
 |---|---:|
 | Package version | 0.10.0 |
 | Public API exports | 828 |
-| Python source modules | 486 |
-| Public Python classes | 930 |
+| Python source modules | 487 |
+| Public Python classes | 932 |
 | Domain package families | 31 |
 | Rust PyO3 function bindings | 177 |
 | Rust source modules | 46 |
 | Notebook files | 100 |
 | Example files | 37 |
 | Optional extras | 43 |
-| Python test files | 857 |
-| Public documentation pages | 262 |
+| Python test files | 858 |
+| Public documentation pages | 263 |
 | GitHub Actions workflows | 23 |
 
 Evidence boundary: this snapshot is a static inventory. Performance, coverage, hardware, and scientific-fidelity claims require their own committed evidence artefacts.
@@ -667,7 +667,7 @@ graph TD
     subgraph "Applications"
         control["control/ (11)\nQAOA-MPC, residual VQLS-GS proxy\nPetri nets, ITER"]
         qsnn["qsnn/ (7)\nQuantum spiking\nneural networks"]
-        apps["applications/ (13)\nFMO, power grid\nJosephson, EEG, ITER"]
+        apps["applications/ (14)\nFMO, power grid\nJosephson, EEG, ITER"]
     end
 
     subgraph "Hardware & QEC"
@@ -702,7 +702,7 @@ graph TD
 | `analysis` | 58 | Synchronisation probes: witnesses, QFI, PH, OTOC, Krylov, magic, BKT, DLA |
 | `hardware` | 63 | IBM Quantum runner, plugin backends registry, AsyncHardwareRunner, trapped-ion backend, GPU offload, circuit cutting, fast sparse, qubit mapper (DynQ), provenance |
 | `phase` | 29 | Time evolution: Trotter, VQE, ADAPT-VQE, VarQITE, AVQDS, QSVT, Floquet DTC, Lindblad |
-| `applications` | 13 | FMO photosynthesis, power grid, Josephson array, EEG, ITER, quantum EVS |
+| `applications` | 14 | FMO photosynthesis, power grid, Josephson array, EEG, ITER, quantum EVS, QRC+ESN baseline |
 | `bridge` | 13 | K_nm → Hamiltonian, cross-repo adapters (sc-neurocore, SSGF, orchestrator) |
 | `control` | 11 | QAOA-MPC, residual-certified VQLS Grad-Shafranov proxy, Petri nets, ITER disruption, topological optimiser |
 | `mitigation` | 12 | ZNE, PEC, dynamical decoupling, Z2 parity, CPDR, symmetry verification, GUESS, compound |
@@ -812,7 +812,7 @@ scpn_quantum_control/
 ├── hardware/       63 modules — IBM runner, backends, GPU, cutting, provenance
 ├── phase/          76 modules — time evolution + variational + Lindblad
 ├── bridge/         14 modules — K_nm → quantum objects + cross-repo
-├── applications/   13 modules — physical system benchmarks
+├── applications/   14 modules — physical system benchmarks
 ├── control/        14 modules — QAOA-MPC, residual VQLS-GS proxy, Petri, ITER, topological
 ├── mitigation/     12 modules — ZNE, PEC, DD, Z2, CPDR, symmetry
 ├── qec/            13 modules — error correction + biological surface code

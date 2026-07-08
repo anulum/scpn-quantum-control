@@ -872,9 +872,12 @@ achieves perfect phase classification on well-separated data.
 | Operation | System | Time | Output |
 |-----------|--------|------|--------|
 | `reservoir_ridge_regression(12 samples)` | 3 qubits | 33.9 ms | MSE=0.022 |
+| `compare_quantum_reservoir_to_esn(10 samples)` | 3 qubits, 9/9 matched features | 48.5 ms | QRC MSE=0.018606, ESN MSE=0.037680 |
 
 Feature matrix has non-trivial rank (expressive reservoir). Higher weight →
-more features. Ridge regression produces actionable predictions.
+more features. Ridge regression produces actionable predictions. The
+QRC-versus-ESN row is local non-isolated functional evidence from 2026-07-08,
+not an isolated-core production benchmark claim.
 
 ### Quantum Kernel
 

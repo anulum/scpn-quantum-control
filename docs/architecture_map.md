@@ -183,8 +183,9 @@ Each lane: purpose · INPUTS · OUTPUTS · processing model · backends · wirin
   `topology_correlation` only as a compatibility alias. They are honestly gated
   (`publication_safe=False`, `source_mode`).
 - **Real quantum-compute apps** (*functional, exact statevector*): `quantum_kernel` (Havlíček
-  QSVM), `quantum_reservoir` (Fujii–Nakajima), `eeg_classification` (structured-ansatz VQE),
-  `q_disruption` (PQC + parameter-shift).
+  QSVM), `quantum_reservoir` plus `qrc_baseline` (Fujii–Nakajima QRC with matched classical
+  ESN comparator), `eeg_classification` (structured-ansatz VQE), `q_disruption`
+  (PQC + parameter-shift).
 
 ### 4.8 Control — `control/`
 - QAOA-MPC, residual VQLS-GS proxy, Petri-net supervisor, ITER disruption, realtime/closed-loop.

@@ -2065,6 +2065,30 @@ eeg_quantum_kernel(state_a, state_b) -> float
 ```
 EEG state classification pipeline using Phase Locking Value (PLV) matrices and Structured VQE.
 
+### `quantum_reservoir`
+
+```python
+reservoir_features(x, K, omega=None, t=1.0, max_weight=2) -> ReservoirResult
+reservoir_feature_matrix(X, K, omega=None, t=1.0, max_weight=2) -> np.ndarray
+reservoir_ridge_regression(X_train, y_train, K, omega=None, alpha=1.0, max_weight=2)
+```
+
+Small-system Kuramoto-XY QRC feature map with ridge readout. See
+[Quantum Reservoir Computing](quantum_reservoir.md) for the named capability
+boundary.
+
+### `qrc_baseline`
+
+```python
+classical_esn_feature_matrix(X, reservoir_size, spectral_radius=0.9, input_scale=0.5, leak_rate=1.0, seed=0) -> np.ndarray
+classical_esn_ridge_regression(X_train, y_train, reservoir_size, alpha=1.0, ...) -> ClassicalESNReadoutResult
+compare_quantum_reservoir_to_esn(X_train, y_train, K, omega=None, alpha=1.0, max_weight=1, ...) -> QRCBaselineComparison
+```
+
+Deterministic classical ESN baseline and matched-feature QRC comparison. The
+comparison reports bounded training-set MSE only; it is not a hardware
+advantage claim.
+
 ## mitigation
 
 ### `compound_mitigation`

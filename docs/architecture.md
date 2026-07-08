@@ -97,7 +97,7 @@ graph TD
     mitigation["mitigation/ (13)\nError mitigation"]
     qec["qec/ (13)\nError correction"]
     gauge["gauge/ (6)\nGauge theory"]
-    apps["applications/ (13)\nBenchmarks"]
+    apps["applications/ (14)\nBenchmarks"]
     crypto["crypto/ (9)\nQKD + PQC"]
     benchmarks["benchmarks/ (19)\nPerformance"]
     ssgf["ssgf/ (4)\nGeometry"]
@@ -342,6 +342,7 @@ applications/                              ← Physical system benchmarks
 ├── iter_benchmark.py                          8 MHD mode coupling
 ├── cross_domain.py                            5-system benchmark summary
 ├── quantum_kernel.py                          K_nm-informed classification
+├── qrc_baseline.py                            Matched classical ESN baseline
 ├── quantum_reservoir.py                       Pauli feature extraction
 ├── disruption_classifier.py                   Plasma stability classification
 └── quantum_evs.py                             Quantum-enhanced EVS for CCW

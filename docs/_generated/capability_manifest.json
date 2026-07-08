@@ -8,12 +8,12 @@
     "notebook_files": 100,
     "optional_extras": 43,
     "public_api_exports": 828,
-    "public_documentation_pages": 262,
-    "python_model_classes": 930,
-    "python_model_source_modules": 486,
+    "public_documentation_pages": 263,
+    "python_model_classes": 932,
+    "python_model_source_modules": 487,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 46,
-    "test_files": 857
+    "test_files": 858
   },
   "documentation": {
     "examples": [
@@ -383,6 +383,7 @@
       "docs/quantum_classical_cosimulation.md",
       "docs/quantum_gradients.md",
       "docs/quantum_graph_neural_network.md",
+      "docs/quantum_reservoir.md",
       "docs/quantum_sensing.md",
       "docs/quantum_thermo.md",
       "docs/quickstart.md",
@@ -454,7 +455,7 @@
       {
         "package": "applications",
         "path": "src/scpn_quantum_control/applications",
-        "python_modules": 13
+        "python_modules": 14
       },
       {
         "package": "benchmark_harness",
@@ -918,6 +919,10 @@
       {
         "name": "ClassicalBaselineRun",
         "path": "src/scpn_quantum_control/benchmarks/classical_baselines.py"
+      },
+      {
+        "name": "ClassicalESNReadoutResult",
+        "path": "src/scpn_quantum_control/applications/qrc_baseline.py"
       },
       {
         "name": "ClassicalLeakagePoint",
@@ -3460,6 +3465,10 @@
         "path": "src/scpn_quantum_control/qpu_compute_types.py"
       },
       {
+        "name": "QRCBaselineComparison",
+        "path": "src/scpn_quantum_control/applications/qrc_baseline.py"
+      },
+      {
         "name": "QRCPhaseResult",
         "path": "src/scpn_quantum_control/analysis/qrc_phase_detector.py"
       },
@@ -4397,6 +4406,7 @@
       "src/scpn_quantum_control/applications/iter_benchmark.py",
       "src/scpn_quantum_control/applications/josephson_array.py",
       "src/scpn_quantum_control/applications/power_grid.py",
+      "src/scpn_quantum_control/applications/qrc_baseline.py",
       "src/scpn_quantum_control/applications/quantum_evs.py",
       "src/scpn_quantum_control/applications/quantum_kernel.py",
       "src/scpn_quantum_control/applications/quantum_reservoir.py",
@@ -6596,6 +6606,7 @@
       "tests/test_qpu_compute_types_guards.py",
       "tests/test_qpu_data_artifact.py",
       "tests/test_qpu_data_artifact_branches.py",
+      "tests/test_qrc_baseline.py",
       "tests/test_qrc_phase_detector.py",
       "tests/test_qrng_stream.py",
       "tests/test_qsnn_native_parameter_shift.py",
