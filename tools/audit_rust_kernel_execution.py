@@ -16,6 +16,8 @@ from collections.abc import Sequence
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
+import tomllib
+
 SCHEMA = "scpn-rust-kernel-execution-audit/v1"
 CLAIM_BOUNDARY = (
     "Static Rust source inventory only: records PyO3 kernel execution-mode "
@@ -99,6 +101,34 @@ def registered_pyfunctions(crate_root: Path) -> set[str]:
     return {match.group("path").rsplit("::", 1)[-1] for match in WRAP_RE.finditer(text)}
 
 
+def pyo3_member_crate_roots(crate_root: Path) -> tuple[Path, ...]:
+    """Return in-tree path-dependency crates compiled with the ``pyo3`` feature.
+
+    After the program-AD replay extraction the ``scpn_quantum_engine`` PyO3 surface
+    is compiled from its own ``src/`` plus every in-tree path dependency it enables
+    the ``pyo3`` feature on. Those member crates ship into the same Python extension,
+    so the audit scans them alongside the primary crate rather than undercounting the
+    relocated kernels. Only path dependencies nested under the crate root are returned,
+    keeping every scanned file addressable relative to the reported crate.
+    """
+    manifest = crate_root / "Cargo.toml"
+    if not manifest.exists():
+        return ()
+    base = crate_root.resolve()
+    dependencies = tomllib.loads(manifest.read_text(encoding="utf-8")).get("dependencies", {})
+    roots: list[Path] = []
+    for spec in dependencies.values():
+        if not isinstance(spec, dict):
+            continue
+        path = spec.get("path")
+        if not path or "pyo3" not in spec.get("features", ()):
+            continue
+        member = (base / path).resolve()
+        if base in member.parents and member not in roots:
+            roots.append(member)
+    return tuple(roots)
+
+
 def _relative(crate_root: Path, path: Path) -> str:
     return path.relative_to(crate_root).as_posix()
 
@@ -161,13 +191,17 @@ def _scan_file(
 
 
 def scan_crate(crate_root: Path) -> RustKernelExecutionAudit:
-    """Scan one Rust crate for static SIMD/threading evidence."""
+    """Scan a Rust crate and its in-tree PyO3 member crates for SIMD/threading evidence."""
     reported_root = crate_root.as_posix()
     resolved_root = crate_root.resolve()
-    registrations = registered_pyfunctions(resolved_root)
+    scan_roots = (resolved_root, *pyo3_member_crate_roots(resolved_root))
+    registrations: set[str] = set()
+    for root in scan_roots:
+        registrations |= registered_pyfunctions(root)
     records: list[RustKernelExecutionRecord] = []
-    for path in rust_files(resolved_root):
-        records.extend(_scan_file(resolved_root, path, registrations))
+    for root in scan_roots:
+        for path in rust_files(root):
+            records.extend(_scan_file(resolved_root, path, registrations))
     records.sort(key=lambda item: (item.file, item.line, item.symbol))
     unregistered = [record for record in records if not record.registered]
     status = "fail" if unregistered else "pass"

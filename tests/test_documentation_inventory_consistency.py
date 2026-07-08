@@ -23,7 +23,16 @@ from pathlib import Path
 import pytest
 
 _REPO_ROOT = Path(__file__).resolve().parents[1]
-_RUST_SRC = _REPO_ROOT / "scpn_quantum_engine" / "src"
+# the engine's PyO3 surface compiles from its own src/ plus the in-tree program-AD replay
+# member crate (a pyo3-featured path dependency), so both source trees count towards the
+# documented binding and source-file totals
+_RUST_SRC_ROOTS = (
+    _REPO_ROOT / "scpn_quantum_engine" / "src",
+    _REPO_ROOT / "scpn_quantum_engine" / "program_ad_replay" / "src",
+)
+# pyfunction attributes sit at the start of a line; matching anchored rather than as a bare
+# substring ignores prose mentions such as the doc comment in the member crate's lib.rs
+_PYFUNCTION_ATTR = re.compile(r"^\s*#\s*\[\s*pyfunction\b", re.MULTILINE)
 _PACKAGE_ROOT = _REPO_ROOT / "src" / "scpn_quantum_control"
 _ARCHITECTURE = _REPO_ROOT / "docs" / "architecture.md"
 
@@ -59,13 +68,14 @@ _CRYPTO_TREE_FILE = re.compile(r"[├└]──\s+([a-z0-9_]+\.py)")
 
 def _actual_pyfunction_count() -> int:
     return sum(
-        len(re.findall(r"#\[pyfunction\]", path.read_text(encoding="utf-8")))
-        for path in _RUST_SRC.rglob("*.rs")
+        len(_PYFUNCTION_ATTR.findall(path.read_text(encoding="utf-8")))
+        for root in _RUST_SRC_ROOTS
+        for path in root.rglob("*.rs")
     )
 
 
 def _actual_rust_source_file_count() -> int:
-    return sum(1 for _ in _RUST_SRC.rglob("*.rs"))
+    return sum(1 for root in _RUST_SRC_ROOTS for _ in root.rglob("*.rs"))
 
 
 def _actual_module_count(package: str) -> int:

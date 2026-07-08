@@ -36,6 +36,15 @@ _audit_rust_kernel_execution = _load_tool_module(
 scan_crate = _audit_rust_kernel_execution.scan_crate
 audit_to_json = _audit_rust_kernel_execution.audit_to_json
 main = _audit_rust_kernel_execution.main
+pyo3_member_crate_roots = _audit_rust_kernel_execution.pyo3_member_crate_roots
+
+
+def _write_crate_with_manifest(root: Path, manifest: str, lib_rs: str = "") -> Path:
+    src = root / "src"
+    src.mkdir(parents=True, exist_ok=True)
+    (root / "Cargo.toml").write_text(manifest, encoding="utf-8")
+    (src / "lib.rs").write_text(lib_rs, encoding="utf-8")
+    return root
 
 
 def _write_rust_fixture(tmp_path: Path, lib_rs: str, module_rs: str) -> Path:
@@ -171,8 +180,10 @@ def test_live_rust_crate_records_threading_without_simd_promotion() -> None:
     audit = scan_crate(crate)
 
     assert audit.status == "pass"
-    # Live crate count includes the Program AD registry metadata mirror PyO3 export and the polyglot
-    # forward-integrator kernels (adaptive DOPRI, inertial, symplectic-inertial, time-delayed, noisy).
+    # The 177 count spans the engine's own src/ plus its in-tree program-AD replay member crate:
+    # after that extraction four PyO3 wrappers (effect-IR forward, value-and-gradient, metadata
+    # summary, and the registry metadata mirror) live in program_ad_replay/src and are audited as
+    # part of the same shipped Python extension alongside the polyglot forward-integrator kernels.
     assert audit.pyfunction_count == 177
     assert audit.rayon_threaded_count > 0
     assert audit.explicit_simd_count == 0
@@ -183,3 +194,105 @@ def test_live_rust_crate_records_threading_without_simd_promotion() -> None:
         and record.execution_mode == "rayon_threaded"
         for record in audit.kernel_records
     )
+    # the relocated program-AD wrappers are audited under the member crate's real path
+    assert any(record.file.startswith("program_ad_replay/src/") for record in audit.kernel_records)
+
+
+def test_pyo3_member_crate_roots_empty_without_manifest(tmp_path: Path) -> None:
+    (tmp_path / "src").mkdir()
+    assert pyo3_member_crate_roots(tmp_path) == ()
+
+
+def test_pyo3_member_crate_roots_finds_nested_pyo3_path_dependency(tmp_path: Path) -> None:
+    crate = tmp_path / "engine"
+    member = crate / "member"
+    _write_crate_with_manifest(member, '[package]\nname = "member"\n')
+    _write_crate_with_manifest(
+        crate,
+        '[dependencies]\nmember = { path = "member", features = ["pyo3"] }\n',
+    )
+
+    assert pyo3_member_crate_roots(crate) == (member.resolve(),)
+
+
+def test_pyo3_member_crate_roots_skips_string_pathless_featureless_and_external(
+    tmp_path: Path,
+) -> None:
+    crate = tmp_path / "engine"
+    outside = tmp_path / "outside"
+    _write_crate_with_manifest(outside, '[package]\nname = "outside"\n')
+    plain = crate / "plain"
+    _write_crate_with_manifest(plain, '[package]\nname = "plain"\n')
+    _write_crate_with_manifest(
+        crate,
+        "[dependencies]\n"
+        'pyo3 = "0.29"\n'  # string spec, not a table
+        'versioned = { version = "1.0", features = ["pyo3"] }\n'  # no path
+        'plain = { path = "plain" }\n'  # path, no pyo3 feature
+        'plain_other = { path = "plain", features = ["serde"] }\n'  # path, wrong feature
+        'outside = { path = "../outside", features = ["pyo3"] }\n',  # pyo3 but not nested
+    )
+
+    assert pyo3_member_crate_roots(crate) == ()
+
+
+def test_pyo3_member_crate_roots_dedupes_repeated_members(tmp_path: Path) -> None:
+    crate = tmp_path / "engine"
+    member = crate / "member"
+    _write_crate_with_manifest(member, '[package]\nname = "member"\n')
+    _write_crate_with_manifest(
+        crate,
+        "[dependencies]\n"
+        'member = { path = "member", features = ["pyo3"] }\n'
+        'member_alias = { path = "member", features = ["pyo3"] }\n',
+    )
+
+    assert pyo3_member_crate_roots(crate) == (member.resolve(),)
+
+
+def test_scan_crate_includes_nested_pyo3_member_crate(tmp_path: Path) -> None:
+    engine = tmp_path / "engine"
+    member = engine / "member"
+    _write_crate_with_manifest(
+        member,
+        '[package]\nname = "member"\n',
+        lib_rs="\n".join(
+            [
+                "mod kernel;",
+                "fn init(m: &Bound<'_, PyModule>) -> PyResult<()> {",
+                "    m.add_function(wrap_pyfunction!(kernel::member_kernel, m)?)?;",
+                "    Ok(())",
+                "}",
+            ]
+        ),
+    )
+    (member / "src" / "kernel.rs").write_text(
+        "#[pyfunction]\npub fn member_kernel() -> PyResult<f64> { Ok(2.0) }\n",
+        encoding="utf-8",
+    )
+    _write_crate_with_manifest(
+        engine,
+        '[dependencies]\nmember = { path = "member", features = ["pyo3"] }\n',
+        lib_rs="\n".join(
+            [
+                "mod module;",
+                "fn init(m: &Bound<'_, PyModule>) -> PyResult<()> {",
+                "    m.add_function(wrap_pyfunction!(module::engine_kernel, m)?)?;",
+                "    Ok(())",
+                "}",
+            ]
+        ),
+    )
+    (engine / "src" / "module.rs").write_text(
+        "#[pyfunction]\npub fn engine_kernel() -> PyResult<f64> { Ok(1.0) }\n",
+        encoding="utf-8",
+    )
+
+    audit = scan_crate(engine)
+
+    assert audit.status == "pass"
+    assert audit.pyfunction_count == 2
+    assert {record.file for record in audit.kernel_records} == {
+        "src/module.rs",
+        "member/src/kernel.rs",
+    }
