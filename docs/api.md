@@ -2760,10 +2760,17 @@ two-dimensional matrix (batch campaign).
 ### `control_qec.ControlQEC`
 
 ```python
-ControlQEC(distance=3)
-    .protect_signal(circuit) -> QuantumCircuit
-    .decode_syndrome(syndrome) -> np.ndarray  # correction
+ControlQEC(distance=3, knm_weights=None)
+    .simulate_errors(p_error, rng=None) -> tuple[np.ndarray, np.ndarray]
+    .get_syndrome(err_x, err_z) -> tuple[np.ndarray, np.ndarray]
+    .decode_and_correct(err_x, err_z) -> bool
 ```
+
+Toric surface-code wrapper using the NetworkX MWPM decoder from
+`control_qec.MWPMDecoder`. It supports optional K_nm-weighted matching and
+rejects uncleared syndromes or non-trivial toric homology cycles. See the
+[QEC decoder boundary](qec_decoder_boundary.md) for the shipped decoder scope
+and explicit non-claims.
 
 ## config — unified runtime configuration
 

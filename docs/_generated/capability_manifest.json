@@ -8,12 +8,12 @@
     "notebook_files": 100,
     "optional_extras": 43,
     "public_api_exports": 828,
-    "public_documentation_pages": 261,
+    "public_documentation_pages": 262,
     "python_model_classes": 930,
     "python_model_source_modules": 486,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 46,
-    "test_files": 856
+    "test_files": 857
   },
   "documentation": {
     "examples": [
@@ -375,6 +375,7 @@
       "docs/publication/rust_vqe_methods_submission_checklist_2026-05-06.md",
       "docs/publication/scipy_2026_cfp_readiness_2026-05-06.md",
       "docs/publication/software_heritage_swhid_2026-05-06.md",
+      "docs/qec_decoder_boundary.md",
       "docs/qpu_compute_unit.md",
       "docs/qpu_data_artifact.md",
       "docs/qpu_provider_readiness.md",
@@ -6576,6 +6577,7 @@
       "tests/test_qaoa_pulsed_cost_branches.py",
       "tests/test_qasm_export.py",
       "tests/test_qcvv.py",
+      "tests/test_qec_decoder_boundary_docs.py",
       "tests/test_qec_properties.py",
       "tests/test_qec_validators_fuzz.py",
       "tests/test_qfi.py",

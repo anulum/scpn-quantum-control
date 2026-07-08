@@ -82,6 +82,11 @@ Each level uses the rotated surface code with:
 - **Decoder:** Minimum-weight perfect matching (MWPM)
 - **Correctable errors:** up to $\lfloor(d-1)/2\rfloor$ per round
 
+The shipped decoder scope is documented in the
+[QEC decoder boundary](qec_decoder_boundary.md): this repository exports MWPM
+decoders for toric and biological graph surfaces, not a union-find decoder or
+a provider-native QEC runtime.
+
 The qubit overhead per level for $n_\text{osc}$ logical qubits:
 
 | $d$ | Qubits/logical | 4 oscillators | 16 oscillators |

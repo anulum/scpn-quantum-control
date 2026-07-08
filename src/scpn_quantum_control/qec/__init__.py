@@ -5,8 +5,12 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Quantum Error Correction
-"""Quantum error correction: surface codes, MWPM decoding, error budgets,
-fault-tolerant UPDE, and repetition code logical qubits.
+"""Quantum error correction analysis surfaces.
+
+The package exports toric-code and biological graph MWPM decoders, DLA-protected
+logical-memory prototypes, surface-code resource estimates, error budgets,
+fault-tolerant UPDE scaffolds, and repetition-code logical qubits. It does not
+export a union-find decoder.
 """
 
 from .biological_diagnostics import (

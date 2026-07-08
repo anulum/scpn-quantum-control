@@ -4,6 +4,10 @@ The DLA-protected logical synchronisation module builds a finite
 repetition-code memory sector inside the global parity decomposition of the
 heterogeneous Kuramoto-XY Hamiltonian.
 
+For surface-code decoder scope and non-claims around union-find or
+rough-boundary graph decoding, see the
+[QEC decoder boundary](qec_decoder_boundary.md).
+
 For `n_logical` logical oscillators and odd repetition distance `d`, each
 logical oscillator occupies a contiguous block of `d` physical qubits:
 

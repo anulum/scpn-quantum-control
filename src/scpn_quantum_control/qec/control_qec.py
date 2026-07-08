@@ -5,10 +5,11 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Control Qec
-"""QEC for quantum control signals using toric surface code + MWPM decoder.
+"""QEC for quantum control signals using a toric surface code and MWPM decoder.
 
-Extends the scpn-quantum MWPM decoder with physics-aware weighting:
-Knm graph distance instead of lattice distance for edge weights.
+The decoder uses NetworkX minimum-weight perfect matching on a toric lattice
+with optional K_nm weighting. It does not implement union-find decoding or a
+hardware-level syndrome-extraction controller.
 """
 
 from __future__ import annotations

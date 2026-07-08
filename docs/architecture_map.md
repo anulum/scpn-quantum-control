@@ -248,6 +248,9 @@ for an eventual multi-provider broker but is **not yet wired** to a producer/con
   tensor-network evolution (nearest-neighbour only); analysis (small-N exact).
 - **Feasibility-only / no-submit (CLOSED claims)**: pulse-level optimal control, analog/neutral-atom
   execution, real-time intra-shot feedback, FPGA/HLS deployment, NV-magnetometry hardware.
+- **QEC decoder scope**: MWPM decoder surfaces are present for toric and biological graph QEC;
+  union-find decoding, rough-boundary biological graph absorption, and provider-native QEC runtime
+  are not claimed. See `docs/qec_decoder_boundary.md`.
 - **Not present**: lab-control instrumentation; broad quantum advantage (classical solvers are
   faster and more accurate at the reachable sizes n ≤ 16).
 - **Domain applications**: mostly topology-similarity proxies, not model reproductions — do not
