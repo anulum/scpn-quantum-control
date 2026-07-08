@@ -9,7 +9,7 @@
     "optional_extras": 43,
     "public_api_exports": 820,
     "public_documentation_pages": 260,
-    "python_model_classes": 925,
+    "python_model_classes": 926,
     "python_model_source_modules": 482,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 64,
@@ -1192,6 +1192,10 @@
       {
         "name": "DatasetIntegrityError",
         "path": "src/scpn_quantum_control/dla_parity/dataset.py"
+      },
+      {
+        "name": "DecodedXYCompileInput",
+        "path": "src/scpn_quantum_control/studio/recompute_kernel.py"
       },
       {
         "name": "DegeneracyMode",

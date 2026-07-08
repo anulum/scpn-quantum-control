@@ -75,6 +75,59 @@ def canonical_xy_compile_input_bytes(
     return bytes(payload)
 
 
+@dataclass(frozen=True, eq=False)
+class DecodedXYCompileInput:
+    """Structured view of a decoded canonical XY-compile input payload.
+
+    This is the inverse image of :func:`canonical_xy_compile_input_bytes`: it
+    exposes the coupling matrix, natural frequencies, and compile parameters a
+    committed recompute unit was built from, so a caller can bind the frozen
+    input back to its physical source by tolerance rather than by a bit-exact
+    rebuild (``np.exp`` in the source matrix is not reproducible to the last
+    ULP across platforms).
+    """
+
+    K_nm: NDArray[np.float64]
+    omega: NDArray[np.float64]
+    time: float
+    trotter_steps: int
+    trotter_order: int
+
+
+def decode_xy_compile_input_bytes(input_bytes: bytes) -> DecodedXYCompileInput:
+    """Return the structured fields packed into a canonical XY-compile input.
+
+    Applies the same version and length validation as the reference digest so a
+    malformed payload fails closed rather than decoding to silent garbage.
+    """
+    if len(input_bytes) < 24:
+        raise ValueError("compile input is too short")
+    version, n_qubits = struct.unpack_from("<II", input_bytes, 0)
+    if version != XY_COMPILE_INPUT_VERSION:
+        raise ValueError("compile input version mismatch")
+    time = struct.unpack_from("<d", input_bytes, 8)[0]
+    trotter_steps, trotter_order = struct.unpack_from("<II", input_bytes, 16)
+    if n_qubits < 1:
+        raise ValueError("n_qubits must be >= 1")
+    if trotter_steps < 1 or trotter_order < 1:
+        raise ValueError("trotter steps/order must be >= 1")
+    n = int(n_qubits)
+    expected_len = 24 + ((n * n) + n) * 8
+    if len(input_bytes) != expected_len:
+        raise ValueError("compile input length mismatch")
+    offset = 24
+    K_values = struct.unpack_from(f"<{n * n}d", input_bytes, offset)
+    offset += n * n * 8
+    omega_values = struct.unpack_from(f"<{n}d", input_bytes, offset)
+    return DecodedXYCompileInput(
+        K_nm=np.asarray(K_values, dtype=np.float64).reshape(n, n),
+        omega=np.asarray(omega_values, dtype=np.float64),
+        time=float(time),
+        trotter_steps=int(trotter_steps),
+        trotter_order=int(trotter_order),
+    )
+
+
 def xy_compile_digest_python(input_bytes: bytes) -> str:
     """Return the Python reference digest for the WASM compile verifier input."""
     if len(input_bytes) < 24:
@@ -211,9 +264,11 @@ __all__ = [
     "XY_COMPILE_RECOMPUTE_SCHEMA",
     "XY_COMPILE_WASM_CRATE",
     "XY_COMPILE_WASM_EXPORT",
+    "DecodedXYCompileInput",
     "XYCompileRecomputeUnit",
     "build_xy_compile_recompute_unit",
     "canonical_xy_compile_input_bytes",
+    "decode_xy_compile_input_bytes",
     "verify_xy_compile_recompute_unit",
     "xy_compile_digest_python",
 ]

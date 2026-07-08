@@ -28,13 +28,27 @@ import sys
 from pathlib import Path
 from typing import Final
 
+import numpy as np
+
 from ..bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
 from ..differentiable_claim_ledger import REPO_ROOT
 from .recompute_kernel import (
     XY_COMPILE_RECOMPUTE_SCHEMA,
+    DecodedXYCompileInput,
     build_xy_compile_recompute_unit,
+    canonical_xy_compile_input_bytes,
+    decode_xy_compile_input_bytes,
     verify_xy_compile_recompute_unit,
 )
+
+# Tolerance for binding a committed unit's frozen inputs back to Paper-27.
+# ``build_knm_paper27`` evaluates ``np.exp``, whose last-ULP result is not
+# reproducible across platforms/BLAS builds, so the committed digest can never
+# be re-derived bit-exactly off-host. The physical drift is ~1e-16 relative;
+# this tolerance is enormously wider than that noise yet far tighter than any
+# real tampering (a swapped matrix differs by orders of magnitude).
+_PAPER27_BIND_RTOL: Final[float] = 1e-9
+_PAPER27_BIND_ATOL: Final[float] = 1e-12
 
 XY_COMPILE_RECOMPUTE_ARTIFACT_SCHEMA: Final[str] = "scpn_qc_studio_xy_compile_recompute_v1"
 """Schema identifier stamped into the committed recompute artefact wrapper."""
@@ -64,6 +78,27 @@ _REGENERATED_BY: Final[str] = (
 )
 
 
+def _expected_artifact_metadata() -> dict[str, object]:
+    """Return the committed artefact's fixed wrapper metadata.
+
+    Every value is a module constant, so this is reproducible on any host and
+    is what both the writer and the validator agree on.
+    """
+    return {
+        "schema": XY_COMPILE_RECOMPUTE_ARTIFACT_SCHEMA,
+        "artifact_id": XY_COMPILE_RECOMPUTE_ARTIFACT_ID,
+        "generated_by": _REGENERATED_BY,
+        "claim_boundary": XY_COMPILE_RECOMPUTE_CLAIM_BOUNDARY,
+        "compile_parameters": {
+            "matrix_source": "paper27",
+            "lattice": XY_COMPILE_RECOMPUTE_LATTICE,
+            "time": XY_COMPILE_RECOMPUTE_TIME,
+            "trotter_steps": XY_COMPILE_RECOMPUTE_TROTTER_STEPS,
+            "trotter_order": XY_COMPILE_RECOMPUTE_TROTTER_ORDER,
+        },
+    }
+
+
 def build_xy_compile_recompute_artifact() -> dict[str, object]:
     """Build the committed-artefact payload for the Paper-27 recompute unit.
 
@@ -89,24 +124,64 @@ def build_xy_compile_recompute_artifact() -> dict[str, object]:
     verdict = verify_xy_compile_recompute_unit(unit)
     if verdict.value != "match":
         raise ValueError(f"recompute unit failed its own reference verification: {verdict.value}")
-    return {
-        "schema": XY_COMPILE_RECOMPUTE_ARTIFACT_SCHEMA,
-        "artifact_id": XY_COMPILE_RECOMPUTE_ARTIFACT_ID,
-        "generated_by": _REGENERATED_BY,
-        "claim_boundary": XY_COMPILE_RECOMPUTE_CLAIM_BOUNDARY,
-        "compile_parameters": {
-            "matrix_source": "paper27",
-            "lattice": XY_COMPILE_RECOMPUTE_LATTICE,
-            "time": XY_COMPILE_RECOMPUTE_TIME,
-            "trotter_steps": XY_COMPILE_RECOMPUTE_TROTTER_STEPS,
-            "trotter_order": XY_COMPILE_RECOMPUTE_TROTTER_ORDER,
-        },
-        "unit": unit.to_dict(),
-    }
+    return {**_expected_artifact_metadata(), "unit": unit.to_dict()}
+
+
+def _reference_decoded_paper27() -> DecodedXYCompileInput:
+    """Decode the canonical Paper-27 input through the exact packing pipeline.
+
+    Building the reference the same way the committed unit was built applies
+    the identical input normalisation (self-coupling zeroing, symmetry) so the
+    tolerance comparison sees only the ``np.exp`` last-ULP drift, never a
+    structural packing difference.
+    """
+    return decode_xy_compile_input_bytes(
+        canonical_xy_compile_input_bytes(
+            build_knm_paper27(L=XY_COMPILE_RECOMPUTE_LATTICE),
+            OMEGA_N_16,
+            time=XY_COMPILE_RECOMPUTE_TIME,
+            trotter_steps=XY_COMPILE_RECOMPUTE_TROTTER_STEPS,
+            trotter_order=XY_COMPILE_RECOMPUTE_TROTTER_ORDER,
+        )
+    )
+
+
+def _decoded_binds_to_paper27(decoded: DecodedXYCompileInput) -> bool:
+    """Return whether decoded inputs match Paper-27 within the bind tolerance.
+
+    Binds by tolerance, not equality: the source matrix is built with
+    ``np.exp`` and is therefore not bit-reproducible across platforms, but the
+    physical drift is far below :data:`_PAPER27_BIND_ATOL`.
+    """
+    if (
+        decoded.time != XY_COMPILE_RECOMPUTE_TIME
+        or decoded.trotter_steps != XY_COMPILE_RECOMPUTE_TROTTER_STEPS
+        or decoded.trotter_order != XY_COMPILE_RECOMPUTE_TROTTER_ORDER
+    ):
+        return False
+    reference = _reference_decoded_paper27()
+    if decoded.K_nm.shape != reference.K_nm.shape:
+        return False
+    return bool(
+        np.allclose(decoded.K_nm, reference.K_nm, rtol=_PAPER27_BIND_RTOL, atol=_PAPER27_BIND_ATOL)
+        and np.allclose(
+            decoded.omega, reference.omega, rtol=_PAPER27_BIND_RTOL, atol=_PAPER27_BIND_ATOL
+        )
+    )
 
 
 def validate_xy_compile_recompute_artifact(payload: dict[str, object]) -> bool:
-    """Return whether a committed payload matches a fresh regeneration.
+    """Return whether a committed payload is a current, Paper-27-bound unit.
+
+    The check is deliberately not a bit-exact rebuild comparison: the source
+    coupling matrix is evaluated with ``np.exp``, whose last-ULP result is not
+    reproducible across platforms, so a rebuild would flake off-host. Instead a
+    committed payload is current when
+
+    1. its wrapper metadata equals the fixed committed constants,
+    2. its embedded unit self-verifies bit-exactly against the Python
+       reference (the same guarantee the browser kernel replays), and
+    3. its frozen inputs decode to the Paper-27 matrix within tolerance.
 
     Parameters
     ----------
@@ -116,9 +191,23 @@ def validate_xy_compile_recompute_artifact(payload: dict[str, object]) -> bool:
     Returns
     -------
     bool
-        ``True`` when the payload is byte-identical to a fresh build.
+        ``True`` when all three conditions hold.
     """
-    return payload == build_xy_compile_recompute_artifact()
+    if any(payload.get(key) != value for key, value in _expected_artifact_metadata().items()):
+        return False
+    unit = payload.get("unit")
+    if not isinstance(unit, dict):
+        return False
+    try:
+        verdict = verify_xy_compile_recompute_unit(unit)
+    except (ValueError, TypeError):
+        return False
+    if verdict.value != "match":
+        return False
+    # A verified unit is guaranteed to carry valid hex input decodable by the
+    # same reference that just accepted it; bind those inputs back to Paper-27.
+    decoded = decode_xy_compile_input_bytes(bytes.fromhex(str(unit["input_hex"])))
+    return _decoded_binds_to_paper27(decoded)
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -152,15 +241,15 @@ def main(argv: list[str] | None = None) -> int:
         help="committed JSON artefact path",
     )
     args = parser.parse_args(argv)
-    payload = build_xy_compile_recompute_artifact()
-    serialised = json.dumps(payload, indent=2, sort_keys=True) + "\n"
     if args.check:
         committed = json.loads(args.json_path.read_text(encoding="utf-8"))
-        if committed == payload:
+        if validate_xy_compile_recompute_artifact(committed):
             print("xy-compile recompute artefact: current")
             return 0
-        print("xy-compile recompute artefact drifted from a fresh build", file=sys.stderr)
+        print("xy-compile recompute artefact drifted from the Paper-27 reference", file=sys.stderr)
         return 1
+    payload = build_xy_compile_recompute_artifact()
+    serialised = json.dumps(payload, indent=2, sort_keys=True) + "\n"
     if args.write:
         args.json_path.parent.mkdir(parents=True, exist_ok=True)
         args.json_path.write_text(serialised, encoding="utf-8")
