@@ -27,11 +27,12 @@ servers.
 
 ### `crypto/` — NOT CONTROLLED under current Note 3 / TSU / Publicly Available carve-outs
 
-Modules implement the **BB84** protocol (`bb84.py`), **entanglement-based
-QKD** (`entanglement_qkd.py`), **Bell-test verification** (`bell_test.py`),
-**QKD parameter estimation** (`qkd_parameter.py`), **topology-authenticated
-QKD** (`topology_qkd.py`), and **key-hierarchy derivation**
-(`key_hierarchy.py`).
+Modules implement **entanglement-based QKD** (`entanglement_qkd.py`),
+**topology-authenticated key establishment** (`topology_auth.py`),
+**K_nm-derived key material** (`knm_key.py`), **noise and percolation
+analysis** (`noise_analysis.py`, `percolation.py`), **hierarchical key
+derivation** (`hierarchical_keys.py`), and **post-quantum trigger-signing
+support** (`ml_dsa.py`, `ml_dsa_seal.py`, `pqc_trigger.py`).
 
 **Why not controlled:**
 
@@ -137,12 +138,15 @@ Maintainer:    Miroslav Šotek, ORCID 0009-0009-3560-0851
 Contact:       protoscience@anulum.li
 
 Crypto-relevant modules (subpackage `crypto/`):
-  - scpn_quantum_control.crypto.bb84
-  - scpn_quantum_control.crypto.bell_test
   - scpn_quantum_control.crypto.entanglement_qkd
-  - scpn_quantum_control.crypto.key_hierarchy
-  - scpn_quantum_control.crypto.qkd_parameter
-  - scpn_quantum_control.crypto.topology_qkd
+  - scpn_quantum_control.crypto.hierarchical_keys
+  - scpn_quantum_control.crypto.knm_key
+  - scpn_quantum_control.crypto.ml_dsa
+  - scpn_quantum_control.crypto.ml_dsa_seal
+  - scpn_quantum_control.crypto.noise_analysis
+  - scpn_quantum_control.crypto.percolation
+  - scpn_quantum_control.crypto.pqc_trigger
+  - scpn_quantum_control.crypto.topology_auth
 
 Each module is documented and intended for research and
 educational use only. No production key-management functionality

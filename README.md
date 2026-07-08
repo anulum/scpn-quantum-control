@@ -679,7 +679,7 @@ graph TD
 
     subgraph "Field Theory"
         gauge["gauge/ (5)\nWilson loops, vortices\nCFT, universality"]
-        crypto["crypto/ (6)\nBB84, Bell tests\ntopology-auth QKD"]
+        crypto["crypto/ (9)\nQKD + PQC\nML-DSA signing"]
     end
 
     bridge --> phase
@@ -709,7 +709,7 @@ graph TD
 | `mitigation` | 12 | ZNE, PEC, dynamical decoupling, Z2 parity, CPDR, symmetry verification, GUESS, compound |
 | `qec` | 13 | Toric code, repetition code UPDE, surface code, biological surface code, error budget, multi-scale, syndrome flow |
 | `benchmarks` | 7 | Classical vs quantum scaling, MPS baseline, GPU baseline, AppQSim |
-| `crypto` | 6 | BB84, Bell tests, topology-authenticated QKD, key hierarchy |
+| `crypto` | 9 | Entanglement QKD, topology authentication, ML-DSA signing, key hierarchy |
 | `identity` | 6 | VQE attractor, coherence budget, entanglement witness, fingerprint |
 | `qsnn` | 7 | Quantum spiking neural networks (LIF, trace STDP, synapses, dynamic coupling, training, neuromorphic bridge) |
 | `gauge` | 5 | U(1) Wilson loops, vortex detection, CFT, universality, confinement |
@@ -820,7 +820,7 @@ scpn_quantum_control/
 ├── benchmarks/     21 modules — performance baselines
 ├── identity/        6 modules — identity continuity analysis
 ├── qsnn/            7 modules — quantum spiking neural networks + neuromorphic bridge
-├── crypto/          8 modules — QKD, Bell tests, key hierarchy
+├── crypto/          9 modules — entanglement QKD, topology authentication, ML-DSA signing, key hierarchy
 ├── gauge/           5 modules — U(1) gauge theory probes
 ├── ssgf/            4 modules — SSGF quantum integration
 ├── tcbo/            1 module  — TCBO quantum observer

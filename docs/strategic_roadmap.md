@@ -72,7 +72,7 @@ scientific landscape moves.
 | S23 | Quantum reservoir computing on Kuramoto transients | medium-high | 5–6 weeks | qrc_phase_detector ✓, OTOC ✓, witnesses ✓ |
 | S24 | Quantum speed limits for collective sync | medium | 4–5 weeks | quantum_speed_limit ✓, DLA ✓, OTOC ✓ |
 | S25 | Topological defects + vortex dynamics on 2D quantum lattices | medium-high | 6–8 weeks | vortex_detector ✓, wilson_loop ✓, mapper 2D extension |
-| S26 | Entanglement-mediated long-range synchronisation | medium | 5–6 weeks | Bell pair prep ✓ (crypto/bell_test), Heron topology constraints |
+| S26 | Entanglement-mediated long-range synchronisation | medium | 5–6 weeks | Bell-pair example ✓ (`examples/07_crypto_bell_test.py`), Heron topology constraints |
 | S27 | Hardware-in-the-loop inverse design of oscillator networks | high | 6–8 weeks | S1 feedback ✓, Rust mapper ✓, VQE ✓ |
 | S28 | Sync-enhanced distributed quantum metrology | medium-high | 5–6 weeks | QFI ✓, witnesses ✓, sensor-array topology design |
 | S29 | Floquet Kuramoto time crystals + subharmonic sync | medium | 4–5 weeks | floquet_kuramoto ✓, Rust hypergeometric pulse ✓ |
@@ -1829,8 +1829,8 @@ the quantum-networks and the quantum-sync literatures.
 
 ### Prerequisites
 
-* Bell-pair preparation primitive — already in repo
-  (`crypto/bell_test`).
+* Bell-pair preparation example — already in repo
+  (`examples/07_crypto_bell_test.py`).
 * Heron r2 topology map (documented).
 
 ### Acceptance

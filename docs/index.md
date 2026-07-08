@@ -169,7 +169,7 @@ like* at the transition, *how hard it is* to prepare, *what its topology reveals
 | `control` | 11 | QAOA-MPC, residual-certified VQLS Grad-Shafranov proxy, Petri nets, ITER disruption, topological optimiser |
 | `identity` | 6 | VQE attractor, coherence budget, entanglement witness, fingerprint |
 | `qsnn` | 7 | Quantum spiking neural networks (LIF, STDP, synapses, dynamic coupling, training) |
-| `crypto` | 6 | BB84, Bell tests, topology-authenticated QKD, key hierarchy |
+| `crypto` | 9 | Entanglement QKD, topology authentication, ML-DSA signing, key hierarchy |
 | `gauge` | 5 | U(1) Wilson loops, vortex detection, CFT, universality, confinement |
 | `ssgf` | 4 | SSGF quantum integration |
 | `benchmarks` | 7 | Classical vs quantum scaling, MPS baseline, GPU baseline, AppQSim |

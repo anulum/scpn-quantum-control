@@ -280,7 +280,7 @@ that maps which pairs in the SCPN hierarchy are entangled.
 | QBER estimate | Quantum bit error rate from basis mismatch |
 | Correlator heatmap | $\langle X_iX_j \rangle + \langle Y_iY_j \rangle$ for all pairs |
 
-**Modules used:** `crypto.bell_test`, `crypto.topology_auth`, `crypto.qkd_bb84`
+**Modules used:** `crypto.entanglement_qkd`, `crypto.topology_auth`, `crypto.knm_key`
 
 ---
 

@@ -23,8 +23,9 @@ non-trivial way.
    GoatCounter key, PyPI Trusted Publisher identity. Exfiltration
    would enable forged submissions under the ANULUM identity.
 3. **End-user cryptographic output** — the output of every function
-   in `crypto/`. Includes BB84 session keys, Bell-test verification
-   bits, QKD-derived secrets. Downstream code that trusts these
+   in `crypto/`. Includes entanglement-QKD session material,
+   topology-authenticated key material, K_nm-derived secrets, and
+   ML-DSA trigger signatures. Downstream code that trusts these
    bytes as secret material must hold against a passive network
    adversary.
 4. **Host resources of anyone who imports the library** — CPU,
@@ -61,8 +62,9 @@ We explicitly do **not** plan against:
 
 ### S1 — Crypto subpackage (`crypto/`)
 
-- `bb84.py`, `entanglement_qkd.py`, `bell_test.py`, `qkd_parameter.py`,
-  `topology_qkd.py`, `key_hierarchy.py`.
+- `entanglement_qkd.py`, `topology_auth.py`, `hierarchical_keys.py`,
+  `knm_key.py`, `ml_dsa.py`, `ml_dsa_seal.py`, `noise_analysis.py`,
+  `percolation.py`, `pqc_trigger.py`.
 - Output is treated as secret. Every function must be deterministic
   in its randomness (i.e. accept a `numpy.random.Generator` rather
   than using `numpy.random.seed`).
