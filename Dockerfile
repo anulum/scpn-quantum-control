@@ -44,7 +44,13 @@ RUN pip install --no-cache-dir --require-hashes -r requirements-ci-py312-linux.t
 COPY tests/ tests/
 COPY tools/ tools/
 COPY .github/workflows/ .github/workflows/
+# The static Rust-inventory and kernel-execution audits read the engine crate
+# manifest plus every in-tree pyo3-featured member crate the ST-12 program-AD
+# replay extraction introduced, so the image ships the manifest and that
+# member crate's sources alongside the primary crate.
+COPY scpn_quantum_engine/Cargo.toml scpn_quantum_engine/Cargo.toml
 COPY scpn_quantum_engine/src/ scpn_quantum_engine/src/
+COPY scpn_quantum_engine/program_ad_replay/src/ scpn_quantum_engine/program_ad_replay/src/
 COPY scpn_quantum_engine/tests/ scpn_quantum_engine/tests/
 COPY scpn_quantum_engine/fuzz/ scpn_quantum_engine/fuzz/
 RUN printf '%s\n' \
