@@ -792,8 +792,10 @@ Noise-enhanced transport optimisation — the Goldilocks zone where decoherence
 `enaqt_scan(K, omega, gamma_range=None, t_evolve=1.0, n_steps=50, *, max_dense_gib=None)`
 returns `ENAQTResult` with the optimal dephasing rate, coherent endpoint,
 large-noise endpoint, and enhancement ratio. The implementation is a dense
-small-system Lindblad diagnostic; `max_dense_gib` gates the Hamiltonian,
-density matrix, and work buffers before allocation.
+small-system Lindblad diagnostic; each time step applies the Lindblad-generator
+exponential action via `scipy.sparse.linalg.expm_multiply` rather than an
+explicit-Euler density update. `max_dense_gib` gates the Hamiltonian, density
+matrix, and work buffers before allocation.
 
 ### `entanglement_enhanced_sync` — Entangled Initial-State Synchronization
 

@@ -35,6 +35,7 @@ from dataclasses import dataclass
 
 import numpy as np
 from numpy.typing import NDArray
+from scipy.sparse.linalg import LinearOperator, expm_multiply
 
 from ..bridge.knm_hamiltonian import knm_to_dense_matrix, knm_to_hamiltonian
 from ..dense_budget import require_dense_allocation
@@ -78,17 +79,55 @@ def _lindblad_evolve(
     n_qubits: int,
     z_signs: NDArray[np.float64] | None = None,
 ) -> NDArray[np.complex128]:
-    """One step of Lindblad master equation with Z-dephasing.
+    """One exponential step of the Lindblad master equation with Z-dephasing.
 
     dρ/dt = -i[H, ρ] + γ Σ_k (Z_k ρ Z_k - ρ)
 
-    Uses vectorised sign-flip for Z-dephasing (no matrix multiply).
-    Pass precomputed z_signs from _build_z_signs to avoid rebuild.
+    Uses ``scipy.sparse.linalg.expm_multiply`` on the Lindblad generator action,
+    avoiding the former explicit-Euler density update while still avoiding a
+    materialised dense superoperator. Pass precomputed z_signs from
+    _build_z_signs to avoid rebuild.
     """
-    commutator = -1j * (H_mat @ rho - rho @ H_mat)
-
     if z_signs is None:
         z_signs = _build_z_signs(n_qubits)
+
+    flat_rho = rho.reshape(-1).astype(np.complex128, copy=False)
+    flat_size = flat_rho.size
+
+    def generator_action(flat_state: NDArray[np.complex128]) -> NDArray[np.complex128]:
+        matrix_state = np.asarray(flat_state, dtype=np.complex128).reshape(rho.shape)
+        return _lindblad_rhs(matrix_state, H_mat, gamma, n_qubits, z_signs).reshape(-1)
+
+    def generator_adjoint_action(flat_state: NDArray[np.complex128]) -> NDArray[np.complex128]:
+        matrix_state = np.asarray(flat_state, dtype=np.complex128).reshape(rho.shape)
+        return _lindblad_adjoint_rhs(matrix_state, H_mat, gamma, n_qubits, z_signs).reshape(-1)
+
+    generator = LinearOperator(
+        (flat_size, flat_size),
+        matvec=generator_action,
+        rmatvec=generator_adjoint_action,
+        dtype=np.complex128,
+    )
+    trace_a = -float(gamma) * float(n_qubits) * float(flat_size) * dt
+    evolved_flat = expm_multiply(dt * generator, flat_rho, traceA=trace_a)
+    rho_new = np.asarray(evolved_flat, dtype=np.complex128).reshape(rho.shape)
+
+    # Re-project tiny numerical drift from the Krylov exponential action.
+    rho_new = (rho_new + rho_new.conj().T) / 2.0
+    rho_new /= np.trace(rho_new)
+    result: NDArray[np.complex128] = rho_new
+    return result
+
+
+def _lindblad_rhs(
+    rho: NDArray[np.complex128],
+    H_mat: NDArray[np.complex128],
+    gamma: float,
+    n_qubits: int,
+    z_signs: NDArray[np.float64],
+) -> NDArray[np.complex128]:
+    """Return the ENAQT Lindblad generator action for one density matrix."""
+    commutator = -1j * (H_mat @ rho - rho @ H_mat)
 
     # Vectorised dephasing: Z_k ρ Z_k = sign_k[:,None] * sign_k[None,:] * ρ
     dephasing = np.zeros_like(rho)
@@ -96,13 +135,26 @@ def _lindblad_evolve(
         sign_matrix = z_signs[k, :, None] * z_signs[k, None, :]
         dephasing += sign_matrix * rho - rho
 
-    drho = commutator + gamma * dephasing
-    rho_new = rho + dt * drho
+    result: NDArray[np.complex128] = commutator + gamma * dephasing
+    return result
 
-    # Enforce trace = 1 and Hermiticity
-    rho_new = (rho_new + rho_new.conj().T) / 2.0
-    rho_new /= np.trace(rho_new)
-    result: NDArray[np.complex128] = rho_new
+
+def _lindblad_adjoint_rhs(
+    rho: NDArray[np.complex128],
+    H_mat: NDArray[np.complex128],
+    gamma: float,
+    n_qubits: int,
+    z_signs: NDArray[np.float64],
+) -> NDArray[np.complex128]:
+    """Return the Hilbert-Schmidt adjoint of the ENAQT Lindblad generator."""
+    commutator = 1j * (H_mat @ rho - rho @ H_mat)
+
+    dephasing = np.zeros_like(rho)
+    for k in range(n_qubits):
+        sign_matrix = z_signs[k, :, None] * z_signs[k, None, :]
+        dephasing += sign_matrix * rho - rho
+
+    result: NDArray[np.complex128] = commutator + gamma * dephasing
     return result
 
 
