@@ -232,9 +232,14 @@ scpn-bench s11-quantum-sensing-readiness
 
 The gate regenerates `data/s11_quantum_sensing/quantum_sensing_readiness_2026-05-20.json`
 and `docs/quantum_sensing.md`. It records a finite K-grid QFI scan, sync-order
-classical Fisher proxy, and optimal readiness row while keeping hardware
-submission and sensing-advantage claims blocked until preregistration, shot
-budget, and raw-count uncertainty evidence are complete.
+classical Fisher proxy, optimal readiness row, and QFI-criticality tail. The
+tail selects the peak-QFI operating point, identifies the most informative
+coupling-pair generator, reports the Cramer-Rao precision bound for the stated
+measurement budget, and records the spectral/geometric QGT cross-check status.
+This composes existing dense exact QFI and QGT kernels; it does not introduce a
+new compute-hot polyglot benchmark surface. Hardware submission and
+sensing-advantage claims remain blocked until preregistration, shot budget, and
+raw-count uncertainty evidence are complete.
 
 ## Phase 3 State/Layout DLA Randomisation
 

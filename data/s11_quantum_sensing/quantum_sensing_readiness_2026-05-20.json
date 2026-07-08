@@ -5,6 +5,28 @@
     "max_dense_gib": 0.01,
     "readout_variance_floor": 0.05
   },
+  "criticality_tail": {
+    "claim_boundary": "QFI-criticality operating-point recommendation only; no probe has been run on hardware and no sensing-advantage claim is allowed",
+    "cramer_rao_std_bound": 0.011482738582732717,
+    "cramer_rao_variance_bound": 0.00013185328535937857,
+    "falsifier": "the QFI peak does not survive the spectral/geometric cross-check or the pre-registered perturbation benchmark",
+    "gap_min_k": 0.4,
+    "geometric_crosscheck_agrees": true,
+    "geometric_crosscheck_max_rel_difference": 0.008193516601268033,
+    "hardware_submission_allowed": false,
+    "measurements": 10000,
+    "operating_k": 0.4,
+    "peak_gap_delta": 0.0,
+    "qfi_trace": 1.7958080000611065,
+    "qfi_value": 0.7584187206821624,
+    "schema": "s11_qfi_criticality_sensing_tail_v1",
+    "selected_pair": [
+      1,
+      2
+    ],
+    "sensing_advantage_claim_allowed": false,
+    "spectral_gap": 0.03112395221028419
+  },
   "falsifier": "ratio of QFI-based Fisher information to classical Fisher information is below 1 on the pre-registered perturbation benchmark",
   "gain_scan": {
     "best_gain_ratio": 1.2290574653363031,

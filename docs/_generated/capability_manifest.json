@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 828,
     "public_documentation_pages": 263,
-    "python_model_classes": 932,
+    "python_model_classes": 933,
     "python_model_source_modules": 487,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 46,
-    "test_files": 858
+    "test_files": 859
   },
   "documentation": {
     "examples": [
@@ -1119,6 +1119,10 @@
       {
         "name": "CoverageFrontierReport",
         "path": "src/scpn_quantum_control/studio/coverage_frontier.py"
+      },
+      {
+        "name": "CriticalitySensingTail",
+        "path": "src/scpn_quantum_control/analysis/sensing.py"
       },
       {
         "name": "CrossDomainResult",
@@ -6691,6 +6695,7 @@
       "tests/test_sc_to_quantum.py",
       "tests/test_scpn_upde_edge.py",
       "tests/test_sensing_branches.py",
+      "tests/test_sensing_coverage.py",
       "tests/test_serialization_surface_audit.py",
       "tests/test_setup_isolated_benchmark_runner.py",
       "tests/test_shadow_tomography.py",

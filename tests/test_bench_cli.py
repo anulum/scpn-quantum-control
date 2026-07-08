@@ -503,6 +503,44 @@ def test_run_harness_dispatches_repo_script_with_current_python(
     assert (tmp_path / "data" / "rust_vqe_methods" / "ran.txt").read_text(encoding="utf-8") == "ok"
 
 
+def test_run_harness_preserves_symlinked_python_path(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    """Virtualenv Python symlinks must not be canonicalized to the base interpreter."""
+    script = tmp_path / "scripts" / "benchmark_rust_core_methods.py"
+    script.parent.mkdir(parents=True)
+    script.write_text("raise SystemExit(0)\n", encoding="utf-8")
+    real_python = tmp_path / "base-python"
+    venv_python = tmp_path / "venv-python"
+    seen_path = tmp_path / "seen.txt"
+    real_python.write_text(
+        "\n".join(
+            (
+                "#!/bin/sh",
+                f"printf '%s\\n' \"$0\" > {seen_path}",
+                "exit 0",
+            )
+        ),
+        encoding="utf-8",
+    )
+    real_python.chmod(0o755)
+    venv_python.symlink_to(real_python)
+    monkeypatch.setattr(bench_cli, "REPO_ROOT", tmp_path)
+    monkeypatch.setattr(bench_cli, "PYTHON", str(venv_python))
+
+    rc = bench_cli._run_harness(
+        bench_cli.Harness(
+            "unit",
+            "scripts/benchmark_rust_core_methods.py",
+            frozenset({"unit"}),
+        )
+    )
+
+    assert rc == 0
+    assert seen_path.read_text(encoding="utf-8").strip() == str(venv_python)
+
+
 def test_run_harness_rejects_non_executable_python(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,

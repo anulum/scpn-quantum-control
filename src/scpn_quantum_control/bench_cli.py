@@ -606,12 +606,12 @@ def _resolve_executable(command: str) -> str | None:
     if located is None:
         return None
     try:
-        resolved = Path(located).resolve(strict=True)
+        admitted = Path(located)
     except (OSError, ValueError):
         return None
-    if not resolved.is_file() or not os.access(resolved, os.X_OK):
+    if not admitted.is_file() or not os.access(admitted, os.X_OK):
         return None
-    return str(resolved)
+    return str(admitted)
 
 
 def _run_admitted_process(

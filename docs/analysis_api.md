@@ -186,13 +186,48 @@ metrological sweet spot.
 
 ```python
 from scpn_quantum_control.analysis.qfi_criticality import (
-    qfi_vs_coupling,
     QFICriticalityResult,
+    qfi_single_coupling,
+    qfi_vs_coupling,
 )
 ```
 
-`qfi_vs_coupling(K, omega, K_base_range=None, n_K=20)` → `QFICriticalityResult` with:
-`K_values`, `qfi_values`, `gap_values`, `peak_K` (coupling at max QFI).
+`qfi_single_coupling(K, omega, *, max_dense_gib=None)` returns the maximum
+coupling-parameter QFI diagonal, spectral gap, and QFI trace for one dense exact
+Kuramoto-XY Hamiltonian.
+
+`qfi_vs_coupling(omega, K_topology, k_range=None, *, max_dense_gib=None)` returns
+`QFICriticalityResult` with `k_values`, `max_qfi`, `spectral_gap`, `total_qfi`,
+`peak_k`, and `peak_qfi`. The scan is dense exact and small-system only; pass
+`max_dense_gib` to fail closed before Hamiltonian or derivative-operator
+allocation.
+
+### `sensing` — S11 QFI-Criticality Readiness
+
+Combines the QFI criticality scan with a classical sync-order Fisher proxy and a
+pair-level Cramer-Rao operating-point recommendation. This is a no-submit
+readiness surface, not hardware evidence.
+
+```python
+from scpn_quantum_control.analysis.sensing import (
+    CriticalitySensingTail,
+    QuantumSensingReadinessConfig,
+    metrological_gain_vs_k,
+    optimal_sensing_k,
+    qfi_criticality_sensing_tail,
+)
+```
+
+`metrological_gain_vs_k(omega, topology, k_grid, *, config=None)` returns a
+`SensingGainScan` over the finite coupling grid. `optimal_sensing_k(...)` returns
+the row with the largest QFI/classical-Fisher ratio.
+
+`qfi_criticality_sensing_tail(omega, topology, k_grid, *, measurements=10000,
+geometric_epsilon=0.005, run_geometric_crosscheck=True, config=None)` selects the
+QFI peak, recomputes the full QFI matrix at that coupling, identifies the most
+informative coupling-pair generator, reports the Cramer-Rao variance and standard
+deviation bounds for the measurement budget, and records whether the spectral
+route agrees with the geometric QGT cross-check.
 
 ### `entanglement_percolation` — Finite-Size Entanglement Percolation
 

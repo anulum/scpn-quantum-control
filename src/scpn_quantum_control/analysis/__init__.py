@@ -93,12 +93,15 @@ from .quantum_phi import PhiResult, compute_quantum_phi, phi_vs_coupling_scan, v
 from .rl_discovery_agent import RLDiscoveryAgent
 from .rl_pulse_optimizer import RLPulseOptimizer
 from .sensing import (
+    CRITICALITY_TAIL_SCHEMA,
     QUANTUM_SENSING_SCHEMA,
+    CriticalitySensingTail,
     QuantumSensingReadinessConfig,
     SensingGainRow,
     SensingGainScan,
     metrological_gain_vs_k,
     optimal_sensing_k,
+    qfi_criticality_sensing_tail,
     quantum_sensing_markdown,
     quantum_sensing_payload,
 )
@@ -251,12 +254,15 @@ __all__ = [
     "pairing_vs_anisotropy",
     "QFICriticalityResult",
     "qfi_vs_coupling",
+    "CRITICALITY_TAIL_SCHEMA",
     "QUANTUM_SENSING_SCHEMA",
+    "CriticalitySensingTail",
     "QuantumSensingReadinessConfig",
     "SensingGainRow",
     "SensingGainScan",
     "metrological_gain_vs_k",
     "optimal_sensing_k",
+    "qfi_criticality_sensing_tail",
     "quantum_sensing_markdown",
     "quantum_sensing_payload",
     "MpembaResult",

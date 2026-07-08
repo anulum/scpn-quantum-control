@@ -17,20 +17,31 @@ from numpy.typing import NDArray
 
 from .bkt_analysis import fiedler_eigenvalue
 from .phase_diagram import critical_coupling_finite_graph, order_parameter_steady_state
+from .qfi import compute_qfi
 from .qfi_criticality import qfi_vs_coupling
+from .qfi_geometric_crosscheck import crosscheck_qfi_geometric
 
 FloatArray: TypeAlias = NDArray[np.float64]
 
 QUANTUM_SENSING_SCHEMA = "s11_quantum_sensing_readiness_v1"
 GAIN_SCAN_SCHEMA = "s11_quantum_sensing_gain_scan_v1"
+CRITICALITY_TAIL_SCHEMA = "s11_qfi_criticality_sensing_tail_v1"
 CLAIM_BOUNDARY = (
     "QFI and sync-order sensing readiness estimate only; no hardware submission "
     "and no sensing-advantage claim"
 )
 ROW_BOUNDARY = "readiness estimate only; not hardware evidence"
+TAIL_BOUNDARY = (
+    "QFI-criticality operating-point recommendation only; no probe has been run "
+    "on hardware and no sensing-advantage claim is allowed"
+)
 FALSIFIER = (
     "ratio of QFI-based Fisher information to classical Fisher information is "
     "below 1 on the pre-registered perturbation benchmark"
+)
+TAIL_FALSIFIER = (
+    "the QFI peak does not survive the spectral/geometric cross-check or the "
+    "pre-registered perturbation benchmark"
 )
 
 
@@ -102,6 +113,53 @@ class SensingGainScan:
         }
 
 
+@dataclass(frozen=True)
+class CriticalitySensingTail:
+    """QFI-peak operating-point recommendation for follow-up sensing probes."""
+
+    schema: str
+    operating_k: float
+    selected_pair: tuple[int, int]
+    qfi_value: float
+    qfi_trace: float
+    spectral_gap: float
+    measurements: int
+    cramer_rao_variance_bound: float
+    cramer_rao_std_bound: float
+    gap_min_k: float
+    peak_gap_delta: float
+    geometric_crosscheck_agrees: bool
+    geometric_crosscheck_max_rel_difference: float
+    claim_boundary: str
+    falsifier: str
+    hardware_submission_allowed: bool = False
+    sensing_advantage_claim_allowed: bool = False
+
+    def to_dict(self) -> dict[str, Any]:
+        """Return JSON-compatible criticality-tail data."""
+        return {
+            "schema": self.schema,
+            "operating_k": self.operating_k,
+            "selected_pair": list(self.selected_pair),
+            "qfi_value": self.qfi_value,
+            "qfi_trace": self.qfi_trace,
+            "spectral_gap": self.spectral_gap,
+            "measurements": self.measurements,
+            "cramer_rao_variance_bound": self.cramer_rao_variance_bound,
+            "cramer_rao_std_bound": self.cramer_rao_std_bound,
+            "gap_min_k": self.gap_min_k,
+            "peak_gap_delta": self.peak_gap_delta,
+            "geometric_crosscheck_agrees": self.geometric_crosscheck_agrees,
+            "geometric_crosscheck_max_rel_difference": (
+                self.geometric_crosscheck_max_rel_difference
+            ),
+            "claim_boundary": self.claim_boundary,
+            "falsifier": self.falsifier,
+            "hardware_submission_allowed": self.hardware_submission_allowed,
+            "sensing_advantage_claim_allowed": self.sensing_advantage_claim_allowed,
+        }
+
+
 def metrological_gain_vs_k(
     omega: FloatArray,
     topology: FloatArray,
@@ -167,16 +225,95 @@ def optimal_sensing_k(
     return metrological_gain_vs_k(omega, topology, k_grid, config=config).optimal_row
 
 
+def qfi_criticality_sensing_tail(
+    omega: FloatArray,
+    topology: FloatArray,
+    k_grid: FloatArray,
+    *,
+    measurements: int = 10000,
+    geometric_epsilon: float = 0.005,
+    run_geometric_crosscheck: bool = True,
+    config: QuantumSensingReadinessConfig | None = None,
+) -> CriticalitySensingTail:
+    """Select the QFI-criticality operating point for a sensing follow-up.
+
+    The scan first finds the coupling value with the largest diagonal QFI,
+    then recomputes the full QFI matrix at that point to identify the most
+    informative coupling-pair generator. The returned Cramer-Rao bound is a
+    local readiness estimate for that selected pair under the supplied
+    measurement budget; it is not hardware evidence.
+    """
+    frequencies, graph, grid = _validate_inputs(omega, topology, k_grid)
+    _require_coupled_topology(graph)
+    _require_positive_integer(measurements, "measurements")
+    _require_positive(geometric_epsilon, "geometric_epsilon")
+    cfg = config or QuantumSensingReadinessConfig()
+
+    qfi_scan = qfi_vs_coupling(
+        frequencies,
+        graph,
+        k_range=grid,
+        max_dense_gib=cfg.max_dense_gib,
+    )
+    peak_index = int(np.argmax(qfi_scan.max_qfi))
+    gap_min_index = int(np.argmin(qfi_scan.spectral_gap))
+    operating_k = float(qfi_scan.k_values[peak_index])
+    K_operating = operating_k * graph
+
+    qfi_at_peak = compute_qfi(
+        K_operating,
+        frequencies,
+        max_dense_gib=cfg.max_dense_gib,
+    )
+    qfi_diagonal = np.diag(qfi_at_peak.qfi_matrix)
+    pair_index = int(np.argmax(qfi_diagonal))
+    qfi_value = float(qfi_diagonal[pair_index])
+    variance_bound = _cramer_rao_variance_bound(qfi_value, measurements)
+
+    if run_geometric_crosscheck:
+        crosscheck = crosscheck_qfi_geometric(
+            K_operating,
+            frequencies,
+            epsilon=geometric_epsilon,
+            max_dense_gib=cfg.max_dense_gib,
+        )
+        geometric_agrees = crosscheck.agrees
+        geometric_max_rel = crosscheck.max_rel_difference
+    else:
+        geometric_agrees = False
+        geometric_max_rel = float("inf")
+
+    return CriticalitySensingTail(
+        schema=CRITICALITY_TAIL_SCHEMA,
+        operating_k=operating_k,
+        selected_pair=qfi_at_peak.coupling_pairs[pair_index],
+        qfi_value=qfi_value,
+        qfi_trace=float(np.trace(qfi_at_peak.qfi_matrix)),
+        spectral_gap=float(qfi_scan.spectral_gap[peak_index]),
+        measurements=measurements,
+        cramer_rao_variance_bound=variance_bound,
+        cramer_rao_std_bound=float(np.sqrt(variance_bound)),
+        gap_min_k=float(qfi_scan.k_values[gap_min_index]),
+        peak_gap_delta=abs(operating_k - float(qfi_scan.k_values[gap_min_index])),
+        geometric_crosscheck_agrees=geometric_agrees,
+        geometric_crosscheck_max_rel_difference=geometric_max_rel,
+        claim_boundary=TAIL_BOUNDARY,
+        falsifier=TAIL_FALSIFIER,
+    )
+
+
 def quantum_sensing_payload() -> dict[str, Any]:
     """Return the S11 quantum-sensing readiness payload."""
     omega, topology, k_grid = _default_problem()
     config = QuantumSensingReadinessConfig()
     gain_scan = metrological_gain_vs_k(omega, topology, k_grid, config=config)
+    criticality_tail = qfi_criticality_sensing_tail(omega, topology, k_grid, config=config)
     return {
         "schema": QUANTUM_SENSING_SCHEMA,
         "claim_boundary": CLAIM_BOUNDARY,
         "config": config.to_dict(),
         "gain_scan": gain_scan.to_dict(),
+        "criticality_tail": criticality_tail.to_dict(),
         "prerequisites": [
             "pre-registered perturbation benchmark and classical Fisher estimator fixed",
             "hardware shot budget and shadow-tomography estimator approved before execution",
@@ -202,6 +339,12 @@ def quantum_sensing_markdown(payload: dict[str, Any] | None = None) -> str:
         "classical Fisher proxy rows without hardware submission or sensing",
         "advantage promotion.",
         "",
+        "## Why this page exists",
+        "",
+        "This page supports teams comparing sensing hypotheses against classical",
+        "baselines. It captures reproducible gain estimates and the required",
+        "prerequisites before any promotion of sensing-advantage claims.",
+        "",
         "## Boundary",
         "",
         str(data["claim_boundary"]),
@@ -218,6 +361,7 @@ def quantum_sensing_markdown(payload: dict[str, Any] | None = None) -> str:
             "{gain_ratio:.6g} |".format(**row)
         )
     optimal = scan["optimal_row"]
+    tail = data["criticality_tail"]
     lines.extend(
         [
             "",
@@ -229,9 +373,25 @@ def quantum_sensing_markdown(payload: dict[str, Any] | None = None) -> str:
             "- Hardware submission allowed: `False`",
             "- sensing advantage claim allowed: `False`",
             "",
+            "## QFI-Criticality Tail",
+            "",
+            str(tail["claim_boundary"]),
+            "",
+            f"- Operating K: `{tail['operating_k']}`",
+            f"- Selected coupling pair: `{tuple(tail['selected_pair'])}`",
+            f"- Pair QFI: `{tail['qfi_value']:.6g}`",
+            f"- Spectral gap at operating point: `{tail['spectral_gap']:.6g}`",
+            f"- Cramer-Rao variance bound: `{tail['cramer_rao_variance_bound']:.6g}`",
+            f"- Cramer-Rao standard-deviation bound: `{tail['cramer_rao_std_bound']:.6g}`",
+            f"- Gap-minimum K: `{tail['gap_min_k']}`",
+            f"- QFI/gap K delta: `{tail['peak_gap_delta']:.6g}`",
+            f"- Spectral/geometric cross-check agrees: `{tail['geometric_crosscheck_agrees']}`",
+            "",
             "## Falsifier",
             "",
             str(data["falsifier"]),
+            "",
+            str(tail["falsifier"]),
             "",
             "## Prerequisites",
         ]
@@ -305,13 +465,32 @@ def _require_positive(value: float, name: str) -> None:
         raise ValueError(f"{name} must be finite and positive")
 
 
+def _require_positive_integer(value: int, name: str) -> None:
+    if value <= 0:
+        raise ValueError(f"{name} must be positive")
+
+
+def _require_coupled_topology(topology: FloatArray) -> None:
+    if not np.any(np.abs(np.triu(topology, k=1)) > 1e-12):
+        raise ValueError("topology must contain at least one nonzero coupling edge")
+
+
+def _cramer_rao_variance_bound(qfi_value: float, measurements: int) -> float:
+    if qfi_value <= 1e-15:
+        return float("inf")
+    return float(1.0 / (float(measurements) * qfi_value))
+
+
 __all__ = [
+    "CRITICALITY_TAIL_SCHEMA",
     "QUANTUM_SENSING_SCHEMA",
+    "CriticalitySensingTail",
     "QuantumSensingReadinessConfig",
     "SensingGainRow",
     "SensingGainScan",
     "metrological_gain_vs_k",
     "optimal_sensing_k",
+    "qfi_criticality_sensing_tail",
     "quantum_sensing_markdown",
     "quantum_sensing_payload",
 ]
