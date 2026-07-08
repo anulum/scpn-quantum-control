@@ -1174,6 +1174,7 @@ parameter.
 | `run_cutting_simulation(n=16, max=8, allow_partition_energy_estimate=True)` | 16 oscillators | 39.3 ms | 2 partitions, R=1.0, energy scope `partition_local_sum` |
 | `run_cutting_simulation(n=24, max=8, allow_partition_energy_estimate=True)` | 24 oscillators | ~53 ms | 3 partitions, energy scope `partition_local_sum` |
 | `run_cutting_simulation(n=32, max=8, allow_partition_energy_estimate=True)` | 32 oscillators | ~60 ms | 4 partitions, energy scope `partition_local_sum` |
+| `circuit_cutting_plan(build_knm_paper27(L=128), max_partition_size=16)` | 128 oscillators | planning only | 8 partitions, overhead reported as infinite for dense all-to-all cuts |
 
 Partitions: ceil(n/max_partition_size). R per partition bounded [0, 1].
 Combined R bounded [0, 1]. For multi-partition runs, energy is a labelled

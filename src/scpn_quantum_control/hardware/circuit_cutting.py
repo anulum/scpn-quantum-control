@@ -30,9 +30,13 @@ For 32 oscillators:
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Final
 
 import numpy as np
 from numpy.typing import NDArray
+
+DEFAULT_MAX_PARTITION_SIZE: Final[int] = 16
+DEFAULT_SCALING_N_VALUES: Final[tuple[int, ...]] = (16, 24, 32, 48, 64, 96, 128)
 
 
 @dataclass
@@ -65,7 +69,7 @@ def count_inter_partition_couplings(
 
 def optimal_partition(
     K: NDArray[np.float64],
-    max_partition_size: int = 16,
+    max_partition_size: int = DEFAULT_MAX_PARTITION_SIZE,
 ) -> list[list[int]]:
     """Partition oscillators to minimise inter-partition cuts.
 
@@ -73,7 +77,7 @@ def optimal_partition(
     For all-to-all K_nm, any partition has the same cut count,
     so contiguous is as good as any.
     """
-    n = K.shape[0]
+    n = _validate_partition_inputs(K, max_partition_size)
     partitions: list[list[int]] = []
     for start in range(0, n, max_partition_size):
         end = min(start + max_partition_size, n)
@@ -83,7 +87,7 @@ def optimal_partition(
 
 def circuit_cutting_plan(
     K: NDArray[np.float64],
-    max_partition_size: int = 16,
+    max_partition_size: int = DEFAULT_MAX_PARTITION_SIZE,
     heron_qubits: int = 127,
 ) -> CircuitCuttingPlan:
     """Compute circuit cutting resource plan.
@@ -93,7 +97,11 @@ def circuit_cutting_plan(
         max_partition_size: maximum oscillators per partition
         heron_qubits: available qubits per QPU
     """
-    n = K.shape[0]
+    n = _validate_partition_inputs(K, max_partition_size)
+    if not isinstance(heron_qubits, int):
+        raise TypeError("heron_qubits must be an integer")
+    if heron_qubits < 1:
+        raise ValueError("heron_qubits must be >= 1")
     partition = optimal_partition(K, max_partition_size)
     n_cuts = count_inter_partition_couplings(K, partition)
     overhead = 4.0**n_cuts if n_cuts < 30 else float("inf")
@@ -113,13 +121,13 @@ def circuit_cutting_plan(
 
 def scaling_analysis(
     n_values: list[int] | None = None,
-    max_partition_size: int = 16,
+    max_partition_size: int = DEFAULT_MAX_PARTITION_SIZE,
 ) -> dict[str, list[float]]:
     """Analyse circuit cutting overhead across system sizes."""
     from ..bridge.knm_hamiltonian import build_knm_paper27
 
     if n_values is None:
-        n_values = [16, 24, 32, 48, 64]
+        n_values = list(DEFAULT_SCALING_N_VALUES)
 
     results: dict[str, list[float]] = {
         "n_oscillators": [],
@@ -130,6 +138,10 @@ def scaling_analysis(
     }
 
     for n in n_values:
+        if not isinstance(n, int):
+            raise TypeError("n_values must contain integers")
+        if n < 2:
+            raise ValueError("n_values must be >= 2")
         K = build_knm_paper27(L=n)
         plan = circuit_cutting_plan(K, max_partition_size)
         results["n_oscillators"].append(n)
@@ -139,3 +151,19 @@ def scaling_analysis(
         results["fits_heron"].append(plan.fits_on_heron)
 
     return results
+
+
+def _validate_partition_inputs(K: NDArray[np.float64], max_partition_size: int) -> int:
+    """Return the oscillator count after validating partition planner inputs."""
+    if not isinstance(max_partition_size, int):
+        raise TypeError("max_partition_size must be an integer")
+    if max_partition_size < 1:
+        raise ValueError("max_partition_size must be >= 1")
+    K_arr = np.asarray(K, dtype=np.float64)
+    if K_arr.ndim != 2 or K_arr.shape[0] != K_arr.shape[1]:
+        raise ValueError("K must be a square 2-D coupling matrix")
+    if K_arr.shape[0] < 2:
+        raise ValueError("K must describe at least two oscillators")
+    if not np.all(np.isfinite(K_arr)):
+        raise ValueError("K must be finite")
+    return int(K_arr.shape[0])

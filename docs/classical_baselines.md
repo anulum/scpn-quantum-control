@@ -119,6 +119,13 @@ assert comparison.row("quantum_trotter").available is False
 
 Example 09 emits this artifact on demand:
 
+The partitioned circuit-cutting planner covers larger synthetic Kuramoto-XY
+networks without relaxing the dense statevector boundary. For example,
+`circuit_cutting_plan(build_knm_paper27(L=128), max_partition_size=16)` returns
+eight 16-oscillator partitions and reports the classical reconstruction
+overhead. Multi-partition energies stay labelled as partition-local diagnostics;
+the full-system dense energy is not claimed.
+
 ```bash
 python examples/09_classical_vs_quantum_benchmark.py \
     --artifact data/classical_quantum_comparison/reproducible_comparison_n8.json
