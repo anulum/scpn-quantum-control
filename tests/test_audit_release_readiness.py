@@ -14,6 +14,8 @@ import sys
 from pathlib import Path
 from types import ModuleType
 
+import pytest
+
 
 def _load_tool_module(module_name: str, filename: str) -> ModuleType:
     tools_root = Path(__file__).resolve().parents[1] / "tools"
@@ -168,7 +170,7 @@ def _write_behavioural_test(root: Path) -> None:
     )
 
 
-def test_release_readiness_passes_when_all_component_gates_pass(tmp_path: Path):
+def test_release_readiness_passes_when_all_component_gates_pass(tmp_path: Path) -> None:
     _write_version_carriers(tmp_path)
     _write_release_artifacts(tmp_path)
     coverage_xml = _write_coverage_xml(tmp_path)
@@ -191,7 +193,7 @@ def test_release_readiness_passes_when_all_component_gates_pass(tmp_path: Path):
     assert "ready_for_tag: True" in summary
 
 
-def test_release_readiness_blocks_missing_coverage_report(tmp_path: Path):
+def test_release_readiness_blocks_missing_coverage_report(tmp_path: Path) -> None:
     _write_version_carriers(tmp_path)
     _write_release_artifacts(tmp_path)
     _write_behavioural_test(tmp_path)
@@ -211,7 +213,7 @@ def test_release_readiness_blocks_missing_coverage_report(tmp_path: Path):
     assert any("coverage XML report missing" in blocker for blocker in payload["blockers"])
 
 
-def test_release_readiness_reports_version_and_artifact_blockers(tmp_path: Path):
+def test_release_readiness_reports_version_and_artifact_blockers(tmp_path: Path) -> None:
     _write_version_carriers(tmp_path, version="0.9.7")
     (tmp_path / "CITATION.cff").write_text('version: "0.9.8"\n', encoding="utf-8")
 
@@ -224,7 +226,7 @@ def test_release_readiness_reports_version_and_artifact_blockers(tmp_path: Path)
     assert artifact_check.blockers
 
 
-def test_required_artifacts_lists_stable_core_release_inputs(tmp_path: Path):
+def test_required_artifacts_lists_stable_core_release_inputs(tmp_path: Path) -> None:
     _write_version_carriers(tmp_path)
     _write_release_artifacts(tmp_path)
 
@@ -236,7 +238,7 @@ def test_required_artifacts_lists_stable_core_release_inputs(tmp_path: Path):
     assert "docs/stable_core_backend_capability_matrix.md" in required
 
 
-def test_required_artifacts_blocks_missing_stable_core_release_inputs(tmp_path: Path):
+def test_required_artifacts_blocks_missing_stable_core_release_inputs(tmp_path: Path) -> None:
     _write_version_carriers(tmp_path)
     _write_release_artifacts(tmp_path)
     stable_core_paths = (
@@ -253,7 +255,9 @@ def test_required_artifacts_blocks_missing_stable_core_release_inputs(tmp_path: 
         assert f"missing required release artefact: {rel_path}" in artifact_check.blockers
 
 
-def test_release_readiness_reports_file_gaps_without_blocking_aggregate_pass(tmp_path: Path):
+def test_release_readiness_reports_file_gaps_without_blocking_aggregate_pass(
+    tmp_path: Path,
+) -> None:
     _write_version_carriers(tmp_path)
     _write_release_artifacts(tmp_path)
     (tmp_path / "src" / "scpn_quantum_control" / "low.py").write_text(
@@ -306,7 +310,7 @@ def test_release_readiness_reports_file_gaps_without_blocking_aggregate_pass(tmp
     assert coverage_check["details"]["below_threshold_files"] == 1
 
 
-def test_release_readiness_can_block_on_file_gaps(tmp_path: Path):
+def test_release_readiness_can_block_on_file_gaps(tmp_path: Path) -> None:
     _write_version_carriers(tmp_path)
     _write_release_artifacts(tmp_path)
     (tmp_path / "src" / "scpn_quantum_control" / "low.py").write_text(
@@ -350,7 +354,10 @@ def test_release_readiness_can_block_on_file_gaps(tmp_path: Path):
     assert any("low.py: below_threshold" in blocker for blocker in payload["blockers"])
 
 
-def test_release_readiness_cli_exit_status(tmp_path: Path, capsys):
+def test_release_readiness_cli_exit_status(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
     _write_version_carriers(tmp_path)
     _write_release_artifacts(tmp_path)
     _write_behavioural_test(tmp_path)
@@ -429,7 +436,7 @@ def _write_hardware_evidence_packet(root: Path) -> Path:
     return packet
 
 
-def test_release_readiness_accepts_hardware_evidence_packet(tmp_path: Path):
+def test_release_readiness_accepts_hardware_evidence_packet(tmp_path: Path) -> None:
     _write_version_carriers(tmp_path)
     _write_release_artifacts(tmp_path)
     coverage_xml = _write_coverage_xml(tmp_path)
@@ -455,7 +462,7 @@ def test_release_readiness_accepts_hardware_evidence_packet(tmp_path: Path):
     assert hardware_check["details"]["cited_pack_ids"] == ["pack_a"]
 
 
-def test_release_readiness_blocks_hardware_log_digest_mismatch(tmp_path: Path):
+def test_release_readiness_blocks_hardware_log_digest_mismatch(tmp_path: Path) -> None:
     import json
 
     _write_version_carriers(tmp_path)
