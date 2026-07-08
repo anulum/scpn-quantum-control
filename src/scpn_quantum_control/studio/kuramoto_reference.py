@@ -135,7 +135,13 @@ def _derivative(
             sin_mean * np.cos(theta) - cos_mean * np.sin(theta)
         )
         return mean_field
-    assert k_nm is not None  # guaranteed by encode/validate
+    if mode != "networked":
+        raise ValueError(f"unknown mode: {mode!r}")
+    if k_nm is None:
+        raise ValueError("networked mode requires a coupling matrix")
+    expected_shape = (int(theta.shape[0]), int(theta.shape[0]))
+    if k_nm.shape != expected_shape:
+        raise ValueError(f"k_nm must have shape {expected_shape}, got {k_nm.shape}")
     phase_delta = theta[None, :] - theta[:, None]
     networked: NDArray[np.float64] = omega + np.sum(k_nm * np.sin(phase_delta), axis=1)
     return networked
@@ -155,6 +161,10 @@ def simulate(
     omega_arr = _as_finite("omega", omega)
     theta = _as_finite("theta0", theta0).copy()
     k_arr = None if k_nm is None else _as_finite("k_nm", k_nm)
+    if omega_arr.ndim != 1 or theta.shape != omega_arr.shape:
+        raise ValueError("omega and theta0 must be 1-D arrays of equal length")
+    if mode == "mean-field" and k_arr is not None:
+        raise ValueError("mean-field mode does not take a coupling matrix")
 
     r_series = np.empty(steps + 1, dtype=np.float64)
     r_series[0] = order_parameter(theta)

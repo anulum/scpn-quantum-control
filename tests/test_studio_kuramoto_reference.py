@@ -10,6 +10,7 @@
 from __future__ import annotations
 
 import struct
+from typing import cast
 
 import numpy as np
 import pytest
@@ -20,6 +21,7 @@ pytest.importorskip("scpn_studio_platform", reason="studio extra not installed")
 from scpn_quantum_control.studio.kuramoto_reference import (  # noqa: E402
     MAX_OSCILLATORS,
     MAX_STEPS,
+    KuramotoMode,
     decode_output,
     encode_kuramoto_input,
     order_parameter,
@@ -154,6 +156,36 @@ def test_mean_field_matches_uniform_network() -> None:
         k_nm=_uniform_matrix(1.5, _N),
     )
     np.testing.assert_allclose(mean.order_parameter, net.order_parameter, rtol=1e-9, atol=1e-12)
+
+
+def test_simulate_fails_closed_on_matrix_contract_errors() -> None:
+    """Simulation rejects invalid coupling-matrix contracts before integration."""
+    with pytest.raises(ValueError, match="equal length"):
+        simulate("mean-field", _OMEGA, _THETA0[:-1], steps=2, dt=0.01, coupling=1.0)
+    with pytest.raises(ValueError, match="unknown mode"):
+        simulate(cast(KuramotoMode, "spiral"), _OMEGA, _THETA0, steps=2, dt=0.01, coupling=1.0)
+    with pytest.raises(ValueError, match="networked mode requires"):
+        simulate("networked", _OMEGA, _THETA0, steps=2, dt=0.01, coupling=1.0)
+    with pytest.raises(ValueError, match="k_nm must have shape"):
+        simulate(
+            "networked",
+            _OMEGA,
+            _THETA0,
+            steps=2,
+            dt=0.01,
+            coupling=1.0,
+            k_nm=np.zeros((2, 2), dtype=np.float64),
+        )
+    with pytest.raises(ValueError, match="does not take a coupling matrix"):
+        simulate(
+            "mean-field",
+            _OMEGA,
+            _THETA0,
+            steps=2,
+            dt=0.01,
+            coupling=1.0,
+            k_nm=_uniform_matrix(1.0, _N),
+        )
 
 
 def test_decode_output_round_trips() -> None:
