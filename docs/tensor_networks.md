@@ -14,6 +14,11 @@ qubits (system-size-dependent on bond dimension and entanglement).
 Install via `pip install scpn-quantum-control[quimb]` or
 `pip install scpn-quantum-control[cotengra]`.
 
+The QWC-4.2 N=30-40 baseline design is tracked in
+[`TN/MPS Baseline Design`](tn_mps_baseline_design.md) and regenerated with
+`scpn-bench s2-tn-mps-baseline-design`. It is a CPU-first plan, not a measured
+N=40 tensor-network benchmark.
+
 ---
 
 ## Part 1: MPS Evolution

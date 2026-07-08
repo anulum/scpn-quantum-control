@@ -98,6 +98,15 @@ from .reproducible_comparison import (
     ReproducibleKuramotoComparison,
     run_reproducible_kuramoto_comparison,
 )
+from .tn_mps_baseline_design import (
+    TN_MPS_BASELINE_DESIGN_CLAIM_BOUNDARY,
+    TN_MPS_BASELINE_DESIGN_SCHEMA,
+    TNBaselineAdapter,
+    TNBaselineDesign,
+    TNBaselineSizePlan,
+    build_tn_mps_baseline_design,
+    render_tn_mps_baseline_design_markdown,
+)
 
 __all__ = [
     "ClassicalBaselineRun",
@@ -155,6 +164,13 @@ __all__ = [
     "gpu_baseline_comparison",
     "MPSBaselineResult",
     "mps_baseline_comparison",
+    "TN_MPS_BASELINE_DESIGN_CLAIM_BOUNDARY",
+    "TN_MPS_BASELINE_DESIGN_SCHEMA",
+    "TNBaselineAdapter",
+    "TNBaselineDesign",
+    "TNBaselineSizePlan",
+    "build_tn_mps_baseline_design",
+    "render_tn_mps_baseline_design_markdown",
     "AdvantageResult",
     "classical_benchmark",
     "estimate_crossover",

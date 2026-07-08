@@ -248,6 +248,7 @@ for name, w in results.items():
 - [Phase API](phase_api.md) — advanced reference for the phase evolution and gradient modules
 - [Kuramoto Variants](kuramoto_variants.md) — higher-order, monitored, and PT-symmetric trajectory APIs
 - [Classical Baselines](classical_baselines.md) — SciPy ODE, QuTiP Lindblad, and MPS TEBD provenance surfaces
+- [TN/MPS Baseline Design](tn_mps_baseline_design.md) — CPU-first N=30-40 tensor-network baseline plan
 - [Hardware Guide](hardware_guide.md) — IBM Quantum setup
 - [Bridges](bridges_api.md) — cross-repo integrations
 - [Tutorials](tutorials.md) — 4-level learning path, 14 tutorials

@@ -138,6 +138,11 @@ HARNESS_REGISTRY: tuple[Harness, ...] = (
         frozenset({"s2"}),
     ),
     Harness(
+        "s2-tn-mps-baseline-design",
+        "scripts/export_tn_mps_baseline_design.py",
+        frozenset({"s2-tn-design"}),
+    ),
+    Harness(
         "s3-design-readiness",
         "scripts/export_s3_design_readiness.py",
         frozenset({"s3"}),
@@ -289,6 +294,7 @@ ARTEFACT_PATHS = (
     "data/scpn_fim_hamiltonian",
     "data/s1_feedback_loop",
     "data/s2_scaling",
+    "data/s2_advantage_scaling",
     "data/s3_pulse_ansatz_design",
     "data/s4_multi_hardware_control",
     "data/s5_benchmark_harness",
@@ -398,6 +404,12 @@ def _parse_args(argv: Sequence[str]) -> argparse.Namespace:
         help="Regenerate no-QPU S2 scaling protocol and lite rows.",
     )
     _add_run_options(s2, default_group="s2")
+
+    s2_tn_design = subparsers.add_parser(
+        "s2-tn-mps-baseline-design",
+        help="Regenerate the no-claim QWC-4.2 TN/MPS baseline design artifacts.",
+    )
+    _add_run_options(s2_tn_design, default_group="s2-tn-design")
 
     s3 = subparsers.add_parser(
         "s3-design-ready",

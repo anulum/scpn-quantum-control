@@ -83,6 +83,19 @@ state, and the protocol claim boundary for the current rows.
 baseline rows, allowed claims, forbidden claims, full-campaign blockers, and
 hardware boundary.
 
+The QWC-4.2 TN/MPS baseline design is regenerated with:
+
+```bash
+scpn-bench s2-tn-mps-baseline-design
+```
+
+It writes `data/s2_advantage_scaling/tn_mps_baseline_design_2026-07-08.json`
+and `docs/tn_mps_baseline_design.md`. This artifact selects the CPU-first quimb
+MPS adapter, records the bounded native Schmidt/resource scaffold, and keeps
+ITensor/Julia plus GPU TN paths blocked until separately owner-gated. It is
+design and preregistration evidence only; it does not execute N=30-40 TN rows or
+support tensor-network-hardness or quantum-advantage claims.
+
 ## S3 Pulse / Ansatz Design Readiness
 
 The S3 ML-augmented pulse / ansatz track starts from a deterministic no-QPU

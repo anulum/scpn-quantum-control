@@ -8,12 +8,12 @@
     "notebook_files": 100,
     "optional_extras": 43,
     "public_api_exports": 828,
-    "public_documentation_pages": 263,
-    "python_model_classes": 933,
-    "python_model_source_modules": 487,
+    "public_documentation_pages": 264,
+    "python_model_classes": 936,
+    "python_model_source_modules": 488,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 46,
-    "test_files": 859
+    "test_files": 860
   },
   "documentation": {
     "examples": [
@@ -414,6 +414,7 @@
       "docs/test_infrastructure.md",
       "docs/theory.md",
       "docs/tier_benchmarks.md",
+      "docs/tn_mps_baseline_design.md",
       "docs/triage.md",
       "docs/tutorials.md",
       "docs/ultrascale_hls.md",
@@ -465,7 +466,7 @@
       {
         "package": "benchmarks",
         "path": "src/scpn_quantum_control/benchmarks",
-        "python_modules": 19
+        "python_modules": 20
       },
       {
         "package": "bridge",
@@ -4065,6 +4066,18 @@
         "path": "src/scpn_quantum_control/analysis/tcbo_weighted_complex.py"
       },
       {
+        "name": "TNBaselineAdapter",
+        "path": "src/scpn_quantum_control/benchmarks/tn_mps_baseline_design.py"
+      },
+      {
+        "name": "TNBaselineDesign",
+        "path": "src/scpn_quantum_control/benchmarks/tn_mps_baseline_design.py"
+      },
+      {
+        "name": "TNBaselineSizePlan",
+        "path": "src/scpn_quantum_control/benchmarks/tn_mps_baseline_design.py"
+      },
+      {
         "name": "TapeGradientRecord",
         "path": "src/scpn_quantum_control/phase/gradient_tape.py"
       },
@@ -4439,6 +4452,7 @@
       "src/scpn_quantum_control/benchmarks/quantum_advantage.py",
       "src/scpn_quantum_control/benchmarks/reproducible_comparison.py",
       "src/scpn_quantum_control/benchmarks/s3_design_protocol.py",
+      "src/scpn_quantum_control/benchmarks/tn_mps_baseline_design.py",
       "src/scpn_quantum_control/bridge/control_plasma_knm.py",
       "src/scpn_quantum_control/bridge/fusion_core_frc.py",
       "src/scpn_quantum_control/bridge/knm_hamiltonian.py",
@@ -6776,6 +6790,7 @@
       "tests/test_tensor_jump_contracts.py",
       "tests/test_thermodynamic_witness.py",
       "tests/test_tier_benchmark_regression_gate.py",
+      "tests/test_tn_mps_baseline_design.py",
       "tests/test_topological_coupling_guard.py",
       "tests/test_topological_optimizer.py",
       "tests/test_topology_auth_edge.py",

@@ -121,16 +121,16 @@ claims only when the evidence exists.
 |---|---:|
 | Package version | 0.10.0 |
 | Public API exports | 828 |
-| Python source modules | 487 |
-| Public Python classes | 933 |
+| Python source modules | 488 |
+| Public Python classes | 936 |
 | Domain package families | 31 |
 | Rust PyO3 function bindings | 177 |
 | Rust source modules | 46 |
 | Notebook files | 100 |
 | Example files | 37 |
 | Optional extras | 43 |
-| Python test files | 859 |
-| Public documentation pages | 263 |
+| Python test files | 860 |
+| Public documentation pages | 264 |
 | GitHub Actions workflows | 23 |
 
 Evidence boundary: this snapshot is a static inventory. Performance, coverage, hardware, and scientific-fidelity claims require their own committed evidence artefacts.
@@ -816,7 +816,7 @@ scpn_quantum_control/
 ├── control/        14 modules — QAOA-MPC, residual VQLS-GS proxy, Petri, ITER, topological
 ├── mitigation/     12 modules — ZNE, PEC, DD, Z2, CPDR, symmetry
 ├── qec/            13 modules — error correction + biological surface code
-├── benchmarks/     13 modules — performance baselines
+├── benchmarks/     20 modules — performance baselines
 ├── identity/        6 modules — identity continuity analysis
 ├── qsnn/            7 modules — quantum spiking neural networks + neuromorphic bridge
 ├── crypto/          8 modules — QKD, Bell tests, key hierarchy
@@ -886,6 +886,7 @@ Full docs at **[anulum.github.io/scpn-quantum-control](https://anulum.github.io/
 - [Phase API](docs/phase_api.md) — advanced reference for 29 evolution algorithms
 - [Application Benchmark Plugins](docs/application_benchmarks.md) — EEG, plasma, power-grid, and FEP datasets through QPU artefacts
 - [Classical Baselines](docs/classical_baselines.md) — SciPy ODE, QuTiP Lindblad, and MPS TEBD provenance surfaces
+- [TN/MPS Baseline Design](docs/tn_mps_baseline_design.md) — CPU-first N=30-40 tensor-network baseline plan
 - [Hardware Guide](docs/hardware_guide.md) — IBM Quantum setup
 - [Notebooks](docs/notebooks.md) — 99 tracked notebooks
 - [Bridges](docs/bridges_api.md) — cross-repo integrations

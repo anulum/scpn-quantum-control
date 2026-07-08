@@ -99,7 +99,7 @@ graph TD
     gauge["gauge/ (6)\nGauge theory"]
     apps["applications/ (14)\nBenchmarks"]
     crypto["crypto/ (9)\nQKD + PQC"]
-    benchmarks["benchmarks/ (19)\nPerformance"]
+    benchmarks["benchmarks/ (20)\nPerformance"]
     ssgf["ssgf/ (4)\nGeometry"]
     psi_field["psi_field/ (4)\nU(1) lattice gauge"]
     oscillatools["oscillatools (external)\nKuramoto substrate: Rust → Julia → Python dispatch"]

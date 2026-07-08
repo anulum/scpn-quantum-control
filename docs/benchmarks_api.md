@@ -2,13 +2,13 @@
 
 The `benchmarks` package measures the computational frontier: at what
 system size does quantum hardware outperform the best classical methods
-for simulating Kuramoto-XY dynamics? Six modules answer this from
+for simulating Kuramoto-XY dynamics? Seven modules answer this from
 different angles — documented classical baselines, exact diagonalisation,
 GPU statevector, MPS tensor networks, application-oriented metrics, and
 differentiable-programming conformance.
 
-6 modules, differentiable-programming conformance rows, and 3 crossover
-estimates.
+7 modules, differentiable-programming conformance rows, TN/MPS baseline design,
+and 3 crossover estimates.
 
 Rust kernel execution-mode evidence is tracked separately from benchmark timing.
 `tools/audit_rust_kernel_execution.py` writes static SIMD/threading inventory
@@ -59,6 +59,22 @@ Provides explicit baseline runs and availability reporting:
 
 See [Classical Baselines](classical_baselines.md) for the provenance contract
 and examples.
+
+### 1b. `tn_mps_baseline_design` — N=30-40 TN/MPS Baseline Plan
+
+Builds the QWC-4.2 no-claim design artifact for the S2 tensor-network baseline
+follow-up:
+
+- `build_tn_mps_baseline_design` — deterministic CPU-first N=30-40 design manifest.
+- `render_tn_mps_baseline_design_markdown` — human-reviewable report.
+
+The design selects the Python/quimb CPU MPS adapter as the first execution path,
+keeps the bounded native Schmidt/resource model as a deterministic scaffold, and
+blocks ITensor/Julia, GPU TN, tensor-network-hardness, and broad-advantage claims
+until measured rows exist.
+
+See [TN/MPS Baseline Design](tn_mps_baseline_design.md) for the generated
+artifact and regeneration command.
 
 ### 2. `quantum_advantage` — Classical vs Quantum Scaling
 

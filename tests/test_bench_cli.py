@@ -111,6 +111,18 @@ def test_s2_scaling_lite_selection_includes_protocol_and_lite_rows() -> None:
     assert labels == ["s2-scaling-protocol", "s2-scaling-lite", "s2-claim-boundary"]
 
 
+def test_s2_tn_mps_design_selection_is_design_harness() -> None:
+    harnesses = bench_cli._selected_harnesses("s2-tn-design", include_gpu=False)
+
+    assert harnesses == [
+        bench_cli.Harness(
+            "s2-tn-mps-baseline-design",
+            "scripts/export_tn_mps_baseline_design.py",
+            frozenset({"s2-tn-design"}),
+        )
+    ]
+
+
 def test_s3_design_ready_selection_is_readiness_harness() -> None:
     harnesses = bench_cli._selected_harnesses("s3", include_gpu=False)
 
@@ -358,6 +370,17 @@ def test_stable_core_capability_matrix_dry_run_selects_matrix_harness(
     assert "selected harnesses" in captured.out
     assert "stable-core-capability-matrix" in captured.out
     assert "scripts/export_stable_core_capability_matrix.py" in captured.out
+
+
+def test_s2_tn_mps_design_dry_run_selects_design_harness(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    rc = bench_cli.run(["s2-tn-mps-baseline-design", "--dry-run"])
+
+    captured = capsys.readouterr()
+    assert rc == 0
+    assert "s2-tn-mps-baseline-design" in captured.out
+    assert "scripts/export_tn_mps_baseline_design.py" in captured.out
 
 
 def test_realtime_control_e2e_dry_run_selects_e2e_harness(

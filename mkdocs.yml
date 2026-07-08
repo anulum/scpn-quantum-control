@@ -126,6 +126,7 @@ nav:
           - Real-Data Synchronisation Forecasting: real_data_sync_forecasting.md
           - Classical Baselines: classical_baselines.md
           - Benchmarks API: benchmarks_api.md
+          - TN/MPS Baseline Design: tn_mps_baseline_design.md
           - Isolated Benchmark Runner: isolated_benchmark_runner.md
           - Rust Engine: rust_engine.md
           - Native Speedup Benchmark: native_speedup_benchmark.md
