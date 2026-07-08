@@ -40,6 +40,7 @@ FSS_CLAIM_BOUNDARY = (
     "fits are numerical extrapolation evidence only, no hardware execution, "
     "no isolated performance claim, and no thermodynamic-limit proof is implied"
 )
+DEFAULT_FSS_SYSTEM_SIZES = (2, 3, 4, 5)
 
 
 @dataclass(frozen=True)
@@ -210,7 +211,7 @@ def _ring_topology(n: int) -> NDArray[np.float64]:
 
 def _validate_system_sizes(system_sizes: list[int] | None) -> list[int]:
     if system_sizes is None:
-        return [2, 3, 4]
+        return list(DEFAULT_FSS_SYSTEM_SIZES)
     if not system_sizes:
         raise ValueError("system_sizes must contain at least one system size")
     sizes: list[int] = []
@@ -257,7 +258,7 @@ def finite_size_scaling(
     Parameters
     ----------
     system_sizes:
-        Optional qubit counts to scan. Defaults to ``[2, 3, 4]``.
+        Optional qubit counts to scan. Defaults to ``[2, 3, 4, 5]``.
     k_range:
         Strictly increasing one-dimensional coupling grid. Defaults to a
         deterministic local scan from 0.3 to 6.0.

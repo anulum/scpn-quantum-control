@@ -285,11 +285,12 @@ and `claim_boundary`. The optional `FSSFitDiagnostics` records expose the
 linearized ansatz name, extrapolated intercept, correction coefficient,
 pointwise residuals, residual norm, maximum absolute residual, design-matrix
 condition number, rank, point count, and the same non-promotional claim
-boundary. `system_sizes` must be unique integer qubit counts from 2 through
-the available frequency table; `k_range` must be one-dimensional, finite,
-strictly increasing, and at least two points. The scan is local dense exact
-finite-size evidence only, not hardware execution, isolated performance
-evidence, or a thermodynamic-limit proof.
+boundary. By default the scan uses system sizes `[2, 3, 4, 5]`.
+`system_sizes` must be unique integer qubit counts from 2 through the available
+frequency table; `k_range` must be one-dimensional, finite, strictly
+increasing, and at least two points. The scan is local dense exact finite-size
+evidence only, not hardware execution, isolated performance evidence, or a
+thermodynamic-limit proof.
 
 ### `adiabatic_preparation` — Adiabatic State Preparation
 

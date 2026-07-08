@@ -10,10 +10,13 @@
 from __future__ import annotations
 
 import sys
+from collections.abc import Iterator
+from typing import Any
 from unittest.mock import MagicMock, patch
 
 import numpy as np
 import pytest
+from numpy.typing import NDArray
 
 from scpn_quantum_control.analysis import graph_topology_scan as gts_mod
 from scpn_quantum_control.analysis import persistent_homology as ph_mod
@@ -22,16 +25,22 @@ from scpn_quantum_control.bridge.knm_hamiltonian import (
 )
 
 
-def _ring(n: int) -> np.ndarray:
+def _ring(n: int) -> NDArray[np.float64]:
     T = np.zeros((n, n))
     for i in range(n):
         j = (i + 1) % n
         T[i, j] = T[j, i] = 1.0
-    return T
+    result: NDArray[np.float64] = T
+    return result
 
 
-def _fake_ripser(D, maxdim=1, distance_matrix=False):
+def _fake_ripser(
+    D: NDArray[np.float64],
+    maxdim: int = 1,
+    distance_matrix: bool = False,
+) -> dict[str, list[NDArray[np.float64]]]:
     """Return plausible persistence diagrams for any distance matrix."""
+    del maxdim, distance_matrix
 
     n = D.shape[0]
     rng = np.random.default_rng(42)
@@ -49,7 +58,7 @@ def _fake_ripser(D, maxdim=1, distance_matrix=False):
 
 
 @pytest.fixture()
-def mock_ripser(monkeypatch):
+def mock_ripser(monkeypatch: pytest.MonkeyPatch) -> Iterator[None]:
     """Patch ripser as available and provide a fake ripser function."""
 
     monkeypatch.setattr(ph_mod, "_RIPSER_AVAILABLE", True)
@@ -60,7 +69,7 @@ def mock_ripser(monkeypatch):
     yield
 
 
-def test_quantum_ph_ripser_not_available():
+def test_quantum_ph_ripser_not_available() -> None:
     """Verifies 46-47: _RIPSER_AVAILABLE = False branch."""
     with patch(
         "scpn_quantum_control.analysis.quantum_persistent_homology._RIPSER_AVAILABLE",
@@ -78,7 +87,7 @@ def test_quantum_ph_ripser_not_available():
             )
 
 
-def test_quantum_ph_function_raises_without_ripser():
+def test_quantum_ph_function_raises_without_ripser() -> None:
     """Verifies 139: quantum_persistent_homology raises when ripser missing."""
     import scpn_quantum_control.analysis.quantum_persistent_homology as qph_mod
 
@@ -93,7 +102,7 @@ def test_quantum_ph_function_raises_without_ripser():
         qph_mod._RIPSER_AVAILABLE = orig
 
 
-def test_quantum_phi_default_k_base():
+def test_quantum_phi_default_k_base() -> None:
     """Verifies 174: k_base_values defaults to linspace when None."""
     from scpn_quantum_control.analysis.quantum_phi import phi_vs_coupling_scan
 
@@ -102,17 +111,18 @@ def test_quantum_phi_default_k_base():
     assert len(result["k_base"]) == 20
 
 
-def test_sff_level_spacing_few_spacings():
+def test_sff_level_spacing_few_spacings() -> None:
     """Verifies 68: _level_spacing_ratio returns 0.0 for < 2 spacings."""
     from scpn_quantum_control.analysis.spectral_form_factor import _level_spacing_ratio
 
-    eigs = np.array([0.0, 0.0, 1.0])  # after filtering zero spacings, < 2
+    eigs = np.array([0.0, 0.0, 1.0], dtype=np.float64)  # after filtering zero spacings, < 2
     r = _level_spacing_ratio(eigs)
     assert isinstance(r, float)
 
 
-def test_compute_persistence(mock_ripser):
-    theta = np.linspace(0, 2 * np.pi, 8, endpoint=False)
+def test_compute_persistence(mock_ripser: None) -> None:
+    del mock_ripser
+    theta = np.linspace(0, 2 * np.pi, 8, endpoint=False, dtype=np.float64)
     result = ph_mod.compute_persistence(theta, persistence_threshold=0.05)
     assert isinstance(result, ph_mod.PersistenceResult)
     assert result.n_oscillators == 8
@@ -121,22 +131,23 @@ def test_compute_persistence(mock_ripser):
     assert 0 <= result.p_h1 <= 1
 
 
-def test_compute_persistence_raises_without_ripser(monkeypatch):
+def test_compute_persistence_raises_without_ripser(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(ph_mod, "_RIPSER_AVAILABLE", False)
     with pytest.raises(ImportError, match="ripser"):
-        ph_mod.compute_persistence(np.zeros(4))
+        ph_mod.compute_persistence(np.zeros(4, dtype=np.float64))
 
 
-def test_phase_distance_matrix():
-    theta = np.array([0, np.pi / 2, np.pi])
+def test_phase_distance_matrix() -> None:
+    theta = np.array([0.0, np.pi / 2, np.pi], dtype=np.float64)
     D = ph_mod.phase_distance_matrix(theta)
     assert D.shape == (3, 3)
     np.testing.assert_allclose(D[0, 0], 0.0)
     np.testing.assert_allclose(D, D.T)
 
 
-def test_p_h1_vs_temperature(mock_ripser, monkeypatch):
-    K = np.array([[0, 0.5, 0.2], [0.5, 0, 0.3], [0.2, 0.3, 0]])
+def test_p_h1_vs_temperature(mock_ripser: None, monkeypatch: pytest.MonkeyPatch) -> None:
+    del mock_ripser, monkeypatch
+    K = np.array([[0.0, 0.5, 0.2], [0.5, 0.0, 0.3], [0.2, 0.3, 0.0]], dtype=np.float64)
     result = ph_mod.p_h1_vs_temperature(
         K,
         t_range=(0.1, 0.5),
@@ -151,33 +162,34 @@ def test_p_h1_vs_temperature(mock_ripser, monkeypatch):
     assert len(result["temperature"]) == 3
 
 
-def test_p_h1_vs_temperature_raises_without_ripser(monkeypatch):
+def test_p_h1_vs_temperature_raises_without_ripser(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(ph_mod, "_RIPSER_AVAILABLE", False)
     with pytest.raises(ImportError, match="ripser"):
-        ph_mod.p_h1_vs_temperature(np.eye(3))
+        ph_mod.p_h1_vs_temperature(np.eye(3, dtype=np.float64))
 
 
-def test_erdos_renyi_coupling():
+def test_erdos_renyi_coupling() -> None:
     K = gts_mod._erdos_renyi_coupling(8, 0.5, strength=0.4, seed=42)
     assert K.shape == (8, 8)
     np.testing.assert_allclose(K, K.T)
 
 
-def test_watts_strogatz_coupling():
+def test_watts_strogatz_coupling() -> None:
     K = gts_mod._watts_strogatz_coupling(8, k=4, beta=0.3, seed=42)
     assert K.shape == (8, 8)
     np.testing.assert_allclose(K, K.T)
 
 
-def test_ring_coupling():
+def test_ring_coupling() -> None:
     K = gts_mod._ring_coupling(8, k=2, strength=0.5)
     assert K.shape == (8, 8)
     np.testing.assert_allclose(K, K.T)
     assert np.sum(K > 0) == 8 * 2 * 2  # each node has 2k neighbours
 
 
-def test_measure_p_h1_at_transition(mock_ripser):
-    K = np.array([[0, 0.5], [0.5, 0]])
+def test_measure_p_h1_at_transition(mock_ripser: None) -> None:
+    del mock_ripser
+    K = np.array([[0.0, 0.5], [0.5, 0.0]], dtype=np.float64)
     mean, std = gts_mod._measure_p_h1_at_transition(
         K,
         n_thermalize=5,
@@ -188,18 +200,27 @@ def test_measure_p_h1_at_transition(mock_ripser):
     assert isinstance(std, float)
 
 
-def test_scan_graph_topologies_raises_without_ripser(monkeypatch):
+def test_scan_graph_topologies_raises_without_ripser(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(gts_mod, "_RIPSER_AVAILABLE", False)
     with pytest.raises(ImportError, match="ripser"):
         gts_mod.scan_graph_topologies()
 
 
-def test_scan_graph_topologies(mock_ripser, monkeypatch):
+def test_scan_graph_topologies(mock_ripser: None, monkeypatch: pytest.MonkeyPatch) -> None:
+    del mock_ripser
+
     # Mock _measure_p_h1_at_transition to avoid slow MC simulation
+    def fake_measure_p_h1_at_transition(
+        K: NDArray[np.float64],
+        **kwargs: Any,
+    ) -> tuple[float, float]:
+        del K, kwargs
+        return 0.5, 0.1
+
     monkeypatch.setattr(
         gts_mod,
         "_measure_p_h1_at_transition",
-        lambda K, **kw: (0.5, 0.1),
+        fake_measure_p_h1_at_transition,
     )
     # n must be >= k+2 (k=4 default) to avoid infinite rewiring loop in Watts-Strogatz
     results = gts_mod.scan_graph_topologies(n=8, n_samples=1, seed=42)
@@ -210,30 +231,37 @@ def test_scan_graph_topologies(mock_ripser, monkeypatch):
 
 
 class TestSFFDefaults:
-    def test_default_k_range(self):
+    def test_default_k_range(self) -> None:
         from scpn_quantum_control.analysis.spectral_form_factor import sff_vs_coupling
 
         result = sff_vs_coupling(OMEGA_N_16[:2], _ring(2))
         assert len(result.k_values) == 15
 
-    def test_no_chaos_onset(self):
+    def test_no_chaos_onset(self) -> None:
         """Very weak coupling → Poisson statistics everywhere → no chaos onset."""
         from scpn_quantum_control.analysis.spectral_form_factor import sff_vs_coupling
 
-        result = sff_vs_coupling(OMEGA_N_16[:2], _ring(2), k_range=np.array([0.001]))
+        result = sff_vs_coupling(
+            OMEGA_N_16[:2],
+            _ring(2),
+            k_range=np.array([0.001], dtype=np.float64),
+        )
         # chaos_onset_K may or may not be None depending on r_bar
         assert isinstance(result.chaos_onset_K, (float, type(None)))
 
 
 class TestFSSDefaults:
-    def test_default_system_sizes(self):
-        from scpn_quantum_control.analysis.finite_size_scaling import finite_size_scaling
+    def test_default_system_sizes(self) -> None:
+        from scpn_quantum_control.analysis.finite_size_scaling import (
+            DEFAULT_FSS_SYSTEM_SIZES,
+            finite_size_scaling,
+        )
 
         result = finite_size_scaling()
-        assert len(result.system_sizes) == 3
-        assert 2 in result.system_sizes
+        assert result.system_sizes == list(DEFAULT_FSS_SYSTEM_SIZES)
+        assert 2 in DEFAULT_FSS_SYSTEM_SIZES
 
-    def test_default_k_range(self):
+    def test_default_k_range(self) -> None:
         from scpn_quantum_control.analysis.finite_size_scaling import finite_size_scaling
 
         result = finite_size_scaling(system_sizes=[2])
@@ -241,10 +269,10 @@ class TestFSSDefaults:
 
 
 class TestPersistentHomology:
-    def test_phase_distance_matrix(self):
+    def test_phase_distance_matrix(self) -> None:
         from scpn_quantum_control.analysis.persistent_homology import phase_distance_matrix
 
-        theta = np.array([0.0, 1.0, 2.0, 3.0])
+        theta = np.array([0.0, 1.0, 2.0, 3.0], dtype=np.float64)
         D = phase_distance_matrix(theta)
         assert D.shape == (4, 4)
         assert np.allclose(D, D.T)

@@ -15,6 +15,7 @@ from numpy.typing import NDArray
 
 from scpn_quantum_control.analysis import finite_size_scaling as fss_module
 from scpn_quantum_control.analysis.finite_size_scaling import (
+    DEFAULT_FSS_SYSTEM_SIZES,
     FSSResult,
     finite_size_scaling,
 )
@@ -278,8 +279,8 @@ class TestFSSCoverage:
     def test_default_parameters(self) -> None:
         """Cover lines 85, 87: system_sizes=None, k_range=None defaults."""
         result = finite_size_scaling()
-        assert len(result.k_c_values) == 3
-        assert len(result.system_sizes) == 3
+        assert result.system_sizes == list(DEFAULT_FSS_SYSTEM_SIZES)
+        assert len(result.k_c_values) == len(DEFAULT_FSS_SYSTEM_SIZES)
 
     def test_fit_power_ansatz_single_point(self) -> None:
         """Cover line 132: _fit_power_ansatz with len(sizes) < 2 returns None.

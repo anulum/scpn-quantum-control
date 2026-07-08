@@ -780,7 +780,7 @@ All values finite. ODE failure → RuntimeError with message.
 
 | Operation | System | Time | Output |
 |-----------|--------|------|--------|
-| `finite_size_scaling(sizes=[2,3,4])` | 3 sizes | 0.8 ms | K_c per size + extrapolation |
+| `finite_size_scaling()` | 4 sizes | ~6.2 ms local mean | K_c per size + extrapolation |
 
 K_c values finite. gap_min > 0. Extrapolation via BKT or power-law fit.
 

@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # Commercial license available
-# © Concepts 1996-2026 Miroslav Sotek. All rights reserved.
-# © Code 2020-2026 Miroslav Sotek. All rights reserved.
+# © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
+# © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # scpn-quantum-control -- tests for unified differentiable API facade
@@ -16,6 +16,7 @@ import pytest
 from numpy.typing import NDArray
 
 import scpn_quantum_control as scpn
+from scpn_quantum_control.analysis.finite_size_scaling import DEFAULT_FSS_SYSTEM_SIZES
 from scpn_quantum_control.differentiable_api import (
     DifferentiabilityDiagnosticReport,
     DifferentiableDashboardCapabilityRow,
@@ -210,6 +211,12 @@ def test_unified_differentiable_qfi_fss_report_is_bounded() -> None:
     assert "no hardware" in report.claim_boundary
     assert dispatched.to_dict() == report.to_dict()
     assert scpn.differentiable_qfi_fss_report is differentiable_qfi_fss_report
+
+
+def test_unified_differentiable_qfi_fss_report_uses_default_fss_sizes() -> None:
+    report = differentiable_qfi_fss_report(k_range=np.linspace(0.5, 3.0, 6))
+
+    assert report.payload["system_sizes"] == list(DEFAULT_FSS_SYSTEM_SIZES)
 
 
 def test_unified_differentiable_benchmark_report_is_non_performance_evidence() -> None:
