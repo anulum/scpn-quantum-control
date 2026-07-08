@@ -151,6 +151,7 @@ packages = ["src/scpn_quantum_control", "src/scpn"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+pythonpath = ["."]
 addopts = "-m 'not slow and not hardware and not internal_corpus and not performance'"
 markers = [
     "slow: marks tests as slow (run with '-m slow')",
