@@ -126,7 +126,7 @@ def test_competitive_baseline_promotion_gate_combines_language_and_freshness() -
         refresh=run_competitive_baseline_refresh(),
         as_of=date(2026, 6, 27),
         public_texts={
-            "README.md": ("The differentiable stack is state-of-the-art for PyTorch autograd.")
+            "README.md": ("The differentiable stack is world-leading for PyTorch autograd.")
         },
     )
 

@@ -213,7 +213,7 @@ evidence only and does not promote performance, provider, QPU, GPU, hardware,
 or `isolated_affinity` claims.
 `audit_differentiable_promotion_language()` is the release-blocking
 public-language gate for that scorecard. It scans the public differentiable
-surfaces used by CI and fails when unbounded `state-of-the-art`, exceedance,
+surfaces used by CI and fails when unbounded category-leadership, exceedance,
 production-performance, or promotion-ready wording appears without a matching
 ready scorecard row and promoted claim-ledger rows. Bounded candidate-status
 wording remains allowed so roadmap and reviewer documentation can describe

@@ -5,11 +5,15 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — differentiable baseline scorecard tests
-"""Tests for differentiable state-of-art scorecard governance."""
+"""Tests for differentiable baseline scorecard governance."""
 
 from __future__ import annotations
 
-from typing import get_args
+from dataclasses import replace
+from pathlib import Path
+from typing import cast, get_args
+
+import pytest
 
 from scpn_quantum_control import (
     DifferentiableBaselineCategory,
@@ -21,7 +25,15 @@ from scpn_quantum_control import (
 )
 from scpn_quantum_control.differentiable_baseline_scorecard import (
     REQUIRED_BASELINE_CATEGORIES,
+    DifferentiableBaselineStatus,
     validate_differentiable_baseline_scorecard,
+)
+from scpn_quantum_control.differentiable_baseline_scorecard import (
+    DifferentiableBaselineCategory as BaselineCategory,
+)
+from scpn_quantum_control.differentiable_claim_ledger import (
+    ClaimLedger,
+    load_differentiable_claim_ledger,
 )
 
 
@@ -53,6 +65,30 @@ def test_differentiable_baseline_scorecard_rows_are_claim_bounded() -> None:
     assert "Catalyst" in rows["catalyst_compiler_workflows"].baseline
     assert rows["provider_hardware_gradients"].claim_ids == ("phase_qnode_claim_boundary",)
     assert rows["rust_native_program_ad"].status == "behind_baseline"
+
+
+def test_differentiable_baseline_scorecard_row_rejects_invalid_fields() -> None:
+    """Row construction rejects unknown vocabulary and empty evidence fields."""
+    row = run_differentiable_baseline_scorecard().rows[0]
+
+    with pytest.raises(ValueError, match="unknown baseline category"):
+        replace(row, category=cast(BaselineCategory, "unknown_category"))
+    with pytest.raises(ValueError, match="unknown baseline status"):
+        replace(row, status=cast(DifferentiableBaselineStatus, "done"))
+    with pytest.raises(ValueError, match="baseline must be non-empty"):
+        replace(row, baseline=" ")
+    with pytest.raises(ValueError, match="claim_ids must contain non-empty entries"):
+        replace(row, claim_ids=())
+
+
+def test_differentiable_baseline_scorecard_row_rejects_inconsistent_blockers() -> None:
+    """Ready rows cannot carry blockers, and behind-baseline rows must list them."""
+    row = run_differentiable_baseline_scorecard().rows[0]
+
+    with pytest.raises(ValueError, match="ready scorecard rows must not carry blockers"):
+        replace(row, status="at_baseline")
+    with pytest.raises(ValueError, match="behind-baseline scorecard rows must list blockers"):
+        replace(row, blockers=())
 
 
 def test_differentiable_baseline_scorecard_validation_rejects_unpromoted_ready_rows() -> None:
@@ -89,13 +125,49 @@ def test_differentiable_baseline_scorecard_validation_rejects_unpromoted_ready_r
     assert any("requires promoted ledger rows" in error for error in validation.errors)
 
 
+def test_differentiable_baseline_scorecard_validation_reports_metadata_errors(
+    tmp_path: Path,
+) -> None:
+    """Scorecard validation reports schema, count, ordering, and path drift."""
+    scorecard = run_differentiable_baseline_scorecard()
+    first = replace(
+        scorecard.rows[0],
+        claim_ids=("missing_claim",),
+        docs_surface=("docs/missing_scorecard_path.md",),
+    )
+    invalid_scorecard = type(scorecard)(
+        schema="bad.schema",
+        artifact_id="bad-artifact",
+        rows=(scorecard.rows[1], first, *scorecard.rows[2:]),
+        promotion_ready=True,
+        ready_category_count=99,
+        total_category_count=99,
+        claim_boundary=scorecard.claim_boundary,
+    )
+
+    validation = validate_differentiable_baseline_scorecard(
+        invalid_scorecard,
+        repo_root=tmp_path,
+    )
+    payload = validation.to_dict()
+
+    assert not validation.passed
+    assert payload["passed"] is False
+    assert any("unexpected scorecard schema" in error for error in validation.errors)
+    assert any("unexpected scorecard artifact_id" in error for error in validation.errors)
+    assert any("categories must match" in error for error in validation.errors)
+    assert any("total_category_count" in error for error in validation.errors)
+    assert any("ready_category_count" in error for error in validation.errors)
+    assert any("promotion_ready" in error for error in validation.errors)
+    assert any("unknown claim-ledger row: missing_claim" in error for error in validation.errors)
+    assert any("docs/missing_scorecard_path.md" in error for error in validation.errors)
+
+
 def test_differentiable_promotion_language_rejects_unbacked_public_claims() -> None:
     """Public promotional wording must fail until scorecard and ledger rows are promoted."""
     audit = audit_differentiable_promotion_language(
         public_texts={
-            "README.md": (
-                "The differentiable stack is state-of-the-art for JAX native transforms."
-            )
+            "README.md": ("The differentiable stack is world-leading for JAX native transforms.")
         }
     )
 
@@ -103,6 +175,76 @@ def test_differentiable_promotion_language_rejects_unbacked_public_claims() -> N
     assert audit.checked_paths == ("README.md",)
     assert audit.checked_promotional_categories == ("jax_native_transforms",)
     assert any("jax_native_transforms" in error for error in audit.errors)
+
+
+def test_differentiable_promotion_language_maps_category_markers() -> None:
+    """Category marker words route promotional wording to the matching scorecard row."""
+    audit = audit_differentiable_promotion_language(
+        public_texts={"README.md": "The torch.compile route is promotion-ready."}
+    )
+
+    assert not audit.passed
+    assert audit.checked_promotional_categories == ("pytorch_autograd_compile",)
+
+
+def test_differentiable_promotion_language_checks_all_categories_without_category_hint() -> None:
+    """Unscoped promotional wording is checked against every scorecard category."""
+    audit = audit_differentiable_promotion_language(
+        public_texts={"README.md": "This route is promotion-ready."}
+    )
+    payload = audit.to_dict()
+
+    assert not audit.passed
+    assert payload["passed"] is False
+    assert set(audit.checked_promotional_categories) == set(REQUIRED_BASELINE_CATEGORIES)
+
+
+def test_differentiable_promotion_language_allows_ready_promoted_category() -> None:
+    """A ready scorecard row with promoted ledger rows may pass the language gate."""
+    committed = load_differentiable_claim_ledger()
+    promoted = ClaimLedger(
+        schema=committed.schema,
+        artifact_id=committed.artifact_id,
+        rows=tuple(replace(row, promotion_status="promoted") for row in committed.rows),
+    )
+    scorecard = run_differentiable_baseline_scorecard(ledger=promoted)
+    ready_first = replace(scorecard.rows[0], status="at_baseline", blockers=())
+    ready_scorecard = type(scorecard)(
+        schema=scorecard.schema,
+        artifact_id=scorecard.artifact_id,
+        rows=(ready_first, *scorecard.rows[1:]),
+        promotion_ready=False,
+        ready_category_count=1,
+        total_category_count=scorecard.total_category_count,
+        claim_boundary=scorecard.claim_boundary,
+    )
+
+    audit = audit_differentiable_promotion_language(
+        public_texts={"README.md": "JAX native transforms are at_baseline."},
+        scorecard=ready_scorecard,
+        ledger=promoted,
+    )
+
+    assert audit.passed
+    assert audit.checked_promotional_categories == ("jax_native_transforms",)
+
+
+def test_differentiable_promotion_language_loads_existing_public_paths(
+    tmp_path: Path,
+) -> None:
+    """The audit loads existing configured public paths and skips missing paths."""
+    docs = tmp_path / "docs"
+    docs.mkdir()
+    present = docs / "page.md"
+    present.write_text("This route remains bounded_candidate.\n", encoding="utf-8")
+
+    audit = audit_differentiable_promotion_language(
+        public_paths=("docs/page.md", "docs/missing.md"),
+        repo_root=tmp_path,
+    )
+
+    assert not audit.passed
+    assert audit.checked_paths == ("docs/page.md",)
 
 
 def test_differentiable_promotion_language_allows_bounded_candidate_wording() -> None:

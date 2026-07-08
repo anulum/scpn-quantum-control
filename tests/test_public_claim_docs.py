@@ -213,7 +213,7 @@ def test_results_summary_is_marked_as_historical_record() -> None:
 # CEO directive 2026-07-07 (BROADCAST_2026-07-07_no_superlatives_outward): outward
 # surfaces carry no self-applied superlatives — they are internal quality targets.
 # Tokens here are the unambiguous marketing tier; factual baseline comparisons
-# ("not yet state-of-the-art", scorecards) do not use these words.
+# ("not yet category-leading", scorecards) do not use these words.
 _BOAST_TOKENS = (
     "world-class",
     "world class",

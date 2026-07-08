@@ -400,7 +400,7 @@ Next differentiable-programming pages:
 
 Before comparing external ML frameworks, build the CPU-only overlay documented
 in [Differentiable Programming](differentiable_programming.md). Phase-QNode
-performance wording remains SOTA-candidate unless a CI artefact is classified as
+performance wording remains bounded_candidate unless a CI artefact is classified as
 `isolated_affinity` by the claim ledger.
 For JAX registered Phase-QNode routes, `jax_phase_qnode_aot_export_audit(...)`
 is a local AOT/export diagnostic that records StableHLO and `jax.export`

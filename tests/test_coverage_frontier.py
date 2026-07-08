@@ -70,9 +70,9 @@ def test_promoted_with_evidence_maps_to_reference_validated() -> None:
     )
 
 
-def test_sota_candidate_and_gaps_map_conservatively() -> None:
+def test_bounded_candidate_and_gaps_map_conservatively() -> None:
     """Candidate, gap, and block statuses each map to their honest non-answered status."""
-    assert map_claim_status("SOTA-candidate") is ClaimStatus.BOUNDED_MODEL
+    assert map_claim_status("bounded_candidate") is ClaimStatus.BOUNDED_MODEL
     assert map_claim_status("hard_gap") is ClaimStatus.VALIDATION_GAP
     assert map_claim_status("blocked") is ClaimStatus.EXTERNAL_DEPENDENCY_BLOCKED
 
@@ -80,7 +80,7 @@ def test_sota_candidate_and_gaps_map_conservatively() -> None:
 def test_reference_validated_on_non_promoted_fails_closed() -> None:
     """An unpromoted claim cannot be reference-validated (LOCK-4 ordering)."""
     with pytest.raises(ValueError, match="only admissible for a promoted claim"):
-        map_claim_status("SOTA-candidate", reference_validated=True)
+        map_claim_status("bounded_candidate", reference_validated=True)
 
 
 def test_unknown_promotion_status_is_rejected() -> None:
@@ -99,7 +99,7 @@ def test_answered_statuses_are_exactly_validated_and_refuted() -> None:
 
 def test_candidate_ledger_answers_nothing_and_is_off_frontier() -> None:
     """A ledger of candidates honestly answers 0% and flags itself over-conservative."""
-    rows = [_row(f"c{i}", "SOTA-candidate") for i in range(4)]
+    rows = [_row(f"c{i}", "bounded_candidate") for i in range(4)]
     report = measure_coverage_frontier(rows)
     assert report.total == 4
     assert report.answered_confident == 0
@@ -113,7 +113,7 @@ def test_candidate_ledger_answers_nothing_and_is_off_frontier() -> None:
 
 def test_attaching_evidence_advances_the_frontier() -> None:
     """Certifying reference-validation evidence on a promoted claim raises the rate."""
-    rows = [_row("p1", "promoted"), _row("c1", "SOTA-candidate")]
+    rows = [_row("p1", "promoted"), _row("c1", "bounded_candidate")]
     report = measure_coverage_frontier(rows, reference_validated_claim_ids=["p1"])
     assert report.answered_confident == 1
     assert report.answer_rate == 0.5
@@ -139,7 +139,7 @@ def test_certification_registry_feeds_reference_validated_claim_ids() -> None:
         ),
     )
     report = measure_coverage_frontier_from_certifications(
-        [_row("p1", "promoted"), _row("c1", "SOTA-candidate")],
+        [_row("p1", "promoted"), _row("c1", "bounded_candidate")],
         registry=registry,
     )
 
@@ -180,14 +180,14 @@ def test_empty_ledger_is_zero_and_on_frontier() -> None:
 
 def test_non_eligible_certified_claim_fails_closed() -> None:
     """Listing a non-promoted claim as reference-validated fails closed in measurement."""
-    rows = [_row("c1", "SOTA-candidate")]
+    rows = [_row("c1", "bounded_candidate")]
     with pytest.raises(ValueError, match="only admissible for a promoted claim"):
         measure_coverage_frontier(rows, reference_validated_claim_ids=["c1"])
 
 
 def test_to_dict_round_trips_the_report() -> None:
     """The report serialises every field for the release artefact."""
-    report = measure_coverage_frontier([_row("c1", "SOTA-candidate")])
+    report = measure_coverage_frontier([_row("c1", "bounded_candidate")])
     payload = report.to_dict()
     assert payload["total"] == 1
     assert payload["answer_rate"] == 0.0
@@ -202,7 +202,7 @@ def test_to_dict_round_trips_the_report() -> None:
 
 def test_markdown_reports_off_frontier_with_reason() -> None:
     """The off-frontier artefact carries the answer rate, the flag, and the reason."""
-    report = measure_coverage_frontier([_row("c1", "SOTA-candidate")])
+    report = measure_coverage_frontier([_row("c1", "bounded_candidate")])
     markdown = render_coverage_frontier_markdown(report)
     assert "WS-6 Coverage Frontier" in markdown
     assert "Answer rate:** 0.000 (0/1 confident)" in markdown

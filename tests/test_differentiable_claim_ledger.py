@@ -9,6 +9,7 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
 from pathlib import Path
 from typing import cast
 
@@ -17,6 +18,7 @@ import pytest
 from scpn_quantum_control.differentiable_claim_ledger import (
     DEFAULT_SUPPORT_SURFACE_ALIGNMENT_PATH,
     ClaimLedgerRow,
+    DifferentiableSupportSurfaceAlignment,
     PromotionStatus,
     load_differentiable_claim_ledger,
     load_differentiable_support_surface_alignment,
@@ -28,6 +30,29 @@ from scpn_quantum_control.differentiable_claim_ledger import (
     validate_public_claim_table,
     validate_public_language_against_ledger,
 )
+
+
+def _valid_claim_row(
+    claim_id: str = "claim",
+    *,
+    promotion_status: PromotionStatus = "bounded_candidate",
+    evidence_artifact_ids: tuple[str, ...] = ("artefact-1",),
+    benchmark_artifact_ids: tuple[str, ...] = ("benchmark-1",),
+    claim_boundary: str = "bounded claim boundary",
+) -> ClaimLedgerRow:
+    """Build a minimally valid claim-ledger row for validation-edge tests."""
+    return ClaimLedgerRow(
+        claim_id=claim_id,
+        claim_text=f"{claim_id} bounded claim",
+        implementation_surface=("src/scpn_quantum_control/differentiable_claim_ledger.py",),
+        test_surface=("tests/test_differentiable_claim_ledger.py",),
+        docs_surface=("docs/differentiable_api.md",),
+        evidence_artifact_ids=evidence_artifact_ids,
+        benchmark_artifact_ids=benchmark_artifact_ids,
+        known_gaps=("external evidence pending",),
+        promotion_status=promotion_status,
+        claim_boundary=claim_boundary,
+    )
 
 
 def test_committed_claim_ledger_has_required_rows_and_artefact_ids() -> None:
@@ -55,6 +80,27 @@ def test_committed_claim_ledger_has_required_rows_and_artefact_ids() -> None:
             assert row.evidence_artifact_ids
 
 
+def test_claim_ledger_row_rejects_empty_required_fields() -> None:
+    """Claim rows reject empty identities, surfaces, and boundaries."""
+    row = _valid_claim_row()
+
+    with pytest.raises(ValueError, match="claim_id must be non-empty"):
+        replace(row, claim_id="")
+    with pytest.raises(ValueError, match="claim_text must be non-empty"):
+        replace(row, claim_text="")
+    with pytest.raises(ValueError, match="implementation_surface must contain non-empty entries"):
+        replace(row, implementation_surface=())
+    with pytest.raises(ValueError, match="claim_boundary must be non-empty"):
+        replace(row, claim_boundary="")
+
+
+def test_claim_ledger_iterates_rows() -> None:
+    """The ledger object exposes its rows through iteration."""
+    ledger = load_differentiable_claim_ledger()
+
+    assert tuple(iter(ledger)) == ledger.rows
+
+
 def test_claim_ledger_rejects_promoted_row_without_artefact_id() -> None:
     row = ClaimLedgerRow(
         claim_id="bad_claim",
@@ -74,6 +120,33 @@ def test_claim_ledger_rejects_promoted_row_without_artefact_id() -> None:
     assert not validation.passed
     assert "bad_claim" in validation.errors[0]
     assert "artefact ID" in validation.errors[0]
+
+
+def test_claim_ledger_rejects_promoted_row_without_benchmark_id() -> None:
+    """Promoted claims must name benchmark evidence IDs."""
+    row = _valid_claim_row(
+        "bad_claim",
+        promotion_status="promoted",
+        benchmark_artifact_ids=(),
+    )
+
+    validation = validate_claim_ledger([row])
+
+    assert not validation.passed
+    assert "benchmark evidence IDs" in validation.errors[0]
+
+
+def test_claim_ledger_validation_reports_duplicates_and_candidate_without_evidence() -> None:
+    """Duplicate claim IDs and candidate rows without artefacts are rejected."""
+    row = _valid_claim_row("duplicate", evidence_artifact_ids=())
+
+    validation = validate_claim_ledger([row, row])
+
+    assert not validation.passed
+    assert any("duplicate claim_id" in error for error in validation.errors)
+    assert any(
+        "candidate claims require artefact ID evidence" in error for error in validation.errors
+    )
 
 
 def test_claim_ledger_rejects_promoted_row_without_passing_artefacts() -> None:
@@ -96,6 +169,19 @@ def test_claim_ledger_rejects_promoted_row_without_passing_artefacts() -> None:
     assert "not passed" in validation.errors[0]
 
 
+def test_public_language_allows_promoted_ledger() -> None:
+    """Once a ledger has promoted evidence, public-language validation delegates to it."""
+    row = _valid_claim_row("promoted_claim", promotion_status="promoted")
+
+    validation = validate_public_language_against_ledger(
+        [row],
+        ("This is a world-leading differentiable quantum control claim.",),
+    )
+
+    assert validation.passed
+    assert validation.errors == ()
+
+
 def test_claim_ledger_markdown_summary_maps_rows_to_status(tmp_path: Path) -> None:
     ledger = load_differentiable_claim_ledger()
     markdown = render_claim_ledger_markdown(ledger)
@@ -108,7 +194,28 @@ def test_claim_ledger_markdown_summary_maps_rows_to_status(tmp_path: Path) -> No
     assert "differentiable_architecture_rustification_map" in text
     assert "differentiable_dependency_environment_map" in text
     assert "differentiable_isolated_benchmark_plan" in text
-    assert "SOTA-candidate" in text
+    assert "bounded_candidate" in text
+
+
+def test_support_surface_alignment_from_dict_edges() -> None:
+    """Support-surface alignment loader validates schema and list-like fields."""
+    payload = {
+        "schema": "scpn_qc_differentiable_support_surface_alignment_v1",
+        "artifact_id": "artifact",
+        "passed": True,
+        "errors": [],
+        "checked_claim_ids": ["claim"],
+        "checked_paths": ["docs/differentiable_api.md"],
+        "claim_boundary": "support-surface alignment audit only",
+    }
+
+    alignment = DifferentiableSupportSurfaceAlignment.from_dict(payload)
+
+    assert alignment.to_dict()["checked_claim_ids"] == ["claim"]
+    with pytest.raises(ValueError, match="unknown support-surface alignment schema"):
+        DifferentiableSupportSurfaceAlignment.from_dict({**payload, "schema": "bad.v1"})
+    with pytest.raises(ValueError, match="expected a list-like JSON value"):
+        DifferentiableSupportSurfaceAlignment.from_dict({**payload, "errors": "bad"})
 
 
 def test_claim_ledger_rejects_unknown_status() -> None:
@@ -164,6 +271,33 @@ def test_public_claim_table_validator_rejects_missing_rows() -> None:
     assert any("missing public claim-table row" in error for error in validation.errors)
 
 
+def test_public_claim_table_handles_promoted_and_hard_gap_rows() -> None:
+    """Public claim tables render promoted and hard-gap status branches."""
+    promoted = _valid_claim_row(
+        "promoted_claim",
+        promotion_status="promoted",
+        claim_boundary="exact promoted boundary",
+    )
+    hard_gap = _valid_claim_row("gap_claim", promotion_status="hard_gap")
+    rows = (promoted, hard_gap)
+    markdown = render_public_claim_table(rows)
+
+    assert "`promoted`" in markdown
+    assert "`blocked`" in markdown
+    assert "exact promoted boundary" in markdown
+    assert validate_public_claim_table(rows, markdown).passed
+
+    invalid = validate_public_claim_table(
+        rows,
+        markdown.replace("exact promoted boundary", "missing promoted boundary"),
+    )
+
+    assert not invalid.passed
+    assert any(
+        "promoted row must include exact claim boundary" in error for error in invalid.errors
+    )
+
+
 def test_support_surface_alignment_audit_matches_committed_manifest_and_ledger() -> None:
     alignment = validate_differentiable_support_surface_alignment()
 
@@ -216,7 +350,7 @@ def test_support_surface_alignment_audit_rejects_missing_manifest_path() -> None
         evidence_artifact_ids=("artifact",),
         benchmark_artifact_ids=("artifact",),
         known_gaps=("none",),
-        promotion_status="SOTA-candidate",
+        promotion_status="bounded_candidate",
         claim_boundary="bounded",
     )
 
@@ -224,3 +358,46 @@ def test_support_surface_alignment_audit_rejects_missing_manifest_path() -> None
 
     assert not alignment.passed
     assert any("docs/not_in_manifest.md" in error for error in alignment.errors)
+
+
+def test_support_surface_alignment_audit_reports_missing_and_invalid_manifest(
+    tmp_path: Path,
+) -> None:
+    """Missing or invalid generated manifests are reported as audit errors."""
+    missing = tmp_path / "docs" / "_generated" / "capability_manifest.json"
+    missing.parent.mkdir(parents=True)
+
+    missing_alignment = validate_differentiable_support_surface_alignment(
+        rows=[],
+        repo_root=tmp_path,
+        manifest_path=missing,
+    )
+    assert not missing_alignment.passed
+    assert any(
+        "generated capability manifest is missing" in error for error in missing_alignment.errors
+    )
+
+    missing.write_text("{not json", encoding="utf-8")
+    invalid_alignment = validate_differentiable_support_surface_alignment(
+        rows=[],
+        repo_root=tmp_path,
+        manifest_path=missing,
+    )
+    assert not invalid_alignment.passed
+    assert any("not valid JSON" in error for error in invalid_alignment.errors)
+
+
+def test_support_surface_alignment_markdown_renders_errors() -> None:
+    """Support-surface alignment markdown includes audit errors when present."""
+    alignment = DifferentiableSupportSurfaceAlignment(
+        passed=False,
+        errors=("bad path",),
+        checked_claim_ids=("claim",),
+        checked_paths=("docs/missing.md",),
+        claim_boundary="support-surface alignment audit only",
+    )
+
+    markdown = render_differentiable_support_surface_alignment_markdown(alignment)
+
+    assert "## Errors" in markdown
+    assert "bad path" in markdown

@@ -175,7 +175,7 @@ assert same_gradient.to_dict()["operation"] == "gradient"
 dashboard = differentiable_api("dashboard_status")
 assert dashboard.payload["status_api_ready"] is True
 
-scorecard = differentiable_api("sota_scorecard")
+scorecard = differentiable_api("baseline_scorecard")
 assert scorecard.payload["promotion_ready"] is False
 
 inventory = differentiable_api("rust_python_inventory")

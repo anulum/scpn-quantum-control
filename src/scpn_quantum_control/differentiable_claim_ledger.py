@@ -15,7 +15,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Literal
 
-PromotionStatus = Literal["promoted", "SOTA-candidate", "hard_gap", "blocked"]
+PromotionStatus = Literal["promoted", "bounded_candidate", "hard_gap", "blocked"]
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_LEDGER_PATH = REPO_ROOT / "data" / "differentiable_phase_qnode" / "claim_ledger.json"
@@ -50,7 +50,7 @@ class ClaimLedgerRow:
             raise ValueError("claim_id must be non-empty")
         if not self.claim_text:
             raise ValueError("claim_text must be non-empty")
-        if self.promotion_status not in {"promoted", "SOTA-candidate", "hard_gap", "blocked"}:
+        if self.promotion_status not in {"promoted", "bounded_candidate", "hard_gap", "blocked"}:
             raise ValueError("promotion_status is unknown")
         for field_name in (
             "implementation_surface",
@@ -208,7 +208,7 @@ def validate_claim_ledger(
         if row.promotion_status == "promoted" and not row.benchmark_artifact_ids:
             errors.append(f"{row.claim_id}: promoted claims require benchmark evidence IDs")
         if (
-            row.promotion_status in {"promoted", "SOTA-candidate"}
+            row.promotion_status in {"promoted", "bounded_candidate"}
             and not row.evidence_artifact_ids
         ):
             errors.append(f"{row.claim_id}: candidate claims require artefact ID evidence")
@@ -234,7 +234,7 @@ def validate_public_language_against_ledger(
     errors: list[str] = []
     for text in public_texts:
         for phrase in banned:
-            if phrase in text and "SOTA-candidate" not in text:
+            if phrase in text and "bounded_candidate" not in text:
                 errors.append(f"public wording exceeds claim ledger: {phrase}")
     return ClaimLedgerValidation(passed=not errors, errors=tuple(errors))
 
@@ -481,7 +481,7 @@ def _public_status(row: ClaimLedgerRow) -> str:
 
 def _public_safe_wording(row: ClaimLedgerRow) -> str:
     if row.promotion_status == "promoted":
-        return row.claim_text
+        return f"{row.claim_text} Claim boundary: {row.claim_boundary}"
     return (
         "Evidence-backed candidate surface for the bounded differentiable lane; "
         "use the listed artefacts and claim boundary when discussing scope."

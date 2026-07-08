@@ -358,7 +358,7 @@
       "test_surface": [
         "tests/test_differentiable_baseline_scorecard.py"
       ],
-      "title": "Differentiable state-of-art category scorecard"
+      "title": "Differentiable baseline category scorecard"
     },
     {
       "benchmark_status": "blocked",

@@ -57,4 +57,4 @@ ledger is `data/differentiable_phase_qnode/claim_ledger.md`.
    unless the artefact itself reports `isolated_affinity`.
 
 The current package is therefore suitable for reviewer reproduction and gap
-triage. It is not yet suitable for state-of-art performance promotion.
+triage. It is not yet suitable for performance promotion.

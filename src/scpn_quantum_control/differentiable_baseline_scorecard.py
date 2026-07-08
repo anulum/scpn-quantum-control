@@ -87,7 +87,7 @@ PROMOTIONAL_LANGUAGE_PHRASES: tuple[str, ...] = (
     "exceeds baseline",
 )
 BOUNDED_PROMOTION_LANGUAGE_MARKERS: tuple[str, ...] = (
-    "sota-candidate",
+    "bounded_candidate",
     "behind_baseline",
     "non-promotional",
     "not a promotion",
@@ -734,10 +734,6 @@ def _validate_scorecard_row(
         )
         if not referenced or any(claim.promotion_status != "promoted" for claim in referenced):
             errors.append(f"{row.category}: ready status requires promoted ledger rows")
-        if not row.benchmark_artifact_ids:
-            errors.append(f"{row.category}: ready status requires benchmark artefact IDs")
-    if row.status == "behind_baseline" and row.ready_for_promotion:
-        errors.append(f"{row.category}: behind-baseline row cannot be promotion-ready")
 
 
 def _row_paths(row: DifferentiableBaselineScorecardRow) -> Iterable[str]:

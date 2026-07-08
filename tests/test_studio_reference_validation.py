@@ -88,7 +88,7 @@ def test_committed_empty_registry_keeps_real_ledger_unanswered() -> None:
 
 def test_promoted_claim_certificate_advances_frontier() -> None:
     """A promoted claim with a WS-3 certification becomes reference-validated."""
-    rows = [_row("p1", "promoted"), _row("c1", "SOTA-candidate")]
+    rows = [_row("p1", "promoted"), _row("c1", "bounded_candidate")]
     registry = _registry(_cert("p1"))
 
     validation = registry.validate_against(rows)
@@ -105,7 +105,7 @@ def test_promoted_claim_certificate_advances_frontier() -> None:
 
 def test_candidate_certificate_fails_closed_before_measurement() -> None:
     """A candidate cannot be reference-validated through a WS-3 registry."""
-    rows = [_row("c1", "SOTA-candidate")]
+    rows = [_row("c1", "bounded_candidate")]
     registry = _registry(_cert("c1"))
 
     validation = registry.validate_against(rows)

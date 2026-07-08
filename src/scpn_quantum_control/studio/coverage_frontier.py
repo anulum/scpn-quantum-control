@@ -79,7 +79,7 @@ def map_claim_status(
     - ``promoted`` → ``bounded-model``, or ``reference-validated`` *only* when
       ``reference_validated`` certifies that reference-validation evidence is
       attached to the claim's bundle (the WS-3 dependency).
-    - ``SOTA-candidate`` → ``bounded-model`` (a credible, within-bounds candidate;
+    - ``bounded_candidate`` → ``bounded-model`` (a credible, within-bounds candidate;
       ``bounded-support`` is reserved for domain fail-closed states, which a
       candidacy is not).
     - ``hard_gap`` → ``validation-gap``.
@@ -115,7 +115,7 @@ def map_claim_status(
         return (
             ClaimStatus.REFERENCE_VALIDATED if reference_validated else ClaimStatus.BOUNDED_MODEL
         )
-    if promotion_status == "SOTA-candidate":
+    if promotion_status == "bounded_candidate":
         return ClaimStatus.BOUNDED_MODEL
     if promotion_status == "hard_gap":
         return ClaimStatus.VALIDATION_GAP

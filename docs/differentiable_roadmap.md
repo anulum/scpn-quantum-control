@@ -29,4 +29,4 @@ This roadmap defines the staged work needed to turn differentiable programming i
 
 ## Release rule
 
-A differentiable feature becomes public-production only when the implementation, tests, docs, examples, support matrix, benchmark evidence, security checks, and failure-mode documentation agree. The formal claim ledger must name artefact IDs and benchmark IDs for promoted rows. Until then, the docs must label it as experimental, planned, unsupported, or SOTA-candidate.
+A differentiable feature becomes public-production only when the implementation, tests, docs, examples, support matrix, benchmark evidence, security checks, and failure-mode documentation agree. The formal claim ledger must name artefact IDs and benchmark IDs for promoted rows. Until then, the docs must label it as experimental, planned, unsupported, or bounded_candidate.
