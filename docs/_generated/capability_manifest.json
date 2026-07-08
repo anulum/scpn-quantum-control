@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 820,
     "public_documentation_pages": 260,
-    "python_model_classes": 926,
-    "python_model_source_modules": 482,
+    "python_model_classes": 927,
+    "python_model_source_modules": 484,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 64,
-    "test_files": 851
+    "test_files": 853
   },
   "documentation": {
     "examples": [
@@ -582,7 +582,7 @@
       {
         "package": "studio",
         "path": "src/scpn_quantum_control/studio",
-        "python_modules": 12
+        "python_modules": 14
       },
       {
         "package": "tcbo",
@@ -2100,6 +2100,10 @@
       {
         "name": "KuramotoProblem",
         "path": "src/scpn_quantum_control/kuramoto_core.py"
+      },
+      {
+        "name": "KuramotoRun",
+        "path": "src/scpn_quantum_control/studio/kuramoto_reference.py"
       },
       {
         "name": "KuramotoVariant",
@@ -4763,6 +4767,8 @@
       "src/scpn_quantum_control/studio/coverage_frontier.py",
       "src/scpn_quantum_control/studio/evidence_bundle.py",
       "src/scpn_quantum_control/studio/federation.py",
+      "src/scpn_quantum_control/studio/kuramoto_reference.py",
+      "src/scpn_quantum_control/studio/kuramoto_scenario_artifact.py",
       "src/scpn_quantum_control/studio/manifest.py",
       "src/scpn_quantum_control/studio/qpu_result_pack.py",
       "src/scpn_quantum_control/studio/recompute_kernel.py",
@@ -6699,6 +6705,8 @@
       "tests/test_structured_ansatz.py",
       "tests/test_structured_ansatz_branches.py",
       "tests/test_studio_evidence_bundle.py",
+      "tests/test_studio_kuramoto_reference.py",
+      "tests/test_studio_kuramoto_scenario_artifact.py",
       "tests/test_studio_manifest.py",
       "tests/test_studio_qpu_result_pack.py",
       "tests/test_studio_recompute_kernel.py",

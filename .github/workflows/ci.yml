@@ -526,6 +526,8 @@ jobs:
           tests/test_differentiable_transform_support_matrix_artifact.py
           tests/test_studio_xy_compile_recompute_artifact.py
           tests/test_studio_qpu_result_pack.py
+          tests/test_studio_kuramoto_reference.py
+          tests/test_studio_kuramoto_scenario_artifact.py
           -q
 
   studio-web:
