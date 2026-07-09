@@ -509,6 +509,15 @@ from .qnode_vector_transforms import (
 from .qsvt_evolution import QSVTResourceEstimate
 from .results import TrajectoryResult
 from .structured_ansatz import build_structured_ansatz
+from .synchronisation_objectives import (
+    SYNCHRONISATION_OBJECTIVE_CLAIM_BOUNDARY,
+    build_synchronisation_objective,
+    cluster_synchronisation_target_term,
+    kuramoto_order_parameter,
+    kuramoto_order_parameter_gradient,
+    kuramoto_order_parameter_target_term,
+    phase_locking_target_term,
+)
 from .tensorflow_bridge import (
     PhaseTensorFlowFunctionCompatibilityResult,
     PhaseTensorFlowGradientTapeCompatibilityResult,
@@ -1240,4 +1249,11 @@ __all__ = [
     "hypergeometric_envelope",
     "ici_three_level_evolution",
     "infidelity_bound",
+    "SYNCHRONISATION_OBJECTIVE_CLAIM_BOUNDARY",
+    "build_synchronisation_objective",
+    "cluster_synchronisation_target_term",
+    "kuramoto_order_parameter",
+    "kuramoto_order_parameter_gradient",
+    "kuramoto_order_parameter_target_term",
+    "phase_locking_target_term",
 ]

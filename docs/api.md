@@ -1495,6 +1495,14 @@ verification, and parameter-shift coupling training. It is the recommended
 single-call audit for release notes and reviewer evidence, while explicitly
 excluding arbitrary Python reverse-mode AD, live provider calibration, dynamic
 circuit topology, and mutation-heavy program IR semantics.
+`build_synchronisation_objective()` composes local analytic losses for the
+global Kuramoto order parameter, pairwise phase-locking, and disjoint
+cluster-synchronisation targets. The individual term builders
+`kuramoto_order_parameter_target_term()`, `phase_locking_target_term()`, and
+`cluster_synchronisation_target_term()` expose exact gradients checked against
+finite differences. They operate on explicit phase vectors and do not submit
+provider jobs, sample hardware, promote benchmark evidence, or claim ownership
+of the standalone `oscillatools` Kuramoto package surface.
 `run_ml_framework_gradient_audit()` records optional JAX, PyTorch, TensorFlow,
 and PennyLane parity status against the native parameter-shift gradient. It
 executes adapters only when their dependencies are importable, records

@@ -122,7 +122,7 @@ claims only when the evidence exists.
 |---|---:|
 | Package version | 0.10.0 |
 | Public API exports | 829 |
-| Python source modules | 494 |
+| Python source modules | 495 |
 | Public Python classes | 952 |
 | Domain package families | 31 |
 | Rust PyO3 function bindings | 177 |
@@ -130,7 +130,7 @@ claims only when the evidence exists.
 | Notebook files | 100 |
 | Example files | 37 |
 | Optional extras | 43 |
-| Python test files | 869 |
+| Python test files | 870 |
 | Public documentation pages | 268 |
 | GitHub Actions workflows | 23 |
 

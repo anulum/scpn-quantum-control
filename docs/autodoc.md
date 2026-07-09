@@ -77,7 +77,7 @@ or debugging a subsystem, not as the default path for tutorial code.
 
 ::: scpn_quantum_control.phase.objectives
     options:
-      members: [ObjectiveTermValue, ObjectiveGradientEvaluation, ObjectiveTerm, ComposedPhaseObjective, ComposedObjectiveTrainingStep, ComposedObjectiveTrainingResult, ComposedObjectiveTrainingCertificate, phase_energy_term, phase_fidelity_target_term, periodic_regularization_term, phase_symmetry_penalty_term, smooth_box_safety_penalty_term, build_phase_control_objective, train_composed_phase_objective, validate_composed_objective_training]
+      members: [ObjectiveTermValue, ObjectiveGradientEvaluation, ObjectiveTerm, ComposedPhaseObjective, ComposedObjectiveTrainingStep, ComposedObjectiveTrainingResult, ComposedObjectiveTrainingCertificate, phase_energy_term, phase_fidelity_target_term, periodic_regularization_term, phase_symmetry_penalty_term, smooth_box_safety_penalty_term, build_phase_control_objective, train_composed_phase_objective, validate_composed_objective_training, kuramoto_order_parameter, kuramoto_order_parameter_gradient, kuramoto_order_parameter_target_term, phase_locking_target_term, cluster_synchronisation_target_term, build_synchronisation_objective]
 
 ::: scpn_quantum_control.phase.objective_audit
     options:

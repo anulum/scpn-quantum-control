@@ -10,10 +10,10 @@
     "public_api_exports": 829,
     "public_documentation_pages": 268,
     "python_model_classes": 952,
-    "python_model_source_modules": 494,
+    "python_model_source_modules": 495,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 46,
-    "test_files": 869
+    "test_files": 870
   },
   "documentation": {
     "examples": [
@@ -560,7 +560,7 @@
       {
         "package": "phase",
         "path": "src/scpn_quantum_control/phase",
-        "python_modules": 88
+        "python_modules": 89
       },
       {
         "package": "psi_field",
@@ -4803,6 +4803,7 @@
       "src/scpn_quantum_control/phase/qsvt_evolution.py",
       "src/scpn_quantum_control/phase/results.py",
       "src/scpn_quantum_control/phase/structured_ansatz.py",
+      "src/scpn_quantum_control/phase/synchronisation_objectives.py",
       "src/scpn_quantum_control/phase/tensor_jump.py",
       "src/scpn_quantum_control/phase/tensorflow_bridge.py",
       "src/scpn_quantum_control/phase/tensorflow_maintenance.py",
@@ -6579,6 +6580,7 @@
       "tests/test_phase_qnode_transforms.py",
       "tests/test_phase_qnode_vector_transforms.py",
       "tests/test_phase_results.py",
+      "tests/test_phase_synchronisation_objectives.py",
       "tests/test_phase_tensorflow_maintenance.py",
       "tests/test_phase_torch_aot_autograd_export.py",
       "tests/test_phase_torch_autograd_function.py",
