@@ -8,12 +8,12 @@
     "notebook_files": 100,
     "optional_extras": 43,
     "public_api_exports": 835,
-    "public_documentation_pages": 268,
-    "python_model_classes": 995,
-    "python_model_source_modules": 507,
+    "public_documentation_pages": 269,
+    "python_model_classes": 996,
+    "python_model_source_modules": 508,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 46,
-    "test_files": 881
+    "test_files": 882
   },
   "documentation": {
     "examples": [
@@ -405,6 +405,7 @@
       "docs/stable_facades_api.md",
       "docs/status_normalisation_policy.md",
       "docs/strategic_roadmap.md",
+      "docs/studio_executive.md",
       "docs/studio_federation.md",
       "docs/symmetry.md",
       "docs/symmetry_decay_guess.md",
@@ -590,7 +591,7 @@
       {
         "package": "studio",
         "path": "src/scpn_quantum_control/studio",
-        "python_modules": 19
+        "python_modules": 20
       },
       {
         "package": "tcbo",
@@ -1640,6 +1641,10 @@
       {
         "name": "ExecutableWholeProgramADKernel",
         "path": "src/scpn_quantum_control/compiler/mlir_whole_program_native.py"
+      },
+      {
+        "name": "ExecuteActionHandler",
+        "path": "src/scpn_quantum_control/studio/executive_execute.py"
       },
       {
         "name": "ExecutionMode",
@@ -5068,6 +5073,7 @@
       "src/scpn_quantum_control/studio/evidence_bundle.py",
       "src/scpn_quantum_control/studio/executive.py",
       "src/scpn_quantum_control/studio/executive_differentiate.py",
+      "src/scpn_quantum_control/studio/executive_execute.py",
       "src/scpn_quantum_control/studio/federation.py",
       "src/scpn_quantum_control/studio/kuramoto_reference.py",
       "src/scpn_quantum_control/studio/kuramoto_scenario_artifact.py",
@@ -7029,6 +7035,7 @@
       "tests/test_studio_evidence_bundle.py",
       "tests/test_studio_executive.py",
       "tests/test_studio_executive_differentiate.py",
+      "tests/test_studio_executive_execute.py",
       "tests/test_studio_kuramoto_reference.py",
       "tests/test_studio_kuramoto_scenario_artifact.py",
       "tests/test_studio_manifest.py",

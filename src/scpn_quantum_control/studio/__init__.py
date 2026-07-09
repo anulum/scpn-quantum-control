@@ -68,6 +68,11 @@ from .executive_differentiate import (
     build_effect_ir,
     default_registry,
 )
+from .executive_execute import (
+    EXECUTE_CLAIM_BOUNDARY,
+    EXECUTE_VERB,
+    ExecuteActionHandler,
+)
 from .federation import (
     build_architecture_map_extension,
     build_federation_document,
@@ -125,6 +130,9 @@ __all__ = [
     "DIFFERENTIATE_CLAIM_BOUNDARY",
     "DIFFERENTIATE_VERB",
     "DifferentiateActionHandler",
+    "EXECUTE_CLAIM_BOUNDARY",
+    "EXECUTE_VERB",
+    "ExecuteActionHandler",
     "ExecutionPlan",
     "ExecutionResult",
     "ExecutiveRecord",

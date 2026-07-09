@@ -72,6 +72,50 @@ print(record.script.source)        # a standalone, runnable reproduction script
 script, and its `produced_schemas` links the action back to the informative
 `studio.differentiation-evidence.v1` family.
 
+## Deploying to a QPU endpoint
+
+The `execute` verb is the studio's only live-hardware action, and it is
+approval-gated. The studio never submits a live QPU job itself — submission
+needs provider credentials and costs real money. The `execute` handler plans an
+approval-gated deployment and, on an approved request, builds a **no-submit**
+deployment dossier and writes a standalone operator submission script.
+
+```python
+from scpn_quantum_control.studio.executive import (
+    ActionRegistry,
+    ExecutiveRequest,
+    run_action,
+)
+from scpn_quantum_control.studio.executive_execute import ExecuteActionHandler
+
+registry = ActionRegistry()
+registry.register(ExecuteActionHandler())
+
+request = ExecutiveRequest(
+    verb="execute",
+    action_id="deploy-brisbane",
+    parameters={
+        "provider": "ibm-quantum",
+        "endpoint": "ibm_brisbane",
+        "circuit_digest": "sha256:...",  # bit-exact link to a recompute-verifiable compile
+        "circuit_ref": "data/studio/xy_compile_recompute_unit_20260708.json",
+        "shots": 4096,
+    },
+    approved=True,  # without this the action is gated and never runs
+)
+record = run_action(request, registry=registry)
+record.result.outputs["submitted"]      # False -- the studio never submits
+record.result.outputs["result_status"]  # "unverifiable" until a provider attestation is attached
+print(record.script.source)             # the operator submission script (guarded behind --confirm)
+```
+
+Without `approved=True` the record is `gated` and no script is written. The
+generated script refuses to submit without `--confirm`, digests the returned
+counts, and hands them to `build_qpu_result_pack_unit`; the operator attaches
+their provider attestation to make the `studio.qpu-result-pack.v1` result
+attestation-verifiable (see [Studio Federation](studio_federation.md)). The
+studio never contacts a provider or produces counts.
+
 ## Claim boundary
 
 The differentiate action proves the exact reverse-mode value and gradient of a
