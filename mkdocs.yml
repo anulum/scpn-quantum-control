@@ -82,6 +82,7 @@ nav:
       - Licensing FAQ: licensing_faq.md
       - API Overview: api.md
       - Studio Federation: studio_federation.md
+      - Studio Executive: studio_executive.md
       - Runtime Contracts:
           - QPU Data Artifact: qpu_data_artifact.md
           - Pipeline Runtime Contract: pipeline_runtime_contract.md
