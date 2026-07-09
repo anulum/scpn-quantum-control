@@ -18,7 +18,7 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends git \
     && rm -rf /var/lib/apt/lists/*
 
-COPY .pre-commit-config.yaml pyproject.toml mkdocs.yml requirements.txt requirements-dev.txt README.md LICENSE ./
+COPY .pre-commit-config.yaml pyproject.toml mkdocs.yml requirements.txt requirements-dev.txt README.md LICENSE ROADMAP.md ./
 # The changelog, public-claim, and rendered-docs-header guards read these
 # root documents.
 COPY CHANGELOG.md VALIDATION.md RESULTS_SUMMARY.md CAPABILITIES_AND_USECASES.md REUSE.toml ./

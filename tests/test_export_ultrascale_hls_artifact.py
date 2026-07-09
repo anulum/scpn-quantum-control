@@ -27,7 +27,9 @@ def test_export_ultrascale_hls_artifact_cli(tmp_path: Path) -> None:
     repo = Path(__file__).resolve().parents[1]
     output_dir = tmp_path / "artifacts"
     env = os.environ.copy()
-    env["PYTHONPATH"] = str(repo / "src")
+    env["PYTHONPATH"] = os.pathsep.join(
+        [str(repo / "src"), str(repo / "oscillatools" / "src"), str(repo)]
+    )
     proc = subprocess.run(
         [
             sys.executable,
