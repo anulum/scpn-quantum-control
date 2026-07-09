@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 835,
     "public_documentation_pages": 268,
-    "python_model_classes": 960,
-    "python_model_source_modules": 496,
+    "python_model_classes": 963,
+    "python_model_source_modules": 497,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 46,
-    "test_files": 870
+    "test_files": 871
   },
   "documentation": {
     "examples": [
@@ -560,7 +560,7 @@
       {
         "package": "phase",
         "path": "src/scpn_quantum_control/phase",
-        "python_modules": 89
+        "python_modules": 90
       },
       {
         "package": "psi_field",
@@ -644,6 +644,10 @@
       {
         "name": "AdaptiveFIMStep",
         "path": "src/scpn_quantum_control/analysis/adaptive_fim_feedback.py"
+      },
+      {
+        "name": "AdaptiveShotAllocationDryRun",
+        "path": "src/scpn_quantum_control/phase/trainability.py"
       },
       {
         "name": "AdiabaticResult",
@@ -824,6 +828,10 @@
       {
         "name": "BackwardResult",
         "path": "src/scpn_quantum_control/bridge/snn_backward.py"
+      },
+      {
+        "name": "BarrenPlateauTrainabilityReport",
+        "path": "src/scpn_quantum_control/phase/trainability.py"
       },
       {
         "name": "BenchmarkFamily",
@@ -4246,6 +4254,10 @@
         "path": "src/scpn_quantum_control/qsnn/quantum_neuromorphic_bridge.py"
       },
       {
+        "name": "TrainabilityGradientSample",
+        "path": "src/scpn_quantum_control/phase/trainability.py"
+      },
+      {
         "name": "TrajectoryResult",
         "path": "src/scpn_quantum_control/phase/results.py"
       },
@@ -4851,6 +4863,7 @@
       "src/scpn_quantum_control/phase/torch_export_shape_matrix.py",
       "src/scpn_quantum_control/phase/torch_module_state.py",
       "src/scpn_quantum_control/phase/torch_training_loop_matrix.py",
+      "src/scpn_quantum_control/phase/trainability.py",
       "src/scpn_quantum_control/phase/transform_nesting.py",
       "src/scpn_quantum_control/phase/trotter_error.py",
       "src/scpn_quantum_control/phase/trotter_upde.py",
@@ -6635,6 +6648,7 @@
       "tests/test_phase_torch_export_shape_matrix.py",
       "tests/test_phase_torch_module_state.py",
       "tests/test_phase_torch_training_loop_matrix.py",
+      "tests/test_phase_trainability.py",
       "tests/test_phase_transform_nesting.py",
       "tests/test_phase_vqe.py",
       "tests/test_physics_accuracy.py",

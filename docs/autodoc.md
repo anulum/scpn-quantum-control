@@ -71,6 +71,10 @@ or debugging a subsystem, not as the default path for tutorial code.
     options:
       members: [NaturalGradientRegularizationPolicy, NaturalGradientDirection, ParameterShiftNaturalGradientStep, ParameterShiftNaturalGradientResult, ParameterShiftNaturalGradientCertificate, solve_natural_gradient_direction, parameter_shift_natural_gradient_descent, validate_natural_gradient_training]
 
+::: scpn_quantum_control.phase.trainability
+    options:
+      members: [TRAINABILITY_CLAIM_BOUNDARY, TrainabilityGradientSample, AdaptiveShotAllocationDryRun, BarrenPlateauTrainabilityReport, run_barren_plateau_trainability_report]
+
 ::: scpn_quantum_control.phase.optimizer_audit
     options:
       members: [OptimizerConvergenceRecord, OptimizerComparisonSuiteResult, run_parameter_shift_optimizer_comparison]

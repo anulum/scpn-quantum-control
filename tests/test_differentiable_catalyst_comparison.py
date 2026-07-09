@@ -64,6 +64,7 @@ def test_catalyst_workflow_profile_serializes_required_scope() -> None:
     assert "compiled differentiation" in cast(str, payload["compiled_differentiation"])
     assert "control flow" in cast(str, payload["control_flow"])
     assert "finite-shot" in cast(str, payload["finite_shot_limitations"])
+    assert "broadcast/vmap trainability" in cast(str, payload["finite_shot_limitations"])
     assert "provider" in cast(str, payload["provider_route_support"])
     assert payload["unsupported_provider_routes"] == list(CATALYST_UNSUPPORTED_PROVIDER_ROUTES)
     assert payload["promotion_ready"] is False
@@ -146,6 +147,18 @@ def test_external_suite_records_catalyst_workflow_hard_gap(
     assert catalyst_payload["promotion_ready"] is False
     assert catalyst_payload["unsupported_provider_routes"] == list(
         CATALYST_UNSUPPORTED_PROVIDER_ROUTES
+    )
+    trainability = {row.case_id: row for row in rows if row.backend == "catalyst"}[
+        "trainability_adaptive_shot_dry_run"
+    ]
+    trainability_payload = cast(dict[str, Any], trainability.to_dict()["catalyst_comparison"])
+    assert trainability.status == "hard_gap"
+    assert trainability.failure_class == "unsupported_batching"
+    assert trainability.closure_status == "permanent_boundary"
+    assert trainability.batching_support == "no_broadcast_no_vmap"
+    assert "adaptive finite-shot trainability" in str(trainability.setup_instructions)
+    assert "broadcast/vmap trainability" in cast(
+        str, trainability_payload["finite_shot_limitations"]
     )
 
 

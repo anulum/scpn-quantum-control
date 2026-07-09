@@ -449,6 +449,7 @@ def run_differentiable_external_comparison_suite() -> tuple[ExternalComparisonRo
         )
     )
     rows.append(_catalyst_row())
+    rows.append(_catalyst_trainability_boundary_row())
     rows.extend(external_comparison_failure_mode_rows())
     return tuple(rows)
 
@@ -921,6 +922,35 @@ def _catalyst_row() -> ExternalComparisonRow:
         dependency_versions=_backend_dependency_versions("catalyst"),
         toolchain=toolchain,
         catalyst_comparison=catalyst_compiler_workflow_comparison(runner_status="success"),
+    )
+
+
+def _catalyst_trainability_boundary_row() -> ExternalComparisonRow:
+    return ExternalComparisonRow(
+        case_id="trainability_adaptive_shot_dry_run",
+        backend="catalyst",
+        status="hard_gap",
+        failure_class="unsupported_batching",
+        value_error=None,
+        gradient_error=None,
+        runtime_seconds=None,
+        memory_peak_bytes=None,
+        batching_support="no_broadcast_no_vmap",
+        transform_support="Catalyst qjit/MLIR/QIR finite-shot trainability dry-run boundary",
+        dtype="float64",
+        device="cpu",
+        source_of_truth="scpn_reference",
+        setup_instructions=(
+            "Catalyst comparison is a boundary row: this evidence surface does not have "
+            "broadcast/vmap support for adaptive finite-shot trainability diagnostics, "
+            "shot-allocation dry-runs, or dry-run cost estimates."
+        ),
+        claim_boundary=(
+            "Catalyst boundary row for BL-14 only; no runtime, hardware, provider, "
+            "or performance promotion claim."
+        ),
+        dependency_versions=_backend_dependency_versions("catalyst"),
+        catalyst_comparison=catalyst_compiler_workflow_comparison(runner_status="dependency_gap"),
     )
 
 

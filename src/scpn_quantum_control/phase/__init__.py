@@ -683,6 +683,14 @@ from .torch_training_loop_matrix import (
     default_torch_training_loop_scenarios,
     run_torch_training_loop_matrix,
 )
+from .trainability import (
+    TRAINABILITY_CLAIM_BOUNDARY,
+    AdaptiveShotAllocationDryRun,
+    BarrenPlateauTrainabilityReport,
+    TrainabilityGradientSample,
+    TrainabilityStatus,
+    run_barren_plateau_trainability_report,
+)
 from .transform_nesting import (
     GradientTransformNestingAuditResult,
     GradientTransformNestingPlan,
@@ -819,6 +827,12 @@ __all__ = [
     "ParameterShiftNaturalGradientCertificate",
     "ParameterShiftNaturalGradientResult",
     "ParameterShiftNaturalGradientStep",
+    "TRAINABILITY_CLAIM_BOUNDARY",
+    "AdaptiveShotAllocationDryRun",
+    "BarrenPlateauTrainabilityReport",
+    "TrainabilityGradientSample",
+    "TrainabilityStatus",
+    "run_barren_plateau_trainability_report",
     "run_parameter_shift_optimizer_comparison",
     "OptimizerComparisonSuiteResult",
     "OptimizerConvergenceRecord",

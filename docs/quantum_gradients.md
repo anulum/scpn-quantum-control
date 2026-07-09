@@ -1275,6 +1275,49 @@ a natural-gradient preconditioner, and inspect `final_metric_nullity`,
 `final_regularization_reason`, and each step's `diagonal_shift` in the returned
 training record.
 
+## Trainability diagnostics and shot dry-runs
+
+`run_barren_plateau_trainability_report(...)` samples parameter-shift gradients
+across a caller-supplied parameter matrix, computes empirical gradient mean and
+variance, classifies flat low-variance landscapes, and runs the variance-aware
+finite-shot allocator without executing a backend:
+
+```python
+import numpy as np
+
+from scpn_quantum_control.differentiable import Parameter
+from scpn_quantum_control.phase import run_barren_plateau_trainability_report
+
+
+def objective(params: np.ndarray) -> float:
+    return float((1.0 - np.cos(params[0])) + 0.2 * (1.0 - np.cos(params[1])))
+
+
+report = run_barren_plateau_trainability_report(
+    objective,
+    np.array([[0.2, -0.3], [0.7, 0.4], [-0.5, 0.6]]),
+    parameters=(Parameter("theta0"), Parameter("theta1")),
+    plus_variances=np.array([0.04, 0.09]),
+    minus_variances=np.array([0.05, 0.10]),
+    target_standard_error=0.02,
+    min_shots=16,
+    cost_per_shot=0.001,
+    cost_unit="credits",
+)
+
+print(report.status, report.shot_dry_run.estimated_quantum_shots)
+```
+
+The dry-run record contains the backend gradient plan, shifted-evaluation count,
+allocated plus/minus shots, predicted standard errors, cap warnings, estimated
+cost, cost unit, and `hardware_execution=False`. Hardware and provider backends
+fail closed because this route never requests hardware policy approval. When
+the caller omits plus/minus variances, the report derives a conservative
+variance tensor from sampled gradient variance and the configured variance
+floor. The external comparison suite also records a Catalyst boundary row for
+this BL-14 surface: adaptive finite-shot trainability dry-runs are not promoted
+as Catalyst broadcast/vmap evidence.
+
 `phase_qnode_computational_basis_fisher_information(circuit, params)` computes
 the exact classical Fisher matrix for computational-basis statevector
 probabilities using the same analytic state derivatives. It fails closed at

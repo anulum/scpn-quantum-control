@@ -57,7 +57,8 @@ _CONTROL_FLOW_SCOPE = (
 
 _FINITE_SHOT_SCOPE = (
     "finite-shot limitations: no shot-noise gradients, sampler jobs, finite-shot "
-    "provider executions, or statistical confidence intervals are evaluated."
+    "provider executions, adaptive shot-allocation dry-runs, broadcast/vmap trainability "
+    "diagnostics, or statistical confidence intervals are evaluated."
 )
 
 _PROVIDER_ROUTE_SCOPE = (
