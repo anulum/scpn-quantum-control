@@ -61,6 +61,11 @@ from .executive import (
     resolve_verb_contract,
     run_action,
 )
+from .executive_compile import (
+    COMPILE_CLAIM_BOUNDARY,
+    COMPILE_VERB,
+    CompileActionHandler,
+)
 from .executive_differentiate import (
     DIFFERENTIATE_CLAIM_BOUNDARY,
     DIFFERENTIATE_VERB,
@@ -127,6 +132,9 @@ __all__ = [
     "ActionHandler",
     "ActionRegistry",
     "ActionStatus",
+    "COMPILE_CLAIM_BOUNDARY",
+    "COMPILE_VERB",
+    "CompileActionHandler",
     "DIFFERENTIATE_CLAIM_BOUNDARY",
     "DIFFERENTIATE_VERB",
     "DifferentiateActionHandler",

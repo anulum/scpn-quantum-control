@@ -72,6 +72,41 @@ print(record.script.source)        # a standalone, runnable reproduction script
 script, and its `produced_schemas` links the action back to the informative
 `studio.differentiation-evidence.v1` family.
 
+## Compiling a network
+
+The read-only `compile` verb compiles an arbitrary bounded `K_nm`/`omega`
+oscillator network into the studio's bit-exact XY compile unit. It builds the
+`studio.xy-compile-recompute.v1` unit, verifies it against its own reference,
+and writes a reproduction script.
+
+```python
+from scpn_quantum_control.studio.executive import ActionRegistry, ExecutiveRequest, run_action
+from scpn_quantum_control.studio.executive_compile import CompileActionHandler
+
+registry = ActionRegistry()
+registry.register(CompileActionHandler())
+
+request = ExecutiveRequest(
+    verb="compile",
+    action_id="compile-3node",
+    parameters={
+        "K_nm": [[0.0, 0.4, 0.1], [0.4, 0.0, 0.3], [0.1, 0.3, 0.0]],
+        "omega": [-0.1, 0.05, 0.05],
+        "time": 0.1,
+        "trotter_steps": 1,
+        "trotter_order": 1,
+    },
+)
+record = run_action(request, registry=registry)
+record.result.outputs["input_sha256"]  # the bit-exact compile digest
+record.result.outputs["verified"]       # True (unit matches its own reference)
+```
+
+The claim boundary is the bit-exact XY compile decision path only: the input
+digest is recompute-verifiable in a browser through the WASM kernel (see
+[Studio Federation](studio_federation.md) → WS-1 recompute kernel). It is not a
+physical `K_nm` claim, a continuous simulator value, or QPU execution.
+
 ## Deploying to a QPU endpoint
 
 The `execute` verb is the studio's only live-hardware action, and it is

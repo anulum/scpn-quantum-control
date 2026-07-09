@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 835,
     "public_documentation_pages": 269,
-    "python_model_classes": 996,
-    "python_model_source_modules": 508,
+    "python_model_classes": 997,
+    "python_model_source_modules": 509,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 46,
-    "test_files": 882
+    "test_files": 883
   },
   "documentation": {
     "examples": [
@@ -591,7 +591,7 @@
       {
         "package": "studio",
         "path": "src/scpn_quantum_control/studio",
-        "python_modules": 20
+        "python_modules": 21
       },
       {
         "package": "tcbo",
@@ -1017,6 +1017,10 @@
       {
         "name": "CompetitorRow",
         "path": "src/scpn_quantum_control/benchmarks/kuramoto_competitive_types.py"
+      },
+      {
+        "name": "CompileActionHandler",
+        "path": "src/scpn_quantum_control/studio/executive_compile.py"
       },
       {
         "name": "CompilerADExecutableConfig",
@@ -5072,6 +5076,7 @@
       "src/scpn_quantum_control/studio/coverage_frontier.py",
       "src/scpn_quantum_control/studio/evidence_bundle.py",
       "src/scpn_quantum_control/studio/executive.py",
+      "src/scpn_quantum_control/studio/executive_compile.py",
       "src/scpn_quantum_control/studio/executive_differentiate.py",
       "src/scpn_quantum_control/studio/executive_execute.py",
       "src/scpn_quantum_control/studio/federation.py",
@@ -7034,6 +7039,7 @@
       "tests/test_studio_coupling_invariant.py",
       "tests/test_studio_evidence_bundle.py",
       "tests/test_studio_executive.py",
+      "tests/test_studio_executive_compile.py",
       "tests/test_studio_executive_differentiate.py",
       "tests/test_studio_executive_execute.py",
       "tests/test_studio_kuramoto_reference.py",
