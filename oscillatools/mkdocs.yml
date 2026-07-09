@@ -44,6 +44,7 @@ nav:
   - Handbook: handbook.md
   - Capability Snapshot: capabilities.md
   - Gradient Coverage Matrix: gradient_coverage_matrix.md
+  - Why oscillatools: why_oscillatools.md
   - Example Gallery: gallery.md
   - Benchmarks:
       - Multi-language Tier Benchmark: tier_benchmarks.md

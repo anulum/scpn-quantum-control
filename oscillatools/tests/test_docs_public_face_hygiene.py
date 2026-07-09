@@ -90,6 +90,7 @@ _REQUIRED_DOC_SURFACES: frozenset[str] = frozenset(
         "docs/handbook.md",
         "docs/capabilities.md",
         "docs/gradient_coverage_matrix.md",
+        "docs/why_oscillatools.md",
         "docs/gallery.md",
         "docs/tier_benchmarks.md",
         "docs/competitive_benchmark.md",

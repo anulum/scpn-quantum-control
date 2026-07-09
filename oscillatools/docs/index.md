@@ -70,6 +70,9 @@ Call `kuramoto.capabilities()` to inspect the grouped public API and
 - **[Gradient coverage matrix](gradient_coverage_matrix.md)** — the generated
   inventory of public gradient, Hessian, Jacobian, adjoint, and sensitivity
   surfaces derived from the same facade map.
+- **[Why oscillatools](why_oscillatools.md)** — a generated decision page that
+  keeps package-selection guidance tied to the committed tier and comparison
+  evidence.
 - **[Example gallery](gallery.md)** — runnable, deterministic worked workflows.
 - **[Multi-language tier benchmark](tier_benchmarks.md)** — the Rust/Julia/Python
   per-primitive latency evidence with full provenance.
