@@ -21,6 +21,29 @@ import oscillatools as kuramoto
 import oscillatools.accel.tensor_io as tensor_io
 
 
+class _TorchLikeTensor:
+    __module__ = "torch.fake"
+
+    dtype = "float32"
+    device = "cuda:0"
+
+    def __init__(self, values: np.ndarray) -> None:
+        self._values = values
+
+    def detach(self) -> _TorchLikeTensor:
+        return self
+
+    def cpu(self) -> _TorchLikeTensor:
+        return self
+
+    def numpy(self) -> np.ndarray:
+        return self._values
+
+
+class _JaxLikeTensor:
+    __module__ = "jaxlib.fake"
+
+
 def _problem() -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     theta = np.array([0.0, 0.4, 1.1, 2.0], dtype=np.float64)
     omega = np.array([0.1, -0.2, 0.05, 0.15], dtype=np.float64)
@@ -175,10 +198,51 @@ class TestJaxTensorIO:
 
 
 class TestTensorAdapterBranches:
+    def test_tensor_template_detects_torch_and_jax_like_inputs(self) -> None:
+        torch_like = _TorchLikeTensor(np.array([1.0, 2.0]))
+        jax_like = _JaxLikeTensor()
+
+        torch_template = tensor_io.tensor_template(torch_like, jax_like)
+        jax_template = tensor_io.tensor_template(jax_like)
+
+        assert torch_template == tensor_io.TensorTemplate(kind="torch", source=torch_like)
+        assert jax_template == tensor_io.TensorTemplate(kind="jax", source=jax_like)
+
+    def test_as_float64_array_converts_torch_like_numpy_chain(self) -> None:
+        torch_like = _TorchLikeTensor(np.array([1, 2], dtype=np.int64))
+
+        converted = tensor_io.as_float64_array(torch_like)
+
+        assert converted.dtype == np.float64
+        np.testing.assert_array_equal(converted, np.array([1.0, 2.0]))
+
     def test_torch_like_value_without_numpy_returns_none(self) -> None:
         torch_like = type("TorchLike", (), {"__module__": "torch.fake"})()
 
         assert tensor_io._torch_tensor_to_numpy(torch_like) is None
+
+    def test_restore_array_uses_torch_template_device(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        calls: list[dict[str, object]] = []
+
+        def as_tensor(value: object, **kwargs: object) -> tuple[object, dict[str, object]]:
+            calls.append(kwargs)
+            return value, kwargs
+
+        monkeypatch.setattr(
+            tensor_io.importlib,
+            "import_module",
+            lambda name: SimpleNamespace(as_tensor=as_tensor, float64="float64"),
+        )
+        source = _TorchLikeTensor(np.array([1.0, 2.0]))
+        template = tensor_io.TensorTemplate(kind="torch", source=source)
+        array = np.array([3.0, 4.0])
+
+        restored = tensor_io.restore_array(array, template)
+
+        assert restored == (array, {"dtype": "float32", "device": "cuda:0"})
+        assert calls == [{"dtype": "float32", "device": "cuda:0"}]
 
     def test_restore_torch_without_device_uses_dtype_only(
         self, monkeypatch: pytest.MonkeyPatch
@@ -221,6 +285,26 @@ class TestTensorAdapterBranches:
 
         with pytest.raises(RuntimeError, match="jax.numpy.asarray is unavailable"):
             tensor_io._restore_jax(np.zeros(2))
+
+    def test_restore_array_uses_jax_template(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        calls: list[dict[str, object]] = []
+
+        def asarray(value: object, **kwargs: object) -> tuple[object, dict[str, object]]:
+            calls.append(kwargs)
+            return value, kwargs
+
+        monkeypatch.setattr(
+            tensor_io.importlib,
+            "import_module",
+            lambda name: SimpleNamespace(asarray=asarray, float64="float64"),
+        )
+        array = np.array([1.0, 2.0])
+        template = tensor_io.TensorTemplate(kind="jax", source=_JaxLikeTensor())
+
+        restored = tensor_io.restore_array(array, template)
+
+        assert restored == (array, {"dtype": "float64"})
+        assert calls == [{"dtype": "float64"}]
 
     def test_call_method_returns_value_when_method_is_absent(self) -> None:
         value = object()

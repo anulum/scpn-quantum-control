@@ -195,6 +195,7 @@ omit = [
     # [jax] extra, not the pinned numpy+scipy CI floor.
     "*/oscillatools/accel/jax_kuramoto.py",
     "*/oscillatools/accel/jax_kuramoto_delayed.py",
+    "*/oscillatools/accel/jax_kuramoto_integrators.py",
     "*/oscillatools/accel/jax_kuramoto_mpc.py",
     "*/oscillatools/accel/diff_kuramoto_mpc_kkt.py",
     "*/oscillatools/accel/neural_lyapunov_certificate.py",
@@ -214,6 +215,7 @@ omit = [
     "*/oscillatools/accel/julia/*",
     "*/oscillatools/accel/jax_kuramoto.py",
     "*/oscillatools/accel/jax_kuramoto_delayed.py",
+    "*/oscillatools/accel/jax_kuramoto_integrators.py",
     "*/oscillatools/accel/jax_kuramoto_mpc.py",
     "*/oscillatools/accel/diff_kuramoto_mpc_kkt.py",
     "*/oscillatools/accel/neural_lyapunov_certificate.py",
