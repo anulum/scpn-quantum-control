@@ -1,30 +1,36 @@
-# Kuramoto JAX autodiff tier
+# Kuramoto JAX tier
 
-The networked-Kuramoto forward integrators dispatch Rust → Julia → NumPy, and each carries a
-hand-written reverse-mode adjoint. This page documents a fourth kind of tier — the same RK4 solve
-expressed in **JAX**, where the gradient comes from **automatic differentiation** rather than a
-hand-derived scheme, and the whole solve runs on whatever accelerator JAX selected (a CUDA GPU when
-one is present). It is Slice 1 of the 7.7 backend programme (one facade, two tiers: a JAX autodiff
-tier and, later, a hand-tuned GPU-kernel tier).
+The networked-Kuramoto production integrators dispatch Rust → Julia → NumPy. This page documents the
+opt-in **JAX** tier: fixed-step Euler, RK4, adaptive Dormand-Prince, networked inertial RK4,
+networked symplectic inertial, and seeded noisy Euler-Maruyama trajectories expressed in JAX and run
+on whatever accelerator JAX selected (a CUDA GPU when one is present).
 
-The tier is **opt-in**: `accel.jax_kuramoto.jax_kuramoto_rk4_trajectory` and
-`jax_kuramoto_rk4_gradient` are directly callable accelerated paths, re-exported through the
-`kuramoto` facade, but they are **not** members of the default dispatch chain. The default
-`kuramoto_rk4_trajectory` still serves the Rust tier, so every existing behaviour is unchanged.
+The tier is **opt-in**: `accel.jax_kuramoto.jax_kuramoto_rk4_trajectory` /
+`jax_kuramoto_rk4_gradient` own the RK4 autodiff surface, while
+`accel.jax_kuramoto_integrators` owns `jax_kuramoto_euler_trajectory`,
+`jax_kuramoto_dopri_trajectory`, `jax_networked_inertial_trajectory`,
+`jax_networked_symplectic_inertial_trajectory`, and `jax_networked_noisy_trajectory`. All are
+re-exported through the `kuramoto` facade, but they are **not** members of the default dispatch
+chain. The default integrators still serve the Rust → Julia → NumPy chain, so existing behaviour is
+unchanged.
 
-## Two claims, verified
+## Verified parity
 
-* **Forward faithfulness (reproducible).** With 64-bit precision enabled, the JAX RK4 forward matches
-  the production Rust integrator to machine precision. The committed benchmark
-  (`docs/benchmarks/kuramoto_jax_tier.json`) records `parity_max_abs_diff = 8.66e-15` for a 256-
-  oscillator network over 200 steps on a CUDA GPU. Parity is asserted under a tolerance (not as
-  bit-identity) because GPU reduction ordering need not equal NumPy's; here it lands at machine
-  precision.
+* **RK4 forward faithfulness (reproducible).** With 64-bit precision enabled, the JAX RK4 forward
+  matches the production Rust integrator to machine precision. The committed benchmark
+  (`docs/benchmarks/kuramoto_jax_tier.json`) records `parity_max_abs_diff = 8.88e-16` for a
+  64-oscillator, 50-step run on the selected CUDA device. Parity is asserted under a tolerance because
+  GPU reduction ordering need not equal NumPy's.
+* **Integrator breadth parity (reproducible).** The same artefact records a 12-oscillator breadth
+  cohort for Euler, Dormand-Prince, inertial RK4, symplectic inertial, and noisy trajectories. The
+  maximum recorded differences are at machine precision: Euler `5.55e-17`, DOPRI terminal
+  `2.78e-17`, inertial velocity `1.11e-16`, symplectic velocity `4.34e-18`, and noisy order parameter
+  `5.55e-17`.
 * **Gradient faithfulness (reproducible).** The autodiff gradient — `∂L/∂θ₀`, `∂L/∂ω`, `∂L/∂K` from
   `jax.vjp` of the forward solve — matches the hand-derived `kuramoto_rk4_vjp` to machine precision
   (~1e-15) across networks of 6 to 64 oscillators (`tests/test_jax_kuramoto.py`). The autodiff tier
-  therefore both **verifies** the hand-written adjoint and supplies the same gradient for objectives
-  whose adjoint would be laborious to derive by hand.
+  therefore verifies the hand-written adjoint and supplies the same gradient for objectives whose
+  adjoint would be laborious to derive by hand.
 
 ## Batched ensembles (vmap)
 
@@ -34,7 +40,7 @@ axis. This is a vectorisation of the *entire* solve, not just the inner force ev
 NumPy and Rust tiers cannot express it: they would loop over the ensemble one member at a time.
 
 The reproducible guarantee is that batching changes nothing but the layout — each batched member is
-**bit-for-bit identical** to its single-initial-condition `jax_kuramoto_rk4_trajectory` /
+identical to its single-initial-condition `jax_kuramoto_rk4_trajectory` /
 `jax_kuramoto_rk4_gradient`, and the batched gradient matches the per-member single gradient to
 machine precision (`tests/test_jax_kuramoto.py`). The committed artefact records the ensemble parity
 alongside advisory batched-versus-sequential timings (`ensemble_forward_us` versus
@@ -45,12 +51,11 @@ and machine-learning pipelines that evaluate many initial conditions or paramete
 ## Wall clock (host- and GPU-dependent, boundary-guarded — not a claim)
 
 The benchmark also records advisory per-call timings. On the recorded host (an 11th Gen Intel Core
-i5-11600K with a CUDA GPU) the JAX tier integrated the 256-oscillator, 200-step problem with a median
-of about 29 ms against about 1082 ms for the production tier on the same host. These milliseconds are
-**excluded from any performance claim** (`production_claim_allowed: false`): they depend on the host,
-the governor, the GPU model and its clock, and the JIT warm-up. A clean absolute number needs a
-quiesced, reserved host with a fixed GPU clock. The reproducible quantity is the parity, not the
-milliseconds.
+i5-11600K with a CUDA GPU), the refreshed artefact measured the 64-oscillator, 50-step RK4 problem
+with three samples. These milliseconds are **excluded from any performance claim**
+(`production_claim_allowed: false`): they depend on the host, the governor, the GPU model and clock,
+and JIT warm-up. A clean absolute number needs a quiesced, reserved host with a fixed GPU clock. The
+reproducible quantities are the parity rows, not the milliseconds.
 
 ## Requirements and precision
 
@@ -64,12 +69,13 @@ lazily before tracing; it enables float64 support without forcing other JAX code
 ## Reproduce
 
 ```bash
-python scripts/bench_kuramoto_jax_tier.py --n 256 --n-steps 200
+python scripts/bench_kuramoto_jax_tier.py --n 64 --n-steps 50 --batch 8 --warmup 1 --repeats 3 --parity-n 12
 ```
 
-This writes `docs/benchmarks/kuramoto_jax_tier.json` with the parity, the advisory timings, the JAX
-version and device, and the full host provenance. In continuous integration JAX is CPU-only
-(`jax[cpu]`), where the same 64-bit parity holds within tolerance; the GPU path is exercised locally.
+This writes `docs/benchmarks/kuramoto_jax_tier.json` with RK4 parity, breadth parity for the new
+integrator surface, advisory timings, the JAX version and device, and full host provenance. In
+continuous integration JAX is CPU-only (`jax[cpu]`), where the same 64-bit parity holds within
+tolerance; the GPU path is exercised locally.
 
 ## Related
 

@@ -5,12 +5,14 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — JAX Kuramoto tier benchmark runner
-"""Measure the JAX autodiff Kuramoto RK4 tier against the production Rust tier and serialise it.
+"""Measure the JAX Kuramoto tier against production integrators and serialise it.
 
 Integrates one networked-Kuramoto problem through the JAX tier (on whatever accelerator JAX selected)
 and through the production ``kuramoto_rk4_trajectory`` facade, records the reproducible cross-tier
 parity (``parity_max_abs_diff``) and advisory per-call timings, captures host + JAX-device provenance,
-and writes the record as JSON.
+and writes the record as JSON. A smaller breadth-parity cohort also checks the opt-in JAX Euler,
+adaptive DOPRI, inertial, symplectic-inertial, and noisy trajectories against their production
+counterparts.
 
 The reproducible quantity is the parity — the JAX tier is faithful to the production integrator at
 64-bit precision. The millisecond timings are advisory host/GPU-bound evidence (``production_claim_
@@ -27,27 +29,38 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 import numpy as np
+from numpy.typing import NDArray
 
-from scpn_quantum_control import kuramoto
-from scpn_quantum_control.accel.jax_kuramoto import (
+import oscillatools as kuramoto
+from oscillatools.accel.jax_kuramoto import (
     jax_kuramoto_rk4_ensemble,
     jax_kuramoto_rk4_trajectory,
 )
-from scpn_quantum_control.accel.tier_benchmark import capture_provenance, measure
+from oscillatools.accel.jax_kuramoto_integrators import (
+    jax_kuramoto_dopri_trajectory,
+    jax_kuramoto_euler_trajectory,
+    jax_networked_inertial_trajectory,
+    jax_networked_noisy_trajectory,
+    jax_networked_symplectic_inertial_trajectory,
+)
+from oscillatools.accel.tier_benchmark import capture_provenance, measure
 from scpn_quantum_control.hardware.jax_accel import is_jax_gpu_available, jax_device_name
 
 _DEFAULT_OUTPUT = Path("docs/benchmarks/kuramoto_jax_tier.json")
-_SCHEMA = "scpn-quantum-control.kuramoto-jax-tier.v1"
+_SCHEMA = "scpn-quantum-control.kuramoto-jax-tier.v2"
 _CLAIM_BOUNDARY = (
-    "The reproducible quantity is the cross-tier parity (parity_max_abs_diff): the JAX tier is "
-    "faithful to the production Rust integrator at 64-bit precision. The per-call milliseconds are "
-    "advisory host/GPU-bound evidence captured under the recorded load, governor and GPU clock, and "
-    "are excluded from any performance claim (production_claim_allowed is false). The gradient tier "
-    "matches the hand-derived reverse-mode adjoint to machine precision (see tests/test_jax_kuramoto)."
+    "The reproducible quantities are the cross-tier parity rows: RK4 parity_max_abs_diff plus the "
+    "breadth_parity cohort for Euler, DOPRI, inertial, symplectic-inertial, and noisy trajectories. "
+    "The per-call milliseconds are advisory host/GPU-bound evidence captured under the recorded load, "
+    "governor and GPU clock, and are excluded from any performance claim (production_claim_allowed "
+    "is false). The RK4 gradient tier matches the hand-derived reverse-mode adjoint to machine "
+    "precision (see tests/test_jax_kuramoto)."
 )
 
 
-def _build_network(n: int, *, seed: int) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+def _build_network(
+    n: int, *, seed: int
+) -> tuple[NDArray[np.float64], NDArray[np.float64], NDArray[np.float64]]:
     rng = np.random.default_rng(seed)
     omega = rng.normal(0.0, 0.7, size=n)
     coupling = np.full((n, n), 1.8 / n, dtype=np.float64)
@@ -74,12 +87,95 @@ def _parse_args(argv: list[str]) -> argparse.Namespace:
         help="ensemble batch size for the vmap comparison (default 64)",
     )
     parser.add_argument(
+        "--parity-n",
+        type=int,
+        default=16,
+        help="oscillator count for breadth-parity checks (default 16)",
+    )
+    parser.add_argument(
         "--output",
         type=Path,
         default=_DEFAULT_OUTPUT,
         help=f"artefact path (default {_DEFAULT_OUTPUT})",
     )
     return parser.parse_args(argv)
+
+
+def _breadth_parity(n: int, seed: int) -> dict[str, float]:
+    """Return cross-tier parity rows for the non-RK4 JAX integrators."""
+    theta0, omega, coupling = _build_network(n, seed=seed)
+    velocities = np.linspace(-0.2, 0.2, n, dtype=np.float64)
+
+    euler_ref = kuramoto.kuramoto_euler_trajectory(theta0, omega, coupling, 0.025, 24)
+    euler_jax = jax_kuramoto_euler_trajectory(theta0, omega, coupling, 0.025, 24)
+
+    dopri_ref = kuramoto.kuramoto_dopri_trajectory(
+        theta0,
+        omega,
+        coupling,
+        t_end=0.3,
+        rtol=1e-7,
+        atol=1e-10,
+        first_step=0.03,
+        max_steps=200,
+    )
+    dopri_jax = jax_kuramoto_dopri_trajectory(
+        theta0,
+        omega,
+        coupling,
+        t_end=0.3,
+        rtol=1e-7,
+        atol=1e-10,
+        first_step=0.03,
+        max_steps=200,
+    )
+
+    inertial_ref = kuramoto.networked_inertial_trajectory(
+        theta0, velocities, omega, coupling, 1.4, damping=0.2, dt=0.015, n_steps=24
+    )
+    inertial_jax = jax_networked_inertial_trajectory(
+        theta0, velocities, omega, coupling, 1.4, damping=0.2, dt=0.015, n_steps=24
+    )
+
+    symplectic_ref = kuramoto.networked_symplectic_inertial_trajectory(
+        theta0, velocities, omega, coupling, 1.4, damping=0.05, dt=0.015, n_steps=24
+    )
+    symplectic_jax = jax_networked_symplectic_inertial_trajectory(
+        theta0, velocities, omega, coupling, 1.4, damping=0.05, dt=0.015, n_steps=24
+    )
+
+    noisy_ref = kuramoto.networked_noisy_trajectory(
+        theta0, omega, coupling, 0.03, dt=0.01, n_steps=32, seed=seed + 17, settle_steps=8
+    )
+    noisy_jax = jax_networked_noisy_trajectory(
+        theta0, omega, coupling, 0.03, dt=0.01, n_steps=32, seed=seed + 17, settle_steps=8
+    )
+
+    return {
+        "euler_max_abs_diff": float(np.max(np.abs(euler_jax - euler_ref))),
+        "dopri_terminal_max_abs_diff": float(
+            np.max(np.abs(dopri_jax.terminal_phases - dopri_ref.terminal_phases))
+        ),
+        "dopri_step_max_abs_diff": float(np.max(np.abs(dopri_jax.steps - dopri_ref.steps))),
+        "inertial_phase_max_abs_diff": float(
+            np.max(np.abs(inertial_jax.phases - inertial_ref.phases))
+        ),
+        "inertial_velocity_max_abs_diff": float(
+            np.max(np.abs(inertial_jax.velocities - inertial_ref.velocities))
+        ),
+        "symplectic_phase_max_abs_diff": float(
+            np.max(np.abs(symplectic_jax.phases - symplectic_ref.phases))
+        ),
+        "symplectic_velocity_max_abs_diff": float(
+            np.max(np.abs(symplectic_jax.velocities - symplectic_ref.velocities))
+        ),
+        "noisy_terminal_max_abs_diff": float(
+            np.max(np.abs(noisy_jax.terminal_phases - noisy_ref.terminal_phases))
+        ),
+        "noisy_order_parameter_max_abs_diff": float(
+            np.max(np.abs(noisy_jax.order_parameter_series - noisy_ref.order_parameter_series))
+        ),
+    }
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -155,6 +251,8 @@ def main(argv: list[str] | None = None) -> int:
         "ensemble_parity_max_abs_diff": ensemble_parity,
         "ensemble_forward_us": ensemble_stats.to_dict(),
         "sequential_forward_us": sequential_stats.to_dict(),
+        "breadth_parity_n_oscillators": args.parity_n,
+        "breadth_parity": _breadth_parity(args.parity_n, args.seed + 100),
         "provenance": capture_provenance().to_dict(),
     }
 
@@ -173,6 +271,7 @@ def main(argv: list[str] | None = None) -> int:
         f"ensemble B={args.batch} parity={ensemble_parity:.2e}  batched p50 {ensemble_stats.p50_us:.1f} us"
         f"  sequential p50 {sequential_stats.p50_us:.1f} us (advisory)"
     )
+    print(f"breadth parity N={args.parity_n} recorded for Euler/DOPRI/inertial/noisy")
     print(f"\nwrote {output}")
     return 0
 

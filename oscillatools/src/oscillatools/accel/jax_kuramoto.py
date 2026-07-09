@@ -90,7 +90,7 @@ def _load_backend() -> _Backend:
     try:
         import jax
         import jax.numpy as jnp
-    except ImportError as error:  # pragma: no cover - exercised only without the optional extra
+    except ImportError as error:
         raise ImportError(
             "the JAX Kuramoto tier requires JAX; install oscillatools[jax]"
         ) from error
