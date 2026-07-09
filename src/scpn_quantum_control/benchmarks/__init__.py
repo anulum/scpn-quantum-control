@@ -121,6 +121,13 @@ from .reproducible_comparison import (
     ReproducibleKuramotoComparison,
     run_reproducible_kuramoto_comparison,
 )
+from .sync_witness_evidence import (
+    SYNC_WITNESS_EVIDENCE_SCHEMA,
+    SyncWitnessEvidenceArtifact,
+    render_sync_witness_evidence_markdown,
+    sync_witness_evidence_payload,
+    write_sync_witness_evidence_artifact,
+)
 from .tn_mps_baseline_design import (
     TN_MPS_BASELINE_DESIGN_CLAIM_BOUNDARY,
     TN_MPS_BASELINE_DESIGN_SCHEMA,
@@ -174,6 +181,11 @@ __all__ = [
     "coupling_recovery_evidence_payload",
     "render_coupling_recovery_evidence_markdown",
     "write_coupling_recovery_evidence_artifact",
+    "SYNC_WITNESS_EVIDENCE_SCHEMA",
+    "SyncWitnessEvidenceArtifact",
+    "render_sync_witness_evidence_markdown",
+    "sync_witness_evidence_payload",
+    "write_sync_witness_evidence_artifact",
     "AcceleratorEvidenceMetadata",
     "BenchmarkIsolationMetadata",
     "ExternalComparisonArtifact",

@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 835,
     "public_documentation_pages": 268,
-    "python_model_classes": 981,
-    "python_model_source_modules": 503,
+    "python_model_classes": 986,
+    "python_model_source_modules": 505,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 46,
-    "test_files": 877
+    "test_files": 879
   },
   "documentation": {
     "examples": [
@@ -470,7 +470,7 @@
       {
         "package": "benchmarks",
         "path": "src/scpn_quantum_control/benchmarks",
-        "python_modules": 24
+        "python_modules": 25
       },
       {
         "package": "bridge",
@@ -560,7 +560,7 @@
       {
         "package": "phase",
         "path": "src/scpn_quantum_control/phase",
-        "python_modules": 93
+        "python_modules": 94
       },
       {
         "package": "psi_field",
@@ -4198,6 +4198,26 @@
         "path": "src/scpn_quantum_control/analysis/entanglement_enhanced_sync.py"
       },
       {
+        "name": "SyncWitnessBoundaryRow",
+        "path": "src/scpn_quantum_control/phase/synchronisation_witness.py"
+      },
+      {
+        "name": "SyncWitnessCase",
+        "path": "src/scpn_quantum_control/phase/synchronisation_witness.py"
+      },
+      {
+        "name": "SyncWitnessEvidenceArtifact",
+        "path": "src/scpn_quantum_control/benchmarks/sync_witness_evidence.py"
+      },
+      {
+        "name": "SyncWitnessRecord",
+        "path": "src/scpn_quantum_control/phase/synchronisation_witness.py"
+      },
+      {
+        "name": "SyncWitnessSuiteResult",
+        "path": "src/scpn_quantum_control/phase/synchronisation_witness.py"
+      },
+      {
         "name": "SynchronisationBenchmarkInstance",
         "path": "src/scpn_quantum_control/benchmark_harness/synchronisation.py"
       },
@@ -4641,6 +4661,7 @@
       "src/scpn_quantum_control/benchmarks/quantum_advantage.py",
       "src/scpn_quantum_control/benchmarks/reproducible_comparison.py",
       "src/scpn_quantum_control/benchmarks/s3_design_protocol.py",
+      "src/scpn_quantum_control/benchmarks/sync_witness_evidence.py",
       "src/scpn_quantum_control/benchmarks/tn_mps_baseline_design.py",
       "src/scpn_quantum_control/benchmarks/tn_mps_crossover_stage1.py",
       "src/scpn_quantum_control/bridge/control_plasma_knm.py",
@@ -4927,6 +4948,7 @@
       "src/scpn_quantum_control/phase/results.py",
       "src/scpn_quantum_control/phase/structured_ansatz.py",
       "src/scpn_quantum_control/phase/synchronisation_objectives.py",
+      "src/scpn_quantum_control/phase/synchronisation_witness.py",
       "src/scpn_quantum_control/phase/tensor_jump.py",
       "src/scpn_quantum_control/phase/tensorflow_bridge.py",
       "src/scpn_quantum_control/phase/tensorflow_maintenance.py",
@@ -6717,6 +6739,7 @@
       "tests/test_phase_qnode_vector_transforms.py",
       "tests/test_phase_results.py",
       "tests/test_phase_synchronisation_objectives.py",
+      "tests/test_phase_synchronisation_witness.py",
       "tests/test_phase_tensorflow_maintenance.py",
       "tests/test_phase_torch_aot_autograd_export.py",
       "tests/test_phase_torch_autograd_function.py",
@@ -6999,6 +7022,7 @@
       "tests/test_sync_order_proxy_contract.py",
       "tests/test_sync_uncertainty.py",
       "tests/test_sync_witness.py",
+      "tests/test_sync_witness_evidence.py",
       "tests/test_synchronisation_benchmark_compare.py",
       "tests/test_synchronisation_benchmark_registry.py",
       "tests/test_synchronisation_compare_branches.py",

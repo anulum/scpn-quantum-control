@@ -183,6 +183,18 @@ def test_coupling_recovery_evidence_selection_is_harness() -> None:
     ]
 
 
+def test_sync_witness_evidence_selection_is_harness() -> None:
+    harnesses = bench_cli._selected_harnesses("diff-sync-witness", include_gpu=False)
+
+    assert harnesses == [
+        bench_cli.Harness(
+            "sync-witness-evidence",
+            "scripts/export_sync_witness_evidence.py",
+            frozenset({"diff-sync-witness"}),
+        )
+    ]
+
+
 def test_p_h1_open_guard_selection_is_claim_guard_harness() -> None:
     harnesses = bench_cli._selected_harnesses("p-h1-open-guard", include_gpu=False)
 
@@ -486,6 +498,17 @@ def test_coupling_recovery_evidence_dry_run_selects_harness(
     assert rc == 0
     assert "coupling-recovery-evidence" in captured.out
     assert "scripts/export_coupling_recovery_evidence.py" in captured.out
+
+
+def test_sync_witness_evidence_dry_run_selects_harness(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    rc = bench_cli.run(["sync-witness-evidence", "--dry-run"])
+
+    captured = capsys.readouterr()
+    assert rc == 0
+    assert "sync-witness-evidence" in captured.out
+    assert "scripts/export_sync_witness_evidence.py" in captured.out
 
 
 def test_realtime_control_e2e_dry_run_selects_e2e_harness(

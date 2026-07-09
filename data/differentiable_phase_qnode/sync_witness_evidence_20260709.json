@@ -1,0 +1,1421 @@
+{
+  "artifact_date": "2026-07-09",
+  "artifact_id": "sync-witness-evidence-local",
+  "boundary_rows": [
+    {
+      "boundary_id": "high_dimensional_manifold_boundary",
+      "claim_boundary": "bounded synthetic phase-cloud synchronisation witnesses (harmonic Kuramoto order parameters and exact Vietoris-Rips persistent homology in dimensions 0 and 1 over geodesic phase distances) with known reference regimes; not hardware phase tomography, provider execution, isolated timing, or high-dimensional manifold inference",
+      "reason": "persistent homology beyond one-dimensional phase clouds requires manifold-embedding and identifiability analysis outside this suite",
+      "status": "hard_gap"
+    },
+    {
+      "boundary_id": "hardware_phase_tomography_boundary",
+      "claim_boundary": "bounded synthetic phase-cloud synchronisation witnesses (harmonic Kuramoto order parameters and exact Vietoris-Rips persistent homology in dimensions 0 and 1 over geodesic phase distances) with known reference regimes; not hardware phase tomography, provider execution, isolated timing, or high-dimensional manifold inference",
+      "reason": "provider-backed phase tomography requires raw counts, calibration, and owner-approved hardware tickets",
+      "status": "hard_gap"
+    }
+  ],
+  "claim_boundary": "bounded synthetic phase-cloud synchronisation witnesses (harmonic Kuramoto order parameters and exact Vietoris-Rips persistent homology in dimensions 0 and 1 over geodesic phase distances) with known reference regimes; not hardware phase tomography, provider execution, isolated timing, or high-dimensional manifold inference",
+  "classification": "functional_non_isolated",
+  "environment": {
+    "platform": "Linux-6.17.0-35-generic-x86_64-with-glibc2.39",
+    "python": "3.12.3"
+  },
+  "passed": true,
+  "production_eligible": false,
+  "promotion_ready": false,
+  "row_schema": {
+    "required_boundary_fields": [
+      "boundary_id",
+      "status",
+      "reason",
+      "claim_boundary"
+    ],
+    "required_run_fields": [
+      "case_id",
+      "regime",
+      "n_nodes",
+      "order_parameter",
+      "order_parameter_harmonic2",
+      "order_parameter_std",
+      "thresholds",
+      "betti0_curve",
+      "betti1_curve",
+      "h0_persistence",
+      "h1_persistence",
+      "persistent_component_count",
+      "dominant_h1_persistence",
+      "reference_scale",
+      "n_bootstrap",
+      "noise_std",
+      "passed",
+      "claim_boundary"
+    ]
+  },
+  "rows": [
+    {
+      "betti0_curve": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "betti1_curve": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "case_id": "synchronised_eight_node",
+      "claim_boundary": "bounded synthetic phase-cloud synchronisation witnesses (harmonic Kuramoto order parameters and exact Vietoris-Rips persistent homology in dimensions 0 and 1 over geodesic phase distances) with known reference regimes; not hardware phase tomography, provider execution, isolated timing, or high-dimensional manifold inference",
+      "dominant_h1_persistence": 0.0,
+      "h0_persistence": [
+        [
+          0.0,
+          0.004999999999999999
+        ],
+        [
+          0.0,
+          0.004999999999999999
+        ],
+        [
+          0.0,
+          0.005
+        ],
+        [
+          0.0,
+          0.005
+        ],
+        [
+          0.0,
+          0.005000000000000001
+        ],
+        [
+          0.0,
+          0.005000000000000001
+        ],
+        [
+          0.0,
+          0.01
+        ],
+        [
+          0.0,
+          Infinity
+        ]
+      ],
+      "h1_persistence": [
+        [
+          0.009999999999999998,
+          0.009999999999999998
+        ],
+        [
+          0.01,
+          0.01
+        ],
+        [
+          0.01,
+          0.01
+        ],
+        [
+          0.01,
+          0.01
+        ],
+        [
+          0.015,
+          0.015
+        ],
+        [
+          0.015,
+          0.015
+        ],
+        [
+          0.015,
+          0.015
+        ],
+        [
+          0.015,
+          0.015
+        ],
+        [
+          0.02,
+          0.02
+        ],
+        [
+          0.02,
+          0.02
+        ],
+        [
+          0.02,
+          0.02
+        ],
+        [
+          0.02,
+          0.02
+        ],
+        [
+          0.025,
+          0.025
+        ],
+        [
+          0.025,
+          0.025
+        ],
+        [
+          0.025,
+          0.025
+        ],
+        [
+          0.03,
+          0.03
+        ],
+        [
+          0.03,
+          0.03
+        ],
+        [
+          0.03,
+          0.03
+        ],
+        [
+          0.035,
+          0.035
+        ],
+        [
+          0.035,
+          0.035
+        ],
+        [
+          0.04,
+          0.04
+        ]
+      ],
+      "n_bootstrap": 32,
+      "n_nodes": 8,
+      "noise_std": 0.01,
+      "order_parameter": 0.9999080101302655,
+      "order_parameter_harmonic2": 0.9996320683330259,
+      "order_parameter_std": 4.52757581708573e-05,
+      "passed": true,
+      "persistent_component_count": 1,
+      "reference_scale": 0.5,
+      "regime": "synchronised",
+      "thresholds": [
+        0.05,
+        0.1844170718952084,
+        0.3188341437904168,
+        0.4532512156856252,
+        0.5876682875808337,
+        0.7220853594760421,
+        0.8565024313712505,
+        0.9909195032664588,
+        1.1253365751616673,
+        1.2597536470568758,
+        1.3941707189520842,
+        1.5285877908472925,
+        1.663004862742501,
+        1.7974219346377094,
+        1.9318390065329176,
+        2.066256078428126,
+        2.2006731503233343,
+        2.335090222218543,
+        2.4695072941137513,
+        2.6039243660089597,
+        2.738341437904168,
+        2.872758509799376,
+        3.0071755816945847,
+        3.141592653589793
+      ]
+    },
+    {
+      "betti0_curve": [
+        8,
+        8,
+        8,
+        8,
+        8,
+        8,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "betti1_curve": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "case_id": "desynchronised_eight_node",
+      "claim_boundary": "bounded synthetic phase-cloud synchronisation witnesses (harmonic Kuramoto order parameters and exact Vietoris-Rips persistent homology in dimensions 0 and 1 over geodesic phase distances) with known reference regimes; not hardware phase tomography, provider execution, isolated timing, or high-dimensional manifold inference",
+      "dominant_h1_persistence": 1.5707963267948963,
+      "h0_persistence": [
+        [
+          0.0,
+          0.7853981633974483
+        ],
+        [
+          0.0,
+          0.7853981633974483
+        ],
+        [
+          0.0,
+          0.7853981633974483
+        ],
+        [
+          0.0,
+          0.7853981633974483
+        ],
+        [
+          0.0,
+          0.7853981633974483
+        ],
+        [
+          0.0,
+          0.7853981633974483
+        ],
+        [
+          0.0,
+          0.7853981633974483
+        ],
+        [
+          0.0,
+          Infinity
+        ]
+      ],
+      "h1_persistence": [
+        [
+          0.7853981633974485,
+          2.356194490192345
+        ],
+        [
+          1.5707963267948966,
+          1.5707963267948966
+        ],
+        [
+          1.5707963267948966,
+          1.5707963267948966
+        ],
+        [
+          1.5707963267948966,
+          1.5707963267948966
+        ],
+        [
+          1.5707963267948966,
+          1.5707963267948966
+        ],
+        [
+          1.5707963267948966,
+          1.5707963267948966
+        ],
+        [
+          1.5707963267948966,
+          1.5707963267948966
+        ],
+        [
+          1.5707963267948968,
+          1.5707963267948968
+        ],
+        [
+          1.5707963267948968,
+          1.5707963267948968
+        ],
+        [
+          2.356194490192345,
+          2.356194490192345
+        ],
+        [
+          2.356194490192345,
+          2.356194490192345
+        ],
+        [
+          2.356194490192345,
+          2.356194490192345
+        ],
+        [
+          2.356194490192345,
+          2.356194490192345
+        ],
+        [
+          2.356194490192345,
+          2.356194490192345
+        ],
+        [
+          2.356194490192345,
+          2.356194490192345
+        ],
+        [
+          2.356194490192345,
+          2.356194490192345
+        ],
+        [
+          2.356194490192345,
+          2.356194490192345
+        ],
+        [
+          3.141592653589793,
+          3.141592653589793
+        ],
+        [
+          3.141592653589793,
+          3.141592653589793
+        ],
+        [
+          3.141592653589793,
+          3.141592653589793
+        ],
+        [
+          3.141592653589793,
+          3.141592653589793
+        ]
+      ],
+      "n_bootstrap": 32,
+      "n_nodes": 8,
+      "noise_std": 0.01,
+      "order_parameter": 4.308740668371214e-17,
+      "order_parameter_harmonic2": 2.7755575615628914e-17,
+      "order_parameter_std": 0.0014455601094495736,
+      "passed": true,
+      "persistent_component_count": 8,
+      "reference_scale": 0.5,
+      "regime": "desynchronised",
+      "thresholds": [
+        0.05,
+        0.1844170718952084,
+        0.3188341437904168,
+        0.4532512156856252,
+        0.5876682875808337,
+        0.7220853594760421,
+        0.8565024313712505,
+        0.9909195032664588,
+        1.1253365751616673,
+        1.2597536470568758,
+        1.3941707189520842,
+        1.5285877908472925,
+        1.663004862742501,
+        1.7974219346377094,
+        1.9318390065329176,
+        2.066256078428126,
+        2.2006731503233343,
+        2.335090222218543,
+        2.4695072941137513,
+        2.6039243660089597,
+        2.738341437904168,
+        2.872758509799376,
+        3.0071755816945847,
+        3.141592653589793
+      ]
+    },
+    {
+      "betti0_curve": [
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "betti1_curve": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "case_id": "clustered_three_group",
+      "claim_boundary": "bounded synthetic phase-cloud synchronisation witnesses (harmonic Kuramoto order parameters and exact Vietoris-Rips persistent homology in dimensions 0 and 1 over geodesic phase distances) with known reference regimes; not hardware phase tomography, provider execution, isolated timing, or high-dimensional manifold inference",
+      "dominant_h1_persistence": 0.06000000000000005,
+      "h0_persistence": [
+        [
+          0.0,
+          0.029999999999999805
+        ],
+        [
+          0.0,
+          0.029999999999999805
+        ],
+        [
+          0.0,
+          0.03
+        ],
+        [
+          0.0,
+          0.03
+        ],
+        [
+          0.0,
+          0.03000000000000025
+        ],
+        [
+          0.0,
+          0.03000000000000025
+        ],
+        [
+          0.0,
+          2.034395102393195
+        ],
+        [
+          0.0,
+          2.034395102393195
+        ],
+        [
+          0.0,
+          Infinity
+        ]
+      ],
+      "h1_persistence": [
+        [
+          0.05999999999999961,
+          0.05999999999999961
+        ],
+        [
+          0.06,
+          0.06
+        ],
+        [
+          0.06000000000000049,
+          0.06000000000000049
+        ],
+        [
+          2.0343951023931957,
+          2.0943951023931957
+        ],
+        [
+          2.064395102393195,
+          2.064395102393195
+        ],
+        [
+          2.0643951023931955,
+          2.0643951023931955
+        ],
+        [
+          2.0643951023931955,
+          2.0643951023931955
+        ],
+        [
+          2.0643951023931955,
+          2.0643951023931955
+        ],
+        [
+          2.0643951023931955,
+          2.0643951023931955
+        ],
+        [
+          2.0643951023931955,
+          2.0643951023931955
+        ],
+        [
+          2.094395102393195,
+          2.094395102393195
+        ],
+        [
+          2.0943951023931953,
+          2.0943951023931953
+        ],
+        [
+          2.0943951023931953,
+          2.0943951023931953
+        ],
+        [
+          2.0943951023931953,
+          2.0943951023931953
+        ],
+        [
+          2.0943951023931953,
+          2.0943951023931953
+        ],
+        [
+          2.0943951023931957,
+          2.0943951023931957
+        ],
+        [
+          2.0943951023931957,
+          2.0943951023931957
+        ],
+        [
+          2.0943951023931957,
+          2.0943951023931957
+        ],
+        [
+          2.0943951023931957,
+          2.0943951023931957
+        ],
+        [
+          2.124395102393195,
+          2.124395102393195
+        ],
+        [
+          2.124395102393195,
+          2.124395102393195
+        ],
+        [
+          2.124395102393195,
+          2.124395102393195
+        ],
+        [
+          2.1243951023931955,
+          2.1243951023931955
+        ],
+        [
+          2.124395102393196,
+          2.124395102393196
+        ],
+        [
+          2.124395102393196,
+          2.124395102393196
+        ],
+        [
+          2.154395102393195,
+          2.154395102393195
+        ],
+        [
+          2.1543951023931953,
+          2.1543951023931953
+        ],
+        [
+          2.154395102393196,
+          2.154395102393196
+        ]
+      ],
+      "n_bootstrap": 32,
+      "n_nodes": 9,
+      "noise_std": 0.01,
+      "order_parameter": 1.2412670766236366e-16,
+      "order_parameter_harmonic2": 2.602242262380099e-16,
+      "order_parameter_std": 0.0011864243055871922,
+      "passed": true,
+      "persistent_component_count": 3,
+      "reference_scale": 0.5,
+      "regime": "clustered",
+      "thresholds": [
+        0.05,
+        0.1844170718952084,
+        0.3188341437904168,
+        0.4532512156856252,
+        0.5876682875808337,
+        0.7220853594760421,
+        0.8565024313712505,
+        0.9909195032664588,
+        1.1253365751616673,
+        1.2597536470568758,
+        1.3941707189520842,
+        1.5285877908472925,
+        1.663004862742501,
+        1.7974219346377094,
+        1.9318390065329176,
+        2.066256078428126,
+        2.2006731503233343,
+        2.335090222218543,
+        2.4695072941137513,
+        2.6039243660089597,
+        2.738341437904168,
+        2.872758509799376,
+        3.0071755816945847,
+        3.141592653589793
+      ]
+    }
+  ],
+  "schema": "scpn_qc_sync_witness_evidence_v1",
+  "suite": {
+    "boundary_rows": [
+      {
+        "boundary_id": "high_dimensional_manifold_boundary",
+        "claim_boundary": "bounded synthetic phase-cloud synchronisation witnesses (harmonic Kuramoto order parameters and exact Vietoris-Rips persistent homology in dimensions 0 and 1 over geodesic phase distances) with known reference regimes; not hardware phase tomography, provider execution, isolated timing, or high-dimensional manifold inference",
+        "reason": "persistent homology beyond one-dimensional phase clouds requires manifold-embedding and identifiability analysis outside this suite",
+        "status": "hard_gap"
+      },
+      {
+        "boundary_id": "hardware_phase_tomography_boundary",
+        "claim_boundary": "bounded synthetic phase-cloud synchronisation witnesses (harmonic Kuramoto order parameters and exact Vietoris-Rips persistent homology in dimensions 0 and 1 over geodesic phase distances) with known reference regimes; not hardware phase tomography, provider execution, isolated timing, or high-dimensional manifold inference",
+        "reason": "provider-backed phase tomography requires raw counts, calibration, and owner-approved hardware tickets",
+        "status": "hard_gap"
+      }
+    ],
+    "claim_boundary": "bounded synthetic phase-cloud synchronisation witnesses (harmonic Kuramoto order parameters and exact Vietoris-Rips persistent homology in dimensions 0 and 1 over geodesic phase distances) with known reference regimes; not hardware phase tomography, provider execution, isolated timing, or high-dimensional manifold inference",
+    "evidence_class": "functional_non_isolated",
+    "passed": true,
+    "records": [
+      {
+        "betti0_curve": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "betti1_curve": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "case_id": "synchronised_eight_node",
+        "claim_boundary": "bounded synthetic phase-cloud synchronisation witnesses (harmonic Kuramoto order parameters and exact Vietoris-Rips persistent homology in dimensions 0 and 1 over geodesic phase distances) with known reference regimes; not hardware phase tomography, provider execution, isolated timing, or high-dimensional manifold inference",
+        "dominant_h1_persistence": 0.0,
+        "h0_persistence": [
+          [
+            0.0,
+            0.004999999999999999
+          ],
+          [
+            0.0,
+            0.004999999999999999
+          ],
+          [
+            0.0,
+            0.005
+          ],
+          [
+            0.0,
+            0.005
+          ],
+          [
+            0.0,
+            0.005000000000000001
+          ],
+          [
+            0.0,
+            0.005000000000000001
+          ],
+          [
+            0.0,
+            0.01
+          ],
+          [
+            0.0,
+            Infinity
+          ]
+        ],
+        "h1_persistence": [
+          [
+            0.009999999999999998,
+            0.009999999999999998
+          ],
+          [
+            0.01,
+            0.01
+          ],
+          [
+            0.01,
+            0.01
+          ],
+          [
+            0.01,
+            0.01
+          ],
+          [
+            0.015,
+            0.015
+          ],
+          [
+            0.015,
+            0.015
+          ],
+          [
+            0.015,
+            0.015
+          ],
+          [
+            0.015,
+            0.015
+          ],
+          [
+            0.02,
+            0.02
+          ],
+          [
+            0.02,
+            0.02
+          ],
+          [
+            0.02,
+            0.02
+          ],
+          [
+            0.02,
+            0.02
+          ],
+          [
+            0.025,
+            0.025
+          ],
+          [
+            0.025,
+            0.025
+          ],
+          [
+            0.025,
+            0.025
+          ],
+          [
+            0.03,
+            0.03
+          ],
+          [
+            0.03,
+            0.03
+          ],
+          [
+            0.03,
+            0.03
+          ],
+          [
+            0.035,
+            0.035
+          ],
+          [
+            0.035,
+            0.035
+          ],
+          [
+            0.04,
+            0.04
+          ]
+        ],
+        "n_bootstrap": 32,
+        "n_nodes": 8,
+        "noise_std": 0.01,
+        "order_parameter": 0.9999080101302655,
+        "order_parameter_harmonic2": 0.9996320683330259,
+        "order_parameter_std": 4.52757581708573e-05,
+        "passed": true,
+        "persistent_component_count": 1,
+        "reference_scale": 0.5,
+        "regime": "synchronised",
+        "thresholds": [
+          0.05,
+          0.1844170718952084,
+          0.3188341437904168,
+          0.4532512156856252,
+          0.5876682875808337,
+          0.7220853594760421,
+          0.8565024313712505,
+          0.9909195032664588,
+          1.1253365751616673,
+          1.2597536470568758,
+          1.3941707189520842,
+          1.5285877908472925,
+          1.663004862742501,
+          1.7974219346377094,
+          1.9318390065329176,
+          2.066256078428126,
+          2.2006731503233343,
+          2.335090222218543,
+          2.4695072941137513,
+          2.6039243660089597,
+          2.738341437904168,
+          2.872758509799376,
+          3.0071755816945847,
+          3.141592653589793
+        ]
+      },
+      {
+        "betti0_curve": [
+          8,
+          8,
+          8,
+          8,
+          8,
+          8,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "betti1_curve": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "case_id": "desynchronised_eight_node",
+        "claim_boundary": "bounded synthetic phase-cloud synchronisation witnesses (harmonic Kuramoto order parameters and exact Vietoris-Rips persistent homology in dimensions 0 and 1 over geodesic phase distances) with known reference regimes; not hardware phase tomography, provider execution, isolated timing, or high-dimensional manifold inference",
+        "dominant_h1_persistence": 1.5707963267948963,
+        "h0_persistence": [
+          [
+            0.0,
+            0.7853981633974483
+          ],
+          [
+            0.0,
+            0.7853981633974483
+          ],
+          [
+            0.0,
+            0.7853981633974483
+          ],
+          [
+            0.0,
+            0.7853981633974483
+          ],
+          [
+            0.0,
+            0.7853981633974483
+          ],
+          [
+            0.0,
+            0.7853981633974483
+          ],
+          [
+            0.0,
+            0.7853981633974483
+          ],
+          [
+            0.0,
+            Infinity
+          ]
+        ],
+        "h1_persistence": [
+          [
+            0.7853981633974485,
+            2.356194490192345
+          ],
+          [
+            1.5707963267948966,
+            1.5707963267948966
+          ],
+          [
+            1.5707963267948966,
+            1.5707963267948966
+          ],
+          [
+            1.5707963267948966,
+            1.5707963267948966
+          ],
+          [
+            1.5707963267948966,
+            1.5707963267948966
+          ],
+          [
+            1.5707963267948966,
+            1.5707963267948966
+          ],
+          [
+            1.5707963267948966,
+            1.5707963267948966
+          ],
+          [
+            1.5707963267948968,
+            1.5707963267948968
+          ],
+          [
+            1.5707963267948968,
+            1.5707963267948968
+          ],
+          [
+            2.356194490192345,
+            2.356194490192345
+          ],
+          [
+            2.356194490192345,
+            2.356194490192345
+          ],
+          [
+            2.356194490192345,
+            2.356194490192345
+          ],
+          [
+            2.356194490192345,
+            2.356194490192345
+          ],
+          [
+            2.356194490192345,
+            2.356194490192345
+          ],
+          [
+            2.356194490192345,
+            2.356194490192345
+          ],
+          [
+            2.356194490192345,
+            2.356194490192345
+          ],
+          [
+            2.356194490192345,
+            2.356194490192345
+          ],
+          [
+            3.141592653589793,
+            3.141592653589793
+          ],
+          [
+            3.141592653589793,
+            3.141592653589793
+          ],
+          [
+            3.141592653589793,
+            3.141592653589793
+          ],
+          [
+            3.141592653589793,
+            3.141592653589793
+          ]
+        ],
+        "n_bootstrap": 32,
+        "n_nodes": 8,
+        "noise_std": 0.01,
+        "order_parameter": 4.308740668371214e-17,
+        "order_parameter_harmonic2": 2.7755575615628914e-17,
+        "order_parameter_std": 0.0014455601094495736,
+        "passed": true,
+        "persistent_component_count": 8,
+        "reference_scale": 0.5,
+        "regime": "desynchronised",
+        "thresholds": [
+          0.05,
+          0.1844170718952084,
+          0.3188341437904168,
+          0.4532512156856252,
+          0.5876682875808337,
+          0.7220853594760421,
+          0.8565024313712505,
+          0.9909195032664588,
+          1.1253365751616673,
+          1.2597536470568758,
+          1.3941707189520842,
+          1.5285877908472925,
+          1.663004862742501,
+          1.7974219346377094,
+          1.9318390065329176,
+          2.066256078428126,
+          2.2006731503233343,
+          2.335090222218543,
+          2.4695072941137513,
+          2.6039243660089597,
+          2.738341437904168,
+          2.872758509799376,
+          3.0071755816945847,
+          3.141592653589793
+        ]
+      },
+      {
+        "betti0_curve": [
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "betti1_curve": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "case_id": "clustered_three_group",
+        "claim_boundary": "bounded synthetic phase-cloud synchronisation witnesses (harmonic Kuramoto order parameters and exact Vietoris-Rips persistent homology in dimensions 0 and 1 over geodesic phase distances) with known reference regimes; not hardware phase tomography, provider execution, isolated timing, or high-dimensional manifold inference",
+        "dominant_h1_persistence": 0.06000000000000005,
+        "h0_persistence": [
+          [
+            0.0,
+            0.029999999999999805
+          ],
+          [
+            0.0,
+            0.029999999999999805
+          ],
+          [
+            0.0,
+            0.03
+          ],
+          [
+            0.0,
+            0.03
+          ],
+          [
+            0.0,
+            0.03000000000000025
+          ],
+          [
+            0.0,
+            0.03000000000000025
+          ],
+          [
+            0.0,
+            2.034395102393195
+          ],
+          [
+            0.0,
+            2.034395102393195
+          ],
+          [
+            0.0,
+            Infinity
+          ]
+        ],
+        "h1_persistence": [
+          [
+            0.05999999999999961,
+            0.05999999999999961
+          ],
+          [
+            0.06,
+            0.06
+          ],
+          [
+            0.06000000000000049,
+            0.06000000000000049
+          ],
+          [
+            2.0343951023931957,
+            2.0943951023931957
+          ],
+          [
+            2.064395102393195,
+            2.064395102393195
+          ],
+          [
+            2.0643951023931955,
+            2.0643951023931955
+          ],
+          [
+            2.0643951023931955,
+            2.0643951023931955
+          ],
+          [
+            2.0643951023931955,
+            2.0643951023931955
+          ],
+          [
+            2.0643951023931955,
+            2.0643951023931955
+          ],
+          [
+            2.0643951023931955,
+            2.0643951023931955
+          ],
+          [
+            2.094395102393195,
+            2.094395102393195
+          ],
+          [
+            2.0943951023931953,
+            2.0943951023931953
+          ],
+          [
+            2.0943951023931953,
+            2.0943951023931953
+          ],
+          [
+            2.0943951023931953,
+            2.0943951023931953
+          ],
+          [
+            2.0943951023931953,
+            2.0943951023931953
+          ],
+          [
+            2.0943951023931957,
+            2.0943951023931957
+          ],
+          [
+            2.0943951023931957,
+            2.0943951023931957
+          ],
+          [
+            2.0943951023931957,
+            2.0943951023931957
+          ],
+          [
+            2.0943951023931957,
+            2.0943951023931957
+          ],
+          [
+            2.124395102393195,
+            2.124395102393195
+          ],
+          [
+            2.124395102393195,
+            2.124395102393195
+          ],
+          [
+            2.124395102393195,
+            2.124395102393195
+          ],
+          [
+            2.1243951023931955,
+            2.1243951023931955
+          ],
+          [
+            2.124395102393196,
+            2.124395102393196
+          ],
+          [
+            2.124395102393196,
+            2.124395102393196
+          ],
+          [
+            2.154395102393195,
+            2.154395102393195
+          ],
+          [
+            2.1543951023931953,
+            2.1543951023931953
+          ],
+          [
+            2.154395102393196,
+            2.154395102393196
+          ]
+        ],
+        "n_bootstrap": 32,
+        "n_nodes": 9,
+        "noise_std": 0.01,
+        "order_parameter": 1.2412670766236366e-16,
+        "order_parameter_harmonic2": 2.602242262380099e-16,
+        "order_parameter_std": 0.0011864243055871922,
+        "passed": true,
+        "persistent_component_count": 3,
+        "reference_scale": 0.5,
+        "regime": "clustered",
+        "thresholds": [
+          0.05,
+          0.1844170718952084,
+          0.3188341437904168,
+          0.4532512156856252,
+          0.5876682875808337,
+          0.7220853594760421,
+          0.8565024313712505,
+          0.9909195032664588,
+          1.1253365751616673,
+          1.2597536470568758,
+          1.3941707189520842,
+          1.5285877908472925,
+          1.663004862742501,
+          1.7974219346377094,
+          1.9318390065329176,
+          2.066256078428126,
+          2.2006731503233343,
+          2.335090222218543,
+          2.4695072941137513,
+          2.6039243660089597,
+          2.738341437904168,
+          2.872758509799376,
+          3.0071755816945847,
+          3.141592653589793
+        ]
+      }
+    ]
+  }
+}

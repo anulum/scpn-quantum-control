@@ -1451,6 +1451,35 @@ and `.md`. These rows are local synthetic known-ground-truth recovery evidence
 only: hardware Hamiltonian learning, provider execution, isolated timing, and
 arbitrary partial-observation inference remain fail-closed boundary rows.
 
+For bounded synchronisation witnesses over phase clouds, use the BL-18
+sync-witness suite:
+
+```python
+from scpn_quantum_control.phase import run_sync_witness_suite
+
+
+suite = run_sync_witness_suite()
+print(suite.passed)
+print(suite.records[0].betti1_curve)
+print(suite.boundary_rows[0].reason)
+```
+
+`run_sync_witness_suite()` builds deterministic synchronised, desynchronised,
+and clustered phase clouds and certifies each with harmonic Kuramoto order
+parameters, bootstrap order-parameter uncertainty, and exact Vietoris-Rips
+persistent homology (Betti-0/1 curves and dimension-0/1 persistence diagrams)
+over geodesic phase distances. The companion artifact command is:
+
+```bash
+PYTHONPATH=src:. python scripts/export_sync_witness_evidence.py
+```
+
+The committed evidence lives at
+`data/differentiable_phase_qnode/sync_witness_evidence_20260709.json`
+and `.md`. These rows are local synthetic reference-regime witness evidence
+only: hardware phase tomography, provider execution, isolated timing, and
+high-dimensional manifold inference remain fail-closed boundary rows.
+
 ## Composed differentiable objectives
 
 Real control objectives usually mix energy, fidelity, regularization,

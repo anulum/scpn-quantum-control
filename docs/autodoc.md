@@ -63,6 +63,10 @@ or debugging a subsystem, not as the default path for tutorial code.
     options:
       members: [COUPLING_RECOVERY_CLAIM_BOUNDARY, COUPLING_RECOVERY_EVIDENCE_CLASS, CouplingRecoveryBoundaryRow, CouplingRecoveryCase, CouplingRecoveryRecord, CouplingRecoverySuiteResult, coupling_recovery_boundary_rows, default_coupling_recovery_cases, inject_time_series_noise_and_missing, recover_kuramoto_couplings_from_time_series, recover_xy_couplings_from_pair_energy_series, run_coupling_recovery_suite, simulate_kuramoto_phase_time_series, simulate_xy_pair_energy_time_series]
 
+::: scpn_quantum_control.phase.synchronisation_witness
+    options:
+      members: [SYNC_WITNESS_CLAIM_BOUNDARY, SYNC_WITNESS_EVIDENCE_CLASS, PhaseCloudRegime, SyncWitnessBoundaryRow, SyncWitnessCase, SyncWitnessRecord, SyncWitnessSuiteResult, betti_curve, default_sync_witness_cases, geodesic_phase_distance_matrix, harmonic_order_parameter, phase_cloud_synchronisation_witness, run_sync_witness_suite, sync_witness_boundary_rows, vietoris_rips_persistence]
+
 ::: scpn_quantum_control.phase.differentiable_audit
     options:
       members: [DifferentiableQuantumAuditReport, DifferentiableWorkflowAuditSuiteResult, FiniteShotGradientAuditResult, MLFrameworkGradientAuditRecord, MLFrameworkGradientAuditSuiteResult, ParameterShiftAnalyticAgreement, PhaseGradientBenchmarkSuiteResult, run_differentiable_workflow_audit_suite, run_finite_shot_gradient_uncertainty_audit, run_known_phase_gradient_audit, run_ml_framework_gradient_audit, run_parameter_shift_audit_suite, run_phase_gradient_benchmark_suite, verify_parameter_shift_analytic_gradient]
