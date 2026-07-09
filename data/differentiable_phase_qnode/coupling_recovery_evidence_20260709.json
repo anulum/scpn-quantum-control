@@ -1,0 +1,466 @@
+{
+  "artifact_date": "2026-07-09",
+  "artifact_id": "coupling-recovery-evidence-local",
+  "boundary_rows": [
+    {
+      "boundary_id": "partial_observation_inference_boundary",
+      "claim_boundary": "bounded synthetic Kuramoto phase and XY pair-energy time-series recovery with known ground truth; not hardware Hamiltonian learning, provider execution, isolated timing, or arbitrary partial-observation inference",
+      "reason": "arbitrary partial-observation oscillator inference requires identifiability analysis beyond this bounded synthetic suite",
+      "status": "hard_gap"
+    },
+    {
+      "boundary_id": "hardware_hamiltonian_learning_boundary",
+      "claim_boundary": "bounded synthetic Kuramoto phase and XY pair-energy time-series recovery with known ground truth; not hardware Hamiltonian learning, provider execution, isolated timing, or arbitrary partial-observation inference",
+      "reason": "provider-backed XY Hamiltonian learning requires raw counts, calibration, and owner-approved hardware tickets",
+      "status": "hard_gap"
+    }
+  ],
+  "claim_boundary": "bounded synthetic Kuramoto phase and XY pair-energy time-series recovery with known ground truth; not hardware Hamiltonian learning, provider execution, isolated timing, or arbitrary partial-observation inference",
+  "classification": "functional_non_isolated",
+  "environment": {
+    "platform": "Linux-6.17.0-35-generic-x86_64-with-glibc2.39",
+    "python": "3.12.13"
+  },
+  "passed": true,
+  "production_eligible": false,
+  "promotion_ready": false,
+  "row_schema": {
+    "required_boundary_fields": [
+      "boundary_id",
+      "status",
+      "reason",
+      "claim_boundary"
+    ],
+    "required_run_fields": [
+      "case_id",
+      "family",
+      "learned_couplings",
+      "true_couplings",
+      "abs_error",
+      "max_abs_error",
+      "rmse",
+      "valid_fraction",
+      "design_rank",
+      "condition_number",
+      "noise_std",
+      "missing_fraction",
+      "tolerance",
+      "passed",
+      "claim_boundary"
+    ]
+  },
+  "rows": [
+    {
+      "abs_error": [
+        [
+          0.0,
+          0.0011726293389020537,
+          0.001172401363706027
+        ],
+        [
+          0.0011726293389020537,
+          0.0,
+          0.0010265076775590187
+        ],
+        [
+          0.001172401363706027,
+          0.0010265076775590187,
+          0.0
+        ]
+      ],
+      "case_id": "kuramoto_clean_three_node",
+      "claim_boundary": "bounded synthetic Kuramoto phase and XY pair-energy time-series recovery with known ground truth; not hardware Hamiltonian learning, provider execution, isolated timing, or arbitrary partial-observation inference",
+      "condition_number": 183.49865752044008,
+      "design_rank": 3,
+      "family": "kuramoto_phase",
+      "learned_couplings": [
+        [
+          0.0,
+          0.42117262933890204,
+          0.17882759863629397
+        ],
+        [
+          0.42117262933890204,
+          0.0,
+          0.311026507677559
+        ],
+        [
+          0.17882759863629397,
+          0.311026507677559,
+          0.0
+        ]
+      ],
+      "max_abs_error": 0.0011726293389020537,
+      "missing_fraction": 0.0,
+      "noise_std": 0.0,
+      "passed": true,
+      "rmse": 0.0011259518249258017,
+      "tolerance": 0.025,
+      "true_couplings": [
+        [
+          0.0,
+          0.42,
+          0.18
+        ],
+        [
+          0.42,
+          0.0,
+          0.31
+        ],
+        [
+          0.18,
+          0.31,
+          0.0
+        ]
+      ],
+      "valid_fraction": 1.0
+    },
+    {
+      "abs_error": [
+        [
+          0.0,
+          0.004036152027761364,
+          0.0028623961147531407
+        ],
+        [
+          0.004036152027761364,
+          0.0,
+          0.0029309821321998886
+        ],
+        [
+          0.0028623961147531407,
+          0.0029309821321998886,
+          0.0
+        ]
+      ],
+      "case_id": "kuramoto_noisy_missing_three_node",
+      "claim_boundary": "bounded synthetic Kuramoto phase and XY pair-energy time-series recovery with known ground truth; not hardware Hamiltonian learning, provider execution, isolated timing, or arbitrary partial-observation inference",
+      "condition_number": 178.53342777387172,
+      "design_rank": 3,
+      "family": "kuramoto_phase",
+      "learned_couplings": [
+        [
+          0.0,
+          0.42403615202776135,
+          0.17713760388524685
+        ],
+        [
+          0.42403615202776135,
+          0.0,
+          0.3129309821321999
+        ],
+        [
+          0.17713760388524685,
+          0.3129309821321999,
+          0.0
+        ]
+      ],
+      "max_abs_error": 0.004036152027761364,
+      "missing_fraction": 0.03,
+      "noise_std": 0.0005,
+      "passed": true,
+      "rmse": 0.003320365992288152,
+      "tolerance": 0.085,
+      "true_couplings": [
+        [
+          0.0,
+          0.42,
+          0.18
+        ],
+        [
+          0.42,
+          0.0,
+          0.31
+        ],
+        [
+          0.18,
+          0.31,
+          0.0
+        ]
+      ],
+      "valid_fraction": 0.8696969696969697
+    },
+    {
+      "abs_error": [
+        [
+          0.0,
+          5.100283929249105e-06,
+          0.00026341238866059435
+        ],
+        [
+          5.100283929249105e-06,
+          0.0,
+          0.0003073975045930766
+        ],
+        [
+          0.00026341238866059435,
+          0.0003073975045930766,
+          0.0
+        ]
+      ],
+      "case_id": "xy_pair_energy_noisy_missing_three_node",
+      "claim_boundary": "bounded synthetic Kuramoto phase and XY pair-energy time-series recovery with known ground truth; not hardware Hamiltonian learning, provider execution, isolated timing, or arbitrary partial-observation inference",
+      "condition_number": 6.9329180126264065,
+      "design_rank": 3,
+      "family": "xy_pair_energy",
+      "learned_couplings": [
+        [
+          0.0,
+          0.41999489971607074,
+          0.1802634123886606
+        ],
+        [
+          0.41999489971607074,
+          0.0,
+          0.3096926024954069
+        ],
+        [
+          0.1802634123886606,
+          0.3096926024954069,
+          0.0
+        ]
+      ],
+      "max_abs_error": 0.0003073975045930766,
+      "missing_fraction": 0.05,
+      "noise_std": 0.002,
+      "passed": true,
+      "rmse": 0.00023374154189766206,
+      "tolerance": 0.03,
+      "true_couplings": [
+        [
+          0.0,
+          0.42,
+          0.18
+        ],
+        [
+          0.42,
+          0.0,
+          0.31
+        ],
+        [
+          0.18,
+          0.31,
+          0.0
+        ]
+      ],
+      "valid_fraction": 0.94824016563147
+    }
+  ],
+  "schema": "scpn_qc_coupling_recovery_evidence_v1",
+  "suite": {
+    "boundary_rows": [
+      {
+        "boundary_id": "partial_observation_inference_boundary",
+        "claim_boundary": "bounded synthetic Kuramoto phase and XY pair-energy time-series recovery with known ground truth; not hardware Hamiltonian learning, provider execution, isolated timing, or arbitrary partial-observation inference",
+        "reason": "arbitrary partial-observation oscillator inference requires identifiability analysis beyond this bounded synthetic suite",
+        "status": "hard_gap"
+      },
+      {
+        "boundary_id": "hardware_hamiltonian_learning_boundary",
+        "claim_boundary": "bounded synthetic Kuramoto phase and XY pair-energy time-series recovery with known ground truth; not hardware Hamiltonian learning, provider execution, isolated timing, or arbitrary partial-observation inference",
+        "reason": "provider-backed XY Hamiltonian learning requires raw counts, calibration, and owner-approved hardware tickets",
+        "status": "hard_gap"
+      }
+    ],
+    "claim_boundary": "bounded synthetic Kuramoto phase and XY pair-energy time-series recovery with known ground truth; not hardware Hamiltonian learning, provider execution, isolated timing, or arbitrary partial-observation inference",
+    "evidence_class": "functional_non_isolated",
+    "passed": true,
+    "records": [
+      {
+        "abs_error": [
+          [
+            0.0,
+            0.0011726293389020537,
+            0.001172401363706027
+          ],
+          [
+            0.0011726293389020537,
+            0.0,
+            0.0010265076775590187
+          ],
+          [
+            0.001172401363706027,
+            0.0010265076775590187,
+            0.0
+          ]
+        ],
+        "case_id": "kuramoto_clean_three_node",
+        "claim_boundary": "bounded synthetic Kuramoto phase and XY pair-energy time-series recovery with known ground truth; not hardware Hamiltonian learning, provider execution, isolated timing, or arbitrary partial-observation inference",
+        "condition_number": 183.49865752044008,
+        "design_rank": 3,
+        "family": "kuramoto_phase",
+        "learned_couplings": [
+          [
+            0.0,
+            0.42117262933890204,
+            0.17882759863629397
+          ],
+          [
+            0.42117262933890204,
+            0.0,
+            0.311026507677559
+          ],
+          [
+            0.17882759863629397,
+            0.311026507677559,
+            0.0
+          ]
+        ],
+        "max_abs_error": 0.0011726293389020537,
+        "missing_fraction": 0.0,
+        "noise_std": 0.0,
+        "passed": true,
+        "rmse": 0.0011259518249258017,
+        "tolerance": 0.025,
+        "true_couplings": [
+          [
+            0.0,
+            0.42,
+            0.18
+          ],
+          [
+            0.42,
+            0.0,
+            0.31
+          ],
+          [
+            0.18,
+            0.31,
+            0.0
+          ]
+        ],
+        "valid_fraction": 1.0
+      },
+      {
+        "abs_error": [
+          [
+            0.0,
+            0.004036152027761364,
+            0.0028623961147531407
+          ],
+          [
+            0.004036152027761364,
+            0.0,
+            0.0029309821321998886
+          ],
+          [
+            0.0028623961147531407,
+            0.0029309821321998886,
+            0.0
+          ]
+        ],
+        "case_id": "kuramoto_noisy_missing_three_node",
+        "claim_boundary": "bounded synthetic Kuramoto phase and XY pair-energy time-series recovery with known ground truth; not hardware Hamiltonian learning, provider execution, isolated timing, or arbitrary partial-observation inference",
+        "condition_number": 178.53342777387172,
+        "design_rank": 3,
+        "family": "kuramoto_phase",
+        "learned_couplings": [
+          [
+            0.0,
+            0.42403615202776135,
+            0.17713760388524685
+          ],
+          [
+            0.42403615202776135,
+            0.0,
+            0.3129309821321999
+          ],
+          [
+            0.17713760388524685,
+            0.3129309821321999,
+            0.0
+          ]
+        ],
+        "max_abs_error": 0.004036152027761364,
+        "missing_fraction": 0.03,
+        "noise_std": 0.0005,
+        "passed": true,
+        "rmse": 0.003320365992288152,
+        "tolerance": 0.085,
+        "true_couplings": [
+          [
+            0.0,
+            0.42,
+            0.18
+          ],
+          [
+            0.42,
+            0.0,
+            0.31
+          ],
+          [
+            0.18,
+            0.31,
+            0.0
+          ]
+        ],
+        "valid_fraction": 0.8696969696969697
+      },
+      {
+        "abs_error": [
+          [
+            0.0,
+            5.100283929249105e-06,
+            0.00026341238866059435
+          ],
+          [
+            5.100283929249105e-06,
+            0.0,
+            0.0003073975045930766
+          ],
+          [
+            0.00026341238866059435,
+            0.0003073975045930766,
+            0.0
+          ]
+        ],
+        "case_id": "xy_pair_energy_noisy_missing_three_node",
+        "claim_boundary": "bounded synthetic Kuramoto phase and XY pair-energy time-series recovery with known ground truth; not hardware Hamiltonian learning, provider execution, isolated timing, or arbitrary partial-observation inference",
+        "condition_number": 6.9329180126264065,
+        "design_rank": 3,
+        "family": "xy_pair_energy",
+        "learned_couplings": [
+          [
+            0.0,
+            0.41999489971607074,
+            0.1802634123886606
+          ],
+          [
+            0.41999489971607074,
+            0.0,
+            0.3096926024954069
+          ],
+          [
+            0.1802634123886606,
+            0.3096926024954069,
+            0.0
+          ]
+        ],
+        "max_abs_error": 0.0003073975045930766,
+        "missing_fraction": 0.05,
+        "noise_std": 0.002,
+        "passed": true,
+        "rmse": 0.00023374154189766206,
+        "tolerance": 0.03,
+        "true_couplings": [
+          [
+            0.0,
+            0.42,
+            0.18
+          ],
+          [
+            0.42,
+            0.0,
+            0.31
+          ],
+          [
+            0.18,
+            0.31,
+            0.0
+          ]
+        ],
+        "valid_fraction": 0.94824016563147
+      }
+    ]
+  }
+}

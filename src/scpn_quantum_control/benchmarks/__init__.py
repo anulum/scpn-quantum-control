@@ -28,6 +28,13 @@ from .compiler_isolated_benchmark_evidence import (
     render_compiler_isolated_benchmark_evidence_markdown,
     write_compiler_isolated_benchmark_evidence,
 )
+from .coupling_recovery_evidence import (
+    COUPLING_RECOVERY_EVIDENCE_SCHEMA,
+    CouplingRecoveryEvidenceArtifact,
+    coupling_recovery_evidence_payload,
+    render_coupling_recovery_evidence_markdown,
+    write_coupling_recovery_evidence_artifact,
+)
 from .differentiable_catalyst_comparison import (
     CATALYST_UNSUPPORTED_PROVIDER_ROUTES,
     CatalystCompilerWorkflowComparison,
@@ -162,6 +169,11 @@ __all__ = [
     "build_compiler_isolated_benchmark_evidence",
     "render_compiler_isolated_benchmark_evidence_markdown",
     "write_compiler_isolated_benchmark_evidence",
+    "COUPLING_RECOVERY_EVIDENCE_SCHEMA",
+    "CouplingRecoveryEvidenceArtifact",
+    "coupling_recovery_evidence_payload",
+    "render_coupling_recovery_evidence_markdown",
+    "write_coupling_recovery_evidence_artifact",
     "AcceleratorEvidenceMetadata",
     "BenchmarkIsolationMetadata",
     "ExternalComparisonArtifact",

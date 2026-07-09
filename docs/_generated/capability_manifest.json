@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 835,
     "public_documentation_pages": 268,
-    "python_model_classes": 976,
-    "python_model_source_modules": 501,
+    "python_model_classes": 981,
+    "python_model_source_modules": 503,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 46,
-    "test_files": 875
+    "test_files": 877
   },
   "documentation": {
     "examples": [
@@ -470,7 +470,7 @@
       {
         "package": "benchmarks",
         "path": "src/scpn_quantum_control/benchmarks",
-        "python_modules": 23
+        "python_modules": 24
       },
       {
         "package": "bridge",
@@ -560,7 +560,7 @@
       {
         "package": "phase",
         "path": "src/scpn_quantum_control/phase",
-        "python_modules": 92
+        "python_modules": 93
       },
       {
         "package": "psi_field",
@@ -1136,6 +1136,26 @@
       {
         "name": "CouplingLearningResult",
         "path": "src/scpn_quantum_control/phase/coupling_learning.py"
+      },
+      {
+        "name": "CouplingRecoveryBoundaryRow",
+        "path": "src/scpn_quantum_control/phase/coupling_time_series_recovery.py"
+      },
+      {
+        "name": "CouplingRecoveryCase",
+        "path": "src/scpn_quantum_control/phase/coupling_time_series_recovery.py"
+      },
+      {
+        "name": "CouplingRecoveryEvidenceArtifact",
+        "path": "src/scpn_quantum_control/benchmarks/coupling_recovery_evidence.py"
+      },
+      {
+        "name": "CouplingRecoveryRecord",
+        "path": "src/scpn_quantum_control/phase/coupling_time_series_recovery.py"
+      },
+      {
+        "name": "CouplingRecoverySuiteResult",
+        "path": "src/scpn_quantum_control/phase/coupling_time_series_recovery.py"
       },
       {
         "name": "CouplingTopologyObjective",
@@ -4603,6 +4623,7 @@
       "src/scpn_quantum_control/benchmarks/appqsim_protocol.py",
       "src/scpn_quantum_control/benchmarks/classical_baselines.py",
       "src/scpn_quantum_control/benchmarks/compiler_isolated_benchmark_evidence.py",
+      "src/scpn_quantum_control/benchmarks/coupling_recovery_evidence.py",
       "src/scpn_quantum_control/benchmarks/differentiable_catalyst_comparison.py",
       "src/scpn_quantum_control/benchmarks/differentiable_evidence.py",
       "src/scpn_quantum_control/benchmarks/differentiable_external_comparison.py",
@@ -4844,6 +4865,7 @@
       "src/scpn_quantum_control/phase/backend_selector.py",
       "src/scpn_quantum_control/phase/contraction_optimiser.py",
       "src/scpn_quantum_control/phase/coupling_learning.py",
+      "src/scpn_quantum_control/phase/coupling_time_series_recovery.py",
       "src/scpn_quantum_control/phase/cross_domain_transfer.py",
       "src/scpn_quantum_control/phase/differentiable_audit.py",
       "src/scpn_quantum_control/phase/differentiable_readiness.py",
@@ -6285,6 +6307,7 @@
       "tests/test_cosimulation.py",
       "tests/test_cosimulation_branches.py",
       "tests/test_count_integrity.py",
+      "tests/test_coupling_recovery_evidence.py",
       "tests/test_coverage_frontier.py",
       "tests/test_cpdr.py",
       "tests/test_critical_concordance.py",
@@ -6636,6 +6659,7 @@
       "tests/test_phase_artifact_errors.py",
       "tests/test_phase_artifact_fuzz.py",
       "tests/test_phase_coupling_learning.py",
+      "tests/test_phase_coupling_time_series_recovery.py",
       "tests/test_phase_diagram.py",
       "tests/test_phase_diagram_branches.py",
       "tests/test_phase_differentiable_audit.py",

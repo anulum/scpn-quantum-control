@@ -171,6 +171,18 @@ def test_open_system_objective_evidence_selection_is_harness() -> None:
     ]
 
 
+def test_coupling_recovery_evidence_selection_is_harness() -> None:
+    harnesses = bench_cli._selected_harnesses("diff-coupling-recovery", include_gpu=False)
+
+    assert harnesses == [
+        bench_cli.Harness(
+            "coupling-recovery-evidence",
+            "scripts/export_coupling_recovery_evidence.py",
+            frozenset({"diff-coupling-recovery"}),
+        )
+    ]
+
+
 def test_p_h1_open_guard_selection_is_claim_guard_harness() -> None:
     harnesses = bench_cli._selected_harnesses("p-h1-open-guard", include_gpu=False)
 
@@ -463,6 +475,17 @@ def test_ground_state_optimizer_convergence_dry_run_selects_harness(
     assert rc == 0
     assert "ground-state-optimizer-convergence" in captured.out
     assert "scripts/export_ground_state_optimizer_convergence.py" in captured.out
+
+
+def test_coupling_recovery_evidence_dry_run_selects_harness(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    rc = bench_cli.run(["coupling-recovery-evidence", "--dry-run"])
+
+    captured = capsys.readouterr()
+    assert rc == 0
+    assert "coupling-recovery-evidence" in captured.out
+    assert "scripts/export_coupling_recovery_evidence.py" in captured.out
 
 
 def test_realtime_control_e2e_dry_run_selects_e2e_harness(

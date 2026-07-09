@@ -256,6 +256,11 @@ HARNESS_REGISTRY: tuple[Harness, ...] = (
         frozenset({"diff-open-system-objectives"}),
     ),
     Harness(
+        "coupling-recovery-evidence",
+        "scripts/export_coupling_recovery_evidence.py",
+        frozenset({"diff-coupling-recovery"}),
+    ),
+    Harness(
         "p-h1-open-guard",
         "scripts/check_p_h1_open_claim_guard.py",
         frozenset({"p-h1-open-guard"}),
@@ -571,6 +576,12 @@ def _parse_args(argv: Sequence[str]) -> argparse.Namespace:
         help="Regenerate BL-16 open-system objective evidence artifacts.",
     )
     _add_run_options(open_system_objectives, default_group="diff-open-system-objectives")
+
+    coupling_recovery = subparsers.add_parser(
+        "coupling-recovery-evidence",
+        help="Regenerate BL-17 coupling-recovery evidence artifacts.",
+    )
+    _add_run_options(coupling_recovery, default_group="diff-coupling-recovery")
 
     p_h1_open_guard = subparsers.add_parser(
         "p-h1-open-guard",

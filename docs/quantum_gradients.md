@@ -1423,6 +1423,34 @@ adjoint Lindblad sensitivities, unbiased stochastic-gradient estimators,
 provider execution, hardware gradients, and isolated timing promotion remain
 hard-gap boundary rows.
 
+For bounded coupling recovery from time series, use the BL-17 recovery suite:
+
+```python
+from scpn_quantum_control.phase import run_coupling_recovery_suite
+
+
+suite = run_coupling_recovery_suite()
+print(suite.passed)
+print(suite.records[0].learned_couplings)
+print(suite.boundary_rows[0].reason)
+```
+
+`run_coupling_recovery_suite()` generates deterministic Kuramoto phase
+trajectories with known coupling matrices, recovers Kuramoto couplings from
+phase time series, and recovers XY couplings from edge-resolved pair-energy
+observations. The default cases cover clean, noisy, and missing-data inputs.
+The companion artifact command is:
+
+```bash
+PYTHONPATH=src:. python scripts/export_coupling_recovery_evidence.py
+```
+
+The committed evidence lives at
+`data/differentiable_phase_qnode/coupling_recovery_evidence_20260709.json`
+and `.md`. These rows are local synthetic known-ground-truth recovery evidence
+only: hardware Hamiltonian learning, provider execution, isolated timing, and
+arbitrary partial-observation inference remain fail-closed boundary rows.
+
 ## Composed differentiable objectives
 
 Real control objectives usually mix energy, fidelity, regularization,
