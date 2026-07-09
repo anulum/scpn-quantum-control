@@ -1474,6 +1474,14 @@ multi-frequency rotations with a declared shift rule, and a coupled pair phase
 loss. Its aggregate result reports per-case audit reports, worst gradient
 error, best objective values, unsupported scenarios, and an explicit boundary
 that this is not a blanket hardware or arbitrary-program AD certificate.
+`plan_generalised_parameter_shift()` records per-parameter finite generator
+spectra, `value_and_generalised_parameter_shift_grad()` evaluates the declared
+plus/minus shifts for exact local scalar-objective gradients, and
+`estimate_generalised_parameter_shift_shot_noise()` propagates materialised
+shifted means, variances, shot counts, provenance, and confidence-policy
+status into a stochastic envelope. These functions require declared spectra
+and caller-supplied samples; they do not infer opaque generators, submit
+provider jobs, execute hardware, or promote benchmark evidence.
 `run_finite_shot_gradient_uncertainty_audit()` verifies stochastic
 parameter-shift uncertainty propagation for deterministic shifted expectation
 values with declared plus/minus variances and planned shot budgets. It records

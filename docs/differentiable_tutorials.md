@@ -37,6 +37,7 @@ simulator kernels are framework-native differentiable.
 | Step | API surface | Evidence produced |
 |---|---|---|
 | Minimal QNode | `PhaseQNodeCircuit`, `execute_phase_qnode_circuit(...)`, `parameter_shift_phase_qnode_gradient(...)` | Local statevector value and analytic parameter-shift gradient for a registered gate and observable. |
+| Finite-spectrum shifts | `plan_generalised_parameter_shift(...)`, `value_and_generalised_parameter_shift_grad(...)`, `estimate_generalised_parameter_shift_shot_noise(...)` | Declared generator spectra, exact shifted-evaluation gradients, and materialised finite-shot confidence envelopes with no provider or hardware execution claim. |
 | Controlled gates | `decompose_phase_qnode_controlled_gate(...)`, `registered_phase_qnode_decompositions()` | Exact registered Toffoli/Fredkin decompositions plus native controlled-H/S/T, Toffoli, CCZ, and Fredkin execution. |
 | Sparse Ising observables | `build_sparse_ising_chain_hamiltonian(...)` | Validated nearest-neighbour sparse Pauli Hamiltonians with scalar or site/edge coefficient vectors for larger local Phase-QNode circuits. |
 | Density and noise | `PhaseQNodeDensityCircuit`, `PhaseQNodeNoiseChannel`, `execute_phase_qnode_density_matrix(...)` | Local density-matrix value, trace, purity, and support report for registered unitary gates plus bounded single-qubit Kraus channels. |

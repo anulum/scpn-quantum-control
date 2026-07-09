@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 829,
     "public_documentation_pages": 268,
-    "python_model_classes": 948,
-    "python_model_source_modules": 493,
+    "python_model_classes": 952,
+    "python_model_source_modules": 494,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 46,
-    "test_files": 868
+    "test_files": 869
   },
   "documentation": {
     "examples": [
@@ -560,7 +560,7 @@
       {
         "package": "phase",
         "path": "src/scpn_quantum_control/phase",
-        "python_modules": 87
+        "python_modules": 88
       },
       {
         "package": "psi_field",
@@ -1800,6 +1800,22 @@
       {
         "name": "GaugeLatticeCrosscheck",
         "path": "src/scpn_quantum_control/gauge/lattice_crosscheck.py"
+      },
+      {
+        "name": "GeneralisedParameterShiftPlan",
+        "path": "src/scpn_quantum_control/phase/generalised_parameter_shift.py"
+      },
+      {
+        "name": "GeneralisedParameterShiftResult",
+        "path": "src/scpn_quantum_control/phase/generalised_parameter_shift.py"
+      },
+      {
+        "name": "GeneralisedParameterShiftTerm",
+        "path": "src/scpn_quantum_control/phase/generalised_parameter_shift.py"
+      },
+      {
+        "name": "GeneralisedStochasticParameterShiftResult",
+        "path": "src/scpn_quantum_control/phase/generalised_parameter_shift.py"
       },
       {
         "name": "GenericParameterShiftEvaluationPlan",
@@ -4735,6 +4751,7 @@
       "src/scpn_quantum_control/phase/domain_benchmark_datasets.py",
       "src/scpn_quantum_control/phase/floquet_kuramoto.py",
       "src/scpn_quantum_control/phase/general_unitary.py",
+      "src/scpn_quantum_control/phase/generalised_parameter_shift.py",
       "src/scpn_quantum_control/phase/gpu_batch_vqe.py",
       "src/scpn_quantum_control/phase/gradient_backend.py",
       "src/scpn_quantum_control/phase/gradient_descent.py",
@@ -6517,6 +6534,7 @@
       "tests/test_phase_dynamics_contracts.py",
       "tests/test_phase_framework_bridges.py",
       "tests/test_phase_general_unitary_gates.py",
+      "tests/test_phase_generalised_parameter_shift.py",
       "tests/test_phase_gradient_backend.py",
       "tests/test_phase_gradient_descent.py",
       "tests/test_phase_gradient_support_matrix.py",

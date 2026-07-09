@@ -69,6 +69,17 @@ from .floquet_kuramoto import (
     scan_drive_amplitude,
 )
 from .general_unitary import build_u3_operations, su2_zyz_angles
+from .generalised_parameter_shift import (
+    GENERALISED_PARAMETER_SHIFT_CLAIM_BOUNDARY,
+    GeneralisedParameterShiftPlan,
+    GeneralisedParameterShiftResult,
+    GeneralisedParameterShiftTerm,
+    GeneralisedStochasticParameterShiftResult,
+    estimate_generalised_parameter_shift_shot_noise,
+    generalised_parameter_shift_gradient,
+    plan_generalised_parameter_shift,
+    value_and_generalised_parameter_shift_grad,
+)
 from .gradient_backend import (
     QuantumGradientBackendCapability,
     QuantumGradientPlan,
@@ -1210,6 +1221,15 @@ __all__ = [
     "build_systems",
     "TransferResult",
     "AnsatzBenchmarkResult",
+    "GENERALISED_PARAMETER_SHIFT_CLAIM_BOUNDARY",
+    "GeneralisedParameterShiftPlan",
+    "GeneralisedParameterShiftResult",
+    "GeneralisedParameterShiftTerm",
+    "GeneralisedStochasticParameterShiftResult",
+    "estimate_generalised_parameter_shift_shot_noise",
+    "generalised_parameter_shift_gradient",
+    "plan_generalised_parameter_shift",
+    "value_and_generalised_parameter_shift_grad",
     "QSVTResourceEstimate",
     "ICIPulse",
     "HypergeometricPulse",
