@@ -19,6 +19,7 @@ import pytest
 
 import scpn_quantum_control.benchmarks.differentiable_external_comparison as comparison
 from scpn_quantum_control.benchmarks.differentiable_external_comparison import (
+    PERMANENT_EXTERNAL_COMPARISON_BOUNDARIES,
     REQUIRED_EXTERNAL_COMPARISON_ROW_FIELDS,
     ExternalComparisonArtifact,
     ExternalComparisonRow,
@@ -116,6 +117,21 @@ def test_external_comparison_suite_records_success_rows_and_enzyme_hard_gap(
         "unsupported_dtype",
         "unsupported_device",
     }.issubset(failure_classes)
+    for row in rows:
+        payload = row.to_dict()
+        assert payload["closure_status"] in {
+            "implemented",
+            "implementation_path",
+            "permanent_boundary",
+        }
+        assert isinstance(payload["closure_reason"], str)
+        assert payload["closure_reason"].strip()
+        if row.status == "success":
+            assert row.closure_status == "implemented"
+        elif row.failure_class in PERMANENT_EXTERNAL_COMPARISON_BOUNDARIES:
+            assert row.closure_status == "permanent_boundary"
+        else:
+            assert row.closure_status == "implementation_path"
 
 
 def test_identical_circuit_gradient_comparison_records_live_backend_boundaries() -> None:
@@ -645,6 +661,8 @@ def test_external_comparison_failure_mode_rows_cover_required_taxonomy() -> None
         assert row.value_error is None
         assert row.gradient_error is None
         assert row.dependency_versions is not None
+        assert row.closure_status == "permanent_boundary"
+        assert row.closure_reason == str(row.setup_instructions)
         assert "no hidden success" in row.claim_boundary
 
 
@@ -754,8 +772,19 @@ def test_external_comparison_writer_records_non_promotional_artifact(tmp_path: P
     assert payload["summary"]["row_count"] == 2
     assert payload["summary"]["success_count"] == 1
     assert payload["summary"]["hard_gap_count"] == 1
+    assert payload["summary"]["hard_gap_closure_counts"] == {
+        "implementation_path": 0,
+        "permanent_boundary": 1,
+    }
     assert payload["summary"]["failure_classes"] == ["unsupported_dtype"]
+    assert payload["row_schema"]["closure_required_fields"] == [
+        "closure_status",
+        "closure_reason",
+    ]
     assert payload["rows"][0]["dependency_versions"] == {"jax": "0.0", "jaxlib": "0.0"}
+    assert payload["rows"][0]["closure_status"] == "implemented"
+    assert payload["rows"][1]["closure_status"] == "permanent_boundary"
+    assert payload["rows"][1]["closure_reason"] == "Use real float64 controls."
     assert (
         frozenset(payload["row_schema"]["required_fields"])
         == REQUIRED_EXTERNAL_COMPARISON_ROW_FIELDS

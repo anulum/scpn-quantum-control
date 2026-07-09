@@ -351,6 +351,14 @@ failure_classes = sorted(
         if row["status"] == "hard_gap" and row["failure_class"] is not None
     }
 )
+closure_counts = {
+    "implementation_path": sum(
+        1 for row in timing_rows if row["closure_status"] == "implementation_path"
+    ),
+    "permanent_boundary": sum(
+        1 for row in timing_rows if row["closure_status"] == "permanent_boundary"
+    ),
+}
 metadata = BenchmarkIsolationMetadata.from_ci_environment(
     {},
     command=("python", "examples/24_differentiable_benchmark_reproduction.py"),
@@ -377,12 +385,16 @@ with tempfile.TemporaryDirectory(prefix="scpn-qc-diff-bench-") as directory:
     print(payload["metadata"]["classification"])
     print(external_artifact.classification)
     print(failure_classes)
+    print(external_artifact.hard_gap_closure_counts)
+    print(closure_counts)
 ```
 
 Local tutorial runs should print `functional_non_isolated`. That is a useful
 reproducibility and integration check for both benchmark and external-comparison
 artefacts, but it cannot close the promotion blocker for true
-`isolated_affinity` evidence.
+`isolated_affinity` evidence. Hard-gap rows also print implementation-path or
+permanent-boundary closure counts, so local runs can inspect unresolved optional
+tooling separately from unsupported framework routes.
 
 The CI evidence writer also emits the external comparison companion artefact:
 
@@ -395,7 +407,8 @@ The output directory contains `diff-qnode-ci-evidence-schema-v1.json`,
 `diff-qnode-ci-evidence-schema-v1.csv`, `diff-qnode-ci-evidence-schema-v1.md`,
 and `diff-qnode-external-comparison.json`. The benchmark JSON references the
 external comparison artefact ID in `evidence_artifact_ids`; the external
-comparison JSON remains `functional_non_isolated`.
+comparison JSON remains `functional_non_isolated` and includes per-row closure
+status and closure reason fields.
 
 ## Claim Boundaries
 

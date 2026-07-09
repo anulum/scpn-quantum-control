@@ -44,6 +44,16 @@ from .differentiable_catalyst_comparison import (
 )
 
 ComparisonStatus = Literal["success", "hard_gap"]
+ComparisonClosureStatus = Literal["implemented", "implementation_path", "permanent_boundary"]
+
+PERMANENT_EXTERNAL_COMPARISON_BOUNDARIES = frozenset(
+    {
+        "unsupported_batching",
+        "unsupported_transform",
+        "unsupported_dtype",
+        "unsupported_device",
+    }
+)
 
 REQUIRED_EXTERNAL_COMPARISON_ROW_FIELDS = frozenset(
     {
@@ -65,6 +75,8 @@ REQUIRED_EXTERNAL_COMPARISON_ROW_FIELDS = frozenset(
         "dependency_versions",
         "toolchain",
         "catalyst_comparison",
+        "closure_status",
+        "closure_reason",
     }
 )
 
@@ -136,6 +148,41 @@ class ExternalComparisonRow:
             raise ValueError(
                 "dependency version metadata must map non-empty strings to non-empty strings"
             )
+        if not self.closure_reason.strip():
+            raise ValueError("closure_reason must be non-empty")
+        if self.status == "success" and self.closure_status != "implemented":
+            raise ValueError("success rows must use implemented closure_status")
+        if self.status == "hard_gap" and self.closure_status == "implemented":
+            raise ValueError("hard_gap rows cannot use implemented closure_status")
+        if (
+            self.failure_class in PERMANENT_EXTERNAL_COMPARISON_BOUNDARIES
+            and self.closure_status != "permanent_boundary"
+        ):
+            raise ValueError("unsupported route rows must use permanent_boundary closure_status")
+        if (
+            self.failure_class not in PERMANENT_EXTERNAL_COMPARISON_BOUNDARIES
+            and self.status == "hard_gap"
+            and self.closure_status != "implementation_path"
+        ):
+            raise ValueError("implementable hard_gap rows must use implementation_path")
+
+    @property
+    def closure_status(self) -> ComparisonClosureStatus:
+        """Return how the row is closed for BL-12 audit purposes."""
+        if self.status == "success":
+            return "implemented"
+        if self.failure_class in PERMANENT_EXTERNAL_COMPARISON_BOUNDARIES:
+            return "permanent_boundary"
+        return "implementation_path"
+
+    @property
+    def closure_reason(self) -> str:
+        """Return the non-empty implementation or boundary reason for the row."""
+        if self.status == "success":
+            return "SCPN reference comparison passed with value and gradient evidence."
+        if self.closure_status == "permanent_boundary":
+            return str(self.setup_instructions)
+        return str(self.setup_instructions)
 
     @property
     def artifact_fields_ready(self) -> bool:
@@ -176,6 +223,8 @@ class ExternalComparisonRow:
                 if self.catalyst_comparison is not None
                 else None
             ),
+            "closure_status": self.closure_status,
+            "closure_reason": self.closure_reason,
         }
 
 
@@ -188,6 +237,7 @@ class ExternalComparisonArtifact:
     row_count: int
     success_count: int
     hard_gap_count: int
+    hard_gap_closure_counts: dict[str, int]
     classification: str
     claim_boundary: str
 
@@ -199,6 +249,7 @@ class ExternalComparisonArtifact:
             "row_count": self.row_count,
             "success_count": self.success_count,
             "hard_gap_count": self.hard_gap_count,
+            "hard_gap_closure_counts": dict(self.hard_gap_closure_counts),
             "classification": self.classification,
             "claim_boundary": self.claim_boundary,
         }
@@ -434,6 +485,7 @@ def write_differentiable_external_comparison(
             if row.status == "hard_gap" and row.failure_class is not None
         }
     )
+    hard_gap_closure_counts = _hard_gap_closure_counts(evidence_rows)
     payload = {
         "schema": "scpn_qc_differentiable_external_comparison_v1",
         "artifact_id": artifact_id.strip(),
@@ -451,6 +503,12 @@ def write_differentiable_external_comparison(
                 "memory_peak_bytes",
             ],
             "hard_gap_required_fields": ["failure_class", "setup_instructions"],
+            "closure_required_fields": ["closure_status", "closure_reason"],
+            "closure_status_values": [
+                "implemented",
+                "implementation_path",
+                "permanent_boundary",
+            ],
         },
         "claim_boundary": (
             "External comparison artefact for bounded CPU framework correctness rows; "
@@ -467,6 +525,7 @@ def write_differentiable_external_comparison(
             "row_count": len(evidence_rows),
             "success_count": success_count,
             "hard_gap_count": hard_gap_count,
+            "hard_gap_closure_counts": hard_gap_closure_counts,
             "failure_classes": failure_classes,
         },
         "rows": row_payloads,
@@ -479,6 +538,7 @@ def write_differentiable_external_comparison(
         row_count=len(evidence_rows),
         success_count=success_count,
         hard_gap_count=hard_gap_count,
+        hard_gap_closure_counts=hard_gap_closure_counts,
         classification="functional_non_isolated",
         claim_boundary=str(payload["claim_boundary"]),
     )
@@ -950,6 +1010,16 @@ def _unsupported_gap_row(
         claim_boundary="Unsupported-route hard gap only; no hidden success or promoted claim.",
         dependency_versions=_backend_dependency_versions(backend),
     )
+
+
+def _hard_gap_closure_counts(
+    rows: tuple[ExternalComparisonRow, ...],
+) -> dict[str, int]:
+    counts = {"implementation_path": 0, "permanent_boundary": 0}
+    for row in rows:
+        if row.status == "hard_gap":
+            counts[row.closure_status] = counts.get(row.closure_status, 0) + 1
+    return counts
 
 
 def _identical_circuit_problem() -> tuple[
@@ -1519,10 +1589,12 @@ def _catalyst_runner_configured() -> bool:
 __all__ = [
     "CATALYST_UNSUPPORTED_PROVIDER_ROUTES",
     "CatalystCompilerWorkflowComparison",
+    "ComparisonClosureStatus",
     "ExternalComparisonArtifact",
     "ExternalComparisonRow",
     "IdenticalCircuitGradientComparisonArtifact",
     "IdenticalCircuitGradientComparisonRow",
+    "PERMANENT_EXTERNAL_COMPARISON_BOUNDARIES",
     "REQUIRED_EXTERNAL_COMPARISON_ROW_FIELDS",
     "catalyst_compiler_workflow_comparison",
     "external_comparison_failure_mode_rows",

@@ -38,7 +38,9 @@ from .differentiable_evidence import (
     BenchmarkIsolationMetadata,
 )
 from .differentiable_external_comparison import (
+    PERMANENT_EXTERNAL_COMPARISON_BOUNDARIES,
     REQUIRED_EXTERNAL_COMPARISON_ROW_FIELDS,
+    ComparisonClosureStatus,
     ExternalComparisonArtifact,
     ExternalComparisonRow,
     IdenticalCircuitGradientComparisonArtifact,
@@ -142,6 +144,7 @@ __all__ = [
     "CompilerBenchmarkClassification",
     "CompilerIsolatedBenchmarkEvidence",
     "CompilerIsolatedBenchmarkEvidenceFiles",
+    "ComparisonClosureStatus",
     "build_compiler_isolated_benchmark_evidence",
     "render_compiler_isolated_benchmark_evidence_markdown",
     "write_compiler_isolated_benchmark_evidence",
@@ -151,6 +154,8 @@ __all__ = [
     "ExternalComparisonRow",
     "IdenticalCircuitGradientComparisonArtifact",
     "IdenticalCircuitGradientComparisonRow",
+    "ComparisonClosureStatus",
+    "PERMANENT_EXTERNAL_COMPARISON_BOUNDARIES",
     "REQUIRED_EXTERNAL_COMPARISON_ROW_FIELDS",
     "external_comparison_failure_mode_rows",
     "run_differentiable_external_comparison_suite",

@@ -9,6 +9,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable as CallableABC
 from dataclasses import replace
 from pathlib import Path
 from typing import Any, Callable, cast
@@ -22,6 +23,7 @@ from _differentiable_external_comparison_edges import (
 )
 
 from scpn_quantum_control.benchmarks.differentiable_external_comparison import (
+    ComparisonClosureStatus,
     ExternalComparisonRow,
     IdenticalCircuitGradientComparisonRow,
     write_differentiable_external_comparison,
@@ -53,6 +55,16 @@ def test_external_comparison_row_rejects_negative_success_errors() -> None:
         replace(success_external_row(), gradient_error=-1.0)
 
 
+def test_external_comparison_row_rejects_catalyst_payload_mismatches() -> None:
+    """Catalyst comparison payloads should stay bound to Catalyst rows only."""
+    row = success_external_row()
+
+    with pytest.raises(ValueError, match="Catalyst rows"):
+        replace(row, backend="catalyst")
+    with pytest.raises(ValueError, match="only valid"):
+        replace(row, catalyst_comparison=cast(Any, object()))
+
+
 def test_external_comparison_row_rejects_incomplete_hard_gap_and_toolchain() -> None:
     """Hard gaps and toolchain metadata should remain complete and non-empty."""
     gap = gap_external_row()
@@ -65,6 +77,43 @@ def test_external_comparison_row_rejects_incomplete_hard_gap_and_toolchain() -> 
         replace(gap, toolchain={"clang": ""})
     with pytest.raises(ValueError, match="toolchain metadata"):
         replace(gap, toolchain={"": "17.0"})
+
+
+def test_external_comparison_row_rejects_closure_contract_regressions(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Closure metadata should fail closed if the computed contract drifts."""
+    with pytest.raises(ValueError, match="closure_reason"):
+        replace(gap_external_row(), setup_instructions=" ")
+
+    def patch_status(status: ComparisonClosureStatus) -> None:
+        def closure_status(self: ExternalComparisonRow) -> ComparisonClosureStatus:
+            del self
+            return status
+
+        monkeypatch.setattr(
+            ExternalComparisonRow,
+            "closure_status",
+            property(closure_status),
+        )
+
+    cases: tuple[
+        tuple[CallableABC[[], ExternalComparisonRow], ComparisonClosureStatus, str],
+        ...,
+    ] = (
+        (success_external_row, "permanent_boundary", "success rows"),
+        (gap_external_row, "implemented", "hard_gap rows cannot"),
+        (
+            lambda: replace(gap_external_row(), failure_class="unsupported_dtype"),
+            "implementation_path",
+            "unsupported route rows",
+        ),
+        (gap_external_row, "permanent_boundary", "implementable hard_gap rows"),
+    )
+    for factory, status, message in cases:
+        patch_status(status)
+        with pytest.raises(ValueError, match=message):
+            factory()
 
 
 def test_identical_circuit_row_rejects_identity_and_execution_edges() -> None:

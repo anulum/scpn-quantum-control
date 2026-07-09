@@ -412,7 +412,13 @@ Benchmark artefacts written by
 External comparison artefacts written by
 `write_differentiable_external_comparison(...)` record row payloads,
 dependency versions, toolchain metadata, failure classes, and local Python/host
-metadata, but they are still classified as `functional_non_isolated`.
+metadata, but they are still classified as `functional_non_isolated`. Every row
+also records `closure_status` and `closure_reason`: passing rows are
+`implemented`, dependency or runner gaps remain `implementation_path`, and
+unsupported batching, transform, dtype, or device routes are
+`permanent_boundary` rows with the boundary reason copied into the artefact.
+The artefact summary includes `hard_gap_closure_counts`, so no hard-gap row can
+land without a recorded implementation path or permanent-boundary reason.
 The benchmark evidence script writes `diff-qnode-external-comparison.json`
 beside the benchmark bundle and records that artefact's ID in the bundle, so CI
 artifacts retain the complete comparison evidence chain without upgrading local
