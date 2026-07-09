@@ -248,6 +248,17 @@ from .optimizer_audit import (
     OptimizerConvergenceRecord,
     run_parameter_shift_optimizer_comparison,
 )
+from .optimizer_convergence_suite import (
+    GROUND_STATE_OPTIMIZER_CLAIM_BOUNDARY,
+    GROUND_STATE_OPTIMIZER_EVIDENCE_CLASS,
+    GroundStateConvergenceCertificate,
+    GroundStateOptimizerBoundaryRow,
+    GroundStateOptimizerConvergenceSuiteResult,
+    GroundStateOptimizerRunRecord,
+    KnownGroundStateObjective,
+    default_ground_state_optimizer_objectives,
+    run_ground_state_optimizer_convergence_suite,
+)
 from .param_shift import (
     GenericParameterShiftEvaluationPlan,
     GradientVerificationResult,
@@ -836,6 +847,15 @@ __all__ = [
     "run_parameter_shift_optimizer_comparison",
     "OptimizerComparisonSuiteResult",
     "OptimizerConvergenceRecord",
+    "GROUND_STATE_OPTIMIZER_CLAIM_BOUNDARY",
+    "GROUND_STATE_OPTIMIZER_EVIDENCE_CLASS",
+    "GroundStateConvergenceCertificate",
+    "GroundStateOptimizerBoundaryRow",
+    "GroundStateOptimizerConvergenceSuiteResult",
+    "GroundStateOptimizerRunRecord",
+    "KnownGroundStateObjective",
+    "default_ground_state_optimizer_objectives",
+    "run_ground_state_optimizer_convergence_suite",
     "build_phase_control_objective",
     "train_composed_phase_objective",
     "validate_composed_objective_training",

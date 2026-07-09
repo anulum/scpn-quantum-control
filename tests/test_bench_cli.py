@@ -147,6 +147,18 @@ def test_knm_josephson_magnitude_study_selection_is_design_harness() -> None:
     ]
 
 
+def test_ground_state_optimizer_convergence_selection_is_harness() -> None:
+    harnesses = bench_cli._selected_harnesses("diff-optimizer-convergence", include_gpu=False)
+
+    assert harnesses == [
+        bench_cli.Harness(
+            "ground-state-optimizer-convergence",
+            "scripts/export_ground_state_optimizer_convergence.py",
+            frozenset({"diff-optimizer-convergence"}),
+        )
+    ]
+
+
 def test_p_h1_open_guard_selection_is_claim_guard_harness() -> None:
     harnesses = bench_cli._selected_harnesses("p-h1-open-guard", include_gpu=False)
 
@@ -428,6 +440,17 @@ def test_s2_tn_crossover_stage1_dry_run_selects_stage1_harness(
     assert rc == 0
     assert "s2-tn-crossover-stage1" in captured.out
     assert "scripts/export_tn_mps_crossover_stage1.py" in captured.out
+
+
+def test_ground_state_optimizer_convergence_dry_run_selects_harness(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    rc = bench_cli.run(["ground-state-optimizer-convergence", "--dry-run"])
+
+    captured = capsys.readouterr()
+    assert rc == 0
+    assert "ground-state-optimizer-convergence" in captured.out
+    assert "scripts/export_ground_state_optimizer_convergence.py" in captured.out
 
 
 def test_realtime_control_e2e_dry_run_selects_e2e_harness(

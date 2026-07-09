@@ -65,6 +65,13 @@ from .differentiable_isolated_benchmark_plan import (
     run_differentiable_isolated_benchmark_plan,
     validate_differentiable_isolated_benchmark_plan,
 )
+from .differentiable_optimizer_convergence import (
+    GROUND_STATE_OPTIMIZER_CONVERGENCE_SCHEMA,
+    GroundStateOptimizerConvergenceArtifact,
+    ground_state_optimizer_convergence_payload,
+    render_ground_state_optimizer_convergence_markdown,
+    write_ground_state_optimizer_convergence_artifact,
+)
 from .differentiable_programming import (
     DifferentiableProgrammingBenchmarkResult,
     DifferentiableProgrammingExternalReferenceResult,
@@ -172,6 +179,11 @@ __all__ = [
     "render_differentiable_isolated_benchmark_plan_markdown",
     "run_differentiable_isolated_benchmark_plan",
     "validate_differentiable_isolated_benchmark_plan",
+    "GROUND_STATE_OPTIMIZER_CONVERGENCE_SCHEMA",
+    "GroundStateOptimizerConvergenceArtifact",
+    "ground_state_optimizer_convergence_payload",
+    "render_ground_state_optimizer_convergence_markdown",
+    "write_ground_state_optimizer_convergence_artifact",
     "run_differentiable_programming_benchmark_suite",
     "run_differentiable_programming_external_reference_suite",
     "run_quantum_gradient_benchmark_suite",

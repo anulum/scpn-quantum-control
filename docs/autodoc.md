@@ -79,6 +79,10 @@ or debugging a subsystem, not as the default path for tutorial code.
     options:
       members: [OptimizerConvergenceRecord, OptimizerComparisonSuiteResult, run_parameter_shift_optimizer_comparison]
 
+::: scpn_quantum_control.phase.optimizer_convergence_suite
+    options:
+      members: [GROUND_STATE_OPTIMIZER_CLAIM_BOUNDARY, GROUND_STATE_OPTIMIZER_EVIDENCE_CLASS, KnownGroundStateObjective, GroundStateConvergenceCertificate, GroundStateOptimizerRunRecord, GroundStateOptimizerBoundaryRow, GroundStateOptimizerConvergenceSuiteResult, default_ground_state_optimizer_objectives, run_ground_state_optimizer_convergence_suite]
+
 ::: scpn_quantum_control.phase.objectives
     options:
       members: [ObjectiveTermValue, ObjectiveGradientEvaluation, ObjectiveTerm, ComposedPhaseObjective, ComposedObjectiveTrainingStep, ComposedObjectiveTrainingResult, ComposedObjectiveTrainingCertificate, phase_energy_term, phase_fidelity_target_term, periodic_regularization_term, phase_symmetry_penalty_term, smooth_box_safety_penalty_term, build_phase_control_objective, train_composed_phase_objective, validate_composed_objective_training, kuramoto_order_parameter, kuramoto_order_parameter_gradient, kuramoto_order_parameter_target_term, phase_locking_target_term, cluster_synchronisation_target_term, build_synchronisation_objective]
@@ -186,6 +190,10 @@ or debugging a subsystem, not as the default path for tutorial code.
 ::: scpn_quantum_control.benchmarks.differentiable_isolated_benchmark_plan
     options:
       members: [DifferentiableIsolatedBenchmarkPlan, DifferentiableIsolatedBenchmarkPlanRow, DifferentiableIsolatedBenchmarkPlanValidation, render_differentiable_isolated_benchmark_plan_markdown, run_differentiable_isolated_benchmark_plan, validate_differentiable_isolated_benchmark_plan]
+
+::: scpn_quantum_control.benchmarks.differentiable_optimizer_convergence
+    options:
+      members: [GROUND_STATE_OPTIMIZER_CONVERGENCE_SCHEMA, GroundStateOptimizerConvergenceArtifact, ground_state_optimizer_convergence_payload, render_ground_state_optimizer_convergence_markdown, write_ground_state_optimizer_convergence_artifact]
 
 ::: scpn_quantum_control.benchmarks.differentiable_catalyst_comparison
     options:

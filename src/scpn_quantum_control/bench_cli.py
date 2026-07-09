@@ -52,6 +52,7 @@ OFFLINE_HARNESS_POLICY = ExecutionSurfacePolicy(
         "data/s10_analog_native",
         "data/s11_quantum_sensing",
         "data/knm_physical_validation",
+        "data/differentiable_phase_qnode",
         "data/p_h1_open_guard",
         "data/stable_core",
         "data/synchronisation_benchmarks",
@@ -245,6 +246,11 @@ HARNESS_REGISTRY: tuple[Harness, ...] = (
         frozenset({"knm-josephson-study"}),
     ),
     Harness(
+        "ground-state-optimizer-convergence",
+        "scripts/export_ground_state_optimizer_convergence.py",
+        frozenset({"diff-optimizer-convergence"}),
+    ),
+    Harness(
         "p-h1-open-guard",
         "scripts/check_p_h1_open_claim_guard.py",
         frozenset({"p-h1-open-guard"}),
@@ -321,6 +327,7 @@ ARTEFACT_PATHS = (
     "data/s9_quantum_thermo",
     "data/s10_analog_native",
     "data/s11_quantum_sensing",
+    "data/differentiable_phase_qnode",
     "data/stable_core",
     "data/synchronisation_benchmarks",
     "data/symmetry_sector_mitigation",
@@ -547,6 +554,12 @@ def _parse_args(argv: Sequence[str]) -> argparse.Namespace:
         help="Regenerate the QWC-5.2 Josephson K_nm magnitude-study artifacts.",
     )
     _add_run_options(josephson_knm, default_group="knm-josephson-study")
+
+    optimizer_convergence = subparsers.add_parser(
+        "ground-state-optimizer-convergence",
+        help="Regenerate BL-15 ground-state optimizer convergence artifacts.",
+    )
+    _add_run_options(optimizer_convergence, default_group="diff-optimizer-convergence")
 
     p_h1_open_guard = subparsers.add_parser(
         "p-h1-open-guard",

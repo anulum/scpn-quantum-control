@@ -1359,7 +1359,10 @@ circuit family themselves.
 For reviewer-facing optimizer evidence, run the multi-start comparison audit:
 
 ```python
-from scpn_quantum_control.phase import run_parameter_shift_optimizer_comparison
+from scpn_quantum_control.phase import (
+    run_ground_state_optimizer_convergence_suite,
+    run_parameter_shift_optimizer_comparison,
+)
 
 
 suite = run_parameter_shift_optimizer_comparison(max_steps=8)
@@ -1367,6 +1370,10 @@ suite = run_parameter_shift_optimizer_comparison(max_steps=8)
 print(suite.passed)
 print(suite.best_optimizer)
 print(suite.natural_gradient_not_worse_count, suite.start_count)
+
+ground_suite = run_ground_state_optimizer_convergence_suite()
+print(ground_suite.passed, ground_suite.optimizer_names)
+print(ground_suite.boundary_rows[0].failure_class)
 ```
 
 The suite executes ordinary parameter-shift descent and natural-gradient descent
@@ -1375,6 +1382,16 @@ the metric-aware route is no worse than the baseline under the declared
 tolerance. Its claim boundary is intentionally narrow: local smooth phase
 objectives, functional convergence evidence, no hardware execution, no
 throughput statement, and no global optimality proof.
+
+`run_ground_state_optimizer_convergence_suite()` is the BL-15 companion for
+known small ground states. It compares natural-gradient, Adam, L-BFGS-B, seeded
+SPSA, and COBYLA on deterministic exact-energy objectives, emits one
+certificate per executable row, and writes local benchmark evidence through
+`scripts/export_ground_state_optimizer_convergence.py`. The artefact rows are
+classified as `functional_non_isolated`; they are convergence evidence, not
+isolated timing, hardware execution, or a global optimality statement. The
+QNG-QJIT-class baseline is represented as a hard-gap boundary row until a
+compiler-owned metric-fusion route exists.
 
 ## Composed differentiable objectives
 
