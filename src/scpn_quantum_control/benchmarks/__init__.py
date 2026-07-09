@@ -95,6 +95,13 @@ from .kuramoto_competitive_benchmark import (
     run_kuramoto_competitive_comparison,
 )
 from .mps_baseline import MPSBaselineResult, mps_baseline_comparison
+from .open_system_objective_evidence import (
+    OPEN_SYSTEM_OBJECTIVE_EVIDENCE_SCHEMA,
+    OpenSystemObjectiveEvidenceArtifact,
+    open_system_objective_evidence_payload,
+    render_open_system_objective_evidence_markdown,
+    write_open_system_objective_evidence_artifact,
+)
 from .quantum_advantage import (
     AdvantageResult,
     classical_benchmark,
@@ -184,6 +191,11 @@ __all__ = [
     "ground_state_optimizer_convergence_payload",
     "render_ground_state_optimizer_convergence_markdown",
     "write_ground_state_optimizer_convergence_artifact",
+    "OPEN_SYSTEM_OBJECTIVE_EVIDENCE_SCHEMA",
+    "OpenSystemObjectiveEvidenceArtifact",
+    "open_system_objective_evidence_payload",
+    "render_open_system_objective_evidence_markdown",
+    "write_open_system_objective_evidence_artifact",
     "run_differentiable_programming_benchmark_suite",
     "run_differentiable_programming_external_reference_suite",
     "run_quantum_gradient_benchmark_suite",

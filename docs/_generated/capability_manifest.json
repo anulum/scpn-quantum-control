@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 835,
     "public_documentation_pages": 268,
-    "python_model_classes": 969,
-    "python_model_source_modules": 499,
+    "python_model_classes": 976,
+    "python_model_source_modules": 501,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 46,
-    "test_files": 873
+    "test_files": 875
   },
   "documentation": {
     "examples": [
@@ -470,7 +470,7 @@
       {
         "package": "benchmarks",
         "path": "src/scpn_quantum_control/benchmarks",
-        "python_modules": 22
+        "python_modules": 23
       },
       {
         "package": "bridge",
@@ -560,7 +560,7 @@
       {
         "package": "phase",
         "path": "src/scpn_quantum_control/phase",
-        "python_modules": 91
+        "python_modules": 92
       },
       {
         "package": "psi_field",
@@ -868,6 +868,10 @@
       {
         "name": "BiologicalSurfaceDiagnostics",
         "path": "src/scpn_quantum_control/qec/biological_diagnostics.py"
+      },
+      {
+        "name": "BoundedOpenSystemObjectiveCase",
+        "path": "src/scpn_quantum_control/phase/open_system_objectives.py"
       },
       {
         "name": "BoundedQNNFrameworkBridgeCapability",
@@ -1244,6 +1248,10 @@
       {
         "name": "DenseHermitianObservable",
         "path": "src/scpn_quantum_control/phase/qnode_circuit.py"
+      },
+      {
+        "name": "DensityMatrixInvariantCertificate",
+        "path": "src/scpn_quantum_control/phase/open_system_objectives.py"
       },
       {
         "name": "DifferentiabilityDiagnosticReport",
@@ -2302,6 +2310,10 @@
         "path": "src/scpn_quantum_control/analysis/monte_carlo_xy.py"
       },
       {
+        "name": "MCWFReproducibilityCertificate",
+        "path": "src/scpn_quantum_control/phase/open_system_objectives.py"
+      },
+      {
         "name": "MLDSAKeyPair",
         "path": "src/scpn_quantum_control/crypto/ml_dsa.py"
       },
@@ -2492,6 +2504,22 @@
       {
         "name": "OpenPulseWaveform",
         "path": "src/scpn_quantum_control/hardware/openpulse_control.py"
+      },
+      {
+        "name": "OpenSystemObjectiveBoundaryRow",
+        "path": "src/scpn_quantum_control/phase/open_system_objectives.py"
+      },
+      {
+        "name": "OpenSystemObjectiveEvidenceArtifact",
+        "path": "src/scpn_quantum_control/benchmarks/open_system_objective_evidence.py"
+      },
+      {
+        "name": "OpenSystemObjectiveRecord",
+        "path": "src/scpn_quantum_control/phase/open_system_objectives.py"
+      },
+      {
+        "name": "OpenSystemObjectiveSuiteResult",
+        "path": "src/scpn_quantum_control/phase/open_system_objectives.py"
       },
       {
         "name": "OptimizationResult",
@@ -4588,6 +4616,7 @@
       "src/scpn_quantum_control/benchmarks/kuramoto_competitive_types.py",
       "src/scpn_quantum_control/benchmarks/kuramoto_external_competitors.py",
       "src/scpn_quantum_control/benchmarks/mps_baseline.py",
+      "src/scpn_quantum_control/benchmarks/open_system_objective_evidence.py",
       "src/scpn_quantum_control/benchmarks/quantum_advantage.py",
       "src/scpn_quantum_control/benchmarks/reproducible_comparison.py",
       "src/scpn_quantum_control/benchmarks/s3_design_protocol.py",
@@ -4842,6 +4871,7 @@
       "src/scpn_quantum_control/phase/objective_audit.py",
       "src/scpn_quantum_control/phase/objective_planner.py",
       "src/scpn_quantum_control/phase/objectives.py",
+      "src/scpn_quantum_control/phase/open_system_objectives.py",
       "src/scpn_quantum_control/phase/optimizer_audit.py",
       "src/scpn_quantum_control/phase/optimizer_convergence_suite.py",
       "src/scpn_quantum_control/phase/param_shift.py",
@@ -6564,6 +6594,7 @@
       "tests/test_nv_magnetometry.py",
       "tests/test_nv_magnetometry_high_field.py",
       "tests/test_observables.py",
+      "tests/test_open_system_objective_evidence.py",
       "tests/test_open_system_workflow.py",
       "tests/test_openpulse_control.py",
       "tests/test_orchestrator_adapter.py",
@@ -6630,6 +6661,7 @@
       "tests/test_phase_objective_audit.py",
       "tests/test_phase_objective_planner.py",
       "tests/test_phase_objectives.py",
+      "tests/test_phase_open_system_objectives.py",
       "tests/test_phase_optimizer_audit.py",
       "tests/test_phase_optimizer_convergence_suite.py",
       "tests/test_phase_param_shift.py",

@@ -201,6 +201,28 @@ result = mcwf_ensemble(
 }
 ```
 
+### Seeded Objective Evidence
+
+`run_open_system_objective_suite()` uses the production `mcwf_ensemble`
+trajectory-batch path for bounded objective rows:
+
+```python
+from scpn_quantum_control.phase import run_open_system_objective_suite
+
+
+suite = run_open_system_objective_suite(backends=("mcwf_ensemble",))
+record = suite.records[0]
+print(record.gradient)
+print(record.reproducibility_certificate.same_seed_max_abs_diff)
+```
+
+The MCWF row records the trajectory-batch shape, seed, final ensemble mean,
+standard deviation, total jumps, and same-seed replay difference. The gradient
+is a central finite difference over coupling and damping scales with the same
+seed replayed for each shifted evaluation. That makes the row deterministic and
+reviewable; it does not claim an unbiased stochastic-gradient estimator,
+hardware gradient, provider execution, or isolated performance evidence.
+
 ### Rust Acceleration
 
 The inner loop of `_order_param_vec` (computing $R$ from a state vector)

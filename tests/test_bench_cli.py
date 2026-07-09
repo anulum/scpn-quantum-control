@@ -159,6 +159,18 @@ def test_ground_state_optimizer_convergence_selection_is_harness() -> None:
     ]
 
 
+def test_open_system_objective_evidence_selection_is_harness() -> None:
+    harnesses = bench_cli._selected_harnesses("diff-open-system-objectives", include_gpu=False)
+
+    assert harnesses == [
+        bench_cli.Harness(
+            "open-system-objective-evidence",
+            "scripts/export_open_system_objective_evidence.py",
+            frozenset({"diff-open-system-objectives"}),
+        )
+    ]
+
+
 def test_p_h1_open_guard_selection_is_claim_guard_harness() -> None:
     harnesses = bench_cli._selected_harnesses("p-h1-open-guard", include_gpu=False)
 

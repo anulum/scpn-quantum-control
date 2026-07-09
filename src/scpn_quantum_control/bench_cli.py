@@ -251,6 +251,11 @@ HARNESS_REGISTRY: tuple[Harness, ...] = (
         frozenset({"diff-optimizer-convergence"}),
     ),
     Harness(
+        "open-system-objective-evidence",
+        "scripts/export_open_system_objective_evidence.py",
+        frozenset({"diff-open-system-objectives"}),
+    ),
+    Harness(
         "p-h1-open-guard",
         "scripts/check_p_h1_open_claim_guard.py",
         frozenset({"p-h1-open-guard"}),
@@ -560,6 +565,12 @@ def _parse_args(argv: Sequence[str]) -> argparse.Namespace:
         help="Regenerate BL-15 ground-state optimizer convergence artifacts.",
     )
     _add_run_options(optimizer_convergence, default_group="diff-optimizer-convergence")
+
+    open_system_objectives = subparsers.add_parser(
+        "open-system-objective-evidence",
+        help="Regenerate BL-16 open-system objective evidence artifacts.",
+    )
+    _add_run_options(open_system_objectives, default_group="diff-open-system-objectives")
 
     p_h1_open_guard = subparsers.add_parser(
         "p-h1-open-guard",

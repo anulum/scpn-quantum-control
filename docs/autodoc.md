@@ -83,6 +83,10 @@ or debugging a subsystem, not as the default path for tutorial code.
     options:
       members: [GROUND_STATE_OPTIMIZER_CLAIM_BOUNDARY, GROUND_STATE_OPTIMIZER_EVIDENCE_CLASS, KnownGroundStateObjective, GroundStateConvergenceCertificate, GroundStateOptimizerRunRecord, GroundStateOptimizerBoundaryRow, GroundStateOptimizerConvergenceSuiteResult, default_ground_state_optimizer_objectives, run_ground_state_optimizer_convergence_suite]
 
+::: scpn_quantum_control.phase.open_system_objectives
+    options:
+      members: [OPEN_SYSTEM_OBJECTIVE_CLAIM_BOUNDARY, OPEN_SYSTEM_OBJECTIVE_EVIDENCE_CLASS, BoundedOpenSystemObjectiveCase, DensityMatrixInvariantCertificate, MCWFReproducibilityCertificate, OpenSystemObjectiveRecord, OpenSystemObjectiveBoundaryRow, OpenSystemObjectiveSuiteResult, certify_density_matrix_invariants, certify_mcwf_reproducibility, default_open_system_objective_cases, evaluate_lindblad_objective, evaluate_mcwf_objective, open_system_objective_boundary_rows, run_open_system_objective_suite]
+
 ::: scpn_quantum_control.phase.objectives
     options:
       members: [ObjectiveTermValue, ObjectiveGradientEvaluation, ObjectiveTerm, ComposedPhaseObjective, ComposedObjectiveTrainingStep, ComposedObjectiveTrainingResult, ComposedObjectiveTrainingCertificate, phase_energy_term, phase_fidelity_target_term, periodic_regularization_term, phase_symmetry_penalty_term, smooth_box_safety_penalty_term, build_phase_control_objective, train_composed_phase_objective, validate_composed_objective_training, kuramoto_order_parameter, kuramoto_order_parameter_gradient, kuramoto_order_parameter_target_term, phase_locking_target_term, cluster_synchronisation_target_term, build_synchronisation_objective]
@@ -194,6 +198,10 @@ or debugging a subsystem, not as the default path for tutorial code.
 ::: scpn_quantum_control.benchmarks.differentiable_optimizer_convergence
     options:
       members: [GROUND_STATE_OPTIMIZER_CONVERGENCE_SCHEMA, GroundStateOptimizerConvergenceArtifact, ground_state_optimizer_convergence_payload, render_ground_state_optimizer_convergence_markdown, write_ground_state_optimizer_convergence_artifact]
+
+::: scpn_quantum_control.benchmarks.open_system_objective_evidence
+    options:
+      members: [OPEN_SYSTEM_OBJECTIVE_EVIDENCE_SCHEMA, OpenSystemObjectiveEvidenceArtifact, open_system_objective_evidence_payload, render_open_system_objective_evidence_markdown, write_open_system_objective_evidence_artifact]
 
 ::: scpn_quantum_control.benchmarks.differentiable_catalyst_comparison
     options:

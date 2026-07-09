@@ -88,7 +88,7 @@ preparation and `bridge/` for Hamiltonian access.
 ```mermaid
 graph TD
     bridge["bridge/ (15)\nK_nm → quantum objects"]
-    phase["phase/ (87)\nTime evolution"]
+    phase["phase/ (92)\nTime evolution"]
     analysis["analysis/ (61)\nSync probes"]
     control["control/ (14)\nQuantum control"]
     qsnn["qsnn/ (7)\nQuantum SNN"]
@@ -99,7 +99,7 @@ graph TD
     gauge["gauge/ (6)\nGauge theory"]
     apps["applications/ (15)\nBenchmarks"]
     crypto["crypto/ (9)\nQKD + PQC"]
-    benchmarks["benchmarks/ (21)\nPerformance"]
+    benchmarks["benchmarks/ (23)\nPerformance"]
     ssgf["ssgf/ (4)\nGeometry"]
     psi_field["psi_field/ (4)\nU(1) lattice gauge"]
     oscillatools["oscillatools (external)\nKuramoto substrate: Rust → Julia → Python dispatch"]
@@ -276,7 +276,7 @@ analysis/                                  ← 60 modules: probes of the sync tr
 ├── vortex_binding.py                          Kosterlitz RG flow
 └── enaqt.py                                   Environment-assisted quantum transport
 
-phase/                                     ← 87 modules: time evolution + variational
+phase/                                     ← 92 modules: time evolution + variational
 ├── xy_kuramoto.py                             Trotterised XY solver
 ├── trotter_upde.py                            Full 16-layer UPDE solver
 ├── trotter_error.py                           Trotter error analysis
@@ -347,7 +347,7 @@ applications/                              ← Physical system benchmarks
 ├── disruption_classifier.py                   Plasma stability classification
 └── quantum_evs.py                             Quantum-enhanced EVS for CCW
 
-benchmarks/                                ← Performance baselines
+benchmarks/                                ← 23 modules: performance baselines
 ├── quantum_advantage.py                       Classical vs quantum scaling
 ├── mps_baseline.py                            MPS bond dimension + advantage threshold
 ├── gpu_baseline.py                            A100 FLOPS + GPU vs QPU crossover

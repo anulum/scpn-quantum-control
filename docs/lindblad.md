@@ -201,6 +201,31 @@ eigenvalues = np.linalg.eigvalsh(rho)
 assert np.all(eigenvalues >= -1e-12), "Not positive semidefinite"
 ```
 
+## Differentiable Objective Evidence
+
+Bounded open-system objective rows are available through
+`scpn_quantum_control.phase.open_system_objectives`. The suite evaluates small
+Kuramoto-XY Lindblad objectives through `LindbladKuramotoSolver.run()` and
+certifies the final density matrix before accepting the objective row:
+
+```python
+from scpn_quantum_control.phase import run_open_system_objective_suite
+
+
+suite = run_open_system_objective_suite(backends=("lindblad_density",))
+record = suite.records[0]
+print(record.gradient)
+print(record.invariant_certificate)
+```
+
+The trainable parameters are bounded scalar coupling and damping scales. The
+recorded gradient is a deterministic central finite difference, so it is useful
+for local objective diagnostics and reviewer replay, not an adjoint Lindblad
+gradient or a provider/hardware gradient. The committed evidence artifact is
+`data/differentiable_phase_qnode/open_system_objective_evidence_20260709.json`;
+regenerate it with `scpn-bench open-system-objective-evidence --no-diff` or
+`scripts/export_open_system_objective_evidence.py`.
+
 ---
 
 ## Comparison with Other Tools

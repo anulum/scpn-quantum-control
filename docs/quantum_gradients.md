@@ -1393,6 +1393,36 @@ isolated timing, hardware execution, or a global optimality statement. The
 QNG-QJIT-class baseline is represented as a hard-gap boundary row until a
 compiler-owned metric-fusion route exists.
 
+For bounded open-system objectives, use the Lindblad/MCWF evidence suite:
+
+```python
+from scpn_quantum_control.phase import run_open_system_objective_suite
+
+
+open_suite = run_open_system_objective_suite()
+print(open_suite.passed, open_suite.backend_names)
+print(open_suite.records[0].invariant_certificate)
+print(open_suite.records[1].reproducibility_certificate)
+```
+
+`run_open_system_objective_suite()` evaluates small Kuramoto-XY open-system
+objectives through the production `LindbladKuramotoSolver` density-matrix path
+and the production `mcwf_ensemble` trajectory-batch path. It records central
+finite-difference gradients over coupling and damping scales, density-matrix
+trace/Hermiticity/positivity certificates, and same-seed MCWF replay
+certificates. The companion artifact command is:
+
+```bash
+PYTHONPATH=src:. python scripts/export_open_system_objective_evidence.py
+```
+
+The committed evidence lives at
+`data/differentiable_phase_qnode/open_system_objective_evidence_20260709.json`
+and `.md`. These rows are local finite-difference objective evidence only:
+adjoint Lindblad sensitivities, unbiased stochastic-gradient estimators,
+provider execution, hardware gradients, and isolated timing promotion remain
+hard-gap boundary rows.
+
 ## Composed differentiable objectives
 
 Real control objectives usually mix energy, fidelity, regularization,

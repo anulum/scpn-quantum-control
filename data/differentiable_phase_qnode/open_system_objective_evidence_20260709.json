@@ -1,0 +1,397 @@
+{
+  "artifact_date": "2026-07-09",
+  "artifact_id": "open-system-objective-evidence-local",
+  "boundary_rows": [
+    {
+      "backend": "lindblad_adjoint",
+      "case_id": "adjoint_lindblad_gradient_boundary",
+      "claim_boundary": "Bounded open-system objective evidence uses scipy Lindblad density-matrix evolution and seeded MCWF trajectory ensembles on small local systems. Gradients are deterministic central finite differences over scalar coupling and damping scales; they are not hardware gradients, adjoint Lindblad gradients, unbiased stochastic-gradient estimators, or isolated performance benchmarks.",
+      "evidence_class": "hard_gap",
+      "failure_class": "unsupported_adjoint_lindblad_gradient",
+      "setup_instructions": "Only central finite differences over bounded scalar scales are executed. Continuous adjoint Lindblad sensitivities require a separate validated solver and invariant-preserving gradient checks.",
+      "status": "hard_gap"
+    },
+    {
+      "backend": "qpu_open_system_gradient",
+      "case_id": "hardware_open_system_gradient_boundary",
+      "claim_boundary": "Bounded open-system objective evidence uses scipy Lindblad density-matrix evolution and seeded MCWF trajectory ensembles on small local systems. Gradients are deterministic central finite differences over scalar coupling and damping scales; they are not hardware gradients, adjoint Lindblad gradients, unbiased stochastic-gradient estimators, or isolated performance benchmarks.",
+      "evidence_class": "hard_gap",
+      "failure_class": "no_live_provider_attestation",
+      "setup_instructions": "No hardware-submitted open-system gradient or provider attestation is included. Provider execution remains behind the live-ticket gate.",
+      "status": "hard_gap"
+    }
+  ],
+  "claim_boundary": "Bounded open-system objective evidence uses scipy Lindblad density-matrix evolution and seeded MCWF trajectory ensembles on small local systems. Gradients are deterministic central finite differences over scalar coupling and damping scales; they are not hardware gradients, adjoint Lindblad gradients, unbiased stochastic-gradient estimators, or isolated performance benchmarks.",
+  "classification": "functional_non_isolated",
+  "environment": {
+    "platform": "Linux-6.17.0-35-generic-x86_64-with-glibc2.39",
+    "python": "3.12.3"
+  },
+  "passed": true,
+  "production_eligible": false,
+  "promotion_ready": false,
+  "row_schema": {
+    "required_boundary_fields": [
+      "case_id",
+      "backend",
+      "status",
+      "failure_class",
+      "setup_instructions",
+      "evidence_class",
+      "claim_boundary"
+    ],
+    "required_run_fields": [
+      "case_id",
+      "backend",
+      "params",
+      "value",
+      "gradient",
+      "evaluations",
+      "final_order_parameter",
+      "invariant_certificate",
+      "reproducibility_certificate",
+      "evidence_class",
+      "claim_boundary"
+    ]
+  },
+  "rows": [
+    {
+      "backend": "lindblad_density",
+      "case_id": "two_qubit_relaxing_sync",
+      "claim_boundary": "Bounded open-system objective evidence uses scipy Lindblad density-matrix evolution and seeded MCWF trajectory ensembles on small local systems. Gradients are deterministic central finite differences over scalar coupling and damping scales; they are not hardware gradients, adjoint Lindblad gradients, unbiased stochastic-gradient estimators, or isolated performance benchmarks.",
+      "evaluations": 5,
+      "evidence_class": "functional_non_isolated",
+      "final_order_parameter": 0.6966067269331873,
+      "gradient": [
+        -0.023133751216125598,
+        -0.024045532147749793
+      ],
+      "invariant_certificate": {
+        "finite": true,
+        "hermiticity_error": 0.0,
+        "min_eigenvalue": 0.004365155270182991,
+        "passed": true,
+        "purity": 0.7806622686882918,
+        "trace_error": 2.220446049250313e-16
+      },
+      "params": [
+        1.0,
+        1.0
+      ],
+      "passed": true,
+      "reproducibility_certificate": null,
+      "value": 0.0765113033146816
+    },
+    {
+      "backend": "mcwf_ensemble",
+      "case_id": "two_qubit_relaxing_sync",
+      "claim_boundary": "Bounded open-system objective evidence uses scipy Lindblad density-matrix evolution and seeded MCWF trajectory ensembles on small local systems. Gradients are deterministic central finite differences over scalar coupling and damping scales; they are not hardware gradients, adjoint Lindblad gradients, unbiased stochastic-gradient estimators, or isolated performance benchmarks.",
+      "evaluations": 5,
+      "evidence_class": "functional_non_isolated",
+      "final_order_parameter": 0.7349840127991915,
+      "gradient": [
+        -0.026522586441028728,
+        0.01057409744770893
+      ],
+      "invariant_certificate": null,
+      "params": [
+        1.0,
+        1.0
+      ],
+      "passed": true,
+      "reproducibility_certificate": {
+        "final_mean_order_parameter": 0.7349840127991915,
+        "final_std_order_parameter": 0.08212837923984906,
+        "finite": true,
+        "n_trajectories": 12,
+        "passed": true,
+        "same_seed_max_abs_diff": 0.0,
+        "seed": 1701,
+        "total_jumps": 1,
+        "trajectory_shape": [
+          12,
+          6
+        ]
+      },
+      "value": 0.09955218185290944
+    },
+    {
+      "backend": "lindblad_density",
+      "case_id": "two_qubit_dephasing_balance",
+      "claim_boundary": "Bounded open-system objective evidence uses scipy Lindblad density-matrix evolution and seeded MCWF trajectory ensembles on small local systems. Gradients are deterministic central finite differences over scalar coupling and damping scales; they are not hardware gradients, adjoint Lindblad gradients, unbiased stochastic-gradient estimators, or isolated performance benchmarks.",
+      "evaluations": 5,
+      "evidence_class": "functional_non_isolated",
+      "final_order_parameter": 0.6041302843667008,
+      "gradient": [
+        -0.002177726430469505,
+        -0.008592341798457567
+      ],
+      "invariant_certificate": {
+        "finite": true,
+        "hermiticity_error": 0.0,
+        "min_eigenvalue": 0.0034897626268375215,
+        "passed": true,
+        "purity": 0.7969700920129282,
+        "trace_error": 0.0
+      },
+      "params": [
+        0.9,
+        1.1
+      ],
+      "passed": true,
+      "reproducibility_certificate": null,
+      "value": 0.010869634955384623
+    },
+    {
+      "backend": "mcwf_ensemble",
+      "case_id": "two_qubit_dephasing_balance",
+      "claim_boundary": "Bounded open-system objective evidence uses scipy Lindblad density-matrix evolution and seeded MCWF trajectory ensembles on small local systems. Gradients are deterministic central finite differences over scalar coupling and damping scales; they are not hardware gradients, adjoint Lindblad gradients, unbiased stochastic-gradient estimators, or isolated performance benchmarks.",
+      "evaluations": 5,
+      "evidence_class": "functional_non_isolated",
+      "final_order_parameter": 0.6275092835435867,
+      "gradient": [
+        -0.0024283531100070116,
+        0.0030936281277017808
+      ],
+      "invariant_certificate": null,
+      "params": [
+        0.9,
+        1.1
+      ],
+      "passed": true,
+      "reproducibility_certificate": {
+        "final_mean_order_parameter": 0.6275092835435867,
+        "final_std_order_parameter": 0.13305855565568353,
+        "finite": true,
+        "n_trajectories": 12,
+        "passed": true,
+        "same_seed_max_abs_diff": 0.0,
+        "seed": 1702,
+        "total_jumps": 1,
+        "trajectory_shape": [
+          12,
+          6
+        ]
+      },
+      "value": 0.01714384635145762
+    }
+  ],
+  "schema": "scpn_qc_open_system_objective_evidence_v1",
+  "suite": {
+    "backend_names": [
+      "lindblad_density",
+      "mcwf_ensemble"
+    ],
+    "boundary_rows": [
+      {
+        "backend": "lindblad_adjoint",
+        "case_id": "adjoint_lindblad_gradient_boundary",
+        "claim_boundary": "Bounded open-system objective evidence uses scipy Lindblad density-matrix evolution and seeded MCWF trajectory ensembles on small local systems. Gradients are deterministic central finite differences over scalar coupling and damping scales; they are not hardware gradients, adjoint Lindblad gradients, unbiased stochastic-gradient estimators, or isolated performance benchmarks.",
+        "evidence_class": "hard_gap",
+        "failure_class": "unsupported_adjoint_lindblad_gradient",
+        "setup_instructions": "Only central finite differences over bounded scalar scales are executed. Continuous adjoint Lindblad sensitivities require a separate validated solver and invariant-preserving gradient checks.",
+        "status": "hard_gap"
+      },
+      {
+        "backend": "qpu_open_system_gradient",
+        "case_id": "hardware_open_system_gradient_boundary",
+        "claim_boundary": "Bounded open-system objective evidence uses scipy Lindblad density-matrix evolution and seeded MCWF trajectory ensembles on small local systems. Gradients are deterministic central finite differences over scalar coupling and damping scales; they are not hardware gradients, adjoint Lindblad gradients, unbiased stochastic-gradient estimators, or isolated performance benchmarks.",
+        "evidence_class": "hard_gap",
+        "failure_class": "no_live_provider_attestation",
+        "setup_instructions": "No hardware-submitted open-system gradient or provider attestation is included. Provider execution remains behind the live-ticket gate.",
+        "status": "hard_gap"
+      }
+    ],
+    "case_count": 2,
+    "cases": [
+      {
+        "case_id": "two_qubit_relaxing_sync",
+        "coupling_matrix": [
+          [
+            0.0,
+            0.32
+          ],
+          [
+            0.32,
+            0.0
+          ]
+        ],
+        "dt": 0.1,
+        "finite_difference_step": 0.001,
+        "gamma_amp": 0.2,
+        "gamma_deph": 0.02,
+        "initial_params": [
+          1.0,
+          1.0
+        ],
+        "n_oscillators": 2,
+        "n_trajectories": 12,
+        "omega": [
+          0.7,
+          1.15
+        ],
+        "seed": 1701,
+        "t_max": 0.5,
+        "target_order_parameter": 0.42,
+        "target_purity": 0.78
+      },
+      {
+        "case_id": "two_qubit_dephasing_balance",
+        "coupling_matrix": [
+          [
+            0.0,
+            0.24
+          ],
+          [
+            0.24,
+            0.0
+          ]
+        ],
+        "dt": 0.1,
+        "finite_difference_step": 0.001,
+        "gamma_amp": 0.12,
+        "gamma_deph": 0.08,
+        "initial_params": [
+          0.9,
+          1.1
+        ],
+        "n_oscillators": 2,
+        "n_trajectories": 12,
+        "omega": [
+          0.55,
+          0.95
+        ],
+        "seed": 1702,
+        "t_max": 0.5,
+        "target_order_parameter": 0.5,
+        "target_purity": 0.82
+      }
+    ],
+    "claim_boundary": "Bounded open-system objective evidence uses scipy Lindblad density-matrix evolution and seeded MCWF trajectory ensembles on small local systems. Gradients are deterministic central finite differences over scalar coupling and damping scales; they are not hardware gradients, adjoint Lindblad gradients, unbiased stochastic-gradient estimators, or isolated performance benchmarks.",
+    "evidence_class": "functional_non_isolated",
+    "passed": true,
+    "record_count": 4,
+    "records": [
+      {
+        "backend": "lindblad_density",
+        "case_id": "two_qubit_relaxing_sync",
+        "claim_boundary": "Bounded open-system objective evidence uses scipy Lindblad density-matrix evolution and seeded MCWF trajectory ensembles on small local systems. Gradients are deterministic central finite differences over scalar coupling and damping scales; they are not hardware gradients, adjoint Lindblad gradients, unbiased stochastic-gradient estimators, or isolated performance benchmarks.",
+        "evaluations": 5,
+        "evidence_class": "functional_non_isolated",
+        "final_order_parameter": 0.6966067269331873,
+        "gradient": [
+          -0.023133751216125598,
+          -0.024045532147749793
+        ],
+        "invariant_certificate": {
+          "finite": true,
+          "hermiticity_error": 0.0,
+          "min_eigenvalue": 0.004365155270182991,
+          "passed": true,
+          "purity": 0.7806622686882918,
+          "trace_error": 2.220446049250313e-16
+        },
+        "params": [
+          1.0,
+          1.0
+        ],
+        "passed": true,
+        "reproducibility_certificate": null,
+        "value": 0.0765113033146816
+      },
+      {
+        "backend": "mcwf_ensemble",
+        "case_id": "two_qubit_relaxing_sync",
+        "claim_boundary": "Bounded open-system objective evidence uses scipy Lindblad density-matrix evolution and seeded MCWF trajectory ensembles on small local systems. Gradients are deterministic central finite differences over scalar coupling and damping scales; they are not hardware gradients, adjoint Lindblad gradients, unbiased stochastic-gradient estimators, or isolated performance benchmarks.",
+        "evaluations": 5,
+        "evidence_class": "functional_non_isolated",
+        "final_order_parameter": 0.7349840127991915,
+        "gradient": [
+          -0.026522586441028728,
+          0.01057409744770893
+        ],
+        "invariant_certificate": null,
+        "params": [
+          1.0,
+          1.0
+        ],
+        "passed": true,
+        "reproducibility_certificate": {
+          "final_mean_order_parameter": 0.7349840127991915,
+          "final_std_order_parameter": 0.08212837923984906,
+          "finite": true,
+          "n_trajectories": 12,
+          "passed": true,
+          "same_seed_max_abs_diff": 0.0,
+          "seed": 1701,
+          "total_jumps": 1,
+          "trajectory_shape": [
+            12,
+            6
+          ]
+        },
+        "value": 0.09955218185290944
+      },
+      {
+        "backend": "lindblad_density",
+        "case_id": "two_qubit_dephasing_balance",
+        "claim_boundary": "Bounded open-system objective evidence uses scipy Lindblad density-matrix evolution and seeded MCWF trajectory ensembles on small local systems. Gradients are deterministic central finite differences over scalar coupling and damping scales; they are not hardware gradients, adjoint Lindblad gradients, unbiased stochastic-gradient estimators, or isolated performance benchmarks.",
+        "evaluations": 5,
+        "evidence_class": "functional_non_isolated",
+        "final_order_parameter": 0.6041302843667008,
+        "gradient": [
+          -0.002177726430469505,
+          -0.008592341798457567
+        ],
+        "invariant_certificate": {
+          "finite": true,
+          "hermiticity_error": 0.0,
+          "min_eigenvalue": 0.0034897626268375215,
+          "passed": true,
+          "purity": 0.7969700920129282,
+          "trace_error": 0.0
+        },
+        "params": [
+          0.9,
+          1.1
+        ],
+        "passed": true,
+        "reproducibility_certificate": null,
+        "value": 0.010869634955384623
+      },
+      {
+        "backend": "mcwf_ensemble",
+        "case_id": "two_qubit_dephasing_balance",
+        "claim_boundary": "Bounded open-system objective evidence uses scipy Lindblad density-matrix evolution and seeded MCWF trajectory ensembles on small local systems. Gradients are deterministic central finite differences over scalar coupling and damping scales; they are not hardware gradients, adjoint Lindblad gradients, unbiased stochastic-gradient estimators, or isolated performance benchmarks.",
+        "evaluations": 5,
+        "evidence_class": "functional_non_isolated",
+        "final_order_parameter": 0.6275092835435867,
+        "gradient": [
+          -0.0024283531100070116,
+          0.0030936281277017808
+        ],
+        "invariant_certificate": null,
+        "params": [
+          0.9,
+          1.1
+        ],
+        "passed": true,
+        "reproducibility_certificate": {
+          "final_mean_order_parameter": 0.6275092835435867,
+          "final_std_order_parameter": 0.13305855565568353,
+          "finite": true,
+          "n_trajectories": 12,
+          "passed": true,
+          "same_seed_max_abs_diff": 0.0,
+          "seed": 1702,
+          "total_jumps": 1,
+          "trajectory_shape": [
+            12,
+            6
+          ]
+        },
+        "value": 0.01714384635145762
+      }
+    ]
+  }
+}
