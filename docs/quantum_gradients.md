@@ -1044,7 +1044,13 @@ sample belongs to which Fourier term.
 
 The current tape remains intentionally bounded. It is not a full programme-IR
 tape, does not capture arbitrary Python side effects, and does not enable
-hardware gradients without explicit policy approval.
+hardware gradients without explicit policy approval. Deterministic records copy
+parameter inputs, stamp `parameter_fingerprint` and `replay_fingerprint`, reject
+objective functions that mutate replay arrays, and fail closed when identical
+parameters do not replay to the same scalar value. `run_gradient_tape_contract_audit()`
+exercises the DP-003 hardening cycle: independent nested tapes, same-tape
+re-entry rejection, persistent clear/reuse, external alias snapshots,
+objective-mutation rejection, and control-flow replay stability.
 
 ## Parameter-shift gradient descent
 

@@ -99,6 +99,10 @@ or debugging a subsystem, not as the default path for tutorial code.
     options:
       members: [GradientTransformNestingPlan, GradientTransformNestingAuditResult, plan_gradient_transform_nesting, assert_gradient_transform_nesting_supported, run_gradient_transform_nesting_audit]
 
+::: scpn_quantum_control.phase.gradient_tape
+    options:
+      members: [GRADIENT_TAPE_CONTRACT_CLAIM_BOUNDARY, TapeGradientRecord, GradientTapeContractCheck, GradientTapeContractAuditResult, QuantumGradientTape, gradient_tape, run_gradient_tape_contract_audit]
+
 ::: scpn_quantum_control.phase.provider_gradient_audit
     options:
       members: [ProviderGradientReadinessScenario, ProviderGradientReadinessRecord, ProviderGradientReadinessAuditResult, default_provider_gradient_readiness_scenarios, run_provider_gradient_readiness_audit]

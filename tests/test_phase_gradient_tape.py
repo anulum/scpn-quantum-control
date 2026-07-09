@@ -9,14 +9,24 @@
 
 from __future__ import annotations
 
+import importlib
+
 import numpy as np
 import pytest
 from numpy.typing import NDArray
 
 from scpn_quantum_control.differentiable import multi_frequency_parameter_shift_rule
-from scpn_quantum_control.phase import QuantumGradientTape, gradient_tape
+from scpn_quantum_control.phase import (
+    GRADIENT_TAPE_CONTRACT_CLAIM_BOUNDARY,
+    GradientTapeContractAuditResult,
+    QuantumGradientTape,
+    gradient_tape,
+    run_gradient_tape_contract_audit,
+)
+from scpn_quantum_control.phase.gradient_backend import QuantumGradientPlan
 
 FloatArray = NDArray[np.float64]
+gradient_tape_module = importlib.import_module("scpn_quantum_control.phase.gradient_tape")
 SAMPLE_PROVENANCE = {
     "sample_seed": "phase-gradient-tape-test-seed",
     "shot_batch_id": "phase-gradient-tape-test-batch",
@@ -39,6 +49,9 @@ def test_gradient_tape_records_deterministic_parameter_shift() -> None:
     assert record.kind == "deterministic"
     assert record.plan.method == "parameter_shift"
     assert record.evaluations == 4
+    assert len(record.parameter_fingerprint) == 64
+    assert len(record.replay_fingerprint) == 64
+    assert "objective mutation guard passed" in record.contract_notes
     assert len(tape.records) == 1
     assert tape.records[0] is record
 
@@ -70,7 +83,11 @@ def test_gradient_tape_records_multi_frequency_parameter_shift() -> None:
     assert record.method == "multi_frequency_parameter_shift"
     assert record.shift_terms == len(rule.terms)
     assert record.evaluations == 2 * len(rule.terms) * params.size
-    assert record.to_dict()["shift_terms"] == len(rule.terms)
+    payload = record.to_dict()
+    assert payload["shift_terms"] == len(rule.terms)
+    assert payload["parameter_fingerprint"] == record.parameter_fingerprint
+    assert payload["replay_fingerprint"] == record.replay_fingerprint
+    assert "contract_notes" in payload
 
 
 def test_gradient_tape_records_finite_shot_uncertainty() -> None:
@@ -91,6 +108,10 @@ def test_gradient_tape_records_finite_shot_uncertainty() -> None:
     assert record.plan.shots == 512
     assert record.standard_error is not None
     assert np.all(record.standard_error > 0.0)
+    payload = record.to_dict()
+    assert payload["confidence_radius"] is not None
+    assert payload["standard_error"] is not None
+    assert "sample provenance required" in record.contract_notes
 
 
 def test_gradient_tape_records_multi_term_finite_shot_uncertainty() -> None:
@@ -142,6 +163,150 @@ def test_gradient_tape_rejects_flat_multi_term_finite_shot_records() -> None:
         )
 
 
+def test_gradient_tape_rejects_invalid_parameter_vectors_and_objectives() -> None:
+    with (
+        gradient_tape(backend="statevector") as tape,
+        pytest.raises(ValueError, match="one-dimensional"),
+    ):
+        tape.record_parameter_shift(
+            "matrix_params",
+            lambda params: float(params[0]),
+            np.array([[0.2]], dtype=float),
+        )
+
+    with (
+        gradient_tape(backend="statevector") as tape,
+        pytest.raises(ValueError, match="finite values"),
+    ):
+        tape.record_parameter_shift(
+            "nan_params",
+            lambda params: float(params[0]),
+            np.array([np.nan], dtype=float),
+        )
+
+    with (
+        gradient_tape(backend="statevector") as tape,
+        pytest.raises(ValueError, match="finite scalar"),
+    ):
+        tape.record_parameter_shift(
+            "nan_objective",
+            lambda params: float(np.nan),
+            np.array([0.2], dtype=float),
+        )
+
+
+def test_gradient_tape_rejects_invalid_finite_shot_shapes_and_values() -> None:
+    with (
+        gradient_tape(backend="finite_shot_simulator", shots=512) as tape,
+        pytest.raises(ValueError, match="one- or two-dimensional"),
+    ):
+        tape.record_finite_shot_parameter_shift(
+            "rank_three",
+            plus_values=np.ones((1, 1, 1), dtype=float),
+            minus_values=np.ones((1, 1, 1), dtype=float),
+            plus_variances=np.ones((1, 1, 1), dtype=float),
+            minus_variances=np.ones((1, 1, 1), dtype=float),
+            sample_provenance=SAMPLE_PROVENANCE,
+        )
+
+    with (
+        gradient_tape(backend="finite_shot_simulator", shots=512) as tape,
+        pytest.raises(ValueError, match="must not be empty"),
+    ):
+        tape.record_finite_shot_parameter_shift(
+            "empty",
+            plus_values=np.array([], dtype=float),
+            minus_values=np.array([], dtype=float),
+            plus_variances=np.array([], dtype=float),
+            minus_variances=np.array([], dtype=float),
+            sample_provenance=SAMPLE_PROVENANCE,
+        )
+
+    with (
+        gradient_tape(backend="finite_shot_simulator", shots=512) as tape,
+        pytest.raises(ValueError, match="finite values"),
+    ):
+        tape.record_finite_shot_parameter_shift(
+            "nan_plus",
+            plus_values=np.array([np.nan], dtype=float),
+            minus_values=np.array([0.5], dtype=float),
+            plus_variances=np.array([0.1], dtype=float),
+            minus_variances=np.array([0.1], dtype=float),
+            sample_provenance=SAMPLE_PROVENANCE,
+        )
+
+    with (
+        gradient_tape(backend="finite_shot_simulator", shots=512) as tape,
+        pytest.raises(ValueError, match="match plus_values shape"),
+    ):
+        tape.record_finite_shot_parameter_shift(
+            "mismatch",
+            plus_values=np.array([1.0, 0.8], dtype=float),
+            minus_values=np.array([0.5], dtype=float),
+            plus_variances=np.array([0.1, 0.1], dtype=float),
+            minus_variances=np.array([0.1, 0.1], dtype=float),
+            sample_provenance=SAMPLE_PROVENANCE,
+        )
+
+
+def test_gradient_tape_rejects_rule_term_axis_mismatch() -> None:
+    rule = multi_frequency_parameter_shift_rule([1.0, 2.0])
+
+    with (
+        gradient_tape(backend="finite_shot_simulator", shots=512) as tape,
+        pytest.raises(ValueError, match="first axis"),
+    ):
+        tape.record_finite_shot_parameter_shift(
+            "axis_mismatch",
+            plus_values=np.array([[1.0]], dtype=float),
+            minus_values=np.array([[0.5]], dtype=float),
+            plus_variances=np.array([[0.1]], dtype=float),
+            minus_variances=np.array([[0.1]], dtype=float),
+            sample_provenance=SAMPLE_PROVENANCE,
+            rule=rule,
+        )
+
+
+def test_gradient_tape_rejects_supported_finite_shot_plan_without_shots(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def plan_without_shots(*_args: object, **_kwargs: object) -> QuantumGradientPlan:
+        return QuantumGradientPlan(
+            backend="finite_shot_simulator",
+            family="finite_shot_simulator",
+            method="stochastic_parameter_shift",
+            supported=True,
+            n_params=1,
+            shift_terms=1,
+            evaluations=2,
+            shots=None,
+            seed=None,
+            finite_shot=True,
+            confidence_level=0.95,
+            requires_hardware_approval=False,
+            reasons=("test-only supported plan without shots",),
+            alternatives=(),
+        )
+
+    monkeypatch.setattr(
+        gradient_tape_module,
+        "plan_quantum_gradient_backend",
+        plan_without_shots,
+    )
+    with (
+        gradient_tape(backend="finite_shot_simulator") as tape,
+        pytest.raises(ValueError, match="explicit shot plan"),
+    ):
+        tape.record_finite_shot_parameter_shift(
+            "missing_plan_shots",
+            plus_values=np.array([1.0], dtype=float),
+            minus_values=np.array([0.5], dtype=float),
+            plus_variances=np.array([0.1], dtype=float),
+            minus_variances=np.array([0.1], dtype=float),
+            sample_provenance=SAMPLE_PROVENANCE,
+        )
+
+
 def test_gradient_tape_rejects_finite_shot_records_without_sample_provenance() -> None:
     with (
         gradient_tape(backend="finite_shot_simulator", shots=512) as tape,
@@ -179,6 +344,103 @@ def test_gradient_tape_rejects_recording_outside_context() -> None:
             lambda params: float(np.cos(params[0])),
             np.array([0.2], dtype=float),
         )
+
+
+def test_gradient_tape_rejects_same_tape_reentry() -> None:
+    tape = QuantumGradientTape(backend="statevector")
+
+    with tape, pytest.raises(RuntimeError, match="already active"):
+        tape.__enter__()
+
+
+def test_gradient_tape_preserves_records_after_context_and_clear_reuses_tape() -> None:
+    tape = QuantumGradientTape(backend="statevector")
+
+    def objective(params: FloatArray) -> float:
+        return float(np.sin(params[0]))
+
+    with tape:
+        first = tape.record_parameter_shift(
+            "first",
+            objective,
+            np.array([0.2], dtype=float),
+        )
+
+    assert tape.records == (first,)
+    tape.clear()
+    assert list(tape.records) == []
+
+    with tape:
+        second = tape.record_parameter_shift(
+            "second",
+            objective,
+            np.array([0.2], dtype=float),
+        )
+
+    assert tape.records == (second,)
+    assert first.replay_fingerprint != second.replay_fingerprint
+
+
+def test_gradient_tape_rejects_objective_input_mutation() -> None:
+    def objective(params: FloatArray) -> float:
+        params[0] = params[0] + 1.0
+        return float(params[0])
+
+    with (
+        gradient_tape(backend="statevector") as tape,
+        pytest.raises(ValueError, match="must not mutate parameter arrays"),
+    ):
+        tape.record_parameter_shift("mutating", objective, np.array([0.2], dtype=float))
+
+
+def test_gradient_tape_rejects_unstable_control_flow_replay() -> None:
+    calls = 0
+
+    def objective(params: FloatArray) -> float:
+        nonlocal calls
+        calls += 1
+        return float(params[0] + calls)
+
+    with (
+        gradient_tape(backend="statevector") as tape,
+        pytest.raises(ValueError, match="replay must be stable"),
+    ):
+        tape.record_parameter_shift("unstable", objective, np.array([0.2], dtype=float))
+
+    assert calls == 2
+
+
+def test_gradient_tape_snapshots_parameter_aliases() -> None:
+    params = np.array([0.2], dtype=float)
+
+    def objective(values: FloatArray) -> float:
+        return float(np.cos(values[0]))
+
+    with gradient_tape(backend="statevector") as tape:
+        record = tape.record_parameter_shift("alias", objective, params)
+
+    payload_before = record.to_dict()
+    params[0] = 9.0
+    assert record.to_dict() == payload_before
+
+
+def test_gradient_tape_contract_audit_covers_dp003_cycles() -> None:
+    audit = run_gradient_tape_contract_audit()
+    payload = audit.to_dict()
+    checks = {check.name: check for check in audit.checks}
+
+    assert isinstance(audit, GradientTapeContractAuditResult)
+    assert audit.passed
+    assert audit.claim_boundary == GRADIENT_TAPE_CONTRACT_CLAIM_BOUNDARY
+    assert len(audit.supported_checks) == 3
+    assert len(audit.fail_closed_checks) == 3
+    assert checks["independent_nested_tapes"].supported
+    assert checks["persistent_reuse"].supported
+    assert checks["parameter_alias_snapshot"].supported
+    assert checks["same_tape_reentry"].blocked_reason is not None
+    assert checks["objective_mutation"].blocked_reason is not None
+    assert checks["control_flow_replay_stability"].blocked_reason is not None
+    assert payload["passed"] is True
 
 
 def test_gradient_tape_rejects_empty_record_names() -> None:

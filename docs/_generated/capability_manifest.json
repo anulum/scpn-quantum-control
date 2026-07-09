@@ -9,7 +9,7 @@
     "optional_extras": 43,
     "public_api_exports": 829,
     "public_documentation_pages": 268,
-    "python_model_classes": 955,
+    "python_model_classes": 957,
     "python_model_source_modules": 495,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 46,
@@ -1848,6 +1848,14 @@
       {
         "name": "GradientSupportPlan",
         "path": "src/scpn_quantum_control/phase/gradient_support_matrix.py"
+      },
+      {
+        "name": "GradientTapeContractAuditResult",
+        "path": "src/scpn_quantum_control/phase/gradient_tape.py"
+      },
+      {
+        "name": "GradientTapeContractCheck",
+        "path": "src/scpn_quantum_control/phase/gradient_tape.py"
       },
       {
         "name": "GradientTransformNestingAuditResult",

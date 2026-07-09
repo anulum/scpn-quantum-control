@@ -107,7 +107,16 @@ from .gradient_support_matrix import (
     plan_gradient_support,
     run_gradient_support_matrix_audit,
 )
-from .gradient_tape import QuantumGradientTape, TapeGradientRecord, gradient_tape
+from .gradient_tape import (
+    GRADIENT_TAPE_CONTRACT_CLAIM_BOUNDARY,
+    GradientTapeContractAuditResult,
+    GradientTapeContractCheck,
+    QuantumGradientTape,
+    TapeContractStatus,
+    TapeGradientRecord,
+    gradient_tape,
+    run_gradient_tape_contract_audit,
+)
 from .hardware_gradient_campaign import (
     HardwareGradientCampaignPlan,
     HardwareGradientCampaignSpec,
@@ -836,8 +845,13 @@ __all__ = [
     "ComposedObjectiveExecutionPlan",
     "ComposedObjectivePlannerAuditResult",
     "gradient_tape",
+    "GRADIENT_TAPE_CONTRACT_CLAIM_BOUNDARY",
+    "GradientTapeContractAuditResult",
+    "GradientTapeContractCheck",
     "QuantumGradientTape",
+    "TapeContractStatus",
     "TapeGradientRecord",
+    "run_gradient_tape_contract_audit",
     "phase_qnode_tape",
     "PhaseQNodeTape",
     "PhaseQNodeTapeReadinessSuiteResult",
