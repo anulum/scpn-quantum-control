@@ -1183,11 +1183,12 @@ round-trip through the Kuramoto conversion path.
 
 ## Parameter-shift natural gradient
 
-For metric-aware training, the phase namespace now exposes a bounded natural
+For metric-aware training, the phase namespace exposes a bounded natural
 gradient route. It computes native parameter-shift gradients, validates an
-explicit metric tensor or callable metric, solves the damped system
-`(metric + damping I) direction = gradient`, and then applies the same
-fail-closed Armijo line-search discipline used by the ordinary descent route:
+explicit metric tensor or callable metric, regularises the metric according to
+an explicit damping/eigenvalue-floor/condition-number policy, solves the
+regularised system, and then applies the same fail-closed Armijo line-search
+discipline used by the ordinary descent route:
 
 ```python
 import numpy as np
@@ -1222,12 +1223,17 @@ print(run.best_value, certificate.monotone_accepted_values)
 ```
 
 `ParameterShiftNaturalGradientResult` records metric source, damping,
-condition-number limits, accepted/rejected steps, backend plan, shift-term
-count, final Euclidean and natural-gradient norms, and a claim boundary. The
-identity metric is allowed as a reproducible preconditioner baseline, but it is
-labelled as such and is not a claim of quantum Fisher extraction. Non-symmetric
-metrics, wrong shapes, non-finite entries, singular regularised systems, unsafe
-hardware backends, and non-descent metrics fail closed.
+eigenvalue floor, degeneracy tolerance, condition-number limit, final metric
+rank/nullity, regularisation reason, accepted/rejected steps, backend plan,
+shift-term count, final Euclidean and natural-gradient norms, and a claim
+boundary. Each step also records the diagonal shift used for the metric solve.
+The identity metric is allowed as a reproducible preconditioner baseline, but it
+is labelled as such and is not a claim of quantum Fisher extraction.
+Positive-semidefinite singular metrics are allowed only when the policy adds a
+positive diagonal shift through damping, an eigenvalue floor, or a
+condition-number cap. Indefinite metrics, non-symmetric metrics, wrong shapes,
+non-finite entries, singular unregularised systems, unsafe hardware backends,
+and non-descent metrics fail closed.
 
 For registered local Phase-QNode circuits, the phase namespace also exposes an
 exact pure-state metric provider.  It propagates analytic state derivatives
@@ -1260,6 +1266,14 @@ run = parameter_shift_natural_gradient_descent(
 This route is bounded to pure-state local Phase-QNode statevectors. It is not a
 finite-shot classical Fisher estimator, density-matrix metric, noisy-channel
 metric, provider metric, or hardware metric claim.
+
+Degenerate QFI metrics are common when a parameter does not change the
+projective state, for example an `rz` parameter on an initial computational
+basis state. In that case the QFI/Fubini-Study metric can have non-zero nullity.
+Use an explicit `eigenvalue_floor` or damping policy before using the metric as
+a natural-gradient preconditioner, and inspect `final_metric_nullity`,
+`final_regularization_reason`, and each step's `diagonal_shift` in the returned
+training record.
 
 `phase_qnode_computational_basis_fisher_information(circuit, params)` computes
 the exact classical Fisher matrix for computational-basis statevector

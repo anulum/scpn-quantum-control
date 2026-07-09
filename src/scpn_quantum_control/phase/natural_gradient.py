@@ -27,6 +27,25 @@ MetricTensorInput: TypeAlias = ArrayLike | MetricTensorProvider | None
 
 
 @dataclass(frozen=True)
+class NaturalGradientRegularizationPolicy:
+    """Regularisation controls for singular or ill-conditioned metric solves."""
+
+    damping: float
+    eigenvalue_floor: float
+    max_condition_number: float
+    degeneracy_tolerance: float
+
+    def to_dict(self) -> dict[str, float]:
+        """Return JSON-ready regularisation controls."""
+        return {
+            "damping": self.damping,
+            "eigenvalue_floor": self.eigenvalue_floor,
+            "max_condition_number": self.max_condition_number,
+            "degeneracy_tolerance": self.degeneracy_tolerance,
+        }
+
+
+@dataclass(frozen=True)
 class NaturalGradientDirection:
     """Damped metric solve used for one natural-gradient step."""
 
@@ -34,7 +53,14 @@ class NaturalGradientDirection:
     metric: FloatArray
     regularized_metric: FloatArray
     damping: float
+    diagonal_shift: float
     condition_number: float
+    metric_rank: int
+    metric_nullity: int
+    minimum_eigenvalue: float
+    regularized_minimum_eigenvalue: float
+    regularization_reason: str
+    regularization_policy: NaturalGradientRegularizationPolicy
     euclidean_gradient_norm: float
     natural_gradient_norm: float
 
@@ -45,7 +71,14 @@ class NaturalGradientDirection:
             "metric": self.metric.tolist(),
             "regularized_metric": self.regularized_metric.tolist(),
             "damping": self.damping,
+            "diagonal_shift": self.diagonal_shift,
             "condition_number": self.condition_number,
+            "metric_rank": self.metric_rank,
+            "metric_nullity": self.metric_nullity,
+            "minimum_eigenvalue": self.minimum_eigenvalue,
+            "regularized_minimum_eigenvalue": self.regularized_minimum_eigenvalue,
+            "regularization_reason": self.regularization_reason,
+            "regularization_policy": self.regularization_policy.to_dict(),
             "euclidean_gradient_norm": self.euclidean_gradient_norm,
             "natural_gradient_norm": self.natural_gradient_norm,
         }
@@ -66,6 +99,10 @@ class ParameterShiftNaturalGradientStep:
     evaluations: int
     metric_condition_number: float
     damping: float
+    diagonal_shift: float
+    metric_rank: int
+    metric_nullity: int
+    regularization_reason: str
     method: str
     shift_terms: int
     params: FloatArray
@@ -84,6 +121,10 @@ class ParameterShiftNaturalGradientStep:
             "evaluations": self.evaluations,
             "metric_condition_number": self.metric_condition_number,
             "damping": self.damping,
+            "diagonal_shift": self.diagonal_shift,
+            "metric_rank": self.metric_rank,
+            "metric_nullity": self.metric_nullity,
+            "regularization_reason": self.regularization_reason,
             "method": self.method,
             "shift_terms": self.shift_terms,
             "params": self.params.tolist(),
@@ -112,7 +153,12 @@ class ParameterShiftNaturalGradientResult:
     shift_terms: int
     metric_source: str
     damping: float
+    eigenvalue_floor: float
+    degeneracy_tolerance: float
     max_condition_number: float
+    final_metric_rank: int
+    final_metric_nullity: int
+    final_regularization_reason: str
     converged: bool
     reason: str
     claim_boundary: str
@@ -152,7 +198,12 @@ class ParameterShiftNaturalGradientResult:
             "shift_terms": self.shift_terms,
             "metric_source": self.metric_source,
             "damping": self.damping,
+            "eigenvalue_floor": self.eigenvalue_floor,
+            "degeneracy_tolerance": self.degeneracy_tolerance,
             "max_condition_number": self.max_condition_number,
+            "final_metric_rank": self.final_metric_rank,
+            "final_metric_nullity": self.final_metric_nullity,
+            "final_regularization_reason": self.final_regularization_reason,
             "converged": self.converged,
             "reason": self.reason,
             "claim_boundary": self.claim_boundary,
@@ -284,6 +335,82 @@ def _metric_at(metric_tensor: MetricTensorInput, params: FloatArray) -> FloatArr
     return metric
 
 
+def _regularization_policy(
+    *,
+    damping: float,
+    eigenvalue_floor: float,
+    max_condition_number: float,
+    degeneracy_tolerance: float,
+) -> NaturalGradientRegularizationPolicy:
+    return NaturalGradientRegularizationPolicy(
+        damping=_non_negative_float("damping", damping),
+        eigenvalue_floor=_non_negative_float("eigenvalue_floor", eigenvalue_floor),
+        max_condition_number=_positive_float("max_condition_number", max_condition_number),
+        degeneracy_tolerance=_non_negative_float(
+            "degeneracy_tolerance",
+            degeneracy_tolerance,
+        ),
+    )
+
+
+def _regularized_metric(
+    metric: FloatArray,
+    policy: NaturalGradientRegularizationPolicy,
+) -> tuple[FloatArray, float, float, int, int, float, float, str]:
+    eigenvalues = np.linalg.eigvalsh(metric)
+    if not np.all(np.isfinite(eigenvalues)):
+        raise ValueError("metric tensor eigenvalues must be finite")
+    minimum = float(np.min(eigenvalues))
+    maximum = float(np.max(eigenvalues))
+    if minimum < -policy.degeneracy_tolerance:
+        raise ValueError(
+            "regularized metric tensor must be positive definite; "
+            "raw metric is not positive semidefinite"
+        )
+    rank = int(np.count_nonzero(eigenvalues > policy.degeneracy_tolerance))
+    nullity = int(metric.shape[0] - rank)
+    floor_shift = max(0.0, policy.eigenvalue_floor - (minimum + policy.damping))
+    condition_shift = 0.0
+    if policy.max_condition_number <= 1.0:
+        raise ValueError("max_condition_number must be greater than one")
+    if maximum > minimum:
+        required = (maximum - policy.max_condition_number * minimum) / (
+            policy.max_condition_number - 1.0
+        )
+        condition_shift = max(0.0, required - policy.damping)
+    diagonal_shift = policy.damping + max(floor_shift, condition_shift)
+    regularized = metric + diagonal_shift * np.eye(metric.shape[0], dtype=np.float64)
+    regularized_eigenvalues = np.linalg.eigvalsh(regularized)
+    regularized_minimum = float(np.min(regularized_eigenvalues))
+    if regularized_minimum <= 0.0:
+        raise ValueError("regularized metric tensor must be positive definite")
+    condition_number = float(np.linalg.cond(regularized))
+    if not np.isfinite(condition_number):
+        raise ValueError("regularized metric condition number must be finite")
+    if condition_number > policy.max_condition_number * (1.0 + 1.0e-10):
+        raise ValueError("regularized metric condition number exceeds max_condition_number")
+    if condition_shift > floor_shift and condition_shift > 0.0:
+        reason = "condition_number_limited"
+    elif floor_shift > 0.0:
+        reason = "eigenvalue_floor"
+    elif policy.damping > 0.0:
+        reason = "damped"
+    else:
+        reason = "none"
+    if nullity > 0 and reason == "none":
+        reason = "degenerate_unregularized"
+    return (
+        regularized,
+        diagonal_shift,
+        condition_number,
+        rank,
+        nullity,
+        minimum,
+        regularized_minimum,
+        reason,
+    )
+
+
 def _value_and_parameter_shift_grad(
     objective: ScalarObjective,
     params: FloatArray,
@@ -309,30 +436,36 @@ def solve_natural_gradient_direction(
     metric_tensor: ArrayLike,
     *,
     damping: float = 1e-8,
+    eigenvalue_floor: float = 0.0,
     max_condition_number: float = 1e12,
+    degeneracy_tolerance: float = 1e-10,
 ) -> NaturalGradientDirection:
-    """Solve ``(metric + damping I) direction = gradient`` fail-closed.
+    """Solve a regularised metric system fail-closed.
 
     The returned direction is a preconditioned descent direction for
-    minimisation steps of the form ``params - step_size * direction``. The
-    metric must be symmetric and the regularised solve must produce positive
-    natural-gradient energy ``gradient @ direction``.
+    minimisation steps of the form ``params - step_size * direction``. Singular
+    or ill-conditioned positive-semidefinite metrics receive the smallest
+    diagonal shift required by the damping, eigenvalue-floor, and condition
+    policy. Indefinite metrics fail closed instead of being silently repaired.
     """
     grad = _as_parameter_vector("gradient", gradient)
-    damp = _non_negative_float("damping", damping)
-    max_condition = _positive_float("max_condition_number", max_condition_number)
+    policy = _regularization_policy(
+        damping=damping,
+        eigenvalue_floor=eigenvalue_floor,
+        max_condition_number=max_condition_number,
+        degeneracy_tolerance=degeneracy_tolerance,
+    )
     metric = _metric_at(metric_tensor, grad)
-    regularized = metric + damp * np.eye(grad.size, dtype=np.float64)
-    condition_number = float(np.linalg.cond(regularized))
-    if not np.isfinite(condition_number):
-        raise ValueError("regularized metric condition number must be finite")
-    if condition_number > max_condition:
-        raise ValueError("regularized metric condition number exceeds max_condition_number")
-    eigenvalues = np.linalg.eigvalsh(regularized)
-    if not np.all(np.isfinite(eigenvalues)):
-        raise ValueError("regularized metric eigenvalues must be finite")
-    if float(np.min(eigenvalues)) <= 0.0:
-        raise ValueError("regularized metric tensor must be positive definite")
+    (
+        regularized,
+        diagonal_shift,
+        condition_number,
+        metric_rank,
+        metric_nullity,
+        minimum_eigenvalue,
+        regularized_minimum,
+        regularization_reason,
+    ) = _regularized_metric(metric, policy)
     try:
         direction = np.linalg.solve(regularized, grad).astype(np.float64, copy=False)
     except np.linalg.LinAlgError as exc:
@@ -347,8 +480,15 @@ def solve_natural_gradient_direction(
         direction=direction,
         metric=metric,
         regularized_metric=regularized,
-        damping=damp,
+        damping=policy.damping,
+        diagonal_shift=diagonal_shift,
         condition_number=condition_number,
+        metric_rank=metric_rank,
+        metric_nullity=metric_nullity,
+        minimum_eigenvalue=minimum_eigenvalue,
+        regularized_minimum_eigenvalue=regularized_minimum,
+        regularization_reason=regularization_reason,
+        regularization_policy=policy,
         euclidean_gradient_norm=float(np.linalg.norm(grad)),
         natural_gradient_norm=natural_norm,
     )
@@ -368,7 +508,9 @@ def parameter_shift_natural_gradient_descent(
     natural_gradient_tolerance: float = 1e-8,
     value_tolerance: float | None = None,
     damping: float = 1e-8,
+    eigenvalue_floor: float = 0.0,
     max_condition_number: float = 1e12,
+    degeneracy_tolerance: float = 1e-10,
     sufficient_decrease: float = 1e-4,
     backtracking_factor: float = 0.5,
     max_backtracks: int = 12,
@@ -391,7 +533,9 @@ def parameter_shift_natural_gradient_descent(
     if value_tolerance is not None:
         value_tol = _non_negative_float("value_tolerance", value_tolerance)
     damp = _non_negative_float("damping", damping)
+    floor = _non_negative_float("eigenvalue_floor", eigenvalue_floor)
     max_condition = _positive_float("max_condition_number", max_condition_number)
+    degeneracy_tol = _non_negative_float("degeneracy_tolerance", degeneracy_tolerance)
     decrease = _positive_float("sufficient_decrease", sufficient_decrease)
     shrink = _positive_float("backtracking_factor", backtracking_factor)
     if shrink >= 1.0:
@@ -429,7 +573,9 @@ def parameter_shift_natural_gradient_descent(
         current_gradient,
         _metric_at(metric_tensor, params),
         damping=damp,
+        eigenvalue_floor=floor,
         max_condition_number=max_condition,
+        degeneracy_tolerance=degeneracy_tol,
     )
 
     for index in range(steps_limit):
@@ -438,7 +584,9 @@ def parameter_shift_natural_gradient_descent(
             current_gradient,
             _metric_at(metric_tensor, params),
             damping=damp,
+            eigenvalue_floor=floor,
             max_condition_number=max_condition,
+            degeneracy_tolerance=degeneracy_tol,
         )
         final_direction = direction
         if gradient_norm <= grad_tol:
@@ -487,6 +635,10 @@ def parameter_shift_natural_gradient_descent(
                     evaluations=evaluations,
                     metric_condition_number=direction.condition_number,
                     damping=damp,
+                    diagonal_shift=direction.diagonal_shift,
+                    metric_rank=direction.metric_rank,
+                    metric_nullity=direction.metric_nullity,
+                    regularization_reason=direction.regularization_reason,
                     method=current.method,
                     shift_terms=terms,
                     params=params.copy(),
@@ -522,12 +674,24 @@ def parameter_shift_natural_gradient_descent(
                 evaluations=evaluations,
                 metric_condition_number=direction.condition_number,
                 damping=damp,
+                diagonal_shift=direction.diagonal_shift,
+                metric_rank=direction.metric_rank,
+                metric_nullity=direction.metric_nullity,
+                regularization_reason=direction.regularization_reason,
                 method=current.method,
                 shift_terms=terms,
                 params=params.copy(),
             )
         )
     else:
+        final_direction = solve_natural_gradient_direction(
+            current_gradient,
+            _metric_at(metric_tensor, params),
+            damping=damp,
+            eigenvalue_floor=floor,
+            max_condition_number=max_condition,
+            degeneracy_tolerance=degeneracy_tol,
+        )
         gradient_norm = float(np.linalg.norm(current_gradient))
         if gradient_norm <= grad_tol:
             converged = True
@@ -543,7 +707,9 @@ def parameter_shift_natural_gradient_descent(
         current_gradient,
         _metric_at(metric_tensor, params),
         damping=damp,
+        eigenvalue_floor=floor,
         max_condition_number=max_condition,
+        degeneracy_tolerance=degeneracy_tol,
     )
     return ParameterShiftNaturalGradientResult(
         initial_value=initial_value,
@@ -564,7 +730,12 @@ def parameter_shift_natural_gradient_descent(
         shift_terms=terms,
         metric_source=_metric_source(metric_tensor),
         damping=damp,
+        eigenvalue_floor=floor,
+        degeneracy_tolerance=degeneracy_tol,
         max_condition_number=max_condition,
+        final_metric_rank=final_direction.metric_rank,
+        final_metric_nullity=final_direction.metric_nullity,
+        final_regularization_reason=final_direction.regularization_reason,
         converged=converged,
         reason=reason,
         claim_boundary=(

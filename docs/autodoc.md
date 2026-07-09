@@ -69,7 +69,7 @@ or debugging a subsystem, not as the default path for tutorial code.
 
 ::: scpn_quantum_control.phase.natural_gradient
     options:
-      members: [NaturalGradientDirection, ParameterShiftNaturalGradientStep, ParameterShiftNaturalGradientResult, ParameterShiftNaturalGradientCertificate, solve_natural_gradient_direction, parameter_shift_natural_gradient_descent, validate_natural_gradient_training]
+      members: [NaturalGradientRegularizationPolicy, NaturalGradientDirection, ParameterShiftNaturalGradientStep, ParameterShiftNaturalGradientResult, ParameterShiftNaturalGradientCertificate, solve_natural_gradient_direction, parameter_shift_natural_gradient_descent, validate_natural_gradient_training]
 
 ::: scpn_quantum_control.phase.optimizer_audit
     options:

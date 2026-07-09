@@ -9,7 +9,7 @@
     "optional_extras": 43,
     "public_api_exports": 835,
     "public_documentation_pages": 268,
-    "python_model_classes": 959,
+    "python_model_classes": 960,
     "python_model_source_modules": 496,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 46,
@@ -2376,6 +2376,10 @@
       {
         "name": "NaturalGradientOptimizer",
         "path": "src/scpn_quantum_control/differentiable_natural_gradient.py"
+      },
+      {
+        "name": "NaturalGradientRegularizationPolicy",
+        "path": "src/scpn_quantum_control/phase/natural_gradient.py"
       },
       {
         "name": "NaturalGradientResult",

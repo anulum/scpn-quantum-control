@@ -205,6 +205,7 @@ from .model_training_evidence import (
 )
 from .natural_gradient import (
     NaturalGradientDirection,
+    NaturalGradientRegularizationPolicy,
     ParameterShiftNaturalGradientCertificate,
     ParameterShiftNaturalGradientResult,
     ParameterShiftNaturalGradientStep,
@@ -814,6 +815,7 @@ __all__ = [
     "validate_natural_gradient_training",
     "solve_natural_gradient_direction",
     "NaturalGradientDirection",
+    "NaturalGradientRegularizationPolicy",
     "ParameterShiftNaturalGradientCertificate",
     "ParameterShiftNaturalGradientResult",
     "ParameterShiftNaturalGradientStep",
