@@ -18,6 +18,7 @@ from numpy.typing import NDArray
 
 qml: Any = pytest.importorskip("pennylane")
 
+import scpn_quantum_control.phase.pennylane_import as pennylane_import
 from scpn_quantum_control.phase.pennylane_bridge import run_pennylane_maturity_audit
 from scpn_quantum_control.phase.pennylane_bridge import build_pennylane_qnode_from_phase_qnode
 from scpn_quantum_control.phase.pennylane_import import (
@@ -38,12 +39,96 @@ FloatArray = NDArray[np.float64]
 TapeFactory = Callable[[], object]
 
 
+class _FakeOperation:
+    """Minimal PennyLane operation stand-in for importer edge tests."""
+
+    def __init__(
+        self,
+        *,
+        name: str,
+        wires: Sequence[object],
+        parameters: Sequence[object] = (),
+        num_params: int = 0,
+    ) -> None:
+        self.name = name
+        self.wires = tuple(wires)
+        self.parameters = tuple(parameters)
+        self.num_params = num_params
+
+
+class _FakeTape:
+    """Minimal tape stand-in exposing the importer contract."""
+
+    def __init__(
+        self,
+        *,
+        wires: Sequence[object],
+        operations: Sequence[object],
+        measurements: Sequence[object],
+    ) -> None:
+        self.wires = tuple(wires)
+        self.operations = tuple(operations)
+        self.measurements = tuple(measurements)
+
+
+class ExpectationMP:
+    """Fake expectation measurement with PennyLane's runtime class name."""
+
+    def __init__(self, obs: object) -> None:
+        self.obs = obs
+
+
+class _FakeSentence:
+    """Minimal Pauli sentence exposing ``items``."""
+
+    def __init__(self, entries: Sequence[tuple[dict[int, str], complex]]) -> None:
+        self._entries = tuple(entries)
+
+    def items(self) -> tuple[tuple[dict[int, str], complex], ...]:
+        """Return fake Pauli-word entries."""
+        return self._entries
+
+
+class _FakePauliNamespace:
+    """Fake qml.pauli namespace for observable parser edge tests."""
+
+    def __init__(self, result: object) -> None:
+        self._result = result
+
+    def pauli_sentence(self, observable: object) -> object:
+        """Return or raise the configured parser result."""
+        del observable
+        if isinstance(self._result, Exception):
+            raise self._result
+        return self._result
+
+
+class _FakeQML:
+    """Fake qml module carrying a configurable pauli namespace."""
+
+    def __init__(self, result: object) -> None:
+        self.pauli = _FakePauliNamespace(result)
+
+
 def _script(ops: Sequence[object], measurements: Sequence[object]) -> object:
     return qml.tape.QuantumScript(ops, measurements)
 
 
 def test_availability() -> None:
     assert is_pennylane_import_available() is True
+
+
+def test_availability_reports_missing_optional_dependency(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Availability should return false when the optional bridge import fails."""
+
+    def _missing_pennylane() -> object:
+        raise ImportError("blocked")
+
+    monkeypatch.setattr(pennylane_import, "_load_pennylane", _missing_pennylane)
+
+    assert is_pennylane_import_available() is False
 
 
 # --------------------------------------------------------------------------- #
@@ -263,3 +348,130 @@ def test_import_round_trip_rejects_invalid_tolerances(
 def test_import_rejects_non_tape() -> None:
     with pytest.raises(ValueError):
         import_phase_qnode_from_pennylane(object())
+
+
+def test_import_rejects_malformed_wire_and_parameter_edges() -> None:
+    """Importer validation should reject malformed tape and gate boundaries."""
+    measurement = qml.expval(qml.PauliZ(0))
+
+    with pytest.raises(ValueError, match="only integer wires"):
+        import_phase_qnode_from_pennylane(
+            _FakeTape(wires=(True,), operations=(), measurements=(measurement,))
+        )
+
+    with pytest.raises(ValueError, match="at least one wire"):
+        import_phase_qnode_from_pennylane(
+            _FakeTape(wires=(), operations=(), measurements=(measurement,))
+        )
+
+    with pytest.raises(ValueError, match="non-integer wire"):
+        import_phase_qnode_from_pennylane(
+            _FakeTape(
+                wires=(0,),
+                operations=(_FakeOperation(name="Hadamard", wires=("bad",)),),
+                measurements=(measurement,),
+            )
+        )
+
+    with pytest.raises(ValueError, match="real scalar"):
+        import_phase_qnode_from_pennylane(
+            _FakeTape(
+                wires=(0,),
+                operations=(
+                    _FakeOperation(
+                        name="RX",
+                        wires=(0,),
+                        parameters=(np.array([0.1, 0.2], dtype=np.float64),),
+                        num_params=1,
+                    ),
+                ),
+                measurements=(measurement,),
+            )
+        )
+
+    with pytest.raises(ValueError, match="2 parameters"):
+        import_phase_qnode_from_pennylane(
+            _FakeTape(
+                wires=(0,),
+                operations=(
+                    _FakeOperation(
+                        name="RX",
+                        wires=(0,),
+                        parameters=(0.1, 0.2),
+                        num_params=2,
+                    ),
+                ),
+                measurements=(measurement,),
+            )
+        )
+
+
+@pytest.mark.parametrize(
+    ("sentence", "match"),
+    [
+        (_FakeSentence((({}, 1.0 + 0.0j),)), "identity-only"),
+        (_FakeSentence((({0: "Z"}, 1.0j),)), "coefficients must be real"),
+        (_FakeSentence((({0: "Z"}, float("nan") + 0.0j),)), "coefficients must be finite"),
+        (_FakeSentence((({2: "Z"}, 1.0 + 0.0j),)), "outside 0..0"),
+        (_FakeSentence(()), "empty Pauli sentence"),
+        (ValueError("unsupported observable"), "supported Pauli-word"),
+    ],
+)
+def test_import_observable_rejects_malformed_pauli_sentences(
+    sentence: object,
+    match: str,
+) -> None:
+    """Observable import should fail closed on malformed Pauli sentences."""
+    with pytest.raises(ValueError, match=match):
+        pennylane_import._import_observable(_FakeQML(sentence), ExpectationMP(object()), 1)
+
+
+def test_import_observable_rejects_missing_observable() -> None:
+    """Expectation measurements must carry an observable."""
+    with pytest.raises(ValueError, match="no observable"):
+        pennylane_import._import_observable(_FakeQML(_FakeSentence(())), ExpectationMP(None), 1)
+
+
+def test_pennylane_gradient_empty_tape_result_returns_zero_gradient(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Empty PennyLane gradient tapes should produce a zero-length gradient."""
+    tape = _script([qml.RY(0.4, wires=0)], [qml.expval(qml.PauliZ(0))])
+
+    def _empty_param_shift(tape_arg: object) -> tuple[list[object], Callable[[object], object]]:
+        del tape_arg
+        return [], lambda results: results
+
+    monkeypatch.setattr(qml.gradients, "param_shift", _empty_param_shift)
+
+    value, gradient = pennylane_import._pennylane_value_and_gradient(qml, tape, 1, 1)
+
+    assert np.isfinite(value)
+    assert gradient.shape == (0,)
+
+
+def test_import_round_trip_records_gradient_shape_mismatch(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Round-trip checks should fail closed when gradient shapes diverge."""
+    tape = _script([qml.RY(0.4, wires=0)], [qml.expval(qml.PauliZ(0))])
+
+    def _wrong_shape_gradient(
+        qml_arg: object,
+        tape_arg: object,
+        n_qubits: int,
+        n_gate_parameters: int,
+    ) -> tuple[float, NDArray[np.float64]]:
+        del qml_arg, tape_arg, n_qubits, n_gate_parameters
+        return 0.0, np.array([0.0, 0.0], dtype=np.float64)
+
+    monkeypatch.setattr(
+        pennylane_import,
+        "_pennylane_value_and_gradient",
+        _wrong_shape_gradient,
+    )
+
+    result = check_pennylane_phase_qnode_import_round_trip(tape)
+
+    assert not result.gradient_match
+    assert result.max_gradient_difference == float("inf")
