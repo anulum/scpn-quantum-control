@@ -443,10 +443,16 @@ The phase namespace includes a fail-closed planner for quantum-gradient method
 selection:
 
 ```python
-from scpn_quantum_control.phase import plan_quantum_gradient_backend
+from scpn_quantum_control.phase import (
+    explain_quantum_gradient_method,
+    plan_quantum_gradient_backend,
+)
 
 plan = plan_quantum_gradient_backend("qasm_simulator", n_params=4, shots=4096)
 print(plan.method, plan.evaluations, plan.shots)
+
+explanation = explain_quantum_gradient_method("qasm_simulator", n_params=4)
+print(explanation.selected_method, explanation.shot_policy.planned_shots)
 ```
 
 Current planner behaviour:
@@ -457,6 +463,12 @@ Current planner behaviour:
 | `finite_shot_simulator` | `stochastic_parameter_shift` | Supported with explicit shots and uncertainty metadata. |
 | `hardware_qpu` | `unsupported` | Fails closed unless a later hardware policy explicitly enables execution. |
 | Unknown backend | `unsupported` | Fails closed and suggests local simulator alternatives. |
+
+`explain_quantum_gradient_method(...)` wraps the same planner decision in a
+deterministic explanation object. It returns the selected `QuantumGradientPlan`,
+ordered rejected methods with reasons, the shot policy after backend defaults,
+and the fallback path for unsupported or degraded routes. The object is planner
+metadata only; it does not submit hardware jobs or promote benchmark evidence.
 
 ## Gradient support matrix
 
@@ -2486,7 +2498,10 @@ The backend planner classifies each execution path as one of:
 - unsupported fail-closed mode.
 
 Each gradient plan reports the selected method, backend, shots, seed, estimator
-uncertainty policy, unsupported alternatives, and fail-closed reasons.
+uncertainty policy, unsupported alternatives, and fail-closed reasons. Use
+`explain_quantum_gradient_method(...)` when integration code needs the full
+deterministic explanation object: selected plan, rejected methods with reasons,
+shot policy, and safe fallback path from one API call.
 Stochastic estimator results additionally carry a
 `StochasticGradientConfidenceInterval` and `failure_policy_status`; the helper
 `gradient_confidence_interval(...)` can evaluate the same fail-closed policy

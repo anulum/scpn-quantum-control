@@ -9,7 +9,7 @@
     "optional_extras": 43,
     "public_api_exports": 829,
     "public_documentation_pages": 268,
-    "python_model_classes": 952,
+    "python_model_classes": 955,
     "python_model_source_modules": 495,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 46,
@@ -3658,12 +3658,24 @@
         "path": "src/scpn_quantum_control/benchmarks/differentiable_programming.py"
       },
       {
+        "name": "QuantumGradientMethodExplanation",
+        "path": "src/scpn_quantum_control/phase/gradient_backend.py"
+      },
+      {
         "name": "QuantumGradientPlan",
+        "path": "src/scpn_quantum_control/phase/gradient_backend.py"
+      },
+      {
+        "name": "QuantumGradientRejectedMethod",
         "path": "src/scpn_quantum_control/phase/gradient_backend.py"
       },
       {
         "name": "QuantumGradientResult",
         "path": "src/scpn_quantum_control/ssgf/quantum_gradient.py"
+      },
+      {
+        "name": "QuantumGradientShotPolicy",
+        "path": "src/scpn_quantum_control/phase/gradient_backend.py"
       },
       {
         "name": "QuantumGradientTape",

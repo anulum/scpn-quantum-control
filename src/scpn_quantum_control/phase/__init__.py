@@ -82,7 +82,11 @@ from .generalised_parameter_shift import (
 )
 from .gradient_backend import (
     QuantumGradientBackendCapability,
+    QuantumGradientMethodExplanation,
     QuantumGradientPlan,
+    QuantumGradientRejectedMethod,
+    QuantumGradientShotPolicy,
+    explain_quantum_gradient_method,
     plan_quantum_gradient_backend,
     quantum_gradient_backend_capability,
 )
@@ -777,9 +781,13 @@ __all__ = [
     "HardwareGradientPreregistration",
     "HardwareGradientPublicationPackage",
     "build_hardware_gradient_publication_package",
+    "explain_quantum_gradient_method",
     "plan_quantum_gradient_backend",
     "QuantumGradientBackendCapability",
+    "QuantumGradientMethodExplanation",
     "QuantumGradientPlan",
+    "QuantumGradientRejectedMethod",
+    "QuantumGradientShotPolicy",
     "GradientSupportCapability",
     "GradientSupportPlan",
     "GradientSupportMatrixAuditResult",

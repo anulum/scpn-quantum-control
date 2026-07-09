@@ -62,6 +62,137 @@ class QuantumGradientPlan:
         return not self.supported
 
 
+@dataclass(frozen=True)
+class QuantumGradientRejectedMethod:
+    """Rejected method candidate from a deterministic backend planner explanation.
+
+    Parameters
+    ----------
+    method
+        Candidate method that was considered and not selected.
+    reasons
+        Deterministic reasons the candidate was not selected.
+    supported_if_requested
+        Whether the candidate would be executable if requested directly with
+        the same backend capability and shot controls.
+    """
+
+    method: str
+    reasons: tuple[str, ...]
+    supported_if_requested: bool
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready rejected-method metadata."""
+        return {
+            "method": self.method,
+            "reasons": list(self.reasons),
+            "supported_if_requested": self.supported_if_requested,
+        }
+
+
+@dataclass(frozen=True)
+class QuantumGradientShotPolicy:
+    """Shot and uncertainty policy attached to a planner explanation.
+
+    Parameters
+    ----------
+    finite_shot
+        Whether the selected plan consumes finite-shot samples.
+    requested_shots
+        Caller-supplied shot count before planner defaults are applied.
+    planned_shots
+        Shot count in the selected plan after defaults and validation.
+    defaulted
+        Whether the planner supplied a backend default shot count.
+    confidence_level
+        Confidence level used by finite-shot uncertainty metadata.
+    seed
+        Optional deterministic seed for stochastic planners.
+    reasons
+        Human-readable shot-policy explanation.
+    """
+
+    finite_shot: bool
+    requested_shots: int | None
+    planned_shots: int | None
+    defaulted: bool
+    confidence_level: float | None
+    seed: int | None
+    reasons: tuple[str, ...]
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready shot-policy metadata."""
+        return {
+            "finite_shot": self.finite_shot,
+            "requested_shots": self.requested_shots,
+            "planned_shots": self.planned_shots,
+            "defaulted": self.defaulted,
+            "confidence_level": self.confidence_level,
+            "seed": self.seed,
+            "reasons": list(self.reasons),
+        }
+
+
+@dataclass(frozen=True)
+class QuantumGradientMethodExplanation:
+    """Deterministic explanation of a backend gradient-method decision.
+
+    Parameters
+    ----------
+    capability
+        Normalised backend capability used by the planner.
+    selected_plan
+        Existing execution plan selected by
+        :func:`plan_quantum_gradient_backend`.
+    rejected_methods
+        Ordered method candidates that were not selected.
+    shot_policy
+        Shot, confidence, and seed policy for the selected plan.
+    fallback_path
+        Ordered safe fallback routes for unsupported or degraded execution.
+    requested_method
+        Normalised method requested by the caller.
+    claim_boundary
+        Claim boundary for this explanation object.
+    """
+
+    capability: QuantumGradientBackendCapability
+    selected_plan: QuantumGradientPlan
+    rejected_methods: tuple[QuantumGradientRejectedMethod, ...]
+    shot_policy: QuantumGradientShotPolicy
+    fallback_path: tuple[str, ...]
+    requested_method: str
+    claim_boundary: str = (
+        "backend planner explanation only; provider execution, hardware gradients, "
+        "benchmark promotion, and framework-specific transforms require separate evidence"
+    )
+
+    @property
+    def selected_method(self) -> str:
+        """Return the method selected by the wrapped backend plan."""
+        return self.selected_plan.method
+
+    @property
+    def supported(self) -> bool:
+        """Return whether the selected plan is executable."""
+        return self.selected_plan.supported
+
+    def to_dict(self) -> dict[str, object]:
+        """Return JSON-ready explanation metadata."""
+        return {
+            "backend": self.capability.backend,
+            "family": self.capability.family,
+            "requested_method": self.requested_method,
+            "selected_method": self.selected_method,
+            "supported": self.supported,
+            "selected_plan": _plan_to_dict(self.selected_plan),
+            "rejected_methods": [method.to_dict() for method in self.rejected_methods],
+            "shot_policy": self.shot_policy.to_dict(),
+            "fallback_path": list(self.fallback_path),
+            "claim_boundary": self.claim_boundary,
+        }
+
+
 _STATEVECTOR_ALIASES = {
     "statevector",
     "statevector_simulator",
@@ -101,6 +232,13 @@ _HARDWARE_ALIASES = {
     "quandela",
     "pennylane_device",
 }
+
+_EXPLANATION_METHOD_ORDER: tuple[GradientMethod, ...] = (
+    "parameter_shift",
+    "stochastic_parameter_shift",
+    "spsa",
+    "finite_difference",
+)
 
 
 def _normalise_backend(backend: str) -> str:
@@ -378,10 +516,239 @@ def plan_quantum_gradient_backend(
     )
 
 
+def explain_quantum_gradient_method(
+    backend: str,
+    *,
+    n_params: int,
+    shift_terms: int = 1,
+    method: str = "auto",
+    shots: int | None = None,
+    seed: int | None = None,
+    finite_shot: bool = False,
+    confidence_level: float | None = None,
+    allow_hardware: bool = False,
+) -> QuantumGradientMethodExplanation:
+    """Explain a backend gradient-method decision without executing gradients.
+
+    Parameters
+    ----------
+    backend
+        Backend family or alias to plan against.
+    n_params
+        Number of trainable scalar parameters.
+    shift_terms
+        Number of parameter-shift terms per trainable parameter.
+    method
+        Requested method, or ``"auto"`` for planner selection.
+    shots
+        Optional finite-shot budget.
+    seed
+        Optional deterministic seed for stochastic routes.
+    finite_shot
+        Whether the caller requires finite-shot planning.
+    confidence_level
+        Optional finite-shot confidence level.
+    allow_hardware
+        Whether policy-gated hardware routes may plan execution.
+
+    Returns
+    -------
+    QuantumGradientMethodExplanation
+        Deterministic selected method, rejected alternatives, shot policy, and
+        fallback path for the requested backend capability combination.
+    """
+    selected_plan = plan_quantum_gradient_backend(
+        backend,
+        n_params=n_params,
+        shift_terms=shift_terms,
+        method=method,
+        shots=shots,
+        seed=seed,
+        finite_shot=finite_shot,
+        confidence_level=confidence_level,
+        allow_hardware=allow_hardware,
+    )
+    capability = quantum_gradient_backend_capability(backend)
+    requested_method = _normalise_method(method)
+    candidates = tuple(
+        candidate for candidate in _EXPLANATION_METHOD_ORDER if candidate != selected_plan.method
+    )
+    rejected = tuple(
+        _explain_rejected_method(
+            candidate,
+            selected_plan=selected_plan,
+            requested_method=requested_method,
+            backend=backend,
+            n_params=n_params,
+            shift_terms=shift_terms,
+            shots=shots,
+            seed=seed,
+            finite_shot=finite_shot,
+            confidence_level=confidence_level,
+            allow_hardware=allow_hardware,
+        )
+        for candidate in candidates
+    )
+    return QuantumGradientMethodExplanation(
+        capability=capability,
+        selected_plan=selected_plan,
+        rejected_methods=rejected,
+        shot_policy=_shot_policy(selected_plan, requested_shots=shots),
+        fallback_path=_fallback_path(selected_plan, rejected),
+        requested_method=requested_method,
+    )
+
+
+def _explain_rejected_method(
+    method: GradientMethod,
+    *,
+    selected_plan: QuantumGradientPlan,
+    requested_method: GradientMethod,
+    backend: str,
+    n_params: int,
+    shift_terms: int,
+    shots: int | None,
+    seed: int | None,
+    finite_shot: bool,
+    confidence_level: float | None,
+    allow_hardware: bool,
+) -> QuantumGradientRejectedMethod:
+    """Return the deterministic rejection row for one candidate method."""
+    candidate_plan = plan_quantum_gradient_backend(
+        backend,
+        n_params=n_params,
+        shift_terms=shift_terms,
+        method=method,
+        shots=shots,
+        seed=seed,
+        finite_shot=finite_shot,
+        confidence_level=confidence_level,
+        allow_hardware=allow_hardware,
+    )
+    reasons = _candidate_rejection_reasons(
+        method,
+        candidate_plan=candidate_plan,
+        selected_plan=selected_plan,
+        requested_method=requested_method,
+    )
+    return QuantumGradientRejectedMethod(
+        method=method,
+        reasons=reasons,
+        supported_if_requested=candidate_plan.supported,
+    )
+
+
+def _candidate_rejection_reasons(
+    method: GradientMethod,
+    *,
+    candidate_plan: QuantumGradientPlan,
+    selected_plan: QuantumGradientPlan,
+    requested_method: GradientMethod,
+) -> tuple[str, ...]:
+    """Build stable reasons for a non-selected candidate method."""
+    if not candidate_plan.supported:
+        return candidate_plan.reasons
+    if requested_method != "auto" and method != requested_method:
+        return (f"caller explicitly requested {requested_method}",)
+    if selected_plan.method == "parameter_shift":
+        return ("deterministic local parameter-shift route has lower estimator noise",)
+    if selected_plan.method == "stochastic_parameter_shift":
+        return ("finite-shot planning requires explicit shot uncertainty metadata",)
+    if selected_plan.method == "spsa":
+        return ("caller selected SPSA diagnostic fallback",)
+    return (f"{selected_plan.method} selected by backend planner",)
+
+
+def _shot_policy(
+    selected_plan: QuantumGradientPlan,
+    *,
+    requested_shots: int | None,
+) -> QuantumGradientShotPolicy:
+    """Return shot metadata for a selected backend plan."""
+    if selected_plan.fail_closed:
+        return QuantumGradientShotPolicy(
+            finite_shot=selected_plan.finite_shot,
+            requested_shots=requested_shots,
+            planned_shots=selected_plan.shots,
+            defaulted=False,
+            confidence_level=selected_plan.confidence_level,
+            seed=selected_plan.seed,
+            reasons=("unsupported plan does not allocate executable shots",),
+        )
+    if selected_plan.finite_shot:
+        defaulted = requested_shots is None and selected_plan.shots is not None
+        reason = (
+            "finite-shot route uses backend default shots"
+            if defaulted
+            else "finite-shot route uses caller supplied shots"
+        )
+        return QuantumGradientShotPolicy(
+            finite_shot=True,
+            requested_shots=requested_shots,
+            planned_shots=selected_plan.shots,
+            defaulted=defaulted,
+            confidence_level=selected_plan.confidence_level,
+            seed=selected_plan.seed,
+            reasons=(reason, "confidence metadata is required for uncertainty reporting"),
+        )
+    return QuantumGradientShotPolicy(
+        finite_shot=False,
+        requested_shots=requested_shots,
+        planned_shots=None,
+        defaulted=False,
+        confidence_level=None,
+        seed=selected_plan.seed,
+        reasons=("deterministic route does not consume finite-shot samples",),
+    )
+
+
+def _fallback_path(
+    selected_plan: QuantumGradientPlan,
+    rejected_methods: tuple[QuantumGradientRejectedMethod, ...],
+) -> tuple[str, ...]:
+    """Return stable fallback routes for the selected planner explanation."""
+    if selected_plan.fail_closed:
+        return tuple(dict.fromkeys(selected_plan.alternatives))
+    supported_methods = tuple(
+        method.method for method in rejected_methods if method.supported_if_requested
+    )
+    if selected_plan.method == "parameter_shift":
+        return tuple(dict.fromkeys((*supported_methods, "finite_difference_diagnostic")))
+    if selected_plan.method == "stochastic_parameter_shift":
+        return tuple(dict.fromkeys((*supported_methods, "increase_shots_or_use_statevector")))
+    if selected_plan.method == "spsa":
+        return tuple(dict.fromkeys((*supported_methods, "stochastic_parameter_shift")))
+    return supported_methods
+
+
+def _plan_to_dict(plan: QuantumGradientPlan) -> dict[str, object]:
+    """Return JSON-ready backend-plan metadata."""
+    return {
+        "backend": plan.backend,
+        "family": plan.family,
+        "method": plan.method,
+        "supported": plan.supported,
+        "n_params": plan.n_params,
+        "shift_terms": plan.shift_terms,
+        "evaluations": plan.evaluations,
+        "shots": plan.shots,
+        "seed": plan.seed,
+        "finite_shot": plan.finite_shot,
+        "confidence_level": plan.confidence_level,
+        "requires_hardware_approval": plan.requires_hardware_approval,
+        "reasons": list(plan.reasons),
+        "alternatives": list(plan.alternatives),
+    }
+
+
 __all__ = [
     "GradientMethod",
     "QuantumGradientBackendCapability",
+    "QuantumGradientMethodExplanation",
     "QuantumGradientPlan",
+    "QuantumGradientRejectedMethod",
+    "QuantumGradientShotPolicy",
+    "explain_quantum_gradient_method",
     "plan_quantum_gradient_backend",
     "quantum_gradient_backend_capability",
 ]

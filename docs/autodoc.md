@@ -87,6 +87,10 @@ or debugging a subsystem, not as the default path for tutorial code.
     options:
       members: [ComposedObjectiveExecutionPlan, ComposedObjectivePlannerAuditResult, plan_composed_objective_execution, assert_composed_objective_execution_supported, run_composed_objective_planner_audit]
 
+::: scpn_quantum_control.phase.gradient_backend
+    options:
+      members: [QuantumGradientBackendCapability, QuantumGradientPlan, QuantumGradientRejectedMethod, QuantumGradientShotPolicy, QuantumGradientMethodExplanation, quantum_gradient_backend_capability, plan_quantum_gradient_backend, explain_quantum_gradient_method]
+
 ::: scpn_quantum_control.phase.gradient_support_matrix
     options:
       members: [GradientSupportCapability, GradientSupportPlan, GradientSupportMatrixAuditResult, gradient_support_capability, list_gradient_support_capabilities, plan_gradient_support, assert_gradient_support, run_gradient_support_matrix_audit]
