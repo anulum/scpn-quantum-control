@@ -11,7 +11,7 @@ finite differences or pretending that a hardware/provider gradient exists.
 
 | Namespace | Role |
 |---|---|
-| `scpn_quantum_control.diff` / `scpn.diff` | Canonical first-path namespace for `grad`, `value_and_grad`, `jacfwd`, `jacrev`, `jacobian`, `hessian`, `jvp`, `vjp`, `vmap`, `jit_or_explain`, `gradient_tape`, and `differentiable_circuit`. It wraps existing supported local routes and returns fail-closed diagnostics for unsupported JIT, provider, hardware, and performance routes. |
+| `scpn_quantum_control.diff` / `scpn.diff` | Canonical first-path namespace for `grad`, `value_and_grad`, `jacfwd`, `jacrev`, `jacobian`, `hessian`, `jvp`, `vjp`, `vmap`, `jit_or_explain`, `gradient_tape`, `differentiable_circuit`, and `run_differentiable_circuit_contract_audit`. It wraps existing supported local routes and returns fail-closed diagnostics for unsupported JIT, provider, hardware, and performance routes. |
 | `scpn_quantum_control.differentiable_api` | Unified façade for value, gradient, Jacobian, Hessian, support, diagnostics, compile, local conformance benchmark, transform-algebra, and dashboard-status reports with one JSON evidence envelope. |
 | `scpn_quantum_control.differentiable` | AD data structures, compatibility re-exports, optimisation helpers, program-AD metadata, and support reports. |
 | `scpn_quantum_control.differentiable_transform_algebra` | Executable local metamorphic gate for `grad(vmap(f))`, `vmap(grad(f))`, `jacrev`/`jacfwd`, Hessian symmetry, JVP/VJP duality, registered custom JVP/VJP composition, whole-program AD Hessian and directional-transform nesting, native phase-QNode `vmap(grad)`, linearity, chain rule, phase-periodic parameter-shift wraparound, sparse/masked parameters, dtype/broadcast replay, and fail-closed unsupported transform boundaries. |
@@ -1620,6 +1620,7 @@ circuit = diff.differentiable_circuit(
     cost,
     name="two_parameter_phase_objective",
     parameter_names=("theta", "bias"),
+    gradient_method="finite_difference",
 )
 
 params = np.array([0.3, 0.5])
@@ -1627,12 +1628,15 @@ print(circuit(params))
 print(circuit.grad(params, method="finite_difference"))
 print(circuit.diagnostics.to_dict()["supported"])
 print(diff.jit_or_explain(circuit).to_dict()["fail_closed"])
+print(diff.run_differentiable_circuit_contract_audit().to_dict()["passed"])
 ```
 
 `DifferentiableCircuit` serializes metadata, backend capability, shot policy,
-and estimator provenance, but it does not serialize executable Python code.
-Unsupported routes fail closed through `DifferentiableCircuitDiagnostics` and
-`JITExplanation` instead of falling back silently.
+bound gradient method, and estimator provenance, but it does not serialize
+executable Python code. The serialized payload includes a deterministic metadata
+digest under `serialization_provenance`. Unsupported routes fail closed through
+`DifferentiableCircuitDiagnostics`, `JITExplanation`, and the DP-004 contract
+audit instead of falling back silently.
 
 ## Minimal gradient tape
 

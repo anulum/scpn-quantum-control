@@ -127,11 +127,13 @@ circuit = diff.differentiable_circuit(
     phase_cost,
     name="phase_cost_first_path",
     parameter_names=("theta", "bias"),
+    gradient_method="finite_difference",
 )
 params = np.array([0.3, 0.5], dtype=np.float64)
 print(circuit(params))
 print(circuit.grad(params, method="finite_difference"))
 print(diff.jit_or_explain(circuit).to_dict())
+print(diff.run_differentiable_circuit_contract_audit().to_dict()["passed"])
 ```
 
 Run the same path from the command line with:
@@ -141,7 +143,9 @@ python examples/30_diff_first_path.py
 ```
 
 The short compatibility import `scpn.diff` exposes the same surface for
-notebooks and external examples.
+notebooks and external examples. The contract audit is the DP-004 evidence path
+for call semantics, backend capability metadata, and serialization provenance;
+it does not promote hardware execution or JIT compilation.
 
 ## 3. Run a hardware experiment on simulator
 

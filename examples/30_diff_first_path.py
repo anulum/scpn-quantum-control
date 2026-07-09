@@ -25,16 +25,19 @@ def main() -> None:
         phase_cost,
         name="phase_cost_first_path",
         parameter_names=("theta", "bias"),
+        gradient_method="finite_difference",
     )
     params = np.array([0.3, 0.5], dtype=np.float64)
-    gradient = circuit.grad(params, method="finite_difference")
+    gradient = circuit.grad(params)
     jit_status = diff.jit_or_explain(circuit)
+    contract = diff.run_differentiable_circuit_contract_audit()
 
     print("canonical diff namespace")
     print(f"  value: {circuit(params):.8f}")
     print(f"  gradient: {gradient.tolist()}")
     print(f"  supported: {circuit.diagnostics.supported}")
     print(f"  jit fail_closed: {jit_status.fail_closed}")
+    print(f"  contract audit passed: {contract.passed}")
     print(f"  claim boundary: {circuit.claim_boundary}")
 
 

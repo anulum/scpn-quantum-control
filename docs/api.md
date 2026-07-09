@@ -25,6 +25,15 @@ ML-framework adapters. Unsupported gradient modes must fail closed with an
 explicit support reason; do not infer production support from an internal
 symbol alone.
 
+For first-path differentiable circuits, use `scpn_quantum_control.diff` or the
+short `scpn.diff` compatibility namespace. `DifferentiableCircuit` binds the
+local scalar objective, named parameters, backend/observable/adapter metadata,
+shot policy, estimator provenance, and default gradient method into a callable
+object. `run_differentiable_circuit_contract_audit()` is the DP-004 contract
+check for call semantics, transform composition, backend capability metadata,
+serialization provenance, and fail-closed unsupported parameter/objective
+boundaries.
+
 For visible correctness evidence, the phase gradient API includes
 `verify_parameter_shift_gradient(...)` and
 `verify_vqe_parameter_shift_gradient(...)` for first derivatives plus

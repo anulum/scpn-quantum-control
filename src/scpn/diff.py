@@ -10,8 +10,13 @@
 from __future__ import annotations
 
 from scpn_quantum_control.diff import (
+    DIFFERENTIABLE_CIRCUIT_CONTRACT_CLAIM_BOUNDARY,
+    DIFFERENTIABLE_CIRCUIT_SCHEMA,
     BackendCapabilityMetadata,
     DifferentiableCircuit,
+    DifferentiableCircuitContractAuditResult,
+    DifferentiableCircuitContractCheck,
+    DifferentiableCircuitContractStatus,
     DifferentiableCircuitDiagnostics,
     EstimatorProvenance,
     JITExplanation,
@@ -29,6 +34,7 @@ from scpn_quantum_control.diff import (
     jit_or_explain,
     jvp,
     namespace_metadata,
+    run_differentiable_circuit_contract_audit,
     supported_transforms,
     value_and_grad,
     vjp,
@@ -37,7 +43,12 @@ from scpn_quantum_control.diff import (
 
 __all__ = [
     "BackendCapabilityMetadata",
+    "DIFFERENTIABLE_CIRCUIT_CONTRACT_CLAIM_BOUNDARY",
+    "DIFFERENTIABLE_CIRCUIT_SCHEMA",
     "DifferentiableCircuit",
+    "DifferentiableCircuitContractAuditResult",
+    "DifferentiableCircuitContractCheck",
+    "DifferentiableCircuitContractStatus",
     "DifferentiableCircuitDiagnostics",
     "EstimatorProvenance",
     "JITExplanation",
@@ -55,6 +66,7 @@ __all__ = [
     "jit_or_explain",
     "jvp",
     "namespace_metadata",
+    "run_differentiable_circuit_contract_audit",
     "supported_transforms",
     "value_and_grad",
     "vjp",

@@ -268,8 +268,13 @@ from .deployment.cloud_native import (
     generate_cloud_manifests,
 )
 from .diff import (
+    DIFFERENTIABLE_CIRCUIT_CONTRACT_CLAIM_BOUNDARY,
+    DIFFERENTIABLE_CIRCUIT_SCHEMA,
     BackendCapabilityMetadata,
     DifferentiableCircuit,
+    DifferentiableCircuitContractAuditResult,
+    DifferentiableCircuitContractCheck,
+    DifferentiableCircuitContractStatus,
     DifferentiableCircuitDiagnostics,
     EstimatorProvenance,
     JITExplanation,
@@ -278,6 +283,7 @@ from .diff import (
     differentiable_circuit,
     jit_or_explain,
     namespace_metadata,
+    run_differentiable_circuit_contract_audit,
     supported_transforms,
 )
 from .differentiable import (
@@ -1544,7 +1550,12 @@ __all__ = [
     "run_competitive_baseline_refresh",
     "validate_competitive_baseline_refresh",
     "BackendCapabilityMetadata",
+    "DIFFERENTIABLE_CIRCUIT_CONTRACT_CLAIM_BOUNDARY",
+    "DIFFERENTIABLE_CIRCUIT_SCHEMA",
     "DifferentiableCircuit",
+    "DifferentiableCircuitContractAuditResult",
+    "DifferentiableCircuitContractCheck",
+    "DifferentiableCircuitContractStatus",
     "DifferentiableCircuitDiagnostics",
     "EstimatorProvenance",
     "JITExplanation",
@@ -1553,6 +1564,7 @@ __all__ = [
     "differentiable_circuit",
     "jit_or_explain",
     "namespace_metadata",
+    "run_differentiable_circuit_contract_audit",
     "supported_transforms",
     "differentiable_api",
     "differentiable_architecture_map_report",

@@ -47,7 +47,7 @@ simulator kernels are framework-native differentiable.
 | Compiler report | `differentiable_compile_report(...)` | Primitive-level compiler-AD planning and MLIR evidence for a selected registered primitive. |
 | Training evidence | `train_parameter_shift_qnn_classifier(...)`, `verify_parameter_shift_qnn_classifier_gradient(...)` | Tiny bounded phase-QNN training run plus finite-difference gradient verification. |
 | Benchmark reproduction | `write_differentiable_benchmark_evidence_bundle(...)` | Temporary local benchmark evidence bundle with explicit `functional_non_isolated` classification unless run under the isolated benchmark CI contract. |
-| Canonical namespace | `scpn_quantum_control.diff`, `scpn.diff`, `DifferentiableCircuit`, `jit_or_explain(...)` | No-credential first-path value/gradient execution, serializable diagnostics, shot policy, estimator provenance, and explicit fail-closed JIT metadata. |
+| Canonical namespace | `scpn_quantum_control.diff`, `scpn.diff`, `DifferentiableCircuit`, `jit_or_explain(...)`, `run_differentiable_circuit_contract_audit()` | No-credential first-path value/gradient execution, serializable diagnostics, bound gradient method, shot policy, estimator provenance, DP-004 contract checks, and explicit fail-closed JIT metadata. |
 | QFI/FSS evidence | `differentiable_qfi_fss_report()`, `differentiable_api("qfi_fss_report")` | Small local Kuramoto-XY finite-size gap scan with BKT and inverse-size residual diagnostics plus non-hardware, non-performance, and non-thermodynamic-limit claim boundaries. |
 
 ## Canonical Differentiable Namespace
@@ -70,6 +70,7 @@ circuit = diff.differentiable_circuit(
     phase_cost,
     name="phase_cost_first_path",
     parameter_names=("theta", "bias"),
+    gradient_method="finite_difference",
 )
 params = np.array([0.3, 0.5], dtype=np.float64)
 
@@ -77,12 +78,16 @@ print(circuit(params))
 print(circuit.grad(params, method="finite_difference"))
 print(circuit.diagnostics.to_dict())
 print(diff.jit_or_explain(circuit).to_dict())
+print(diff.run_differentiable_circuit_contract_audit().to_dict()["passed"])
 ```
 
 For older code that imports directly from `scpn_quantum_control.differentiable`
 or `scpn_quantum_control.differentiable_api`, keep those imports when you need
 low-level result contracts or JSON envelopes. Use `diff` when you want the
 stable user-facing path with circuit metadata and fail-closed route diagnostics.
+The contract audit records the supported local call, transform, backend
+capability, and serialization-provenance checks, and records unsupported
+dataclass-parameter and vector-objective paths as fail-closed boundaries.
 
 ## Minimal QNode
 

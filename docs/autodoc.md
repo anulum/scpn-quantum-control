@@ -145,7 +145,7 @@ or debugging a subsystem, not as the default path for tutorial code.
 
 ::: scpn_quantum_control.diff
     options:
-      members: [ShotPolicy, EstimatorProvenance, BackendCapabilityMetadata, DifferentiableCircuitDiagnostics, DifferentiableCircuit, JITExplanation, differentiable_circuit, jit_or_explain, supported_transforms, namespace_metadata]
+      members: [ShotPolicy, EstimatorProvenance, BackendCapabilityMetadata, DifferentiableCircuitDiagnostics, DifferentiableCircuit, JITExplanation, DifferentiableCircuitContractCheck, DifferentiableCircuitContractAuditResult, differentiable_circuit, jit_or_explain, run_differentiable_circuit_contract_audit, supported_transforms, namespace_metadata]
 
 ::: scpn_quantum_control.differentiable
     options:

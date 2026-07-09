@@ -9,6 +9,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass
@@ -47,6 +48,15 @@ DIFF_CLAIM_BOUNDARY: Final[str] = (
     "canonical differentiable namespace over supported local SCPN routes; "
     "JIT, provider callbacks, hardware gradients, and performance claims fail "
     "closed unless a dedicated evidence surface says otherwise"
+)
+DIFFERENTIABLE_CIRCUIT_SCHEMA: Final[str] = "scpn.diff.differentiable_circuit.v1"
+CANONICAL_GRADIENT_METHODS: Final[tuple[str, ...]] = (
+    "parameter_shift",
+    "finite_difference",
+    "complex_step",
+    "forward_mode",
+    "reverse_mode",
+    "whole_program",
 )
 
 
@@ -270,6 +280,9 @@ class DifferentiableCircuit:
         Transform route used for support-matrix routing.
     adapter:
         Framework adapter used for support-matrix routing.
+    gradient_method:
+        Canonical gradient method used by :meth:`value_and_grad` when callers
+        do not override the method explicitly.
     shot_policy:
         Finite-shot and hardware policy.
     estimator_provenance:
@@ -286,6 +299,7 @@ class DifferentiableCircuit:
     backend: str = "statevector"
     transform: str = "grad"
     adapter: str = "native"
+    gradient_method: str = "parameter_shift"
     shot_policy: ShotPolicy = ShotPolicy()
     estimator_provenance: EstimatorProvenance | None = None
     claim_boundary: str = DIFF_CLAIM_BOUNDARY
@@ -298,6 +312,9 @@ class DifferentiableCircuit:
             raise ValueError("differentiable circuit objective must be callable")
         if any(not name for name in self.parameter_names):
             raise ValueError("differentiable circuit parameter_names must be non-empty")
+        if self.gradient_method not in CANONICAL_GRADIENT_METHODS:
+            allowed = ", ".join(CANONICAL_GRADIENT_METHODS)
+            raise ValueError(f"differentiable circuit gradient_method must be one of: {allowed}")
         if not self.claim_boundary:
             raise ValueError("differentiable circuit claim_boundary must be non-empty")
         if self.estimator_provenance is None:
@@ -306,7 +323,9 @@ class DifferentiableCircuit:
                 "estimator_provenance",
                 EstimatorProvenance(
                     estimator="local_scalar_objective",
-                    route=f"{self.adapter}:{self.backend}:{self.transform}",
+                    route=(
+                        f"{self.adapter}:{self.backend}:{self.transform}:{self.gradient_method}"
+                    ),
                     package_version=_package_version(),
                     artifact_ids=(),
                     claim_boundary=self.claim_boundary,
@@ -366,7 +385,7 @@ class DifferentiableCircuit:
         self,
         values: ArrayLike,
         *,
-        method: str = "parameter_shift",
+        method: str | None = None,
         parameters: Sequence[Parameter] | None = None,
         step: float | None = None,
     ) -> GradientResult:
@@ -376,7 +395,7 @@ class DifferentiableCircuit:
             self.objective,
             values,
             parameters=self._parameters(values, parameters),
-            method=method,
+            method=self.gradient_method if method is None else method,
             step=step,
         )
         return cast(GradientResult, result)
@@ -385,7 +404,7 @@ class DifferentiableCircuit:
         self,
         values: ArrayLike,
         *,
-        method: str = "parameter_shift",
+        method: str | None = None,
         parameters: Sequence[Parameter] | None = None,
         step: float | None = None,
     ) -> FloatArray:
@@ -399,7 +418,8 @@ class DifferentiableCircuit:
 
     def to_dict(self) -> dict[str, object]:
         """Return JSON-ready metadata without serializing executable code."""
-        return {
+        payload: dict[str, object] = {
+            "schema": DIFFERENTIABLE_CIRCUIT_SCHEMA,
             "name": self.name,
             "objective": _callable_label(self.objective),
             "parameter_names": list(self.parameter_names),
@@ -408,9 +428,12 @@ class DifferentiableCircuit:
             "backend": self.backend,
             "transform": self.transform,
             "adapter": self.adapter,
+            "gradient_method": self.gradient_method,
             "diagnostics": self.diagnostics.to_dict(),
             "claim_boundary": self.claim_boundary,
         }
+        payload["serialization_provenance"] = _serialization_provenance(payload)
+        return payload
 
     def to_json(self) -> str:
         """Return deterministic JSON metadata for audit artifacts."""
@@ -448,6 +471,7 @@ def differentiable_circuit(
     backend: str = "statevector",
     transform: str = "grad",
     adapter: str = "native",
+    gradient_method: str = "parameter_shift",
     shot_policy: ShotPolicy | None = None,
     estimator_provenance: EstimatorProvenance | None = None,
 ) -> DifferentiableCircuit:
@@ -461,6 +485,7 @@ def differentiable_circuit(
         backend=backend,
         transform=transform,
         adapter=adapter,
+        gradient_method=gradient_method,
         shot_policy=ShotPolicy() if shot_policy is None else shot_policy,
         estimator_provenance=estimator_provenance,
     )
@@ -527,7 +552,12 @@ def namespace_metadata() -> dict[str, object]:
 
 
 def _parameter_vector(values: ArrayLike) -> FloatArray:
-    array = np.asarray(values, dtype=np.float64)
+    try:
+        array = np.asarray(values, dtype=np.float64)
+    except (TypeError, ValueError) as exc:
+        raise ValueError(
+            "differentiable circuit values must be a one-dimensional numeric array"
+        ) from exc
     if array.ndim != 1:
         raise ValueError("differentiable circuit values must be one-dimensional")
     if not np.all(np.isfinite(array)):
@@ -561,12 +591,39 @@ def _package_version() -> str:
         return "editable-local"
 
 
+def _serialization_provenance(metadata: dict[str, object]) -> dict[str, object]:
+    digest_payload = dict(metadata)
+    encoded = json.dumps(digest_payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    return {
+        "schema": DIFFERENTIABLE_CIRCUIT_SCHEMA,
+        "metadata_digest": hashlib.sha256(encoded).hexdigest(),
+        "serializes_executable_code": False,
+        "objective_label": metadata["objective"],
+        "gradient_method": metadata["gradient_method"],
+        "claim_boundary": metadata["claim_boundary"],
+    }
+
+
+from .diff_contract_audit import (  # noqa: E402
+    DIFFERENTIABLE_CIRCUIT_CONTRACT_CLAIM_BOUNDARY,
+    DifferentiableCircuitContractAuditResult,
+    DifferentiableCircuitContractCheck,
+    DifferentiableCircuitContractStatus,
+    run_differentiable_circuit_contract_audit,
+)
+
 __all__ = [
     "BackendCapabilityMetadata",
     "CANONICAL_DIFF_NAMESPACE",
+    "CANONICAL_GRADIENT_METHODS",
     "COMPATIBILITY_DIFF_NAMESPACE",
+    "DIFFERENTIABLE_CIRCUIT_CONTRACT_CLAIM_BOUNDARY",
+    "DIFFERENTIABLE_CIRCUIT_SCHEMA",
     "DIFF_CLAIM_BOUNDARY",
     "DifferentiableCircuit",
+    "DifferentiableCircuitContractAuditResult",
+    "DifferentiableCircuitContractCheck",
+    "DifferentiableCircuitContractStatus",
     "DifferentiableCircuitDiagnostics",
     "DiffTransformName",
     "EstimatorProvenance",
@@ -585,6 +642,7 @@ __all__ = [
     "jit_or_explain",
     "jvp",
     "namespace_metadata",
+    "run_differentiable_circuit_contract_audit",
     "supported_transforms",
     "value_and_grad",
     "vjp",

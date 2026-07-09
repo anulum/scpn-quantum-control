@@ -6,9 +6,9 @@
 | Surface | Current inventory |
 |---|---:|
 | Package version | 0.10.0 |
-| Public API exports | 829 |
-| Python source modules | 495 |
-| Public Python classes | 957 |
+| Public API exports | 835 |
+| Python source modules | 496 |
+| Public Python classes | 959 |
 | Domain package families | 31 |
 | Rust PyO3 function bindings | 177 |
 | Rust source modules | 46 |
