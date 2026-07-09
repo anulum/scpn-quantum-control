@@ -131,7 +131,7 @@ claims only when the evidence exists.
 | Example files | 37 |
 | Optional extras | 43 |
 | Python test files | 866 |
-| Public documentation pages | 267 |
+| Public documentation pages | 268 |
 | GitHub Actions workflows | 23 |
 
 Evidence boundary: this snapshot is a static inventory. Performance, coverage, hardware, and scientific-fidelity claims require their own committed evidence artefacts.
@@ -879,6 +879,7 @@ Full docs at **[anulum.github.io/scpn-quantum-control](https://anulum.github.io/
 - [Tutorials](docs/tutorials.md) — 4-level learning path, 14 tutorials
 - [Stable Facades API](docs/stable_facades_api.md) — first-path public API for notebooks, tutorials, and integrations
 - [Kuramoto Standalone Package Decision](docs/kuramoto_standalone_package_decision.md) — the `oscillatools` package split, CEO/IP-approved 2026-07-04
+- [Sparse Kuramoto CPU Path](docs/kuramoto_sparse_cpu.md) — SciPy sparse force/Euler/RK4 route with 1M-node ring scaling evidence
 - [API Overview](docs/api.md) — stable facade route first, advanced module references second
 - [Research Gems](docs/research_gems.md) — **33 analysis modules with theory and API**
 - [Equations](docs/equations.md) — every equation in the codebase

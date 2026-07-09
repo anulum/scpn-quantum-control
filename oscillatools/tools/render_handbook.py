@@ -63,19 +63,16 @@ class BenchmarkArtifact(TypedDict):
 
 def load_benchmark_artifact(path: Path) -> BenchmarkArtifact:
     """Load the committed tier-benchmark artefact."""
-
     return cast(BenchmarkArtifact, json.loads(path.read_text(encoding="utf-8")))
 
 
 def _symbol_list(symbols: Sequence[str]) -> str:
     """Format a stable comma-separated list of public symbols."""
-
     return ", ".join(f"`{symbol}`" for symbol in symbols)
 
 
 def _rows_for_operation(results: Sequence[BenchmarkResult]) -> dict[str, list[BenchmarkResult]]:
     """Group benchmark rows by operation name."""
-
     grouped: dict[str, list[BenchmarkResult]] = {}
     for result in results:
         grouped.setdefault(result["operation"], []).append(result)
@@ -84,7 +81,6 @@ def _rows_for_operation(results: Sequence[BenchmarkResult]) -> dict[str, list[Be
 
 def _p50(row: BackendRow | None) -> str:
     """Format a backend P50 value for the handbook table."""
-
     if row is None or row["stats"] is None:
         return "—"
     return f"{row['stats']['p50_us']:.3f}"
@@ -92,13 +88,11 @@ def _p50(row: BackendRow | None) -> str:
 
 def _backend_rows(result: BenchmarkResult) -> dict[str, BackendRow]:
     """Index one result by backend name."""
-
     return {row["backend"]: row for row in result["rows"]}
 
 
 def _string_sequence(value: object) -> Sequence[object]:
     """Return a JSON sequence value without treating strings as sequences."""
-
     if isinstance(value, Sequence) and not isinstance(value, str | bytes):
         return value
     return ()
@@ -106,7 +100,6 @@ def _string_sequence(value: object) -> Sequence[object]:
 
 def _representative_result(rows: Sequence[BenchmarkResult]) -> BenchmarkResult:
     """Choose a stable representative row for the operation summary table."""
-
     for target_size in (128, 32, 8):
         for row in rows:
             if row["size"] == target_size:
@@ -116,7 +109,6 @@ def _representative_result(rows: Sequence[BenchmarkResult]) -> BenchmarkResult:
 
 def _benchmark_table(artifact: BenchmarkArtifact) -> list[str]:
     """Render one row per benchmarked operation using a representative size."""
-
     grouped = _rows_for_operation(artifact["results"])
     lines = [
         "| Operation | Representative N | Rust p50 (µs) | Python p50 (µs) | Fastest backend | Parity max abs diff |",
@@ -140,7 +132,6 @@ def _benchmark_table(artifact: BenchmarkArtifact) -> list[str]:
 
 def _capability_table(capabilities: Mapping[str, Sequence[str]]) -> list[str]:
     """Render the live oscillatools facade capability groups."""
-
     lines = ["| Group | Count | Public symbols |", "|---|--:|---|"]
     for group, symbols in capabilities.items():
         lines.append(f"| `{group}` | {len(symbols)} | {_symbol_list(symbols)} |")
@@ -149,7 +140,6 @@ def _capability_table(capabilities: Mapping[str, Sequence[str]]) -> list[str]:
 
 def _benchmark_summary(artifact: BenchmarkArtifact) -> list[str]:
     """Render benchmark provenance and claim-boundary facts."""
-
     parameters = artifact["parameters"]
     provenance = artifact["provenance"]
     sizes = ", ".join(str(size) for size in _string_sequence(parameters.get("sizes", ())))
@@ -172,7 +162,6 @@ def _benchmark_summary(artifact: BenchmarkArtifact) -> list[str]:
 
 def render_handbook(artifact: BenchmarkArtifact) -> str:
     """Render the complete oscillatools handbook Markdown document."""
-
     capabilities = kuramoto.capabilities()
     capability_count = sum(len(symbols) for symbols in capabilities.values())
     benchmark_operations = len(_rows_for_operation(artifact["results"]))
@@ -234,6 +223,7 @@ def render_handbook(artifact: BenchmarkArtifact) -> str:
         "|---|---|---|",
         "| Mean-field Kuramoto | `K r sin(psi - theta_i)` and its dense Jacobian. | `mean_field_force`, `mean_field_jacobian` |",
         "| Networked Kuramoto | `sum_j K_ij sin(theta_j - theta_i)` for dense coupling matrices. | `networked_kuramoto_force`, `networked_kuramoto_jacobian` |",
+        "| Sparse networked Kuramoto | Stored-edge SciPy sparse force and fixed-step trajectories for large classical graphs. | `sparse_networked_kuramoto_force`, `sparse_kuramoto_rk4_trajectory` |",
         "| Sakaguchi-Kuramoto | Frustrated coupling `sin(theta_j - theta_i - alpha)`. | `sakaguchi_force`, `sakaguchi_mean_field_force` |",
         "| Daido harmonics | Higher harmonic order parameter `r_m exp(i psi_m)`. | `daido_order_parameter`, `daido_mean_field_force` |",
         "| Triadic/simplex/hyperedge | Higher-order terms over simplex order or explicit hyperedge lists. | `simplex_mean_field_force`, `hyperedge_force`, `heterogeneous_force` |",
@@ -247,6 +237,10 @@ def render_handbook(artifact: BenchmarkArtifact) -> str:
         "The public facade exposes fixed-step Euler and RK4 trajectories, adaptive",
         "Dormand-Prince trajectories, delayed/inertial/noisy/adaptive variants, and",
         "reverse-mode adjoints for the differentiable Euler, RK4, and DOPRI paths.",
+        "Large sparse classical networks use the explicit SciPy sparse CPU route",
+        "(`sparse_networked_kuramoto_force`, `sparse_kuramoto_euler_trajectory`,",
+        "`sparse_kuramoto_rk4_trajectory`) so the dense multi-language path stays",
+        "unchanged for small dense matrices.",
         "The adjoints return gradients with respect to the initial phases, natural",
         "frequencies, and coupling parameters where the corresponding mathematical",
         "contract is implemented. Unsupported routes fail closed rather than",
@@ -357,7 +351,6 @@ def render_handbook(artifact: BenchmarkArtifact) -> str:
 
 def main(argv: Sequence[str] | None = None) -> int:
     """Render the handbook and write it to disk."""
-
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--benchmark",

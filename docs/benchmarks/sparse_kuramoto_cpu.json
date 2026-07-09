@@ -1,0 +1,148 @@
+{
+  "claim_boundary": "Sparse classical CPU scaling evidence for ring-network Kuramoto force and fixed-step integrators; not quantum hardware evidence and not a broad performance claim.",
+  "command": [
+    "scripts/bench_sparse_kuramoto_cpu.py",
+    "--samples",
+    "3",
+    "--n-steps",
+    "1",
+    "--sizes",
+    "1000",
+    "10000",
+    "100000",
+    "1000000"
+  ],
+  "generated_at": "2026-07-09T00:05:12.420824+00:00",
+  "numpy": "2.2.6",
+  "oscillatools": "0.1.0",
+  "platform": "Linux-6.17.0-35-generic-x86_64-with-glibc2.39",
+  "python": "3.12.13",
+  "rows": [
+    {
+      "density": 0.002,
+      "dt": 0.01,
+      "euler_terminal_order_parameter": 0.0,
+      "euler_trajectory": {
+        "max_ms": 0.065261,
+        "median_ms": 0.062607,
+        "min_ms": 0.057881,
+        "samples": 3
+      },
+      "force": {
+        "max_ms": 0.040884,
+        "median_ms": 0.039926,
+        "min_ms": 0.038918,
+        "samples": 3
+      },
+      "n_oscillators": 1000,
+      "n_steps": 1,
+      "rk4_terminal_order_parameter": 0.0,
+      "rk4_trajectory": {
+        "max_ms": 0.228091,
+        "median_ms": 0.213639,
+        "min_ms": 0.209084,
+        "samples": 3
+      },
+      "stored_edges": 2000,
+      "trajectory_shape": [
+        2,
+        1000
+      ]
+    },
+    {
+      "density": 0.0002,
+      "dt": 0.01,
+      "euler_terminal_order_parameter": 6.821210263296962e-17,
+      "euler_trajectory": {
+        "max_ms": 1.4151,
+        "median_ms": 1.022603,
+        "min_ms": 0.780399,
+        "samples": 3
+      },
+      "force": {
+        "max_ms": 0.446527,
+        "median_ms": 0.262318,
+        "min_ms": 0.225809,
+        "samples": 3
+      },
+      "n_oscillators": 10000,
+      "n_steps": 1,
+      "rk4_terminal_order_parameter": 6.821210263296962e-17,
+      "rk4_trajectory": {
+        "max_ms": 2.638173,
+        "median_ms": 2.139971,
+        "min_ms": 1.742487,
+        "samples": 3
+      },
+      "stored_edges": 20000,
+      "trajectory_shape": [
+        2,
+        10000
+      ]
+    },
+    {
+      "density": 2e-05,
+      "dt": 0.01,
+      "euler_terminal_order_parameter": 9.659409710232518e-17,
+      "euler_trajectory": {
+        "max_ms": 15.866525,
+        "median_ms": 15.55156,
+        "min_ms": 8.845818,
+        "samples": 3
+      },
+      "force": {
+        "max_ms": 16.706585,
+        "median_ms": 14.235563,
+        "min_ms": 9.658074,
+        "samples": 3
+      },
+      "n_oscillators": 100000,
+      "n_steps": 1,
+      "rk4_terminal_order_parameter": 9.659409710232518e-17,
+      "rk4_trajectory": {
+        "max_ms": 56.933116,
+        "median_ms": 49.873319,
+        "min_ms": 21.653164,
+        "samples": 3
+      },
+      "stored_edges": 200000,
+      "trajectory_shape": [
+        2,
+        100000
+      ]
+    },
+    {
+      "density": 2e-06,
+      "dt": 0.01,
+      "euler_terminal_order_parameter": 1.3003029114527027e-16,
+      "euler_trajectory": {
+        "max_ms": 152.205931,
+        "median_ms": 141.238214,
+        "min_ms": 139.92294,
+        "samples": 3
+      },
+      "force": {
+        "max_ms": 101.290259,
+        "median_ms": 81.760077,
+        "min_ms": 44.787221,
+        "samples": 3
+      },
+      "n_oscillators": 1000000,
+      "n_steps": 1,
+      "rk4_terminal_order_parameter": 1.3003029114527027e-16,
+      "rk4_trajectory": {
+        "max_ms": 568.197584,
+        "median_ms": 566.205522,
+        "min_ms": 546.431961,
+        "samples": 3
+      },
+      "stored_edges": 2000000,
+      "trajectory_shape": [
+        2,
+        1000000
+      ]
+    }
+  ],
+  "schema": "scpn-quantum-control.sparse-kuramoto-cpu.v1",
+  "scipy": "1.15.3"
+}

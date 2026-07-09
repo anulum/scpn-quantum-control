@@ -121,6 +121,7 @@ nav:
           - DLA-Protected Scar Memory: dla_protected_scar_memory.md
           - Kuramoto Variants: kuramoto_variants.md
           - Kuramoto Visualisation: kuramoto_visualisation.md
+          - Sparse Kuramoto CPU Path: kuramoto_sparse_cpu.md
           - Witness Discovery: witness_discovery.md
           - Application Benchmark Plugins: application_benchmarks.md
           - Real-Data Synchronisation Forecasting: real_data_sync_forecasting.md

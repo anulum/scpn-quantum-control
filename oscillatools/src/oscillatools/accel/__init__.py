@@ -557,6 +557,14 @@ from .sakaguchi_mean_field import (
     sakaguchi_mean_field_force,
     sakaguchi_mean_field_jacobian,
 )
+from .sparse_kuramoto import (
+    SparseKuramotoCoupling,
+    ring_sparse_coupling,
+    sparse_coupling_from_scipy,
+    sparse_kuramoto_euler_trajectory,
+    sparse_kuramoto_rk4_trajectory,
+    sparse_networked_kuramoto_force,
+)
 from .stuart_landau import (
     StuartLandauTrajectory,
     amplitudes,
@@ -988,6 +996,12 @@ __all__ = [
     "mean_phase_hessian",
     "networked_kuramoto_force",
     "networked_kuramoto_jacobian",
+    "SparseKuramotoCoupling",
+    "ring_sparse_coupling",
+    "sparse_coupling_from_scipy",
+    "sparse_networked_kuramoto_force",
+    "sparse_kuramoto_euler_trajectory",
+    "sparse_kuramoto_rk4_trajectory",
     "last_networked_kuramoto_force_tier_used",
     "last_networked_kuramoto_jacobian_tier_used",
     "GraphLike",
