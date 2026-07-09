@@ -23,12 +23,14 @@ Multi-language (Rust → Julia → Python floor) implementations dispatched thro
 from __future__ import annotations
 
 from collections.abc import Callable
+from typing import Any
 
 import numpy as np
 from numpy.typing import NDArray
 
 from . import dispatcher
 from .dispatcher import MultiLangDispatcher, register_dispatcher
+from .tensor_io import as_float64_array, restore_array, tensor_template
 
 
 def _validate_coupling(
@@ -210,9 +212,7 @@ _kuramoto_interaction_energy_hessian_dispatcher = MultiLangDispatcher(
 )
 
 
-def kuramoto_interaction_energy(
-    theta: NDArray[np.float64], coupling: NDArray[np.float64]
-) -> float:
+def kuramoto_interaction_energy(theta: object, coupling: object) -> float:
     r"""Kuramoto interaction energy with multi-language dispatch.
 
     Returns :math:`E(\theta) = -\tfrac12 \sum_{jk} K_{jk} \cos(\theta_j - \theta_k)`, the
@@ -222,10 +222,12 @@ def kuramoto_interaction_energy(
 
     Parameters
     ----------
-    theta : numpy.ndarray
-        One-dimensional array of ``N`` oscillator phases in radians.
-    coupling : numpy.ndarray
-        Two-dimensional ``(N, N)`` coupling matrix ``K``.
+    theta : array-like
+        One-dimensional array or optional Torch/JAX tensor of ``N`` oscillator
+        phases in radians.
+    coupling : array-like
+        Two-dimensional ``(N, N)`` coupling matrix ``K``. Torch/JAX tensors are
+        accepted without making either backend a required dependency.
 
     Returns
     -------
@@ -242,12 +244,17 @@ def kuramoto_interaction_energy(
     Chain (measured fastest first): Rust → Julia → Python floor. The served tier is
     recorded on :func:`last_kuramoto_interaction_energy_tier_used`.
     """
-    return float(_kuramoto_interaction_energy_dispatcher(theta, coupling))
+    return float(
+        _kuramoto_interaction_energy_dispatcher(
+            as_float64_array(theta),
+            as_float64_array(coupling),
+        )
+    )
 
 
 def kuramoto_interaction_energy_gradient(
-    theta: NDArray[np.float64], coupling: NDArray[np.float64]
-) -> NDArray[np.float64]:
+    theta: object, coupling: object
+) -> NDArray[np.float64] | Any:
     r"""Gradient of the Kuramoto interaction energy with multi-language dispatch.
 
     Returns :math:`\partial E / \partial \theta_j = \tfrac12 \sum_k (K_{jk} + K_{kj})
@@ -257,16 +264,19 @@ def kuramoto_interaction_energy_gradient(
 
     Parameters
     ----------
-    theta : numpy.ndarray
-        One-dimensional array of ``N`` oscillator phases in radians.
-    coupling : numpy.ndarray
-        Two-dimensional ``(N, N)`` coupling matrix ``K``.
+    theta : array-like
+        One-dimensional array or optional Torch/JAX tensor of ``N`` oscillator
+        phases in radians.
+    coupling : array-like
+        Two-dimensional ``(N, N)`` coupling matrix ``K``. Torch/JAX tensors are
+        accepted without making either backend a required dependency.
 
     Returns
     -------
-    numpy.ndarray
+    numpy.ndarray or tensor
         One-dimensional float64 gradient array of length ``N``. An empty input yields an
-        empty array.
+        empty array. When ``theta`` or ``coupling`` is a Torch/JAX tensor, the result is
+        restored to that first detected tensor namespace.
 
     Raises
     ------
@@ -278,14 +288,20 @@ def kuramoto_interaction_energy_gradient(
     Chain (measured fastest first): Rust → Julia → Python floor. The served tier is
     recorded on :func:`last_kuramoto_interaction_energy_gradient_tier_used`.
     """
-    return np.asarray(
-        _kuramoto_interaction_energy_gradient_dispatcher(theta, coupling), dtype=np.float64
+    template = tensor_template(theta, coupling)
+    result = np.asarray(
+        _kuramoto_interaction_energy_gradient_dispatcher(
+            as_float64_array(theta),
+            as_float64_array(coupling),
+        ),
+        dtype=np.float64,
     )
+    return restore_array(result, template)
 
 
 def kuramoto_interaction_energy_hessian(
-    theta: NDArray[np.float64], coupling: NDArray[np.float64]
-) -> NDArray[np.float64]:
+    theta: object, coupling: object
+) -> NDArray[np.float64] | Any:
     r"""Hessian of the Kuramoto interaction energy with multi-language dispatch.
 
     Returns :math:`\partial^2 E / \partial \theta_i \partial \theta_l = -\tfrac12 (K_{il} +
@@ -297,16 +313,19 @@ def kuramoto_interaction_energy_hessian(
 
     Parameters
     ----------
-    theta : numpy.ndarray
-        One-dimensional array of ``N`` oscillator phases in radians.
-    coupling : numpy.ndarray
-        Two-dimensional ``(N, N)`` coupling matrix ``K``.
+    theta : array-like
+        One-dimensional array or optional Torch/JAX tensor of ``N`` oscillator
+        phases in radians.
+    coupling : array-like
+        Two-dimensional ``(N, N)`` coupling matrix ``K``. Torch/JAX tensors are
+        accepted without making either backend a required dependency.
 
     Returns
     -------
-    numpy.ndarray
+    numpy.ndarray or tensor
         Two-dimensional ``(N, N)`` float64 Hessian matrix. An empty input yields a
-        ``(0, 0)`` array.
+        ``(0, 0)`` array. When ``theta`` or ``coupling`` is a Torch/JAX tensor, the
+        result is restored to that first detected tensor namespace.
 
     Raises
     ------
@@ -318,9 +337,15 @@ def kuramoto_interaction_energy_hessian(
     Chain (measured fastest first): Rust → Julia → Python floor. The served tier is
     recorded on :func:`last_kuramoto_interaction_energy_hessian_tier_used`.
     """
-    return np.asarray(
-        _kuramoto_interaction_energy_hessian_dispatcher(theta, coupling), dtype=np.float64
+    template = tensor_template(theta, coupling)
+    result = np.asarray(
+        _kuramoto_interaction_energy_hessian_dispatcher(
+            as_float64_array(theta),
+            as_float64_array(coupling),
+        ),
+        dtype=np.float64,
     )
+    return restore_array(result, template)
 
 
 def last_kuramoto_interaction_energy_tier_used() -> str | None:

@@ -23,12 +23,14 @@ Multi-language (Rust → Julia → Python floor) implementations dispatched thro
 from __future__ import annotations
 
 from collections.abc import Callable
+from typing import Any
 
 import numpy as np
 from numpy.typing import NDArray
 
 from . import dispatcher
 from .dispatcher import MultiLangDispatcher, register_dispatcher
+from .tensor_io import as_float64_array, restore_array, tensor_template
 
 
 def _validate_coupling(
@@ -154,9 +156,7 @@ _networked_kuramoto_force_dispatcher = MultiLangDispatcher(_NETWORKED_KURAMOTO_F
 _networked_kuramoto_jacobian_dispatcher = MultiLangDispatcher(_NETWORKED_KURAMOTO_JACOBIAN_CHAIN)
 
 
-def networked_kuramoto_force(
-    theta: NDArray[np.float64], coupling: NDArray[np.float64]
-) -> NDArray[np.float64]:
+def networked_kuramoto_force(theta: object, coupling: object) -> NDArray[np.float64] | Any:
     r"""Networked Kuramoto coupling force with multi-language dispatch.
 
     Returns :math:`F_j = \sum_k K_{jk} \sin(\theta_k - \theta_j)`, the general (graph) form
@@ -168,16 +168,19 @@ def networked_kuramoto_force(
 
     Parameters
     ----------
-    theta : numpy.ndarray
-        One-dimensional array of ``N`` oscillator phases in radians.
-    coupling : numpy.ndarray
-        Two-dimensional ``(N, N)`` coupling matrix ``K``.
+    theta : array-like
+        One-dimensional array or optional Torch/JAX tensor of ``N`` oscillator
+        phases in radians.
+    coupling : array-like
+        Two-dimensional ``(N, N)`` coupling matrix ``K``. Torch/JAX tensors are
+        accepted without making either backend a required dependency.
 
     Returns
     -------
-    numpy.ndarray
-        One-dimensional float64 force array of length ``N``. An empty input yields an
-        empty array.
+    numpy.ndarray or tensor
+        One-dimensional float64 force array of length ``N``. When ``theta`` or
+        ``coupling`` is a Torch/JAX tensor, the result is restored to that first
+        detected tensor namespace. An empty input yields an empty array.
 
     Raises
     ------
@@ -189,12 +192,18 @@ def networked_kuramoto_force(
     Chain (measured fastest first): Rust → Julia → Python floor. The served tier is
     recorded on :func:`last_networked_kuramoto_force_tier_used`.
     """
-    return np.asarray(_networked_kuramoto_force_dispatcher(theta, coupling), dtype=np.float64)
+    template = tensor_template(theta, coupling)
+    result = np.asarray(
+        _networked_kuramoto_force_dispatcher(
+            as_float64_array(theta),
+            as_float64_array(coupling),
+        ),
+        dtype=np.float64,
+    )
+    return restore_array(result, template)
 
 
-def networked_kuramoto_jacobian(
-    theta: NDArray[np.float64], coupling: NDArray[np.float64]
-) -> NDArray[np.float64]:
+def networked_kuramoto_jacobian(theta: object, coupling: object) -> NDArray[np.float64] | Any:
     r"""Networked Kuramoto stability Jacobian with multi-language dispatch.
 
     Returns the linearisation :math:`J_{jl} = K_{jl}\cos(\theta_l - \theta_j)` for
@@ -205,16 +214,19 @@ def networked_kuramoto_jacobian(
 
     Parameters
     ----------
-    theta : numpy.ndarray
-        One-dimensional array of ``N`` oscillator phases in radians.
-    coupling : numpy.ndarray
-        Two-dimensional ``(N, N)`` coupling matrix ``K``.
+    theta : array-like
+        One-dimensional array or optional Torch/JAX tensor of ``N`` oscillator
+        phases in radians.
+    coupling : array-like
+        Two-dimensional ``(N, N)`` coupling matrix ``K``. Torch/JAX tensors are
+        accepted without making either backend a required dependency.
 
     Returns
     -------
-    numpy.ndarray
-        Two-dimensional ``(N, N)`` float64 Jacobian matrix. An empty input yields a
-        ``(0, 0)`` array.
+    numpy.ndarray or tensor
+        Two-dimensional ``(N, N)`` float64 Jacobian matrix. When ``theta`` or
+        ``coupling`` is a Torch/JAX tensor, the result is restored to that first
+        detected tensor namespace. An empty input yields a ``(0, 0)`` array.
 
     Raises
     ------
@@ -226,7 +238,15 @@ def networked_kuramoto_jacobian(
     Chain (measured fastest first): Rust → Julia → Python floor. The served tier is
     recorded on :func:`last_networked_kuramoto_jacobian_tier_used`.
     """
-    return np.asarray(_networked_kuramoto_jacobian_dispatcher(theta, coupling), dtype=np.float64)
+    template = tensor_template(theta, coupling)
+    result = np.asarray(
+        _networked_kuramoto_jacobian_dispatcher(
+            as_float64_array(theta),
+            as_float64_array(coupling),
+        ),
+        dtype=np.float64,
+    )
+    return restore_array(result, template)
 
 
 def last_networked_kuramoto_force_tier_used() -> str | None:

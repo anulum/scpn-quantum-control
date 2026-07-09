@@ -25,12 +25,14 @@ Multi-language (Rust → Julia → Python floor) implementations dispatched thro
 from __future__ import annotations
 
 from collections.abc import Callable
+from typing import Any
 
 import numpy as np
 from numpy.typing import NDArray
 
 from . import dispatcher
 from .dispatcher import MultiLangDispatcher, register_dispatcher
+from .tensor_io import as_float64_array, restore_array, restore_array_tuple, tensor_template
 
 _VjpResult = tuple[NDArray[np.float64], NDArray[np.float64], NDArray[np.float64]]
 
@@ -322,12 +324,12 @@ _kuramoto_rk4_vjp_dispatcher = MultiLangDispatcher(_KURAMOTO_RK4_VJP_CHAIN)
 
 
 def kuramoto_rk4_trajectory(
-    theta0: NDArray[np.float64],
-    omega: NDArray[np.float64],
-    coupling: NDArray[np.float64],
+    theta0: object,
+    omega: object,
+    coupling: object,
     dt: float,
     n_steps: int,
-) -> NDArray[np.float64]:
+) -> NDArray[np.float64] | Any:
     r"""Forward networked-Kuramoto RK4 trajectory with multi-language dispatch.
 
     Integrates :math:`\dot\theta = \omega + F(\theta)` with
@@ -339,12 +341,15 @@ def kuramoto_rk4_trajectory(
 
     Parameters
     ----------
-    theta0 : numpy.ndarray
-        One-dimensional array of ``N`` initial phases in radians.
-    omega : numpy.ndarray
-        One-dimensional array of ``N`` natural frequencies.
-    coupling : numpy.ndarray
-        Two-dimensional ``(N, N)`` coupling matrix ``K``.
+    theta0 : array-like
+        One-dimensional array or optional Torch/JAX tensor of ``N`` initial
+        phases in radians.
+    omega : array-like
+        One-dimensional array or optional Torch/JAX tensor of ``N`` natural
+        frequencies.
+    coupling : array-like
+        Two-dimensional ``(N, N)`` coupling matrix ``K``. Torch/JAX tensors are
+        accepted without making either backend a required dependency.
     dt : float
         The RK4 step size.
     n_steps : int
@@ -352,8 +357,10 @@ def kuramoto_rk4_trajectory(
 
     Returns
     -------
-    numpy.ndarray
-        Two-dimensional ``(n_steps + 1, N)`` float64 trajectory; row 0 is ``theta0``.
+    numpy.ndarray or tensor
+        Two-dimensional ``(n_steps + 1, N)`` float64 trajectory; row 0 is
+        ``theta0``. When an input is a Torch/JAX tensor, the result is restored
+        to that first detected tensor namespace.
 
     Raises
     ------
@@ -365,19 +372,27 @@ def kuramoto_rk4_trajectory(
     Chain (measured fastest first): Rust → Julia → Python floor. The served tier is
     recorded on :func:`last_kuramoto_rk4_trajectory_tier_used`.
     """
-    return np.asarray(
-        _kuramoto_rk4_trajectory_dispatcher(theta0, omega, coupling, dt, n_steps),
+    template = tensor_template(theta0, omega, coupling)
+    result = np.asarray(
+        _kuramoto_rk4_trajectory_dispatcher(
+            as_float64_array(theta0),
+            as_float64_array(omega),
+            as_float64_array(coupling),
+            dt,
+            n_steps,
+        ),
         dtype=np.float64,
     )
+    return restore_array(result, template)
 
 
 def kuramoto_rk4_vjp(
-    trajectory: NDArray[np.float64],
-    omega: NDArray[np.float64],
-    coupling: NDArray[np.float64],
+    trajectory: object,
+    omega: object,
+    coupling: object,
     dt: float,
-    cotangent: NDArray[np.float64],
-) -> _VjpResult:
+    cotangent: object,
+) -> tuple[NDArray[np.float64] | Any, ...]:
     r"""Reverse-mode adjoint of the networked-Kuramoto RK4 integrator.
 
     Given the forward ``trajectory`` from :func:`kuramoto_rk4_trajectory` and a cotangent
@@ -387,22 +402,24 @@ def kuramoto_rk4_vjp(
 
     Parameters
     ----------
-    trajectory : numpy.ndarray
-        Two-dimensional ``(n_steps + 1, N)`` forward trajectory.
-    omega : numpy.ndarray
+    trajectory : array-like
+        Two-dimensional ``(n_steps + 1, N)`` forward trajectory. Torch/JAX tensors
+        are accepted without making either backend a required dependency.
+    omega : array-like
         One-dimensional ``(N,)`` natural frequencies used in the forward pass.
-    coupling : numpy.ndarray
+    coupling : array-like
         Two-dimensional ``(N, N)`` coupling matrix ``K`` used in the forward pass.
     dt : float
         The RK4 step size used in the forward pass.
-    cotangent : numpy.ndarray
+    cotangent : array-like
         One-dimensional ``(N,)`` cotangent on the final phase, ``∂L/∂θ_N``.
 
     Returns
     -------
-    tuple of numpy.ndarray
+    tuple of numpy.ndarray or tensor
         ``(grad_theta0, grad_omega, grad_coupling)`` with shapes ``(N,)``, ``(N,)`` and
-        ``(N, N)``.
+        ``(N, N)``. When an input is a Torch/JAX tensor, every gradient channel is
+        restored to that first detected tensor namespace.
 
     Raises
     ------
@@ -415,13 +432,21 @@ def kuramoto_rk4_vjp(
     Chain (measured fastest first): Rust → Julia → Python floor. The served tier is
     recorded on :func:`last_kuramoto_rk4_vjp_tier_used`.
     """
+    template = tensor_template(trajectory, cotangent, omega, coupling)
     grad_theta0, grad_omega, grad_coupling = _kuramoto_rk4_vjp_dispatcher(
-        trajectory, omega, coupling, dt, cotangent
+        as_float64_array(trajectory),
+        as_float64_array(omega),
+        as_float64_array(coupling),
+        dt,
+        as_float64_array(cotangent),
     )
-    return (
-        np.asarray(grad_theta0, dtype=np.float64),
-        np.asarray(grad_omega, dtype=np.float64),
-        np.asarray(grad_coupling, dtype=np.float64),
+    return restore_array_tuple(
+        (
+            np.asarray(grad_theta0, dtype=np.float64),
+            np.asarray(grad_omega, dtype=np.float64),
+            np.asarray(grad_coupling, dtype=np.float64),
+        ),
+        template,
     )
 
 
