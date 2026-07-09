@@ -67,6 +67,9 @@ Call `kuramoto.capabilities()` to inspect the grouped public API and
   integrators and adjoints, observables, and analysis and control surface.
 - **[Capability snapshot](capabilities.md)** — the exact, diffable inventory of
   every public group and symbol at the current version.
+- **[Gradient coverage matrix](gradient_coverage_matrix.md)** — the generated
+  inventory of public gradient, Hessian, Jacobian, adjoint, and sensitivity
+  surfaces derived from the same facade map.
 - **[Example gallery](gallery.md)** — runnable, deterministic worked workflows.
 - **[Multi-language tier benchmark](tier_benchmarks.md)** — the Rust/Julia/Python
   per-primitive latency evidence with full provenance.
