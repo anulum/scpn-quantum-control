@@ -19,10 +19,32 @@ cargo-fuzz = true
 libfuzzer-sys = "0.4"
 ndarray = "=0.16.1"
 scpn-quantum-engine = { path = ".." }
+scpn-quantum-studio-wasm-kernel = { path = "../studio_wasm_kernel" }
 
 [[bin]]
 name = "program_ad_ir"
 path = "fuzz_targets/program_ad_ir.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "studio_kuramoto_input"
+path = "fuzz_targets/studio_kuramoto_input.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "ml_dsa_ntt"
+path = "fuzz_targets/ml_dsa_ntt.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "knm_validators"
+path = "fuzz_targets/knm_validators.rs"
 test = false
 doc = false
 bench = false

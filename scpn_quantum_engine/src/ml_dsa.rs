@@ -16,8 +16,10 @@
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 
-const Q: i64 = 8380417;
-const N: usize = 256;
+/// The ML-DSA modulus `q = 8380417` (FIPS 204, Table 1).
+pub const Q: i64 = 8380417;
+/// Coefficient count of the polynomial ring `Z_q[X]/(X^256 + 1)`.
+pub const N: usize = 256;
 const ZETA: i64 = 1753;
 const F_256_INV: i64 = 8347681; // 256^-1 mod q
 
@@ -115,18 +117,36 @@ fn load(poly: Vec<i64>) -> PyResult<[i64; N]> {
     Ok(w)
 }
 
+/// Forward NTT core over arbitrary signed coefficients (pure Rust, no PyO3).
+///
+/// Coefficients are reduced into `[0, q)` first — exactly the Python-bridge
+/// normalisation — so any `i64` input is admissible without overflow: every
+/// butterfly product stays below `q² < 2⁴⁷`. This is the fuzz/bench surface;
+/// the `#[pyfunction]` wrappers delegate here.
+pub fn ml_dsa_ntt_core(poly: [i64; N]) -> [i64; N] {
+    let mut w = poly.map(rem_q);
+    ntt_inplace(&mut w);
+    w
+}
+
+/// Inverse NTT core over arbitrary signed coefficients (pure Rust, no PyO3).
+///
+/// The exact inverse of [`ml_dsa_ntt_core`] on `[0, q)`:
+/// `ml_dsa_intt_core(ml_dsa_ntt_core(x)) == x.map(rem_q)` for every input.
+pub fn ml_dsa_intt_core(poly: [i64; N]) -> [i64; N] {
+    let mut w = poly.map(rem_q);
+    intt_inplace(&mut w);
+    w
+}
+
 /// Forward NTT of a 256-coefficient polynomial over Z_q.
 #[pyfunction]
 pub fn ml_dsa_ntt(poly: Vec<i64>) -> PyResult<Vec<i64>> {
-    let mut w = load(poly)?;
-    ntt_inplace(&mut w);
-    Ok(w.to_vec())
+    Ok(ml_dsa_ntt_core(load(poly)?).to_vec())
 }
 
 /// Inverse NTT of a 256-coefficient polynomial over Z_q.
 #[pyfunction]
 pub fn ml_dsa_intt(poly: Vec<i64>) -> PyResult<Vec<i64>> {
-    let mut w = load(poly)?;
-    intt_inplace(&mut w);
-    Ok(w.to_vec())
+    Ok(ml_dsa_intt_core(load(poly)?).to_vec())
 }

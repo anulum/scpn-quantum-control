@@ -35,17 +35,24 @@ pub fn check_finite(arr: &[f64], name: &str) -> Result<(), String> {
     Ok(())
 }
 
-/// Validate that a value is strictly positive.
+/// Validate that a value is strictly positive (and finite).
+///
+/// Written as a positive predicate so NaN fails CLOSED: the old
+/// `val <= 0.0` rejection let NaN through (every comparison with NaN is
+/// false), and a NaN `dt`/`k_base`/`alpha` would poison whole kernels.
 pub fn check_positive(val: f64, name: &str) -> Result<(), String> {
-    if val <= 0.0 {
-        return Err(format!("{name} must be positive, got {val}"));
+    if !(val.is_finite() && val > 0.0) {
+        return Err(format!("{name} must be positive and finite, got {val}"));
     }
     Ok(())
 }
 
 /// Validate that a value is in the range [lo, hi].
+///
+/// Written as a positive predicate so a NaN value (or NaN bounds) fails
+/// CLOSED instead of slipping through the negated comparison.
 pub fn check_range(val: f64, lo: f64, hi: f64, name: &str) -> Result<(), String> {
-    if val < lo || val > hi {
+    if !(val >= lo && val <= hi) {
         return Err(format!("{name} must be in [{lo}, {hi}], got {val}"));
     }
     Ok(())
@@ -60,15 +67,26 @@ pub fn check_n(n: usize, name: &str) -> Result<(), String> {
 }
 
 /// Validate flat array length matches expected n*n.
+///
+/// Fail-closed on `n * n` overflow: an `n` too large to square can never
+/// describe a real matrix, so it is a mismatch, not a panic.
 pub fn check_flat_square(arr: &[f64], n: usize, name: &str) -> Result<(), String> {
-    if arr.len() != n * n {
-        return Err(format!("{name} length {} != {n}² = {}", arr.len(), n * n));
+    match n.checked_mul(n) {
+        Some(expected) if arr.len() == expected => Ok(()),
+        Some(expected) => Err(format!("{name} length {} != {n}² = {expected}", arr.len())),
+        None => Err(format!("{name}: n = {n} overflows n² on this platform")),
     }
-    Ok(())
 }
 
 /// Validate statevector length is 2^n.
+///
+/// Fail-closed on `2^n` overflow: for `n` at or beyond the pointer width the
+/// shift would wrap (release) or panic (debug), so it is a mismatch instead —
+/// no admissible statevector has that many amplitudes.
 pub fn check_statevec_len(len: usize, n: usize, name: &str) -> Result<(), String> {
+    if n >= usize::BITS as usize {
+        return Err(format!("{name}: 2^{n} overflows usize on this platform"));
+    }
     let expected = 1usize << n;
     if len != expected {
         return Err(format!("{name} length {len} != 2^{n} = {expected}"));
@@ -154,6 +172,22 @@ mod tests {
     }
 
     #[test]
+    fn test_check_positive_rejects_nan_and_inf() {
+        // Fuzz-found (knm_validators): NaN passed the old `val <= 0.0`
+        // rejection because every NaN comparison is false — fail-open.
+        assert!(check_positive(f64::NAN, "x").is_err());
+        assert!(check_positive(f64::INFINITY, "x").is_err());
+        assert!(check_positive(f64::NEG_INFINITY, "x").is_err());
+    }
+
+    #[test]
+    fn test_check_range_rejects_nan_value_and_bounds() {
+        assert!(check_range(f64::NAN, 0.0, 1.0, "p").is_err());
+        assert!(check_range(0.5, f64::NAN, 1.0, "p").is_err());
+        assert!(check_range(0.5, 0.0, f64::NAN, "p").is_err());
+    }
+
+    #[test]
     fn test_check_range_ok() {
         assert!(check_range(0.5, 0.0, 1.0, "p").is_ok());
     }
@@ -179,6 +213,13 @@ mod tests {
     }
 
     #[test]
+    fn test_check_flat_square_overflowing_n_fails_closed() {
+        // n² overflows usize: must be a mismatch error, never a panic.
+        let err = check_flat_square(&[0.0; 4], usize::MAX, "K").unwrap_err();
+        assert!(err.contains("overflows"));
+    }
+
+    #[test]
     fn test_check_statevec_ok() {
         assert!(check_statevec_len(4, 2, "psi").is_ok());
     }
@@ -186,6 +227,15 @@ mod tests {
     #[test]
     fn test_check_statevec_wrong() {
         assert!(check_statevec_len(5, 2, "psi").is_err());
+    }
+
+    #[test]
+    fn test_check_statevec_overflowing_n_fails_closed() {
+        // 2^n beyond the pointer width: must be an error, never a shift panic
+        // (debug) or a wrapped, silently wrong expectation (release).
+        let err = check_statevec_len(1, usize::BITS as usize, "psi").unwrap_err();
+        assert!(err.contains("overflows"));
+        assert!(check_statevec_len(usize::MAX, 10_000, "psi").is_err());
     }
 
     #[test]

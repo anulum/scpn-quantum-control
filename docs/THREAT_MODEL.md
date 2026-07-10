@@ -142,6 +142,23 @@ We explicitly do **not** plan against:
 - **B7** — Mutation testing baseline. `mutmut` has never been run;
   we do not know the test-quality score.
 - **B8** — Fuzz tests on the non-koopman input boundaries.
+  NARROWED 2026-07-11: four coverage-guided `cargo-fuzz` targets now
+  cover the highest-exposure boundaries — `program_ad_ir` (Program AD
+  JSON IR), `studio_kuramoto_input` (the browser-facing studio WASM
+  kernel byte parsers + bounded replay), `ml_dsa_ntt` (NTT/INTT input
+  domain with a bijection invariant), and `knm_validators` (the shared
+  Rust `validation::check_*` guards + bounded `build_knm_inner`).
+  The harness surfaced and fixed three fail-open validator defects:
+  `check_flat_square` `n*n` overflow and `check_statevec_len` `1 << n`
+  shift overflow (found while writing the harness — both now return an
+  error instead of panicking/wrapping), and — found by the running
+  fuzzer on its first seed pass — `check_positive`/`check_range`
+  accepting NaN because their negated comparisons are false for NaN
+  (a NaN `dt`/`k_base`/`alpha` sailed through the positivity guard;
+  both rewritten as positive predicates that fail closed). Residual:
+  fuzzing is build-checked and seeded with short sanity runs, not yet a
+  sustained CI campaign; PyO3-bound entry points (numpy-array kernels)
+  remain exercised only via the Python property/panic-boundary suites.
 - **C4** — Formal export-control (ECCN 5D002) assessment for the
   `crypto/` subpackage.
 - **C7** — Cross-validation against Dynamiqs / QuTiP / PennyLane

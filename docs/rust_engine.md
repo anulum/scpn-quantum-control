@@ -201,10 +201,21 @@ adds a `cargo-fuzz` target over the same public parser, forward replay, and
 value+gradient replay APIs, with seed corpus entries under
 `scpn_quantum_engine/fuzz/corpus/program_ad_ir/`.
 
+Three further targets extend the fuzz surface to the remaining
+highest-exposure input boundaries (THREAT_MODEL B8):
+`studio_kuramoto_input` (the browser-facing studio WASM kernel byte
+parsers `parse_kuramoto_input` / `parse_compile_input` plus bounded
+simulate/digest replay), `ml_dsa_ntt` (the pure-Rust NTT/INTT cores over
+the full `i64` coefficient domain, asserting the forward/inverse pair is
+a bijection on `[0, q)`), and `knm_validators` (the shared
+`validation::check_*` guards against independent predicates, plus a
+bounded `build_knm_inner` replay). Seed corpora live under
+`scpn_quantum_engine/fuzz/corpus/<target>/`.
+
 Focused fuzz-harness build checks are run from the Rust crate directory:
 
 ```bash
-cargo +nightly fuzz check program_ad_ir
+cargo +nightly fuzz check
 ```
 
 That check is build reliability evidence only. Sustained coverage-guided fuzz
