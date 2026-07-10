@@ -235,6 +235,18 @@ Coverage target: 90% (`--cov-fail-under=90`) on the Python 3.12
 coverage lane. Coverage recovery must stay module-specific; coverage-bucket
 tests remain forbidden.
 
+### Coverage-exclusions ledger
+
+Every file omitted from the line gate (`[tool.coverage.run].omit` and
+`[tool.coverage.report].omit` in `pyproject.toml`) MUST carry exactly one
+row in `docs/release_coverage_exclusions.json`, stating why it is omitted
+and the CI lane that exercises it instead (or an explicit tracked gap).
+`tests/test_exclusions_ledger_drift.py` is the drift gate: it fails the
+build the moment an omit glob has no ledger row, or a ledger row matches
+no live omit glob — the coverage analogue of the
+no-`pragma: no cover`-without-issue rule, so the 90% number can never
+hide a silent, unjustified hole.
+
 ## Test Quality Standards
 
 Every test file must have:

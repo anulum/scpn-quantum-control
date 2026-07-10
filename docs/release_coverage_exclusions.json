@@ -1,52 +1,91 @@
 {
+  "schema": "scpn_qc_coverage_exclusions_v2",
+  "note": "The single source of truth for WHY each file is omitted from the CPU-only line-coverage gate and WHERE it is exercised instead. Every glob in [tool.coverage.run].omit and [tool.coverage.report].omit in pyproject.toml MUST have exactly one row here, and every row MUST match a live omit glob — tests/test_exclusions_ledger_drift.py fails the build on any drift. 'exercised_by' names the CI workflow (or an explicit tracked gap) that DOES cover the file; it is documentation, not a machine contract.",
   "exclusions": [
     {
       "path_glob": "src/scpn_quantum_control/accel/julia/*",
-      "reason": "Julia accelerator wrappers require an optional Julia runtime. Python dispatcher fallthrough is covered in the release suite, and the Julia tier is exercised through the optional julia extra."
+      "reason": "Julia accelerator wrappers require an optional Julia runtime. Python dispatcher fallthrough is covered in the release suite, and the Julia tier is exercised through the optional julia extra.",
+      "exercised_by": "local [julia] extra (juliacall + Julia runtime); no CI lane — installing Julia adds ~4 min JIT boot per run. Tracked gap: the Julia wrapper branches are not CI-covered, only the Python dispatcher fallthrough is."
     },
     {
       "path_glob": "src/scpn_quantum_control/hardware/hal_*.py",
-      "reason": "Provider HAL adapters require vendor SDKs, credentials, accounts, or live resources. Contract and conformance tests cover injected-provider behavior; live branches remain in provider smoke/readiness workflows."
+      "reason": "Provider HAL adapters require vendor SDKs, credentials, accounts, or live resources. Contract and conformance tests cover injected-provider behavior; live branches remain in provider smoke/readiness workflows.",
+      "exercised_by": "provider-isolated-smoke.yml (injected-provider contract/conformance); live SDK branches remain a tracked gap pending PROVIDER-DEPTH real runs."
     },
     {
       "path": "src/scpn_quantum_control/hardware/provider_capability_discovery.py",
-      "reason": "Provider capability discovery depends on optional vendor SDK presence and live provider metadata. Release behavior is covered by discovery contract tests with injected snapshots and provider fixtures."
+      "reason": "Provider capability discovery depends on optional vendor SDK presence and live provider metadata. Release behavior is covered by discovery contract tests with injected snapshots and provider fixtures.",
+      "exercised_by": "provider-isolated-smoke.yml (discovery contract tests with injected snapshots)."
     },
     {
       "path": "src/scpn_quantum_control/hardware/provider_smoke.py",
-      "reason": "Provider smoke execution is an operational live-provider entry point. It is governed by hardware-marked smoke workflows rather than the CPU-only unit-test line gate."
+      "reason": "Provider smoke execution is an operational live-provider entry point. It is governed by hardware-marked smoke workflows rather than the CPU-only unit-test line gate.",
+      "exercised_by": "provider-isolated-smoke.yml (hardware-marked); live execution is operator-gated."
     },
     {
       "path": "src/scpn_quantum_control/hardware/ibm_latency_probe.py",
-      "reason": "IBM latency probing submits or inspects live backend jobs and requires operator-approved credentials. It is governed by preregistration and result-pack evidence instead of ordinary unit-test coverage."
+      "reason": "IBM latency probing submits or inspects live backend jobs and requires operator-approved credentials. It is governed by preregistration and result-pack evidence instead of ordinary unit-test coverage.",
+      "exercised_by": "none — operational live-IBM entry point gated by preregistration + result-pack evidence. Tracked gap by design (no CI credentials)."
     },
     {
       "path": "src/scpn_quantum_control/hardware/openpulse_control.py",
-      "reason": "OpenPulse control paths require provider-specific pulse support and live hardware constraints. Feasibility and adapter contracts cover offline behavior; live execution remains hardware-marked."
+      "reason": "OpenPulse control paths require provider-specific pulse support and live hardware constraints. Feasibility and adapter contracts cover offline behavior; live execution remains hardware-marked.",
+      "exercised_by": "none for live pulse execution — offline feasibility/adapter contracts covered in the core suite; live branches are a tracked hardware gap."
     },
     {
       "path": "src/scpn_quantum_control/hardware/s1_feedback_ibm.py",
-      "reason": "S1 IBM feedback submission is a campaign submitter with live-provider side effects. Release evidence is preregistration, manifest, and result-pack based."
+      "reason": "S1 IBM feedback submission is a campaign submitter with live-provider side effects. Release evidence is preregistration, manifest, and result-pack based.",
+      "exercised_by": "none — campaign submitter with live side effects; evidence is preregistration + manifest + result-pack. Tracked gap by design."
     },
     {
       "path": "src/scpn_quantum_control/phase/gpu_batch_vqe.py",
-      "reason": "GPU batch VQE depends on optional accelerator runtimes that are not part of the pinned CPU-only release lane. Dispatcher and fallback behavior are covered by core accelerator tests."
+      "reason": "GPU batch VQE depends on optional accelerator runtimes that are not part of the pinned CPU-only release lane. Dispatcher and fallback behavior are covered by core accelerator tests.",
+      "exercised_by": "differentiable-frameworks.yml optional-GPU-contract job + tests/test_gpu_batch_vqe*.py (dispatcher/fallback in the core suite)."
     },
     {
       "path": "src/scpn_quantum_control/phase/jax_nqs.py",
-      "reason": "JAX NQS requires optional JAX accelerator surfaces. Contract tests cover import and fallback behavior while accelerator-specific execution remains in optional runtime lanes."
+      "reason": "JAX NQS requires optional JAX accelerator surfaces. Contract tests cover import and fallback behavior while accelerator-specific execution remains in optional runtime lanes.",
+      "exercised_by": "differentiable-frameworks.yml (full profile) + tests/test_jax_nqs.py (import/fallback contracts)."
     },
     {
       "path": "src/scpn_quantum_control/phase/mps_evolution.py",
-      "reason": "MPS evolution depends on optional tensor-network runtime surfaces. Core contraction and MPS baseline behavior are covered elsewhere in the release suite."
+      "reason": "MPS evolution depends on optional tensor-network runtime surfaces. Core contraction and MPS baseline behavior are covered elsewhere in the release suite.",
+      "exercised_by": "tests/test_mps_evolution.py under the optional tensor-network extra; core contraction baseline is in the release suite."
+    },
+    {
+      "path": "src/scpn_quantum_control/accel/jax_kuramoto.py",
+      "reason": "The JAX autodiff Kuramoto base tier needs jax[cuda]/jax[cpu], absent from the pinned CPU-only CI lane. Its importorskip test runs locally (GPU) or in the differentiable-frameworks overlay lane.",
+      "exercised_by": "differentiable-frameworks.yml full profile (importorskip); dispatcher fallthrough is covered in the core suite."
+    },
+    {
+      "path": "src/scpn_quantum_control/accel/jax_kuramoto_delayed.py",
+      "reason": "The JAX autodiff delayed-Kuramoto tier needs jax[cuda]/jax[cpu], absent from the pinned CPU-only CI lane. Its importorskip test runs locally (GPU) or in the differentiable-frameworks overlay lane.",
+      "exercised_by": "differentiable-frameworks.yml full profile (importorskip); dispatcher fallthrough is covered in the core suite."
+    },
+    {
+      "path": "src/scpn_quantum_control/accel/jax_kuramoto_mpc.py",
+      "reason": "The JAX autodiff Kuramoto-MPC tier needs jax[cuda]/jax[cpu], absent from the pinned CPU-only CI lane. Its importorskip test runs locally (GPU) or in the differentiable-frameworks overlay lane.",
+      "exercised_by": "differentiable-frameworks.yml full profile (importorskip); dispatcher fallthrough is covered in the core suite."
     },
     {
       "path": "src/scpn_quantum_control/mitigation/mitiq_integration.py",
-      "reason": "Mitiq integration depends on optional external mitigation dependencies. Integration behavior is covered by dedicated Mitiq tests when the mitigation extra is installed."
+      "reason": "Mitiq integration depends on optional external mitigation dependencies. Integration behavior is covered by dedicated Mitiq tests when the mitigation extra is installed.",
+      "exercised_by": "tests/test_mitiq_integration.py under the optional [mitigation] extra."
     },
     {
       "path": "src/scpn_quantum_control/analysis/quantum_persistent_homology.py",
-      "reason": "Quantum persistent homology has optional topological dependencies and hardware-loop branches. Offline contracts are covered by topology analysis and optimizer tests; live branches remain hardware-marked."
+      "reason": "Quantum persistent homology has optional topological dependencies and hardware-loop branches. Offline contracts are covered by topology analysis and optimizer tests; live branches remain hardware-marked.",
+      "exercised_by": "topology-analysis + optimizer tests (offline contracts); live QPU loops are a tracked hardware gap."
+    },
+    {
+      "path": "src/scpn_quantum_control/forecasting/kuramoto_neural_operator.py",
+      "reason": "The Kuramoto neural operator forecaster depends on the optional torch surrogate stack, absent from the CPU-only line gate. Host-independent arithmetic is factored into covered modules.",
+      "exercised_by": "forecasting suite under the optional [torch] extra; the cost-model arithmetic in neural_operator_cost_model.py is NOT omitted and is covered to 100%."
+    },
+    {
+      "path": "src/scpn_quantum_control/forecasting/neural_operator_advantage.py",
+      "reason": "The advantage study orchestrates the torch surrogate end-to-end; its test skips without the optional torch extra, so its lines are excluded from the CPU-only line gate.",
+      "exercised_by": "tests/test_neural_operator_advantage.py under the optional [torch] extra; the host-independent arithmetic lives in neural_operator_cost_model.py, which is NOT omitted and is covered to 100%."
     }
   ]
 }

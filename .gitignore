@@ -42,6 +42,9 @@ qiskit-ibm.json
 **/target/
 scpn_quantum_engine/target/
 
+# cargo-fuzz crash/corpus artifacts (transient; committed seeds live in corpus/)
+scpn_quantum_engine/fuzz/artifacts/
+
 # Internal business docs — never commit
 docs/internal/
 paper/**/*.aux
