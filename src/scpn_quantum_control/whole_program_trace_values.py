@@ -158,6 +158,9 @@ class TraceADScalar:
     """Operator-intercepted scalar for exact executed-path whole-program AD."""
 
     __array_priority__ = 1000.0
+    # ``__eq__`` returns a trace predicate, not a bool, so hashing has no
+    # coherent semantics for traced scalars — explicitly unhashable.
+    __hash__ = None  # type: ignore[assignment]
 
     def __init__(
         self,
@@ -322,6 +325,10 @@ class TraceADArray:
     """Derivative-carrying one-dimensional array for whole-program AD."""
 
     __array_priority__ = 1000.0
+    # ``__eq__`` returns a trace predicate (elementwise), not a bool, so
+    # hashing has no coherent semantics for traced arrays — explicitly
+    # unhashable.
+    __hash__ = None  # type: ignore[assignment]
 
     def __init__(
         self,
@@ -4676,10 +4683,7 @@ def _trace_triangular_mask(
     _require_program_ad_assembly_contract(name, (array, int(k)))
     rows, cols = array.shape[-2:]
     row_index, col_index = np.ogrid[:rows, :cols]
-    if lower:
-        base_mask = row_index + int(k) >= col_index
-    else:
-        base_mask = row_index + int(k) <= col_index
+    base_mask = row_index + int(k) >= col_index if lower else row_index + int(k) <= col_index
     mask = np.broadcast_to(base_mask, array.shape).reshape(-1)
     zero = _trace_constant(0.0, array.context)
     items = tuple(

@@ -180,13 +180,13 @@ def symmetry_expand(
 
     for bitstring, count in counts.items():
         clean = _clean_bitstring(bitstring)
-        count = _validate_count(count)
+        validated = _validate_count(count)
         if bitstring_parity(clean) == expected_parity:
-            expanded[clean] = expanded.get(clean, 0) + count
+            expanded[clean] = expanded.get(clean, 0) + validated
         else:
             # Flip least-significant bit to correct parity
             flipped = clean[:-1] + ("0" if clean[-1] == "1" else "1")
-            expanded[flipped] = expanded.get(flipped, 0) + count
+            expanded[flipped] = expanded.get(flipped, 0) + validated
 
     return expanded
 

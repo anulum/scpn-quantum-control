@@ -234,10 +234,9 @@ def eigh_by_magnetisation(
             "n_sectors_computed": 0,
         }
 
-    for m, indices in selected_indices.items():
-        H_sparse, sector_indices = build_sparse_sector_hamiltonian(K, omega, m)
+    for m in selected_indices:
+        H_sparse, indices = build_sparse_sector_hamiltonian(K, omega, m)
         H_sector = np.asarray(H_sparse.toarray())
-        indices = sector_indices
         vals, vecs = np.linalg.eigh(H_sector)
         results[m] = {
             "eigvals": vals,
