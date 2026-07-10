@@ -89,6 +89,11 @@ from .executive_simulate import (
     SIMULATE_VERB,
     SimulateActionHandler,
 )
+from .executive_validate import (
+    VALIDATE_CLAIM_BOUNDARY,
+    VALIDATE_VERB,
+    ValidateActionHandler,
+)
 from .federation import (
     build_architecture_map_extension,
     build_federation_document,
@@ -190,6 +195,9 @@ __all__ = [
     "STUDIO_ID",
     "SimulateActionHandler",
     "StudioBundleValidation",
+    "VALIDATE_CLAIM_BOUNDARY",
+    "VALIDATE_VERB",
+    "ValidateActionHandler",
     "XY_COMPILE_INPUT_VERSION",
     "XY_COMPILE_RECOMPUTE_SCHEMA",
     "XY_COMPILE_WASM_CRATE",

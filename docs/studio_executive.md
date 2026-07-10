@@ -193,6 +193,37 @@ thresholds — not a quantum-state measurement, a dynamical-evolution claim, or 
 statement about any generating model. The action feeds the informative
 `studio.sync-analysis.v1` family.
 
+## Validating the claim ledger
+
+The read-only `validate` verb checks the committed WS-3 reference-validation
+registry against the committed differentiable claim ledger — every
+certification must be unique, point at a ledger claim, and certify a promoted
+claim — then measures the reference-validated coverage frontier.
+
+```python
+from scpn_quantum_control.studio.executive import (
+    ActionRegistry,
+    ExecutiveRequest,
+    run_action,
+)
+from scpn_quantum_control.studio.executive_validate import ValidateActionHandler
+
+registry = ActionRegistry()
+registry.register(ValidateActionHandler())
+
+request = ExecutiveRequest(verb="validate", action_id="validate-ledger", parameters={})
+record = run_action(request, registry=registry)
+record.result.outputs["validation_passed"]    # registry-consistency verdict
+record.result.outputs["certificate_count"]    # WS-3 certifications on file
+record.result.outputs["total_claims"]         # ledger claims measured
+record.result.outputs["answer_rate"]          # reference-validated fraction
+```
+
+The claim boundary is registry-consistency and coverage measurement over the
+committed artefacts only: it does not prove any physics claim itself, run a
+simulation, or touch hardware. The action feeds the informative
+`studio.physics-validation.v1` family.
+
 ## Deploying to a QPU endpoint
 
 The `execute` verb is the studio's only live-hardware action, and it is
@@ -263,7 +294,7 @@ Exit codes are scriptable: `0` succeeded (or previewed), `1` the action failed,
 `2` a request or parameter error, `3` the action was gated — a live-hardware or
 certified verb invoked without `--approve` never executes. The default registry
 carries every shipped handler (`analyse`, `compile`, `differentiate`,
-`execute`, `simulate`) and is also available from Python as
+`execute`, `simulate`, `validate`) and is also available from Python as
 `scpn_quantum_control.studio.build_default_registry()`.
 
 ## Claim boundary

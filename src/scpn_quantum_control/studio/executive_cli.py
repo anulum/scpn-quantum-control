@@ -45,6 +45,7 @@ from .executive_compile import CompileActionHandler
 from .executive_differentiate import DifferentiateActionHandler
 from .executive_execute import ExecuteActionHandler
 from .executive_simulate import SimulateActionHandler
+from .executive_validate import ValidateActionHandler
 
 EXIT_SUCCEEDED: Final[int] = 0
 EXIT_FAILED: Final[int] = 1
@@ -59,7 +60,8 @@ def build_default_registry() -> ActionRegistry:
     -------
     ActionRegistry
         A fresh registry carrying the ``analyse``, ``compile``,
-        ``differentiate``, ``execute``, and ``simulate`` handlers.
+        ``differentiate``, ``execute``, ``simulate``, and ``validate``
+        handlers.
     """
     registry = ActionRegistry()
     registry.register(AnalyseActionHandler())
@@ -67,6 +69,7 @@ def build_default_registry() -> ActionRegistry:
     registry.register(DifferentiateActionHandler())
     registry.register(ExecuteActionHandler())
     registry.register(SimulateActionHandler())
+    registry.register(ValidateActionHandler())
     return registry
 
 
