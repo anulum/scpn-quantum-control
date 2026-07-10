@@ -61,6 +61,7 @@ from .executive import (
     resolve_verb_contract,
     run_action,
 )
+from .executive_cli import build_default_registry
 from .executive_compile import (
     COMPILE_CLAIM_BOUNDARY,
     COMPILE_VERB,
@@ -153,6 +154,7 @@ __all__ = [
     "GeneratedScript",
     "ScriptLanguage",
     "VerbContract",
+    "build_default_registry",
     "build_effect_ir",
     "build_generated_script",
     "default_registry",

@@ -196,6 +196,35 @@ their provider attestation to make the `studio.qpu-result-pack.v1` result
 attestation-verifiable (see [Studio Federation](studio_federation.md)). The
 studio never contacts a provider or produces counts.
 
+## Running actions from the CLI
+
+The `scpn-studio-run` entry point drives the executive spine from a shell (or
+from the SCPN-STUDIO hub), one verb per invocation. It prints the sealed
+`ExecutiveRecord` — or the inspectable plan under `--preview` — as JSON on
+stdout, and writes the generated reproduction script into `--script-dir` on
+success.
+
+```bash
+# compile a bounded network (inline parameters)
+scpn-studio-run compile --action-id compile-3node \
+  --params '{"K_nm": [[0.0, 0.4], [0.4, 0.0]], "omega": [-0.1, 0.1],
+             "time": 0.1, "trotter_steps": 1, "trotter_order": 1}' \
+  --script-dir out/
+
+# inspect a simulate plan without executing it
+scpn-studio-run simulate --action-id sim-3node --params-file request.json --preview
+
+# an approval-gated deploy fails closed without --approve (exit code 3)
+scpn-studio-run execute --action-id deploy --params-file deploy.json --approve
+```
+
+Exit codes are scriptable: `0` succeeded (or previewed), `1` the action failed,
+`2` a request or parameter error, `3` the action was gated — a live-hardware or
+certified verb invoked without `--approve` never executes. The default registry
+carries every shipped handler (`compile`, `differentiate`, `execute`,
+`simulate`) and is also available from Python as
+`scpn_quantum_control.studio.build_default_registry()`.
+
 ## Claim boundary
 
 The differentiate action proves the exact reverse-mode value and gradient of a

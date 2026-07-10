@@ -61,6 +61,7 @@ scpn-provider-smoke = "scpn_quantum_control.hardware.provider_smoke:main"
 scpn-biological-qec-report = "scpn_quantum_control.qec.biological_cli:main"
 install-differentiable-framework-overlay = "scpn_quantum_control.differentiable_framework_overlay:main"
 scpn-emit-studio-manifest = "scpn_quantum_control.studio.federation:main"
+scpn-studio-run = "scpn_quantum_control.studio.executive_cli:main"
 
 [project.optional-dependencies]
 viz = ["matplotlib>=3.5,<4.0"]
