@@ -78,6 +78,11 @@ from .executive_execute import (
     EXECUTE_VERB,
     ExecuteActionHandler,
 )
+from .executive_simulate import (
+    SIMULATE_CLAIM_BOUNDARY,
+    SIMULATE_VERB,
+    SimulateActionHandler,
+)
 from .federation import (
     build_architecture_map_extension,
     build_federation_document,
@@ -170,7 +175,10 @@ __all__ = [
     "ReferenceValidationCertification",
     "ReferenceValidationRegistry",
     "ReferenceValidationRegistryValidation",
+    "SIMULATE_CLAIM_BOUNDARY",
+    "SIMULATE_VERB",
     "STUDIO_ID",
+    "SimulateActionHandler",
     "StudioBundleValidation",
     "XY_COMPILE_INPUT_VERSION",
     "XY_COMPILE_RECOMPUTE_SCHEMA",

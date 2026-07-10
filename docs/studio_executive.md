@@ -107,6 +107,51 @@ digest is recompute-verifiable in a browser through the WASM kernel (see
 [Studio Federation](studio_federation.md) → WS-1 recompute kernel). It is not a
 physical `K_nm` claim, a continuous simulator value, or QPU execution.
 
+## Simulating an evolution
+
+The read-only `simulate` verb evolves a bounded `K_nm`/`omega` oscillator
+network on a local dense-statevector simulator. It Trotter-evolves the XY spin
+Hamiltonian from `t = 0` to `t_max` in `dt` steps and measures the Kuramoto
+synchronisation order parameter `R(t)` along the trajectory, returning the
+trajectory summary and a reproduction script.
+
+```python
+from scpn_quantum_control.studio.executive import (
+    ActionRegistry,
+    ExecutiveRequest,
+    run_action,
+)
+from scpn_quantum_control.studio.executive_simulate import SimulateActionHandler
+
+registry = ActionRegistry()
+registry.register(SimulateActionHandler())
+
+request = ExecutiveRequest(
+    verb="simulate",
+    action_id="simulate-3node",
+    parameters={
+        "K_nm": [[0.0, 0.4, 0.1], [0.4, 0.0, 0.3], [0.1, 0.3, 0.0]],
+        "omega": [-0.1, 0.05, 0.05],
+        "t_max": 0.2,
+        "dt": 0.1,
+        "trotter_per_step": 1,
+        "trotter_order": 1,
+    },
+)
+record = run_action(request, registry=registry)
+record.result.outputs["order_parameter_final"]  # Kuramoto R at t_max
+record.result.outputs["order_parameter_mean"]    # trajectory-mean R
+record.result.outputs["n_points"]                # trajectory length
+print(record.script.source)                       # a standalone reproduction script
+```
+
+The claim boundary is a *simulator estimate*: the reported order parameter is a
+dense-statevector Trotter approximation at the stated step and Trotter
+resolution, not a continuous-time exact solution, a physical `K_nm` claim, or QPU
+execution. The reproduction script re-evolves the network and checks the sealed
+`order_parameter_final`/`order_parameter_mean` summary to a numerical tolerance.
+The action feeds the informative `studio.quantum-evolution.v1` family.
+
 ## Deploying to a QPU endpoint
 
 The `execute` verb is the studio's only live-hardware action, and it is
