@@ -235,6 +235,21 @@ Coverage target: 90% (`--cov-fail-under=90`) on the Python 3.12
 coverage lane. Coverage recovery must stay module-specific; coverage-bucket
 tests remain forbidden.
 
+### Docker image — reproduction/CI only
+
+The root `Dockerfile` (built and exercised by
+`.github/workflows/docker.yml`) is a **reproduction / CI test image, not a
+production runtime**. Its default `CMD` is the pytest suite, and the
+workflow builds the image and runs the tests inside it — the image is never
+pushed to a registry. It deliberately ships `tests/`, `docs/`, `paper/`,
+`notebooks/`, `data/`, and CI fixtures, and it does not install the
+compiled `scpn_quantum_engine` extension (stubbed to fail loudly), so the
+Python tier runs on its pure-Python fallbacks with no Rust toolchain in the
+image. It is intentionally not slimmed — slimming would defeat its only
+purpose. For a production deployment, install the published wheel
+(`pip install scpn-quantum-control`) into your own base image rather than
+reusing this one.
+
 ### Coverage-exclusions ledger
 
 Every file omitted from the line gate (`[tool.coverage.run].omit` and

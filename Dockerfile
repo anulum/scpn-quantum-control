@@ -3,6 +3,19 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
+#
+# PURPOSE: reproduction / CI test image — NOT a production runtime.
+# This image exists to run the test suite in a clean, pinned container
+# (its default CMD is pytest, and .github/workflows/docker.yml builds it
+# and runs the tests inside — it is never pushed to a registry). It
+# therefore deliberately ships tests/, docs/, paper/, notebooks/, data/,
+# and CI fixtures, and it does NOT install the compiled scpn_quantum_engine
+# extension (the module is stubbed to fail loudly): the Python tier runs on
+# its pure-Python fallbacks so the image stays free of a Rust toolchain.
+# Do NOT slim this into a runtime image — slimming would defeat its only
+# job (reproducing the full test run). For a production deployment, install
+# the published wheel (`pip install scpn-quantum-control`) into your own
+# base image instead of reusing this one.
 
 FROM python:3.12-slim@sha256:3d5ed973e45820f5ba5e46bd065bd88b3a504ff0724d85980dcd05eab361fcf4
 
