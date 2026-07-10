@@ -415,7 +415,7 @@ def _collect_tensor_metadata(
         return
     if isinstance(value, Mapping):
         nested_mapping = cast(Mapping[object, object], value)
-        for key in sorted(nested_mapping, key=lambda item: str(item)):
+        for key in sorted(nested_mapping, key=str):
             _collect_tensor_metadata(f"{prefix}.{key}", nested_mapping[key], metadata)
         return
     if isinstance(value, list | tuple):

@@ -1579,7 +1579,7 @@ def analyze_program_ad_alias_effects(
         components.setdefault(find(member), []).append(member)
 
     alias_sets: list[ProgramADAliasSet] = []
-    for index, members in enumerate(sorted(components.values(), key=lambda values: tuple(values))):
+    for index, members in enumerate(sorted(components.values(), key=tuple)):
         component_versions: set[int] = set()
         component_mutation_versions: set[int] = set()
         for member in members:
@@ -1728,9 +1728,7 @@ def program_ad_static_alias_lattice_report(
         components_by_root.setdefault(find(member), []).append(member)
 
     components: list[ProgramADStaticAliasLatticeComponent] = []
-    for index, members in enumerate(
-        sorted(components_by_root.values(), key=lambda values: tuple(values))
-    ):
+    for index, members in enumerate(sorted(components_by_root.values(), key=tuple)):
         edge_kinds: set[str] = set()
         versions: set[int] = set()
         mutation_versions: set[int] = set()
