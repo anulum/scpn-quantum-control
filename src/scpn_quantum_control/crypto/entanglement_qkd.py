@@ -16,6 +16,12 @@ Protocol:
 Security: K_nm's 120 continuous parameters form the shared secret.
 Correlations from wrong K_nm' are statistically distinguishable.
 
+Simulation-only boundary: the protocol runs on a statevector simulator —
+there is no physical channel, no classical-channel authentication, and no
+finite-key analysis; outputs are research artefacts, not usable key
+material. All randomness comes from an explicit caller-supplied seed, and
+key bits live in ordinary NumPy arrays with no memory zeroisation.
+
 Refs:
 - Frequency-bin QKD, npj Quantum Information 2025
 - Huygens quantum sync, Nature Communications 2025
@@ -38,12 +44,19 @@ def scpn_qkd_protocol(
     alice_qubits: list[int],
     bob_qubits: list[int],
     shots: int = 10000,
-    seed: int = 42,
+    *,
+    seed: int,
 ) -> dict[str, Any]:
     """Execute SCPN-QKD protocol on statevector simulator.
 
-    Returns dict with raw_key_alice, raw_key_bob, qber, secure_key_length,
-    and bell_correlator (CHSH value).
+    ``seed`` is REQUIRED: a key-distribution simulation must never source
+    its randomness from a hidden default, so the caller states the seed
+    explicitly (simulation-only — see the module docstring).
+
+    Returns dict with raw_key_alice, raw_key_bob, qber, secure_key (the
+    privacy-amplified bit array, empty when the measured QBER is at or
+    above the security threshold), secure_key_length (in bits), and
+    bell_correlator (CHSH value).
     """
     n = K.shape[0]
     rng = np.random.default_rng(seed)
@@ -68,16 +81,20 @@ def scpn_qkd_protocol(
     # CHSH correlator for entanglement certification
     bell = correlator_matrix(sv, alice_qubits, bob_qubits)
 
-    # Privacy amplification
+    # Privacy amplification against the MEASURED QBER — a raw key observed
+    # at or above the security threshold yields an empty key, never a
+    # clamped-QBER one. The Toeplitz seed is public randomness drawn from
+    # the protocol RNG after the raw key exists.
     combined_raw = np.concatenate([alice_bits, bob_bits])
-    secure_key = privacy_amplification(combined_raw, min(qber, 0.10))
+    toeplitz_seed = int(rng.integers(0, 2**32))
+    secure_key = privacy_amplification(combined_raw, qber, seed=toeplitz_seed)
 
     return {
         "raw_key_alice": alice_bits,
         "raw_key_bob": bob_bits,
         "qber": qber,
         "secure_key": secure_key,
-        "secure_key_length": len(secure_key) * 8,
+        "secure_key_length": int(secure_key.size),
         "bell_correlator": bell,
         "ground_energy": key_state["energy"],
     }

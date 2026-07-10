@@ -311,13 +311,15 @@ def correlator_4q_experiment(
 
 
 def qkd_qber_4q_experiment(
-    runner: HardwareRunner, shots: int = 10000, maxiter: int = 100
+    runner: HardwareRunner, shots: int = 10000, maxiter: int = 100, sim_seed: int = 0
 ) -> dict[str, Any]:
     """QBER measurement from hardware for BB84-family security validation.
 
     Measures in Z and X bases, extracts Alice (qubits 0,1) and Bob (qubits 2,3)
     raw keys, computes QBER. Secure if QBER < 0.11 (BB84 threshold).
-    ~15s QPU budget (2 circuits).
+    ~15s QPU budget (2 circuits). ``sim_seed`` fixes the simulator
+    reference's basis-choice PRNG for reproducibility — it is a comparison
+    baseline, not key entropy.
 
     Returns
     -------
@@ -361,7 +363,7 @@ def qkd_qber_4q_experiment(
     qber_x_hw = estimate_qber(alice_x, bob_x)
 
     # Simulator reference
-    sim_result = scpn_qkd_protocol(K, omega, [0, 1], [2, 3], shots=shots)
+    sim_result = scpn_qkd_protocol(K, omega, [0, 1], [2, 3], shots=shots, seed=sim_seed)
     qber_sim = sim_result["qber"]
 
     rate_z = devetak_winter_rate(qber_z_hw)

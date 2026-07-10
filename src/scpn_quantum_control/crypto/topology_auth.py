@@ -12,6 +12,10 @@ Co-spectral graphs (different K_nm with same spectrum) exist, so
 publishing the spectrum doesn't reveal K_nm — but any party with the
 true K_nm can verify consistency.
 
+The secret K_nm is used directly as HMAC key material and lives in
+ordinary NumPy arrays with no memory zeroisation, so it must be assumed
+to persist in process memory until interpreter exit.
+
 Refs:
 - Van Dam & Haemers (2003), "Which graphs are determined by their spectrum?"
 - AAAI Symposium 2025, "Quantum Network Science: Graph Structure to Entanglement Performance"

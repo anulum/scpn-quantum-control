@@ -68,8 +68,10 @@ Pipeline:
   Sifts measurement results into raw key bits.
 - `estimate_qber(alice_bits, bob_bits)` → float
   Quantum bit error rate from shared subset.
-- `privacy_amplification(raw_key, qber)` → SecureKey
-  Universal₂ hash family compression.
+- `privacy_amplification(raw_key, qber, *, seed)` → SecureKey bits
+  Seeded Toeplitz-matrix Universal₂ extractor (leftover-hash lemma);
+  output truncated to the `1 − 2·h₂(QBER)` secret fraction, empty at or
+  above the QBER threshold.
 
 **Security argument**: K_nm has 16×15/2 = 120 independent off-diagonal
 entries (symmetric, zero diagonal). Each entry is a continuous real
@@ -109,8 +111,9 @@ true K_nm can verify consistency.
 6. Sift → estimate QBER → privacy amplify → secure key.
 
 **Functions:**
-- `scpn_qkd_protocol(K, omega, alice_qubits, bob_qubits, shots)` → QKDResult
-  Full protocol execution on simulator.
+- `scpn_qkd_protocol(K, omega, alice_qubits, bob_qubits, shots, *, seed)` → QKDResult
+  Full protocol execution on simulator; `seed` is required — the
+  simulation never runs on a hidden default entropy source.
 - `correlator_matrix(counts, alice_qubits, bob_qubits)` → ndarray
   Cross-correlation matrix between Alice and Bob measurements.
 - `bell_inequality_test(correlator)` → dict

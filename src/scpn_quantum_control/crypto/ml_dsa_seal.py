@@ -31,7 +31,9 @@ every run, which is what makes the seal independently recomputable.
 
 This is *signing* assurance (the grade is the studio's own, unforged); it is not a
 FIPS-140-validated module and carries no side-channel-resistance guarantee — the same
-boundary :mod:`scpn_quantum_control.crypto.ml_dsa` states.
+boundary :mod:`scpn_quantum_control.crypto.ml_dsa` states. Secret keys are held in
+ordinary Python ``bytes`` with no memory zeroisation, so they must be assumed to
+persist in process memory until interpreter exit.
 """
 
 from __future__ import annotations

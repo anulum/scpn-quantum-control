@@ -16,17 +16,51 @@ module and carries no side-channel-resistance guarantee.
 
 The polynomial ring is ``R_q = Z_q[X]/(X^256 + 1)`` with ``q = 8380417``. The
 number-theoretic transform (``ntt`` / ``intt``) dispatches to a bit-true Rust
-kernel when the acceleration engine is installed.
+kernel when the acceleration engine is installed; any fallback to the
+pure-Python reference is logged once per process, and setting
+``SCPN_REQUIRE_NATIVE_CRYPTO=1`` turns a fallback into a ``RuntimeError``.
+
+Secret material (seeds, secret keys) lives in ordinary Python ``bytes``;
+CPython provides no reliable memory zeroisation, so secrets must be assumed
+to persist in process memory until interpreter exit.
 """
 
 from __future__ import annotations
 
 import hashlib
+import logging
+import os
+import warnings
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from _hashlib import HASHXOF
+    from collections.abc import Callable
+
+_LOGGER = logging.getLogger(__name__)
+
+REQUIRE_NATIVE_ENV = "SCPN_REQUIRE_NATIVE_CRYPTO"
+
+_RESEARCH_BOUNDARY_WARNING = (
+    "scpn_quantum_control.crypto.ml_dsa is a research implementation of FIPS 204:"
+    " it reproduces the standard's ACVP test vectors but carries no constant-time,"
+    " side-channel-resistance, or FIPS-140 validation guarantee; do not protect"
+    " production secrets with it."
+)
+
+_ntt_fallback_logged = False
+_research_warning_emitted = False
+
+
+def _warn_research_boundary(suppress: bool) -> None:
+    """Emit the research-boundary ``UserWarning`` once per process."""
+    global _research_warning_emitted
+    if suppress or _research_warning_emitted:
+        return
+    _research_warning_emitted = True
+    warnings.warn(_RESEARCH_BOUNDARY_WARNING, UserWarning, stacklevel=3)
+
 
 # --- ML-DSA-65 parameters (FIPS 204, Table 1) ------------------------------- #
 Q = 8380417
@@ -122,28 +156,76 @@ def _intt_python(poly: list[int]) -> list[int]:
     return [(_F_256_INV * x) % Q for x in w]
 
 
-def ntt(poly: list[int]) -> list[int]:
-    """Forward NTT, dispatching to the Rust kernel when available."""
+def _native_kernel(name: str) -> Callable[[list[int]], list[int]] | None:
+    """Return the Rust NTT kernel ``name``, or ``None`` when unavailable."""
     try:
         import scpn_quantum_engine as _engine
+    except ImportError:
+        return None
+    kernel = getattr(_engine, name, None)
+    return kernel if callable(kernel) else None
 
-        if hasattr(_engine, "ml_dsa_ntt"):
-            return list(_engine.ml_dsa_ntt(poly))
-    except (ImportError, AttributeError, ValueError, TypeError):
-        pass
-    return _ntt_python(poly)
+
+def _log_ntt_fallback(reason: str) -> None:
+    """Log the active-path decision once per process."""
+    global _ntt_fallback_logged
+    if _ntt_fallback_logged:
+        return
+    _ntt_fallback_logged = True
+    _LOGGER.warning(
+        "ML-DSA NTT dispatch: using the pure-Python reference path (%s);"
+        " set %s=1 to make any fallback an error.",
+        reason,
+        REQUIRE_NATIVE_ENV,
+    )
+
+
+def _dispatch_ntt(
+    name: str, python_impl: Callable[[list[int]], list[int]], poly: list[int]
+) -> list[int]:
+    """Dispatch to the Rust kernel ``name`` with an observable fallback.
+
+    The pure-Python reference is bit-true, so the fallback is safe — but it
+    must never be silent: the first fallback in a process logs a warning
+    naming the reason, and ``SCPN_REQUIRE_NATIVE_CRYPTO=1`` raises
+    ``RuntimeError`` instead of falling back.
+    """
+    strict = os.environ.get(REQUIRE_NATIVE_ENV) == "1"
+    kernel = _native_kernel(name)
+    if kernel is None:
+        if strict:
+            raise RuntimeError(
+                f"{REQUIRE_NATIVE_ENV}=1 but the Rust kernel '{name}' is unavailable"
+            )
+        _log_ntt_fallback(f"Rust kernel '{name}' unavailable")
+        return python_impl(poly)
+    try:
+        return list(kernel(poly))
+    except (ValueError, TypeError) as exc:
+        if strict:
+            raise RuntimeError(
+                f"{REQUIRE_NATIVE_ENV}=1 and the Rust kernel '{name}' failed: {exc!r}"
+            ) from exc
+        _log_ntt_fallback(f"Rust kernel '{name}' failed: {exc!r}")
+        return python_impl(poly)
+
+
+def ntt(poly: list[int]) -> list[int]:
+    """Forward NTT, dispatching to the Rust kernel when available.
+
+    A fallback to the pure-Python reference logs a once-per-process warning;
+    ``SCPN_REQUIRE_NATIVE_CRYPTO=1`` raises ``RuntimeError`` instead.
+    """
+    return _dispatch_ntt("ml_dsa_ntt", _ntt_python, poly)
 
 
 def intt(poly: list[int]) -> list[int]:
-    """Inverse NTT, dispatching to the Rust kernel when available."""
-    try:
-        import scpn_quantum_engine as _engine
+    """Inverse NTT, dispatching to the Rust kernel when available.
 
-        if hasattr(_engine, "ml_dsa_intt"):
-            return list(_engine.ml_dsa_intt(poly))
-    except (ImportError, AttributeError, ValueError, TypeError):
-        pass
-    return _intt_python(poly)
+    A fallback to the pure-Python reference logs a once-per-process warning;
+    ``SCPN_REQUIRE_NATIVE_CRYPTO=1`` raises ``RuntimeError`` instead.
+    """
+    return _dispatch_ntt("ml_dsa_intt", _intt_python, poly)
 
 
 def _ntt_mul(a_hat: list[int], b_hat: list[int]) -> list[int]:
@@ -586,8 +668,14 @@ def _encode_message(message: bytes, context: bytes) -> bytes:
     return bytes([0, len(context)]) + context + message
 
 
-def key_gen(seed: bytes) -> MLDSAKeyPair:
-    """Deterministic ML-DSA-65 key generation from a 32-byte seed."""
+def key_gen(seed: bytes, *, suppress_research_warning: bool = False) -> MLDSAKeyPair:
+    """Deterministic ML-DSA-65 key generation from a 32-byte seed.
+
+    The first key-material operation in a process emits a ``UserWarning``
+    stating the research boundary (no constant-time or FIPS-140 guarantee);
+    pass ``suppress_research_warning=True`` to acknowledge it explicitly.
+    """
+    _warn_research_boundary(suppress_research_warning)
     if len(seed) != SEED_BYTES:
         raise ValueError(f"seed must be {SEED_BYTES} bytes")
     pk, sk = _keygen_internal(seed)
@@ -600,8 +688,15 @@ def sign(
     *,
     context: bytes = b"",
     randomness: bytes | None = None,
+    suppress_research_warning: bool = False,
 ) -> bytes:
-    """ML-DSA-65 signature (pure, external interface). Deterministic by default."""
+    """ML-DSA-65 signature (pure, external interface). Deterministic by default.
+
+    The first key-material operation in a process emits a ``UserWarning``
+    stating the research boundary (no constant-time or FIPS-140 guarantee);
+    pass ``suppress_research_warning=True`` to acknowledge it explicitly.
+    """
+    _warn_research_boundary(suppress_research_warning)
     if len(secret_key) != SECRET_KEY_BYTES:
         raise ValueError(f"secret_key must be {SECRET_KEY_BYTES} bytes")
     rnd = bytes(32) if randomness is None else randomness

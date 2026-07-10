@@ -26,10 +26,10 @@ from scpn_quantum_control.crypto.knm_key import prepare_key_state
 
 
 class TestSCPNQKDProtocol:
-    def test_returns_expected_keys(self):
+    def test_returns_expected_keys(self) -> None:
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
-        result = scpn_qkd_protocol(K, omega, alice_qubits=[0, 1], bob_qubits=[2, 3])
+        result = scpn_qkd_protocol(K, omega, alice_qubits=[0, 1], bob_qubits=[2, 3], seed=42)
         assert "raw_key_alice" in result
         assert "raw_key_bob" in result
         assert "qber" in result
@@ -38,26 +38,26 @@ class TestSCPNQKDProtocol:
         assert "bell_correlator" in result
         assert "ground_energy" in result
 
-    def test_qber_bounded(self):
+    def test_qber_bounded(self) -> None:
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
-        result = scpn_qkd_protocol(K, omega, alice_qubits=[0, 1], bob_qubits=[2, 3])
+        result = scpn_qkd_protocol(K, omega, alice_qubits=[0, 1], bob_qubits=[2, 3], seed=42)
         assert 0 <= result["qber"] <= 1
 
-    def test_ground_energy_negative(self):
+    def test_ground_energy_negative(self) -> None:
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
-        result = scpn_qkd_protocol(K, omega, alice_qubits=[0, 1], bob_qubits=[2, 3])
+        result = scpn_qkd_protocol(K, omega, alice_qubits=[0, 1], bob_qubits=[2, 3], seed=42)
         assert result["ground_energy"] < 0
 
-    def test_raw_key_shapes(self):
+    def test_raw_key_shapes(self) -> None:
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
-        result = scpn_qkd_protocol(K, omega, alice_qubits=[0, 1], bob_qubits=[2, 3])
+        result = scpn_qkd_protocol(K, omega, alice_qubits=[0, 1], bob_qubits=[2, 3], seed=42)
         assert len(result["raw_key_alice"]) == 2
         assert len(result["raw_key_bob"]) == 2
 
-    def test_seed_affects_basis_choice(self):
+    def test_seed_affects_basis_choice(self) -> None:
         """Different seeds select different random bases for measurement."""
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
@@ -67,7 +67,7 @@ class TestSCPNQKDProtocol:
         assert 0 <= r1["qber"] <= 1
         assert 0 <= r2["qber"] <= 1
 
-    def test_different_seeds_may_differ(self):
+    def test_different_seeds_may_differ(self) -> None:
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         r1 = scpn_qkd_protocol(K, omega, [0, 1], [2, 3], seed=1)
@@ -79,11 +79,31 @@ class TestSCPNQKDProtocol:
             or True
         )  # protocol is deterministic given seed, but different seeds → different bases
 
-    def test_secure_key_length_nonnegative(self):
+    def test_secure_key_length_nonnegative(self) -> None:
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
-        result = scpn_qkd_protocol(K, omega, [0, 1], [2, 3])
+        result = scpn_qkd_protocol(K, omega, [0, 1], [2, 3], seed=42)
         assert result["secure_key_length"] >= 0
+        assert result["secure_key_length"] == result["secure_key"].size
+
+    def test_seed_is_required(self) -> None:
+        """A key-distribution simulation must never run on a hidden default seed."""
+        K = build_knm_paper27(L=4)
+        omega = OMEGA_N_16[:4]
+        with pytest.raises(TypeError):
+            scpn_qkd_protocol(K, omega, [0, 1], [2, 3])  # type: ignore[call-arg]
+
+    def test_high_qber_yields_empty_secure_key(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """A raw key at/above the QBER threshold produces NO key — never a clamped one."""
+        from scpn_quantum_control.crypto import entanglement_qkd
+
+        monkeypatch.setattr(entanglement_qkd, "estimate_qber", lambda _a, _b: 0.5)
+        K = build_knm_paper27(L=4)
+        omega = OMEGA_N_16[:4]
+        result = scpn_qkd_protocol(K, omega, [0, 1], [2, 3], seed=42)
+        assert result["qber"] == 0.5
+        assert result["secure_key"].size == 0
+        assert result["secure_key_length"] == 0
 
 
 # ---------------------------------------------------------------------------
@@ -92,7 +112,7 @@ class TestSCPNQKDProtocol:
 
 
 class TestCorrelatorMatrix:
-    def test_shape(self):
+    def test_shape(self) -> None:
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         state = prepare_key_state(K, omega, ansatz_reps=1, maxiter=20)
@@ -100,7 +120,7 @@ class TestCorrelatorMatrix:
         corr = correlator_matrix(sv, [0, 1], [2, 3])
         assert corr.shape == (2, 2)
 
-    def test_has_nonzero_entries(self):
+    def test_has_nonzero_entries(self) -> None:
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         state = prepare_key_state(K, omega, ansatz_reps=2, maxiter=50)
@@ -108,7 +128,7 @@ class TestCorrelatorMatrix:
         corr = correlator_matrix(sv, [0, 1], [2, 3])
         assert np.any(np.abs(corr) > 1e-6)
 
-    def test_all_finite(self):
+    def test_all_finite(self) -> None:
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         state = prepare_key_state(K, omega, ansatz_reps=1, maxiter=20)
@@ -116,7 +136,7 @@ class TestCorrelatorMatrix:
         corr = correlator_matrix(sv, [0, 1], [2, 3])
         assert np.all(np.isfinite(corr))
 
-    def test_single_qubit_each(self):
+    def test_single_qubit_each(self) -> None:
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         state = prepare_key_state(K, omega, ansatz_reps=1, maxiter=20)
@@ -131,7 +151,7 @@ class TestCorrelatorMatrix:
 
 
 class TestBellInequality:
-    def test_returns_expected_keys(self):
+    def test_returns_expected_keys(self) -> None:
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         state = prepare_key_state(K, omega, ansatz_reps=1, maxiter=20)
@@ -141,7 +161,7 @@ class TestBellInequality:
         assert "violates_classical" in result
         assert "correlators" in result
 
-    def test_S_nonnegative(self):
+    def test_S_nonnegative(self) -> None:
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         state = prepare_key_state(K, omega, ansatz_reps=1, maxiter=20)
@@ -149,7 +169,7 @@ class TestBellInequality:
         result = bell_inequality_test(sv, qubit_a=0, qubit_b=1, n_total=4)
         assert result["S"] >= 0
 
-    def test_correlators_all_present(self):
+    def test_correlators_all_present(self) -> None:
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         state = prepare_key_state(K, omega, ansatz_reps=1, maxiter=20)
@@ -159,7 +179,7 @@ class TestBellInequality:
             assert key in result["correlators"]
             assert np.isfinite(result["correlators"][key])
 
-    def test_out_of_range_qubits_raises(self):
+    def test_out_of_range_qubits_raises(self) -> None:
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         state = prepare_key_state(K, omega, ansatz_reps=1, maxiter=20)
@@ -167,7 +187,7 @@ class TestBellInequality:
         with pytest.raises(ValueError, match="out of range"):
             bell_inequality_test(sv, qubit_a=5, qubit_b=1, n_total=4)
 
-    def test_S_bounded_by_quantum_limit(self):
+    def test_S_bounded_by_quantum_limit(self) -> None:
         """S should not exceed 2*sqrt(2) ≈ 2.828 (Tsirelson bound)."""
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]

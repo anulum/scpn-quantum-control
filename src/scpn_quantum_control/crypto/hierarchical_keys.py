@@ -14,6 +14,10 @@ The 16-layer SCPN hierarchy maps to a key tree where:
 Time-varying keys: Kuramoto phase sequences add temporal entropy.
 Different time windows produce different keys from the same K_nm.
 
+Derived keys are held in ordinary Python ``bytes`` with no memory
+zeroisation, so they must be assumed to persist in process memory until
+interpreter exit.
+
 Ref: Improved group QKD with multi-party collaboration, Sci. Reports 2025
 """
 

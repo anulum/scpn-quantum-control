@@ -13,6 +13,9 @@ altered without invalidating the signature; verification optionally enforces a
 freshness window. Built on the from-specification ML-DSA-65 implementation in
 :mod:`~scpn_quantum_control.crypto.ml_dsa` (validated against the NIST ACVP
 known-answer vectors).
+
+Secret keys are held in ordinary Python ``bytes`` with no memory zeroisation,
+so they must be assumed to persist in process memory until interpreter exit.
 """
 
 from __future__ import annotations

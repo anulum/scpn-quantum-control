@@ -15,8 +15,10 @@ interface size guards.
 
 from __future__ import annotations
 
+import logging
 import sys
 import types
+import warnings
 from typing import Any
 
 import pytest
@@ -39,32 +41,122 @@ from scpn_quantum_control.crypto.ml_dsa import (
 )
 
 
-def test_ntt_falls_back_to_python(monkeypatch: pytest.MonkeyPatch) -> None:
-    """A raising native NTT export falls back to the Python kernel."""
+@pytest.fixture()
+def _fresh_dispatch_state(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Reset the once-per-process dispatch bookkeeping for observability tests."""
+    monkeypatch.setattr(ml_dsa, "_ntt_fallback_logged", False)
+    monkeypatch.delenv(ml_dsa.REQUIRE_NATIVE_ENV, raising=False)
 
+
+def _install_raising_engine(monkeypatch: pytest.MonkeyPatch, export: str) -> None:
     def _boom(*_args: Any, **_kwargs: Any) -> None:
-        raise ValueError("engine refused the NTT")
+        raise ValueError("engine refused the transform")
 
     stub = types.ModuleType("scpn_quantum_engine")
-    stub.ml_dsa_ntt = _boom  # type: ignore[attr-defined]
+    setattr(stub, export, _boom)
+    monkeypatch.setitem(sys.modules, "scpn_quantum_engine", stub)
+
+
+@pytest.mark.usefixtures("_fresh_dispatch_state")
+def test_ntt_falls_back_to_python_and_warns_once(
+    monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
+) -> None:
+    """A raising native NTT export falls back with ONE logged warning per process."""
+    _install_raising_engine(monkeypatch, "ml_dsa_ntt")
+
+    poly = list(range(N))
+    with caplog.at_level(logging.WARNING, logger="scpn_quantum_control.crypto.ml_dsa"):
+        assert ntt(poly) == _ntt_python(poly)
+        assert ntt(poly) == _ntt_python(poly)
+    fallback_records = [r for r in caplog.records if "pure-Python reference path" in r.message]
+    assert len(fallback_records) == 1
+    assert "ml_dsa_ntt" in fallback_records[0].message
+
+
+@pytest.mark.usefixtures("_fresh_dispatch_state")
+def test_intt_falls_back_to_python_and_warns(
+    monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
+) -> None:
+    """A raising native INTT export falls back to the Python kernel with a warning."""
+    _install_raising_engine(monkeypatch, "ml_dsa_intt")
+
+    poly = list(range(N))
+    with caplog.at_level(logging.WARNING, logger="scpn_quantum_control.crypto.ml_dsa"):
+        assert intt(poly) == _intt_python(poly)
+    assert any("ml_dsa_intt" in r.message for r in caplog.records)
+
+
+@pytest.mark.usefixtures("_fresh_dispatch_state")
+def test_missing_engine_falls_back_with_warning(
+    monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
+) -> None:
+    """An absent engine module falls back to Python, naming the unavailable kernel."""
+    monkeypatch.setitem(sys.modules, "scpn_quantum_engine", None)
+
+    poly = list(range(N))
+    with caplog.at_level(logging.WARNING, logger="scpn_quantum_control.crypto.ml_dsa"):
+        assert ntt(poly) == _ntt_python(poly)
+    assert any("unavailable" in r.message for r in caplog.records)
+
+
+@pytest.mark.usefixtures("_fresh_dispatch_state")
+def test_strict_mode_raises_when_kernel_unavailable(monkeypatch: pytest.MonkeyPatch) -> None:
+    """SCPN_REQUIRE_NATIVE_CRYPTO=1 turns an unavailable kernel into RuntimeError."""
+    monkeypatch.setitem(sys.modules, "scpn_quantum_engine", None)
+    monkeypatch.setenv(ml_dsa.REQUIRE_NATIVE_ENV, "1")
+
+    with pytest.raises(RuntimeError, match="unavailable"):
+        ntt(list(range(N)))
+
+
+@pytest.mark.usefixtures("_fresh_dispatch_state")
+def test_strict_mode_raises_when_kernel_fails(monkeypatch: pytest.MonkeyPatch) -> None:
+    """SCPN_REQUIRE_NATIVE_CRYPTO=1 turns a failing kernel call into RuntimeError."""
+    _install_raising_engine(monkeypatch, "ml_dsa_ntt")
+    monkeypatch.setenv(ml_dsa.REQUIRE_NATIVE_ENV, "1")
+
+    with pytest.raises(RuntimeError, match="failed"):
+        ntt(list(range(N)))
+
+
+@pytest.mark.usefixtures("_fresh_dispatch_state")
+def test_native_path_is_silent(
+    monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
+) -> None:
+    """A working native kernel produces no fallback log at all."""
+    stub = types.ModuleType("scpn_quantum_engine")
+    stub.ml_dsa_ntt = _ntt_python  # type: ignore[attr-defined]
     monkeypatch.setitem(sys.modules, "scpn_quantum_engine", stub)
 
     poly = list(range(N))
-    assert ntt(poly) == _ntt_python(poly)
+    with caplog.at_level(logging.WARNING, logger="scpn_quantum_control.crypto.ml_dsa"):
+        assert ntt(poly) == _ntt_python(poly)
+    assert not caplog.records
 
 
-def test_intt_falls_back_to_python(monkeypatch: pytest.MonkeyPatch) -> None:
-    """A raising native INTT export falls back to the Python kernel."""
+@pytest.fixture()
+def _fresh_research_warning(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Reset the once-per-process research-boundary warning flag."""
+    monkeypatch.setattr(ml_dsa, "_research_warning_emitted", False)
 
-    def _boom(*_args: Any, **_kwargs: Any) -> None:
-        raise ValueError("engine refused the INTT")
 
-    stub = types.ModuleType("scpn_quantum_engine")
-    stub.ml_dsa_intt = _boom  # type: ignore[attr-defined]
-    monkeypatch.setitem(sys.modules, "scpn_quantum_engine", stub)
+@pytest.mark.usefixtures("_fresh_research_warning")
+def test_key_gen_emits_research_warning_once() -> None:
+    """The first key-material operation warns about the research boundary — once."""
+    with pytest.warns(UserWarning, match="research implementation of FIPS 204"):
+        pair = key_gen(bytes(32))
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        sign(pair.secret_key, b"payload")
 
-    poly = list(range(N))
-    assert intt(poly) == _intt_python(poly)
+
+@pytest.mark.usefixtures("_fresh_research_warning")
+def test_research_warning_is_suppressible() -> None:
+    """suppress_research_warning=True acknowledges the boundary without a warning."""
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        pair = key_gen(bytes(32), suppress_research_warning=True)
+        sign(pair.secret_key, b"payload", suppress_research_warning=True)
 
 
 def test_hint_unpack_rejects_out_of_range_end() -> None:
