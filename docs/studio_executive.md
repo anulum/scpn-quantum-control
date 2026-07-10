@@ -224,6 +224,50 @@ committed artefacts only: it does not prove any physics claim itself, run a
 simulation, or touch hardware. The action feeds the informative
 `studio.physics-validation.v1` family.
 
+## Mitigating a noise-scaled sweep
+
+The read-only `mitigate` verb applies polynomial zero-noise extrapolation with
+delta-method uncertainty propagation to measured expectation values at
+amplified noise scales: a weighted least-squares fit when per-scale standard
+errors are supplied, ordinary least squares otherwise, and a coverage interval
+on the zero-noise estimate either way. An under-determined request (ordinary
+least squares with fewer than `order + 2` points) fails closed.
+
+```python
+from scpn_quantum_control.studio.executive import (
+    ActionRegistry,
+    ExecutiveRequest,
+    run_action,
+)
+from scpn_quantum_control.studio.executive_mitigate import MitigateActionHandler
+
+registry = ActionRegistry()
+registry.register(MitigateActionHandler())
+
+request = ExecutiveRequest(
+    verb="mitigate",
+    action_id="zne-sweep",
+    parameters={
+        "noise_scales": [1.0, 2.0, 3.0],
+        "expectation_values": [0.91, 0.83, 0.76],
+        "standard_errors": [0.01, 0.012, 0.015],
+        "order": 1,
+        "coverage": 0.95,
+    },
+)
+record = run_action(request, registry=registry)
+record.result.outputs["zero_noise_estimate"]  # extrapolated value at scale 0
+record.result.outputs["standard_error"]        # delta-method propagated error
+record.result.outputs["interval_low"]          # coverage-interval bounds
+record.result.outputs["interval_high"]
+```
+
+The claim boundary is the extrapolation arithmetic only: the handler proves
+the polynomial fit and its propagated uncertainty over the *given* measured
+values — it does not run circuits, amplify noise itself, model the device
+noise physics, or validate that the supplied expectations came from a real
+experiment. The action feeds the informative `studio.mitigation.v1` family.
+
 ## Replaying the committed hardware evidence
 
 The read-only `replay` verb re-verifies the committed hardware result packs
@@ -377,9 +421,10 @@ scpn-studio-run execute --action-id deploy --params-file deploy.json --approve
 Exit codes are scriptable: `0` succeeded (or previewed), `1` the action failed,
 `2` a request or parameter error, `3` the action was gated — a live-hardware or
 certified verb invoked without `--approve` never executes. The default registry
-carries every shipped handler (`analyse`, `benchmark`, `compile`,
-`differentiate`, `execute`, `replay`, `simulate`, `validate`) and is also
-available from Python as `scpn_quantum_control.studio.build_default_registry()`.
+carries every verb the studio advertises on the federation contract
+(`analyse`, `benchmark`, `compile`, `differentiate`, `execute`, `mitigate`,
+`replay`, `simulate`, `validate`) and is also available from Python as
+`scpn_quantum_control.studio.build_default_registry()`.
 
 ## Claim boundary
 

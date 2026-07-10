@@ -93,6 +93,11 @@ from .executive_execute import (
     EXECUTE_VERB,
     ExecuteActionHandler,
 )
+from .executive_mitigate import (
+    MITIGATE_CLAIM_BOUNDARY,
+    MITIGATE_VERB,
+    MitigateActionHandler,
+)
 from .executive_replay import (
     REPLAY_CLAIM_BOUNDARY,
     REPLAY_VERB,
@@ -183,6 +188,9 @@ __all__ = [
     "ExecutiveRequest",
     "GeneratedScript",
     "LIVE_TIMING_CAVEAT",
+    "MITIGATE_CLAIM_BOUNDARY",
+    "MITIGATE_VERB",
+    "MitigateActionHandler",
     "ScriptLanguage",
     "VerbContract",
     "build_default_registry",
