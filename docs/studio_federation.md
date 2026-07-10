@@ -152,6 +152,33 @@ explains the planner-selected method and fail-closed boundaries, but it does not
 execute a browser differentiate run. The manifest `ui_module` field stays `null`
 until the remote is deployed and its URL is real.
 
+### 3D Lab
+
+The 3D Lab section renders two orbitable scenes from the live WASM Kuramoto
+kernel — the same Rust kernel the Play panel drives. The kernel's one-shot
+entry point returns only `[R(t) ; θ_final]`, so the Lab captures the full
+phase trajectory `θ_i(t)` by chaining single RK4 steps (the kernel accumulates
+raw phases and its canonical input round-trips exactly, so the chain is
+bit-identical to the one-shot run) and then **proves** that at runtime: the
+captured order-parameter series and final phases are compared bit-exactly
+against a one-shot replay, and any divergence renders as a loud
+`unverifiable` block. The TypeScript centroid recomputation is additionally
+held within `1e-12` of the kernel's own R(t).
+
+* **Phase cylinder** — each oscillator traces `(cos θ_i(t), sin θ_i(t), t)`
+  on the unit cylinder with time running up the axis; the heavy strand is the
+  order-parameter centroid, whose radius is R(t).
+* **Bloch equator** — the final snapshot under the documented classical-limit
+  correspondence (a phase is a qubit on the Bloch sphere's equatorial plane):
+  spin-coherent points on the equator plus the order parameter `R e^{iψ}` as
+  an interior equatorial point. The scene claims no z-axis dynamics, no
+  entanglement, and no hardware state.
+
+The Lab enforces its own fail-closed boundary (N ≤ 32, steps ≤ 360 — stricter
+than the kernel's limits) and projects with exact, unit-tested orthographic
+mathematics into SVG rather than a WebGL engine, keeping the remote inside the
+portal's first-paint budget and every rendered element accessible.
+
 ## WS-3 reference-validation feed
 
 WS-6 coverage must advance from attached reference-validation evidence, not from

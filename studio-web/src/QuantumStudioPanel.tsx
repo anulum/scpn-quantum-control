@@ -10,6 +10,7 @@ import "./tokens.css";
 
 import { GradientPlanExplanation } from "./panel/GradientPlanExplanation";
 import { KuramotoPlayPanel } from "./panel/KuramotoPlayPanel";
+import { Lab3DPanel } from "./panel/Lab3DPanel";
 import { ManifestCapabilities } from "./panel/ManifestCapabilities";
 import { ProgramADReplayCard } from "./panel/ProgramADReplayCard";
 import { RecomputeCard } from "./panel/RecomputeCard";
@@ -60,6 +61,14 @@ export function QuantumStudioPanel() {
       )}
       {committedScenario.ok ? (
         <KuramotoPlayPanel scenario={committedScenario.value} />
+      ) : (
+        <Unverifiable
+          surface="kuramoto_scenario_meanfield_20260708.json"
+          reason={committedScenario.reason}
+        />
+      )}
+      {committedScenario.ok ? (
+        <Lab3DPanel scenario={committedScenario.value} />
       ) : (
         <Unverifiable
           surface="kuramoto_scenario_meanfield_20260708.json"
