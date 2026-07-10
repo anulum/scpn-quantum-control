@@ -49,6 +49,7 @@ SYNC_ANALYSIS_SCHEMA = "studio.sync-analysis.v1"
 DLA_PARITY_SCHEMA = "studio.dla-parity.v1"
 COUPLING_INVARIANT_SCHEMA = "studio.coupling-invariant.v1"
 PHYSICS_VALIDATION_SCHEMA = "studio.physics-validation.v1"
+QEC_READINESS_SCHEMA = "studio.qec-readiness.v1"
 NATIVE_SPEEDUP_SCHEMA = "studio.native-speedup.v1"
 BENCHMARK_DATABANK_SCHEMA = "studio.benchmark-databank.v1"
 EVIDENCE_REPLAY_SCHEMA = "studio.evidence-replay.v1"
@@ -105,10 +106,15 @@ VALIDATE = Verb(
     side_effect=SideEffect.READ_ONLY,
     timing=Timing(TimingClass.BATCH),
     fidelity=Fidelity.ANALYTIC,
-    produces=(PHYSICS_VALIDATION_SCHEMA,),
+    produces=(PHYSICS_VALIDATION_SCHEMA, QEC_READINESS_SCHEMA),
     backends=("python",),
 )
-"""Check a bounded physics claim (parity, invariants) against its reference."""
+"""Check a bounded physics claim (parity, invariants) against its reference.
+
+Emits two families: ``studio.physics-validation.v1`` (registry-consistency
+plus coverage-frontier measurement) and ``studio.qec-readiness.v1`` (the
+committed offline distance-3 QEC readiness decision — decoder logical-failure
+aggregates with the artefact's own supported/blocked claim boundary)."""
 
 BENCHMARK = Verb(
     name="benchmark",
@@ -213,6 +219,7 @@ def evidence_schemas() -> tuple[str, ...]:
         DLA_PARITY_SCHEMA,
         COUPLING_INVARIANT_SCHEMA,
         PHYSICS_VALIDATION_SCHEMA,
+        QEC_READINESS_SCHEMA,
         NATIVE_SPEEDUP_SCHEMA,
         BENCHMARK_DATABANK_SCHEMA,
         EVIDENCE_REPLAY_SCHEMA,

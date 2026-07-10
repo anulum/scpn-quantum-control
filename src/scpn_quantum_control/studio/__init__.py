@@ -119,12 +119,22 @@ from .federation import (
     write_federation_document,
 )
 from .manifest import build_manifest, declared_surface
+from .qec_readiness_bundle import (
+    DEFAULT_QEC_READINESS_ARTIFACT_PATH,
+    QEC_READINESS_ARTIFACT_ID,
+    build_qec_readiness_bundle,
+)
 from .qpu_result_pack import (
     QPU_VERIFIABILITY_MODE,
     QpuResultPackPresentation,
     build_qpu_result_pack_unit,
     present_qpu_result_pack,
     seal_qpu_result_pack,
+)
+from .readout_mitigation_bundle import (
+    DEFAULT_READOUT_MITIGATION_ARTIFACT_PATH,
+    READOUT_MITIGATION_ARTIFACT_ID,
+    build_readout_mitigation_bundle,
 )
 from .recompute_kernel import (
     XY_COMPILE_INPUT_VERSION,
@@ -206,12 +216,16 @@ __all__ = [
     "CouplingInvariantPayload",
     "CouplingInvariantSource",
     "DEFAULT_BENCHMARK_DATABANK_ARTIFACT_PATH",
+    "DEFAULT_QEC_READINESS_ARTIFACT_PATH",
+    "DEFAULT_READOUT_MITIGATION_ARTIFACT_PATH",
     "DEFAULT_REFERENCE_VALIDATION_PATH",
     "DEFAULT_SCORECARD_ARTIFACT_PATH",
     "DEFAULT_SUPPORT_MATRIX_ARTIFACT_PATH",
+    "QEC_READINESS_ARTIFACT_ID",
     "QPU_VERIFIABILITY_MODE",
     "QUANTUM_VERBS",
     "QpuResultPackPresentation",
+    "READOUT_MITIGATION_ARTIFACT_ID",
     "REFERENCE_VALIDATION_SCHEMA",
     "REPLAY_CLAIM_BOUNDARY",
     "REPLAY_VERB",
@@ -244,7 +258,9 @@ __all__ = [
     "build_hardware_result_pack_bundles",
     "build_manifest",
     "build_provider_attestation",
+    "build_qec_readiness_bundle",
     "build_qpu_result_pack_unit",
+    "build_readout_mitigation_bundle",
     "build_result_pack_unit",
     "build_scorecard_bundle",
     "build_support_matrix_bundle",

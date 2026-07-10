@@ -116,6 +116,12 @@ def _capabilities() -> list[dict[str, str]]:
             "status": "wired",
         },
         {"name": "error-mitigation", "domain": "Mitigation", "tier": "core", "status": "wired"},
+        {
+            "name": "qec-offline-readiness",
+            "domain": "QEC",
+            "tier": "extended",
+            "status": "wired",
+        },
         {"name": "hardware-execution", "domain": "Hardware", "tier": "core", "status": "wired"},
         {"name": "evidence-ledger", "domain": "Provenance", "tier": "core", "status": "wired"},
         {

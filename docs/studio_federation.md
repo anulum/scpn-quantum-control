@@ -93,6 +93,8 @@ wire dictionaries to a Hub.
 | Differentiable baseline scorecard | `build_scorecard_bundle()` | `studio.differentiation-evidence.v1` | Eleven external-baseline category rows ride in `cases[]` with verbatim statuses; the bundle is curated `bounded-model` and the emitter can never upgrade a category. A scorecard that fails its own validation is refused. |
 | Transform-algebra support matrix | `build_support_matrix_bundle()` | `studio.differentiation-evidence.v1` | Thirteen generated support rows ride in `cases[]` with verbatim statuses and measured residuals as case errors; blocked rows stay explicit fail-closed boundaries. The bundle is measured `bounded-model` numerical-model evidence, and an audit that did not pass is never federated. |
 | Effective-coupling invariant | `build_coupling_invariant_bundle()` | `studio.coupling-invariant.v1` | `knm.kuramoto.effective-coupling` source inventory from Hamiltonian learning and differentiable coupling learning with parameter-shift verification. `sync_uncertainty` and `zne_uncertainty` are mandatory UQ sources; the bundle is not a DLA parity claim. |
+| Readout mitigation | `build_readout_mitigation_bundle()` | `studio.mitigation.v1` | Measured raw-versus-corrected parity-asymmetry pairs from real `ibm_kingston` runs ride in `cases[]` verbatim (corrected relative asymmetry as case error, `hardware-mitigated` substrate). The claim boundary carries the artefact's confusion-matrix caveat verbatim: state-specific parity inversion over selected calibration states, not a full `2^n x 2^n` confusion-matrix inversion. `bounded-support`. |
+| QEC offline readiness | `build_qec_readiness_bundle()` | `studio.qec-readiness.v1` | Offline distance-3 surface-code decoder logical-failure aggregates ride in `cases[]` verbatim with explicit `simulated` statuses (Monte-Carlo decoder runs under modelled noise, never hardware). The claim boundary carries the artefact's own supported/blocked lists verbatim — fault tolerance, scalable QEC, and hardware logical-error reduction stay blocked. `bounded-model`. |
 
 The ledger builder loads:
 
@@ -111,6 +113,16 @@ content-addresses the committed artefact for its derivation edge:
 
 ```text
 data/differentiable_phase_qnode/differentiable_transform_support_matrix_20260708.json
+```
+
+The readout-mitigation and QEC-readiness builders load their committed
+artefacts and fail closed on any missing honesty field (method, pairs,
+confusion-matrix caveat; decoder aggregates, code distance, readiness
+decision, supported/blocked lists):
+
+```text
+data/phase2_readout_mitigation/phase2_readout_mitigation_summary_2026-05-05.json
+data/phase3_multicircuit_qec/qec_readiness_2026-05-07.json
 ```
 
 ## Studio web remote (Phase 0)

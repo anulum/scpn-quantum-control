@@ -96,6 +96,12 @@
         "tier": "core"
       },
       {
+        "domain": "QEC",
+        "name": "qec-offline-readiness",
+        "status": "wired",
+        "tier": "extended"
+      },
+      {
         "domain": "Hardware",
         "name": "hardware-execution",
         "status": "wired",
@@ -321,7 +327,7 @@
     ]
   },
   "schema_a": {
-    "content_digest": "sha256:e69b8330cb30ad80ab511f6eacfcc417b536c516633cf9ddec846099a88b0283",
+    "content_digest": "sha256:369e5a6c5df881ee502ffa7d6872d522e1047e21f099ad4f5cd55035e9f8fe59",
     "contract_era": "v1",
     "enumeration": "language-agnostic",
     "evidence_types": [
@@ -331,6 +337,7 @@
       "studio.dla-parity.v1",
       "studio.coupling-invariant.v1",
       "studio.physics-validation.v1",
+      "studio.qec-readiness.v1",
       "studio.native-speedup.v1",
       "studio.benchmark-databank.v1",
       "studio.evidence-replay.v1",
@@ -405,7 +412,8 @@
         ],
         "fidelity": "analytic",
         "produces": [
-          "studio.physics-validation.v1"
+          "studio.physics-validation.v1",
+          "studio.qec-readiness.v1"
         ],
         "safety_tier": "research",
         "side_effect": "read-only",
