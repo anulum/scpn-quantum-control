@@ -13,7 +13,7 @@
     "python_model_source_modules": 518,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 46,
-    "test_files": 893
+    "test_files": 894
   },
   "documentation": {
     "examples": [
@@ -6533,6 +6533,7 @@
       "tests/test_enzyme_toolchain_execution_evidence.py",
       "tests/test_error_budget.py",
       "tests/test_example_workflows.py",
+      "tests/test_exclusions_ledger_drift.py",
       "tests/test_execution_surface_branches.py",
       "tests/test_execution_surface_policy.py",
       "tests/test_experiment_dynamics.py",
