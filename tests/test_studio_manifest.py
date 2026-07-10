@@ -10,6 +10,7 @@
 from __future__ import annotations
 
 import json
+import sys
 from pathlib import Path
 
 import pytest
@@ -193,3 +194,23 @@ def test_committed_studio_manifest_is_current() -> None:
     repo_root = Path(__file__).resolve().parents[1]
     drift = federation.studio_manifest_drift(repo_root)
     assert drift is None, drift
+
+
+def test_platform_sdk_range_matches_the_studio_extra() -> None:
+    """The declared platform_sdk range byte-matches the pyproject studio extra.
+
+    The federation manifest advertises which platform SDK versions the studio
+    builds on; a range narrower than the installable extra would exclude the
+    version CI actually resolves (this drifted once: the manifest said <0.11
+    while the extra allowed <0.12 and CI ran 0.11.0).
+    """
+    if sys.version_info >= (3, 11):
+        import tomllib
+    else:  # pragma: no cover - retained for downstream legacy interpreters
+        import tomli as tomllib
+
+    repo_root = Path(__file__).resolve().parents[1]
+    with (repo_root / "pyproject.toml").open("rb") as handle:
+        pyproject = tomllib.load(handle)
+    (studio_requirement,) = pyproject["project"]["optional-dependencies"]["studio"]
+    assert studio_requirement == f"scpn-studio-platform{manifest.PLATFORM_SDK_RANGE}"
