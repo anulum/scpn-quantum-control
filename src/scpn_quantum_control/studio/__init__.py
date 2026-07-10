@@ -61,6 +61,11 @@ from .executive import (
     resolve_verb_contract,
     run_action,
 )
+from .executive_analyse import (
+    ANALYSE_CLAIM_BOUNDARY,
+    ANALYSE_VERB,
+    AnalyseActionHandler,
+)
 from .executive_cli import build_default_registry
 from .executive_compile import (
     COMPILE_CLAIM_BOUNDARY,
@@ -134,8 +139,11 @@ from .support_matrix_bundle import (
 from .verbs import QUANTUM_VERBS, STUDIO_ID, evidence_schemas, verb_substrates
 
 __all__ = [
+    "ANALYSE_CLAIM_BOUNDARY",
+    "ANALYSE_VERB",
     "ANSWERED_STATUSES",
     "ActionHandler",
+    "AnalyseActionHandler",
     "ActionRegistry",
     "ActionStatus",
     "COMPILE_CLAIM_BOUNDARY",

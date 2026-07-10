@@ -152,6 +152,47 @@ execution. The reproduction script re-evolves the network and checks the sealed
 `order_parameter_final`/`order_parameter_mean` summary to a numerical tolerance.
 The action feeds the informative `studio.quantum-evolution.v1` family.
 
+## Analysing a phase cloud
+
+The read-only `analyse` verb runs the synchronisation witness over a bounded
+phase cloud: harmonic Kuramoto order parameters, geodesic phase distances, and
+exact Vietoris–Rips persistent homology (H0/H1 persistence, Betti curves,
+persistent component count at a reference scale, dominant loop lifetime).
+
+```python
+from scpn_quantum_control.studio.executive import (
+    ActionRegistry,
+    ExecutiveRequest,
+    run_action,
+)
+from scpn_quantum_control.studio.executive_analyse import AnalyseActionHandler
+
+registry = ActionRegistry()
+registry.register(AnalyseActionHandler())
+
+request = ExecutiveRequest(
+    verb="analyse",
+    action_id="analyse-4node",
+    parameters={
+        "phases": [0.0, 0.05, -0.04, 0.02],
+        "thresholds": [0.0, 0.5, 1.0, 2.0, 3.0],
+        "reference_scale": 0.5,
+        "expected_components": 1,
+    },
+)
+record = run_action(request, registry=registry)
+record.result.outputs["order_parameter"]              # first-harmonic Kuramoto R
+record.result.outputs["persistent_component_count"]   # H0 components at the reference scale
+record.result.outputs["dominant_h1_persistence"]       # dominant loop lifetime
+record.result.outputs["witness_passed"]                # witness verdict
+```
+
+The claim boundary is a classical phase-configuration analysis: exact
+persistent homology of the given finite phase cloud over the given filtration
+thresholds — not a quantum-state measurement, a dynamical-evolution claim, or a
+statement about any generating model. The action feeds the informative
+`studio.sync-analysis.v1` family.
+
 ## Deploying to a QPU endpoint
 
 The `execute` verb is the studio's only live-hardware action, and it is
@@ -221,8 +262,8 @@ scpn-studio-run execute --action-id deploy --params-file deploy.json --approve
 Exit codes are scriptable: `0` succeeded (or previewed), `1` the action failed,
 `2` a request or parameter error, `3` the action was gated — a live-hardware or
 certified verb invoked without `--approve` never executes. The default registry
-carries every shipped handler (`compile`, `differentiate`, `execute`,
-`simulate`) and is also available from Python as
+carries every shipped handler (`analyse`, `compile`, `differentiate`,
+`execute`, `simulate`) and is also available from Python as
 `scpn_quantum_control.studio.build_default_registry()`.
 
 ## Claim boundary

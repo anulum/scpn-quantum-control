@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 835,
     "public_documentation_pages": 269,
-    "python_model_classes": 998,
-    "python_model_source_modules": 511,
+    "python_model_classes": 999,
+    "python_model_source_modules": 512,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 46,
-    "test_files": 885
+    "test_files": 886
   },
   "documentation": {
     "examples": [
@@ -591,7 +591,7 @@
       {
         "package": "studio",
         "path": "src/scpn_quantum_control/studio",
-        "python_modules": 23
+        "python_modules": 24
       },
       {
         "package": "tcbo",
@@ -725,6 +725,10 @@
       {
         "name": "AnalogProviderTarget",
         "path": "src/scpn_quantum_control/hardware/analog_kuramoto.py"
+      },
+      {
+        "name": "AnalyseActionHandler",
+        "path": "src/scpn_quantum_control/studio/executive_analyse.py"
       },
       {
         "name": "AncillaCircuitStats",
@@ -5080,6 +5084,7 @@
       "src/scpn_quantum_control/studio/coverage_frontier.py",
       "src/scpn_quantum_control/studio/evidence_bundle.py",
       "src/scpn_quantum_control/studio/executive.py",
+      "src/scpn_quantum_control/studio/executive_analyse.py",
       "src/scpn_quantum_control/studio/executive_cli.py",
       "src/scpn_quantum_control/studio/executive_compile.py",
       "src/scpn_quantum_control/studio/executive_differentiate.py",
@@ -7045,6 +7050,7 @@
       "tests/test_studio_coupling_invariant.py",
       "tests/test_studio_evidence_bundle.py",
       "tests/test_studio_executive.py",
+      "tests/test_studio_executive_analyse.py",
       "tests/test_studio_executive_cli.py",
       "tests/test_studio_executive_compile.py",
       "tests/test_studio_executive_differentiate.py",

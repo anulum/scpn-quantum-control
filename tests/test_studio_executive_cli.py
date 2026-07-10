@@ -75,7 +75,7 @@ def _compile_argv(*extra: str) -> list[str]:
 # --------------------------------------------------------------------------- #
 def test_default_registry_registers_all_shipped_verbs() -> None:
     registry = build_default_registry()
-    assert registry.verbs() == ("compile", "differentiate", "execute", "simulate")
+    assert registry.verbs() == ("analyse", "compile", "differentiate", "execute", "simulate")
 
 
 # --------------------------------------------------------------------------- #
