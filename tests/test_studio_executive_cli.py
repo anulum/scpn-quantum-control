@@ -81,6 +81,7 @@ def test_default_registry_registers_all_shipped_verbs() -> None:
         "compile",
         "differentiate",
         "execute",
+        "replay",
         "simulate",
         "validate",
     )

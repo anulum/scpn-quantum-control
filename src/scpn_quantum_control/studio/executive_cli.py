@@ -45,6 +45,7 @@ from .executive_benchmark import BenchmarkActionHandler
 from .executive_compile import CompileActionHandler
 from .executive_differentiate import DifferentiateActionHandler
 from .executive_execute import ExecuteActionHandler
+from .executive_replay import ReplayActionHandler
 from .executive_simulate import SimulateActionHandler
 from .executive_validate import ValidateActionHandler
 
@@ -61,8 +62,8 @@ def build_default_registry() -> ActionRegistry:
     -------
     ActionRegistry
         A fresh registry carrying the ``analyse``, ``benchmark``, ``compile``,
-        ``differentiate``, ``execute``, ``simulate``, and ``validate``
-        handlers.
+        ``differentiate``, ``execute``, ``replay``, ``simulate``, and
+        ``validate`` handlers.
     """
     registry = ActionRegistry()
     registry.register(AnalyseActionHandler())
@@ -70,6 +71,7 @@ def build_default_registry() -> ActionRegistry:
     registry.register(CompileActionHandler())
     registry.register(DifferentiateActionHandler())
     registry.register(ExecuteActionHandler())
+    registry.register(ReplayActionHandler())
     registry.register(SimulateActionHandler())
     registry.register(ValidateActionHandler())
     return registry

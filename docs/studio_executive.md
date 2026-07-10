@@ -224,6 +224,43 @@ committed artefacts only: it does not prove any physics claim itself, run a
 simulation, or touch hardware. The action feeds the informative
 `studio.physics-validation.v1` family.
 
+## Replaying the committed hardware evidence
+
+The read-only `replay` verb re-verifies the committed hardware result packs
+from their raw artefacts and provenance: every declared artefact must exist
+with its exact byte size and SHA-256 digest, and every declared provider job
+identifier must appear inside the committed raw payloads. Any drift — a
+missing artefact, a digest mismatch, an absent job identifier, or an unknown
+pack id — seals a `failed` record instead of a weakened summary.
+
+```python
+from scpn_quantum_control.studio.executive import (
+    ActionRegistry,
+    ExecutiveRequest,
+    run_action,
+)
+from scpn_quantum_control.studio.executive_replay import ReplayActionHandler
+
+registry = ActionRegistry()
+registry.register(ReplayActionHandler())
+
+request = ExecutiveRequest(
+    verb="replay",
+    action_id="replay-all-packs",
+    parameters={},  # or {"pack_ids": ["phase1_dla_parity_ibm_kingston_2026_04"]}
+)
+record = run_action(request, registry=registry)
+record.result.outputs["replay_passed"]    # True — every artefact re-verified
+record.result.outputs["pack_count"]       # committed packs re-verified
+record.result.outputs["artifact_count"]   # artefacts digest-checked
+```
+
+The claim boundary is integrity re-verification of the committed artefacts
+only: replay proves the raw evidence on disk is exactly what the manifest
+promised — it does not prove any derived physics claim, contact a provider,
+or produce new counts. The action feeds the informative
+`studio.evidence-replay.v1` family.
+
 ## Benchmarking the native construction
 
 The simulated `benchmark` verb times the dense XY-Hamiltonian construction for
@@ -341,8 +378,8 @@ Exit codes are scriptable: `0` succeeded (or previewed), `1` the action failed,
 `2` a request or parameter error, `3` the action was gated — a live-hardware or
 certified verb invoked without `--approve` never executes. The default registry
 carries every shipped handler (`analyse`, `benchmark`, `compile`,
-`differentiate`, `execute`, `simulate`, `validate`) and is also available from
-Python as `scpn_quantum_control.studio.build_default_registry()`.
+`differentiate`, `execute`, `replay`, `simulate`, `validate`) and is also
+available from Python as `scpn_quantum_control.studio.build_default_registry()`.
 
 ## Claim boundary
 

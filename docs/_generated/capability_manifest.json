@@ -9,11 +9,11 @@
     "optional_extras": 43,
     "public_api_exports": 835,
     "public_documentation_pages": 269,
-    "python_model_classes": 1001,
-    "python_model_source_modules": 514,
+    "python_model_classes": 1002,
+    "python_model_source_modules": 515,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 46,
-    "test_files": 888
+    "test_files": 889
   },
   "documentation": {
     "examples": [
@@ -591,7 +591,7 @@
       {
         "package": "studio",
         "path": "src/scpn_quantum_control/studio",
-        "python_modules": 26
+        "python_modules": 27
       },
       {
         "package": "tcbo",
@@ -3991,6 +3991,10 @@
         "path": "src/scpn_quantum_control/qec/fault_tolerant.py"
       },
       {
+        "name": "ReplayActionHandler",
+        "path": "src/scpn_quantum_control/studio/executive_replay.py"
+      },
+      {
         "name": "ReproducibleKuramotoComparison",
         "path": "src/scpn_quantum_control/benchmarks/reproducible_comparison.py"
       },
@@ -5098,6 +5102,7 @@
       "src/scpn_quantum_control/studio/executive_compile.py",
       "src/scpn_quantum_control/studio/executive_differentiate.py",
       "src/scpn_quantum_control/studio/executive_execute.py",
+      "src/scpn_quantum_control/studio/executive_replay.py",
       "src/scpn_quantum_control/studio/executive_simulate.py",
       "src/scpn_quantum_control/studio/executive_validate.py",
       "src/scpn_quantum_control/studio/federation.py",
@@ -7066,6 +7071,7 @@
       "tests/test_studio_executive_compile.py",
       "tests/test_studio_executive_differentiate.py",
       "tests/test_studio_executive_execute.py",
+      "tests/test_studio_executive_replay.py",
       "tests/test_studio_executive_simulate.py",
       "tests/test_studio_executive_validate.py",
       "tests/test_studio_kuramoto_reference.py",

@@ -93,6 +93,11 @@ from .executive_execute import (
     EXECUTE_VERB,
     ExecuteActionHandler,
 )
+from .executive_replay import (
+    REPLAY_CLAIM_BOUNDARY,
+    REPLAY_VERB,
+    ReplayActionHandler,
+)
 from .executive_simulate import (
     SIMULATE_CLAIM_BOUNDARY,
     SIMULATE_VERB,
@@ -200,9 +205,12 @@ __all__ = [
     "QUANTUM_VERBS",
     "QpuResultPackPresentation",
     "REFERENCE_VALIDATION_SCHEMA",
+    "REPLAY_CLAIM_BOUNDARY",
+    "REPLAY_VERB",
     "ReferenceValidationCertification",
     "ReferenceValidationRegistry",
     "ReferenceValidationRegistryValidation",
+    "ReplayActionHandler",
     "SIMULATE_CLAIM_BOUNDARY",
     "SIMULATE_VERB",
     "STUDIO_ID",
