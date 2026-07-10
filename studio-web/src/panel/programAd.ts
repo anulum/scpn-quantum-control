@@ -24,7 +24,11 @@ import committedUnitJson from "../../../data/studio/program_ad_replay_rational_2
 
 export const PROGRAM_AD_SCHEMA = "scpn_qc_studio_program_ad_replay_v1";
 export const KERNEL_EXPORT = "scpn_program_ad_replay";
-export const KERNEL_WASM_URL = "wasm/scpn_quantum_studio_program_ad_wasm.wasm";
+// Module-relative for federated loading (see kuramoto.ts KERNEL_WASM_URL).
+export const KERNEL_WASM_URL = new URL(
+  "../wasm/scpn_quantum_studio_program_ad_wasm.wasm",
+  import.meta.url,
+).href;
 const KERNEL_OK = 0;
 const ALLOC_FAILED = -1;
 

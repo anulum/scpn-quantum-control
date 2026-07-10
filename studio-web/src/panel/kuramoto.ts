@@ -24,7 +24,13 @@ import committedScenarioJson from "../../../data/studio/kuramoto_scenario_meanfi
 
 export const KURAMOTO_INPUT_VERSION = 1;
 export const KURAMOTO_SIMULATE_EXPORT = "scpn_kuramoto_simulate";
-export const KERNEL_WASM_URL = "wasm/scpn_quantum_studio_wasm_kernel.wasm";
+// Resolved module-relative: built chunks live under assets/, the shipped
+// kernels one level up under wasm/ — page-relative paths 404 when the panel
+// is federated under a different origin path (e.g. the Hub's /platform/).
+export const KERNEL_WASM_URL = new URL(
+  "../wasm/scpn_quantum_studio_wasm_kernel.wasm",
+  import.meta.url,
+).href;
 const HEADER_LEN = 32;
 const KERNEL_OK = 0;
 const ALLOC_FAILED = -1;

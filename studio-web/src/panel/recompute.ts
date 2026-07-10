@@ -27,7 +27,11 @@ export const RECOMPUTE_SCHEMA = "studio.xy-compile-recompute.v1";
 export const RECOMPUTE_EXACTNESS = "bit-exact";
 export const RECOMPUTE_MODE = "recompute";
 export const KERNEL_EXPORT = "scpn_xy_compile_digest";
-export const KERNEL_WASM_URL = "wasm/scpn_quantum_studio_wasm_kernel.wasm";
+// Module-relative for federated loading (see kuramoto.ts KERNEL_WASM_URL).
+export const KERNEL_WASM_URL = new URL(
+  "../wasm/scpn_quantum_studio_wasm_kernel.wasm",
+  import.meta.url,
+).href;
 const DIGEST_LEN = 32;
 const KERNEL_OK = 0;
 
