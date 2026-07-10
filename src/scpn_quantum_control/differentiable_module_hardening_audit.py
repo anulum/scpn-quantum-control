@@ -116,6 +116,14 @@ def differentiable_module_hardening_registry() -> tuple[DifferentiableModuleHard
             ("bucket-test rejection", "benchmark-classification smoke cases"),
         ),
         _record(
+            "src/scpn_quantum_control/benchmarks/differentiable_optimizer_convergence.py",
+            ("tests/test_differentiable_optimizer_convergence.py",),
+            (
+                "ground-state optimizer convergence rows",
+                "non-isolated evidence-class fail-closed rows",
+            ),
+        ),
+        _record(
             "src/scpn_quantum_control/benchmarks/differentiable_programming.py",
             ("tests/test_differentiable_programming_benchmarks.py",),
             ("claim-boundary benchmark rows", "external-reference hard gaps"),

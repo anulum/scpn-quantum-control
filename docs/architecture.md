@@ -88,7 +88,7 @@ preparation and `bridge/` for Hamiltonian access.
 ```mermaid
 graph TD
     bridge["bridge/ (15)\nK_nm → quantum objects"]
-    phase["phase/ (92)\nTime evolution"]
+    phase["phase/ (94)\nTime evolution"]
     analysis["analysis/ (61)\nSync probes"]
     control["control/ (14)\nQuantum control"]
     qsnn["qsnn/ (7)\nQuantum SNN"]
@@ -99,7 +99,7 @@ graph TD
     gauge["gauge/ (6)\nGauge theory"]
     apps["applications/ (15)\nBenchmarks"]
     crypto["crypto/ (9)\nQKD + PQC"]
-    benchmarks["benchmarks/ (23)\nPerformance"]
+    benchmarks["benchmarks/ (25)\nPerformance"]
     ssgf["ssgf/ (4)\nGeometry"]
     psi_field["psi_field/ (4)\nU(1) lattice gauge"]
     oscillatools["oscillatools (external)\nKuramoto substrate: Rust → Julia → Python dispatch"]
