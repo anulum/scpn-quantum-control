@@ -149,8 +149,11 @@ surface that fails its fail-closed guard renders as a loud `unverifiable` block.
 The gradient-plan view is sourced from
 `data/differentiable_phase_qnode/gradient_plan_explanations_20260709.json`; it
 explains the planner-selected method and fail-closed boundaries, but it does not
-execute a browser differentiate run. The manifest `ui_module` field stays `null`
-until the remote is deployed and its URL is real.
+execute a browser differentiate run. The manifest `ui_module` is LIVE: the
+remote is pull-deployed under the Hub origin and the manifest points at
+`https://www.anulum.org/studios/scpn-quantum-control/remoteEntry.js`, exposing
+`./QuantumStudioPanel` (probe-verified by the platform keeper; a regression
+test pins the values against `module-federation.config.ts`).
 
 ### 3D Lab
 

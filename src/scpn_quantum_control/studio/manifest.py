@@ -15,8 +15,12 @@ JSON of the declared verbs and evidence schemas, so it is reproducible across
 checkouts and independent of git state — the cross-repo ``capability_manifest`` drift
 gotcha does not apply to the federation contract block.
 
-QUANTUM does not yet ship a federated Studio UI panel, so ``ui_module`` is ``None``;
-the panel is added once the Studio UI binding exists.
+The federated Studio UI panel is DEPLOYED: ``ui_module`` points at the live
+Module Federation remote under the Hub origin
+(``https://www.anulum.org/studios/scpn-quantum-control/``), exposing
+``./QuantumStudioPanel``. The values were probe-verified live by the platform
+keeper (container init/get, all chunks under the studio path, zero page
+errors) before they landed here.
 """
 
 from __future__ import annotations
@@ -29,6 +33,7 @@ import tomllib
 from scpn_studio_platform.manifest import (
     CapabilityManifest,
     TransportProfile,
+    UiModule,
     content_digest,
 )
 
@@ -36,6 +41,15 @@ from .verbs import QUANTUM_VERBS, STUDIO_ID, evidence_schemas, verb_substrates
 
 PLATFORM_SDK_RANGE = ">=0.9,<0.12"
 """The platform SDK SemVer range the studio builds on (matches the ``studio`` extra)."""
+
+STUDIO_REMOTE_ENTRY = "https://www.anulum.org/studios/scpn-quantum-control/remoteEntry.js"
+"""The deployed Module Federation remote entry (platform pull-deploy target)."""
+
+STUDIO_EXPOSED_MODULE = "./QuantumStudioPanel"
+"""The exposed MF module the Hub mounts (must match module-federation.config.ts)."""
+
+STUDIO_FEDERATION_NAME = "scpn_quantum_control"
+"""The MF container name (must match ``name`` in module-federation.config.ts)."""
 
 PROTOCOL_VERSION = "1"
 """The SYNAPSE wire protocol version the studio pins."""
@@ -120,5 +134,9 @@ def build_manifest(*, studio_version: str = STUDIO_VERSION) -> CapabilityManifes
         transport_profile=TransportProfile.LOCAL_FIRST,
         verbs=QUANTUM_VERBS,
         evidence_types=evidence_schemas(),
-        ui_module=None,
+        ui_module=UiModule(
+            remote_entry=STUDIO_REMOTE_ENTRY,
+            exposes=(STUDIO_EXPOSED_MODULE,),
+            federation=STUDIO_FEDERATION_NAME,
+        ),
     )

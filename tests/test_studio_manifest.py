@@ -214,3 +214,31 @@ def test_platform_sdk_range_matches_the_studio_extra() -> None:
         pyproject = tomllib.load(handle)
     (studio_requirement,) = pyproject["project"]["optional-dependencies"]["studio"]
     assert studio_requirement == f"scpn-studio-platform{manifest.PLATFORM_SDK_RANGE}"
+
+
+def test_ui_module_matches_the_deployed_remote_and_the_vite_config() -> None:
+    """``ui_module`` byte-matches the live deploy target and the MF config.
+
+    The Hub's loader reads ``ui_module.exposes[0]`` and the federation name
+    from the manifest, so a drift against ``module-federation.config.ts``
+    breaks panel loading silently. The values here were probe-verified live
+    by the platform keeper on 2026-07-10 (container init/get, all chunks
+    under the studio path).
+    """
+    built = manifest.build_manifest()
+    ui = built.ui_module
+    assert ui is not None
+    assert ui.remote_entry == (
+        "https://www.anulum.org/studios/scpn-quantum-control/remoteEntry.js"
+    )
+    assert ui.remote_entry.startswith("https://")
+    assert "/studios/scpn-quantum-control/" in ui.remote_entry
+    assert ui.exposes == ("./QuantumStudioPanel",)
+    assert ui.federation == "scpn_quantum_control"
+
+    repo_root = Path(__file__).resolve().parents[1]
+    mf_config = (repo_root / "studio-web" / "module-federation.config.ts").read_text(
+        encoding="utf-8"
+    )
+    assert f'FEDERATION_NAME = "{ui.federation}"' in mf_config
+    assert f'PANEL_EXPOSE_KEY = "{ui.exposes[0]}"' in mf_config

@@ -352,6 +352,13 @@
     "studio": "scpn-quantum-control",
     "studio_version": "0.10.0",
     "transport_profile": "local-first",
+    "ui_module": {
+      "exposes": [
+        "./QuantumStudioPanel"
+      ],
+      "federation": "scpn_quantum_control",
+      "remote_entry": "https://www.anulum.org/studios/scpn-quantum-control/remoteEntry.js"
+    },
     "verbs": [
       {
         "backends": [
