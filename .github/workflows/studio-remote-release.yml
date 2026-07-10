@@ -1,0 +1,100 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
+# © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
+# © Code 2020–2026 Miroslav Šotek. All rights reserved.
+# ORCID: 0009-0009-3560-0851
+# Contact: www.anulum.li | protoscience@anulum.li
+# scpn-quantum-control — studio remote pull-deploy Release (ST-36)
+#
+# The studio hosting contract is a credential-free PULL: this repo holds no
+# deploy key. On a `studio-remote-v<version>` tag this workflow rebuilds the
+# studio remote from source, packages the deterministic release pair
+# (tarball + standalone deploy manifest with the bundle content digest), and
+# publishes both as public Release assets for the SCPN-STUDIO reflector to
+# fetch, verify fail-closed, and deploy.
+
+name: Studio Remote Release
+
+on:
+  push:
+    tags:
+      - "studio-remote-v*"
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # create the Release and upload its assets
+    defaults:
+      run:
+        working-directory: studio-web
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: "22"
+      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
+        with:
+          version: 11.9.0
+          run_install: false
+      - name: Assert the tag matches the studio version
+        working-directory: .
+        run: |
+          tag_version="${GITHUB_REF_NAME#studio-remote-v}"
+          project_version="$(python3 -c 'import tomllib, pathlib; print(tomllib.loads(pathlib.Path("pyproject.toml").read_text())["project"]["version"])')"
+          if [[ "${tag_version}" != "${project_version}" ]]; then
+            echo "tag ${GITHUB_REF_NAME} does not match project version ${project_version}"
+            exit 1
+          fi
+      - name: Install locked dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Typecheck (TS strict)
+        run: pnpm typecheck
+      - name: Add the WASM build target
+        run: rustup target add wasm32-unknown-unknown
+      - name: Build the WASM kernel (tests replay it)
+        working-directory: scpn_quantum_engine/studio_wasm_kernel
+        run: cargo build --release --locked --target wasm32-unknown-unknown
+      - name: Build the program-AD WASM kernel
+        working-directory: scpn_quantum_engine/studio_program_ad_wasm
+        run: cargo build --release --locked --target wasm32-unknown-unknown
+      - name: Test with enforced coverage thresholds
+        run: pnpm test:coverage
+      - name: Build the portal and the federation remote
+        run: pnpm build
+      - name: Ship the WASM kernels + write the deploy manifest
+        working-directory: .
+        run: python3 tools/build_studio_wasm_bundle.py
+      - name: Package the release pair (tag-gated)
+        working-directory: .
+        run: |
+          python3 tools/package_studio_release.py \
+            --expect-version "${GITHUB_REF_NAME#studio-remote-v}"
+      - name: Independently re-verify the bundle digest
+        working-directory: .
+        run: |
+          python3 - <<'EOF'
+          import hashlib, json
+          from pathlib import Path
+          out = Path("studio-web/release")
+          manifest = json.loads((out / "deploy-manifest.json").read_text())
+          tarball = out / manifest["bundle"]["name"]
+          digest = "sha256:" + hashlib.sha256(tarball.read_bytes()).hexdigest()
+          assert digest == manifest["bundle"]["sha256"], "bundle digest drift"
+          assert tarball.stat().st_size == manifest["bundle"]["bytes"], "bundle size drift"
+          print(f"release pair verified: {tarball.name} {digest}")
+          EOF
+      - name: Publish the Release with both assets
+        working-directory: .
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${GITHUB_REF_NAME}" \
+            "studio-web/release/scpn-quantum-control-studio-remote.tar.gz" \
+            "studio-web/release/deploy-manifest.json" \
+            --verify-tag \
+            --title "Studio remote ${GITHUB_REF_NAME#studio-remote-}" \
+            --notes "Pull-deploy release pair for the SCPN-STUDIO reflector: the studio remote bundle plus its standalone deploy manifest (studio_version + bundle content digest + per-file digest table). Verify the tarball against the manifest digest before deploying."

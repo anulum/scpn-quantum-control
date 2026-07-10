@@ -120,3 +120,4 @@ paper/**/paper*_assessment.md
 paper/**/_v1_archive/
 paper/**/paper*_assessment_*.md
 node_modules/
+studio-web/release/

@@ -3,7 +3,7 @@
   "counts": {
     "domain_package_families": 31,
     "example_files": 37,
-    "github_workflows": 23,
+    "github_workflows": 24,
     "model_documentation_pages": null,
     "notebook_files": 100,
     "optional_extras": 43,
@@ -13,7 +13,7 @@
     "python_model_source_modules": 518,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 46,
-    "test_files": 892
+    "test_files": 893
   },
   "documentation": {
     "examples": [
@@ -6288,7 +6288,8 @@
       ".github/workflows/rust-wheels.yml",
       ".github/workflows/sbom.yml",
       ".github/workflows/scorecard.yml",
-      ".github/workflows/stale.yml"
+      ".github/workflows/stale.yml",
+      ".github/workflows/studio-remote-release.yml"
     ],
     "test_files": [
       "tests/_differentiable_external_comparison_edges.py",
@@ -6734,6 +6735,7 @@
       "tests/test_p_h1_derivation.py",
       "tests/test_p_h1_open_guard.py",
       "tests/test_p_h1_open_question_audit.py",
+      "tests/test_package_studio_release.py",
       "tests/test_pairing_correlator.py",
       "tests/test_param_shift.py",
       "tests/test_param_shift_contracts.py",
