@@ -41,6 +41,7 @@ from .executive import (
     run_action,
 )
 from .executive_analyse import AnalyseActionHandler
+from .executive_benchmark import BenchmarkActionHandler
 from .executive_compile import CompileActionHandler
 from .executive_differentiate import DifferentiateActionHandler
 from .executive_execute import ExecuteActionHandler
@@ -59,12 +60,13 @@ def build_default_registry() -> ActionRegistry:
     Returns
     -------
     ActionRegistry
-        A fresh registry carrying the ``analyse``, ``compile``,
+        A fresh registry carrying the ``analyse``, ``benchmark``, ``compile``,
         ``differentiate``, ``execute``, ``simulate``, and ``validate``
         handlers.
     """
     registry = ActionRegistry()
     registry.register(AnalyseActionHandler())
+    registry.register(BenchmarkActionHandler())
     registry.register(CompileActionHandler())
     registry.register(DifferentiateActionHandler())
     registry.register(ExecuteActionHandler())

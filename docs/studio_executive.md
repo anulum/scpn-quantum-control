@@ -224,6 +224,53 @@ committed artefacts only: it does not prove any physics claim itself, run a
 simulation, or touch hardware. The action feeds the informative
 `studio.physics-validation.v1` family.
 
+## Benchmarking the native construction
+
+The simulated `benchmark` verb times the dense XY-Hamiltonian construction for
+a bounded `K_nm`/`omega` network on the requested backend — the native Rust
+PyO3 kernel (default) or the pure-numpy reference — parity-checks the native
+operator against the reference, and summarises the committed tier-benchmark
+databank.
+
+```python
+from scpn_quantum_control.studio.executive import (
+    ActionRegistry,
+    ExecutiveRequest,
+    run_action,
+)
+from scpn_quantum_control.studio.executive_benchmark import BenchmarkActionHandler
+
+registry = ActionRegistry()
+registry.register(BenchmarkActionHandler())
+
+request = ExecutiveRequest(
+    verb="benchmark",
+    action_id="bench-3node",
+    parameters={
+        "K_nm": [[0.0, 0.4, 0.1], [0.4, 0.0, 0.3], [0.1, 0.3, 0.0]],
+        "omega": [-0.1, 0.05, 0.05],
+        "repeats": 5,
+        "warmup": 1,
+    },
+)
+record = run_action(request, registry=registry)
+record.result.outputs["parity"]              # native operator matches the numpy reference
+record.result.outputs["speedup_p50"]          # native-vs-reference P50 ratio (never asserted)
+record.result.outputs["databank_row_count"]   # committed benchmark databank summary
+record.result.outputs["production_claim_allowed"]  # always False
+```
+
+The claim boundary is deliberately narrow: the wall-clock numbers are
+opportunistic local timing on a shared workstation — environment-dependent
+regression evidence, never a published performance claim — so every sealed
+record carries `production_claim_allowed: False` and its timing caveat
+verbatim. Only the *deterministic* verdicts are reproducible: the reproduction
+script re-asserts the operator shape, the native/reference parity, and the
+committed databank row count, and re-prints fresh timings without asserting
+them. A `rust` request fails closed when the native kernel is not importable.
+The action feeds the informative `studio.native-speedup.v1` and
+`studio.benchmark-databank.v1` families.
+
 ## Deploying to a QPU endpoint
 
 The `execute` verb is the studio's only live-hardware action, and it is
@@ -293,9 +340,9 @@ scpn-studio-run execute --action-id deploy --params-file deploy.json --approve
 Exit codes are scriptable: `0` succeeded (or previewed), `1` the action failed,
 `2` a request or parameter error, `3` the action was gated — a live-hardware or
 certified verb invoked without `--approve` never executes. The default registry
-carries every shipped handler (`analyse`, `compile`, `differentiate`,
-`execute`, `simulate`, `validate`) and is also available from Python as
-`scpn_quantum_control.studio.build_default_registry()`.
+carries every shipped handler (`analyse`, `benchmark`, `compile`,
+`differentiate`, `execute`, `simulate`, `validate`) and is also available from
+Python as `scpn_quantum_control.studio.build_default_registry()`.
 
 ## Claim boundary
 

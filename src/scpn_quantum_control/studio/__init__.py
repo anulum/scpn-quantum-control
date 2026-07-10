@@ -66,6 +66,15 @@ from .executive_analyse import (
     ANALYSE_VERB,
     AnalyseActionHandler,
 )
+from .executive_benchmark import (
+    BENCHMARK_CLAIM_BOUNDARY,
+    BENCHMARK_VERB,
+    LIVE_TIMING_CAVEAT,
+    BenchmarkActionHandler,
+    measure_p50_us,
+    native_dense_xy_hamiltonian,
+    reference_dense_xy_hamiltonian,
+)
 from .executive_cli import build_default_registry
 from .executive_compile import (
     COMPILE_CLAIM_BOUNDARY,
@@ -151,6 +160,9 @@ __all__ = [
     "AnalyseActionHandler",
     "ActionRegistry",
     "ActionStatus",
+    "BENCHMARK_CLAIM_BOUNDARY",
+    "BENCHMARK_VERB",
+    "BenchmarkActionHandler",
     "COMPILE_CLAIM_BOUNDARY",
     "COMPILE_VERB",
     "CompileActionHandler",
@@ -165,6 +177,7 @@ __all__ = [
     "ExecutiveRecord",
     "ExecutiveRequest",
     "GeneratedScript",
+    "LIVE_TIMING_CAVEAT",
     "ScriptLanguage",
     "VerbContract",
     "build_default_registry",
@@ -228,7 +241,10 @@ __all__ = [
     "map_claim_status",
     "measure_coverage_frontier",
     "measure_coverage_frontier_from_certifications",
+    "measure_p50_us",
+    "native_dense_xy_hamiltonian",
     "present_qpu_result_pack",
+    "reference_dense_xy_hamiltonian",
     "render_coverage_frontier_markdown",
     "seal_qpu_result_pack",
     "seal_result_pack",
