@@ -62,7 +62,14 @@ from typing import Any
 
 import structlog
 
-_CONFIGURED: tuple[str, str] | None = None
+
+class _BootstrapState:
+    """One-slot mutable holder for the applied (level, format) pair."""
+
+    configured: tuple[str, str] | None = None
+
+
+_STATE = _BootstrapState()
 
 
 def configure_logging(
@@ -87,11 +94,9 @@ def configure_logging(
         When True, reconfigure even if ``configure_logging`` has already
         been called with the same (level, format). Useful in tests.
     """
-    global _CONFIGURED
-
     resolved_level, resolved_format = _resolve(level, format)
 
-    if not force and (resolved_level, resolved_format) == _CONFIGURED:
+    if not force and (resolved_level, resolved_format) == _STATE.configured:
         return
 
     # ------------------------------------------------------------------
@@ -145,7 +150,7 @@ def configure_logging(
         ),
     )
 
-    _CONFIGURED = (resolved_level, resolved_format)
+    _STATE.configured = (resolved_level, resolved_format)
 
 
 def _resolve(level: str | None, fmt: str | None) -> tuple[str, str]:
@@ -186,8 +191,7 @@ def get_logger(name: str | None = None) -> Any:
 
 def reset_for_testing() -> None:
     """Clear cached bootstrap state (tests only)."""
-    global _CONFIGURED
-    _CONFIGURED = None
+    _STATE.configured = None
     structlog.reset_defaults()
 
 

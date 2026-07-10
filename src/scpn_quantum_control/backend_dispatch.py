@@ -24,7 +24,14 @@ from typing import Any
 import numpy as np
 from numpy.typing import NDArray
 
-_CURRENT_BACKEND = "numpy"
+
+class _DispatchState:
+    """One-slot mutable holder for the active backend selection."""
+
+    backend: str = "numpy"
+
+
+_STATE = _DispatchState()
 _BACKEND_MODULES: dict[str, Any] = {"numpy": np}
 
 
@@ -33,18 +40,17 @@ def set_backend(name: str) -> None:
 
     Supported: "numpy" (default), "jax", "torch".
     """
-    global _CURRENT_BACKEND
     name = name.lower()
 
     if name == "numpy":
-        _CURRENT_BACKEND = "numpy"
+        _STATE.backend = "numpy"
         _BACKEND_MODULES["numpy"] = np
     elif name == "jax":
         try:
             import jax.numpy as jnp
 
             _BACKEND_MODULES["jax"] = jnp
-            _CURRENT_BACKEND = "jax"
+            _STATE.backend = "jax"
         except Exception as e:
             raise ImportError("JAX unavailable: install compatible jax and jaxlib") from e
     elif name in ("torch", "pytorch"):
@@ -52,7 +58,7 @@ def set_backend(name: str) -> None:
             import torch
 
             _BACKEND_MODULES["torch"] = torch
-            _CURRENT_BACKEND = "torch"
+            _STATE.backend = "torch"
         except ImportError as e:
             raise ImportError("PyTorch not installed: pip install torch") from e
     else:
@@ -61,21 +67,21 @@ def set_backend(name: str) -> None:
 
 def get_backend() -> str:
     """Return the name of the current backend."""
-    return _CURRENT_BACKEND
+    return _STATE.backend
 
 
 def get_array_module() -> Any:
     """Return the current array module (np, jnp, or torch)."""
-    return _BACKEND_MODULES.get(_CURRENT_BACKEND, np)
+    return _BACKEND_MODULES.get(_STATE.backend, np)
 
 
 def to_numpy(arr: Any) -> NDArray[Any]:
     """Convert any backend array to numpy."""
     if isinstance(arr, np.ndarray):
         return arr
-    if _CURRENT_BACKEND == "jax":
+    if _STATE.backend == "jax":
         return np.array(arr, copy=False)
-    if _CURRENT_BACKEND == "torch":
+    if _STATE.backend == "torch":
         result: NDArray[Any] = arr.detach().cpu().numpy()
         return result
     return np.array(arr, copy=False)
@@ -83,13 +89,13 @@ def to_numpy(arr: Any) -> NDArray[Any]:
 
 def from_numpy(arr: NDArray[Any]) -> Any:
     """Convert numpy array to current backend."""
-    if _CURRENT_BACKEND == "numpy":
+    if _STATE.backend == "numpy":
         return arr
-    if _CURRENT_BACKEND == "jax":
+    if _STATE.backend == "jax":
         import jax.numpy as jnp
 
         return jnp.array(arr)
-    if _CURRENT_BACKEND == "torch":
+    if _STATE.backend == "torch":
         import torch
 
         return torch.from_numpy(arr)

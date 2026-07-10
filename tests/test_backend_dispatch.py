@@ -189,9 +189,9 @@ class TestMockedJaxPath:
         """Exercise to_numpy jax branch with a memoryview-compatible input."""
         import scpn_quantum_control.backend_dispatch as mod
 
-        old_backend = mod._CURRENT_BACKEND
+        old_backend = mod._STATE.backend
         try:
-            mod._CURRENT_BACKEND = "jax"
+            mod._STATE.backend = "jax"
             # Use a numpy array subclass to bypass isinstance check but still
             # allow copy=False. np.matrix is a subclass, but simpler: use
             # np.asarray on a memoryview.
@@ -200,7 +200,7 @@ class TestMockedJaxPath:
             result = to_numpy(view)
             np.testing.assert_array_equal(result, [1.0, 2.0])
         finally:
-            mod._CURRENT_BACKEND = old_backend
+            mod._STATE.backend = old_backend
 
     def test_to_numpy_torch_branch(self):
         """Exercise to_numpy torch branch with a mock tensor."""
@@ -208,29 +208,29 @@ class TestMockedJaxPath:
 
         import scpn_quantum_control.backend_dispatch as mod
 
-        old_backend = mod._CURRENT_BACKEND
+        old_backend = mod._STATE.backend
         try:
-            mod._CURRENT_BACKEND = "torch"
+            mod._STATE.backend = "torch"
             mock_tensor = MagicMock()
             mock_tensor.detach.return_value.cpu.return_value.numpy.return_value = np.array([3.0])
             result = to_numpy(mock_tensor)
             np.testing.assert_array_equal(result, [3.0])
         finally:
-            mod._CURRENT_BACKEND = old_backend
+            mod._STATE.backend = old_backend
 
     def test_to_numpy_fallback_branch(self):
         """Exercise to_numpy fallback (unknown backend, non-ndarray)."""
         import scpn_quantum_control.backend_dispatch as mod
 
-        old_backend = mod._CURRENT_BACKEND
+        old_backend = mod._STATE.backend
         try:
-            mod._CURRENT_BACKEND = "unknown"
+            mod._STATE.backend = "unknown"
             buf = np.array([4.0, 5.0])
             view = memoryview(buf)
             result = to_numpy(view)
             np.testing.assert_array_equal(result, [4.0, 5.0])
         finally:
-            mod._CURRENT_BACKEND = old_backend
+            mod._STATE.backend = old_backend
 
     def test_from_numpy_jax_branch(self):
         """Exercise from_numpy jax branch with mock jnp."""
@@ -239,9 +239,9 @@ class TestMockedJaxPath:
 
         import scpn_quantum_control.backend_dispatch as mod
 
-        old_backend = mod._CURRENT_BACKEND
+        old_backend = mod._STATE.backend
         try:
-            mod._CURRENT_BACKEND = "jax"
+            mod._STATE.backend = "jax"
             mock_jnp = MagicMock()
             mock_jnp.array.return_value = "jax_array"
             fake_jax = ModuleType("jax")
@@ -251,7 +251,7 @@ class TestMockedJaxPath:
                 result = from_numpy(arr)
                 assert result == "jax_array"
         finally:
-            mod._CURRENT_BACKEND = old_backend
+            mod._STATE.backend = old_backend
 
     def test_from_numpy_torch_branch(self):
         """Exercise from_numpy torch branch with mock torch."""
@@ -259,9 +259,9 @@ class TestMockedJaxPath:
 
         import scpn_quantum_control.backend_dispatch as mod
 
-        old_backend = mod._CURRENT_BACKEND
+        old_backend = mod._STATE.backend
         try:
-            mod._CURRENT_BACKEND = "torch"
+            mod._STATE.backend = "torch"
             mock_torch = MagicMock()
             mock_torch.from_numpy.return_value = "torch_tensor"
             with patch.dict("sys.modules", {"torch": mock_torch}):
@@ -269,19 +269,19 @@ class TestMockedJaxPath:
                 result = from_numpy(arr)
                 assert result == "torch_tensor"
         finally:
-            mod._CURRENT_BACKEND = old_backend
+            mod._STATE.backend = old_backend
 
     def test_from_numpy_unknown_returns_arr(self):
         """from_numpy with unknown backend falls through to return arr."""
         import scpn_quantum_control.backend_dispatch as mod
 
-        old_backend = mod._CURRENT_BACKEND
+        old_backend = mod._STATE.backend
         try:
-            mod._CURRENT_BACKEND = "unknown"
+            mod._STATE.backend = "unknown"
             arr = np.array([9.0])
             assert from_numpy(arr) is arr
         finally:
-            mod._CURRENT_BACKEND = old_backend
+            mod._STATE.backend = old_backend
 
 
 class TestAvailableBackendsMocked:
@@ -325,14 +325,14 @@ class TestSetBackendMockedSuccess:
         fake_jnp = MagicMock()
         fake_jax = ModuleType("jax")
         fake_jax.numpy = fake_jnp  # type: ignore[attr-defined]
-        old_backend = mod._CURRENT_BACKEND
+        old_backend = mod._STATE.backend
         try:
             with patch.dict("sys.modules", {"jax": fake_jax, "jax.numpy": fake_jnp}):
                 set_backend("jax")
                 assert get_backend() == "jax"
                 assert mod._BACKEND_MODULES["jax"] is fake_jnp
         finally:
-            mod._CURRENT_BACKEND = old_backend
+            mod._STATE.backend = old_backend
             mod._BACKEND_MODULES.pop("jax", None)
 
     def test_set_torch_success(self):
@@ -342,12 +342,12 @@ class TestSetBackendMockedSuccess:
         import scpn_quantum_control.backend_dispatch as mod
 
         fake_torch = ModuleType("torch")
-        old_backend = mod._CURRENT_BACKEND
+        old_backend = mod._STATE.backend
         try:
             with patch.dict("sys.modules", {"torch": fake_torch}):
                 set_backend("torch")
                 assert get_backend() == "torch"
                 assert mod._BACKEND_MODULES["torch"] is fake_torch
         finally:
-            mod._CURRENT_BACKEND = old_backend
+            mod._STATE.backend = old_backend
             mod._BACKEND_MODULES.pop("torch", None)

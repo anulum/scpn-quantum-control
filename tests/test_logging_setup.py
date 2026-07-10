@@ -225,10 +225,10 @@ class TestPipelineLogging:
     def test_reset_for_testing_clears_everything(self) -> None:
         ls.configure_logging(level="INFO", format="json", force=True)
         ls.reset_for_testing()
-        assert ls._CONFIGURED is None
+        assert ls._STATE.configured is None
         # After reset, a fresh configure works.
         ls.configure_logging(level="DEBUG", force=True)
-        assert ls._CONFIGURED is not None
+        assert ls._STATE.configured is not None
 
 
 # ---------------------------------------------------------------------------
@@ -259,7 +259,7 @@ class TestCoverageEdgePaths:
         monkeypatch.setattr(sys, "stderr", fake_stderr)
         ls.configure_logging(level="INFO", format="console", force=True)
         # If we got here without raising, the console-renderer branch ran.
-        assert ls._CONFIGURED == ("INFO", "console")
+        assert ls._STATE.configured == ("INFO", "console")
 
     def test_resolve_falls_back_when_config_import_fails(
         self,
@@ -273,7 +273,7 @@ class TestCoverageEdgePaths:
         ls.reset_for_testing()
         ls.configure_logging(force=True)
         # Buffered stderr → console downgrades to json, so (INFO, json).
-        assert ls._CONFIGURED[0] == "INFO"
+        assert ls._STATE.configured[0] == "INFO"
 
 
 class TestStructlogSurface:
