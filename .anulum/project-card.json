@@ -1,0 +1,18 @@
+{
+  "schema": "studio.project-card.v1",
+  "tagline": "Kuramoto-XY quantum compiler with an executive studio: nine runnable verbs, sealed records, and reproduction scripts.",
+  "summary": "scpn-quantum-control compiles arbitrary bounded Kuramoto oscillator networks into XY/XXZ spin Hamiltonians and circuits, evolves them on simulators, analyses synchronisation with persistent-homology witnesses, and ledgers every hardware claim against committed raw-count evidence. The executive studio runs all nine federation verbs from one CLI — each action seals an auditable record with a content digest and writes a standalone reproduction script; live-QPU deployment is approval-gated and fails closed. At today's reachable sizes classical solvers outperform the quantum routes; the claim ledger says exactly what is and is not demonstrated.",
+  "highlights": [
+    "Executive spine with all nine federation verbs (compile, simulate, analyse, validate, benchmark, replay, differentiate, mitigate, approval-gated execute) runnable via scpn-studio-run; every action seals a digest-bound record and a reproduction script.",
+    "Committed hardware evidence: five ibm_kingston (Heron r2) result packs, sixteen raw artefacts, re-verifiable byte-for-byte (SHA-256 digests and provider job identifiers) through the replay verb.",
+    "Bit-exact XY compile unit whose input digest recomputes in a browser through a WASM kernel — verification without trusting the studio.",
+    "Bounded differentiable-programming surface with a claim ledger and a reference-validation registry; the validate verb re-checks both on demand.",
+    "Honest-scope policy: hardware status ledger separates theory, simulator, unmitigated and mitigated claims; benchmark records always carry production_claim_allowed: false with their timing caveat."
+  ],
+  "links": [
+    { "label": "Zenodo DOI", "url": "https://doi.org/10.5281/zenodo.18821929" },
+    { "label": "Colab", "url": "https://colab.research.google.com/github/anulum/scpn-quantum-control/blob/main/notebooks/01_kuramoto_xy_dynamics.ipynb" },
+    { "label": "Hardware Status Ledger", "url": "https://anulum.github.io/scpn-quantum-control/hardware_status_ledger/" },
+    { "label": "Studio Executive Actions", "url": "https://anulum.github.io/scpn-quantum-control/studio_executive/" }
+  ]
+}
