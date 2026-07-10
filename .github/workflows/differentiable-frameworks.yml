@@ -84,8 +84,12 @@ jobs:
             -q
 
       # The witness module moved to the oscillatools distribution (DA1) and
-      # imports its sibling via the oscillatools test rootdir.
+      # imports its sibling via the oscillatools test rootdir. It is JAX-only
+      # by design (importorskip at module level), so it runs in the full
+      # profile only — in the sparse profile the whole file skips and pytest
+      # exits 5 (no tests collected), which is not a parity failure.
       - name: Run oscillatools autodiff witness parity
+        if: matrix.profile == 'full'
         working-directory: oscillatools
         run: |
           pytest \
