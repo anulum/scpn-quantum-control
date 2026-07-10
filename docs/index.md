@@ -268,11 +268,11 @@ for name, w in results.items():
 
 <p align="center">
   <a href="https://www.anulum.li">
-    <img src="assets/anulum_logo_company.jpg" width="180" alt="ANULUM">
+    <img src="assets/anulum_logo_company.jpg" height="70" alt="ANULUM">
   </a>
   &nbsp;&nbsp;&nbsp;&nbsp;
   <a href="https://www.anulum.li">
-    <img src="assets/fortis_studio_logo.jpg" width="180" alt="Fortis Studio">
+    <img src="assets/fortis_studio_logo.jpg" height="70" alt="Fortis Studio">
   </a>
   <br>
   <em>Developed by <a href="https://www.anulum.li">ANULUM</a> / Fortis Studio</em>
@@ -286,11 +286,11 @@ for name, w in results.items():
 
 <p align="center">
   <a href="https://www.anulum.li">
-    <img src="assets/anulum_logo_company.jpg" width="180" alt="ANULUM">
+    <img src="assets/anulum_logo_company.jpg" height="70" alt="ANULUM">
   </a>
   &nbsp;&nbsp;&nbsp;&nbsp;
   <a href="https://www.anulum.li">
-    <img src="assets/fortis_studio_logo.jpg" width="180" alt="Fortis Studio">
+    <img src="assets/fortis_studio_logo.jpg" height="70" alt="Fortis Studio">
   </a>
   <br>
   <em>Developed by <a href="https://www.anulum.li">ANULUM</a> / Fortis Studio</em>
