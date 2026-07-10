@@ -209,12 +209,24 @@ def _fake_capability_manifest(tmp_path: Path, studio: str = "scpn-quantum-contro
 
 
 def test_stage_capability_manifest_lands_at_the_bundle_root(tmp_path: Path) -> None:
-    """The committed schema-A manifest is staged verbatim as manifest.json."""
+    """Without a version the committed schema-A manifest is staged verbatim."""
     dist = _fake_bundle(tmp_path)
     source = _fake_capability_manifest(tmp_path)
     staged = release_tool.stage_capability_manifest(dist, source)
     assert staged == dist / release_tool.BUNDLE_MANIFEST_NAME
     assert staged.read_text(encoding="utf-8") == source.read_text(encoding="utf-8")
+
+
+def test_stage_capability_manifest_stamps_the_release_version(tmp_path: Path) -> None:
+    """The staged copy carries the resolved release version; the source is untouched."""
+    dist = _fake_bundle(tmp_path)
+    source = _fake_capability_manifest(tmp_path)
+    before = source.read_text(encoding="utf-8")
+    staged = release_tool.stage_capability_manifest(dist, source, version="0.10.2")
+    payload = json.loads(staged.read_text(encoding="utf-8"))
+    assert payload["schema_a"]["studio_version"] == "0.10.2"
+    assert payload["schema_a"]["studio"] == release_tool.STUDIO_ID
+    assert source.read_text(encoding="utf-8") == before  # committed manifest untouched
 
 
 def test_stage_capability_manifest_fails_closed_on_missing_source(tmp_path: Path) -> None:
@@ -282,6 +294,11 @@ def test_main_packages_the_release_triple(
         names = archive.getnames()
         assert names == [row["path"] for row in manifest["files"]]
         assert release_tool.BUNDLE_MANIFEST_NAME in names
+        member = archive.extractfile(release_tool.BUNDLE_MANIFEST_NAME)
+        assert member is not None
+        staged = json.load(member)
+        # the deployed manifest agrees with the descriptor version
+        assert staged["schema_a"]["studio_version"] == descriptor["studio_version"]
 
 
 def test_main_studio_version_override_drives_all_outputs(tmp_path: Path) -> None:
@@ -310,3 +327,7 @@ def test_main_studio_version_override_drives_all_outputs(tmp_path: Path) -> None
     assert manifest["release_tag"] == "studio-remote-v0.10.99"
     assert descriptor["studio_version"] == "0.10.99"
     assert descriptor["release_tag"] == "studio-remote-v0.10.99"
+    with tarfile.open(out / release_tool.RELEASE_TARBALL_NAME, mode="r:gz") as archive:
+        member = archive.extractfile(release_tool.BUNDLE_MANIFEST_NAME)
+        assert member is not None
+        assert json.load(member)["schema_a"]["studio_version"] == "0.10.99"

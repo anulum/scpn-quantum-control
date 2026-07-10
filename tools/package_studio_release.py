@@ -186,12 +186,23 @@ def bundle_file_table(dist_dir: Path) -> list[dict[str, object]]:
     return rows
 
 
-def stage_capability_manifest(dist_dir: Path, source: Path = DEFAULT_CAPABILITY_MANIFEST) -> Path:
+def stage_capability_manifest(
+    dist_dir: Path,
+    source: Path = DEFAULT_CAPABILITY_MANIFEST,
+    version: str | None = None,
+) -> Path:
     """Stage the committed schema-A manifest as ``manifest.json`` at the root.
 
     The hosting contract's stage gate is fail-closed: the tarball root MUST
     carry a ``manifest.json`` naming this studio, and the box aggregation
     composes ``federation.json`` from it.
+
+    When ``version`` is given, the staged copy's ``schema_a.studio_version``
+    is stamped with it so the deployed manifest agrees with the release
+    descriptor (the remote iterates on release tags, not on the Python
+    package version the committed manifest carries). ``content_digest`` is
+    computed over the declared verbs/schemas surface only — never over
+    ``studio_version`` — so the stamp cannot invalidate the digest.
 
     Parameters
     ----------
@@ -199,6 +210,9 @@ def stage_capability_manifest(dist_dir: Path, source: Path = DEFAULT_CAPABILITY_
         The built portal bundle to stage into.
     source
         The committed schema-A studio manifest.
+    version
+        The resolved release version to stamp into the staged copy;
+        ``None`` keeps the committed manifest byte-identical.
 
     Returns
     -------
@@ -217,7 +231,11 @@ def stage_capability_manifest(dist_dir: Path, source: Path = DEFAULT_CAPABILITY_
     if named != STUDIO_ID:
         raise ValueError(f"capability manifest names {named!r}, expected {STUDIO_ID!r}")
     staged = dist_dir / BUNDLE_MANIFEST_NAME
-    staged.write_text(source.read_text(encoding="utf-8"), encoding="utf-8")
+    if version is None:
+        staged.write_text(source.read_text(encoding="utf-8"), encoding="utf-8")
+        return staged
+    payload["schema_a"]["studio_version"] = version
+    staged.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     return staged
 
 
@@ -440,7 +458,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     version = args.studio_version if args.studio_version is not None else studio_version()
     deploy_manifest = load_deploy_manifest(args.dist_dir)
-    stage_capability_manifest(args.dist_dir, args.capability_manifest)
+    stage_capability_manifest(args.dist_dir, args.capability_manifest, version=version)
     files = bundle_file_table(args.dist_dir)
     tarball_path = pack_release_tarball(args.dist_dir, files, args.out_dir)
     payload = tarball_path.read_bytes()

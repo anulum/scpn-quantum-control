@@ -200,8 +200,12 @@ independently of the Python package version):
   full `vite build` tree plus the shipped WASM kernels AND the committed
   schema-A `manifest.json` staged at the archive root (the platform's stage
   gate requires it to name this studio; the box aggregation composes
-  `federation.json` from it). Packed deterministically (sorted members,
-  zeroed owners and timestamps) by `tools/package_studio_release.py`.
+  `federation.json` from it). The staged copy's `studio_version` is stamped
+  with the resolved release version so the deployed manifest always agrees
+  with the descriptor — the `content_digest` covers only the declared
+  verbs/schemas surface, so the stamp never invalidates it. Packed
+  deterministically (sorted members, zeroed owners and timestamps) by
+  `tools/package_studio_release.py`.
 * `deploy-manifest.json` — this repo's richer release manifest
   (`scpn_qc_studio_release_manifest_v1`): the `sha256:`-prefixed bundle
   digest and byte size, one digest row per bundled file, and the kernel
