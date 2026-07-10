@@ -40,15 +40,6 @@ jobs:
         with:
           version: 11.9.0
           run_install: false
-      - name: Assert the tag matches the studio version
-        working-directory: .
-        run: |
-          tag_version="${GITHUB_REF_NAME#studio-remote-v}"
-          project_version="$(python3 -c 'import tomllib, pathlib; print(tomllib.loads(pathlib.Path("pyproject.toml").read_text())["project"]["version"])')"
-          if [[ "${tag_version}" != "${project_version}" ]]; then
-            echo "tag ${GITHUB_REF_NAME} does not match project version ${project_version}"
-            exit 1
-          fi
       - name: Install locked dependencies
         run: pnpm install --frozen-lockfile
       - name: Typecheck (TS strict)
@@ -68,33 +59,40 @@ jobs:
       - name: Ship the WASM kernels + write the deploy manifest
         working-directory: .
         run: python3 tools/build_studio_wasm_bundle.py
-      - name: Package the release pair (tag-gated)
+      - name: Package the release triple (tag drives the studio version)
         working-directory: .
         run: |
           python3 tools/package_studio_release.py \
-            --expect-version "${GITHUB_REF_NAME#studio-remote-v}"
-      - name: Independently re-verify the bundle digest
+            --studio-version "${GITHUB_REF_NAME#studio-remote-v}"
+      - name: Independently re-verify the bundle digest and the descriptor
         working-directory: .
         run: |
           python3 - <<'EOF'
-          import hashlib, json
+          import hashlib, json, tarfile
           from pathlib import Path
           out = Path("studio-web/release")
           manifest = json.loads((out / "deploy-manifest.json").read_text())
+          descriptor = json.loads((out / "studio-deploy.json").read_text())
           tarball = out / manifest["bundle"]["name"]
-          digest = "sha256:" + hashlib.sha256(tarball.read_bytes()).hexdigest()
-          assert digest == manifest["bundle"]["sha256"], "bundle digest drift"
+          hex_digest = hashlib.sha256(tarball.read_bytes()).hexdigest()
+          assert "sha256:" + hex_digest == manifest["bundle"]["sha256"], "bundle digest drift"
           assert tarball.stat().st_size == manifest["bundle"]["bytes"], "bundle size drift"
-          print(f"release pair verified: {tarball.name} {digest}")
+          assert descriptor["schema"] == "studio.deploy-bundle.v1", "descriptor schema drift"
+          assert descriptor["bundle_sha256"] == hex_digest, "descriptor digest drift"
+          assert descriptor["bundle_asset"] == tarball.name, "descriptor asset drift"
+          with tarfile.open(tarball, mode="r:gz") as archive:
+              assert "manifest.json" in archive.getnames(), "schema-A manifest missing from root"
+          print(f"release triple verified: {tarball.name} sha256:{hex_digest}")
           EOF
-      - name: Publish the Release with both assets
+      - name: Publish the Release with all three assets
         working-directory: .
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release create "${GITHUB_REF_NAME}" \
+            "studio-web/release/studio-deploy.json" \
             "studio-web/release/scpn-quantum-control-studio-remote.tar.gz" \
             "studio-web/release/deploy-manifest.json" \
             --verify-tag \
             --title "Studio remote ${GITHUB_REF_NAME#studio-remote-}" \
-            --notes "Pull-deploy release pair for the SCPN-STUDIO reflector: the studio remote bundle plus its standalone deploy manifest (studio_version + bundle content digest + per-file digest table). Verify the tarball against the manifest digest before deploying."
+            --notes "Pull-deploy release for the SCPN-STUDIO reflector: studio-deploy.json (studio.deploy-bundle.v1 discovery descriptor, bare-hex bundle_sha256), the studio remote bundle (schema-A manifest.json at the archive root), and the richer deploy-manifest.json (per-file digest table + toolchain provenance). Verify the tarball against the descriptor digest before deploying."

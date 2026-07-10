@@ -6,19 +6,29 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — studio remote Release packaging (pull-deploy contract).
-"""Package the built studio remote into the public pull-deploy Release pair.
+"""Package the built studio remote into the public pull-deploy Release triple.
 
 The studio hosting contract is a credential-free PULL: this repository holds
-zero deploy secrets. Instead it publishes two public GitHub Release assets
-that the SCPN-STUDIO platform fetches, verifies fail-closed, and deploys:
+zero deploy secrets. Instead it publishes three public GitHub Release assets
+that the SCPN-STUDIO platform discovers, verifies fail-closed, and deploys:
 
-* ``scpn-quantum-control-studio-remote.tar.gz`` — the deployable bundle
-  (the full ``vite build`` output tree including the shipped WASM kernels).
-* ``deploy-manifest.json`` — the standalone release manifest carrying
-  ``studio_version``, the tarball's ``bundle`` content digest, one digest row
-  per bundled file, and the kernel toolchain provenance. The reflector reads
-  this small asset first, compares digests against the deployed state, and
-  only then pulls the tarball — which it re-verifies before any deploy.
+* ``studio-deploy.json`` — the fleet-normative ``studio.deploy-bundle.v1``
+  discovery descriptor (hosting contract §3, identical schema for every
+  studio): studio id, ``studio_version``, the bundle asset name, and the
+  tarball's BARE lowercase-hex ``bundle_sha256``. The reflector scans recent
+  releases for exactly this asset name.
+* ``scpn-quantum-control-studio-remote.tar.gz`` — the deployable bundle:
+  the full ``vite build`` tree including the shipped WASM kernels, plus the
+  committed schema-A ``manifest.json`` staged at the ARCHIVE ROOT (the
+  stage gate requires it to name this studio; the box aggregation composes
+  ``federation.json`` from it).
+* ``deploy-manifest.json`` — this repo's richer release manifest carrying
+  the ``sha256:``-prefixed bundle digest, one digest row per bundled file,
+  and the kernel toolchain provenance.
+
+The studio version comes from the Release tag (``--studio-version``, passed
+by CI); the ``pyproject.toml`` project version is only the local default —
+the studio remote iterates independently of the Python package.
 
 The tarball is packed deterministically (sorted members, zeroed owner and
 timestamps) so re-packing an identical tree yields an identical digest. The
@@ -43,7 +53,13 @@ import tomllib
 REPO_ROOT: Final[Path] = Path(__file__).resolve().parents[1]
 DEFAULT_DIST_DIR: Final[Path] = REPO_ROOT / "studio-web" / "dist"
 DEFAULT_OUT_DIR: Final[Path] = REPO_ROOT / "studio-web" / "release"
+DEFAULT_CAPABILITY_MANIFEST: Final[Path] = (
+    REPO_ROOT / "docs" / "_generated" / "studio_manifest.json"
+)
+BUNDLE_MANIFEST_NAME: Final[str] = "manifest.json"
 DEPLOY_MANIFEST_NAME: Final[str] = "deploy-manifest.json"
+DEPLOY_DESCRIPTOR_NAME: Final[str] = "studio-deploy.json"
+DEPLOY_BUNDLE_SCHEMA: Final[str] = "studio.deploy-bundle.v1"
 RELEASE_TARBALL_NAME: Final[str] = "scpn-quantum-control-studio-remote.tar.gz"
 RELEASE_MANIFEST_SCHEMA: Final[str] = "scpn_qc_studio_release_manifest_v1"
 RELEASE_TAG_PREFIX: Final[str] = "studio-remote-v"
@@ -170,6 +186,41 @@ def bundle_file_table(dist_dir: Path) -> list[dict[str, object]]:
     return rows
 
 
+def stage_capability_manifest(dist_dir: Path, source: Path = DEFAULT_CAPABILITY_MANIFEST) -> Path:
+    """Stage the committed schema-A manifest as ``manifest.json`` at the root.
+
+    The hosting contract's stage gate is fail-closed: the tarball root MUST
+    carry a ``manifest.json`` naming this studio, and the box aggregation
+    composes ``federation.json`` from it.
+
+    Parameters
+    ----------
+    dist_dir
+        The built portal bundle to stage into.
+    source
+        The committed schema-A studio manifest.
+
+    Returns
+    -------
+    Path
+        The staged ``manifest.json`` inside the bundle.
+
+    Raises
+    ------
+    ValueError
+        If the committed manifest is missing or does not name this studio.
+    """
+    if not source.is_file():
+        raise ValueError(f"capability manifest missing: {source.as_posix()}")
+    payload: dict[str, Any] = json.loads(source.read_text(encoding="utf-8"))
+    named = payload.get("schema_a", {}).get("studio")
+    if named != STUDIO_ID:
+        raise ValueError(f"capability manifest names {named!r}, expected {STUDIO_ID!r}")
+    staged = dist_dir / BUNDLE_MANIFEST_NAME
+    staged.write_text(source.read_text(encoding="utf-8"), encoding="utf-8")
+    return staged
+
+
 def _deterministic_member(member: tarfile.TarInfo) -> tarfile.TarInfo:
     """Zero the owner and timestamp of a tar member for reproducible packing."""
     member.uid = 0
@@ -264,6 +315,63 @@ def build_release_manifest(
     }
 
 
+def build_deploy_descriptor(
+    *, version: str, bundle_digest: str, bundle_bytes: int
+) -> dict[str, object]:
+    """Assemble the ``studio.deploy-bundle.v1`` discovery descriptor.
+
+    This is the fleet-normative asset the platform reflector scans releases
+    for; the schema is identical across every federated studio (hosting
+    contract §3) and MUST NOT be forked. ``bundle_sha256`` is the BARE
+    lowercase hex digest — no ``sha256:`` prefix.
+
+    Parameters
+    ----------
+    version
+        The studio version (equal to the Release tag's semver).
+    bundle_digest
+        The tarball digest in this repo's ``sha256:<hex>`` form; the prefix
+        is stripped for the descriptor.
+    bundle_bytes
+        The tarball byte size (permitted extra field).
+
+    Returns
+    -------
+    dict[str, object]
+        JSON-ready deploy descriptor.
+    """
+    return {
+        "schema": DEPLOY_BUNDLE_SCHEMA,
+        "studio": STUDIO_ID,
+        "studio_version": version,
+        "bundle_asset": RELEASE_TARBALL_NAME,
+        "bundle_sha256": bundle_digest.removeprefix("sha256:"),
+        "bundle_bytes": bundle_bytes,
+        "release_tag": f"{RELEASE_TAG_PREFIX}{version}",
+    }
+
+
+def write_deploy_descriptor(descriptor: dict[str, object], out_dir: Path) -> Path:
+    """Write the deploy descriptor as deterministic sorted JSON.
+
+    Parameters
+    ----------
+    descriptor
+        The ``studio.deploy-bundle.v1`` payload.
+    out_dir
+        Output directory (created if absent).
+
+    Returns
+    -------
+    Path
+        The written ``studio-deploy.json`` path.
+    """
+    out_dir.mkdir(parents=True, exist_ok=True)
+    path = out_dir / DEPLOY_DESCRIPTOR_NAME
+    path.write_text(json.dumps(descriptor, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return path
+
+
 def write_release_manifest(manifest: dict[str, object], out_dir: Path) -> Path:
     """Write the release manifest as deterministic sorted JSON.
 
@@ -301,8 +409,8 @@ def main(argv: list[str] | None = None) -> int:
     Raises
     ------
     ValueError
-        If the bundle is missing or stale, or if ``--expect-version`` does
-        not match the canonical studio version (the Release tag gate).
+        If the bundle is missing or stale, or if the capability manifest
+        does not name this studio.
     """
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -315,22 +423,24 @@ def main(argv: list[str] | None = None) -> int:
         "--out-dir",
         type=Path,
         default=DEFAULT_OUT_DIR,
-        help="output directory for the release tarball + manifest",
+        help="output directory for the release tarball + manifest + descriptor",
     )
     parser.add_argument(
-        "--expect-version",
+        "--studio-version",
         default=None,
-        help="fail closed unless the studio version equals this value"
-        " (CI passes the version parsed from the Release tag)",
+        help="studio version for this release (CI passes the tag's semver;"
+        " defaults to the pyproject project version)",
+    )
+    parser.add_argument(
+        "--capability-manifest",
+        type=Path,
+        default=DEFAULT_CAPABILITY_MANIFEST,
+        help="committed schema-A studio manifest staged into the tarball root",
     )
     args = parser.parse_args(argv)
-    version = studio_version()
-    if args.expect_version is not None and args.expect_version != version:
-        raise ValueError(
-            f"release tag version {args.expect_version!r} does not match"
-            f" the studio version {version!r}"
-        )
+    version = args.studio_version if args.studio_version is not None else studio_version()
     deploy_manifest = load_deploy_manifest(args.dist_dir)
+    stage_capability_manifest(args.dist_dir, args.capability_manifest)
     files = bundle_file_table(args.dist_dir)
     tarball_path = pack_release_tarball(args.dist_dir, files, args.out_dir)
     payload = tarball_path.read_bytes()
@@ -342,24 +452,39 @@ def main(argv: list[str] | None = None) -> int:
         deploy_manifest=deploy_manifest,
     )
     manifest_path = write_release_manifest(manifest, args.out_dir)
+    descriptor_path = write_deploy_descriptor(
+        build_deploy_descriptor(
+            version=version,
+            bundle_digest=sha256_bytes(payload),
+            bundle_bytes=len(payload),
+        ),
+        args.out_dir,
+    )
     print(f"packed {tarball_path} ({len(payload)} bytes, {sha256_bytes(payload)})")
     print(f"wrote {manifest_path}")
+    print(f"wrote {descriptor_path}")
     return 0
 
 
 __all__ = [
+    "BUNDLE_MANIFEST_NAME",
+    "DEPLOY_BUNDLE_SCHEMA",
+    "DEPLOY_DESCRIPTOR_NAME",
     "DEPLOY_MANIFEST_NAME",
     "RELEASE_MANIFEST_SCHEMA",
     "RELEASE_TAG_PREFIX",
     "RELEASE_TARBALL_NAME",
     "STUDIO_ID",
+    "build_deploy_descriptor",
     "build_release_manifest",
     "bundle_file_table",
     "load_deploy_manifest",
     "main",
     "pack_release_tarball",
     "sha256_bytes",
+    "stage_capability_manifest",
     "studio_version",
+    "write_deploy_descriptor",
     "write_release_manifest",
 ]
 

@@ -184,25 +184,33 @@ portal's first-paint budget and every rendered element accessible.
 Studio repositories are public, so this repo holds **zero deploy
 credentials** — no SSH key, no box secret. Deployment is a credential-free
 PULL, owner-decided on 2026-07-10: pushing a `studio-remote-v<version>` tag
-(the version must equal the `pyproject.toml` project version, enforced
-fail-closed) rebuilds the remote from source and publishes two public GitHub
-Release assets:
+rebuilds the remote from source and publishes three public GitHub Release
+assets (the tag's semver IS the studio version — the remote iterates
+independently of the Python package version):
 
+* `studio-deploy.json` — the fleet-normative `studio.deploy-bundle.v1`
+  discovery descriptor (hosting contract §3; identical schema across every
+  federated studio): studio id, `studio_version`, `bundle_asset`, and the
+  tarball's bare lowercase-hex `bundle_sha256`. The reflector scans recent
+  non-draft releases for exactly this asset name.
 * `scpn-quantum-control-studio-remote.tar.gz` — the deployable bundle: the
-  full `vite build` tree plus the shipped WASM kernels, packed
-  deterministically (sorted members, zeroed owners and timestamps) by
-  `tools/package_studio_release.py`.
-* `deploy-manifest.json` — the standalone release manifest
-  (`scpn_qc_studio_release_manifest_v1`): `studio_version`, the release tag,
-  the tarball's `bundle` content digest and byte size, one digest row per
-  bundled file, and the kernel toolchain provenance carried verbatim from the
-  in-bundle deploy manifest.
+  full `vite build` tree plus the shipped WASM kernels AND the committed
+  schema-A `manifest.json` staged at the archive root (the platform's stage
+  gate requires it to name this studio; the box aggregation composes
+  `federation.json` from it). Packed deterministically (sorted members,
+  zeroed owners and timestamps) by `tools/package_studio_release.py`.
+* `deploy-manifest.json` — this repo's richer release manifest
+  (`scpn_qc_studio_release_manifest_v1`): the `sha256:`-prefixed bundle
+  digest and byte size, one digest row per bundled file, and the kernel
+  toolchain provenance carried verbatim from the in-bundle deploy manifest.
 
-The SCPN-STUDIO reflector reads the small manifest first, compares digests
+The SCPN-STUDIO reflector reads the descriptor first, compares the digest
 against the deployed state, then pulls the tarball and re-verifies it
-fail-closed before deploying into `/studios/scpn-quantum-control/`. The
-packer itself fails closed on a missing or stale bundle: every artefact row
-of the in-bundle deploy manifest is re-hashed before anything is packaged.
+fail-closed (sha-256 match, `data`-filtered extraction, root `manifest.json`
+naming this studio) before deploying into `/studios/scpn-quantum-control/`.
+The packer itself fails closed on a missing or stale bundle: every artefact
+row of the in-bundle deploy manifest is re-hashed before anything is
+packaged.
 
 ## WS-3 reference-validation feed
 

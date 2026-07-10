@@ -198,30 +198,96 @@ def test_write_release_manifest_emits_sorted_json(tmp_path: Path) -> None:
     assert path.name == release_tool.DEPLOY_MANIFEST_NAME
 
 
-def test_main_packages_the_release_pair(
+def _fake_capability_manifest(tmp_path: Path, studio: str = "scpn-quantum-control") -> Path:
+    """Write a minimal schema-A studio manifest for staging tests."""
+    path = tmp_path / "studio_manifest.json"
+    path.write_text(
+        json.dumps({"schema_a": {"studio": studio, "studio_version": "0.10.0"}}) + "\n",
+        encoding="utf-8",
+    )
+    return path
+
+
+def test_stage_capability_manifest_lands_at_the_bundle_root(tmp_path: Path) -> None:
+    """The committed schema-A manifest is staged verbatim as manifest.json."""
+    dist = _fake_bundle(tmp_path)
+    source = _fake_capability_manifest(tmp_path)
+    staged = release_tool.stage_capability_manifest(dist, source)
+    assert staged == dist / release_tool.BUNDLE_MANIFEST_NAME
+    assert staged.read_text(encoding="utf-8") == source.read_text(encoding="utf-8")
+
+
+def test_stage_capability_manifest_fails_closed_on_missing_source(tmp_path: Path) -> None:
+    """A missing committed manifest is refused."""
+    dist = _fake_bundle(tmp_path)
+    with pytest.raises(ValueError, match="capability manifest missing"):
+        release_tool.stage_capability_manifest(dist, tmp_path / "absent.json")
+
+
+def test_stage_capability_manifest_fails_closed_on_a_foreign_studio(tmp_path: Path) -> None:
+    """A manifest naming a different studio is refused (stage-gate contract)."""
+    dist = _fake_bundle(tmp_path)
+    source = _fake_capability_manifest(tmp_path, studio="someone-else")
+    with pytest.raises(ValueError, match="names 'someone-else'"):
+        release_tool.stage_capability_manifest(dist, source)
+
+
+def test_build_deploy_descriptor_is_fleet_normative() -> None:
+    """The descriptor carries the exact studio.deploy-bundle.v1 fields."""
+    descriptor = release_tool.build_deploy_descriptor(
+        version="0.10.1",
+        bundle_digest="sha256:" + "ab" * 32,
+        bundle_bytes=99,
+    )
+    assert descriptor["schema"] == release_tool.DEPLOY_BUNDLE_SCHEMA
+    assert descriptor["studio"] == release_tool.STUDIO_ID
+    assert descriptor["studio_version"] == "0.10.1"
+    assert descriptor["bundle_asset"] == release_tool.RELEASE_TARBALL_NAME
+    # bare lowercase hex, NO sha256: prefix (normative)
+    assert descriptor["bundle_sha256"] == "ab" * 32
+    assert ":" not in str(descriptor["bundle_sha256"])
+    assert descriptor["bundle_bytes"] == 99
+    assert descriptor["release_tag"] == "studio-remote-v0.10.1"
+
+
+def test_main_packages_the_release_triple(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
-    """The CLI packs the tarball + manifest and the digests agree."""
+    """The CLI packs tarball + manifest + descriptor and all digests agree."""
     dist = _fake_bundle(tmp_path)
+    source = _fake_capability_manifest(tmp_path)
     out = tmp_path / "release"
-    exit_code = release_tool.main(["--dist-dir", str(dist), "--out-dir", str(out)])
+    exit_code = release_tool.main(
+        ["--dist-dir", str(dist), "--out-dir", str(out), "--capability-manifest", str(source)]
+    )
     assert exit_code == 0
     captured = capsys.readouterr()
     assert "packed" in captured.out
     tarball = out / release_tool.RELEASE_TARBALL_NAME
+    tarball_hex = hashlib.sha256(tarball.read_bytes()).hexdigest()
     manifest = json.loads((out / release_tool.DEPLOY_MANIFEST_NAME).read_text(encoding="utf-8"))
     bundle = manifest["bundle"]
-    assert bundle["sha256"] == "sha256:" + hashlib.sha256(tarball.read_bytes()).hexdigest()
+    assert bundle["sha256"] == "sha256:" + tarball_hex
     assert bundle["bytes"] == tarball.stat().st_size
     assert manifest["studio_version"] == release_tool.studio_version()
-    # the tarball unpacks to exactly the manifested file set
+    descriptor = json.loads(
+        (out / release_tool.DEPLOY_DESCRIPTOR_NAME).read_text(encoding="utf-8")
+    )
+    assert descriptor["schema"] == release_tool.DEPLOY_BUNDLE_SCHEMA
+    assert descriptor["bundle_sha256"] == tarball_hex
+    assert descriptor["studio_version"] == manifest["studio_version"]
+    # the tarball unpacks to exactly the manifested file set, with the
+    # schema-A manifest.json staged at the archive root
     with tarfile.open(tarball, mode="r:gz") as archive:
-        assert archive.getnames() == [row["path"] for row in manifest["files"]]
+        names = archive.getnames()
+        assert names == [row["path"] for row in manifest["files"]]
+        assert release_tool.BUNDLE_MANIFEST_NAME in names
 
 
-def test_main_accepts_a_matching_expected_version(tmp_path: Path) -> None:
-    """The Release tag gate passes when the versions agree."""
+def test_main_studio_version_override_drives_all_outputs(tmp_path: Path) -> None:
+    """The tag-derived version overrides the pyproject default everywhere."""
     dist = _fake_bundle(tmp_path)
+    source = _fake_capability_manifest(tmp_path)
     out = tmp_path / "release"
     exit_code = release_tool.main(
         [
@@ -229,15 +295,18 @@ def test_main_accepts_a_matching_expected_version(tmp_path: Path) -> None:
             str(dist),
             "--out-dir",
             str(out),
-            "--expect-version",
-            release_tool.studio_version(),
+            "--capability-manifest",
+            str(source),
+            "--studio-version",
+            "0.10.99",
         ]
     )
     assert exit_code == 0
-
-
-def test_main_fails_closed_on_a_version_mismatch(tmp_path: Path) -> None:
-    """A Release tag that disagrees with the studio version is refused."""
-    dist = _fake_bundle(tmp_path)
-    with pytest.raises(ValueError, match="does not match"):
-        release_tool.main(["--dist-dir", str(dist), "--expect-version", "99.99.99"])
+    manifest = json.loads((out / release_tool.DEPLOY_MANIFEST_NAME).read_text(encoding="utf-8"))
+    descriptor = json.loads(
+        (out / release_tool.DEPLOY_DESCRIPTOR_NAME).read_text(encoding="utf-8")
+    )
+    assert manifest["studio_version"] == "0.10.99"
+    assert manifest["release_tag"] == "studio-remote-v0.10.99"
+    assert descriptor["studio_version"] == "0.10.99"
+    assert descriptor["release_tag"] == "studio-remote-v0.10.99"
