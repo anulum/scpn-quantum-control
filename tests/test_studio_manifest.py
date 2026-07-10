@@ -216,14 +216,13 @@ def test_platform_sdk_range_matches_the_studio_extra() -> None:
     assert studio_requirement == f"scpn-studio-platform{manifest.PLATFORM_SDK_RANGE}"
 
 
-def test_ui_module_matches_the_deployed_remote_and_the_vite_config() -> None:
-    """``ui_module`` byte-matches the live deploy target and the MF config.
+def test_ui_module_points_at_the_deployed_remote() -> None:
+    """``ui_module`` carries the live pull-deploy target verbatim.
 
     The Hub's loader reads ``ui_module.exposes[0]`` and the federation name
-    from the manifest, so a drift against ``module-federation.config.ts``
-    breaks panel loading silently. The values here were probe-verified live
-    by the platform keeper on 2026-07-10 (container init/get, all chunks
-    under the studio path).
+    from the manifest. The values here were probe-verified live by the
+    platform keeper on 2026-07-10 (container init/get, all chunks under the
+    studio path).
     """
     built = manifest.build_manifest()
     ui = built.ui_module
@@ -236,9 +235,21 @@ def test_ui_module_matches_the_deployed_remote_and_the_vite_config() -> None:
     assert ui.exposes == ("./QuantumStudioPanel",)
     assert ui.federation == "scpn_quantum_control"
 
+
+def test_ui_module_matches_the_vite_federation_config() -> None:
+    """``ui_module`` byte-matches ``module-federation.config.ts``.
+
+    A drift between the manifest and the vite federation config breaks Hub
+    panel loading silently, so both are pinned to each other. The config
+    lives only in the source tree (the Docker test image ships no
+    ``studio-web/``), so the cross-check is source-tree-only.
+    """
     repo_root = Path(__file__).resolve().parents[1]
-    mf_config = (repo_root / "studio-web" / "module-federation.config.ts").read_text(
-        encoding="utf-8"
-    )
+    mf_config_path = repo_root / "studio-web" / "module-federation.config.ts"
+    if not mf_config_path.is_file():
+        pytest.skip("module-federation.config.ts is not present in this environment")
+    ui = manifest.build_manifest().ui_module
+    assert ui is not None
+    mf_config = mf_config_path.read_text(encoding="utf-8")
     assert f'FEDERATION_NAME = "{ui.federation}"' in mf_config
     assert f'PANEL_EXPOSE_KEY = "{ui.exposes[0]}"' in mf_config
