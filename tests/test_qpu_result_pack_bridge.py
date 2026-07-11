@@ -22,6 +22,8 @@ import json
 
 import pytest
 
+pytest.importorskip("scpn_studio_platform.seal", reason="studio extra not installed")
+
 from scpn_quantum_control.hardware.hal import (
     BackendProfile,
     HardwareAbstractionLayer,
