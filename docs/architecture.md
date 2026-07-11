@@ -55,10 +55,14 @@ JIT/VMAP/PMAP/PyTree compatibility and nested-transform algebra live in the one-
 live in `phase/jax_maturity.py`; the remaining 575-line facade contains signature-stable public
 wrappers and result re-exports rather than mixed execution concerns.
 
+The Torch bridge is undergoing the same bounded decomposition. Its 19 immutable result, route,
+evidence, matrix, and cloud-plan records live in the dependency-free
+`phase/torch_bridge_contracts.py` leaf. `phase/torch_bridge.py` and the phase package re-export the
+same class objects while executable Torch concerns are assessed one cluster at a time.
+
 | Module | Single responsibility | Why it stays whole |
 |--------|-----------------------|--------------------|
 | `whole_program_trace_values.py` | Operator-intercepted forward-AD trace value runtime (`TraceADScalar`/`TraceADArray` and helpers) | Mutually recursive; splitting creates import cycles |
-| `phase/torch_bridge.py` | Torch bridge: training-loop, ecosystem and maturity audits | One connected cluster |
 | `benchmarks/differentiable_programming.py` | Differentiable-programming benchmark suite | Cases share one case/result-record framework |
 | `program_ad_linalg_primitives.py` | Program-AD linear-algebra primitive rules and conditioning diagnostics | One dominant cluster; satellites are registry-dispatched rules |
 | `hardware/provider_capability_discovery.py` | Per-provider capability snapshot extraction | One discovery framework shared across providers |

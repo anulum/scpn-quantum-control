@@ -24,7 +24,8 @@ from typing import TypeAlias, cast
 import numpy as np
 from numpy.typing import NDArray
 
-from .torch_bridge import PhaseTorchTrainingLoopAuditResult, run_torch_training_loop_audit
+from .torch_bridge import run_torch_training_loop_audit
+from .torch_bridge_contracts import PhaseTorchTrainingLoopAuditResult
 
 FloatArray: TypeAlias = NDArray[np.float64]
 

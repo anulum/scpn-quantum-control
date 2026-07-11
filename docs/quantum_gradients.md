@@ -2317,6 +2317,11 @@ remain explicit non-claims.
 
 ## Optional framework tensor bridges and cloud validation plans
 
+The 19 immutable Torch result, route, evidence, matrix, and cloud-plan records live in the
+NumPy/stdlib-only `phase.torch_bridge_contracts` leaf. The executable bridge and phase package
+re-export the same class objects, while optional Torch loading and all framework execution remain
+outside the contract module.
+
 For ML pipelines that need framework tensors, the phase namespace exposes
 host-boundary adapters, deterministic registered statevector routes, and
 non-promotional cloud-validation plans for accelerator routes blocked by local
