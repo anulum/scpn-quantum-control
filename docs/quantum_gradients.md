@@ -873,7 +873,9 @@ that hardware execution remains closed.
 All nine Qiskit shifted-circuit, gradient, Runtime, provider-workflow, evidence-bundle, and maturity
 record classes plus their closed constructor-validation and serialization graph live in the
 one-way `phase.qiskit_bridge_contracts` leaf. The bridge and phase namespace retain exact class
-identity.
+identity. Fully bound shifted-circuit generation, deterministic Statevector parameter-shift
+gradients, and finite-shot surrogate uncertainty live in the one-way `phase.qiskit_gradients`
+leaf and retain exact bridge/phase function identity.
 
 For Qiskit-native circuits, the phase namespace can generate fully bound
 plus/minus shifted circuits and execute a local Statevector parameter-shift

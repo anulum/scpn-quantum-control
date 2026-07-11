@@ -72,8 +72,9 @@ The Qiskit bridge decomposition begins with the record/validation graph. All nin
 gradient, Runtime, provider-workflow, evidence-bundle, and maturity records plus provider-method
 registries, constructor validation, and JSON-ready serialization live in the one-way
 `phase/qiskit_bridge_contracts.py` leaf. `phase/qiskit_bridge.py` re-exports those exact objects and
-retains shifted-circuit execution, Runtime capture builders, and maturity orchestration while the
-remaining concerns are split.
+local shifted-circuit generation plus deterministic Statevector and finite-shot surrogate
+gradients live in the one-way `phase/qiskit_gradients.py` leaf. The bridge retains Runtime capture
+builders and maturity orchestration while the remaining concern is split.
 
 The Phase-QNode circuit decomposition starts from a dependency-free declaration layer. All 21
 circuit, observable, support, execution, gradient, metric, and Fisher record classes plus their
