@@ -100,6 +100,36 @@ No adapter may hide an unavailable provider by silently switching to a
 different backend. A fallback is allowed only when the compute request
 declares it.
 
+## Result-pack emission
+
+Every HAL adapter normalises its provider onto one neutral
+`QuantumJobResult` (`hardware/hal.py`). Because of that single shape, the
+step from a returned result to an attestation-verifiable
+`studio.qpu-result-pack.v1` unit is wired **once**, not sixteen times:
+`hardware/qpu_result_pack_bridge.py` (`qpu_result_pack_from_job`) applies
+unchanged to IBM, IonQ, IQM, Rigetti, Quantinuum, QuEra, Pasqal, OQC,
+D-Wave, Braket, Azure, Cirq, PennyLane, qBraid, Quandela, and
+Strangeworks. The bridge supplies the two things the studio unit cannot
+synthesise from a pack record:
+
+- the deterministic digest of the returned counts
+  (`raw_results_digest` - canonical JSON, sorted keys, `sha256:`), which
+  is byte-for-byte the value the executive deploy template hands a
+  provider to sign against, so the on-device signature and the
+  studio-side digest cannot drift; a parity test locks the two together;
+- the run provenance drawn from the neutral result and its backend
+  profile (job id, concrete backend, hardware family, required job ids).
+
+Honesty boundary. The bridge refuses to mint provenance with a blank
+claim scope, title, or non-claims list - a shot histogram cannot state
+what it does or does not support, so the caller must. Without a provider
+attestation over the counts digest, the emitted unit renders
+`unverifiable` downstream, loud and never silently upgraded; a supplied
+attestation that signs a different digest is rejected at emission. This
+is the `declared` boundary of PROVIDER-DEPTH: the wiring is complete and
+offline-testable through the local deterministic simulator, while status
+advances to `measured` only on a real provider run with an evidence pack.
+
 ## Proposal-ready allocation package
 
 When applying for resources, the dossier should include:
