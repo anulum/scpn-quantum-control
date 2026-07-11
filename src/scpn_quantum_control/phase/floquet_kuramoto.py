@@ -30,8 +30,7 @@ import numpy as np
 from numpy.typing import NDArray
 from scipy.linalg import expm
 
-from oscillatools.accel.rust_import import optional_rust_engine
-
+from .._rust_accel import optional_rust_engine
 from ..bridge.knm_hamiltonian import knm_to_dense_matrix
 from ..dense_budget import require_dense_allocation
 

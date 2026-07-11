@@ -21,8 +21,7 @@ from scipy.linalg import expm
 from scipy.sparse import csc_matrix
 from scipy.sparse.linalg import eigsh, expm_multiply
 
-from oscillatools.accel.rust_import import optional_rust_engine
-
+from .._rust_accel import optional_rust_engine
 from ..bridge.knm_hamiltonian import (
     build_knm_paper27,
     knm_to_dense_matrix,

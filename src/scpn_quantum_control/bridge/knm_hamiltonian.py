@@ -23,9 +23,8 @@ from qiskit.circuit import ParameterVector, QuantumCircuit
 from qiskit.quantum_info import SparsePauliOp
 from scipy import sparse
 
-from oscillatools.accel.rust_import import optional_rust_engine
-
 from .._constants import COUPLING_SPARSITY_EPS
+from .._rust_accel import optional_rust_engine
 from ..compile_budget import require_pauli_operator_budget
 from ..dense_budget import require_dense_allocation
 

@@ -41,7 +41,7 @@ from dataclasses import dataclass
 import numpy as np
 from numpy.typing import NDArray
 
-from oscillatools.accel.rust_import import optional_rust_engine
+from .._rust_accel import optional_rust_engine
 
 # Upper bound on n_oscillators for routines that allocate the full n²×n²
 # Koopman generator. At n=32 the dense generator is 1024×1024 (8 MB) and

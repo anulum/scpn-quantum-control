@@ -10,10 +10,10 @@
     "public_api_exports": 835,
     "public_documentation_pages": 269,
     "python_model_classes": 1003,
-    "python_model_source_modules": 519,
+    "python_model_source_modules": 520,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 46,
-    "test_files": 895
+    "test_files": 896
   },
   "documentation": {
     "examples": [
@@ -4626,6 +4626,7 @@
     "python_source_modules": [
       "src/scpn_quantum_control/_constants.py",
       "src/scpn_quantum_control/_paths.py",
+      "src/scpn_quantum_control/_rust_accel.py",
       "src/scpn_quantum_control/analysis/adaptive_fim_feedback.py",
       "src/scpn_quantum_control/analysis/berry_phase.py",
       "src/scpn_quantum_control/analysis/bkt_analysis.py",
@@ -7018,6 +7019,7 @@
       "tests/test_run_dla_parity_suite_cli.py",
       "tests/test_run_quantum_ssgf_descent.py",
       "tests/test_runner_guards.py",
+      "tests/test_rust_accel_import_resilience.py",
       "tests/test_rust_ffi_safety_audit.py",
       "tests/test_rust_ffi_validation.py",
       "tests/test_rust_kernel_execution_audit.py",

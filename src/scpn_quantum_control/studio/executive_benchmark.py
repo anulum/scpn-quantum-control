@@ -32,8 +32,7 @@ from typing import Any, Final, cast
 import numpy as np
 from numpy.typing import NDArray
 
-from oscillatools.accel.rust_import import optional_rust_engine
-
+from .._rust_accel import optional_rust_engine
 from .benchmark_databank_bundle import build_benchmark_databank_bundle
 from .evidence_bundle import validate_bundle
 from .executive import (

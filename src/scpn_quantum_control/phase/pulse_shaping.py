@@ -29,7 +29,7 @@ import numpy as np
 from numpy.typing import NDArray
 from scipy.special import hyp2f1
 
-from oscillatools.accel.rust_import import optional_rust_engine
+from .._rust_accel import optional_rust_engine
 
 _engine = optional_rust_engine()
 _HAS_RUST = _engine is not None

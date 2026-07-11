@@ -24,7 +24,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from oscillatools.accel.rust_import import optional_rust_engine
+from .._rust_accel import optional_rust_engine
 
 _engine = optional_rust_engine()
 _fit_rust = getattr(_engine, "fit_symmetry_decay", None)

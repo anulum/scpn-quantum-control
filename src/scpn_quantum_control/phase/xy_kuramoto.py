@@ -26,8 +26,7 @@ from qiskit.circuit.library import PauliEvolutionGate
 from qiskit.quantum_info import SparsePauliOp, Statevector
 from qiskit.synthesis import LieTrotter, SuzukiTrotter
 
-from oscillatools.accel.rust_import import optional_rust_engine
-
+from .._rust_accel import optional_rust_engine
 from ..bridge.knm_hamiltonian import knm_to_hamiltonian
 from ..dense_budget import require_dense_allocation
 from .results import TrajectoryResult

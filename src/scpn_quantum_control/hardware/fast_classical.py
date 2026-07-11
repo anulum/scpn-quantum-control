@@ -24,8 +24,9 @@ from numpy.typing import NDArray
 from scipy.sparse import csc_matrix
 from scipy.sparse.linalg import expm_multiply
 
-from oscillatools.accel.rust_import import optional_rust_engine
 from scpn_quantum_control.bridge.knm_hamiltonian import knm_to_xxz_hamiltonian
+
+from .._rust_accel import optional_rust_engine
 
 _engine = optional_rust_engine()
 _HAS_RUST = _engine is not None
