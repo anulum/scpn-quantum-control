@@ -46,9 +46,11 @@ a single connected responsibility cluster. They are deliberate architecture, not
 refactors:
 
 The JAX bridge is undergoing staged decomposition under the extraction gate. Immutable result
-records now live in the dependency-free `phase/jax_bridge_contracts.py` leaf; the compatibility
-module retains execution and re-exports those records while later execution clusters are assessed
-one at a time.
+records live in the dependency-free `phase/jax_bridge_contracts.py` leaf, and bounded
+parameter-shift/native/custom-VJP QNN implementations live in the one-way
+`phase/jax_gradients.py` leaf. The compatibility module retains signature-stable wrappers,
+registered-QNode execution, transform/lowering audits, and maturity/cloud orchestration while
+later clusters are assessed one at a time.
 
 | Module | Single responsibility | Why it stays whole |
 |--------|-----------------------|--------------------|

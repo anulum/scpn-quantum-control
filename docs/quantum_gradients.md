@@ -1892,8 +1892,9 @@ flags for requested gap or gradient tolerances.
 
 `phase.jax_bridge` provides a bounded JAX-facing adapter for supported
 parameter-shift calls. Its immutable evidence records live in the dependency-free
-`phase.jax_bridge_contracts` leaf and are re-exported through both the bridge and phase package,
-while optional JAX loading and execution remain in `phase.jax_bridge`:
+`phase.jax_bridge_contracts` leaf; bounded parameter-shift, native-QNN, and custom-VJP QNN
+implementations live in `phase.jax_gradients`. The compatibility bridge re-exports the records,
+retains the established function signatures, and injects its optional-JAX loader:
 
 ```python
 import numpy as np
