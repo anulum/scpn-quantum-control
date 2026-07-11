@@ -10,10 +10,10 @@
     "public_api_exports": 835,
     "public_documentation_pages": 269,
     "python_model_classes": 1003,
-    "python_model_source_modules": 546,
+    "python_model_source_modules": 547,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 49,
-    "test_files": 924
+    "test_files": 925
   },
   "documentation": {
     "examples": [
@@ -471,7 +471,7 @@
       {
         "package": "benchmarks",
         "path": "src/scpn_quantum_control/benchmarks",
-        "python_modules": 25
+        "python_modules": 26
       },
       {
         "package": "bridge",
@@ -1432,11 +1432,11 @@
       },
       {
         "name": "DifferentiableProgrammingBenchmarkResult",
-        "path": "src/scpn_quantum_control/benchmarks/differentiable_programming.py"
+        "path": "src/scpn_quantum_control/benchmarks/differentiable_programming_contracts.py"
       },
       {
         "name": "DifferentiableProgrammingExternalReferenceResult",
-        "path": "src/scpn_quantum_control/benchmarks/differentiable_programming.py"
+        "path": "src/scpn_quantum_control/benchmarks/differentiable_programming_contracts.py"
       },
       {
         "name": "DifferentiablePromotionLanguageAudit",
@@ -3808,7 +3808,7 @@
       },
       {
         "name": "QuantumGradientBenchmarkResult",
-        "path": "src/scpn_quantum_control/benchmarks/differentiable_programming.py"
+        "path": "src/scpn_quantum_control/benchmarks/differentiable_programming_contracts.py"
       },
       {
         "name": "QuantumGradientMethodExplanation",
@@ -4721,6 +4721,7 @@
       "src/scpn_quantum_control/benchmarks/differentiable_isolated_benchmark_plan.py",
       "src/scpn_quantum_control/benchmarks/differentiable_optimizer_convergence.py",
       "src/scpn_quantum_control/benchmarks/differentiable_programming.py",
+      "src/scpn_quantum_control/benchmarks/differentiable_programming_contracts.py",
       "src/scpn_quantum_control/benchmarks/gpu_baseline.py",
       "src/scpn_quantum_control/benchmarks/isolated_host_readiness.py",
       "src/scpn_quantum_control/benchmarks/kuramoto_competitive_benchmark.py",
@@ -6518,6 +6519,7 @@
       "tests/test_differentiable_programming_benchmark_program_ir_edges.py",
       "tests/test_differentiable_programming_benchmark_rust_edges.py",
       "tests/test_differentiable_programming_benchmarks.py",
+      "tests/test_differentiable_programming_contracts.py",
       "tests/test_differentiable_registered_custom.py",
       "tests/test_differentiable_residual_weights.py",
       "tests/test_differentiable_result_contracts.py",

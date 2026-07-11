@@ -125,6 +125,11 @@ Cholesky/eigen kernels and their private geometry helpers. `compiler_ad.rs` owns
 validation, Python exception conversion, Python-array construction, and the 56 binding functions;
 both facades explicitly re-export inner kernels so existing Rust paths remain stable.
 
+Differentiable benchmark result validation is isolated from benchmark execution.
+`benchmarks/differentiable_programming_contracts.py` owns the three immutable result records and
+shared gradient/error normalization helpers. `differentiable_programming.py` re-exports those exact
+objects while retaining the program-AD, quantum-gradient, and external-reference suites.
+
 | Module | Single responsibility | Why it stays whole |
 |--------|-----------------------|--------------------|
 | `whole_program_trace_values.py` | Operator-intercepted forward-AD trace value runtime (`TraceADScalar`/`TraceADArray` and helpers) | Cohesion audit: 106/122 definitions form one strongly connected component; class dispatch and value construction make primitive-family splits cyclic |
