@@ -13,7 +13,7 @@
     "python_model_source_modules": 554,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 49,
-    "test_files": 935
+    "test_files": 939
   },
   "documentation": {
     "examples": [
@@ -6873,10 +6873,14 @@
       "tests/test_phase_qnode_affinity_benchmark.py",
       "tests/test_phase_qnode_circuit.py",
       "tests/test_phase_qnode_circuit_builders.py",
+      "tests/test_phase_qnode_circuit_builders_integration.py",
       "tests/test_phase_qnode_circuit_contracts.py",
       "tests/test_phase_qnode_circuit_differentiation.py",
+      "tests/test_phase_qnode_circuit_differentiation_integration.py",
       "tests/test_phase_qnode_circuit_execution.py",
+      "tests/test_phase_qnode_circuit_execution_integration.py",
       "tests/test_phase_qnode_circuit_support.py",
+      "tests/test_phase_qnode_circuit_support_integration.py",
       "tests/test_phase_qnode_compiler_lowering.py",
       "tests/test_phase_qnode_framework_parity.py",
       "tests/test_phase_qnode_provider_transforms.py",

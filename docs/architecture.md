@@ -128,6 +128,9 @@ propagation, exact/finite-shot Fisher information, QFI/Fubini-Study, and natural
 live in the one-way `phase/qnode_circuit_differentiation.py` leaf. `phase/qnode_circuit.py` is now
 a shallow compatibility facade that re-exports the exact contract, builder, support, execution,
 and differentiation objects without defining executable functions.
+Its paired tests follow the same ownership boundary: the facade file retains only export checks,
+while builder, support, execution, and differentiation integration behavior lives in separate
+module-named test surfaces.
 
 Provider capability discovery now separates provider-neutral governance from vendor metadata
 normalization. `hardware/provider_capability_core.py` owns no-submit snapshots and decisions,
