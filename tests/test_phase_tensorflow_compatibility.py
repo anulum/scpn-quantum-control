@@ -5,12 +5,14 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 
-# SCPN Quantum Control — TensorFlow Phase Bridge Tests
+# SCPN Quantum Control — TensorFlow Compatibility Tests
 
-"""Contract tests for TensorFlow phase-gradient and QNode bridge integration."""
+"""Behavioral tests for TensorFlow compatibility, lowering, and maturity."""
 
 from __future__ import annotations
 
+import ast
+import inspect
 from collections.abc import Callable
 from typing import Any, cast
 
@@ -19,6 +21,7 @@ import pytest
 from numpy.typing import NDArray
 
 import scpn_quantum_control.phase.tensorflow_bridge as tensorflow_bridge
+import scpn_quantum_control.phase.tensorflow_compatibility as tensorflow_compatibility
 from scpn_quantum_control.phase import (
     PhaseTensorFlowMaturityAuditResult,
     PhaseTensorFlowPhaseQNodeLoweringMatrixResult,
@@ -753,3 +756,122 @@ def test_tensorflow_bridge_fails_closed_when_optional_dependency_missing(
             labels=np.array([0.0], dtype=float),
             initial_params=np.array([0.2], dtype=float),
         )
+
+
+def test_tensorflow_compatibility_leaf_has_no_facade_backedge() -> None:
+    """Keep compatibility execution independent of the public bridge facade."""
+    tree = ast.parse(inspect.getsource(tensorflow_compatibility))
+    imported_modules = {
+        node.module
+        for node in ast.walk(tree)
+        if isinstance(node, ast.ImportFrom) and node.module is not None
+    }
+    imported_modules.update(
+        alias.name
+        for node in ast.walk(tree)
+        if isinstance(node, ast.Import)
+        for alias in node.names
+    )
+
+    assert not any(module.endswith("tensorflow_bridge") for module in imported_modules)
+
+
+def test_tensorflow_compatibility_helpers_are_exact_facade_aliases() -> None:
+    """Keep optional-framework helpers single-owned by the compatibility leaf."""
+    helper_names = (
+        "_tensorflow_variable",
+        "_tensorflow_gradient_tape",
+        "_tensorflow_function",
+        "_tensorflow_keras_layer_base_and_constant",
+        "_tensorflow_trainable_parameter_count",
+        "_tensorflow_values_to_float",
+        "_tensorflow_bounded_qnn_loss_tensor",
+    )
+
+    for name in helper_names:
+        assert getattr(tensorflow_bridge, name) is getattr(tensorflow_compatibility, name)
+
+
+def test_tensorflow_compatibility_facade_injects_active_loader(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Verify compatibility wrappers pass the currently active facade loader."""
+    sentinel = object()
+    seen: dict[str, object] = {}
+
+    def loader() -> object:
+        """Return a sentinel optional-framework module."""
+        return object()
+
+    def fake_gradient_tape_audit(
+        *,
+        features: object,
+        labels: object,
+        params: object,
+        tolerance: float,
+        _tensorflow_loader: Callable[[], Any],
+    ) -> object:
+        del features, labels, params, tolerance
+        seen["loader"] = _tensorflow_loader
+        return sentinel
+
+    monkeypatch.setattr(tensorflow_bridge, "_load_tensorflow", loader)
+    monkeypatch.setattr(
+        tensorflow_bridge,
+        "_run_tensorflow_gradient_tape_compatibility_audit",
+        fake_gradient_tape_audit,
+    )
+
+    result = tensorflow_bridge.run_tensorflow_gradient_tape_compatibility_audit(
+        features=np.array([[0.0]], dtype=float),
+        labels=np.array([0.0], dtype=float),
+        params=np.array([0.0], dtype=float),
+    )
+
+    assert result is sentinel
+    assert seen["loader"] is loader
+
+
+def test_tensorflow_compatibility_facade_signatures_hide_private_loader() -> None:
+    """Keep public compatibility signatures equal after removing leaf injection."""
+    function_names = (
+        "run_tensorflow_phase_qnode_lowering_matrix",
+        "run_tensorflow_gradient_tape_compatibility_audit",
+        "run_tensorflow_function_compatibility_audit",
+        "run_tensorflow_xla_compatibility_audit",
+        "tensorflow_bounded_qnn_keras_layer",
+        "run_tensorflow_keras_layer_wrapper_audit",
+        "run_tensorflow_maturity_audit",
+    )
+
+    for name in function_names:
+        facade_signature = inspect.signature(getattr(tensorflow_bridge, name))
+        leaf_signature = inspect.signature(getattr(tensorflow_compatibility, name))
+        public_parameters = tuple(
+            parameter
+            for parameter in leaf_signature.parameters.values()
+            if parameter.name != "_tensorflow_loader"
+        )
+        assert facade_signature == leaf_signature.replace(parameters=public_parameters)
+
+
+def test_tensorflow_facade_does_not_redefine_compatibility_helpers() -> None:
+    """Keep moved compatibility helpers single-owned by the execution leaf."""
+    tree = ast.parse(inspect.getsource(tensorflow_bridge))
+    definitions = {
+        node.name
+        for node in tree.body
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef))
+    }
+
+    assert definitions.isdisjoint(
+        {
+            "_tensorflow_variable",
+            "_tensorflow_gradient_tape",
+            "_tensorflow_function",
+            "_tensorflow_keras_layer_base_and_constant",
+            "_tensorflow_trainable_parameter_count",
+            "_tensorflow_values_to_float",
+            "_tensorflow_bounded_qnn_loss_tensor",
+        }
+    )

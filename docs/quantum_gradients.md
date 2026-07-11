@@ -324,10 +324,13 @@ TensorFlow bridge result records while preserving exact bridge/phase class ident
 and
 the one-way `phase.tensorflow_gradients` leaf, which owns host-boundary
 `tensorflow_parameter_shift_value_and_grad(...)`,
-`tensorflow_bounded_qnn_value_and_grad(...)`, and their direct validation helpers while the public
-facade injects its active optional-framework loader. The bounded-QNN route returns TensorFlow
-tensors from the analytic bounded-model gradient. Each route checks the same
-parameter-shift reference. These are intentionally narrow bridge promotions:
+`tensorflow_bounded_qnn_value_and_grad(...)`, and their direct validation helpers,
+and
+the one-way `phase.tensorflow_compatibility` leaf, which owns bounded GradientTape,
+`tf.function`, XLA, Keras-layer, Phase-QNode lowering-matrix, and maturity evidence behind the same
+injected loader boundary. The public facade injects its active optional-framework loader. The
+bounded-QNN route returns TensorFlow tensors from the analytic bounded-model gradient, and each
+route checks the same parameter-shift reference. These are intentionally narrow bridge promotions:
 arbitrary autodiff-through-simulator kernels, unrestricted QNN architectures,
 incompatible CUDA/device placement guarantees, cross-runtime AOTAutograd
 execution, dynamic-shape AOTAutograd export, dynamic feature-width export
