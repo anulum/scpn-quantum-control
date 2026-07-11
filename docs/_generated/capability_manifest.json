@@ -10,10 +10,10 @@
     "public_api_exports": 835,
     "public_documentation_pages": 269,
     "python_model_classes": 1003,
-    "python_model_source_modules": 551,
+    "python_model_source_modules": 552,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 49,
-    "test_files": 931
+    "test_files": 933
   },
   "documentation": {
     "examples": [
@@ -4812,6 +4812,7 @@
       "src/scpn_quantum_control/differentiable_competitive_baselines.py",
       "src/scpn_quantum_control/differentiable_consistency.py",
       "src/scpn_quantum_control/differentiable_custom_derivatives.py",
+      "src/scpn_quantum_control/differentiable_dashboard.py",
       "src/scpn_quantum_control/differentiable_dependency_environment_map.py",
       "src/scpn_quantum_control/differentiable_exact_modes.py",
       "src/scpn_quantum_control/differentiable_external_validation.py",
@@ -6328,6 +6329,7 @@
       ".github/workflows/studio-remote-release.yml"
     ],
     "test_files": [
+      "tests/_differentiable_api_test_helpers.py",
       "tests/_differentiable_external_comparison_edges.py",
       "tests/_differentiable_programming_benchmark_edge_helpers.py",
       "tests/_internal_corpus_markers.py",
@@ -6492,6 +6494,7 @@
       "tests/test_differentiable_competitive_baselines.py",
       "tests/test_differentiable_consistency.py",
       "tests/test_differentiable_custom_derivatives.py",
+      "tests/test_differentiable_dashboard.py",
       "tests/test_differentiable_dependency_environment_map.py",
       "tests/test_differentiable_exact_modes.py",
       "tests/test_differentiable_external_comparison_framework_edges.py",

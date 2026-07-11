@@ -42,6 +42,7 @@ def test_differentiable_module_hardening_registry_covers_current_scope() -> None
     assert "src/scpn_quantum_control/differentiable.py" in module_paths
     assert "src/scpn_quantum_control/differentiable_api.py" in module_paths
     assert "src/scpn_quantum_control/differentiable_api_contracts.py" in module_paths
+    assert "src/scpn_quantum_control/differentiable_dashboard.py" in module_paths
     assert "src/scpn_quantum_control/differentiable_parameter_contracts.py" in module_paths
     assert "src/scpn_quantum_control/differentiable_scalar_kernels.py" in module_paths
     assert "src/scpn_quantum_control/differentiable_stochastic_policy.py" in module_paths

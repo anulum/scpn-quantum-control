@@ -319,9 +319,14 @@ def differentiable_module_hardening_registry() -> tuple[DifferentiableModuleHard
             ("unified result envelopes", "dashboard record validation"),
         ),
         _record(
+            "src/scpn_quantum_control/differentiable_dashboard.py",
+            ("tests/test_differentiable_dashboard.py",),
+            ("claim-bounded capability rows", "optional conformance overlay"),
+        ),
+        _record(
             "src/scpn_quantum_control/differentiable_api.py",
             ("tests/test_differentiable_api.py",),
-            ("unified support reports", "unsupported-route diagnostics"),
+            ("unified route wrappers", "unsupported-route dispatch"),
         ),
         _record(
             "src/scpn_quantum_control/differentiable_benchmark_report.py",
