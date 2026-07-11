@@ -137,6 +137,7 @@ branch-IR completeness modules backed by one shared real-IR fixture.
 | Module | Single responsibility | Why it stays whole |
 |--------|-----------------------|--------------------|
 | `whole_program_trace_values.py` | Operator-intercepted forward-AD trace value runtime (`TraceADScalar`/`TraceADArray` and helpers) | Cohesion audit: 106/122 definitions form one strongly connected component; class dispatch and value construction make primitive-family splits cyclic |
+| `compiler/mlir_whole_program_emitter.py` | Native LLVM text emission for recorded whole-program AD operations and their derivatives | Cohesion audit: 45/46 top-level definitions form one 114-edge component spanning dispatch, linalg helpers, batch scaffolds, operands and formatting; the native driver is the sole production importer |
 | `benchmarks/differentiable_programming.py` | Differentiable-programming execution facade after contract/quantum leaf extraction | Program/external cases are tested facade monkeypatch seams for ten runtime/compiler/JAX dependencies; alias moves would break diagnostic substitution |
 | `program_ad_linalg_primitives.py` | Program-AD linear-algebra primitive rules and conditioning diagnostics | One dominant cluster; satellites are registry-dispatched rules |
 | `whole_program_frontend.py` | Whole-program compiler frontend report and assembly | One connected cluster |
