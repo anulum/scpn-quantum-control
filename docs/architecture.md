@@ -212,6 +212,15 @@ framework, identical-circuit, runner, dependency, and fail-closed classification
 | `whole_program_frontend.py` | Static source/bytecode introspection and report assembly after contract extraction | The residual private metadata record and 45 functions form one connected pipeline; public records live in the one-way contracts leaf |
 | `program_ad_assembly_primitives.py` | Program-AD assembly primitive rules (stack/concat/triu/tril) | One dominant cluster |
 
+The remaining large paired tests deliberately follow those source ownership decisions:
+
+| Test surface | Source owner | Why it stays whole |
+|--------------|--------------|--------------------|
+| `test_differentiable_result_contracts.py` | `differentiable_result_contracts.py` | One canonical derivative-result schema lifecycle; facade identity, normalization, and fail-closed invariants must move together |
+| `test_program_ad_registry.py` | `program_ad_registry.py` | One resolved primitive-registry lifecycle spanning identity, rules, transforms, registration, dispatch reports, and facade exports |
+| `test_program_ad_adjoint_generation.py` | `program_ad_adjoint_generation.py` | One reverse-adjoint contribution/dispatch pipeline; primitive-family cases exercise the same dispatcher and result assembly |
+| `test_program_ad_shape_transforms.py` | `program_ad_shape_transforms.py` | One static shape-transform primitive family with shared registry policy, normalization, direct rules, and failure boundaries |
+
 A reviewer encountering one of these files will find the same statement in its module
 docstring. An entry is re-opened only if a future change makes the module mix an
 additional, independent responsibility.
