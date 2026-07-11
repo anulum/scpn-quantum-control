@@ -754,6 +754,11 @@ def differentiable_module_hardening_registry() -> tuple[DifferentiableModuleHard
             ("missing-TensorFlow dependency records", "host-boundary diagnostics"),
         ),
         _record(
+            "src/scpn_quantum_control/phase/tensorflow_bridge_contracts.py",
+            ("tests/test_phase_tensorflow_bridge_contracts.py",),
+            ("contract identity", "result serialization"),
+        ),
+        _record(
             "src/scpn_quantum_control/phase/tensorflow_maintenance.py",
             ("tests/test_phase_tensorflow_maintenance.py",),
             ("compatibility-only decision", "Graph/XLA promotion blockers"),

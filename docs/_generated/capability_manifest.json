@@ -10,10 +10,10 @@
     "public_api_exports": 835,
     "public_documentation_pages": 269,
     "python_model_classes": 1003,
-    "python_model_source_modules": 538,
+    "python_model_source_modules": 539,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 46,
-    "test_files": 918
+    "test_files": 919
   },
   "documentation": {
     "examples": [
@@ -561,7 +561,7 @@
       {
         "package": "phase",
         "path": "src/scpn_quantum_control/phase",
-        "python_modules": 112
+        "python_modules": 113
       },
       {
         "package": "psi_field",
@@ -3112,15 +3112,15 @@
       },
       {
         "name": "PhaseTensorFlowFunctionCompatibilityResult",
-        "path": "src/scpn_quantum_control/phase/tensorflow_bridge.py"
+        "path": "src/scpn_quantum_control/phase/tensorflow_bridge_contracts.py"
       },
       {
         "name": "PhaseTensorFlowGradientTapeCompatibilityResult",
-        "path": "src/scpn_quantum_control/phase/tensorflow_bridge.py"
+        "path": "src/scpn_quantum_control/phase/tensorflow_bridge_contracts.py"
       },
       {
         "name": "PhaseTensorFlowKerasLayerWrapperAuditResult",
-        "path": "src/scpn_quantum_control/phase/tensorflow_bridge.py"
+        "path": "src/scpn_quantum_control/phase/tensorflow_bridge_contracts.py"
       },
       {
         "name": "PhaseTensorFlowMaintenanceReport",
@@ -3132,27 +3132,27 @@
       },
       {
         "name": "PhaseTensorFlowMaturityAuditResult",
-        "path": "src/scpn_quantum_control/phase/tensorflow_bridge.py"
+        "path": "src/scpn_quantum_control/phase/tensorflow_bridge_contracts.py"
       },
       {
         "name": "PhaseTensorFlowParameterShiftResult",
-        "path": "src/scpn_quantum_control/phase/tensorflow_bridge.py"
+        "path": "src/scpn_quantum_control/phase/tensorflow_bridge_contracts.py"
       },
       {
         "name": "PhaseTensorFlowPhaseQNodeLoweringMatrixResult",
-        "path": "src/scpn_quantum_control/phase/tensorflow_bridge.py"
+        "path": "src/scpn_quantum_control/phase/tensorflow_bridge_contracts.py"
       },
       {
         "name": "PhaseTensorFlowPhaseQNodeLoweringRoute",
-        "path": "src/scpn_quantum_control/phase/tensorflow_bridge.py"
+        "path": "src/scpn_quantum_control/phase/tensorflow_bridge_contracts.py"
       },
       {
         "name": "PhaseTensorFlowQNNGradientResult",
-        "path": "src/scpn_quantum_control/phase/tensorflow_bridge.py"
+        "path": "src/scpn_quantum_control/phase/tensorflow_bridge_contracts.py"
       },
       {
         "name": "PhaseTensorFlowXLACompatibilityResult",
-        "path": "src/scpn_quantum_control/phase/tensorflow_bridge.py"
+        "path": "src/scpn_quantum_control/phase/tensorflow_bridge_contracts.py"
       },
       {
         "name": "PhaseTorchAOTAutogradExportResult",
@@ -5035,6 +5035,7 @@
       "src/scpn_quantum_control/phase/synchronisation_witness.py",
       "src/scpn_quantum_control/phase/tensor_jump.py",
       "src/scpn_quantum_control/phase/tensorflow_bridge.py",
+      "src/scpn_quantum_control/phase/tensorflow_bridge_contracts.py",
       "src/scpn_quantum_control/phase/tensorflow_maintenance.py",
       "src/scpn_quantum_control/phase/torch_aot_autograd_export.py",
       "src/scpn_quantum_control/phase/torch_autograd_function.py",
@@ -6860,6 +6861,7 @@
       "tests/test_phase_synchronisation_objectives.py",
       "tests/test_phase_synchronisation_witness.py",
       "tests/test_phase_tensorflow_bridge.py",
+      "tests/test_phase_tensorflow_bridge_contracts.py",
       "tests/test_phase_tensorflow_maintenance.py",
       "tests/test_phase_torch_aot_autograd_export.py",
       "tests/test_phase_torch_autograd_function.py",

@@ -319,6 +319,9 @@ batch sizes after save/load,
 AOTAutograd forward/backward FX graphs and replays the loaded backward graph
 against the SCPN parameter-shift gradient reference,
 and
+the dependency-free `phase.tensorflow_bridge_contracts` leaf, which owns all
+TensorFlow bridge result records while preserving exact bridge/phase class identity,
+and
 `tensorflow_bounded_qnn_value_and_grad(...)`, which returns TensorFlow tensors
 from the analytic bounded-model gradient. Each route checks the same
 parameter-shift reference. These are intentionally narrow bridge promotions:
