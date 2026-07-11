@@ -118,10 +118,12 @@ normalization. `hardware/provider_capability_discovery.py` is now a definition-f
 facade that re-exports the exact core, normalization, and provider-adapter objects.
 
 The Rust compiler-AD surface separates numerical kernels from language bindings.
-`scpn_quantum_engine/src/compiler_ad/kernels.rs` owns numerical validation and the 56 native
-value/JVP/VJP/gradient kernels with their unit tests. `compiler_ad.rs` owns NumPy/PyO3 validation,
-Python exception conversion, Python-array construction, and the 56 binding functions; it explicitly
-re-exports every inner kernel so existing Rust paths remain stable.
+`scpn_quantum_engine/src/compiler_ad/kernels.rs` owns the shared fixed-vector validator and the 28
+dimension-generic matrix/vector kernels. `compiler_ad/kernels/specialized_2x2.rs` owns the 28
+fixed-size determinant/inverse/solve/Cholesky/eigen kernels and their private geometry helpers.
+`compiler_ad.rs` owns NumPy/PyO3 validation, Python exception conversion, Python-array construction,
+and the 56 binding functions; both facades explicitly re-export inner kernels so existing Rust
+paths remain stable.
 
 | Module | Single responsibility | Why it stays whole |
 |--------|-----------------------|--------------------|
