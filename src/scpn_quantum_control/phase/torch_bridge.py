@@ -7,10 +7,11 @@
 # SCPN Quantum Control — Phase PyTorch Bridge
 """Optional PyTorch execution facade for phase gradients.
 
-Immutable result records live in :mod:`.torch_bridge_contracts`. This module
-retains optional Torch loading and executable gradient, registered-QNode,
-compatibility, module, training, cloud, and maturity routes while those
-responsibilities undergo bounded decomposition.
+Immutable result records live in :mod:`.torch_bridge_contracts`, and bounded
+gradient implementations plus their direct runtime primitives live in
+:mod:`.torch_gradients`. This module retains registered-QNode, compatibility,
+module, training, cloud, and maturity routes while those responsibilities
+undergo bounded decomposition.
 """
 
 from __future__ import annotations
@@ -24,14 +25,11 @@ import numpy as np
 from numpy.typing import ArrayLike, NDArray
 
 from ..differentiable import (
-    GradientResult,
     Parameter,
     ParameterShiftRule,
-    value_and_parameter_shift_grad,
 )
 from .qnn_training import (
     parameter_shift_qnn_classifier_gradient,
-    parameter_shift_qnn_classifier_loss,
 )
 from .qnode_circuit import (
     DenseHermitianObservable,
@@ -71,18 +69,51 @@ from .torch_bridge_contracts import (
 from .torch_bridge_contracts import (
     _result_to_dict as _result_to_dict,
 )
+from .torch_gradients import (
+    _as_feature_matrix as _as_feature_matrix,
+)
+from .torch_gradients import (
+    _as_label_vector as _as_label_vector,
+)
+from .torch_gradients import (
+    _as_non_negative_tolerance as _as_non_negative_tolerance,
+)
+from .torch_gradients import (
+    _as_parameter_vector as _as_parameter_vector,
+)
+from .torch_gradients import (
+    _bounded_qnn_loss_gradient_reference as _bounded_qnn_loss_gradient_reference,
+)
+from .torch_gradients import (
+    _load_torch as _load_torch,
+)
+from .torch_gradients import (
+    _torch_autograd_function as _torch_autograd_function,
+)
+from .torch_gradients import (
+    _torch_autograd_grad as _torch_autograd_grad,
+)
+from .torch_gradients import (
+    _torch_tensor as _torch_tensor,
+)
+from .torch_gradients import (
+    _torch_trainable_tensor as _torch_trainable_tensor,
+)
+from .torch_gradients import (
+    _torch_values_to_numpy as _torch_values_to_numpy,
+)
+from .torch_gradients import (
+    torch_autograd_qnn_value_and_grad as _torch_autograd_qnn_value_and_grad,
+)
+from .torch_gradients import (
+    torch_bounded_qnn_value_and_grad as _torch_bounded_qnn_value_and_grad,
+)
+from .torch_gradients import (
+    torch_parameter_shift_value_and_grad as _torch_parameter_shift_value_and_grad,
+)
 
 FloatArray: TypeAlias = NDArray[np.float64]
 ScalarObjective = Callable[[FloatArray], float]
-AutogradAuditRecord: TypeAlias = tuple[float, FloatArray, FloatArray, float, float, bool]
-
-
-def _load_torch() -> Any:
-    try:
-        import torch
-    except ImportError as exc:
-        raise ImportError("PyTorch is unavailable; install scpn-quantum-control[torch]") from exc
-    return torch
 
 
 def is_phase_torch_available() -> bool:
@@ -234,28 +265,6 @@ def run_torch_phase_qnode_lowering_matrix() -> PhaseTorchPhaseQNodeLoweringMatri
     return PhaseTorchPhaseQNodeLoweringMatrixResult(routes=routes)
 
 
-def _as_parameter_vector(name: str, values: object, *, width: int | None = None) -> FloatArray:
-    vector = np.asarray(values, dtype=float)
-    if vector.ndim != 1:
-        raise ValueError(f"{name} must be a one-dimensional array")
-    if width is not None and vector.shape != (width,):
-        raise ValueError(f"{name} must have shape ({width},), got {vector.shape}")
-    if not np.all(np.isfinite(vector)):
-        raise ValueError(f"{name} must contain only finite values")
-    return vector.astype(np.float64, copy=True)
-
-
-def _as_feature_matrix(features: ArrayLike) -> FloatArray:
-    matrix = np.asarray(features, dtype=float)
-    if matrix.ndim != 2:
-        raise ValueError("features must be a two-dimensional array")
-    if matrix.shape[0] == 0 or matrix.shape[1] == 0:
-        raise ValueError("features must not be empty")
-    if not np.all(np.isfinite(matrix)):
-        raise ValueError("features must contain only finite values")
-    return matrix.astype(np.float64, copy=True)
-
-
 def _as_parameter_matrix(name: str, values: object, *, width: int | None = None) -> FloatArray:
     matrix = np.asarray(values, dtype=float)
     if matrix.ndim != 2:
@@ -267,24 +276,6 @@ def _as_parameter_matrix(name: str, values: object, *, width: int | None = None)
     if not np.all(np.isfinite(matrix)):
         raise ValueError(f"{name} must contain only finite values")
     return matrix.astype(np.float64, copy=True)
-
-
-def _as_label_vector(labels: ArrayLike, *, n_samples: int) -> FloatArray:
-    vector = np.asarray(labels, dtype=float)
-    if vector.ndim != 1:
-        raise ValueError("labels must be a one-dimensional array")
-    if vector.shape != (n_samples,):
-        raise ValueError(f"labels must have shape ({n_samples},), got {vector.shape}")
-    if not np.all(np.isfinite(vector)):
-        raise ValueError("labels must contain only finite values")
-    return vector.astype(np.float64, copy=True)
-
-
-def _as_non_negative_tolerance(value: float) -> float:
-    tolerance = float(value)
-    if not np.isfinite(tolerance) or tolerance < 0.0:
-        raise ValueError("tolerance must be a non-negative finite float")
-    return tolerance
 
 
 def _as_positive_learning_rate(value: float) -> float:
@@ -300,20 +291,6 @@ def _as_positive_step_count(value: int) -> int:
     if value <= 0:
         raise ValueError("steps must be a positive integer")
     return value
-
-
-def _torch_values_to_numpy(values: object) -> FloatArray:
-    candidate = values
-    detach = getattr(candidate, "detach", None)
-    if callable(detach):
-        candidate = detach()
-    cpu = getattr(candidate, "cpu", None)
-    if callable(cpu):
-        candidate = cpu()
-    numpy_method = getattr(candidate, "numpy", None)
-    if callable(numpy_method):
-        candidate = numpy_method()
-    return _as_parameter_vector("values", candidate)
 
 
 def _torch_batch_to_numpy(values: object) -> FloatArray:
@@ -362,38 +339,6 @@ def _torch_scalar_to_float(values: object) -> float:
     if not np.isfinite(value):
         raise ValueError("PyTorch scalar value must be finite")
     return value
-
-
-def _torch_tensor(torch_module: Any, values: object) -> Any:
-    dtype = getattr(torch_module, "float64", None)
-    as_tensor = getattr(torch_module, "as_tensor", None)
-    if callable(as_tensor):
-        if dtype is None:
-            return as_tensor(values)
-        return as_tensor(values, dtype=dtype)
-    tensor = getattr(torch_module, "tensor", None)
-    if callable(tensor):
-        if dtype is None:
-            return tensor(values)
-        return tensor(values, dtype=dtype)
-    raise RuntimeError("PyTorch module does not expose as_tensor or tensor")
-
-
-def _torch_autograd_function(torch_module: Any) -> Any:
-    autograd = getattr(torch_module, "autograd", None)
-    function = getattr(autograd, "Function", None)
-    apply = getattr(function, "apply", None)
-    if autograd is None or function is None or not callable(apply):
-        raise RuntimeError("PyTorch module does not expose torch.autograd.Function.apply")
-    return function
-
-
-def _torch_autograd_grad(torch_module: Any) -> Any:
-    autograd = getattr(torch_module, "autograd", None)
-    grad = getattr(autograd, "grad", None)
-    if not callable(grad):
-        raise RuntimeError("PyTorch module does not expose torch.autograd.grad")
-    return grad
 
 
 def _torch_func_transforms(torch_module: Any) -> tuple[Any, Any, Any]:
@@ -462,20 +407,6 @@ def _torch_parameter_count(module: Any) -> int:
     if not callable(parameters):
         return 0
     return sum(1 for _parameter in parameters())
-
-
-def _torch_trainable_tensor(torch_module: Any, values: FloatArray) -> Any:
-    tensor = _torch_tensor(torch_module, values)
-    detach = getattr(tensor, "detach", None)
-    if callable(detach):
-        tensor = detach()
-    clone = getattr(tensor, "clone", None)
-    if callable(clone):
-        tensor = clone()
-    requires_grad = getattr(tensor, "requires_grad_", None)
-    if not callable(requires_grad):
-        raise RuntimeError("PyTorch tensor does not expose requires_grad_")
-    return requires_grad(True)
 
 
 def _torch_bounded_qnn_loss_tensor(
@@ -805,74 +736,6 @@ def _torch_pauli_matrix(torch_module: Any, label: str) -> Any:
     raise ValueError(f"unsupported PyTorch Pauli label: {label}")
 
 
-def _bounded_qnn_loss_gradient_reference(
-    features: ArrayLike,
-    labels: ArrayLike,
-    params: ArrayLike | object,
-    *,
-    tolerance: float,
-) -> tuple[FloatArray, FloatArray, FloatArray, float, float, float, bool]:
-    feature_matrix = _as_feature_matrix(features)
-    label_vector = _as_label_vector(labels, n_samples=feature_matrix.shape[0])
-    parameter_values = _as_parameter_vector("params", params)
-    if parameter_values.shape != (feature_matrix.shape[1],):
-        raise ValueError(
-            "params width must match feature width: "
-            f"{parameter_values.shape[0]} != {feature_matrix.shape[1]}",
-        )
-    tolerance_value = _as_non_negative_tolerance(tolerance)
-
-    shifted = feature_matrix + parameter_values[None, :]
-    probabilities = 0.5 * (1.0 - np.cos(shifted))
-    predictions = np.mean(probabilities, axis=1)
-    residual = predictions - label_vector
-    loss = float(np.mean(residual * residual))
-    scale = 1.0 / float(feature_matrix.shape[1])
-    gradient = (2.0 / float(feature_matrix.shape[0])) * np.sum(
-        residual[:, None] * (0.5 * np.sin(shifted) * scale),
-        axis=0,
-    )
-    gradient = _as_parameter_vector(
-        "PyTorch bounded phase-QNN gradient",
-        gradient,
-        width=parameter_values.size,
-    )
-
-    reference_loss = parameter_shift_qnn_classifier_loss(
-        feature_matrix,
-        label_vector,
-        parameter_values,
-    )
-    if abs(loss - reference_loss) > tolerance_value:
-        raise RuntimeError(
-            "PyTorch bounded phase-QNN tensor loss disagrees with SCPN "
-            f"parameter-shift loss: {loss} != {reference_loss}",
-        )
-    reference_gradient = parameter_shift_qnn_classifier_gradient(
-        feature_matrix,
-        label_vector,
-        parameter_values,
-    )
-    reference_gradient = _as_parameter_vector(
-        "SCPN bounded phase-QNN parameter-shift gradient",
-        reference_gradient,
-        width=parameter_values.size,
-    )
-    delta = gradient - reference_gradient
-    max_abs_error = float(np.max(np.abs(delta))) if delta.size else 0.0
-    l2_error = float(np.linalg.norm(delta))
-    passed = bool(max_abs_error <= tolerance_value)
-    return (
-        np.asarray(loss, dtype=np.float64),
-        gradient,
-        reference_gradient,
-        max_abs_error,
-        l2_error,
-        tolerance_value,
-        passed,
-    )
-
-
 def torch_parameter_shift_value_and_grad(
     objective: ScalarObjective,
     values: ArrayLike | object,
@@ -887,29 +750,12 @@ def torch_parameter_shift_value_and_grad(
     PyTorch tensors for framework pipelines. It does not claim native PyTorch
     autograd through a quantum simulator.
     """
-    torch_module = _load_torch()
-    parameter_values = _torch_values_to_numpy(values)
-    result: GradientResult = value_and_parameter_shift_grad(
+    return _torch_parameter_shift_value_and_grad(
         objective,
-        parameter_values,
+        values,
         parameters=parameters,
         rule=rule,
-    )
-    shift_terms = len((rule or ParameterShiftRule()).terms)
-    gradient = _as_parameter_vector(
-        "PyTorch parameter-shift gradient",
-        result.gradient,
-        width=parameter_values.size,
-    )
-    return PhaseTorchParameterShiftResult(
-        value=float(result.value),
-        gradient=gradient,
-        torch_value=_torch_tensor(torch_module, np.asarray(result.value, dtype=np.float64)),
-        torch_gradient=_torch_tensor(torch_module, gradient),
-        method=result.method,
-        evaluations=result.evaluations,
-        host_boundary=True,
-        shift_terms=shift_terms,
+        _torch_loader=_load_torch,
     )
 
 
@@ -1377,33 +1223,12 @@ def torch_bounded_qnn_value_and_grad(
     compares it against the canonical SCPN parameter-shift gradient before
     returning tensors to PyTorch workflows.
     """
-    torch_module = _load_torch()
-    parameter_values = _torch_values_to_numpy(params)
-    (
-        loss,
-        gradient,
-        reference_gradient,
-        max_abs_error,
-        l2_error,
-        tolerance_value,
-        passed,
-    ) = _bounded_qnn_loss_gradient_reference(
+    return _torch_bounded_qnn_value_and_grad(
         features,
         labels,
-        parameter_values,
+        params,
         tolerance=tolerance,
-    )
-    return PhaseTorchQNNGradientResult(
-        loss=float(loss),
-        gradient=gradient,
-        parameter_shift_gradient=reference_gradient,
-        torch_loss=_torch_tensor(torch_module, loss),
-        torch_gradient=_torch_tensor(torch_module, gradient),
-        torch_parameter_shift_gradient=_torch_tensor(torch_module, reference_gradient),
-        max_abs_error=max_abs_error,
-        l2_error=l2_error,
-        tolerance=tolerance_value,
-        passed=passed,
+        _torch_loader=_load_torch,
     )
 
 
@@ -1421,76 +1246,12 @@ def torch_autograd_qnn_value_and_grad(
     against the canonical SCPN parameter-shift gradient before the result is
     returned.
     """
-    torch_module = _load_torch()
-    function_base = _torch_autograd_function(torch_module)
-    autograd_grad = _torch_autograd_grad(torch_module)
-    feature_matrix = _as_feature_matrix(features)
-    label_vector = _as_label_vector(labels, n_samples=feature_matrix.shape[0])
-    parameter_values = _torch_values_to_numpy(params)
-    if parameter_values.shape != (feature_matrix.shape[1],):
-        raise ValueError(
-            "params width must match feature width: "
-            f"{parameter_values.shape[0]} != {feature_matrix.shape[1]}",
-        )
-    tolerance_value = _as_non_negative_tolerance(tolerance)
-    audit: dict[str, AutogradAuditRecord] = {}
-
-    class _BoundedPhaseQNNFunction(function_base):  # type: ignore[misc, valid-type]
-        @staticmethod
-        def forward(ctx: Any, parameter_tensor: Any) -> Any:
-            raw_params = _torch_values_to_numpy(parameter_tensor)
-            (
-                loss,
-                gradient,
-                reference_gradient,
-                max_abs_error,
-                l2_error,
-                _checked_tolerance,
-                passed,
-            ) = _bounded_qnn_loss_gradient_reference(
-                feature_matrix,
-                label_vector,
-                raw_params,
-                tolerance=tolerance_value,
-            )
-            ctx.gradient = _torch_tensor(torch_module, gradient)
-            audit["record"] = (
-                float(loss),
-                gradient,
-                reference_gradient,
-                max_abs_error,
-                l2_error,
-                passed,
-            )
-            return _torch_tensor(torch_module, loss)
-
-        @staticmethod
-        def backward(ctx: Any, grad_output: Any) -> tuple[Any]:
-            return (ctx.gradient * grad_output,)
-
-    trainable_params = _torch_trainable_tensor(torch_module, parameter_values)
-    torch_loss = _BoundedPhaseQNNFunction.apply(trainable_params)
-    torch_gradient = autograd_grad(
-        torch_loss,
-        trainable_params,
-        retain_graph=False,
-        create_graph=False,
-    )[0]
-    try:
-        loss, gradient, reference_gradient, max_abs_error, l2_error, passed = audit["record"]
-    except KeyError as exc:
-        raise RuntimeError("PyTorch autograd forward did not produce audit evidence") from exc
-    return PhaseTorchAutogradQNNGradientResult(
-        loss=loss,
-        gradient=_as_parameter_vector("PyTorch autograd bounded phase-QNN gradient", gradient),
-        parameter_shift_gradient=reference_gradient,
-        torch_loss=torch_loss,
-        torch_gradient=torch_gradient,
-        torch_parameter_shift_gradient=_torch_tensor(torch_module, reference_gradient),
-        max_abs_error=max_abs_error,
-        l2_error=l2_error,
-        tolerance=tolerance_value,
-        passed=passed,
+    return _torch_autograd_qnn_value_and_grad(
+        features,
+        labels,
+        params,
+        tolerance=tolerance,
+        _torch_loader=_load_torch,
     )
 
 

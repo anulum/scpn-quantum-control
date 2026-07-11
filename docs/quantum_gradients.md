@@ -2319,8 +2319,10 @@ remain explicit non-claims.
 
 The 19 immutable Torch result, route, evidence, matrix, and cloud-plan records live in the
 NumPy/stdlib-only `phase.torch_bridge_contracts` leaf. The executable bridge and phase package
-re-export the same class objects, while optional Torch loading and all framework execution remain
-outside the contract module.
+re-export the same class objects. Optional Torch loading, numeric/tensor validation, host
+parameter-shift conversion, analytic bounded-QNN gradients, and custom-autograd bounded-QNN
+gradients live in `phase.torch_gradients`; the facade retains the established public signatures
+and injects its active loader.
 
 For ML pipelines that need framework tensors, the phase namespace exposes
 host-boundary adapters, deterministic registered statevector routes, and

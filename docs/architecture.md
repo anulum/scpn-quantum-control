@@ -57,8 +57,10 @@ wrappers and result re-exports rather than mixed execution concerns.
 
 The Torch bridge is undergoing the same bounded decomposition. Its 19 immutable result, route,
 evidence, matrix, and cloud-plan records live in the dependency-free
-`phase/torch_bridge_contracts.py` leaf. `phase/torch_bridge.py` and the phase package re-export the
-same class objects while executable Torch concerns are assessed one cluster at a time.
+`phase/torch_bridge_contracts.py` leaf. Optional Torch loading, numeric/tensor validation, and the
+parameter-shift, analytic tensor, and custom-autograd bounded gradient routes live in the one-way
+`phase/torch_gradients.py` leaf. `phase/torch_bridge.py` and the phase package retain the established
+public surfaces while later executable concerns are assessed one cluster at a time.
 
 | Module | Single responsibility | Why it stays whole |
 |--------|-----------------------|--------------------|
