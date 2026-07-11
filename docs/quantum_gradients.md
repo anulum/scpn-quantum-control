@@ -1621,7 +1621,9 @@ classes plus registered vocabulary and constructor validation live in the NumPy/
 re-export the same public class objects while retaining the established functional API.
 Registered vocabulary accessors, sparse Ising construction, controlled-gate decompositions, and
 multi-qubit templates live in the one-way `phase.qnode_circuit_builders` leaf and are re-exported
-as the same function objects.
+as the same function objects. Arbitrary-depth circuit registration, deterministic depth/resource
+profiling, support reports, and gate-aware parameter-shift evaluation planning live in the one-way
+`phase.qnode_circuit_support` leaf and retain exact facade and phase-package function identity.
 
 For the registered local Phase-QNode subset, use the executable circuit and
 parity suite when a concrete circuit family is required:

@@ -73,9 +73,11 @@ circuit, observable, support, execution, gradient, metric, and Fisher record cla
 registry constants and constructor validators live in `phase/qnode_circuit_contracts.py`.
 Registered vocabulary accessors, sparse Ising construction, controlled-gate decomposition, and
 multi-qubit template construction live in the one-way `phase/qnode_circuit_builders.py` leaf.
-`phase/qnode_circuit.py` re-exports the exact objects and functions and retains arbitrary-depth
-registration, support analysis, execution, gradients, measurements, and numerical kernels while
-those concerns are split one at a time.
+Arbitrary-depth registration, deterministic depth/resource profiling, statevector/density support
+analysis, and gate-aware parameter-shift planning live in the one-way
+`phase/qnode_circuit_support.py` leaf. `phase/qnode_circuit.py` re-exports the exact objects and
+functions and retains execution, gradients, measurements, and numerical kernels while those
+concerns are split one at a time.
 
 | Module | Single responsibility | Why it stays whole |
 |--------|-----------------------|--------------------|

@@ -10,10 +10,10 @@
     "public_api_exports": 835,
     "public_documentation_pages": 269,
     "python_model_classes": 1003,
-    "python_model_source_modules": 532,
+    "python_model_source_modules": 533,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 46,
-    "test_files": 913
+    "test_files": 914
   },
   "documentation": {
     "examples": [
@@ -561,7 +561,7 @@
       {
         "package": "phase",
         "path": "src/scpn_quantum_control/phase",
-        "python_modules": 106
+        "python_modules": 107
       },
       {
         "package": "psi_field",
@@ -5017,6 +5017,7 @@
       "src/scpn_quantum_control/phase/qnode_circuit.py",
       "src/scpn_quantum_control/phase/qnode_circuit_builders.py",
       "src/scpn_quantum_control/phase/qnode_circuit_contracts.py",
+      "src/scpn_quantum_control/phase/qnode_circuit_support.py",
       "src/scpn_quantum_control/phase/qnode_framework_parity.py",
       "src/scpn_quantum_control/phase/qnode_provider_transforms.py",
       "src/scpn_quantum_control/phase/qnode_tape.py",
@@ -6838,6 +6839,7 @@
       "tests/test_phase_qnode_circuit.py",
       "tests/test_phase_qnode_circuit_builders.py",
       "tests/test_phase_qnode_circuit_contracts.py",
+      "tests/test_phase_qnode_circuit_support.py",
       "tests/test_phase_qnode_compiler_lowering.py",
       "tests/test_phase_qnode_framework_parity.py",
       "tests/test_phase_qnode_provider_transforms.py",
