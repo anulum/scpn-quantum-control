@@ -10,10 +10,10 @@
     "public_api_exports": 835,
     "public_documentation_pages": 269,
     "python_model_classes": 1003,
-    "python_model_source_modules": 543,
+    "python_model_source_modules": 544,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 46,
-    "test_files": 922
+    "test_files": 923
   },
   "documentation": {
     "examples": [
@@ -536,7 +536,7 @@
       {
         "package": "hardware",
         "path": "src/scpn_quantum_control/hardware",
-        "python_modules": 66
+        "python_modules": 67
       },
       {
         "package": "identity",
@@ -4912,6 +4912,7 @@
       "src/scpn_quantum_control/hardware/provenance.py",
       "src/scpn_quantum_control/hardware/provider_capability_core.py",
       "src/scpn_quantum_control/hardware/provider_capability_discovery.py",
+      "src/scpn_quantum_control/hardware/provider_capability_gate_adapters.py",
       "src/scpn_quantum_control/hardware/provider_capability_normalization.py",
       "src/scpn_quantum_control/hardware/provider_smoke.py",
       "src/scpn_quantum_control/hardware/pulse_feasibility.py",
@@ -6965,6 +6966,7 @@
       "tests/test_provenance.py",
       "tests/test_provider_capability_core.py",
       "tests/test_provider_capability_discovery.py",
+      "tests/test_provider_capability_gate_adapters.py",
       "tests/test_provider_capability_normalization.py",
       "tests/test_provider_isolated_smoke_workflow.py",
       "tests/test_psi_field.py",
