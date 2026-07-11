@@ -10,10 +10,10 @@
     "public_api_exports": 835,
     "public_documentation_pages": 269,
     "python_model_classes": 1003,
-    "python_model_source_modules": 550,
+    "python_model_source_modules": 551,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 49,
-    "test_files": 930
+    "test_files": 931
   },
   "documentation": {
     "examples": [
@@ -1296,7 +1296,7 @@
       },
       {
         "name": "DifferentiabilityDiagnosticReport",
-        "path": "src/scpn_quantum_control/differentiable_api.py"
+        "path": "src/scpn_quantum_control/differentiable_api_contracts.py"
       },
       {
         "name": "DifferentiableArchitectureMap",
@@ -1352,11 +1352,11 @@
       },
       {
         "name": "DifferentiableDashboardCapabilityRow",
-        "path": "src/scpn_quantum_control/differentiable_api.py"
+        "path": "src/scpn_quantum_control/differentiable_api_contracts.py"
       },
       {
         "name": "DifferentiableDashboardStatus",
-        "path": "src/scpn_quantum_control/differentiable_api.py"
+        "path": "src/scpn_quantum_control/differentiable_api_contracts.py"
       },
       {
         "name": "DifferentiableDependencyEnvironmentMap",
@@ -4468,7 +4468,7 @@
       },
       {
         "name": "UnifiedDifferentiableAPIResult",
-        "path": "src/scpn_quantum_control/differentiable_api.py"
+        "path": "src/scpn_quantum_control/differentiable_api_contracts.py"
       },
       {
         "name": "UniversalCheckResult",
@@ -4802,6 +4802,7 @@
       "src/scpn_quantum_control/diff_contract_audit.py",
       "src/scpn_quantum_control/differentiable.py",
       "src/scpn_quantum_control/differentiable_api.py",
+      "src/scpn_quantum_control/differentiable_api_contracts.py",
       "src/scpn_quantum_control/differentiable_architecture_map.py",
       "src/scpn_quantum_control/differentiable_baseline_scorecard.py",
       "src/scpn_quantum_control/differentiable_batch_helpers.py",
@@ -6478,6 +6479,7 @@
       "tests/test_determinism.py",
       "tests/test_diff_namespace.py",
       "tests/test_differentiable_api.py",
+      "tests/test_differentiable_api_contracts.py",
       "tests/test_differentiable_architecture_map.py",
       "tests/test_differentiable_baseline_scorecard.py",
       "tests/test_differentiable_batch_helpers.py",

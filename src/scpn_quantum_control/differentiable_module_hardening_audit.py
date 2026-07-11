@@ -314,6 +314,11 @@ def differentiable_module_hardening_registry() -> tuple[DifferentiableModuleHard
             ("source/bytecode introspection", "unsupported Python-semantics hard gaps"),
         ),
         _record(
+            "src/scpn_quantum_control/differentiable_api_contracts.py",
+            ("tests/test_differentiable_api_contracts.py",),
+            ("unified result envelopes", "dashboard record validation"),
+        ),
+        _record(
             "src/scpn_quantum_control/differentiable_api.py",
             ("tests/test_differentiable_api.py",),
             ("unified support reports", "unsupported-route diagnostics"),

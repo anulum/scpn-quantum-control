@@ -137,6 +137,12 @@ diagnostic, and aggregate report records. `whole_program_frontend.py` retains pr
 metadata, source/bytecode inspection, semantic classification, digest construction, and report
 assembly, and re-exports the exact public records for compatibility.
 
+The unified differentiable API also isolates its dependency-free public envelopes.
+`differentiable_api_contracts.py` owns the operation and dashboard-state aliases, shared claim
+boundary, and four immutable result, diagnostic, capability-row, and dashboard-status records.
+`differentiable_api.py` re-exports those exact objects while retaining route execution, report
+wrappers, dashboard assembly, and public dispatch.
+
 Differentiable benchmark result validation is isolated from benchmark execution.
 `benchmarks/differentiable_programming_contracts.py` owns the three immutable result records and
 shared gradient/error normalization helpers. `differentiable_programming.py` re-exports those exact

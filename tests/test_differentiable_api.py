@@ -938,36 +938,6 @@ def test_differentiable_dashboard_status_can_include_conformance_backing() -> No
     assert "no compiler" in rows["higher_order_transform_algebra"].claim_boundary
 
 
-def test_differentiable_dashboard_status_validates_rows() -> None:
-    row = DifferentiableDashboardCapabilityRow(
-        surface="demo",
-        state="unsupported",
-        backing_api="demo_api",
-        evidence=("contract",),
-        blocked_reasons=("not implemented",),
-        claim_boundary="bounded",
-    )
-
-    assert row.fail_closed is True
-    assert row.to_dict()["state"] == "unsupported"
-    with pytest.raises(ValueError, match="surface"):
-        DifferentiableDashboardCapabilityRow(
-            surface="",
-            state="planned",
-            backing_api="demo_api",
-            evidence=("contract",),
-            blocked_reasons=(),
-            claim_boundary="bounded",
-        )
-    with pytest.raises(ValueError, match="rows"):
-        DifferentiableDashboardStatus(
-            rows=(),
-            status_api_ready=True,
-            generated_from=("demo",),
-            claim_boundary="bounded",
-        )
-
-
 def test_unified_differentiable_dispatcher_and_root_exports() -> None:
     values = np.array([2.0, -1.0], dtype=float)
     calls = {"count": 0}
