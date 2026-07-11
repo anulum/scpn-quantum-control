@@ -131,6 +131,16 @@ def differentiable_module_hardening_registry() -> tuple[DifferentiableModuleHard
             ("claim-boundary benchmark rows", "external-reference hard gaps"),
         ),
         _record(
+            "src/scpn_quantum_control/benchmarks/differentiable_programming_contracts.py",
+            ("tests/test_differentiable_programming_contracts.py",),
+            ("benchmark result validation", "gradient and error normalization"),
+        ),
+        _record(
+            "src/scpn_quantum_control/benchmarks/differentiable_programming_quantum.py",
+            ("tests/test_differentiable_programming_quantum.py",),
+            ("quantum reference cases", "framework availability boundaries"),
+        ),
+        _record(
             "src/scpn_quantum_control/differentiable.py",
             ("tests/test_differentiable_package_exports.py",),
             ("facade export compatibility", "diagnostic-only finite differences"),
@@ -269,9 +279,14 @@ def differentiable_module_hardening_registry() -> tuple[DifferentiableModuleHard
             ),
         ),
         _record(
+            "src/scpn_quantum_control/program_ad_alias_contracts.py",
+            ("tests/test_program_ad_alias_contracts.py",),
+            ("alias/lattice record validation", "typed provenance serialization"),
+        ),
+        _record(
             "src/scpn_quantum_control/program_ad_alias_analysis.py",
             ("tests/test_program_ad_alias_effects.py",),
-            ("alias/effect summaries", "static alias-lattice readiness"),
+            ("alias/effect union-find summaries", "static alias-lattice provenance parsing"),
         ),
         _record(
             "src/scpn_quantum_control/program_ad_effect_ir.py",

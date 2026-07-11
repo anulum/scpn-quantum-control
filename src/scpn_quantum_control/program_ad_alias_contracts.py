@@ -1,0 +1,1557 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
+# © Concepts 1996-2026 Miroslav Sotek. All rights reserved.
+# © Code 2020-2026 Miroslav Sotek. All rights reserved.
+# ORCID: 0009-0009-3560-0851
+# Contact: www.anulum.li | protoscience@anulum.li
+# scpn-quantum-control -- Program AD alias-analysis contracts
+"""Immutable Program AD alias, lattice, and provenance result contracts."""
+
+from __future__ import annotations
+
+from collections.abc import Sequence
+from dataclasses import dataclass
+
+from .program_ad_effect_ir import ProgramADAliasEdge
+from .whole_program_frontend import WholeProgramUnsupportedSemanticDiagnostic
+
+PROGRAM_AD_ALIAS_EFFECT_CLAIM_BOUNDARY = "metadata_only_no_general_alias_lattice"
+PROGRAM_AD_STATIC_ALIAS_LATTICE_CLAIM_BOUNDARY = (
+    "static_alias_lattice_over_emitted_program_ad_ir_no_non_executed_branch_semantics"
+)
+_PROGRAM_AD_SUPPORTED_ALIAS_EDGE_KINDS = frozenset(
+    {
+        "alias_analysis",
+        "control_path_alias",
+        "expression_rebinding_alias",
+        "list_alias",
+        "local_rebinding_alias",
+        "loop_carried_state",
+        "mutation_version",
+        "object_attribute_alias",
+        "source_alias",
+        "view_alias",
+    }
+)
+_PROGRAM_AD_LIST_ALIAS_TARGET_KINDS = frozenset({"indexed_mutation_source", "local_name"})
+_PROGRAM_AD_CONTROL_PATH_ALIAS_BRANCH_ARMS = frozenset({"body", "orelse"})
+_PROGRAM_AD_REBINDING_ALIAS_EDGE_KINDS = frozenset(
+    {"expression_rebinding_alias", "local_rebinding_alias"}
+)
+
+
+@dataclass(frozen=True)
+class ProgramADAliasSet:
+    """One deterministic alias component derived from Program AD effect IR.
+
+    Parameters
+    ----------
+    index:
+        Dense component index in deterministic report order.
+    members:
+        Sorted non-empty SSA, source, view, or local-name labels that belong
+        to the alias component.
+    versions:
+        Sorted non-negative Program AD versions observed for component members.
+    mutation_versions:
+        Sorted non-negative mutation versions observed for component members.
+
+    Raises
+    ------
+    ValueError
+        Raised when metadata is negative, unsorted, or contains empty member
+        labels.
+    """
+
+    index: int
+    members: tuple[str, ...]
+    versions: tuple[int, ...]
+    mutation_versions: tuple[int, ...]
+
+    def __post_init__(self) -> None:
+        """Validate alias-set metadata at construction time."""
+        if self.index < 0:
+            raise ValueError("program AD alias set index must be non-negative")
+        if any(not isinstance(member, str) or not member for member in self.members):
+            raise ValueError("program AD alias set members must be non-empty strings")
+        if tuple(sorted(self.members)) != self.members:
+            raise ValueError("program AD alias set members must be sorted deterministically")
+        if any(version < 0 for version in self.versions):
+            raise ValueError("program AD alias set versions must be non-negative")
+        if any(version < 0 for version in self.mutation_versions):
+            raise ValueError("program AD alias set mutation_versions must be non-negative")
+
+    def as_dict(self) -> dict[str, object]:
+        """Return a stable JSON-ready alias-set payload.
+
+        Returns
+        -------
+        dict[str, object]
+            Mapping with deterministic list-valued members, versions, and
+            mutation-version fields.
+        """
+        return {
+            "index": self.index,
+            "members": list(self.members),
+            "versions": list(self.versions),
+            "mutation_versions": list(self.mutation_versions),
+        }
+
+
+@dataclass(frozen=True)
+class ProgramADAliasEffectAnalysis:
+    """Deterministic metadata-only alias/effect analysis for Program AD IR.
+
+    Parameters
+    ----------
+    alias_sets:
+        Alias components derived from emitted Program AD alias edges.
+    mutation_effects:
+        Sorted mutation-effect indices captured in the effect IR.
+    alias_edges:
+        Raw alias-edge provenance retained for downstream diagnostics.
+    unknown_aliasing:
+        Whether the analysis observed unsupported dynamic aliasing.
+    claim_boundary:
+        Explicit promotion boundary for the metadata-only analysis.
+
+    Raises
+    ------
+    ValueError
+        Raised when records have the wrong type, mutation effects are
+        negative or unsorted, or the claim boundary is empty.
+    """
+
+    alias_sets: tuple[ProgramADAliasSet, ...]
+    mutation_effects: tuple[int, ...]
+    alias_edges: tuple[ProgramADAliasEdge, ...]
+    unknown_aliasing: bool
+    claim_boundary: str
+
+    def __post_init__(self) -> None:
+        """Validate alias/effect analysis contents at construction time."""
+        if any(not isinstance(alias_set, ProgramADAliasSet) for alias_set in self.alias_sets):
+            raise ValueError("program AD alias analysis alias_sets must contain ProgramADAliasSet")
+        if tuple(sorted(self.mutation_effects)) != self.mutation_effects:
+            raise ValueError("program AD alias analysis mutation_effects must be sorted")
+        if any(effect < 0 for effect in self.mutation_effects):
+            raise ValueError("program AD alias analysis mutation_effects must be non-negative")
+        if any(not isinstance(edge, ProgramADAliasEdge) for edge in self.alias_edges):
+            raise ValueError(
+                "program AD alias analysis alias_edges must contain ProgramADAliasEdge"
+            )
+        if not isinstance(self.unknown_aliasing, bool):
+            raise ValueError("program AD alias analysis unknown_aliasing must be boolean")
+        _normalise_claim_boundary("program AD alias analysis", self.claim_boundary)
+
+    def as_dict(self) -> dict[str, object]:
+        """Return a stable JSON-ready alias/effect analysis payload.
+
+        Returns
+        -------
+        dict[str, object]
+            Mapping containing serialised alias sets, mutation effects, raw
+            alias-edge rows, unknown-aliasing state, and claim boundary.
+        """
+        return {
+            "alias_sets": [alias_set.as_dict() for alias_set in self.alias_sets],
+            "mutation_effects": list(self.mutation_effects),
+            "alias_edges": [
+                {
+                    "source": edge.source,
+                    "target": edge.target,
+                    "kind": edge.kind,
+                    "version": edge.version,
+                }
+                for edge in self.alias_edges
+            ],
+            "unknown_aliasing": self.unknown_aliasing,
+            "claim_boundary": self.claim_boundary,
+        }
+
+
+@dataclass(frozen=True)
+class ProgramADStaticAliasLatticeComponent:
+    """One component in the static alias lattice derived from Program AD IR.
+
+    Parameters
+    ----------
+    index:
+        Dense static-lattice component index.
+    members:
+        Sorted alias labels in the component.
+    edge_kinds:
+        Sorted unique alias-edge kinds contributing to the component.
+    versions:
+        Sorted non-negative Program AD versions observed in the component.
+    mutation_versions:
+        Sorted non-negative mutation versions observed in the component.
+
+    Raises
+    ------
+    ValueError
+        Raised when component metadata is negative, empty, duplicated, or not
+        deterministically sorted.
+    """
+
+    index: int
+    members: tuple[str, ...]
+    edge_kinds: tuple[str, ...]
+    versions: tuple[int, ...]
+    mutation_versions: tuple[int, ...]
+
+    def __post_init__(self) -> None:
+        """Validate static alias-lattice component metadata at construction time."""
+        if self.index < 0:
+            raise ValueError("program AD static alias component index must be non-negative")
+        if any(not isinstance(member, str) or not member for member in self.members):
+            raise ValueError("program AD static alias component members must be non-empty strings")
+        if tuple(sorted(self.members)) != self.members:
+            raise ValueError(
+                "program AD static alias component members must be sorted deterministically"
+            )
+        if any(not isinstance(kind, str) or not kind for kind in self.edge_kinds):
+            raise ValueError(
+                "program AD static alias component edge_kinds must be non-empty strings"
+            )
+        if tuple(sorted(set(self.edge_kinds))) != self.edge_kinds:
+            raise ValueError(
+                "program AD static alias component edge_kinds must be sorted and unique"
+            )
+        if any(version < 0 for version in self.versions):
+            raise ValueError("program AD static alias component versions must be non-negative")
+        if any(version < 0 for version in self.mutation_versions):
+            raise ValueError(
+                "program AD static alias component mutation_versions must be non-negative"
+            )
+
+    def as_dict(self) -> dict[str, object]:
+        """Return a JSON-ready static alias lattice component.
+
+        Returns
+        -------
+        dict[str, object]
+            Mapping with deterministic list-valued members, edge kinds, and
+            version fields.
+        """
+        return {
+            "index": self.index,
+            "members": list(self.members),
+            "edge_kinds": list(self.edge_kinds),
+            "versions": list(self.versions),
+            "mutation_versions": list(self.mutation_versions),
+        }
+
+
+@dataclass(frozen=True)
+class ProgramADUnknownAliasEdge:
+    """Unsupported alias edge preserved as fail-closed provenance.
+
+    Parameters
+    ----------
+    source:
+        Source alias label emitted by the Program AD effect IR.
+    target:
+        Target alias label emitted by the Program AD effect IR.
+    kind:
+        Unsupported alias-edge kind that blocks static-lattice promotion.
+    version:
+        Non-negative Program AD version attached to the edge.
+
+    Raises
+    ------
+    ValueError
+        Raised when labels are empty, the edge kind is already supported, or
+        the version is negative.
+    """
+
+    source: str
+    target: str
+    kind: str
+    version: int
+
+    def __post_init__(self) -> None:
+        """Validate unknown alias-edge provenance at construction time."""
+        if not isinstance(self.source, str) or not self.source:
+            raise ValueError("program AD unknown alias edge source must be non-empty")
+        if not isinstance(self.target, str) or not self.target:
+            raise ValueError("program AD unknown alias edge target must be non-empty")
+        if not isinstance(self.kind, str) or not self.kind:
+            raise ValueError("program AD unknown alias edge kind must be non-empty")
+        if self.kind in _PROGRAM_AD_SUPPORTED_ALIAS_EDGE_KINDS:
+            raise ValueError("program AD unknown alias edge kind must be unsupported")
+        if self.version < 0:
+            raise ValueError("program AD unknown alias edge version must be non-negative")
+
+    def as_dict(self) -> dict[str, object]:
+        """Return a JSON-ready unknown alias-edge provenance payload.
+
+        Returns
+        -------
+        dict[str, object]
+            Mapping with source, target, unsupported kind, and version.
+        """
+        return {
+            "source": self.source,
+            "target": self.target,
+            "kind": self.kind,
+            "version": self.version,
+        }
+
+
+@dataclass(frozen=True)
+class ProgramADViewAliasProvenance:
+    """Parseable source-to-view alias edge preserved by the static lattice.
+
+    Parameters
+    ----------
+    source:
+        Source SSA or alias label for the viewed value.
+    target:
+        Canonical ``view:<operation>:<view_id>[<output_index>]`` target marker.
+    operation:
+        Shape or indexing operation that produced the view.
+    view_id:
+        Non-negative view marker identifier.
+    output_index:
+        Non-negative output index within the view-producing operation.
+    version:
+        Non-negative Program AD version attached to the edge.
+
+    Raises
+    ------
+    ValueError
+        Raised when labels are malformed, counters are negative, or the target
+        marker does not match the parsed operation fields.
+    """
+
+    source: str
+    target: str
+    operation: str
+    view_id: int
+    output_index: int
+    version: int
+
+    def __post_init__(self) -> None:
+        """Validate view-alias provenance at construction time."""
+        if not isinstance(self.source, str) or not self.source:
+            raise ValueError("program AD view alias provenance source must be non-empty")
+        if not isinstance(self.target, str) or not self.target.startswith("view:"):
+            raise ValueError("program AD view alias provenance target must be a view marker")
+        if not isinstance(self.operation, str) or not self.operation:
+            raise ValueError("program AD view alias provenance operation must be non-empty")
+        if self.view_id < 0:
+            raise ValueError("program AD view alias provenance view_id must be non-negative")
+        if self.output_index < 0:
+            raise ValueError("program AD view alias provenance output_index must be non-negative")
+        if self.version < 0:
+            raise ValueError("program AD view alias provenance version must be non-negative")
+        expected_target = f"view:{self.operation}:{self.view_id}[{self.output_index}]"
+        if self.target != expected_target:
+            raise ValueError(
+                "program AD view alias provenance target must match operation/view_id/output_index"
+            )
+
+    def as_dict(self) -> dict[str, object]:
+        """Return a JSON-ready view-alias provenance payload.
+
+        Returns
+        -------
+        dict[str, object]
+            Mapping with the source, target marker, parsed operation fields,
+            and Program AD version.
+        """
+        return {
+            "source": self.source,
+            "target": self.target,
+            "operation": self.operation,
+            "view_id": self.view_id,
+            "output_index": self.output_index,
+            "version": self.version,
+        }
+
+
+@dataclass(frozen=True)
+class ProgramADListAliasProvenance:
+    """Parseable local list-alias edge preserved by the static lattice.
+
+    Parameters
+    ----------
+    source:
+        Canonical ``list:<name>`` source marker.
+    target:
+        Local-name target or indexed-mutation source marker.
+    list_name:
+        Non-empty local list name parsed from ``source``.
+    target_kind:
+        Supported list alias target kind.
+    version:
+        Non-negative Program AD version attached to the edge.
+
+    Raises
+    ------
+    ValueError
+        Raised when list markers, target markers, target kinds, or versions do
+        not match the supported static-list alias contract.
+    """
+
+    source: str
+    target: str
+    list_name: str
+    target_kind: str
+    version: int
+
+    def __post_init__(self) -> None:
+        """Validate list-alias provenance at construction time."""
+        if not isinstance(self.source, str) or not self.source.startswith("list:"):
+            raise ValueError("program AD list alias provenance source must be a list marker")
+        if self.source == "list:":
+            raise ValueError("program AD list alias provenance source must include a list name")
+        if not isinstance(self.list_name, str) or not self.list_name:
+            raise ValueError("program AD list alias provenance list_name must be non-empty")
+        if self.source != f"list:{self.list_name}":
+            raise ValueError("program AD list alias provenance list_name must match source")
+        if self.target_kind not in _PROGRAM_AD_LIST_ALIAS_TARGET_KINDS:
+            raise ValueError("program AD list alias provenance target_kind is unsupported")
+        if self.target_kind == "local_name" and (
+            not isinstance(self.target, str) or not self.target.startswith("name:")
+        ):
+            raise ValueError("program AD list alias provenance target must be a local name")
+        if self.target_kind == "local_name" and self.target == "name:":
+            raise ValueError("program AD list alias provenance target must name a local")
+        if self.target_kind == "indexed_mutation_source" and self.target != "source:list_mutation":
+            raise ValueError(
+                "program AD list alias provenance mutation target must be source:list_mutation"
+            )
+        if self.version < 0:
+            raise ValueError("program AD list alias provenance version must be non-negative")
+
+    def as_dict(self) -> dict[str, object]:
+        """Return a JSON-ready list-alias provenance payload.
+
+        Returns
+        -------
+        dict[str, object]
+            Mapping with source and target markers, parsed list name, target
+            kind, and Program AD version.
+        """
+        return {
+            "source": self.source,
+            "target": self.target,
+            "list_name": self.list_name,
+            "target_kind": self.target_kind,
+            "version": self.version,
+        }
+
+
+@dataclass(frozen=True)
+class ProgramADLoopCarriedStateProvenance:
+    """Parseable loop-carried scalar state edge preserved by the static lattice.
+
+    Parameters
+    ----------
+    source:
+        Canonical ``loop:<state_name>:entry`` source marker.
+    target:
+        Canonical ``loop:<state_name>:backedge`` target marker.
+    state_name:
+        Non-empty local state name shared by entry and backedge markers.
+    entry_label:
+        Literal entry label parsed from the source marker.
+    backedge_label:
+        Literal backedge label parsed from the target marker.
+    version:
+        Non-negative Program AD version attached to the edge.
+
+    Raises
+    ------
+    ValueError
+        Raised when loop markers are malformed, labels do not match the
+        supported entry/backedge contract, or the version is negative.
+    """
+
+    source: str
+    target: str
+    state_name: str
+    entry_label: str
+    backedge_label: str
+    version: int
+
+    def __post_init__(self) -> None:
+        """Validate loop-carried state provenance at construction time."""
+        if not isinstance(self.source, str) or not self.source.startswith("loop:"):
+            raise ValueError(
+                "program AD loop-carried state provenance source must be loop:<state>:entry"
+            )
+        if not isinstance(self.target, str) or not self.target.startswith("loop:"):
+            raise ValueError(
+                "program AD loop-carried state provenance target must be loop:<state>:backedge"
+            )
+        if not isinstance(self.state_name, str) or not self.state_name:
+            raise ValueError(
+                "program AD loop-carried state provenance state_name must be non-empty"
+            )
+        if self.entry_label != "entry":
+            raise ValueError("program AD loop-carried state provenance entry_label must be entry")
+        if self.backedge_label != "backedge":
+            raise ValueError(
+                "program AD loop-carried state provenance backedge_label must be backedge"
+            )
+        if self.source != f"loop:{self.state_name}:{self.entry_label}":
+            raise ValueError(
+                "program AD loop-carried state provenance source must match state_name"
+            )
+        if self.target != f"loop:{self.state_name}:{self.backedge_label}":
+            raise ValueError(
+                "program AD loop-carried state provenance target must match state_name"
+            )
+        if self.version < 0:
+            raise ValueError(
+                "program AD loop-carried state provenance version must be non-negative"
+            )
+
+    def as_dict(self) -> dict[str, object]:
+        """Return a JSON-ready loop-carried state provenance payload.
+
+        Returns
+        -------
+        dict[str, object]
+            Mapping with source and target loop markers, parsed state labels,
+            and Program AD version.
+        """
+        return {
+            "source": self.source,
+            "target": self.target,
+            "state_name": self.state_name,
+            "entry_label": self.entry_label,
+            "backedge_label": self.backedge_label,
+            "version": self.version,
+        }
+
+
+@dataclass(frozen=True)
+class ProgramADControlPathAliasProvenance:
+    """Parseable branch-local control-path alias edge preserved by the lattice.
+
+    Parameters
+    ----------
+    source:
+        Canonical ``control:if:<line>:<body|orelse>`` source marker.
+    target:
+        Canonical ``control:<target_label>`` marker for the branch-local
+        target.
+    branch_line:
+        Positive source line number for the branch.
+    branch_arm:
+        Branch arm label, either ``"body"`` or ``"orelse"``.
+    target_label:
+        Non-empty target label parsed from ``target``.
+    version:
+        Non-negative Program AD version attached to the edge.
+
+    Raises
+    ------
+    ValueError
+        Raised when control-path markers are malformed, branch metadata is
+        unsupported, or the version is negative.
+    """
+
+    source: str
+    target: str
+    branch_line: int
+    branch_arm: str
+    target_label: str
+    version: int
+
+    def __post_init__(self) -> None:
+        """Validate control-path alias provenance at construction time."""
+        if not isinstance(self.source, str) or not self.source.startswith("control:if:"):
+            raise ValueError(
+                "program AD control-path alias provenance source must be "
+                "control:if:<line>:<body|orelse>"
+            )
+        if not isinstance(self.target, str) or not self.target.startswith("control:"):
+            raise ValueError("program AD control-path alias provenance target must be control:*")
+        if self.target == "control:":
+            raise ValueError(
+                "program AD control-path alias provenance target must include a label"
+            )
+        if self.branch_line <= 0:
+            raise ValueError(
+                "program AD control-path alias provenance branch_line must be positive"
+            )
+        if self.branch_arm not in _PROGRAM_AD_CONTROL_PATH_ALIAS_BRANCH_ARMS:
+            raise ValueError("program AD control-path alias provenance branch_arm is unsupported")
+        if not isinstance(self.target_label, str) or not self.target_label:
+            raise ValueError(
+                "program AD control-path alias provenance target_label must be non-empty"
+            )
+        expected_source = f"control:if:{self.branch_line}:{self.branch_arm}"
+        if self.source != expected_source:
+            raise ValueError(
+                "program AD control-path alias provenance source must match "
+                "branch_line and branch_arm"
+            )
+        if self.target != f"control:{self.target_label}":
+            raise ValueError(
+                "program AD control-path alias provenance target_label must match target"
+            )
+        if self.version < 0:
+            raise ValueError(
+                "program AD control-path alias provenance version must be non-negative"
+            )
+
+    def as_dict(self) -> dict[str, object]:
+        """Return a JSON-ready control-path alias provenance payload.
+
+        Returns
+        -------
+        dict[str, object]
+            Mapping with source and target markers, parsed branch metadata, and
+            Program AD version.
+        """
+        return {
+            "source": self.source,
+            "target": self.target,
+            "branch_line": self.branch_line,
+            "branch_arm": self.branch_arm,
+            "target_label": self.target_label,
+            "version": self.version,
+        }
+
+
+@dataclass(frozen=True)
+class ProgramADRebindingAliasProvenance:
+    """Parseable local or expression rebinding alias preserved by the lattice.
+
+    Parameters
+    ----------
+    source:
+        Local-name or expression marker used as the rebinding source.
+    target:
+        Canonical ``name:<target_name>`` marker for the rebound local name.
+    binding_kind:
+        Rebinding kind, either ``"local"`` or ``"expression"``.
+    source_name:
+        Source local name for local rebinding, otherwise ``None``.
+    expression_line:
+        Positive source line for expression rebinding, otherwise ``None``.
+    expression_label:
+        Non-empty expression label for expression rebinding, otherwise
+        ``None``.
+    target_name:
+        Non-empty target local name parsed from ``target``.
+    version:
+        Non-negative Program AD version attached to the edge.
+
+    Raises
+    ------
+    ValueError
+        Raised when rebinding markers mix local and expression metadata, labels
+        are malformed, or the version is negative.
+    """
+
+    source: str
+    target: str
+    binding_kind: str
+    source_name: str | None
+    expression_line: int | None
+    expression_label: str | None
+    target_name: str
+    version: int
+
+    def __post_init__(self) -> None:
+        """Validate rebinding-alias provenance at construction time."""
+        if self.binding_kind not in {"expression", "local"}:
+            raise ValueError("program AD rebinding alias provenance binding_kind is unsupported")
+        if not isinstance(self.target, str) or not self.target.startswith("name:"):
+            raise ValueError("program AD rebinding alias provenance target must be a local name")
+        if self.target == "name:":
+            raise ValueError("program AD rebinding alias provenance target must name a local")
+        if not isinstance(self.target_name, str) or not self.target_name:
+            raise ValueError("program AD rebinding alias provenance target_name must be non-empty")
+        if self.target != f"name:{self.target_name}":
+            raise ValueError("program AD rebinding alias provenance target_name must match target")
+        if self.binding_kind == "local":
+            if not isinstance(self.source, str) or not self.source.startswith("name:"):
+                raise ValueError(
+                    "program AD local rebinding alias provenance source must be a local name"
+                )
+            if self.source == "name:":
+                raise ValueError(
+                    "program AD local rebinding alias provenance source must name a local"
+                )
+            if not isinstance(self.source_name, str) or not self.source_name:
+                raise ValueError(
+                    "program AD local rebinding alias provenance source_name must be non-empty"
+                )
+            if self.source != f"name:{self.source_name}":
+                raise ValueError(
+                    "program AD local rebinding alias provenance source_name must match source"
+                )
+            if self.expression_line is not None or self.expression_label is not None:
+                raise ValueError(
+                    "program AD local rebinding alias provenance cannot carry expression metadata"
+                )
+        if self.binding_kind == "expression":
+            if self.source_name is not None:
+                raise ValueError(
+                    "program AD expression rebinding alias provenance cannot carry source_name"
+                )
+            if self.expression_line is None or self.expression_line <= 0:
+                raise ValueError(
+                    "program AD expression rebinding alias provenance "
+                    "expression_line must be positive"
+                )
+            if not isinstance(self.expression_label, str) or not self.expression_label:
+                raise ValueError(
+                    "program AD expression rebinding alias provenance "
+                    "expression_label must be non-empty"
+                )
+            if self.source != f"expr:{self.expression_line}:{self.expression_label}":
+                raise ValueError(
+                    "program AD expression rebinding alias provenance source must match "
+                    "expression_line and expression_label"
+                )
+        if self.version < 0:
+            raise ValueError("program AD rebinding alias provenance version must be non-negative")
+
+    def as_dict(self) -> dict[str, object]:
+        """Return a JSON-ready rebinding-alias provenance payload.
+
+        Returns
+        -------
+        dict[str, object]
+            Mapping with rebinding source, target, parsed metadata, and Program
+            AD version.
+        """
+        return {
+            "source": self.source,
+            "target": self.target,
+            "binding_kind": self.binding_kind,
+            "source_name": self.source_name,
+            "expression_line": self.expression_line,
+            "expression_label": self.expression_label,
+            "target_name": self.target_name,
+            "version": self.version,
+        }
+
+
+@dataclass(frozen=True)
+class ProgramADStaticAliasLatticeReport:
+    """Static alias-lattice readiness report for emitted Program AD IR.
+
+    The report builds deterministic alias components from the emitted
+    ``program_ad_effect_ir.v1`` metadata and records the exact blockers that
+    prevent promotion to full static alias, mutation, or non-executed branch
+    semantics. Unsupported whole-program frontend diagnostics are preserved as
+    static source/region/bytecode provenance for the corresponding blockers.
+
+    Parameters
+    ----------
+    components:
+        Dense deterministic static-lattice components.
+    mutation_effects:
+        Sorted mutation-effect indices that block full static promotion.
+    non_executed_phi_nodes:
+        Sorted phi-node indices whose non-selected inputs remain blocked.
+    non_executed_control_alias_edges:
+        Sorted branch-local alias labels that require non-executed branch
+        semantics.
+    unknown_alias_edge_kinds:
+        Sorted unsupported alias-edge kinds emitted by the effect IR.
+    blocker_reasons:
+        Sorted fail-closed blockers explaining why ``complete`` is false.
+    complete:
+        Whether the report has no blockers and can represent the emitted alias
+        metadata as a complete bounded static lattice.
+    claim_boundary:
+        Explicit promotion boundary for the static-lattice report.
+    control_path_alias_provenance:
+        Parsed branch-local alias provenance rows.
+    malformed_control_path_alias_edges:
+        Alias-edge labels that could not be parsed as branch-local provenance.
+    unsupported_python_semantics:
+        Unsupported frontend semantics that must remain blocked.
+    unsupported_semantic_diagnostics:
+        Source-level diagnostics for unsupported frontend semantics.
+    unsupported_object_attribute_roots:
+        Captured or global object roots that need a static object model before
+        promotion.
+    unsupported_object_attribute_details:
+        Source-level object-attribute diagnostic details.
+    unknown_alias_edges:
+        Unsupported alias edges preserved as typed fail-closed provenance.
+    view_alias_provenance:
+        Parsed source-to-view alias provenance rows.
+    malformed_view_alias_edges:
+        Alias-edge labels that could not be parsed as view provenance.
+    list_alias_provenance:
+        Parsed local list-alias provenance rows.
+    malformed_list_alias_edges:
+        Alias-edge labels that could not be parsed as list provenance.
+    loop_carried_state_provenance:
+        Parsed loop-carried state provenance rows.
+    malformed_loop_carried_state_edges:
+        Alias-edge labels that could not be parsed as loop-carried state
+        provenance.
+    rebinding_alias_provenance:
+        Parsed local or expression rebinding provenance rows.
+    malformed_rebinding_alias_edges:
+        Alias-edge labels that could not be parsed as rebinding provenance.
+
+    Raises
+    ------
+    ValueError
+        Raised when report fields are unsorted, inconsistent with their
+        blocker reasons, contain malformed provenance rows, or claim
+        completeness while blockers remain.
+    """
+
+    components: tuple[ProgramADStaticAliasLatticeComponent, ...]
+    mutation_effects: tuple[int, ...]
+    non_executed_phi_nodes: tuple[int, ...]
+    non_executed_control_alias_edges: tuple[str, ...]
+    unknown_alias_edge_kinds: tuple[str, ...]
+    blocker_reasons: tuple[str, ...]
+    complete: bool
+    claim_boundary: str
+    control_path_alias_provenance: tuple[ProgramADControlPathAliasProvenance, ...] = ()
+    malformed_control_path_alias_edges: tuple[str, ...] = ()
+    unsupported_python_semantics: tuple[str, ...] = ()
+    unsupported_semantic_diagnostics: tuple[WholeProgramUnsupportedSemanticDiagnostic, ...] = ()
+    unsupported_object_attribute_roots: tuple[str, ...] = ()
+    unsupported_object_attribute_details: tuple[str, ...] = ()
+    unknown_alias_edges: tuple[ProgramADUnknownAliasEdge, ...] = ()
+    view_alias_provenance: tuple[ProgramADViewAliasProvenance, ...] = ()
+    malformed_view_alias_edges: tuple[str, ...] = ()
+    list_alias_provenance: tuple[ProgramADListAliasProvenance, ...] = ()
+    malformed_list_alias_edges: tuple[str, ...] = ()
+    loop_carried_state_provenance: tuple[ProgramADLoopCarriedStateProvenance, ...] = ()
+    malformed_loop_carried_state_edges: tuple[str, ...] = ()
+    rebinding_alias_provenance: tuple[ProgramADRebindingAliasProvenance, ...] = ()
+    malformed_rebinding_alias_edges: tuple[str, ...] = ()
+
+    def __post_init__(self) -> None:
+        """Validate static alias-lattice report contents at construction time."""
+        if any(
+            not isinstance(component, ProgramADStaticAliasLatticeComponent)
+            for component in self.components
+        ):
+            raise ValueError(
+                "program AD static alias lattice components must contain "
+                "ProgramADStaticAliasLatticeComponent entries"
+            )
+        if tuple(component.index for component in self.components) != tuple(
+            range(len(self.components))
+        ):
+            raise ValueError("program AD static alias lattice components must be dense")
+        for name in ("mutation_effects", "non_executed_phi_nodes"):
+            values = getattr(self, name)
+            if tuple(sorted(values)) != values or any(value < 0 for value in values):
+                raise ValueError(
+                    f"program AD static alias lattice {name} must be sorted non-negative ints"
+                )
+        if any(
+            not isinstance(edge, str) or not edge for edge in self.non_executed_control_alias_edges
+        ):
+            raise ValueError(
+                "program AD static alias lattice non_executed_control_alias_edges "
+                "must be non-empty strings"
+            )
+        if (
+            tuple(sorted(set(self.non_executed_control_alias_edges)))
+            != self.non_executed_control_alias_edges
+        ):
+            raise ValueError(
+                "program AD static alias lattice non_executed_control_alias_edges "
+                "must be sorted and unique"
+            )
+        if any(
+            not isinstance(row, ProgramADControlPathAliasProvenance)
+            for row in self.control_path_alias_provenance
+        ):
+            raise ValueError(
+                "program AD static alias lattice control_path_alias_provenance must "
+                "contain ProgramADControlPathAliasProvenance entries"
+            )
+        control_path_alias_order = tuple(
+            (
+                row.branch_line,
+                row.branch_arm,
+                row.target_label,
+                row.source,
+                row.target,
+                row.version,
+            )
+            for row in self.control_path_alias_provenance
+        )
+        if tuple(sorted(set(control_path_alias_order))) != control_path_alias_order:
+            raise ValueError(
+                "program AD static alias lattice control_path_alias_provenance must "
+                "be sorted unique"
+            )
+        control_path_alias_labels = set(self.non_executed_control_alias_edges)
+        if any(
+            f"{row.source}->{row.target}" not in control_path_alias_labels
+            for row in self.control_path_alias_provenance
+        ):
+            raise ValueError(
+                "program AD static alias lattice control_path_alias_provenance must "
+                "match non_executed_control_alias_edges"
+            )
+        if any(
+            not isinstance(edge, str) or not edge
+            for edge in self.malformed_control_path_alias_edges
+        ):
+            raise ValueError(
+                "program AD static alias lattice malformed_control_path_alias_edges "
+                "must contain non-empty strings"
+            )
+        if (
+            tuple(sorted(set(self.malformed_control_path_alias_edges)))
+            != self.malformed_control_path_alias_edges
+        ):
+            raise ValueError(
+                "program AD static alias lattice malformed_control_path_alias_edges "
+                "must be sorted and unique"
+            )
+        if any(not isinstance(kind, str) or not kind for kind in self.unknown_alias_edge_kinds):
+            raise ValueError(
+                "program AD static alias lattice unknown_alias_edge_kinds must be strings"
+            )
+        if tuple(sorted(set(self.unknown_alias_edge_kinds))) != self.unknown_alias_edge_kinds:
+            raise ValueError(
+                "program AD static alias lattice unknown_alias_edge_kinds must be sorted unique"
+            )
+        if any(
+            not isinstance(edge, ProgramADUnknownAliasEdge) for edge in self.unknown_alias_edges
+        ):
+            raise ValueError(
+                "program AD static alias lattice unknown_alias_edges must contain "
+                "ProgramADUnknownAliasEdge entries"
+            )
+        unknown_edge_order = tuple(
+            (edge.kind, edge.source, edge.target, edge.version)
+            for edge in self.unknown_alias_edges
+        )
+        if tuple(sorted(set(unknown_edge_order))) != unknown_edge_order:
+            raise ValueError(
+                "program AD static alias lattice unknown_alias_edges must be sorted unique"
+            )
+        expected_unknown_alias_edge_kinds = tuple(
+            sorted({edge.kind for edge in self.unknown_alias_edges})
+        )
+        if self.unknown_alias_edge_kinds != expected_unknown_alias_edge_kinds:
+            raise ValueError(
+                "program AD static alias lattice unknown_alias_edge_kinds must match "
+                "unknown_alias_edges"
+            )
+        if any(
+            not isinstance(row, ProgramADViewAliasProvenance) for row in self.view_alias_provenance
+        ):
+            raise ValueError(
+                "program AD static alias lattice view_alias_provenance must contain "
+                "ProgramADViewAliasProvenance entries"
+            )
+        view_alias_order = tuple(
+            (
+                row.operation,
+                row.view_id,
+                row.output_index,
+                row.source,
+                row.target,
+                row.version,
+            )
+            for row in self.view_alias_provenance
+        )
+        if tuple(sorted(set(view_alias_order))) != view_alias_order:
+            raise ValueError(
+                "program AD static alias lattice view_alias_provenance must be sorted unique"
+            )
+        if any(not isinstance(edge, str) or not edge for edge in self.malformed_view_alias_edges):
+            raise ValueError(
+                "program AD static alias lattice malformed_view_alias_edges "
+                "must contain non-empty strings"
+            )
+        if tuple(sorted(set(self.malformed_view_alias_edges))) != self.malformed_view_alias_edges:
+            raise ValueError(
+                "program AD static alias lattice malformed_view_alias_edges "
+                "must be sorted and unique"
+            )
+        if any(
+            not isinstance(row, ProgramADListAliasProvenance) for row in self.list_alias_provenance
+        ):
+            raise ValueError(
+                "program AD static alias lattice list_alias_provenance must contain "
+                "ProgramADListAliasProvenance entries"
+            )
+        list_alias_order = tuple(
+            (
+                row.list_name,
+                row.target_kind,
+                row.source,
+                row.target,
+                row.version,
+            )
+            for row in self.list_alias_provenance
+        )
+        if tuple(sorted(set(list_alias_order))) != list_alias_order:
+            raise ValueError(
+                "program AD static alias lattice list_alias_provenance must be sorted unique"
+            )
+        if any(not isinstance(edge, str) or not edge for edge in self.malformed_list_alias_edges):
+            raise ValueError(
+                "program AD static alias lattice malformed_list_alias_edges "
+                "must contain non-empty strings"
+            )
+        if tuple(sorted(set(self.malformed_list_alias_edges))) != self.malformed_list_alias_edges:
+            raise ValueError(
+                "program AD static alias lattice malformed_list_alias_edges "
+                "must be sorted and unique"
+            )
+        if any(
+            not isinstance(row, ProgramADLoopCarriedStateProvenance)
+            for row in self.loop_carried_state_provenance
+        ):
+            raise ValueError(
+                "program AD static alias lattice loop_carried_state_provenance must "
+                "contain ProgramADLoopCarriedStateProvenance entries"
+            )
+        loop_carried_state_order = tuple(
+            (
+                row.state_name,
+                row.entry_label,
+                row.backedge_label,
+                row.source,
+                row.target,
+                row.version,
+            )
+            for row in self.loop_carried_state_provenance
+        )
+        if tuple(sorted(set(loop_carried_state_order))) != loop_carried_state_order:
+            raise ValueError(
+                "program AD static alias lattice loop_carried_state_provenance "
+                "must be sorted unique"
+            )
+        if any(
+            not isinstance(edge, str) or not edge
+            for edge in self.malformed_loop_carried_state_edges
+        ):
+            raise ValueError(
+                "program AD static alias lattice malformed_loop_carried_state_edges "
+                "must contain non-empty strings"
+            )
+        if (
+            tuple(sorted(set(self.malformed_loop_carried_state_edges)))
+            != self.malformed_loop_carried_state_edges
+        ):
+            raise ValueError(
+                "program AD static alias lattice malformed_loop_carried_state_edges "
+                "must be sorted and unique"
+            )
+        if any(
+            not isinstance(row, ProgramADRebindingAliasProvenance)
+            for row in self.rebinding_alias_provenance
+        ):
+            raise ValueError(
+                "program AD static alias lattice rebinding_alias_provenance must contain "
+                "ProgramADRebindingAliasProvenance entries"
+            )
+        rebinding_alias_order = tuple(
+            (
+                row.binding_kind,
+                row.source,
+                row.target,
+                row.source_name or "",
+                row.expression_line or 0,
+                row.expression_label or "",
+                row.version,
+            )
+            for row in self.rebinding_alias_provenance
+        )
+        if tuple(sorted(set(rebinding_alias_order))) != rebinding_alias_order:
+            raise ValueError(
+                "program AD static alias lattice rebinding_alias_provenance must be sorted unique"
+            )
+        if any(
+            not isinstance(edge, str) or not edge for edge in self.malformed_rebinding_alias_edges
+        ):
+            raise ValueError(
+                "program AD static alias lattice malformed_rebinding_alias_edges "
+                "must contain non-empty strings"
+            )
+        if (
+            tuple(sorted(set(self.malformed_rebinding_alias_edges)))
+            != self.malformed_rebinding_alias_edges
+        ):
+            raise ValueError(
+                "program AD static alias lattice malformed_rebinding_alias_edges "
+                "must be sorted and unique"
+            )
+        has_view_alias_component = any(
+            "view_alias" in component.edge_kinds for component in self.components
+        )
+        has_list_alias_component = any(
+            "list_alias" in component.edge_kinds for component in self.components
+        )
+        has_loop_carried_state_component = any(
+            "loop_carried_state" in component.edge_kinds for component in self.components
+        )
+        has_rebinding_alias_component = any(
+            bool(_PROGRAM_AD_REBINDING_ALIAS_EDGE_KINDS.intersection(component.edge_kinds))
+            for component in self.components
+        )
+        has_control_path_alias_component = any(
+            "control_path_alias" in component.edge_kinds for component in self.components
+        )
+        if (
+            has_control_path_alias_component
+            and not self.control_path_alias_provenance
+            and not self.malformed_control_path_alias_edges
+        ):
+            raise ValueError(
+                "program AD static alias lattice control-path alias components require "
+                "control_path_alias_provenance"
+            )
+        if self.control_path_alias_provenance and not has_control_path_alias_component:
+            raise ValueError(
+                "program AD static alias lattice control-path alias provenance requires "
+                "a control_path_alias component"
+            )
+        if (
+            has_view_alias_component
+            and not self.view_alias_provenance
+            and not self.malformed_view_alias_edges
+        ):
+            raise ValueError(
+                "program AD static alias lattice view alias components require "
+                "view_alias_provenance"
+            )
+        if self.view_alias_provenance and not has_view_alias_component:
+            raise ValueError(
+                "program AD static alias lattice view alias provenance requires "
+                "a view_alias component"
+            )
+        if (
+            has_list_alias_component
+            and not self.list_alias_provenance
+            and not self.malformed_list_alias_edges
+        ):
+            raise ValueError(
+                "program AD static alias lattice list alias components require "
+                "list_alias_provenance"
+            )
+        if self.list_alias_provenance and not has_list_alias_component:
+            raise ValueError(
+                "program AD static alias lattice list alias provenance requires "
+                "a list_alias component"
+            )
+        if (
+            has_loop_carried_state_component
+            and not self.loop_carried_state_provenance
+            and not self.malformed_loop_carried_state_edges
+        ):
+            raise ValueError(
+                "program AD static alias lattice loop-carried state components require "
+                "loop_carried_state_provenance"
+            )
+        if self.loop_carried_state_provenance and not has_loop_carried_state_component:
+            raise ValueError(
+                "program AD static alias lattice loop-carried state provenance requires "
+                "a loop_carried_state component"
+            )
+        if (
+            has_rebinding_alias_component
+            and not self.rebinding_alias_provenance
+            and not self.malformed_rebinding_alias_edges
+        ):
+            raise ValueError(
+                "program AD static alias lattice rebinding alias components require "
+                "rebinding_alias_provenance"
+            )
+        if self.rebinding_alias_provenance and not has_rebinding_alias_component:
+            raise ValueError(
+                "program AD static alias lattice rebinding alias provenance requires "
+                "a rebinding alias component"
+            )
+        if any(
+            not isinstance(semantic, str) or not semantic
+            for semantic in self.unsupported_python_semantics
+        ):
+            raise ValueError(
+                "program AD static alias lattice unsupported_python_semantics "
+                "must be non-empty strings"
+            )
+        if (
+            tuple(sorted(set(self.unsupported_python_semantics)))
+            != self.unsupported_python_semantics
+        ):
+            raise ValueError(
+                "program AD static alias lattice unsupported_python_semantics "
+                "must be sorted and unique"
+            )
+        if any(
+            not isinstance(diagnostic, WholeProgramUnsupportedSemanticDiagnostic)
+            for diagnostic in self.unsupported_semantic_diagnostics
+        ):
+            raise ValueError(
+                "program AD static alias lattice unsupported_semantic_diagnostics "
+                "must contain WholeProgramUnsupportedSemanticDiagnostic entries"
+            )
+        diagnostic_order = tuple(
+            (diagnostic.line_number, diagnostic.semantic, diagnostic.detail)
+            for diagnostic in self.unsupported_semantic_diagnostics
+        )
+        if tuple(sorted(set(diagnostic_order))) != diagnostic_order:
+            raise ValueError(
+                "program AD static alias lattice unsupported_semantic_diagnostics "
+                "must be sorted and unique"
+            )
+        unsupported_semantics = set(self.unsupported_python_semantics)
+        if any(
+            diagnostic.semantic not in unsupported_semantics
+            for diagnostic in self.unsupported_semantic_diagnostics
+        ):
+            raise ValueError(
+                "program AD static alias lattice unsupported_semantic_diagnostics "
+                "must match unsupported_python_semantics"
+            )
+        for name in ("unsupported_object_attribute_roots", "unsupported_object_attribute_details"):
+            values = getattr(self, name)
+            if any(not isinstance(value, str) or not value for value in values):
+                raise ValueError(
+                    f"program AD static alias lattice {name} must contain non-empty strings"
+                )
+            if tuple(sorted(set(values))) != values:
+                raise ValueError(
+                    f"program AD static alias lattice {name} must be sorted and unique"
+                )
+        expected_object_attribute_details = _unsupported_object_attribute_details(
+            self.unsupported_semantic_diagnostics
+        )
+        if self.unsupported_object_attribute_details != expected_object_attribute_details:
+            raise ValueError(
+                "program AD static alias lattice unsupported_object_attribute_details "
+                "must match object-attribute diagnostics"
+            )
+        expected_object_attribute_roots = _unsupported_object_attribute_roots(
+            expected_object_attribute_details
+        )
+        if self.unsupported_object_attribute_roots != expected_object_attribute_roots:
+            raise ValueError(
+                "program AD static alias lattice unsupported_object_attribute_roots "
+                "must match object-attribute diagnostics"
+            )
+        if any(not isinstance(reason, str) or not reason for reason in self.blocker_reasons):
+            raise ValueError(
+                "program AD static alias lattice blocker_reasons must be non-empty strings"
+            )
+        if tuple(sorted(set(self.blocker_reasons))) != self.blocker_reasons:
+            raise ValueError(
+                "program AD static alias lattice blocker_reasons must be sorted and unique"
+            )
+        if not isinstance(self.complete, bool):
+            raise ValueError("program AD static alias lattice complete must be boolean")
+        if self.complete and self.blocker_reasons:
+            raise ValueError(
+                "complete program AD static alias lattice cannot carry blocker reasons"
+            )
+        mutation_blocker = "mutation_effects_require_versioned_alias_semantics"
+        unknown_alias_blocker = "unknown_alias_edge_kinds"
+        unsupported_semantics_blocker = "unsupported_python_semantics_require_frontend_lowering"
+        control_path_alias_blocker = "control_path_aliases_require_branch_semantics"
+        malformed_control_path_alias_blocker = (
+            "control_path_alias_provenance_requires_parseable_targets"
+        )
+        malformed_view_alias_blocker = "view_alias_provenance_requires_parseable_targets"
+        malformed_list_alias_blocker = "list_alias_provenance_requires_parseable_targets"
+        malformed_loop_carried_state_blocker = (
+            "loop_carried_state_provenance_requires_parseable_targets"
+        )
+        malformed_rebinding_alias_blocker = "rebinding_alias_provenance_requires_parseable_targets"
+        if self.complete and self.control_path_alias_provenance:
+            raise ValueError(
+                "complete program AD static alias lattice cannot carry control-path aliases"
+            )
+        if self.complete and self.malformed_control_path_alias_edges:
+            raise ValueError(
+                "complete program AD static alias lattice cannot carry malformed "
+                "control-path alias edges"
+            )
+        if self.complete and self.unknown_alias_edges:
+            raise ValueError(
+                "complete program AD static alias lattice cannot carry unknown_alias_edges"
+            )
+        if self.complete and self.malformed_view_alias_edges:
+            raise ValueError(
+                "complete program AD static alias lattice cannot carry malformed view-alias edges"
+            )
+        if self.complete and self.malformed_list_alias_edges:
+            raise ValueError(
+                "complete program AD static alias lattice cannot carry malformed list-alias edges"
+            )
+        if self.complete and self.malformed_loop_carried_state_edges:
+            raise ValueError(
+                "complete program AD static alias lattice cannot carry malformed "
+                "loop-carried state edges"
+            )
+        if self.complete and self.malformed_rebinding_alias_edges:
+            raise ValueError(
+                "complete program AD static alias lattice cannot carry malformed "
+                "rebinding-alias edges"
+            )
+        if self.complete and self.mutation_effects:
+            raise ValueError(
+                "complete program AD static alias lattice cannot carry mutation_effects"
+            )
+        if (
+            self.non_executed_control_alias_edges
+            and control_path_alias_blocker not in self.blocker_reasons
+        ):
+            raise ValueError(
+                "program AD static alias lattice control-path aliases require a blocker reason"
+            )
+        if (
+            not self.non_executed_control_alias_edges
+            and control_path_alias_blocker in self.blocker_reasons
+        ):
+            raise ValueError(
+                "program AD static alias lattice control-path blocker requires "
+                "non_executed_control_alias_edges"
+            )
+        if (
+            self.malformed_control_path_alias_edges
+            and malformed_control_path_alias_blocker not in self.blocker_reasons
+        ):
+            raise ValueError(
+                "program AD static alias lattice malformed control-path alias edges "
+                "require a blocker reason"
+            )
+        if (
+            not self.malformed_control_path_alias_edges
+            and malformed_control_path_alias_blocker in self.blocker_reasons
+        ):
+            raise ValueError(
+                "program AD static alias lattice malformed control-path alias blocker "
+                "requires malformed_control_path_alias_edges"
+            )
+        if self.unknown_alias_edges and unknown_alias_blocker not in self.blocker_reasons:
+            raise ValueError(
+                "program AD static alias lattice unknown_alias_edges require a blocker reason"
+            )
+        if not self.unknown_alias_edges and unknown_alias_blocker in self.blocker_reasons:
+            raise ValueError(
+                "program AD static alias lattice unknown alias blocker requires "
+                "unknown_alias_edges"
+            )
+        if (
+            self.malformed_view_alias_edges
+            and malformed_view_alias_blocker not in self.blocker_reasons
+        ):
+            raise ValueError(
+                "program AD static alias lattice malformed view-alias edges require "
+                "a blocker reason"
+            )
+        if (
+            not self.malformed_view_alias_edges
+            and malformed_view_alias_blocker in self.blocker_reasons
+        ):
+            raise ValueError(
+                "program AD static alias lattice malformed view-alias blocker requires "
+                "malformed_view_alias_edges"
+            )
+        if (
+            self.malformed_list_alias_edges
+            and malformed_list_alias_blocker not in self.blocker_reasons
+        ):
+            raise ValueError(
+                "program AD static alias lattice malformed list-alias edges require "
+                "a blocker reason"
+            )
+        if (
+            not self.malformed_list_alias_edges
+            and malformed_list_alias_blocker in self.blocker_reasons
+        ):
+            raise ValueError(
+                "program AD static alias lattice malformed list-alias blocker requires "
+                "malformed_list_alias_edges"
+            )
+        if (
+            self.malformed_loop_carried_state_edges
+            and malformed_loop_carried_state_blocker not in self.blocker_reasons
+        ):
+            raise ValueError(
+                "program AD static alias lattice malformed loop-carried state edges "
+                "require a blocker reason"
+            )
+        if (
+            not self.malformed_loop_carried_state_edges
+            and malformed_loop_carried_state_blocker in self.blocker_reasons
+        ):
+            raise ValueError(
+                "program AD static alias lattice malformed loop-carried state blocker "
+                "requires malformed_loop_carried_state_edges"
+            )
+        if (
+            self.malformed_rebinding_alias_edges
+            and malformed_rebinding_alias_blocker not in self.blocker_reasons
+        ):
+            raise ValueError(
+                "program AD static alias lattice malformed rebinding-alias edges require "
+                "a blocker reason"
+            )
+        if (
+            not self.malformed_rebinding_alias_edges
+            and malformed_rebinding_alias_blocker in self.blocker_reasons
+        ):
+            raise ValueError(
+                "program AD static alias lattice malformed rebinding-alias blocker requires "
+                "malformed_rebinding_alias_edges"
+            )
+        if self.complete and self.unsupported_python_semantics:
+            raise ValueError(
+                "complete program AD static alias lattice cannot carry "
+                "unsupported_python_semantics"
+            )
+        if self.complete and self.unsupported_object_attribute_roots:
+            raise ValueError(
+                "complete program AD static alias lattice cannot carry "
+                "unsupported_object_attribute_roots"
+            )
+        if self.mutation_effects and mutation_blocker not in self.blocker_reasons:
+            raise ValueError(
+                "program AD static alias lattice mutation_effects require a blocker reason"
+            )
+        if not self.mutation_effects and mutation_blocker in self.blocker_reasons:
+            raise ValueError(
+                "program AD static alias lattice mutation blocker requires mutation_effects"
+            )
+        if (
+            self.unsupported_python_semantics
+            and unsupported_semantics_blocker not in self.blocker_reasons
+        ):
+            raise ValueError(
+                "program AD static alias lattice unsupported_python_semantics require "
+                "a blocker reason"
+            )
+        if (
+            not self.unsupported_python_semantics
+            and unsupported_semantics_blocker in self.blocker_reasons
+        ):
+            raise ValueError(
+                "program AD static alias lattice unsupported semantics blocker requires "
+                "unsupported_python_semantics"
+            )
+        object_attribute_blocker = "object_attributes_require_static_object_model"
+        if (
+            self.unsupported_object_attribute_roots
+            and object_attribute_blocker not in self.blocker_reasons
+        ):
+            raise ValueError(
+                "program AD static alias lattice unsupported object attributes require "
+                "a blocker reason"
+            )
+        if (
+            not self.unsupported_object_attribute_roots
+            and object_attribute_blocker in self.blocker_reasons
+        ):
+            raise ValueError(
+                "program AD static alias lattice object attribute blocker requires "
+                "unsupported object-attribute diagnostics"
+            )
+        _normalise_claim_boundary("program AD static alias lattice", self.claim_boundary)
+
+    def as_dict(self) -> dict[str, object]:
+        """Return a JSON-ready static alias lattice readiness payload.
+
+        Returns
+        -------
+        dict[str, object]
+            Mapping that serialises components, blockers, typed provenance,
+            unsupported semantics, completeness, and claim boundary.
+        """
+        return {
+            "components": [component.as_dict() for component in self.components],
+            "mutation_effects": list(self.mutation_effects),
+            "non_executed_phi_nodes": list(self.non_executed_phi_nodes),
+            "non_executed_control_alias_edges": list(self.non_executed_control_alias_edges),
+            "control_path_alias_provenance": [
+                row.as_dict() for row in self.control_path_alias_provenance
+            ],
+            "malformed_control_path_alias_edges": list(self.malformed_control_path_alias_edges),
+            "unknown_alias_edge_kinds": list(self.unknown_alias_edge_kinds),
+            "unknown_alias_edges": [edge.as_dict() for edge in self.unknown_alias_edges],
+            "view_alias_provenance": [row.as_dict() for row in self.view_alias_provenance],
+            "malformed_view_alias_edges": list(self.malformed_view_alias_edges),
+            "list_alias_provenance": [row.as_dict() for row in self.list_alias_provenance],
+            "malformed_list_alias_edges": list(self.malformed_list_alias_edges),
+            "loop_carried_state_provenance": [
+                row.as_dict() for row in self.loop_carried_state_provenance
+            ],
+            "malformed_loop_carried_state_edges": list(self.malformed_loop_carried_state_edges),
+            "rebinding_alias_provenance": [
+                row.as_dict() for row in self.rebinding_alias_provenance
+            ],
+            "malformed_rebinding_alias_edges": list(self.malformed_rebinding_alias_edges),
+            "unsupported_python_semantics": list(self.unsupported_python_semantics),
+            "unsupported_semantic_diagnostics": [
+                diagnostic.to_dict() for diagnostic in self.unsupported_semantic_diagnostics
+            ],
+            "unsupported_object_attribute_roots": list(self.unsupported_object_attribute_roots),
+            "unsupported_object_attribute_details": list(
+                self.unsupported_object_attribute_details
+            ),
+            "blocker_reasons": list(self.blocker_reasons),
+            "complete": self.complete,
+            "claim_boundary": self.claim_boundary,
+        }
+
+
+def _unsupported_object_attribute_details(
+    diagnostics: Sequence[WholeProgramUnsupportedSemanticDiagnostic],
+) -> tuple[str, ...]:
+    """Return sorted frontend object-attribute diagnostic detail strings."""
+    return tuple(
+        sorted(
+            {
+                diagnostic.detail
+                for diagnostic in diagnostics
+                if diagnostic.semantic == "object_attribute"
+            }
+        )
+    )
+
+
+def _unsupported_object_attribute_roots(details: Sequence[str]) -> tuple[str, ...]:
+    """Return captured or global object roots from object-attribute details."""
+    roots: set[str] = set()
+    prefix = "object_attribute:"
+    for detail in details:
+        if detail.startswith(prefix) and detail != prefix:
+            roots.add(detail.removeprefix(prefix))
+        else:
+            roots.add(detail)
+    return tuple(sorted(roots))
+
+
+def _normalise_claim_boundary(label: str, claim_boundary: str) -> str:
+    if not isinstance(claim_boundary, str) or not claim_boundary:
+        raise ValueError(f"{label} claim_boundary must be a non-empty string")
+    return claim_boundary
+
+
+__all__ = [
+    "PROGRAM_AD_ALIAS_EFFECT_CLAIM_BOUNDARY",
+    "PROGRAM_AD_STATIC_ALIAS_LATTICE_CLAIM_BOUNDARY",
+    "ProgramADAliasEffectAnalysis",
+    "ProgramADAliasSet",
+    "ProgramADControlPathAliasProvenance",
+    "ProgramADListAliasProvenance",
+    "ProgramADLoopCarriedStateProvenance",
+    "ProgramADRebindingAliasProvenance",
+    "ProgramADStaticAliasLatticeComponent",
+    "ProgramADStaticAliasLatticeReport",
+    "ProgramADUnknownAliasEdge",
+    "ProgramADViewAliasProvenance",
+]

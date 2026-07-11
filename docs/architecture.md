@@ -125,6 +125,12 @@ Cholesky/eigen kernels and their private geometry helpers. `compiler_ad.rs` owns
 validation, Python exception conversion, Python-array construction, and the 56 binding functions;
 both facades explicitly re-export inner kernels so existing Rust paths remain stable.
 
+Program-AD alias analysis separates immutable evidence contracts from analysis execution.
+`program_ad_alias_contracts.py` owns the ten alias-set, lattice, unknown-edge, and typed provenance
+records plus their fail-closed validation and serialization. `program_ad_alias_analysis.py` owns
+the metadata union-find summaries, static-lattice assembly, and provenance parsers, and re-exports
+the exact contract objects so package and differentiable-facade identities remain stable.
+
 Differentiable benchmark result validation is isolated from benchmark execution.
 `benchmarks/differentiable_programming_contracts.py` owns the three immutable result records and
 shared gradient/error normalization helpers. `differentiable_programming.py` re-exports those exact
