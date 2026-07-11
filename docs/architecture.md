@@ -45,6 +45,15 @@ The following modules are **intentionally retained at their current size** becau
 a single connected responsibility cluster. They are deliberate architecture, not pending
 refactors:
 
+The 1,277-line `compiler/mlir_enzyme_evidence.py` leaf is one Enzyme/MLIR evidence-schema
+cluster rather than a mixed execution module. Its nine immutable records and seven
+construction/render/write definitions form one 23-edge component: the breadth artifact links
+case and benchmark records to derived promotion evidence, the maturity result aggregates every
+evidence subtype, and the writer consumes the artifact, renderer, filename helper, and output
+record. `compiler/mlir.py` is the sole production importer and consumes or re-exports the complete
+family. The module stays intact until a genuinely independent evidence schema or persistence API
+emerges.
+
 The JAX bridge completed staged decomposition under the extraction gate. Immutable result records
 live in the dependency-free `phase/jax_bridge_contracts.py` leaf, and bounded
 parameter-shift/native/custom-VJP QNN implementations live in the one-way
