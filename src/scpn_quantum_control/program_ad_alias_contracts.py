@@ -13,7 +13,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 
 from .program_ad_effect_ir import ProgramADAliasEdge
-from .whole_program_frontend import WholeProgramUnsupportedSemanticDiagnostic
+from .whole_program_frontend_contracts import WholeProgramUnsupportedSemanticDiagnostic
 
 PROGRAM_AD_ALIAS_EFFECT_CLAIM_BOUNDARY = "metadata_only_no_general_alias_lattice"
 PROGRAM_AD_STATIC_ALIAS_LATTICE_CLAIM_BOUNDARY = (

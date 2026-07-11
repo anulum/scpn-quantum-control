@@ -31,7 +31,7 @@ from .program_ad_alias_contracts import (
     _unsupported_object_attribute_roots,
 )
 from .program_ad_effect_ir import ProgramADAliasEdge, ProgramADEffectIR
-from .whole_program_frontend import WholeProgramUnsupportedSemanticDiagnostic
+from .whole_program_frontend_contracts import WholeProgramUnsupportedSemanticDiagnostic
 
 
 def analyze_program_ad_alias_effects(

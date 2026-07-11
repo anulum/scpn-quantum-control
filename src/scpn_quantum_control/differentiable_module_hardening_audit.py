@@ -304,9 +304,14 @@ def differentiable_module_hardening_registry() -> tuple[DifferentiableModuleHard
             ("Rust bridge result parsing", "extension fail-closed boundaries"),
         ),
         _record(
+            "src/scpn_quantum_control/whole_program_frontend_contracts.py",
+            ("tests/test_whole_program_frontend_contracts.py",),
+            ("frontend record validation", "public contract identity"),
+        ),
+        _record(
             "src/scpn_quantum_control/whole_program_frontend.py",
             ("tests/test_whole_program_frontend.py",),
-            ("static bytecode/source frontend", "unsupported Python-semantics hard gaps"),
+            ("source/bytecode introspection", "unsupported Python-semantics hard gaps"),
         ),
         _record(
             "src/scpn_quantum_control/differentiable_api.py",

@@ -131,6 +131,12 @@ records plus their fail-closed validation and serialization. `program_ad_alias_a
 the metadata union-find summaries, static-lattice assembly, and provenance parsers, and re-exports
 the exact contract objects so package and differentiable-facade identities remain stable.
 
+The whole-program frontend uses the same contract-first dependency direction.
+`whole_program_frontend_contracts.py` owns the nine immutable bytecode, source-region, semantic,
+diagnostic, and aggregate report records. `whole_program_frontend.py` retains private source
+metadata, source/bytecode inspection, semantic classification, digest construction, and report
+assembly, and re-exports the exact public records for compatibility.
+
 Differentiable benchmark result validation is isolated from benchmark execution.
 `benchmarks/differentiable_programming_contracts.py` owns the three immutable result records and
 shared gradient/error normalization helpers. `differentiable_programming.py` re-exports those exact
@@ -146,7 +152,7 @@ branch-IR completeness modules backed by one shared real-IR fixture.
 | `compiler/mlir_whole_program_emitter.py` | Native LLVM text emission for recorded whole-program AD operations and their derivatives | Cohesion audit: 45/46 top-level definitions form one 114-edge component spanning dispatch, linalg helpers, batch scaffolds, operands and formatting; the native driver is the sole production importer |
 | `benchmarks/differentiable_programming.py` | Differentiable-programming execution facade after contract/quantum leaf extraction | Program/external cases are tested facade monkeypatch seams for ten runtime/compiler/JAX dependencies; alias moves would break diagnostic substitution |
 | `program_ad_linalg_primitives.py` | Program-AD linear-algebra primitive rules and conditioning diagnostics | One dominant cluster; satellites are registry-dispatched rules |
-| `whole_program_frontend.py` | Whole-program compiler frontend report and assembly | One connected cluster |
+| `whole_program_frontend.py` | Static source/bytecode introspection and report assembly after contract extraction | The residual private metadata record and 45 functions form one connected pipeline; public records live in the one-way contracts leaf |
 | `program_ad_assembly_primitives.py` | Program-AD assembly primitive rules (stack/concat/triu/tril) | One dominant cluster |
 
 A reviewer encountering one of these files will find the same statement in its module

@@ -10,10 +10,10 @@
     "public_api_exports": 835,
     "public_documentation_pages": 269,
     "python_model_classes": 1003,
-    "python_model_source_modules": 549,
+    "python_model_source_modules": 550,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 49,
-    "test_files": 929
+    "test_files": 930
   },
   "documentation": {
     "examples": [
@@ -4532,15 +4532,15 @@
       },
       {
         "name": "WholeProgramBytecodeBasicBlock",
-        "path": "src/scpn_quantum_control/whole_program_frontend.py"
+        "path": "src/scpn_quantum_control/whole_program_frontend_contracts.py"
       },
       {
         "name": "WholeProgramBytecodeInstruction",
-        "path": "src/scpn_quantum_control/whole_program_frontend.py"
+        "path": "src/scpn_quantum_control/whole_program_frontend_contracts.py"
       },
       {
         "name": "WholeProgramCompilerFrontendReport",
-        "path": "src/scpn_quantum_control/whole_program_frontend.py"
+        "path": "src/scpn_quantum_control/whole_program_frontend_contracts.py"
       },
       {
         "name": "WholeProgramIRNode",
@@ -4548,23 +4548,23 @@
       },
       {
         "name": "WholeProgramSemanticsReport",
-        "path": "src/scpn_quantum_control/whole_program_frontend.py"
+        "path": "src/scpn_quantum_control/whole_program_frontend_contracts.py"
       },
       {
         "name": "WholeProgramSourceBytecodeLineMap",
-        "path": "src/scpn_quantum_control/whole_program_frontend.py"
+        "path": "src/scpn_quantum_control/whole_program_frontend_contracts.py"
       },
       {
         "name": "WholeProgramSourceIRFeature",
-        "path": "src/scpn_quantum_control/whole_program_frontend.py"
+        "path": "src/scpn_quantum_control/whole_program_frontend_contracts.py"
       },
       {
         "name": "WholeProgramSourceRegion",
-        "path": "src/scpn_quantum_control/whole_program_frontend.py"
+        "path": "src/scpn_quantum_control/whole_program_frontend_contracts.py"
       },
       {
         "name": "WholeProgramSymbolScopeEntry",
-        "path": "src/scpn_quantum_control/whole_program_frontend.py"
+        "path": "src/scpn_quantum_control/whole_program_frontend_contracts.py"
       },
       {
         "name": "WholeProgramTraceEvent",
@@ -4572,7 +4572,7 @@
       },
       {
         "name": "WholeProgramUnsupportedSemanticDiagnostic",
-        "path": "src/scpn_quantum_control/whole_program_frontend.py"
+        "path": "src/scpn_quantum_control/whole_program_frontend_contracts.py"
       },
       {
         "name": "WilsonLoopResult",
@@ -5168,6 +5168,7 @@
       "src/scpn_quantum_control/whole_program_ad_api.py",
       "src/scpn_quantum_control/whole_program_ad_result.py",
       "src/scpn_quantum_control/whole_program_frontend.py",
+      "src/scpn_quantum_control/whole_program_frontend_contracts.py",
       "src/scpn_quantum_control/whole_program_trace_metadata.py",
       "src/scpn_quantum_control/whole_program_trace_predicates.py",
       "src/scpn_quantum_control/whole_program_trace_runtime.py",
@@ -7240,6 +7241,7 @@
       "tests/test_whole_program_ad_numpy_structural.py",
       "tests/test_whole_program_ad_runtime.py",
       "tests/test_whole_program_frontend.py",
+      "tests/test_whole_program_frontend_contracts.py",
       "tests/test_whole_program_trace_metadata.py",
       "tests/test_whole_program_trace_predicates.py",
       "tests/test_whole_program_trace_runtime.py",
