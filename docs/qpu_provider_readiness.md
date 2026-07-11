@@ -287,6 +287,48 @@ Readiness requirement:
 - hybrid solver selection
 - result conversion into ranked interventions or schedules
 
+## Integration depth versus native SDKs
+
+An external review characterised the HAL as "thin" relative to a native
+provider SDK (Qiskit, PennyLane, or a provider's own client). That is
+accurate on the dimensions where we deliberately defer to the mature SDK
+rather than reimplement it, and it is incomplete as a whole-picture
+verdict, because on provenance, governance, and neutrality the HAL is
+deeper than any single-ecosystem SDK by design. The honest per-dimension
+comparison:
+
+<!-- markdownlint-disable MD013 -->
+
+| Dimension | Native provider SDK | SCPN Quantum Control HAL | Verdict |
+| --- | --- | --- | --- |
+| Circuit submission and counts retrieval | Full, one ecosystem | Normalised onto one `QuantumJobResult` across all sixteen routes | Parity, wider surface |
+| Circuit transpilation and optimisation | Owns the optimiser (e.g. Qiskit transpiler levels, PennyLane passes) | Hands the circuit to the provider-native compiler and records transpiled depth and two-qubit-gate budget; owns no optimiser | Thinner — deferred by choice |
+| Provider-native error mitigation | Built-in primitives (e.g. Qiskit Runtime resilience: ZNE, PEC, measurement twirling, dynamical decoupling) | Independent mitigation in `analysis/` (ZNE, symmetry-sector), not wired as a provider primitive | Thinner on provider-native; carries its own auditable mitigation |
+| Dynamic circuits and mid-circuit measurement | First-class | Capability-flagged and validated, not exercised end to end | Thinner |
+| Pulse-level control | Provider-specific (e.g. IBM OpenPulse) | No-submit OpenPulse readiness surface (feasibility only); no live pulse lane | Thinner — declared, not measured |
+| Session, batching, job orchestration | Sessions and task batching | Single-submit through approval gates; no session wrapper | Thinner |
+| Result provenance and attestation | Raw results; no signed evidence | Attestation-verifiable `studio.qpu-result-pack.v1`, count integrity, honest claim status, `declared`→`measured` discipline | Deeper |
+| Approval, budget, and spend governance | None built in | Cloud profiles require an explicit approval token; budget guards | Deeper |
+| Provider neutrality | Single ecosystem | Sixteen adapters behind one contract and one result shape | Deeper, wider |
+
+<!-- markdownlint-enable MD013 -->
+
+Reading the table honestly: the review's critique holds on the first six
+rows — compilation depth, provider-native mitigation, dynamic circuits,
+pulse, and sessions. On those the HAL intentionally leans on the provider
+SDK, which is the correct engineering choice; reimplementing a mature
+transpiler or a vendor's resilience stack would add surface without adding
+fidelity. The last three rows are where the HAL is intentionally deeper:
+signed, attestation-verifiable result packs
+([result-pack emission](#result-pack-emission)), approval and budget
+governance, and one neutral contract spanning every provider — none of
+which a single-ecosystem SDK provides.
+
+Closing the first six rows is per-provider work and mostly gated on live
+spend and credentials: it advances a provider from `declared` integration
+to `measured` only through real runs with evidence, never by relabelling
+(see the funding-readiness state machine below).
+
 ## Funding-readiness state machine
 
 Every provider starts at `unverified` and advances only by evidence:
