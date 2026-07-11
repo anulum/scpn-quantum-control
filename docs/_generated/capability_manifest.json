@@ -13,7 +13,7 @@
     "python_model_source_modules": 554,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 49,
-    "test_files": 939
+    "test_files": 941
   },
   "documentation": {
     "examples": [
@@ -6335,6 +6335,7 @@
       "tests/_differentiable_external_comparison_edges.py",
       "tests/_differentiable_programming_benchmark_edge_helpers.py",
       "tests/_internal_corpus_markers.py",
+      "tests/_phase_pennylane_bridge_test_helpers.py",
       "tests/conftest.py",
       "tests/test_accelerator_detection_boundaries.py",
       "tests/test_adapt_vqe.py",
@@ -6854,6 +6855,7 @@
       "tests/test_phase_pennylane_bridge.py",
       "tests/test_phase_pennylane_import.py",
       "tests/test_phase_pennylane_provider_plugin.py",
+      "tests/test_phase_pennylane_provider_plugin_integration.py",
       "tests/test_phase_provider_gradient.py",
       "tests/test_phase_provider_gradient_audit.py",
       "tests/test_phase_provider_hardware_gradient_audit.py",

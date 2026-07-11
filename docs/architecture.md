@@ -107,6 +107,13 @@ Keras-layer, Phase-QNode lowering-matrix, and maturity evidence live in
 the exact contracts and helpers, keeps optional loading, and injects that active loader through
 signature-stable wrappers.
 
+The PennyLane surface separates local gradient/QNode conversion and maturity aggregation in
+`phase/pennylane_bridge.py`, tape import in `phase/pennylane_import.py`, and provider-plugin
+artifacts plus matrix validation in `phase/pennylane_provider_plugin.py`. Its paired tests mirror
+those boundaries: local bridge behavior stays in the bridge test, import behavior owns its direct
+surface, and provider evidence/maturity integration has a provider-named test with one shared typed
+fake module.
+
 The differentiable audit decomposition separates immutable evidence contracts from audit
 execution. The shared float-array alias, four closed validation/serialization helpers, and seven
 analytic-agreement, workflow, finite-shot, benchmark, and ML-framework report records live in the
