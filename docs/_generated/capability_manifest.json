@@ -13,7 +13,7 @@
     "python_model_source_modules": 520,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 46,
-    "test_files": 900
+    "test_files": 901
   },
   "documentation": {
     "examples": [
@@ -6779,7 +6779,6 @@
       "tests/test_phase_differentiable_readiness_docstrings.py",
       "tests/test_phase_domain_benchmark_datasets.py",
       "tests/test_phase_dynamics_contracts.py",
-      "tests/test_phase_framework_bridges.py",
       "tests/test_phase_general_unitary_gates.py",
       "tests/test_phase_generalised_parameter_shift.py",
       "tests/test_phase_gradient_backend.py",
@@ -6830,9 +6829,11 @@
       "tests/test_phase_results.py",
       "tests/test_phase_synchronisation_objectives.py",
       "tests/test_phase_synchronisation_witness.py",
+      "tests/test_phase_tensorflow_bridge.py",
       "tests/test_phase_tensorflow_maintenance.py",
       "tests/test_phase_torch_aot_autograd_export.py",
       "tests/test_phase_torch_autograd_function.py",
+      "tests/test_phase_torch_bridge.py",
       "tests/test_phase_torch_bridge_compile_boundaries.py",
       "tests/test_phase_torch_bridge_qnode_edge_routes.py",
       "tests/test_phase_torch_bridge_runtime_boundaries.py",

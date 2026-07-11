@@ -4,13 +4,14 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — Tests for Phase Framework Bridges
-"""Tests for optional PyTorch and TensorFlow phase-gradient bridges."""
+
+# SCPN Quantum Control — PyTorch Phase Bridge Tests
+
+"""Contract tests for PyTorch phase-gradient and QNode bridge integration."""
 
 from __future__ import annotations
 
 import json
-from collections.abc import Callable
 from pathlib import Path
 from typing import Any, cast
 
@@ -18,16 +19,11 @@ import numpy as np
 import pytest
 from numpy.typing import NDArray
 
-import scpn_quantum_control.phase.tensorflow_bridge as tensorflow_bridge
 import scpn_quantum_control.phase.torch_bridge as torch_bridge
 from scpn_quantum_control.phase import (
     PauliTerm,
     PhaseQNodeCircuit,
     PhaseQNodeOperation,
-    PhaseTensorFlowMaturityAuditResult,
-    PhaseTensorFlowParameterShiftResult,
-    PhaseTensorFlowPhaseQNodeLoweringMatrixResult,
-    PhaseTensorFlowQNNGradientResult,
     PhaseTorchAutogradQNNGradientResult,
     PhaseTorchCloudValidationRunSpec,
     PhaseTorchCompileCompatibilityResult,
@@ -42,16 +38,12 @@ from scpn_quantum_control.phase import (
     PhaseTorchPhaseQNodeTransformResult,
     PhaseTorchQNNGradientResult,
     PhaseTorchTrainingLoopAuditResult,
-    is_phase_tensorflow_available,
     is_phase_torch_available,
     multi_frequency_parameter_shift_rule,
     parameter_shift_phase_qnode_gradient,
     parameter_shift_qnn_classifier_gradient,
     parameter_shift_qnn_classifier_loss,
     plan_torch_cloud_validation_batch,
-    run_tensorflow_keras_layer_wrapper_audit,
-    run_tensorflow_maturity_audit,
-    run_tensorflow_phase_qnode_lowering_matrix,
     run_torch_compile_compatibility_audit,
     run_torch_ecosystem_maturity_audit,
     run_torch_func_compatibility_audit,
@@ -59,9 +51,6 @@ from scpn_quantum_control.phase import (
     run_torch_module_wrapper_audit,
     run_torch_phase_qnode_lowering_matrix,
     run_torch_training_loop_audit,
-    tensorflow_bounded_qnn_keras_layer,
-    tensorflow_bounded_qnn_value_and_grad,
-    tensorflow_parameter_shift_value_and_grad,
     torch_autograd_qnn_value_and_grad,
     torch_bounded_qnn_layer,
     torch_bounded_qnn_module,
@@ -76,29 +65,38 @@ FloatArray = NDArray[np.float64]
 
 
 class _FakeTorchTensor:
+    """NumPy-backed tensor implementing the PyTorch operations under test."""
+
     def __init__(self, values: object) -> None:
+        """Initialize deterministic state for the fake framework object."""
         if isinstance(values, _FakeTorchTensor):
             values = values.numpy()
         self._values = np.asarray(values, dtype=float)
         self.grad: _FakeTorchTensor | None = None
 
     def detach(self) -> _FakeTorchTensor:
+        """Return this tensor without changing its NumPy-backed state."""
         return self
 
     def clone(self) -> _FakeTorchTensor:
+        """Return an independent copy of this fake tensor."""
         return _FakeTorchTensor(self._values.copy())
 
     def requires_grad_(self, requires_grad: bool = True) -> _FakeTorchTensor:
+        """Record whether callers requested gradient tracking."""
         del requires_grad
         return self
 
     def cpu(self) -> _FakeTorchTensor:
+        """Return this CPU-only fake tensor unchanged."""
         return self
 
     def numpy(self) -> FloatArray:
+        """Return the tensor payload as a NumPy array."""
         return self._values.copy()
 
     def __mul__(self, other: object) -> _FakeTorchTensor:
+        """Apply elementwise multiplication with NumPy broadcasting."""
         if isinstance(other, _FakeTorchTensor):
             return _FakeTorchTensor(self._values * other._values)
         return _FakeTorchTensor(self._values * np.asarray(other, dtype=float))
@@ -106,6 +104,7 @@ class _FakeTorchTensor:
     __rmul__ = __mul__
 
     def __add__(self, other: object) -> _FakeTorchTensor:
+        """Apply elementwise addition with NumPy broadcasting."""
         if isinstance(other, _FakeTorchTensor):
             return _FakeTorchTensor(self._values + other._values)
         return _FakeTorchTensor(self._values + np.asarray(other, dtype=float))
@@ -113,22 +112,28 @@ class _FakeTorchTensor:
     __radd__ = __add__
 
     def __sub__(self, other: object) -> _FakeTorchTensor:
+        """Apply elementwise subtraction with NumPy broadcasting."""
         if isinstance(other, _FakeTorchTensor):
             return _FakeTorchTensor(self._values - other._values)
         return _FakeTorchTensor(self._values - np.asarray(other, dtype=float))
 
     def __rsub__(self, other: object) -> _FakeTorchTensor:
+        """Apply reflected elementwise subtraction."""
         if isinstance(other, _FakeTorchTensor):
             return _FakeTorchTensor(other._values - self._values)
         return _FakeTorchTensor(np.asarray(other, dtype=float) - self._values)
 
     def unsqueeze(self, axis: int) -> _FakeTorchTensor:
+        """Insert one singleton dimension at the requested axis."""
         return _FakeTorchTensor(np.expand_dims(self._values, axis=axis))
 
 
 class _FakeTorchAutogradFunction:
+    """Minimal custom-autograd function dispatcher for bridge tests."""
+
     @classmethod
     def apply(cls, *args: object) -> _FakeTorchTensor:
+        """Execute the supplied fake custom-autograd function."""
         ctx = type("_FakeAutogradContext", (), {})()
         result = cast(Any, cls).forward(ctx, *args)
         result._ctx = ctx
@@ -137,6 +142,8 @@ class _FakeTorchAutogradFunction:
 
 
 class _FakeTorchAutograd:
+    """Finite-difference autograd facade for deterministic bridge tests."""
+
     Function = _FakeTorchAutogradFunction
 
     def grad(
@@ -147,6 +154,7 @@ class _FakeTorchAutograd:
         retain_graph: bool = False,
         create_graph: bool = False,
     ) -> tuple[_FakeTorchTensor]:
+        """Build or evaluate the deterministic fake gradient operation."""
         del inputs, retain_graph, create_graph
         backward = outputs._function_cls.backward  # type: ignore[attr-defined]
         result = backward(outputs._ctx, _FakeTorchTensor(np.asarray(1.0, dtype=float)))  # type: ignore[attr-defined]
@@ -156,66 +164,85 @@ class _FakeTorchAutograd:
 
 
 class _FakeTorchModule:
+    """Small module base exposing buffers, parameters, and calls."""
+
     def __init__(self) -> None:
+        """Initialize deterministic state for the fake framework object."""
         self._buffers: dict[str, _FakeTorchTensor] = {}
 
     def register_buffer(self, name: str, tensor: _FakeTorchTensor) -> None:
+        """Attach a named non-trainable buffer to the fake module."""
         self._buffers[name] = tensor
         setattr(self, name, tensor)
 
     def parameters(self) -> tuple[_FakeTorchTensor, ...]:
+        """Return the fake module's trainable parameter tuple."""
         params = getattr(self, "params", None)
         if params is None:
             return ()
         return (params,)
 
     def __call__(self, *args: object, **kwargs: object) -> object:
+        """Execute the fake callable with NumPy-backed inputs."""
         return cast(Any, self).forward(*args, **kwargs)
 
 
 class _FakeTorchNN:
+    """Namespace containing the fake PyTorch module and parameter types."""
+
     Module = _FakeTorchModule
 
     @staticmethod
     def Parameter(values: object, *, requires_grad: bool = True) -> _FakeTorchTensor:
+        """Wrap values as a trainable fake PyTorch tensor."""
         return _FakeTorchTensor(values).requires_grad_(requires_grad)
 
 
 class _FakeTorchFunc:
+    """Deterministic torch.func facade recording transform usage."""
+
     def __init__(self) -> None:
+        """Initialize deterministic state for the fake framework object."""
         self.grad_calls = 0
         self.vmap_calls = 0
         self.jacrev_calls = 0
 
     def grad(self, loss_fn: object) -> object:
+        """Build or evaluate the deterministic fake gradient operation."""
         del loss_fn
         self.grad_calls += 1
 
         def gradient(params: object) -> _FakeTorchTensor:
+            """Evaluate the recorded gradient transform for input values."""
             return _FakeTorchTensor(self._gradient(params))
 
         return gradient
 
     def vmap(self, gradient_fn: object) -> object:
+        """Build a deterministic vectorizing transform wrapper."""
         self.vmap_calls += 1
 
         def mapped(params_batch: object) -> _FakeTorchTensor:
+            """Evaluate the wrapped function across the leading batch axis."""
             batch = np.asarray(_FakeTorchTensor(params_batch).numpy(), dtype=float)
             return _FakeTorchTensor(np.vstack([self._gradient(row) for row in batch]))
 
         return mapped
 
     def jacrev(self, loss_fn: object) -> object:
+        """Build a deterministic reverse-Jacobian transform wrapper."""
         del loss_fn
         self.jacrev_calls += 1
 
         def jacobian(params: object) -> _FakeTorchTensor:
+            """Evaluate the finite-difference Jacobian for one input vector."""
             return _FakeTorchTensor(self._gradient(params))
 
         return jacobian
 
     @staticmethod
     def _gradient(params: object) -> FloatArray:
+        """Evaluate a central finite-difference gradient in float64."""
         features = np.array([[0.0], [np.pi]], dtype=float)
         labels = np.array([0.0, 1.0], dtype=float)
         return parameter_shift_qnn_classifier_gradient(
@@ -226,10 +253,13 @@ class _FakeTorchFunc:
 
 
 class _FakeTorch:
+    """Bounded PyTorch facade backed by NumPy test doubles."""
+
     float64 = np.float64
     __version__ = "fake-torch"
 
     def __init__(self) -> None:
+        """Initialize deterministic state for the fake framework object."""
         self.autograd = _FakeTorchAutograd()
         self.func = _FakeTorchFunc()
         self.nn = _FakeTorchNN()
@@ -237,6 +267,7 @@ class _FakeTorch:
         self.compile_calls: list[dict[str, object]] = []
 
     def as_tensor(self, values: object, *, dtype: object | None = None) -> _FakeTorchTensor:
+        """Convert values to a NumPy-backed fake PyTorch tensor."""
         del dtype
         array = np.asarray(values, dtype=float)
         self.as_tensor_calls.append(array.copy())
@@ -249,322 +280,59 @@ class _FakeTorch:
         fullgraph: bool = True,
         dynamic: bool = False,
     ) -> object:
+        """Record compilation and return the callable unchanged."""
         self.compile_calls.append({"fullgraph": fullgraph, "dynamic": dynamic})
         return fn
 
     def cos(self, values: object) -> _FakeTorchTensor:
+        """Apply elementwise cosine while preserving fake tensor wrapping."""
         return _FakeTorchTensor(np.cos(_FakeTorchTensor(values).numpy()))
 
     def mean(self, values: object, *, dim: int | None = None) -> _FakeTorchTensor:
+        """Return the scalar mean as a fake tensor."""
         return _FakeTorchTensor(np.mean(_FakeTorchTensor(values).numpy(), axis=dim))
 
 
 class _FakeTorchWithoutAutogradFunction(_FakeTorch):
+    """PyTorch facade lacking custom autograd support."""
+
     def __init__(self) -> None:
+        """Initialize deterministic state for the fake framework object."""
         super().__init__()
         cast(Any, self).autograd = object()
 
 
 class _FakeTorchWithoutFunc(_FakeTorch):
+    """PyTorch facade lacking the torch.func transform namespace."""
+
     def __init__(self) -> None:
+        """Initialize deterministic state for the fake framework object."""
         super().__init__()
         cast(Any, self).func = object()
 
 
 class _FakeTorchWithoutCompile(_FakeTorch):
+    """PyTorch facade lacking the torch.compile entry point."""
+
     compile: Any = None
 
 
 class _FakeTorchWithoutNN(_FakeTorch):
+    """PyTorch facade lacking the torch.nn module namespace."""
+
     def __init__(self) -> None:
+        """Initialize deterministic state for the fake framework object."""
         super().__init__()
         cast(Any, self).nn = object()
 
 
-class _FakeTensorFlowTensor:
-    def __init__(
-        self,
-        values: object,
-        *,
-        derivative: FloatArray | None = None,
-    ) -> None:
-        if isinstance(values, _FakeTensorFlowTensor):
-            if derivative is None:
-                derivative = values.derivative()
-            values = values.numpy()
-        self._values = np.asarray(values, dtype=float)
-        self._derivative = None if derivative is None else np.asarray(derivative, dtype=float)
-
-    def numpy(self) -> FloatArray:
-        return self._values.copy()
-
-    def derivative(self) -> FloatArray | None:
-        if self._derivative is None:
-            return None
-        return self._derivative.copy()
-
-    @staticmethod
-    def _with_derivative(
-        values: FloatArray, derivative: FloatArray | None
-    ) -> _FakeTensorFlowTensor:
-        return _FakeTensorFlowTensor(values, derivative=derivative)
-
-    @staticmethod
-    def _broadcast_derivative(
-        derivative: FloatArray | None,
-        *,
-        target_shape: tuple[int, ...],
-        width: int,
-    ) -> FloatArray:
-        if derivative is None:
-            return np.zeros((*target_shape, width), dtype=float)
-        return np.broadcast_to(derivative, (*target_shape, width)).copy()
-
-    @staticmethod
-    def _derivative_width(
-        left: FloatArray | None,
-        right: FloatArray | None,
-    ) -> int | None:
-        if left is not None:
-            return int(left.shape[-1])
-        if right is not None:
-            return int(right.shape[-1])
-        return None
-
-    def __add__(self, other: object) -> _FakeTensorFlowTensor:
-        rhs = _FakeTensorFlowTensor(other)
-        values = self._values + rhs.numpy()
-        width = self._derivative_width(self._derivative, rhs._derivative)
-        derivative = None
-        if width is not None:
-            derivative = self._broadcast_derivative(
-                self._derivative,
-                target_shape=values.shape,
-                width=width,
-            ) + self._broadcast_derivative(
-                rhs._derivative,
-                target_shape=values.shape,
-                width=width,
-            )
-        return self._with_derivative(values, derivative)
-
-    __radd__ = __add__
-
-    def __sub__(self, other: object) -> _FakeTensorFlowTensor:
-        rhs = _FakeTensorFlowTensor(other)
-        values = self._values - rhs.numpy()
-        width = self._derivative_width(self._derivative, rhs._derivative)
-        derivative = None
-        if width is not None:
-            derivative = self._broadcast_derivative(
-                self._derivative,
-                target_shape=values.shape,
-                width=width,
-            ) - self._broadcast_derivative(
-                rhs._derivative,
-                target_shape=values.shape,
-                width=width,
-            )
-        return self._with_derivative(values, derivative)
-
-    def __rsub__(self, other: object) -> _FakeTensorFlowTensor:
-        lhs = _FakeTensorFlowTensor(other)
-        return lhs.__sub__(self)
-
-    def __mul__(self, other: object) -> _FakeTensorFlowTensor:
-        rhs = _FakeTensorFlowTensor(other)
-        lhs_values = self._values
-        rhs_values = rhs.numpy()
-        values = lhs_values * rhs_values
-        width = self._derivative_width(self._derivative, rhs._derivative)
-        derivative = None
-        if width is not None:
-            lhs_derivative = self._broadcast_derivative(
-                self._derivative,
-                target_shape=values.shape,
-                width=width,
-            )
-            rhs_derivative = self._broadcast_derivative(
-                rhs._derivative,
-                target_shape=values.shape,
-                width=width,
-            )
-            derivative = (
-                lhs_derivative * np.broadcast_to(rhs_values, values.shape)[..., np.newaxis]
-                + rhs_derivative * np.broadcast_to(lhs_values, values.shape)[..., np.newaxis]
-            )
-        return self._with_derivative(values, derivative)
-
-    __rmul__ = __mul__
-
-
-class _FakeTensorFlowVariable(_FakeTensorFlowTensor):
-    def __init__(self, values: object) -> None:
-        array = np.asarray(values, dtype=float)
-        if array.ndim != 1:
-            raise ValueError("fake TensorFlow Variable only supports vectors")
-        derivative = np.eye(array.size, dtype=float)
-        super().__init__(array, derivative=derivative)
-
-
-class _FakeTensorFlowGradientTape:
-    def __init__(self, module: _FakeTensorFlow) -> None:
-        self.module = module
-        self.watched: list[_FakeTensorFlowTensor] = []
-        self.entered = False
-
-    def __enter__(self) -> _FakeTensorFlowGradientTape:
-        self.entered = True
-        self.module.gradient_tape_entries += 1
-        return self
-
-    def __exit__(self, exc_type: object, exc: object, tb: object) -> None:
-        del exc_type, exc, tb
-
-    def watch(self, tensor: _FakeTensorFlowTensor) -> None:
-        self.watched.append(tensor)
-
-    def gradient(
-        self,
-        loss: _FakeTensorFlowTensor,
-        params: _FakeTensorFlowTensor,
-    ) -> _FakeTensorFlowTensor | None:
-        del params
-        self.module.gradient_calls += 1
-        gradient = loss.derivative()
-        if gradient is None:
-            return None
-        return _FakeTensorFlowTensor(gradient)
-
-
-class _FakeTensorFlowKerasLayer:
-    def __init__(self) -> None:
-        self.trainable_variables: list[_FakeTensorFlowVariable] = []
-        self.non_trainable_variables: list[_FakeTensorFlowVariable] = []
-
-    def add_weight(
-        self,
-        *,
-        name: str,
-        shape: tuple[int, ...],
-        initializer: object,
-        trainable: bool = True,
-        dtype: object | None = None,
-    ) -> _FakeTensorFlowVariable:
-        del name, dtype
-        values = (
-            initializer(shape=shape) if callable(initializer) else np.zeros(shape, dtype=float)
-        )
-        variable = _FakeTensorFlowVariable(values)
-        if trainable:
-            self.trainable_variables.append(variable)
-        else:
-            self.non_trainable_variables.append(variable)
-        return variable
-
-    def __call__(self, *args: object, **kwargs: object) -> object:
-        return cast(Any, self).call(*args, **kwargs)
-
-
-class _FakeTensorFlowConstantInitializer:
-    def __init__(self, values: object) -> None:
-        self._values = _FakeTensorFlowTensor(values).numpy()
-
-    def __call__(self, *, shape: tuple[int, ...]) -> FloatArray:
-        values = np.asarray(self._values, dtype=float)
-        if values.shape != shape:
-            return np.broadcast_to(values, shape).copy()
-        return values.copy()
-
-
-class _FakeTensorFlowKerasInitializers:
-    Constant = _FakeTensorFlowConstantInitializer
-
-
-class _FakeTensorFlowKerasLayers:
-    Layer = _FakeTensorFlowKerasLayer
-
-
-class _FakeTensorFlowKeras:
-    def __init__(self) -> None:
-        self.layers = _FakeTensorFlowKerasLayers()
-        self.initializers = _FakeTensorFlowKerasInitializers()
-
-
-class _FakeTensorFlow:
-    float64 = np.float64
-
-    def __init__(self) -> None:
-        self.convert_calls: list[FloatArray] = []
-        self.gradient_tape_entries = 0
-        self.gradient_calls = 0
-        self.function_traces = 0
-        self.function_calls = 0
-        self.function_jit_flags: list[bool | None] = []
-        self.keras = _FakeTensorFlowKeras()
-
-    def convert_to_tensor(
-        self,
-        values: object,
-        *,
-        dtype: object | None = None,
-    ) -> _FakeTensorFlowTensor:
-        del dtype
-        array = np.asarray(values, dtype=float)
-        self.convert_calls.append(array.copy())
-        return _FakeTensorFlowTensor(array)
-
-    def Variable(self, values: object, *, dtype: object | None = None) -> _FakeTensorFlowVariable:
-        del dtype
-        return _FakeTensorFlowVariable(values)
-
-    def GradientTape(self) -> _FakeTensorFlowGradientTape:
-        return _FakeTensorFlowGradientTape(self)
-
-    def function(self, fn: object, *, jit_compile: bool | None = None) -> object:
-        self.function_traces += 1
-        self.function_jit_flags.append(jit_compile)
-
-        def wrapped(*args: object, **kwargs: object) -> object:
-            self.function_calls += 1
-            return cast(Callable[..., object], fn)(*args, **kwargs)
-
-        return wrapped
-
-    def cos(self, values: object) -> _FakeTensorFlowTensor:
-        tensor = _FakeTensorFlowTensor(values)
-        array = tensor.numpy()
-        derivative = tensor.derivative()
-        if derivative is not None:
-            derivative = -np.sin(array)[..., np.newaxis] * derivative
-        return _FakeTensorFlowTensor(np.cos(array), derivative=derivative)
-
-    def reduce_mean(
-        self,
-        values: object,
-        *,
-        axis: int | None = None,
-    ) -> _FakeTensorFlowTensor:
-        tensor = _FakeTensorFlowTensor(values)
-        derivative = tensor.derivative()
-        if derivative is not None:
-            value_ndim = tensor.numpy().ndim
-            if axis is None:
-                derivative_axis: int | tuple[int, ...] = tuple(range(value_ndim))
-            else:
-                derivative_axis = axis
-            derivative = np.mean(derivative, axis=derivative_axis)
-        return _FakeTensorFlowTensor(
-            np.mean(tensor.numpy(), axis=axis),
-            derivative=derivative,
-        )
-
-
 def _objective(values: FloatArray) -> float:
+    """Evaluate the shared two-parameter cosine objective in radians."""
     return float(np.cos(values[0]) + 0.25 * np.sin(values[1]))
 
 
 def test_torch_bridge_returns_tensor_and_numpy_gradients(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Verify that PyTorch bridge returns tensor and NumPy gradients."""
     fake_torch = _FakeTorch()
     monkeypatch.setattr(torch_bridge, "_load_torch", lambda: fake_torch)
 
@@ -591,11 +359,13 @@ def test_torch_bridge_returns_tensor_and_numpy_gradients(monkeypatch: pytest.Mon
 def test_torch_bridge_reports_multi_frequency_parameter_shift(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """Verify that PyTorch bridge reports multi frequency parameter shift."""
     fake_torch = _FakeTorch()
     monkeypatch.setattr(torch_bridge, "_load_torch", lambda: fake_torch)
     rule = multi_frequency_parameter_shift_rule([1.0, 2.0])
 
     def objective(values: FloatArray) -> float:
+        """Evaluate the local cosine objective used to inspect rule metadata."""
         return float(np.sin(values[0]) + 0.1 * np.cos(2.0 * values[0]))
 
     result = torch_parameter_shift_value_and_grad(
@@ -615,6 +385,7 @@ def test_torch_bridge_reports_multi_frequency_parameter_shift(
 def test_torch_bounded_qnn_gradient_matches_parameter_shift(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """Verify that PyTorch bounded QNN gradient matches parameter shift."""
     fake_torch = _FakeTorch()
     monkeypatch.setattr(torch_bridge, "_load_torch", lambda: fake_torch)
     features = np.array([[0.0], [np.pi]], dtype=float)
@@ -653,6 +424,7 @@ def test_torch_bounded_qnn_gradient_matches_parameter_shift(
 def test_torch_autograd_qnn_gradient_uses_custom_function(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """Verify that PyTorch autograd QNN gradient uses custom function."""
     fake_torch = _FakeTorch()
     monkeypatch.setattr(torch_bridge, "_load_torch", lambda: fake_torch)
     features = np.array([[0.0], [np.pi]], dtype=float)
@@ -685,6 +457,7 @@ def test_torch_autograd_qnn_gradient_uses_custom_function(
 def test_torch_autograd_qnn_gradient_fails_closed_without_function(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """Verify that PyTorch autograd QNN gradient fails closed without function."""
     fake_torch = _FakeTorchWithoutAutogradFunction()
     monkeypatch.setattr(torch_bridge, "_load_torch", lambda: fake_torch)
 
@@ -699,6 +472,7 @@ def test_torch_autograd_qnn_gradient_fails_closed_without_function(
 def test_torch_func_compatibility_audit_checks_grad_vmap_and_jacrev(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """Verify that PyTorch func compatibility audit checks grad vmap and jacrev."""
     fake_torch = _FakeTorch()
     monkeypatch.setattr(torch_bridge, "_load_torch", lambda: fake_torch)
     features = np.array([[0.0], [np.pi]], dtype=float)
@@ -742,6 +516,7 @@ def test_torch_func_compatibility_audit_checks_grad_vmap_and_jacrev(
 def test_torch_func_compatibility_audit_fails_closed_without_torch_func(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """Verify that PyTorch func compatibility audit fails closed without PyTorch func."""
     fake_torch = _FakeTorchWithoutFunc()
     monkeypatch.setattr(torch_bridge, "_load_torch", lambda: fake_torch)
 
@@ -757,6 +532,7 @@ def test_torch_func_compatibility_audit_fails_closed_without_torch_func(
 def test_torch_compile_compatibility_audit_checks_compiled_grad(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """Verify that PyTorch compile compatibility audit checks compiled grad."""
     fake_torch = _FakeTorch()
     monkeypatch.setattr(torch_bridge, "_load_torch", lambda: fake_torch)
     features = np.array([[0.0], [np.pi]], dtype=float)
@@ -793,6 +569,7 @@ def test_torch_compile_compatibility_audit_checks_compiled_grad(
 def test_torch_compile_compatibility_audit_fails_closed_without_compile(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """Verify that PyTorch compile compatibility audit fails closed without compile."""
     fake_torch = _FakeTorchWithoutCompile()
     monkeypatch.setattr(torch_bridge, "_load_torch", lambda: fake_torch)
 
@@ -807,6 +584,7 @@ def test_torch_compile_compatibility_audit_fails_closed_without_compile(
 def test_torch_bounded_qnn_module_and_layer_wrap_bounded_loss(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """Verify that PyTorch bounded QNN module and layer wrap bounded loss."""
     fake_torch = _FakeTorch()
     monkeypatch.setattr(torch_bridge, "_load_torch", lambda: fake_torch)
     features = np.array([[0.0], [np.pi]], dtype=float)
@@ -838,6 +616,7 @@ def test_torch_bounded_qnn_module_and_layer_wrap_bounded_loss(
 def test_torch_module_wrapper_audit_checks_module_grad(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """Verify that PyTorch module wrapper audit checks module grad."""
     fake_torch = _FakeTorch()
     monkeypatch.setattr(torch_bridge, "_load_torch", lambda: fake_torch)
     features = np.array([[0.0], [np.pi]], dtype=float)
@@ -869,6 +648,7 @@ def test_torch_module_wrapper_audit_checks_module_grad(
 def test_torch_training_loop_audit_updates_module_with_compile_and_func(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """Verify that PyTorch training loop audit updates module with compile and func."""
     fake_torch = _FakeTorch()
     monkeypatch.setattr(torch_bridge, "_load_torch", lambda: fake_torch)
     features = np.array([[0.0], [np.pi]], dtype=float)
@@ -933,6 +713,7 @@ def test_torch_training_loop_audit_fails_closed_on_invalid_controls(
     tolerance: float,
     match: str,
 ) -> None:
+    """Verify that PyTorch training loop audit fails closed on invalid controls."""
     fake_torch = _FakeTorch()
     monkeypatch.setattr(torch_bridge, "_load_torch", lambda: fake_torch)
 
@@ -950,6 +731,7 @@ def test_torch_training_loop_audit_fails_closed_on_invalid_controls(
 def test_torch_training_loop_audit_fails_closed_on_shape_mismatch(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """Verify that PyTorch training loop audit fails closed on shape mismatch."""
     fake_torch = _FakeTorch()
     monkeypatch.setattr(torch_bridge, "_load_torch", lambda: fake_torch)
 
@@ -965,6 +747,7 @@ def test_torch_maturity_audit_records_bounded_passes_and_provider_gaps(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
 ) -> None:
+    """Verify that PyTorch maturity audit records bounded passes and provider gaps."""
     fake_torch = _FakeTorch()
     monkeypatch.setattr(torch_bridge, "_load_torch", lambda: fake_torch)
     features = np.array([[0.0], [np.pi]], dtype=float)
@@ -1076,6 +859,9 @@ def test_torch_maturity_audit_rejects_invalid_lowering_matrix(
 def test_torch_ecosystem_maturity_audit_records_broad_module_func_compile_device_gaps(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """Verify that PyTorch ecosystem maturity audit records broad module func compile
+    device gaps.
+    """
     fake_torch = _FakeTorch()
     fake_torch.__version__ = "2.11.0+cpu"
     monkeypatch.setattr(torch_bridge, "_load_torch", lambda: fake_torch)
@@ -1107,6 +893,7 @@ def test_torch_maturity_audit_rejects_incomplete_live_overlay_artifact(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
 ) -> None:
+    """Verify that PyTorch maturity audit rejects incomplete live overlay artifact."""
     fake_torch = _FakeTorch()
     monkeypatch.setattr(torch_bridge, "_load_torch", lambda: fake_torch)
     bad_artifact = tmp_path / "diff-qnode-external-comparison.json"
@@ -1132,6 +919,9 @@ def test_torch_maturity_audit_rejects_incomplete_live_overlay_artifact(
 
 
 def test_torch_phase_qnode_lowering_matrix_fails_closed_for_arbitrary_qnodes() -> None:
+    """Verify that PyTorch phase QNode lowering matrix fails closed for arbitrary
+    qnodes.
+    """
     result = run_torch_phase_qnode_lowering_matrix()
 
     assert isinstance(result, PhaseTorchPhaseQNodeLoweringMatrixResult)
@@ -1170,6 +960,7 @@ def test_torch_phase_qnode_lowering_matrix_fails_closed_for_arbitrary_qnodes() -
 def test_torch_cloud_validation_batch_schedules_incompatible_local_device(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """Verify that PyTorch cloud validation batch schedules incompatible local device."""
     fake_torch = _FakeTorch()
     fake_torch.__version__ = "2.11.0+cpu"
     monkeypatch.setattr(torch_bridge, "_load_torch", lambda: fake_torch)
@@ -1195,6 +986,7 @@ def test_torch_cloud_validation_batch_schedules_incompatible_local_device(
 
 
 def test_torch_phase_qnode_compile_audit_lowers_registered_statevector() -> None:
+    """Verify that PyTorch phase QNode compile audit lowers registered statevector."""
     pytest.importorskip("torch", reason="native Torch Phase-QNode compile requires PyTorch")
 
     circuit = PhaseQNodeCircuit(
@@ -1233,6 +1025,7 @@ def test_torch_phase_qnode_compile_audit_lowers_registered_statevector() -> None
 
 
 def test_torch_phase_qnode_value_and_grad_lowers_registered_statevector() -> None:
+    """Verify that PyTorch phase QNode value and grad lowers registered statevector."""
     pytest.importorskip("torch", reason="native Torch phase-QNode lowering requires PyTorch")
 
     circuit = PhaseQNodeCircuit(
@@ -1265,6 +1058,7 @@ def test_torch_phase_qnode_value_and_grad_lowers_registered_statevector() -> Non
 
 
 def test_torch_phase_qnode_transform_audit_checks_grad_jacrev_and_vmap() -> None:
+    """Verify that PyTorch phase QNode transform audit checks grad jacrev and vmap."""
     pytest.importorskip("torch", reason="native Torch Phase-QNode transforms require PyTorch")
 
     circuit = PhaseQNodeCircuit(
@@ -1310,6 +1104,9 @@ def test_torch_phase_qnode_transform_audit_checks_grad_jacrev_and_vmap() -> None
 def test_torch_phase_qnode_transform_audit_fails_closed_without_torch_func(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """Verify that PyTorch phase QNode transform audit fails closed without PyTorch
+    func.
+    """
     fake_torch = _FakeTorchWithoutFunc()
     monkeypatch.setattr(torch_bridge, "_load_torch", lambda: fake_torch)
     circuit = PhaseQNodeCircuit(
@@ -1329,6 +1126,7 @@ def test_torch_phase_qnode_transform_audit_fails_closed_without_torch_func(
 def test_torch_maturity_audit_fails_closed_on_bad_batch_shape(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """Verify that PyTorch maturity audit fails closed on bad batch shape."""
     fake_torch = _FakeTorch()
     monkeypatch.setattr(torch_bridge, "_load_torch", lambda: fake_torch)
 
@@ -1344,6 +1142,7 @@ def test_torch_maturity_audit_fails_closed_on_bad_batch_shape(
 def test_torch_module_wrapper_fails_closed_without_nn(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """Verify that PyTorch module wrapper fails closed without nn."""
     fake_torch = _FakeTorchWithoutNN()
     monkeypatch.setattr(torch_bridge, "_load_torch", lambda: fake_torch)
 
@@ -1358,6 +1157,7 @@ def test_torch_module_wrapper_fails_closed_without_nn(
 def test_torch_bounded_qnn_gradient_fails_closed_on_shape_mismatch(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    """Verify that PyTorch bounded QNN gradient fails closed on shape mismatch."""
     fake_torch = _FakeTorch()
     monkeypatch.setattr(torch_bridge, "_load_torch", lambda: fake_torch)
 
@@ -1369,458 +1169,17 @@ def test_torch_bounded_qnn_gradient_fails_closed_on_shape_mismatch(
         )
 
 
-def test_tensorflow_bridge_returns_tensor_and_numpy_gradients(
+def test_torch_bridge_fails_closed_when_optional_dependency_missing(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    fake_tf = _FakeTensorFlow()
-    monkeypatch.setattr(tensorflow_bridge, "_load_tensorflow", lambda: fake_tf)
+    """Fail closed when the optional PyTorch dependency cannot be imported."""
 
-    result = tensorflow_parameter_shift_value_and_grad(
-        _objective,
-        _FakeTensorFlowTensor(np.array([0.2, -0.4], dtype=float)),
-    )
-
-    assert isinstance(result, PhaseTensorFlowParameterShiftResult)
-    assert is_phase_tensorflow_available()
-    assert result.method == "parameter_shift"
-    assert result.host_boundary
-    assert result.evaluations == 5
-    assert isinstance(result.tensorflow_value, _FakeTensorFlowTensor)
-    assert isinstance(result.tensorflow_gradient, _FakeTensorFlowTensor)
-    np.testing.assert_allclose(
-        result.gradient,
-        np.array([-np.sin(0.2), 0.25 * np.cos(-0.4)], dtype=float),
-        atol=1e-12,
-    )
-    np.testing.assert_allclose(
-        result.tensorflow_gradient.numpy(),
-        result.gradient,
-        atol=1e-12,
-    )
-
-
-def test_tensorflow_bridge_reports_multi_frequency_parameter_shift(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    fake_tf = _FakeTensorFlow()
-    monkeypatch.setattr(tensorflow_bridge, "_load_tensorflow", lambda: fake_tf)
-    rule = multi_frequency_parameter_shift_rule([1.0, 2.0])
-
-    def objective(values: FloatArray) -> float:
-        return float(np.sin(values[0]) + 0.1 * np.cos(2.0 * values[0]))
-
-    result = tensorflow_parameter_shift_value_and_grad(
-        objective,
-        _FakeTensorFlowTensor(np.array([0.4], dtype=float)),
-        rule=rule,
-    )
-
-    expected = np.array([np.cos(0.4) - 0.2 * np.sin(0.8)], dtype=float)
-    assert result.method == "multi_frequency_parameter_shift"
-    assert result.shift_terms == len(rule.terms)
-    assert result.evaluations == 1 + 2 * len(rule.terms)
-    np.testing.assert_allclose(result.gradient, expected, atol=1e-12)
-    assert result.to_dict()["shift_terms"] == len(rule.terms)
-
-
-def test_tensorflow_bounded_qnn_gradient_matches_parameter_shift(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    fake_tf = _FakeTensorFlow()
-    monkeypatch.setattr(tensorflow_bridge, "_load_tensorflow", lambda: fake_tf)
-    features = np.array([[0.0], [np.pi]], dtype=float)
-    labels = np.array([0.0, 1.0], dtype=float)
-    params = _FakeTensorFlowTensor(np.array([0.45], dtype=float))
-
-    result = tensorflow_bounded_qnn_value_and_grad(
-        features,
-        labels,
-        params,
-        tolerance=1e-12,
-    )
-
-    expected_loss = parameter_shift_qnn_classifier_loss(
-        features,
-        labels,
-        params.numpy(),
-    )
-    expected_gradient = parameter_shift_qnn_classifier_gradient(
-        features,
-        labels,
-        params.numpy(),
-    )
-    assert isinstance(result, PhaseTensorFlowQNNGradientResult)
-    assert result.passed
-    assert result.analytic_framework_gradient
-    assert not result.native_framework_autodiff
-    assert not result.host_boundary
-    np.testing.assert_allclose(result.loss, expected_loss, atol=1e-12)
-    np.testing.assert_allclose(result.gradient, expected_gradient, atol=1e-12)
-    np.testing.assert_allclose(result.parameter_shift_gradient, expected_gradient, atol=1e-12)
-    np.testing.assert_allclose(result.tensorflow_gradient.numpy(), expected_gradient, atol=1e-12)
-    assert result.to_dict()["passed"] is True
-
-
-def test_tensorflow_bounded_qnn_gradient_fails_closed_on_shape_mismatch(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    fake_tf = _FakeTensorFlow()
-    monkeypatch.setattr(tensorflow_bridge, "_load_tensorflow", lambda: fake_tf)
-
-    with pytest.raises(ValueError, match="params width must match feature width"):
-        tensorflow_bounded_qnn_value_and_grad(
-            np.array([[0.0, 1.0]], dtype=float),
-            np.array([0.0], dtype=float),
-            np.array([0.45], dtype=float),
-        )
-
-
-def test_tensorflow_gradient_tape_compatibility_audit_checks_native_gradient_tape(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    fake_tf = _FakeTensorFlow()
-    monkeypatch.setattr(tensorflow_bridge, "_load_tensorflow", lambda: fake_tf)
-    features = np.array([[0.0], [np.pi]], dtype=float)
-    labels = np.array([0.0, 1.0], dtype=float)
-    params = _FakeTensorFlowTensor(np.array([0.45], dtype=float))
-
-    result = tensorflow_bridge.run_tensorflow_gradient_tape_compatibility_audit(
-        features=features,
-        labels=labels,
-        params=params,
-        tolerance=1e-12,
-    )
-
-    expected_gradient = parameter_shift_qnn_classifier_gradient(
-        features,
-        labels,
-        params.numpy(),
-    )
-    assert isinstance(
-        result,
-        tensorflow_bridge.PhaseTensorFlowGradientTapeCompatibilityResult,
-    )
-    assert result.passed
-    assert result.gradient_tape_supported
-    assert result.native_framework_autodiff
-    assert not result.host_boundary
-    assert result.claim_boundary == "bounded_tensorflow_gradient_tape_compatibility"
-    np.testing.assert_allclose(result.gradient, expected_gradient, atol=1e-12)
-    np.testing.assert_allclose(result.tensorflow_gradient.numpy(), expected_gradient, atol=1e-12)
-    assert fake_tf.gradient_tape_entries == 1
-    assert fake_tf.gradient_calls == 1
-    assert result.to_dict()["gradient_tape_supported"] is True
-
-
-def test_tensorflow_gradient_tape_compatibility_fails_closed_without_gradient_tape(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    fake_tf = _FakeTensorFlow()
-    fake_tf.GradientTape = None  # type: ignore[assignment]
-    monkeypatch.setattr(tensorflow_bridge, "_load_tensorflow", lambda: fake_tf)
-
-    with pytest.raises(RuntimeError, match="GradientTape"):
-        tensorflow_bridge.run_tensorflow_gradient_tape_compatibility_audit(
-            features=np.array([[0.0]], dtype=float),
-            labels=np.array([0.0], dtype=float),
-            params=np.array([0.45], dtype=float),
-        )
-
-
-def test_tensorflow_function_compatibility_audit_checks_traced_gradient(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    fake_tf = _FakeTensorFlow()
-    monkeypatch.setattr(tensorflow_bridge, "_load_tensorflow", lambda: fake_tf)
-    features = np.array([[0.0], [np.pi]], dtype=float)
-    labels = np.array([0.0, 1.0], dtype=float)
-    params = _FakeTensorFlowTensor(np.array([0.45], dtype=float))
-
-    result = tensorflow_bridge.run_tensorflow_function_compatibility_audit(
-        features=features,
-        labels=labels,
-        params=params,
-        tolerance=1e-12,
-    )
-
-    expected_gradient = parameter_shift_qnn_classifier_gradient(
-        features,
-        labels,
-        params.numpy(),
-    )
-    assert isinstance(
-        result,
-        tensorflow_bridge.PhaseTensorFlowFunctionCompatibilityResult,
-    )
-    assert result.passed
-    assert result.function_supported
-    assert result.gradient_tape_supported
-    assert result.native_framework_autodiff
-    assert not result.host_boundary
-    assert result.claim_boundary == "bounded_tensorflow_function_compatibility"
-    np.testing.assert_allclose(result.gradient, expected_gradient, atol=1e-12)
-    np.testing.assert_allclose(result.tensorflow_gradient.numpy(), expected_gradient, atol=1e-12)
-    assert fake_tf.function_traces == 1
-    assert fake_tf.function_calls == 1
-    assert fake_tf.gradient_tape_entries == 1
-    assert fake_tf.gradient_calls == 1
-    assert result.to_dict()["function_supported"] is True
-
-
-def test_tensorflow_function_compatibility_fails_closed_without_tf_function(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    fake_tf = _FakeTensorFlow()
-    fake_tf.function = None  # type: ignore[assignment]
-    monkeypatch.setattr(tensorflow_bridge, "_load_tensorflow", lambda: fake_tf)
-
-    with pytest.raises(RuntimeError, match="tf.function"):
-        tensorflow_bridge.run_tensorflow_function_compatibility_audit(
-            features=np.array([[0.0]], dtype=float),
-            labels=np.array([0.0], dtype=float),
-            params=np.array([0.45], dtype=float),
-        )
-
-
-def test_tensorflow_xla_compatibility_audit_requests_jit_compile(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    fake_tf = _FakeTensorFlow()
-    monkeypatch.setattr(tensorflow_bridge, "_load_tensorflow", lambda: fake_tf)
-    features = np.array([[0.0], [np.pi]], dtype=float)
-    labels = np.array([0.0, 1.0], dtype=float)
-    params = _FakeTensorFlowTensor(np.array([0.45], dtype=float))
-
-    result = tensorflow_bridge.run_tensorflow_xla_compatibility_audit(
-        features=features,
-        labels=labels,
-        params=params,
-        tolerance=1e-12,
-    )
-
-    expected_gradient = parameter_shift_qnn_classifier_gradient(
-        features,
-        labels,
-        params.numpy(),
-    )
-    assert isinstance(
-        result,
-        tensorflow_bridge.PhaseTensorFlowXLACompatibilityResult,
-    )
-    assert result.passed
-    assert result.xla_compile_requested
-    assert result.function_supported
-    assert result.gradient_tape_supported
-    assert result.native_framework_autodiff
-    assert not result.host_boundary
-    assert result.claim_boundary == "bounded_tensorflow_xla_compatibility"
-    np.testing.assert_allclose(result.gradient, expected_gradient, atol=1e-12)
-    np.testing.assert_allclose(result.tensorflow_gradient.numpy(), expected_gradient, atol=1e-12)
-    assert fake_tf.function_jit_flags == [True]
-    assert fake_tf.function_calls == 1
-    assert fake_tf.gradient_calls == 1
-    assert result.to_dict()["xla_compile_requested"] is True
-
-
-def test_tensorflow_xla_compatibility_fails_closed_without_jit_compile(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    fake_tf = _FakeTensorFlow()
-
-    def function_without_jit(fn: object) -> object:
-        return fn
-
-    fake_tf.function = function_without_jit  # type: ignore[assignment]
-    monkeypatch.setattr(tensorflow_bridge, "_load_tensorflow", lambda: fake_tf)
-
-    with pytest.raises(RuntimeError, match="jit_compile"):
-        tensorflow_bridge.run_tensorflow_xla_compatibility_audit(
-            features=np.array([[0.0]], dtype=float),
-            labels=np.array([0.0], dtype=float),
-            params=np.array([0.45], dtype=float),
-        )
-
-
-def test_tensorflow_keras_layer_wraps_bounded_loss_and_reference_gradient(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    fake_tf = _FakeTensorFlow()
-    monkeypatch.setattr(tensorflow_bridge, "_load_tensorflow", lambda: fake_tf)
-    features = np.array([[0.0], [np.pi]], dtype=float)
-    labels = np.array([0.0, 1.0], dtype=float)
-    initial_params = np.array([0.45], dtype=float)
-
-    layer = tensorflow_bounded_qnn_keras_layer(
-        features=features,
-        labels=labels,
-        initial_params=initial_params,
-    )
-    frozen_layer = tensorflow_bounded_qnn_keras_layer(
-        features=features,
-        labels=labels,
-        initial_params=initial_params,
-        trainable=False,
-    )
-
-    expected_loss = parameter_shift_qnn_classifier_loss(features, labels, initial_params)
-    expected_gradient = parameter_shift_qnn_classifier_gradient(features, labels, initial_params)
-    assert layer.claim_boundary == "bounded_tensorflow_keras_layer_wrapper"
-    assert layer.feature_width == 1
-    assert layer.host_boundary is False
-    assert layer.native_framework_autodiff is True
-    assert len(layer.trainable_variables) == 1
-    assert len(frozen_layer.trainable_variables) == 0
-    np.testing.assert_allclose(layer().numpy(), expected_loss, atol=1e-12)
-    np.testing.assert_allclose(layer.parameter_shift_gradient(), expected_gradient, atol=1e-12)
-    np.testing.assert_allclose(frozen_layer().numpy(), expected_loss, atol=1e-12)
-
-
-def test_tensorflow_keras_layer_wrapper_audit_checks_gradient_tape(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    fake_tf = _FakeTensorFlow()
-    monkeypatch.setattr(tensorflow_bridge, "_load_tensorflow", lambda: fake_tf)
-    features = np.array([[0.0], [np.pi]], dtype=float)
-    labels = np.array([0.0, 1.0], dtype=float)
-    initial_params = np.array([0.45], dtype=float)
-
-    result = run_tensorflow_keras_layer_wrapper_audit(
-        features=features,
-        labels=labels,
-        initial_params=initial_params,
-        tolerance=1e-12,
-    )
-
-    expected_gradient = parameter_shift_qnn_classifier_gradient(features, labels, initial_params)
-    assert isinstance(
-        result,
-        tensorflow_bridge.PhaseTensorFlowKerasLayerWrapperAuditResult,
-    )
-    assert result.passed
-    assert result.keras_layer_supported
-    assert result.gradient_tape_supported
-    assert result.trainable_parameters == 1
-    assert result.native_framework_autodiff
-    assert not result.host_boundary
-    assert result.claim_boundary == "bounded_tensorflow_keras_layer_wrapper"
-    np.testing.assert_allclose(result.gradient, expected_gradient, atol=1e-12)
-    np.testing.assert_allclose(result.tensorflow_gradient.numpy(), expected_gradient, atol=1e-12)
-    assert fake_tf.gradient_tape_entries == 1
-    assert fake_tf.gradient_calls == 1
-    assert result.to_dict()["keras_layer_supported"] is True
-
-
-def test_tensorflow_maturity_audit_records_bounded_passes_and_provider_gaps(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    fake_tf = _FakeTensorFlow()
-    monkeypatch.setattr(tensorflow_bridge, "_load_tensorflow", lambda: fake_tf)
-    features = np.array([[0.0], [np.pi]], dtype=float)
-    labels = np.array([0.0, 1.0], dtype=float)
-    params = np.array([0.45], dtype=float)
-
-    result = run_tensorflow_maturity_audit(
-        features=features,
-        labels=labels,
-        params=params,
-        tolerance=1e-12,
-    )
-
-    assert isinstance(result, PhaseTensorFlowMaturityAuditResult)
-    assert result.bounded_model_ready
-    assert not result.ready_for_provider_exceedance
-    analytic_tensor = cast(
-        PhaseTensorFlowQNNGradientResult,
-        result.evidence["analytic_tensor"],
-    )
-    gradient_tape = cast(
-        tensorflow_bridge.PhaseTensorFlowGradientTapeCompatibilityResult,
-        result.evidence["gradient_tape"],
-    )
-    tf_function = cast(
-        tensorflow_bridge.PhaseTensorFlowFunctionCompatibilityResult,
-        result.evidence["tf_function"],
-    )
-    xla = cast(
-        tensorflow_bridge.PhaseTensorFlowXLACompatibilityResult,
-        result.evidence["xla"],
-    )
-    keras_layer = cast(
-        tensorflow_bridge.PhaseTensorFlowKerasLayerWrapperAuditResult,
-        result.evidence["keras_layer"],
-    )
-    assert analytic_tensor.passed
-    assert gradient_tape.passed
-    assert tf_function.passed
-    assert xla.passed
-    assert keras_layer.passed
-    assert "arbitrary_phase_qnode_tensorflow_lowering" in result.open_gaps
-    assert "hardware_gradient_execution" in result.open_gaps
-    payload = cast(dict[str, Any], result.to_dict())
-    required_capabilities = cast(dict[str, str], payload["required_capabilities"])
-    assert required_capabilities["xla"] == "passed"
-    assert required_capabilities["provider_callbacks"] == "blocked"
-    assert payload["claim_boundary"] == "bounded_tensorflow_provider_maturity_audit"
-
-
-def test_tensorflow_phase_qnode_lowering_matrix_fails_closed_for_arbitrary_qnodes() -> None:
-    result = run_tensorflow_phase_qnode_lowering_matrix()
-
-    assert isinstance(result, PhaseTensorFlowPhaseQNodeLoweringMatrixResult)
-    assert result.bounded_qnn_routes_ready
-    assert not result.arbitrary_phase_qnode_lowering_ready
-    assert not result.ready_for_provider_exceedance
-    assert result.route_status("bounded_qnn_gradient_tape") == "passed"
-    assert result.route_status("bounded_qnn_tf_function") == "passed"
-    assert result.route_status("bounded_qnn_xla") == "passed"
-    assert result.route_status("registered_phase_qnode_statevector_lowering") == "blocked"
-    assert result.route_status("registered_phase_qnode_graph_lowering") == "blocked"
-    assert result.route_status("registered_phase_qnode_provider_lowering") == "blocked"
-    assert result.route_status("registered_phase_qnode_hardware_lowering") == "blocked"
-    assert "registered_phase_qnode_statevector_lowering" in result.open_gaps
-    assert "isolated_benchmark_artifact" in result.open_gaps
-    assert result.claim_boundary == "bounded_tensorflow_phase_qnode_lowering_matrix"
-
-    payload = cast(dict[str, Any], result.to_dict())
-    routes = cast(dict[str, dict[str, Any]], payload["routes"])
-    assert routes["bounded_qnn_keras_layer_wrapper"]["status"] == "passed"
-    assert routes["registered_phase_qnode_hardware_lowering"]["requires"] == [
-        "live_ticket",
-        "provider_allowlist",
-        "shot_budget",
-        "hardware_evidence_id",
-    ]
-
-
-def test_tensorflow_keras_layer_fails_closed_without_keras_layer(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    fake_tf = _FakeTensorFlow()
-    fake_tf.keras = object()  # type: ignore[assignment]
-    monkeypatch.setattr(tensorflow_bridge, "_load_tensorflow", lambda: fake_tf)
-
-    with pytest.raises(RuntimeError, match="tf.keras.layers.Layer"):
-        tensorflow_bounded_qnn_keras_layer(
-            features=np.array([[0.0]], dtype=float),
-            labels=np.array([0.0], dtype=float),
-            initial_params=np.array([0.45], dtype=float),
-        )
-
-
-def test_framework_bridges_fail_closed_when_optional_dependency_missing(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
     def missing_torch() -> object:
+        """Raise the deterministic optional-dependency failure for PyTorch."""
         raise ImportError("torch blocked")
 
-    def missing_tensorflow() -> object:
-        raise ImportError("tensorflow blocked")
-
     monkeypatch.setattr(torch_bridge, "_load_torch", missing_torch)
-    monkeypatch.setattr(tensorflow_bridge, "_load_tensorflow", missing_tensorflow)
-
     assert not is_phase_torch_available()
-    assert not is_phase_tensorflow_available()
     with pytest.raises(ImportError, match="torch blocked"):
         torch_parameter_shift_value_and_grad(_objective, np.array([0.2, -0.4], dtype=float))
     with pytest.raises(ImportError, match="torch blocked"):
@@ -1862,29 +1221,6 @@ def test_framework_bridges_fail_closed_when_optional_dependency_missing(
         )
     with pytest.raises(ImportError, match="torch blocked"):
         run_torch_module_wrapper_audit(
-            features=np.array([[0.0]], dtype=float),
-            labels=np.array([0.0], dtype=float),
-            initial_params=np.array([0.2], dtype=float),
-        )
-    with pytest.raises(ImportError, match="tensorflow blocked"):
-        tensorflow_parameter_shift_value_and_grad(
-            _objective,
-            np.array([0.2, -0.4], dtype=float),
-        )
-    with pytest.raises(ImportError, match="tensorflow blocked"):
-        tensorflow_bounded_qnn_value_and_grad(
-            np.array([[0.0]], dtype=float),
-            np.array([0.0], dtype=float),
-            np.array([0.2], dtype=float),
-        )
-    with pytest.raises(ImportError, match="tensorflow blocked"):
-        tensorflow_bounded_qnn_keras_layer(
-            features=np.array([[0.0]], dtype=float),
-            labels=np.array([0.0], dtype=float),
-            initial_params=np.array([0.2], dtype=float),
-        )
-    with pytest.raises(ImportError, match="tensorflow blocked"):
-        run_tensorflow_keras_layer_wrapper_audit(
             features=np.array([[0.0]], dtype=float),
             labels=np.array([0.0], dtype=float),
             initial_params=np.array([0.2], dtype=float),
