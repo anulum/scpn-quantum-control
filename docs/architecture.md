@@ -71,9 +71,11 @@ re-exports rather than mixed execution concerns.
 The Phase-QNode circuit decomposition starts from a dependency-free declaration layer. All 21
 circuit, observable, support, execution, gradient, metric, and Fisher record classes plus their
 registry constants and constructor validators live in `phase/qnode_circuit_contracts.py`.
-`phase/qnode_circuit.py` re-exports the exact objects and retains executable builders, support
-analysis, execution, gradients, measurements, and numerical kernels while those concerns are
-split one at a time.
+Registered vocabulary accessors, sparse Ising construction, controlled-gate decomposition, and
+multi-qubit template construction live in the one-way `phase/qnode_circuit_builders.py` leaf.
+`phase/qnode_circuit.py` re-exports the exact objects and functions and retains arbitrary-depth
+registration, support analysis, execution, gradients, measurements, and numerical kernels while
+those concerns are split one at a time.
 
 | Module | Single responsibility | Why it stays whole |
 |--------|-----------------------|--------------------|
