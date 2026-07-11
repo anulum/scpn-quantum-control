@@ -24,7 +24,7 @@ import pytest
 
 pytest.importorskip("scpn_studio_platform.seal", reason="studio extra not installed")
 
-from scpn_quantum_control.hardware.hal import (
+from scpn_quantum_control.hardware.hal import (  # noqa: E402
     BackendProfile,
     HardwareAbstractionLayer,
     LocalDeterministicSimulator,
@@ -32,16 +32,16 @@ from scpn_quantum_control.hardware.hal import (
     QuantumJobResult,
     QuantumWorkload,
 )
-from scpn_quantum_control.hardware.qpu_result_pack_bridge import (
+from scpn_quantum_control.hardware.qpu_result_pack_bridge import (  # noqa: E402
     job_result_provenance,
     qpu_result_pack_from_job,
     raw_results_digest,
 )
-from scpn_quantum_control.studio.qpu_result_pack import (
+from scpn_quantum_control.studio.qpu_result_pack import (  # noqa: E402
     QPU_VERIFIABILITY_MODE,
     present_qpu_result_pack,
 )
-from scpn_quantum_control.studio.verbs import QPU_RESULT_PACK_SCHEMA
+from scpn_quantum_control.studio.verbs import QPU_RESULT_PACK_SCHEMA  # noqa: E402
 
 _COUNTS: dict[str, int] = {"0000": 520, "1111": 504}
 _NON_CLAIMS: tuple[str, ...] = ("broad quantum advantage", "multi-device replication")

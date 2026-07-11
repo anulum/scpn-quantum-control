@@ -192,7 +192,6 @@ ignore = [
 "tests/kuramoto_delay_sensitivity_witness.py" = ["E402", "I001"]  # importorskip(jax) before local import
 "tests/test_diff_kuramoto_delay_sensitivity_witness.py" = ["E402", "I001"]  # importorskip(jax) before local import
 "tests/test_kuramoto_visualisation.py" = ["E402", "I001"]  # importorskip(matplotlib) before local import
-"tests/test_qpu_result_pack_bridge.py" = ["E402", "I001"]  # importorskip(scpn_studio_platform) before local import
 # Docstring (D) scope: the 2026-06-17 broadcast mandates NumPy docstrings on the
 # PUBLIC API. tests/ are not public API (design exemption); scripts/ and
 # examples/ adopt in a staged follow-up. The per-file entries below are the
