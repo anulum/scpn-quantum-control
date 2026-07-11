@@ -103,12 +103,18 @@ live in the one-way `phase/qnode_circuit_differentiation.py` leaf. `phase/qnode_
 a shallow compatibility facade that re-exports the exact contract, builder, support, execution,
 and differentiation objects without defining executable functions.
 
+Provider capability discovery now separates provider-neutral governance from vendor metadata
+normalization. `hardware/provider_capability_core.py` owns no-submit snapshots and decisions,
+route-bound assessment/probing, and OpenPulse readiness. The discovery facade re-exports those
+exact objects and retains the Azure, IonQ, D-Wave, IQM, QuEra, OQC, Pasqal, Quandela, Quantinuum,
+Rigetti, Braket, Qiskit Runtime, qBraid, and Strangeworks metadata adapters for later provider-group
+decomposition.
+
 | Module | Single responsibility | Why it stays whole |
 |--------|-----------------------|--------------------|
 | `whole_program_trace_values.py` | Operator-intercepted forward-AD trace value runtime (`TraceADScalar`/`TraceADArray` and helpers) | Mutually recursive; splitting creates import cycles |
 | `benchmarks/differentiable_programming.py` | Differentiable-programming benchmark suite | Cases share one case/result-record framework |
 | `program_ad_linalg_primitives.py` | Program-AD linear-algebra primitive rules and conditioning diagnostics | One dominant cluster; satellites are registry-dispatched rules |
-| `hardware/provider_capability_discovery.py` | Per-provider capability snapshot extraction | One discovery framework shared across providers |
 | `whole_program_frontend.py` | Whole-program compiler frontend report and assembly | One connected cluster |
 | `program_ad_assembly_primitives.py` | Program-AD assembly primitive rules (stack/concat/triu/tril) | One dominant cluster |
 

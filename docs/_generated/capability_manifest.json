@@ -10,10 +10,10 @@
     "public_api_exports": 835,
     "public_documentation_pages": 269,
     "python_model_classes": 1003,
-    "python_model_source_modules": 541,
+    "python_model_source_modules": 542,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 46,
-    "test_files": 920
+    "test_files": 921
   },
   "documentation": {
     "examples": [
@@ -536,7 +536,7 @@
       {
         "package": "hardware",
         "path": "src/scpn_quantum_control/hardware",
-        "python_modules": 64
+        "python_modules": 65
       },
       {
         "package": "identity",
@@ -2564,7 +2564,7 @@
       },
       {
         "name": "OpenPulseControlReadiness",
-        "path": "src/scpn_quantum_control/hardware/provider_capability_discovery.py"
+        "path": "src/scpn_quantum_control/hardware/provider_capability_core.py"
       },
       {
         "name": "OpenPulseInstruction",
@@ -3532,11 +3532,11 @@
       },
       {
         "name": "ProviderCapabilityDecision",
-        "path": "src/scpn_quantum_control/hardware/provider_capability_discovery.py"
+        "path": "src/scpn_quantum_control/hardware/provider_capability_core.py"
       },
       {
         "name": "ProviderCapabilitySnapshot",
-        "path": "src/scpn_quantum_control/hardware/provider_capability_discovery.py"
+        "path": "src/scpn_quantum_control/hardware/provider_capability_core.py"
       },
       {
         "name": "ProviderExpectationSample",
@@ -4910,6 +4910,7 @@
       "src/scpn_quantum_control/hardware/pennylane_adapter.py",
       "src/scpn_quantum_control/hardware/plugin_registry.py",
       "src/scpn_quantum_control/hardware/provenance.py",
+      "src/scpn_quantum_control/hardware/provider_capability_core.py",
       "src/scpn_quantum_control/hardware/provider_capability_discovery.py",
       "src/scpn_quantum_control/hardware/provider_smoke.py",
       "src/scpn_quantum_control/hardware/pulse_feasibility.py",
@@ -6961,6 +6962,7 @@
       "tests/test_project_paths.py",
       "tests/test_project_paths_and_version_fallbacks.py",
       "tests/test_provenance.py",
+      "tests/test_provider_capability_core.py",
       "tests/test_provider_capability_discovery.py",
       "tests/test_provider_isolated_smoke_workflow.py",
       "tests/test_psi_field.py",
