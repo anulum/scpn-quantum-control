@@ -13,7 +13,7 @@
     "python_model_source_modules": 548,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 49,
-    "test_files": 926
+    "test_files": 928
   },
   "documentation": {
     "examples": [
@@ -6519,6 +6519,8 @@
       "tests/test_differentiable_programming_benchmark_metadata_edges.py",
       "tests/test_differentiable_programming_benchmark_program_ir_edges.py",
       "tests/test_differentiable_programming_benchmark_rust_edges.py",
+      "tests/test_differentiable_programming_benchmark_static_alias_branch_edges.py",
+      "tests/test_differentiable_programming_benchmark_static_alias_lattice_edges.py",
       "tests/test_differentiable_programming_benchmarks.py",
       "tests/test_differentiable_programming_contracts.py",
       "tests/test_differentiable_programming_quantum.py",

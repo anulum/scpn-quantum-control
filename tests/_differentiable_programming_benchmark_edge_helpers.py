@@ -20,6 +20,41 @@ from scpn_quantum_control.benchmarks.differentiable_programming import (
     DifferentiableProgrammingBenchmarkResult,
     QuantumGradientBenchmarkResult,
 )
+from scpn_quantum_control.differentiable import (
+    ProgramADEffect,
+    ProgramADEffectIR,
+    ProgramADSSAValue,
+)
+
+
+def _static_lattice_program_ir() -> ProgramADEffectIR:
+    """Return real minimal Program AD IR for static-lattice benchmark guards."""
+
+    return ProgramADEffectIR(
+        ssa_values=(
+            ProgramADSSAValue(
+                "%0",
+                producer=0,
+                version=0,
+                shape=(),
+                dtype="float64",
+                effect=0,
+            ),
+        ),
+        effects=(
+            ProgramADEffect(
+                index=0,
+                kind="pure",
+                target="%0",
+                inputs=(),
+                version=0,
+                ordering=0,
+            ),
+        ),
+        alias_edges=(),
+        control_regions=(),
+        serialization="program_ad_effect_ir.v1",
+    )
 
 
 def _gradient(size: int) -> NDArray[np.float64]:

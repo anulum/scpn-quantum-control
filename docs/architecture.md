@@ -131,6 +131,8 @@ shared gradient/error normalization helpers. `differentiable_programming.py` re-
 objects and retains suite ordering plus monkeypatchable availability seams.
 `differentiable_programming_quantum.py` owns all 12 analytic, Torch, and JAX quantum-gradient case
 builders; the exact public quantum-suite orchestrator remains in the facade.
+Benchmark alias-edge tests are partitioned into metadata, static-lattice completeness, and
+branch-IR completeness modules backed by one shared real-IR fixture.
 
 | Module | Single responsibility | Why it stays whole |
 |--------|-----------------------|--------------------|
