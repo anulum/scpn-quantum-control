@@ -25,6 +25,7 @@ DIFFERENTIABLE_MODULE_PATTERNS = (
     "src/scpn_quantum_control/phase/*provider*.py",
     "src/scpn_quantum_control/phase/*qnode*.py",
     "src/scpn_quantum_control/phase/*bridge*.py",
+    "src/scpn_quantum_control/phase/qiskit_runtime.py",
     "src/scpn_quantum_control/phase/*compiler*.py",
     "src/scpn_quantum_control/phase/*maintenance*.py",
     "src/scpn_quantum_control/phase/*state*.py",
@@ -604,6 +605,21 @@ def differentiable_module_hardening_registry() -> tuple[DifferentiableModuleHard
             ("missing-JAX dependency records", "host-callback boundaries"),
         ),
         _record(
+            "src/scpn_quantum_control/phase/jax_bridge_contracts.py",
+            ("tests/test_phase_jax_bridge_contracts.py",),
+            ("contract identity", "serialization validation"),
+        ),
+        _record(
+            "src/scpn_quantum_control/phase/jax_gradients.py",
+            ("tests/test_phase_jax_gradients.py",),
+            ("bounded gradient routes", "missing-JAX dependency records"),
+        ),
+        _record(
+            "src/scpn_quantum_control/phase/jax_qnode_transforms.py",
+            ("tests/test_phase_jax_qnode_transforms.py",),
+            ("registered QNode transforms", "compiler-boundary diagnostics"),
+        ),
+        _record(
             "src/scpn_quantum_control/phase/natural_gradient.py",
             ("tests/test_phase_natural_gradient.py",),
             ("singular-metric damping", "accepted-descent certificates"),
@@ -640,8 +656,27 @@ def differentiable_module_hardening_registry() -> tuple[DifferentiableModuleHard
         ),
         _record(
             "src/scpn_quantum_control/phase/qiskit_bridge.py",
-            ("tests/test_phase_qiskit_bridge.py",),
+            (
+                "tests/test_phase_qiskit_bridge_contracts.py",
+                "tests/test_phase_qiskit_gradients.py",
+                "tests/test_phase_qiskit_runtime.py",
+            ),
             ("no-submit Qiskit maturity rows", "provider execution blockers"),
+        ),
+        _record(
+            "src/scpn_quantum_control/phase/qiskit_bridge_contracts.py",
+            ("tests/test_phase_qiskit_bridge_contracts.py",),
+            ("Runtime evidence contracts", "provider-method validation"),
+        ),
+        _record(
+            "src/scpn_quantum_control/phase/qiskit_gradients.py",
+            ("tests/test_phase_qiskit_gradients.py",),
+            ("local shifted gradients", "finite-shot surrogate uncertainty"),
+        ),
+        _record(
+            "src/scpn_quantum_control/phase/qiskit_runtime.py",
+            ("tests/test_phase_qiskit_runtime.py",),
+            ("Runtime evidence chains", "provider-exceedance blockers"),
         ),
         _record(
             "src/scpn_quantum_control/phase/qnn_framework_bridge_matrix.py",
@@ -662,6 +697,31 @@ def differentiable_module_hardening_registry() -> tuple[DifferentiableModuleHard
             "src/scpn_quantum_control/phase/qnode_circuit.py",
             ("tests/test_phase_qnode_circuit.py",),
             ("gate and observable support errors", "density-route boundaries"),
+        ),
+        _record(
+            "src/scpn_quantum_control/phase/qnode_circuit_builders.py",
+            ("tests/test_phase_qnode_circuit_builders.py",),
+            ("registered construction", "template validation"),
+        ),
+        _record(
+            "src/scpn_quantum_control/phase/qnode_circuit_contracts.py",
+            ("tests/test_phase_qnode_circuit_contracts.py",),
+            ("contract identity", "constructor validation"),
+        ),
+        _record(
+            "src/scpn_quantum_control/phase/qnode_circuit_differentiation.py",
+            ("tests/test_phase_qnode_circuit_differentiation.py",),
+            ("Fisher and metric boundaries", "gradient support errors"),
+        ),
+        _record(
+            "src/scpn_quantum_control/phase/qnode_circuit_execution.py",
+            ("tests/test_phase_qnode_circuit_execution.py",),
+            ("statevector execution", "density and observable kernels"),
+        ),
+        _record(
+            "src/scpn_quantum_control/phase/qnode_circuit_support.py",
+            ("tests/test_phase_qnode_circuit_support.py",),
+            ("support reports", "parameter-shift planning"),
         ),
         _record(
             "src/scpn_quantum_control/phase/qnode_framework_parity.py",
@@ -690,7 +750,7 @@ def differentiable_module_hardening_registry() -> tuple[DifferentiableModuleHard
         ),
         _record(
             "src/scpn_quantum_control/phase/tensorflow_bridge.py",
-            ("tests/test_phase_framework_bridges.py",),
+            ("tests/test_phase_tensorflow_bridge.py",),
             ("missing-TensorFlow dependency records", "host-boundary diagnostics"),
         ),
         _record(
@@ -700,8 +760,23 @@ def differentiable_module_hardening_registry() -> tuple[DifferentiableModuleHard
         ),
         _record(
             "src/scpn_quantum_control/phase/torch_bridge.py",
-            ("tests/test_phase_framework_bridges.py",),
+            ("tests/test_phase_torch_bridge.py",),
             ("missing-PyTorch dependency records", "compile and func blockers"),
+        ),
+        _record(
+            "src/scpn_quantum_control/phase/torch_bridge_contracts.py",
+            ("tests/test_phase_torch_bridge_contracts.py",),
+            ("contract identity", "serialization validation"),
+        ),
+        _record(
+            "src/scpn_quantum_control/phase/torch_gradients.py",
+            ("tests/test_phase_torch_gradients.py",),
+            ("bounded gradient routes", "autograd boundaries"),
+        ),
+        _record(
+            "src/scpn_quantum_control/phase/torch_qnode_transforms.py",
+            ("tests/test_phase_torch_qnode_transforms.py",),
+            ("registered QNode transforms", "compile-boundary diagnostics"),
         ),
         _record(
             "src/scpn_quantum_control/phase/torch_autograd_function.py",

@@ -122,7 +122,7 @@ claims only when the evidence exists.
 |---|---:|
 | Package version | 0.10.0 |
 | Public API exports | 835 |
-| Python source modules | 537 |
+| Python source modules | 538 |
 | Public Python classes | 1003 |
 | Domain package families | 31 |
 | Rust PyO3 function bindings | 177 |

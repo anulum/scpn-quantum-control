@@ -4,11 +4,13 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — Tests for Phase Qiskit Bridge
+# SCPN Quantum Control — Qiskit Runtime Evidence Tests
 """Tests for Qiskit Runtime evidence and maturity orchestration."""
 
 from __future__ import annotations
 
+import ast
+import inspect
 from collections.abc import Callable
 from typing import Any, cast
 
@@ -18,6 +20,9 @@ from qiskit import QuantumCircuit
 from qiskit.circuit import Parameter
 from qiskit.quantum_info import SparsePauliOp
 
+import scpn_quantum_control.phase as phase
+import scpn_quantum_control.phase.qiskit_bridge as qiskit_bridge
+import scpn_quantum_control.phase.qiskit_runtime as qiskit_runtime
 from scpn_quantum_control.phase import (
     QiskitCalibrationStatevectorComparisonArtifact,
     QiskitMaturityAuditResult,
@@ -1160,3 +1165,47 @@ def test_qiskit_calibration_comparison_artifact_rejects_failed_tolerance() -> No
             hardware_execution=True,
             live_ticket_id="live-ticket-20260616",
         )
+
+
+RUNTIME_FUNCTIONS = (
+    "build_qiskit_runtime_qpu_execution_artifact",
+    "build_qiskit_provider_gradient_workflow_artifact",
+    "build_qiskit_runtime_qpu_provider_evidence_bundle",
+    "run_qiskit_maturity_audit",
+)
+PRIVATE_RUNTIME_HELPERS = (
+    "_validate_qiskit_provider_evidence_bundle_freshness",
+    "_normalise_provider_gradient_workflow_artifacts",
+    "_validate_provider_gradient_workflow_chain",
+    "_require_matching_optional_evidence_field",
+)
+
+
+def test_qiskit_runtime_leaf_has_no_bridge_back_edge() -> None:
+    """Keep Runtime evidence orchestration independent from the facade."""
+    tree = ast.parse(inspect.getsource(qiskit_runtime))
+    relative_imports = {
+        node.module for node in tree.body if isinstance(node, ast.ImportFrom) and node.level > 0
+    }
+    assert "qiskit_bridge" not in relative_imports
+    assert "__init__" not in relative_imports
+
+
+def test_qiskit_runtime_keeps_leaf_bridge_and_phase_identity() -> None:
+    """Re-export every public Runtime route as the same function object."""
+    for name in RUNTIME_FUNCTIONS:
+        leaf_function = getattr(qiskit_runtime, name)
+        assert getattr(qiskit_bridge, name) is leaf_function
+        assert getattr(phase, name) is leaf_function
+
+
+def test_qiskit_private_runtime_helpers_remain_exact_bridge_aliases() -> None:
+    """Keep freshness and evidence-chain helpers stable."""
+    for name in PRIVATE_RUNTIME_HELPERS:
+        assert getattr(qiskit_bridge, name) is getattr(qiskit_runtime, name)
+
+
+def test_qiskit_compatibility_facade_defines_no_functions() -> None:
+    """Keep the completed Qiskit facade free of executable definitions."""
+    tree = ast.parse(inspect.getsource(qiskit_bridge))
+    assert not [node.name for node in tree.body if isinstance(node, ast.FunctionDef)]

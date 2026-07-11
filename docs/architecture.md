@@ -73,8 +73,10 @@ gradient, Runtime, provider-workflow, evidence-bundle, and maturity records plus
 registries, constructor validation, and JSON-ready serialization live in the one-way
 `phase/qiskit_bridge_contracts.py` leaf. `phase/qiskit_bridge.py` re-exports those exact objects and
 local shifted-circuit generation plus deterministic Statevector and finite-shot surrogate
-gradients live in the one-way `phase/qiskit_gradients.py` leaf. The bridge retains Runtime capture
-builders and maturity orchestration while the remaining concern is split.
+gradients live in the one-way `phase/qiskit_gradients.py` leaf. No-submit Runtime capture builders,
+provider-gradient workflow evidence, freshness-bounded evidence bundles, and maturity aggregation
+live in the one-way `phase/qiskit_runtime.py` leaf. `phase/qiskit_bridge.py` is now a shallow
+compatibility facade with exact contract, gradient, and Runtime re-exports.
 
 The Phase-QNode circuit decomposition starts from a dependency-free declaration layer. All 21
 circuit, observable, support, execution, gradient, metric, and Fisher record classes plus their
