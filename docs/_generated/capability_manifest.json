@@ -10,10 +10,10 @@
     "public_api_exports": 835,
     "public_documentation_pages": 269,
     "python_model_classes": 1003,
-    "python_model_source_modules": 529,
+    "python_model_source_modules": 530,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 46,
-    "test_files": 910
+    "test_files": 911
   },
   "documentation": {
     "examples": [
@@ -561,7 +561,7 @@
       {
         "package": "phase",
         "path": "src/scpn_quantum_control/phase",
-        "python_modules": 103
+        "python_modules": 104
       },
       {
         "package": "psi_field",
@@ -5040,6 +5040,7 @@
       "src/scpn_quantum_control/phase/torch_export.py",
       "src/scpn_quantum_control/phase/torch_export_shape_matrix.py",
       "src/scpn_quantum_control/phase/torch_gradients.py",
+      "src/scpn_quantum_control/phase/torch_maturity.py",
       "src/scpn_quantum_control/phase/torch_module_state.py",
       "src/scpn_quantum_control/phase/torch_qnode_transforms.py",
       "src/scpn_quantum_control/phase/torch_training_loop_matrix.py",
@@ -6861,6 +6862,7 @@
       "tests/test_phase_torch_export.py",
       "tests/test_phase_torch_export_shape_matrix.py",
       "tests/test_phase_torch_gradients.py",
+      "tests/test_phase_torch_maturity.py",
       "tests/test_phase_torch_module_state.py",
       "tests/test_phase_torch_qnode_transforms.py",
       "tests/test_phase_torch_training_loop_matrix.py",

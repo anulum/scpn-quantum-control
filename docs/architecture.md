@@ -63,8 +63,10 @@ parameter-shift, analytic tensor, and custom-autograd bounded gradient routes li
 `torch.func` transforms, `torch.compile` diagnostics, and compiler-boundary routes live in the
 one-way `phase/torch_qnode_transforms.py` leaf. Bounded phase-QNN `torch.func`/`torch.compile`
 compatibility, module/layer wrappers, and deterministic compiled training live in the one-way
-`phase/torch_compatibility.py` leaf. `phase/torch_bridge.py` and the phase package retain the
-established public surfaces while lowering and maturity orchestration remain under assessment.
+`phase/torch_compatibility.py` leaf. Lowering declarations, CUDA/ecosystem diagnostics, cloud
+planning, live-overlay validation, and maturity aggregation live in `phase/torch_maturity.py`;
+the remaining 681-line facade contains signature-stable public wrappers and result/helper
+re-exports rather than mixed execution concerns.
 
 | Module | Single responsibility | Why it stays whole |
 |--------|-----------------------|--------------------|

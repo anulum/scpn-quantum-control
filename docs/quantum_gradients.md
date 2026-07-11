@@ -2327,6 +2327,8 @@ and injects its active loader. Deterministic registered Phase-QNode statevector 
 one-way `phase.torch_qnode_transforms` leaf under the same facade boundary. Bounded phase-QNN
 `torch.func`/`torch.compile` compatibility, module/layer construction and auditing, and the
 deterministic compiled training loop live in the one-way `phase.torch_compatibility` leaf.
+Lowering declarations, CUDA/ecosystem diagnostics, cloud planning, live-overlay validation, and
+maturity aggregation live in the one-way `phase.torch_maturity` orchestration leaf.
 
 For ML pipelines that need framework tensors, the phase namespace exposes
 host-boundary adapters, deterministic registered statevector routes, and
