@@ -2324,7 +2324,9 @@ parameter-shift conversion, analytic bounded-QNN gradients, and custom-autograd 
 gradients live in `phase.torch_gradients`; the facade retains the established public signatures
 and injects its active loader. Deterministic registered Phase-QNode statevector execution,
 `torch.func` transforms, `torch.compile` diagnostics, and compiler-boundary routes live in the
-one-way `phase.torch_qnode_transforms` leaf under the same facade boundary.
+one-way `phase.torch_qnode_transforms` leaf under the same facade boundary. Bounded phase-QNN
+`torch.func`/`torch.compile` compatibility, module/layer construction and auditing, and the
+deterministic compiled training loop live in the one-way `phase.torch_compatibility` leaf.
 
 For ML pipelines that need framework tensors, the phase namespace exposes
 host-boundary adapters, deterministic registered statevector routes, and

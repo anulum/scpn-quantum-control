@@ -61,8 +61,10 @@ evidence, matrix, and cloud-plan records live in the dependency-free
 parameter-shift, analytic tensor, and custom-autograd bounded gradient routes live in the one-way
 `phase/torch_gradients.py` leaf. Deterministic registered Phase-QNode statevector execution,
 `torch.func` transforms, `torch.compile` diagnostics, and compiler-boundary routes live in the
-one-way `phase/torch_qnode_transforms.py` leaf. `phase/torch_bridge.py` and the phase package retain
-the established public surfaces while later executable concerns are assessed one cluster at a time.
+one-way `phase/torch_qnode_transforms.py` leaf. Bounded phase-QNN `torch.func`/`torch.compile`
+compatibility, module/layer wrappers, and deterministic compiled training live in the one-way
+`phase/torch_compatibility.py` leaf. `phase/torch_bridge.py` and the phase package retain the
+established public surfaces while lowering and maturity orchestration remain under assessment.
 
 | Module | Single responsibility | Why it stays whole |
 |--------|-----------------------|--------------------|

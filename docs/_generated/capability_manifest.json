@@ -10,10 +10,10 @@
     "public_api_exports": 835,
     "public_documentation_pages": 269,
     "python_model_classes": 1003,
-    "python_model_source_modules": 528,
+    "python_model_source_modules": 529,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 46,
-    "test_files": 909
+    "test_files": 910
   },
   "documentation": {
     "examples": [
@@ -561,7 +561,7 @@
       {
         "package": "phase",
         "path": "src/scpn_quantum_control/phase",
-        "python_modules": 102
+        "python_modules": 103
       },
       {
         "package": "psi_field",
@@ -5034,6 +5034,7 @@
       "src/scpn_quantum_control/phase/torch_bridge_contracts.py",
       "src/scpn_quantum_control/phase/torch_checkpoint.py",
       "src/scpn_quantum_control/phase/torch_checkpoint_matrix.py",
+      "src/scpn_quantum_control/phase/torch_compatibility.py",
       "src/scpn_quantum_control/phase/torch_device_state.py",
       "src/scpn_quantum_control/phase/torch_dynamic_shape_export.py",
       "src/scpn_quantum_control/phase/torch_export.py",
@@ -6854,6 +6855,7 @@
       "tests/test_phase_torch_bridge_validation_edges.py",
       "tests/test_phase_torch_checkpoint.py",
       "tests/test_phase_torch_checkpoint_matrix.py",
+      "tests/test_phase_torch_compatibility.py",
       "tests/test_phase_torch_device_state.py",
       "tests/test_phase_torch_dynamic_shape_export.py",
       "tests/test_phase_torch_export.py",
