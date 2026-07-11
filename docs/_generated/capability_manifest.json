@@ -13,7 +13,7 @@
     "python_model_source_modules": 520,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 46,
-    "test_files": 896
+    "test_files": 900
   },
   "documentation": {
     "examples": [
@@ -6394,6 +6394,7 @@
       "tests/test_classical_reference_regression.py",
       "tests/test_closed_loop_analysis.py",
       "tests/test_closed_loop_analysis_wall_clock.py",
+      "tests/test_cloud_native.py",
       "tests/test_cloud_native_branches.py",
       "tests/test_commutator_bounds.py",
       "tests/test_compare_eeg_plv_cohorts.py",
@@ -6700,11 +6701,13 @@
       "tests/test_ml_dsa_seal.py",
       "tests/test_mlir_enzyme_evidence_docstrings.py",
       "tests/test_mlir_executable_kernel.py",
-      "tests/test_mlir_realtime_cloud.py",
+      "tests/test_mlir_native_compilation_integration.py",
       "tests/test_mlir_records.py",
       "tests/test_mlir_scalar_native_compilation.py",
       "tests/test_mlir_toolchain_probe_hardening.py",
+      "tests/test_mlir_transform_plan.py",
       "tests/test_mlir_whole_program_emitter.py",
+      "tests/test_mlir_whole_program_native.py",
       "tests/test_monte_carlo_xy.py",
       "tests/test_mps_baseline.py",
       "tests/test_mps_evolution.py",
@@ -7005,6 +7008,7 @@
       "tests/test_realtime_feedback_fallback_branches.py",
       "tests/test_realtime_latency_scenarios.py",
       "tests/test_realtime_latency_scenarios_branches.py",
+      "tests/test_realtime_runtime.py",
       "tests/test_realtime_runtime_branches.py",
       "tests/test_regression_baselines.py",
       "tests/test_render_kuramoto_handbook.py",
