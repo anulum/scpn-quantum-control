@@ -111,9 +111,11 @@ selection, online-state vocabulary, and IR/program-spec tuple normalization.
 `hardware/provider_capability_gate_adapters.py` owns the complete direct IonQ, IQM, OQC,
 Quantinuum, and Rigetti adapter closures.
 `hardware/provider_capability_specialized_adapters.py` owns D-Wave annealing, QuEra/Pasqal
-neutral-atom, and Quandela photonic adapter closures. The discovery facade re-exports those exact
-objects and retains the Azure, Braket, Qiskit Runtime, qBraid, and Strangeworks cloud/broker
-metadata adapters for the final provider-group decomposition.
+neutral-atom, and Quandela photonic adapter closures.
+`hardware/provider_capability_cloud_adapters.py` owns the complete Azure, Braket, Qiskit Runtime,
+qBraid, and Strangeworks cloud/broker adapter closures, including shared calibration-timestamp
+normalization. `hardware/provider_capability_discovery.py` is now a definition-free compatibility
+facade that re-exports the exact core, normalization, and provider-adapter objects.
 
 | Module | Single responsibility | Why it stays whole |
 |--------|-----------------------|--------------------|

@@ -4,15 +4,19 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# scpn-quantum-control — provider capability discovery tests
-"""Tests for no-submit provider capability discovery contracts."""
+# SCPN Quantum Control — Cloud Provider Adapter Tests
+"""Behavioral and structural tests for cloud provider metadata adapters."""
 
 from __future__ import annotations
 
+import ast
+import inspect
 from datetime import datetime, timezone
 
 import pytest
 
+import scpn_quantum_control.hardware.provider_capability_cloud_adapters as cloud_adapters
+import scpn_quantum_control.hardware.provider_capability_discovery as provider_capability_discovery
 from scpn_quantum_control.hardware.provider_capability_discovery import (
     OpenPulseControlReadiness,
     ProviderCapabilitySnapshot,
@@ -622,3 +626,82 @@ def test_broker_snapshot_rejects_missing_declared_ir_formats() -> None:
             ir_format="quil",
             metadata_probe=lambda resolved: snapshot_from_qbraid_device(resolved, Device()),
         )
+
+
+def test_cloud_adapter_leaf_has_no_discovery_backedge() -> None:
+    """Keep cloud provider adapters independent of the compatibility facade."""
+    tree = ast.parse(inspect.getsource(cloud_adapters))
+    imported_modules = {
+        node.module
+        for node in ast.walk(tree)
+        if isinstance(node, ast.ImportFrom) and node.module is not None
+    }
+    imported_modules.update(
+        alias.name
+        for node in ast.walk(tree)
+        if isinstance(node, ast.Import)
+        for alias in node.names
+    )
+
+    assert not any(module.endswith("provider_capability_discovery") for module in imported_modules)
+
+
+def test_cloud_adapter_objects_are_exact_facade_aliases() -> None:
+    """Preserve public and private cloud-provider object identity."""
+    names = (
+        "snapshot_from_azure_target",
+        "snapshot_from_braket_device",
+        "snapshot_from_qiskit_runtime_backend",
+        "snapshot_from_qbraid_device",
+        "snapshot_from_strangeworks_backend",
+        "_qiskit_supported_ir_formats",
+        "_azure_supported_ir_formats",
+        "_azure_declared_ir_formats",
+        "_azure_ir_format_token",
+        "_azure_native_features",
+        "_azure_online_state",
+        "_braket_supported_ir_formats",
+        "_braket_action_names",
+        "_braket_basis_gates",
+        "_braket_action_entries",
+        "_braket_native_features",
+        "_braket_max_shots",
+        "_range_maximum",
+        "_positive_int",
+        "_braket_queue_depth",
+        "_qiskit_native_features",
+        "_qiskit_online_state",
+        "_qbraid_supported_ir_formats",
+        "_strangeworks_supported_ir_formats",
+        "_broker_ir_format_token",
+        "_qbraid_native_features",
+        "_strangeworks_native_features",
+        "_strangeworks_online_state",
+        "_qiskit_calibration_timestamp",
+        "normalize_calibration_timestamp",
+        "_qiskit_openpulse_profile",
+        "_first_optional_attr",
+        "_first_coupling_map",
+    )
+
+    for name in names:
+        assert getattr(provider_capability_discovery, name) is getattr(cloud_adapters, name)
+
+
+def test_provider_discovery_is_definition_free_compatibility_facade() -> None:
+    """Keep every capability implementation single-owned by an extracted leaf."""
+    tree = ast.parse(inspect.getsource(provider_capability_discovery))
+
+    assert not any(isinstance(node, ast.FunctionDef) for node in tree.body)
+
+
+def test_cloud_adapter_leaf_exposes_only_cloud_and_broker_contracts() -> None:
+    """Keep this leaf limited to hosted cloud and broker provider routes."""
+    assert set(cloud_adapters.__all__) == {
+        "normalize_calibration_timestamp",
+        "snapshot_from_azure_target",
+        "snapshot_from_braket_device",
+        "snapshot_from_qbraid_device",
+        "snapshot_from_qiskit_runtime_backend",
+        "snapshot_from_strangeworks_backend",
+    }

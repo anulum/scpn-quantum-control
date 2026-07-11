@@ -10,7 +10,7 @@
     "public_api_exports": 835,
     "public_documentation_pages": 269,
     "python_model_classes": 1003,
-    "python_model_source_modules": 545,
+    "python_model_source_modules": 546,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 46,
     "test_files": 924
@@ -536,7 +536,7 @@
       {
         "package": "hardware",
         "path": "src/scpn_quantum_control/hardware",
-        "python_modules": 68
+        "python_modules": 69
       },
       {
         "package": "identity",
@@ -4910,6 +4910,7 @@
       "src/scpn_quantum_control/hardware/pennylane_adapter.py",
       "src/scpn_quantum_control/hardware/plugin_registry.py",
       "src/scpn_quantum_control/hardware/provenance.py",
+      "src/scpn_quantum_control/hardware/provider_capability_cloud_adapters.py",
       "src/scpn_quantum_control/hardware/provider_capability_core.py",
       "src/scpn_quantum_control/hardware/provider_capability_discovery.py",
       "src/scpn_quantum_control/hardware/provider_capability_gate_adapters.py",
@@ -6965,8 +6966,8 @@
       "tests/test_project_paths.py",
       "tests/test_project_paths_and_version_fallbacks.py",
       "tests/test_provenance.py",
+      "tests/test_provider_capability_cloud_adapters.py",
       "tests/test_provider_capability_core.py",
-      "tests/test_provider_capability_discovery.py",
       "tests/test_provider_capability_gate_adapters.py",
       "tests/test_provider_capability_normalization.py",
       "tests/test_provider_capability_specialized_adapters.py",
