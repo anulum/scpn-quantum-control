@@ -105,10 +105,12 @@ and differentiation objects without defining executable functions.
 
 Provider capability discovery now separates provider-neutral governance from vendor metadata
 normalization. `hardware/provider_capability_core.py` owns no-submit snapshots and decisions,
-route-bound assessment/probing, and OpenPulse readiness. The discovery facade re-exports those
-exact objects and retains the Azure, IonQ, D-Wave, IQM, QuEra, OQC, Pasqal, Quandela, Quantinuum,
-Rigetti, Braket, Qiskit Runtime, qBraid, and Strangeworks metadata adapters for later provider-group
-decomposition.
+route-bound assessment/probing, and OpenPulse readiness.
+`hardware/provider_capability_normalization.py` owns provider-independent attribute access, scalar
+selection, online-state vocabulary, and IR/program-spec tuple normalization. The discovery facade
+re-exports those exact objects and retains the Azure, IonQ, D-Wave, IQM, QuEra, OQC, Pasqal,
+Quandela, Quantinuum, Rigetti, Braket, Qiskit Runtime, qBraid, and Strangeworks metadata adapters
+for later provider-group decomposition.
 
 | Module | Single responsibility | Why it stays whole |
 |--------|-----------------------|--------------------|
