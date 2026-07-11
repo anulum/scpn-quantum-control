@@ -42,6 +42,7 @@ SCPN_MARKERS = (
     "feedback",
 )
 ALLOWED_FOUNDATION_IMPORTS = (
+    "scpn_quantum_control._rust_accel",
     "scpn_quantum_control.accel",
     "scpn_quantum_control.bridge.knm_hamiltonian",
     "scpn_quantum_control.bridge.sparse_hamiltonian",
