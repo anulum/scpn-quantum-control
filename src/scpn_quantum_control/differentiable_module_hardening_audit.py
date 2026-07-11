@@ -759,6 +759,11 @@ def differentiable_module_hardening_registry() -> tuple[DifferentiableModuleHard
             ("contract identity", "result serialization"),
         ),
         _record(
+            "src/scpn_quantum_control/phase/tensorflow_gradients.py",
+            ("tests/test_phase_tensorflow_gradients.py",),
+            ("loader injection", "parameter-shift parity diagnostics"),
+        ),
+        _record(
             "src/scpn_quantum_control/phase/tensorflow_maintenance.py",
             ("tests/test_phase_tensorflow_maintenance.py",),
             ("compatibility-only decision", "Graph/XLA promotion blockers"),

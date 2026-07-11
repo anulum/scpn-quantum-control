@@ -78,11 +78,14 @@ provider-gradient workflow evidence, freshness-bounded evidence bundles, and mat
 live in the one-way `phase/qiskit_runtime.py` leaf. `phase/qiskit_bridge.py` is now a shallow
 compatibility facade with exact contract, gradient, and Runtime re-exports.
 
-The TensorFlow bridge decomposition starts with a dependency-free declaration layer. All nine
-gradient, compatibility, lowering, Keras, and maturity result records plus the shared float-array
-alias and serializer live in `phase/tensorflow_bridge_contracts.py`. The bridge re-exports those
-exact objects and retains loader-sensitive gradients, compatibility, lowering, and maturity routes
-while those executable concerns are split.
+The TensorFlow bridge decomposition uses a dependency-free declaration layer and a one-way gradient
+execution leaf. All nine gradient, compatibility, lowering, Keras, and maturity result records plus
+the shared float-array alias and serializer live in `phase/tensorflow_bridge_contracts.py`.
+Host-boundary parameter-shift execution, bounded phase-QNN analytic gradients, and their direct
+validation helpers live in `phase/tensorflow_gradients.py`. The bridge re-exports the exact
+contracts and helpers, keeps its optional loader, and injects that active loader through
+signature-stable gradient wrappers. Compatibility, lowering, and maturity orchestration remain in
+the facade while those executable concerns are split.
 
 The Phase-QNode circuit decomposition starts from a dependency-free declaration layer. All 21
 circuit, observable, support, execution, gradient, metric, and Fisher record classes plus their
