@@ -29,6 +29,13 @@ README, `docs/index.md`, and `docs/results.md` should treat this dated snapshot
 as the source of truth for public status wording. If a campaign value changes,
 update this table first, then refresh the summary pages.
 
+The dated snapshot reflects the last promotion review, not a freshness
+guarantee for every row. The Package-line release version above is not left to
+manual refresh: `scripts/check_version_consistency.py` (a pre-commit and CI gate)
+holds it in lock-step with `pyproject.toml`, so it cannot silently lag the
+release between snapshots. Campaign rows change only when a new dataset is
+promoted, so an unchanged date here means no new promotion has occurred.
+
 ## Claim Classes
 
 | Class | Meaning | Required evidence |

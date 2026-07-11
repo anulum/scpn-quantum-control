@@ -15,6 +15,8 @@ import sys
 from pathlib import Path
 from types import ModuleType
 
+import pytest
+
 
 def _load_script_module(module_name: str, filename: str) -> ModuleType:
     module_path = Path(__file__).resolve().parents[1] / "scripts" / filename
@@ -45,7 +47,9 @@ def _write_version_files(tmp_path: Path, versions: dict[str, str]) -> dict[str, 
     return files
 
 
-def _patch_contract_paths(monkeypatch, tmp_path: Path, files: dict[str, Path]) -> None:
+def _patch_contract_paths(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, files: dict[str, Path]
+) -> None:
     monkeypatch.setattr(_check_version_consistency, "ROOT", tmp_path)
     monkeypatch.setattr(
         _check_version_consistency,
@@ -58,7 +62,9 @@ def _patch_contract_paths(monkeypatch, tmp_path: Path, files: dict[str, Path]) -
     )
 
 
-def test_version_consistency_returns_zero_when_all_carriers_match(tmp_path: Path, monkeypatch):
+def test_version_consistency_returns_zero_when_all_carriers_match(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     files = _write_version_files(
         tmp_path,
         {
@@ -72,7 +78,9 @@ def test_version_consistency_returns_zero_when_all_carriers_match(tmp_path: Path
     assert _check_version_consistency.main() == 0
 
 
-def test_version_consistency_reports_mismatched_carrier(tmp_path: Path, monkeypatch, capsys):
+def test_version_consistency_reports_mismatched_carrier(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
     files = _write_version_files(
         tmp_path,
         {
@@ -90,8 +98,8 @@ def test_version_consistency_reports_mismatched_carrier(tmp_path: Path, monkeypa
 
 
 def test_version_consistency_reports_missing_and_unmatched_files(
-    tmp_path: Path, monkeypatch, capsys
-):
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
     files = _write_version_files(
         tmp_path,
         {
@@ -108,3 +116,54 @@ def test_version_consistency_reports_missing_and_unmatched_files(
     output = capsys.readouterr().out
     assert "CITATION.cff: file not found" in output
     assert ".zenodo.json: version pattern not found" in output
+
+
+def test_live_version_carriers_including_the_ledger_are_consistent() -> None:
+    """The real pyproject, CITATION, zenodo, and hardware ledger agree on the version.
+
+    This is the live drift gate: the hardware status ledger's Package-line version
+    must not lag the canonical release version, even between dated snapshots.
+    """
+    assert _check_version_consistency.main() == 0
+
+
+def test_hardware_status_ledger_is_a_registered_version_carrier() -> None:
+    """The ledger Package-line version is enforced against the canonical source."""
+    ledger = _check_version_consistency.HARDWARE_STATUS_LEDGER
+    assert ledger in _check_version_consistency.PATTERNS
+    ledger_match = _check_version_consistency.PATTERNS[ledger].search(
+        ledger.read_text(encoding="utf-8")
+    )
+    assert ledger_match is not None
+    pyproject = _check_version_consistency.PYPROJECT
+    pyproject_match = _check_version_consistency.PATTERNS[pyproject].search(
+        pyproject.read_text(encoding="utf-8")
+    )
+    assert pyproject_match is not None
+    assert ledger_match.group(1) == pyproject_match.group(1)
+
+
+def test_version_consistency_flags_a_drifted_ledger(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """A ledger Package-line version that lags pyproject is reported as a mismatch."""
+    pyproject = tmp_path / "pyproject.toml"
+    pyproject.write_text('version = "0.11.0"\n', encoding="utf-8")
+    ledger = tmp_path / "hardware_status_ledger.md"
+    ledger.write_text(
+        "| Package line | Version `0.10.0`, Python `>=3.11`. | `pyproject.toml` |\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(_check_version_consistency, "ROOT", tmp_path)
+    monkeypatch.setattr(
+        _check_version_consistency,
+        "PATTERNS",
+        {
+            pyproject: re.compile(r'^version\s*=\s*"([^"]+)"', re.MULTILINE),
+            ledger: re.compile(r"Package line \| Version `([^`]+)`"),
+        },
+    )
+
+    assert _check_version_consistency.main() == 1
+    output = capsys.readouterr().out
+    assert "0.10.0 (expected 0.11.0)" in output
