@@ -12,7 +12,7 @@
     "python_model_classes": 1003,
     "python_model_source_modules": 546,
     "rust_pyo3_model_wrappers": 177,
-    "rust_source_modules": 48,
+    "rust_source_modules": 49,
     "test_files": 924
   },
   "documentation": {
@@ -5355,6 +5355,7 @@
       "scpn_quantum_engine/src/bin/ibm_runtime_latency_runner.rs",
       "scpn_quantum_engine/src/biological_qec.rs",
       "scpn_quantum_engine/src/community.rs",
+      "scpn_quantum_engine/src/compiler_ad/kernels/generic.rs",
       "scpn_quantum_engine/src/compiler_ad/kernels/specialized_2x2.rs",
       "scpn_quantum_engine/src/compiler_ad/kernels.rs",
       "scpn_quantum_engine/src/compiler_ad.rs",
