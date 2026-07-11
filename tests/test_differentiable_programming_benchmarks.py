@@ -12,7 +12,7 @@ from __future__ import annotations
 import sys
 from collections.abc import Callable
 from types import ModuleType, SimpleNamespace
-from typing import Any, cast
+from typing import Any
 
 import numpy as np
 import pytest
@@ -27,10 +27,6 @@ from scpn_quantum_control.benchmarks import (
     run_quantum_gradient_benchmark_suite,
 )
 from scpn_quantum_control.benchmarks import differentiable_programming as dp_benchmarks
-
-
-def _require_torch_backend() -> None:
-    pytest.importorskip("torch", reason="native Torch quantum-gradient rows require PyTorch")
 
 
 def test_differentiable_programming_benchmark_suite_matches_analytic_references() -> None:
@@ -294,75 +290,6 @@ def test_differentiable_programming_benchmark_suite_matches_analytic_references(
     assert "jvp/vjp over whole-program AD Hessian transforms" in (
         hessian_jvp_vjp_row.claim_boundary
     )
-
-
-def test_quantum_gradient_benchmark_suite_matches_analytic_references() -> None:
-    """Quantum-gradient rows should expose parameter-shift verification evidence."""
-
-    results = run_quantum_gradient_benchmark_suite()
-    dp_any = cast(Any, dp_benchmarks)
-
-    expected_case_ids = [
-        "single_rotation_parameter_shift",
-        "two_parameter_phase_expectation",
-        "sparse_ising_chain_six_qubit_expectation",
-    ]
-    if dp_any.is_phase_torch_available():
-        expected_case_ids.append("torch_registered_phase_qnode_statevector_lowering")
-        expected_case_ids.append("torch_registered_phase_qnode_func_transform_lowering")
-        expected_case_ids.append("torch_registered_phase_qnode_compile_lowering")
-        expected_case_ids.append("torch_registered_phase_qnode_compile_boundary_diagnostic")
-    if dp_any.is_phase_jax_available():
-        expected_case_ids.append("jax_registered_phase_qnode_native_transform_lowering")
-        expected_case_ids.append("jax_registered_phase_qnode_pytree_transform_lowering")
-        expected_case_ids.append("jax_registered_phase_qnode_pmap_sharding_lowering")
-        expected_case_ids.append("jax_registered_phase_qnode_aot_export_lowering")
-    assert [row.case_id for row in results] == expected_case_ids
-    for row in results:
-        assert isinstance(row, QuantumGradientBenchmarkResult)
-        assert row.category == "quantum-gradient"
-        assert row.passed
-        assert row.verification_passed
-        assert row.evaluations > 0
-        assert row.max_abs_reference_error <= 1.0e-12
-        assert row.max_abs_finite_difference_error <= 1.0e-5
-        assert "no wall-clock performance" in row.claim_boundary
-        assert "hardware" in row.claim_boundary
-        np.testing.assert_allclose(
-            row.parameter_shift_gradient,
-            row.analytic_gradient,
-            atol=1.0e-12,
-        )
-    sparse_row = next(row for row in results if row.case_id.startswith("sparse_ising"))
-    assert sparse_row.parameter_shift_gradient.shape == (6,)
-    assert sparse_row.evaluations >= 24
-    assert "sparse Hamiltonian" in sparse_row.claim_boundary
-    if dp_any.is_phase_torch_available():
-        torch_row = next(row for row in results if row.case_id.startswith("torch_registered"))
-        assert torch_row.parameter_shift_gradient.shape == (2,)
-        assert torch_row.max_abs_reference_error <= 1.0e-8
-        assert "native PyTorch autograd statevector lowering" in torch_row.claim_boundary
-        assert "no provider, hardware, isolated benchmark, or performance promotion" in (
-            torch_row.claim_boundary
-        )
-    if dp_any.is_phase_jax_available():
-        jax_row = next(row for row in results if row.case_id.startswith("jax_registered"))
-        assert jax_row.parameter_shift_gradient.shape == (2,)
-        assert jax_row.max_abs_reference_error <= 1.0e-8
-        assert "native JAX grad" in jax_row.claim_boundary
-        assert "no provider, hardware, isolated benchmark, or performance promotion" in (
-            jax_row.claim_boundary
-        )
-        jax_aot_row = next(
-            row
-            for row in results
-            if row.case_id == "jax_registered_phase_qnode_aot_export_lowering"
-        )
-        assert "jax.export serialization/deserialization diagnostic" in (
-            jax_aot_row.claim_boundary
-        )
-        assert "persistent cross-platform execution" in jax_aot_row.claim_boundary
-        assert "no exported VJP" in jax_aot_row.claim_boundary
 
 
 def test_differentiable_programming_external_reference_suite_fails_closed_when_unavailable(

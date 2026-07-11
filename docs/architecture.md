@@ -128,7 +128,9 @@ both facades explicitly re-export inner kernels so existing Rust paths remain st
 Differentiable benchmark result validation is isolated from benchmark execution.
 `benchmarks/differentiable_programming_contracts.py` owns the three immutable result records and
 shared gradient/error normalization helpers. `differentiable_programming.py` re-exports those exact
-objects while retaining the program-AD, quantum-gradient, and external-reference suites.
+objects and retains suite ordering plus monkeypatchable availability seams.
+`differentiable_programming_quantum.py` owns all 12 analytic, Torch, and JAX quantum-gradient case
+builders; the exact public quantum-suite orchestrator remains in the facade.
 
 | Module | Single responsibility | Why it stays whole |
 |--------|-----------------------|--------------------|
