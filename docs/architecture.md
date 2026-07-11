@@ -48,9 +48,11 @@ refactors:
 The JAX bridge is undergoing staged decomposition under the extraction gate. Immutable result
 records live in the dependency-free `phase/jax_bridge_contracts.py` leaf, and bounded
 parameter-shift/native/custom-VJP QNN implementations live in the one-way
-`phase/jax_gradients.py` leaf. The compatibility module retains signature-stable wrappers,
-registered-QNode execution, transform/lowering audits, and maturity/cloud orchestration while
-later clusters are assessed one at a time.
+`phase/jax_gradients.py` leaf. Registered-QNode statevector, flat/PyTree transform, PMAP-sharding,
+and AOT/export execution lives in the one-way `phase/jax_qnode_transforms.py` leaf. The
+compatibility module retains signature-stable wrappers, bounded-QNN compatibility/nested algebra,
+lowering matrices, and maturity/cloud orchestration while later clusters are assessed one at a
+time.
 
 | Module | Single responsibility | Why it stays whole |
 |--------|-----------------------|--------------------|

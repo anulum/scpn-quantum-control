@@ -1894,7 +1894,9 @@ flags for requested gap or gradient tolerances.
 parameter-shift calls. Its immutable evidence records live in the dependency-free
 `phase.jax_bridge_contracts` leaf; bounded parameter-shift, native-QNN, and custom-VJP QNN
 implementations live in `phase.jax_gradients`. The compatibility bridge re-exports the records,
-retains the established function signatures, and injects its optional-JAX loader:
+retains the established function signatures, and injects its optional-JAX loader. Registered local
+Phase-QNode statevector, flat/PyTree transform, PMAP-sharding, and AOT/export execution lives in
+`phase.jax_qnode_transforms` under the same fail-closed facade boundary:
 
 ```python
 import numpy as np

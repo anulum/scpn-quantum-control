@@ -10,10 +10,10 @@
     "public_api_exports": 835,
     "public_documentation_pages": 269,
     "python_model_classes": 1003,
-    "python_model_source_modules": 522,
+    "python_model_source_modules": 523,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 46,
-    "test_files": 903
+    "test_files": 904
   },
   "documentation": {
     "examples": [
@@ -561,7 +561,7 @@
       {
         "package": "phase",
         "path": "src/scpn_quantum_control/phase",
-        "python_modules": 96
+        "python_modules": 97
       },
       {
         "package": "psi_field",
@@ -4977,6 +4977,7 @@
       "src/scpn_quantum_control/phase/jax_bridge_contracts.py",
       "src/scpn_quantum_control/phase/jax_gradients.py",
       "src/scpn_quantum_control/phase/jax_nqs.py",
+      "src/scpn_quantum_control/phase/jax_qnode_transforms.py",
       "src/scpn_quantum_control/phase/kuramoto_variants.py",
       "src/scpn_quantum_control/phase/lindblad.py",
       "src/scpn_quantum_control/phase/lindblad_engine.py",
@@ -6795,6 +6796,7 @@
       "tests/test_phase_jax_bridge_aot_export.py",
       "tests/test_phase_jax_bridge_contracts.py",
       "tests/test_phase_jax_gradients.py",
+      "tests/test_phase_jax_qnode_transforms.py",
       "tests/test_phase_model_training_evidence.py",
       "tests/test_phase_natural_gradient.py",
       "tests/test_phase_objective_audit.py",
