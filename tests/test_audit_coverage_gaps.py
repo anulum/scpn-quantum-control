@@ -16,6 +16,8 @@ from types import ModuleType
 
 
 def _load_tool_module(module_name: str, filename: str) -> ModuleType:
+    """Load one repository tool module without requiring a tools package."""
+
     module_path = Path(__file__).resolve().parents[1] / "tools" / filename
     spec = importlib.util.spec_from_file_location(module_name, module_path)
     if spec is None or spec.loader is None:
@@ -36,7 +38,9 @@ format_audits = _audit_coverage_gaps.format_audits
 load_justified_exclusions = _audit_coverage_gaps.load_justified_exclusions
 
 
-def test_coverage_gap_audit_classifies_ok_low_and_missing_files(tmp_path: Path):
+def test_coverage_gap_audit_classifies_ok_low_and_missing_files(tmp_path: Path) -> None:
+    """Classify covered, below-threshold, and absent source files."""
+
     project_root = tmp_path / "repo"
     source_root = project_root / "src" / "scpn_quantum_control"
     source_root.mkdir(parents=True)
@@ -80,7 +84,9 @@ def test_coverage_gap_audit_classifies_ok_low_and_missing_files(tmp_path: Path):
     assert by_path["missing.py"].status == "missing_from_report"
 
 
-def test_coverage_gap_outputs_are_deterministic(tmp_path: Path):
+def test_coverage_gap_outputs_are_deterministic(tmp_path: Path) -> None:
+    """Render deterministic JSON and text summaries for identical audits."""
+
     project_root = tmp_path / "repo"
     source_root = project_root / "src" / "scpn_quantum_control"
     source_root.mkdir(parents=True)
@@ -115,7 +121,9 @@ def test_coverage_gap_outputs_are_deterministic(tmp_path: Path):
     assert "Coverage gap audit summary:" in format_audits(audits)
 
 
-def test_coverage_gap_audit_accepts_package_relative_xml_sources(tmp_path: Path):
+def test_coverage_gap_audit_accepts_package_relative_xml_sources(tmp_path: Path) -> None:
+    """Resolve package-relative XML filenames against declared source roots."""
+
     project_root = tmp_path / "repo"
     source_root = project_root / "src" / "scpn_quantum_control"
     source_root.mkdir(parents=True)
@@ -153,7 +161,11 @@ def test_coverage_gap_audit_accepts_package_relative_xml_sources(tmp_path: Path)
     assert audits[0].status == "ok"
 
 
-def test_coverage_gap_summary_warns_when_report_matches_no_source_files(tmp_path: Path):
+def test_coverage_gap_summary_warns_when_report_matches_no_source_files(
+    tmp_path: Path,
+) -> None:
+    """Warn when a coverage report contains no matching source records."""
+
     project_root = tmp_path / "repo"
     source_root = project_root / "src" / "scpn_quantum_control"
     source_root.mkdir(parents=True)
@@ -174,7 +186,9 @@ def test_coverage_gap_summary_warns_when_report_matches_no_source_files(tmp_path
     assert "missing_from_report: src/scpn_quantum_control/module.py" in summary
 
 
-def test_coverage_gap_audit_accepts_justified_file_exclusions(tmp_path: Path):
+def test_coverage_gap_audit_accepts_justified_file_exclusions(tmp_path: Path) -> None:
+    """Retain explicit reasons for exact-path coverage exclusions."""
+
     project_root = tmp_path / "repo"
     source_root = project_root / "src" / "scpn_quantum_control"
     source_root.mkdir(parents=True)
@@ -218,7 +232,9 @@ def test_coverage_gap_audit_accepts_justified_file_exclusions(tmp_path: Path):
     assert "files_justified_exclusions: 2" in summary
 
 
-def test_coverage_gap_audit_accepts_justified_glob_exclusions(tmp_path: Path):
+def test_coverage_gap_audit_accepts_justified_glob_exclusions(tmp_path: Path) -> None:
+    """Apply justified glob exclusions to matching source paths."""
+
     project_root = tmp_path / "repo"
     source_root = project_root / "src" / "scpn_quantum_control" / "paper0"
     source_root.mkdir(parents=True)
@@ -240,7 +256,9 @@ def test_coverage_gap_audit_accepts_justified_glob_exclusions(tmp_path: Path):
     assert audits[0].is_gap is False
 
 
-def test_load_justified_exclusions_requires_reason(tmp_path: Path):
+def test_load_justified_exclusions_requires_reason(tmp_path: Path) -> None:
+    """Reject exclusion records whose reason is empty or whitespace."""
+
     path = tmp_path / "exclusions.json"
     path.write_text('{"exclusions": [{"path": "src/pkg.py", "reason": "  "}]}', encoding="utf-8")
 
@@ -252,7 +270,9 @@ def test_load_justified_exclusions_requires_reason(tmp_path: Path):
         raise AssertionError("Expected empty exclusion reason to fail")
 
 
-def test_load_justified_exclusions_accepts_path_glob(tmp_path: Path):
+def test_load_justified_exclusions_accepts_path_glob(tmp_path: Path) -> None:
+    """Load a justified path-glob exclusion into the normalized mapping."""
+
     path = tmp_path / "exclusions.json"
     path.write_text(
         '{"exclusions": [{"path_glob": "src/pkg/generated_*.py", "reason": "generated"}]}',

@@ -62,16 +62,19 @@ def test_forbidden_test_names_are_reported_with_policy_reasons() -> None:
     assert all("non-specific bucket" in finding.reason for finding in findings)
 
 
-def test_exceptions_and_module_backed_tests_are_not_reported(
+def test_module_backed_tests_are_not_reported(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
     tool = _load_tool_module()
     _write(tmp_path / "src" / "domain_runner.py")
+    _write(tmp_path / "src" / "scpn_quantum_control" / "studio" / "coverage_frontier.py")
+    _write(tmp_path / "tools" / "audit_coverage_gaps.py")
     monkeypatch.setattr(tool, "ROOT", tmp_path)
 
     findings = tool.audit_test_paths(
         [
             Path("tests/test_audit_coverage_gaps.py"),
+            Path("tests/test_coverage_frontier.py"),
             Path("tests/test_domain_runner.py"),
         ]
     )

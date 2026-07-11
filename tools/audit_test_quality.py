@@ -42,12 +42,6 @@ FORBIDDEN_PATTERNS: tuple[re.Pattern[str], ...] = (
     re.compile(r"^test_final.*\.py$"),
 )
 
-MODULE_SPECIFIC_EXCEPTIONS: frozenset[str] = frozenset(
-    {
-        "test_audit_coverage_gaps.py",
-    }
-)
-
 
 def _module_stems() -> frozenset[str]:
     """Return known production/tool/script module stems once per audit run."""
@@ -79,8 +73,6 @@ def audit_test_paths(paths: Iterable[Path]) -> list[TestQualityFinding]:
     module_stems = _module_stems()
     for path in sorted(paths, key=lambda item: item.as_posix()):
         name = path.name
-        if name in MODULE_SPECIFIC_EXCEPTIONS:
-            continue
         if _module_backed(path, module_stems):
             continue
         if any(pattern.fullmatch(name) for pattern in FORBIDDEN_PATTERNS):
