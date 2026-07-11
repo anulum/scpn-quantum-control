@@ -1,0 +1,601 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Commercial license available
+# © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
+# © Code 2020–2026 Miroslav Šotek. All rights reserved.
+# ORCID: 0009-0009-3560-0851
+# Contact: www.anulum.li | protoscience@anulum.li
+# SCPN Quantum Control — Phase-QNode Circuit Differentiation
+"""Gradient, Fisher, and metric orchestration for Phase-QNode circuits.
+
+This one-way leaf implements analytic parameter-shift gradients, parameter
+state derivatives, exact and finite-shot classical Fisher information,
+QFI/Fubini-Study metrics, and natural-gradient metrics. It contains no
+framework, compiler, provider, hardware, benchmark, or publication logic.
+"""
+
+from __future__ import annotations
+
+from collections.abc import Callable
+from typing import Any, cast
+
+import numpy as np
+from numpy.typing import ArrayLike
+
+from .qnode_circuit_contracts import (
+    _I,
+    _PARAMETRIC_GATES,
+    _X,
+    _Y,
+    _Z,
+    ComplexArray,
+    FloatArray,
+    PauliCovarianceObservable,
+    PhaseQNodeCircuit,
+    PhaseQNodeClassicalFisherResult,
+    PhaseQNodeDensityCircuit,
+    PhaseQNodeGradientResult,
+    PhaseQNodeMetricTensorResult,
+    PhaseQNodeOperation,
+    PhaseQNodeSupportError,
+    PhaseQNodeSupportReport,
+    _as_finite_scalar,
+    _FiniteShotFisherEvidence,
+)
+from .qnode_circuit_execution import (
+    _apply_gate_matrix,
+    _controlled,
+    _execute_state,
+    _operation_matrix,
+    _symmetrized_product_expectation,
+    _term_expectation,
+    execute_phase_qnode_circuit,
+)
+from .qnode_circuit_support import (
+    _as_parameter_vector,
+    _blocked_density_route_support_report,
+    _parameter_shift_terms_for_group,
+    _parsed_operations,
+    phase_qnode_gradient_support_report,
+    phase_qnode_metric_support_report,
+    phase_qnode_support_report,
+    plan_phase_qnode_parameter_shift_evaluations,
+)
+
+
+def phase_qnode_computational_basis_fisher_support_report(
+    circuit: PhaseQNodeCircuit | PhaseQNodeDensityCircuit,
+    parameters: ArrayLike,
+    *,
+    min_probability: float = 1e-15,
+) -> PhaseQNodeSupportReport:
+    """Return support metadata for exact computational-basis Fisher diagnostics."""
+    values = _as_parameter_vector(parameters)
+    threshold = _as_min_probability(min_probability)
+    if isinstance(circuit, PhaseQNodeDensityCircuit):
+        return _blocked_density_route_support_report(
+            circuit,
+            values,
+            route_name="exact computational-basis Fisher diagnostics",
+            alternatives=(
+                "use PhaseQNodeCircuit away from zero-probability boundaries",
+                "use phase_qnode_quantum_fisher_information for pure-state QFI diagnostics",
+                "route noisy, finite-shot, provider, or hardware Fisher estimators through explicit policy records",
+            ),
+        )
+    report = phase_qnode_support_report(circuit, values)
+    if not report.supported:
+        return report
+    state, _derivatives = _execute_state_and_parameter_derivatives(circuit, values)
+    probabilities = np.asarray(np.abs(state) ** 2, dtype=np.float64)
+    if np.any(probabilities <= threshold):
+        return PhaseQNodeSupportReport(
+            supported=False,
+            gates=report.gates,
+            observable_kind=report.observable_kind,
+            differentiable_parameters=report.differentiable_parameters,
+            unsupported_gates=report.unsupported_gates,
+            unsupported_observables=report.unsupported_observables,
+            unsupported_parameters=report.unsupported_parameters,
+            failure_reason=(
+                "computational-basis Fisher information is singular at a "
+                "zero-probability outcome; choose parameters away from the boundary "
+                "or use QFI/Fubini-Study diagnostics"
+            ),
+            alternatives=(
+                "increase min_probability only when the boundary is intentionally excluded",
+                "use phase_qnode_quantum_fisher_information for pure-state QFI diagnostics",
+                "use parameter_shift_phase_qnode_gradient for expectation-value gradients",
+            ),
+        )
+    return report
+
+
+def parameter_shift_phase_qnode_gradient(
+    circuit: PhaseQNodeCircuit | PhaseQNodeDensityCircuit,
+    parameters: ArrayLike,
+) -> PhaseQNodeGradientResult:
+    """Evaluate the analytic parameter-shift gradient for registered generators."""
+    values = _as_parameter_vector(parameters)
+    report = phase_qnode_gradient_support_report(circuit, values)
+    if not report.supported:
+        raise PhaseQNodeSupportError(report)
+    if isinstance(circuit, PhaseQNodeDensityCircuit):
+        raise PhaseQNodeSupportError(report)
+    plan = plan_phase_qnode_parameter_shift_evaluations(circuit, values)
+    gradient = np.zeros_like(values)
+    base_result = execute_phase_qnode_circuit(circuit, values)
+    operations_by_parameter = _parametric_operations_by_parameter(circuit)
+    for index in report.differentiable_parameters:
+        shift_terms = _parameter_shift_terms_for_group(operations_by_parameter[index])
+        if isinstance(circuit.observable, PauliCovarianceObservable):
+            if len(shift_terms) != 1:
+                raise ValueError(
+                    "Pauli covariance gradients with repeated logical parameters require "
+                    "an explicit product-rule implementation for each frequency term"
+                )
+            _frequency, shift, coefficient = shift_terms[0]
+            plus = values.copy()
+            minus = values.copy()
+            plus[index] += shift
+            minus[index] -= shift
+            plus_state = _execute_state(circuit, plus)
+            minus_state = _execute_state(circuit, minus)
+            gradient[index] = _covariance_product_rule_gradient(
+                base_result.state,
+                plus_state,
+                minus_state,
+                circuit.n_qubits,
+                circuit.observable,
+            ) * (2.0 * coefficient)
+        else:
+            total = 0.0
+            for _frequency, shift, coefficient in shift_terms:
+                plus = values.copy()
+                minus = values.copy()
+                plus[index] += shift
+                minus[index] -= shift
+                total += coefficient * (
+                    execute_phase_qnode_circuit(circuit, plus).value
+                    - execute_phase_qnode_circuit(circuit, minus).value
+                )
+            gradient[index] = total
+    return PhaseQNodeGradientResult(
+        value=base_result.value,
+        gradient=gradient,
+        support_report=report,
+        parameter_shift_evaluations=plan.parameter_shift_evaluations,
+        evaluation_plan=plan,
+    )
+
+
+def phase_qnode_quantum_fisher_information(
+    circuit: PhaseQNodeCircuit | PhaseQNodeDensityCircuit,
+    parameters: ArrayLike,
+) -> PhaseQNodeMetricTensorResult:
+    """Compute the pure-state QFI and Fubini-Study metric for a local QNode."""
+    values = _as_parameter_vector(parameters)
+    report = phase_qnode_metric_support_report(circuit, values)
+    if not report.supported:
+        raise PhaseQNodeSupportError(report)
+    if isinstance(circuit, PhaseQNodeDensityCircuit):
+        raise PhaseQNodeSupportError(report)
+    state, derivatives = _execute_state_and_parameter_derivatives(circuit, values)
+    width = values.size
+    metric = np.zeros((width, width), dtype=np.float64)
+    overlaps = np.array([np.vdot(state, derivative) for derivative in derivatives])
+    for row in range(width):
+        for column in range(row, width):
+            raw = (
+                np.vdot(derivatives[row], derivatives[column])
+                - np.conj(overlaps[row]) * overlaps[column]
+            )
+            value = float(np.real_if_close(raw).real)
+            metric[row, column] = value
+            metric[column, row] = value
+    symmetrized_metric: FloatArray = np.asarray(0.5 * (metric + metric.T), dtype=np.float64)
+    qfi: FloatArray = np.asarray(4.0 * symmetrized_metric, dtype=np.float64)
+    derivative_norms = np.asarray(
+        [np.linalg.norm(derivative) for derivative in derivatives],
+        dtype=np.float64,
+    )
+    return PhaseQNodeMetricTensorResult(
+        fubini_study_metric=symmetrized_metric,
+        quantum_fisher_information=qfi,
+        derivative_norms=derivative_norms,
+        support_report=report,
+        parameter_derivative_evaluations=len(_parsed_operations(circuit)),
+        claim_boundary=(
+            "pure-state local Phase-QNode Fubini-Study metric and QFI for the "
+            "registered statevector gate family; no finite-shot classical Fisher, "
+            "density-matrix, noisy-channel, provider, or hardware metric claim"
+        ),
+    )
+
+
+def phase_qnode_computational_basis_fisher_information(
+    circuit: PhaseQNodeCircuit | PhaseQNodeDensityCircuit,
+    parameters: ArrayLike,
+    *,
+    min_probability: float = 1e-15,
+    shot_count: int | None = None,
+    observed_counts: ArrayLike | None = None,
+    confidence_level: float = 0.95,
+    confidence_z: float = 1.959963984540054,
+) -> PhaseQNodeClassicalFisherResult:
+    """Compute computational-basis classical Fisher information.
+
+    The returned ``classical_fisher_information`` is always the exact local
+    statevector reference. ``shot_count`` adds a multinomial delta-method
+    uncertainty model around that reference distribution. ``observed_counts``
+    replays a strictly positive raw-count record as a plug-in finite-shot
+    Fisher estimate while preserving the exact analytic reference matrix.
+    """
+    values = _as_parameter_vector(parameters)
+    threshold = _as_min_probability(min_probability)
+    shots = _as_shot_count(shot_count)
+    confidence = _as_confidence_level(confidence_level)
+    z_value = _as_confidence_z(confidence_z)
+    report = phase_qnode_computational_basis_fisher_support_report(
+        circuit,
+        values,
+        min_probability=threshold,
+    )
+    if not report.supported:
+        raise PhaseQNodeSupportError(report)
+    if isinstance(circuit, PhaseQNodeDensityCircuit):
+        raise PhaseQNodeSupportError(report)
+    state, derivatives = _execute_state_and_parameter_derivatives(circuit, values)
+    probabilities = np.asarray(np.abs(state) ** 2, dtype=np.float64)
+    probability_derivatives = np.asarray(
+        [2.0 * np.real(np.conj(state) * derivative) for derivative in derivatives],
+        dtype=np.float64,
+    )
+    fisher = _classical_fisher_from_probabilities(
+        probability_derivatives,
+        probabilities,
+    )
+    finite_shot = _finite_shot_fisher_evidence(
+        probabilities,
+        probability_derivatives,
+        shots,
+        observed_counts,
+        confidence,
+        z_value,
+    )
+    claim_boundary = (
+        "exact classical Fisher information for computational-basis "
+        "probabilities from the registered local statevector Phase-QNode "
+        "family; no finite-shot estimator, hardware sampling, adaptive "
+        "measurement, or optimal-measurement claim"
+    )
+    if finite_shot.sampling_model is not None:
+        claim_boundary = (
+            "exact computational-basis classical Fisher reference plus "
+            "finite-shot multinomial uncertainty/replay evidence for the "
+            "registered local statevector Phase-QNode family; no hardware "
+            "submission, backend calibration, adaptive measurement, "
+            "optimal-measurement, or provider-runtime claim"
+        )
+    return PhaseQNodeClassicalFisherResult(
+        classical_fisher_information=fisher,
+        probabilities=probabilities,
+        probability_derivatives=probability_derivatives,
+        measurement="computational_basis",
+        min_probability=threshold,
+        support_report=report,
+        claim_boundary=claim_boundary,
+        shot_count=finite_shot.shot_count,
+        count_record=finite_shot.count_record,
+        empirical_probabilities=finite_shot.empirical_probabilities,
+        finite_shot_classical_fisher_information=(
+            finite_shot.finite_shot_classical_fisher_information
+        ),
+        fisher_standard_error=finite_shot.fisher_standard_error,
+        fisher_confidence_radius=finite_shot.fisher_confidence_radius,
+        confidence_level=finite_shot.confidence_level,
+        confidence_z=finite_shot.confidence_z,
+        sampling_model=finite_shot.sampling_model,
+    )
+
+
+def phase_qnode_natural_gradient_metric(
+    circuit: PhaseQNodeCircuit,
+) -> Callable[[FloatArray], FloatArray]:
+    """Return a metric provider for quantum natural-gradient optimisation."""
+
+    def metric(parameters: FloatArray) -> FloatArray:
+        result = phase_qnode_quantum_fisher_information(circuit, parameters)
+        metric_copy: Any = result.fubini_study_metric.copy()
+        return cast(FloatArray, metric_copy)
+
+    return metric
+
+
+def _parametric_operations_by_parameter(
+    circuit: PhaseQNodeCircuit,
+) -> dict[int, tuple[PhaseQNodeOperation, ...]]:
+    grouped: dict[int, list[PhaseQNodeOperation]] = {}
+    for operation in _parsed_operations(circuit):
+        if operation.gate in _PARAMETRIC_GATES and operation.parameter_index is not None:
+            grouped.setdefault(operation.parameter_index, []).append(operation)
+    return {index: tuple(operations) for index, operations in grouped.items()}
+
+
+def _as_min_probability(value: float) -> float:
+    raw = np.asarray(value)
+    if raw.shape != () or raw.dtype.kind in {"b", "c", "O", "S", "U"}:
+        raise ValueError("min_probability must be a non-negative finite scalar")
+    scalar = float(raw.item())
+    if scalar < 0.0 or not np.isfinite(scalar):
+        raise ValueError("min_probability must be a non-negative finite scalar")
+    return scalar
+
+
+def _as_shot_count(value: int | None) -> int | None:
+    """Return a validated optional positive shot count."""
+    if value is None:
+        return None
+    raw = np.asarray(value)
+    if raw.shape != () or raw.dtype.kind not in {"i", "u"}:
+        raise ValueError("shot_count must be a positive integer")
+    count = int(raw.item())
+    if count < 1:
+        raise ValueError("shot_count must be a positive integer")
+    return count
+
+
+def _as_confidence_level(value: float) -> float:
+    """Return a validated open-interval confidence level."""
+    confidence = _as_finite_scalar("confidence_level", value)
+    if confidence <= 0.0 or confidence >= 1.0:
+        raise ValueError("confidence_level must be between zero and one")
+    return confidence
+
+
+def _as_confidence_z(value: float) -> float:
+    """Return a validated positive normal-approximation multiplier."""
+    z_value = _as_finite_scalar("confidence_z", value)
+    if z_value <= 0.0:
+        raise ValueError("confidence_z must be finite and positive")
+    return z_value
+
+
+def _as_observed_count_record(
+    observed_counts: ArrayLike,
+    width: int,
+    shot_count: int | None,
+) -> tuple[tuple[int, ...], int]:
+    """Return a strict positive raw-count record and its total shots."""
+    raw = np.asarray(observed_counts)
+    if raw.shape != (width,):
+        raise ValueError(f"observed_counts must have shape ({width},), got {raw.shape}")
+    if raw.dtype.kind not in {"i", "u"}:
+        raise ValueError("observed_counts must be integer counts")
+    counts = np.asarray(raw, dtype=np.int64)
+    if np.any(counts <= 0):
+        raise ValueError("observed_counts must be strictly positive for finite-shot Fisher replay")
+    total = int(np.sum(counts, dtype=np.int64))
+    if shot_count is not None and total != shot_count:
+        raise ValueError("observed_counts sum must equal shot_count")
+    return tuple(int(item) for item in counts.tolist()), total
+
+
+def _classical_fisher_from_probabilities(
+    probability_derivatives: FloatArray,
+    probabilities: FloatArray,
+) -> FloatArray:
+    """Return the computational-basis Fisher matrix for probability derivatives."""
+    weighted = probability_derivatives / probabilities[np.newaxis, :]
+    fisher = np.asarray(probability_derivatives @ weighted.T, dtype=np.float64)
+    return np.asarray(0.5 * (fisher + fisher.T), dtype=np.float64)
+
+
+def _classical_fisher_delta_method_standard_error(
+    probability_derivatives: FloatArray,
+    probabilities: FloatArray,
+    shot_count: int,
+) -> FloatArray:
+    """Return multinomial delta-method standard errors for Fisher entries."""
+    width = probability_derivatives.shape[0]
+    standard_error = np.zeros((width, width), dtype=np.float64)
+    for row in range(width):
+        for column in range(row, width):
+            weights = probability_derivatives[row] * probability_derivatives[column]
+            sensitivity = -weights / np.square(probabilities)
+            mean = float(np.dot(probabilities, sensitivity))
+            second_moment = float(np.dot(probabilities, sensitivity * sensitivity))
+            variance = max(0.0, (second_moment - mean * mean) / float(shot_count))
+            value = float(np.sqrt(variance))
+            standard_error[row, column] = value
+            standard_error[column, row] = value
+    return standard_error
+
+
+def _finite_shot_fisher_evidence(
+    probabilities: FloatArray,
+    probability_derivatives: FloatArray,
+    shot_count: int | None,
+    observed_counts: ArrayLike | None,
+    confidence_level: float,
+    confidence_z: float,
+) -> _FiniteShotFisherEvidence:
+    """Return optional finite-shot Fisher uncertainty and replay evidence."""
+    if observed_counts is None and shot_count is None:
+        return _FiniteShotFisherEvidence(
+            shot_count=None,
+            count_record=None,
+            empirical_probabilities=None,
+            finite_shot_classical_fisher_information=None,
+            fisher_standard_error=None,
+            fisher_confidence_radius=None,
+            confidence_level=None,
+            confidence_z=None,
+            sampling_model=None,
+        )
+    count_record: tuple[int, ...] | None = None
+    effective_shots = shot_count
+    if observed_counts is not None:
+        count_record, effective_shots = _as_observed_count_record(
+            observed_counts,
+            probabilities.size,
+            shot_count,
+        )
+        counts = np.asarray(count_record, dtype=np.float64)
+        empirical_probabilities = np.asarray(counts / float(effective_shots), dtype=np.float64)
+        sampling_model = "multinomial_delta_method_raw_count_replay"
+    else:
+        if effective_shots is None:
+            raise ValueError("shot_count is required when observed_counts are not supplied")
+        empirical_probabilities = np.asarray(probabilities.copy(), dtype=np.float64)
+        sampling_model = "multinomial_delta_method_expected_counts"
+    finite_shot_fisher = _classical_fisher_from_probabilities(
+        probability_derivatives,
+        empirical_probabilities,
+    )
+    standard_error = _classical_fisher_delta_method_standard_error(
+        probability_derivatives,
+        empirical_probabilities,
+        effective_shots,
+    )
+    confidence_radius = np.asarray(confidence_z * standard_error, dtype=np.float64)
+    return _FiniteShotFisherEvidence(
+        shot_count=effective_shots,
+        count_record=count_record,
+        empirical_probabilities=empirical_probabilities,
+        finite_shot_classical_fisher_information=finite_shot_fisher,
+        fisher_standard_error=standard_error,
+        fisher_confidence_radius=confidence_radius,
+        confidence_level=confidence_level,
+        confidence_z=confidence_z,
+        sampling_model=sampling_model,
+    )
+
+
+def _execute_state_and_parameter_derivatives(
+    circuit: PhaseQNodeCircuit,
+    values: FloatArray,
+) -> tuple[ComplexArray, tuple[ComplexArray, ...]]:
+    state = np.zeros(2**circuit.n_qubits, dtype=np.complex128)
+    state[0] = 1.0 + 0.0j
+    derivatives = tuple(np.zeros_like(state) for _ in range(values.size))
+    for operation in _parsed_operations(circuit):
+        matrix = _operation_matrix(operation, values)
+        derivative_matrix = _operation_derivative_matrix(operation, values)
+        previous_state = state
+        state = _apply_gate_matrix(previous_state, circuit.n_qubits, operation.qubits, matrix)
+        updated: list[ComplexArray] = []
+        for index, derivative in enumerate(derivatives):
+            propagated = _apply_gate_matrix(derivative, circuit.n_qubits, operation.qubits, matrix)
+            if operation.parameter_index == index:
+                propagated = propagated + _apply_gate_matrix(
+                    previous_state,
+                    circuit.n_qubits,
+                    operation.qubits,
+                    derivative_matrix,
+                )
+            updated.append(cast(ComplexArray, propagated.astype(np.complex128, copy=False)))
+        derivatives = tuple(updated)
+    return state, derivatives
+
+
+def _operation_derivative_matrix(
+    operation: PhaseQNodeOperation,
+    parameters: FloatArray,
+) -> ComplexArray:
+    if operation.gate not in _PARAMETRIC_GATES:
+        return np.zeros(
+            (2 ** len(operation.qubits), 2 ** len(operation.qubits)), dtype=np.complex128
+        )
+    theta = float(parameters[cast(int, operation.parameter_index)])
+    return _gate_derivative_matrix(operation.gate, theta)
+
+
+def _gate_derivative_matrix(gate: str, theta: float) -> ComplexArray:
+    if gate == "rx":
+        return np.asarray(
+            -0.5 * np.sin(theta / 2.0) * _I - 0.5j * np.cos(theta / 2.0) * _X,
+            dtype=np.complex128,
+        )
+    if gate == "ry":
+        return np.asarray(
+            -0.5 * np.sin(theta / 2.0) * _I - 0.5j * np.cos(theta / 2.0) * _Y,
+            dtype=np.complex128,
+        )
+    if gate == "rz":
+        return np.asarray(
+            -0.5 * np.sin(theta / 2.0) * _I - 0.5j * np.cos(theta / 2.0) * _Z,
+            dtype=np.complex128,
+        )
+    if gate == "phase":
+        return np.array(
+            [[0.0, 0.0], [0.0, 1.0j * np.exp(1.0j * theta)]],
+            dtype=np.complex128,
+        )
+    if gate == "crx":
+        return _controlled(_gate_derivative_matrix("rx", theta))
+    if gate == "cry":
+        return _controlled(_gate_derivative_matrix("ry", theta))
+    if gate == "crz":
+        return _controlled(_gate_derivative_matrix("rz", theta))
+    if gate == "rxx":
+        return np.asarray(
+            -0.5 * np.sin(theta / 2.0) * np.eye(4, dtype=np.complex128)
+            - 0.5j * np.cos(theta / 2.0) * np.kron(_X, _X),
+            dtype=np.complex128,
+        )
+    if gate == "ryy":
+        return np.asarray(
+            -0.5 * np.sin(theta / 2.0) * np.eye(4, dtype=np.complex128)
+            - 0.5j * np.cos(theta / 2.0) * np.kron(_Y, _Y),
+            dtype=np.complex128,
+        )
+    if gate == "rzz":
+        return np.asarray(
+            -0.5 * np.sin(theta / 2.0) * np.eye(4, dtype=np.complex128)
+            - 0.5j * np.cos(theta / 2.0) * np.kron(_Z, _Z),
+            dtype=np.complex128,
+        )
+    raise ValueError(f"unsupported gate derivative matrix: {gate}")
+
+
+def _covariance_product_rule_gradient(
+    base_state: ComplexArray,
+    plus_state: ComplexArray,
+    minus_state: ComplexArray,
+    n_qubits: int,
+    observable: PauliCovarianceObservable,
+) -> float:
+    base_left = _term_expectation(base_state, n_qubits, observable.left)
+    base_right = _term_expectation(base_state, n_qubits, observable.right)
+    left_grad = 0.5 * (
+        _term_expectation(plus_state, n_qubits, observable.left)
+        - _term_expectation(minus_state, n_qubits, observable.left)
+    )
+    right_grad = 0.5 * (
+        _term_expectation(plus_state, n_qubits, observable.right)
+        - _term_expectation(minus_state, n_qubits, observable.right)
+    )
+    sym_grad = 0.5 * (
+        _symmetrized_product_expectation(
+            plus_state,
+            n_qubits,
+            observable.left,
+            observable.right,
+        )
+        - _symmetrized_product_expectation(
+            minus_state,
+            n_qubits,
+            observable.left,
+            observable.right,
+        )
+    )
+    return float(sym_grad - left_grad * base_right - base_left * right_grad)
+
+
+__all__ = [
+    "phase_qnode_computational_basis_fisher_support_report",
+    "parameter_shift_phase_qnode_gradient",
+    "phase_qnode_quantum_fisher_information",
+    "phase_qnode_computational_basis_fisher_information",
+    "phase_qnode_natural_gradient_metric",
+]

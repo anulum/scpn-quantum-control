@@ -77,9 +77,11 @@ Arbitrary-depth registration, deterministic depth/resource profiling, statevecto
 analysis, and gate-aware parameter-shift planning live in the one-way
 `phase/qnode_circuit_support.py` leaf. Deterministic statevector and density-matrix execution,
 registered gate and Kraus kernels, and observable evaluation live in the one-way
-`phase/qnode_circuit_execution.py` leaf. `phase/qnode_circuit.py` re-exports the exact objects and
-functions and retains derivative propagation, gradients, metrics, and measurements while those
-concerns are split one at a time.
+`phase/qnode_circuit_execution.py` leaf. Analytic parameter-shift gradients, derivative
+propagation, exact/finite-shot Fisher information, QFI/Fubini-Study, and natural-gradient metrics
+live in the one-way `phase/qnode_circuit_differentiation.py` leaf. `phase/qnode_circuit.py` is now
+a shallow compatibility facade that re-exports the exact contract, builder, support, execution,
+and differentiation objects without defining executable functions.
 
 | Module | Single responsibility | Why it stays whole |
 |--------|-----------------------|--------------------|

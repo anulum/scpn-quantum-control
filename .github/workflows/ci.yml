@@ -220,6 +220,7 @@ jobs:
           src/scpn_quantum_control/phase/qnode_circuit_builders.py
           src/scpn_quantum_control/phase/qnode_circuit.py
           src/scpn_quantum_control/phase/qnode_circuit_contracts.py
+          src/scpn_quantum_control/phase/qnode_circuit_differentiation.py
           src/scpn_quantum_control/phase/qnode_circuit_execution.py
           src/scpn_quantum_control/phase/qnode_circuit_support.py
           src/scpn_quantum_control/phase/pennylane_bridge.py

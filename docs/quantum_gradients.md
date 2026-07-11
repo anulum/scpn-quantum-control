@@ -1626,7 +1626,10 @@ profiling, support reports, and gate-aware parameter-shift evaluation planning l
 `phase.qnode_circuit_support` leaf and retain exact facade and phase-package function identity.
 Deterministic statevector and density execution, registered gate/Kraus kernels, and observable
 expectations live in the one-way `phase.qnode_circuit_execution` leaf and are re-exported as the
-same public function objects.
+same public function objects. Analytic parameter-shift gradients, derivative propagation,
+exact/finite-shot Fisher information, QFI/Fubini-Study, and natural-gradient metrics live in the
+one-way `phase.qnode_circuit_differentiation` leaf. `phase.qnode_circuit` is now a shallow
+compatibility facade with no executable function definitions.
 
 For the registered local Phase-QNode subset, use the executable circuit and
 parity suite when a concrete circuit family is required:
