@@ -50,6 +50,7 @@ def test_differentiable_module_hardening_registry_covers_current_scope() -> None
     assert "src/scpn_quantum_control/whole_program_ad_result.py" in module_paths
     assert "src/scpn_quantum_control/whole_program_frontend_contracts.py" in module_paths
     assert "src/scpn_quantum_control/whole_program_trace_runtime.py" in module_paths
+    assert "src/scpn_quantum_control/phase/differentiable_audit_contracts.py" in module_paths
     assert "src/scpn_quantum_control/phase/qnode_circuit.py" in module_paths
     assert "src/scpn_quantum_control/phase/jax_bridge.py" in module_paths
     assert "src/scpn_quantum_control/phase/torch_autograd_function.py" in module_paths

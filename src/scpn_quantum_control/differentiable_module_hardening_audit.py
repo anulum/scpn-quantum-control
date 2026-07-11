@@ -586,6 +586,11 @@ def differentiable_module_hardening_registry() -> tuple[DifferentiableModuleHard
             ),
         ),
         _record(
+            "src/scpn_quantum_control/phase/differentiable_audit_contracts.py",
+            ("tests/test_phase_differentiable_audit_contracts.py",),
+            ("immutable audit-report validation", "JSON-ready evidence serialization"),
+        ),
+        _record(
             "src/scpn_quantum_control/phase/differentiable_audit.py",
             ("tests/test_phase_differentiable_audit.py",),
             ("audit-suite failure rows", "bounded workflow diagnostics"),

@@ -88,6 +88,13 @@ Keras-layer, Phase-QNode lowering-matrix, and maturity evidence live in
 the exact contracts and helpers, keeps optional loading, and injects that active loader through
 signature-stable wrappers.
 
+The differentiable audit decomposition separates immutable evidence contracts from audit
+execution. The shared float-array alias, four closed validation/serialization helpers, and seven
+analytic-agreement, workflow, finite-shot, benchmark, and ML-framework report records live in the
+one-way `phase/differentiable_audit_contracts.py` leaf. The remaining
+`phase/differentiable_audit.py` executable facade re-exports those exact records and retains the
+adapter protocol, objective aliases, execution helpers, and bounded audit runners.
+
 The Phase-QNode circuit decomposition starts from a dependency-free declaration layer. All 21
 circuit, observable, support, execution, gradient, metric, and Fisher record classes plus their
 registry constants and constructor validators live in `phase/qnode_circuit_contracts.py`.

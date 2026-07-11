@@ -10,10 +10,10 @@
     "public_api_exports": 835,
     "public_documentation_pages": 269,
     "python_model_classes": 1003,
-    "python_model_source_modules": 553,
+    "python_model_source_modules": 554,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 49,
-    "test_files": 934
+    "test_files": 935
   },
   "documentation": {
     "examples": [
@@ -561,7 +561,7 @@
       {
         "package": "phase",
         "path": "src/scpn_quantum_control/phase",
-        "python_modules": 115
+        "python_modules": 116
       },
       {
         "package": "psi_field",
@@ -1472,7 +1472,7 @@
       },
       {
         "name": "DifferentiableQuantumAuditReport",
-        "path": "src/scpn_quantum_control/phase/differentiable_audit.py"
+        "path": "src/scpn_quantum_control/phase/differentiable_audit_contracts.py"
       },
       {
         "name": "DifferentiableReadinessAuditRecord",
@@ -1504,7 +1504,7 @@
       },
       {
         "name": "DifferentiableWorkflowAuditSuiteResult",
-        "path": "src/scpn_quantum_control/phase/differentiable_audit.py"
+        "path": "src/scpn_quantum_control/phase/differentiable_audit_contracts.py"
       },
       {
         "name": "DifferentiateActionHandler",
@@ -1824,7 +1824,7 @@
       },
       {
         "name": "FiniteShotGradientAuditResult",
-        "path": "src/scpn_quantum_control/phase/differentiable_audit.py"
+        "path": "src/scpn_quantum_control/phase/differentiable_audit_contracts.py"
       },
       {
         "name": "FiniteShotSampleProvenance",
@@ -2396,11 +2396,11 @@
       },
       {
         "name": "MLFrameworkGradientAuditRecord",
-        "path": "src/scpn_quantum_control/phase/differentiable_audit.py"
+        "path": "src/scpn_quantum_control/phase/differentiable_audit_contracts.py"
       },
       {
         "name": "MLFrameworkGradientAuditSuiteResult",
-        "path": "src/scpn_quantum_control/phase/differentiable_audit.py"
+        "path": "src/scpn_quantum_control/phase/differentiable_audit_contracts.py"
       },
       {
         "name": "MLIRCompileConfig",
@@ -2660,7 +2660,7 @@
       },
       {
         "name": "ParameterShiftAnalyticAgreement",
-        "path": "src/scpn_quantum_control/phase/differentiable_audit.py"
+        "path": "src/scpn_quantum_control/phase/differentiable_audit_contracts.py"
       },
       {
         "name": "ParameterShiftNaturalGradientCertificate",
@@ -2908,7 +2908,7 @@
       },
       {
         "name": "PhaseGradientBenchmarkSuiteResult",
-        "path": "src/scpn_quantum_control/phase/differentiable_audit.py"
+        "path": "src/scpn_quantum_control/phase/differentiable_audit_contracts.py"
       },
       {
         "name": "PhaseJAXCloudValidationRunSpec",
@@ -4970,6 +4970,7 @@
       "src/scpn_quantum_control/phase/coupling_time_series_recovery.py",
       "src/scpn_quantum_control/phase/cross_domain_transfer.py",
       "src/scpn_quantum_control/phase/differentiable_audit.py",
+      "src/scpn_quantum_control/phase/differentiable_audit_contracts.py",
       "src/scpn_quantum_control/phase/differentiable_readiness.py",
       "src/scpn_quantum_control/phase/domain_benchmark_datasets.py",
       "src/scpn_quantum_control/phase/floquet_kuramoto.py",
@@ -6819,6 +6820,7 @@
       "tests/test_phase_diagram.py",
       "tests/test_phase_diagram_branches.py",
       "tests/test_phase_differentiable_audit.py",
+      "tests/test_phase_differentiable_audit_contracts.py",
       "tests/test_phase_differentiable_readiness.py",
       "tests/test_phase_differentiable_readiness_docstrings.py",
       "tests/test_phase_domain_benchmark_datasets.py",
