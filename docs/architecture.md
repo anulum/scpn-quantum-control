@@ -119,7 +119,7 @@ facade that re-exports the exact core, normalization, and provider-adapter objec
 
 | Module | Single responsibility | Why it stays whole |
 |--------|-----------------------|--------------------|
-| `whole_program_trace_values.py` | Operator-intercepted forward-AD trace value runtime (`TraceADScalar`/`TraceADArray` and helpers) | Mutually recursive; splitting creates import cycles |
+| `whole_program_trace_values.py` | Operator-intercepted forward-AD trace value runtime (`TraceADScalar`/`TraceADArray` and helpers) | Cohesion audit: 106/122 definitions form one strongly connected component; class dispatch and value construction make primitive-family splits cyclic |
 | `benchmarks/differentiable_programming.py` | Differentiable-programming benchmark suite | Cases share one case/result-record framework |
 | `program_ad_linalg_primitives.py` | Program-AD linear-algebra primitive rules and conditioning diagnostics | One dominant cluster; satellites are registry-dispatched rules |
 | `whole_program_frontend.py` | Whole-program compiler frontend report and assembly | One connected cluster |
