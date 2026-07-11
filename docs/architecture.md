@@ -68,6 +68,13 @@ planning, live-overlay validation, and maturity aggregation live in `phase/torch
 the remaining 681-line facade contains signature-stable public wrappers and result/helper
 re-exports rather than mixed execution concerns.
 
+The Qiskit bridge decomposition begins with the record/validation graph. All nine shifted-circuit,
+gradient, Runtime, provider-workflow, evidence-bundle, and maturity records plus provider-method
+registries, constructor validation, and JSON-ready serialization live in the one-way
+`phase/qiskit_bridge_contracts.py` leaf. `phase/qiskit_bridge.py` re-exports those exact objects and
+retains shifted-circuit execution, Runtime capture builders, and maturity orchestration while the
+remaining concerns are split.
+
 The Phase-QNode circuit decomposition starts from a dependency-free declaration layer. All 21
 circuit, observable, support, execution, gradient, metric, and Fisher record classes plus their
 registry constants and constructor validators live in `phase/qnode_circuit_contracts.py`.
