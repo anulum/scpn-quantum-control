@@ -2322,7 +2322,9 @@ NumPy/stdlib-only `phase.torch_bridge_contracts` leaf. The executable bridge and
 re-export the same class objects. Optional Torch loading, numeric/tensor validation, host
 parameter-shift conversion, analytic bounded-QNN gradients, and custom-autograd bounded-QNN
 gradients live in `phase.torch_gradients`; the facade retains the established public signatures
-and injects its active loader.
+and injects its active loader. Deterministic registered Phase-QNode statevector execution,
+`torch.func` transforms, `torch.compile` diagnostics, and compiler-boundary routes live in the
+one-way `phase.torch_qnode_transforms` leaf under the same facade boundary.
 
 For ML pipelines that need framework tensors, the phase namespace exposes
 host-boundary adapters, deterministic registered statevector routes, and

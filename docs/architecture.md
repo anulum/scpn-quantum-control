@@ -59,8 +59,10 @@ The Torch bridge is undergoing the same bounded decomposition. Its 19 immutable 
 evidence, matrix, and cloud-plan records live in the dependency-free
 `phase/torch_bridge_contracts.py` leaf. Optional Torch loading, numeric/tensor validation, and the
 parameter-shift, analytic tensor, and custom-autograd bounded gradient routes live in the one-way
-`phase/torch_gradients.py` leaf. `phase/torch_bridge.py` and the phase package retain the established
-public surfaces while later executable concerns are assessed one cluster at a time.
+`phase/torch_gradients.py` leaf. Deterministic registered Phase-QNode statevector execution,
+`torch.func` transforms, `torch.compile` diagnostics, and compiler-boundary routes live in the
+one-way `phase/torch_qnode_transforms.py` leaf. `phase/torch_bridge.py` and the phase package retain
+the established public surfaces while later executable concerns are assessed one cluster at a time.
 
 | Module | Single responsibility | Why it stays whole |
 |--------|-----------------------|--------------------|
