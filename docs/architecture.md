@@ -68,13 +68,19 @@ planning, live-overlay validation, and maturity aggregation live in `phase/torch
 the remaining 681-line facade contains signature-stable public wrappers and result/helper
 re-exports rather than mixed execution concerns.
 
+The Phase-QNode circuit decomposition starts from a dependency-free declaration layer. All 21
+circuit, observable, support, execution, gradient, metric, and Fisher record classes plus their
+registry constants and constructor validators live in `phase/qnode_circuit_contracts.py`.
+`phase/qnode_circuit.py` re-exports the exact objects and retains executable builders, support
+analysis, execution, gradients, measurements, and numerical kernels while those concerns are
+split one at a time.
+
 | Module | Single responsibility | Why it stays whole |
 |--------|-----------------------|--------------------|
 | `whole_program_trace_values.py` | Operator-intercepted forward-AD trace value runtime (`TraceADScalar`/`TraceADArray` and helpers) | Mutually recursive; splitting creates import cycles |
 | `benchmarks/differentiable_programming.py` | Differentiable-programming benchmark suite | Cases share one case/result-record framework |
 | `program_ad_linalg_primitives.py` | Program-AD linear-algebra primitive rules and conditioning diagnostics | One dominant cluster; satellites are registry-dispatched rules |
 | `hardware/provider_capability_discovery.py` | Per-provider capability snapshot extraction | One discovery framework shared across providers |
-| `phase/qnode_circuit.py` | Phase QNode circuit support, gate matrices and parameter-shift planning | One dominant cluster plus registry accessors |
 | `whole_program_frontend.py` | Whole-program compiler frontend report and assembly | One connected cluster |
 | `program_ad_assembly_primitives.py` | Program-AD assembly primitive rules (stack/concat/triu/tril) | One dominant cluster |
 

@@ -1615,6 +1615,11 @@ status against the native parameter-shift reference. It executes available
 adapters, records missing optional dependencies as unavailable, and blocks
 PennyLane execution until a caller supplies a QNode gradient callable.
 
+The shared Phase-QNode circuit, observable, support, execution, gradient, metric, and Fisher record
+classes plus registered vocabulary and constructor validation live in the NumPy/stdlib-only
+`phase.qnode_circuit_contracts` leaf. The executable `phase.qnode_circuit` facade and phase package
+re-export the same public class objects while retaining the established functional API.
+
 For the registered local Phase-QNode subset, use the executable circuit and
 parity suite when a concrete circuit family is required:
 
