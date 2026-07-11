@@ -45,14 +45,15 @@ The following modules are **intentionally retained at their current size** becau
 a single connected responsibility cluster. They are deliberate architecture, not pending
 refactors:
 
-The JAX bridge is undergoing staged decomposition under the extraction gate. Immutable result
-records live in the dependency-free `phase/jax_bridge_contracts.py` leaf, and bounded
+The JAX bridge completed staged decomposition under the extraction gate. Immutable result records
+live in the dependency-free `phase/jax_bridge_contracts.py` leaf, and bounded
 parameter-shift/native/custom-VJP QNN implementations live in the one-way
 `phase/jax_gradients.py` leaf. Registered-QNode statevector, flat/PyTree transform, PMAP-sharding,
 and AOT/export execution lives in the one-way `phase/jax_qnode_transforms.py` leaf. Bounded-QNN
 JIT/VMAP/PMAP/PyTree compatibility and nested-transform algebra live in the one-way
-`phase/jax_compatibility.py` leaf. The facade retains signature-stable wrappers, lowering
-matrices, and maturity/cloud orchestration while the final cluster is assessed.
+`phase/jax_compatibility.py` leaf. Lowering declarations, cloud planning, and maturity aggregation
+live in `phase/jax_maturity.py`; the remaining 575-line facade contains signature-stable public
+wrappers and result re-exports rather than mixed execution concerns.
 
 | Module | Single responsibility | Why it stays whole |
 |--------|-----------------------|--------------------|

@@ -1896,7 +1896,8 @@ parameter-shift calls. Its immutable evidence records live in the dependency-fre
 implementations live in `phase.jax_gradients`. Registered local Phase-QNode statevector,
 flat/PyTree transform, PMAP-sharding, and AOT/export execution lives in
 `phase.jax_qnode_transforms`; bounded-QNN JIT/VMAP/PMAP/PyTree and nested-transform audits live in
-`phase.jax_compatibility`. The facade re-exports the records, retains the established public
+`phase.jax_compatibility`; lowering declarations, cloud planning, and maturity aggregation live in
+`phase.jax_maturity`. The shallow facade re-exports the records, retains the established public
 function signatures, and injects its optional-JAX loader under the same fail-closed boundary:
 
 ```python
