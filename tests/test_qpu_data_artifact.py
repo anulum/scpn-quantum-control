@@ -10,9 +10,12 @@
 from __future__ import annotations
 
 import json
+from pathlib import Path
+from typing import Any, cast
 
 import numpy as np
 import pytest
+from numpy.typing import NDArray
 
 from scpn_quantum_control.bridge.qpu_data_artifact import (
     QPUDataArtifact,
@@ -24,13 +27,15 @@ from scpn_quantum_control.bridge.qpu_data_artifact import (
 )
 
 
-def _valid_knm(n: int = 4) -> np.ndarray:
+def _valid_knm(n: int = 4) -> NDArray[np.float64]:
+    """Build a symmetric float64 coupling matrix with a zero diagonal."""
     K = np.full((n, n), 0.2, dtype=np.float64)
     np.fill_diagonal(K, 0.0)
     return K
 
 
-def test_real_artifact_roundtrip_and_hashes(tmp_path):
+def test_real_artifact_roundtrip_and_hashes(tmp_path: Path) -> None:
+    """Verify that real artifact roundtrip and hashes."""
     artifact = artifact_from_arrays(
         domain="connectome",
         source_name="c_elegans_sub",
@@ -59,7 +64,8 @@ def test_real_artifact_roundtrip_and_hashes(tmp_path):
     assert loaded.metadata["compiler"] == "phase-orchestrator"
 
 
-def test_publication_gate_rejects_synthetic_artifact():
+def test_publication_gate_rejects_synthetic_artifact() -> None:
+    """Verify that publication gate rejects synthetic artifact."""
     artifact = artifact_from_arrays(
         domain="scpn",
         source_name="datastream-fixture",
@@ -77,7 +83,8 @@ def test_publication_gate_rejects_synthetic_artifact():
     assert validate_qpu_data_artifact(artifact, require_publication_safe=False) is artifact
 
 
-def test_publication_gate_requires_timestamp_or_replay_id():
+def test_publication_gate_requires_timestamp_or_replay_id() -> None:
+    """Verify that publication gate requires timestamp or replay id."""
     artifact = artifact_from_arrays(
         domain="power-grid",
         source_name="grid",
@@ -92,7 +99,8 @@ def test_publication_gate_requires_timestamp_or_replay_id():
         artifact.require_publication_safe()
 
 
-def test_artifact_to_kuramoto_problem_preserves_provenance_metadata():
+def test_artifact_to_kuramoto_problem_preserves_provenance_metadata() -> None:
+    """Verify that artifact to kuramoto problem preserves provenance metadata."""
     artifact = artifact_from_arrays(
         domain="power-grid",
         source_name="ieee5bus_power_grid",
@@ -119,7 +127,8 @@ def test_artifact_to_kuramoto_problem_preserves_provenance_metadata():
     assert problem.metadata["artifact_sha256"] == artifact.to_dict()["artifact_sha256"]
 
 
-def test_rejects_invalid_knm_invariants():
+def test_rejects_invalid_knm_invariants() -> None:
+    """Verify that rejects invalid K_nm invariants."""
     with pytest.raises(ValueError, match="at least one oscillator"):
         artifact_from_arrays(
             domain="x",
@@ -215,7 +224,8 @@ def test_rejects_invalid_knm_invariants():
         )
 
 
-def test_rejects_shape_mismatch_and_missing_metadata():
+def test_rejects_shape_mismatch_and_missing_metadata() -> None:
+    """Verify that rejects shape mismatch and missing metadata."""
     with pytest.raises(ValueError, match="omega shape"):
         artifact_from_arrays(
             domain="x",
@@ -241,13 +251,14 @@ def test_rejects_shape_mismatch_and_missing_metadata():
         )
 
 
-def test_rejects_implicit_numeric_string_coercion():
+def test_rejects_implicit_numeric_string_coercion() -> None:
+    """Verify that rejects implicit numeric string coercion."""
     with pytest.raises(ValueError, match="K_nm entries must be numeric"):
         artifact_from_arrays(
             domain="x",
             source_name="x",
             source_mode="recorded",
-            K_nm=[["0.0", "0.2"], ["0.2", "0.0"]],
+            K_nm=cast(Any, [["0.0", "0.2"], ["0.2", "0.0"]]),
             omega=[1.0, 2.0],
             normalization="n",
             extraction_method="e",
@@ -255,7 +266,8 @@ def test_rejects_implicit_numeric_string_coercion():
         )
 
 
-def test_rejects_ragged_knm_payloads_with_contract_error():
+def test_rejects_ragged_knm_payloads_with_contract_error() -> None:
+    """Verify that rejects ragged K_nm payloads with contract error."""
     with pytest.raises(ValueError, match="K_nm must be a rectangular numeric array"):
         artifact_from_arrays(
             domain="x",
@@ -269,7 +281,8 @@ def test_rejects_ragged_knm_payloads_with_contract_error():
         )
 
 
-def test_rejects_boolean_frequency_payloads():
+def test_rejects_boolean_frequency_payloads() -> None:
+    """Verify that rejects boolean frequency payloads."""
     with pytest.raises(ValueError, match="omega entries must be numeric"):
         artifact_from_arrays(
             domain="x",
@@ -283,7 +296,8 @@ def test_rejects_boolean_frequency_payloads():
         )
 
 
-def test_rejects_complex_initial_phases():
+def test_rejects_complex_initial_phases() -> None:
+    """Verify that rejects complex initial phases."""
     with pytest.raises(ValueError, match="theta0 entries must be real numeric"):
         artifact_from_arrays(
             domain="x",
@@ -291,14 +305,15 @@ def test_rejects_complex_initial_phases():
             source_mode="recorded",
             K_nm=_valid_knm(2),
             omega=[1.0, 2.0],
-            theta0=[0.0, 1.0 + 0.0j],
+            theta0=cast(Any, [0.0, 1.0 + 0.0j]),
             normalization="n",
             extraction_method="e",
             replay_id="r",
         )
 
 
-def test_from_scpn_datastream_payload_defaults_to_synthetic():
+def test_from_scpn_datastream_payload_defaults_to_synthetic() -> None:
+    """Verify that from SCPN datastream payload defaults to synthetic."""
     payload = {
         "schema_version": "sc-neurocore.scpn.datastream.v1",
         "source_project": "sc-neurocore",
@@ -318,7 +333,8 @@ def test_from_scpn_datastream_payload_defaults_to_synthetic():
     np.testing.assert_allclose(artifact.K_nm, _valid_knm(4))
 
 
-def test_scpn_datastream_adapter_rejects_implicit_numeric_coercion():
+def test_scpn_datastream_adapter_rejects_implicit_numeric_coercion() -> None:
+    """Verify that SCPN datastream adapter rejects implicit numeric coercion."""
     payload = {
         "schema_version": "sc-neurocore.scpn.datastream.v1",
         "source_project": "sc-neurocore",
@@ -335,7 +351,8 @@ def test_scpn_datastream_adapter_rejects_implicit_numeric_coercion():
         QPUDataArtifact.from_scpn_datastream_payload(payload)
 
 
-def test_scpn_datastream_adapter_rejects_non_string_layer_ids():
+def test_scpn_datastream_adapter_rejects_non_string_layer_ids() -> None:
+    """Verify that SCPN datastream adapter rejects non string layer ids."""
     payload = {
         "schema_version": "sc-neurocore.scpn.datastream.v1",
         "source_project": "sc-neurocore",
@@ -352,12 +369,14 @@ def test_scpn_datastream_adapter_rejects_non_string_layer_ids():
         QPUDataArtifact.from_scpn_datastream_payload(payload)
 
 
-def test_scpn_datastream_adapter_rejects_non_mapping_payloads():
+def test_scpn_datastream_adapter_rejects_non_mapping_payloads() -> None:
+    """Verify that SCPN datastream adapter rejects non mapping payloads."""
     with pytest.raises(ValueError, match="SC-NeuroCore datastream payload must be a mapping"):
-        QPUDataArtifact.from_scpn_datastream_payload([("schema_version", "wrong")])
+        QPUDataArtifact.from_scpn_datastream_payload(cast(Any, [("schema_version", "wrong")]))
 
 
-def test_scpn_datastream_adapter_requires_seed_for_replay_identity():
+def test_scpn_datastream_adapter_requires_seed_for_replay_identity() -> None:
+    """Verify that SCPN datastream adapter requires seed for replay identity."""
     payload = {
         "schema_version": "sc-neurocore.scpn.datastream.v1",
         "source_project": "sc-neurocore",
@@ -373,7 +392,8 @@ def test_scpn_datastream_adapter_requires_seed_for_replay_identity():
         QPUDataArtifact.from_scpn_datastream_payload(payload)
 
 
-def test_scpn_datastream_adapter_rejects_non_integer_seed():
+def test_scpn_datastream_adapter_rejects_non_integer_seed() -> None:
+    """Verify that SCPN datastream adapter rejects non integer seed."""
     payload = {
         "schema_version": "sc-neurocore.scpn.datastream.v1",
         "source_project": "sc-neurocore",
@@ -390,7 +410,8 @@ def test_scpn_datastream_adapter_rejects_non_integer_seed():
         QPUDataArtifact.from_scpn_datastream_payload(payload)
 
 
-def test_scpn_datastream_adapter_rejects_n_layers_mismatch():
+def test_scpn_datastream_adapter_rejects_n_layers_mismatch() -> None:
+    """Verify that SCPN datastream adapter rejects n layers mismatch."""
     payload = {
         "schema_version": "sc-neurocore.scpn.datastream.v1",
         "source_project": "sc-neurocore",
@@ -407,7 +428,8 @@ def test_scpn_datastream_adapter_rejects_n_layers_mismatch():
         QPUDataArtifact.from_scpn_datastream_payload(payload)
 
 
-def test_scpn_datastream_adapter_rejects_invalid_dt_s():
+def test_scpn_datastream_adapter_rejects_invalid_dt_s() -> None:
+    """Verify that SCPN datastream adapter rejects invalid dt s."""
     payload = {
         "schema_version": "sc-neurocore.scpn.datastream.v1",
         "source_project": "sc-neurocore",
@@ -424,7 +446,8 @@ def test_scpn_datastream_adapter_rejects_invalid_dt_s():
         QPUDataArtifact.from_scpn_datastream_payload(payload)
 
 
-def test_scpn_datastream_adapter_rejects_invalid_n_steps():
+def test_scpn_datastream_adapter_rejects_invalid_n_steps() -> None:
+    """Verify that SCPN datastream adapter rejects invalid n steps."""
     payload = {
         "schema_version": "sc-neurocore.scpn.datastream.v1",
         "source_project": "sc-neurocore",
@@ -441,7 +464,8 @@ def test_scpn_datastream_adapter_rejects_invalid_n_steps():
         QPUDataArtifact.from_scpn_datastream_payload(payload)
 
 
-def test_scpn_datastream_adapter_rejects_blank_source_project():
+def test_scpn_datastream_adapter_rejects_blank_source_project() -> None:
+    """Verify that SCPN datastream adapter rejects blank source project."""
     payload = {
         "schema_version": "sc-neurocore.scpn.datastream.v1",
         "source_project": "   ",
@@ -458,7 +482,8 @@ def test_scpn_datastream_adapter_rejects_blank_source_project():
         QPUDataArtifact.from_scpn_datastream_payload(payload)
 
 
-def test_scpn_datastream_adapter_hashes_canonical_source_project():
+def test_scpn_datastream_adapter_hashes_canonical_source_project() -> None:
+    """Verify that SCPN datastream adapter hashes canonical source project."""
     base_payload = {
         "schema_version": "sc-neurocore.scpn.datastream.v1",
         "source_project": "sc-neurocore",
@@ -480,7 +505,8 @@ def test_scpn_datastream_adapter_hashes_canonical_source_project():
     assert padded.metadata["payload_sha256"] == baseline.metadata["payload_sha256"]
 
 
-def test_scpn_datastream_adapter_hashes_canonical_layer_ids():
+def test_scpn_datastream_adapter_hashes_canonical_layer_ids() -> None:
+    """Verify that SCPN datastream adapter hashes canonical layer ids."""
     base_payload = {
         "schema_version": "sc-neurocore.scpn.datastream.v1",
         "source_project": "sc-neurocore",
@@ -502,7 +528,8 @@ def test_scpn_datastream_adapter_hashes_canonical_layer_ids():
     assert padded.metadata["payload_sha256"] == baseline.metadata["payload_sha256"]
 
 
-def test_scpn_datastream_adapter_hashes_canonical_numeric_containers():
+def test_scpn_datastream_adapter_hashes_canonical_numeric_containers() -> None:
+    """Verify that SCPN datastream adapter hashes canonical numeric containers."""
     base_payload = {
         "schema_version": "sc-neurocore.scpn.datastream.v1",
         "source_project": "sc-neurocore",
@@ -524,7 +551,8 @@ def test_scpn_datastream_adapter_hashes_canonical_numeric_containers():
     assert integer_variant.metadata["payload_sha256"] == baseline.metadata["payload_sha256"]
 
 
-def test_scpn_datastream_adapter_ignores_extra_keys_in_payload_fingerprint():
+def test_scpn_datastream_adapter_ignores_extra_keys_in_payload_fingerprint() -> None:
+    """Verify that SCPN datastream adapter ignores extra keys in payload fingerprint."""
     base_payload = {
         "schema_version": "sc-neurocore.scpn.datastream.v1",
         "source_project": "sc-neurocore",
@@ -545,7 +573,8 @@ def test_scpn_datastream_adapter_ignores_extra_keys_in_payload_fingerprint():
     assert annotated.metadata["payload_sha256"] == baseline.metadata["payload_sha256"]
 
 
-def test_scpn_datastream_adapter_rejects_publication_safe_source_mode():
+def test_scpn_datastream_adapter_rejects_publication_safe_source_mode() -> None:
+    """Verify that SCPN datastream adapter rejects publication safe source mode."""
     payload = {
         "schema_version": "sc-neurocore.scpn.datastream.v1",
         "source_project": "sc-neurocore",
@@ -564,25 +593,31 @@ def test_scpn_datastream_adapter_rejects_publication_safe_source_mode():
         QPUDataArtifact.from_scpn_datastream_payload(payload, source_mode="recorded")
 
 
-def test_scpn_datastream_adapter_rejects_invalid_identity_overrides_before_payload_work():
+def test_scpn_datastream_adapter_rejects_invalid_identity_overrides_before_payload_work() -> None:
+    """Verify that SCPN datastream adapter rejects invalid identity overrides before
+    payload work.
+    """
     with pytest.raises(ValueError, match="domain must be a string"):
         QPUDataArtifact.from_scpn_datastream_payload(
-            [("schema_version", "wrong")],
-            domain=123,
+            cast(Any, [("schema_version", "wrong")]),
+            domain=cast(Any, 123),
         )
 
 
-def test_json_loader_rejects_wrong_schema():
+def test_json_loader_rejects_wrong_schema() -> None:
+    """Verify that JSON loader rejects wrong schema."""
     with pytest.raises(ValueError, match="schema"):
         QPUDataArtifact.from_json(json.dumps({"schema_version": "wrong"}))
 
 
-def test_loader_rejects_non_mapping_payloads_with_contract_error():
+def test_loader_rejects_non_mapping_payloads_with_contract_error() -> None:
+    """Verify that loader rejects non mapping payloads with contract error."""
     with pytest.raises(ValueError, match="artifact payload must be a mapping"):
-        QPUDataArtifact.from_dict([("schema_version", "wrong")])
+        QPUDataArtifact.from_dict(cast(Any, [("schema_version", "wrong")]))
 
 
-def test_loader_rejects_stale_array_hashes():
+def test_loader_rejects_stale_array_hashes() -> None:
+    """Verify that loader rejects stale array hashes."""
     artifact = artifact_from_arrays(
         domain="connectome",
         source_name="tamper-check",
@@ -601,7 +636,8 @@ def test_loader_rejects_stale_array_hashes():
         QPUDataArtifact.from_dict(payload)
 
 
-def test_loader_rejects_stale_artifact_hash_after_metadata_tamper():
+def test_loader_rejects_stale_artifact_hash_after_metadata_tamper() -> None:
+    """Verify that loader rejects stale artifact hash after metadata tamper."""
     artifact = artifact_from_arrays(
         domain="connectome",
         source_name="tamper-check",
@@ -620,7 +656,8 @@ def test_loader_rejects_stale_artifact_hash_after_metadata_tamper():
         QPUDataArtifact.from_dict(payload)
 
 
-def test_loader_rejects_malformed_artifact_hash():
+def test_loader_rejects_malformed_artifact_hash() -> None:
+    """Verify that loader rejects malformed artifact hash."""
     artifact = artifact_from_arrays(
         domain="connectome",
         source_name="hash-syntax-check",
@@ -639,7 +676,8 @@ def test_loader_rejects_malformed_artifact_hash():
         QPUDataArtifact.from_dict(payload)
 
 
-def test_artifact_arrays_are_defensive_copies_and_read_only():
+def test_artifact_arrays_are_defensive_copies_and_read_only() -> None:
+    """Verify that artifact arrays are defensive copies and read only."""
     K_nm = _valid_knm(3)
     omega = np.array([0.1, 0.2, 0.3], dtype=np.float64)
     theta0 = np.array([0.0, 0.1, 0.2], dtype=np.float64)
@@ -670,7 +708,8 @@ def test_artifact_arrays_are_defensive_copies_and_read_only():
         artifact.K_nm[0, 1] = 0.7
 
 
-def test_artifact_mappings_are_defensive_copies_and_read_only():
+def test_artifact_mappings_are_defensive_copies_and_read_only() -> None:
+    """Verify that artifact mappings are defensive copies and read only."""
     metadata = {"acquisition": "original"}
     artifact = QPUDataArtifact(
         domain="connectome",
@@ -690,13 +729,14 @@ def test_artifact_mappings_are_defensive_copies_and_read_only():
     assert artifact.metadata["acquisition"] == "original"
     assert artifact.hashes["K_nm_sha256"] == original_k_nm_hash
     with pytest.raises(TypeError):
-        artifact.metadata["acquisition"] = "blocked"
+        cast(dict[str, Any], artifact.metadata)["acquisition"] = "blocked"
     with pytest.raises(TypeError):
-        artifact.hashes["K_nm_sha256"] = "blocked"
+        cast(dict[str, str], artifact.hashes)["K_nm_sha256"] = "blocked"
 
 
-def test_artifact_metadata_is_deep_frozen_and_serializes_as_json_lists():
-    nested_metadata = {
+def test_artifact_metadata_is_deep_frozen_and_serializes_as_json_lists() -> None:
+    """Verify that artifact metadata is deep frozen and serializes as JSON lists."""
+    nested_metadata: dict[str, Any] = {
         "calibration": {
             "operator": "source-a",
             "window": [0.0, 1.0],
@@ -728,7 +768,8 @@ def test_artifact_metadata_is_deep_frozen_and_serializes_as_json_lists():
     assert serialized["metadata"]["calibration"]["window"] == [0.0, 1.0]
 
 
-def test_layer_assignments_are_defensive_copies_and_read_only():
+def test_layer_assignments_are_defensive_copies_and_read_only() -> None:
+    """Verify that layer assignments are defensive copies and read only."""
     layer_assignments = ["cortex", "thalamus", "brainstem"]
     artifact = artifact_from_arrays(
         domain="connectome",
@@ -746,11 +787,12 @@ def test_layer_assignments_are_defensive_copies_and_read_only():
 
     assert artifact.layer_assignments == ("cortex", "thalamus", "brainstem")
     with pytest.raises(AttributeError):
-        artifact.layer_assignments.append("blocked")
+        cast(list[str], artifact.layer_assignments).append("blocked")
     assert artifact.to_dict()["layer_assignments"] == ["cortex", "thalamus", "brainstem"]
 
 
-def test_layer_assignments_reject_non_string_labels():
+def test_layer_assignments_reject_non_string_labels() -> None:
+    """Verify that layer assignments reject non string labels."""
     with pytest.raises(ValueError, match="layer_assignments entries must be strings"):
         artifact_from_arrays(
             domain="connectome",
@@ -761,11 +803,12 @@ def test_layer_assignments_reject_non_string_labels():
             normalization="documented",
             extraction_method="unit-test",
             replay_id="source-run-1",
-            layer_assignments=["cortex", 2, "brainstem"],
+            layer_assignments=cast(Any, ["cortex", 2, "brainstem"]),
         )
 
 
-def test_layer_assignments_reject_blank_labels():
+def test_layer_assignments_reject_blank_labels() -> None:
+    """Verify that layer assignments reject blank labels."""
     with pytest.raises(ValueError, match="layer_assignments entries must be non-empty"):
         artifact_from_arrays(
             domain="connectome",
@@ -780,7 +823,8 @@ def test_layer_assignments_reject_blank_labels():
         )
 
 
-def test_metadata_rejects_non_string_keys():
+def test_metadata_rejects_non_string_keys() -> None:
+    """Verify that metadata rejects non string keys."""
     with pytest.raises(ValueError, match="metadata keys must be strings"):
         artifact_from_arrays(
             domain="connectome",
@@ -791,11 +835,12 @@ def test_metadata_rejects_non_string_keys():
             normalization="documented",
             extraction_method="unit-test",
             replay_id="source-run-1",
-            metadata={1: "not-a-json-object-key"},
+            metadata=cast(Any, {1: "not-a-json-object-key"}),
         )
 
 
-def test_metadata_rejects_non_finite_floats():
+def test_metadata_rejects_non_finite_floats() -> None:
+    """Verify that metadata rejects non finite floats."""
     with pytest.raises(ValueError, match="metadata floats must be finite"):
         artifact_from_arrays(
             domain="connectome",
@@ -810,7 +855,8 @@ def test_metadata_rejects_non_finite_floats():
         )
 
 
-def test_metadata_rejects_non_json_values():
+def test_metadata_rejects_non_json_values() -> None:
+    """Verify that metadata rejects non JSON values."""
     with pytest.raises(ValueError, match="metadata values must be JSON-compatible"):
         artifact_from_arrays(
             domain="connectome",
@@ -825,7 +871,8 @@ def test_metadata_rejects_non_json_values():
         )
 
 
-def test_hashes_reject_unknown_keys():
+def test_hashes_reject_unknown_keys() -> None:
+    """Verify that hashes reject unknown keys."""
     with pytest.raises(ValueError, match="unknown hash key"):
         QPUDataArtifact(
             domain="connectome",
@@ -840,7 +887,8 @@ def test_hashes_reject_unknown_keys():
         )
 
 
-def test_hashes_reject_malformed_sha256_values():
+def test_hashes_reject_malformed_sha256_values() -> None:
+    """Verify that hashes reject malformed SHA-256 values."""
     with pytest.raises(ValueError, match="K_nm_sha256 must be lowercase SHA-256 hex"):
         QPUDataArtifact(
             domain="connectome",
@@ -855,7 +903,8 @@ def test_hashes_reject_malformed_sha256_values():
         )
 
 
-def test_metadata_rejects_non_mapping_containers():
+def test_metadata_rejects_non_mapping_containers() -> None:
+    """Verify that metadata rejects non mapping containers."""
     with pytest.raises(ValueError, match="metadata must be a mapping"):
         QPUDataArtifact(
             domain="connectome",
@@ -866,11 +915,12 @@ def test_metadata_rejects_non_mapping_containers():
             normalization="documented",
             extraction_method="unit-test",
             replay_id="source-run-1",
-            metadata=[("operator", "pair-list")],
+            metadata=cast(Any, [("operator", "pair-list")]),
         )
 
 
-def test_hashes_reject_non_mapping_containers():
+def test_hashes_reject_non_mapping_containers() -> None:
+    """Verify that hashes reject non mapping containers."""
     with pytest.raises(ValueError, match="hashes must be a mapping"):
         QPUDataArtifact(
             domain="connectome",
@@ -881,11 +931,12 @@ def test_hashes_reject_non_mapping_containers():
             normalization="documented",
             extraction_method="unit-test",
             replay_id="source-run-1",
-            hashes=[("K_nm_sha256", "0" * 64)],
+            hashes=cast(Any, [("K_nm_sha256", "0" * 64)]),
         )
 
 
-def test_source_timestamp_rejects_non_string_values():
+def test_source_timestamp_rejects_non_string_values() -> None:
+    """Verify that source timestamp rejects non string values."""
     with pytest.raises(ValueError, match="source_timestamp must be a string"):
         QPUDataArtifact(
             domain="connectome",
@@ -895,11 +946,12 @@ def test_source_timestamp_rejects_non_string_values():
             omega=np.array([0.1, 0.2, 0.3], dtype=np.float64),
             normalization="documented",
             extraction_method="unit-test",
-            source_timestamp=123,
+            source_timestamp=cast(Any, 123),
         )
 
 
-def test_replay_id_rejects_blank_values():
+def test_replay_id_rejects_blank_values() -> None:
+    """Verify that replay id rejects blank values."""
     with pytest.raises(ValueError, match="replay_id must be non-empty"):
         artifact_from_arrays(
             domain="connectome",
@@ -913,7 +965,8 @@ def test_replay_id_rejects_blank_values():
         )
 
 
-def test_provenance_identifiers_are_trimmed_before_hashing():
+def test_provenance_identifiers_are_trimmed_before_hashing() -> None:
+    """Verify that provenance identifiers are trimmed before hashing."""
     artifact = artifact_from_arrays(
         domain="connectome",
         source_name="provenance-normalization",
@@ -932,10 +985,11 @@ def test_provenance_identifiers_are_trimmed_before_hashing():
     assert artifact.to_dict()["replay_id"] == "source-run-1"
 
 
-def test_required_text_fields_reject_non_string_values():
+def test_required_text_fields_reject_non_string_values() -> None:
+    """Verify that required text fields reject non string values."""
     with pytest.raises(ValueError, match="domain must be a string"):
         QPUDataArtifact(
-            domain=123,
+            domain=cast(Any, 123),
             source_name="required-text-validation",
             source_mode="recorded",
             K_nm=_valid_knm(3),
@@ -946,7 +1000,8 @@ def test_required_text_fields_reject_non_string_values():
         )
 
 
-def test_required_text_fields_are_trimmed_before_hashing():
+def test_required_text_fields_are_trimmed_before_hashing() -> None:
+    """Verify that required text fields are trimmed before hashing."""
     artifact = QPUDataArtifact(
         domain="  connectome  ",
         source_name="  required-text-normalization  ",
@@ -965,7 +1020,8 @@ def test_required_text_fields_are_trimmed_before_hashing():
     assert artifact.extraction_method == "unit-test"
 
 
-def test_loader_rejects_non_string_required_identity_fields():
+def test_loader_rejects_non_string_required_identity_fields() -> None:
+    """Verify that loader rejects non string required identity fields."""
     artifact = artifact_from_arrays(
         domain="connectome",
         source_name="loader-required-text-validation",
@@ -984,7 +1040,8 @@ def test_loader_rejects_non_string_required_identity_fields():
         QPUDataArtifact.from_dict(payload)
 
 
-def test_loader_rejects_non_mapping_metadata():
+def test_loader_rejects_non_mapping_metadata() -> None:
+    """Verify that loader rejects non mapping metadata."""
     artifact = artifact_from_arrays(
         domain="connectome",
         source_name="loader-metadata-container-validation",
@@ -1003,7 +1060,8 @@ def test_loader_rejects_non_mapping_metadata():
         QPUDataArtifact.from_dict(payload)
 
 
-def test_loader_rejects_string_layer_assignment_container():
+def test_loader_rejects_string_layer_assignment_container() -> None:
+    """Verify that loader rejects string layer assignment container."""
     artifact = artifact_from_arrays(
         domain="connectome",
         source_name="loader-layer-container-validation",
