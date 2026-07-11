@@ -1891,7 +1891,9 @@ flags for requested gap or gradient tolerances.
 ## Optional JAX bridge
 
 `phase.jax_bridge` provides a bounded JAX-facing adapter for supported
-parameter-shift calls:
+parameter-shift calls. Its immutable evidence records live in the dependency-free
+`phase.jax_bridge_contracts` leaf and are re-exported through both the bridge and phase package,
+while optional JAX loading and execution remain in `phase.jax_bridge`:
 
 ```python
 import numpy as np

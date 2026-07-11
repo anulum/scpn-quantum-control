@@ -10,10 +10,10 @@
     "public_api_exports": 835,
     "public_documentation_pages": 269,
     "python_model_classes": 1003,
-    "python_model_source_modules": 520,
+    "python_model_source_modules": 521,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 46,
-    "test_files": 901
+    "test_files": 902
   },
   "documentation": {
     "examples": [
@@ -561,7 +561,7 @@
       {
         "package": "phase",
         "path": "src/scpn_quantum_control/phase",
-        "python_modules": 94
+        "python_modules": 95
       },
       {
         "package": "psi_field",
@@ -2912,79 +2912,79 @@
       },
       {
         "name": "PhaseJAXCloudValidationRunSpec",
-        "path": "src/scpn_quantum_control/phase/jax_bridge.py"
+        "path": "src/scpn_quantum_control/phase/jax_bridge_contracts.py"
       },
       {
         "name": "PhaseJAXCustomVJPQNNGradientResult",
-        "path": "src/scpn_quantum_control/phase/jax_bridge.py"
+        "path": "src/scpn_quantum_control/phase/jax_bridge_contracts.py"
       },
       {
         "name": "PhaseJAXGradientAgreementResult",
-        "path": "src/scpn_quantum_control/phase/jax_bridge.py"
+        "path": "src/scpn_quantum_control/phase/jax_bridge_contracts.py"
       },
       {
         "name": "PhaseJAXJITCompatibilityResult",
-        "path": "src/scpn_quantum_control/phase/jax_bridge.py"
+        "path": "src/scpn_quantum_control/phase/jax_bridge_contracts.py"
       },
       {
         "name": "PhaseJAXMaturityAuditResult",
-        "path": "src/scpn_quantum_control/phase/jax_bridge.py"
+        "path": "src/scpn_quantum_control/phase/jax_bridge_contracts.py"
       },
       {
         "name": "PhaseJAXNativeQNNGradientResult",
-        "path": "src/scpn_quantum_control/phase/jax_bridge.py"
+        "path": "src/scpn_quantum_control/phase/jax_bridge_contracts.py"
       },
       {
         "name": "PhaseJAXNestedTransformAlgebraResult",
-        "path": "src/scpn_quantum_control/phase/jax_bridge.py"
+        "path": "src/scpn_quantum_control/phase/jax_bridge_contracts.py"
       },
       {
         "name": "PhaseJAXNestedTransformRoute",
-        "path": "src/scpn_quantum_control/phase/jax_bridge.py"
+        "path": "src/scpn_quantum_control/phase/jax_bridge_contracts.py"
       },
       {
         "name": "PhaseJAXParameterShiftResult",
-        "path": "src/scpn_quantum_control/phase/jax_bridge.py"
+        "path": "src/scpn_quantum_control/phase/jax_bridge_contracts.py"
       },
       {
         "name": "PhaseJAXPhaseQNodeAOTExportResult",
-        "path": "src/scpn_quantum_control/phase/jax_bridge.py"
+        "path": "src/scpn_quantum_control/phase/jax_bridge_contracts.py"
       },
       {
         "name": "PhaseJAXPhaseQNodeLoweringMatrixResult",
-        "path": "src/scpn_quantum_control/phase/jax_bridge.py"
+        "path": "src/scpn_quantum_control/phase/jax_bridge_contracts.py"
       },
       {
         "name": "PhaseJAXPhaseQNodeLoweringRoute",
-        "path": "src/scpn_quantum_control/phase/jax_bridge.py"
+        "path": "src/scpn_quantum_control/phase/jax_bridge_contracts.py"
       },
       {
         "name": "PhaseJAXPhaseQNodeNativeTransformResult",
-        "path": "src/scpn_quantum_control/phase/jax_bridge.py"
+        "path": "src/scpn_quantum_control/phase/jax_bridge_contracts.py"
       },
       {
         "name": "PhaseJAXPhaseQNodePyTreeTransformResult",
-        "path": "src/scpn_quantum_control/phase/jax_bridge.py"
+        "path": "src/scpn_quantum_control/phase/jax_bridge_contracts.py"
       },
       {
         "name": "PhaseJAXPhaseQNodeShardingTransformResult",
-        "path": "src/scpn_quantum_control/phase/jax_bridge.py"
+        "path": "src/scpn_quantum_control/phase/jax_bridge_contracts.py"
       },
       {
         "name": "PhaseJAXPhaseQNodeStatevectorResult",
-        "path": "src/scpn_quantum_control/phase/jax_bridge.py"
+        "path": "src/scpn_quantum_control/phase/jax_bridge_contracts.py"
       },
       {
         "name": "PhaseJAXPyTreeCompatibilityResult",
-        "path": "src/scpn_quantum_control/phase/jax_bridge.py"
+        "path": "src/scpn_quantum_control/phase/jax_bridge_contracts.py"
       },
       {
         "name": "PhaseJAXShardingCompatibilityResult",
-        "path": "src/scpn_quantum_control/phase/jax_bridge.py"
+        "path": "src/scpn_quantum_control/phase/jax_bridge_contracts.py"
       },
       {
         "name": "PhaseJAXVMAPCompatibilityResult",
-        "path": "src/scpn_quantum_control/phase/jax_bridge.py"
+        "path": "src/scpn_quantum_control/phase/jax_bridge_contracts.py"
       },
       {
         "name": "PhaseOrchestratorAdapter",
@@ -4974,6 +4974,7 @@
       "src/scpn_quantum_control/phase/hardware_gradient_policy.py",
       "src/scpn_quantum_control/phase/hardware_gradient_publication.py",
       "src/scpn_quantum_control/phase/jax_bridge.py",
+      "src/scpn_quantum_control/phase/jax_bridge_contracts.py",
       "src/scpn_quantum_control/phase/jax_nqs.py",
       "src/scpn_quantum_control/phase/kuramoto_variants.py",
       "src/scpn_quantum_control/phase/lindblad.py",
@@ -6791,6 +6792,7 @@
       "tests/test_phase_hardware_gradient_publication.py",
       "tests/test_phase_jax_bridge.py",
       "tests/test_phase_jax_bridge_aot_export.py",
+      "tests/test_phase_jax_bridge_contracts.py",
       "tests/test_phase_model_training_evidence.py",
       "tests/test_phase_natural_gradient.py",
       "tests/test_phase_objective_audit.py",

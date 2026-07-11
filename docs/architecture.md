@@ -45,10 +45,14 @@ The following modules are **intentionally retained at their current size** becau
 a single connected responsibility cluster. They are deliberate architecture, not pending
 refactors:
 
+The JAX bridge is undergoing staged decomposition under the extraction gate. Immutable result
+records now live in the dependency-free `phase/jax_bridge_contracts.py` leaf; the compatibility
+module retains execution and re-exports those records while later execution clusters are assessed
+one at a time.
+
 | Module | Single responsibility | Why it stays whole |
 |--------|-----------------------|--------------------|
 | `whole_program_trace_values.py` | Operator-intercepted forward-AD trace value runtime (`TraceADScalar`/`TraceADArray` and helpers) | Mutually recursive; splitting creates import cycles |
-| `phase/jax_bridge.py` | JAX bridge: lowering, transform algebra and maturity audits | One connected cluster around shared coercion helpers |
 | `phase/torch_bridge.py` | Torch bridge: training-loop, ecosystem and maturity audits | One connected cluster |
 | `benchmarks/differentiable_programming.py` | Differentiable-programming benchmark suite | Cases share one case/result-record framework |
 | `program_ad_linalg_primitives.py` | Program-AD linear-algebra primitive rules and conditioning diagnostics | One dominant cluster; satellites are registry-dispatched rules |
