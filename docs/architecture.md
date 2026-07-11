@@ -54,6 +54,16 @@ record. `compiler/mlir.py` is the sole production importer and consumes or re-ex
 family. The module stays intact until a genuinely independent evidence schema or persistence API
 emerges.
 
+The 2,128-line `differentiable_result_contracts.py` module is intentionally retained as the
+canonical derivative-result schema registry. It contains 32 frozen result records, seven private
+normalization/consistency helpers, and no public functions or I/O. Its static definition graph has
+one 29-definition shared gradient/provenance component plus nine leaf records; those components
+are immutable schema families consumed by already-separated algorithm modules, not competing
+execution responsibilities. Keeping one canonical registry preserves a stable import and facade
+identity boundary across parameter shift, stochastic estimators, sparse derivatives, natural
+gradient, Levenberg–Marquardt, Fisher, and sensitivity code. Reassess only if a domain requires
+independent schema versioning or a distinct lifecycle.
+
 The JAX bridge completed staged decomposition under the extraction gate. Immutable result records
 live in the dependency-free `phase/jax_bridge_contracts.py` leaf, and bounded
 parameter-shift/native/custom-VJP QNN implementations live in the one-way
