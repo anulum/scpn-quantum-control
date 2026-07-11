@@ -24,7 +24,6 @@ from scpn_quantum_control.benchmarks.differentiable_external_comparison import (
     ExternalComparisonArtifact,
     ExternalComparisonRow,
     IdenticalCircuitGradientComparisonArtifact,
-    IdenticalCircuitGradientComparisonRow,
     external_comparison_failure_mode_rows,
     run_differentiable_external_comparison_suite,
     run_identical_circuit_gradient_comparison_suite,
@@ -270,36 +269,6 @@ def test_identical_circuit_gradient_comparison_writer_marks_ready_not_promoted(
     assert payload["same_circuit_contract"]["shots"] is None
 
 
-def test_identical_circuit_gradient_comparison_row_requires_success_evidence() -> None:
-    """Success rows should reject missing backend value or gradient evidence."""
-    try:
-        IdenticalCircuitGradientComparisonRow(
-            case_id="case",
-            backend="qiskit",
-            status="success",
-            failure_class=None,
-            circuit_fingerprint="abc",
-            operations=(("ry", (0,), 0),),
-            observable="Z0",
-            parameter_values=(0.4,),
-            execution_mode="exact_state",
-            shots=None,
-            scpn_value=1.0,
-            backend_value=None,
-            value_error=0.0,
-            scpn_gradient=(0.0,),
-            backend_gradient=None,
-            gradient_error=None,
-            evaluations=3,
-            dependency_versions={"qiskit": "test"},
-            claim_boundary="bounded comparison",
-        )
-    except ValueError as exc:
-        assert "success rows require numeric" in str(exc)
-    else:
-        raise AssertionError("success row without backend gradient was accepted")
-
-
 def test_external_comparison_suite_classifies_runtime_failures(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -327,57 +296,6 @@ def test_external_comparison_suite_classifies_runtime_failures(
     assert row.status == "hard_gap"
     assert row.failure_class == "runtime_error"
     assert "framework callback failed" in str(row.setup_instructions)
-
-
-def test_external_comparison_row_requires_hard_gap_fields() -> None:
-    """Hard-gap rows should preserve required setup and failure metadata."""
-    row = ExternalComparisonRow(
-        case_id="bounded_phase_objective",
-        backend="enzyme",
-        status="hard_gap",
-        failure_class="dependency_missing",
-        value_error=None,
-        gradient_error=None,
-        runtime_seconds=None,
-        memory_peak_bytes=None,
-        batching_support="not_evaluated",
-        transform_support="LLVM Enzyme",
-        dtype="float64",
-        device="cpu",
-        source_of_truth="scpn_reference",
-        setup_instructions="Install LLVM/Enzyme tooling.",
-        claim_boundary="recorded hard gap only",
-    )
-
-    assert row.artifact_fields_ready
-    assert row.to_dict()["failure_class"] == "dependency_missing"
-    assert row.to_dict()["dependency_versions"] is None
-
-
-def test_external_comparison_row_rejects_success_without_numeric_evidence() -> None:
-    """Success rows should reject incomplete numeric evidence."""
-    try:
-        ExternalComparisonRow(
-            case_id="bounded_phase_objective",
-            backend="jax",
-            status="success",
-            failure_class=None,
-            value_error=0.0,
-            gradient_error=None,
-            runtime_seconds=0.0,
-            memory_peak_bytes=1024,
-            batching_support="vmap",
-            transform_support="value_and_grad",
-            dtype="float64",
-            device="cpu",
-            source_of_truth="scpn_reference",
-            setup_instructions=None,
-            claim_boundary="diagnostic comparison only",
-        )
-    except ValueError as exc:
-        assert "success rows require numeric" in str(exc)
-    else:
-        raise AssertionError("success row without gradient evidence was accepted")
 
 
 def test_external_comparison_suite_records_dependency_missing_rows(
@@ -664,33 +582,6 @@ def test_external_comparison_failure_mode_rows_cover_required_taxonomy() -> None
         assert row.closure_status == "permanent_boundary"
         assert row.closure_reason == str(row.setup_instructions)
         assert "no hidden success" in row.claim_boundary
-
-
-def test_external_comparison_row_rejects_empty_dependency_metadata() -> None:
-    """Dependency metadata should reject empty keys or values."""
-    try:
-        ExternalComparisonRow(
-            case_id="bounded_phase_objective",
-            backend="jax",
-            status="hard_gap",
-            failure_class="unsupported_dtype",
-            value_error=None,
-            gradient_error=None,
-            runtime_seconds=None,
-            memory_peak_bytes=None,
-            batching_support="vmap",
-            transform_support="value_and_grad",
-            dtype="complex128",
-            device="cpu",
-            source_of_truth="scpn_reference",
-            setup_instructions="Use real float64 controls.",
-            claim_boundary="unsupported route only",
-            dependency_versions={"jax": ""},
-        )
-    except ValueError as exc:
-        assert "dependency version metadata" in str(exc)
-    else:
-        raise AssertionError("empty dependency metadata was accepted")
 
 
 def test_external_comparison_dependency_version_falls_back_to_import(

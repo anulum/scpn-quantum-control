@@ -153,6 +153,12 @@ builders; the exact public quantum-suite orchestrator remains in the facade.
 Benchmark alias-edge tests are partitioned into metadata, static-lattice completeness, and
 branch-IR completeness modules backed by one shared real-IR fixture.
 
+External differentiable comparison evidence separates immutable contracts from runner execution.
+`benchmarks/differentiable_external_contracts.py` owns the four framework/identical-circuit row and
+artifact records, closure vocabulary, required-field set, and operation JSON normalization.
+`differentiable_external_comparison.py` re-exports those exact objects and retains suite/writer,
+framework, identical-circuit, runner, dependency, and fail-closed classification logic.
+
 | Module | Single responsibility | Why it stays whole |
 |--------|-----------------------|--------------------|
 | `whole_program_trace_values.py` | Operator-intercepted forward-AD trace value runtime (`TraceADScalar`/`TraceADArray` and helpers) | Cohesion audit: 106/122 definitions form one strongly connected component; class dispatch and value construction make primitive-family splits cyclic |

@@ -108,6 +108,11 @@ def differentiable_module_hardening_registry() -> tuple[DifferentiableModuleHard
             ("runner isolation classification", "accelerator fallback hard gaps"),
         ),
         _record(
+            "src/scpn_quantum_control/benchmarks/differentiable_external_contracts.py",
+            ("tests/test_differentiable_external_contracts.py",),
+            ("comparison row validation", "artifact serialization"),
+        ),
+        _record(
             "src/scpn_quantum_control/benchmarks/differentiable_external_comparison.py",
             ("tests/test_differentiable_external_comparisons.py",),
             ("dependency-missing rows", "correctness-mismatch rows"),

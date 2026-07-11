@@ -10,10 +10,10 @@
     "public_api_exports": 835,
     "public_documentation_pages": 269,
     "python_model_classes": 1003,
-    "python_model_source_modules": 552,
+    "python_model_source_modules": 553,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 49,
-    "test_files": 933
+    "test_files": 934
   },
   "documentation": {
     "examples": [
@@ -471,7 +471,7 @@
       {
         "package": "benchmarks",
         "path": "src/scpn_quantum_control/benchmarks",
-        "python_modules": 27
+        "python_modules": 28
       },
       {
         "package": "bridge",
@@ -1704,11 +1704,11 @@
       },
       {
         "name": "ExternalComparisonArtifact",
-        "path": "src/scpn_quantum_control/benchmarks/differentiable_external_comparison.py"
+        "path": "src/scpn_quantum_control/benchmarks/differentiable_external_contracts.py"
       },
       {
         "name": "ExternalComparisonRow",
-        "path": "src/scpn_quantum_control/benchmarks/differentiable_external_comparison.py"
+        "path": "src/scpn_quantum_control/benchmarks/differentiable_external_contracts.py"
       },
       {
         "name": "ExternalValidationArtifactBundle",
@@ -2188,11 +2188,11 @@
       },
       {
         "name": "IdenticalCircuitGradientComparisonArtifact",
-        "path": "src/scpn_quantum_control/benchmarks/differentiable_external_comparison.py"
+        "path": "src/scpn_quantum_control/benchmarks/differentiable_external_contracts.py"
       },
       {
         "name": "IdenticalCircuitGradientComparisonRow",
-        "path": "src/scpn_quantum_control/benchmarks/differentiable_external_comparison.py"
+        "path": "src/scpn_quantum_control/benchmarks/differentiable_external_contracts.py"
       },
       {
         "name": "IdentityAttractor",
@@ -4717,6 +4717,7 @@
       "src/scpn_quantum_control/benchmarks/differentiable_catalyst_comparison.py",
       "src/scpn_quantum_control/benchmarks/differentiable_evidence.py",
       "src/scpn_quantum_control/benchmarks/differentiable_external_comparison.py",
+      "src/scpn_quantum_control/benchmarks/differentiable_external_contracts.py",
       "src/scpn_quantum_control/benchmarks/differentiable_hardening_gate.py",
       "src/scpn_quantum_control/benchmarks/differentiable_isolated_benchmark_plan.py",
       "src/scpn_quantum_control/benchmarks/differentiable_optimizer_convergence.py",
@@ -6501,6 +6502,7 @@
       "tests/test_differentiable_external_comparison_row_edges.py",
       "tests/test_differentiable_external_comparison_runner_edges.py",
       "tests/test_differentiable_external_comparisons.py",
+      "tests/test_differentiable_external_contracts.py",
       "tests/test_differentiable_external_validation.py",
       "tests/test_differentiable_finite_difference.py",
       "tests/test_differentiable_fisher.py",
