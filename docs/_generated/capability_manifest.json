@@ -13,7 +13,7 @@
     "python_model_source_modules": 554,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 49,
-    "test_files": 946
+    "test_files": 951
   },
   "documentation": {
     "examples": [
@@ -6337,6 +6337,7 @@
       "tests/_internal_corpus_markers.py",
       "tests/_phase_jax_bridge_test_helpers.py",
       "tests/_phase_pennylane_bridge_test_helpers.py",
+      "tests/_program_ad_rust_bridge_test_fixtures.py",
       "tests/conftest.py",
       "tests/test_accelerator_detection_boundaries.py",
       "tests/test_adapt_vqe.py",
@@ -6969,15 +6970,19 @@
       "tests/test_program_ad_registry.py",
       "tests/test_program_ad_runtime_registry_dispatch.py",
       "tests/test_program_ad_rust_bridge.py",
+      "tests/test_program_ad_rust_bridge_contracts.py",
       "tests/test_program_ad_rust_cumulative_bridge.py",
       "tests/test_program_ad_rust_interpolation_bridge.py",
       "tests/test_program_ad_rust_linalg_array_bridge.py",
       "tests/test_program_ad_rust_linalg_diag_bridge.py",
       "tests/test_program_ad_rust_linalg_diagflat_bridge.py",
       "tests/test_program_ad_rust_linalg_eig_bridge.py",
+      "tests/test_program_ad_rust_linalg_integration.py",
       "tests/test_program_ad_rust_linalg_matrix_power_bridge.py",
       "tests/test_program_ad_rust_linalg_spectral_bridge.py",
       "tests/test_program_ad_rust_linalg_svd_bridge.py",
+      "tests/test_program_ad_rust_reduction_integration.py",
+      "tests/test_program_ad_rust_replay_integration.py",
       "tests/test_program_ad_rust_signal_bridge.py",
       "tests/test_program_ad_selection_direct_rules.py",
       "tests/test_program_ad_selection_folds.py",

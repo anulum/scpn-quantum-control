@@ -163,6 +163,10 @@ kernels; `compiler_ad/kernels/specialized_2x2.rs` owns the 28 fixed-size determi
 Cholesky/eigen kernels and their private geometry helpers. `compiler_ad.rs` owns NumPy/PyO3
 validation, Python exception conversion, Python-array construction, and the 56 binding functions;
 both facades explicitly re-export inner kernels so existing Rust paths remain stable.
+The Python bridge tests follow the execution boundary without recreating a mixed bucket: facade
+and registry behavior stays in `test_program_ad_rust_bridge.py`, serialized effect-IR fixtures live
+in one private typed helper, and scalar/structural replay, reduction replay, validation contracts,
+and real-engine linear algebra each have a dedicated module-named test surface.
 
 Program-AD alias analysis separates immutable evidence contracts from analysis execution.
 `program_ad_alias_contracts.py` owns the ten alias-set, lattice, unknown-edge, and typed provenance
