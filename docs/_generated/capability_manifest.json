@@ -13,7 +13,7 @@
     "python_model_source_modules": 554,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 49,
-    "test_files": 941
+    "test_files": 946
   },
   "documentation": {
     "examples": [
@@ -6335,6 +6335,7 @@
       "tests/_differentiable_external_comparison_edges.py",
       "tests/_differentiable_programming_benchmark_edge_helpers.py",
       "tests/_internal_corpus_markers.py",
+      "tests/_phase_jax_bridge_test_helpers.py",
       "tests/_phase_pennylane_bridge_test_helpers.py",
       "tests/conftest.py",
       "tests/test_accelerator_detection_boundaries.py",
@@ -6840,9 +6841,13 @@
       "tests/test_phase_jax_bridge_aot_export.py",
       "tests/test_phase_jax_bridge_contracts.py",
       "tests/test_phase_jax_compatibility.py",
+      "tests/test_phase_jax_compatibility_integration.py",
       "tests/test_phase_jax_gradients.py",
+      "tests/test_phase_jax_gradients_integration.py",
       "tests/test_phase_jax_maturity.py",
+      "tests/test_phase_jax_maturity_integration.py",
       "tests/test_phase_jax_qnode_transforms.py",
+      "tests/test_phase_jax_qnode_transforms_integration.py",
       "tests/test_phase_model_training_evidence.py",
       "tests/test_phase_natural_gradient.py",
       "tests/test_phase_objective_audit.py",

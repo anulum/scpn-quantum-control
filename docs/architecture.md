@@ -73,6 +73,9 @@ JIT/VMAP/PMAP/PyTree compatibility and nested-transform algebra live in the one-
 `phase/jax_compatibility.py` leaf. Lowering declarations, cloud planning, and maturity aggregation
 live in `phase/jax_maturity.py`; the remaining 575-line facade contains signature-stable public
 wrappers and result re-exports rather than mixed execution concerns.
+Its paired tests mirror those boundaries: the bridge test retains optional-dependency availability,
+while gradient, compatibility, registered-QNode transform, and maturity integration behavior lives
+in four module-named surfaces backed by one shared strictly typed fake JAX runtime.
 
 The Torch bridge is undergoing the same bounded decomposition. Its 19 immutable result, route,
 evidence, matrix, and cloud-plan records live in the dependency-free
