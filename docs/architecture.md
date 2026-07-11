@@ -75,8 +75,10 @@ Registered vocabulary accessors, sparse Ising construction, controlled-gate deco
 multi-qubit template construction live in the one-way `phase/qnode_circuit_builders.py` leaf.
 Arbitrary-depth registration, deterministic depth/resource profiling, statevector/density support
 analysis, and gate-aware parameter-shift planning live in the one-way
-`phase/qnode_circuit_support.py` leaf. `phase/qnode_circuit.py` re-exports the exact objects and
-functions and retains execution, gradients, measurements, and numerical kernels while those
+`phase/qnode_circuit_support.py` leaf. Deterministic statevector and density-matrix execution,
+registered gate and Kraus kernels, and observable evaluation live in the one-way
+`phase/qnode_circuit_execution.py` leaf. `phase/qnode_circuit.py` re-exports the exact objects and
+functions and retains derivative propagation, gradients, metrics, and measurements while those
 concerns are split one at a time.
 
 | Module | Single responsibility | Why it stays whole |

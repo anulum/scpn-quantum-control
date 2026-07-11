@@ -1624,6 +1624,9 @@ multi-qubit templates live in the one-way `phase.qnode_circuit_builders` leaf an
 as the same function objects. Arbitrary-depth circuit registration, deterministic depth/resource
 profiling, support reports, and gate-aware parameter-shift evaluation planning live in the one-way
 `phase.qnode_circuit_support` leaf and retain exact facade and phase-package function identity.
+Deterministic statevector and density execution, registered gate/Kraus kernels, and observable
+expectations live in the one-way `phase.qnode_circuit_execution` leaf and are re-exported as the
+same public function objects.
 
 For the registered local Phase-QNode subset, use the executable circuit and
 parity suite when a concrete circuit family is required:
