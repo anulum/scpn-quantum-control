@@ -118,17 +118,17 @@ def test_version_consistency_reports_missing_and_unmatched_files(
     assert ".zenodo.json: version pattern not found" in output
 
 
-def test_live_version_carriers_including_the_ledger_are_consistent() -> None:
-    """The real pyproject, CITATION, zenodo, and hardware ledger agree on the version.
-
-    This is the live drift gate: the hardware status ledger's Package-line version
-    must not lag the canonical release version, even between dated snapshots.
-    """
-    assert _check_version_consistency.main() == 0
-
-
 def test_hardware_status_ledger_is_a_registered_version_carrier() -> None:
-    """The ledger Package-line version is enforced against the canonical source."""
+    """The ledger Package-line version is enforced against the canonical source.
+
+    This is the live drift gate for Q-HW-03: the hardware status ledger's
+    Package-line version must not lag the canonical release version, even between
+    dated snapshots. It is deliberately hermetic — it compares only the ledger and
+    pyproject, both always present — rather than invoking ``main()`` over every
+    carrier, because the reproduction Docker image omits metadata-only carriers
+    (``CITATION.cff``, ``.zenodo.json``). The full ``main()`` sweep runs in the
+    pre-commit/CI gate against a complete checkout.
+    """
     ledger = _check_version_consistency.HARDWARE_STATUS_LEDGER
     assert ledger in _check_version_consistency.PATTERNS
     ledger_match = _check_version_consistency.PATTERNS[ledger].search(
