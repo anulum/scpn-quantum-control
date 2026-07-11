@@ -117,6 +117,12 @@ qBraid, and Strangeworks cloud/broker adapter closures, including shared calibra
 normalization. `hardware/provider_capability_discovery.py` is now a definition-free compatibility
 facade that re-exports the exact core, normalization, and provider-adapter objects.
 
+The Rust compiler-AD surface separates numerical kernels from language bindings.
+`scpn_quantum_engine/src/compiler_ad/kernels.rs` owns numerical validation and the 56 native
+value/JVP/VJP/gradient kernels with their unit tests. `compiler_ad.rs` owns NumPy/PyO3 validation,
+Python exception conversion, Python-array construction, and the 56 binding functions; it explicitly
+re-exports every inner kernel so existing Rust paths remain stable.
+
 | Module | Single responsibility | Why it stays whole |
 |--------|-----------------------|--------------------|
 | `whole_program_trace_values.py` | Operator-intercepted forward-AD trace value runtime (`TraceADScalar`/`TraceADArray` and helpers) | Cohesion audit: 106/122 definitions form one strongly connected component; class dispatch and value construction make primitive-family splits cyclic |
