@@ -18,7 +18,7 @@
     ".tsx",
     ".v"
   ],
-  "open_refactor_limit": 5,
+  "open_refactor_limit": 4,
   "files": [
     {
       "path": "oscillatools/src/oscillatools/__init__.py",
@@ -419,16 +419,6 @@
       "responsibility": "Qiskit Runtime capture, provider workflow evidence, bundle freshness, maturity aggregation, and facade identity tests.",
       "dependency_boundary": "Owns phase/qiskit_runtime with its contracts, bridge aliases, provider-gradient, and hardware-audit collaborators; no unrelated framework lifecycle is tested.",
       "reassess_when": "Runtime capture, provider workflow, or maturity becomes an independently versioned source lifecycle."
-    },
-    {
-      "path": "tests/test_phase_torch_bridge.py",
-      "lines": 1227,
-      "kind": "test",
-      "disposition": "refactor_required",
-      "responsibility": "Current mixed bridge bucket for Torch gradients, torch.func/compile compatibility, modules/training, registered QNode transforms, ecosystem/cloud maturity, and availability.",
-      "dependency_boundary": "Imports the Torch bridge facade and phase exports but spans the already-separated torch_gradients, torch_qnode_transforms, torch_compatibility, and torch_maturity source leaves using one fake Torch runtime.",
-      "reassess_when": "Close after leaf-owned integration tests and one shared typed fake runtime replace the mixed surface.",
-      "refactor_target": "Redistribute gradient, QNode-transform, compatibility/training, and maturity tests to module-named integration files; retain only facade availability checks."
     },
     {
       "path": "tests/test_program_ad_adjoint_generation.py",

@@ -52,8 +52,8 @@ operand-class compilation, whole-program lowering/emission, and Enzyme evidence.
 cross-language rescan then found that the residual `compiler/mlir.py` still owns four independent
 implementation clusters, so that facade is re-opened below rather than treated as complete.
 
-At baseline `4c3a4fee`, the exhaustive scan contains 51 oversized tracked code files: 46 have an
-approved cohesive, facade, test-owner, or entry-point decision, and 5 remain open. The open
+After the 2026-07-12 Torch test split, the exhaustive scan contains 50 oversized tracked code files:
+46 have an approved cohesive, facade, test-owner, or entry-point decision, and 4 remain open. The open
 rows are not covered by a repository-wide "no oversized mixed modules" claim:
 
 | Open surface | Independent responsibilities | Required boundary |
@@ -62,7 +62,6 @@ rows are not covered by a repository-wide "no oversized mixed modules" claim:
 | `scpn_quantum_engine/tests/program_ad_ir.rs` | parser/metadata, forward replay, reverse/reduction replay, linalg replay | module-named tests plus one shared fixture owner |
 | `src/scpn_quantum_control/compiler/mlir.py` | transform planning, Kuramoto/custom compilation, Enzyme audit, Phase-QNode runtime | implementation leaves behind signature-stable facade wrappers |
 | `tests/test_mlir_native_compilation_integration.py` | compiler exports plus scalar, vector, matrix, 2x2, symmetric, batch, and custom kernels | operand-class integration surfaces with single-owned helpers |
-| `tests/test_phase_torch_bridge.py` | gradients, QNode transforms, compatibility/training, maturity/cloud, availability | leaf-owned integration tests plus one shared typed fake runtime |
 
 The retained modules described next are intentionally kept at their current size because each is
 a single connected responsibility cluster or an explicit compatibility boundary. They are
@@ -100,7 +99,7 @@ Its paired tests mirror those boundaries: the bridge test retains optional-depen
 while gradient, compatibility, registered-QNode transform, and maturity integration behavior lives
 in four module-named surfaces backed by one shared strictly typed fake JAX runtime.
 
-The Torch bridge is undergoing the same bounded decomposition. Its 19 immutable result, route,
+The Torch bridge completed the same bounded decomposition. Its 19 immutable result, route,
 evidence, matrix, and cloud-plan records live in the dependency-free
 `phase/torch_bridge_contracts.py` leaf. Optional Torch loading, numeric/tensor validation, and the
 parameter-shift, analytic tensor, and custom-autograd bounded gradient routes live in the one-way
@@ -112,6 +111,11 @@ compatibility, module/layer wrappers, and deterministic compiled training live i
 planning, live-overlay validation, and maturity aggregation live in `phase/torch_maturity.py`;
 the remaining 681-line facade contains signature-stable public wrappers and result/helper
 re-exports rather than mixed execution concerns.
+Its paired tests now mirror those boundaries: the 85-line bridge test retains optional-dependency
+availability and fail-closed facade checks; gradient, compatibility/training, registered-QNode
+transform, and maturity/cloud behavior lives in four module-named integration surfaces backed by
+one 286-line strictly typed fake Torch runtime. All 40 original top-level definitions are preserved
+exactly once with AST-equivalent bodies.
 
 The Qiskit bridge decomposition begins with the record/validation graph. All nine shifted-circuit,
 gradient, Runtime, provider-workflow, evidence-bundle, and maturity records plus provider-method

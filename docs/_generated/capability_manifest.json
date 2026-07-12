@@ -13,7 +13,7 @@
     "python_model_source_modules": 554,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 49,
-    "test_files": 952
+    "test_files": 957
   },
   "documentation": {
     "examples": [
@@ -6337,6 +6337,7 @@
       "tests/_internal_corpus_markers.py",
       "tests/_phase_jax_bridge_test_helpers.py",
       "tests/_phase_pennylane_bridge_test_helpers.py",
+      "tests/_phase_torch_bridge_test_helpers.py",
       "tests/_program_ad_rust_bridge_test_fixtures.py",
       "tests/conftest.py",
       "tests/test_accelerator_detection_boundaries.py",
@@ -6915,14 +6916,18 @@
       "tests/test_phase_torch_checkpoint.py",
       "tests/test_phase_torch_checkpoint_matrix.py",
       "tests/test_phase_torch_compatibility.py",
+      "tests/test_phase_torch_compatibility_integration.py",
       "tests/test_phase_torch_device_state.py",
       "tests/test_phase_torch_dynamic_shape_export.py",
       "tests/test_phase_torch_export.py",
       "tests/test_phase_torch_export_shape_matrix.py",
       "tests/test_phase_torch_gradients.py",
+      "tests/test_phase_torch_gradients_integration.py",
       "tests/test_phase_torch_maturity.py",
+      "tests/test_phase_torch_maturity_integration.py",
       "tests/test_phase_torch_module_state.py",
       "tests/test_phase_torch_qnode_transforms.py",
+      "tests/test_phase_torch_qnode_transforms_integration.py",
       "tests/test_phase_torch_training_loop_matrix.py",
       "tests/test_phase_trainability.py",
       "tests/test_phase_transform_nesting.py",
