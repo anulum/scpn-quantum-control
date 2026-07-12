@@ -10,10 +10,10 @@
     "public_api_exports": 835,
     "public_documentation_pages": 269,
     "python_model_classes": 1003,
-    "python_model_source_modules": 554,
+    "python_model_source_modules": 558,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 49,
-    "test_files": 964
+    "test_files": 968
   },
   "documentation": {
     "examples": [
@@ -486,7 +486,7 @@
       {
         "package": "compiler",
         "path": "src/scpn_quantum_control/compiler",
-        "python_modules": 17
+        "python_modules": 21
       },
       {
         "package": "control",
@@ -3052,7 +3052,7 @@
       },
       {
         "name": "PhaseQNodeMLIRRuntimeExecutable",
-        "path": "src/scpn_quantum_control/compiler/mlir.py"
+        "path": "src/scpn_quantum_control/compiler/mlir_phase_qnode_runtime.py"
       },
       {
         "name": "PhaseQNodeMetricTensorResult",
@@ -4756,6 +4756,7 @@
       "src/scpn_quantum_control/compile_budget.py",
       "src/scpn_quantum_control/compiler/alias_activity_evidence.py",
       "src/scpn_quantum_control/compiler/mlir.py",
+      "src/scpn_quantum_control/compiler/mlir_enzyme_audit.py",
       "src/scpn_quantum_control/compiler/mlir_enzyme_evidence.py",
       "src/scpn_quantum_control/compiler/mlir_enzyme_execution_runner.py",
       "src/scpn_quantum_control/compiler/mlir_executable_kernel.py",
@@ -4764,12 +4765,15 @@
       "src/scpn_quantum_control/compiler/mlir_matrix_native_compilation.py",
       "src/scpn_quantum_control/compiler/mlir_native_execution_evidence.py",
       "src/scpn_quantum_control/compiler/mlir_native_primitives.py",
+      "src/scpn_quantum_control/compiler/mlir_phase_qnode_runtime.py",
       "src/scpn_quantum_control/compiler/mlir_records.py",
       "src/scpn_quantum_control/compiler/mlir_scalar_native_compilation.py",
       "src/scpn_quantum_control/compiler/mlir_symmetric_native_compilation.py",
+      "src/scpn_quantum_control/compiler/mlir_transform_plan_assembly.py",
       "src/scpn_quantum_control/compiler/mlir_vector_native_compilation.py",
       "src/scpn_quantum_control/compiler/mlir_whole_program_emitter.py",
       "src/scpn_quantum_control/compiler/mlir_whole_program_native.py",
+      "src/scpn_quantum_control/compiler/mlir_workload_compilation.py",
       "src/scpn_quantum_control/compiler/promotion_batch.py",
       "src/scpn_quantum_control/config.py",
       "src/scpn_quantum_control/control/adaptive_branching.py",
@@ -6749,21 +6753,25 @@
       "tests/test_ml_dsa_branches.py",
       "tests/test_ml_dsa_pqc.py",
       "tests/test_ml_dsa_seal.py",
+      "tests/test_mlir_enzyme_audit.py",
       "tests/test_mlir_enzyme_evidence_docstrings.py",
       "tests/test_mlir_executable_batching_integration.py",
       "tests/test_mlir_executable_kernel.py",
       "tests/test_mlir_matrix_2x2_native_compilation_integration.py",
       "tests/test_mlir_matrix_native_compilation_integration.py",
       "tests/test_mlir_native_compilation_integration.py",
+      "tests/test_mlir_phase_qnode_runtime.py",
       "tests/test_mlir_records.py",
       "tests/test_mlir_scalar_native_compilation.py",
       "tests/test_mlir_scalar_native_compilation_integration.py",
       "tests/test_mlir_symmetric_native_compilation_integration.py",
       "tests/test_mlir_toolchain_probe_hardening.py",
       "tests/test_mlir_transform_plan.py",
+      "tests/test_mlir_transform_plan_assembly.py",
       "tests/test_mlir_vector_native_compilation_integration.py",
       "tests/test_mlir_whole_program_emitter.py",
       "tests/test_mlir_whole_program_native.py",
+      "tests/test_mlir_workload_compilation.py",
       "tests/test_module_size_policy.py",
       "tests/test_monte_carlo_xy.py",
       "tests/test_mps_baseline.py",

@@ -18,7 +18,7 @@
     ".tsx",
     ".v"
   ],
-  "open_refactor_limit": 3,
+  "open_refactor_limit": 2,
   "files": [
     {
       "path": "oscillatools/src/oscillatools/__init__.py",
@@ -147,16 +147,6 @@
       "responsibility": "Differentiable-programming conformance case orchestration after contract and quantum-case extraction.",
       "dependency_boundary": "Depends on benchmark contracts, quantum cases, MLIR, native differentiable APIs, and JAX/Torch bridges; benchmark reports and focused edge tests consume and monkeypatch its stable availability/compiler seams.",
       "reassess_when": "A case family becomes independently consumed or a public dependency-injection contract replaces facade globals."
-    },
-    {
-      "path": "src/scpn_quantum_control/compiler/mlir.py",
-      "lines": 1825,
-      "kind": "source",
-      "disposition": "refactor_required",
-      "responsibility": "Current mixed facade: compiler-AD transform planning, Kuramoto/custom executable compilation, Enzyme maturity probing, and Phase-QNode MLIR runtime execution.",
-      "dependency_boundary": "Imports records, executable-kernel, native primitive/operand leaves, whole-program lowering, Enzyme evidence/runner/gates, differentiable APIs, Kuramoto core, and Phase-QNode circuits; benchmarks, API modules, and compiler tests consume the public facade.",
-      "reassess_when": "Close after each execution/probe lifecycle has a one-way implementation leaf and mlir.py retains stable wrappers and re-exports only.",
-      "refactor_target": "Extract transform-plan assembly, Kuramoto/custom compilation, Enzyme audit, and Phase-QNode runtime implementations behind the existing public facade."
     },
     {
       "path": "src/scpn_quantum_control/compiler/mlir_enzyme_evidence.py",

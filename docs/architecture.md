@@ -48,19 +48,18 @@ referenced top-level definition) is decomposed into connected components; a seco
 removes the most-referenced shared symbols to confirm the remaining definitions are still
 one cluster rather than independent groups joined by a single shared helper. The initial
 `compiler` decomposition applied this test to records, executable kernels, native primitives,
-operand-class compilation, whole-program lowering/emission, and Enzyme evidence. The 2026-07-12
-cross-language rescan then found that the residual `compiler/mlir.py` still owns four independent
-implementation clusters, so that facade is re-opened below rather than treated as complete.
+operand-class compilation, whole-program lowering/emission, and Enzyme evidence. The later
+cross-language rescan found four residual `compiler/mlir.py` implementation clusters; the
+2026-07-13 extraction below closes them behind the stable facade.
 
-After the Torch and MLIR native-integration test splits, the exhaustive scan contains 50 oversized tracked code files:
-47 have an approved cohesive, facade, test-owner, or entry-point decision, and 3 remain open. The open
+After the Torch/MLIR test splits and MLIR facade extraction, the exhaustive scan contains 49 oversized tracked code files:
+47 have an approved cohesive, facade, test-owner, or entry-point decision, and 2 remain open. The open
 rows are not covered by a repository-wide "no oversized mixed modules" claim:
 
 | Open surface | Independent responsibilities | Required boundary |
 |--------------|------------------------------|-------------------|
 | `scpn_quantum_engine/program_ad_replay/src/program_ad_ir.rs` | schema/parser, scalar forward replay, numeric evaluation, reverse accumulation, PyO3 bindings | one-way schema, forward, numeric, reverse, and binding leaves behind the existing public path |
 | `scpn_quantum_engine/tests/program_ad_ir.rs` | parser/metadata, forward replay, reverse/reduction replay, linalg replay | module-named tests plus one shared fixture owner |
-| `src/scpn_quantum_control/compiler/mlir.py` | transform planning, Kuramoto/custom compilation, Enzyme audit, Phase-QNode runtime | implementation leaves behind signature-stable facade wrappers |
 
 The retained modules described next are intentionally kept at their current size because each is
 a single connected responsibility cluster or an explicit compatibility boundary. They are
@@ -74,13 +73,21 @@ mirror the single closed-form dense-2x2 production family and share the same reg
 Python-native, and Rust-native lifecycle. All 26 original definitions remain exactly once with
 AST-equivalent bodies.
 
+The MLIR compiler facade is now 503 lines of exact records, kernel, evidence, and implementation
+re-exports. Transform-plan assembly lives in `mlir_transform_plan_assembly.py`;
+Kuramoto/custom executable compilation in `mlir_workload_compilation.py`; toolchain probing and
+maturity aggregation in `mlir_enzyme_audit.py`; and registered Phase-QNode lowering/runtime
+execution in `mlir_phase_qnode_runtime.py`. All 22 former facade definitions have one
+AST-equivalent leaf owner, every leaf has a one-way dependency on existing lower-level contracts,
+and focused boundary tests prevent a facade back-edge.
+
 The 1,277-line `compiler/mlir_enzyme_evidence.py` leaf is one Enzyme/MLIR evidence-schema
 cluster rather than a mixed execution module. Its nine immutable records and seven
 construction/render/write definitions form one 23-edge component: the breadth artifact links
 case and benchmark records to derived promotion evidence, the maturity result aggregates every
 evidence subtype, and the writer consumes the artifact, renderer, filename helper, and output
-record. `compiler/mlir.py` is the sole production importer and consumes or re-exports the complete
-family. The module stays intact until a genuinely independent evidence schema or persistence API
+record. `compiler/mlir_enzyme_audit.py` consumes the maturity records and `compiler/mlir.py`
+re-exports the complete public family. The evidence module stays intact until a genuinely independent evidence schema or persistence API
 emerges.
 
 The 2,128-line `differentiable_result_contracts.py` module is intentionally retained as the
@@ -266,7 +273,7 @@ auto-generated block is the source of truth if the two ever drift.
 
 | Metric | Count |
 |--------|-------|
-| Python modules | 554 (excluding package initialisers) |
+| Python modules | 558 (excluding package initialisers) |
 | Rust crate | 1 (PyO3 0.29, **177 bindings**, 68 Rust source files including `validation.rs`, `symmetry_decay.rs`, `community.rs`, `pulse_shaping.rs`) |
 | Julia tier | 1 (now in the `oscillatools` distribution: `oscillatools/accel/julia/order_parameter.jl`; juliacall-bridged, opt-in via `oscillatools[julia]`) |
 | Tests | CI-gated suite (90% aggregate coverage gate; non-refactor tree at 100%) |
