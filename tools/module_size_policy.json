@@ -18,7 +18,7 @@
     ".tsx",
     ".v"
   ],
-  "open_refactor_limit": 4,
+  "open_refactor_limit": 3,
   "files": [
     {
       "path": "oscillatools/src/oscillatools/__init__.py",
@@ -384,14 +384,13 @@
       "reassess_when": "The source contract registry splits into independently versioned schema lifecycles."
     },
     {
-      "path": "tests/test_mlir_native_compilation_integration.py",
-      "lines": 3382,
+      "path": "tests/test_mlir_matrix_2x2_native_compilation_integration.py",
+      "lines": 1047,
       "kind": "test",
-      "disposition": "refactor_required",
-      "responsibility": "Current mixed integration bucket for compiler exports plus scalar, vector, generic-matrix, 2x2, symmetric, batch, and custom native compilation kernels.",
-      "dependency_boundary": "Imports package/compiler MLIR facades, differentiable contracts, and Kuramoto core while exercising multiple already-separated native-compilation source leaves.",
-      "reassess_when": "Close after every existing test has exactly one operand-class source owner and shared helpers are single-owned.",
-      "refactor_target": "Split compiler exports and scalar, vector, matrix, 2x2, symmetric, and batch native-compilation integration tests by source leaf."
+      "disposition": "cohesive",
+      "responsibility": "Fixed-size dense 2x2 determinant, inverse, solve, eigenvalue, and eigensystem native-compilation integration family.",
+      "dependency_boundary": "Owns compiler/mlir_matrix_2x2_native_compilation through the public compiler facade and Rust-engine parity mirror; shares only the typed eager-batching helper with sibling operand-class tests.",
+      "reassess_when": "A non-2x2 operand class, separate backend lifecycle, or independently consumed fixture enters this test owner."
     },
     {
       "path": "tests/test_mlir_transform_plan.py",

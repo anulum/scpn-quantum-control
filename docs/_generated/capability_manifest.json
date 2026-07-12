@@ -13,7 +13,7 @@
     "python_model_source_modules": 554,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 49,
-    "test_files": 957
+    "test_files": 964
   },
   "documentation": {
     "examples": [
@@ -6335,6 +6335,7 @@
       "tests/_differentiable_external_comparison_edges.py",
       "tests/_differentiable_programming_benchmark_edge_helpers.py",
       "tests/_internal_corpus_markers.py",
+      "tests/_mlir_native_compilation_test_helpers.py",
       "tests/_phase_jax_bridge_test_helpers.py",
       "tests/_phase_pennylane_bridge_test_helpers.py",
       "tests/_phase_torch_bridge_test_helpers.py",
@@ -6749,12 +6750,18 @@
       "tests/test_ml_dsa_pqc.py",
       "tests/test_ml_dsa_seal.py",
       "tests/test_mlir_enzyme_evidence_docstrings.py",
+      "tests/test_mlir_executable_batching_integration.py",
       "tests/test_mlir_executable_kernel.py",
+      "tests/test_mlir_matrix_2x2_native_compilation_integration.py",
+      "tests/test_mlir_matrix_native_compilation_integration.py",
       "tests/test_mlir_native_compilation_integration.py",
       "tests/test_mlir_records.py",
       "tests/test_mlir_scalar_native_compilation.py",
+      "tests/test_mlir_scalar_native_compilation_integration.py",
+      "tests/test_mlir_symmetric_native_compilation_integration.py",
       "tests/test_mlir_toolchain_probe_hardening.py",
       "tests/test_mlir_transform_plan.py",
+      "tests/test_mlir_vector_native_compilation_integration.py",
       "tests/test_mlir_whole_program_emitter.py",
       "tests/test_mlir_whole_program_native.py",
       "tests/test_module_size_policy.py",

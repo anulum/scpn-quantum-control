@@ -52,8 +52,8 @@ operand-class compilation, whole-program lowering/emission, and Enzyme evidence.
 cross-language rescan then found that the residual `compiler/mlir.py` still owns four independent
 implementation clusters, so that facade is re-opened below rather than treated as complete.
 
-After the 2026-07-12 Torch test split, the exhaustive scan contains 50 oversized tracked code files:
-46 have an approved cohesive, facade, test-owner, or entry-point decision, and 4 remain open. The open
+After the Torch and MLIR native-integration test splits, the exhaustive scan contains 50 oversized tracked code files:
+47 have an approved cohesive, facade, test-owner, or entry-point decision, and 3 remain open. The open
 rows are not covered by a repository-wide "no oversized mixed modules" claim:
 
 | Open surface | Independent responsibilities | Required boundary |
@@ -61,11 +61,18 @@ rows are not covered by a repository-wide "no oversized mixed modules" claim:
 | `scpn_quantum_engine/program_ad_replay/src/program_ad_ir.rs` | schema/parser, scalar forward replay, numeric evaluation, reverse accumulation, PyO3 bindings | one-way schema, forward, numeric, reverse, and binding leaves behind the existing public path |
 | `scpn_quantum_engine/tests/program_ad_ir.rs` | parser/metadata, forward replay, reverse/reduction replay, linalg replay | module-named tests plus one shared fixture owner |
 | `src/scpn_quantum_control/compiler/mlir.py` | transform planning, Kuramoto/custom compilation, Enzyme audit, Phase-QNode runtime | implementation leaves behind signature-stable facade wrappers |
-| `tests/test_mlir_native_compilation_integration.py` | compiler exports plus scalar, vector, matrix, 2x2, symmetric, batch, and custom kernels | operand-class integration surfaces with single-owned helpers |
 
 The retained modules described next are intentionally kept at their current size because each is
 a single connected responsibility cluster or an explicit compatibility boundary. They are
 deliberate architecture, not pending refactors:
+
+The former 3,382-line MLIR native-compilation integration bucket is now source-owned: the public
+compiler facade/custom executable, scalar, vector, dimension-generic matrix, fixed 2x2,
+symmetric 2x2, and executable-batching lifecycles have separate test modules plus one 32-line
+typed batching helper. The 1,047-line fixed-2x2 test stays whole because its five parity tests
+mirror the single closed-form dense-2x2 production family and share the same registry, plan,
+Python-native, and Rust-native lifecycle. All 26 original definitions remain exactly once with
+AST-equivalent bodies.
 
 The 1,277-line `compiler/mlir_enzyme_evidence.py` leaf is one Enzyme/MLIR evidence-schema
 cluster rather than a mixed execution module. Its nine immutable records and seven
