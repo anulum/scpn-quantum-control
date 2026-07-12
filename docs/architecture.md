@@ -52,14 +52,10 @@ operand-class compilation, whole-program lowering/emission, and Enzyme evidence.
 cross-language rescan found four residual `compiler/mlir.py` implementation clusters; the
 2026-07-13 extraction below closes them behind the stable facade.
 
-After the Torch/MLIR test splits and MLIR facade extraction, the exhaustive scan contains 49 oversized tracked code files:
-47 have an approved cohesive, facade, test-owner, or entry-point decision, and 2 remain open. The open
-rows are not covered by a repository-wide "no oversized mixed modules" claim:
-
-| Open surface | Independent responsibilities | Required boundary |
-|--------------|------------------------------|-------------------|
-| `scpn_quantum_engine/program_ad_replay/src/program_ad_ir.rs` | schema/parser, scalar forward replay, numeric evaluation, reverse accumulation, PyO3 bindings | one-way schema, forward, numeric, reverse, and binding leaves behind the existing public path |
-| `scpn_quantum_engine/tests/program_ad_ir.rs` | parser/metadata, forward replay, reverse/reduction replay, linalg replay | module-named tests plus one shared fixture owner |
+After all five reopened refactors, the exhaustive scan contains 47 oversized tracked code files:
+all 47 have an approved cohesive, facade, test-owner, or entry-point decision, and 0 remain open.
+The strict module-size certification is therefore green. This is a structural ownership claim over
+tracked code files above 1,000 physical lines, not a substitute for runtime or scientific validation.
 
 The retained modules described next are intentionally kept at their current size because each is
 a single connected responsibility cluster or an explicit compatibility boundary. They are
@@ -80,6 +76,13 @@ maturity aggregation in `mlir_enzyme_audit.py`; and registered Phase-QNode lower
 execution in `mlir_phase_qnode_runtime.py`. All 22 former facade definitions have one
 AST-equivalent leaf owner, every leaf has a one-way dependency on existing lower-level contracts,
 and focused boundary tests prevent a facade back-edge.
+
+The Rust Program-AD replay surface is now a 98-line stable module owner that includes focused
+schema/parser, scalar-forward, numeric-state, numeric-dispatch, reverse-dispatch, reduction,
+structural, linalg, opcode, and PyO3 binding leaves. The former 1,895-line integration test is a
+20-line owner over parser/registry, scalar-forward, scalar-reverse, structural, reduction, and
+linalg test leaves plus one shared fixture owner. All former source bodies remain in their original
+order after whitespace normalization, and all 44 tests remain exact and single-owned.
 
 The 1,277-line `compiler/mlir_enzyme_evidence.py` leaf is one Enzyme/MLIR evidence-schema
 cluster rather than a mixed execution module. Its nine immutable records and seven
@@ -274,7 +277,7 @@ auto-generated block is the source of truth if the two ever drift.
 | Metric | Count |
 |--------|-------|
 | Python modules | 558 (excluding package initialisers) |
-| Rust crate | 1 (PyO3 0.29, **177 bindings**, 68 Rust source files including `validation.rs`, `symmetry_decay.rs`, `community.rs`, `pulse_shaping.rs`) |
+| Rust crate | 1 (PyO3 0.29, **177 bindings**, 81 Rust source files including `validation.rs`, `symmetry_decay.rs`, `community.rs`, `pulse_shaping.rs`) |
 | Julia tier | 1 (now in the `oscillatools` distribution: `oscillatools/accel/julia/order_parameter.jl`; juliacall-bridged, opt-in via `oscillatools[julia]`) |
 | Tests | CI-gated suite (90% aggregate coverage gate; non-refactor tree at 100%) |
 | Subpackages | domain package families (see the package map below) |
@@ -596,7 +599,7 @@ l16/                                       ← Layer 16 quantum director
 └── quantum_director.py                        Loschmidt echo, stability score
 
 scpn_quantum_engine/                       ← Rust crate (PyO3 0.29, rayon parallel)
-└── src/lib.rs                                 177 PyO3 bindings across 68 source files, including: kuramoto_euler, kuramoto_trajectory,
+└── src/lib.rs                                 177 PyO3 bindings across 81 source files, including: kuramoto_euler, kuramoto_trajectory,
                                                order_parameter, build_knm, pec_coefficients,
                                                pec_sample_parallel, dla_dimension, mc_xy_simulate,
                                                state_order_param_sparse, expectation_pauli_fast,

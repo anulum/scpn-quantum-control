@@ -18,7 +18,7 @@
     ".tsx",
     ".v"
   ],
-  "open_refactor_limit": 2,
+  "open_refactor_limit": 0,
   "files": [
     {
       "path": "oscillatools/src/oscillatools/__init__.py",
@@ -46,16 +46,6 @@
       "responsibility": "Lazy juliacall adapter for the bundled Julia acceleration tier and its typed array conversions.",
       "dependency_boundary": "Depends on NumPy, optional juliacall, and bundled Julia sources; focused oscillatools acceleration leaves call this adapter and own the public numerical APIs.",
       "reassess_when": "A second runtime, independent lifecycle, or non-Julia numerical implementation is added."
-    },
-    {
-      "path": "scpn_quantum_engine/program_ad_replay/src/program_ad_ir.rs",
-      "lines": 4123,
-      "kind": "source",
-      "disposition": "refactor_required",
-      "responsibility": "Current mixed surface: effect-IR schema and parser, metadata validation, scalar forward replay, numeric value evaluation, reverse accumulation, and optional PyO3 bindings.",
-      "dependency_boundary": "Depends on serde/serde_json plus the replay crate's registry, reduction, interpolation, signal, stencil, source-map, and linalg leaves; re-exported by both replay and engine crates and consumed by Studio WASM, Python bindings, fuzzing, and Rust integration tests.",
-      "reassess_when": "Close only after the independent parser, forward, numeric, reverse, and binding lifecycles are one-way leaves behind unchanged program_ad_ir public paths.",
-      "refactor_target": "Extract schema/parser, scalar-forward replay, numeric value operations, reverse accumulation, and PyO3 wrappers behind a compatibility facade."
     },
     {
       "path": "scpn_quantum_engine/src/compiler_ad/kernels/generic.rs",
@@ -101,16 +91,6 @@
       "responsibility": "Stochastic parameter-shift, SPSA, score-function, and confidence-interval gradient uncertainty kernel family.",
       "dependency_boundary": "Depends on ndarray and NumPy/PyO3 conversion; lib.rs exposes the four bindings, hot-path benchmarks consume inner kernels, and validation/unit tests remain colocated.",
       "reassess_when": "A deterministic optimizer, training loop, or independently configured sampling engine is added."
-    },
-    {
-      "path": "scpn_quantum_engine/tests/program_ad_ir.rs",
-      "lines": 1895,
-      "kind": "test",
-      "disposition": "refactor_required",
-      "responsibility": "Current mixed test bucket for effect-IR parsing, registry metadata, scalar forward replay, reverse value-and-gradient replay, structural/reduction boundaries, aliases, and linalg.",
-      "dependency_boundary": "Imports the public program_ad_ir parser, forward interpreter, reverse interpreter, and registry mirror; fixtures and assertions span the same independent lifecycles as the oversized Rust source module.",
-      "reassess_when": "Close with the source split after every prior test and serialized fixture has one module-named owner.",
-      "refactor_target": "Split parser/metadata, forward replay, reverse/reduction, and linalg tests with one shared typed fixture module."
     },
     {
       "path": "scripts/run_knm_physical_validation_audit.py",
