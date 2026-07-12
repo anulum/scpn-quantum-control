@@ -233,7 +233,7 @@ auto-generated block is the source of truth if the two ever drift.
 | Metric | Count |
 |--------|-------|
 | Python modules | 471 (excluding package initialisers) |
-| Rust crate | 1 (PyO3 0.29, **177 bindings**, 65 Rust source files including `validation.rs`, `symmetry_decay.rs`, `community.rs`, `pulse_shaping.rs`) |
+| Rust crate | 1 (PyO3 0.29, **177 bindings**, 68 Rust source files including `validation.rs`, `symmetry_decay.rs`, `community.rs`, `pulse_shaping.rs`) |
 | Julia tier | 1 (now in the `oscillatools` distribution: `oscillatools/accel/julia/order_parameter.jl`; juliacall-bridged, opt-in via `oscillatools[julia]`) |
 | Tests | CI-gated suite (90% aggregate coverage gate; non-refactor tree at 100%) |
 | Subpackages | domain package families (see the package map below) |
@@ -252,18 +252,18 @@ preparation and `bridge/` for Hamiltonian access.
 ```mermaid
 graph TD
     bridge["bridge/ (15)\nK_nm → quantum objects"]
-    phase["phase/ (94)\nTime evolution"]
+    phase["phase/ (116)\nTime evolution"]
     analysis["analysis/ (61)\nSync probes"]
     control["control/ (14)\nQuantum control"]
     qsnn["qsnn/ (7)\nQuantum SNN"]
     identity["identity/ (6)\nIdentity analysis"]
-    hardware["hardware/ (64)\nBackends + registry + async + provenance"]
+    hardware["hardware/ (69)\nBackends + registry + async + provenance"]
     mitigation["mitigation/ (13)\nError mitigation"]
     qec["qec/ (13)\nError correction"]
     gauge["gauge/ (6)\nGauge theory"]
     apps["applications/ (15)\nBenchmarks"]
     crypto["crypto/ (9)\nQKD + PQC"]
-    benchmarks["benchmarks/ (25)\nPerformance"]
+    benchmarks["benchmarks/ (28)\nPerformance"]
     ssgf["ssgf/ (4)\nGeometry"]
     psi_field["psi_field/ (4)\nU(1) lattice gauge"]
     oscillatools["oscillatools (external)\nKuramoto substrate: Rust → Julia → Python dispatch"]
@@ -555,7 +555,7 @@ l16/                                       ← Layer 16 quantum director
 └── quantum_director.py                        Loschmidt echo, stability score
 
 scpn_quantum_engine/                       ← Rust crate (PyO3 0.29, rayon parallel)
-└── src/lib.rs                                 177 PyO3 bindings across 65 source files, including: kuramoto_euler, kuramoto_trajectory,
+└── src/lib.rs                                 177 PyO3 bindings across 68 source files, including: kuramoto_euler, kuramoto_trajectory,
                                                order_parameter, build_knm, pec_coefficients,
                                                pec_sample_parallel, dla_dimension, mc_xy_simulate,
                                                state_order_param_sparse, expectation_pauli_fast,
