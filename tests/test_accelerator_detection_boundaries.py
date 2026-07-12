@@ -4,6 +4,7 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
+# SCPN Quantum Control — accelerator detection boundaries tests
 """Optional accelerator detection must not hide broken runtimes."""
 
 from __future__ import annotations

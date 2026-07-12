@@ -4,6 +4,7 @@
 // © Code 2020–2026 Miroslav Šotek. All rights reserved.
 // ORCID: 0009-0009-3560-0851
 // Contact: www.anulum.li | protoscience@anulum.li
+// scpn-quantum-engine — kuramoto inertial Rust module
 //! Rust tier for the inertial (second-order / swing-equation) networked-Kuramoto forward trajectory.
 //!
 //! Separate from the first-order fixed-grid RK4/Euler autodiff module: the second-order swing

@@ -4,6 +4,7 @@
 // © Code 2020–2026 Miroslav Šotek. All rights reserved.
 // ORCID: 0009-0009-3560-0851
 // Contact: www.anulum.li | protoscience@anulum.li
+// SCPN Quantum Control — ap int tests
 //
 // NON-SYNTHESIS lint / co-simulation shim for <ap_int.h>. This is NOT the AMD
 // Xilinx header: it backs ap_int<W> / ap_uint<W> with two's-complement int64_t

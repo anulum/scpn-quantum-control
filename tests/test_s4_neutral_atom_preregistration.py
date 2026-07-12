@@ -1,9 +1,10 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # Commercial license available
-# (c) Concepts 1996-2026 Miroslav Sotek. All rights reserved.
-# (c) Code 2020-2026 Miroslav Sotek. All rights reserved.
+# © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
+# © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
+# SCPN Quantum Control — s4 neutral atom preregistration tests
 # scpn-quantum-control -- S4 neutral-atom preregistration tests
 """Tests for S4 neutral-atom provider-object preregistration."""
 

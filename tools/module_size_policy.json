@@ -121,7 +121,7 @@
     },
     {
       "path": "src/scpn_quantum_control/benchmarks/differentiable_programming.py",
-      "lines": 2925,
+      "lines": 2926,
       "kind": "source",
       "disposition": "cohesive",
       "responsibility": "Differentiable-programming conformance case orchestration after contract and quantum-case extraction.",
@@ -130,7 +130,7 @@
     },
     {
       "path": "src/scpn_quantum_control/compiler/mlir_enzyme_evidence.py",
-      "lines": 1277,
+      "lines": 1278,
       "kind": "source",
       "disposition": "cohesive",
       "responsibility": "Immutable Enzyme/MLIR evidence schema, maturity aggregation, rendering, and artifact writing lifecycle.",
@@ -139,7 +139,7 @@
     },
     {
       "path": "src/scpn_quantum_control/compiler/mlir_matrix_2x2_native_compilation.py",
-      "lines": 2415,
+      "lines": 2416,
       "kind": "source",
       "disposition": "cohesive",
       "responsibility": "Closed-form 2x2 dense and symmetric matrix native LLVM/JIT lowering family.",
@@ -148,7 +148,7 @@
     },
     {
       "path": "src/scpn_quantum_control/compiler/mlir_matrix_native_compilation.py",
-      "lines": 2428,
+      "lines": 2429,
       "kind": "source",
       "disposition": "cohesive",
       "responsibility": "Dimension-generic vector and matrix native LLVM/JIT lowering family.",
@@ -166,7 +166,7 @@
     },
     {
       "path": "src/scpn_quantum_control/compiler/mlir_whole_program_native.py",
-      "lines": 2053,
+      "lines": 2054,
       "kind": "source",
       "disposition": "cohesive",
       "responsibility": "Whole-program AD MLIR/native compilation, executable-kernel, cache, and lowering-analysis pipeline.",
@@ -175,7 +175,7 @@
     },
     {
       "path": "src/scpn_quantum_control/differentiable_finite_difference.py",
-      "lines": 1861,
+      "lines": 1862,
       "kind": "source",
       "disposition": "cohesive",
       "responsibility": "Finite-difference and complex-step diagnostic gradient, Jacobian, JVP, VJP, Hessian, HVP, value, and batch transform family.",
@@ -193,7 +193,7 @@
     },
     {
       "path": "src/scpn_quantum_control/differentiable_result_contracts.py",
-      "lines": 2128,
+      "lines": 2129,
       "kind": "source",
       "disposition": "cohesive",
       "responsibility": "Canonical immutable derivative-result schema registry and shared validation helpers.",
@@ -238,7 +238,7 @@
     },
     {
       "path": "src/scpn_quantum_control/program_ad_adjoint_generation.py",
-      "lines": 1510,
+      "lines": 1511,
       "kind": "source",
       "disposition": "cohesive",
       "responsibility": "Reverse-mode adjoint contribution generation and dispatch over the stabilised whole-program AD IR.",
@@ -247,7 +247,7 @@
     },
     {
       "path": "src/scpn_quantum_control/program_ad_alias_contracts.py",
-      "lines": 1557,
+      "lines": 1558,
       "kind": "source",
       "disposition": "cohesive",
       "responsibility": "Immutable Program-AD alias-set, lattice, unknown-edge, and provenance contract graph.",
@@ -256,7 +256,7 @@
     },
     {
       "path": "src/scpn_quantum_control/program_ad_array_indexing.py",
-      "lines": 1716,
+      "lines": 1717,
       "kind": "source",
       "disposition": "cohesive",
       "responsibility": "Static array-indexing derivative rules and registry dispatch contracts.",
@@ -265,7 +265,7 @@
     },
     {
       "path": "src/scpn_quantum_control/program_ad_assembly_primitives.py",
-      "lines": 1899,
+      "lines": 1900,
       "kind": "source",
       "disposition": "cohesive",
       "responsibility": "Program-AD stack, concatenate, block, broadcast, triangular, diagonal, and like-constructor assembly derivative family.",
@@ -274,7 +274,7 @@
     },
     {
       "path": "src/scpn_quantum_control/program_ad_linalg_primitives.py",
-      "lines": 2656,
+      "lines": 2657,
       "kind": "source",
       "disposition": "cohesive",
       "responsibility": "Program-AD linear-algebra derivative rules, registry contracts, and conditioning diagnostics.",
@@ -283,7 +283,7 @@
     },
     {
       "path": "src/scpn_quantum_control/program_ad_product_primitives.py",
-      "lines": 1416,
+      "lines": 1417,
       "kind": "source",
       "disposition": "cohesive",
       "responsibility": "Program-AD product and contraction derivative factories with registry contracts.",
@@ -292,7 +292,7 @@
     },
     {
       "path": "src/scpn_quantum_control/program_ad_reduction_primitives.py",
-      "lines": 1708,
+      "lines": 1709,
       "kind": "source",
       "disposition": "cohesive",
       "responsibility": "Program-AD reduction derivative factories and registry contracts.",
@@ -301,7 +301,7 @@
     },
     {
       "path": "src/scpn_quantum_control/program_ad_registry.py",
-      "lines": 1770,
+      "lines": 1771,
       "kind": "source",
       "disposition": "cohesive",
       "responsibility": "Primitive identity, rule, transform, registration, dispatch-report, and coverage lifecycle for Program AD.",
@@ -310,7 +310,7 @@
     },
     {
       "path": "src/scpn_quantum_control/program_ad_selection_primitives.py",
-      "lines": 1259,
+      "lines": 1260,
       "kind": "source",
       "disposition": "cohesive",
       "responsibility": "Program-AD static selection, sort, where, and clip derivative rule family.",
@@ -319,7 +319,7 @@
     },
     {
       "path": "src/scpn_quantum_control/program_ad_shape_transforms.py",
-      "lines": 2014,
+      "lines": 2015,
       "kind": "source",
       "disposition": "cohesive",
       "responsibility": "Static Program-AD reshape, axis, rank, repeat, tile, roll, rotation, and flip derivative rule family.",
@@ -328,7 +328,7 @@
     },
     {
       "path": "src/scpn_quantum_control/whole_program_frontend.py",
-      "lines": 1432,
+      "lines": 1433,
       "kind": "source",
       "disposition": "cohesive",
       "responsibility": "Static source/bytecode inspection, semantic classification, digest, and frontend report assembly pipeline.",
@@ -337,7 +337,7 @@
     },
     {
       "path": "src/scpn_quantum_control/whole_program_trace_values.py",
-      "lines": 4993,
+      "lines": 4994,
       "kind": "source",
       "disposition": "cohesive",
       "responsibility": "Operator-intercepted forward-AD TraceADScalar and TraceADArray value runtime.",
@@ -346,7 +346,7 @@
     },
     {
       "path": "tests/test_differentiable_result_contracts.py",
-      "lines": 3750,
+      "lines": 3751,
       "kind": "test",
       "disposition": "cohesive",
       "responsibility": "Canonical derivative-result schema identity, normalization, serialization, and fail-closed invariant tests.",
@@ -391,7 +391,7 @@
     },
     {
       "path": "tests/test_program_ad_adjoint_generation.py",
-      "lines": 1583,
+      "lines": 1584,
       "kind": "test",
       "disposition": "cohesive",
       "responsibility": "Reverse-adjoint contribution, primitive dispatch, provenance, and result-assembly tests.",
@@ -400,7 +400,7 @@
     },
     {
       "path": "tests/test_program_ad_alias_contracts.py",
-      "lines": 1637,
+      "lines": 1638,
       "kind": "test",
       "disposition": "cohesive",
       "responsibility": "Program-AD alias/lattice/provenance contract docs, identity, and exhaustive validation-path tests.",
@@ -409,7 +409,7 @@
     },
     {
       "path": "tests/test_program_ad_alias_effects.py",
-      "lines": 1161,
+      "lines": 1162,
       "kind": "test",
       "disposition": "cohesive",
       "responsibility": "Program-AD alias/effect analysis execution and static-lattice report tests.",
@@ -418,7 +418,7 @@
     },
     {
       "path": "tests/test_program_ad_registry.py",
-      "lines": 1633,
+      "lines": 1634,
       "kind": "test",
       "disposition": "cohesive",
       "responsibility": "Primitive identity, rule, transform, registration, dispatch-report, facade, and coverage tests for Program AD.",
@@ -427,7 +427,7 @@
     },
     {
       "path": "tests/test_program_ad_shape_transforms.py",
-      "lines": 1555,
+      "lines": 1556,
       "kind": "test",
       "disposition": "cohesive",
       "responsibility": "Static Program-AD shape-transform rules, normalization, registry policy, direct adjoints, and failure-boundary tests.",

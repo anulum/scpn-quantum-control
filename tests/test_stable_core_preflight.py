@@ -4,6 +4,7 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
+# SCPN Quantum Control — stable core preflight tests
 # scpn-quantum-control -- stable core preflight tests
 """Focused tests for stable-core preflight evaluation."""
 

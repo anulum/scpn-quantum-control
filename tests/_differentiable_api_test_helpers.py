@@ -4,6 +4,7 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
+# SCPN Quantum Control — differentiable API test helpers tests
 # scpn-quantum-control -- differentiable API test helpers
 """Shared optional-runtime helpers for differentiable API and dashboard tests."""
 

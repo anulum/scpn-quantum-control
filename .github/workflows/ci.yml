@@ -52,6 +52,10 @@ jobs:
         run: python tools/audit_module_size_policy.py
       - name: Type-check module-size policy audit
         run: mypy --strict tools/audit_module_size_policy.py
+      - name: Audit licence readiness and canonical source headers
+        run: python tools/audit_license_readiness.py
+      - name: Type-check licence readiness audit
+        run: mypy --strict tools/audit_license_readiness.py
       - name: Audit differentiable promotion language
         run: python tools/check_differentiable_promotion_language.py
       - name: Ruff docstring ratchet for differentiable module hardening

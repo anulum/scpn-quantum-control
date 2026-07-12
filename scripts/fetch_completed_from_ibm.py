@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # Commercial license available
-# © Concepts & Code 2020–2026 Miroslav Šotek. All rights reserved.
+# © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
+# © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# scpn-quantum-control — IBM Job Retrieval Helper
+# SCPN Quantum Control — fetch completed from IBM script
 """
 fetch_completed_from_ibm.py — Retrieve the two most-recently completed IBM
 Quantum jobs from the configured account (no embedded job IDs required).

@@ -5,6 +5,10 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-07-13 — Added a cross-language licence-readiness gate that checks every
+  tracked Python, Rust, Julia, Go, C/C++, JavaScript/TypeScript, TOML, YAML,
+  Verilog, and SystemVerilog source/configuration header in local preflight and
+  CI. Canonicalised 515 existing headers while preserving each file body.
 - 2026-07-04 — Extracted the coupled-phase-oscillator (Kuramoto) toolkit into a
   standalone [`oscillatools`](oscillatools/) distribution (a NumPy + SciPy floor
   with optional `rust`/`julia`/`jax`/`torch`/`sklearn`/`viz` tiers) so it can be

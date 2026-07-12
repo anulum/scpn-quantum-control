@@ -4,6 +4,7 @@
 // © Code 2020–2026 Miroslav Šotek. All rights reserved.
 // ORCID: 0009-0009-3560-0851
 // Contact: www.anulum.li | protoscience@anulum.li
+// scpn-quantum-engine — kuramoto dopri Rust module
 //! Rust tier for the adaptive Dormand–Prince (DOPRI5) networked-Kuramoto forward trajectory.
 //!
 //! Separate from the fixed-grid RK4/Euler autodiff module: adaptive, error-controlled integration

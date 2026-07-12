@@ -3,7 +3,8 @@
 # © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
-# Contact: www.anulum.li — Noisy Kuramoto Fokker–Planck mean-field theory tests
+# Contact: www.anulum.li | protoscience@anulum.li
+# oscillatools — kuramoto noisy mean field tests
 """Multi-angle tests for the noisy Kuramoto Fokker–Planck mean-field theory.
 
 Covers the noisy critical coupling (the closed-form Lorentzian shift ``2(γ + D)``, the

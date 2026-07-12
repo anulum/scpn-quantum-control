@@ -4,6 +4,7 @@
 // © Code 2020–2026 Miroslav Šotek. All rights reserved.
 // ORCID: 0009-0009-3560-0851
 // Contact: www.anulum.li | protoscience@anulum.li
+// scpn-quantum-engine — kuramoto symplectic inertial Rust module
 //! Rust tier for the symplectic (velocity-Verlet) inertial networked-Kuramoto forward trajectory.
 //!
 //! Structure-preserving integration of the swing equation ``m θ̈ + γ θ̇ = ω + F(θ)`` by a damped

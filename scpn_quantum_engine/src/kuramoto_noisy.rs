@@ -4,6 +4,7 @@
 // © Code 2020–2026 Miroslav Šotek. All rights reserved.
 // ORCID: 0009-0009-3560-0851
 // Contact: www.anulum.li | protoscience@anulum.li
+// scpn-quantum-engine — kuramoto noisy Rust module
 //! Rust tier for the stochastic (noisy) networked-Kuramoto Euler–Maruyama forward trajectory.
 //!
 //! Each oscillator obeys the Langevin equation ``dθ_j = (ω_j + F_j(θ)) dt + √(2D) dW_j`` with a

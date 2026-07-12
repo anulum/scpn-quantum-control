@@ -4,6 +4,7 @@
 // © Code 2020–2026 Miroslav Šotek. All rights reserved.
 // ORCID: 0009-0009-3560-0851
 // Contact: www.anulum.li | protoscience@anulum.li
+// scpn-quantum-engine — kuramoto delayed Rust module
 //! Rust tier for the time-delayed (method-of-steps) networked-Kuramoto forward trajectory.
 //!
 //! The coupling carries a finite propagation delay ``τ``, so each oscillator feels the *delayed*

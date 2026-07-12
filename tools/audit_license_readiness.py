@@ -11,6 +11,8 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
+import subprocess
 import sys
 from collections.abc import Iterable
 from dataclasses import dataclass
@@ -59,17 +61,51 @@ REQUIRED_TEXT_FILES: dict[str, tuple[str, ...]] = {
         "not available as a permissive package today",
     ),
 }
-HEADER_SCAN_ROOTS = (
-    "src/scpn_quantum_control",
-    "tools",
-    "scripts",
+HEADER_COMMENT_PREFIXES = {
+    ".c": "//",
+    ".cc": "//",
+    ".cpp": "//",
+    ".go": "//",
+    ".h": "//",
+    ".hpp": "//",
+    ".jl": "#",
+    ".js": "//",
+    ".jsx": "//",
+    ".py": "#",
+    ".pyi": "#",
+    ".rs": "//",
+    ".sv": "//",
+    ".toml": "#",
+    ".ts": "//",
+    ".tsx": "//",
+    ".v": "//",
+    ".yaml": "#",
+    ".yml": "#",
+}
+CANONICAL_HEADER_LINES = (
+    "SPDX-License-Identifier: AGPL-3.0-or-later",
+    "Commercial license available",
+    "© Concepts 1996–2026 Miroslav Šotek. All rights reserved.",
+    "© Code 2020–2026 Miroslav Šotek. All rights reserved.",
+    "ORCID: 0009-0009-3560-0851",
+    "Contact: www.anulum.li | protoscience@anulum.li",
 )
-HEADER_SUFFIXES = {".py"}
+EXCLUDED_HEADER_PATHS = {"studio-web/pnpm-lock.yaml"}
 IGNORED_HEADER_PARTS = {
+    ".git",
+    ".mypy_cache",
+    ".pytest_cache",
+    ".ruff_cache",
     "__pycache__",
+    "BACKUP",
+    "ARCHIVE",
+    "build",
+    "dist",
+    "node_modules",
     ".venv",
     ".venv-linux",
     "site",
+    "target",
 }
 
 
@@ -173,17 +209,15 @@ def check_required_text(project_root: Path) -> LicenseReadinessCheck:
 
 
 def check_spdx_headers(project_root: Path) -> LicenseReadinessCheck:
-    """Check source/tool Python files for the AGPL/commercial header."""
+    """Check tracked code and configuration files for the canonical header."""
     blockers: list[str] = []
     scanned: list[str] = []
     for path in _iter_header_scan_files(project_root):
         rel_path = path.relative_to(project_root).as_posix()
         scanned.append(rel_path)
-        head = "\n".join(path.read_text(encoding="utf-8", errors="replace").splitlines()[:8])
-        if "SPDX-License-Identifier: AGPL-3.0-or-later" not in head:
-            blockers.append(f"{rel_path}: missing SPDX header")
-        if "Commercial license available" not in head:
-            blockers.append(f"{rel_path}: missing commercial licence header")
+        lines = path.read_text(encoding="utf-8", errors="replace").splitlines()
+        prefix = HEADER_COMMENT_PREFIXES[path.suffix]
+        blockers.extend(_header_blockers(rel_path, lines, prefix))
     return LicenseReadinessCheck(
         name="source_spdx_headers",
         valid=not blockers,
@@ -224,17 +258,74 @@ def format_license_readiness(payload: dict[str, Any]) -> str:
 
 
 def _iter_header_scan_files(project_root: Path) -> Iterable[Path]:
-    for root in HEADER_SCAN_ROOTS:
-        scan_root = project_root / root
-        if not scan_root.exists():
+    tracked = _git_tracked_files(project_root)
+    candidates = tracked if tracked is not None else _walk_files(project_root)
+    for path in candidates:
+        if not path.is_file() or path.suffix not in HEADER_COMMENT_PREFIXES:
             continue
-        for path in sorted(scan_root.rglob("*")):
-            if not path.is_file() or path.suffix not in HEADER_SUFFIXES:
-                continue
-            rel_parts = set(path.relative_to(project_root).parts)
-            if rel_parts & IGNORED_HEADER_PARTS:
-                continue
-            yield path
+        relative = path.relative_to(project_root)
+        if relative.as_posix() in EXCLUDED_HEADER_PATHS:
+            continue
+        if set(relative.parts) & IGNORED_HEADER_PARTS:
+            continue
+        yield path
+
+
+def _git_tracked_files(project_root: Path) -> tuple[Path, ...] | None:
+    """Return tracked paths, or ``None`` when the root is not a Git checkout."""
+    try:
+        result = subprocess.run(
+            ["git", "-C", str(project_root), "ls-files", "-z"],
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+    except OSError:
+        return None
+    if result.returncode != 0:
+        return None
+    relative_paths = sorted(path for path in result.stdout.split("\0") if path)
+    return tuple(project_root / relative for relative in relative_paths)
+
+
+def _walk_files(project_root: Path) -> tuple[Path, ...]:
+    """Return filesystem candidates while pruning generated dependency trees."""
+    paths: list[Path] = []
+    for current_root, directory_names, file_names in os.walk(project_root):
+        directory_names[:] = sorted(
+            name for name in directory_names if name not in IGNORED_HEADER_PARTS
+        )
+        root = Path(current_root)
+        paths.extend(root / name for name in sorted(file_names))
+    return tuple(paths)
+
+
+def _header_blockers(relative: str, lines: list[str], prefix: str) -> tuple[str, ...]:
+    """Return deterministic canonical-header blockers for one file."""
+    start = 1 if lines and lines[0].startswith("#!") else 0
+    expected = tuple(f"{prefix} {line}" for line in CANONICAL_HEADER_LINES)
+    blockers: list[str] = []
+    for index, expected_line in enumerate(expected):
+        line_number = start + index + 1
+        if len(lines) < line_number:
+            blockers.append(f"{relative}: missing canonical header line {index + 1}")
+            continue
+        observed = lines[line_number - 1]
+        if observed != expected_line:
+            blockers.append(f"{relative}: non-canonical header line {index + 1}: {observed!r}")
+    description_index = start + len(expected)
+    if len(lines) <= description_index:
+        blockers.append(f"{relative}: missing Project — Description header line")
+        return tuple(blockers)
+    description_line = lines[description_index]
+    marker = f"{prefix} "
+    if not description_line.startswith(marker):
+        blockers.append(f"{relative}: malformed Project — Description header line")
+        return tuple(blockers)
+    project, separator, description = description_line[len(marker) :].partition(" — ")
+    if separator != " — " or not project.strip() or not description.strip():
+        blockers.append(f"{relative}: malformed Project — Description header line")
+    return tuple(blockers)
 
 
 def _normalise_text(value: str) -> str:

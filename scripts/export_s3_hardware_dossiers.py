@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # Commercial license available
-# (c) Concepts 1996-2026 Miroslav Sotek. All rights reserved.
-# (c) Code 2020-2026 Miroslav Sotek. All rights reserved.
+# © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
+# © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
+# SCPN Quantum Control — export s3 hardware dossiers script
 # scpn-quantum-control -- S3 hardware dossier export
 """Export no-submit hardware-job dossiers for promoted S3 candidates."""
 

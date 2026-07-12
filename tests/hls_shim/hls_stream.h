@@ -4,6 +4,7 @@
 // © Code 2020–2026 Miroslav Šotek. All rights reserved.
 // ORCID: 0009-0009-3560-0851
 // Contact: www.anulum.li | protoscience@anulum.li
+// SCPN Quantum Control — HLS stream tests
 //
 // NON-SYNTHESIS lint / co-simulation shim for <hls_stream.h>. Backs
 // hls::stream<T> with a std::deque FIFO so the generated AXI4-Stream pulse

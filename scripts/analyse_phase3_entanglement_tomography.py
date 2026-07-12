@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # Commercial license available
-# © Concepts 1996-2026 Miroslav Sotek. All rights reserved.
-# © Code 2020-2026 Miroslav Sotek. All rights reserved.
+# © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
+# © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
+# SCPN Quantum Control — analyse phase3 entanglement tomography script
 # scpn-quantum-control -- Phase 3 entanglement/tomography analysis
 """Analyse approved Phase 3 entanglement/tomography raw-count artefacts."""
 

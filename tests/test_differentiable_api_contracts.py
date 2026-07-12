@@ -4,6 +4,7 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
+# SCPN Quantum Control — differentiable API contracts tests
 # scpn-quantum-control -- unified differentiable API contract tests
 """Validation and facade-identity tests for unified differentiable API contracts."""
 

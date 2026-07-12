@@ -1,10 +1,10 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # Commercial license available
-# © Concepts 1996-2026 Miroslav Sotek. All rights reserved.
-# © Code 2020-2026 Miroslav Sotek. All rights reserved.
+# © Concepts 1996–2026 Miroslav Šotek. All rights reserved.
+# © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
-# SCPN Quantum Control — Program AD Rust Bridge Contract Tests
+# SCPN Quantum Control — program AD rust bridge contracts tests
 """Validation and immutable-result contract tests for the Program AD Rust bridge."""
 
 from __future__ import annotations

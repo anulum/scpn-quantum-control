@@ -4,6 +4,7 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
+# SCPN Quantum Control — program AD rust linalg diag bridge tests
 # scpn-quantum-control -- Rust Program AD diag linalg bridge tests
 """Focused Rust bridge tests for Program AD diag gather/scatter replay."""
 

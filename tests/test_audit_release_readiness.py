@@ -42,14 +42,25 @@ format_release_readiness = _audit_release_readiness.format_release_readiness
 main = _audit_release_readiness.main
 
 
+def _canonical_header(description: str) -> list[str]:
+    return [
+        "# SPDX-License-Identifier: AGPL-3.0-or-later",
+        "# Commercial license available",
+        "# © Concepts 1996–2026 Miroslav Šotek. All rights reserved.",
+        "# © Code 2020–2026 Miroslav Šotek. All rights reserved.",
+        "# ORCID: 0009-0009-3560-0851",
+        "# Contact: www.anulum.li | protoscience@anulum.li",
+        f"# SCPN Quantum Control — {description}",
+    ]
+
+
 def _write_version_carriers(root: Path, version: str = "0.9.7") -> None:
     package_root = root / "src" / "scpn_quantum_control"
     package_root.mkdir(parents=True)
     (package_root / "__init__.py").write_text(
         "\n".join(
             [
-                "# SPDX-License-Identifier: AGPL-3.0-or-later",
-                "# Commercial license available",
+                *_canonical_header("Test package"),
                 "from importlib.metadata import version",
                 "__version__ = version('scpn-quantum-control')",
             ]
@@ -59,6 +70,7 @@ def _write_version_carriers(root: Path, version: str = "0.9.7") -> None:
     (root / "pyproject.toml").write_text(
         "\n".join(
             [
+                *_canonical_header("Test project configuration"),
                 "[project]",
                 f'version = "{version}"',
                 'license = "AGPL-3.0-or-later"',
@@ -156,6 +168,7 @@ def _write_behavioural_test(root: Path) -> None:
     (tests_root / "test_contract.py").write_text(
         "\n".join(
             [
+                *_canonical_header("Behavioural contract tests"),
                 "import pytest",
                 "",
                 "def test_contract():",
@@ -263,8 +276,7 @@ def test_release_readiness_reports_file_gaps_without_blocking_aggregate_pass(
     (tmp_path / "src" / "scpn_quantum_control" / "low.py").write_text(
         "\n".join(
             [
-                "# SPDX-License-Identifier: AGPL-3.0-or-later",
-                "# Commercial license available",
+                *_canonical_header("Low-coverage test module"),
                 "x = 1",
             ]
         ),

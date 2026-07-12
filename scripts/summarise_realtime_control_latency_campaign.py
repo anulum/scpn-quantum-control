@@ -5,6 +5,7 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
+# SCPN Quantum Control — summarise realtime control latency campaign script
 # scpn-quantum-control -- realtime control latency consolidation
 """Consolidate local Rust/Python loop benchmarks with IBM runtime campaigns."""
 

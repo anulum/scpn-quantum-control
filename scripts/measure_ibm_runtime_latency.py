@@ -5,6 +5,7 @@
 # © Code 2020–2026 Miroslav Šotek. All rights reserved.
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
+# SCPN Quantum Control — measure IBM runtime latency script
 # scpn-quantum-control -- IBM runtime latency campaign
 """Run a reproducible IBM Runtime latency scenario matrix.
 
