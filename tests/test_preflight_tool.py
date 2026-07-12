@@ -44,6 +44,16 @@ def test_static_gates_include_documentation_surface_gate() -> None:
     assert "--fail-on-findings" in gate_map["documentation-surface"]
 
 
+def test_static_gates_include_module_size_policy_and_typing() -> None:
+    """Preflight must keep the oversized-code registry current and typed."""
+    gate_map = {name: cmd for name, cmd in _preflight.STATIC_GATES}
+
+    assert "tools/audit_module_size_policy.py" in gate_map["module-size-policy"]
+    strict_cmd = gate_map["mypy-strict-module-size-policy"]
+    assert "--strict" in strict_cmd
+    assert "tools/audit_module_size_policy.py" in strict_cmd
+
+
 def test_static_gates_include_differentiable_docstring_ratchet() -> None:
     """Differentiable docstring-clean modules must stay under Ruff D."""
     gate_map = {name: cmd for name, cmd in _preflight.STATIC_GATES}

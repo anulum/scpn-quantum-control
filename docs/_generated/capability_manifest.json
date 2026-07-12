@@ -13,7 +13,7 @@
     "python_model_source_modules": 554,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 49,
-    "test_files": 951
+    "test_files": 952
   },
   "documentation": {
     "examples": [
@@ -6756,6 +6756,7 @@
       "tests/test_mlir_transform_plan.py",
       "tests/test_mlir_whole_program_emitter.py",
       "tests/test_mlir_whole_program_native.py",
+      "tests/test_module_size_policy.py",
       "tests/test_monte_carlo_xy.py",
       "tests/test_mps_baseline.py",
       "tests/test_mps_evolution.py",

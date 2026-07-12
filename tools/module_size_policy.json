@@ -1,0 +1,488 @@
+{
+  "threshold_lines": 1000,
+  "extensions": [
+    ".c",
+    ".cc",
+    ".cpp",
+    ".go",
+    ".h",
+    ".hpp",
+    ".jl",
+    ".js",
+    ".jsx",
+    ".py",
+    ".pyi",
+    ".rs",
+    ".sv",
+    ".ts",
+    ".tsx",
+    ".v"
+  ],
+  "open_refactor_limit": 5,
+  "files": [
+    {
+      "path": "oscillatools/src/oscillatools/__init__.py",
+      "lines": 1376,
+      "kind": "facade",
+      "disposition": "facade",
+      "responsibility": "Compatibility import surface for the focused classical-Kuramoto modules shipped by oscillatools.",
+      "dependency_boundary": "Imports the package version and re-exports the oscillatools.accel surface; downstream examples, SCPN modules, and external clients consume these stable aliases.",
+      "reassess_when": "Executable numerical logic moves into this package initializer instead of a focused accel module."
+    },
+    {
+      "path": "oscillatools/src/oscillatools/accel/__init__.py",
+      "lines": 1060,
+      "kind": "facade",
+      "disposition": "facade",
+      "responsibility": "Stable multi-language acceleration import surface over focused Kuramoto implementation modules.",
+      "dependency_boundary": "Re-exports the focused oscillatools.accel modules and NumPy-facing dispatcher contracts; legacy and package-root consumers depend on the aliases, while compute bodies stay in leaves.",
+      "reassess_when": "A compute kernel or backend lifecycle is implemented directly in the initializer."
+    },
+    {
+      "path": "oscillatools/src/oscillatools/accel/julia/__init__.py",
+      "lines": 1211,
+      "kind": "source",
+      "disposition": "cohesive",
+      "responsibility": "Lazy juliacall adapter for the bundled Julia acceleration tier and its typed array conversions.",
+      "dependency_boundary": "Depends on NumPy, optional juliacall, and bundled Julia sources; focused oscillatools acceleration leaves call this adapter and own the public numerical APIs.",
+      "reassess_when": "A second runtime, independent lifecycle, or non-Julia numerical implementation is added."
+    },
+    {
+      "path": "scpn_quantum_engine/program_ad_replay/src/program_ad_ir.rs",
+      "lines": 4123,
+      "kind": "source",
+      "disposition": "refactor_required",
+      "responsibility": "Current mixed surface: effect-IR schema and parser, metadata validation, scalar forward replay, numeric value evaluation, reverse accumulation, and optional PyO3 bindings.",
+      "dependency_boundary": "Depends on serde/serde_json plus the replay crate's registry, reduction, interpolation, signal, stencil, source-map, and linalg leaves; re-exported by both replay and engine crates and consumed by Studio WASM, Python bindings, fuzzing, and Rust integration tests.",
+      "reassess_when": "Close only after the independent parser, forward, numeric, reverse, and binding lifecycles are one-way leaves behind unchanged program_ad_ir public paths.",
+      "refactor_target": "Extract schema/parser, scalar-forward replay, numeric value operations, reverse accumulation, and PyO3 wrappers behind a compatibility facade."
+    },
+    {
+      "path": "scpn_quantum_engine/src/compiler_ad/kernels/generic.rs",
+      "lines": 1124,
+      "kind": "source",
+      "disposition": "cohesive",
+      "responsibility": "Dimension-generic matrix and vector value, JVP, VJP, and gradient kernels for compiler AD.",
+      "dependency_boundary": "Depends only on the parent checked-vector validator; compiler_ad::kernels re-exports the complete family to PyO3 bindings, with unit tests colocated below the implementation.",
+      "reassess_when": "A kernel family with different dimension policy or validation lifecycle is added."
+    },
+    {
+      "path": "scpn_quantum_engine/src/compiler_ad/kernels/specialized_2x2.rs",
+      "lines": 1102,
+      "kind": "source",
+      "disposition": "cohesive",
+      "responsibility": "Fixed-size 2x2 determinant, inverse, solve, Cholesky, and spectral compiler-AD kernels.",
+      "dependency_boundary": "Depends only on the parent fixed-vector validator; compiler_ad::kernels re-exports the complete 2x2 family to bindings, with geometry helpers and unit tests kept local.",
+      "reassess_when": "A non-2x2 operand class or independently versioned numerical policy is added."
+    },
+    {
+      "path": "scpn_quantum_engine/src/kuramoto_coupling.rs",
+      "lines": 1529,
+      "kind": "source",
+      "disposition": "cohesive",
+      "responsibility": "Kuramoto coupling-force, stability-Jacobian, interaction-energy, local-field, Sakaguchi, Daido, and triadic kernel family.",
+      "dependency_boundary": "Depends on ndarray, NumPy/PyO3 conversion, and the shared phase-vector validator; lib.rs registers all wrappers, kuramoto_autodiff uses the networked inner kernel, and family unit tests are colocated.",
+      "reassess_when": "Non-coupling observables, trajectory integration, or an independent backend lifecycle enters the module."
+    },
+    {
+      "path": "scpn_quantum_engine/src/kuramoto_observables.rs",
+      "lines": 1005,
+      "kind": "source",
+      "disposition": "cohesive",
+      "responsibility": "Kuramoto order-parameter, mean-phase, and Daido observable values with analytic gradients and Hessians.",
+      "dependency_boundary": "Depends on ndarray, NumPy/PyO3 conversion, and the shared phase-vector validator; lib.rs registers wrappers and Kuramoto kernels/benchmarks consume the pure inner functions; unit tests are colocated.",
+      "reassess_when": "A non-observable solver or unrelated statistical lifecycle is added."
+    },
+    {
+      "path": "scpn_quantum_engine/src/stochastic_gradient.rs",
+      "lines": 1006,
+      "kind": "source",
+      "disposition": "cohesive",
+      "responsibility": "Stochastic parameter-shift, SPSA, score-function, and confidence-interval gradient uncertainty kernel family.",
+      "dependency_boundary": "Depends on ndarray and NumPy/PyO3 conversion; lib.rs exposes the four bindings, hot-path benchmarks consume inner kernels, and validation/unit tests remain colocated.",
+      "reassess_when": "A deterministic optimizer, training loop, or independently configured sampling engine is added."
+    },
+    {
+      "path": "scpn_quantum_engine/tests/program_ad_ir.rs",
+      "lines": 1895,
+      "kind": "test",
+      "disposition": "refactor_required",
+      "responsibility": "Current mixed test bucket for effect-IR parsing, registry metadata, scalar forward replay, reverse value-and-gradient replay, structural/reduction boundaries, aliases, and linalg.",
+      "dependency_boundary": "Imports the public program_ad_ir parser, forward interpreter, reverse interpreter, and registry mirror; fixtures and assertions span the same independent lifecycles as the oversized Rust source module.",
+      "reassess_when": "Close with the source split after every prior test and serialized fixture has one module-named owner.",
+      "refactor_target": "Split parser/metadata, forward replay, reverse/reduction, and linalg tests with one shared typed fixture module."
+    },
+    {
+      "path": "scripts/run_knm_physical_validation_audit.py",
+      "lines": 1014,
+      "kind": "entrypoint",
+      "disposition": "entrypoint",
+      "responsibility": "Single command-line audit that assembles K_nm parity and measured-system validation evidence.",
+      "dependency_boundary": "Depends on the K_nm Hamiltonian bridge, NumPy, subprocess tool probes, and JSON/filesystem output; no production module imports the script.",
+      "reassess_when": "Reusable library logic or a second command lifecycle is added instead of extracted."
+    },
+    {
+      "path": "src/scpn_quantum_control/__init__.py",
+      "lines": 1771,
+      "kind": "facade",
+      "disposition": "facade",
+      "responsibility": "Package-root compatibility facade and lazy public export registry.",
+      "dependency_boundary": "Lazily resolves the package's focused application, compiler, control, differentiable, hardware, phase, QEC, and utility leaves; examples, tests, and external callers consume the stable root aliases.",
+      "reassess_when": "Algorithmic execution or stateful backend ownership moves into the initializer."
+    },
+    {
+      "path": "src/scpn_quantum_control/benchmarks/differentiable_external_comparison.py",
+      "lines": 1283,
+      "kind": "source",
+      "disposition": "cohesive",
+      "responsibility": "External differentiable-framework comparison execution facade after contract extraction.",
+      "dependency_boundary": "Depends on the external-contract and Catalyst leaves plus JAX, Torch, TensorFlow, PennyLane, Qiskit, and Phase-QNode adapters; benchmark scripts and focused edge tests consume and monkeypatch its runner seams.",
+      "reassess_when": "A runner gains an independent public API or dependency injection replaces the shared facade seams."
+    },
+    {
+      "path": "src/scpn_quantum_control/benchmarks/differentiable_programming.py",
+      "lines": 2925,
+      "kind": "source",
+      "disposition": "cohesive",
+      "responsibility": "Differentiable-programming conformance case orchestration after contract and quantum-case extraction.",
+      "dependency_boundary": "Depends on benchmark contracts, quantum cases, MLIR, native differentiable APIs, and JAX/Torch bridges; benchmark reports and focused edge tests consume and monkeypatch its stable availability/compiler seams.",
+      "reassess_when": "A case family becomes independently consumed or a public dependency-injection contract replaces facade globals."
+    },
+    {
+      "path": "src/scpn_quantum_control/compiler/mlir.py",
+      "lines": 1825,
+      "kind": "source",
+      "disposition": "refactor_required",
+      "responsibility": "Current mixed facade: compiler-AD transform planning, Kuramoto/custom executable compilation, Enzyme maturity probing, and Phase-QNode MLIR runtime execution.",
+      "dependency_boundary": "Imports records, executable-kernel, native primitive/operand leaves, whole-program lowering, Enzyme evidence/runner/gates, differentiable APIs, Kuramoto core, and Phase-QNode circuits; benchmarks, API modules, and compiler tests consume the public facade.",
+      "reassess_when": "Close after each execution/probe lifecycle has a one-way implementation leaf and mlir.py retains stable wrappers and re-exports only.",
+      "refactor_target": "Extract transform-plan assembly, Kuramoto/custom compilation, Enzyme audit, and Phase-QNode runtime implementations behind the existing public facade."
+    },
+    {
+      "path": "src/scpn_quantum_control/compiler/mlir_enzyme_evidence.py",
+      "lines": 1277,
+      "kind": "source",
+      "disposition": "cohesive",
+      "responsibility": "Immutable Enzyme/MLIR evidence schema, maturity aggregation, rendering, and artifact writing lifecycle.",
+      "dependency_boundary": "Depends on the Phase-QNode affinity benchmark record; compiler.mlir and the evidence-writer script consume the complete record family.",
+      "reassess_when": "An evidence subtype gains independent versioning, persistence, or consumers."
+    },
+    {
+      "path": "src/scpn_quantum_control/compiler/mlir_matrix_2x2_native_compilation.py",
+      "lines": 2415,
+      "kind": "source",
+      "disposition": "cohesive",
+      "responsibility": "Closed-form 2x2 dense and symmetric matrix native LLVM/JIT lowering family.",
+      "dependency_boundary": "Depends on MLIR records, executable kernels, native primitives, and differentiable contracts; compiler.mlir is the sole production facade and owns public dispatch.",
+      "reassess_when": "A non-2x2 operand class, separate backend, or independently consumed lowering API is added."
+    },
+    {
+      "path": "src/scpn_quantum_control/compiler/mlir_matrix_native_compilation.py",
+      "lines": 2428,
+      "kind": "source",
+      "disposition": "cohesive",
+      "responsibility": "Dimension-generic vector and matrix native LLVM/JIT lowering family.",
+      "dependency_boundary": "Depends on MLIR records, executable kernels, native primitives, and differentiable contracts; compiler.mlir is the sole production facade and owns public dispatch.",
+      "reassess_when": "A distinct operand policy, backend lifecycle, or independently consumed lowering API appears."
+    },
+    {
+      "path": "src/scpn_quantum_control/compiler/mlir_whole_program_emitter.py",
+      "lines": 2837,
+      "kind": "source",
+      "disposition": "cohesive",
+      "responsibility": "LLVM text emission for recorded whole-program AD operations and derivatives.",
+      "dependency_boundary": "Depends on whole-program differentiable result types; mlir_whole_program_native is the sole production importer and owns driver, cache, and executable lifecycles.",
+      "reassess_when": "An independently consumed lowering family or second backend is introduced."
+    },
+    {
+      "path": "src/scpn_quantum_control/compiler/mlir_whole_program_native.py",
+      "lines": 2053,
+      "kind": "source",
+      "disposition": "cohesive",
+      "responsibility": "Whole-program AD MLIR/native compilation, executable-kernel, cache, and lowering-analysis pipeline.",
+      "dependency_boundary": "Depends on MLIR records/native primitives, the dedicated emitter, and whole-program differentiable results; compiler.mlir and native-execution evidence consume the pipeline.",
+      "reassess_when": "Cache, execution, or lowering analysis gains an independent public lifecycle."
+    },
+    {
+      "path": "src/scpn_quantum_control/differentiable_finite_difference.py",
+      "lines": 1861,
+      "kind": "source",
+      "disposition": "cohesive",
+      "responsibility": "Finite-difference and complex-step diagnostic gradient, Jacobian, JVP, VJP, Hessian, HVP, value, and batch transform family.",
+      "dependency_boundary": "Depends on differentiable parameter/result contracts and shared batch/transform helpers; differentiable facades, optimizers, algebra audits, and dedicated tests consume the transform family.",
+      "reassess_when": "A non-diagnostic AD method or independently versioned transform backend enters the module."
+    },
+    {
+      "path": "src/scpn_quantum_control/differentiable_module_hardening_audit.py",
+      "lines": 1005,
+      "kind": "source",
+      "disposition": "cohesive",
+      "responsibility": "Static registry and filesystem audit for differentiable module ownership, coverage, typing, docs, and wiring status.",
+      "dependency_boundary": "Depends only on dataclasses, paths, and typed collections; hardening and Rust/Python inventory tests consume its registry and audit result.",
+      "reassess_when": "It begins executing benchmarks, compiler transforms, or another independent audit lifecycle."
+    },
+    {
+      "path": "src/scpn_quantum_control/differentiable_result_contracts.py",
+      "lines": 2128,
+      "kind": "source",
+      "disposition": "cohesive",
+      "responsibility": "Canonical immutable derivative-result schema registry and shared validation helpers.",
+      "dependency_boundary": "Depends on parameter and stochastic-policy contracts; twenty differentiable algorithm, facade, and report modules consume the stable record identities.",
+      "reassess_when": "A domain requires independent schema versioning, persistence, or lifecycle ownership."
+    },
+    {
+      "path": "src/scpn_quantum_control/phase/__init__.py",
+      "lines": 1415,
+      "kind": "facade",
+      "disposition": "facade",
+      "responsibility": "Phase package compatibility facade and public re-export registry.",
+      "dependency_boundary": "Re-exports focused phase solver, gradient, framework bridge, QNode, objective, audit, and training leaves; package clients and tests consume the stable phase aliases.",
+      "reassess_when": "Executable solver or bridge logic is implemented directly in the initializer."
+    },
+    {
+      "path": "src/scpn_quantum_control/phase/jax_qnode_transforms.py",
+      "lines": 1339,
+      "kind": "source",
+      "disposition": "cohesive",
+      "responsibility": "Registered Phase-QNode statevector execution, PyTree transforms, PMAP sharding, and AOT/export JAX route family.",
+      "dependency_boundary": "Depends one-way on JAX contracts, gradient helpers, and QNode circuit declarations; jax_bridge, compatibility, maturity, and direct tests consume the complete transform leaf.",
+      "reassess_when": "Non-QNode compatibility/training or independent cloud evidence moves into the leaf."
+    },
+    {
+      "path": "src/scpn_quantum_control/phase/param_shift.py",
+      "lines": 1197,
+      "kind": "source",
+      "disposition": "cohesive",
+      "responsibility": "Parameter-shift gradient planning and execution for phase and Kuramoto-XY VQE objectives.",
+      "dependency_boundary": "Depends on differentiable primitives, classical hardware support, gradient backend contracts, and Phase VQE; audits, training, provider-gradient, QNode, and benchmark modules consume it.",
+      "reassess_when": "A different gradient method or independent training lifecycle is added."
+    },
+    {
+      "path": "src/scpn_quantum_control/phase/qiskit_bridge_contracts.py",
+      "lines": 1023,
+      "kind": "source",
+      "disposition": "cohesive",
+      "responsibility": "Immutable Qiskit gradient, Runtime, provider-workflow, evidence-bundle, and maturity contract graph.",
+      "dependency_boundary": "Depends on NumPy and Qiskit value types but no local execution module; qiskit_bridge, qiskit_gradients, qiskit_runtime, and direct contract tests consume the exact records and validators.",
+      "reassess_when": "A contract family needs independent versioning or an execution lifecycle enters the leaf."
+    },
+    {
+      "path": "src/scpn_quantum_control/program_ad_adjoint_generation.py",
+      "lines": 1510,
+      "kind": "source",
+      "disposition": "cohesive",
+      "responsibility": "Reverse-mode adjoint contribution generation and dispatch over the stabilised whole-program AD IR.",
+      "dependency_boundary": "Depends on adjoint/effect IR plus cumulative, interpolation, linalg, signal, stencil, and whole-program result leaves; differentiable and whole-program facades plus dedicated tests consume the private pipeline.",
+      "reassess_when": "A second reverse engine or independently consumed primitive dispatcher appears."
+    },
+    {
+      "path": "src/scpn_quantum_control/program_ad_alias_contracts.py",
+      "lines": 1557,
+      "kind": "source",
+      "disposition": "cohesive",
+      "responsibility": "Immutable Program-AD alias-set, lattice, unknown-edge, and provenance contract graph.",
+      "dependency_boundary": "Depends on effect-IR and frontend contract types; program_ad_alias_analysis is the sole production importer and re-exports the record identities.",
+      "reassess_when": "A schema family needs independent versioning or analysis execution enters the contract leaf."
+    },
+    {
+      "path": "src/scpn_quantum_control/program_ad_array_indexing.py",
+      "lines": 1716,
+      "kind": "source",
+      "disposition": "cohesive",
+      "responsibility": "Static array-indexing derivative rules and registry dispatch contracts.",
+      "dependency_boundary": "Depends on parameter and registry contracts; Program-AD primitive families, trace values, differentiable facades, and dedicated tests consume the indexing rules.",
+      "reassess_when": "A non-indexing primitive family or independently dispatched backend is added."
+    },
+    {
+      "path": "src/scpn_quantum_control/program_ad_assembly_primitives.py",
+      "lines": 1899,
+      "kind": "source",
+      "disposition": "cohesive",
+      "responsibility": "Program-AD stack, concatenate, block, broadcast, triangular, diagonal, and like-constructor assembly derivative family.",
+      "dependency_boundary": "Depends on parameter/indexing/registry contracts and focused broadcast/stack assembly helpers; differentiable and trace-value facades plus assembly tests consume the rules.",
+      "reassess_when": "A non-assembly primitive or independent dispatch lifecycle enters the module."
+    },
+    {
+      "path": "src/scpn_quantum_control/program_ad_linalg_primitives.py",
+      "lines": 2656,
+      "kind": "source",
+      "disposition": "cohesive",
+      "responsibility": "Program-AD linear-algebra derivative rules, registry contracts, and conditioning diagnostics.",
+      "dependency_boundary": "Depends on parameter/result/registry contracts plus indexing and shape-transform helpers; differentiable, adjoint, trace, finite-difference parity, and direct-rule tests consume the linalg family.",
+      "reassess_when": "A separate backend, non-linalg primitive family, or independent conditioning service appears."
+    },
+    {
+      "path": "src/scpn_quantum_control/program_ad_product_primitives.py",
+      "lines": 1416,
+      "kind": "source",
+      "disposition": "cohesive",
+      "responsibility": "Program-AD product and contraction derivative factories with registry contracts.",
+      "dependency_boundary": "Depends on parameter/indexing/registry contracts and shape transforms; differentiable and trace-value facades plus product/parity tests consume the family.",
+      "reassess_when": "A non-product primitive or independent contraction backend is added."
+    },
+    {
+      "path": "src/scpn_quantum_control/program_ad_reduction_primitives.py",
+      "lines": 1708,
+      "kind": "source",
+      "disposition": "cohesive",
+      "responsibility": "Program-AD reduction derivative factories and registry contracts.",
+      "dependency_boundary": "Depends on the registry and trapezoid reduction leaf; differentiable and trace-value facades plus reduction/parity tests consume the family.",
+      "reassess_when": "A non-reduction primitive family or separate execution backend enters the module."
+    },
+    {
+      "path": "src/scpn_quantum_control/program_ad_registry.py",
+      "lines": 1770,
+      "kind": "source",
+      "disposition": "cohesive",
+      "responsibility": "Primitive identity, rule, transform, registration, dispatch-report, and coverage lifecycle for Program AD.",
+      "dependency_boundary": "Dependency-free apart from NumPy and typed standard-library records; thirty-six compiler, differentiable, primitive, trace, and test modules consume the registry contracts.",
+      "reassess_when": "A second registry lifecycle, persistence service, or backend-specific policy appears."
+    },
+    {
+      "path": "src/scpn_quantum_control/program_ad_selection_primitives.py",
+      "lines": 1259,
+      "kind": "source",
+      "disposition": "cohesive",
+      "responsibility": "Program-AD static selection, sort, where, and clip derivative rule family.",
+      "dependency_boundary": "Depends on parameter/indexing/registry contracts and shape transforms; differentiable and trace-value facades plus selection/parity tests consume the family.",
+      "reassess_when": "A non-selection primitive or independent selector backend is added."
+    },
+    {
+      "path": "src/scpn_quantum_control/program_ad_shape_transforms.py",
+      "lines": 2014,
+      "kind": "source",
+      "disposition": "cohesive",
+      "responsibility": "Static Program-AD reshape, axis, rank, repeat, tile, roll, rotation, and flip derivative rule family.",
+      "dependency_boundary": "Depends on parameter/indexing/registry contracts and trace metadata; ten primitive, trace, differentiable, and direct test modules consume the shape rules.",
+      "reassess_when": "A non-shape primitive or independently dispatched backend enters the module."
+    },
+    {
+      "path": "src/scpn_quantum_control/whole_program_frontend.py",
+      "lines": 1432,
+      "kind": "source",
+      "disposition": "cohesive",
+      "responsibility": "Static source/bytecode inspection, semantic classification, digest, and frontend report assembly pipeline.",
+      "dependency_boundary": "Depends one-way on whole_program_frontend_contracts; differentiable, whole-program runtime/result/API modules and direct tests consume the frontend and stable record re-exports.",
+      "reassess_when": "Execution, lowering, or an independently consumed analysis lifecycle is added."
+    },
+    {
+      "path": "src/scpn_quantum_control/whole_program_trace_values.py",
+      "lines": 4993,
+      "kind": "source",
+      "disposition": "cohesive",
+      "responsibility": "Operator-intercepted forward-AD TraceADScalar and TraceADArray value runtime.",
+      "dependency_boundary": "Depends on parameter contracts, every focused Program-AD primitive-rule leaf, and trace metadata/predicate/runtime helpers; differentiable, vmap, and whole-program AD APIs consume the mutually recursive value classes.",
+      "reassess_when": "A non-value runtime lifecycle appears or class dispatch can be separated without cyclic imports."
+    },
+    {
+      "path": "tests/test_differentiable_result_contracts.py",
+      "lines": 3750,
+      "kind": "test",
+      "disposition": "cohesive",
+      "responsibility": "Canonical derivative-result schema identity, normalization, serialization, and fail-closed invariant tests.",
+      "dependency_boundary": "Owns differentiable_result_contracts through package and differentiable facades, with stochastic-policy fixtures; no other test imports this test module.",
+      "reassess_when": "The source contract registry splits into independently versioned schema lifecycles."
+    },
+    {
+      "path": "tests/test_mlir_native_compilation_integration.py",
+      "lines": 3382,
+      "kind": "test",
+      "disposition": "refactor_required",
+      "responsibility": "Current mixed integration bucket for compiler exports plus scalar, vector, generic-matrix, 2x2, symmetric, batch, and custom native compilation kernels.",
+      "dependency_boundary": "Imports package/compiler MLIR facades, differentiable contracts, and Kuramoto core while exercising multiple already-separated native-compilation source leaves.",
+      "reassess_when": "Close after every existing test has exactly one operand-class source owner and shared helpers are single-owned.",
+      "refactor_target": "Split compiler exports and scalar, vector, matrix, 2x2, symmetric, and batch native-compilation integration tests by source leaf."
+    },
+    {
+      "path": "tests/test_mlir_transform_plan.py",
+      "lines": 1572,
+      "kind": "test",
+      "disposition": "cohesive",
+      "responsibility": "Compiler-AD transform-plan construction, lowering-status, registry, fail-closed policy, and public export contract tests.",
+      "dependency_boundary": "Owns the transform-plan lifecycle exposed by compiler.mlir and differentiable registry contracts; it does not import other test modules.",
+      "reassess_when": "Transform planning splits into independently owned source lifecycles."
+    },
+    {
+      "path": "tests/test_mlir_whole_program_native.py",
+      "lines": 2055,
+      "kind": "test",
+      "disposition": "cohesive",
+      "responsibility": "Whole-program AD MLIR/native compilation, cache, lowering-boundary, selection, and executable-kernel integration tests.",
+      "dependency_boundary": "Owns compiler/mlir_whole_program_native through the package/compiler facade and differentiable whole-program records; no test bucket imports it.",
+      "reassess_when": "The source pipeline splits into independently consumed cache, driver, or execution lifecycles."
+    },
+    {
+      "path": "tests/test_phase_qiskit_runtime.py",
+      "lines": 1211,
+      "kind": "test",
+      "disposition": "cohesive",
+      "responsibility": "Qiskit Runtime capture, provider workflow evidence, bundle freshness, maturity aggregation, and facade identity tests.",
+      "dependency_boundary": "Owns phase/qiskit_runtime with its contracts, bridge aliases, provider-gradient, and hardware-audit collaborators; no unrelated framework lifecycle is tested.",
+      "reassess_when": "Runtime capture, provider workflow, or maturity becomes an independently versioned source lifecycle."
+    },
+    {
+      "path": "tests/test_phase_torch_bridge.py",
+      "lines": 1227,
+      "kind": "test",
+      "disposition": "refactor_required",
+      "responsibility": "Current mixed bridge bucket for Torch gradients, torch.func/compile compatibility, modules/training, registered QNode transforms, ecosystem/cloud maturity, and availability.",
+      "dependency_boundary": "Imports the Torch bridge facade and phase exports but spans the already-separated torch_gradients, torch_qnode_transforms, torch_compatibility, and torch_maturity source leaves using one fake Torch runtime.",
+      "reassess_when": "Close after leaf-owned integration tests and one shared typed fake runtime replace the mixed surface.",
+      "refactor_target": "Redistribute gradient, QNode-transform, compatibility/training, and maturity tests to module-named integration files; retain only facade availability checks."
+    },
+    {
+      "path": "tests/test_program_ad_adjoint_generation.py",
+      "lines": 1583,
+      "kind": "test",
+      "disposition": "cohesive",
+      "responsibility": "Reverse-adjoint contribution, primitive dispatch, provenance, and result-assembly tests.",
+      "dependency_boundary": "Owns program_ad_adjoint_generation with effect IR and whole-program result fixtures; its cases exercise the same private dispatcher lifecycle.",
+      "reassess_when": "The source adjoint engine splits into independently owned dispatch lifecycles."
+    },
+    {
+      "path": "tests/test_program_ad_alias_contracts.py",
+      "lines": 1637,
+      "kind": "test",
+      "disposition": "cohesive",
+      "responsibility": "Program-AD alias/lattice/provenance contract docs, identity, and exhaustive validation-path tests.",
+      "dependency_boundary": "Owns program_ad_alias_contracts through package and differentiable facade identities; execution analysis remains in the separate alias-effects test.",
+      "reassess_when": "The source contract registry splits by independently versioned schema family."
+    },
+    {
+      "path": "tests/test_program_ad_alias_effects.py",
+      "lines": 1161,
+      "kind": "test",
+      "disposition": "cohesive",
+      "responsibility": "Program-AD alias/effect analysis execution and static-lattice report tests.",
+      "dependency_boundary": "Owns the program_ad_alias_analysis execution lifecycle through the differentiable facade; immutable schema validation stays in the separate contract test.",
+      "reassess_when": "The source analysis pipeline splits into independently consumed execution lifecycles."
+    },
+    {
+      "path": "tests/test_program_ad_registry.py",
+      "lines": 1633,
+      "kind": "test",
+      "disposition": "cohesive",
+      "responsibility": "Primitive identity, rule, transform, registration, dispatch-report, facade, and coverage tests for Program AD.",
+      "dependency_boundary": "Owns program_ad_registry through package and differentiable facades; all cases exercise the same registry lifecycle and shared helper graph.",
+      "reassess_when": "The source registry splits into independently versioned or persisted lifecycles."
+    },
+    {
+      "path": "tests/test_program_ad_shape_transforms.py",
+      "lines": 1555,
+      "kind": "test",
+      "disposition": "cohesive",
+      "responsibility": "Static Program-AD shape-transform rules, normalization, registry policy, direct adjoints, and failure-boundary tests.",
+      "dependency_boundary": "Owns program_ad_shape_transforms through direct, package, and differentiable imports; all cases exercise the same primitive family.",
+      "reassess_when": "The source shape family splits into independently dispatched modules."
+    },
+    {
+      "path": "tests/test_qpu_data_artifact.py",
+      "lines": 1080,
+      "kind": "test",
+      "disposition": "cohesive",
+      "responsibility": "QPU data artifact schema, validation, provenance, hashing, persistence, and defensive-copy contract tests.",
+      "dependency_boundary": "Owns bridge/qpu_data_artifact directly and has no unrelated source owner or test-module dependency.",
+      "reassess_when": "The artifact schema and persistence lifecycle split into independently consumed source modules."
+    }
+  ]
+}

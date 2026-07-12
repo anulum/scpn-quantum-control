@@ -63,6 +63,12 @@ _RUST_SOURCE_FILE_PATTERNS = (
     re.compile(rf"{_INT}\s+Rust\s+source\s+files", re.IGNORECASE),
     re.compile(rf"PyO3\s+bindings\s+across\s+{_INT}\s+source\s+files", re.IGNORECASE),
 )
+_PYTHON_SOURCE_MODULE_COUNT_DOCS = {
+    "docs/architecture.md": re.compile(
+        r"\| Python modules \| (\d+) \(excluding package initialisers\)"
+    ),
+    "docs/index.md": re.compile(r"\| Python modules \| (\d+) Python source modules"),
+}
 _MERMAID_NODE = re.compile(r'"([a-z0-9_]+)/ \((\d+)\)')
 _CRYPTO_TREE_FILE = re.compile(r"[├└]──\s+([a-z0-9_]+\.py)")
 _CRYPTO_MODULE_COUNT_DOCS = {
@@ -122,6 +128,14 @@ def _actual_module_count(package: str) -> int:
     return sum(1 for path in directory.glob("*.py") if path.name != "__init__.py")
 
 
+def _actual_python_source_module_count() -> int:
+    return sum(
+        1
+        for path in _PACKAGE_ROOT.rglob("*.py")
+        if path.name != "__init__.py" and "__pycache__" not in path.parts
+    )
+
+
 def _actual_module_names(package: str) -> tuple[str, ...]:
     directory = _PACKAGE_ROOT / package
     return tuple(
@@ -153,6 +167,19 @@ def test_documented_rust_source_file_count_matches_the_crate() -> None:
     assert claims, "no documentation quotes the Rust source-file count"
     wrong = [(doc, value) for doc, value in claims if value != actual]
     assert not wrong, f"Rust source-file-count drift (actual {actual}): {wrong}"
+
+
+def test_documented_python_source_module_count_matches_the_package() -> None:
+    actual = _actual_python_source_module_count()
+    wrong: list[tuple[str, int, int]] = []
+    for relative, pattern in _PYTHON_SOURCE_MODULE_COUNT_DOCS.items():
+        text = (_REPO_ROOT / relative).read_text(encoding="utf-8")
+        match = pattern.search(text)
+        assert match is not None, f"{relative} quotes no Python source-module count"
+        claimed = int(match.group(1))
+        if claimed != actual:
+            wrong.append((relative, claimed, actual))
+    assert not wrong, f"Python source-module-count drift (doc, claimed, actual): {wrong}"
 
 
 def test_architecture_mermaid_node_counts_match_the_filesystem() -> None:

@@ -30,20 +30,43 @@ kept whole, because splitting it would introduce artificial seams or import cycl
 improving cohesion. Line-count thresholds are treated as a prompt to ask "is this still one
 thing?", not as an automatic limit.
 
+The exhaustive policy is machine-readable in `tools/module_size_policy.json`. It covers every
+Git-tracked Python, Rust, Julia, JavaScript/TypeScript, Go, C/C++, Verilog, and SystemVerilog file
+above 1,000 physical lines, including tests and entry points. Every row records the exact current
+size, file kind, disposition, single responsibility (or current mixed responsibilities), direct
+dependency boundary, and the condition that re-opens review. `tools/audit_module_size_policy.py`
+rejects missing rows, stale rows, line-count drift, malformed decisions, and growth in the explicit
+refactor-debt ratchet. The local no-test preflight and CI run that inventory gate. The stricter
+command below is the certification check; it remains red while any reviewed refactor is open:
+
+```bash
+python tools/audit_module_size_policy.py --strict
+```
+
 The test is structural. Each module's internal call graph (top-level definition to
 referenced top-level definition) is decomposed into connected components; a second pass
 removes the most-referenced shared symbols to confirm the remaining definitions are still
-one cluster rather than independent groups joined by a single shared helper. The
-`compiler` package was decomposed on exactly this basis: the former `mlir` module mixed
-records, lowering logic, text builders, validation, native lowering, evidence adapters and
-the public facade — seven independent concerns — and was split into a thin facade plus
-cohesive leaves (`mlir_records`, `mlir_executable_kernel`, `mlir_native_primitives`, the
-`mlir_*_native_compilation` operand-class leaves, `mlir_whole_program_native` and its
-`mlir_whole_program_emitter` engine, `mlir_enzyme_evidence`).
+one cluster rather than independent groups joined by a single shared helper. The initial
+`compiler` decomposition applied this test to records, executable kernels, native primitives,
+operand-class compilation, whole-program lowering/emission, and Enzyme evidence. The 2026-07-12
+cross-language rescan then found that the residual `compiler/mlir.py` still owns four independent
+implementation clusters, so that facade is re-opened below rather than treated as complete.
 
-The following modules are **intentionally retained at their current size** because each is
-a single connected responsibility cluster. They are deliberate architecture, not pending
-refactors:
+At baseline `4c3a4fee`, the exhaustive scan contains 51 oversized tracked code files: 46 have an
+approved cohesive, facade, test-owner, or entry-point decision, and 5 remain open. The open
+rows are not covered by a repository-wide "no oversized mixed modules" claim:
+
+| Open surface | Independent responsibilities | Required boundary |
+|--------------|------------------------------|-------------------|
+| `scpn_quantum_engine/program_ad_replay/src/program_ad_ir.rs` | schema/parser, scalar forward replay, numeric evaluation, reverse accumulation, PyO3 bindings | one-way schema, forward, numeric, reverse, and binding leaves behind the existing public path |
+| `scpn_quantum_engine/tests/program_ad_ir.rs` | parser/metadata, forward replay, reverse/reduction replay, linalg replay | module-named tests plus one shared fixture owner |
+| `src/scpn_quantum_control/compiler/mlir.py` | transform planning, Kuramoto/custom compilation, Enzyme audit, Phase-QNode runtime | implementation leaves behind signature-stable facade wrappers |
+| `tests/test_mlir_native_compilation_integration.py` | compiler exports plus scalar, vector, matrix, 2x2, symmetric, batch, and custom kernels | operand-class integration surfaces with single-owned helpers |
+| `tests/test_phase_torch_bridge.py` | gradients, QNode transforms, compatibility/training, maturity/cloud, availability | leaf-owned integration tests plus one shared typed fake runtime |
+
+The retained modules described next are intentionally kept at their current size because each is
+a single connected responsibility cluster or an explicit compatibility boundary. They are
+deliberate architecture, not pending refactors:
 
 The 1,277-line `compiler/mlir_enzyme_evidence.py` leaf is one Enzyme/MLIR evidence-schema
 cluster rather than a mixed execution module. Its nine immutable records and seven
@@ -202,7 +225,7 @@ artifact records, closure vocabulary, required-field set, and operation JSON nor
 `differentiable_external_comparison.py` re-exports those exact objects and retains suite/writer,
 framework, identical-circuit, runner, dependency, and fail-closed classification logic.
 
-| Module | Single responsibility | Why it stays whole |
+| Selected module | Single responsibility | Why it stays whole |
 |--------|-----------------------|--------------------|
 | `whole_program_trace_values.py` | Operator-intercepted forward-AD trace value runtime (`TraceADScalar`/`TraceADArray` and helpers) | Cohesion audit: 106/122 definitions form one strongly connected component; class dispatch and value construction make primitive-family splits cyclic |
 | `compiler/mlir_whole_program_emitter.py` | Native LLVM text emission for recorded whole-program AD operations and their derivatives | Cohesion audit: 45/46 top-level definitions form one 114-edge component spanning dispatch, linalg helpers, batch scaffolds, operands and formatting; the native driver is the sole production importer |
@@ -221,9 +244,9 @@ The remaining large paired tests deliberately follow those source ownership deci
 | `test_program_ad_adjoint_generation.py` | `program_ad_adjoint_generation.py` | One reverse-adjoint contribution/dispatch pipeline; primitive-family cases exercise the same dispatcher and result assembly |
 | `test_program_ad_shape_transforms.py` | `program_ad_shape_transforms.py` | One static shape-transform primitive family with shared registry policy, normalization, direct rules, and failure boundaries |
 
-A reviewer encountering one of these files will find the same statement in its module
-docstring. An entry is re-opened only if a future change makes the module mix an
-additional, independent responsibility.
+The selected table is explanatory; `tools/module_size_policy.json` is the exhaustive inventory,
+including Rust, oscillatools, tests, facades, and entry points. An approved entry is re-opened if a
+future change adds an independent responsibility or crosses its recorded dependency boundary.
 
 ## Package Statistics (v0.10.0)
 
@@ -232,7 +255,7 @@ auto-generated block is the source of truth if the two ever drift.
 
 | Metric | Count |
 |--------|-------|
-| Python modules | 471 (excluding package initialisers) |
+| Python modules | 554 (excluding package initialisers) |
 | Rust crate | 1 (PyO3 0.29, **177 bindings**, 68 Rust source files including `validation.rs`, `symmetry_decay.rs`, `community.rs`, `pulse_shaping.rs`) |
 | Julia tier | 1 (now in the `oscillatools` distribution: `oscillatools/accel/julia/order_parameter.jl`; juliacall-bridged, opt-in via `oscillatools[julia]`) |
 | Tests | CI-gated suite (90% aggregate coverage gate; non-refactor tree at 100%) |

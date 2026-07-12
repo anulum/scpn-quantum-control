@@ -16,12 +16,14 @@ Gates (in order):
   6. diff-transform  — differentiable transform-algebra metamorphic gate
   7. ruff D ratchet  — NumPy-style docstring ratchet for differentiable hardening
   8. test-quality    — forbid coverage-bucket pytest modules
-  9. version-sync    — version string consistency across 5 carrier files
-  10. rust-pyi        — Rust PyO3 exports match local typing contract
-  11. mypy           — type errors
-  12. mypy-strict-dp — strict typing ratchet for differentiable programming
-  13. pytest+coverage — tests + temporary coverage threshold (--cov-fail-under=70)
-  14. bandit         — security scan
+  9. module-size     — tracked oversized-code responsibility inventory
+  10. module-size typing — strict typing for the inventory tool
+  11. version-sync   — version string consistency across 5 carrier files
+  12. rust-pyi       — Rust PyO3 exports match local typing contract
+  13. mypy           — type errors
+  14. mypy-strict-dp — strict typing ratchet for differentiable programming
+  15. pytest+coverage — tests + temporary coverage threshold (--cov-fail-under=70)
+  16. bandit         — security scan
 
 Usage:
   python tools/preflight.py                # all gates (default)
@@ -117,6 +119,11 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
         ],
     ),
     ("test-quality", [_PY, "tools/audit_test_quality.py"]),
+    ("module-size-policy", [_PY, "tools/audit_module_size_policy.py"]),
+    (
+        "mypy-strict-module-size-policy",
+        [_PY, "-m", "mypy", "--strict", "tools/audit_module_size_policy.py"],
+    ),
     ("version-sync", [_PY, "scripts/check_version_consistency.py"]),
     ("rust-pyi", [_PY, "tools/check_rust_pyi_exports.py"]),
     ("mypy", [_PY, "-m", "mypy"]),
