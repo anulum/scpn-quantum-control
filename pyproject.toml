@@ -203,7 +203,6 @@ ignore = [
 "figures/**" = ["D"]
 "data/**" = ["D"]
 "*.py" = ["D"]
-"src/scpn_quantum_control/analysis/vortex_binding.py" = ["D401"]
 "src/scpn_quantum_control/applications/josephson_array.py" = ["D401"]
 "src/scpn_quantum_control/bridge/qpu_data_artifact.py" = ["D401"]
 "src/scpn_quantum_control/control/__init__.py" = ["D205"]

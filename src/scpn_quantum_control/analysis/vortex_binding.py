@@ -66,7 +66,7 @@ def vortex_pair_energy(j_eff: float, system_size: float, cutoff: float = 1.0) ->
 
 
 def vortex_pair_entropy(system_size: float, cutoff: float = 1.0) -> float:
-    """Configurational entropy of a vortex pair.
+    """Compute the configurational entropy of a vortex pair.
 
     S = 2 * ln(L/a) (in units where k_B = 1).
     """
