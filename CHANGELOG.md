@@ -14,6 +14,14 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   fallback and the complete manifest-scoped Rustfmt command.
 
 ### Added
+- 2026-07-13 — Closed all three D401 findings plus adjacent D413/D417 debt in
+  the QSVT resource estimator. Complete NumPy-style contracts and the corrected
+  phase API now document Hamiltonian norms, validated query/step formulas,
+  dense-versus-sparse spectral paths, result fields, input-dependent ratios,
+  estimator-only boundaries, and unverified QSP seed angles. Five strictly
+  typed public-path branch tests close the fail-closed validation owner without
+  changing estimator arithmetic, public signatures, polyglot kernels, or
+  benchmark evidence.
 - 2026-07-13 — Closed both D401 findings in the bounded QGNN module. Complete
   NumPy-style contracts and the public guide now document graph
   canonicalisation, architecture bounds, parameter layout and initialisation,

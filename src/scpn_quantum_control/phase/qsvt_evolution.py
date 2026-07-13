@@ -55,7 +55,34 @@ from ..dense_budget import require_dense_allocation
 
 @dataclass
 class QSVTResourceEstimate:
-    """QSVT resource estimation for Hamiltonian simulation."""
+    """Record matched QSVT and product-formula resource estimates.
+
+    Parameters
+    ----------
+    alpha
+        Pauli-coefficient 1-norm used to normalise a block encoding.
+    spectral_norm
+        Largest absolute Hamiltonian eigenvalue.
+    simulation_time
+        Non-negative simulated evolution time.
+    target_error
+        Requested error in the open interval ``(0, 1)``.
+    qsvt_queries
+        Estimated block-encoding query count.
+    trotter1_steps
+        Matched-error first-order product-formula step count.
+    trotter2_steps
+        Matched-error second-order product-formula step count.
+    speedup_vs_trotter1
+        Ratio ``trotter1_steps / qsvt_queries``; not a wall-time claim.
+    speedup_vs_trotter2
+        Ratio ``trotter2_steps / qsvt_queries``; not a wall-time claim.
+    n_qubits
+        Number of system qubits represented by the coupling matrix.
+    n_ancilla_qsvt
+        Conservative block-encoding signal/selection ancilla estimate.
+
+    """
 
     alpha: float  # 1-norm of Hamiltonian (block-encoding normalisation)
     spectral_norm: float  # ||H|| (largest eigenvalue magnitude)
@@ -98,6 +125,7 @@ def _as_real_scalar(name: str, value: object) -> float:
 def _validate_problem_inputs(
     K: NDArray[np.float64], omega: NDArray[np.float64]
 ) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
+    """Validate and return finite real Kuramoto-XY problem arrays."""
     K_arr = _as_real_numeric_array("K", K)
     omega_arr = _as_real_numeric_array("omega", omega)
     if K_arr.ndim != 2 or K_arr.shape[0] != K_arr.shape[1]:
@@ -116,6 +144,7 @@ def _validate_problem_inputs(
 def _validate_resource_budget(
     alpha: float, t: float, epsilon: float
 ) -> tuple[float, float, float]:
+    """Validate and return block normalisation, time, and target error."""
     alpha_value = _as_real_scalar("alpha", alpha)
     time_value = _as_real_scalar("simulation time", t)
     epsilon_value = _as_real_scalar("epsilon", epsilon)
@@ -129,9 +158,27 @@ def _validate_resource_budget(
 
 
 def hamiltonian_1norm(K: NDArray[np.float64], omega: NDArray[np.float64]) -> float:
-    """1-norm of the Kuramoto-XY Hamiltonian: Σ |c_i| over Pauli terms.
+    """Return the Kuramoto-XY Hamiltonian's Pauli-coefficient 1-norm.
 
-    Computed directly from the SparsePauliOp for exactness.
+    Parameters
+    ----------
+    K
+        Finite real symmetric coupling matrix.
+    omega
+        Finite real natural-frequency vector matching the matrix dimension.
+
+    Returns
+    -------
+    float
+        Sum of the absolute coefficients in the constructed sparse Pauli
+        operator.
+
+    Raises
+    ------
+    ValueError
+        If the problem arrays violate their shape, scalar, finiteness, or
+        symmetry contract.
+
     """
     K, omega = _validate_problem_inputs(K, omega)
     H_op = knm_to_hamiltonian(K, omega)
@@ -144,9 +191,31 @@ def hamiltonian_spectral_norm(
     *,
     max_dense_gib: float | None = None,
 ) -> float:
-    """Spectral norm ||H|| = max |eigenvalue|.
+    """Return the spectral norm ``max(abs(eigenvalue(H)))``.
 
-    Uses sparse eigsh for n >= 14 to avoid dense 2^n x 2^n allocation.
+    Parameters
+    ----------
+    K
+        Finite real symmetric coupling matrix.
+    omega
+        Finite real natural-frequency vector matching the matrix dimension.
+    max_dense_gib
+        Optional positive dense-workspace budget in GiB for systems below 14
+        qubits. The sparse branch does not allocate the dense workspace.
+
+    Returns
+    -------
+    float
+        Largest absolute eigenvalue, using sparse extremal eigensolves for 14
+        or more qubits and a dense Hermitian eigensolve otherwise.
+
+    Raises
+    ------
+    ValueError
+        If the problem arrays or explicit dense budget are invalid.
+    DenseAllocationError
+        If the small-system dense spectral workspace exceeds the active budget.
+
     """
     from scipy.sparse.linalg import eigsh
 
@@ -174,10 +243,34 @@ def hamiltonian_spectral_norm(
 
 
 def qsvt_query_count(alpha: float, t: float, epsilon: float) -> int:
-    """Number of block-encoding queries for QSVT simulation.
+    """Return the estimated QSVT block-encoding query count.
 
-    Q = O(α|t| + log(1/ε)) — optimal (Gilyén et al.)
-    Using the concrete bound: Q = ceil(e × α × |t| + ln(2/ε) / ln(e))
+    Parameters
+    ----------
+    alpha
+        Finite strictly positive block-encoding normalisation.
+    t
+        Finite non-negative simulation time.
+    epsilon
+        Finite target error satisfying ``0 < epsilon < 1``.
+
+    Returns
+    -------
+    int
+        At least one query, using
+        ``ceil(e * alpha * t + log(2 / epsilon))``.
+
+    Raises
+    ------
+    ValueError
+        If any scalar is implicitly coercible rather than explicitly real, or
+        if a finiteness or range constraint fails.
+
+    Notes
+    -----
+    The asymptotic query complexity is
+    ``O(alpha * t + log(1 / epsilon))`` (Gilyén et al.).
+
     """
     alpha, t, epsilon = _validate_resource_budget(alpha, t, epsilon)
     main_term = np.e * alpha * t
@@ -186,18 +279,55 @@ def qsvt_query_count(alpha: float, t: float, epsilon: float) -> int:
 
 
 def trotter1_step_count(alpha: float, t: float, epsilon: float) -> int:
-    """Number of first-order Trotter steps for same error.
+    """Return the matched-error first-order Trotter step count.
 
-    r = ceil((α|t|)² / ε) — first-order product formula.
+    Parameters
+    ----------
+    alpha
+        Finite strictly positive Hamiltonian scale.
+    t
+        Finite non-negative simulation time.
+    epsilon
+        Finite target error satisfying ``0 < epsilon < 1``.
+
+    Returns
+    -------
+    int
+        At least one step, using ``ceil((alpha * t)**2 / epsilon)``.
+
+    Raises
+    ------
+    ValueError
+        If any scalar, finiteness, or range contract fails.
+
     """
     alpha, t, epsilon = _validate_resource_budget(alpha, t, epsilon)
     return max(int(np.ceil((alpha * t) ** 2 / epsilon)), 1)
 
 
 def trotter2_step_count(alpha: float, t: float, epsilon: float) -> int:
-    """Number of second-order Trotter steps for same error.
+    """Return the matched-error second-order Trotter step count.
 
-    r = ceil((α|t|)^{3/2} / sqrt(ε)) — second-order product formula.
+    Parameters
+    ----------
+    alpha
+        Finite strictly positive Hamiltonian scale.
+    t
+        Finite non-negative simulation time.
+    epsilon
+        Finite target error satisfying ``0 < epsilon < 1``.
+
+    Returns
+    -------
+    int
+        At least one step, using
+        ``ceil((alpha * t)**1.5 / sqrt(epsilon))``.
+
+    Raises
+    ------
+    ValueError
+        If any scalar, finiteness, or range contract fails.
+
     """
     alpha, t, epsilon = _validate_resource_budget(alpha, t, epsilon)
     return max(int(np.ceil((alpha * t) ** 1.5 / np.sqrt(epsilon))), 1)
@@ -211,13 +341,43 @@ def qsvt_resource_estimate(
     *,
     max_dense_gib: float | None = None,
 ) -> QSVTResourceEstimate:
-    """Full QSVT vs Trotter resource comparison.
+    """Return a matched-error QSVT versus Trotter resource estimate.
 
-    Args:
-        K: coupling matrix
-        omega: natural frequencies
-        t: simulation time
-        epsilon: target error
+    Parameters
+    ----------
+    K
+        Finite real symmetric coupling matrix.
+    omega
+        Finite real natural-frequency vector matching the matrix dimension.
+    t
+        Finite non-negative simulation time.
+    epsilon
+        Finite target error satisfying ``0 < epsilon < 1``.
+    max_dense_gib
+        Optional positive dense-workspace budget in GiB for the spectral norm
+        of systems below 14 qubits.
+
+    Returns
+    -------
+    QSVTResourceEstimate
+        Hamiltonian norms, query/step estimates, step-to-query ratios, system
+        size, and conservative block-encoding ancilla count.
+
+    Raises
+    ------
+    ValueError
+        If the problem arrays, scalar budget, or explicit dense budget are
+        invalid, including a zero Pauli 1-norm that cannot normalise a block
+        encoding.
+    DenseAllocationError
+        If the small-system dense spectral workspace exceeds the active budget.
+
+    Notes
+    -----
+    This function estimates query and product-formula resources. It does not
+    construct a block encoding, synthesise verified QSP phases, execute a
+    circuit, or establish a wall-time speedup.
+
     """
     K, omega = _validate_problem_inputs(K, omega)
     _, t, epsilon = _validate_resource_budget(1.0, t, epsilon)
@@ -261,6 +421,28 @@ def qsp_phase_angles(degree: int, *, allow_initial_guess: bool = False) -> NDArr
     Set ``allow_initial_guess=True`` only when a caller needs the historical
     symmetric seed angles for an offline optimiser. Those angles are not valid
     compiled QSP phases and must not be used for resource or hardware claims.
+
+    Parameters
+    ----------
+    degree
+        Non-negative polynomial degree.
+    allow_initial_guess
+        Explicit opt-in to the unverified historical seed-angle construction.
+
+    Returns
+    -------
+    numpy.ndarray
+        ``degree + 1`` alternating seed angles with first and last values fixed
+        to ``pi / 4``.
+
+    Raises
+    ------
+    ValueError
+        If ``degree`` is boolean, negative, or not integer-like.
+    NotImplementedError
+        Unless ``allow_initial_guess`` is true, because production phase
+        synthesis and complementary-polynomial verification are not wired.
+
     """
     degree_value = _validate_non_negative_integer(degree, "degree")
     if not allow_initial_guess:
@@ -281,6 +463,7 @@ def qsp_phase_angles(degree: int, *, allow_initial_guess: bool = False) -> NDArr
 
 
 def _validate_non_negative_integer(value: Any, name: str) -> int:
+    """Return an integer-like non-negative value without boolean coercion."""
     if isinstance(value, bool):
         raise ValueError(f"{name} must be a non-negative integer.")
     try:

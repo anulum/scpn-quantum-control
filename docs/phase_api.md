@@ -337,8 +337,10 @@ performance claims still require isolated-affinity artefacts.
 ### `qsvt_evolution` — Quantum Singular Value Transformation
 
 QSVT resource estimation for Hamiltonian simulation (Gilyén et al., STOC 2019).
-Achieves optimal query complexity $O(t + \log(1/\varepsilon))$, a 260× estimated
-speedup over first-order Trotter at target fidelity $\varepsilon = 10^{-3}$.
+The query estimate scales as
+$O(\alpha t + \log(1/\varepsilon))$, where $\alpha$ is the Hamiltonian's Pauli
+coefficient 1-norm. Reported step-to-query ratios depend on the supplied
+Hamiltonian, time, and error budget; they are not wall-time speedup claims.
 
 ```python
 from scpn_quantum_control.phase.qsvt_evolution import (
@@ -347,8 +349,11 @@ from scpn_quantum_control.phase.qsvt_evolution import (
 )
 ```
 
-`qsvt_resource_estimate(K, omega, t_max, epsilon=1e-3)` → `QSVTResourceEstimate` with:
-`n_queries`, `trotter_depth_equivalent`, `speedup_factor`, `block_encoding_cost`.
+`qsvt_resource_estimate(K, omega, t=1.0, epsilon=0.01, *, max_dense_gib=None)`
+returns `QSVTResourceEstimate` with `alpha`, `spectral_norm`,
+`simulation_time`, `target_error`, `qsvt_queries`, `trotter1_steps`,
+`trotter2_steps`, both step-to-query ratios, `n_qubits`, and the conservative
+`n_ancilla_qsvt` block-encoding estimate.
 
 Inputs are validated before any Hamiltonian construction or resource-claim
 calculation: `K` must be a finite square symmetric coupling matrix, `omega`
@@ -358,11 +363,13 @@ values that NumPy could silently coerce. Simulation time must be finite and
 non-negative, and `epsilon` must satisfy `0 < epsilon < 1`. The lower-level
 query-count helpers apply the same explicit real-scalar `alpha`, time, and
 error-budget checks so invalid budgets cannot be silently clamped or coerced.
+For fewer than 14 qubits, `max_dense_gib` guards the two-matrix dense spectral
+workspace before allocation; larger systems use sparse extremal eigensolves.
 
-This module provides resource estimates, not executable circuits. QSVT circuits require
-block encoding of the Hamiltonian, which demands ancilla qubits and multi-controlled
-gates that exceed current hardware capabilities. The estimates inform hardware roadmap
-planning.
+This module provides query/step estimates, not executable circuits, verified
+QSP phases, or latency benchmarks. QSVT circuits require a hardware-specific
+block encoding of the Hamiltonian, including ancilla and selection logic that
+is not constructed here. The estimates inform hardware-roadmap planning only.
 
 `qsp_phase_angles(degree, allow_initial_guess=True)` accepts only a
 non-negative integer `degree`. The returned values are symmetric seed angles for
