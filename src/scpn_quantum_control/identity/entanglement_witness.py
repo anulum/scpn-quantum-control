@@ -59,10 +59,32 @@ def _two_qubit_correlator(
     theta_a: float,
     theta_b: float,
 ) -> float:
-    """Expectation of (cos(θ_a)Z_a + sin(θ_a)X_a) ⊗ (cos(θ_b)Z_b + sin(θ_b)X_b).
+    """Return the rotated two-qubit Pauli expectation value.
 
-    Qiskit Pauli labels use reversed qubit ordering: label[0] is the
-    highest-index qubit, label[n-1] is qubit 0.
+    Parameters
+    ----------
+    sv : Statevector
+        Multi-qubit state whose correlator is evaluated.
+    qa : int
+        First qubit index.
+    qb : int
+        Second qubit index.
+    theta_a : float
+        Measurement-plane angle for the first qubit.
+    theta_b : float
+        Measurement-plane angle for the second qubit.
+
+    Returns
+    -------
+    float
+        Expectation of ``(cos(theta_a) Z_a + sin(theta_a) X_a)`` tensor
+        ``(cos(theta_b) Z_b + sin(theta_b) X_b)``.
+
+    Notes
+    -----
+    Qiskit Pauli labels use reversed qubit ordering: ``label[0]`` is the
+    highest-index qubit and ``label[n - 1]`` is qubit zero.
+
     """
     from qiskit.quantum_info import SparsePauliOp
 

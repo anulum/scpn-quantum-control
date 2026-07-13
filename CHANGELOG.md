@@ -14,6 +14,11 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   fallback and the complete manifest-scoped Rustfmt command.
 
 ### Added
+- 2026-07-13 — Closed the D401 suppression for the identity entanglement
+  witness. Its rotated two-qubit Pauli correlator now documents state, qubit,
+  angle, return, and Qiskit ordering contracts in NumPy style under the global
+  Ruff D gate. Executable source, CHSH physics, identity wiring, and benchmarks
+  are unchanged.
 - 2026-07-13 — Closed the D205 suppression for the IBM/Aer hardware runner.
   Its structured-logger helper now documents the logger name, return contract,
   and optional logging dependency fallback in NumPy style under the global Ruff
