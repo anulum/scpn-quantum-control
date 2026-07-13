@@ -12,6 +12,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
 import tomllib
 
 
@@ -83,6 +84,11 @@ def test_ci_lint_gates_differentiable_external_validation_manifests() -> None:
 
 def test_docker_reproduction_image_builds_credential_free_git_index() -> None:
     """Docker policy audits need an index without copying host Git metadata."""
+    if not Path("Dockerfile").exists():
+        pytest.skip(
+            "host-side meta-test: the Dockerfile and .dockerignore are not copied "
+            "into the reproduction image, so this contract runs on the host and CI only"
+        )
     dockerfile = Path("Dockerfile").read_text(encoding="utf-8")
     dockerignore = Path(".dockerignore").read_text(encoding="utf-8")
 
