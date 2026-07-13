@@ -265,16 +265,14 @@ enable_error_code = ["ignore-without-code"]
 # import resolution. Its own strict gate owns its internals (see the override
 # below), and it is never added to `files`, so mypy resolves but does not re-check it.
 mypy_path = ["src", "oscillatools/src"]
-# Test-typing policy (adjudicated 2026-07-07, QWC-2.7): tests/ stays OUTSIDE
-# the strict gate as a documented exemption, not silent drift. Measured basis:
-# `mypy --strict tests/` = 6,618 errors in 403 of 840 files, ~80% mechanical
-# `no-untyped-def` annotations with no defect-finding power for pytest suites;
-# the residual 753 include the intentional-invalid-input technique that
-# fail-closed tests require (each needing a per-line `ignore[arg-type]`).
-# Rails that hold instead: all test suppressions are code-specific (ruff
-# PGH003/PGH004 in the lint gate), and dead ignores were removed at
-# adjudication time. Upgrade path if ever wanted: cohort-strict via a
-# `tests.*` override lane — a delegatable closeout, not a config flip.
+# Test-typing policy (R2-M01, 2026-07-13): tests/ stays outside this broad
+# `files` set because the pre-ratchet census found 6,301 errors in 388 of 968
+# tracked Python test files; 5,076 were mechanical `no-untyped-def` findings. Instead,
+# `tools/test_typing_policy.json` defines an additive strict cohort executed by
+# `tools/audit_test_typing_policy.py` in CI and local preflight. Invalid-input
+# tests keep narrow error-code suppressions where the negative call is
+# intentional. The cohort ratchet grows by source-owned risk waves; it is not a
+# claim that the full test tree is already strict.
 files = [
     "src/scpn_quantum_control/",
 ]

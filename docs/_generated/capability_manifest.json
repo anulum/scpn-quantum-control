@@ -13,7 +13,7 @@
     "python_model_source_modules": 558,
     "rust_pyo3_model_wrappers": 177,
     "rust_source_modules": 49,
-    "test_files": 968
+    "test_files": 969
   },
   "documentation": {
     "examples": [
@@ -6384,6 +6384,7 @@
       "tests/test_audit_test_behaviour.py",
       "tests/test_audit_test_ordering_state.py",
       "tests/test_audit_test_quality.py",
+      "tests/test_audit_test_typing_policy.py",
       "tests/test_avqds.py",
       "tests/test_backend_dispatch.py",
       "tests/test_backend_dispatch_branches.py",

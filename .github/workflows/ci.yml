@@ -56,6 +56,10 @@ jobs:
         run: python tools/audit_license_readiness.py
       - name: Type-check licence readiness audit
         run: mypy --strict tools/audit_license_readiness.py
+      - name: Audit additive strict test-typing cohort
+        run: python tools/audit_test_typing_policy.py
+      - name: Type-check test-typing policy audit
+        run: mypy --strict tools/audit_test_typing_policy.py
       - name: Audit differentiable promotion language
         run: python tools/check_differentiable_promotion_language.py
       - name: Ruff docstring ratchet for differentiable module hardening

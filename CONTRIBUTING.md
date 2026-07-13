@@ -62,6 +62,20 @@ python tools/preflight.py
 - For hardware-facing code, use simulator or mocked provider boundaries by
   default.
 
+The whole test tree has measured legacy typing debt. CI and local preflight
+therefore enforce an additive strict-mypy cohort instead of pretending all test
+files are already strict:
+
+```bash
+python tools/audit_test_typing_policy.py
+```
+
+The ordered cohort schedule and exact enforced paths live in
+`tools/test_typing_policy.json`. Add a test file only in a source-owned slice
+that also passes focused pytest, Ruff check/format, and strict mypy. Keep
+intentional invalid-input calls and use a narrow error-code suppression only
+where the type system cannot express the negative case.
+
 ## Commit Messages
 
 Use conventional subjects:

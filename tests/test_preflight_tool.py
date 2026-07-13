@@ -54,6 +54,16 @@ def test_static_gates_include_module_size_policy_and_typing() -> None:
     assert "tools/audit_module_size_policy.py" in strict_cmd
 
 
+def test_static_gates_include_test_typing_policy_and_tool_typing() -> None:
+    """Preflight must execute the test cohort and keep its audit tool strict."""
+    gate_map = {name: cmd for name, cmd in _preflight.STATIC_GATES}
+
+    assert gate_map["test-typing-policy"][-1] == "tools/audit_test_typing_policy.py"
+    strict_cmd = gate_map["mypy-strict-test-typing-policy"]
+    assert "--strict" in strict_cmd
+    assert strict_cmd[-1] == "tools/audit_test_typing_policy.py"
+
+
 def test_static_gates_include_differentiable_docstring_ratchet() -> None:
     """Differentiable docstring-clean modules must stay under Ruff D."""
     gate_map = {name: cmd for name, cmd in _preflight.STATIC_GATES}

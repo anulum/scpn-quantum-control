@@ -40,6 +40,33 @@ pytest tests/test_rust_path_benchmarks.py -v -s
 pytest tests/ --cov=scpn_quantum_control --cov-report=html -m "not slow"
 ```
 
+## Test typing ratchet
+
+Production Python remains under repository-wide strict mypy. The test tree is
+being migrated additively because a 2026-07-13 census of `mypy --strict tests/`
+reported 6,301 errors in 388 of 968 tracked Python test files; 5,076 were
+`no-untyped-def`. Adding the whole directory to one gate would therefore mix
+mechanical annotations with intentional invalid-input tests and hide ownership.
+
+`tools/test_typing_policy.json` is the machine-readable policy. Its initial
+13-file `repository_policy` cohort covers licence, release, generated-surface,
+commit, secret, TODO, version, branch, module-size, CI/pre-push, and local
+preflight gate tests. `tools/audit_test_typing_policy.py` validates that every
+enforced path is tracked and runs strict mypy over the exact cohort; CI and the
+no-test local preflight execute the same command.
+
+Migration order is explicit: claim and release contracts first, then hardware
+and provider boundaries, then scientific runtime contracts; legacy fixture
+mechanics are last. Each slice is limited to 40 files and must pass focused
+pytest, strict mypy, Ruff check, and Ruff format. Intentional negative calls keep
+narrow error-code suppressions where a static type cannot represent the invalid
+input.
+
+```bash
+python tools/audit_test_typing_policy.py
+python tools/audit_test_typing_policy.py --validate-only --json
+```
+
 ## Test Categories
 
 ### 1. Pipeline Wiring Tests (`test_pipeline_wiring_performance.py`)

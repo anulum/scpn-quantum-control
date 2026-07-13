@@ -1,0 +1,81 @@
+{
+  "schema_version": 1,
+  "baseline": {
+    "command": "mypy --strict tests/",
+    "dominant_error_code": "no-untyped-def",
+    "dominant_error_count": 5076,
+    "errors": 6301,
+    "files_with_errors": 388,
+    "measured_at": "2026-07-13",
+    "scope_note": "Measured before adding the R2-M01 audit and test files; no test execution was involved.",
+    "tracked_python_files": 968
+  },
+  "migration_rules": {
+    "additions_only": true,
+    "invalid_input_policy": "Keep intentionally invalid calls and add the narrow error-code suppression only when mypy cannot express the negative test.",
+    "maximum_files_per_slice": 40,
+    "minimum_enforced_files": 13,
+    "required_verification": [
+      "focused pytest",
+      "mypy --strict",
+      "ruff check",
+      "ruff format --check"
+    ]
+  },
+  "cohorts": [
+    {
+      "activation_criterion": "Every listed repository-policy test passes mypy --strict together in the pinned CI environment.",
+      "files": [
+        "tests/test_audit_license_readiness.py",
+        "tests/test_audit_release_readiness.py",
+        "tests/test_audit_test_typing_policy.py",
+        "tests/test_capability_manifest.py",
+        "tests/test_check_commit_trailers.py",
+        "tests/test_check_internal_todo_policy.py",
+        "tests/test_check_secrets.py",
+        "tests/test_check_version_consistency.py",
+        "tests/test_ci_documentation_surface_gate.py",
+        "tests/test_enforce_main_branch_policy.py",
+        "tests/test_module_size_policy.py",
+        "tests/test_pre_commit_documentation_surface_gate.py",
+        "tests/test_preflight_tool.py"
+      ],
+      "id": "repository_policy",
+      "order": 0,
+      "selection": "Tests that own repository policy, release, generated-surface, and local or CI drift gates.",
+      "status": "enforced"
+    },
+    {
+      "activation_criterion": "Promote owner slices of at most 40 files after strict typing, focused runtime tests, and claim-boundary review pass together.",
+      "files": [],
+      "id": "claim_release_contracts",
+      "order": 1,
+      "selection": "Claim-bearing evidence, provenance, release, status-ledger, and publication-boundary tests.",
+      "status": "planned"
+    },
+    {
+      "activation_criterion": "Promote adapter-owner slices after intentional invalid-input calls use narrow suppressions and no live provider access is introduced.",
+      "files": [],
+      "id": "hardware_provider_boundaries",
+      "order": 2,
+      "selection": "Hardware adapters, provider validation, approval, budget, attestation, and result-pack tests.",
+      "status": "planned"
+    },
+    {
+      "activation_criterion": "Promote one source-owned scientific family per slice with focused invariant tests and no widening of scientific claims.",
+      "files": [],
+      "id": "scientific_runtime_contracts",
+      "order": 3,
+      "selection": "Numerical, compiler, differentiable, control, QEC, and analysis runtime-contract tests.",
+      "status": "planned"
+    },
+    {
+      "activation_criterion": "Address only after higher-risk cohorts; mechanical annotations alone do not justify displacing defect-bearing work.",
+      "files": [],
+      "id": "legacy_fixture_mechanics",
+      "order": 4,
+      "selection": "Legacy fixtures and broad parameterisation surfaces dominated by annotation-only debt.",
+      "status": "deferred"
+    }
+  ]
+}

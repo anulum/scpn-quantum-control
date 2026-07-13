@@ -20,12 +20,14 @@ Gates (in order):
   10. module-size typing — strict typing for the inventory tool
   11. licence-readiness — canonical cross-language source headers and licence boundaries
   12. licence typing — strict typing for the licence-readiness audit
-  13. version-sync   — version string consistency across 5 carrier files
-  14. rust-pyi       — Rust PyO3 exports match local typing contract
-  15. mypy           — type errors
-  16. mypy-strict-dp — strict typing ratchet for differentiable programming
-  17. pytest+coverage — tests + temporary coverage threshold (--cov-fail-under=70)
-  18. bandit         — security scan
+  13. test typing    — additive strict-mypy cohort for repository tests
+  14. test typing tool — strict typing for the cohort-policy audit
+  15. version-sync   — version string consistency across 5 carrier files
+  16. rust-pyi       — Rust PyO3 exports match local typing contract
+  17. mypy           — type errors
+  18. mypy-strict-dp — strict typing ratchet for differentiable programming
+  19. pytest+coverage — tests + temporary coverage threshold (--cov-fail-under=70)
+  20. bandit         — security scan
 
 Usage:
   python tools/preflight.py                # all gates (default)
@@ -130,6 +132,11 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     (
         "mypy-strict-licence-readiness",
         [_PY, "-m", "mypy", "--strict", "tools/audit_license_readiness.py"],
+    ),
+    ("test-typing-policy", [_PY, "tools/audit_test_typing_policy.py"]),
+    (
+        "mypy-strict-test-typing-policy",
+        [_PY, "-m", "mypy", "--strict", "tools/audit_test_typing_policy.py"],
     ),
     ("version-sync", [_PY, "scripts/check_version_consistency.py"]),
     ("rust-pyi", [_PY, "tools/check_rust_pyi_exports.py"]),

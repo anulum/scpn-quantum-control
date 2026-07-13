@@ -5,6 +5,10 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-07-13 — Added a machine-readable, additive strict-mypy cohort for
+  repository tests. The gate records the current whole-tree debt baseline,
+  orders later migrations by claim risk, validates tracked cohort membership,
+  and executes the exact enforced files in CI and local no-test preflight.
 - 2026-07-13 — Added a cross-language licence-readiness gate that checks every
   tracked Python, Rust, Julia, Go, C/C++, JavaScript/TypeScript, TOML, YAML,
   Verilog, and SystemVerilog source/configuration header in local preflight and

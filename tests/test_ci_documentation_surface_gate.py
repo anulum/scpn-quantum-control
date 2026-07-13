@@ -25,6 +25,16 @@ def test_ci_lint_job_gates_documentation_surface() -> None:
     assert "python tools/check_differentiable_promotion_language.py" in workflow
 
 
+def test_ci_lint_job_gates_additive_test_typing_policy() -> None:
+    """CI must execute the registered strict-test cohort and type its audit."""
+    workflow = Path(".github/workflows/ci.yml").read_text(encoding="utf-8")
+
+    assert "Audit additive strict test-typing cohort" in workflow
+    assert "python tools/audit_test_typing_policy.py" in workflow
+    assert "Type-check test-typing policy audit" in workflow
+    assert "mypy --strict tools/audit_test_typing_policy.py" in workflow
+
+
 def test_ci_gates_differentiable_strict_mypy_ratchet() -> None:
     """CI must enforce strict mypy on promoted differentiable modules."""
     workflow = Path(".github/workflows/ci.yml").read_text(encoding="utf-8")
