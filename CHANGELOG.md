@@ -14,6 +14,11 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   fallback and the complete manifest-scoped Rustfmt command.
 
 ### Added
+- 2026-07-13 — Closed the D205 suppression for the mitigation package facade.
+  Its package contract now separates the public summary from the exported ZNE,
+  PEC, decoupling, CPDR, readout, and symmetry-mitigation scope under the global
+  Ruff D gate. Executable source, public exports, mitigation algorithms, and
+  benchmarks are unchanged.
 - 2026-07-13 — Closed the D401 suppression for the identity entanglement
   witness. Its rotated two-qubit Pauli correlator now documents state, qubit,
   angle, return, and Qiskit ordering contracts in NumPy style under the global

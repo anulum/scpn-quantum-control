@@ -5,8 +5,10 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Error Mitigation
-"""Error mitigation techniques: ZNE, PEC, dynamical decoupling, CPDR,
-and Z2 symmetry verification with parity post-selection.
+"""Expose error-mitigation techniques and their public contracts.
+
+The facade re-exports ZNE, PEC, dynamical decoupling, CPDR, readout
+correction, symmetry-sector replay, and Z2 parity post-selection helpers.
 """
 
 from .cpdr import CPDRResult, cpdr_full_pipeline, cpdr_mitigate, generate_training_circuits

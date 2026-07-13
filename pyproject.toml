@@ -203,7 +203,6 @@ ignore = [
 "figures/**" = ["D"]
 "data/**" = ["D"]
 "*.py" = ["D"]
-"src/scpn_quantum_control/mitigation/__init__.py" = ["D205"]
 "src/scpn_quantum_control/phase/adapt_vqe.py" = ["D401"]
 "src/scpn_quantum_control/phase/ancilla_lindblad.py" = ["D205"]
 "src/scpn_quantum_control/phase/ansatz_methodology.py" = ["D401"]
