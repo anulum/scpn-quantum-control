@@ -33,20 +33,35 @@ class StructuredAnsatz:
         coupling_scale: float = 2.0,
         **kwargs: Any,
     ) -> StructuredAnsatz:
-        """
-        Builds a Trotterised Kuramoto-XY circuit from coupling matrix K_nm and
-        natural frequencies omega.
+        """Build a Trotterised Kuramoto-XY circuit from coupling data.
 
-        Args:
-            K_nm:           N×N symmetric coupling matrix (diagonal ignored).
-            omega:          Length-N natural frequencies. None → all zero.
-            trotter_depth:  Number of Trotter steps.
-            time_step:      dt per Trotter step.
-            lambda_fim:     FIM feedback angle per step (float, not a Parameter).
-            coupling_scale: Multiplicative scaling applied to K_nm before circuit
-                            construction. Default 2.0 doubles coupling strength
-                            relative to the raw matrix, pushing the system toward
-                            the Kuramoto synchronisation transition.
+        Parameters
+        ----------
+        K_nm : NDArray[np.float64]
+            Symmetric coupling matrix; diagonal entries are ignored.
+        omega : NDArray[np.float64] | None, optional
+            Natural frequencies. ``None`` assigns zero frequency to every qubit.
+        trotter_depth : int, optional
+            Number of Trotter steps.
+        time_step : float, optional
+            Duration of each Trotter step.
+        lambda_fim : float, optional
+            Concrete FIM feedback angle per step.
+        coupling_scale : float, optional
+            Multiplier applied to ``K_nm`` before circuit construction.
+        **kwargs : Any
+            Reserved keyword arguments retained for compatibility.
+
+        Returns
+        -------
+        StructuredAnsatz
+            Ansatz containing the constructed Qiskit circuit and build parameters.
+
+        Raises
+        ------
+        ValueError
+            If ``K_nm`` is not square and finite, or ``omega`` has an invalid
+            shape or non-finite values.
         """
         K_nm = np.asarray(K_nm, dtype=np.float64)
         if K_nm.ndim != 2 or K_nm.shape[0] != K_nm.shape[1]:
@@ -101,7 +116,18 @@ class StructuredAnsatz:
         return ansatz
 
     def build_circuit(self) -> QuantumCircuit:
-        """Returns a copy of the built Qiskit circuit for submission."""
+        """Return a copy of the built Qiskit circuit for submission.
+
+        Returns
+        -------
+        QuantumCircuit
+            Copy of the circuit constructed by :meth:`from_kuramoto`.
+
+        Raises
+        ------
+        ValueError
+            If :meth:`from_kuramoto` has not built a circuit yet.
+        """
         if self.circuit is None:
             raise ValueError("Call from_kuramoto() first.")
         return self.circuit.copy()

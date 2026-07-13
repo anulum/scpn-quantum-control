@@ -18,7 +18,7 @@ SCPN Quantum Control — Differentiable external-validation environment lock
 
 | Lockfile | Role | SHA-256 | Pinned packages |
 |---|---|---|---|
-| `pyproject.toml` | Package metadata and bounded dependency ranges | `6a844c4697e7738e3213329e8d641e3fd16e8a200492e4f570581c951f3daf4b` | 0 |
+| `pyproject.toml` | Package metadata and bounded dependency ranges | `2b2dc1afdf9356a18841fce058186e430e9f0e4537217d8f64cf091f013cc0e2` | 0 |
 | `requirements.txt` | Runtime dependency lock input | `739228b5225dd2e52ac26aa66ae2d03783b3de0794460b059d8b825717d85f8c` | 11 |
 | `requirements-dev.txt` | Developer verification dependency lock input | `afeb77a50d0dbd2d800034d702cb3ff69c137f0106a62d670daeb85f07e12ade` | 27 |
 | `requirements-ci-cross-platform-smoke.txt` | Cross-platform smoke CI lockfile | `fbeeb0088998de7067f9ba57f8e3df4ad68aee84ae79dcf916ef4448331a6ca9` | 17 |

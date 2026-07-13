@@ -4,12 +4,12 @@
   "classification": "functional_non_isolated",
   "lockfiles": [
     {
-      "line_count": 499,
+      "line_count": 498,
       "path": "pyproject.toml",
       "pinned_package_count": 0,
       "role": "Package metadata and bounded dependency ranges",
-      "sha256": "6a844c4697e7738e3213329e8d641e3fd16e8a200492e4f570581c951f3daf4b",
-      "size_bytes": 20817
+      "sha256": "2b2dc1afdf9356a18841fce058186e430e9f0e4537217d8f64cf091f013cc0e2",
+      "size_bytes": 20742
     },
     {
       "line_count": 21,
