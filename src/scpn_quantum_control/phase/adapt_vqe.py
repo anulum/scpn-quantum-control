@@ -110,7 +110,20 @@ def _pool_generators_dense(K: FloatArray, n: int) -> list[ComplexArray]:
 
 
 def _plus_reference(n: int) -> ComplexArray:
-    """The symmetric reference state ``|+⟩^{⊗n}`` as a dense statevector."""
+    """Construct the symmetric ``|+⟩^{⊗n}`` reference state.
+
+    Parameters
+    ----------
+    n
+        Number of qubits in the dense statevector.
+
+    Returns
+    -------
+    ComplexArray
+        Normalised dense statevector with uniform computational-basis
+        amplitudes.
+
+    """
     plus = np.array([1.0, 1.0], dtype=complex) / np.sqrt(2.0)
     state = np.ones(1, dtype=complex)
     for _ in range(n):
@@ -148,21 +161,44 @@ def adapt_vqe(
     n_restarts: int = 4,
     max_dense_gib: float | None = None,
 ) -> ADAPTResult:
-    """Adaptive layered VQE for the Kuramoto-XY Hamiltonian.
+    """Run adaptive layered VQE for the Kuramoto-XY Hamiltonian.
 
     Grows the ansatz one full pool layer at a time, optimising all angles with
     random-restart BFGS, until the best energy stops improving by more than
     ``gradient_threshold``. Returns the variational ground-state estimate.
 
-    Args:
-        K: coupling matrix.
-        omega: natural frequencies.
-        max_iterations: maximum number of ansatz layers.
-        gradient_threshold: energy-improvement convergence threshold between layers.
-        maxiter_opt: BFGS iterations per restart.
-        seed: random seed for angle initialisation (reproducible).
-        n_restarts: random restarts per layer (escapes the real-state local minima).
-        max_dense_gib: dense exact-statevector budget for local simulation.
+    Parameters
+    ----------
+    K
+        Square oscillator-coupling matrix.
+    omega
+        Natural-frequency vector ordered like the rows of ``K``.
+    max_iterations
+        Maximum number of full operator-pool layers.
+    gradient_threshold
+        Energy-improvement threshold below which the iteration converges.
+    maxiter_opt
+        Maximum BFGS iterations per restart.
+    seed
+        Random seed for reproducible angle initialisation.
+    n_restarts
+        Random restarts per layer. Non-positive values select one restart.
+    max_dense_gib
+        Optional dense exact-statevector memory budget in GiB.
+
+    Returns
+    -------
+    ADAPTResult
+        Best energy, convergence history, layer count, parameter count, and
+        selected operator-pool indices.
+
+    Raises
+    ------
+    ValueError
+        If the coupling matrix describes more than ten qubits.
+    DenseAllocationError
+        If the requested dense statevector exceeds ``max_dense_gib``.
+
     """
     n = K.shape[0]
     if n > 10:

@@ -14,6 +14,12 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   fallback and the complete manifest-scoped Rustfmt command.
 
 ### Added
+- 2026-07-13 — Closed the D401 suppression and adjacent D413 debt for layered
+  ADAPT-VQE. The symmetric-reference helper and solver now expose complete
+  NumPy-style input, result, convergence, restart, memory-budget, and failure
+  contracts. Focused regressions also cover uncoupled-pair exclusion and the
+  zero-layer result path. Executable source, public APIs, physics, and
+  benchmarks are unchanged.
 - 2026-07-13 — Closed the D205 suppression for the mitigation package facade.
   Its package contract now separates the public summary from the exported ZNE,
   PEC, decoupling, CPDR, readout, and symmetry-mitigation scope under the global
