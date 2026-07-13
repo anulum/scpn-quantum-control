@@ -62,11 +62,17 @@ def test_coverage_sources_are_filesystem_paths_not_importable_packages() -> None
     filesystem_target = "--cov=src/scpn_quantum_control"
     importable_target = "--cov=scpn_quantum_control"
     workflow = Path(".github/workflows/ci.yml").read_text(encoding="utf-8")
-    makefile = Path("Makefile").read_text(encoding="utf-8")
     test_docs = Path("docs/test_infrastructure.md").read_text(encoding="utf-8")
     pyproject = tomllib.loads(Path("pyproject.toml").read_text(encoding="utf-8"))
 
-    for surface in (workflow, makefile, test_docs):
+    # The reproduction image does not copy the Makefile (make is not used inside
+    # the container), so check it only when present; the copied surfaces still
+    # enforce the filesystem-path coverage contract in every environment.
+    surfaces = [workflow, test_docs]
+    makefile_path = Path("Makefile")
+    if makefile_path.is_file():
+        surfaces.append(makefile_path.read_text(encoding="utf-8"))
+    for surface in surfaces:
         assert filesystem_target in surface
         assert importable_target not in surface
     assert pyproject["tool"]["coverage"]["run"]["source"] == ["src/scpn_quantum_control"]
