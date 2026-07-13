@@ -112,7 +112,15 @@ class IQMQuantumBackend:
         self._import_module = import_module
 
     def is_available(self) -> bool:
-        """True iff Qiskit-on-IQM is importable in this environment."""
+        """Return whether Qiskit-on-IQM is importable in this environment.
+
+        Returns
+        -------
+        bool
+            ``True`` when the Qiskit-on-IQM provider module imports
+            successfully.
+
+        """
         try:
             self._import_module("iqm.qiskit_iqm.iqm_provider")
         except Exception:

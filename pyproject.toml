@@ -203,7 +203,6 @@ ignore = [
 "figures/**" = ["D"]
 "data/**" = ["D"]
 "*.py" = ["D"]
-"src/scpn_quantum_control/hardware/iqm_backend.py" = ["D401"]
 "src/scpn_quantum_control/hardware/plugin_registry.py" = ["D401"]
 "src/scpn_quantum_control/hardware/runner.py" = ["D205"]
 "src/scpn_quantum_control/identity/entanglement_witness.py" = ["D401"]

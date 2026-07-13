@@ -280,6 +280,15 @@ def test_extract_counts_reads_results_data_counts() -> None:
     assert _extract_counts(result) == {"11": 9}
 
 
+def test_extract_counts_rejects_non_mapping_results_counts() -> None:
+    """Reject a results-data counts field that is not a mapping."""
+    data = types.SimpleNamespace(counts=[("11", 9)])
+    result = types.SimpleNamespace(results=[types.SimpleNamespace(data=data)])
+
+    with pytest.raises(RuntimeError, match="Could not extract IQM counts"):
+        _extract_counts(result)
+
+
 def test_extract_counts_fails_when_unreadable() -> None:
     """A result with no recognisable counts shape fails closed."""
     with pytest.raises(RuntimeError, match="Could not extract IQM counts"):

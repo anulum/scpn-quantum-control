@@ -14,6 +14,11 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   fallback and the complete manifest-scoped Rustfmt command.
 
 ### Added
+- 2026-07-13 — Closed the D401 suppression for the IQM provider adapter. Its
+  Qiskit-on-IQM availability contract now uses NumPy-style documentation
+  enforced by the global Ruff D gate. A malformed provider-counts regression
+  closes branch coverage; executable source, submission policy, provider
+  schemas, and benchmarks are unchanged.
 - 2026-07-13 — Closed the D401 suppression for the hybrid digital-analog
   compiler. Its provider protocol and built-in availability contracts now use
   NumPy-style documentation enforced by the global Ruff D gate. A stale-engine
