@@ -5,6 +5,10 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-07-13 — Added a crate-wide Rustfmt gate to local preflight and the CI
+  Rust audit job, and canonicalised the four queued Kuramoto engine formatting
+  drifts. The change is layout-only; numerical expressions, PyO3 surfaces, and
+  benchmark semantics are unchanged.
 - 2026-07-13 — Replaced the stale 684-file coverage-debt snapshot with a
   deterministic 100% recovery register derived from remote CI evidence. The
   typed audit prioritises public claim-bearing and runtime-critical modules,

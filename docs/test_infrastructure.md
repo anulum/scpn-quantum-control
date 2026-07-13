@@ -286,6 +286,20 @@ python tools/audit_coverage_debt.py \
   --write-register
 ```
 
+### Rust engine format gate
+
+The complete `scpn_quantum_engine` crate is checked with the repository
+toolchain's canonical formatter in both local preflight and the CI `rust-audit`
+job:
+
+```bash
+cargo fmt --manifest-path scpn_quantum_engine/Cargo.toml --all -- --check
+```
+
+Formatting drift fails before Rust tests or advisory conclusions are accepted.
+The gate is crate-wide so a touched module cannot leave adjacent Rust owners in
+an uncheckable state.
+
 ### Docker image — reproduction/CI only
 
 The root `Dockerfile` (built and exercised by

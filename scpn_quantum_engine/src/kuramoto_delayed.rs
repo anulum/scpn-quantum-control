@@ -177,7 +177,9 @@ pub fn kuramoto_delayed_trajectory<'py>(
         )));
     }
     if dt <= 0.0 {
-        return Err(PyValueError::new_err(format!("dt must be positive, got {dt}")));
+        return Err(PyValueError::new_err(format!(
+            "dt must be positive, got {dt}"
+        )));
     }
     if n_steps < 1 {
         return Err(PyValueError::new_err(format!(

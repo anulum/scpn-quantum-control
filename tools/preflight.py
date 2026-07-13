@@ -26,12 +26,13 @@ Gates (in order):
   16. coverage policy tool — strict typing for the coverage-policy audit
   17. coverage debt — current 100% recovery register and priority drift
   18. coverage debt tool — strict typing for the debt-register audit
-  19. version-sync   — version string consistency across 5 carrier files
-  20. rust-pyi       — Rust PyO3 exports match local typing contract
-  21. mypy           — type errors
-  22. mypy-strict-dp — strict typing ratchet for differentiable programming
-  23. pytest+coverage — tests + temporary coverage threshold (--cov-fail-under=70)
-  24. bandit         — security scan
+  19. rustfmt        — canonical formatting across the Rust engine crate
+  20. version-sync   — version string consistency across 5 carrier files
+  21. rust-pyi       — Rust PyO3 exports match local typing contract
+  22. mypy           — type errors
+  23. mypy-strict-dp — strict typing ratchet for differentiable programming
+  24. pytest+coverage — tests + temporary coverage threshold (--cov-fail-under=70)
+  25. bandit         — security scan
 
 Usage:
   python tools/preflight.py                # all gates (default)
@@ -47,9 +48,11 @@ import time
 from collections.abc import Iterable
 from os import X_OK, access, environ, pathsep
 from pathlib import Path
+from shutil import which
 
 ROOT = Path(__file__).resolve().parent.parent
 _PY = sys.executable
+_CARGO = which("cargo") or "cargo"
 _RUNTIME_SOURCE_ROOTS = (ROOT / "src", ROOT / "oscillatools" / "src")
 _HELP_FLAGS = frozenset({"-h", "--help"})
 
@@ -155,6 +158,18 @@ STATIC_GATES: list[tuple[str, list[str]]] = [
     (
         "mypy-strict-coverage-debt",
         [_PY, "-m", "mypy", "--strict", "tools/audit_coverage_debt.py"],
+    ),
+    (
+        "rustfmt",
+        [
+            _CARGO,
+            "fmt",
+            "--manifest-path",
+            "scpn_quantum_engine/Cargo.toml",
+            "--all",
+            "--",
+            "--check",
+        ],
     ),
     ("version-sync", [_PY, "scripts/check_version_consistency.py"]),
     ("rust-pyi", [_PY, "tools/check_rust_pyi_exports.py"]),

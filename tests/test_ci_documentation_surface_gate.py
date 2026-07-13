@@ -133,4 +133,6 @@ def test_rust_audit_installer_retries_transient_crates_io_transport_errors() -> 
     assert 'CARGO_HTTP_MULTIPLEXING: "false"' in workflow
     assert "for attempt in 1 2 3" in workflow
     assert "cargo install cargo-audit --locked --version 0.22.1" in workflow
+    assert "Check Rust formatting" in workflow
+    assert "cargo fmt --all -- --check" in workflow
     assert "cargo audit --deny warnings" in workflow

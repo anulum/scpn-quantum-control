@@ -86,6 +86,22 @@ def test_static_gates_include_coverage_debt_register_and_tool_typing() -> None:
     assert strict_cmd[-1] == "tools/audit_coverage_debt.py"
 
 
+def test_static_gates_include_manifest_scoped_rustfmt() -> None:
+    """Preflight must reject formatting drift across the Rust engine crate."""
+    gate_map = {name: cmd for name, cmd in _preflight.STATIC_GATES}
+    command = gate_map["rustfmt"]
+
+    assert Path(command[0]).is_absolute()
+    assert command[1:] == [
+        "fmt",
+        "--manifest-path",
+        "scpn_quantum_engine/Cargo.toml",
+        "--all",
+        "--",
+        "--check",
+    ]
+
+
 def test_static_gates_include_differentiable_docstring_ratchet() -> None:
     """Differentiable docstring-clean modules must stay under Ruff D."""
     gate_map = {name: cmd for name, cmd in _preflight.STATIC_GATES}
