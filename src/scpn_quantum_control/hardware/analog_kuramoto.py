@@ -232,7 +232,14 @@ class AnalogKuramotoBackendProtocol(Protocol):
     capabilities: AnalogBackendCapabilities
 
     def is_available(self) -> bool:
-        """True iff the adapter can compile in this environment."""
+        """Return whether the adapter can compile in this environment.
+
+        Returns
+        -------
+        bool
+            ``True`` when the adapter's required runtime is available.
+
+        """
         ...
 
     def compile(
@@ -266,7 +273,15 @@ class AnalogKuramotoBackend:
         self.capabilities = _capabilities(self.platform, max_oscillators=max_oscillators)
 
     def is_available(self) -> bool:
-        """The built-in compiler has no optional runtime dependency."""
+        """Return whether the built-in compiler is available.
+
+        Returns
+        -------
+        bool
+            Always ``True`` because the compiler has no optional runtime
+            dependency.
+
+        """
         return True
 
     def compile(

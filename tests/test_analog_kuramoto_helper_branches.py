@@ -58,6 +58,29 @@ def test_kernel_falls_back_to_numpy_on_engine_error(monkeypatch: pytest.MonkeyPa
     assert radii.tolist() == [0.0]
 
 
+def test_kernel_falls_back_when_native_export_is_missing(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Fall back to NumPy when the installed engine lacks the native export."""
+    stub = types.ModuleType("scpn_quantum_engine")
+    monkeypatch.setitem(sys.modules, "scpn_quantum_engine", stub)
+
+    k_nm = np.array([[0.0, -0.5], [-0.5, 0.0]], dtype=np.float64)
+    rows, cols, strengths, phases, radii = ak._analog_terms_kernel(
+        k_nm,
+        AnalogKuramotoPlatform.CIRCUIT_QED,
+        coupling_scale=2.0,
+        c6_coefficient=1.0,
+        zero_threshold=1e-9,
+    )
+
+    assert rows.tolist() == [0]
+    assert cols.tolist() == [1]
+    assert strengths.tolist() == [1.0]
+    assert phases.tolist() == [pytest.approx(np.pi)]
+    assert radii.tolist() == [0.0]
+
+
 def test_kernel_uses_native_engine_result(monkeypatch: pytest.MonkeyPatch) -> None:
     """A successful native export is adopted verbatim through the kernel."""
 
