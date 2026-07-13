@@ -5,8 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Entanglement Enhanced Sync
-"""Entanglement-enhanced synchronization: does initial entanglement
-change Kuramoto dynamics?
+"""Test whether initial entanglement changes Kuramoto synchronization.
 
 All prior work treats entanglement as an OUTPUT of synchronization
 (Galve 2013, Roulet 2018, Nature Comms 2025). Nobody has tested

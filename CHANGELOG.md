@@ -11,6 +11,9 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   fallback and the complete manifest-scoped Rustfmt command.
 
 ### Added
+- 2026-07-13 — Closed the D205/D400 suppression for the
+  entanglement-enhanced synchronization analysis. Its module contract is now
+  enforced by the global Ruff D gate; executable source is unchanged.
 - 2026-07-13 — Changed coverage source discovery from an importable package
   name to the package filesystem directory across coverage.py, CI, local
   preflight, Makefile, and test documentation. This prevents coverage.py's
