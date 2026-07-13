@@ -14,6 +14,11 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   fallback and the complete manifest-scoped Rustfmt command.
 
 ### Added
+- 2026-07-13 — Closed the D400 suppression for the cross-domain transfer
+  summarizer. Its NumPy-style contract now documents the result sequence,
+  aggregate pair counts, best-transfer label and speedup, mean speedup, and
+  empty-input defaults. Executable source, VQE transfer behavior, public APIs,
+  and benchmark evidence are unchanged.
 - 2026-07-13 — Closed the D401 suppression for the ansatz-methodology
   convergence helper. Its NumPy-style contract now documents ordered energy
   history, short-history and fallback results, and the benchmark's historical

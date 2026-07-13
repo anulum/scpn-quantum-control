@@ -232,7 +232,21 @@ def run_transfer_matrix(
 
 
 def summarize_transfer(results: list[TransferResult]) -> TransferSummary:
-    """Summarize transfer matrix: which pairs show positive transfer?"""
+    """Summarize positive and negative cross-domain transfer outcomes.
+
+    Parameters
+    ----------
+    results
+        Ordered source-target transfer results to aggregate.
+
+    Returns
+    -------
+    TransferSummary
+        Pair counts, best source-target label and speedup, and mean speedup.
+        Empty input produces zero counts and speedups with no best-transfer
+        label.
+
+    """
     positive = [r for r in results if r.energy_improvement > 0]
     negative = [r for r in results if r.energy_improvement <= 0]
     best = max(results, key=lambda r: r.speedup) if results else None
