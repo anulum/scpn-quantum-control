@@ -22,8 +22,8 @@ SCPN Quantum Control — Differentiable external-validation environment lock
 | `requirements.txt` | Runtime dependency lock input | `739228b5225dd2e52ac26aa66ae2d03783b3de0794460b059d8b825717d85f8c` | 11 |
 | `requirements-dev.txt` | Developer verification dependency lock input | `527a565ac8952f601308c42de023618ce165891387cd21e4c5201a9d4a0a9add` | 27 |
 | `requirements-ci-cross-platform-smoke.txt` | Cross-platform smoke CI lockfile | `7dbb41967d1fa074b90e1b6c6801f5c92f09b2edea7aeb6467192764a12758f0` | 17 |
-| `requirements-ci-py311-linux.txt` | Python 3.11 Linux CI lockfile | `8a69e7741d2ef8f3381f01941b0d685afe4b43c9894e9facab818f0eae4d3ac8` | 156 |
-| `requirements-ci-py312-linux.txt` | Python 3.12 Linux CI lockfile | `4a071e4904bcec5a8e0a2be022a979a9b42a1b21c3b368223a27e50dbc2dde75` | 156 |
-| `requirements-ci-py313-linux.txt` | Python 3.13 Linux CI lockfile | `47e843b054b1be5e0a98b3cf32bf6cdd9d5988d29cef85f2c69011589d681798` | 156 |
+| `requirements-ci-py311-linux.txt` | Python 3.11 Linux CI lockfile | `0a14fddb91f379a7bcb62dc012ddfb0516030cbc7cb9c603e6ca0b5fc8559751` | 156 |
+| `requirements-ci-py312-linux.txt` | Python 3.12 Linux CI lockfile | `a7349a53b354d119335d724b1912e3268a6d4d230184dc767a26bb07c3f11b77` | 156 |
+| `requirements-ci-py313-linux.txt` | Python 3.13 Linux CI lockfile | `f95b8039089e0decc48519d2c80ed0cebcd170770ec1aafbf27ce956551bba7e` | 156 |
 | `data/differentiable_phase_qnode/local_benchmark_20260616T0955Z/framework_overlay_freeze.txt` | CPU framework overlay freeze used for JAX, PyTorch, TensorFlow, and PennyLane rows | `11a15a483d2f8f602b8d052dc1cf0824d37a86a47853a66b1cda1ed93caa56c6` | 54 |
 | `data/differentiable_phase_qnode/local_benchmark_20260616T0955Z/enzyme_py39_freeze.txt` | Python 3.9 Enzyme/JAX runner freeze used for installed-toolchain hard-gap evidence | `2770738675e8ac3fbf3edd5f8b004a3c0d2621fd3324b77aa3a238437b947d32` | 10 |
