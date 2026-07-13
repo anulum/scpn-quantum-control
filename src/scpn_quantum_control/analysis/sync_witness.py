@@ -176,7 +176,7 @@ def fiedler_witness_from_counts(
     n_qubits: int,
     threshold: float = 0.0,
 ) -> WitnessResult:
-    """Convenience: build Fiedler witness directly from hardware counts."""
+    """Build a Fiedler witness directly from hardware counts."""
     xx = _two_point_correlator(x_counts, n_qubits)
     yy = _two_point_correlator(y_counts, n_qubits)
     corr_matrix = xx + yy
