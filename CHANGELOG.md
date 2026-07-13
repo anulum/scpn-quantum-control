@@ -11,6 +11,9 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   fallback and the complete manifest-scoped Rustfmt command.
 
 ### Added
+- 2026-07-13 — Closed the D401 suppression for the QPU-data-artifact bridge.
+  Its array-construction contract is now enforced by the global Ruff D gate;
+  executable source is unchanged.
 - 2026-07-13 — Closed the D401 suppression for the Josephson-array
   application. Its correlation-variation helper is now enforced by the global
   Ruff D gate; executable source is unchanged.

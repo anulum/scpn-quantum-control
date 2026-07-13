@@ -500,7 +500,7 @@ def artifact_from_arrays(
     replay_id: str | None = None,
     metadata: Mapping[str, Any] | None = None,
 ) -> QPUDataArtifact:
-    """Convenience constructor for bridge tests and loaders."""
+    """Construct a QPU data artifact for bridge tests and loaders."""
     return QPUDataArtifact(
         domain=domain,
         source_name=source_name,
