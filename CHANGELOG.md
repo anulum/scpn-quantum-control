@@ -14,6 +14,13 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   fallback and the complete manifest-scoped Rustfmt command.
 
 ### Added
+- 2026-07-13 — Closed both D401 findings in the bounded QGNN module. Complete
+  NumPy-style contracts and the public guide now document graph
+  canonicalisation, architecture bounds, parameter layout and initialisation,
+  exact chained gradients, the fixed-step synthetic Kuramoto target, training
+  loss timing, results, provenance, and failure modes. Executable model
+  behavior, public signatures, Phase-QNode wiring, polyglot kernels, and
+  benchmark evidence are unchanged.
 - 2026-07-13 — Closed the D401 suppression for the Lindblad Kuramoto-XY
   solver. Its NumPy-style contracts now document validated physical inputs,
   dense-memory budgeting, cached operator construction, observable semantics,

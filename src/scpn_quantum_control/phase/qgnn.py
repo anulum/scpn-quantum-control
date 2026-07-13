@@ -48,20 +48,55 @@ FloatArray: TypeAlias = NDArray[np.float64]
 
 @dataclass(frozen=True)
 class KnmGraph:
-    """A K_nm coupling graph: symmetric couplings plus per-node frequencies."""
+    """Store one K_nm coupling graph and its per-node frequencies.
+
+    Parameters
+    ----------
+    coupling
+        Candidate coupling matrix. Public model operations pass the container
+        through :func:`validate_graph` before use.
+    node_frequencies
+        Candidate natural-frequency vector ordered like the matrix rows.
+
+    Notes
+    -----
+    Construction alone does not validate or symmetrise the arrays. Use
+    :func:`validate_graph` when a canonical, finite graph is required.
+
+    """
 
     coupling: FloatArray
     node_frequencies: FloatArray
 
     @property
     def n_nodes(self) -> int:
-        """Number of graph nodes represented by the coupling matrix."""
+        """Return the number of rows in the coupling matrix."""
         return int(self.coupling.shape[0])
 
 
 @dataclass(frozen=True)
 class QGNNConfig:
-    """Architecture of the message-passing stack and the readout circuit."""
+    """Configure the message-passing stack and quantum readout circuit.
+
+    Parameters
+    ----------
+    hidden_dim
+        Positive hidden-feature width used by every message-passing layer.
+    n_message_layers
+        Positive number of classical message-passing layers.
+    angles_per_node
+        One or two trainable readout rotations per graph node.
+    edge_threshold
+        Non-negative coupling magnitude required to place a controlled-Z
+        entangler in the readout circuit.
+
+    Raises
+    ------
+    ValueError
+        If a dimension or layer count is non-positive, the angle count is not
+        one or two, or the edge threshold is negative.
+
+    """
 
     hidden_dim: int = 4
     n_message_layers: int = 1
@@ -69,6 +104,7 @@ class QGNNConfig:
     edge_threshold: float = 1e-3
 
     def __post_init__(self) -> None:
+        """Validate the bounded architecture controls."""
         if self.hidden_dim < 1:
             raise ValueError("hidden_dim must be a positive integer")
         if self.n_message_layers < 1:
@@ -81,7 +117,21 @@ class QGNNConfig:
 
 @dataclass(frozen=True)
 class QGNNTrainingResult:
-    """Trained weights and the observed local loss trajectory."""
+    """Record trained weights and the observed local loss trajectory.
+
+    Parameters
+    ----------
+    parameters
+        Final flattened message-passing and readout weights.
+    loss_history
+        Mean-squared training loss recorded before each parameter update.
+    final_loss
+        Last value in ``loss_history``.
+    provenance
+        Architecture, training controls, graph count, and explicit bounded
+        claim boundary for the local run.
+
+    """
 
     parameters: FloatArray
     loss_history: FloatArray
@@ -90,7 +140,27 @@ class QGNNTrainingResult:
 
 
 def validate_graph(graph: KnmGraph) -> KnmGraph:
-    """Validate and symmetrise a :class:`KnmGraph`, fail-closed on bad input."""
+    """Validate and symmetrise a :class:`KnmGraph`.
+
+    Parameters
+    ----------
+    graph
+        Graph container with a candidate coupling matrix and frequency vector.
+
+    Returns
+    -------
+    KnmGraph
+        Canonical graph with float64 arrays and coupling replaced by
+        ``(K + K.T) / 2``.
+
+    Raises
+    ------
+    ValueError
+        If the coupling is not square, the graph has fewer than one or more
+        than :data:`MAX_QGNN_NODES` nodes, the frequency length disagrees with
+        the matrix, or either array contains a non-finite value.
+
+    """
     coupling = np.asarray(graph.coupling, dtype=np.float64)
     frequencies = np.asarray(graph.node_frequencies, dtype=np.float64)
     if coupling.ndim != 2 or coupling.shape[0] != coupling.shape[1]:
@@ -106,12 +176,13 @@ def validate_graph(graph: KnmGraph) -> KnmGraph:
 
 
 def _node_features(graph: KnmGraph) -> FloatArray:
-    """Per-node input features: natural frequency and weighted degree."""
+    """Return natural frequency and absolute weighted degree per node."""
     degree = np.sum(np.abs(graph.coupling), axis=1)
     return np.stack([graph.node_frequencies, degree], axis=1)
 
 
 def _normalised_adjacency(coupling: FloatArray) -> FloatArray:
+    """Return the signed coupling divided by absolute row degree."""
     degree = np.sum(np.abs(coupling), axis=1, keepdims=True)
     degree[degree < _EDGE_THRESHOLD] = 1.0
     adjacency: FloatArray = coupling / degree
@@ -122,11 +193,13 @@ _INPUT_FEATURES = 2
 
 
 def _layer_shapes(config: QGNNConfig) -> list[tuple[int, int]]:
+    """Return input/output dimensions for each message-passing layer."""
     dims = [_INPUT_FEATURES] + [config.hidden_dim] * config.n_message_layers
     return [(dims[i], dims[i + 1]) for i in range(config.n_message_layers)]
 
 
 def _parameter_layout(config: QGNNConfig) -> list[tuple[str, tuple[int, ...]]]:
+    """Return the deterministic flattened parameter-block layout."""
     layout: list[tuple[str, tuple[int, ...]]] = []
     for layer, (d_in, d_out) in enumerate(_layer_shapes(config)):
         layout.append((f"w_self_{layer}", (d_in, d_out)))
@@ -138,17 +211,47 @@ def _parameter_layout(config: QGNNConfig) -> list[tuple[str, tuple[int, ...]]]:
 
 
 def parameter_count(config: QGNNConfig) -> int:
-    """Number of trainable scalars for ``config``."""
+    """Return the number of trainable scalars for ``config``.
+
+    Parameters
+    ----------
+    config
+        Validated QGNN architecture whose layer and readout shapes define the
+        flattened parameter vector.
+
+    Returns
+    -------
+    int
+        Sum of both message matrices and one bias per layer, followed by the
+        readout matrix and bias.
+
+    """
     return sum(int(np.prod(shape)) for _name, shape in _parameter_layout(config))
 
 
 def initialise_parameters(config: QGNNConfig, seed: int | None = None) -> FloatArray:
-    """Draw a small-variance initial weight vector."""
+    """Draw a small-variance initial weight vector.
+
+    Parameters
+    ----------
+    config
+        QGNN architecture that determines the vector length.
+    seed
+        Optional NumPy generator seed for reproducible initialisation.
+
+    Returns
+    -------
+    FloatArray
+        Length-:func:`parameter_count` vector drawn independently from a
+        zero-mean normal distribution with standard deviation ``0.1``.
+
+    """
     rng = np.random.default_rng(seed)
     return rng.standard_normal(parameter_count(config)) * 0.1
 
 
 def _unflatten(config: QGNNConfig, parameters: FloatArray) -> dict[str, FloatArray]:
+    """Return named parameter views after validating the flat vector length."""
     parameters = np.asarray(parameters, dtype=np.float64)
     expected = parameter_count(config)
     if parameters.shape != (expected,):
@@ -168,7 +271,7 @@ def _message_passing_forward(
     features: FloatArray,
     adjacency: FloatArray,
 ) -> tuple[FloatArray, list[dict[str, FloatArray]]]:
-    """Run the message-passing stack, returning the angle vector and a tape."""
+    """Run the message-passing stack and return angles plus a backward tape."""
     activation = features
     tape: list[dict[str, FloatArray]] = []
     for layer in range(config.n_message_layers):
@@ -188,6 +291,7 @@ def _message_passing_forward(
 
 
 def _readout_circuit(config: QGNNConfig, graph: KnmGraph, angles: FloatArray) -> PhaseQNodeCircuit:
+    """Build the graph-structured Phase-QNode readout circuit."""
     n = graph.n_nodes
     operations: list[PhaseQNodeOperation] = []
     index = 0
@@ -222,7 +326,29 @@ def _circuit_angles(config: QGNNConfig, graph: KnmGraph, flat_angles: FloatArray
 
 
 def predict(config: QGNNConfig, parameters: FloatArray, graph: KnmGraph) -> float:
-    """Forward pass: graph + weights -> circuit expectation."""
+    """Return the graph-conditioned quantum-circuit expectation.
+
+    Parameters
+    ----------
+    config
+        Bounded message-passing and readout architecture.
+    parameters
+        Flattened trainable vector with length :func:`parameter_count`.
+    graph
+        Candidate K_nm graph, validated and symmetrised before execution.
+
+    Returns
+    -------
+    float
+        Normalised-Z readout expectation from the registered Phase-QNode
+        circuit.
+
+    Raises
+    ------
+    ValueError
+        If the graph contract or flattened parameter length is invalid.
+
+    """
     graph = validate_graph(graph)
     weights = _unflatten(config, parameters)
     features = _node_features(graph)
@@ -241,6 +367,27 @@ def predict_and_gradient(
     The gradient chains the analytic parameter-shift gradient of the circuit
     output with respect to the rotation angles and the analytic backward pass of
     the message-passing stack with respect to the weights.
+
+    Parameters
+    ----------
+    config
+        Bounded message-passing and readout architecture.
+    parameters
+        Flattened trainable vector with length :func:`parameter_count`.
+    graph
+        Candidate K_nm graph, validated and symmetrised before execution.
+
+    Returns
+    -------
+    tuple
+        Circuit expectation and a float64 gradient vector ordered exactly like
+        ``parameters``.
+
+    Raises
+    ------
+    ValueError
+        If the graph contract or flattened parameter length is invalid.
+
     """
     graph = validate_graph(graph)
     weights = _unflatten(config, parameters)
@@ -274,6 +421,7 @@ def _message_passing_backward(
     grad_angles: FloatArray,
     adjacency: FloatArray,
 ) -> dict[str, FloatArray]:
+    """Backpropagate circuit-angle derivatives through message passing."""
     readout = tape[-1]
     grads: dict[str, FloatArray] = {}
     # Readout: angles = pi * tanh(readout_pre); d angle / d readout_pre.
@@ -298,11 +446,33 @@ def _message_passing_backward(
 
 
 def synthetic_kuramoto_target(graph: KnmGraph) -> float:
-    """A deterministic Kuramoto-XY regression target in ``[-1, 1]``.
+    """Return a deterministic Kuramoto-XY regression target in ``[-1, 1]``.
 
     Maps the phase-locked Kuramoto order parameter of the graph (evolved from a
     fixed synchronised start) onto ``[-1, 1]`` so a unit-norm circuit observable
     can represent it.
+
+    Parameters
+    ----------
+    graph
+        Candidate K_nm graph, validated and symmetrised before evolution.
+
+    Returns
+    -------
+    float
+        ``2 * abs(mean(exp(1j * theta))) - 1`` after 40 explicit-Euler steps
+        of size ``0.05`` from the all-zero phase vector.
+
+    Raises
+    ------
+    ValueError
+        If the graph contract is invalid.
+
+    Notes
+    -----
+    This deterministic, bounded label is a local training target, not a
+    high-accuracy Kuramoto integrator or a benchmark claim.
+
     """
     graph = validate_graph(graph)
     n = graph.n_nodes
@@ -330,6 +500,35 @@ def train(
 
     Reports observed local loss decrease only; it does not claim convergence for
     arbitrary graphs, depths, or unseen distributions.
+
+    Parameters
+    ----------
+    config
+        Bounded message-passing and readout architecture.
+    parameters
+        Initial flattened trainable vector.
+    graphs
+        Non-empty tuple of training graphs.
+    targets
+        One scalar regression target per graph.
+    learning_rate
+        Positive finite full-batch gradient-descent step size.
+    epochs
+        Positive number of full-batch parameter updates.
+
+    Returns
+    -------
+    QGNNTrainingResult
+        Final parameters, pre-update mean-squared-loss history, final recorded
+        loss, and bounded-run provenance.
+
+    Raises
+    ------
+    ValueError
+        If the graph tuple is empty, target shape disagrees with it, the
+        learning rate is non-positive or non-finite, the epoch count is
+        non-positive, or a graph/parameter contract fails during prediction.
+
     """
     if len(graphs) == 0:
         raise ValueError("at least one training graph is required")

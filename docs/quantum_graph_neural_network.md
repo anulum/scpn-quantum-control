@@ -26,6 +26,14 @@ arbitrary-depth, provider, hardware, or production QGNN convergence.
    above `edge_threshold` (the physics-informed K_nm topology), an optional
    second `RY` layer, and a normalised `Z` observable.
 
+`validate_graph` accepts one to twelve nodes, requires finite square coupling
+and matching frequency arrays, and replaces the coupling with
+`(K + K.T) / 2`. `QGNNConfig` requires positive hidden/layer dimensions, one or
+two angles per node, and a non-negative edge threshold. `parameter_count`
+sums both message matrices and the bias for each layer plus the readout matrix
+and bias; `initialise_parameters(config, seed)` draws that many independent
+normal weights with standard deviation `0.1`.
+
 ```python
 from scpn_quantum_control.phase import qgnn
 
@@ -50,6 +58,13 @@ to the weights. The chain is validated against finite differences to ~1e-9 in
 graph onto `[-1, 1]`, matching the range of the normalised circuit observable.
 `train` fits the weights by gradient descent and returns the loss trajectory and
 a claim-boundary record.
+
+The synthetic label starts every node at phase zero, applies 40 explicit-Euler
+steps of size `0.05`, and returns
+`2 * abs(mean(exp(1j * theta))) - 1`. It is a deterministic bounded training
+label, not a high-accuracy Kuramoto integrator or benchmark result. Training
+records the mean-squared loss before each full-batch update; `final_loss` is the
+last recorded value rather than an extra post-update evaluation.
 
 ```python
 targets = np.array([qgnn.synthetic_kuramoto_target(g) for g in graphs])
