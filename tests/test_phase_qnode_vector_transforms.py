@@ -13,7 +13,6 @@ import numpy as np
 import pytest
 from numpy.typing import NDArray
 
-import scpn_quantum_control.phase.qnode_vector_transforms as vector_transforms
 from scpn_quantum_control.phase import (
     PhaseQNodeVectorTransformResult,
     execute_phase_qnode_vector_hessian,
@@ -316,37 +315,6 @@ def test_vector_jacobian_refuses_supported_non_jacobian_transform() -> None:
     assert result.fail_closed
     assert result.jacobian is None
     assert result.failure_reason == "vector QNode execution supports only jacfwd or jacrev"
-
-
-def test_vector_jvp_vjp_propagate_nested_jacobian_refusal(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    """Directional wrappers preserve a nested Jacobian fail-closed decision."""
-    params = np.array([0.2, -0.4], dtype=float)
-    blocked = execute_phase_qnode_vector_jacobian(
-        "jacfwd",
-        _vector_objective,
-        params,
-        adapter="jax",
-    )
-
-    def refuse_jacobian(*args: object, **kwargs: object) -> PhaseQNodeVectorTransformResult:
-        del args, kwargs
-        return blocked
-
-    monkeypatch.setattr(
-        vector_transforms,
-        "execute_phase_qnode_vector_jacobian",
-        refuse_jacobian,
-    )
-
-    jvp = execute_phase_qnode_vector_jvp(_vector_objective, params, np.array([1.0, 0.0]))
-    vjp = execute_phase_qnode_vector_vjp(_vector_objective, params, np.array([1.0, 0.0]))
-
-    assert jvp.fail_closed
-    assert jvp.failure_reason == blocked.failure_reason
-    assert vjp.fail_closed
-    assert vjp.failure_reason == blocked.failure_reason
 
 
 def test_phase_qnode_vector_transforms_reject_complex_derivative_inputs() -> None:

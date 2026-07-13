@@ -12,21 +12,20 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   and complex-derivative guards. Numerical transform arithmetic, public APIs,
   framework/provider policy, polyglot surfaces, and benchmark claims are
   unchanged.
-- 2026-07-13 — Closed the live Phase-QNode vector-transform coverage row.
-  Strict public-contract regressions now exercise every remaining malformed
-  parameter, batch, and vector-output boundary, reject supported scalar
-  transforms at the vector-Jacobian execution seam, and preserve nested
-  Jacobian fail-closed decisions through JVP/VJP wrappers. Public APIs,
-  parameter-shift arithmetic, framework/provider policy, polyglot surfaces,
-  and benchmark claims are unchanged.
-- 2026-07-13 — Closed the live Phase-QNode framework-parity coverage row.
-  Deterministic regressions now classify every framework failure boundary,
-  validate scenario/parameter guards, execute both TensorFlow runner branches,
-  and numerically cross-check the registered two-qubit TensorFlow array helper
-  without requiring that optional dependency. A dead private NumPy objective
-  and the defensive runtime-exception coverage exclusion were removed; public
-  APIs, parity arithmetic, dependency-sparse behavior, provider policy,
+- 2026-07-13 — Corrected Phase-QNode vector-transform verification by removing
+  a synthetic Jacobian-substitution test. Public-path regressions cover
+  malformed parameter, batch, and vector-output boundaries, supported scalar
+  transforms at the vector-Jacobian seam, JVP/VJP execution, and unsafe-route
+  refusal. The defensive nested-refusal branch is not claimed as locally
+  covered. Public APIs, parameter-shift arithmetic, framework/provider policy,
   polyglot surfaces, and benchmark claims are unchanged.
+- 2026-07-13 — Corrected Phase-QNode framework-parity verification by removing
+  fake TensorFlow and private-helper tests. The public suite validates scenario
+  and parameter contracts and executes installed optional frameworks; the
+  dedicated framework-overlay CI job owns real TensorFlow execution. A dead
+  private NumPy objective and the runtime-exception coverage exclusion remain
+  removed. Public APIs, parity arithmetic, dependency-sparse behavior,
+  provider policy, polyglot surfaces, and benchmark claims are unchanged.
 - 2026-07-13 — Closed the live Phase-QNode provider-transform coverage row.
   Strict public-path regressions now exercise finite-shot vmap accounting,
   scalar cotangents, malformed parameter/vector/batch inputs, unsupported
