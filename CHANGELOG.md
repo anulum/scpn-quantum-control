@@ -5,6 +5,14 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Fixed
+- 2026-07-13 — Closed the live Phase-QNode framework-parity coverage row.
+  Deterministic regressions now classify every framework failure boundary,
+  validate scenario/parameter guards, execute both TensorFlow runner branches,
+  and numerically cross-check the registered two-qubit TensorFlow array helper
+  without requiring that optional dependency. A dead private NumPy objective
+  and the defensive runtime-exception coverage exclusion were removed; public
+  APIs, parity arithmetic, dependency-sparse behavior, provider policy,
+  polyglot surfaces, and benchmark claims are unchanged.
 - 2026-07-13 — Closed the live Phase-QNode provider-transform coverage row.
   Strict public-path regressions now exercise finite-shot vmap accounting,
   scalar cotangents, malformed parameter/vector/batch inputs, unsupported

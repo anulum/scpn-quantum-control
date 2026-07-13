@@ -230,10 +230,6 @@ def _scenario_claim_boundary(scenario: ParityScenario) -> str:
     return TWO_QUBIT_CLAIM_BOUNDARY
 
 
-def _objective_numpy(values: FloatArray) -> float:
-    return float(np.cos(values[0]) * np.cos(values[1]))
-
-
 def _run_framework_record(
     framework: str,
     runner: Any,
@@ -257,7 +253,7 @@ def _run_framework_record(
             device="unavailable",
             failure_reason=str(exc),
         )
-    except Exception as exc:  # pragma: no cover - defensive framework boundary
+    except Exception as exc:
         return PhaseQNodeFrameworkParityRecord(
             framework=framework,
             status="failed",
