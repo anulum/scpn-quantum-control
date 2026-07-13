@@ -14,6 +14,11 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   fallback and the complete manifest-scoped Rustfmt command.
 
 ### Added
+- 2026-07-13 — Closed the D401 suppression for the hybrid digital-analog
+  compiler. Its provider protocol and built-in availability contracts now use
+  NumPy-style documentation enforced by the global Ruff D gate. A stale-engine
+  fallback regression closes branch coverage; executable source, Rust/PyO3
+  partitioning, provider schemas, and benchmarks are unchanged.
 - 2026-07-13 — Closed the D401 suppression for the hardware backend registry.
   Its protocol and process-wide registration, lookup, removal, and discovery
   wrappers now use NumPy-style contracts enforced by the global Ruff D gate.

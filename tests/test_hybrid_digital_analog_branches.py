@@ -23,6 +23,7 @@ import pytest
 
 from scpn_quantum_control.hardware.analog_kuramoto import AnalogKuramotoPlatform
 from scpn_quantum_control.hardware.hybrid_digital_analog import (
+    HybridRoute,
     compile_hybrid_digital_analog,
     partition_kuramoto_couplings,
 )
@@ -75,6 +76,20 @@ def test_partition_falls_back_to_numpy_on_engine_error(monkeypatch: pytest.Monke
     partition = partition_kuramoto_couplings(_K)
     assert partition.n_couplings == 1
     assert partition.n_analog_couplings + partition.n_digital_couplings == 1
+
+
+def test_partition_falls_back_when_native_export_is_missing(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Use the NumPy partition when the installed engine lacks the native export."""
+    stub = types.ModuleType("scpn_quantum_engine")
+    monkeypatch.setitem(sys.modules, "scpn_quantum_engine", stub)
+
+    partition = partition_kuramoto_couplings(_K, max_analog_couplers=0)
+
+    np.testing.assert_array_equal(partition.analog_K_nm, np.zeros_like(_K))
+    np.testing.assert_array_equal(partition.digital_K_nm, _K)
+    assert partition.assignments[0].route is HybridRoute.DIGITAL
 
 
 def test_partition_rejects_non_square_matrix() -> None:

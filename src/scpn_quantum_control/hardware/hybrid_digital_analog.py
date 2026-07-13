@@ -155,7 +155,14 @@ class HybridDigitalAnalogBackendProtocol(Protocol):
     name: str
 
     def is_available(self) -> bool:
-        """True iff the compiler can run in this environment."""
+        """Return whether the compiler can run in this environment.
+
+        Returns
+        -------
+        bool
+            ``True`` when the compiler's required runtime is available.
+
+        """
         ...
 
     def compile(
@@ -194,7 +201,15 @@ class HybridDigitalAnalogBackend:
         )
 
     def is_available(self) -> bool:
-        """The built-in hybrid compiler has no optional runtime dependency."""
+        """Return whether the built-in hybrid compiler is available.
+
+        Returns
+        -------
+        bool
+            Always ``True`` because the compiler has no optional runtime
+            dependency.
+
+        """
         return True
 
     def compile(
