@@ -45,6 +45,21 @@ duplicates the first defect for an odd input to keep matching deterministic;
 `ControlQEC` then recomputes both syndromes and returns `False` if correction
 did not clear them. This compatibility path is not a boundary-aware decoder.
 
+### Surface-Code UPDE Scaffold (Not a Decoder)
+
+`scpn_quantum_control.qec.surface_code_upde.SurfaceCodeUPDE` is a circuit and
+resource scaffold, not a third decoder. It allocates rotated-surface-code-shaped
+patch registers and appends proxy encoding fan-out, distributed physical RZ/RZZ
+layers, and X/Z ancilla interactions. Its circuit contains no measurements,
+resets, classical syndrome bits, decoder invocation, or correction feedback.
+
+The distributed rotations are not established fault-tolerant logical gates,
+and the inter-patch RZZ layer is not an ancilla-mediated lattice-surgery
+merge-and-split protocol. The scaffold is suitable for qubit accounting and
+circuit-structure analysis only. Its default frequency dependency covers every
+requested oscillator by periodically extending the canonical 16-entry table;
+entries beyond 16 are synthetic repeats, not new Paper 27 measurements.
+
 ### Biological Graph Decoder
 
 `scpn_quantum_control.qec.biological_surface_code.BiologicalMWPMDecoder` maps

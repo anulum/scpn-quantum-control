@@ -210,6 +210,13 @@ qec/multiscale_qec.py → build_multiscale_qec() → MultiscaleQECResult
 qec/surface_code_upde.py → SurfaceCodeUPDE (per-level circuit)
 ```
 
+`SurfaceCodeUPDE` is a separate structural circuit/resource scaffold; it is not
+called by `build_multiscale_qec` and does not turn the analytical level records
+above into an executable correction stack. Its distributed physical RZ/RZZ and
+ancilla-interaction layers contain no measurements, classical syndrome bits,
+decoder call, or feedback. They must not be presented as validated logical
+gates, lattice surgery, or fault-tolerant X/Z correction.
+
 **Inputs:** K_nm coupling matrix (from `bridge/`), physical error rate,
 target logical rate.
 

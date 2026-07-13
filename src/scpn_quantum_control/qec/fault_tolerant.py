@@ -9,8 +9,10 @@
 
 Proof-of-concept for QEC-protected Kuramoto dynamics. Uses distance-d
 repetition code (bit-flip only) per oscillator. Does NOT correct phase
-errors — use SurfaceCodeUPDE for full X+Z protection. Validates approach
-on statevector; not executable on current hardware at useful noise levels.
+errors. ``SurfaceCodeUPDE`` supplies a separate X/Z ancilla-interaction and
+resource scaffold, not full protection or decoding. This module validates its
+repetition-code approach on statevector and is not executable on current
+hardware at useful noise levels.
 """
 
 from __future__ import annotations

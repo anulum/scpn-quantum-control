@@ -14,6 +14,16 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   fallback and the complete manifest-scoped Rustfmt command.
 
 ### Added
+- 2026-07-13 — Closed the D401 suppression and adjacent D107/D413 debt for
+  the surface-code UPDE scaffold. Complete source and public contracts now
+  distinguish its unmeasured structural RZ/RZZ and ancilla-interaction proxies
+  from logical gates, lattice surgery, decoding, or demonstrated correction.
+  Default frequencies now use the scalable canonical-prefix/periodic-extension
+  provider, and invariant-backed four-neighbour construction removes dead
+  bounds branches. Three strictly typed public-path regressions cover
+  larger-than-16 defaults, zero-coupling omission, and four-neighbour topology
+  across distances 3, 5, and 7; public signatures, qubit formulas, provider
+  wiring, polyglot kernels, and benchmark evidence are unchanged.
 - 2026-07-13 — Closed the D401 suppression for the toric ControlQEC module.
   Complete NumPy-style contracts and public decoder documentation now define
   lattice/check shapes, error and syndrome arrays, matching and K_nm cost
