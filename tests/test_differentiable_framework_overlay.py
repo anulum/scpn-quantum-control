@@ -11,17 +11,21 @@ from __future__ import annotations
 
 import json
 import subprocess
+import sys
 from pathlib import Path
 
 import pytest
 
+import scpn_quantum_control.differentiable_framework_overlay as overlay_module
 from scpn_quantum_control.differentiable_framework_overlay import (
     CPU_FRAMEWORK_WHEELS,
     FrameworkOverlayManifest,
     build_framework_overlay_manifest,
+    default_framework_overlay_path,
     framework_overlay_pythonpath,
     install_framework_overlay,
     verify_framework_overlay_manifest,
+    verify_framework_overlay_path,
 )
 
 
@@ -145,3 +149,142 @@ def test_framework_overlay_pythonpath_requires_existing_manifest(tmp_path: Path)
     """The PYTHONPATH helper should require an existing manifest file."""
     with pytest.raises(FileNotFoundError):
         framework_overlay_pythonpath(tmp_path / "missing.json")
+
+
+def test_framework_overlay_defaults_follow_cache_environment(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Default manifests use the declared cache root and running Python minor."""
+    monkeypatch.setenv("XDG_CACHE_HOME", str(tmp_path))
+
+    default_path = default_framework_overlay_path()
+    manifest = build_framework_overlay_manifest()
+
+    assert default_path == tmp_path / overlay_module.DEFAULT_OVERLAY_BASENAME
+    assert manifest.overlay_path == default_path
+    assert manifest.python_version == (f"{sys.version_info.major}.{sys.version_info.minor}")
+
+
+def test_framework_overlay_rejects_null_and_root_paths() -> None:
+    """Destructive or OS-invalid installation targets fail before filesystem use."""
+    with pytest.raises(ValueError, match="null byte"):
+        build_framework_overlay_manifest(overlay_path=Path("/tmp/invalid\x00overlay"))
+    with pytest.raises(ValueError, match="filesystem root"):
+        build_framework_overlay_manifest(overlay_path=Path(Path.cwd().anchor))
+
+
+def test_framework_overlay_reports_partial_packages_and_unknown_version(tmp_path: Path) -> None:
+    """Partial overlays retain missing roots and fail-closed version metadata."""
+    overlay = tmp_path / "overlay"
+    (overlay / "jax").mkdir(parents=True)
+    (overlay / "jax-unknown.dist-info").mkdir()
+
+    result = verify_framework_overlay_path(overlay, pythonpath="explicit-pythonpath")
+
+    assert not result.ready
+    assert result.status == "missing_packages"
+    assert result.pythonpath == "explicit-pythonpath"
+    assert result.missing_packages == ("torch", "tensorflow", "pennylane")
+    assert result.package_versions == {}
+    assert result.to_dict()["missing_packages"] == ["torch", "tensorflow", "pennylane"]
+
+
+def test_framework_overlay_discovers_underscore_distribution_fallback(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Underscore package roots can use their matching dist-info spelling."""
+    monkeypatch.setattr(
+        overlay_module,
+        "CPU_FRAMEWORK_PACKAGE_ROOTS",
+        ("tensorflow_cpu",),
+    )
+    overlay = tmp_path / "overlay"
+    (overlay / "tensorflow_cpu").mkdir(parents=True)
+    dist_info = overlay / "tensorflow_cpu-2.3.4.dist-info"
+    dist_info.mkdir()
+    (dist_info / "METADATA").write_text("Name: tensorflow-cpu\nVersion: 2.3.4\n", encoding="utf-8")
+
+    result = verify_framework_overlay_path(overlay)
+
+    assert result.ready
+    assert result.package_versions == {"tensorflow_cpu": "2.3.4"}
+
+
+def test_framework_overlay_metadata_without_version_is_unknown(tmp_path: Path) -> None:
+    """Present metadata without a Version field is reported as unknown."""
+    overlay = tmp_path / "overlay"
+    for package in ("jax", "torch", "tensorflow", "pennylane"):
+        (overlay / package).mkdir(parents=True)
+    dist_info = overlay / "jax-unknown.dist-info"
+    dist_info.mkdir()
+    (dist_info / "METADATA").write_text("Name: jax\n", encoding="utf-8")
+
+    result = verify_framework_overlay_path(overlay)
+
+    assert result.ready
+    assert result.package_versions == {"jax": "unknown"}
+
+
+def test_framework_overlay_cli_emits_and_verifies_manifest(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """The CLI emits its default manifest and returns fail-closed verify codes."""
+    overlay = tmp_path / "overlay"
+    manifest_path = overlay / "framework_overlay_manifest.json"
+
+    assert overlay_module.main(["--overlay-path", str(overlay)]) == 0
+    emitted = capsys.readouterr().out
+    assert str(manifest_path) in emitted
+    assert f"PYTHONPATH={overlay}" in emitted
+    assert framework_overlay_pythonpath(manifest_path) == str(overlay)
+
+    assert overlay_module.main(["--manifest-path", str(manifest_path), "--verify"]) == 2
+    missing_payload = json.loads(capsys.readouterr().out)
+    assert missing_payload["status"] == "missing_packages"
+
+    for package in ("jax", "torch", "tensorflow", "pennylane"):
+        (overlay / package).mkdir(parents=True)
+    assert overlay_module.main(["--manifest-path", str(manifest_path), "--verify"]) == 0
+    ready_payload = json.loads(capsys.readouterr().out)
+    assert ready_payload["ready"] is True
+
+
+def test_framework_overlay_cli_install_delegates_to_installer(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """The install flag delegates once and writes the returned manifest."""
+    overlay = tmp_path / "overlay"
+    manifest_path = tmp_path / "installed.json"
+    installed_paths: list[Path] = []
+
+    def fake_install(path: Path) -> FrameworkOverlayManifest:
+        installed_paths.append(path)
+        return build_framework_overlay_manifest(
+            overlay_path=path,
+            package_versions={"jax": "test"},
+            verification_status="ready",
+        )
+
+    monkeypatch.setattr(overlay_module, "install_framework_overlay", fake_install)
+
+    assert (
+        overlay_module.main(
+            [
+                "--overlay-path",
+                str(overlay),
+                "--manifest-path",
+                str(manifest_path),
+                "--install",
+            ]
+        )
+        == 0
+    )
+    capsys.readouterr()
+
+    assert installed_paths == [overlay]
+    assert FrameworkOverlayManifest.from_json(manifest_path).verification_status == "ready"

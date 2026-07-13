@@ -5,6 +5,12 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Fixed
+- 2026-07-13 — Closed the next live P0 claim-bearing coverage row for the
+  differentiable CPU framework-overlay profile. Strictly typed regressions now
+  cover default-path resolution, destructive target rejection, partial and
+  underscore-named distribution discovery, incomplete metadata, and both CLI
+  emit/install/verify result paths. Production overlay installation logic,
+  public APIs, parity boundaries, and evidence claims are unchanged.
 - 2026-07-13 — Closed the live P0 claim-bearing branch-coverage debt for the
   Phase-QNode affinity benchmark owner. Strictly typed regressions now cover
   invalid runner configuration, every isolation-policy failure, admitted
