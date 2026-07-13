@@ -7,8 +7,9 @@
 #
 # This lock covers the optional Julia tier installed by
 # .github/workflows/benchmark-kuramoto-tiers.yml after the base CI lock.
-filelock==3.29.0 \
-    --hash=sha256:96f5f6344709aa1572bbf631c640e4ebeeb519e08da902c39a001882f30ac258
+filelock==3.29.7 \
+    --hash=sha256:5b481979797ae69e72f0b389d89a80bdd585c260c5b3f1fb9c0a5ba9bb3f195d \
+    --hash=sha256:987db6f789a3a2a59f55081801b2b3697cb97e2a736b5f1a9e99b559285fbc51
     # via juliapkg
 juliacall==0.9.35 \
     --hash=sha256:fd58e7858b12a8e1aa44f9f9eeaea05ff8029dd9a19d98521a5451ca94f2f81a

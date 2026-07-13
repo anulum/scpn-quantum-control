@@ -24,40 +24,40 @@
       "path": "requirements-dev.txt",
       "pinned_package_count": 27,
       "role": "Developer verification dependency lock input",
-      "sha256": "afeb77a50d0dbd2d800034d702cb3ff69c137f0106a62d670daeb85f07e12ade",
+      "sha256": "201c35c1d64dc527f4b6949d0158ecac1b3a4003ffa17e912d6df901925979cb",
       "size_bytes": 965
     },
     {
-      "line_count": 295,
+      "line_count": 351,
       "path": "requirements-ci-cross-platform-smoke.txt",
       "pinned_package_count": 17,
       "role": "Cross-platform smoke CI lockfile",
-      "sha256": "fbeeb0088998de7067f9ba57f8e3df4ad68aee84ae79dcf916ef4448331a6ca9",
-      "size_bytes": 22423
+      "sha256": "7dbb41967d1fa074b90e1b6c6801f5c92f09b2edea7aeb6467192764a12758f0",
+      "size_bytes": 27183
     },
     {
-      "line_count": 2949,
+      "line_count": 3005,
       "path": "requirements-ci-py311-linux.txt",
       "pinned_package_count": 156,
       "role": "Python 3.11 Linux CI lockfile",
-      "sha256": "030de97aea281cc0a1ce39b926405ef6eaf7199cbc8836844c944fb69496969d",
-      "size_bytes": 217534
+      "sha256": "026d5e208f3ae6b58a7bf507a7b711e873e89b55a7d03111e30932521a77a9ea",
+      "size_bytes": 222294
     },
     {
-      "line_count": 2904,
+      "line_count": 2960,
       "path": "requirements-ci-py312-linux.txt",
       "pinned_package_count": 156,
       "role": "Python 3.12 Linux CI lockfile",
-      "sha256": "c906ca45454a9e8f32896fb8de0b3c670f0b7bdcd4104c1e4651f5e15a0d8782",
-      "size_bytes": 213709
+      "sha256": "a340cb953b566990c9cc2220bdaa229afc0a20532adcfde07fad9b08728acb75",
+      "size_bytes": 218469
     },
     {
-      "line_count": 2945,
+      "line_count": 3001,
       "path": "requirements-ci-py313-linux.txt",
       "pinned_package_count": 156,
       "role": "Python 3.13 Linux CI lockfile",
-      "sha256": "1d0418b8ace9de61956421784f37d2b35938733b0dd518d149ad8abdbf8bb077",
-      "size_bytes": 217459
+      "sha256": "7e3dda1c70eb8ea38104c5c04b4cced9e8959b9289ba9995ace9376468db8e28",
+      "size_bytes": 222219
     },
     {
       "line_count": 54,
@@ -77,6 +77,6 @@
     }
   ],
   "platform": "Linux-6.17.0-35-generic-x86_64-with-glibc2.39",
-  "python_version": "3.12.13",
+  "python_version": "3.12.3",
   "schema": "scpn_qc_differentiable_external_validation_environment_lock_v1"
 }
