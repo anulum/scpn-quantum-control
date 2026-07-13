@@ -90,7 +90,7 @@ _PYTEST_BASE = [
 ]
 
 _PYTEST_COV = _PYTEST_BASE + [
-    "--cov=scpn_quantum_control",
+    "--cov=src/scpn_quantum_control",
     "--cov-branch",
     "--cov-fail-under=70",  # temporary combined local smoke guard; CI separately gates lines
 ]

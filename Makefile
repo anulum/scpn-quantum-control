@@ -13,7 +13,7 @@ test:
 	pytest tests/ -v --tb=short
 
 test-cov:
-	pytest tests/ --cov=scpn_quantum_control --cov-report=term-missing --cov-fail-under=95
+	pytest tests/ --cov=src/scpn_quantum_control --cov-report=term-missing --cov-fail-under=95
 
 lint:
 	ruff check src/ tests/ examples/

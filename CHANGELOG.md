@@ -5,6 +5,11 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-07-13 — Changed coverage source discovery from an importable package
+  name to the package filesystem directory across coverage.py, CI, local
+  preflight, Makefile, and test documentation. This prevents coverage.py's
+  temporary source discovery from importing and then unloading NumPy/Qiskit
+  modules, while preserving the measured package and Cobertura path mapping.
 - 2026-07-13 — Closed the NumPy-docstring suppression for the public DLA parity
   witness. Its class and callable contracts are now enforced by the global Ruff
   D gate; runtime signatures and parity calculations are unchanged.

@@ -12,6 +12,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import tomllib
+
 
 def test_ci_lint_job_gates_documentation_surface() -> None:
     """CI must fail if repository documentation-surface findings reappear."""
@@ -52,6 +54,21 @@ def test_ci_coverage_job_collects_branches_and_preserves_the_line_gate() -> None
     assert "mypy --strict tools/audit_coverage_debt.py" in workflow
     assert "--coverage-audit coverage-gap-audit.json" in workflow
     assert "--check-current" in workflow
+
+
+def test_coverage_sources_are_filesystem_paths_not_importable_packages() -> None:
+    """Coverage discovery must not import and then unload NumPy/Qiskit state."""
+    filesystem_target = "--cov=src/scpn_quantum_control"
+    importable_target = "--cov=scpn_quantum_control"
+    workflow = Path(".github/workflows/ci.yml").read_text(encoding="utf-8")
+    makefile = Path("Makefile").read_text(encoding="utf-8")
+    test_docs = Path("docs/test_infrastructure.md").read_text(encoding="utf-8")
+    pyproject = tomllib.loads(Path("pyproject.toml").read_text(encoding="utf-8"))
+
+    for surface in (workflow, makefile, test_docs):
+        assert filesystem_target in surface
+        assert importable_target not in surface
+    assert pyproject["tool"]["coverage"]["run"]["source"] == ["src/scpn_quantum_control"]
 
 
 def test_ci_lint_gates_differentiable_external_validation_manifests() -> None:

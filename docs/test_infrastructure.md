@@ -39,7 +39,7 @@ pytest tests/test_pipeline_wiring_performance.py -v -s
 pytest tests/test_rust_path_benchmarks.py -v -s
 
 # Coverage with branch telemetry
-pytest tests/ --cov=scpn_quantum_control --cov-branch --cov-report=html -m "not slow"
+pytest tests/ --cov=src/scpn_quantum_control --cov-branch --cov-report=html -m "not slow"
 ```
 
 ## Test typing ratchet

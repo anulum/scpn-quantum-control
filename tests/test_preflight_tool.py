@@ -234,6 +234,8 @@ def test_static_gates_include_differentiable_strict_mypy_ratchet() -> None:
 
 def test_preflight_coverage_gate_collects_branches_with_local_smoke_threshold() -> None:
     """Local full preflight must collect arcs without impersonating CI's line gate."""
+    assert "--cov=src/scpn_quantum_control" in _preflight._PYTEST_COV
+    assert "--cov=scpn_quantum_control" not in _preflight._PYTEST_COV
     assert "--cov-branch" in _preflight._PYTEST_COV
     assert "--cov-fail-under=70" in _preflight._PYTEST_COV
 
