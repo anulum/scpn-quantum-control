@@ -5,6 +5,12 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Fixed
+- 2026-07-13 — Closed the live Phase-QNode provider-transform coverage row.
+  Strict public-path regressions now exercise finite-shot vmap accounting,
+  scalar cotangents, malformed parameter/vector/batch inputs, unsupported
+  transforms, and invalid baseline callback payloads. Provider execution,
+  fail-closed hardware policy, public APIs, scientific arithmetic, polyglot
+  surfaces, and benchmark claims are unchanged.
 - 2026-07-13 — Completed the mypy 2.3.0 integration by aligning the isolated
   pre-commit mirror with the developer/CI lock and accepting its narrowed NumPy
   sort-kind type directly instead of retaining a now-redundant cast in the

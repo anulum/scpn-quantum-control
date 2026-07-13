@@ -10,6 +10,7 @@
 from __future__ import annotations
 
 import math
+from typing import cast
 
 import numpy as np
 import pytest
@@ -67,6 +68,7 @@ def test_provider_qnode_transform_executes_scalar_transform_family() -> None:
     assert grad.value is None
     assert grad.provider_gradient_result is not None
     assert grad.total_evaluations == 4
+    assert grad.batch_size == 0
     assert "provider callback QNode transform" in grad.claim_boundary
 
     assert value_grad.supported
@@ -135,6 +137,25 @@ def test_provider_qnode_vmap_grad_executes_rowwise_callback_gradients() -> None:
     )
     assert len(result.provider_gradient_results) == 3
     assert result.total_evaluations == 12
+    assert result.batch_size == 3
+
+
+def test_provider_qnode_vmap_grad_accumulates_finite_shots() -> None:
+    """Finite-shot vmap evidence sums shifted and baseline callback shots."""
+    batched_values = np.array([[0.2, -0.4], [0.7, 0.1]], dtype=float)
+
+    result = execute_provider_qnode_vmap_grad(
+        _sampler,
+        batched_values,
+        backend="qasm_simulator",
+        shots=256,
+    )
+
+    assert result.supported
+    assert result.total_evaluations == 8
+    assert result.total_shots == 2 * 5 * 256
+    assert result.batched_standard_error is not None
+    assert result.batched_confidence_radius is not None
 
 
 def test_provider_qnode_transforms_fail_closed_for_unsafe_routes() -> None:
@@ -172,17 +193,105 @@ def test_provider_qnode_transform_validates_directional_inputs() -> None:
     values = np.array([0.2, -0.4], dtype=float)
 
     missing_tangent = execute_provider_qnode_transform("jvp", _sampler, values)
+    wrong_width_tangent = execute_provider_qnode_transform(
+        "jvp",
+        _sampler,
+        values,
+        tangent=np.array([1.0], dtype=float),
+    )
+    non_finite_tangent = execute_provider_qnode_transform(
+        "jvp",
+        _sampler,
+        values,
+        tangent=np.array([1.0, np.nan], dtype=float),
+    )
+    missing_cotangent = execute_provider_qnode_transform("vjp", _sampler, values)
     bad_cotangent = execute_provider_qnode_transform(
         "vjp",
         _sampler,
         values,
         cotangent=np.array([1.0, 2.0], dtype=float),
     )
+    non_finite_cotangent = execute_provider_qnode_transform(
+        "vjp",
+        _sampler,
+        values,
+        cotangent=np.inf,
+    )
+    scalar_cotangent = execute_provider_qnode_transform(
+        "vjp",
+        _sampler,
+        values,
+        cotangent=3.0,
+    )
 
     assert missing_tangent.fail_closed
     assert "tangent" in missing_tangent.failure_reason
+    assert wrong_width_tangent.fail_closed
+    assert "shape (2,)" in wrong_width_tangent.failure_reason
+    assert non_finite_tangent.fail_closed
+    assert "finite" in non_finite_tangent.failure_reason
+    assert missing_cotangent.fail_closed
+    assert "cotangent must be provided" in missing_cotangent.failure_reason
     assert bad_cotangent.fail_closed
     assert "cotangent" in bad_cotangent.failure_reason
+    assert non_finite_cotangent.fail_closed
+    assert "finite" in non_finite_cotangent.failure_reason
+    assert scalar_cotangent.supported
+    assert scalar_cotangent.vjp is not None
+    np.testing.assert_allclose(scalar_cotangent.vjp, 3.0 * _gradient(values), atol=1e-12)
+
+
+def test_provider_qnode_transform_validates_public_shapes_and_labels() -> None:
+    """Public entry points reject malformed parameter owners and labels."""
+    values = np.array([0.2, -0.4], dtype=float)
+
+    unsupported = execute_provider_qnode_transform("fft", _sampler, values)
+
+    assert unsupported.fail_closed
+    assert "outside the bounded scalar callback algebra" in unsupported.failure_reason
+    with pytest.raises(ValueError, match="non-empty"):
+        execute_provider_qnode_transform(" ", _sampler, values)
+    with pytest.raises(ValueError, match="one-dimensional"):
+        execute_provider_qnode_transform("grad", _sampler, values.reshape(1, 2))
+    with pytest.raises(ValueError, match="finite"):
+        execute_provider_qnode_transform("grad", _sampler, np.array([0.2, np.nan]))
+
+    with pytest.raises(ValueError, match="two-dimensional"):
+        execute_provider_qnode_vmap_grad(_sampler, values)
+    for empty_batch in (
+        np.empty((0, 2), dtype=float),
+        np.empty((2, 0), dtype=float),
+    ):
+        with pytest.raises(ValueError, match="non-empty"):
+            execute_provider_qnode_vmap_grad(_sampler, empty_batch)
+    with pytest.raises(ValueError, match="finite"):
+        execute_provider_qnode_vmap_grad(
+            _sampler,
+            np.array([[0.2, -0.4], [0.7, np.nan]], dtype=float),
+        )
+
+
+def test_provider_qnode_transform_rejects_invalid_baseline_sample() -> None:
+    """A valid shifted sampler cannot return an untyped baseline payload."""
+    values = np.array([0.2, -0.4], dtype=float)
+
+    def invalid_baseline_sampler(
+        shifted: FloatArray,
+        shots: int | None,
+    ) -> ProviderExpectationSample:
+        if np.array_equal(shifted, values):
+            return cast(ProviderExpectationSample, object())
+        return _sampler(shifted, shots)
+
+    result = execute_provider_qnode_transform(
+        "value_and_grad",
+        invalid_baseline_sampler,
+        values,
+    )
+
+    assert result.fail_closed
+    assert result.failure_reason == "provider sampler must return ProviderExpectationSample"
 
 
 def test_provider_qnode_transform_readiness_suite_records_boundaries() -> None:
