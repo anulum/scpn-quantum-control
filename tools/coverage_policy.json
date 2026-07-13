@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "coverage_xml": "coverage.xml",
+  "line_minimum_percent": 90.0,
+  "branch": {
+    "minimum_percent": null,
+    "mode": "observe",
+    "require_data": true
+  },
+  "baseline": {
+    "branch_percent": null,
+    "covered_lines": 75731,
+    "line_percent": 92.5151,
+    "measured_lines": 81858,
+    "origin_commit": "4c3a4fee4935ca4eb8c75bb7f33b3262038faeaa",
+    "remote_ci_run": 29180328986,
+    "source": "coverage-gap-audit-3.12"
+  },
+  "branch_promotion": {
+    "minimum_successful_remote_runs": 3,
+    "rule": "Set branch.mode to enforce and branch.minimum_percent only after consecutive successful main-branch CI artefacts establish a stable branch baseline; do not lower the 90 percent line gate."
+  }
+}

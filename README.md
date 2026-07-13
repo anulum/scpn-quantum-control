@@ -130,7 +130,7 @@ claims only when the evidence exists.
 | Notebook files | 100 |
 | Example files | 37 |
 | Optional extras | 43 |
-| Python test files | 969 |
+| Python test files | 970 |
 | Public documentation pages | 269 |
 | GitHub Actions workflows | 24 |
 
@@ -531,7 +531,7 @@ information scrambles*, and *whether the system thermalises*.
 | Source package surface | Tracked Python source files under `src/scpn_quantum_control` (excluding package initialisers) — the current count lives in the generated capability inventory above. |
 | Research module families | Analysis, phase, hardware, bridge, mitigation, QEC, applications, forecasting, and benchmark families; exact current counts are listed in the package map below. |
 | Publication figures | **17** (simulation + hardware, including the Phase 1 DLA parity panels and exact-simulation crossover) |
-| Test and typing gates | CI-gated suite at a **90%** aggregate coverage gate (`--cov-fail-under=90`); production Python is strict-mypy checked, while tests use the additive cohort in `tools/test_typing_policy.json` rather than claiming the legacy test tree is already strict. See [Test Infrastructure](docs/test_infrastructure.md) and the generated capability inventory for current scope. |
+| Test, coverage, and typing gates | CI enforces **90% line coverage** through `tools/coverage_policy.json`, collects branch telemetry without inventing an unmeasured branch threshold, and strict-mypy checks production Python. Tests use the additive cohort in `tools/test_typing_policy.json` rather than claiming the legacy test tree is already strict. See [Test Infrastructure](docs/test_infrastructure.md) and the generated capability inventory for current scope. |
 | Reproducibility CLI | `scpn-bench reproduce-methods`, `scpn-bench fim-all`, and `scpn-bench all` regenerate committed methods/FIM artefacts without IBM submission |
 
 ### Exact-Simulation Wall-Time (Not broad quantum-advantage claim)

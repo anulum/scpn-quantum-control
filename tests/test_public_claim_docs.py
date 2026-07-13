@@ -11,7 +11,7 @@
 carried quality numbers that had drifted years of releases behind the enforced
 gates (679 tests / Python 3.9 / Qiskit 1.0 / a 95 or 100 percent coverage gate
 against the real 90). These guards pin every such claim to its enforcing
-source — ``pyproject.toml``, the CI workflow, and the generated capability
+source — ``pyproject.toml``, the coverage policy, and the generated capability
 snapshot — so the docs fail closed instead of rotting silently.
 """
 
@@ -25,8 +25,8 @@ _REPO_ROOT = Path(__file__).resolve().parents[1]
 _VALIDATION = _REPO_ROOT / "VALIDATION.md"
 _CAPABILITIES = _REPO_ROOT / "CAPABILITIES_AND_USECASES.md"
 _RESULTS = _REPO_ROOT / "RESULTS_SUMMARY.md"
-_CI_WORKFLOW = _REPO_ROOT / ".github" / "workflows" / "ci.yml"
 _PYPROJECT = _REPO_ROOT / "pyproject.toml"
+_COVERAGE_POLICY = _REPO_ROOT / "tools" / "coverage_policy.json"
 _SNAPSHOT = _REPO_ROOT / "docs" / "_generated" / "capability_snapshot.md"
 _CONTROL_SCOPE = _REPO_ROOT / "docs" / "control_scope.md"
 _ROADMAP = _REPO_ROOT / "ROADMAP.md"
@@ -84,16 +84,19 @@ _REMOVED_PAPER0_PATH_TOKENS = (
 
 
 def _ci_coverage_gate() -> int:
-    """Return the ``--cov-fail-under`` percentage enforced by the CI workflow.
+    """Return the line-coverage percentage enforced by the CI policy audit.
 
     Returns
     -------
     int
-        The aggregate coverage gate, parsed from ``.github/workflows/ci.yml``.
+        The line-coverage gate parsed from ``tools/coverage_policy.json``.
     """
-    match = re.search(r"--cov-fail-under=(\d+)", _CI_WORKFLOW.read_text(encoding="utf-8"))
-    assert match is not None, "ci.yml no longer declares --cov-fail-under"
-    return int(match.group(1))
+    payload = json.loads(_COVERAGE_POLICY.read_text(encoding="utf-8"))
+    value = payload.get("line_minimum_percent")
+    assert isinstance(value, (int, float)) and not isinstance(value, bool)
+    numeric = float(value)
+    assert numeric.is_integer(), "public line-coverage gate must be an integer percent"
+    return int(numeric)
 
 
 def _python_floor() -> str:
@@ -140,7 +143,7 @@ def test_claim_docs_carry_no_stale_quality_tokens() -> None:
 def test_validation_quotes_the_enforced_coverage_gate() -> None:
     """VALIDATION.md states exactly the coverage gate that CI enforces."""
     text = _VALIDATION.read_text(encoding="utf-8")
-    assert f"--cov-fail-under={_ci_coverage_gate()}" in text, (
+    assert f"{_ci_coverage_gate()}% line-coverage gate" in text, (
         f"VALIDATION.md does not quote the CI coverage gate (enforced: {_ci_coverage_gate()})"
     )
 

@@ -5,6 +5,10 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-07-13 — Enabled coverage.py branch collection while preserving the
+  existing 90% line gate through a typed Cobertura policy audit. CI now requires
+  real branch opportunity data and reports the branch rate in observation mode;
+  a branch threshold remains blocked on consecutive remote baseline artefacts.
 - 2026-07-13 — Added a machine-readable, additive strict-mypy cohort for
   repository tests. The gate records the current whole-tree debt baseline,
   orders later migrations by claim risk, validates tracked cohort membership,

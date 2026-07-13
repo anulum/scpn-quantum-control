@@ -399,7 +399,7 @@ def test_live_registry_validates_all_enforced_paths() -> None:
     policy = _audit.load_policy(repo_root / "tools" / "test_typing_policy.json")
     tracked = set(_audit.tracked_test_paths(repo_root))
 
-    assert len(policy.enforced_paths) == 13
+    assert len(policy.enforced_paths) == 14
     assert _audit.audit_policy(policy, tuple(sorted(tracked))) == ()
 
 

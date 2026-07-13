@@ -431,6 +431,11 @@ runner = "python -m pytest -x -q tests/test_koopman.py"
 
 [tool.coverage.run]
 source = ["scpn_quantum_control"]
+# Collect branch arcs in every coverage.py invocation. CI preserves the
+# historical 90% LINE gate through tools/audit_coverage_policy.py and keeps the
+# first whole-suite branch rate in observation mode until remote evidence can
+# support a separate branch threshold.
+branch = true
 omit = [
     # Julia tier requires juliacall + Julia runtime; not installed in
     # CI (would add ~4 min JIT boot per run). Dispatcher covers the

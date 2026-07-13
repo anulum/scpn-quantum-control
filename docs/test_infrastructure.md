@@ -2,11 +2,13 @@
 
 ## Overview
 
-scpn-quantum-control has a CI-gated test suite with **97%+ branch
-coverage**. The active count is intentionally left to CI summaries and
-release notes because the suite changes frequently. The test suite
-verifies correctness, pipeline wiring, Rust acceleration parity, and
-performance benchmarks.
+scpn-quantum-control has a CI-gated test suite with a 90% aggregate **line**
+coverage requirement. CI now collects branch arcs in the same run and requires
+real branch opportunity data, but the branch percentage remains observational
+until consecutive remote runs establish a stable baseline. The active test
+count is intentionally left to CI summaries and release notes because the suite
+changes frequently. The test suite verifies correctness, pipeline wiring, Rust
+acceleration parity, and performance benchmarks.
 
 ```
 tests/
@@ -36,8 +38,8 @@ pytest tests/test_pipeline_wiring_performance.py -v -s
 # Rust benchmarks
 pytest tests/test_rust_path_benchmarks.py -v -s
 
-# Coverage
-pytest tests/ --cov=scpn_quantum_control --cov-report=html -m "not slow"
+# Coverage with branch telemetry
+pytest tests/ --cov=scpn_quantum_control --cov-branch --cov-report=html -m "not slow"
 ```
 
 ## Test typing ratchet
@@ -49,11 +51,11 @@ reported 6,301 errors in 388 of 968 tracked Python test files; 5,076 were
 mechanical annotations with intentional invalid-input tests and hide ownership.
 
 `tools/test_typing_policy.json` is the machine-readable policy. Its initial
-13-file `repository_policy` cohort covers licence, release, generated-surface,
-commit, secret, TODO, version, branch, module-size, CI/pre-push, and local
-preflight gate tests. `tools/audit_test_typing_policy.py` validates that every
-enforced path is tracked and runs strict mypy over the exact cohort; CI and the
-no-test local preflight execute the same command.
+14-file `repository_policy` cohort covers coverage, licence, release,
+generated-surface, commit, secret, TODO, version, branch, module-size,
+CI/pre-push, and local preflight gate tests. `tools/audit_test_typing_policy.py`
+validates that every enforced path is tracked and runs strict mypy over the
+exact cohort; CI and the no-test local preflight execute the same command.
 
 Migration order is explicit: claim and release contracts first, then hardware
 and provider boundaries, then scientific runtime contracts; legacy fixture
@@ -258,9 +260,12 @@ CI skips slow tests: `pytest -m "not slow"`.
 ```
 
 Test matrix: Python 3.11, 3.12, 3.13.
-Coverage target: 90% (`--cov-fail-under=90`) on the Python 3.12
-coverage lane. Coverage recovery must stay module-specific; coverage-bucket
-tests remain forbidden.
+Coverage target: 90% line coverage on the Python 3.12 lane, enforced by
+`tools/audit_coverage_policy.py` from branch-enabled `coverage.xml`. Branch data
+is mandatory but observational until the policy records an evidence-backed
+branch threshold. The pre-branch remote baseline is 92.5151% line coverage at
+origin `4c3a4fee` (CI run `29180328986`). Coverage recovery must stay
+module-specific; coverage-bucket tests remain forbidden.
 
 ### Docker image — reproduction/CI only
 

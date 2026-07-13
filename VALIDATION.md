@@ -126,12 +126,16 @@ All 20 experiment circuits validated on AerSimulator (no IBM credentials needed)
 
 ## Coverage
 
-CI enforces `--cov-fail-under=90` on the aggregate suite (the `slow`,
-`hardware`, `internal_corpus`, and `performance` markers are deselected in the
-coverage lane; hardware runner/experiment paths require IBM credentials). New
-modules ship with 100% focused coverage; the remaining below-100 files are
-tracked on the internal execution queue.
+CI collects both line and branch coverage on the aggregate suite. The tracked
+policy audit preserves a **90% line-coverage gate** and requires non-empty
+branch data; branch coverage is reported in observation mode until consecutive
+remote main-branch runs establish a baseline for a separate threshold. The
+`slow`, `hardware`, `internal_corpus`, and `performance` markers are deselected
+in the coverage lane because hardware runner/experiment paths require explicit
+resources or credentials. New modules ship with focused branch coverage; the
+remaining coverage debt is tracked on the internal execution queue.
 
 ```bash
-pytest tests/ --cov=scpn_quantum_control --cov-report=term-missing
+pytest tests/ --cov=scpn_quantum_control --cov-branch --cov-report=xml --cov-fail-under=0
+python tools/audit_coverage_policy.py --coverage-xml coverage.xml
 ```

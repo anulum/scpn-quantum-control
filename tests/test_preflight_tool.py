@@ -64,6 +64,18 @@ def test_static_gates_include_test_typing_policy_and_tool_typing() -> None:
     assert strict_cmd[-1] == "tools/audit_test_typing_policy.py"
 
 
+def test_static_gates_include_coverage_policy_and_tool_typing() -> None:
+    """Preflight must validate the branch policy and keep its audit strict."""
+    gate_map = {name: cmd for name, cmd in _preflight.STATIC_GATES}
+
+    policy_cmd = gate_map["coverage-policy"]
+    assert "tools/audit_coverage_policy.py" in policy_cmd
+    assert "--validate-policy" in policy_cmd
+    strict_cmd = gate_map["mypy-strict-coverage-policy"]
+    assert "--strict" in strict_cmd
+    assert strict_cmd[-1] == "tools/audit_coverage_policy.py"
+
+
 def test_static_gates_include_differentiable_docstring_ratchet() -> None:
     """Differentiable docstring-clean modules must stay under Ruff D."""
     gate_map = {name: cmd for name, cmd in _preflight.STATIC_GATES}
@@ -182,8 +194,9 @@ def test_static_gates_include_differentiable_strict_mypy_ratchet() -> None:
     assert "src/scpn_quantum_control/phase/floquet_kuramoto.py" in strict_cmd
 
 
-def test_preflight_coverage_gate_matches_temporary_ci_threshold() -> None:
-    """Preflight coverage threshold must mirror the temporary CI threshold."""
+def test_preflight_coverage_gate_collects_branches_with_local_smoke_threshold() -> None:
+    """Local full preflight must collect arcs without impersonating CI's line gate."""
+    assert "--cov-branch" in _preflight._PYTEST_COV
     assert "--cov-fail-under=70" in _preflight._PYTEST_COV
 
 

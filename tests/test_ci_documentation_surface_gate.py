@@ -35,6 +35,20 @@ def test_ci_lint_job_gates_additive_test_typing_policy() -> None:
     assert "mypy --strict tools/audit_test_typing_policy.py" in workflow
 
 
+def test_ci_coverage_job_collects_branches_and_preserves_the_line_gate() -> None:
+    """CI must measure branches while enforcing lines through the policy audit."""
+    workflow = Path(".github/workflows/ci.yml").read_text(encoding="utf-8")
+
+    assert "--cov-branch" in workflow
+    assert "--cov-fail-under=0" in workflow
+    assert "python tools/audit_coverage_policy.py --coverage-xml coverage.xml" in workflow
+    assert "python tools/audit_coverage_policy.py --validate-policy" in workflow
+    assert "mypy --strict tools/audit_coverage_policy.py" in workflow
+    assert "Upload coverage policy evidence" in workflow
+    assert "coverage.xml" in workflow
+    assert "coverage-gap-audit.json" in workflow
+
+
 def test_ci_gates_differentiable_strict_mypy_ratchet() -> None:
     """CI must enforce strict mypy on promoted differentiable modules."""
     workflow = Path(".github/workflows/ci.yml").read_text(encoding="utf-8")
