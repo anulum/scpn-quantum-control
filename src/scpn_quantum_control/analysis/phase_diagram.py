@@ -125,7 +125,7 @@ def effective_temperature(
     t1: float = np.inf,
     t2: float = np.inf,
 ) -> float:
-    """Combined effective temperature: frequency disorder + decoherence.
+    """Combine frequency disorder and decoherence into an effective temperature.
 
     T_eff = σ_ω (classical noise) + T_decoherence (quantum noise).
     """
