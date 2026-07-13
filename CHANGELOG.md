@@ -5,6 +5,12 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Fixed
+- 2026-07-13 — Closed the live P0 claim-bearing branch-coverage debt for the
+  Phase-QNode affinity benchmark owner. Strictly typed regressions now cover
+  invalid runner configuration, every isolation-policy failure, admitted
+  self-hosted execution, malformed artifact encodings/types/metadata, and
+  unavailable or malformed host probes. Production benchmark logic, timing
+  loops, evidence labels, public APIs, and benchmark claims are unchanged.
 - 2026-07-13 — Scoped the neural-operator content-determinism regression test
   to reproducible fields, excluding live host provenance such as load averages
   exactly as required by the existing digest and claim boundary.
