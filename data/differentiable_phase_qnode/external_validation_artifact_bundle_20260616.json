@@ -156,13 +156,13 @@
     {
       "path": "data/differentiable_phase_qnode/external_validation_environment_lock_20260616.json",
       "role": "Exact environment-lock manifest",
-      "sha256": "eb9c5f1caa1d7cee4d4cc3812cf6bfd255521b0f83b56efa74bb7c282d336ea7",
+      "sha256": "694f25df232762c8eabada08d44bac10b1a222122e6f23ab2e501eba2ef9adf3",
       "size_bytes": 3226
     },
     {
       "path": "data/differentiable_phase_qnode/external_validation_environment_lock_20260616.md",
       "role": "Environment-lock reviewer summary",
-      "sha256": "02ae10d05d64973feb290dba8c4eb4633c93555e74862ceadded122ec8b6cd07",
+      "sha256": "ecb1c71c7301fa65e1849a909fa84846838c79d887c427900dd3772d9c897087",
       "size_bytes": 2375
     },
     {

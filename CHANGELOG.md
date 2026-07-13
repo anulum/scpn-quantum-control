@@ -14,6 +14,10 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   fallback and the complete manifest-scoped Rustfmt command.
 
 ### Added
+- 2026-07-13 — Closed the D205 suppression for the hardware package facade.
+  Its backend and execution-contract summary now follows the NumPy-style
+  summary/description boundary enforced by global Ruff D; exports and
+  executable source are unchanged.
 - 2026-07-13 — Closed the D400 suppression for the neural-operator advantage
   study. Its existing module-level comparison contract now has a punctuated
   imperative summary enforced by the global Ruff D gate; executable source and
