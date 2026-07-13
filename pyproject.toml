@@ -203,8 +203,6 @@ ignore = [
 "figures/**" = ["D"]
 "data/**" = ["D"]
 "*.py" = ["D"]
-"src/scpn_quantum_control/tcbo/quantum_observer.py" = ["D401"]
-
 [tool.ruff.lint.isort]
 known-first-party = ["oscillatools", "scpn_quantum_control"]
 

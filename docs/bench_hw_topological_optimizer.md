@@ -53,15 +53,16 @@ Total step time is dominated by IBM Quantum queue latency, not computation.
 
 ## TCBO Observables (Related)
 
-The TCBO observer (`compute_tcbo_observables`) provides the observables that
-the optimizer targets:
+The TCBO observer (`compute_tcbo_observables`) is a separate related diagnostic;
+the optimizer does not invoke it:
 
 | Operation | System | Time | Output |
 |-----------|--------|------|--------|
 | `compute_tcbo_observables(K, omega)` | 4 qubits | 4.6 ms | $p_{h1}$, TEE, string order |
 
-$p_{h1} \in [0, 1]$, TEE finite, $|\text{string\_order}| \leq 1$,
-$\beta_0 + \beta_1 \approx 1$.
+$p_{h1} \in [0, 1]$, the seven-term entropy inclusion-exclusion proxy is finite,
+and $|\text{string\_order}| \leq 1$. The Betti-labelled proxies are independently
+defined and need not sum to one.
 
 ## Physical Invariants (Verified by Tests)
 

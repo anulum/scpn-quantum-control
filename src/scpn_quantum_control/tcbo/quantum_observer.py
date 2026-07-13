@@ -5,27 +5,19 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Quantum Observer
-"""Quantum TCBO: topological coherence via persistent Dirac operator.
+"""Compute small-system TCBO proxy diagnostics from exact ground states.
 
-The classical TCBO computes persistent homology (Betti numbers β_0, β_1)
-from the oscillator phase configuration. The quantum TCBO measures
-topological content directly from the quantum state.
+The observer diagonalises the XY Kuramoto Hamiltonian and aggregates four
+diagnostics: gauge-module vortex density as ``p_h1``; a seven-term,
+Kitaev-Preskill-style entropy inclusion-exclusion value in bits; a Pauli-string
+expectation; and the fraction of qubits whose absolute Z expectation exceeds
+0.5. The two Betti-labelled fields are independent bounded proxies.
 
-Quantum topological observables:
-    1. p_h1: fraction of H1 cycles detected (vortex count / plaquettes)
-       — Empirical/open threshold target p_h1 = 0.72
-
-    2. Topological entanglement entropy (TEE):
-       S_topo = S_A + S_B + S_C - S_AB - S_BC - S_AC + S_ABC
-       For topologically ordered states, S_topo = -ln(D) where D
-       is the total quantum dimension (Kitaev-Preskill, Levin-Wen 2006).
-
-    3. String order parameter:
-       O_string = <Z_i × Π_{k=i+1}^{j-1} X_k × Z_j>
-       Non-zero in symmetry-protected topological phases.
-
-For the XY model at the BKT transition, the TEE distinguishes
-trivial (TEE=0) from topological (TEE≠0) phases.
+This module does not construct a persistent Dirac operator, compute persistent
+homology, certify topological order, or execute on hardware. The related
+coupling-weighted persistent-homology reconstruction lives in
+``analysis.tcbo_weighted_complex``. The target ``p_h1 = 0.72`` remains an open
+empirical/theoretical question rather than a result of this observer.
 """
 
 from __future__ import annotations
@@ -43,20 +35,37 @@ from ..hardware.classical import classical_exact_diag
 
 @dataclass
 class TCBOResult:
-    """Quantum TCBO measurement result."""
+    """Collect small-system TCBO proxy diagnostics.
+
+    Attributes
+    ----------
+    p_h1 : float
+        Gauge vortex density, reused as the Betti-1-labelled proxy.
+    tee : float
+        Seven-term entropy inclusion-exclusion proxy in bits.
+    string_order : float
+        Real expectation of the endpoint-Z/interior-X Pauli string.
+    n_qubits : int
+        Number of oscillators represented by the exact ground state.
+    betti_0_proxy : float
+        Fraction of qubits with absolute Z expectation above 0.5.
+    betti_1_proxy : float
+        Alias of ``p_h1``; not a computed persistent-homology Betti number.
+
+    """
 
     p_h1: float  # vortex density (persistent H1 proxy)
-    tee: float  # topological entanglement entropy
-    string_order: float  # string order parameter
+    tee: float  # seven-term entropy inclusion-exclusion proxy [bits]
+    string_order: float  # endpoint-Z/interior-X Pauli-string expectation
     n_qubits: int
-    betti_0_proxy: float  # connected components proxy
-    betti_1_proxy: float  # loop proxy (= p_h1)
+    betti_0_proxy: float  # thresholded polarization fraction
+    betti_1_proxy: float  # vortex-density alias (= p_h1)
 
 
 def _string_order_parameter(
     psi: NDArray[np.complex128], n: int, i: int = 0, j: int | None = None
 ) -> float:
-    """String order parameter: <Z_i × Π X_k × Z_j> for k in (i,j)."""
+    """Return the endpoint-Z/interior-X string expectation for ``(i, j)``."""
     if j is None:
         j = n - 1
     if j <= i + 1:
@@ -73,12 +82,15 @@ def _string_order_parameter(
 
 
 def _topological_entanglement_entropy(psi: NDArray[np.complex128], n: int) -> float:
-    """Topological entanglement entropy via Kitaev-Preskill construction.
+    """Return the seven-term entropy inclusion-exclusion proxy in bits.
 
-    For 3 contiguous regions A, B, C:
-        S_topo = S_A + S_B + S_C - S_AB - S_BC - S_AC + S_ABC
+    For three contiguous qubit-index regions A, B, and C, the value is
+    ``S_A + S_B + S_C - S_AB - S_BC - S_AC + S_ABC``.
 
-    Uses n//3 partition into 3 equal-ish regions.
+    This small-system partition is inspired by the Kitaev-Preskill
+    inclusion-exclusion form. It does not establish the spatial geometry,
+    scaling limit, or state family needed to certify topological entanglement
+    entropy or topological order.
     """
     if n < 4:
         return 0.0
@@ -107,10 +119,7 @@ def _topological_entanglement_entropy(psi: NDArray[np.complex128], n: int) -> fl
 
 
 def _betti_0_proxy(psi: NDArray[np.complex128], n: int) -> float:
-    """β_0 proxy: fraction of qubits with |<Z>| > 0.5 (non-trivially polarised).
-
-    High β_0 = many connected components = desynchronised.
-    """
+    """Return the fraction of qubits whose absolute Z expectation exceeds 0.5."""
     sv = Statevector(np.ascontiguousarray(psi))
     count = 0
     for i in range(n):
@@ -126,7 +135,30 @@ def compute_tcbo_observables(
     K: NDArray[np.float64],
     omega: NDArray[np.float64],
 ) -> TCBOResult:
-    """Compute all quantum TCBO observables from ground state."""
+    """Compute TCBO proxy diagnostics from a small-system exact ground state.
+
+    Parameters
+    ----------
+    K : NDArray[np.float64]
+        Square oscillator-coupling matrix passed to the exact-diagonalisation
+        and gauge-vortex owners.
+    omega : NDArray[np.float64]
+        Oscillator-frequency vector with one entry per row of ``K``.
+
+    Returns
+    -------
+    TCBOResult
+        Vortex-density, entropy inclusion-exclusion, Pauli-string, and
+        polarization-fraction diagnostics.
+
+    Notes
+    -----
+    The state-based fields use ``classical_exact_diag``. The ``p_h1`` field
+    delegates independently to ``measure_vortex_density``, whose gauge-module
+    contract owns its own ground-state solve. Consequently this aggregator is a
+    small-system library utility, not a large-system or hardware pipeline.
+
+    """
     n = K.shape[0]
     exact = classical_exact_diag(n, K=K, omega=omega)
     psi = exact["ground_state"]
@@ -135,7 +167,7 @@ def compute_tcbo_observables(
     vortex = measure_vortex_density(K, omega)
     p_h1 = vortex.vortex_density
 
-    # TEE
+    # Seven-term entropy inclusion-exclusion proxy
     tee = _topological_entanglement_entropy(psi, n)
 
     # String order

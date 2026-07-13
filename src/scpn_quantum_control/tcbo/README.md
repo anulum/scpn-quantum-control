@@ -9,43 +9,49 @@
 
 ## What it is
 
-The quantum counterpart of the SCPN framework's **Topological Coherence
-Bridge Observer**. The classical TCBO reads persistent-homology Betti
-numbers (`β₀`, `β₁`) off the oscillator phase configuration; this package
-measures the topological content directly from the quantum state.
+The small-system proxy surface for the SCPN framework's **Topological Coherence
+Bridge Observer**. It exact-diagonalises the XY Kuramoto Hamiltonian and
+aggregates state and gauge diagnostics. It does not compute persistent homology
+or measure topological content directly. The separate coupling-weighted
+persistent-homology reconstruction lives in
+`analysis/tcbo_weighted_complex.py`.
 
 Public surface (`compute_tcbo_observables`, `TCBOResult`):
 
-- `p_h1` — vortex density as a persistent-`H₁` proxy (empirical/open
+- `p_h1` — gauge vortex density as an `H₁`-labelled proxy (empirical/open
   threshold target `p_h1 = 0.72`);
-- `tee` — topological entanglement entropy
+- `tee` — a seven-term entropy inclusion-exclusion proxy in bits,
   `S_topo = S_A + S_B + S_C − S_AB − S_BC − S_AC + S_ABC`
-  (Kitaev–Preskill / Levin–Wen 2006), which distinguishes trivial
-  (`TEE = 0`) from topological (`TEE ≠ 0`) phases at the XY/BKT
-  transition;
-- `string_order` — the SPT string order parameter
+  over three contiguous qubit-index regions; this is inspired by the
+  Kitaev–Preskill construction but does not certify topological order;
+- `string_order` — the Pauli-string expectation
   `O_string = <Z_i · Π_k X_k · Z_j>`;
-- `β₀`/`β₁` proxies.
+- `β₀`/`β₁`-labelled proxies, which are independently defined and need not sum
+  to one.
 
 ## Which paper
 
-SCPN framework, TCBO layer (topological coherence bridge). TEE definition
-after Kitaev–Preskill and Levin–Wen (2006); vortex density via the gauge
-`vortex_detector`.
+SCPN framework, TCBO layer (topological coherence bridge). The entropy
+inclusion-exclusion form is adapted from Kitaev–Preskill and Levin–Wen (2006);
+vortex density comes from the gauge `vortex_detector`.
 
-## Wiring status — ACTIVE
+## Wiring status — CALLABLE LIBRARY SURFACE
 
-- `analysis/qfi_geometric_crosscheck.py` and the `analysis` package import
-  the observer; `gauge/vortex_detector.measure_vortex_density` feeds the
-  `p_h1` proxy.
-- Cross-referenced by `pgbo/` and `l16/`; exercised by
-  `tests/test_tcbo_observer_edge_cases.py`,
-  `tests/test_tcbo_weighted_complex_validation.py`, and
+- `tcbo/__init__.py` exports the two public symbols, and the project root exports
+  the `tcbo` package module.
+- `compute_tcbo_observables` depends on
+  `hardware.classical.classical_exact_diag`,
+  `gauge.vortex_detector.measure_vortex_density`, and the entropy/partial-trace
+  helpers in `analysis.quantum_phi`.
+- No production control or analysis pipeline imports this observer. Callers opt
+  into it explicitly; the weighted-complex analysis is a separate surface.
+- The observer is exercised by `tests/test_tcbo_observer.py`,
+  `tests/test_tcbo_observer_edge_cases.py`, and
   `tests/test_gauge_topology_contracts.py`.
 
 ## Claim boundary
 
-Small-`n` exact-diagonalisation state; Betti numbers are **proxies**
-(vortex density, connected-components estimate), not computed persistent
-homology, and `p_h1 = 0.72` is an open empirical target, not a proven
-bound. No hardware execution.
+Small-`n` exact-diagonalisation state; Betti-labelled values and the entropy
+inclusion-exclusion value are **proxies**, not computed persistent-homology or
+certified topological-order quantities. `p_h1 = 0.72` is an open empirical
+target, not a proven bound. No hardware execution.

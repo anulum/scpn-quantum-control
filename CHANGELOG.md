@@ -14,6 +14,16 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   fallback and the complete manifest-scoped Rustfmt command.
 
 ### Added
+- 2026-07-13 — Closed the final Ruff D401 shrink-list entry in the bounded TCBO
+  observer and corrected its public claim boundary. Contracts now identify
+  vortex density, seven-term entropy inclusion-exclusion, Pauli-string, and
+  polarization-fraction values as independent small-system proxies; they no
+  longer claim a persistent Dirac operator, computed Betti numbers, certified
+  topological order, active optimizer/analysis-pipeline wiring, or a false
+  Betti-proxy complement identity. The owning test is strict-mypy clean and a
+  strong-coupling regression proves the proxies need not sum to one. Executable
+  observer logic, the two-symbol facade, provider wiring, polyglot kernels, and
+  benchmark measurements are unchanged.
 - 2026-07-13 — Closed the D401 suppression and adjacent module-docstring D413
   debt for the 20 T NV-centre magnetometry model. The sensing facade now
   re-exports all 11 public leaf symbols, including the previously omitted

@@ -9,6 +9,10 @@
 
 from __future__ import annotations
 
+import time
+
+import numpy as np
+
 from scpn_quantum_control.bridge.knm_hamiltonian import OMEGA_N_16, build_knm_paper27
 from scpn_quantum_control.tcbo.quantum_observer import (
     TCBOResult,
@@ -17,50 +21,50 @@ from scpn_quantum_control.tcbo.quantum_observer import (
 
 
 class TestComputeTCBOObservables:
-    def test_returns_result(self):
+    def test_returns_result(self) -> None:
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         result = compute_tcbo_observables(K, omega)
         assert isinstance(result, TCBOResult)
 
-    def test_p_h1_bounded(self):
+    def test_p_h1_bounded(self) -> None:
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         result = compute_tcbo_observables(K, omega)
         assert 0 <= result.p_h1 <= 1.0
 
-    def test_n_qubits(self):
+    def test_n_qubits(self) -> None:
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         result = compute_tcbo_observables(K, omega)
         assert result.n_qubits == 4
 
-    def test_tee_type(self):
+    def test_tee_type(self) -> None:
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         result = compute_tcbo_observables(K, omega)
         assert isinstance(result.tee, float)
 
-    def test_string_order_bounded(self):
+    def test_string_order_bounded(self) -> None:
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         result = compute_tcbo_observables(K, omega)
         assert abs(result.string_order) <= 1.0 + 1e-10
 
-    def test_betti_proxies(self):
+    def test_betti_proxies(self) -> None:
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         result = compute_tcbo_observables(K, omega)
         assert 0 <= result.betti_0_proxy <= 1.0
         assert result.betti_1_proxy == result.p_h1
 
-    def test_6_oscillators(self):
+    def test_6_oscillators(self) -> None:
         K = build_knm_paper27(L=6)
         omega = OMEGA_N_16[:6]
         result = compute_tcbo_observables(K, omega)
         assert result.n_qubits == 6
 
-    def test_scpn_tcbo_measurement(self):
+    def test_scpn_tcbo_measurement(self) -> None:
         """Record TCBO observables at SCPN defaults."""
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
@@ -79,30 +83,27 @@ class TestComputeTCBOObservables:
 
 
 class TestTCBOPhysics:
-    def test_tee_finite(self):
-        """Topological entanglement entropy must be finite."""
+    def test_tee_finite(self) -> None:
+        """The entropy inclusion-exclusion proxy must be finite."""
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
         result = compute_tcbo_observables(K, omega)
-        import numpy as np
-
         assert np.isfinite(result.tee)
 
-    def test_different_coupling_different_observables(self):
-        """Different K_base → different topological observables."""
+    def test_different_coupling_changes_string_order(self) -> None:
+        """Strong coupling changes the Pauli-string diagnostic."""
         omega = OMEGA_N_16[:4]
         r1 = compute_tcbo_observables(build_knm_paper27(L=4, K_base=0.1), omega)
         r2 = compute_tcbo_observables(build_knm_paper27(L=4, K_base=2.0), omega)
-        assert r1.p_h1 != r2.p_h1 or r1.tee != r2.tee
+        assert not np.isclose(r1.string_order, r2.string_order)
 
-    def test_betti_0_complement_of_p_h1(self):
-        """β_0 proxy ≈ 1 - p_h1 (connected components vs loops)."""
-        K = build_knm_paper27(L=4)
+    def test_betti_proxies_are_not_artificially_complemented(self) -> None:
+        """The independently defined Betti-labelled proxies need not sum to one."""
+        K = build_knm_paper27(L=4, K_base=2.0)
         omega = OMEGA_N_16[:4]
         result = compute_tcbo_observables(K, omega)
-        import numpy as np
-
-        np.testing.assert_allclose(result.betti_0_proxy + result.betti_1_proxy, 1.0, atol=0.01)
+        assert result.betti_1_proxy == result.p_h1
+        assert not np.isclose(result.betti_0_proxy + result.betti_1_proxy, 1.0)
 
 
 # ---------------------------------------------------------------------------
@@ -111,10 +112,8 @@ class TestTCBOPhysics:
 
 
 class TestTCBOPipeline:
-    def test_pipeline_knm_to_tcbo(self):
+    def test_pipeline_knm_to_tcbo(self) -> None:
         """Full pipeline: build_knm → TCBO → all observables wired."""
-        import time
-
         K = build_knm_paper27(L=4)
         omega = OMEGA_N_16[:4]
 

@@ -1121,8 +1121,11 @@ Quantum Fisher metric: symmetric, PSD (det >= 0). Berry curvature: antisymmetric
 |-----------|--------|------|--------|
 | `compute_tcbo_observables(K, omega)` | 4 qubits | 4.6 ms | p_h1, TEE, string_order |
 
-p_h1 ∈ [0, 1]. TEE finite. |string_order| <= 1. beta_0 + beta_1 ≈ 1
-(connected components + loops = 1). Different coupling → different observables.
+`p_h1` and the Betti-0-labelled polarization fraction are independently bounded
+proxies; they are not required to sum to one. The seven-term entropy
+inclusion-exclusion value is finite, and `|string_order| <= 1`. These are
+small-system exact-diagonalisation diagnostics, not persistent-homology or
+topological-order certification.
 
 ---
 
