@@ -14,22 +14,37 @@ from typing import Any
 
 
 class DLAParityWitness:
-    """
-    Computes parity asymmetry between odd (feedback) and even (projection)
-    sub-blocks of the Dynamical Lie Algebra (DLA) from measurement counts.
+    """Compute DLA parity asymmetry from measurement counts.
+
+    Odd-Hamming-weight bitstrings represent the feedback sub-block and
+    even-Hamming-weight bitstrings represent the projection sub-block.
+
+    Parameters
+    ----------
+    split_odd_even : bool, default=True
+        Compatibility flag retained on the witness instance. The current
+        observable always reports the odd/even parity split.
     """
 
     def __init__(self, split_odd_even: bool = True) -> None:
         self.split_odd_even = split_odd_even
 
     def __call__(self, counts: Mapping[str, int] | None = None, **kwargs: Any) -> dict[str, float]:
-        """
-        Args:
-            counts: Qiskit measurement counts (bitstrings -> shots)
+        """Evaluate the parity witness.
+
+        Parameters
+        ----------
+        counts : Mapping[str, int] or None, optional
+            Measurement counts mapping bitstrings to shot counts. Missing or
+            empty counts return the balanced negative control.
+        **kwargs : Any
+            Ignored compatibility keywords accepted by the observable API.
 
         Returns
         -------
-            Dictionary with dla_asymmetry and supporting metrics
+        dict[str, float]
+            DLA asymmetry percentage, odd/even robustness fractions, and the
+            total shot count when at least one shot is present.
         """
         if counts is None or len(counts) == 0:
             return {"dla_asymmetry": 0.0, "odd_robustness": 0.5, "even_robustness": 0.5}

@@ -5,6 +5,9 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Added
+- 2026-07-13 — Closed the NumPy-docstring suppression for the public DLA parity
+  witness. Its class and callable contracts are now enforced by the global Ruff
+  D gate; runtime signatures and parity calculations are unchanged.
 - 2026-07-13 — Added a typed CI/preflight gate for the differentiable
   external-validation environment lock and dependent artefact bundle, refreshed
   their stale file metadata in dependency order, and gave the reproduction-only
