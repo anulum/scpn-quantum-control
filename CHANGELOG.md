@@ -14,6 +14,12 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   fallback and the complete manifest-scoped Rustfmt command.
 
 ### Added
+- 2026-07-13 — Closed the D205 suppression and adjacent D413 debt for the
+  single-ancilla Lindblad circuit. The module, circuit builder, and resource
+  estimator now expose complete NumPy-style parameter, result, validation, and
+  failure contracts; the estimator contract also removes its stale reference
+  to a nonexistent `estimated_depth` key. Executable source, public APIs,
+  open-system physics, and benchmarks are unchanged.
 - 2026-07-13 — Closed the D401 suppression and adjacent D413 debt for layered
   ADAPT-VQE. The symmetric-reference helper and solver now expose complete
   NumPy-style input, result, convergence, restart, memory-budget, and failure

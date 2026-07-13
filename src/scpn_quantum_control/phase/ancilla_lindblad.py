@@ -5,8 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Single-Ancilla Lindblad Circuit
-"""Simulate open-system Kuramoto-XY dynamics on quantum hardware using
-a single ancilla qubit.
+"""Simulate open-system Kuramoto-XY dynamics with one ancilla qubit.
 
 Instead of representing the full density matrix (exponentially expensive),
 this method uses repeated interactions with a single environment qubit
@@ -99,6 +98,13 @@ def build_ancilla_lindblad_circuit(
     -------
     QuantumCircuit
         Circuit with n system qubits + 1 ancilla qubit.
+
+    Raises
+    ------
+    ValueError
+        If the evolution time or damping rate is non-finite or negative, or if
+        either step count is non-positive.
+
     """
     _validate_parameters(t, trotter_reps, gamma, n_dissipation_steps)
     n = K.shape[0]
@@ -152,12 +158,36 @@ def ancilla_circuit_stats(
     gamma: float = 0.05,
     n_dissipation_steps: int = 3,
 ) -> AncillaCircuitStats:
-    """Return circuit statistics without building full circuit.
+    """Estimate circuit resources without building the full circuit.
+
+    Parameters
+    ----------
+    K : array (n, n)
+        Coupling matrix whose non-zero upper-triangle entries define exchange
+        interactions.
+    omega : array (n,)
+        Natural-frequency vector retained for parity with the circuit builder.
+    t : float
+        Total evolution time. It is validated but does not change gate counts.
+    trotter_reps : int
+        Trotter steps per dissipation round.
+    gamma : float
+        Amplitude-damping rate recorded in the returned estimate.
+    n_dissipation_steps : int
+        Number of dissipation rounds and ancilla-reset cycles.
 
     Returns
     -------
-    dict with: n_qubits, n_system, n_ancilla, estimated_depth, n_cx_gates,
-               n_resets, total_gates
+    AncillaCircuitStats
+        System/ancilla qubit counts, controlled-X and reset counts, total gate
+        estimate, dissipation-step count, and damping rate.
+
+    Raises
+    ------
+    ValueError
+        If the evolution time or damping rate is non-finite or negative, or if
+        either step count is non-positive.
+
     """
     _validate_parameters(t, trotter_reps, gamma, n_dissipation_steps)
     n = K.shape[0]
