@@ -20,21 +20,57 @@ from numpy.typing import NDArray
 
 
 class SurfaceCode:
-    """Toric surface code with distance d.
+    """Represent a periodic square-lattice toric surface code.
 
-    Data qubits: N = 2*d^2 (edges of d x d torus).
-    Vertex (X) stabilizers: d^2.
-    Plaquette (Z) stabilizers: d^2.
-    Edge indexing: h(r,c) = 2*(r*d+c), v(r,c) = 2*(r*d+c)+1.
+    Parameters
+    ----------
+    distance : int, default=3
+        Linear lattice dimension ``d``. The code allocates ``2*d**2`` data
+        qubits and ``d**2`` checks of each stabilizer type.
+
+    Attributes
+    ----------
+    d : int
+        Linear lattice dimension supplied by the caller.
+    num_data : int
+        Number of edge-local data qubits, ``2*d**2``.
+    Hx : numpy.ndarray
+        Vertex-check matrix with shape ``(d**2, 2*d**2)`` and ``int8`` dtype.
+    Hz : numpy.ndarray
+        Plaquette-check matrix with the same shape and dtype as ``Hx``.
+
+    Notes
+    -----
+    Horizontal and vertical edges use indices ``h(r, c) = 2*(r*d+c)`` and
+    ``v(r, c) = 2*(r*d+c)+1``. This low-level prototype does not validate the
+    distance; callers are responsible for supplying a positive dimension that
+    represents the intended toric code.
+
     """
 
     def __init__(self, distance: int = 3):
-        """Build toric code check matrices for given code distance."""
+        """Build the toric-code parity-check matrices.
+
+        Parameters
+        ----------
+        distance : int, default=3
+            Linear dimension used for both periodic lattice axes.
+
+        """
         self.d = distance
         self.num_data = 2 * distance**2
         self.Hx, self.Hz = self._build_checks()
 
     def _build_checks(self) -> tuple[NDArray[np.int8], NDArray[np.int8]]:
+        """Construct the vertex and plaquette parity-check matrices.
+
+        Returns
+        -------
+        tuple[numpy.ndarray, numpy.ndarray]
+            ``(Hx, Hz)`` binary ``int8`` matrices, each with shape
+            ``(d**2, 2*d**2)``.
+
+        """
         d = self.d
         N = self.num_data
         Hx: NDArray[np.int8] = np.zeros((d * d, N), dtype=np.int8)
@@ -65,21 +101,65 @@ class SurfaceCode:
 
 
 class MWPMDecoder:
-    """Minimum Weight Perfect Matching decoder for toric codes.
+    """Decode toric syndromes by minimum-weight perfect matching.
 
-    Manhattan distance on toric lattice, optionally weighted by Knm graph distance.
+    Parameters
+    ----------
+    distance : int
+        Linear dimension ``d`` of the periodic stabilizer lattice.
+    knm_weights : numpy.ndarray or None, optional
+        Optional stabilizer-indexed coupling matrix used to rescale pair costs.
+
+    Notes
+    -----
+    NetworkX solves a maximum-cardinality matching with negative edge weights,
+    which is equivalent here to minimizing the integer toric pair costs. The
+    optional K_nm matrix changes defect pairing only; corrections still follow
+    deterministic Manhattan paths on the primal or dual lattice.
+
     """
 
     def __init__(self, distance: int, knm_weights: NDArray[np.float64] | None = None):
-        """Optional knm_weights rescales Manhattan distance by 1/(1+K[u,v])."""
+        """Configure matching for a toric stabilizer lattice.
+
+        Parameters
+        ----------
+        distance : int
+            Linear stabilizer-lattice dimension.
+        knm_weights : numpy.ndarray or None, optional
+            Matrix indexed by stabilizer identifiers. For in-range pairs, the
+            decoder floors ``base_distance / (1 + K[u, v])`` to an integer and
+            clamps the result to at least one. Matrix shape and values are not
+            validated.
+
+        """
         self.d = distance
         self.knm_weights = knm_weights
 
     def decode(self, syndrome: NDArray[np.int8], dual: bool = False) -> NDArray[np.int8]:
-        """Decode syndrome -> correction vector of length 2*d^2.
+        """Construct a binary correction for a toric syndrome.
 
-        dual=False for vertex syndromes (X error correction),
-        dual=True for plaquette syndromes (Z error correction).
+        Parameters
+        ----------
+        syndrome : numpy.ndarray
+            One-dimensional stabilizer vector. Entries equal to one are treated
+            as defects; other values are ignored by the defect selector.
+        dual : bool, default=False
+            Use the plaquette/dual path convention when true. False decodes
+            vertex syndromes for X-error correction; true decodes plaquette
+            syndromes for Z-error correction.
+
+        Returns
+        -------
+        numpy.ndarray
+            Binary ``int8`` correction vector with length ``2*d**2``.
+
+        Notes
+        -----
+        A valid periodic-code syndrome has even defect parity. For compatibility,
+        an odd input duplicates its first defect before matching. ``ControlQEC``
+        subsequently rejects any correction that leaves a residual syndrome.
+
         """
         defects = np.where(syndrome == 1)[0]
         if len(defects) == 0:
@@ -104,6 +184,21 @@ class MWPMDecoder:
         return correction
 
     def _distance(self, u: int, v: int) -> int:
+        """Return the integer matching cost between two stabilizers.
+
+        Parameters
+        ----------
+        u, v : int
+            Flattened stabilizer indices on the ``d`` by ``d`` torus.
+
+        Returns
+        -------
+        int
+            Wrapped Manhattan distance, optionally rescaled by ``K[u, v]``,
+            floored through integer conversion, and clamped to at least one for
+            weighted in-range pairs.
+
+        """
         d = self.d
         r1, c1 = divmod(u, d)
         r2, c2 = divmod(v, d)
@@ -121,12 +216,28 @@ class MWPMDecoder:
         return base_dist
 
     def _shortest_path(self, u: int, v: int, dual: bool = False) -> list[int]:
-        """Qubit indices along Manhattan shortest path on torus.
+        """Return qubit indices along a toric Manhattan shortest path.
 
-        dual=False: vertex path (vertical edges for row moves, horizontal for column).
-        dual=True: plaquette path (horizontal edges for row moves, vertical for column).
-        On the toric code, plaquette (r,c) and plaquette ((r+1)%d, c) share
-        horizontal edge h((r+1)%d, c), so row movement in the dual uses h-edges.
+        Parameters
+        ----------
+        u, v : int
+            Flattened start and end stabilizer indices.
+        dual : bool, default=False
+            Select plaquette-path edge conventions instead of vertex-path
+            conventions.
+
+        Returns
+        -------
+        list[int]
+            Ordered data-qubit indices toggled by the correction.
+
+        Notes
+        -----
+        Vertex paths use vertical edges for row moves and horizontal edges for
+        column moves. Plaquette paths reverse those roles. Plaquettes ``(r, c)``
+        and ``((r+1) % d, c)`` share horizontal edge ``h((r+1) % d, c)``.
+        Equal-length wrapped directions deterministically choose the forward path.
+
         """
         d = self.d
         r1, c1 = divmod(u, d)
@@ -177,20 +288,70 @@ class MWPMDecoder:
 
 
 class ControlQEC:
-    """QEC wrapper for protecting quantum control signals.
+    """Run stochastic toric-code error-correction rounds.
 
-    Combines SurfaceCode + MWPMDecoder with optional Knm-weighted edges.
+    Parameters
+    ----------
+    distance : int, default=3
+        Linear dimension of the periodic surface-code lattice.
+    knm_weights : numpy.ndarray or None, optional
+        Stabilizer-indexed coupling weights forwarded to ``MWPMDecoder``.
+
+    Attributes
+    ----------
+    code : SurfaceCode
+        Constructed toric code and its parity-check matrices.
+    decoder : MWPMDecoder
+        Matching decoder configured for the same distance and optional weights.
+
+    Notes
+    -----
+    A round succeeds only when both corrected syndromes vanish and neither
+    residual error contains a non-contractible toric cycle. This analysis
+    surface does not perform hardware syndrome extraction.
+
     """
 
     def __init__(self, distance: int = 3, knm_weights: NDArray[np.float64] | None = None):
-        """Assemble SurfaceCode + MWPMDecoder for the given distance."""
+        """Assemble a toric code and its matching decoder.
+
+        Parameters
+        ----------
+        distance : int, default=3
+            Linear dimension forwarded unchanged to both components.
+        knm_weights : numpy.ndarray or None, optional
+            Optional stabilizer-pair coupling matrix forwarded to the decoder.
+
+        """
         self.code = SurfaceCode(distance)
         self.decoder = MWPMDecoder(distance, knm_weights)
 
     def simulate_errors(
         self, p_error: float, rng: np.random.Generator | None = None
     ) -> tuple[NDArray[np.int8], NDArray[np.int8]]:
-        """Simulate independent X and Z errors with probability p_error."""
+        """Sample independent X- and Z-error vectors.
+
+        Parameters
+        ----------
+        p_error : float
+            Bernoulli probability passed to NumPy for every X and Z component.
+        rng : numpy.random.Generator or None, optional
+            Random generator to consume. A fresh default generator is created
+            when omitted.
+
+        Returns
+        -------
+        tuple[numpy.ndarray, numpy.ndarray]
+            Independent ``(err_x, err_z)`` binary ``int8`` vectors, each with
+            length ``2*d**2``.
+
+        Raises
+        ------
+        ValueError
+            If NumPy rejects ``p_error``, including probabilities outside
+            ``[0, 1]``.
+
+        """
         if rng is None:
             rng = np.random.default_rng()
         N = self.code.num_data
@@ -201,17 +362,54 @@ class ControlQEC:
     def get_syndrome(
         self, err_x: NDArray[np.int8], err_z: NDArray[np.int8]
     ) -> tuple[NDArray[np.int8], NDArray[np.int8]]:
-        """Compute syndromes: syn_z = Hx @ err_x mod 2, syn_x = Hz @ err_z mod 2."""
+        """Compute vertex and plaquette syndromes modulo two.
+
+        Parameters
+        ----------
+        err_x, err_z : numpy.ndarray
+            X- and Z-error vectors with expected length ``2*d**2``.
+
+        Returns
+        -------
+        tuple[numpy.ndarray, numpy.ndarray]
+            ``(syn_z, syn_x)`` where ``syn_z = Hx @ err_x mod 2`` and
+            ``syn_x = Hz @ err_z mod 2``. Each vector has length ``d**2``.
+
+        Raises
+        ------
+        ValueError
+            If an error vector is dimensionally incompatible with its check
+            matrix.
+
+        """
         syn_z = (self.code.Hx @ err_x) % 2
         syn_x = (self.code.Hz @ err_z) % 2
         return syn_z, syn_x
 
     def decode_and_correct(self, err_x: NDArray[np.int8], err_z: NDArray[np.int8]) -> bool:
-        """Full decode cycle. Returns True if no logical error remains.
+        """Decode one X/Z error pair and test whether correction succeeds.
 
-        Checks both syndrome clearance and non-trivial homology on the torus.
-        A residual with zero syndrome can still be a logical operator if it wraps
-        around a non-contractible cycle.
+        Parameters
+        ----------
+        err_x, err_z : numpy.ndarray
+            Binary ``int8`` error vectors with expected length ``2*d**2``.
+
+        Returns
+        -------
+        bool
+            True only when both residual syndromes vanish and no residual has
+            odd winding parity across either toric seam.
+
+        Raises
+        ------
+        ValueError
+            If an error vector is dimensionally incompatible with the code.
+
+        Notes
+        -----
+        A residual with zero syndrome may still represent a logical operator
+        when it wraps around a non-contractible toric cycle.
+
         """
         syn_z, syn_x = self.get_syndrome(err_x, err_z)
 
@@ -232,15 +430,24 @@ class ControlQEC:
     def _has_logical_error(
         self, residual_x: NDArray[np.int8], residual_z: NDArray[np.int8]
     ) -> bool:
-        """Check if residual errors form non-trivial homology cycles.
+        """Detect non-trivial winding in residual X and Z errors.
 
-        A residual with zero syndrome may still be a logical operator if it
-        wraps around a non-contractible cycle of the torus. We detect winding
-        by counting edge crossings at a seam:
-        - Horizontal winding: parity of h-edges crossing the vertical seam
-          at column 0, i.e. h(r, 0) = 2*r*d for each row r.
-        - Vertical winding: parity of v-edges crossing the horizontal seam
-          at row 0, i.e. v(0, c) = 2*c + 1 for each column c.
+        Parameters
+        ----------
+        residual_x, residual_z : numpy.ndarray
+            Corrected binary error vectors with length ``2*d**2``.
+
+        Returns
+        -------
+        bool
+            True when either residual has odd horizontal or vertical seam
+            parity; otherwise false.
+
+        Notes
+        -----
+        Horizontal winding is the parity of ``h(r, 0) = 2*r*d`` over rows.
+        Vertical winding is the parity of ``v(0, c) = 2*c + 1`` over columns.
+
         """
         d = self.code.d
         for residual in (residual_x, residual_z):

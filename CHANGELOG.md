@@ -14,6 +14,13 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   fallback and the complete manifest-scoped Rustfmt command.
 
 ### Added
+- 2026-07-13 — Closed the D401 suppression for the toric ControlQEC module.
+  Complete NumPy-style contracts and public decoder documentation now define
+  lattice/check shapes, error and syndrome arrays, matching and K_nm cost
+  semantics, deterministic primal/dual paths, odd-defect compatibility,
+  correction success, homology checks, validation boundaries, results, and
+  failure modes. Executable source, public signatures, QEC algorithms,
+  provider wiring, polyglot kernels, and benchmark evidence are unchanged.
 - 2026-07-13 — Removed the stale D205 exemption from the QEC package facade.
   Its existing package contract already satisfies the global Ruff D gate and
   exposes 52 unique, live error-correction symbols without exporting a

@@ -27,8 +27,23 @@ The primal path decodes vertex syndromes for X-error correction. The dual path
 decodes plaquette syndromes for Z-error correction. Residual syndromes and
 non-trivial toric homology cycles are rejected by `decode_and_correct`.
 
+For lattice dimension `d`, the wrapper allocates `2*d**2` data qubits and
+returns two `d**2`-entry syndromes. Error and correction vectors are binary
+`int8` arrays. The low-level constructor does not enforce a distance bound;
+callers are responsible for choosing a positive dimension that represents the
+intended toric code. The focused decoder evidence exercises `d=3` and `d=5`.
+
 Optional K_nm weighting rescales the toric Manhattan distance used by matching.
-It is a weighting heuristic for the toric decoder, not a new decoder family.
+For an in-range stabilizer pair `(u, v)`, the matching cost is
+`int(base_distance / (1 + K[u, v]))`, clamped to at least one. The matrix changes
+pair selection but not the deterministic Manhattan correction path; callers
+must provide a square, indexable matrix with suitable finite values. It is a
+weighting heuristic for the toric decoder, not a new decoder family.
+
+Valid periodic-code syndromes have even defect parity. The low-level decoder
+duplicates the first defect for an odd input to keep matching deterministic;
+`ControlQEC` then recomputes both syndromes and returns `False` if correction
+did not clear them. This compatibility path is not a boundary-aware decoder.
 
 ### Biological Graph Decoder
 

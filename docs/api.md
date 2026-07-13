@@ -2827,6 +2827,12 @@ rejects uncleared syndromes or non-trivial toric homology cycles. See the
 [QEC decoder boundary](qec_decoder_boundary.md) for the shipped decoder scope
 and explicit non-claims.
 
+For dimension `d`, X/Z error and correction vectors have `2*d**2` binary
+entries and each syndrome has `d**2` entries. `simulate_errors` samples the X
+and Z channels independently; `decode_and_correct` succeeds only after both
+residual syndromes and both toric winding parities are clear. K_nm weights alter
+integer matching costs, not the selected primal/dual Manhattan path geometry.
+
 ## config — unified runtime configuration
 
 Available via the `[config]` extra (pydantic-settings).
