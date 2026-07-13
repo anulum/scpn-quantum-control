@@ -4,6 +4,12 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 
 ## [Unreleased]
 
+### Fixed
+- 2026-07-13 — Made reproduction-image policy tests distinguish host-only
+  Docker build metadata and optional Rust-toolchain availability. Host checks
+  remain strict, while the toolchain-free image verifies the documented Cargo
+  fallback and the complete manifest-scoped Rustfmt command.
+
 ### Added
 - 2026-07-13 — Changed coverage source discovery from an importable package
   name to the package filesystem directory across coverage.py, CI, local

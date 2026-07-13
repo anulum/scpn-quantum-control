@@ -347,6 +347,13 @@ copies source and fixtures only. Local backup archives and ignored campaign-run
 logs are excluded for the same reason; committed root `results/` fixtures remain
 part of the reproduction surface.
 
+Static assertions over `Dockerfile` and `.dockerignore` run on the host, where
+those build inputs exist, and skip inside the built image because neither file
+is part of its curated runtime context. The Rustfmt preflight contract likewise
+checks an absolute Cargo executable when the Rust toolchain is installed and
+the explicit `cargo` fallback when it is absent; the manifest-scoped command
+arguments remain mandatory in both environments.
+
 ### Coverage-exclusions ledger
 
 Every file omitted from the line gate (`[tool.coverage.run].omit` and

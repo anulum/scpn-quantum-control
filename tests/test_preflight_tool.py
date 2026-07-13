@@ -14,6 +14,7 @@ import os
 import subprocess
 import sys
 from pathlib import Path
+from shutil import which
 from types import ModuleType
 
 import pytest
@@ -91,7 +92,12 @@ def test_static_gates_include_manifest_scoped_rustfmt() -> None:
     gate_map = {name: cmd for name, cmd in _preflight.STATIC_GATES}
     command = gate_map["rustfmt"]
 
-    assert Path(command[0]).is_absolute()
+    cargo = which("cargo")
+    if cargo is None:
+        assert command[0] == "cargo"
+    else:
+        assert command[0] == cargo
+        assert Path(command[0]).is_absolute()
     assert command[1:] == [
         "fmt",
         "--manifest-path",

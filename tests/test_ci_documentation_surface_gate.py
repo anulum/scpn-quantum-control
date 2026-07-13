@@ -12,6 +12,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
 import tomllib
 
 
@@ -83,8 +84,15 @@ def test_ci_lint_gates_differentiable_external_validation_manifests() -> None:
 
 def test_docker_reproduction_image_builds_credential_free_git_index() -> None:
     """Docker policy audits need an index without copying host Git metadata."""
-    dockerfile = Path("Dockerfile").read_text(encoding="utf-8")
-    dockerignore = Path(".dockerignore").read_text(encoding="utf-8")
+    dockerfile_path = Path("Dockerfile")
+    dockerignore_path = Path(".dockerignore")
+    if not dockerfile_path.is_file() or not dockerignore_path.is_file():
+        pytest.skip(
+            "Docker build metadata is host-only and is not copied into the reproduction image"
+        )
+
+    dockerfile = dockerfile_path.read_text(encoding="utf-8")
+    dockerignore = dockerignore_path.read_text(encoding="utf-8")
 
     assert "RUN git init -q" in dockerfile
     assert "&& git add -A" in dockerfile
