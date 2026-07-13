@@ -102,7 +102,14 @@ class BackendProtocol(Protocol):
     name: str
 
     def is_available(self) -> bool:
-        """True iff the backend can run in the current environment."""
+        """Return whether the backend can run in the current environment.
+
+        Returns
+        -------
+        bool
+            ``True`` when the backend's runtime requirements are satisfied.
+
+        """
         ...  # pragma: no cover - Protocol declaration only.
 
 
@@ -252,17 +259,58 @@ def get_registry() -> BackendRegistry:
 
 
 def register_backend(name: str, factory: BackendFactory) -> None:
-    """Convenience wrapper for :meth:`BackendRegistry.register`."""
+    """Register a backend factory in the process-wide registry.
+
+    Parameters
+    ----------
+    name : str
+        Unique backend name.
+    factory : BackendFactory
+        Zero-argument callable that constructs a conforming backend.
+
+    Raises
+    ------
+    BackendRegistrationError
+        If the name or factory is invalid, or the name is already bound to a
+        different factory.
+
+    """
     _registry.register(name, factory)
 
 
 def unregister_backend(name: str) -> None:
-    """Convenience wrapper for :meth:`BackendRegistry.unregister`."""
+    """Remove a backend from the process-wide registry.
+
+    Parameters
+    ----------
+    name : str
+        Backend name to remove. Missing names are ignored.
+
+    """
     _registry.unregister(name)
 
 
 def get_backend(name: str) -> BackendProtocol:
-    """Convenience wrapper for :meth:`BackendRegistry.get`."""
+    """Instantiate a backend from the process-wide registry.
+
+    Parameters
+    ----------
+    name : str
+        Registered backend name.
+
+    Returns
+    -------
+    BackendProtocol
+        Newly constructed backend instance.
+
+    Raises
+    ------
+    KeyError
+        If ``name`` is not registered.
+    BackendRegistrationError
+        If the factory result does not satisfy :class:`BackendProtocol`.
+
+    """
     return _registry.get(name)
 
 
@@ -306,7 +354,20 @@ def describe_backend(name: str) -> QuantumBackendDescriptor:
 
 
 def discover_backends(*, force: bool = False) -> list[str]:
-    """Convenience wrapper for :meth:`BackendRegistry.discover`."""
+    """Discover backend entry points through the process-wide registry.
+
+    Parameters
+    ----------
+    force : bool, default=False
+        Repeat discovery even when the process-wide registry has already
+        completed a scan.
+
+    Returns
+    -------
+    list[str]
+        Names successfully registered during this discovery pass.
+
+    """
     return _registry.discover(force=force)
 
 

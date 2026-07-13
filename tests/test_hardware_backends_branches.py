@@ -24,19 +24,32 @@ from scpn_quantum_control.hardware import backends as be
 from scpn_quantum_control.hardware.hal import BackendCapabilities, BackendProfile
 
 
-def _capabilities(*, supports_cost_estimate: bool = False) -> BackendCapabilities:
+def _capabilities(
+    *,
+    supports_counts: bool = True,
+    supports_shots: bool = True,
+    supports_cancellation: bool = True,
+    supports_cost_estimate: bool = False,
+) -> BackendCapabilities:
     return BackendCapabilities(
-        supports_shots=True,
-        supports_counts=True,
+        supports_shots=supports_shots,
+        supports_counts=supports_counts,
         supports_statevector=False,
         supports_mid_circuit_measurement=False,
         supports_analog=False,
         supports_pulse=False,
+        supports_cancellation=supports_cancellation,
         supports_cost_estimate=supports_cost_estimate,
     )
 
 
-def _local_profile(*, supports_cost_estimate: bool = False) -> BackendProfile:
+def _local_profile(
+    *,
+    supports_counts: bool = True,
+    supports_shots: bool = True,
+    supports_cancellation: bool = True,
+    supports_cost_estimate: bool = False,
+) -> BackendProfile:
     return BackendProfile(
         backend_id="local_qiskit_aer",
         provider="test_provider",
@@ -44,7 +57,12 @@ def _local_profile(*, supports_cost_estimate: bool = False) -> BackendProfile:
         modality="gate_model",
         sdk_package="test-sdk",
         ir_formats=("openqasm3",),
-        capabilities=_capabilities(supports_cost_estimate=supports_cost_estimate),
+        capabilities=_capabilities(
+            supports_counts=supports_counts,
+            supports_shots=supports_shots,
+            supports_cancellation=supports_cancellation,
+            supports_cost_estimate=supports_cost_estimate,
+        ),
     )
 
 
@@ -105,6 +123,21 @@ def test_capability_tokens_include_cost_estimate() -> None:
     """A profile that advertises cost estimation lists the cost_estimate capability."""
     tokens = be._hal_profile_capability_tokens(_local_profile(supports_cost_estimate=True))
     assert "cost_estimate" in tokens
+
+
+def test_capability_tokens_omit_disabled_registry_features() -> None:
+    """Omit count, shot, and cancellation tokens when their flags are disabled."""
+    profile = _local_profile(
+        supports_counts=False,
+        supports_shots=False,
+        supports_cancellation=False,
+    )
+
+    tokens = be._hal_profile_capability_tokens(profile)
+
+    assert "counts" not in tokens
+    assert "shots" not in tokens
+    assert "cancellation" not in tokens
 
 
 def test_qiskit_aer_backend_unavailable_without_package(monkeypatch: pytest.MonkeyPatch) -> None:
