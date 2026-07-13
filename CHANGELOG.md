@@ -14,6 +14,11 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   fallback and the complete manifest-scoped Rustfmt command.
 
 ### Added
+- 2026-07-13 — Removed the stale D205 exemption from the QEC package facade.
+  Its existing package contract already satisfies the global Ruff D gate and
+  exposes 52 unique, live error-correction symbols without exporting a
+  union-find decoder. Facade source, public exports, QEC algorithms, polyglot
+  kernels, and benchmark evidence are unchanged.
 - 2026-07-13 — Closed all three D401 findings plus adjacent D413/D417 debt in
   the QSVT resource estimator. Complete NumPy-style contracts and the corrected
   phase API now document Hamiltonian norms, validated query/step formulas,
