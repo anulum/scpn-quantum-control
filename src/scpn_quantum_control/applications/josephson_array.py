@@ -40,7 +40,7 @@ from numpy.typing import NDArray
 
 
 def _has_variation(values: NDArray[np.float64]) -> bool:
-    """True when correlation is statistically defined for a vector."""
+    """Return whether correlation is statistically defined for a vector."""
     return values.size >= 2 and float(np.ptp(values)) > 0.0
 
 
