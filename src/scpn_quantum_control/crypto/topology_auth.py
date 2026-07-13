@@ -164,7 +164,22 @@ def challenge_response_verify(
     challenge: bytes,
     response: bytes,
 ) -> bool:
-    """Verifier: check that the response matches HMAC(K_nm, challenge)."""
+    """Verify a response against the HMAC for a topology challenge.
+
+    Parameters
+    ----------
+    K : NDArray[np.float64]
+        Secret coupling matrix used as the HMAC key material.
+    challenge : bytes
+        Verifier-issued challenge bytes.
+    response : bytes
+        Claimed SHA-256 HMAC response.
+
+    Returns
+    -------
+    bool
+        ``True`` when the response matches the expected HMAC.
+    """
     expected = hmac.new(K.tobytes(), challenge, hashlib.sha256).digest()
     return hmac.compare_digest(response, expected)
 

@@ -11,6 +11,9 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   fallback and the complete manifest-scoped Rustfmt command.
 
 ### Added
+- 2026-07-13 — Closed the D401 suppression for topology challenge-response
+  authentication. Its public HMAC verifier now has a NumPy-style contract
+  enforced by the global Ruff D gate; executable source is unchanged.
 - 2026-07-13 — Closed the D205/D401 suppression for the control-layer
   structured ansatz. Its circuit-construction and submission contracts now use
   NumPy-style documentation enforced by the global Ruff D gate; executable
