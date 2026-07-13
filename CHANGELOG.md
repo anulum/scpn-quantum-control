@@ -5,6 +5,13 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Fixed
+- 2026-07-13 — Closed the live Phase-QNode vector-transform coverage row.
+  Strict public-contract regressions now exercise every remaining malformed
+  parameter, batch, and vector-output boundary, reject supported scalar
+  transforms at the vector-Jacobian execution seam, and preserve nested
+  Jacobian fail-closed decisions through JVP/VJP wrappers. Public APIs,
+  parameter-shift arithmetic, framework/provider policy, polyglot surfaces,
+  and benchmark claims are unchanged.
 - 2026-07-13 — Closed the live Phase-QNode framework-parity coverage row.
   Deterministic regressions now classify every framework failure boundary,
   validate scenario/parameter guards, execute both TensorFlow runner branches,

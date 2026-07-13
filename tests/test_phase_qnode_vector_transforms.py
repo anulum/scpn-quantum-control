@@ -11,7 +11,9 @@ from __future__ import annotations
 
 import numpy as np
 import pytest
+from numpy.typing import NDArray
 
+import scpn_quantum_control.phase.qnode_vector_transforms as vector_transforms
 from scpn_quantum_control.phase import (
     PhaseQNodeVectorTransformResult,
     execute_phase_qnode_vector_hessian,
@@ -23,16 +25,18 @@ from scpn_quantum_control.phase import (
     run_phase_qnode_vector_transform_readiness_suite,
 )
 
+FloatArray = NDArray[np.float64]
 
-def _scalar_objective(params: np.ndarray) -> float:
+
+def _scalar_objective(params: FloatArray) -> float:
     return float(np.cos(params[0]) + 0.25 * np.sin(params[1]))
 
 
-def _scalar_gradient(params: np.ndarray) -> np.ndarray:
+def _scalar_gradient(params: FloatArray) -> FloatArray:
     return np.array([-np.sin(params[0]), 0.25 * np.cos(params[1])], dtype=float)
 
 
-def _vector_objective(params: np.ndarray) -> np.ndarray:
+def _vector_objective(params: FloatArray) -> FloatArray:
     return np.array(
         [
             np.cos(params[0]) + 0.1 * np.sin(params[1]),
@@ -42,7 +46,7 @@ def _vector_objective(params: np.ndarray) -> np.ndarray:
     )
 
 
-def _vector_jacobian(params: np.ndarray) -> np.ndarray:
+def _vector_jacobian(params: FloatArray) -> FloatArray:
     return np.array(
         [
             [-np.sin(params[0]), 0.1 * np.cos(params[1])],
@@ -52,7 +56,7 @@ def _vector_jacobian(params: np.ndarray) -> np.ndarray:
     )
 
 
-def _vector_hessian(params: np.ndarray) -> np.ndarray:
+def _vector_hessian(params: FloatArray) -> FloatArray:
     return np.array(
         [
             [[-np.cos(params[0]), 0.0], [0.0, -0.1 * np.sin(params[1])]],
@@ -96,7 +100,9 @@ def test_phase_qnode_vector_jvp_and_vjp_match_jacobian_reference() -> None:
     assert jvp.transform == "jvp"
     assert vjp.transform == "vjp"
     assert jvp.jvp is not None
+    assert jvp.tangent is not None
     assert vjp.vjp is not None
+    assert vjp.cotangent is not None
     np.testing.assert_allclose(jvp.jvp, expected_jacobian @ tangent, atol=1e-12)
     np.testing.assert_allclose(vjp.vjp, expected_jacobian.T @ cotangent, atol=1e-12)
     np.testing.assert_allclose(jvp.tangent, tangent, atol=1e-12)
@@ -257,6 +263,90 @@ def test_phase_qnode_vector_transforms_validate_shapes_and_finiteness() -> None:
             lambda _: float("nan"),
             np.array([[0.2, -0.4]], dtype=float),
         )
+
+
+def test_phase_qnode_vector_transforms_reject_remaining_invalid_boundaries() -> None:
+    """Public vector routes reject malformed parameters, batches, and outputs."""
+    params = np.array([0.2, -0.4], dtype=float)
+
+    with pytest.raises(ValueError, match="one-dimensional"):
+        execute_phase_qnode_vector_jacobian(
+            "jacfwd",
+            _vector_objective,
+            np.array([[0.2, -0.4]], dtype=float),
+        )
+    with pytest.raises(ValueError, match="finite values"):
+        execute_phase_qnode_vector_jacobian(
+            "jacfwd",
+            _vector_objective,
+            np.array([0.2, np.nan], dtype=float),
+        )
+    with pytest.raises(ValueError, match="non-empty batch"):
+        execute_phase_qnode_vmap_grad(
+            _scalar_objective,
+            np.empty((0, 2), dtype=float),
+        )
+    with pytest.raises(ValueError, match="finite values"):
+        execute_phase_qnode_vmap_grad(
+            _scalar_objective,
+            np.array([[0.2, np.inf]], dtype=float),
+        )
+    with pytest.raises(ValueError, match="must not be empty"):
+        execute_phase_qnode_vector_jacobian(
+            "jacrev",
+            lambda _: np.array([], dtype=float),
+            params,
+        )
+    with pytest.raises(ValueError, match="finite values"):
+        execute_phase_qnode_vector_jacobian(
+            "jacrev",
+            lambda _: np.array([np.nan], dtype=float),
+            params,
+        )
+
+
+def test_vector_jacobian_refuses_supported_non_jacobian_transform() -> None:
+    """A supported scalar transform cannot execute through the vector Jacobian API."""
+    result = execute_phase_qnode_vector_jacobian(
+        "grad",
+        _vector_objective,
+        np.array([0.2, -0.4], dtype=float),
+    )
+
+    assert result.fail_closed
+    assert result.jacobian is None
+    assert result.failure_reason == "vector QNode execution supports only jacfwd or jacrev"
+
+
+def test_vector_jvp_vjp_propagate_nested_jacobian_refusal(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Directional wrappers preserve a nested Jacobian fail-closed decision."""
+    params = np.array([0.2, -0.4], dtype=float)
+    blocked = execute_phase_qnode_vector_jacobian(
+        "jacfwd",
+        _vector_objective,
+        params,
+        adapter="jax",
+    )
+
+    def refuse_jacobian(*args: object, **kwargs: object) -> PhaseQNodeVectorTransformResult:
+        del args, kwargs
+        return blocked
+
+    monkeypatch.setattr(
+        vector_transforms,
+        "execute_phase_qnode_vector_jacobian",
+        refuse_jacobian,
+    )
+
+    jvp = execute_phase_qnode_vector_jvp(_vector_objective, params, np.array([1.0, 0.0]))
+    vjp = execute_phase_qnode_vector_vjp(_vector_objective, params, np.array([1.0, 0.0]))
+
+    assert jvp.fail_closed
+    assert jvp.failure_reason == blocked.failure_reason
+    assert vjp.fail_closed
+    assert vjp.failure_reason == blocked.failure_reason
 
 
 def test_phase_qnode_vector_transforms_reject_complex_derivative_inputs() -> None:
