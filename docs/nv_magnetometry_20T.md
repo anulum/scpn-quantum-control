@@ -23,9 +23,14 @@ no further sensing modalities are implemented or claimed.
 `gamma_e = 28.024951 GHz/T` (Doherty et al., Physics Reports 528, 1, 2013).
 
 ```python
-from scpn_quantum_control.sensing.nv_magnetometry_20T import NVCenter, odmr_resonances_hz
+from scpn_quantum_control.sensing import (
+    NVCenter,
+    nv_ground_state_hamiltonian,
+    odmr_resonances_hz,
+)
 
 nv = NVCenter()
+hamiltonian = nv_ground_state_hamiltonian(nv, field_tesla=20.0)
 lo, hi = odmr_resonances_hz(nv, field_tesla=20.0)   # (557.6 GHz, 563.4 GHz)
 ```
 

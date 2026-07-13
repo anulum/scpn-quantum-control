@@ -14,10 +14,15 @@ parabolic-peak boundary case, and the two field-calibration guards.
 
 from __future__ import annotations
 
+import sys
+from types import ModuleType
+
 import numpy as np
 import pytest
 from numpy.typing import NDArray
 
+import scpn_quantum_control.sensing as sensing
+from scpn_quantum_control.sensing import nv_magnetometry_20T
 from scpn_quantum_control.sensing.nv_magnetometry_20T import (
     NVCenter,
     _lorentzian_dip,
@@ -25,8 +30,16 @@ from scpn_quantum_control.sensing.nv_magnetometry_20T import (
     _parabolic_peak,
     calibrate_field_from_odmr,
     nv_energy_levels_hz,
+    odmr_spectrum,
     simulate_odmr_measurement,
 )
+
+
+def test_sensing_facade_reexports_the_leaf_public_api() -> None:
+    """The sensing facade preserves every public NV-magnetometry symbol."""
+    assert sensing.__all__ == nv_magnetometry_20T.__all__
+    for name in nv_magnetometry_20T.__all__:
+        assert getattr(sensing, name) is getattr(nv_magnetometry_20T, name)
 
 
 def test_rejects_negative_transverse_strain() -> None:
@@ -66,6 +79,20 @@ def test_odmr_dispatch_falls_back_to_python_lorentzian(monkeypatch: pytest.Monke
     np.testing.assert_allclose(result, expected)
 
 
+def test_odmr_dispatch_falls_back_when_native_symbol_is_absent(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A loaded native module without the optional kernel uses NumPy."""
+    engine_without_kernel = ModuleType("scpn_quantum_engine")
+    monkeypatch.setitem(sys.modules, "scpn_quantum_engine", engine_without_kernel)
+    freqs = np.linspace(2.80e9, 2.94e9, 64, dtype=np.float64)
+    centers = np.array([2.85e9, 2.89e9], dtype=np.float64)
+
+    result = _odmr_spectrum_dispatch(freqs, centers, 1.0e6, 0.03)
+
+    np.testing.assert_array_equal(result, _lorentzian_dip(freqs, centers, 1.0e6, 0.03))
+
+
 def test_rejects_negative_noise_std() -> None:
     """A negative readout-noise standard deviation is rejected."""
     freqs = np.linspace(2.80e9, 2.94e9, 16, dtype=np.float64)
@@ -73,11 +100,22 @@ def test_rejects_negative_noise_std() -> None:
         simulate_odmr_measurement(freqs, NVCenter(), 0.05, noise_std=-1.0)
 
 
+def test_noise_free_measurement_matches_the_odmr_model() -> None:
+    """Zero readout noise returns the deterministic ODMR spectrum."""
+    freqs = np.linspace(1.45e9, 4.30e9, 64, dtype=np.float64)
+    nv = NVCenter()
+
+    measured = simulate_odmr_measurement(freqs, nv, 0.05, noise_std=0.0)
+
+    np.testing.assert_array_equal(measured, odmr_spectrum(freqs, nv, 0.05))
+
+
 def test_parabolic_peak_returns_grid_point_at_boundary() -> None:
-    """At a boundary index the sub-grid refinement falls back to the grid point."""
+    """Boundary and zero-curvature peaks fall back to their grid points."""
     grid = np.array([0.0, 1.0, 2.0], dtype=np.float64)
     signal = np.array([1.0, 0.5, 0.2], dtype=np.float64)
     assert _parabolic_peak(grid, signal, 0) == 0.0
+    assert _parabolic_peak(grid, np.ones(3, dtype=np.float64), 1) == 1.0
 
 
 def test_calibration_requires_three_samples() -> None:

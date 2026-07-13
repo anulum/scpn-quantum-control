@@ -14,6 +14,14 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   fallback and the complete manifest-scoped Rustfmt command.
 
 ### Added
+- 2026-07-13 — Closed the D401 suppression and adjacent module-docstring D413
+  debt for the 20 T NV-centre magnetometry model. The sensing facade now
+  re-exports all 11 public leaf symbols, including the previously omitted
+  ground-state Hamiltonian helper. Three strictly typed branch regressions
+  cover the optional-native-symbol fallback, deterministic noise-free
+  measurement, and zero-curvature peak refinement; scientific algorithms,
+  the curated top-level API, native-kernel behavior, and benchmark evidence
+  are unchanged.
 - 2026-07-13 — Closed the D205 suppression for the QSNN package facade. Its
   package contract now separates the public summary from the exported LIF,
   synapse/STDP, dense-layer, trainer-result, diagnostics, and neuromorphic

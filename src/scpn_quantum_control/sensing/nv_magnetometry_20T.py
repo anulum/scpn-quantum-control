@@ -23,6 +23,7 @@ References
   Reviews of Modern Physics 92, 015004 (2020) — CW-ODMR DC sensitivity.
 - E. Bauch et al., *Ultra-long dephasing times in solid-state spin ensembles via
   quantum control*, Physical Review X 8, 031025 (2018) — coherence regime.
+
 """
 
 from __future__ import annotations
@@ -109,11 +110,11 @@ def nv_energy_levels_hz(
 def odmr_resonances_hz(
     nv: NVCenter, field_tesla: float, theta_rad: float = 0.0, phi_rad: float = 0.0
 ) -> tuple[float, float]:
-    """The two ODMR transition frequencies from the ``ms=0``-like state [Hz].
+    """Return the two ODMR transitions from the ``ms=0``-like state [Hz].
 
-    Returns ``(f_lower, f_upper)`` sorted ascending. At zero field both equal D;
-    for an axial field they are ``D -/+ gamma_e B`` (the lower branch reflects
-    about the GSLAC).
+    The returned ``(f_lower, f_upper)`` pair is sorted ascending. At zero field
+    both frequencies equal D; for an axial field they are ``D -/+ gamma_e B``
+    (the lower branch reflects about the GSLAC).
     """
     hamiltonian = nv_ground_state_hamiltonian(nv, field_tesla, theta_rad, phi_rad)
     values, vectors = np.linalg.eigh(hamiltonian)
