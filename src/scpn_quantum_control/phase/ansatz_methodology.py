@@ -146,7 +146,26 @@ def _vqe_run(
 
 
 def _convergence_99pct(history: list[float]) -> int:
-    """Iteration at which energy first reaches 99% of final value."""
+    """Return the first iteration meeting the signed energy threshold.
+
+    Parameters
+    ----------
+    history
+        Ordered energy evaluations ending with the final benchmark value.
+
+    Returns
+    -------
+    int
+        First qualifying zero-based index, zero for histories shorter than two
+        evaluations, or the final index when no earlier value qualifies.
+
+    Notes
+    -----
+    A negative final energy qualifies at or below 99 percent of that value. A
+    non-negative final energy qualifies at or above 101 percent of that value,
+    preserving the benchmark's historical signed-threshold convention.
+
+    """
     if len(history) < 2:
         return 0
     final = history[-1]

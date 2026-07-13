@@ -14,6 +14,11 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   fallback and the complete manifest-scoped Rustfmt command.
 
 ### Added
+- 2026-07-13 — Closed the D401 suppression for the ansatz-methodology
+  convergence helper. Its NumPy-style contract now documents ordered energy
+  history, short-history and fallback results, and the benchmark's historical
+  signed 99/101-percent threshold convention. Executable source, benchmark
+  algorithms, public APIs, and evidence are unchanged.
 - 2026-07-13 — Closed the D205 suppression and adjacent D413 debt for the
   single-ancilla Lindblad circuit. The module, circuit builder, and resource
   estimator now expose complete NumPy-style parameter, result, validation, and
