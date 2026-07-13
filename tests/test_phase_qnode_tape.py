@@ -9,11 +9,15 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
+from typing import cast
+
 import numpy as np
 import pytest
 from numpy.typing import NDArray
 
 from scpn_quantum_control.differentiable import Parameter, multi_frequency_parameter_shift_rule
+from scpn_quantum_control.differentiable_result_contracts import ParameterShiftSampleRecord
 from scpn_quantum_control.phase import (
     PhaseQNodeTape,
     PhaseQNodeTapeRecord,
@@ -210,3 +214,81 @@ def test_phase_qnode_tape_fails_closed_on_invalid_inputs() -> None:
             plus_variances=np.array([0.1, 0.1], dtype=float),
             minus_variances=np.array([0.1], dtype=float),
         )
+
+
+def test_phase_qnode_tape_record_rejects_inconsistent_metadata() -> None:
+    """Record validation should reject inconsistent uncertainty and sample metadata."""
+    suite = run_phase_qnode_tape_readiness_suite()
+    deterministic = suite.records[0]
+    finite_shot = suite.records[1]
+
+    with pytest.raises(ValueError, match="standard_error must match gradient shape"):
+        replace(deterministic, standard_error=np.zeros(1, dtype=float))
+    with pytest.raises(ValueError, match="confidence_radius must match gradient shape"):
+        replace(deterministic, confidence_radius=np.zeros(1, dtype=float))
+    with pytest.raises(ValueError, match="shot_count must be positive"):
+        replace(deterministic, shot_count=0)
+    with pytest.raises(ValueError, match="seed must be non-negative"):
+        replace(deterministic, seed=-1)
+
+    invalid_samples = cast(tuple[ParameterShiftSampleRecord, ...], ("not-a-sample",))
+    with pytest.raises(ValueError, match="must contain ParameterShiftSampleRecord"):
+        replace(deterministic, sample_records=invalid_samples)
+
+    out_of_range = replace(
+        finite_shot.sample_records[0],
+        parameter_index=deterministic.gradient.size,
+    )
+    with pytest.raises(ValueError, match="parameter_index must fit"):
+        replace(deterministic, sample_records=(out_of_range,))
+    with pytest.raises(ValueError, match="must include sample_records"):
+        replace(finite_shot, sample_records=())
+    with pytest.raises(ValueError, match="only valid for finite-shot"):
+        replace(deterministic, sample_records=(finite_shot.sample_records[0],))
+
+
+def test_phase_qnode_tape_context_reentry_clear_and_supported_provider_boundary() -> None:
+    """Tape lifecycle guards should preserve a fail-closed local provider boundary."""
+    tape = PhaseQNodeTape(
+        qnode_name="local_provider_candidate",
+        observable="energy",
+        backend="statevector",
+    )
+
+    with tape:
+        with pytest.raises(RuntimeError, match="already active"):
+            tape.__enter__()
+        record = tape.record_provider_boundary(
+            "provider_boundary",
+            provider="local_simulator",
+        )
+        assert record.plan.supported
+        assert not record.supported
+        assert record.failure_reason == (
+            "provider execution not submitted by QNode tape readiness record"
+        )
+        assert tape.records == (record,)
+        tape.clear()
+        assert len(tape.records) == 0
+
+
+def test_phase_qnode_tape_rejects_invalid_constructor_controls() -> None:
+    """Tape construction should reject invalid shot, seed, and confidence controls."""
+    with pytest.raises(ValueError, match="shots must be a positive integer"):
+        PhaseQNodeTape(qnode_name="invalid", observable="energy", shots=True)
+    with pytest.raises(ValueError, match="seed must be a non-negative integer"):
+        PhaseQNodeTape(qnode_name="invalid", observable="energy", seed=-1)
+    with pytest.raises(ValueError, match="confidence_level must be between"):
+        PhaseQNodeTape(qnode_name="invalid", observable="energy", confidence_level=np.nan)
+
+
+def test_phase_qnode_tape_record_rejects_nonfinite_and_nonscalar_vectors() -> None:
+    """Record construction should reject non-finite scalars and malformed vectors."""
+    record = run_phase_qnode_tape_readiness_suite().records[0]
+
+    with pytest.raises(ValueError, match="value must be finite"):
+        replace(record, value=np.inf)
+    with pytest.raises(ValueError, match="gradient must be a one-dimensional array"):
+        replace(record, gradient=np.zeros((1, 2), dtype=float))
+    with pytest.raises(ValueError, match="gradient must contain only finite values"):
+        replace(record, gradient=np.array([np.nan, 0.0], dtype=float))

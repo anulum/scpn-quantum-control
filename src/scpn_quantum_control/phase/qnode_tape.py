@@ -71,7 +71,7 @@ class PhaseQNodeTapeRecord:
         object.__setattr__(self, "observable", _as_non_empty_string("observable", self.observable))
         object.__setattr__(self, "backend", _as_non_empty_string("backend", self.backend))
         object.__setattr__(self, "value", _as_finite_scalar("value", self.value))
-        gradient = _as_finite_vector("gradient", self.gradient, allow_empty=True)
+        gradient = _as_finite_vector("gradient", self.gradient)
         standard_error = _as_optional_finite_vector("standard_error", self.standard_error)
         confidence_radius = _as_optional_finite_vector(
             "confidence_radius",
@@ -642,12 +642,10 @@ def _as_confidence_level(value: float) -> float:
     return confidence
 
 
-def _as_finite_vector(name: str, values: ArrayLike, *, allow_empty: bool = False) -> FloatArray:
+def _as_finite_vector(name: str, values: ArrayLike) -> FloatArray:
     vector = np.asarray(values, dtype=float)
     if vector.ndim != 1:
         raise ValueError(f"{name} must be a one-dimensional array")
-    if not allow_empty and vector.size == 0:
-        raise ValueError(f"{name} must not be empty")
     if not np.all(np.isfinite(vector)):
         raise ValueError(f"{name} must contain only finite values")
     return cast(FloatArray, vector.astype(np.float64, copy=True))
@@ -656,7 +654,7 @@ def _as_finite_vector(name: str, values: ArrayLike, *, allow_empty: bool = False
 def _as_optional_finite_vector(name: str, values: ArrayLike | None) -> FloatArray | None:
     if values is None:
         return None
-    return _as_finite_vector(name, values, allow_empty=True)
+    return _as_finite_vector(name, values)
 
 
 __all__ = [

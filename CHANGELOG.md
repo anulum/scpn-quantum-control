@@ -5,6 +5,13 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Fixed
+- 2026-07-13 — Closed the live P0 Phase-QNode tape coverage row. Public-contract
+  regressions now exercise every reachable record validator, context lifecycle,
+  supported-plan provider boundary, and fail-closed scalar/vector control. The
+  dead private `allow_empty` switch was removed because every QNode record path
+  intentionally accepts the empty gradient used by provider-boundary evidence;
+  public APIs, gradient arithmetic, provider submission policy, polyglot
+  surfaces, and benchmark claims are unchanged.
 - 2026-07-13 — Closed the next live P0 claim-bearing coverage row for the
   differentiable-programming orchestration owner. A dedicated, strictly typed
   static-alias provenance-guard cohort now exercises all malformed provenance,
