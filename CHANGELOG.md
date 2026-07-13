@@ -14,6 +14,12 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   fallback and the complete manifest-scoped Rustfmt command.
 
 ### Added
+- 2026-07-13 — Closed the D205 suppression for the QSNN package facade. Its
+  package contract now separates the public summary from the exported LIF,
+  synapse/STDP, dense-layer, trainer-result, diagnostics, and neuromorphic
+  bridge claim-boundary scope. Executable source, all 15 public exports, QSNN
+  algorithms, native gradient wiring, polyglot kernels, and benchmark evidence
+  are unchanged.
 - 2026-07-13 — Closed the D401 suppression and adjacent D107/D413 debt for
   the surface-code UPDE scaffold. Complete source and public contracts now
   distinguish its unmeasured structural RZ/RZZ and ancilla-interaction proxies
