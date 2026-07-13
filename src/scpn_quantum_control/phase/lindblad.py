@@ -66,6 +66,35 @@ def _validate_lindblad_inputs(
     gamma_amp: float,
     gamma_deph: float,
 ) -> tuple[int, NDArray[np.float64], NDArray[np.float64], float, float]:
+    """Validate and normalise the solver's physical inputs.
+
+    Parameters
+    ----------
+    n_oscillators
+        Positive oscillator and qubit count.
+    K_coupling
+        Candidate square, finite, symmetric coupling matrix.
+    omega_natural
+        Candidate finite natural-frequency vector.
+    gamma_amp
+        Candidate amplitude-damping rate.
+    gamma_deph
+        Candidate pure-dephasing rate.
+
+    Returns
+    -------
+    tuple
+        Validated oscillator count, a copied coupling matrix with a zero
+        diagonal, a copied frequency vector, and the two finite non-negative
+        damping rates.
+
+    Raises
+    ------
+    ValueError
+        If a count, shape, scalar type, finiteness condition, rate bound, or
+        coupling symmetry condition is invalid.
+
+    """
     if isinstance(n_oscillators, bool) or not isinstance(n_oscillators, int):
         raise ValueError("n_oscillators must be a positive integer.")
     if n_oscillators < 1:
@@ -93,6 +122,27 @@ def _validate_lindblad_inputs(
 
 
 def _validate_time_grid(t_max: float, dt: float) -> tuple[float, float]:
+    """Validate and return the requested evolution horizon and step bound.
+
+    Parameters
+    ----------
+    t_max
+        Finite non-negative evolution horizon.
+    dt
+        Finite positive upper bound on the returned sample spacing.
+
+    Returns
+    -------
+    tuple
+        Validated ``(t_max, dt)`` values as Python floats.
+
+    Raises
+    ------
+    ValueError
+        If ``t_max`` is negative or non-finite, or if ``dt`` is non-positive
+        or non-finite.
+
+    """
     t_max_value = float(t_max)
     dt_value = float(dt)
     if not np.isfinite(t_max_value) or t_max_value < 0.0:
@@ -121,20 +171,31 @@ def _sigma(pauli: str, qubit: int, n: int) -> NDArray[np.complex128]:
 
 
 class LindbladKuramotoSolver:
-    """Open-system Kuramoto-XY solver via Lindblad master equation.
+    """Solve open-system Kuramoto-XY dynamics with a Lindblad equation.
 
     Parameters
     ----------
-    n_oscillators : int
-        Number of oscillators (qubits).
-    K_coupling : array-like, shape (n, n)
-        Coupling matrix.
-    omega_natural : array-like, shape (n,)
-        Natural frequencies.
-    gamma_amp : float
-        Amplitude damping rate per qubit (energy relaxation, T1).
-    gamma_deph : float
-        Pure dephasing rate per qubit (T2).
+    n_oscillators
+        Positive number of oscillators and qubits.
+    K_coupling
+        Finite real symmetric coupling matrix of shape ``(n, n)``. Its
+        diagonal is discarded by the Kuramoto-XY mapping.
+    omega_natural
+        Finite real natural-frequency vector of shape ``(n,)``.
+    gamma_amp
+        Finite non-negative amplitude-damping rate per qubit.
+    gamma_deph
+        Finite non-negative pure-dephasing rate per qubit.
+    max_dense_gib
+        Optional dense-workspace budget in GiB. When omitted, the shared dense
+        budget resolver uses ``SCPN_MAX_DENSE_GIB`` or its host-aware default.
+
+    Raises
+    ------
+    ValueError
+        If the oscillator count, physical arrays, symmetry, finiteness, or
+        damping-rate constraints are invalid.
+
     """
 
     def __init__(
@@ -147,6 +208,7 @@ class LindbladKuramotoSolver:
         *,
         max_dense_gib: float | None = None,
     ):
+        """Initialize validated solver state without allocating dense operators."""
         self.n, self.K, self.omega, self.gamma_amp, self.gamma_deph = _validate_lindblad_inputs(
             n_oscillators,
             K_coupling,
@@ -160,6 +222,7 @@ class LindbladKuramotoSolver:
         self._lindblad_ops: list[NDArray[np.complex128]] = []
 
     def _dense_object_count(self) -> int:
+        """Return the conservative number of simultaneous dense matrices."""
         channel_count = 0
         if self.gamma_amp > 0:
             channel_count += self.n
@@ -168,7 +231,22 @@ class LindbladKuramotoSolver:
         return max(4, 4 + channel_count)
 
     def build(self, *, max_dense_gib: float | None = None) -> None:
-        """Build Hamiltonian and Lindblad operators."""
+        """Build and cache the Hamiltonian and Lindblad channel operators.
+
+        Parameters
+        ----------
+        max_dense_gib
+            Optional per-build dense-workspace budget in GiB. It overrides the
+            constructor value; ``None`` reuses that value.
+
+        Raises
+        ------
+        DenseAllocationError
+            If the conservative dense workspace exceeds the active budget.
+        ValueError
+            If the active dense-workspace budget is not positive.
+
+        """
         budget_gib = self.max_dense_gib if max_dense_gib is None else max_dense_gib
         require_dense_allocation(
             self.n,
@@ -187,7 +265,27 @@ class LindbladKuramotoSolver:
                 self._lindblad_ops.append(np.sqrt(self.gamma_deph / 2) * _sigma("Z", i, self.n))
 
     def _rhs(self, _t: float, rho_flat: NDArray[np.complex128]) -> NDArray[np.complex128]:
-        """Lindblad RHS in flattened form for scipy integrator."""
+        """Evaluate the flattened Lindblad right-hand side for SciPy.
+
+        Parameters
+        ----------
+        _t
+            Integration time accepted for the ``solve_ivp`` callback
+            contract; the generator is time independent.
+        rho_flat
+            Flattened complex density matrix of length ``dim**2``.
+
+        Returns
+        -------
+        numpy.ndarray
+            Flattened density-matrix derivative.
+
+        Raises
+        ------
+        RuntimeError
+            If :meth:`build` has not populated the Hamiltonian.
+
+        """
         rho = rho_flat.reshape(self.dim, self.dim)
 
         # Coherent part: -i[H, rho]
@@ -205,7 +303,19 @@ class LindbladKuramotoSolver:
         return np.asarray(drho.ravel(), dtype=np.complex128)
 
     def order_parameter(self, rho: NDArray[np.complex128]) -> float:
-        """Extract Kuramoto R from density matrix."""
+        """Return the Kuramoto synchronisation magnitude for a density matrix.
+
+        Parameters
+        ----------
+        rho
+            Complex density matrix of shape ``(dim, dim)``.
+
+        Returns
+        -------
+        float
+            Magnitude of the mean single-qubit transverse expectation value.
+
+        """
         z = 0.0 + 0.0j
         for i in range(self.n):
             sx = _sigma("X", i, self.n)
@@ -215,11 +325,33 @@ class LindbladKuramotoSolver:
         return float(abs(z))
 
     def purity(self, rho: NDArray[np.complex128]) -> float:
-        """Tr(ρ²) — 1 for pure state, 1/dim for maximally mixed."""
+        """Return the density-matrix purity ``Tr(rho**2)``.
+
+        Parameters
+        ----------
+        rho
+            Complex density matrix of shape ``(dim, dim)``.
+
+        Returns
+        -------
+        float
+            Purity, equal to one for a pure state and ``1 / dim`` for the
+            maximally mixed state.
+
+        """
         return float(np.trace(rho @ rho).real)
 
     def _initial_density_matrix(self) -> NDArray[np.complex128]:
-        """Initial product state density matrix used by the Lindblad solver."""
+        """Construct the frequency-seeded product-state density matrix.
+
+        Returns
+        -------
+        numpy.ndarray
+            Pure density matrix obtained by applying one ``R_y`` rotation per
+            qubit to the all-zero computational-basis state. Each angle is the
+            corresponding natural frequency reduced modulo ``2 * pi``.
+
+        """
         rho0 = np.zeros((self.dim, self.dim), dtype=np.complex128)
         rho0[0, 0] = 1.0
         U: NDArray[np.complex128] = np.eye(1, dtype=np.complex128)
@@ -239,9 +371,38 @@ class LindbladKuramotoSolver:
         *,
         max_dense_gib: float | None = None,
     ) -> dict[str, Any]:
-        """Time-evolve under Lindblad dynamics.
+        """Evolve the density matrix under the configured Lindblad dynamics.
 
-        Returns dict with keys: times, R, purity, rho_final.
+        Parameters
+        ----------
+        t_max
+            Finite non-negative evolution horizon.
+        dt
+            Finite positive upper bound on adjacent output sample spacing.
+        method
+            Integration method forwarded to :func:`scipy.integrate.solve_ivp`.
+        max_dense_gib
+            Optional dense-workspace override used when this call must build
+            the Hamiltonian and channels. A previously built solver is reused.
+
+        Returns
+        -------
+        dict
+            Heterogeneous array payload with ``times``, synchronisation
+            history ``R``, ``purity`` history, and the final density matrix
+            ``rho_final``. A zero horizon returns the initial state without
+            invoking the integrator.
+
+        Raises
+        ------
+        ValueError
+            If the time grid, integration method, or active dense budget is
+            invalid.
+        DenseAllocationError
+            If an unbuilt solver's dense workspace exceeds the active budget.
+        RuntimeError
+            If SciPy reports an unsuccessful integration.
+
         """
         t_max, dt = _validate_time_grid(t_max, dt)
         budget_gib = self.max_dense_gib if max_dense_gib is None else max_dense_gib

@@ -75,6 +75,8 @@ LindbladKuramotoSolver(
     omega_natural: np.ndarray,    # shape (n,)
     gamma_amp: float = 0.0,       # amplitude damping rate
     gamma_deph: float = 0.0,      # dephasing rate
+    *,
+    max_dense_gib: float | None = None,
 )
 ```
 
@@ -82,31 +84,44 @@ LindbladKuramotoSolver(
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `n_oscillators` | `int` | Number of qubits (oscillators) |
-| `K_coupling` | `ndarray (n, n)` | Coupling matrix. Must be symmetric. |
-| `omega_natural` | `ndarray (n,)` | Natural frequencies |
-| `gamma_amp` | `float` | Amplitude damping rate per qubit. $\gamma = 0$ → no damping. |
-| `gamma_deph` | `float` | Pure dephasing rate per qubit. $\gamma = 0$ → no dephasing. |
+| `n_oscillators` | `int` | Positive number of qubits and oscillators. |
+| `K_coupling` | `ndarray (n, n)` | Finite real symmetric coupling matrix. The diagonal is discarded. |
+| `omega_natural` | `ndarray (n,)` | Finite real natural frequencies ordered like the rows of `K_coupling`. |
+| `gamma_amp` | `float` | Finite non-negative amplitude-damping rate per qubit. $\gamma = 0$ disables damping. |
+| `gamma_deph` | `float` | Finite non-negative pure-dephasing rate per qubit. $\gamma = 0$ disables dephasing. |
+| `max_dense_gib` | `float | None` | Optional positive dense-workspace budget in GiB. |
+
+If `max_dense_gib` is omitted, dense allocation uses `SCPN_MAX_DENSE_GIB`
+when set, otherwise the shared host-aware default. `build()` estimates the
+simultaneous Hamiltonian, density-matrix, work-array, and channel-operator
+footprint and raises `DenseAllocationError` before an over-budget allocation.
 
 #### Methods
 
 | Method | Signature | Returns | Description |
 |--------|-----------|---------|-------------|
-| `build()` | `() → None` | — | Build Hamiltonian and Lindblad operators. Called automatically by `run()`. |
-| `run()` | `(t_max, dt, method="RK45") → dict` | See below | Time-evolve under Lindblad dynamics. |
-| `order_parameter()` | `(rho) → float` | Kuramoto $R$ | Extract $R$ from density matrix. |
-| `purity()` | `(rho) → float` | $\text{Tr}(\rho^2)$ | Purity of density matrix. |
+| `build()` | `(*, max_dense_gib=None) → None` | — | Build and cache the Hamiltonian and channel operators under the active dense budget. |
+| `run()` | `(t_max, dt, method="RK45", *, max_dense_gib=None) → dict` | See below | Evolve through `t_max`; `dt` bounds adjacent output spacing. A zero horizon returns the initial state without SciPy. |
+| `order_parameter()` | `(rho) → float` | Kuramoto $R$ | Return the mean transverse-expectation magnitude. |
+| `purity()` | `(rho) → float` | $\text{Tr}(\rho^2)$ | Return density-matrix purity. |
+
+The `run()` budget argument is a build-time override. If the solver is already
+built, its cached operators are reused. Invalid grids fail with `ValueError`,
+and an unsuccessful SciPy integration fails with `RuntimeError`.
 
 #### `run()` Return Value
 
 ```python
 {
-    "times": np.ndarray,      # shape (n_steps,)
-    "R": np.ndarray,          # Kuramoto R at each time, shape (n_steps,)
-    "purity": np.ndarray,     # Tr(ρ²) at each time, shape (n_steps,)
+    "times": np.ndarray,      # shape (n_samples,)
+    "R": np.ndarray,          # Kuramoto R at each sample, shape (n_samples,)
+    "purity": np.ndarray,     # Tr(ρ²) at each sample, shape (n_samples,)
     "rho_final": np.ndarray,  # final density matrix, shape (dim, dim)
 }
 ```
+
+The initial density matrix is a pure product state obtained by applying one
+$R_y(\omega_i \bmod 2\pi)$ rotation to each qubit of the all-zero state.
 
 ---
 

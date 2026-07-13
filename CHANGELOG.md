@@ -14,6 +14,12 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   fallback and the complete manifest-scoped Rustfmt command.
 
 ### Added
+- 2026-07-13 — Closed the D401 suppression for the Lindblad Kuramoto-XY
+  solver. Its NumPy-style contracts now document validated physical inputs,
+  dense-memory budgeting, cached operator construction, observable semantics,
+  frequency-seeded initial state, time-grid behavior, result arrays, and
+  failure modes. Executable dynamics, public signatures, phase wiring,
+  polyglot kernels, and benchmark evidence are unchanged.
 - 2026-07-13 — Closed the D400 suppression for the cross-domain transfer
   summarizer. Its NumPy-style contract now documents the result sequence,
   aggregate pair counts, best-transfer label and speedup, mean speedup, and
