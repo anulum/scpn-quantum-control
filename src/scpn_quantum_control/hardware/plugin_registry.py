@@ -53,11 +53,26 @@ class PluginRegistry:
         }
 
     def register(self, name: str) -> Any:
-        """Decorator to register a backend class.
+        """Register a backend class under ``name``.
 
-        @registry.register("my_backend")
-        class MyRunner:
-            def __init__(self, K, omega, **kwargs): ...
+        Parameters
+        ----------
+        name : str
+            Backend name used for subsequent registry lookups.
+
+        Returns
+        -------
+        Callable[[type], type]
+            Class decorator that stores and returns the decorated class.
+
+        Examples
+        --------
+        Register a custom runner class:
+
+        >>> @registry.register("my_backend")
+        ... class MyRunner:
+        ...     def __init__(self, K, omega, **kwargs): ...
+
         """
 
         def decorator(cls: type) -> type:
@@ -97,12 +112,18 @@ class PluginRegistry:
         ----------
         name : str
             Backend name ("qiskit", "pennylane", "cirq", or custom).
-        K, omega : coupling matrix and frequencies
-        **kwargs : backend-specific arguments (e.g. device, shots)
+        K : Any
+            Coupling matrix passed to the backend constructor.
+        omega : Any
+            Oscillator frequencies passed to the backend constructor.
+        **kwargs : Any
+            Backend-specific constructor arguments such as device or shots.
 
         Returns
         -------
-        Runner instance with .run_trotter() and/or .run_vqe() methods.
+        Any
+            Runner instance supplied by the registered or lazy-loaded backend.
+
         """
         if name in self._backends:
             return self._backends[name](K, omega, **kwargs)

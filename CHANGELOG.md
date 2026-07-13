@@ -14,6 +14,12 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
   fallback and the complete manifest-scoped Rustfmt command.
 
 ### Added
+- 2026-07-13 — Closed the D401 suppression for the hardware plugin registry.
+  Its backend class-decorator contract now uses NumPy-style parameter, return,
+  and example documentation enforced by the global Ruff D gate. The adjacent
+  runner-factory parameter and return sections now also satisfy the strict
+  D413/D417 contract. Executable source, registry wiring, provider schemas, and
+  benchmarks are unchanged.
 - 2026-07-13 — Closed the D401 suppression for the IQM provider adapter. Its
   Qiskit-on-IQM availability contract now uses NumPy-style documentation
   enforced by the global Ruff D gate. A malformed provider-counts regression
