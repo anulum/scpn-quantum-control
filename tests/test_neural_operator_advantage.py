@@ -20,6 +20,7 @@ from datetime import datetime, timezone
 
 import numpy as np
 import pytest
+from numpy.typing import NDArray
 
 pytest.importorskip("torch")
 
@@ -39,7 +40,7 @@ _STEPS = 8  # horizon = 0.4
 _FIXED_CLOCK = datetime(2026, 7, 3, 12, 0, 0, tzinfo=timezone.utc)
 
 
-def _network(seed: int) -> tuple[np.ndarray, np.ndarray]:
+def _network(seed: int) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
     rng = np.random.default_rng(seed)
     omega = rng.normal(0.0, 0.5, size=_N)
     coupling = np.full((_N, _N), 2.0 / _N, dtype=np.float64)
@@ -150,7 +151,11 @@ def test_study_is_deterministic_on_content() -> None:
         second.fidelity.surrogate_mean_error
     )
     assert first.fidelity.error_vs_horizon == second.fidelity.error_vs_horizon
-    assert first.to_dict() == second.to_dict()
+    # Live host provenance includes load averages and other advisory state, so
+    # it is deliberately outside the deterministic content contract.
+    first_content = {key: value for key, value in first.to_dict().items() if key != "provenance"}
+    second_content = {key: value for key, value in second.to_dict().items() if key != "provenance"}
+    assert first_content == second_content
 
 
 def test_payload_digest_is_host_independent_of_provenance() -> None:

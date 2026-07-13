@@ -5,12 +5,19 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Fixed
+- 2026-07-13 — Scoped the neural-operator content-determinism regression test
+  to reproducible fields, excluding live host provenance such as load averages
+  exactly as required by the existing digest and claim boundary.
 - 2026-07-13 — Made reproduction-image policy tests distinguish host-only
   Docker build metadata and optional Rust-toolchain availability. Host checks
   remain strict, while the toolchain-free image verifies the documented Cargo
   fallback and the complete manifest-scoped Rustfmt command.
 
 ### Added
+- 2026-07-13 — Closed the D400 suppression for the neural-operator advantage
+  study. Its existing module-level comparison contract now has a punctuated
+  imperative summary enforced by the global Ruff D gate; executable source and
+  performance-claim boundaries are unchanged.
 - 2026-07-13 — Closed the D401 suppression for topology challenge-response
   authentication. Its public HMAC verifier now has a NumPy-style contract
   enforced by the global Ruff D gate; executable source is unchanged.

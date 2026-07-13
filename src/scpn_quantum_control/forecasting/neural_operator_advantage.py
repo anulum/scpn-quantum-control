@@ -5,7 +5,7 @@
 # ORCID: 0009-0009-3560-0851
 # Contact: www.anulum.li | protoscience@anulum.li
 # SCPN Quantum Control — Neural-operator surrogate vs direct simulation: an honest advantage study
-r"""Does the Kuramoto neural-operator surrogate genuinely beat direct simulation?
+r"""Evaluate whether the Kuramoto neural-operator surrogate beats direct simulation.
 
 A trained surrogate that merely *reduces its loss* has not been shown to be useful. This study asks
 the sharper question — for a concrete network, does the DeepONet surrogate of
