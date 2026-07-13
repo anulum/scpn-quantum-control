@@ -5,6 +5,13 @@ Dated list of changes. Format follows [Keep a Changelog](https://keepachangelog.
 ## [Unreleased]
 
 ### Fixed
+- 2026-07-13 — Closed the live Phase-QNode scalar-transform coverage row.
+  The scalar executor now reports an actionable fail-closed reason when a
+  separately supported gradient-tape plan reaches its non-tape execution seam.
+  Strict public-contract regressions cover the remaining parameter, cotangent,
+  and complex-derivative guards. Numerical transform arithmetic, public APIs,
+  framework/provider policy, polyglot surfaces, and benchmark claims are
+  unchanged.
 - 2026-07-13 — Closed the live Phase-QNode vector-transform coverage row.
   Strict public-contract regressions now exercise every remaining malformed
   parameter, batch, and vector-output boundary, reject supported scalar

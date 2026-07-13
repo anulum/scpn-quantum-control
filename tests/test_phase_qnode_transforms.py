@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import numpy as np
 import pytest
+from numpy.typing import NDArray
 
 from scpn_quantum_control.phase import (
     PhaseQNodeComplexDerivativeContract,
@@ -22,16 +23,18 @@ from scpn_quantum_control.phase import (
     run_phase_qnode_transform_readiness_suite,
 )
 
+FloatArray = NDArray[np.float64]
 
-def _objective(params: np.ndarray) -> float:
+
+def _objective(params: FloatArray) -> float:
     return float(np.cos(params[0]) + 0.25 * np.sin(params[1]))
 
 
-def _gradient(params: np.ndarray) -> np.ndarray:
+def _gradient(params: FloatArray) -> FloatArray:
     return np.array([-np.sin(params[0]), 0.25 * np.cos(params[1])], dtype=float)
 
 
-def _hessian(params: np.ndarray) -> np.ndarray:
+def _hessian(params: FloatArray) -> FloatArray:
     return np.array(
         [[-np.cos(params[0]), 0.0], [0.0, -0.25 * np.sin(params[1])]],
         dtype=float,
@@ -77,6 +80,7 @@ def test_phase_qnode_transform_executes_hessian_vector_product() -> None:
     assert hvp.transform == "hessian_vector_product"
     assert hvp.hessian is not None
     assert hvp.hessian_vector_product is not None
+    assert hvp.tangent is not None
     np.testing.assert_allclose(hvp.hessian, _hessian(params), atol=1e-12)
     np.testing.assert_allclose(hvp.hessian_vector_product, _hessian(params) @ vector, atol=1e-12)
     np.testing.assert_allclose(hvp.tangent, vector, atol=1e-12)
@@ -168,6 +172,67 @@ def test_phase_qnode_transform_validates_directional_inputs() -> None:
             params,
             np.array([1.0], dtype=float),
         )
+
+
+def test_phase_qnode_transform_covers_remaining_scalar_input_contracts() -> None:
+    """Scalar execution validates parameter rank/finiteness and cotangent shape/value."""
+    params = np.array([0.2, -0.4], dtype=float)
+
+    with pytest.raises(ValueError, match="one-dimensional"):
+        execute_phase_qnode_transform(
+            "grad",
+            _objective,
+            np.array([[0.2, -0.4]], dtype=float),
+        )
+    with pytest.raises(ValueError, match="finite values"):
+        execute_phase_qnode_transform(
+            "grad",
+            _objective,
+            np.array([0.2, np.nan], dtype=float),
+        )
+
+    scalar_cotangent = execute_phase_qnode_transform(
+        "vjp",
+        _objective,
+        params,
+        cotangent=2.0,
+    )
+    assert scalar_cotangent.vjp is not None
+    np.testing.assert_allclose(scalar_cotangent.vjp, 2.0 * _gradient(params), atol=1e-12)
+
+    with pytest.raises(ValueError, match="scalar or one-element"):
+        execute_phase_qnode_transform(
+            "vjp",
+            _objective,
+            params,
+            cotangent=np.array([1.0, 2.0], dtype=float),
+        )
+    with pytest.raises(ValueError, match="finite values"):
+        execute_phase_qnode_transform(
+            "vjp",
+            _objective,
+            params,
+            cotangent=float("nan"),
+        )
+
+
+def test_scalar_executor_refuses_planned_tape_with_actionable_reason() -> None:
+    """The scalar executor redirects the separately supported tape surface."""
+    result = execute_phase_qnode_transform(
+        "gradient_tape",
+        _objective,
+        np.array([0.2, -0.4], dtype=float),
+    )
+
+    assert result.fail_closed
+    assert result.failure_reason
+    assert "phase_qnode_tape" in result.failure_reason
+
+
+def test_phase_qnode_complex_contract_rejects_unknown_derivative() -> None:
+    """The complex-boundary helper rejects derivative names outside its contract."""
+    with pytest.raises(ValueError, match="complex.*wirtinger"):
+        phase_qnode_complex_derivative_contract("holomorphic")
 
 
 def test_phase_qnode_complex_and_wirtinger_contract_is_explicit_fail_closed() -> None:

@@ -301,7 +301,15 @@ def execute_phase_qnode_transform(
             ),
         )
 
-    return _blocked_result(label, plan, values)
+    return _blocked_result(
+        label,
+        plan,
+        values,
+        reason=(
+            f"scalar QNode transform executor has no execution route for {label}; "
+            "use the dedicated phase_qnode_tape or vector-transform API"
+        ),
+    )
 
 
 def phase_qnode_complex_derivative_contract(
@@ -465,6 +473,8 @@ def _blocked_result(
     transform: str,
     plan: GradientTransformNestingPlan,
     params: FloatArray,
+    *,
+    reason: str | None = None,
 ) -> PhaseQNodeTransformResult:
     return PhaseQNodeTransformResult(
         transform=transform,
@@ -481,7 +491,7 @@ def _blocked_result(
         tangent=None,
         cotangent=None,
         parameter_shift_evaluations=0,
-        failure_reason="; ".join(plan.blocked_reasons),
+        failure_reason=reason if reason is not None else "; ".join(plan.blocked_reasons),
     )
 
 
